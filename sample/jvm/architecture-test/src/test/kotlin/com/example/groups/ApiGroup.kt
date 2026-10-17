@@ -66,4 +66,21 @@ fun DeclarationContainerScope.apiGroup() = "api".group {
 
     controller()
     ktorPlugin()
+    // A Controller and the Service it calls, as one set. The members come from two groups
+    // (`api` and `domain`), each named by its own path, and each gets its own value by an
+    // expression: the Controller takes the resource as it is, the Service takes it capitalised.
+    //   ./gradlew :architecture-test:katachiTemplate --arg template=api.Endpoint --arg resource=greeting
+    // writes `controller/greeting/GreetingController.kt` and `service/GreetingService.kt`.
+    "Endpoint".templateSet {
+        title = "Endpoint"
+        summary = "A Controller and the Service it calls"
+        val resource by stringParameter()
+
+        template("api.Controller") {
+            arg("resource", resource)
+        }
+        template("domain.Service") {
+            arg("name", resource.replaceFirstChar(Char::uppercaseChar))
+        }
+    }
 }

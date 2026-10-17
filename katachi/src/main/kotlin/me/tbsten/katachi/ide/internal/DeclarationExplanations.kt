@@ -50,6 +50,8 @@ internal class DeclarationExplanations(
                 kind = DefinitionProblemKind.ExplanationFailed,
                 message = "The constraint declared at ${declared.declaredAt} could not explain its declarations: ${oneLineOf(cause)}",
                 detail = declared.role.qualifiedName,
+                declaredAt = problemSiteOf(cause) ?: siteOf(declared.declaredAt),
+                exception = cause.javaClass.name,
             )
             return null
         }

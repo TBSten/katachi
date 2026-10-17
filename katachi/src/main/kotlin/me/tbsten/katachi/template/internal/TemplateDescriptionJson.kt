@@ -70,8 +70,31 @@ internal fun templateDescriptionJsonOf(
     context: ArchitectureProcessContext<*>,
     table: List<DeclaredTemplate> = declaredTemplatesOf(context.declaredEntries),
     withPlacements: Boolean = true,
-): TemplateDescriptionJson {
-    val previewed = table.mapNotNull { template -> catching { template to templateDetailOf(template) }.getOrNull() }
+): TemplateDescriptionJson = templateDescriptionOf(context, table, withPlacements).json
+
+/**
+ * What [templateDescriptionJsonOf] writes, and why each template or set it lists without a detail
+ * has none: the exception its preview threw, by the specifier (`template`) or name (`templateSet`)
+ * the JSON lists it under.
+ */
+internal class TemplateDescription(
+    val json: TemplateDescriptionJson,
+    val templateFailures: Map<String, Throwable>,
+    val templateSetFailures: Map<String, Throwable>,
+)
+
+/** [templateDescriptionJsonOf], keeping the exceptions the previews threw. */
+internal fun templateDescriptionOf(
+    context: ArchitectureProcessContext<*>,
+    table: List<DeclaredTemplate> = declaredTemplatesOf(context.declaredEntries),
+    withPlacements: Boolean = true,
+): TemplateDescription {
+    val templateFailures = LinkedHashMap<String, Throwable>()
+    val previewed = table.mapNotNull { template ->
+        catching { template to templateDetailOf(template) }
+            .onFailure { templateFailures[template.specifier] = it }
+            .getOrNull()
+    }
     val placements = if (!withPlacements) {
         emptyList()
     } else {
@@ -80,13 +103,19 @@ internal fun templateDescriptionJsonOf(
         }
     }
     val sets = context.architecture.allTemplateSets
-    return TemplateDescriptionJson(
+    val templateSetFailures = LinkedHashMap<String, Throwable>()
+    val json = TemplateDescriptionJson(
         templates = table.map(::templateSummaryOf),
         details = previewed.map { it.second },
         modulePlacements = placements,
         templateSets = sets.map { templateSetSummaryOf(it, table) },
-        templateSetDetails = sets.mapNotNull { catching { templateSetDetailOf(it, table) }.getOrNull() },
+        templateSetDetails = sets.mapNotNull { set ->
+            catching { templateSetDetailOf(set, table) }
+                .onFailure { templateSetFailures[set.specifier] = it }
+                .getOrNull()
+        },
     )
+    return TemplateDescription(json, templateFailures, templateSetFailures)
 }
 
 /** The suffix the JSON wears while it is written but not yet in place. */

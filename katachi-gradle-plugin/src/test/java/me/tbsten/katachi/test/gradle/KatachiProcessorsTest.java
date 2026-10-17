@@ -302,6 +302,39 @@ class KatachiProcessorsTest {
                 () -> processors.outputs("role names", outputs -> outputs.setReadsProjectFiles(false)));
     }
 
+    @Test
+    @DisplayName("誤りの JSON を書く場所は、既定の internalDefinitionJson にだけ答える")
+    void definitionErrorsPathIsOnlyForTheDefaultDefinitionTask() {
+        KatachiProcessors processors = new KatachiProcessors();
+
+        assertEquals(
+                "build/katachi/internalDefinitionJson/definition-errors.json",
+                definitionErrorsPathOf(processors, "internalDefinitionJson"));
+        assertEquals(null, definitionErrorsPathOf(processors, "internalTemplatesJson"));
+        assertEquals(null, definitionErrorsPathOf(processors, "templates"));
+        assertEquals(null, definitionErrorsPathOf(processors, "docs"));
+    }
+
+    @Test
+    @DisplayName("internalDefinitionJson を利用者のクラスで register し直すと、誤りの JSON の場所は答えない")
+    void aReplacedDefinitionTaskGetsNoDefinitionErrorsPath() {
+        KatachiProcessors processors = new KatachiProcessors();
+        processors.register("internalDefinitionJson", "com.example.processors.OurOwnJson");
+
+        assertEquals(null, definitionErrorsPathOf(processors, "internalDefinitionJson"));
+    }
+
+    /** Calls the package-private {@code KatachiProcessors.definitionErrorsPathOf(String)}. */
+    private static String definitionErrorsPathOf(KatachiProcessors processors, String key) {
+        try {
+            Method method = KatachiProcessors.class.getDeclaredMethod("definitionErrorsPathOf", String.class);
+            method.setAccessible(true);
+            return (String) method.invoke(processors, key);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
     /**
      * Calls the package-private {@code KatachiProcessors.getConfiguredArgs()}.
      *

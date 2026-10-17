@@ -1461,7 +1461,12 @@
     {
       "kind": "TemplateSetPreviewFailed",
       "message": "The template set could not be previewed, so it has no detail; katachiTemplates --arg template= says why.",
-      "detail": "feature.Broken"
+      "detail": "feature.Broken",
+      "declaredAt": {
+        "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+        "line": 70
+      },
+      "exception": "me.tbsten.katachi.template.KatachiInvalidTemplateSetArgException"
     }
   ]
 }

@@ -271,6 +271,12 @@ data class SampleBaseline(
  * sample of the SARIF file its `katachi { report { sarif = true } }` writes; checkSample<Name>Build
  * deletes it before the run and requires it afterwards to be a SARIF 2.1.0 document with no
  * `error` in it (the run passed, and what the baseline held back must not be in the file either).
+ *
+ * [definitionJsonDir], when given, is the directory inside the sample that its
+ * `katachiInternalDefinitionJson` writes to -- the task the IDE plugin runs. The build task
+ * deletes it before the run and requires it afterwards to hold `definition.json` and a
+ * `definition-errors.json` whose `errors` is empty: a sample whose definition the IDE could not
+ * read cleanly is a sample the IDE shows nothing for.
  */
 data class SampleBuild(
     val name: String,
@@ -279,6 +285,7 @@ data class SampleBuild(
     val template: SampleTemplate? = null,
     val baseline: SampleBaseline? = null,
     val sarifReport: String? = null,
+    val definitionJsonDir: String? = null,
 )
 
 val sampleBuilds = listOf(
@@ -295,6 +302,7 @@ val sampleBuilds = listOf(
             "katachiDocs",
             "--arg",
             "mode=check",
+            ":architecture-test:katachiInternalDefinitionJson",
         ),
         needsAndroidSdk = false,
         template = SampleTemplate(
@@ -311,6 +319,16 @@ val sampleBuilds = listOf(
                         "src/main/kotlin/com/example/controller/smoke/SmokeController.kt",
                     ),
                 ),
+                // A template set (`api.Endpoint`, declared inside the api group): a Controller
+                // and a Service in one run. `resource` fills the Controller's capture as it is and
+                // the Service's `name` capitalised, so the two files are named after one value.
+                SampleTemplateRun(
+                    args = listOf("template=api.Endpoint", "resource=setsmoke"),
+                    generatedFiles = listOf(
+                        "src/main/kotlin/com/example/controller/setsmoke/SetsmokeController.kt",
+                        "src/main/kotlin/com/example/service/SetsmokeService.kt",
+                    ),
+                ),
             ),
             verifyTasks = listOf(
                 ":architecture-test:test",
@@ -323,10 +341,18 @@ val sampleBuilds = listOf(
         // `report { sarif = true }`: its `check` writes the file through the Gradle plugin, the
         // path a user takes. Its Test task is `test`, so the file sits directly under katachi/.
         sarifReport = "architecture-test/build/reports/katachi/katachi.sarif",
+        definitionJsonDir = "architecture-test/build/katachi/internalDefinitionJson",
     ),
     SampleBuild(
         "android",
-        listOf("check", "katachiLayout", "katachiDocs", "--arg", "mode=check"),
+        listOf(
+            "check",
+            "katachiLayout",
+            "katachiDocs",
+            "--arg",
+            "mode=check",
+            ":architecture-test:katachiInternalDefinitionJson",
+        ),
         needsAndroidSdk = true,
         template = SampleTemplate(
             runs = listOf(
@@ -395,6 +421,17 @@ val sampleBuilds = listOf(
                         "testing/src/main/kotlin/com/example/sample/testing/FakeUserKatachiSmokeRepository.kt",
                     ),
                 ),
+                // A template set (`data.NewRepository`): the interface, the implementation and the fake
+                // from the run above, in one `--arg template=`. The fake's `repository` is built from
+                // `name` by the set itself, so one `name` is all the run is given.
+                SampleTemplateRun(
+                    args = listOf("template=data.NewRepository", "name=SetSmoke"),
+                    generatedFiles = listOf(
+                        "data/src/main/kotlin/com/example/sample/data/user/UserSetSmokeRepository.kt",
+                        "data/src/main/kotlin/com/example/sample/data/user/UserSetSmokeRepositoryImpl.kt",
+                        "testing/src/main/kotlin/com/example/sample/testing/FakeUserSetSmokeRepository.kt",
+                    ),
+                ),
                 SampleTemplateRun(
                     args = listOf("template=RoleDefinition", "name=KatachiSmoke"),
                     generatedFiles = listOf(
@@ -424,6 +461,7 @@ val sampleBuilds = listOf(
         ),
         baseline = SampleBaseline(":architecture-test:test", "com.example.sample.ProjectArchitectureTest", heldBack = 2),
         sarifReport = "architecture-test/build/reports/katachi/katachi.sarif",
+        definitionJsonDir = "architecture-test/build/katachi/internalDefinitionJson",
     ),
     SampleBuild(
         "kmp",
@@ -434,6 +472,7 @@ val sampleBuilds = listOf(
             ":architecture-test:katachiDocs",
             "--arg",
             "mode=check",
+            ":architecture-test:katachiInternalDefinitionJson",
         ),
         needsAndroidSdk = true,
         template = SampleTemplate(
@@ -463,6 +502,15 @@ val sampleBuilds = listOf(
                         "feature/home/src/commonMain/kotlin/com/example/kmp/feature/home/component/HomeKatachiSmoke.kt",
                     ),
                 ),
+                // A template set (`data.NewRepository`): the same two roles as the first run, as one
+                // name instead of a comma-separated list.
+                SampleTemplateRun(
+                    args = listOf("template=data.NewRepository", "name=SetSmoke"),
+                    generatedFiles = listOf(
+                        "data/src/commonMain/kotlin/com/example/kmp/data/user/SetSmokeRepository.kt",
+                        "data/src/commonMain/kotlin/com/example/kmp/data/user/SetSmokeRepositoryImpl.kt",
+                    ),
+                ),
             ),
             verifyTasks = listOf(
                 ":architecture-test:test",
@@ -474,6 +522,7 @@ val sampleBuilds = listOf(
         ),
         baseline = SampleBaseline(":architecture-test:test", "com.example.kmp.ProjectArchitectureTest", heldBack = 1),
         sarifReport = "architecture-test/build/reports/katachi/katachi.sarif",
+        definitionJsonDir = "architecture-test/build/katachi/internalDefinitionJson",
     ),
     SampleBuild(
         "custom-processor",
@@ -766,14 +815,41 @@ sampleBuilds.forEach { sample ->
     // Only a File and Strings are captured below: the configuration cache cannot store `sample`
     // or the script itself, which a call to a top-level function from doLast would drag in.
     val sarifReport = sample.sarifReport?.let { File(sampleDir, it) }
+    val definitionJsonDir = sample.definitionJsonDir?.let { File(sampleDir, it) }
     val buildTask = tasks.register<Exec>(buildTaskName) {
         group = LifecycleBasePlugin.VERIFICATION_GROUP
         description = "Runs `${sampleTasks.joinToString(" ")}` in the standalone sample build " +
                 "sample/${sample.name}." +
                 (if (sarifReport == null) "" else " Requires it to leave a SARIF 2.1.0 report at ${sample.sarifReport}.") +
+                (if (definitionJsonDir == null) "" else " Requires it to leave definition.json and an empty " +
+                        "definition-errors.json in ${sample.definitionJsonDir}.") +
                 sdkNote
         runSampleWrapper(sample, sampleDir, sampleTasks)
         mustRunAfter(predecessors)
+        if (definitionJsonDir != null) {
+            // Deleted first, so files an earlier run left behind cannot pass for this one.
+            doFirst { definitionJsonDir.deleteRecursively() }
+            doLast {
+                val definition = File(definitionJsonDir, "definition.json")
+                val errors = File(definitionJsonDir, "definition-errors.json")
+                if (!definition.isFile || !errors.isFile) {
+                    throw GradleException(
+                        "sample/$sampleName passed, but katachiInternalDefinitionJson left no " +
+                                "${definition.name} and ${errors.name} in ${definitionJsonDir.path}. " +
+                                "Either the task is gone from the sample's default tasks in the root " +
+                                "build.gradle.kts, or the Gradle plugin no longer registers it.",
+                    )
+                }
+                // The shape katachi writes: two-space indentation, one key per line, an empty array as `[]`.
+                if (errors.readLines().none { it.trim() == "\"errors\": []" }) {
+                    throw GradleException(
+                        "sample/$sampleName passed, but ${errors.path} reports mistakes in its " +
+                                "definition (or is not the file katachi writes):\n${errors.readText()}" +
+                                "\nThe IDE plugin would show them: fix the definition.",
+                    )
+                }
+            }
+        }
         if (sarifReport != null) {
             // Deleted first, so a file an earlier run left behind cannot pass for this one.
             doFirst { sarifReport.delete() }

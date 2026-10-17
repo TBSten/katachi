@@ -160,6 +160,9 @@ public class KatachiPlugin implements Plugin<Project> {
                     task.setDescription(internalDescription);
                 }
                 task.getProcessorKey().set(key);
+                // Read when the task is realized, like the description: only the default
+                // `internalDefinitionJson` knows the option, and a re-registration replaces it.
+                task.getDefinitionErrorsPath().set(project.provider(() -> processors.definitionErrorsPathOf(key)));
                 // A convention, not a set: a build script's `withType<KatachiProcessorTask>()
                 // .configureEach { mainClass.set(...) }` runs before this action for a task
                 // registered after it, and must still win.

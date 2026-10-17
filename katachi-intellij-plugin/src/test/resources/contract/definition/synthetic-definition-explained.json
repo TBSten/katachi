@@ -314,7 +314,12 @@
     {
       "kind": "ExplanationFailed",
       "message": "The constraint declared at DescribeDefinitionSpecSupport.kt:195 could not explain its declarations: IllegalStateException: cannot explain Thrower",
-      "detail": "Thrower"
+      "detail": "Thrower",
+      "declaredAt": {
+        "fileName": "DescribeDefinitionSpecSupport.kt",
+        "line": 84
+      },
+      "exception": "java.lang.IllegalStateException"
     }
   ]
 }

@@ -1803,12 +1803,22 @@
     {
       "kind": "TemplatePreviewFailed",
       "message": "The template could not be previewed, so it has no detail; katachiTemplates --arg template= says why.",
-      "detail": "a.b.Middle"
+      "detail": "a.b.Middle",
+      "declaredAt": {
+        "fileName": "DescribeDefinitionSpecSupport.kt",
+        "line": 225
+      },
+      "exception": "me.tbsten.katachi.dsl.KatachiTemplateParameterConflictException"
     },
     {
       "kind": "TemplatePreviewFailed",
       "message": "The template could not be previewed, so it has no detail; katachiTemplates --arg template= says why.",
-      "detail": "other.Broken"
+      "detail": "other.Broken",
+      "declaredAt": {
+        "fileName": "IdePluginSyntheticSpecSupport.kt",
+        "line": 130
+      },
+      "exception": "java.lang.IllegalStateException"
     }
   ]
 }

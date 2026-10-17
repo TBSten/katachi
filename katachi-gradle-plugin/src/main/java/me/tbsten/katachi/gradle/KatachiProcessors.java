@@ -111,6 +111,14 @@ public class KatachiProcessors {
     static final String INTERNAL_DEFINITION_JSON_DIR = "build/katachi/internalDefinitionJson";
 
     /**
+     * Where {@code katachiInternalDefinitionJson} writes the mistakes of the definition, relative to
+     * the module directory: next to {@code definition.json}. Passed to the processor's JVM as
+     * {@code --definition-errors=}, an option for the IDE plugin only.
+     */
+    static final String INTERNAL_DEFINITION_ERRORS_PATH =
+            INTERNAL_DEFINITION_JSON_DIR + "/definition-errors.json";
+
+    /**
      * The arguments a default registration runs with, by key, while it still points at katachi's
      * own class.
      *
@@ -410,6 +418,20 @@ public class KatachiProcessors {
             return null;
         }
         return INTERNAL_DESCRIPTIONS.get(key);
+    }
+
+    /**
+     * Where the task of {@code key} is to write {@code definition-errors.json}, or {@code null}
+     * when it is not the definition task: another key, or {@code internalDefinitionJson}
+     * registered again with a class of the user's own, which does not know the option.
+     *
+     * <p>Package-private: {@link KatachiPlugin} reads it when it configures the task.
+     */
+    String definitionErrorsPathOf(String key) {
+        if (!INTERNAL_DEFINITION_JSON_KEY.equals(key) || !isDefaultRegistration(key)) {
+            return null;
+        }
+        return INTERNAL_DEFINITION_ERRORS_PATH;
     }
 
     /** What {@code katachiDocs} is given every run. See {@link #docs(Action)}. */

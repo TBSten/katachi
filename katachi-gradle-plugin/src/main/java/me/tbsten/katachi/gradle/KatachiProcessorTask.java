@@ -115,6 +115,17 @@ public abstract class KatachiProcessorTask extends JavaExec {
         this.processorArgs = processorArgs;
     }
 
+    /**
+     * Where the processor writes {@code definition-errors.json}, relative to the working
+     * directory; absent for every task but the one that describes the definition. Set by
+     * {@link KatachiPlugin}.
+     *
+     * <p>{@code @Internal}: it only tells the IDE plugin where to look, and has no bearing on what
+     * the task does to the project.
+     */
+    @Internal
+    public abstract Property<String> getDefinitionErrorsPath();
+
     /** The registered key of the one processor this task runs. Set by {@link KatachiPlugin}. */
     @Input
     public abstract Property<String> getProcessorKey();
@@ -252,6 +263,9 @@ public abstract class KatachiProcessorTask extends JavaExec {
         List<String> args = new ArrayList<>();
         args.add("--entry-point=" + getEntryPointClassName().get());
         args.add("--processor=" + getProcessorKey().get());
+        if (getDefinitionErrorsPath().isPresent()) {
+            args.add("--definition-errors=" + getDefinitionErrorsPath().get());
+        }
 
         // The command line wins over what the build script configured, so `--arg` stays the way
         // to vary one run without editing the build. Collected first for that reason: a key seen
