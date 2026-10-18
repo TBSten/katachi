@@ -72,7 +72,11 @@ private fun awaitProbe(bridge: EditorEntryProbe, vararg fields: Pair<String, Str
     return checkNotNull(landed)
 }
 
-/** S3's select-opened-file locator avoids assumptions about compact package nodes in Project. */
+/**
+ * TODO(local-driver-input): this right-click and menu walk uses the real mouse, which does not reach a local macOS IDE (see
+ * [SmokeBridge]), so it is expected to fail locally and pass on CI; move it to `describeNewMenu` / `chooseNewMenuItemLater`.
+ *
+ * S3's select-opened-file locator avoids assumptions about compact package nodes in Project. */
 internal fun Driver.openEntryNewMenu(file: String) {
     openFile(file, waitForCodeAnalysis = false)
     // The Project toolbar (Select Opened File) only exists while the tool window is active, and the

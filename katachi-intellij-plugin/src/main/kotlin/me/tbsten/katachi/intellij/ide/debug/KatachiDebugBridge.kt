@@ -191,6 +191,9 @@ internal class KatachiDebugBridge(private val project: Project) {
     /** Presses × of the no-role notification (see [DebugPanels.dismissNoRole]). */
     fun dismissNoRole(): String = checked(DebugPanels(project)).dismissNoRole()
 
+    /** Writes the generate dialog's window, as the screen shows it, as a PNG to [out] (see [DebugScreenshots.ofDialog]). */
+    fun screenshotDialog(out: String): String = DebugScreenshots(project).ofDialog(checked(out))
+
     /** Writes the popup on screen as a PNG to [out] (see [DebugPanels.screenshotPopup]). */
     fun screenshotPopup(out: String): String = DebugPanels(project).screenshotPopup(checked(out))
 
@@ -211,6 +214,12 @@ internal class KatachiDebugBridge(private val project: Project) {
 
     /** The ◆, their menus and the Code Vision of the definition file [path] (see [AuthoringDebugReader.describeDefinitionGutter]). */
     fun describeDefinitionGutter(path: String): String = authoringReader().describeDefinitionGutter(path)
+
+    /** The items of New > katachi on the directory [directory] as `item=katachi/<group>/<label>|enabled` (or `|disabled`) lines (see [DebugNewMenu.describeNewMenu]). */
+    fun describeNewMenu(directory: String): String = checked(DebugNewMenu(project)).describeNewMenu(directory)
+
+    /** Chooses the New > katachi item [path] of [directory], leaving the choosing for later on the EDT: `chosen=<label>` or `chosen=none` (see [DebugNewMenu.chooseNewMenuItemLater]). */
+    fun chooseNewMenuItemLater(directory: String, path: String): String = checked(DebugNewMenu(project)).chooseNewMenuItemLater(directory, path)
 
     private fun authoringReader(): AuthoringDebugReader = AuthoringDebugReader(project, onScreen).also { checked(it) }
 
