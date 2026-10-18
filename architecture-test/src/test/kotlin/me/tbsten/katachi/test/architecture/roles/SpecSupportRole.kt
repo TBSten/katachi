@@ -23,6 +23,8 @@ fun DeclarationContainerScope.specSupport() = "SpecSupport".role {
             description = "スペックが使う道具のうち、:katachi だけで組み立てられるもの。偽のファイルシステムや DSL の下ごしらえ"
             testSourceSet / kotlin / "**" / "*SpecSupport".ktFile()
             testSourceSet / kotlin / KATACHI_TEST_PACKAGE / "dsl" / "ArchitectureExtensions".ktFile()
+            // The entry points and the written-at lines the specs of `definition-errors.json` share.
+            testSourceSet / kotlin / KATACHI_TEST_PACKAGE / "processor" / "DefinitionErrorsSupport".ktFile()
             // Three of them — Fake / Forbidden / Throwing — and the glob stops short of
             // `FileSystemSpec.kt`, which is a spec and belongs to the role above.
             testSourceSet / kotlin / KATACHI_TEST_PACKAGE / "dsl" / "files" / "*FileSystem".ktFile()

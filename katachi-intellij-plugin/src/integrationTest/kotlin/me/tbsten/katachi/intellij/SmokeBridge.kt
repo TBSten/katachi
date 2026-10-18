@@ -95,6 +95,8 @@ internal fun Driver.waitForSmoke(
 
 /** The IDE window painted by the IDE itself (Starter's desktop screenshot is the wallpaper without screen-recording permission). */
 internal fun SmokeBridge.shot(directory: Path, name: String) {
+    // The bridge does not make the directory: a smoke that took no shot before (ToolWindowSmokeTest) would lose it silently.
+    java.nio.file.Files.createDirectories(directory)
     println("screenshot " + screenshotFrame(directory.resolve("$name.png").toString()))
 }
 

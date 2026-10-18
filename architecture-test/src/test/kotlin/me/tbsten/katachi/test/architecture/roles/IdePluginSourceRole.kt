@@ -74,6 +74,10 @@ private val FILES_WITHOUT_SDK_CALLS: Map<String, String> = mapOf(
     "KatachiFileLineMarkerProvider" to "hands the daemon's elements to GutterMarkerDrawing, which wraps every SDK call in sdkCall",
     "NoRoleDecider" to "reads through RulesPorts and the definition service, whose implementations wrap their SDK calls in sdkCall; both callers, the two providers (NoRoleNotificationProvider and KatachiEditorNotificationProvider), wrap the whole decision in sdkCall",
     "NoRoleNotificationPanel" to "builds Swing components; its only caller wraps the build in sdkCall (NoRoleNotificationProvider)",
+    "AnchorShapes" to "reads the shape of a call from the PSI alone (no resolve, no index); its only caller, DefinitionAnchors, wraps the call in sdkCall",
+    "AuthoringPorts" to "a project service holding a lambda that finds the definition service; the features that call it (completion, debug reader) wrap their use in sdkCall",
+    "DefinitionErrorAnnotation" to "types that hold a PsiFile, a VirtualFile and a TextRange; no SDK call",
+    "KatachiCodeVisionGroup" to "returns constant strings for the settings page; no SDK call",
     "NoRolePanels" to "a weak map of editors to panels; no SDK call, only SDK types as keys",
 )
 

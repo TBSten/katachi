@@ -33,6 +33,10 @@ class DefinitionAuthoringSmokeTest {
         // The line the mistake is written on (1-based): where the error's site and the underline must both be.
         val brokenLine = original.lines().indexOfFirst { LAYOUT_LINE in it } + 1
         assertTrue(brokenLine > 0, "$LAYOUT_LINE is not in RepositoryRole.kt")
+        // `.template { }` needs its import and the opt-in; both go on lines the file already has, so the mistake's line number stays.
+        val brokenText = original.replace(LAYOUT_LINE, BROKEN_LINE)
+            .replaceFirst("package com.example.roles", "@file:OptIn(me.tbsten.katachi.ExperimentalKatachiApi::class) package com.example.roles")
+            .replaceFirst("import me.tbsten.katachi.dsl.kotlin.ktFile", "import me.tbsten.katachi.dsl.kotlin.ktFile; import me.tbsten.katachi.dsl.template")
         val quote = serviceText.indexOf(CAPTURE_VALUE) + CAPTURE_VALUE.length
 
         ide.run(project) { _, bridge ->
@@ -57,7 +61,7 @@ class DefinitionAuthoringSmokeTest {
 
             // 3. A name-less `*` with a `.template { "" }`: katachi cannot read the definition. Underlined where it was written, announced in a banner.
             openFile(REPOSITORY, waitForCodeAnalysis = false)
-            repository.writeText(original.replace(LAYOUT_LINE, BROKEN_LINE))
+            repository.writeText(brokenText)
             invokeAction("Synchronize")
             val underlined = "highlight=ERROR|$brokenLine:"
             waitForSmoke("the mistake of RepositoryRole.kt underlined on line $brokenLine and announced", bridge, repositoryPath, timeout = 2.minutes, interval = 3.seconds) {

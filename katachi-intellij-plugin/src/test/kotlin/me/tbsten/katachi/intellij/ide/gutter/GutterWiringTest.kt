@@ -173,7 +173,10 @@ internal class GutterWiringTest : GutterWiringTestBase() {
         assertEquals(listOf(null to ERROR, "HealthService" to ERROR), annotatedByRefresher().map { it.text to it.severity })
 
         gate.complete(Unit)
-        waitUntil("the second SARIF was read") { violations.runningChecks.value.isEmpty() && violations.state.value is ViolationsState.Ready }
+        // The check leaves runningChecks before it reads the SARIF, so "idle and Ready" alone can still be the first answer: wait for the second one (one run, where the first had two).
+        waitUntil("the second SARIF was read") {
+            violations.runningChecks.value.isEmpty() && (violations.state.value as? ViolationsState.Ready)?.runs?.size == 1
+        }
         assertEquals(listOf("HealthService" to WARNING), annotatedByRefresher().map { it.text to it.severity })
 
         // A check that leaves no SARIF (`report { sarif = true }` is not set): nothing of the old results stays.

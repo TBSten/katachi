@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
@@ -35,6 +36,18 @@ class GutterActionsSmokeTest {
         val project = ide.prepareCopy { copy ->
             copy.resolve(PROBE).writeText("package com.example.service\n\ninternal class ProbeService\n")
             copy.resolve(BANNER).writeText("package com.example.service\n")
+            // The copy is a git repository, so the IDE asks "Do you want to add the following file to Git?" for the generated file and that
+            // modal dialog holds the generation up for good: answered in advance: the project's "Add" confirmation is set to add silently.
+            val idea = copy.resolve(".idea").also { it.createDirectories() }
+            idea.resolve("workspace.xml").writeText(
+                """<?xml version="1.0" encoding="UTF-8"?>
+                |<project version="4">
+                |  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+                |    <ConfirmationsSetting value="2" id="Add" />
+                |  </component>
+                |</project>
+                |""".trimMargin(),
+            )
         }
         val probe = project.resolve(PROBE).toString()
         val banner = project.resolve(BANNER).toString()
@@ -64,7 +77,8 @@ class GutterActionsSmokeTest {
             // 3. The banner: a file-level one, with the two links of the quick fixes.
             openFile(BANNER, waitForCodeAnalysis = false)
             waitForSmoke("the banner over BannerProbeService", bridge, banner, timeout = 20.minutes, interval = 5.seconds) {
-                "BannerProbeService" in bridge.describeBanners(banner)
+                // the header line holds the file's path, which names BannerProbeService too: only a `banner=` line is the banner
+                bridge.describeBanners(banner).lines().any { it.startsWith("banner=") && "BannerProbeService" in it }
             }
             val banners = bridge.describeBanners(banner).lines().filter { it.startsWith("banner=") }
             assertEquals(1, banners.size, banners.toString())
@@ -86,7 +100,10 @@ class GutterActionsSmokeTest {
             bridge.shot(ide.screenshots, "4-dialog-filled")
             assertEquals("pressed=generate", bridge.pressDialog("generate"))
             val generated = project.resolve(GENERATED)
-            waitForSmoke("SmokeService.kt written", bridge, health, timeout = 5.minutes, interval = 3.seconds) { generated.exists() }
+            // The file first holds a "katachi: generating this file" placeholder; the Gradle run replaces it with the generated class.
+            waitForSmoke("SmokeService.kt written", bridge, health, timeout = 10.minutes, interval = 3.seconds) {
+                generated.exists() && "class SmokeService" in generated.readText()
+            }
             assertEquals("none", bridge.describeDialog().valueOf("dialog"))
             assertTrue("class SmokeService" in generated.readText(), generated.readText())
             waitForSmoke("SmokeService.kt open with its ◆", bridge, generated.toString(), timeout = 5.minutes) {
