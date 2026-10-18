@@ -227,7 +227,7 @@ roles: testing.GroupDefinition
 == architecture-test/src/test/kotlin/com/example/kmp/groups/DataGroup.kt
 roles: testing.GroupDefinition
     testing.GroupDefinition declared at GroupDefinitionRole.kt:8 | fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
-16 | ◆ | katachi: testing.GroupDefinition
+19 | ◆ | katachi: testing.GroupDefinition
     menu | ◇ Role testing.GroupDefinition — Group definition | GroupDefinitionRole.kt:8
     menu | == Other files of testing.GroupDefinition (6)
     menu | AppGroup.kt | architecture-test/…/example/kmp/groups

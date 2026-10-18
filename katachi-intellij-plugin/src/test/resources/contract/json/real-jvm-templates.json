@@ -1,0 +1,218 @@
+{
+  "templates": [
+    {
+      "template": "api.Controller",
+      "id": null,
+      "title": "Controller",
+      "roleName": "api.Controller",
+      "summary": "Receives one HTTP request, calls the matching Service and returns the result",
+      "parameterNames": [],
+      "captures": [
+        {
+          "name": "resource",
+          "kind": "PathCapture",
+          "pattern": "src/main/kotlin/com/example/controller/*/*Controller.kt",
+          "position": 6,
+          "segment": "${resource}",
+          "wildcardIndex": 0,
+          "transform": null
+        },
+        {
+          "name": "resource",
+          "kind": "PathCapture",
+          "pattern": "src/main/kotlin/com/example/controller/*/*Controller.kt",
+          "position": 7,
+          "segment": "<resource.pascalCase>Controller.kt",
+          "wildcardIndex": 0,
+          "transform": "pascalCase"
+        }
+      ],
+      "conflict": false
+    },
+    {
+      "template": "domain.Service",
+      "id": null,
+      "title": "Service",
+      "roleName": "domain.Service",
+      "summary": "Owns one application-specific behaviour, realized by combining Repositories",
+      "parameterNames": ["kdoc"],
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "src/main/kotlin/com/example/service/*Service.kt",
+          "position": 6,
+          "segment": "${name}Service.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ],
+      "conflict": false
+    }
+  ],
+  "details": [
+    {
+      "template": "api.Controller",
+      "id": null,
+      "title": "Controller",
+      "roleName": "api.Controller",
+      "summary": "Receives one HTTP request, calls the matching Service and returns the result",
+      "parameters": [],
+      "files": [
+        {
+          "pattern": "src/main/kotlin/com/example/controller/${resource}/<resource.pascalCase>Controller.kt",
+          "fileName": "<resource.pascalCase>Controller.kt",
+          "path": "src/main/kotlin/com/example/controller/${resource}/<resource.pascalCase>Controller.kt",
+          "captures": ["resource"],
+          "parameters": [],
+          "content": "package com.example.controller.${resource}\n\nimport io.ktor.server.response.respondText\nimport io.ktor.server.routing.Route\nimport io.ktor.server.routing.get\n\n/** Maps `GET /${resource}`. */\nclass ${resource}Controller {\n    fun register(route: Route) {\n        route.get(\"/${resource}\") {\n            call.respondText(\"TODO: ${resource}Controller\")\n        }\n    }\n}\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=api.Controller --arg resource=<resource>",
+      "captures": [
+        {
+          "name": "resource",
+          "kind": "PathCapture",
+          "pattern": "src/main/kotlin/com/example/controller/*/*Controller.kt",
+          "position": 6,
+          "segment": "${resource}",
+          "wildcardIndex": 0,
+          "transform": null
+        },
+        {
+          "name": "resource",
+          "kind": "PathCapture",
+          "pattern": "src/main/kotlin/com/example/controller/*/*Controller.kt",
+          "position": 7,
+          "segment": "<resource.pascalCase>Controller.kt",
+          "wildcardIndex": 0,
+          "transform": "pascalCase"
+        }
+      ]
+    },
+    {
+      "template": "domain.Service",
+      "id": null,
+      "title": "Service",
+      "roleName": "domain.Service",
+      "summary": "Owns one application-specific behaviour, realized by combining Repositories",
+      "parameters": [
+        {
+          "name": "kdoc",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": "Application-specific behaviour for ${name}.",
+          "acceptedValues": [],
+          "isRequired": false,
+          "previewValue": "${kdoc}",
+          "previewValueSource": "Placeholder"
+        }
+      ],
+      "files": [
+        {
+          "pattern": "src/main/kotlin/com/example/service/${name}Service.kt",
+          "fileName": "${name}Service.kt",
+          "path": "src/main/kotlin/com/example/service/${name}Service.kt",
+          "captures": ["name"],
+          "parameters": ["kdoc"],
+          "content": "package com.example.service\n\n/** ${kdoc} */\nclass ${name}Service {\n    fun execute(): String = TODO(\"Implement ${name}Service\")\n}\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=domain.Service --arg name=<name>",
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "src/main/kotlin/com/example/service/*Service.kt",
+          "position": 6,
+          "segment": "${name}Service.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ]
+    }
+  ],
+  "modulePlacements": [],
+  "templateSets": [
+    {
+      "templateSet": "api.Endpoint",
+      "name": "Endpoint",
+      "title": "Endpoint",
+      "summary": "A Controller and the Service it calls",
+      "groupName": "api",
+      "parameterNames": ["resource"],
+      "members": ["api.Controller", "domain.Service"],
+      "conflict": false
+    }
+  ],
+  "templateSetDetails": [
+    {
+      "templateSet": "api.Endpoint",
+      "name": "Endpoint",
+      "title": "Endpoint",
+      "summary": "A Controller and the Service it calls",
+      "groupName": "api",
+      "parameters": [
+        {
+          "name": "resource",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${resource}",
+          "previewValueSource": "Placeholder"
+        }
+      ],
+      "members": [
+        {
+          "template": "api.Controller",
+          "title": "Controller",
+          "args": [
+            {
+              "name": "resource",
+              "kind": "Capture",
+              "previewValue": "${resource}",
+              "parameter": "resource"
+            }
+          ],
+          "files": [
+            {
+              "pattern": "src/main/kotlin/com/example/controller/${resource}/<resource.pascalCase>Controller.kt",
+              "fileName": "<resource.pascalCase>Controller.kt",
+              "path": "src/main/kotlin/com/example/controller/${resource}/<resource.pascalCase>Controller.kt",
+              "captures": ["resource"],
+              "parameters": [],
+              "content": "package com.example.controller.${resource}\n\nimport io.ktor.server.response.respondText\nimport io.ktor.server.routing.Route\nimport io.ktor.server.routing.get\n\n/** Maps `GET /${resource}`. */\nclass ${resource}Controller {\n    fun register(route: Route) {\n        route.get(\"/${resource}\") {\n            call.respondText(\"TODO: ${resource}Controller\")\n        }\n    }\n}\n"
+            }
+          ]
+        },
+        {
+          "template": "domain.Service",
+          "title": "Service",
+          "args": [
+            {
+              "name": "name",
+              "kind": "Capture",
+              "previewValue": "${resource}",
+              "parameter": "resource"
+            }
+          ],
+          "files": [
+            {
+              "pattern": "src/main/kotlin/com/example/service/${name}Service.kt",
+              "fileName": "${name}Service.kt",
+              "path": "src/main/kotlin/com/example/service/${resource}Service.kt",
+              "captures": ["name"],
+              "parameters": ["kdoc"],
+              "content": "package com.example.service\n\n/** ${kdoc} */\nclass ${resource}Service {\n    fun execute(): String = TODO(\"Implement ${resource}Service\")\n}\n"
+            }
+          ]
+        }
+      ],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=api.Endpoint --arg resource=<resource>"
+    }
+  ]
+}

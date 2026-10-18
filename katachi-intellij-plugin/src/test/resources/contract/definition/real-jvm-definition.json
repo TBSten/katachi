@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
   "katachiVersion": "0.2.0",
-  "generatedAt": "2026-10-06T02:34:23Z",
+  "generatedAt": "2026-10-17T23:33:17Z",
   "projectRoot": "/__ROOT__",
   "architecture": {
     "declaredAt": {
       "fileName": "ProjectArchitecture.kt",
-      "line": 43
+      "line": 44
     },
     "files": "gitTracked",
     "baseline": "katachi-baseline.json"
@@ -3297,7 +3297,7 @@
         {
           "name": "fails the build on every compiler warning",
           "backend": "custom",
-          "checkClass": "com.example.groups.GradleGroupKt$$Lambda$78/0x00000070010837c0",
+          "checkClass": "com.example.groups.GradleGroupKt$$Lambda$82/0x000000f00108ab48",
           "range": "Subtree",
           "declaredAt": {
             "fileName": "GradleGroup.kt",
@@ -3985,7 +3985,87 @@
         ]
       }
     ],
-    "modulePlacements": []
+    "modulePlacements": [],
+    "templateSets": [
+      {
+        "templateSet": "api.Endpoint",
+        "name": "Endpoint",
+        "title": "Endpoint",
+        "summary": "A Controller and the Service it calls",
+        "groupName": "api",
+        "parameterNames": ["resource"],
+        "members": ["api.Controller", "domain.Service"],
+        "conflict": false
+      }
+    ],
+    "templateSetDetails": [
+      {
+        "templateSet": "api.Endpoint",
+        "name": "Endpoint",
+        "title": "Endpoint",
+        "summary": "A Controller and the Service it calls",
+        "groupName": "api",
+        "parameters": [
+          {
+            "name": "resource",
+            "kind": "StringParameter",
+            "typeName": "String",
+            "default": null,
+            "acceptedValues": [],
+            "isRequired": true,
+            "previewValue": "${resource}",
+            "previewValueSource": "Placeholder"
+          }
+        ],
+        "members": [
+          {
+            "template": "api.Controller",
+            "title": "Controller",
+            "args": [
+              {
+                "name": "resource",
+                "kind": "Capture",
+                "previewValue": "${resource}",
+                "parameter": "resource"
+              }
+            ],
+            "files": [
+              {
+                "pattern": "src/main/kotlin/com/example/controller/${resource}/<resource.pascalCase>Controller.kt",
+                "fileName": "<resource.pascalCase>Controller.kt",
+                "path": "src/main/kotlin/com/example/controller/${resource}/<resource.pascalCase>Controller.kt",
+                "captures": ["resource"],
+                "parameters": [],
+                "content": "package com.example.controller.${resource}\n\nimport io.ktor.server.response.respondText\nimport io.ktor.server.routing.Route\nimport io.ktor.server.routing.get\n\n/** Maps `GET /${resource}`. */\nclass ${resource}Controller {\n    fun register(route: Route) {\n        route.get(\"/${resource}\") {\n            call.respondText(\"TODO: ${resource}Controller\")\n        }\n    }\n}\n"
+              }
+            ]
+          },
+          {
+            "template": "domain.Service",
+            "title": "Service",
+            "args": [
+              {
+                "name": "name",
+                "kind": "Capture",
+                "previewValue": "${resource}",
+                "parameter": "resource"
+              }
+            ],
+            "files": [
+              {
+                "pattern": "src/main/kotlin/com/example/service/${name}Service.kt",
+                "fileName": "${name}Service.kt",
+                "path": "src/main/kotlin/com/example/service/${resource}Service.kt",
+                "captures": ["name"],
+                "parameters": ["kdoc"],
+                "content": "package com.example.service\n\n/** ${kdoc} */\nclass ${resource}Service {\n    fun execute(): String = TODO(\"Implement ${resource}Service\")\n}\n"
+              }
+            ]
+          }
+        ],
+        "exampleCommand": "./gradlew katachiTemplate --arg template=api.Endpoint --arg resource=<resource>"
+      }
+    ]
   },
   "problems": []
 }

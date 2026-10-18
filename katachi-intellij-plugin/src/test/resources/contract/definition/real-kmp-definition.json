@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "katachiVersion": "0.2.0",
-  "generatedAt": "2026-10-06T02:34:50Z",
+  "generatedAt": "2026-10-17T23:33:50Z",
   "projectRoot": "/__ROOT__",
   "architecture": {
     "declaredAt": {
@@ -45,7 +45,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "DataGroup.kt",
-        "line": 16
+        "line": 19
       }
     },
     {
@@ -8354,7 +8354,7 @@
         {
           "name": "namespace of a library module follows the module path",
           "backend": "custom",
-          "checkClass": "com.example.kmp.groups.GradleGroupKt$$Lambda$113/0x000000a00108bbe0",
+          "checkClass": "com.example.kmp.groups.GradleGroupKt$$Lambda$117/0x000000a001092f68",
           "range": "Subtree",
           "declaredAt": {
             "fileName": "GradleGroup.kt",
@@ -9023,7 +9023,87 @@
         ]
       }
     ],
-    "modulePlacements": []
+    "modulePlacements": [],
+    "templateSets": [
+      {
+        "templateSet": "data.NewRepository",
+        "name": "NewRepository",
+        "title": "New repository",
+        "summary": "A repository's interface and its implementation",
+        "groupName": "data",
+        "parameterNames": ["name"],
+        "members": ["data.RepositoryInterface", "data.RepositoryImplementation"],
+        "conflict": false
+      }
+    ],
+    "templateSetDetails": [
+      {
+        "templateSet": "data.NewRepository",
+        "name": "NewRepository",
+        "title": "New repository",
+        "summary": "A repository's interface and its implementation",
+        "groupName": "data",
+        "parameters": [
+          {
+            "name": "name",
+            "kind": "StringParameter",
+            "typeName": "String",
+            "default": null,
+            "acceptedValues": [],
+            "isRequired": true,
+            "previewValue": "${name}",
+            "previewValueSource": "Placeholder"
+          }
+        ],
+        "members": [
+          {
+            "template": "data.RepositoryInterface",
+            "title": "Repository interface",
+            "args": [
+              {
+                "name": "name",
+                "kind": "Capture",
+                "previewValue": "${name}",
+                "parameter": "name"
+              }
+            ],
+            "files": [
+              {
+                "pattern": "data/src/commonMain/kotlin/com/example/kmp/data/user/${name}Repository.kt",
+                "fileName": "${name}Repository.kt",
+                "path": "data/src/commonMain/kotlin/com/example/kmp/data/user/${name}Repository.kt",
+                "captures": ["name"],
+                "parameters": ["item"],
+                "content": "package com.example.kmp.data.user\n\n/** Reads ${name} data. */\ninterface ${name}Repository {\n    fun items(): List<${item}>\n}\n"
+              }
+            ]
+          },
+          {
+            "template": "data.RepositoryImplementation",
+            "title": "Repository implementation",
+            "args": [
+              {
+                "name": "name",
+                "kind": "Capture",
+                "previewValue": "${name}",
+                "parameter": "name"
+              }
+            ],
+            "files": [
+              {
+                "pattern": "data/src/commonMain/kotlin/com/example/kmp/data/user/${name}RepositoryImpl.kt",
+                "fileName": "${name}RepositoryImpl.kt",
+                "path": "data/src/commonMain/kotlin/com/example/kmp/data/user/${name}RepositoryImpl.kt",
+                "captures": ["name"],
+                "parameters": ["item"],
+                "content": "package com.example.kmp.data.user\n\n/** The real implementation. A stub, like [UserRepositoryImpl]. */\nclass ${name}RepositoryImpl : ${name}Repository {\n    override fun items(): List<${item}> = emptyList()\n}\n"
+              }
+            ]
+          }
+        ],
+        "exampleCommand": "./gradlew katachiTemplate --arg template=data.NewRepository --arg name=<name>"
+      }
+    ]
   },
   "problems": []
 }
