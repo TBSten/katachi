@@ -24,11 +24,18 @@ package me.tbsten.katachi.test.architecture
  * built on `processor`. `report` turns the violations of a run into a SARIF file: `check`'s
  * `assertWith` writes it, and it reads `check`'s violations and report blocks. Each imports
  * another, so none may come before the others: they may import each other freely, and all
- * three may import nothing after them.
+ * three may import nothing after them (except `processor.internal.DefinitionErrorReport`, see
+ * `ide` below).
  *
  * `ide` writes the whole definition as JSON for the katachi IDE plugin. It comes after `template`
  * because that JSON carries the templates' own JSON, built by `template.internal`, next to what
- * `processor` and `check` know of the walk; nothing in `:katachi` imports it.
+ * `processor` and `check` know of the walk; nothing in `:katachi` imports it, with one exception:
+ * `processor.internal.DefinitionErrorReport` imports four names from `ide.internal` and
+ * `template.internal` (see `ProcessorRole`). runMain writes definition-errors.json even when the
+ * entry point cannot be read, so it cannot call `ide` through a registry. The two names from
+ * `template.internal` (`encodeToJson`, `writeFileAtomically`) are the JSON encoder and the atomic
+ * file writer that the `ide` export uses too; sharing them keeps definition-errors.json written
+ * the same way as the definition JSON.
  *
  * `konsist` and `konture` are the layers of `:katachi-konsist` and `:katachi-konture`, listed
  * together because the two backends are siblings and neither is "after" the other. Nothing in

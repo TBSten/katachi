@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "katachiVersion": "0.2.0",
+  "generatedAt": "2026-10-17T23:45:49Z",
+  "errors": [
+    {
+      "phase": "entryPoint",
+      "processor": null,
+      "exception": "me.tbsten.katachi.dsl.KatachiDuplicateDeclarationException",
+      "message": "Duplicate group \"domain\" declared at DomainGroup.kt:9.\nIt was already declared at DomainGroup.kt:9, in the root of architecture { }.\nGroup names must be unique among the groups declared under the same parent.",
+      "declaredAt": {
+        "fileName": "DomainGroup.kt",
+        "line": 9
+      }
+    }
+  ]
+}

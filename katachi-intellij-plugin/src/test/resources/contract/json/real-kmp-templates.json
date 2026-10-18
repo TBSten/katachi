@@ -1,0 +1,298 @@
+{
+  "templates": [
+    {
+      "template": "feature.FeatureComponent",
+      "id": null,
+      "title": "Screen component",
+      "roleName": "feature.FeatureComponent",
+      "summary": "A @Composable used by only one screen. Placed as <Name>*.kt in the component package of the commonMain of :feature:<name>",
+      "parameterNames": [],
+      "captures": [
+        {
+          "name": "feature",
+          "kind": "PathCapture",
+          "pattern": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/component/*.kt",
+          "position": 1,
+          "segment": "${feature}",
+          "wildcardIndex": 0,
+          "transform": null
+        },
+        {
+          "name": "feature",
+          "kind": "PathCapture",
+          "pattern": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/component/*.kt",
+          "position": 9,
+          "segment": "${feature}",
+          "wildcardIndex": 0,
+          "transform": null
+        },
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/component/*.kt",
+          "position": 11,
+          "segment": "${name}.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ],
+      "conflict": false
+    },
+    {
+      "template": "data.RepositoryInterface",
+      "id": null,
+      "title": "Repository interface",
+      "roleName": "data.RepositoryInterface",
+      "summary": "The :data module's user package. The interface through which the app reads data",
+      "parameterNames": ["item"],
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "data/src/commonMain/kotlin/com/example/kmp/data/user/*Repository.kt",
+          "position": 9,
+          "segment": "${name}Repository.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ],
+      "conflict": false
+    },
+    {
+      "template": "data.RepositoryImplementation",
+      "id": null,
+      "title": "Repository implementation",
+      "roleName": "data.RepositoryImplementation",
+      "summary": "The :data module's user package. The implementation of a repository interface",
+      "parameterNames": ["item"],
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "data/src/commonMain/kotlin/com/example/kmp/data/user/*RepositoryImpl.kt",
+          "position": 9,
+          "segment": "${name}RepositoryImpl.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ],
+      "conflict": false
+    }
+  ],
+  "details": [
+    {
+      "template": "feature.FeatureComponent",
+      "id": null,
+      "title": "Screen component",
+      "roleName": "feature.FeatureComponent",
+      "summary": "A @Composable used by only one screen. Placed as <Name>*.kt in the component package of the commonMain of :feature:<name>",
+      "parameters": [],
+      "files": [
+        {
+          "pattern": "feature/${feature}/src/commonMain/kotlin/com/example/kmp/feature/${feature}/component/${name}.kt",
+          "fileName": "${name}.kt",
+          "path": "feature/${feature}/src/commonMain/kotlin/com/example/kmp/feature/${feature}/component/${name}.kt",
+          "captures": ["feature", "name"],
+          "parameters": [],
+          "content": "package com.example.kmp.feature.${feature}.component\n\nimport androidx.compose.material3.Text\nimport androidx.compose.runtime.Composable\nimport androidx.compose.ui.Modifier\n\n/** Part of the ${feature} screen that no other screen uses. */\n@Composable\ninternal fun ${name}(\n    name: String,\n    modifier: Modifier = Modifier,\n) {\n    Text(text = name, modifier = modifier)\n}\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=feature.FeatureComponent --arg feature=<feature> --arg name=<name>",
+      "captures": [
+        {
+          "name": "feature",
+          "kind": "PathCapture",
+          "pattern": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/component/*.kt",
+          "position": 1,
+          "segment": "${feature}",
+          "wildcardIndex": 0,
+          "transform": null
+        },
+        {
+          "name": "feature",
+          "kind": "PathCapture",
+          "pattern": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/component/*.kt",
+          "position": 9,
+          "segment": "${feature}",
+          "wildcardIndex": 0,
+          "transform": null
+        },
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/component/*.kt",
+          "position": 11,
+          "segment": "${name}.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ]
+    },
+    {
+      "template": "data.RepositoryInterface",
+      "id": null,
+      "title": "Repository interface",
+      "roleName": "data.RepositoryInterface",
+      "summary": "The :data module's user package. The interface through which the app reads data",
+      "parameters": [
+        {
+          "name": "item",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": "String",
+          "acceptedValues": [],
+          "isRequired": false,
+          "previewValue": "${item}",
+          "previewValueSource": "Placeholder"
+        }
+      ],
+      "files": [
+        {
+          "pattern": "data/src/commonMain/kotlin/com/example/kmp/data/user/${name}Repository.kt",
+          "fileName": "${name}Repository.kt",
+          "path": "data/src/commonMain/kotlin/com/example/kmp/data/user/${name}Repository.kt",
+          "captures": ["name"],
+          "parameters": ["item"],
+          "content": "package com.example.kmp.data.user\n\n/** Reads ${name} data. */\ninterface ${name}Repository {\n    fun items(): List<${item}>\n}\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=data.RepositoryInterface --arg name=<name>",
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "data/src/commonMain/kotlin/com/example/kmp/data/user/*Repository.kt",
+          "position": 9,
+          "segment": "${name}Repository.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ]
+    },
+    {
+      "template": "data.RepositoryImplementation",
+      "id": null,
+      "title": "Repository implementation",
+      "roleName": "data.RepositoryImplementation",
+      "summary": "The :data module's user package. The implementation of a repository interface",
+      "parameters": [
+        {
+          "name": "item",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": "String",
+          "acceptedValues": [],
+          "isRequired": false,
+          "previewValue": "${item}",
+          "previewValueSource": "Placeholder"
+        }
+      ],
+      "files": [
+        {
+          "pattern": "data/src/commonMain/kotlin/com/example/kmp/data/user/${name}RepositoryImpl.kt",
+          "fileName": "${name}RepositoryImpl.kt",
+          "path": "data/src/commonMain/kotlin/com/example/kmp/data/user/${name}RepositoryImpl.kt",
+          "captures": ["name"],
+          "parameters": ["item"],
+          "content": "package com.example.kmp.data.user\n\n/** The real implementation. A stub, like [UserRepositoryImpl]. */\nclass ${name}RepositoryImpl : ${name}Repository {\n    override fun items(): List<${item}> = emptyList()\n}\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=data.RepositoryImplementation --arg name=<name>",
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "data/src/commonMain/kotlin/com/example/kmp/data/user/*RepositoryImpl.kt",
+          "position": 9,
+          "segment": "${name}RepositoryImpl.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ]
+    }
+  ],
+  "modulePlacements": [],
+  "templateSets": [
+    {
+      "templateSet": "data.NewRepository",
+      "name": "NewRepository",
+      "title": "New repository",
+      "summary": "A repository's interface and its implementation",
+      "groupName": "data",
+      "parameterNames": ["name"],
+      "members": ["data.RepositoryInterface", "data.RepositoryImplementation"],
+      "conflict": false
+    }
+  ],
+  "templateSetDetails": [
+    {
+      "templateSet": "data.NewRepository",
+      "name": "NewRepository",
+      "title": "New repository",
+      "summary": "A repository's interface and its implementation",
+      "groupName": "data",
+      "parameters": [
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder"
+        }
+      ],
+      "members": [
+        {
+          "template": "data.RepositoryInterface",
+          "title": "Repository interface",
+          "args": [
+            {
+              "name": "name",
+              "kind": "Capture",
+              "previewValue": "${name}",
+              "parameter": "name"
+            }
+          ],
+          "files": [
+            {
+              "pattern": "data/src/commonMain/kotlin/com/example/kmp/data/user/${name}Repository.kt",
+              "fileName": "${name}Repository.kt",
+              "path": "data/src/commonMain/kotlin/com/example/kmp/data/user/${name}Repository.kt",
+              "captures": ["name"],
+              "parameters": ["item"],
+              "content": "package com.example.kmp.data.user\n\n/** Reads ${name} data. */\ninterface ${name}Repository {\n    fun items(): List<${item}>\n}\n"
+            }
+          ]
+        },
+        {
+          "template": "data.RepositoryImplementation",
+          "title": "Repository implementation",
+          "args": [
+            {
+              "name": "name",
+              "kind": "Capture",
+              "previewValue": "${name}",
+              "parameter": "name"
+            }
+          ],
+          "files": [
+            {
+              "pattern": "data/src/commonMain/kotlin/com/example/kmp/data/user/${name}RepositoryImpl.kt",
+              "fileName": "${name}RepositoryImpl.kt",
+              "path": "data/src/commonMain/kotlin/com/example/kmp/data/user/${name}RepositoryImpl.kt",
+              "captures": ["name"],
+              "parameters": ["item"],
+              "content": "package com.example.kmp.data.user\n\n/** The real implementation. A stub, like [UserRepositoryImpl]. */\nclass ${name}RepositoryImpl : ${name}Repository {\n    override fun items(): List<${item}> = emptyList()\n}\n"
+            }
+          ]
+        }
+      ],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=data.NewRepository --arg name=<name>"
+    }
+  ]
+}

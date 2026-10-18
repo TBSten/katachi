@@ -13,6 +13,8 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.runtime.CompositionLocalProvider
 import me.tbsten.katachi.intellij.presentation.EnglishKatachiStrings
 import me.tbsten.katachi.intellij.presentation.JapaneseKatachiStrings
+import me.tbsten.katachi.intellij.presentation.GenerationState
+import me.tbsten.katachi.intellij.presentation.KatachiScreenState
 import me.tbsten.katachi.intellij.presentation.KatachiStrings
 import me.tbsten.katachi.intellij.presentation.uiStateOf
 import me.tbsten.katachi.intellij.ui.KatachiTestTags
@@ -140,7 +142,7 @@ private fun fileNameOf(render: Render, language: Language, theme: String) =
  * does, kept open to read the texts). Returns what the font gate says about the texts it drew.
  */
 private fun renderScenario(render: Render, strings: KatachiStrings, dark: Boolean, out: File): List<String> {
-    val ui = uiStateOf(render.scenario.state, strings, PREVIEW_NOW)
+    val ui = uiStateOf(localizedForPreview(render.scenario.state, strings), strings, PREVIEW_NOW)
     val scene = ImageComposeScene(render.width, render.height, Density(1f)) {
         PreviewTheme(isDark = dark) {
             CompositionLocalProvider(LocalStaticRendering provides true) {
@@ -236,4 +238,15 @@ private fun writeReport(outDir: File, goldenDir: File, diff: PreviewChecks.Golde
         """.trimIndent(),
     )
     return report
+}
+
+/**
+ * The scenarios hold the Local History label as the Japanese bundle writes it (`localHistory.label`);
+ * the English tool window shows the English bundle's one, so that a screen never mixes the two.
+ */
+private fun localizedForPreview(state: KatachiScreenState, strings: KatachiStrings): KatachiScreenState {
+    val generation = state.generation as? GenerationState.Finished ?: return state
+    if (strings !== EnglishKatachiStrings) return state
+    val label = generation.localHistoryLabel?.replace("生成前（", "before generating (")?.replace("）", ")") ?: return state
+    return state.copy(generation = generation.copy(localHistoryLabel = label))
 }

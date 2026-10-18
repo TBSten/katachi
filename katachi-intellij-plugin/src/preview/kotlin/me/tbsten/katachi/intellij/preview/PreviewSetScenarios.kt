@@ -114,8 +114,8 @@ internal val setScenarios: List<Scenario> = listOf(
                         GenerationItemReport(
                             listOf(newFeatureId),
                             GenerationItemResult.Failed(
-                                GenerationFailure.Katachi(listOf("組のメンバ feature.Screen の生成に失敗しました", "何も書きませんでした")),
-                                output = listOf("> Task :architecture-test:katachiTemplate", "[FAILED] template", "  組のメンバ feature.Screen の生成に失敗しました", "BUILD FAILED in 3s"),
+                                GenerationFailure.Katachi(listOf("Failed to generate set member feature.Screen", "Nothing was written")),
+                                output = listOf("> Task :architecture-test:katachiTemplate", "[FAILED] template", "  Failed to generate set member feature.Screen", "BUILD FAILED in 3s"),
                             ),
                         ),
                     ),

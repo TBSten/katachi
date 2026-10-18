@@ -25,7 +25,7 @@ internal class DefinitionPorts(
     /** Whether the katachi project service already exists (something of katachi runs here). */
     private val serviceExists: () -> Boolean,
     /** Whether the synced data has a definition module; reads it, never runs Gradle. */
-    private val hasDefinitionModule: () -> Boolean,
+    val hasDefinitionModule: () -> Boolean,
     // Not named `definition` / `violations`: inside `violations()` the property would be shadowed by the function and call itself.
     private val createDefinition: () -> DefinitionModelService,
     private val createViolations: () -> ViolationsService,

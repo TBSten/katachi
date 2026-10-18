@@ -23,7 +23,7 @@ import java.util.concurrent.CancellationException
  * avoid. The stack trace still lands in idea.log.
  *
  * ```kotlin
- * val opened = sdkCall("open $file in an editor") { FileEditorManager.getInstance(project).openFile(file, false) }.isSuccess
+ * val opened = sdkCall("open $file in an editor") { OpenFileDescriptor(project, file).navigateInEditor(project, false) }.getOrNull() == true
  * ```
  *
  * @param action what the call does, for the log line: "open X in an editor".

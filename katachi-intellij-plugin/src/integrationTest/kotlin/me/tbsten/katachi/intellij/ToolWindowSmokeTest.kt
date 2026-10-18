@@ -106,7 +106,7 @@ class ToolWindowSmokeTest {
 
     /**
      * The template set stage (template-set plan 1.9): a copy of sample/android, whose `data.NewRepository` is a set of three
-     * members. The tool window lists it as one row; checking it, filling its one parameter and generating writes the three files.
+     * members. The tool window lists it as one row; checking it, filling its one parameter and generating writes the three files and opens the first.
      */
     @Test
     fun `sample-androidの組をチェックして生成すると3つのファイルができ開く`() {
@@ -131,9 +131,10 @@ class ToolWindowSmokeTest {
             val added = set.sourcesOf(project) - before
             assertEquals(3, added.size, added.toString())
             assertTrue(added.all { "Profile" in it }, added.toString())
-            // TODO(smoke-helper): that the three files open is read from the editor count; the V4 run says whether the set opens all three.
-            waitFor("the written files to open", timeout = 1.minutes, interval = 1.seconds, errorMessage = { smoke.describeState() }) {
-                service(FileEditorManager::class, ideProject).getAllEditors().size >= 3
+            // The IDE opens the first member's file only (template-set design 3: "the first file the IDE opens" is the first member's);
+            // the three files are on disk, one is in the editor.
+            waitFor("the first member's file to open", timeout = 1.minutes, interval = 1.seconds, errorMessage = { openFileOf(ideProject) }) {
+                openFileOf(ideProject).endsWith("/UserProfileRepository.kt")
             }
             smoke.shot(set.screenshots, "2-set-generated")
         }

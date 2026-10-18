@@ -73,7 +73,7 @@ roles: testing.IntegrationSpec
 == architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt
 roles: testing.ArchitectureDefinitionEntry
     testing.ArchitectureDefinitionEntry declared at ArchitectureDefinitionEntryRole.kt:10 | fun DeclarationContainerScope.architectureDefinitionEntry() = "ArchitectureDefinitionEntry".role {
-43 | ◆ | katachi: testing.ArchitectureDefinitionEntry
+44 | ◆ | katachi: testing.ArchitectureDefinitionEntry
     menu | ◇ Role testing.ArchitectureDefinitionEntry — Architecture definition entry | ArchitectureDefinitionEntryRole.kt:10
     menu | == Other files of testing.ArchitectureDefinitionEntry
     menu | (disabled) — No other file yet

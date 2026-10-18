@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "katachiVersion": "0.2.0",
-  "generatedAt": "2026-10-06T02:34:36Z",
+  "generatedAt": "2026-10-17T23:33:45Z",
   "projectRoot": "/__ROOT__",
   "architecture": {
     "declaredAt": {
@@ -45,7 +45,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "DataGroup.kt",
-        "line": 8
+        "line": 11
       }
     },
     {
@@ -7550,7 +7550,7 @@
         {
           "name": "namespace of a library module follows the module path",
           "backend": "custom",
-          "checkClass": "com.example.sample.groups.GradleGroupKt$$Lambda$104/0x000000700108e300",
+          "checkClass": "com.example.sample.groups.GradleGroupKt$$Lambda$109/0x000000f801095318",
           "range": "Subtree",
           "declaredAt": {
             "fileName": "GradleGroup.kt",
@@ -8636,7 +8636,109 @@
         ]
       }
     ],
-    "modulePlacements": []
+    "modulePlacements": [],
+    "templateSets": [
+      {
+        "templateSet": "data.NewRepository",
+        "name": "NewRepository",
+        "title": "New repository",
+        "summary": "A user repository's interface, its implementation and its fake",
+        "groupName": "data",
+        "parameterNames": ["name"],
+        "members": ["data.RepositoryInterface.user", "data.RepositoryImplementation.user", "testing.Fake"],
+        "conflict": false
+      }
+    ],
+    "templateSetDetails": [
+      {
+        "templateSet": "data.NewRepository",
+        "name": "NewRepository",
+        "title": "New repository",
+        "summary": "A user repository's interface, its implementation and its fake",
+        "groupName": "data",
+        "parameters": [
+          {
+            "name": "name",
+            "kind": "StringParameter",
+            "typeName": "String",
+            "default": null,
+            "acceptedValues": [],
+            "isRequired": true,
+            "previewValue": "${name}",
+            "previewValueSource": "Placeholder"
+          }
+        ],
+        "members": [
+          {
+            "template": "data.RepositoryInterface.user",
+            "title": "user",
+            "args": [
+              {
+                "name": "name",
+                "kind": "Capture",
+                "previewValue": "${name}",
+                "parameter": "name"
+              }
+            ],
+            "files": [
+              {
+                "pattern": "data/src/main/kotlin/com/example/sample/data/user/User${name}Repository.kt",
+                "fileName": "User${name}Repository.kt",
+                "path": "data/src/main/kotlin/com/example/sample/data/user/User${name}Repository.kt",
+                "captures": ["name"],
+                "parameters": [],
+                "content": "package com.example.sample.data.user\n\n/** Reads ${name} data. */\ninterface User${name}Repository {\n    // TODO: replace with what this repository actually reads and writes.\n    fun load(): String\n}\n"
+              }
+            ]
+          },
+          {
+            "template": "data.RepositoryImplementation.user",
+            "title": "user",
+            "args": [
+              {
+                "name": "name",
+                "kind": "Capture",
+                "previewValue": "${name}",
+                "parameter": "name"
+              }
+            ],
+            "files": [
+              {
+                "pattern": "data/src/main/kotlin/com/example/sample/data/user/User${name}RepositoryImpl.kt",
+                "fileName": "User${name}RepositoryImpl.kt",
+                "path": "data/src/main/kotlin/com/example/sample/data/user/User${name}RepositoryImpl.kt",
+                "captures": ["name"],
+                "parameters": [],
+                "content": "package com.example.sample.data.user\n\n/** Production implementation of [User${name}Repository]. */\nclass User${name}RepositoryImpl : User${name}Repository {\n    override fun load(): String = \"\"\n}\n"
+              }
+            ]
+          },
+          {
+            "template": "testing.Fake",
+            "title": "Fake",
+            "args": [
+              {
+                "name": "repository",
+                "kind": "Capture",
+                "previewValue": "User${name}Repository",
+                "parameter": null
+              }
+            ],
+            "files": [
+              {
+                "pattern": "testing/src/main/kotlin/com/example/sample/testing/Fake${repository}.kt",
+                "fileName": "Fake${repository}.kt",
+                "path": "testing/src/main/kotlin/com/example/sample/testing/FakeUser${name}Repository.kt",
+                "captures": ["repository"],
+                "parameters": [],
+                "content": "package com.example.sample.testing\n\nimport com.example.sample.data.user.User${name}Repository\n\n/** In-memory [User${name}Repository] for tests of other modules. */\nclass FakeUser${name}Repository(\n    private var value: String = \"\",\n) : User${name}Repository {\n    override fun load(): String = value\n}\n"
+              }
+            ]
+          }
+        ],
+        "exampleCommand": "./gradlew katachiTemplate --arg template=data.NewRepository --arg name=<name>"
+      }
+    ]
   },
   "problems": []
 }

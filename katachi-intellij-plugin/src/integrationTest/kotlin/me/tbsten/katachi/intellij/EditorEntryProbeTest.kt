@@ -11,6 +11,12 @@ private const val ENTRY_PLUGIN = "me.tbsten.katachi.intellij"
 interface EditorEntryBridgeRef {
     fun describeState(): String
     fun describeDialog(): String
+
+    /** New > katachi of a directory as `item=katachi/<group>/<label>|enabled` lines, read without the Project view. */
+    fun describeNewMenu(directory: String): String
+
+    /** Chooses the item [path] of that menu, queued on the EDT (it opens a modal dialog): `chosen=<label>` or `chosen=none`. */
+    fun chooseNewMenuItemLater(directory: String, path: String): String
 }
 
 /**
@@ -22,6 +28,10 @@ internal class EditorEntryProbe(private val driver: Driver, private val project:
     private val bridge by lazy { driver.service(EditorEntryBridgeRef::class, project) }
 
     fun describeDialog(): String = bridge.describeDialog()
+
+    fun describeNewMenu(directory: String): String = bridge.describeNewMenu(directory)
+
+    fun chooseNewMenuItemLater(directory: String, path: String): String = bridge.chooseNewMenuItemLater(directory, path)
 
     fun describeState(): String {
         val description = bridge.describeState()

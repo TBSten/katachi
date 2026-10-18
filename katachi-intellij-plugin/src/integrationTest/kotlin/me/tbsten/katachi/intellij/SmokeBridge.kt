@@ -9,6 +9,10 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 /**
+ * On a local macOS the IDE under test does not receive Driver's real mouse and keyboard (`java.awt.Robot`; see `NoRoleProbe` and
+ * [shot]): a local Driver smoke operates through this bridge and does not right-click, press keys or type. Only a CI run, which has
+ * a display of its own, may use them.
+ *
  * The plugin's [me.tbsten.katachi.intellij.ide.debug.KatachiDebugBridge] as the new smokes (`GutterSurfacesSmokeTest`,
  * `GutterActionsSmokeTest`, `ArchModuleNameSmokeTest`) see it from Driver. [GutterBridgeRef] is the older half the existing
  * smokes keep using; this is the version with the doors the quality design (2.3) added.
@@ -55,6 +59,20 @@ interface SmokeBridge {
 
     fun screenshotGutterMenu(path: String, line: Int, out: String): String
 
+    // ---- L-E: the doors for what Driver's real mouse and keyboard cannot reach on a local macOS ----
+
+    /** The items of New > katachi on the directory [directory] as `item=katachi/<group>/<label>|enabled` (or `|disabled`) lines (`DebugNewMenu.describeNewMenu`). */
+    fun describeNewMenu(directory: String): String
+
+    /** Chooses the New > katachi item [path] of [directory], queued on the EDT (it opens a modal dialog): `chosen=<label>` (`DebugNewMenu.chooseNewMenuItemLater`). */
+    fun chooseNewMenuItemLater(directory: String, path: String): String
+
+    /** Writes the generate dialog's window as the screen shows it to [out] (needs the OS's screen-capture permission): `saved=<out>|<w>x<h>` or `saved=none` (`DebugScreenshots.ofDialog`). */
+    fun screenshotDialog(out: String): String
+
+    /** Writes the popup on screen (a candidate list, a menu) as a PNG to [out]: `saved=<out>|<w>x<h>` or `saved=none`. */
+    fun screenshotPopup(out: String): String
+
     // ---- L-A (ide-authoring design 5): the doors for writing a definition ----
 
     /** The mistakes katachi found in the definition, the underlines and the banner of [path] (`AuthoringDebugReader.describeDefinitionErrors`). */
@@ -95,6 +113,8 @@ internal fun Driver.waitForSmoke(
 
 /** The IDE window painted by the IDE itself (Starter's desktop screenshot is the wallpaper without screen-recording permission). */
 internal fun SmokeBridge.shot(directory: Path, name: String) {
+    // The bridge does not make the directory: a smoke that took no shot before (ToolWindowSmokeTest) would lose it silently.
+    java.nio.file.Files.createDirectories(directory)
     println("screenshot " + screenshotFrame(directory.resolve("$name.png").toString()))
 }
 

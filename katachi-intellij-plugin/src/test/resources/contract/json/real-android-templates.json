@@ -1,0 +1,737 @@
+{
+  "templates": [
+    {
+      "template": "feature.FeatureComponent",
+      "id": null,
+      "title": "Screen part",
+      "roleName": "feature.FeatureComponent",
+      "summary": "A @Composable used by only one screen. Placed as <Name>*.kt in the component package of :feature:<name>",
+      "parameterNames": ["withPreview"],
+      "captures": [
+        {
+          "name": "feature",
+          "kind": "PathCapture",
+          "pattern": "feature/*/src/main/kotlin/com/example/sample/feature/*/component/*.kt",
+          "position": 1,
+          "segment": "${feature}",
+          "wildcardIndex": 0,
+          "transform": null
+        },
+        {
+          "name": "feature",
+          "kind": "PathCapture",
+          "pattern": "feature/*/src/main/kotlin/com/example/sample/feature/*/component/*.kt",
+          "position": 9,
+          "segment": "${feature}",
+          "wildcardIndex": 0,
+          "transform": null
+        },
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "feature/*/src/main/kotlin/com/example/sample/feature/*/component/*.kt",
+          "position": 11,
+          "segment": "${name}.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ],
+      "conflict": false
+    },
+    {
+      "template": "feature.FeatureTest.home",
+      "id": "home",
+      "title": "home",
+      "roleName": "feature.FeatureTest",
+      "summary": "A test in src/test of :feature:<name> that runs the ViewModel with fakes from :testing",
+      "parameterNames": [],
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "feature/home/src/test/kotlin/com/example/sample/feature/home/Home*Test.kt",
+          "position": 10,
+          "segment": "Home${name}Test.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ],
+      "conflict": false
+    },
+    {
+      "template": "feature.FeatureTest.settings",
+      "id": "settings",
+      "title": "settings",
+      "roleName": "feature.FeatureTest",
+      "summary": "A test in src/test of :feature:<name> that runs the ViewModel with fakes from :testing",
+      "parameterNames": [],
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "feature/settings/src/test/kotlin/com/example/sample/feature/settings/Settings*Test.kt",
+          "position": 10,
+          "segment": "Settings${name}Test.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ],
+      "conflict": false
+    },
+    {
+      "template": "ui.Component",
+      "id": null,
+      "title": "Shared component",
+      "roleName": "ui.Component",
+      "summary": "A part in the component package of the :ui module, used across features",
+      "parameterNames": ["previewText"],
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "ui/src/main/kotlin/com/example/sample/ui/component/*.kt",
+          "position": 9,
+          "segment": "${name}.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ],
+      "conflict": false
+    },
+    {
+      "template": "data.RepositoryInterface.user",
+      "id": "user",
+      "title": "user",
+      "roleName": "data.RepositoryInterface",
+      "summary": "The interface for fetching and storing data, in :data, in one package per subject (user / settings)",
+      "parameterNames": [],
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "data/src/main/kotlin/com/example/sample/data/user/User*Repository.kt",
+          "position": 9,
+          "segment": "User${name}Repository.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ],
+      "conflict": false
+    },
+    {
+      "template": "data.RepositoryInterface.settings",
+      "id": "settings",
+      "title": "settings",
+      "roleName": "data.RepositoryInterface",
+      "summary": "The interface for fetching and storing data, in :data, in one package per subject (user / settings)",
+      "parameterNames": [],
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "data/src/main/kotlin/com/example/sample/data/settings/Settings*Repository.kt",
+          "position": 9,
+          "segment": "Settings${name}Repository.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ],
+      "conflict": false
+    },
+    {
+      "template": "data.RepositoryImplementation.user",
+      "id": "user",
+      "title": "user",
+      "roleName": "data.RepositoryImplementation",
+      "summary": "The implementation of a repository interface, in :data, next to the interface",
+      "parameterNames": [],
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "data/src/main/kotlin/com/example/sample/data/user/User*RepositoryImpl.kt",
+          "position": 9,
+          "segment": "User${name}RepositoryImpl.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ],
+      "conflict": false
+    },
+    {
+      "template": "data.RepositoryImplementation.settings",
+      "id": "settings",
+      "title": "settings",
+      "roleName": "data.RepositoryImplementation",
+      "summary": "The implementation of a repository interface, in :data, next to the interface",
+      "parameterNames": [],
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "data/src/main/kotlin/com/example/sample/data/settings/Settings*RepositoryImpl.kt",
+          "position": 9,
+          "segment": "Settings${name}RepositoryImpl.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ],
+      "conflict": false
+    },
+    {
+      "template": "testing.Fake",
+      "id": null,
+      "title": "Fake",
+      "roleName": "testing.Fake",
+      "summary": "A stand-in implementation kept in :testing, used by the tests of other modules",
+      "parameterNames": [],
+      "captures": [
+        {
+          "name": "repository",
+          "kind": "PathCapture",
+          "pattern": "testing/src/main/kotlin/com/example/sample/testing/Fake*.kt",
+          "position": 8,
+          "segment": "Fake${repository}.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ],
+      "conflict": false
+    },
+    {
+      "template": "testing.GroupDefinition",
+      "id": null,
+      "title": "Group definition",
+      "roleName": "testing.GroupDefinition",
+      "summary": "groups/<Name>Group.kt, one group of the definition, which lists its roles by calling their functions",
+      "parameterNames": [],
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "architecture-test/src/test/kotlin/com/example/sample/groups/*Group.kt",
+          "position": 8,
+          "segment": "${name}Group.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ],
+      "conflict": false
+    },
+    {
+      "template": "testing.RoleDefinition",
+      "id": null,
+      "title": "Role definition",
+      "roleName": "testing.RoleDefinition",
+      "summary": "roles/<Name>Role.kt, one role of the definition, with where its files live",
+      "parameterNames": [],
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "architecture-test/src/test/kotlin/com/example/sample/roles/*Role.kt",
+          "position": 8,
+          "segment": "${name}Role.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ],
+      "conflict": false
+    }
+  ],
+  "details": [
+    {
+      "template": "feature.FeatureComponent",
+      "id": null,
+      "title": "Screen part",
+      "roleName": "feature.FeatureComponent",
+      "summary": "A @Composable used by only one screen. Placed as <Name>*.kt in the component package of :feature:<name>",
+      "parameters": [
+        {
+          "name": "withPreview",
+          "kind": "BooleanParameter",
+          "typeName": "Boolean",
+          "default": "true",
+          "acceptedValues": ["true", "false"],
+          "isRequired": false,
+          "previewValue": "true",
+          "previewValueSource": "Default"
+        }
+      ],
+      "files": [
+        {
+          "pattern": "feature/${feature}/src/main/kotlin/com/example/sample/feature/${feature}/component/${name}.kt",
+          "fileName": "${name}.kt",
+          "path": "feature/${feature}/src/main/kotlin/com/example/sample/feature/${feature}/component/${name}.kt",
+          "captures": ["feature", "name"],
+          "parameters": ["withPreview"],
+          "content": "package com.example.sample.feature.${feature}.component\n\nimport androidx.compose.foundation.layout.Arrangement\nimport androidx.compose.foundation.layout.Column\nimport androidx.compose.material3.MaterialTheme\nimport androidx.compose.material3.Text\nimport androidx.compose.runtime.Composable\nimport androidx.compose.ui.Modifier\nimport androidx.compose.ui.unit.dp\nimport androidx.compose.ui.tooling.preview.Preview\nimport com.example.sample.ui.preview.PreviewRoot\n\n/** Part of the ${feature} screen that no other screen uses. */\n@Composable\ninternal fun ${name}(\n    title: String,\n    modifier: Modifier = Modifier,\n) {\n    Column(\n        modifier = modifier,\n        verticalArrangement = Arrangement.spacedBy(8.dp),\n    ) {\n        Text(text = title, style = MaterialTheme.typography.titleMedium)\n    }\n}\n\n@Preview(showBackground = true)\n@Composable\nprivate fun ${name}Preview() = PreviewRoot {\n    ${name}(title = \"${name}\")\n}"
+        }
+      ],
+      "branches": [
+        {
+          "parameterName": "withPreview",
+          "value": "false",
+          "addedFiles": [],
+          "removedFiles": [],
+          "addedParameters": [],
+          "removedParameters": []
+        }
+      ],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=feature.FeatureComponent --arg feature=<feature> --arg name=<name>",
+      "captures": [
+        {
+          "name": "feature",
+          "kind": "PathCapture",
+          "pattern": "feature/*/src/main/kotlin/com/example/sample/feature/*/component/*.kt",
+          "position": 1,
+          "segment": "${feature}",
+          "wildcardIndex": 0,
+          "transform": null
+        },
+        {
+          "name": "feature",
+          "kind": "PathCapture",
+          "pattern": "feature/*/src/main/kotlin/com/example/sample/feature/*/component/*.kt",
+          "position": 9,
+          "segment": "${feature}",
+          "wildcardIndex": 0,
+          "transform": null
+        },
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "feature/*/src/main/kotlin/com/example/sample/feature/*/component/*.kt",
+          "position": 11,
+          "segment": "${name}.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ]
+    },
+    {
+      "template": "feature.FeatureTest.home",
+      "id": "home",
+      "title": "home",
+      "roleName": "feature.FeatureTest",
+      "summary": "A test in src/test of :feature:<name> that runs the ViewModel with fakes from :testing",
+      "parameters": [],
+      "files": [
+        {
+          "pattern": "feature/home/src/test/kotlin/com/example/sample/feature/home/Home${name}Test.kt",
+          "fileName": "Home${name}Test.kt",
+          "path": "feature/home/src/test/kotlin/com/example/sample/feature/home/Home${name}Test.kt",
+          "captures": ["name"],
+          "parameters": [],
+          "content": "package com.example.sample.feature.home\n\nimport com.example.sample.testing.FakeUserRepository\nimport com.example.sample.ui.core.UiState\nimport org.junit.Assert.assertEquals\nimport org.junit.Test\n\nclass Home${name}Test {\n    @Test\n        fun `exposes the value read from the repository as Content`() {\n        val viewModel = HomeViewModel(userRepository = FakeUserRepository(userName = \"katachi\"))\n\n        assertEquals(UiState.Content(HomeContent(userName = \"katachi\", visitCount = 1)), viewModel.uiState.value)\n    }\n}\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=feature.FeatureTest.home --arg name=<name>",
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "feature/home/src/test/kotlin/com/example/sample/feature/home/Home*Test.kt",
+          "position": 10,
+          "segment": "Home${name}Test.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ]
+    },
+    {
+      "template": "feature.FeatureTest.settings",
+      "id": "settings",
+      "title": "settings",
+      "roleName": "feature.FeatureTest",
+      "summary": "A test in src/test of :feature:<name> that runs the ViewModel with fakes from :testing",
+      "parameters": [],
+      "files": [
+        {
+          "pattern": "feature/settings/src/test/kotlin/com/example/sample/feature/settings/Settings${name}Test.kt",
+          "fileName": "Settings${name}Test.kt",
+          "path": "feature/settings/src/test/kotlin/com/example/sample/feature/settings/Settings${name}Test.kt",
+          "captures": ["name"],
+          "parameters": [],
+          "content": "package com.example.sample.feature.settings\n\nimport com.example.sample.testing.FakeSettingsRepository\nimport com.example.sample.ui.core.UiState\nimport org.junit.Assert.assertEquals\nimport org.junit.Test\n\nclass Settings${name}Test {\n    @Test\n        fun `exposes the value read from the repository as Content`() {\n        val viewModel = SettingsViewModel(settingsRepository = FakeSettingsRepository(darkThemeEnabled = true))\n\n        assertEquals(UiState.Content(SettingsContent(darkThemeEnabled = true)), viewModel.uiState.value)\n    }\n}\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=feature.FeatureTest.settings --arg name=<name>",
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "feature/settings/src/test/kotlin/com/example/sample/feature/settings/Settings*Test.kt",
+          "position": 10,
+          "segment": "Settings${name}Test.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ]
+    },
+    {
+      "template": "ui.Component",
+      "id": null,
+      "title": "Shared component",
+      "roleName": "ui.Component",
+      "summary": "A part in the component package of the :ui module, used across features",
+      "parameters": [
+        {
+          "name": "previewText",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": "${name}",
+          "acceptedValues": [],
+          "isRequired": false,
+          "previewValue": "${previewText}",
+          "previewValueSource": "Placeholder"
+        }
+      ],
+      "files": [
+        {
+          "pattern": "ui/src/main/kotlin/com/example/sample/ui/component/${name}.kt",
+          "fileName": "${name}.kt",
+          "path": "ui/src/main/kotlin/com/example/sample/ui/component/${name}.kt",
+          "captures": ["name"],
+          "parameters": ["previewText"],
+          "content": "package com.example.sample.ui.component\n\nimport androidx.compose.material3.Text\nimport androidx.compose.runtime.Composable\nimport androidx.compose.ui.Modifier\nimport androidx.compose.ui.tooling.preview.Preview\nimport com.example.sample.ui.preview.PreviewRoot\n\n/** Shared ${name}, called by feature modules instead of Material's own. */\n@Composable\nfun ${name}(\n    text: String,\n    modifier: Modifier = Modifier,\n) {\n    Text(text = text, modifier = modifier)\n}\n\n@Preview(showBackground = true)\n@Composable\nprivate fun ${name}Preview() = PreviewRoot {\n    ${name}(text = \"${previewText}\")\n}\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=ui.Component --arg name=<name>",
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "ui/src/main/kotlin/com/example/sample/ui/component/*.kt",
+          "position": 9,
+          "segment": "${name}.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ]
+    },
+    {
+      "template": "data.RepositoryInterface.user",
+      "id": "user",
+      "title": "user",
+      "roleName": "data.RepositoryInterface",
+      "summary": "The interface for fetching and storing data, in :data, in one package per subject (user / settings)",
+      "parameters": [],
+      "files": [
+        {
+          "pattern": "data/src/main/kotlin/com/example/sample/data/user/User${name}Repository.kt",
+          "fileName": "User${name}Repository.kt",
+          "path": "data/src/main/kotlin/com/example/sample/data/user/User${name}Repository.kt",
+          "captures": ["name"],
+          "parameters": [],
+          "content": "package com.example.sample.data.user\n\n/** Reads ${name} data. */\ninterface User${name}Repository {\n    // TODO: replace with what this repository actually reads and writes.\n    fun load(): String\n}\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=data.RepositoryInterface.user --arg name=<name>",
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "data/src/main/kotlin/com/example/sample/data/user/User*Repository.kt",
+          "position": 9,
+          "segment": "User${name}Repository.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ]
+    },
+    {
+      "template": "data.RepositoryInterface.settings",
+      "id": "settings",
+      "title": "settings",
+      "roleName": "data.RepositoryInterface",
+      "summary": "The interface for fetching and storing data, in :data, in one package per subject (user / settings)",
+      "parameters": [],
+      "files": [
+        {
+          "pattern": "data/src/main/kotlin/com/example/sample/data/settings/Settings${name}Repository.kt",
+          "fileName": "Settings${name}Repository.kt",
+          "path": "data/src/main/kotlin/com/example/sample/data/settings/Settings${name}Repository.kt",
+          "captures": ["name"],
+          "parameters": [],
+          "content": "package com.example.sample.data.settings\n\n/** Reads ${name} data. */\ninterface Settings${name}Repository {\n    // TODO: replace with what this repository actually reads and writes.\n    fun load(): String\n}\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=data.RepositoryInterface.settings --arg name=<name>",
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "data/src/main/kotlin/com/example/sample/data/settings/Settings*Repository.kt",
+          "position": 9,
+          "segment": "Settings${name}Repository.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ]
+    },
+    {
+      "template": "data.RepositoryImplementation.user",
+      "id": "user",
+      "title": "user",
+      "roleName": "data.RepositoryImplementation",
+      "summary": "The implementation of a repository interface, in :data, next to the interface",
+      "parameters": [],
+      "files": [
+        {
+          "pattern": "data/src/main/kotlin/com/example/sample/data/user/User${name}RepositoryImpl.kt",
+          "fileName": "User${name}RepositoryImpl.kt",
+          "path": "data/src/main/kotlin/com/example/sample/data/user/User${name}RepositoryImpl.kt",
+          "captures": ["name"],
+          "parameters": [],
+          "content": "package com.example.sample.data.user\n\n/** Production implementation of [User${name}Repository]. */\nclass User${name}RepositoryImpl : User${name}Repository {\n    override fun load(): String = \"\"\n}\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=data.RepositoryImplementation.user --arg name=<name>",
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "data/src/main/kotlin/com/example/sample/data/user/User*RepositoryImpl.kt",
+          "position": 9,
+          "segment": "User${name}RepositoryImpl.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ]
+    },
+    {
+      "template": "data.RepositoryImplementation.settings",
+      "id": "settings",
+      "title": "settings",
+      "roleName": "data.RepositoryImplementation",
+      "summary": "The implementation of a repository interface, in :data, next to the interface",
+      "parameters": [],
+      "files": [
+        {
+          "pattern": "data/src/main/kotlin/com/example/sample/data/settings/Settings${name}RepositoryImpl.kt",
+          "fileName": "Settings${name}RepositoryImpl.kt",
+          "path": "data/src/main/kotlin/com/example/sample/data/settings/Settings${name}RepositoryImpl.kt",
+          "captures": ["name"],
+          "parameters": [],
+          "content": "package com.example.sample.data.settings\n\n/** Production implementation of [Settings${name}Repository]. */\nclass Settings${name}RepositoryImpl : Settings${name}Repository {\n    override fun load(): String = \"\"\n}\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=data.RepositoryImplementation.settings --arg name=<name>",
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "data/src/main/kotlin/com/example/sample/data/settings/Settings*RepositoryImpl.kt",
+          "position": 9,
+          "segment": "Settings${name}RepositoryImpl.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ]
+    },
+    {
+      "template": "testing.Fake",
+      "id": null,
+      "title": "Fake",
+      "roleName": "testing.Fake",
+      "summary": "A stand-in implementation kept in :testing, used by the tests of other modules",
+      "parameters": [],
+      "files": [
+        {
+          "pattern": "testing/src/main/kotlin/com/example/sample/testing/Fake${repository}.kt",
+          "fileName": "Fake${repository}.kt",
+          "path": "testing/src/main/kotlin/com/example/sample/testing/Fake${repository}.kt",
+          "captures": ["repository"],
+          "parameters": [],
+          "content": "package com.example.sample.testing\n\nimport com.example.sample.data.user.${repository}\n\n/** In-memory [${repository}] for tests of other modules. */\nclass Fake${repository}(\n    private var value: String = \"\",\n) : ${repository} {\n    override fun load(): String = value\n}\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=testing.Fake --arg repository=<repository>",
+      "captures": [
+        {
+          "name": "repository",
+          "kind": "PathCapture",
+          "pattern": "testing/src/main/kotlin/com/example/sample/testing/Fake*.kt",
+          "position": 8,
+          "segment": "Fake${repository}.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ]
+    },
+    {
+      "template": "testing.GroupDefinition",
+      "id": null,
+      "title": "Group definition",
+      "roleName": "testing.GroupDefinition",
+      "summary": "groups/<Name>Group.kt, one group of the definition, which lists its roles by calling their functions",
+      "parameters": [],
+      "files": [
+        {
+          "pattern": "architecture-test/src/test/kotlin/com/example/sample/groups/${name}Group.kt",
+          "fileName": "${name}Group.kt",
+          "path": "architecture-test/src/test/kotlin/com/example/sample/groups/${name}Group.kt",
+          "captures": ["name"],
+          "parameters": [],
+          "content": "package com.example.sample.groups\n\nimport me.tbsten.katachi.dsl.DeclarationContainerScope\n\n// TODO: call ${name}Group() from ProjectArchitecture.kt.\n/** TODO: say what the roles of the ${name} group have in common. */\nfun DeclarationContainerScope.${name}Group() = \"${name}\".group {\n    title = \"${name}\"\n    summary = \"TODO: what the roles of this group have in common\"\n}\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=testing.GroupDefinition --arg name=<name>",
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "architecture-test/src/test/kotlin/com/example/sample/groups/*Group.kt",
+          "position": 8,
+          "segment": "${name}Group.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ]
+    },
+    {
+      "template": "testing.RoleDefinition",
+      "id": null,
+      "title": "Role definition",
+      "roleName": "testing.RoleDefinition",
+      "summary": "roles/<Name>Role.kt, one role of the definition, with where its files live",
+      "parameters": [],
+      "files": [
+        {
+          "pattern": "architecture-test/src/test/kotlin/com/example/sample/roles/${name}Role.kt",
+          "fileName": "${name}Role.kt",
+          "path": "architecture-test/src/test/kotlin/com/example/sample/roles/${name}Role.kt",
+          "captures": ["name"],
+          "parameters": [],
+          "content": "package com.example.sample.roles\n\nimport me.tbsten.katachi.dsl.DeclarationContainerScope\n\n// TODO: call ${name}() from the group this role belongs to.\n/** TODO: say what a file of the ${name} role is. */\nfun DeclarationContainerScope.${name}() = \"${name}\".role {\n    title = \"${name}\"\n    summary = \"TODO: what a file of this role is\"\n    // TODO: declare where its files live.\n    layout { }\n}\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=testing.RoleDefinition --arg name=<name>",
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "architecture-test/src/test/kotlin/com/example/sample/roles/*Role.kt",
+          "position": 8,
+          "segment": "${name}Role.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ]
+    }
+  ],
+  "modulePlacements": [],
+  "templateSets": [
+    {
+      "templateSet": "data.NewRepository",
+      "name": "NewRepository",
+      "title": "New repository",
+      "summary": "A user repository's interface, its implementation and its fake",
+      "groupName": "data",
+      "parameterNames": ["name"],
+      "members": ["data.RepositoryInterface.user", "data.RepositoryImplementation.user", "testing.Fake"],
+      "conflict": false
+    }
+  ],
+  "templateSetDetails": [
+    {
+      "templateSet": "data.NewRepository",
+      "name": "NewRepository",
+      "title": "New repository",
+      "summary": "A user repository's interface, its implementation and its fake",
+      "groupName": "data",
+      "parameters": [
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder"
+        }
+      ],
+      "members": [
+        {
+          "template": "data.RepositoryInterface.user",
+          "title": "user",
+          "args": [
+            {
+              "name": "name",
+              "kind": "Capture",
+              "previewValue": "${name}",
+              "parameter": "name"
+            }
+          ],
+          "files": [
+            {
+              "pattern": "data/src/main/kotlin/com/example/sample/data/user/User${name}Repository.kt",
+              "fileName": "User${name}Repository.kt",
+              "path": "data/src/main/kotlin/com/example/sample/data/user/User${name}Repository.kt",
+              "captures": ["name"],
+              "parameters": [],
+              "content": "package com.example.sample.data.user\n\n/** Reads ${name} data. */\ninterface User${name}Repository {\n    // TODO: replace with what this repository actually reads and writes.\n    fun load(): String\n}\n"
+            }
+          ]
+        },
+        {
+          "template": "data.RepositoryImplementation.user",
+          "title": "user",
+          "args": [
+            {
+              "name": "name",
+              "kind": "Capture",
+              "previewValue": "${name}",
+              "parameter": "name"
+            }
+          ],
+          "files": [
+            {
+              "pattern": "data/src/main/kotlin/com/example/sample/data/user/User${name}RepositoryImpl.kt",
+              "fileName": "User${name}RepositoryImpl.kt",
+              "path": "data/src/main/kotlin/com/example/sample/data/user/User${name}RepositoryImpl.kt",
+              "captures": ["name"],
+              "parameters": [],
+              "content": "package com.example.sample.data.user\n\n/** Production implementation of [User${name}Repository]. */\nclass User${name}RepositoryImpl : User${name}Repository {\n    override fun load(): String = \"\"\n}\n"
+            }
+          ]
+        },
+        {
+          "template": "testing.Fake",
+          "title": "Fake",
+          "args": [
+            {
+              "name": "repository",
+              "kind": "Capture",
+              "previewValue": "User${name}Repository",
+              "parameter": null
+            }
+          ],
+          "files": [
+            {
+              "pattern": "testing/src/main/kotlin/com/example/sample/testing/Fake${repository}.kt",
+              "fileName": "Fake${repository}.kt",
+              "path": "testing/src/main/kotlin/com/example/sample/testing/FakeUser${name}Repository.kt",
+              "captures": ["repository"],
+              "parameters": [],
+              "content": "package com.example.sample.testing\n\nimport com.example.sample.data.user.User${name}Repository\n\n/** In-memory [User${name}Repository] for tests of other modules. */\nclass FakeUser${name}Repository(\n    private var value: String = \"\",\n) : User${name}Repository {\n    override fun load(): String = value\n}\n"
+            }
+          ]
+        }
+      ],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=data.NewRepository --arg name=<name>"
+    }
+  ]
+}
