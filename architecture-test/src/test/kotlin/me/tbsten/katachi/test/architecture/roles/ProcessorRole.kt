@@ -51,8 +51,23 @@ private fun LayoutScope.packageAndLayerImports() =
     ktFileContent {
         `package`(matchingDirectory)
         `import`("**")
-        laterLayerImportsOf(LAYER).forEach { not.`import`(it) }
+        laterLayerImportsOf(LAYER).forEach {
+            // runMain writes definition-errors.json even when the entry point cannot be read, so it cannot call ide through a registry
+            if (fileName == "DefinitionErrorReport") {
+                not.`import`(it).except(*DEFINITION_ERROR_REPORT_IMPORTS)
+            } else {
+                not.`import`(it)
+            }
+        }
     }
+
+/** The four later-layer imports only `DefinitionErrorReport` may keep; any other file importing them fails. */
+private val DEFINITION_ERROR_REPORT_IMPORTS: Array<String> = arrayOf(
+    "me.tbsten.katachi.ide.internal.DeclarationSiteJson",
+    "me.tbsten.katachi.ide.internal.siteOf",
+    "me.tbsten.katachi.template.internal.encodeToJson",
+    "me.tbsten.katachi.template.internal.writeFileAtomically",
+)
 
 private fun LayoutScope.publicDeclarationsShowExample() =
     KDOC_EXAMPLE_RULE.konsist {
