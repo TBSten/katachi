@@ -35,13 +35,13 @@ private val useCaseDone = GenerationItemResult.Generated(listOf(written(DOMAIN, 
 private val serviceDone = GenerationItemResult.Generated(listOf(written(DOMAIN, "UserService.kt")))
 
 private val slashFailure = GenerationItemResult.Failed(
-    GenerationFailure.Katachi(listOf("ファイル名に使えない文字「/」が含まれています: User/Admin", "name の値を見直してください")),
+    GenerationFailure.Katachi(listOf("The file name contains a character that cannot be used: '/' in User/Admin", "Check the value of name")),
     output = listOf(
         "> Task :architecture-test:katachiTemplate",
         "[1/3] Loading architecture...",
         "[2/3] Running template data.Repository...",
         "[FAILED] template",
-        "  ファイル名に使えない文字「/」が含まれています: User/Admin",
+        "  The file name contains a character that cannot be used: '/' in User/Admin",
         "BUILD FAILED in 3s",
     ),
 )
