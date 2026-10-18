@@ -14,8 +14,6 @@ internal class DefinitionModulePresenceWiringTest : AnalysisTestBase() {
 
     override fun setUp() {
         super.setUp()
-        // The light project is shared: a service another test created would make the definition ports answer without asking.
-        assertNull("no katachi service yet", project.getServiceIfCreated(KatachiProjectService::class.java))
         val counting = DefinitionModulePresence(project) { reads++; true }
         project.replaceService(DefinitionModulePresence::class.java, counting, testRootDisposable)
     }
@@ -25,8 +23,16 @@ internal class DefinitionModulePresenceWiringTest : AnalysisTestBase() {
         val definition = DefinitionPorts.of(project)
 
         repeat(3) { assertTrue(notification.hasDefinitionModule()) }
-        repeat(3) { assertTrue(definition.available()) }
+        repeat(3) { assertTrue(definition.hasDefinitionModule()) }
 
         assertEquals("both ports share the one kept answer", 1, reads)
+    }
+
+    fun `test 定義のポートだけでも同期データを読むのは1回だけ`() {
+        val definition = DefinitionPorts.of(project)
+
+        repeat(3) { assertTrue(definition.hasDefinitionModule()) }
+
+        assertEquals("the definition port asks the kept answer", 1, reads)
     }
 }

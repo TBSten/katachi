@@ -13,7 +13,7 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.externalSystem.importing.ImportSpecBuilder
 import com.intellij.openapi.externalSystem.util.ExternalSystemUtil
 import com.intellij.openapi.fileEditor.FileDocumentManager
-import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -106,10 +106,9 @@ internal class IdeEffectsImpl(
             }
         }
         return onEdt {
-            val editors = sdkCall("get the editors") { FileEditorManager.getInstance(project) }.getOrNull() ?: return@onEdt emptyList()
             // Opening a file selects its tab, so open them all in order and then select the first again.
-            val opened = files.filter { (path, file) -> sdkCall("open $path in an editor") { editors.openFile(file, false) }.isSuccess }
-            opened.firstOrNull()?.let { (path, file) -> sdkCall("select $path") { editors.openFile(file, true) } }
+            val opened = files.filter { (path, file) -> sdkCall("open $path in an editor") { OpenFileDescriptor(project, file).navigateInEditor(project, false) }.getOrNull() == true }
+            opened.firstOrNull()?.let { (path, file) -> sdkCall("select $path") { OpenFileDescriptor(project, file).navigateInEditor(project, true) } }
             opened.map { (path, _) -> path }
         }.orEmpty()
     }
@@ -178,8 +177,8 @@ internal class IdeEffectsImpl(
         val opened = onEdt {
             sdkCall("open $path in an editor") {
                 entrySdkProbe(EntrySdkCall.Editor)
-                FileEditorManager.getInstance(project).openFile(file, true)
-            }.isSuccess
+                OpenFileDescriptor(project, file).navigateInEditor(project, true)
+            }.getOrNull() == true
         }
         if (opened == false) warn(KatachiBundle.message("generate.failed.open", path.fileName.toString()))
         return true
