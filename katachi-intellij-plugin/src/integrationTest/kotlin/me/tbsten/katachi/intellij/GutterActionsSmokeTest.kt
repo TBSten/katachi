@@ -36,18 +36,7 @@ class GutterActionsSmokeTest {
         val project = ide.prepareCopy { copy ->
             copy.resolve(PROBE).writeText("package com.example.service\n\ninternal class ProbeService\n")
             copy.resolve(BANNER).writeText("package com.example.service\n")
-            // The copy is a git repository, so the IDE asks "Do you want to add the following file to Git?" for the generated file and that
-            // modal dialog holds the generation up for good: answered in advance: the project's "Add" confirmation is set to add silently.
-            val idea = copy.resolve(".idea").also { it.createDirectories() }
-            idea.resolve("workspace.xml").writeText(
-                """<?xml version="1.0" encoding="UTF-8"?>
-                |<project version="4">
-                |  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
-                |    <ConfirmationsSetting value="2" id="Add" />
-                |  </component>
-                |</project>
-                |""".trimMargin(),
-            )
+            ide.answerVcsAddSilently(copy)
         }
         val probe = project.resolve(PROBE).toString()
         val banner = project.resolve(BANNER).toString()

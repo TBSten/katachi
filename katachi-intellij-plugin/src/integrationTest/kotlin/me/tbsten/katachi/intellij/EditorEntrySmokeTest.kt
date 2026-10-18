@@ -2,9 +2,7 @@ package me.tbsten.katachi.intellij
 
 import com.intellij.driver.client.Driver
 import com.intellij.driver.sdk.*
-import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.elements.dialog
-import com.intellij.driver.sdk.ui.components.elements.popupMenu
 import com.intellij.driver.sdk.ui.ui
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IdeProductProvider
@@ -48,7 +46,7 @@ class EditorEntrySmokeTest {
             revealAndOpenSettings(bridge)
             generateFromEmptyFile(fixture, bridge)
             cancelFromNew(fixture, bridge)
-            unrelatedNewHasNoKatachi()
+            unrelatedNewHasNoKatachi(fixture, bridge)
         }
     }
 
@@ -123,17 +121,15 @@ class EditorEntrySmokeTest {
     private fun Driver.cancelFromNew(fixture: EditorEntryFixture, bridge: EditorEntryProbe) {
         val before = fixture.sourceSnapshot()
         val vfsBefore = entryVfsSnapshot(fixture.project.resolve(EditorEntryFixture.SERVICE_DIR).toString())
-        openEntryNewMenu("${EditorEntryFixture.SERVICE_DIR}/EntryEmptyService.kt")
         // Scenario 4 already loaded the index; the optional cold/loading item (論点18)
-        // cannot be observed deterministically in this single-IDE sequence.
-        selectEntryMenuItem("katachi")
-        selectEntryMenuItem("domain")
-        selectEntryMenuItem("Service")
-        waitFor("both templates expose the remaining path", timeout = 10.seconds) {
-            val templates = ideFrame().popupMenu().itemsList()
-            "Helper source — <name>Helper.kt" in templates && "Service source — <name>Service.kt" in templates
+        // cannot be observed deterministically in this single-IDE sequence. New > katachi is read and chosen through the bridge:
+        // Driver's real mouse does not reach a local macOS IDE.
+        val serviceDirectory = fixture.project.resolve(EditorEntryFixture.SERVICE_DIR).toString()
+        waitFor("both templates expose the remaining path", timeout = 30.seconds, errorMessage = { bridge.describeNewMenu(serviceDirectory) }) {
+            val items = bridge.describeNewMenu(serviceDirectory).lines()
+            "item=$SERVICE_ITEM|enabled" in items && "item=katachi/domain/Service/Helper source — <name>Helper.kt|enabled" in items
         }
-        selectEntryMenuItem("Service source — <name>Service.kt")
+        assertEquals("chosen=Service source — <name>Service.kt", bridge.chooseNewMenuItemLater(serviceDirectory, SERVICE_ITEM))
         awaitEntryDialog(bridge, "dialog=open", "template=${EditorEntryFixture.TEMPLATE}", "field=name=", "canGenerate=false", "okEnabled=false")
         // An undecided capture is required; typing makes it valid but does not write anything.
         ui.keyboard { typeText("EntryCancelled", delayBetweenCharsInMs = 80) }
@@ -153,12 +149,14 @@ class EditorEntrySmokeTest {
     }
 
     // covers: 論点3, 4, 9(4), 12
-    private fun Driver.unrelatedNewHasNoKatachi() {
-        // application.conf is an existing resource in the sample. Selecting its parent gives a
-        // real resource directory, which none of this fixture's templates can generate into.
-        openEntryNewMenu("src/main/resources/application.conf")
-        val items = ideFrame().popupMenu().itemsList()
-        assertFalse(items.any { it.contains("katachi", ignoreCase = true) }, "Unexpected katachi item: $items")
-        ui.keyboard { escape(); escape() }
+    private fun unrelatedNewHasNoKatachi(fixture: EditorEntryFixture, bridge: EditorEntryProbe) {
+        // application.conf is an existing resource in the sample. Its parent is a real resource directory,
+        // which none of this fixture's templates can generate into.
+        val resources = fixture.project.resolve("src/main/resources").toString()
+        assertEquals("item=none", bridge.describeNewMenu(resources))
+    }
+
+    private companion object {
+        const val SERVICE_ITEM = "katachi/domain/Service/Service source — <name>Service.kt"
     }
 }

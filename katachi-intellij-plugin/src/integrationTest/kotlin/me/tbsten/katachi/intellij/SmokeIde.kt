@@ -19,6 +19,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
+import kotlin.io.path.writeText
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -36,7 +37,6 @@ import kotlin.time.Duration.Companion.minutes
  * The older smokes (`GutterSmokeTest`, `NoRoleSmokeTest`, `EditorEntry*`) keep their own copies of this: they run in the nightly 263
  * job and stay green, so they are not moved here.
  */
-// TODO(smoke-helper): move the older smokes onto SmokeIde when #14 (the smoke helpers) is looked at again.
 @Suppress("NewApi")
 internal class SmokeIde(name: String) {
     private val sample: Path = Paths.get(System.getProperty("katachi.smoke.sampleProject"))
@@ -95,6 +95,24 @@ internal class SmokeIde(name: String) {
             waitForIndicators(ideProject, 15.minutes)
             block(ideProject, service(SmokeBridge::class, ideProject))
         }
+    }
+
+    /**
+     * Answers the "Do you want to add the following file to Git?" question in advance: the copy is a git repository, so the IDE
+     * asks for every generated file and that modal dialog holds the generation up for good. The project's "Add" confirmation is
+     * set to add silently in its `.idea/workspace.xml`. Call it in [prepareCopy]'s `edit`, with [project] the directory to open.
+     */
+    fun answerVcsAddSilently(project: Path) {
+        val idea = project.resolve(".idea").also { Files.createDirectories(it) }
+        idea.resolve("workspace.xml").writeText(
+            """<?xml version="1.0" encoding="UTF-8"?>
+            |<project version="4">
+            |  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+            |    <ConfirmationsSetting value="2" id="Add" />
+            |  </component>
+            |</project>
+            |""".trimMargin(),
+        )
     }
 
     /** Every file under [project] but the IDE's and Gradle's own state, by relative path, so a smoke can say "nothing was added". */

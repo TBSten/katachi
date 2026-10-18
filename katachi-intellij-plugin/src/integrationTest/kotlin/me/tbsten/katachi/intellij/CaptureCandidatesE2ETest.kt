@@ -36,22 +36,8 @@ class CaptureCandidatesE2ETest {
 
     @Test
     fun `featureを選んでNewメニューから開いたダイアログのfeatureをsettingsにするとその下にBadgeが生成されツールウィンドウが開く`() {
-        // The copy is a git repository, so the IDE asks "Do you want to add the following file to Git?" for the generated file and that
-        // modal dialog holds the generation up for good (as in GutterActionsSmokeTest): the "Add" confirmation is set to add silently.
-        // TODO(smoke-helper): the same workspace.xml text is in GutterActionsSmokeTest; one SmokeIde.answerVcsAddSilently(project) for both
-        // (SmokeIde.kt is not this lane's to change, the orchestrator decides after the merge).
-        val kmp = ide.prepareCopy { jvm ->
-            val idea = jvm.resolveSibling("kmp").resolve(".idea").also { it.createDirectories() }
-            idea.resolve("workspace.xml").writeText(
-                """<?xml version="1.0" encoding="UTF-8"?>
-                |<project version="4">
-                |  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
-                |    <ConfirmationsSetting value="2" id="Add" />
-                |  </component>
-                |</project>
-                |""".trimMargin(),
-            )
-        }.resolveSibling("kmp")
+        // The copy is a git repository: the "Add to Git?" question of the generated file is answered in advance.
+        val kmp = ide.prepareCopy { jvm -> ide.answerVcsAddSilently(jvm.resolveSibling("kmp")) }.resolveSibling("kmp")
         val generated = kmp.resolve(GENERATED)
 
         ide.run(kmp, runTimeout = 60.minutes) { ideProject, bridge ->
