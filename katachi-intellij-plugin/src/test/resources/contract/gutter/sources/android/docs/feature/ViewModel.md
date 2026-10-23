@@ -26,7 +26,7 @@ disappears and the shape does not change.
 
 ## Constraints
 
-- ktFileContent
+- [Must not import Compose or Android (ktFileContent)](#kotlin-file-content)
 
 ## Kotlin file content
 

@@ -252,7 +252,7 @@ internal class RealDefinitionGutterTest : AnnotatorTestBase() {
             val trimmed = lines[j].trim()
             if (trimmed.isEmpty() || trimmed.startsWith("//") || trimmed.startsWith("}")) continue
             if (indentOf(lines[j]) < indent) {
-                if (trimmed.startsWith("ktFileContent")) return true
+                if (trimmed.startsWith("ktFileContent") || trimmed.contains(".ktFileContent {")) return true
                 indent = indentOf(lines[j])
             }
         }

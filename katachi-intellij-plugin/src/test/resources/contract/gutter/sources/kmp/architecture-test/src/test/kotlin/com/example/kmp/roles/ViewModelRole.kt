@@ -53,7 +53,7 @@ fun DeclarationContainerScope.viewModel() = "ViewModel".role {
     // The state holder named after the file, exposing `state` and taking events, and a display
     // type such as SettingsUi beside it. androidx.compose and android are not among the imports,
     // so a view model that reaches for either fails.
-    ktFileContent {
+    "Must not import Compose or Android".ktFileContent {
         `import`("androidx.lifecycle.**")
         `import`("kotlinx.coroutines.**")
         `import`("com.example.kmp.data.**")

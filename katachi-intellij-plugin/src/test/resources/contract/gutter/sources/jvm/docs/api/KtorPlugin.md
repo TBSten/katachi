@@ -20,7 +20,7 @@ of the Ktor feature being installed.
 
 ## Constraints
 
-- ktFileContent
+- [ktFileContent](#kotlin-file-content)
 
 ## Kotlin file content
 
