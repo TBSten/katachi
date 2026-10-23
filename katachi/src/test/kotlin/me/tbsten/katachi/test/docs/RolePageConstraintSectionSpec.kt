@@ -75,6 +75,11 @@ class RolePageConstraintSectionSpec : FreeSpec({
             page shouldContain "- [has a section](#kotlin-file-content)\n"
         }
 
+        "名前に ] や [ や \\ を含んでいても、リンクの文字列だけがエスケープされて壊れない" {
+            val page = pageWith("## Kotlin file content\n\nBody.", name = "a [b] c\\d (ktFileContent)")
+            page shouldContain "- [a \\[b\\] c\\\\d (ktFileContent)](#kotlin-file-content)\n"
+        }
+
         "節を書かなかった制約は名前だけのまま" {
             pageWith("## Custom") shouldContain "- plain"
         }

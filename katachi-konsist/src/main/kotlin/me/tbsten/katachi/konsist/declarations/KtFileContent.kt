@@ -119,7 +119,8 @@ public fun ktFileContent(block: KtFileContentScope.() -> Unit) {
  *   a line break — it is printed on one line of a report block.
  * @throws KatachiKtFileContentModifierException when a line's modifiers fit no declaration.
  * @throws KatachiKtFileContentPatternException when a name, path or type is not a pattern katachi reads.
- * @throws KatachiKtFileContentLineException when a line is written in a way that means nothing.
+ * @throws KatachiKtFileContentLineException when a line is written in a way that means nothing,
+ *   including modifiers or annotations written on a line of their own that no kind follows.
  * @throws me.tbsten.katachi.dsl.KatachiFileConstraintWithoutLayoutException when the role it is
  *   written on declares no `layout { }`, so nothing could ever be covered.
  */

@@ -157,7 +157,12 @@ private fun table(header: List<String>, rows: () -> List<List<String>>): String 
 /** [text] as inline code, with enough backticks around it to hold the ones it contains. */
 private fun code(text: String): String = if ('`' in text) "`` $text ``" else "`$text`"
 
-/** The type of [cause] and the first line of its message, as a report's `Cause:` line reads. */
+/**
+ * The type of [cause] and the first line of its message, on one line.
+ *
+ * Only the first line is kept because the result is a single line of a generated page. A report's
+ * `Cause:` section prints every line of the message, so this is shorter than what a report shows.
+ */
 private fun causeLineOf(cause: Throwable): String {
     val type = cause::class.qualifiedName ?: cause::class.java.name
     val message = cause.message?.lineSequence()?.firstOrNull()?.trim()

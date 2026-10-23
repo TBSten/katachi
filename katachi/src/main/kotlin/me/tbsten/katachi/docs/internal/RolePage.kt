@@ -112,10 +112,20 @@ private fun StringBuilder.appendFileConstraints(
     append(
         items.joinToString("\n") { item ->
             val slug = item.section?.let { slugs[it] }
-            if (slug == null) "- ${item.name}" else "- [${item.name}](#$slug)"
+            if (slug == null) "- ${item.name}" else "- [${linkText(item.name)}](#$slug)"
         },
     )
 }
+
+/**
+ * [name] as the text of a Markdown link.
+ *
+ * A name is a sentence its author wrote, so it may hold the characters that end or reshape a link
+ * (`]`, `\`) or that Markdown reads as markup; each gets a backslash in front of it.
+ */
+private fun linkText(name: String): String = name.replace(LINK_TEXT_SPECIAL) { "\\${it.value}" }
+
+private val LINK_TEXT_SPECIAL = Regex("""[\\\[\]`*_<>]""")
 
 /** The sections the role's constraints wrote about themselves, as they wrote them. */
 private fun StringBuilder.appendConstraintSections(sections: List<ConstraintSection>) {
