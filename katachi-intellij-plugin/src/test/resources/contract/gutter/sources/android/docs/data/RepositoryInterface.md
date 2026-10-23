@@ -31,7 +31,7 @@ generation target). The id is split per domain, and
 
 ## Constraints
 
-- ktFileContent
+- [ktFileContent](#kotlin-file-content)
 
 ## Kotlin file content
 

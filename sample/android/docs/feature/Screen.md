@@ -32,7 +32,7 @@ a preview passes and wraps its body in is not checked.
 
 ## Constraints
 
-- ktFileContent
+- [ktFileContent](#kotlin-file-content)
 
 ## Kotlin file content
 

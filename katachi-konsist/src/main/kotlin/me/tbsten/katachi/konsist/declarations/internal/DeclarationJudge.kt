@@ -11,7 +11,7 @@ import java.util.IdentityHashMap
  * 2. an allowed line matches it in full: allowed (and its members are judged by the `{ }` of the
  *    first such line that has one)
  * 3. an `anythingElse()` matches it: allowed (its members are not looked at)
- * 4. otherwise it is wrong: mismatched when an allowed line matches its name, unexpected if not
+ * 4. otherwise it is wrong: mismatched when an allowed line without a `*` in its name matches its name, unexpected if not
  *
  * Then each required line that nothing matches, and that no mismatched declaration claims, is
  * missing.
@@ -47,10 +47,10 @@ internal sealed interface DeclarationOutcome {
     /** No line matches it, and these `anythingElse()` do. */
     class AllowedByAnythingElse(val rules: List<AnythingElseRule>) : DeclarationOutcome
 
-    /** An allowed line matches its name, [rule] being the one it is reported against. */
+    /** An allowed line without a `*` in its name matches its name, [rule] being the one it is reported against. */
     class Mismatched(val rule: DeclarationRule, val differences: List<String>) : DeclarationOutcome
 
-    /** Nothing matches it, not even by name. */
+    /** No line matches it, nor does a line without a `*` in its name by name alone. */
     data object Unexpected : DeclarationOutcome
 }
 
@@ -148,7 +148,10 @@ private fun decide(rules: DeclarationListRules, allowedLines: List<DeclarationRu
     allowedLines.filter { fullMatch(it, fact) }.takeIf { it.isNotEmpty() }?.let { return Decision.Allowed(it) }
     rules.anythingElse.filter { anythingElseMatches(it, fact) }.takeIf { it.isNotEmpty() }
         ?.let { return Decision.AllowedByAnythingElse(it) }
-    return Decision.Wrong(allowedLines.filter { nameMatches(it, fact) })
+    // A line with `*` in its name matches names it was never written for, so a declaration it does not fully match is not
+    // "the one this line meant": it is an extra one, not a wrong version of it. A choice such as {A,B} still names its
+    // declarations one by one, and stays a candidate.
+    return Decision.Wrong(allowedLines.filter { !it.name.hasStar && nameMatches(it, fact) })
 }
 
 /** A set that compares by identity: a line is the same line only as itself. */

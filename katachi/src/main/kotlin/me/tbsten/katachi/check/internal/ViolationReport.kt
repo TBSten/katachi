@@ -406,7 +406,7 @@ private fun missingFileBlock(violation: MissingFile, root: String?): List<String
 private fun uncheckedFileBlock(violation: UncheckedFile, root: String?): List<String> = listOf(
     "[${violation.label}] ${displayExistingPath(root, violation.path)}",
     "${STEP}Katachi failed while checking this file, so nothing is known about it.",
-    "${STEP}Cause: ${causeLine(violation.cause)}",
+    *causeLines(violation.cause).toTypedArray(),
     "",
     "${STEP}How to fix:",
     "$STEP$STEP- Check that the file is readable, then run the check again",
@@ -433,7 +433,7 @@ private fun uncheckedDirectoryBlock(violation: UncheckedDirectory, root: String?
             "${STEP}Katachi failed while looking for modules here, so a module key may have " +
                     "expanded to fewer modules than the project has."
     },
-    "${STEP}Cause: ${causeLine(violation.cause)}",
+    *causeLines(violation.cause).toTypedArray(),
     "",
     "${STEP}How to fix:",
     "$STEP$STEP- Check that the directory is readable, then run the check again",
@@ -443,7 +443,7 @@ private fun uncheckedDirectoryBlock(violation: UncheckedDirectory, root: String?
 private fun uncheckedCheckBlock(violation: UncheckedCheck, root: String?): List<String> = listOf(
     "[${violation.label}] ${displayExistingPath(root, violation.path)}",
     "${STEP}Katachi failed while running ${violation.check}, so nothing it would have reported is known.",
-    "${STEP}Cause: ${causeLine(violation.cause)}",
+    *causeLines(violation.cause).toTypedArray(),
     "",
     "${STEP}How to fix:",
     "$STEP$STEP- Read the cause above and fix the check, or stop passing it to assert()",
@@ -476,14 +476,31 @@ internal fun oneLine(value: String): String =
  * needs to be worth opening.
  *
  * The stack trace is left out. It points into katachi rather than at the project, and
- * printing one per block would bury every violation the reader came for. Only the first line
- * of the message is kept for the same reason: a message that wraps would break out of the
- * block's shape.
+ * printing one per block would bury every violation the reader came for. This is the first line
+ * of a `Cause:` entry only; [causeLines] adds the lines of the message after it.
  */
 internal fun causeLine(cause: Throwable): String {
     val type = cause::class.qualifiedName ?: cause::class.java.name
     val message = cause.message?.lineSequence()?.firstOrNull()?.trim()
     return if (message.isNullOrEmpty()) type else "$type: $message"
+}
+
+/**
+ * A failure as the lines of a block's `Cause:` entry: [causeLine] first, then every further line
+ * of the message one step deeper.
+ *
+ * The whole message is kept because a katachi exception writes what went wrong on its first line
+ * and the reason and the way out on the lines after it; the first line alone says what is
+ * broken and not what to do. Blank lines of the message are dropped: inside a block a blank line
+ * is what sets `Cause:` apart from `How to fix:`, so one inside the cause could not be told from
+ * that separator.
+ */
+internal fun causeLines(cause: Throwable): List<String> {
+    val rest = cause.message?.lines()?.drop(1).orEmpty()
+        .map { it.trimEnd() }
+        .filter { it.isNotEmpty() }
+        .map { "$STEP$STEP$it" }
+    return listOf("${STEP}Cause: ${causeLine(cause)}") + rest
 }
 
 /** Indents a copyable fragment one step further than the list it hangs under. */

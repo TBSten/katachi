@@ -55,6 +55,83 @@ private class ExampleRecordingConstraint : FileConstraint {
 }
 
 class RolePageConstraintSectionSpec : FreeSpec({
+    "## Constraints の項目" - {
+        fun pageWith(section: String?, name: String = "has a section"): String {
+            val arch = architecture {
+                "domain".group {
+                    "UseCase".role {
+                        example("GetUserUseCase")
+                        fileConstraint(name, check = DescribedConstraint { section })
+                        fileConstraint("plain", check = DescribedConstraint { null })
+                        layout { "useCase" / "*UseCase".ktFile() }
+                    }
+                }
+            }
+            return arch.page("domain/UseCase.md")
+        }
+
+        "節を書いた制約は、その節の最初の見出しへのリンクになる" {
+            val page = pageWith("## Kotlin file content\n\nBody.")
+            page shouldContain "- [has a section](#kotlin-file-content)\n"
+        }
+
+        "名前に ] や [ や \\ を含んでいても、リンクの文字列だけがエスケープされて壊れない" {
+            val page = pageWith("## Kotlin file content\n\nBody.", name = "a [b] c\\d (ktFileContent)")
+            page shouldContain "- [a \\[b\\] c\\\\d (ktFileContent)](#kotlin-file-content)\n"
+        }
+
+        "節を書かなかった制約は名前だけのまま" {
+            pageWith("## Custom") shouldContain "- plain"
+        }
+
+        "slug は小文字にし、空白は - にし、記号は落とす" {
+            val page = pageWith("### Why: the (rule) & more_things!\n\nBody.")
+            page shouldContain "- [has a section](#why-the-rule--more_things)\n"
+        }
+
+        "節が見出しで始まらないときは先頭の見出しを使う" {
+            val page = pageWith("Intro line.\n\n## Real heading")
+            page shouldContain "- [has a section](#real-heading)\n"
+        }
+
+        "同じ名前で節ありと節なしの制約が並んでも、リンクは節を書いた方にだけ付く" {
+            val arch = architecture {
+                "domain".group {
+                    "UseCase".role {
+                        example("GetUserUseCase")
+                        fileConstraint("naming", check = DescribedConstraint { "## A" })
+                        fileConstraint("naming", check = DescribedConstraint { null })
+                        layout { "useCase" / "*UseCase".ktFile() }
+                    }
+                }
+            }
+            arch.page("domain/UseCase.md") shouldContain "- [naming](#a)\n- naming\n"
+        }
+
+        "同じ名前で、後の節に見出しが無くても先の節のリンクは消えない" {
+            val arch = architecture {
+                "domain".group {
+                    "UseCase".role {
+                        example("GetUserUseCase")
+                        fileConstraint("naming", check = DescribedConstraint { "## A" })
+                        fileConstraint("naming", check = DescribedConstraint { "no heading" })
+                        layout { "useCase" / "*UseCase".ktFile() }
+                    }
+                }
+            }
+            arch.page("domain/UseCase.md") shouldContain "- [naming](#a)\n- naming\n"
+        }
+
+        "コードフェンスの中の見出しは飛ばし、開いた記号と同じ記号で閉じる" {
+            val page = pageWith("```\n## Inside\n```\n\n~~~\n```\n## Still inside\n~~~\n\n## Real")
+            page shouldContain "- [has a section](#real)\n"
+        }
+
+        "見出しがひとつも無い節のときは名前だけにする" {
+            pageWith("just text") shouldContain "- has a section\n"
+        }
+    }
+
     "節の置き場所" - {
         "節は ## Constraints の後、## Examples の前に出る" {
             val arch = architecture {
@@ -71,7 +148,7 @@ class RolePageConstraintSectionSpec : FreeSpec({
                 """
                 ## Constraints
 
-                - has a section
+                - [has a section](#custom)
 
                 ## Custom
 
@@ -179,7 +256,78 @@ class RolePageConstraintSectionSpec : FreeSpec({
                 }
             }
 
-            arch.page("domain/UseCase.md").split("## Built").size shouldBe 2
+            val page = arch.page("domain/UseCase.md")
+            page.split("## Built").size shouldBe 2
+            page shouldContain "- [built](#built)\n"
+            // Handed to two places, listed once.
+            page.split("- [built]").size shouldBe 2
+        }
+
+        "同じ制約に名前を付けて 2 か所に配ると、どちらの項目も畳み先の節へのリンクで、項目は 1 つ" {
+            val shared = DescribedConstraint { "## Shared" }
+            val arch = architecture {
+                "domain".group {
+                    "UseCase".role {
+                        layout {
+                            "alpha" {
+                                fileConstraint("shared", check = shared)
+                                "*.kt".file()
+                            }
+                            "beta" {
+                                fileConstraint("shared", check = shared)
+                                "*.kt".file()
+                            }
+                        }
+                    }
+                }
+            }
+
+            val page = arch.page("domain/UseCase.md")
+            page shouldContain "- [shared](#shared)\n"
+            page.split("- [shared]").size shouldBe 2
+            page.split("## Shared").size shouldBe 2
+        }
+
+        "同じ制約を別の名前で 2 か所に配ると、項目は名前の数だけ出て、どちらも同じ節へのリンクになる" {
+            val shared = DescribedConstraint { "## Shared" }
+            val arch = architecture {
+                "domain".group {
+                    "UseCase".role {
+                        layout {
+                            "alpha" {
+                                fileConstraint("first", check = shared)
+                                "*.kt".file()
+                            }
+                            "beta" {
+                                fileConstraint("second", check = shared)
+                                "*.kt".file()
+                            }
+                        }
+                    }
+                }
+            }
+
+            val page = arch.page("domain/UseCase.md")
+            page shouldContain "- [first](#shared)\n"
+            page shouldContain "- [second](#shared)\n"
+        }
+
+        "ページ内で見出しが重なるときは、サイトと同じ接尾辞を付けたリンクになる" {
+            val arch = architecture {
+                "domain".group {
+                    "UseCase".role {
+                        fileConstraint("one", check = DescribedConstraint { "## Rules\n\nA." })
+                        fileConstraint("two", check = DescribedConstraint { "## Rules\n\nB." })
+                        fileConstraint("clash", check = DescribedConstraint { "## Constraints\n\nC." })
+                        layout { "useCase" / "*UseCase".ktFile() }
+                    }
+                }
+            }
+
+            val page = arch.page("domain/UseCase.md")
+            page shouldContain "- [one](#rules)\n"
+            page shouldContain "- [two](#rules-1)\n"
+            page shouldContain "- [clash](#constraints-1)"
         }
 
         "名前が違えば、同じ場所で書いた制約の節はそれぞれ出る" {

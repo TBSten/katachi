@@ -26,7 +26,7 @@ ActualImplementation role is a wildcard. That is the hole here.
 
 ## Constraints
 
-- ktFileContent
+- [ktFileContent](#kotlin-file-content)
 
 ## Kotlin file content
 

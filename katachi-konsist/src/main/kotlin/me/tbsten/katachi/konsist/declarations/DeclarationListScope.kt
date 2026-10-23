@@ -131,7 +131,8 @@ public sealed interface KtFileContentScope : DeclarationListScope {
     override val not: FileProhibition
 
     /**
-     * Allows the packages matching [pattern], `.` separated: `*` is one level, `**` any number.
+     * Allows the packages matching [pattern], `.` separated: `*` is one level, `**` any number of
+     * levels, zero included: `"com.example.**"` matches `com.example` itself as well as `com.example.feature`.
      * Once a package line is written, a file whose package matches none -- or that has no package --
      * is a violation.
      *
@@ -166,7 +167,8 @@ public sealed interface KtFileContentScope : DeclarationListScope {
 
     /**
      * Allows the imports whose path matches [pattern], `.` separated: `*` is one level, `**` any
-     * number. Required when it has no `*`. A star import `import a.b.*` is matched as the path
+     * number of levels, zero included: `"com.example.App.**"` matches the class import
+     * `com.example.App` itself as well as `com.example.App.Companion`. Required when it has no `*`. A star import `import a.b.*` is matched as the path
      * `a.b.*`; an alias is not looked at.
      *
      * ## Example 1: imports of Kotlin and of the domain layer only

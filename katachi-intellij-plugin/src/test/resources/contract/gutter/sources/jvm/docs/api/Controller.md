@@ -32,7 +32,7 @@ into the package, so the template accepts only letters and digits (a value such 
 
 ## Constraints
 
-- ktFileContent
+- [ktFileContent](#kotlin-file-content)
 
 ## Kotlin file content
 

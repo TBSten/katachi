@@ -2,6 +2,7 @@
 
 package me.tbsten.katachi.konsist.declarations.internal
 
+import java.util.WeakHashMap
 import java.util.concurrent.atomic.AtomicReference
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationSite
@@ -43,7 +44,7 @@ internal class KtFileContentConstraint(
         // Stand-ins once more, now that the layout is known: a `captureValue` name it does not
         // capture is refused here, before any file is read.
         evaluateWithStandIns(block, placeholderInput(subject, declaredAt, patterns), declaredAt)
-        return judgeKtFiles(subject, declaredAt) { file ->
+        return judgeKtFiles(subject) { file ->
             evaluateRules(block, inputFor(subject, file, declaredAt, patterns), declaredAt)
         }
     }
@@ -55,14 +56,16 @@ internal class KtFileContentConstraint(
     override fun explainDeclarations(subject: FileConstraintSubject): List<FileDeclarationsExplanation> {
         registerOnce(subject)
         evaluateWithStandIns(block, placeholderInput(subject, declaredAt, patterns), declaredAt)
-        return explainKtFiles(subject, declaredAt) { file ->
+        return explainKtFiles(subject) { file ->
             evaluateRules(block, inputFor(subject, file, declaredAt, patterns), declaredAt)
         }
     }
 
     /** The `## Kotlin file content` section of the role's page, worked out for its example file. */
-    override fun documentSection(context: FileConstraintDocumentContext): String? =
-        ktFileContentSection(block, context, declaredAt, patterns)
+    override fun documentSection(context: FileConstraintDocumentContext): String? {
+        DocumentedBlocks.claim(context.role, this)
+        return ktFileContentSection(block, context, declaredAt, patterns)
+    }
 
     /**
      * Claims [subject]'s role for this block, refusing a block written somewhere else for the same
@@ -101,4 +104,32 @@ internal class KtFileContentRegistry {
         first.compareAndExchange(null, constraint) ?: constraint
 
     override fun toString(): String = "KtFileContentRegistry(${first.get()})"
+}
+
+/**
+ * The first `ktFileContent { }` block whose section was written for each role, so that a role's
+ * page refuses a second one the way the check does.
+ *
+ * The page generator hands a constraint no memo shared between a role's constraints, as a check
+ * does ([FileConstraintSubject.memo]), so this is kept here, by role. A role is equal only to itself,
+ * and is let go with its definition. Only the place is kept, never the block, so that a value does
+ * not reach its key.
+ * TODO: take it from the document context once that carries a role-wide memo, and drop this table.
+ */
+private object DocumentedBlocks {
+    private val first = WeakHashMap<Role, DeclarationSite>()
+
+    /**
+     * @throws KatachiKtFileContentDuplicateException when [role] already has a block written at
+     *   another place than [constraint].
+     */
+    fun claim(role: Role, constraint: KtFileContentConstraint) {
+        val earlier = synchronized(first) { first.getOrPut(role) { constraint.declaredAt } }
+        if (earlier == constraint.declaredAt) return
+        throw KatachiKtFileContentDuplicateException(
+            role = role.qualifiedName,
+            firstDeclaredAt = earlier,
+            declaredAt = constraint.declaredAt,
+        )
+    }
 }

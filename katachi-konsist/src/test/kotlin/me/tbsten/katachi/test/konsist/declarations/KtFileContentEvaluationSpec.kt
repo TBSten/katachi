@@ -29,7 +29,6 @@ import me.tbsten.katachi.dsl.wholeTree
 import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentCaptureUnavailableException
 import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentDuplicateException
 import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentModifierException
-import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentNothingWrittenException
 import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentPatternException
 import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentUnknownCaptureException
 import me.tbsten.katachi.konsist.declarations.internal.fileNameOf
@@ -226,7 +225,7 @@ class KtFileContentEvaluationSpec : FreeSpec({
     }
 
     "何も書いていないブロック" - {
-        "どのファイルでも 1 行も書かなければ NothingWritten" {
+        "どのファイルでも 1 行も書かなければ例外にならず、何も言わない" {
             val violations = ktFileContentRun(
                 "src/HomeScreen.kt" to classNamed("HomeScreen"),
                 paths = { "src" / "*".ktFile() },
@@ -234,9 +233,7 @@ class KtFileContentEvaluationSpec : FreeSpec({
                 ktFileContent { if (fileName == "NoSuchFile") `class`(fileName) }
             }
 
-            val cause = violations.singleUnchecked().cause
-                .shouldBeInstanceOf<KatachiKtFileContentNothingWrittenException>()
-            cause.role shouldBe "Screen"
+            violations.shouldBeEmpty()
         }
 
         "覆うファイルが 1 つも無ければ何も言わない" {

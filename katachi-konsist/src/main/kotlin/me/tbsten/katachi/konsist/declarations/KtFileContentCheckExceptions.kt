@@ -135,10 +135,12 @@ public class KatachiKtFileContentCaptureUnavailableException internal constructo
 )
 
 /**
- * One role with two `ktFileContent { }` blocks, found when the check runs the second one.
+ * One role with two `ktFileContent { }` blocks, found when the check runs the second one, or when
+ * the role's documentation page is generated.
  *
  * Each block is an allow list of what a file may hold, so two of them over one file would each
- * reject what the other allows. Reported as `[UncheckedFileConstraint]`.
+ * reject what the other allows. The check reports it as `[UncheckedFileConstraint]`; generating
+ * the documentation throws it.
  *
  * ## Example 1: catch a role that writes the block twice
  * ```kt
@@ -180,48 +182,7 @@ public class KatachiKtFileContentDuplicateException internal constructor(
     message = listOf(
         "Role $role declares ktFileContent { } twice: at $firstDeclaredAt and at $declaredAt.",
         "Each block is an allow list for the role's files, so two of them would each reject what the other allows.",
-        "Merge them into one ktFileContent { }.",
-    ).joinToString("\n"),
-)
-
-/**
- * A `ktFileContent { }` that writes no line for any of the files it covers.
- *
- * Only the kinds a block writes are checked, so a block that writes nothing checks nothing, and a
- * report could not tell it from a rule every file satisfies. Reported as `[UncheckedFileConstraint]`.
- *
- * ## Example 1: catch a block whose only line sits behind an `if` no file takes
- * ```kt
- * val failure = shouldThrow<KatachiArchitectureAssertionError> { projectArchitecture.assert(FileConstraintCheck()) }
- * failure.violations.filterIsInstance<UncheckedFileConstraint>().single()
- *     .cause.shouldBeInstanceOf<KatachiKtFileContentNothingWrittenException>()
- * ```
- */
-@ExperimentalKatachiApi
-public class KatachiKtFileContentNothingWrittenException internal constructor(
-    /**
-     * The qualified name of the role.
-     *
-     * ## Example 1: read back the role
-     * ```kt
-     * error.role shouldBe "ViewModel"
-     * ```
-     */
-    public val role: String,
-    /**
-     * Where `ktFileContent { }` was called.
-     *
-     * ## Example 1: jump to the block
-     * ```kt
-     * error.declaredAt.lineNumber
-     * ```
-     */
-    public val declaredAt: DeclarationSite,
-) : KatachiDeclarationException(
-    message = listOf(
-        "ktFileContent { } at $declaredAt of role $role wrote no line for any file.",
-        "A block that says nothing checks nothing, which reads in a report like a rule every file satisfies.",
-        "Write at least one package, import or declaration line, or remove the block.",
+        "Merge them into one ktFileContent { }, or split the role in two when the rules differ by directory.",
     ).joinToString("\n"),
 )
 

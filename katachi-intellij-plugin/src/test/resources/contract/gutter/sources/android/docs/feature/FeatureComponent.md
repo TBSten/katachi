@@ -28,7 +28,7 @@ the module's name; the check does not tie the file name to the module.
 
 ## Constraints
 
-- ktFileContent
+- [ktFileContent](#kotlin-file-content)
 
 ## Kotlin file content
 

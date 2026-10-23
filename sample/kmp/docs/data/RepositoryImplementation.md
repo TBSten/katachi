@@ -26,7 +26,7 @@ creates both at once, and the `item` parameter binds both when given once.
 
 ## Constraints
 
-- ktFileContent
+- [ktFileContent](#kotlin-file-content)
 
 ## Kotlin file content
 

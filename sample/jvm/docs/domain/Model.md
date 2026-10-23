@@ -24,7 +24,7 @@ capital letter are covered; a directory dug beneath it does not fall under this 
 
 ## Constraints
 
-- ktFileContent
+- [ktFileContent](#kotlin-file-content)
 
 ## Kotlin file content
 

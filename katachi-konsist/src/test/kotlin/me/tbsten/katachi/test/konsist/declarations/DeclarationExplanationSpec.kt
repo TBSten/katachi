@@ -210,10 +210,12 @@ class DeclarationExplanationSpec : FreeSpec({
             explanations[1].verdicts() shouldContainExactly listOf("Fine Allowed [class Fine]")
         }
 
-        "どのファイルにも行を書かないブロックは、検査と同じ例外で全体が投げる" {
+        "どのファイルにも行を書かないブロックは、検査も説明も例外にならず、宣言は検査しない扱いになる" {
             val run = explainedRun("src/main/kotlin/com/example/Sample.kt" to kt("class Sample")) { }
-            run.failures.exceptionOrNull()?.let { it::class } shouldBe run.explanations.exceptionOrNull()?.let { it::class }
-            run.explanations.isFailure shouldBe true
+            run.failures.isSuccess shouldBe true
+            val explanations = run.explanations.getOrThrow()
+            explanations.single().declarationsChecked shouldBe false
+            explanations.single().unexplainedReason shouldBe null
         }
     }
 

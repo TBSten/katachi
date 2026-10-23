@@ -1,10 +1,13 @@
 package me.tbsten.katachi.test.konsist.declarations
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.konsist.declarations.DeclarationListScope
+import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentLineException
+import me.tbsten.katachi.konsist.declarations.KtFileContentLineProblem
 import me.tbsten.katachi.konsist.declarations.TypeKind
 
 /*
@@ -230,13 +233,13 @@ class KtFileContentDslSpec : FreeSpec({
             """.trimIndent()
         }
 
-        "単独の行の annotated は次の宣言に付かない（隠れた状態を持たない）" {
-            val dump = dumpOf {
-                annotated("Orphan")
-                `class`("A")
-            }
-
-            dump shouldBe "required class{} A"
+        "単独の行の annotated は次の宣言に付かない（隠れた状態を持たないので、無視せず例外にする）" {
+            shouldThrow<KatachiKtFileContentLineException> {
+                dumpOf {
+                    annotated("Orphan")
+                    `class`("A")
+                }
+            }.problem shouldBe KtFileContentLineProblem.DanglingModifiers
         }
 
         "修飾子は種類にも、or で組んだ種類にもかけられる" {

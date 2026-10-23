@@ -34,7 +34,7 @@ convention of this role, not something the layout enforces).
 
 ## Constraints
 
-- ktFileContent
+- [ktFileContent](#kotlin-file-content)
 
 ## Kotlin file content
 

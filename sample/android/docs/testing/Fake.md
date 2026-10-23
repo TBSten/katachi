@@ -32,7 +32,7 @@ goes into is decided by which `DataDomain` the start of the name matches.
 
 ## Constraints
 
-- ktFileContent
+- [ktFileContent](#kotlin-file-content)
 
 ## Kotlin file content
 

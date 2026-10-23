@@ -70,7 +70,7 @@ fun DeclarationContainerScope.service() = "Service".role {
     // What a Service file may hold, in the order the file lists it. Only the kinds a line is
     // written for are checked, each as an allow list: the package, the imports, the one class
     // and that class's members. The template above writes a file that passes it.
-    ktFileContent {
+    "Must import models and Repositories only, never HTTP".ktFileContent {
         `package`("com.example.service")
 
         // The domain knows the models and the Repositories, and nothing of HTTP.

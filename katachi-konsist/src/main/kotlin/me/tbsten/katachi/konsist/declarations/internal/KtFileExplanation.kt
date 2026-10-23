@@ -3,7 +3,6 @@
 package me.tbsten.katachi.konsist.declarations.internal
 
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.FileConstraintSubject
 import me.tbsten.katachi.dsl.internal.DeclarationExplanation
 import me.tbsten.katachi.dsl.internal.DeclarationVerdict
@@ -24,10 +23,9 @@ import me.tbsten.katachi.dsl.internal.RuleExplanation
  */
 internal fun explainKtFiles(
     subject: FileConstraintSubject,
-    declaredAt: DeclarationSite,
     rulesOf: (file: String) -> FileRules,
 ): List<FileDeclarationsExplanation> =
-    readKtFiles(subject, declaredAt) { file -> runCatchingPerFile { rulesOf(file) } }.map { input ->
+    readKtFiles(subject) { file -> runCatchingPerFile { rulesOf(file) } }.map { input ->
         val rules = input.rules.getOrElse { cause -> return@map unexplained(input.file, reasonOf(cause)) }
         // A block that wrote no line about declarations judges none, so Konsist's reading of the
         // file does not matter, and the check does not make its facts for it either.

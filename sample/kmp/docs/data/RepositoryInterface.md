@@ -35,7 +35,7 @@ package in the definition would make the documentation point at a directory that
 
 ## Constraints
 
-- ktFileContent
+- [ktFileContent](#kotlin-file-content)
 
 ## Kotlin file content
 

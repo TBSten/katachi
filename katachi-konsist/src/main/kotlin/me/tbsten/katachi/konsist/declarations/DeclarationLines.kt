@@ -29,6 +29,10 @@ public class TypeLine internal constructor(
      * interface it implements. A name without `<...>` matches whatever type arguments the supertype
      * has. With [body], the declaration's members are an allow list too.
      *
+     * A name is a glob in which `*` stands for zero or more characters, so `"*NavKey"` matches
+     * `NavKey` itself as well as `StartupNavKey`. To list the candidates, put them in braces:
+     * `"{StartupNavKey,*NavKey}"`, or for names that do not overlap, `"{NavKey,*Route}"`.
+     *
      * ## Example 1: the default implementation of the interface the file is named after
      * ```kt
      * `class`("Default$fileName").superclass(fileName) { override.`fun`("invoke") }

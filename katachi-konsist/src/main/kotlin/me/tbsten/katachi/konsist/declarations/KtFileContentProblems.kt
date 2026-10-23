@@ -109,6 +109,12 @@ public enum class KtFileContentLineProblem {
     /** `annotated()` with no name. */
     AnnotatedWithoutNames,
 
+    /**
+     * Modifiers or annotations written on a line of their own, which no declaration follows:
+     * `annotated("Inject")` or `private` alone.
+     */
+    DanglingModifiers,
+
     /** `anythingElse()` after `not.`, which names nothing to prohibit. */
     AnythingElseAfterNot,
 

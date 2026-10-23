@@ -23,7 +23,7 @@ It only receives the Repository as an argument and never creates it. Creating it
 
 ## Constraints
 
-- ktFileContent
+- [Must not import Compose or Android (ktFileContent)](#kotlin-file-content)
 
 ## Kotlin file content
 

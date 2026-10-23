@@ -61,6 +61,9 @@ internal enum class ModifierName(val keyword: String) {
 internal data class NameRule(val written: String, val pattern: NamePattern) {
     val hasWildcard: Boolean get() = pattern.hasWildcard
 
+    /** Whether [written] holds a `*`: a line that matches names it was never written for. */
+    val hasStar: Boolean get() = '*' in written
+
     fun matches(text: String): Boolean = pattern.matches(text)
 }
 

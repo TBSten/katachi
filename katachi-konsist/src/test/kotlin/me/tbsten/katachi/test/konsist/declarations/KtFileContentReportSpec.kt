@@ -131,7 +131,8 @@ class KtFileContentReportSpec : FreeSpec({
             [UnsatisfiedFileConstraint] feature/home/HomeViewModel.kt
               Role: Screen / FileConstraint: "ktFileContent"
               Declaration: import com.example.feature.settings.SettingsRepository (line 5)
-              Not allowed: prohibited by not import com.example.feature.** except com.example.feature.home.**
+              Not allowed: import com.example.feature.settings.SettingsRepository
+              Prohibited by: not import com.example.feature.** except com.example.feature.home.**
               Declared at: $prohibited
 
               How to fix:

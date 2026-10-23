@@ -4,6 +4,7 @@ import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.konsist.declarations.internal.DeclarationKindName
 import me.tbsten.katachi.konsist.declarations.internal.DeclarationListBuilder
 import me.tbsten.katachi.konsist.declarations.internal.ModifierName
+import me.tbsten.katachi.konsist.declarations.internal.ModifierTrace
 import me.tbsten.katachi.konsist.declarations.internal.ModifierSet
 import me.tbsten.katachi.konsist.declarations.internal.Shape
 import me.tbsten.katachi.konsist.declarations.internal.annotationRule
@@ -17,6 +18,8 @@ internal class VocabularyImpl(
     private val alternatives: List<ModifierSet>,
     private val prohibited: Boolean,
     private val sink: DeclarationListBuilder,
+    /** The value these words are chained after, which they build on; `null` at the start of a line. */
+    private val after: ModifierTrace? = null,
 ) : DeclarationVocabulary {
     override val public: Modifiers get() = adding(ModifierName.Public)
     override val protected: Modifiers get() = adding(ModifierName.Protected)
@@ -52,22 +55,38 @@ internal class VocabularyImpl(
             )
         }
         val annotations = names.map { sink.session.patterns.annotationRule(it) }
-        return Modifiers(alternatives.map { it.withAnnotations(annotations) }, prohibited, sink)
+        return modifiers(alternatives.map { it.withAnnotations(annotations) })
     }
 
+    // TODO: a line that chains only a kind onto modifiers (`annotated("X").`class``, no name) counts as
+    //  used and is still dropped silently; track it on the kinds too and use the trace when a name is given.
     override val `class`: TypeKind get() = typeKind(DeclarationKindName.Class)
     override val `interface`: TypeKind get() = typeKind(DeclarationKindName.Interface)
     override val `object`: TypeKind get() = typeKind(DeclarationKindName.Object)
     override val type: TypeKind
         get() = typeKind(DeclarationKindName.Class, DeclarationKindName.Interface, DeclarationKindName.Object)
-    override val `fun`: FunctionKind get() = FunctionKind(alternatives, prohibited, sink)
-    override val `val`: PropertyKind get() = PropertyKind(shapesOf(DeclarationKindName.Val), prohibited, sink)
-    override val `var`: PropertyKind get() = PropertyKind(shapesOf(DeclarationKindName.Var), prohibited, sink)
-    override val `typealias`: TypeAliasKind get() = TypeAliasKind(alternatives, prohibited, sink)
+    override val `fun`: FunctionKind get() = built { FunctionKind(alternatives, prohibited, sink) }
+    override val `val`: PropertyKind get() = built { PropertyKind(shapesOf(DeclarationKindName.Val), prohibited, sink) }
+    override val `var`: PropertyKind get() = built { PropertyKind(shapesOf(DeclarationKindName.Var), prohibited, sink) }
+    override val `typealias`: TypeAliasKind get() = built { TypeAliasKind(alternatives, prohibited, sink) }
 
-    private fun adding(modifier: ModifierName): Modifiers = Modifiers(alternatives.map { it + modifier }, prohibited, sink)
+    private fun adding(modifier: ModifierName): Modifiers = modifiers(alternatives.map { it + modifier })
 
-    private fun typeKind(vararg kinds: DeclarationKindName): TypeKind = TypeKind(shapesOf(*kinds), prohibited, sink)
+    /** A value for [next], which builds on [after] and is itself kept to be asked about when the run ends. */
+    private fun modifiers(next: List<ModifierSet>): Modifiers {
+        after?.use()
+        // TODO: DeclarationSite.capture() walks the stack once per chain; reuse the line's own site if a benchmark shows it.
+        val trace = ModifierTrace(next, prohibited, after?.declaredAt ?: DeclarationSite.capture())
+        return Modifiers(next, prohibited, sink, sink.session.modifiers.track(trace))
+    }
+
+    /** [create], after marking the value these words are chained after as built on. */
+    private fun <T> built(create: () -> T): T {
+        after?.use()
+        return create()
+    }
+
+    private fun typeKind(vararg kinds: DeclarationKindName): TypeKind = built { TypeKind(shapesOf(*kinds), prohibited, sink) }
 
     private fun shapesOf(vararg kinds: DeclarationKindName): List<Shape> =
         alternatives.flatMap { set -> kinds.map { Shape(set, it) } }

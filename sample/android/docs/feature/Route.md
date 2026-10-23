@@ -26,7 +26,7 @@ decides which screen to go to, and a feature never imports another feature's Rou
 
 ## Constraints
 
-- ktFileContent
+- [ktFileContent](#kotlin-file-content)
 
 ## Kotlin file content
 

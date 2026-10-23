@@ -602,7 +602,7 @@
       ],
       "constraints": [
         {
-          "name": "ktFileContent",
+          "name": "Must not import Compose or Android (ktFileContent)",
           "backend": "ktFileContent",
           "checkClass": "me.tbsten.katachi.konsist.declarations.internal.KtFileContentConstraint",
           "range": "Subtree",

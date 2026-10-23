@@ -28,7 +28,7 @@ it is chosen by id rather than by passing values.
 
 ## Constraints
 
-- ktFileContent
+- [ktFileContent](#kotlin-file-content)
 
 ## Kotlin file content
 

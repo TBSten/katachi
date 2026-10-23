@@ -31,7 +31,7 @@ internal class DeclarationListContext(
     override fun toString(): String = "DeclarationListContext(${containers.map { it.name }})"
 }
 
-/** A declaration that matches no line, nor any line by name alone, nor `anythingElse()`. */
+/** A declaration that matches no line, nor any line without a `*` in its name by name alone, nor `anythingElse()`. */
 internal class UnexpectedDeclaration(
     val fact: DeclarationFact,
     val list: DeclarationListContext,
@@ -47,7 +47,7 @@ internal class ProhibitedDeclaration(
 ) : KtFileFinding
 
 /**
- * A declaration whose name an allowed line matches, but whose kind, modifiers, annotations,
+ * A declaration whose name an allowed line (one without a `*` in its name) matches, but whose kind, modifiers, annotations,
  * supertypes, type, parameters or return type do not: reported once rather than as one too many
  * and one missing, since there is one thing to fix.
  */
