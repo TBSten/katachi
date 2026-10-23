@@ -58,7 +58,8 @@ class KtFileContentScopeIsolationSpec : FreeSpec({
 
             val names = sources.flatMap { publicTopLevelNamesOf(KotlinFileParser.getKoFile(it.absoluteFile)) }
 
-            names shouldBe listOf("ktFileContent")
+            // `ktFileContent { }` and `"...".ktFileContent { }`.
+            names shouldBe listOf("ktFileContent", "ktFileContent")
         }
     }
 

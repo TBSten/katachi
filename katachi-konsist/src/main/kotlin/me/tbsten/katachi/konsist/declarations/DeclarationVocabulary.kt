@@ -275,6 +275,11 @@ public sealed interface DeclarationVocabulary {
      * Requires every one of the annotations [names], compared by simple name -- or by full name
      * when a name holds a `.` (`androidx.compose.runtime.Composable`). Arguments are not looked at.
      *
+     * A simple name is compared with the name as written in the file, and an alias is not resolved to
+     * what it stands for: after `import a.Inject as Wired`, `@Wired` is matched by `annotated("Wired")`
+     * and not by `annotated("Inject")`. To match through the alias, write the full name:
+     * `annotated("a.Inject")` matches that `@Wired` too.
+     *
      * `annotated("A").annotated("B")` is the same as `annotated("A", "B")`.
      *
      * ## Example 1: a composable function named after the file

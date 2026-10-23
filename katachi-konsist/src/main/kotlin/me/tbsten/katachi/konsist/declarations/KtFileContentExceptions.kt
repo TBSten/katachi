@@ -308,6 +308,17 @@ private fun lineMessage(problem: KtFileContentLineProblem, line: String, at: Dec
             "Pass at least one name, such as annotated(\"Composable\"), or remove it.",
         )
 
+        KtFileContentLineProblem.DanglingModifiers -> Triple(
+            "\"$line\" at $at is not followed by a declaration.",
+            "Modifiers and annotations apply to the kind chained after them, so on a line of their own they " +
+                "apply to nothing: the next line is not their declaration, and they would be ignored.",
+            if (line.startsWith("not ")) {
+                "Write what to prohibit in front of the kind on the same line, such as not.private.`fun`(\"*\"), or remove it."
+            } else {
+                "Write it in front of the kind on the same line, such as annotated(\"Inject\").`class`(\"Name\"), or finish it with anythingElse(), or remove it."
+            },
+        )
+
         KtFileContentLineProblem.AnythingElseAfterNot -> Triple(
             "Line \"$line\" at $at prohibits anythingElse().",
             "anythingElse() allows what no other line matches; after not. it names nothing in particular to prohibit.",

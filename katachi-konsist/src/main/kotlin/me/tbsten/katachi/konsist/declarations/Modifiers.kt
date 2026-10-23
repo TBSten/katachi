@@ -4,6 +4,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.konsist.declarations.internal.DeclarationListBuilder
 import me.tbsten.katachi.konsist.declarations.internal.ModifierSet
+import me.tbsten.katachi.konsist.declarations.internal.ModifierTrace
 import me.tbsten.katachi.konsist.declarations.internal.Shape
 import me.tbsten.katachi.konsist.declarations.internal.renderModifierAlternatives
 
@@ -14,7 +15,9 @@ import me.tbsten.katachi.konsist.declarations.internal.renderModifierAlternative
  * It holds one or more alternatives, each a set of modifiers and annotations that all have to be
  * on a declaration. A word chained after it adds to every alternative; `or` puts the alternatives
  * of both sides together. Nothing is written until a kind is named and called with a name, or
- * until [anythingElse] -- a value on its own is not a line.
+ * until [anythingElse] -- a value on its own is not a line, and is refused when the block ends
+ * ([KtFileContentLineProblem.DanglingModifiers]). Only modifiers that stop before any kind are
+ * refused; a line that chains a kind but passes no name is not caught yet.
  *
  * ## Example 1: modifiers in front of a kind, the way Kotlin writes them
  * ```kt
@@ -32,7 +35,8 @@ public class Modifiers internal constructor(
     internal val alternatives: List<ModifierSet>,
     internal val prohibited: Boolean,
     internal val sink: DeclarationListBuilder,
-) : DeclarationVocabulary by VocabularyImpl(alternatives, prohibited, sink) {
+    private val trace: ModifierTrace,
+) : DeclarationVocabulary by VocabularyImpl(alternatives, prohibited, sink, trace) {
     /**
      * Either these modifiers or [other]'s.
      *
@@ -45,7 +49,11 @@ public class Modifiers internal constructor(
      */
     public infix fun or(other: Modifiers): Modifiers {
         checkJoinable(other.prohibited, other.sink, "$this or $other")
-        return Modifiers((alternatives + other.alternatives).distinct(), prohibited, sink)
+        trace.use()
+        other.trace.use()
+        val joined = (alternatives + other.alternatives).distinct()
+        val joinedTrace = ModifierTrace(joined, prohibited, trace.declaredAt)
+        return Modifiers(joined, prohibited, sink, sink.session.modifiers.track(joinedTrace))
     }
 
     /**
@@ -59,6 +67,7 @@ public class Modifiers internal constructor(
      */
     public operator fun invoke(kind: TypeKind): TypeKind {
         checkSameBlock(kind.sink, "$this($kind)")
+        trace.use()
         return TypeKind(combined(kind.shapes), prohibited || kind.prohibited, sink)
     }
 
@@ -73,6 +82,7 @@ public class Modifiers internal constructor(
      */
     public operator fun invoke(kind: PropertyKind): PropertyKind {
         checkSameBlock(kind.sink, "$this($kind)")
+        trace.use()
         return PropertyKind(combined(kind.shapes), prohibited || kind.prohibited, sink)
     }
 
@@ -88,6 +98,7 @@ public class Modifiers internal constructor(
      * @throws KatachiKtFileContentLineException when written after `not.`.
      */
     public fun anythingElse() {
+        trace.use()
         sink.addAnythingElse(alternatives, prohibited)
     }
 

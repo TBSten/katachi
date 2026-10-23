@@ -65,6 +65,7 @@ internal fun evaluateRules(
     val file = FileBuilder(session, declaredAt)
     try {
         session.within(file.declarations) { KtFileContentScopeImpl(file).block() }
+        session.failOnDanglingModifiers()
     } finally {
         session.close()
     }
