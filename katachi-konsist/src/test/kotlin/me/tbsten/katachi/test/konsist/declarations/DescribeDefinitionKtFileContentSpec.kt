@@ -169,7 +169,7 @@ class DescribeDefinitionKtFileContentSpec : FreeSpec({
     }
 
     "説明できないとき" - {
-        "どのファイルにも行を書かないブロックは ExplanationFailed で、ほかの役割は答える" {
+        "どのファイルにも行を書かないブロックは説明の失敗にならず、ほかの役割は答える" {
             val architecture = architecture {
                 files = wholeTree()
                 "Silent".role {
@@ -188,8 +188,7 @@ class DescribeDefinitionKtFileContentSpec : FreeSpec({
                 "src/loud/Loud.kt" to kt("class Loud"),
             )
 
-            explanationProblemsIn(json) shouldContainExactly listOf("ExplanationFailed")
-            json shouldContain "KatachiKtFileContentNothingWrittenException"
+            explanationProblemsIn(json).shouldBeEmpty()
             declarationsIn(json) shouldContainExactly listOf("class Loud 3 Allowed")
         }
 

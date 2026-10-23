@@ -185,47 +185,6 @@ public class KatachiKtFileContentDuplicateException internal constructor(
 )
 
 /**
- * A `ktFileContent { }` that writes no line for any of the files it covers.
- *
- * Only the kinds a block writes are checked, so a block that writes nothing checks nothing, and a
- * report could not tell it from a rule every file satisfies. Reported as `[UncheckedFileConstraint]`.
- *
- * ## Example 1: catch a block whose only line sits behind an `if` no file takes
- * ```kt
- * val failure = shouldThrow<KatachiArchitectureAssertionError> { projectArchitecture.assert(FileConstraintCheck()) }
- * failure.violations.filterIsInstance<UncheckedFileConstraint>().single()
- *     .cause.shouldBeInstanceOf<KatachiKtFileContentNothingWrittenException>()
- * ```
- */
-@ExperimentalKatachiApi
-public class KatachiKtFileContentNothingWrittenException internal constructor(
-    /**
-     * The qualified name of the role.
-     *
-     * ## Example 1: read back the role
-     * ```kt
-     * error.role shouldBe "ViewModel"
-     * ```
-     */
-    public val role: String,
-    /**
-     * Where `ktFileContent { }` was called.
-     *
-     * ## Example 1: jump to the block
-     * ```kt
-     * error.declaredAt.lineNumber
-     * ```
-     */
-    public val declaredAt: DeclarationSite,
-) : KatachiDeclarationException(
-    message = listOf(
-        "ktFileContent { } at $declaredAt of role $role wrote no line for any file.",
-        "A block that says nothing checks nothing, which reads in a report like a rule every file satisfies.",
-        "Write at least one package, import or declaration line, or remove the block.",
-    ).joinToString("\n"),
-)
-
-/**
  * [relative] under [projectRoot] as a `file:///...` URI, the form every report prints a path in so
  * that a terminal shows it as a link.
  */

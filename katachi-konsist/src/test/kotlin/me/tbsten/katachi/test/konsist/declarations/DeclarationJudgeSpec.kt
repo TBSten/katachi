@@ -1,8 +1,15 @@
+@file:OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
+
 package me.tbsten.katachi.test.konsist.declarations
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.InternalKatachiApi
+import me.tbsten.katachi.konsist.declarations.internal.failureOf
+import me.tbsten.katachi.konsist.declarations.internal.judgeKtFile
 
 /**
  * The judging of declarations and members (impl-spec 8.1): one source judged against one block,
@@ -11,6 +18,12 @@ import io.kotest.matchers.shouldBe
 
 /** [body] as a file of package `com.example`: its first line is line 3. */
 private fun kt(body: String): String = "package com.example\n\n" + body.trimIndent() + "\n"
+
+/** The fixes [block] gives to the failures of [source], in the order the report lists them. */
+private fun fixesOf(source: String, block: me.tbsten.katachi.konsist.declarations.KtFileContentScope.() -> Unit): List<List<String>> {
+    val rules = rulesOf(fileName = "Sample", block = block)
+    return judgeKtFile(factsOf(source), rules).map { failureOf(it, SAMPLE_PATH, rules) }.map { failure -> failure.howToFix.map { it.text } }
+}
 
 class DeclarationJudgeSpec : FreeSpec({
     "判定の順" - {
@@ -47,7 +60,7 @@ class DeclarationJudgeSpec : FreeSpec({
             judged(kt("class A\nprivate class B")) {
                 public.`class`("*")
             } shouldBe listOf(
-                "B (line 4) | Not allowed: private class B | Expected: public class * | Differs in: modifiers (missing: public)",
+                "B (line 4) | Not allowed: private class B",
             )
         }
 
@@ -59,8 +72,7 @@ class DeclarationJudgeSpec : FreeSpec({
             judged(kt("internal class A\nprivate class B\nclass C")) {
                 (internal or private).`class`("*")
             } shouldBe listOf(
-                "C (line 5) | Not allowed: class C | Expected: (internal or private) class * | " +
-                    "Differs in: modifiers (missing: internal)",
+                "C (line 5) | Not allowed: class C",
             )
         }
 
@@ -68,7 +80,7 @@ class DeclarationJudgeSpec : FreeSpec({
             judged(kt("@A @B class X\n@A class Y")) {
                 annotated("A", "B").`class`("*")
             } shouldBe listOf(
-                "Y (line 4) | Not allowed: @A class Y | Expected: @A @B class * | Differs in: annotations (missing: @B)",
+                "Y (line 4) | Not allowed: @A class Y",
             )
         }
 
@@ -82,6 +94,33 @@ class DeclarationJudgeSpec : FreeSpec({
             judged(kt("class Sample")) { `interface`(fileName) } shouldBe listOf(
                 "Sample (line 3) | Not allowed: class Sample | Expected: interface Sample | Differs in: kind (is class, expected interface)",
             )
+        }
+
+        "名前に * を含む行は、種類の違う宣言を「名前が合う 1 件」にしない" {
+            judged(kt("interface Foo")) { `class`("*") } shouldBe listOf("Foo (line 3) | Not allowed: interface Foo")
+        }
+
+        "名前に * を含む行は、直し方に「Change the declaration to」も「Rename it to」も出さず、動かす・許す直し方になる" {
+            fixesOf(kt("interface Foo")) { `class`("*") }.single().let { fixes ->
+                fixes.none { it.startsWith("Change the declaration to") || it.startsWith("Rename it to") } shouldBe true
+                fixes.first() shouldBe "Move it to a file of another role"
+                fixes.size shouldBe 2
+            }
+        }
+
+        "名前が * の行でも、修飾子の違いは直し方に出さず、動かす・許す直し方になる" {
+            fixesOf(kt("class A\nprivate class B")) { public.`class`("*") }.single().let { fixes ->
+                fixes.none { it.startsWith("Change the declaration to") } shouldBe true
+                fixes shouldContain "Move it to a file of another role"
+                fixes.any { it.startsWith("Allow it") } shouldBe true
+            }
+        }
+
+        "名前が { } の選択肢の行も候補から外し、直し方に Change the declaration to を出さない" {
+            fixesOf(kt("interface HomeViewModel")) { `class`("{HomeViewModel,SettingsViewModel}") }.single().let { fixes ->
+                fixes.none { it.startsWith("Change the declaration to") || it.startsWith("Rename it to") } shouldBe true
+                fixes.first() shouldBe "Move it to a file of another role"
+            }
         }
 
         "private・protected・override のメンバも数える" {
@@ -130,7 +169,7 @@ class DeclarationJudgeSpec : FreeSpec({
             judged(kt("fun onA() {}\nfun onB(): Unit {}\nfun onC() = Unit")) {
                 `fun`("on*")().returns("Unit")
             } shouldBe listOf(
-                "onC (line 5) | Not allowed: fun onC() | Expected: fun on*(): Unit | Differs in: return type (not written, expected Unit)",
+                "onC (line 5) | Not allowed: fun onC()",
             )
         }
 
