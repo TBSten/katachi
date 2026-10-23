@@ -20,6 +20,7 @@ import me.tbsten.katachi.dsl.internal.RuleExplanation
  * [subject]'s `.kt` files explained, in order. A file whose block throws is still listed, with the
  * reason; what fails for every file at once ([readKtFiles]'s exceptions) is thrown.
  *
+ * @param declaredAt unused now that no exception names the call site. TODO: drop it, and the argument KtFileContentConstraint passes, now that nothing reads it.
  * @param rulesOf the rules of one file, given project relative.
  */
 internal fun explainKtFiles(
@@ -27,7 +28,7 @@ internal fun explainKtFiles(
     declaredAt: DeclarationSite,
     rulesOf: (file: String) -> FileRules,
 ): List<FileDeclarationsExplanation> =
-    readKtFiles(subject, declaredAt) { file -> runCatchingPerFile { rulesOf(file) } }.map { input ->
+    readKtFiles(subject) { file -> runCatchingPerFile { rulesOf(file) } }.map { input ->
         val rules = input.rules.getOrElse { cause -> return@map unexplained(input.file, reasonOf(cause)) }
         // A block that wrote no line about declarations judges none, so Konsist's reading of the
         // file does not matter, and the check does not make its facts for it either.

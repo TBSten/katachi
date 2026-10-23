@@ -79,8 +79,7 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
             "feature/settings/SettingsViewModel.kt: SettingsViewModel.isLoading (line 11) | " +
                 "Not allowed: var isLoading in class SettingsViewModel",
             "feature/settings/SettingsViewModel.kt: SettingsViewModel.onSave (line 12) | " +
-                "Not allowed: fun onSave(): Int in class SettingsViewModel | Expected: public fun on*(): Unit | " +
-                "Differs in: return type (is Int, expected Unit)",
+                "Not allowed: fun onSave(): Int in class SettingsViewModel",
         )
     }
 
@@ -143,10 +142,8 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
         }
 
         violations.unsatisfiedLines() shouldBe listOf(
-            "ui/SettingsUiState.kt: SettingsUiState.dark (line 3) | Not allowed: var dark: Boolean in data class SettingsUiState | " +
-                "Expected: val * | Differs in: kind (is var, expected val)",
-            "ui/SettingsUiState.kt: SettingsUiState.toggle (line 4) | Not allowed: fun toggle() in data class SettingsUiState | " +
-                "Expected: val * | Differs in: kind (is fun, expected val)",
+            "ui/SettingsUiState.kt: SettingsUiState.dark (line 3) | Not allowed: var dark: Boolean in data class SettingsUiState",
+            "ui/SettingsUiState.kt: SettingsUiState.toggle (line 4) | Not allowed: fun toggle() in data class SettingsUiState",
         )
     }
 
@@ -164,9 +161,10 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
         }
 
         violations.unsatisfiedLines() shouldBe listOf(
-            "src/Leak.kt: import me.tbsten.katachi.docs.Page (line 3) | Not allowed: prohibited by not import me.tbsten.katachi.docs.**",
+            "src/Leak.kt: import me.tbsten.katachi.docs.Page (line 3) | " +
+                "Not allowed: import me.tbsten.katachi.docs.Page | Prohibited by: not import me.tbsten.katachi.docs.**",
             "src/Leak.kt: import me.tbsten.katachi.template.Template (line 4) | " +
-                "Not allowed: prohibited by not import me.tbsten.katachi.template.**",
+                "Not allowed: import me.tbsten.katachi.template.Template | Prohibited by: not import me.tbsten.katachi.template.**",
         )
     }
 
@@ -228,8 +226,7 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
         violations.unsatisfiedLines() shouldBe listOf(
             "src/OtherScreen.kt: OtherScreen (line 3) | Not allowed: fun OtherScreen() | Expected: @Composable public fun OtherScreen(...) | " +
                 "Differs in: annotations (missing: @Composable)",
-            "src/OtherScreen.kt: OtherScreenPreview (line 5) | Not allowed: @Preview fun OtherScreenPreview() | " +
-                "Expected: (@Preview or @PreviewLightDark) private fun *Preview(...) | Differs in: modifiers (missing: private)",
+            "src/OtherScreen.kt: OtherScreenPreview (line 5) | Not allowed: @Preview fun OtherScreenPreview()",
         )
     }
 

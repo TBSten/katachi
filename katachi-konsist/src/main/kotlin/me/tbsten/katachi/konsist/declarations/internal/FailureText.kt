@@ -169,7 +169,10 @@ private fun prohibitedImportFailure(finding: ProhibitedImport, path: String): Fi
         file = path,
         declaration = "import $import",
         line = finding.import.line,
-        reasons = listOf(FileConstraintReason(NOT_ALLOWED, "prohibited by ${renderImport(finding.rule)}")),
+        reasons = listOf(
+            FileConstraintReason(NOT_ALLOWED, "import $import"),
+            FileConstraintReason("Prohibited by", renderImport(finding.rule)),
+        ),
         howToFix = removeImportFixes(finding.rule.declaredAt, ".except(${kotlinString(import)})", allowing = false),
         ruleDeclaredAt = finding.rule.declaredAt,
     )
@@ -213,7 +216,10 @@ private fun prohibitedPackageFailure(finding: ProhibitedPackage, path: String): 
     file = path,
     declaration = "package ${finding.packageName}",
     line = finding.line,
-    reasons = listOf(FileConstraintReason(NOT_ALLOWED, "prohibited by ${renderPackage(finding.rule)}")),
+    reasons = listOf(
+        FileConstraintReason(NOT_ALLOWED, "package ${finding.packageName}"),
+        FileConstraintReason("Prohibited by", renderPackage(finding.rule)),
+    ),
     howToFix = listOf(
         FileConstraintFix("Change the package"),
         exceptFix("If this package is fine, exclude it from the prohibited line at ${finding.rule.declaredAt}:", finding.packageName),

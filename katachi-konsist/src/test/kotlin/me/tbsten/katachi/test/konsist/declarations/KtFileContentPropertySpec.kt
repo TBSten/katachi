@@ -123,7 +123,7 @@ class KtFileContentPropertySpec : FreeSpec({
             withClue(clueOf("imported $path" + if (alsoAllowed) " and allowed **" else "", changed)) {
                 val found = judgedCase(changed)
                 found.map(::keyOf) shouldBe listOf("import $path")
-                found.single() shouldContain "Not allowed: prohibited by not import ${line.pattern}"
+                found.single() shouldContain "Prohibited by: not import ${line.pattern}"
             }
         }
     }

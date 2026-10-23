@@ -37,8 +37,8 @@ class ImportPackageJudgeSpec : FreeSpec({
                 `import`("**")
                 not.`import`("com.example.feature.**").except("com.example.feature.${captureValue("feature")}.**")
             } shouldBe listOf(
-                "import com.example.feature.settings.B (line 4) | " +
-                    "Not allowed: prohibited by not import com.example.feature.** except com.example.feature.home.**",
+                "import com.example.feature.settings.B (line 4) | Not allowed: import com.example.feature.settings.B | " +
+                    "Prohibited by: not import com.example.feature.** except com.example.feature.home.**",
             )
         }
 
@@ -63,7 +63,10 @@ class ImportPackageJudgeSpec : FreeSpec({
             judged("package com.example.legacy.a\n\nclass Sample\n") {
                 `package`("**")
                 not.`package`("com.example.legacy.**")
-            } shouldBe listOf("package com.example.legacy.a (line 1) | Not allowed: prohibited by not package com.example.legacy.**")
+            } shouldBe listOf(
+                "package com.example.legacy.a (line 1) | Not allowed: package com.example.legacy.a | " +
+                    "Prohibited by: not package com.example.legacy.**",
+            )
         }
 
         "matchingDirectory は src/<名前>/kotlin/ の下のディレクトリと比べる" {
