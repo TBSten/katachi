@@ -48,7 +48,9 @@ public fun interface FileConstraint {
      *
      * Called once per constraint each time the pages are generated, and never by the check. The
      * section goes after the page's `## Constraints` list and before its `## Examples`, as
-     * returned, trailing blank lines dropped. Whatever it throws stops the generation, since a
+     * returned, trailing blank lines dropped. When the constraint has a name, its entry in the
+     * `## Constraints` list links to the first heading of this section (the id follows the rule
+     * GitHub and Starlight share). Whatever it throws stops the generation, since a
      * constraint that cannot describe itself is a mistake in the definition.
      *
      * [context] says which role the page is for and, when asked, which file to show an example
