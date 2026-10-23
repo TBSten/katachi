@@ -17,7 +17,10 @@ import me.tbsten.katachi.konsist.declarations.internal.renderModifierAlternative
  * of both sides together. Nothing is written until a kind is named and called with a name, or
  * until [anythingElse] -- a value on its own is not a line, and is refused when the block ends
  * ([KtFileContentLineProblem.DanglingModifiers]). Only modifiers that stop before any kind are
- * refused; a line that chains a kind but passes no name is not caught yet.
+ * refused; a line that chains a kind but passes no name is not caught yet. When the block reads
+ * `fileName` or `captureValue`, the run made while the definition is read does not refuse them
+ * (a value kept in a variable and used only under `if (fileName ...)` is unused for the stand-in);
+ * the run for each file does.
  *
  * ## Example 1: modifiers in front of a kind, the way Kotlin writes them
  * ```kt

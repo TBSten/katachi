@@ -13,6 +13,9 @@ import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.wholeTree
 import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentLineException
+import me.tbsten.katachi.konsist.declarations.internal.EvaluationInput
+import me.tbsten.katachi.konsist.declarations.internal.PatternCache
+import me.tbsten.katachi.konsist.declarations.internal.evaluateWithStandIns
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 import me.tbsten.katachi.konsist.declarations.KtFileContentLineProblem
 import me.tbsten.katachi.konsist.declarations.KtFileContentScope
@@ -154,6 +157,23 @@ class KtFileContentDanglingModifiersSpec : FreeSpec({
                     priv.`val`("b")
                 }
             }
+        }
+
+        "fileName を読むブロックの stand-in の実行では、条件が偽で使われなかった修飾子を見逃す" {
+            val block: KtFileContentScope.() -> Unit = {
+                val inject = annotated("Inject")
+                if (fileName.endsWith("ViewModel")) inject.`class`(fileName)
+            }
+            shouldNotThrowAny {
+                evaluateWithStandIns(block, EvaluationInput("Sample", { it }, PatternCache()), SPEC_SITE)
+            }
+            danglingOf(block).problem shouldBe KtFileContentLineProblem.DanglingModifiers
+        }
+
+        "fileName を読まないブロックの stand-in の実行では DanglingModifiers を投げる" {
+            shouldThrow<KatachiKtFileContentLineException> {
+                evaluateWithStandIns({ annotated("Inject") }, EvaluationInput("Sample", { it }, PatternCache()), SPEC_SITE)
+            }.problem shouldBe KtFileContentLineProblem.DanglingModifiers
         }
 
         "何も書かないブロックは例外にならない" {
