@@ -32,7 +32,7 @@ actual match, and that compiler does not run on CI; that is the hole here.
 
 ## Constraints
 
-- ktFileContent
+- [ktFileContent](#kotlin-file-content)
 
 ## Kotlin file content
 

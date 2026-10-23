@@ -28,7 +28,7 @@ is held.
 
 ## Constraints
 
-- ktFileContent
+- [Must import models and Repositories only, never HTTP (ktFileContent)](#kotlin-file-content)
 - Must be public
 
 ## Kotlin file content

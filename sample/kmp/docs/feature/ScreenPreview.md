@@ -26,7 +26,7 @@ Previews can be written in `commonMain` because the former is used.
 
 ## Constraints
 
-- ktFileContent
+- [ktFileContent](#kotlin-file-content)
 
 ## Kotlin file content
 

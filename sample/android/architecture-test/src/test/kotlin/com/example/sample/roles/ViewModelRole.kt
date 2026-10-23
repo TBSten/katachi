@@ -46,7 +46,7 @@ fun DeclarationContainerScope.viewModel() = "ViewModel".role {
     }
     // The description above, written the way the file is written. androidx.compose and android
     // are not among the imports, so a view model that reaches for either fails.
-    ktFileContent {
+    "Must not import Compose or Android".ktFileContent {
         `import`("androidx.lifecycle.**")
         `import`("kotlinx.coroutines.**")
         `import`("com.example.sample.data.**")
