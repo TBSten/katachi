@@ -43,7 +43,8 @@ public class FileProhibition internal constructor(
     DeclarationVocabulary by VocabularyImpl(listOf(ModifierSet.EMPTY), prohibited = true, sink = file.declarations) {
     /**
      * Prohibits the imports whose path matches [pattern], `.` separated: `*` is one level, `**`
-     * any number of them.
+     * any number of them, zero included: `"com.example.legacy.**"` prohibits `com.example.legacy`
+     * itself as well, so a class import `com.example.Legacy` is prohibited by `"com.example.Legacy.**"`.
      *
      * ## Example 1: no other feature
      * ```kt
@@ -55,7 +56,8 @@ public class FileProhibition internal constructor(
     public fun `import`(pattern: String): ImportLine = ImportLine(file.declareImport(pattern, prohibited = true))
 
     /**
-     * Prohibits the packages matching [pattern], `.` separated.
+     * Prohibits the packages matching [pattern], `.` separated. `**` is any number of levels, zero included: `"com.example.legacy.**"`
+     * prohibits `com.example.legacy` itself as well.
      *
      * ## Example 1: nothing left in the legacy package
      * ```kt

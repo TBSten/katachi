@@ -26,6 +26,9 @@ internal class EvaluationSession(val input: EvaluationInput) {
 
     val patterns: PatternCache get() = input.patterns
 
+    /** The modifiers and annotations written in this run, to find the ones no declaration follows. */
+    val modifiers: ModifierTraces = ModifierTraces()
+
     /** Whether the run has not ended yet. */
     val isOpen: Boolean get() = !closed
 
@@ -41,6 +44,15 @@ internal class EvaluationSession(val input: EvaluationInput) {
         } finally {
             current = outer
         }
+    }
+
+    /**
+     * @throws KatachiKtFileContentLineException when modifiers or annotations were written on a line
+     *   of their own and no declaration was built from them.
+     */
+    fun failOnDanglingModifiers() {
+        val dangling = modifiers.firstDangling() ?: return
+        throw KatachiKtFileContentLineException(KtFileContentLineProblem.DanglingModifiers, dangling.line(), dangling.declaredAt)
     }
 
     /** Ends the run: nothing can be written into it any more. */

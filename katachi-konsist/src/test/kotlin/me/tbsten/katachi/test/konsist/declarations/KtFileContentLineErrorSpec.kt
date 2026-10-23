@@ -151,7 +151,7 @@ class KtFileContentLineErrorSpec : FreeSpec({
             lateinit var kept: Modifiers
             lateinit var line: TypeLine
             rulesOf {
-                kept = private
+                kept = private.also { it.`fun`("x") }
                 line = `class`("A")
             }
 
@@ -177,6 +177,7 @@ class KtFileContentLineErrorSpec : FreeSpec({
                 { `class`("A") { `typealias`("B") } },
                 { annotated() },
                 { not.private.anythingElse() },
+                { annotated("X") },
             ).map(::lineErrorOf)
 
             errors.map { it.problem }.toSet().size shouldBe errors.size
