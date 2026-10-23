@@ -88,7 +88,7 @@ internal fun uncheckedFileConstraintBlock(violation: UncheckedFileConstraint, ro
     }
     add("$STEP${constraintLine(violation.role.qualifiedName, violation.constraintName)}")
     add("${STEP}Declared at: ${violation.declaredAt}${inLayout(root, violation.layoutPath)}")
-    violation.cause?.let { add("${STEP}Cause: ${causeLine(it)}") }
+    violation.cause?.let { addAll(causeLines(it)) }
     add("")
     add("${STEP}How to fix:")
     when (violation.reason) {
