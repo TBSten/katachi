@@ -135,10 +135,12 @@ public class KatachiKtFileContentCaptureUnavailableException internal constructo
 )
 
 /**
- * One role with two `ktFileContent { }` blocks, found when the check runs the second one.
+ * One role with two `ktFileContent { }` blocks, found when the check runs the second one, or when
+ * the role's documentation page is generated.
  *
  * Each block is an allow list of what a file may hold, so two of them over one file would each
- * reject what the other allows. Reported as `[UncheckedFileConstraint]`.
+ * reject what the other allows. The check reports it as `[UncheckedFileConstraint]`; generating
+ * the documentation throws it.
  *
  * ## Example 1: catch a role that writes the block twice
  * ```kt
@@ -180,7 +182,7 @@ public class KatachiKtFileContentDuplicateException internal constructor(
     message = listOf(
         "Role $role declares ktFileContent { } twice: at $firstDeclaredAt and at $declaredAt.",
         "Each block is an allow list for the role's files, so two of them would each reject what the other allows.",
-        "Merge them into one ktFileContent { }.",
+        "Merge them into one ktFileContent { }, or split the role in two when the rules differ by directory.",
     ).joinToString("\n"),
 )
 

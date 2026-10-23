@@ -44,7 +44,7 @@ internal class KtFileContentConstraint(
         // Stand-ins once more, now that the layout is known: a `captureValue` name it does not
         // capture is refused here, before any file is read.
         evaluateWithStandIns(block, placeholderInput(subject, declaredAt, patterns), declaredAt)
-        return judgeKtFiles(subject, declaredAt) { file ->
+        return judgeKtFiles(subject) { file ->
             evaluateRules(block, inputFor(subject, file, declaredAt, patterns), declaredAt)
         }
     }
@@ -56,7 +56,7 @@ internal class KtFileContentConstraint(
     override fun explainDeclarations(subject: FileConstraintSubject): List<FileDeclarationsExplanation> {
         registerOnce(subject)
         evaluateWithStandIns(block, placeholderInput(subject, declaredAt, patterns), declaredAt)
-        return explainKtFiles(subject, declaredAt) { file ->
+        return explainKtFiles(subject) { file ->
             evaluateRules(block, inputFor(subject, file, declaredAt, patterns), declaredAt)
         }
     }

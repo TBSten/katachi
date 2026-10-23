@@ -116,10 +116,9 @@ class DeclarationJudgeSpec : FreeSpec({
             }
         }
 
-        "名前が { } の選択肢の行も候補から外し、直し方に Change the declaration to を出さない" {
+        "名前が { } の選択肢の行は名前を 1 つずつ書いているので候補に残し、Change the declaration to を出す" {
             fixesOf(kt("interface HomeViewModel")) { `class`("{HomeViewModel,SettingsViewModel}") }.single().let { fixes ->
-                fixes.none { it.startsWith("Change the declaration to") || it.startsWith("Rename it to") } shouldBe true
-                fixes.first() shouldBe "Move it to a file of another role"
+                fixes.any { it.startsWith("Change the declaration to") } shouldBe true
             }
         }
 

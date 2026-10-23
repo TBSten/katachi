@@ -1,7 +1,6 @@
 package me.tbsten.katachi.konsist.declarations.internal
 
 import java.io.File
-import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.FileConstraintFailure
 import me.tbsten.katachi.dsl.FileConstraintSubject
 import me.tbsten.katachi.konsist.KatachiKonsistNoKotlinFilesException
@@ -21,13 +20,11 @@ private data class KtFileFactsKey(val absolutePath: String)
  * The files are parsed the way `konsist { }` parses them (`konsistScopeOf`), so a file both read
  * in one run is parsed once.
  *
- * @param declaredAt unused now that no exception names the call site. TODO: drop it, and the argument KtFileContentConstraint passes, now that nothing reads it.
  * @param rulesOf the rules of one file, given project relative.
  * @throws KatachiKonsistNoKotlinFilesException when the covered files hold no `.kt` file.
  */
 internal fun judgeKtFiles(
     subject: FileConstraintSubject,
-    declaredAt: DeclarationSite,
     rulesOf: (file: String) -> FileRules,
 ): List<FileConstraintFailure> =
     readKtFiles(subject) { file -> Result.success(rulesOf(file)) }.flatMap { input ->
