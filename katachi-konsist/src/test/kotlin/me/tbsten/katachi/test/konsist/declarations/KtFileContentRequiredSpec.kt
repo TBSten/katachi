@@ -14,10 +14,19 @@ import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.konsist.declarations.KtFileContentScope
+import me.tbsten.katachi.konsist.declarations.internal.failureOf
+import me.tbsten.katachi.konsist.declarations.internal.judgeKtFile
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /** [body] as a file of package `com.example`: its first line is line 3. */
 private fun kt(body: String): String = "package com.example\n\n" + body.trimIndent() + "\n"
+
+/** The fixes [block] gives to the failures of [source], one list per failure, in the order the report lists them. */
+private fun fixesOf(source: String, block: KtFileContentScope.() -> Unit): List<List<String>> {
+    val rules = rulesOf(fileName = "Sample", block = block)
+    return judgeKtFile(factsOf(source), rules).map { failureOf(it, SAMPLE_PATH, rules) }.map { failure -> failure.howToFix.map { it.text } }
+}
 
 /**
  * Which lines are required: the ones written with `required(...)`, whatever their name. A line
@@ -119,6 +128,43 @@ class KtFileContentRequiredSpec : FreeSpec({
             judged(kt("sealed interface HomeAction"), block = block).shouldBeEmpty()
             judged(kt("sealed interface HomeAction\nsealed interface ListAction"), block = block).shouldBeEmpty()
             judged(kt("class Sample"), block = block) shouldBe listOf("*Action | Missing: sealed interface *Action")
+        }
+
+        "{A,B} の required は、どれか 1 つがあれば満たし、どれも無ければ足りない" {
+            val block: KtFileContentScope.() -> Unit = { required(`class`, "{Alpha,Beta}") }
+            judged(kt("class Alpha"), block = block).shouldBeEmpty()
+            judged(kt("class Alpha\nclass Beta"), block = block).shouldBeEmpty()
+            judged(kt("class Extra"), block = block) shouldBe listOf(
+                "Extra (line 3) | Not allowed: class Extra",
+                "{Alpha,Beta} | Missing: class {Alpha,Beta}",
+            )
+        }
+
+        "* のある required に名前だけ当たる宣言は、形違いにまとめず余計と足りないの 2 件" {
+            judged(kt("interface HomeAction")) { required(sealed, `interface`, "*Action") } shouldBe listOf(
+                "HomeAction (line 3) | Not allowed: interface HomeAction",
+                "*Action | Missing: sealed interface *Action",
+            )
+        }
+
+        "名前がパターンの required の行には、その名前への改名を勧めない" {
+            fixesOf(kt("interface HomeAction")) { required(sealed, `interface`, "*Action") }.first() shouldNotContain
+                "Rename it to *Action"
+            val braces = fixesOf(kt("class Extra")) { required(`class`, "{Alpha,Beta}") }.first()
+            braces shouldNotContain "Rename it to {Alpha,Beta}"
+            braces shouldContain "Move it to a file of another role"
+            // A name that is not a pattern is still offered.
+            fixesOf(kt("class Extra")) { required(`class`, fileName) }.first() shouldContain "Rename it to Sample"
+        }
+
+        "名前がパターンの required の行が足りないとき、別の形で許された宣言を Found に出さない" {
+            val block: KtFileContentScope.() -> Unit = {
+                required(sealed, type, "*Action")
+                allow(data, `class`, "*")
+            }
+            judged(kt("data class HomeAction"), block = block) shouldBe
+                listOf("*Action | Missing: sealed (class or interface) *Action")
+            fixesOf(kt("data class HomeAction"), block).single().none { it.startsWith("Change the declaration") } shouldBe true
         }
 
         "* の無い allow は、その宣言が無くても違反にならない" {

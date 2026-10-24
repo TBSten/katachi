@@ -47,7 +47,7 @@ class KtFileContentParameterSpec : FreeSpec({
             )
         }
 
-        "名前のパターン *Id は Id で終わる名前に当たる（* のある行は任意なので、外れた宣言は許可されないとだけ出る）" {
+        "名前のパターン *Id は Id で終わる名前に当たる" {
             judged(kt("fun find(userId: String, groupId: String) {}\nfun findBy(user: String) {}")) {
                 allow(`fun`, "find*")("*Id: String")
                 required(`fun`, "find")("*Id: String", "*Id: String")

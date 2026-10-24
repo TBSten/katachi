@@ -37,9 +37,11 @@ private fun unexpectedDeclarationFailure(finding: UnexpectedDeclaration, path: S
     val fixes = buildList {
         if (list.rules.allowsOnlyByNot()) add(onlyNotLinesFix("declarations", site, "allow(anythingElse)"))
         // Renaming is only offered for the file's own declarations: a member is more often in the
-        // wrong place than misnamed, and the remaining fixes say so.
+        // wrong place than misnamed, and the remaining fixes say so. A name that is a pattern
+        // (`*Action`, `{Alpha,Beta}`) is no name to rename to.
         if (container == null) {
-            finding.unclaimed.singleOrNull()?.takeIf { rule -> rule.shapes.any { it.kind == fact.kind } }
+            finding.unclaimed.singleOrNull()
+                ?.takeIf { rule -> !rule.name.hasWildcard && rule.shapes.any { it.kind == fact.kind } }
                 ?.let { add(FileConstraintFix("Rename it to ${it.name.written}")) }
         }
         list.rules.anythingElse.firstOrNull { it.allowsOnlyVisibilities() }?.let { rule ->

@@ -5,10 +5,10 @@ import me.tbsten.katachi.konsist.declarations.internal.requiredWriter
 
 /**
  * The `required(...)` lines for a function: written as `allow(...)` is, and the function has to be
- * there -- that name when it has no `*`, one or more matching functions when it has one. The
+ * there -- that name when it is not a pattern, at least one matching function when it is. The
  * parameters and the return type are chained after it.
  *
- * ## Example 1: a composable named after the file, with optional previews
+ * ## Example 1: a composable named after the file, and previews that may be there
  * ```kt
  * ktFileContent {
  *     required(annotated("Composable"), public, `fun`, fileName)

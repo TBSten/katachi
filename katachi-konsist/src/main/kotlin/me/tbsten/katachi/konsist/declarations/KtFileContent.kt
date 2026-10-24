@@ -20,8 +20,8 @@ private const val KT_FILE_CONTENT_NAME: String = "ktFileContent"
  * - **Nothing is special by default.** Private declarations and imports of the same role count
  *   like any other; open them up with `allow(private, anythingElse)` or `` `import`("**") ``.
  * - **`allow(...)` lets a declaration be, `required(...)` asks for it.** A required line with no
- *   `*` in its name asks for that name, one with `*` for one or more declarations it matches.
- *   An import line only allows.
+ *   pattern for its name asks for that name; a pattern (`*`, `{A,B}` and the like) asks for at
+ *   least one declaration it matches. An import line only allows.
  * - **The block runs once per file**, so [DeclarationListScope.fileName] and
  *   [DeclarationListScope.captureValue] are that file's own `String`s.
  *

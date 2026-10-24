@@ -9,8 +9,9 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  *
  * - **`allow(...)` lets a declaration be; `required(...)` also asks for it.** A required line is an
  *   allow list entry too: what it matches need not be written again with `allow(...)`.
- * - **A name without `*` asks for that name, one with `*` for one or more declarations it
- *   matches**: `required(sealed, type, "*Action")` is at least one sealed `...Action`.
+ * - **A name that is not a pattern asks for that name; a pattern (`*`, `{A,B}` and the like) asks
+ *   for at least one declaration it matches**: `required(sealed, type, "*Action")` is at least
+ *   one sealed `...Action`.
  * - **The kinds written are the allow list, as with `allow(...)`**: a kind written with
  *   `required(...)` only allows what its lines match, and a kind not written is not looked at.
  *

@@ -6,8 +6,8 @@ import me.tbsten.katachi.konsist.declarations.internal.requiredWriter
 /**
  * The `required(...)` lines for a class, an interface or an object: written as `allow(...)` is --
  * the modifiers and annotations (none to ten of them), then the kind, then the name -- and the
- * declaration has to be there. A name without `*` asks for that name, one with `*` for one or more
- * declarations it matches. A required line is an allow list entry too.
+ * declaration has to be there. A name that is not a pattern asks for that name; a pattern asks for
+ * at least one declaration it matches. A required line is an allow list entry too.
  *
  * ## Example 1: a view model named after the file, and its actions
  * ```kt

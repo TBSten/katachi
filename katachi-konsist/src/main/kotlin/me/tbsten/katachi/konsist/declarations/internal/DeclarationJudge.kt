@@ -135,9 +135,14 @@ private fun judgeList(
     }
 
     for (rule in unclaimed) {
-        val found = facts.withIndex().firstOrNull { (index, fact) ->
-            nameMatches(rule, fact) && decisions[index].let { it is Decision.Allowed || it is Decision.AllowedByAnythingElse }
-        }?.value
+        // A name that is a pattern names no one declaration, so none is "the one meant, in another shape".
+        val found = if (rule.name.hasWildcard) {
+            null
+        } else {
+            facts.withIndex().firstOrNull { (index, fact) ->
+                nameMatches(rule, fact) && decisions[index].let { it is Decision.Allowed || it is Decision.AllowedByAnythingElse }
+            }?.value
+        }
         missing(containers.size, MissingDeclaration(rule, list, found))
     }
     return ListJudgement(judged, unclaimed)
