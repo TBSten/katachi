@@ -19,8 +19,9 @@ private const val KT_FILE_CONTENT_NAME: String = "ktFileContent"
  *   given a `{ }`.
  * - **Nothing is special by default.** Private declarations and imports of the same role count
  *   like any other; open them up with `allow(private, anythingElse)` or `` `import`("**") ``.
- * - **A name without `*` is required, one with `*` is optional**, as in `layout { }`;
- *   `.optional()` makes a line optional.
+ * - **`allow(...)` lets a declaration be, `required(...)` asks for it.** A required line with no
+ *   `*` in its name asks for that name, one with `*` for one or more declarations it matches.
+ *   An import line only allows.
  * - **The block runs once per file**, so [DeclarationListScope.fileName] and
  *   [DeclarationListScope.captureValue] are that file's own `String`s.
  *
@@ -55,8 +56,8 @@ private const val KT_FILE_CONTENT_NAME: String = "ktFileContent"
  *         `import`("dagger.hilt.**")
  *         `import`("javax.inject.**")
  *
- *         allow(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
- *             allow(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+ *         required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
+ *             required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
  *             allow(public, `fun`, "on*")().returns("Unit")
  *             allow(private, anythingElse)
  *         }
@@ -69,11 +70,11 @@ private const val KT_FILE_CONTENT_NAME: String = "ktFileContent"
  * "UseCase".role {
  *     layout { "core/domain" / mainSourceSet / kotlin / "com/example/domain" / "*UseCase".ktFile() }
  *     ktFileContent {
- *         allow(`interface`, fileName) {
- *             allow(operator, `fun`, "invoke")
+ *         required(`interface`, fileName) {
+ *             required(operator, `fun`, "invoke")
  *         }
- *         allow(`class`, "Default$fileName").superclass(fileName) {
- *             allow(override, `fun`, "invoke")
+ *         required(`class`, "Default$fileName").superclass(fileName) {
+ *             required(override, `fun`, "invoke")
  *             allow(private, anythingElse)
  *         }
  *     }
@@ -85,7 +86,7 @@ private const val KT_FILE_CONTENT_NAME: String = "ktFileContent"
  * @throws KatachiKtFileContentPatternException when a name, path or type is not a pattern katachi reads.
  * @throws KatachiKtFileContentLineException when a line is written in a way that means nothing,
  *   including a value of the vocabulary (a modifier, an annotation, a kind, `anythingElse`) that has
- *   not been passed to `allow(...)` when the evaluation of the block ends.
+ *   not been passed to `allow(...)` or `required(...)` when the evaluation of the block ends.
  * @throws me.tbsten.katachi.dsl.KatachiFileConstraintWithoutLayoutException when the role it is
  *   written on declares no `layout { }`, so nothing could ever be covered.
  */
@@ -121,7 +122,7 @@ public fun ktFileContent(block: KtFileContentScope.() -> Unit) {
  * @throws KatachiKtFileContentPatternException when a name, path or type is not a pattern katachi reads.
  * @throws KatachiKtFileContentLineException when a line is written in a way that means nothing,
  *   including a value of the vocabulary (a modifier, an annotation, a kind, `anythingElse`) that has
- *   not been passed to `allow(...)` when the evaluation of the block ends.
+ *   not been passed to `allow(...)` or `required(...)` when the evaluation of the block ends.
  * @throws me.tbsten.katachi.dsl.KatachiFileConstraintWithoutLayoutException when the role it is
  *   written on declares no `layout { }`, so nothing could ever be covered.
  */

@@ -88,7 +88,8 @@ private fun packageTable(rules: List<PackageRule>): String = table(listOf("Packa
 }
 
 private fun importTable(rules: List<ImportRule>): String = table(listOf("Import", "")) {
-    rules.map { rule -> listOf(code(rule.path.written) + exceptCells(rule.except), statusOf(rule.prohibited, rule.required)) } +
+    // An import line only allows: it is never required.
+    rules.map { rule -> listOf(code(rule.path.written) + exceptCells(rule.except), statusOf(rule.prohibited, required = false)) } +
         listOfNotNull(listOf(ANYTHING_ELSE, NOT_ALLOWED).takeIf { rules.all { it.prohibited } })
 }
 

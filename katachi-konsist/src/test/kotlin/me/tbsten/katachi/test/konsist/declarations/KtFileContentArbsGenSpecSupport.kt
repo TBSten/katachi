@@ -129,7 +129,8 @@ private fun GenContext.genAllowedLine(placement: GenPlacement, depth: Int): GenL
             .takeIf { !bare && kind == GenKind.Function && random.chance(40) },
         anyArgs = !bare && kind == GenKind.Function && random.chance(15),
         returnType = if (!bare && kind == GenKind.Function && random.chance(40)) random.pick(RETURN_SAMPLES).pattern else null,
-        optional = !bare && style < 60 && random.chance(20),
+        // Most lines named in full are required, as before; now and then a line with `*` is too.
+        required = !bare && if (style < 60) !random.chance(20) else random.chance(25),
         members = if (!bare && kinds.first().isType && depth < 2 && stemsLeft > 8 && random.chance(35)) {
             genList(GenPlacement.ClassBody, depth + 1)
         } else {
@@ -153,6 +154,7 @@ private fun GenContext.fileNameLine(): GenLine? {
         name = name,
         superclasses = if (name == "Default{F}") listOf(FILE_SUPERTYPE.pattern) else emptyList(),
         returnType = if (kind == GenKind.Function && random.chance(50)) UNIT_SAMPLE.pattern else null,
+        required = true,
     )
 }
 

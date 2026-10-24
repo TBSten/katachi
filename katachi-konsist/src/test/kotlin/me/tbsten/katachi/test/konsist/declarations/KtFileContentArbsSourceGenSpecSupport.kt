@@ -20,7 +20,8 @@ internal fun GenContext.sourceOf(list: GenList, placement: GenPlacement, depth: 
 private fun GenContext.instancesOf(line: GenLine, index: Int, placement: GenPlacement, depth: Int, container: GenKind?): List<SrcDecl> {
     if (line.prohibited) return emptyList()
     val count = when {
-        line.isRequired -> 1
+        line.isRequired && '*' !in line.name -> 1
+        line.isRequired -> random.nextInt(1, 3)
         '*' !in line.name -> random.nextInt(0, 2)
         else -> random.nextInt(0, 3)
     }
@@ -175,7 +176,7 @@ internal fun GenContext.importsOf(check: Boolean, options: GenOptions): Pair<Lis
         return emptyList<GenImportLine>() to paths.map(::importOf)
     }
     val lines = ALLOWED_IMPORT_PATTERNS.shuffled(random).take(random.nextInt(1, 4)).map { GenImportLine(it) }.toMutableList()
-    if (random.chance(40)) lines += GenImportLine(REQUIRED_IMPORT, optional = random.chance(30))
+    if (random.chance(40)) lines += GenImportLine(EXACT_IMPORT)
     if (options.exceptImport) {
         val (pattern, except) = PROHIBITED_IMPORTS.first { it.second.isNotEmpty() }
         lines += GenImportLine(pattern, prohibited = true, except = except)
@@ -188,7 +189,7 @@ internal fun GenContext.importsOf(check: Boolean, options: GenOptions): Pair<Lis
     for (line in lines.filterNot { it.prohibited }) {
         IMPORT_TABLE.keys.filter { importLineMatches(line.pattern, line.except, it) && importAllowed(lines, it) }
             .shuffled(random).take(random.nextInt(0, 3)).forEach { paths += it }
-        if (line.isRequired) paths += line.pattern
+        if (line.pattern == EXACT_IMPORT && random.chance(70)) paths += line.pattern
     }
     paths += annotationImports
     return lines.shuffled(random) to paths.shuffled(random).map(::importOf)

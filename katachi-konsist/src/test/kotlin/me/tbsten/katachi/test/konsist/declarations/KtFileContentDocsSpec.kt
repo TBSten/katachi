@@ -28,8 +28,8 @@ class KtFileContentDocsSpec : FreeSpec({
                     `import`("kotlin.**")
                     `import`("com.example.domain.**")
                     not.`import`("android.**").except("android.os.**")
-                    allow(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
-                            allow(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+                    required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
+                            required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
                             allow(public, `fun`, "on*")().returns("Unit")
                             allow(private, anythingElse)
                         }
@@ -74,9 +74,9 @@ class KtFileContentDocsSpec : FreeSpec({
                 ktFileContent {
                     `package`(matchingDirectory)
                     not.`package`("com.example.legacy.**")
-                    allow(`interface`, fileName) {
-                        allow(`class`, "Params") { }
-                        allow(operator, `fun`, "invoke")
+                    required(`interface`, fileName) {
+                        required(`class`, "Params") { }
+                        required(operator, `fun`, "invoke")
                     }
                     not.allow(`class`, "*Impl").except("DefaultImpl")
                     allow(internal or private, anythingElse)
@@ -130,7 +130,7 @@ class KtFileContentDocsSpec : FreeSpec({
             "Repository".role {
                 example("UserRepository")
                 layout { "data" / "*Repository".ktFile() }
-                ktFileContent { if (fileName != "UserRepository") allow(`class`, fileName) }
+                ktFileContent { if (fileName != "UserRepository") required(`class`, fileName) }
             }
         }.getValue("Repository.md")
 
@@ -141,7 +141,7 @@ class KtFileContentDocsSpec : FreeSpec({
         val page = rolePageOf {
             "Repository".role {
                 layout { "data" / "*Repository".ktFile() }
-                ktFileContent { allow(`interface`, fileName) }
+                ktFileContent { required(`interface`, fileName) }
             }
         }.getValue("Repository.md")
 
@@ -192,7 +192,7 @@ class KtFileContentDocsSpec : FreeSpec({
                     ":feature:*".module {
                         "build.gradle.kts".file()
                         mainSourceSet / kotlin / "*Screen".ktFile()
-                        ktFileContent { allow(`class`, fileName) }
+                        ktFileContent { required(`class`, fileName) }
                     }
                 }
             }
@@ -206,7 +206,7 @@ class KtFileContentDocsSpec : FreeSpec({
             "Screen".role {
                 example("Home")
                 layout { "ui" / "*".ktFile() }
-                ktFileContent { allow(`val`, "`a|b`") }
+                ktFileContent { required(`val`, "`a|b`") }
             }
         }.getValue("Screen.md")
 

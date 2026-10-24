@@ -24,15 +24,15 @@ class KtFileContentAllowSpec : FreeSpec({
     "種類ごとの allow" - {
         "class・interface・object・type: 修飾子 0 個・数個・10 個" {
             dumpOf {
-                allow(`class`, "A")
-                allow(annotated("Keep"), public, data, `class`, "B")
-                allow(
+                required(`class`, "A")
+                required(annotated("Keep"), public, data, `class`, "B")
+                required(
                     annotated("A1"), annotated("A2"), annotated("A3"), annotated("A4"), annotated("A5"),
                     annotated("A6"), annotated("A7"), annotated("A8"), annotated("A9"), sealed,
                     type, "C",
                 )
-                allow(`interface`, "D")
-                allow(`object`, "E")
+                required(`interface`, "D")
+                required(`object`, "E")
             } shouldBe """
                 required class{} A
                 required class{@Keep public data} B
@@ -44,9 +44,9 @@ class KtFileContentAllowSpec : FreeSpec({
 
         "fun: 修飾子 0 個・数個・10 個" {
             dumpOf {
-                allow(`fun`, "a")
-                allow(annotated("Composable"), public, suspend, `fun`, "b")
-                allow(
+                required(`fun`, "a")
+                required(annotated("Composable"), public, suspend, `fun`, "b")
+                required(
                     annotated("A1"), annotated("A2"), annotated("A3"), annotated("A4"), annotated("A5"),
                     annotated("A6"), annotated("A7"), annotated("A8"), annotated("A9"), inline,
                     `fun`, "c",
@@ -60,9 +60,9 @@ class KtFileContentAllowSpec : FreeSpec({
 
         "val・var: 修飾子 0 個・数個・10 個と型" {
             dumpOf {
-                allow(`val`, "a")
-                allow(annotated("Keep"), private, const, `val`, "B", "String")
-                allow(
+                required(`val`, "a")
+                required(annotated("Keep"), private, const, `val`, "B", "String")
+                required(
                     annotated("A1"), annotated("A2"), annotated("A3"), annotated("A4"), annotated("A5"),
                     annotated("A6"), annotated("A7"), annotated("A8"), annotated("A9"), lateinit,
                     `var`, "c", "Int",
@@ -76,9 +76,9 @@ class KtFileContentAllowSpec : FreeSpec({
 
         "typealias: 修飾子 0 個・数個・10 個" {
             dumpOf {
-                allow(`typealias`, "A")
-                allow(annotated("Keep"), private, expect, `typealias`, "B")
-                allow(
+                required(`typealias`, "A")
+                required(annotated("Keep"), private, expect, `typealias`, "B")
+                required(
                     annotated("A1"), annotated("A2"), annotated("A3"), annotated("A4"), annotated("A5"),
                     annotated("A6"), annotated("A7"), annotated("A8"), annotated("A9"), internal,
                     `typealias`, "C",
@@ -92,9 +92,9 @@ class KtFileContentAllowSpec : FreeSpec({
 
         "fun interface: 修飾子 0 個・数個・10 個" {
             dumpOf {
-                allow(`fun`, `interface`, "AListener")
-                allow(annotated("Keep"), public, expect, `fun`, `interface`, "BListener")
-                allow(
+                required(`fun`, `interface`, "AListener")
+                required(annotated("Keep"), public, expect, `fun`, `interface`, "BListener")
+                required(
                     annotated("A1"), annotated("A2"), annotated("A3"), annotated("A4"), annotated("A5"),
                     annotated("A6"), annotated("A7"), annotated("A8"), annotated("A9"), internal,
                     `fun`, `interface`, "CListener",
@@ -126,8 +126,8 @@ class KtFileContentAllowSpec : FreeSpec({
 
         "書いた順ではなく、どの順に渡しても同じ行になる" {
             dumpOf {
-                allow(data, public, `class`, "A")
-                allow(public, data, `class`, "B")
+                required(data, public, `class`, "A")
+                required(public, data, `class`, "B")
             } shouldBe """
                 required class{public data} A
                 required class{public data} B
@@ -136,12 +136,12 @@ class KtFileContentAllowSpec : FreeSpec({
 
         "戻り値に後ろの書き方をつなげる" {
             dumpOf(fileName = "HomeViewModel") {
-                allow(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
+                required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
                     allow(public, `fun`, "on*")().returns("Unit")
-                    allow(`fun`, "load")("id: String", "count: Int")
-                    allow(`val`, "isLoading", "Boolean").optional()
+                    required(`fun`, "load")("id: String", "count: Int")
+                    allow(`val`, "isLoading", "Boolean")
                 }
-                allow(`typealias`, "Callback").optional()
+                allow(`typealias`, "Callback")
             } shouldBe """
                 required class{@HiltViewModel public} HomeViewModel supers=[ViewModel]
                   members:
@@ -192,7 +192,7 @@ class KtFileContentAllowSpec : FreeSpec({
 
         "クラスの { } の中の not.allow" {
             dumpOf {
-                allow(`class`, "A") {
+                required(`class`, "A") {
                     allow(`val`, "*")
                     not.allow(public, `var`, "*").except("isEnabled")
                 }
@@ -210,20 +210,20 @@ class KtFileContentAllowSpec : FreeSpec({
                 it.line shouldBe "not (anything)"
             }
             shouldThrow<KatachiKtFileContentLineException> {
-                rulesOf { allow(`class`, "A") { not.allow(private, anythingElse) } }
+                rulesOf { required(`class`, "A") { not.allow(private, anythingElse) } }
             }.line shouldBe "not private (anything)"
         }
     }
 
     "付けられない組み合わせ" - {
         "同時に付けられない修飾子は Conflicting" {
-            modifierErrorOf { allow(public, internal, `class`, "X") }.let {
+            modifierErrorOf { required(public, internal, `class`, "X") }.let {
                 it.problem shouldBe KtFileContentModifierProblem.Conflicting
                 it.modifiers shouldBe listOf("public", "internal")
                 it.line shouldBe "public internal class X"
             }
             modifierErrorOf {
-                allow(
+                required(
                     annotated("A1"), annotated("A2"), annotated("A3"), annotated("A4"), annotated("A5"),
                     annotated("A6"), annotated("A7"), annotated("A8"), data, sealed,
                     `class`, "Y",
@@ -232,17 +232,17 @@ class KtFileContentAllowSpec : FreeSpec({
         }
 
         "種類に付けられない修飾子は NotApplicable" {
-            modifierErrorOf { allow(data, `interface`, "X") }.let {
+            modifierErrorOf { required(data, `interface`, "X") }.let {
                 it.problem shouldBe KtFileContentModifierProblem.NotApplicable
                 it.kind shouldBe "interface"
             }
-            modifierErrorOf { allow(const, `fun`, "x") }.kind shouldBe "fun"
-            modifierErrorOf { allow(lateinit, `val`, "x") }.kind shouldBe "val"
-            modifierErrorOf { allow(data, `typealias`, "X") }.kind shouldBe "typealias"
+            modifierErrorOf { required(const, `fun`, "x") }.kind shouldBe "fun"
+            modifierErrorOf { required(lateinit, `val`, "x") }.kind shouldBe "val"
+            modifierErrorOf { required(data, `typealias`, "X") }.kind shouldBe "typealias"
         }
 
         "fun interface の種類に interface が無いと NotApplicable" {
-            modifierErrorOf { allow(`fun`, `class`, "X") }.let {
+            modifierErrorOf { required(`fun`, `class`, "X") }.let {
                 it.problem shouldBe KtFileContentModifierProblem.NotApplicable
                 it.modifiers shouldBe listOf("fun")
                 it.kind shouldBe "class"
@@ -251,9 +251,9 @@ class KtFileContentAllowSpec : FreeSpec({
         }
 
         "クラスの中だけの修飾子をファイル直下に書くと OnlyInClassBody" {
-            modifierErrorOf { allow(override, `fun`, "x") }.problem shouldBe KtFileContentModifierProblem.OnlyInClassBody
+            modifierErrorOf { required(override, `fun`, "x") }.problem shouldBe KtFileContentModifierProblem.OnlyInClassBody
             modifierErrorOf { allow(protected, anythingElse) }.problem shouldBe KtFileContentModifierProblem.OnlyInClassBody
-            dumpOf { allow(`class`, "A") { allow(override, `fun`, "x") } } shouldBe """
+            dumpOf { required(`class`, "A") { required(override, `fun`, "x") } } shouldBe """
                 required class{} A
                   members:
                     required fun{override} x

@@ -26,7 +26,6 @@ internal fun failureOf(finding: KtFileFinding, path: String, rules: FileRules): 
     is MissingDeclaration -> missingDeclarationFailure(finding, path)
     is UnexpectedImport -> unexpectedImportFailure(finding, path, rules.declaredAt)
     is ProhibitedImport -> prohibitedImportFailure(finding, path)
-    is MissingImport -> missingImportFailure(finding, path)
     is UnexpectedPackage -> unexpectedPackageFailure(finding, path)
     is ProhibitedPackage -> prohibitedPackageFailure(finding, path)
 }
@@ -52,7 +51,7 @@ private fun unexpectedDeclarationFailure(finding: UnexpectedDeclaration, path: S
                 if (container == null) "Move it to a file of another role" else "Move it out of ${renderContainer(container)}",
             ),
         )
-        add(allowItFix(site, "allow(`${fact.kind.keyword}`, ${namePatternLiteral(fact.name)}).optional()"))
+        add(allowItFix(site, "allow(`${fact.kind.keyword}`, ${namePatternLiteral(fact.name)})"))
     }
     return FileConstraintFailure(
         file = path,
@@ -121,11 +120,15 @@ private fun missingDeclarationFailure(finding: MissingDeclaration, path: String)
         },
         howToFix = finding.found?.let { found -> foundFixes(found, rule) } ?: listOf(
             FileConstraintFix(if (container == null) "Declare it in this file" else "Declare it in ${renderContainer(container)}"),
-            FileConstraintFix("If some files do not need it, make it optional at ${rule.declaredAt}"),
+            notRequiredFix(rule),
         ),
         ruleDeclaredAt = rule.declaredAt,
     )
 }
+
+/** For a line some files can do without: write it with `allow(...)`, which lets it be without asking for it. */
+private fun notRequiredFix(rule: DeclarationRule): FileConstraintFix =
+    FileConstraintFix("If some files do not need it, write allow(...) in place of required(...) at ${rule.declaredAt}")
 
 /**
  * The fixes of a missing line whose name a declaration of another shape has: the declaration is
@@ -134,7 +137,7 @@ private fun missingDeclarationFailure(finding: MissingDeclaration, path: String)
 private fun foundFixes(found: DeclarationFact, rule: DeclarationRule): List<FileConstraintFix> = listOf(
     FileConstraintFix("Change the declaration" + (found.line?.let { " at line $it" } ?: "") + " to: ${renderRule(rule)}"),
     FileConstraintFix("Or change the line at ${rule.declaredAt} if the declaration is right"),
-    FileConstraintFix("If some files do not need it, make it optional at ${rule.declaredAt}"),
+    notRequiredFix(rule),
 )
 
 /** The fixes of an import that should not be there: remove it, or allow it at [site] with [code]. */
@@ -155,10 +158,9 @@ private fun unexpectedImportFailure(finding: UnexpectedImport, path: String, sit
         declaration = "import $import",
         line = finding.import.line,
         reasons = listOf(FileConstraintReason(NOT_ALLOWED, reason)),
-        // An import allowed in every file of the role would be required in each, hence .optional().
         howToFix = listOfNotNull(
             onlyNotLinesFix("imports", site, "`import`(\"**\")").takeIf { finding.allowed.isEmpty() },
-        ) + removeImportFixes(site, "`import`(${kotlinString(import)}).optional()", allowing = true),
+        ) + removeImportFixes(site, "`import`(${kotlinString(import)})", allowing = true),
         ruleDeclaredAt = site,
     )
 }
@@ -175,21 +177,6 @@ private fun prohibitedImportFailure(finding: ProhibitedImport, path: String): Fi
         ),
         howToFix = removeImportFixes(finding.rule.declaredAt, ".except(${kotlinString(import)})", allowing = false),
         ruleDeclaredAt = finding.rule.declaredAt,
-    )
-}
-
-private fun missingImportFailure(finding: MissingImport, path: String): FileConstraintFailure {
-    val rule = finding.rule
-    return FileConstraintFailure(
-        file = path,
-        declaration = "import ${rule.path.written}",
-        line = null,
-        reasons = listOf(FileConstraintReason(MISSING, renderImport(rule))),
-        howToFix = listOf(
-            FileConstraintFix("Add the import"),
-            FileConstraintFix("If some files do not need it, make it optional at ${rule.declaredAt}"),
-        ),
-        ruleDeclaredAt = rule.declaredAt,
     )
 }
 

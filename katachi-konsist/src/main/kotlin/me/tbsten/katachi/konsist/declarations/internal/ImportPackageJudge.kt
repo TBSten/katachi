@@ -6,14 +6,14 @@ package me.tbsten.katachi.konsist.declarations.internal
  * is its path, and a file has one package.
  */
 
-/** What [judgeImports] found: one finding per wrong import in line order, then the missing imports. */
-internal class ImportFindings(val located: List<KtFileFinding>, val missing: List<KtFileFinding>)
-
-/** Judges [imports] against [rules]. Nothing is looked at when no import line was written. */
-internal fun judgeImports(rules: List<ImportRule>, imports: List<ImportFact>): ImportFindings {
-    if (rules.isEmpty()) return ImportFindings(emptyList(), emptyList())
+/**
+ * Judges [imports] against [rules]: one finding per wrong import, in line order. Nothing is looked
+ * at when no import line was written. An import line only allows, so no import is ever missing.
+ */
+internal fun judgeImports(rules: List<ImportRule>, imports: List<ImportFact>): List<KtFileFinding> {
+    if (rules.isEmpty()) return emptyList()
     val allowed = rules.filterNot { it.prohibited }
-    val located = imports.mapNotNull { import ->
+    return imports.mapNotNull { import ->
         val prohibitedBy = rules.firstOrNull { it.prohibited && importMatches(it, import.path) }
         when {
             prohibitedBy != null -> ProhibitedImport(import, prohibitedBy)
@@ -21,10 +21,6 @@ internal fun judgeImports(rules: List<ImportRule>, imports: List<ImportFact>): I
             else -> UnexpectedImport(import, allowed)
         }
     }
-    val missing = allowed
-        .filter { rule -> rule.required && imports.none { importMatches(rule, it.path) } }
-        .map(::MissingImport)
-    return ImportFindings(located, missing)
 }
 
 private fun importMatches(rule: ImportRule, path: String): Boolean =

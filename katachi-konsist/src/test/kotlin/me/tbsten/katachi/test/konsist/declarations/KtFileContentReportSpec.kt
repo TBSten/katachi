@@ -27,8 +27,8 @@ class KtFileContentReportSpec : FreeSpec({
             paths = { "core/domain" / "*UseCase".ktFile() },
         ) {
             block = DeclarationSite.capture(); ktFileContent {
-                allow(`interface`, fileName)
-                defaultLine = DeclarationSite.capture(); allow(`class`, "Default$fileName").superclass(fileName)
+                required(`interface`, fileName)
+                defaultLine = DeclarationSite.capture(); required(`class`, "Default$fileName").superclass(fileName)
             }
         }
 
@@ -48,7 +48,7 @@ class KtFileContentReportSpec : FreeSpec({
                 - Rename it to DefaultGetUserUseCase
                 - Move it to a file of another role
                 - Allow it in ktFileContent { } at $block:
-                    allow(`class`, "GetUserUseCaseImpl").optional()
+                    allow(`class`, "GetUserUseCaseImpl")
 
             [UnsatisfiedFileConstraint] core/domain/GetUserUseCase.kt
               Role: Screen / FileConstraint: "ktFileContent"
@@ -58,7 +58,7 @@ class KtFileContentReportSpec : FreeSpec({
 
               How to fix:
                 - Declare it in this file
-                - If some files do not need it, make it optional at $defaultLine
+                - If some files do not need it, write allow(...) in place of required(...) at $defaultLine
         """.trimIndent()
     }
 
@@ -126,7 +126,7 @@ class KtFileContentReportSpec : FreeSpec({
               How to fix:
                 - Remove the import and receive what it needs from outside
                 - Allow it in ktFileContent { } at $block:
-                    `import`("android.content.Context").optional()
+                    `import`("android.content.Context")
 
             [UnsatisfiedFileConstraint] feature/home/HomeViewModel.kt
               Role: Screen / FileConstraint: "ktFileContent"
@@ -158,8 +158,8 @@ class KtFileContentReportSpec : FreeSpec({
             paths = { "src" / "*ViewModel".ktFile() },
         ) {
             ktFileContent {
-                classLine = DeclarationSite.capture(); allow(public, `class`, fileName).superclass("ViewModel") {
-                    allow(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+                classLine = DeclarationSite.capture(); required(public, `class`, fileName).superclass("ViewModel") {
+                    required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
                     allow(public, `fun`, "on*")().returns("Unit")
                     allow(private, anythingElse)
                 }
@@ -183,13 +183,12 @@ class KtFileContentReportSpec : FreeSpec({
                 - Make it private: private (anything) is allowed here
                 - Move it out of class HomeViewModel
                 - Allow it in ktFileContent { } at $classLine:
-                    allow(`var`, "isLoading").optional()
+                    allow(`var`, "isLoading")
         """.trimIndent()
     }
 
-    "(5) 足りないメンバと import、Found の行" {
+    "(5) 足りないメンバと Found の行。* の無い import の行は許すだけで足りないにならない" {
         var uiState: DeclarationSite? = null
-        var app: DeclarationSite? = null
         val violations = ktFileContentRun(
             "src/HomeViewModel.kt" to """
                 package com.example
@@ -201,26 +200,16 @@ class KtFileContentReportSpec : FreeSpec({
             paths = { "src" / "*ViewModel".ktFile() },
         ) {
             ktFileContent {
-                app = DeclarationSite.capture(); `import`("com.example.App")
-                allow(`class`, fileName) {
-                    uiState = DeclarationSite.capture(); allow(public, `val`, "uiState", "StateFlow<*>")
+                `import`("com.example.App")
+                required(`class`, fileName) {
+                    uiState = DeclarationSite.capture(); required(public, `val`, "uiState", "StateFlow<*>")
                     allow(private, anythingElse)
                 }
             }
         }
 
         violations.report() shouldBe """
-            Katachi check failed: 2 violations (FileConstraint: 2)
-
-            [UnsatisfiedFileConstraint] src/HomeViewModel.kt
-              Role: Screen / FileConstraint: "ktFileContent"
-              Declaration: import com.example.App
-              Missing: import com.example.App
-              Declared at: $app
-
-              How to fix:
-                - Add the import
-                - If some files do not need it, make it optional at $app
+            Katachi check failed: 1 violation (FileConstraint: 1)
 
             [UnsatisfiedFileConstraint] src/HomeViewModel.kt
               Role: Screen / FileConstraint: "ktFileContent"
@@ -232,7 +221,7 @@ class KtFileContentReportSpec : FreeSpec({
               How to fix:
                 - Change the declaration at line 4 to: public val uiState: StateFlow<*>
                 - Or change the line at $uiState if the declaration is right
-                - If some files do not need it, make it optional at $uiState
+                - If some files do not need it, write allow(...) in place of required(...) at $uiState
         """.trimIndent()
     }
 
@@ -243,7 +232,7 @@ class KtFileContentReportSpec : FreeSpec({
             paths = { "src" / "*UiState".ktFile() },
         ) {
             ktFileContent {
-                dataLine = DeclarationSite.capture(); allow(data, `class`, fileName) { allow(`val`, "*") }
+                dataLine = DeclarationSite.capture(); required(data, `class`, fileName) { allow(`val`, "*") }
             }
         }
 
@@ -316,10 +305,10 @@ class KtFileContentReportSpec : FreeSpec({
             ktFileContent {
                 `package`(matchingDirectory)
                 `import`("kotlin.**")
-                allow(`class`, fileName) { }
-                allow(data, `class`, "FooImpl")
+                required(`class`, fileName) { }
+                required(data, `class`, "FooImpl")
                 not.allow(`object`, "*")
-                allow(`interface`, "Missing")
+                required(`interface`, "Missing")
             }
         }
 

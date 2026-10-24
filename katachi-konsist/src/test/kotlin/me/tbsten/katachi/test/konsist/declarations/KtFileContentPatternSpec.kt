@@ -23,8 +23,8 @@ class KtFileContentPatternSpec : FreeSpec({
         "名前の閉じない [ {・空のクラス・空のパターンは Name" {
             patternErrorOf { allow(`class`, "Foo[") }.what shouldBe KtFileContentPatternKind.Name
             patternErrorOf { allow(`fun`, "{on,{do}}") }.what shouldBe KtFileContentPatternKind.Name
-            patternErrorOf { allow(`val`, "") }.what shouldBe KtFileContentPatternKind.Name
-            patternErrorOf { allow(`class`, "H") { allow(`fun`, "[]") } }.what shouldBe KtFileContentPatternKind.Name
+            patternErrorOf { required(`val`, "") }.what shouldBe KtFileContentPatternKind.Name
+            patternErrorOf { required(`class`, "H") { allow(`fun`, "[]") } }.what shouldBe KtFileContentPatternKind.Name
         }
 
         "import と package の空の区切り・区切りをまたぐ {..}・空のパターン" {
@@ -36,13 +36,13 @@ class KtFileContentPatternSpec : FreeSpec({
         }
 
         "型・親の型・アノテーション・except" {
-            patternErrorOf { allow(`val`, "x", "Map<{K, V>") }.what shouldBe KtFileContentPatternKind.Type
-            patternErrorOf { allow(`fun`, "x")("*: [z-a]") }.what shouldBe KtFileContentPatternKind.Type
-            patternErrorOf { allow(`fun`, "x")("[z-a]: String") }.what shouldBe KtFileContentPatternKind.ParameterName
-            patternErrorOf { allow(`fun`, "x").returns("") }.what shouldBe KtFileContentPatternKind.Type
-            patternErrorOf { allow(`class`, "A").superclass("Base{T") }.what shouldBe KtFileContentPatternKind.Superclass
-            patternErrorOf { allow(annotated("Pre[view"), `fun`, "x") }.what shouldBe KtFileContentPatternKind.Annotation
-            patternErrorOf { allow(annotated("androidx..Composable"), `fun`, "x") }.what shouldBe KtFileContentPatternKind.Annotation
+            patternErrorOf { required(`val`, "x", "Map<{K, V>") }.what shouldBe KtFileContentPatternKind.Type
+            patternErrorOf { required(`fun`, "x")("*: [z-a]") }.what shouldBe KtFileContentPatternKind.Type
+            patternErrorOf { required(`fun`, "x")("[z-a]: String") }.what shouldBe KtFileContentPatternKind.ParameterName
+            patternErrorOf { required(`fun`, "x").returns("") }.what shouldBe KtFileContentPatternKind.Type
+            patternErrorOf { required(`class`, "A").superclass("Base{T") }.what shouldBe KtFileContentPatternKind.Superclass
+            patternErrorOf { required(annotated("Pre[view"), `fun`, "x") }.what shouldBe KtFileContentPatternKind.Annotation
+            patternErrorOf { required(annotated("androidx..Composable"), `fun`, "x") }.what shouldBe KtFileContentPatternKind.Annotation
             patternErrorOf { not.allow(`class`, "*").except("a[b") }.what shouldBe KtFileContentPatternKind.Except
             patternErrorOf { not.`import`("a.**").except("a..b") }.what shouldBe KtFileContentPatternKind.Except
         }
@@ -83,9 +83,9 @@ class KtFileContentPatternSpec : FreeSpec({
     "型" - {
         "型の ? は nullable の印で、エラーにならず文字として当たる" {
             val rules = rulesOf {
-                allow(`val`, "name", "String?")
-                allow(`fun`, "find")("ids: List<String?>").returns("Int?")
-                allow(`class`, "A").superclass("Repository<User?>")
+                required(`val`, "name", "String?")
+                required(`fun`, "find")("ids: List<String?>").returns("Int?")
+                required(`class`, "A").superclass("Repository<User?>")
             }
             val declarations = rules.declarations?.lines.orEmpty()
 
@@ -102,7 +102,7 @@ class KtFileContentPatternSpec : FreeSpec({
             canonicalType("(String) -> Unit") shouldBe "(String)->Unit"
             canonicalType("kotlin.collections.List<*>") shouldBe "List<*>"
 
-            val type = rulesOf { allow(`val`, "uiState", "kotlinx.coroutines.flow.StateFlow< * >") }.firstDeclaration.propertyType
+            val type = rulesOf { required(`val`, "uiState", "kotlinx.coroutines.flow.StateFlow< * >") }.firstDeclaration.propertyType
             type?.written shouldBe "kotlinx.coroutines.flow.StateFlow< * >"
             type?.canonical?.pattern shouldBe "StateFlow<*>"
             type?.canonical?.matches("StateFlow<HomeUiState>") shouldBe true
@@ -112,7 +112,7 @@ class KtFileContentPatternSpec : FreeSpec({
 
         "親の型は型引数を書かなければ名前で比べる" {
             val superclasses = rulesOf {
-                allow(`class`, "A").superclass("Repository", "Repository<User>", "com.example.Base")
+                required(`class`, "A").superclass("Repository", "Repository<User>", "com.example.Base")
             }.firstDeclaration.superclasses
 
             superclasses.map { it.byName } shouldBe listOf(true, false, true)
@@ -137,7 +137,7 @@ class KtFileContentPatternSpec : FreeSpec({
 
         "アノテーションは . を含めば完全修飾名、含まなければ単純名で比べる" {
             val annotations = rulesOf {
-                allow(annotated("Composable", "androidx.compose.runtime.*"), `fun`, "x")
+                required(annotated("Composable", "androidx.compose.runtime.*"), `fun`, "x")
             }.firstDeclaration.shapes.single().modifiers.annotations
 
             annotations.map { it.qualified } shouldBe listOf(false, true)
@@ -146,7 +146,7 @@ class KtFileContentPatternSpec : FreeSpec({
         }
 
         "大文字と小文字を区別する" {
-            rulesOf { allow(`class`, "Home") }.firstDeclaration.name.matches("home") shouldBe false
+            rulesOf { required(`class`, "Home") }.firstDeclaration.name.matches("home") shouldBe false
         }
     }
 })

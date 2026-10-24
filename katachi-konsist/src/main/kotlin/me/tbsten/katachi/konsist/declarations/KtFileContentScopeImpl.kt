@@ -17,6 +17,8 @@ internal abstract class DeclarationListScopeImpl(
     DeclarationVocabulary by VocabularyImpl(list) {
     val writer: AllowWriter = AllowWriter(list, prohibited = false)
 
+    val requiredWriter: AllowWriter = AllowWriter(list, prohibited = false, required = true)
+
     override val fileName: String get() = list.session.input.fileName
 
     override fun captureValue(name: String): String = list.session.input.captureValue(name)

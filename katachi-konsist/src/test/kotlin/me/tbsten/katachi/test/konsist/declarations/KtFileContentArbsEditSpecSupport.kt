@@ -86,8 +86,8 @@ internal fun GenCase.shrinks(): List<GenCase> = buildList {
     if (packageLines.isNotEmpty()) add(copy(packageLines = emptyList()))
     if (importLines.isNotEmpty()) add(copy(importLines = emptyList()))
     imports.forEachIndexed { index, import ->
-        // The required import and the annotations' imports keep the case following its rules.
-        if (import.path != REQUIRED_IMPORT && !import.path.startsWith("com.example.annotations")) {
+        // The annotations' imports keep the case following its rules.
+        if (!import.path.startsWith("com.example.annotations")) {
             add(copy(imports = imports.filterIndexed { i, _ -> i != index }))
         }
     }

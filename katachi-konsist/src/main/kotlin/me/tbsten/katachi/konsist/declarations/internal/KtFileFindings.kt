@@ -59,7 +59,7 @@ internal class MismatchedDeclaration(
     val differences: List<String>,
 ) : KtFileFinding
 
-/** A required line nothing in the list matches. */
+/** A `required(...)` line nothing in the list matches. */
 internal class MissingDeclaration(
     val rule: DeclarationRule,
     val list: DeclarationListContext,
@@ -76,9 +76,6 @@ internal class UnexpectedImport(
 
 /** An import a `not.` import line matches. */
 internal class ProhibitedImport(val import: ImportFact, val rule: ImportRule) : KtFileFinding
-
-/** A required import line no import matches. */
-internal class MissingImport(val rule: ImportRule) : KtFileFinding
 
 /** A package (or the lack of one) no allowed package line matches. */
 internal class UnexpectedPackage(

@@ -11,7 +11,7 @@ import me.tbsten.katachi.konsist.declarations.internal.allowWriter
  * ```kt
  * ktFileContent {
  *     allow(private, `typealias`, "*")
- *     allow(`typealias`, fileName).optional()
+ *     allow(`typealias`, fileName)
  * }
  * ```
  */

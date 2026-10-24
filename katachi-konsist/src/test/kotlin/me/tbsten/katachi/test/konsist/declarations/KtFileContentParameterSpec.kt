@@ -29,19 +29,19 @@ class KtFileContentParameterSpec : FreeSpec({
     "一致" - {
         "名前と型の両方が当たれば通る" {
             judged(kt("fun save(name: String, count: Int) {}")) {
-                allow(`fun`, "save")("name: String", "count: Int")
+                required(`fun`, "save")("name: String", "count: Int")
             }.shouldBeEmpty()
         }
 
         "名前だけ違えば当たらず、実際の引数を Kotlin の書き方で出す" {
-            judged(kt("fun save(title: String) {}")) { allow(`fun`, "save")("name: String") } shouldBe listOf(
+            judged(kt("fun save(title: String) {}")) { required(`fun`, "save")("name: String") } shouldBe listOf(
                 "save (line 3) | Not allowed: fun save(title: String) | Expected: fun save(name: String) | " +
                     "Differs in: parameters (are (title: String), expected (name: String))",
             )
         }
 
         "型だけ違っても当たらない" {
-            judged(kt("fun save(name: Int) {}")) { allow(`fun`, "save")("name: String") } shouldBe listOf(
+            judged(kt("fun save(name: Int) {}")) { required(`fun`, "save")("name: String") } shouldBe listOf(
                 "save (line 3) | Not allowed: fun save(name: Int) | Expected: fun save(name: String) | " +
                     "Differs in: parameters (are (name: Int), expected (name: String))",
             )
@@ -50,7 +50,7 @@ class KtFileContentParameterSpec : FreeSpec({
         "名前のパターン *Id は Id で終わる名前に当たる（* のある行は任意なので、外れた宣言は許可されないとだけ出る）" {
             judged(kt("fun find(userId: String, groupId: String) {}\nfun findBy(user: String) {}")) {
                 allow(`fun`, "find*")("*Id: String")
-                allow(`fun`, "find")("*Id: String", "*Id: String")
+                required(`fun`, "find")("*Id: String", "*Id: String")
             } shouldBe listOf(
                 "findBy (line 4) | Not allowed: fun findBy(user: String)",
             )
@@ -74,7 +74,7 @@ class KtFileContentParameterSpec : FreeSpec({
 
         "並びが違えば当たらない" {
             judged(kt("fun save(count: Int, name: String) {}")) {
-                allow(`fun`, "save")("name: String", "count: Int")
+                required(`fun`, "save")("name: String", "count: Int")
             } shouldBe listOf(
                 "save (line 3) | Not allowed: fun save(count: Int, name: String) | Expected: fun save(name: String, count: Int) | " +
                     "Differs in: parameters (are (count: Int, name: String), expected (name: String, count: Int))",
@@ -83,8 +83,8 @@ class KtFileContentParameterSpec : FreeSpec({
 
         "数が多くても少なくても当たらない" {
             judged(kt("fun one(a: Int) {}\nfun three(a: Int, b: Int, c: Int) {}")) {
-                allow(`fun`, "one")("a: Int", "b: Int")
-                allow(`fun`, "three")("a: Int", "b: Int")
+                required(`fun`, "one")("a: Int", "b: Int")
+                required(`fun`, "three")("a: Int", "b: Int")
             } shouldBe listOf(
                 "one (line 3) | Not allowed: fun one(a: Int) | Expected: fun one(a: Int, b: Int) | " +
                     "Differs in: parameters (are (a: Int), expected (a: Int, b: Int))",
@@ -95,26 +95,26 @@ class KtFileContentParameterSpec : FreeSpec({
 
         "コロンの前後の空白は問わない" {
             judged(kt("fun save(name: String) {}\nfun load(name: String) {}\nfun drop(name: String) {}")) {
-                allow(`fun`, "save")("name:String")
-                allow(`fun`, "load")(" name : String ")
-                allow(`fun`, "drop")("name  :  String")
+                required(`fun`, "save")("name:String")
+                required(`fun`, "load")(" name : String ")
+                required(`fun`, "drop")("name  :  String")
             }.shouldBeEmpty()
         }
 
         "型の中の : で無く、最初の : で分ける" {
             judged(kt("fun on(block: (String) -> Unit, map: Map<String, Int>) {}")) {
-                allow(`fun`, "on")("block: (String) -> Unit", "map: Map<String, *>")
+                required(`fun`, "on")("block: (String) -> Unit", "map: Map<String, *>")
             }.shouldBeEmpty()
         }
 
         "バッククォートで書いた引数名は、バッククォート無しの名前で比べる" {
-            judged(kt("fun on(`in`: String) {}")) { allow(`fun`, "on")("in: String") }.shouldBeEmpty()
+            judged(kt("fun on(`in`: String) {}")) { required(`fun`, "on")("in: String") }.shouldBeEmpty()
         }
     }
 
     "定義を読んだ時点の誤り" - {
         ": の無い文字列は ParameterWithoutName で、直し方に name: と *: を出す" {
-            lineErrorOf { allow(`fun`, "save")("String", "count: Int") }.let {
+            lineErrorOf { required(`fun`, "save")("String", "count: Int") }.let {
                 it.problem shouldBe KtFileContentLineProblem.ParameterWithoutName
                 it.parameter shouldBe "String"
                 it.line shouldBe "fun save(String, count: Int)"
@@ -127,7 +127,7 @@ class KtFileContentParameterSpec : FreeSpec({
         }
 
         "名前が空なら ParameterWithoutName" {
-            lineErrorOf { allow(`fun`, "save")(": Int") }.let {
+            lineErrorOf { required(`fun`, "save")(": Int") }.let {
                 it.problem shouldBe KtFileContentLineProblem.ParameterWithoutName
                 it.parameter shouldBe ": Int"
                 it.message.orEmpty().lines().first() shouldBe
@@ -139,7 +139,7 @@ class KtFileContentParameterSpec : FreeSpec({
 
         "型が空なら ParameterWithoutType" {
             listOf("id:", "id: ", " id :").forEach { written ->
-                lineErrorOf { allow(`fun`, "save")(written) }.let {
+                lineErrorOf { required(`fun`, "save")(written) }.let {
                     it.problem shouldBe KtFileContentLineProblem.ParameterWithoutType
                     it.parameter shouldBe written.trim()
                     it.message.orEmpty().lines().last() shouldBe
@@ -149,7 +149,7 @@ class KtFileContentParameterSpec : FreeSpec({
         }
 
         "空の文字列も ParameterWithoutName" {
-            lineErrorOf { allow(`fun`, "save")("") }.problem shouldBe KtFileContentLineProblem.ParameterWithoutName
+            lineErrorOf { required(`fun`, "save")("") }.problem shouldBe KtFileContentLineProblem.ParameterWithoutName
         }
 
         "禁止の行でも同じに断る" {
@@ -161,8 +161,8 @@ class KtFileContentParameterSpec : FreeSpec({
 
         "文面は ASCII だけ" {
             listOf(
-                lineErrorOf { allow(`fun`, "save")("String") },
-                lineErrorOf { allow(`fun`, "save")("id:") },
+                lineErrorOf { required(`fun`, "save")("String") },
+                lineErrorOf { required(`fun`, "save")("id:") },
             ).forEach { error -> error.message.orEmpty().filter { it.code > 127 } shouldBe "" }
         }
 
@@ -171,21 +171,21 @@ class KtFileContentParameterSpec : FreeSpec({
                 architecture {
                     "Controller".role {
                         layout { "src" / "*Controller".ktFile() }
-                        ktFileContent { allow(`fun`, "register")("Route") }
+                        ktFileContent { required(`fun`, "register")("Route") }
                     }
                 }
             }.problem shouldBe KtFileContentLineProblem.ParameterWithoutName
         }
 
         "名前のパターンが読めなければ ParameterName の誤りで、名前の部分だけを出す" {
-            shouldThrow<KatachiKtFileContentPatternException> { rulesOf { allow(`fun`, "x")("[z-a]: String") } }.let {
+            shouldThrow<KatachiKtFileContentPatternException> { rulesOf { required(`fun`, "x")("[z-a]: String") } }.let {
                 it.what shouldBe KtFileContentPatternKind.ParameterName
                 it.pattern shouldBe "[z-a]"
             }
         }
 
         "型のパターンが読めなければ Type の誤りで、型の部分だけを出す" {
-            shouldThrow<KatachiKtFileContentPatternException> { rulesOf { allow(`fun`, "x")("id: Map<{K, V>") } }.let {
+            shouldThrow<KatachiKtFileContentPatternException> { rulesOf { required(`fun`, "x")("id: Map<{K, V>") } }.let {
                 it.what shouldBe KtFileContentPatternKind.Type
                 it.pattern shouldBe "Map<{K, V>"
             }
@@ -195,8 +195,8 @@ class KtFileContentParameterSpec : FreeSpec({
     "出力" - {
         "規則の描画は書いたとおりの name: Type" {
             rulesOf {
-                allow(`fun`, "save")("name: String", "*: Int")
-                allow(`fun`, "load")("name:String")
+                required(`fun`, "save")("name: String", "*: Int")
+                required(`fun`, "load")("name:String")
                 not.allow(`fun`, "*")("*: Context")
             }.declarations?.lines.orEmpty().map(::renderRule) shouldBe listOf(
                 "fun save(name: String, *: Int)",
@@ -211,8 +211,8 @@ class KtFileContentParameterSpec : FreeSpec({
                     example("HealthController")
                     layout { "web" / "*Controller".ktFile() }
                     ktFileContent {
-                        allow(`class`, fileName) {
-                            allow(`fun`, "register")("route: Route")
+                        required(`class`, fileName) {
+                            required(`fun`, "register")("route: Route")
                             not.allow(`fun`, "*")("*: Context")
                         }
                     }
@@ -232,7 +232,7 @@ class KtFileContentParameterSpec : FreeSpec({
                 "src/HealthController.kt" to kt("class HealthController {\n    fun register(path: Route) {}\n}"),
                 paths = { "src" / "*Controller".ktFile() },
             ) {
-                ktFileContent { allow(`class`, fileName) { allow(`fun`, "register")("route: Route") } }
+                ktFileContent { required(`class`, fileName) { required(`fun`, "register")("route: Route") } }
             }
 
             violations.unsatisfiedLines() shouldBe listOf(

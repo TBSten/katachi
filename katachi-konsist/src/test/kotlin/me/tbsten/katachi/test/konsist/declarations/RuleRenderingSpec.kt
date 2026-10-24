@@ -18,10 +18,10 @@ class RuleRenderingSpec : FreeSpec({
     "宣言の行" - {
         "見本の 5 つ" {
             renderedLines(fileName = "HomeViewModel") {
-                allow(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel")
+                required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel")
                 allow(public, `fun`, "on*")().returns("Unit")
-                allow(public, `val`, "uiState", "StateFlow<HomeUiState>")
-                allow(`fun`, "load")
+                required(public, `val`, "uiState", "StateFlow<HomeUiState>")
+                required(`fun`, "load")
                 not.allow(`class`, "*Impl").except("DefaultImpl")
             } shouldBe listOf(
                 "@HiltViewModel public class HomeViewModel : ViewModel",
@@ -34,9 +34,9 @@ class RuleRenderingSpec : FreeSpec({
 
         "修飾子は書いた順ではなく Kotlin の順に並ぶ" {
             val lines = rulesOf {
-                allow(data, public, `class`, "A")
-                allow(const, private, `val`, "D")
-                allow(`class`, "H") { allow(operator, override, suspend, `fun`, "b") }
+                required(data, public, `class`, "A")
+                required(const, private, `val`, "D")
+                required(`class`, "H") { required(operator, override, suspend, `fun`, "b") }
             }.declarations?.lines.orEmpty()
 
             lines.take(2).map(::renderRule) shouldBe listOf("public data class A", "private const val D")
@@ -45,13 +45,13 @@ class RuleRenderingSpec : FreeSpec({
 
         "前置きの 4 通り" {
             renderedLines {
-                allow(`class` or `interface`, "HomeUiState")
-                allow(sealed, type, "Action")
+                required(`class` or `interface`, "HomeUiState")
+                required(sealed, type, "Action")
                 allow(internal or private, data, `object`, "*")
-                allow(public or data, `class` or `interface`, "X")
-                allow(internal or private, `class` or `interface`, "Y")
+                required(public or data, `class` or `interface`, "X")
+                required(internal or private, `class` or `interface`, "Y")
                 allow(annotated("Preview") or annotated("PreviewLightDark"), private, `fun`, "*Preview")
-                allow(public, public or data, `object`, "Z")
+                required(public, public or data, `object`, "Z")
             } shouldBe listOf(
                 "(class or interface) HomeUiState",
                 "sealed (class or interface) Action",
@@ -65,13 +65,13 @@ class RuleRenderingSpec : FreeSpec({
 
         "後ろにつなぐもの" {
             renderedLines {
-                allow(`class`, "A").superclass("B", "C<D>")
-                allow(`fun`, "e")("name: String", "*: Int")
-                allow(`fun`, "f")()
-                allow(`fun`, "g")(anyArgs())
-                allow(`fun`, "h").returns("Unit")
-                allow(`var`, "i", "Int?")
-                allow(`typealias`, "J")
+                required(`class`, "A").superclass("B", "C<D>")
+                required(`fun`, "e")("name: String", "*: Int")
+                required(`fun`, "f")()
+                required(`fun`, "g")(anyArgs())
+                required(`fun`, "h").returns("Unit")
+                required(`var`, "i", "Int?")
+                required(`typealias`, "J")
             } shouldBe listOf(
                 "class A : B, C<D>",
                 "fun e(name: String, *: Int)",

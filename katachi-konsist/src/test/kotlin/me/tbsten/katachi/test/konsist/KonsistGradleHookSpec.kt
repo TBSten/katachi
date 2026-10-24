@@ -36,7 +36,7 @@ class KonsistGradleHookSpec : FreeSpec({
                 files = wholeTree()
                 gradle(requireWrapper = false) {
                     buildScript {
-                        ktFileContent { allow(`class`, fileName) { } }
+                        ktFileContent { required(`class`, fileName) { } }
                         "internal であること".konsist { classes().must { it.hasInternalModifier } }
                     }
                 }

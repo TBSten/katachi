@@ -88,11 +88,7 @@ private fun PackageRule.dump(): String {
 }
 
 private fun ImportRule.dump(): String {
-    val status = when {
-        prohibited -> "prohibited"
-        required -> "required"
-        else -> "optional"
-    }
+    val status = if (prohibited) "prohibited" else "optional"
     return "import ${path.written} $status${exceptOf(except.map { it.written })}"
 }
 

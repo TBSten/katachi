@@ -81,8 +81,8 @@ internal fun judgeKtFile(facts: KtFileFacts, rules: FileRules): List<KtFileFindi
     val packageFinding = judgePackage(rules.packages, facts)
     val imports = judgeImports(rules.imports, facts.imports)
     val declarations = rules.declarations?.let { judgeDeclarations(it, facts.declarations) }
-    val located = listOfNotNull(packageFinding?.takeIf { it.hasLine() }) + imports.located + declarations?.located.orEmpty()
-    val lineless = listOfNotNull(packageFinding?.takeUnless { it.hasLine() }) + imports.missing + declarations?.missing.orEmpty()
+    val located = listOfNotNull(packageFinding?.takeIf { it.hasLine() }) + imports + declarations?.located.orEmpty()
+    val lineless = listOfNotNull(packageFinding?.takeUnless { it.hasLine() }) + declarations?.missing.orEmpty()
     return located + lineless
 }
 

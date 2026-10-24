@@ -9,8 +9,8 @@ import me.tbsten.katachi.konsist.declarations.KtFileContentPatternKind
 
 /*
  * What one evaluation of the block writes into, line by line, before it is frozen into the model
- * of `KtFileContentRules.kt`. A line is registered when `allow(...)` is called, and the calls
- * chained after it (`.superclass(...)`, `.optional()`) change that same line.
+ * of `KtFileContentRules.kt`. A line is registered when `allow(...)` or `required(...)` is called,
+ * and the calls chained after it (`.superclass(...)`, `.returns(...)`) change that same line.
  */
 
 /**
@@ -87,7 +87,8 @@ internal class DeclarationListBuilder(
     val isWritten: Boolean get() = entries.isNotEmpty()
 
     /**
-     * Registers a declaration line: candidates [raw] (not checked yet) named [name].
+     * Registers a declaration line: candidates [raw] (not checked yet) named [name], one that has to
+     * be there when [required] (written with `required(...)`).
      *
      * @throws KatachiKtFileContentLineException when this list is not the block being written, or
      *   for a `typealias` inside a class.
@@ -96,7 +97,7 @@ internal class DeclarationListBuilder(
      * @throws me.tbsten.katachi.konsist.declarations.KatachiKtFileContentModifierException when no
      *   declaration can have the modifiers.
      */
-    fun declare(raw: List<Shape>, prohibited: Boolean, name: String): DeclarationLineBuilder {
+    fun declare(raw: List<Shape>, prohibited: Boolean, required: Boolean, name: String): DeclarationLineBuilder {
         val line = renderDeclaration(raw, name, prohibited)
         ensureCurrent(line)
         val declaredAt = DeclarationSite.capture()
@@ -105,7 +106,7 @@ internal class DeclarationListBuilder(
         }
         val nameRule = session.patterns.nameRule(name, KtFileContentPatternKind.Name)
         val shapes = validatedShapes(raw, placement, line, declaredAt)
-        return DeclarationLineBuilder(this, shapes, nameRule, prohibited, declaredAt).also { entries += it }
+        return DeclarationLineBuilder(this, shapes, nameRule, prohibited, required, declaredAt).also { entries += it }
     }
 
     /**
@@ -142,6 +143,8 @@ internal class DeclarationLineBuilder(
     private val shapes: List<Shape>,
     private val name: NameRule,
     private val prohibited: Boolean,
+    /** Written with `required(...)`: a declaration has to match it. */
+    private val required: Boolean,
     private val declaredAt: DeclarationSite,
 ) : DeclarationListEntryBuilder {
     private val superclasses = mutableListOf<SuperclassRule>()
@@ -151,7 +154,6 @@ internal class DeclarationLineBuilder(
     private var parametersWritten = false
     private var returnType: TypeRule? = null
     private var members: DeclarationListBuilder? = null
-    private var optional = false
     private val except = mutableListOf<NameRule>()
 
     private val session: EvaluationSession get() = list.session
@@ -223,12 +225,6 @@ internal class DeclarationLineBuilder(
         session.within(memberList) { ClassBodyScopeImpl(memberList).body() }
     }
 
-    fun markOptional() {
-        ensureOpen()
-        if (prohibited) throw problem(KtFileContentLineProblem.OptionalOnProhibited)
-        optional = true
-    }
-
     fun addExcept(names: List<String>) {
         ensureOpen()
         if (!prohibited) throw problem(KtFileContentLineProblem.ExceptWithoutNot)
@@ -244,7 +240,7 @@ internal class DeclarationLineBuilder(
         parameters = parameters,
         returnType = returnType,
         members = members?.build(),
-        required = !prohibited && !optional && !name.hasWildcard,
+        required = required,
         prohibited = prohibited,
         except = except.toList(),
         declaredAt = declaredAt,

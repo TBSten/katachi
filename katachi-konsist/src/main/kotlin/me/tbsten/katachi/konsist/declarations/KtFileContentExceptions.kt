@@ -260,12 +260,6 @@ private fun lineMessage(problem: KtFileContentLineProblem, line: String, at: Dec
             "Pass at least one pattern, or remove .except().",
         )
 
-        KtFileContentLineProblem.OptionalOnProhibited -> Triple(
-            ".optional() on line \"$line\" at $at has no effect.",
-            "A prohibited line is never required, so there is nothing to make optional.",
-            "Remove .optional(), or remove not. if the line is meant to allow something.",
-        )
-
         KtFileContentLineProblem.BodyWrittenTwice -> Triple(
             "Line \"$line\" at $at is given a { } twice.",
             "A class line has one body: the { } after allow(...) and the { } after .superclass(...) would both list its members.",
@@ -331,10 +325,10 @@ private fun lineMessage(problem: KtFileContentLineProblem, line: String, at: Dec
         )
 
         KtFileContentLineProblem.DanglingModifiers -> Triple(
-            "\"$line\" at $at is not passed to allow(...).",
+            "\"$line\" at $at is not passed to allow(...) or required(...).",
             "A modifier, an annotation or a kind writes nothing on a line of its own: it does not apply to the " +
                 "next line, so it would be ignored.",
-            "Pass it to allow(...) on the same line, such as allow(annotated(\"Inject\"), `class`, \"Name\") or " +
+            "Pass it to allow(...) or required(...) on the same line, such as allow(annotated(\"Inject\"), `class`, \"Name\") or " +
                 "allow(private, anythingElse), or remove it.",
         )
 

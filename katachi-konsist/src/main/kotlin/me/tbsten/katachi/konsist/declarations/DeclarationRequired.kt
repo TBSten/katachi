@@ -1,0 +1,36 @@
+package me.tbsten.katachi.konsist.declarations
+
+import me.tbsten.katachi.ExperimentalKatachiApi
+
+/**
+ * Every `required(...)` a declaration line is written with: the same overloads as `allow(...)`
+ * -- modifiers and annotations, then the kind, then the name -- for a declaration that has to be
+ * there. It is written directly in the file and inside the `{ }` of a class line; `not.` has none.
+ *
+ * - **`allow(...)` lets a declaration be; `required(...)` also asks for it.** A required line is an
+ *   allow list entry too: what it matches need not be written again with `allow(...)`.
+ * - **A name without `*` asks for that name, one with `*` for one or more declarations it
+ *   matches**: `required(sealed, type, "*Action")` is at least one sealed `...Action`.
+ * - **The kinds written are the allow list, as with `allow(...)`**: a kind written with
+ *   `required(...)` only allows what its lines match, and a kind not written is not looked at.
+ *
+ * ## Example 1: a view model file with what it has to hold
+ * ```kt
+ * ktFileContent {
+ *     required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
+ *         required(public, `val`, "uiState", "StateFlow<*>")
+ *         allow(public, `fun`, "on*")().returns("Unit")
+ *         allow(private, anythingElse)
+ *     }
+ *     required(sealed, type, "*Action")
+ *     allow(`object`, "*Preview")
+ * }
+ * ```
+ */
+@ExperimentalKatachiApi
+public sealed interface DeclarationRequired :
+    TypeRequired,
+    FunInterfaceRequired,
+    FunctionRequired,
+    PropertyRequired,
+    TypeAliasRequired

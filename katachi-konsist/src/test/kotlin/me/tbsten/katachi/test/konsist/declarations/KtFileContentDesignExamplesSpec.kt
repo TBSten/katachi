@@ -64,8 +64,8 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
                 `import`("dagger.hilt.**")
                 `import`("javax.inject.**")
 
-                allow(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
-                        allow(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+                required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
+                        required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
                         allow(public, `fun`, "on*")().returns("Unit")
                         allow(private, anythingElse)
                     }
@@ -109,11 +109,11 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
             paths = { "core/domain" / "*UseCase".ktFile() },
         ) {
             ktFileContent {
-                allow(`interface`, fileName) {
-                    allow(operator, `fun`, "invoke")
+                required(`interface`, fileName) {
+                    required(operator, `fun`, "invoke")
                 }
-                allow(`class`, "Default$fileName").superclass(fileName) {
-                    allow(override, `fun`, "invoke")
+                required(`class`, "Default$fileName").superclass(fileName) {
+                    required(override, `fun`, "invoke")
                     allow(private, anythingElse)
                 }
             }
@@ -134,7 +134,7 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
             paths = { "ui" / "*UiState".ktFile() },
         ) {
             ktFileContent {
-                allow(data, `class`, fileName) {
+                required(data, `class`, fileName) {
                     allow(`val`, "*")
                 }
             }
@@ -214,7 +214,7 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
             paths = { "src" / "*Screen".ktFile() },
         ) {
             ktFileContent {
-                allow(annotated("Composable"), public, `fun`, fileName)
+                required(annotated("Composable"), public, `fun`, fileName)
                 allow(annotated("Preview") or annotated("PreviewLightDark"), private, `fun`, "*Preview")
                 allow(annotated("Serializable"), `object` or `class`, "*Key")
                 allow(internal or private, data, `object`, "*")
@@ -254,10 +254,10 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
             paths = { "src" / "*Loader".ktFile() },
         ) {
             ktFileContent {
-                allow(`class`, fileName) {
-                    allow(`val`, "state", "StateFlow<*>")
-                    allow(`fun`, "load")("id: String", "page: Int")
-                    allow(`fun`, "reset")().returns("Unit")
+                required(`class`, fileName) {
+                    required(`val`, "state", "StateFlow<*>")
+                    required(`fun`, "load")("id: String", "page: Int")
+                    required(`fun`, "reset")().returns("Unit")
                     allow(`fun`, "on*")(anyArgs())
                 }
             }
@@ -273,19 +273,21 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
         )
     }
 
-    "必須と任意: * を含まない import は必須" {
+    "必須と任意: required は無ければ違反、allow と import は無くてもよい" {
         val violations = ktFileContentRun(
-            "src/Home.kt" to "package com.example\n\nimport com.example.App\nimport androidx.compose.ui.Modifier\n\nclass Home\n",
-            "src/Settings.kt" to "package com.example\n\nclass Settings\n",
+            "src/Home.kt" to "package com.example\n\nimport com.example.App\nimport androidx.compose.ui.Modifier\n\nclass Home\nobject HomePreview\n",
+            "src/Settings.kt" to "package com.example\n\nobject SettingsPreview\n",
             paths = { "src" / "*".ktFile() },
         ) {
             ktFileContent {
                 `import`("com.example.App")
                 `import`("androidx.compose.**")
+                required(`class`, fileName)
+                allow(`object`, "*Preview")
             }
         }
 
-        violations.unsatisfiedLines() shouldBe listOf("src/Settings.kt: import com.example.App | Missing: import com.example.App")
+        violations.unsatisfiedLines() shouldBe listOf("src/Settings.kt: Settings | Missing: class Settings")
     }
 
     "ほかは何でもよい: allow(private, anythingElse) はファイル直下でも効く" {
@@ -294,7 +296,7 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
             paths = { "src" / "*".ktFile() },
         ) {
             ktFileContent {
-                allow(`class`, fileName)
+                required(`class`, fileName)
                 allow(private, anythingElse)
             }
         }
@@ -311,9 +313,9 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
         ) {
             ktFileContent {
                 if (fileName.startsWith("Default")) {
-                    allow(`class`, fileName).superclass(fileName.removePrefix("Default"))
+                    required(`class`, fileName).superclass(fileName.removePrefix("Default"))
                 } else {
-                    allow(`interface`, fileName).superclass("Navigator")
+                    required(`interface`, fileName).superclass("Navigator")
                 }
             }
         }
@@ -342,7 +344,7 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
             ktFileContent {
                 `package`(matchingDirectory)
                 `import`("kotlinx.**")
-                allow(`interface`, fileName) { allow(`fun`, "*")().returns("Flow<*>") }
+                required(`interface`, fileName) { allow(`fun`, "*")().returns("Flow<*>") }
             }
         }.shouldBeEmpty()
     }

@@ -26,7 +26,7 @@ class KtFileContentNamedSpec : FreeSpec({
                 "core/domain/GetUserUseCase.kt" to classNamed("Other"),
                 paths = { "core/domain" / "*UseCase".ktFile() },
             ) {
-                "UseCase の形".ktFileContent { allow(`class`, fileName) }
+                "UseCase の形".ktFileContent { required(`class`, fileName) }
             }
 
             violations.report() shouldContain "FileConstraint: \"UseCase の形 (ktFileContent)\""
@@ -37,7 +37,7 @@ class KtFileContentNamedSpec : FreeSpec({
                 "core/domain/GetUserUseCase.kt" to classNamed("Other"),
                 paths = { "core/domain" / "*UseCase".ktFile() },
             ) {
-                ktFileContent { allow(`class`, fileName) }
+                ktFileContent { required(`class`, fileName) }
             }
 
             violations.report() shouldContain "FileConstraint: \"ktFileContent\""
@@ -48,16 +48,16 @@ class KtFileContentNamedSpec : FreeSpec({
                 "core/domain/GetUserUseCase.kt" to classNamed("GetUserUseCase"),
                 paths = { "core/domain" / "*UseCase".ktFile() },
             ) {
-                "UseCase の形".ktFileContent { allow(`class`, fileName) }
+                "UseCase の形".ktFileContent { required(`class`, fileName) }
             }.shouldBeEmpty()
         }
 
         "空白だけの名前は konsist { } と同じく宣言の時に例外になる" {
             shouldThrow<KatachiFileConstraintNameException> {
-                ktFileContentRun(paths = { "core" / "*".ktFile() }) { "  ".ktFileContent { allow(`class`, fileName) } }
+                ktFileContentRun(paths = { "core" / "*".ktFile() }) { "  ".ktFileContent { required(`class`, fileName) } }
             }
             shouldThrow<KatachiFileConstraintNameException> {
-                ktFileContentRun(paths = { "core" / "*".ktFile() }) { "a\nb".ktFileContent { allow(`class`, fileName) } }
+                ktFileContentRun(paths = { "core" / "*".ktFile() }) { "a\nb".ktFileContent { required(`class`, fileName) } }
             }
         }
     }
@@ -76,8 +76,8 @@ class KtFileContentNamedSpec : FreeSpec({
                 rolePageOf {
                     "Screen".role {
                         layout { "src" / "*".ktFile() }
-                        "前半".ktFileContent { allow(`class`, fileName) }
-                        ktFileContent { allow(`interface`, fileName) }
+                        "前半".ktFileContent { required(`class`, fileName) }
+                        ktFileContent { required(`interface`, fileName) }
                     }
                 }
             }
@@ -88,7 +88,7 @@ class KtFileContentNamedSpec : FreeSpec({
                 "UseCase".role {
                     example("GetUserUseCase")
                     layout { "domain" / "*UseCase".ktFile() }
-                    "UseCase の形".ktFileContent { allow(`class`, fileName) }
+                    "UseCase の形".ktFileContent { required(`class`, fileName) }
                 }
             }.getValue("UseCase.md")
 
@@ -99,11 +99,11 @@ class KtFileContentNamedSpec : FreeSpec({
             rolePageOf {
                 "A".role {
                     layout { "a" / "*".ktFile() }
-                    ktFileContent { allow(`class`, fileName) }
+                    ktFileContent { required(`class`, fileName) }
                 }
                 "B".role {
                     layout { "b" / "*".ktFile() }
-                    ktFileContent { allow(`class`, fileName) }
+                    ktFileContent { required(`class`, fileName) }
                 }
             }
         }
