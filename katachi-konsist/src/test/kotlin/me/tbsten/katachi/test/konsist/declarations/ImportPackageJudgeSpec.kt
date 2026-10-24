@@ -102,7 +102,7 @@ class ImportPackageJudgeSpec : FreeSpec({
             `package`("com.example")
             `import`("kotlin.**")
             `import`("com.example.App")
-            `class`(fileName)
+            allow(`class`, fileName)
         } shouldBe listOf(
             "package com.other (line 1) | Not allowed: package com.other",
             "import a.B (line 3) | Not allowed: not in the allowed imports (kotlin.**, com.example.App)",

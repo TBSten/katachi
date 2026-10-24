@@ -58,10 +58,13 @@ internal fun ModifierName.applicableKinds(): Set<DeclarationKindName> = when (th
 }
 
 /**
- * [raw] with every candidate no declaration can have removed, in order.
+ * [raw] with every candidate no declaration can have removed, in order: a set holding two
+ * modifiers that exclude each other, and a modifier on a kind that cannot carry it. Only when no
+ * candidate is left is the line refused, as `allow(public or internal, internal, ...)` still
+ * matches an internal declaration.
  *
- * @throws KatachiKtFileContentModifierException when a set holds two modifiers that exclude each
- *   other, uses a member-only modifier directly in the file, or when no candidate is left.
+ * @throws KatachiKtFileContentModifierException when every set holds two modifiers that exclude
+ *   each other, a set uses a member-only modifier directly in the file, or no candidate is left.
  */
 internal fun validatedShapes(
     raw: List<Shape>,
@@ -69,10 +72,9 @@ internal fun validatedShapes(
     line: String,
     declaredAt: DeclarationSite,
 ): List<Shape> {
-    val shapes = raw.distinct()
-    for (set in shapes.map { it.modifiers }.distinct()) {
-        checkCombinable(set, placement, line, declaredAt)
-    }
+    val sets = withoutConflicts(raw.map { it.modifiers }.distinct(), line, declaredAt)
+    for (set in sets) checkPlacement(set, placement, line, declaredAt)
+    val shapes = raw.distinct().filter { it.modifiers in sets }
     if (placement == Placement.File) {
         for (shape in shapes) {
             if (shape.kind !in CALLABLE_KINDS) continue
@@ -100,35 +102,50 @@ internal fun validatedShapes(
 }
 
 /**
- * Checks the alternatives of an `anythingElse()`: no kind is named, so only whether each set can
- * be on one declaration, and whether it may be written where it is.
+ * The alternatives of an `allow(..., anythingElse)` that can be on one declaration: no kind is
+ * named, so only the sets holding two modifiers that exclude each other are removed, and whether
+ * each may be written where it is is checked.
  *
  * @throws KatachiKtFileContentModifierException as [validatedShapes] does for its first two checks.
  */
-internal fun validateAnythingElse(
+internal fun validatedAnythingElse(
     alternatives: List<ModifierSet>,
     placement: Placement,
     line: String,
     declaredAt: DeclarationSite,
-) {
-    for (set in alternatives.distinct()) checkCombinable(set, placement, line, declaredAt)
+): List<ModifierSet> {
+    val sets = withoutConflicts(alternatives.distinct(), line, declaredAt)
+    for (set in sets) checkPlacement(set, placement, line, declaredAt)
+    return sets
 }
 
 /** Whether a kind is one a `typealias` line names, which only the file can hold. */
 internal fun List<Shape>.namesTypeAlias(): Boolean = any { it.kind == TypeAlias }
 
-private fun checkCombinable(set: ModifierSet, placement: Placement, line: String, declaredAt: DeclarationSite) {
-    for (group in EXCLUSIVE_GROUPS) {
-        val together = set.modifiers.filter { it in group }.sortedBy { it.ordinal }
-        if (together.size < 2) continue
-        throw KatachiKtFileContentModifierException(
-            line = line,
-            problem = KtFileContentModifierProblem.Conflicting,
-            modifiers = together.map { it.keyword },
-            kind = null,
-            declaredAt = declaredAt,
-        )
-    }
+/** The modifiers of [set] that exclude each other, in Kotlin's order, or `null` when there are none. */
+private fun conflictIn(set: ModifierSet): List<ModifierName>? = EXCLUSIVE_GROUPS
+    .map { group -> set.modifiers.filter { it in group }.sortedBy { it.ordinal } }
+    .firstOrNull { it.size >= 2 }
+
+/**
+ * [sets] without the ones holding two modifiers that exclude each other.
+ *
+ * @throws KatachiKtFileContentModifierException when every one of them does, naming the first pair.
+ */
+private fun withoutConflicts(sets: List<ModifierSet>, line: String, declaredAt: DeclarationSite): List<ModifierSet> {
+    val kept = sets.filter { conflictIn(it) == null }
+    if (kept.isNotEmpty() || sets.isEmpty()) return kept
+    val together = sets.firstNotNullOf { conflictIn(it) }
+    throw KatachiKtFileContentModifierException(
+        line = line,
+        problem = KtFileContentModifierProblem.Conflicting,
+        modifiers = together.map { it.keyword },
+        kind = null,
+        declaredAt = declaredAt,
+    )
+}
+
+private fun checkPlacement(set: ModifierSet, placement: Placement, line: String, declaredAt: DeclarationSite) {
     if (placement != Placement.File) return
     val memberOnly = CLASS_BODY_ONLY.firstOrNull { it in set.modifiers } ?: return
     throw KatachiKtFileContentModifierException(

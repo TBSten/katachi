@@ -1,10 +1,10 @@
 package me.tbsten.katachi.test.konsist.declarations
 
 import me.tbsten.katachi.konsist.declarations.ClassBodyScope
+import me.tbsten.katachi.konsist.declarations.DeclarationAllow
 import me.tbsten.katachi.konsist.declarations.DeclarationListScope
 import me.tbsten.katachi.konsist.declarations.DeclarationVocabulary
 import me.tbsten.katachi.konsist.declarations.KtFileContentScope
-import me.tbsten.katachi.konsist.declarations.Modifiers
 import me.tbsten.katachi.konsist.declarations.PropertyKind
 import me.tbsten.katachi.konsist.declarations.TypeKind
 
@@ -19,7 +19,7 @@ import me.tbsten.katachi.konsist.declarations.TypeKind
  * Names are kept apart so that the properties can say what a change does without judging it
  * themselves. Every line takes a stem of its own (`Alpha`, `bravo`), and the stems are no prefix
  * of each other; `Extra`, `Helper`, `Free` and `Legacy` (or `*Deprecated`) are left to the
- * declarations a property adds, to the ones only `anythingElse()` allows, to the ones nothing looks
+ * declarations a property adds, to the ones only `allow(anythingElse)` allows, to the ones nothing looks
  * at, and to the `not.` lines.
  */
 
@@ -39,7 +39,7 @@ internal enum class GenKind(val keyword: String) {
     val isProperty: Boolean get() = this == Val || this == Var
 }
 
-/** One alternative of modifiers and annotations, as a line or an `anythingElse()` asks for it. */
+/** One alternative of modifiers and annotations, as a line or an `allow(..., anythingElse)` asks for it. */
 internal data class GenModifiers(val keywords: List<String> = emptyList(), val annotations: List<String> = emptyList()) {
     val isEmpty: Boolean get() = keywords.isEmpty() && annotations.isEmpty()
 
@@ -74,7 +74,7 @@ internal data class GenLine(
     val isBareWildcard: Boolean get() = name == "*"
 }
 
-/** `anythingElse()` with the alternatives written in front of it; a single empty one is the plain call. */
+/** `allow(..., anythingElse)` with the alternatives written in front of it; a single empty one is `allow(anythingElse)`. */
 internal data class GenAnythingElse(val alternatives: List<GenModifiers>) : GenEntry {
     /** Whether it allows a declaration that writes no modifier and no annotation. */
     val allowsPlain: Boolean get() = alternatives.any { it.annotations.isEmpty() && (it.keywords.isEmpty() || it.keywords == listOf("public")) }
@@ -175,32 +175,34 @@ internal fun DeclarationListScope.writeList(list: GenList) {
     for (entry in list.entries) {
         when (entry) {
             is GenLine -> writeLine(entry)
-            is GenAnythingElse -> modifiersOf(this, entry.alternatives)?.anythingElse() ?: anythingElse()
+            is GenAnythingElse -> allowAnythingElse(this, modifiersOf(this, entry.alternatives), anythingElse)
         }
     }
 }
 
 private fun DeclarationListScope.writeLine(line: GenLine) {
-    val start: DeclarationVocabulary = if (line.prohibited) not else this
-    val vocabulary: DeclarationVocabulary = modifiersOf(start, line.alternatives) ?: start
+    val target: DeclarationAllow = if (line.prohibited) not else this
+    val modifiers = modifiersOf(this, line.alternatives)
     val name = line.name.fillIn(fileName)
     val body: (ClassBodyScope.() -> Unit)? = line.members?.let { members -> { writeList(members) } }
     val kind = line.kinds.first()
     when {
         kind.isType -> {
             val funInterface = line.kinds == listOf(GenKind.Interface) && line.alternatives.any { "fun" in it.keywords }
-            val types: TypeKind = if (funInterface) {
-                vocabulary.`fun`.`interface`
-            } else {
-                line.kinds.map { vocabulary.typeKind(it) }.reduce(TypeKind::or)
-            }
+            val types: TypeKind = line.kinds.map { typeKind(it) }.reduce(TypeKind::or)
             val superclasses = line.superclasses.map { it.fillIn(fileName) }
-            val written = if (superclasses.isEmpty()) types(name, body) else types(name).superclass(*superclasses.toTypedArray(), body = body)
+            val lineBody = body.takeIf { superclasses.isEmpty() }
+            val written = if (funInterface) {
+                allowFunInterface(target, modifiers, `fun`, types, name, lineBody)
+            } else {
+                allowType(target, modifiers, types, name, lineBody)
+            }
+            if (superclasses.isNotEmpty()) written.superclass(*superclasses.toTypedArray(), body = body)
             if (line.optional) written.optional()
             if (line.except.isNotEmpty()) written.except(*line.except.toTypedArray())
         }
         kind == GenKind.Function -> {
-            var written = vocabulary.`fun`(name)
+            var written = allowFunction(target, modifiers, `fun`, name)
             line.parameters?.let { types -> written = written(*types.map { it.fillIn(fileName) }.toTypedArray()) }
             if (line.anyArgs) written = written(anyArgs())
             line.returnType?.let { written = written.returns(it.fillIn(fileName)) }
@@ -208,13 +210,13 @@ private fun DeclarationListScope.writeLine(line: GenLine) {
             if (line.except.isNotEmpty()) written.except(*line.except.toTypedArray())
         }
         kind == GenKind.TypeAlias -> {
-            val written = vocabulary.`typealias`(name)
+            val written = allowTypeAlias(target, modifiers, `typealias`, name)
             if (line.optional) written.optional()
             if (line.except.isNotEmpty()) written.except(*line.except.toTypedArray())
         }
         else -> {
-            val properties: PropertyKind = line.kinds.map { if (it == GenKind.Val) vocabulary.`val` else vocabulary.`var` }.reduce(PropertyKind::or)
-            val written = properties(name, line.propertyType?.fillIn(fileName))
+            val properties: PropertyKind = line.kinds.map { if (it == GenKind.Val) `val` else `var` }.reduce(PropertyKind::or)
+            val written = allowProperty(target, modifiers, properties, name, line.propertyType?.fillIn(fileName))
             if (line.optional) written.optional()
             if (line.except.isNotEmpty()) written.except(*line.except.toTypedArray())
         }
@@ -226,46 +228,4 @@ private fun DeclarationVocabulary.typeKind(kind: GenKind): TypeKind = when (kind
     GenKind.Interface -> `interface`
     GenKind.Object -> `object`
     else -> error("not a type kind: $kind")
-}
-
-/**
- * [alternatives] written after [start] and joined with `or`, the annotations first as Kotlin
- * writes them; `null` when they write nothing. `fun` is left to `` `fun`.`interface` ``.
- */
-private fun modifiersOf(start: DeclarationVocabulary, alternatives: List<GenModifiers>): Modifiers? {
-    val written = alternatives.map { alternative ->
-        val annotated = if (alternative.annotations.isEmpty()) null else start.annotated(*alternative.annotations.toTypedArray())
-        alternative.keywords.filter { it != "fun" }.fold(annotated) { modifiers, keyword -> (modifiers ?: start).modifier(keyword) }
-    }
-    if (written.all { it == null }) return null
-    return written.map { it ?: error("an alternative with no modifier cannot be joined with or: $alternatives") }.reduce(Modifiers::or)
-}
-
-/** The modifier [keyword] names, chained after this. */
-internal fun DeclarationVocabulary.modifier(keyword: String): Modifiers = when (keyword) {
-    "public" -> public
-    "internal" -> internal
-    "protected" -> protected
-    "private" -> private
-    "data" -> data
-    "sealed" -> sealed
-    "enum" -> enum
-    "value" -> value
-    "annotation" -> annotation
-    "abstract" -> abstract
-    "open" -> open
-    "inner" -> inner
-    "companion" -> companion
-    "override" -> override
-    "operator" -> operator
-    "infix" -> infix
-    "suspend" -> suspend
-    "inline" -> inline
-    "tailrec" -> tailrec
-    "external" -> external
-    "const" -> const
-    "lateinit" -> lateinit
-    "expect" -> expect
-    "actual" -> actual
-    else -> error("no such modifier: $keyword")
 }

@@ -77,9 +77,9 @@ fun DeclarationContainerScope.service() = "Service".role {
         `import`("com.example.model.**")
         `import`("com.example.repository.**")
 
-        `class`(fileName) {                         // HealthService.kt -> class HealthService
-            private.`val`("*", "*Repository")       // the Repositories it is built from
-            `fun`("*")                              // the behaviour a Controller calls
+        allow(`class`, fileName) {                    // HealthService.kt -> class HealthService
+            allow(private, `val`, "*", "*Repository") // the Repositories it is built from
+            allow(`fun`, "*")                         // the behaviour a Controller calls
         }
     }
 }

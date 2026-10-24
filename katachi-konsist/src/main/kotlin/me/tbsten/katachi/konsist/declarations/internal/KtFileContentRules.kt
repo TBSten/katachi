@@ -104,7 +104,7 @@ internal data class Shape(val modifiers: ModifierSet, val kind: DeclarationKindN
 /** Where a list of declarations sits: directly in the file, or inside a class's `{ }`. */
 internal enum class Placement { File, ClassBody }
 
-/** A line of a declaration list: a declaration line or an `anythingElse()`, in the order they were written. */
+/** A line of a declaration list: a declaration line or an `allow(..., anythingElse)`, in the order they were written. */
 internal sealed interface DeclarationListEntry {
     val declaredAt: DeclarationSite
 }
@@ -133,7 +133,7 @@ internal class DeclarationRule(
     override fun toString(): String = "DeclarationRule(${renderRule(this)})"
 }
 
-/** One `anythingElse()`: any declaration matching one of [alternatives] is allowed. */
+/** One `allow(..., anythingElse)`: any declaration matching one of [alternatives] is allowed. */
 internal class AnythingElseRule(
     /** A single empty set means anything at all. */
     val alternatives: List<ModifierSet>,
@@ -153,7 +153,7 @@ internal class DeclarationListRules(
     /** The declaration lines, in the order they were written. */
     val lines: List<DeclarationRule> = entries.filterIsInstance<DeclarationRule>()
 
-    /** The `anythingElse()` lines, in the order they were written. */
+    /** The `allow(..., anythingElse)` lines, in the order they were written. */
     val anythingElse: List<AnythingElseRule> = entries.filterIsInstance<AnythingElseRule>()
 }
 

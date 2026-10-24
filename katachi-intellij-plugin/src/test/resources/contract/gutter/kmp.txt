@@ -1351,7 +1351,7 @@ roles: Gradle.BuildScript
 roles: data.ActualImplementation
     data.ActualImplementation declared at ActualImplementationRole.kt:16 | fun DeclarationContainerScope.actualImplementation() = "ActualImplementation".role {
 3 | ◆ | katachi: data.ActualImplementation — allowed by actual (anything) (ActualImplementationRole.kt:58)
-    allowed at ActualImplementationRole.kt:58 | actual.anythingElse()
+    allowed at ActualImplementationRole.kt:58 | allow(actual, anythingElse)
     menu | ◆ Allowed by actual (anything) | ActualImplementationRole.kt:58
     menu | ◇ Role data.ActualImplementation — Actual implementation | ActualImplementationRole.kt:16
     menu | == Other files of data.ActualImplementation (1)
@@ -1364,7 +1364,7 @@ roles: data.ActualImplementation
 roles: data.ExpectDeclaration
     data.ExpectDeclaration declared at ExpectDeclarationRole.kt:20 | fun DeclarationContainerScope.expectDeclaration() = "ExpectDeclaration".role {
 4 | ◆ | katachi: data.ExpectDeclaration — allowed by expect (anything) (ExpectDeclarationRole.kt:56)
-    allowed at ExpectDeclarationRole.kt:56 | expect.anythingElse()
+    allowed at ExpectDeclarationRole.kt:56 | allow(expect, anythingElse)
     menu | ◆ Allowed by expect (anything) | ExpectDeclarationRole.kt:56
     menu | ◇ Role data.ExpectDeclaration — Expect declaration | ExpectDeclarationRole.kt:20
     menu | == Other files of data.ExpectDeclaration
@@ -1377,7 +1377,7 @@ roles: data.ExpectDeclaration
 roles: data.RepositoryInterface
     data.RepositoryInterface declared at RepositoryInterfaceRole.kt:22 | fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role {
 4 | ◆ | katachi: data.RepositoryInterface — allowed by interface UserRepository (RepositoryInterfaceRole.kt:77)
-    allowed at RepositoryInterfaceRole.kt:77 | `interface`(fileName) {
+    allowed at RepositoryInterfaceRole.kt:77 | allow(`interface`, fileName) {
     menu | ◆ Allowed by interface UserRepository | RepositoryInterfaceRole.kt:77
     menu | ◇ Role data.RepositoryInterface — Repository interface | RepositoryInterfaceRole.kt:22
     menu | == Other files of data.RepositoryInterface
@@ -1391,7 +1391,7 @@ roles: data.RepositoryInterface
 roles: data.RepositoryImplementation
     data.RepositoryImplementation declared at RepositoryImplementationRole.kt:16 | fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation".role {
 4 | ◆ | katachi: data.RepositoryImplementation — allowed by class UserRepositoryImpl : UserRepository (RepositoryImplementationRole.kt:64)
-    allowed at RepositoryImplementationRole.kt:64 | `class`(fileName).superclass("${captureValue("name")}Repository") {
+    allowed at RepositoryImplementationRole.kt:64 | allow(`class`, fileName).superclass("${captureValue("name")}Repository") {
     menu | ◆ Allowed by class UserRepositoryImpl : UserRepository | RepositoryImplementationRole.kt:64
     menu | ◇ Role data.RepositoryImplementation — Repository implementation | RepositoryImplementationRole.kt:16
     menu | == Other files of data.RepositoryImplementation
@@ -1405,7 +1405,7 @@ roles: data.RepositoryImplementation
 roles: data.ActualImplementation
     data.ActualImplementation declared at ActualImplementationRole.kt:16 | fun DeclarationContainerScope.actualImplementation() = "ActualImplementation".role {
 3 | ◆ | katachi: data.ActualImplementation — allowed by actual (anything) (ActualImplementationRole.kt:58)
-    allowed at ActualImplementationRole.kt:58 | actual.anythingElse()
+    allowed at ActualImplementationRole.kt:58 | allow(actual, anythingElse)
     menu | ◆ Allowed by actual (anything) | ActualImplementationRole.kt:58
     menu | ◇ Role data.ActualImplementation — Actual implementation | ActualImplementationRole.kt:16
     menu | == Other files of data.ActualImplementation (1)
@@ -2498,7 +2498,7 @@ roles: feature.Screen
 roles: feature.ScreenPreview
     feature.ScreenPreview declared at ScreenPreviewRole.kt:21 | fun DeclarationContainerScope.screenPreview() = "ScreenPreview".role {
 16 | ◆ | katachi: feature.ScreenPreview — allowed by @Preview private fun *Preview(...) (ScreenPreviewRole.kt:58)
-    allowed at ScreenPreviewRole.kt:58 | annotated("Preview").private.`fun`("*Preview")
+    allowed at ScreenPreviewRole.kt:58 | allow(annotated("Preview"), private, `fun`, "*Preview")
     menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenPreviewRole.kt:58
     menu | ◇ Role feature.ScreenPreview — Screen preview | ScreenPreviewRole.kt:21
     menu | == Other files of feature.ScreenPreview (1)
@@ -2507,7 +2507,7 @@ roles: feature.ScreenPreview
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 24 | ◆ | katachi: feature.ScreenPreview — allowed by @Preview private fun *Preview(...) (ScreenPreviewRole.kt:58)
-    allowed at ScreenPreviewRole.kt:58 | annotated("Preview").private.`fun`("*Preview")
+    allowed at ScreenPreviewRole.kt:58 | allow(annotated("Preview"), private, `fun`, "*Preview")
     menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenPreviewRole.kt:58
     menu | ◇ Role feature.ScreenPreview — Screen preview | ScreenPreviewRole.kt:21
     menu | == Other files of feature.ScreenPreview (1)
@@ -2516,7 +2516,7 @@ roles: feature.ScreenPreview
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 32 | ◆ | katachi: feature.ScreenPreview — allowed by @Preview private fun *Preview(...) (ScreenPreviewRole.kt:58)
-    allowed at ScreenPreviewRole.kt:58 | annotated("Preview").private.`fun`("*Preview")
+    allowed at ScreenPreviewRole.kt:58 | allow(annotated("Preview"), private, `fun`, "*Preview")
     menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenPreviewRole.kt:58
     menu | ◇ Role feature.ScreenPreview — Screen preview | ScreenPreviewRole.kt:21
     menu | == Other files of feature.ScreenPreview (1)
@@ -2529,7 +2529,7 @@ roles: feature.ScreenPreview
 roles: feature.ViewModel
     feature.ViewModel declared at ViewModelRole.kt:19 | fun DeclarationContainerScope.viewModel() = "ViewModel".role {
 19 | ◆ | katachi: feature.ViewModel — allowed by internal class HomeViewModel : ViewModel (ViewModelRole.kt:63)
-    allowed at ViewModelRole.kt:63 | internal.`class`(fileName).superclass("ViewModel") {
+    allowed at ViewModelRole.kt:63 | allow(internal, `class`, fileName).superclass("ViewModel") {
     menu | ◆ Allowed by internal class HomeViewModel : ViewModel | ViewModelRole.kt:63
     menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:19
     menu | == Other files of feature.ViewModel (1)
@@ -2542,7 +2542,7 @@ roles: feature.ViewModel
 roles: feature.FeatureComponent
     feature.FeatureComponent declared at FeatureComponentRole.kt:26 | fun DeclarationContainerScope.featureComponent() = "FeatureComponent".role {
 10 | ◆ | katachi: feature.FeatureComponent — allowed by @Composable internal fun HomeUserCard(...) (FeatureComponentRole.kt:91)
-    allowed at FeatureComponentRole.kt:91 | annotated("Composable").internal.`fun`(fileName)
+    allowed at FeatureComponentRole.kt:91 | allow(annotated("Composable"), internal, `fun`, fileName)
     menu | ◆ Allowed by @Composable internal fun HomeUserCard(...) | FeatureComponentRole.kt:91
     menu | ◇ Role feature.FeatureComponent — Screen component | FeatureComponentRole.kt:26
     menu | == Other files of feature.FeatureComponent
@@ -2596,7 +2596,7 @@ roles: feature.Screen
 roles: feature.ScreenPreview
     feature.ScreenPreview declared at ScreenPreviewRole.kt:21 | fun DeclarationContainerScope.screenPreview() = "ScreenPreview".role {
 11 | ◆ | katachi: feature.ScreenPreview — allowed by @Preview private fun *Preview(...) (ScreenPreviewRole.kt:58)
-    allowed at ScreenPreviewRole.kt:58 | annotated("Preview").private.`fun`("*Preview")
+    allowed at ScreenPreviewRole.kt:58 | allow(annotated("Preview"), private, `fun`, "*Preview")
     menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenPreviewRole.kt:58
     menu | ◇ Role feature.ScreenPreview — Screen preview | ScreenPreviewRole.kt:21
     menu | == Other files of feature.ScreenPreview (1)
@@ -2605,7 +2605,7 @@ roles: feature.ScreenPreview
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 22 | ◆ | katachi: feature.ScreenPreview — allowed by @Preview private fun *Preview(...) (ScreenPreviewRole.kt:58)
-    allowed at ScreenPreviewRole.kt:58 | annotated("Preview").private.`fun`("*Preview")
+    allowed at ScreenPreviewRole.kt:58 | allow(annotated("Preview"), private, `fun`, "*Preview")
     menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenPreviewRole.kt:58
     menu | ◇ Role feature.ScreenPreview — Screen preview | ScreenPreviewRole.kt:21
     menu | == Other files of feature.ScreenPreview (1)
@@ -2618,7 +2618,7 @@ roles: feature.ScreenPreview
 roles: feature.ViewModel
     feature.ViewModel declared at ViewModelRole.kt:19 | fun DeclarationContainerScope.viewModel() = "ViewModel".role {
 14 | ◆ | katachi: feature.ViewModel — allowed by internal data class *Ui (ViewModelRole.kt:62)
-    allowed at ViewModelRole.kt:62 | internal.data.`class`("*Ui")
+    allowed at ViewModelRole.kt:62 | allow(internal, data, `class`, "*Ui")
     menu | ◆ Allowed by internal data class *Ui | ViewModelRole.kt:62
     menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:19
     menu | == Other files of feature.ViewModel (1)
@@ -2627,7 +2627,7 @@ roles: feature.ViewModel
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 20 | ◆ | katachi: feature.ViewModel — allowed by internal class SettingsViewModel : ViewModel (ViewModelRole.kt:63)
-    allowed at ViewModelRole.kt:63 | internal.`class`(fileName).superclass("ViewModel") {
+    allowed at ViewModelRole.kt:63 | allow(internal, `class`, fileName).superclass("ViewModel") {
     menu | ◆ Allowed by internal class SettingsViewModel : ViewModel | ViewModelRole.kt:63
     menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:19
     menu | == Other files of feature.ViewModel (1)

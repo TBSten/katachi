@@ -64,11 +64,10 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
                 `import`("dagger.hilt.**")
                 `import`("javax.inject.**")
 
-                annotated("HiltViewModel")
-                    .public.`class`(fileName).superclass("ViewModel") {
-                        public.`val`("uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
-                        public.`fun`("on*")().returns("Unit")
-                        private.anythingElse()
+                allow(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
+                        allow(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+                        allow(public, `fun`, "on*")().returns("Unit")
+                        allow(private, anythingElse)
                     }
             }
         }
@@ -110,12 +109,12 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
             paths = { "core/domain" / "*UseCase".ktFile() },
         ) {
             ktFileContent {
-                `interface`(fileName) {
-                    operator.`fun`("invoke")
+                allow(`interface`, fileName) {
+                    allow(operator, `fun`, "invoke")
                 }
-                `class`("Default$fileName").superclass(fileName) {
-                    override.`fun`("invoke")
-                    private.anythingElse()
+                allow(`class`, "Default$fileName").superclass(fileName) {
+                    allow(override, `fun`, "invoke")
+                    allow(private, anythingElse)
                 }
             }
         }
@@ -135,8 +134,8 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
             paths = { "ui" / "*UiState".ktFile() },
         ) {
             ktFileContent {
-                data.`class`(fileName) {
-                    `val`("*")
+                allow(data, `class`, fileName) {
+                    allow(`val`, "*")
                 }
             }
         }
@@ -174,7 +173,7 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
             "src/Settings.kt" to "package com.example\n\nobject Settings\n",
             paths = { "src" / "*".ktFile() },
         ) {
-            ktFileContent { classOrInterface(fileName) }
+            ktFileContent { allow(classOrInterface, fileName) }
         }
 
         violations.unsatisfiedLines() shouldBe listOf(
@@ -215,11 +214,11 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
             paths = { "src" / "*Screen".ktFile() },
         ) {
             ktFileContent {
-                annotated("Composable").public.`fun`(fileName)
-                (annotated("Preview") or annotated("PreviewLightDark")).private.`fun`("*Preview")
-                annotated("Serializable")(`object` or `class`)("*Key")
-                (internal or private).data.`object`("*")
-                `fun`.`interface`("*Listener")
+                allow(annotated("Composable"), public, `fun`, fileName)
+                allow(annotated("Preview") or annotated("PreviewLightDark"), private, `fun`, "*Preview")
+                allow(annotated("Serializable"), `object` or `class`, "*Key")
+                allow(internal or private, data, `object`, "*")
+                allow(`fun`, `interface`, "*Listener")
             }
         }
 
@@ -255,11 +254,11 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
             paths = { "src" / "*Loader".ktFile() },
         ) {
             ktFileContent {
-                `class`(fileName) {
-                    `val`("state", "StateFlow<*>")
-                    `fun`("load")("String", "Int")
-                    `fun`("reset")().returns("Unit")
-                    `fun`("on*")(anyArgs())
+                allow(`class`, fileName) {
+                    allow(`val`, "state", "StateFlow<*>")
+                    allow(`fun`, "load")("String", "Int")
+                    allow(`fun`, "reset")().returns("Unit")
+                    allow(`fun`, "on*")(anyArgs())
                 }
             }
         }
@@ -289,14 +288,14 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
         violations.unsatisfiedLines() shouldBe listOf("src/Settings.kt: import com.example.App | Missing: import com.example.App")
     }
 
-    "ほかは何でもよい: private.anythingElse() はファイル直下でも効く" {
+    "ほかは何でもよい: allow(private, anythingElse) はファイル直下でも効く" {
         val violations = ktFileContentRun(
             "src/Home.kt" to "package com.example\n\nclass Home\nprivate const val TAG = \"x\"\nprivate fun helper() {}\nfun leaked() {}\n",
             paths = { "src" / "*".ktFile() },
         ) {
             ktFileContent {
-                `class`(fileName)
-                private.anythingElse()
+                allow(`class`, fileName)
+                allow(private, anythingElse)
             }
         }
 
@@ -312,9 +311,9 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
         ) {
             ktFileContent {
                 if (fileName.startsWith("Default")) {
-                    `class`(fileName).superclass(fileName.removePrefix("Default"))
+                    allow(`class`, fileName).superclass(fileName.removePrefix("Default"))
                 } else {
-                    `interface`(fileName).superclass("Navigator")
+                    allow(`interface`, fileName).superclass("Navigator")
                 }
             }
         }
@@ -343,7 +342,7 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
             ktFileContent {
                 `package`(matchingDirectory)
                 `import`("kotlinx.**")
-                `interface`(fileName) { `fun`("*")().returns("Flow<*>") }
+                allow(`interface`, fileName) { allow(`fun`, "*")().returns("Flow<*>") }
             }
         }.shouldBeEmpty()
     }

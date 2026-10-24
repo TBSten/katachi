@@ -9,20 +9,24 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  * ## Example 1: tell which modifier mistake a definition made
  * ```kt
  * val error = shouldThrow<KatachiKtFileContentModifierException> {
- *     architecture { "UiState".role { layout { "*".ktFile() }; ktFileContent { data.`interface`(fileName) } } }
+ *     architecture { "UiState".role { layout { "*".ktFile() }; ktFileContent { allow(data, `interface`, fileName) } } }
  * }
  * error.problem shouldBe KtFileContentModifierProblem.NotApplicable
  * ```
  */
 @ExperimentalKatachiApi
 public enum class KtFileContentModifierProblem {
-    /** Two modifiers no declaration carries together, such as `public.internal` or `data.sealed`. */
+    /**
+     * Two modifiers no declaration carries together, such as `allow(public, internal, ...)` or
+     * `allow(data, sealed, ...)`, in every candidate of the line: `allow(public or internal, internal, ...)`
+     * keeps the internal one and is not refused.
+     */
     Conflicting,
 
     /** A modifier only a member can carry (`override`, `protected`, `inner`, `companion`), or `abstract` / `open` on a fun, val or var, written directly in the file. */
     OnlyInClassBody,
 
-    /** A modifier the kind cannot carry, such as `` data.`interface` `` or `` const.`fun` ``, leaving no candidate. */
+    /** A modifier the kind cannot carry, such as `` allow(data, `interface`, ...) `` or `` allow(const, `fun`, ...) ``, leaving no candidate. */
     NotApplicable,
 }
 
@@ -40,7 +44,7 @@ public enum class KtFileContentModifierProblem {
  */
 @ExperimentalKatachiApi
 public enum class KtFileContentPatternKind(internal val label: String) {
-    /** The name of a declaration line: `` `class`("*ViewModel") ``. */
+    /** The name of a declaration line: `` allow(`class`, "*ViewModel") ``. */
     Name("name"),
 
     /** A package line: `` `package`("com.example.**") ``. */
@@ -49,7 +53,7 @@ public enum class KtFileContentPatternKind(internal val label: String) {
     /** An import line: `` `import`("kotlinx.coroutines.**") ``. */
     Import("import"),
 
-    /** A property type, a parameter type or a return type: `` `val`("state", "StateFlow<*>") ``. */
+    /** A property type, a parameter type or a return type: `` allow(`val`, "state", "StateFlow<*>") ``. */
     Type("type"),
 
     /** A `.superclass("...")`. */
@@ -85,7 +89,7 @@ public enum class KtFileContentLineProblem {
     /** `.optional()` on a prohibited line, which is never required anyway. */
     OptionalOnProhibited,
 
-    /** A `{ }` given both to the kind and to `.superclass(...)`. */
+    /** A `{ }` given both to `allow(...)` and to `.superclass(...)`. */
     BodyWrittenTwice,
 
     /** A `{ }` on a prohibited line, whose members are never looked at. */
@@ -100,9 +104,6 @@ public enum class KtFileContentLineProblem {
     /** `.superclass()` with no name. */
     SuperclassWithoutNames,
 
-    /** `or` between something that starts with `not.` and something that does not. */
-    NotInsideOr,
-
     /** A `typealias` line inside a class's `{ }`, where Kotlin has no typealias. */
     TypeAliasInClassBody,
 
@@ -110,12 +111,14 @@ public enum class KtFileContentLineProblem {
     AnnotatedWithoutNames,
 
     /**
-     * Modifiers or annotations written on a line of their own, which no declaration follows:
-     * `annotated("Inject")` or `private` alone.
+     * A value written on a line of its own and never passed to `allow(...)`: a modifier or
+     * annotations (`annotated("Inject")` or `private` alone), a kind (`` `class` `` alone), or
+     * `anythingElse`. A value made and not used, as in `` mapOf("a" to `class`) ``, is refused too: make
+     * only the values a line is written with.
      */
     DanglingModifiers,
 
-    /** `anythingElse()` after `not.`, which names nothing to prohibit. */
+    /** `not.allow(..., anythingElse)`, which names nothing to prohibit. */
     AnythingElseAfterNot,
 
     /** A value of one block's vocabulary used to write a line in another block, or after its block ended. */

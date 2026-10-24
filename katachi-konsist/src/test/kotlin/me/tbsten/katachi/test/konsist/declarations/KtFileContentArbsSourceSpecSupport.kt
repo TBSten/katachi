@@ -137,12 +137,12 @@ private fun StringBuilder.describeList(list: GenList, indent: Int) {
     for (entry in list.entries) {
         append(INDENT.repeat(indent))
         when (entry) {
-            is GenAnythingElse -> appendLine(describeAlternatives(entry.alternatives) + "anythingElse()")
+            is GenAnythingElse -> appendLine("allow(" + (describeAlternatives(entry.alternatives) + "anythingElse") + ")")
             is GenLine -> {
-                append(if (entry.prohibited) "not." else "").append(describeAlternatives(entry.alternatives))
-                val kinds = entry.kinds.joinToString(" or ") { "`${it.keyword}`" }
-                append(if (entry.kinds.size > 1) "($kinds)" else kinds)
-                append("(${quoted(entry.name)}")
+                append(if (entry.prohibited) "not." else "").append("allow(").append(describeAlternatives(entry.alternatives))
+                if (entry.kinds == listOf(GenKind.Interface) && entry.alternatives.any { "fun" in it.keywords }) append("`fun`, ")
+                append(entry.kinds.joinToString(" or ") { "`${it.keyword}`" })
+                append(", ${quoted(entry.name)}")
                 entry.propertyType?.let { append(", ${quoted(it)}") }
                 append(")")
                 entry.parameters?.let { append(it.joinToString(", ", "(", ")", transform = ::quoted)) }
@@ -164,15 +164,15 @@ private fun StringBuilder.describeList(list: GenList, indent: Int) {
     }
 }
 
+/** The values in front of the kind, each followed by `, `: what every alternative shares, and what tells them apart joined with `or`. */
 private fun describeAlternatives(alternatives: List<GenModifiers>): String {
-    val written = alternatives.filterNot { it.isEmpty }.map { alternative ->
-        (alternative.annotations.map { "annotated(${quoted(it)})" } + alternative.keywords).joinToString(".")
+    val tokens = alternatives.map { alternative ->
+        alternative.annotations.map { "annotated(${quoted(it)})" } + alternative.keywords.filter { it != "fun" }
     }
-    return when (written.size) {
-        0 -> ""
-        1 -> written.single() + "."
-        else -> written.joinToString(" or ", "(", ").")
-    }
+    val common = tokens.first().filter { token -> tokens.all { token in it } }
+    val differing = tokens.map { it - common.toSet() }.filter { it.isNotEmpty() }.distinct()
+    val group = if (differing.isEmpty()) emptyList() else listOf(differing.joinToString(" or ") { it.joinToString(" ") })
+    return (group + common).joinToString("") { "$it, " }
 }
 
 private fun quoted(text: String): String = "\"$text\""

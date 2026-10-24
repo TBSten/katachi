@@ -2,7 +2,7 @@ package me.tbsten.katachi.konsist.declarations.internal
 
 /*
  * Judging a file's imports and its package. Like the declarations, each is prohibited first,
- * allowed next, and wrong otherwise; neither has an `anythingElse()` or a mismatch -- an import
+ * allowed next, and wrong otherwise; neither has an `allow(..., anythingElse)` or a mismatch -- an import
  * is its path, and a file has one package.
  */
 

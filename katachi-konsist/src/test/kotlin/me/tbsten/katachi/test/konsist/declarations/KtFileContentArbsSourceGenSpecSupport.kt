@@ -2,10 +2,10 @@ package me.tbsten.katachi.test.konsist.declarations
 
 /*
  * The source half of a random case: for each line the declarations that follow it, for each
- * `anythingElse()` some it allows, and the imports the import lines allow.
+ * `allow(..., anythingElse)` some it allows, and the imports the import lines allow.
  */
 
-/** The declarations of [list], in random order: what each line was made for, and what only `anythingElse()` allows. */
+/** The declarations of [list], in random order: what each line was made for, and what only `allow(..., anythingElse)` allows. */
 internal fun GenContext.sourceOf(list: GenList, placement: GenPlacement, depth: Int, container: GenKind?): List<SrcDecl> {
     val instances = list.lines.withIndex().flatMap { (index, line) -> instancesOf(line, index, placement, depth, container) }
     val anythingElse = list.anythingElse.flatMap { it.alternatives }
@@ -135,7 +135,7 @@ private fun GenContext.spellSupertype(pattern: String, kind: GenKind): String {
 
 private fun GenContext.spellType(sample: TypeSample): String = random.pick(sample.matching).fillIn(fileName)
 
-/** A declaration only an `anythingElse()` alternative allows: named `Helper<n>`, carrying what [alternative] asks for. */
+/** A declaration only an `allow(..., anythingElse)` alternative allows: named `Helper<n>`, carrying what [alternative] asks for. */
 private fun GenContext.freeDeclaration(alternative: GenModifiers, placement: GenPlacement, container: GenKind?): SrcDecl {
     val kind = random.pick(if (placement == GenPlacement.File) GenKind.entries else GenKind.entries - GenKind.TypeAlias)
     val keywords = if ("public" in alternative.keywords && random.chance(50)) alternative.keywords - "public" else alternative.keywords

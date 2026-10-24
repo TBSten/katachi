@@ -6,7 +6,7 @@ package me.tbsten.katachi.konsist.declarations.internal
  * `public fun on*(): Unit`, `not class *Impl except DefaultImpl`, `private (anything)`.
  */
 
-/** What an `anythingElse()` line prints after its modifiers. */
+/** What an `anythingElse` line prints after its modifiers. */
 internal const val ANYTHING: String = "(anything)"
 
 /** What a `package`(matchingDirectory) line prints in place of a package. */
@@ -27,6 +27,10 @@ internal fun renderRule(rule: DeclarationRule): String = renderDeclaration(
 /** `(anything)`, `private (anything)`, `(internal or private) (anything)`. */
 internal fun renderAnythingElse(rule: AnythingElseRule): String =
     listOf(renderModifierAlternatives(rule.alternatives), ANYTHING).filter { it.isNotEmpty() }.joinToString(" ")
+
+/** An `anythingElse` line still being written, with `not ` in front when [prohibited]: `not private (anything)`. */
+internal fun renderAnythingElseLine(alternatives: List<ModifierSet>, prohibited: Boolean): String =
+    notOf(prohibited) + listOf(renderModifierAlternatives(alternatives), ANYTHING).filter { it.isNotEmpty() }.joinToString(" ")
 
 /** `import kotlin.**`, `not import android.** except android.os.**`. */
 internal fun renderImport(rule: ImportRule): String =
@@ -107,10 +111,14 @@ internal fun renderShapes(shapes: List<Shape>): String {
     }
 }
 
+/** `class`, `(class or interface)`: the kinds of a kind value, as `toString` and an exception print it. */
+internal fun renderKinds(kinds: List<DeclarationKindName>): String =
+    kinds.singleOrNull()?.keyword ?: kinds.joinToString(" or ", "(", ")") { it.keyword }
+
 /** `@A @B public data`: the annotations as written, then the modifiers in Kotlin's order. Empty for none. */
 internal fun renderModifierSet(set: ModifierSet): String = tokensOf(set).joinToString(" ")
 
-/** The alternatives of an `anythingElse()` or of a `Modifiers`: `private`, `(internal or private)`, or nothing. */
+/** The alternatives of an `anythingElse` line or of a `Modifiers`: `private`, `(internal or private)`, or nothing. */
 internal fun renderModifierAlternatives(sets: List<ModifierSet>): String =
     renderAlternativesOrNull(sets.distinct())
         ?: sets.distinct().joinToString(" or ", "(", ")") { renderModifierSet(it).ifEmpty { NO_MODIFIER } }

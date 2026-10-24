@@ -18,11 +18,11 @@ class RuleRenderingSpec : FreeSpec({
     "宣言の行" - {
         "見本の 5 つ" {
             renderedLines(fileName = "HomeViewModel") {
-                annotated("HiltViewModel").public.`class`(fileName).superclass("ViewModel")
-                public.`fun`("on*")().returns("Unit")
-                public.`val`("uiState", "StateFlow<HomeUiState>")
-                `fun`("load")
-                not.`class`("*Impl").except("DefaultImpl")
+                allow(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel")
+                allow(public, `fun`, "on*")().returns("Unit")
+                allow(public, `val`, "uiState", "StateFlow<HomeUiState>")
+                allow(`fun`, "load")
+                not.allow(`class`, "*Impl").except("DefaultImpl")
             } shouldBe listOf(
                 "@HiltViewModel public class HomeViewModel : ViewModel",
                 "public fun on*(): Unit",
@@ -34,9 +34,9 @@ class RuleRenderingSpec : FreeSpec({
 
         "修飾子は書いた順ではなく Kotlin の順に並ぶ" {
             val lines = rulesOf {
-                data.public.`class`("A")
-                const.private.`val`("D")
-                `class`("H") { operator.override.suspend.`fun`("b") }
+                allow(data, public, `class`, "A")
+                allow(const, private, `val`, "D")
+                allow(`class`, "H") { allow(operator, override, suspend, `fun`, "b") }
             }.declarations?.lines.orEmpty()
 
             lines.take(2).map(::renderRule) shouldBe listOf("public data class A", "private const val D")
@@ -45,18 +45,18 @@ class RuleRenderingSpec : FreeSpec({
 
         "前置きの 4 通り" {
             renderedLines {
-                (`class` or `interface`)("HomeUiState")
-                sealed.type("Action")
-                (internal or private).data.`object`("*")
-                (`class` or public.`interface`)("X")
-                (internal or private)(`class` or `interface`)("Y")
-                (annotated("Preview") or annotated("PreviewLightDark")).private.`fun`("*Preview")
-                (public or public.data).`object`("Z")
+                allow(`class` or `interface`, "HomeUiState")
+                allow(sealed, type, "Action")
+                allow(internal or private, data, `object`, "*")
+                allow(public or data, `class` or `interface`, "X")
+                allow(internal or private, `class` or `interface`, "Y")
+                allow(annotated("Preview") or annotated("PreviewLightDark"), private, `fun`, "*Preview")
+                allow(public, public or data, `object`, "Z")
             } shouldBe listOf(
                 "(class or interface) HomeUiState",
                 "sealed (class or interface) Action",
                 "(internal or private) data object *",
-                "(class or public interface) X",
+                "(public class or public interface or data class) X",
                 "(internal or private) (class or interface) Y",
                 "(@Preview or @PreviewLightDark) private fun *Preview(...)",
                 "(public or public data) object Z",
@@ -65,13 +65,13 @@ class RuleRenderingSpec : FreeSpec({
 
         "後ろにつなぐもの" {
             renderedLines {
-                `class`("A").superclass("B", "C<D>")
-                `fun`("e")("String", "Int")
-                `fun`("f")()
-                `fun`("g")(anyArgs())
-                `fun`("h").returns("Unit")
-                `var`("i", "Int?")
-                `typealias`("J")
+                allow(`class`, "A").superclass("B", "C<D>")
+                allow(`fun`, "e")("String", "Int")
+                allow(`fun`, "f")()
+                allow(`fun`, "g")(anyArgs())
+                allow(`fun`, "h").returns("Unit")
+                allow(`var`, "i", "Int?")
+                allow(`typealias`, "J")
             } shouldBe listOf(
                 "class A : B, C<D>",
                 "fun e(String, Int)",
@@ -85,8 +85,8 @@ class RuleRenderingSpec : FreeSpec({
 
         "禁止の行は not を前に、except を後ろに" {
             renderedLines {
-                not.public.`var`("*").except("isEnabled", "isVisible")
-                not.annotated("Deprecated").`fun`("*")
+                not.allow(public, `var`, "*").except("isEnabled", "isVisible")
+                not.allow(annotated("Deprecated"), `fun`, "*")
             } shouldBe listOf(
                 "not public var * except isEnabled, isVisible",
                 "not @Deprecated fun *(...)",
@@ -97,10 +97,10 @@ class RuleRenderingSpec : FreeSpec({
     "anythingElse" - {
         "修飾子なし・1 つ・or" {
             val rules = rulesOf {
-                anythingElse()
-                private.anythingElse()
-                (internal or private).anythingElse()
-                annotated("Preview").private.anythingElse()
+                allow(anythingElse)
+                allow(private, anythingElse)
+                allow(internal or private, anythingElse)
+                allow(annotated("Preview"), private, anythingElse)
             }
 
             rules.declarations?.anythingElse.orEmpty().map(::renderAnythingElse) shouldBe listOf(

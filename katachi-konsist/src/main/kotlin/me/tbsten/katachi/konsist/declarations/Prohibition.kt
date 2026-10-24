@@ -1,29 +1,30 @@
 package me.tbsten.katachi.konsist.declarations
 
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.konsist.declarations.internal.AllowWriter
 import me.tbsten.katachi.konsist.declarations.internal.FileBuilder
-import me.tbsten.katachi.konsist.declarations.internal.ModifierSet
 
 /**
- * What `not.` starts: a prohibited line. A declaration it matches is a violation even when an
- * allowed line matches it too -- a prohibition is stronger than a permission -- and `.except(...)`
- * lets part of it through.
+ * What `not.` starts: a prohibited line, `not.allow(...)`. A declaration it matches is a violation
+ * even when an allowed line matches it too -- a prohibition is stronger than a permission -- and
+ * `.except(...)` lets part of it through.
  *
- * Everything that starts a declaration line starts a prohibited one here: modifiers, `annotated`,
- * the kinds. There is no `anythingElse()`: "anything else" names nothing in particular to prohibit.
+ * It holds `allow(...)` only, written as on an allowed line, and in the file `` `import` `` and
+ * `` `package` ``. `not.allow(..., anythingElse)` is refused: "anything else" names nothing in
+ * particular to prohibit.
  *
  * ## Example 1: everything but implementations named after the interface
  * ```kt
  * ktFileContent {
- *     `interface`(fileName)
- *     `class`("Default$fileName")
- *     not.`class`("*Impl").except("LegacyImpl")
- *     not.private.`fun`("*")
+ *     allow(`interface`, fileName)
+ *     allow(`class`, "Default$fileName")
+ *     not.allow(`class`, "*Impl").except("LegacyImpl")
+ *     not.allow(private, `fun`, "*")
  * }
  * ```
  */
 @ExperimentalKatachiApi
-public sealed interface Prohibition : DeclarationVocabulary
+public sealed interface Prohibition : DeclarationAllow
 
 /**
  * `not.` directly in `ktFileContent { }`, where imports and packages can be prohibited too.
@@ -39,8 +40,9 @@ public sealed interface Prohibition : DeclarationVocabulary
 @ExperimentalKatachiApi
 public class FileProhibition internal constructor(
     private val file: FileBuilder,
-) : Prohibition,
-    DeclarationVocabulary by VocabularyImpl(listOf(ModifierSet.EMPTY), prohibited = true, sink = file.declarations) {
+) : Prohibition {
+    internal val writer: AllowWriter = AllowWriter(file.declarations, prohibited = true)
+
     /**
      * Prohibits the imports whose path matches [pattern], `.` separated: `*` is one level, `**`
      * any number of them, zero included: `"com.example.legacy.**"` prohibits `com.example.legacy`

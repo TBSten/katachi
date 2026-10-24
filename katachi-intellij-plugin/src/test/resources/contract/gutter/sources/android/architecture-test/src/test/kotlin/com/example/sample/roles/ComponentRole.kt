@@ -99,8 +99,8 @@ fun DeclarationContainerScope.component() = "Component".role {
         `import`("androidx.compose.**")
         `import`("com.example.sample.ui.**")
 
-        annotated("Composable").public.`fun`(fileName)
-        annotated("Preview").private.`fun`("*Preview")
-        public.enum.`class`("$fileName*")
+        allow(annotated("Composable"), public, `fun`, fileName)
+        allow(annotated("Preview"), private, `fun`, "*Preview")
+        allow(public, enum, `class`, "$fileName*")
     }
 }

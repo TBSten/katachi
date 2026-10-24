@@ -53,6 +53,6 @@ fun DeclarationContainerScope.expectDeclaration() = "ExpectDeclaration".role {
     // share. A declaration written once for every platform belongs to another role.
     ktFileContent {
         `package`("com.example.kmp.data.platform")
-        expect.anythingElse()
+        allow(expect, anythingElse)
     }
 }

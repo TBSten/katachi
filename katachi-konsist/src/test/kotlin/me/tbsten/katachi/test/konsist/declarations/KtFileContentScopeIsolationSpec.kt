@@ -64,13 +64,13 @@ class KtFileContentScopeIsolationSpec : FreeSpec({
     }
 
     "スコープのメンバ" - {
-        "修飾子・annotated・種類・fileName・captureValue・not・anythingElse・anyArgs は宣言の一覧のスコープのメンバ" {
+        "修飾子・annotated・種類・fileName・captureValue・not・anythingElse・anyArgs・allow は宣言の一覧のスコープのメンバ" {
             val words = listOf(
                 "public", "protected", "private", "internal", "expect", "actual", "abstract", "open",
                 "sealed", "const", "external", "override", "lateinit", "tailrec", "suspend", "inner",
                 "enum", "annotation", "companion", "inline", "value", "infix", "operator", "data",
                 "annotated", "class", "interface", "object", "type", "fun", "val", "var", "typealias",
-                "fileName", "captureValue", "not", "anythingElse", "anyArgs",
+                "fileName", "captureValue", "not", "anythingElse", "anyArgs", "allow",
             )
 
             memberNamesOf(DeclarationListScope::class.java) shouldContainAll words

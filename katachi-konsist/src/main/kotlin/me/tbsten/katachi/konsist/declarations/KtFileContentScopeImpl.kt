@@ -1,8 +1,8 @@
 package me.tbsten.katachi.konsist.declarations
 
+import me.tbsten.katachi.konsist.declarations.internal.AllowWriter
 import me.tbsten.katachi.konsist.declarations.internal.DeclarationListBuilder
 import me.tbsten.katachi.konsist.declarations.internal.FileBuilder
-import me.tbsten.katachi.konsist.declarations.internal.ModifierSet
 
 /*
  * The scopes a `ktFileContent { }` block and the `{ }` of its class lines run in. They sit next to
@@ -14,14 +14,12 @@ import me.tbsten.katachi.konsist.declarations.internal.ModifierSet
 internal abstract class DeclarationListScopeImpl(
     protected val list: DeclarationListBuilder,
 ) : DeclarationListScope,
-    DeclarationVocabulary by VocabularyImpl(listOf(ModifierSet.EMPTY), prohibited = false, sink = list) {
+    DeclarationVocabulary by VocabularyImpl(list) {
+    val writer: AllowWriter = AllowWriter(list, prohibited = false)
+
     override val fileName: String get() = list.session.input.fileName
 
     override fun captureValue(name: String): String = list.session.input.captureValue(name)
-
-    override fun anythingElse() {
-        list.addAnythingElse(listOf(ModifierSet.EMPTY), prohibited = false)
-    }
 
     override fun anyArgs(): AnyArgs = AnyArgs()
 }
@@ -55,7 +53,8 @@ internal class ClassBodyScopeImpl(
 /** `not.` inside the `{ }` of a class: members only, no import or package. */
 internal class MemberProhibition(
     members: DeclarationListBuilder,
-) : Prohibition,
-    DeclarationVocabulary by VocabularyImpl(listOf(ModifierSet.EMPTY), prohibited = true, sink = members) {
+) : Prohibition {
+    val writer: AllowWriter = AllowWriter(members, prohibited = true)
+
     override fun toString(): String = "not"
 }

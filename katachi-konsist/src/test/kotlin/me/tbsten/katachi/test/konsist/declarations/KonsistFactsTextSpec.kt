@@ -140,7 +140,7 @@ class KonsistFactsTextSpec : FreeSpec({
         renderedFactsOf(
             "package com.example\n\ninternal fun LicensesScreenUiState.Companion.fake(): LicensesScreenUiState = TODO()\n",
         ) shouldBe listOf("internal fun LicensesScreenUiState.Companion.fake(): LicensesScreenUiState")
-        judged("package com.example\n\nfun String.fake() {}\n") { `fun`("fake") } shouldBe emptyList()
+        judged("package com.example\n\nfun String.fake() {}\n") { allow(`fun`, "fake") } shouldBe emptyList()
     }
 
     "context(...) の前のアノテーションを読み、行はアノテーションの行" - {

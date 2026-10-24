@@ -27,8 +27,8 @@ class KtFileContentReportSpec : FreeSpec({
             paths = { "core/domain" / "*UseCase".ktFile() },
         ) {
             block = DeclarationSite.capture(); ktFileContent {
-                `interface`(fileName)
-                defaultLine = DeclarationSite.capture(); `class`("Default$fileName").superclass(fileName)
+                allow(`interface`, fileName)
+                defaultLine = DeclarationSite.capture(); allow(`class`, "Default$fileName").superclass(fileName)
             }
         }
 
@@ -48,7 +48,7 @@ class KtFileContentReportSpec : FreeSpec({
                 - Rename it to DefaultGetUserUseCase
                 - Move it to a file of another role
                 - Allow it in ktFileContent { } at $block:
-                    `class`("GetUserUseCaseImpl").optional()
+                    allow(`class`, "GetUserUseCaseImpl").optional()
 
             [UnsatisfiedFileConstraint] core/domain/GetUserUseCase.kt
               Role: Screen / FileConstraint: "ktFileContent"
@@ -69,8 +69,8 @@ class KtFileContentReportSpec : FreeSpec({
             paths = { "src" / "*".ktFile() },
         ) {
             ktFileContent {
-                `class`("*")
-                prohibited = DeclarationSite.capture(); not.`class`("*Impl")
+                allow(`class`, "*")
+                prohibited = DeclarationSite.capture(); not.allow(`class`, "*Impl")
             }
         }
 
@@ -158,10 +158,10 @@ class KtFileContentReportSpec : FreeSpec({
             paths = { "src" / "*ViewModel".ktFile() },
         ) {
             ktFileContent {
-                classLine = DeclarationSite.capture(); public.`class`(fileName).superclass("ViewModel") {
-                    public.`val`("uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
-                    public.`fun`("on*")().returns("Unit")
-                    private.anythingElse()
+                classLine = DeclarationSite.capture(); allow(public, `class`, fileName).superclass("ViewModel") {
+                    allow(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+                    allow(public, `fun`, "on*")().returns("Unit")
+                    allow(private, anythingElse)
                 }
             }
         }
@@ -183,7 +183,7 @@ class KtFileContentReportSpec : FreeSpec({
                 - Make it private: private (anything) is allowed here
                 - Move it out of class HomeViewModel
                 - Allow it in ktFileContent { } at $classLine:
-                    `var`("isLoading").optional()
+                    allow(`var`, "isLoading").optional()
         """.trimIndent()
     }
 
@@ -202,9 +202,9 @@ class KtFileContentReportSpec : FreeSpec({
         ) {
             ktFileContent {
                 app = DeclarationSite.capture(); `import`("com.example.App")
-                `class`(fileName) {
-                    uiState = DeclarationSite.capture(); public.`val`("uiState", "StateFlow<*>")
-                    private.anythingElse()
+                allow(`class`, fileName) {
+                    uiState = DeclarationSite.capture(); allow(public, `val`, "uiState", "StateFlow<*>")
+                    allow(private, anythingElse)
                 }
             }
         }
@@ -243,7 +243,7 @@ class KtFileContentReportSpec : FreeSpec({
             paths = { "src" / "*UiState".ktFile() },
         ) {
             ktFileContent {
-                dataLine = DeclarationSite.capture(); data.`class`(fileName) { `val`("*") }
+                dataLine = DeclarationSite.capture(); allow(data, `class`, fileName) { allow(`val`, "*") }
             }
         }
 
@@ -316,10 +316,10 @@ class KtFileContentReportSpec : FreeSpec({
             ktFileContent {
                 `package`(matchingDirectory)
                 `import`("kotlin.**")
-                `class`(fileName) { }
-                data.`class`("FooImpl")
-                not.`object`("*")
-                `interface`("Missing")
+                allow(`class`, fileName) { }
+                allow(data, `class`, "FooImpl")
+                not.allow(`object`, "*")
+                allow(`interface`, "Missing")
             }
         }
 

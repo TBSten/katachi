@@ -8,10 +8,10 @@ class KtFileContentRequiredSpec : FreeSpec({
     "宣言の行" - {
         "* を含まない名前は必須、含む名前は任意" {
             dumpOf {
-                `class`("Fixed")
-                `class`("*Free")
-                `fun`("on*")
-                `val`("**")
+                allow(`class`, "Fixed")
+                allow(`class`, "*Free")
+                allow(`fun`, "on*")
+                allow(`val`, "**")
             } shouldBe """
                 required class{} Fixed
                 optional class{} *Free
@@ -21,16 +21,16 @@ class KtFileContentRequiredSpec : FreeSpec({
         }
 
         "\\* は文字の * なので、1 つに決まる名前として必須" {
-            dumpOf { `class`("""Star\*""") } shouldBe """required class{} Star\*"""
+            dumpOf { allow(`class`, """Star\*""") } shouldBe """required class{} Star\*"""
         }
 
         "optional() で任意になる。* を含む行の optional() は何も変えない" {
             dumpOf {
-                `class`("Fixed").optional()
-                `fun`("main").optional()
-                `val`("TAG").optional()
-                `typealias`("Key").optional()
-                `class`("*Free").optional()
+                allow(`class`, "Fixed").optional()
+                allow(`fun`, "main").optional()
+                allow(`val`, "TAG").optional()
+                allow(`typealias`, "Key").optional()
+                allow(`class`, "*Free").optional()
             } shouldBe """
                 optional class{} Fixed
                 optional fun{} main
@@ -42,8 +42,8 @@ class KtFileContentRequiredSpec : FreeSpec({
 
         "fileName や captureValue を埋めた名前は、埋めた後に * が無ければ必須" {
             dumpOf(fileName = "HomeViewModel", captures = mapOf("feature" to "home")) {
-                `class`(fileName)
-                `object`("${captureValue("feature")}Module")
+                allow(`class`, fileName)
+                allow(`object`, "${captureValue("feature")}Module")
             } shouldBe """
                 required class{} HomeViewModel
                 required object{} homeModule
@@ -51,16 +51,16 @@ class KtFileContentRequiredSpec : FreeSpec({
         }
 
         "禁止の行は必須にならない" {
-            dumpOf { not.`class`("Fixed") }.startsWith("prohibited") shouldBe true
-            rulesOf { not.`class`("Fixed") }.firstDeclaration.required shouldBe false
+            dumpOf { not.allow(`class`, "Fixed") }.startsWith("prohibited") shouldBe true
+            rulesOf { not.allow(`class`, "Fixed") }.firstDeclaration.required shouldBe false
         }
 
         "メンバも同じ決まり" {
             dumpOf {
-                `class`("Host") {
-                    `val`("uiState")
-                    `fun`("on*")
-                    companion.`object`("Companion").optional()
+                allow(`class`, "Host") {
+                    allow(`val`, "uiState")
+                    allow(`fun`, "on*")
+                    allow(companion, `object`, "Companion").optional()
                 }
             } shouldBe """
                 required class{} Host

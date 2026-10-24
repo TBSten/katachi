@@ -55,6 +55,6 @@ fun DeclarationContainerScope.screenPreview() = "ScreenPreview".role {
     }
     // Previews only, and private: nothing else calls them.
     ktFileContent {
-        annotated("Preview").private.`fun`("*Preview")
+        allow(annotated("Preview"), private, `fun`, "*Preview")
     }
 }

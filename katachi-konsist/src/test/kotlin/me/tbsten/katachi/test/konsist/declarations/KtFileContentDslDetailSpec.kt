@@ -7,14 +7,14 @@ import me.tbsten.katachi.konsist.declarations.KtFileContentScope
 /*
  * The rest of the ways of writing a line compile, and build the model they mean: names filled in
  * per file, what is chained after a kind, required and optional, prohibited lines and
- * `anythingElse()`, members. Compared through `dump()`, as `KtFileContentDslSpec` does.
+ * `allow(..., anythingElse)`, members. Compared through `dump()`, as `KtFileContentDslSpec` does.
  */
 class KtFileContentDslDetailSpec : FreeSpec({
     "名前 — fileName と captureValue" - {
         val block: KtFileContentScope.() -> Unit = {
             `package`("com.example.feature.${captureValue("feature")}")
-            `class`(fileName) {
-                `val`("uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+            allow(`class`, fileName) {
+                allow(`val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
             }
         }
 
@@ -37,9 +37,9 @@ class KtFileContentDslDetailSpec : FreeSpec({
         "if でファイルによって中身を変えられる" {
             val navigator: KtFileContentScope.() -> Unit = {
                 if (fileName.startsWith("Default")) {
-                    `class`(fileName).superclass(fileName.removePrefix("Default"))
+                    allow(`class`, fileName).superclass(fileName.removePrefix("Default"))
                 } else {
-                    `interface`(fileName).superclass("Navigator")
+                    allow(`interface`, fileName).superclass("Navigator")
                 }
             }
 
@@ -53,13 +53,13 @@ class KtFileContentDslDetailSpec : FreeSpec({
     "後ろにつなぐもの" - {
         "引数・戻り値・プロパティの型" {
             val dump = dumpOf {
-                `fun`("load")()
-                `fun`("save")("String", "Int")
-                `fun`("on*")(anyArgs())
-                `fun`("free")
-                public.`fun`("on*")().returns("Unit")
-                `val`("state", "StateFlow<*>")
-                `var`("count")
+                allow(`fun`, "load")()
+                allow(`fun`, "save")("String", "Int")
+                allow(`fun`, "on*")(anyArgs())
+                allow(`fun`, "free")
+                allow(public, `fun`, "on*")().returns("Unit")
+                allow(`val`, "state", "StateFlow<*>")
+                allow(`var`, "count")
             }
 
             dump shouldBe """
@@ -75,9 +75,9 @@ class KtFileContentDslDetailSpec : FreeSpec({
 
         "親の型はいくつも書け、{ } は種類の後ろにも superclass の後ろにも付けられる" {
             val dump = dumpOf {
-                `class`("A").superclass("B", "C").superclass("D")
-                `class`("E") { `val`("x") }
-                `class`("F").superclass("G") { `val`("y") }
+                allow(`class`, "A").superclass("B", "C").superclass("D")
+                allow(`class`, "E") { allow(`val`, "x") }
+                allow(`class`, "F").superclass("G") { allow(`val`, "y") }
             }
 
             dump shouldBe """
@@ -111,8 +111,8 @@ class KtFileContentDslDetailSpec : FreeSpec({
                 not.`import`("com.example.feature.**")
                     .except("com.example.feature.${captureValue("featurePackage")}.**")
 
-                `class`(fileName)
-                private.anythingElse()
+                allow(`class`, fileName)
+                allow(private, anythingElse)
             }
 
             dump shouldBe """
@@ -125,13 +125,13 @@ class KtFileContentDslDetailSpec : FreeSpec({
 
         "宣言とメンバの禁止の行。修飾子のない anythingElse は何でも" {
             val dump = dumpOf {
-                not.`class`("*Impl").except("DefaultImpl", "LegacyImpl")
-                `class`("Holder") {
-                    not.public.`var`("*")
-                    not.annotated("Deprecated").`fun`("*")
-                    (internal or private).anythingElse()
+                not.allow(`class`, "*Impl").except("DefaultImpl", "LegacyImpl")
+                allow(`class`, "Holder") {
+                    not.allow(public, `var`, "*")
+                    not.allow(annotated("Deprecated"), `fun`, "*")
+                    allow(internal or private, anythingElse)
                 }
-                anythingElse()
+                allow(anythingElse)
             }
 
             dump shouldBe """
@@ -149,12 +149,12 @@ class KtFileContentDslDetailSpec : FreeSpec({
     "メンバ" - {
         "UseCase の interface と Default の実装" {
             val dump = dumpOf(fileName = "GetUserUseCase") {
-                `interface`(fileName) {
-                    operator.`fun`("invoke")
+                allow(`interface`, fileName) {
+                    allow(operator, `fun`, "invoke")
                 }
-                `class`("Default$fileName").superclass(fileName) {
-                    override.`fun`("invoke")
-                    private.anythingElse()
+                allow(`class`, "Default$fileName").superclass(fileName) {
+                    allow(override, `fun`, "invoke")
+                    allow(private, anythingElse)
                 }
             }
 
@@ -171,8 +171,8 @@ class KtFileContentDslDetailSpec : FreeSpec({
 
         "UiState は val だけ" {
             dumpOf(fileName = "HomeUiState") {
-                data.`class`(fileName) {
-                    `val`("*")
+                allow(data, `class`, fileName) {
+                    allow(`val`, "*")
                 }
             } shouldBe """
                 required class{data} HomeUiState
@@ -183,13 +183,13 @@ class KtFileContentDslDetailSpec : FreeSpec({
 
         "入れ子のクラスにも { } を付けられ、クラスの中だけの修飾子が使える" {
             val dump = dumpOf {
-                `class`(fileName) {
-                    `class`("Mode") { `val`("*") }
-                    enum.`class`("*Kind")
-                    inner.`class`("Inner")
-                    companion.`object`("Companion").optional()
-                    protected.abstract.`fun`("render")
-                    lateinit.`var`("*")
+                allow(`class`, fileName) {
+                    allow(`class`, "Mode") { allow(`val`, "*") }
+                    allow(enum, `class`, "*Kind")
+                    allow(inner, `class`, "Inner")
+                    allow(companion, `object`, "Companion").optional()
+                    allow(protected, abstract, `fun`, "render")
+                    allow(lateinit, `var`, "*")
                 }
             }
 
@@ -211,8 +211,8 @@ class KtFileContentDslDetailSpec : FreeSpec({
     "テンプレートと同じ骨組みの例" - {
         "capture の値を埋めた親の型" {
             dumpOf(fileName = "UserRepositoryImpl", captures = mapOf("name" to "User")) {
-                `class`(fileName).superclass("${captureValue("name")}Repository") {
-                    override.`fun`("*")
+                allow(`class`, fileName).superclass("${captureValue("name")}Repository") {
+                    allow(override, `fun`, "*")
                 }
             } shouldBe """
                 required class{} UserRepositoryImpl supers=[UserRepository]

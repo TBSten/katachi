@@ -26,13 +26,13 @@ class KtFileContentLineErrorSpec : FreeSpec({
                     Start the line with not., or remove .except(...).
                 """.trimIndent()
             }
-            lineErrorOf { `class`("A").except("B") }.line shouldBe "class A"
+            lineErrorOf { allow(`class`, "A").except("B") }.line shouldBe "class A"
             lineErrorOf { `package`("a.**").except("a.b") }.line shouldBe "package a.**"
-            lineErrorOf { `class`("H") { `fun`("x").except("y") } }.problem shouldBe KtFileContentLineProblem.ExceptWithoutNot
+            lineErrorOf { allow(`class`, "H") { allow(`fun`, "x").except("y") } }.problem shouldBe KtFileContentLineProblem.ExceptWithoutNot
         }
 
         "名前の無い except は ExceptWithoutNames" {
-            lineErrorOf { not.`class`("*").except() }.let {
+            lineErrorOf { not.allow(`class`, "*").except() }.let {
                 it.problem shouldBe KtFileContentLineProblem.ExceptWithoutNames
                 it.line shouldBe "not class *"
             }
@@ -40,7 +40,7 @@ class KtFileContentLineErrorSpec : FreeSpec({
         }
 
         "禁止の行の optional は OptionalOnProhibited" {
-            lineErrorOf { not.`class`("A").optional() }.let {
+            lineErrorOf { not.allow(`class`, "A").optional() }.let {
                 it.problem shouldBe KtFileContentLineProblem.OptionalOnProhibited
                 it.line shouldBe "not class A"
             }
@@ -50,55 +50,47 @@ class KtFileContentLineErrorSpec : FreeSpec({
 
     "{ } と後ろにつなぐもの" - {
         "{ } を 2 回付けると BodyWrittenTwice" {
-            lineErrorOf { `class`("A") { }.superclass("B") { } }.let {
+            lineErrorOf { allow(`class`, "A") { }.superclass("B") { } }.let {
                 it.problem shouldBe KtFileContentLineProblem.BodyWrittenTwice
                 it.line shouldBe "class A : B"
             }
         }
 
         "禁止の行の { } は BodyOnProhibited" {
-            lineErrorOf { not.`class`("A") { } }.let {
+            lineErrorOf { not.allow(`class`, "A") { } }.let {
                 it.problem shouldBe KtFileContentLineProblem.BodyOnProhibited
                 it.line shouldBe "not class A"
             }
         }
 
         "引数を 2 回書くと ParametersWrittenTwice（anyArgs() も書いたことになる）" {
-            lineErrorOf { `fun`("x")()("String") }.let {
+            lineErrorOf { allow(`fun`, "x")()("String") }.let {
                 it.problem shouldBe KtFileContentLineProblem.ParametersWrittenTwice
                 it.line shouldBe "fun x()"
             }
-            lineErrorOf { `fun`("x")(anyArgs())() }.line shouldBe "fun x(...)"
+            lineErrorOf { allow(`fun`, "x")(anyArgs())() }.line shouldBe "fun x(...)"
         }
 
         "returns を 2 回書くと ReturnTypeWrittenTwice" {
-            lineErrorOf { `fun`("x").returns("A").returns("B") }.let {
+            lineErrorOf { allow(`fun`, "x").returns("A").returns("B") }.let {
                 it.problem shouldBe KtFileContentLineProblem.ReturnTypeWrittenTwice
                 it.line shouldBe "fun x(...): A"
             }
         }
 
         "名前の無い superclass は SuperclassWithoutNames" {
-            lineErrorOf { `class`("A").superclass() }.problem shouldBe KtFileContentLineProblem.SuperclassWithoutNames
+            lineErrorOf { allow(`class`, "A").superclass() }.problem shouldBe KtFileContentLineProblem.SuperclassWithoutNames
         }
     }
 
     "or と not" - {
-        "禁止と許可を or でつなぐと NotInsideOr" {
-            lineErrorOf { (not.private or internal).`class`("A") }.let {
-                it.problem shouldBe KtFileContentLineProblem.NotInsideOr
-                it.line shouldBe "not private or internal"
-            }
-            lineErrorOf { (not.`class` or `interface`)("A") }.line shouldBe "not class or interface"
-            lineErrorOf { (`val` or not.`var`)("a") }.line shouldBe "val or not var"
-        }
-
-        "両方が禁止なら or でつなげる" {
-            rulesOf { (not.`class` or not.`interface`)("*Impl") }.dump() shouldBe "prohibited class{}|interface{} *Impl"
+        "禁止かどうかは allow を呼んだ受け手で決まり、or で組んだ値はそのまま禁止の行に渡せる" {
+            rulesOf { not.allow(internal or private, `class` or `interface`, "*Impl") }.dump() shouldBe
+                "prohibited class{internal}|interface{internal}|class{private}|interface{private} *Impl"
         }
 
         "not のあとの anythingElse は AnythingElseAfterNot" {
-            lineErrorOf { not.private.anythingElse() }.let {
+            lineErrorOf { not.allow(private, anythingElse) }.let {
                 it.problem shouldBe KtFileContentLineProblem.AnythingElseAfterNot
                 it.line shouldBe "not private (anything)"
             }
@@ -107,19 +99,18 @@ class KtFileContentLineErrorSpec : FreeSpec({
 
     "種類と annotated" - {
         "クラスの中の typealias は TypeAliasInClassBody" {
-            lineErrorOf { `class`("A") { `typealias`("B") } }.let {
+            lineErrorOf { allow(`class`, "A") { allow(`typealias`, "B") } }.let {
                 it.problem shouldBe KtFileContentLineProblem.TypeAliasInClassBody
                 it.line shouldBe "typealias B"
             }
         }
 
         "名前の無い annotated は AnnotatedWithoutNames" {
-            lineErrorOf { annotated().`class`("A") }.let {
+            lineErrorOf { allow(annotated(), `class`, "A") }.let {
                 it.problem shouldBe KtFileContentLineProblem.AnnotatedWithoutNames
                 it.line shouldBe "annotated()"
                 it.message?.lines()?.first() shouldBe "annotated() at ${it.declaredAt} names no annotation."
             }
-            lineErrorOf { public.annotated() }.problem shouldBe KtFileContentLineProblem.AnnotatedWithoutNames
         }
     }
 
@@ -127,7 +118,7 @@ class KtFileContentLineErrorSpec : FreeSpec({
         "ファイル直下の値でクラスの中に行を書くと OutsideItsBlock" {
             lineErrorOf {
                 val fromFile = private
-                `class`("A") { fromFile.anythingElse() }
+                allow(`class`, "A") { allow(fromFile, anythingElse) }
             }.let {
                 it.problem shouldBe KtFileContentLineProblem.OutsideItsBlock
                 it.line shouldBe "private (anything)"
@@ -136,26 +127,28 @@ class KtFileContentLineErrorSpec : FreeSpec({
 
         "ラベルで外のスコープを指しても、クラスの中から import は書けない" {
             lineErrorOf {
-                `class`("A") { this@lineErrorOf.`import`("kotlin.**") }
+                allow(`class`, "A") { this@lineErrorOf.`import`("kotlin.**") }
             }.problem shouldBe KtFileContentLineProblem.OutsideItsBlock
         }
 
         "ほかのブロックの種類と or でつなぐと OutsideItsBlock" {
             lineErrorOf {
                 val fromFile = `class`
-                `class`("A") { (fromFile or `interface`)("B") }
+                allow(`class`, "A") { allow(fromFile or `interface`, "B") }
             }.problem shouldBe KtFileContentLineProblem.OutsideItsBlock
         }
 
         "評価が終わった後に値を使うと OutsideItsBlock" {
+            lateinit var scope: KtFileContentScope
             lateinit var kept: Modifiers
             lateinit var line: TypeLine
             rulesOf {
-                kept = private.also { it.`fun`("x") }
-                line = `class`("A")
+                scope = this
+                kept = private.also { allow(it, `fun`, "x") }
+                line = allow(`class`, "A")
             }
 
-            shouldThrow<KatachiKtFileContentLineException> { kept.anythingElse() }
+            shouldThrow<KatachiKtFileContentLineException> { scope.allow(kept, scope.`fun`, "y") }
                 .problem shouldBe KtFileContentLineProblem.OutsideItsBlock
             shouldThrow<KatachiKtFileContentLineException> { line.optional() }
                 .problem shouldBe KtFileContentLineProblem.OutsideItsBlock
@@ -166,17 +159,16 @@ class KtFileContentLineErrorSpec : FreeSpec({
         "どの文面も 3 行で ASCII だけ、宣言元を含む" {
             val errors = listOf<KtFileContentScope.() -> Unit>(
                 { `import`("a.**").except("b") },
-                { not.`class`("*").except() },
-                { not.`class`("A").optional() },
-                { `class`("A") { }.superclass("B") { } },
-                { not.`class`("A") { } },
-                { `fun`("x")()() },
-                { `fun`("x").returns("A").returns("B") },
-                { `class`("A").superclass() },
-                { (not.private or internal).`class`("A") },
-                { `class`("A") { `typealias`("B") } },
+                { not.allow(`class`, "*").except() },
+                { not.allow(`class`, "A").optional() },
+                { allow(`class`, "A") { }.superclass("B") { } },
+                { not.allow(`class`, "A") { } },
+                { allow(`fun`, "x")()() },
+                { allow(`fun`, "x").returns("A").returns("B") },
+                { allow(`class`, "A").superclass() },
+                { allow(`class`, "A") { allow(`typealias`, "B") } },
                 { annotated() },
-                { not.private.anythingElse() },
+                { not.allow(private, anythingElse) },
                 { annotated("X") },
             ).map(::lineErrorOf)
 

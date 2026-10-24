@@ -62,7 +62,7 @@ private fun moduleArchitecture(): Architecture = architecture {
             ":feature:*".module {
                 "build.gradle.kts".file()
                 mainSourceSet / kotlin / "*Screen".ktFile()
-                ktFileContent { `class`(fileName) }
+                ktFileContent { allow(`class`, fileName) }
             }
         }
     }
@@ -101,8 +101,8 @@ class DescribeDefinitionKtFileContentSpec : FreeSpec({
     "fileDeclarations" - {
         "書かれた JSON は explainDeclarations の答えと同じ宣言・行・verdict で、.txt は読まれない" {
             val block: KtFileContentScope.() -> Unit = {
-                `class`(fileName)
-                `object`("*Factory")
+                allow(`class`, fileName)
+                allow(`object`, "*Factory")
             }
             val json = describedJson(serviceArchitecture(block), healthService, userService, notes)
 
@@ -157,7 +157,7 @@ class DescribeDefinitionKtFileContentSpec : FreeSpec({
 
         "落ちたのが .kt 以外だけなら ExplanationTruncated は出ない" {
             val json = describedJson(
-                serviceArchitecture { `class`(fileName) },
+                serviceArchitecture { allow(`class`, fileName) },
                 healthService,
                 notes,
                 args = { DescribeDefinition.Args(output = it, maxExplainedFiles = 1) },
@@ -179,7 +179,7 @@ class DescribeDefinitionKtFileContentSpec : FreeSpec({
                     }
                 }
                 "Loud".role {
-                    layout { "src/loud" { "*".ktFile(); ktFileContent { `class`(fileName) } } }
+                    layout { "src/loud" { "*".ktFile(); ktFileContent { allow(`class`, fileName) } } }
                 }
             }
             val json = describedJson(
@@ -203,7 +203,7 @@ class DescribeDefinitionKtFileContentSpec : FreeSpec({
 
         "explainDeclarations = false なら Kotlin のソースを読まず fileDeclarations は null" {
             val json = describedJson(
-                serviceArchitecture { `class`(fileName) },
+                serviceArchitecture { allow(`class`, fileName) },
                 healthService,
                 args = { DescribeDefinition.Args(output = it, explainDeclarations = false) },
             )

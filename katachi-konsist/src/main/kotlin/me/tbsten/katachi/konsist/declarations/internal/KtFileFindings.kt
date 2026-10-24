@@ -31,7 +31,7 @@ internal class DeclarationListContext(
     override fun toString(): String = "DeclarationListContext(${containers.map { it.name }})"
 }
 
-/** A declaration that matches no line, nor any line without a `*` in its name by name alone, nor `anythingElse()`. */
+/** A declaration that matches no line, nor any line without a `*` in its name by name alone, nor `allow(..., anythingElse)`. */
 internal class UnexpectedDeclaration(
     val fact: DeclarationFact,
     val list: DeclarationListContext,

@@ -14,7 +14,7 @@ import me.tbsten.katachi.konsist.declarations.internal.applicableKinds
  * definition is read.
  *
  * The block is evaluated once with stand-in values (`fileName` is `Sample`) as soon as
- * `ktFileContent { }` is called, so a line like `` data.`interface`(fileName) `` fails there and
+ * `ktFileContent { }` is called, so a line like `` allow(data, `interface`, fileName) `` fails there and
  * then, pointing at the line, rather than matching nothing in every file. The same check runs for
  * every file during the check, where a line only one file reaches (behind an `if`) is caught.
  *
@@ -24,7 +24,7 @@ import me.tbsten.katachi.konsist.declarations.internal.applicableKinds
  *     architecture {
  *         "UiState".role {
  *             layout { "*UiState".ktFile() }
- *             ktFileContent { data.`interface`(fileName) }
+ *             ktFileContent { allow(data, `interface`, fileName) }
  *         }
  *     }
  * }
@@ -197,7 +197,7 @@ private fun modifierMessage(
     val (why, how) = when (problem) {
         KtFileContentModifierProblem.Conflicting ->
             "$named cannot be on one declaration together." to
-                "Write (${modifiers.joinToString(" or ")}) to accept either, or keep only one of them."
+                "Write allow(${modifiers.joinToString(" or ")}, ...) to accept either, or keep only one of them."
 
         KtFileContentModifierProblem.OnlyInClassBody -> if (kind == null) {
             "$named is only valid on a member of a class, and this line is written directly in the file." to
@@ -262,7 +262,7 @@ private fun lineMessage(problem: KtFileContentLineProblem, line: String, at: Dec
 
         KtFileContentLineProblem.BodyWrittenTwice -> Triple(
             "Line \"$line\" at $at is given a { } twice.",
-            "A class line has one body: the { } after the name and the { } after .superclass(...) would both list its members.",
+            "A class line has one body: the { } after allow(...) and the { } after .superclass(...) would both list its members.",
             "Write the members in one of the two { }.",
         )
 
@@ -290,12 +290,6 @@ private fun lineMessage(problem: KtFileContentLineProblem, line: String, at: Dec
             "Pass at least one name, or remove .superclass().",
         )
 
-        KtFileContentLineProblem.NotInsideOr -> Triple(
-            "\"$line\" at $at joins a prohibited part and an allowed part with or.",
-            "A line either allows or prohibits: not. applies to the whole line, so it cannot sit on one side of or.",
-            "Put not. in front of every part, or write the two parts as two lines.",
-        )
-
         KtFileContentLineProblem.TypeAliasInClassBody -> Triple(
             "Line \"$line\" at $at puts a typealias inside the { } of a class.",
             "Kotlin declares a typealias only directly in a file, so the line could never match a member.",
@@ -309,27 +303,24 @@ private fun lineMessage(problem: KtFileContentLineProblem, line: String, at: Dec
         )
 
         KtFileContentLineProblem.DanglingModifiers -> Triple(
-            "\"$line\" at $at is not followed by a declaration.",
-            "Modifiers and annotations apply to the kind chained after them, so on a line of their own they " +
-                "apply to nothing: the next line is not their declaration, and they would be ignored.",
-            if (line.startsWith("not ")) {
-                "Write what to prohibit in front of the kind on the same line, such as not.private.`fun`(\"*\"), or remove it."
-            } else {
-                "Write it in front of the kind on the same line, such as annotated(\"Inject\").`class`(\"Name\"), or finish it with anythingElse(), or remove it."
-            },
+            "\"$line\" at $at is not passed to allow(...).",
+            "A modifier, an annotation or a kind writes nothing on a line of its own: it does not apply to the " +
+                "next line, so it would be ignored.",
+            "Pass it to allow(...) on the same line, such as allow(annotated(\"Inject\"), `class`, \"Name\") or " +
+                "allow(private, anythingElse), or remove it.",
         )
 
         KtFileContentLineProblem.AnythingElseAfterNot -> Triple(
-            "Line \"$line\" at $at prohibits anythingElse().",
-            "anythingElse() allows what no other line matches; after not. it names nothing in particular to prohibit.",
-            "Write what to prohibit as lines of their own, such as not.private.`fun`(\"*\"), or remove not.",
+            "Line \"$line\" at $at prohibits anythingElse.",
+            "allow(anythingElse) allows what no other line matches; after not. it names nothing in particular to prohibit.",
+            "Write what to prohibit as lines of their own, such as not.allow(private, `fun`, \"*\"), or remove not.",
         )
 
         KtFileContentLineProblem.OutsideItsBlock -> Triple(
             "Line \"$line\" at $at is written with a value that belongs to another block.",
             "A line goes to the block whose vocabulary built it, so a value kept in a variable would put it " +
                 "somewhere other than where it is written, or into an evaluation that has already ended.",
-            "Write the line with the vocabulary of the block it is in, such as private.anythingElse() directly " +
+            "Write the line with the vocabulary of the block it is in, such as allow(private, anythingElse) directly " +
                 "inside the { } of the class.",
         )
     }

@@ -63,7 +63,7 @@ class KtFileContentPropertySpec : FreeSpec({
                 val found = judgedCase(changed)
                 found.map(::keyOf) shouldBe listOf(key)
                 val mismatch = found.single().endsWith(" | Differs in: ${change.differs}")
-                // Allowed some other way (anythingElse(), a line named *), the line is missing instead.
+                // Allowed some other way (allow(anythingElse), a line named *), the line is missing instead.
                 val missingWithFound = list.rules?.allowsOtherwise == true && found.single().contains(" | Found: ")
                 withClue("found: ${found.single()}") { (mismatch || missingWithFound) shouldBe true }
             }

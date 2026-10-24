@@ -10,7 +10,7 @@ import java.util.IdentityHashMap
  * 1. a `not.` line matches it in full: prohibited
  * 2. an allowed line matches it in full: allowed (and its members are judged by the `{ }` of the
  *    first such line that has one)
- * 3. an `anythingElse()` matches it: allowed (its members are not looked at)
+ * 3. an `allow(..., anythingElse)` matches it: allowed (its members are not looked at)
  * 4. otherwise it is wrong: mismatched when an allowed line without a `*` in its name matches its name, unexpected if not
  *
  * Then each required line that nothing matches, and that no mismatched declaration claims, is
@@ -44,7 +44,7 @@ internal sealed interface DeclarationOutcome {
     /** These allowed lines match it in full, in the order written. */
     class Allowed(val rules: List<DeclarationRule>) : DeclarationOutcome
 
-    /** No line matches it, and these `anythingElse()` do. */
+    /** No line matches it, and these `allow(..., anythingElse)` do. */
     class AllowedByAnythingElse(val rules: List<AnythingElseRule>) : DeclarationOutcome
 
     /** An allowed line without a `*` in its name matches its name, [rule] being the one it is reported against. */

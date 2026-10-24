@@ -28,7 +28,7 @@ class KtFileContentDeclarationTimeSpec : FreeSpec({
                     "UiState".role {
                         layout { "*UiState".ktFile() }
                         ktFileContent {
-                            site = DeclarationSite.capture(); data.`interface`(fileName)
+                            site = DeclarationSite.capture(); allow(data, `interface`, fileName)
                         }
                     }
                 }
@@ -78,8 +78,8 @@ class KtFileContentDeclarationTimeSpec : FreeSpec({
                     "Screen".role {
                         layout { "*Screen".ktFile() }
                         ktFileContent {
-                            `class`(fileName) {
-                                site = DeclarationSite.capture(); abstract.open.`fun`("render")
+                            allow(`class`, fileName) {
+                                site = DeclarationSite.capture(); allow(abstract, open, `fun`, "render")
                             }
                         }
                     }
@@ -96,7 +96,7 @@ class KtFileContentDeclarationTimeSpec : FreeSpec({
                     "Screen".role {
                         layout { "*Screen".ktFile() }
                         ktFileContent {
-                            if (fileName == "Sample") data.`interface`(fileName) else `class`(fileName)
+                            if (fileName == "Sample") allow(data, `interface`, fileName) else allow(`class`, fileName)
                         }
                     }
                 }
@@ -112,7 +112,7 @@ class KtFileContentDeclarationTimeSpec : FreeSpec({
                     layout { "*Screen".ktFile() }
                     ktFileContent {
                         seen += "$fileName ${captureValue("feature")} ${captureValue("anything")}"
-                        `class`(fileName)
+                        allow(`class`, fileName)
                     }
                 }
             }
@@ -126,7 +126,7 @@ class KtFileContentDeclarationTimeSpec : FreeSpec({
                     "Screen".role {
                         layout { "*Screen".ktFile() }
                         ktFileContent {
-                            `class`(captureValue("feature").substring(20))
+                            allow(`class`, captureValue("feature").substring(20))
                         }
                     }
                 }
