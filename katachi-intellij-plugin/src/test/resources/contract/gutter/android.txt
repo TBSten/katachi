@@ -1105,7 +1105,7 @@ roles: Gradle.BuildScript
 roles: data.RepositoryInterface
     data.RepositoryInterface declared at RepositoryInterfaceRole.kt:15 | fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role {
 4 | ◆ | katachi: data.RepositoryInterface — allowed by interface SettingsRepository (RepositoryInterfaceRole.kt:74)
-    allowed at RepositoryInterfaceRole.kt:74 | allow(`interface`, fileName) {
+    allowed at RepositoryInterfaceRole.kt:74 | required(`interface`, fileName) {
     menu | ◆ Allowed by interface SettingsRepository | RepositoryInterfaceRole.kt:74
     menu | ◇ Role data.RepositoryInterface — Repository interface | RepositoryInterfaceRole.kt:15
     menu | == Other files of data.RepositoryInterface (1)
@@ -1121,7 +1121,7 @@ roles: data.RepositoryInterface
 roles: data.RepositoryImplementation
     data.RepositoryImplementation declared at RepositoryImplementationRole.kt:15 | fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation".role {
 8 | ◆ | katachi: data.RepositoryImplementation — allowed by class SettingsRepositoryImpl : SettingsRepository (RepositoryImplementationRole.kt:58)
-    allowed at RepositoryImplementationRole.kt:58 | allow(`class`, fileName).superclass(fileName.removeSuffix("Impl")) { // UserRepositoryImpl : UserRepository
+    allowed at RepositoryImplementationRole.kt:58 | required(`class`, fileName).superclass(fileName.removeSuffix("Impl")) { // UserRepositoryImpl : UserRepository
     menu | ◆ Allowed by class SettingsRepositoryImpl : SettingsRepository | RepositoryImplementationRole.kt:58
     menu | ◇ Role data.RepositoryImplementation — Repository implementation | RepositoryImplementationRole.kt:15
     menu | == Other files of data.RepositoryImplementation (1)
@@ -1137,7 +1137,7 @@ roles: data.RepositoryImplementation
 roles: data.RepositoryInterface
     data.RepositoryInterface declared at RepositoryInterfaceRole.kt:15 | fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role {
 4 | ◆ | katachi: data.RepositoryInterface — allowed by interface UserRepository (RepositoryInterfaceRole.kt:74)
-    allowed at RepositoryInterfaceRole.kt:74 | allow(`interface`, fileName) {
+    allowed at RepositoryInterfaceRole.kt:74 | required(`interface`, fileName) {
     menu | ◆ Allowed by interface UserRepository | RepositoryInterfaceRole.kt:74
     menu | ◇ Role data.RepositoryInterface — Repository interface | RepositoryInterfaceRole.kt:15
     menu | == Other files of data.RepositoryInterface (1)
@@ -1153,7 +1153,7 @@ roles: data.RepositoryInterface
 roles: data.RepositoryImplementation
     data.RepositoryImplementation declared at RepositoryImplementationRole.kt:15 | fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation".role {
 9 | ◆ | katachi: data.RepositoryImplementation — allowed by class UserRepositoryImpl : UserRepository (RepositoryImplementationRole.kt:58)
-    allowed at RepositoryImplementationRole.kt:58 | allow(`class`, fileName).superclass(fileName.removeSuffix("Impl")) { // UserRepositoryImpl : UserRepository
+    allowed at RepositoryImplementationRole.kt:58 | required(`class`, fileName).superclass(fileName.removeSuffix("Impl")) { // UserRepositoryImpl : UserRepository
     menu | ◆ Allowed by class UserRepositoryImpl : UserRepository | RepositoryImplementationRole.kt:58
     menu | ◇ Role data.RepositoryImplementation — Repository implementation | RepositoryImplementationRole.kt:15
     menu | == Other files of data.RepositoryImplementation (1)
@@ -2045,7 +2045,7 @@ roles: Gradle.BuildScript
 roles: feature.Route
     feature.Route declared at RouteRole.kt:15 | fun DeclarationContainerScope.route() = "Route".role {
 12 | ◆ | katachi: feature.Route — allowed by object HomeRoute (RouteRole.kt:51)
-    allowed at RouteRole.kt:51 | allow(`object`, fileName) {
+    allowed at RouteRole.kt:51 | required(`object`, fileName) {
     menu | ◆ Allowed by object HomeRoute | RouteRole.kt:51
     menu | ◇ Role feature.Route — Route | RouteRole.kt:15
     menu | == Other files of feature.Route (1)
@@ -2054,7 +2054,7 @@ roles: feature.Route
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 17 | ◆ | katachi: feature.Route — allowed by fun homeScreen(...) (RouteRole.kt:54)
-    allowed at RouteRole.kt:54 | allow(`fun`, "${feature}Screen") // NavGraphBuilder.homeScreen(...)
+    allowed at RouteRole.kt:54 | required(`fun`, "${feature}Screen") // NavGraphBuilder.homeScreen(...)
     menu | ◆ Allowed by fun homeScreen(...) | RouteRole.kt:54
     menu | ◇ Role feature.Route — Route | RouteRole.kt:15
     menu | == Other files of feature.Route (1)
@@ -2067,7 +2067,7 @@ roles: feature.Route
 roles: feature.Screen
     feature.Screen declared at ScreenRole.kt:23 | fun DeclarationContainerScope.screen() = "Screen".role {
 30 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun HomeScreen(...) (ScreenRole.kt:73)
-    allowed at ScreenRole.kt:73 | allow(annotated("Composable"), internal, `fun`, fileName)
+    allowed at ScreenRole.kt:73 | required(annotated("Composable"), internal, `fun`, fileName)
     menu | ◆ Allowed by @Composable internal fun HomeScreen(...) | ScreenRole.kt:73
     menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:23
     menu | == Other files of feature.Screen (1)
@@ -2076,7 +2076,7 @@ roles: feature.Screen
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 46 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun HomeScreen(...) (ScreenRole.kt:73)
-    allowed at ScreenRole.kt:73 | allow(annotated("Composable"), internal, `fun`, fileName)
+    allowed at ScreenRole.kt:73 | required(annotated("Composable"), internal, `fun`, fileName)
     menu | ◆ Allowed by @Composable internal fun HomeScreen(...) | ScreenRole.kt:73
     menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:23
     menu | == Other files of feature.Screen (1)
@@ -2107,7 +2107,7 @@ roles: feature.Screen
 roles: feature.ViewModel
     feature.ViewModel declared at ViewModelRole.kt:15 | fun DeclarationContainerScope.viewModel() = "ViewModel".role {
 12 | ◆ | katachi: feature.ViewModel — allowed by internal data class HomeContent (ViewModelRole.kt:56)
-    allowed at ViewModelRole.kt:56 | allow(internal, data, `class`, content)
+    allowed at ViewModelRole.kt:56 | required(internal, data, `class`, content)
     menu | ◆ Allowed by internal data class HomeContent | ViewModelRole.kt:56
     menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:15
     menu | == Other files of feature.ViewModel (1)
@@ -2116,7 +2116,7 @@ roles: feature.ViewModel
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 23 | ◆ | katachi: feature.ViewModel — allowed by internal class HomeViewModel : ViewModel (ViewModelRole.kt:57)
-    allowed at ViewModelRole.kt:57 | allow(internal, `class`, fileName).superclass("ViewModel") {
+    allowed at ViewModelRole.kt:57 | required(internal, `class`, fileName).superclass("ViewModel") {
     menu | ◆ Allowed by internal class HomeViewModel : ViewModel | ViewModelRole.kt:57
     menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:15
     menu | == Other files of feature.ViewModel (1)
@@ -2129,7 +2129,7 @@ roles: feature.ViewModel
 roles: feature.FeatureTest
     feature.FeatureTest declared at FeatureTestRole.kt:25 | fun DeclarationContainerScope.featureTest() = "FeatureTest".role {
 8 | ◆ | katachi: feature.FeatureTest — allowed by class HomeViewModelTest (FeatureTestRole.kt:73)
-    allowed at FeatureTestRole.kt:73 | allow(`class`, fileName) {
+    allowed at FeatureTestRole.kt:73 | required(`class`, fileName) {
     menu | ◆ Allowed by class HomeViewModelTest | FeatureTestRole.kt:73
     menu | ◇ Role feature.FeatureTest — Screen test | FeatureTestRole.kt:25
     menu | == Other files of feature.FeatureTest (1)
@@ -2163,7 +2163,7 @@ roles: Gradle.BuildScript
 roles: feature.Route
     feature.Route declared at RouteRole.kt:15 | fun DeclarationContainerScope.route() = "Route".role {
 12 | ◆ | katachi: feature.Route — allowed by object SettingsRoute (RouteRole.kt:51)
-    allowed at RouteRole.kt:51 | allow(`object`, fileName) {
+    allowed at RouteRole.kt:51 | required(`object`, fileName) {
     menu | ◆ Allowed by object SettingsRoute | RouteRole.kt:51
     menu | ◇ Role feature.Route — Route | RouteRole.kt:15
     menu | == Other files of feature.Route (1)
@@ -2172,7 +2172,7 @@ roles: feature.Route
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 17 | ◆ | katachi: feature.Route — allowed by fun settingsScreen(...) (RouteRole.kt:54)
-    allowed at RouteRole.kt:54 | allow(`fun`, "${feature}Screen") // NavGraphBuilder.homeScreen(...)
+    allowed at RouteRole.kt:54 | required(`fun`, "${feature}Screen") // NavGraphBuilder.homeScreen(...)
     menu | ◆ Allowed by fun settingsScreen(...) | RouteRole.kt:54
     menu | ◇ Role feature.Route — Route | RouteRole.kt:15
     menu | == Other files of feature.Route (1)
@@ -2185,7 +2185,7 @@ roles: feature.Route
 roles: feature.Screen
     feature.Screen declared at ScreenRole.kt:23 | fun DeclarationContainerScope.screen() = "Screen".role {
 28 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun SettingsScreen(...) (ScreenRole.kt:73)
-    allowed at ScreenRole.kt:73 | allow(annotated("Composable"), internal, `fun`, fileName)
+    allowed at ScreenRole.kt:73 | required(annotated("Composable"), internal, `fun`, fileName)
     menu | ◆ Allowed by @Composable internal fun SettingsScreen(...) | ScreenRole.kt:73
     menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:23
     menu | == Other files of feature.Screen (1)
@@ -2194,7 +2194,7 @@ roles: feature.Screen
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 44 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun SettingsScreen(...) (ScreenRole.kt:73)
-    allowed at ScreenRole.kt:73 | allow(annotated("Composable"), internal, `fun`, fileName)
+    allowed at ScreenRole.kt:73 | required(annotated("Composable"), internal, `fun`, fileName)
     menu | ◆ Allowed by @Composable internal fun SettingsScreen(...) | ScreenRole.kt:73
     menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:23
     menu | == Other files of feature.Screen (1)
@@ -2216,7 +2216,7 @@ roles: feature.Screen
 roles: feature.ViewModel
     feature.ViewModel declared at ViewModelRole.kt:15 | fun DeclarationContainerScope.viewModel() = "ViewModel".role {
 12 | ◆ | katachi: feature.ViewModel — allowed by internal data class SettingsContent (ViewModelRole.kt:56)
-    allowed at ViewModelRole.kt:56 | allow(internal, data, `class`, content)
+    allowed at ViewModelRole.kt:56 | required(internal, data, `class`, content)
     menu | ◆ Allowed by internal data class SettingsContent | ViewModelRole.kt:56
     menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:15
     menu | == Other files of feature.ViewModel (1)
@@ -2225,7 +2225,7 @@ roles: feature.ViewModel
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 17 | ◆ | katachi: feature.ViewModel — allowed by internal class SettingsViewModel : ViewModel (ViewModelRole.kt:57)
-    allowed at ViewModelRole.kt:57 | allow(internal, `class`, fileName).superclass("ViewModel") {
+    allowed at ViewModelRole.kt:57 | required(internal, `class`, fileName).superclass("ViewModel") {
     menu | ◆ Allowed by internal class SettingsViewModel : ViewModel | ViewModelRole.kt:57
     menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:15
     menu | == Other files of feature.ViewModel (1)
@@ -2238,7 +2238,7 @@ roles: feature.ViewModel
 roles: feature.FeatureTest
     feature.FeatureTest declared at FeatureTestRole.kt:25 | fun DeclarationContainerScope.featureTest() = "FeatureTest".role {
 8 | ◆ | katachi: feature.FeatureTest — allowed by class SettingsViewModelTest (FeatureTestRole.kt:73)
-    allowed at FeatureTestRole.kt:73 | allow(`class`, fileName) {
+    allowed at FeatureTestRole.kt:73 | required(`class`, fileName) {
     menu | ◆ Allowed by class SettingsViewModelTest | FeatureTestRole.kt:73
     menu | ◇ Role feature.FeatureTest — Screen test | FeatureTestRole.kt:25
     menu | == Other files of feature.FeatureTest (1)
@@ -2367,7 +2367,7 @@ roles: Gradle.BuildScript
 roles: testing.Fake
     testing.Fake declared at FakeRole.kt:20 | fun DeclarationContainerScope.fake() = "Fake".role {
 6 | ◆ | katachi: testing.Fake — allowed by class FakeSettingsRepository : SettingsRepository (FakeRole.kt:90)
-    allowed at FakeRole.kt:90 | allow(`class`, fileName).superclass(captureValue("repository")) {
+    allowed at FakeRole.kt:90 | required(`class`, fileName).superclass(captureValue("repository")) {
     menu | ◆ Allowed by class FakeSettingsRepository : SettingsRepository | FakeRole.kt:90
     menu | ◇ Role testing.Fake — Fake | FakeRole.kt:20
     menu | == Other files of testing.Fake (1)
@@ -2381,7 +2381,7 @@ roles: testing.Fake
 roles: testing.Fake
     testing.Fake declared at FakeRole.kt:20 | fun DeclarationContainerScope.fake() = "Fake".role {
 6 | ◆ | katachi: testing.Fake — allowed by class FakeUserRepository : UserRepository (FakeRole.kt:90)
-    allowed at FakeRole.kt:90 | allow(`class`, fileName).superclass(captureValue("repository")) {
+    allowed at FakeRole.kt:90 | required(`class`, fileName).superclass(captureValue("repository")) {
     menu | ◆ Allowed by class FakeUserRepository : UserRepository | FakeRole.kt:90
     menu | ◇ Role testing.Fake — Fake | FakeRole.kt:20
     menu | == Other files of testing.Fake (1)
@@ -2413,7 +2413,7 @@ roles: Gradle.BuildScript
 roles: ui.Component
     ui.Component declared at ComponentRole.kt:17 | fun DeclarationContainerScope.component() = "Component".role {
 18 | ◆ | katachi: ui.Component — allowed by @Composable public fun AppButton(...) (ComponentRole.kt:102)
-    allowed at ComponentRole.kt:102 | allow(annotated("Composable"), public, `fun`, fileName)
+    allowed at ComponentRole.kt:102 | required(annotated("Composable"), public, `fun`, fileName)
     menu | ◆ Allowed by @Composable public fun AppButton(...) | ComponentRole.kt:102
     menu | ◇ Role ui.Component — Shared component | ComponentRole.kt:17
     menu | == Other files of ui.Component

@@ -5,16 +5,16 @@ import me.tbsten.katachi.konsist.declarations.internal.DeclarationLineBuilder
 
 /**
  * A class, interface or object line just written, which the calls chained after it change:
- * supertypes, members, whether it is required, what a prohibited line lets through.
+ * supertypes, members, what a prohibited line lets through.
  *
  * ## Example 1: a view model named after the file, with its supertype and members
  * ```kt
  * ktFileContent {
- *     allow(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
- *         allow(public, `val`, "uiState", "StateFlow<*>")
+ *     required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
+ *         required(public, `val`, "uiState", "StateFlow<*>")
  *         allow(private, anythingElse)
  *     }
- *     allow(`object`, "*Preview").optional()
+ *     allow(`object`, "*Preview")
  *     not.allow(`class`, "*Impl").except("LegacyImpl")
  * }
  * ```
@@ -48,22 +48,6 @@ public class TypeLine internal constructor(
     }
 
     /**
-     * Makes the line optional: a file without such a declaration is fine. A name with `*` is
-     * optional already.
-     *
-     * ## Example 1: an optional companion object
-     * ```kt
-     * allow(`class`, fileName) { allow(companion, `object`, "Companion").optional() }
-     * ```
-     *
-     * @throws KatachiKtFileContentLineException on a line that starts with `not.`.
-     */
-    public fun optional(): TypeLine {
-        line.markOptional()
-        return this
-    }
-
-    /**
      * Lets the names matching [names] through this prohibited line.
      *
      * ## Example 1: no `*Impl` class but one
@@ -85,7 +69,7 @@ public class TypeLine internal constructor(
 
 /**
  * A function line just written, which the calls chained after it change: parameters, the return
- * type, whether it is required, what a prohibited line lets through.
+ * type, what a prohibited line lets through.
  *
  * A parameter is written the way Kotlin writes it, `"name: Type"`: a name pattern and a type
  * pattern, split at the first `:`. `"*: String"` accepts any name and `"id: *"` any type.
@@ -155,21 +139,6 @@ public class FunctionLine internal constructor(
     }
 
     /**
-     * Makes the line optional: a file without such a function is fine.
-     *
-     * ## Example 1: an optional entry point
-     * ```kt
-     * allow(public, `fun`, "main").optional()
-     * ```
-     *
-     * @throws KatachiKtFileContentLineException on a line that starts with `not.`.
-     */
-    public fun optional(): FunctionLine {
-        line.markOptional()
-        return this
-    }
-
-    /**
      * Lets the names matching [names] through this prohibited line.
      *
      * ## Example 1: no public function but `invoke`
@@ -192,11 +161,11 @@ public class FunctionLine internal constructor(
 /**
  * A property line just written, which the calls chained after it change.
  *
- * ## Example 1: an optional property, and a prohibited one
+ * ## Example 1: a property that may be there, and a prohibited one
  * ```kt
  * ktFileContent {
  *     allow(`class`, fileName) {
- *         allow(`val`, "isLoading", "Boolean").optional()
+ *         allow(`val`, "isLoading", "Boolean")
  *         not.allow(public, `var`, "*")
  *     }
  * }
@@ -206,21 +175,6 @@ public class FunctionLine internal constructor(
 public class PropertyLine internal constructor(
     internal val line: DeclarationLineBuilder,
 ) {
-    /**
-     * Makes the line optional: a file without such a property is fine.
-     *
-     * ## Example 1: an optional tag
-     * ```kt
-     * allow(private, const, `val`, "TAG").optional()
-     * ```
-     *
-     * @throws KatachiKtFileContentLineException on a line that starts with `not.`.
-     */
-    public fun optional(): PropertyLine {
-        line.markOptional()
-        return this
-    }
-
     /**
      * Lets the names matching [names] through this prohibited line.
      *
@@ -244,30 +198,15 @@ public class PropertyLine internal constructor(
 /**
  * A type alias line just written, which the calls chained after it change.
  *
- * ## Example 1: an optional type alias
+ * ## Example 1: type aliases that may be there
  * ```kt
- * ktFileContent { allow(`typealias`, "*Key").optional() }
+ * ktFileContent { allow(`typealias`, "*Key") }
  * ```
  */
 @ExperimentalKatachiApi
 public class TypeAliasLine internal constructor(
     internal val line: DeclarationLineBuilder,
 ) {
-    /**
-     * Makes the line optional: a file without such a type alias is fine.
-     *
-     * ## Example 1: an optional type alias named after the file
-     * ```kt
-     * allow(`typealias`, fileName).optional()
-     * ```
-     *
-     * @throws KatachiKtFileContentLineException on a line that starts with `not.`.
-     */
-    public fun optional(): TypeAliasLine {
-        line.markOptional()
-        return this
-    }
-
     /**
      * Lets the names matching [names] through this prohibited line.
      *

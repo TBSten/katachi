@@ -70,7 +70,7 @@ fun DeclarationContainerScope.screen() = "Screen".role {
         `import`("androidx.lifecycle.**")
         `import`("com.example.sample.ui.**")
 
-        allow(annotated("Composable"), internal, `fun`, fileName)
+        required(annotated("Composable"), internal, `fun`, fileName)
         allow(annotated("Preview"), private, `fun`, "*Preview")
     }
 }

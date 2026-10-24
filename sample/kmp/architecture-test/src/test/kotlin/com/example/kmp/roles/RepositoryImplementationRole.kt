@@ -61,7 +61,7 @@ fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementa
     // `class UserRepositoryImpl : UserRepository`, and that class only overrides. The skeleton is
     // written twice, here and in the template, and a drift between them fails the next check.
     ktFileContent {
-        allow(`class`, fileName).superclass("${captureValue("name")}Repository") {
+        required(`class`, fileName).superclass("${captureValue("name")}Repository") {
             allow(override, `fun`, "*")
         }
     }

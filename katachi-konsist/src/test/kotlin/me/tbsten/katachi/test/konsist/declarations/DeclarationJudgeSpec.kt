@@ -43,7 +43,7 @@ class DeclarationJudgeSpec : FreeSpec({
 
         "どの行にも当たらなければ anythingElse で通る" {
             judged(kt("class Sample\nprivate fun helper() {}\nfun leak() {}")) {
-                allow(`class`, fileName)
+                required(`class`, fileName)
                 allow(private, anythingElse)
             } shouldBe listOf("leak (line 5) | Not allowed: fun leak()")
         }
@@ -65,7 +65,7 @@ class DeclarationJudgeSpec : FreeSpec({
         }
 
         "書かなかった修飾子は問わない" {
-            judged(kt("data class Sample(val id: Int)")) { allow(`class`, fileName) }.shouldBeEmpty()
+            judged(kt("data class Sample(val id: Int)")) { required(`class`, fileName) }.shouldBeEmpty()
         }
 
         "or はどちらかでよい" {
@@ -86,12 +86,12 @@ class DeclarationJudgeSpec : FreeSpec({
 
         "完全修飾名のアノテーションは import から解決して当たる" {
             judged(kt("import androidx.compose.runtime.Composable\n\n@Composable\nfun Sample() {}")) {
-                allow(annotated("androidx.compose.runtime.Composable"), `fun`, fileName)
+                required(annotated("androidx.compose.runtime.Composable"), `fun`, fileName)
             }.shouldBeEmpty()
         }
 
         "種類が違えば kind を言う" {
-            judged(kt("class Sample")) { allow(`interface`, fileName) } shouldBe listOf(
+            judged(kt("class Sample")) { required(`interface`, fileName) } shouldBe listOf(
                 "Sample (line 3) | Not allowed: class Sample | Expected: interface Sample | Differs in: kind (is class, expected interface)",
             )
         }
@@ -124,7 +124,7 @@ class DeclarationJudgeSpec : FreeSpec({
 
         "private・protected・override のメンバも数える" {
             judged(kt("abstract class Sample : Base() {\n    private val a = 1\n    protected fun b() {}\n    override fun c() {}\n}")) {
-                allow(`class`, fileName) { }
+                required(`class`, fileName) { }
             } shouldBe listOf(
                 "Sample.a (line 4) | Not allowed: private val a in class Sample",
                 "Sample.b (line 5) | Not allowed: protected fun b() in class Sample",
@@ -136,29 +136,29 @@ class DeclarationJudgeSpec : FreeSpec({
     "型・引数・戻り値・親の型" - {
         "プロパティの型はパッケージと空白を外して比べ、* が使える" {
             judged(kt("class Sample {\n    val a: kotlinx.coroutines.flow.StateFlow< Int >\n}")) {
-                allow(`class`, fileName) { allow(`val`, "a", "StateFlow<*>") }
+                required(`class`, fileName) { required(`val`, "a", "StateFlow<*>") }
             }.shouldBeEmpty()
         }
 
         "推論させた型は、型を書いた行に当たらない" {
             judged(kt("class Sample {\n    val a = 1\n}")) {
-                allow(`class`, fileName) { allow(`val`, "a", "Int") }
+                required(`class`, fileName) { required(`val`, "a", "Int") }
             } shouldBe listOf(
                 "Sample.a (line 4) | Not allowed: val a in class Sample | Expected: val a: Int | Differs in: type (not written, expected Int)",
             )
         }
 
         "nullable は区別する" {
-            judged(kt("val name: String? = null")) { allow(`val`, "name", "String") } shouldBe listOf(
+            judged(kt("val name: String? = null")) { required(`val`, "name", "String") } shouldBe listOf(
                 "name (line 3) | Not allowed: val name: String? | Expected: val name: String | Differs in: type (is String?, expected String)",
             )
         }
 
         "引数は名前と型の並びで比べ、書かなければ問わない" {
             judged(kt("fun load(a: String, b: Int) {}\nfun save(x: Int) {}\nfun drop(x: Int) {}")) {
-                allow(`fun`, "load")("a: String", "b: Int")
-                allow(`fun`, "save")()
-                allow(`fun`, "drop")
+                required(`fun`, "load")("a: String", "b: Int")
+                required(`fun`, "save")()
+                required(`fun`, "drop")
             } shouldBe listOf(
                 "save (line 4) | Not allowed: fun save(x: Int) | Expected: fun save() | Differs in: parameters (are (x: Int), expected ())",
             )
@@ -174,10 +174,10 @@ class DeclarationJudgeSpec : FreeSpec({
 
         "親の型は、型引数を書かなければ名前で、書けば型引数ごと比べる。いくつも書けばすべて要る" {
             judged(kt("class Sample : Repository<User>, Closeable")) {
-                allow(`class`, fileName).superclass("Repository", "Closeable")
+                required(`class`, fileName).superclass("Repository", "Closeable")
             }.shouldBeEmpty()
             judged(kt("class Sample : Repository<User>")) {
-                allow(`class`, fileName).superclass("Repository<Admin>")
+                required(`class`, fileName).superclass("Repository<Admin>")
             } shouldBe listOf(
                 "Sample (line 3) | Not allowed: class Sample : Repository<User> | Expected: class Sample : Repository<Admin> | " +
                     "Differs in: superclass (missing: Repository<Admin>)",
@@ -191,42 +191,42 @@ class DeclarationJudgeSpec : FreeSpec({
         }
 
         "宣言だけを書けば import は見ない" {
-            judged(kt("import android.content.Context\n\nclass Sample")) { allow(`class`, fileName) }.shouldBeEmpty()
+            judged(kt("import android.content.Context\n\nclass Sample")) { required(`class`, fileName) }.shouldBeEmpty()
         }
 
         "{ } を付けなければメンバは見ない。空の { } はメンバを置かない" {
             val source = kt("class Sample {\n    fun a() {}\n}")
-            judged(source) { allow(`class`, fileName) }.shouldBeEmpty()
-            judged(source) { allow(`class`, fileName) { } } shouldBe listOf("Sample.a (line 4) | Not allowed: fun a() in class Sample")
+            judged(source) { required(`class`, fileName) }.shouldBeEmpty()
+            judged(source) { required(`class`, fileName) { } } shouldBe listOf("Sample.a (line 4) | Not allowed: fun a() in class Sample")
         }
     }
 
     "必須と足りないもの" - {
-        "* を含まない名前は必須で、無ければ足りない" {
+        "required の行は、当たる宣言が無ければ足りない" {
             judged(kt("interface Sample")) {
-                allow(`interface`, fileName)
-                allow(`class`, "Default$fileName").superclass(fileName)
+                required(`interface`, fileName)
+                required(`class`, "Default$fileName").superclass(fileName)
             } shouldBe listOf("DefaultSample | Missing: class DefaultSample : Sample")
         }
 
-        "optional() と * を含む名前は無くてもよい" {
+        "allow の行は、* の有無にかかわらず当たる宣言が無くてもよい" {
             judged(kt("interface Sample")) {
-                allow(`interface`, fileName)
-                allow(`class`, "Default$fileName").optional()
+                required(`interface`, fileName)
+                allow(`class`, "Default$fileName")
                 allow(`object`, "*Factory")
             }.shouldBeEmpty()
         }
 
         "名前だけ当たる宣言は 1 件にまとめ、足りないは出さない" {
-            judged(kt("class Sample")) { allow(data, `class`, fileName) } shouldBe listOf(
+            judged(kt("class Sample")) { required(data, `class`, fileName) } shouldBe listOf(
                 "Sample (line 3) | Not allowed: class Sample | Expected: data class Sample | Differs in: modifiers (missing: data)",
             )
         }
 
         "名前は当たるが形が違う宣言が anythingElse で許されたら、足りないに Found を添える" {
             judged(kt("class Sample {\n    private fun invoke() {}\n}")) {
-                allow(`class`, fileName) {
-                    allow(override, `fun`, "invoke")
+                required(`class`, fileName) {
+                    required(override, `fun`, "invoke")
                     allow(private, anythingElse)
                 }
             } shouldBe listOf("Sample.invoke | Missing: override fun invoke(...) in class Sample | Found: private fun invoke() (line 4)")
@@ -234,9 +234,9 @@ class DeclarationJudgeSpec : FreeSpec({
 
         "メンバの必須は、入れ子のクラスまで見る" {
             judged(kt("class Sample {\n    class Mode {\n        fun next() {}\n    }\n}")) {
-                allow(`class`, fileName) {
-                    allow(`class`, "Mode") {
-                        allow(`fun`, "previous")
+                required(`class`, fileName) {
+                    required(`class`, "Mode") {
+                        required(`fun`, "previous")
                     }
                 }
             } shouldBe listOf(
@@ -247,8 +247,8 @@ class DeclarationJudgeSpec : FreeSpec({
 
         "足りないものは、ファイル直下が先、メンバが後" {
             judged(kt("class Sample {\n}")) {
-                allow(`class`, fileName) { allow(`val`, "state") }
-                allow(`object`, "Keys")
+                required(`class`, fileName) { required(`val`, "state") }
+                required(`object`, "Keys")
             } shouldBe listOf(
                 "Keys | Missing: object Keys",
                 "Sample.state | Missing: val state in class Sample",

@@ -48,9 +48,9 @@ fun DeclarationContainerScope.route() = "Route".role {
         `import`("androidx.navigation.**")
 
         val feature = fileName.removeSuffix("Route").replaceFirstChar { it.lowercaseChar() }
-        allow(`object`, fileName) {
-            allow(const, `val`, "PATH", "String")
+        required(`object`, fileName) {
+            required(const, `val`, "PATH", "String")
         }
-        allow(`fun`, "${feature}Screen") // NavGraphBuilder.homeScreen(...)
+        required(`fun`, "${feature}Screen") // NavGraphBuilder.homeScreen(...)
     }
 }

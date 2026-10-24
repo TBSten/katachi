@@ -38,7 +38,7 @@
           "ruleIndex": 0,
           "level": "error",
           "message": {
-            "text": "Role: Screen / FileConstraint: \"ktFileContent\"\nDeclaration: GetUserUseCaseImpl (line 5)\nNot allowed: class GetUserUseCaseImpl : GetUserUseCase\nAllowed here:\n  interface GetUserUseCase\n  class DefaultGetUserUseCase : GetUserUseCase  (missing)\nDeclared at: KtFileContentSarifSpec.kt:36\n\nHow to fix:\n  - Rename it to DefaultGetUserUseCase\n  - Move it to a file of another role\n  - Allow it in ktFileContent { } at KtFileContentSarifSpec.kt:36:\n      allow(`class`, \"GetUserUseCaseImpl\").optional()"
+            "text": "Role: Screen / FileConstraint: \"ktFileContent\"\nDeclaration: GetUserUseCaseImpl (line 5)\nNot allowed: class GetUserUseCaseImpl : GetUserUseCase\nAllowed here:\n  interface GetUserUseCase\n  class DefaultGetUserUseCase : GetUserUseCase  (missing)\nDeclared at: KtFileContentSarifSpec.kt:36\n\nHow to fix:\n  - Rename it to DefaultGetUserUseCase\n  - Move it to a file of another role\n  - Allow it in ktFileContent { } at KtFileContentSarifSpec.kt:36:\n      allow(`class`, \"GetUserUseCaseImpl\")"
           },
           "locations": [
             {
@@ -68,7 +68,7 @@
           "ruleIndex": 0,
           "level": "error",
           "message": {
-            "text": "Role: Screen / FileConstraint: \"ktFileContent\"\nDeclaration: DefaultGetUserUseCase\nMissing: class DefaultGetUserUseCase : GetUserUseCase\nDeclared at: KtFileContentSarifSpec.kt:38\n\nHow to fix:\n  - Declare it in this file\n  - If some files do not need it, make it optional at KtFileContentSarifSpec.kt:38"
+            "text": "Role: Screen / FileConstraint: \"ktFileContent\"\nDeclaration: DefaultGetUserUseCase\nMissing: class DefaultGetUserUseCase : GetUserUseCase\nDeclared at: KtFileContentSarifSpec.kt:38\n\nHow to fix:\n  - Declare it in this file\n  - If some files do not need it, write allow(...) in place of required(...) at KtFileContentSarifSpec.kt:38"
           },
           "locations": [
             {
@@ -125,7 +125,7 @@
           "ruleIndex": 0,
           "level": "error",
           "message": {
-            "text": "Role: Screen / FileConstraint: \"ktFileContent\"\nDeclaration: DefaultHomeViewModel\nMissing: class DefaultHomeViewModel : HomeViewModel\nDeclared at: KtFileContentSarifSpec.kt:38\n\nHow to fix:\n  - Declare it in this file\n  - If some files do not need it, make it optional at KtFileContentSarifSpec.kt:38"
+            "text": "Role: Screen / FileConstraint: \"ktFileContent\"\nDeclaration: DefaultHomeViewModel\nMissing: class DefaultHomeViewModel : HomeViewModel\nDeclared at: KtFileContentSarifSpec.kt:38\n\nHow to fix:\n  - Declare it in this file\n  - If some files do not need it, write allow(...) in place of required(...) at KtFileContentSarifSpec.kt:38"
           },
           "locations": [
             {
@@ -152,34 +152,7 @@
           "ruleIndex": 0,
           "level": "error",
           "message": {
-            "text": "Role: Screen / FileConstraint: \"ktFileContent\"\nDeclaration: import com.example.App\nMissing: import com.example.App\nDeclared at: KtFileContentSarifSpec.kt:47\n\nHow to fix:\n  - Add the import\n  - If some files do not need it, make it optional at KtFileContentSarifSpec.kt:47"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "android/core/ui/CounterViewModel.kt",
-                  "uriBaseId": "%SRCROOT%"
-                }
-              }
-            }
-          ],
-          "properties": {
-            "kind": "FileConstraint",
-            "severity": "Error",
-            "path": "core/ui/CounterViewModel.kt",
-            "role": "Screen",
-            "constraint": "ktFileContent",
-            "declaration": "import com.example.App",
-            "declaredAt": "KtFileContentSarifSpec.kt:47"
-          }
-        },
-        {
-          "ruleId": "katachi.UnsatisfiedFileConstraint",
-          "ruleIndex": 0,
-          "level": "error",
-          "message": {
-            "text": "Role: Screen / FileConstraint: \"ktFileContent\"\nDeclaration: CounterViewModel.count\nMissing: public val count: Int in class CounterViewModel\nFound: private val count (line 4)\nDeclared at: KtFileContentSarifSpec.kt:49\n\nHow to fix:\n  - Change the declaration at line 4 to: public val count: Int\n  - Or change the line at KtFileContentSarifSpec.kt:49 if the declaration is right\n  - If some files do not need it, make it optional at KtFileContentSarifSpec.kt:49"
+            "text": "Role: Screen / FileConstraint: \"ktFileContent\"\nDeclaration: CounterViewModel.count\nMissing: public val count: Int in class CounterViewModel\nFound: private val count (line 4)\nDeclared at: KtFileContentSarifSpec.kt:49\n\nHow to fix:\n  - Change the declaration at line 4 to: public val count: Int\n  - Or change the line at KtFileContentSarifSpec.kt:49 if the declaration is right\n  - If some files do not need it, write allow(...) in place of required(...) at KtFileContentSarifSpec.kt:49"
           },
           "locations": [
             {

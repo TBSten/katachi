@@ -34,19 +34,19 @@ class KtFileContentSarifSpec : FreeSpec({
             paths = { "core/domain" / "*".ktFile() },
         ) {
             ktFileContent {
-                allow(`interface`, fileName)
-                allow(`class`, "Default$fileName").superclass(fileName)
+                required(`interface`, fileName)
+                required(`class`, "Default$fileName").superclass(fileName)
             }
         }
-        // A member that exists in another shape (the `Found:` line), and an import that is not there.
+        // A member that exists in another shape (the `Found:` line); the import line only allows, so it is never missing.
         val members = ktFileContentRun(
             "core/ui/CounterViewModel.kt" to "package com.example.ui\n\nclass CounterViewModel {\n    private val count = 1\n}\n",
             paths = { "core/ui" / "*ViewModel".ktFile() },
         ) {
             ktFileContent {
                 `import`("com.example.App")
-                allow(`class`, fileName) {
-                    allow(public, `val`, "count", "Int")
+                required(`class`, fileName) {
+                    required(public, `val`, "count", "Int")
                     allow(private, anythingElse)
                 }
             }

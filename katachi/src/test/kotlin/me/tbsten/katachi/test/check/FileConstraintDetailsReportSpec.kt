@@ -73,7 +73,7 @@ class FileConstraintDetailsReportSpec : FreeSpec({
                         FileConstraintFix("Move it to a file of another role"),
                         FileConstraintFix(
                             "Allow it in ktFileContent { } at UseCaseRole.kt:16:",
-                            code = listOf("allow(`class`, \"GetUserUseCaseImpl\").optional()"),
+                            code = listOf("allow(`class`, \"GetUserUseCaseImpl\")"),
                         ),
                     ),
                     ruleDeclaredAt = RULE_SITE,
@@ -98,7 +98,7 @@ class FileConstraintDetailsReportSpec : FreeSpec({
                 - Rename it to DefaultGetUserUseCase
                 - Move it to a file of another role
                 - Allow it in ktFileContent { } at UseCaseRole.kt:16:
-                    allow(`class`, "GetUserUseCaseImpl").optional()
+                    allow(`class`, "GetUserUseCaseImpl")
             """.trimIndent()
     }
 

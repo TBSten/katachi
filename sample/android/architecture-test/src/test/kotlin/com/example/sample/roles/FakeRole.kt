@@ -87,7 +87,7 @@ fun DeclarationContainerScope.fake() = "Fake".role {
     ktFileContent {
         `import`("com.example.sample.data.**")
 
-        allow(`class`, fileName).superclass(captureValue("repository")) {
+        required(`class`, fileName).superclass(captureValue("repository")) {
             allow(override, `fun`, "*")
             allow(private, anythingElse)
         }

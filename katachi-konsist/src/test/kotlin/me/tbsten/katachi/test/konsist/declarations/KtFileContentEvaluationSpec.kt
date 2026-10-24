@@ -66,7 +66,7 @@ class KtFileContentEvaluationSpec : FreeSpec({
             ) {
                 ktFileContent {
                     seen += "$fileName ${captureValue("feature")}"
-                    allow(`class`, fileName)
+                    required(`class`, fileName)
                 }
             }
 
@@ -113,7 +113,7 @@ class KtFileContentEvaluationSpec : FreeSpec({
                 paths = { "src" / "*".ktFile() },
             ) {
                 ktFileContent {
-                    if (fileName == "Sample") allow(`class`, fileName) else allow(data, `interface`, fileName)
+                    if (fileName == "Sample") required(`class`, fileName) else required(data, `interface`, fileName)
                 }
             }
 
@@ -179,8 +179,8 @@ class KtFileContentEvaluationSpec : FreeSpec({
                 "src/HomeScreen.kt" to classNamed("HomeScreen"),
                 paths = { "src" / "*".ktFile() },
             ) {
-                first = DeclarationSite.capture(); ktFileContent { allow(`class`, fileName) }
-                second = DeclarationSite.capture(); ktFileContent { allow(`class`, fileName) }
+                first = DeclarationSite.capture(); ktFileContent { required(`class`, fileName) }
+                second = DeclarationSite.capture(); ktFileContent { required(`class`, fileName) }
             }
 
             val unchecked = violations.singleUnchecked()
@@ -211,7 +211,7 @@ class KtFileContentEvaluationSpec : FreeSpec({
                                 mainSourceSet / kotlin / "*Screen".ktFile()
                                 ktFileContent {
                                     seen += fileName
-                                    allow(`class`, fileName)
+                                    required(`class`, fileName)
                                 }
                             }
                         }
@@ -230,7 +230,7 @@ class KtFileContentEvaluationSpec : FreeSpec({
                 "src/HomeScreen.kt" to classNamed("HomeScreen"),
                 paths = { "src" / "*".ktFile() },
             ) {
-                ktFileContent { if (fileName == "NoSuchFile") allow(`class`, fileName) }
+                ktFileContent { if (fileName == "NoSuchFile") required(`class`, fileName) }
             }
 
             violations.shouldBeEmpty()
@@ -252,7 +252,7 @@ class KtFileContentEvaluationSpec : FreeSpec({
                 paths = { "src" / "*ViewModel".ktFile() },
             ) {
                 ktFileContent {
-                    allow(`class`, fileName)
+                    required(`class`, fileName)
                     // Empty for the stand-in Sample only: "Home" for the real file.
                     allow(`class`, fileName.dropLast("ViewModel".length))
                 }

@@ -13,8 +13,8 @@ class KtFileContentDslDetailSpec : FreeSpec({
     "名前 — fileName と captureValue" - {
         val block: KtFileContentScope.() -> Unit = {
             `package`("com.example.feature.${captureValue("feature")}")
-            allow(`class`, fileName) {
-                allow(`val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+            required(`class`, fileName) {
+                required(`val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
             }
         }
 
@@ -37,9 +37,9 @@ class KtFileContentDslDetailSpec : FreeSpec({
         "if でファイルによって中身を変えられる" {
             val navigator: KtFileContentScope.() -> Unit = {
                 if (fileName.startsWith("Default")) {
-                    allow(`class`, fileName).superclass(fileName.removePrefix("Default"))
+                    required(`class`, fileName).superclass(fileName.removePrefix("Default"))
                 } else {
-                    allow(`interface`, fileName).superclass("Navigator")
+                    required(`interface`, fileName).superclass("Navigator")
                 }
             }
 
@@ -53,13 +53,13 @@ class KtFileContentDslDetailSpec : FreeSpec({
     "後ろにつなぐもの" - {
         "引数・戻り値・プロパティの型" {
             val dump = dumpOf {
-                allow(`fun`, "load")()
-                allow(`fun`, "save")("name: String", "count: Int")
+                required(`fun`, "load")()
+                required(`fun`, "save")("name: String", "count: Int")
                 allow(`fun`, "on*")(anyArgs())
-                allow(`fun`, "free")
+                required(`fun`, "free")
                 allow(public, `fun`, "on*")().returns("Unit")
-                allow(`val`, "state", "StateFlow<*>")
-                allow(`var`, "count")
+                required(`val`, "state", "StateFlow<*>")
+                required(`var`, "count")
             }
 
             dump shouldBe """
@@ -75,9 +75,9 @@ class KtFileContentDslDetailSpec : FreeSpec({
 
         "親の型はいくつも書け、{ } は種類の後ろにも superclass の後ろにも付けられる" {
             val dump = dumpOf {
-                allow(`class`, "A").superclass("B", "C").superclass("D")
-                allow(`class`, "E") { allow(`val`, "x") }
-                allow(`class`, "F").superclass("G") { allow(`val`, "y") }
+                required(`class`, "A").superclass("B", "C").superclass("D")
+                required(`class`, "E") { required(`val`, "x") }
+                required(`class`, "F").superclass("G") { required(`val`, "y") }
             }
 
             dump shouldBe """
@@ -93,12 +93,12 @@ class KtFileContentDslDetailSpec : FreeSpec({
     }
 
     "必須と任意" - {
-        "* を含まない import は必須、含むものは任意" {
+        "import の行は * の有無にかかわらず許すだけ" {
             dumpOf {
                 `import`("com.example.App")
                 `import`("androidx.compose.**")
             } shouldBe """
-                import com.example.App required
+                import com.example.App optional
                 import androidx.compose.** optional
             """.trimIndent()
         }
@@ -111,7 +111,7 @@ class KtFileContentDslDetailSpec : FreeSpec({
                 not.`import`("com.example.feature.**")
                     .except("com.example.feature.${captureValue("featurePackage")}.**")
 
-                allow(`class`, fileName)
+                required(`class`, fileName)
                 allow(private, anythingElse)
             }
 
@@ -126,7 +126,7 @@ class KtFileContentDslDetailSpec : FreeSpec({
         "宣言とメンバの禁止の行。修飾子のない anythingElse は何でも" {
             val dump = dumpOf {
                 not.allow(`class`, "*Impl").except("DefaultImpl", "LegacyImpl")
-                allow(`class`, "Holder") {
+                required(`class`, "Holder") {
                     not.allow(public, `var`, "*")
                     not.allow(annotated("Deprecated"), `fun`, "*")
                     allow(internal or private, anythingElse)
@@ -149,11 +149,11 @@ class KtFileContentDslDetailSpec : FreeSpec({
     "メンバ" - {
         "UseCase の interface と Default の実装" {
             val dump = dumpOf(fileName = "GetUserUseCase") {
-                allow(`interface`, fileName) {
-                    allow(operator, `fun`, "invoke")
+                required(`interface`, fileName) {
+                    required(operator, `fun`, "invoke")
                 }
-                allow(`class`, "Default$fileName").superclass(fileName) {
-                    allow(override, `fun`, "invoke")
+                required(`class`, "Default$fileName").superclass(fileName) {
+                    required(override, `fun`, "invoke")
                     allow(private, anythingElse)
                 }
             }
@@ -171,7 +171,7 @@ class KtFileContentDslDetailSpec : FreeSpec({
 
         "UiState は val だけ" {
             dumpOf(fileName = "HomeUiState") {
-                allow(data, `class`, fileName) {
+                required(data, `class`, fileName) {
                     allow(`val`, "*")
                 }
             } shouldBe """
@@ -183,12 +183,12 @@ class KtFileContentDslDetailSpec : FreeSpec({
 
         "入れ子のクラスにも { } を付けられ、クラスの中だけの修飾子が使える" {
             val dump = dumpOf {
-                allow(`class`, fileName) {
-                    allow(`class`, "Mode") { allow(`val`, "*") }
+                required(`class`, fileName) {
+                    required(`class`, "Mode") { allow(`val`, "*") }
                     allow(enum, `class`, "*Kind")
-                    allow(inner, `class`, "Inner")
-                    allow(companion, `object`, "Companion").optional()
-                    allow(protected, abstract, `fun`, "render")
+                    required(inner, `class`, "Inner")
+                    allow(companion, `object`, "Companion")
+                    required(protected, abstract, `fun`, "render")
                     allow(lateinit, `var`, "*")
                 }
             }
@@ -211,7 +211,7 @@ class KtFileContentDslDetailSpec : FreeSpec({
     "テンプレートと同じ骨組みの例" - {
         "capture の値を埋めた親の型" {
             dumpOf(fileName = "UserRepositoryImpl", captures = mapOf("name" to "User")) {
-                allow(`class`, fileName).superclass("${captureValue("name")}Repository") {
+                required(`class`, fileName).superclass("${captureValue("name")}Repository") {
                     allow(override, `fun`, "*")
                 }
             } shouldBe """

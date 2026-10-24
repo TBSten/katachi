@@ -67,24 +67,17 @@ internal class FileBuilder(
         "FileBuilder(${packages.size} package lines, ${imports.size} import lines, ${declarations.isWritten})"
 }
 
-/** One import line while `.optional()` and `.except(...)` can still change it. */
+/** One import line while `.except(...)` can still change it. */
 internal class ImportLineBuilder(
     private val session: EvaluationSession,
     private val path: NameRule,
     private val prohibited: Boolean,
     private val declaredAt: DeclarationSite,
 ) {
-    private var optional = false
     private val except = mutableListOf<NameRule>()
 
     /** The line as written so far. */
     val text: String get() = renderImport(path.written, prohibited, except.map { it.written })
-
-    fun markOptional() {
-        ensureOpen(session, text)
-        if (prohibited) throw KatachiKtFileContentLineException(KtFileContentLineProblem.OptionalOnProhibited, text, declaredAt)
-        optional = true
-    }
 
     fun addExcept(patterns: List<String>) {
         ensureOpen(session, text)
@@ -97,7 +90,6 @@ internal class ImportLineBuilder(
 
     fun build(): ImportRule = ImportRule(
         path = path,
-        required = !prohibited && !optional && !path.hasWildcard,
         prohibited = prohibited,
         except = except.toList(),
         declaredAt = declaredAt,

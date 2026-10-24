@@ -10,7 +10,8 @@ import me.tbsten.katachi.konsist.declarations.internal.allowWriter
  *
  * The kind is `` `class` ``, `` `interface` ``, `` `object` ``, `type`, or any of them joined with
  * `or`. Modifiers in front of a kind that cannot carry them leave that kind out: `allow(sealed, type, "*")`
- * is a sealed class or a sealed interface. A name without `*` is required, one with `*` optional.
+ * is a sealed class or a sealed interface. A line only allows, with or without `*` in its name:
+ * [TypeRequired]'s `required(...)` is the line for a declaration that has to be there.
  *
  * ## Example 1: a view model, sealed actions and a data class
  * ```kt

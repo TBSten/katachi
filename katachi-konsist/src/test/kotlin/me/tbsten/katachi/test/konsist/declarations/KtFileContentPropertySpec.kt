@@ -50,6 +50,27 @@ class KtFileContentPropertySpec : FreeSpec({
         }
     }
 
+    "* を含む required の行に当たる宣言を全部消すと、足りないが 1 件。1 つでも残れば 0 件" {
+        checkCases("missing pattern", seedOffset = 12, generate = { genCase(GenOptions(declarations = true)) }) { case, random ->
+            val (list, lineIndex) = random.pickOrNull(requiredPatternLinesOf(case)) ?: return@checkCases
+            val line = list.rules?.lines?.get(lineIndex) ?: return@checkCases
+            val made = list.declarations.indices.filter { list.declarations[it].origin == lineIndex }
+            val keepOne = made.size > 1 && random.chance(50)
+            val removed = if (keepOne) made.drop(1).toSet() else made.toSet()
+            val changed = case.updateList(list.path) { it.filterIndexed { i, _ -> i !in removed } }
+            val key = list.qualified(line.name.fillIn(case.fileName))
+            withClue(clueOf("removed ${removed.size} of the ${made.size} declarations of the required line ${line.name}", changed)) {
+                val found = judgedCase(changed)
+                if (keepOne) {
+                    found.shouldBeEmpty()
+                } else {
+                    found.map(::keyOf) shouldBe listOf(key)
+                    found.single() shouldContain " | Missing: "
+                }
+            }
+        }
+    }
+
     "宣言の 1 か所（修飾子・アノテーション・親の型・型・引数・戻り値・種類）を変えると 1 件だけで、違うところを名指しする" {
         checkCases("one change", seedOffset = 3, generate = { genCase(GenOptions(declarations = true)) }) { case, random ->
             val (list, index) = random.pickOrNull(requiredInstancesOf(case)) ?: return@checkCases
@@ -149,14 +170,12 @@ class KtFileContentPropertySpec : FreeSpec({
         }
     }
 
-    "必須の import を消すと、足りないが 1 件" {
-        val generate: Random.() -> GenCase = { generateSequence { genCase() }.first { case -> case.importLines.any { it.isRequired } } }
-        checkCases("missing import", seedOffset = 8, generate = generate) { case, _ ->
-            if (case.importLines.none { it.isRequired }) return@checkCases
-            val changed = case.copy(imports = case.imports.filterNot { it.path == REQUIRED_IMPORT })
-            withClue(clueOf("removed import $REQUIRED_IMPORT", changed)) {
-                judgedCase(changed) shouldBe listOf("import $REQUIRED_IMPORT | Missing: import $REQUIRED_IMPORT")
-            }
+    "* の無い import の行に当たる import を消しても 0 件。import の行は許すだけ" {
+        val generate: Random.() -> GenCase = { generateSequence { genCase() }.first { case -> case.imports.any { it.path == EXACT_IMPORT } } }
+        checkCases("removed import", seedOffset = 8, generate = generate) { case, _ ->
+            if (case.imports.none { it.path == EXACT_IMPORT }) return@checkCases
+            val changed = case.copy(imports = case.imports.filterNot { it.path == EXACT_IMPORT })
+            withClue(clueOf("removed import $EXACT_IMPORT", changed)) { judgedCase(changed).shouldBeEmpty() }
         }
     }
 
@@ -211,9 +230,19 @@ private fun checkCases(
 
 private fun clueOf(what: String, changed: GenCase): String = "$what\nthe source judged:\n${sourceOf(changed)}"
 
-/** The declarations, with their lists, that a required line was made for. */
+/**
+ * The declarations, with their lists, that a required line named in full was made for: the one
+ * declaration of that name. A required line with `*` may have several, see [requiredPatternLinesOf].
+ */
 private fun requiredInstancesOf(case: GenCase): List<Pair<ListRef, Int>> = case.lists().flatMap { list ->
-    list.declarations.indices.filter { list.lineOf(list.declarations[it])?.isRequired == true }.map { list to it }
+    list.declarations.indices.filter { index ->
+        list.lineOf(list.declarations[index])?.let { it.isRequired && '*' !in it.name } == true
+    }.map { list to it }
+}
+
+/** The required lines with `*` in their name, with their lists and their index among the list's lines. */
+private fun requiredPatternLinesOf(case: GenCase): List<Pair<ListRef, Int>> = case.lists().flatMap { list ->
+    list.rules?.lines.orEmpty().withIndex().filter { (_, line) -> line.isRequired && '*' in line.name }.map { list to it.index }
 }
 
 /** Whether the package lines allow [packageName] in a file whose directory names another package. */

@@ -8,10 +8,11 @@ import me.tbsten.katachi.dsl.KatachiDsl
  * inside the `{ }` of a class line ([ClassBodyScope]). The vocabulary is the same in both, so an
  * extension of this type works in either.
  *
- * Every line written here with `allow(...)` is an allow list entry. Once one line is written, a
+ * Every line written here with `allow(...)` or `required(...)` is an allow list entry; a
+ * `required(...)` line also has to be matched by a declaration. Once one line is written, a
  * declaration matched by no line is a violation; with no line written, the declarations are not
  * looked at. Lines are judged in this order: a prohibited line (`not.allow(...)`) wins, then an
- * allowed line, then `allow(..., anythingElse)`, and anything left is a violation.
+ * allowed or required line, then `allow(..., anythingElse)`, and anything left is a violation.
  *
  * ## Example 1: a name of your own for a combination of kinds
  * ```kt
@@ -26,7 +27,7 @@ import me.tbsten.katachi.dsl.KatachiDsl
  */
 @KatachiDsl
 @ExperimentalKatachiApi
-public sealed interface DeclarationListScope : DeclarationVocabulary, DeclarationAllow {
+public sealed interface DeclarationListScope : DeclarationVocabulary, DeclarationAllow, DeclarationRequired {
     /**
      * The name of the file being checked, up to its first `.`: `Platform.android.kt` is
      * `Platform`. A plain `String`: the block runs once per file, so `replace`, `removePrefix` and
@@ -95,8 +96,8 @@ public sealed interface DeclarationListScope : DeclarationVocabulary, Declaratio
  *     `import`("javax.inject.**")
  *     not.`import`("android.**")
  *
- *     allow(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
- *         allow(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+ *     required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
+ *         required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
  *         allow(public, `fun`, "on*")().returns("Unit")
  *         allow(private, anythingElse)
  *     }
@@ -155,7 +156,8 @@ public sealed interface KtFileContentScope : DeclarationListScope {
     /**
      * Allows the imports whose path matches [pattern], `.` separated: `*` is one level, `**` any
      * number of levels, zero included: `"com.example.App.**"` matches the class import
-     * `com.example.App` itself as well as `com.example.App.Companion`. Required when it has no `*`. A star import `import a.b.*` is matched as the path
+     * `com.example.App` itself as well as `com.example.App.Companion`. An import line only allows:
+     * a file that does not import it is fine. A star import `import a.b.*` is matched as the path
      * `a.b.*`; an alias is not looked at.
      *
      * ## Example 1: imports of Kotlin and of the domain layer only
@@ -178,11 +180,11 @@ public sealed interface KtFileContentScope : DeclarationListScope {
  * ## Example 1: what a use case interface and its implementation hold
  * ```kt
  * ktFileContent {
- *     allow(`interface`, fileName) {
- *         allow(operator, `fun`, "invoke")
+ *     required(`interface`, fileName) {
+ *         required(operator, `fun`, "invoke")
  *     }
- *     allow(`class`, "Default$fileName").superclass(fileName) {
- *         allow(override, `fun`, "invoke")
+ *     required(`class`, "Default$fileName").superclass(fileName) {
+ *         required(override, `fun`, "invoke")
  *         allow(private, anythingElse)
  *     }
  * }

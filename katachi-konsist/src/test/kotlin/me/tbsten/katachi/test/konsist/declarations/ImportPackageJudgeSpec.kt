@@ -24,9 +24,8 @@ class ImportPackageJudgeSpec : FreeSpec({
             }.shouldBeEmpty()
         }
 
-        "必須の import が無ければ足りない" {
-            judged("package com.example\n\nclass Sample\n") { `import`("com.example.App") } shouldBe
-                listOf("import com.example.App | Missing: import com.example.App")
+        "* の無い import の行も許すだけで、その import が無くても違反にならない" {
+            judged("package com.example\n\nclass Sample\n") { `import`("com.example.App") }.shouldBeEmpty()
         }
 
         "禁止と except" {
@@ -102,12 +101,11 @@ class ImportPackageJudgeSpec : FreeSpec({
             `package`("com.example")
             `import`("kotlin.**")
             `import`("com.example.App")
-            allow(`class`, fileName)
+            required(`class`, fileName)
         } shouldBe listOf(
             "package com.other (line 1) | Not allowed: package com.other",
             "import a.B (line 3) | Not allowed: not in the allowed imports (kotlin.**, com.example.App)",
             "Extra (line 5) | Not allowed: class Extra",
-            "import com.example.App | Missing: import com.example.App",
             "Sample | Missing: class Sample",
         )
     }

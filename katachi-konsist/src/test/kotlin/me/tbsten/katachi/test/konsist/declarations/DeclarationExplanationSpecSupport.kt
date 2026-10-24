@@ -126,5 +126,5 @@ internal var helperLineSite: DeclarationSite? = null
 
 /** A helper that writes one line for the caller, the way a team shares a line between roles. */
 internal fun KtFileContentScope.allowLoggerHelper() {
-    allow(`val`, "logger").optional().also { helperLineSite = DeclarationSite.capture() }
+    allow(`val`, "logger").also { helperLineSite = DeclarationSite.capture() }
 }

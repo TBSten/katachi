@@ -28,7 +28,7 @@ class KtFileContentDeclarationTimeSpec : FreeSpec({
                     "UiState".role {
                         layout { "*UiState".ktFile() }
                         ktFileContent {
-                            site = DeclarationSite.capture(); allow(data, `interface`, fileName)
+                            site = DeclarationSite.capture(); required(data, `interface`, fileName)
                         }
                     }
                 }
@@ -78,8 +78,8 @@ class KtFileContentDeclarationTimeSpec : FreeSpec({
                     "Screen".role {
                         layout { "*Screen".ktFile() }
                         ktFileContent {
-                            allow(`class`, fileName) {
-                                site = DeclarationSite.capture(); allow(abstract, open, `fun`, "render")
+                            required(`class`, fileName) {
+                                site = DeclarationSite.capture(); required(abstract, open, `fun`, "render")
                             }
                         }
                     }
@@ -96,7 +96,7 @@ class KtFileContentDeclarationTimeSpec : FreeSpec({
                     "Screen".role {
                         layout { "*Screen".ktFile() }
                         ktFileContent {
-                            if (fileName == "Sample") allow(data, `interface`, fileName) else allow(`class`, fileName)
+                            if (fileName == "Sample") required(data, `interface`, fileName) else required(`class`, fileName)
                         }
                     }
                 }
@@ -112,7 +112,7 @@ class KtFileContentDeclarationTimeSpec : FreeSpec({
                     layout { "*Screen".ktFile() }
                     ktFileContent {
                         seen += "$fileName ${captureValue("feature")} ${captureValue("anything")}"
-                        allow(`class`, fileName)
+                        required(`class`, fileName)
                     }
                 }
             }

@@ -61,7 +61,7 @@ private val definition: Architecture = architecture {
         }
         ktFileContent {
             `import`("kotlin.**")
-            allow(`class`, fileName) { }
+            required(`class`, fileName) { }
             not.allow(`class`, "*Impl")
         }
     }

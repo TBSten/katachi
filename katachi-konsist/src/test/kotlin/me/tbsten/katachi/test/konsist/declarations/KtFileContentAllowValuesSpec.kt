@@ -38,14 +38,14 @@ class KtFileContentAllowValuesSpec : FreeSpec({
         "ファイル直下の修飾子を or の左に置いてクラスの中で使うと OutsideItsBlock" {
             lineErrorOf {
                 val outer = private
-                allow(`class`, "A") { allow(outer or public, `fun`, "f") }
+                required(`class`, "A") { required(outer or public, `fun`, "f") }
             }.problem shouldBe KtFileContentLineProblem.OutsideItsBlock
         }
 
         "ファイル直下の修飾子を or の右に置いてクラスの中で使うと OutsideItsBlock" {
             lineErrorOf {
                 val outer = private
-                allow(`class`, "A") { allow(public or outer, `fun`, "f") }
+                required(`class`, "A") { required(public or outer, `fun`, "f") }
             }.let {
                 it.problem shouldBe KtFileContentLineProblem.OutsideItsBlock
                 it.line shouldBe "public or private"
@@ -55,14 +55,14 @@ class KtFileContentAllowValuesSpec : FreeSpec({
         "ほかのブロックの val と or でつなぐと OutsideItsBlock" {
             lineErrorOf {
                 val outer = `val`
-                allow(`class`, "A") { allow(outer or `var`, "x") }
+                required(`class`, "A") { allow(outer or `var`, "x") }
             }.problem shouldBe KtFileContentLineProblem.OutsideItsBlock
         }
 
         "ほかのブロックの anythingElse を渡すと OutsideItsBlock" {
             lineErrorOf {
                 val outer = anythingElse
-                allow(`class`, "A") { allow(private, outer) }
+                required(`class`, "A") { allow(private, outer) }
             }.let {
                 it.problem shouldBe KtFileContentLineProblem.OutsideItsBlock
                 it.line shouldBe "private (anything)"
@@ -81,8 +81,8 @@ class KtFileContentAllowValuesSpec : FreeSpec({
         "同じ種類の値を複数の行で使い回せる" {
             dumpOf {
                 val k = `class` or `interface`
-                allow(k, "A")
-                allow(public, k, "B")
+                required(k, "A")
+                required(public, k, "B")
                 not.allow(k, "*Impl")
             } shouldBe """
                 required class{}|interface{} A
@@ -139,7 +139,7 @@ class KtFileContentAllowValuesSpec : FreeSpec({
         }
 
         "interface に付けられない修飾子は NotApplicable" {
-            modifierErrorOf { allow(data, `fun`, `interface`, "X") }.let {
+            modifierErrorOf { required(data, `fun`, `interface`, "X") }.let {
                 it.problem shouldBe KtFileContentModifierProblem.NotApplicable
                 it.modifiers shouldBe listOf("data")
                 it.kind shouldBe "interface"
@@ -149,7 +149,7 @@ class KtFileContentAllowValuesSpec : FreeSpec({
 
     "一部の候補だけが衝突する行" - {
         "衝突する候補だけを外す" {
-            dumpOf { allow(public or internal, internal, `class`, "X") } shouldBe "required class{internal} X"
+            dumpOf { required(public or internal, internal, `class`, "X") } shouldBe "required class{internal} X"
         }
 
         "anythingElse でも衝突する候補だけを外す" {
@@ -162,7 +162,7 @@ class KtFileContentAllowValuesSpec : FreeSpec({
         }
 
         "候補が全部衝突するときだけ Conflicting" {
-            modifierErrorOf { allow(public or private, internal, `class`, "X") }.let {
+            modifierErrorOf { required(public or private, internal, `class`, "X") }.let {
                 it.problem shouldBe KtFileContentModifierProblem.Conflicting
                 it.modifiers shouldBe listOf("public", "internal")
             }

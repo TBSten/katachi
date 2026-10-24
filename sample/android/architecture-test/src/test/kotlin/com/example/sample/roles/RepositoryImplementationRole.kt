@@ -55,7 +55,7 @@ fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementa
         `import`("kotlinx.**")
         `import`("com.example.sample.data.**")
 
-        allow(`class`, fileName).superclass(fileName.removeSuffix("Impl")) { // UserRepositoryImpl : UserRepository
+        required(`class`, fileName).superclass(fileName.removeSuffix("Impl")) { // UserRepositoryImpl : UserRepository
             allow(override, `fun`, "*")
             allow(private, anythingElse)
         }

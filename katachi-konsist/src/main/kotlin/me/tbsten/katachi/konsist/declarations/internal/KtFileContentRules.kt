@@ -127,7 +127,10 @@ internal class DeclarationRule(
     val returnType: TypeRule?,
     /** `null` when the line has no `{ }`, so its members are not looked at. */
     val members: DeclarationListRules?,
-    /** `!prohibited && !optional() && !name.hasWildcard`. */
+    /**
+     * Written with `required(...)`: a declaration has to match it -- one or more, the name written
+     * with or without `*`. A line written with `allow(...)` only lets what it matches be.
+     */
     val required: Boolean,
     val prohibited: Boolean,
     val except: List<NameRule>,
@@ -160,10 +163,9 @@ internal class DeclarationListRules(
     val anythingElse: List<AnythingElseRule> = entries.filterIsInstance<AnythingElseRule>()
 }
 
-/** One import line. Its path is matched with `.` as the separator. */
+/** One import line, which only allows (or with `not.` prohibits). Its path is matched with `.` as the separator. */
 internal class ImportRule(
     val path: NameRule,
-    val required: Boolean,
     val prohibited: Boolean,
     val except: List<NameRule>,
     val declaredAt: DeclarationSite,

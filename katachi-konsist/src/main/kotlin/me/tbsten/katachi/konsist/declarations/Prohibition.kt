@@ -11,7 +11,7 @@ import me.tbsten.katachi.konsist.declarations.internal.FileBuilder
  *
  * It holds `allow(...)` only, written as on an allowed line, and in the file `` `import` `` and
  * `` `package` ``. `not.allow(..., anythingElse)` is refused: "anything else" names nothing in
- * particular to prohibit.
+ * particular to prohibit. There is no `not.required(...)`: a prohibited line asks for nothing.
  *
  * ## Example 1: everything but implementations named after the interface
  * ```kt

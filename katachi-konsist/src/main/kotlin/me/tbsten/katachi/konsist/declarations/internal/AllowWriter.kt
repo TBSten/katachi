@@ -4,27 +4,33 @@ import me.tbsten.katachi.konsist.declarations.AnythingElse
 import me.tbsten.katachi.konsist.declarations.AnythingElseAllow
 import me.tbsten.katachi.konsist.declarations.ClassBodyScope
 import me.tbsten.katachi.konsist.declarations.DeclarationAllow
+import me.tbsten.katachi.konsist.declarations.DeclarationRequired
 import me.tbsten.katachi.konsist.declarations.DeclarationListScopeImpl
 import me.tbsten.katachi.konsist.declarations.FileProhibition
 import me.tbsten.katachi.konsist.declarations.FunInterfaceAllow
+import me.tbsten.katachi.konsist.declarations.FunInterfaceRequired
 import me.tbsten.katachi.konsist.declarations.FunctionAllow
+import me.tbsten.katachi.konsist.declarations.FunctionRequired
 import me.tbsten.katachi.konsist.declarations.FunctionKind
 import me.tbsten.katachi.konsist.declarations.FunctionLine
 import me.tbsten.katachi.konsist.declarations.MemberProhibition
 import me.tbsten.katachi.konsist.declarations.Modifiers
 import me.tbsten.katachi.konsist.declarations.PropertyAllow
+import me.tbsten.katachi.konsist.declarations.PropertyRequired
 import me.tbsten.katachi.konsist.declarations.PropertyKind
 import me.tbsten.katachi.konsist.declarations.PropertyLine
 import me.tbsten.katachi.konsist.declarations.TypeAliasAllow
+import me.tbsten.katachi.konsist.declarations.TypeAliasRequired
 import me.tbsten.katachi.konsist.declarations.TypeAliasKind
 import me.tbsten.katachi.konsist.declarations.TypeAliasLine
 import me.tbsten.katachi.konsist.declarations.TypeAllow
+import me.tbsten.katachi.konsist.declarations.TypeRequired
 import me.tbsten.katachi.konsist.declarations.TypeKind
 import me.tbsten.katachi.konsist.declarations.TypeLine
 
 /**
- * What every `allow(...)` overload hands its values to: the lines of [list], allowed ones, or
- * prohibited ones for `not.allow(...)`.
+ * What every `allow(...)` and `required(...)` overload hands its values to: the lines of [list],
+ * allowed ones, prohibited ones for `not.allow(...)`, or required ones for `required(...)`.
  *
  * Each overload only says which kind it was given. What a line is made of is worked out here, in
  * one place: every value passed counts as used, each has to belong to [list]'s block, and the
@@ -33,6 +39,8 @@ import me.tbsten.katachi.konsist.declarations.TypeLine
 internal class AllowWriter(
     private val list: DeclarationListBuilder,
     private val prohibited: Boolean,
+    /** The lines are written with `required(...)`: a declaration has to match each. */
+    private val required: Boolean = false,
 ) {
     fun type(modifiers: List<Modifiers>, kind: TypeKind, name: String, body: (ClassBodyScope.() -> Unit)?): TypeLine {
         val line = declare(modifiers, listOf(kind.word), kind.kinds.map { Shape(ModifierSet.EMPTY, it) }, name)
@@ -77,7 +85,7 @@ internal class AllowWriter(
             .flatMap { set -> kindShapes.map { Shape(set.union(it.modifiers), it.kind) } }
             .distinct()
         use(modifiers.map { it.word } + kinds) { renderDeclaration(shapes, name, prohibited) }
-        return list.declare(shapes, prohibited, name)
+        return list.declare(shapes, prohibited, required, name)
     }
 
     /**
@@ -97,13 +105,13 @@ internal class AllowWriter(
             sets.flatMap { set -> next.alternatives.map { set.union(it) } }
         }.distinct()
 
-    override fun toString(): String = "AllowWriter($list, prohibited=$prohibited)"
+    override fun toString(): String = "AllowWriter($list, prohibited=$prohibited, required=$required)"
 }
 
 /*
- * The writer behind each `allow(...)` interface. Kotlin has no internal member in an interface, so
- * the overloads reach it through these: every implementation of the interfaces is one of the three
- * classes below, which the sealed hierarchy lets `when` check without an `else`.
+ * The writer behind each `allow(...)` and `required(...)` interface. Kotlin has no internal member
+ * in an interface, so the overloads reach it through these: every implementation of the interfaces
+ * is one of the classes below, which the sealed hierarchy lets `when` check without an `else`.
  */
 
 private fun writerOf(target: DeclarationAllow): AllowWriter = when (target) {
@@ -140,4 +148,34 @@ internal val TypeAliasAllow.allowWriter: AllowWriter
 internal val AnythingElseAllow.allowWriter: AllowWriter
     get() = when (this) {
         is DeclarationAllow -> writerOf(this)
+    }
+
+/** The writer of the `required(...)` lines: only a scope has one, `not.` does not. */
+private fun requiredWriterOf(target: DeclarationRequired): AllowWriter = when (target) {
+    is DeclarationListScopeImpl -> target.requiredWriter
+}
+
+internal val TypeRequired.requiredWriter: AllowWriter
+    get() = when (this) {
+        is DeclarationRequired -> requiredWriterOf(this)
+    }
+
+internal val FunInterfaceRequired.requiredWriter: AllowWriter
+    get() = when (this) {
+        is DeclarationRequired -> requiredWriterOf(this)
+    }
+
+internal val FunctionRequired.requiredWriter: AllowWriter
+    get() = when (this) {
+        is DeclarationRequired -> requiredWriterOf(this)
+    }
+
+internal val PropertyRequired.requiredWriter: AllowWriter
+    get() = when (this) {
+        is DeclarationRequired -> requiredWriterOf(this)
+    }
+
+internal val TypeAliasRequired.requiredWriter: AllowWriter
+    get() = when (this) {
+        is DeclarationRequired -> requiredWriterOf(this)
     }

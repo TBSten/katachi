@@ -89,9 +89,6 @@ public enum class KtFileContentLineProblem {
     /** `.except()` with no pattern. */
     ExceptWithoutNames,
 
-    /** `.optional()` on a prohibited line, which is never required anyway. */
-    OptionalOnProhibited,
-
     /** A `{ }` given both to `allow(...)` and to `.superclass(...)`. */
     BodyWrittenTwice,
 
@@ -123,9 +120,9 @@ public enum class KtFileContentLineProblem {
     AnnotatedWithoutNames,
 
     /**
-     * A value written on a line of its own and never passed to `allow(...)`: a modifier or
-     * annotations (`annotated("Inject")` or `private` alone), a kind (`` `class` `` alone), or
-     * `anythingElse`. A value made and not used, as in `` mapOf("a" to `class`) ``, is refused too: make
+     * A value written on a line of its own and never passed to `allow(...)` or `required(...)`: a
+     * modifier or annotations (`annotated("Inject")` or `private` alone), a kind (`` `class` ``
+     * alone), or `anythingElse`. A value made and not used, as in `` mapOf("a" to `class`) ``, is refused too: make
      * only the values a line is written with.
      */
     DanglingModifiers,

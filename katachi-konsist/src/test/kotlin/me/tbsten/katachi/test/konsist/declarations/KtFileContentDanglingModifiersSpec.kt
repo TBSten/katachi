@@ -42,7 +42,7 @@ class KtFileContentDanglingModifiersSpec : FreeSpec({
         "annotated の次の行に宣言を書いても、つながらないので DanglingModifiers" {
             danglingOf {
                 annotated("Inject")
-                allow(`class`, "A")
+                required(`class`, "A")
             }.line shouldBe "@Inject"
         }
 
@@ -71,8 +71,8 @@ class KtFileContentDanglingModifiersSpec : FreeSpec({
         }
 
         "クラスの { } の中の単独の修飾子・種類も DanglingModifiers" {
-            danglingOf { allow(`class`, "A") { private } }.line shouldBe "private"
-            danglingOf { allow(`class`, "A") { `fun` } }.line shouldBe "fun"
+            danglingOf { required(`class`, "A") { private } }.line shouldBe "private"
+            danglingOf { required(`class`, "A") { `fun` } }.line shouldBe "fun"
         }
 
         "declaredAt は書かれた行を指す" {
@@ -154,12 +154,34 @@ class KtFileContentDanglingModifiersSpec : FreeSpec({
             }
         }
 
+        "required(...) に渡した修飾子・種類と、or でつないだ値も使われたと数える" {
+            shouldNotThrowAny {
+                rulesOf {
+                    required(annotated("HiltViewModel"), public, `class`, "A") {
+                        required(override, `fun`, "x")
+                        required(public or internal, `val`, "y")
+                    }
+                    required(internal or private, data, `object`, "B")
+                    required(`fun`, `interface`, "*Listener")
+                    required(const, `val` or `var`, "D")
+                    required(public, `typealias`, "E")
+                }
+            }
+        }
+
+        "required(...) の行があっても、どこにも渡さなかった値は DanglingModifiers" {
+            danglingOf {
+                required(public, `class`, "A")
+                internal
+            }.line shouldBe "internal"
+        }
+
         "変数に取っておいた修飾子を複数の行に使っても例外にならない" {
             shouldNotThrowAny {
                 rulesOf {
                     val priv = private
-                    allow(priv, `fun`, "a")
-                    allow(priv, `val`, "b")
+                    required(priv, `fun`, "a")
+                    required(priv, `val`, "b")
                 }
             }
         }
@@ -167,7 +189,7 @@ class KtFileContentDanglingModifiersSpec : FreeSpec({
         "fileName を読むブロックの stand-in の実行では、条件が偽で使われなかった修飾子を見逃す" {
             val block: KtFileContentScope.() -> Unit = {
                 val inject = annotated("Inject")
-                if (fileName.endsWith("ViewModel")) allow(inject, `class`, fileName)
+                if (fileName.endsWith("ViewModel")) required(inject, `class`, fileName)
             }
             shouldNotThrowAny {
                 evaluateWithStandIns(block, EvaluationInput("Sample", { it }, PatternCache()), SPEC_SITE)

@@ -42,8 +42,8 @@ internal val PROHIBITED_IMPORTS: List<Pair<String, List<String>>> = listOf(
     "android.**" to emptyList(),
 )
 
-/** The import a required import line names. */
-internal const val REQUIRED_IMPORT: String = "com.example.App"
+/** The import an import line names in full, with no `*`: it only allows, like any import line. */
+internal const val EXACT_IMPORT: String = "com.example.App"
 
 /** Whether an import line of [pattern] (and [except]) matches [path], read from [IMPORT_TABLE]. */
 internal fun importLineMatches(pattern: String, except: List<String>, path: String): Boolean {

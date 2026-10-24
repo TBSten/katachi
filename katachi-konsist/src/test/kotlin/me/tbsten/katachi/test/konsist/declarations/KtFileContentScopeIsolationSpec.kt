@@ -5,13 +5,24 @@ import com.lemonappdev.konsist.core.util.KotlinFileParser
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import java.io.File
+import me.tbsten.katachi.konsist.declarations.AnythingElse
 import me.tbsten.katachi.konsist.declarations.ClassBodyScope
+import me.tbsten.katachi.konsist.declarations.DeclarationAllow
 import me.tbsten.katachi.konsist.declarations.DeclarationListScope
+import me.tbsten.katachi.konsist.declarations.DeclarationRequired
+import me.tbsten.katachi.konsist.declarations.FileProhibition
+import me.tbsten.katachi.konsist.declarations.FunctionLine
+import me.tbsten.katachi.konsist.declarations.ImportLine
 import me.tbsten.katachi.konsist.declarations.KtFileContentScope
+import me.tbsten.katachi.konsist.declarations.Prohibition
+import me.tbsten.katachi.konsist.declarations.PropertyLine
+import me.tbsten.katachi.konsist.declarations.TypeAliasLine
 import me.tbsten.katachi.konsist.declarations.TypeKind
+import me.tbsten.katachi.konsist.declarations.TypeLine
 
 /**
  * The vocabulary is seen inside `ktFileContent { }` only: every word is a member of
@@ -50,6 +61,10 @@ private fun memberNamesOf(type: Class<*>): Set<String> = type.methods.map { meth
     }
 }.toSet()
 
+/** The parameter types of each method of [type] named [name], one list per overload. */
+private fun requiredShapesOf(type: Class<*>, name: String): Set<List<Class<*>>> =
+    type.methods.filter { it.name == name }.map { it.parameterTypes.toList() }.toSet()
+
 class KtFileContentScopeIsolationSpec : FreeSpec({
     "トップレベル" - {
         "declarations パッケージのトップレベルに公開の関数と値は ktFileContent しかない" {
@@ -64,13 +79,13 @@ class KtFileContentScopeIsolationSpec : FreeSpec({
     }
 
     "スコープのメンバ" - {
-        "修飾子・annotated・種類・fileName・captureValue・not・anythingElse・anyArgs・allow は宣言の一覧のスコープのメンバ" {
+        "修飾子・annotated・種類・fileName・captureValue・not・anythingElse・anyArgs・allow・required は宣言の一覧のスコープのメンバ" {
             val words = listOf(
                 "public", "protected", "private", "internal", "expect", "actual", "abstract", "open",
                 "sealed", "const", "external", "override", "lateinit", "tailrec", "suspend", "inner",
                 "enum", "annotation", "companion", "inline", "value", "infix", "operator", "data",
                 "annotated", "class", "interface", "object", "type", "fun", "val", "var", "typealias",
-                "fileName", "captureValue", "not", "anythingElse", "anyArgs", "allow",
+                "fileName", "captureValue", "not", "anythingElse", "anyArgs", "allow", "required",
             )
 
             memberNamesOf(DeclarationListScope::class.java) shouldContainAll words
@@ -83,6 +98,24 @@ class KtFileContentScopeIsolationSpec : FreeSpec({
             memberNamesOf(KtFileContentScope::class.java) shouldContainAll fileOnly
             withClue("クラスの { } からは package と import を書けない") {
                 memberNamesOf(ClassBodyScope::class.java).intersect(fileOnly.toSet()) shouldBe emptySet()
+            }
+        }
+
+        "not の後ろには required が無い。not.required(...) は書けない" {
+            memberNamesOf(Prohibition::class.java) shouldNotContain "required"
+            memberNamesOf(FileProhibition::class.java) shouldNotContain "required"
+        }
+
+        "required は allow と同じ多重定義の並びで、anythingElse を取るものだけが無い" {
+            val allow = requiredShapesOf(DeclarationAllow::class.java, "allow")
+            val required = requiredShapesOf(DeclarationRequired::class.java, "required")
+            required.size shouldBe 55
+            required shouldBe allow.filterNot { AnythingElse::class.java in it }.toSet()
+        }
+
+        "宣言の行と import の行に optional() は無い。.optional() は書けない" {
+            for (type in listOf(TypeLine::class.java, FunctionLine::class.java, PropertyLine::class.java, TypeAliasLine::class.java, ImportLine::class.java)) {
+                withClue(type.simpleName) { memberNamesOf(type) shouldNotContain "optional" }
             }
         }
 

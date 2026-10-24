@@ -71,7 +71,7 @@ fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role
         `import`("kotlinx.**")
         `import`("com.example.sample.data.**")
 
-        allow(`interface`, fileName) {
+        required(`interface`, fileName) {
             allow(`fun`, "*")
         }
     }

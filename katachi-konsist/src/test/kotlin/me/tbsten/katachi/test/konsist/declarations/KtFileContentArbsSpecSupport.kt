@@ -61,14 +61,15 @@ internal data class GenLine(
     val parameters: List<String>? = null,
     val anyArgs: Boolean = false,
     val returnType: String? = null,
-    val optional: Boolean = false,
+    /** Written with `required(...)`: a declaration has to match it. */
+    val required: Boolean = false,
     val prohibited: Boolean = false,
     /** The names a `not.` line gives back. */
     val except: List<String> = emptyList(),
     /** The `{ }` of a class line; `null`: none, the members are not looked at. */
     val members: GenList? = null,
 ) : GenEntry {
-    val isRequired: Boolean get() = !prohibited && !optional && '*' !in name
+    val isRequired: Boolean get() = !prohibited && required
 
     /** A line named `*`, which may match a declaration of any name. */
     val isBareWildcard: Boolean get() = name == "*"
@@ -127,11 +128,8 @@ internal data class GenPackageLine(val pattern: String?, val prohibited: Boolean
 internal data class GenImportLine(
     val pattern: String,
     val prohibited: Boolean = false,
-    val optional: Boolean = false,
     val except: List<String> = emptyList(),
-) {
-    val isRequired: Boolean get() = !prohibited && !optional && '*' !in pattern
-}
+)
 
 /** One import as written: `a.b.C`, `a.b.*`, or with an alias. */
 internal data class GenImport(val path: String, val alias: String? = null)
@@ -166,7 +164,6 @@ internal fun KtFileContentScope.writeCase(case: GenCase) {
     }
     for (line in case.importLines) {
         val written = if (line.prohibited) not.`import`(line.pattern) else `import`(line.pattern)
-        if (line.optional) written.optional()
         if (line.except.isNotEmpty()) written.except(*line.except.toTypedArray())
     }
     case.declarationRules?.let { writeList(it) }
@@ -184,6 +181,8 @@ internal fun DeclarationListScope.writeList(list: GenList) {
 
 private fun DeclarationListScope.writeLine(line: GenLine) {
     val target: DeclarationAllow = if (line.prohibited) not else this
+    // A required line is written with required(...), which only the scope itself has.
+    val required = line.isRequired
     val modifiers = modifiersOf(this, line.alternatives)
     val name = line.name.fillIn(fileName)
     val body: (ClassBodyScope.() -> Unit)? = line.members?.let { members -> { writeList(members) } }
@@ -195,33 +194,31 @@ private fun DeclarationListScope.writeLine(line: GenLine) {
             val superclasses = line.superclasses.map { it.fillIn(fileName) }
             val lineBody = body.takeIf { superclasses.isEmpty() }
             val written = if (funInterface) {
-                allowFunInterface(target, modifiers, `fun`, types, name, lineBody)
+                if (required) requiredFunInterface(this, modifiers, `fun`, types, name, lineBody)
+                else allowFunInterface(target, modifiers, `fun`, types, name, lineBody)
             } else {
-                allowType(target, modifiers, types, name, lineBody)
+                if (required) requiredType(this, modifiers, types, name, lineBody) else allowType(target, modifiers, types, name, lineBody)
             }
             if (superclasses.isNotEmpty()) written.superclass(*superclasses.toTypedArray(), body = body)
-            if (line.optional) written.optional()
             if (line.except.isNotEmpty()) written.except(*line.except.toTypedArray())
         }
         kind == GenKind.Function -> {
-            var written = allowFunction(target, modifiers, `fun`, name)
+            var written = if (required) requiredFunction(this, modifiers, `fun`, name) else allowFunction(target, modifiers, `fun`, name)
             line.parameters?.let { types ->
                 written = written(*types.mapIndexed { index, type -> parameterPatternOf(index, type.fillIn(fileName)) }.toTypedArray())
             }
             if (line.anyArgs) written = written(anyArgs())
             line.returnType?.let { written = written.returns(it.fillIn(fileName)) }
-            if (line.optional) written.optional()
             if (line.except.isNotEmpty()) written.except(*line.except.toTypedArray())
         }
         kind == GenKind.TypeAlias -> {
-            val written = allowTypeAlias(target, modifiers, `typealias`, name)
-            if (line.optional) written.optional()
+            val written = if (required) requiredTypeAlias(this, modifiers, `typealias`, name) else allowTypeAlias(target, modifiers, `typealias`, name)
             if (line.except.isNotEmpty()) written.except(*line.except.toTypedArray())
         }
         else -> {
             val properties: PropertyKind = line.kinds.map { if (it == GenKind.Val) `val` else `var` }.reduce(PropertyKind::or)
-            val written = allowProperty(target, modifiers, properties, name, line.propertyType?.fillIn(fileName))
-            if (line.optional) written.optional()
+            val type = line.propertyType?.fillIn(fileName)
+            val written = if (required) requiredProperty(this, modifiers, properties, name, type) else allowProperty(target, modifiers, properties, name, type)
             if (line.except.isNotEmpty()) written.except(*line.except.toTypedArray())
         }
     }

@@ -132,7 +132,6 @@ internal fun describeCase(case: GenCase): String = buildString {
     }
     for (line in case.importLines) {
         append(INDENT).append(if (line.prohibited) "not." else "").append("`import`(${quoted(line.pattern)})")
-        if (line.optional) append(".optional()")
         if (line.except.isNotEmpty()) append(".except(${line.except.joinToString(", ", transform = ::quoted)})")
         appendLine()
     }
@@ -148,7 +147,8 @@ private fun StringBuilder.describeList(list: GenList, indent: Int) {
         when (entry) {
             is GenAnythingElse -> appendLine("allow(" + (describeAlternatives(entry.alternatives) + "anythingElse") + ")")
             is GenLine -> {
-                append(if (entry.prohibited) "not." else "").append("allow(").append(describeAlternatives(entry.alternatives))
+                append(if (entry.prohibited) "not." else "").append(if (entry.required) "required(" else "allow(")
+                    .append(describeAlternatives(entry.alternatives))
                 if (entry.kinds == listOf(GenKind.Interface) && entry.alternatives.any { "fun" in it.keywords }) append("`fun`, ")
                 append(entry.kinds.joinToString(" or ") { "`${it.keyword}`" })
                 append(", ${quoted(entry.name)}")
@@ -160,7 +160,6 @@ private fun StringBuilder.describeList(list: GenList, indent: Int) {
                 if (entry.anyArgs) append("(anyArgs())")
                 entry.returnType?.let { append(".returns(${quoted(it)})") }
                 if (entry.superclasses.isNotEmpty()) append(".superclass(${entry.superclasses.joinToString(", ", transform = ::quoted)})")
-                if (entry.optional) append(".optional()")
                 if (entry.except.isNotEmpty()) append(".except(${entry.except.joinToString(", ", transform = ::quoted)})")
                 val members = entry.members
                 if (members == null) {

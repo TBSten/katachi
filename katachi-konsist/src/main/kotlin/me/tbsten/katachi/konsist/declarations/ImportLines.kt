@@ -12,8 +12,7 @@ import me.tbsten.katachi.konsist.declarations.internal.PackageLineBuilder
  * ktFileContent {
  *     `import`("kotlin.**")
  *     `import`("kotlinx.coroutines.**")
- *     `import`("com.example.App")          // required: no `*`
- *     `import`("com.example.Logger").optional()
+ *     `import`("com.example.Logger")       // may be imported; an import line never asks for one
  *     not.`import`("android.**").except("android.os.Parcelable")
  * }
  * ```
@@ -22,22 +21,6 @@ import me.tbsten.katachi.konsist.declarations.internal.PackageLineBuilder
 public class ImportLine internal constructor(
     internal val line: ImportLineBuilder,
 ) {
-    /**
-     * Makes the line optional: a file that does not import it is fine. A path with `*` is optional
-     * already.
-     *
-     * ## Example 1: an import a file may leave out
-     * ```kt
-     * `import`("com.example.Logger").optional()
-     * ```
-     *
-     * @throws KatachiKtFileContentLineException on a line that starts with `not.`.
-     */
-    public fun optional(): ImportLine {
-        line.markOptional()
-        return this
-    }
-
     /**
      * Lets the imports matching [patterns] through this prohibited line.
      *
