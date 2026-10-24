@@ -35,11 +35,6 @@ public class Modifiers internal constructor(
     /**
      * Either these modifiers or [other]'s.
      *
-     * ## Example 1: internal or private data objects
-     * ```kt
-     * allow(internal or private, data, `object`, "*")
-     * ```
-     *
      * @throws KatachiKtFileContentLineException when [other] belongs to another block.
      */
     public infix fun or(other: Modifiers): Modifiers {

@@ -84,7 +84,8 @@ private const val KT_FILE_CONTENT_NAME: String = "ktFileContent"
  * @throws KatachiKtFileContentModifierException when a line's modifiers fit no declaration.
  * @throws KatachiKtFileContentPatternException when a name, path or type is not a pattern katachi reads.
  * @throws KatachiKtFileContentLineException when a line is written in a way that means nothing,
- *   including a modifier, an annotation or a kind written on a line of its own, never passed to `allow(...)`.
+ *   including a value of the vocabulary (a modifier, an annotation, a kind, `anythingElse`) that has
+ *   not been passed to `allow(...)` when the evaluation of the block ends.
  * @throws me.tbsten.katachi.dsl.KatachiFileConstraintWithoutLayoutException when the role it is
  *   written on declares no `layout { }`, so nothing could ever be covered.
  */
@@ -119,7 +120,8 @@ public fun ktFileContent(block: KtFileContentScope.() -> Unit) {
  * @throws KatachiKtFileContentModifierException when a line's modifiers fit no declaration.
  * @throws KatachiKtFileContentPatternException when a name, path or type is not a pattern katachi reads.
  * @throws KatachiKtFileContentLineException when a line is written in a way that means nothing,
- *   including a modifier, an annotation or a kind written on a line of its own, never passed to `allow(...)`.
+ *   including a value of the vocabulary (a modifier, an annotation, a kind, `anythingElse`) that has
+ *   not been passed to `allow(...)` when the evaluation of the block ends.
  * @throws me.tbsten.katachi.dsl.KatachiFileConstraintWithoutLayoutException when the role it is
  *   written on declares no `layout { }`, so nothing could ever be covered.
  */

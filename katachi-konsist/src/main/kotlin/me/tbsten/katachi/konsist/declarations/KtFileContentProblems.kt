@@ -16,7 +16,11 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  */
 @ExperimentalKatachiApi
 public enum class KtFileContentModifierProblem {
-    /** Two modifiers no declaration carries together, such as `allow(public, internal, ...)` or `allow(data, sealed, ...)`. */
+    /**
+     * Two modifiers no declaration carries together, such as `allow(public, internal, ...)` or
+     * `allow(data, sealed, ...)`, in every candidate of the line: `allow(public or internal, internal, ...)`
+     * keeps the internal one and is not refused.
+     */
     Conflicting,
 
     /** A modifier only a member can carry (`override`, `protected`, `inner`, `companion`), or `abstract` / `open` on a fun, val or var, written directly in the file. */
@@ -109,7 +113,8 @@ public enum class KtFileContentLineProblem {
     /**
      * A value written on a line of its own and never passed to `allow(...)`: a modifier or
      * annotations (`annotated("Inject")` or `private` alone), a kind (`` `class` `` alone), or
-     * `anythingElse`.
+     * `anythingElse`. A value made and not used, as in `` mapOf("a" to `class`) ``, is refused too: make
+     * only the values a line is written with.
      */
     DanglingModifiers,
 

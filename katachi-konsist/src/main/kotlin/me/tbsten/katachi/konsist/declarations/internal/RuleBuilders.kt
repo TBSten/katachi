@@ -121,8 +121,8 @@ internal class DeclarationListBuilder(
         ensureCurrent(line)
         val declaredAt = DeclarationSite.capture()
         if (prohibited) throw KatachiKtFileContentLineException(KtFileContentLineProblem.AnythingElseAfterNot, line, declaredAt)
-        validateAnythingElse(alternatives, placement, line, declaredAt)
-        entries += WrittenEntry(AnythingElseRule(alternatives.distinct(), declaredAt))
+        val kept = validatedAnythingElse(alternatives, placement, line, declaredAt)
+        entries += WrittenEntry(AnythingElseRule(kept, declaredAt))
     }
 
     /** @throws KatachiKtFileContentLineException when this list is not the innermost block being run. */

@@ -33,11 +33,6 @@ public class TypeKind internal constructor(
     /**
      * Either this kind or [other].
      *
-     * ## Example 1: a class or an interface, not an object
-     * ```kt
-     * allow(`class` or `interface`, fileName)
-     * ```
-     *
      * @throws KatachiKtFileContentLineException when [other] belongs to another block.
      */
     public infix fun or(other: TypeKind): TypeKind {
@@ -87,11 +82,6 @@ public class PropertyKind internal constructor(
 ) {
     /**
      * Either this kind or [other].
-     *
-     * ## Example 1: any property, read-only or not
-     * ```kt
-     * allow(`val` or `var`, "*")
-     * ```
      *
      * @throws KatachiKtFileContentLineException when [other] belongs to another block.
      */

@@ -18,13 +18,14 @@ import java.io.File
  * role of `:katachi` and on this module's own role — see
  * `architecture-test/src/test/kotlin/me/tbsten/katachi/test/architecture/KdocExamples.kt`.
  * That is the rule; this spec is a second reading of it, kept because it is the one that fails
- * inside this module's own `test` task rather than in `:architecture-test`, and because it is
- * deliberately stricter: it reads every line starting with `public `.
+ * inside this module's own `test` task rather than in `:architecture-test`. It asks the same as
+ * that rule, read off the text: every line starting with `public ` needs a KDoc, and one at the
+ * top level of its file an example too.
  *
  * Reads sources as text: parsing Kotlin would be a far bigger thing to maintain than the rule
  * it guards.
  *
- * TODO: decide whether the stricter reading is worth two implementations of one rule, or
+ * TODO: decide whether a second reading of the same rule is worth two implementations, or
  *   whether this spec should go the way `FileConstraintApiKdocSpec` did once the constraint landed.
  */
 
