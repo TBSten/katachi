@@ -95,11 +95,11 @@ private fun propertyInConstructor(property: SrcDecl): String =
     (property.annotations.map { "@$it" } + property.modifiers + property.kind.keyword).joinToString(" ") +
         " ${property.name}" + propertyTypeOf(property)
 
-private fun parametersOf(function: SrcDecl): String = renderedParametersOf(function.parameters)
+private fun parametersOf(function: SrcDecl): String = renderedParametersOf(function.parameters, function.renamedParameter)
 
-/** [types] as the source writes a function's parameters: `(p0: String, p1: Int)`. */
-internal fun renderedParametersOf(types: List<String>): String =
-    types.withIndex().joinToString(", ", "(", ")") { (index, type) -> "p$index: $type" }
+/** [types] as the source writes a function's parameters: `(p0: String, p1: Int)`, with `q<index>` for [renamed]. */
+internal fun renderedParametersOf(types: List<String>, renamed: Int? = null): String =
+    types.withIndex().joinToString(", ", "(", ")") { (index, type) -> "${if (index == renamed) "q" else "p"}$index: $type" }
 
 /**
  * Parameter [index] of a line as the DSL writes it: one of three name patterns the source's name

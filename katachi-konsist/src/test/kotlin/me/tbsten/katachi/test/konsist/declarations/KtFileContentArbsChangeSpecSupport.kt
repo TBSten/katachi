@@ -70,11 +70,18 @@ private fun propertyTypeChanges(line: GenLine, declaration: SrcDecl, fileName: S
 private fun parameterChanges(line: GenLine, declaration: SrcDecl, fileName: String): List<AspectChange> {
     val patterns = line.parameters ?: return emptyList()
     val expected = patterns.withIndex().joinToString(", ", "(", ")") { (index, type) -> parameterPatternOf(index, type.fillIn(fileName)) }
-    fun change(parameters: List<String>) =
-        AspectChange(declaration.copy(parameters = parameters), "parameters (are ${renderedParametersOf(parameters)}, expected $expected)")
+    fun change(parameters: List<String>, renamed: Int? = null) = AspectChange(
+        declaration.copy(parameters = parameters, renamedParameter = renamed),
+        "parameters (are ${renderedParametersOf(parameters, renamed)}, expected $expected)",
+    )
+    // Only a parameter whose name pattern is not `*` (see parameterPatternOf) can be renamed out of its line.
+    val renamable = patterns.indices.firstOrNull { it % 3 != 0 }
     return patterns.indices.map { index ->
         change(declaration.parameters.mapIndexed { i, written -> if (i == index) typeSampleOf(patterns[index]).other else written })
-    } + change(declaration.parameters + "Int") + listOfNotNull(change(declaration.parameters.dropLast(1)).takeIf { patterns.isNotEmpty() })
+    } + change(declaration.parameters + "Int") + listOfNotNull(
+        change(declaration.parameters.dropLast(1)).takeIf { patterns.isNotEmpty() },
+        renamable?.let { change(declaration.parameters, renamed = it) },
+    )
 }
 
 private fun returnTypeChanges(line: GenLine, declaration: SrcDecl, fileName: String): List<AspectChange> {

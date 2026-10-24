@@ -193,8 +193,8 @@ internal class DeclarationLineBuilder(
     }
 
     /**
-     * [written] split at its first `:`, which a Kotlin parameter type never holds, into a name
-     * pattern and a type pattern.
+     * [written] split at its first `:`, which a parameter name never holds, into a name pattern and
+     * a type pattern. The type may hold more, as in `(result: String) -> Unit`.
      */
     private fun parameterRule(written: String): ParameterRule {
         val colon = written.indexOf(':')

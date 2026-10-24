@@ -101,10 +101,14 @@ class KtFileContentParameterSpec : FreeSpec({
             }.shouldBeEmpty()
         }
 
-        "型の中の : で無く、最初の : で分ける" {
-            judged(kt("fun on(block: (String) -> Unit, map: Map<String, Int>) {}")) {
-                required(`fun`, "on")("block: (String) -> Unit", "map: Map<String, *>")
+        "最初の : で分け、型の中の : は型の一部として読む" {
+            judged(kt("fun on(block: (String) -> Unit, map: Map<String, Int>, callback: (result: String) -> Unit) {}")) {
+                allow(`fun`, "on")("block: (String) -> Unit", "map: Map<String, *>", "callback: (result: String) -> Unit")
             }.shouldBeEmpty()
+            rulesOf { allow(`fun`, "on")("callback: (result: String) -> Unit") }.firstDeclaration.parameters?.single()?.let {
+                it.name.written shouldBe "callback"
+                it.type.written shouldBe "(result: String) -> Unit"
+            }
         }
 
         "バッククォートで書いた引数名は、バッククォート無しの名前で比べる" {
@@ -113,17 +117,19 @@ class KtFileContentParameterSpec : FreeSpec({
     }
 
     "定義を読んだ時点の誤り" - {
-        ": の無い文字列は ParameterWithoutName で、直し方に name: と *: を出す" {
-            lineErrorOf { required(`fun`, "save")("String", "count: Int") }.let {
+        ": の無い文字列は ParameterWithoutName で、名前としても型としても直し方を出す" {
+            lineErrorOf { allow(`fun`, "save")("String", "count: Int") }.let {
                 it.problem shouldBe KtFileContentLineProblem.ParameterWithoutName
                 it.parameter shouldBe "String"
                 it.line shouldBe "fun save(String, count: Int)"
                 it.message shouldBe """
                     Parameter "String" of line "fun save(String, count: Int)" at ${it.declaredAt} is not written as "name: Type".
                     A parameter is written the way Kotlin writes it, "name: Type": a name pattern and a type pattern, split at the first ':'.
-                    Write "name: String" with the parameter's name, or "*: String" to accept any name.
+                    Write "String: Type" if "String" is the name, or "name: String" if it is the type; "*: String" accepts any name.
                 """.trimIndent()
             }
+            lineErrorOf { allow(`fun`, "find")("id") }.message.orEmpty().lines().last() shouldBe
+                "Write \"id: Type\" if \"id\" is the name, or \"name: id\" if it is the type; \"*: id\" accepts any name."
         }
 
         "名前が空なら ParameterWithoutName" {
@@ -148,8 +154,14 @@ class KtFileContentParameterSpec : FreeSpec({
             }
         }
 
-        "空の文字列も ParameterWithoutName" {
-            lineErrorOf { required(`fun`, "save")("") }.problem shouldBe KtFileContentLineProblem.ParameterWithoutName
+        "空・空白だけの文字列は ParameterWithoutName で、空の引数と言う" {
+            listOf("", "   ").forEach { written ->
+                lineErrorOf { allow(`fun`, "on")(written) }.let {
+                    it.problem shouldBe KtFileContentLineProblem.ParameterWithoutName
+                    it.message.orEmpty().lines().first() shouldBe "Line \"fun on()\" at ${it.declaredAt} has a blank parameter."
+                    it.message.orEmpty().lines().last() shouldBe "Write it as \"name: Type\", such as \"name: String\", or remove it."
+                }
+            }
         }
 
         "禁止の行でも同じに断る" {
@@ -161,8 +173,10 @@ class KtFileContentParameterSpec : FreeSpec({
 
         "文面は ASCII だけ" {
             listOf(
-                lineErrorOf { required(`fun`, "save")("String") },
-                lineErrorOf { required(`fun`, "save")("id:") },
+                lineErrorOf { allow(`fun`, "save")("String") },
+                lineErrorOf { allow(`fun`, "save")("id:") },
+                lineErrorOf { allow(`fun`, "save")(": Int") },
+                lineErrorOf { allow(`fun`, "save")(" ") },
             ).forEach { error -> error.message.orEmpty().filter { it.code > 127 } shouldBe "" }
         }
 

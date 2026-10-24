@@ -107,6 +107,8 @@ internal data class SrcDecl(
     val supertypes: List<String> = emptyList(),
     val propertyType: String? = null,
     val parameters: List<String> = emptyList(),
+    /** The parameter written `q<index>` rather than `p<index>`: a name no line's pattern but `*` matches. */
+    val renamedParameter: Int? = null,
     val returnType: String? = null,
     val body: GenBody = GenBody.Block,
     /** The members of a class, an interface or an object; `null` when it is something else. */
