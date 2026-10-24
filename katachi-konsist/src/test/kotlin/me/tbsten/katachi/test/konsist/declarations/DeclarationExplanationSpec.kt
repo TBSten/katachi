@@ -29,43 +29,43 @@ private class Case(val name: String, val source: String, val block: KtFileConten
  * sources and blocks: every rule of the judging, each once.
  */
 private val CASES: List<Case> = listOf(
-    Case("禁止は許可より強い", kt("class FooImpl")) { `class`("*"); not.`class`("*Impl") },
-    Case("except", kt("class DefaultImpl\nclass FooImpl")) { `class`("*"); not.`class`("*Impl").except("DefaultImpl") },
-    Case("anythingElse", kt("class Sample\nprivate fun helper() {}\nfun leak() {}")) { `class`(fileName); private.anythingElse() },
-    Case("禁止の行だけ", kt("class Sample")) { not.`class`("*Impl") },
-    Case("public", kt("class A\nprivate class B")) { public.`class`("*") },
-    Case("or", kt("internal class A\nprivate class B\nclass C")) { (internal or private).`class`("*") },
-    Case("アノテーション", kt("@A @B class X\n@A class Y")) { annotated("A", "B").`class`("*") },
-    Case("種類", kt("class Sample")) { `interface`(fileName) },
-    Case("メンバ", kt("abstract class Sample : Base() {\n    private val a = 1\n    protected fun b() {}\n}")) { `class`(fileName) { } },
-    Case("型", kt("val name: String? = null")) { `val`("name", "String") },
+    Case("禁止は許可より強い", kt("class FooImpl")) { allow(`class`, "*"); not.allow(`class`, "*Impl") },
+    Case("except", kt("class DefaultImpl\nclass FooImpl")) { allow(`class`, "*"); not.allow(`class`, "*Impl").except("DefaultImpl") },
+    Case("anythingElse", kt("class Sample\nprivate fun helper() {}\nfun leak() {}")) { allow(`class`, fileName); allow(private, anythingElse) },
+    Case("禁止の行だけ", kt("class Sample")) { not.allow(`class`, "*Impl") },
+    Case("public", kt("class A\nprivate class B")) { allow(public, `class`, "*") },
+    Case("or", kt("internal class A\nprivate class B\nclass C")) { allow(internal or private, `class`, "*") },
+    Case("アノテーション", kt("@A @B class X\n@A class Y")) { allow(annotated("A", "B"), `class`, "*") },
+    Case("種類", kt("class Sample")) { allow(`interface`, fileName) },
+    Case("メンバ", kt("abstract class Sample : Base() {\n    private val a = 1\n    protected fun b() {}\n}")) { allow(`class`, fileName) { } },
+    Case("型", kt("val name: String? = null")) { allow(`val`, "name", "String") },
     Case("引数", kt("fun load(a: String, b: Int) {}\nfun save(x: Int) {}\nfun drop(x: Int) {}")) {
-        `fun`("load")("String", "Int")
-        `fun`("save")()
-        `fun`("drop")
+        allow(`fun`, "load")("String", "Int")
+        allow(`fun`, "save")()
+        allow(`fun`, "drop")
     },
-    Case("戻り値", kt("fun onA() {}\nfun onB(): Unit {}\nfun onC() = Unit")) { `fun`("on*")().returns("Unit") },
-    Case("親の型", kt("class Sample : Repository<User>")) { `class`(fileName).superclass("Repository<Admin>") },
+    Case("戻り値", kt("fun onA() {}\nfun onB(): Unit {}\nfun onC() = Unit")) { allow(`fun`, "on*")().returns("Unit") },
+    Case("親の型", kt("class Sample : Repository<User>")) { allow(`class`, fileName).superclass("Repository<Admin>") },
     Case("import だけ", kt("class Anything\nfun whatever() {}")) { `import`("**") },
-    Case("必須が足りない", kt("interface Sample")) { `interface`(fileName); `class`("Default$fileName").superclass(fileName) },
-    Case("optional", kt("interface Sample")) { `interface`(fileName); `class`("Default$fileName").optional(); `object`("*Factory") },
-    Case("名前だけ当たる", kt("class Sample")) { data.`class`(fileName) },
+    Case("必須が足りない", kt("interface Sample")) { allow(`interface`, fileName); allow(`class`, "Default$fileName").superclass(fileName) },
+    Case("optional", kt("interface Sample")) { allow(`interface`, fileName); allow(`class`, "Default$fileName").optional(); allow(`object`, "*Factory") },
+    Case("名前だけ当たる", kt("class Sample")) { allow(data, `class`, fileName) },
     Case("Found を添える", kt("class Sample {\n    private fun invoke() {}\n}")) {
-        `class`(fileName) { override.`fun`("invoke"); private.anythingElse() }
+        allow(`class`, fileName) { allow(override, `fun`, "invoke"); allow(private, anythingElse) }
     },
     Case("入れ子のメンバ", kt("class Sample {\n    class Mode {\n        fun next() {}\n    }\n}")) {
-        `class`(fileName) { `class`("Mode") { `fun`("previous") } }
+        allow(`class`, fileName) { allow(`class`, "Mode") { allow(`fun`, "previous") } }
     },
-    Case("ファイル直下とメンバの足りない", kt("class Sample {\n}")) { `class`(fileName) { `val`("state") }; `object`("Keys") },
-    Case("オーバーロード", kt("fun load(a: String) {}\nfun load(a: Int) {}")) { `fun`("load")("String") },
-    Case("2 行に当たる", kt("class Sample")) { `class`("*"); `class`(fileName) },
-    Case("拡張関数", kt("fun String.shout(): String = uppercase()")) { `fun`("shout") },
-    Case("typealias", kt("typealias Id = String\nclass Sample")) { `class`(fileName) },
-    Case("宣言なしのファイル", kt("")) { `class`(fileName) },
+    Case("ファイル直下とメンバの足りない", kt("class Sample {\n}")) { allow(`class`, fileName) { allow(`val`, "state") }; allow(`object`, "Keys") },
+    Case("オーバーロード", kt("fun load(a: String) {}\nfun load(a: Int) {}")) { allow(`fun`, "load")("String") },
+    Case("2 行に当たる", kt("class Sample")) { allow(`class`, "*"); allow(`class`, fileName) },
+    Case("拡張関数", kt("fun String.shout(): String = uppercase()")) { allow(`fun`, "shout") },
+    Case("typealias", kt("typealias Id = String\nclass Sample")) { allow(`class`, fileName) },
+    Case("宣言なしのファイル", kt("")) { allow(`class`, fileName) },
     Case("package と import と宣言", kt("import kotlin.math.max\n\nclass Sample\nobject Other")) {
         `package`("com.example")
         `import`("kotlin.**")
-        `class`(fileName)
+        allow(`class`, fileName)
     },
 )
 
@@ -78,8 +78,8 @@ class DeclarationExplanationSpec : FreeSpec({
     "宣言ごとの verdict と決めた行" - {
         "許可の行に当たれば Allowed で、当たった行を書いた順にすべて" {
             judgedAndExplained(kt("class Sample\nclass Other")) {
-                `class`("*")
-                `class`(fileName)
+                allow(`class`, "*")
+                allow(`class`, fileName)
             }.explanation.verdicts() shouldContainExactly listOf(
                 "Sample Allowed [class *, class Sample]",
                 "Other Allowed [class *]",
@@ -88,15 +88,15 @@ class DeclarationExplanationSpec : FreeSpec({
 
         "anythingElse だけに当たれば AllowedByAnythingElse で、その行" {
             judgedAndExplained(kt("class Sample\nprivate fun helper() {}")) {
-                `class`(fileName)
-                private.anythingElse()
+                allow(`class`, fileName)
+                allow(private, anythingElse)
             }.explanation.verdicts()[1] shouldStartWith "helper AllowedByAnythingElse [private"
         }
 
         "禁止の行は Prohibited、名前だけ当たれば Mismatched と違い、どれにも当たらなければ Unexpected" {
             val explanation = judgedAndExplained(kt("class FooImpl\nclass Sample\nfun stray() {}")) {
-                not.`class`("*Impl")
-                `interface`(fileName)
+                not.allow(`class`, "*Impl")
+                allow(`interface`, fileName)
             }.explanation
             explanation.verdicts() shouldContainExactly listOf(
                 "FooImpl Prohibited [not class *Impl]",
@@ -110,7 +110,7 @@ class DeclarationExplanationSpec : FreeSpec({
 
         "オーバーロードは宣言ごとに決まる" {
             judgedAndExplained(kt("fun load(a: String) {}\nfun load(a: Int) {}")) {
-                `fun`("load")("String")
+                allow(`fun`, "load")("String")
             }.explanation.verdicts() shouldContainExactly listOf(
                 "load Allowed [fun load(String)]",
                 "load Mismatched [fun load(String)]",
@@ -119,13 +119,13 @@ class DeclarationExplanationSpec : FreeSpec({
 
         "fileName で書いた行は、そのファイルの値で描く" {
             judgedAndExplained(kt("class HealthService"), path = "src/main/kotlin/com/example/HealthService.kt") {
-                `class`(fileName)
+                allow(`class`, fileName)
             }.explanation.declarations.single().rules.single().text shouldBe "class HealthService"
         }
 
         "行の宣言元は書いた行。ヘルパー関数に書いた行はヘルパーの行" {
             val explanation = judgedAndExplained(kt("class Sample\nval logger = 1")) {
-                `class`(fileName)
+                allow(`class`, fileName)
                 allowLoggerHelper()
             }.explanation
             explanation.declarations[0].rules.single().declaredAt.fileName shouldBe "DeclarationExplanationSpec.kt"
@@ -135,8 +135,8 @@ class DeclarationExplanationSpec : FreeSpec({
 
         "必須の行に当たる宣言が無ければ missing に入る" {
             judgedAndExplained(kt("interface Sample")) {
-                `interface`(fileName)
-                `class`("Default$fileName").superclass(fileName)
+                allow(`interface`, fileName)
+                allow(`class`, "Default$fileName").superclass(fileName)
             }.explanation.missing.map { it.text } shouldContainExactly listOf("class DefaultSample : Sample")
         }
 
@@ -177,8 +177,8 @@ class DeclarationExplanationSpec : FreeSpec({
                 "src/main/kotlin/com/example/UserService.kt" to kt("object UserService"),
                 "src/main/kotlin/com/example/notes.txt" to "not Kotlin",
             ) {
-                `class`(fileName)
-                `object`("*Factory")
+                allow(`class`, fileName)
+                allow(`object`, "*Factory")
             }
             val explanations = run.explanations.getOrThrow()
             explanations.map { it.file } shouldContainExactly listOf(
@@ -200,7 +200,7 @@ class DeclarationExplanationSpec : FreeSpec({
                 "src/main/kotlin/com/example/Fine.kt" to kt("class Fine"),
             ) {
                 if (fileName == "Broken") throw IllegalStateException("no rules for Broken\nsecond line")
-                `class`(fileName)
+                allow(`class`, fileName)
             }
             // The check stops at the first file that throws: a constraint answers as a whole.
             run.failures.isFailure shouldBe true

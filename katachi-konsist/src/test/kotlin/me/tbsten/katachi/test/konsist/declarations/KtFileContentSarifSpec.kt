@@ -34,8 +34,8 @@ class KtFileContentSarifSpec : FreeSpec({
             paths = { "core/domain" / "*".ktFile() },
         ) {
             ktFileContent {
-                `interface`(fileName)
-                `class`("Default$fileName").superclass(fileName)
+                allow(`interface`, fileName)
+                allow(`class`, "Default$fileName").superclass(fileName)
             }
         }
         // A member that exists in another shape (the `Found:` line), and an import that is not there.
@@ -45,9 +45,9 @@ class KtFileContentSarifSpec : FreeSpec({
         ) {
             ktFileContent {
                 `import`("com.example.App")
-                `class`(fileName) {
-                    public.`val`("count", "Int")
-                    private.anythingElse()
+                allow(`class`, fileName) {
+                    allow(public, `val`, "count", "Int")
+                    allow(private, anythingElse)
                 }
             }
         }

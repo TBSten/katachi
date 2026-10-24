@@ -73,7 +73,7 @@ class FileConstraintDetailsReportSpec : FreeSpec({
                         FileConstraintFix("Move it to a file of another role"),
                         FileConstraintFix(
                             "Allow it in ktFileContent { } at UseCaseRole.kt:16:",
-                            code = listOf("`class`(\"GetUserUseCaseImpl\").optional()"),
+                            code = listOf("allow(`class`, \"GetUserUseCaseImpl\").optional()"),
                         ),
                     ),
                     ruleDeclaredAt = RULE_SITE,
@@ -98,7 +98,7 @@ class FileConstraintDetailsReportSpec : FreeSpec({
                 - Rename it to DefaultGetUserUseCase
                 - Move it to a file of another role
                 - Allow it in ktFileContent { } at UseCaseRole.kt:16:
-                    `class`("GetUserUseCaseImpl").optional()
+                    allow(`class`, "GetUserUseCaseImpl").optional()
             """.trimIndent()
     }
 
@@ -177,11 +177,11 @@ class FileConstraintDetailsReportSpec : FreeSpec({
                         FileConstraintFix(
                             "Allow its members:",
                             code = listOf(
-                                "`class`(\"Foo\") {",
-                                "    private.anythingElse()",
+                                "allow(`class`, \"Foo\") {",
+                                "    allow(private, anythingElse)",
                                 "}",
                                 "",
-                                "`object`(\"Bar\") {\n    `val`(\"x\")\n}",
+                                "allow(`object`, \"Bar\") {\n    allow(`val`, \"x\")\n}",
                             ),
                         ),
                     ),
@@ -192,12 +192,12 @@ class FileConstraintDetailsReportSpec : FreeSpec({
         reportOf(arch).lines().takeLast(9) shouldBe listOf(
             "  How to fix:",
             "    - Allow its members:",
-            "        `class`(\"Foo\") {",
-            "            private.anythingElse()",
+            "        allow(`class`, \"Foo\") {",
+            "            allow(private, anythingElse)",
             "        }",
             "",
-            "        `object`(\"Bar\") {",
-            "            `val`(\"x\")",
+            "        allow(`object`, \"Bar\") {",
+            "            allow(`val`, \"x\")",
             "        }",
         )
     }
@@ -255,7 +255,7 @@ class FileConstraintDetailsReportSpec : FreeSpec({
                     line = 1,
                     reasons = listOf(FileConstraintReason("Not allowed", "class Foo")),
                     allowed = FileConstraintAllowedList("Allowed here", emptyList()),
-                    howToFix = listOf(FileConstraintFix("Remove it", code = listOf("not.`class`(\"Foo\")"))),
+                    howToFix = listOf(FileConstraintFix("Remove it", code = listOf("not.allow(`class`, \"Foo\")"))),
                     ruleDeclaredAt = RULE_SITE,
                 )
             },

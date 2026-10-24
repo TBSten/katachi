@@ -21,9 +21,9 @@ import me.tbsten.katachi.konsist.declarations.KtFileContentLineProblem
 import me.tbsten.katachi.konsist.declarations.KtFileContentScope
 
 /**
- * Modifiers or annotations written on a line of their own, which no declaration follows:
- * `annotated("Inject")` alone does not apply to the next line, so it is refused instead of
- * being ignored.
+ * A value of the vocabulary written on a line of its own and never passed to `allow(...)`: a
+ * modifier, `annotated(...)`, a kind or `anythingElse`. `annotated("Inject")` alone does not apply
+ * to the next line, so it is refused instead of being ignored.
  */
 private fun danglingOf(block: KtFileContentScope.() -> Unit): KatachiKtFileContentLineException =
     shouldThrow<KatachiKtFileContentLineException> { rulesOf(block = block) }
@@ -35,39 +35,44 @@ class KtFileContentDanglingModifiersSpec : FreeSpec({
                 it.problem shouldBe KtFileContentLineProblem.DanglingModifiers
                 it.line shouldBe "@Inject"
                 it.message.orEmpty() shouldContain "@Inject"
-                it.message.orEmpty() shouldContain "is not followed by a declaration"
+                it.message.orEmpty() shouldContain "is not passed to allow(...)"
             }
         }
 
         "annotated の次の行に宣言を書いても、つながらないので DanglingModifiers" {
             danglingOf {
                 annotated("Inject")
-                `class`("A")
+                allow(`class`, "A")
             }.line shouldBe "@Inject"
         }
 
         "private などの修飾子だけの行も DanglingModifiers" {
             danglingOf { private }.line shouldBe "private"
-            danglingOf { public.data }.line shouldBe "public data"
-            danglingOf { (internal or private) }.line shouldBe "(internal or private)"
+            danglingOf { internal or private }.line shouldBe "(internal or private)"
         }
 
-        "not. の修飾子だけの行も DanglingModifiers" {
-            danglingOf { not.private }.line shouldBe "not private"
+        "種類の値だけの行も DanglingModifiers" {
+            danglingOf { `class` }.line shouldBe "class"
+            danglingOf { `class` or `interface` }.line shouldBe "(class or interface)"
+            danglingOf { `fun` }.line shouldBe "fun"
+            danglingOf { `val` or `var` }.line shouldBe "(val or var)"
+            danglingOf { `typealias` }.line shouldBe "typealias"
+            danglingOf { type }.line shouldBe "(class or interface or object)"
         }
 
-        "not. の行の直し方は anythingElse() を勧めない（not. の後では別の例外になるため）" {
-            val message = danglingOf { not.private }.message.orEmpty()
-            message shouldContain "not.private"
-            (message.contains("anythingElse()")) shouldBe false
+        "anythingElse の値だけの行も DanglingModifiers" {
+            danglingOf { anythingElse }.line shouldBe "anythingElse"
         }
 
-        "not. でない行の直し方は anythingElse() も挙げる" {
-            danglingOf { private }.message.orEmpty() shouldContain "anythingElse()"
+        "直し方は allow(...) に渡す書き方を挙げる" {
+            val message = danglingOf { private }.message.orEmpty()
+            message shouldContain "allow(annotated(\"Inject\"), `class`, \"Name\")"
+            message shouldContain "allow(private, anythingElse)"
         }
 
-        "クラスの { } の中の単独の修飾子も DanglingModifiers" {
-            danglingOf { `class`("A") { private } }.line shouldBe "private"
+        "クラスの { } の中の単独の修飾子・種類も DanglingModifiers" {
+            danglingOf { allow(`class`, "A") { private } }.line shouldBe "private"
+            danglingOf { allow(`class`, "A") { `fun` } }.line shouldBe "fun"
         }
 
         "declaredAt は書かれた行を指す" {
@@ -127,24 +132,24 @@ class KtFileContentDanglingModifiersSpec : FreeSpec({
             ) {
                 ktFileContent { if (fileName == "Real") annotated("Inject") }
             }
-            violations.report() shouldContain "is not followed by a declaration"
+            violations.report() shouldContain "is not passed to allow(...)"
         }
     }
 
     "宣言につながる修飾子は例外にならない" - {
-        "kind を呼ぶ・anythingElse・or・invoke につなげた修飾子" {
+        "allow(...) に渡した修飾子・種類・anythingElse と、or でつないだ値" {
             shouldNotThrowAny {
                 rulesOf {
-                    annotated("HiltViewModel").public.`class`("A") {
-                        private.anythingElse()
-                        override.`fun`("x")
+                    allow(annotated("HiltViewModel"), public, `class`, "A") {
+                        allow(private, anythingElse)
+                        allow(override, `fun`, "x")
                     }
-                    (internal or private).data.`object`("B")
-                    annotated("Serializable")(`object` or `class`)("C")
-                    const(`val` or `var`)("D")
-                    public.`typealias`("E")
-                    not.private.`fun`("*")
-                    not.annotated("Deprecated").`class`("F")
+                    allow(internal or private, data, `object`, "B")
+                    allow(annotated("Serializable"), `object` or `class`, "C")
+                    allow(const, `val` or `var`, "D")
+                    allow(public, `typealias`, "E")
+                    not.allow(private, `fun`, "*")
+                    not.allow(annotated("Deprecated"), `class`, "F")
                 }
             }
         }
@@ -153,8 +158,8 @@ class KtFileContentDanglingModifiersSpec : FreeSpec({
             shouldNotThrowAny {
                 rulesOf {
                     val priv = private
-                    priv.`fun`("a")
-                    priv.`val`("b")
+                    allow(priv, `fun`, "a")
+                    allow(priv, `val`, "b")
                 }
             }
         }
@@ -162,7 +167,7 @@ class KtFileContentDanglingModifiersSpec : FreeSpec({
         "fileName を読むブロックの stand-in の実行では、条件が偽で使われなかった修飾子を見逃す" {
             val block: KtFileContentScope.() -> Unit = {
                 val inject = annotated("Inject")
-                if (fileName.endsWith("ViewModel")) inject.`class`(fileName)
+                if (fileName.endsWith("ViewModel")) allow(inject, `class`, fileName)
             }
             shouldNotThrowAny {
                 evaluateWithStandIns(block, EvaluationInput("Sample", { it }, PatternCache()), SPEC_SITE)

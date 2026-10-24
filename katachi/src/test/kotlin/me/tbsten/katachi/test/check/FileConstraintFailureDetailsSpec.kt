@@ -35,7 +35,7 @@ private fun detailedFailure(file: String): FileConstraintFailure = FileConstrain
     line = 9,
     reasons = listOf(FileConstraintReason("Not allowed", "class GetUserUseCaseImpl")),
     allowed = FileConstraintAllowedList("Allowed here", listOf("interface GetUserUseCase")),
-    howToFix = listOf(FileConstraintFix("Rename it", code = listOf("`interface`(\"GetUserUseCase\")"))),
+    howToFix = listOf(FileConstraintFix("Rename it", code = listOf("allow(`interface`, \"GetUserUseCase\")"))),
     ruleDeclaredAt = DeclarationSite("UseCaseRole.kt", 16),
 )
 
@@ -94,7 +94,7 @@ class FileConstraintFailureDetailsSpec : FreeSpec({
 
             violation.reasons shouldBe listOf(FileConstraintReason("Not allowed", "class GetUserUseCaseImpl"))
             violation.allowed shouldBe FileConstraintAllowedList("Allowed here", listOf("interface GetUserUseCase"))
-            violation.howToFix shouldBe listOf(FileConstraintFix("Rename it", code = listOf("`interface`(\"GetUserUseCase\")")))
+            violation.howToFix shouldBe listOf(FileConstraintFix("Rename it", code = listOf("allow(`interface`, \"GetUserUseCase\")")))
             violation.ruleDeclaredAt shouldBe DeclarationSite("UseCaseRole.kt", 16)
             violation.declaredAt shouldBe CONSTRAINT_SITE
         }

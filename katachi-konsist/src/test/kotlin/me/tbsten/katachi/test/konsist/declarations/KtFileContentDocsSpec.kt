@@ -28,11 +28,10 @@ class KtFileContentDocsSpec : FreeSpec({
                     `import`("kotlin.**")
                     `import`("com.example.domain.**")
                     not.`import`("android.**").except("android.os.**")
-                    annotated("HiltViewModel")
-                        .public.`class`(fileName).superclass("ViewModel") {
-                            public.`val`("uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
-                            public.`fun`("on*")().returns("Unit")
-                            private.anythingElse()
+                    allow(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
+                            allow(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+                            allow(public, `fun`, "on*")().returns("Unit")
+                            allow(private, anythingElse)
                         }
                 }
             }
@@ -75,13 +74,13 @@ class KtFileContentDocsSpec : FreeSpec({
                 ktFileContent {
                     `package`(matchingDirectory)
                     not.`package`("com.example.legacy.**")
-                    `interface`(fileName) {
-                        `class`("Params") { }
-                        operator.`fun`("invoke")
+                    allow(`interface`, fileName) {
+                        allow(`class`, "Params") { }
+                        allow(operator, `fun`, "invoke")
                     }
-                    not.`class`("*Impl").except("DefaultImpl")
-                    (internal or private).anythingElse()
-                    anythingElse()
+                    not.allow(`class`, "*Impl").except("DefaultImpl")
+                    allow(internal or private, anythingElse)
+                    allow(anythingElse)
                 }
             }
         }.getValue("UseCase.md")
@@ -131,7 +130,7 @@ class KtFileContentDocsSpec : FreeSpec({
             "Repository".role {
                 example("UserRepository")
                 layout { "data" / "*Repository".ktFile() }
-                ktFileContent { if (fileName != "UserRepository") `class`(fileName) }
+                ktFileContent { if (fileName != "UserRepository") allow(`class`, fileName) }
             }
         }.getValue("Repository.md")
 
@@ -142,7 +141,7 @@ class KtFileContentDocsSpec : FreeSpec({
         val page = rolePageOf {
             "Repository".role {
                 layout { "data" / "*Repository".ktFile() }
-                ktFileContent { `interface`(fileName) }
+                ktFileContent { allow(`interface`, fileName) }
             }
         }.getValue("Repository.md")
 
@@ -169,7 +168,7 @@ class KtFileContentDocsSpec : FreeSpec({
             "Screen".role {
                 example("Home")
                 layout { "ui" / "*".ktFile() }
-                ktFileContent { `class`(fileName.substring(10)) }
+                ktFileContent { allow(`class`, fileName.substring(10)) }
             }
         }.getValue("Screen.md")
 
@@ -193,7 +192,7 @@ class KtFileContentDocsSpec : FreeSpec({
                     ":feature:*".module {
                         "build.gradle.kts".file()
                         mainSourceSet / kotlin / "*Screen".ktFile()
-                        ktFileContent { `class`(fileName) }
+                        ktFileContent { allow(`class`, fileName) }
                     }
                 }
             }
@@ -207,7 +206,7 @@ class KtFileContentDocsSpec : FreeSpec({
             "Screen".role {
                 example("Home")
                 layout { "ui" / "*".ktFile() }
-                ktFileContent { `val`("`a|b`") }
+                ktFileContent { allow(`val`, "`a|b`") }
             }
         }.getValue("Screen.md")
 
@@ -222,7 +221,7 @@ class KtFileContentDocsSpec : FreeSpec({
                 ktFileContent {
                     not.`package`("com.example.legacy.**")
                     not.`import`("android.**")
-                    not.`class`("*Impl")
+                    not.allow(`class`, "*Impl")
                 }
             }
         }.getValue("Screen.md")

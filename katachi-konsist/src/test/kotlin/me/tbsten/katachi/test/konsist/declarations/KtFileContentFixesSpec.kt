@@ -37,16 +37,16 @@ class KtFileContentFixesSpec : FreeSpec({
         }
 
         "宣言" {
-            fixesOf("package com.example\n\nclass Sample\n") { not.`class`("*Impl") }.first() shouldBe
+            fixesOf("package com.example\n\nclass Sample\n") { not.allow(`class`, "*Impl") }.first() shouldBe
                 "Sample: Only not. lines are written for declarations, so every other one is rejected too. " +
-                "To allow the rest, add at $SPEC_SITE: / anythingElse()"
+                "To allow the rest, add at $SPEC_SITE: / allow(anythingElse)"
         }
 
         "許可の行が 1 つでもあれば出さない" {
             fixesOf("package com.example\n\nimport a.B\n\nclass Sample\n") {
                 `import`("kotlin.**")
                 not.`import`("android.**")
-                `class`(fileName)
+                allow(`class`, fileName)
             }.none { "Only not. lines" in it } shouldBe true
         }
     }
@@ -54,8 +54,8 @@ class KtFileContentFixesSpec : FreeSpec({
     "名前の当たる宣言が別の形で許されていたら、その宣言の形を直す直し方を出す" {
         var line: DeclarationSite? = null
         fixesOf("package com.example\n\ninterface SampleAction\n") {
-            line = DeclarationSite.capture(); sealed.`interface`("SampleAction")
-            anythingElse()
+            line = DeclarationSite.capture(); allow(sealed, `interface`, "SampleAction")
+            allow(anythingElse)
         } shouldBe listOf(
             "SampleAction: Change the declaration at line 3 to: sealed interface SampleAction",
             "SampleAction: Or change the line at $line if the declaration is right",
@@ -65,30 +65,30 @@ class KtFileContentFixesSpec : FreeSpec({
 
     "glob の文字を含む名前は、エスケープしたパターンとして出し、貼ればその名前だけに当たる" {
         val source = "package com.example\n\nclass Sample\n\nfun `is it {ok}?`() {}\nfun `a*b`() {}\n"
-        val fixes = fixesOf(source) { `class`(fileName) }
+        val fixes = fixesOf(source) { allow(`class`, fileName) }
         fixes.filter { "optional()" in it }.map { it.substringAfterLast(" / ") } shouldBe listOf(
-            "`fun`(\"is it \\\\{ok\\\\}\\\\?\").optional()",
-            "`fun`(\"a\\\\*b\").optional()",
+            "allow(`fun`, \"is it \\\\{ok\\\\}\\\\?\").optional()",
+            "allow(`fun`, \"a\\\\*b\").optional()",
         )
         // Pasted back, the code compiles and allows exactly those two.
         judged(source) {
-            `class`(fileName)
-            `fun`("is it \\{ok\\}\\?").optional()
-            `fun`("a\\*b").optional()
+            allow(`class`, fileName)
+            allow(`fun`, "is it \\{ok\\}\\?").optional()
+            allow(`fun`, "a\\*b").optional()
         }.shouldBeEmpty()
         judged("package com.example\n\nclass Sample\n\nfun axxb() {}\n") {
-            `class`(fileName)
-            `fun`("a\\*b").optional()
+            allow(`class`, fileName)
+            allow(`fun`, "a\\*b").optional()
         }.size shouldBe 1
     }
 
     "型のパターンに package と * を書くと、何にでも当たる代わりに例外" {
-        val error = shouldThrow<KatachiKtFileContentPatternException> { rulesOf { `val`("x", "com.example.*") } }
+        val error = shouldThrow<KatachiKtFileContentPatternException> { rulesOf { allow(`val`, "x", "com.example.*") } }
         error.what shouldBe KtFileContentPatternKind.Type
         error.message shouldContain "Types are compared without their package"
-        shouldThrow<KatachiKtFileContentPatternException> { rulesOf { `class`(fileName).superclass("com.example.*") } }
+        shouldThrow<KatachiKtFileContentPatternException> { rulesOf { allow(`class`, fileName).superclass("com.example.*") } }
             .what shouldBe KtFileContentPatternKind.Superclass
         // A type argument's wildcard is not a package's.
-        rulesOf { `val`("x", "kotlinx.coroutines.flow.StateFlow<*>") }
+        rulesOf { allow(`val`, "x", "kotlinx.coroutines.flow.StateFlow<*>") }
     }
 })

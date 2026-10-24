@@ -125,14 +125,14 @@ private fun KtFileContentScope.perFileRules(rules: PerFileRules) {
         if (rules.prohibitOthers) not.`import`("com.example.feature.**").except("com.example.feature.$feature.**")
     }
     when {
-        fileName.endsWith("Screen") -> `fun`(fileName)
-        rules.body -> `class`(fileName) {
-            `val`("state", "StateFlow<${fileName}State>")
-            private.anythingElse()
+        fileName.endsWith("Screen") -> allow(`fun`, fileName)
+        rules.body -> allow(`class`, fileName) {
+            allow(`val`, "state", "StateFlow<${fileName}State>")
+            allow(private, anythingElse)
         }
-        else -> `class`(fileName)
+        else -> allow(`class`, fileName)
     }
-    if (rules.keys) `object`("${fileName}Keys")
+    if (rules.keys) allow(`object`, "${fileName}Keys")
 }
 
 /**

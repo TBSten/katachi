@@ -6,6 +6,7 @@ import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldNotContain
+import me.tbsten.katachi.konsist.declarations.DeclarationListScope
 import me.tbsten.katachi.konsist.declarations.DeclarationVocabulary
 import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentLineException
 import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentModifierException
@@ -49,22 +50,22 @@ private val MODIFIERS: Map<String, DeclarationVocabulary.() -> Modifiers> = mapO
     "value" to { value }, "infix" to { infix }, "operator" to { operator }, "data" to { data },
 )
 
-/** Writes a line of each kind, by its keyword, named `X`. */
-private val KINDS: Map<String, Modifiers.() -> Unit> = mapOf(
-    "class" to { `class`("X") },
-    "interface" to { `interface`("X") },
-    "object" to { `object`("X") },
-    "fun" to { `fun`("X") },
-    "val" to { `val`("X") },
-    "var" to { `var`("X") },
-    "typealias" to { `typealias`("X") },
+/** Writes a line of each kind, by its keyword, named `X`, with the modifier given in front. */
+private val KINDS: Map<String, DeclarationListScope.(Modifiers) -> Unit> = mapOf(
+    "class" to { allow(it, `class`, "X") },
+    "interface" to { allow(it, `interface`, "X") },
+    "object" to { allow(it, `object`, "X") },
+    "fun" to { allow(it, `fun`, "X") },
+    "val" to { allow(it, `val`, "X") },
+    "var" to { allow(it, `var`, "X") },
+    "typealias" to { allow(it, `typealias`, "X") },
 )
 
 /** What writing [modifier] in front of [kind] comes to, as one word, in the file or in a class. */
 private fun outcomeOf(modifier: String, kind: String, inClassBody: Boolean): String {
     val line: KtFileContentScope.() -> Unit = {
-        val write: DeclarationVocabulary.() -> Unit = { KINDS.getValue(kind)(MODIFIERS.getValue(modifier)(this)) }
-        if (inClassBody) `class`("Host") { write() } else write()
+        val write: DeclarationListScope.() -> Unit = { KINDS.getValue(kind)(this, MODIFIERS.getValue(modifier)(this)) }
+        if (inClassBody) allow(`class`, "Host") { write() } else write()
     }
     return try {
         val rules = rulesOf(block = line)
@@ -103,27 +104,27 @@ class ModifierValidationSpec : FreeSpec({
             }
         }
 
-        "修飾子 fun は `fun`.`interface` だけで付き、interface になる" {
-            rulesOf { `fun`.`interface`("X") }.dump() shouldBe "required interface{fun} X"
+        "修飾子 fun は allow(`fun`, `interface`, …) だけで付き、interface になる" {
+            rulesOf { allow(`fun`, `interface`, "X") }.dump() shouldBe "required interface{fun} X"
         }
     }
 
     "付けられる種類に絞る" - {
-        "sealed.type は sealed class か sealed interface になる" {
-            rulesOf { sealed.type("X") }.dump() shouldBe "required class{sealed}|interface{sealed} X"
+        "allow(sealed, type, …) は sealed class か sealed interface になる" {
+            rulesOf { allow(sealed, type, "X") }.dump() shouldBe "required class{sealed}|interface{sealed} X"
         }
 
         "利用者が組んだ種類も type と同じ規則で絞る" {
-            rulesOf { data(`class` or `interface`)("X") }.dump() shouldBe "required class{data} X"
-            rulesOf { const(`val` or `var`)("X") }.dump() shouldBe "required val{const} X"
+            rulesOf { allow(data, `class` or `interface`, "X") }.dump() shouldBe "required class{data} X"
+            rulesOf { allow(const, `val` or `var`, "X") }.dump() shouldBe "required val{const} X"
         }
 
         "or の片方だけが付けられる組み合わせなら、付けられる方だけが残る" {
-            rulesOf { (data or sealed).`interface`("X") }.dump() shouldBe "required interface{sealed} X"
+            rulesOf { allow(data or sealed, `interface`, "X") }.dump() shouldBe "required interface{sealed} X"
         }
 
-        "data.`interface` は候補が無くなり、data と interface を名指しする" {
-            val error = shouldThrow<KatachiKtFileContentModifierException> { rulesOf { data.`interface`(fileName) } }
+        "allow(data, `interface`, …) は候補が無くなり、data と interface を名指しする" {
+            val error = shouldThrow<KatachiKtFileContentModifierException> { rulesOf { allow(data, `interface`, fileName) } }
 
             error.problem shouldBe KtFileContentModifierProblem.NotApplicable
             error.modifiers shouldBe listOf("data")
@@ -136,8 +137,8 @@ class ModifierValidationSpec : FreeSpec({
             """.trimIndent()
         }
 
-        "suspend.`fun`.`interface` は suspend を名指しする" {
-            val error = shouldThrow<KatachiKtFileContentModifierException> { rulesOf { suspend.`fun`.`interface`("X") } }
+        "allow(suspend, `fun`, `interface`, …) は suspend を名指しする" {
+            val error = shouldThrow<KatachiKtFileContentModifierException> { rulesOf { allow(suspend, `fun`, `interface`, "X") } }
 
             error.modifiers shouldBe listOf("suspend")
             error.kind shouldBe "interface"
@@ -145,8 +146,8 @@ class ModifierValidationSpec : FreeSpec({
     }
 
     "組の中の衝突" - {
-        "public.internal は Conflicting" {
-            val error = shouldThrow<KatachiKtFileContentModifierException> { rulesOf { public.internal.`class`("X") } }
+        "allow(public, internal, …) は Conflicting" {
+            val error = shouldThrow<KatachiKtFileContentModifierException> { rulesOf { allow(public, internal, `class`, "X") } }
 
             error.problem shouldBe KtFileContentModifierProblem.Conflicting
             error.modifiers shouldBe listOf("public", "internal")
@@ -154,27 +155,27 @@ class ModifierValidationSpec : FreeSpec({
             error.message shouldBe """
                 Line "public internal class X" in ktFileContent { } at ${error.declaredAt} cannot match anything.
                 public and internal cannot be on one declaration together.
-                Write (public or internal) to accept either, or keep only one of them.
+                Write allow(public or internal, ...) to accept either, or keep only one of them.
             """.trimIndent()
         }
 
         "data と sealed、abstract と open、expect と actual もそれぞれ 1 つまで" {
-            shouldThrow<KatachiKtFileContentModifierException> { rulesOf { data.sealed.`class`("X") } }
+            shouldThrow<KatachiKtFileContentModifierException> { rulesOf { allow(data, sealed, `class`, "X") } }
                 .modifiers shouldBe listOf("sealed", "data")
-            shouldThrow<KatachiKtFileContentModifierException> { rulesOf { `class`("H") { abstract.open.`fun`("x") } } }
+            shouldThrow<KatachiKtFileContentModifierException> { rulesOf { allow(`class`, "H") { allow(abstract, open, `fun`, "x") } } }
                 .modifiers shouldBe listOf("abstract", "open")
-            shouldThrow<KatachiKtFileContentModifierException> { rulesOf { expect.actual.`fun`("x") } }
+            shouldThrow<KatachiKtFileContentModifierException> { rulesOf { allow(expect, actual, `fun`, "x") } }
                 .modifiers shouldBe listOf("expect", "actual")
         }
 
         "or でつないだ可視性は衝突しない" {
-            rulesOf { (public or internal).`class`("X") }.dump() shouldBe "required class{public}|class{internal} X"
+            rulesOf { allow(public or internal, `class`, "X") }.dump() shouldBe "required class{public}|class{internal} X"
         }
     }
 
     "置き場" - {
         "ファイル直下の override は OnlyInClassBody。クラスの中なら通る" {
-            val error = shouldThrow<KatachiKtFileContentModifierException> { rulesOf { override.`fun`("invoke") } }
+            val error = shouldThrow<KatachiKtFileContentModifierException> { rulesOf { allow(override, `fun`, "invoke") } }
 
             error.problem shouldBe KtFileContentModifierProblem.OnlyInClassBody
             error.message shouldBe """
@@ -182,11 +183,11 @@ class ModifierValidationSpec : FreeSpec({
                 override is only valid on a member of a class, and this line is written directly in the file.
                 Move the line into the { } of a class line.
             """.trimIndent()
-            rulesOf { `class`("H") { override.`fun`("invoke") } }.firstDeclaration.members?.lines?.size shouldBe 1
+            rulesOf { allow(`class`, "H") { allow(override, `fun`, "invoke") } }.firstDeclaration.members?.lines?.size shouldBe 1
         }
 
-        "ファイル直下の abstract.`fun` は種類も名指しする" {
-            val error = shouldThrow<KatachiKtFileContentModifierException> { rulesOf { abstract.`fun`("x") } }
+        "ファイル直下の allow(abstract, `fun`, …) は種類も名指しする" {
+            val error = shouldThrow<KatachiKtFileContentModifierException> { rulesOf { allow(abstract, `fun`, "x") } }
 
             error.problem shouldBe KtFileContentModifierProblem.OnlyInClassBody
             error.kind shouldBe "fun"
@@ -194,19 +195,19 @@ class ModifierValidationSpec : FreeSpec({
                 "abstract on a fun is only valid inside a class, and this line is written directly in the file."
         }
 
-        "ファイル直下の abstract.`class` は通る" {
-            rulesOf { abstract.`class`("X") }.dump() shouldBe "required class{abstract} X"
+        "ファイル直下の allow(abstract, `class`, …) は通る" {
+            rulesOf { allow(abstract, `class`, "X") }.dump() shouldBe "required class{abstract} X"
         }
     }
 
     "anythingElse の修飾子" - {
         "衝突と置き場だけを確かめる" {
-            shouldThrow<KatachiKtFileContentModifierException> { rulesOf { public.internal.anythingElse() } }
+            shouldThrow<KatachiKtFileContentModifierException> { rulesOf { allow(public, internal, anythingElse) } }
                 .problem shouldBe KtFileContentModifierProblem.Conflicting
-            shouldThrow<KatachiKtFileContentModifierException> { rulesOf { override.anythingElse() } }
+            shouldThrow<KatachiKtFileContentModifierException> { rulesOf { allow(override, anythingElse) } }
                 .problem shouldBe KtFileContentModifierProblem.OnlyInClassBody
-            rulesOf { abstract.anythingElse() }.dump() shouldBe "anythingElse {abstract}"
-            rulesOf { `class`("H") { override.anythingElse() } }.dump() shouldBe """
+            rulesOf { allow(abstract, anythingElse) }.dump() shouldBe "anythingElse {abstract}"
+            rulesOf { allow(`class`, "H") { allow(override, anythingElse) } }.dump() shouldBe """
                 required class{} H
                   members:
                     anythingElse {override}
@@ -217,10 +218,10 @@ class ModifierValidationSpec : FreeSpec({
     "文面" - {
         "例外の文面は ASCII だけ" {
             val messages = listOf(
-                shouldThrow<KatachiKtFileContentModifierException> { rulesOf { data.`interface`("X") } },
-                shouldThrow<KatachiKtFileContentModifierException> { rulesOf { public.private.`class`("X") } },
-                shouldThrow<KatachiKtFileContentModifierException> { rulesOf { inner.`class`("X") } },
-                shouldThrow<KatachiKtFileContentModifierException> { rulesOf { open.`val`("x") } },
+                shouldThrow<KatachiKtFileContentModifierException> { rulesOf { allow(data, `interface`, "X") } },
+                shouldThrow<KatachiKtFileContentModifierException> { rulesOf { allow(public, private, `class`, "X") } },
+                shouldThrow<KatachiKtFileContentModifierException> { rulesOf { allow(inner, `class`, "X") } },
+                shouldThrow<KatachiKtFileContentModifierException> { rulesOf { allow(open, `val`, "x") } },
             ).map { it.message.orEmpty() }
 
             for (message in messages) {

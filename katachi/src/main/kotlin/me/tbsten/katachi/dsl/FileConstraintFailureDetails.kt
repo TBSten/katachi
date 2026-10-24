@@ -71,7 +71,7 @@ public data class FileConstraintAllowedList(
  * ```text
  *   How to fix:
  *     - Allow it in ktFileContent { } at UseCaseRole.kt:16:
- *         `class`("GetUserUseCaseImpl").optional()
+ *         allow(`class`, "GetUserUseCaseImpl").optional()
  * ```
  *
  * [text] is printed on one line. Each element of [code] is printed indented under it as written,
@@ -85,7 +85,7 @@ public data class FileConstraintAllowedList(
  *     declaration = "GetUserUseCaseImpl",
  *     howToFix = listOf(
  *         FileConstraintFix("Rename it to DefaultGetUserUseCase"),
- *         FileConstraintFix("Allow it at UseCaseRole.kt:16:", code = listOf("`class`(\"GetUserUseCaseImpl\").optional()")),
+ *         FileConstraintFix("Allow it at UseCaseRole.kt:16:", code = listOf("allow(`class`, \"GetUserUseCaseImpl\").optional()")),
  *     ),
  * )
  * ```

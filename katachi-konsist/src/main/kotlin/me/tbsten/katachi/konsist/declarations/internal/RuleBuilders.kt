@@ -9,8 +9,8 @@ import me.tbsten.katachi.konsist.declarations.KtFileContentPatternKind
 
 /*
  * What one evaluation of the block writes into, line by line, before it is frozen into the model
- * of `KtFileContentRules.kt`. A line is registered when its kind is called (`class`(...)), and the
- * calls chained after it (`.superclass(...)`, `.optional()`) change that same line.
+ * of `KtFileContentRules.kt`. A line is registered when `allow(...)` is called, and the calls
+ * chained after it (`.superclass(...)`, `.optional()`) change that same line.
  */
 
 /**
@@ -26,8 +26,8 @@ internal class EvaluationSession(val input: EvaluationInput) {
 
     val patterns: PatternCache get() = input.patterns
 
-    /** The modifiers and annotations written in this run, to find the ones no declaration follows. */
-    val modifiers: ModifierTraces = ModifierTraces()
+    /** The values of the vocabulary written in this run, to find the ones no line was written with. */
+    val values: ValueTraces = ValueTraces()
 
     /** Whether the run has not ended yet. */
     val isOpen: Boolean get() = !closed
@@ -47,12 +47,12 @@ internal class EvaluationSession(val input: EvaluationInput) {
     }
 
     /**
-     * @throws KatachiKtFileContentLineException when modifiers or annotations were written on a line
-     *   of their own and no declaration was built from them.
+     * @throws KatachiKtFileContentLineException when a value of the vocabulary -- a modifier, an
+     *   annotation, a kind, `anythingElse` -- was written on a line of its own and never passed to `allow(...)`.
      */
-    fun failOnDanglingModifiers() {
-        val dangling = modifiers.firstDangling() ?: return
-        throw KatachiKtFileContentLineException(KtFileContentLineProblem.DanglingModifiers, dangling.line(), dangling.declaredAt)
+    fun failOnDanglingValues() {
+        val dangling = values.firstDangling() ?: return
+        throw KatachiKtFileContentLineException(KtFileContentLineProblem.DanglingModifiers, dangling.text(), dangling.declaredAt)
     }
 
     /** Ends the run: nothing can be written into it any more. */
@@ -64,7 +64,7 @@ internal class EvaluationSession(val input: EvaluationInput) {
     override fun toString(): String = "EvaluationSession($input, open=$isOpen)"
 }
 
-/** Something a declaration list holds: a declaration line still being written, or a finished `anythingElse()`. */
+/** Something a declaration list holds: a declaration line still being written, or a finished `anythingElse` line. */
 internal sealed interface DeclarationListEntryBuilder {
     fun build(): DeclarationListEntry
 }
@@ -109,7 +109,7 @@ internal class DeclarationListBuilder(
     }
 
     /**
-     * Registers an `anythingElse()` that allows what matches one of [alternatives].
+     * Registers an `allow(..., anythingElse)` that allows what matches one of [alternatives].
      *
      * @throws KatachiKtFileContentLineException when this list is not the block being written, or
      *   when the line starts with `not.`.
@@ -117,12 +117,10 @@ internal class DeclarationListBuilder(
      *   of modifiers cannot be on one declaration, or not here.
      */
     fun addAnythingElse(alternatives: List<ModifierSet>, prohibited: Boolean) {
-        val line = listOf(renderModifierAlternatives(alternatives), ANYTHING).filter { it.isNotEmpty() }.joinToString(" ")
+        val line = renderAnythingElseLine(alternatives, prohibited)
         ensureCurrent(line)
         val declaredAt = DeclarationSite.capture()
-        if (prohibited) {
-            throw KatachiKtFileContentLineException(KtFileContentLineProblem.AnythingElseAfterNot, "not $line", declaredAt)
-        }
+        if (prohibited) throw KatachiKtFileContentLineException(KtFileContentLineProblem.AnythingElseAfterNot, line, declaredAt)
         validateAnythingElse(alternatives, placement, line, declaredAt)
         entries += WrittenEntry(AnythingElseRule(alternatives.distinct(), declaredAt))
     }
@@ -138,7 +136,7 @@ internal class DeclarationListBuilder(
     override fun toString(): String = "DeclarationListBuilder($placement, ${entries.size} lines)"
 }
 
-/** One declaration line while the calls chained after its kind are still changing it. */
+/** One declaration line while the calls chained after `allow(...)` are still changing it. */
 internal class DeclarationLineBuilder(
     private val list: DeclarationListBuilder,
     private val shapes: List<Shape>,

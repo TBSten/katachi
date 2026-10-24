@@ -8,25 +8,25 @@ import me.tbsten.katachi.dsl.KatachiDsl
  * inside the `{ }` of a class line ([ClassBodyScope]). The vocabulary is the same in both, so an
  * extension of this type works in either.
  *
- * Every line written here is an allow list entry. Once one line is written, a declaration matched
- * by no line is a violation; with no line written, the declarations are not looked at. Lines are
- * judged in this order: a prohibited line (`not.`) wins, then an allowed line, then
- * [anythingElse], and anything left is a violation.
+ * Every line written here with `allow(...)` is an allow list entry. Once one line is written, a
+ * declaration matched by no line is a violation; with no line written, the declarations are not
+ * looked at. Lines are judged in this order: a prohibited line (`not.allow(...)`) wins, then an
+ * allowed line, then `allow(..., anythingElse)`, and anything left is a violation.
  *
  * ## Example 1: a name of your own for a combination of kinds
  * ```kt
  * val DeclarationListScope.classOrInterface get() = `class` or `interface`
  *
  * ktFileContent {
- *     classOrInterface(fileName) {
- *         classOrInterface("*")
+ *     allow(classOrInterface, fileName) {
+ *         allow(classOrInterface, "*")
  *     }
  * }
  * ```
  */
 @KatachiDsl
 @ExperimentalKatachiApi
-public sealed interface DeclarationListScope : DeclarationVocabulary {
+public sealed interface DeclarationListScope : DeclarationVocabulary, DeclarationAllow {
     /**
      * The name of the file being checked, up to its first `.`: `Platform.android.kt` is
      * `Platform`. A plain `String`: the block runs once per file, so `replace`, `removePrefix` and
@@ -34,7 +34,7 @@ public sealed interface DeclarationListScope : DeclarationVocabulary {
      *
      * ## Example 1: the state type named after the view model's file
      * ```kt
-     * public.`val`("uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+     * allow(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
      * ```
      */
     public val fileName: String
@@ -55,27 +55,15 @@ public sealed interface DeclarationListScope : DeclarationVocabulary {
     public fun captureValue(name: String): String
 
     /**
-     * Starts a prohibited line: what it matches is a violation, even when an allowed line matches
-     * it too.
+     * Starts a prohibited line, `not.allow(...)`: what it matches is a violation, even when an
+     * allowed line matches it too.
      *
      * ## Example 1: no implementation class but the default one
      * ```kt
-     * not.`class`("*Impl").except("DefaultImpl")
+     * not.allow(`class`, "*Impl").except("DefaultImpl")
      * ```
      */
     public val not: Prohibition
-
-    /**
-     * Allows any declaration no other line matches, whatever its kind, name and modifiers. With
-     * modifiers in front, only declarations carrying them: `private.anythingElse()`.
-     *
-     * ## Example 1: one class named after the file, plus anything else
-     * ```kt
-     * `class`(fileName)
-     * anythingElse()
-     * ```
-     */
-    public fun anythingElse()
 
     /**
      * "Any parameters", for a function line that reads better with it than without; the same as
@@ -83,7 +71,7 @@ public sealed interface DeclarationListScope : DeclarationVocabulary {
      *
      * ## Example 1: functions starting with `on`, whatever their parameters
      * ```kt
-     * `fun`("on*")(anyArgs())
+     * allow(`fun`, "on*")(anyArgs())
      * ```
      */
     public fun anyArgs(): AnyArgs
@@ -107,12 +95,11 @@ public sealed interface DeclarationListScope : DeclarationVocabulary {
  *     `import`("javax.inject.**")
  *     not.`import`("android.**")
  *
- *     annotated("HiltViewModel")
- *         .public.`class`(fileName).superclass("ViewModel") {
- *             public.`val`("uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
- *             public.`fun`("on*")().returns("Unit")
- *             private.anythingElse()
- *         }
+ *     allow(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
+ *         allow(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+ *         allow(public, `fun`, "on*")().returns("Unit")
+ *         allow(private, anythingElse)
+ *     }
  * }
  * ```
  */
@@ -191,12 +178,12 @@ public sealed interface KtFileContentScope : DeclarationListScope {
  * ## Example 1: what a use case interface and its implementation hold
  * ```kt
  * ktFileContent {
- *     `interface`(fileName) {
- *         operator.`fun`("invoke")
+ *     allow(`interface`, fileName) {
+ *         allow(operator, `fun`, "invoke")
  *     }
- *     `class`("Default$fileName").superclass(fileName) {
- *         override.`fun`("invoke")
- *         private.anythingElse()
+ *     allow(`class`, "Default$fileName").superclass(fileName) {
+ *         allow(override, `fun`, "invoke")
+ *         allow(private, anythingElse)
  *     }
  * }
  * ```

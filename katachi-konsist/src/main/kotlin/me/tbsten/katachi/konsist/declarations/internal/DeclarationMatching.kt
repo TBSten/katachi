@@ -80,6 +80,6 @@ internal fun returnTypeMatches(rule: DeclarationRule, fact: DeclarationFact): Bo
     return expected.canonical.matches(actual.canonical)
 }
 
-/** The declaration matches one of the alternatives of an `anythingElse()`. */
+/** The declaration matches one of the alternatives of an `allow(..., anythingElse)`. */
 internal fun anythingElseMatches(rule: AnythingElseRule, fact: DeclarationFact): Boolean =
     rule.alternatives.any { modifiersSatisfied(it, fact) }

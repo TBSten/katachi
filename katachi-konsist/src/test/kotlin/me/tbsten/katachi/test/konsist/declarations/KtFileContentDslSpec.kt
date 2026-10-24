@@ -31,11 +31,10 @@ class KtFileContentDslSpec : FreeSpec({
                 `import`("androidx.**")
                 `import`("com.example.domain.**")
 
-                annotated("HiltViewModel")
-                    .public.`class`(fileName).superclass("ViewModel") {
-                        public.`val`("uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
-                        public.`fun`("on*")().returns("Unit")
-                        private.anythingElse()
+                allow(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
+                        allow(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+                        allow(public, `fun`, "on*")().returns("Unit")
+                        allow(private, anythingElse)
                     }
             }
 
@@ -56,7 +55,7 @@ class KtFileContentDslSpec : FreeSpec({
 
     "書いた種類だけが allow list" - {
         "宣言だけを書けば package と import は見ない" {
-            val rules = rulesOf(fileName = "GetUserUseCase") { `interface`(fileName) }
+            val rules = rulesOf(fileName = "GetUserUseCase") { allow(`interface`, fileName) }
 
             rules.dump() shouldBe "required interface{} GetUserUseCase"
             rules.packages.shouldBeEmpty()
@@ -78,8 +77,8 @@ class KtFileContentDslSpec : FreeSpec({
 
         "{ } を付けないクラスの行はメンバを見ない。空の { } はメンバを 1 つも置かない" {
             val dump = dumpOf {
-                `class`("Free")
-                `class`("Empty") { }
+                allow(`class`, "Free")
+                allow(`class`, "Empty") { }
             }
 
             dump shouldBe """
@@ -129,14 +128,14 @@ class KtFileContentDslSpec : FreeSpec({
     "宣言の種類" - {
         "種類ごとの行と type" {
             val dump = dumpOf {
-                `class`("A")
-                `interface`("B")
-                `object`("C")
-                type("D")
-                `fun`("e")
-                `val`("f")
-                `var`("g")
-                `typealias`("H")
+                allow(`class`, "A")
+                allow(`interface`, "B")
+                allow(`object`, "C")
+                allow(type, "D")
+                allow(`fun`, "e")
+                allow(`val`, "f")
+                allow(`var`, "g")
+                allow(`typealias`, "H")
             }
 
             dump shouldBe """
@@ -153,22 +152,22 @@ class KtFileContentDslSpec : FreeSpec({
 
         "種類は値なので or で組める" {
             val dump = dumpOf(fileName = "HomeUiState") {
-                (`class` or `interface`)(fileName)
-                (public.data.`class` or internal.`object`)("*State")
-                (`val` or `var`)("*")
+                allow(`class` or `interface`, fileName)
+                allow(internal or private, `class` or `object`, "*State")
+                allow(`val` or `var`, "*")
             }
 
             dump shouldBe """
                 required class{}|interface{} HomeUiState
-                optional class{public data}|object{internal} *State
+                optional class{internal}|object{internal}|class{private}|object{private} *State
                 optional val{}|var{} *
             """.trimIndent()
         }
 
         "利用者の拡張プロパティがファイル直下とクラスの中の両方で使える" {
             val dump = dumpOf(fileName = "HomeUiState") {
-                classOrInterface(fileName) {
-                    classOrInterface("*")
+                allow(classOrInterface, fileName) {
+                    allow(classOrInterface, "*")
                 }
             }
 
@@ -179,17 +178,17 @@ class KtFileContentDslSpec : FreeSpec({
             """.trimIndent()
         }
 
-        "fun interface は `fun`.`interface`" {
-            dumpOf { `fun`.`interface`("*Listener") } shouldBe "optional interface{fun} *Listener"
+        "fun interface は allow(`fun`, `interface`, …)" {
+            dumpOf { allow(`fun`, `interface`, "*Listener") } shouldBe "optional interface{fun} *Listener"
         }
     }
 
     "修飾子とアノテーション" - {
         "修飾子は . でつなぎ、or でどれかになる" {
             val dump = dumpOf(fileName = "HomeNavKey") {
-                public.data.`object`(fileName)
-                (internal or private).data.`object`("*")
-                data.public.`class`("Same")
+                allow(public, data, `object`, fileName)
+                allow(internal or private, data, `object`, "*")
+                allow(data, public, `class`, "Same")
             }
 
             dump shouldBe """
@@ -201,13 +200,12 @@ class KtFileContentDslSpec : FreeSpec({
 
         "annotated は前につなぎ、行頭の . で次の行に続けても同じ宣言に付く" {
             val dump = dumpOf(fileName = "HomeScreen") {
-                annotated("HiltViewModel")
-                    .public.`class`(fileName).superclass("ViewModel")
+                allow(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel")
 
-                annotated("Composable").public.`fun`(fileName)
-                annotated("Serializable").data.`object`(fileName)
-                (annotated("Preview") or annotated("PreviewLightDark")).private.`fun`("*Preview")
-                annotated("Serializable")(`object` or `class`)(fileName)
+                allow(annotated("Composable"), public, `fun`, fileName)
+                allow(annotated("Serializable"), data, `object`, fileName)
+                allow(annotated("Preview") or annotated("PreviewLightDark"), private, `fun`, "*Preview")
+                allow(annotated("Serializable"), `object` or `class`, fileName)
             }
 
             dump shouldBe """
@@ -221,9 +219,9 @@ class KtFileContentDslSpec : FreeSpec({
 
         "annotated をいくつ書いても、すべて付いている必要がある" {
             val dump = dumpOf {
-                annotated("A", "B").`class`("One")
-                annotated("A").annotated("B").`class`("Two")
-                annotated("androidx.compose.runtime.Composable").`fun`("Three")
+                allow(annotated("A", "B"), `class`, "One")
+                allow(annotated("A"), annotated("B"), `class`, "Two")
+                allow(annotated("androidx.compose.runtime.Composable"), `fun`, "Three")
             }
 
             dump shouldBe """
@@ -237,16 +235,16 @@ class KtFileContentDslSpec : FreeSpec({
             shouldThrow<KatachiKtFileContentLineException> {
                 dumpOf {
                     annotated("Orphan")
-                    `class`("A")
+                    allow(`class`, "A")
                 }
             }.problem shouldBe KtFileContentLineProblem.DanglingModifiers
         }
 
         "修飾子は種類にも、or で組んだ種類にもかけられる" {
             val dump = dumpOf {
-                const(`val` or `var`)("*")
-                sealed.type("*Action")
-                public(data.`class`)("Wrapped")
+                allow(const, `val` or `var`, "*")
+                allow(sealed, type, "*Action")
+                allow(public, data, `class`, "Wrapped")
             }
 
             dump shouldBe """

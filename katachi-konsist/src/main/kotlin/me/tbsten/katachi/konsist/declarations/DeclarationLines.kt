@@ -10,13 +10,12 @@ import me.tbsten.katachi.konsist.declarations.internal.DeclarationLineBuilder
  * ## Example 1: a view model named after the file, with its supertype and members
  * ```kt
  * ktFileContent {
- *     annotated("HiltViewModel")
- *         .public.`class`(fileName).superclass("ViewModel") {
- *             public.`val`("uiState", "StateFlow<*>")
- *             private.anythingElse()
- *         }
- *     `object`("*Preview").optional()
- *     not.`class`("*Impl").except("LegacyImpl")
+ *     allow(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
+ *         allow(public, `val`, "uiState", "StateFlow<*>")
+ *         allow(private, anythingElse)
+ *     }
+ *     allow(`object`, "*Preview").optional()
+ *     not.allow(`class`, "*Impl").except("LegacyImpl")
  * }
  * ```
  */
@@ -35,7 +34,7 @@ public class TypeLine internal constructor(
      *
      * ## Example 1: the default implementation of the interface the file is named after
      * ```kt
-     * `class`("Default$fileName").superclass(fileName) { override.`fun`("invoke") }
+     * allow(`class`, "Default$fileName").superclass(fileName) { allow(override, `fun`, "invoke") }
      * ```
      *
      * @throws KatachiKtFileContentLineException when no name is given, or when [body] is given a
@@ -54,7 +53,7 @@ public class TypeLine internal constructor(
      *
      * ## Example 1: an optional companion object
      * ```kt
-     * `class`(fileName) { companion.`object`("Companion").optional() }
+     * allow(`class`, fileName) { allow(companion, `object`, "Companion").optional() }
      * ```
      *
      * @throws KatachiKtFileContentLineException on a line that starts with `not.`.
@@ -69,7 +68,7 @@ public class TypeLine internal constructor(
      *
      * ## Example 1: no `*Impl` class but one
      * ```kt
-     * not.`class`("*Impl").except("LegacyImpl")
+     * not.allow(`class`, "*Impl").except("LegacyImpl")
      * ```
      *
      * @throws KatachiKtFileContentLineException on a line that does not start with `not.`, or when
@@ -91,10 +90,10 @@ public class TypeLine internal constructor(
  * ## Example 1: parameters and return types
  * ```kt
  * ktFileContent {
- *     `fun`("load")()                    // no parameter
- *     `fun`("save")("String", "Int")     // the parameter types, in order
- *     `fun`("on*")(anyArgs())            // any parameters, the same as writing none
- *     public.`fun`("on*")().returns("Unit")
+ *     allow(`fun`, "load")()                    // no parameter
+ *     allow(`fun`, "save")("String", "Int")     // the parameter types, in order
+ *     allow(`fun`, "on*")(anyArgs())            // any parameters, the same as writing none
+ *     allow(public, `fun`, "on*")().returns("Unit")
  * }
  * ```
  */
@@ -108,7 +107,7 @@ public class FunctionLine internal constructor(
      *
      * ## Example 1: one String parameter
      * ```kt
-     * `fun`("find")("String")
+     * allow(`fun`, "find")("String")
      * ```
      *
      * @throws KatachiKtFileContentLineException when the parameters were already written.
@@ -125,7 +124,7 @@ public class FunctionLine internal constructor(
      *
      * ## Example 1: any parameters
      * ```kt
-     * `fun`("on*")(anyArgs())
+     * allow(`fun`, "on*")(anyArgs())
      * ```
      *
      * @throws KatachiKtFileContentLineException when the parameters were already written.
@@ -141,7 +140,7 @@ public class FunctionLine internal constructor(
      *
      * ## Example 1: functions returning Unit
      * ```kt
-     * `fun`("on*")().returns("Unit")
+     * allow(`fun`, "on*")().returns("Unit")
      * ```
      *
      * @throws KatachiKtFileContentLineException when the return type was already written.
@@ -157,7 +156,7 @@ public class FunctionLine internal constructor(
      *
      * ## Example 1: an optional entry point
      * ```kt
-     * public.`fun`("main").optional()
+     * allow(public, `fun`, "main").optional()
      * ```
      *
      * @throws KatachiKtFileContentLineException on a line that starts with `not.`.
@@ -172,7 +171,7 @@ public class FunctionLine internal constructor(
      *
      * ## Example 1: no public function but `invoke`
      * ```kt
-     * not.public.`fun`("*").except("invoke")
+     * not.allow(public, `fun`, "*").except("invoke")
      * ```
      *
      * @throws KatachiKtFileContentLineException on a line that does not start with `not.`, or when
@@ -193,9 +192,9 @@ public class FunctionLine internal constructor(
  * ## Example 1: an optional property, and a prohibited one
  * ```kt
  * ktFileContent {
- *     `class`(fileName) {
- *         `val`("isLoading", "Boolean").optional()
- *         not.public.`var`("*")
+ *     allow(`class`, fileName) {
+ *         allow(`val`, "isLoading", "Boolean").optional()
+ *         not.allow(public, `var`, "*")
  *     }
  * }
  * ```
@@ -209,7 +208,7 @@ public class PropertyLine internal constructor(
      *
      * ## Example 1: an optional tag
      * ```kt
-     * private.const.`val`("TAG").optional()
+     * allow(private, const, `val`, "TAG").optional()
      * ```
      *
      * @throws KatachiKtFileContentLineException on a line that starts with `not.`.
@@ -224,7 +223,7 @@ public class PropertyLine internal constructor(
      *
      * ## Example 1: no public mutable property but one
      * ```kt
-     * not.public.`var`("*").except("isEnabled")
+     * not.allow(public, `var`, "*").except("isEnabled")
      * ```
      *
      * @throws KatachiKtFileContentLineException on a line that does not start with `not.`, or when
@@ -244,7 +243,7 @@ public class PropertyLine internal constructor(
  *
  * ## Example 1: an optional type alias
  * ```kt
- * ktFileContent { `typealias`("*Key").optional() }
+ * ktFileContent { allow(`typealias`, "*Key").optional() }
  * ```
  */
 @ExperimentalKatachiApi
@@ -256,7 +255,7 @@ public class TypeAliasLine internal constructor(
      *
      * ## Example 1: an optional type alias named after the file
      * ```kt
-     * `typealias`(fileName).optional()
+     * allow(`typealias`, fileName).optional()
      * ```
      *
      * @throws KatachiKtFileContentLineException on a line that starts with `not.`.
@@ -271,7 +270,7 @@ public class TypeAliasLine internal constructor(
      *
      * ## Example 1: no type alias but one
      * ```kt
-     * not.`typealias`("*").except("Callback")
+     * not.allow(`typealias`, "*").except("Callback")
      * ```
      *
      * @throws KatachiKtFileContentLineException on a line that does not start with `not.`, or when
@@ -291,7 +290,7 @@ public class TypeAliasLine internal constructor(
  *
  * ## Example 1: any parameters
  * ```kt
- * ktFileContent { `fun`("on*")(anyArgs()) }
+ * ktFileContent { allow(`fun`, "on*")(anyArgs()) }
  * ```
  */
 @ExperimentalKatachiApi

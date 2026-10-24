@@ -3,29 +3,25 @@ package me.tbsten.katachi.konsist.declarations
 import me.tbsten.katachi.ExperimentalKatachiApi
 
 /**
- * The words a line of `ktFileContent { }` starts with: modifiers, `annotated(...)`, and the kinds
- * of declaration. Shared by the scopes and by what modifiers return, so that a line reads the way
- * Kotlin writes the declaration -- annotations, then modifiers, then the kind, then the name.
+ * The values a line of `ktFileContent { }` is written with: modifiers, `annotated(...)`, the kinds
+ * of declaration and [anythingElse]. They are passed to `allow(...)` in the order Kotlin writes
+ * the declaration -- annotations, then modifiers, then the kind -- followed by the name.
  *
  * - **A modifier written is a modifier required; one not written is not asked about.** `public`
  *   is also met by a declaration that writes no visibility, as Kotlin reads it.
- * - **Modifiers chain with `.`, in any order**, and `or` makes alternatives:
- *   `` (internal or private).data.`object`("*") ``.
- * - **A kind is a value**, so kinds combine with `or` too, and a name of your own is an extension:
+ * - **Modifiers and kinds are values**, so `or` makes alternatives of them --
+ *   `` allow(internal or private, data, `object`, "*") `` -- and a name of your own is an extension:
  *   `` val DeclarationListScope.classOrInterface get() = `class` or `interface` ``.
- * - **A combination no declaration can have is refused while the definition is read**
- *   (`` data.`interface` ``, `` const.`fun` ``, `public.internal`), with
- *   [KatachiKtFileContentModifierException]. Modifiers in front of [type] or of kinds combined with
- *   `or` keep only the kinds they can be on: `sealed.type` is a sealed class or a sealed interface.
+ * - **A value on a line of its own writes nothing**, and is refused when the block ends
+ *   ([KtFileContentLineProblem.DanglingModifiers]): pass it to `allow(...)`.
  *
  * ## Example 1: modifiers and annotations in front, as in Kotlin
  * ```kt
  * ktFileContent {
- *     annotated("HiltViewModel")
- *         .public.`class`(fileName).superclass("ViewModel")
- *     (annotated("Preview") or annotated("PreviewLightDark")).private.`fun`("*Preview")
- *     const.`val`("*")
- *     sealed.type("*Action")
+ *     allow(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel")
+ *     allow(annotated("Preview") or annotated("PreviewLightDark"), private, `fun`, "*Preview")
+ *     allow(const, `val`, "*")
+ *     allow(sealed, type, "*Action")
  * }
  * ```
  */
@@ -36,7 +32,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: a public class
      * ```kt
-     * public.`class`(fileName)
+     * allow(public, `class`, fileName)
      * ```
      */
     public val public: Modifiers
@@ -46,7 +42,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: protected members of a class
      * ```kt
-     * `class`(fileName) { protected.anythingElse() }
+     * allow(`class`, fileName) { allow(protected, anythingElse) }
      * ```
      */
     public val protected: Modifiers
@@ -56,7 +52,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: allow any private helper
      * ```kt
-     * private.anythingElse()
+     * allow(private, anythingElse)
      * ```
      */
     public val private: Modifiers
@@ -66,7 +62,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: internal objects
      * ```kt
-     * internal.`object`("*")
+     * allow(internal, `object`, "*")
      * ```
      */
     public val internal: Modifiers
@@ -76,7 +72,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: an expect function named after the file
      * ```kt
-     * expect.`fun`(fileName)
+     * allow(expect, `fun`, fileName)
      * ```
      */
     public val expect: Modifiers
@@ -86,7 +82,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: an actual function named after the file
      * ```kt
-     * actual.`fun`(fileName)
+     * allow(actual, `fun`, fileName)
      * ```
      */
     public val actual: Modifiers
@@ -96,7 +92,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: an abstract class with abstract functions
      * ```kt
-     * abstract.`class`(fileName) { abstract.`fun`("*") }
+     * allow(abstract, `class`, fileName) { allow(abstract, `fun`, "*") }
      * ```
      */
     public val abstract: Modifiers
@@ -106,7 +102,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: an open class
      * ```kt
-     * open.`class`(fileName)
+     * allow(open, `class`, fileName)
      * ```
      */
     public val open: Modifiers
@@ -116,7 +112,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: a sealed class or interface named after the file
      * ```kt
-     * sealed.type(fileName)
+     * allow(sealed, type, fileName)
      * ```
      */
     public val sealed: Modifiers
@@ -126,7 +122,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: constants
      * ```kt
-     * const.`val`("*")
+     * allow(const, `val`, "*")
      * ```
      */
     public val const: Modifiers
@@ -136,7 +132,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: external functions
      * ```kt
-     * external.`fun`("*")
+     * allow(external, `fun`, "*")
      * ```
      */
     public val external: Modifiers
@@ -146,7 +142,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: the implementation of a use case
      * ```kt
-     * `class`("Default$fileName").superclass(fileName) { override.`fun`("invoke") }
+     * allow(`class`, "Default$fileName").superclass(fileName) { allow(override, `fun`, "invoke") }
      * ```
      */
     public val override: Modifiers
@@ -156,7 +152,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: late-initialised properties
      * ```kt
-     * `class`(fileName) { lateinit.`var`("*") }
+     * allow(`class`, fileName) { allow(lateinit, `var`, "*") }
      * ```
      */
     public val lateinit: Modifiers
@@ -166,7 +162,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: tail-recursive functions
      * ```kt
-     * tailrec.`fun`("*")
+     * allow(tailrec, `fun`, "*")
      * ```
      */
     public val tailrec: Modifiers
@@ -176,7 +172,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: suspending functions
      * ```kt
-     * suspend.`fun`("*")
+     * allow(suspend, `fun`, "*")
      * ```
      */
     public val suspend: Modifiers
@@ -186,7 +182,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: inner classes inside a class
      * ```kt
-     * `class`(fileName) { inner.`class`("*") }
+     * allow(`class`, fileName) { allow(inner, `class`, "*") }
      * ```
      */
     public val inner: Modifiers
@@ -196,7 +192,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: an enum class named after the file
      * ```kt
-     * enum.`class`(fileName)
+     * allow(enum, `class`, fileName)
      * ```
      */
     public val enum: Modifiers
@@ -206,7 +202,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: an annotation class named after the file
      * ```kt
-     * annotation.`class`(fileName)
+     * allow(annotation, `class`, fileName)
      * ```
      */
     public val annotation: Modifiers
@@ -216,7 +212,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: a class with a companion object
      * ```kt
-     * `class`(fileName) { companion.`object`("*") }
+     * allow(`class`, fileName) { allow(companion, `object`, "*") }
      * ```
      */
     public val companion: Modifiers
@@ -226,7 +222,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: inline functions
      * ```kt
-     * inline.`fun`("*")
+     * allow(inline, `fun`, "*")
      * ```
      */
     public val inline: Modifiers
@@ -236,7 +232,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: a value class named after the file
      * ```kt
-     * annotated("JvmInline").value.`class`(fileName)
+     * allow(annotated("JvmInline"), value, `class`, fileName)
      * ```
      */
     public val value: Modifiers
@@ -246,7 +242,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: infix functions
      * ```kt
-     * infix.`fun`("*")
+     * allow(infix, `fun`, "*")
      * ```
      */
     public val infix: Modifiers
@@ -256,7 +252,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: a use case interface with an operator invoke
      * ```kt
-     * `interface`(fileName) { operator.`fun`("invoke") }
+     * allow(`interface`, fileName) { allow(operator, `fun`, "invoke") }
      * ```
      */
     public val operator: Modifiers
@@ -266,7 +262,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: a data class named after the file
      * ```kt
-     * data.`class`(fileName)
+     * allow(data, `class`, fileName)
      * ```
      */
     public val data: Modifiers
@@ -280,11 +276,11 @@ public sealed interface DeclarationVocabulary {
      * and not by `annotated("Inject")`. To match through the alias, write the full name:
      * `annotated("a.Inject")` matches that `@Wired` too.
      *
-     * `annotated("A").annotated("B")` is the same as `annotated("A", "B")`.
+     * `allow(annotated("A"), annotated("B"), ...)` is the same as `allow(annotated("A", "B"), ...)`.
      *
      * ## Example 1: a composable function named after the file
      * ```kt
-     * annotated("Composable").public.`fun`(fileName)
+     * allow(annotated("Composable"), public, `fun`, fileName)
      * ```
      *
      * @throws KatachiKtFileContentLineException when no name is given.
@@ -296,7 +292,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: a class named after the file, with its members
      * ```kt
-     * `class`(fileName) { `val`("*") }
+     * allow(`class`, fileName) { allow(`val`, "*") }
      * ```
      */
     public val `class`: TypeKind
@@ -306,7 +302,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: an interface named after the file
      * ```kt
-     * `interface`(fileName)
+     * allow(`interface`, fileName)
      * ```
      */
     public val `interface`: TypeKind
@@ -316,7 +312,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: a data object named after the file
      * ```kt
-     * data.`object`(fileName)
+     * allow(data, `object`, fileName)
      * ```
      */
     public val `object`: TypeKind
@@ -326,18 +322,18 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: any type named after the file
      * ```kt
-     * type(fileName)
+     * allow(type, fileName)
      * ```
      */
     public val type: TypeKind
 
     /**
-     * A function, extensions included (its name is the part after the receiver). `` `fun`.`interface` ``
-     * is a fun interface.
+     * A function, extensions included (its name is the part after the receiver). Followed by
+     * `` `interface` ``, a fun interface: `` allow(`fun`, `interface`, "*Listener") ``.
      *
      * ## Example 1: functions with no parameter that return Unit
      * ```kt
-     * public.`fun`("on*")().returns("Unit")
+     * allow(public, `fun`, "on*")().returns("Unit")
      * ```
      */
     public val `fun`: FunctionKind
@@ -347,7 +343,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: a property with its type
      * ```kt
-     * public.`val`("uiState", "StateFlow<*>")
+     * allow(public, `val`, "uiState", "StateFlow<*>")
      * ```
      */
     public val `val`: PropertyKind
@@ -357,7 +353,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: private mutable properties
      * ```kt
-     * private.`var`("*")
+     * allow(private, `var`, "*")
      * ```
      */
     public val `var`: PropertyKind
@@ -367,8 +363,20 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: a type alias named after the file
      * ```kt
-     * `typealias`(fileName)
+     * allow(`typealias`, fileName)
      * ```
      */
     public val `typealias`: TypeAliasKind
+
+    /**
+     * Any declaration no other line matches, whatever its kind and name, written where the kind goes:
+     * `allow(private, anythingElse)` lets any private declaration through.
+     *
+     * ## Example 1: one class named after the file, plus anything else
+     * ```kt
+     * allow(`class`, fileName)
+     * allow(anythingElse)
+     * ```
+     */
+    public val anythingElse: AnythingElse
 }

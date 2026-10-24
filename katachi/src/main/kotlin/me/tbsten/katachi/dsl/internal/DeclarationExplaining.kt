@@ -100,7 +100,7 @@ public class DeclarationExplanation(
     public val verdict: DeclarationVerdict,
     /**
      * The lines that decided it: every allowed line it matches for [DeclarationVerdict.Allowed],
-     * the matching `anythingElse()` lines, the prohibiting line, or the line whose name it matches
+     * the matching `allow(..., anythingElse)` lines, the prohibiting line, or the line whose name it matches
      * for [DeclarationVerdict.Mismatched]. Empty for [DeclarationVerdict.Unexpected].
      */
     public val rules: List<RuleExplanation>,
@@ -146,7 +146,7 @@ public enum class DeclarationVerdict(public val isAllowed: Boolean) {
     /** An allowed line matches it in full. */
     Allowed(isAllowed = true),
 
-    /** No line matches it, and an `anythingElse()` lets it be. */
+    /** No line matches it, and an `allow(..., anythingElse)` lets it be. */
     AllowedByAnythingElse(isAllowed = true),
 
     /** A `not.` line matches it. */
@@ -155,6 +155,6 @@ public enum class DeclarationVerdict(public val isAllowed: Boolean) {
     /** An allowed line matches its name, and not the rest of it. */
     Mismatched(isAllowed = false),
 
-    /** No line matches it, not even by name, and no `anythingElse()` lets it be. */
+    /** No line matches it, not even by name, and no `allow(..., anythingElse)` lets it be. */
     Unexpected(isAllowed = false),
 }

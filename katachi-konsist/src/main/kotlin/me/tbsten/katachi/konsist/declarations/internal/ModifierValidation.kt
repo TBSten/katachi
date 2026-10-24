@@ -100,7 +100,7 @@ internal fun validatedShapes(
 }
 
 /**
- * Checks the alternatives of an `anythingElse()`: no kind is named, so only whether each set can
+ * Checks the alternatives of an `allow(..., anythingElse)`: no kind is named, so only whether each set can
  * be on one declaration, and whether it may be written where it is.
  *
  * @throws KatachiKtFileContentModifierException as [validatedShapes] does for its first two checks.

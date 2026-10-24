@@ -67,7 +67,7 @@ internal fun evaluateRules(
     val file = FileBuilder(session, declaredAt)
     try {
         session.within(file.declarations) { KtFileContentScopeImpl(file).block() }
-        session.failOnDanglingModifiers()
+        session.failOnDanglingValues()
     } finally {
         session.close()
     }
@@ -91,8 +91,8 @@ internal fun validateAtDeclaration(block: KtFileContentScope.() -> Unit, declare
  * Only katachi's own definition errors are let through. Anything else the block throws -- most
  * likely because a stand-in is not a value it expected, such as `fileName.substring(10)` on
  * `Sample` -- is dropped: the run with each file's real values happens anyway, and
- * reports it there. So is a pattern that cannot be read, or modifiers left without a
- * declaration ([KtFileContentLineProblem.DanglingModifiers]), once the block has read a stand-in:
+ * reports it there. So is a pattern that cannot be read, or a value never passed to `allow(...)`
+ * ([KtFileContentLineProblem.DanglingModifiers]), once the block has read a stand-in:
  * `fileName.dropLast(9)` is empty for `Sample` only, and `if (fileName.endsWith("ViewModel"))`
  * is false for it.
  */
@@ -102,7 +102,7 @@ internal fun evaluateWithStandIns(block: KtFileContentScope.() -> Unit, input: E
     } catch (cause: KatachiKtFileContentPatternException) {
         if (!input.readValues) throw cause
     } catch (cause: KatachiKtFileContentLineException) {
-        // A modifier kept in a variable and used under `if (fileName ...)` is unused for the stand-in only.
+        // A value kept in a variable and used under `if (fileName ...)` is unused for the stand-in only.
         val standInOnly = cause.problem == KtFileContentLineProblem.DanglingModifiers && input.readValues
         if (!standInOnly) throw cause
     } catch (cause: KatachiDeclarationException) {

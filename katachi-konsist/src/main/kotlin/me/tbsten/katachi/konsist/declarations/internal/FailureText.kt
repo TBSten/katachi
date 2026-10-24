@@ -36,7 +36,7 @@ private fun unexpectedDeclarationFailure(finding: UnexpectedDeclaration, path: S
     val site = list.rules.declaredAt
     val container = list.container
     val fixes = buildList {
-        if (list.rules.allowsOnlyByNot()) add(onlyNotLinesFix("declarations", site, "anythingElse()"))
+        if (list.rules.allowsOnlyByNot()) add(onlyNotLinesFix("declarations", site, "allow(anythingElse)"))
         // Renaming is only offered for the file's own declarations: a member is more often in the
         // wrong place than misnamed, and the remaining fixes say so.
         if (container == null) {
@@ -52,7 +52,7 @@ private fun unexpectedDeclarationFailure(finding: UnexpectedDeclaration, path: S
                 if (container == null) "Move it to a file of another role" else "Move it out of ${renderContainer(container)}",
             ),
         )
-        add(allowItFix(site, "`${fact.kind.keyword}`(${namePatternLiteral(fact.name)}).optional()"))
+        add(allowItFix(site, "allow(`${fact.kind.keyword}`, ${namePatternLiteral(fact.name)}).optional()"))
     }
     return FileConstraintFailure(
         file = path,
@@ -232,7 +232,7 @@ private fun headingOf(list: DeclarationListContext): String =
     list.container?.let { "Allowed members of ${renderContainer(it)}" } ?: "Allowed here"
 
 /**
- * The allowed lines and `anythingElse()` of the list, in the order written, a required line no
+ * The allowed lines and `anythingElse` lines of the list, in the order written, a required line no
  * declaration matches marked `(missing)`. The `not.` lines are left out: they allow nothing.
  */
 private fun allowedEntriesOf(list: DeclarationListContext): List<String> = list.rules.entries.mapNotNull { entry ->
@@ -249,7 +249,7 @@ private fun allowedEntriesOf(list: DeclarationListContext): List<String> = list.
 /** ` in class HomeViewModel` for a member, nothing for a declaration of the file. */
 private fun inContainer(list: DeclarationListContext): String = list.container?.let { " in ${renderContainer(it)}" }.orEmpty()
 
-/** An `anythingElse()` that asks for one visibility and nothing more, in every alternative. */
+/** An `anythingElse` line that asks for one visibility and nothing more, in every alternative. */
 private fun AnythingElseRule.allowsOnlyVisibilities(): Boolean = alternatives.all { set ->
     set.annotations.isEmpty() && set.modifiers.size == 1 && set.modifiers.single() in ModifierName.VISIBILITIES
 }

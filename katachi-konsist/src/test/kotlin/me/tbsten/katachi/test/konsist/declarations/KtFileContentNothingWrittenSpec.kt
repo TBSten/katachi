@@ -34,7 +34,7 @@ class KtFileContentNothingWrittenSpec : FreeSpec({
             "docs/README.md" to "# docs\n",
             paths = { "docs" / "*.md".file() },
         ) {
-            ktFileContent { `class`(fileName) }
+            ktFileContent { allow(`class`, fileName) }
         }
 
         violations.filterIsInstance<UncheckedFileConstraint>().single().cause
@@ -47,7 +47,7 @@ class KtFileContentNothingWrittenSpec : FreeSpec({
             "src/Other.kt" to "package com.example\n\nobject Other\n",
             paths = { "src" / "*".ktFile() },
         ) {
-            ktFileContent { if (fileName == "Home") `class`(fileName) }
+            ktFileContent { if (fileName == "Home") allow(`class`, fileName) }
         }
 
         violations.shouldBeEmpty()
@@ -58,7 +58,7 @@ class KtFileContentNothingWrittenSpec : FreeSpec({
             "src/Home.kt" to "package com.example\n\nclass Home\n",
             paths = { "src" / "*".ktFile() },
         ) {
-            ktFileContent { if (fileName == "Nothing") `class`(fileName) }
+            ktFileContent { if (fileName == "Nothing") allow(`class`, fileName) }
         }
 
         violations.shouldBeEmpty()
@@ -81,7 +81,7 @@ class KtFileContentNothingWrittenSpec : FreeSpec({
                         ":feature:*".module {
                             "build.gradle.kts".file()
                             mainSourceSet / kotlin / "*".ktFile()
-                            ktFileContent { if (fileName.endsWith("Screen")) `class`(fileName) }
+                            ktFileContent { if (fileName.endsWith("Screen")) allow(`class`, fileName) }
                         }
                     }
                 }
