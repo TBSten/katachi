@@ -60,8 +60,8 @@ fun DeclarationContainerScope.viewModel() = "ViewModel".role {
         `import`("com.example.kmp.ui.core.**")
 
         allow(internal, data, `class`, "*Ui")
-        allow(internal, `class`, fileName).superclass("ViewModel") {
-            allow(public, `val`, "state", "StateFlow<UiState<*>>")
+        required(internal, `class`, fileName).superclass("ViewModel") {
+            required(public, `val`, "state", "StateFlow<UiState<*>>")
             allow(public, `fun`, "*")    // the events: reload()
             allow(private, anythingElse) // the repository and the mutable state
         }

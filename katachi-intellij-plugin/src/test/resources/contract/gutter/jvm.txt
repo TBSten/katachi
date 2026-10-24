@@ -1553,7 +1553,7 @@ roles: app.Entrypoint
 roles: api.Controller
     api.Controller declared at ControllerRole.kt:28 | fun DeclarationContainerScope.controller() = "Controller".role {
 9 | ◆ | katachi: api.Controller — allowed by class HealthController (ControllerRole.kt:119)
-    allowed at ControllerRole.kt:119 | allow(`class`, fileName) {
+    allowed at ControllerRole.kt:119 | required(`class`, fileName) {
     menu | ◆ Allowed by class HealthController | ControllerRole.kt:119
     menu | ◇ Role api.Controller — Controller | ControllerRole.kt:28
     menu | == Other files of api.Controller
@@ -1582,7 +1582,7 @@ roles: domain.Model
 roles: api.KtorPlugin
     api.KtorPlugin declared at KtorPluginRole.kt:14 | fun DeclarationContainerScope.ktorPlugin() = "KtorPlugin".role {
 8 | ◆ | katachi: api.KtorPlugin — allowed by fun configureRouting() (KtorPluginRole.kt:53)
-    allowed at KtorPluginRole.kt:53 | allow(`fun`, "configure$fileName")()
+    allowed at KtorPluginRole.kt:53 | required(`fun`, "configure$fileName")()
     menu | ◆ Allowed by fun configureRouting() | KtorPluginRole.kt:53
     menu | ◇ Role api.KtorPlugin — Ktor plugin configuration | KtorPluginRole.kt:14
     menu | == Other files of api.KtorPlugin (1)
@@ -1595,7 +1595,7 @@ roles: api.KtorPlugin
 roles: api.KtorPlugin
     api.KtorPlugin declared at KtorPluginRole.kt:14 | fun DeclarationContainerScope.ktorPlugin() = "KtorPlugin".role {
 10 | ◆ | katachi: api.KtorPlugin — allowed by fun configureSerialization() (KtorPluginRole.kt:53)
-    allowed at KtorPluginRole.kt:53 | allow(`fun`, "configure$fileName")()
+    allowed at KtorPluginRole.kt:53 | required(`fun`, "configure$fileName")()
     menu | ◆ Allowed by fun configureSerialization() | KtorPluginRole.kt:53
     menu | ◇ Role api.KtorPlugin — Ktor plugin configuration | KtorPluginRole.kt:14
     menu | == Other files of api.KtorPlugin (1)
@@ -1619,7 +1619,7 @@ roles: data.Repository
 roles: domain.Service
     domain.Service declared at ServiceRole.kt:19 | fun DeclarationContainerScope.service() = "Service".role {
 7 | ◆ | katachi: domain.Service — allowed by class HealthService (ServiceRole.kt:80)
-    allowed at ServiceRole.kt:80 | allow(`class`, fileName) {                    // HealthService.kt -> class HealthService
+    allowed at ServiceRole.kt:80 | required(`class`, fileName) {                 // HealthService.kt -> class HealthService
     menu | ◆ Allowed by class HealthService | ServiceRole.kt:80
     menu | ◇ Role domain.Service — Service | ServiceRole.kt:19
     menu | == Other files of domain.Service (1)
@@ -1637,7 +1637,7 @@ roles: (none) Unexpected
 roles: domain.Service
     domain.Service declared at ServiceRole.kt:19 | fun DeclarationContainerScope.service() = "Service".role {
 11 | ◆ | katachi: domain.Service — allowed by class LegacyStatusService (ServiceRole.kt:80)
-    allowed at ServiceRole.kt:80 | allow(`class`, fileName) {                    // HealthService.kt -> class HealthService
+    allowed at ServiceRole.kt:80 | required(`class`, fileName) {                 // HealthService.kt -> class HealthService
     menu | ◆ Allowed by class LegacyStatusService | ServiceRole.kt:80
     menu | ◇ Role domain.Service — Service | ServiceRole.kt:19
     menu | == Other files of domain.Service (1)

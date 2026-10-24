@@ -123,7 +123,7 @@ fun DeclarationContainerScope.featureComponent() = "FeatureComponent".role {
         `import`("$feature.**")
         not.`import`("$feature.*ViewModel")
 
-        allow(annotated("Composable"), internal, `fun`, fileName)
+        required(annotated("Composable"), internal, `fun`, fileName)
         allow(annotated("Preview"), private, `fun`, "*Preview")
     }
 }

@@ -1377,7 +1377,7 @@ roles: data.ExpectDeclaration
 roles: data.RepositoryInterface
     data.RepositoryInterface declared at RepositoryInterfaceRole.kt:22 | fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role {
 4 | ◆ | katachi: data.RepositoryInterface — allowed by interface UserRepository (RepositoryInterfaceRole.kt:77)
-    allowed at RepositoryInterfaceRole.kt:77 | allow(`interface`, fileName) {
+    allowed at RepositoryInterfaceRole.kt:77 | required(`interface`, fileName) {
     menu | ◆ Allowed by interface UserRepository | RepositoryInterfaceRole.kt:77
     menu | ◇ Role data.RepositoryInterface — Repository interface | RepositoryInterfaceRole.kt:22
     menu | == Other files of data.RepositoryInterface
@@ -1391,7 +1391,7 @@ roles: data.RepositoryInterface
 roles: data.RepositoryImplementation
     data.RepositoryImplementation declared at RepositoryImplementationRole.kt:16 | fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation".role {
 4 | ◆ | katachi: data.RepositoryImplementation — allowed by class UserRepositoryImpl : UserRepository (RepositoryImplementationRole.kt:64)
-    allowed at RepositoryImplementationRole.kt:64 | allow(`class`, fileName).superclass("${captureValue("name")}Repository") {
+    allowed at RepositoryImplementationRole.kt:64 | required(`class`, fileName).superclass("${captureValue("name")}Repository") {
     menu | ◆ Allowed by class UserRepositoryImpl : UserRepository | RepositoryImplementationRole.kt:64
     menu | ◇ Role data.RepositoryImplementation — Repository implementation | RepositoryImplementationRole.kt:16
     menu | == Other files of data.RepositoryImplementation
@@ -2529,7 +2529,7 @@ roles: feature.ScreenPreview
 roles: feature.ViewModel
     feature.ViewModel declared at ViewModelRole.kt:19 | fun DeclarationContainerScope.viewModel() = "ViewModel".role {
 19 | ◆ | katachi: feature.ViewModel — allowed by internal class HomeViewModel : ViewModel (ViewModelRole.kt:63)
-    allowed at ViewModelRole.kt:63 | allow(internal, `class`, fileName).superclass("ViewModel") {
+    allowed at ViewModelRole.kt:63 | required(internal, `class`, fileName).superclass("ViewModel") {
     menu | ◆ Allowed by internal class HomeViewModel : ViewModel | ViewModelRole.kt:63
     menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:19
     menu | == Other files of feature.ViewModel (1)
@@ -2542,7 +2542,7 @@ roles: feature.ViewModel
 roles: feature.FeatureComponent
     feature.FeatureComponent declared at FeatureComponentRole.kt:26 | fun DeclarationContainerScope.featureComponent() = "FeatureComponent".role {
 10 | ◆ | katachi: feature.FeatureComponent — allowed by @Composable internal fun HomeUserCard(...) (FeatureComponentRole.kt:91)
-    allowed at FeatureComponentRole.kt:91 | allow(annotated("Composable"), internal, `fun`, fileName)
+    allowed at FeatureComponentRole.kt:91 | required(annotated("Composable"), internal, `fun`, fileName)
     menu | ◆ Allowed by @Composable internal fun HomeUserCard(...) | FeatureComponentRole.kt:91
     menu | ◇ Role feature.FeatureComponent — Screen component | FeatureComponentRole.kt:26
     menu | == Other files of feature.FeatureComponent
@@ -2627,7 +2627,7 @@ roles: feature.ViewModel
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 20 | ◆ | katachi: feature.ViewModel — allowed by internal class SettingsViewModel : ViewModel (ViewModelRole.kt:63)
-    allowed at ViewModelRole.kt:63 | allow(internal, `class`, fileName).superclass("ViewModel") {
+    allowed at ViewModelRole.kt:63 | required(internal, `class`, fileName).superclass("ViewModel") {
     menu | ◆ Allowed by internal class SettingsViewModel : ViewModel | ViewModelRole.kt:63
     menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:19
     menu | == Other files of feature.ViewModel (1)

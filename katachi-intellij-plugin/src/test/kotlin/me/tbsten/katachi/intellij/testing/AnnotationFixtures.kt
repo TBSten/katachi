@@ -77,7 +77,7 @@ internal object AnnotationFixtures {
         level = level,
         message = "Role: $role / FileConstraint: \"$constraint\"\nDeclaration: $declaration\nMissing: $requires" +
             (found?.let { "\nFound: $it" }.orEmpty()) +
-            "\nDeclared at: $declaredAt\n\nHow to fix:\n  - Declare it in this file\n  - If some files do not need it, make it optional at $declaredAt",
+            "\nDeclared at: $declaredAt\n\nHow to fix:\n  - Declare it in this file\n  - If some files do not need it, write allow(...) in place of required(...) at $declaredAt",
         location = SarifLocation(path, null),
         related = related,
         properties = mapOf(

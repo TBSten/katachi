@@ -74,7 +74,7 @@ fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role
     }
     // The interface named after the file, of functions only.
     ktFileContent {
-        allow(`interface`, fileName) {
+        required(`interface`, fileName) {
             allow(`fun`, "*")
         }
     }

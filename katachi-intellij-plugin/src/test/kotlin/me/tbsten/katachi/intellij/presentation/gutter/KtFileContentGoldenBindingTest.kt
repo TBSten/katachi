@@ -26,7 +26,6 @@ class KtFileContentGoldenBindingTest {
                 "DefaultGetUserUseCase" to AnnotationTarget.FileLevel,
                 "HomeViewModel" to AnnotationTarget.AtDeclaration("HomeViewModel", 3),
                 "DefaultHomeViewModel" to AnnotationTarget.FileLevel,
-                "import com.example.App" to AnnotationTarget.FileLevel,
                 "CounterViewModel.count" to AnnotationTarget.FileLevel,
             ),
             targets,
