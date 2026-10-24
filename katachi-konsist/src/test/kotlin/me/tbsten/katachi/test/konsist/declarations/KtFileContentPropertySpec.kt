@@ -101,7 +101,7 @@ class KtFileContentPropertySpec : FreeSpec({
             val keywords = line.alternatives.first().keywords
             // In the file, a line named * that allows it in full is put in too, now and then.
             val alsoAllowed = list.path.isEmpty() && random.chance(50)
-            val allowing = GenLine(listOf(kind), listOf(GenModifiers(keywords)), "*")
+            val allowing = GenLine(listOf(kind), listOf(GenModifiers(keywords)), name = "*")
             val withRules = if (alsoAllowed) case.copy(declarationRules = GenList(rules.entries + allowing)) else case
             val changed = withRules.updateList(list.path) { random.inserting(it, plainDeclaration(kind, name, keywords, emptyList(), container = null)) }
             withClue(clueOf("added ${list.qualified(name)}" + if (alsoAllowed) " and a line named * that allows it" else "", changed)) {
@@ -123,7 +123,7 @@ class KtFileContentPropertySpec : FreeSpec({
             val name = line.except.first()
             // In the file, a line named * allows it: nothing is wrong. In a class, it is at most not allowed, never prohibited.
             val allowed = list.path.isEmpty()
-            val allowing = GenLine(listOf(kind), listOf(GenModifiers(keywords)), "*")
+            val allowing = GenLine(listOf(kind), listOf(GenModifiers(keywords)), name = "*")
             val withRules = if (allowed) case.copy(declarationRules = GenList(rules.entries + allowing)) else case
             val changed = withRules.updateList(list.path) { random.inserting(it, plainDeclaration(kind, name, keywords, emptyList(), container = null)) }
             withClue(clueOf("added ${list.qualified(name)}, which ${line.name} gives back" + if (allowed) ", and a line named * that allows it" else "", changed)) {

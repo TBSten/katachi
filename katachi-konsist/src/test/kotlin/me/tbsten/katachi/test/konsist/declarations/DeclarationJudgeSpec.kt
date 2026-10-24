@@ -64,8 +64,11 @@ class DeclarationJudgeSpec : FreeSpec({
             )
         }
 
-        "書かなかった修飾子は問わない" {
-            judged(kt("data class Sample(val id: Int)")) { required(`class`, fileName) }.shouldBeEmpty()
+        "書かなかった修飾子が付いていれば当たらず、余計な修飾子を言う" {
+            judged(kt("data class Sample(val id: Int)")) { required(`class`, fileName) } shouldBe listOf(
+                "Sample (line 3) | Not allowed: data class Sample | Expected: class Sample | " +
+                    "Differs in: modifiers (has data, which the line does not allow)",
+            )
         }
 
         "or はどちらかでよい" {
@@ -124,7 +127,7 @@ class DeclarationJudgeSpec : FreeSpec({
 
         "private・protected・override のメンバも数える" {
             judged(kt("abstract class Sample : Base() {\n    private val a = 1\n    protected fun b() {}\n    override fun c() {}\n}")) {
-                required(`class`, fileName) { }
+                required(abstract, `class`, fileName) { }
             } shouldBe listOf(
                 "Sample.a (line 4) | Not allowed: private val a in class Sample",
                 "Sample.b (line 5) | Not allowed: protected fun b() in class Sample",

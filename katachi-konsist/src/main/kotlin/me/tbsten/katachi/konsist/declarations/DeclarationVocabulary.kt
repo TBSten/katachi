@@ -7,8 +7,11 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  * of declaration and [anythingElse]. They are passed to `allow(...)` in the order Kotlin writes
  * the declaration -- annotations, then modifiers, then the kind -- followed by the name.
  *
- * - **A modifier written is a modifier required; one not written is not asked about.** `public`
- *   is also met by a declaration that writes no visibility, as Kotlin reads it.
+ * - **A line's modifiers are the declaration's, as its Kotlin source writes them.** Each one
+ *   written has to be there, and one not written may not be -- except `public` and `final`, which
+ *   Kotlin reads a declaration without them as having. A modifier that may be there or not is
+ *   written [Modifiers.optional]: `suspend.optional()`. An annotation not written is not asked
+ *   about, and `allow(..., anythingElse)` and `not.allow(...)` ask only for what they write.
  * - **Modifiers and kinds are values**, so `or` makes alternatives of them --
  *   `` allow(internal or private, data, `object`, "*") `` -- and a name of your own is an extension:
  *   `` val DeclarationListScope.classOrInterface get() = `class` or `interface` ``.
@@ -22,13 +25,15 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  *     allow(annotated("Preview") or annotated("PreviewLightDark"), private, `fun`, "*Preview")
  *     allow(const, `val`, "*")
  *     allow(sealed, type, "*Action")
+ *     allow(suspend.optional(), `fun`, "execute")
  * }
  * ```
  */
 @ExperimentalKatachiApi
 public sealed interface DeclarationVocabulary {
     /**
-     * Requires `public`, or no visibility written at all, which Kotlin reads as public.
+     * Requires `public`, or no visibility written at all, which Kotlin reads as public: a line
+     * with it and one without match the same declarations.
      *
      * ## Example 1: a public class
      * ```kt

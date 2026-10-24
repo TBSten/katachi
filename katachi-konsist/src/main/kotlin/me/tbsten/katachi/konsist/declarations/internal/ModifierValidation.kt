@@ -18,7 +18,7 @@ import me.tbsten.katachi.konsist.declarations.internal.DeclarationKindName.Var
  */
 
 /** Groups of modifiers of which one declaration carries at most one. */
-private val EXCLUSIVE_GROUPS: List<Set<ModifierName>> = listOf(
+internal val EXCLUSIVE_GROUPS: List<Set<ModifierName>> = listOf(
     ModifierName.VISIBILITIES,
     setOf(ModifierName.Data, ModifierName.Sealed, ModifierName.Enum, ModifierName.Value, ModifierName.Annotation),
     setOf(ModifierName.Abstract, ModifierName.Open),
@@ -63,6 +63,8 @@ internal fun ModifierName.applicableKinds(): Set<DeclarationKindName> = when (th
  * candidate is left is the line refused, as `allow(public or internal, internal, ...)` still
  * matches an internal declaration.
  *
+ * The `.optional()` modifiers are checked the same way, each `.optional()` value on its own: see [checkOptional].
+ *
  * @throws KatachiKtFileContentModifierException when every set holds two modifiers that exclude
  *   each other, a set uses a member-only modifier directly in the file, or no candidate is left.
  */
@@ -89,7 +91,7 @@ internal fun validatedShapes(
         }
     }
     val kept = shapes.filter { shape -> shape.modifiers.modifiers.all { shape.kind in it.applicableKinds() } }
-    if (kept.isNotEmpty()) return kept
+    if (kept.isNotEmpty()) return kept.also { checkOptional(it, placement, line, declaredAt) }
     val first = shapes.first()
     val offending = first.modifiers.modifiers.sortedBy { it.ordinal }.first { first.kind !in it.applicableKinds() }
     throw KatachiKtFileContentModifierException(
@@ -118,6 +120,59 @@ internal fun validatedAnythingElse(
     for (set in sets) checkPlacement(set, placement, line, declaredAt)
     return sets
 }
+
+/**
+ * Refuses a `.optional()` value of [shapes] that could never be on their declarations: one with a
+ * member-only modifier directly in the file, one no kind of the line can carry, and one every
+ * modifier of which excludes a required modifier of every candidate (`allow(internal, private.optional(), ...)`).
+ * A value with one modifier that fits is kept, as `(internal or private).optional()` is next to `internal`.
+ *
+ * @throws KatachiKtFileContentModifierException for such a value.
+ */
+private fun checkOptional(shapes: List<Shape>, placement: Placement, line: String, declaredAt: DeclarationSite) {
+    for (group in shapes.first().modifiers.optional) {
+        val sorted = group.sortedBy { it.ordinal }
+        if (placement == Placement.File) {
+            val memberOnly = CLASS_BODY_ONLY.firstOrNull { it in group }
+                ?: shapes.firstOrNull { it.kind in CALLABLE_KINDS }?.let { MEMBER_ONLY_ON_CALLABLES.firstOrNull { it in group } }
+            if (memberOnly != null) {
+                val callable = shapes.firstOrNull { it.kind in CALLABLE_KINDS }
+                throw KatachiKtFileContentModifierException(
+                    line = line,
+                    problem = KtFileContentModifierProblem.OnlyInClassBody,
+                    modifiers = listOf(memberOnly.keyword),
+                    kind = if (memberOnly in CLASS_BODY_ONLY) null else callable?.kind?.keyword,
+                    declaredAt = declaredAt,
+                )
+            }
+        }
+        if (sorted.none { modifier -> shapes.any { it.kind in modifier.applicableKinds() } }) {
+            throw KatachiKtFileContentModifierException(
+                line = line,
+                problem = KtFileContentModifierProblem.NotApplicable,
+                modifiers = listOf(sorted.first().keyword),
+                kind = shapes.first().kind.keyword,
+                declaredAt = declaredAt,
+            )
+        }
+        val conflicts = shapes.map { shape -> sorted.map { excludedBy(it, shape.modifiers.modifiers) } }
+        if (conflicts.all { perShape -> perShape.all { it != null } }) {
+            val excluding = conflicts.first().first() ?: continue
+            throw KatachiKtFileContentModifierException(
+                line = line,
+                problem = KtFileContentModifierProblem.Conflicting,
+                modifiers = listOf(excluding, sorted.first()).sortedBy { it.ordinal }.map { it.keyword },
+                kind = null,
+                declaredAt = declaredAt,
+            )
+        }
+    }
+}
+
+/** The modifier of [required] that excludes [modifier] (another of one of its groups), or `null`. */
+internal fun excludedBy(modifier: ModifierName, required: Set<ModifierName>): ModifierName? = EXCLUSIVE_GROUPS
+    .filter { modifier in it }
+    .firstNotNullOfOrNull { group -> required.firstOrNull { it != modifier && it in group } }
 
 /** Whether a kind is one a `typealias` line names, which only the file can hold. */
 internal fun List<Shape>.namesTypeAlias(): Boolean = any { it.kind == TypeAlias }

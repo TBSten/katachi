@@ -20,7 +20,7 @@ import me.tbsten.katachi.konsist.declarations.internal.requiredWriter
 @ExperimentalKatachiApi
 public sealed interface PropertyRequired {
     /**
-     * Writes the required line for a property named [name], of [type] when given, asking for no modifier.
+     * Writes the required line for a property named [name], of [type] when given, carrying no modifier (`public` and `final` aside).
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
      * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.

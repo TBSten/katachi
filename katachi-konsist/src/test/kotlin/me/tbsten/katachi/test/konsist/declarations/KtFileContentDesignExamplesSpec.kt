@@ -216,7 +216,7 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
             ktFileContent {
                 required(annotated("Composable"), public, `fun`, fileName)
                 allow(annotated("Preview") or annotated("PreviewLightDark"), private, `fun`, "*Preview")
-                allow(annotated("Serializable"), `object` or `class`, "*Key")
+                allow(annotated("Serializable"), data.optional(), `object` or `class`, "*Key")
                 allow(internal or private, data, `object`, "*")
                 allow(`fun`, `interface`, "*Listener")
             }

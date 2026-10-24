@@ -349,6 +349,39 @@ private fun lineMessage(problem: KtFileContentLineProblem, line: String, at: Dec
             "Write what to prohibit as lines of their own, such as not.allow(private, `fun`, \"*\"), or remove not.",
         )
 
+        KtFileContentLineProblem.OptionalAnnotation -> Triple(
+            "\"$line\" at $at makes an annotation optional.",
+            "An annotation the line does not write is not asked about, so an optional one would ask for nothing.",
+            "Remove the annotation, or remove .optional() if the declaration has to carry it.",
+        )
+
+        KtFileContentLineProblem.OptionalTwice -> Triple(
+            "\"$line\" at $at writes .optional() twice.",
+            "A modifier is either required or optional; a second .optional() says nothing more.",
+            "Keep one .optional().",
+        )
+
+        KtFileContentLineProblem.OptionalInsideOr -> Triple(
+            "\"$line\" at $at puts .optional() on one side of an or.",
+            "An or asks for one of its modifiers, so only the whole or can be made optional.",
+            "Put .optional() on the whole or, such as (internal or private).optional(), or write the optional " +
+                "modifier as a value of its own.",
+        )
+
+        KtFileContentLineProblem.OptionalOnAnythingElse -> Triple(
+            "Line \"$line\" at $at has a .optional() modifier on allow(..., anythingElse).",
+            "allow(..., anythingElse) asks only for the modifiers it writes and lets any other be there, so an " +
+                "optional one changes nothing.",
+            "Remove the .optional() modifier.",
+        )
+
+        KtFileContentLineProblem.OptionalAfterNot -> Triple(
+            "Line \"$line\" at $at has a .optional() modifier after not.",
+            "A not. line prohibits what carries the modifiers it writes, whatever else the declaration carries, so " +
+                "an optional one changes nothing.",
+            "Remove the .optional() modifier.",
+        )
+
         KtFileContentLineProblem.OutsideItsBlock -> Triple(
             "Line \"$line\" at $at is written with a value that belongs to another block.",
             "A line goes to the block whose vocabulary built it, so a value kept in a variable would put it " +

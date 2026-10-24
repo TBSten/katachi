@@ -18,7 +18,7 @@ import me.tbsten.katachi.konsist.declarations.internal.allowWriter
 @ExperimentalKatachiApi
 public sealed interface TypeAliasAllow {
     /**
-     * Writes the line for a type alias named [name], asking for no modifier.
+     * Writes the line for a type alias named [name], carrying no modifier (`public` and `final` aside).
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
      * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.

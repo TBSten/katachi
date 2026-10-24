@@ -122,6 +122,7 @@ private fun GenContext.genAllowedLine(placement: GenPlacement, depth: Int): GenL
     return GenLine(
         kinds = kinds,
         alternatives = alternatives,
+        optional = optionalGroupsOf(kinds, alternatives, placement),
         name = name,
         superclasses = if (!bare && kinds.first().isType && random.chance(30)) superclassPatterns() else emptyList(),
         propertyType = random.pick(TYPE_SAMPLES).pattern.takeIf { !bare && kinds.first().isProperty && random.chance(40) },
@@ -137,6 +138,45 @@ private fun GenContext.genAllowedLine(placement: GenPlacement, depth: Int): GenL
             null
         },
     ).let { line -> if (line.parameters != null) line.copy(anyArgs = false) else line }
+}
+
+/**
+ * Modifiers a line of [kinds] may make `.optional()` without changing how its declarations are
+ * written: no `abstract`, `lateinit`, `const` or `companion`, which take a body, an initializer or a name away.
+ */
+private fun optionalCandidatesOf(kind: GenKind, placement: GenPlacement): List<String> {
+    val member = placement == GenPlacement.ClassBody
+    return when (kind) {
+        GenKind.Class -> listOf("open", "data") + if (member) listOf("inner") else emptyList()
+        GenKind.Interface -> listOf("sealed")
+        GenKind.Object -> listOf("data")
+        GenKind.Function -> listOf("suspend", "inline", "operator", "infix", "tailrec") + if (member) listOf("override", "open") else emptyList()
+        GenKind.Val, GenKind.Var -> if (member) listOf("override", "open") else emptyList()
+        GenKind.TypeAlias -> emptyList()
+    }
+}
+
+/**
+ * The `.optional()` values of a line, now and then: a visibility (or two joined with `or`) when
+ * the line asks for none, and a modifier of its kind that fits with every alternative.
+ */
+private fun GenContext.optionalGroupsOf(kinds: List<GenKind>, alternatives: List<GenModifiers>, placement: GenPlacement): List<List<String>> {
+    val asked = alternatives.flatMap { it.keywords }.toSet()
+    val visibility = if (asked.none { it in VISIBILITIES } && random.chance(30)) {
+        random.pick(
+            listOf(listOf("internal"), listOf("private"), listOf("internal", "private")) +
+                if (placement == GenPlacement.ClassBody) listOf(listOf("protected"), listOf("internal", "protected")) else emptyList(),
+        )
+    } else {
+        null
+    }
+    val kind = kinds.singleOrNull()
+    val specific = kind?.let { optionalCandidatesOf(it, placement) }.orEmpty()
+        // A fun interface cannot be sealed. Konsist 0.17.3 reads no supertype of a `companion data object`.
+        .filter { candidate -> alternatives.all { fitsWith(candidate, it.keywords) } && !(candidate == "sealed" && "fun" in asked) }
+        .filter { candidate -> !(candidate == "data" && "companion" in asked) }
+    val modifier = random.pickOrNull(specific)?.takeIf { random.chance(25) }
+    return listOfNotNull(visibility, modifier?.let { listOf(it) })
 }
 
 /** A line named after the file: `{F}`, `Default{F} : {F}`, `{F}Keys`, `create{F}`. */

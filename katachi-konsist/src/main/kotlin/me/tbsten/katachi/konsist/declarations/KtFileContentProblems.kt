@@ -130,6 +130,33 @@ public enum class KtFileContentLineProblem {
     /** `not.allow(..., anythingElse)`, which names nothing to prohibit. */
     AnythingElseAfterNot,
 
+    /**
+     * `annotated("X").optional()`: an annotation not written is not asked about already, so an
+     * optional one would mean nothing.
+     */
+    OptionalAnnotation,
+
+    /** `.optional()` on a value that is `.optional()` already: `suspend.optional().optional()`. */
+    OptionalTwice,
+
+    /**
+     * `.optional()` on one side of an `or`, as in `internal.optional() or private`: `.optional()`
+     * goes on the whole `or`, `(internal or private).optional()`.
+     */
+    OptionalInsideOr,
+
+    /**
+     * A `.optional()` modifier on an `allow(..., anythingElse)` line, which lets any modifier it
+     * does not write be there already.
+     */
+    OptionalOnAnythingElse,
+
+    /**
+     * A `.optional()` modifier on a `not.allow(...)` line, which prohibits what carries the
+     * modifiers it writes whatever else it carries, so an optional one changes nothing.
+     */
+    OptionalAfterNot,
+
     /** A value of one block's vocabulary used to write a line in another block, or after its block ended. */
     OutsideItsBlock,
 }

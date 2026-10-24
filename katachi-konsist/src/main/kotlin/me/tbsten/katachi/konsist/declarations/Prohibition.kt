@@ -7,7 +7,9 @@ import me.tbsten.katachi.konsist.declarations.internal.FileBuilder
 /**
  * What `not.` starts: a prohibited line, `not.allow(...)`. A declaration it matches is a violation
  * even when an allowed line matches it too -- a prohibition is stronger than a permission -- and
- * `.except(...)` lets part of it through.
+ * `.except(...)` lets part of it through. Unlike an allowed line, it asks only for the modifiers
+ * it writes: `` not.allow(`class`, "*Manager") `` prohibits an `internal class XManager` too, and a
+ * `.optional()` modifier on it is refused as meaningless.
  *
  * It holds `allow(...)` only, written as on an allowed line, and in the file `` `import` `` and
  * `` `package` ``. `not.allow(..., anythingElse)` is refused: "anything else" names nothing in

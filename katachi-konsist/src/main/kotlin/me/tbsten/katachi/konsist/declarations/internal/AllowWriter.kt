@@ -1,5 +1,6 @@
 package me.tbsten.katachi.konsist.declarations.internal
 
+import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.konsist.declarations.AnythingElse
 import me.tbsten.katachi.konsist.declarations.AnythingElseAllow
 import me.tbsten.katachi.konsist.declarations.ClassBodyScope
@@ -13,6 +14,8 @@ import me.tbsten.katachi.konsist.declarations.FunctionAllow
 import me.tbsten.katachi.konsist.declarations.FunctionRequired
 import me.tbsten.katachi.konsist.declarations.FunctionKind
 import me.tbsten.katachi.konsist.declarations.FunctionLine
+import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentLineException
+import me.tbsten.katachi.konsist.declarations.KtFileContentLineProblem
 import me.tbsten.katachi.konsist.declarations.MemberProhibition
 import me.tbsten.katachi.konsist.declarations.Modifiers
 import me.tbsten.katachi.konsist.declarations.PropertyAllow
@@ -76,7 +79,10 @@ internal class AllowWriter(
 
     fun anythingElse(modifiers: List<Modifiers>, anything: AnythingElse) {
         val alternatives = alternativesOf(modifiers)
-        use(modifiers.map { it.word } + anything.word) { renderAnythingElseLine(alternatives, prohibited) }
+        val line = { renderAnythingElseLine(alternatives, prohibited) }
+        use(modifiers.map { it.word } + anything.word, line)
+        // `not.allow(..., anythingElse)` has a problem of its own, which says more than this one.
+        if (!prohibited) refuseOptional(modifiers, KtFileContentLineProblem.OptionalOnAnythingElse, line)
         list.addAnythingElse(alternatives, prohibited)
     }
 
@@ -84,8 +90,19 @@ internal class AllowWriter(
         val shapes = alternativesOf(modifiers)
             .flatMap { set -> kindShapes.map { Shape(set.union(it.modifiers), it.kind) } }
             .distinct()
-        use(modifiers.map { it.word } + kinds) { renderDeclaration(shapes, name, prohibited) }
+        val line = { renderDeclaration(shapes, name, prohibited) }
+        use(modifiers.map { it.word } + kinds, line)
+        if (prohibited) refuseOptional(modifiers, KtFileContentLineProblem.OptionalAfterNot, line)
         return list.declare(shapes, prohibited, required, name)
+    }
+
+    /**
+     * @throws KatachiKtFileContentLineException with [problem] when one of [modifiers] is
+     *   `.optional()`, on a line that does not read the modifiers it does not write.
+     */
+    private fun refuseOptional(modifiers: List<Modifiers>, problem: KtFileContentLineProblem, line: () -> String) {
+        if (modifiers.none { it.isOptional }) return
+        throw KatachiKtFileContentLineException(problem, line(), DeclarationSite.capture())
     }
 
     /**
@@ -99,11 +116,19 @@ internal class AllowWriter(
         words.forEach { it.requireIn(list, line) }
     }
 
-    /** Every combination of one alternative of each of [modifiers]: the empty set for none. */
-    private fun alternativesOf(modifiers: List<Modifiers>): List<ModifierSet> =
-        modifiers.fold(listOf(ModifierSet.EMPTY)) { sets, next ->
-            sets.flatMap { set -> next.alternatives.map { set.union(it) } }
+    /**
+     * Every combination of one alternative of each required one of [modifiers] (the empty set for
+     * none), each carrying the `.optional()` ones and the other alternatives of its `or`s.
+     */
+    private fun alternativesOf(modifiers: List<Modifiers>): List<ModifierSet> {
+        val optional = modifiers.filter { it.isOptional }.map { value -> value.alternatives.flatMap { it.modifiers }.distinct() }
+        return modifiers.filterNot { it.isOptional }.fold(listOf(ModifierSet.EMPTY.copy(optional = optional))) { sets, next ->
+            val inOr = next.alternatives.flatMap { it.modifiers }.toSet()
+            sets.flatMap { set ->
+                next.alternatives.map { chosen -> set.union(chosen.copy(bundled = inOr - chosen.modifiers)) }
+            }
         }.distinct()
+    }
 
     override fun toString(): String = "AllowWriter($list, prohibited=$prohibited, required=$required)"
 }

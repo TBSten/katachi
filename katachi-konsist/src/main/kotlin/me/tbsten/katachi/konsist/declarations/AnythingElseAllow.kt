@@ -5,7 +5,9 @@ import me.tbsten.katachi.konsist.declarations.internal.allowWriter
 
 /**
  * The `allow(...)` lines that let through any declaration no other line matches: the modifiers and
- * annotations (none to ten of them) it has to carry, then `anythingElse`.
+ * annotations (none to ten of them) it has to carry, then `anythingElse`. Unlike a declaration
+ * line, it does not ask for the modifiers it does not write: `allow(private, anythingElse)` lets a
+ * `private suspend fun` through, and a `.optional()` modifier on it is refused as meaningless.
  * The members of what it lets through are not looked at.
  *
  * Lines are judged in this order: a prohibited line (`not.allow(...)`) wins, then an allowed line,

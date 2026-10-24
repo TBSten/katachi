@@ -5,17 +5,25 @@ package me.tbsten.katachi.konsist.declarations.internal
  * `fullMatch` and `nameMatches`; `DeclarationDifferences.kt` asks the pieces to say what differs.
  */
 
-/** The line matches the declaration in full: name, kind with modifiers and annotations, and the details. */
+/**
+ * The line matches the declaration in full: name, kind with modifiers and annotations, and the
+ * details. An allowed or required line asks for the declaration's modifiers exactly; a `not.` line
+ * only for the ones it writes.
+ */
 internal fun fullMatch(rule: DeclarationRule, fact: DeclarationFact): Boolean =
-    nameMatches(rule, fact) && rule.shapes.any { shapeMatches(it, fact) } && detailsMatch(rule, fact)
+    nameMatches(rule, fact) && rule.shapes.any { shapeMatches(it, fact, exact = !rule.prohibited) } && detailsMatch(rule, fact)
 
 /** The line's name pattern matches the declaration's name, and none of its `except` does. */
 internal fun nameMatches(rule: DeclarationRule, fact: DeclarationFact): Boolean =
     rule.name.matches(fact.name) && rule.except.none { it.matches(fact.name) }
 
-/** The declaration is of [shape]'s kind and carries every modifier and annotation it asks for. */
-internal fun shapeMatches(shape: Shape, fact: DeclarationFact): Boolean =
-    fact.kind == shape.kind && modifiersSatisfied(shape.modifiers, fact)
+/**
+ * The declaration is of [shape]'s kind and carries every modifier and annotation it asks for --
+ * and, when [exact], no modifier it does not allow.
+ */
+internal fun shapeMatches(shape: Shape, fact: DeclarationFact, exact: Boolean): Boolean =
+    fact.kind == shape.kind && modifiersSatisfied(shape.modifiers, fact) &&
+        (!exact || extraModifiersOf(shape.modifiers, fact).isEmpty())
 
 /** The declaration carries every modifier and annotation of [set]. An empty set is satisfied by anything. */
 internal fun modifiersSatisfied(set: ModifierSet, fact: DeclarationFact): Boolean =
@@ -27,6 +35,20 @@ internal fun modifiersSatisfied(set: ModifierSet, fact: DeclarationFact): Boolea
  */
 internal fun missingModifiersOf(set: ModifierSet, fact: DeclarationFact): List<ModifierName> =
     set.modifiers.filterNot { hasModifier(fact, it) }.sortedBy { it.ordinal }
+
+/**
+ * The modifiers the declaration carries that [set] neither asks for nor lets be, in Kotlin's
+ * order. `public` is never one of them: Kotlin reads a declaration with no visibility as public,
+ * so writing it or not says the same. Nor is one that takes the place of a modifier [set] asks
+ * for and the declaration lacks (`private` where `public` is asked): the missing one says it.
+ */
+internal fun extraModifiersOf(set: ModifierSet, fact: DeclarationFact): List<ModifierName> {
+    val allowed = set.modifiers + set.alsoAllowed
+    val missing = missingModifiersOf(set, fact).toSet()
+    return fact.modifiers
+        .filter { it != ModifierName.Public && it !in allowed && excludedBy(it, missing) == null }
+        .sortedBy { it.ordinal }
+}
 
 /** The annotations of [set] the declaration does not carry, in the order written. */
 internal fun missingAnnotationsOf(set: ModifierSet, fact: DeclarationFact): List<AnnotationRule> =

@@ -19,6 +19,10 @@ private const val KT_FILE_CONTENT_NAME: String = "ktFileContent"
  *   given a `{ }`.
  * - **Nothing is special by default.** Private declarations and imports of the same role count
  *   like any other; open them up with `allow(private, anythingElse)` or `` `import`("**") ``.
+ * - **A line's modifiers are the declaration's, as its Kotlin source writes them.**
+ *   `` allow(`fun`, "execute") `` does not match `suspend fun execute`; `public` and `final` count as
+ *   written, and a modifier that may be there or not is written `suspend.optional()`.
+ *   Annotations, `allow(..., anythingElse)` and `not.allow(...)` ask only for what they write.
  * - **`allow(...)` lets a declaration be, `required(...)` asks for it.** A required line with no
  *   pattern for its name asks for that name; a pattern (`*`, `{A,B}` and the like) asks for at
  *   least one declaration it matches. An import line only allows.
