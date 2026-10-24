@@ -95,8 +95,17 @@ private fun propertyInConstructor(property: SrcDecl): String =
     (property.annotations.map { "@$it" } + property.modifiers + property.kind.keyword).joinToString(" ") +
         " ${property.name}" + propertyTypeOf(property)
 
-private fun parametersOf(function: SrcDecl): String =
-    function.parameters.withIndex().joinToString(", ", "(", ")") { (index, type) -> "p$index: $type" }
+private fun parametersOf(function: SrcDecl): String = renderedParametersOf(function.parameters)
+
+/** [types] as the source writes a function's parameters: `(p0: String, p1: Int)`. */
+internal fun renderedParametersOf(types: List<String>): String =
+    types.withIndex().joinToString(", ", "(", ")") { (index, type) -> "p$index: $type" }
+
+/**
+ * Parameter [index] of a line as the DSL writes it: one of three name patterns the source's name
+ * `p<index>` always matches, so that the line asks about [type] alone while names are read too.
+ */
+internal fun parameterPatternOf(index: Int, type: String): String = "${listOf("*", "p$index", "p*")[index % 3]}: $type"
 
 private fun returnTypeOf(function: SrcDecl): String = function.returnType?.let { ": $it" }.orEmpty()
 
@@ -145,7 +154,9 @@ private fun StringBuilder.describeList(list: GenList, indent: Int) {
                 append(", ${quoted(entry.name)}")
                 entry.propertyType?.let { append(", ${quoted(it)}") }
                 append(")")
-                entry.parameters?.let { append(it.joinToString(", ", "(", ")", transform = ::quoted)) }
+                entry.parameters?.let { types ->
+                    append(types.withIndex().joinToString(", ", "(", ")") { (index, type) -> quoted(parameterPatternOf(index, type)) })
+                }
                 if (entry.anyArgs) append("(anyArgs())")
                 entry.returnType?.let { append(".returns(${quoted(it)})") }
                 if (entry.superclasses.isNotEmpty()) append(".superclass(${entry.superclasses.joinToString(", ", transform = ::quoted)})")

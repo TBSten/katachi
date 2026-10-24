@@ -54,7 +54,7 @@ class KtFileContentDslDetailSpec : FreeSpec({
         "引数・戻り値・プロパティの型" {
             val dump = dumpOf {
                 allow(`fun`, "load")()
-                allow(`fun`, "save")("String", "Int")
+                allow(`fun`, "save")("name: String", "count: Int")
                 allow(`fun`, "on*")(anyArgs())
                 allow(`fun`, "free")
                 allow(public, `fun`, "on*")().returns("Unit")
@@ -64,7 +64,7 @@ class KtFileContentDslDetailSpec : FreeSpec({
 
             dump shouldBe """
                 required fun{} load params=()
-                required fun{} save params=(String, Int)
+                required fun{} save params=(name: String, count: Int)
                 optional fun{} on*
                 required fun{} free
                 optional fun{public} on* params=() returns=Unit

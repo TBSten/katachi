@@ -256,7 +256,7 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
             ktFileContent {
                 allow(`class`, fileName) {
                     allow(`val`, "state", "StateFlow<*>")
-                    allow(`fun`, "load")("String", "Int")
+                    allow(`fun`, "load")("id: String", "page: Int")
                     allow(`fun`, "reset")().returns("Unit")
                     allow(`fun`, "on*")(anyArgs())
                 }
@@ -266,8 +266,8 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
         violations.unsatisfiedLines() shouldBe listOf(
             "src/BrokenLoader.kt: BrokenLoader.state (line 4) | Not allowed: val state in class BrokenLoader | " +
                 "Expected: val state: StateFlow<*> | Differs in: type (not written, expected StateFlow<*>)",
-            "src/BrokenLoader.kt: BrokenLoader.load (line 5) | Not allowed: fun load(Int) in class BrokenLoader | " +
-                "Expected: fun load(String, Int) | Differs in: parameters (are (Int), expected (String, Int))",
+            "src/BrokenLoader.kt: BrokenLoader.load (line 5) | Not allowed: fun load(id: Int) in class BrokenLoader | " +
+                "Expected: fun load(id: String, page: Int) | Differs in: parameters (are (id: Int), expected (id: String, page: Int))",
             "src/BrokenLoader.kt: BrokenLoader.reset (line 6) | Not allowed: fun reset(): Boolean in class BrokenLoader | " +
                 "Expected: fun reset(): Unit | Differs in: return type (is Boolean, expected Unit)",
         )

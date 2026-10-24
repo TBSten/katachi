@@ -69,9 +69,9 @@ private fun propertyTypeChanges(line: GenLine, declaration: SrcDecl, fileName: S
 
 private fun parameterChanges(line: GenLine, declaration: SrcDecl, fileName: String): List<AspectChange> {
     val patterns = line.parameters ?: return emptyList()
-    val expected = patterns.joinToString(", ", "(", ")") { it.fillIn(fileName) }
+    val expected = patterns.withIndex().joinToString(", ", "(", ")") { (index, type) -> parameterPatternOf(index, type.fillIn(fileName)) }
     fun change(parameters: List<String>) =
-        AspectChange(declaration.copy(parameters = parameters), "parameters (are ${parameters.joinToString(", ", "(", ")")}, expected $expected)")
+        AspectChange(declaration.copy(parameters = parameters), "parameters (are ${renderedParametersOf(parameters)}, expected $expected)")
     return patterns.indices.map { index ->
         change(declaration.parameters.mapIndexed { i, written -> if (i == index) typeSampleOf(patterns[index]).other else written })
     } + change(declaration.parameters + "Int") + listOfNotNull(change(declaration.parameters.dropLast(1)).takeIf { patterns.isNotEmpty() })

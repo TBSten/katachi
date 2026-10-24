@@ -203,7 +203,9 @@ private fun DeclarationListScope.writeLine(line: GenLine) {
         }
         kind == GenKind.Function -> {
             var written = allowFunction(target, modifiers, `fun`, name)
-            line.parameters?.let { types -> written = written(*types.map { it.fillIn(fileName) }.toTypedArray()) }
+            line.parameters?.let { types ->
+                written = written(*types.mapIndexed { index, type -> parameterPatternOf(index, type.fillIn(fileName)) }.toTypedArray())
+            }
             if (line.anyArgs) written = written(anyArgs())
             line.returnType?.let { written = written.returns(it.fillIn(fileName)) }
             if (line.optional) written.optional()

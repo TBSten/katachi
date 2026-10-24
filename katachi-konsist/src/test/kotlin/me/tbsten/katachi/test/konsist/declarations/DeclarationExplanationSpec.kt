@@ -40,7 +40,7 @@ private val CASES: List<Case> = listOf(
     Case("メンバ", kt("abstract class Sample : Base() {\n    private val a = 1\n    protected fun b() {}\n}")) { allow(`class`, fileName) { } },
     Case("型", kt("val name: String? = null")) { allow(`val`, "name", "String") },
     Case("引数", kt("fun load(a: String, b: Int) {}\nfun save(x: Int) {}\nfun drop(x: Int) {}")) {
-        allow(`fun`, "load")("String", "Int")
+        allow(`fun`, "load")("a: String", "b: Int")
         allow(`fun`, "save")()
         allow(`fun`, "drop")
     },
@@ -57,7 +57,7 @@ private val CASES: List<Case> = listOf(
         allow(`class`, fileName) { allow(`class`, "Mode") { allow(`fun`, "previous") } }
     },
     Case("ファイル直下とメンバの足りない", kt("class Sample {\n}")) { allow(`class`, fileName) { allow(`val`, "state") }; allow(`object`, "Keys") },
-    Case("オーバーロード", kt("fun load(a: String) {}\nfun load(a: Int) {}")) { allow(`fun`, "load")("String") },
+    Case("オーバーロード", kt("fun load(a: String) {}\nfun load(a: Int) {}")) { allow(`fun`, "load")("a: String") },
     Case("2 行に当たる", kt("class Sample")) { allow(`class`, "*"); allow(`class`, fileName) },
     Case("拡張関数", kt("fun String.shout(): String = uppercase()")) { allow(`fun`, "shout") },
     Case("typealias", kt("typealias Id = String\nclass Sample")) { allow(`class`, fileName) },
@@ -110,10 +110,10 @@ class DeclarationExplanationSpec : FreeSpec({
 
         "オーバーロードは宣言ごとに決まる" {
             judgedAndExplained(kt("fun load(a: String) {}\nfun load(a: Int) {}")) {
-                allow(`fun`, "load")("String")
+                allow(`fun`, "load")("a: String")
             }.explanation.verdicts() shouldContainExactly listOf(
-                "load Allowed [fun load(String)]",
-                "load Mismatched [fun load(String)]",
+                "load Allowed [fun load(a: String)]",
+                "load Mismatched [fun load(a: String)]",
             )
         }
 

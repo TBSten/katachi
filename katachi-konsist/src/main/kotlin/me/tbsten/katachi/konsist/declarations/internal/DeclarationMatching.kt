@@ -66,12 +66,15 @@ internal fun propertyTypeMatches(rule: DeclarationRule, fact: DeclarationFact): 
     return expected.canonical.matches(actual.canonical)
 }
 
-/** No parameters asked for, or as many parameter types as asked, each matching in order. */
+/** No parameters asked for, or as many parameters as asked, each matching both its name and its type, in order. */
 internal fun parametersMatch(rule: DeclarationRule, fact: DeclarationFact): Boolean {
     val expected = rule.parameters ?: return true
-    val actual = fact.parameterTypes ?: return false
-    return expected.size == actual.size && expected.zip(actual).all { (type, written) -> type.canonical.matches(written.canonical) }
+    val actual = fact.parameters ?: return false
+    return expected.size == actual.size && expected.zip(actual).all { (parameter, written) -> parameterMatches(parameter, written) }
 }
+
+private fun parameterMatches(rule: ParameterRule, fact: ParameterFact): Boolean =
+    rule.name.matches(fact.name) && rule.type.canonical.matches(fact.type.canonical)
 
 /** No return type asked for, or one (written, or `Unit` for a block body) that matches it. */
 internal fun returnTypeMatches(rule: DeclarationRule, fact: DeclarationFact): Boolean {

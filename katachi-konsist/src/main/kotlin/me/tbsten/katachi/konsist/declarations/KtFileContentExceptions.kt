@@ -184,7 +184,13 @@ public class KatachiKtFileContentLineException internal constructor(
      * ```
      */
     public val declaredAt: DeclarationSite,
-) : KatachiDeclarationException(message = lineMessage(problem, line, declaredAt))
+    /**
+     * The parameter the problem is about, as written (`"String"` for
+     * [KtFileContentLineProblem.ParameterWithoutName]); `null` for a problem that is not about one
+     * parameter.
+     */
+    public val parameter: String? = null,
+) : KatachiDeclarationException(message = lineMessage(problem, line, declaredAt, parameter))
 
 private fun modifierMessage(
     line: String,
@@ -240,7 +246,7 @@ private fun patternMessage(
     problem?.how ?: "Escape a literal *, ?, [, ], {, }, , or \\ with \\.",
 ).joinToString("\n")
 
-private fun lineMessage(problem: KtFileContentLineProblem, line: String, at: DeclarationSite): String {
+private fun lineMessage(problem: KtFileContentLineProblem, line: String, at: DeclarationSite, parameter: String?): String {
     val (what, why, how) = when (problem) {
         KtFileContentLineProblem.ExceptWithoutNot -> Triple(
             ".except(...) on line \"$line\" at $at has no effect.",
@@ -274,9 +280,31 @@ private fun lineMessage(problem: KtFileContentLineProblem, line: String, at: Dec
 
         KtFileContentLineProblem.ParametersWrittenTwice -> Triple(
             "Line \"$line\" at $at writes its parameters twice.",
-            "A function has one parameter list: the types in (...) after the name, or anyArgs().",
+            "A function has one parameter list: the \"name: Type\" parameters in (...) after the name, or anyArgs().",
             "Keep one of the two.",
         )
+
+        KtFileContentLineProblem.ParameterWithoutName -> {
+            val type = parameter.orEmpty().substringAfter(':').trim().ifEmpty { "String" }
+            Triple(
+                if (':' in parameter.orEmpty()) {
+                    "Parameter \"$parameter\" of line \"$line\" at $at has no name before its ':'."
+                } else {
+                    "Parameter \"$parameter\" of line \"$line\" at $at is not written as \"name: Type\"."
+                },
+                PARAMETER_FORM,
+                "Write \"name: $type\" with the parameter's name, or \"*: $type\" to accept any name.",
+            )
+        }
+
+        KtFileContentLineProblem.ParameterWithoutType -> {
+            val name = parameter.orEmpty().substringBefore(':').trim()
+            Triple(
+                "Parameter \"$parameter\" of line \"$line\" at $at has no type after its ':'.",
+                PARAMETER_FORM,
+                "Write \"$name: String\" with the parameter's type, or \"$name: *\" to accept any type.",
+            )
+        }
 
         KtFileContentLineProblem.ReturnTypeWrittenTwice -> Triple(
             "Line \"$line\" at $at writes .returns(...) twice.",
@@ -326,3 +354,7 @@ private fun lineMessage(problem: KtFileContentLineProblem, line: String, at: Dec
     }
     return listOf(what, why, how).joinToString("\n")
 }
+
+/** Why a parameter of a `fun` line is written the way it is, for both of the problems about one. */
+private const val PARAMETER_FORM: String =
+    "A parameter is written the way Kotlin writes it, \"name: Type\": a name pattern and a type pattern, split at the first ':'."

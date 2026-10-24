@@ -31,9 +31,9 @@ internal fun differencesOf(rule: DeclarationRule, fact: DeclarationFact): List<S
     if (isProperty && !propertyTypeMatches(rule, fact)) {
         add("type (${isOrNotWritten(fact.propertyType)}, expected ${rule.propertyType?.written})")
     }
-    val parameterTypes = fact.parameterTypes
-    if (parameterTypes != null && !parametersMatch(rule, fact)) {
-        val actual = parameterTypes.joinToString(", ", "(", ")") { it.written }
+    val parameters = fact.parameters
+    if (parameters != null && !parametersMatch(rule, fact)) {
+        val actual = renderParameters(parameters)
         val expected = rule.parameters.orEmpty().joinToString(", ", "(", ")") { it.written }
         add("parameters (are $actual, expected $expected)")
     }

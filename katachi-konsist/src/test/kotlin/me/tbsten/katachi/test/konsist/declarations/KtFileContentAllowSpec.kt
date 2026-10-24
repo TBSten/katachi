@@ -138,7 +138,7 @@ class KtFileContentAllowSpec : FreeSpec({
             dumpOf(fileName = "HomeViewModel") {
                 allow(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
                     allow(public, `fun`, "on*")().returns("Unit")
-                    allow(`fun`, "load")("String", "Int")
+                    allow(`fun`, "load")("id: String", "count: Int")
                     allow(`val`, "isLoading", "Boolean").optional()
                 }
                 allow(`typealias`, "Callback").optional()
@@ -146,7 +146,7 @@ class KtFileContentAllowSpec : FreeSpec({
                 required class{@HiltViewModel public} HomeViewModel supers=[ViewModel]
                   members:
                     optional fun{public} on* params=() returns=Unit
-                    required fun{} load params=(String, Int)
+                    required fun{} load params=(id: String, count: Int)
                     optional val{} isLoading type=Boolean
                 optional typealias{} Callback
             """.trimIndent()
@@ -179,12 +179,12 @@ class KtFileContentAllowSpec : FreeSpec({
         "禁止の行になり、except で一部を通す" {
             dumpOf {
                 not.allow(public, `class`, "*Impl").except("LegacyImpl")
-                not.allow(`fun`, "*")("Context")
+                not.allow(`fun`, "*")("*: Context")
                 not.allow(`fun`, `interface`, "*")
                 not.allow(private, `typealias`, "*")
             } shouldBe """
                 prohibited class{public} *Impl except=[LegacyImpl]
-                prohibited fun{} * params=(Context)
+                prohibited fun{} * params=(*: Context)
                 prohibited interface{fun} *
                 prohibited typealias{private} *
             """.trimIndent()

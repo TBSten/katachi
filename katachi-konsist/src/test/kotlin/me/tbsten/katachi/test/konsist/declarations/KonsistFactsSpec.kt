@@ -104,7 +104,7 @@ class KonsistFactsSpec : FreeSpec({
             "abstract class A",
             "  val a: kotlinx.coroutines.flow.StateFlow< Int >",
             "  var b",
-            "  fun c(String, Int): Unit",
+            "  fun c(x: String, y: Int): Unit",
             "  fun d()",
             "  fun e()",
             "  abstract fun f()",

@@ -67,7 +67,7 @@ public sealed interface DeclarationListScope : DeclarationVocabulary, Declaratio
 
     /**
      * "Any parameters", for a function line that reads better with it than without; the same as
-     * writing no parameter types.
+     * writing no parameters.
      *
      * ## Example 1: functions starting with `on`, whatever their parameters
      * ```kt

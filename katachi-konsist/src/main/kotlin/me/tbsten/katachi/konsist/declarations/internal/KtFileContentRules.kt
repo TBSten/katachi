@@ -70,6 +70,9 @@ internal data class NameRule(val written: String, val pattern: NamePattern) {
 /** A type as written, and the pattern its canonical form (see `canonicalType`) is matched with. */
 internal data class TypeRule(val written: String, val canonical: NamePattern)
 
+/** One parameter of a `fun` line: [written] as it was written (`"id: String"`), and its name and type patterns. */
+internal data class ParameterRule(val written: String, val name: NameRule, val type: TypeRule)
+
 /**
  * One `.superclass("...")`. [byName] when it was written without type arguments, so that it
  * matches a supertype whatever its arguments are (`Repository` matches `Repository<User>`).
@@ -119,7 +122,7 @@ internal class DeclarationRule(
     /** `null` means not asked about. */
     val propertyType: TypeRule?,
     /** `null` means not asked about (not written, or `anyArgs()`); empty means no parameter. */
-    val parameters: List<TypeRule>?,
+    val parameters: List<ParameterRule>?,
     /** `null` means not asked about. */
     val returnType: TypeRule?,
     /** `null` when the line has no `{ }`, so its members are not looked at. */

@@ -37,7 +37,8 @@ class KtFileContentPatternSpec : FreeSpec({
 
         "型・親の型・アノテーション・except" {
             patternErrorOf { allow(`val`, "x", "Map<{K, V>") }.what shouldBe KtFileContentPatternKind.Type
-            patternErrorOf { allow(`fun`, "x")("[z-a]") }.what shouldBe KtFileContentPatternKind.Type
+            patternErrorOf { allow(`fun`, "x")("*: [z-a]") }.what shouldBe KtFileContentPatternKind.Type
+            patternErrorOf { allow(`fun`, "x")("[z-a]: String") }.what shouldBe KtFileContentPatternKind.ParameterName
             patternErrorOf { allow(`fun`, "x").returns("") }.what shouldBe KtFileContentPatternKind.Type
             patternErrorOf { allow(`class`, "A").superclass("Base{T") }.what shouldBe KtFileContentPatternKind.Superclass
             patternErrorOf { allow(annotated("Pre[view"), `fun`, "x") }.what shouldBe KtFileContentPatternKind.Annotation
@@ -83,14 +84,14 @@ class KtFileContentPatternSpec : FreeSpec({
         "型の ? は nullable の印で、エラーにならず文字として当たる" {
             val rules = rulesOf {
                 allow(`val`, "name", "String?")
-                allow(`fun`, "find")("List<String?>").returns("Int?")
+                allow(`fun`, "find")("ids: List<String?>").returns("Int?")
                 allow(`class`, "A").superclass("Repository<User?>")
             }
             val declarations = rules.declarations?.lines.orEmpty()
 
             declarations[0].propertyType?.canonical?.matches("String?") shouldBe true
             declarations[0].propertyType?.canonical?.matches("String") shouldBe false
-            declarations[1].parameters?.single()?.canonical?.matches("List<String?>") shouldBe true
+            declarations[1].parameters?.single()?.type?.canonical?.matches("List<String?>") shouldBe true
             declarations[1].returnType?.canonical?.matches("Int?") shouldBe true
             declarations[2].superclasses.single().pattern.matches("Repository<User?>") shouldBe true
         }
