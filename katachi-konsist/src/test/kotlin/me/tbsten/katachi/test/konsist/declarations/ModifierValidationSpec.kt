@@ -32,7 +32,9 @@ private val APPLICABLE: Map<String, Set<String>> = buildMap {
     put("inner", setOf("class"))
     put("companion", setOf("object"))
     put("override", setOf("fun", "val", "var"))
-    for (it in listOf("operator", "infix", "suspend", "inline", "tailrec", "external")) put(it, setOf("fun"))
+    for (it in listOf("operator", "infix", "suspend", "tailrec")) put(it, setOf("fun"))
+    put("inline", setOf("fun", "val", "var"))
+    put("external", setOf("class", "interface", "object", "fun", "val", "var"))
     put("const", setOf("val"))
     put("lateinit", setOf("var"))
 }

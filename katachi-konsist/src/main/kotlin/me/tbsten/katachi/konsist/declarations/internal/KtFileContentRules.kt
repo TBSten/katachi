@@ -82,9 +82,27 @@ internal data class SuperclassRule(val written: String, val byName: Boolean, val
 /** One name of `annotated(...)`. [qualified] when it holds a `.` and is matched as a full name. */
 internal data class AnnotationRule(val written: String, val qualified: Boolean, val pattern: NamePattern)
 
-/** One set of modifiers and annotations that all have to be on a declaration. */
-internal data class ModifierSet(val modifiers: Set<ModifierName>, val annotations: List<AnnotationRule>) {
+/**
+ * One set of modifiers and annotations that all have to be on a declaration.
+ *
+ * On a declaration line (not on an `anythingElse` or a `not.` line), the declaration may carry no
+ * other modifier than these, [optional]'s and [bundled]'s; `public` is never counted as another.
+ */
+internal data class ModifierSet(
+    val modifiers: Set<ModifierName>,
+    val annotations: List<AnnotationRule>,
+    /** Each `.optional()` value of the line, as written: modifiers the declaration may carry or not. */
+    val optional: List<List<ModifierName>> = emptyList(),
+    /**
+     * The other alternatives of the `or`s [modifiers] were chosen from: `(suspend or inline)` asks for
+     * at least one of them, so a declaration carrying both still matches. Never printed.
+     */
+    val bundled: Set<ModifierName> = emptySet(),
+) {
     val isEmpty: Boolean get() = modifiers.isEmpty() && annotations.isEmpty()
+
+    /** Every modifier the declaration may carry besides [modifiers]. */
+    val alsoAllowed: Set<ModifierName> get() = optional.flatten().toSet() + bundled
 
     operator fun plus(modifier: ModifierName): ModifierSet = copy(modifiers = modifiers + modifier)
 
@@ -93,8 +111,12 @@ internal data class ModifierSet(val modifiers: Set<ModifierName>, val annotation
         copy(annotations = (annotations + more).distinctBy { it.written })
 
     /** Everything this set and [other] ask for together. */
-    fun union(other: ModifierSet): ModifierSet =
-        ModifierSet(modifiers + other.modifiers, (annotations + other.annotations).distinctBy { it.written })
+    fun union(other: ModifierSet): ModifierSet = ModifierSet(
+        modifiers = modifiers + other.modifiers,
+        annotations = (annotations + other.annotations).distinctBy { it.written },
+        optional = (optional + other.optional).distinct(),
+        bundled = bundled + other.bundled,
+    )
 
     companion object {
         val EMPTY: ModifierSet = ModifierSet(emptySet(), emptyList())

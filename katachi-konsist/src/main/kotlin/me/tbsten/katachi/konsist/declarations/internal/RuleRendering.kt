@@ -3,6 +3,7 @@ package me.tbsten.katachi.konsist.declarations.internal
 /*
  * Rules written back the way Kotlin would write the declaration they describe, for a report, an
  * exception and the role page alike: `@HiltViewModel public class HomeViewModel : ViewModel`,
+ * `suspend.optional() fun execute(...)`,
  * `public fun on*(): Unit`, `not class *Impl except DefaultImpl`, `private (anything)`.
  */
 
@@ -15,6 +16,21 @@ internal const val THE_FILES_DIRECTORY: String = "(the file's directory)"
 /** One declaration line: `<prefix> <name><details>`, with `not ` and ` except ...` when prohibited. */
 internal fun renderRule(rule: DeclarationRule): String = renderDeclaration(
     shapes = rule.shapes,
+    name = rule.name.written,
+    prohibited = rule.prohibited,
+    superclasses = rule.superclasses.map { it.written },
+    propertyType = rule.propertyType?.written,
+    parameters = rule.parameters?.map { it.written },
+    returnType = rule.returnType?.written,
+    except = rule.except.map { it.written },
+)
+
+/**
+ * [rule] as the Kotlin declaration it asks for, for a fix that tells what to change the
+ * declaration to: the `.optional()` modifiers left out, as the declaration may do without them.
+ */
+internal fun renderRuleAsDeclaration(rule: DeclarationRule): String = renderDeclaration(
+    shapes = rule.shapes.map { it.copy(modifiers = it.modifiers.copy(optional = emptyList())) },
     name = rule.name.written,
     prohibited = rule.prohibited,
     superclasses = rule.superclasses.map { it.written },
@@ -115,7 +131,7 @@ internal fun renderShapes(shapes: List<Shape>): String {
 internal fun renderKinds(kinds: List<DeclarationKindName>): String =
     kinds.singleOrNull()?.keyword ?: kinds.joinToString(" or ", "(", ")") { it.keyword }
 
-/** `@A @B public data`: the annotations as written, then the modifiers in Kotlin's order. Empty for none. */
+/** `@A @B public data`, `suspend.optional()`: as [tokensOf] lists them. Empty for none. */
 internal fun renderModifierSet(set: ModifierSet): String = tokensOf(set).joinToString(" ")
 
 /** The alternatives of an `anythingElse` line or of a `Modifiers`: `private`, `(internal or private)`, or nothing. */
@@ -126,8 +142,21 @@ internal fun renderModifierAlternatives(sets: List<ModifierSet>): String =
 /** How a set with nothing in it reads when it has to be printed among others. */
 private const val NO_MODIFIER: String = "no modifier"
 
-private fun tokensOf(set: ModifierSet): List<String> =
-    set.annotations.map { "@${it.written}" } + set.modifiers.sortedBy { it.ordinal }.map { it.keyword }
+/**
+ * The annotations as written, then the modifiers in Kotlin's order, each `.optional()` value as
+ * written (`suspend.optional()`, `(internal or private).optional()`) at the place of its first modifier.
+ */
+private fun tokensOf(set: ModifierSet): List<String> {
+    val required = set.modifiers.map { it.ordinal to it.keyword }
+    val optional = set.optional.filter { it.isNotEmpty() }.map { group ->
+        group.minOf { it.ordinal } to renderOptional(group)
+    }
+    return set.annotations.map { "@${it.written}" } + (required + optional).sortedBy { it.first }.map { it.second }
+}
+
+/** `suspend.optional()`, `(internal or private).optional()`. */
+private fun renderOptional(group: List<ModifierName>): String =
+    (group.singleOrNull()?.keyword ?: group.joinToString(" or ", "(", ")") { it.keyword }) + ".optional()"
 
 /**
  * [sets] as one group, or `null` when one of several is empty (`(public or )` cannot be written).

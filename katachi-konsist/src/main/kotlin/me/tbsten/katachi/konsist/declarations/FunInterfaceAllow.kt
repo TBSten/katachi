@@ -22,7 +22,7 @@ import me.tbsten.katachi.konsist.declarations.internal.allowWriter
 @ExperimentalKatachiApi
 public sealed interface FunInterfaceAllow {
     /**
-     * Writes the line for a fun interface named [name], asking for no modifier.
+     * Writes the line for a fun interface named [name], carrying no modifier but `fun` (`public` and `final` aside).
      *
      * @throws KatachiKtFileContentModifierException when [kind] holds no interface, or no declaration can have
      *   the modifiers here.

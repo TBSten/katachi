@@ -1618,9 +1618,9 @@ roles: data.Repository
 == src/main/kotlin/com/example/service/HealthService.kt
 roles: domain.Service
     domain.Service declared at ServiceRole.kt:19 | fun DeclarationContainerScope.service() = "Service".role {
-7 | ◆ | katachi: domain.Service — allowed by class HealthService (ServiceRole.kt:80)
-    allowed at ServiceRole.kt:80 | required(`class`, fileName) {                 // HealthService.kt -> class HealthService
-    menu | ◆ Allowed by class HealthService | ServiceRole.kt:80
+7 | ◆ | katachi: domain.Service — allowed by internal.optional() class HealthService (ServiceRole.kt:80)
+    allowed at ServiceRole.kt:80 | required(internal.optional(), `class`, fileName) { // class HealthService; "Must be public" says the visibility
+    menu | ◆ Allowed by internal.optional() class HealthService | ServiceRole.kt:80
     menu | ◇ Role domain.Service — Service | ServiceRole.kt:19
     menu | == Other files of domain.Service (1)
     menu | LegacyStatusService.kt | src/main/kotlin/com/example/service
@@ -1636,9 +1636,9 @@ roles: (none) Unexpected
 == src/main/kotlin/com/example/service/LegacyStatusService.kt
 roles: domain.Service
     domain.Service declared at ServiceRole.kt:19 | fun DeclarationContainerScope.service() = "Service".role {
-11 | ◆ | katachi: domain.Service — allowed by class LegacyStatusService (ServiceRole.kt:80)
-    allowed at ServiceRole.kt:80 | required(`class`, fileName) {                 // HealthService.kt -> class HealthService
-    menu | ◆ Allowed by class LegacyStatusService | ServiceRole.kt:80
+11 | ◆ | katachi: domain.Service — allowed by internal.optional() class LegacyStatusService (ServiceRole.kt:80)
+    allowed at ServiceRole.kt:80 | required(internal.optional(), `class`, fileName) { // class HealthService; "Must be public" says the visibility
+    menu | ◆ Allowed by internal.optional() class LegacyStatusService | ServiceRole.kt:80
     menu | ◇ Role domain.Service — Service | ServiceRole.kt:19
     menu | == Other files of domain.Service (1)
     menu | HealthService.kt | src/main/kotlin/com/example/service

@@ -5,6 +5,7 @@ import me.tbsten.katachi.konsist.declarations.DeclarationAllow
 import me.tbsten.katachi.konsist.declarations.DeclarationListScope
 import me.tbsten.katachi.konsist.declarations.DeclarationVocabulary
 import me.tbsten.katachi.konsist.declarations.KtFileContentScope
+import me.tbsten.katachi.konsist.declarations.Modifiers
 import me.tbsten.katachi.konsist.declarations.PropertyKind
 import me.tbsten.katachi.konsist.declarations.TypeKind
 
@@ -12,6 +13,9 @@ import me.tbsten.katachi.konsist.declarations.TypeKind
  * The model the judging properties (plan P1) generate: an allow list of `ktFileContent { }` and a
  * Kotlin source that follows it, made together line by line, so that each declaration of the
  * source knows the line it was written for.
+ *
+ * A declaration carries exactly the modifiers its line writes, and now and then one of the line's
+ * `.optional()` ones: a modifier the line does not write may not be on it.
  *
  * Names and types may hold `{F}`, the file's name: the block fills it in with its own `fileName`
  * when it runs, the source with the name of the file it is written to.
@@ -54,6 +58,8 @@ internal data class GenLine(
     val kinds: List<GenKind>,
     /** One or more; a single empty one is a line with no modifier written. */
     val alternatives: List<GenModifiers>,
+    /** Each `.optional()` value, its keywords joined with `or`: modifiers a declaration may carry or not. */
+    val optional: List<List<String>> = emptyList(),
     val name: String,
     val superclasses: List<String> = emptyList(),
     val propertyType: String? = null,
@@ -183,7 +189,8 @@ private fun DeclarationListScope.writeLine(line: GenLine) {
     val target: DeclarationAllow = if (line.prohibited) not else this
     // A required line is written with required(...), which only the scope itself has.
     val required = line.isRequired
-    val modifiers = modifiersOf(this, line.alternatives)
+    val modifiers = modifiersOf(this, line.alternatives) +
+        line.optional.map { group -> group.map { modifier(it) }.reduce(Modifiers::or).optional() }
     val name = line.name.fillIn(fileName)
     val body: (ClassBodyScope.() -> Unit)? = line.members?.let { members -> { writeList(members) } }
     val kind = line.kinds.first()

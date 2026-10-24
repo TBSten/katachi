@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "katachiVersion": "0.2.0",
-  "generatedAt": "2026-10-24T16:31:54Z",
+  "generatedAt": "2026-10-24T18:02:22Z",
   "projectRoot": "/__ROOT__",
   "architecture": {
     "declaredAt": {
@@ -799,7 +799,7 @@
                   "verdict": "Allowed",
                   "rules": [
                     {
-                      "text": "class HealthService",
+                      "text": "internal.optional() class HealthService",
                       "declaredAt": {
                         "fileName": "ServiceRole.kt",
                         "line": 80
@@ -823,7 +823,7 @@
                   "verdict": "Allowed",
                   "rules": [
                     {
-                      "text": "class LegacyStatusService",
+                      "text": "internal.optional() class LegacyStatusService",
                       "declaredAt": {
                         "fileName": "ServiceRole.kt",
                         "line": 80
@@ -3297,7 +3297,7 @@
         {
           "name": "fails the build on every compiler warning",
           "backend": "custom",
-          "checkClass": "com.example.groups.GradleGroupKt$$Lambda$85/0x000000f001090cc8",
+          "checkClass": "com.example.groups.GradleGroupKt$$Lambda$86/0x0000007001094ed0",
           "range": "Subtree",
           "declaredAt": {
             "fileName": "GradleGroup.kt",

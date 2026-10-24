@@ -24,7 +24,8 @@ private fun modifierChanges(line: GenLine, declaration: SrcDecl, placement: GenP
     val alternatives = line.alternatives
     if (alternatives.all { alternative -> alternative.keywords.any { it in VISIBILITIES } }) {
         // Every alternative asks for a visibility: write one none of them asks for. Each alternative
-        // then lacks one modifier, and the report names the first alternative's.
+        // then lacks one modifier, and the report names the first alternative's. The one written
+        // is not named too: it is what takes the place of the one asked for.
         val asked = alternatives.flatMap { alternative -> alternative.keywords.filter { it in VISIBILITIES } }.toSet()
         val others = (if (placement == GenPlacement.ClassBody) listOf("internal", "protected", "private") else listOf("internal", "private")) - asked
         val replacements = others.map { listOf(it) } + if ("public" in asked) emptyList() else listOf(listOf("public"), emptyList())
@@ -36,11 +37,38 @@ private fun modifierChanges(line: GenLine, declaration: SrcDecl, placement: GenP
     }
     val specific = alternatives.first().keywords.filterNot { it in VISIBILITIES }
     for (keyword in specific) {
+        // Konsist 0.17.3 reads no supertype of an `object Companion` that is not a plain companion
+        // object, which would add a second difference.
+        if (keyword == "companion" && declaration.name == "Companion" && declaration.supertypes.isNotEmpty()) continue
         if (alternatives.all { keyword in it.keywords }) {
             add(AspectChange(declaration.copy(modifiers = declaration.modifiers - keyword), "modifiers (missing: $keyword)"))
         }
     }
+    // A modifier the line neither writes nor makes .optional(): the declaration has one too many.
+    val allowed = alternatives.flatMap { it.keywords } + line.optional.flatten()
+    for (keyword in extraCandidatesOf(declaration)) {
+        if (keyword in allowed) continue
+        add(AspectChange(declaration.copy(modifiers = declaration.modifiers + keyword), extraDiffers(listOf(keyword))))
+    }
 }
+
+/** `modifiers (has suspend, which the line does not allow)`. */
+internal fun extraDiffers(keywords: List<String>): String = "modifiers (has ${keywords.joinToString(", ")}, which the line does not allow)"
+
+/** Modifiers that can be added to [declaration] without changing anything else about how it is written. */
+private fun extraCandidatesOf(declaration: SrcDecl): List<String> {
+    val written = declaration.modifiers
+    return when (declaration.kind) {
+        GenKind.Class -> listOf("open").takeIf { written.none { it in CLASS_SHAPES } }.orEmpty()
+        GenKind.Interface -> listOf("sealed").takeIf { "sealed" !in written && "fun" !in written }.orEmpty()
+        GenKind.Object -> listOf("data").takeIf { "data" !in written && "companion" !in written }.orEmpty()
+        GenKind.Function -> listOf("suspend", "inline", "operator", "infix", "tailrec").filter { it !in written }
+        GenKind.Val, GenKind.Var, GenKind.TypeAlias -> emptyList()
+    }
+}
+
+/** The modifiers after which a class may not also be `open`. */
+private val CLASS_SHAPES: Set<String> = setOf("data", "sealed", "enum", "value", "annotation", "abstract", "open", "inner")
 
 private fun annotationChanges(line: GenLine, declaration: SrcDecl): List<AspectChange> {
     // The generator writes the annotations a line asks for first, in the order asked.

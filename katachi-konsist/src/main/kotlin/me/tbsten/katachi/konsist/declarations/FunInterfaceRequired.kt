@@ -17,7 +17,7 @@ import me.tbsten.katachi.konsist.declarations.internal.requiredWriter
 @ExperimentalKatachiApi
 public sealed interface FunInterfaceRequired {
     /**
-     * Writes the required line for a fun interface named [name], asking for no modifier.
+     * Writes the required line for a fun interface named [name], carrying no modifier but `fun` (`public` and `final` aside).
      *
      * @throws KatachiKtFileContentModifierException when [kind] holds no interface, or no declaration can have
      *   the modifiers here.

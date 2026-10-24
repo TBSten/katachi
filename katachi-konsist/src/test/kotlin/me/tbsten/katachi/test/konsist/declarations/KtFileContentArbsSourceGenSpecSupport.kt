@@ -47,7 +47,7 @@ private fun GenContext.instanceOf(
     container: GenKind?,
 ): SrcDecl {
     val alternative = random.pick(line.alternatives)
-    val keywords = writtenModifiers(alternative.keywords, placement)
+    val keywords = writtenModifiers(alternative.keywords + alsoChosen(line, alternative), line.optional)
     val annotations = alternative.annotations.map { spellAnnotation(it) } + listOfNotNull("Suppress(\"unused\")".takeIf { random.chance(10) })
     val declaration = when {
         kind.isType -> SrcDecl(
@@ -115,12 +115,29 @@ private fun GenContext.propertyOf(
     )
 }
 
-/** [asked] as a declaration writes it: `public` left out at times, a visibility nobody asked for put in at times. */
-private fun GenContext.writtenModifiers(asked: List<String>, placement: GenPlacement): List<String> {
-    if ("public" in asked && random.chance(50)) return asked - "public"
-    if (asked.any { it in VISIBILITIES } || !random.chance(25)) return asked
-    val visibilities = listOf("public", "internal", "private") + if (placement == GenPlacement.ClassBody) listOf("protected") else emptyList()
-    return listOf(random.pick(visibilities)) + asked
+/**
+ * [asked] as a declaration writes it: `public` left out at times, or put in when no visibility is
+ * asked -- Kotlin reads both the same -- and now and then one modifier of each of [optional].
+ */
+private fun GenContext.writtenModifiers(asked: List<String>, optional: List<List<String>>): List<String> {
+    var written = if ("public" in asked && random.chance(50)) asked - "public" else asked
+    for (group in optional) {
+        val picked = random.pickOrNull(group.filter { fitsWith(it, written) })?.takeIf { random.chance(50) } ?: continue
+        written = if (picked in VISIBILITIES) listOf(picked) + written else written + picked
+    }
+    if (written.none { it in VISIBILITIES } && random.chance(25)) written = listOf("public") + written
+    return written
+}
+
+/**
+ * Now and then the modifiers of the other alternatives of [line]'s `or` that can join [chosen]:
+ * an `or` asks for at least one, so `suspend inline fun` meets `(suspend or inline)`.
+ */
+private fun GenContext.alsoChosen(line: GenLine, chosen: GenModifiers): List<String> {
+    val others = line.alternatives.flatMap { it.keywords }.distinct() - chosen.keywords.toSet()
+    return others.fold(emptyList()) { added, keyword ->
+        if (fitsWith(keyword, chosen.keywords + added) && random.chance(40)) added + keyword else added
+    }
 }
 
 private fun GenContext.spellAnnotation(name: String): String {

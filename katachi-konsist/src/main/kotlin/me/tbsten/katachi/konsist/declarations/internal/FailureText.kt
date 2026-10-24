@@ -53,7 +53,7 @@ private fun unexpectedDeclarationFailure(finding: UnexpectedDeclaration, path: S
                 if (container == null) "Move it to a file of another role" else "Move it out of ${renderContainer(container)}",
             ),
         )
-        add(allowItFix(site, "allow(`${fact.kind.keyword}`, ${namePatternLiteral(fact.name)})"))
+        add(allowItFix(site, allowLineOf(fact)))
     }
     return FileConstraintFailure(
         file = path,
@@ -99,8 +99,8 @@ private fun mismatchedDeclarationFailure(finding: MismatchedDeclaration, path: S
             FileConstraintReason("Expected", expected),
             FileConstraintReason("Differs in", finding.differences.joinToString("; ")),
         ),
-        howToFix = listOf(
-            FileConstraintFix("Change the declaration to: $expected"),
+        howToFix = extraModifierFixes(rule, fact) + listOf(
+            FileConstraintFix("Change the declaration to: ${renderRuleAsDeclaration(rule)}"),
             FileConstraintFix("Or change the line at ${rule.declaredAt} if the declaration is right"),
         ),
         ruleDeclaredAt = rule.declaredAt,
@@ -136,11 +136,43 @@ private fun notRequiredFix(rule: DeclarationRule): FileConstraintFix =
  * The fixes of a missing line whose name a declaration of another shape has: the declaration is
  * there, so it is its shape, or the line, that needs changing.
  */
-private fun foundFixes(found: DeclarationFact, rule: DeclarationRule): List<FileConstraintFix> = listOf(
-    FileConstraintFix("Change the declaration" + (found.line?.let { " at line $it" } ?: "") + " to: ${renderRule(rule)}"),
+private fun foundFixes(found: DeclarationFact, rule: DeclarationRule): List<FileConstraintFix> = extraModifierFixes(rule, found) + listOf(
+    FileConstraintFix("Change the declaration" + (found.line?.let { " at line $it" } ?: "") + " to: ${renderRuleAsDeclaration(rule)}"),
     FileConstraintFix("Or change the line at ${rule.declaredAt} if the declaration is right"),
     notRequiredFix(rule),
 )
+
+/**
+ * When the declaration carries modifiers the line does not allow (`suspend`), the two ways to make
+ * them agree: let the line accept them, or take them off the declaration. Nothing otherwise.
+ *
+ * A fun interface's `fun` is a kind of the vocabulary, not a modifier value, so it cannot be made
+ * `.optional()`: the line is told to write `` `fun`, `interface` `` instead.
+ */
+private fun extraModifierFixes(rule: DeclarationRule, fact: DeclarationFact): List<FileConstraintFix> {
+    val extra = extraModifiersOf(closestShapeOf(rule, fact).modifiers, fact).takeIf { it.isNotEmpty() } ?: return emptyList()
+    val optional = extra.filter { it != ModifierName.Fun }
+    return listOfNotNull(
+        optional.takeIf { it.isNotEmpty() }?.let { modifiers ->
+            FileConstraintFix("Add ${modifiers.joinToString(", ") { "${it.keyword}.optional()" }} to the line at ${rule.declaredAt}")
+        },
+        FileConstraintFix(
+            "Write `fun`, `interface` in the line at ${rule.declaredAt} (two lines if an interface without fun is allowed too)",
+        ).takeIf { ModifierName.Fun in extra },
+        FileConstraintFix("Remove ${extra.joinToString(", ") { it.keyword }} from the declaration"),
+    )
+}
+
+/**
+ * The line that allows [fact] and nothing else of its kind and name: every modifier it carries,
+ * as a line has to write them all, then its kind. A fun interface's `fun` goes right before
+ * `` `interface` ``. Annotations are left out, as a line asks for none it does not write.
+ */
+private fun allowLineOf(fact: DeclarationFact): String {
+    val modifiers = fact.modifiers.filter { it != ModifierName.Fun }.sortedBy { it.ordinal }.map { it.keyword }
+    val kinds = listOfNotNull("`fun`".takeIf { ModifierName.Fun in fact.modifiers }, "`${fact.kind.keyword}`")
+    return "allow(${(modifiers + kinds + namePatternLiteral(fact.name)).joinToString(", ")})"
+}
 
 /** The fixes of an import that should not be there: remove it, or allow it at [site] with [code]. */
 private fun removeImportFixes(site: DeclarationSite, code: String, allowing: Boolean): List<FileConstraintFix> = listOf(

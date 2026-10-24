@@ -149,6 +149,7 @@ private fun StringBuilder.describeList(list: GenList, indent: Int) {
             is GenLine -> {
                 append(if (entry.prohibited) "not." else "").append(if (entry.required) "required(" else "allow(")
                     .append(describeAlternatives(entry.alternatives))
+                    .append(entry.optional.joinToString("") { group -> describeOptional(group) + ", " })
                 if (entry.kinds == listOf(GenKind.Interface) && entry.alternatives.any { "fun" in it.keywords }) append("`fun`, ")
                 append(entry.kinds.joinToString(" or ") { "`${it.keyword}`" })
                 append(", ${quoted(entry.name)}")
@@ -184,5 +185,9 @@ private fun describeAlternatives(alternatives: List<GenModifiers>): String {
     val group = if (differing.isEmpty()) emptyList() else listOf(differing.joinToString(" or ") { it.joinToString(" ") })
     return (group + common).joinToString("") { "$it, " }
 }
+
+/** `suspend.optional()`, `(internal or private).optional()`. */
+private fun describeOptional(group: List<String>): String =
+    (group.singleOrNull() ?: group.joinToString(" or ", "(", ")")) + ".optional()"
 
 private fun quoted(text: String): String = "\"$text\""

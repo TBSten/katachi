@@ -148,3 +148,15 @@ internal val ANNOTATION_SPELLINGS: Map<String, List<Pair<String, String?>>> = ma
 
 /** The visibility keywords. */
 internal val VISIBILITIES: Set<String> = setOf("public", "internal", "protected", "private")
+
+/** Groups of modifiers of which one declaration carries at most one, as Kotlin has them. */
+internal val EXCLUSIVE_KEYWORDS: List<Set<String>> = listOf(
+    VISIBILITIES,
+    setOf("data", "sealed", "enum", "value", "annotation"),
+    setOf("abstract", "open"),
+    setOf("expect", "actual"),
+)
+
+/** Whether [keyword] can join [keywords] on one declaration: not there yet, and excluding none of them. */
+internal fun fitsWith(keyword: String, keywords: Collection<String>): Boolean =
+    keyword !in keywords && EXCLUSIVE_KEYWORDS.none { group -> keyword in group && keywords.any { it != keyword && it in group } }

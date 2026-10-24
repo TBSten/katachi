@@ -7,9 +7,13 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  * kind, then the name -- the order Kotlin writes the declaration in. It is the same in the file,
  * inside the `{ }` of a class line, and after `not.`, where the line prohibits what it matches.
  *
- * - **A modifier written is a modifier required; one not written is not asked about**, in any
- *   order. Zero to ten of them, `annotated(...)` included, each one a single word or several joined
- *   with `or`.
+ * - **The modifiers are the declaration's, as its Kotlin source writes them**, in any order: each
+ *   one written has to be there, and one not written may not be, except `public` and `final`.
+ *   One that may be there or not is written `suspend.optional()`. Annotations written have to be
+ *   there; others are not asked about. Zero to ten of them, `annotated(...)` and `.optional()`
+ *   ones included, each one a single word or several joined with `or`.
+ * - **After `not.`, and with `anythingElse`, only what is written is asked for**: `` not.allow(`class`, "*Manager") ``
+ *   also prohibits an `internal class XManager`.
  * - **The kind comes after the modifiers**, and only one kind: `` allow(`class`, public, "*") ``,
  *   two kinds, or no kind at all does not compile.
  * - **A combination no declaration can have is refused while the definition is read**

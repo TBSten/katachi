@@ -28,7 +28,7 @@ import me.tbsten.katachi.konsist.declarations.internal.allowWriter
 @ExperimentalKatachiApi
 public sealed interface TypeAllow {
     /**
-     * Writes the line for a class, interface or object named [name], asking for no modifier.
+     * Writes the line for a class, interface or object named [name], carrying no modifier (`public` and `final` aside).
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
      * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
