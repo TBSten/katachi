@@ -84,15 +84,20 @@ public class TypeLine internal constructor(
 }
 
 /**
- * A function line just written, which the calls chained after it change: parameter types, the
- * return type, whether it is required, what a prohibited line lets through.
+ * A function line just written, which the calls chained after it change: parameters, the return
+ * type, whether it is required, what a prohibited line lets through.
+ *
+ * A parameter is written the way Kotlin writes it, `"name: Type"`: a name pattern and a type
+ * pattern, split at the first `:`. `"*: String"` accepts any name and `"id: *"` any type.
  *
  * ## Example 1: parameters and return types
  * ```kt
  * ktFileContent {
- *     allow(`fun`, "load")()                    // no parameter
- *     allow(`fun`, "save")("String", "Int")     // the parameter types, in order
- *     allow(`fun`, "on*")(anyArgs())            // any parameters, the same as writing none
+ *     allow(`fun`, "load")()                                // no parameter
+ *     allow(`fun`, "save")("name: String", "count: Int")    // these parameters, in order
+ *     allow(`fun`, "find*")("*Id: String")                  // a name pattern too
+ *     allow(`fun`, "on*")("*: String")                      // any name, a String
+ *     allow(`fun`, "on*")(anyArgs())                        // any parameters, the same as writing none
  *     allow(public, `fun`, "on*")().returns("Unit")
  * }
  * ```
@@ -102,19 +107,17 @@ public class FunctionLine internal constructor(
     internal val line: DeclarationLineBuilder,
 ) {
     /**
-     * Requires exactly these parameter types, in order; `()` is no parameter. Names, default values
-     * and `vararg` are not looked at, nor are a receiver and context parameters.
+     * Requires exactly these parameters, in order, each written `"name: Type"`; `()` is no
+     * parameter. A parameter matches when its name matches the part before the first `:` and its
+     * type the part after it; spaces around either part are ignored. Default values and `vararg`
+     * are not looked at, nor are a receiver and context parameters.
      *
-     * ## Example 1: one String parameter
-     * ```kt
-     * allow(`fun`, "find")("String")
-     * ```
-     *
-     * @throws KatachiKtFileContentLineException when the parameters were already written.
-     * @throws KatachiKtFileContentPatternException when a type is not a pattern katachi reads.
+     * @throws KatachiKtFileContentLineException when the parameters were already written, or when a
+     *   parameter is not `"name: Type"`: no `:`, nothing before it, or nothing after it.
+     * @throws KatachiKtFileContentPatternException when a name or a type is not a pattern katachi reads.
      */
-    public operator fun invoke(vararg parameterTypes: String): FunctionLine {
-        line.writeParameters(parameterTypes.toList())
+    public operator fun invoke(vararg parameters: String): FunctionLine {
+        line.writeParameters(parameters.toList())
         return this
     }
 
@@ -286,7 +289,7 @@ public class TypeAliasLine internal constructor(
 }
 
 /**
- * What `anyArgs()` returns: "any parameters", written where a function line's parameter types go.
+ * What `anyArgs()` returns: "any parameters", written where a function line's parameters go.
  *
  * ## Example 1: any parameters
  * ```kt

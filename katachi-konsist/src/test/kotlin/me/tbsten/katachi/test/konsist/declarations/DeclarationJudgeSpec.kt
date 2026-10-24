@@ -154,13 +154,13 @@ class DeclarationJudgeSpec : FreeSpec({
             )
         }
 
-        "引数は型の並びで比べ、書かなければ問わない" {
+        "引数は名前と型の並びで比べ、書かなければ問わない" {
             judged(kt("fun load(a: String, b: Int) {}\nfun save(x: Int) {}\nfun drop(x: Int) {}")) {
-                allow(`fun`, "load")("String", "Int")
+                allow(`fun`, "load")("a: String", "b: Int")
                 allow(`fun`, "save")()
                 allow(`fun`, "drop")
             } shouldBe listOf(
-                "save (line 4) | Not allowed: fun save(Int) | Expected: fun save() | Differs in: parameters (are (Int), expected ())",
+                "save (line 4) | Not allowed: fun save(x: Int) | Expected: fun save() | Differs in: parameters (are (x: Int), expected ())",
             )
         }
 

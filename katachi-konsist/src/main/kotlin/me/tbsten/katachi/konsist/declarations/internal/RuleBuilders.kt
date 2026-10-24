@@ -146,7 +146,8 @@ internal class DeclarationLineBuilder(
 ) : DeclarationListEntryBuilder {
     private val superclasses = mutableListOf<SuperclassRule>()
     private var propertyType: TypeRule? = null
-    private var parameters: List<TypeRule>? = null
+    private var parameterTexts: List<String>? = null
+    private var parameters: List<ParameterRule>? = null
     private var parametersWritten = false
     private var returnType: TypeRule? = null
     private var members: DeclarationListBuilder? = null
@@ -163,7 +164,7 @@ internal class DeclarationLineBuilder(
             prohibited = prohibited,
             superclasses = superclasses.map { it.written },
             propertyType = propertyType?.written,
-            parameters = parameters?.map { it.written },
+            parameters = parameterTexts,
             returnType = returnType?.written,
             except = except.map { it.written },
         )
@@ -178,12 +179,32 @@ internal class DeclarationLineBuilder(
         propertyType = session.patterns.typeRule(type)
     }
 
-    /** [types] `null` is `anyArgs()`: written, but asking nothing. */
-    fun writeParameters(types: List<String>?) {
+    /** [written] `null` is `anyArgs()`: written, but asking nothing. Each one is `"name: Type"`. */
+    fun writeParameters(written: List<String>?) {
         ensureOpen()
         if (parametersWritten) throw problem(KtFileContentLineProblem.ParametersWrittenTwice)
         parametersWritten = true
-        parameters = types?.map { session.patterns.typeRule(it) }
+        val texts = written?.map { it.trim() }
+        // Kept before reading them, so that the line an exception names shows the parameters as written.
+        parameterTexts = texts
+        parameters = texts?.map(::parameterRule)
+    }
+
+    /**
+     * [written] split at its first `:`, which a parameter name never holds, into a name pattern and
+     * a type pattern. The type may hold more, as in `(result: String) -> Unit`.
+     */
+    private fun parameterRule(written: String): ParameterRule {
+        val colon = written.indexOf(':')
+        val name = if (colon < 0) "" else written.substring(0, colon).trim()
+        val type = (if (colon < 0) written else written.substring(colon + 1)).trim()
+        if (name.isEmpty()) throw parameterProblem(KtFileContentLineProblem.ParameterWithoutName, written)
+        if (type.isEmpty()) throw parameterProblem(KtFileContentLineProblem.ParameterWithoutType, written)
+        return ParameterRule(
+            written = written,
+            name = session.patterns.nameRule(name, KtFileContentPatternKind.ParameterName),
+            type = session.patterns.typeRule(type),
+        )
     }
 
     fun writeReturnType(type: String) {
@@ -237,6 +258,9 @@ internal class DeclarationLineBuilder(
 
     private fun problem(problem: KtFileContentLineProblem): KatachiKtFileContentLineException =
         KatachiKtFileContentLineException(problem, text, declaredAt)
+
+    private fun parameterProblem(problem: KtFileContentLineProblem, parameter: String): KatachiKtFileContentLineException =
+        KatachiKtFileContentLineException(problem, text, declaredAt, parameter = parameter)
 
     override fun toString(): String = "DeclarationLineBuilder($text)"
 }

@@ -5,15 +5,15 @@ import me.tbsten.katachi.konsist.declarations.internal.allowWriter
 
 /**
  * The `allow(...)` lines for a function: the modifiers and annotations (none to ten of them), then
- * `` `fun` ``, then the name -- the part after the receiver, for an extension. The parameter types
- * and the return type are chained after it; neither is asked about when not written.
+ * `` `fun` ``, then the name -- the part after the receiver, for an extension. The parameters
+ * (`"name: Type"`) and the return type are chained after it; neither is asked about when not written.
  *
  * ## Example 1: a composable named after the file, and event handlers
  * ```kt
  * ktFileContent {
  *     allow(annotated("Composable"), public, `fun`, fileName)
  *     allow(public, `fun`, "on*")().returns("Unit")
- *     not.allow(`fun`, "*")("Context")
+ *     not.allow(`fun`, "*")("*: Context")
  * }
  * ```
  */

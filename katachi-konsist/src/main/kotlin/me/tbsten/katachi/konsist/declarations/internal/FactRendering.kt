@@ -29,7 +29,7 @@ internal fun renderFact(fact: DeclarationFact): String = buildString {
     append(prefix.joinToString(" ")).append(' ')
     fact.receiver?.let { append(receiverText(it)).append('.') }
     append(quotedName(fact.name))
-    fact.parameterTypes?.let { types -> append(types.joinToString(", ", "(", ")") { it.written }) }
+    fact.parameters?.let { append(renderParameters(it)) }
     if (fact.supertypes.isNotEmpty()) append(" : ").append(fact.supertypes.joinToString(", ") { it.written })
     fact.propertyType?.let { append(": ").append(it.written) }
     if (fact.returnTypeWritten) fact.returnType?.let { append(": ").append(it.written) }
@@ -62,5 +62,10 @@ private fun isParenthesised(text: String): Boolean {
     return false
 }
 
+/** The parameters of a function as Kotlin writes them: `(id: String, count: Int)`. */
+internal fun renderParameters(parameters: List<ParameterFact>): String =
+    parameters.joinToString(", ", "(", ")") { "${quotedName(it.name)}: ${it.type.written}" }
+
+// TODO: a keyword such as `in` is printed without the backticks Kotlin needs around it.
 /** [name], in backticks when Kotlin could not read it without them. */
 private fun quotedName(name: String): String = if (IDENTIFIER.matches(name)) name else "`$name`"

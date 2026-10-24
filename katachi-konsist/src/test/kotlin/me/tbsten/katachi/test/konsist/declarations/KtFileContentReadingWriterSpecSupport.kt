@@ -192,13 +192,15 @@ private fun ReadingWriter.function(random: Random, head: DeclarationHead, indent
     )
 }
 
-/** One parameter as written, and the canonical form of its type. */
+/** One parameter as written, and its name and the canonical form of its type as the facts hold them. */
 private fun parameterOf(random: Random, index: Int): Pair<String, String> {
     val type = random.pick(READ_TYPES + SPREAD_TYPES.takeIf { random.chance(20) }.orEmpty())
     val annotation = "@Suppress(\"x\") ".takeIf { random.chance(15) }.orEmpty()
     val vararg = "vararg ".takeIf { random.chance(10) }.orEmpty()
     val default = random.pick(listOf("", "", " = TODO()", " = error(\"(\")"))
-    return "$annotation${vararg}p$index: ${type.written}$default" to type.canonical
+    // A name in backticks is read without them, as a declaration's name is.
+    val written = if (random.chance(15)) "`p$index`" else "p$index"
+    return "$annotation$vararg$written: ${type.written}$default" to "p$index: ${type.canonical}"
 }
 
 private fun ReadingWriter.property(

@@ -64,7 +64,7 @@ class KtFileContentLineErrorSpec : FreeSpec({
         }
 
         "引数を 2 回書くと ParametersWrittenTwice（anyArgs() も書いたことになる）" {
-            lineErrorOf { allow(`fun`, "x")()("String") }.let {
+            lineErrorOf { allow(`fun`, "x")()("id: String") }.let {
                 it.problem shouldBe KtFileContentLineProblem.ParametersWrittenTwice
                 it.line shouldBe "fun x()"
             }

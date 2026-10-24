@@ -86,7 +86,7 @@ internal fun describeActual(facts: List<DeclarationFact>, expected: List<Expecte
             },
             fact.supertypes.map { "${it.canonical}/${it.withoutArguments}" },
             fact.propertyType?.canonical,
-            fact.parameterTypes?.map { it.canonical },
+            fact.parameters?.map { "${it.name}: ${it.type.canonical}" },
             fact.returnType?.let { it.canonical + if (fact.returnTypeWritten) "" else " (implied)" },
             fact.line ?: -1,
         )

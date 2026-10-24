@@ -66,7 +66,7 @@ class RuleRenderingSpec : FreeSpec({
         "後ろにつなぐもの" {
             renderedLines {
                 allow(`class`, "A").superclass("B", "C<D>")
-                allow(`fun`, "e")("String", "Int")
+                allow(`fun`, "e")("name: String", "*: Int")
                 allow(`fun`, "f")()
                 allow(`fun`, "g")(anyArgs())
                 allow(`fun`, "h").returns("Unit")
@@ -74,7 +74,7 @@ class RuleRenderingSpec : FreeSpec({
                 allow(`typealias`, "J")
             } shouldBe listOf(
                 "class A : B, C<D>",
-                "fun e(String, Int)",
+                "fun e(name: String, *: Int)",
                 "fun f()",
                 "fun g(...)",
                 "fun h(...): Unit",

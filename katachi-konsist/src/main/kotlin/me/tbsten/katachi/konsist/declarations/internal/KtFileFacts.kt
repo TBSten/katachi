@@ -32,6 +32,11 @@ internal class TypeText(val written: String, val canonical: String) {
     override fun toString(): String = written
 }
 
+/** One parameter of a function: its name without backticks, and its type. */
+internal class ParameterFact(val name: String, val type: TypeText) {
+    override fun toString(): String = "$name: ${type.written}"
+}
+
 /**
  * One supertype after the header's `:`: as written (`ViewModel`, `Repository<User>`), without its
  * type arguments for a by-name match, and canonical.
@@ -62,8 +67,8 @@ internal class DeclarationFact(
     val supertypes: List<SupertypeFact>,
     /** The type written on a property, or `null` when it is inferred (or this is no property). */
     val propertyType: TypeText?,
-    /** The parameter types of a function, in order; `null` for anything but a function. */
-    val parameterTypes: List<TypeText>?,
+    /** The parameters of a function, in order; `null` for anything but a function. */
+    val parameters: List<ParameterFact>?,
     /**
      * The return type of a function as the matching reads it: the one written, or `Unit` for a
      * block body (or no body) that writes none. `null` for an expression body that writes none.

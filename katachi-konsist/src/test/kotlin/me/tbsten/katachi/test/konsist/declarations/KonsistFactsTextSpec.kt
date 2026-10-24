@@ -160,7 +160,7 @@ class KonsistFactsTextSpec : FreeSpec({
             val source = "package com.example\n\n@Keep context(Logger) fun f(x: Int) {}\n" +
                 "class A {\n    @[Keep Other]\n    context(scope: Scope)\n    fun g() {}\n}\n"
             renderedFactsOf(source) shouldBe listOf(
-                "@Keep fun f(Int)",
+                "@Keep fun f(x: Int)",
                 "class A",
                 "  @Keep @Other fun g()",
             )

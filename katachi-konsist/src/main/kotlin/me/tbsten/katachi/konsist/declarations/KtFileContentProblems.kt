@@ -56,6 +56,9 @@ public enum class KtFileContentPatternKind(internal val label: String) {
     /** A property type, a parameter type or a return type: `` allow(`val`, "state", "StateFlow<*>") ``. */
     Type("type"),
 
+    /** The name of a parameter of a `fun` line, before its `:`: `` allow(`fun`, "find")("*Id: String") ``. */
+    ParameterName("parameter name"),
+
     /** A `.superclass("...")`. */
     Superclass("superclass"),
 
@@ -97,6 +100,15 @@ public enum class KtFileContentLineProblem {
 
     /** The parameters of a `fun` line written twice. */
     ParametersWrittenTwice,
+
+    /**
+     * A parameter of a `fun` line with no name: `("String")`, which has no `:`, or `(": String")`. A
+     * parameter is written `"name: Type"`, and `"*: String"` accepts any name.
+     */
+    ParameterWithoutName,
+
+    /** A parameter of a `fun` line with no type after its `:`: `("id:")`. `"id: *"` accepts any type. */
+    ParameterWithoutType,
 
     /** `.returns(...)` written twice. */
     ReturnTypeWrittenTwice,
