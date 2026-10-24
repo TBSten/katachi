@@ -57,7 +57,7 @@ Example: `HealthController.kt`
 | Member | |
 |---|---|
 | `private val *: *Service` | optional |
-| `fun register(Route)` | required |
+| `fun register(route: Route)` | required |
 
 ## Examples
 
