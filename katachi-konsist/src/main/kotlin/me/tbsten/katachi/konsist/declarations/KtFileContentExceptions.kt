@@ -185,7 +185,7 @@ public class KatachiKtFileContentLineException internal constructor(
      */
     public val declaredAt: DeclarationSite,
     /**
-     * The parameter the problem is about, as written (`"String"` for
+     * The parameter the problem is about, as written without the spaces around it (`"String"` for
      * [KtFileContentLineProblem.ParameterWithoutName]); `null` for a problem that is not about one
      * parameter.
      */
@@ -285,16 +285,27 @@ private fun lineMessage(problem: KtFileContentLineProblem, line: String, at: Dec
         )
 
         KtFileContentLineProblem.ParameterWithoutName -> {
-            val type = parameter.orEmpty().substringAfter(':').trim().ifEmpty { "String" }
-            Triple(
-                if (':' in parameter.orEmpty()) {
-                    "Parameter \"$parameter\" of line \"$line\" at $at has no name before its ':'."
-                } else {
-                    "Parameter \"$parameter\" of line \"$line\" at $at is not written as \"name: Type\"."
-                },
-                PARAMETER_FORM,
-                "Write \"name: $type\" with the parameter's name, or \"*: $type\" to accept any name.",
-            )
+            val written = parameter.orEmpty()
+            val type = written.substringAfter(':').trim()
+            when {
+                written.isBlank() -> Triple(
+                    "Line \"$line\" at $at has a blank parameter.",
+                    PARAMETER_FORM,
+                    "Write it as \"name: Type\", such as \"name: String\", or remove it.",
+                )
+                // Without a ':' the text may have been meant as the name or as the type, so both are shown.
+                ':' !in written -> Triple(
+                    "Parameter \"$written\" of line \"$line\" at $at is not written as \"name: Type\".",
+                    PARAMETER_FORM,
+                    "Write \"$written: Type\" if \"$written\" is the name, or \"name: $written\" if it is the type; " +
+                        "\"*: $written\" accepts any name.",
+                )
+                else -> Triple(
+                    "Parameter \"$written\" of line \"$line\" at $at has no name before its ':'.",
+                    PARAMETER_FORM,
+                    "Write \"name: $type\" with the parameter's name, or \"*: $type\" to accept any name.",
+                )
+            }
         }
 
         KtFileContentLineProblem.ParameterWithoutType -> {

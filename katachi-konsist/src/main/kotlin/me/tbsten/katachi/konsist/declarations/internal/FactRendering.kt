@@ -66,5 +66,6 @@ private fun isParenthesised(text: String): Boolean {
 internal fun renderParameters(parameters: List<ParameterFact>): String =
     parameters.joinToString(", ", "(", ")") { "${quotedName(it.name)}: ${it.type.written}" }
 
+// TODO: a keyword such as `in` is printed without the backticks Kotlin needs around it.
 /** [name], in backticks when Kotlin could not read it without them. */
 private fun quotedName(name: String): String = if (IDENTIFIER.matches(name)) name else "`$name`"
