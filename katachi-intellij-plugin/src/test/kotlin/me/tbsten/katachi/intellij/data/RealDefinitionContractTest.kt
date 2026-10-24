@@ -176,7 +176,7 @@ class RealDefinitionContractTest {
         assertEquals(SourceDeclarationKind.Class, declaration.kind)
         assertEquals("HealthService", declaration.name)
         assertEquals(DeclarationVerdict.Allowed, declaration.verdict)
-        assertEquals(listOf("class HealthService"), declaration.rules.map { it.text })
+        assertEquals(listOf("internal.optional() class HealthService"), declaration.rules.map { it.text })
         assertEquals(listOf(DeclarationSiteRef("ServiceRole.kt", 80)), declaration.rules.map { it.declaredAt })
         assertEquals(true, answer.declarations.declarationsChecked)
 
