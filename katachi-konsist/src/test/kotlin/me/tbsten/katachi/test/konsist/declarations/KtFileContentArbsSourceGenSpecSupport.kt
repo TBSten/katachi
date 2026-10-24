@@ -47,7 +47,7 @@ private fun GenContext.instanceOf(
     container: GenKind?,
 ): SrcDecl {
     val alternative = random.pick(line.alternatives)
-    val keywords = writtenModifiers(alternative.keywords, line.optional)
+    val keywords = writtenModifiers(alternative.keywords + alsoChosen(line, alternative), line.optional)
     val annotations = alternative.annotations.map { spellAnnotation(it) } + listOfNotNull("Suppress(\"unused\")".takeIf { random.chance(10) })
     val declaration = when {
         kind.isType -> SrcDecl(
@@ -127,6 +127,17 @@ private fun GenContext.writtenModifiers(asked: List<String>, optional: List<List
     }
     if (written.none { it in VISIBILITIES } && random.chance(25)) written = listOf("public") + written
     return written
+}
+
+/**
+ * Now and then the modifiers of the other alternatives of [line]'s `or` that can join [chosen]:
+ * an `or` asks for at least one, so `suspend inline fun` meets `(suspend or inline)`.
+ */
+private fun GenContext.alsoChosen(line: GenLine, chosen: GenModifiers): List<String> {
+    val others = line.alternatives.flatMap { it.keywords }.distinct() - chosen.keywords.toSet()
+    return others.fold(emptyList()) { added, keyword ->
+        if (fitsWith(keyword, chosen.keywords + added) && random.chance(40)) added + keyword else added
+    }
 }
 
 private fun GenContext.spellAnnotation(name: String): String {

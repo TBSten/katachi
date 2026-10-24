@@ -71,6 +71,21 @@ class KtFileContentExactModifiersSpec : FreeSpec({
                 it.substringAfter("Differs in: ") shouldBe "modifiers (missing: fun)"
             }
         }
+
+        "fun interface の余計な fun には .optional() ではなく `fun`, `interface` と書く直し方を出す" {
+            for (line in listOf<KtFileContentScope.() -> Unit>({ allow(`interface`, fileName) }, { allow(`class` or `interface`, fileName) })) {
+                fixesOf(kt("fun interface Sample { fun run() }"), line).single().map { it.substringBefore(" at ") }.take(2) shouldBe listOf(
+                    "Write `fun`, `interface` in the line",
+                    "Remove fun from the declaration",
+                )
+            }
+            fixesOf(kt("internal fun interface Sample { fun run() }")) { allow(`interface`, fileName) }.single()
+                .map { it.substringBefore(" at ") }.take(3) shouldBe listOf(
+                    "Add internal.optional() to the line",
+                    "Write `fun`, `interface` in the line",
+                    "Remove internal, fun from the declaration",
+                )
+        }
     }
 
     "Kotlin の既定の修飾子" - {
@@ -148,6 +163,19 @@ class KtFileContentExactModifiersSpec : FreeSpec({
                 fixes[0].substringAfter(" at ").startsWith("KtFileContentExactModifiersSpec.kt:") shouldBe true
                 fixes[1] shouldBe "Remove suspend, inline from the declaration"
             }
+        }
+
+        "宣言を直す案内は .optional() の修飾子を落とした Kotlin の宣言の形で出す" {
+            fixesOf(kt("inline fun Sample() {}")) { required(suspend.optional(), `fun`, fileName) }.single()
+                .first { it.startsWith("Change the declaration to: ") } shouldBe "Change the declaration to: fun Sample(...)"
+            judged(kt("inline fun Sample() {}")) { required(suspend.optional(), `fun`, fileName) }.single()
+                .substringAfter("Expected: ").substringBefore(" |") shouldBe "suspend.optional() fun Sample(...)"
+        }
+
+        "余計な修飾子も数えて、行の候補のうち近いほうと比べる" {
+            // Without counting `abstract` as one more, data (written first) and open would tie.
+            judged(kt("abstract class Sample")) { required(data or open, `class`, fileName) }.single()
+                .substringAfter("Differs in: ") shouldBe "modifiers (missing: open)"
         }
 
         "足りないだけの宣言には .optional() の直し方を出さない" {

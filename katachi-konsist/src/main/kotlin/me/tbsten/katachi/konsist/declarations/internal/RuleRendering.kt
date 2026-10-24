@@ -25,6 +25,21 @@ internal fun renderRule(rule: DeclarationRule): String = renderDeclaration(
     except = rule.except.map { it.written },
 )
 
+/**
+ * [rule] as the Kotlin declaration it asks for, for a fix that tells what to change the
+ * declaration to: the `.optional()` modifiers left out, as the declaration may do without them.
+ */
+internal fun renderRuleAsDeclaration(rule: DeclarationRule): String = renderDeclaration(
+    shapes = rule.shapes.map { it.copy(modifiers = it.modifiers.copy(optional = emptyList())) },
+    name = rule.name.written,
+    prohibited = rule.prohibited,
+    superclasses = rule.superclasses.map { it.written },
+    propertyType = rule.propertyType?.written,
+    parameters = rule.parameters?.map { it.written },
+    returnType = rule.returnType?.written,
+    except = rule.except.map { it.written },
+)
+
 /** `(anything)`, `private (anything)`, `(internal or private) (anything)`. */
 internal fun renderAnythingElse(rule: AnythingElseRule): String =
     listOf(renderModifierAlternatives(rule.alternatives), ANYTHING).filter { it.isNotEmpty() }.joinToString(" ")

@@ -37,6 +37,9 @@ private fun modifierChanges(line: GenLine, declaration: SrcDecl, placement: GenP
     }
     val specific = alternatives.first().keywords.filterNot { it in VISIBILITIES }
     for (keyword in specific) {
+        // Konsist 0.17.3 reads no supertype of an `object Companion` that is not a plain companion
+        // object, which would add a second difference.
+        if (keyword == "companion" && declaration.name == "Companion" && declaration.supertypes.isNotEmpty()) continue
         if (alternatives.all { keyword in it.keywords }) {
             add(AspectChange(declaration.copy(modifiers = declaration.modifiers - keyword), "modifiers (missing: $keyword)"))
         }

@@ -100,7 +100,7 @@ private fun mismatchedDeclarationFailure(finding: MismatchedDeclaration, path: S
             FileConstraintReason("Differs in", finding.differences.joinToString("; ")),
         ),
         howToFix = extraModifierFixes(rule, fact) + listOf(
-            FileConstraintFix("Change the declaration to: $expected"),
+            FileConstraintFix("Change the declaration to: ${renderRuleAsDeclaration(rule)}"),
             FileConstraintFix("Or change the line at ${rule.declaredAt} if the declaration is right"),
         ),
         ruleDeclaredAt = rule.declaredAt,
@@ -137,7 +137,7 @@ private fun notRequiredFix(rule: DeclarationRule): FileConstraintFix =
  * there, so it is its shape, or the line, that needs changing.
  */
 private fun foundFixes(found: DeclarationFact, rule: DeclarationRule): List<FileConstraintFix> = extraModifierFixes(rule, found) + listOf(
-    FileConstraintFix("Change the declaration" + (found.line?.let { " at line $it" } ?: "") + " to: ${renderRule(rule)}"),
+    FileConstraintFix("Change the declaration" + (found.line?.let { " at line $it" } ?: "") + " to: ${renderRuleAsDeclaration(rule)}"),
     FileConstraintFix("Or change the line at ${rule.declaredAt} if the declaration is right"),
     notRequiredFix(rule),
 )
@@ -145,11 +145,20 @@ private fun foundFixes(found: DeclarationFact, rule: DeclarationRule): List<File
 /**
  * When the declaration carries modifiers the line does not allow (`suspend`), the two ways to make
  * them agree: let the line accept them, or take them off the declaration. Nothing otherwise.
+ *
+ * A fun interface's `fun` is a kind of the vocabulary, not a modifier value, so it cannot be made
+ * `.optional()`: the line is told to write `` `fun`, `interface` `` instead.
  */
 private fun extraModifierFixes(rule: DeclarationRule, fact: DeclarationFact): List<FileConstraintFix> {
     val extra = extraModifiersOf(closestShapeOf(rule, fact).modifiers, fact).takeIf { it.isNotEmpty() } ?: return emptyList()
-    return listOf(
-        FileConstraintFix("Add ${extra.joinToString(", ") { "${it.keyword}.optional()" }} to the line at ${rule.declaredAt}"),
+    val optional = extra.filter { it != ModifierName.Fun }
+    return listOfNotNull(
+        optional.takeIf { it.isNotEmpty() }?.let { modifiers ->
+            FileConstraintFix("Add ${modifiers.joinToString(", ") { "${it.keyword}.optional()" }} to the line at ${rule.declaredAt}")
+        },
+        FileConstraintFix(
+            "Write `fun`, `interface` in the line at ${rule.declaredAt} (two lines if an interface without fun is allowed too)",
+        ).takeIf { ModifierName.Fun in extra },
         FileConstraintFix("Remove ${extra.joinToString(", ") { it.keyword }} from the declaration"),
     )
 }

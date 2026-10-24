@@ -49,9 +49,10 @@ internal fun ModifierName.applicableKinds(): Set<DeclarationKindName> = when (th
     ModifierName.Fun -> setOf(Interface)
     ModifierName.Companion -> setOf(Object)
     ModifierName.Override -> setOf(Function, Val, Var)
-    ModifierName.Operator, ModifierName.Infix, ModifierName.Suspend,
-    ModifierName.Inline, ModifierName.Tailrec, ModifierName.External,
-    -> setOf(Function)
+    ModifierName.Operator, ModifierName.Infix, ModifierName.Suspend, ModifierName.Tailrec -> setOf(Function)
+    // An inline property (`inline val Int.twice get() = ...`) is Kotlin too.
+    ModifierName.Inline -> setOf(Function, Val, Var)
+    ModifierName.External -> setOf(Class, Interface, Object, Function, Val, Var)
 
     ModifierName.Const -> setOf(Val)
     ModifierName.Lateinit -> setOf(Var)

@@ -231,8 +231,18 @@ private fun GenContext.lineShape(placement: GenPlacement, bare: Boolean): Pair<L
             annotations = listOfNotNull(annotation),
         )
     }
+    // Now and then an `or` of modifiers one declaration can carry together, `(suspend or inline)`:
+    // at least one of them, and the source may write more than one.
+    val single = alternatives.singleOrNull()
+    if (kind == GenKind.Function && single != null && random.chance(15)) {
+        val choices = (OR_CHOICES - single.keywords.toSet()).shuffled(random).take(2)
+        return listOf(kind) to choices.map { single.copy(keywords = single.keywords + it) }
+    }
     return listOf(kind) to alternatives
 }
+
+/** Modifiers of a fun that do not exclude each other, for an `or` a declaration may meet with several of them. */
+private val OR_CHOICES: List<String> = listOf("suspend", "inline", "operator", "infix", "tailrec")
 
 private fun GenContext.visibilityAlternatives(placement: GenPlacement, bare: Boolean, mustAsk: Boolean): List<GenModifiers> {
     val roll = random.nextInt(100)

@@ -25,11 +25,12 @@ internal class VocabularyWord(val list: DeclarationListBuilder, val trace: Value
 
     /**
      * The word of a value made from this one, such as `suspend.optional()`, which reads as [text]:
-     * this one counts as used, and the new one is kept to be asked about in its turn.
+     * this one counts as used, and the new one -- written where it is made, not where this one was --
+     * is kept to be asked about in its turn.
      */
     fun derive(text: String): VocabularyWord {
         trace.use()
-        return VocabularyWord(list, list.session.values.track(ValueTrace(trace.declaredAt) { text }))
+        return VocabularyWord(list, list.session.values.track(ValueTrace(DeclarationSite.capture()) { text }))
     }
 
     /** @throws KatachiKtFileContentLineException when this value belongs to a block other than [target]'s. */
