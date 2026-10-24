@@ -16,9 +16,10 @@ katachi is pulled in from the repository source with `includeBuild("../..")`, bu
 
 | File                                                                                                 | What it shows                                                                                                   |
 |----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
-| [`ProjectArchitecture.kt`](architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt)         | The body of `architecture { }`. It only calls the 7 groups; the roles live in `roles/`, one role per file       |
+| [`ProjectArchitecture.kt`](architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt)         | The body of `architecture { }`. It only calls the 7 groups (the `Endpoint` template set is declared inside the api group); the roles live in `roles/`, one role per file       |
 | [`roles/ServiceRole.kt`](architecture-test/src/test/kotlin/com/example/roles/ServiceRole.kt)             | A role that writes a constraint with `konsist { }` in addition to `layout { }`. It doubles as an example of generating `*Service.kt` with the `.template { }` attached to a file declaration |
-| [`roles/ControllerRole.kt`](architecture-test/src/test/kotlin/com/example/roles/ControllerRole.kt)       | An example of naming a directory's `*` with `capture("resource")`, deriving the file name from it (`${capture("resource").pascalCase}Controller`) and reading it back from `.template { }` with `captureValue("resource")`. The value is used as-is in a package, so it is rejected with `require(...)`. `controller/health/LegacyStatusController.kt` deliberately breaks the derivation and is held back by the baseline as a `[CaptureMismatch]` |
+| [`roles/ControllerRole.kt`](architecture-test/src/test/kotlin/com/example/roles/ControllerRole.kt)       | An example of naming a directory's `*` with `capture("resource")`, deriving the file name from it (`${capture("resource").pascalCase}Controller`) and reading it back from `.template { }` with `captureValue("resource")`. The value is used as-is in a package, so it is rejected with `require(...)`. In the IDE plugin, the `resource` field offers the directories that exist now (`health`) as candidates. `controller/health/LegacyStatusController.kt` deliberately breaks the derivation and is held back by the baseline as a `[CaptureMismatch]` |
+| [`groups/ApiGroup.kt`](architecture-test/src/test/kotlin/com/example/groups/ApiGroup.kt) | `endpointTemplateSet()`, a template set called directly from `architecture { }`: a Controller and a Service generated together from one `resource`, each member given its own value by `arg(...)` |
 | [`roles/ArchitectureDefinitionEntryRole.kt`](architecture-test/src/test/kotlin/com/example/roles/ArchitectureDefinitionEntryRole.kt) | The definition split into one role per kind of file: the entry, `groups/*Group.kt` ([`GroupDefinitionRole.kt`](architecture-test/src/test/kotlin/com/example/roles/GroupDefinitionRole.kt)) and `roles/*Role.kt` ([`RoleDefinitionRole.kt`](architecture-test/src/test/kotlin/com/example/roles/RoleDefinitionRole.kt)). The entry also carries a `konsist { }` constraint |
 | [`ProjectArchitectureTest.kt`](architecture-test/src/test/kotlin/com/example/ProjectArchitectureTest.kt) | The only test a user writes. It calls `assert(FileConstraintCheck())` so that `konsist { }` is evaluated too              |
 | [`processors/RoleNames.kt`](architecture-test/src/test/kotlin/com/example/processors/RoleNames.kt)       | A minimal example of a custom processor that receives arguments with `--arg`                                                                |
@@ -47,6 +48,10 @@ cd sample/jvm
 # (resource is the level named with capture("resource") in the layout; it selects which directory to generate into,
 # and the file name GreetingController.kt is derived from it)
 ./gradlew :architecture-test:katachiTemplate --arg template=Controller --arg resource=greeting
+
+# Generate controller/greeting/GreetingController.kt and service/GreetingService.kt together from the Endpoint template set
+# (the set takes one `resource`; the Service gets it capitalised as its `name`)
+./gradlew :architecture-test:katachiTemplate --arg template=api.Endpoint --arg resource=greeting
 ```
 
 From the repository root, the same set as CI (including generating from templates, checking, and deleting the generated files, plus checking that the baseline is up to date) runs with one command.

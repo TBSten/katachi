@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "katachiVersion": "0.2.0",
-  "generatedAt": "2026-10-17T23:33:17Z",
+  "generatedAt": "2026-10-24T12:34:15Z",
   "projectRoot": "/__ROOT__",
   "architecture": {
     "declaredAt": {
@@ -3297,7 +3297,7 @@
         {
           "name": "fails the build on every compiler warning",
           "backend": "custom",
-          "checkClass": "com.example.groups.GradleGroupKt$$Lambda$82/0x000000f00108ab48",
+          "checkClass": "com.example.groups.GradleGroupKt$$Lambda$85/0x0000007001089430",
           "range": "Subtree",
           "declaredAt": {
             "fileName": "GradleGroup.kt",

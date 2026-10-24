@@ -50,6 +50,6 @@ fun DeclarationContainerScope.ktorPlugin() = "KtorPlugin".role {
         `import`("kotlinx.serialization.**")
         `import`("com.example.controller.**")
 
-        `fun`("configure$fileName")()
+        allow(`fun`, "configure$fileName")()
     }
 }

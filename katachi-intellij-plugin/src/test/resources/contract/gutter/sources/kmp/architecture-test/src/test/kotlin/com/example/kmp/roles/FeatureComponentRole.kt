@@ -88,6 +88,6 @@ fun DeclarationContainerScope.featureComponent() = "FeatureComponent".role {
         `import`("androidx.compose.**")
         `import`("com.example.kmp.ui.**")
 
-        annotated("Composable").internal.`fun`(fileName)
+        allow(annotated("Composable"), internal, `fun`, fileName)
     }
 }

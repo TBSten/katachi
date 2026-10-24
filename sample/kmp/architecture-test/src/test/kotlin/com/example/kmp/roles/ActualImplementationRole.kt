@@ -55,6 +55,6 @@ fun DeclarationContainerScope.actualImplementation() = "ActualImplementation".ro
     // pair up otherwise. Whether every `expect` has its `actual` is still the compiler's to say.
     ktFileContent {
         `package`("com.example.kmp.data.platform")
-        actual.anythingElse()
+        allow(actual, anythingElse)
     }
 }

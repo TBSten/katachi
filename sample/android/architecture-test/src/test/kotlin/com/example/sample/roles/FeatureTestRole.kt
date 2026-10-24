@@ -70,8 +70,8 @@ fun DeclarationContainerScope.featureTest() = "FeatureTest".role {
         `import`("com.example.sample.**")
         not.`import`("com.example.sample.data.**.*RepositoryImpl")
 
-        `class`(fileName) {
-            annotated("Test").`fun`("*")
+        allow(`class`, fileName) {
+            allow(annotated("Test"), `fun`, "*")
         }
     }
 }

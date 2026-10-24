@@ -38,7 +38,7 @@
           "ruleIndex": 0,
           "level": "error",
           "message": {
-            "text": "Role: Screen / FileConstraint: \"ktFileContent\"\nDeclaration: GetUserUseCaseImpl (line 5)\nNot allowed: class GetUserUseCaseImpl : GetUserUseCase\nAllowed here:\n  interface GetUserUseCase\n  class DefaultGetUserUseCase : GetUserUseCase  (missing)\nDeclared at: KtFileContentSarifSpec.kt:36\n\nHow to fix:\n  - Rename it to DefaultGetUserUseCase\n  - Move it to a file of another role\n  - Allow it in ktFileContent { } at KtFileContentSarifSpec.kt:36:\n      `class`(\"GetUserUseCaseImpl\").optional()"
+            "text": "Role: Screen / FileConstraint: \"ktFileContent\"\nDeclaration: GetUserUseCaseImpl (line 5)\nNot allowed: class GetUserUseCaseImpl : GetUserUseCase\nAllowed here:\n  interface GetUserUseCase\n  class DefaultGetUserUseCase : GetUserUseCase  (missing)\nDeclared at: KtFileContentSarifSpec.kt:36\n\nHow to fix:\n  - Rename it to DefaultGetUserUseCase\n  - Move it to a file of another role\n  - Allow it in ktFileContent { } at KtFileContentSarifSpec.kt:36:\n      allow(`class`, \"GetUserUseCaseImpl\").optional()"
           },
           "locations": [
             {

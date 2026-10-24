@@ -53,11 +53,11 @@ fun DeclarationContainerScope.viewModel() = "ViewModel".role {
         `import`("com.example.sample.ui.core.**")
 
         val content = fileName.replace("ViewModel", "Content")      // HomeViewModel.kt -> HomeContent
-        internal.data.`class`(content)
-        internal.`class`(fileName).superclass("ViewModel") {
-            public.`val`("uiState", "StateFlow<UiState<$content>>")
-            public.`fun`("*")                                       // the events: refresh(), ...
-            private.anythingElse()                                  // the repository and the mutable state
+        allow(internal, data, `class`, content)
+        allow(internal, `class`, fileName).superclass("ViewModel") {
+            allow(public, `val`, "uiState", "StateFlow<UiState<$content>>")
+            allow(public, `fun`, "*")    // the events: refresh(), ...
+            allow(private, anythingElse) // the repository and the mutable state
         }
     }
 }
