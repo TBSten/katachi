@@ -1121,7 +1121,7 @@ roles: data.RepositoryInterface
 roles: data.RepositoryImplementation
     data.RepositoryImplementation declared at RepositoryImplementationRole.kt:15 | fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation".role {
 8 | ◆ | katachi: data.RepositoryImplementation — allowed by class SettingsRepositoryImpl : SettingsRepository (RepositoryImplementationRole.kt:58)
-    allowed at RepositoryImplementationRole.kt:58 | allow(`class`, fileName).superclass(fileName.removeSuffix("Impl")) {   // UserRepositoryImpl : UserRepository
+    allowed at RepositoryImplementationRole.kt:58 | allow(`class`, fileName).superclass(fileName.removeSuffix("Impl")) { // UserRepositoryImpl : UserRepository
     menu | ◆ Allowed by class SettingsRepositoryImpl : SettingsRepository | RepositoryImplementationRole.kt:58
     menu | ◇ Role data.RepositoryImplementation — Repository implementation | RepositoryImplementationRole.kt:15
     menu | == Other files of data.RepositoryImplementation (1)
@@ -1153,7 +1153,7 @@ roles: data.RepositoryInterface
 roles: data.RepositoryImplementation
     data.RepositoryImplementation declared at RepositoryImplementationRole.kt:15 | fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation".role {
 9 | ◆ | katachi: data.RepositoryImplementation — allowed by class UserRepositoryImpl : UserRepository (RepositoryImplementationRole.kt:58)
-    allowed at RepositoryImplementationRole.kt:58 | allow(`class`, fileName).superclass(fileName.removeSuffix("Impl")) {   // UserRepositoryImpl : UserRepository
+    allowed at RepositoryImplementationRole.kt:58 | allow(`class`, fileName).superclass(fileName.removeSuffix("Impl")) { // UserRepositoryImpl : UserRepository
     menu | ◆ Allowed by class UserRepositoryImpl : UserRepository | RepositoryImplementationRole.kt:58
     menu | ◇ Role data.RepositoryImplementation — Repository implementation | RepositoryImplementationRole.kt:15
     menu | == Other files of data.RepositoryImplementation (1)
@@ -2054,7 +2054,7 @@ roles: feature.Route
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 17 | ◆ | katachi: feature.Route — allowed by fun homeScreen(...) (RouteRole.kt:54)
-    allowed at RouteRole.kt:54 | allow(`fun`, "${feature}Screen")                                   // NavGraphBuilder.homeScreen(...)
+    allowed at RouteRole.kt:54 | allow(`fun`, "${feature}Screen") // NavGraphBuilder.homeScreen(...)
     menu | ◆ Allowed by fun homeScreen(...) | RouteRole.kt:54
     menu | ◇ Role feature.Route — Route | RouteRole.kt:15
     menu | == Other files of feature.Route (1)
@@ -2172,7 +2172,7 @@ roles: feature.Route
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 17 | ◆ | katachi: feature.Route — allowed by fun settingsScreen(...) (RouteRole.kt:54)
-    allowed at RouteRole.kt:54 | allow(`fun`, "${feature}Screen")                                   // NavGraphBuilder.homeScreen(...)
+    allowed at RouteRole.kt:54 | allow(`fun`, "${feature}Screen") // NavGraphBuilder.homeScreen(...)
     menu | ◆ Allowed by fun settingsScreen(...) | RouteRole.kt:54
     menu | ◇ Role feature.Route — Route | RouteRole.kt:15
     menu | == Other files of feature.Route (1)

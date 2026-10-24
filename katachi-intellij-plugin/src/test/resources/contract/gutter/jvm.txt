@@ -1619,7 +1619,7 @@ roles: data.Repository
 roles: domain.Service
     domain.Service declared at ServiceRole.kt:19 | fun DeclarationContainerScope.service() = "Service".role {
 7 | ◆ | katachi: domain.Service — allowed by class HealthService (ServiceRole.kt:80)
-    allowed at ServiceRole.kt:80 | allow(`class`, fileName) {                         // HealthService.kt -> class HealthService
+    allowed at ServiceRole.kt:80 | allow(`class`, fileName) {                    // HealthService.kt -> class HealthService
     menu | ◆ Allowed by class HealthService | ServiceRole.kt:80
     menu | ◇ Role domain.Service — Service | ServiceRole.kt:19
     menu | == Other files of domain.Service (1)
@@ -1637,7 +1637,7 @@ roles: (none) Unexpected
 roles: domain.Service
     domain.Service declared at ServiceRole.kt:19 | fun DeclarationContainerScope.service() = "Service".role {
 11 | ◆ | katachi: domain.Service — allowed by class LegacyStatusService (ServiceRole.kt:80)
-    allowed at ServiceRole.kt:80 | allow(`class`, fileName) {                         // HealthService.kt -> class HealthService
+    allowed at ServiceRole.kt:80 | allow(`class`, fileName) {                    // HealthService.kt -> class HealthService
     menu | ◆ Allowed by class LegacyStatusService | ServiceRole.kt:80
     menu | ◇ Role domain.Service — Service | ServiceRole.kt:19
     menu | == Other files of domain.Service (1)
