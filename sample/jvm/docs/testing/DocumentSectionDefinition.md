@@ -4,10 +4,12 @@
 
 The headings this project declares for itself, so roles and groups can write under them
 
-`DocumentSections.kt` declares the headings that appear in the generated pages besides
-katachi's own ones ("Allowed contents", "Forbidden contents"), and the property each
-role or group writes them with. It is a vocabulary the role files share and no role
-owns, so it is a file of its own next to the entry.
+`DocumentSections.kt` declares two headings this project adds to the generated pages
+besides katachi's own ones, "Allowed contents" and "Forbidden contents", and the property
+each role or group writes them with. They are a vocabulary the role files share and no
+role owns, so they are a file of their own next to the entry. A heading only one group
+writes stays in that group's file instead: "Test policy" is declared in
+`groups/ApiGroup.kt`.
 
 ## Placement
 

@@ -56,7 +56,7 @@ katachi が表現できなければならない形の中で最もよく出てく
 
 | サンプル | 残してある違反 |
 |---|---|
-| `jvm` | `service/LegacyHealthCheck.kt`（`[UnexpectedFile]`）、`service/LegacyStatusService.kt`（`internal` なので `konsist { }` の制約違反） |
+| `jvm` | `service/LegacyHealthCheck.kt`（`[UnexpectedFile]`）、`service/LegacyStatusService.kt`（`internal` なので `konsist { }` の制約違反）、`controller/health/LegacyStatusController.kt`（`[CaptureMismatch]`） |
 | `android` | `:feature:home` の `HomeFormatter.kt`（`[UnexpectedFile]`）、`:data` の `legacy/`（`[UnexpectedDirectory]`） |
 | `kmp` | `:data` の `androidMain` にある `user/`（`[UnexpectedDirectory]`） |
 

@@ -316,7 +316,8 @@ ui.ComponentPreview	ui/src/commonMain/kotlin/com/example	Directory	optional
 ui.ComponentPreview	ui/src/commonMain/kotlin/com/example/kmp	Directory	optional
 ui.ComponentPreview	ui/src/commonMain/kotlin/com/example/kmp/ui	Directory	optional
 ui.ComponentPreview	ui/src/commonMain/kotlin/com/example/kmp/ui/component	Directory	optional
-ui.ComponentPreview	ui/src/commonMain/kotlin/com/example/kmp/ui/component/*Preview.kt	File	optional
+ui.ComponentPreview	ui/src/commonMain/kotlin/com/example/kmp/ui/component/preview	Directory	optional
+ui.ComponentPreview	ui/src/commonMain/kotlin/com/example/kmp/ui/component/preview/*Preview.kt	File	optional
 ui.Navigation	navigation	Directory	optional
 ui.Navigation	navigation/src	Directory	optional
 ui.Navigation	navigation/src/commonMain	Directory	optional

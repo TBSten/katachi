@@ -7,7 +7,7 @@ import me.tbsten.katachi.KatachiDeclarationException
  * `--arg template=` named something no template answers to.
  *
  * Almost always a typo, a template whose role or id was renamed, or a group left out of a
- * qualified name -- see the design draft's section 3 for how a specifier is read. The message
+ * qualified name -- [GenerateCodeFromTemplate.Args.template] says how a specifier is read. The message
  * lists what the definition does declare, since the fix is one of those specifiers and reading
  * them is faster than opening the definition.
  *
@@ -68,7 +68,7 @@ public class KatachiUnknownTemplateException internal constructor(
  *
  * Reached two ways: a specifier that leaves its group out and its role has more than one template,
  * and a specifier read two ways at once -- `feature.Screen` as either the role `Screen` of group
- * `feature`, or the id `Screen` of a role `feature` -- see the design draft's section 3. Either
+ * `feature`, or the id `Screen` of a role `feature` (see [GenerateCodeFromTemplate.Args.template]). Either
  * way, [candidates][KatachiAmbiguousTemplateException.candidates] is what to choose from: every one
  * of them is a specifier `--arg template=` accepts on its own.
  *
