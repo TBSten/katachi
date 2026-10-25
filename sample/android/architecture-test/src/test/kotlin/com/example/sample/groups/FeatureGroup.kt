@@ -74,7 +74,9 @@ fun DeclarationContainerScope.featureGroup() = "feature".group {
         A new feature's Route, Screen and ViewModel, with one screen part, can be generated as one
         set, `feature.NewFeature`, from one `--arg feature=`. The module's `build.gradle.kts` and
         its `include(":feature:<name>")` in `settings.gradle.kts` are not generated: add them by
-        hand, after `:feature:home`'s.
+        hand, after the other features' includes. To show the screen, `:app` also needs
+        `implementation(project(":feature:<name>"))` and the one line `<name>Screen(...)` in its
+        NavHost, the one line the Route role says `:app` grows by.
     """.trimIndent()
 
     screen()

@@ -38,6 +38,10 @@ a preview passes and wraps its body in is not checked.
 
 Example: `HomeScreen.kt`
 
+| Package |
+|---|
+| `com.example.sample.feature.<feature>` |
+
 | Import | |
 |---|---|
 | `androidx.compose.**` | optional |

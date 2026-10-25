@@ -74,6 +74,8 @@ fun DeclarationContainerScope.route() = "Route".role {
     // `fileName` is a plain String: HomeRoute.kt holds `object HomeRoute` and `homeScreen(...)`.
     // Navigation is the only import, so another feature's Route cannot be reached from here.
     ktFileContent {
+        `package`("com.example.sample.feature.${captureValue("feature")}")
+
         `import`("androidx.navigation.**")
 
         val feature = fileName.removeSuffix("Route").replaceFirstChar { it.lowercaseChar() }

@@ -181,6 +181,8 @@ fun DeclarationContainerScope.screen() = "Screen".role {
     // The two overloads named after the file, both internal, and the previews, all private.
     // Navigation and other features are not among the imports: leaving a screen is a callback.
     ktFileContent {
+        `package`("com.example.sample.feature.${captureValue("feature")}")
+
         `import`("androidx.compose.**")
         `import`("androidx.lifecycle.**")
         `import`("com.example.sample.ui.**")

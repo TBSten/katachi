@@ -32,6 +32,10 @@ disappears and the shape does not change.
 
 Example: `HomeViewModel.kt`
 
+| Package |
+|---|
+| `com.example.sample.feature.<feature>` |
+
 | Import | |
 |---|---|
 | `androidx.lifecycle.**` | optional |

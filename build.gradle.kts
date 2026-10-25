@@ -226,7 +226,8 @@ tasks.register("verifyApiDocs") {
 /**
  * One `katachiTemplate` run: the `--arg`s it is given and the files it writes.
  *
- * [generatedFiles] are relative to the sample and are the *only* paths the clean-up deletes.
+ * [generatedFiles] are relative to the sample and are the *only* files the clean-up deletes;
+ * besides them it deletes only the directories that generating them created, once those are empty.
  * They restate what the template and the layout decide together, so the check task refuses to
  * run when one of them is missing -- a list out of step with the template fails loudly instead
  * of leaving files behind.
