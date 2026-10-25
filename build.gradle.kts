@@ -226,7 +226,8 @@ tasks.register("verifyApiDocs") {
 /**
  * One `katachiTemplate` run: the `--arg`s it is given and the files it writes.
  *
- * [generatedFiles] are relative to the sample and are the *only* paths the clean-up deletes.
+ * [generatedFiles] are relative to the sample and are the *only* files the clean-up deletes;
+ * besides them it deletes only the directories that generating them created, once those are empty.
  * They restate what the template and the layout decide together, so the check task refuses to
  * run when one of them is missing -- a list out of step with the template fails loudly instead
  * of leaving files behind.
@@ -399,6 +400,19 @@ val sampleBuilds = listOf(
                     generatedFiles = listOf(
                         "feature/settings/src/test/kotlin/com/example/sample/feature/settings/" +
                                 "SettingsKatachiSmokeTest.kt",
+                    ),
+                ),
+                // A template set (`feature.NewFeature`): a feature's Route, Screen, ViewModel and one screen part
+                // from one `--arg feature=`. The module's build.gradle.kts and its `include` are not generated,
+                // so the files are checked by the architecture test but not compiled here.
+                SampleTemplateRun(
+                    args = listOf("template=feature.NewFeature", "feature=setsmoke"),
+                    generatedFiles = listOf(
+                        "feature/setsmoke/src/main/kotlin/com/example/sample/feature/setsmoke/SetsmokeRoute.kt",
+                        "feature/setsmoke/src/main/kotlin/com/example/sample/feature/setsmoke/SetsmokeScreen.kt",
+                        "feature/setsmoke/src/main/kotlin/com/example/sample/feature/setsmoke/SetsmokeViewModel.kt",
+                        "feature/setsmoke/src/main/kotlin/com/example/sample/feature/setsmoke/component/" +
+                                "SetsmokeHeader.kt",
                     ),
                 ),
                 // The interface and the implementation are two roles (`data.RepositoryInterface.user` /
@@ -891,13 +905,28 @@ sampleBuilds.forEach { sample ->
     // Written just before generating and read by the clean-up: without it, a generation that
     // refused to start because the files were already there would have them deleted anyway.
     val marker = layout.buildDirectory.file("sample-template/${sample.name}.generated").get().asFile
+    // The directories of generatedFiles that were not there before generating, written next to
+    // the marker: a run that generates a whole module (`feature/setsmoke/`) would otherwise leave
+    // its directories behind, empty, once the files are deleted.
+    val createdDirectories = layout.buildDirectory.file("sample-template/${sample.name}.created-directories")
+        .get().asFile
 
     val deleteTask = tasks.register<Delete>("deleteSample${suffix}Template") {
         group = LifecycleBasePlugin.VERIFICATION_GROUP
         description = "Deletes the files generateSample${suffix}Template wrote into " +
-                "sample/${sample.name}, and nothing else."
+                "sample/${sample.name}, and the directories it created for them once they are empty."
         onlyIf("generateSample${suffix}Template started generating") { marker.isFile }
         delete(generatedFiles + marker)
+        doLast {
+            // Deepest first, so a directory emptied by deleting its child is deleted too. One that
+            // still holds anything (a file someone put there meanwhile) is left as it is.
+            if (createdDirectories.isFile) {
+                createdDirectories.readLines().filter { it.isNotBlank() }.map(::File)
+                    .sortedByDescending { it.path.length }
+                    .forEach { if (it.isDirectory && it.list().isNullOrEmpty()) it.delete() }
+                createdDirectories.delete()
+            }
+        }
     }
 
     // Checks every run's files at once, before the first run writes anything: a run that found
@@ -923,6 +952,11 @@ sampleBuilds.forEach { sample ->
             }
             marker.parentFile.mkdirs()
             marker.writeText(generatedFiles.joinToString("\n", postfix = "\n") { it.path })
+            val missingDirectories = generatedFiles
+                .flatMap { file -> generateSequence(file.parentFile) { it.parentFile }.takeWhile { it != sampleDir } }
+                .distinct()
+                .filterNot { it.exists() }
+            createdDirectories.writeText(missingDirectories.joinToString("") { "${it.path}\n" })
         }
     }
 

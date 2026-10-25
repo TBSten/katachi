@@ -32,6 +32,10 @@ decides which screen to go to, and a feature never imports another feature's Rou
 
 Example: `HomeRoute.kt`
 
+| Package |
+|---|
+| `com.example.sample.feature.<feature>` |
+
 | Import | |
 |---|---|
 | `androidx.navigation.**` | optional |

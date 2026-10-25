@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "katachiVersion": "0.2.0",
-  "generatedAt": "2026-10-24T16:32:30Z",
+  "generatedAt": "2026-10-25T06:26:48Z",
   "projectRoot": "/__ROOT__",
   "architecture": {
     "declaredAt": {
@@ -21,7 +21,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "FeatureGroup.kt",
-        "line": 36
+        "line": 40
       }
     },
     {
@@ -119,7 +119,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "ScreenRole.kt",
-        "line": 23
+        "line": 24
       },
       "layout": [
         {
@@ -130,7 +130,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature",
@@ -151,7 +151,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*",
@@ -179,7 +179,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src",
@@ -207,7 +207,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main",
@@ -235,7 +235,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin",
@@ -263,7 +263,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin/com",
@@ -291,7 +291,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin/com/example",
@@ -319,7 +319,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin/com/example/sample",
@@ -347,7 +347,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin/com/example/sample/feature",
@@ -375,7 +375,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin/com/example/sample/feature/*",
@@ -409,7 +409,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ScreenRole.kt",
-            "line": 64
+            "line": 69
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin/com/example/sample/feature/*/*Screen.kt",
@@ -434,7 +434,15 @@
             }
           ],
           "moduleCapture": null,
-          "template": null,
+          "template": {
+            "specifier": "feature.Screen",
+            "id": null,
+            "title": null,
+            "declaredAt": {
+              "fileName": "ScreenRole.kt",
+              "line": 70
+            }
+          },
           "matchedFiles": ["feature/home/src/main/kotlin/com/example/sample/feature/home/HomeScreen.kt", "feature/settings/src/main/kotlin/com/example/sample/feature/settings/SettingsScreen.kt"],
           "matchedCount": 2,
           "matchedFilesTruncated": false,
@@ -450,7 +458,7 @@
           "range": "Subtree",
           "declaredAt": {
             "fileName": "ScreenRole.kt",
-            "line": 68
+            "line": 183
           },
           "layoutPath": null,
           "anchors": ["feature/*/src/main/kotlin/com/example/sample/feature/*"],
@@ -474,7 +482,7 @@
                       "text": "@Composable internal fun HomeScreen(...)",
                       "declaredAt": {
                         "fileName": "ScreenRole.kt",
-                        "line": 73
+                        "line": 190
                       }
                     }
                   ],
@@ -490,7 +498,7 @@
                       "text": "@Composable internal fun HomeScreen(...)",
                       "declaredAt": {
                         "fileName": "ScreenRole.kt",
-                        "line": 73
+                        "line": 190
                       }
                     }
                   ],
@@ -506,7 +514,7 @@
                       "text": "@Preview private fun *Preview(...)",
                       "declaredAt": {
                         "fileName": "ScreenRole.kt",
-                        "line": 74
+                        "line": 191
                       }
                     }
                   ],
@@ -522,7 +530,7 @@
                       "text": "@Preview private fun *Preview(...)",
                       "declaredAt": {
                         "fileName": "ScreenRole.kt",
-                        "line": 74
+                        "line": 191
                       }
                     }
                   ],
@@ -546,7 +554,7 @@
                       "text": "@Composable internal fun SettingsScreen(...)",
                       "declaredAt": {
                         "fileName": "ScreenRole.kt",
-                        "line": 73
+                        "line": 190
                       }
                     }
                   ],
@@ -562,7 +570,7 @@
                       "text": "@Composable internal fun SettingsScreen(...)",
                       "declaredAt": {
                         "fileName": "ScreenRole.kt",
-                        "line": 73
+                        "line": 190
                       }
                     }
                   ],
@@ -578,7 +586,7 @@
                       "text": "@Preview private fun *Preview(...)",
                       "declaredAt": {
                         "fileName": "ScreenRole.kt",
-                        "line": 74
+                        "line": 191
                       }
                     }
                   ],
@@ -601,7 +609,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "ViewModelRole.kt",
-        "line": 15
+        "line": 16
       },
       "layout": [
         {
@@ -612,7 +620,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature",
@@ -633,7 +641,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*",
@@ -661,7 +669,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src",
@@ -689,7 +697,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main",
@@ -717,7 +725,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin",
@@ -745,7 +753,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin/com",
@@ -773,7 +781,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin/com/example",
@@ -801,7 +809,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin/com/example/sample",
@@ -829,7 +837,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin/com/example/sample/feature",
@@ -857,7 +865,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin/com/example/sample/feature/*",
@@ -891,7 +899,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ViewModelRole.kt",
-            "line": 45
+            "line": 50
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin/com/example/sample/feature/*/*ViewModel.kt",
@@ -916,7 +924,15 @@
             }
           ],
           "moduleCapture": null,
-          "template": null,
+          "template": {
+            "specifier": "feature.ViewModel",
+            "id": null,
+            "title": null,
+            "declaredAt": {
+              "fileName": "ViewModelRole.kt",
+              "line": 51
+            }
+          },
           "matchedFiles": ["feature/home/src/main/kotlin/com/example/sample/feature/home/HomeViewModel.kt", "feature/settings/src/main/kotlin/com/example/sample/feature/settings/SettingsViewModel.kt"],
           "matchedCount": 2,
           "matchedFilesTruncated": false,
@@ -932,7 +948,7 @@
           "range": "Subtree",
           "declaredAt": {
             "fileName": "ViewModelRole.kt",
-            "line": 49
+            "line": 97
           },
           "layoutPath": null,
           "anchors": ["feature/*/src/main/kotlin/com/example/sample/feature/*"],
@@ -956,7 +972,7 @@
                       "text": "internal data class HomeContent",
                       "declaredAt": {
                         "fileName": "ViewModelRole.kt",
-                        "line": 56
+                        "line": 106
                       }
                     }
                   ],
@@ -972,7 +988,7 @@
                       "text": "internal class HomeViewModel : ViewModel",
                       "declaredAt": {
                         "fileName": "ViewModelRole.kt",
-                        "line": 57
+                        "line": 107
                       }
                     }
                   ],
@@ -996,7 +1012,7 @@
                       "text": "internal data class SettingsContent",
                       "declaredAt": {
                         "fileName": "ViewModelRole.kt",
-                        "line": 56
+                        "line": 106
                       }
                     }
                   ],
@@ -1012,7 +1028,7 @@
                       "text": "internal class SettingsViewModel : ViewModel",
                       "declaredAt": {
                         "fileName": "ViewModelRole.kt",
-                        "line": 57
+                        "line": 107
                       }
                     }
                   ],
@@ -1035,7 +1051,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "RouteRole.kt",
-        "line": 15
+        "line": 17
       },
       "layout": [
         {
@@ -1046,7 +1062,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature",
@@ -1067,7 +1083,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*",
@@ -1095,7 +1111,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src",
@@ -1123,7 +1139,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main",
@@ -1151,7 +1167,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin",
@@ -1179,7 +1195,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin/com",
@@ -1207,7 +1223,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin/com/example",
@@ -1235,7 +1251,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin/com/example/sample",
@@ -1263,7 +1279,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin/com/example/sample/feature",
@@ -1291,7 +1307,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin/com/example/sample/feature/*",
@@ -1325,7 +1341,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "RouteRole.kt",
-            "line": 43
+            "line": 48
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin/com/example/sample/feature/*/*Route.kt",
@@ -1350,7 +1366,15 @@
             }
           ],
           "moduleCapture": null,
-          "template": null,
+          "template": {
+            "specifier": "feature.Route",
+            "id": null,
+            "title": null,
+            "declaredAt": {
+              "fileName": "RouteRole.kt",
+              "line": 49
+            }
+          },
           "matchedFiles": ["feature/home/src/main/kotlin/com/example/sample/feature/home/HomeRoute.kt", "feature/settings/src/main/kotlin/com/example/sample/feature/settings/SettingsRoute.kt"],
           "matchedCount": 2,
           "matchedFilesTruncated": false,
@@ -1366,7 +1390,7 @@
           "range": "Subtree",
           "declaredAt": {
             "fileName": "RouteRole.kt",
-            "line": 47
+            "line": 76
           },
           "layoutPath": null,
           "anchors": ["feature/*/src/main/kotlin/com/example/sample/feature/*"],
@@ -1390,7 +1414,7 @@
                       "text": "object HomeRoute",
                       "declaredAt": {
                         "fileName": "RouteRole.kt",
-                        "line": 51
+                        "line": 82
                       }
                     }
                   ],
@@ -1406,7 +1430,7 @@
                       "text": "fun homeScreen(...)",
                       "declaredAt": {
                         "fileName": "RouteRole.kt",
-                        "line": 54
+                        "line": 85
                       }
                     }
                   ],
@@ -1430,7 +1454,7 @@
                       "text": "object SettingsRoute",
                       "declaredAt": {
                         "fileName": "RouteRole.kt",
-                        "line": 51
+                        "line": 82
                       }
                     }
                   ],
@@ -1446,7 +1470,7 @@
                       "text": "fun settingsScreen(...)",
                       "declaredAt": {
                         "fileName": "RouteRole.kt",
-                        "line": 54
+                        "line": 85
                       }
                     }
                   ],
@@ -1480,7 +1504,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature",
@@ -1501,7 +1525,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*",
@@ -1529,7 +1553,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src",
@@ -1557,7 +1581,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main",
@@ -1585,7 +1609,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin",
@@ -1613,7 +1637,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin/com",
@@ -1641,7 +1665,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin/com/example",
@@ -1669,7 +1693,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin/com/example/sample",
@@ -1697,7 +1721,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin/com/example/sample/feature",
@@ -1725,7 +1749,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 101
+            "line": 131
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/main/kotlin/com/example/sample/feature/*",
@@ -1875,7 +1899,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 141
+            "line": 171
           },
           "modulePath": null,
           "pathInModule": "feature",
@@ -1896,7 +1920,7 @@
           "description": "For `:feature:home`. Start the file name with `Home`",
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 141
+            "line": 171
           },
           "modulePath": null,
           "pathInModule": "feature/home",
@@ -2121,7 +2145,7 @@
           "description": "For `:feature:settings`. Start the file name with `Settings`",
           "declaredAt": {
             "fileName": "FeatureGroup.kt",
-            "line": 141
+            "line": 171
           },
           "modulePath": null,
           "pathInModule": "feature/settings",
@@ -7550,7 +7574,7 @@
         {
           "name": "namespace of a library module follows the module path",
           "backend": "custom",
-          "checkClass": "com.example.sample.groups.GradleGroupKt$$Lambda$113/0x0000000301095430",
+          "checkClass": "com.example.sample.groups.GradleGroupKt$$Lambda$118/0x0000000701096e78",
           "range": "Subtree",
           "declaredAt": {
             "fileName": "GradleGroup.kt",
@@ -8006,6 +8030,120 @@
   "templates": {
     "templates": [
       {
+        "template": "feature.Screen",
+        "id": null,
+        "title": "Screen",
+        "roleName": "feature.Screen",
+        "summary": "A @Composable that implements the UI of one screen. One <Name>Screen.kt per :feature:<name>",
+        "parameterNames": [],
+        "captures": [
+          {
+            "name": "feature",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/com/example/sample/feature/*/*Screen.kt",
+            "position": 1,
+            "segment": "${feature}",
+            "wildcardIndex": 0,
+            "transform": null
+          },
+          {
+            "name": "feature",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/com/example/sample/feature/*/*Screen.kt",
+            "position": 9,
+            "segment": "${feature}",
+            "wildcardIndex": 0,
+            "transform": null
+          },
+          {
+            "name": "feature",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/com/example/sample/feature/*/*Screen.kt",
+            "position": 10,
+            "segment": "<feature.pascalCase>Screen.kt",
+            "wildcardIndex": 0,
+            "transform": "pascalCase"
+          }
+        ],
+        "conflict": false
+      },
+      {
+        "template": "feature.ViewModel",
+        "id": null,
+        "title": "ViewModel",
+        "roleName": "feature.ViewModel",
+        "summary": "An androidx.lifecycle.ViewModel that exposes screen state as a StateFlow and receives events",
+        "parameterNames": [],
+        "captures": [
+          {
+            "name": "feature",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/com/example/sample/feature/*/*ViewModel.kt",
+            "position": 1,
+            "segment": "${feature}",
+            "wildcardIndex": 0,
+            "transform": null
+          },
+          {
+            "name": "feature",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/com/example/sample/feature/*/*ViewModel.kt",
+            "position": 9,
+            "segment": "${feature}",
+            "wildcardIndex": 0,
+            "transform": null
+          },
+          {
+            "name": "feature",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/com/example/sample/feature/*/*ViewModel.kt",
+            "position": 10,
+            "segment": "<feature.pascalCase>ViewModel.kt",
+            "wildcardIndex": 0,
+            "transform": "pascalCase"
+          }
+        ],
+        "conflict": false
+      },
+      {
+        "template": "feature.Route",
+        "id": null,
+        "title": "Route",
+        "roleName": "feature.Route",
+        "summary": "The destination of a screen. The only entrance a feature exposes to the outside",
+        "parameterNames": [],
+        "captures": [
+          {
+            "name": "feature",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/com/example/sample/feature/*/*Route.kt",
+            "position": 1,
+            "segment": "${feature}",
+            "wildcardIndex": 0,
+            "transform": null
+          },
+          {
+            "name": "feature",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/com/example/sample/feature/*/*Route.kt",
+            "position": 9,
+            "segment": "${feature}",
+            "wildcardIndex": 0,
+            "transform": null
+          },
+          {
+            "name": "feature",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/com/example/sample/feature/*/*Route.kt",
+            "position": 10,
+            "segment": "<feature.pascalCase>Route.kt",
+            "wildcardIndex": 0,
+            "transform": "pascalCase"
+          }
+        ],
+        "conflict": false
+      },
+      {
         "template": "feature.FeatureComponent",
         "id": null,
         "title": "Screen part",
@@ -8245,6 +8383,153 @@
       }
     ],
     "details": [
+      {
+        "template": "feature.Screen",
+        "id": null,
+        "title": "Screen",
+        "roleName": "feature.Screen",
+        "summary": "A @Composable that implements the UI of one screen. One <Name>Screen.kt per :feature:<name>",
+        "parameters": [],
+        "files": [
+          {
+            "pattern": "feature/${feature}/src/main/kotlin/com/example/sample/feature/${feature}/<feature.pascalCase>Screen.kt",
+            "fileName": "<feature.pascalCase>Screen.kt",
+            "path": "feature/${feature}/src/main/kotlin/com/example/sample/feature/${feature}/<feature.pascalCase>Screen.kt",
+            "captures": ["feature"],
+            "parameters": [],
+            "content": "package com.example.sample.feature.${feature}\n\nimport androidx.compose.foundation.layout.Arrangement\nimport androidx.compose.foundation.layout.Column\nimport androidx.compose.foundation.layout.fillMaxSize\nimport androidx.compose.foundation.layout.padding\nimport androidx.compose.material3.CircularProgressIndicator\nimport androidx.compose.material3.MaterialTheme\nimport androidx.compose.material3.Text\nimport androidx.compose.runtime.Composable\nimport androidx.compose.runtime.getValue\nimport androidx.compose.ui.Alignment\nimport androidx.compose.ui.Modifier\nimport androidx.compose.ui.tooling.preview.Preview\nimport androidx.compose.ui.unit.dp\nimport androidx.lifecycle.compose.collectAsStateWithLifecycle\nimport androidx.lifecycle.viewmodel.compose.viewModel\nimport com.example.sample.ui.component.AppButton\nimport com.example.sample.ui.component.AppButtonEmphasis\nimport com.example.sample.ui.core.UiState\nimport com.example.sample.ui.preview.PreviewRoot\n\n/** The ${feature} screen, wired to its [${feature}ViewModel]. */\n@Composable\ninternal fun ${feature}Screen(\n    onNavigateUp: () -> Unit,\n    modifier: Modifier = Modifier,\n    viewModel: ${feature}ViewModel = viewModel(),\n) {\n    val uiState by viewModel.uiState.collectAsStateWithLifecycle()\n    ${feature}Screen(\n        uiState = uiState,\n        onRefresh = viewModel::refresh,\n        onNavigateUp = onNavigateUp,\n        modifier = modifier,\n    )\n}\n\n/** The ${feature} screen as a function of its state. */\n@Composable\ninternal fun ${feature}Screen(\n    uiState: UiState<${feature}Content>,\n    onRefresh: () -> Unit,\n    onNavigateUp: () -> Unit,\n    modifier: Modifier = Modifier,\n) {\n    Column(\n        modifier = modifier\n            .fillMaxSize()\n            .padding(24.dp),\n        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),\n        horizontalAlignment = Alignment.CenterHorizontally,\n    ) {\n        when (uiState) {\n            UiState.Loading -> CircularProgressIndicator()\n\n            is UiState.Content -> {\n                Text(\n                    text = uiState.value.userName,\n                    style = MaterialTheme.typography.headlineSmall,\n                )\n                AppButton(text = \"Reload\", onClick = onRefresh)\n            }\n\n            is UiState.Error -> Text(\n                text = uiState.message,\n                style = MaterialTheme.typography.bodyMedium,\n                color = MaterialTheme.colorScheme.error,\n            )\n        }\n\n        AppButton(\n            text = \"Back\",\n            onClick = onNavigateUp,\n            emphasis = AppButtonEmphasis.Outlined,\n        )\n    }\n}\n\n@Preview(showBackground = true)\n@Composable\nprivate fun ${feature}ScreenContentPreview() {\n    PreviewRoot {\n        ${feature}Screen(\n            uiState = UiState.Content(${feature}Content(userName = \"katachi\")),\n            onRefresh = {},\n            onNavigateUp = {},\n        )\n    }\n}\n\n@Preview(showBackground = true)\n@Composable\nprivate fun ${feature}ScreenLoadingPreview() {\n    PreviewRoot {\n        ${feature}Screen(\n            uiState = UiState.Loading,\n            onRefresh = {},\n            onNavigateUp = {},\n        )\n    }\n}"
+          }
+        ],
+        "branches": [],
+        "exampleCommand": "./gradlew katachiTemplate --arg template=feature.Screen --arg feature=<feature>",
+        "captures": [
+          {
+            "name": "feature",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/com/example/sample/feature/*/*Screen.kt",
+            "position": 1,
+            "segment": "${feature}",
+            "wildcardIndex": 0,
+            "transform": null
+          },
+          {
+            "name": "feature",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/com/example/sample/feature/*/*Screen.kt",
+            "position": 9,
+            "segment": "${feature}",
+            "wildcardIndex": 0,
+            "transform": null
+          },
+          {
+            "name": "feature",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/com/example/sample/feature/*/*Screen.kt",
+            "position": 10,
+            "segment": "<feature.pascalCase>Screen.kt",
+            "wildcardIndex": 0,
+            "transform": "pascalCase"
+          }
+        ]
+      },
+      {
+        "template": "feature.ViewModel",
+        "id": null,
+        "title": "ViewModel",
+        "roleName": "feature.ViewModel",
+        "summary": "An androidx.lifecycle.ViewModel that exposes screen state as a StateFlow and receives events",
+        "parameters": [],
+        "files": [
+          {
+            "pattern": "feature/${feature}/src/main/kotlin/com/example/sample/feature/${feature}/<feature.pascalCase>ViewModel.kt",
+            "fileName": "<feature.pascalCase>ViewModel.kt",
+            "path": "feature/${feature}/src/main/kotlin/com/example/sample/feature/${feature}/<feature.pascalCase>ViewModel.kt",
+            "captures": ["feature"],
+            "parameters": [],
+            "content": "package com.example.sample.feature.${feature}\n\nimport androidx.lifecycle.ViewModel\nimport com.example.sample.data.user.UserRepository\nimport com.example.sample.data.user.UserRepositoryImpl\nimport com.example.sample.ui.core.UiState\nimport kotlinx.coroutines.flow.MutableStateFlow\nimport kotlinx.coroutines.flow.StateFlow\nimport kotlinx.coroutines.flow.asStateFlow\n\n/** What [${feature}Screen] draws once it has something to draw. */\ninternal data class ${feature}Content(\n    val userName: String,\n)\n\n/** State holder of [${feature}Screen]. */\ninternal class ${feature}ViewModel(\n    private val userRepository: UserRepository = UserRepositoryImpl(),\n) : ViewModel() {\n    private val mutableUiState = MutableStateFlow<UiState<${feature}Content>>(UiState.Loading)\n\n    /** State of the ${feature} screen, collected by the composable. */\n    val uiState: StateFlow<UiState<${feature}Content>> = mutableUiState.asStateFlow()\n\n    init {\n        refresh()\n    }\n\n    /** Reads the current user again and republishes the screen state. */\n    fun refresh() {\n        mutableUiState.value = UiState.Content(\n            ${feature}Content(userName = userRepository.currentUserName()),\n        )\n    }\n}"
+          }
+        ],
+        "branches": [],
+        "exampleCommand": "./gradlew katachiTemplate --arg template=feature.ViewModel --arg feature=<feature>",
+        "captures": [
+          {
+            "name": "feature",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/com/example/sample/feature/*/*ViewModel.kt",
+            "position": 1,
+            "segment": "${feature}",
+            "wildcardIndex": 0,
+            "transform": null
+          },
+          {
+            "name": "feature",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/com/example/sample/feature/*/*ViewModel.kt",
+            "position": 9,
+            "segment": "${feature}",
+            "wildcardIndex": 0,
+            "transform": null
+          },
+          {
+            "name": "feature",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/com/example/sample/feature/*/*ViewModel.kt",
+            "position": 10,
+            "segment": "<feature.pascalCase>ViewModel.kt",
+            "wildcardIndex": 0,
+            "transform": "pascalCase"
+          }
+        ]
+      },
+      {
+        "template": "feature.Route",
+        "id": null,
+        "title": "Route",
+        "roleName": "feature.Route",
+        "summary": "The destination of a screen. The only entrance a feature exposes to the outside",
+        "parameters": [],
+        "files": [
+          {
+            "pattern": "feature/${feature}/src/main/kotlin/com/example/sample/feature/${feature}/<feature.pascalCase>Route.kt",
+            "fileName": "<feature.pascalCase>Route.kt",
+            "path": "feature/${feature}/src/main/kotlin/com/example/sample/feature/${feature}/<feature.pascalCase>Route.kt",
+            "captures": ["feature"],
+            "parameters": [],
+            "content": "package com.example.sample.feature.${feature}\n\nimport androidx.navigation.NavGraphBuilder\nimport androidx.navigation.compose.composable\n\n/** Navigation entry of the ${feature} feature: the only thing it publishes outside itself. */\nobject ${feature}Route {\n    const val PATH: String = \"${feature}\"\n}\n\n/** Registers the ${feature} screen as a destination of the graph being built. */\nfun NavGraphBuilder.${feature}Screen(onNavigateUp: () -> Unit) {\n    composable(${feature}Route.PATH) {\n        ${feature}Screen(onNavigateUp = onNavigateUp)\n    }\n}"
+          }
+        ],
+        "branches": [],
+        "exampleCommand": "./gradlew katachiTemplate --arg template=feature.Route --arg feature=<feature>",
+        "captures": [
+          {
+            "name": "feature",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/com/example/sample/feature/*/*Route.kt",
+            "position": 1,
+            "segment": "${feature}",
+            "wildcardIndex": 0,
+            "transform": null
+          },
+          {
+            "name": "feature",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/com/example/sample/feature/*/*Route.kt",
+            "position": 9,
+            "segment": "${feature}",
+            "wildcardIndex": 0,
+            "transform": null
+          },
+          {
+            "name": "feature",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/com/example/sample/feature/*/*Route.kt",
+            "position": 10,
+            "segment": "<feature.pascalCase>Route.kt",
+            "wildcardIndex": 0,
+            "transform": "pascalCase"
+          }
+        ]
+      },
       {
         "template": "feature.FeatureComponent",
         "id": null,
@@ -8639,6 +8924,16 @@
     "modulePlacements": [],
     "templateSets": [
       {
+        "templateSet": "feature.NewFeature",
+        "name": "NewFeature",
+        "title": "New feature",
+        "summary": "A feature module's Route, Screen, ViewModel and one screen part, named after the feature",
+        "groupName": "feature",
+        "parameterNames": ["feature"],
+        "members": ["feature.Route", "feature.Screen", "feature.ViewModel", "feature.FeatureComponent"],
+        "conflict": false
+      },
+      {
         "templateSet": "data.NewRepository",
         "name": "NewRepository",
         "title": "New repository",
@@ -8650,6 +8945,122 @@
       }
     ],
     "templateSetDetails": [
+      {
+        "templateSet": "feature.NewFeature",
+        "name": "NewFeature",
+        "title": "New feature",
+        "summary": "A feature module's Route, Screen, ViewModel and one screen part, named after the feature",
+        "groupName": "feature",
+        "parameters": [
+          {
+            "name": "feature",
+            "kind": "StringParameter",
+            "typeName": "String",
+            "default": null,
+            "acceptedValues": [],
+            "isRequired": true,
+            "previewValue": "${feature}",
+            "previewValueSource": "Placeholder"
+          }
+        ],
+        "members": [
+          {
+            "template": "feature.Route",
+            "title": "Route",
+            "args": [
+              {
+                "name": "feature",
+                "kind": "Capture",
+                "previewValue": "${feature}",
+                "parameter": "feature"
+              }
+            ],
+            "files": [
+              {
+                "pattern": "feature/${feature}/src/main/kotlin/com/example/sample/feature/${feature}/<feature.pascalCase>Route.kt",
+                "fileName": "<feature.pascalCase>Route.kt",
+                "path": "feature/${feature}/src/main/kotlin/com/example/sample/feature/${feature}/<feature.pascalCase>Route.kt",
+                "captures": ["feature"],
+                "parameters": [],
+                "content": "package com.example.sample.feature.${feature}\n\nimport androidx.navigation.NavGraphBuilder\nimport androidx.navigation.compose.composable\n\n/** Navigation entry of the ${feature} feature: the only thing it publishes outside itself. */\nobject ${feature}Route {\n    const val PATH: String = \"${feature}\"\n}\n\n/** Registers the ${feature} screen as a destination of the graph being built. */\nfun NavGraphBuilder.${feature}Screen(onNavigateUp: () -> Unit) {\n    composable(${feature}Route.PATH) {\n        ${feature}Screen(onNavigateUp = onNavigateUp)\n    }\n}"
+              }
+            ]
+          },
+          {
+            "template": "feature.Screen",
+            "title": "Screen",
+            "args": [
+              {
+                "name": "feature",
+                "kind": "Capture",
+                "previewValue": "${feature}",
+                "parameter": "feature"
+              }
+            ],
+            "files": [
+              {
+                "pattern": "feature/${feature}/src/main/kotlin/com/example/sample/feature/${feature}/<feature.pascalCase>Screen.kt",
+                "fileName": "<feature.pascalCase>Screen.kt",
+                "path": "feature/${feature}/src/main/kotlin/com/example/sample/feature/${feature}/<feature.pascalCase>Screen.kt",
+                "captures": ["feature"],
+                "parameters": [],
+                "content": "package com.example.sample.feature.${feature}\n\nimport androidx.compose.foundation.layout.Arrangement\nimport androidx.compose.foundation.layout.Column\nimport androidx.compose.foundation.layout.fillMaxSize\nimport androidx.compose.foundation.layout.padding\nimport androidx.compose.material3.CircularProgressIndicator\nimport androidx.compose.material3.MaterialTheme\nimport androidx.compose.material3.Text\nimport androidx.compose.runtime.Composable\nimport androidx.compose.runtime.getValue\nimport androidx.compose.ui.Alignment\nimport androidx.compose.ui.Modifier\nimport androidx.compose.ui.tooling.preview.Preview\nimport androidx.compose.ui.unit.dp\nimport androidx.lifecycle.compose.collectAsStateWithLifecycle\nimport androidx.lifecycle.viewmodel.compose.viewModel\nimport com.example.sample.ui.component.AppButton\nimport com.example.sample.ui.component.AppButtonEmphasis\nimport com.example.sample.ui.core.UiState\nimport com.example.sample.ui.preview.PreviewRoot\n\n/** The ${feature} screen, wired to its [${feature}ViewModel]. */\n@Composable\ninternal fun ${feature}Screen(\n    onNavigateUp: () -> Unit,\n    modifier: Modifier = Modifier,\n    viewModel: ${feature}ViewModel = viewModel(),\n) {\n    val uiState by viewModel.uiState.collectAsStateWithLifecycle()\n    ${feature}Screen(\n        uiState = uiState,\n        onRefresh = viewModel::refresh,\n        onNavigateUp = onNavigateUp,\n        modifier = modifier,\n    )\n}\n\n/** The ${feature} screen as a function of its state. */\n@Composable\ninternal fun ${feature}Screen(\n    uiState: UiState<${feature}Content>,\n    onRefresh: () -> Unit,\n    onNavigateUp: () -> Unit,\n    modifier: Modifier = Modifier,\n) {\n    Column(\n        modifier = modifier\n            .fillMaxSize()\n            .padding(24.dp),\n        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),\n        horizontalAlignment = Alignment.CenterHorizontally,\n    ) {\n        when (uiState) {\n            UiState.Loading -> CircularProgressIndicator()\n\n            is UiState.Content -> {\n                Text(\n                    text = uiState.value.userName,\n                    style = MaterialTheme.typography.headlineSmall,\n                )\n                AppButton(text = \"Reload\", onClick = onRefresh)\n            }\n\n            is UiState.Error -> Text(\n                text = uiState.message,\n                style = MaterialTheme.typography.bodyMedium,\n                color = MaterialTheme.colorScheme.error,\n            )\n        }\n\n        AppButton(\n            text = \"Back\",\n            onClick = onNavigateUp,\n            emphasis = AppButtonEmphasis.Outlined,\n        )\n    }\n}\n\n@Preview(showBackground = true)\n@Composable\nprivate fun ${feature}ScreenContentPreview() {\n    PreviewRoot {\n        ${feature}Screen(\n            uiState = UiState.Content(${feature}Content(userName = \"katachi\")),\n            onRefresh = {},\n            onNavigateUp = {},\n        )\n    }\n}\n\n@Preview(showBackground = true)\n@Composable\nprivate fun ${feature}ScreenLoadingPreview() {\n    PreviewRoot {\n        ${feature}Screen(\n            uiState = UiState.Loading,\n            onRefresh = {},\n            onNavigateUp = {},\n        )\n    }\n}"
+              }
+            ]
+          },
+          {
+            "template": "feature.ViewModel",
+            "title": "ViewModel",
+            "args": [
+              {
+                "name": "feature",
+                "kind": "Capture",
+                "previewValue": "${feature}",
+                "parameter": "feature"
+              }
+            ],
+            "files": [
+              {
+                "pattern": "feature/${feature}/src/main/kotlin/com/example/sample/feature/${feature}/<feature.pascalCase>ViewModel.kt",
+                "fileName": "<feature.pascalCase>ViewModel.kt",
+                "path": "feature/${feature}/src/main/kotlin/com/example/sample/feature/${feature}/<feature.pascalCase>ViewModel.kt",
+                "captures": ["feature"],
+                "parameters": [],
+                "content": "package com.example.sample.feature.${feature}\n\nimport androidx.lifecycle.ViewModel\nimport com.example.sample.data.user.UserRepository\nimport com.example.sample.data.user.UserRepositoryImpl\nimport com.example.sample.ui.core.UiState\nimport kotlinx.coroutines.flow.MutableStateFlow\nimport kotlinx.coroutines.flow.StateFlow\nimport kotlinx.coroutines.flow.asStateFlow\n\n/** What [${feature}Screen] draws once it has something to draw. */\ninternal data class ${feature}Content(\n    val userName: String,\n)\n\n/** State holder of [${feature}Screen]. */\ninternal class ${feature}ViewModel(\n    private val userRepository: UserRepository = UserRepositoryImpl(),\n) : ViewModel() {\n    private val mutableUiState = MutableStateFlow<UiState<${feature}Content>>(UiState.Loading)\n\n    /** State of the ${feature} screen, collected by the composable. */\n    val uiState: StateFlow<UiState<${feature}Content>> = mutableUiState.asStateFlow()\n\n    init {\n        refresh()\n    }\n\n    /** Reads the current user again and republishes the screen state. */\n    fun refresh() {\n        mutableUiState.value = UiState.Content(\n            ${feature}Content(userName = userRepository.currentUserName()),\n        )\n    }\n}"
+              }
+            ]
+          },
+          {
+            "template": "feature.FeatureComponent",
+            "title": "Screen part",
+            "args": [
+              {
+                "name": "feature",
+                "kind": "Capture",
+                "previewValue": "${feature}",
+                "parameter": "feature"
+              },
+              {
+                "name": "name",
+                "kind": "Capture",
+                "previewValue": "${feature}Header",
+                "parameter": null
+              }
+            ],
+            "files": [
+              {
+                "pattern": "feature/${feature}/src/main/kotlin/com/example/sample/feature/${feature}/component/${name}.kt",
+                "fileName": "${name}.kt",
+                "path": "feature/${feature}/src/main/kotlin/com/example/sample/feature/${feature}/component/${feature}Header.kt",
+                "captures": ["feature", "name"],
+                "parameters": ["withPreview"],
+                "content": "package com.example.sample.feature.${feature}.component\n\nimport androidx.compose.foundation.layout.Arrangement\nimport androidx.compose.foundation.layout.Column\nimport androidx.compose.material3.MaterialTheme\nimport androidx.compose.material3.Text\nimport androidx.compose.runtime.Composable\nimport androidx.compose.ui.Modifier\nimport androidx.compose.ui.unit.dp\nimport androidx.compose.ui.tooling.preview.Preview\nimport com.example.sample.ui.preview.PreviewRoot\n\n/** Part of the ${feature} screen that no other screen uses. */\n@Composable\ninternal fun ${feature}Header(\n    title: String,\n    modifier: Modifier = Modifier,\n) {\n    Column(\n        modifier = modifier,\n        verticalArrangement = Arrangement.spacedBy(8.dp),\n    ) {\n        Text(text = title, style = MaterialTheme.typography.titleMedium)\n    }\n}\n\n@Preview(showBackground = true)\n@Composable\nprivate fun ${feature}HeaderPreview() = PreviewRoot {\n    ${feature}Header(title = \"${feature}Header\")\n}"
+              }
+            ]
+          }
+        ],
+        "exampleCommand": "./gradlew katachiTemplate --arg template=feature.NewFeature --arg feature=<feature>"
+      },
       {
         "templateSet": "data.NewRepository",
         "name": "NewRepository",
