@@ -6,9 +6,11 @@ import com.example.sample.forbiddenContents
 import com.example.sample.groups.featureSources
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
+import me.tbsten.katachi.dsl.camelCase
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.pascalCase
+import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /** The role of a feature module's only public entry: where the rest of the app navigates to. */
@@ -37,10 +39,37 @@ fun DeclarationContainerScope.route() = "Route".role {
     """.trimIndent()
     example("HomeRoute", "The destination of the home screen")
     example("SettingsRoute", "The destination of the settings screen")
+    // A new feature's Route, from the feature's name alone. Usually generated with its Screen and
+    // ViewModel as the set `feature.NewFeature`; the callback it registers is `onNavigateUp`.
+    //   ./gradlew :architecture-test:katachiTemplate --arg template=feature.Route --arg feature=profile
     layout {
         // `feature` is the module directory and the package directory alike, and the file name
         // follows it: feature/home/.../home/HomeRoute.kt, and nothing else named *Route.kt there.
         featureSources(capture("feature")) / "${capture("feature").pascalCase}Route".ktFile()
+            .template {
+                val feature = captureValue("feature")
+                val pascal = feature.pascalCase
+                // The same name the check derives from the file: SetsmokeRoute.kt -> setsmokeScreen.
+                val register = "${feature.camelCase}Screen"
+                """
+                    |package com.example.sample.feature.$feature
+                    |
+                    |import androidx.navigation.NavGraphBuilder
+                    |import androidx.navigation.compose.composable
+                    |
+                    |/** Navigation entry of the $feature feature: the only thing it publishes outside itself. */
+                    |object ${pascal}Route {
+                    |    const val PATH: String = "$feature"
+                    |}
+                    |
+                    |/** Registers the $feature screen as a destination of the graph being built. */
+                    |fun NavGraphBuilder.$register(onNavigateUp: () -> Unit) {
+                    |    composable(${pascal}Route.PATH) {
+                    |        ${pascal}Screen(onNavigateUp = onNavigateUp)
+                    |    }
+                    |}
+                """.trimMargin()
+            }
     }
     // `fileName` is a plain String: HomeRoute.kt holds `object HomeRoute` and `homeScreen(...)`.
     // Navigation is the only import, so another feature's Route cannot be reached from here.

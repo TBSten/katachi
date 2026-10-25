@@ -10,6 +10,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.pascalCase
+import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /**
@@ -58,10 +59,124 @@ fun DeclarationContainerScope.screen() = "Screen".role {
     """.trimIndent()
     example("HomeScreen", "The home screen")
     example("SettingsScreen", "The settings screen")
+    // A new feature's Screen in the two overloads above, with its two previews. It draws the
+    // `<Name>Content` of the ViewModel template, so the two are generated together, usually as the
+    // set `feature.NewFeature`.
+    //   ./gradlew :architecture-test:katachiTemplate --arg template=feature.Screen --arg feature=profile
     layout {
         // `feature` is the module directory and the package directory alike, and the file name
         // follows it: feature/home/.../home/HomeScreen.kt, and nothing else named *Screen.kt there.
         featureSources(capture("feature")) / "${capture("feature").pascalCase}Screen".ktFile()
+            .template {
+                val feature = captureValue("feature")
+                val screen = "${feature.pascalCase}Screen"
+                val content = "${feature.pascalCase}Content"
+                val viewModel = "${feature.pascalCase}ViewModel"
+                """
+                    |package com.example.sample.feature.$feature
+                    |
+                    |import androidx.compose.foundation.layout.Arrangement
+                    |import androidx.compose.foundation.layout.Column
+                    |import androidx.compose.foundation.layout.fillMaxSize
+                    |import androidx.compose.foundation.layout.padding
+                    |import androidx.compose.material3.CircularProgressIndicator
+                    |import androidx.compose.material3.MaterialTheme
+                    |import androidx.compose.material3.Text
+                    |import androidx.compose.runtime.Composable
+                    |import androidx.compose.runtime.getValue
+                    |import androidx.compose.ui.Alignment
+                    |import androidx.compose.ui.Modifier
+                    |import androidx.compose.ui.tooling.preview.Preview
+                    |import androidx.compose.ui.unit.dp
+                    |import androidx.lifecycle.compose.collectAsStateWithLifecycle
+                    |import androidx.lifecycle.viewmodel.compose.viewModel
+                    |import com.example.sample.ui.component.AppButton
+                    |import com.example.sample.ui.component.AppButtonEmphasis
+                    |import com.example.sample.ui.core.UiState
+                    |import com.example.sample.ui.preview.PreviewRoot
+                    |
+                    |/** The $feature screen, wired to its [$viewModel]. */
+                    |@Composable
+                    |internal fun $screen(
+                    |    onNavigateUp: () -> Unit,
+                    |    modifier: Modifier = Modifier,
+                    |    viewModel: $viewModel = viewModel(),
+                    |) {
+                    |    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                    |    $screen(
+                    |        uiState = uiState,
+                    |        onRefresh = viewModel::refresh,
+                    |        onNavigateUp = onNavigateUp,
+                    |        modifier = modifier,
+                    |    )
+                    |}
+                    |
+                    |/** The $feature screen as a function of its state. */
+                    |@Composable
+                    |internal fun $screen(
+                    |    uiState: UiState<$content>,
+                    |    onRefresh: () -> Unit,
+                    |    onNavigateUp: () -> Unit,
+                    |    modifier: Modifier = Modifier,
+                    |) {
+                    |    Column(
+                    |        modifier = modifier
+                    |            .fillMaxSize()
+                    |            .padding(24.dp),
+                    |        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+                    |        horizontalAlignment = Alignment.CenterHorizontally,
+                    |    ) {
+                    |        when (uiState) {
+                    |            UiState.Loading -> CircularProgressIndicator()
+                    |
+                    |            is UiState.Content -> {
+                    |                Text(
+                    |                    text = uiState.value.userName,
+                    |                    style = MaterialTheme.typography.headlineSmall,
+                    |                )
+                    |                AppButton(text = "Reload", onClick = onRefresh)
+                    |            }
+                    |
+                    |            is UiState.Error -> Text(
+                    |                text = uiState.message,
+                    |                style = MaterialTheme.typography.bodyMedium,
+                    |                color = MaterialTheme.colorScheme.error,
+                    |            )
+                    |        }
+                    |
+                    |        AppButton(
+                    |            text = "Back",
+                    |            onClick = onNavigateUp,
+                    |            emphasis = AppButtonEmphasis.Outlined,
+                    |        )
+                    |    }
+                    |}
+                    |
+                    |@Preview(showBackground = true)
+                    |@Composable
+                    |private fun ${screen}ContentPreview() {
+                    |    PreviewRoot {
+                    |        $screen(
+                    |            uiState = UiState.Content($content(userName = "katachi")),
+                    |            onRefresh = {},
+                    |            onNavigateUp = {},
+                    |        )
+                    |    }
+                    |}
+                    |
+                    |@Preview(showBackground = true)
+                    |@Composable
+                    |private fun ${screen}LoadingPreview() {
+                    |    PreviewRoot {
+                    |        $screen(
+                    |            uiState = UiState.Loading,
+                    |            onRefresh = {},
+                    |            onNavigateUp = {},
+                    |        )
+                    |    }
+                    |}
+                """.trimMargin()
+            }
     }
     // The two overloads named after the file, both internal, and the previews, all private.
     // Navigation and other features are not among the imports: leaving a screen is a callback.

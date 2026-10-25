@@ -34,6 +34,11 @@ feature does not touch this definition. Only tests name each module one by one, 
 the template content differs per screen; when adding a feature, add one line to
 `FeatureModule` too.
 
+A new feature's Route, Screen and ViewModel, with one screen part, can be generated as one
+set, `feature.NewFeature`, from one `--arg feature=`. The module's `build.gradle.kts` and
+its `include(":feature:<name>")` in `settings.gradle.kts` are not generated: add them by
+hand, after `:feature:home`'s.
+
 | Role | Summary |
 |---|---|
 | [Screen](./Screen.md) | A @Composable that implements the UI of one screen. One <Name>Screen.kt per :feature:<name> |

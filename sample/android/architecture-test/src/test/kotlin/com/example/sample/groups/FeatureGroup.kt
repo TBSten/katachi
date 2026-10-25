@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalKatachiApi::class)
+
 package com.example.sample.groups
 
 import com.example.sample.roles.featureComponent
@@ -5,11 +7,13 @@ import com.example.sample.roles.featureTest
 import com.example.sample.roles.route
 import com.example.sample.roles.screen
 import com.example.sample.roles.viewModel
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.LayoutDirectory
 import me.tbsten.katachi.dsl.LayoutDirectoryScope
 import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.gradle.*
+import me.tbsten.katachi.dsl.pascalCase
 
 /**
  * Roles of one feature: what every `:feature:<name>` module holds.
@@ -66,6 +70,11 @@ fun DeclarationContainerScope.featureGroup() = "feature".group {
         feature does not touch this definition. Only tests name each module one by one, because
         the template content differs per screen; when adding a feature, add one line to
         `FeatureModule` too.
+
+        A new feature's Route, Screen and ViewModel, with one screen part, can be generated as one
+        set, `feature.NewFeature`, from one `--arg feature=`. The module's `build.gradle.kts` and
+        its `include(":feature:<name>")` in `settings.gradle.kts` are not generated: add them by
+        hand, after `:feature:home`'s.
     """.trimIndent()
 
     screen()
@@ -73,6 +82,25 @@ fun DeclarationContainerScope.featureGroup() = "feature".group {
     route()
     featureComponent()
     featureTest()
+
+    // A whole feature from its name, as one set: Route, Screen and ViewModel named after it, and
+    // one screen part. The module's build.gradle.kts and its `include` are not files any role
+    // here holds, so they are written by hand; FeatureTest stays out, as its template is
+    // written per module.
+    //   ./gradlew :architecture-test:katachiTemplate --arg template=feature.NewFeature --arg feature=profile
+    "NewFeature".templateSet {
+        title = "New feature"
+        summary = "A feature module's Route, Screen, ViewModel and one screen part, named after the feature"
+        val feature by stringParameter()
+
+        template("feature.Route") { arg("feature", feature) }
+        template("feature.Screen") { arg("feature", feature) }
+        template("feature.ViewModel") { arg("feature", feature) }
+        template("feature.FeatureComponent") {
+            arg("feature", feature)
+            arg("name", "${feature.pascalCase}Header")
+        }
+    }
 }
 
 /**
