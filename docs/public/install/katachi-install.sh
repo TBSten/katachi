@@ -2251,11 +2251,17 @@ in ${sc_root_build_uri} (create plugins { } if there is none)."
 		[ "$MODULE_DIR" = "$MODULE_DIR_RECORDED" ] || update_checklist_meta "$_sc_wd/check-list.html" moduleDir "$MODULE_DIR"
 	fi
 
+	# 手順書の 2-2 と同じく、Gradle を直接起動せず CLI の test を勧める。
+	if _sc_wd=$(resolve_workdir); then
+		_sc_cli="$_sc_wd/tmp/katachi-install.sh"
+	else
+		_sc_cli="$0"
+	fi
 	say ""
-	say "次: ./gradlew ${MODULE_GRADLE_PATH}:test
+	say "次: sh ${_sc_cli} test
     architecture { } が空なので、すべてのファイルが Unexpected として報告されて
     落ちるのが正常です。Unexpected 以外のエラーが出た場合だけが問題です。" \
-		"Next: ./gradlew ${MODULE_GRADLE_PATH}:test
+		"Next: sh ${_sc_cli} test
     architecture { } is empty, so every file is reported as Unexpected and the test
     fails. That is expected. Only errors other than Unexpected are a problem."
 }
@@ -3277,7 +3283,12 @@ settings_block_info() {
 			c = gsub(/\}/, "}", line)
 			if (!start && depth == 0 && $0 ~ ("^[[:space:]]*" outer "[[:space:]]*[{]")) {
 				start = NR
-				if (o > 0 && o == c) oneline = 1
+				if (o > 0 && o == c) {
+					oneline = 1
+					# `pluginManagement { repositories { mavenCentral() } }` のように1行に
+					# 収まっていれば、その行が repositories { } の範囲でもある。
+					if ($0 ~ /[{][[:space:]]*repositories[[:space:]]*[{]/) { repo = NR; repo_end = NR }
+				}
 			}
 			if (start && !end && !repo && depth == 1 && $0 ~ /^[[:space:]]*repositories[[:space:]]*[{]/) {
 				repo = NR
