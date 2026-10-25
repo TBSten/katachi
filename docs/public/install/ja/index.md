@@ -147,7 +147,7 @@ sh /tmp/katachi-install.sh init --lang ja
 - Gradle のプロジェクトであることの確認（違えば止まる）
 - Git 管理下かの確認（無ければ警告する）
 - 作業用ディレクトリの決定と作成（`.gitignore` されている置き場があればその中、無ければ `tmp/install-katachi/`）
-- katachi の最新バージョンの取得（Gradle plugin の無い 0.2.0 未満なら、何も作らずに止まる）
+- katachi の最新バージョンの取得（この手順が前提にする 0.3.0 より前なら、何も作らずに止まる）
 - プロジェクトが使っている Kotlin バージョンの検出
 - `check-list.html` と `project-code-base-report.html` の配置
 - この手順書の取得（`guide` が節ごとに出すための原文。取り直すときは `sh $CLI guide --refresh`）
@@ -158,7 +158,7 @@ sh /tmp/katachi-install.sh init --lang ja
 
 ```
 KATACHI_WORKDIR=/path/to/project/tmp/install-katachi
-KATACHI_VERSION=0.2.0
+KATACHI_VERSION=0.3.0
 KATACHI_PROJECT_ROOT=/path/to/project
 KATACHI_KOTLIN=2.4.10
 KATACHI_GIT=yes
@@ -356,7 +356,7 @@ sh $CLI data merge report <KATACHI_WORKDIR>/tmp/roles.json
 #### Role 候補の洗い出しの指針
 
 - **Role 候補は group の木として書く。** group は「モジュール → 層 → 種類」の順で入れ子にし、1 つの group に Role を 8 個以上並べない（並ぶなら group を切る）
-- **`build.gradle.kts` / `settings.gradle.kts` / `gradle.properties` / version catalog は `gradle()` が受け持つ。** モジュール種別ごとの Role を作らない。`add role` も拒む（`buildSrc` と `includeBuild` したビルドは除く）。例外は、ビルドファイルに制約（namespace とパッケージの一致など）を付けるためだけの Role で、`add role --constraint-only --note <理由>` で記録する。この Role は 3-3 で `gradle()` の 1 行に置き換える対象から除く
+- **`build.gradle.kts` / `settings.gradle.kts` / `gradle.properties` / version catalog は `gradle()` が受け持つ。** モジュール種別ごとの Role を作らない。`add role` も拒む（`buildSrc` と `includeBuild` したビルドは除く）。例外は、ビルドファイルに制約（namespace とパッケージの一致など）を付けたいもので、`add role --constraint-only --note <理由>` で記録する。定義では Role にせず、制約を `gradle { buildScript { } }` などの hook に書く。hook の制約は全モジュールのビルドファイルを受け取るので、1 つのモジュールだけを見るなら制約の中で絞る（3-2 の「1 つの Role = 1 種類のファイル」の Gradle の段落）
 - **`documented = false` にするもの:** (1) 生成物（build 出力、コミットされた生成コード）、(2) ビルド・ツールの設定（`.editorconfig`、CI の yaml、lint の設定）、(3) 1 ファイルしかない補助（README、LICENSE、`.gitignore`）。利用者が読んで役に立つ Role だけを生成ドキュメントに載せる
 - **Android の定番（`AndroidManifest.xml`、`res/`）は、レシピをコピーして合わせる。** https://tbsten.github.io/katachi/ja/recipes/android-three-layer/ の定義を元にする
 
@@ -431,7 +431,7 @@ JVM toolchain は、プロジェクトに既にある設定（ほかのモジュ
 
 例外は、生成されたファイルを変えないとビルドがそもそも動かない場合だけです。これは上のルールより優先します。ただしその場合はスクリプト側のバグなので、`add changed` に理由を書いて記録し、`questions` にも登録してください。
 
-`konsist { }` を使わない方針が決まっている場合だけ `--no-konsist` を付ける。決まっていなければデフォルトのままでよい。
+`konsist { }` も `ktFileContent { }` も使わない方針が決まっている場合だけ `--no-konsist` を付ける（どちらも katachi-konsist に入っている）。この構成ではテストが `assert()` に `FileConstraintCheck()` を渡さないので、`gradle { }` の hook に書いた `fileConstraint` も評価されず、test は `[UncheckedFileConstraint]` で失敗する（How to fix は `Pass FileConstraintCheck() to assert()`）。決まっていなければデフォルトのままでよい。
 
 作成できたら `sh $CLI check 2-1`。
 
@@ -451,22 +451,42 @@ JDK: 21（JAVA_HOME）
 結果: Katachi check failed: 4 violations (Unexpected: 4)
 ```
 
-ログの中では、違反ごとに次の形の段落が続きます。
+ログの中では、違反ごとに次の形の段落が続きます（ファイルとディレクトリの例）。
 
 ```
-[UnexpectedFile] build.gradle.kts
+[UnexpectedFile] file:///path/to/project/.gitignore
   No role is defined for this file.
 
   How to fix:
+    - Delete it if it is not needed
     - Add a new role for it:
-        "BuildGradle".role { ... }
+        "Gitignore".role {
+          summary = "TODO"
+          layout {
+            ".gitignore".file()
+          }
+        }
+
+[UnexpectedDirectory] file:///path/to/project/.gemini
+  No role is defined for this directory. Nothing below it was checked.
+
+  How to fix:
+    - Delete it if it is not needed
+    - Declare what belongs in it in the layout of an existing role
+    - Add a new role for it:
+        "Gemini".role {
+          summary = "TODO"
+          layout {
+            ".gemini" { ignore() }
+          }
+        }
 ```
 
-違反の表示件数はデフォルトで 10 件です。導入中は数十〜百件出るので、全件が要るときは `sh $CLI test -- -Dkatachi.maxViolations=all` で出します（`--` より後ろは `./gradlew` にそのまま渡り、katachi の Gradle plugin がテストの JVM に届けます。katachi 0.3 以降）。テストのコードに `maxViolations` を書く必要はありません。
+違反の表示件数はデフォルトで 10 件です。導入中は数十〜百件出るので、全件が要るときは `sh $CLI test -- -Dkatachi.maxViolations=all` で出します（`--` より後ろは `./gradlew` にそのまま渡り、katachi の Gradle plugin がテストの JVM に届けます）。テストのコードに `maxViolations` を書く必要はありません。
 
 **この形で落ちていれば配線は正しい**ということです。
 
-Gradle を初めて動かすと、Kotlin 2.x が `.kotlin/` を作ります。プロジェクトの `.gitignore` に無いと `[UnexpectedDirectory] .kotlin` が出ます。`init` の警告（未追跡で ignore もされていないもの）と同じ扱いで、`.gitignore` に足すかどうかをユーザに確認してください。`.gitignore` を自分で書き換えないこと。`Unexpected` 以外のエラー、たとえばコンパイルエラー、依存の解決失敗、`Could not start Gradle Test Executor` のようなものが出た場合だけが問題です（要約は `結果: 検査まで届いていません` になり、ログの末尾が添えられます）。
+Gradle を初めて動かすと、Kotlin 2.x が `.kotlin/` を作ります。プロジェクトの `.gitignore` に無いと `[UnexpectedDirectory] .kotlin` が出ます。Gradle が作る `.gradle/` も同じです。`init` の警告（未追跡で ignore もされていないもの）と同じ扱いで、`.gitignore` に足すかどうかをユーザに確認してください。`.idea/` の中に git が追跡しているファイル（`.idea/codeStyles/` など）があれば、それも検査の対象なので、ステップ 3 で Role を書いて宣言します（中身を検査しないなら `ignore()` でよい）。`.gitignore` を自分で書き換えないこと。`Unexpected` 以外のエラー、たとえばコンパイルエラー、依存の解決失敗、`Could not start Gradle Test Executor` のようなものが出た場合だけが問題です（要約は `結果: 検査まで届いていません` になり、ログの末尾が添えられます）。
 
 その場合はステップ 4 と同じ方針で、**katachi に関係ないエラー（Gradle・Java・依存解決）は修正を試みてください。** それでも解けない場合だけ、出力をそのままユーザに伝えて判断を仰ぎます。
 
@@ -496,10 +516,10 @@ sh $CLI add changed --path "gradle/libs.versions.toml" --change "変更" --summa
 sh $CLI docs --topic layout
 sh $CLI docs --topic role
 sh $CLI docs --topic basic-api
-sh $CLI docs --topic konsist     # konsist { } を使うときだけ
+sh $CLI docs --topic kt-file-content     # ktFileContent { } を使うときだけ
 ```
 
-ガイドを話題ごとに切り出して取得し、ファイルのパスを出します。そのファイルを読んでください。**ガイド全体（`sh $CLI docs`）を読まないこと。** 定義を書くのに要るのは上の 4 つだけです。話題の一覧は `sh $CLI docs --topics` で出ます。どれもすでに取得済みなら取り直しません。
+ガイドを話題ごとに切り出して取得し、ファイルのパスを出します。そのファイルを読んでください。**ガイド全体（`sh $CLI docs`）を読まないこと。** 定義を書くのに要るのは上の 4 つだけです。`konsist { }` の書き方は `role` の「中身に制約をかける」（取得される英語版では "Constraining the contents"）と、`basic-api` の 7 節（"7. Constraining a file’s contents with `"...".konsist { }`"）にあります。話題の一覧は `sh $CLI docs --topics` で出ます。どれもすでに取得済みなら取り直しません。
 
 **取得されるのは英語版です。** ドキュメントサイトのデフォルトロケールが英語で、この形式はデフォルトロケールのぶんしか生成されないためです。DSL の API 名は言語に依らないので、定義を書くうえでは差し支えない。
 
@@ -521,18 +541,21 @@ sh $CLI docs --topic konsist     # konsist { } を使うときだけ
 
 **まず動く定義を作ることが目的です。** 1ファイルに書いてかまいません。ファイルの分割や重複の整理は 3-3 でします。API に迷ったら 3-1 の「API に迷ったら」の llms.txt を読んでください。
 
-**よく使う import はこれです。** ドキュメントのサンプルには import が書かれていないので、ここに置いておきます。
+**よく使う import はこれです。** ドキュメントの断片の例には import が書かれていないので、ここに置いておきます。
 
 ```kt
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.DeclarationContainerScope   // 定義を関数に分割するとき
-import me.tbsten.katachi.dsl.gradle.*                    // module / sourceSet / kotlin / gradle() / `/` 演算子
+import me.tbsten.katachi.dsl.gradle.*                    // mainSourceSet / testSourceSet / kotlin / gradle() / `/` 演算子
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 import me.tbsten.katachi.konsist.konsist                 // konsist { } を書くとき
+import me.tbsten.katachi.konsist.declarations.ktFileContent   // ktFileContent { } を書くとき（実験的な API）
 ```
 
 `me.tbsten.katachi.dsl.gradle` は**スター import にしてください。** `/` は `div` 演算子なので、個別に import すると連結が書けません。
+
+**`capture()`・`fileConstraint`・`FileConstraintFailure`・`ktFileContent { }` は実験的な API です。** 1 つでも使うファイルには、先頭に `@file:OptIn(ExperimentalKatachiApi::class)` を書き、import に `import me.tbsten.katachi.ExperimentalKatachiApi` を足します。書かないと、使った箇所ごとにコンパイルエラーになります。
 
 **`val projectArchitecture` の名前とパッケージは変えないこと。** 検査用モジュールの `build.gradle.kts` の `katachi { architecture = "..." }` がこの完全修飾名を指しています。定義を関数やファイルに分割するのは自由です（3-3）。
 
@@ -552,7 +575,9 @@ import me.tbsten.katachi.konsist.konsist                 // konsist { } を書�
 
 ルート直下のファイルは `layout { }` の直下にそのまま書けます（`"README.md".file()`）。1つの Role にまとめて書く必要はありません。
 
-**Gradle のファイル（wrapper・settings・各モジュールのビルドスクリプト・`gradle.properties`・version catalog）は、Role を自分で書かずに `gradle()` を1行書いてください。** 種類ごとの Role に分けた `Gradle` group を katachi が宣言します（katachi 0.2 以降。`me.tbsten.katachi.dsl.gradle.*` のスター import に入っています）。対象外の `buildSrc` と、`includeBuild` したビルドだけは自分で Role を書きます。
+**Gradle のファイル（wrapper・settings・各モジュールのビルドスクリプト・`gradle.properties`・version catalog）は、Role を自分で書かずに `gradle()` を1行書いてください。** 種類ごとの Role に分けた `Gradle` group を katachi が宣言します（`me.tbsten.katachi.dsl.gradle.*` のスター import に入っています）。対象外の `buildSrc` と、`includeBuild` したビルドだけは自分で Role を書きます。
+
+ビルドファイルの中身を検査したいとき（レポートで `constraintOnly` の印が付いたもの）も、Role は書きません。`gradle { buildScript { fileConstraint("...") { subject -> ... } } }` のように、`gradle()` のブロックの hook に制約を書きます（settings なら `settingsScript { }`、version catalog なら `versionCatalog { }`）。`fileConstraint` と `FileConstraintFailure` は実験的な API なので、上の「実験的な API」の段落のとおり opt-in（`@file:OptIn(ExperimentalKatachiApi::class)` と `import me.tbsten.katachi.ExperimentalKatachiApi`）が要ります。`buildScript { }` の制約は、ルートを含む全モジュールの `build.gradle(.kts)` を `subject.files` に受け取ります。1 つのモジュールだけを見るなら、制約の中で `subject.files` をパスで絞ります（例: `subject.files.filter { it == "app/build.gradle.kts" }`）。`gradle { }` の中に katachi の Role と同じ名前の Role（`"BuildScript".role { }` など）を書くと、重複の例外になります。`gradle { }` の外の Role でビルドファイルを宣言すると、katachi の `BuildScript` と同じファイルを取り合って `[AmbiguousLayout]` になります。
 
 <details>
 <summary>よくある誤りと直し方</summary>
@@ -589,12 +614,12 @@ import me.tbsten.katachi.konsist.konsist                 // konsist { } を書�
 
 #### 配置だけで終わらせない
 
-**ステップ1で読んだドキュメントの規約を、`konsist { }` の候補として棚卸ししてください。** 配置だけの定義は、ファイルが正しい場所にあることしか言いません。
+**ステップ1で読んだドキュメントの規約を、中身の制約（`ktFileContent { }` / `konsist { }`）の候補として棚卸ししてください。** 配置だけの定義は、ファイルが正しい場所にあることしか言いません。`ktFileContent { }` は実験的な API なので、書くファイルに opt-in（`@file:OptIn(ExperimentalKatachiApi::class)`）が要ります。書き方は `sh $CLI docs --topic kt-file-content` で取得します。
 
 **受け皿の Role を作らないこと。** `commonMain/**/*.kt` のように「その場所なら何でもよい」という layout は、検査しているようで何も検査していません。実際に導入後の検証で、**同じ責務のテストが別の場所に作られてそのまま受理された**例があります。受け皿になってしまう場合は、最低でもどちらかを付けてください。
 
 - ファイル名のパターン（`"*ViewModel".ktFile()` のように）
-- `konsist { }` の制約を1つ（「この Role のファイルは何を宣言するか」）
+- 中身の制約を1つ（「この Role のファイルは何を宣言するか」。`ktFileContent { }` か `konsist { }` で書く）
 
 ファイルの import を見る制約は、`classes()` ではなく `files` に書きます。ドキュメントの規約の多くは「これを import しない」の形です。
 
@@ -645,8 +670,8 @@ sh $CLI test --save before-refactor
 - [ ] **分割に使う関数を `inline` にしていない。** katachi は違反の宣言位置をスタックトレースから読むので、`inline` にすると行番号がずれる
 - [ ] **分けた定義ファイルが検査に通る。** 定義ファイル自身も検査の対象です。検査用モジュールを受け持つ Role の `layout { }` が `<group>/<role>/<Role>.kt` の深さまで受け入れること
 - [ ] **1 つの Role = 1 種類のファイル。** すべての Role を 3-2 の「1 つの Role = 1 種類のファイル」の3つの問いで見直した。`lint` の警告が 0 件か、残すものは理由を `sh $CLI warn 3 "..."` に書いた
-- [ ] **Gradle まわりは `gradle()` の1行。** Gradle のファイルを手書きの Role で宣言していない（`buildSrc` と `includeBuild` したビルドは除く。ビルドファイルに制約を付けるための Role も除く。レポートで `constraintOnly` の印が付いたもの）
-- [ ] **受け皿の Role が残っていない。** `anyFile()` / `ignore()` の寄せ集めや、「その場所なら何でもよい」`layout` の Role に、ファイル名のパターンか `konsist { }` の制約が付いている（3-2 の「配置だけで終わらせない」）
+- [ ] **Gradle まわりは `gradle()` の1行。** Gradle のファイルを手書きの Role で宣言していない（`buildSrc` と `includeBuild` したビルドは除く）。ビルドファイルへの制約（レポートで `constraintOnly` の印が付いたもの）は、`gradle { buildScript { } }` などの hook に書いた（1 つのモジュールだけを見る制約は、`subject.files` をパスで絞った）
+- [ ] **受け皿の Role が残っていない。** `anyFile()` / `ignore()` の寄せ集めや、「その場所なら何でもよい」`layout` の Role に、ファイル名のパターンか中身の制約（`ktFileContent { }` / `konsist { }`）が付いている（3-2 の「配置だけで終わらせない」）
 - [ ] **説明がそろっている。** Role と group に `title` / `summary` / `description`、Role に `example()`（実例のファイル名）。中身はステップ 1 のレポートの `roles` から取る。1-2 の指針で `documented = false` にすると決めた Role には、そう書いてある
 - [ ] **重複を共通化した。** 同じ `layout` を複数の Role に書き写していない（関数に切り出す）。パッケージのディレクトリのような何度も出る値を `val` に切り出した
 - [ ] **検査結果が前後で変わらない。** 下の「前後で比べる」が「変わっていません」で終わる
@@ -756,7 +781,7 @@ sh $CLI summary
 
 材料はステップ 1 のレポートの `roles` です（`sh $CLI data get report roles`）。**向いているのは、同じ形のファイルが何本もある Role**です（UseCase、ViewModel、Screen、Repository など）。`count` が小さい Role や、1本ごとに形が違う Role には提案しないこと。
 
-**`feature/*/...` のように、生成先のディレクトリがワイルドカードの Role も対象です**（ViewModel、Screen はたいていこの形です）。その `*` に `capture("feature")` で名前を付ければ、`--arg feature=home` で生成先を選べます（6-D の手順 2）。**生成先に残る `*` は、モジュールのディレクトリのものもパッケージのディレクトリのものもすべて名前が要ります。**名前を付けられないのは `**` だけで（部分一致は `capture()` で名前を付けられます）、生成先が `**` しか無い Role には提案しないこと。
+**`feature/*/...` のように、生成先のディレクトリがワイルドカードの Role も対象です**（ViewModel、Screen はたいていこの形です）。その `*` に `capture("feature")` で名前を付ければ、`--arg feature=home` で生成先を選べます（6-D の手順 2）。**生成先に残る `*` は、モジュールのディレクトリのものもパッケージのディレクトリのものもすべて名前が要ります。**2 つが同じ値になるなら、1 つの名前を両方に付けます（`capture("feature")` を 2 か所に書く）。名前を付けられないのは `**` だけで（部分一致は `capture()` で名前を付けられます）、生成先が `**` しか無い Role には提案しないこと。
 
 Role ごとに次を決め、`add template` で記録します。
 
@@ -764,14 +789,14 @@ Role ごとに次を決め、`add template` で記録します。
 |---|---|
 | `--role` | Role の名前（`architecture { }` に書いた名前） |
 | `--files` | 作るファイル名。**複数回渡せる。** `${name}UseCase.kt` のように、パラメータを埋め込んだ形で書く（同じ種類のファイルの名前の形が複数あるときだけ。interface と実装のように種類が違うものは Role を分け、`add template` を Role ごとに1回ずつ実行する） |
-| `--params` | `stringParameter()` などの `*Parameter()` で受けるパラメータ名と、生成先のワイルドカードに付ける名前（例: `feature`）。複数回渡せる。**生成先の `*` が複数あれば（モジュールのディレクトリとパッケージのディレクトリなど）、その数だけ並べる** |
+| `--params` | `stringParameter()` などの `*Parameter()` で受けるパラメータ名と、生成先のワイルドカードに付ける名前（例: `feature`）。複数回渡せる。**生成先の `*` に付けた名前の数だけ並べる**（モジュールのディレクトリとパッケージのディレクトリに同じ名前を付けたなら 1 つ） |
 | `--basedOn` | 雛形の元にする既存ファイル（`roles[].examples` の1本） |
 | `--reason` | その Role に当てる理由（件数と、形が揃っていること） |
 
 ```sh
 sh $CLI add template --role UseCase --files '${name}UseCase.kt' --params name --basedOn "domain/src/main/kotlin/com/example/app/domain/useCase/GetUserUseCase.kt" --reason "18 件がすべて interface で、形が揃っている"
 sh $CLI add template --role UseCaseImplementation --files '${name}UseCaseImpl.kt' --params name --basedOn "data/src/main/kotlin/com/example/app/data/useCase/GetUserUseCaseImpl.kt" --reason "18 件がすべて UseCase の実装で、形が揃っている"
-sh $CLI add template --role ViewModel --files '${name}ViewModel.kt' --params feature --params featurePackage --params name --basedOn "feature/home/src/main/kotlin/com/example/app/feature/home/HomeViewModel.kt" --reason "12 件が feature/* の各モジュールに1本ずつあり、形が揃っている。feature/* の * とパッケージのディレクトリの * に名前を付けて生成先を選ぶ"
+sh $CLI add template --role ViewModel --files '${name}ViewModel.kt' --params feature --params name --basedOn "feature/home/src/main/kotlin/com/example/app/feature/home/HomeViewModel.kt" --reason "12 件が feature/* の各モジュールに1本ずつあり、形が揃っている。feature/* の * とパッケージのディレクトリの * は同じ名前なので、1 つの名前 feature で生成先を選ぶ"
 ```
 
 当てられる Role が無いと判断したら、何も記録しなくて構いません。記録したものは `summary` の「Next action」とレポートの「テンプレートの提案」に出ます。**`.template { }` をここで書かないこと。** 書くのはユーザが同意した後の 6-D です。
@@ -972,14 +997,14 @@ Pull request 作成時・Merge request 作成時・pre-push hook など、スト
        layout {
            // 元は "feature" / "*" / mainSourceSet / kotlin / "com/example/app/feature" / "*" / "*ViewModel".ktFile()
            "feature" / capture("feature") / mainSourceSet / kotlin /
-               "com/example/app/feature" / capture("featurePackage") /
+               "com/example/app/feature" / capture("feature") /
                "${capture("name")}ViewModel".ktFile()
                    .template {
-                       val featurePackage = captureValue("featurePackage")   // --arg featurePackage=home なら "home"
-                       val name = captureValue("name")                       // --arg name=Home なら "Home"
+                       val feature = captureValue("feature")   // --arg feature=home なら "home"
+                       val name = captureValue("name")         // --arg name=Home なら "Home"
 
                        """
-                           package com.example.app.feature.$featurePackage
+                           package com.example.app.feature.$feature
 
                            class ${name}ViewModel
                        """.trimIndent()
@@ -988,9 +1013,9 @@ Pull request 作成時・Merge request 作成時・pre-push hook など、スト
    }
    ```
 
-   ディレクトリの `*` は、`"feature" / "*" / ...` の `"*"` を `capture("feature")` に書き換える。`*` が複数あれば、`"feature" / capture("feature") / capture("layer") / ...` のようにそれぞれに別の名前の `capture()` を書く。**同じ名前の capture は1本のパスで2回使えない**（`KatachiDuplicateCaptureException` になる）。
+   ディレクトリの `*` は、`"feature" / "*" / ...` の `"*"` を `capture("feature")` に書き換える。`*` が複数あれば、`"feature" / capture("feature") / capture("layer") / ...` のようにそれぞれに `capture()` を書く。
 
-   **生成先のディレクトリ部分に残る `*` は、すべて名前を付ける。** 上の例のようにモジュールのディレクトリの `*` とパッケージのディレクトリの `*` の両方があるなら、それぞれに別の名前の `capture(...)` が要る。1つでも名前の無い `*` が残ると、`.template { }` を付けたファイルの layout を展開する時点でエラーになる（`assert()` で分かり、`katachiTemplate` の実行を待たない）。
+   **生成先のディレクトリ部分に残る `*` は、すべて名前を付ける。** 上の例のようにモジュールのディレクトリの `*` とパッケージのディレクトリの `*` が同じ値になるなら、1 つの名前（`capture("feature")`）を両方に書く。katachi は 2 か所が同じ値かを検査し、食い違うファイルを `[CaptureMismatch]` にする。値が違ってよいなら、それぞれに別の名前を付ける。1つでも名前の無い `*` が残ると、`.template { }` を付けたファイルの layout を展開する時点でエラーになる（`assert()` で分かり、`katachiTemplate` の実行を待たない）。
 
    **パッケージのディレクトリ名がモジュールのディレクトリ名と違う（モジュール `appConfig` とディレクトリ `appconfig` など）なら、そのディレクトリの `*` にもモジュールとは別の名前を付け、その `captureValue()` を package に使う。** モジュールの名前（`captureValue("feature")`）を package に入れると、ディレクトリと食い違う package が書かれ、検査もコンパイルも通るので気づけない。
 
@@ -1006,7 +1031,7 @@ Pull request 作成時・Merge request 作成時・pre-push hook など、スト
    ワイルドカードに名前を付けた Role は、その値も渡す。**ディレクトリの値は、存在しない名前を渡してもそのまま生成先のパスになる**（打ち間違えると、無いディレクトリにファイルを作る）。実在するディレクトリ名を渡すこと。
 
    ```sh
-   ./gradlew :architecture-test:katachiTemplate --arg template=ViewModel --arg feature=home --arg featurePackage=home --arg name=Sample
+   ./gradlew :architecture-test:katachiTemplate --arg template=ViewModel --arg feature=home --arg name=Sample
    sh $CLI test
    ```
 
