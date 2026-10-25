@@ -108,7 +108,10 @@ class KtFileContentOptionalModifierErrorSpec : FreeSpec({
         "inline は fun・val・var に、external は typealias 以外に書ける" {
             shouldNotThrowAny { rulesOf { allow(inline, `val` or `var`, "*") } }
             shouldNotThrowAny { rulesOf { allow(external, `class` or `interface` or `object`, "*"); allow(external, `val`, "*") } }
-            judged("package com.example\n\ninline val Int.twice get() = this * 2\n") { allow(inline, `val`, "*") } shouldBe emptyList()
+            judged("package com.example\n\ninline val Int.twice get() = this * 2\n") {
+                `package`("**")
+                allow(inline, `val`, "*")
+            } shouldBe emptyList()
         }
 
         "inline val を許す直し方の行は、例外を投げずに書ける" {

@@ -191,9 +191,13 @@ class KonsistFactsSpec : FreeSpec({
 
         "明示の import が同じ package の名前を隠す" {
             judged("package com.example\n\nimport other.Marker\n\n@Marker\nclass Sample\n") {
+                `package`("**")
+                `import`("**")
                 required(annotated("com.example.Marker"), `class`, fileName)
             }.size shouldBe 1
             judged("package com.example\n\nimport other.Marker\n\n@Marker\nclass Sample\n") {
+                `package`("**")
+                `import`("**")
                 required(annotated("other.Marker"), `class`, fileName)
             } shouldBe emptyList()
         }

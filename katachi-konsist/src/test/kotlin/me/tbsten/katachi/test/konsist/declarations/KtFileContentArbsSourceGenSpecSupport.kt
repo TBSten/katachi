@@ -12,7 +12,9 @@ internal fun GenContext.sourceOf(list: GenList, placement: GenPlacement, depth: 
     val free = if (anythingElse.isEmpty()) {
         emptyList()
     } else {
-        List(random.nextInt(0, 3)) { freeDeclaration(random.pick(anythingElse), placement, container) }
+        // A class a line named * also matches is that line's, whose members it then decides: no Helper is made of such a kind.
+        val takenTypes = list.lines.filter { it.isBareWildcard && !it.prohibited }.flatMap { it.kinds }.filter { it.isType }.toSet()
+        List(random.nextInt(0, 3)) { freeDeclaration(random.pick(anythingElse), placement, container, takenTypes) }
     }
     return (instances + free).shuffled(random)
 }
@@ -57,11 +59,8 @@ private fun GenContext.instanceOf(
             modifiers = keywords,
             annotations = annotations,
             supertypes = line.superclasses.map { spellSupertype(it, kind) } + listOfNotNull("Closeable".takeIf { random.chance(15) }),
-            members = when {
-                line.members != null -> sourceOf(line.members, GenPlacement.ClassBody, depth + 1, container = kind)
-                random.chance(30) -> uncheckedDeclarations(GenPlacement.ClassBody)
-                else -> null
-            },
+            // A line without `{ }` allows no member, as an empty one does.
+            members = line.members?.let { sourceOf(it, GenPlacement.ClassBody, depth + 1, container = kind) },
         )
         kind == GenKind.Function -> functionOf(line, name, keywords, annotations, container)
         kind == GenKind.TypeAlias -> SrcDecl(kind, name, keywords, annotations)
@@ -154,17 +153,15 @@ private fun GenContext.spellSupertype(pattern: String, kind: GenKind): String {
 private fun GenContext.spellType(sample: TypeSample): String = random.pick(sample.matching).fillIn(fileName)
 
 /** A declaration only an `allow(..., anythingElse)` alternative allows: named `Helper<n>`, carrying what [alternative] asks for. */
-private fun GenContext.freeDeclaration(alternative: GenModifiers, placement: GenPlacement, container: GenKind?): SrcDecl {
-    val kind = random.pick(if (placement == GenPlacement.File) GenKind.entries else GenKind.entries - GenKind.TypeAlias)
+private fun GenContext.freeDeclaration(
+    alternative: GenModifiers,
+    placement: GenPlacement,
+    container: GenKind?,
+    takenTypes: Set<GenKind>,
+): SrcDecl {
+    val kind = random.pick((if (placement == GenPlacement.File) GenKind.entries else GenKind.entries - GenKind.TypeAlias) - takenTypes)
     val keywords = if ("public" in alternative.keywords && random.chance(50)) alternative.keywords - "public" else alternative.keywords
     return plainDeclaration(kind, nameOf(kind, "Helper") + number(), keywords, alternative.annotations.map { spellAnnotation(it) }, container)
-}
-
-/** A few declarations of a list that nothing looks at. */
-internal fun GenContext.uncheckedDeclarations(placement: GenPlacement): List<SrcDecl> = List(random.nextInt(1, 3)) {
-    val kind = random.pick(if (placement == GenPlacement.File) GenKind.entries else GenKind.entries - GenKind.TypeAlias)
-    val visibility = random.pickOrNull(listOf("internal", "private")).takeIf { random.chance(40) }
-    plainDeclaration(kind, nameOf(kind, "Free") + number(), listOfNotNull(visibility), emptyList(), container = null)
 }
 
 /** A declaration of [kind] that writes nothing but [keywords] and [annotations]: no type, no parameter, no member. */
@@ -186,11 +183,13 @@ internal fun importAllowed(lines: List<GenImportLine>, path: String): Boolean =
     lines.none { it.prohibited && importLineMatches(it.pattern, it.except, path) } &&
         lines.any { !it.prohibited && importLineMatches(it.pattern, it.except, path) }
 
-/** The import lines of a case (none when [check] is `false`) and imports that follow them, the annotations' imports among them. */
+/** The import lines of a case (when [check] is `false`, only the one the annotations' imports need) and imports that follow them, the annotations' imports among them. */
 internal fun GenContext.importsOf(check: Boolean, options: GenOptions): Pair<List<GenImportLine>, List<GenImport>> {
     if (!check) {
-        val paths = (IMPORT_TABLE.keys.shuffled(random).take(random.nextInt(0, 4)) + annotationImports).distinct()
-        return emptyList<GenImportLine>() to paths.map(::importOf)
+        // Deny by default: with no import line, a source that follows the rules imports nothing, so
+        // the annotations' imports need the one line that allows them.
+        if (annotationImports.isEmpty()) return emptyList<GenImportLine>() to emptyList()
+        return listOf(GenImportLine("com.example.annotations.*")) to annotationImports.map(::importOf)
     }
     val lines = ALLOWED_IMPORT_PATTERNS.shuffled(random).take(random.nextInt(1, 4)).map { GenImportLine(it) }.toMutableList()
     if (random.chance(40)) lines += GenImportLine(EXACT_IMPORT)

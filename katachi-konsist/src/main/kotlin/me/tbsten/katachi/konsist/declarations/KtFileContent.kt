@@ -13,10 +13,13 @@ private const val KT_FILE_CONTENT_NAME: String = "ktFileContent"
  * declarations directly in them and the members of their classes -- written the way the file
  * itself is written.
  *
- * - **Only the kinds a line is written for are checked, each as an allow list.** Write an import
- *   line, and every import no line allows is a violation; write none, and imports are not looked
- *   at. The same goes for the package, the declarations, and the members of each class line
- *   given a `{ }`.
+ * - **Nothing is allowed that no line allows (deny by default).** An empty `ktFileContent { }`
+ *   rejects the file's package declaration, every import and every declaration. The package, the
+ *   imports, the declarations and the members of each class line are each an allow list of the
+ *   lines written for them; one no line is written for allows nothing, and a class line without
+ *   `{ }` allows no member, as an empty `{ }` does. Open a kind up with `` `package`("**") ``
+ *   (which a file declaring no package passes too), `` `import`("**") ``, `allow(anythingElse)`,
+ *   or `{ allow(anythingElse) }` on a class line.
  * - **Nothing is special by default.** Private declarations and imports of the same role count
  *   like any other; open them up with `allow(private, anythingElse)` or `` `import`("**") ``.
  * - **A line's modifiers are the declaration's, as its Kotlin source writes them.**
@@ -74,6 +77,9 @@ private const val KT_FILE_CONTENT_NAME: String = "ktFileContent"
  * "UseCase".role {
  *     layout { "core/domain" / mainSourceSet / kotlin / "com/example/domain" / "*UseCase".ktFile() }
  *     ktFileContent {
+ *         `package`("com.example.domain")
+ *         `import`("javax.inject.**")
+ *
  *         required(`interface`, fileName) {
  *             required(operator, `fun`, "invoke")
  *         }
@@ -114,7 +120,11 @@ public fun ktFileContent(block: KtFileContentScope.() -> Unit) {
  * "ViewModel".role {
  *     layout { "feature" / "**" / "*ViewModel".ktFile() }
  *     "the shape of a view model".ktFileContent {
- *         allow(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel")
+ *         `package`("**")
+ *         `import`("**")
+ *         allow(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
+ *             allow(anythingElse)
+ *         }
  *     }
  * }
  * ```

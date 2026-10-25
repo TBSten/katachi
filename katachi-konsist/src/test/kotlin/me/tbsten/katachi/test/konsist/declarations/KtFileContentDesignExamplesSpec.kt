@@ -109,6 +109,7 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
             paths = { "core/domain" / "*UseCase".ktFile() },
         ) {
             ktFileContent {
+                `package`("**")
                 required(`interface`, fileName) {
                     required(operator, `fun`, "invoke")
                 }
@@ -134,6 +135,7 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
             paths = { "ui" / "*UiState".ktFile() },
         ) {
             ktFileContent {
+                `package`("**")
                 required(data, `class`, fileName) {
                     allow(`val`, "*")
                 }
@@ -146,16 +148,18 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
         )
     }
 
-    "import だけを縛る: 後ろの層を import しない（katachi 自身の規則）" {
+    "import を縛る: 後ろの層を import しない（katachi 自身の規則。package と宣言は問わない）" {
         val violations = ktFileContentRun(
             "src/Check.kt" to "package me.tbsten.katachi.check\n\nimport me.tbsten.katachi.dsl.Role\n\nclass Check\nfun anything() {}\n",
             "src/Leak.kt" to "package me.tbsten.katachi.check\n\nimport me.tbsten.katachi.docs.Page\nimport me.tbsten.katachi.template.Template\n\nclass Leak\n",
             paths = { "src" / "*".ktFile() },
         ) {
             ktFileContent {
+                `package`("**")
                 `import`("**")
                 not.`import`("me.tbsten.katachi.docs.**")
                 not.`import`("me.tbsten.katachi.template.**")
+                allow(anythingElse)
             }
         }
 
@@ -167,13 +171,17 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
         )
     }
 
-    "宣言だけを縛る: (class or interface) と利用者の拡張" {
+    "宣言を縛る: (class or interface) と利用者の拡張（package と import は問わない）" {
         val violations = ktFileContentRun(
             "src/Home.kt" to "package com.example\n\nimport anything.At.All\n\ninterface Home\n",
             "src/Settings.kt" to "package com.example\n\nobject Settings\n",
             paths = { "src" / "*".ktFile() },
         ) {
-            ktFileContent { allow(classOrInterface, fileName) }
+            ktFileContent {
+                `package`("**")
+                `import`("**")
+                allow(classOrInterface, fileName)
+            }
         }
 
         violations.unsatisfiedLines() shouldBe listOf(
@@ -214,11 +222,12 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
             paths = { "src" / "*Screen".ktFile() },
         ) {
             ktFileContent {
+                `package`("**")
                 required(annotated("Composable"), public, `fun`, fileName)
                 allow(annotated("Preview") or annotated("PreviewLightDark"), private, `fun`, "*Preview")
                 allow(annotated("Serializable"), data.optional(), `object` or `class`, "*Key")
                 allow(internal or private, data, `object`, "*")
-                allow(`fun`, `interface`, "*Listener")
+                allow(`fun`, `interface`, "*Listener") { allow(`fun`, "on*")() }
             }
         }
 
@@ -254,6 +263,7 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
             paths = { "src" / "*Loader".ktFile() },
         ) {
             ktFileContent {
+                `package`("**")
                 required(`class`, fileName) {
                     required(`val`, "state", "StateFlow<*>")
                     required(`fun`, "load")("id: String", "page: Int")
@@ -280,6 +290,7 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
             paths = { "src" / "*".ktFile() },
         ) {
             ktFileContent {
+                `package`("**")
                 `import`("com.example.App")
                 `import`("androidx.compose.**")
                 required(`class`, fileName)
@@ -296,6 +307,7 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
             paths = { "src" / "*".ktFile() },
         ) {
             ktFileContent {
+                `package`("**")
                 required(`class`, fileName)
                 allow(private, anythingElse)
             }
@@ -312,6 +324,7 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
             paths = { "nav" / "*ScreenNavigator".ktFile() },
         ) {
             ktFileContent {
+                `package`("**")
                 if (fileName.startsWith("Default")) {
                     required(`class`, fileName).superclass(fileName.removePrefix("Default"))
                 } else {

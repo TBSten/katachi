@@ -63,3 +63,12 @@ internal fun List<Violation>.unsatisfiedLines(): List<String> = filterIsInstance
     val head = violation.path + ": " + violation.declaration + (violation.line?.let { " (line $it)" } ?: "")
     (listOf(head) + violation.reasons.map { "${it.label}: ${it.text}" }).joinToString(" | ")
 }
+
+/** Each failure of [source] judged against [block], as `<declaration>: <fix> / <code>...`, one entry per fix. */
+internal fun fixLinesOf(source: String, block: KtFileContentScope.() -> Unit): List<String> {
+    val facts = factsOf(source)
+    val rules = rulesOf(fileName = "Sample", block = block)
+    return judgeKtFile(facts, rules).map { failureOf(it, SAMPLE_PATH, rules) }.flatMap { failure ->
+        failure.howToFix.map { fix -> (listOf("${failure.declaration}: ${fix.text}") + fix.code).joinToString(" / ") }
+    }
+}

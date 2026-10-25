@@ -27,6 +27,7 @@ class KtFileContentReportSpec : FreeSpec({
             paths = { "core/domain" / "*UseCase".ktFile() },
         ) {
             block = DeclarationSite.capture(); ktFileContent {
+                `package`("**")
                 required(`interface`, fileName)
                 defaultLine = DeclarationSite.capture(); required(`class`, "Default$fileName").superclass(fileName)
             }
@@ -69,6 +70,7 @@ class KtFileContentReportSpec : FreeSpec({
             paths = { "src" / "*".ktFile() },
         ) {
             ktFileContent {
+                `package`("**")
                 allow(`class`, "*")
                 prohibited = DeclarationSite.capture(); not.allow(`class`, "*Impl")
             }
@@ -107,10 +109,12 @@ class KtFileContentReportSpec : FreeSpec({
             paths = { "feature" / capture("feature") / "*ViewModel".ktFile() },
         ) {
             block = DeclarationSite.capture(); ktFileContent {
+                `package`("**")
                 `import`("kotlin.**")
                 `import`("com.example.**")
                 prohibited = DeclarationSite.capture(); not.`import`("com.example.feature.**")
                     .except("com.example.feature.${captureValue("feature")}.**")
+                allow(anythingElse)
             }
         }
 
@@ -158,6 +162,7 @@ class KtFileContentReportSpec : FreeSpec({
             paths = { "src" / "*ViewModel".ktFile() },
         ) {
             ktFileContent {
+                `package`("**")
                 classLine = DeclarationSite.capture(); required(public, `class`, fileName).superclass("ViewModel") {
                     required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
                     allow(public, `fun`, "on*")().returns("Unit")
@@ -200,6 +205,7 @@ class KtFileContentReportSpec : FreeSpec({
             paths = { "src" / "*ViewModel".ktFile() },
         ) {
             ktFileContent {
+                `package`("**")
                 `import`("com.example.App")
                 required(`class`, fileName) {
                     uiState = DeclarationSite.capture(); required(public, `val`, "uiState", "StateFlow<*>")
@@ -232,6 +238,7 @@ class KtFileContentReportSpec : FreeSpec({
             paths = { "src" / "*UiState".ktFile() },
         ) {
             ktFileContent {
+                `package`("**")
                 dataLine = DeclarationSite.capture(); required(data, `class`, fileName) { allow(`val`, "*") }
             }
         }
@@ -264,6 +271,7 @@ class KtFileContentReportSpec : FreeSpec({
             ktFileContent {
                 packageLine = DeclarationSite.capture(); `package`("com.example.feature.${captureValue("feature")}")
                 `package`(matchingDirectory)
+                allow(anythingElse)
             }
         }
 

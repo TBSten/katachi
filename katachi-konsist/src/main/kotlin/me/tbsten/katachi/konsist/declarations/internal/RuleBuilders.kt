@@ -83,7 +83,7 @@ internal class DeclarationListBuilder(
 ) {
     private val entries = mutableListOf<DeclarationListEntryBuilder>()
 
-    /** Whether a line was written, which is what makes the list an allow list at all. */
+    /** Whether a line was written. A list with none is still an allow list: it allows nothing. */
     val isWritten: Boolean get() = entries.isNotEmpty()
 
     /**

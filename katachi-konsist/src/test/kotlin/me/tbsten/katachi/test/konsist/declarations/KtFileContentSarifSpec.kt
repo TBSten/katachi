@@ -33,7 +33,7 @@ class KtFileContentSarifSpec : FreeSpec({
                 "package com.example.domain\n\nclass HomeViewModel {\n    private val uiState: Int = 0\n}\n",
             paths = { "core/domain" / "*".ktFile() },
         ) {
-            ktFileContent {
+            ktFileContent { `package`("**") // on this line, so that the lines below stay where the golden names them
                 required(`interface`, fileName)
                 required(`class`, "Default$fileName").superclass(fileName)
             }
@@ -43,7 +43,7 @@ class KtFileContentSarifSpec : FreeSpec({
             "core/ui/CounterViewModel.kt" to "package com.example.ui\n\nclass CounterViewModel {\n    private val count = 1\n}\n",
             paths = { "core/ui" / "*ViewModel".ktFile() },
         ) {
-            ktFileContent {
+            ktFileContent { `package`("**") // on this line, so that the lines below stay where the golden names them
                 `import`("com.example.App")
                 required(`class`, fileName) {
                     required(public, `val`, "count", "Int")

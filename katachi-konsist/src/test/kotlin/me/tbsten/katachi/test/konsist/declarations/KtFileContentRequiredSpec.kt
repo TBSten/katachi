@@ -115,13 +115,20 @@ class KtFileContentRequiredSpec : FreeSpec({
 
     "判定" - {
         "* の無い required は、その名前の宣言が無ければ足りない" {
-            judged(kt("class Sample")) { required(`class`, fileName) }.shouldBeEmpty()
-            judged(kt("class Other")) { required(`class`, fileName); allow(`class`, "*") } shouldBe
+            judged(kt("class Sample")) {
+                `package`("**")
+                required(`class`, fileName)
+            }.shouldBeEmpty()
+            judged(kt("class Other")) {
+                `package`("**")
+                required(`class`, fileName); allow(`class`, "*")
+            } shouldBe
                 listOf("Sample | Missing: class Sample")
         }
 
         "* のある required は、当たる宣言が 1 つでも複数でもよく、0 件なら足りない" {
             val block: me.tbsten.katachi.konsist.declarations.KtFileContentScope.() -> Unit = {
+                `package`("**")
                 required(sealed, `interface`, "*Action")
                 allow(`class`, "*")
             }
@@ -131,7 +138,10 @@ class KtFileContentRequiredSpec : FreeSpec({
         }
 
         "{A,B} の required は、どれか 1 つがあれば満たし、どれも無ければ足りない" {
-            val block: KtFileContentScope.() -> Unit = { required(`class`, "{Alpha,Beta}") }
+            val block: KtFileContentScope.() -> Unit = {
+                `package`("**")
+                required(`class`, "{Alpha,Beta}")
+            }
             judged(kt("class Alpha"), block = block).shouldBeEmpty()
             judged(kt("class Alpha\nclass Beta"), block = block).shouldBeEmpty()
             judged(kt("class Extra"), block = block) shouldBe listOf(
@@ -141,24 +151,37 @@ class KtFileContentRequiredSpec : FreeSpec({
         }
 
         "* のある required に名前だけ当たる宣言は、形違いにまとめず余計と足りないの 2 件" {
-            judged(kt("interface HomeAction")) { required(sealed, `interface`, "*Action") } shouldBe listOf(
+            judged(kt("interface HomeAction")) {
+                `package`("**")
+                required(sealed, `interface`, "*Action")
+            } shouldBe listOf(
                 "HomeAction (line 3) | Not allowed: interface HomeAction",
                 "*Action | Missing: sealed interface *Action",
             )
         }
 
         "名前がパターンの required の行には、その名前への改名を勧めない" {
-            fixesOf(kt("interface HomeAction")) { required(sealed, `interface`, "*Action") }.first() shouldNotContain
+            fixesOf(kt("interface HomeAction")) {
+                `package`("**")
+                required(sealed, `interface`, "*Action")
+            }.first() shouldNotContain
                 "Rename it to *Action"
-            val braces = fixesOf(kt("class Extra")) { required(`class`, "{Alpha,Beta}") }.first()
+            val braces = fixesOf(kt("class Extra")) {
+                `package`("**")
+                required(`class`, "{Alpha,Beta}")
+            }.first()
             braces shouldNotContain "Rename it to {Alpha,Beta}"
             braces shouldContain "Move it to a file of another role"
             // A name that is not a pattern is still offered.
-            fixesOf(kt("class Extra")) { required(`class`, fileName) }.first() shouldContain "Rename it to Sample"
+            fixesOf(kt("class Extra")) {
+                `package`("**")
+                required(`class`, fileName)
+            }.first() shouldContain "Rename it to Sample"
         }
 
         "名前がパターンの required の行が足りないとき、別の形で許された宣言を Found に出さない" {
             val block: KtFileContentScope.() -> Unit = {
+                `package`("**")
                 required(sealed, type, "*Action")
                 allow(data, `class`, "*")
             }
@@ -169,6 +192,7 @@ class KtFileContentRequiredSpec : FreeSpec({
 
         "* の無い allow は、その宣言が無くても違反にならない" {
             judged(kt("class Sample")) {
+                `package`("**")
                 required(`class`, fileName)
                 allow(`class`, "Default$fileName")
                 allow(`object`, "Companion")
@@ -177,6 +201,7 @@ class KtFileContentRequiredSpec : FreeSpec({
 
         "required と allow が同じ種類に並ぶと、どちらも allow list の 1 行で、ほかの宣言は余計" {
             val block: me.tbsten.katachi.konsist.declarations.KtFileContentScope.() -> Unit = {
+                `package`("**")
                 required(`class`, fileName)
                 allow(`class`, "*Helper")
             }
@@ -185,12 +210,16 @@ class KtFileContentRequiredSpec : FreeSpec({
         }
 
         "required だけを書いた宣言の一覧も、allow list は required の行だけ" {
-            judged(kt("class Sample\nclass Extra\nfun free() {}")) { required(`class`, fileName) } shouldBe
+            judged(kt("class Sample\nclass Extra\nfun free() {}")) {
+                `package`("**")
+                required(`class`, fileName)
+            } shouldBe
                 listOf("Extra (line 4) | Not allowed: class Extra", "free (line 5) | Not allowed: fun free()")
         }
 
         "クラスの本体の中の required も、無ければ足りない" {
             judged(kt("class Sample {\n    fun load() {}\n}")) {
+                `package`("**")
                 required(`class`, fileName) {
                     required(`val`, "uiState")
                     required(`fun`, "on*")
@@ -200,7 +229,10 @@ class KtFileContentRequiredSpec : FreeSpec({
         }
 
         "名前だけ当たる宣言は required でも 1 件の形違いにまとめる" {
-            judged(kt("class Sample")) { required(data, `class`, fileName) } shouldBe listOf(
+            judged(kt("class Sample")) {
+                `package`("**")
+                required(data, `class`, fileName)
+            } shouldBe listOf(
                 "Sample (line 3) | Not allowed: class Sample | Expected: data class Sample | Differs in: modifiers (missing: data)",
             )
         }
@@ -221,6 +253,7 @@ class KtFileContentRequiredSpec : FreeSpec({
 
         "* の無い import の行に当たる import が無くても違反にならない" {
             judged(kt("class Sample")) {
+                `package`("**")
                 `import`("com.example.App")
                 required(`class`, fileName)
             }.shouldBeEmpty()
@@ -235,6 +268,7 @@ class KtFileContentRequiredSpec : FreeSpec({
                 paths = { "src" / "*".ktFile() },
             ) {
                 ktFileContent {
+                    `package`("**")
                     line = DeclarationSite.capture(); required(`class`, fileName)
                     allow(`object`, "*Preview")
                 }
@@ -249,7 +283,10 @@ class KtFileContentRequiredSpec : FreeSpec({
                 "src/Home.kt" to "package com.example\n\nclass Home\nclass Extra\n",
                 paths = { "src" / "*".ktFile() },
             ) {
-                ktFileContent { required(`class`, fileName) }
+                ktFileContent {
+                    `package`("**")
+                    required(`class`, fileName)
+                }
             }
             val report = violations.report()
             report.trimEnd().endsWith("allow(`class`, \"Extra\")") shouldBe true
@@ -262,6 +299,7 @@ class KtFileContentRequiredSpec : FreeSpec({
                     example("HomeScreen")
                     layout { "src" / "*Screen".ktFile() }
                     ktFileContent {
+                        `package`("**")
                         `import`("com.example.App")
                         required(`fun`, fileName)
                         allow(`fun`, "${fileName}Preview")

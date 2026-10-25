@@ -8,9 +8,6 @@ import io.kotest.matchers.string.shouldContain
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentPatternException
 import me.tbsten.katachi.konsist.declarations.KtFileContentPatternKind
-import me.tbsten.katachi.konsist.declarations.KtFileContentScope
-import me.tbsten.katachi.konsist.declarations.internal.failureOf
-import me.tbsten.katachi.konsist.declarations.internal.judgeKtFile
 
 /**
  * The `How to fix:` of a failure, where it says more than the general shape: a kind written with
@@ -18,32 +15,28 @@ import me.tbsten.katachi.konsist.declarations.internal.judgeKtFile
  * a name the glob would read as a pattern. Also the patterns refused before they mislead.
  */
 
-/** Each failure of [source] judged against [block], as `<declaration>: <fix> / <code>...`, one entry per fix. */
-private fun fixesOf(source: String, block: KtFileContentScope.() -> Unit): List<String> {
-    val facts = factsOf(source)
-    val rules = rulesOf(fileName = "Sample", block = block)
-    return judgeKtFile(facts, rules).map { failureOf(it, SAMPLE_PATH, rules) }.flatMap { failure ->
-        failure.howToFix.map { fix -> (listOf("${failure.declaration}: ${fix.text}") + fix.code).joinToString(" / ") }
-    }
-}
-
 class KtFileContentFixesSpec : FreeSpec({
     "not. の行しか無い種類は、残りを許す行を最初の直し方に出す" - {
         "import" {
-            fixesOf("package com.example\n\nimport kotlinx.coroutines.flow.Flow\n\nclass Sample\n") {
+            fixLinesOf("package com.example\n\nimport kotlinx.coroutines.flow.Flow\n\nclass Sample\n") {
+                `package`("**")
                 not.`import`("android.**")
             }.first() shouldBe "import kotlinx.coroutines.flow.Flow: Only not. lines are written for imports, so every other one is " +
                 "rejected too. To allow the rest, add at $SPEC_SITE: / `import`(\"**\")"
         }
 
         "宣言" {
-            fixesOf("package com.example\n\nclass Sample\n") { not.allow(`class`, "*Impl") }.first() shouldBe
+            fixLinesOf("package com.example\n\nclass Sample\n") {
+                `package`("**")
+                not.allow(`class`, "*Impl")
+            }.first() shouldBe
                 "Sample: Only not. lines are written for declarations, so every other one is rejected too. " +
                 "To allow the rest, add at $SPEC_SITE: / allow(anythingElse)"
         }
 
         "許可の行が 1 つでもあれば出さない" {
-            fixesOf("package com.example\n\nimport a.B\n\nclass Sample\n") {
+            fixLinesOf("package com.example\n\nimport a.B\n\nclass Sample\n") {
+                `package`("**")
                 `import`("kotlin.**")
                 not.`import`("android.**")
                 required(`class`, fileName)
@@ -53,7 +46,8 @@ class KtFileContentFixesSpec : FreeSpec({
 
     "名前の当たる宣言が別の形で許されていたら、その宣言の形を直す直し方を出す" {
         var line: DeclarationSite? = null
-        fixesOf("package com.example\n\ninterface SampleAction\n") {
+        fixLinesOf("package com.example\n\ninterface SampleAction\n") {
+            `package`("**")
             line = DeclarationSite.capture(); required(sealed, `interface`, "SampleAction")
             allow(anythingElse)
         } shouldBe listOf(
@@ -65,18 +59,23 @@ class KtFileContentFixesSpec : FreeSpec({
 
     "glob の文字を含む名前は、エスケープしたパターンとして出し、貼ればその名前だけに当たる" {
         val source = "package com.example\n\nclass Sample\n\nfun `is it {ok}?`() {}\nfun `a*b`() {}\n"
-        val fixes = fixesOf(source) { required(`class`, fileName) }
+        val fixes = fixLinesOf(source) {
+            `package`("**")
+            required(`class`, fileName)
+        }
         fixes.filter { "allow(`fun`" in it }.map { it.substringAfterLast(" / ") } shouldBe listOf(
             "allow(`fun`, \"is it \\\\{ok\\\\}\\\\?\")",
             "allow(`fun`, \"a\\\\*b\")",
         )
         // Pasted back, the code compiles and allows exactly those two.
         judged(source) {
+            `package`("**")
             required(`class`, fileName)
             allow(`fun`, "is it \\{ok\\}\\?")
             allow(`fun`, "a\\*b")
         }.shouldBeEmpty()
         judged("package com.example\n\nclass Sample\n\nfun axxb() {}\n") {
+            `package`("**")
             required(`class`, fileName)
             allow(`fun`, "a\\*b")
         }.size shouldBe 1

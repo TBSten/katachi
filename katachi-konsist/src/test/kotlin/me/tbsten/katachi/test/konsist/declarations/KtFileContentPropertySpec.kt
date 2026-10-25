@@ -11,7 +11,8 @@ import kotlin.random.Random
  * The judging over random allow lists (plan P1, properties 1 to 6; property 7 is
  * `KtFileContentPerFilePropertySpec`): a source that follows its allow list passes, and each single
  * change to it -- a declaration, an import or the package added, removed or changed -- is reported
- * exactly once, or not at all where nothing looks.
+ * exactly once, or not at all where `allow(anythingElse)` or a line allows it. A kind no line is
+ * written for allows nothing (deny by default), so a change there is reported too.
  *
  * A case is an allow list and a source made together (`KtFileContentArbs*SpecSupport.kt`). What a
  * change should give is said from how the case was made and from tables written by hand, not by
@@ -23,7 +24,7 @@ class KtFileContentPropertySpec : FreeSpec({
         checkCases("conforming", seedOffset = 0) { case, _ -> judgedCase(case).shouldBeEmpty() }
     }
 
-    "列挙していない宣言を 1 つ足すと、その 1 件だけ。見ていない一覧や、anythingElse が許す一覧なら 0 件" {
+    "列挙していない宣言を 1 つ足すと、その 1 件だけ（行を書いていない一覧でも）。anythingElse が許す一覧や、anythingElse が許したクラスのメンバなら 0 件" {
         checkCases("extra declaration", seedOffset = 1) { case, random ->
             val list = random.pick(case.lists())
             val kind = random.pick(if (list.path.isEmpty()) GenKind.entries else GenKind.entries - GenKind.TypeAlias)
@@ -160,12 +161,12 @@ class KtFileContentPropertySpec : FreeSpec({
         }
     }
 
-    "どの許可の行にも当たらない import を足すと 1 件。import の行を書いていなければ 0 件" {
+    "どの許可の行にも当たらない import を足すと 1 件。import の行を書いていなくても 1 件" {
         checkCases("unlisted import", seedOffset = 7) { case, random ->
             val path = random.pick(listOf("org.other.Thing", "com.exampleplus.Thing", "kotlin.time.Duration"))
             if (case.imports.any { it.path == path }) return@checkCases
             val changed = case.copy(imports = random.inserting(case.imports, GenImport(path)))
-            val expected = if (case.importLines.isEmpty() || importAllowed(case.importLines, path)) emptyList() else listOf("import $path")
+            val expected = if (importAllowed(case.importLines, path)) emptyList() else listOf("import $path")
             withClue(clueOf("imported $path", changed)) { judgedCase(changed).map(::keyOf) shouldBe expected }
         }
     }

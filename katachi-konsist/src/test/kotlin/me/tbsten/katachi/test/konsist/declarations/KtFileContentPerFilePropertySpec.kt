@@ -94,20 +94,29 @@ private fun Random.perFileCase(): PerFileCase {
     return PerFileCase(rules, files, movedIndex, movedTo)
 }
 
-/** What the block asks of a file of [file]'s name and feature. */
+/**
+ * What the block asks of a file of [file]'s name and feature. Deny by default: a kind the block
+ * writes no line for is left out, and a class line without `{ }` has no member.
+ */
 private fun contentOf(file: PerFileFile, rules: PerFileRules): String = buildString {
-    appendLine("package com.example.feature.${file.feature}")
-    appendLine()
-    appendLine("import kotlinx.coroutines.flow.StateFlow")
-    appendLine("import com.example.feature.${file.feature}.model.Item")
-    appendLine()
-    if (file.name.endsWith("Screen")) {
-        appendLine("fun ${file.name}() {}")
-    } else {
-        appendLine("class ${file.name} {")
-        appendLine("    val state: StateFlow<${file.name}State> = TODO()")
-        appendLine("    private val cache = 1")
-        appendLine("}")
+    if (rules.packageLine) {
+        appendLine("package com.example.feature.${file.feature}")
+        appendLine()
+    }
+    if (rules.imports) {
+        appendLine("import kotlinx.coroutines.flow.StateFlow")
+        appendLine("import com.example.feature.${file.feature}.model.Item")
+        appendLine()
+    }
+    when {
+        file.name.endsWith("Screen") -> appendLine("fun ${file.name}() {}")
+        rules.body -> {
+            appendLine("class ${file.name} {")
+            appendLine("    val state: StateFlow<${file.name}State> = TODO()")
+            appendLine("    private val cache = 1")
+            appendLine("}")
+        }
+        else -> appendLine("class ${file.name}")
     }
     if (rules.keys) appendLine("object ${file.name}Keys")
 }

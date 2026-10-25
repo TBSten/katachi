@@ -147,7 +147,10 @@ internal class DeclarationRule(
     val parameters: List<ParameterRule>?,
     /** `null` means not asked about. */
     val returnType: TypeRule?,
-    /** `null` when the line has no `{ }`, so its members are not looked at. */
+    /**
+     * `null` when the line has no `{ }`: its declaration may then have no members, as with an empty
+     * `{ }` (see [DeclarationListRules.membersOfBodilessLine]).
+     */
     val members: DeclarationListRules?,
     /**
      * Written with `required(...)`: a declaration has to match it -- one or more, the name written
@@ -170,19 +173,30 @@ internal class AnythingElseRule(
     override fun toString(): String = "AnythingElseRule(${renderAnythingElse(this)})"
 }
 
-/** The allow list of the declarations directly in a file, or of the members of one class. */
+/**
+ * The allow list of the declarations directly in a file, or of the members of one class. With no
+ * entries, it allows nothing: a kind no line is written for is denied, not left unchecked.
+ */
 internal class DeclarationListRules(
     val placement: Placement,
     /** Every line, in the order it was written. */
     val entries: List<DeclarationListEntry>,
     /** The `ktFileContent { }` call for a file; the class line for a class's members. */
     val declaredAt: DeclarationSite,
+    /** Whether these are the members of a class line written without `{ }`, which the line allows none of. */
+    val withoutBody: Boolean = false,
 ) {
     /** The declaration lines, in the order they were written. */
     val lines: List<DeclarationRule> = entries.filterIsInstance<DeclarationRule>()
 
     /** The `allow(..., anythingElse)` lines, in the order they were written. */
     val anythingElse: List<AnythingElseRule> = entries.filterIsInstance<AnythingElseRule>()
+
+    companion object {
+        /** The members of [line], a class line written without `{ }`: an empty allow list, as an empty `{ }` is. */
+        fun membersOfBodilessLine(line: DeclarationRule): DeclarationListRules =
+            DeclarationListRules(Placement.ClassBody, emptyList(), line.declaredAt, withoutBody = true)
+    }
 }
 
 /** One import line, which only allows (or with `not.` prohibits). Its path is matched with `.` as the separator. */
@@ -214,16 +228,20 @@ internal class PackageRule(
     override fun toString(): String = "PackageRule(${renderPackage(this)})"
 }
 
-/** Everything one evaluation of the block wrote, for one file. */
+/**
+ * Everything one evaluation of the block wrote, for one file. Deny by default: a kind no line is
+ * written for allows nothing of that kind.
+ */
 internal class FileRules(
-    /** Empty means the package is not looked at. */
+    /** Empty means no package may be declared (a file declaring none is fine). */
     val packages: List<PackageRule>,
-    /** Empty means the imports are not looked at. */
+    /** Empty means no import is allowed. */
     val imports: List<ImportRule>,
-    /** `null` means the declarations directly in the file are not looked at. */
-    val declarations: DeclarationListRules?,
+    /** With no entries, no declaration is allowed directly in the file. */
+    val declarations: DeclarationListRules,
     /** Where `ktFileContent { }` was called. */
     val declaredAt: DeclarationSite,
 ) {
-    val isEmpty: Boolean get() = packages.isEmpty() && imports.isEmpty() && declarations == null
+    /** Whether the block wrote no line at all for this file, which then allows nothing in it. */
+    val isEmpty: Boolean get() = packages.isEmpty() && imports.isEmpty() && declarations.entries.isEmpty()
 }

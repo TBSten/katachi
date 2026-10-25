@@ -65,6 +65,7 @@ class KtFileContentEvaluationSpec : FreeSpec({
                 paths = { "feature" / capture("feature") / "*".ktFile() },
             ) {
                 ktFileContent {
+                    `package`("**")
                     seen += "$fileName ${captureValue("feature")}"
                     required(`class`, fileName)
                 }
@@ -90,7 +91,10 @@ class KtFileContentEvaluationSpec : FreeSpec({
                 "src/HomeScreenView.kt" to classNamed("View"),
                 paths = { "src" / "*".ktFile() },
             ) {
-                ktFileContent { allow(`class`, fileName.substring(10)) }
+                ktFileContent {
+                    `package`("**")
+                    allow(`class`, fileName.substring(10))
+                }
             }
 
             violations.filterIsInstance<UncheckedFileConstraint>().shouldBeEmpty()
@@ -101,7 +105,10 @@ class KtFileContentEvaluationSpec : FreeSpec({
                 "src/HomeScreen.kt" to classNamed("HomeScreen"),
                 paths = { "src" / "*".ktFile() },
             ) {
-                ktFileContent { allow(`class`, fileName.substring(20)) }
+                ktFileContent {
+                    `package`("**")
+                    allow(`class`, fileName.substring(20))
+                }
             }
 
             violations.singleUnchecked().cause.shouldBeInstanceOf<StringIndexOutOfBoundsException>()
@@ -113,6 +120,7 @@ class KtFileContentEvaluationSpec : FreeSpec({
                 paths = { "src" / "*".ktFile() },
             ) {
                 ktFileContent {
+                    `package`("**")
                     if (fileName == "Sample") required(`class`, fileName) else required(data, `interface`, fileName)
                 }
             }
@@ -131,7 +139,10 @@ class KtFileContentEvaluationSpec : FreeSpec({
                 "feature/home/HomeScreen.kt" to classNamed("HomeScreen"),
                 paths = { "feature" / capture("feature") / "*".ktFile() },
             ) {
-                site = DeclarationSite.capture(); ktFileContent { allow(`class`, captureValue("featur") + "Screen") }
+                site = DeclarationSite.capture(); ktFileContent {
+                    `package`("**")
+                    allow(`class`, captureValue("featur") + "Screen")
+                }
             }
 
             val unchecked = violations.singleUnchecked()
@@ -158,7 +169,10 @@ class KtFileContentEvaluationSpec : FreeSpec({
                     "core" / "*Screen".ktFile()
                 },
             ) {
-                ktFileContent { allow(`class`, captureValue("feature").replaceFirstChar { it.uppercase() } + "Screen") }
+                ktFileContent {
+                    `package`("**")
+                    allow(`class`, captureValue("feature").replaceFirstChar { it.uppercase() } + "Screen")
+                }
             }
 
             val cause = violations.singleUnchecked().cause
@@ -179,8 +193,14 @@ class KtFileContentEvaluationSpec : FreeSpec({
                 "src/HomeScreen.kt" to classNamed("HomeScreen"),
                 paths = { "src" / "*".ktFile() },
             ) {
-                first = DeclarationSite.capture(); ktFileContent { required(`class`, fileName) }
-                second = DeclarationSite.capture(); ktFileContent { required(`class`, fileName) }
+                first = DeclarationSite.capture(); ktFileContent {
+                    `package`("**")
+                    required(`class`, fileName)
+                }
+                second = DeclarationSite.capture(); ktFileContent {
+                    `package`("**")
+                    required(`class`, fileName)
+                }
             }
 
             val unchecked = violations.singleUnchecked()
@@ -210,6 +230,7 @@ class KtFileContentEvaluationSpec : FreeSpec({
                                 "build.gradle.kts".file()
                                 mainSourceSet / kotlin / "*Screen".ktFile()
                                 ktFileContent {
+                                    `package`("**")
                                     seen += fileName
                                     required(`class`, fileName)
                                 }
@@ -225,7 +246,7 @@ class KtFileContentEvaluationSpec : FreeSpec({
     }
 
     "何も書いていないブロック" - {
-        "どのファイルでも 1 行も書かなければ例外にならず、何も言わない" {
+        "どのファイルでも 1 行も書かなければ例外にならず、空のブロックと同じにすべてを違反にする" {
             val violations = ktFileContentRun(
                 "src/HomeScreen.kt" to classNamed("HomeScreen"),
                 paths = { "src" / "*".ktFile() },
@@ -233,7 +254,11 @@ class KtFileContentEvaluationSpec : FreeSpec({
                 ktFileContent { if (fileName == "NoSuchFile") required(`class`, fileName) }
             }
 
-            violations.shouldBeEmpty()
+            violations.filterIsInstance<UncheckedFileConstraint>().shouldBeEmpty()
+            violations.unsatisfiedLines() shouldBe listOf(
+                "src/HomeScreen.kt: package com.example (line 1) | Not allowed: package com.example",
+                "src/HomeScreen.kt: HomeScreen (line 3) | Not allowed: class HomeScreen",
+            )
         }
 
         "覆うファイルが 1 つも無ければ何も言わない" {
@@ -252,6 +277,7 @@ class KtFileContentEvaluationSpec : FreeSpec({
                 paths = { "src" / "*ViewModel".ktFile() },
             ) {
                 ktFileContent {
+                    `package`("**")
                     required(`class`, fileName)
                     // Empty for the stand-in Sample only: "Home" for the real file.
                     allow(`class`, fileName.dropLast("ViewModel".length))
@@ -266,7 +292,10 @@ class KtFileContentEvaluationSpec : FreeSpec({
                 architecture {
                     "Screen".role {
                         layout { "src" / "*".ktFile() }
-                        ktFileContent { `import`("a..b") }
+                        ktFileContent {
+                            `package`("**")
+                            `import`("a..b")
+                        }
                     }
                 }
             }

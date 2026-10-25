@@ -169,7 +169,7 @@ class DescribeDefinitionKtFileContentSpec : FreeSpec({
     }
 
     "説明できないとき" - {
-        "どのファイルにも行を書かないブロックは説明の失敗にならず、ほかの役割は答える" {
+        "どのファイルにも行を書かないブロックは説明の失敗にならず、宣言をすべて許されないと答える" {
             val architecture = architecture {
                 files = wholeTree()
                 "Silent".role {
@@ -189,14 +189,14 @@ class DescribeDefinitionKtFileContentSpec : FreeSpec({
             )
 
             explanationProblemsIn(json).shouldBeEmpty()
-            declarationsIn(json) shouldContainExactly listOf("class Loud 3 Allowed")
+            declarationsIn(json) shouldContainExactly listOf("class Quiet 3 Unexpected", "class Loud 3 Allowed")
         }
 
-        "宣言の行を書かないブロックは、Konsist の読み取りに関わらず declarationsChecked = false で理由は null" {
+        "宣言の行を書かないブロックも宣言を判定し、declarationsChecked = true ですべて許されないと答える" {
             val json = describedJson(serviceArchitecture { `import`("**") }, healthService)
 
-            declarationsIn(json).shouldBeEmpty()
-            json shouldContain "\"declarationsChecked\": false"
+            declarationsIn(json) shouldContainExactly listOf("class HealthService 3 Unexpected", "fun stray 4 Unexpected")
+            json shouldContain "\"declarationsChecked\": true"
             json shouldContain "\"unexplainedReason\": null"
             json shouldNotContain "Konsist did not read"
         }

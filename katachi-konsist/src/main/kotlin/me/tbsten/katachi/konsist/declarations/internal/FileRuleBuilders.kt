@@ -55,11 +55,11 @@ internal class FileBuilder(
             .also { packages += it }
     }
 
-    /** Freezes what was written. A kind no line was written for comes out as "not looked at". */
+    /** Freezes what was written. A kind no line was written for comes out as an empty allow list. */
     fun build(): FileRules = FileRules(
         packages = packages.map { it.build() },
         imports = imports.map { it.build() },
-        declarations = declarations.takeIf { it.isWritten }?.build(),
+        declarations = declarations.build(),
         declaredAt = declaredAt,
     )
 

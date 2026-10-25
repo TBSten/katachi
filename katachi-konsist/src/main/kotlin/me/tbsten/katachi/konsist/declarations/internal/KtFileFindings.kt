@@ -84,8 +84,8 @@ internal class UnexpectedPackage(
     val line: Int?,
     /** The allowed package lines, in the order written. */
     val allowed: List<PackageRule>,
-    /** The first package line, which `Declared at:` points at. */
-    val firstRule: PackageRule,
+    /** The first package line, which `Declared at:` points at; `null` when none is written. */
+    val firstRule: PackageRule?,
     /** What the file's directory reads as, for `matchingDirectory`; `null` when it cannot be told. */
     val directoryPackage: String?,
 ) : KtFileFinding

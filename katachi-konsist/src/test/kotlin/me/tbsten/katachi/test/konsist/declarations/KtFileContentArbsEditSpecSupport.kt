@@ -18,7 +18,8 @@ internal fun withoutLineNumbers(judgedLine: String): String = judgedLine.replace
 
 /**
  * One list of declarations in a case: the file's (an empty [path]) or the members of the declaration
- * [path] leads to, with the lines that govern it -- `null` when nothing looks at it.
+ * [path] leads to, with the lines that govern it -- empty when no line is written for it, which
+ * allows nothing, and `null` when nothing looks at it (the members of what `allow(anythingElse)` allows).
  */
 internal class ListRef(
     val path: List<Int>,
@@ -43,10 +44,12 @@ internal fun GenCase.lists(): List<ListRef> {
         found += list
         declarations.forEachIndexed { index, declaration ->
             if (!declaration.kind.isType) return@forEachIndexed
-            walk(path + index, list.lineOf(declaration)?.members, containers + declaration, declaration.members.orEmpty())
+            // A line without `{ }` allows no member; a declaration no line was made for is allowed by anythingElse, which looks at none.
+            val members = list.lineOf(declaration)?.let { line -> line.members ?: GenList(emptyList()) }
+            walk(path + index, members, containers + declaration, declaration.members.orEmpty())
         }
     }
-    walk(emptyList(), declarationRules, emptyList(), declarations)
+    walk(emptyList(), declarationRules ?: GenList(emptyList()), emptyList(), declarations)
     return found
 }
 
@@ -83,8 +86,11 @@ private fun shuffledTree(declarations: List<SrcDecl>, random: Random): List<SrcD
  * dropped.
  */
 internal fun GenCase.shrinks(): List<GenCase> = buildList {
-    if (packageLines.isNotEmpty()) add(copy(packageLines = emptyList()))
-    if (importLines.isNotEmpty()) add(copy(importLines = emptyList()))
+    // Deny by default: a kind left out takes what it allowed with it.
+    if (packageLines.isNotEmpty()) add(copy(packageLines = emptyList(), packageName = null))
+    if (importLines.isNotEmpty() && imports.none { it.path.startsWith("com.example.annotations") }) {
+        add(copy(importLines = emptyList(), imports = emptyList()))
+    }
     imports.forEachIndexed { index, import ->
         // The annotations' imports keep the case following its rules.
         if (!import.path.startsWith("com.example.annotations")) {
@@ -94,7 +100,10 @@ internal fun GenCase.shrinks(): List<GenCase> = buildList {
     declarationRules?.let { rules ->
         rules.lines.indices.forEach { add(withoutFileLine(rules, it)) }
         rules.lines.forEachIndexed { index, line ->
-            if (line.members != null) add(copy(declarationRules = rules.replacingLine(index, line.copy(members = null))))
+            if (line.members != null) {
+                val withoutMembers = declarations.map { if (it.origin == index) it.copy(members = null) else it }
+                add(copy(declarationRules = rules.replacingLine(index, line.copy(members = null)), declarations = withoutMembers))
+            }
         }
         if (rules.anythingElse.isNotEmpty()) {
             val withoutAnythingElse = GenList(rules.entries.filterNot { it is GenAnythingElse })

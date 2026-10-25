@@ -26,7 +26,8 @@ public class TypeLine internal constructor(
     /**
      * Requires each of [names] among the declaration's supertypes -- a class it extends or an
      * interface it implements. A name without `<...>` matches whatever type arguments the supertype
-     * has. With [body], the declaration's members are an allow list too.
+     * has. [body] is the allow list of the declaration's members; a line given no `{ }` at all
+     * allows no member.
      *
      * A name is a glob in which `*` stands for zero or more characters, so `"*NavKey"` matches
      * `NavKey` itself as well as `StartupNavKey`. To list the candidates, put them in braces:

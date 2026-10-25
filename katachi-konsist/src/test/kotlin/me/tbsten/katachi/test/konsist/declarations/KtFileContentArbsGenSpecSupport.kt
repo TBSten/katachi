@@ -38,16 +38,14 @@ internal fun Random.genCase(options: GenOptions = GenOptions()): GenCase {
     val checkImports = options.prohibitedImport || options.exceptImport || chance(50)
     val checkDeclarations = options.declarations || options.prohibitedDeclaration || chance(90) || (!checkPackage && !checkImports)
     val declarationRules = if (checkDeclarations) context.genList(GenPlacement.File, depth = 0, prohibited = options.prohibitedDeclaration) else null
-    val declarations = if (declarationRules == null) {
-        context.uncheckedDeclarations(GenPlacement.File)
-    } else {
-        context.sourceOf(declarationRules, GenPlacement.File, depth = 0, container = null)
-    }
+    // Deny by default: with no declaration line, a source that follows the rules declares nothing.
+    val declarations = declarationRules?.let { context.sourceOf(it, GenPlacement.File, depth = 0, container = null) }.orEmpty()
     val (importLines, imports) = context.importsOf(checkImports, options)
     return GenCase(
         fileName = context.fileName,
         directory = packageName.replace('.', '/'),
-        packageName = packageName,
+        // With no package line, a file that follows the rules declares no package.
+        packageName = packageName.takeIf { checkPackage },
         packageLines = if (checkPackage) packageLinesOf(packageName) else emptyList(),
         importLines = importLines,
         declarationRules = declarationRules,
