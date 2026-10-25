@@ -83,3 +83,7 @@ CLAUDE.local.md
 
 # Python bytecode of the skills' scripts
 __pycache__/
+
+### JetBrains Air ###
+# Per-session state written by Air (session-mcp/<id>/mcp.json holds a bearer token for the local MCP endpoint).
+.awb/
