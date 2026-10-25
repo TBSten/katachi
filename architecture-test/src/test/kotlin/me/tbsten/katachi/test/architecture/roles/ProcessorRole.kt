@@ -59,6 +59,8 @@ private fun LayoutScope.packageAndLayerImports() =
                 not.`import`(it)
             }
         }
+        // What a declaration may be is left to the `konsist { }` rules below, which read the KDoc and the `.internal` line.
+        allow(anythingElse)
     }
 
 /** The four later-layer imports only `DefinitionErrorReport` may keep; any other file importing them fails. */

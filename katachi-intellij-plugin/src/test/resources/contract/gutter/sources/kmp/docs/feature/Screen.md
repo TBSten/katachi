@@ -6,13 +6,13 @@ The @Composable of one screen. Subscribes to the ViewModel's StateFlow and draws
 
 The look of one whole screen. Put one file, `<Name>Screen.kt`, in the
 `commonMain` of `:feature:<name>`, named after the module (`HomeScreen.kt` in
-`:feature:home`). The check looks at the place and the suffix only. To add a screen,
-add a module.
+`:feature:home`). The check holds the file to it: the module directory, the package
+directory and the file name all read the same feature name. To add a screen, add a module.
 
 The file is built in two levels. `HomeScreen` receives the ViewModel and subscribes with
 `collectAsState()`, and `internal fun HomeContent` receives a `UiState` as an argument and
 draws it. Separating what cannot be drawn without creating a ViewModel from what can be
-drawn once given a state lets both previews (ui/Preview) and tests deal with the latter only.
+drawn once given a state lets both previews (ScreenPreview) and tests deal with the latter only.
 
 It is `commonMain` only so that Android and iOS share the same screen code through
 Compose Multiplatform. If something needs platform-dependent behavior, push it down to

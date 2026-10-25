@@ -7,12 +7,14 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.dsl.pascalCase
 
 /**
  * What binds a screen to a navigation destination, named after its feature module.
  *
  * The third of the three files a feature module holds, written like [screen] and [viewModel]:
- * a `*Route.kt` glob under the directory `"feature" / "*"`.
+ * `capture("feature")` on the module and package directories, and the file name
+ * `${capture("feature").pascalCase}Route` derived from it.
  */
 fun DeclarationContainerScope.route() = "Route".role {
     title = "Route"
@@ -39,7 +41,9 @@ fun DeclarationContainerScope.route() = "Route".role {
     example("HomeRoute", "The destination of the home screen")
     example("SettingsRoute", "The destination of the settings screen")
     layout {
-        "feature" / "*" / "commonMain".sourceSet / kotlin / "com/example/kmp/feature" / "*" /
-            "*Route".ktFile()
+        // Named after the module like Screen: feature/home/.../home/HomeRoute.kt, and nothing
+        // else named *Route.kt there.
+        "feature" / capture("feature") / "commonMain".sourceSet / kotlin / "com/example/kmp/feature" /
+            capture("feature") / "${capture("feature").pascalCase}Route".ktFile()
     }
 }

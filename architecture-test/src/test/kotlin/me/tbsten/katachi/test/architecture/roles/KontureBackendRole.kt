@@ -32,7 +32,7 @@ import me.tbsten.katachi.test.architecture.KONTURE_MAIN_PACKAGE
  * The other rules apply for the reasons given on `KonsistBackend`: public declarations are a
  * surface a reader meets (`KDOC_EXAMPLE_RULE` / `KDOC_TAG_ORDER_RULE`), the machinery lives in
  * `konture.internal` (`INTERNAL_PACKAGE_RULE`), and the package follows the directory
- * (`` `package`(matchingDirectory) `` in `ktFileContent { }`).
+ * (`` `package`(matchingDirectory) `` in `ktFileContent { }`, next to the same `` `import`("**") ``).
  *
  * The rules themselves are written with `katachi-konsist` (`ktFileContent { }` and `konsist { }`),
  * not Konture: this definition's own rules are Konsist's job, and the two cannot share a
@@ -62,6 +62,10 @@ fun DeclarationContainerScope.kontureBackend() = "KontureBackend".role {
 private fun LayoutScope.packageMatchesDirectory() =
     ktFileContent {
         `package`(matchingDirectory)
+        // No layer comes after this one, and what of katachi it may reach is the build's opt-in (see the role).
+        `import`("**")
+        // What a declaration may be is left to the `konsist { }` rules below, which read the KDoc and the `.internal` line.
+        allow(anythingElse)
     }
 
 private fun LayoutScope.publicDeclarationsShowExample() =

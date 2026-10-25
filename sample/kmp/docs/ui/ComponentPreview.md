@@ -2,24 +2,23 @@
 
 # Component preview
 
-A private @Composable annotated with @Preview for a component. Placed in <Target>Preview.kt in the component package of :ui, with the content wrapped in PreviewRoot
+A private @Composable annotated with @Preview for a component. Placed in <Target>Preview.kt in the component/preview package of :ui, with the content wrapped in PreviewRoot
 
 A `private @Composable` annotated with `@Preview` that draws a shared component. It is
-written in `<Target>Preview.kt` in the `component` package of `:ui`, next to the
-component, because a component belongs to no screen and so to no feature module.
+written in `<Target>Preview.kt` in the `preview` package right below the `component`
+package of `:ui`, close to the component, because a component belongs to no screen and so
+to no feature module.
 
-The Component role claims every `.kt` file of the same package, and this role claims the
-ones ending in `Preview.kt`, so the one file matching both belongs to both roles. katachi
-reports that overlap as `[AmbiguousLayout]`, which is a Warning and never fails
-`assert()`. It is kept rather than designed away: a preview belongs beside the component
-it renders, and the report saying so out loud is what this sample wants to show — see
-`OmittedRoleSelfCheckSpec`, which pins it.
+It has a package of its own so that a file is either a component or a preview of one,
+never both. The Component role claims every `.kt` file of `component`; if the previews
+sat in the same package, that pattern would claim them too, and one file would belong to
+two roles.
 
 ## Placement
 
 | Path | When to use |
 |---|---|
-| `ui/src/commonMain/kotlin/com/example/kmp/ui/component/*Preview.kt` |  |
+| `ui/src/commonMain/kotlin/com/example/kmp/ui/component/preview/*Preview.kt` |  |
 
 ## Examples
 

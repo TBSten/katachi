@@ -20,7 +20,7 @@ import me.tbsten.katachi.konsist.declarations.ktFileContent
  */
 fun DeclarationContainerScope.screenPreview() = "ScreenPreview".role {
     title = "Screen preview"
-    summary = "A private @Composable annotated with @Preview for a screen. Placed in Home*Preview.kt in the feature " +
+    summary = "A private @Composable annotated with @Preview for a screen. Placed in <Target>Preview.kt in the feature " +
         "module that holds the screen, with the content wrapped in PreviewRoot"
     description = """
         A `private @Composable` annotated with `@Preview` that draws a screen. It is written in
@@ -29,7 +29,7 @@ fun DeclarationContainerScope.screenPreview() = "ScreenPreview".role {
         sample splits the files (the co-located form is in sample/android).
 
         The file is written as a `*Preview.kt` glob in any feature module, and named after the
-        screen it renders by convention (`HomeLoadedPreview.kt` for the home screen).
+        screen it renders by convention (`HomeScreenPreview.kt` for `HomeScreen`).
 
         This `@Preview` is the one from Compose Multiplatform's
         `org.jetbrains.compose.ui:ui-tooling-preview`. Its fully qualified annotation name is
@@ -48,7 +48,7 @@ fun DeclarationContainerScope.screenPreview() = "ScreenPreview".role {
         - Anything that touches a real Repository or the network. Write values as literals
         - Previews of components. They belong to the ComponentPreview role in `:ui`
     """.trimIndent()
-    example("HomeLoadedPreview", "The home screen, loaded")
+    example("HomeScreenPreview", "The home screen, loading, loaded and failed")
     layout {
         "feature" / "*" / "commonMain".sourceSet / kotlin / "com/example/kmp/feature" / "*" /
             "*Preview".ktFile()

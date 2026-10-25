@@ -16,9 +16,9 @@ fun DeclarationContainerScope.component() = "Component".role {
         Android and iOS use the same parts.
 
         When a part is added, add one file here first. Previews are written separately in
-        `<PartName>Preview.kt` in the same package (the ui/Preview role), so no `@Preview` goes
-        into this role's files. Because `component/*.kt` also matches `*Preview.kt`, katachi
-        reports the overlap as `[AmbiguousLayout]`. This is a known and accepted shape.
+        `<PartName>Preview.kt` in the `preview` package below this one (the ComponentPreview
+        role), so no `@Preview` goes into this role's files. `component/*.kt` does not reach into
+        that package, so each file in `component` belongs to exactly one of the two roles.
     """.trimIndent()
     allowedContents = """
         - Parts that know nothing about screens. They take only plain arguments such as `label` and `onClick` and hold no state

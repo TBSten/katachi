@@ -8,13 +8,14 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.dsl.pascalCase
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /**
  * The state holder of one screen, named after the feature module it sits in.
  *
- * Written the same loose way as [screen]: a `*ViewModel.kt` glob under the directory
- * `"feature" / "*"`, with the file name named after the module by convention.
+ * Written the same way as [screen]: `capture("feature")` on the module directory and the
+ * package directory, and the file name derived from it, `${capture("feature").pascalCase}ViewModel`.
  */
 fun DeclarationContainerScope.viewModel() = "ViewModel".role {
     title = "ViewModel"
@@ -22,7 +23,7 @@ fun DeclarationContainerScope.viewModel() = "ViewModel".role {
         "Converts values fetched from the Repository into a UiState and exposes it as a StateFlow"
     description = """
         The place that holds screen state. One file, `<Name>ViewModel.kt`, in the `commonMain` of
-        `:feature:<name>`. As with Screen, the file name is bound to the module name, so two
+        `:feature:<name>`. As with Screen, the check binds the file name to the module name, so two
         ViewModels never sit side by side in one feature module.
 
         It extends `androidx.lifecycle.ViewModel`, which is the Compose Multiplatform version
@@ -47,8 +48,10 @@ fun DeclarationContainerScope.viewModel() = "ViewModel".role {
     example("HomeViewModel", "The state of the home screen")
     example("SettingsViewModel", "The state of the settings screen")
     layout {
-        "feature" / "*" / "commonMain".sourceSet / kotlin / "com/example/kmp/feature" / "*" /
-            "*ViewModel".ktFile()
+        // Named after the module like Screen: feature/home/.../home/HomeViewModel.kt, and nothing
+        // else named *ViewModel.kt there.
+        "feature" / capture("feature") / "commonMain".sourceSet / kotlin / "com/example/kmp/feature" /
+            capture("feature") / "${capture("feature").pascalCase}ViewModel".ktFile()
     }
     // The state holder named after the file, exposing `state` and taking events, and a display
     // type such as SettingsUi beside it. androidx.compose and android are not among the imports,

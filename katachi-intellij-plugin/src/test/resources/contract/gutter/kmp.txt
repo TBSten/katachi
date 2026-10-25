@@ -243,7 +243,7 @@ roles: testing.GroupDefinition
 == architecture-test/src/test/kotlin/com/example/kmp/groups/FeatureGroup.kt
 roles: testing.GroupDefinition
     testing.GroupDefinition declared at GroupDefinitionRole.kt:8 | fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
-28 | ◆ | katachi: testing.GroupDefinition
+29 | ◆ | katachi: testing.GroupDefinition
     menu | ◇ Role testing.GroupDefinition — Group definition | GroupDefinitionRole.kt:8
     menu | == Other files of testing.GroupDefinition (6)
     menu | AppGroup.kt | architecture-test/…/example/kmp/groups
@@ -1106,7 +1106,7 @@ roles: testing.RoleDefinition
 == architecture-test/src/test/kotlin/com/example/kmp/roles/RouteRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-17 | ◆ | katachi: testing.RoleDefinition
+19 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
     menu | == Other files of testing.RoleDefinition (35)
     menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
@@ -1158,7 +1158,7 @@ roles: testing.RoleDefinition
 == architecture-test/src/test/kotlin/com/example/kmp/roles/ScreenRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-20 | ◆ | katachi: testing.RoleDefinition
+22 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
     menu | == Other files of testing.RoleDefinition (35)
     menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
@@ -1262,7 +1262,7 @@ roles: testing.RoleDefinition
 == architecture-test/src/test/kotlin/com/example/kmp/roles/ViewModelRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-19 | ◆ | katachi: testing.RoleDefinition
+20 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
     menu | == Other files of testing.RoleDefinition (35)
     menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
@@ -2474,9 +2474,9 @@ roles: Gradle.BuildScript
 
 == feature/home/src/commonMain/kotlin/com/example/kmp/feature/home/HomeRoute.kt
 roles: feature.Route
-    feature.Route declared at RouteRole.kt:17 | fun DeclarationContainerScope.route() = "Route".role {
+    feature.Route declared at RouteRole.kt:19 | fun DeclarationContainerScope.route() = "Route".role {
 15 | ◆ | katachi: feature.Route
-    menu | ◇ Role feature.Route — Route | RouteRole.kt:17
+    menu | ◇ Role feature.Route — Route | RouteRole.kt:19
     menu | == Other files of feature.Route (1)
     menu | SettingsRoute.kt | feature/…/example/kmp/feature/settings
     menu | -----
@@ -2485,9 +2485,9 @@ roles: feature.Route
 
 == feature/home/src/commonMain/kotlin/com/example/kmp/feature/home/HomeScreen.kt
 roles: feature.Screen
-    feature.Screen declared at ScreenRole.kt:20 | fun DeclarationContainerScope.screen() = "Screen".role {
+    feature.Screen declared at ScreenRole.kt:22 | fun DeclarationContainerScope.screen() = "Screen".role {
 20 | ◆ | katachi: feature.Screen
-    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:20
+    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:22
     menu | == Other files of feature.Screen (1)
     menu | SettingsScreen.kt | feature/…/example/kmp/feature/settings
     menu | -----
@@ -2527,11 +2527,11 @@ roles: feature.ScreenPreview
 
 == feature/home/src/commonMain/kotlin/com/example/kmp/feature/home/HomeViewModel.kt
 roles: feature.ViewModel
-    feature.ViewModel declared at ViewModelRole.kt:19 | fun DeclarationContainerScope.viewModel() = "ViewModel".role {
-19 | ◆ | katachi: feature.ViewModel — allowed by internal class HomeViewModel : ViewModel (ViewModelRole.kt:67)
-    allowed at ViewModelRole.kt:67 | required(internal, `class`, fileName).superclass("ViewModel") {
-    menu | ◆ Allowed by internal class HomeViewModel : ViewModel | ViewModelRole.kt:67
-    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:19
+    feature.ViewModel declared at ViewModelRole.kt:20 | fun DeclarationContainerScope.viewModel() = "ViewModel".role {
+19 | ◆ | katachi: feature.ViewModel — allowed by internal class HomeViewModel : ViewModel (ViewModelRole.kt:70)
+    allowed at ViewModelRole.kt:70 | required(internal, `class`, fileName).superclass("ViewModel") {
+    menu | ◆ Allowed by internal class HomeViewModel : ViewModel | ViewModelRole.kt:70
+    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:20
     menu | == Other files of feature.ViewModel (1)
     menu | SettingsViewModel.kt | feature/…/example/kmp/feature/settings
     menu | -----
@@ -2572,9 +2572,9 @@ roles: Gradle.BuildScript
 
 == feature/settings/src/commonMain/kotlin/com/example/kmp/feature/settings/SettingsRoute.kt
 roles: feature.Route
-    feature.Route declared at RouteRole.kt:17 | fun DeclarationContainerScope.route() = "Route".role {
+    feature.Route declared at RouteRole.kt:19 | fun DeclarationContainerScope.route() = "Route".role {
 10 | ◆ | katachi: feature.Route
-    menu | ◇ Role feature.Route — Route | RouteRole.kt:17
+    menu | ◇ Role feature.Route — Route | RouteRole.kt:19
     menu | == Other files of feature.Route (1)
     menu | HomeRoute.kt | feature/…/com/example/kmp/feature/home
     menu | -----
@@ -2583,9 +2583,9 @@ roles: feature.Route
 
 == feature/settings/src/commonMain/kotlin/com/example/kmp/feature/settings/SettingsScreen.kt
 roles: feature.Screen
-    feature.Screen declared at ScreenRole.kt:20 | fun DeclarationContainerScope.screen() = "Screen".role {
+    feature.Screen declared at ScreenRole.kt:22 | fun DeclarationContainerScope.screen() = "Screen".role {
 19 | ◆ | katachi: feature.Screen
-    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:20
+    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:22
     menu | == Other files of feature.Screen (1)
     menu | HomeScreen.kt | feature/…/com/example/kmp/feature/home
     menu | -----
@@ -2616,20 +2616,20 @@ roles: feature.ScreenPreview
 
 == feature/settings/src/commonMain/kotlin/com/example/kmp/feature/settings/SettingsViewModel.kt
 roles: feature.ViewModel
-    feature.ViewModel declared at ViewModelRole.kt:19 | fun DeclarationContainerScope.viewModel() = "ViewModel".role {
-14 | ◆ | katachi: feature.ViewModel — allowed by internal data class *Ui (ViewModelRole.kt:64)
-    allowed at ViewModelRole.kt:64 | allow(internal, data, `class`, "*Ui") { // data class SettingsUi(val userCount: Int, ...)
-    menu | ◆ Allowed by internal data class *Ui | ViewModelRole.kt:64
-    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:19
+    feature.ViewModel declared at ViewModelRole.kt:20 | fun DeclarationContainerScope.viewModel() = "ViewModel".role {
+14 | ◆ | katachi: feature.ViewModel — allowed by internal data class *Ui (ViewModelRole.kt:67)
+    allowed at ViewModelRole.kt:67 | allow(internal, data, `class`, "*Ui") { // data class SettingsUi(val userCount: Int, ...)
+    menu | ◆ Allowed by internal data class *Ui | ViewModelRole.kt:67
+    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:20
     menu | == Other files of feature.ViewModel (1)
     menu | HomeViewModel.kt | feature/…/com/example/kmp/feature/home
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
-20 | ◆ | katachi: feature.ViewModel — allowed by internal class SettingsViewModel : ViewModel (ViewModelRole.kt:67)
-    allowed at ViewModelRole.kt:67 | required(internal, `class`, fileName).superclass("ViewModel") {
-    menu | ◆ Allowed by internal class SettingsViewModel : ViewModel | ViewModelRole.kt:67
-    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:19
+20 | ◆ | katachi: feature.ViewModel — allowed by internal class SettingsViewModel : ViewModel (ViewModelRole.kt:70)
+    allowed at ViewModelRole.kt:70 | required(internal, `class`, fileName).superclass("ViewModel") {
+    menu | ◆ Allowed by internal class SettingsViewModel : ViewModel | ViewModelRole.kt:70
+    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:20
     menu | == Other files of feature.ViewModel (1)
     menu | HomeViewModel.kt | feature/…/com/example/kmp/feature/home
     menu | -----
@@ -2794,22 +2794,16 @@ roles: ui.Component
     ui.Component declared at ComponentRole.kt:10 | fun DeclarationContainerScope.component() = "Component".role {
 13 | ◆ | katachi: ui.Component
     menu | ◇ Role ui.Component — Shared component | ComponentRole.kt:10
-    menu | == Other files of ui.Component (1)
-    menu | PrimaryButtonPreview.kt | ui/…/kotlin/com/example/kmp/ui/component
+    menu | == Other files of ui.Component
+    menu | (disabled) — No other file yet
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
-== ui/src/commonMain/kotlin/com/example/kmp/ui/component/PrimaryButtonPreview.kt
-roles: ui.Component, ui.ComponentPreview
-    ui.Component declared at ComponentRole.kt:10 | fun DeclarationContainerScope.component() = "Component".role {
+== ui/src/commonMain/kotlin/com/example/kmp/ui/component/preview/PrimaryButtonPreview.kt
+roles: ui.ComponentPreview
     ui.ComponentPreview declared at ComponentPreviewRole.kt:14 | fun DeclarationContainerScope.componentPreview() = "ComponentPreview".role {
-17 | ◆ | katachi: ui.Component, ui.ComponentPreview
-    menu | == ui.Component
-    menu | ◇ Role ui.Component — Shared component | ComponentRole.kt:10
-    menu | == Other files of ui.Component (1)
-    menu | PrimaryButton.kt | ui/…/kotlin/com/example/kmp/ui/component
-    menu | == ui.ComponentPreview
+18 | ◆ | katachi: ui.ComponentPreview
     menu | ◇ Role ui.ComponentPreview — Component preview | ComponentPreviewRole.kt:14
     menu | == Other files of ui.ComponentPreview
     menu | (disabled) — No other file yet

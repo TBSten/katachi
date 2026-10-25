@@ -40,6 +40,10 @@ import me.tbsten.katachi.test.architecture.roles.util
  *    anything written after one — most often a `## Example` that drifted below its `@param`s —
  *    renders broken. See `KdocExamples.kt`.
  *
+ * The `ktFileContent { }` lets every declaration through (`allow(anythingElse)`): what a
+ * declaration may be is rules 3 to 5, which read the KDoc and the `.internal` line that the block
+ * cannot. `Marker` alone names what it holds, because it is one kind of file rather than a layer.
+ *
  * ## Why every role file repeats the same four helpers
  *
  * `konsist { }` and `ktFileContent { }` are captured at the first stack frame outside katachi,

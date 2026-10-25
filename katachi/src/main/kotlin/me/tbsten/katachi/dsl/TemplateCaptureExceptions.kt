@@ -155,9 +155,9 @@ public class KatachiTemplateParameterConflictException internal constructor(
  * different type or a different default.
  *
  * A parameter's value arrives as `--arg <name>=...`, shared by every template of the run that
- * declares one under that name -- design draft section 2, "複数指定のとき": "capture とパラメータは、
- * 書いたテンプレート全部の中で名前ごとに1つ". Two declarations that only differ in type or default
- * cannot both be "the" parameter of that name: a `stringParameter()` and an `intParameter()` would
+ * declares one under that name: across the templates of one run, a capture or a parameter is one
+ * per name. Two declarations that only differ in type or default cannot both be "the" parameter
+ * of that name: a `stringParameter()` and an `intParameter()` would
  * read the same `--arg` string two different ways, and two different defaults would leave one of
  * them silently unused whenever the run's `--arg` list leaves the value out.
  *

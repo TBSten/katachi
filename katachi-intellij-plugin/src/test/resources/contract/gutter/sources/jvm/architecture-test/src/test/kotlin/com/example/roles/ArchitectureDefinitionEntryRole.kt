@@ -12,9 +12,9 @@ fun DeclarationContainerScope.architectureDefinitionEntry() = "ArchitectureDefin
     summary = "The one file whose `architecture { }` gathers every group, so the definition can be read from here"
     description = """
         The starting point of the definition. `ProjectArchitecture.kt` holds the `architecture { }`
-        block and the `val` every role file shares, and it only calls the group functions. The
-        groups, the roles and the processors are other kinds of file with their own roles, so
-        this role is the one file and nothing else.
+        block, as `val projectArchitecture`, and it only calls the group functions. The groups, the
+        roles, the processors and the headings every role file shares (`DocumentSections.kt`) are
+        other kinds of file with their own roles, so this role is the one file and nothing else.
 
         The definition lives in a dedicated module, `:architecture-test`, because it belongs to no
         layer of the application. The application is the root project (`:`), so moving the

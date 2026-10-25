@@ -13,10 +13,10 @@ different kinds of file. `*RepositoryImpl.kt` is also a name the interface patte
 `*Repository.kt` cannot match, so a file in the wrong place is reported as a violation
 instead of quietly passing.
 
-The file declaration carries one `.template` whose `name` capture is shared with the
-interface's template: running
-`--arg template=data.RepositoryInterface,data.RepositoryImplementation --arg name=Cache`
-creates both at once, and the `item` parameter binds both when given once.
+The file declaration carries one `.template` whose `name` capture and `item` parameter
+match the interface's template. The two are usually generated together as the template
+set `data.NewRepository` (`--arg template=data.NewRepository --arg name=Cache`), which
+passes the one `name` to both.
 
 ## Placement
 

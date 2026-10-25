@@ -8,9 +8,9 @@ A layer of modules that grows by one per screen. There are `:feature:home` and
 `:feature:settings`; adding a screen means adding a module.
 
 Screen / ViewModel / Route are collected here because each of them exists for a single
-screen. All three are written as globs under the directory `feature/*`, and by convention the
-file is named after the module: `:feature:home` has `HomeScreen.kt` / `HomeViewModel.kt` /
-`HomeRoute.kt`. The check looks at the place and the suffix, not at the pairing.
+screen. Each file is named after the module: `:feature:home` has `HomeScreen.kt` /
+`HomeViewModel.kt` / `HomeRoute.kt`, and the check holds them to it, so a
+`ProfileScreen.kt` in `:feature:home` is reported.
 
 It is separate from the ui group because the two grow differently. A feature is a place
 where modules are expected to multiply, and one declaration of the directory `feature/*`
@@ -34,7 +34,7 @@ screens. Platform differences stay inside ExpectDeclaration and ActualImplementa
 | [ViewModel](./ViewModel.md) | An androidx.lifecycle.ViewModel that holds screen state. Converts values fetched from the Repository into a UiState and exposes it as a StateFlow |
 | [Route](./Route.md) | Ties a screen to a navigation Destination and also takes on creating the ViewModel |
 | [Screen component](./FeatureComponent.md) | A @Composable used by only one screen. Placed as <Name>*.kt in the component package of the commonMain of :feature:<name> |
-| [Screen preview](./ScreenPreview.md) | A private @Composable annotated with @Preview for a screen. Placed in Home*Preview.kt in the feature module that holds the screen, with the content wrapped in PreviewRoot |
+| [Screen preview](./ScreenPreview.md) | A private @Composable annotated with @Preview for a screen. Placed in <Target>Preview.kt in the feature module that holds the screen, with the content wrapped in PreviewRoot |
 
 ## Placement in this group
 

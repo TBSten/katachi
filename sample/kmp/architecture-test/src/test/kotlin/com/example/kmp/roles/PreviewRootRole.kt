@@ -8,9 +8,9 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
  * The `preview` package of `:ui`.
  *
  * `PreviewRoot` is the only thing in it, and every `@Preview` in the sample goes through it
- * instead of writing `AppTheme { }` itself. Kept apart from [preview], whose name it is a
- * prefix of, because the two are different things: one is the wrapper, the other is what the
- * wrapper is used by.
+ * instead of writing `AppTheme { }` itself. Kept apart from [componentPreview] and
+ * [screenPreview], whose names are close to it, because they are different things: one is the
+ * wrapper, the others are what the wrapper is used by.
  */
 fun DeclarationContainerScope.previewRoot() = "PreviewRoot".role {
     title = "Preview root"
@@ -21,9 +21,9 @@ fun DeclarationContainerScope.previewRoot() = "PreviewRoot".role {
         paints their background behind it. Without it, every preview would copy the same two
         lines, and they would all drift apart the day the theme gains an argument.
 
-        It is a different role from ui/Preview, whose name is similar. This one is the wrapping
-        side and that one the wrapped side; no `@Preview` is written here. Conversely, nothing
-        other than previews calls `PreviewRoot`.
+        It is a different role from ComponentPreview and ScreenPreview, whose names are similar.
+        This one is the wrapping side and those the wrapped side; no `@Preview` is written here.
+        Conversely, nothing other than previews calls `PreviewRoot`.
 
         It sits in `commonMain`, not `commonTest`, because the `@Preview` that uses it lives in
         the `commonMain` of the feature modules. A test source set cannot be referenced from other

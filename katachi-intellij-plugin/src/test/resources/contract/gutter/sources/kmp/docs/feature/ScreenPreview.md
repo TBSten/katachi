@@ -2,7 +2,7 @@
 
 # Screen preview
 
-A private @Composable annotated with @Preview for a screen. Placed in Home*Preview.kt in the feature module that holds the screen, with the content wrapped in PreviewRoot
+A private @Composable annotated with @Preview for a screen. Placed in <Target>Preview.kt in the feature module that holds the screen, with the content wrapped in PreviewRoot
 
 A `private @Composable` annotated with `@Preview` that draws a screen. It is written in
 `<Target>Preview.kt` in the same package as the screen, inside the feature module that
@@ -10,7 +10,7 @@ holds the screen. Keeping it in the same file as the target is also possible, bu
 sample splits the files (the co-located form is in sample/android).
 
 The file is written as a `*Preview.kt` glob in any feature module, and named after the
-screen it renders by convention (`HomeLoadedPreview.kt` for the home screen).
+screen it renders by convention (`HomeScreenPreview.kt` for `HomeScreen`).
 
 This `@Preview` is the one from Compose Multiplatform's
 `org.jetbrains.compose.ui:ui-tooling-preview`. Its fully qualified annotation name is
@@ -30,7 +30,7 @@ Previews can be written in `commonMain` because the former is used.
 
 ## Kotlin file content
 
-Example: `HomeLoadedPreview.kt`
+Example: `HomeScreenPreview.kt`
 
 | Package |
 |---|
@@ -47,7 +47,7 @@ Example: `HomeLoadedPreview.kt`
 
 ## Examples
 
-- `HomeLoadedPreview` ... The home screen, loaded
+- `HomeScreenPreview` ... The home screen, loading, loaded and failed
 
 ## Allowed contents
 

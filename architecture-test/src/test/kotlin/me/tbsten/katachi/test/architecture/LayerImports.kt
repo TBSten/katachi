@@ -78,6 +78,7 @@ private const val ROOT_PACKAGE: String = "me.tbsten.katachi"
  *     `package`(matchingDirectory)
  *     `import`("**")
  *     laterLayerImportsOf(LAYER).forEach { not.`import`(it) }
+ *     allow(anythingElse)
  * }
  * ```
  *

@@ -71,7 +71,7 @@ One module per screen. :feature:<name> always holds a Screen / ViewModel / Route
 - [ViewModel](./feature/ViewModel.md) ... An androidx.lifecycle.ViewModel that holds screen state. Converts values fetched from the Repository into a UiState and exposes it as a StateFlow
 - [Route](./feature/Route.md) ... Ties a screen to a navigation Destination and also takes on creating the ViewModel
 - [Screen component](./feature/FeatureComponent.md) ... A @Composable used by only one screen. Placed as <Name>*.kt in the component package of the commonMain of :feature:<name>
-- [Screen preview](./feature/ScreenPreview.md) ... A private @Composable annotated with @Preview for a screen. Placed in Home*Preview.kt in the feature module that holds the screen, with the content wrapped in PreviewRoot
+- [Screen preview](./feature/ScreenPreview.md) ... A private @Composable annotated with @Preview for a screen. Placed in <Target>Preview.kt in the feature module that holds the screen, with the content wrapped in PreviewRoot
 
 ## UI
 
@@ -80,7 +80,7 @@ One module per screen. :feature:<name> always holds a Screen / ViewModel / Route
 - [Shared component](./ui/Component.md) ... The component package of the :ui module. @Composable parts used by several screens
 - [Theme](./ui/Theme.md) ... The theme package of the :ui module. The MaterialTheme setup and the design tokens for color and spacing
 - [UI core](./ui/UiCore.md) ... The core package of the :ui module. The screen-independent foundation of the UI, such as UiState
-- [Component preview](./ui/ComponentPreview.md) ... A private @Composable annotated with @Preview for a component. Placed in <Target>Preview.kt in the component package of :ui, with the content wrapped in PreviewRoot
+- [Component preview](./ui/ComponentPreview.md) ... A private @Composable annotated with @Preview for a component. Placed in <Target>Preview.kt in the component/preview package of :ui, with the content wrapped in PreviewRoot
 - [Preview root](./ui/PreviewRoot.md) ... The preview package of the :ui module. Wraps the content of a @Preview in AppTheme and Surface
 - [Navigation](./ui/Navigation.md) ... The definition of destinations, and the Navigator that holds the current location
 

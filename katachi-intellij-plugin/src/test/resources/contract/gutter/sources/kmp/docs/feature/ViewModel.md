@@ -5,7 +5,7 @@
 An androidx.lifecycle.ViewModel that holds screen state. Converts values fetched from the Repository into a UiState and exposes it as a StateFlow
 
 The place that holds screen state. One file, `<Name>ViewModel.kt`, in the `commonMain` of
-`:feature:<name>`. As with Screen, the file name is bound to the module name, so two
+`:feature:<name>`. As with Screen, the check binds the file name to the module name, so two
 ViewModels never sit side by side in one feature module.
 
 It extends `androidx.lifecycle.ViewModel`, which is the Compose Multiplatform version

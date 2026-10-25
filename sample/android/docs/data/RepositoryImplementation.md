@@ -9,10 +9,10 @@ The implementation of a repository, kept in `:data` in the same package as its i
 ViewModel receives, and wiring the implementation in is the only place it appears.
 
 Only the `User*RepositoryImpl.kt` part can be generated from a template
-(`UserRepositoryImpl.kt` itself is handwritten in each domain from the start). Each id
-shares its interface template's `name` capture, so passing `name` once binds both when
-they are generated together
-(`--arg template=data.RepositoryInterface.user,data.RepositoryImplementation.user`).
+(`UserRepositoryImpl.kt` itself is handwritten in each domain from the start). A user
+repository's implementation is usually generated with its interface and fake as the
+template set `data.NewRepository` (`--arg template=data.NewRepository --arg name=Cache`),
+which passes the one `name` to each of them.
 
 ## Placement
 

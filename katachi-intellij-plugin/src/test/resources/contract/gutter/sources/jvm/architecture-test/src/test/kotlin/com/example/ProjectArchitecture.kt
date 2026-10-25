@@ -37,8 +37,9 @@ import me.tbsten.katachi.dsl.architecture
  * covered by some role, and anything else fails `ProjectArchitectureTest`.
  *
  * `baseline()` holds back the violations recorded in `katachi-baseline.json`
- * (declared by `roles/BaselineFileRole.kt`). Two are left in on purpose, as the demo of it: see
- * `service/LegacyHealthCheck.kt` and `service/LegacyStatusService.kt`.
+ * (declared by `roles/BaselineFileRole.kt`). Three are left in on purpose, as the demo of it: see
+ * `service/LegacyHealthCheck.kt`, `service/LegacyStatusService.kt` and
+ * `controller/health/LegacyStatusController.kt`.
  */
 @OptIn(ExperimentalKatachiApi::class)
 val projectArchitecture: Architecture = architecture {

@@ -33,8 +33,8 @@ import me.tbsten.katachi.dsl.architecture
  * It uses `validate()`, which hands the violations back instead of throwing. That function is
  * `@InternalKatachiApi` on purpose: a user asserts, and this file is not a user.
  *
- * `validate()` answers with the warnings too, so [PREVIEW_OVERLAP] is in every expectation
- * below. It is not a failure and not a side effect of dropping a group — see its own comment.
+ * `validate()` answers with the warnings too. The full definition has none, so every line of
+ * the expectations below comes from the group each one drops, or from the baseline.
  *
  * `FileConstraintCheck()` is passed as [ProjectArchitectureTest] passes it, so the
  * `ktFileContent { }` of the roles kept in each definition are checked rather than reported as
@@ -61,7 +61,6 @@ class OmittedRoleSelfCheckSpec : FreeSpec({
                 "[UnexpectedFile] .gitignore",
                 "[UnexpectedFile] README.md",
                 HELD_BACK_BY_BASELINE,
-                PREVIEW_OVERLAP,
             )
     }
 
@@ -82,7 +81,7 @@ class OmittedRoleSelfCheckSpec : FreeSpec({
         }
 
         withoutData.validate(FileConstraintCheck()).labels() shouldContainExactly
-            listOf("[UnexpectedDirectory] data/src", PREVIEW_OVERLAP)
+            listOf("[UnexpectedDirectory] data/src")
     }
 
     "the nearby locations of a file that lost its role are the roles of its own directory, never Gradle.BuildScript" {
@@ -129,18 +128,6 @@ private const val HOME_SOURCES = "feature/home/src/commonMain/kotlin/com/example
  */
 private const val HELD_BACK_BY_BASELINE: String =
     "[UnexpectedDirectory] data/src/androidMain/kotlin/com/example/kmp/data/user"
-
-/**
- * The one overlap this sample means to have. In the `component` package of `:ui`, `Component`
- * claims every `.kt` file and `Preview` claims the ones ending in `Preview.kt`, so the one file
- * matching both belongs to both roles.
- *
- * katachi reports it as a Warning, which never fails `assert()` — see `roles/ComponentPreviewRole.kt`,
- * where the overlap is declared on purpose. Both definitions above keep `uiGroup()`, so it is
- * in both of their results and says nothing about the group each of them dropped.
- */
-private const val PREVIEW_OVERLAP: String =
-    "[AmbiguousLayout] ui/src/commonMain/kotlin/com/example/kmp/ui/component/PrimaryButtonPreview.kt"
 
 /**
  * `[UnexpectedFile] path`, with [Violation.path] relative to the project root. A report block's
