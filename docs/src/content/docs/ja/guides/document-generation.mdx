@@ -14,7 +14,7 @@ import CodeComparison from '../../../../components/CodeComparison';
 
 katachi は `architecture { }` 定義から markdown ドキュメントを生成できます。
 
-## 基本
+## ドキュメント生成を実行する
 
 build.gradle.kts に以下のように設定します。
 
@@ -219,9 +219,9 @@ group は入れ子にでき、入れ子の group はその親の group のディ
 |---|---|---|
 | [`title`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/title.html) | Role のページの見出し。デフォルトは Role の識別子 | `<Role名>.md`、および索引・一覧のリンク文字列 |
 | [`summary`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/summary.html) | 一覧の表に入る1行 | `<Role名>.md`、親の `README.md` |
-| [`description`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/description.html) | Role のページの本文。書いた Markdown が改行も含めてそのまま入ります。katachi は構造を足さないので、**中の見出しは書き手が決めます** | `<Role名>.md` |
-| [`example(name, description)`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/example.html) | 具体例。1つの例につき1回呼びます。**呼んだ順**に並びます | `<Role名>.md` の `## Examples` |
-| [`documented`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/documented.html) | `false` にするとドキュメントに出ません。出ないだけで、**assert() などの検査には引き続き参加します** | --- |
+| [`description`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/description.html) | Role のページの本文。書いた Markdown が改行も含めてそのまま入ります。katachi は構造を足さないので、中の見出しは書き手が決めます | `<Role名>.md` |
+| [`example(name, description)`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/example.html) | 具体例。1つの例につき1回呼びます。呼んだ順に並びます | `<Role名>.md` の `## Examples` |
+| [`documented`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/documented.html) | `false` にするとドキュメントに出ません。出ないだけで、assert() などの検査には引き続き参加します | --- |
 
 <CodeComparison>
     <CodeComparison.Panel label="Role 定義">
@@ -273,80 +273,9 @@ group は入れ子にでき、入れ子の group はその親の group のディ
     </CodeComparison.Panel>
 </CodeComparison>
 
-#### `ktFileContent { }` の節
-
-<Aside type="note" title="AI が書いた下書き">
-この節は AI が書いた下書きです。`ktFileContent { }` は v0.3 で入る予定の実験的な機能です。
-</Aside>
-
-制約は、Role のページに自分の節を出せます。[`ktFileContent { }`](/katachi/ja/guides/kt-file-content/) を書いた Role のページには、`## Constraints` と `## Examples` のあいだに `## Kotlin file content` の節が出ます。
-`ktFileContent { }` に書いた行を、例のファイルに当てはめて表にしたものです。
-
-<CodeComparison>
-    <CodeComparison.Panel label="Role 定義">
-        ```kt
-        "ViewModel".role {
-            summary = "画面の状態を StateFlow で公開し、画面からのイベントを受け取る"
-            example("HomeViewModel", "ホーム画面の状態")
-
-            layout {
-                "feature" / capture("feature") / mainSourceSet / kotlin / "**" / "*ViewModel".ktFile()
-            }
-
-            ktFileContent {
-                `package`("com.example.feature.${captureValue("feature")}")
-
-                `import`("androidx.lifecycle.**")
-                `import`("kotlinx.coroutines.**")
-
-                `class`(fileName).superclass("ViewModel") {
-                    public.`val`("uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
-                    private.anythingElse()
-                }
-            }
-        }
-        ```
-    </CodeComparison.Panel>
-    <CodeComparison.Panel label="生成されるマークダウン">
-        ```md title="ViewModel.md（抜粋）"
-        ## Kotlin file content
-
-        Example: `HomeViewModel.kt`
-
-        | Package |
-        |---|
-        | `com.example.feature.<feature>` |
-
-        | Import | |
-        |---|---|
-        | `androidx.lifecycle.**` | optional |
-        | `kotlinx.coroutines.**` | optional |
-
-        | Declaration | |
-        |---|---|
-        | `class HomeViewModel : ViewModel` | required |
-
-        ### Members of `class HomeViewModel`
-
-        | Member | |
-        |---|---|
-        | `public val uiState: StateFlow<HomeUiState>` | required |
-        | `private` (anything) | optional |
-        ```
-    </CodeComparison.Panel>
-</CodeComparison>
-
-例のファイルは、次の順に決まります。
-
-1. Role の `example(…)` の最初の名前（`example("HomeViewModel")` なら `HomeViewModel.kt`）
-2. `example(…)` が無ければ、その Role に当たったプロジェクトのファイルのうち最初のもの
-3. どちらも無ければ `Sample.kt`
-
-例のファイルの名前から分からない capture の値は、`com.example.feature.<feature>` の `<feature>` のように、capture の名前で出ます。
-
 ### group
 
-group に設定できるのは Role と同じ4つです。**`example()` だけがありません。**
+group に設定できるのは Role と同じ4つです。`example()` だけがありません。
 
 | プロパティ | 生成されるドキュメントでの役割 | 使用されるページ |
 |---|---|---|
@@ -358,7 +287,7 @@ group に設定できるのは Role と同じ4つです。**`example()` だけ�
 <details>
     <summary>注意: documented = false は group の中身ごと外します</summary>
 
-    `documented = false` にした group は、**中の Role とネストした group もまとめてドキュメントに出なくなります。** 中の Role が自分で何と書いていても同じです。
+    `documented = false` にした group は、中の Role とネストした group もまとめてドキュメントに出なくなります。 中の Role が自分で何と書いていても同じです。
 
     ```kt
     "build".group {
@@ -370,6 +299,8 @@ group に設定できるのは Role と同じ4つです。**`example()` だけ�
     値そのものは中の Role や group に写されません（それぞれ自分が書いた値を持ちます）。自作の processor でこの値を見るときは、`Role.groupPath` をたどって親の group の値も見てください。
 
 </details>
+
+次の group 定義からは、右のマークダウンが生成されます。
 
 <CodeComparison>
     <CodeComparison.Panel label="group 定義">
@@ -482,7 +413,7 @@ var MetadataScope.testPolicy by TestPolicy
     <summary>セクションを入れ子にする</summary>
 
     セクションは入れ子にできます。`TestPolicy.documentSection("ユニットテスト")` のように、親のセクションに対して宣言します。
-    **見出しのレベルは深さで決まります。** 最上位が `##` で、1段深くなるごとに `#` が1つ増えます。
+    見出しのレベルは深さで決まります。 最上位が `##` で、1段深くなるごとに `#` が1つ増えます。
     親に本文を書いていなくても、子に本文があれば親の見出しは出ます。
 
     <CodeComparison>
@@ -537,9 +468,98 @@ var MetadataScope.testPolicy by TestPolicy
 
 </details>
 
+### `ktFileContent { }` の節
+
+<Aside type="note" title="AI が書いた下書き">
+この節は AI が書いた下書きです。`ktFileContent { }` は v0.3 で入る予定の実験的な機能です。
+</Aside>
+
+制約は、Role のページに自分の節を出せます。[`ktFileContent { }`](/katachi/ja/guides/kt-file-content/) を書いた Role のページには、`## Constraints` と `## Examples` のあいだに `## Kotlin file content` の節が出ます。
+`ktFileContent { }` に書いた行を、例のファイルに当てはめて表にしたものです。
+
+<CodeComparison>
+    <CodeComparison.Panel label="Role 定義">
+        ```kt
+        "ViewModel".role {
+            summary = "画面の状態を StateFlow で公開し、画面からのイベントを受け取る"
+            example("HomeViewModel", "ホーム画面の状態")
+
+            layout {
+                "feature" / capture("feature") / mainSourceSet / kotlin / "**" / "*ViewModel".ktFile()
+            }
+
+            ktFileContent {
+                `package`("com.example.feature.${captureValue("feature")}")
+
+                `import`("androidx.lifecycle.**")
+                `import`("kotlinx.coroutines.**")
+
+                required(`class`, fileName).superclass("ViewModel") {
+                    required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+                    allow(private, anythingElse)
+                }
+            }
+        }
+        ```
+    </CodeComparison.Panel>
+    <CodeComparison.Panel label="生成されるマークダウン">
+        ```md title="ViewModel.md（抜粋）"
+        ## Kotlin file content
+
+        Example: `HomeViewModel.kt`
+
+        | Package |
+        |---|
+        | `com.example.feature.<feature>` |
+
+        | Import | |
+        |---|---|
+        | `androidx.lifecycle.**` | optional |
+        | `kotlinx.coroutines.**` | optional |
+
+        | Declaration | |
+        |---|---|
+        | `class HomeViewModel : ViewModel` | required |
+
+        ### Members of `class HomeViewModel`
+
+        | Member | |
+        |---|---|
+        | `public val uiState: StateFlow<HomeUiState>` | required |
+        | `private` (anything) | optional |
+        ```
+    </CodeComparison.Panel>
+</CodeComparison>
+
+例のファイルは、次の順に決まります。
+
+1. Role の `example(…)` の最初の名前（`example("HomeViewModel")` なら `HomeViewModel.kt`）
+2. `example(…)` が無ければ、その Role に当たったプロジェクトのファイルのうち最初のもの
+3. どちらも無ければ `Sample.kt`
+
+例のファイルの名前から分からない capture の値は、`com.example.feature.<feature>` の `<feature>` のように、capture の名前で出ます。
+
 ## まとめ
 
-- アーキテクチャ定義に title, summary, description, example などのプロパティを設定すると、ドキュメントを作成できます。
+title / summary / description / example / layout を全部使った Role の定義と、生成されるマークダウンは次のとおりです。
+
+```kt
+"UseCase".role {
+    title = "UseCase"
+    summary = "各画面で発生するアプリ固有の1つの振る舞い"
+    description = """
+        UseCase はアプリ固有の1つの振る舞いを表すクラスです。
+    """.trimIndent()
+
+    example("GetItemListUseCase", "商品の一覧を取得する")
+    example("SignInUseCase", "サインインする")
+
+    layout {
+        "src/main/kotlin/com/example/useCase" /
+            "*UseCase".ktFile()
+    }
+}
+```
 
 ## 次のステップ
 

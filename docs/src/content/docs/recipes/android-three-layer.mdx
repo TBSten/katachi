@@ -11,11 +11,9 @@ tags:
 
 import SnippetIsStartingPoint from '../../../components/SnippetIsStartingPoint.astro';
 
-import { Aside, FileTree, LinkCard } from '@astrojs/starlight/components';
+import { Aside, FileTree, LinkCard, TabItem, Tabs } from '@astrojs/starlight/components';
 
-<Aside type="note" title="Draft written by AI">
-The definitions on this page are a draft that AI rewrote to match the addition of `ktFileContent { }`, and their contents have not been reviewed yet. `ktFileContent { }` is an experimental feature planned for v0.3.
-</Aside>
+This page shows an example that declares the UI, domain, and data layers as groups and the kinds of files as Roles, and checks naming and contents as well.
 
 <LinkCard
   title="App Architecture Guide"
@@ -26,6 +24,28 @@ The definitions on this page are a draft that AI rewrote to match the addition o
 The app architecture guide published by Android Developers is widely known as the baseline architecture for Android applications.
 
 Below is an example architecture definition for a setup that adopts a domain layer.
+
+```mermaid
+flowchart LR
+    subgraph ui["ui (group)"]
+        UiState
+        ViewModel
+        Screen
+    end
+    subgraph domain["domain (group)"]
+        UseCase
+        DomainModel
+    end
+    subgraph data["data (group)"]
+        RepositoryInterface
+        RepositoryImplementation
+        DataSource
+    end
+    ui --> domain
+    domain --> data
+```
+
+Figure 1. The groups of the three layers and the Roles in them. Arrows show the direction of dependencies
 
 ## Example directory structure
 
@@ -50,8 +70,9 @@ Below is an example architecture definition for a setup that adopts a domain lay
 
 ## Architecture definition
 
-```kt
-// ProjectArchitecture.kt
+Put the groups of the three layers in `ProjectArchitecture.kt`, and one file per Role under `roles/`.
+
+```kt title=ProjectArchitecture.kt nocollapse
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -82,13 +103,14 @@ val projectArchitecture = architecture {
     repositoryInterface()
     repositoryImplementation()
     dataSource()
-  }  
+  }
 }
+```
 
-// Constants.kt
-const val appPackageDir = "com/example/project"
+<Tabs>
+<TabItem label="UiState">
 
-// roles/UiState.kt
+```kt title=roles/UiState.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -112,8 +134,12 @@ private fun RoleScope.shouldBeImmutable() =
   "All properties are val".konsist {
     classes().must { klass -> klass.properties().all { it.isVal } }
   }
+```
 
-// roles/ViewModel.kt
+</TabItem>
+<TabItem label="ViewModel">
+
+```kt title=roles/ViewModel.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -131,15 +157,19 @@ fun DeclarationContainerScope.viewModel() = "ViewModel".role {
 
   // HomeViewModel.kt contains only class HomeViewModel, which extends ViewModel
   ktFileContent {
-    `class`(fileName).superclass("ViewModel") {
-      public.`val`("uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
-      public.`fun`("*")          // events from the screen
-      private.anythingElse()     // UseCases, and the writable side of the state
+    required(`class`, fileName).superclass("ViewModel") {
+      required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+      allow(public, `fun`, "*")          // events from the screen
+      allow(private, anythingElse)     // UseCases, and the writable side of the state
     }
   }
 }
+```
 
-// roles/Screen.kt
+</TabItem>
+<TabItem label="Screen">
+
+```kt title=roles/Screen.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -157,12 +187,16 @@ fun DeclarationContainerScope.screen() = "Screen".role {
 
   // The only public declaration in HomeScreen.kt is @Composable fun HomeScreen
   ktFileContent {
-    annotated("Composable").public.`fun`(fileName)
-    private.anythingElse()      // anything private is fine, such as parts of the screen and Previews
+    required(annotated("Composable"), public, `fun`, fileName)
+    allow(private, anythingElse)      // anything private is fine, such as parts of the screen and Previews
   }
 }
+```
 
-// roles/UseCase.kt
+</TabItem>
+<TabItem label="UseCase">
+
+```kt title=roles/UseCase.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -180,14 +214,21 @@ fun DeclarationContainerScope.useCase() = "UseCase".role {
 
   // GetUserUseCase.kt contains only class GetUserUseCase, and its only public function is invoke
   ktFileContent {
-    `class`(fileName) {
-      public.`fun`("invoke")
-      private.anythingElse()      // such as the Repository received in the constructor
+    `package`(matchingDirectory)      // the package that matches the directory
+    `import`("**")
+
+    required(`class`, fileName) {
+      required(public, suspend.optional(), operator, `fun`, "invoke")  // it may or may not be suspend
+      allow(private, anythingElse)      // such as the Repository received in the constructor
     }
   }
 }
+```
 
-// roles/DomainModel.kt
+</TabItem>
+<TabItem label="DomainModel">
+
+```kt title=roles/DomainModel.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -202,8 +243,12 @@ fun DeclarationContainerScope.domainModel() = "DomainModel".role {
     "app" / mainSourceSet / kotlin / appPackageDir / "domain/model" / "*".ktFile()
   }
 }
+```
 
-// roles/RepositoryInterface.kt
+</TabItem>
+<TabItem label="RepositoryInterface">
+
+```kt title=roles/RepositoryInterface.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -221,11 +266,15 @@ fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role
 
   // UserRepository.kt contains only interface UserRepository
   ktFileContent {
-    `interface`(fileName)
+    required(`interface`, fileName)
   }
 }
+```
 
-// roles/RepositoryImplementation.kt
+</TabItem>
+<TabItem label="RepositoryImplementation">
+
+```kt title=roles/RepositoryImplementation.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -243,11 +292,15 @@ fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementa
 
   // UserRepositoryImpl.kt contains only class UserRepositoryImpl, which implements UserRepository
   ktFileContent {
-    `class`(fileName).superclass(fileName.removeSuffix("Impl"))
+    required(`class`, fileName).superclass(fileName.removeSuffix("Impl"))
   }
 }
+```
 
-// roles/DataSource.kt
+</TabItem>
+<TabItem label="DataSource">
+
+```kt title=roles/DataSource.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -265,14 +318,48 @@ fun DeclarationContainerScope.dataSource() = "DataSource".role {
 
   // UserRemoteDataSource.kt contains only class UserRemoteDataSource
   ktFileContent {
-    `class`(fileName)
+    required(`class`, fileName)
   }
 }
 ```
 
-The declarations a file may contain are written with `ktFileContent { }`, and the rule that every property of a UiState is a `val` is written with `konsist { }`. Both are included in `katachi-konsist`, so add a dependency on `katachi-konsist` to `:architecture-test` and call `assert(FileConstraintCheck())` in the test. With `assert()` alone the constraints are not evaluated and the test fails with `[UncheckedFileConstraint]`. See [Define an allow list of the declarations a file may contain](/katachi/guides/kt-file-content/#installation) for details.
+</TabItem>
+</Tabs>
 
 A real definition that splits the layers into groups and the kinds of files into Roles is in [ProjectArchitecture.kt in sample/android](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/ProjectArchitecture.kt). The sample has no domain layer and splits its modules by screen, so its definition is shaped differently from the one on this page.
+
+When you use `ktFileContent { }` and `konsist { }`, you need the setup described in [Define an allow list of the declarations a file may contain](/katachi/guides/kt-file-content/#installation).
+
+## AndroidManifest.xml and the res/ Role
+
+Android files that belong to none of the three layers also need Roles. `:app` has only one `AndroidManifest.xml`, so write its name as it is. The layout inside `res/` is decided by the Android resource system, so use `ignore()` for it. The next two are quoted from [AndroidManifestRole.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/roles/AndroidManifestRole.kt) and [AndroidResourceRole.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/roles/AndroidResourceRole.kt) in sample/android.
+
+```kt {8,20}
+// roles/AndroidManifest.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+import me.tbsten.katachi.dsl.gradle.mainSourceSet
+
+fun DeclarationContainerScope.androidManifest() = "AndroidManifest".role {
+  summary = "The :app AndroidManifest.xml that declares the app to Android"
+  layout {
+    "app" / mainSourceSet / "AndroidManifest.xml".file()
+  }
+}
+
+// roles/AndroidResource.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+import me.tbsten.katachi.dsl.gradle.mainSourceSet
+
+fun DeclarationContainerScope.androidResource() = "AndroidResource".role {
+  summary = "res/ of :app. The Android resource system decides its inner layout"
+  layout {
+    // AGP checks the arrangement of values/ and drawable-*/, so katachi does not look at it
+    "app" / mainSourceSet / "res".ignore()
+  }
+}
+```
+
+In `ProjectArchitecture.kt`, put them into the `:app` group, as in `"app".group { androidManifest(); androidResource() }`. The sample also places the `MainActivity` and `MainApplication` Roles in the same group ([AppGroup.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/groups/AppGroup.kt)).
 
 <SnippetIsStartingPoint>
 For example, if your product uses Dagger Hilt, you might add a check for the `@HiltViewModel` annotation on ViewModels, or a check that repository implementation classes have an `@Inject` constructor — customizations like these will likely be necessary.

@@ -56,7 +56,7 @@ katachi は逆に、**現れてよいものを全部書かせます。** 書い�
 
 ## 既存のプロジェクトに入れたら、違反だらけになりませんか
 
-なります。**それが正常な出発点です。**
+なります。それが正常な出発点です。
 
 初回の実行で出てくる違反の一覧は、そのまま
 **「このプロジェクトには、誰も説明できていないファイルがこれだけある」** という報告です。
@@ -71,7 +71,7 @@ katachi が壊したのではなく、もともとそうだったものが見え
 
 ## Konsist や ArchUnit があるのに、なぜ別のものが要るのですか
 
-**katachi と Konsist・ArchUnit では、見ている範囲が違います。**
+katachi と Konsist・ArchUnit では、見ている範囲が違います。
 
 Konsist や ArchUnit は **「対象を絞ってから、その中身を検証する」** 道具です。
 
@@ -85,7 +85,7 @@ Konsist.scopeFromProject()
     .assertTrue { /* ... */ }
 ```
 
-この書き方では、**絞った範囲に入らないものは検証されません。**
+この書き方では、絞った範囲に入らないものは検証されません。
 
 <FileTree>
 - src/main/kotlin/com/example/
@@ -113,11 +113,13 @@ flowchart TB
     style K fill:#9BC7B622,stroke:#9BC7B6
 ```
 
+図 1. katachi が見る範囲と Konsist の scope
+
 「あるべきでないものがある」を見つけるには、**全体を見る側の道具**が要ります。
 
 ## では Konsist は要らなくなるのですか
 
-いいえ、**併用するのがおすすめの使い方です。katachi と Konsist では役割が違います。**
+いいえ、併用するのがおすすめの使い方です。katachi と Konsist では役割が違います。
 
 | | 何を見るか |
 |---|---|
@@ -131,16 +133,13 @@ katachi の定義の中に Konsist の制約を書けるようにしてあるの
 テストで `assert(FileConstraintCheck())` を呼べば、**配置の違反と中身の違反が1つのレポートにまとまります。**
 
 「ファイルの中身を検証する」という立ち位置は、Konsist だけのものではありません。
-[detekt](https://detekt.dev/) のカスタムルールや [Konture](https://github.com/baole/konture) を使っているなら、検証したいルールによってはそれらが Konsist の代わりになるかもしれません。
-Konture は `katachi-konture` で、`konsist { }` と同じ形の `konture { }` として katachi の定義の中に書けます（[Konture との統合](/katachi/ja/guides/konture-integration/)）。
+[detekt](https://detekt.dev/) のカスタムルールを使っているなら、検証したいルールによっては detekt が Konsist の代わりになるかもしれません。
+
+[Konture](https://github.com/baole/konture) も、Konsist の代わりになるかもしれません。
+Konture は `katachi-konture` で、`konsist { }` と同じ形の `konture { }` として katachi の定義の中に書けます。
 
 
 <CardGrid>
-    <LinkCard
-        title="Konsist との統合"
-        description="konsist { } の書き方と、1つのレポートにまとまる仕組み。"
-        href="/katachi/ja/guides/konsist-integration/"
-    />
     <LinkCard
         title="他ツールとの比較"
         description="detekt・Konture など、中身を検証する他の選択肢との関係。"
@@ -207,6 +206,8 @@ flowchart LR
     style D fill:#5B8DEF22,stroke:#5B8DEF,stroke-width:2px
     style C fill:#BDBDBD22,stroke:#BDBDBD,stroke-dasharray:4 3,color:#8A8A8A
 ```
+
+図 2. 1つの定義からテストとドキュメントを出す流れ
 
 アーキテクチャ定義が Single Source of Truth になるので、**片方だけが古くなることは構造上起きません。**
 

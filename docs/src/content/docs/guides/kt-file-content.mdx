@@ -1,25 +1,17 @@
 ---
-title: "[AI-generated] Define an allow list of the declarations a file may contain"
+title: "ktFileContent"
 description: How to use ktFileContent { } to define the package, imports, declarations, and members that may appear in a Role's Kotlin files, as an allow list written in the same order as Kotlin source.
 tags:
   - intermediate
 ---
 
-{/*
-  Purpose of this page: to let the reader write the contents of a Role's Kotlin files (package, imports, declarations, members) as an allow list with ktFileContent { }.
-  Rules that ktFileContent { } cannot express, such as expressions and function bodies, are left to "Define custom rules with Konsist". This page owns the installation steps for katachi-konsist, and the Konsist page points here.
-*/}
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-import { Aside } from '@astrojs/starlight/components';
+With `ktFileContent { }`, you can define what may be placed in a Role's Kotlin files, using the same kind of allow list as `layout { }`.
 
-<Aside type="note" title="Draft written by AI">
-This page is a draft written by AI, and its contents have not been reviewed yet. `ktFileContent { }` is an experimental feature planned for v0.3.
-</Aside>
+For example, you can specify a rule such as "this file may contain only a class named ViewModel".
 
-`ktFileContent { }` lets you define what may be placed in a Role's Kotlin files, using the same kind of allow list as `layout { }`.
-It covers four kinds: the package, imports, top-level declarations, and class members. You write them in the same order as in Kotlin source.
-
-```kt {6,8-13,15-19}
+```kt nocollapse {6,8-13,15-19}
 "ViewModel".role {
     layout {
         "feature" / capture("feature") / mainSourceSet / kotlin / "**" / "*ViewModel".ktFile()
@@ -34,23 +26,19 @@ It covers four kinds: the package, imports, top-level declarations, and class me
         `import`("javax.inject.**")            // @Inject
         `import`("com.example.domain.**")
 
-        annotated("HiltViewModel")
-            .public.`class`(fileName).superclass("ViewModel") {
-                public.`val`("uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
-                public.`fun`("on*")().returns("Unit")
-                private.anythingElse()
-            }
+        required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
+            required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+            allow(public, `fun`, "on*")().returns("Unit")
+            allow(private, anythingElse)
+        }
     }
 }
 ```
 
-List the package, imports, and declarations in that order, and write the members of a class inside that class's `{ }`.
-Modifiers and annotations go before the declaration, and the supertype, type, parameters, and return type go after it. Each is in the same position as when you write Kotlin.
-
 <details>
 <summary>A HomeViewModel.kt that satisfies this definition</summary>
 
-```kt title="feature/home/src/main/kotlin/com/example/feature/home/HomeViewModel.kt"
+```kt nocollapse title="feature/home/src/main/kotlin/com/example/feature/home/HomeViewModel.kt"
 package com.example.feature.home
 
 import androidx.lifecycle.ViewModel
@@ -71,33 +59,37 @@ class HomeViewModel @Inject constructor(
 }
 ```
 
-If you write even one import line in `ktFileContent { }`, every import that matches none of the lines you wrote is a violation.
-So without the `dagger.hilt.**` and `javax.inject.**` lines, the imports of `@HiltViewModel` and `@Inject` would be violations.
-
 </details>
 
-Definitions that actually run are in [the Role definitions in sample/android](https://github.com/TBSten/katachi/tree/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/roles).
+<details>
+<summary>A HomeViewModel.kt for which this definition detects violations</summary>
 
-## Only the kinds you write become allow lists
+```kt nocollapse title="feature/home/src/main/kotlin/com/example/feature/home/HomeViewModel.kt" {3,18,19,22}
+package com.example.feature.home
 
-Of the package, imports, top-level declarations, and class members, **each kind you write even one line for becomes an allow list**, and anything that matches none of the lines you wrote is a violation. Kinds you write no lines for are not checked.
+import android.util.Log                              // an import that is not allowed
+import androidx.lifecycle.ViewModel
+import com.example.domain.GetUserUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
-```kt
-// Decide only the declarations. The package and imports are not checked
-ktFileContent {
-    `interface`(fileName)
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+    private val getUser: GetUserUseCase,
+) : ViewModel() {
+    private val state = MutableStateFlow(HomeUiState())
+    val uiState: StateFlow<HomeUiState> = state
+
+    fun refresh() {}                                 // the name does not start with on
+    val isLoading: Boolean = false                   // a public val that is not allowed
 }
+
+data class HomeUiState(val name: String = "")        // the only class this file may contain is HomeViewModel
 ```
 
-```kt
-// Decide only the imports. Declarations are not checked
-ktFileContent {
-    `import`("kotlin.**")
-    `import`("kotlinx.serialization.**")
-}
-```
-
-Members work the same way. If you don't attach `{ }` to a class line, that class's members are not checked. If you attach `{ }`, the lines you write inside it become the allow list for the members. An empty `{ }` means "no members at all".
+</details>
 
 ## Installation
 
@@ -109,7 +101,7 @@ dependencies {
 }
 ```
 
-Next, pass `FileConstraintCheck()` to `projectArchitecture.assert()` to run the `ktFileContent { }` checks. With `assert()` alone nothing is checked, and the test fails with `[UncheckedFileConstraint]`.
+Next, pass `FileConstraintCheck()` to `projectArchitecture.assert()` to run the `ktFileContent { }` checks.
 
 ```kt del={3} ins={4}
 @Test
@@ -119,416 +111,313 @@ fun `files are placed according to the architecture`() {
 }
 ```
 
-[`konsist { }`](/katachi/guides/konsist-integration/) lives in the same artifact too, and it is checked by the same `assert(FileConstraintCheck())`.
+## Declaring package and imports
 
-You write `ktFileContent { }` inside a Role's block. It applies to the `.kt` files that match that Role's `layout { }`. `.kts` files are not checked.
-You can't write it in a Role that has no `layout { }`. Also, for now you can write only one `ktFileContent { }` in a Role.
+Just writing `ktFileContent { }` prohibits every declaration, including package and import declarations. (This is because katachi follows the deny by default principle.)
 
-`ktFileContent { }` is an experimental feature during v0.3 and is annotated with `@ExperimentalKatachiApi`. How you write it may change in the future.
-
-## How to write declarations
-
-### Kind and name
-
-You write a declaration line by wrapping the Kotlin keyword in backticks and passing a name.
-
-| Syntax | Matches |
-|---|---|
-| `` `class`(name) `` | class (including data class, enum class, sealed class, value class, and annotation class) |
-| `` `interface`(name) `` | interface (including fun interface) |
-| `` `object`(name) `` | object (including data object and companion object) |
-| `type(name)` | any of class, interface, or object |
-| `` `fun`(name) `` | function (including extension functions; the name is the part without the receiver) |
-| `` `val`(name) `` / `` `var`(name) `` | property (inside a class, including `val` and `var` in the primary constructor) |
-| `` `typealias`(name) `` | typealias (can be written only at the top level of a file) |
-
-### Modifiers
-
-As in Kotlin, you join modifiers before the declaration with `.`.
+First, let's define the package and import declarations that may be used in the file.
 
 ```kt
-public.data.`class`(fileName)          // public data class HomeUiState
-sealed.`interface`(fileName)           // sealed interface HomeAction
-const.`val`("*")                       // const val TAG = "Home"
-`fun`.`interface`("*Listener")         // fun interface ClickListener
-```
-
-Every modifier you write must be present. Modifiers you don't write are not checked, so if you don't write a visibility, both public and private declarations match.
-`public` matches both a declaration written with `public` and one with no visibility written, because both are public in Kotlin.
-
-If you write a combination that can't be put on any declaration, such as `` data.`interface` `` or `public.internal`, it is an error as soon as the definition is read.
-
-### Annotations
-
-You write an annotation as `annotated("…")` and join it before the declaration, like a modifier.
-When it gets long, start the next line with `.` and continue. It looks the same as writing the annotation on the line above in Kotlin.
-
-```kt
-annotated("HiltViewModel")
-    .public.`class`(fileName).superclass("ViewModel")      // @HiltViewModel public class HomeViewModel : ViewModel()
-
-annotated("Composable").public.`fun`(fileName)            // @Composable public fun HomeScreen()
-annotated("Serializable").data.`object`(fileName)         // @Serializable data object HomeNavKey
-```
-
-<Aside type="caution">
-Writing `annotated("…")` alone on a line does not attach it to the declaration on the next line. Start the next line with `.` so the two are joined into a single declaration.
-</Aside>
-
-Annotations are compared by simple name. If you write a name that contains `.`, such as `annotated("androidx.compose.runtime.Composable")`, it is compared by fully qualified name.
-Annotation arguments are not checked. If you write several annotations, all of them must be present.
-
-### Writing "any of"
-
-Joining with `or` means "any of". It works for modifiers, annotations, and kinds.
-
-```kt
-(internal or private).data.`object`("*")                                     // a data object that is internal or private
-(annotated("Preview") or annotated("PreviewLightDark")).private.`fun`("*Preview")
-(`class` or `interface`)(fileName)                                           // a class or an interface. An object does not match
-```
-
-A kind is a value, so you can give a name of your own to a combination you use often and reuse it.
-Make it an extension property of `DeclarationListScope` and it can be used only inside `ktFileContent { }`. It works at the top level of a file and inside a class's `{ }` alike.
-
-```kt
-val DeclarationListScope.classOrInterface get() = `class` or `interface`
-
-ktFileContent {
-    classOrInterface(fileName)
-}
-```
-
-### Supertypes, types, parameters, and return types
-
-Supertypes, property types, function parameters, and return types go after the declaration.
-
-| Syntax | Meaning |
-|---|---|
-| `` `class`(fileName).superclass("ViewModel") `` | `ViewModel` is among the supertypes (what you write after `:` in Kotlin). It matches both class inheritance and interface implementation |
-| `` `val`("uiState", "StateFlow<*>") `` | The property's type |
-| `` `fun`("load")() `` | No parameters |
-| `` `fun`("save")("String", "Int") `` | The parameter types are these, in this order (parameter names are not checked) |
-| `` `fun`("on*")(anyArgs()) `` | Any parameters (same as not writing the parameters) |
-| `` `fun`("on*")().returns("Unit") `` | The return type |
-
-If you write several names in `superclass`, all of them must be among the supertypes. If you don't write type arguments, the comparison uses the name without its type arguments. For example, `superclass("Repository")` matches `Repository<User>`.
-
-A type is compared with the type string written in the source. The package part is stripped before comparing, and `*` can be used (`"StateFlow<*UiState>"`). Nullability is distinguished, so `"String"` does not match `String?`.
-A property or function whose type is left to inference does not match a line that specifies a type. However, a function with a block body and no return type written is treated as a function that returns `Unit`, as in Kotlin.
-
-### package
-
-```kt
-`package`("com.example.feature.**")       // packages under com.example.feature
-`package`(matchingDirectory)              // the package that matches the file's directory
-```
-
-Paths are separated by `.`; `*` matches one level and `**` matches any number of levels.
-`matchingDirectory` is the package made by joining with `.` the directories below the source set's `kotlin/` (including Android's `java/`). For `src/main/kotlin/com/example/home/HomeScreen.kt`, it is `com.example.home`.
-
-### import
-
-```kt
-`import`("kotlinx.coroutines.**")       // anything under kotlinx.coroutines
-`import`("kotlinx.coroutines.*")        // matches kotlinx.coroutines.launch, but not kotlinx.coroutines.flow.Flow
-```
-
-Paths are written the same way as for package. An import is compared by the path exactly as written in the file.
-Aliases (`as`) are not checked. A star import (`import a.b.*`) is compared as the path `a.b.*`. Packages that Kotlin imports by default, such as `kotlin.*`, are not checked, because the file has no import lines for them.
-
-## Names
-
-### Writing part of a name with `*`
-
-A `*` in a name matches one or more characters, just like in file names in `layout { }`. `"*Preview"` matches `HomePreview` but not `Preview`. Names are case-sensitive.
-
-### Using the file name and capture values
-
-`fileName` is the part of the name of the file being checked that comes before the first `.`. For `GetUserUseCase.kt` it is `GetUserUseCase`, and for `Platform.android.kt` it is `Platform`.
-`captureValue("feature")` is the value that `capture("feature")` captured in the path of `layout { }`.
-
-The `ktFileContent { }` block is evaluated once per file. So `fileName` and `captureValue(…)` are both plain `String`s holding that file's values.
-
-| Line written | In `HomeViewModel.kt` | In `SettingsViewModel.kt` |
-|---|---|---|
-| `` `class`(fileName) `` | `class HomeViewModel` | `class SettingsViewModel` |
-| `` `val`("uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>") `` | `val uiState: StateFlow<HomeUiState>` | `val uiState: StateFlow<SettingsUiState>` |
-| `` `package`("com.example.feature.${captureValue("feature")}") `` | `package com.example.feature.home` | `package com.example.feature.settings` |
-
-You can use `String` functions such as `replace` as they are, and you can also use `if` to write something different for each file.
-
-```kt
-// Put object HomeRoute and NavGraphBuilder.homeScreen(…) in HomeRoute.kt
-ktFileContent {
-    val feature = fileName.removeSuffix("Route").replaceFirstChar { it.lowercaseChar() }
-    `object`(fileName) {
-        const.`val`("PATH", "String")
+"ViewModel".role {
+    layout {
+        "feature" / capture("feature") / mainSourceSet / kotlin / "**" / "*ViewModel".ktFile()
     }
-    `fun`("${feature}Screen")
-}
-```
 
-## Required and optional
-
-Whether a line is required or optional follows the same rule as in `layout { }`.
-
-| Name or path | Meaning |
-|---|---|
-| Contains no `*` (including ones with `fileName` or `captureValue(…)` filled in) | Required. It is a violation unless the file has at least one |
-| Contains `*` | Optional. It may be absent, and any number of matches are fine |
-
-Adding `.optional()` makes a line optional.
-
-```kt
-ktFileContent {
-    `import`("com.example.App")                // required. This file must import App
-    `import`("androidx.compose.**")            // optional
-
-    `class`(fileName)                          // required
-    private.const.`val`("TAG").optional()      // optional
-}
-```
-
-An import line that contains no `*` is also required. If you only want to allow the import of a single class, add `.optional()`.
-
-## Prohibiting, and "anything else is fine"
-
-Putting `not.` at the start of a line makes it a prohibited line. Anything that matches a prohibited line is a violation, even if it also matches an allowed line. To allow part of what a prohibited line covers, add `.except(…)`.
-
-```kt
-ktFileContent {
-    `import`("**")
-    not.`import`("com.example.feature.**")
-        .except("com.example.feature.${captureValue("feature")}.**")   // do not import other features
-}
-```
-
-`anythingElse()` allows declarations (top-level declarations and class members) that match none of the lines. If you put a modifier in front, it allows only declarations that have that modifier.
-To say "anything else is fine" for imports, write `` `import`("**") ``.
-
-```kt
-ktFileContent {
-    `class`(fileName)
-    private.anythingElse()        // any private helper functions and constants are fine
-}
-```
-
-Lines are judged in this order: prohibited lines, allowed lines, then `anythingElse()`. If none of them matches, it is a violation.
-
-<Aside type="caution">
-A kind for which you write only `not.` lines also becomes an allow list. Since there are no allowed lines, everything that does not match a prohibited line is a violation too.
-When you want to prohibit only some things, also write a line that allows the rest, such as `` `import`("**") `` or `anythingElse()`.
-</Aside>
-
-## Class members
-
-If you attach `{ }` to a class, interface, or object line, its members also become an allow list. What you write inside the `{ }` is the same as at the top level of a file.
-
-```kt {5,8-9}
-"UseCase".role {
-    layout { "core/domain" / mainSourceSet / kotlin / "com/example/domain" / "*UseCase".ktFile() }
     ktFileContent {
-        `interface`(fileName) {                                    // for GetUserUseCase.kt, interface GetUserUseCase
-            operator.`fun`("invoke")
-        }
-        `class`("Default$fileName").superclass(fileName) {          // class DefaultGetUserUseCase : GetUserUseCase
-            override.`fun`("invoke")
-            private.anythingElse()
-        }
-    }
-}
-```
+        `package`("com.example.feature.${captureValue("feature")}.**")
 
-What counts as a member is functions, properties, and nested classes, interfaces, and objects. Properties include `val` and `var` in the primary constructor, and objects include companion objects.
-Constructors, `init` blocks, and enum entries are not counted.
-
-Private, protected, and override members are counted just like other members. Members that are not written in the source, such as members inherited from a parent or the `copy` that a data class generates, are not checked.
-
-`val` and `var` in the primary constructor are also members, so if you write `` data.`class`(fileName) { } `` with an empty `{ }`, the class can't have any properties. To allow properties, write something like `` `val`("*") `` inside the `{ }`.
-
-## When adding it to an existing project
-
-`ktFileContent { }` doesn't treat anything as a special case. Private declarations, imports of external libraries, and imports of other files in the same Role are all violations unless you write them.
-
-When you add it to an existing project, it is easier to start with lines that allow broadly. For declarations, add `anythingElse()` next to the lines for the ones that must be there, so that other declarations are allowed.
-Allow every import with `` `import`("**") ``, and prohibit only the ones you don't want used with `not.`. As you fix violations, remove `anythingElse()` and narrow the import lines to allow less and less.
-
-```kt
-ktFileContent {
-    `import`("**")
-    not.`import`("android.**")
-
-    `class`(fileName)
-    anythingElse()
-}
-```
-
-If there are too many violations to fix right away, you can use [Baseline](/katachi/guides/baseline/) to tolerate the existing violations and make only new violations errors.
-
-## Example errors
-
-Violations of `ktFileContent { }` are reported as `[UnsatisfiedFileConstraint]`, the same as `konsist { }`. Besides the declaration that violated the rule, the report also shows what is allowed and how to fix it.
-
-In this example, with the following Role, `GetUserUseCaseImpl` is placed in `GetUserUseCase.kt`.
-
-```kt title="UseCaseRole.kt"
-fun DeclarationContainerScope.useCase() = "UseCase".role {
-    layout { "core/domain" / mainSourceSet / kotlin / "com/example/domain" / "*UseCase".ktFile() }
-    ktFileContent {
-        `interface`(fileName)
-        `class`("Default$fileName").superclass(fileName)
-    }
-}
-```
-
-```kt title="GetUserUseCase.kt"
-package com.example.domain
-
-interface GetUserUseCase
-
-class GetUserUseCaseImpl : GetUserUseCase
-```
-
-```text
-Katachi check failed: 2 violations (FileConstraint: 2)
-
-[UnsatisfiedFileConstraint] file:///path/to/project/core/domain/src/main/kotlin/com/example/domain/GetUserUseCase.kt
-  Role: UseCase / FileConstraint: "ktFileContent"
-  Declaration: GetUserUseCaseImpl (line 5)
-  Not allowed: class GetUserUseCaseImpl : GetUserUseCase
-  Allowed here:
-    interface GetUserUseCase
-    class DefaultGetUserUseCase : GetUserUseCase  (missing)
-  Declared at: UseCaseRole.kt:3
-
-  How to fix:
-    - Rename it to DefaultGetUserUseCase
-    - Move it to a file of another role
-    - Allow it in ktFileContent { } at UseCaseRole.kt:3:
-        `class`("GetUserUseCaseImpl").optional()
-
-[UnsatisfiedFileConstraint] file:///path/to/project/core/domain/src/main/kotlin/com/example/domain/GetUserUseCase.kt
-  Role: UseCase / FileConstraint: "ktFileContent"
-  Declaration: DefaultGetUserUseCase
-  Missing: class DefaultGetUserUseCase : GetUserUseCase
-  Declared at: UseCaseRole.kt:5
-
-  How to fix:
-    - Declare it in this file
-    - If some files do not need it, make it optional at UseCaseRole.kt:5
-```
-
-<details>
-<summary>When there is an import that isn't allowed, and an import that is prohibited</summary>
-
-In this example, with the following Role, `HomeViewModel.kt` imports `android.content.Context`, which isn't allowed, and `SettingsRepository` from another feature.
-
-```kt title="ViewModelRole.kt"
-fun DeclarationContainerScope.viewModel() = "ViewModel".role {
-    layout { "feature" / capture("feature") / mainSourceSet / kotlin / "**" / "*ViewModel".ktFile() }
-    ktFileContent {
         `import`("kotlin.**")
-        `import`("com.example.**")
-        not.`import`("com.example.feature.**")
-            .except("com.example.feature.${captureValue("feature")}.**")
     }
 }
 ```
 
-```kt title="HomeViewModel.kt"
-package com.example.feature.home
+## Allowing class, interface, and object declarations
 
-import android.content.Context
-import com.example.domain.GetUser
-import com.example.feature.settings.SettingsRepository
+To allow a class, interface, or object in the file, pass the kind and the name of the declaration that may be there to `required(...)` or `allow(...)`.
 
-class HomeViewModel
+- A declaration specified with `required(...)` must be present.
+- A declaration specified with `allow(...)` is allowed to be present. It is not a violation if it is absent.
+
+<Tabs>
+  <TabItem label="Example for Android">
+
+    ```kt {5, 13, 21} nocollapse
+    "UseCase".role {
+        layout { /* ... */ }
+
+        ktFileContent {
+            allow(`class`, "*UseCase") // a class whose name ends with UseCase
+        }
+    }
+
+    "ViewModel".role {
+        layout { /* ... */ }
+
+        ktFileContent {
+            allow(`class`, "*ViewModel") // a class whose name ends with ViewModel
+        }
+    }
+
+    "Navigation Route".role {
+        layout { /* ... */ }
+
+        ktFileContent {
+            allow(data, `object`, "*Route") // a data object whose name ends with Route
+        }
+    }
+    ```
+
+  </TabItem>
+
+  <TabItem label="Example for MVC">
+
+    ```kt {5, 13, 21} nocollapse
+    "Controller".role {
+        layout { /* ... */ }
+
+        ktFileContent {
+            required(`class`, fileName) // exactly one Controller class with the same name as the file
+        }
+    }
+
+    "Service".role {
+        layout { /* ... */ }
+
+        ktFileContent {
+            required(`class`, fileName) // exactly one Service class with the same name as the file
+        }
+    }
+
+    "Model".role {
+        layout { /* ... */ }
+
+        ktFileContent {
+            allow(data, `class`, "*") // a Model is a data class
+        }
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+If a declaration needs a modifier such as `data` or `internal`, you can pass the modifier as well.
+
+```kt
+allow(public, `interface`, "*UseCase") // a UseCase interface must be public.
+allow(internal, `class`, "*UseCaseImpl") // a UseCaseImpl class must be internal.
 ```
 
-```text
-Katachi check failed: 2 violations (FileConstraint: 2)
+If any of `class`, `interface`, and `object` is fine, you can also pass `type`.
 
-[UnsatisfiedFileConstraint] file:///path/to/project/feature/home/src/main/kotlin/com/example/feature/home/HomeViewModel.kt
-  Role: ViewModel / FileConstraint: "ktFileContent"
-  Declaration: import android.content.Context (line 3)
-  Not allowed: not in the allowed imports (kotlin.**, com.example.**)
-  Declared at: ViewModelRole.kt:3
-
-  How to fix:
-    - Remove the import and receive what it needs from outside
-    - Allow it in ktFileContent { } at ViewModelRole.kt:3:
-        `import`("android.content.Context").optional()
-
-[UnsatisfiedFileConstraint] file:///path/to/project/feature/home/src/main/kotlin/com/example/feature/home/HomeViewModel.kt
-  Role: ViewModel / FileConstraint: "ktFileContent"
-  Declaration: import com.example.feature.settings.SettingsRepository (line 5)
-  Not allowed: prohibited by not import com.example.feature.** except com.example.feature.home.**
-  Declared at: ViewModelRole.kt:6
-
-  How to fix:
-    - Remove the import and receive what it needs from outside
-    - If this import is fine, exclude it from the prohibited line at ViewModelRole.kt:6:
-        .except("com.example.feature.settings.SettingsRepository")
+```kt
+allow(public, type, "*Repository")
 ```
-
-</details>
 
 <details>
-<summary>When a class has a member that isn't allowed</summary>
+    <summary>Specifying the details of a type declaration</summary>
 
-In this example, a public `var isLoading` is added to `HomeViewModel` in the `"ViewModel"` Role at the top of this page.
+    <table>
 
-```text
-[UnsatisfiedFileConstraint] file:///path/to/project/feature/home/src/main/kotlin/com/example/feature/home/HomeViewModel.kt
-  Role: ViewModel / FileConstraint: "ktFileContent"
-  Declaration: HomeViewModel.isLoading (line 18)
-  Not allowed: var isLoading in class HomeViewModel
-  Allowed members of class HomeViewModel:
-    public val uiState: StateFlow<HomeUiState>
-    public fun on*(): Unit
-    private (anything)
-  Declared at: ViewModelRole.kt:16
+        <tr>
+            <td>What you want to do</td>
+            <td>Example</td>
+        </tr>
 
-  How to fix:
-    - Make it private: private (anything) is allowed here
-    - Move it out of class HomeViewModel
-    - Allow it in ktFileContent { } at ViewModelRole.kt:16:
-        `var`("isLoading").optional()
-```
+        <tr>
+            <td>
+                Specify a superclass
+            </td>
+            <td>
+                ```kt
+                allow(`class`, "*ViewModel").superclass("ViewModel")
+                ```
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                Allow several kinds
+            </td>
+            <td>
+                ```kt
+                // allow a ViewModel that is either an interface or a class
+                allow(`interface` or `class`, "*ViewModel")
+                ```
+            </td>
+        </tr>
+
+    </table>
+
 
 </details>
 
-The wording of violation reports may change during v0.3.
 
-## Dividing the work with `konsist { }`
+## Allowing property and function declarations
 
-`layout { }`, `ktFileContent { }`, and `konsist { }` divide up what they decide as follows.
+To allow property and function declarations, pass `val`/`var` and `fun` as the kind.
 
-| What it decides | Where to write it |
-|---|---|
-| Where files may be placed | `layout { }` |
-| The package and imports, and the shape of declarations and members (kind, modifiers, annotations, name, supertype, type, parameter types, return type) | `ktFileContent { }` |
-| Everything else (expressions, function bodies, KDoc, strings, and so on) | `konsist { }` |
+<Tabs>
+  <TabItem label="Example for Android">
 
-Rules that `ktFileContent { }` can't express are written with `konsist { }`, using Konsist's API. You can write both `ktFileContent { }` and `konsist { }` in a single Role.
-See [Define custom rules with Konsist](/katachi/guides/konsist-integration/) for details.
+    ```kt {5, 6} nocollapse
+    "ScreenComposable".role {
+        // ...
 
-## Generated documentation
+        ktFileContent {
+            allow(private, `val`, "*") // allow private variables
+            required(`fun`, "*Screen") // at least one function whose name ends with Screen must exist
 
-The Role pages created by [Document generation](/katachi/guides/document-generation/) get a `## Kotlin file content` section. It is a table made by applying the lines you wrote in `ktFileContent { }` to the Role's example files.
+            required(`fun`, "doSomethingWithoutArg")() // doSomethingWithoutArg with no parameters must exist
+            required(`fun`, "doSomethingWithSingleArg")("action: *UiAction") // doSomethingWithSingleArg with a single parameter must exist
+            required(`fun`, "doSomethingWithAnyArgs")(anyArgs()) // doSomethingWithAnyArgs with any parameters must exist
+        }
+    }
+    ```
 
-## Summary
+    The properties and functions you allow can also be defined inside a class and the like.
 
-- `ktFileContent { }` is an allow list, written in the same order as Kotlin source, of the package, imports, declarations, and members that may appear in a Role's Kotlin files.
-- **Only the kinds you write at least one line for become allow lists.** Kinds you write no lines for are not checked.
-- A line whose name contains no `*` is required, and a line that contains one is optional (the same as `layout { }`). `.optional()` makes a line optional.
-- Prohibit with `not.`, and allow the rest with `anythingElse()` and `` `import`("**") ``.
-- `fileName` and `captureValue(…)` are plain `String`s holding a value for each file.
-- Add `katachi-konsist` to your dependencies and call `assert(FileConstraintCheck())` in the test to run the checks.
+    ```kt
+    required(`class`, "*ViewModel") {
+        required(`val`, "uiState", "StateFlow<*>") // uiState: StateFlow<*> must exist
+    }
 
-## Next steps
+    required(`class`, "*UseCase") {
+        required(suspend.optional(), operator, `fun`, "invoke")(anyArgs()) // operator fun invoke must exist; it may or may not be suspend
+        allow(private, anythingElse) // the Repository and the like received in the constructor
+    }
+    ```
 
-- [Define custom rules with Konsist](/katachi/guides/konsist-integration/) ... Learn how to write, with Konsist's API, the rules that `ktFileContent { }` can't express.
-- [Document generation](/katachi/guides/document-generation/) ... Check the `## Kotlin file content` section that appears on a Role's page.
-- [Baseline](/katachi/guides/baseline/) ... Learn how to tolerate existing violations so that only new violations become errors.
+  </TabItem>
+
+  <TabItem label="Example for MVC">
+
+    ```kt {5-7, 16-18} nocollapse
+    "Controller".role {
+        // ...
+
+        ktFileContent {
+            required(`class`, fileName) {
+                allow(private, `val`, "*", "*Service") // hold the Service it calls as a private val
+                allow(`fun`, "*")(anyArgs())            // handler functions. Any name and any parameters
+            }
+        }
+    }
+
+    "Service".role {
+        // ...
+
+        ktFileContent {
+            required(`class`, fileName) {
+                allow(private, `val`, "*", "*Repository") // hold the Repository it calls as a private val
+                allow(`fun`, "*")(anyArgs())
+            }
+        }
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+<details>
+<summary>Defining a function's parameters and return type</summary>
+
+    <table>
+
+        <tr>
+            <th style="min-width: 8rem">What you want to do</th>
+            <th style="min-width: 12rem">Example</th>
+            <th style="min-width: 28rem">Notes</th>
+        </tr>
+
+        <tr>
+            <td>
+                Specify parameters
+            </td>
+            <td>
+                ```kt
+                required(`fun`, "*Screen")()
+                
+                required(`fun`, "doSomethingWithSingleArg")("action: *UiAction")
+
+                required(`fun`, "doSomethingWithAnyArgs")(anyArgs())
+                ```
+            </td>
+            <td>
+                - Specify each parameter as `name: Type`.
+                - The type of a parameter can also use `*` as a wildcard.
+                - To allow any parameters, specify `anyArgs()`.
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                Specify the return type
+            </td>
+            <td>
+                ```kt
+                required(`fun`, "*Screen")
+                    .returns("Unit")
+                ```
+            </td>
+            <td>
+
+            </td>
+        </tr>
+
+    </table>
+
+</details>
+
+## Allowing typealias declarations
+
+A typealias can be allowed in the same way as other declarations.
+
+```kt
+allow(`typealias`, "*Handler")
+```
+
+## Requiring annotations on a declaration
+
+When you want to use an annotation, specify `annotated()` the same way as a modifier.
+
+<Tabs>
+  <TabItem label="Example for Android">
+
+    ```kt {5} nocollapse
+    "ViewModel".role {
+        layout { /* ... */ }
+
+        ktFileContent {
+            required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
+                // ...
+            }
+        }
+    }
+    ```
+
+  </TabItem>
+
+  <TabItem label="Example for MVC">
+
+    ```kt {5, 15} nocollapse
+    "Controller".role {
+        layout { /* ... */ }
+
+        ktFileContent {
+            required(annotated("RestController"), `class`, fileName) {
+                // ...
+            }
+        }
+    }
+
+    "Service".role {
+        layout { /* ... */ }
+
+        ktFileContent {
+            required(annotated("Service"), `class`, fileName)
+        }
+    }
+    ```
+
+  </TabItem>
+</Tabs>

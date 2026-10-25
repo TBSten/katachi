@@ -11,11 +11,27 @@ tags:
 
 既存のプロジェクトに katachi を入れると、最初の実行で **宣言していないファイルやディレクトリが違反として出ます。** 出てきたパスを定義に足すか・移すか・消すかで片付けていくのが基本ですが、数が多いとすぐには片付けきれないでしょう。
 
-**baseline は既存の違反を一時的に抑制して、新しい違反をテストでエラーにする**機能です。
+baseline は、既存の違反を一時的に抑制して、新しい違反をテストでエラーにする機能です。
+
+次の図は、baseline を使った一連の流れです。定義に `baseline()` を書き、`update` で今ある違反を記録します。その後、違反を直したら `prune` で記録から削除します。
+
+```mermaid
+flowchart LR
+    Def["定義に baseline() を書く"] --> Update["update=true で実行<br/>今ある違反を記録"]
+    Update --> Check["通常のテスト"]
+    Check -->|新しい違反がある| Fail1["テストが落ちる"]
+    Check -->|記録した違反を直した| Fail2["StaleBaselineEntry で<br/>テストが落ちる"]
+    Fail2 --> Prune["prune=true で実行<br/>記録から削除"]
+    Prune --> Check
+```
+
+図 1. baseline の流れ。記録した違反はテストを落とさず、新しい違反と、直したのに残っている記録だけが落ちる
 
 ## 設定する
 
 ### 1. 定義に `baseline()` を書く
+
+`ProjectArchitecture.kt` の `architecture { }` に `baseline()` を足します。
 
 ```kt title="ProjectArchitecture.kt（抜粋）" {3}
 val projectArchitecture: Architecture = architecture {
@@ -66,13 +82,13 @@ fun DeclarationContainerScope.baselineFile() = "BaselineFile".role {
 
 作成・更新されたファイルは、コミットすることをおすすめします。
 
-[`ktFileContent { }`](/katachi/ja/guides/kt-file-content/) の違反は、`GetUserUseCaseImpl`・`HomeViewModel.isLoading`・`import android.content.Context`・`package com.example.home` のように、宣言ごとに記録されます。行番号は記録しないので、同じファイルに行を足して違反の行がずれても、許容した違反は許容されたままです。（AI の下書き）
+[`ktFileContent { }`](/katachi/ja/guides/kt-file-content/) の違反は、宣言ごとに記録されます。たとえば `GetUserUseCaseImpl`・`HomeViewModel.isLoading`・`import android.content.Context`・`package com.example.home` のような単位です。行番号は記録しないので、同じファイルに行を足して違反の行がずれても、許容した違反は許容されたままです。（AI の下書き）
 
 baseline で許容した違反は、テストを落とさないだけでなく、[PR に注釈を出す](/katachi/ja/recipes/github/#pr-に注釈を出す)ときの SARIF のファイルにも書かれません。
 
 ## 許容していた違反を直したあと
 
-許容されていた違反を直すと、Baseline ファイルにはもう存在しない違反の記録が残ります。放っておくと、あとで同じパスに置かれた別のファイルが気づかないうちに通ってしまうので、katachi はこの残りを `[StaleBaselineEntry]` として報告し、**テストを落とします。**
+許容されていた違反を直すと、Baseline ファイルにはもう存在しない違反の記録が残ります。放っておくと、あとで同じパスに置かれた別のファイルが気づかないうちに通ってしまいます。そのため katachi はこの残りを `[StaleBaselineEntry]` として報告し、**テストを落とします。**
 
 baseline のファイルから修正した違反を削除するには、`-Dkatachi.baseline.prune=true` を付けて、もう一度アーキテクチャテストを実行します。
 
@@ -84,10 +100,26 @@ prune は、記録の件数を**減らすだけ**です。新しい違反を bas
 
 ## まとめ
 
-- baseline は、既存の違反を Baseline ファイルに記録して一時的に抑制し、**新しく増えた違反と、直したのに Baseline ファイルに残っている分でだけ**テストを落とすための機能です。
-- Baseline ファイルは `-Dkatachi.baseline.update=true` を付けてアーキテクチャテストを実行すると作成・更新されます。できたファイルはコミットしておきましょう。
-- 許容していた違反を直すと、baseline のファイルに残った分が `[StaleBaselineEntry]` でテストを落とします。`-Dkatachi.baseline.prune=true` で修正した違反を削除します。
+ここまでの設定を1つにした完成形です。
+
+```kt
+// 記録する: ./gradlew :architecture-test:test -Dkatachi.baseline.update=true
+// 削除する: ./gradlew :architecture-test:test -Dkatachi.baseline.prune=true
+val projectArchitecture = architecture {
+    baseline()
+
+    "BaselineFile".role {
+        summary = "既存の違反を一時的に抑制するためのファイル"
+        layout {
+            "katachi-baseline.json".file()
+        }
+    }
+}
+```
 
 ## 次のステップ
 
 - [初めてのアーキテクチャ定義](/katachi/ja/get-started/first-architecture/) ... baseline で許容する前の、最初の定義の書き方です。
+- [Role](/katachi/ja/guides/role/) ... Baseline ファイルの Role のように、Role の説明・置き場所・制約をまとめて書く方法を学びましょう。
+- [Layout](/katachi/ja/guides/layout/) ... 宣言していない場所のファイルを違反にする、置き場所の書き方を学びましょう。
+- [GitHub](/katachi/ja/recipes/github/#pr-に注釈を出す) ... baseline で許容していない違反を、SARIF で PR に注釈として出す方法を学びましょう。

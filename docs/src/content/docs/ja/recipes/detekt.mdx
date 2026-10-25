@@ -14,13 +14,13 @@ import SnippetIsStartingPoint from '../../../../components/SnippetIsStartingPoin
 
 import { LinkCard } from '@astrojs/starlight/components';
 
+detekt では、ルールの有効・無効やしきい値を YAML の設定ファイルで設定できます。
+
 <LinkCard
   title="detekt"
   description="Kotlin の静的解析ツール。ルールの有効・無効は YAML の設定ファイルに書く。"
   href="https://detekt.dev/"
 />
-
-detekt では、ルールの有効・無効やしきい値を YAML の設定ファイルで設定できます。
 
 設定ファイルとベースラインも、アーキテクチャ定義に書いて katachi に伝えておくのがおすすめです。
 
@@ -64,5 +64,7 @@ fun DeclarationContainerScope.detekt() =
         }
     }
 ```
+
+{/* TODO: C16 コードの直後にサンプルへのリンクが無い（sample/ に detekt の例が無い） → 先に sample に detekt の Role を足し、コードの直後にそのファイルへのリンクを1行置く */}
 
 <SnippetIsStartingPoint />

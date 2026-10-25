@@ -11,11 +11,27 @@ tags:
 
 Adding katachi to an existing project means that on the first run, **undeclared files and directories come out as violations.** The basic approach is to work through the reported paths one by one — adding them to the definition, moving them, or deleting them — but when there are a lot of them, you can't clear them all right away.
 
-baseline is a feature that **temporarily suppresses existing violations, so that new violations fail the test**.
+baseline is a feature that temporarily suppresses existing violations, so that new violations fail the test.
+
+The diagram below shows the whole flow of using baseline. You write `baseline()` in the definition and record the existing violations with `update`. After that, once you fix a violation, you remove it from the record with `prune`.
+
+```mermaid
+flowchart LR
+    Def["Write baseline()<br/>in the definition"] --> Update["Run with update=true<br/>record existing violations"]
+    Update --> Check["Normal test run"]
+    Check -->|new violation| Fail1["Test fails"]
+    Check -->|recorded violation fixed| Fail2["Test fails with<br/>StaleBaselineEntry"]
+    Fail2 --> Prune["Run with prune=true<br/>remove from the record"]
+    Prune --> Check
+```
+
+Figure 1. The baseline flow. Recorded violations don't fail the test; only new violations and records left behind after a fix do
 
 ## Setting it up
 
 ### 1. Write `baseline()` in the definition
+
+Add `baseline()` to the `architecture { }` in `ProjectArchitecture.kt`.
 
 ```kt title="ProjectArchitecture.kt (excerpt)" {3}
 val projectArchitecture: Architecture = architecture {
@@ -66,13 +82,13 @@ Running the architecture test with `-Dkatachi.baseline.update=true` makes all vi
 
 It's recommended to commit the created/updated file.
 
-Violations of [`ktFileContent { }`](/katachi/guides/kt-file-content/) are recorded per declaration, such as `GetUserUseCaseImpl`, `HomeViewModel.isLoading`, `import android.content.Context`, or `package com.example.home`. Line numbers are not recorded, so even if you add lines to the same file and the violating line shifts, the violations you tolerated stay tolerated. (AI draft)
+Violations of [`ktFileContent { }`](/katachi/guides/kt-file-content/) are recorded per declaration. Examples of the unit are `GetUserUseCaseImpl`, `HomeViewModel.isLoading`, `import android.content.Context`, or `package com.example.home`. Line numbers are not recorded, so even if you add lines to the same file and the violating line shifts, the violations you tolerated stay tolerated. (AI draft)
 
 Violations tolerated by the baseline not only do not fail the test; they are also not written to the SARIF file used when you [annotate the PR](/katachi/recipes/github/#annotate-the-pr).
 
 ## After you fix a tolerated violation
 
-When you fix a violation that had been tolerated, the baseline file is left with a record of a violation that no longer exists. If left alone, a different file placed at the same path later would pass silently, so katachi reports these leftovers as `[StaleBaselineEntry]` and **fails the test.**
+When you fix a violation that had been tolerated, the baseline file is left with a record of a violation that no longer exists. If left alone, a different file placed at the same path later would pass silently. For that reason katachi reports these leftovers as `[StaleBaselineEntry]` and **fails the test.**
 
 To remove fixed violations from the baseline file, run the architecture test again with `-Dkatachi.baseline.prune=true`.
 
@@ -84,10 +100,26 @@ prune only **reduces** the number of records. It never adds new violations to th
 
 ## Summary
 
-- baseline is a feature that records existing violations in the baseline file and temporarily suppresses them, so that only **newly added violations, and entries still in the baseline file after they were fixed,** fail the test.
-- The baseline file is created and updated by running the architecture test with `-Dkatachi.baseline.update=true`. Commit the resulting file.
-- When you fix a tolerated violation, the entries left in the baseline file fail the test as `[StaleBaselineEntry]`. `-Dkatachi.baseline.prune=true` removes the violations you have fixed.
+This is a complete example that puts the setup above together.
+
+```kt
+// Record:  ./gradlew :architecture-test:test -Dkatachi.baseline.update=true
+// Remove:  ./gradlew :architecture-test:test -Dkatachi.baseline.prune=true
+val projectArchitecture = architecture {
+    baseline()
+
+    "BaselineFile".role {
+        summary = "A file that temporarily suppresses existing violations"
+        layout {
+            "katachi-baseline.json".file()
+        }
+    }
+}
+```
 
 ## Next steps
 
 - [Your first architecture definition](/katachi/get-started/first-architecture/) ... How to write your first definition, before tolerating any existing violations with a baseline.
+- [Role](/katachi/guides/role/) ... Learn how to write a Role's description, placement, and constraints together, as in the baseline file's Role.
+- [Layout](/katachi/guides/layout/) ... Learn how to write placements so that files in undeclared locations become violations.
+- [GitHub](/katachi/recipes/github/#annotate-the-pr) ... Learn how to annotate a PR via SARIF with the violations that baseline does not tolerate.

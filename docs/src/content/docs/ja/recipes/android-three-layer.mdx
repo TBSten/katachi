@@ -11,11 +11,9 @@ tags:
 
 import SnippetIsStartingPoint from '../../../../components/SnippetIsStartingPoint.astro';
 
-import { Aside, FileTree, LinkCard } from '@astrojs/starlight/components';
+import { Aside, FileTree, LinkCard, TabItem, Tabs } from '@astrojs/starlight/components';
 
-<Aside type="note" title="AI が書いた下書き">
-このページの定義は、`ktFileContent { }` の追加にあわせて AI が書き直した下書きで、内容はまだ確認が済んでいません。`ktFileContent { }` は v0.3 で入る予定の実験的な機能です。
-</Aside>
+このページでは、UI・ドメイン・データの3層を group に、ファイルの種類を Role に宣言し、命名と中身まで検査する例を示します。
 
 <LinkCard
   title="アプリ アーキテクチャ ガイド"
@@ -26,6 +24,28 @@ import { Aside, FileTree, LinkCard } from '@astrojs/starlight/components';
 Android developers で公開されているアプリアーキテクチャガイドは、Android アプリケーションのベースとなるアーキテクチャとして広く知られています。
 
 以下は Domain レイヤーを採用する場合のアーキテクチャ定義の例です。
+
+```mermaid
+flowchart LR
+    subgraph ui["ui（group）"]
+        UiState
+        ViewModel
+        Screen
+    end
+    subgraph domain["domain（group）"]
+        UseCase
+        DomainModel
+    end
+    subgraph data["data（group）"]
+        RepositoryInterface
+        RepositoryImplementation
+        DataSource
+    end
+    ui --> domain
+    domain --> data
+```
+
+図 1. 3層の group と、その中の Role。矢印は依存の向き
 
 ## ディレクトリ構造の例
 
@@ -50,8 +70,9 @@ Android developers で公開されているアプリアーキテクチャガイ�
 
 ## アーキテクチャ定義
 
-```kt
-// ProjectArchitecture.kt
+`ProjectArchitecture.kt` に3層の group を、`roles/` 以下に Role ごとのファイルを置きます。
+
+```kt title=ProjectArchitecture.kt nocollapse
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -82,13 +103,14 @@ val projectArchitecture = architecture {
     repositoryInterface()
     repositoryImplementation()
     dataSource()
-  }  
+  }
 }
+```
 
-// Constants.kt
-const val appPackageDir = "com/example/project"
+<Tabs>
+<TabItem label="UiState">
 
-// roles/UiState.kt
+```kt title=roles/UiState.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -112,8 +134,12 @@ private fun RoleScope.shouldBeImmutable() =
   "プロパティはすべて val であること".konsist {
     classes().must { klass -> klass.properties().all { it.isVal } }
   }
+```
 
-// roles/ViewModel.kt
+</TabItem>
+<TabItem label="ViewModel">
+
+```kt title=roles/ViewModel.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -131,15 +157,19 @@ fun DeclarationContainerScope.viewModel() = "ViewModel".role {
 
   // HomeViewModel.kt には、ViewModel を継承した class HomeViewModel だけを置く
   ktFileContent {
-    `class`(fileName).superclass("ViewModel") {
-      public.`val`("uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
-      public.`fun`("*")          // 画面からのイベント
-      private.anythingElse()     // UseCase や、書き換える側の状態
+    required(`class`, fileName).superclass("ViewModel") {
+      required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+      allow(public, `fun`, "*")          // 画面からのイベント
+      allow(private, anythingElse)     // UseCase や、書き換える側の状態
     }
   }
 }
+```
 
-// roles/Screen.kt
+</TabItem>
+<TabItem label="Screen">
+
+```kt title=roles/Screen.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -157,12 +187,16 @@ fun DeclarationContainerScope.screen() = "Screen".role {
 
   // HomeScreen.kt で public にするのは @Composable fun HomeScreen だけにする
   ktFileContent {
-    annotated("Composable").public.`fun`(fileName)
-    private.anythingElse()      // 画面の部品や Preview など、private なものは何でもよい
+    required(annotated("Composable"), public, `fun`, fileName)
+    allow(private, anythingElse)      // 画面の部品や Preview など、private なものは何でもよい
   }
 }
+```
 
-// roles/UseCase.kt
+</TabItem>
+<TabItem label="UseCase">
+
+```kt title=roles/UseCase.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -180,14 +214,21 @@ fun DeclarationContainerScope.useCase() = "UseCase".role {
 
   // GetUserUseCase.kt には class GetUserUseCase だけを置き、public な関数は invoke だけにする
   ktFileContent {
-    `class`(fileName) {
-      public.`fun`("invoke")
-      private.anythingElse()      // コンストラクタで受け取る Repository など
+    `package`(matchingDirectory)      // ディレクトリと同じ package
+    `import`("**")
+
+    required(`class`, fileName) {
+      required(public, suspend.optional(), operator, `fun`, "invoke")  // suspend は付いていても無くてもよい
+      allow(private, anythingElse)      // コンストラクタで受け取る Repository など
     }
   }
 }
+```
 
-// roles/DomainModel.kt
+</TabItem>
+<TabItem label="DomainModel">
+
+```kt title=roles/DomainModel.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -202,8 +243,12 @@ fun DeclarationContainerScope.domainModel() = "DomainModel".role {
     "app" / mainSourceSet / kotlin / appPackageDir / "domain/model" / "*".ktFile()
   }
 }
+```
 
-// roles/RepositoryInterface.kt
+</TabItem>
+<TabItem label="RepositoryInterface">
+
+```kt title=roles/RepositoryInterface.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -221,11 +266,15 @@ fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role
 
   // UserRepository.kt には interface UserRepository だけを置く
   ktFileContent {
-    `interface`(fileName)
+    required(`interface`, fileName)
   }
 }
+```
 
-// roles/RepositoryImplementation.kt
+</TabItem>
+<TabItem label="RepositoryImplementation">
+
+```kt title=roles/RepositoryImplementation.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -243,11 +292,15 @@ fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementa
 
   // UserRepositoryImpl.kt には、UserRepository を実装した class UserRepositoryImpl だけを置く
   ktFileContent {
-    `class`(fileName).superclass(fileName.removeSuffix("Impl"))
+    required(`class`, fileName).superclass(fileName.removeSuffix("Impl"))
   }
 }
+```
 
-// roles/DataSource.kt
+</TabItem>
+<TabItem label="DataSource">
+
+```kt title=roles/DataSource.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -265,14 +318,48 @@ fun DeclarationContainerScope.dataSource() = "DataSource".role {
 
   // UserRemoteDataSource.kt には class UserRemoteDataSource だけを置く
   ktFileContent {
-    `class`(fileName)
+    required(`class`, fileName)
   }
 }
 ```
 
-置いてよい宣言は `ktFileContent { }` で、UiState のプロパティがすべて `val` であることは `konsist { }` で書いています。どちらも `katachi-konsist` に入っているので、`:architecture-test` に `katachi-konsist` への依存を足し、テストでは `assert(FileConstraintCheck())` を呼んでください。`assert()` だけでは制約が評価されず、`[UncheckedFileConstraint]` で落ちます。詳しくは [ファイルの中で定義できる宣言の許可リストを定義する](/katachi/ja/guides/kt-file-content/#インストール) を参照してください。
+</TabItem>
+</Tabs>
 
 層を group に、ファイルの種類を Role に分けた実際の定義は、[sample/android の ProjectArchitecture.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/ProjectArchitecture.kt) にあります。サンプルはドメイン層を持たず、画面ごとにモジュールを分けた構成なので、このページの定義とは形が違います。
+
+`ktFileContent { }` と `konsist { }` を使うときは、[ファイルの中で定義できる宣言の許可リストを定義する](/katachi/ja/guides/kt-file-content/#インストール)の設定が要ります。
+
+## AndroidManifest.xml と res/ の Role
+
+3層のどこにも入らない Android のファイルにも Role が要ります。`:app` の `AndroidManifest.xml` は1つしか無いので名前をそのまま書き、`res/` の中の構成は Android のリソースシステムが決めるので `ignore()` にします。次の2つは [sample/android の AndroidManifestRole.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/roles/AndroidManifestRole.kt) と [AndroidResourceRole.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/roles/AndroidResourceRole.kt) から引用したものです。
+
+```kt {8,20}
+// roles/AndroidManifest.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+import me.tbsten.katachi.dsl.gradle.mainSourceSet
+
+fun DeclarationContainerScope.androidManifest() = "AndroidManifest".role {
+  summary = "Android にアプリを宣言する :app の AndroidManifest.xml"
+  layout {
+    "app" / mainSourceSet / "AndroidManifest.xml".file()
+  }
+}
+
+// roles/AndroidResource.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+import me.tbsten.katachi.dsl.gradle.mainSourceSet
+
+fun DeclarationContainerScope.androidResource() = "AndroidResource".role {
+  summary = ":app の res/。中の構成は Android のリソースシステムが決める"
+  layout {
+    // values/ や drawable-*/ の並びは AGP が検査するので、katachi では見ない
+    "app" / mainSourceSet / "res".ignore()
+  }
+}
+```
+
+`ProjectArchitecture.kt` では、`"app".group { androidManifest(); androidResource() }` のように `:app` の group に入れます。サンプルでは同じ group に `MainActivity` と `MainApplication` の Role も置いています（[AppGroup.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/groups/AppGroup.kt)）。
 
 <SnippetIsStartingPoint>
 たとえばプロダクトで Dagger Hilt を使っているなら、ViewModel に `@HiltViewModel` アノテーションが付いているかの検査や、Repository の実装クラスに `@Inject` コンストラクタがあるかの検査を追加するなど、さらにカスタマイズが必要になるでしょう。

@@ -11,6 +11,8 @@ tags:
 
 import SnippetIsStartingPoint from '../../../components/SnippetIsStartingPoint.astro';
 
+Writing `gradle()` as one line declares the Gradle wrapper, the build scripts, and the version catalog. The following `ProjectArchitecture.kt` is a definition with just that one line.
+
 ```kt title="ProjectArchitecture.kt"
 @file:OptIn(ExperimentalKatachiApi::class)
 
@@ -23,11 +25,13 @@ val projectArchitecture = architecture {
 }
 ```
 
-The samples declare it with the same single line ([GradleGroup.kt in sample/jvm](https://github.com/TBSten/katachi/blob/main/sample/jvm/architecture-test/src/test/kotlin/com/example/groups/GradleGroup.kt)).
+The custom-processor sample declares it with the same single line ([GradleGroup.kt in sample/custom-processor](https://github.com/TBSten/katachi/blob/main/sample/custom-processor/architecture-test/src/test/kotlin/com/example/groups/GradleGroup.kt)). The jvm, android, and kmp samples write `gradle { buildScript { … } }` and add constraints of the sample's own to the build scripts ([GradleGroup.kt in sample/jvm](https://github.com/TBSten/katachi/blob/main/sample/jvm/architecture-test/src/test/kotlin/com/example/groups/GradleGroup.kt)).
 
 ## When you use a composite build / buildSrc
 
 `gradle()` does not declare included builds such as `build-logic`, nor `buildSrc`. Declare their build scripts and convention plugins yourself.
+
+The following `ProjectArchitecture.kt` shows the overall shape. Line up three Roles inside the `"Build"` group.
 
 ```kt title="ProjectArchitecture.kt"
 @file:OptIn(ExperimentalKatachiApi::class)
@@ -48,41 +52,55 @@ val projectArchitecture = architecture {
     "Build".group {
         documented = false
 
-        "BuildScript".role {
-            summary = "The build scripts of the included build / buildSrc itself"
-            layout {
-                buildConventionDir {
-                    "build.gradle".ktsFile()
-                    "settings.gradle".ktsFile().optional() // buildSrc may go without one
-                }
-            }
-        }
+        // Write the three Roles BuildScript, ConventionPluginScript, and ConventionPluginSource inside here
+    }
+}
+```
 
-        "ConventionPluginScript".role {
-            summary = "Convention plugin scripts that each module applies with plugins { id(\"...\") }"
-            layout {
-                conventionSourceDir {
-                    "${capture("name")}.gradle".ktsFile()
-                        .template {
-                            """
-                                plugins {
-                                    kotlin("jvm")
-                                }
-                            """.trimIndent()
+### Declare the build scripts of the included build / buildSrc itself
+
+```kt
+"BuildScript".role {
+    summary = "The build scripts of the included build / buildSrc itself"
+    layout {
+        buildConventionDir {
+            "build.gradle".ktsFile()
+            "settings.gradle".ktsFile().optional() // buildSrc may go without one
+        }
+    }
+}
+```
+
+### Declare the convention plugin scripts
+
+```kt
+"ConventionPluginScript".role {
+    summary = "Convention plugin scripts that each module applies with plugins { id(\"...\") }"
+    layout {
+        conventionSourceDir {
+            "${capture("name")}.gradle".ktsFile()
+                .template {
+                    """
+                        plugins {
+                            kotlin("jvm")
                         }
+                    """.trimIndent()
                 }
-            }
-
-            // ./gradlew katachiTemplate --arg template=Build.ConventionPluginScript --arg name=kotlin-library
         }
+    }
 
-        "ConventionPluginSource".role {
-            summary = "Helper Kotlin classes used by the convention plugin scripts"
-            layout {
-                conventionSourceDir {
-                    "**" / "*".ktFile() // also allows classes in packages
-                }
-            }
+    // ./gradlew katachiTemplate --arg template=Build.ConventionPluginScript --arg name=kotlin-library
+}
+```
+
+### Declare the Kotlin classes used by convention plugins
+
+```kt
+"ConventionPluginSource".role {
+    summary = "Helper Kotlin classes used by the convention plugin scripts"
+    layout {
+        conventionSourceDir {
+            "**" / "*".ktFile() // also allows classes in packages
         }
     }
 }

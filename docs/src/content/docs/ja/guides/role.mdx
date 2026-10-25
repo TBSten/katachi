@@ -9,8 +9,10 @@ tags:
   このページの目的: katachi のアーキテクチャ定義における重要な要素である Role 周辺の使い方を深く網羅的に理解すること。
 */}
 
-import { Aside, FileTree } from "@astrojs/starlight/components";
+import { Aside, Badge, FileTree } from "@astrojs/starlight/components";
 import CodeComparison from "../../../../components/CodeComparison";
+
+Role は、プロジェクトに現れてよいファイルの種類を宣言する単位です。このページでは、Role の説明・置き場所・制約の書き方と、Role をグループにまとめる方法、定義が大きくなったときの分け方を説明します。
 
 ## Role を定義する
 
@@ -29,22 +31,23 @@ architecture {
 ```
 
 Role は `"名前".role { }` で宣言します。`"名前".group { }` と形がそろい、`layout { }` の中に書くディレクトリの宣言 `"src" { }` とも見分けられます。
+Role の名前はドキュメント生成などで使うため、ASCII（英字で始まり、英数字・`_`・`-` が続く）しか使えません。日本語の表示名は `title` に書きます。
 
 Role の説明・置き場所・制約は、その Role のブロックの中に書きます。
 
-- `title`・`summary`・`description` など ... そのRoleの説明です。ドキュメント生成に使われます。
-- `layout { }` ... そのRoleのファイルをどこに置けるかを定義します。
-  - 詳しくは [レイアウトの定義](/katachi/ja/guides/layout/) を参照してください。
-- `ktFileContent { }` ... そのRoleのファイルに置いてよい package・import・宣言を定義します。
-  - 詳しくは [ファイルの中で定義できる宣言の許可リストを定義する](/katachi/ja/guides/kt-file-content/) を参照してください。
-- `"制約名".konsist { }` ... `ktFileContent { }` で書けない制限を、Konsist で定義します。
-  - 詳しくは [カスタムルールを Konsist で定義する](/katachi/ja/guides/konsist-integration/) を参照してください。
-- `.template { }` ... `layout { }` で宣言したファイルに付けて、そのファイルを新しく作るときのテンプレートを定義します。
-  - 詳しくは [テンプレートからコード生成](/katachi/ja/guides/generate-code-from-template/) を参照してください。
+| 書くもの | 説明 | 詳しくは |
+|---|---|---|
+| `title`・`summary`・`description` など | その Role の説明です。ドキュメント生成に使われます | このページの「説明を書く」 |
+| `layout { }` | その Role のファイルをどこに置けるかを定義します | [レイアウトの定義](/katachi/ja/guides/layout/) |
+| `ktFileContent { }` | その Role のファイルに置いてよい package・import・宣言を定義します | [ファイルの中で定義できる宣言の許可リストを定義する](/katachi/ja/guides/kt-file-content/) |
+| `"制約名".konsist { }` | `ktFileContent { }` で書けない制限を、Konsist で定義します | |
+| `.template { }` | `layout { }` で宣言したファイルに付けて、そのファイルを新しく作るときのテンプレートを定義します | [テンプレートからコード生成](/katachi/ja/guides/generate-code-from-template/) |
 
 <Aside type="note" title="AI が書いた下書き">
-この一覧の `ktFileContent { }` の項目と、このページで `ktFileContent { }` を使う例は、AI が書いた下書きです。`ktFileContent { }` は v0.3 で入る予定の実験的な機能です。
+この表の `ktFileContent { }` の行と、このページで `ktFileContent { }` を使う例は、AI が書いた下書きです。`ktFileContent { }` は v0.3 で入る予定の実験的な機能です。
 </Aside>
+
+次は、title / summary / layout / konsist を1つにまとめた例です。
 
 ```kt
 architecture {
@@ -69,8 +72,7 @@ architecture {
 
 それぞれを、もう少し詳しく説明します。
 
-<details>
-<summary>説明を書く</summary>
+### 説明を書く
 
 最低限必要なのは `summary` だけです。生成ドキュメントでRoleの一覧表に並ぶ1行になります。
 
@@ -98,10 +100,7 @@ architecture {
 }
 ```
 
-</details>
-
-<details>
-<summary>置き場所を宣言する</summary>
+### 置き場所を宣言する
 
 置き場所を1つだけ持つ場合です。
 
@@ -113,23 +112,25 @@ architecture {
 }
 ```
 
-**`layout { }` は複数書けます。** 同じ種類のファイルが複数の場所に現れてよい、という宣言です。種類の違うファイルは、Role を分けて宣言します。
+`layout { }` は複数書けます。同じ種類のファイルが複数の場所に現れてよい、という宣言です。種類の違うファイルは、Role を分けて宣言します。
 
 ```kt
-"Screen".role {
+"UseCase".role {
     // feature-home のモジュールに
     layout {
-        "feature-home/src/main/kotlin/screen" / "*Screen".ktFile()
+        "feature-home/src/main/kotlin/useCase" / "*UseCase".ktFile()
     }
 
     // feature-settings のモジュールにも
     layout {
-        "feature-settings/src/main/kotlin/screen" / "*Screen".ktFile()
+        "feature-settings/src/main/kotlin/useCase" / "*UseCase".ktFile()
     }
 }
 ```
 
-**宣言していない場所にファイルを置くと違反になります。**
+### 置き場所の違反を確かめる
+
+宣言していない場所にファイルを置くと違反になります。
 
 ```text
 src/main/kotlin/com/example/GetUserUseCase.kt   ← useCase/ の外に置いてしまった
@@ -144,10 +145,10 @@ Katachi check failed: 1 violation (Unexpected: 1)
   No role is defined for this file.
 
   Nearby locations:
-    UseCase file:///path/to/project/src/main/kotlin/com/example/useCase/
+    UseCase file:///path/to/project/src/main/kotlin/com/example/useCase/ (*UseCase.kt)
 
   How to fix:
-    - Move it to one of the locations above
+    - Move it to one of the locations above, with a name matching the pattern in parentheses
     - Delete it if it is not needed
     - Add a new role for it:
         "GetUserUseCase".role {
@@ -158,14 +159,11 @@ Katachi check failed: 1 violation (Unexpected: 1)
         }
 ```
 
-</details>
-
-<details>
-<summary>中身に制約をかける</summary>
+### 中身に制約をかける
 
 ファイルに置いてよい宣言は `ktFileContent { }` で定義できます。ここでは、`konsist { }` で書く制約を説明します。
 
-制約には名前を付けます。**この名前がそのまま違反レポートに出ます。**
+制約には名前を付けます。この名前がそのまま違反レポートに出ます。
 
 ```kt
 "UseCase".role {
@@ -201,7 +199,9 @@ Katachi check failed: 1 violation (Unexpected: 1)
 }
 ```
 
-**制約を満たさないクラスがあると違反になります。**
+### 制約の違反を確かめる
+
+制約を満たさないクラスがあると違反になります。
 
 ```kt
 // useCase/ の中に置かれているが、invoke 以外の関数を持っている
@@ -211,7 +211,7 @@ class GetUserUseCase(private val repository: UserRepository) {
 }
 ```
 
-テストで `assert(FileConstraintCheck())` を呼ぶと、配置の違反と同じレポートに並びます。**どのファイルの何行目かまで出ます。**
+テストで `assert(FileConstraintCheck())` を呼ぶと、配置の違反と同じレポートに並びます。どのファイルの何行目かまで出ます。
 
 ```text
 [UnsatisfiedFileConstraint] file:///path/to/project/src/main/kotlin/com/example/useCase/GetUserUseCase.kt
@@ -220,12 +220,7 @@ class GetUserUseCase(private val repository: UserRepository) {
   Declared at: ProjectArchitecture.kt:12
 ```
 
-</details>
-
-
-なお、Role の名前はドキュメント生成などで使うため、ASCII（英字で始まり、英数字・`_`・`-` が続く）しか使えません。日本語の表示名は `title` に書きます。
-
-## Role のグループ
+### Role をグループにまとめる
 
 `"グループ名".group { ... }` を使うと、Roleをグループにまとめられます。
 
@@ -243,18 +238,20 @@ architecture {
 }
 ```
 
-## Role 設計のベストプラクティス
+## Role を保守しやすく設計する
 
 ### 良い Role 定義は変更を必要としない
 
-**アプリに機能を足すたびに `architecture { }` を書き換える必要があるなら、その `architecture { }` の定義は悪い設計です。**
+<Badge text="おすすめ" variant="success" />
 
-`architecture { }` がディレクトリ構造の写しになって二度手間にならないよう、`*` や `**` といったワイルドカードをうまく使ってください。
+アプリに機能を足すたびに `architecture { }` を書き換えていると、定義がディレクトリ構造の写しになって二度手間になりがちです。`*` や `**` といったワイルドカードをうまく使って、機能を足しても定義を変えずに済むようにしましょう。
 
 ### 1つの Role には1種類のファイルだけを入れる
 
-**1つの Role は、1種類のファイルだけを表すようにしてください。**
-たとえば Repository の interface と実装は、名前は似ていても別の種類のファイルです。1つの Role にまとめると、説明・制約・テンプレートが「どちらのファイルの話か」で分かれてしまい、`ktFileContent { }` にも「interface なら…、実装なら…」という条件分岐が入ります。
+<Badge text="おすすめ" variant="success" />
+
+1つの Role は、1種類のファイルだけを表すようにしてください。
+たとえば Repository の interface と実装は、名前は似ていても別の種類のファイルです。1つの Role にまとめると、説明・制約・テンプレートが「どちらのファイルの話か」で分かれてしまいます。`ktFileContent { }` にも「interface なら…、実装なら…」という条件分岐が入ります。
 種類ごとに Role を分ければ、説明も制約もその種類のファイルだけを対象にでき、生成されるドキュメントも種類ごとのページになります。
 
 <CodeComparison>
@@ -282,7 +279,7 @@ architecture {
         summary = "データの取得と保存の窓口"
         layout { "repository" / "*Repository".ktFile() }
         ktFileContent {
-            `interface`(fileName)
+            required(`interface`, fileName)
         }
     }
 
@@ -328,7 +325,7 @@ Role ごとに拡張関数に切り出しましょう。
                 "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
             }
             ktFileContent {
-                `interface`(fileName)
+                required(`interface`, fileName)
             }
             // ...
         }
@@ -376,7 +373,7 @@ Role ごとに拡張関数に切り出しましょう。
             "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
         }
         ktFileContent {
-            `interface`(fileName)
+            required(`interface`, fileName)
         }
         // ...
     }
@@ -385,6 +382,10 @@ Role ごとに拡張関数に切り出しましょう。
     </CodeComparison.Panel>
 
 </CodeComparison>
+
+<Aside type="caution" title="KDoc に配置パターンを書くとコンパイルが落ちます">
+切り出した関数の KDoc に `feature/*` のようなパスを書くと、Kotlin は `/*` をネストしたコメントの始まりとして読み、コンパイルが落ちます。コードスパンで囲んでも同じです。配置の説明は Role の `description`（文字列）に書くか、KDoc では `feature/<名前>` のように書いてください。
+</Aside>
 
 ### Role 定義の中を分割する
 
@@ -428,9 +429,7 @@ Role 定義の中でも、特に `"...".konsist { }` は、制約が多かった
 
 ## まとめ
 
-- Role は **プロジェクトの中に現れてよいファイルの種類** です。パッケージやモジュールとは独立しています。
-- 1つのRoleに、説明（`title` / `summary`）・置き場所（`layout { }`）・制約（`ktFileContent { }`・`konsist { }`）が **まとまります**。
-- **Role 定義はすぐに肥大化します。** `architecture { }` や Role 定義が膨らまないよう、拡張関数を使って適切に分割しましょう。
+ここまでの書き方を全部使った完成形です。
 
 ```kt
 architecture {
@@ -455,5 +454,4 @@ architecture {
 
 - [Layout](/katachi/ja/guides/layout/) ... Roleのファイルをどこに置けるか宣言する方法を学びましょう。
 - [ファイルの中で定義できる宣言の許可リストを定義する](/katachi/ja/guides/kt-file-content/) ... Roleのファイルに置いてよい宣言を定義する方法を学びましょう。
-- [カスタムルールを Konsist で定義する](/katachi/ja/guides/konsist-integration/) ... `ktFileContent { }` で書けない制約を、Konsist でかける方法を学びましょう。
 - [初めてのアーキテクチャ定義](/katachi/ja/get-started/first-architecture/) ... あなたのプロジェクトに katachi を導入して、実際に Role を書いてみましょう。

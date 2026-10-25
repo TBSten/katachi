@@ -1,25 +1,17 @@
 ---
-title: "[AI生成] ファイルの中で定義できる宣言の許可リストを定義する"
+title: "ktFileContent"
 description: ktFileContent { } で、Role の Kotlin ファイルに置いてよい package・import・宣言・メンバを、Kotlin のソースと同じ並びの許可リストで定義する方法。
 tags:
   - intermediate
 ---
 
-{/*
-  このページの目的: ktFileContent { } で、Role の Kotlin ファイルの中身（package・import・宣言・メンバ）を許可リストとして書けるようになること。
-  式や関数の本文など ktFileContent { } で書けない規則は「カスタムルールを Konsist で定義する」に任せる。katachi-konsist のインストールの手順はこのページが持ち、Konsist のページからはここを指す。
-*/}
-
-import { Aside } from '@astrojs/starlight/components';
-
-<Aside type="note" title="AI が書いた下書き">
-このページは AI が書いた下書きで、内容はまだ確認が済んでいません。`ktFileContent { }` は v0.3 で入る予定の実験的な機能です。
-</Aside>
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
 
 `ktFileContent { }` を使うと、Role の Kotlin ファイルに何を置いてよいかを、`layout { }` と同じ許可リスト（allow list）で定義できます。
-対象は package・import・ファイル直下の宣言・クラスのメンバの4種類で、書き方は Kotlin のソースと同じ並びです。
 
-```kt {6,8-13,15-19}
+例えば 「このファイルには ViewModel というクラスのみを配置できる」といったルールを指定することができます。
+
+```kt nocollapse {6,8-13,15-19}
 "ViewModel".role {
     layout {
         "feature" / capture("feature") / mainSourceSet / kotlin / "**" / "*ViewModel".ktFile()
@@ -34,23 +26,19 @@ import { Aside } from '@astrojs/starlight/components';
         `import`("javax.inject.**")            // @Inject
         `import`("com.example.domain.**")
 
-        annotated("HiltViewModel")
-            .public.`class`(fileName).superclass("ViewModel") {
-                public.`val`("uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
-                public.`fun`("on*")().returns("Unit")
-                private.anythingElse()
-            }
+        required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
+            required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+            allow(public, `fun`, "on*")().returns("Unit")
+            allow(private, anythingElse)
+        }
     }
 }
 ```
 
-package・import・宣言の順に並べ、クラスの `{ }` の中にはそのクラスのメンバを書きます。
-修飾子とアノテーションは宣言の前に、親の型・型・引数・戻り値は宣言の後ろに付けます。どれも Kotlin で書くときと同じ位置です。
-
 <details>
 <summary>この定義を満たす HomeViewModel.kt</summary>
 
-```kt title="feature/home/src/main/kotlin/com/example/feature/home/HomeViewModel.kt"
+```kt nocollapse title="feature/home/src/main/kotlin/com/example/feature/home/HomeViewModel.kt"
 package com.example.feature.home
 
 import androidx.lifecycle.ViewModel
@@ -71,33 +59,37 @@ class HomeViewModel @Inject constructor(
 }
 ```
 
-`ktFileContent { }` に import の行を1行でも書くと、書いた行のどれにも当たらない import は違反になります。
-そのため `dagger.hilt.**` と `javax.inject.**` の行が無いと、`@HiltViewModel` と `@Inject` の import が違反になります。
-
 </details>
 
-実際に動いている定義は、[sample/android の Role の定義](https://github.com/TBSten/katachi/tree/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/roles) にあります。
+<details>
+<summary>この定義が違反を検出する HomeViewModel.kt</summary>
 
-## 書いた種類だけが許可リストになる
+```kt nocollapse title="feature/home/src/main/kotlin/com/example/feature/home/HomeViewModel.kt" {3,18,19,22}
+package com.example.feature.home
 
-package・import・ファイル直下の宣言・クラスのメンバのうち、**1行でも書いた種類は許可リストになり**、書いた行のどれにも当たらないものは違反になります。1行も書かなかった種類は見ません。
+import android.util.Log                              // 許可していない import
+import androidx.lifecycle.ViewModel
+import com.example.domain.GetUserUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
-```kt
-// 宣言だけを決める。package と import は見ない
-ktFileContent {
-    `interface`(fileName)
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+    private val getUser: GetUserUseCase,
+) : ViewModel() {
+    private val state = MutableStateFlow(HomeUiState())
+    val uiState: StateFlow<HomeUiState> = state
+
+    fun refresh() {}                                 // 名前が on で始まらない
+    val isLoading: Boolean = false                   // 許可していない public の val
 }
+
+data class HomeUiState(val name: String = "")        // このファイルに置ける class は HomeViewModel だけ
 ```
 
-```kt
-// import だけを決める。宣言は見ない
-ktFileContent {
-    `import`("kotlin.**")
-    `import`("kotlinx.serialization.**")
-}
-```
-
-メンバも同じです。クラスの行に `{ }` を付けなければ、そのクラスのメンバは見ません。`{ }` を付けると、中に書いた行がメンバの許可リストになります。中身の無い `{ }` は「メンバを1つも置かない」という意味です。
+</details>
 
 ## インストール
 
@@ -109,7 +101,7 @@ dependencies {
 }
 ```
 
-次に、`projectArchitecture.assert()` に `FileConstraintCheck()` を渡すと、`ktFileContent { }` の検査を実行できます。`assert()` だけでは検査されず、`[UncheckedFileConstraint]` でテストが落ちます。
+次に、`projectArchitecture.assert()` に `FileConstraintCheck()` を渡すと、`ktFileContent { }` の検査を実行できます。
 
 ```kt del={3} ins={4}
 @Test
@@ -119,416 +111,313 @@ fun `アーキテクチャに沿ったファイル配置になっている`() {
 }
 ```
 
-[`konsist { }`](/katachi/ja/guides/konsist-integration/) も同じアーティファクトに入っていて、検査するのも同じ `assert(FileConstraintCheck())` です。
+## import, package の宣言
 
-`ktFileContent { }` は Role のブロックの中に書きます。対象は、その Role の `layout { }` に当てはまる `.kt` ファイルです。`.kts` ファイルは見ません。
-`layout { }` の無い Role には書けません。また、1つの Role に書ける `ktFileContent { }` は、今のところ1つだけです。
+`ktFileContent { }` を書いただけでは package, import 宣言を含む全ての宣言が禁止されます。(これは katachi が Deny by default の原則に従うためです。)
 
-`ktFileContent { }` は v0.3 の間は実験的な機能で、`@ExperimentalKatachiApi` が付いています。書き方は今後変わる可能性があります。
-
-## 宣言の書き方
-
-### 種類と名前
-
-宣言の行は、Kotlin のキーワードをバッククオートで囲み、名前を渡して書きます。
-
-| 書き方 | 当たるもの |
-|---|---|
-| `` `class`(名前) `` | class（data class・enum class・sealed class・value class・annotation class を含む） |
-| `` `interface`(名前) `` | interface（fun interface を含む） |
-| `` `object`(名前) `` | object（data object・companion object を含む） |
-| `type(名前)` | class・interface・object のどれか |
-| `` `fun`(名前) `` | 関数（拡張関数を含む。名前は受け手を除いた部分） |
-| `` `val`(名前) `` / `` `var`(名前) `` | プロパティ（クラスの中では、主コンストラクタの `val`・`var` を含む） |
-| `` `typealias`(名前) `` | typealias（ファイル直下だけに書ける） |
-
-### 修飾子
-
-修飾子は、Kotlin と同じく宣言の前に `.` でつなぎます。
+まずはファイル内で利用できる package, import 宣言を定義してみましょう。
 
 ```kt
-public.data.`class`(fileName)          // public data class HomeUiState
-sealed.`interface`(fileName)           // sealed interface HomeAction
-const.`val`("*")                       // const val TAG = "Home"
-`fun`.`interface`("*Listener")         // fun interface ClickListener
-```
-
-書いた修飾子は、すべて付いている必要があります。書かなかった修飾子は問わないので、可視性を書かなければ public でも private でも当たります。
-`public` は、`public` と書いた宣言にも、可視性を何も書いていない宣言にも当たります。Kotlin ではどちらも public だからです。
-
-`` data.`interface` `` や `public.internal` のように、どの宣言にも付けられない組み合わせを書くと、定義を読んだ時点でエラーになります。
-
-### アノテーション
-
-アノテーションは `annotated("…")` と書き、修飾子と同じく宣言の前につなぎます。
-長くなるときは、次の行を `.` で始めて続けます。Kotlin でアノテーションを上の行に書いたときと同じ見た目です。
-
-```kt
-annotated("HiltViewModel")
-    .public.`class`(fileName).superclass("ViewModel")      // @HiltViewModel public class HomeViewModel : ViewModel()
-
-annotated("Composable").public.`fun`(fileName)            // @Composable public fun HomeScreen()
-annotated("Serializable").data.`object`(fileName)         // @Serializable data object HomeNavKey
-```
-
-<Aside type="caution">
-`annotated("…")` だけを1行に書いても、次の行の宣言には付きません。次の行を `.` で始めて、1つの宣言としてつなげてください。
-</Aside>
-
-アノテーションは単純名で比べます。`annotated("androidx.compose.runtime.Composable")` のように `.` を含めて書くと、完全修飾名で比べます。
-引数は見ません。いくつも書いたときは、そのすべてが付いている必要があります。
-
-### 「どれか」を書く
-
-`or` でつなぐと「どれか」になります。修飾子にも、アノテーションにも、種類にも使えます。
-
-```kt
-(internal or private).data.`object`("*")                                     // internal か private の data object
-(annotated("Preview") or annotated("PreviewLightDark")).private.`fun`("*Preview")
-(`class` or `interface`)(fileName)                                           // class か interface。object は当たらない
-```
-
-種類は値なので、よく使う組み合わせに自分で名前を付けて使い回せます。
-`DeclarationListScope` の拡張プロパティにすると、`ktFileContent { }` の中でだけ使えます。ファイル直下でも、クラスの `{ }` の中でも使えます。
-
-```kt
-val DeclarationListScope.classOrInterface get() = `class` or `interface`
-
-ktFileContent {
-    classOrInterface(fileName)
-}
-```
-
-### 親の型・型・引数・戻り値
-
-親の型・プロパティの型・関数の引数・戻り値の型は、宣言の後ろに書きます。
-
-| 書き方 | 意味 |
-|---|---|
-| `` `class`(fileName).superclass("ViewModel") `` | 親の型（Kotlin で `:` の後ろに書くもの）に `ViewModel` がある。class の継承にも interface の実装にも当たる |
-| `` `val`("uiState", "StateFlow<*>") `` | プロパティの型 |
-| `` `fun`("load")() `` | 引数が無い |
-| `` `fun`("save")("String", "Int") `` | 引数の型が、この順に並ぶ（引数の名前は見ない） |
-| `` `fun`("on*")(anyArgs()) `` | 引数は何でもよい（引数を書かないのと同じ） |
-| `` `fun`("on*")().returns("Unit") `` | 戻り値の型 |
-
-`superclass` に名前をいくつも書くと、そのすべてを親の型に持つ必要があります。型引数を書かなければ、型引数を外した名前で比べます。たとえば `superclass("Repository")` は `Repository<User>` に当たります。
-
-型は、ソースに書いてある型の文字列と比べます。package の部分は外して比べ、`*` も使えます（`"StateFlow<*UiState>"`）。nullable は区別するので、`"String"` は `String?` に当たりません。
-型を書かずに推論させたプロパティや関数は、型を指定した行には当たりません。ただし、戻り値の型を書いていない関数のうちブロック本体のものは、Kotlin と同じく `Unit` を返す関数として扱います。
-
-### package
-
-```kt
-`package`("com.example.feature.**")       // com.example.feature の下の package
-`package`(matchingDirectory)              // ファイルのディレクトリと一致する package
-```
-
-パスは `.` で区切り、`*` は1階層に、`**` は何階層にでも当たります。
-`matchingDirectory` は、ソースセットの `kotlin/`（Android の `java/` を含む）より下のディレクトリを `.` でつないだ package です。`src/main/kotlin/com/example/home/HomeScreen.kt` なら `com.example.home` になります。
-
-### import
-
-```kt
-`import`("kotlinx.coroutines.**")       // kotlinx.coroutines の下ならどれでも
-`import`("kotlinx.coroutines.*")        // kotlinx.coroutines.launch には当たり、kotlinx.coroutines.flow.Flow には当たらない
-```
-
-パスの書き方は package と同じです。import は、ファイルに書いてあるパスのまま比べます。
-alias（`as`）は見ません。star import（`import a.b.*`）は `a.b.*` というパスとして比べます。Kotlin がデフォルトで読み込む `kotlin.*` などは、ファイルに import が書かれていないので見ません。
-
-## 名前
-
-### `*` で名前の一部を書く
-
-名前の `*` は、`layout { }` のファイル名と同じく1文字以上に当たります。`"*Preview"` は `HomePreview` に当たりますが、`Preview` には当たりません。大文字と小文字は区別します。
-
-### ファイルの名前と capture の値を使う
-
-`fileName` は、いま見ているファイルの名前の、最初の `.` より前の部分です。`GetUserUseCase.kt` なら `GetUserUseCase`、`Platform.android.kt` なら `Platform` になります。
-`captureValue("feature")` は、`layout { }` のパスで `capture("feature")` が捕まえた値です。
-
-`ktFileContent { }` のブロックはファイルごとに評価されます。そのため `fileName` と `captureValue(…)` は、どちらもそのファイルの値を持つ普通の `String` です。
-
-| 書いた行 | `HomeViewModel.kt` では | `SettingsViewModel.kt` では |
-|---|---|---|
-| `` `class`(fileName) `` | `class HomeViewModel` | `class SettingsViewModel` |
-| `` `val`("uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>") `` | `val uiState: StateFlow<HomeUiState>` | `val uiState: StateFlow<SettingsUiState>` |
-| `` `package`("com.example.feature.${captureValue("feature")}") `` | `package com.example.feature.home` | `package com.example.feature.settings` |
-
-`replace` などの String の関数がそのまま使え、`if` でファイルごとに書き分けることもできます。
-
-```kt
-// HomeRoute.kt には object HomeRoute と NavGraphBuilder.homeScreen(…) を置く
-ktFileContent {
-    val feature = fileName.removeSuffix("Route").replaceFirstChar { it.lowercaseChar() }
-    `object`(fileName) {
-        const.`val`("PATH", "String")
+"ViewModel".role {
+    layout {
+        "feature" / capture("feature") / mainSourceSet / kotlin / "**" / "*ViewModel".ktFile()
     }
-    `fun`("${feature}Screen")
-}
-```
 
-## 必須と任意
-
-必須か任意かは、`layout { }` と同じ決まりです。
-
-| 名前・パス | 意味 |
-|---|---|
-| `*` を含まない（`fileName` や `captureValue(…)` を埋めたものも含む） | 必須。ファイルに1つ以上ないと違反になる |
-| `*` を含む | 任意。無くてもよく、あれば何個でもよい |
-
-`.optional()` を付けると任意になります。
-
-```kt
-ktFileContent {
-    `import`("com.example.App")                // 必須。このファイルは App を import していなければならない
-    `import`("androidx.compose.**")            // 任意
-
-    `class`(fileName)                          // 必須
-    private.const.`val`("TAG").optional()      // 任意
-}
-```
-
-`*` を含まない import の行も必須になります。1つのクラスの import を許すだけなら、`.optional()` を付けてください。
-
-## 禁止と「ほかは何でもよい」
-
-行の先頭に `not.` を付けると、禁止の行になります。禁止の行に当たったものは、許可の行に当たっていても違反です。禁止の一部を許すときは、`.except(…)` を付けます。
-
-```kt
-ktFileContent {
-    `import`("**")
-    not.`import`("com.example.feature.**")
-        .except("com.example.feature.${captureValue("feature")}.**")   // ほかの feature は import しない
-}
-```
-
-`anythingElse()` は、宣言（ファイル直下とクラスのメンバ）のうち、どの行にも当たらないものを許します。前に修飾子を付けると、その修飾子を持つものだけを許します。
-「ほかは何でもよい」を import で書くときは、`` `import`("**") `` と書きます。
-
-```kt
-ktFileContent {
-    `class`(fileName)
-    private.anythingElse()        // private な補助関数や定数は何でもよい
-}
-```
-
-判定は、禁止の行、許可の行、`anythingElse()` の順に行います。どれにも当たらなければ違反です。
-
-<Aside type="caution">
-`not.` の行だけを書いた種類も、許可リストになります。許可の行が無いので、禁止の行に当たらないものもすべて違反です。
-一部だけを禁止したいときは、`` `import`("**") `` や `anythingElse()` のように、残りを許す行も一緒に書いてください。
-</Aside>
-
-## クラスのメンバ
-
-class・interface・object の行に `{ }` を付けると、そのメンバも許可リストになります。`{ }` の中の書き方は、ファイル直下と同じです。
-
-```kt {5,8-9}
-"UseCase".role {
-    layout { "core/domain" / mainSourceSet / kotlin / "com/example/domain" / "*UseCase".ktFile() }
     ktFileContent {
-        `interface`(fileName) {                                    // GetUserUseCase.kt なら interface GetUserUseCase
-            operator.`fun`("invoke")
-        }
-        `class`("Default$fileName").superclass(fileName) {          // class DefaultGetUserUseCase : GetUserUseCase
-            override.`fun`("invoke")
-            private.anythingElse()
-        }
-    }
-}
-```
+        `package`("com.example.feature.${captureValue("feature")}.**")
 
-メンバとして数えるのは、関数・プロパティ・入れ子の class・interface・object です。プロパティには主コンストラクタの `val`・`var` を、object には companion object を含みます。
-コンストラクタ・`init` ブロック・enum の項目は数えません。
-
-private・protected・override のメンバも、ほかのメンバと同じく数えます。親から継承したメンバや、data class が作る `copy` のような、ソースに書いていないメンバは見ません。
-
-主コンストラクタの `val`・`var` もメンバなので、`` data.`class`(fileName) { } `` と中身の無い `{ }` を書くと、プロパティを1つも持てません。プロパティを許すときは、`{ }` の中に `` `val`("*") `` のように書いてください。
-
-## 既存のプロジェクトに入れるとき
-
-`ktFileContent { }` は、何も特別扱いしません。private の宣言も、外部ライブラリの import も、同じ Role のファイルの import も、書かなければ違反になります。
-
-既存のプロジェクトに入れるときは、広く許す行から始めると進めやすいでしょう。宣言は、必ず置くものの行に `anythingElse()` を添えて、ほかの宣言を許しておきます。
-`` `import`("**") `` で import を全部許し、使わせたくないものだけを `not.` で禁止します。違反を直しながら、`anythingElse()` を外したり import の行を絞ったりして、許すものを減らしていきます。
-
-```kt
-ktFileContent {
-    `import`("**")
-    not.`import`("android.**")
-
-    `class`(fileName)
-    anythingElse()
-}
-```
-
-違反が多くてすぐには直しきれないときは、[Baseline](/katachi/ja/guides/baseline/) で今ある違反を許容し、新しい違反だけをエラーにできます。
-
-## エラーの例
-
-`ktFileContent { }` の違反は、`konsist { }` と同じ `[UnsatisfiedFileConstraint]` で出ます。違反した宣言のほかに、許されているものと直し方も出ます。
-
-次の Role で、`GetUserUseCase.kt` に `GetUserUseCaseImpl` を置いた例です。
-
-```kt title="UseCaseRole.kt"
-fun DeclarationContainerScope.useCase() = "UseCase".role {
-    layout { "core/domain" / mainSourceSet / kotlin / "com/example/domain" / "*UseCase".ktFile() }
-    ktFileContent {
-        `interface`(fileName)
-        `class`("Default$fileName").superclass(fileName)
-    }
-}
-```
-
-```kt title="GetUserUseCase.kt"
-package com.example.domain
-
-interface GetUserUseCase
-
-class GetUserUseCaseImpl : GetUserUseCase
-```
-
-```text
-Katachi check failed: 2 violations (FileConstraint: 2)
-
-[UnsatisfiedFileConstraint] file:///path/to/project/core/domain/src/main/kotlin/com/example/domain/GetUserUseCase.kt
-  Role: UseCase / FileConstraint: "ktFileContent"
-  Declaration: GetUserUseCaseImpl (line 5)
-  Not allowed: class GetUserUseCaseImpl : GetUserUseCase
-  Allowed here:
-    interface GetUserUseCase
-    class DefaultGetUserUseCase : GetUserUseCase  (missing)
-  Declared at: UseCaseRole.kt:3
-
-  How to fix:
-    - Rename it to DefaultGetUserUseCase
-    - Move it to a file of another role
-    - Allow it in ktFileContent { } at UseCaseRole.kt:3:
-        `class`("GetUserUseCaseImpl").optional()
-
-[UnsatisfiedFileConstraint] file:///path/to/project/core/domain/src/main/kotlin/com/example/domain/GetUserUseCase.kt
-  Role: UseCase / FileConstraint: "ktFileContent"
-  Declaration: DefaultGetUserUseCase
-  Missing: class DefaultGetUserUseCase : GetUserUseCase
-  Declared at: UseCaseRole.kt:5
-
-  How to fix:
-    - Declare it in this file
-    - If some files do not need it, make it optional at UseCaseRole.kt:5
-```
-
-<details>
-<summary>許していない import と、禁止した import があるとき</summary>
-
-次の Role で、`HomeViewModel.kt` が許していない `android.content.Context` と、ほかの feature の `SettingsRepository` を import した例です。
-
-```kt title="ViewModelRole.kt"
-fun DeclarationContainerScope.viewModel() = "ViewModel".role {
-    layout { "feature" / capture("feature") / mainSourceSet / kotlin / "**" / "*ViewModel".ktFile() }
-    ktFileContent {
         `import`("kotlin.**")
-        `import`("com.example.**")
-        not.`import`("com.example.feature.**")
-            .except("com.example.feature.${captureValue("feature")}.**")
     }
 }
 ```
 
-```kt title="HomeViewModel.kt"
-package com.example.feature.home
+## class, interface, object 宣言を許可する
 
-import android.content.Context
-import com.example.domain.GetUser
-import com.example.feature.settings.SettingsRepository
+そのファイル内に class, interface, object の配置を許可する場合、`required(...)` または `allow(...)` に 宣言して良い宣言の種類と名前を渡して定義します。
 
-class HomeViewModel
+- `required(...)` で指定した宣言は必ず存在する必要があります。
+- `allow(...)` で指定した宣言は存在を許されます。存在しない場合も違反にはなりません。
+
+<Tabs>
+  <TabItem label="Android での例">
+
+    ```kt {5, 13, 21} nocollapse
+    "UseCase".role {
+        layout { /* ... */ }
+
+        ktFileContent {
+            allow(`class`, "*UseCase") // UseCase で終わる名前を持つ class
+        }
+    }
+
+    "ViewModel".role {
+        layout { /* ... */ }
+
+        ktFileContent {
+            allow(`class`, "*ViewModel") // ViewModel で終わる名前を持つ class
+        }
+    }
+
+    "Navigation Route".role {
+        layout { /* ... */ }
+
+        ktFileContent {
+            allow(data, `object`, "*Route") // Route で終わる名前を持つ data object
+        }
+    }
+    ```
+
+  </TabItem>
+
+  <TabItem label="MVC での例">
+
+    ```kt {5, 13, 21} nocollapse
+    "Controller".role {
+        layout { /* ... */ }
+
+        ktFileContent {
+            required(`class`, fileName) // ファイル名と同じ名前の Controller class が必ず 1 つ
+        }
+    }
+
+    "Service".role {
+        layout { /* ... */ }
+
+        ktFileContent {
+            required(`class`, fileName) // ファイル名と同じ名前の Service class が必ず 1 つ
+        }
+    }
+
+    "Model".role {
+        layout { /* ... */ }
+
+        ktFileContent {
+            allow(data, `class`, "*") // Model は data class
+        }
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+宣言に `data`, `internal` といった修飾子が必要な場合は修飾子も渡すことができます。
+
+```kt
+allow(public, `interface`, "*UseCase") // UseCase interface は public である必要がある。
+allow(internal, `class`, "*UseCaseImpl") // UseCaseImpl class は internal である必要がある。
 ```
 
-```text
-Katachi check failed: 2 violations (FileConstraint: 2)
+また `class`, `interface`, `object` のいずれでも良い場合は `type` を渡すこともできます。
 
-[UnsatisfiedFileConstraint] file:///path/to/project/feature/home/src/main/kotlin/com/example/feature/home/HomeViewModel.kt
-  Role: ViewModel / FileConstraint: "ktFileContent"
-  Declaration: import android.content.Context (line 3)
-  Not allowed: not in the allowed imports (kotlin.**, com.example.**)
-  Declared at: ViewModelRole.kt:3
-
-  How to fix:
-    - Remove the import and receive what it needs from outside
-    - Allow it in ktFileContent { } at ViewModelRole.kt:3:
-        `import`("android.content.Context").optional()
-
-[UnsatisfiedFileConstraint] file:///path/to/project/feature/home/src/main/kotlin/com/example/feature/home/HomeViewModel.kt
-  Role: ViewModel / FileConstraint: "ktFileContent"
-  Declaration: import com.example.feature.settings.SettingsRepository (line 5)
-  Not allowed: prohibited by not import com.example.feature.** except com.example.feature.home.**
-  Declared at: ViewModelRole.kt:6
-
-  How to fix:
-    - Remove the import and receive what it needs from outside
-    - If this import is fine, exclude it from the prohibited line at ViewModelRole.kt:6:
-        .except("com.example.feature.settings.SettingsRepository")
+```kt
+allow(public, type, "*Repository")
 ```
-
-</details>
 
 <details>
-<summary>クラスに許していないメンバがあるとき</summary>
+    <summary>type 宣言の詳細を指定する</summary>
 
-このページの冒頭の `"ViewModel"` の Role で、`HomeViewModel` に public な `var isLoading` を足した例です。
+    <table>
 
-```text
-[UnsatisfiedFileConstraint] file:///path/to/project/feature/home/src/main/kotlin/com/example/feature/home/HomeViewModel.kt
-  Role: ViewModel / FileConstraint: "ktFileContent"
-  Declaration: HomeViewModel.isLoading (line 18)
-  Not allowed: var isLoading in class HomeViewModel
-  Allowed members of class HomeViewModel:
-    public val uiState: StateFlow<HomeUiState>
-    public fun on*(): Unit
-    private (anything)
-  Declared at: ViewModelRole.kt:16
+        <tr>
+            <td>やりたいこと</td>
+            <td>例</td>
+        </tr>
 
-  How to fix:
-    - Make it private: private (anything) is allowed here
-    - Move it out of class HomeViewModel
-    - Allow it in ktFileContent { } at ViewModelRole.kt:16:
-        `var`("isLoading").optional()
-```
+        <tr>
+            <td>
+                親クラスを指定
+            </td>
+            <td>
+                ```kt
+                allow(`class`, "*ViewModel").superclass("ViewModel")
+                ```
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                複数種類を許容する
+            </td>
+            <td>
+                ```kt
+                // interface または class の ViewModel を許可する
+                allow(`interface` or `class`, "*ViewModel")
+                ```
+            </td>
+        </tr>
+
+    </table>
+
 
 </details>
 
-違反の文面は、v0.3 の間に変わる可能性があります。
 
-## `konsist { }` との分担
+## プロパティ・関数の宣言を許可する
 
-`layout { }`・`ktFileContent { }`・`konsist { }` は、次のように決めることを分けています。
+プロパティ・関数の宣言を許可したい場合は `val`/`var`, `fun` を種類として渡して定義します。
 
-| 何を決めるか | 書く場所 |
-|---|---|
-| ファイルをどこに置いてよいか | `layout { }` |
-| package・import と、宣言・メンバの形（種類・修飾子・アノテーション・名前・親の型・型・引数の型・戻り値の型） | `ktFileContent { }` |
-| それ以外（式・関数の本文・KDoc・文字列など） | `konsist { }` |
+<Tabs>
+  <TabItem label="Android での例">
 
-`ktFileContent { }` で書けない規則は、`konsist { }` で Konsist の API を使って書きます。1つの Role に `ktFileContent { }` と `konsist { }` の両方を書けます。
-詳しくは [カスタムルールを Konsist で定義する](/katachi/ja/guides/konsist-integration/) を参照してください。
+    ```kt {5, 6} nocollapse
+    "ScreenComposable".role {
+        // ...
 
-## 生成されるドキュメント
+        ktFileContent {
+            allow(private, `val`, "*") // private 変数を許可する
+            required(`fun`, "*Screen") // Screen で終わる名前を持つ関数が1つ以上ある
 
-[ドキュメント生成](/katachi/ja/guides/document-generation/) で作る Role のページには、`## Kotlin file content` の節が出ます。`ktFileContent { }` に書いた行を、Role の例のファイルに当てはめて表にしたものです。
+            required(`fun`, "doSomethingWithoutArg")() // 引数なしの doSomethingWithoutArg が必ずある
+            required(`fun`, "doSomethingWithSingleArg")("action: *UiAction") // 引数が1つの doSomethingWithSingleArg が必ずある
+            required(`fun`, "doSomethingWithAnyArgs")(anyArgs()) // 引数を問わない doSomethingWithAnyArgs が必ずある
+        }
+    }
+    ```
 
-## まとめ
+    また 許可するプロパティ・関数は class などの中にも定義することができます。
 
-- `ktFileContent { }` は、Role の Kotlin ファイルに置いてよい package・import・宣言・メンバを、Kotlin のソースと同じ並びで書く許可リストです。
-- **1行でも書いた種類だけが許可リストになります。** 1行も書かなかった種類は見ません。
-- 名前に `*` を含まない行は必須、含む行は任意です（`layout { }` と同じ）。`.optional()` で任意にできます。
-- `not.` で禁止し、`anythingElse()` と `` `import`("**") `` で残りを許します。
-- `fileName` と `captureValue(…)` は、ファイルごとの値を持つ普通の `String` です。
-- 依存に `katachi-konsist` を足し、テストで `assert(FileConstraintCheck())` を呼ぶと検査されます。
+    ```kt
+    required(`class`, "*ViewModel") {
+        required(`val`, "uiState", "StateFlow<*>") // uiState: StateFlow<*> が必ずある
+    }
 
-## 次のステップ
+    required(`class`, "*UseCase") {
+        required(suspend.optional(), operator, `fun`, "invoke")(anyArgs()) // operator fun invoke が必ずある。suspend は付いていても無くてもよい
+        allow(private, anythingElse) // コンストラクタで受け取る Repository など
+    }
+    ```
 
-- [カスタムルールを Konsist で定義する](/katachi/ja/guides/konsist-integration/) ... `ktFileContent { }` で書けない規則を、Konsist の API で書く方法を学びましょう。
-- [ドキュメント生成](/katachi/ja/guides/document-generation/) ... Role のページに出る `## Kotlin file content` の節を確かめましょう。
-- [Baseline](/katachi/ja/guides/baseline/) ... 今ある違反を許容して、新しい違反だけをエラーにする方法を学びましょう。
+  </TabItem>
+
+  <TabItem label="MVC での例">
+
+    ```kt {5-7, 16-18} nocollapse
+    "Controller".role {
+        // ...
+
+        ktFileContent {
+            required(`class`, fileName) {
+                allow(private, `val`, "*", "*Service") // 呼び出す Service を private val で持つ
+                allow(`fun`, "*")(anyArgs())            // ハンドラの関数。名前も引数も問わない
+            }
+        }
+    }
+
+    "Service".role {
+        // ...
+
+        ktFileContent {
+            required(`class`, fileName) {
+                allow(private, `val`, "*", "*Repository") // 呼び出す Repository を private val で持つ
+                allow(`fun`, "*")(anyArgs())
+            }
+        }
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+<details>
+<summary>関数の引数・戻り値の定義</summary>
+
+    <table>
+
+        <tr>
+            <th style="min-width: 8rem">やりたいこと</th>
+            <th style="min-width: 12rem">例</th>
+            <th style="min-width: 28rem">補足</th>
+        </tr>
+
+        <tr>
+            <td>
+                引数を指定
+            </td>
+            <td>
+                ```kt
+                required(`fun`, "*Screen")()
+                
+                required(`fun`, "doSomethingWithSingleArg")("action: *UiAction")
+
+                required(`fun`, "doSomethingWithAnyArgs")(anyArgs())
+                ```
+            </td>
+            <td>
+                - 各引数は `名前: 型` で指定します。
+                - 引数の型は `*` を使ってワイルドカードで指定することもできます。
+                - 任意の引数を許容する場合は `anyArgs()` を指定します。
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                戻り値を指定
+            </td>
+            <td>
+                ```kt
+                required(`fun`, "*Screen")
+                    .returns("Unit")
+                ```
+            </td>
+            <td>
+
+            </td>
+        </tr>
+
+    </table>
+
+</details>
+
+## typealias の宣言を許可する
+
+typealias も他の宣言と同じように許可することができます。
+
+```kt
+allow(`typealias`, "*Handler")
+```
+
+## 宣言にアノテーションを指定させる
+
+アノテーションを使いたいときは、`annotated()` を modifier と同じように指定します。
+
+<Tabs>
+  <TabItem label="Android での例">
+
+    ```kt {5} nocollapse
+    "ViewModel".role {
+        layout { /* ... */ }
+
+        ktFileContent {
+            required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
+                // ...
+            }
+        }
+    }
+    ```
+
+  </TabItem>
+
+  <TabItem label="MVC での例">
+
+    ```kt {5, 15} nocollapse
+    "Controller".role {
+        layout { /* ... */ }
+
+        ktFileContent {
+            required(annotated("RestController"), `class`, fileName) {
+                // ...
+            }
+        }
+    }
+
+    "Service".role {
+        layout { /* ... */ }
+
+        ktFileContent {
+            required(annotated("Service"), `class`, fileName)
+        }
+    }
+    ```
+
+  </TabItem>
+</Tabs>

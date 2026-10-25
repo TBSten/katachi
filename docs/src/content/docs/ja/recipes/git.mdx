@@ -11,8 +11,9 @@ tags:
 
 import SnippetIsStartingPoint from '../../../../components/SnippetIsStartingPoint.astro';
 
-```kt collapse {9,21,29,37}
-// ProjectArchitecture.kt
+`.gitignore`・`.gitkeep`・`.gitattributes` を、1種類のファイルにつき1つの Role として宣言できます。`ProjectArchitecture.kt` から `git()` を呼ぶと、3つの Role がまとめて入ります。
+
+```kt title=ProjectArchitecture.kt {8} nocollapse
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -23,8 +24,11 @@ val projectArchitecture = architecture {
         git()
     }
 }
+```
 
-// roles/Git.kt
+`git()` の中身は `roles/Git.kt` に置きます。
+
+```kt title=roles/Git.kt {8,16,24}
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi

@@ -14,7 +14,7 @@ import CodeComparison from '../../../components/CodeComparison';
 
 katachi can generate Markdown documentation from an `architecture { }` definition.
 
-## Basics
+## Run the document generation
 
 Configure it in `build.gradle.kts`.
 
@@ -219,9 +219,9 @@ The documentation is generated from the properties you set on Roles and groups.
 |---|---|---|
 | [`title`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/title.html) | The heading of the Role's page. Defaults to the Role's identifier | `<Role>.md`, and the link text in the index and listings |
 | [`summary`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/summary.html) | The single line that goes in the listing table | `<Role>.md`, the parent's `README.md` |
-| [`description`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/description.html) | The body of the Role's page. The Markdown you write goes in as is, newlines included. katachi adds no structure of its own, so **the headings inside are yours to choose** | `<Role>.md` |
-| [`example(name, description)`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/example.html) | A concrete example. Call it once per example; they appear **in the order you called them** | `## Examples` in `<Role>.md` |
-| [`documented`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/documented.html) | Set to `false` to keep it out of the documentation. It only stops being documented -- **it still takes part in `assert()` and the other checks** | --- |
+| [`description`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/description.html) | The body of the Role's page. The Markdown you write goes in as is, newlines included. katachi adds no structure of its own, so the headings inside are yours to choose | `<Role>.md` |
+| [`example(name, description)`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/example.html) | A concrete example. Call it once per example; they appear in the order you called them | `## Examples` in `<Role>.md` |
+| [`documented`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/documented.html) | Set to `false` to keep it out of the documentation. It only stops being documented -- it still takes part in `assert()` and the other checks | --- |
 
 <CodeComparison>
     <CodeComparison.Panel label="Role definition">
@@ -273,80 +273,9 @@ The documentation is generated from the properties you set on Roles and groups.
     </CodeComparison.Panel>
 </CodeComparison>
 
-#### The `ktFileContent { }` section
-
-<Aside type="note" title="Draft written by AI">
-This section is a draft written by AI. `ktFileContent { }` is an experimental feature planned for v0.3.
-</Aside>
-
-A constraint can add a section of its own to a Role's page. The page of a Role that has [`ktFileContent { }`](/katachi/guides/kt-file-content/) gets a `## Kotlin file content` section between `## Constraints` and `## Examples`.
-It is a table made by applying the lines you wrote in `ktFileContent { }` to an example file.
-
-<CodeComparison>
-    <CodeComparison.Panel label="Role definition">
-        ```kt
-        "ViewModel".role {
-            summary = "Exposes the screen's state as a StateFlow and receives events from the screen"
-            example("HomeViewModel", "The home screen's state")
-
-            layout {
-                "feature" / capture("feature") / mainSourceSet / kotlin / "**" / "*ViewModel".ktFile()
-            }
-
-            ktFileContent {
-                `package`("com.example.feature.${captureValue("feature")}")
-
-                `import`("androidx.lifecycle.**")
-                `import`("kotlinx.coroutines.**")
-
-                `class`(fileName).superclass("ViewModel") {
-                    public.`val`("uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
-                    private.anythingElse()
-                }
-            }
-        }
-        ```
-    </CodeComparison.Panel>
-    <CodeComparison.Panel label="Generated Markdown">
-        ```md title="ViewModel.md (excerpt)"
-        ## Kotlin file content
-
-        Example: `HomeViewModel.kt`
-
-        | Package |
-        |---|
-        | `com.example.feature.<feature>` |
-
-        | Import | |
-        |---|---|
-        | `androidx.lifecycle.**` | optional |
-        | `kotlinx.coroutines.**` | optional |
-
-        | Declaration | |
-        |---|---|
-        | `class HomeViewModel : ViewModel` | required |
-
-        ### Members of `class HomeViewModel`
-
-        | Member | |
-        |---|---|
-        | `public val uiState: StateFlow<HomeUiState>` | required |
-        | `private` (anything) | optional |
-        ```
-    </CodeComparison.Panel>
-</CodeComparison>
-
-The example file is decided in the following order.
-
-1. The first name in the Role's `example(…)` (for `example("HomeViewModel")`, `HomeViewModel.kt`)
-2. If there is no `example(…)`, the first of the project's files that matched that Role
-3. If neither exists, `Sample.kt`
-
-A capture value that can't be worked out from the example file's name appears as the capture's name, like `<feature>` in `com.example.feature.<feature>`.
-
 ### group
 
-A group takes the same four properties a Role does. **Only `example()` is missing.**
+A group takes the same four properties a Role does. Only `example()` is missing.
 
 | Property | What it becomes in the generated documentation | Pages it is used on |
 |---|---|---|
@@ -358,7 +287,7 @@ A group takes the same four properties a Role does. **Only `example()` is missin
 <details>
     <summary>Careful: documented = false takes the group's contents out with it</summary>
 
-    A group with `documented = false` **takes its Roles and nested groups out of the documentation along with it,** whatever those Roles write for themselves.
+    A group with `documented = false` takes its Roles and nested groups out of the documentation along with it, whatever those Roles write for themselves.
 
     ```kt
     "build".group {
@@ -370,6 +299,8 @@ A group takes the same four properties a Role does. **Only `example()` is missin
     The value itself is not copied onto the Roles and groups inside (each keeps what it wrote). A processor of your own that reads this value should walk up `Role.groupPath` and look at the parent groups' values too.
 
 </details>
+
+The following group definition produces the Markdown on the right.
 
 <CodeComparison>
     <CodeComparison.Panel label="group definition">
@@ -482,7 +413,7 @@ var MetadataScope.testPolicy by TestPolicy
     <summary>Nesting sections</summary>
 
     Sections can be nested. Declare the child on its parent section, as in `TestPolicy.documentSection("Unit tests")`.
-    **The heading level follows from the depth.** The top level is `##`, and each level down adds one `#`.
+    The heading level follows from the depth. The top level is `##`, and each level down adds one `#`.
     Even if the parent has no body, its heading still appears when a child has one.
 
     <CodeComparison>
@@ -533,13 +464,102 @@ var MetadataScope.testPolicy by TestPolicy
         </CodeComparison.Panel>
     </CodeComparison>
 
-    Custom sections come **after the built-in sections (`## Placement` / `## Constraints` / `## Examples`)**, in the order they are written in the definition.
+    Custom sections come after the built-in sections (`## Placement` / `## Constraints` / `## Examples`), in the order they are written in the definition.
 
 </details>
 
+### The `ktFileContent { }` section
+
+<Aside type="note" title="Draft written by AI">
+This section is a draft written by AI. `ktFileContent { }` is an experimental feature planned for v0.3.
+</Aside>
+
+A constraint can add a section of its own to a Role's page. The page of a Role that has [`ktFileContent { }`](/katachi/guides/kt-file-content/) gets a `## Kotlin file content` section between `## Constraints` and `## Examples`.
+It is a table made by applying the lines you wrote in `ktFileContent { }` to an example file.
+
+<CodeComparison>
+    <CodeComparison.Panel label="Role definition">
+        ```kt
+        "ViewModel".role {
+            summary = "Exposes the screen's state as a StateFlow and receives events from the screen"
+            example("HomeViewModel", "The home screen's state")
+
+            layout {
+                "feature" / capture("feature") / mainSourceSet / kotlin / "**" / "*ViewModel".ktFile()
+            }
+
+            ktFileContent {
+                `package`("com.example.feature.${captureValue("feature")}")
+
+                `import`("androidx.lifecycle.**")
+                `import`("kotlinx.coroutines.**")
+
+                required(`class`, fileName).superclass("ViewModel") {
+                    required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+                    allow(private, anythingElse)
+                }
+            }
+        }
+        ```
+    </CodeComparison.Panel>
+    <CodeComparison.Panel label="Generated Markdown">
+        ```md title="ViewModel.md (excerpt)"
+        ## Kotlin file content
+
+        Example: `HomeViewModel.kt`
+
+        | Package |
+        |---|
+        | `com.example.feature.<feature>` |
+
+        | Import | |
+        |---|---|
+        | `androidx.lifecycle.**` | optional |
+        | `kotlinx.coroutines.**` | optional |
+
+        | Declaration | |
+        |---|---|
+        | `class HomeViewModel : ViewModel` | required |
+
+        ### Members of `class HomeViewModel`
+
+        | Member | |
+        |---|---|
+        | `public val uiState: StateFlow<HomeUiState>` | required |
+        | `private` (anything) | optional |
+        ```
+    </CodeComparison.Panel>
+</CodeComparison>
+
+The example file is decided in the following order.
+
+1. The first name in the Role's `example(…)` (for `example("HomeViewModel")`, `HomeViewModel.kt`)
+2. If there is no `example(…)`, the first of the project's files that matched that Role
+3. If neither exists, `Sample.kt`
+
+A capture value that can't be worked out from the example file's name appears as the capture's name, like `<feature>` in `com.example.feature.<feature>`.
+
 ## Summary
 
-- Documentation is created by setting properties such as title, summary, description, and example in the architecture definition.
+Here is a Role definition that uses title, summary, description, example, and layout, all together.
+
+```kt
+"UseCase".role {
+    title = "UseCase"
+    summary = "A single app-specific behavior that happens on a screen"
+    description = """
+        A UseCase is a class representing one app-specific behavior.
+    """.trimIndent()
+
+    example("GetItemListUseCase", "Fetches the list of items")
+    example("SignInUseCase", "Signs in")
+
+    layout {
+        "src/main/kotlin/com/example/useCase" /
+            "*UseCase".ktFile()
+    }
+}
+```
 
 ## Next steps
 

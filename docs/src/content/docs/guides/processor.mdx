@@ -9,7 +9,7 @@ tags:
   The purpose of this page: to understand how the architecture definition and ArchitectureProcessor work, and how to write and run your own ArchitectureProcessor.
 */}
 
-import { Tabs, TabItem, LinkCard } from "@astrojs/starlight/components"
+import { Aside, Tabs, TabItem, LinkCard } from "@astrojs/starlight/components"
 
 This page explains ArchitectureProcessor, one of katachi's key elements, to deepen your understanding of katachi.
 
@@ -30,7 +30,11 @@ public interface ArchitectureProcessor<Args, R> {
 }
 ```
 
-Wrap the body of `process` in `runCatching { }` (or the `runCatchingScoped` utility). `runCatchingScoped` collects every problem you find with `failure(...)` and fails once at the end ([RoleDocCoverage.kt in sample/custom-processor](https://github.com/TBSten/katachi/blob/main/sample/custom-processor/architecture-test/src/test/kotlin/com/example/processors/RoleDocCoverage.kt)).
+Wrap the body of `process` in `runCatching { }` (or the `runCatchingScoped` utility).
+
+`runCatchingScoped` collects every problem you find with `failure(...)` and fails once at the end.
+
+For how to use it, see [RoleDocCoverage.kt in sample/custom-processor](https://github.com/TBSten/katachi/blob/main/sample/custom-processor/architecture-test/src/test/kotlin/com/example/processors/RoleDocCoverage.kt).
 
 | Return value | Meaning | Handling in the Gradle task |
 | --- | --- | --- |
@@ -41,11 +45,13 @@ Wrap the body of `process` in `runCatching { }` (or the `runCatchingScoped` util
 
 Broadly speaking, katachi consists of two elements: the **architecture definition** and **ArchitectureProcessor**.
 
+The following diagram shows how one architecture definition is used by both the built-in ArchitectureProcessors and the ArchitectureProcessors you write yourself.
+
 ```mermaid
 flowchart LR
     D["architecture { }<br/>Architecture definition"]
     D --> Layout["LayoutCheck<br/>Validates placement"]
-    D --> Konsist["FileConstraintCheck<br/>Evaluates konsist { } constraints"]
+    D --> Konsist["FileConstraintCheck<br/>Evaluates konsist { } and ktFileContent { } constraints"]
     D --> Doc["GenerateDocumentation<br/>Generates documentation"]
     D --> Template["GenerateCodeFromTemplate<br/>Generates code"]
     D -.-> Custom["Your ArchitectureProcessor<br/>Aggregation, extraction, output to other formats"]
@@ -53,6 +59,8 @@ flowchart LR
     style D fill:#5B8DEF22,stroke:#5B8DEF,stroke-width:2px
     style Custom fill:#BDBDBD22,stroke:#BDBDBD,stroke-dasharray:4 3,color:#8A8A8A
 ```
+
+Figure 1. The relationship between the architecture definition and ArchitectureProcessors
 
 The architecture definition itself doesn't execute anything. **It's `ArchitectureProcessor` that takes an `ArchitectureProcessContext` and does something with it.**
 
@@ -79,8 +87,8 @@ katachi ships with five ArchitectureProcessors.
         </tr>
         <tr>
             <td><code>FileConstraintCheck</code></td>
-            <td>Evaluates the constraints written in <code>{"konsist { }"}</code>. Passed as <code>projectArchitecture.assert(FileConstraintCheck())</code>.</td>
-            <td><a href="/katachi/guides/konsist-integration/">Konsist integration</a></td>
+            <td>Evaluates the file constraints written on Roles, such as <code>{"konsist { }"}</code> and <code>{"ktFileContent { }"}</code>. Passed as <code>projectArchitecture.assert(FileConstraintCheck())</code>.</td>
+            <td></td>
         </tr>
         <tr>
             <td><code>GenerateDocumentation</code></td>
@@ -108,8 +116,7 @@ There are a few patterns for running an ArchitectureProcessor.
 
 The recommended way to run it differs per ArchitectureProcessor, so refer to each ArchitectureProcessor's own documentation for how to run it.
 
-<Tabs>
-    <TabItem label="Call the API from your program">
+### Run it through the API
 
 If an API is provided alongside the ArchitectureProcessor (often a top-level function), you can run the ArchitectureProcessor by calling that API.
 
@@ -119,8 +126,7 @@ For example, for LayoutCheck, you can run that ArchitectureProcessor by calling 
 projectArchitecture.assert() // Internally calls LayoutCheck().process(...)
 ```
 
-    </TabItem>
-    <TabItem label="Run it from the command line">
+### Run it from the command line
 
 To run an ArchitectureProcessor from the command line, it needs to be registered through the Gradle plugin.
 
@@ -173,9 +179,6 @@ $ ./gradlew katachiSomeProcessor
 ========================================
 ```
 
-    </TabItem>
-</Tabs>
-
 ---
 
 ## Custom ArchitectureProcessors
@@ -192,72 +195,68 @@ Prepare a class that implements ArchitectureProcessorNoArg or ArchitectureProces
 
 The `context` passed as the argument to the `process` method holds the architecture definition, arguments, and so on, so refer to these as needed to implement your ArchitectureProcessor's logic.
 
-<Tabs>
-    <TabItem label="No arguments">
-        If your ArchitectureProcessor needs no arguments, implement the `ArchitectureProcessorNoArg` interface.
-
-        Specify the return type at run time as the type argument.
-
-        ```kt {2,3}
-        // Define an object that implements ArchitectureProcessorNoArg
-        object CountFilesPerRole : ArchitectureProcessorNoArg<Map<String, Int>> {
-            override fun process(context: ArchitectureProcessNoArgContext): Result<Map<String, Int>> = runCatching {
-                // context.architecture    ... the architecture definition
-                // context.roles / groups  ... the defined Roles / groups
-                // context.declaredEntries ... the flattened list of declarations from layout
-                // context.filesOf(role)   ... the actual files that matched that Role
-                // context.rawArgs         ... the arguments passed, as raw names and values
-                // context.log()           ... outputs progress
-
-                context.log("Counting files per role...")
-                context.roles.associate { role -> role.name to context.filesOf(role).size }
-            }
-        }
-        ```
-
-    </TabItem>
-    <TabItem label="With arguments">
-        katachi uses [kotlinx.serialization](https://github.com/kotlin/kotlinx.serialization) to parse arguments, so add a kotlinx.serialization dependency to your project.
-
-        ```kts {3} title="architecture-test/build.gradle.kts" 
-        plugins {
-            kotlin("jvm") version "<kotlin-version>"
-            kotlin("plugin.serialization") version "<kotlin-version>"
-        }
-        ```        
-
-        If your ArchitectureProcessor needs arguments, implement the `ArchitectureProcessor` interface.
-
-        Specify the argument type as the first type argument and the return type as the second.
-
-        ```kt {1, 3, 5, 16-17} nocollapse
-        object CountFilesPerRole : ArchitectureProcessor<CountFilesPerRole.Args, Map<String, Int>> {
-            // Pass the type of the value received via --arg, and how to read it
-            override val argsSerializer: KSerializer<Args> = Args.serializer()
-
-            override fun process(context: ArchitectureProcessContext<Args>): Result<Map<String, Int>> = runCatching {
-                // Refer to the arguments using context.args
-                val args: CountFilesPerRole.Args = context.args
-                val prefix = args.prefix
-
-                context.log("Counting files per role under $prefix...")
-                context.roles
-                    .filter { role -> role.qualifiedName.startsWith(prefix) }
-                    .associate { role -> role.name to context.filesOf(role).size }
-            }
-
-            @Serializable
-            data class Args(val prefix: String = "")
-        }
-        ```
-
-    </TabItem>
-</Tabs>
-
 For details on the information available from `context`, refer to [`ArchitectureProcessContext`'s API reference](/katachi/api-docs/katachi/me.tbsten.katachi.processor/-architecture-process-context/index.html).
 
-<details>
-<summary>Role metadata</summary>
+#### No arguments
+
+If your ArchitectureProcessor needs no arguments, implement the `ArchitectureProcessorNoArg` interface.
+
+Specify the return type at run time as the type argument.
+
+```kt {2,3}
+// Define an object that implements ArchitectureProcessorNoArg
+object CountFilesPerRole : ArchitectureProcessorNoArg<Map<String, Int>> {
+    override fun process(context: ArchitectureProcessNoArgContext): Result<Map<String, Int>> = runCatching {
+        // context.architecture    ... the architecture definition
+        // context.roles / groups  ... the defined Roles / groups
+        // context.declaredEntries ... the flattened list of declarations from layout
+        // context.filesOf(role)   ... the actual files that matched that Role
+        // context.rawArgs         ... the arguments passed, as raw names and values
+        // context.log()           ... outputs progress
+
+        context.log("Counting files per role...")
+        context.roles.associate { role -> role.name to context.filesOf(role).size }
+    }
+}
+```
+
+#### With arguments
+
+katachi uses [kotlinx.serialization](https://github.com/kotlin/kotlinx.serialization) to parse arguments, so add a kotlinx.serialization dependency to your project.
+
+```kts {3} title="architecture-test/build.gradle.kts" 
+plugins {
+    kotlin("jvm") version "<kotlin-version>"
+    kotlin("plugin.serialization") version "<kotlin-version>"
+}
+```        
+
+If your ArchitectureProcessor needs arguments, implement the `ArchitectureProcessor` interface.
+
+Specify the argument type as the first type argument and the return type as the second.
+
+```kt {1, 3, 5, 16-17} nocollapse
+object CountFilesPerRole : ArchitectureProcessor<CountFilesPerRole.Args, Map<String, Int>> {
+    // Pass the type of the value received via --arg, and how to read it
+    override val argsSerializer: KSerializer<Args> = Args.serializer()
+
+    override fun process(context: ArchitectureProcessContext<Args>): Result<Map<String, Int>> = runCatching {
+        // Refer to the arguments using context.args
+        val args: CountFilesPerRole.Args = context.args
+        val prefix = args.prefix
+
+        context.log("Counting files per role under $prefix...")
+        context.roles
+            .filter { role -> role.qualifiedName.startsWith(prefix) }
+            .associate { role -> role.name to context.filesOf(role).size }
+    }
+
+    @Serializable
+    data class Args(val prefix: String = "")
+}
+```
+
+#### Role metadata
 
 In some cases, the user of an ArchitectureProcessor may need a custom property that they want specified on the architecture definition.
 In that case, you can use **Role metadata**.
@@ -284,8 +283,6 @@ architecture {
     }
 }
 ```
-
-</details>
 
 ### 2. Provide a way to run ArchitectureProcessor
 
@@ -323,6 +320,8 @@ If you want it runnable from a program as an API, providing an API is recommende
         }
         ```
 
+        Run it with the following command.
+
         ```shell
         ./gradlew katachiCountFilesPerRole
         ```
@@ -334,17 +333,38 @@ If you want it runnable from a program as an API, providing an API is recommende
 
 ---
 
-**Provide the way to run it as documentation, such as in the processor's KDoc, so that users are told how to run it as well.**
+<Aside type="caution">
+Provide the way to run it as documentation, such as in the processor's KDoc, so that users are told how to run it as well.
+</Aside>
 
 ## Summary
 
-- **`assert()`, as well as documentation and template generation, are all ArchitectureProcessors.**
-- You can build a custom ArchitectureProcessor following the same mechanism the standard ArchitectureProcessors use.
+A custom processor is complete once you implement `ArchitectureProcessor` and provide how to run it as an extension function on `Architecture`.
+
+```kt
+object CountFilesPerRole : ArchitectureProcessor<CountFilesPerRole.Args, Map<String, Int>> {
+    override val argsSerializer: KSerializer<Args> = Args.serializer()
+
+    override fun process(context: ArchitectureProcessContext<Args>): Result<Map<String, Int>> = runCatching {
+        val prefix = context.args.prefix
+        context.log("Counting files per role under $prefix...")
+        context.roles
+            .filter { role -> role.qualifiedName.startsWith(prefix) }
+            .associate { role -> role.name to context.filesOf(role).size }
+    }
+
+    @Serializable
+    data class Args(val prefix: String = "")
+}
+
+fun Architecture.countFilesPerRole(): Map<String, Int> =
+    process(CountFilesPerRole, CountFilesPerRole.Args()).getOrThrow()
+```
 
 ## Next steps
 
 - [ArchitectureProcessor API reference](/katachi/api-docs/katachi/me.tbsten.katachi.processor/-architecture-processor/index.html) ... The `ArchitectureProcessor` type and the APIs you can use in `process`.
 - [Document generation](/katachi/guides/document-generation/) ... The biggest built-in processor built on the same mechanism.
-    - See also the [KDoc](https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.docs/-generate-documentation/index.html) and [source code](https://github.com/TBSten/katachi/blob/main/katachi/src/main/kotlin/me/tbsten/katachi/docs/GenerateDocumentation.kt#L88) of the document generation ArchitectureProcessor.
+    - See also the [KDoc](https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.docs/-generate-documentation/index.html) and [source code](https://github.com/TBSten/katachi/blob/main/katachi/src/main/kotlin/me/tbsten/katachi/docs/GenerateDocumentation.kt#L92) of the document generation ArchitectureProcessor.
 - [Generating code from a template](/katachi/guides/generate-code-from-template/) ... The processor that produces code from the definition.
-    - See also the [KDoc](https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.template/-generate-code-from-template/index.html) and [source code](https://github.com/TBSten/katachi/blob/main/katachi/src/main/kotlin/me/tbsten/katachi/template/GenerateCodeFromTemplate.kt#L114) of the code-from-template ArchitectureProcessor.
+    - See also the [KDoc](https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.template/-generate-code-from-template/index.html) and [source code](https://github.com/TBSten/katachi/blob/main/katachi/src/main/kotlin/me/tbsten/katachi/template/GenerateCodeFromTemplate.kt#L124) of the code-from-template ArchitectureProcessor.

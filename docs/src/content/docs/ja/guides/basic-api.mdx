@@ -45,6 +45,15 @@ fun `アーキテクチャに沿ったファイル配置になっている`() {
 }
 ```
 
+定義に合わないファイルがあると、テストは次のようなレポートで失敗します（一部を省いています）。
+
+```text
+Katachi check failed: 1 violation (Unexpected: 1)
+
+[UnexpectedFile] file:///path/to/project/src/main/kotlin/com/example/GetItemUseCase.kt
+  No role is defined for this file.
+```
+
 ## 3. Role を定義する `"名前".role { }`
 
 `"名前".role { }` はプロジェクトの中に登場するファイルの役割 (Role) を定義します。
@@ -77,11 +86,11 @@ architecture {
 
 ### Deny by default
 
-katachi では、**宣言した Role のファイルしかプロジェクトに存在を許されません**。
+katachi では、宣言した Role のファイルしかプロジェクトに存在を許されません。
 
 つまり katachi を導入するときは、プロジェクトの規約に合った Role を列挙する必要があります。
 
-### 関連ドキュメント
+### Role の詳細を読む
 
 Role については [Role 定義の詳細](/katachi/ja/guides/role/) も参照してください。
 
@@ -102,7 +111,7 @@ architecture {
 
 Role のグループをドメインレイヤーとして DSL で表すと、Role 同士の関係や階層構造が明確になります。分かりやすいアーキテクチャ定義を作るには、分かりやすい粒度で Role をグループ化することが大切です。
 
-### 関連ドキュメント
+### Role のグループの詳細を読む
 
 Role のグループについては [Role 定義の詳細](/katachi/ja/guides/role/) も参照してください。
 
@@ -128,7 +137,7 @@ architecture {
 
 Deny by default の原則により、`layout { }` で宣言していない場所にはファイルを置けません。
 
-たとえば AI Agent が、新しい UseCase ファイルを `src/main/kotlin/com/example/GetItemUseCase.kt` に置こうとしたとします (本来は useCase パッケージの中に置くべきです)。
+たとえば AI Agent が、新しい UseCase ファイルを `src/main/kotlin/com/example/GetItemUseCase.kt` に置こうとしたとします。本来は useCase パッケージの中に置くべきファイルです。
 `assert()` が呼び出された時点で、katachi はこのパスに一致する Role が無いことを検知し、テストが失敗します。
 
 <FileTree>
@@ -138,7 +147,7 @@ Deny by default の原則により、`layout { }` で宣言していない場所
     - GetUserUseCase.kt ⭐️ 宣言どおりの場所
 </FileTree>
 
-### 関連ドキュメント
+### Layout の詳細を読む
 
 `layout { }` については [Layout 定義の詳細](/katachi/ja/guides/layout/) も参照してください。
 
@@ -150,7 +159,7 @@ Deny by default の原則により、`layout { }` で宣言していない場所
 
 `ktFileContent { }` は、Role のファイルに置いてよい package・import・宣言を、許可リストで定義するブロックです。
 
-```kt {7-8}
+```kt {7-10}
 architecture {
   "UseCase".role {
     layout {
@@ -158,19 +167,40 @@ architecture {
     }
 
     ktFileContent {
-      `class`(fileName)
+      `package`("com.example.useCase")
+      required(`class`, fileName) {
+        allow(anythingElse)          // クラスのメンバは何でもよい
+      }
     }
   }
 }
 
-// GetUserUseCase.kt には、class GetUserUseCase だけを置ける
+// GetUserUseCase.kt には、package com.example.useCase の宣言と class GetUserUseCase だけを置ける
 ```
 
-書いた種類（package・import・宣言）だけが許可リストになり、書いた行に当たらないものは違反になります。`fileName` には、検査しているファイルの名前が入ります（`GetUserUseCase.kt` なら `GetUserUseCase`）。
+`GetUserUseCase.kt` に置いた宣言は、次のように通るか落ちるかが決まります。
+
+```kt title="GetUserUseCase.kt"
+package com.example.useCase
+
+class GetUserUseCase { /* ... */ }   // 通る: required の行に当たる
+fun helper() {}                      // 落ちる: 当たる行が無い
+```
+
+落ちた宣言は、次のようなレポートで報告されます（一部を省いています）。
+
+```text
+[UnsatisfiedFileConstraint] file:///path/to/project/src/main/kotlin/com/example/useCase/GetUserUseCase.kt
+  Role: UseCase / FileConstraint: "ktFileContent"
+  Declaration: helper (line 4)
+  Not allowed: fun helper()
+```
+
+書いた行が許可リストになり、行を書かなかった種類には何も置けません（Deny by default）。この例には import の行が無いので、import を1つも書けません。クラスのメンバは `{ }` の中の行が許可リストで、`allow(anythingElse)` は「何でもよい」を表します。`fileName` には、検査しているファイルの名前が入ります（`GetUserUseCase.kt` なら `GetUserUseCase`）。
 
 `ktFileContent { }` は別モジュール `katachi-konsist` に入っています。検査するには、テストで `assert()` の代わりに `assert(FileConstraintCheck())` を呼びます。`assert()` だけでは検査されず、`[UncheckedFileConstraint]` としてテストが落ちます。
 
-### 関連ドキュメント
+### `ktFileContent { }` の詳細を読む
 
 `ktFileContent { }` については [ファイルの中で定義できる宣言の許可リストを定義する](/katachi/ja/guides/kt-file-content/) も参照してください。
 
@@ -192,165 +222,27 @@ architecture {
 }
 ```
 
-制約の対象は `layout { }` で指定したファイルで、制約そのものは Konsist の API で書きます。
+制約の対象は `layout { }` で指定したファイルで、制約そのものは Konsist の API で書きます。制約を満たさないクラスがあると、付けた名前がそのままレポートに出ます（一部を省いています）。
+
+```text
+[UnsatisfiedFileConstraint] file:///path/to/project/src/main/kotlin/com/example/useCase/GetUserUseCase.kt
+  Role: UseCase / FileConstraint: "invoke 関数を1つだけ持つこと"
+  Declaration: GetUserUseCase (line 3)
+```
 
 制約を検査するには、テストで `assert()` の代わりに `assert(FileConstraintCheck())` を呼びます。`assert()` だけでは制約が評価されず、`[UncheckedFileConstraint]` としてテストが落ちます。
 
-### 関連ドキュメント
-
-`"...".konsist { }` については [カスタムルールを Konsist で定義する](/katachi/ja/guides/konsist-integration/) も参照してください。
-
 ## まとめ
 
-<table>
-  <tr>
-    <th>API</th>
-    <th style="min-width: 12rem">何をするか</th>
-    <th>例</th>
-  </tr>
-
-  <tr>
-    <td>
-      ```kt
-      architecture { }
-      ```
-    </td>
-    <td>
-      プロジェクト全体のアーキテクチャを定義する、エントリーポイントの関数です。
-    </td>
-    <td>
-      ```kt nocollapse
-      architecture {
-        "UseCase".role { /* ... */ }
-      }
-      ```
-
-      - 意味: このプロジェクトには `UseCase` という Role がある
-    </td>
-  </tr>
-
-  <tr>
-    <td>
-      ```kt
-      assert()
-      ```
-    </td>
-    <td>
-      定義どおりにファイルが置かれているかを検査します。テストから呼ぶ1行で、これが無いと何も起きません。
-    </td>
-    <td>
-      ```kt nocollapse
-      @Test
-      fun `配置が定義どおり`() {
-        projectArchitecture.assert()
-      }
-      ```
-
-      - 意味: 違反があればテストが落ちる。1回の実行で全部の違反を集め、1つのメッセージにまとめる
-    </td>
-  </tr>
-
-  <tr>
-    <td>
-      ```kt
-      "名前".role { }
-      ```
-    </td>
-    <td>
-      プロジェクトの中に登場するファイルの役割 (Role) を定義します。
-    </td>
-    <td>
-      ```kt nocollapse
-      "UseCase".role {
-        layout { /* ... */ }
-      }
-      ```
-
-      - 意味: `UseCase` という Role がある。宣言していない Role のファイルは置けない
-    </td>
-  </tr>
-
-  <tr>
-    <td>
-      ```kt
-      "名前".group { }
-      ```
-    </td>
-    <td>
-      Role をまとめて階層を作ります。使うかどうかは任意で、使わなくても Role は書けます。
-    </td>
-    <td>
-      ```kt nocollapse
-      "domain".group {
-        "UseCase".role { /* ... */ }
-      }
-      ```
-
-      - 意味: `UseCase` は domain レイヤーの Role。修飾名は `domain.UseCase` になる
-    </td>
-  </tr>
-
-  <tr>
-    <td>
-      ```kt
-      layout { }
-      ```
-    </td>
-    <td>
-      その Role のファイルをどこに置いてよいかを定義します。
-    </td>
-    <td>
-      ```kt nocollapse
-      layout {
-        "domain/useCase" /
-          "*UseCase".ktFile()
-      }
-      ```
-
-      - 意味: `domain/useCase/*UseCase.kt` にだけ置ける。それ以外の場所に置くと違反になる
-    </td>
-  </tr>
-
-  <tr>
-    <td>
-      ```kt
-      ktFileContent { }
-      ```
-    </td>
-    <td>
-      その Role のファイルに置いてよい package・import・宣言を、許可リストで定義します。別モジュール `katachi-konsist` と、テストでの `assert(FileConstraintCheck())` が必要です。
-    </td>
-    <td>
-      ```kt nocollapse
-      ktFileContent {
-        `class`(fileName)
-      }
-      ```
-
-      - 意味: ファイル名と同じ名前の class だけを置ける。ほかの宣言を置くと違反になる
-    </td>
-  </tr>
-
-  <tr>
-    <td>
-      ```kt
-      "名前".konsist { }
-      ```
-    </td>
-    <td>
-      その Role のファイルの中身に制約をかけます。別モジュール `katachi-konsist` と、テストでの `assert(FileConstraintCheck())` が必要です。
-    </td>
-    <td>
-      ```kt nocollapse
-      "invoke を1つだけ持つこと".konsist {
-        classes().must { /* 条件 */ }
-      }
-      ```
-
-      - 意味: 満たさないファイルがあると違反になる。**制約名がそのまま違反レポートに出る**
-    </td>
-  </tr>
-</table>
+| API | 何をするか |
+|---|---|
+| `architecture { }` | プロジェクト全体のアーキテクチャを定義する、エントリーポイントです |
+| `assert()` | 定義どおりにファイルが置かれているかを検査します。テストから呼ぶ1行で、これが無いと何も起きません |
+| `"名前".role { }` | プロジェクトの中に登場するファイルの役割（Role）を定義します |
+| `"名前".group { }` | Role をまとめて階層を作ります。使うかどうかは任意です |
+| `layout { }` | その Role のファイルをどこに置いてよいかを定義します |
+| `ktFileContent { }` | その Role のファイルに置いてよい package・import・宣言を、許可リストで定義します |
+| `"名前".konsist { }` | その Role のファイルの中身に、Konsist で制約をかけます。制約名がそのまま違反レポートに出ます |
 
 ## 次のステップ
 

@@ -11,10 +11,13 @@ tags:
 
 import SnippetIsStartingPoint from '../../../components/SnippetIsStartingPoint.astro';
 
+You can declare the configuration files of nine AI coding tools, such as Claude Code and Cursor, with one group and Roles per tool.
+
 ## Claude Code
 
-```kt collapse
-// ProjectArchitecture.kt
+Call `claudeCode()` from `ProjectArchitecture.kt`, and put its body in `roles/ClaudeCode.kt`.
+
+```kt title=ProjectArchitecture.kt nocollapse
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -25,8 +28,9 @@ val projectArchitecture = architecture {
         claudeCode()
     }
 }
+```
 
-// roles/ClaudeCode.kt
+```kt title=roles/ClaudeCode.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -104,8 +108,9 @@ fun DeclarationContainerScope.claudeCode() =
 
 ## Cursor
 
-```kt collapse
-// ProjectArchitecture.kt
+Call `cursor()` from `ProjectArchitecture.kt`, and put its body in `roles/Cursor.kt`.
+
+```kt title=ProjectArchitecture.kt nocollapse
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -116,8 +121,9 @@ val projectArchitecture = architecture {
         cursor()
     }
 }
+```
 
-// roles/Cursor.kt
+```kt title=roles/Cursor.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -203,8 +209,9 @@ fun DeclarationContainerScope.cursor() =
 
 ## Windsurf (Devin Desktop)
 
-```kt collapse
-// ProjectArchitecture.kt
+Call `windsurf()` from `ProjectArchitecture.kt`, and put its body in `roles/Windsurf.kt`.
+
+```kt title=ProjectArchitecture.kt nocollapse
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -215,8 +222,9 @@ val projectArchitecture = architecture {
         windsurf()
     }
 }
+```
 
-// roles/Windsurf.kt
+```kt title=roles/Windsurf.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -294,8 +302,9 @@ fun DeclarationContainerScope.windsurf() =
 
 ## GitHub Copilot
 
-```kt collapse
-// ProjectArchitecture.kt
+Call `githubCopilot()` from `ProjectArchitecture.kt`, and put its body in `roles/GitHubCopilot.kt`.
+
+```kt title=ProjectArchitecture.kt nocollapse
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -306,8 +315,9 @@ val projectArchitecture = architecture {
         githubCopilot()
     }
 }
+```
 
-// roles/GitHubCopilot.kt
+```kt title=roles/GitHubCopilot.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -378,8 +388,9 @@ fun DeclarationContainerScope.githubCopilot() =
 
 ## Cline
 
-```kt collapse
-// ProjectArchitecture.kt
+Call `cline()` from `ProjectArchitecture.kt`, and put its body in `roles/Cline.kt`.
+
+```kt title=ProjectArchitecture.kt nocollapse
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -390,8 +401,9 @@ val projectArchitecture = architecture {
         cline()
     }
 }
+```
 
-// roles/Cline.kt
+```kt title=roles/Cline.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -445,8 +457,9 @@ fun DeclarationContainerScope.cline() =
 
 ## JetBrains Junie
 
-```kt collapse
-// ProjectArchitecture.kt
+Call `junie()` from `ProjectArchitecture.kt`, and put its body in `roles/Junie.kt`.
+
+```kt title=ProjectArchitecture.kt nocollapse
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -457,8 +470,9 @@ val projectArchitecture = architecture {
         junie()
     }
 }
+```
 
-// roles/Junie.kt
+```kt title=roles/Junie.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -521,8 +535,9 @@ fun DeclarationContainerScope.junie() =
 
 ## OpenAI Codex
 
-```kt collapse
-// ProjectArchitecture.kt
+Call `codex()` from `ProjectArchitecture.kt`, and put its body in `roles/Codex.kt`.
+
+```kt title=ProjectArchitecture.kt nocollapse
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -533,8 +548,9 @@ val projectArchitecture = architecture {
         codex()
     }
 }
+```
 
-// roles/Codex.kt
+```kt title=roles/Codex.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -586,8 +602,9 @@ fun DeclarationContainerScope.codex() =
 
 ## Google Antigravity
 
-```kt collapse
-// ProjectArchitecture.kt
+Call `antigravity()` from `ProjectArchitecture.kt`, and put its body in `roles/Antigravity.kt`.
+
+```kt title=ProjectArchitecture.kt nocollapse
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -598,8 +615,9 @@ val projectArchitecture = architecture {
         antigravity()
     }
 }
+```
 
-// roles/Antigravity.kt
+```kt title=roles/Antigravity.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -653,8 +671,9 @@ fun DeclarationContainerScope.antigravity() =
 
 ## Aider
 
-```kt collapse
-// ProjectArchitecture.kt
+Call `aider()` from `ProjectArchitecture.kt`, and put its body in `roles/Aider.kt`.
+
+```kt title=ProjectArchitecture.kt nocollapse
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -665,8 +684,9 @@ val projectArchitecture = architecture {
         aider()
     }
 }
+```
 
-// roles/Aider.kt
+```kt title=roles/Aider.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi

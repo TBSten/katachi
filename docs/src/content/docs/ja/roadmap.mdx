@@ -11,6 +11,8 @@ tags:
 
 import { Aside, Steps } from '@astrojs/starlight/components';
 
+katachi のバージョンごとの計画と、いま何が入っていて何が先送りかを示します。
+
 ## 全体像
 
 <table>
@@ -34,7 +36,7 @@ import { Aside, Steps } from '@astrojs/starlight/components';
         </tr>
         <tr>
             <td><strong>v0.3 以降</strong></td>
-            <td><code>ktFileContent &#123; &#125;</code> / レポート出力 / 語彙数の計測</td>
+            <td><code>ktFileContent &#123; &#125;</code> / レポート出力 / templateSet / Konture の統合</td>
             <td><strong>既存プロジェクト</strong>に入れやすくなる。v0.1 で書いた <code>konsist &#123; &#125;</code> の大半を <code>ktFileContent &#123; &#125;</code> で置き換えられる</td>
         </tr>
     </tbody>
@@ -52,17 +54,30 @@ import { Aside, Steps } from '@astrojs/starlight/components';
 |---|---|
 | **Role で import を指す書き方**（将来） | import を、パスのパターンではなく Role で指す（「domain の Role のファイルだけを import してよい」）。v0.2 の計画にあった `dependsOnlyOn` は作らず、import の許可リストは `ktFileContent { }` に入れた |
 | **レポート出力**（v0.3 で入った） | 違反を SARIF のファイルで出し、GitHub の PR に注釈として載せる。手順は [GitHub のレシピ](/katachi/ja/recipes/github/#pr-に注釈を出す) |
-| **`pairedWith`** | 「すべての `Screen` に対応する `Preview` がある」のような網羅性を検査する |
-| **語彙数の計測** | Role の数と、Role ごとのファイル数を数値で出す |
+| **Konture の統合**（v0.3 で入った） | [Konture](https://github.com/baole/konture) の規則を、`konsist { }` と同じ位置に `konture { }` で書く（`katachi-konture`）。`konsist { }` と同じテストモジュールには置けない |
+| **templateSet**（v0.3 で入った） | 幾つかのテンプレートに名前を付けてまとめ、`--arg template=<名前>` の1回で生成する。IDE プラグインからも生成できる |
+| **capture の検査**（v0.3 で入った） | 1本のパスに同じ名前の `capture()` を書いたとき、その段が同じ値になっているかを検査する（`[CaptureMismatch]`）。`capture("x").camelCase` のような派生も書ける |
+| **`pairedWith`**（v0.3 ではやらない） | 「すべての `Screen` に対応する `Preview` がある」のような網羅性を検査する |
+| **語彙数の計測**（v0.3 ではやらない） | Role の数と、Role ごとのファイル数を数値で出す |
 | **Gradle のモデルに基づくモジュールの解決** | `projectDir` を変えたモジュールや、source set の実際の場所に追従する |
 
-レポート出力のほかは、仕様がまだほとんど決まっていません。バージョン番号の割り当ても「v0.3 以降」とひとまとまりです。
+v0.3 で入ったもののほかは、仕様がまだほとんど決まっていません。バージョン番号の割り当ても「v0.3 以降」とひとまとまりです。
 
 ### Role の宣言は `"名前".role { }` に
 
 v0.2 まで `"UseCase" { }` と書いていた Role の宣言は、v0.3 から `"UseCase".role { }` と書きます。`"domain".group { }` と形がそろい、`layout { }` の中に書くディレクトリの宣言 `"src" { }` と見分けられるようにするためです。
 
 v0.2 の `"UseCase" { }` は v0.3 ではコンパイルエラーになり、エラーメッセージに書き換え先の `"UseCase".role { }` が出ます。IDE の検索と置換で `.role` を足せば直せます。`layout { }` の中のディレクトリの宣言（`"src" { }`）は変わらないので、置き換えないでください。
+
+### glob の `*` は 0 文字以上に
+
+v0.2 まで 1 文字以上に当たっていた glob の `*` は、v0.3 から標準の glob と同じく 0 文字以上に当たります。たとえば `"app_icon*.xml"` は `app_icon.xml` にも当たるようになります。ディレクトリの段全体に書いた `*`（`"feature" / "*"`）は、名前が空のディレクトリが無いので、当たるものは変わりません。
+
+あわせて、標準の glob の `?`・`[...]`・`{...}` も書けるようになりました。
+
+### `.module { }` は非推奨に
+
+`.module { }` は v0.3 で非推奨になり、使うとコンパイル時に警告が出ます。v0.4 でコンパイルエラーになり、v0.5 で削除する予定です。モジュールはディレクトリとして `"core/data" / mainSourceSet / kotlin / "com/example/core/data" / "*Repository".ktFile()` のように書きます。`modulePackage` の代わりに package のディレクトリを書き、モジュールのパスの `*` は `capture()` にします。
 
 ### `ktFileContent { }` — `konsist { }` からの昇格
 
@@ -87,12 +102,15 @@ v0.1 の `konsist { }` は、言ってしまえば**逃げ道**です。「`*Use
         "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
     }
     ktFileContent {
-        `interface`(fileName)
-        `class`("Default$fileName").superclass(fileName)
+        `package`("**")
+        `import`("**")
+
+        required(`interface`, fileName) { allow(anythingElse) }
+        required(`class`, "Default$fileName").superclass(fileName) { allow(anythingElse) }
     }
 }
 ```
 
-書いた種類（package・import・宣言・メンバ）は、列挙したもの以外を置けません。`layout { }` が配置の allow list であるのと同じ意味で、このブロックが中身の allow list になります。
+行を書かなかった種類（package・import・宣言・クラスのメンバ）には、何も置けません。上の `konsist { }` の例は package・import・メンバを問わないので、この例でも `**` と `allow(anythingElse)` でそれらを開いています。`layout { }` が配置の allow list であるのと同じ意味で、このブロックが中身の allow list になります。
 
 詳しくは [ファイルの中で定義できる宣言の許可リストを定義する](/katachi/ja/guides/kt-file-content/) を参照してください。

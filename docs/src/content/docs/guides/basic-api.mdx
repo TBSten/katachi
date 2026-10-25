@@ -45,6 +45,15 @@ fun `files are placed according to the architecture`() {
 }
 ```
 
+If a file doesn't match the definition, the test fails with a report like this (some lines are omitted).
+
+```text
+Katachi check failed: 1 violation (Unexpected: 1)
+
+[UnexpectedFile] file:///path/to/project/src/main/kotlin/com/example/GetItemUseCase.kt
+  No role is defined for this file.
+```
+
 ## 3. Declaring a Role with `"Name".role { }`
 
 `"Name".role { }` declares the role that a file appearing in the project plays.
@@ -77,11 +86,11 @@ If you're using a well-known architecture, roles typically look something like t
 
 ### Deny by default
 
-In katachi, **only files with a declared Role are allowed to exist in the project**.
+In katachi, only files with a declared Role are allowed to exist in the project.
 
 In other words, adopting katachi requires you to enumerate the Roles that match your project's conventions.
 
-### Related documentation
+### Reading more about Role
 
 For Role, also see [Role definitions in depth](/katachi/guides/role/).
 
@@ -102,7 +111,7 @@ architecture {
 
 Expressing a group like "the domain layer" in the DSL makes the relationships and hierarchy between roles clear. Grouping Roles at a sensible granularity is important for building an architecture definition that's easy to understand.
 
-### Related documentation
+### Reading more about Role groups
 
 For grouping Roles, also see [Role definitions in depth](/katachi/guides/role/).
 
@@ -128,7 +137,7 @@ architecture {
 
 Under the Deny by default principle, you can't place a file anywhere that isn't declared in `layout { }`.
 
-Say an AI Agent tries to place a new UseCase file at `src/main/kotlin/com/example/GetItemUseCase.kt` (it should really go inside the useCase package). The moment `assert()` is called, katachi detects that no Role matches this path, and the test fails.
+Say an AI Agent tries to place a new UseCase file at `src/main/kotlin/com/example/GetItemUseCase.kt`. It should really go inside the useCase package. The moment `assert()` is called, katachi detects that no Role matches this path, and the test fails.
 
 <FileTree>
 - src/main/kotlin/com/example/
@@ -137,7 +146,7 @@ Say an AI Agent tries to place a new UseCase file at `src/main/kotlin/com/exampl
     - GetUserUseCase.kt ⭐️ where the declaration puts it
 </FileTree>
 
-### Related documentation
+### Reading more about layout
 
 For `layout { }`, also see [Layout definitions in depth](/katachi/guides/layout/).
 
@@ -149,7 +158,7 @@ This section and the `ktFileContent { }` row in the summary table are a draft wr
 
 `ktFileContent { }` is the block that defines, as an allow list, the package, imports, and declarations that may be placed in a Role's files.
 
-```kt {7-8}
+```kt {7-10}
 architecture {
   "UseCase".role {
     layout {
@@ -157,19 +166,40 @@ architecture {
     }
 
     ktFileContent {
-      `class`(fileName)
+      `package`("com.example.useCase")
+      required(`class`, fileName) {
+        allow(anythingElse)          // the class may have any members
+      }
     }
   }
 }
 
-// GetUserUseCase.kt may contain only class GetUserUseCase
+// GetUserUseCase.kt may contain only the package com.example.useCase declaration and class GetUserUseCase
 ```
 
-Only the kinds you write (package, import, declaration) become allow lists, and anything that doesn't match a line you wrote is a violation. `fileName` holds the name of the file being checked (`GetUserUseCase` for `GetUserUseCase.kt`).
+Declarations placed in `GetUserUseCase.kt` either pass or fail like this.
+
+```kt title="GetUserUseCase.kt"
+package com.example.useCase
+
+class GetUserUseCase { /* ... */ }   // passes: matches the required line
+fun helper() {}                      // fails: no line matches
+```
+
+The declaration that fails is reported like this (some lines are omitted).
+
+```text
+[UnsatisfiedFileConstraint] file:///path/to/project/src/main/kotlin/com/example/useCase/GetUserUseCase.kt
+  Role: UseCase / FileConstraint: "ktFileContent"
+  Declaration: helper (line 4)
+  Not allowed: fun helper()
+```
+
+The lines you write become the allow list, and nothing may be placed for a kind you wrote no line for (deny by default). This example has no import line, so the file may not have a single import. The members of a class are an allow list of the lines in its `{ }`, and `allow(anythingElse)` means "anything". `fileName` holds the name of the file being checked (`GetUserUseCase` for `GetUserUseCase.kt`).
 
 `ktFileContent { }` lives in the separate `katachi-konsist` module. To check it, call `assert(FileConstraintCheck())` instead of `assert()` in the test. With `assert()` alone it is not checked, and the test fails with `[UncheckedFileConstraint]`.
 
-### Related documentation
+### Reading more about `ktFileContent { }`
 
 For `ktFileContent { }`, also see [Define an allow list of the declarations a file may contain](/katachi/guides/kt-file-content/).
 
@@ -191,165 +221,27 @@ architecture {
 }
 ```
 
-The constraints apply to the files specified in `layout { }`, and the constraints themselves are written with the Konsist API.
+The constraints apply to the files specified in `layout { }`, and the constraints themselves are written with the Konsist API. If a class doesn't satisfy a constraint, the name you gave it appears as-is in the report (some lines are omitted).
+
+```text
+[UnsatisfiedFileConstraint] file:///path/to/project/src/main/kotlin/com/example/useCase/GetUserUseCase.kt
+  Role: UseCase / FileConstraint: "has exactly one invoke function"
+  Declaration: GetUserUseCase (line 3)
+```
 
 To check the constraints, call `assert(FileConstraintCheck())` instead of `assert()` in the test. With `assert()` alone the constraints are not evaluated, and the test fails with `[UncheckedFileConstraint]`.
 
-### Related documentation
-
-For `"...".konsist { }`, also see [Define custom rules with Konsist](/katachi/guides/konsist-integration/).
-
 ## Summary
 
-<table>
-  <tr>
-    <th>API</th>
-    <th style="min-width: 12rem">What it does</th>
-    <th>Example</th>
-  </tr>
-
-  <tr>
-    <td>
-      ```kt
-      architecture { }
-      ```
-    </td>
-    <td>
-      The function that serves as the entry point for defining your project's overall architecture.
-    </td>
-    <td>
-      ```kt nocollapse
-      architecture {
-        "UseCase".role { /* ... */ }
-      }
-      ```
-
-      - Meaning: this project has a role called `UseCase`
-    </td>
-  </tr>
-
-  <tr>
-    <td>
-      ```kt
-      assert()
-      ```
-    </td>
-    <td>
-      Checks whether files are placed according to the definition. It's a single line called from a test — without it, nothing happens.
-    </td>
-    <td>
-      ```kt nocollapse
-      @Test
-      fun `placement follows the definition`() {
-        projectArchitecture.assert()
-      }
-      ```
-
-      - Meaning: the test fails if there's a violation. A single run collects every violation and puts them in one message
-    </td>
-  </tr>
-
-  <tr>
-    <td>
-      ```kt
-      "Name".role { }
-      ```
-    </td>
-    <td>
-      Declares the role (Role) of a file that appears in the project.
-    </td>
-    <td>
-      ```kt nocollapse
-      "UseCase".role {
-        layout { /* ... */ }
-      }
-      ```
-
-      - Meaning: there's a role called `UseCase`. Files for undeclared roles can't be placed
-    </td>
-  </tr>
-
-  <tr>
-    <td>
-      ```kt
-      "Name".group { }
-      ```
-    </td>
-    <td>
-      Groups Roles together to build a hierarchy. Optional — Roles work fine without it.
-    </td>
-    <td>
-      ```kt nocollapse
-      "domain".group {
-        "UseCase".role { /* ... */ }
-      }
-      ```
-
-      - Meaning: `UseCase` is a role in the domain layer. Its qualified name becomes `domain.UseCase`
-    </td>
-  </tr>
-
-  <tr>
-    <td>
-      ```kt
-      layout { }
-      ```
-    </td>
-    <td>
-      Defines where that Role's files may be placed.
-    </td>
-    <td>
-      ```kt nocollapse
-      layout {
-        "domain/useCase" /
-          "*UseCase".ktFile()
-      }
-      ```
-
-      - Meaning: it can only be placed at `domain/useCase/*UseCase.kt`. Anywhere else is a violation
-    </td>
-  </tr>
-
-  <tr>
-    <td>
-      ```kt
-      ktFileContent { }
-      ```
-    </td>
-    <td>
-      Defines, as an allow list, the package, imports, and declarations that may be placed in that Role's files. Requires the separate `katachi-konsist` module and `assert(FileConstraintCheck())` in the test.
-    </td>
-    <td>
-      ```kt nocollapse
-      ktFileContent {
-        `class`(fileName)
-      }
-      ```
-
-      - Meaning: only a class named the same as the file can be placed. Placing any other declaration is a violation
-    </td>
-  </tr>
-
-  <tr>
-    <td>
-      ```kt
-      "Name".konsist { }
-      ```
-    </td>
-    <td>
-      Constrains the contents of that Role's files. Requires the separate `katachi-konsist` module and `assert(FileConstraintCheck())` in the test.
-    </td>
-    <td>
-      ```kt nocollapse
-      "has exactly one invoke".konsist {
-        classes().must { /* condition */ }
-      }
-      ```
-
-      - Meaning: a file that doesn't satisfy this is a violation. **The constraint name appears directly in the violation report**
-    </td>
-  </tr>
-</table>
+| API | What it does |
+|---|---|
+| `architecture { }` | The entry point that defines the architecture of the whole project |
+| `assert()` | Checks that files are placed as defined. It is the one line you call from a test, and nothing happens without it |
+| `"Name".role { }` | Declares the role (Role) that a file appearing in the project plays |
+| `"Name".group { }` | Brings Roles together to build a hierarchy. Using it is optional |
+| `layout { }` | Defines where the files for that Role may be placed |
+| `ktFileContent { }` | Defines, as an allow list, the package, imports, and declarations that may be placed in that Role's files |
+| `"Name".konsist { }` | Applies constraints to the contents of that Role's files with Konsist. The constraint name appears directly in the violation report |
 
 ## Next steps
 

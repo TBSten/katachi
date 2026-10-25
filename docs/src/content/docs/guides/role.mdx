@@ -9,8 +9,10 @@ tags:
   The purpose of this page: to gain a deep, comprehensive understanding of how to use Role, an important element of katachi's architecture definitions.
 */}
 
-import { Aside, FileTree } from "@astrojs/starlight/components";
+import { Aside, Badge, FileTree } from "@astrojs/starlight/components";
 import CodeComparison from "../../../components/CodeComparison";
+
+A Role is the unit that declares the kinds of files that may appear in your project. This page explains how to write a Role's description, placement, and constraints, how to bring Roles together in groups, and how to split the definition when it grows large.
 
 ## Declaring a Role
 
@@ -30,21 +32,23 @@ architecture {
 
 A Role is declared with `"Name".role { }`. This matches the shape of `"name".group { }` and sets it apart from a directory declaration such as `"src" { }`, which you write inside `layout { }`.
 
+Because Role names are used for things like documentation generation, they must be ASCII only (starting with a letter, followed by letters, digits, `_`, or `-`). Put a Japanese (or any other) display name in `title`.
+
 You write a Role's description, placement, and constraints inside that Role's block.
 
-- `title`, `summary`, `description`, etc. ... The description of the Role. Used when generating documentation.
-- `layout { }` ... Defines where the files for that Role may be placed.
-  - See [Layout definitions](/katachi/guides/layout/) for details.
-- `ktFileContent { }` ... Defines the package, imports, and declarations that may be placed in that Role's files.
-  - See [Define an allow list of the declarations a file may contain](/katachi/guides/kt-file-content/) for details.
-- `"constraint name".konsist { }` ... Defines, using Konsist, the constraints that `ktFileContent { }` cannot express.
-  - See [Define custom rules with Konsist](/katachi/guides/konsist-integration/) for details.
-- `.template { }` ... Attached to a file declared in `layout { }`, it defines the template used when that file is newly created.
-  - See [Generate code from a template](/katachi/guides/generate-code-from-template/) for details.
+| What you write | Description | Details |
+|---|---|---|
+| `title`, `summary`, `description`, etc. | The description of the Role. Used when generating documentation | "Writing a description" on this page |
+| `layout { }` | Defines where the files for that Role may be placed | [Layout definitions](/katachi/guides/layout/) |
+| `ktFileContent { }` | Defines the package, imports, and declarations that may be placed in that Role's files | [Define an allow list of the declarations a file may contain](/katachi/guides/kt-file-content/) |
+| `"constraint name".konsist { }` | Defines, using Konsist, the constraints that `ktFileContent { }` cannot express | |
+| `.template { }` | Attached to a file declared in `layout { }`, it defines the template used when that file is newly created | [Generate code from a template](/katachi/guides/generate-code-from-template/) |
 
 <Aside type="note" title="Draft written by AI">
-The `ktFileContent { }` item in this list and the examples on this page that use `ktFileContent { }` are a draft written by AI. `ktFileContent { }` is an experimental feature planned for v0.3.
+The `ktFileContent { }` row in this table and the examples on this page that use `ktFileContent { }` are a draft written by AI. `ktFileContent { }` is an experimental feature planned for v0.3.
 </Aside>
+
+Next is an example that puts title / summary / layout / konsist together in one place.
 
 ```kt
 architecture {
@@ -69,8 +73,7 @@ architecture {
 
 Let's look at each of these in a bit more detail.
 
-<details>
-<summary>Writing a description</summary>
+### Writing a description
 
 At minimum, all you need is `summary`. It becomes the one-line entry for the Role in the generated documentation's list table.
 
@@ -98,10 +101,7 @@ At minimum, all you need is `summary`. It becomes the one-line entry for the Rol
 }
 ```
 
-</details>
-
-<details>
-<summary>Declaring where files go</summary>
+### Declaring where files go
 
 This is the case where a Role has just one place to live.
 
@@ -113,23 +113,25 @@ This is the case where a Role has just one place to live.
 }
 ```
 
-**You can write multiple `layout { }` blocks.** This declares that the same kind of file is allowed to appear in more than one place. Files of different kinds go in separate Roles.
+You can write multiple `layout { }` blocks. This declares that the same kind of file is allowed to appear in more than one place. Files of different kinds go in separate Roles.
 
 ```kt
-"Screen".role {
+"UseCase".role {
     // In the feature-home module
     layout {
-        "feature-home/src/main/kotlin/screen" / "*Screen".ktFile()
+        "feature-home/src/main/kotlin/useCase" / "*UseCase".ktFile()
     }
 
     // And in the feature-settings module
     layout {
-        "feature-settings/src/main/kotlin/screen" / "*Screen".ktFile()
+        "feature-settings/src/main/kotlin/useCase" / "*UseCase".ktFile()
     }
 }
 ```
 
-**Placing a file anywhere you haven't declared is a violation.**
+### Checking a placement violation
+
+Placing a file anywhere you haven't declared is a violation.
 
 ```text
 src/main/kotlin/com/example/GetUserUseCase.kt   ← placed outside useCase/
@@ -144,10 +146,10 @@ Katachi check failed: 1 violation (Unexpected: 1)
   No role is defined for this file.
 
   Nearby locations:
-    UseCase file:///path/to/project/src/main/kotlin/com/example/useCase/
+    UseCase file:///path/to/project/src/main/kotlin/com/example/useCase/ (*UseCase.kt)
 
   How to fix:
-    - Move it to one of the locations above
+    - Move it to one of the locations above, with a name matching the pattern in parentheses
     - Delete it if it is not needed
     - Add a new role for it:
         "GetUserUseCase".role {
@@ -158,14 +160,11 @@ Katachi check failed: 1 violation (Unexpected: 1)
         }
 ```
 
-</details>
-
-<details>
-<summary>Constraining the contents</summary>
+### Constraining the contents
 
 The declarations a file may contain can be defined with `ktFileContent { }`. Here, we explain the constraints you write with `konsist { }`.
 
-You give each constraint a name. **That name appears directly in the violation report.**
+You give each constraint a name. That name appears directly in the violation report.
 
 ```kt
 "UseCase".role {
@@ -201,7 +200,9 @@ You can also express a prohibition with `mustNot` and `mustBeEmpty()`.
 }
 ```
 
-**A class that doesn't satisfy the constraint is a violation.**
+### Checking a constraint violation
+
+A class that doesn't satisfy the constraint is a violation.
 
 ```kt
 // Placed inside useCase/, but has a function other than invoke
@@ -211,7 +212,7 @@ class GetUserUseCase(private val repository: UserRepository) {
 }
 ```
 
-When the test calls `assert(FileConstraintCheck())`, it shows up in the same report as placement violations. **It even tells you which file and which line.**
+When the test calls `assert(FileConstraintCheck())`, it shows up in the same report as placement violations. It even tells you which file and which line.
 
 ```text
 [UnsatisfiedFileConstraint] file:///path/to/project/src/main/kotlin/com/example/useCase/GetUserUseCase.kt
@@ -220,12 +221,7 @@ When the test calls `assert(FileConstraintCheck())`, it shows up in the same rep
   Declared at: ProjectArchitecture.kt:12
 ```
 
-</details>
-
-
-Also, because Role names are used for things like documentation generation, they must be ASCII only (starting with a letter, followed by letters, digits, `_`, or `-`). Put a Japanese (or any other) display name in `title`.
-
-## Grouping Roles
+### Grouping Roles
 
 You can group Roles together using `"group name".group { ... }`.
 
@@ -243,18 +239,20 @@ architecture {
 }
 ```
 
-## Best practices for designing Roles
+## Designing Roles that are easy to maintain
 
 ### A good Role definition needs no changes
 
-**If you have to rewrite `architecture { }` every time you add a feature to the app, that `architecture { }` definition is poorly designed.**
+<Badge text="Recommended" variant="success" />
 
-Make good use of wildcards like `*` and `**` so that `architecture { }` doesn't end up as a duplicate of your directory structure, requiring double the work to maintain.
+If you rewrite `architecture { }` every time you add a feature to the app, the definition tends to become a duplicate of your directory structure, requiring double the work to maintain. Make good use of wildcards like `*` and `**` so that you can add features without changing the definition.
 
 ### Put only one kind of file in a Role
 
-**Make each Role stand for exactly one kind of file.**
-For example, a Repository interface and its implementation have similar names but are different kinds of file. If you put both in one Role, its description, constraints, and templates split by "which of the two files this is about", and your `ktFileContent { }` ends up with branches like "if it is the interface…, if it is the implementation…".
+<Badge text="Recommended" variant="success" />
+
+Make each Role stand for exactly one kind of file.
+For example, a Repository interface and its implementation have similar names but are different kinds of file. If you put both in one Role, its description, constraints, and templates split by "which of the two files this is about". Your `ktFileContent { }` also ends up with branches like "if it is the interface…, if it is the implementation…".
 With one Role per kind, the description and constraints only deal with that kind of file, and the generated documentation gets one page per kind.
 
 <CodeComparison>
@@ -282,7 +280,7 @@ With one Role per kind, the description and constraints only deal with that kind
         summary = "The entry point for loading and saving data"
         layout { "repository" / "*Repository".ktFile() }
         ktFileContent {
-            `interface`(fileName)
+            required(`interface`, fileName)
         }
     }
 
@@ -328,7 +326,7 @@ Factor each Role out into its own extension function.
                 "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
             }
             ktFileContent {
-                `interface`(fileName)
+                required(`interface`, fileName)
             }
             // ...
         }
@@ -376,7 +374,7 @@ Factor each Role out into its own extension function.
             "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
         }
         ktFileContent {
-            `interface`(fileName)
+            required(`interface`, fileName)
         }
         // ...
     }
@@ -428,9 +426,7 @@ Don't hesitate to factor `"...".konsist { }` out into private extension function
 
 ## Summary
 
-- A Role is **a kind of file that's allowed to appear in the project**. It's independent of packages and modules.
-- A single Role **brings together** its description (`title` / `summary`), placement (`layout { }`), and constraints (`ktFileContent { }` and `konsist { }`).
-- **Role definitions bloat easily.** To keep `architecture { }` and Role definitions from bloating, make good use of extension functions to split them appropriately.
+This is a complete example that uses everything covered so far.
 
 ```kt
 architecture {
@@ -455,5 +451,4 @@ architecture {
 
 - [Layout](/katachi/guides/layout/) ... Learn how to declare where a Role's files may be placed.
 - [Define an allow list of the declarations a file may contain](/katachi/guides/kt-file-content/) ... Learn how to define the declarations that may be placed in a Role's files.
-- [Define custom rules with Konsist](/katachi/guides/konsist-integration/) ... Learn how to use Konsist to apply the constraints that `ktFileContent { }` cannot express.
 - [Your first architecture definition](/katachi/get-started/first-architecture/) ... Introduce katachi into your project and actually write a Role.

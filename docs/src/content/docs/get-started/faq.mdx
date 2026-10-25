@@ -58,7 +58,7 @@ be accounted for is itself the information.** Do you really need that file?
 
 ## Won't an existing project be nothing but violations?
 
-Yes. **That is the normal starting point.**
+Yes. That is the normal starting point.
 
 The list of violations from the first run is, as it stands, a report saying
 **"this project contains this many files that nobody can account for."**
@@ -73,7 +73,7 @@ Tolerating them is temporary: you remove each violation from the baseline file o
 
 ## Konsist and ArchUnit exist — why does anything else need to?
 
-**katachi and Konsist / ArchUnit look at different ranges.**
+katachi and Konsist / ArchUnit look at different ranges.
 
 Konsist and ArchUnit are tools for **narrowing down a target and then checking its contents**.
 
@@ -87,7 +87,7 @@ Konsist.scopeFromProject()
     .assertTrue { /* ... */ }
 ```
 
-Written this way, **anything outside the narrowed range is never checked.**
+Written this way, anything outside the narrowed range is never checked.
 
 <FileTree>
 - src/main/kotlin/com/example/
@@ -115,11 +115,13 @@ flowchart TB
     style K fill:#9BC7B622,stroke:#9BC7B6
 ```
 
+Figure 1. The range katachi looks at and the scope of Konsist
+
 To find "something is here that should not be", you need **a tool that looks at the whole.**
 
 ## So does Konsist become unnecessary?
 
-No, **using both together is the recommended way. katachi and Konsist do different jobs.**
+No, using both together is the recommended way. katachi and Konsist do different jobs.
 
 | | What it looks at |
 |---|---|
@@ -133,16 +135,13 @@ Because you can write Konsist constraints inside a katachi definition,
 calling `assert(FileConstraintCheck())` in the test puts **placement violations and content violations in a single report.**
 
 And Konsist is not the only tool that occupies the "check the contents of a file" position.
-If you use custom [detekt](https://detekt.dev/) rules or [Konture](https://github.com/baole/konture), those may serve as a substitute for Konsist, depending on the rule you want to check.
-Konture can be written inside a katachi definition as `konture { }`, which has the same shape as `konsist { }`, through `katachi-konture` ([Konture integration](/katachi/guides/konture-integration/)).
+If you use custom [detekt](https://detekt.dev/) rules, detekt may serve as a substitute for Konsist, depending on the rule you want to check.
+
+[Konture](https://github.com/baole/konture) may also serve as a substitute for Konsist.
+Konture can be written inside a katachi definition as `konture { }`, which has the same shape as `konsist { }`, through `katachi-konture`.
 
 
 <CardGrid>
-  <LinkCard
-    title="Konsist integration"
-    description="How to write konsist { }, and how it all lands in one report."
-    href="/katachi/guides/konsist-integration/"
-  />
   <LinkCard
     title="Comparison with other tools"
     description="How detekt, Konture, and the rest — the tools that check contents — relate to katachi."
@@ -212,6 +211,8 @@ flowchart LR
     style D fill:#5B8DEF22,stroke:#5B8DEF,stroke-width:2px
     style C fill:#BDBDBD22,stroke:#BDBDBD,stroke-dasharray:4 3,color:#8A8A8A
 ```
+
+Figure 2. The flow of producing tests and documentation from one definition
 
 Because the architecture definition is the single source of truth, **one side going stale on its
 own is structurally impossible.**

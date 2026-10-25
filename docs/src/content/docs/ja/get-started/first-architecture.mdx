@@ -11,6 +11,8 @@ tags:
 
 import { Aside, Tabs, TabItem, Steps, Badge } from '@astrojs/starlight/components';
 
+katachi を Gradle プロジェクトに入れ、最初の `architecture { }` 定義を書いてテストを通すまでを説明します。
+
 katachi が必要かどうか迷う場合は、先に [モチベーション](/katachi/ja/get-started/motivation/) を読むことをおすすめします。
 
 ## katachi をプロジェクトに導入する
@@ -114,16 +116,8 @@ katachi が必要かどうか迷う場合は、先に [モチベーション](/k
         }
         ```
 
-        - **`outputs.upToDateWhen { false }` / `outputs.cacheIf { false }`**: katachi が検査するのはリポジトリ全体のファイルですが、Gradle が Test タスクの入力として見ているのはテストのクラスパスだけです。これが無いと、ファイルを足したり変えたりしても `:architecture-test:test` が `UP-TO-DATE` で飛ばされ、違反があっても緑のままになります。`cacheIf` は、ビルドキャッシュを有効にしているときに前の結果が使い回されないようにするための指定です。
-        - **`testLogging { exceptionFormat = TestExceptionFormat.FULL }`**: これが無いと、テストが落ちてもコンソールには例外のクラス名の1行しか出ず、違反の一覧はテストレポートを開かないと読めません。
-        - **`katachi { architecture = ... }`**: ドキュメント生成・テンプレートが定義を見つけるための指定です。値は手順3で書く定義の完全修飾名（`package` + 変数名）にします。
-
-        <Aside type="caution" title="Android プロジェクトの場合">
-        ルートの `build.gradle.kts` に `kotlin("jvm") version "..." apply false` を書き、**モジュール側ではバージョンを書かずに** `kotlin("jvm")` とだけ書いてください。
-        </Aside>
-
         <details>
-        <summary>Kotlin のバージョン（2.2 以上。2.4 未満ならコンパイラオプションが要る）</summary>
+        <summary>Kotlin 2.2.0 以上 2.4.0 未満の場合</summary>
 
         Kotlin は **2.2 以上** を使ってください。それより前の Kotlin は katachi のライブラリの metadata を読めません。
 
@@ -167,6 +161,8 @@ katachi が必要かどうか迷う場合は、先に [モチベーション](/k
 
     4. **検査する1本のテストを書く**
 
+        次のテストを `ProjectArchitectureTest.kt` に書きます。
+
         ```kotlin title="architecture-test/src/test/kotlin/<パッケージ>/ProjectArchitectureTest.kt"
         @file:OptIn(ExperimentalKatachiApi::class)
 
@@ -184,21 +180,19 @@ katachi が必要かどうか迷う場合は、先に [モチベーション](/k
         }
         ```
 
-        **プロジェクトが書くテストはこれ1本だけです。** リポジトリ全体の違反が1つの失敗メッセージに集まるので、ルールごとにテストを分ける意味がありません。
+        プロジェクトが書くテストはこれ1本だけです。リポジトリ全体の違反が1つの失敗メッセージに集まるので、ルールごとにテストを分ける意味がありません。
 
-        定義に `konsist { }` を書いたら、`assert()` の代わりに `assert(FileConstraintCheck())` を呼びます。`assert()` だけでは制約が評価されず、テストが落ちます。詳しくは [Konsist との統合](/katachi/ja/guides/konsist-integration/) を参照してください。
+        `konsist { }` や `ktFileContent { }` を書いたら、`projectArchitecture.assert(FileConstraintCheck())` に変えます。`assert()` のままでは制約が検査されず、`[UncheckedFileConstraint]` でテストが落ちます。
 
     5. **実行する**
+
+        次のコマンドでアーキテクチャテストを実行します。
 
         ```shell
         ./gradlew :architecture-test:test
         ```
 
-        最初は **宣言していないファイルやディレクトリが違反として出ます。** katachi は許可リスト方式なので、これが正常な出発点です。出てきたパスを定義に足すか、消すかを決めていってください。
-
-        Gradle のファイル（wrapper・`settings.gradle.kts`・build スクリプト・`gradle.properties`・version catalog）は、手順3の `gradle()` の1行で宣言できます。`buildSrc` や convention plugin がある場合は [Gradle 周辺のレシピ](/katachi/ja/recipes/gradle/) を参照してください。
-
-        既存の違反が多くてすぐには片付けられない場合は、実験的な機能の baseline で今ある違反をとりあえず許容し、新しい違反だけをエラーにすることもできます。詳しくは [baseline](/katachi/ja/guides/baseline/) を参照してください。
+        最初は宣言していないファイルやディレクトリが違反として出ます。katachi は許可リスト方式なので、これが正常な出発点です。出てきたパスを定義に足すか、消すかを決めていってください。
 
     </Steps>
   </TabItem>
@@ -287,11 +281,10 @@ katachi が必要かどうか迷う場合は、先に [モチベーション](/k
 
 ## 次のステップ
 
-- katachi への理解を深め、architecture 定義を洗練させるには、各種ガイドを参照してください。
-    - [基本的な API](/katachi/ja/guides/basic-api/)
-    - [Role](/katachi/ja/guides/role/)
-    - [Layout](/katachi/ja/guides/layout/)
-    - [Konsist との統合](/katachi/ja/guides/konsist-integration/)
-    - [ドキュメント生成](/katachi/ja/guides/document-generation/)
-    - [テンプレートからコード生成](/katachi/ja/guides/generate-code-from-template/)
-    - [baseline](/katachi/ja/guides/baseline/)
+katachi への理解を深め、architecture 定義を洗練させるには、次のガイドを参照してください。
+
+- [基本的な API](/katachi/ja/guides/basic-api/) ... katachi の定義を書くときに最初に覚える API を学びましょう。
+- [Role](/katachi/ja/guides/role/) ... 定義の基本単位である Role の書き方と、分け方の考え方を学びましょう。
+- [Layout](/katachi/ja/guides/layout/) ... ディレクトリ構成を厳守させる Layout の書き方を学びましょう。
+
+ドキュメント生成・テンプレートからのコード生成・baseline など、ほかのガイドはサイドバーの「ガイド」から読めます。

@@ -11,6 +11,8 @@ tags:
 
 import { Aside, Steps } from '@astrojs/starlight/components';
 
+This page shows katachi's plans by version, what is in now, and what has been put off.
+
 ## Overview
 
 <table>
@@ -34,7 +36,7 @@ import { Aside, Steps } from '@astrojs/starlight/components';
         </tr>
         <tr>
             <td><strong>v0.3 and beyond</strong></td>
-            <td><code>ktFileContent &#123; &#125;</code> / report output / vocabulary-size measurement</td>
+            <td><code>ktFileContent &#123; &#125;</code> / report output / templateSet / Konture integration</td>
             <td>Easier to adopt in an <strong>existing project</strong>. Most of the <code>konsist &#123; &#125;</code> written in v0.1 can be replaced with <code>ktFileContent &#123; &#125;</code></td>
         </tr>
     </tbody>
@@ -52,17 +54,30 @@ Making katachi easier to adopt in existing projects is the theme of v0.3 and bey
 |---|---|
 | **Referring to imports by Role** (future) | Refers to an import by Role rather than by a path pattern ("only files of Roles in domain may be imported"). The `dependsOnlyOn` from the v0.2 plan won't be built; the import allow list went into `ktFileContent { }` instead |
 | **Report output** (landed in v0.3) | Outputs violations as a SARIF file, surfaced as annotations on GitHub PRs. For the steps, see the [GitHub recipe](/katachi/recipes/github/#annotate-the-pr) |
-| **`pairedWith`** | Checks coverage, such as "every `Screen` has a corresponding `Preview`" |
-| **Vocabulary-size measurement** | Reports the number of Roles and the file count per Role as numbers |
+| **Konture integration** (landed in v0.3) | Writes [Konture](https://github.com/baole/konture) rules as `konture { }`, in the same place as `konsist { }` (`katachi-konture`). It cannot be placed in the same test module as `konsist { }` |
+| **templateSet** (landed in v0.3) | Groups several templates under a name and generates them with a single `--arg template=<name>`. You can also generate them from the IDE plugin |
+| **Capture check** (landed in v0.3) | When one path holds the same `capture()` name more than once, checks that those levels hold the same value (`[CaptureMismatch]`). Derivations such as `capture("x").camelCase` can also be written |
+| **`pairedWith`** (not in v0.3) | Checks coverage, such as "every `Screen` has a corresponding `Preview`" |
+| **Vocabulary-size measurement** (not in v0.3) | Reports the number of Roles and the file count per Role as numbers |
 | **Module resolution based on Gradle's model** | Follows modules whose `projectDir` was changed, and where source sets actually are |
 
-Apart from report output, the specification for this stage is largely undecided. Even the version numbering is grouped together as "v0.3 and beyond" for now.
+Apart from what landed in v0.3, the specification for this stage is largely undecided. Even the version numbering is grouped together as "v0.3 and beyond" for now.
 
 ### Declaring a Role with `"Name".role { }`
 
 Up to v0.2, a Role was declared as `"UseCase" { }`. From v0.3, you write `"UseCase".role { }`. This matches the shape of `"domain".group { }` and sets a Role declaration apart from a directory declaration such as `"src" { }`, which you write inside `layout { }`.
 
 In v0.3, the v0.2 form `"UseCase" { }` is a compile error, and the error message shows the `"UseCase".role { }` to rewrite it to. A search and replace in your IDE that adds `.role` fixes it. Directory declarations inside `layout { }` (`"src" { }`) do not change, so do not replace them.
+
+### The glob `*` matches zero or more characters
+
+The glob `*`, which matched one or more characters up to v0.2, matches zero or more characters from v0.3, as a standard glob does. For example, `"app_icon*.xml"` now also matches `app_icon.xml`. A `*` written as a whole directory level (`"feature" / "*"`) matches the same things as before, since no directory has an empty name.
+
+The standard glob's `?`, `[...]`, and `{...}` can also be written now.
+
+### `.module { }` is deprecated
+
+`.module { }` is deprecated in v0.3, and using it produces a warning at compile time. It is planned to become a compile error in v0.4 and to be removed in v0.5. Write a module as a directory, as in `"core/data" / mainSourceSet / kotlin / "com/example/core/data" / "*Repository".ktFile()`. Write the package's directories instead of `modulePackage`, and turn a `*` in a module path into a `capture()`.
 
 ### `ktFileContent { }` — a promotion out of `konsist { }`
 
@@ -87,12 +102,15 @@ The rule "only an interface and its Default implementation go here" can be writt
         "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
     }
     ktFileContent {
-        `interface`(fileName)
-        `class`("Default$fileName").superclass(fileName)
+        `package`("**")
+        `import`("**")
+
+        required(`interface`, fileName) { allow(anythingElse) }
+        required(`class`, "Default$fileName").superclass(fileName) { allow(anythingElse) }
     }
 }
 ```
 
-For the kinds you write (package, import, declaration, member), anything other than what you enumerate may not appear. The block is the allow list for contents, in the same way `layout { }` is the allow list for placement.
+Nothing may be placed for a kind you wrote no line for (package, import, declaration, class member). The `konsist { }` example above does not restrict the package, the imports, or the members, so this example opens them up with `**` and `allow(anythingElse)` as well. The block is the allow list for contents, in the same way `layout { }` is the allow list for placement.
 
 For details, see [Define an allow list of the declarations a file may contain](/katachi/guides/kt-file-content/).
