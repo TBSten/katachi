@@ -617,6 +617,28 @@ EOF
 	grep -q 'me\.tbsten' "${d}/gradle/libs.versions.toml" && ng "dry-run は toml を触らない" "toml が変わった" || ok "dry-run は toml を触らない"
 }
 
+# scaffold は1行の pluginManagement { repositories { mavenCentral() } } を読み、「次:」に sh <CLI> test を出す
+case_scaffold_oneline_plugin_management() {
+	d=$(inited oneline)
+	c=$(cli "${d}")
+	printf 'pluginManagement { repositories { mavenCentral() } }\nrootProject.name = "fx"\n' >"${d}/settings.gradle.kts"
+	(cd "${d}" && ${KSH} "${c}" scaffold --package com.example.app) >"${WORK}/oneline.log" 2>&1
+	st=$?
+	[ "${st}" -eq 0 ] && grep -q 'pluginManagement に追加: no' "${WORK}/oneline.log" && ! grep -q '足すまで' "${WORK}/oneline.log" &&
+		ok "scaffold は1行の pluginManagement { repositories { mavenCentral() } } を読める" ||
+		ng "scaffold は1行の pluginManagement { repositories { mavenCentral() } } を読める" "st=${st} $(grep -n 'pluginManagement\|足す' "${WORK}/oneline.log")"
+	grep -qF 'pluginManagement { repositories { mavenCentral() } }' "${d}/settings.gradle.kts" && ok "1行の pluginManagement は書き換えない" || ng "1行の pluginManagement は書き換えない" "$(head -n 3 "${d}/settings.gradle.kts")"
+	grep -q "^次: sh ${c} test\$" "${WORK}/oneline.log" && ! grep -q 'gradlew :architecture-test:test' "${WORK}/oneline.log" &&
+		ok "scaffold の「次:」は sh <CLI> test を勧める" || ng "scaffold の「次:」は sh <CLI> test を勧める" "$(grep -n '^次:' "${WORK}/oneline.log")"
+	# mavenCentral() が無い1行は、足す指示を出す
+	d2=$(inited oneline-miss)
+	c2=$(cli "${d2}")
+	printf 'pluginManagement { repositories { gradlePluginPortal() } }\nrootProject.name = "fx"\n' >"${d2}/settings.gradle.kts"
+	(cd "${d2}" && ${KSH} "${c2}" scaffold --package com.example.app --dry-run) >"${WORK}/oneline-miss.log" 2>&1
+	grep -q 'pluginManagement に追加: yes（mavenCentral()）' "${WORK}/oneline-miss.log" && ok "mavenCentral() が無い1行の pluginManagement は不足と判定する" ||
+		ng "mavenCentral() が無い1行の pluginManagement は不足と判定する" "$(grep -n 'pluginManagement' "${WORK}/oneline-miss.log")"
+}
+
 # test は gradlew の無い場所で exit 2 / 要約とログのパスを出し、--save で名前付きのログを写す / 前回との差分を出す
 case_test() {
 	d=$(inited tst)
@@ -713,6 +735,7 @@ run_case lint_without_definition
 run_case lint_checks
 run_case add_rejects
 run_case scaffold_deps_conflict
+run_case scaffold_oneline_plugin_management
 run_case test
 run_case data_get_key
 
