@@ -42,8 +42,8 @@ fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role
     // directory `capture(...)` has no value the layout could read back to write that requirement
     // once, so it is written out per domain instead (see DataDomain's KDoc). `capture(...)`
     // would still be enough to just choose which package a generated file goes in.
-    // Written twice because katachi's `*` matches one character or more, so
-    // `User*Repository` alone would not accept `UserRepository` itself.
+    // Written twice: the line with no wildcard makes the domain's own `UserRepository.kt` required,
+    // while the capturing line only allows more repositories (`UserCacheRepository.kt`) next to it.
     //
     // The domain's own file (`UserRepository.kt`, no capture) is written by hand and carries no
     // template. The capturing pattern's `.template` is attached inside the DataDomain loop, with

@@ -101,7 +101,7 @@ inited() {
 	_n="$1"
 	shift
 	_d=$(fresh "${_n}")
-	if ! (cd "${_d}" && ${KSH} "${KIT}" init --katachi 0.2.0 --workdir .local/install-katachi "$@") >"${WORK}/${_n}.init.log" 2>&1; then
+	if ! (cd "${_d}" && ${KSH} "${KIT}" init --katachi 0.3.0 --workdir .local/install-katachi "$@") >"${WORK}/${_n}.init.log" 2>&1; then
 		printf 'init failed (%s): %s\n' "${_n}" "$(tail -3 "${WORK}/${_n}.init.log")" >&2
 	fi
 	printf '%s\n' "${_d}"
@@ -444,7 +444,7 @@ case_init_workdir_existing() {
 	printf 'keep\n' >"${d}/.local/install-katachi/notes.txt"
 	: >"${d}/.local/install-katachi/other.md"
 	: >"${d}/.local/install-katachi/check-list.html.bak"
-	(cd "${d}" && ${KSH} "${KIT}" init --katachi 0.2.0 --workdir .local/install-katachi) >"${WORK}/initwd.log" 2>&1
+	(cd "${d}" && ${KSH} "${KIT}" init --katachi 0.3.0 --workdir .local/install-katachi) >"${WORK}/initwd.log" 2>&1
 	st=$?
 	[ "${st}" -eq 0 ] && grep -q '既存のファイルがあります（2 件）' "${WORK}/initwd.log" && [ "$(cat "${d}/.local/install-katachi/notes.txt")" = "keep" ] &&
 		ok "init --workdir は既存のファイルの件数を出して上書きしない（*.bak は数えない）" ||
@@ -460,7 +460,7 @@ case_init_module_dir() {
 	m=$(${KSH} "$(cli "${d}")" data get check-list meta.moduleDir 2>/dev/null)
 	[ "${m}" = "static-analysis/katachi" ] && ok "init --module-dir が meta.moduleDir に入る" || ng "init --module-dir が meta.moduleDir に入る" "meta.moduleDir=${m}"
 	d2=$(fresh initbad)
-	(cd "${d2}" && ${KSH} "${KIT}" init --katachi 0.2.0 --workdir .local/install-katachi --module-dir ../up) >"${WORK}/initbad.log" 2>&1
+	(cd "${d2}" && ${KSH} "${KIT}" init --katachi 0.3.0 --workdir .local/install-katachi --module-dir ../up) >"${WORK}/initbad.log" 2>&1
 	st=$?
 	[ "${st}" -eq 1 ] && grep -q 'Gradle ルートからの相対パス' "${WORK}/initbad.log" && ok "init --module-dir は不正な値で止まる" || ng "init --module-dir は不正な値で止まる" "st=${st} $(tail -2 "${WORK}/initbad.log")"
 }
@@ -475,7 +475,8 @@ case_lint_without_definition() {
 		ok "lint は定義ディレクトリが無ければ exit 1" || ng "lint は定義ディレクトリが無ければ exit 1" "st=${st} $(cat "${WORK}/lintno.log")"
 }
 
-# lint は制約の無い手書き Gradle Role だけを指摘し、制約を持つものは指摘しない
+# lint は制約の無い手書き Gradle Role を gradle() の 1 行に置き換えるよう指摘する
+# lint は制約を持つ手書き Gradle Role に、置いたファイルに合う hook への移し方を出す
 # lint は平たい group と分けていないファイルと documented の候補を出す
 case_lint_checks() {
 	d=$(inited lint)
@@ -485,7 +486,7 @@ case_lint_checks() {
 		return
 	}
 	def="${d}/architecture-test/src/test/kotlin/com/example/app/test/architecture"
-	# 1. Gradle ファイル + fileConstraint の Role（指摘しない）
+	# 1. Gradle ファイル + fileConstraint の Role（hook への移し方を出す。settings なので settingsScript { }）
 	write_def "${def}" "GradleConstrained.kt" <<'EOF'
 package com.example.app.test.architecture
 
@@ -496,7 +497,7 @@ val gradleConstrained = architecture {
     }
 }
 EOF
-	# 2. 制約の無い手書き Gradle Role（これだけ指摘する）
+	# 2. 制約の無い手書き Gradle Role（gradle() の 1 行に置き換えるよう指摘する）
 	write_def "${def}" "GradleHand.kt" <<'EOF'
 package com.example.app.test.architecture
 
@@ -536,10 +537,23 @@ val readme = architecture {
 EOF
 	(cd "${d}" && ${KSH} "${c}" lint) >"${WORK}/lint.log" 2>&1
 	st=$?
-	if [ "${st}" -eq 0 ] && grep -q 'PlainBuildScripts' "${WORK}/lint.log" && ! grep -q 'ConstrainedBuildScripts' "${WORK}/lint.log"; then
-		ok "lint は制約の無い手書き Gradle Role だけを指摘し、制約を持つものは指摘しない"
+	# 制約の無い Role の一覧（「…宣言しています（Role: …）」の行）には PlainBuildScripts だけが載る
+	if [ "${st}" -eq 0 ] && grep 'を手書きの Role で宣言しています（Role: ' "${WORK}/lint.log" | grep -q 'PlainBuildScripts' &&
+		! grep 'を手書きの Role で宣言しています（Role: ' "${WORK}/lint.log" | grep -q 'ConstrainedBuildScripts' &&
+		grep -q 'gradle() の1行に置き換えてください' "${WORK}/lint.log"; then
+		ok "lint は制約の無い手書き Gradle Role を gradle() の 1 行に置き換えるよう指摘する"
 	else
-		ng "lint は制約の無い手書き Gradle Role だけを指摘し、制約を持つものは指摘しない" "st=${st} $(cat "${WORK}/lint.log")"
+		ng "lint は制約の無い手書き Gradle Role を gradle() の 1 行に置き換えるよう指摘する" "st=${st} $(cat "${WORK}/lint.log")"
+	fi
+	# 制約を持つ Role は、その Role の行に置いたファイルに合う hook（settings なら settingsScript { }）が出て、
+	# 移し方の文面（buildScript { } の制約が受け取るファイルと、[AmbiguousLayout]）が続く
+	if grep 'Role "ConstrainedBuildScripts"' "${WORK}/lint.log" | grep -q 'gradle { settingsScript { } }' &&
+		grep -q '制約は gradle { buildScript { } }' "${WORK}/lint.log" &&
+		grep -q 'subject.files をパスで絞って' "${WORK}/lint.log" &&
+		grep -q 'AmbiguousLayout' "${WORK}/lint.log"; then
+		ok "lint は制約を持つ手書き Gradle Role に、置いたファイルに合う hook への移し方を出す"
+	else
+		ng "lint は制約を持つ手書き Gradle Role に、置いたファイルに合う hook への移し方を出す" "$(cat "${WORK}/lint.log")"
 	fi
 	if grep -q '平たい group' "${WORK}/lint.log" && grep -q '"Flat"' "${WORK}/lint.log" &&
 		grep -q '分けていないファイル' "${WORK}/lint.log" && grep -q 'FlatGroup.kt' "${WORK}/lint.log" &&
