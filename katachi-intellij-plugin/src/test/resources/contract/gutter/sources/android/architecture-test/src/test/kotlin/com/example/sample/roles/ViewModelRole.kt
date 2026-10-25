@@ -9,6 +9,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.pascalCase
+import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /** The role holding one screen's state, named after the feature module it belongs to. */
@@ -39,14 +40,63 @@ fun DeclarationContainerScope.viewModel() = "ViewModel".role {
     """.trimIndent()
     example("HomeViewModel", "The state of the home screen")
     example("SettingsViewModel", "The state of the settings screen")
+    // A new feature's ViewModel and its `<Name>Content`, standing on the existing UserRepository
+    // so that it compiles in any feature. Usually generated with its Screen as the set
+    // `feature.NewFeature`.
+    //   ./gradlew :architecture-test:katachiTemplate --arg template=feature.ViewModel --arg feature=profile
     layout {
         // `feature` is the module directory and the package directory alike, and the file name
         // follows it: feature/home/.../home/HomeViewModel.kt, and nothing else named *ViewModel.kt there.
         featureSources(capture("feature")) / "${capture("feature").pascalCase}ViewModel".ktFile()
+            .template {
+                val feature = captureValue("feature")
+                val screen = "${feature.pascalCase}Screen"
+                val content = "${feature.pascalCase}Content"
+                val viewModel = "${feature.pascalCase}ViewModel"
+                """
+                    |package com.example.sample.feature.$feature
+                    |
+                    |import androidx.lifecycle.ViewModel
+                    |import com.example.sample.data.user.UserRepository
+                    |import com.example.sample.data.user.UserRepositoryImpl
+                    |import com.example.sample.ui.core.UiState
+                    |import kotlinx.coroutines.flow.MutableStateFlow
+                    |import kotlinx.coroutines.flow.StateFlow
+                    |import kotlinx.coroutines.flow.asStateFlow
+                    |
+                    |/** What [$screen] draws once it has something to draw. */
+                    |internal data class $content(
+                    |    val userName: String,
+                    |)
+                    |
+                    |/** State holder of [$screen]. */
+                    |internal class $viewModel(
+                    |    private val userRepository: UserRepository = UserRepositoryImpl(),
+                    |) : ViewModel() {
+                    |    private val mutableUiState = MutableStateFlow<UiState<$content>>(UiState.Loading)
+                    |
+                    |    /** State of the $feature screen, collected by the composable. */
+                    |    val uiState: StateFlow<UiState<$content>> = mutableUiState.asStateFlow()
+                    |
+                    |    init {
+                    |        refresh()
+                    |    }
+                    |
+                    |    /** Reads the current user again and republishes the screen state. */
+                    |    fun refresh() {
+                    |        mutableUiState.value = UiState.Content(
+                    |            $content(userName = userRepository.currentUserName()),
+                    |        )
+                    |    }
+                    |}
+                """.trimMargin()
+            }
     }
     // The description above, written the way the file is written. androidx.compose and android
     // are not among the imports, so a view model that reaches for either fails.
     "Must not import Compose or Android".ktFileContent {
+        `package`("com.example.sample.feature.${captureValue("feature")}")
+
         `import`("androidx.lifecycle.**")
         `import`("kotlinx.coroutines.**")
         `import`("com.example.sample.data.**")

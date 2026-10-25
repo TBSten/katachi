@@ -200,7 +200,7 @@ roles: testing.GroupDefinition
 == architecture-test/src/test/kotlin/com/example/sample/groups/FeatureGroup.kt
 roles: testing.GroupDefinition
     testing.GroupDefinition declared at GroupDefinitionRole.kt:12 | fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
-36 | ◆ | katachi: testing.GroupDefinition
+40 | ◆ | katachi: testing.GroupDefinition
     menu | ◇ Role testing.GroupDefinition — Group definition | GroupDefinitionRole.kt:12
     menu | == Other files of testing.GroupDefinition (6)
     menu | AppGroup.kt | architecture-test/…/sample/groups
@@ -933,7 +933,7 @@ roles: testing.RoleDefinition
 == architecture-test/src/test/kotlin/com/example/sample/roles/RouteRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-15 | ◆ | katachi: testing.RoleDefinition
+17 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
     menu | == Other files of testing.RoleDefinition (28)
     menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
@@ -960,7 +960,7 @@ roles: testing.RoleDefinition
 == architecture-test/src/test/kotlin/com/example/sample/roles/ScreenRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-23 | ◆ | katachi: testing.RoleDefinition
+24 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
     menu | == Other files of testing.RoleDefinition (28)
     menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
@@ -1041,7 +1041,7 @@ roles: testing.RoleDefinition
 == architecture-test/src/test/kotlin/com/example/sample/roles/ViewModelRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-15 | ◆ | katachi: testing.RoleDefinition
+16 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
     menu | == Other files of testing.RoleDefinition (28)
     menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
@@ -2043,85 +2043,93 @@ roles: Gradle.BuildScript
 
 == feature/home/src/main/kotlin/com/example/sample/feature/home/HomeRoute.kt
 roles: feature.Route
-    feature.Route declared at RouteRole.kt:15 | fun DeclarationContainerScope.route() = "Route".role {
-12 | ◆ | katachi: feature.Route — allowed by object HomeRoute (RouteRole.kt:51)
-    allowed at RouteRole.kt:51 | required(`object`, fileName) {
-    menu | ◆ Allowed by object HomeRoute | RouteRole.kt:51
-    menu | ◇ Role feature.Route — Route | RouteRole.kt:15
+    feature.Route declared at RouteRole.kt:17 | fun DeclarationContainerScope.route() = "Route".role {
+12 | ◆ | katachi: feature.Route — allowed by object HomeRoute (RouteRole.kt:82)
+    allowed at RouteRole.kt:82 | required(`object`, fileName) {
+    menu | ◆ Allowed by object HomeRoute | RouteRole.kt:82
+    menu | ◇ Role feature.Route — Route | RouteRole.kt:17
     menu | == Other files of feature.Route (1)
     menu | SettingsRoute.kt | feature/…/sample/feature/settings
     menu | -----
+    menu | + New feature.Route from template…
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
-17 | ◆ | katachi: feature.Route — allowed by fun homeScreen(...) (RouteRole.kt:54)
-    allowed at RouteRole.kt:54 | required(`fun`, "${feature}Screen") // NavGraphBuilder.homeScreen(...)
-    menu | ◆ Allowed by fun homeScreen(...) | RouteRole.kt:54
-    menu | ◇ Role feature.Route — Route | RouteRole.kt:15
+17 | ◆ | katachi: feature.Route — allowed by fun homeScreen(...) (RouteRole.kt:85)
+    allowed at RouteRole.kt:85 | required(`fun`, "${feature}Screen") // NavGraphBuilder.homeScreen(...)
+    menu | ◆ Allowed by fun homeScreen(...) | RouteRole.kt:85
+    menu | ◇ Role feature.Route — Route | RouteRole.kt:17
     menu | == Other files of feature.Route (1)
     menu | SettingsRoute.kt | feature/…/sample/feature/settings
     menu | -----
+    menu | + New feature.Route from template…
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
 == feature/home/src/main/kotlin/com/example/sample/feature/home/HomeScreen.kt
 roles: feature.Screen
-    feature.Screen declared at ScreenRole.kt:23 | fun DeclarationContainerScope.screen() = "Screen".role {
-30 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun HomeScreen(...) (ScreenRole.kt:73)
-    allowed at ScreenRole.kt:73 | required(annotated("Composable"), internal, `fun`, fileName)
-    menu | ◆ Allowed by @Composable internal fun HomeScreen(...) | ScreenRole.kt:73
-    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:23
+    feature.Screen declared at ScreenRole.kt:24 | fun DeclarationContainerScope.screen() = "Screen".role {
+30 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun HomeScreen(...) (ScreenRole.kt:190)
+    allowed at ScreenRole.kt:190 | required(annotated("Composable"), internal, `fun`, fileName)
+    menu | ◆ Allowed by @Composable internal fun HomeScreen(...) | ScreenRole.kt:190
+    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:24
     menu | == Other files of feature.Screen (1)
     menu | SettingsScreen.kt | feature/…/sample/feature/settings
     menu | -----
+    menu | + New feature.Screen from template…
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
-46 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun HomeScreen(...) (ScreenRole.kt:73)
-    allowed at ScreenRole.kt:73 | required(annotated("Composable"), internal, `fun`, fileName)
-    menu | ◆ Allowed by @Composable internal fun HomeScreen(...) | ScreenRole.kt:73
-    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:23
+46 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun HomeScreen(...) (ScreenRole.kt:190)
+    allowed at ScreenRole.kt:190 | required(annotated("Composable"), internal, `fun`, fileName)
+    menu | ◆ Allowed by @Composable internal fun HomeScreen(...) | ScreenRole.kt:190
+    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:24
     menu | == Other files of feature.Screen (1)
     menu | SettingsScreen.kt | feature/…/sample/feature/settings
     menu | -----
+    menu | + New feature.Screen from template…
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
-91 | ◆ | katachi: feature.Screen — allowed by @Preview private fun *Preview(...) (ScreenRole.kt:74)
-    allowed at ScreenRole.kt:74 | allow(annotated("Preview"), private, `fun`, "*Preview")
-    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenRole.kt:74
-    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:23
+91 | ◆ | katachi: feature.Screen — allowed by @Preview private fun *Preview(...) (ScreenRole.kt:191)
+    allowed at ScreenRole.kt:191 | allow(annotated("Preview"), private, `fun`, "*Preview")
+    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenRole.kt:191
+    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:24
     menu | == Other files of feature.Screen (1)
     menu | SettingsScreen.kt | feature/…/sample/feature/settings
     menu | -----
+    menu | + New feature.Screen from template…
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
-103 | ◆ | katachi: feature.Screen — allowed by @Preview private fun *Preview(...) (ScreenRole.kt:74)
-    allowed at ScreenRole.kt:74 | allow(annotated("Preview"), private, `fun`, "*Preview")
-    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenRole.kt:74
-    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:23
+103 | ◆ | katachi: feature.Screen — allowed by @Preview private fun *Preview(...) (ScreenRole.kt:191)
+    allowed at ScreenRole.kt:191 | allow(annotated("Preview"), private, `fun`, "*Preview")
+    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenRole.kt:191
+    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:24
     menu | == Other files of feature.Screen (1)
     menu | SettingsScreen.kt | feature/…/sample/feature/settings
     menu | -----
+    menu | + New feature.Screen from template…
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
 == feature/home/src/main/kotlin/com/example/sample/feature/home/HomeViewModel.kt
 roles: feature.ViewModel
-    feature.ViewModel declared at ViewModelRole.kt:15 | fun DeclarationContainerScope.viewModel() = "ViewModel".role {
-12 | ◆ | katachi: feature.ViewModel — allowed by internal data class HomeContent (ViewModelRole.kt:56)
-    allowed at ViewModelRole.kt:56 | required(internal, data, `class`, content)
-    menu | ◆ Allowed by internal data class HomeContent | ViewModelRole.kt:56
-    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:15
+    feature.ViewModel declared at ViewModelRole.kt:16 | fun DeclarationContainerScope.viewModel() = "ViewModel".role {
+12 | ◆ | katachi: feature.ViewModel — allowed by internal data class HomeContent (ViewModelRole.kt:106)
+    allowed at ViewModelRole.kt:106 | required(internal, data, `class`, content)
+    menu | ◆ Allowed by internal data class HomeContent | ViewModelRole.kt:106
+    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:16
     menu | == Other files of feature.ViewModel (1)
     menu | SettingsViewModel.kt | feature/…/sample/feature/settings
     menu | -----
+    menu | + New feature.ViewModel from template…
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
-23 | ◆ | katachi: feature.ViewModel — allowed by internal class HomeViewModel : ViewModel (ViewModelRole.kt:57)
-    allowed at ViewModelRole.kt:57 | required(internal, `class`, fileName).superclass("ViewModel") {
-    menu | ◆ Allowed by internal class HomeViewModel : ViewModel | ViewModelRole.kt:57
-    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:15
+23 | ◆ | katachi: feature.ViewModel — allowed by internal class HomeViewModel : ViewModel (ViewModelRole.kt:107)
+    allowed at ViewModelRole.kt:107 | required(internal, `class`, fileName).superclass("ViewModel") {
+    menu | ◆ Allowed by internal class HomeViewModel : ViewModel | ViewModelRole.kt:107
+    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:16
     menu | == Other files of feature.ViewModel (1)
     menu | SettingsViewModel.kt | feature/…/sample/feature/settings
     menu | -----
+    menu | + New feature.ViewModel from template…
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
@@ -2161,76 +2169,83 @@ roles: Gradle.BuildScript
 
 == feature/settings/src/main/kotlin/com/example/sample/feature/settings/SettingsRoute.kt
 roles: feature.Route
-    feature.Route declared at RouteRole.kt:15 | fun DeclarationContainerScope.route() = "Route".role {
-12 | ◆ | katachi: feature.Route — allowed by object SettingsRoute (RouteRole.kt:51)
-    allowed at RouteRole.kt:51 | required(`object`, fileName) {
-    menu | ◆ Allowed by object SettingsRoute | RouteRole.kt:51
-    menu | ◇ Role feature.Route — Route | RouteRole.kt:15
+    feature.Route declared at RouteRole.kt:17 | fun DeclarationContainerScope.route() = "Route".role {
+12 | ◆ | katachi: feature.Route — allowed by object SettingsRoute (RouteRole.kt:82)
+    allowed at RouteRole.kt:82 | required(`object`, fileName) {
+    menu | ◆ Allowed by object SettingsRoute | RouteRole.kt:82
+    menu | ◇ Role feature.Route — Route | RouteRole.kt:17
     menu | == Other files of feature.Route (1)
     menu | HomeRoute.kt | feature/…/example/sample/feature/home
     menu | -----
+    menu | + New feature.Route from template…
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
-17 | ◆ | katachi: feature.Route — allowed by fun settingsScreen(...) (RouteRole.kt:54)
-    allowed at RouteRole.kt:54 | required(`fun`, "${feature}Screen") // NavGraphBuilder.homeScreen(...)
-    menu | ◆ Allowed by fun settingsScreen(...) | RouteRole.kt:54
-    menu | ◇ Role feature.Route — Route | RouteRole.kt:15
+17 | ◆ | katachi: feature.Route — allowed by fun settingsScreen(...) (RouteRole.kt:85)
+    allowed at RouteRole.kt:85 | required(`fun`, "${feature}Screen") // NavGraphBuilder.homeScreen(...)
+    menu | ◆ Allowed by fun settingsScreen(...) | RouteRole.kt:85
+    menu | ◇ Role feature.Route — Route | RouteRole.kt:17
     menu | == Other files of feature.Route (1)
     menu | HomeRoute.kt | feature/…/example/sample/feature/home
     menu | -----
+    menu | + New feature.Route from template…
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
 == feature/settings/src/main/kotlin/com/example/sample/feature/settings/SettingsScreen.kt
 roles: feature.Screen
-    feature.Screen declared at ScreenRole.kt:23 | fun DeclarationContainerScope.screen() = "Screen".role {
-28 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun SettingsScreen(...) (ScreenRole.kt:73)
-    allowed at ScreenRole.kt:73 | required(annotated("Composable"), internal, `fun`, fileName)
-    menu | ◆ Allowed by @Composable internal fun SettingsScreen(...) | ScreenRole.kt:73
-    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:23
+    feature.Screen declared at ScreenRole.kt:24 | fun DeclarationContainerScope.screen() = "Screen".role {
+28 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun SettingsScreen(...) (ScreenRole.kt:190)
+    allowed at ScreenRole.kt:190 | required(annotated("Composable"), internal, `fun`, fileName)
+    menu | ◆ Allowed by @Composable internal fun SettingsScreen(...) | ScreenRole.kt:190
+    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:24
     menu | == Other files of feature.Screen (1)
     menu | HomeScreen.kt | feature/…/example/sample/feature/home
     menu | -----
+    menu | + New feature.Screen from template…
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
-44 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun SettingsScreen(...) (ScreenRole.kt:73)
-    allowed at ScreenRole.kt:73 | required(annotated("Composable"), internal, `fun`, fileName)
-    menu | ◆ Allowed by @Composable internal fun SettingsScreen(...) | ScreenRole.kt:73
-    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:23
+44 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun SettingsScreen(...) (ScreenRole.kt:190)
+    allowed at ScreenRole.kt:190 | required(annotated("Composable"), internal, `fun`, fileName)
+    menu | ◆ Allowed by @Composable internal fun SettingsScreen(...) | ScreenRole.kt:190
+    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:24
     menu | == Other files of feature.Screen (1)
     menu | HomeScreen.kt | feature/…/example/sample/feature/home
     menu | -----
+    menu | + New feature.Screen from template…
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
-88 | ◆ | katachi: feature.Screen — allowed by @Preview private fun *Preview(...) (ScreenRole.kt:74)
-    allowed at ScreenRole.kt:74 | allow(annotated("Preview"), private, `fun`, "*Preview")
-    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenRole.kt:74
-    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:23
+88 | ◆ | katachi: feature.Screen — allowed by @Preview private fun *Preview(...) (ScreenRole.kt:191)
+    allowed at ScreenRole.kt:191 | allow(annotated("Preview"), private, `fun`, "*Preview")
+    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenRole.kt:191
+    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:24
     menu | == Other files of feature.Screen (1)
     menu | HomeScreen.kt | feature/…/example/sample/feature/home
     menu | -----
+    menu | + New feature.Screen from template…
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
 == feature/settings/src/main/kotlin/com/example/sample/feature/settings/SettingsViewModel.kt
 roles: feature.ViewModel
-    feature.ViewModel declared at ViewModelRole.kt:15 | fun DeclarationContainerScope.viewModel() = "ViewModel".role {
-12 | ◆ | katachi: feature.ViewModel — allowed by internal data class SettingsContent (ViewModelRole.kt:56)
-    allowed at ViewModelRole.kt:56 | required(internal, data, `class`, content)
-    menu | ◆ Allowed by internal data class SettingsContent | ViewModelRole.kt:56
-    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:15
+    feature.ViewModel declared at ViewModelRole.kt:16 | fun DeclarationContainerScope.viewModel() = "ViewModel".role {
+12 | ◆ | katachi: feature.ViewModel — allowed by internal data class SettingsContent (ViewModelRole.kt:106)
+    allowed at ViewModelRole.kt:106 | required(internal, data, `class`, content)
+    menu | ◆ Allowed by internal data class SettingsContent | ViewModelRole.kt:106
+    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:16
     menu | == Other files of feature.ViewModel (1)
     menu | HomeViewModel.kt | feature/…/example/sample/feature/home
     menu | -----
+    menu | + New feature.ViewModel from template…
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
-17 | ◆ | katachi: feature.ViewModel — allowed by internal class SettingsViewModel : ViewModel (ViewModelRole.kt:57)
-    allowed at ViewModelRole.kt:57 | required(internal, `class`, fileName).superclass("ViewModel") {
-    menu | ◆ Allowed by internal class SettingsViewModel : ViewModel | ViewModelRole.kt:57
-    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:15
+17 | ◆ | katachi: feature.ViewModel — allowed by internal class SettingsViewModel : ViewModel (ViewModelRole.kt:107)
+    allowed at ViewModelRole.kt:107 | required(internal, `class`, fileName).superclass("ViewModel") {
+    menu | ◆ Allowed by internal class SettingsViewModel : ViewModel | ViewModelRole.kt:107
+    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:16
     menu | == Other files of feature.ViewModel (1)
     menu | HomeViewModel.kt | feature/…/example/sample/feature/home
     menu | -----
+    menu | + New feature.ViewModel from template…
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
