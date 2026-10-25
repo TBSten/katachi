@@ -25,7 +25,7 @@
         See <a href="https://tbsten.github.io/katachi/guides/generate-code-from-template/">Generate code from template</a>.</p>
     ]]></description>
     <change-notes><![CDATA[
-        <p>Next release (the version number is set when it is released; works with katachi 0.3.0):</p>
+        <p>0.2.0 (with katachi 0.3.0):</p>
         <ul>
             <li>templateSet: a set of templates is listed and generated like a template.</li>
             <li>Suggestions for the directory names of a capture field in the tool window and the generate dialog.</li>
