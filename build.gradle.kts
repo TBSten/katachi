@@ -1037,7 +1037,8 @@ tasks.register<Exec>("checkIdePlugin") {
  *
  * The sugar stays in the API for now, but it is on its way out, so nothing a reader copies from
  * here may use it: write the directory path (`"core/domain" / mainSourceSet / ...`) instead.
- * katachi's own sources, tests and benchmarks are not watched; they exercise the API itself.
+ * katachi's own sources, tests and benchmarks are not watched; they exercise the API itself, and
+ * neither is the roadmap, which announces the deprecation.
  */
 val checkNoModuleSugar = tasks.register("checkNoModuleSugar") {
     group = LifecycleBasePlugin.VERIFICATION_GROUP
@@ -1057,7 +1058,7 @@ val checkNoModuleSugar = tasks.register("checkNoModuleSugar") {
     val sugar = Regex("""\.module *\{""")
     doLast {
         val hits = watched.flatMap { path ->
-            root.resolve(path).walkTopDown().filter { it.isFile }.flatMap { file ->
+            root.resolve(path).walkTopDown().filter { it.isFile && it.name != "roadmap.mdx" }.flatMap { file ->
                 file.readLines().withIndex()
                     .filter { (_, line) -> sugar.containsMatchIn(line) }
                     .map { (index, line) -> "${file.relativeTo(root)}:${index + 1}: ${line.trim()}" }
