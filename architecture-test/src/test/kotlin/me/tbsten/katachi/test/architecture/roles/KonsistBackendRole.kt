@@ -28,7 +28,8 @@ import me.tbsten.katachi.test.architecture.KONSIST_MAIN_PACKAGE
  * and a rule with an empty forbidden list can never reject anything. Writing it would add a
  * constraint that is green by construction and says nothing — worse than absent, because it
  * reads as a rule that is being enforced. That is why the `ktFileContent { }` here has the
- * package line the `library` roles write and none of their import lines.
+ * package line the `library` roles write and none of their prohibited import lines, only the
+ * `` `import`("**") `` that a block needs before it lets any import through.
  *
  * What would actually be worth stating here — that the backend touches only katachi's
  * *public* surface — is already enforced by the build: `:katachi-konsist` opts into
@@ -72,6 +73,10 @@ fun DeclarationContainerScope.konsistBackend() = "KonsistBackend".role {
 private fun LayoutScope.packageMatchesDirectory() =
     ktFileContent {
         `package`(matchingDirectory)
+        // No layer comes after this one, and what of katachi it may reach is the build's opt-in (see the role).
+        `import`("**")
+        // What a declaration may be is left to the `konsist { }` rules below, which read the KDoc and the `.internal` line.
+        allow(anythingElse)
     }
 
 private fun LayoutScope.publicDeclarationsShowExample() =

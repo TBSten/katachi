@@ -91,7 +91,7 @@ const val ARCHITECTURE_TEST_PACKAGE: String = "me/tbsten/katachi/test/architectu
  * directory so that the first means something. That half used to be a hand-written spec
  * reading the sources as text; it is a rule about what a Kotlin file holds, which is what
  * `ktFileContent { }` writes. See `LayerImports.kt`. `backend/KonsistBackend` and
- * `backend/KontureBackend` carry the package line alone.
+ * `backend/KontureBackend` carry the package line and no prohibited import.
  *
  * Two `konsist { }` on each of those roles — the same two on `backend/KonsistBackend` and
  * `backend/KontureBackend`, and one alone on `tool/DokkaPlugin` — ask the repository's KDoc

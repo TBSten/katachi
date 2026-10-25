@@ -71,6 +71,8 @@ private fun LayoutScope.packageAndLayerImports() =
         `package`(matchingDirectory)
         `import`("**")
         laterLayerImportsOf(LAYER).forEach { not.`import`(it) }
+        // What a declaration may be is left to the `konsist { }` rules below, which read the KDoc and the `.internal` line.
+        allow(anythingElse)
     }
 
 private fun LayoutScope.publicDeclarationsShowExample() =

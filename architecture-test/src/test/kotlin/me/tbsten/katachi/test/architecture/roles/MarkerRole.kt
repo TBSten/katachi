@@ -60,6 +60,12 @@ private fun LayoutScope.packageAndLayerImports() =
         `package`(matchingDirectory)
         `import`("**")
         laterLayerImportsOf(LAYER).forEach { not.`import`(it) }
+        // What the root package is for: the opt-in markers and the exception bases a user catches,
+        allow(public, annotation, `class`, "*KatachiApi")
+        allow(public, abstract, `class`, "Katachi*Exception")
+        // and, in `internal`, the helpers every layer shares, closed to the library.
+        allow(internal, anythingElse)
+        allow(private, anythingElse)
     }
 
 private fun LayoutScope.publicDeclarationsShowExample() =
