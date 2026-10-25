@@ -12,6 +12,51 @@ import { archivedVersions, archivedVersionSlugs, currentVersion, publicSections 
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
+const sidebar = (() => {
+	/** @typedef {{ en: string; ja: string; }} Label */
+	const translated = (/** @type {Label} */ label) => ({ label: label.en, translations: { ja: label.ja } })
+	const category = (
+		/** @type {Label} */ label,
+		/** @type {Array<ReturnType<typeof item> | ReturnType<typeof link>>} */ ...items
+	) => ({ ...translated(label), items })
+	const item = (/** @type {string} */ slug, /** @type {Label} */ label) => ({ ...translated(label), slug })
+	const link = (/** @type {string} */ href, /** @type {Label} */ label) => ({ ...translated(label), link: href })
+
+	return [
+		category(
+			{ en: 'Get started', ja: 'はじめる' },
+			item('get-started/motivation', { en: 'Motivation', ja: 'モチベーション' }),
+			item('get-started/first-architecture', { en: 'Your first definition', ja: '初めての定義' }),
+			item('get-started/faq', { en: 'FAQ', ja: 'FAQ' }),
+			item('get-started/comparison-with-other-tools', { en: 'Compared with other tools', ja: '他ツールとの比較' }),
+		),
+		category(
+			{ en: 'Guides', ja: 'ガイド' },
+			item('guides/basic-api', { en: 'The basic API', ja: '基本的な API' }),
+			item('guides/role', { en: 'Role', ja: 'Role' }),
+			item('guides/layout', { en: 'Layout', ja: 'Layout' }),
+			item('guides/kt-file-content', { en: '[AI-generated] File content allow list', ja: 'ktFileContent' }),
+			item('guides/document-generation', { en: 'Document generation', ja: 'ドキュメント生成' }),
+			item('guides/generate-code-from-template', { en: 'Generate code from template', ja: 'テンプレートからコード生成' }),
+			item('guides/baseline', { en: 'Baseline', ja: 'Baseline' }),
+			item('guides/processor', { en: 'ArchitectureProcessor', ja: 'ArchitectureProcessor とそのカスタマイズ' }),
+		),
+		category(
+			{ en: 'Recipes', ja: 'レシピ' },
+			item('recipes', { en: 'All recipes', ja: '一覧' }),
+			item('recipes/android-three-layer', { en: 'Android three layers architecture', ja: 'Android の3層アーキテクチャ' }),
+			item('recipes/gradle', { en: 'Gradle', ja: 'Gradle' }),
+			item('recipes/ai-agent', { en: 'AI agents', ja: 'AI Agent' }),
+			item('recipes/ktlint', { en: 'ktlint', ja: 'ktlint' }),
+			item('recipes/detekt', { en: 'detekt', ja: 'detekt' }),
+			item('recipes/git', { en: 'Git', ja: 'Git' }),
+			item('recipes/github', { en: 'GitHub', ja: 'GitHub' }),
+		),
+		link('/api-docs/', { en: 'API reference', ja: 'API リファレンス' }),
+		item('roadmap', { en: 'Roadmap', ja: 'ロードマップ' }),
+	]
+})()
+
 // `astro dev` は public/ の下のディレクトリの URL（`/katachi/api-docs/`）を index.html に
 // 解決せず 404 を返す。GitHub Pages とビルドしたサイトでは解決されるので、サイドバーの
 // 「API リファレンス」が dev サーバーでだけリンク切れになっていた。dev のときだけ、
@@ -199,61 +244,8 @@ export default defineConfig({
 			social: [
 				{ icon: 'github', label: 'GitHub', href: 'https://github.com/tbsten/katachi' },
 			],
-			sidebar: [
-				{
-					label: 'Get started', translations: { ja: 'はじめる' },
-					items: [
-						{ label: 'Motivation', translations: { ja: 'モチベーション' }, slug: 'get-started/motivation' },
-						{ label: 'Your first definition', translations: { ja: '初めての定義' }, slug: 'get-started/first-architecture' },
-						{ label: 'FAQ', translations: { ja: 'FAQ' }, slug: 'get-started/faq' },
-						{ label: 'Compared with other tools', translations: { ja: '他ツールとの比較' }, slug: 'get-started/comparison-with-other-tools' },
-					],
-				},
-				{
-					label: 'Guides', translations: { ja: 'ガイド' },
-					items: [
-						// この節の入口。Role と Layout はこの地図の深掘りなので、必ず先頭に置く。
-						// 下の「API リファレンス」（Dokka の全一覧）とは別物で、あちらが網羅、こちらが最小。
-						{ label: 'The basic API', translations: { ja: '基本的な API' }, slug: 'guides/basic-api' },
-						// 「Role 定義を分割する」は独立ページをやめ、Role の末尾へ統合した。
-						{ label: 'Role', translations: { ja: 'Role' }, slug: 'guides/role' },
-						{ label: 'Layout', translations: { ja: 'Layout' }, slug: 'guides/layout' },
-						// ktFileContent { }。katachi-konsist のインストールの節もここが持ち、Konsist のページはここを指す。
-						{ label: '[AI-generated] File content allow list', translations: { ja: '[AI生成] ファイルの中で定義できる宣言の許可リストを定義する' }, slug: 'guides/kt-file-content' },
-						{ label: 'Custom rules with Konsist', translations: { ja: 'カスタムルールを Konsist で定義する' }, slug: 'guides/konsist-integration' },
-						{ label: '[AI-generated] Konture integration', translations: { ja: '[AI生成] Konture との統合' }, slug: 'guides/konture-integration' },
-						{ label: 'Document generation', translations: { ja: 'ドキュメント生成' }, slug: 'guides/document-generation' },
-						{ label: 'Generate code from template', translations: { ja: 'テンプレートからコード生成' }, slug: 'guides/generate-code-from-template' },
-						// 既存のプロジェクトに入れるときの棚上げ。実験的な機能なので、processor の手前（ガイドの後ろ寄り）に置く。
-						{ label: 'Baseline', translations: { ja: 'Baseline' }, slug: 'guides/baseline' },
-						{ label: 'ArchitectureProcessor', translations: { ja: 'ArchitectureProcessor とそのカスタマイズ' }, slug: 'guides/processor' },
-					],
-				},
-				{
-					label: 'Recipes', translations: { ja: 'レシピ' },
-					items: [
-						{ label: 'All recipes', translations: { ja: '一覧' }, slug: 'recipes' },
-						{ label: 'Android three layers architecture', translations: { ja: 'Android の3層アーキテクチャ' }, slug: 'recipes/android-three-layer' },
-						{ label: 'Gradle', translations: { ja: 'Gradle' }, slug: 'recipes/gradle' },
-						{ label: 'AI agents', translations: { ja: 'AI Agent' }, slug: 'recipes/ai-agent' },
-						{ label: 'ktlint', translations: { ja: 'ktlint' }, slug: 'recipes/ktlint' },
-						{ label: 'detekt', translations: { ja: 'detekt' }, slug: 'recipes/detekt' },
-						{ label: 'Git', translations: { ja: 'Git' }, slug: 'recipes/git' },
-						{ label: 'GitHub', translations: { ja: 'GitHub' }, slug: 'recipes/github' },
-					],
-				},
-				{
-					label: 'API reference', translations: { ja: 'API リファレンス' },
-					// Dokka が `docs/public/api-docs/` に出す HTML。content collection の
-					// ページではないので `slug` ではなく `link` で指す。
-					//
-					// **`base` を自分で前置しないこと。** Starlight は `link` にも `base` を
-					// 付ける。`/katachi/api-docs/` と書くと `/katachi/katachi/api-docs/` になり、
-					// 日本語側ではさらに locale が挟まって `/katachi/ja/katachi/api-docs/` になる。
-					link: '/api-docs/',
-				},
-				{ label: 'Roadmap', translations: { ja: 'ロードマップ' }, slug: 'roadmap' },
-			],
+			// 中身はファイル先頭の `sidebar`（ラベルを { en, ja } で書くヘルパー）。
+			sidebar,
 		}),
 	],
 	vite: {

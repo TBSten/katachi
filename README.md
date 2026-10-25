@@ -47,7 +47,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
     kotlin("jvm") version "2.4.10"
-    id("me.tbsten.katachi") version "0.2.0"
+    id("me.tbsten.katachi") version "0.3.0"
 }
 
 kotlin { jvmToolchain(17) }
@@ -61,7 +61,7 @@ tasks.test {
 }
 
 dependencies {
-    testImplementation("me.tbsten.katachi:katachi:0.2.0")
+    testImplementation("me.tbsten.katachi:katachi:0.3.0")
     testImplementation(platform("org.junit:junit-bom:5.14.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -118,7 +118,7 @@ The full walkthrough — importing, and handing it off to an AI agent — is in 
 |---|---|
 | Learn how to write Roles and groups | [Basic API](https://tbsten.github.io/katachi/guides/basic-api/), [Role](https://tbsten.github.io/katachi/guides/role/) |
 | Get the details of writing layouts | [Layout](https://tbsten.github.io/katachi/guides/layout/) |
-| Check file contents too | [Konsist integration](https://tbsten.github.io/katachi/guides/konsist-integration/) |
+| Check file contents too | [ktFileContent](https://tbsten.github.io/katachi/guides/kt-file-content/) |
 | Generate documentation and code | [Document generation](https://tbsten.github.io/katachi/guides/document-generation/), [Generating code from a template](https://tbsten.github.io/katachi/guides/generate-code-from-template/) |
 | Adopt katachi while setting existing violations aside | [Baseline](https://tbsten.github.io/katachi/guides/baseline/) |
 | See a real project's definition | [Samples](CONTRIBUTING.md#samples), [Recipes](https://tbsten.github.io/katachi/recipes/) |

@@ -17,7 +17,7 @@
 - 検査される側: `docs/src/content/docs/ja/` の全ページ（get-started / guides / recipes / roadmap）、`README.ja.md`、
   `docs/public/install/ja/` の手順書（`index.md` とテンプレート HTML）。ルールの出どころ自身も、他のガイドとの食い違い
   （例: role.mdx の例が basic-api.mdx の「1 Role 1種類」に反する）は検査する。
-- ルールの出どころ（既定）: `docs/src/content/docs/ja/guides/` の `basic-api.mdx`・`role.mdx`・`layout.mdx`・`konsist-integration.mdx`。
+- ルールの出どころ（既定）: `docs/src/content/docs/ja/guides/` の `basic-api.mdx`・`role.mdx`・`layout.mdx`。
 
 ## 手順
 

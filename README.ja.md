@@ -47,7 +47,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
     kotlin("jvm") version "2.4.10"
-    id("me.tbsten.katachi") version "0.2.0"
+    id("me.tbsten.katachi") version "0.3.0"
 }
 
 kotlin { jvmToolchain(17) }
@@ -61,7 +61,7 @@ tasks.test {
 }
 
 dependencies {
-    testImplementation("me.tbsten.katachi:katachi:0.2.0")
+    testImplementation("me.tbsten.katachi:katachi:0.3.0")
     testImplementation(platform("org.junit:junit-bom:5.14.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -118,7 +118,7 @@ class ProjectArchitectureTest {
 |---|---|
 | Role・group の書き方 | [基本的な API](https://tbsten.github.io/katachi/ja/guides/basic-api/)、[Role](https://tbsten.github.io/katachi/ja/guides/role/) |
 | 置き場所の書き方 | [Layout](https://tbsten.github.io/katachi/ja/guides/layout/) |
-| ファイルの中身も検査する | [Konsist との統合](https://tbsten.github.io/katachi/ja/guides/konsist-integration/) |
+| ファイルの中身も検査する | [ktFileContent](https://tbsten.github.io/katachi/ja/guides/kt-file-content/) |
 | ドキュメント・コードを生成する | [ドキュメント生成](https://tbsten.github.io/katachi/ja/guides/document-generation/)、[テンプレートからコード生成](https://tbsten.github.io/katachi/ja/guides/generate-code-from-template/) |
 | 既存の違反を許容して導入する | [baseline](https://tbsten.github.io/katachi/ja/guides/baseline/) |
 | 実際の定義を見る | [サンプル](CONTRIBUTING.ja.md#サンプル)、[レシピ](https://tbsten.github.io/katachi/ja/recipes/) |

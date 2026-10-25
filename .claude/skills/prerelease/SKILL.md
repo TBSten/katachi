@@ -153,7 +153,7 @@ priority 10 の警告。結果は `ci-checks.md`、ログは `tmp/ci-checks/`。
 
 日本語の全ページ・README.ja.md・`docs/public/install/ja/` のコード例と本文が、ガイドに書かれたルール・ベストプラクティスに
 沿っているかを確かめる（直さず報告する）。ルールの出どころは既定で `docs/src/content/docs/ja/guides/` の basic-api・role・
-layout・konsist-integration。**チェックの前に**、ほかのガイド（generate-code-from-template・processor・baseline など）と
+layout。**チェックの前に**、ほかのガイド（generate-code-from-template・processor・baseline など）と
 `docs/AGENTS.md` にもルールがあるかを確かめ、あれば対象に足して、何をどこから拾ったかを結果に書く。
 1体目がチェックリストを作り、ページのまとまりごとの subagent が並列に照合する。結果は `docs-rules.md`、中間物は `tmp/docs-rules/`。
 詳細: [references/docs-rules.md](references/docs-rules.md)
