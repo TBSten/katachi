@@ -21,7 +21,7 @@
 # 開発者向け: KATACHI_MAVEN_LOCAL=1
 #   リリース前の katachi を ~/.m2 に publish して試すための口。利用者の手順には出さない。
 #   init に付けると作業用ディレクトリに記録され、以降の scaffold も従う。
-#   - init / scaffold の「Gradle plugin は 0.2.0 以降」の確認を飛ばす（--katachi か
+#   - init / scaffold の「katachi は 0.3.0 以降」の確認を飛ばす（--katachi か
 #     init で指定した版のときだけ。GitHub の最新を取ってきた版では飛ばさない）
 #   - scaffold が settings の pluginManagement { repositories { } } と
 #     dependencyResolutionManagement { repositories { } } に mavenLocal() を足す
@@ -29,7 +29,7 @@
 #     # katachi のリポジトリで。署名の設定が無い手元では -Pkatachi.skipSigning が要る
 #     ./gradlew publishToMavenLocal -Pkatachi.skipSigning
 #     # 試すプロジェクトで。scaffold は init の --katachi を引き継ぐ
-#     KATACHI_MAVEN_LOCAL=1 sh katachi-install.sh init --katachi 0.2.0
+#     KATACHI_MAVEN_LOCAL=1 sh katachi-install.sh init --katachi 0.3.0
 #     sh <作業用ディレクトリ>/tmp/katachi-install.sh scaffold --package com.example.app
 
 set -eu
@@ -55,10 +55,14 @@ KATACHI_RELEASES_PAGE="https://github.com/TBSten/katachi/releases"
 KOTLIN_MIN_MAJOR="2"
 KOTLIN_MIN_MINOR="2"
 
-# katachi の Gradle plugin（me.tbsten.katachi）が最初に出た版。これより前の版には
-# plugin が無く、scaffold が生成する build.gradle.kts が解決できない。
+# このスクリプトと手順書（index.md）が前提にする katachi の下限。手順書と生成物は 0.3 の機能で書いてある。
+# - Role の宣言は "Name".role { }
+# - capture の束縛（同じ名前を 2 段に書くと同じ値かを検査し、[CaptureMismatch] にする）
+# - -Dkatachi.maxViolations=all（katachi の Gradle plugin が test の JVM に渡す）
+# - gradle { buildScript { } } などの hook（lint が Gradle のファイルの制約の移し先として勧める）
+# これより前の版では手順書どおりに書いた定義がコンパイルできない・効かないので、init / scaffold で止める。
 KATACHI_MIN_MAJOR="0"
-KATACHI_MIN_MINOR="2"
+KATACHI_MIN_MINOR="3"
 KATACHI_PLUGIN_ID="me.tbsten.katachi"
 
 JUNIT_VERSION="5.14.4"
@@ -172,7 +176,9 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
       --katachi <version> katachi のバージョン（既定: init が記録した版。
                           無ければ GitHub の最新リリース）
       --kotlin <version>  Kotlin のバージョン（既定: プロジェクトから検出）
-      --no-konsist        katachi-konsist を使わない構成で生成する
+      --no-konsist        katachi-konsist を使わない構成で生成する（konsist { } も ktFileContent { } も書けない）。
+                          assert() に FileConstraintCheck() を渡さないので、gradle { } の hook に
+                          書いた fileConstraint も評価されない
       --module-dir <path> 検査用モジュールの置き場所（既定: init が記録した meta.moduleDir。
                           無ければ architecture-test）。指定すると meta.moduleDir を書き換える
       --test-framework <junit5|kotest>
@@ -249,7 +255,7 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
   sh katachi-install.sh docs --topic <名前> [--refresh]
   sh katachi-install.sh docs --topics
       ガイドを話題（ページ）ごとに切り出して tmp/cache/topics/<名前>.md に置き、
-      そのパスを出力する（layout / role / basic-api / konsist など。--topics で一覧）。
+      そのパスを出力する（layout / role / basic-api / kt-file-content など。--topics で一覧）。
       全文を読まずに済ませるためのもの。古い版の写しは含めない。
 
   sh katachi-install.sh docs --api [--refresh]
@@ -273,8 +279,8 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
   sh katachi-install.sh lint
       定義（検査用モジュールの src/test/kotlin）を読み、種類の違うファイルを1つの
       Role に抱えていそうなもの、Gradle のファイルを手書きで宣言した Role（制約を持つものは
-      katachi 0.3 以降なら hook への移し方を出し、0.3 より前なら指摘しない）、平たい group、
-      分けていないファイル、documented = false の候補を列挙する。check 3-2 / check 3-3 でも自動で走る。
+      gradle { } の hook への移し方も出す）、平たい group、分けていないファイル、
+      documented = false の候補を列挙する。check 3-2 / check 3-3 でも自動で走る。
       素朴なテキスト走査なので誤検知があり得る。点検の結果では失敗にしない（0 を返す）。
       定義のディレクトリが無ければ（scaffold 前、置き場所の食い違い）1 を返す。
 
@@ -308,7 +314,7 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
   KATACHI_MAVEN_LOCAL=1
       ~/.m2 に publish したリリース前の katachi で試すための口。
       init に付けると作業用ディレクトリに記録され、以降の scaffold も従う。
-      「Gradle plugin は 0.2.0 以降」の確認を飛ばし（GitHub の最新を取ってきた
+      「katachi は 0.3.0 以降」の確認を飛ばし（GitHub の最新を取ってきた
       版では飛ばさない）、scaffold が settings の pluginManagement と
       dependencyResolutionManagement の repositories に mavenLocal() を足す。
       利用者の導入では使わない。~/.m2 へは katachi のリポジトリで
@@ -364,7 +370,9 @@ Usage:
       --katachi <version> katachi version (default: the one init recorded,
                           otherwise the latest release)
       --kotlin <version>  Kotlin version (default: detected from the project)
-      --no-konsist        Generate a setup that does not use katachi-konsist
+      --no-konsist        Generate a setup that does not use katachi-konsist (no konsist { } or ktFileContent { }).
+                          assert() gets no FileConstraintCheck(), so a fileConstraint written in a
+                          gradle { } hook is not evaluated either
       --module-dir <path> Where the test module goes (default: meta.moduleDir recorded by init,
                           otherwise architecture-test). When given, meta.moduleDir is updated
       --test-framework <junit5|kotest>
@@ -447,7 +455,7 @@ Usage:
   sh katachi-install.sh docs --topic <name> [--refresh]
   sh katachi-install.sh docs --topics
       Cuts one topic (page) out of the guide into tmp/cache/topics/<name>.md and prints
-      its path (layout / role / basic-api / konsist and so on; --topics lists them).
+      its path (layout / role / basic-api / kt-file-content and so on; --topics lists them).
       Saves reading the full text. Copies of older versions are left out.
 
   sh katachi-install.sh docs --api [--refresh]
@@ -471,8 +479,8 @@ Usage:
   sh katachi-install.sh lint
       Reads the definition (src/test/kotlin of the test module) and lists Roles that
       seem to hold files of different kinds, hand-written Roles for Gradle files (ones with
-      constraints get the way to move them into a hook on katachi 0.3 or later, and are not
-      reported before 0.3), flat groups, files not split, and candidates for documented = false.
+      constraints also get the way to move them into a gradle { } hook), flat groups, files
+      not split, and candidates for documented = false.
       Also runs on check 3-2 / check 3-3.
       It is a plain text scan, so false positives are possible. Findings never fail it (returns 0).
       Returns 1 if the definition directory does not exist (before scaffold, or a different location).
@@ -510,7 +518,7 @@ Environment variables for developers:
   KATACHI_MAVEN_LOCAL=1
       A hook for trying an unreleased katachi published to ~/.m2.
       Set it on init and it is recorded in the working directory; later scaffold runs follow it.
-      Skips the "Gradle plugin needs 0.2.0 or later" check (not for a version fetched
+      Skips the "katachi needs 0.3.0 or later" check (not for a version fetched
       as the latest release from GitHub), and scaffold adds mavenLocal() to the
       repositories of pluginManagement and dependencyResolutionManagement in settings.
       Not for real installations. Publish to ~/.m2 from the katachi repository with
@@ -1042,13 +1050,13 @@ maven_local_enabled() {
 	[ -f "$_ml_wd/tmp/cache/maven-local" ]
 }
 
-# $1 の katachi に Gradle plugin があるかを確かめ、無ければ止まる。
-# plugin は 0.2.0 で入った。それより前の版で scaffold まで進むと、Gradle が
-# plugin を解決できずに落ち、原因が分かりにくい。KATACHI_MAVEN_LOCAL のときは
+# $1 の katachi が下限（KATACHI_MIN_MAJOR.KATACHI_MIN_MINOR）以上かを確かめ、足りなければ止まる。
+# 下限より前の版で進むと、手順書どおりに書いた定義が 3-2 でコンパイルできず（"Name".role { } が無い）、
+# 原因が分かりにくい。KATACHI_MAVEN_LOCAL のときは
 # 開発版を任意の版番号で試せるように飛ばす。ただし $2 が latest（GitHub の最新を
 # 取ってきた版）なら飛ばさない。人が選んだ版ではないので、~/.m2 の開発版と
 # 食い違っていても黙って進んでしまう。
-require_plugin_version() {
+require_katachi_version() {
 	[ "${2:-}" != "latest" ] && maven_local_enabled && return 0
 	_pv_mm=$(kotlin_major_minor "$1")
 	[ -n "$_pv_mm" ] || return 0
@@ -1056,9 +1064,9 @@ require_plugin_version() {
 	_pv_min=${_pv_mm#* }
 	if [ "$_pv_maj" -lt "$KATACHI_MIN_MAJOR" ] ||
 		{ [ "$_pv_maj" -eq "$KATACHI_MIN_MAJOR" ] && [ "$_pv_min" -lt "$KATACHI_MIN_MINOR" ]; }; then
-		die "katachi ${1} には Gradle plugin（${KATACHI_PLUGIN_ID}）がありません。このスクリプトが作る構成は Gradle plugin を使うため、katachi ${KATACHI_MIN_MAJOR}.${KATACHI_MIN_MINOR}.0 以降が必要です。
+		die "katachi ${1} はこの手順には古すぎます。手順書とこのスクリプトが作る構成は katachi ${KATACHI_MIN_MAJOR}.${KATACHI_MIN_MINOR}.0 の機能（\"Name\".role { } など）で書いてあるため、${KATACHI_MIN_MAJOR}.${KATACHI_MIN_MINOR}.0 以降が必要です。
     ${KATACHI_RELEASES_PAGE} で ${KATACHI_MIN_MAJOR}.${KATACHI_MIN_MINOR}.0 以降が出ているかを確かめ、--katachi <version> で指定してやり直してください。" \
-			"katachi ${1} has no Gradle plugin (${KATACHI_PLUGIN_ID}). The setup this script creates uses the Gradle plugin, so it needs katachi ${KATACHI_MIN_MAJOR}.${KATACHI_MIN_MINOR}.0 or later.
+			"katachi ${1} is too old for this guide. The guide and the setup this script creates are written with katachi ${KATACHI_MIN_MAJOR}.${KATACHI_MIN_MINOR}.0 features (such as \"Name\".role { }), so they need ${KATACHI_MIN_MAJOR}.${KATACHI_MIN_MINOR}.0 or later.
     Check ${KATACHI_RELEASES_PAGE} for ${KATACHI_MIN_MAJOR}.${KATACHI_MIN_MINOR}.0 or later, and run again with --katachi <version>."
 	fi
 }
@@ -1359,7 +1367,9 @@ cmd_init() {
 			;;
 		--katachi)
 			need_value "$1" "${2:-}"
-			init_version="$2"
+			# v0.3.0 のようなタグの形でも受ける。v を残すと版の判定を素通りし、build.gradle.kts に
+			# version "v0.3.0" と書かれて解決できない。
+			init_version="${2#v}"
 			shift 2
 			;;
 		--offline)
@@ -1401,7 +1411,7 @@ cmd_init() {
 	note "settings:          $(file_uri "$SETTINGS_FILE")" \
 		"settings:           $(file_uri "$SETTINGS_FILE")"
 
-	# katachi のバージョン。plugin の無い版なら何も作らないうちに止まる。
+	# katachi のバージョン。下限（0.3.0）より前の版なら何も作らないうちに止まる。
 	if [ -z "$init_version" ] && [ "$init_offline" = "no" ]; then
 		init_version=$(fetch_latest_version)
 		init_version_source="latest"
@@ -1411,7 +1421,7 @@ cmd_init() {
 			"Could not get the latest katachi version. Look it up at ${KATACHI_RELEASES_PAGE} and pass it with --katachi."
 		init_version="UNKNOWN"
 	else
-		require_plugin_version "$init_version" "$init_version_source"
+		require_katachi_version "$init_version" "$init_version_source"
 		note "katachi:            ${init_version}"
 	fi
 	if maven_local_enabled; then
@@ -1829,7 +1839,8 @@ cmd_scaffold() {
 			;;
 		--katachi)
 			need_value "$1" "${2:-}"
-			sc_version="$2"
+			# init と同じく、先頭の v は落とす。
+			sc_version="${2#v}"
 			shift 2
 			;;
 		--kotlin)
@@ -1898,7 +1909,7 @@ cmd_scaffold() {
 	[ -n "$sc_version" ] ||
 		die "katachi のバージョンが分かりません。${KATACHI_RELEASES_PAGE} を見て --katachi で指定してください。" \
 			"Cannot tell the katachi version. Look it up at ${KATACHI_RELEASES_PAGE} and pass it with --katachi."
-	require_plugin_version "$sc_version" "$sc_version_source"
+	require_katachi_version "$sc_version" "$sc_version_source"
 	if maven_local_enabled; then
 		sc_maven_local="yes"
 	else
@@ -3630,8 +3641,9 @@ cmd_data() {
 
 # docs --topic の名前。llms-full.txt のページ見出し（`# ...`）に対応する。並びはガイドのサイドバーの順。
 # 名前はドキュメントの URL の末尾（guides/layout → layout）に合わせる。手順書の 3-1 / 6-C / 6-D が
-# layout / role / basic-api / konsist / document-generation / template を指す。
-DOCS_TOPICS="motivation first-architecture faq comparison basic-api role layout kt-file-content konsist konture document-generation template baseline processor recipes android-three-layer gradle ai-agent ktlint detekt git github roadmap"
+# layout / role / basic-api / kt-file-content / document-generation / template を指す。
+# konsist { } の説明は role（「中身に制約をかける」）と basic-api にあり、専用のページは無い。
+DOCS_TOPICS="motivation first-architecture faq comparison basic-api role layout kt-file-content document-generation template baseline processor recipes android-three-layer gradle ai-agent ktlint detekt git github roadmap"
 
 # $1（topic）に対応するページ見出しの文言を出す。知らない名前なら何も出さず 1 を返す。
 # llms-full.txt の見出しは `# <文言>` か、AI が書いた下書きの印つきの `# [AI-generated] <文言>`。
@@ -3645,9 +3657,7 @@ docs_topic_title() {
 	basic-api) printf '%s\n' "Basic API" ;;
 	role) printf '%s\n' "Role" ;;
 	layout) printf '%s\n' "Enforce directory structure with the Layout system" ;;
-	kt-file-content) printf '%s\n' "Define an allow list of the declarations a file may contain" ;;
-	konsist) printf '%s\n' "Define custom rules with Konsist" ;;
-	konture) printf '%s\n' "Konture integration" ;;
+	kt-file-content) printf '%s\n' "ktFileContent" ;;
 	document-generation) printf '%s\n' "Document generation" ;;
 	template) printf '%s\n' "Generating code from a template" ;;
 	baseline) printf '%s\n' "Temporarily disable existing violations with baseline" ;;
@@ -3977,45 +3987,7 @@ try:
 except Exception:
     pass
 module_dir = sys.argv[2]
-plugin_id = sys.argv[3] if len(sys.argv) > 3 else "me.tbsten.katachi"
 root = os.path.join(project_root, module_dir, "src", "test", "kotlin")
-
-
-def katachi_version():
-    # プロジェクトの katachi の版。(a) 検査用モジュールの build.gradle(.kts) の plugin の座標
-    # → (b) version catalog の katachi の版 → (c) 無ければ None（0.3 以降として扱う）。
-    for name in ("build.gradle.kts", "build.gradle"):
-        path = os.path.join(project_root, module_dir, name)
-        if not os.path.isfile(path):
-            continue
-        src = open(path, encoding="utf-8", errors="replace").read()
-        m = re.search(r"""id\s*\(?\s*["']""" + re.escape(plugin_id) + r"""["']\s*\)?\s+version\s+["']([0-9][^"']*)["']""", src)
-        if m:
-            return m.group(1)
-    toml = os.path.join(project_root, "gradle", "libs.versions.toml")
-    if os.path.isfile(toml):
-        src = open(toml, encoding="utf-8", errors="replace").read()
-        m = re.search(r"""(?m)^\s*katachi\s*=\s*["']([0-9][^"']*)["']""", src)
-        if m:
-            return m.group(1)
-        m = re.search(r"""me\.tbsten\.katachi:katachi[^\n]*version\s*=\s*["']([0-9][^"']*)["']""", src)
-        if m:
-            return m.group(1)
-    return None
-
-
-def version_before(version, major, minor):
-    # version が major.minor より前なら True。読めなければ False（新しい方の扱い）。
-    m = re.match(r"^(\d+)\.(\d+)", version or "")
-    if not m:
-        return False
-    return (int(m.group(1)), int(m.group(2))) < (major, minor)
-
-
-KATACHI_VERSION = katachi_version()
-# 0.3 より前の katachi では gradle { buildScript { } } が無いので、制約を持つ手書きの Gradle Role は
-# 黙って通す（design 18）。0.3 以降（版が読めないときも）は hook への移し方を出す。
-HOOKS_AVAILABLE = not version_before(KATACHI_VERSION, 0, 3)
 
 
 def included_builds():
@@ -4205,7 +4177,7 @@ def scan(path, roles, groups, decls):
         in_layout = "layout" in kinds
         group = next((s[1] for s in reversed(stack) if s[0] == "group"), None)
         if t == "op" and v == "{":
-            # Role の宣言は "Name".role { }。"Name" { } は v0.2 までの書き方で、layout { } の外にあれば Role として読む
+            # Role の宣言は "Name".role { }。古い書き方の "Name" { }（今はコンパイルエラー）も、layout { } の外にあれば Role として読む
             role_call = prev == ("id", "role", prev[2]) and prev2[1] == "." and prev3[0] == "str" and prev3[1] is not None
             if role_call or (prev[0] == "str" and prev[1] is not None):
                 name_tok = prev3 if role_call else prev
@@ -4300,8 +4272,8 @@ for r in roles:
             if gradle and not in_included_build(where):
                 if not r.has_constraint:
                     gradle_hand.append((r, name))
-                elif HOOKS_AVAILABLE:
-                    # 制約の行き先（hook）まで言う。0.3 より前では黙って通す（design 18）
+                else:
+                    # 制約の行き先（gradle { } の hook）まで言う
                     gradle_constrained.append((r, name, label))
     if len(kinds) >= 2:
         reasons.append(t("種類の違うファイルが同居しています: ", "Files of different kinds share this Role: ") + " / ".join(
@@ -4381,11 +4353,11 @@ if gradle_hand:
     print()
     print(t("Gradle のファイルを手書きの Role で宣言しています（Role: %s）。",
             "Gradle files are declared in hand-written Roles (Roles: %s).") % ", ".join(names))
-    print(t("""katachi 0.2 以降は gradle() が wrapper・settings・ビルドスクリプト・gradle.properties・
+    print(t("""gradle() が wrapper・settings・ビルドスクリプト・gradle.properties・
 version catalog を種類ごとの Role に分けて宣言します（import me.tbsten.katachi.dsl.gradle.*）。
 これらの Role を消して gradle() の1行に置き換えてください。buildSrc や includeBuild した
 ビルドは gradle() の対象外なので、それだけは自分の Role に残します（この点検もその下は数えません）。""",
-            """Since katachi 0.2, gradle() declares the wrapper, settings, build scripts, gradle.properties
+            """gradle() declares the wrapper, settings, build scripts, gradle.properties
 and the version catalog as one Role per kind (import me.tbsten.katachi.dsl.gradle.*).
 Remove these Roles and replace them with the single line gradle(). buildSrc and included
 builds are not covered by gradle(), so keep only those in your own Roles (this check skips them too)."""))
@@ -4397,12 +4369,20 @@ if gradle_constrained:
         print(t('  %s:%d Role "%s"（%s → gradle { %s }）', '  %s:%d Role "%s" (%s -> gradle { %s })')
               % (file_uri(r.path), r.line, r.name, name.rsplit("/", 1)[-1], HOOK_OF.get(label, "buildScript { }")))
     print(t("""配置は gradle() の 1 行に置き換え、制約は gradle { buildScript { } }（settings なら settingsScript { }、
-catalog なら versionCatalog { }）に移してください（katachi 0.3 以降）。katachi の Role（BuildScript など）と
-同名の "X".role { } は重複の例外になります。制約は hook に書いてください。""",
+catalog なら versionCatalog { }）に移してください。buildScript { } の制約は、ルートを含む全モジュールの
+build.gradle(.kts) を subject.files に受け取ります。1 つのモジュールだけを見るなら、制約の中で
+subject.files をパスで絞ってください（例: subject.files.filter { it == "app/build.gradle.kts" }）。
+gradle { } の中に katachi の Role と同じ名前の Role（"BuildScript".role { } など）を書くと重複の例外に、
+gradle { } の外の Role でビルドファイルを宣言すると BuildScript と同じファイルを取り合って
+[AmbiguousLayout] になります。制約は hook に書いてください。""",
             """Replace the placement with the single line gradle() and move the constraints into
-gradle { buildScript { } } (settingsScript { } for settings, versionCatalog { } for the catalog)
-(katachi 0.3 or later). A "X".role { } with the same name as one of the Roles katachi declares
-(BuildScript and so on) is a duplicate declaration error; write the constraints in the hook."""))
+gradle { buildScript { } } (settingsScript { } for settings, versionCatalog { } for the catalog).
+A buildScript { } constraint receives the build.gradle(.kts) of every module, the root included, in
+subject.files. To look at one module only, narrow subject.files by path inside the constraint
+(for example subject.files.filter { it == "app/build.gradle.kts" }).
+A Role inside gradle { } with the same name as one of katachi's ("BuildScript".role { } and so on) is a
+duplicate declaration error, and a Role outside gradle { } that declares a build file claims the same
+file as BuildScript and becomes [AmbiguousLayout]. Write the constraints in the hook."""))
 if flat_groups:
     print()
     print(t("平たい group（直下に Role が 8 個以上あり、group を含まない）が %d 件あります（preferences.nestedGroups = yes）。",
@@ -4431,7 +4411,7 @@ if documented_candidates:
 lint config), (3) single-file helpers (README, LICENSE, .gitignore). Only Roles a reader benefits from belong in the generated docs."""))
 print("==================================================================")
 PYROLES
-	} | python3 - "$_lr_json" "$MODULE_DIR" "$KATACHI_PLUGIN_ID" || :
+	} | python3 - "$_lr_json" "$MODULE_DIR" || :
 	[ -n "$_lr_json" ] && rm -f "$_lr_json"
 	return 0
 }
@@ -4680,8 +4660,8 @@ cmd_test() {
 	# 打ち切りの行（katachi が先頭 N 件だけ出したとき）。全件の出し方を添える。
 	_ts_omit=$(grep -E '^[[:space:]]*Showing first ' "$_ts_log" | sed -e 's/^[[:space:]]*//' | head -n 1)
 	if [ -n "$_ts_omit" ]; then
-		say "省略: ${_ts_omit}。全件は -- -Dkatachi.maxViolations=all（katachi 0.3 以降）" \
-			"Omitted: ${_ts_omit}. For everything, pass -- -Dkatachi.maxViolations=all (katachi 0.3 or later)"
+		say "省略: ${_ts_omit}。全件は -- -Dkatachi.maxViolations=all" \
+			"Omitted: ${_ts_omit}. For everything, pass -- -Dkatachi.maxViolations=all"
 	fi
 	return "$_ts_rc"
 }

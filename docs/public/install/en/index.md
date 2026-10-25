@@ -147,7 +147,7 @@ This command does all of the following. **Do not redo any of this by hand.**
 - Confirming this is a Gradle project (stops if not)
 - Checking whether it's under Git management (warns if not)
 - Deciding on and creating the working directory (inside a `.gitignore`d location if one exists, otherwise `tmp/install-katachi/`)
-- Fetching the latest version of katachi (if it is below 0.2.0, which has no Gradle plugin, it stops before creating anything)
+- Fetching the latest version of katachi (if it is below 0.3.0, which this procedure assumes, it stops before creating anything)
 - Detecting the Kotlin version the project uses
 - Placing `check-list.html` and `project-code-base-report.html`
 - Fetching this document (the original text that `guide` prints section by section. To fetch it again, `sh $CLI guide --refresh`)
@@ -158,7 +158,7 @@ At the end, the result is printed in the following format (a few lines of guidan
 
 ```
 KATACHI_WORKDIR=/path/to/project/tmp/install-katachi
-KATACHI_VERSION=0.2.0
+KATACHI_VERSION=0.3.0
 KATACHI_PROJECT_ROOT=/path/to/project
 KATACHI_KOTLIN=2.4.10
 KATACHI_GIT=yes
@@ -356,7 +356,7 @@ In `modules`, write `path` / `kind` / `responsibility` / `buildFile` for each mo
 #### Guidelines for listing Role candidates
 
 - **Write Role candidates as a tree of groups.** Nest groups in the order "module → layer → kind", and do not line up 8 or more Roles in one group (if they do, split the group)
-- **`build.gradle.kts` / `settings.gradle.kts` / `gradle.properties` / the version catalog are covered by `gradle()`.** Do not make a Role per kind of module. `add role` refuses them too (except `buildSrc` and builds added with `includeBuild`). The exception is a Role that exists only to put a constraint on a build file (that the namespace matches the package, say); record it with `add role --constraint-only --note <reason>`. Such a Role is exempt from being replaced with the one line `gradle()` in 3-3
+- **`build.gradle.kts` / `settings.gradle.kts` / `gradle.properties` / the version catalog are covered by `gradle()`.** Do not make a Role per kind of module. `add role` refuses them too (except `buildSrc` and builds added with `includeBuild`). The exception is a constraint you want to put on a build file (that the namespace matches the package, say); record it with `add role --constraint-only --note <reason>`. In the definition it does not become a Role: write the constraint in a hook such as `gradle { buildScript { } }`. A hook's constraint receives the build files of every module, so to look at one module only, narrow them inside the constraint (the Gradle paragraph under "One Role = one kind of file" in 3-2)
 - **What gets `documented = false`:** (1) generated output (build output, committed generated code), (2) build and tool configuration (`.editorconfig`, CI yaml, lint configuration), (3) single-file helpers (README, LICENSE, `.gitignore`). Only Roles that are useful to a reader go into the generated documentation
 - **For the Android staples (`AndroidManifest.xml`, `res/`), copy the recipe and adapt it.** Base them on the definition at https://tbsten.github.io/katachi/recipes/android-three-layer/
 
@@ -431,7 +431,7 @@ The JVM toolchain reuses the N the project already sets: `jvmToolchain(N)` or `J
 
 The one exception is when the generated file has to change for the build to run at all. That takes priority over the rule above — but it means the script has a bug, so record it with `add changed` giving the reason, and register it in `questions` as well.
 
-Add `--no-konsist` only if it has been decided not to use `konsist { }`. If it hasn't been decided, leave the default as is.
+Add `--no-konsist` only if it has been decided to use neither `konsist { }` nor `ktFileContent { }` (both come with katachi-konsist). With this setup the test passes no `FileConstraintCheck()` to `assert()`, so a `fileConstraint` written in a `gradle { }` hook is not evaluated either. If it hasn't been decided, leave the default as is.
 
 Once it's created, run `sh $CLI check 2-1`.
 
@@ -462,11 +462,11 @@ In the log, a paragraph of the following shape follows for each violation.
         "BuildGradle".role { ... }
 ```
 
-By default 10 violations are shown. During adoption there are usually dozens to a hundred, so when you need all of them, use `sh $CLI test -- -Dkatachi.maxViolations=all` (everything after `--` is passed to `./gradlew` as is, and katachi's Gradle plugin delivers it to the test JVM; katachi 0.3 and later). There is no need to write `maxViolations` in the test code.
+By default 10 violations are shown. During adoption there are usually dozens to a hundred, so when you need all of them, use `sh $CLI test -- -Dkatachi.maxViolations=all` (everything after `--` is passed to `./gradlew` as is, and katachi's Gradle plugin delivers it to the test JVM). There is no need to write `maxViolations` in the test code.
 
 **Failing in this shape means the wiring is correct.**
 
-The first Gradle run makes `.kotlin/` (Kotlin 2.x). If the project's `.gitignore` does not have it, `[UnexpectedDirectory] .kotlin` shows up. Treat it the same as the untracked-file warning from `init`: ask the user whether to add it to `.gitignore`. Do not edit `.gitignore` yourself. Only an error that is not `Unexpected` is a problem — a compile error, a dependency resolution failure, something like `Could not start Gradle Test Executor` (the summary then says `Result: The check did not run`, with the tail of the log attached).
+The first Gradle run makes `.kotlin/` (Kotlin 2.x). If the project's `.gitignore` does not have it, `[UnexpectedDirectory] .kotlin` shows up. So does the `.gradle/` that Gradle creates. Treat them the same as the untracked-file warning from `init`: ask the user whether to add them to `.gitignore`. If git tracks files inside `.idea/` (such as `.idea/codeStyles/`), they are checked too, so declare them by writing a Role in step 3 (if you do not check their contents, `ignore()` is enough). Do not edit `.gitignore` yourself. Only an error that is not `Unexpected` is a problem — a compile error, a dependency resolution failure, something like `Could not start Gradle Test Executor` (the summary then says `Result: The check did not run`, with the tail of the log attached).
 
 In that case, following the same policy as step 4, **attempt to fix errors unrelated to katachi (Gradle, Java, dependency resolution).** Only if it still can't be resolved, pass the output to the user exactly as it is and ask for their judgment.
 
@@ -496,10 +496,10 @@ Write the `architecture { }` definition based on the information given to you in
 sh $CLI docs --topic layout
 sh $CLI docs --topic role
 sh $CLI docs --topic basic-api
-sh $CLI docs --topic konsist     # only when using konsist { }
+sh $CLI docs --topic kt-file-content     # only when using ktFileContent { }
 ```
 
-This fetches the guide cut out by topic and prints the file's path. Read that file. **Do not read the whole guide (`sh $CLI docs`).** The four above are all you need to write the definition. `sh $CLI docs --topics` lists the topics. Anything already fetched is not fetched again.
+This fetches the guide cut out by topic and prints the file's path. Read that file. **Do not read the whole guide (`sh $CLI docs`).** The four above are all you need to write the definition. How to write `konsist { }` is in "Constraining the contents" of `role` and in section 7 of `basic-api` ("7. Constraining a file's contents with `"...".konsist { }`"). `sh $CLI docs --topics` lists the topics. Anything already fetched is not fetched again.
 
 **What is fetched is the English version.** The site's default locale is English, and this format is generated only for the default locale. DSL API names do not depend on the language, so this is no obstacle to writing the definition.
 
@@ -521,15 +521,16 @@ To look at just one API, open the Markdown version of its page, linked from the 
 
 **The goal is a definition that runs.** Writing it in one file is fine. Splitting files and cleaning up duplication happen in 3-3. When unsure about an API, read the llms.txt in "When unsure about an API" in 3-1.
 
-**These are the imports you will need.** The samples in the documentation do not show them, so they are here.
+**These are the imports you will need.** The documentation's snippet examples do not show them, so they are here.
 
 ```kt
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.DeclarationContainerScope   // when splitting the definition into functions
-import me.tbsten.katachi.dsl.gradle.*                    // module / sourceSet / kotlin / gradle() / the `/` operator
+import me.tbsten.katachi.dsl.gradle.*                    // mainSourceSet / testSourceSet / kotlin / gradle() / the `/` operator
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 import me.tbsten.katachi.konsist.konsist                 // when writing konsist { }
+import me.tbsten.katachi.konsist.declarations.ktFileContent   // when writing ktFileContent { } (an experimental API)
 ```
 
 **Star-import `me.tbsten.katachi.dsl.gradle`.** `/` is the `div` operator, so importing names one by one leaves you unable to chain paths.
@@ -552,7 +553,9 @@ The other way round, **it is not one Role per file either.** Eighteen `*UseCase.
 
 Files directly under the root can be written directly under `layout { }` (`"README.md".file()`). You do not need to gather them in one Role.
 
-**For the Gradle files (the wrapper, settings, each module's build script, `gradle.properties`, the version catalog), do not write Roles yourself: write the one line `gradle()`.** katachi declares a `Gradle` group split into one Role per kind of file (katachi 0.2 and later; it comes with the star import of `me.tbsten.katachi.dsl.gradle.*`). Only `buildSrc` and builds added with `includeBuild`, which it does not cover, need Roles of your own.
+**For the Gradle files (the wrapper, settings, each module's build script, `gradle.properties`, the version catalog), do not write Roles yourself: write the one line `gradle()`.** katachi declares a `Gradle` group split into one Role per kind of file (it comes with the star import of `me.tbsten.katachi.dsl.gradle.*`). Only `buildSrc` and builds added with `includeBuild`, which it does not cover, need Roles of your own.
+
+When you want to check the contents of a build file (the ones marked `constraintOnly` in the report), you do not write a Role either. Write the constraint in a hook of the `gradle()` block, as in `gradle { buildScript { fileConstraint("...") { subject -> ... } } }` (`settingsScript { }` for settings, `versionCatalog { }` for the version catalog). `fileConstraint` is an experimental API, so write `@file:OptIn(ExperimentalKatachiApi::class)` and `import me.tbsten.katachi.ExperimentalKatachiApi` at the top of that file. A `buildScript { }` constraint receives the `build.gradle(.kts)` of every module, the root included, in `subject.files`. To look at one module only, narrow `subject.files` by path inside the constraint (for example `subject.files.filter { it == "app/build.gradle.kts" }`). Writing a Role inside `gradle { }` with the same name as one of katachi's (`"BuildScript".role { }` and so on) raises a duplicate exception. A Role outside `gradle { }` that declares a build file claims the same file as katachi's `BuildScript` and becomes `[AmbiguousLayout]`.
 
 <details>
 <summary>Common mistakes and how to fix them</summary>
@@ -589,12 +592,12 @@ In the field tests of the install kit, these shapes turned up in 13 projects.
 
 #### Do not stop at placement
 
-**Take the conventions you read in step 1 and go through them as candidates for `konsist { }`.** A definition that only says where files go only ever tells you that a file is in the right place.
+**Take the conventions you read in step 1 and go through them as candidates for constraints on the contents (`ktFileContent { }` / `konsist { }`).** A definition that only says where files go only ever tells you that a file is in the right place. `ktFileContent { }` is an experimental API, so the file that uses it needs the opt-in (`@file:OptIn(ExperimentalKatachiApi::class)`). Fetch how to write it with `sh $CLI docs --topic kt-file-content`.
 
 **Do not write catch-all Roles.** A layout like `commonMain/**/*.kt` — "anything, as long as it is here" — looks like a check and is not one. In a real adoption this let **a test for the same responsibility be created somewhere else entirely, and accepted.** If a Role would end up a catch-all, give it at least one of the following.
 
 - a pattern in the file name (`"*ViewModel".ktFile()`)
-- one `konsist { }` constraint (what a file of this Role declares)
+- one constraint on the contents (what a file of this Role declares; write it with `ktFileContent { }` or `konsist { }`)
 
 A constraint on a file's imports goes on `files`, not `classes()`. Many of a project's conventions are of the form "do not import this".
 
@@ -645,8 +648,8 @@ Tidy up the 3-2 definition **without changing the check result.** When unsure ab
 - [ ] **The functions used for splitting are not `inline`.** katachi reads a violation's declaration site off the stack trace, and `inline` shifts the line numbers
 - [ ] **The split definition files pass the check.** The definition files are checked too. The `layout { }` of the Role that covers the verification module accepts files as deep as `<group>/<role>/<Role>.kt`
 - [ ] **One Role = one kind of file.** Every Role has been gone over with the three questions of "One Role = one kind of file" in 3-2. `lint` reports 0 warnings, or the reason for each one kept is written with `sh $CLI warn 3 "..."`
-- [ ] **Gradle is the one line `gradle()`.** No Gradle files are declared in hand-written Roles (except `buildSrc` and builds added with `includeBuild`, and Roles that exist to put a constraint on a build file — the ones marked `constraintOnly` in the report)
-- [ ] **No catch-all Roles are left.** Roles that gather `anyFile()` / `ignore()`, or whose `layout` means "anything, as long as it is here", have a file name pattern or a `konsist { }` constraint ("Do not stop at placement" in 3-2)
+- [ ] **Gradle is the one line `gradle()`.** No Gradle files are declared in hand-written Roles (except `buildSrc` and builds added with `includeBuild`). Constraints on build files (the ones marked `constraintOnly` in the report) were written in a hook such as `gradle { buildScript { } }` (a constraint that looks at one module only narrows `subject.files` by path)
+- [ ] **No catch-all Roles are left.** Roles that gather `anyFile()` / `ignore()`, or whose `layout` means "anything, as long as it is here", have a file name pattern or a constraint on the contents (`ktFileContent { }` / `konsist { }`) ("Do not stop at placement" in 3-2)
 - [ ] **The descriptions are complete.** `title` / `summary` / `description` on Roles and groups, and `example()` (the name of a real file) on Roles. Take the content from `roles` in the step 1 report. The Roles you decided to give `documented = false` by the 1-2 guidelines say so
 - [ ] **Duplication is shared.** The same `layout` is not copied into several Roles (pull it out into a function). A value that keeps coming up, like a package directory, is pulled out into a `val`
 - [ ] **The check result is the same before and after.** "Compare before and after" below ends with "has not changed"
@@ -756,7 +759,7 @@ sh $CLI summary
 
 Work from `roles` in the step 1 report (`sh $CLI data get report roles`). **The good candidates are Roles with many files of the same shape** (UseCase, ViewModel, Screen, Repository, and so on). Do not propose one for a Role with a small `count`, or one whose files each take a different shape.
 
-**Roles whose destination directory is a wildcard, like `feature/*/...`, are candidates too** (ViewModel and Screen are usually shaped this way). Name that `*` with `capture("feature")` and you can pick the destination with `--arg feature=home` (step 2 of 6-D). **Every `*` left in the destination needs a name, both the module directory's and the package directory's.** The only thing that can't be named is `**` (a partial match can be named with `capture()`); don't propose one for a Role whose destination is only that.
+**Roles whose destination directory is a wildcard, like `feature/*/...`, are candidates too** (ViewModel and Screen are usually shaped this way). Name that `*` with `capture("feature")` and you can pick the destination with `--arg feature=home` (step 2 of 6-D). **Every `*` left in the destination needs a name, both the module directory's and the package directory's.** If the two get the same value, give both one name (write `capture("feature")` in two places). The only thing that can't be named is `**` (a partial match can be named with `capture()`); don't propose one for a Role whose destination is only that.
 
 For each Role, decide the following and record it with `add template`.
 
@@ -764,14 +767,14 @@ For each Role, decide the following and record it with `add template`.
 |---|---|
 | `--role` | The Role's name (as written in `architecture { }`) |
 | `--files` | The files it creates. **Can be passed more than once.** Write them with the parameter embedded, like `${name}UseCase.kt` (only when one kind of file has several name shapes; files of different kinds, like an interface and its implementation, get separate Roles and one `add template` each) |
-| `--params` | The parameter names taken with `stringParameter()` or another `*Parameter()`, plus the name given to a wildcard in the destination (for example, `feature`). Can be passed more than once. **If the destination has more than one `*` (the module directory and the package directory, for example), list that many** |
+| `--params` | The parameter names taken with `stringParameter()` or another `*Parameter()`, plus the name given to a wildcard in the destination (for example, `feature`). Can be passed more than once. **List as many as the names you gave to the `*` in the destination** (one, if you gave the module directory and the package directory the same name) |
 | `--basedOn` | The existing file the skeleton is based on (one of `roles[].examples`) |
 | `--reason` | Why this Role gets one (the count, and that the files share a shape) |
 
 ```sh
 sh $CLI add template --role UseCase --files '${name}UseCase.kt' --params name --basedOn "domain/src/main/kotlin/com/example/app/domain/useCase/GetUserUseCase.kt" --reason "All 18 are interfaces and share one shape"
 sh $CLI add template --role UseCaseImplementation --files '${name}UseCaseImpl.kt' --params name --basedOn "data/src/main/kotlin/com/example/app/data/useCase/GetUserUseCaseImpl.kt" --reason "All 18 implement a UseCase and share one shape"
-sh $CLI add template --role ViewModel --files '${name}ViewModel.kt' --params feature --params featurePackage --params name --basedOn "feature/home/src/main/kotlin/com/example/app/feature/home/HomeViewModel.kt" --reason "12 are one each in every feature/* module, and share one shape. Name the * in feature/* and the * of the package directory to pick the destination"
+sh $CLI add template --role ViewModel --files '${name}ViewModel.kt' --params feature --params name --basedOn "feature/home/src/main/kotlin/com/example/app/feature/home/HomeViewModel.kt" --reason "12 are one each in every feature/* module, and share one shape. The * in feature/* and the * of the package directory take the same name, so one name, feature, picks the destination"
 ```
 
 If you judge that no Role suits a template, record nothing. What you record shows up in the "Next action" of `summary` and in the report's "Template proposals". **Do not write `.template { }` here.** That happens in 6-D, after the user agrees.
@@ -972,14 +975,14 @@ Do this only for the Roles, among the proposals recorded in step 6, that the use
        layout {
            // was "feature" / "*" / mainSourceSet / kotlin / "com/example/app/feature" / "*" / "*ViewModel".ktFile()
            "feature" / capture("feature") / mainSourceSet / kotlin /
-               "com/example/app/feature" / capture("featurePackage") /
+               "com/example/app/feature" / capture("feature") /
                "${capture("name")}ViewModel".ktFile()
                    .template {
-                       val featurePackage = captureValue("featurePackage")   // "home" for --arg featurePackage=home
-                       val name = captureValue("name")                       // "Home" for --arg name=Home
+                       val feature = captureValue("feature")   // "home" for --arg feature=home
+                       val name = captureValue("name")         // "Home" for --arg name=Home
 
                        """
-                           package com.example.app.feature.$featurePackage
+                           package com.example.app.feature.$feature
 
                            class ${name}ViewModel
                        """.trimIndent()
@@ -988,9 +991,9 @@ Do this only for the Roles, among the proposals recorded in step 6, that the use
    }
    ```
 
-   For a directory's `*`, rewrite the `"*"` in `"feature" / "*" / ...` as `capture("feature")`. With more than one `*`, write a `capture()` with a different name for each, as in `"feature" / capture("feature") / capture("layer") / ...`. **The same capture name can't be used twice in one path** (it raises `KatachiDuplicateCaptureException`).
+   For a directory's `*`, rewrite the `"*"` in `"feature" / "*" / ...` as `capture("feature")`. With more than one `*`, write a `capture()` for each, as in `"feature" / capture("feature") / capture("layer") / ...`.
 
-   **Name every `*` left in the directory part of the destination.** If there is both a module directory `*` and a package directory `*`, as in the example above, each needs a `capture(...)` with a different name. If even one unnamed `*` is left, an error occurs when layout is expanded for the file with `.template { }` attached (`assert()` catches it; it doesn't wait for `katachiTemplate` to run).
+   **Name every `*` left in the directory part of the destination.** If the module directory's `*` and the package directory's `*` get the same value, as in the example above, write one name (`capture("feature")`) in both. katachi checks that the two places have the same value, and reports a file where they differ as `[CaptureMismatch]`. If the values may differ, give each its own name. If even one unnamed `*` is left, an error occurs when layout is expanded for the file with `.template { }` attached (`assert()` catches it; it doesn't wait for `katachiTemplate` to run).
 
    **If the package directory's name differs from the module directory's name (module `appConfig` and directory `appconfig`, for example), give that directory's `*` its own name, separate from the module's, and use its `captureValue()` in the package.** If you put the module's name (`captureValue("feature")`) in the package, you write a package that disagrees with its directory, and since both the check and the compiler pass, you won't notice.
 
@@ -1006,7 +1009,7 @@ Do this only for the Roles, among the proposals recorded in step 6, that the use
    For a Role whose wildcard was named, pass that value too. **A directory's value becomes the destination path as it is, even if no such directory exists** (a typo creates the file in a directory that isn't there). Pass the name of a directory that exists.
 
    ```sh
-   ./gradlew :architecture-test:katachiTemplate --arg template=ViewModel --arg feature=home --arg featurePackage=home --arg name=Sample
+   ./gradlew :architecture-test:katachiTemplate --arg template=ViewModel --arg feature=home --arg name=Sample
    sh $CLI test
    ```
 
