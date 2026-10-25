@@ -10,6 +10,7 @@ import me.tbsten.katachi.konsist.declarations.internal.allowWriter
  * ## Example 1: private type aliases, and one named after the file
  * ```kt
  * ktFileContent {
+ *     `package`("com.example.**")
  *     allow(private, `typealias`, "*")
  *     allow(`typealias`, fileName)
  * }

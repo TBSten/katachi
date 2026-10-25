@@ -64,7 +64,7 @@ internal class FileBuilder(
     )
 
     override fun toString(): String =
-        "FileBuilder(${packages.size} package lines, ${imports.size} import lines, ${declarations.isWritten})"
+        "FileBuilder(${packages.size} package lines, ${imports.size} import lines, $declarations)"
 }
 
 /** One import line while `.except(...)` can still change it. */

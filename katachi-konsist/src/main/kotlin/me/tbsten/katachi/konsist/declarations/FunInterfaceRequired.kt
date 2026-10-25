@@ -10,6 +10,7 @@ import me.tbsten.katachi.konsist.declarations.internal.requiredWriter
  * ## Example 1: a listener named after the file
  * ```kt
  * ktFileContent {
+ *     `package`("com.example.**")
  *     required(public, `fun`, `interface`, fileName) { required(`fun`, "on*") }
  * }
  * ```

@@ -29,8 +29,9 @@ internal data class GutterInput(
  * the PSI and the definition say and turns each [GutterMark] into a line marker.
  *
  * - Only a file the definition [MatchOutcome.Matched] gets a ◆.
- * - A `.kt` file one of whose roles' `ktFileContent { }` restricts top-level declarations
- *   (`declarationsChecked`) gets one per declaration, saying what allowed it.
+ * - A `.kt` file one of whose roles' `ktFileContent { }` judged its top-level declarations
+ *   (`declarationsChecked`, `false` only when the file could not be explained) gets one per
+ *   declaration, saying what allowed it.
  * - Any other `.kt` file gets one, at its first declaration (or its head); `.kts` and other files one at the head.
  *
  * ```kotlin

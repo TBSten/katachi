@@ -21,10 +21,13 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  * ## Example 1: modifiers and annotations in front, as in Kotlin
  * ```kt
  * ktFileContent {
- *     allow(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel")
+ *     `package`("com.example.feature.**")
+ *     `import`("**")
+ *
+ *     allow(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") { allow(anythingElse) }
  *     allow(annotated("Preview") or annotated("PreviewLightDark"), private, `fun`, "*Preview")
  *     allow(const, `val`, "*")
- *     allow(sealed, type, "*Action")
+ *     allow(sealed, type, "*Action") { allow(data, `object`, "*") }
  *     allow(suspend.optional(), `fun`, "execute")
  * }
  * ```
@@ -117,7 +120,7 @@ public sealed interface DeclarationVocabulary {
      *
      * ## Example 1: a sealed class or interface named after the file
      * ```kt
-     * allow(sealed, type, fileName)
+     * allow(sealed, type, fileName) { allow(data, `object`, "*") }
      * ```
      */
     public val sealed: Modifiers

@@ -17,8 +17,10 @@ import me.tbsten.katachi.konsist.declarations.internal.renderKinds
  * ## Example 1: kinds combined with `or`, and a class given members
  * ```kt
  * ktFileContent {
- *     allow(`class` or `interface`, fileName)
- *     allow(sealed, type, "*Action")
+ *     `package`("com.example.**")
+ *
+ *     allow(`class` or `interface`, fileName) { allow(anythingElse) }
+ *     allow(sealed, type, "*Action") { allow(data, `object`, "*") }
  *     allow(`class`, "Default$fileName").superclass(fileName) {
  *         allow(override, `fun`, "invoke")
  *     }
@@ -51,8 +53,11 @@ public class TypeKind internal constructor(
  * ## Example 1: functions, and a fun interface
  * ```kt
  * ktFileContent {
+ *     `package`("com.example.**")
+ *     `import`("androidx.compose.**")
+ *
  *     allow(annotated("Composable"), public, `fun`, fileName)
- *     allow(`fun`, `interface`, "*Listener")
+ *     allow(`fun`, `interface`, "*Listener") { allow(`fun`, "on*") }
  * }
  * ```
  */
@@ -70,6 +75,9 @@ public class FunctionKind internal constructor(
  * ## Example 1: a property with its type, and constants
  * ```kt
  * ktFileContent {
+ *     `package`("com.example.**")
+ *     `import`("kotlinx.coroutines.flow.**")
+ *
  *     allow(`class`, fileName) { allow(public, `val`, "uiState", "StateFlow<*>") }
  *     allow(const, `val` or `var`, "*")
  * }
@@ -99,7 +107,10 @@ public class PropertyKind internal constructor(
  *
  * ## Example 1: a type alias named after the file
  * ```kt
- * ktFileContent { allow(`typealias`, fileName) }
+ * ktFileContent {
+ *     `package`("com.example.**")
+ *     allow(`typealias`, fileName)
+ * }
  * ```
  */
 @ExperimentalKatachiApi
@@ -117,7 +128,9 @@ public class TypeAliasKind internal constructor(
  * ## Example 1: any private helper next to the class named after the file
  * ```kt
  * ktFileContent {
- *     allow(`class`, fileName)
+ *     `package`("com.example.**")
+ *
+ *     allow(`class`, fileName) { allow(anythingElse) }
  *     allow(private, anythingElse)
  * }
  * ```

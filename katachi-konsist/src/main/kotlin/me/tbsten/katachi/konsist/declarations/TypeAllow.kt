@@ -17,11 +17,14 @@ import me.tbsten.katachi.konsist.declarations.internal.allowWriter
  * ## Example 1: a view model, sealed actions and a data class
  * ```kt
  * ktFileContent {
+ *     `package`("com.example.feature.**")
+ *     `import`("**")
+ *
  *     allow(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
  *         allow(public, `val`, "uiState", "StateFlow<*>")
  *         allow(private, anythingElse)
  *     }
- *     allow(sealed, type, "*Action")
+ *     allow(sealed, type, "*Action") { allow(data, `object`, "*") }
  *     allow(internal or private, data, `object`, "*")
  * }
  * ```

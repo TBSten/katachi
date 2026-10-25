@@ -11,7 +11,7 @@ import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.konsist.declarations.KtFileContentScope
 import me.tbsten.katachi.konsist.declarations.internal.DeclarationFact
 import me.tbsten.katachi.konsist.declarations.internal.KtFileFacts
-import me.tbsten.katachi.konsist.declarations.internal.failureOf
+import me.tbsten.katachi.konsist.declarations.internal.failuresOf
 import me.tbsten.katachi.konsist.declarations.internal.judgeKtFile
 import me.tbsten.katachi.konsist.declarations.internal.ktFileFactsOf
 import me.tbsten.katachi.konsist.declarations.internal.renderFact
@@ -52,7 +52,7 @@ internal fun judged(
 ): List<String> {
     val facts = factsOf(source, path)
     val rules = rulesOf(fileName = path.substringAfterLast('/').substringBefore('.'), captures = captures, block = block)
-    return judgeKtFile(facts, rules).map { failureOf(it, path, rules) }.map { failure ->
+    return failuresOf(judgeKtFile(facts, rules), path, rules).map { failure ->
         val head = failure.declaration + (failure.line?.let { " (line $it)" } ?: "")
         (listOf(head) + failure.reasons.map { "${it.label}: ${it.text}" }).joinToString(" | ")
     }
@@ -64,11 +64,15 @@ internal fun List<Violation>.unsatisfiedLines(): List<String> = filterIsInstance
     (listOf(head) + violation.reasons.map { "${it.label}: ${it.text}" }).joinToString(" | ")
 }
 
+/** The `Note:` of the first failure of a file the block wrote no line for. */
+internal const val NOTHING_WRITTEN: String = "ktFileContent { } wrote no line for this file, so nothing is allowed in it " +
+    "(a condition in the block, such as if (fileName ...), may have left it out)"
+
 /** Each failure of [source] judged against [block], as `<declaration>: <fix> / <code>...`, one entry per fix. */
 internal fun fixLinesOf(source: String, block: KtFileContentScope.() -> Unit): List<String> {
     val facts = factsOf(source)
     val rules = rulesOf(fileName = "Sample", block = block)
-    return judgeKtFile(facts, rules).map { failureOf(it, SAMPLE_PATH, rules) }.flatMap { failure ->
+    return failuresOf(judgeKtFile(facts, rules), SAMPLE_PATH, rules).flatMap { failure ->
         failure.howToFix.map { fix -> (listOf("${failure.declaration}: ${fix.text}") + fix.code).joinToString(" / ") }
     }
 }

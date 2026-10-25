@@ -90,5 +90,5 @@ internal class UnexpectedPackage(
     val directoryPackage: String?,
 ) : KtFileFinding
 
-/** A package a `not.` package line matches. */
-internal class ProhibitedPackage(val packageName: String, val line: Int?, val rule: PackageRule) : KtFileFinding
+/** A package a `not.` package line matches, or the lack of one ([packageName] `null`) that `` not.`package`("**") `` does. */
+internal class ProhibitedPackage(val packageName: String?, val line: Int?, val rule: PackageRule) : KtFileFinding

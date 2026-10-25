@@ -18,12 +18,15 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  * ## Example 1: a view model file with what it has to hold
  * ```kt
  * ktFileContent {
+ *     `package`("com.example.feature.**")
+ *     `import`("**")
+ *
  *     required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
  *         required(public, `val`, "uiState", "StateFlow<*>")
  *         allow(public, `fun`, "on*")().returns("Unit")
  *         allow(private, anythingElse)
  *     }
- *     required(sealed, type, "*Action")
+ *     required(sealed, type, "*Action") { allow(data, `object`, "*") }
  *     allow(`object`, "*Preview")
  * }
  * ```

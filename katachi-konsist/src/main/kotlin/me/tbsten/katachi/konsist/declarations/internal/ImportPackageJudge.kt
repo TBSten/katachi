@@ -6,9 +6,6 @@ package me.tbsten.katachi.konsist.declarations.internal
  * is its path, and a file has one package. With no line written, nothing is allowed.
  */
 
-/** The name a file without a package declaration is matched with: the default package's, which is empty. */
-private const val DEFAULT_PACKAGE: String = ""
-
 /**
  * Judges [imports] against [rules]: one finding per wrong import, in line order. With no import
  * line written, every import is wrong. An import line only allows, so no import is ever missing.
@@ -31,46 +28,44 @@ private fun importMatches(rule: ImportRule, path: String): Boolean =
 /**
  * Judges the package of [facts] against [rules]. With no package line written, a declared package
  * is wrong and a file declaring none is fine: it declares nothing to deny.
+ *
+ * A file declaring no package is in the default package, which has no level: only a pattern of
+ * nothing but `**` levels (`**`) matches it, allowed or prohibited; `*` does not, as it is one level.
  */
 internal fun judgePackage(rules: List<PackageRule>, facts: KtFileFacts): KtFileFinding? {
     val packageName = facts.packageName
-    if (rules.isEmpty()) {
-        return packageName?.let { UnexpectedPackage(it, facts.packageLine, allowed = emptyList(), firstRule = null, directoryPackage = null) }
-    }
     val directoryPackage = directoryPackageOf(facts.path)
-    if (packageName != null) {
-        rules.firstOrNull { it.prohibited && packageMatches(it, packageName, facts.path, directoryPackage) }
-            ?.let { return ProhibitedPackage(packageName, facts.packageLine, it) }
+    if (rules.isEmpty()) {
+        return packageName?.let { UnexpectedPackage(it, facts.packageLine, allowed = emptyList(), firstRule = null, directoryPackage) }
     }
+    rules.firstOrNull { it.prohibited && packageMatches(it, packageName, facts.path, directoryPackage) }
+        ?.let { return ProhibitedPackage(packageName, facts.packageLine, it) }
     val allowed = rules.filterNot { it.prohibited }
-    val isAllowed = allowed.any { rule ->
-        if (packageName != null) {
-            packageMatches(rule, packageName, facts.path, directoryPackage)
-        } else {
-            // A file without a package is in the default one, named "": a pattern matching that
-            // (`**`) allows it, and so does `matchingDirectory` for a file directly under `kotlin/`.
-            when (val target = rule.target) {
-                is PackageTarget.Pattern -> target.rule.matches(DEFAULT_PACKAGE) && rule.except.none { it.matches(DEFAULT_PACKAGE) }
-                PackageTarget.MatchingDirectory -> directoryPackage == DEFAULT_PACKAGE
-            }
-        }
-    }
-    if (isAllowed) return null
+    if (allowed.any { packageMatches(it, packageName, facts.path, directoryPackage) }) return null
     return UnexpectedPackage(packageName, facts.packageLine, allowed, rules.first(), directoryPackage)
 }
 
-private fun packageMatches(rule: PackageRule, packageName: String, path: String, directoryPackage: String?): Boolean =
+/** Whether [rule] matches [packageName], `null` for the default package of a file that declares none. */
+private fun packageMatches(rule: PackageRule, packageName: String?, path: String, directoryPackage: String?): Boolean =
     when (val target = rule.target) {
-        is PackageTarget.Pattern -> target.rule.matches(packageName) && rule.except.none { it.matches(packageName) }
-        PackageTarget.MatchingDirectory -> if (directoryPackage != null) {
-            packageName == directoryPackage
-        } else {
+        is PackageTarget.Pattern -> pathMatches(target.rule, packageName) && rule.except.none { pathMatches(it, packageName) }
+        // A file without a package is in the default one only directly under the source root's `kotlin/`.
+        PackageTarget.MatchingDirectory -> when {
+            packageName == null -> directoryPackage == ""
+            directoryPackage != null -> packageName == directoryPackage
             // No source root in the path: the file's path has to end with its package, as
             // Konsist's `hasMatchingPath` reads it.
-            path.endsWith("/" + packageName.replace('.', '/') + "/" + path.substringAfterLast('/')) ||
+            else -> path.endsWith("/" + packageName.replace('.', '/') + "/" + path.substringAfterLast('/')) ||
                 path == packageName.replace('.', '/') + "/" + path.substringAfterLast('/')
         }
     }
+
+/** Whether the path pattern [rule] matches [packageName]; the default package (`null`) only by levels of `**` alone. */
+private fun pathMatches(rule: NameRule, packageName: String?): Boolean =
+    if (packageName == null) rule.written.split('.').all { it == ANY_LEVELS } else rule.matches(packageName)
+
+/** The level of a path pattern that stands for any number of levels, none included. */
+private const val ANY_LEVELS: String = "**"
 
 /** The last `src/<source set>/kotlin/` or `src/<source set>/java/` in a path. */
 private val SOURCE_ROOT: Regex = Regex("""(?:^|/)src/[^/]+/(?:kotlin|java)/""")

@@ -4,7 +4,10 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
+import me.tbsten.katachi.check.UnsatisfiedFileConstraint
 import me.tbsten.katachi.dsl.DeclarationSite
+import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /**
  * Deny by default (decided 2026-10-25): `ktFileContent { }` on its own rejects the file's package
@@ -16,7 +19,7 @@ import me.tbsten.katachi.dsl.DeclarationSite
 class KtFileContentDenyByDefaultSpec : FreeSpec({
     "空のブロックは package 宣言・import・宣言をすべて違反にする" {
         judged("package com.example\n\nimport a.B\n\nclass Sample\n\nfun helper() {}\n") {} shouldBe listOf(
-            "package com.example (line 1) | Not allowed: package com.example",
+            "package com.example (line 1) | Not allowed: package com.example | Note: $NOTHING_WRITTEN",
             "import a.B (line 3) | Not allowed: ktFileContent { } allows no import here",
             "Sample (line 5) | Not allowed: class Sample",
             "helper (line 7) | Not allowed: fun helper()",
@@ -65,6 +68,21 @@ class KtFileContentDenyByDefaultSpec : FreeSpec({
                 `package`("**")
                 required(`class`, fileName)
             }.shouldBeEmpty()
+        }
+
+        "`package`(\"*\") は 1 階層なので、package 宣言の無いファイルには当たらない" {
+            judged("class Sample\n") {
+                `package`("*")
+                required(`class`, fileName)
+            } shouldBe listOf("package (none) | Not allowed: the file declares no package")
+        }
+
+        "not.`package`(\"**\") は package 宣言の無いファイルにも当たる" {
+            judged("class Sample\n") {
+                `package`("**")
+                not.`package`("**")
+                required(`class`, fileName)
+            } shouldBe listOf("package (none) | Not allowed: the file declares no package | Prohibited by: not package **")
         }
 
         "\"\" に当たらない package の行では、package 宣言の無いファイルは今と同じく違反" {
@@ -210,6 +228,7 @@ class KtFileContentDenyByDefaultSpec : FreeSpec({
                 "package com.example: No package line is written, so no package may be declared. " +
                     "To allow any package, add at $SPEC_SITE: / `package`(\"**\")",
                 "package com.example: Allow it in ktFileContent { } at $SPEC_SITE: / `package`(\"com.example\")",
+                "package com.example: Or allow the package each file's directory names, at $SPEC_SITE: / `package`(matchingDirectory)",
             )
         }
 
@@ -227,7 +246,8 @@ class KtFileContentDenyByDefaultSpec : FreeSpec({
             }
             fixes.first() shouldBe "Sample.count: The line at $line has no { }, so class Sample may have no members. " +
                 "To allow any, give it: / { allow(anythingElse) }"
-            fixes shouldContain "Sample.count: Allow it in a { } given to the line at $line: / { allow(`val`, \"count\") }"
+            fixes shouldContain "Sample.count: Allow it in the { } of the line at $line, giving the line one if it has none: / " +
+                "allow(`val`, \"count\")"
         }
 
         "空の { } のメンバ" {
@@ -245,6 +265,71 @@ class KtFileContentDenyByDefaultSpec : FreeSpec({
                 `import`("kotlin.**")
                 required(`class`, fileName)
             }.none { "No " in it && "line is written" in it } shouldBe true
+        }
+    }
+
+    "違反の量: 開き方は一覧ごとに 1 回、最初の違反にだけ出す" - {
+        "import の行が無ければ、2 つ目からの import には開き方を出さない" {
+            val fixes = fixLinesOf("package com.example\n\nimport a.B\nimport c.D\n\nclass Sample\n") {
+                `package`("**")
+                required(`class`, fileName)
+            }
+            fixes.count { "No import line is written" in it } shouldBe 1
+            fixes.filter { it.startsWith("import c.D: ") }.map { it.substringAfter(": ").substringBefore(" at ") } shouldBe listOf(
+                "Remove the import and receive what it needs from outside",
+                "Allow it in ktFileContent { }",
+            )
+        }
+
+        "{ } の無い行のメンバは、開き方を 1 回だけ出し、どのメンバも同じ { } に貼れる 1 行を出す" {
+            val fixes = fixLinesOf("package com.example\n\ndata class Sample(val a: Int, val b: Int)\n") {
+                `package`("**")
+                required(data, `class`, fileName)
+            }
+            fixes.count { "has no { }" in it } shouldBe 1
+            fixes.filter { "giving the line one" in it }.map { it.substringAfterLast(" / ") } shouldBe listOf(
+                "allow(`val`, \"a\")",
+                "allow(`val`, \"b\")",
+            )
+        }
+
+        "主コンストラクタのプロパティには「クラスの外へ動かす」を出さない" {
+            fixLinesOf("package com.example\n\ndata class Sample(val a: Int) {\n    val b = 1\n}\n") {
+                `package`("**")
+                required(data, `class`, fileName)
+            }.filter { "Move it out of" in it } shouldBe listOf("Sample.b: Move it out of data class Sample")
+        }
+    }
+
+    "条件で行を 1 つも書かれなかったファイルは、最初の違反にそう添える" {
+        val violations = ktFileContentRun(
+            "src/Home.kt" to "package com.example\n\nclass Home\n",
+            paths = { "src" / "*".ktFile() },
+        ) {
+            ktFileContent { if (fileName == "Other") required(`class`, fileName) }
+        }
+        val notes = violations.filterIsInstance<UnsatisfiedFileConstraint>().map { violation ->
+            violation.reasons.filter { it.label == "Note" }.map { it.text }
+        }
+        notes shouldBe listOf(listOf(NOTHING_WRITTEN), emptyList())
+    }
+
+    "宣言した package がディレクトリと一致すれば、matchingDirectory も直し方に出す" - {
+        "package の行が無いとき" {
+            fixLinesOf("package com.example\n\nclass Sample\n") { required(`class`, fileName) } shouldContain
+                "package com.example: Or allow the package each file's directory names, at $SPEC_SITE: / `package`(matchingDirectory)"
+        }
+
+        "package の行が当たらないとき" {
+            fixLinesOf("package com.example\n\nclass Sample\n") {
+                `package`("org.other")
+                required(`class`, fileName)
+            }.filter { "matchingDirectory" in it }.size shouldBe 1
+        }
+
+        "ディレクトリと違う package には出さない" {
+            fixLinesOf("package com.other\n\nclass Sample\n") { required(`class`, fileName) }
+                .none { "matchingDirectory" in it } shouldBe true
         }
     }
 })

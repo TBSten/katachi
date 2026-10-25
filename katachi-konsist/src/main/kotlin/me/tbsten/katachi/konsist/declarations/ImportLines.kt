@@ -10,10 +10,14 @@ import me.tbsten.katachi.konsist.declarations.internal.PackageLineBuilder
  * ## Example 1: what a view model may import
  * ```kt
  * ktFileContent {
+ *     `package`("com.example.**")
+ *
  *     `import`("kotlin.**")
  *     `import`("kotlinx.coroutines.**")
  *     `import`("com.example.Logger")       // may be imported; an import line never asks for one
  *     not.`import`("android.**").except("android.os.Parcelable")
+ *
+ *     allow(anythingElse)
  * }
  * ```
  */
@@ -51,6 +55,9 @@ public class ImportLine internal constructor(
  * ktFileContent {
  *     `package`("com.example.feature.${captureValue("feature")}.**")
  *     not.`package`("com.example.feature.*.internal.**").except("com.example.feature.*.internal.api")
+ *
+ *     `import`("**")
+ *     allow(anythingElse)
  * }
  * ```
  */
@@ -86,7 +93,11 @@ public class PackageLine internal constructor(
  *
  * ## Example 1: every file's package matches where it is
  * ```kt
- * ktFileContent { `package`(matchingDirectory) }
+ * ktFileContent {
+ *     `package`(matchingDirectory)
+ *     `import`("**")
+ *     allow(anythingElse)
+ * }
  * ```
  */
 @ExperimentalKatachiApi

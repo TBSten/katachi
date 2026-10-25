@@ -11,6 +11,9 @@ import me.tbsten.katachi.konsist.declarations.internal.requiredWriter
  * ## Example 1: a composable named after the file, and previews that may be there
  * ```kt
  * ktFileContent {
+ *     `package`("com.example.**")
+ *     `import`("androidx.compose.**")
+ *
  *     required(annotated("Composable"), public, `fun`, fileName)
  *     allow(annotated("Preview"), private, `fun`, "*Preview")
  * }

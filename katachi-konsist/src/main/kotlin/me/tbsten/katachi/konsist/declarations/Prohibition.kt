@@ -15,11 +15,13 @@ import me.tbsten.katachi.konsist.declarations.internal.FileBuilder
  * `` `package` ``. `not.allow(..., anythingElse)` is refused: "anything else" names nothing in
  * particular to prohibit. There is no `not.required(...)`: a prohibited line asks for nothing.
  *
- * ## Example 1: everything but implementations named after the interface
+ * ## Example 1: any class but the `*Impl` ones, `LegacyImpl` aside
  * ```kt
  * ktFileContent {
- *     allow(`interface`, fileName)
- *     allow(`class`, "Default$fileName")
+ *     `package`("com.example.**")
+ *
+ *     allow(`interface`, fileName) { allow(`fun`, "*") }
+ *     allow(`class`, "*") { allow(anythingElse) }  // a not. line only takes from what a line allows
  *     not.allow(`class`, "*Impl").except("LegacyImpl")
  *     not.allow(private, `fun`, "*")
  * }
@@ -34,8 +36,10 @@ public sealed interface Prohibition : DeclarationAllow
  * ## Example 1: any import but the Android framework's
  * ```kt
  * ktFileContent {
+ *     `package`("**")
  *     `import`("**")
  *     not.`import`("android.**").except("android.os.Parcelable")
+ *     allow(anythingElse)
  * }
  * ```
  */

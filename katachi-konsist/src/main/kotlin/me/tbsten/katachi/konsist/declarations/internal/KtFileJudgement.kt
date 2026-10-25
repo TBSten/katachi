@@ -31,7 +31,7 @@ internal fun judgeKtFiles(
         val rules = input.rules.getOrThrow()
         val facts = input.facts
         if (facts == null) return@flatMap emptyList()
-        judgeKtFile(facts, rules).map { failureOf(it, input.file, rules) }
+        failuresOf(judgeKtFile(facts, rules), input.file, rules)
     }
 
 /** One `.kt` file of a subject: the rules the block wrote for it, and its facts when Konsist read it. */
@@ -87,9 +87,10 @@ internal fun judgeKtFile(facts: KtFileFacts, rules: FileRules): List<KtFileFindi
     return located + lineless
 }
 
-/** Whether the report places [this] at a line of the file: a missing package has none. */
+/** Whether the report places [this] at a line of the file: a package that is not declared has none. */
 private fun KtFileFinding.hasLine(): Boolean = when (this) {
     is UnexpectedPackage -> packageName != null
+    is ProhibitedPackage -> packageName != null
     else -> true
 }
 

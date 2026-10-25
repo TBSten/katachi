@@ -11,6 +11,9 @@ import me.tbsten.katachi.konsist.declarations.internal.allowWriter
  * ## Example 1: a state holder typed after the file, and constants
  * ```kt
  * ktFileContent {
+ *     `package`("com.example.**")
+ *     `import`("kotlinx.coroutines.flow.**")
+ *
  *     allow(`class`, fileName) {
  *         allow(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
  *     }

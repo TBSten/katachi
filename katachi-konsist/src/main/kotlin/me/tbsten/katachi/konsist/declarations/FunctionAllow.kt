@@ -11,6 +11,9 @@ import me.tbsten.katachi.konsist.declarations.internal.allowWriter
  * ## Example 1: a composable named after the file, and event handlers
  * ```kt
  * ktFileContent {
+ *     `package`("com.example.**")
+ *     `import`("androidx.compose.**")
+ *
  *     allow(annotated("Composable"), public, `fun`, fileName)
  *     allow(public, `fun`, "on*")().returns("Unit")
  *     not.allow(`fun`, "*")("*: Context")

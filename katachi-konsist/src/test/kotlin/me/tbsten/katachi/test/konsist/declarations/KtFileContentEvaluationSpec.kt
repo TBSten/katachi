@@ -256,7 +256,7 @@ class KtFileContentEvaluationSpec : FreeSpec({
 
             violations.filterIsInstance<UncheckedFileConstraint>().shouldBeEmpty()
             violations.unsatisfiedLines() shouldBe listOf(
-                "src/HomeScreen.kt: package com.example (line 1) | Not allowed: package com.example",
+                "src/HomeScreen.kt: package com.example (line 1) | Not allowed: package com.example | Note: $NOTHING_WRITTEN",
                 "src/HomeScreen.kt: HomeScreen (line 3) | Not allowed: class HomeScreen",
             )
         }

@@ -10,7 +10,7 @@ import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.declarations.KtFileContentScope
-import me.tbsten.katachi.konsist.declarations.internal.failureOf
+import me.tbsten.katachi.konsist.declarations.internal.failuresOf
 import me.tbsten.katachi.konsist.declarations.internal.judgeKtFile
 import me.tbsten.katachi.konsist.declarations.internal.renderRule
 import me.tbsten.katachi.konsist.declarations.ktFileContent
@@ -28,7 +28,7 @@ private fun kt(body: String): String = "package com.example\n\n" + body.trimInde
 /** The fixes [block] gives to the failures of [source], in the order the report lists them. */
 private fun fixesOf(source: String, block: KtFileContentScope.() -> Unit): List<List<String>> {
     val rules = rulesOf(fileName = "Sample", block = block)
-    return judgeKtFile(factsOf(source), rules).map { failureOf(it, SAMPLE_PATH, rules) }.map { failure ->
+    return failuresOf(judgeKtFile(factsOf(source), rules), SAMPLE_PATH, rules).map { failure ->
         failure.howToFix.map { fix -> (listOf(fix.text) + fix.code).joinToString(" ") }
     }
 }

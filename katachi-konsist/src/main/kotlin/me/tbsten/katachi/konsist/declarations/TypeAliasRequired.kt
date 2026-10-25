@@ -10,6 +10,7 @@ import me.tbsten.katachi.konsist.declarations.internal.requiredWriter
  * ## Example 1: a type alias named after the file
  * ```kt
  * ktFileContent {
+ *     `package`("com.example.**")
  *     required(`typealias`, fileName)
  *     allow(private, `typealias`, "*")
  * }

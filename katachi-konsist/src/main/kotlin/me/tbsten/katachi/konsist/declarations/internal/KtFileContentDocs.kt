@@ -132,8 +132,8 @@ private fun memberSections(list: DeclarationListRules, outer: List<String>): Lis
     if (rule.prohibited || rule.shapes.none { it.kind in KINDS_WITH_MEMBERS }) return@flatMap emptyList()
     val members = rule.members
     val path = outer + rule.name.written
-    val kinds = rule.shapes.map { it.kind.keyword }.distinct().joinToString(" or ")
-    val heading = "### Members of ${code("$kinds ${path.joinToString(".")}")}"
+    // The line's modifiers and kinds as written (`public enum class`, `(data or value) class`), the name with its outer classes.
+    val heading = "### Members of ${code(renderDeclaration(rule.shapes, path.joinToString("."), prohibited = false))}"
     val body = if (members == null || members.entries.isEmpty()) NO_MEMBERS else declarationTable("Member", members)
     listOf("$heading\n\n$body") + members?.let { memberSections(it, path) }.orEmpty()
 }

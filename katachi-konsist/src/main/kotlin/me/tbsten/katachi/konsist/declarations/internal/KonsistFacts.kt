@@ -11,6 +11,7 @@ import com.lemonappdev.konsist.api.declaration.KoTypeAliasDeclaration
 import com.lemonappdev.konsist.api.provider.KoAnnotationProvider
 import com.lemonappdev.konsist.api.provider.KoBaseProvider
 import com.lemonappdev.konsist.api.provider.KoDeclarationProvider
+import com.lemonappdev.konsist.api.provider.KoIsConstructorDefinedProvider
 import com.lemonappdev.konsist.api.provider.KoNameProvider
 import com.lemonappdev.konsist.api.provider.KoPathProvider
 import com.lemonappdev.konsist.api.provider.KoTextProvider
@@ -160,6 +161,7 @@ private class FactReader(
             returnTypeWritten = returnTypeWritten,
             line = beforeContext?.let { lineAt(fileText, it.start) } ?: line?.plus(kDocLinesOf(declaration)),
             members = members,
+            inConstructor = (declaration as? KoIsConstructorDefinedProvider)?.isConstructorDefined == true,
         )
     }
 

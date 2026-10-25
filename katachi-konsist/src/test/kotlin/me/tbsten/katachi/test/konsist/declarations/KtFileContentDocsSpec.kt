@@ -56,7 +56,7 @@ class KtFileContentDocsSpec : FreeSpec({
             |---|---|
             | `@HiltViewModel public class HomeViewModel : ViewModel` | required |
 
-            ### Members of `class HomeViewModel`
+            ### Members of `@HiltViewModel public class HomeViewModel`
 
             | Member | |
             |---|---|
@@ -143,6 +143,22 @@ class KtFileContentDocsSpec : FreeSpec({
 
         page shouldContain "### Members of `interface UserRepository`\n\nNo members are allowed."
         page shouldNotContain "Members of `fun"
+    }
+
+    "メンバの見出しは、行の修飾子と種類を書いたとおりに出す" {
+        val page = rolePageOf {
+            "Ui".role {
+                example("AppButton")
+                layout { "ui" / "*".ktFile() }
+                ktFileContent {
+                    allow(public, enum, `class`, "AppButton*") { allow(anythingElse) }
+                    allow(data or enum or value, `class`, "Health")
+                }
+            }
+        }.getValue("Ui.md")
+
+        page shouldContain "### Members of `public enum class AppButton*`"
+        page shouldContain "### Members of `(data or enum or value) class Health`"
     }
 
     "例のファイルで何も書かなくても節を出し、どの種類も何も許さないと書く" {

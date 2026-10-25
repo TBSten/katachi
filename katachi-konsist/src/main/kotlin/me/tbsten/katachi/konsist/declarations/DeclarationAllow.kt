@@ -23,13 +23,16 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  * ## Example 1: the lines of a view model file
  * ```kt
  * ktFileContent {
+ *     `package`("com.example.feature.**")
+ *     `import`("**")
+ *
  *     allow(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
  *         allow(public, `val`, "uiState", "StateFlow<*>")
  *         allow(public, `fun`, "on*")().returns("Unit")
  *         allow(private, anythingElse)
  *     }
  *     allow(const, `val`, "*")
- *     allow(`fun`, `interface`, "*Listener")
+ *     allow(`fun`, `interface`, "*Listener") { allow(`fun`, "on*") }
  *     not.allow(public, `class`, "*Impl").except("LegacyImpl")
  * }
  * ```

@@ -187,7 +187,7 @@ class KtFileContentReportSpec : FreeSpec({
               How to fix:
                 - Make it private: private (anything) is allowed here
                 - Move it out of class HomeViewModel
-                - Allow it in ktFileContent { } at $classLine:
+                - Allow it in the { } of the line at $classLine:
                     allow(`var`, "isLoading")
         """.trimIndent()
     }

@@ -10,11 +10,15 @@ import me.tbsten.katachi.konsist.declarations.internal.DeclarationLineBuilder
  * ## Example 1: a view model named after the file, with its supertype and members
  * ```kt
  * ktFileContent {
+ *     `package`("com.example.feature.**")
+ *     `import`("**")
+ *
  *     required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
  *         required(public, `val`, "uiState", "StateFlow<*>")
  *         allow(private, anythingElse)
  *     }
  *     allow(`object`, "*Preview")
+ *     allow(`class`, "*") { allow(anythingElse) }
  *     not.allow(`class`, "*Impl").except("LegacyImpl")
  * }
  * ```
@@ -78,6 +82,7 @@ public class TypeLine internal constructor(
  * ## Example 1: parameters and return types
  * ```kt
  * ktFileContent {
+ *     `package`("com.example.**")
  *     allow(`fun`, "load")()                                // no parameter
  *     allow(`fun`, "save")("name: String", "count: Int")    // these parameters, in order
  *     allow(`fun`, "find*")("*Id: String")                  // a name pattern too
@@ -165,6 +170,7 @@ public class FunctionLine internal constructor(
  * ## Example 1: a property that may be there, and a prohibited one
  * ```kt
  * ktFileContent {
+ *     `package`("com.example.**")
  *     allow(`class`, fileName) {
  *         allow(`val`, "isLoading", "Boolean")
  *         not.allow(public, `var`, "*")
@@ -201,7 +207,10 @@ public class PropertyLine internal constructor(
  *
  * ## Example 1: type aliases that may be there
  * ```kt
- * ktFileContent { allow(`typealias`, "*Key") }
+ * ktFileContent {
+ *     `package`("com.example.**")
+ *     allow(`typealias`, "*Key")
+ * }
  * ```
  */
 @ExperimentalKatachiApi
@@ -233,7 +242,10 @@ public class TypeAliasLine internal constructor(
  *
  * ## Example 1: any parameters
  * ```kt
- * ktFileContent { allow(`fun`, "on*")(anyArgs()) }
+ * ktFileContent {
+ *     `package`("com.example.**")
+ *     allow(`fun`, "on*")(anyArgs())
+ * }
  * ```
  */
 @ExperimentalKatachiApi

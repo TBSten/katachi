@@ -12,12 +12,15 @@ import me.tbsten.katachi.konsist.declarations.internal.requiredWriter
  * ## Example 1: a view model named after the file, and its actions
  * ```kt
  * ktFileContent {
+ *     `package`("com.example.feature.**")
+ *     `import`("**")
+ *
  *     required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
  *         required(public, `val`, "uiState", "StateFlow<*>")
  *         allow(private, anythingElse)
  *     }
- *     required(sealed, type, "*Action")
- *     allow(data, `class`, "*")
+ *     required(sealed, type, "*Action") { allow(data, `object`, "*") }
+ *     allow(data, `class`, "*") { allow(`val`, "*") }
  * }
  * ```
  */
