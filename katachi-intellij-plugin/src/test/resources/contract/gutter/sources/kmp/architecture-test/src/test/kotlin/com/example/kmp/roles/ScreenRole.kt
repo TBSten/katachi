@@ -8,14 +8,16 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.dsl.pascalCase
 
 /**
  * The role of one screen's UI: the `@Composable` its feature module is named after.
  *
- * Written loosely, as the directory `"feature" / "*"` and a `*Screen.kt` glob: any feature
- * module may hold a `<Name>Screen.kt`. The check does not tie the file name to the module name
- * (a `ProfileScreen.kt` under `:feature:home` is accepted, and so is a module without a
- * screen), so that pairing is kept by review.
+ * The layout names the module directory and the package directory alike, `capture("feature")`,
+ * and derives the file name from it: `${capture("feature").pascalCase}Screen`. So `:feature:home`
+ * may hold `HomeScreen.kt` and nothing else named `*Screen.kt` (a `ProfileScreen.kt` there is
+ * reported as `[CaptureMismatch]`), without the feature modules being listed one by one. A
+ * module without a screen is not reported: a pattern with a wildcard is never required.
  */
 fun DeclarationContainerScope.screen() = "Screen".role {
     title = "Screen"
@@ -23,13 +25,13 @@ fun DeclarationContainerScope.screen() = "Screen".role {
     description = """
         The look of one whole screen. Put one file, `<Name>Screen.kt`, in the
         `commonMain` of `:feature:<name>`, named after the module (`HomeScreen.kt` in
-        `:feature:home`). The check looks at the place and the suffix only. To add a screen,
-        add a module.
+        `:feature:home`). The check holds the file to it: the module directory, the package
+        directory and the file name all read the same feature name. To add a screen, add a module.
 
         The file is built in two levels. `HomeScreen` receives the ViewModel and subscribes with
         `collectAsState()`, and `internal fun HomeContent` receives a `UiState` as an argument and
         draws it. Separating what cannot be drawn without creating a ViewModel from what can be
-        drawn once given a state lets both previews (ui/Preview) and tests deal with the latter only.
+        drawn once given a state lets both previews (ScreenPreview) and tests deal with the latter only.
 
         It is `commonMain` only so that Android and iOS share the same screen code through
         Compose Multiplatform. If something needs platform-dependent behavior, push it down to
@@ -47,7 +49,9 @@ fun DeclarationContainerScope.screen() = "Screen".role {
     example("HomeScreen", "The home screen")
     example("SettingsScreen", "The settings screen")
     layout {
-        "feature" / "*" / "commonMain".sourceSet / kotlin / "com/example/kmp/feature" / "*" /
-            "*Screen".ktFile()
+        // `feature` is the module directory and the package directory alike, and the file name
+        // follows it: feature/home/.../home/HomeScreen.kt, and nothing else named *Screen.kt there.
+        "feature" / capture("feature") / "commonMain".sourceSet / kotlin / "com/example/kmp/feature" /
+            capture("feature") / "${capture("feature").pascalCase}Screen".ktFile()
     }
 }

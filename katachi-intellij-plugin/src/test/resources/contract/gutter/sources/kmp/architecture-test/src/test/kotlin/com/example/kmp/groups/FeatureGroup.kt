@@ -18,12 +18,13 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * into one group would hide that difference in the generated documentation, and would mix two
  * shapes of `layout` inside a single group.
  *
- * Screen, ViewModel and Route are written loosely, as `*Screen.kt` / `*ViewModel.kt` /
- * `*Route.kt` globs under that directory, so the check does not tie a file name to the module
- * it sits in; that pairing is kept by convention and review. FeatureComponent names the
- * module directory and its package directory alike, `capture("feature")`, so its template is
- * given one value (`--arg feature=home`) to pick the module it generates into and the check
- * holds the two directories to the same name.
+ * The `*` after `feature` stands for whatever directory sits under it, so adding
+ * `:feature:profile` needs no edit here. What the check does tie together is the module and its
+ * files, the same way sample/android does: Screen / ViewModel / Route name the module directory
+ * and the package directory alike with `capture("feature")` and write the file name as
+ * `${capture("feature").pascalCase}Screen`, so a `ProfileScreen.kt` in `:feature:home` is
+ * reported as `[CaptureMismatch]`. FeatureComponent uses the same `capture("feature")`, so its
+ * template is given one value (`--arg feature=home`) to pick the module it generates into.
  */
 fun DeclarationContainerScope.featureGroup() = "feature".group {
     title = "Feature"
@@ -33,9 +34,9 @@ fun DeclarationContainerScope.featureGroup() = "feature".group {
         `:feature:settings`; adding a screen means adding a module.
 
         Screen / ViewModel / Route are collected here because each of them exists for a single
-        screen. All three are written as globs under the directory `feature/*`, and by convention the
-        file is named after the module: `:feature:home` has `HomeScreen.kt` / `HomeViewModel.kt` /
-        `HomeRoute.kt`. The check looks at the place and the suffix, not at the pairing.
+        screen. Each file is named after the module: `:feature:home` has `HomeScreen.kt` /
+        `HomeViewModel.kt` / `HomeRoute.kt`, and the check holds them to it, so a
+        `ProfileScreen.kt` in `:feature:home` is reported.
 
         It is separate from the ui group because the two grow differently. A feature is a place
         where modules are expected to multiply, and one declaration of the directory `feature/*`

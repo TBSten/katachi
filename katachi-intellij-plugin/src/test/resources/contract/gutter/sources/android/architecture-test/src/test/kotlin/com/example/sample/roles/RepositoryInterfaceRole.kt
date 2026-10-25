@@ -28,9 +28,9 @@ fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role
 
         Only the `User*Repository.kt` part can be generated from a template
         (`UserRepository.kt` itself is handwritten in each domain from the start and is not a
-        generation target). The id is split per domain, and
-        `--arg template=data.RepositoryInterface.user,data.RepositoryImplementation.user
-        --arg name=Cache` creates the interface and its implementation at once.
+        generation target). The id is split per domain. A new user repository is usually
+        generated as the template set `data.NewRepository` (`--arg template=data.NewRepository
+        --arg name=Cache`), which writes the interface, its implementation and its fake at once.
     """.trimIndent()
     forbiddenContents = """
         - Types for screens. Repacking into `UiState` is the ViewModel's job, and `:data` does not know `:ui`

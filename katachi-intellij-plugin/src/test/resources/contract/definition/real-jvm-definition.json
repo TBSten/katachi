@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
   "katachiVersion": "0.2.0",
-  "generatedAt": "2026-10-25T14:10:56Z",
+  "generatedAt": "2026-10-25T16:13:17Z",
   "projectRoot": "/__ROOT__",
   "architecture": {
     "declaredAt": {
       "fileName": "ProjectArchitecture.kt",
-      "line": 44
+      "line": 45
     },
     "files": "gitTracked",
     "baseline": "katachi-baseline.json"
@@ -1886,7 +1886,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DocumentSectionDefinitionRole.kt",
-            "line": 23
+            "line": 25
           },
           "modulePath": null,
           "pathInModule": "architecture-test",
@@ -1907,7 +1907,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DocumentSectionDefinitionRole.kt",
-            "line": 23
+            "line": 25
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src",
@@ -1928,7 +1928,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DocumentSectionDefinitionRole.kt",
-            "line": 23
+            "line": 25
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src/test",
@@ -1949,7 +1949,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DocumentSectionDefinitionRole.kt",
-            "line": 23
+            "line": 25
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src/test/kotlin",
@@ -1970,7 +1970,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DocumentSectionDefinitionRole.kt",
-            "line": 23
+            "line": 25
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src/test/kotlin/com",
@@ -1991,7 +1991,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DocumentSectionDefinitionRole.kt",
-            "line": 23
+            "line": 25
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src/test/kotlin/com/example",
@@ -2012,7 +2012,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DocumentSectionDefinitionRole.kt",
-            "line": 23
+            "line": 25
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src/test/kotlin/com/example/DocumentSections.kt",
@@ -3077,7 +3077,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "BaselineFileRole.kt",
-            "line": 44
+            "line": 45
           },
           "modulePath": null,
           "pathInModule": "katachi-baseline.json",
@@ -3314,7 +3314,7 @@
         {
           "name": "fails the build on every compiler warning",
           "backend": "custom",
-          "checkClass": "com.example.groups.GradleGroupKt$$Lambda$90/0x000000d001096120",
+          "checkClass": "com.example.groups.GradleGroupKt$$Lambda$90/0x0000008001096120",
           "range": "Subtree",
           "declaredAt": {
             "fileName": "GradleGroup.kt",

@@ -32,8 +32,8 @@ fun DeclarationContainerScope.uiGroup() = "ui".group {
 
         `:ui` is one module split into packages: `component` (parts), `theme` (appearance),
         `core` (the types for screen state) and `preview` (the base for previews), each one role.
-        The previews of components are here too, next to the components; the previews of screens
-        are in the feature group.
+        The previews of components are here too, in `component/preview` right below the
+        components; the previews of screens are in the feature group.
         They used to be separate modules such as `:ui:component`, but were merged into packages.
         katachi needs to be able to say "this role is this package of this module", and it is
         also the shape more often seen in real projects.

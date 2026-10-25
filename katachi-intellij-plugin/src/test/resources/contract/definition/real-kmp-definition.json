@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "katachiVersion": "0.2.0",
-  "generatedAt": "2026-10-25T14:11:54Z",
+  "generatedAt": "2026-10-25T16:14:27Z",
   "projectRoot": "/__ROOT__",
   "architecture": {
     "declaredAt": {
@@ -21,7 +21,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "FeatureGroup.kt",
-        "line": 28
+        "line": 29
       }
     },
     {
@@ -119,7 +119,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "ScreenRole.kt",
-        "line": 20
+        "line": 22
       },
       "layout": [
         {
@@ -130,7 +130,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ScreenRole.kt",
-            "line": 50
+            "line": 54
           },
           "modulePath": null,
           "pathInModule": "feature",
@@ -151,11 +151,18 @@
           "description": null,
           "declaredAt": {
             "fileName": "ScreenRole.kt",
-            "line": 50
+            "line": 54
           },
           "modulePath": null,
           "pathInModule": "feature/*",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -172,11 +179,18 @@
           "description": null,
           "declaredAt": {
             "fileName": "ScreenRole.kt",
-            "line": 50
+            "line": 54
           },
           "modulePath": null,
           "pathInModule": "feature/*/src",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -193,11 +207,18 @@
           "description": null,
           "declaredAt": {
             "fileName": "ScreenRole.kt",
-            "line": 50
+            "line": 54
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -214,11 +235,18 @@
           "description": null,
           "declaredAt": {
             "fileName": "ScreenRole.kt",
-            "line": 50
+            "line": 54
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -235,11 +263,18 @@
           "description": null,
           "declaredAt": {
             "fileName": "ScreenRole.kt",
-            "line": 50
+            "line": 54
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -256,11 +291,18 @@
           "description": null,
           "declaredAt": {
             "fileName": "ScreenRole.kt",
-            "line": 50
+            "line": 54
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -277,11 +319,18 @@
           "description": null,
           "declaredAt": {
             "fileName": "ScreenRole.kt",
-            "line": 50
+            "line": 54
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -298,11 +347,18 @@
           "description": null,
           "declaredAt": {
             "fileName": "ScreenRole.kt",
-            "line": 50
+            "line": 54
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp/feature",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -319,11 +375,24 @@
           "description": null,
           "declaredAt": {
             "fileName": "ScreenRole.kt",
-            "line": 50
+            "line": 54
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            },
+            {
+              "name": "feature",
+              "segmentIndex": 9,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -340,11 +409,30 @@
           "description": null,
           "declaredAt": {
             "fileName": "ScreenRole.kt",
-            "line": 51
+            "line": 55
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/*Screen.kt",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            },
+            {
+              "name": "feature",
+              "segmentIndex": 9,
+              "wildcardIndex": 0,
+              "transform": null
+            },
+            {
+              "name": "feature",
+              "segmentIndex": 10,
+              "wildcardIndex": 0,
+              "transform": "pascalCase"
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": ["feature/home/src/commonMain/kotlin/com/example/kmp/feature/home/HomeScreen.kt", "feature/settings/src/commonMain/kotlin/com/example/kmp/feature/settings/SettingsScreen.kt"],
@@ -365,7 +453,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "ViewModelRole.kt",
-        "line": 19
+        "line": 20
       },
       "layout": [
         {
@@ -376,7 +464,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ViewModelRole.kt",
-            "line": 50
+            "line": 53
           },
           "modulePath": null,
           "pathInModule": "feature",
@@ -397,11 +485,18 @@
           "description": null,
           "declaredAt": {
             "fileName": "ViewModelRole.kt",
-            "line": 50
+            "line": 53
           },
           "modulePath": null,
           "pathInModule": "feature/*",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -418,11 +513,18 @@
           "description": null,
           "declaredAt": {
             "fileName": "ViewModelRole.kt",
-            "line": 50
+            "line": 53
           },
           "modulePath": null,
           "pathInModule": "feature/*/src",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -439,11 +541,18 @@
           "description": null,
           "declaredAt": {
             "fileName": "ViewModelRole.kt",
-            "line": 50
+            "line": 53
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -460,11 +569,18 @@
           "description": null,
           "declaredAt": {
             "fileName": "ViewModelRole.kt",
-            "line": 50
+            "line": 53
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -481,11 +597,18 @@
           "description": null,
           "declaredAt": {
             "fileName": "ViewModelRole.kt",
-            "line": 50
+            "line": 53
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -502,11 +625,18 @@
           "description": null,
           "declaredAt": {
             "fileName": "ViewModelRole.kt",
-            "line": 50
+            "line": 53
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -523,11 +653,18 @@
           "description": null,
           "declaredAt": {
             "fileName": "ViewModelRole.kt",
-            "line": 50
+            "line": 53
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -544,11 +681,18 @@
           "description": null,
           "declaredAt": {
             "fileName": "ViewModelRole.kt",
-            "line": 50
+            "line": 53
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp/feature",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -565,11 +709,24 @@
           "description": null,
           "declaredAt": {
             "fileName": "ViewModelRole.kt",
-            "line": 50
+            "line": 53
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            },
+            {
+              "name": "feature",
+              "segmentIndex": 9,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -586,11 +743,30 @@
           "description": null,
           "declaredAt": {
             "fileName": "ViewModelRole.kt",
-            "line": 51
+            "line": 54
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/*ViewModel.kt",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            },
+            {
+              "name": "feature",
+              "segmentIndex": 9,
+              "wildcardIndex": 0,
+              "transform": null
+            },
+            {
+              "name": "feature",
+              "segmentIndex": 10,
+              "wildcardIndex": 0,
+              "transform": "pascalCase"
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": ["feature/home/src/commonMain/kotlin/com/example/kmp/feature/home/HomeViewModel.kt", "feature/settings/src/commonMain/kotlin/com/example/kmp/feature/settings/SettingsViewModel.kt"],
@@ -608,7 +784,7 @@
           "range": "Subtree",
           "declaredAt": {
             "fileName": "ViewModelRole.kt",
-            "line": 56
+            "line": 59
           },
           "layoutPath": null,
           "anchors": ["feature/*/src/commonMain/kotlin/com/example/kmp/feature/*"],
@@ -632,7 +808,7 @@
                       "text": "internal class HomeViewModel : ViewModel",
                       "declaredAt": {
                         "fileName": "ViewModelRole.kt",
-                        "line": 67
+                        "line": 70
                       }
                     }
                   ],
@@ -656,7 +832,7 @@
                       "text": "internal data class *Ui",
                       "declaredAt": {
                         "fileName": "ViewModelRole.kt",
-                        "line": 64
+                        "line": 67
                       }
                     }
                   ],
@@ -672,7 +848,7 @@
                       "text": "internal class SettingsViewModel : ViewModel",
                       "declaredAt": {
                         "fileName": "ViewModelRole.kt",
-                        "line": 67
+                        "line": 70
                       }
                     }
                   ],
@@ -695,7 +871,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "RouteRole.kt",
-        "line": 17
+        "line": 19
       },
       "layout": [
         {
@@ -706,7 +882,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "RouteRole.kt",
-            "line": 42
+            "line": 46
           },
           "modulePath": null,
           "pathInModule": "feature",
@@ -727,11 +903,18 @@
           "description": null,
           "declaredAt": {
             "fileName": "RouteRole.kt",
-            "line": 42
+            "line": 46
           },
           "modulePath": null,
           "pathInModule": "feature/*",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -748,11 +931,18 @@
           "description": null,
           "declaredAt": {
             "fileName": "RouteRole.kt",
-            "line": 42
+            "line": 46
           },
           "modulePath": null,
           "pathInModule": "feature/*/src",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -769,11 +959,18 @@
           "description": null,
           "declaredAt": {
             "fileName": "RouteRole.kt",
-            "line": 42
+            "line": 46
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -790,11 +987,18 @@
           "description": null,
           "declaredAt": {
             "fileName": "RouteRole.kt",
-            "line": 42
+            "line": 46
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -811,11 +1015,18 @@
           "description": null,
           "declaredAt": {
             "fileName": "RouteRole.kt",
-            "line": 42
+            "line": 46
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -832,11 +1043,18 @@
           "description": null,
           "declaredAt": {
             "fileName": "RouteRole.kt",
-            "line": 42
+            "line": 46
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -853,11 +1071,18 @@
           "description": null,
           "declaredAt": {
             "fileName": "RouteRole.kt",
-            "line": 42
+            "line": 46
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -874,11 +1099,18 @@
           "description": null,
           "declaredAt": {
             "fileName": "RouteRole.kt",
-            "line": 42
+            "line": 46
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp/feature",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -895,11 +1127,24 @@
           "description": null,
           "declaredAt": {
             "fileName": "RouteRole.kt",
-            "line": 42
+            "line": 46
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            },
+            {
+              "name": "feature",
+              "segmentIndex": 9,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
@@ -916,11 +1161,30 @@
           "description": null,
           "declaredAt": {
             "fileName": "RouteRole.kt",
-            "line": 43
+            "line": 47
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/*Route.kt",
-          "captures": [],
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            },
+            {
+              "name": "feature",
+              "segmentIndex": 9,
+              "wildcardIndex": 0,
+              "transform": null
+            },
+            {
+              "name": "feature",
+              "segmentIndex": 10,
+              "wildcardIndex": 0,
+              "transform": "pascalCase"
+            }
+          ],
           "moduleCapture": null,
           "template": null,
           "matchedFiles": ["feature/home/src/commonMain/kotlin/com/example/kmp/feature/home/HomeRoute.kt", "feature/settings/src/commonMain/kotlin/com/example/kmp/feature/settings/SettingsRoute.kt"],
@@ -1357,7 +1621,7 @@
       "name": "ScreenPreview",
       "groupPath": ["feature"],
       "title": "Screen preview",
-      "summary": "A private @Composable annotated with @Preview for a screen. Placed in Home*Preview.kt in the feature module that holds the screen, with the content wrapped in PreviewRoot",
+      "summary": "A private @Composable annotated with @Preview for a screen. Placed in <Target>Preview.kt in the feature module that holds the screen, with the content wrapped in PreviewRoot",
       "documented": null,
       "declaredAt": {
         "fileName": "ScreenPreviewRole.kt",
@@ -1930,8 +2194,8 @@
           "captures": [],
           "moduleCapture": null,
           "template": null,
-          "matchedFiles": ["ui/src/commonMain/kotlin/com/example/kmp/ui/component/PrimaryButton.kt", "ui/src/commonMain/kotlin/com/example/kmp/ui/component/PrimaryButtonPreview.kt"],
-          "matchedCount": 2,
+          "matchedFiles": ["ui/src/commonMain/kotlin/com/example/kmp/ui/component/PrimaryButton.kt"],
+          "matchedCount": 1,
           "matchedFilesTruncated": false,
           "synthetic": false,
           "place": false
@@ -2394,7 +2658,7 @@
       "name": "ComponentPreview",
       "groupPath": ["ui"],
       "title": "Component preview",
-      "summary": "A private @Composable annotated with @Preview for a component. Placed in <Target>Preview.kt in the component package of :ui, with the content wrapped in PreviewRoot",
+      "summary": "A private @Composable annotated with @Preview for a component. Placed in <Target>Preview.kt in the component/preview package of :ui, with the content wrapped in PreviewRoot",
       "documented": null,
       "declaredAt": {
         "fileName": "ComponentPreviewRole.kt",
@@ -2409,7 +2673,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentPreviewRole.kt",
-            "line": 41
+            "line": 40
           },
           "modulePath": null,
           "pathInModule": "ui",
@@ -2430,7 +2694,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentPreviewRole.kt",
-            "line": 42
+            "line": 41
           },
           "modulePath": null,
           "pathInModule": "ui/src",
@@ -2451,7 +2715,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentPreviewRole.kt",
-            "line": 42
+            "line": 41
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain",
@@ -2472,7 +2736,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentPreviewRole.kt",
-            "line": 42
+            "line": 41
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin",
@@ -2493,7 +2757,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentPreviewRole.kt",
-            "line": 42
+            "line": 41
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com",
@@ -2514,7 +2778,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentPreviewRole.kt",
-            "line": 42
+            "line": 41
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example",
@@ -2535,7 +2799,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentPreviewRole.kt",
-            "line": 42
+            "line": 41
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp",
@@ -2556,7 +2820,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentPreviewRole.kt",
-            "line": 42
+            "line": 41
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp/ui",
@@ -2577,7 +2841,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentPreviewRole.kt",
-            "line": 42
+            "line": 41
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp/ui/component",
@@ -2592,20 +2856,41 @@
         },
         {
           "index": 9,
-          "path": "ui/src/commonMain/kotlin/com/example/kmp/ui/component/*Preview.kt",
+          "path": "ui/src/commonMain/kotlin/com/example/kmp/ui/component/preview",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ComponentPreviewRole.kt",
+            "line": 41
+          },
+          "modulePath": null,
+          "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp/ui/component/preview",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 10,
+          "path": "ui/src/commonMain/kotlin/com/example/kmp/ui/component/preview/*Preview.kt",
           "kind": "File",
           "required": false,
           "description": null,
           "declaredAt": {
             "fileName": "ComponentPreviewRole.kt",
-            "line": 42
+            "line": 41
           },
           "modulePath": null,
-          "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp/ui/component/*Preview.kt",
+          "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp/ui/component/preview/*Preview.kt",
           "captures": [],
           "moduleCapture": null,
           "template": null,
-          "matchedFiles": ["ui/src/commonMain/kotlin/com/example/kmp/ui/component/PrimaryButtonPreview.kt"],
+          "matchedFiles": ["ui/src/commonMain/kotlin/com/example/kmp/ui/component/preview/PrimaryButtonPreview.kt"],
           "matchedCount": 1,
           "matchedFilesTruncated": false,
           "synthetic": false,
@@ -4973,7 +5258,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DefinitionSectionsRole.kt",
-            "line": 20
+            "line": 21
           },
           "modulePath": null,
           "pathInModule": "architecture-test",
@@ -4994,7 +5279,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DefinitionSectionsRole.kt",
-            "line": 21
+            "line": 22
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src",
@@ -5015,7 +5300,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DefinitionSectionsRole.kt",
-            "line": 21
+            "line": 22
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src/test",
@@ -5036,7 +5321,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DefinitionSectionsRole.kt",
-            "line": 21
+            "line": 22
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src/test/kotlin",
@@ -5057,7 +5342,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DefinitionSectionsRole.kt",
-            "line": 21
+            "line": 22
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src/test/kotlin/com",
@@ -5078,7 +5363,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DefinitionSectionsRole.kt",
-            "line": 21
+            "line": 22
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src/test/kotlin/com/example",
@@ -5099,7 +5384,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DefinitionSectionsRole.kt",
-            "line": 21
+            "line": 22
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src/test/kotlin/com/example/kmp",
@@ -5120,7 +5405,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DefinitionSectionsRole.kt",
-            "line": 21
+            "line": 22
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src/test/kotlin/com/example/kmp/DocumentSections.kt",
@@ -8354,7 +8639,7 @@
         {
           "name": "namespace of a library module follows the module path",
           "backend": "custom",
-          "checkClass": "com.example.kmp.groups.GradleGroupKt$$Lambda$122/0x000000700109d0f8",
+          "checkClass": "com.example.kmp.groups.GradleGroupKt$$Lambda$122/0x000000080109d0f8",
           "range": "Subtree",
           "declaredAt": {
             "fileName": "GradleGroup.kt",

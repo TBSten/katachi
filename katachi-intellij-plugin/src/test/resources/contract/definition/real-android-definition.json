@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "katachiVersion": "0.2.0",
-  "generatedAt": "2026-10-25T14:11:32Z",
+  "generatedAt": "2026-10-25T16:14:09Z",
   "projectRoot": "/__ROOT__",
   "architecture": {
     "declaredAt": {
@@ -5951,7 +5951,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DefinitionSectionsRole.kt",
-            "line": 24
+            "line": 26
           },
           "modulePath": null,
           "pathInModule": "architecture-test",
@@ -5972,7 +5972,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DefinitionSectionsRole.kt",
-            "line": 25
+            "line": 27
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src",
@@ -5993,7 +5993,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DefinitionSectionsRole.kt",
-            "line": 25
+            "line": 27
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src/test",
@@ -6014,7 +6014,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DefinitionSectionsRole.kt",
-            "line": 25
+            "line": 27
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src/test/kotlin",
@@ -6035,7 +6035,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DefinitionSectionsRole.kt",
-            "line": 25
+            "line": 27
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src/test/kotlin/com",
@@ -6056,7 +6056,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DefinitionSectionsRole.kt",
-            "line": 25
+            "line": 27
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src/test/kotlin/com/example",
@@ -6077,7 +6077,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DefinitionSectionsRole.kt",
-            "line": 25
+            "line": 27
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src/test/kotlin/com/example/sample",
@@ -6098,7 +6098,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DefinitionSectionsRole.kt",
-            "line": 26
+            "line": 28
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src/test/kotlin/com/example/sample/DocumentSections.kt",
@@ -7574,7 +7574,7 @@
         {
           "name": "namespace of a library module follows the module path",
           "backend": "custom",
-          "checkClass": "com.example.sample.groups.GradleGroupKt$$Lambda$119/0x00000070010976c0",
+          "checkClass": "com.example.sample.groups.GradleGroupKt$$Lambda$119/0x00000090010976c0",
           "range": "Subtree",
           "declaredAt": {
             "fileName": "GradleGroup.kt",
