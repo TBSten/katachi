@@ -64,9 +64,12 @@ fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role
             }
         }
     }
-    // A plain Kotlin interface named after the file, of functions only. :data knows neither
-    // Android, Compose nor :ui, so importing any of them fails.
+    // A plain Kotlin interface named after the file, of functions only, in the package of the
+    // domain's directory. :data knows neither Android, Compose nor :ui, so importing any of them
+    // fails.
     ktFileContent {
+        `package`(matchingDirectory)
+
         `import`("kotlin.**")
         `import`("kotlinx.**")
         `import`("com.example.sample.data.**")

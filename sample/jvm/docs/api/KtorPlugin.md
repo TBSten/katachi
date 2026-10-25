@@ -26,6 +26,10 @@ of the Ktor feature being installed.
 
 Example: `Routing.kt`
 
+| Package |
+|---|
+| `com.example.plugin` |
+
 | Import | |
 |---|---|
 | `io.ktor.**` | optional |

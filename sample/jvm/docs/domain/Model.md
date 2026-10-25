@@ -30,10 +30,25 @@ capital letter are covered; a directory dug beneath it does not fall under this 
 
 Example: `Health.kt`
 
+| Package |
+|---|
+| `com.example.model` |
+
 | Import | |
 |---|---|
 | `kotlin.**` | optional |
 | `kotlinx.serialization.**` | optional |
+
+| Declaration | |
+|---|---|
+| `(data or enum or value) class Health` | required |
+
+### Members of `class Health`
+
+| Member | |
+|---|---|
+| `val *` | optional |
+| `fun *(...)` | optional |
 
 ## Examples
 

@@ -29,6 +29,10 @@ It only receives the Repository as an argument and never creates it. Creating it
 
 Example: `HomeViewModel.kt`
 
+| Package |
+|---|
+| (the file's directory) |
+
 | Import | |
 |---|---|
 | `androidx.lifecycle.**` | optional |
@@ -40,6 +44,12 @@ Example: `HomeViewModel.kt`
 |---|---|
 | `internal data class *Ui` | optional |
 | `internal class HomeViewModel : ViewModel` | required |
+
+### Members of `class *Ui`
+
+| Member | |
+|---|---|
+| `val *` | optional |
 
 ### Members of `class HomeViewModel`
 

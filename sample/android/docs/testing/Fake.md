@@ -38,6 +38,10 @@ goes into is decided by which `DataDomain` the start of the name matches.
 
 Example: `FakeUserRepository.kt`
 
+| Package |
+|---|
+| `com.example.sample.testing` |
+
 | Import | |
 |---|---|
 | `com.example.sample.data.**` | optional |

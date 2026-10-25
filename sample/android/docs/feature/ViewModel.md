@@ -48,6 +48,12 @@ Example: `HomeViewModel.kt`
 | `internal data class HomeContent` | required |
 | `internal class HomeViewModel : ViewModel` | required |
 
+### Members of `class HomeContent`
+
+| Member | |
+|---|---|
+| `val *` | optional |
+
 ### Members of `class HomeViewModel`
 
 | Member | |

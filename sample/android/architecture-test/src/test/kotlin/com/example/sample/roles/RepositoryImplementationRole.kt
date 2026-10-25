@@ -49,8 +49,11 @@ fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementa
         }
     }
     // The class named after the file implements the interface of the same name without `Impl`,
-    // and holds overrides and private state only.
+    // and holds overrides and private state only. The package is the domain's directory the
+    // layout put the file in (data/user/ -> com.example.sample.data.user).
     ktFileContent {
+        `package`(matchingDirectory)
+
         `import`("kotlin.**")
         `import`("kotlinx.**")
         `import`("com.example.sample.data.**")

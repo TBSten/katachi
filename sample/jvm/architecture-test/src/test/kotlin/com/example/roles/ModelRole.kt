@@ -39,10 +39,18 @@ fun DeclarationContainerScope.model() = "Model".role {
         // character of that range). Any such `.kt` directly in it counts; a subdirectory does not.
         mainSourceSet / kotlin / "com/example/model" / "[A-Z]*".ktFile()
     }
-    // Imports only: a model may know about kotlinx.serialization and no further. No other kind
-    // of line is written, so the declarations themselves are not looked at.
+    // A model may know about kotlinx.serialization and no further. The file holds the value it is
+    // named after (Health.kt -> Health), and that value holds read-only properties and the
+    // computations over them; a `var` or a second top-level declaration fails.
     ktFileContent {
+        `package`("com.example.model")
+
         `import`("kotlin.**")
         `import`("kotlinx.serialization.**")
+
+        required(data or enum or value, `class`, fileName) { // @Serializable data class Health(...)
+            allow(`val`, "*")                                // status, version
+            allow(`fun`, "*")
+        }
     }
 }
