@@ -17,7 +17,9 @@ import me.tbsten.katachi.konsist.declarations.internal.allowWriter
  * ## Example 1: one class named after the file, plus any private helper
  * ```kt
  * ktFileContent {
- *     allow(`class`, fileName)
+ *     `package`("com.example.**")
+ *
+ *     allow(`class`, fileName) { allow(anythingElse) }
  *     allow(private, anythingElse)
  * }
  * ```

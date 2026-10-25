@@ -26,7 +26,10 @@ class KtFileContentNamedSpec : FreeSpec({
                 "core/domain/GetUserUseCase.kt" to classNamed("Other"),
                 paths = { "core/domain" / "*UseCase".ktFile() },
             ) {
-                "UseCase の形".ktFileContent { required(`class`, fileName) }
+                "UseCase の形".ktFileContent {
+                    `package`("**")
+                    required(`class`, fileName)
+                }
             }
 
             violations.report() shouldContain "FileConstraint: \"UseCase の形 (ktFileContent)\""
@@ -37,7 +40,10 @@ class KtFileContentNamedSpec : FreeSpec({
                 "core/domain/GetUserUseCase.kt" to classNamed("Other"),
                 paths = { "core/domain" / "*UseCase".ktFile() },
             ) {
-                ktFileContent { required(`class`, fileName) }
+                ktFileContent {
+                    `package`("**")
+                    required(`class`, fileName)
+                }
             }
 
             violations.report() shouldContain "FileConstraint: \"ktFileContent\""
@@ -48,16 +54,25 @@ class KtFileContentNamedSpec : FreeSpec({
                 "core/domain/GetUserUseCase.kt" to classNamed("GetUserUseCase"),
                 paths = { "core/domain" / "*UseCase".ktFile() },
             ) {
-                "UseCase の形".ktFileContent { required(`class`, fileName) }
+                "UseCase の形".ktFileContent {
+                    `package`("**")
+                    required(`class`, fileName)
+                }
             }.shouldBeEmpty()
         }
 
         "空白だけの名前は konsist { } と同じく宣言の時に例外になる" {
             shouldThrow<KatachiFileConstraintNameException> {
-                ktFileContentRun(paths = { "core" / "*".ktFile() }) { "  ".ktFileContent { required(`class`, fileName) } }
+                ktFileContentRun(paths = { "core" / "*".ktFile() }) { "  ".ktFileContent {
+                    `package`("**")
+                    required(`class`, fileName)
+                } }
             }
             shouldThrow<KatachiFileConstraintNameException> {
-                ktFileContentRun(paths = { "core" / "*".ktFile() }) { "a\nb".ktFileContent { required(`class`, fileName) } }
+                ktFileContentRun(paths = { "core" / "*".ktFile() }) { "a\nb".ktFileContent {
+                    `package`("**")
+                    required(`class`, fileName)
+                } }
             }
         }
     }
@@ -65,7 +80,10 @@ class KtFileContentNamedSpec : FreeSpec({
     "名前の確かめはブロックの評価より先" - {
         "空白だけの名前とブロックの書き間違いが重なると、名前の例外が出る" {
             shouldThrow<KatachiFileConstraintNameException> {
-                ktFileContentRun(paths = { "core" / "*".ktFile() }) { "  ".ktFileContent { annotated("X") } }
+                ktFileContentRun(paths = { "core" / "*".ktFile() }) { "  ".ktFileContent {
+                    `package`("**")
+                    annotated("X")
+                } }
             }
         }
     }
@@ -76,8 +94,14 @@ class KtFileContentNamedSpec : FreeSpec({
                 rolePageOf {
                     "Screen".role {
                         layout { "src" / "*".ktFile() }
-                        "前半".ktFileContent { required(`class`, fileName) }
-                        ktFileContent { required(`interface`, fileName) }
+                        "前半".ktFileContent {
+                            `package`("**")
+                            required(`class`, fileName)
+                        }
+                        ktFileContent {
+                            `package`("**")
+                            required(`interface`, fileName)
+                        }
                     }
                 }
             }
@@ -88,7 +112,10 @@ class KtFileContentNamedSpec : FreeSpec({
                 "UseCase".role {
                     example("GetUserUseCase")
                     layout { "domain" / "*UseCase".ktFile() }
-                    "UseCase の形".ktFileContent { required(`class`, fileName) }
+                    "UseCase の形".ktFileContent {
+                        `package`("**")
+                        required(`class`, fileName)
+                    }
                 }
             }.getValue("UseCase.md")
 
@@ -99,11 +126,17 @@ class KtFileContentNamedSpec : FreeSpec({
             rolePageOf {
                 "A".role {
                     layout { "a" / "*".ktFile() }
-                    ktFileContent { required(`class`, fileName) }
+                    ktFileContent {
+                        `package`("**")
+                        required(`class`, fileName)
+                    }
                 }
                 "B".role {
                     layout { "b" / "*".ktFile() }
-                    ktFileContent { required(`class`, fileName) }
+                    ktFileContent {
+                        `package`("**")
+                        required(`class`, fileName)
+                    }
                 }
             }
         }

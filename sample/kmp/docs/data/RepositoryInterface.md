@@ -41,6 +41,16 @@ package in the definition would make the documentation point at a directory that
 
 Example: `UserRepository.kt`
 
+| Package |
+|---|
+| `com.example.kmp.data.user` |
+
+| Import | |
+|---|---|
+| `kotlin.**` | optional |
+| `kotlinx.**` | optional |
+| `com.example.kmp.data.**` | optional |
+
 | Declaration | |
 |---|---|
 | `interface UserRepository` | required |

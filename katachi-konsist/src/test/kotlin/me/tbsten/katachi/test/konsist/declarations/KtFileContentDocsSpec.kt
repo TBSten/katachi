@@ -56,7 +56,7 @@ class KtFileContentDocsSpec : FreeSpec({
             |---|---|
             | `@HiltViewModel public class HomeViewModel : ViewModel` | required |
 
-            ### Members of `class HomeViewModel`
+            ### Members of `@HiltViewModel public class HomeViewModel`
 
             | Member | |
             |---|---|
@@ -91,6 +91,8 @@ class KtFileContentDocsSpec : FreeSpec({
             | (the file's directory) |
             | `com.example.legacy.**` (not allowed) |
 
+            No import line is written, so no import is allowed.
+
             | Declaration | |
             |---|---|
             | `interface GetUserUseCase` | required |
@@ -111,7 +113,7 @@ class KtFileContentDocsSpec : FreeSpec({
         """.trimIndent()
     }
 
-    "書いていない種類の表は出ない" {
+    "書いていない種類は表の代わりに、何も許さないと 1 行で書く" {
         val page = rolePageOf {
             "Repository".role {
                 example("UserRepository")
@@ -123,9 +125,43 @@ class KtFileContentDocsSpec : FreeSpec({
         page shouldContain "| Import | |"
         page shouldNotContain "| Package |"
         page shouldNotContain "| Declaration |"
+        page shouldContain "No package line is written, so no package may be declared."
+        page shouldContain "No declaration line is written, so nothing may be declared in the file."
     }
 
-    "例のファイルで何も書かなければ節を出さない" {
+    "{ } の無いクラスの行は、メンバを何も許さないと書く。関数の行には書かない" {
+        val page = rolePageOf {
+            "Repository".role {
+                example("UserRepository")
+                layout { "data" / "*Repository".ktFile() }
+                ktFileContent {
+                    required(`interface`, fileName)
+                    allow(private, `fun`, "helper")
+                }
+            }
+        }.getValue("Repository.md")
+
+        page shouldContain "### Members of `interface UserRepository`\n\nNo members are allowed."
+        page shouldNotContain "Members of `fun"
+    }
+
+    "メンバの見出しは、行の修飾子と種類を書いたとおりに出す" {
+        val page = rolePageOf {
+            "Ui".role {
+                example("AppButton")
+                layout { "ui" / "*".ktFile() }
+                ktFileContent {
+                    allow(public, enum, `class`, "AppButton*") { allow(anythingElse) }
+                    allow(data or enum or value, `class`, "Health")
+                }
+            }
+        }.getValue("Ui.md")
+
+        page shouldContain "### Members of `public enum class AppButton*`"
+        page shouldContain "### Members of `(data or enum or value) class Health`"
+    }
+
+    "例のファイルで何も書かなくても節を出し、どの種類も何も許さないと書く" {
         val page = rolePageOf {
             "Repository".role {
                 example("UserRepository")
@@ -134,7 +170,17 @@ class KtFileContentDocsSpec : FreeSpec({
             }
         }.getValue("Repository.md")
 
-        page shouldNotContain "## Kotlin file content"
+        page shouldContain """
+            ## Kotlin file content
+
+            Example: `UserRepository.kt`
+
+            No package line is written, so no package may be declared.
+
+            No import line is written, so no import is allowed.
+
+            No declaration line is written, so nothing may be declared in the file.
+        """.trimIndent()
     }
 
     "例が無く、プロジェクトに当たるファイルも無ければ Sample.kt で表にし、そう書く" {

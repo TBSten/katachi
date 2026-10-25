@@ -67,9 +67,9 @@ fun DeclarationContainerScope.service() = "Service".role {
                     """.trimIndent() + "\n"
                 }
     }
-    // What a Service file may hold, in the order the file lists it. Only the kinds a line is
-    // written for are checked, each as an allow list: the package, the imports, the one class
-    // and that class's members. The template above writes a file that passes it.
+    // What a Service file may hold, in the order the file lists it. Each kind is an allow list
+    // of the lines written for it, and nothing else may be there: the package, the imports, the
+    // one class and that class's members. The template above writes a file that passes it.
     "Must import models and Repositories only, never HTTP".ktFileContent {
         `package`("com.example.service")
 

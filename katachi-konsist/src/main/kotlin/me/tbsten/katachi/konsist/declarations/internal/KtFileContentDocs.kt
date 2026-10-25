@@ -16,8 +16,8 @@ import me.tbsten.katachi.konsist.declarations.KtFileContentScope
 private const val HEADING: String = "## Kotlin file content"
 
 /**
- * The section for [block], evaluated for [context]'s example file, or `null` when it writes no
- * line for that file.
+ * The section for [block], evaluated for [context]'s example file. A kind it writes no line for
+ * is said to allow nothing, as the check reads it.
  *
  * A katachi exception -- a mistake in the definition, such as a `captureValue` name the layout
  * does not capture -- is thrown, which stops the pages. Anything else the block throws is most
@@ -29,7 +29,7 @@ internal fun ktFileContentSection(
     context: FileConstraintDocumentContext,
     declaredAt: DeclarationSite,
     patterns: PatternCache,
-): String? {
+): String {
     val example = context.exampleFile
     val exampleLine = when (example.source) {
         FileConstraintExampleSource.Placeholder ->
@@ -63,19 +63,29 @@ internal fun ktFileContentSection(
         return listOf(HEADING, exampleLine, "The rules could not be shown for this example: ${causeLineOf(cause)}")
             .joinToString("\n\n")
     }
-    if (rules.isEmpty) return null
+    val declarations = rules.declarations
     val parts = buildList {
         add(HEADING)
         add(exampleLine)
-        if (rules.packages.isNotEmpty()) add(packageTable(rules.packages))
-        if (rules.imports.isNotEmpty()) add(importTable(rules.imports))
-        rules.declarations?.let { declarations ->
-            add(declarationTable("Declaration", declarations))
-            addAll(memberSections(declarations, outer = emptyList()))
-        }
+        add(if (rules.packages.isEmpty()) NO_PACKAGE_LINE else packageTable(rules.packages))
+        add(if (rules.imports.isEmpty()) NO_IMPORT_LINE else importTable(rules.imports))
+        add(if (declarations.entries.isEmpty()) NO_DECLARATION_LINE else declarationTable("Declaration", declarations))
+        addAll(memberSections(declarations, outer = emptyList()))
     }
     return parts.joinToString("\n\n")
 }
+
+private const val NO_PACKAGE_LINE: String = "No package line is written, so no package may be declared."
+
+private const val NO_IMPORT_LINE: String = "No import line is written, so no import is allowed."
+
+private const val NO_DECLARATION_LINE: String = "No declaration line is written, so nothing may be declared in the file."
+
+private const val NO_MEMBERS: String = "No members are allowed."
+
+/** The kinds whose declarations have members, and so whose lines say what members they may have. */
+private val KINDS_WITH_MEMBERS: Set<DeclarationKindName> =
+    setOf(DeclarationKindName.Class, DeclarationKindName.Interface, DeclarationKindName.Object)
 
 private fun packageTable(rules: List<PackageRule>): String = table(listOf("Package")) {
     rules.map { rule ->
@@ -114,14 +124,18 @@ private fun declarationTable(heading: String, list: DeclarationListRules): Strin
  */
 private const val ANYTHING_ELSE: String = "(anything else)"
 
-/** A `### Members of ...` section for every line with a `{ }`, outer classes before their nested ones. */
+/**
+ * A `### Members of ...` section for every allowed line of a class, an interface or an object,
+ * outer classes before their nested ones. A line without `{ }` allows no member, as an empty one does.
+ */
 private fun memberSections(list: DeclarationListRules, outer: List<String>): List<String> = list.lines.flatMap { rule ->
-    val members = rule.members ?: return@flatMap emptyList()
+    if (rule.prohibited || rule.shapes.none { it.kind in KINDS_WITH_MEMBERS }) return@flatMap emptyList()
+    val members = rule.members
     val path = outer + rule.name.written
-    val kinds = rule.shapes.map { it.kind.keyword }.distinct().joinToString(" or ")
-    val heading = "### Members of ${code("$kinds ${path.joinToString(".")}")}"
-    val body = if (members.entries.isEmpty()) "No members are allowed." else declarationTable("Member", members)
-    listOf("$heading\n\n$body") + memberSections(members, path)
+    // The line's modifiers and kinds as written (`public enum class`, `(data or value) class`), the name with its outer classes.
+    val heading = "### Members of ${code(renderDeclaration(rule.shapes, path.joinToString("."), prohibited = false))}"
+    val body = if (members == null || members.entries.isEmpty()) NO_MEMBERS else declarationTable("Member", members)
+    listOf("$heading\n\n$body") + members?.let { memberSections(it, path) }.orEmpty()
 }
 
 /** The line as written, without the `not ` a status column says and the `except` a cell lists. */

@@ -53,8 +53,11 @@ fun DeclarationContainerScope.actualImplementation() = "ActualImplementation".ro
     }
     // Nothing but `actual` declarations, in the same package as the `expect`: the two do not
     // pair up otherwise. Whether every `expect` has its `actual` is still the compiler's to say.
+    // No import line: `platformName()` needs none, so an import fails until a line is written for
+    // it, such as `import`("platform.UIKit.**") for an iOS `actual` that reads the device.
     ktFileContent {
         `package`("com.example.kmp.data.platform")
+
         allow(actual, anythingElse)
     }
 }

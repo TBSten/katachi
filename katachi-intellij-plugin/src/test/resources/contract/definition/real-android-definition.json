@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "katachiVersion": "0.2.0",
-  "generatedAt": "2026-10-25T06:26:48Z",
+  "generatedAt": "2026-10-25T14:11:32Z",
   "projectRoot": "/__ROOT__",
   "architecture": {
     "declaredAt": {
@@ -988,7 +988,7 @@
                       "text": "internal class HomeViewModel : ViewModel",
                       "declaredAt": {
                         "fileName": "ViewModelRole.kt",
-                        "line": 107
+                        "line": 109
                       }
                     }
                   ],
@@ -1028,7 +1028,7 @@
                       "text": "internal class SettingsViewModel : ViewModel",
                       "declaredAt": {
                         "fileName": "ViewModelRole.kt",
-                        "line": 107
+                        "line": 109
                       }
                     }
                   ],
@@ -4005,7 +4005,7 @@
           "range": "Subtree",
           "declaredAt": {
             "fileName": "RepositoryInterfaceRole.kt",
-            "line": 69
+            "line": 70
           },
           "layoutPath": null,
           "anchors": ["data/src/main/kotlin/com/example/sample/data/user", "data/src/main/kotlin/com/example/sample/data/settings"],
@@ -4029,7 +4029,7 @@
                       "text": "interface SettingsRepository",
                       "declaredAt": {
                         "fileName": "RepositoryInterfaceRole.kt",
-                        "line": 74
+                        "line": 77
                       }
                     }
                   ],
@@ -4053,7 +4053,7 @@
                       "text": "interface UserRepository",
                       "declaredAt": {
                         "fileName": "RepositoryInterfaceRole.kt",
-                        "line": 74
+                        "line": 77
                       }
                     }
                   ],
@@ -4412,7 +4412,7 @@
           "range": "Subtree",
           "declaredAt": {
             "fileName": "RepositoryImplementationRole.kt",
-            "line": 53
+            "line": 54
           },
           "layoutPath": null,
           "anchors": ["data/src/main/kotlin/com/example/sample/data/user", "data/src/main/kotlin/com/example/sample/data/settings"],
@@ -4436,7 +4436,7 @@
                       "text": "class SettingsRepositoryImpl : SettingsRepository",
                       "declaredAt": {
                         "fileName": "RepositoryImplementationRole.kt",
-                        "line": 58
+                        "line": 61
                       }
                     }
                   ],
@@ -4460,7 +4460,7 @@
                       "text": "class UserRepositoryImpl : UserRepository",
                       "declaredAt": {
                         "fileName": "RepositoryImplementationRole.kt",
-                        "line": 58
+                        "line": 61
                       }
                     }
                   ],
@@ -5344,7 +5344,7 @@
                       "text": "class FakeSettingsRepository : SettingsRepository",
                       "declaredAt": {
                         "fileName": "FakeRole.kt",
-                        "line": 90
+                        "line": 92
                       }
                     }
                   ],
@@ -5368,7 +5368,7 @@
                       "text": "class FakeUserRepository : UserRepository",
                       "declaredAt": {
                         "fileName": "FakeRole.kt",
-                        "line": 90
+                        "line": 92
                       }
                     }
                   ],
@@ -7574,7 +7574,7 @@
         {
           "name": "namespace of a library module follows the module path",
           "backend": "custom",
-          "checkClass": "com.example.sample.groups.GradleGroupKt$$Lambda$118/0x0000000701096e78",
+          "checkClass": "com.example.sample.groups.GradleGroupKt$$Lambda$119/0x00000070010976c0",
           "range": "Subtree",
           "declaredAt": {
             "fileName": "GradleGroup.kt",

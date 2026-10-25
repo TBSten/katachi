@@ -8,7 +8,10 @@ package me.tbsten.katachi.intellij.model
 internal data class FileDeclarationsModel(
     /** Relative to the project root, `/` separated; the same spelling as a layout entry's `matchedFiles`. */
     val file: String,
-    /** Whether the block wrote any top-level declaration line. When `false` the declarations are not restricted. */
+    /**
+     * Whether the top-level declarations were judged: `false` only when the file could not be
+     * explained ([unexplainedReason]). A block with no declaration line still judges them, allowing none.
+     */
     val declarationsChecked: Boolean,
     val declarations: List<DeclarationModel>,
     /** The required lines no declaration matched. */

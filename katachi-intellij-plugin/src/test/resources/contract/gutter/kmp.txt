@@ -1350,9 +1350,9 @@ roles: Gradle.BuildScript
 == data/src/androidMain/kotlin/com/example/kmp/data/platform/PlatformInfo.android.kt
 roles: data.ActualImplementation
     data.ActualImplementation declared at ActualImplementationRole.kt:16 | fun DeclarationContainerScope.actualImplementation() = "ActualImplementation".role {
-3 | ◆ | katachi: data.ActualImplementation — allowed by actual (anything) (ActualImplementationRole.kt:58)
-    allowed at ActualImplementationRole.kt:58 | allow(actual, anythingElse)
-    menu | ◆ Allowed by actual (anything) | ActualImplementationRole.kt:58
+3 | ◆ | katachi: data.ActualImplementation — allowed by actual (anything) (ActualImplementationRole.kt:61)
+    allowed at ActualImplementationRole.kt:61 | allow(actual, anythingElse)
+    menu | ◆ Allowed by actual (anything) | ActualImplementationRole.kt:61
     menu | ◇ Role data.ActualImplementation — Actual implementation | ActualImplementationRole.kt:16
     menu | == Other files of data.ActualImplementation (1)
     menu | PlatformInfo.ios.kt | data/…/com/example/kmp/data/platform
@@ -1363,9 +1363,9 @@ roles: data.ActualImplementation
 == data/src/commonMain/kotlin/com/example/kmp/data/platform/PlatformInfo.kt
 roles: data.ExpectDeclaration
     data.ExpectDeclaration declared at ExpectDeclarationRole.kt:20 | fun DeclarationContainerScope.expectDeclaration() = "ExpectDeclaration".role {
-4 | ◆ | katachi: data.ExpectDeclaration — allowed by expect (anything) (ExpectDeclarationRole.kt:56)
-    allowed at ExpectDeclarationRole.kt:56 | allow(expect, anythingElse)
-    menu | ◆ Allowed by expect (anything) | ExpectDeclarationRole.kt:56
+4 | ◆ | katachi: data.ExpectDeclaration — allowed by expect (anything) (ExpectDeclarationRole.kt:58)
+    allowed at ExpectDeclarationRole.kt:58 | allow(expect, anythingElse)
+    menu | ◆ Allowed by expect (anything) | ExpectDeclarationRole.kt:58
     menu | ◇ Role data.ExpectDeclaration — Expect declaration | ExpectDeclarationRole.kt:20
     menu | == Other files of data.ExpectDeclaration
     menu | (disabled) — No other file yet
@@ -1376,9 +1376,9 @@ roles: data.ExpectDeclaration
 == data/src/commonMain/kotlin/com/example/kmp/data/user/UserRepository.kt
 roles: data.RepositoryInterface
     data.RepositoryInterface declared at RepositoryInterfaceRole.kt:22 | fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role {
-4 | ◆ | katachi: data.RepositoryInterface — allowed by interface UserRepository (RepositoryInterfaceRole.kt:77)
-    allowed at RepositoryInterfaceRole.kt:77 | required(`interface`, fileName) {
-    menu | ◆ Allowed by interface UserRepository | RepositoryInterfaceRole.kt:77
+4 | ◆ | katachi: data.RepositoryInterface — allowed by interface UserRepository (RepositoryInterfaceRole.kt:84)
+    allowed at RepositoryInterfaceRole.kt:84 | required(`interface`, fileName) {
+    menu | ◆ Allowed by interface UserRepository | RepositoryInterfaceRole.kt:84
     menu | ◇ Role data.RepositoryInterface — Repository interface | RepositoryInterfaceRole.kt:22
     menu | == Other files of data.RepositoryInterface
     menu | (disabled) — No other file yet
@@ -1390,9 +1390,9 @@ roles: data.RepositoryInterface
 == data/src/commonMain/kotlin/com/example/kmp/data/user/UserRepositoryImpl.kt
 roles: data.RepositoryImplementation
     data.RepositoryImplementation declared at RepositoryImplementationRole.kt:16 | fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation".role {
-4 | ◆ | katachi: data.RepositoryImplementation — allowed by class UserRepositoryImpl : UserRepository (RepositoryImplementationRole.kt:64)
-    allowed at RepositoryImplementationRole.kt:64 | required(`class`, fileName).superclass("${captureValue("name")}Repository") {
-    menu | ◆ Allowed by class UserRepositoryImpl : UserRepository | RepositoryImplementationRole.kt:64
+4 | ◆ | katachi: data.RepositoryImplementation — allowed by class UserRepositoryImpl : UserRepository (RepositoryImplementationRole.kt:71)
+    allowed at RepositoryImplementationRole.kt:71 | required(`class`, fileName).superclass("${captureValue("name")}Repository") {
+    menu | ◆ Allowed by class UserRepositoryImpl : UserRepository | RepositoryImplementationRole.kt:71
     menu | ◇ Role data.RepositoryImplementation — Repository implementation | RepositoryImplementationRole.kt:16
     menu | == Other files of data.RepositoryImplementation
     menu | (disabled) — No other file yet
@@ -1404,9 +1404,9 @@ roles: data.RepositoryImplementation
 == data/src/iosMain/kotlin/com/example/kmp/data/platform/PlatformInfo.ios.kt
 roles: data.ActualImplementation
     data.ActualImplementation declared at ActualImplementationRole.kt:16 | fun DeclarationContainerScope.actualImplementation() = "ActualImplementation".role {
-3 | ◆ | katachi: data.ActualImplementation — allowed by actual (anything) (ActualImplementationRole.kt:58)
-    allowed at ActualImplementationRole.kt:58 | allow(actual, anythingElse)
-    menu | ◆ Allowed by actual (anything) | ActualImplementationRole.kt:58
+3 | ◆ | katachi: data.ActualImplementation — allowed by actual (anything) (ActualImplementationRole.kt:61)
+    allowed at ActualImplementationRole.kt:61 | allow(actual, anythingElse)
+    menu | ◆ Allowed by actual (anything) | ActualImplementationRole.kt:61
     menu | ◇ Role data.ActualImplementation — Actual implementation | ActualImplementationRole.kt:16
     menu | == Other files of data.ActualImplementation (1)
     menu | PlatformInfo.android.kt | data/…/com/example/kmp/data/platform
@@ -2497,27 +2497,27 @@ roles: feature.Screen
 == feature/home/src/commonMain/kotlin/com/example/kmp/feature/home/HomeScreenPreview.kt
 roles: feature.ScreenPreview
     feature.ScreenPreview declared at ScreenPreviewRole.kt:21 | fun DeclarationContainerScope.screenPreview() = "ScreenPreview".role {
-16 | ◆ | katachi: feature.ScreenPreview — allowed by @Preview private fun *Preview(...) (ScreenPreviewRole.kt:58)
-    allowed at ScreenPreviewRole.kt:58 | allow(annotated("Preview"), private, `fun`, "*Preview")
-    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenPreviewRole.kt:58
+16 | ◆ | katachi: feature.ScreenPreview — allowed by @Preview private fun *Preview(...) (ScreenPreviewRole.kt:64)
+    allowed at ScreenPreviewRole.kt:64 | allow(annotated("Preview"), private, `fun`, "*Preview")
+    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenPreviewRole.kt:64
     menu | ◇ Role feature.ScreenPreview — Screen preview | ScreenPreviewRole.kt:21
     menu | == Other files of feature.ScreenPreview (1)
     menu | SettingsScreenPreview.kt | feature/…/example/kmp/feature/settings
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
-24 | ◆ | katachi: feature.ScreenPreview — allowed by @Preview private fun *Preview(...) (ScreenPreviewRole.kt:58)
-    allowed at ScreenPreviewRole.kt:58 | allow(annotated("Preview"), private, `fun`, "*Preview")
-    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenPreviewRole.kt:58
+24 | ◆ | katachi: feature.ScreenPreview — allowed by @Preview private fun *Preview(...) (ScreenPreviewRole.kt:64)
+    allowed at ScreenPreviewRole.kt:64 | allow(annotated("Preview"), private, `fun`, "*Preview")
+    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenPreviewRole.kt:64
     menu | ◇ Role feature.ScreenPreview — Screen preview | ScreenPreviewRole.kt:21
     menu | == Other files of feature.ScreenPreview (1)
     menu | SettingsScreenPreview.kt | feature/…/example/kmp/feature/settings
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
-32 | ◆ | katachi: feature.ScreenPreview — allowed by @Preview private fun *Preview(...) (ScreenPreviewRole.kt:58)
-    allowed at ScreenPreviewRole.kt:58 | allow(annotated("Preview"), private, `fun`, "*Preview")
-    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenPreviewRole.kt:58
+32 | ◆ | katachi: feature.ScreenPreview — allowed by @Preview private fun *Preview(...) (ScreenPreviewRole.kt:64)
+    allowed at ScreenPreviewRole.kt:64 | allow(annotated("Preview"), private, `fun`, "*Preview")
+    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenPreviewRole.kt:64
     menu | ◇ Role feature.ScreenPreview — Screen preview | ScreenPreviewRole.kt:21
     menu | == Other files of feature.ScreenPreview (1)
     menu | SettingsScreenPreview.kt | feature/…/example/kmp/feature/settings
@@ -2528,9 +2528,9 @@ roles: feature.ScreenPreview
 == feature/home/src/commonMain/kotlin/com/example/kmp/feature/home/HomeViewModel.kt
 roles: feature.ViewModel
     feature.ViewModel declared at ViewModelRole.kt:19 | fun DeclarationContainerScope.viewModel() = "ViewModel".role {
-19 | ◆ | katachi: feature.ViewModel — allowed by internal class HomeViewModel : ViewModel (ViewModelRole.kt:63)
-    allowed at ViewModelRole.kt:63 | required(internal, `class`, fileName).superclass("ViewModel") {
-    menu | ◆ Allowed by internal class HomeViewModel : ViewModel | ViewModelRole.kt:63
+19 | ◆ | katachi: feature.ViewModel — allowed by internal class HomeViewModel : ViewModel (ViewModelRole.kt:67)
+    allowed at ViewModelRole.kt:67 | required(internal, `class`, fileName).superclass("ViewModel") {
+    menu | ◆ Allowed by internal class HomeViewModel : ViewModel | ViewModelRole.kt:67
     menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:19
     menu | == Other files of feature.ViewModel (1)
     menu | SettingsViewModel.kt | feature/…/example/kmp/feature/settings
@@ -2595,18 +2595,18 @@ roles: feature.Screen
 == feature/settings/src/commonMain/kotlin/com/example/kmp/feature/settings/SettingsScreenPreview.kt
 roles: feature.ScreenPreview
     feature.ScreenPreview declared at ScreenPreviewRole.kt:21 | fun DeclarationContainerScope.screenPreview() = "ScreenPreview".role {
-11 | ◆ | katachi: feature.ScreenPreview — allowed by @Preview private fun *Preview(...) (ScreenPreviewRole.kt:58)
-    allowed at ScreenPreviewRole.kt:58 | allow(annotated("Preview"), private, `fun`, "*Preview")
-    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenPreviewRole.kt:58
+11 | ◆ | katachi: feature.ScreenPreview — allowed by @Preview private fun *Preview(...) (ScreenPreviewRole.kt:64)
+    allowed at ScreenPreviewRole.kt:64 | allow(annotated("Preview"), private, `fun`, "*Preview")
+    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenPreviewRole.kt:64
     menu | ◇ Role feature.ScreenPreview — Screen preview | ScreenPreviewRole.kt:21
     menu | == Other files of feature.ScreenPreview (1)
     menu | HomeScreenPreview.kt | feature/…/com/example/kmp/feature/home
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
-22 | ◆ | katachi: feature.ScreenPreview — allowed by @Preview private fun *Preview(...) (ScreenPreviewRole.kt:58)
-    allowed at ScreenPreviewRole.kt:58 | allow(annotated("Preview"), private, `fun`, "*Preview")
-    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenPreviewRole.kt:58
+22 | ◆ | katachi: feature.ScreenPreview — allowed by @Preview private fun *Preview(...) (ScreenPreviewRole.kt:64)
+    allowed at ScreenPreviewRole.kt:64 | allow(annotated("Preview"), private, `fun`, "*Preview")
+    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenPreviewRole.kt:64
     menu | ◇ Role feature.ScreenPreview — Screen preview | ScreenPreviewRole.kt:21
     menu | == Other files of feature.ScreenPreview (1)
     menu | HomeScreenPreview.kt | feature/…/com/example/kmp/feature/home
@@ -2617,18 +2617,18 @@ roles: feature.ScreenPreview
 == feature/settings/src/commonMain/kotlin/com/example/kmp/feature/settings/SettingsViewModel.kt
 roles: feature.ViewModel
     feature.ViewModel declared at ViewModelRole.kt:19 | fun DeclarationContainerScope.viewModel() = "ViewModel".role {
-14 | ◆ | katachi: feature.ViewModel — allowed by internal data class *Ui (ViewModelRole.kt:62)
-    allowed at ViewModelRole.kt:62 | allow(internal, data, `class`, "*Ui")
-    menu | ◆ Allowed by internal data class *Ui | ViewModelRole.kt:62
+14 | ◆ | katachi: feature.ViewModel — allowed by internal data class *Ui (ViewModelRole.kt:64)
+    allowed at ViewModelRole.kt:64 | allow(internal, data, `class`, "*Ui") { // data class SettingsUi(val userCount: Int, ...)
+    menu | ◆ Allowed by internal data class *Ui | ViewModelRole.kt:64
     menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:19
     menu | == Other files of feature.ViewModel (1)
     menu | HomeViewModel.kt | feature/…/com/example/kmp/feature/home
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
-20 | ◆ | katachi: feature.ViewModel — allowed by internal class SettingsViewModel : ViewModel (ViewModelRole.kt:63)
-    allowed at ViewModelRole.kt:63 | required(internal, `class`, fileName).superclass("ViewModel") {
-    menu | ◆ Allowed by internal class SettingsViewModel : ViewModel | ViewModelRole.kt:63
+20 | ◆ | katachi: feature.ViewModel — allowed by internal class SettingsViewModel : ViewModel (ViewModelRole.kt:67)
+    allowed at ViewModelRole.kt:67 | required(internal, `class`, fileName).superclass("ViewModel") {
+    menu | ◆ Allowed by internal class SettingsViewModel : ViewModel | ViewModelRole.kt:67
     menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:19
     menu | == Other files of feature.ViewModel (1)
     menu | HomeViewModel.kt | feature/…/com/example/kmp/feature/home

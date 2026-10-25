@@ -22,9 +22,8 @@ import me.tbsten.katachi.konsist.declarations.TypeKind
  *
  * Names are kept apart so that the properties can say what a change does without judging it
  * themselves. Every line takes a stem of its own (`Alpha`, `bravo`), and the stems are no prefix
- * of each other; `Extra`, `Helper`, `Free` and `Legacy` (or `*Deprecated`) are left to the
- * declarations a property adds, to the ones only `allow(anythingElse)` allows, to the ones nothing looks
- * at, and to the `not.` lines.
+ * of each other; `Extra`, `Helper` and `Legacy` (or `*Deprecated`) are left to the declarations a
+ * property adds, to the ones only `allow(anythingElse)` allows, and to the `not.` lines.
  */
 
 /** A kind a line names and a source declares. */
@@ -72,7 +71,7 @@ internal data class GenLine(
     val prohibited: Boolean = false,
     /** The names a `not.` line gives back. */
     val except: List<String> = emptyList(),
-    /** The `{ }` of a class line; `null`: none, the members are not looked at. */
+    /** The `{ }` of a class line; `null`: none, which allows no member, as an empty one does. */
     val members: GenList? = null,
 ) : GenEntry {
     val isRequired: Boolean get() = !prohibited && required
@@ -145,10 +144,11 @@ internal data class GenCase(
     val fileName: String,
     /** The directories under `src/main/kotlin/`, `/` separated. */
     val directory: String,
+    /** `null` for a file declaring no package, which is what a case with no package line holds. */
     val packageName: String?,
     val packageLines: List<GenPackageLine> = emptyList(),
     val importLines: List<GenImportLine> = emptyList(),
-    /** `null`: no declaration line is written, so the declarations are not looked at. */
+    /** `null`: no declaration line is written, so no declaration is allowed (deny by default). */
     val declarationRules: GenList? = null,
     val imports: List<GenImport> = emptyList(),
     val declarations: List<SrcDecl> = emptyList(),

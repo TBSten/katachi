@@ -103,7 +103,9 @@ fun DeclarationContainerScope.viewModel() = "ViewModel".role {
         `import`("com.example.sample.ui.core.**")
 
         val content = fileName.replace("ViewModel", "Content")      // HomeViewModel.kt -> HomeContent
-        required(internal, data, `class`, content)
+        required(internal, data, `class`, content) { // data class HomeContent(val userName: String, ...)
+            allow(`val`, "*")                         // read-only values only: the screen does not write back
+        }
         required(internal, `class`, fileName).superclass("ViewModel") {
             required(public, `val`, "uiState", "StateFlow<UiState<$content>>")
             allow(public, `fun`, "*")    // the events: refresh(), ...

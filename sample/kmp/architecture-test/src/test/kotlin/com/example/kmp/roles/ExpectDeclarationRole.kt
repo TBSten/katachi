@@ -50,9 +50,11 @@ fun DeclarationContainerScope.expectDeclaration() = "ExpectDeclaration".role {
         }
     }
     // Nothing but `expect` declarations, whatever their kind, in the package the `actual` files
-    // share. A declaration written once for every platform belongs to another role.
+    // share. A declaration written once for every platform belongs to another role. No import
+    // line: `expect fun platformName(): String` needs none, so any import fails.
     ktFileContent {
         `package`("com.example.kmp.data.platform")
+
         allow(expect, anythingElse)
     }
 }

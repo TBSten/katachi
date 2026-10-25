@@ -60,8 +60,9 @@ public class FileDeclarationsExplanation(
     /** Project relative, `/` separated, as [FileConstraintSubject.files] names it. */
     public val file: String,
     /**
-     * Whether the rules of this file wrote a line about its top-level declarations at all. When
-     * `false`, nothing binds them and [declarations] is empty.
+     * Whether the top-level declarations of this file were judged. `ktFileContent { }` judges them
+     * even when it writes no declaration line (deny by default: then none is allowed), so this is
+     * `false` only when the file could not be explained ([unexplainedReason]), with [declarations] empty.
      */
     public val declarationsChecked: Boolean,
     /** The top-level declarations of the file, in the order they are written. */

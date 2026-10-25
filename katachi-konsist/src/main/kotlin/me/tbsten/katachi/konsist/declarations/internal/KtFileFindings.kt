@@ -84,11 +84,11 @@ internal class UnexpectedPackage(
     val line: Int?,
     /** The allowed package lines, in the order written. */
     val allowed: List<PackageRule>,
-    /** The first package line, which `Declared at:` points at. */
-    val firstRule: PackageRule,
+    /** The first package line, which `Declared at:` points at; `null` when none is written. */
+    val firstRule: PackageRule?,
     /** What the file's directory reads as, for `matchingDirectory`; `null` when it cannot be told. */
     val directoryPackage: String?,
 ) : KtFileFinding
 
-/** A package a `not.` package line matches. */
-internal class ProhibitedPackage(val packageName: String, val line: Int?, val rule: PackageRule) : KtFileFinding
+/** A package a `not.` package line matches, or the lack of one ([packageName] `null`) that `` not.`package`("**") `` does. */
+internal class ProhibitedPackage(val packageName: String?, val line: Int?, val rule: PackageRule) : KtFileFinding

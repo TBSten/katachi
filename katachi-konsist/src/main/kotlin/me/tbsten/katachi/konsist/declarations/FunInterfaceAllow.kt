@@ -14,7 +14,9 @@ import me.tbsten.katachi.konsist.declarations.internal.allowWriter
  * ## Example 1: listeners declared as fun interfaces
  * ```kt
  * ktFileContent {
- *     allow(`fun`, `interface`, "*Listener")
+ *     `package`("com.example.**")
+ *
+ *     allow(`fun`, `interface`, "*Listener") { allow(`fun`, "on*") }
  *     allow(public, `fun`, `interface`, fileName) { allow(`fun`, "on*") }
  * }
  * ```

@@ -25,8 +25,9 @@ import me.tbsten.katachi.test.konsist.fixtureProject
 
 /**
  * A role whose covered files hold no `.kt` Konsist can read is refused (decided D6). A block that
- * writes no line for a file, or for any file, judges nothing and raises nothing: a conditional block
- * under a wildcard module must not fail the modules it has nothing to say about (decided 2026-10-24, decision 1 of design.md section 8).
+ * writes no line for a file, or for any file, raises nothing but is judged like an empty block:
+ * deny by default (decided 2026-10-25), so whatever such a file holds is a violation. This
+ * replaces decision 1 of design.md section 8 (2026-10-24), which left such files unchecked.
  */
 class KtFileContentNothingWrittenSpec : FreeSpec({
     "覆うファイルに .kt が無ければ KatachiKonsistNoKotlinFilesException" {
@@ -41,19 +42,23 @@ class KtFileContentNothingWrittenSpec : FreeSpec({
             .shouldBeInstanceOf<KatachiKonsistNoKotlinFilesException>().role shouldBe "Screen"
     }
 
-    "ファイルによっては何も書かなくても、どれかのファイルで書けば検査する" {
+    "行を 1 つも書かないファイルも、空のブロックと同じにすべてを違反にする" {
         val violations = ktFileContentRun(
             "src/Home.kt" to "package com.example\n\nclass Home\n",
             "src/Other.kt" to "package com.example\n\nobject Other\n",
             paths = { "src" / "*".ktFile() },
         ) {
-            ktFileContent { if (fileName == "Home") required(`class`, fileName) }
+            ktFileContent {
+                `package`("**")
+                if (fileName == "Home") required(`class`, fileName)
+            }
         }
 
-        violations.shouldBeEmpty()
+        violations.filterIsInstance<UncheckedFileConstraint>().shouldBeEmpty()
+        violations.unsatisfiedLines() shouldBe listOf("src/Other.kt: Other (line 3) | Not allowed: object Other")
     }
 
-    "どのファイルでも書かなくても例外にならず、違反も出さない" {
+    "どのファイルでも行を書かないブロックは、例外にならず、すべてを違反にする" {
         val violations = ktFileContentRun(
             "src/Home.kt" to "package com.example\n\nclass Home\n",
             paths = { "src" / "*".ktFile() },
@@ -61,12 +66,16 @@ class KtFileContentNothingWrittenSpec : FreeSpec({
             ktFileContent { if (fileName == "Nothing") required(`class`, fileName) }
         }
 
-        violations.shouldBeEmpty()
+        violations.filterIsInstance<UncheckedFileConstraint>().shouldBeEmpty()
+        violations.unsatisfiedLines() shouldBe listOf(
+            "src/Home.kt: package com.example (line 1) | Not allowed: package com.example | Note: $NOTHING_WRITTEN",
+            "src/Home.kt: Home (line 3) | Not allowed: class Home",
+        )
     }
 
-    "ワイルドカードのモジュールで、該当ファイルが片方にしか無くても、ほかのモジュールは検査される" {
+    "ワイルドカードのモジュールで、行を書かないモジュールがあっても例外にならず、どのモジュールも検査される" {
         // The module block runs once per module, so each module is its own subject: feature/other
-        // writes no line for any of its files, and must not fail feature/home.
+        // writes no declaration line for any of its files, and its declarations are denied.
         val violations = fixtureProject(
             "feature/home/build.gradle.kts" to "",
             "feature/home/src/main/kotlin/HomeScreen.kt" to "package com.example\n\nclass HomeScreen\n\nobject Stray\n",
@@ -81,7 +90,10 @@ class KtFileContentNothingWrittenSpec : FreeSpec({
                         ":feature:*".module {
                             "build.gradle.kts".file()
                             mainSourceSet / kotlin / "*".ktFile()
-                            ktFileContent { if (fileName.endsWith("Screen")) required(`class`, fileName) }
+                            ktFileContent {
+                                `package`("**")
+                                if (fileName.endsWith("Screen")) required(`class`, fileName)
+                            }
                         }
                     }
                 }
@@ -91,6 +103,7 @@ class KtFileContentNothingWrittenSpec : FreeSpec({
         violations.filterIsInstance<UncheckedFileConstraint>().shouldBeEmpty()
         violations.unsatisfiedLines() shouldBe listOf(
             "feature/home/src/main/kotlin/HomeScreen.kt: Stray (line 5) | Not allowed: object Stray",
+            "feature/other/src/main/kotlin/Other.kt: Other (line 3) | Not allowed: class Other",
         )
     }
 })

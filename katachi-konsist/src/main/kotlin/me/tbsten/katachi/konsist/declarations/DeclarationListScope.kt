@@ -9,16 +9,17 @@ import me.tbsten.katachi.dsl.KatachiDsl
  * extension of this type works in either.
  *
  * Every line written here with `allow(...)` or `required(...)` is an allow list entry; a
- * `required(...)` line also has to be matched by a declaration. Once one line is written, a
- * declaration matched by no line is a violation; with no line written, the declarations are not
- * looked at. Lines are judged in this order: a prohibited line (`not.allow(...)`) wins, then an
- * allowed or required line, then `allow(..., anythingElse)`, and anything left is a violation.
+ * `required(...)` line also has to be matched by a declaration. A declaration matched by no line
+ * is a violation, so with no line written, every declaration is one (deny by default). Lines are
+ * judged in this order: a prohibited line (`not.allow(...)`) wins, then an allowed or required
+ * line, then `allow(..., anythingElse)`, and anything left is a violation.
  *
  * ## Example 1: a name of your own for a combination of kinds
  * ```kt
  * val DeclarationListScope.classOrInterface get() = `class` or `interface`
  *
  * ktFileContent {
+ *     `package`("com.example.**")
  *     allow(classOrInterface, fileName) {
  *         allow(classOrInterface, "*")
  *     }
@@ -82,8 +83,9 @@ public sealed interface DeclarationListScope : DeclarationVocabulary, Declaratio
  * Receiver of `ktFileContent { }`: the file's package, its imports and the declarations directly
  * in it, written in the order a Kotlin file lists them.
  *
- * Only the kinds a line is written for are checked -- package, import, declarations -- and each of
- * them as an allow list. A `{ }` on a class line makes that class's members an allow list too.
+ * The package, the imports and the declarations are each an allow list of the lines written for
+ * them, and a kind no line is written for allows nothing (deny by default). The `{ }` of a class
+ * line is the allow list of its members; a class line without `{ }` allows no member.
  *
  * ## Example 1: the shape of a view model file
  * ```kt
@@ -121,8 +123,9 @@ public sealed interface KtFileContentScope : DeclarationListScope {
     /**
      * Allows the packages matching [pattern], `.` separated: `*` is one level, `**` any number of
      * levels, zero included: `"com.example.**"` matches `com.example` itself as well as `com.example.feature`.
-     * Once a package line is written, a file whose package matches none -- or that has no package --
-     * is a violation.
+     * A package no package line matches is a violation, and with no package line written, every
+     * declared package is one. A file that declares no package is matched only by a pattern of `**`
+     * levels alone (`"**"`), so it passes `` `package`("**") `` and no other pattern.
      *
      * ## Example 1: the packages of the feature the file is in
      * ```kt
@@ -180,6 +183,7 @@ public sealed interface KtFileContentScope : DeclarationListScope {
  * ## Example 1: what a use case interface and its implementation hold
  * ```kt
  * ktFileContent {
+ *     `package`("com.example.domain")
  *     required(`interface`, fileName) {
  *         required(operator, `fun`, "invoke")
  *     }

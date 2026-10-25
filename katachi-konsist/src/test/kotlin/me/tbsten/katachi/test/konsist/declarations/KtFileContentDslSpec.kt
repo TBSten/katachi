@@ -3,7 +3,6 @@ package me.tbsten.katachi.test.konsist.declarations
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
-import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.konsist.declarations.DeclarationListScope
 import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentLineException
@@ -53,8 +52,8 @@ class KtFileContentDslSpec : FreeSpec({
         }
     }
 
-    "書いた種類だけが allow list" - {
-        "宣言だけを書けば package と import は見ない" {
+    "行を書かなかった種類は、空の allow list として残る" - {
+        "宣言だけを書けば、package と import の行は空" {
             val rules = rulesOf(fileName = "GetUserUseCase") { required(`interface`, fileName) }
 
             rules.dump() shouldBe "required interface{} GetUserUseCase"
@@ -62,7 +61,7 @@ class KtFileContentDslSpec : FreeSpec({
             rules.imports.shouldBeEmpty()
         }
 
-        "import だけを書けば宣言は見ない" {
+        "import だけを書けば、宣言の一覧は空のまま残る（deny by default で何も許さない）" {
             val rules = rulesOf {
                 `import`("**")
                 not.`import`("android.**")
@@ -72,7 +71,7 @@ class KtFileContentDslSpec : FreeSpec({
                 import ** optional
                 import android.** prohibited
             """.trimIndent()
-            rules.declarations.shouldBeNull()
+            rules.declarations.entries.shouldBeEmpty()
         }
 
         "{ } を付けないクラスの行はメンバを見ない。空の { } はメンバを 1 つも置かない" {

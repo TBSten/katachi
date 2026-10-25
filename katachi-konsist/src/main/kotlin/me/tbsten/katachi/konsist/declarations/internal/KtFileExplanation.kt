@@ -27,18 +27,14 @@ internal fun explainKtFiles(
 ): List<FileDeclarationsExplanation> =
     readKtFiles(subject) { file -> runCatchingPerFile { rulesOf(file) } }.map { input ->
         val rules = input.rules.getOrElse { cause -> return@map unexplained(input.file, reasonOf(cause)) }
-        // A block that wrote no line about declarations judges none, so Konsist's reading of the
-        // file does not matter, and the check does not make its facts for it either.
-        if (rules.declarations == null) return@map notChecked(input.file)
+        // A block that wrote no declaration line still judges the declarations: it allows none.
         val facts = input.facts ?: return@map unexplained(input.file, "Konsist did not read this file.")
         explainKtFile(input.file, facts, rules)
     }
 
 /** One file explained against [rules]: its own declarations, decided as `judgeKtFile` decides them. */
 internal fun explainKtFile(file: String, facts: KtFileFacts, rules: FileRules): FileDeclarationsExplanation {
-    val declarationRules = rules.declarations
-        ?: return notChecked(file)
-    val findings = judgeDeclarations(declarationRules, facts.declarations)
+    val findings = judgeDeclarations(rules.declarations, facts.declarations)
     return FileDeclarationsExplanation(
         file = file,
         declarationsChecked = true,
@@ -72,10 +68,6 @@ private fun explanationOf(judged: JudgedDeclaration): DeclarationExplanation {
 private fun ruleExplanationOf(rule: DeclarationRule): RuleExplanation = RuleExplanation(renderRule(rule), rule.declaredAt)
 
 private fun ruleExplanationOf(rule: AnythingElseRule): RuleExplanation = RuleExplanation(renderAnythingElse(rule), rule.declaredAt)
-
-/** A file whose rules wrote no line about its declarations: nothing binds them, and nothing is wrong with it. */
-private fun notChecked(file: String): FileDeclarationsExplanation =
-    FileDeclarationsExplanation(file, declarationsChecked = false, emptyList(), emptyList(), unexplainedReason = null)
 
 private fun unexplained(file: String, reason: String): FileDeclarationsExplanation =
     FileDeclarationsExplanation(file, declarationsChecked = false, emptyList(), emptyList(), unexplainedReason = reason)

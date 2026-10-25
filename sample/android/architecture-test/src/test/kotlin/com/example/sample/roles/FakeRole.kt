@@ -85,6 +85,8 @@ fun DeclarationContainerScope.fake() = "Fake".role {
     // The captured part of the file name is the interface the fake stands in for:
     // FakeUserRepository.kt holds `class FakeUserRepository : UserRepository`.
     ktFileContent {
+        `package`("com.example.sample.testing")
+
         `import`("com.example.sample.data.**")
 
         required(`class`, fileName).superclass(captureValue("repository")) {

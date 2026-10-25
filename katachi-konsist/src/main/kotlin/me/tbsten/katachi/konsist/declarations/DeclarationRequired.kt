@@ -12,18 +12,21 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  * - **A name that is not a pattern asks for that name; a pattern (`*`, `{A,B}` and the like) asks
  *   for at least one declaration it matches**: `required(sealed, type, "*Action")` is at least
  *   one sealed `...Action`.
- * - **The kinds written are the allow list, as with `allow(...)`**: a kind written with
- *   `required(...)` only allows what its lines match, and a kind not written is not looked at.
+ * - **The lines written are the allow list, as with `allow(...)`**: a declaration no line matches
+ *   is a violation, and with no line written in a list, every declaration of it is one.
  *
  * ## Example 1: a view model file with what it has to hold
  * ```kt
  * ktFileContent {
+ *     `package`("com.example.feature.**")
+ *     `import`("**")
+ *
  *     required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
  *         required(public, `val`, "uiState", "StateFlow<*>")
  *         allow(public, `fun`, "on*")().returns("Unit")
  *         allow(private, anythingElse)
  *     }
- *     required(sealed, type, "*Action")
+ *     required(sealed, type, "*Action") { allow(data, `object`, "*") }
  *     allow(`object`, "*Preview")
  * }
  * ```

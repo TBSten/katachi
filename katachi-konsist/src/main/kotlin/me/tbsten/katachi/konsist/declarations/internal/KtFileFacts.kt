@@ -79,6 +79,8 @@ internal class DeclarationFact(
     val line: Int?,
     /** The members of a class, an interface or an object, in order; `null` for anything else. */
     val members: List<DeclarationFact>?,
+    /** Whether this is a property written in the primary constructor of its class. */
+    val inConstructor: Boolean = false,
 ) {
     override fun toString(): String = "DeclarationFact(${renderFact(this)})"
 }

@@ -83,9 +83,6 @@ internal class DeclarationListBuilder(
 ) {
     private val entries = mutableListOf<DeclarationListEntryBuilder>()
 
-    /** Whether a line was written, which is what makes the list an allow list at all. */
-    val isWritten: Boolean get() = entries.isNotEmpty()
-
     /**
      * Registers a declaration line: candidates [raw] (not checked yet) named [name], one that has to
      * be there when [required] (written with `required(...)`).

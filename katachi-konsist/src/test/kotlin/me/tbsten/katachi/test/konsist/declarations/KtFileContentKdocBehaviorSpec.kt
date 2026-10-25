@@ -22,7 +22,10 @@ class KtFileContentKdocBehaviorSpec : FreeSpec({
                 "src/A.kt" to "package a\n\nclass A : NavKey\n",
                 paths = { "src" / "*".ktFile() },
             ) {
-                ktFileContent { required(`class`, "A").superclass("*NavKey") }
+                ktFileContent {
+                    `package`("**")
+                    required(`class`, "A").superclass("*NavKey")
+                }
             }.shouldBeEmpty()
         }
 
@@ -31,7 +34,10 @@ class KtFileContentKdocBehaviorSpec : FreeSpec({
                 "src/A.kt" to "package a\n\nclass A : StartupNavKey\n",
                 paths = { "src" / "*".ktFile() },
             ) {
-                ktFileContent { required(`class`, "A").superclass("*NavKey") }
+                ktFileContent {
+                    `package`("**")
+                    required(`class`, "A").superclass("*NavKey")
+                }
             }.shouldBeEmpty()
         }
 
@@ -40,7 +46,10 @@ class KtFileContentKdocBehaviorSpec : FreeSpec({
                 "src/A.kt" to "package a\n\nclass A : Foo\n",
                 paths = { "src" / "*".ktFile() },
             ) {
-                ktFileContent { required(`class`, "A").superclass("{Foo,*NavKey}") }
+                ktFileContent {
+                    `package`("**")
+                    required(`class`, "A").superclass("{Foo,*NavKey}")
+                }
             }.shouldBeEmpty()
         }
 
@@ -49,7 +58,10 @@ class KtFileContentKdocBehaviorSpec : FreeSpec({
                 "src/A.kt" to "package a\n\nclass A : StartupNavKey\n",
                 paths = { "src" / "*".ktFile() },
             ) {
-                ktFileContent { required(`class`, "A").superclass("{Foo,*NavKey}") }
+                ktFileContent {
+                    `package`("**")
+                    required(`class`, "A").superclass("{Foo,*NavKey}")
+                }
             }.shouldBeEmpty()
         }
     }
@@ -61,7 +73,10 @@ class KtFileContentKdocBehaviorSpec : FreeSpec({
                 "src/B.kt" to "package a\n\nclass B : HomeRoute\n",
                 paths = { "src" / "*".ktFile() },
             ) {
-                ktFileContent { required(`class`, fileName).superclass("{NavKey,*Route}") }
+                ktFileContent {
+                    `package`("**")
+                    required(`class`, fileName).superclass("{NavKey,*Route}")
+                }
             }.shouldBeEmpty()
         }
     }
@@ -73,6 +88,7 @@ class KtFileContentKdocBehaviorSpec : FreeSpec({
                 paths = { "src" / "*".ktFile() },
             ) {
                 ktFileContent {
+                    `package`("**")
                     `import`("**")
                     required(annotated("Wired"), `class`, "A")
                 }
@@ -85,6 +101,7 @@ class KtFileContentKdocBehaviorSpec : FreeSpec({
                 paths = { "src" / "*".ktFile() },
             ) {
                 ktFileContent {
+                    `package`("**")
                     `import`("**")
                     required(annotated("b.Inject"), `class`, "A")
                 }
@@ -97,6 +114,7 @@ class KtFileContentKdocBehaviorSpec : FreeSpec({
                 paths = { "src" / "*".ktFile() },
             ) {
                 ktFileContent {
+                    `package`("**")
                     `import`("**")
                     required(annotated("Inject"), `class`, "A")
                 }
@@ -113,6 +131,7 @@ class KtFileContentKdocBehaviorSpec : FreeSpec({
                 paths = { "src" / "*".ktFile() },
             ) {
                 ktFileContent {
+                    `package`("**")
                     `import`("com.example.App.**")
                     required(`class`, "A")
                 }

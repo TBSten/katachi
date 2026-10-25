@@ -18,24 +18,69 @@ import me.tbsten.katachi.dsl.FileConstraintReason
 private const val NOT_ALLOWED: String = "Not allowed"
 private const val MISSING: String = "Missing"
 
-/** [finding] about the file at [path] (project relative), whose rules are [rules]. */
-internal fun failureOf(finding: KtFileFinding, path: String, rules: FileRules): FileConstraintFailure = when (finding) {
-    is UnexpectedDeclaration -> unexpectedDeclarationFailure(finding, path)
+/**
+ * What the block wrote no line for this file says on the file's first failure: the reason everything
+ * in it is rejected, which a condition in the block (`if (fileName ...)`) is the likely cause of.
+ */
+private val NOTHING_WRITTEN_NOTE: FileConstraintReason = FileConstraintReason(
+    "Note",
+    "ktFileContent { } wrote no line for this file, so nothing is allowed in it " +
+        "(a condition in the block, such as if (fileName ...), may have left it out)",
+)
+
+/**
+ * The [findings] of the file at [path] (project relative), whose rules are [rules], worded in the
+ * same order. The fix that opens up a list no line allows -- `` `import`("**") ``,
+ * `allow(anythingElse)` and the like -- is given once per list, on its first failure, so that a
+ * file of many imports does not repeat it for each; a file the block wrote no line for says so on
+ * its first failure.
+ */
+internal fun failuresOf(findings: List<KtFileFinding>, path: String, rules: FileRules): List<FileConstraintFailure> {
+    val opened = mutableListOf<OpeningKey>()
+    return findings.mapIndexed { index, finding ->
+        val key = openingKeyOf(finding, rules)
+        val opening = key == null || opened.none { it.sameAs(key) }
+        if (key != null && opening) opened += key
+        val failure = failureOf(finding, path, rules, opening)
+        if (index == 0 && rules.isEmpty) failure.copy(reasons = failure.reasons + NOTHING_WRITTEN_NOTE) else failure
+    }
+}
+
+/** The list whose opening fix a finding gives: its lines (by identity) and the classes it is the members of. */
+private class OpeningKey(val lines: Any, val containers: List<String>) {
+    fun sameAs(other: OpeningKey): Boolean = lines === other.lines && containers == other.containers
+}
+
+private fun openingKeyOf(finding: KtFileFinding, rules: FileRules): OpeningKey? = when (finding) {
+    is UnexpectedDeclaration -> OpeningKey(finding.list.rules, finding.list.containers.map { it.name })
+    is UnexpectedImport -> OpeningKey(rules.imports, emptyList())
+    else -> null
+}
+
+/**
+ * [finding] about the file at [path] (project relative), whose rules are [rules]. [opening] says
+ * whether to give the fix that opens up its whole list, which [failuresOf] gives once per list.
+ */
+private fun failureOf(finding: KtFileFinding, path: String, rules: FileRules, opening: Boolean): FileConstraintFailure = when (finding) {
+    is UnexpectedDeclaration -> unexpectedDeclarationFailure(finding, path, opening)
     is ProhibitedDeclaration -> prohibitedDeclarationFailure(finding, path)
     is MismatchedDeclaration -> mismatchedDeclarationFailure(finding, path)
     is MissingDeclaration -> missingDeclarationFailure(finding, path)
-    is UnexpectedImport -> unexpectedImportFailure(finding, path, rules.declaredAt)
+    is UnexpectedImport -> unexpectedImportFailure(finding, path, rules.declaredAt, nothingWritten = rules.imports.isEmpty(), opening)
     is ProhibitedImport -> prohibitedImportFailure(finding, path)
-    is UnexpectedPackage -> unexpectedPackageFailure(finding, path)
+    is UnexpectedPackage -> unexpectedPackageFailure(finding, path, rules.declaredAt)
     is ProhibitedPackage -> prohibitedPackageFailure(finding, path)
 }
 
-private fun unexpectedDeclarationFailure(finding: UnexpectedDeclaration, path: String): FileConstraintFailure {
+private fun unexpectedDeclarationFailure(finding: UnexpectedDeclaration, path: String, opening: Boolean): FileConstraintFailure {
     val (fact, list) = finding.fact to finding.list
     val site = list.rules.declaredAt
     val container = list.container
     val fixes = buildList {
-        if (list.rules.allowsOnlyByNot()) add(onlyNotLinesFix("declarations", site, "allow(anythingElse)"))
+        if (opening) {
+            nothingWrittenFix(list)?.let(::add)
+            if (list.rules.allowsOnlyByNot()) add(onlyNotLinesFix("declarations", site, "allow(anythingElse)"))
+        }
         // Renaming is only offered for the file's own declarations: a member is more often in the
         // wrong place than misnamed, and the remaining fixes say so. A name that is a pattern
         // (`*Action`, `{Alpha,Beta}`) is no name to rename to.
@@ -48,12 +93,22 @@ private fun unexpectedDeclarationFailure(finding: UnexpectedDeclaration, path: S
             val visibility = rule.alternatives.first().modifiers.single().keyword
             add(FileConstraintFix("Make it $visibility: ${renderAnythingElse(rule)} is allowed here"))
         }
+        // A property of the primary constructor cannot be moved out of its class.
+        when {
+            container == null -> add(FileConstraintFix("Move it to a file of another role"))
+            !fact.inConstructor -> add(FileConstraintFix("Move it out of ${renderContainer(container)}"))
+        }
         add(
-            FileConstraintFix(
-                if (container == null) "Move it to a file of another role" else "Move it out of ${renderContainer(container)}",
-            ),
+            when {
+                container == null -> allowItFix(site, allowLineOf(fact))
+                // One line to paste, so that two members of a class line without { } go into one { }.
+                list.rules.withoutBody -> FileConstraintFix(
+                    "Allow it in the { } of the line at $site, giving the line one if it has none:",
+                    code = listOf(allowLineOf(fact)),
+                )
+                else -> FileConstraintFix("Allow it in the { } of the line at $site:", code = listOf(allowLineOf(fact)))
+            },
         )
-        add(allowItFix(site, allowLineOf(fact)))
     }
     return FileConstraintFailure(
         file = path,
@@ -180,7 +235,38 @@ private fun removeImportFixes(site: DeclarationSite, code: String, allowing: Boo
     if (allowing) allowItFix(site, code) else exceptFixWithCode("If this import is fine, exclude it from the prohibited line at $site:", code),
 )
 
-private fun unexpectedImportFailure(finding: UnexpectedImport, path: String, site: DeclarationSite): FileConstraintFailure {
+/**
+ * The fix that comes first when no line at all is written for [list]: the list allows nothing, and
+ * what lets everything through. `null` when a line is written.
+ */
+private fun nothingWrittenFix(list: DeclarationListContext): FileConstraintFix? {
+    val rules = list.rules
+    if (rules.entries.isNotEmpty()) return null
+    val site = rules.declaredAt
+    val container = list.container
+    return when {
+        container == null -> FileConstraintFix(
+            "No declaration line is written, so every declaration is rejected. To allow any, add at $site:",
+            code = listOf("allow(anythingElse)"),
+        )
+        rules.withoutBody -> FileConstraintFix(
+            "The line at $site has no { }, so ${renderContainer(container)} may have no members. To allow any, give it:",
+            code = listOf("{ allow(anythingElse) }"),
+        )
+        else -> FileConstraintFix(
+            "No line is written in the { } at $site, so every member is rejected. To allow any, add there:",
+            code = listOf("allow(anythingElse)"),
+        )
+    }
+}
+
+private fun unexpectedImportFailure(
+    finding: UnexpectedImport,
+    path: String,
+    site: DeclarationSite,
+    nothingWritten: Boolean,
+    opening: Boolean,
+): FileConstraintFailure {
     val import = finding.import.path
     val reason = if (finding.allowed.isEmpty()) {
         "ktFileContent { } allows no import here"
@@ -193,7 +279,15 @@ private fun unexpectedImportFailure(finding: UnexpectedImport, path: String, sit
         line = finding.import.line,
         reasons = listOf(FileConstraintReason(NOT_ALLOWED, reason)),
         howToFix = listOfNotNull(
-            onlyNotLinesFix("imports", site, "`import`(\"**\")").takeIf { finding.allowed.isEmpty() },
+            when {
+                !opening -> null
+                nothingWritten -> FileConstraintFix(
+                    "No import line is written, so every import is rejected. To allow any import, add at $site:",
+                    code = listOf("`import`(\"**\")"),
+                )
+                finding.allowed.isEmpty() -> onlyNotLinesFix("imports", site, "`import`(\"**\")")
+                else -> null
+            },
         ) + removeImportFixes(site, "`import`(${kotlinString(import)})", allowing = true),
         ruleDeclaredAt = site,
     )
@@ -214,8 +308,12 @@ private fun prohibitedImportFailure(finding: ProhibitedImport, path: String): Fi
     )
 }
 
-private fun unexpectedPackageFailure(finding: UnexpectedPackage, path: String): FileConstraintFailure {
+private fun unexpectedPackageFailure(finding: UnexpectedPackage, path: String, blockSite: DeclarationSite): FileConstraintFailure {
     val packageName = finding.packageName
+    if (finding.firstRule == null && packageName != null) {
+        return undeclaredPackageFailure(packageName, finding.line, path, blockSite, finding.directoryPackage)
+    }
+    val ruleSite = finding.firstRule?.declaredAt ?: blockSite
     val directoryPackage = finding.directoryPackage?.takeIf { it.isNotEmpty() }
     val hasMatchingDirectory = finding.allowed.any { it.target == PackageTarget.MatchingDirectory }
     return FileConstraintFailure(
@@ -225,28 +323,67 @@ private fun unexpectedPackageFailure(finding: UnexpectedPackage, path: String): 
         reasons = listOf(FileConstraintReason(NOT_ALLOWED, packageName?.let { "package $it" } ?: "the file declares no package")),
         allowed = FileConstraintAllowedList("Allowed here", finding.allowed.map { renderPackage(it, directoryPackage) }),
         howToFix = buildList {
-            if (finding.allowed.isEmpty()) add(onlyNotLinesFix("packages", finding.firstRule.declaredAt, "`package`(\"**\")"))
+            if (finding.allowed.isEmpty()) add(onlyNotLinesFix("packages", ruleSite, "`package`(\"**\")"))
             add(FileConstraintFix(if (packageName == null) "Declare a package allowed above" else "Change the package to one allowed above"))
             if (hasMatchingDirectory && packageName != null) add(FileConstraintFix("Or move the file to the directory its package names"))
+            if (!hasMatchingDirectory && packageName != null && packageName == finding.directoryPackage) add(matchingDirectoryFix(ruleSite))
         },
-        ruleDeclaredAt = finding.firstRule.declaredAt,
+        ruleDeclaredAt = ruleSite,
     )
 }
 
-private fun prohibitedPackageFailure(finding: ProhibitedPackage, path: String): FileConstraintFailure = FileConstraintFailure(
+/**
+ * [packageName], declared in a file whose block, at [site], writes no package line: no package may
+ * be declared. [directoryPackage] is what the file's directory reads as.
+ */
+private fun undeclaredPackageFailure(
+    packageName: String,
+    line: Int?,
+    path: String,
+    site: DeclarationSite,
+    directoryPackage: String?,
+): FileConstraintFailure = FileConstraintFailure(
     file = path,
-    declaration = "package ${finding.packageName}",
-    line = finding.line,
-    reasons = listOf(
-        FileConstraintReason(NOT_ALLOWED, "package ${finding.packageName}"),
-        FileConstraintReason("Prohibited by", renderPackage(finding.rule)),
+    declaration = "package $packageName",
+    line = line,
+    reasons = listOf(FileConstraintReason(NOT_ALLOWED, "package $packageName")),
+    allowed = FileConstraintAllowedList("Allowed here", emptyList()),
+    howToFix = listOfNotNull(
+        FileConstraintFix(
+            "No package line is written, so no package may be declared. To allow any package, add at $site:",
+            code = listOf("`package`(\"**\")"),
+        ),
+        allowItFix(site, "`package`(${kotlinString(packageName)})"),
+        matchingDirectoryFix(site).takeIf { packageName == directoryPackage },
     ),
-    howToFix = listOf(
-        FileConstraintFix("Change the package"),
-        exceptFix("If this package is fine, exclude it from the prohibited line at ${finding.rule.declaredAt}:", finding.packageName),
-    ),
-    ruleDeclaredAt = finding.rule.declaredAt,
+    ruleDeclaredAt = site,
 )
+
+/** For a package that is the file's directory: allow every file the package its directory names. */
+private fun matchingDirectoryFix(site: DeclarationSite): FileConstraintFix =
+    FileConstraintFix("Or allow the package each file's directory names, at $site:", code = listOf("`package`(matchingDirectory)"))
+
+private fun prohibitedPackageFailure(finding: ProhibitedPackage, path: String): FileConstraintFailure {
+    val packageName = finding.packageName
+    return FileConstraintFailure(
+        file = path,
+        declaration = packageName?.let { "package $it" } ?: "package (none)",
+        line = finding.line,
+        reasons = listOf(
+            FileConstraintReason(NOT_ALLOWED, packageName?.let { "package $it" } ?: "the file declares no package"),
+            FileConstraintReason("Prohibited by", renderPackage(finding.rule)),
+        ),
+        howToFix = if (packageName == null) {
+            listOf(FileConstraintFix("Declare a package the prohibited line does not match"))
+        } else {
+            listOf(
+                FileConstraintFix("Change the package"),
+                exceptFix("If this package is fine, exclude it from the prohibited line at ${finding.rule.declaredAt}:", packageName),
+            )
+        },
+        ruleDeclaredAt = finding.rule.declaredAt,
+    )
+}
 
 /** `Allowed here` for the file's declarations, `Allowed members of class X` for a class's. */
 private fun headingOf(list: DeclarationListContext): String =

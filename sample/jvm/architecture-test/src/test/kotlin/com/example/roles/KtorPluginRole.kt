@@ -46,6 +46,8 @@ fun DeclarationContainerScope.ktorPlugin() = "KtorPlugin".role {
     // Routing.kt holds `Application.configureRouting()` and nothing else. The imports leave out
     // the Services and Repositories, which a plugin configuration never calls.
     ktFileContent {
+        `package`("com.example.plugin")
+
         `import`("io.ktor.**")
         `import`("kotlinx.serialization.**")
         `import`("com.example.controller.**")

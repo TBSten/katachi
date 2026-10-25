@@ -60,7 +60,14 @@ fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementa
     // The same `name` capture as the template: `UserRepositoryImpl.kt` holds
     // `class UserRepositoryImpl : UserRepository`, and that class only overrides. The skeleton is
     // written twice, here and in the template, and a drift between them fails the next check.
+    // `:data` knows neither Compose nor `:ui`, so only Kotlin and `:data` itself are imported.
     ktFileContent {
+        `package`("com.example.kmp.data.user")
+
+        `import`("kotlin.**")
+        `import`("kotlinx.**")
+        `import`("com.example.kmp.data.**")
+
         required(`class`, fileName).superclass("${captureValue("name")}Repository") {
             allow(override, `fun`, "*")
         }

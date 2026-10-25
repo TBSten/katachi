@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "katachiVersion": "0.2.0",
-  "generatedAt": "2026-10-24T16:33:41Z",
+  "generatedAt": "2026-10-25T14:11:54Z",
   "projectRoot": "/__ROOT__",
   "architecture": {
     "declaredAt": {
@@ -632,7 +632,7 @@
                       "text": "internal class HomeViewModel : ViewModel",
                       "declaredAt": {
                         "fileName": "ViewModelRole.kt",
-                        "line": 63
+                        "line": 67
                       }
                     }
                   ],
@@ -656,7 +656,7 @@
                       "text": "internal data class *Ui",
                       "declaredAt": {
                         "fileName": "ViewModelRole.kt",
-                        "line": 62
+                        "line": 64
                       }
                     }
                   ],
@@ -672,7 +672,7 @@
                       "text": "internal class SettingsViewModel : ViewModel",
                       "declaredAt": {
                         "fileName": "ViewModelRole.kt",
-                        "line": 63
+                        "line": 67
                       }
                     }
                   ],
@@ -1604,7 +1604,7 @@
           "range": "Subtree",
           "declaredAt": {
             "fileName": "ScreenPreviewRole.kt",
-            "line": 57
+            "line": 58
           },
           "layoutPath": null,
           "anchors": ["feature/*/src/commonMain/kotlin/com/example/kmp/feature/*"],
@@ -1628,7 +1628,7 @@
                       "text": "@Preview private fun *Preview(...)",
                       "declaredAt": {
                         "fileName": "ScreenPreviewRole.kt",
-                        "line": 58
+                        "line": 64
                       }
                     }
                   ],
@@ -1644,7 +1644,7 @@
                       "text": "@Preview private fun *Preview(...)",
                       "declaredAt": {
                         "fileName": "ScreenPreviewRole.kt",
-                        "line": 58
+                        "line": 64
                       }
                     }
                   ],
@@ -1660,7 +1660,7 @@
                       "text": "@Preview private fun *Preview(...)",
                       "declaredAt": {
                         "fileName": "ScreenPreviewRole.kt",
-                        "line": 58
+                        "line": 64
                       }
                     }
                   ],
@@ -1684,7 +1684,7 @@
                       "text": "@Preview private fun *Preview(...)",
                       "declaredAt": {
                         "fileName": "ScreenPreviewRole.kt",
-                        "line": 58
+                        "line": 64
                       }
                     }
                   ],
@@ -1700,7 +1700,7 @@
                       "text": "@Preview private fun *Preview(...)",
                       "declaredAt": {
                         "fileName": "ScreenPreviewRole.kt",
-                        "line": 58
+                        "line": 64
                       }
                     }
                   ],
@@ -3289,7 +3289,7 @@
           "range": "Subtree",
           "declaredAt": {
             "fileName": "RepositoryInterfaceRole.kt",
-            "line": 76
+            "line": 77
           },
           "layoutPath": null,
           "anchors": ["data/src/commonMain/kotlin/com/example/kmp/data/user"],
@@ -3313,7 +3313,7 @@
                       "text": "interface UserRepository",
                       "declaredAt": {
                         "fileName": "RepositoryInterfaceRole.kt",
-                        "line": 77
+                        "line": 84
                       }
                     }
                   ],
@@ -3573,7 +3573,7 @@
           "range": "Subtree",
           "declaredAt": {
             "fileName": "RepositoryImplementationRole.kt",
-            "line": 63
+            "line": 64
           },
           "layoutPath": null,
           "anchors": ["data/src/commonMain/kotlin/com/example/kmp/data/user"],
@@ -3597,7 +3597,7 @@
                       "text": "class UserRepositoryImpl : UserRepository",
                       "declaredAt": {
                         "fileName": "RepositoryImplementationRole.kt",
-                        "line": 64
+                        "line": 71
                       }
                     }
                   ],
@@ -3842,7 +3842,7 @@
           "range": "Subtree",
           "declaredAt": {
             "fileName": "ExpectDeclarationRole.kt",
-            "line": 54
+            "line": 55
           },
           "layoutPath": null,
           "anchors": ["data/src/commonMain/kotlin/com/example/kmp/data/platform"],
@@ -3866,7 +3866,7 @@
                       "text": "expect (anything)",
                       "declaredAt": {
                         "fileName": "ExpectDeclarationRole.kt",
-                        "line": 56
+                        "line": 58
                       }
                     }
                   ],
@@ -4279,7 +4279,7 @@
           "range": "Subtree",
           "declaredAt": {
             "fileName": "ActualImplementationRole.kt",
-            "line": 56
+            "line": 58
           },
           "layoutPath": null,
           "anchors": ["data/src/androidMain/kotlin/com/example/kmp/data/platform", "data/src/iosMain/kotlin/com/example/kmp/data/platform"],
@@ -4303,7 +4303,7 @@
                       "text": "actual (anything)",
                       "declaredAt": {
                         "fileName": "ActualImplementationRole.kt",
-                        "line": 58
+                        "line": 61
                       }
                     }
                   ],
@@ -4327,7 +4327,7 @@
                       "text": "actual (anything)",
                       "declaredAt": {
                         "fileName": "ActualImplementationRole.kt",
-                        "line": 58
+                        "line": 61
                       }
                     }
                   ],
@@ -8354,7 +8354,7 @@
         {
           "name": "namespace of a library module follows the module path",
           "backend": "custom",
-          "checkClass": "com.example.kmp.groups.GradleGroupKt$$Lambda$121/0x000000700109c430",
+          "checkClass": "com.example.kmp.groups.GradleGroupKt$$Lambda$122/0x000000700109d0f8",
           "range": "Subtree",
           "declaredAt": {
             "fileName": "GradleGroup.kt",

@@ -1104,9 +1104,9 @@ roles: Gradle.BuildScript
 == data/src/main/kotlin/com/example/sample/data/settings/SettingsRepository.kt
 roles: data.RepositoryInterface
     data.RepositoryInterface declared at RepositoryInterfaceRole.kt:15 | fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role {
-4 | ◆ | katachi: data.RepositoryInterface — allowed by interface SettingsRepository (RepositoryInterfaceRole.kt:74)
-    allowed at RepositoryInterfaceRole.kt:74 | required(`interface`, fileName) {
-    menu | ◆ Allowed by interface SettingsRepository | RepositoryInterfaceRole.kt:74
+4 | ◆ | katachi: data.RepositoryInterface — allowed by interface SettingsRepository (RepositoryInterfaceRole.kt:77)
+    allowed at RepositoryInterfaceRole.kt:77 | required(`interface`, fileName) {
+    menu | ◆ Allowed by interface SettingsRepository | RepositoryInterfaceRole.kt:77
     menu | ◇ Role data.RepositoryInterface — Repository interface | RepositoryInterfaceRole.kt:15
     menu | == Other files of data.RepositoryInterface (1)
     menu | UserRepository.kt | data/…/com/example/sample/data/user
@@ -1120,9 +1120,9 @@ roles: data.RepositoryInterface
 == data/src/main/kotlin/com/example/sample/data/settings/SettingsRepositoryImpl.kt
 roles: data.RepositoryImplementation
     data.RepositoryImplementation declared at RepositoryImplementationRole.kt:15 | fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation".role {
-8 | ◆ | katachi: data.RepositoryImplementation — allowed by class SettingsRepositoryImpl : SettingsRepository (RepositoryImplementationRole.kt:58)
-    allowed at RepositoryImplementationRole.kt:58 | required(`class`, fileName).superclass(fileName.removeSuffix("Impl")) { // UserRepositoryImpl : UserRepository
-    menu | ◆ Allowed by class SettingsRepositoryImpl : SettingsRepository | RepositoryImplementationRole.kt:58
+8 | ◆ | katachi: data.RepositoryImplementation — allowed by class SettingsRepositoryImpl : SettingsRepository (RepositoryImplementationRole.kt:61)
+    allowed at RepositoryImplementationRole.kt:61 | required(`class`, fileName).superclass(fileName.removeSuffix("Impl")) { // UserRepositoryImpl : UserRepository
+    menu | ◆ Allowed by class SettingsRepositoryImpl : SettingsRepository | RepositoryImplementationRole.kt:61
     menu | ◇ Role data.RepositoryImplementation — Repository implementation | RepositoryImplementationRole.kt:15
     menu | == Other files of data.RepositoryImplementation (1)
     menu | UserRepositoryImpl.kt | data/…/com/example/sample/data/user
@@ -1136,9 +1136,9 @@ roles: data.RepositoryImplementation
 == data/src/main/kotlin/com/example/sample/data/user/UserRepository.kt
 roles: data.RepositoryInterface
     data.RepositoryInterface declared at RepositoryInterfaceRole.kt:15 | fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role {
-4 | ◆ | katachi: data.RepositoryInterface — allowed by interface UserRepository (RepositoryInterfaceRole.kt:74)
-    allowed at RepositoryInterfaceRole.kt:74 | required(`interface`, fileName) {
-    menu | ◆ Allowed by interface UserRepository | RepositoryInterfaceRole.kt:74
+4 | ◆ | katachi: data.RepositoryInterface — allowed by interface UserRepository (RepositoryInterfaceRole.kt:77)
+    allowed at RepositoryInterfaceRole.kt:77 | required(`interface`, fileName) {
+    menu | ◆ Allowed by interface UserRepository | RepositoryInterfaceRole.kt:77
     menu | ◇ Role data.RepositoryInterface — Repository interface | RepositoryInterfaceRole.kt:15
     menu | == Other files of data.RepositoryInterface (1)
     menu | SettingsRepository.kt | data/…/com/example/sample/data/settings
@@ -1152,9 +1152,9 @@ roles: data.RepositoryInterface
 == data/src/main/kotlin/com/example/sample/data/user/UserRepositoryImpl.kt
 roles: data.RepositoryImplementation
     data.RepositoryImplementation declared at RepositoryImplementationRole.kt:15 | fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation".role {
-9 | ◆ | katachi: data.RepositoryImplementation — allowed by class UserRepositoryImpl : UserRepository (RepositoryImplementationRole.kt:58)
-    allowed at RepositoryImplementationRole.kt:58 | required(`class`, fileName).superclass(fileName.removeSuffix("Impl")) { // UserRepositoryImpl : UserRepository
-    menu | ◆ Allowed by class UserRepositoryImpl : UserRepository | RepositoryImplementationRole.kt:58
+9 | ◆ | katachi: data.RepositoryImplementation — allowed by class UserRepositoryImpl : UserRepository (RepositoryImplementationRole.kt:61)
+    allowed at RepositoryImplementationRole.kt:61 | required(`class`, fileName).superclass(fileName.removeSuffix("Impl")) { // UserRepositoryImpl : UserRepository
+    menu | ◆ Allowed by class UserRepositoryImpl : UserRepository | RepositoryImplementationRole.kt:61
     menu | ◇ Role data.RepositoryImplementation — Repository implementation | RepositoryImplementationRole.kt:15
     menu | == Other files of data.RepositoryImplementation (1)
     menu | SettingsRepositoryImpl.kt | data/…/com/example/sample/data/settings
@@ -2113,7 +2113,7 @@ roles: feature.Screen
 roles: feature.ViewModel
     feature.ViewModel declared at ViewModelRole.kt:16 | fun DeclarationContainerScope.viewModel() = "ViewModel".role {
 12 | ◆ | katachi: feature.ViewModel — allowed by internal data class HomeContent (ViewModelRole.kt:106)
-    allowed at ViewModelRole.kt:106 | required(internal, data, `class`, content)
+    allowed at ViewModelRole.kt:106 | required(internal, data, `class`, content) { // data class HomeContent(val userName: String, ...)
     menu | ◆ Allowed by internal data class HomeContent | ViewModelRole.kt:106
     menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:16
     menu | == Other files of feature.ViewModel (1)
@@ -2122,9 +2122,9 @@ roles: feature.ViewModel
     menu | + New feature.ViewModel from template…
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
-23 | ◆ | katachi: feature.ViewModel — allowed by internal class HomeViewModel : ViewModel (ViewModelRole.kt:107)
-    allowed at ViewModelRole.kt:107 | required(internal, `class`, fileName).superclass("ViewModel") {
-    menu | ◆ Allowed by internal class HomeViewModel : ViewModel | ViewModelRole.kt:107
+23 | ◆ | katachi: feature.ViewModel — allowed by internal class HomeViewModel : ViewModel (ViewModelRole.kt:109)
+    allowed at ViewModelRole.kt:109 | required(internal, `class`, fileName).superclass("ViewModel") {
+    menu | ◆ Allowed by internal class HomeViewModel : ViewModel | ViewModelRole.kt:109
     menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:16
     menu | == Other files of feature.ViewModel (1)
     menu | SettingsViewModel.kt | feature/…/sample/feature/settings
@@ -2229,7 +2229,7 @@ roles: feature.Screen
 roles: feature.ViewModel
     feature.ViewModel declared at ViewModelRole.kt:16 | fun DeclarationContainerScope.viewModel() = "ViewModel".role {
 12 | ◆ | katachi: feature.ViewModel — allowed by internal data class SettingsContent (ViewModelRole.kt:106)
-    allowed at ViewModelRole.kt:106 | required(internal, data, `class`, content)
+    allowed at ViewModelRole.kt:106 | required(internal, data, `class`, content) { // data class HomeContent(val userName: String, ...)
     menu | ◆ Allowed by internal data class SettingsContent | ViewModelRole.kt:106
     menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:16
     menu | == Other files of feature.ViewModel (1)
@@ -2238,9 +2238,9 @@ roles: feature.ViewModel
     menu | + New feature.ViewModel from template…
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
-17 | ◆ | katachi: feature.ViewModel — allowed by internal class SettingsViewModel : ViewModel (ViewModelRole.kt:107)
-    allowed at ViewModelRole.kt:107 | required(internal, `class`, fileName).superclass("ViewModel") {
-    menu | ◆ Allowed by internal class SettingsViewModel : ViewModel | ViewModelRole.kt:107
+17 | ◆ | katachi: feature.ViewModel — allowed by internal class SettingsViewModel : ViewModel (ViewModelRole.kt:109)
+    allowed at ViewModelRole.kt:109 | required(internal, `class`, fileName).superclass("ViewModel") {
+    menu | ◆ Allowed by internal class SettingsViewModel : ViewModel | ViewModelRole.kt:109
     menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:16
     menu | == Other files of feature.ViewModel (1)
     menu | HomeViewModel.kt | feature/…/example/sample/feature/home
@@ -2381,9 +2381,9 @@ roles: Gradle.BuildScript
 == testing/src/main/kotlin/com/example/sample/testing/FakeSettingsRepository.kt
 roles: testing.Fake
     testing.Fake declared at FakeRole.kt:20 | fun DeclarationContainerScope.fake() = "Fake".role {
-6 | ◆ | katachi: testing.Fake — allowed by class FakeSettingsRepository : SettingsRepository (FakeRole.kt:90)
-    allowed at FakeRole.kt:90 | required(`class`, fileName).superclass(captureValue("repository")) {
-    menu | ◆ Allowed by class FakeSettingsRepository : SettingsRepository | FakeRole.kt:90
+6 | ◆ | katachi: testing.Fake — allowed by class FakeSettingsRepository : SettingsRepository (FakeRole.kt:92)
+    allowed at FakeRole.kt:92 | required(`class`, fileName).superclass(captureValue("repository")) {
+    menu | ◆ Allowed by class FakeSettingsRepository : SettingsRepository | FakeRole.kt:92
     menu | ◇ Role testing.Fake — Fake | FakeRole.kt:20
     menu | == Other files of testing.Fake (1)
     menu | FakeUserRepository.kt | testing/…/com/example/sample/testing
@@ -2395,9 +2395,9 @@ roles: testing.Fake
 == testing/src/main/kotlin/com/example/sample/testing/FakeUserRepository.kt
 roles: testing.Fake
     testing.Fake declared at FakeRole.kt:20 | fun DeclarationContainerScope.fake() = "Fake".role {
-6 | ◆ | katachi: testing.Fake — allowed by class FakeUserRepository : UserRepository (FakeRole.kt:90)
-    allowed at FakeRole.kt:90 | required(`class`, fileName).superclass(captureValue("repository")) {
-    menu | ◆ Allowed by class FakeUserRepository : UserRepository | FakeRole.kt:90
+6 | ◆ | katachi: testing.Fake — allowed by class FakeUserRepository : UserRepository (FakeRole.kt:92)
+    allowed at FakeRole.kt:92 | required(`class`, fileName).superclass(captureValue("repository")) {
+    menu | ◆ Allowed by class FakeUserRepository : UserRepository | FakeRole.kt:92
     menu | ◇ Role testing.Fake — Fake | FakeRole.kt:20
     menu | == Other files of testing.Fake (1)
     menu | FakeSettingsRepository.kt | testing/…/com/example/sample/testing
@@ -2438,7 +2438,7 @@ roles: ui.Component
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 37 | ◆ | katachi: ui.Component — allowed by public enum class AppButton* (ComponentRole.kt:104)
-    allowed at ComponentRole.kt:104 | allow(public, enum, `class`, "$fileName*")
+    allowed at ComponentRole.kt:104 | allow(public, enum, `class`, "$fileName*") // entries only (Filled, Outlined): no { }, so no members
     menu | ◆ Allowed by public enum class AppButton* | ComponentRole.kt:104
     menu | ◇ Role ui.Component — Shared component | ComponentRole.kt:17
     menu | == Other files of ui.Component

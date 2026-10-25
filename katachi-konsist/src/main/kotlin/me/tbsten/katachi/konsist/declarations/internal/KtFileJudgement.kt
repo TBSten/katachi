@@ -30,8 +30,8 @@ internal fun judgeKtFiles(
     readKtFiles(subject) { file -> Result.success(rulesOf(file)) }.flatMap { input ->
         val rules = input.rules.getOrThrow()
         val facts = input.facts
-        if (rules.isEmpty || facts == null) return@flatMap emptyList()
-        judgeKtFile(facts, rules).map { failureOf(it, input.file, rules) }
+        if (facts == null) return@flatMap emptyList()
+        failuresOf(judgeKtFile(facts, rules), input.file, rules)
     }
 
 /** One `.kt` file of a subject: the rules the block wrote for it, and its facts when Konsist read it. */
@@ -51,7 +51,8 @@ internal class KtFileInput(
  * what the IDE's explanation decides the same way. Empty when [subject] covers nothing.
  *
  * [rulesOf] decides whether a block that throws ends the whole run (the check) or only that file's
- * answer (the explanation). A file the block writes no line for stays in the list; judging it finds nothing.
+ * answer (the explanation). A file the block writes no line for stays in the list, and is judged
+ * like any other: with nothing allowed, whatever it holds is wrong.
  *
  * @throws KatachiKonsistNoKotlinFilesException when the covered files hold no `.kt` file.
  */
@@ -80,15 +81,16 @@ internal fun readKtFiles(
 internal fun judgeKtFile(facts: KtFileFacts, rules: FileRules): List<KtFileFinding> {
     val packageFinding = judgePackage(rules.packages, facts)
     val imports = judgeImports(rules.imports, facts.imports)
-    val declarations = rules.declarations?.let { judgeDeclarations(it, facts.declarations) }
-    val located = listOfNotNull(packageFinding?.takeIf { it.hasLine() }) + imports + declarations?.located.orEmpty()
-    val lineless = listOfNotNull(packageFinding?.takeUnless { it.hasLine() }) + declarations?.missing.orEmpty()
+    val declarations = judgeDeclarations(rules.declarations, facts.declarations)
+    val located = listOfNotNull(packageFinding?.takeIf { it.hasLine() }) + imports + declarations.located
+    val lineless = listOfNotNull(packageFinding?.takeUnless { it.hasLine() }) + declarations.missing
     return located + lineless
 }
 
-/** Whether the report places [this] at a line of the file: a missing package has none. */
+/** Whether the report places [this] at a line of the file: a package that is not declared has none. */
 private fun KtFileFinding.hasLine(): Boolean = when (this) {
     is UnexpectedPackage -> packageName != null
+    is ProhibitedPackage -> packageName != null
     else -> true
 }
 

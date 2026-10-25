@@ -27,10 +27,13 @@ import me.tbsten.katachi.konsist.declarations.internal.renderModifierAlternative
  * ## Example 1: modifiers in front of a kind, the way Kotlin writes them
  * ```kt
  * ktFileContent {
- *     allow(public, data, `class`, fileName)                    // public data class, and nothing more
- *     allow(suspend.optional(), `fun`, "execute")              // fun execute or suspend fun execute
+ *     `package`("com.example.**")
+ *     `import`("kotlinx.serialization.**")
+ *
+ *     allow(public, data, `class`, fileName) { allow(`val`, "*") }  // public data class, nothing more, with its vals
+ *     allow(suspend.optional(), `fun`, "execute")                  // fun execute or suspend fun execute
  *     allow((internal or private).optional(), data, `object`, "*")
- *     allow(annotated("Serializable"), `object` or `class`, fileName)
+ *     allow(annotated("Serializable"), `object` or `class`, "*Key")
  *     allow(private, anythingElse)
  * }
  * ```

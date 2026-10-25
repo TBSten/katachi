@@ -10,6 +10,9 @@ import me.tbsten.katachi.konsist.declarations.internal.requiredWriter
  * ## Example 1: the state a view model exposes
  * ```kt
  * ktFileContent {
+ *     `package`("com.example.**")
+ *     `import`("kotlinx.coroutines.flow.**")
+ *
  *     allow(`class`, fileName) {
  *         required(public, `val`, "uiState", "StateFlow<*>")
  *         allow(public, `val`, "is*", "Boolean")

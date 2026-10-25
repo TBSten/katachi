@@ -55,7 +55,7 @@ class RealDefinitionContractTest {
 
     private val samples = listOf(
         Sample(
-            "jvm", roles = 30, groups = 8, constraints = 7, explainedFiles = 6, declarations = 5, allowedByAnythingElse = 0,
+            "jvm", roles = 30, groups = 8, constraints = 7, explainedFiles = 6, declarations = 6, allowedByAnythingElse = 0,
             heldBack = listOf(
                 "src/main/kotlin/com/example/controller/health/LegacyStatusController.kt",
                 "src/main/kotlin/com/example/service/LegacyHealthCheck.kt",
@@ -188,7 +188,7 @@ class RealDefinitionContractTest {
     }
 
     @Test
-    fun `fileDeclarations を持つファイルを照合すると説明を書いた役割に当たり 宣言の無いファイルも説明に載る`() {
+    fun `fileDeclarations を持つファイルを照合すると説明を書いた役割に当たり どのファイルも判定済みになる`() {
         for (sample in samples) {
             val definition = sample.definition
             val lookup = DefinitionLookup(listOf(definitionSnapshot(definition)))
@@ -202,11 +202,13 @@ class RealDefinitionContractTest {
                 }
             }
         }
-        // A file whose block wrote no declaration line is listed, with nothing restricted.
-        val model = samples.first { it.name == "jvm" }.definition.roles.single { it.qualifiedName == "domain.Model" }
-        val unchecked = model.constraints.flatMap { it.fileDeclarations.orEmpty() }.single()
-        assertEquals(false, unchecked.declarationsChecked)
-        assertEquals(emptyList<Any>(), unchecked.declarations)
+        // ktFileContent is deny by default: every explained file is judged, so none is left unchecked.
+        for (sample in samples) {
+            val unchecked = ktFileContentConstraints(sample.definition)
+                .flatMap { (_, constraint) -> constraint.fileDeclarations.orEmpty() }
+                .filterNot { it.declarationsChecked }
+            assertEquals("${sample.name}: files left unchecked", emptyList<String>(), unchecked.map { it.file })
+        }
     }
 
     @Test

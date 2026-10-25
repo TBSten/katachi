@@ -55,6 +55,10 @@ Example: `AppButton.kt`
 | `@Preview private fun *Preview(...)` | optional |
 | `public enum class AppButton*` | optional |
 
+### Members of `public enum class AppButton*`
+
+No members are allowed.
+
 ## Examples
 
 - `AppButton` ... The app-wide button

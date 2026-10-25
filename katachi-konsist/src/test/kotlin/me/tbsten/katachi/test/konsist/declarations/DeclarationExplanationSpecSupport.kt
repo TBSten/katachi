@@ -17,7 +17,7 @@ import me.tbsten.katachi.dsl.wholeTree
 import me.tbsten.katachi.konsist.declarations.KtFileContentScope
 import me.tbsten.katachi.konsist.declarations.internal.KtFileContentConstraint
 import me.tbsten.katachi.konsist.declarations.internal.explainKtFile
-import me.tbsten.katachi.konsist.declarations.internal.failureOf
+import me.tbsten.katachi.konsist.declarations.internal.failuresOf
 import me.tbsten.katachi.konsist.declarations.internal.judgeKtFile
 import me.tbsten.katachi.test.konsist.fixtureProject
 
@@ -40,7 +40,7 @@ internal fun judgedAndExplained(
     val facts = factsOf(source, path)
     val rules = rulesOf(fileName = path.substringAfterLast('/').substringBefore('.'), block = block)
     return JudgedAndExplained(
-        failures = judgeKtFile(facts, rules).map { failureOf(it, path, rules) },
+        failures = failuresOf(judgeKtFile(facts, rules), path, rules),
         explanation = explainKtFile(path, facts, rules),
     )
 }

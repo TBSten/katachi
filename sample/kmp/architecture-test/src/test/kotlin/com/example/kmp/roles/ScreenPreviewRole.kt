@@ -53,8 +53,14 @@ fun DeclarationContainerScope.screenPreview() = "ScreenPreview".role {
         "feature" / "*" / "commonMain".sourceSet / kotlin / "com/example/kmp/feature" / "*" /
             "*Preview".ktFile()
     }
-    // Previews only, and private: nothing else calls them.
+    // Previews only, and private: nothing else calls them. They sit in the package of the screen
+    // they preview, and draw it with `UiState` and `PreviewRoot` from `:ui`.
     ktFileContent {
+        `package`(matchingDirectory)
+
+        `import`("androidx.compose.**")
+        `import`("com.example.kmp.ui.**")
+
         allow(annotated("Preview"), private, `fun`, "*Preview")
     }
 }

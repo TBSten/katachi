@@ -4,12 +4,12 @@ import java.util.Collections
 import java.util.IdentityHashMap
 
 /*
- * Judging the declarations of a file, and the members of the classes whose lines have a `{ }`,
- * against their allow lists. Each declaration is decided in this order:
+ * Judging the declarations of a file, and the members of its classes, against their allow lists.
+ * A list no line is written for allows nothing. Each declaration is decided in this order:
  *
  * 1. a `not.` line matches it in full: prohibited
  * 2. an allowed line matches it in full: allowed (and its members are judged by the `{ }` of the
- *    first such line that has one)
+ *    first such line that has one; when none has, by an empty list, so it may have no members)
  * 3. an `allow(..., anythingElse)` matches it: allowed (its members are not looked at)
  * 4. otherwise it is wrong: mismatched when an allowed line without a `*` in its name matches its name, unexpected if not
  *
@@ -110,11 +110,12 @@ private fun judgeList(
                 DeclarationOutcome.Prohibited(decision.rule)
             }
             is Decision.Allowed -> {
-                // The declaration itself is fine; its members may not be.
-                val withBody = decision.rules.firstOrNull { it.members != null }
+                // The declaration itself is fine; its members may not be. A line without `{ }` allows none.
                 val members = fact.members
-                if (withBody?.members != null && members != null) {
-                    judgeList(withBody.members, members, containers + fact, located, missing)
+                if (members != null) {
+                    val memberRules = decision.rules.firstNotNullOfOrNull { it.members }
+                        ?: DeclarationListRules.membersOfBodilessLine(decision.rules.first())
+                    judgeList(memberRules, members, containers + fact, located, missing)
                 }
                 DeclarationOutcome.Allowed(decision.rules)
             }

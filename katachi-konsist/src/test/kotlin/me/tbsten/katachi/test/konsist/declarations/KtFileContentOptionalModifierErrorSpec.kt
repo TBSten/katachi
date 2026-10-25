@@ -15,7 +15,7 @@ import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentModifierExcept
 import me.tbsten.katachi.konsist.declarations.KtFileContentLineProblem
 import me.tbsten.katachi.konsist.declarations.KtFileContentModifierProblem
 import me.tbsten.katachi.konsist.declarations.KtFileContentScope
-import me.tbsten.katachi.konsist.declarations.internal.failureOf
+import me.tbsten.katachi.konsist.declarations.internal.failuresOf
 import me.tbsten.katachi.konsist.declarations.internal.judgeKtFile
 
 /**
@@ -26,7 +26,7 @@ import me.tbsten.katachi.konsist.declarations.internal.judgeKtFile
 /** The code every fix of the failures of [source] shows, in the order the report lists them. */
 private fun fixCodesOf(source: String, block: KtFileContentScope.() -> Unit): List<String> {
     val rules = rulesOf(fileName = "Sample", block = block)
-    return judgeKtFile(factsOf(source), rules).map { failureOf(it, SAMPLE_PATH, rules) }.flatMap { failure -> failure.howToFix.flatMap { it.code } }
+    return failuresOf(judgeKtFile(factsOf(source), rules), SAMPLE_PATH, rules).flatMap { failure -> failure.howToFix.flatMap { it.code } }
 }
 
 private fun lineErrorOf(block: KtFileContentScope.() -> Unit): KatachiKtFileContentLineException =
@@ -108,7 +108,10 @@ class KtFileContentOptionalModifierErrorSpec : FreeSpec({
         "inline は fun・val・var に、external は typealias 以外に書ける" {
             shouldNotThrowAny { rulesOf { allow(inline, `val` or `var`, "*") } }
             shouldNotThrowAny { rulesOf { allow(external, `class` or `interface` or `object`, "*"); allow(external, `val`, "*") } }
-            judged("package com.example\n\ninline val Int.twice get() = this * 2\n") { allow(inline, `val`, "*") } shouldBe emptyList()
+            judged("package com.example\n\ninline val Int.twice get() = this * 2\n") {
+                `package`("**")
+                allow(inline, `val`, "*")
+            } shouldBe emptyList()
         }
 
         "inline val を許す直し方の行は、例外を投げずに書ける" {

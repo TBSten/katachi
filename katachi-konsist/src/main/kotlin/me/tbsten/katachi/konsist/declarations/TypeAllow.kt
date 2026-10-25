@@ -5,8 +5,9 @@ import me.tbsten.katachi.konsist.declarations.internal.allowWriter
 
 /**
  * The `allow(...)` lines for a class, an interface or an object: the modifiers and annotations
- * (none to ten of them), then the kind, then the name, as Kotlin writes the declaration. With a
- * `{ }`, the declaration's members are an allow list too.
+ * (none to ten of them), then the kind, then the name, as Kotlin writes the declaration. The
+ * `{ }` is the allow list of the declaration's members; without one, it may have no members, as
+ * with an empty `{ }`.
  *
  * The kind is `` `class` ``, `` `interface` ``, `` `object` ``, `type`, or any of them joined with
  * `or`. Modifiers in front of a kind that cannot carry them leave that kind out: `allow(sealed, type, "*")`
@@ -16,11 +17,14 @@ import me.tbsten.katachi.konsist.declarations.internal.allowWriter
  * ## Example 1: a view model, sealed actions and a data class
  * ```kt
  * ktFileContent {
+ *     `package`("com.example.feature.**")
+ *     `import`("**")
+ *
  *     allow(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
  *         allow(public, `val`, "uiState", "StateFlow<*>")
  *         allow(private, anythingElse)
  *     }
- *     allow(sealed, type, "*Action")
+ *     allow(sealed, type, "*Action") { allow(data, `object`, "*") }
  *     allow(internal or private, data, `object`, "*")
  * }
  * ```

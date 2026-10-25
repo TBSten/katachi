@@ -76,7 +76,7 @@ internal fun dumpOf(
 internal fun FileRules.dump(): String = buildList {
     packages.forEach { add(it.dump()) }
     imports.forEach { add(it.dump()) }
-    declarations?.let { addAll(it.dumpEntries(indent = "")) }
+    addAll(declarations.dumpEntries(indent = ""))
 }.joinToString("\n")
 
 private fun PackageRule.dump(): String {
@@ -129,7 +129,7 @@ private fun exceptOf(except: List<String>): String = if (except.isEmpty()) "" el
 
 /** The first declaration line written directly in the file. */
 internal val FileRules.firstDeclaration: DeclarationRule
-    get() = declarations?.lines?.firstOrNull() ?: throw AssertionError("no declaration line was written: ${dump()}")
+    get() = declarations.lines.firstOrNull() ?: throw AssertionError("no declaration line was written: ${dump()}")
 
 /**
  * One end-to-end run: a throwaway project holding [sources], a role named `Screen` whose layout

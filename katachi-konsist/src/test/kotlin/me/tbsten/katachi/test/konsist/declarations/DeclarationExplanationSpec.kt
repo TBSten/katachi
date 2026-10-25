@@ -140,10 +140,10 @@ class DeclarationExplanationSpec : FreeSpec({
             }.explanation.missing.map { it.text } shouldContainExactly listOf("class DefaultSample : Sample")
         }
 
-        "import だけのブロックは declarationsChecked = false で宣言を並べない" {
+        "import だけのブロックも宣言を判定し、どの宣言も Unexpected と説明する" {
             val explanation = judgedAndExplained(kt("class Anything")) { `import`("**") }.explanation
-            explanation.declarationsChecked shouldBe false
-            explanation.declarations.shouldBeEmpty()
+            explanation.declarationsChecked shouldBe true
+            explanation.verdicts() shouldBe listOf("Anything Unexpected []")
         }
     }
 
@@ -210,12 +210,13 @@ class DeclarationExplanationSpec : FreeSpec({
             explanations[1].verdicts() shouldContainExactly listOf("Fine Allowed [class Fine]")
         }
 
-        "どのファイルにも行を書かないブロックは、検査も説明も例外にならず、宣言は検査しない扱いになる" {
+        "どのファイルにも行を書かないブロックは、検査も説明も例外にならず、宣言をすべて許されないと判定する" {
             val run = explainedRun("src/main/kotlin/com/example/Sample.kt" to kt("class Sample")) { }
             run.failures.isSuccess shouldBe true
             val explanations = run.explanations.getOrThrow()
-            explanations.single().declarationsChecked shouldBe false
+            explanations.single().declarationsChecked shouldBe true
             explanations.single().unexplainedReason shouldBe null
+            explanations.single().declarations.map { "${it.name} ${it.verdict.name}" } shouldBe listOf("Sample Unexpected")
         }
     }
 
