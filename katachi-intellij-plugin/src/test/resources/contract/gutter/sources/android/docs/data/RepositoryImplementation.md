@@ -31,6 +31,10 @@ they are generated together
 
 Example: `UserRepositoryImpl.kt`
 
+| Package |
+|---|
+| (the file's directory) |
+
 | Import | |
 |---|---|
 | `kotlin.**` | optional |

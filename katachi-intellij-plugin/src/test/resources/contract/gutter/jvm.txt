@@ -1570,7 +1570,9 @@ roles: (none) CaptureMismatch
 == src/main/kotlin/com/example/model/Health.kt
 roles: domain.Model
     domain.Model declared at ModelRole.kt:14 | fun DeclarationContainerScope.model() = "Model".role {
-7 | ◆ | katachi: domain.Model
+7 | ◆ | katachi: domain.Model — allowed by (data or enum or value) class Health (ModelRole.kt:51)
+    allowed at ModelRole.kt:51 | required(data or enum or value, `class`, fileName) { // @Serializable data class Health(...)
+    menu | ◆ Allowed by (data or enum or value) class Health | ModelRole.kt:51
     menu | ◇ Role domain.Model — Model | ModelRole.kt:14
     menu | == Other files of domain.Model
     menu | (disabled) — No other file yet
@@ -1581,9 +1583,9 @@ roles: domain.Model
 == src/main/kotlin/com/example/plugin/Routing.kt
 roles: api.KtorPlugin
     api.KtorPlugin declared at KtorPluginRole.kt:14 | fun DeclarationContainerScope.ktorPlugin() = "KtorPlugin".role {
-8 | ◆ | katachi: api.KtorPlugin — allowed by fun configureRouting() (KtorPluginRole.kt:53)
-    allowed at KtorPluginRole.kt:53 | required(`fun`, "configure$fileName")()
-    menu | ◆ Allowed by fun configureRouting() | KtorPluginRole.kt:53
+8 | ◆ | katachi: api.KtorPlugin — allowed by fun configureRouting() (KtorPluginRole.kt:55)
+    allowed at KtorPluginRole.kt:55 | required(`fun`, "configure$fileName")()
+    menu | ◆ Allowed by fun configureRouting() | KtorPluginRole.kt:55
     menu | ◇ Role api.KtorPlugin — Ktor plugin configuration | KtorPluginRole.kt:14
     menu | == Other files of api.KtorPlugin (1)
     menu | Serialization.kt | src/main/kotlin/com/example/plugin
@@ -1594,9 +1596,9 @@ roles: api.KtorPlugin
 == src/main/kotlin/com/example/plugin/Serialization.kt
 roles: api.KtorPlugin
     api.KtorPlugin declared at KtorPluginRole.kt:14 | fun DeclarationContainerScope.ktorPlugin() = "KtorPlugin".role {
-10 | ◆ | katachi: api.KtorPlugin — allowed by fun configureSerialization() (KtorPluginRole.kt:53)
-    allowed at KtorPluginRole.kt:53 | required(`fun`, "configure$fileName")()
-    menu | ◆ Allowed by fun configureSerialization() | KtorPluginRole.kt:53
+10 | ◆ | katachi: api.KtorPlugin — allowed by fun configureSerialization() (KtorPluginRole.kt:55)
+    allowed at KtorPluginRole.kt:55 | required(`fun`, "configure$fileName")()
+    menu | ◆ Allowed by fun configureSerialization() | KtorPluginRole.kt:55
     menu | ◇ Role api.KtorPlugin — Ktor plugin configuration | KtorPluginRole.kt:14
     menu | == Other files of api.KtorPlugin (1)
     menu | Routing.kt | src/main/kotlin/com/example/plugin

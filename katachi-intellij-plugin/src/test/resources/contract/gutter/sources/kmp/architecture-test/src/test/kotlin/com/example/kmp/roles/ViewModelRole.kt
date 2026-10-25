@@ -54,12 +54,16 @@ fun DeclarationContainerScope.viewModel() = "ViewModel".role {
     // type such as SettingsUi beside it. androidx.compose and android are not among the imports,
     // so a view model that reaches for either fails.
     "Must not import Compose or Android".ktFileContent {
+        `package`(matchingDirectory) // feature/home/.../home/HomeViewModel.kt -> com.example.kmp.feature.home
+
         `import`("androidx.lifecycle.**")
         `import`("kotlinx.coroutines.**")
         `import`("com.example.kmp.data.**")
         `import`("com.example.kmp.ui.core.**")
 
-        allow(internal, data, `class`, "*Ui")
+        allow(internal, data, `class`, "*Ui") { // data class SettingsUi(val userCount: Int, ...)
+            allow(`val`, "*")                    // read-only values only: the screen does not write back
+        }
         required(internal, `class`, fileName).superclass("ViewModel") {
             required(public, `val`, "state", "StateFlow<UiState<*>>")
             allow(public, `fun`, "*")    // the events: reload()

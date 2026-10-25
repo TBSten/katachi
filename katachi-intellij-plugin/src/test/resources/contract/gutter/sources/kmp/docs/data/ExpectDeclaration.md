@@ -36,6 +36,8 @@ Example: `PlatformInfo.kt`
 |---|
 | `com.example.kmp.data.platform` |
 
+No import line is written, so no import is allowed.
+
 | Declaration | |
 |---|---|
 | `expect` (anything) | optional |

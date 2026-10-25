@@ -42,6 +42,8 @@ Example: `PlatformInfo.android.kt`
 |---|
 | `com.example.kmp.data.platform` |
 
+No import line is written, so no import is allowed.
+
 | Declaration | |
 |---|---|
 | `actual` (anything) | optional |

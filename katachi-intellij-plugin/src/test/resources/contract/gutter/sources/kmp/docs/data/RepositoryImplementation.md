@@ -32,6 +32,16 @@ creates both at once, and the `item` parameter binds both when given once.
 
 Example: `UserRepositoryImpl.kt`
 
+| Package |
+|---|
+| `com.example.kmp.data.user` |
+
+| Import | |
+|---|---|
+| `kotlin.**` | optional |
+| `kotlinx.**` | optional |
+| `com.example.kmp.data.**` | optional |
+
 | Declaration | |
 |---|---|
 | `class UserRepositoryImpl : UserRepository` | required |

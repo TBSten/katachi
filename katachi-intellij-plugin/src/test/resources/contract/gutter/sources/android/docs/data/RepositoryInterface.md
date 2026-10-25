@@ -37,6 +37,10 @@ generation target). The id is split per domain, and
 
 Example: `UserRepository.kt`
 
+| Package |
+|---|
+| (the file's directory) |
+
 | Import | |
 |---|---|
 | `kotlin.**` | optional |

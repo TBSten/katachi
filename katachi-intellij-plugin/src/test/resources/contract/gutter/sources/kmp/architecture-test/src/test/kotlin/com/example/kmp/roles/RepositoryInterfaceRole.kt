@@ -72,8 +72,15 @@ fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role
             }
         }
     }
-    // The interface named after the file, of functions only.
+    // The interface named after the file, of functions only. `:data` knows neither Compose nor
+    // `:ui`, so only Kotlin and `:data` itself are imported.
     ktFileContent {
+        `package`("com.example.kmp.data.user")
+
+        `import`("kotlin.**")
+        `import`("kotlinx.**")
+        `import`("com.example.kmp.data.**")
+
         required(`interface`, fileName) {
             allow(`fun`, "*")
         }

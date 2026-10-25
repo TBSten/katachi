@@ -32,6 +32,15 @@ Previews can be written in `commonMain` because the former is used.
 
 Example: `HomeLoadedPreview.kt`
 
+| Package |
+|---|
+| (the file's directory) |
+
+| Import | |
+|---|---|
+| `androidx.compose.**` | optional |
+| `com.example.kmp.ui.**` | optional |
+
 | Declaration | |
 |---|---|
 | `@Preview private fun *Preview(...)` | optional |

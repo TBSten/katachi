@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "katachiVersion": "0.2.0",
-  "generatedAt": "2026-10-24T18:02:22Z",
+  "generatedAt": "2026-10-25T14:10:56Z",
   "projectRoot": "/__ROOT__",
   "architecture": {
     "declaredAt": {
@@ -557,7 +557,7 @@
                       "text": "fun configureRouting()",
                       "declaredAt": {
                         "fileName": "KtorPluginRole.kt",
-                        "line": 53
+                        "line": 55
                       }
                     }
                   ],
@@ -581,7 +581,7 @@
                       "text": "fun configureSerialization()",
                       "declaredAt": {
                         "fileName": "KtorPluginRole.kt",
-                        "line": 53
+                        "line": 55
                       }
                     }
                   ],
@@ -1026,7 +1026,7 @@
           "range": "Subtree",
           "declaredAt": {
             "fileName": "ModelRole.kt",
-            "line": 44
+            "line": 45
           },
           "layoutPath": null,
           "anchors": ["src/main/kotlin/com/example/model"],
@@ -1038,8 +1038,25 @@
           "fileDeclarations": [
             {
               "file": "src/main/kotlin/com/example/model/Health.kt",
-              "declarationsChecked": false,
-              "declarations": [],
+              "declarationsChecked": true,
+              "declarations": [
+                {
+                  "kind": "class",
+                  "name": "Health",
+                  "line": 6,
+                  "verdict": "Allowed",
+                  "rules": [
+                    {
+                      "text": "(data or enum or value) class Health",
+                      "declaredAt": {
+                        "fileName": "ModelRole.kt",
+                        "line": 51
+                      }
+                    }
+                  ],
+                  "difference": null
+                }
+              ],
               "missing": [],
               "unexplainedReason": null
             }
@@ -3297,7 +3314,7 @@
         {
           "name": "fails the build on every compiler warning",
           "backend": "custom",
-          "checkClass": "com.example.groups.GradleGroupKt$$Lambda$86/0x0000007001094ed0",
+          "checkClass": "com.example.groups.GradleGroupKt$$Lambda$90/0x000000d001096120",
           "range": "Subtree",
           "declaredAt": {
             "fileName": "GradleGroup.kt",
