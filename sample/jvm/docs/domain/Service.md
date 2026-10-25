@@ -48,7 +48,7 @@ Example: `HealthService.kt`
 |---|---|
 | `internal.optional() class HealthService` | required |
 
-### Members of `class HealthService`
+### Members of `internal.optional() class HealthService`
 
 | Member | |
 |---|---|

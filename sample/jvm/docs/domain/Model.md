@@ -43,7 +43,7 @@ Example: `Health.kt`
 |---|---|
 | `(data or enum or value) class Health` | required |
 
-### Members of `class Health`
+### Members of `(data or enum or value) class Health`
 
 | Member | |
 |---|---|
