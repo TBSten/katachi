@@ -178,7 +178,8 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
       --kotlin <version>  Kotlin のバージョン（既定: プロジェクトから検出）
       --no-konsist        katachi-konsist を使わない構成で生成する（konsist { } も ktFileContent { } も書けない）。
                           assert() に FileConstraintCheck() を渡さないので、gradle { } の hook に
-                          書いた fileConstraint も評価されない
+                          書いた fileConstraint も評価されず、test は [UncheckedFileConstraint] で
+                          失敗する（How to fix: Pass FileConstraintCheck() to assert()）
       --module-dir <path> 検査用モジュールの置き場所（既定: init が記録した meta.moduleDir。
                           無ければ architecture-test）。指定すると meta.moduleDir を書き換える
       --test-framework <junit5|kotest>
@@ -372,7 +373,8 @@ Usage:
       --kotlin <version>  Kotlin version (default: detected from the project)
       --no-konsist        Generate a setup that does not use katachi-konsist (no konsist { } or ktFileContent { }).
                           assert() gets no FileConstraintCheck(), so a fileConstraint written in a
-                          gradle { } hook is not evaluated either
+                          gradle { } hook is not evaluated either, and the test fails with
+                          [UncheckedFileConstraint] (How to fix: Pass FileConstraintCheck() to assert())
       --module-dir <path> Where the test module goes (default: meta.moduleDir recorded by init,
                           otherwise architecture-test). When given, meta.moduleDir is updated
       --test-framework <junit5|kotest>

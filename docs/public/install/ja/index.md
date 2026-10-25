@@ -431,7 +431,7 @@ JVM toolchain は、プロジェクトに既にある設定（ほかのモジュ
 
 例外は、生成されたファイルを変えないとビルドがそもそも動かない場合だけです。これは上のルールより優先します。ただしその場合はスクリプト側のバグなので、`add changed` に理由を書いて記録し、`questions` にも登録してください。
 
-`konsist { }` も `ktFileContent { }` も使わない方針が決まっている場合だけ `--no-konsist` を付ける（どちらも katachi-konsist に入っている）。この構成ではテストが `assert()` に `FileConstraintCheck()` を渡さないので、`gradle { }` の hook に書いた `fileConstraint` も評価されない。決まっていなければデフォルトのままでよい。
+`konsist { }` も `ktFileContent { }` も使わない方針が決まっている場合だけ `--no-konsist` を付ける（どちらも katachi-konsist に入っている）。この構成ではテストが `assert()` に `FileConstraintCheck()` を渡さないので、`gradle { }` の hook に書いた `fileConstraint` も評価されず、test は `[UncheckedFileConstraint]` で失敗する（How to fix は `Pass FileConstraintCheck() to assert()`）。決まっていなければデフォルトのままでよい。
 
 作成できたら `sh $CLI check 2-1`。
 
@@ -451,15 +451,35 @@ JDK: 21（JAVA_HOME）
 結果: Katachi check failed: 4 violations (Unexpected: 4)
 ```
 
-ログの中では、違反ごとに次の形の段落が続きます。
+ログの中では、違反ごとに次の形の段落が続きます（ファイルとディレクトリの例）。
 
 ```
-[UnexpectedFile] build.gradle.kts
+[UnexpectedFile] file:///path/to/project/.gitignore
   No role is defined for this file.
 
   How to fix:
+    - Delete it if it is not needed
     - Add a new role for it:
-        "BuildGradle".role { ... }
+        "Gitignore".role {
+          summary = "TODO"
+          layout {
+            ".gitignore".file()
+          }
+        }
+
+[UnexpectedDirectory] file:///path/to/project/.gemini
+  No role is defined for this directory. Nothing below it was checked.
+
+  How to fix:
+    - Delete it if it is not needed
+    - Declare what belongs in it in the layout of an existing role
+    - Add a new role for it:
+        "Gemini".role {
+          summary = "TODO"
+          layout {
+            ".gemini" { ignore() }
+          }
+        }
 ```
 
 違反の表示件数はデフォルトで 10 件です。導入中は数十〜百件出るので、全件が要るときは `sh $CLI test -- -Dkatachi.maxViolations=all` で出します（`--` より後ろは `./gradlew` にそのまま渡り、katachi の Gradle plugin がテストの JVM に届けます）。テストのコードに `maxViolations` を書く必要はありません。
@@ -499,7 +519,7 @@ sh $CLI docs --topic basic-api
 sh $CLI docs --topic kt-file-content     # ktFileContent { } を使うときだけ
 ```
 
-ガイドを話題ごとに切り出して取得し、ファイルのパスを出します。そのファイルを読んでください。**ガイド全体（`sh $CLI docs`）を読まないこと。** 定義を書くのに要るのは上の 4 つだけです。`konsist { }` の書き方は `role` の「中身に制約をかける」（取得される英語版では "Constraining the contents"）と、`basic-api` の 7 節（"7. Constraining a file's contents with `"...".konsist { }`"）にあります。話題の一覧は `sh $CLI docs --topics` で出ます。どれもすでに取得済みなら取り直しません。
+ガイドを話題ごとに切り出して取得し、ファイルのパスを出します。そのファイルを読んでください。**ガイド全体（`sh $CLI docs`）を読まないこと。** 定義を書くのに要るのは上の 4 つだけです。`konsist { }` の書き方は `role` の「中身に制約をかける」（取得される英語版では "Constraining the contents"）と、`basic-api` の 7 節（"7. Constraining a file’s contents with `"...".konsist { }`"）にあります。話題の一覧は `sh $CLI docs --topics` で出ます。どれもすでに取得済みなら取り直しません。
 
 **取得されるのは英語版です。** ドキュメントサイトのデフォルトロケールが英語で、この形式はデフォルトロケールのぶんしか生成されないためです。DSL の API 名は言語に依らないので、定義を書くうえでは差し支えない。
 
@@ -535,6 +555,8 @@ import me.tbsten.katachi.konsist.declarations.ktFileContent   // ktFileContent {
 
 `me.tbsten.katachi.dsl.gradle` は**スター import にしてください。** `/` は `div` 演算子なので、個別に import すると連結が書けません。
 
+**`capture()`・`fileConstraint`・`FileConstraintFailure`・`ktFileContent { }` は実験的な API です。** 1 つでも使うファイルには、先頭に `@file:OptIn(ExperimentalKatachiApi::class)` を書き、import に `import me.tbsten.katachi.ExperimentalKatachiApi` を足します。書かないと、使った箇所ごとにコンパイルエラーになります。
+
 **`val projectArchitecture` の名前とパッケージは変えないこと。** 検査用モジュールの `build.gradle.kts` の `katachi { architecture = "..." }` がこの完全修飾名を指しています。定義を関数やファイルに分割するのは自由です（3-3）。
 
 `architecture { }` の先頭には `title = "..."` と `description = "..."` を書けます。ステップ 4 で生成するドキュメントのルートページの見出しと本文になります（`build.gradle.kts` からは設定できません）。中身はステップ 1 のレポートの `overview` / `architecture` から取ってください。
@@ -555,7 +577,7 @@ import me.tbsten.katachi.konsist.declarations.ktFileContent   // ktFileContent {
 
 **Gradle のファイル（wrapper・settings・各モジュールのビルドスクリプト・`gradle.properties`・version catalog）は、Role を自分で書かずに `gradle()` を1行書いてください。** 種類ごとの Role に分けた `Gradle` group を katachi が宣言します（`me.tbsten.katachi.dsl.gradle.*` のスター import に入っています）。対象外の `buildSrc` と、`includeBuild` したビルドだけは自分で Role を書きます。
 
-ビルドファイルの中身を検査したいとき（レポートで `constraintOnly` の印が付いたもの）も、Role は書きません。`gradle { buildScript { fileConstraint("...") { subject -> ... } } }` のように、`gradle()` のブロックの hook に制約を書きます（settings なら `settingsScript { }`、version catalog なら `versionCatalog { }`）。`fileConstraint` は実験的な API なので、そのファイルの先頭に `@file:OptIn(ExperimentalKatachiApi::class)` と `import me.tbsten.katachi.ExperimentalKatachiApi` を書きます。`buildScript { }` の制約は、ルートを含む全モジュールの `build.gradle(.kts)` を `subject.files` に受け取ります。1 つのモジュールだけを見るなら、制約の中で `subject.files` をパスで絞ります（例: `subject.files.filter { it == "app/build.gradle.kts" }`）。`gradle { }` の中に katachi の Role と同じ名前の Role（`"BuildScript".role { }` など）を書くと、重複の例外になります。`gradle { }` の外の Role でビルドファイルを宣言すると、katachi の `BuildScript` と同じファイルを取り合って `[AmbiguousLayout]` になります。
+ビルドファイルの中身を検査したいとき（レポートで `constraintOnly` の印が付いたもの）も、Role は書きません。`gradle { buildScript { fileConstraint("...") { subject -> ... } } }` のように、`gradle()` のブロックの hook に制約を書きます（settings なら `settingsScript { }`、version catalog なら `versionCatalog { }`）。`fileConstraint` と `FileConstraintFailure` は実験的な API なので、上の「実験的な API」の段落のとおり opt-in（`@file:OptIn(ExperimentalKatachiApi::class)` と `import me.tbsten.katachi.ExperimentalKatachiApi`）が要ります。`buildScript { }` の制約は、ルートを含む全モジュールの `build.gradle(.kts)` を `subject.files` に受け取ります。1 つのモジュールだけを見るなら、制約の中で `subject.files` をパスで絞ります（例: `subject.files.filter { it == "app/build.gradle.kts" }`）。`gradle { }` の中に katachi の Role と同じ名前の Role（`"BuildScript".role { }` など）を書くと、重複の例外になります。`gradle { }` の外の Role でビルドファイルを宣言すると、katachi の `BuildScript` と同じファイルを取り合って `[AmbiguousLayout]` になります。
 
 <details>
 <summary>よくある誤りと直し方</summary>
