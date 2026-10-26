@@ -131,6 +131,8 @@ fun `アーキテクチャに沿ったファイル配置になっている`() {
 }
 ```
 
+このあとの節の例では `package` / `import` の行を省き、`// package / import の行は省略` とだけ書きます。写すときは、ファイルに合わせた `` `package`(…) `` / `` `import`(…) `` の行を書き足してください。
+
 ## class, interface, object 宣言を許可する
 
 そのファイル内に class, interface, object の配置を許可する場合、`required(...)` または `allow(...)` に 宣言して良い宣言の種類と名前を渡して定義します。
@@ -138,15 +140,18 @@ fun `アーキテクチャに沿ったファイル配置になっている`() {
 - `required(...)` で指定した宣言は必ず存在する必要があります。
 - `allow(...)` で指定した宣言は存在を許されます。存在しない場合も違反にはなりません。
 
+class, interface, object の行に `{ }` を書かないと、その宣言はメンバ（主コンストラクタのプロパティを含む）を1つも持てません。メンバを問わないときは `{ allow(anythingElse) }` を付けます。
+
 <Tabs>
   <TabItem label="Android での例">
 
-    ```kt {5, 13, 21} nocollapse
+    ```kt {6, 15, 24} nocollapse
     "UseCase".role {
         layout { /* ... */ }
 
         ktFileContent {
-            allow(`class`, "*UseCase") // UseCase で終わる名前を持つ class
+            // package / import の行は省略
+            allow(`class`, "*UseCase") { allow(anythingElse) } // UseCase で終わる名前を持つ class
         }
     }
 
@@ -154,14 +159,16 @@ fun `アーキテクチャに沿ったファイル配置になっている`() {
         layout { /* ... */ }
 
         ktFileContent {
-            allow(`class`, "*ViewModel") // ViewModel で終わる名前を持つ class
+            // package / import の行は省略
+            allow(`class`, "*ViewModel") { allow(anythingElse) } // ViewModel で終わる名前を持つ class
         }
     }
 
-    "Navigation Route".role {
+    "NavigationRoute".role {
         layout { /* ... */ }
 
         ktFileContent {
+            // package / import の行は省略
             allow(data, `object`, "*Route") // Route で終わる名前を持つ data object
         }
     }
@@ -171,12 +178,13 @@ fun `アーキテクチャに沿ったファイル配置になっている`() {
 
   <TabItem label="MVC での例">
 
-    ```kt {5, 13, 21} nocollapse
+    ```kt {6, 15, 24} nocollapse
     "Controller".role {
         layout { /* ... */ }
 
         ktFileContent {
-            required(`class`, fileName) // ファイル名と同じ名前の Controller class が必ず 1 つ
+            // package / import の行は省略
+            required(`class`, fileName) { allow(anythingElse) } // ファイル名と同じ名前の Controller class が必ず 1 つ
         }
     }
 
@@ -184,7 +192,8 @@ fun `アーキテクチャに沿ったファイル配置になっている`() {
         layout { /* ... */ }
 
         ktFileContent {
-            required(`class`, fileName) // ファイル名と同じ名前の Service class が必ず 1 つ
+            // package / import の行は省略
+            required(`class`, fileName) { allow(anythingElse) } // ファイル名と同じ名前の Service class が必ず 1 つ
         }
     }
 
@@ -192,7 +201,8 @@ fun `アーキテクチャに沿ったファイル配置になっている`() {
         layout { /* ... */ }
 
         ktFileContent {
-            allow(data, `class`, "*") // Model は data class
+            // package / import の行は省略
+            allow(data, `class`, "*") { allow(anythingElse) } // Model は data class
         }
     }
     ```
@@ -259,11 +269,12 @@ allow(public, type, "*Repository")
 <Tabs>
   <TabItem label="Android での例">
 
-    ```kt {5, 6} nocollapse
+    ```kt {6, 7} nocollapse
     "ScreenComposable".role {
         // ...
 
         ktFileContent {
+            // package / import の行は省略
             allow(private, `val`, "*") // private 変数を許可する
             required(`fun`, "*Screen") // Screen で終わる名前を持つ関数が1つ以上ある
 
@@ -291,11 +302,12 @@ allow(public, type, "*Repository")
 
   <TabItem label="MVC での例">
 
-    ```kt {5-7, 16-18} nocollapse
+    ```kt {6-8, 18-20} nocollapse
     "Controller".role {
         // ...
 
         ktFileContent {
+            // package / import の行は省略
             required(`class`, fileName) {
                 allow(private, `val`, "*", "*Service") // 呼び出す Service を private val で持つ
                 allow(`fun`, "*")(anyArgs())            // ハンドラの関数。名前も引数も問わない
@@ -307,6 +319,7 @@ allow(public, type, "*Repository")
         // ...
 
         ktFileContent {
+            // package / import の行は省略
             required(`class`, fileName) {
                 allow(private, `val`, "*", "*Repository") // 呼び出す Repository を private val で持つ
                 allow(`fun`, "*")(anyArgs())
@@ -383,11 +396,12 @@ allow(`typealias`, "*Handler")
 <Tabs>
   <TabItem label="Android での例">
 
-    ```kt {5} nocollapse
+    ```kt {6} nocollapse
     "ViewModel".role {
         layout { /* ... */ }
 
         ktFileContent {
+            // package / import の行は省略
             required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
                 // ...
             }
@@ -399,11 +413,12 @@ allow(`typealias`, "*Handler")
 
   <TabItem label="MVC での例">
 
-    ```kt {5, 15} nocollapse
+    ```kt {6, 17} nocollapse
     "Controller".role {
         layout { /* ... */ }
 
         ktFileContent {
+            // package / import の行は省略
             required(annotated("RestController"), `class`, fileName) {
                 // ...
             }
@@ -414,7 +429,10 @@ allow(`typealias`, "*Handler")
         layout { /* ... */ }
 
         ktFileContent {
-            required(annotated("Service"), `class`, fileName)
+            // package / import の行は省略
+            required(annotated("Service"), `class`, fileName) {
+                // ...
+            }
         }
     }
     ```

@@ -107,6 +107,10 @@ val projectArchitecture = architecture {
 }
 ```
 
+```kt title=Constants.kt
+const val appPackageDir = "com/example/project"
+```
+
 <Tabs>
 <TabItem label="UiState">
 
@@ -157,6 +161,9 @@ fun DeclarationContainerScope.viewModel() = "ViewModel".role {
 
   // HomeViewModel.kt には、ViewModel を継承した class HomeViewModel だけを置く
   ktFileContent {
+    `package`(matchingDirectory)
+    `import`("**")
+
     required(`class`, fileName).superclass("ViewModel") {
       required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
       allow(public, `fun`, "*")          // 画面からのイベント
@@ -187,6 +194,9 @@ fun DeclarationContainerScope.screen() = "Screen".role {
 
   // HomeScreen.kt で public にするのは @Composable fun HomeScreen だけにする
   ktFileContent {
+    `package`(matchingDirectory)
+    `import`("**")
+
     required(annotated("Composable"), public, `fun`, fileName)
     allow(private, anythingElse)      // 画面の部品や Preview など、private なものは何でもよい
   }
@@ -266,7 +276,12 @@ fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role
 
   // UserRepository.kt には interface UserRepository だけを置く
   ktFileContent {
-    required(`interface`, fileName)
+    `package`(matchingDirectory)
+    `import`("**")
+
+    required(`interface`, fileName) {
+      allow(anythingElse)      // メンバは問わない
+    }
   }
 }
 ```
@@ -292,7 +307,12 @@ fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementa
 
   // UserRepositoryImpl.kt には、UserRepository を実装した class UserRepositoryImpl だけを置く
   ktFileContent {
-    required(`class`, fileName).superclass(fileName.removeSuffix("Impl"))
+    `package`(matchingDirectory)
+    `import`("**")
+
+    required(`class`, fileName).superclass(fileName.removeSuffix("Impl")) {
+      allow(anythingElse)      // メンバは問わない
+    }
   }
 }
 ```
@@ -318,7 +338,12 @@ fun DeclarationContainerScope.dataSource() = "DataSource".role {
 
   // UserRemoteDataSource.kt には class UserRemoteDataSource だけを置く
   ktFileContent {
-    required(`class`, fileName)
+    `package`(matchingDirectory)
+    `import`("**")
+
+    required(`class`, fileName) {
+      allow(anythingElse)      // メンバは問わない
+    }
   }
 }
 ```

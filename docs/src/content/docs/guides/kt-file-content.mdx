@@ -131,6 +131,8 @@ First, let's define the package and import declarations that may be used in the 
 }
 ```
 
+The examples in the following sections leave out the `package` / `import` lines and only write `// package / import lines omitted`. When you copy them, add the `` `package`(…) `` / `` `import`(…) `` lines that fit your files.
+
 ## Allowing class, interface, and object declarations
 
 To allow a class, interface, or object in the file, pass the kind and the name of the declaration that may be there to `required(...)` or `allow(...)`.
@@ -138,15 +140,18 @@ To allow a class, interface, or object in the file, pass the kind and the name o
 - A declaration specified with `required(...)` must be present.
 - A declaration specified with `allow(...)` is allowed to be present. It is not a violation if it is absent.
 
+If a class, interface, or object line has no `{ }`, that declaration may not have a single member (properties of the primary constructor included). When any member is fine, add `{ allow(anythingElse) }`.
+
 <Tabs>
   <TabItem label="Example for Android">
 
-    ```kt {5, 13, 21} nocollapse
+    ```kt {6, 15, 24} nocollapse
     "UseCase".role {
         layout { /* ... */ }
 
         ktFileContent {
-            allow(`class`, "*UseCase") // a class whose name ends with UseCase
+            // package / import lines omitted
+            allow(`class`, "*UseCase") { allow(anythingElse) } // a class whose name ends with UseCase
         }
     }
 
@@ -154,14 +159,16 @@ To allow a class, interface, or object in the file, pass the kind and the name o
         layout { /* ... */ }
 
         ktFileContent {
-            allow(`class`, "*ViewModel") // a class whose name ends with ViewModel
+            // package / import lines omitted
+            allow(`class`, "*ViewModel") { allow(anythingElse) } // a class whose name ends with ViewModel
         }
     }
 
-    "Navigation Route".role {
+    "NavigationRoute".role {
         layout { /* ... */ }
 
         ktFileContent {
+            // package / import lines omitted
             allow(data, `object`, "*Route") // a data object whose name ends with Route
         }
     }
@@ -171,12 +178,13 @@ To allow a class, interface, or object in the file, pass the kind and the name o
 
   <TabItem label="Example for MVC">
 
-    ```kt {5, 13, 21} nocollapse
+    ```kt {6, 15, 24} nocollapse
     "Controller".role {
         layout { /* ... */ }
 
         ktFileContent {
-            required(`class`, fileName) // exactly one Controller class with the same name as the file
+            // package / import lines omitted
+            required(`class`, fileName) { allow(anythingElse) } // exactly one Controller class with the same name as the file
         }
     }
 
@@ -184,7 +192,8 @@ To allow a class, interface, or object in the file, pass the kind and the name o
         layout { /* ... */ }
 
         ktFileContent {
-            required(`class`, fileName) // exactly one Service class with the same name as the file
+            // package / import lines omitted
+            required(`class`, fileName) { allow(anythingElse) } // exactly one Service class with the same name as the file
         }
     }
 
@@ -192,7 +201,8 @@ To allow a class, interface, or object in the file, pass the kind and the name o
         layout { /* ... */ }
 
         ktFileContent {
-            allow(data, `class`, "*") // a Model is a data class
+            // package / import lines omitted
+            allow(data, `class`, "*") { allow(anythingElse) } // a Model is a data class
         }
     }
     ```
@@ -259,11 +269,12 @@ To allow property and function declarations, pass `val`/`var` and `fun` as the k
 <Tabs>
   <TabItem label="Example for Android">
 
-    ```kt {5, 6} nocollapse
+    ```kt {6, 7} nocollapse
     "ScreenComposable".role {
         // ...
 
         ktFileContent {
+            // package / import lines omitted
             allow(private, `val`, "*") // allow private variables
             required(`fun`, "*Screen") // at least one function whose name ends with Screen must exist
 
@@ -291,11 +302,12 @@ To allow property and function declarations, pass `val`/`var` and `fun` as the k
 
   <TabItem label="Example for MVC">
 
-    ```kt {5-7, 16-18} nocollapse
+    ```kt {6-8, 18-20} nocollapse
     "Controller".role {
         // ...
 
         ktFileContent {
+            // package / import lines omitted
             required(`class`, fileName) {
                 allow(private, `val`, "*", "*Service") // hold the Service it calls as a private val
                 allow(`fun`, "*")(anyArgs())            // handler functions. Any name and any parameters
@@ -307,6 +319,7 @@ To allow property and function declarations, pass `val`/`var` and `fun` as the k
         // ...
 
         ktFileContent {
+            // package / import lines omitted
             required(`class`, fileName) {
                 allow(private, `val`, "*", "*Repository") // hold the Repository it calls as a private val
                 allow(`fun`, "*")(anyArgs())
@@ -383,11 +396,12 @@ When you want to use an annotation, specify `annotated()` the same way as a modi
 <Tabs>
   <TabItem label="Example for Android">
 
-    ```kt {5} nocollapse
+    ```kt {6} nocollapse
     "ViewModel".role {
         layout { /* ... */ }
 
         ktFileContent {
+            // package / import lines omitted
             required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
                 // ...
             }
@@ -399,11 +413,12 @@ When you want to use an annotation, specify `annotated()` the same way as a modi
 
   <TabItem label="Example for MVC">
 
-    ```kt {5, 15} nocollapse
+    ```kt {6, 17} nocollapse
     "Controller".role {
         layout { /* ... */ }
 
         ktFileContent {
+            // package / import lines omitted
             required(annotated("RestController"), `class`, fileName) {
                 // ...
             }
@@ -414,7 +429,10 @@ When you want to use an annotation, specify `annotated()` the same way as a modi
         layout { /* ... */ }
 
         ktFileContent {
-            required(annotated("Service"), `class`, fileName)
+            // package / import lines omitted
+            required(annotated("Service"), `class`, fileName) {
+                // ...
+            }
         }
     }
     ```

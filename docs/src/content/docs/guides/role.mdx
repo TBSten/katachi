@@ -45,7 +45,7 @@ You write a Role's description, placement, and constraints inside that Role's bl
 | `.template { }` | Attached to a file declared in `layout { }`, it defines the template used when that file is newly created | [Generate code from a template](/katachi/guides/generate-code-from-template/) |
 
 <Aside type="note" title="Draft written by AI">
-The `ktFileContent { }` row in this table and the examples on this page that use `ktFileContent { }` are a draft written by AI. `ktFileContent { }` is an experimental feature planned for v0.3.
+The `ktFileContent { }` row in this table and the examples on this page that use `ktFileContent { }` are a draft written by AI. `ktFileContent { }` is an experimental feature added in v0.3.
 </Aside>
 
 Next is an example that puts title / summary / layout / konsist together in one place.
@@ -275,12 +275,15 @@ With one Role per kind, the description and constraints only deal with that kind
 
     <CodeComparison.Panel label="🆗 One Role per kind" labelVariant="success">
 
-    ```kt {1,3,9,11} nocollapse
+    ```kt {1,3,12,14} nocollapse
     "RepositoryInterface".role {
         summary = "The entry point for loading and saving data"
         layout { "repository" / "*Repository".ktFile() }
         ktFileContent {
-            required(`interface`, fileName)
+            `package`("**")
+            `import`("**")
+
+            required(`interface`, fileName) { allow(anythingElse) }
         }
     }
 
@@ -326,7 +329,10 @@ Factor each Role out into its own extension function.
                 "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
             }
             ktFileContent {
-                required(`interface`, fileName)
+                `package`(matchingDirectory)
+                `import`("**")
+
+                required(`interface`, fileName) { allow(anythingElse) }
             }
             // ...
         }
@@ -374,7 +380,10 @@ Factor each Role out into its own extension function.
             "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
         }
         ktFileContent {
-            required(`interface`, fileName)
+            `package`(matchingDirectory)
+            `import`("**")
+
+            required(`interface`, fileName) { allow(anythingElse) }
         }
         // ...
     }

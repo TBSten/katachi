@@ -107,6 +107,10 @@ val projectArchitecture = architecture {
 }
 ```
 
+```kt title=Constants.kt
+const val appPackageDir = "com/example/project"
+```
+
 <Tabs>
 <TabItem label="UiState">
 
@@ -157,6 +161,9 @@ fun DeclarationContainerScope.viewModel() = "ViewModel".role {
 
   // HomeViewModel.kt contains only class HomeViewModel, which extends ViewModel
   ktFileContent {
+    `package`(matchingDirectory)
+    `import`("**")
+
     required(`class`, fileName).superclass("ViewModel") {
       required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
       allow(public, `fun`, "*")          // events from the screen
@@ -187,6 +194,9 @@ fun DeclarationContainerScope.screen() = "Screen".role {
 
   // The only public declaration in HomeScreen.kt is @Composable fun HomeScreen
   ktFileContent {
+    `package`(matchingDirectory)
+    `import`("**")
+
     required(annotated("Composable"), public, `fun`, fileName)
     allow(private, anythingElse)      // anything private is fine, such as parts of the screen and Previews
   }
@@ -266,7 +276,12 @@ fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role
 
   // UserRepository.kt contains only interface UserRepository
   ktFileContent {
-    required(`interface`, fileName)
+    `package`(matchingDirectory)
+    `import`("**")
+
+    required(`interface`, fileName) {
+      allow(anythingElse)      // any members
+    }
   }
 }
 ```
@@ -292,7 +307,12 @@ fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementa
 
   // UserRepositoryImpl.kt contains only class UserRepositoryImpl, which implements UserRepository
   ktFileContent {
-    required(`class`, fileName).superclass(fileName.removeSuffix("Impl"))
+    `package`(matchingDirectory)
+    `import`("**")
+
+    required(`class`, fileName).superclass(fileName.removeSuffix("Impl")) {
+      allow(anythingElse)      // any members
+    }
   }
 }
 ```
@@ -318,7 +338,12 @@ fun DeclarationContainerScope.dataSource() = "DataSource".role {
 
   // UserRemoteDataSource.kt contains only class UserRemoteDataSource
   ktFileContent {
-    required(`class`, fileName)
+    `package`(matchingDirectory)
+    `import`("**")
+
+    required(`class`, fileName) {
+      allow(anythingElse)      // any members
+    }
   }
 }
 ```
