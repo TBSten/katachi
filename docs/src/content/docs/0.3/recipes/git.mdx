@@ -1,0 +1,69 @@
+---
+title: Git
+description: .gitignore, .gitattributes, and other Git-related files, declared
+  in architecture { }.
+tags:
+  - beginner
+slug: 0.3/recipes/git
+---
+
+{/*
+  The purpose of this page: to show, in a copy-and-paste form, how to declare .gitignore / .gitkeep / .gitattributes as one Role per kind of file.
+  */}
+
+import SnippetIsStartingPoint from '../../../../components/SnippetIsStartingPoint.astro';
+
+Declare `.gitignore`, `.gitkeep`, and `.gitattributes` as one Role per kind of file. Calling `git()` from `ProjectArchitecture.kt` brings in all three Roles at once.
+
+```kt title=ProjectArchitecture.kt {8} nocollapse
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.architecture
+
+val projectArchitecture = architecture {
+    "Tools".group {
+        git()
+    }
+}
+```
+
+The body of `git()` goes in `roles/Git.kt`.
+
+```kt title=roles/Git.kt {8,16,24}
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+fun DeclarationContainerScope.git() =
+    "Git".group {
+        "GitIgnore".role {
+            title = "Git ignore"
+            summary = "The list of files kept out of Git (.gitignore)"
+            layout {
+                "**/.gitignore".file()
+            }
+        }
+
+        "GitKeep".role {
+            title = "Git keep"
+            summary = "Empty placeholder files that keep a directory in Git (.gitkeep)"
+            layout {
+                "**/.gitkeep".file()
+            }
+        }
+
+        "GitAttributes".role {
+            title = "Git attributes"
+            summary = "Per-path attributes such as line endings and diff handling (.gitattributes)"
+            layout {
+                "**/.gitattributes".file()
+            }
+        }
+    }
+```
+
+The samples declare only `.gitignore`, with one Role ([GitRole.kt in sample/jvm](https://github.com/TBSten/katachi/blob/main/sample/jvm/architecture-test/src/test/kotlin/com/example/roles/GitRole.kt)).
+
+<SnippetIsStartingPoint />

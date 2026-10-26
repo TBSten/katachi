@@ -1,0 +1,456 @@
+---
+title: Role
+description: How to declare your project's elements with Role. Grouping with
+  group, and how to split Role definitions across files.
+tags:
+  - intermediate
+slug: 0.3/guides/role
+---
+
+{/*
+  The purpose of this page: to gain a deep, comprehensive understanding of how to use Role, an important element of katachi's architecture definitions.
+  */}
+
+import { Aside, Badge, FileTree } from "@astrojs/starlight/components";
+import CodeComparison from "../../../../components/CodeComparison";
+
+A Role is the unit that declares the kinds of files that may appear in your project. This page explains how to write a Role's description, placement, and constraints, how to bring Roles together in groups, and how to split the definition when it grows large.
+
+## Declaring a Role
+
+An app that follows an architecture definition has files with specific roles (Roles).
+For example `UseCase`, `Repository`, `Controller`, or `ViewModel`.
+
+You define what Roles exist inside `architecture { }`.
+
+```kt
+architecture {
+    // Define a Role called UseCase
+    "UseCase".role {
+        // Write the description, placement, and constraints inside here
+    }
+}
+```
+
+A Role is declared with `"Name".role { }`. This matches the shape of `"name".group { }` and sets it apart from a directory declaration such as `"src" { }`, which you write inside `layout { }`.
+
+Because Role names are used for things like documentation generation, they must be ASCII only (starting with a letter, followed by letters, digits, `_`, or `-`). Put a Japanese (or any other) display name in `title`.
+
+You write a Role's description, placement, and constraints inside that Role's block.
+
+| What you write | Description | Details |
+|---|---|---|
+| `title`, `summary`, `description`, etc. | The description of the Role. Used when generating documentation | "Writing a description" on this page |
+| `layout { }` | Defines where the files for that Role may be placed | [Layout definitions](/katachi/0.3/guides/layout/) |
+| `ktFileContent { }` | Defines the package, imports, and declarations that may be placed in that Role's files | [Define an allow list of the declarations a file may contain](/katachi/0.3/guides/kt-file-content/) |
+| `"constraint name".konsist { }` | Defines, using Konsist, the constraints that `ktFileContent { }` cannot express | |
+| `.template { }` | Attached to a file declared in `layout { }`, it defines the template used when that file is newly created | [Generate code from a template](/katachi/0.3/guides/generate-code-from-template/) |
+
+<Aside type="note" title="Draft written by AI">
+  The `ktFileContent { }` row in this table and the examples on this page that use `ktFileContent { }` are a draft written by AI. `ktFileContent { }` is an experimental feature added in v0.3.
+</Aside>
+
+Next is an example that puts title / summary / layout / konsist together in one place.
+
+```kt
+architecture {
+    "UseCase".role {
+        title = "Use case"
+        summary = "A single app-specific behavior that occurs on each screen"
+
+        example("GetUserUseCase", "Fetch the user")
+
+        // Where it may be placed
+        layout {
+            "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+        }
+
+        // What its contents should look like
+        "has exactly one invoke function".konsist {
+            classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
+        }
+    }
+}
+```
+
+Let's look at each of these in a bit more detail.
+
+### Writing a description
+
+At minimum, all you need is `summary`. It becomes the one-line entry for the Role in the generated documentation's list table.
+
+```kt
+"UseCase".role {
+    summary = "A single app-specific behavior that occurs on each screen"
+}
+```
+
+`description` can hold a longer explanation, and `example()` a representative example. Calls to `example()` are kept in the order you call them.
+
+```kt
+"UseCase".role {
+    title = "Use case"
+    summary = "A single app-specific behavior that occurs on each screen"
+    description = """
+        Call only UseCase from the UI; never touch Repository directly.
+
+        ### Things not to do
+        - Depend on Android types
+    """.trimIndent()
+
+    example("GetUserUseCase", "Fetch the user")
+    example("UpdateUserUseCase", "Update the user")
+}
+```
+
+### Declaring where files go
+
+This is the case where a Role has just one place to live.
+
+```kt
+"UseCase".role {
+    layout {
+        "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+    }
+}
+```
+
+You can write multiple `layout { }` blocks. This declares that the same kind of file is allowed to appear in more than one place. Files of different kinds go in separate Roles.
+
+```kt
+"UseCase".role {
+    // In the feature-home module
+    layout {
+        "feature-home/src/main/kotlin/useCase" / "*UseCase".ktFile()
+    }
+
+    // And in the feature-settings module
+    layout {
+        "feature-settings/src/main/kotlin/useCase" / "*UseCase".ktFile()
+    }
+}
+```
+
+### Checking a placement violation
+
+Placing a file anywhere you haven't declared is a violation.
+
+```text
+src/main/kotlin/com/example/GetUserUseCase.kt   ← placed outside useCase/
+```
+
+When you run the test, katachi reports the nearby valid location and how to fix it together in a single block.
+
+```text
+Katachi check failed: 1 violation (Unexpected: 1)
+
+[UnexpectedFile] file:///path/to/project/src/main/kotlin/com/example/GetUserUseCase.kt
+  No role is defined for this file.
+
+  Nearby locations:
+    UseCase file:///path/to/project/src/main/kotlin/com/example/useCase/ (*UseCase.kt)
+
+  How to fix:
+    - Move it to one of the locations above, with a name matching the pattern in parentheses
+    - Delete it if it is not needed
+    - Add a new role for it:
+        "GetUserUseCase".role {
+          summary = "TODO"
+          layout {
+            "src/main/kotlin/com/example" / "GetUserUseCase".ktFile()
+          }
+        }
+```
+
+### Constraining the contents
+
+The declarations a file may contain can be defined with `ktFileContent { }`. Here, we explain the constraints you write with `konsist { }`.
+
+You give each constraint a name. That name appears directly in the violation report.
+
+```kt
+"UseCase".role {
+    layout {
+        "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+    }
+
+    "has exactly one invoke function".konsist {
+        classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
+    }
+}
+```
+
+A constraint applies to the files that matched the Role's `layout { }`. You cannot write a constraint on a Role that has no `layout { }`.
+
+You can also express a prohibition with `mustNot` and `mustBeEmpty()`.
+
+```kt
+"RepositoryInterface".role {
+    layout {
+        "src/main/kotlin/com/example/repository" / "*Repository".ktFile()
+    }
+
+    // Write the required condition as a negation
+    "must not be internal".konsist {
+        classes().mustNot { it.hasInternalModifier }
+    }
+
+    // Require that none match
+    "must not place Impl in the same location".konsist {
+        classes().filter { it.hasNameEndingWith("Impl") }.mustBeEmpty()
+    }
+}
+```
+
+### Checking a constraint violation
+
+A class that doesn't satisfy the constraint is a violation.
+
+```kt
+// Placed inside useCase/, but has a function other than invoke
+class GetUserUseCase(private val repository: UserRepository) {
+    suspend fun invoke(id: String) = repository.find(id)
+    fun clearCache() = repository.clear()   // ← this one
+}
+```
+
+When the test calls `assert(FileConstraintCheck())`, it shows up in the same report as placement violations. It even tells you which file and which line.
+
+```text
+[UnsatisfiedFileConstraint] file:///path/to/project/src/main/kotlin/com/example/useCase/GetUserUseCase.kt
+  Role: UseCase / FileConstraint: "has exactly one invoke function"
+  Declaration: GetUserUseCase (line 3)
+  Declared at: ProjectArchitecture.kt:12
+```
+
+### Grouping Roles
+
+You can group Roles together using `"group name".group { ... }`.
+
+```kt {2}
+architecture {
+    "domain".group {
+        "UseCase".role {
+            // ...
+        }
+
+        "RepositoryInterface".role {
+            // ...
+        }
+    }
+}
+```
+
+## Designing Roles that are easy to maintain
+
+### A good Role definition needs no changes
+
+<Badge text="Recommended" variant="success" />
+
+If you rewrite `architecture { }` every time you add a feature to the app, the definition tends to become a duplicate of your directory structure, requiring double the work to maintain. Make good use of wildcards like `*` and `**` so that you can add features without changing the definition.
+
+### Put only one kind of file in a Role
+
+<Badge text="Recommended" variant="success" />
+
+Make each Role stand for exactly one kind of file.
+For example, a Repository interface and its implementation have similar names but are different kinds of file. If you put both in one Role, its description, constraints, and templates split by "which of the two files this is about". Your `ktFileContent { }` also ends up with branches like "if it is the interface…, if it is the implementation…".
+With one Role per kind, the description and constraints only deal with that kind of file, and the generated documentation gets one page per kind.
+
+<CodeComparison>
+  <CodeComparison.Panel label="🆖 Two kinds of file in one Role" labelVariant="danger">
+    ```kt {4-5,7-8} nocollapse
+    "Repository".role {
+        summary = "Loads and saves data"
+        layout {
+            "repository" / "*Repository".ktFile()      // interface
+            "repository" / "*RepositoryImpl".ktFile()  // implementation
+        }
+        ktFileContent {
+            // the lines to write have to differ between the interface file and the implementation file
+        }
+    }
+    ```
+  </CodeComparison.Panel>
+
+  <CodeComparison.Panel label="🆗 One Role per kind" labelVariant="success">
+    ```kt {1,3,12,14} nocollapse
+    "RepositoryInterface".role {
+        summary = "The entry point for loading and saving data"
+        layout { "repository" / "*Repository".ktFile() }
+        ktFileContent {
+            `package`("**")
+            `import`("**")
+
+            required(`interface`, fileName) { allow(anythingElse) }
+        }
+    }
+
+    "RepositoryImplementation".role {
+        summary = "The implementation of RepositoryInterface"
+        layout { "repository" / "*RepositoryImpl".ktFile() }
+    }
+    ```
+  </CodeComparison.Panel>
+</CodeComparison>
+
+## Splitting Role definitions
+
+The bigger the project, the more the `architecture { }` definition tends to bloat.
+
+Because `architecture { }` is a Kotlin DSL, you can factor it out into extension functions just like ordinary Kotlin code.
+
+Here's the recommended **way to split Role definitions**.
+
+### Splitting the `architecture { }` definition
+
+What tends to bloat is **the detail inside each Role**.
+Factor each Role out into its own extension function.
+
+<CodeComparison>
+  <CodeComparison.Panel label="Before">
+    ```kt title=ProjectArchitecture.kt nocollapse
+    architecture {
+        "UseCase".role {
+            layout { 
+                "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
+            }
+            "has exactly one invoke function".konsist {
+                classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
+            }
+            // ...
+        }
+
+        "RepositoryInterface".role {
+            layout { 
+                "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
+            }
+            ktFileContent {
+                `package`(matchingDirectory)
+                `import`("**")
+
+                required(`interface`, fileName) { allow(anythingElse) }
+            }
+            // ...
+        }
+
+        // ...
+    }
+    ```
+  </CodeComparison.Panel>
+
+  <CodeComparison.Panel label="After" labelVariant="success">
+    <FileTree>
+      * ProjectArchitecture.kt
+      * **domain/**
+        * UseCaseRole.kt
+        * RepositoryInterfaceRole.kt
+    </FileTree>
+
+    ```kt title=ProjectArchitecture.kt
+    architecture {
+        useCase()
+        repositoryInterface()
+
+        // ...
+    }
+    ```
+
+    ```kt title=domain/UseCaseRole.kt
+    // hint: DeclarationContainerScope is the receiver of architecture { } and "...".group { }.
+    fun DeclarationContainerScope.useCase() = "UseCase".role {
+        layout {
+            "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
+        }
+        "has exactly one invoke function".konsist {
+            classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
+        }
+        // ...
+    }
+    ```
+
+    ```kt title=domain/RepositoryInterfaceRole.kt
+    fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role {
+        layout {
+            "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
+        }
+        ktFileContent {
+            `package`(matchingDirectory)
+            `import`("**")
+
+            required(`interface`, fileName) { allow(anythingElse) }
+        }
+        // ...
+    }
+    ```
+  </CodeComparison.Panel>
+</CodeComparison>
+
+### Splitting the inside of a Role definition
+
+Within a Role definition, `"...".konsist { }` in particular tends to bloat as the number of constraints grows or they get more complex.
+
+Don't hesitate to factor `"...".konsist { }` out into private extension functions.
+
+<CodeComparison>
+  <CodeComparison.Panel label="Before">
+    ```kt
+      fun DeclarationContainerScope.useCase() = "UseCase".role {
+          layout {
+              "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
+          }
+          "has exactly one invoke function".konsist {
+              classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
+          }
+          // ...
+      }
+    ```
+  </CodeComparison.Panel>
+
+  <CodeComparison.Panel label="After" labelVariant="success">
+    ```kt
+      fun DeclarationContainerScope.useCase() = "UseCase".role {
+          layout {
+              "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
+          }
+
+          onlyInvokeFun()
+          // ...
+      }
+
+      private fun RoleScope.onlyInvokeFun() = 
+          "has exactly one invoke function".konsist {
+              classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
+          }
+    ```
+  </CodeComparison.Panel>
+</CodeComparison>
+
+## Summary
+
+This is a complete example that uses everything covered so far.
+
+```kt
+architecture {
+    "domain".group {
+        "UseCase".role {
+            summary = "A single app-specific behavior that occurs on each screen"
+
+            // However many places it is put in, the description stays in this one place
+            layout {
+                "core/domain/src/main/kotlin/useCase" / "*UseCase".ktFile()
+            }
+
+            "has exactly one invoke function".konsist {
+                classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
+            }
+        }
+    }
+}
+```
+
+## Next steps
+
+* [Layout](/katachi/0.3/guides/layout/) ... Learn how to declare where a Role's files may be placed.
+* [Define an allow list of the declarations a file may contain](/katachi/0.3/guides/kt-file-content/) ... Learn how to define the declarations that may be placed in a Role's files.
+* [Your first architecture definition](/katachi/0.3/get-started/first-architecture/) ... Introduce katachi into your project and actually write a Role.

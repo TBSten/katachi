@@ -1,0 +1,121 @@
+---
+title: ロードマップ
+description: katachi のバージョンごとの計画。v0.1 の DSL と検査、v0.2 の Gradle
+  plugin・ドキュメント生成・テンプレート・baseline から、v0.3 以降の ktFileContent と既存プロジェクトへの導入まで。
+tags:
+  - advanced
+slug: ja/0.3/roadmap
+---
+
+{/*
+  このページの目的: katachi のバージョンごとの計画と、いま何が入っていて何が先送りかを示すこと。機能の使い方は各ガイドに任せる。
+  */}
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+katachi のバージョンごとの計画と、いま何が入っていて何が先送りかを示します。
+
+## 全体像
+
+<table>
+  <thead>
+    <tr>
+      <th style="min-width: 6rem;">バージョン</th>
+      <th style="min-width: 12rem;">テーマ</th>
+      <th style="min-width: 36rem;">完了と言える条件</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td><strong>v0.1</strong></td>
+      <td>DSL + 検査 + <code>konsist \{ }</code></td>
+      <td>大規模なプロジェクトを表現でき、検査が通る</td>
+    </tr>
+
+    <tr>
+      <td><strong>v0.2</strong></td>
+      <td>Gradle plugin + ドキュメント生成 + テンプレート + baseline（＋ IDE プラグイン、実験的）</td>
+      <td><code>./gradlew katachiDocs</code> でドキュメントが出る。既存の違反を baseline で許容した状態で、新しい違反と、直したのに baseline のファイルに残っている項目でだけテストが落ちる</td>
+    </tr>
+
+    <tr>
+      <td><strong>v0.3 以降</strong></td>
+      <td><code>ktFileContent \{ }</code> / レポート出力 / templateSet / Konture の統合</td>
+      <td><strong>既存プロジェクト</strong>に入れやすくなる。v0.1 で書いた <code>konsist \{ }</code> の大半を <code>ktFileContent \{ }</code> で置き換えられる</td>
+    </tr>
+  </tbody>
+</table>
+
+## v0.3 以降 — 既存プロジェクトへの導入と `ktFileContent { }`
+
+<Aside type="note" title="AI が書いた下書き">
+  この節と、全体像の表の v0.3 以降の行は、`ktFileContent { }` の実装にあわせて AI が書き直した下書きです。内容はまだ確認が済んでいません。
+</Aside>
+
+既存プロジェクトに入れやすくするのが v0.3 以降の主題です。今ある違反をとりあえず許容し、新しい違反だけをエラーにする baseline だけは、実験的な機能として v0.2 に先に入りました。レポート出力は v0.3 で入りました。
+
+| 機能 | 何ができるか |
+|---|---|
+| **Role で import を指す書き方**（将来） | import を、パスのパターンではなく Role で指す（「domain の Role のファイルだけを import してよい」）。v0.2 の計画にあった `dependsOnlyOn` は作らず、import の許可リストは `ktFileContent { }` に入れた |
+| **レポート出力**（v0.3 で入った） | 違反を SARIF のファイルで出し、GitHub の PR に注釈として載せる。手順は [GitHub のレシピ](/katachi/ja/0.3/recipes/github/#pr-に注釈を出す) |
+| **Konture の統合**（v0.3 で入った） | [Konture](https://github.com/baole/konture) の規則を、`konsist { }` と同じ位置に `konture { }` で書く（`katachi-konture`）。`konsist { }` と同じテストモジュールには置けない |
+| **templateSet**（v0.3 で入った） | 幾つかのテンプレートに名前を付けてまとめ、`--arg template=<名前>` の1回で生成する。IDE プラグインからも生成できる |
+| **capture の検査**（v0.3 で入った） | 1本のパスに同じ名前の `capture()` を書いたとき、その段が同じ値になっているかを検査する（`[CaptureMismatch]`）。`capture("x").camelCase` のような派生も書ける |
+| **`pairedWith`**（v0.3 ではやらない） | 「すべての `Screen` に対応する `Preview` がある」のような網羅性を検査する |
+| **語彙数の計測**（v0.3 ではやらない） | Role の数と、Role ごとのファイル数を数値で出す |
+| **Gradle のモデルに基づくモジュールの解決** | `projectDir` を変えたモジュールや、source set の実際の場所に追従する |
+
+v0.3 で入ったもののほかは、仕様がまだほとんど決まっていません。バージョン番号の割り当ても「v0.3 以降」とひとまとまりです。
+
+### Role の宣言は `"名前".role { }` に
+
+v0.2 まで `"UseCase" { }` と書いていた Role の宣言は、v0.3 から `"UseCase".role { }` と書きます。`"domain".group { }` と形がそろい、`layout { }` の中に書くディレクトリの宣言 `"src" { }` と見分けられるようにするためです。
+
+v0.2 の `"UseCase" { }` は v0.3 ではコンパイルエラーになり、エラーメッセージに書き換え先の `"UseCase".role { }` が出ます。IDE の検索と置換で `.role` を足せば直せます。`layout { }` の中のディレクトリの宣言（`"src" { }`）は変わらないので、置き換えないでください。
+
+### glob の `*` は 0 文字以上に
+
+v0.2 まで 1 文字以上に当たっていた glob の `*` は、v0.3 から標準の glob と同じく 0 文字以上に当たります。たとえば `"app_icon*.xml"` は `app_icon.xml` にも当たるようになります。ディレクトリの段全体に書いた `*`（`"feature" / "*"`）は、名前が空のディレクトリが無いので、当たるものは変わりません。
+
+あわせて、標準の glob の `?`・`[...]`・`{...}` も書けるようになりました。
+
+### `.module { }` は非推奨に
+
+`.module { }` は v0.3 で非推奨になり、使うとコンパイル時に警告が出ます。v0.4 でコンパイルエラーになり、v0.5 で削除する予定です。モジュールはディレクトリとして `"core/data" / mainSourceSet / kotlin / "com/example/core/data" / "*Repository".ktFile()` のように書きます。`modulePackage` の代わりに package のディレクトリを書き、モジュールのパスの `*` は `capture()` にします。
+
+### `ktFileContent { }` — `konsist { }` からの昇格
+
+v0.1 の `konsist { }` は、言ってしまえば**逃げ道**です。「`*UseCase` interface と `Default*UseCase` class だけを置く」のように、ほとんどの Role が言いたいことでも、毎回 Konsist の式で書き下すことになります。
+
+```kt
+"interface と Default 実装だけを置くこと".konsist {
+    files.must { file ->
+        val decls = file.declarations(includeNested = false, includeLocal = false)
+        decls.size == 2 &&
+            decls.any { it is KoInterfaceDeclaration && it.name.endsWith("UseCase") } &&
+            decls.any { it is KoClassDeclaration && it.name.startsWith("Default") }
+    }
+}
+```
+
+「interface と Default 実装だけを置く」規則は、v0.3 では `ktFileContent { }` で次のように書けます。v0.3 の間は実験的な機能です。
+
+```kt
+"UseCase".role {
+    layout {
+        "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+    }
+    ktFileContent {
+        `package`("**")
+        `import`("**")
+
+        required(`interface`, fileName) { allow(anythingElse) }
+        required(`class`, "Default$fileName").superclass(fileName) { allow(anythingElse) }
+    }
+}
+```
+
+行を書かなかった種類（package・import・宣言・クラスのメンバ）には、何も置けません。上の `konsist { }` の例は package・import・メンバを問わないので、この例でも `**` と `allow(anythingElse)` でそれらを開いています。`layout { }` が配置の allow list であるのと同じ意味で、このブロックが中身の allow list になります。
+
+詳しくは [ファイルの中で定義できる宣言の許可リストを定義する](/katachi/ja/0.3/guides/kt-file-content/) を参照してください。

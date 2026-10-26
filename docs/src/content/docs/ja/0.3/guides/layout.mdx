@@ -1,0 +1,197 @@
+---
+title: Layout システムでディレクトリ構成を厳守させる
+sidebar:
+  label: Layout
+description: layout { } でディレクトリ構成とファイル名を宣言し、宣言していない場所にファイルが増えたら落とす方法。
+tags:
+  - intermediate
+slug: ja/0.3/guides/layout
+---
+
+{/*
+  このページの目的: katachi のアーキテクチャ定義における重要な要素である Role の layout 周辺の使い方を深く網羅的に理解すること。
+  */}
+
+import { Aside, FileTree } from "@astrojs/starlight/components";
+
+`layout { }` でディレクトリ構成とファイル名を宣言し、宣言外のファイルを違反にします。このページでは、置き場所の書き方と、検査するファイルの決め方、宣言を省く `anyFile()` と `ignore()` を説明します。
+
+## ファイルをどこに置けるかを定義する
+
+Role に対応するファイルをどこに置けるかを定義するのが `layout { }` です。
+
+```kt {3-5}
+architecture {
+    "UseCase".role {
+        // UseCase は useCase/ の中の *UseCase.kt にだけ置けます
+        layout {
+            "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+        }
+    }
+}
+```
+
+## 検査の対象になるファイル
+
+`layout { }` と照らし合わせるファイルは、`architecture { }` の `files` で決まります。デフォルトは `gitTracked()` です。
+
+* `gitTracked()`（デフォルト）... git が追跡しているファイルと、追跡していないが ignore もされていないファイル（`git ls-files --cached --others --exclude-standard` の結果）。`.gitignore` で除外したディレクトリの中にあっても、追跡しているファイルは対象です（`.idea/*` を除外しつつ `!.idea/codeStyles/` で戻したもの、`git add -f` で足したもの）。
+* `wholeTree()` ... プロジェクトルートより下のすべてのファイル。`build/` や `.gradle/` も対象になるので、`ignore()` で外します。
+
+どちらでも `.git/` だけは対象になりません。`.gradle/` と `.idea/` はほかのディレクトリと同じ扱いで、宣言が無ければ `[UnexpectedDirectory]` になります。
+
+`gitTracked()` では、`.gitignore` に書いたものに Role は要りません。逆に、追跡しているファイルにはすべて Role が要ります。`.idea/` の中に追跡しているファイルがあれば、それも宣言します。
+
+```kt
+architecture {
+    "IdeCodeStyle".role {
+        layout {
+            ".idea" / "codeStyles" / "*.xml".file()
+        }
+    }
+}
+```
+
+親ディレクトリが ignore されていると、`!.idea/codeStyles/` のような戻すパターンを書いても、追跡していないファイルは戻りません（git の仕様です）。追跡していないファイルは katachi からも見えません。`"Project.xml".file()` のように名前を固定で書いた宣言なら `[MissingFile]` になりますが、この例の `"*.xml"` のようなパターンの宣言では何も報告されません。
+
+## 置き場所の書き方を選ぶ
+
+ディレクトリ宣言にはいくつか書き方があり、好みのスタイルで書けます。
+
+### スラッシュで繋ぐ
+
+各階層に置くものが1つだけのときは、`/` で繋いで1行で書けます。
+
+```kt
+layout {
+    "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+}
+```
+
+### ブロックで囲む
+
+同じディレクトリに複数のものを置くときは、ブロックで囲みます。
+
+```kt
+layout {
+    "src/main/kotlin/com/example/useCase" {
+        "Get*UseCase".ktFile()
+        "Update*UseCase".ktFile()
+    }
+}
+```
+
+ブロックの中では `description` を書けます。生成ドキュメントで「この置き場所は何か」の説明になります。
+
+```kt
+layout {
+    "src/main/kotlin/com/example/useCase" {
+        description = "複数の画面から使われるもの"
+        "*UseCase".ktFile()
+    }
+}
+```
+
+## 任意のファイルの配置を許す
+
+### `anyFile()` — 直下のファイルだけ許す
+
+そのディレクトリの直下に限って、どんなファイルでも置けるようにします。
+
+```kt
+layout {
+    "generated" { anyFile() }
+}
+```
+
+この例ではサブディレクトリは許されません。1階層下にファイルがあれば、それは違反のまま報告されます。
+
+<FileTree>
+  * generated/
+    * Foo.kt 通る
+    * schema.json 通る
+    * nested/ 落ちる（サブディレクトリは宣言が無い）
+      * Bar.kt 落ちる
+</FileTree>
+
+### `ignore()` — 以下すべての検査をやめる
+
+そのディレクトリより下を、どの深さでも検査しなくなります。
+
+```kt
+layout {
+    "build".ignore()
+}
+```
+
+<FileTree>
+  * build/ 通る（検査しない）
+    * app.jar 通る
+    * tmp/ 通る
+      * Foo.class 通る
+</FileTree>
+
+`"build" { ignore() }` とブロックの中に書くこともできます。
+
+<Aside type="caution">
+  `anyFile()` と `ignore()` は任意のファイルの配置を許可しますが、これは **deny by default の逃げ道** です。注意して使ってください。
+
+  「宣言するのが面倒だから」で ignore, anyFile を乱用すると katachi を入れた意味が薄れます。
+  **機械的に生成されるもの** や、 **別のツールが構成を決めているもの** に限って使ってください。
+</Aside>
+
+## パスを定数に切り出す
+
+すべての Role にディレクトリのパスを丸ごと書くのは非効率です。
+意味のある単位でパスを定数にしましょう。
+
+```kt {1,6}
+val appPackageDir = "src/main/kotlin/com/example"
+
+architecture {
+    "UseCase".role {
+        layout {
+            appPackageDir / "useCase" / "*UseCase".ktFile()
+        }
+    }
+}
+```
+
+## まとめ
+
+ここまでの書き方を全部使った完成形です。
+
+```kt {1,6-8,16,23}
+val appPackageDir = "src/main/kotlin/com/example"  // パスは定数に切り出せる
+
+architecture {
+    "UseCase".role {
+        layout {
+            appPackageDir / "useCase" / "*UseCase".ktFile()   // "/" で繋いで置き場所を宣言する
+            appPackageDir {                                    // ブロックで囲んでも同じ宣言になる
+                "feature" / "useCase" / "*UseCase".ktFile()
+            }
+        }
+    }
+
+    "GeneratedFile".role {
+        summary = "ツールが生成するファイル"
+        layout {
+            "generated" { anyFile() }   // 直下ならどんなファイルでもよい（サブディレクトリは不可）
+        }
+    }
+
+    "BuildOutput".role {
+        summary = "ビルドの出力"
+        layout {
+            "build".ignore()            // それより下は検査しない
+        }
+    }
+}
+```
+
+## 次のステップ
+
+* [Role](/katachi/ja/0.3/guides/role/) ... 定義が大きくなってきたときに、ファイルと関数へ切り分ける方法を学びましょう。
+* [テンプレートからコード生成](/katachi/ja/0.3/guides/generate-code-from-template/#生成先にワイルドカードがあるときは名前を付けて値を渡す) ... 生成先のワイルドカードに名前を付ける `capture()` の書き方を学びましょう。layout の検査だけなら `capture()` は要らず、`*` のままで構いません。
+* [初めてのアーキテクチャ定義](/katachi/ja/0.3/get-started/first-architecture/) ... あなたのプロジェクトに katachi を導入して、実際に宣言を書いてみましょう。

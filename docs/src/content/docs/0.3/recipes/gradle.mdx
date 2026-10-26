@@ -1,0 +1,112 @@
+---
+title: Gradle
+description: An example of declaring build scripts, the wrapper, and the version
+  catalog in architecture { }, and of declaring a composite build / buildSrc
+  when you use one.
+tags:
+  - intermediate
+slug: 0.3/recipes/gradle
+---
+
+{/*
+  The purpose of this page: to show, with copy-and-paste examples, how to declare Gradle files (the wrapper, build scripts, and the version catalog) in one line with `gradle()`, and how much you have to declare yourself when you use a composite build / buildSrc.
+  */}
+
+import SnippetIsStartingPoint from '../../../../components/SnippetIsStartingPoint.astro';
+
+Writing `gradle()` as one line declares the Gradle wrapper, the build scripts, and the version catalog. The following `ProjectArchitecture.kt` is a definition with just that one line.
+
+```kt title="ProjectArchitecture.kt"
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.gradle.gradle
+
+val projectArchitecture = architecture {
+    gradle() // Declares gradle.kts, the Gradle wrapper, and the like with documented = false
+}
+```
+
+The custom-processor sample declares it with the same single line ([GradleGroup.kt in sample/custom-processor](https://github.com/TBSten/katachi/blob/main/sample/custom-processor/architecture-test/src/test/kotlin/com/example/groups/GradleGroup.kt)). The jvm, android, and kmp samples write `gradle { buildScript { … } }` and add constraints of the sample's own to the build scripts ([GradleGroup.kt in sample/jvm](https://github.com/TBSten/katachi/blob/main/sample/jvm/architecture-test/src/test/kotlin/com/example/groups/GradleGroup.kt)).
+
+## When you use a composite build / buildSrc
+
+`gradle()` does not declare included builds such as `build-logic`, nor `buildSrc`. Declare their build scripts and convention plugins yourself.
+
+The following `ProjectArchitecture.kt` shows the overall shape. Line up three Roles inside the `"Build"` group.
+
+```kt title="ProjectArchitecture.kt"
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.gradle.gradle
+import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.dsl.kotlin.ktsFile
+import me.tbsten.katachi.dsl.template
+
+const val buildConventionDir = "build-logic" // Use "buildSrc" instead if you use buildSrc
+const val conventionSourceDir = "$buildConventionDir/src/main/kotlin"
+
+val projectArchitecture = architecture {
+    gradle()
+
+    "Build".group {
+        documented = false
+
+        // Write the three Roles BuildScript, ConventionPluginScript, and ConventionPluginSource inside here
+    }
+}
+```
+
+### Declare the build scripts of the included build / buildSrc itself
+
+```kt
+"BuildScript".role {
+    summary = "The build scripts of the included build / buildSrc itself"
+    layout {
+        buildConventionDir {
+            "build.gradle".ktsFile()
+            "settings.gradle".ktsFile().optional() // buildSrc may go without one
+        }
+    }
+}
+```
+
+### Declare the convention plugin scripts
+
+```kt
+"ConventionPluginScript".role {
+    summary = "Convention plugin scripts that each module applies with plugins { id(\"...\") }"
+    layout {
+        conventionSourceDir {
+            "${capture("name")}.gradle".ktsFile()
+                .template {
+                    """
+                        plugins {
+                            kotlin("jvm")
+                        }
+                    """.trimIndent()
+                }
+        }
+    }
+
+    // ./gradlew katachiTemplate --arg template=Build.ConventionPluginScript --arg name=kotlin-library
+}
+```
+
+### Declare the Kotlin classes used by convention plugins
+
+```kt
+"ConventionPluginSource".role {
+    summary = "Helper Kotlin classes used by the convention plugin scripts"
+    layout {
+        conventionSourceDir {
+            "**" / "*".ktFile() // also allows classes in packages
+        }
+    }
+}
+```
+
+<SnippetIsStartingPoint />

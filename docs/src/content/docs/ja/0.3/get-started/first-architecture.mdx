@@ -1,0 +1,286 @@
+---
+title: 初めてのアーキテクチャ定義
+description: katachi を Gradle プロジェクトに入れ、:architecture-test モジュールを作って最初の
+  architecture { } 定義を書くまでの手順。
+tags:
+  - beginner
+slug: ja/0.3/get-started/first-architecture
+---
+
+{/*
+  このページの目的: katachi のモチベーションを理解したユーザが、自分のプロジェクトに katachi を導入することができること。導入の中には Gradle モジュールの設定・周辺の設定を含む。
+  */}
+
+import { Aside, Tabs, TabItem, Steps, Badge } from '@astrojs/starlight/components';
+
+katachi を Gradle プロジェクトに入れ、最初の `architecture { }` 定義を書いてテストを通すまでを説明します。
+
+katachi が必要かどうか迷う場合は、先に [モチベーション](/katachi/ja/0.3/get-started/motivation/) を読むことをおすすめします。
+
+## katachi をプロジェクトに導入する
+
+<Tabs>
+  <TabItem label="AI Agent に任せる">
+    <Steps>
+      1. お使いの AI Agent を起動し、次のように **プロンプトを入力** してください。
+
+         ```md
+         このプロジェクトに katachi を導入してください。
+
+         - https://tbsten.github.io/katachi/install/ja/index.md に従って導入してください。
+         ```
+
+         * 事前にプロジェクトを git で管理しておくことをおすすめします。
+         * AI Agent が参照するページには、プロジェクトへの katachi の導入を **あなたと一緒に** 進めるよう指示が書いてあります。
+
+         <details>
+           <summary>追加のオプション</summary>
+
+           * **アーキテクチャに関するドキュメントがコードベースの外にある場合** （例: Notion で管理しているなど）、プロンプトにそのリンクを含めてください。
+           * AI Agent は、デフォルトでは `architecture-test` モジュールを作り、そこにアーキテクチャ定義を書こうとします。
+             * **別のモジュールに作成したい場合** は `テストは <module> に作成してください` のようなプロンプトを追加してください。
+           * context 管理の一環として、**katachi 導入専用のセッションを新規に開始する** ことをおすすめします。
+             * Claude Code, Codex CLI の場合: `/clear` コマンドでセッションをクリアしてからプロンプトを入力します。
+         </details>
+
+      2. AI Agent がプロジェクトにセットアップした差分を **レビュー** し、必要に応じて内容を修正してください。
+
+         注目すべき点:
+
+         * `architecture-test/src/test/kotlin/<パッケージ>/ProjectArchitecture.kt` がエントリーポイントです。
+         * AI Agent は architecture の定義を group・Role ごとのファイルに分け、`ProjectArchitecture.kt` の下のパッケージに置きます。そのファイルもレビュー対象です。
+         * チームで開発している場合は、チームメンバー（特にチームのリード）にも重点的にレビューしてもらいましょう。
+
+      3. **アーキテクチャテストを実行** し、All green になることを確認してください。
+
+         ```shell
+         ./gradlew :architecture-test:test
+         ```
+
+         これでセットアップは完了です。
+    </Steps>
+  </TabItem>
+
+  <TabItem label="手動でインストールする">
+    <Steps>
+      1. **`:architecture-test` モジュールを作る**
+
+         アプリのどの層にも属さない、アーキテクチャ定義とそれを検査するテストだけを置くモジュールです。
+
+         ```kotlin title="settings.gradle.kts"
+         pluginManagement {
+             repositories {
+                 gradlePluginPortal()
+                 mavenCentral()
+             }
+         }
+
+         include(":architecture-test")
+         ```
+
+         katachi の Gradle plugin は Gradle Plugin Portal ではなく Maven Central に公開しています。`pluginManagement { }` に `mavenCentral()` が無いと、plugin を解決できません。
+
+      2. **依存を書く**
+
+         プロジェクトが Android でも KMP でも、**ここはプレーンな `kotlin("jvm")` モジュール**にします。katachi 自身が JVM のライブラリだからです。
+
+         ```kotlin title="architecture-test/build.gradle.kts"
+         import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
+         plugins {
+             kotlin("jvm") version "<Kotlin のバージョン>"
+             id("me.tbsten.katachi") version "<katachi のバージョン>"
+         }
+
+         kotlin {
+             jvmToolchain(17)
+         }
+
+         tasks.test {
+             useJUnitPlatform()
+             // 検査するファイルは Test タスクの入力ではないので、毎回走らせる（ビルドキャッシュにも結果を書かせない）
+             outputs.upToDateWhen { false }
+             outputs.cacheIf { false }
+             // 違反の一覧をコンソールに出す
+             testLogging { exceptionFormat = TestExceptionFormat.FULL }
+         }
+
+         dependencies {
+             testImplementation("me.tbsten.katachi:katachi:<katachi のバージョン>")
+             testImplementation("me.tbsten.katachi:katachi-konsist:<katachi のバージョン>")
+             testImplementation(platform("org.junit:junit-bom:5.14.4"))
+             testImplementation("org.junit.jupiter:junit-jupiter")
+             testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+         }
+
+         katachi {
+             architecture = "com.example.projectArchitecture"
+         }
+         ```
+
+         <details>
+           <summary>Kotlin 2.2.0 以上 2.4.0 未満の場合</summary>
+
+           Kotlin は **2.2 以上** を使ってください。それより前の Kotlin は katachi のライブラリの metadata を読めません。
+
+           `ktFile()` や `konsist { }` などは context parameters で宣言しています。**Kotlin 2.4 未満** では、次のオプションが無いと呼べません（2.4 以降では付けないでください。警告になります）。
+
+           ```kotlin title="architecture-test/build.gradle.kts"
+           kotlin {
+               compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")
+           }
+           ```
+         </details>
+
+      3. **アーキテクチャを定義する。**
+
+         `architecture-test/src/test/kotlin/<パッケージ>/ProjectArchitecture.kt` がエントリーポイントです。
+
+         ```kotlin
+         // 例
+         @file:OptIn(ExperimentalKatachiApi::class)
+
+         package com.example
+
+         import me.tbsten.katachi.ExperimentalKatachiApi
+         import me.tbsten.katachi.dsl.architecture
+         import me.tbsten.katachi.dsl.gradle.gradle
+         import me.tbsten.katachi.dsl.kotlin.ktFile
+
+         val projectArchitecture = architecture {
+             gradle() // wrapper・settings・build スクリプトなど Gradle のファイル
+             "domain".group {
+                 "UseCase".role {
+                     summary = "各画面で発生するアプリ固有の1つの振る舞い"
+                     layout {
+                         "domain/src/main/kotlin/usecase" / "*UseCase".ktFile()
+                     }
+                 }
+             }
+         }
+         ```
+
+      4. **検査する1本のテストを書く**
+
+         次のテストを `ProjectArchitectureTest.kt` に書きます。
+
+         ```kotlin title="architecture-test/src/test/kotlin/<パッケージ>/ProjectArchitectureTest.kt"
+         @file:OptIn(ExperimentalKatachiApi::class)
+
+         package com.example
+
+         import me.tbsten.katachi.ExperimentalKatachiApi
+         import me.tbsten.katachi.check.assert
+         import org.junit.jupiter.api.Test
+
+         class ProjectArchitectureTest {
+             @Test
+             fun `プロジェクトの構成が定義どおりになっている`() {
+                 projectArchitecture.assert()
+             }
+         }
+         ```
+
+         プロジェクトが書くテストはこれ1本だけです。リポジトリ全体の違反が1つの失敗メッセージに集まるので、ルールごとにテストを分ける意味がありません。
+
+         `konsist { }` や `ktFileContent { }` を書いたら、`projectArchitecture.assert(FileConstraintCheck())` に変えます。`assert()` のままでは制約が検査されず、`[UncheckedFileConstraint]` でテストが落ちます。
+
+      5. **実行する**
+
+         次のコマンドでアーキテクチャテストを実行します。
+
+         ```shell
+         ./gradlew :architecture-test:test
+         ```
+
+         最初は宣言していないファイルやディレクトリが違反として出ます。katachi は許可リスト方式なので、これが正常な出発点です。出てきたパスを定義に足すか、消すかを決めていってください。
+    </Steps>
+  </TabItem>
+</Tabs>
+
+## 導入できたことを確かめる
+
+<Tabs>
+  <TabItem label="AI Agent に検証させる">
+    AI Agent に実際にタスクを渡し、アーキテクチャルールに違反するファイルを生成しないことを確かめてみましょう。
+
+    <details>
+      <summary>今後発生しうる実装タスクがある場合</summary>
+
+      今後実際に発生するタスクがあるなら、それを試しに実行させて、katachi が機能するかを確かめるのが効果的です。
+      タスクの内容を AI Agent に渡して実行させてください。
+
+      JIRA や Notion などで管理しているタスクチケットがあれば、それをそのまま渡すのも手です。
+    </details>
+
+    <details>
+      <summary>特にない場合</summary>
+
+      架空のタスクを AI Agent に考えさせて、katachi がガードレールとして機能するか検証させましょう。
+
+      ```md
+      このプロジェクトで将来発生しそうな架空のタスクをいくつか考えてください。
+      ```
+    </details>
+  </TabItem>
+
+  <TabItem label="手動で検証する">
+    1. アーキテクチャルールに違反するコード例を考え、実際にそのソースファイルを作成してください。
+    2. `./gradlew :architecture-test:test` を実行して、アーキテクチャテストが失敗することを確認してください。
+  </TabItem>
+</Tabs>
+
+## <Badge text="オプション" size="small" /> <br /> CI に組み込む
+
+品質を維持するには、katachi のアーキテクチャテストを CI に組み込み、定期的に実行させることが大切です。
+
+<Tabs>
+  <TabItem label="Github Actions">
+    以下のようなワークフローファイルを追加してください。
+
+    ```yaml title=".github/workflows/architecture.yml"
+    name: Architecture
+
+    on:
+      push:
+        branches: [main]
+      pull_request:
+
+    permissions:
+      contents: read
+
+    jobs:
+      architecture:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v7
+
+          - uses: actions/setup-java@v6
+            with:
+              distribution: temurin
+              java-version: '17'
+
+          - uses: gradle/actions/setup-gradle@v6
+
+          - run: ./gradlew :architecture-test:test
+    ```
+  </TabItem>
+
+  <TabItem label="その他の CI システム">
+    次のようなワークフローを、それぞれの CI システムの仕様に合わせて記述します。
+
+    1. Java をセットアップする。
+    2. `./gradlew :architecture-test:test` を実行する。
+    3. 2 の結果をレポートする。
+  </TabItem>
+</Tabs>
+
+## 次のステップ
+
+katachi への理解を深め、architecture 定義を洗練させるには、次のガイドを参照してください。
+
+* [基本的な API](/katachi/ja/0.3/guides/basic-api/) ... katachi の定義を書くときに最初に覚える API を学びましょう。
+* [Role](/katachi/ja/0.3/guides/role/) ... 定義の基本単位である Role の書き方と、分け方の考え方を学びましょう。
+* [Layout](/katachi/ja/0.3/guides/layout/) ... ディレクトリ構成を厳守させる Layout の書き方を学びましょう。
+
+ドキュメント生成・テンプレートからのコード生成・baseline など、ほかのガイドはサイドバーの「ガイド」から読めます。

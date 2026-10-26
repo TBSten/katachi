@@ -1,0 +1,197 @@
+---
+title: Enforce directory structure with the Layout system
+sidebar:
+  label: Layout
+description: How to declare your directory structure and file names with layout
+  { }, and fail the check when files appear in undeclared locations.
+tags:
+  - intermediate
+slug: 0.3/guides/layout
+---
+
+{/*
+  The purpose of this page: to give the reader a deep, thorough understanding of how to use the Role's layout, an important element of katachi's architecture definitions.
+  */}
+
+import { Aside, FileTree } from "@astrojs/starlight/components";
+
+Use `layout { }` to declare the directory structure and file names; any file outside the declaration becomes a violation. This page explains how to write placements, how the files to check are chosen, and how to skip declarations with `anyFile()` and `ignore()`.
+
+## Defining where files may be placed
+
+`layout { }` defines where the files for a Role may be placed.
+
+```kt {3-5}
+architecture {
+    "UseCase".role {
+        // A UseCase may only be placed as *UseCase.kt inside useCase/
+        layout {
+            "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+        }
+    }
+}
+```
+
+## Files that get checked
+
+The files that `layout { }` is checked against are decided by `files` in `architecture { }`. The default is `gitTracked()`.
+
+* `gitTracked()` (default) ... Files tracked by git, plus files that are untracked but not ignored either (the result of `git ls-files --cached --others --exclude-standard`). Tracked files are included even when they sit in a directory excluded by `.gitignore` (for example, a directory excluded with `.idea/*` and brought back with `!.idea/codeStyles/`, or a file added with `git add -f`).
+* `wholeTree()` ... Every file under the project root. `build/` and `.gradle/` are included too, so exclude them with `ignore()`.
+
+With either one, only `.git/` is never checked. `.gradle/` and `.idea/` are treated like any other directory, and without a declaration they become `[UnexpectedDirectory]`.
+
+With `gitTracked()`, things listed in `.gitignore` don't need a Role. Conversely, every tracked file needs a Role. If there are tracked files inside `.idea/`, declare those too.
+
+```kt
+architecture {
+    "IdeCodeStyle".role {
+        layout {
+            ".idea" / "codeStyles" / "*.xml".file()
+        }
+    }
+}
+```
+
+When a parent directory is ignored, writing a restoring pattern such as `!.idea/codeStyles/` does not bring back untracked files (this is how git works). Untracked files are invisible to katachi as well. A declaration that writes the name as is, like `"Project.xml".file()`, results in `[MissingFile]`, but a declaration with a pattern, like `"*.xml"` in this example, reports nothing.
+
+## Choosing how to write a placement
+
+There are a few ways to write a directory declaration. You can use whichever style you prefer.
+
+### Chaining with slashes
+
+When each level has only one thing in it, you can chain them with `/` on a single line.
+
+```kt
+layout {
+    "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+}
+```
+
+### Wrapping in a block
+
+When you want to place multiple things in the same directory, wrap them in a block.
+
+```kt
+layout {
+    "src/main/kotlin/com/example/useCase" {
+        "Get*UseCase".ktFile()
+        "Update*UseCase".ktFile()
+    }
+}
+```
+
+Inside the block, you can write `description`. It becomes the explanation of "what this location is for" in the generated documentation.
+
+```kt
+layout {
+    "src/main/kotlin/com/example/useCase" {
+        description = "Used from multiple screens"
+        "*UseCase".ktFile()
+    }
+}
+```
+
+## Allowing arbitrary files to be placed
+
+### `anyFile()` — allow only files directly inside
+
+Allows any file to be placed, but only directly inside that directory.
+
+```kt
+layout {
+    "generated" { anyFile() }
+}
+```
+
+In this example, subdirectories aren't allowed. A file one level deeper is still reported as a violation.
+
+<FileTree>
+  * generated/
+    * Foo.kt passes
+    * schema.json passes
+    * nested/ fails (no declaration for a subdirectory)
+      * Bar.kt fails
+</FileTree>
+
+### `ignore()` — stop checking everything below
+
+Stops checking everything below that directory, at any depth.
+
+```kt
+layout {
+    "build".ignore()
+}
+```
+
+<FileTree>
+  * build/ passes (not checked)
+    * app.jar passes
+    * tmp/ passes
+      * Foo.class passes
+</FileTree>
+
+You can also write it inside a block as `"build" { ignore() }`.
+
+<Aside type="caution">
+  `anyFile()` and `ignore()` let you allow files of any kind to be placed, but they are **escape hatches from deny by default**. Use them with care.
+
+  If you overuse `ignore()` and `anyFile()` just because "declaring it is a hassle," you undermine the point of adopting katachi. Use them only for **things a machine generates** or **things whose structure is decided by another tool**.
+</Aside>
+
+## Extracting paths into constants
+
+Writing out every directory for every Role is inefficient.
+Extract them into constants at a meaningful unit.
+
+```kt {1,6}
+val appPackageDir = "src/main/kotlin/com/example"
+
+architecture {
+    "UseCase".role {
+        layout {
+            appPackageDir / "useCase" / "*UseCase".ktFile()
+        }
+    }
+}
+```
+
+## Summary
+
+This is a complete example that uses everything covered so far.
+
+```kt {1,6-8,16,23}
+val appPackageDir = "src/main/kotlin/com/example"  // paths can be pulled out into constants
+
+architecture {
+    "UseCase".role {
+        layout {
+            appPackageDir / "useCase" / "*UseCase".ktFile()   // join with "/" to declare where files go
+            appPackageDir {                                    // wrapping in a block declares the same thing
+                "feature" / "useCase" / "*UseCase".ktFile()
+            }
+        }
+    }
+
+    "GeneratedFile".role {
+        summary = "Files generated by a tool"
+        layout {
+            "generated" { anyFile() }   // any file directly inside is allowed (no subdirectories)
+        }
+    }
+
+    "BuildOutput".role {
+        summary = "Build output"
+        layout {
+            "build".ignore()            // nothing below is checked
+        }
+    }
+}
+```
+
+## Next steps
+
+* [Role](/katachi/0.3/guides/role/) ... Learn how to split a definition into files and functions as it grows.
+* [Generating code from a template](/katachi/0.3/guides/generate-code-from-template/#when-the-destination-has-a-wildcard-name-it-and-pass-a-value) ... Learn how to write `capture()`, which names a wildcard in a destination. For checking layout alone you don't need `capture()`; a plain `*` is fine.
+* [Your first architecture definition](/katachi/0.3/get-started/first-architecture/) ... Introduce katachi into your project and actually write a declaration.

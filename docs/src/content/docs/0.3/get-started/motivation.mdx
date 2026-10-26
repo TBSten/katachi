@@ -1,0 +1,314 @@
+---
+title: Motivation and where katachi fits
+description: Architecture drifts because it is maintained twice, as
+  documentation and as tests. katachi produces both from a single definition.
+tags:
+  - beginner
+slug: 0.3/get-started/motivation
+---
+
+{/*
+  The purpose of this page: to help users who have never used katachi understand where katachi fits and how it differs from other tools such as Konsist. It is not to teach the details of the API.
+  */}
+
+import { Aside, FileTree, LinkCard } from '@astrojs/starlight/components';
+import CodeComparison from '../../../../components/CodeComparison';
+
+This page explains the problem katachi solves and how it differs in position from other tools such as Konsist.
+
+There's also a 5-minute slide deck that gives you the big picture of katachi.
+
+<LinkCard title="katachi in 5 Minutes" description="Get a quick grasp, in slides, of the problem katachi solves and how one definition produces both tests and documentation." href="../../slides/katachi-in-5-minutes/index.html" target="_blank" />
+
+## Architecture documentation always drifts from the implementation
+
+Being the diligent developer you are, your project surely has a `/docs` directory that spells out the overall structure and the rules for every component.
+
+But the sentence "a UseCase is written like this" in that documentation has no power to enforce anything. A newcomer who does not know the project's rules, or an AI agent that is uncertain by nature, can break those rules without effort.
+
+## Konsist alone is not enough
+
+[Konsist](https://docs.konsist.lemonappdev.com/) is one of the tools that act as a guardrail against code that ignores project rules like these.
+
+Konsist lets you write your project's rules as unit tests.
+
+```kt
+class UseCaseKonsistTest {
+  @Test
+  fun `a UseCase has exactly one invoke function`() {
+      Konsist
+          .scopeFromProject()
+          .classes()
+          .withNameEndingWith("UseCase")
+          .assertTrue { it.functions().map { function -> function.name } == listOf("invoke") }
+  }
+}
+```
+
+At first glance Konsist looks like all you need to enforce your project's rules.
+In practice, the way Konsist works makes that hard.
+
+:::caution[Nothing outside the scope is checked]
+Konsist uses a notation called a scope to narrow checking down to particular files in the project. Files and directories outside that scope are never checked. See the [FAQ](/katachi/0.3/get-started/faq/) for details.
+:::
+
+Focusing on particular files is not enough. **You need a way to check the project as a whole.**
+
+## Where katachi comes in
+
+katachi looks at the whole project from above and lets you declare which kinds of files may appear in it and where they may be placed.
+
+```kt
+val projectArchitecture = architecture {
+  "UseCase".role {
+    layout {
+      "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
+    }
+  }
+}
+```
+
+katachi has you declare two things:
+
+* The kinds of files that may appear in the project (these are called Roles)
+* Where the files of that Role may appear
+
+Writing this in a declarative DSL lets you test the directory structure of the entire project.
+
+<Aside title="Deny by default" type="tip">
+  Under the Deny by default principle that katachi adopts, **a file that is not declared in `projectArchitecture` is not allowed to exist**.
+
+  Even if an AI agent writes code that breaks the rules, katachi refuses to let it exist and reports it as a violation.
+</Aside>
+
+<details>
+  <summary>An example this rule catches</summary>
+
+  Suppose an AI agent places a file named `com.example.project.GetUserUseCase`:
+
+  ```kt
+  // com/example/project/GetUserUseCase.kt
+  package com.example.project // ❌ this belongs in com.example.project.useCase
+
+  class GetUserUseCase {
+    suspend fun invoke() = ...
+  }
+  ```
+
+  <FileTree>
+    * src/main/kotlin/com/example/project/
+      * **GetUserUseCase.kt** ❌ placed somewhere that was never declared
+      * useCase/
+        * UpdateUserUseCase.kt ⭐️ exactly where the declaration says
+  </FileTree>
+
+  Running the unit test that includes katachi reports the error like this:
+
+  ```
+  Katachi check failed: 1 violation (Unexpected: 1)
+
+  [UnexpectedFile] file:///path/to/project/src/main/kotlin/com/example/project/GetUserUseCase.kt
+    No role is defined for this file.
+
+    Nearby locations:
+      UseCase file:///path/to/project/src/main/kotlin/com/example/project/useCase/
+
+    How to fix:
+      - Move it to one of the locations above
+      - Delete it if it is not needed
+      - Add a new role for it:
+          "GetUserUseCase".role {
+            summary = "TODO"
+            layout {
+              "src/main/kotlin/com/example/project" / "GetUserUseCase".ktFile()
+            }
+          }
+  ```
+</details>
+
+## Generation with katachi
+
+katachi can generate a variety of things from your architecture definition.
+
+<details>
+  <summary>Generate documentation</summary>
+
+  From the project structure you defined with katachi, you can have Markdown documentation generated.
+
+  ```shell
+  $ ./gradlew katachiDocs
+  ```
+
+  Once you point the Gradle plugin at the definition with `katachi { architecture = "..." }`, the pages are written to `build/katachi/docs` of the module that holds the definition.
+
+  <CodeComparison>
+    <CodeComparison.Panel label="Architecture definition" labelVariant="note">
+      ```kt title="ProjectArchitecture.kt"
+      val projectArchitecture = architecture {
+        "UseCase".role {
+          title = "Use case"
+          summary = "A single app-specific behavior that occurs on a screen"
+
+          example("GetUserUseCase", "Gets a user")
+          example("UpdateUserUseCase", "Updates a user")
+
+          layout {
+            "src/main/kotlin/com/example/project/useCase" {
+              description = "Ones used from more than one screen"
+              "*UseCase".ktFile()
+            }
+          }
+        }
+
+        // ...
+      }
+      ```
+    </CodeComparison.Panel>
+
+    <CodeComparison.Panel label="Generated Markdown" labelVariant="success">
+      ```md title="build/katachi/docs/UseCase.md"
+      [Architecture](README.md)
+
+      # Use case
+
+      A single app-specific behavior that occurs on a screen
+
+      ## Placement
+
+      | Path | When to use |
+      |---|---|
+      | `src/main/kotlin/com/example/project/useCase/*UseCase.kt` | Ones used from more than one screen |
+
+      ## Examples
+
+      - `GetUserUseCase` ... Gets a user
+      - `UpdateUserUseCase` ... Updates a user
+      ```
+    </CodeComparison.Panel>
+  </CodeComparison>
+
+  Treat the project structure you defined with katachi as the single source of truth, and generate documentation that both humans and AI agents can read.
+
+  See [Document generation](/katachi/0.3/guides/document-generation/) for the details.
+
+  <LinkCard title="Document generation" description="How to generate a Markdown page per Role from the architecture { } definition." href="/katachi/guides/document-generation/" />
+</details>
+
+<details>
+  <summary>Generate code from templates</summary>
+
+  By attaching a typical source code template to a file declaration inside the architecture definition, you can generate that file with a single command.
+
+  ```shell
+  $ ./gradlew katachiTemplate --arg template=UseCase,UseCaseImplementation --arg name=GetUser
+  ```
+
+  <CodeComparison>
+    <CodeComparison.Panel label="Architecture definition" labelVariant="note">
+      ```kt title="ProjectArchitecture.kt"
+      val projectArchitecture = architecture {
+        "UseCase".role {
+          layout {
+            "src/main/kotlin/com/example/project/useCase" /
+              "${capture("name")}UseCase".ktFile()
+                  .template {
+                    val name = captureValue("name")
+                    """
+                      package com.example.project.useCase
+
+                      interface ${name}UseCase {
+                        suspend operator fun invoke()
+                      }
+                    """.trimIndent()
+                  }
+          }
+        }
+
+        "UseCaseImplementation".role {
+          layout {
+            "src/main/kotlin/com/example/project/useCase" /
+              "${capture("name")}UseCaseImpl".ktFile()
+                  .template {
+                    val name = captureValue("name")
+                    """
+                      package com.example.project.useCase
+
+                      class ${name}UseCaseImpl : ${name}UseCase {
+                        override suspend fun invoke() {
+                          // Write the behavior here
+                        }
+                      }
+                    """.trimIndent()
+                  }
+          }
+        }
+        // ...
+      }
+      ```
+    </CodeComparison.Panel>
+
+    <CodeComparison.Panel label="Command to generate, and the generated source code" labelVariant="success">
+      ```shell
+      $ ./gradlew katachiTemplate --arg template=UseCase,UseCaseImplementation --arg name=GetUser
+      [1/3] Processors: template
+
+      [2/3] Processing...
+        [template] Generating 2 files under file:///path/to/project
+        [template] Wrote file:///path/to/project/src/main/kotlin/com/example/project/useCase/GetUserUseCase.kt
+        [template] Wrote file:///path/to/project/src/main/kotlin/com/example/project/useCase/GetUserUseCaseImpl.kt
+
+      ========================================
+      [3/3] Katachi processor run: 1 succeeded, 0 failed
+
+      [OK] template
+
+      ========================================
+      ```
+
+      ```kt title="src/main/kotlin/com/example/project/useCase/GetUserUseCase.kt"
+      package com.example.project.useCase
+
+      interface GetUserUseCase {
+        suspend operator fun invoke()
+      }
+      ```
+    </CodeComparison.Panel>
+  </CodeComparison>
+
+  See [Generating code from a template](/katachi/0.3/guides/generate-code-from-template/) for the details.
+
+  <LinkCard title="Generating code from a template" description="How to write .template { }, its parameters, and what happens when a file already exists." href="/katachi/guides/generate-code-from-template/" />
+</details>
+
+## katachi and Konsist
+
+katachi works together with Konsist: it verifies the project as a whole, then checks each individual file.
+
+```kt
+val projectArchitecture = architecture {
+  "UseCase".role {
+    // where it may be placed
+    layout {
+      "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
+    }
+
+    // what its contents should look like
+    "has exactly one invoke function".konsist {
+      classes()
+        .withNameEndingWith("UseCase")
+        .must { it.functions().map { function -> function.name } == listOf("invoke") }
+    }
+  }
+}
+```
+
+When the test calls `assert(FileConstraintCheck())`, placement violations and content violations line up in one and the same report.
+
+The recommended split is to test the structure of the whole project with katachi, then check the contents of each file with Konsist.
+
+## Next steps
+
+* [Your first architecture definition](/katachi/0.3/get-started/first-architecture/) ... Add a katachi architecture definition to your own project and see what it does for you.
+* [FAQ](/katachi/0.3/get-started/faq/) ... Understand the thinking behind katachi through the questions people ask most.
+* [Role definitions](/katachi/0.3/guides/role/) ... Learn about the Role, the basic unit of an architecture definition in katachi.
+* [Layout](/katachi/0.3/guides/layout/) ... Learn about Layout, how katachi defines directory structure.

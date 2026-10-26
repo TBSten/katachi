@@ -1,0 +1,122 @@
+---
+title: Roadmap
+description: katachi's plans by version — from the v0.1 DSL and checks, through
+  the v0.2 Gradle plugin, documentation generation, templates and baseline, to
+  ktFileContent and adoption in existing projects in v0.3 and beyond.
+tags:
+  - advanced
+slug: 0.3/roadmap
+---
+
+{/*
+  The purpose of this page: to show katachi's plans by version, and what is in now versus what has been put off. How to use each feature is left to the individual guides.
+  */}
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+This page shows katachi's plans by version, what is in now, and what has been put off.
+
+## Overview
+
+<table>
+  <thead>
+    <tr>
+      <th style="min-width: 6rem;">Version</th>
+      <th style="min-width: 12rem;">Theme</th>
+      <th style="min-width: 36rem;">Definition of done</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td><strong>v0.1</strong></td>
+      <td>DSL + checks + <code>konsist \{ }</code></td>
+      <td>Can express a large project, and checks pass</td>
+    </tr>
+
+    <tr>
+      <td><strong>v0.2</strong></td>
+      <td>Gradle plugin + documentation generation + templates + baseline (+ IDE plugin, experimental)</td>
+      <td><code>./gradlew katachiDocs</code> produces documentation. With existing violations tolerated by a baseline, the test fails only on new violations and on entries still in the baseline file after they were fixed</td>
+    </tr>
+
+    <tr>
+      <td><strong>v0.3 and beyond</strong></td>
+      <td><code>ktFileContent \{ }</code> / report output / templateSet / Konture integration</td>
+      <td>Easier to adopt in an <strong>existing project</strong>. Most of the <code>konsist \{ }</code> written in v0.1 can be replaced with <code>ktFileContent \{ }</code></td>
+    </tr>
+  </tbody>
+</table>
+
+## v0.3 and beyond — Adoption in existing projects and `ktFileContent { }`
+
+<Aside type="note" title="Draft written by AI">
+  This section and the v0.3-and-beyond row of the overview table are a draft that AI rewrote to match the implementation of `ktFileContent { }`. The contents have not been checked yet.
+</Aside>
+
+Making katachi easier to adopt in existing projects is the theme of v0.3 and beyond. Only baseline, which tolerates the existing violations for now and fails only on new ones, has already landed in v0.2 as an experimental feature. Report output landed in v0.3.
+
+| Feature | What it enables |
+|---|---|
+| **Referring to imports by Role** (future) | Refers to an import by Role rather than by a path pattern ("only files of Roles in domain may be imported"). The `dependsOnlyOn` from the v0.2 plan won't be built; the import allow list went into `ktFileContent { }` instead |
+| **Report output** (landed in v0.3) | Outputs violations as a SARIF file, surfaced as annotations on GitHub PRs. For the steps, see the [GitHub recipe](/katachi/0.3/recipes/github/#annotate-the-pr) |
+| **Konture integration** (landed in v0.3) | Writes [Konture](https://github.com/baole/konture) rules as `konture { }`, in the same place as `konsist { }` (`katachi-konture`). It cannot be placed in the same test module as `konsist { }` |
+| **templateSet** (landed in v0.3) | Groups several templates under a name and generates them with a single `--arg template=<name>`. You can also generate them from the IDE plugin |
+| **Capture check** (landed in v0.3) | When one path holds the same `capture()` name more than once, checks that those levels hold the same value (`[CaptureMismatch]`). Derivations such as `capture("x").camelCase` can also be written |
+| **`pairedWith`** (not in v0.3) | Checks coverage, such as "every `Screen` has a corresponding `Preview`" |
+| **Vocabulary-size measurement** (not in v0.3) | Reports the number of Roles and the file count per Role as numbers |
+| **Module resolution based on Gradle's model** | Follows modules whose `projectDir` was changed, and where source sets actually are |
+
+Apart from what landed in v0.3, the specification for this stage is largely undecided. Even the version numbering is grouped together as "v0.3 and beyond" for now.
+
+### Declaring a Role with `"Name".role { }`
+
+Up to v0.2, a Role was declared as `"UseCase" { }`. From v0.3, you write `"UseCase".role { }`. This matches the shape of `"domain".group { }` and sets a Role declaration apart from a directory declaration such as `"src" { }`, which you write inside `layout { }`.
+
+In v0.3, the v0.2 form `"UseCase" { }` is a compile error, and the error message shows the `"UseCase".role { }` to rewrite it to. A search and replace in your IDE that adds `.role` fixes it. Directory declarations inside `layout { }` (`"src" { }`) do not change, so do not replace them.
+
+### The glob `*` matches zero or more characters
+
+The glob `*`, which matched one or more characters up to v0.2, matches zero or more characters from v0.3, as a standard glob does. For example, `"app_icon*.xml"` now also matches `app_icon.xml`. A `*` written as a whole directory level (`"feature" / "*"`) matches the same things as before, since no directory has an empty name.
+
+The standard glob's `?`, `[...]`, and `{...}` can also be written now.
+
+### `.module { }` is deprecated
+
+`.module { }` is deprecated in v0.3, and using it produces a warning at compile time. It is planned to become a compile error in v0.4 and to be removed in v0.5. Write a module as a directory, as in `"core/data" / mainSourceSet / kotlin / "com/example/core/data" / "*Repository".ktFile()`. Write the package's directories instead of `modulePackage`, and turn a `*` in a module path into a `capture()`.
+
+### `ktFileContent { }` — a promotion out of `konsist { }`
+
+v0.1's `konsist { }` is, frankly, **an escape hatch.** Something almost every Role wants to say — like "only a `*UseCase` interface and a `Default*UseCase` class go here" — ends up being spelled out as a Konsist expression every time.
+
+```kt
+"only the interface and its Default implementation are placed".konsist {
+    files.must { file ->
+        val decls = file.declarations(includeNested = false, includeLocal = false)
+        decls.size == 2 &&
+            decls.any { it is KoInterfaceDeclaration && it.name.endsWith("UseCase") } &&
+            decls.any { it is KoClassDeclaration && it.name.startsWith("Default") }
+    }
+}
+```
+
+The rule "only an interface and its Default implementation go here" can be written in v0.3 with `ktFileContent { }` as shown below. It is an experimental feature throughout v0.3.
+
+```kt
+"UseCase".role {
+    layout {
+        "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+    }
+    ktFileContent {
+        `package`("**")
+        `import`("**")
+
+        required(`interface`, fileName) { allow(anythingElse) }
+        required(`class`, "Default$fileName").superclass(fileName) { allow(anythingElse) }
+    }
+}
+```
+
+Nothing may be placed for a kind you wrote no line for (package, import, declaration, class member). The `konsist { }` example above does not restrict the package, the imports, or the members, so this example opens them up with `**` and `allow(anythingElse)` as well. The block is the allow list for contents, in the same way `layout { }` is the allow list for placement.
+
+For details, see [Define an allow list of the declarations a file may contain](/katachi/0.3/guides/kt-file-content/).

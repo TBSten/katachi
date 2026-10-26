@@ -1,0 +1,298 @@
+---
+title: Generating code from a template
+description: How to generate code by adding .template { } to a layout declaration.
+tags:
+  - beginner
+slug: 0.3/guides/generate-code-from-template
+---
+
+{/*
+  The purpose of this page: to give the reader a deep, thorough understanding of katachi's template generation feature.
+  */}
+
+import { Aside, FileTree } from '@astrojs/starlight/components';
+
+Add `.template { }` to a layout declaration and that file can be generated as code.
+
+```kt {4-5,21-22} nocollapse
+"UseCase".role {
+    layout {
+        "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" /
+            "${capture("name")}UseCase".ktFile()
+                .template {
+                    val name = captureValue("name")
+                    """
+                        package com.example.core.domain.useCase
+
+                        interface ${name}UseCase {
+                            suspend operator fun invoke()
+                        }
+                    """.trimIndent()
+                }
+    }
+}
+
+"UseCaseImplementation".role {
+    layout {
+        "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" /
+            "${capture("name")}UseCaseImpl".ktFile()
+                .template {
+                    val name = captureValue("name")
+                    val implBody by stringParameter(default = """TODO("Implement ${name}UseCase")""")
+                    """
+                        package com.example.core.domain.useCase
+
+                        class ${name}UseCaseImpl : ${name}UseCase {
+                            override suspend fun invoke() {
+                                $implBody
+                            }
+                        }
+                    """.trimIndent()
+                }
+    }
+}
+```
+
+```shell
+# generate both UseCase and UseCaseImplementation at once
+./gradlew katachiTemplate \
+    --arg "template=UseCase,UseCaseImplementation" --arg "name=GetItemList"
+```
+
+This command generates the following two files.
+
+<FileTree>
+  * core/domain/src/main/kotlin/com/example/core/domain/useCase/
+    * GetItemListUseCase.kt
+    * GetItemListUseCaseImpl.kt
+</FileTree>
+
+`--arg template=<specifier>` says which templates to generate.
+
+## Specifying a template — `--arg template=`
+
+A template is specified by the qualified name of the Role that has it (`group.Role`). To generate several templates at once, separate them with `,`.
+
+| What you write | What it means |
+| --- | --- |
+| `Controller` | The template of Role `Controller`, which is in no group |
+| `feature.Screen` | The template of Role `Screen`, in group `feature` |
+| `feature.Screen.preview` | The template whose `id` is `preview`, of Role `Screen` in group `feature` |
+| `RepositoryInterface` | A specifier with no group. Usable when, among the Roles that have a template, only one is named `RepositoryInterface` |
+
+When you attach two or more templates to one Role, give each of them an `id`, as in `.template(id = "preview") { }`. If you also pass a `title`, the `katachiTemplates` list shows that name instead of the `id`.
+
+When no template matches what you wrote, the run fails, listing the specifiers you can write.
+
+## Parameters
+
+Declare the parameters a generation run can pass with `--arg`, inside the template's block.
+
+```kt {4}
+"${capture("name")}UseCaseImpl".ktFile()
+    .template {
+        val name = captureValue("name")
+        val implBody by stringParameter(default = """TODO("Implement ${name}UseCase")""")
+
+        // ...
+    }
+```
+
+The property's name is the parameter's name, as is. `val implBody by stringParameter(default = ...)` declares the parameter passed as `--arg implBody=...`.
+
+```shell
+./gradlew katachiTemplate \
+    --arg "template=UseCaseImplementation" \
+    --arg "name=GetItemList" --arg 'implBody=println("Hello World")'
+```
+
+There are four parameter types. All of them are passed as `--arg name=value`.
+
+| How to write it | How to pass it | What it accepts |
+| --- | --- | --- |
+| `val name by stringParameter()` | `--arg name=User` | Anything |
+| `val withImpl by booleanParameter(default = true)` | `--arg withImpl=false` | `true` / `false` (lower case only) |
+| `val pageSize by intParameter(default = 20)` | `--arg pageSize=50` | An integer |
+| `val visibility by enumParameter(default = Visibility.Public)` | `--arg visibility=Internal` | An enum entry name |
+
+<Aside type="caution">
+  A capture and a parameter are each one, by name, across every template a single run generates. If two templates share one `capture("name")`, one `--arg name=User` fills in both. When two templates declare a parameter of the same name, give it the same type and the same default.
+</Aside>
+
+## When the destination has a wildcard, name it and pass a value
+
+`capture()` gives a `*` a name. It doesn't declare anything by itself — it just returns a string with the name embedded in it — so you can write it right inside a Kotlin string template.
+
+```kt {2}
+layout {
+    "feature" / capture("feature") / "src" / "main" / "kotlin" / "*ViewModel".ktFile()
+}
+```
+
+As far as checking goes, it's exactly the same as `*`. Rewriting `capture("feature")` as `"*"` doesn't change which files are allowed, not even one.
+
+The name is used when passing a value with `--arg`. Left as `*`, a template can't tell whether to generate into `feature/home` or `feature/settings`. Name it, and you can choose with `--arg feature=home`. For a Role with no template, `*` on its own is fine.
+
+`.template { }` is attached to the file declaration itself, so the destination path is fixed to that one `layout { }` declaration. If a `*` or `**` with no name from `capture()` is still left in it, there is nowhere for a value to arrive, so **it is an error**.
+
+```kt {3-5,7-8} nocollapse
+"FeatureComponent".role {
+    layout {
+        "feature" / capture("feature") / "commonMain".sourceSet / kotlin /
+            "com/example/kmp/feature" / capture("feature") / "component" /
+            "${capture("name")}".ktFile()
+                .template {
+                    val feature = captureValue("feature")
+                    val name = captureValue("name")
+
+                    """
+                        package com.example.kmp.feature.$feature.component
+
+                        @Composable
+                        internal fun $name(title: String) {
+                            Text(text = title)
+                        }
+                    """.trimIndent()
+                }
+    }
+}
+```
+
+```shell
+./gradlew katachiTemplate \
+    --arg "template=FeatureComponent" --arg "feature=home" --arg "name=HomeUserCard"
+```
+
+The module's directory and the package's directory both have a capture with the same name, `feature`. Captures with the same name take the same value, so the single `--arg feature=home` decides both `*` as `home`, and `HomeUserCard.kt` lands in `component/` under `feature/home/`.
+
+A capture's name becomes the `--arg` argument name, as is. Inside the template, read the same value with `captureValue("feature")`, for example.
+
+## Templates work on files other than Kotlin
+
+`.template { }` can be attached to a file declared with `.file()`, not only to `.ktFile()`. The string the block returns becomes the file's content as it is, so you can also generate a document with a fixed shape, such as Markdown.
+
+```kt {3-4} nocollapse
+"FeatureReadme".role {
+    layout {
+        "docs" / capture("feature") / "README.md".file()
+            .template {
+                val feature = captureValue("feature")
+                """
+                    # $feature
+
+                    ## Responsibility
+
+                    TODO
+
+                    ## Public API
+
+                    TODO
+                """.trimIndent()
+            }
+    }
+}
+```
+
+```shell
+./gradlew katachiTemplate --arg "template=FeatureReadme" --arg "feature=home"
+```
+
+This generates `docs/home/README.md`.
+
+## When a file already exists
+
+`--arg onExisting=` chooses what happens when a file already exists at the destination. **The default is `fail`.** When generating more than one template at once, the value of `onExisting` is used for every template in the set.
+
+| Value | Behavior |
+| --- | --- |
+| `fail` (default) | If even one already exists, **writes none** and fails |
+| `skip` | If even one already exists, **writes none**, without failing either |
+| `overwrite` | Replaces what's there |
+
+```shell
+./gradlew katachiTemplate \
+    --arg "template=UseCase" --arg "name=GetItemList" --arg "onExisting=overwrite"
+```
+
+You can also set the default in build.gradle.kts.
+
+```kts {6} title="architecture-test/build.gradle.kts"
+import me.tbsten.katachi.gradle.KatachiOnExisting
+
+katachi {
+    processors {
+        template {
+            onExisting = KatachiOnExisting.SKIP
+        }
+    }
+}
+```
+
+## Listing templates and seeing their details
+
+The **`katachiTemplates` task** shows which templates exist, and what to pass to generate what.
+
+```shell
+# a list of templates (title / summary, parameter names, the specifier you can write for --arg template=)
+./gradlew katachiTemplates
+
+# the detail of one template
+./gradlew katachiTemplates --arg "template=data.RepositoryInterface"
+```
+
+The detail shows the list of parameters, the destination path and the file's contents, and a `katachiTemplate` command.
+
+## Generating from the IDE (experimental)
+
+With the IntelliJ IDEA / Android Studio plugin installed, you can list templates, fill in their parameters and generate, all inside the IDE. You do not have to assemble `--arg`. It is experimental, so its screens and behavior may change in later versions.
+
+It is not published on JetBrains Marketplace. Install it from the zip on GitHub Releases:
+
+1. Download `katachi-intellij-plugin-<version>.zip` from [GitHub Releases](https://github.com/TBSten/katachi/releases/latest).
+2. In the IDE, open **Settings → Plugins**, choose ⚙ → **Install Plugin from Disk…**, and select the zip without extracting it.
+3. Restart the IDE if it asks you to.
+
+It works with IntelliJ IDEA 2026.1 and Android Studio Quail (2026.1) or later.
+
+The project needs the katachi Gradle plugin 0.2.0 or later, and Gradle must be synced.
+
+You can generate from three places. The screens follow the IDE's language (Japanese or English).
+
+* The **katachi** tool window on the right edge
+* Right-click in the Project tree → **New → katachi**
+* The notification that appears above the editor when you open a file that a template fits
+
+Updating the IDE does not update the plugin. Install a newer version from Releases again.
+
+## Summary
+
+Using every way of writing covered on this page, a template looks like this.
+
+```kt nocollapse
+"FeatureReadme".role {
+    layout {
+        "docs" / capture("feature") / "README.md".file()
+            .template {
+                val feature = captureValue("feature")
+                val summary by stringParameter(default = "TODO")
+                """
+                    # $feature
+
+                    $summary
+                """.trimIndent()
+            }
+    }
+}
+```
+
+```shell
+./gradlew katachiTemplate \
+    --arg "template=FeatureReadme" --arg "feature=home" \
+    --arg 'summary=Home screen' --arg "onExisting=overwrite"
+```
+
+## Next steps
+
+* [Generating documentation](/katachi/0.3/guides/document-generation/) ... Learn how to generate documentation, not code, from the same definition.
+* [ArchitectureProcessor and customizing it](/katachi/0.3/guides/processor/) ... Template generation is one ArchitectureProcessor too. Learn how to produce other outputs of your own.
+* [Enforce directory structure with the Layout system](/katachi/0.3/guides/layout/) ... Learn how to write the declarations that take `.template { }`, and where `capture()` helps.
