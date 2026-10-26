@@ -12,6 +12,8 @@ import com.intellij.ui.InplaceButton
 import com.intellij.ui.SimpleColoredComponent
 import com.intellij.util.ui.UIUtil
 import me.tbsten.katachi.intellij.ide.KatachiBundle
+import me.tbsten.katachi.intellij.ide.notification.KatachiNotificationPanel
+import me.tbsten.katachi.intellij.ide.notification.NoRolePanel
 import me.tbsten.katachi.intellij.ide.notification.NoRolePanels
 import me.tbsten.katachi.intellij.ide.sdkCall
 import java.awt.Window
@@ -21,7 +23,7 @@ import javax.swing.JList
 import javax.swing.RootPaneContainer
 
 /**
- * What a user does with the mouse on the no-role notification and its popup, done inside the IDE for the Driver smoke. Driver's
+ * What a user does with the mouse on the katachi notifications and the no-role popup, done inside the IDE for the Driver smoke. Driver's
  * own click moves the real mouse, which lands in whatever window is in front when the IDE under test is not (a machine in use,
  * a locked screen); these call what the click would call (`doClick`, `cancel`) and need no window to be in front.
  *
@@ -39,6 +41,26 @@ internal class DebugPanels(private val project: Project) {
             "pressed=none"
         } else {
             link.doClick()
+            "pressed=$text"
+        }
+    }
+
+    /**
+     * Presses the link [text] (or the ⚙ / × whose tooltip is [text]) of the template notification on the selected editor, the
+     * press left for later on the EDT: Create and ⚙ open a modal dialog, which would hold this call. `pressed=<text>` once the
+     * press is queued; `pressed=none` when the editor shows no template notification or it has no such link.
+     */
+    fun pressEntryLinkLater(text: String): String = onEdt {
+        val file = FileEditorManager.getInstance(project).selectedEditors.firstOrNull()?.file
+        val panel = file?.let { GutterDebugReader(project).bannerPanelsOf(it) }.orEmpty()
+            .firstOrNull { it is KatachiNotificationPanel && it !is NoRolePanel }
+        val link = panel?.let { UIUtil.findComponentsOfType(it, HyperlinkLabel::class.java).firstOrNull { label -> label.text == text } }
+        val button = panel?.let { UIUtil.findComponentsOfType(it, InplaceButton::class.java).firstOrNull { b -> b.toolTipText == text } }
+        val press: (() -> Unit)? = link?.let { { it.doClick() } } ?: button?.let { { it.doClick() } }
+        if (press == null) {
+            "pressed=none"
+        } else {
+            ApplicationManager.getApplication().invokeLater({ sdkCall("press $text of the katachi notification") { press() } }, ModalityState.any())
             "pressed=$text"
         }
     }

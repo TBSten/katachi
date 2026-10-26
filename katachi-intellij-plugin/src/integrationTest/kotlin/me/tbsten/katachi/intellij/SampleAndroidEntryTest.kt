@@ -2,8 +2,6 @@ package me.tbsten.katachi.intellij
 
 import com.intellij.driver.client.Driver
 import com.intellij.driver.sdk.*
-import com.intellij.driver.sdk.ui.components.elements.dialog
-import com.intellij.driver.sdk.ui.ui
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IdeProductProvider
@@ -26,7 +24,7 @@ import kotlin.time.Duration.Companion.seconds
 
 /**
  * V1: G2 scenario 1 (notification -> dialog -> generation) on a copy of sample/android, whose
- * templates capture the module directory and the package directory (`feature` / `featurePackage`). Explicitly invoked only.
+ * templates bind the module directory and the package directory to one capture (`feature`). Explicitly invoked only.
  */
 class SampleAndroidEntryTest {
     @Test
@@ -72,16 +70,17 @@ class SampleAndroidEntryTest {
             val bridge = EditorEntryProbe(this, singleProject())
             openFile(relative, waitForCodeAnalysis = false)
             awaitEntryNotification("Create")
-            entryNotification().x { byVisibleText("Create") }.click()
+            // Pressed in the IDE: Driver's real mouse lands in whatever window is in front (see SmokeBridge).
+            assertEquals("pressed=Create", bridge.pressEntryLink("Create"))
             waitFor("dialog with all captures reverse-captured", timeout = 2.minutes, errorMessage = { bridge.describeDialog() }) {
                 val lines = bridge.describeDialog().lines()
-                "dialog=open" in lines && "field=feature=home" in lines && "field=featurePackage=home" in lines &&
-                    "field=name=HomeUserCard" in lines &&
+                "dialog=open" in lines && "field=feature=home" in lines &&
+                    "field=name=HomeUserCard" in lines && "okEnabled=true" in lines &&
                     lines.any { it.startsWith("target=") && it.endsWith(relative) }
             }
             println("SAMPLE-DIALOG:\n" + bridge.describeDialog())
             assertEquals(placeholder, project.resolve(relative).readText(), "Opening the dialog must not write")
-            ui.dialog(title = "katachi: Generate from Template").x { byVisibleText("Generate") }.click()
+            assertEquals("pressed=generate", bridge.pressDialog("generate"))
             awaitEntryDialog(bridge, "dialog=none")
             waitFor("placeholder overwritten by the real katachiTemplate", timeout = 15.minutes, interval = 2.seconds) {
                 project.resolve(relative).readText().contains("internal fun HomeUserCard(")

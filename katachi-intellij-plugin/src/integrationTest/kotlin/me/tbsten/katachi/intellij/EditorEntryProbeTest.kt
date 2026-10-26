@@ -6,11 +6,23 @@ import com.intellij.driver.sdk.Project
 
 private const val ENTRY_PLUGIN = "me.tbsten.katachi.intellij"
 
-/** Read-only bridge: no generation, field filling, or reveal actions are invoked remotely. */
+/**
+ * The bridge as the editor entry smokes use it: reads, plus the presses and the typing a user does (see [SmokeBridge] for why a
+ * local smoke does not use Driver's real mouse and keyboard).
+ */
 @Remote("me.tbsten.katachi.intellij.ide.debug.KatachiDebugBridge", plugin = ENTRY_PLUGIN)
 interface EditorEntryBridgeRef {
     fun describeState(): String
     fun describeDialog(): String
+
+    /** Presses the link (or the ⚙ by its tooltip) of the template notification on the selected editor, queued on the EDT: `pressed=<text>` or `pressed=none`. */
+    fun pressEntryLinkLater(text: String): String
+
+    /** Types [value] into the field [name] of the generate dialog: `filled=<name>` or `filled=none`. */
+    fun fillDialog(name: String, value: String): String
+
+    /** Presses `generate` or `cancel` of the generate dialog: `pressed=<button>` or `pressed=none`. */
+    fun pressDialog(button: String): String
 
     /** New > katachi of a directory as `item=katachi/<group>/<label>|enabled` lines, read without the Project view. */
     fun describeNewMenu(directory: String): String
@@ -32,6 +44,12 @@ internal class EditorEntryProbe(private val driver: Driver, private val project:
     fun describeNewMenu(directory: String): String = bridge.describeNewMenu(directory)
 
     fun chooseNewMenuItemLater(directory: String, path: String): String = bridge.chooseNewMenuItemLater(directory, path)
+
+    fun pressEntryLink(text: String): String = bridge.pressEntryLinkLater(text)
+
+    fun fillDialog(name: String, value: String): String = bridge.fillDialog(name, value)
+
+    fun pressDialog(button: String): String = bridge.pressDialog(button)
 
     fun describeState(): String {
         val description = bridge.describeState()

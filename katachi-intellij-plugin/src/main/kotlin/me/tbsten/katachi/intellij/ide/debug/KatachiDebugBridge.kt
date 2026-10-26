@@ -188,6 +188,9 @@ internal class KatachiDebugBridge(private val project: Project) {
     /** Presses the link [text] of the no-role notification: `pressed=<text>` or `pressed=none` (see [DebugPanels.pressNoRoleLink]). */
     fun pressNoRoleLink(text: String): String = DebugPanels(project).pressNoRoleLink(checked(text))
 
+    /** Presses the link or button [text] of the template notification on the selected editor, queued on the EDT: `pressed=<text>` or `pressed=none` (see [DebugPanels.pressEntryLinkLater]). */
+    fun pressEntryLinkLater(text: String): String = checked(DebugPanels(project)).pressEntryLinkLater(text)
+
     /** Presses × of the no-role notification (see [DebugPanels.dismissNoRole]). */
     fun dismissNoRole(): String = checked(DebugPanels(project)).dismissNoRole()
 
