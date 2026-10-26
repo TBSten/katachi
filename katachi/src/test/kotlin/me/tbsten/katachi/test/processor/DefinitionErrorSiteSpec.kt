@@ -9,7 +9,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.KatachiTemplateOnWildcardException
-import me.tbsten.katachi.ide.KatachiDefinitionJsonIoException
+import me.tbsten.katachi.ide.internal.KatachiDefinitionJsonIoException
 import me.tbsten.katachi.processor.internal.definitionErrorSiteOf
 import me.tbsten.katachi.processor.internal.definitionErrorsOf
 import me.tbsten.katachi.util.runCatchingScoped

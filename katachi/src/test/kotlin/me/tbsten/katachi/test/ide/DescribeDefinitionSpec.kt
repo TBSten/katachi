@@ -12,8 +12,8 @@ import java.io.File
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gradle.gradle
 import me.tbsten.katachi.dsl.wholeTree
-import me.tbsten.katachi.ide.DescribeDefinition
-import me.tbsten.katachi.ide.KatachiDefinitionJsonIoException
+import me.tbsten.katachi.ide.internal.DescribeDefinition
+import me.tbsten.katachi.ide.internal.KatachiDefinitionJsonIoException
 import me.tbsten.katachi.ide.internal.DefinitionProblemKind
 import me.tbsten.katachi.ide.internal.backendOf
 import me.tbsten.katachi.processor.internal.FakeArchitectureProcessContext

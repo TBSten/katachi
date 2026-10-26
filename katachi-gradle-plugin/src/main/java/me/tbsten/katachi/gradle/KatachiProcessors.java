@@ -91,7 +91,7 @@ public class KatachiProcessors {
         defaults.put("template", "me.tbsten.katachi.template.GenerateCodeFromTemplate");
         defaults.put("templates", "me.tbsten.katachi.template.DescribeTemplates");
         defaults.put(INTERNAL_TEMPLATES_JSON_KEY, "me.tbsten.katachi.template.DescribeTemplates");
-        defaults.put(INTERNAL_DEFINITION_JSON_KEY, "me.tbsten.katachi.ide.DescribeDefinition");
+        defaults.put(INTERNAL_DEFINITION_JSON_KEY, "me.tbsten.katachi.ide.internal.DescribeDefinition");
         return defaults;
     }
 

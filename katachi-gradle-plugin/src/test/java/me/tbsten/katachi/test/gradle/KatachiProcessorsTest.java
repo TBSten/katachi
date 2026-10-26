@@ -38,7 +38,7 @@ class KatachiProcessorsTest {
     private static final String DESCRIBE_TEMPLATES = "me.tbsten.katachi.template.DescribeTemplates";
 
     /** Where the default definition describer lives, as the generated source has to spell it. */
-    private static final String DESCRIBE_DEFINITION = "me.tbsten.katachi.ide.DescribeDefinition";
+    private static final String DESCRIBE_DEFINITION = "me.tbsten.katachi.ide.internal.DescribeDefinition";
 
     @Test
     @DisplayName("何も register しなくても docs が引ける")

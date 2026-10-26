@@ -17,7 +17,7 @@ import me.tbsten.katachi.dsl.internal.FileDeclarationsExplanation
 import me.tbsten.katachi.dsl.internal.RuleExplanation
 import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.dsl.wholeTree
-import me.tbsten.katachi.ide.DescribeDefinition
+import me.tbsten.katachi.ide.internal.DescribeDefinition
 import me.tbsten.katachi.ide.internal.DefinitionJson
 import me.tbsten.katachi.ide.internal.DefinitionJsonOptions
 import me.tbsten.katachi.ide.internal.definitionJsonOf

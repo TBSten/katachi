@@ -1,14 +1,10 @@
-package me.tbsten.katachi.ide
+package me.tbsten.katachi.ide.internal
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import me.tbsten.katachi.ExperimentalKatachiApi
-import me.tbsten.katachi.ide.internal.DefinitionJson
-import me.tbsten.katachi.ide.internal.DefinitionJsonOptions
-import me.tbsten.katachi.ide.internal.TemplatePreviewFailures
-import me.tbsten.katachi.ide.internal.definitionJsonOf
+import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.internal.KatachiVersion
 import me.tbsten.katachi.internal.absolutePathOf
 import me.tbsten.katachi.internal.catching
@@ -55,7 +51,7 @@ import me.tbsten.katachi.template.internal.writeFileAtomically
  *
  * ## Example 1: write the JSON from code, and from the command line
  * ```kt
- * import me.tbsten.katachi.ide.DescribeDefinition
+ * import me.tbsten.katachi.ide.internal.DescribeDefinition
  * import me.tbsten.katachi.processor.process
  *
  * projectArchitecture.process(
@@ -72,7 +68,7 @@ import me.tbsten.katachi.template.internal.writeFileAtomically
  * @see DescribeDefinition.Args
  * @see me.tbsten.katachi.template.DescribeTemplates
  */
-@ExperimentalKatachiApi
+@InternalKatachiApi
 public object DescribeDefinition : ArchitectureProcessor<DescribeDefinition.Args, DefinitionSummary> {
     override val argsSerializer: KSerializer<Args> = Args.serializer()
 
@@ -115,7 +111,7 @@ public object DescribeDefinition : ArchitectureProcessor<DescribeDefinition.Args
      *
      * ## Example 1: the same arguments from code, from the command line and from the build script
      * ```kt
-     * import me.tbsten.katachi.ide.DescribeDefinition
+     * import me.tbsten.katachi.ide.internal.DescribeDefinition
      *
      * DescribeDefinition.Args(output = "build/katachi/internalDefinitionJson/definition.json", maxMatchedFiles = 50)
      * ```
@@ -165,7 +161,7 @@ public object DescribeDefinition : ArchitectureProcessor<DescribeDefinition.Args
  *
  * @constructor Takes the counts and the path written.
  */
-@ExperimentalKatachiApi
+@InternalKatachiApi
 public class DefinitionSummary internal constructor(
     /** How many roles the JSON describes. */
     public val roles: Int,

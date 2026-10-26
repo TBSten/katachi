@@ -37,7 +37,6 @@ fun DeclarationContainerScope.ide() = "Ide".role {
             internalDeclarationsInInternalPackage()
             publicDeclarationsShowExample()
             publicDeclarationsKeepTagsLast()
-            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "ide" / "*".ktFile()
             mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "ide" / "**" / "*".ktFile()
         }
     }

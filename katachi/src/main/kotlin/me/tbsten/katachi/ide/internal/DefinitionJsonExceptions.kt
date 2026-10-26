@@ -1,6 +1,6 @@
-package me.tbsten.katachi.ide
+package me.tbsten.katachi.ide.internal
 
-import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.KatachiCheckException
 import me.tbsten.katachi.internal.absolutePathOf
 import me.tbsten.katachi.internal.fileUri
@@ -15,8 +15,8 @@ import me.tbsten.katachi.internal.fileUri
  * ## Example 1: say where a failing run was writing
  * ```kt
  * import io.kotest.assertions.throwables.shouldThrow
- * import me.tbsten.katachi.ide.DescribeDefinition
- * import me.tbsten.katachi.ide.KatachiDefinitionJsonIoException
+ * import me.tbsten.katachi.ide.internal.DescribeDefinition
+ * import me.tbsten.katachi.ide.internal.KatachiDefinitionJsonIoException
  * import me.tbsten.katachi.processor.process
  *
  * val failure = shouldThrow<KatachiDefinitionJsonIoException> {
@@ -27,7 +27,7 @@ import me.tbsten.katachi.internal.fileUri
  *
  * @see DescribeDefinition
  */
-@ExperimentalKatachiApi
+@InternalKatachiApi
 public class KatachiDefinitionJsonIoException internal constructor(
     /** The file being written, exactly as `--arg output=` spelled it. */
     public val output: String,

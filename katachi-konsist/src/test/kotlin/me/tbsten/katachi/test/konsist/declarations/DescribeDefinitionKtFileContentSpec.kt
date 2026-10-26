@@ -21,7 +21,7 @@ import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.wholeTree
-import me.tbsten.katachi.ide.DescribeDefinition
+import me.tbsten.katachi.ide.internal.DescribeDefinition
 import me.tbsten.katachi.konsist.declarations.KtFileContentScope
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 import me.tbsten.katachi.processor.internal.process
