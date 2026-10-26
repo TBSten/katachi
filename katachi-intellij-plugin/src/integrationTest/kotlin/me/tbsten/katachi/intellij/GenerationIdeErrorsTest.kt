@@ -64,7 +64,7 @@ class GenerationIdeErrorsTest {
     @Test
     fun `複数のテンプレートを続けて生成してもIDEにエラーが出ない`() {
         keepStarterFilesUnder(workDir.resolve("starter"))
-        val repository = copyOfRepository(sample, workDir.resolve("repository"))
+        val repository = copyOfRepository(sample, workDir)
         addTemplates(repository.resolve("sample/jvm"))
         val ide = IdeProductProvider.IU.copy(getInstaller = { ExistingIdeInstaller(appBundleOf(ideHome, workDir)) })
         val context = Starter.newContext("katachiGenerationIdeErrors", TestCase(ide, LocalProjectInfo(repository.resolve("sample/jvm"))), false)
@@ -202,11 +202,13 @@ private fun appBundleOf(contents: Path, workDir: Path): Path {
  * that the IDE opens the copy (sample/jvm includes the whole repository). `git init` keeps
  * katachi's `gitTracked()` working in the copy. Returns [destination].
  */
-private fun copyOfRepository(sample: Path, destination: Path): Path {
+private fun copyOfRepository(sample: Path, workDir: Path): Path {
     val repository = sample.resolve("../..").normalize()
-    runCommand(destination.parent, "rm", "-rf", destination.toString())
-    Files.createDirectories(destination)
-    runCommand(destination.parent, "rsync", "-a", *REPOSITORY_COPY_EXCLUDES, "$repository/", "$destination/")
+    // A fresh directory each run: Finder writes .DS_Store back into a copy while it is deleted, so `rm -rf` of a fixed path fails.
+    Files.createDirectories(workDir)
+    Files.newDirectoryStream(workDir, "repository*").use { entries -> entries.forEach { it.toFile().deleteRecursively() } }
+    val destination = Files.createTempDirectory(workDir, "repository-")
+    runCommand(workDir, "rsync", "-a", *REPOSITORY_COPY_EXCLUDES, "$repository/", "$destination/")
     runCommand(destination, "git", "init", "-q")
     return destination
 }

@@ -40,7 +40,7 @@ class ArchModuleNameSmokeTest {
         ide.run(project) { _, bridge ->
             // 1. The ◆ names the line of the rule exactly as with :architecture-test.
             openFile(SERVICE, waitForCodeAnalysis = false)
-            waitForSmoke("the ◆ on HealthService", bridge, service, timeout = 15.minutes) { "allowed by class HealthService (ServiceRole.kt:80)" in bridge.describeGutter(service) }
+            waitForSmoke("the ◆ on HealthService", bridge, service, timeout = 15.minutes) { "allowed by internal.optional() class HealthService (ServiceRole.kt:80)" in bridge.describeGutter(service) }
             bridge.shot(ide.screenshots, "1-service-gutter")
 
             // 2. The check's row in the menu runs the module under its real path.

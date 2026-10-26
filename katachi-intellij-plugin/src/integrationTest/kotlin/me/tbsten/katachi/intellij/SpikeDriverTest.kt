@@ -194,9 +194,10 @@ class SpikeDriverTest {
      */
     private fun copyOfSample(): Path {
         val repository = sample.resolve("../..").normalize()
-        val destination = workDir.resolve("repository")
-        run(workDir, "rm", "-rf", destination.toString())
-        Files.createDirectories(destination)
+        // A fresh directory each run: Finder writes .DS_Store back into a copy while it is deleted, so `rm -rf` of a fixed path fails.
+        Files.createDirectories(workDir)
+        Files.newDirectoryStream(workDir, "repository*").use { entries -> entries.forEach { it.toFile().deleteRecursively() } }
+        val destination = Files.createTempDirectory(workDir, "repository-")
         run(workDir, "rsync", "-a", *REPOSITORY_COPY_EXCLUDES, "$repository/", "$destination/")
         run(destination, "git", "init", "-q")
         return destination

@@ -194,8 +194,9 @@ internal class HighlightingRefresher(private val project: Project, private val s
             if (roots.isNotEmpty() && roots.none { path.startsWith(it) }) continue
             val psiFile = sdkCall("find the PSI of ${file.path}") { readAction { PsiManager.getInstance(project).findFile(file) } }.getOrNull()
                 ?: continue
+            // restart(PsiFile) reads the PSI, which the platform asserts is done inside a read action.
             sdkCall("draw the katachi gutter of ${file.path} again") {
-                if (!project.isDisposed) DaemonCodeAnalyzer.getInstance(project).restart(psiFile, "katachi: $reason")
+                readAction { if (!project.isDisposed) DaemonCodeAnalyzer.getInstance(project).restart(psiFile, "katachi: $reason") }
             }
         }
     }
