@@ -908,14 +908,14 @@
   ],
   "questions": [
     {
-      "id": "q1",
+      "id": "cq1",
       "question": "UseCase と Repository の間に Interactor 層を挟む方針は今後も続けますか？",
       "observed": "domain/src/main/kotlin/com/example/app/domain/interactor/ 配下の *Interactor.kt は3件だけで、残る15件の UseCase は Repository を直接呼んでいる",
       "options": ["Interactor 層を全体に広げる", "Interactor を廃して UseCase に寄せる", "現状のまま両方を許す"],
       "recommendation": "B。Interactor が3件に留まっており、UseCase 側へ寄せるほうが規約を1つにできるため"
     },
     {
-      "id": "q2",
+      "id": "cq2",
       "question": "legacy パッケージは katachi の対象に含めますか？",
       "observed": "app/src/main/kotlin/com/example/app/ui/legacy/ の配下だけ Fragment + Presenter のまま残っている",
       "options": ["対象に含めて直す", "当面 ignore する"],
@@ -923,7 +923,7 @@
     }
   ],
   "answers": {
-    "q1": { "answer": "Interactor を廃して UseCase に寄せる", "note": "次の四半期で移行する", "answeredAt": "2026-09-24T11:00:00+09:00" }
+    "cq1": { "answer": "Interactor を廃して UseCase に寄せる", "note": "次の四半期で移行する", "answeredAt": "2026-09-24T11:00:00+09:00" }
   },
   "templates": [
     {
@@ -1498,8 +1498,9 @@
   // { id, recommendation, radios, free, card }
   var answerCards = [];
 
+  // レポートの確認事項の id は cq<n>（チェックリストは q<n>。katachi-install.sh の QUESTION_ID_PY と同じ）
   function questionId(item, index) {
-    return blank(item.id) ? 'q' + (index + 1) : String(item.id);
+    return blank(item.id) ? 'cq' + (index + 1) : String(item.id);
   }
   // 入力途中の下書き。localStorage が使えなくても描画は壊さない
   function draftKey(id) { return location.href.split('#')[0] + '#answer:' + id; }

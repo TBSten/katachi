@@ -908,14 +908,14 @@
   ],
   "questions": [
     {
-      "id": "q1",
+      "id": "cq1",
       "question": "Will you keep the policy of inserting an Interactor layer between UseCase and Repository?",
       "observed": "Only 3 *Interactor.kt files exist under domain/src/main/kotlin/com/example/app/domain/interactor/; the remaining 15 UseCases call the Repository directly",
       "options": ["Extend the Interactor layer to everything", "Drop Interactor and consolidate into UseCase", "Keep the current state and allow both"],
       "recommendation": "B. Only 3 Interactors exist, and consolidating into UseCase keeps the convention singular"
     },
     {
-      "id": "q2",
+      "id": "cq2",
       "question": "Should the legacy package be included in katachi's scope?",
       "observed": "Only the files under app/src/main/kotlin/com/example/app/ui/legacy/ still use the old Fragment + Presenter pattern",
       "options": ["Include it and fix it", "Ignore it for now"],
@@ -923,7 +923,7 @@
     }
   ],
   "answers": {
-    "q1": { "answer": "Drop Interactor and consolidate into UseCase", "note": "Migrate next quarter", "answeredAt": "2026-09-24T11:00:00+09:00" }
+    "cq1": { "answer": "Drop Interactor and consolidate into UseCase", "note": "Migrate next quarter", "answeredAt": "2026-09-24T11:00:00+09:00" }
   },
   "templates": [
     {
@@ -1498,8 +1498,9 @@
   // { id, recommendation, radios, free, card }
   var answerCards = [];
 
+  // Questions in the report are cq<n> (q<n> in the check list; the same as QUESTION_ID_PY in katachi-install.sh)
   function questionId(item, index) {
-    return blank(item.id) ? 'q' + (index + 1) : String(item.id);
+    return blank(item.id) ? 'cq' + (index + 1) : String(item.id);
   }
   // Drafts while typing. Rendering must not break when localStorage is unavailable
   function draftKey(id) { return location.href.split('#')[0] + '#answer:' + id; }

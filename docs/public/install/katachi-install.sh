@@ -220,7 +220,7 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
       配列に1件追記する。merge と違い、既存の要素を消さない。
       check-list: violation / question / changed
       report:     module / role / tool / excluded / codebase-question / template
-      question / codebase-question は id（q1, q2, ...）を自動で採番する。
+      id を自動で採番する。question（チェックリスト）は q1, q2, ...、codebase-question（レポート）は cq1, cq2, ...。
       追記の前後で件数を確かめ、合わなければ止まる（並行して書き込んだときの検知）。
 
       add role --group <group> [--constraint-only --note <理由>]
@@ -244,9 +244,10 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
   sh katachi-install.sh answers [show] [--target report|check-list]
   sh katachi-install.sh answers import <json> [--target report|check-list]
   sh katachi-install.sh answers set <id> <回答> [--note <文>] [--target report|check-list]
-      確認事項（questions）への回答を表示 / 取り込む。import はブラウザで書き出した JSON
-      （{"target": "report", "answers": {"q1": {"answer": "...", "note": null}}}）を読み、
-      知らない id は飛ばして件数を出す。--target の既定は JSON の target、無ければ report。
+      確認事項（questions）への回答を表示 / 取り込む。show は --target が無ければ両方を出す。
+      set は id で書き込み先が決まる（q<n> はチェックリスト、cq<n> はレポート。--target と食い違えば止まる）。
+      import はブラウザで書き出した JSON（{"target": "report", "answers": {"cq1": {"answer": "...", "note": null}}}）を読み、
+      知らない id は飛ばして件数を出す。書き込み先は JSON の target、無ければ --target、それも無ければ id から決める。
       回答は answers（id ごと）に残り、summary が回答済みの件数と未回答だけを出す。
 
   sh katachi-install.sh docs [--small] [--refresh]
@@ -417,7 +418,7 @@ Usage:
       Appends one entry to an array. Unlike merge, existing entries are kept.
       check-list: violation / question / changed
       report:     module / role / tool / excluded / codebase-question / template
-      question / codebase-question get an id (q1, q2, ...) automatically.
+      An id is numbered automatically: q1, q2, ... for question (check list), cq1, cq2, ... for codebase-question (report).
       The count is checked before and after appending; a mismatch stops the command
       (detects concurrent writes).
 
@@ -444,11 +445,11 @@ Usage:
   sh katachi-install.sh answers [show] [--target report|check-list]
   sh katachi-install.sh answers import <json> [--target report|check-list]
   sh katachi-install.sh answers set <id> <answer> [--note <text>] [--target report|check-list]
-      Shows / imports the answers to the questions. import reads the JSON exported from the
-      browser ({"target": "report", "answers": {"q1": {"answer": "...", "note": null}}}),
-      skips unknown ids and prints the counts. --target defaults to the target in the JSON,
-      otherwise report. Answers are kept under answers (per id); summary prints the number
-      answered and lists only the unanswered ones.
+      Shows / imports the answers to the questions. Without --target, show prints both files.
+      set writes where the id belongs (q<n> is the check list, cq<n> the report; a contradicting --target stops it).
+      import reads the JSON exported from the browser ({"target": "report", "answers": {"cq1": {"answer": "...", "note": null}}}),
+      skips unknown ids and prints the counts. It writes to the target in the JSON, otherwise --target, otherwise where the ids belong.
+      Answers are kept under answers (per id); summary prints the number answered and lists only the unanswered ones.
 
   sh katachi-install.sh docs [--small] [--refresh]
       Fetches the full guide (llms-full.txt) into tmp/cache/ in the working directory
@@ -4437,6 +4438,9 @@ cmd_lint() {
 
 # ./gradlew :architecture-test:test の出力から、検査結果の行だけを取り出して並べ替える。
 # 取り出すのは要約の1行（Katachi check failed: ...）と、違反ごとの見出し（[種類] パス）。
+# 見出しは katachi が出す種類（KATACHI_VIOLATION_LABELS）だけを拾う。Gradle も
+# `[Incubating] Problems report is available at: file://...` のような `[大文字の語] ` の行を出すので、
+# 形だけで拾うと違反 0 件でも「増えた 1 件」になる。利用者が自分で定義した違反の種類は比べない。
 # 宣言位置（ProjectArchitecture.kt:42 など）はファイルを分ければ変わるのが正しいので比べない。
 # [MissingDescription] は説明を書き足せば減るのが正しいので、比べる対象から外して別に数える。
 # 要約の行の「, N warnings」も同じ理由で落とす。
@@ -4445,8 +4449,12 @@ cmd_lint() {
 # （`    me.tbsten.katachi.check.KatachiArchitectureAssertionError: Katachi check failed: ...`）。
 # その接頭辞は付いていても付いていなくても同じ行として扱う。
 CHECK_FAILED_LINE='^[[:space:]]*([A-Za-z0-9_.$]*(Error|Exception): )?Katachi check failed:'
+# katachi の違反の種類（katachi/src/main/kotlin/me/tbsten/katachi/check の Violation の label）。
+# katachi が種類を足したら、ここにも足す（check-install-kit-smoke.sh の check_result_headings が突き合わせる）。
+KATACHI_VIOLATION_LABELS='UnexpectedFile|UnexpectedDirectory|CaptureMismatch|MissingFile|UncheckedFile|UncheckedDirectory|UncheckedCheck|UnsatisfiedFileConstraint|UncheckedFileConstraint|AmbiguousLayout|MissingDescription|StaleBaselineEntry'
+VIOLATION_HEADING_LINE="^[[:space:]]*\\[(${KATACHI_VIOLATION_LABELS})\\] "
 extract_check_result() {
-	grep -E "${CHECK_FAILED_LINE}|^[[:space:]]*\[[A-Z][A-Za-z]*\] " "$1" |
+	grep -E "${CHECK_FAILED_LINE}|${VIOLATION_HEADING_LINE}" "$1" |
 		sed -E -e 's/^[[:space:]]*([A-Za-z0-9_.$]*(Error|Exception): )?//' -e 's/, [0-9][0-9]* warnings*$//' |
 		grep -v '^\[MissingDescription\] ' |
 		sort >"$2" || :
@@ -4747,6 +4755,35 @@ def section_of(item_id):
     return item_id
 '
 
+# 確認事項（questions）の id。チェックリストは q<n>、レポートは cq<n>（codebase-question）と接頭辞を分ける。
+# 同じ番号を両方に持たせると、answers set q1 がどちらの q1 なのか決まらず、もう一方に黙って入る。
+# ADD_PY（採番）・ANSWERS_PY（回答）・SUMMARY_PY（未回答の一覧）と cmd_answers の先頭に、PY_LANG と同じ流儀で流し込む。
+# HTML 側の questionId（id の無い要素を位置から補う）も同じ接頭辞を使う（JS は共有できない）。
+QUESTION_ID_PY='
+import re as _question_re
+
+QUESTION_ID_PREFIX = {"check-list": "q", "report": "cq"}
+QUESTION_TARGET_NAME = {"check-list": ("チェックリスト", "the check list"), "report": ("レポート", "the report")}
+
+
+def question_id(target, q, pos):
+    # id が無い古い要素は位置から補う（HTML の questionId と同じ規則）
+    return q.get("id") or "%s%d" % (QUESTION_ID_PREFIX[target], pos + 1)
+
+
+def question_number(target, qid):
+    # target の接頭辞の id なら番号を、違えば None を返す（q1 と cq1 は互いに当たらない）
+    m = _question_re.match(r"^%s([0-9]+)$" % QUESTION_ID_PREFIX[target], str(qid or ""))
+    return int(m.group(1)) if m else None
+
+
+def target_of_question_id(qid):
+    for target in QUESTION_ID_PREFIX:
+        if question_number(target, qid) is not None:
+            return target
+    return None
+'
+
 CHECK_PY='
 import json, sys
 src, dest, done = sys.argv[1], sys.argv[2], sys.argv[3] == "true"
@@ -4876,7 +4913,8 @@ FLAGS = {
     "role": {"constraint-only": "constraintOnly"},
 }
 
-# question / codebase-question は id を q<n> で採番する（ブラウザの一括回答が id で答えを返す）。
+# question / codebase-question は id を採番する（ブラウザの一括回答が id で答えを返す）。
+# 接頭辞は行き先で分ける（チェックリストは q<n>、レポートは cq<n>。QUESTION_ID_PY）。
 NUMBERED = ("question", "codebase-question")
 
 # gradle() が受け持つファイル（lint の KINDS の Gradle 行と同じ）。add role の --layout の末尾がこれなら、
@@ -4922,8 +4960,9 @@ if any(a in ("-h", "--help") for a in args):
         print(t("--deviation は同じ kind の他のモジュールと構成が違う点（無ければ省略）。",
                 "--deviation is how this module differs from the other modules of the same kind (omit if none)."))
     if kind in NUMBERED:
-        print(t("id は q1, q2, ... と自動で採番されます（ブラウザの一括回答と answers がこの id で答えを結びつけます）。",
-                "The id is numbered automatically as q1, q2, ... (the answers in the browser and answers use it)."))
+        pre = QUESTION_ID_PREFIX[target]
+        print(t("id は %s1, %s2, ... と自動で採番されます（ブラウザの一括回答と answers がこの id で答えを結びつけます）。",
+                "The id is numbered automatically as %s1, %s2, ... (the answers in the browser and answers use it).") % (pre, pre))
     sys.exit(0)
 
 if not args:
@@ -4996,22 +5035,23 @@ if idf is not None and entry.get(idf) is not None:
                                "To change it, take it out with data get, edit it, and write it back with data set.\n"))
             sys.exit(1)
 
-# id の採番（design 5）: q<n>、n は既存の q<n> の最大 + 1。id の無い既存要素があれば先に位置順で、
+# id の採番（design 5）: <接頭辞><n>、n は既存の同じ接頭辞の id の最大 + 1。id の無い既存要素があれば先に位置順で、
 # 使われていない最小の番号から埋める（ブラウザの一括回答が id で答えを返すので、全部に要る）。
 if kind in NUMBERED:
+    pre = QUESTION_ID_PREFIX[target]
     used = set()
     for row in rows:
-        m = re.match(r"^q([0-9]+)$", str(row.get("id") or ""))
-        if m:
-            used.add(int(m.group(1)))
+        num = question_number(target, row.get("id"))
+        if num is not None:
+            used.add(num)
     n = 1
     for row in rows:
         if not row.get("id"):
             while n in used:
                 n += 1
-            row["id"] = "q%d" % n
+            row["id"] = "%s%d" % (pre, n)
             used.add(n)
-    entry = dict([("id", "q%d" % ((max(used) if used else 0) + 1))] + list(entry.items()))
+    entry = dict([("id", "%s%d" % (pre, (max(used) if used else 0) + 1))] + list(entry.items()))
 
 # 追記前の件数。sh 側が追記後に N+1 になったことを確かめる（並行書き込みの検知）。
 sys.stderr.write("before=%d\n" % len(rows))
@@ -5054,7 +5094,7 @@ cmd_add() {
 
 	# --help なら使える項目を並べて終わる。チェックリストやレポートには触らない。
 	if wants_help "$@"; then
-		printf '%s\n%s' "$PY_LANG" "$ADD_PY" | python3 - "" "" "$_target" "$_kind" "" --help
+		printf '%s\n%s\n%s' "$PY_LANG" "$QUESTION_ID_PY" "$ADD_PY" | python3 - "" "" "$_target" "$_kind" "" --help
 		return $?
 	fi
 
@@ -5097,7 +5137,7 @@ cmd_add() {
 	# 抜き取り、残りをそのまま標準エラーに流す。
 	_new="$_html.new.$$"
 	_err="$_html.err.$$"
-	if printf '%s\n%s' "$PY_LANG" "$ADD_PY" | python3 - "$_cur" "$_new" "$_target" "$_kind" "$_included" "$@" 2>"$_err"; then
+	if printf '%s\n%s\n%s' "$PY_LANG" "$QUESTION_ID_PY" "$ADD_PY" | python3 - "$_cur" "$_new" "$_target" "$_kind" "$_included" "$@" 2>"$_err"; then
 		grep -v '^before=\|^array=' "$_err" >&2 || :
 		_before=$(sed -n 's/^before=//p' "$_err" | head -n 1)
 		_array=$(sed -n 's/^array=//p' "$_err" | head -n 1)
@@ -5275,13 +5315,14 @@ cmd_preferences() {
 # ---------------------------------------------------------------- answers
 
 # 確認事項への回答（design 5）。answers は dict: { "<id>": { "answer", "note", "answeredAt" } }。
-# argv: 1 = 動作（show / import / set）, 2 = 対象の JSON, 3 = 書き出すパッチ（show は空）,
-#       import: 4 = 取り込む JSON / set: 4 = id, 5 = 回答, 6 = note（空なら null）
-# import / set はパッチ（answers だけ）を 3 に書く。sh が data merge で深くマージする。
+# argv: 1 = 動作（show / import / set）, 2 = 対象（check-list / report）, 3 = 対象の JSON, 4 = 書き出すパッチ（show は空）,
+#       import: 5 = 取り込む JSON / set: 5 = id, 6 = 回答, 7 = note（空なら null）
+# import / set はパッチ（answers だけ）を 4 に書く。sh が data merge で深くマージする。
 ANSWERS_PY='
 import datetime, json, re, sys
 
-action, src, patch = sys.argv[1], sys.argv[2], sys.argv[3]
+action, target, src, patch = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+args = sys.argv[5:]
 data = json.load(open(src, encoding="utf-8"))
 questions = data.get("questions") or []
 answers = data.get("answers") or {}
@@ -5290,8 +5331,13 @@ if not isinstance(answers, dict):
 
 
 def qid(q, pos):
-    # id が無い古い要素は位置から補う（HTML と summary も同じ規則）
-    return q.get("id") or "q%d" % (pos + 1)
+    return question_id(target, q, pos)
+
+
+def other_side(i):
+    # もう一方のファイルの id なら、その名前（取り違えを黙って飛ばさないため）
+    other = target_of_question_id(i)
+    return QUESTION_TARGET_NAME[other] if other and other != target else None
 
 
 ids = [qid(q, n) for n, q in enumerate(questions)]
@@ -5314,9 +5360,9 @@ if action == "show":
 incoming = {}
 if action == "import":
     try:
-        doc = json.load(open(sys.argv[4], encoding="utf-8"))
+        doc = json.load(open(args[0], encoding="utf-8"))
     except Exception as e:
-        sys.stderr.write(t("JSON として読めません: %s（%s）\n", "Not valid JSON: %s (%s)\n") % (sys.argv[4], e))
+        sys.stderr.write(t("JSON として読めません: %s（%s）\n", "Not valid JSON: %s (%s)\n") % (args[0], e))
         sys.exit(1)
     raw = doc.get("answers") if isinstance(doc, dict) else None
     if not isinstance(raw, dict):
@@ -5325,7 +5371,12 @@ if action == "import":
         sys.exit(1)
     for i, a in raw.items():
         if i not in ids:
-            sys.stderr.write(t("[!] 知らない id を飛ばしました: %s\n", "[!] Skipped an unknown id: %s\n") % i)
+            side = other_side(i)
+            if side:
+                sys.stderr.write(t("[!] %s は%sの確認事項なので、ここには入れずに飛ばしました\n",
+                                   "[!] Skipped %s: it is a question in %s, not here\n") % (i, t(*side)))
+            else:
+                sys.stderr.write(t("[!] 知らない id を飛ばしました: %s\n", "[!] Skipped an unknown id: %s\n") % i)
             continue
         if isinstance(a, dict):
             ans = a.get("answer")
@@ -5337,7 +5388,7 @@ if action == "import":
         incoming[i] = {"answer": str(ans), "note": (str(note) if note not in (None, "") else None),
                        "answeredAt": a.get("answeredAt") if isinstance(a, dict) and a.get("answeredAt") else now}
 else:
-    i, ans, note = sys.argv[4], sys.argv[5], sys.argv[6] if len(sys.argv) > 6 else ""
+    i, ans, note = args[0], args[1], args[2] if len(args) > 2 else ""
     if i not in ids:
         sys.stderr.write(t("知らない id です: %s（使える id: %s）\n", "Unknown id: %s (valid ids: %s)\n") % (i, ", ".join(ids) or "-"))
         sys.exit(1)
@@ -5350,6 +5401,83 @@ unanswered = [i for i in ids if not merged.get(i)]
 print(t("取り込みました: 回答 %d 件（未回答 %d 件）", "Imported: %d answers (%d unanswered)") % (len(incoming), len(unanswered)))
 '
 
+# answers set / import の書き込み先を決める（QUESTION_ID_PY を前に付けて流す）。
+# argv: 1 = 動作（set / import）, 2 = --target の値（空なら無し）, 3 = set なら id / import なら JSON のパス
+# 決まった対象（check-list / report）を出す。決まらない・食い違うなら理由を標準エラーに出して 1。
+#   set:    id の接頭辞で決める（q<n> はチェックリスト、cq<n> はレポート）。--target と食い違えば止まる
+#   import: JSON の target > --target > JSON の id の接頭辞（全部が同じ側のときだけ）。target と --target が食い違えば止まる
+ANSWERS_TARGET_PY='
+import json, sys
+
+action, given, arg = sys.argv[1], sys.argv[2], sys.argv[3]
+
+
+def name(target):
+    return t(*QUESTION_TARGET_NAME[target])
+
+
+def fail(ja, en):
+    sys.stderr.write("\n[x] %s\n" % t(ja, en))
+    sys.exit(1)
+
+
+if action == "set":
+    found = target_of_question_id(arg)
+    if found is None:
+        fail("answers set: 確認事項の id ではありません: %s（チェックリストの確認事項は q<n>、レポートの確認事項は cq<n>）" % arg,
+             "answers set: not a question id: %s (questions in the check list are q<n>, in the report cq<n>)" % arg)
+    if given and given != found:
+        fail("answers set: %s は%s（%s）の確認事項で、--target %s と食い違うので書きませんでした。--target を外してください。"
+             % (arg, name(found), found, given),
+             "answers set: %s is a question in %s (%s), which contradicts --target %s. Nothing was written; drop --target."
+             % (arg, name(found), found, given))
+    print(found)
+    sys.exit(0)
+
+try:
+    doc = json.load(open(arg, encoding="utf-8"))
+except Exception:
+    # 読めない JSON は ANSWERS_PY が理由つきで止める。ここでは対象だけ返す。
+    print(given or "report")
+    sys.exit(0)
+from_json = doc.get("target") if isinstance(doc, dict) and isinstance(doc.get("target"), str) else ""
+if from_json == "checklist":
+    from_json = "check-list"
+if from_json and given and from_json != given:
+    fail("answers import: JSON の target（%s）と --target %s が食い違います。どちらに取り込むかを確かめてください。" % (from_json, given),
+         "answers import: the target in the JSON (%s) contradicts --target %s. Check which file the answers belong to." % (from_json, given))
+if from_json or given:
+    print(from_json or given)
+    sys.exit(0)
+raw = doc.get("answers") if isinstance(doc, dict) else None
+sides = set(target_of_question_id(i) for i in raw) if isinstance(raw, dict) else set()
+if len(sides) == 1 and None not in sides:
+    print(sides.pop())
+    sys.exit(0)
+fail("answers import: JSON に target が無く、id からも取り込み先を決められません。--target report か --target check-list を付けてください。",
+     "answers import: the JSON has no target, and the ids do not tell where it belongs. Pass --target report or --target check-list.")
+'
+
+# answers show の 1 ファイルぶん。$1 = 対象（check-list / report）
+answers_show() {
+	_as_html=$(resolve_data_target "$1")
+	[ -f "$_as_html" ] || die "ファイルがありません: $(file_uri "$_as_html")" "File not found: $(file_uri "$_as_html")"
+	_as_id=$(guess_block_id "$_as_html")
+	_as_cur="$_as_html.cur.$$"
+	extract_json "$_as_html" "$_as_id" >"$_as_cur" || {
+		rm -f "$_as_cur"
+		die "$(file_uri "$_as_html") から JSON を取り出せません。" \
+			"Could not extract the JSON from $(file_uri "$_as_html")."
+	}
+	say "$(pick "対象" "Target"): ${1}"
+	if printf '%s\n%s\n%s' "$PY_LANG" "$QUESTION_ID_PY" "$ANSWERS_PY" | python3 - show "$1" "$_as_cur" ""; then
+		rm -f "$_as_cur"
+	else
+		rm -f "$_as_cur"
+		exit 1
+	fi
+}
+
 cmd_answers() {
 	_an_action="${1:-show}"
 	case "$_an_action" in
@@ -5358,6 +5486,8 @@ cmd_answers() {
 		return 0
 		;;
 	show | import | set) [ $# -gt 0 ] && shift ;;
+	# show は省略できる（answers --target report）。オプションは下の while が読む。
+	-*) _an_action="show" ;;
 	*) die "answers のサブコマンドは show / import / set です（指定されたのは '${_an_action}'）" \
 		"The answers subcommands are show / import / set (got '${_an_action}')" ;;
 	esac
@@ -5392,55 +5522,53 @@ cmd_answers() {
 			;;
 		esac
 	done
+	[ "$_an_target" = "checklist" ] && _an_target="check-list"
+	case "$_an_target" in
+	"" | report | check-list) ;;
+	*) die "answers: 対象は report か check-list です: ${_an_target}" "answers: the target is report or check-list: ${_an_target}" ;;
+	esac
+
+	# show: --target が無ければ両方（チェックリスト → レポート）。どちらにも確認事項がある。
+	if [ "$_an_action" = "show" ]; then
+		if [ -n "$_an_target" ]; then
+			answers_show "$_an_target"
+		else
+			answers_show check-list
+			say ""
+			answers_show report
+		fi
+		return 0
+	fi
 
 	if [ "$_an_action" = "import" ]; then
 		[ -n "$_an_1" ] || die "answers import: ブラウザで書き出した JSON のパスを指定してください。" \
 			"answers import: give the path of the JSON exported from the browser."
 		[ -f "$_an_1" ] || die "ファイルがありません: $(file_uri "$_an_1")" "File not found: $(file_uri "$_an_1")"
-		# 対象は JSON の target（report / check-list）> --target > report
-		if [ -z "$_an_target" ]; then
-			_an_target=$(python3 -c '
-import json, sys
-try:
-    v = json.load(open(sys.argv[1], encoding="utf-8")).get("target")
-except Exception:
-    v = None
-print(v if isinstance(v, str) else "")
-' "$_an_1" 2>/dev/null || :)
-		fi
-	elif [ "$_an_action" = "set" ]; then
+	else
 		[ -n "$_an_1" ] && [ -n "$_an_2" ] || die "answers set: <id> <回答> を指定してください（例: answers set q1 \"はい\" --note \"理由\"）" \
 			"answers set: give <id> <answer> (for example: answers set q1 \"yes\" --note \"reason\")"
 	fi
-	[ -n "$_an_target" ] || _an_target="report"
+	# 書き込み先は id（set）か JSON（import）から決める。既定の対象は置かない（黙ってもう一方に入れないため）。
+	_an_target=$(printf '%s\n%s\n%s' "$PY_LANG" "$QUESTION_ID_PY" "$ANSWERS_TARGET_PY" | python3 - "$_an_action" "$_an_target" "$_an_1") || exit 1
 	case "$_an_target" in
-	report | check-list | checklist) ;;
+	report | check-list) ;;
 	*) die "answers: 対象は report か check-list です: ${_an_target}" "answers: the target is report or check-list: ${_an_target}" ;;
 	esac
 	_an_html=$(resolve_data_target "$_an_target")
 	[ -f "$_an_html" ] || die "ファイルがありません: $(file_uri "$_an_html")" "File not found: $(file_uri "$_an_html")"
 	_an_id=$(guess_block_id "$_an_html")
 
-	# import / set は読む前にロックを取る（cmd_data は保持中なら取らない）。show は読むだけ。
-	[ "$_an_action" = "show" ] || lock_acquire "$_an_html"
+	# 読む前にロックを取る（cmd_data は保持中なら取らない）。
+	lock_acquire "$_an_html"
 	_an_cur="$_an_html.cur.$$"
 	extract_json "$_an_html" "$_an_id" >"$_an_cur" || {
 		rm -f "$_an_cur"
 		die "$(file_uri "$_an_html") から JSON を取り出せません。" \
 			"Could not extract the JSON from $(file_uri "$_an_html")."
 	}
-	if [ "$_an_action" = "show" ]; then
-		say "$(pick "対象" "Target"): ${_an_target}"
-		if printf '%s\n%s' "$PY_LANG" "$ANSWERS_PY" | python3 - show "$_an_cur" ""; then
-			rm -f "$_an_cur"
-		else
-			rm -f "$_an_cur"
-			exit 1
-		fi
-		return 0
-	fi
+	say "$(pick "対象" "Target"): ${_an_target}"
 	_an_patch="$_an_html.answers.$$"
-	if printf '%s\n%s' "$PY_LANG" "$ANSWERS_PY" | python3 - "$_an_action" "$_an_cur" "$_an_patch" "$_an_1" "$_an_2" "$_an_note"; then
+	if printf '%s\n%s\n%s' "$PY_LANG" "$QUESTION_ID_PY" "$ANSWERS_PY" | python3 - "$_an_action" "$_an_target" "$_an_cur" "$_an_patch" "$_an_1" "$_an_2" "$_an_note"; then
 		rm -f "$_an_cur"
 		if cmd_data merge "$_an_html" "$_an_patch" --id "$_an_id" >/dev/null; then
 			rm -f "$_an_patch" "$_an_html.bak"
@@ -5624,20 +5752,20 @@ done = [i for i in items if i.get("done")]
 optional_items = [i for s in steps if s.get("optional") is True for i in s.get("items", [])]
 
 
-def answer_counts(doc):
-    # 確認事項（questions）と回答（answers: { "<id>": {...} }）。id の無い古い要素は位置から q<n> を補う。
+def answer_counts(doc, target):
+    # 確認事項（questions）と回答（answers: { "<id>": {...} }）。id の無い古い要素は位置から補う（QUESTION_ID_PY）。
     qs = doc.get("questions") or []
     ans = doc.get("answers") or {}
     if not isinstance(ans, dict):
         ans = {}
-    ids = [q.get("id") or "q%d" % (n + 1) for n, q in enumerate(qs)]
+    ids = [question_id(target, q, n) for n, q in enumerate(qs)]
     answered = [i for i in ids if ans.get(i)]
     unanswered = [(i, q) for i, q in zip(ids, qs) if not ans.get(i)]
     return len(answered), unanswered
 
 
-report_answered, report_unanswered = answer_counts(report)
-cl_answered, cl_unanswered = answer_counts(cl)
+report_answered, report_unanswered = answer_counts(report, "report")
+cl_answered, cl_unanswered = answer_counts(cl, "check-list")
 
 if len(done) < len(items):
     print(t("❌ katachi のセットアップができませんでした", "❌ Could not set up katachi"))
@@ -5767,7 +5895,7 @@ cmd_summary() {
 	[ -d "$_def" ] && _def_exists="yes"
 
 	# `set -e` の下では、条件に置かないと python の失敗で後始末に届かない。
-	if printf '%s\n%s\n%s' "$PY_LANG" "$SECTION_OF_PY" "$SUMMARY_PY" | python3 - "$_a" "$_b" "$MODULE_DIR" "$MODULE_GRADLE_PATH" "$_cli" "$_def" "$_def_exists"; then
+	if printf '%s\n%s\n%s\n%s' "$PY_LANG" "$SECTION_OF_PY" "$QUESTION_ID_PY" "$SUMMARY_PY" | python3 - "$_a" "$_b" "$MODULE_DIR" "$MODULE_GRADLE_PATH" "$_cli" "$_def" "$_def_exists"; then
 		rm -f "$_a" "$_b"
 	else
 		rm -f "$_a" "$_b"

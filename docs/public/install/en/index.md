@@ -307,7 +307,7 @@ Take the following from them.
 | The name of the architecture and why it was chosen | `architecture.name` / `rationale` / `characteristics` |
 | Checks of their own (a Kotlin compiler plugin, custom detekt rules, ktlint) | `tools` |
 
-Write inconsistencies with `sh $CLI add codebase-question ...` (`add question` goes to the checklist, which is for something else).
+Write inconsistencies with `sh $CLI add codebase-question ...` (`add question` goes to the checklist, which is for something else). The ids are `cq1`, `cq2`, … in the report and `q1`, `q2`, … in the checklist, so they never collide.
 
 **Where the documentation and the code disagree, write it into `questions`.** Do not quietly side with the code. Whether the documentation is stale or the code has drifted is something only the user can say - and that disagreement is exactly what belongs in front of them before step 3.
 
@@ -370,9 +370,9 @@ Ask like this. Do not re-list the questions in chat.
 
 1. Once `questions` is written, show the report's URL (the path to `project-code-base-report.html`, starting with `file://`) and have the user answer in "7. Questions for you" in the browser and save the JSON with "Export answers"
 2. Import the JSON you receive with `sh $CLI answers import <path to json>`. Ids that could not be imported are printed as warnings
-3. If an answer arrives in chat, import it one at a time with `sh $CLI answers set <id> "<answer>"` (`--note "<supplement>"` can be added)
+3. If an answer arrives in chat, import it one at a time with `sh $CLI answers set <id> "<answer>"` (`--note "<supplement>"` can be added). The id decides where it goes (`cq…` is the report, `q…` the checklist)
 
-`sh $CLI answers` prints how many are answered and lists the unanswered ones.
+`sh $CLI answers` prints, for the checklist and the report each, how many are answered and lists the unanswered ones.
 
 **Use the app package name identified in this step in step 2.**
 
@@ -633,7 +633,7 @@ A constraint on a file's imports goes on `files`, not `classes()`. Many of a pro
 }
 ```
 
-Constraint names follow `constraintNames` from 1-3. With `numbered`, prefix the name with the id of the question the constraint came from (`q3` and so on), as in `"q3: Does not import the android package".konsist { }`. With `plain`, it is as in the example above.
+Constraint names follow `constraintNames` from 1-3. With `numbered`, prefix the name with the id of the question the constraint came from (`q3`, `cq2` and so on), as in `"q3: Does not import the android package".konsist { }`. With `plain`, it is as in the example above.
 
 #### Dividing the work with the static analysis already there
 
@@ -803,7 +803,7 @@ If you judge that no Role suits a template, record nothing. What you record show
 
 If incomplete items remain, the failure format is printed; if everything is done, the success format is printed. The number of violations, the number of questions and how many of them are answered, and the number of changed files are pulled from the JSON.
 
-The only thing you write out in prose after `summary`'s output is **the unanswered questions** (`summary` lists them as `- <id> <question> → recommended: <recommendation>`). Leave the answered ones as a count. **This part is meant for a human to read and decide on, so as an exception you write the text yourself here.** Everywhere else, use `summary`'s output as is. For the answers, show the report's URL and have them written in the browser, then import them with `sh $CLI answers import <json>` (an answer that arrives in chat goes through `answers set`, as in 1-2).
+The only thing you write out in prose after `summary`'s output is **the unanswered questions** (`summary` lists them as `- <id> <question> → recommended: <recommendation>`). Leave the answered ones as a count. **This part is meant for a human to read and decide on, so as an exception you write the text yourself here.** Everywhere else, use `summary`'s output as is. For the answers, show the URL of the report for ids starting with `cq` and of the checklist for ids starting with `q`, have them written in the browser, then import them with `sh $CLI answers import <json>` (an answer that arrives in chat goes through `answers set`, which writes where the id belongs, as in 1-2).
 
 > **The session may end here.** The next session fetches this document again, runs `sh <KATACHI_CLI> summary`, and reads the next section named in the "Resume" field of the output with `guide`. The previous session's results are in the checklist and the report. Do not rely on the conversation's memory.
 
@@ -813,7 +813,7 @@ This section is for when the user has looked at the `summary` output and the def
 
 There is one thing to do. Check the user's comments against the questions (`sh $CLI answers`) and the violations left in place (the checklist's `violations`), fix the definition, and confirm the counts with `sh $CLI test`. Look at the summary's diff to see that the fixed definition has not added any `[UnexpectedFile]`.
 
-If the user's reply answers a question, record it with `sh $CLI answers set <id> "<answer>"` before fixing. If a comment raises a new question, add it with `add question`.
+If the user's reply answers a question, record it with `sh $CLI answers set <id> "<answer>"` before fixing (no `--target` needed; the id decides where it goes). If a comment raises a new question, add it with `add question`.
 
 > **The session may end here.** The next session fetches this document again, runs `sh <KATACHI_CLI> summary`, and reads the next section named in the "Resume" field of the output with `guide`. The previous session's results are in the checklist and the report. Do not rely on the conversation's memory.
 

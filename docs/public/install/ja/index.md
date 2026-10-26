@@ -307,7 +307,7 @@ sh $CLI warn 4 --clear         # 警告を消す
 | アーキテクチャの名前と、その選択の理由 | `architecture.name` / `rationale` / `characteristics` |
 | 独自の検査（Kotlin compiler plugin、detekt のカスタムルール、ktlint など） | `tools` |
 
-食い違いは `sh $CLI add codebase-question ...` で書きます（`add question` はチェックリスト側で、用途が違います）。
+食い違いは `sh $CLI add codebase-question ...` で書きます（`add question` はチェックリスト側で、用途が違います）。id はレポート側が `cq1`・`cq2`…、チェックリスト側が `q1`・`q2`… で、重なりません。
 
 **ドキュメントとコードが食い違ったら、`questions` に書いてください。** 黙ってコード側に合わせないこと。ドキュメントが古いのか、コードが逸脱しているのかは、利用者にしか判断できません。この食い違いこそが、ステップ3の前にユーザへ提示すべきものです。
 
@@ -370,9 +370,9 @@ sh $CLI data merge report <KATACHI_WORKDIR>/tmp/roles.json
 
 1. `questions` を書き終えたら、レポートの URL（`file://` で始まる `project-code-base-report.html` のパス）を示し、ブラウザの「7. ユーザに確認したいこと」で回答して「回答を書き出す」で JSON を保存してもらう
 2. 受け取った JSON を `sh $CLI answers import <json のパス>` で取り込む。取り込めなかった id は警告に出る
-3. チャットで答えが来たら、1 件ずつ `sh $CLI answers set <id> "<回答>"` で取り込む（`--note "<補足>"` を付けられる）
+3. チャットで答えが来たら、1 件ずつ `sh $CLI answers set <id> "<回答>"` で取り込む（`--note "<補足>"` を付けられる）。書き込み先は id で決まる（`cq` で始まればレポート、`q` で始まればチェックリスト）
 
-`sh $CLI answers` が、回答済みの件数と未回答の一覧を出します。
+`sh $CLI answers` が、チェックリストとレポートのそれぞれについて、回答済みの件数と未回答の一覧を出します。
 
 **このステップで特定したアプリのパッケージ名をステップ 2 で使う。**
 
@@ -633,7 +633,7 @@ import me.tbsten.katachi.konsist.declarations.ktFileContent   // ktFileContent {
 }
 ```
 
-制約の名前は、1-3 の `constraintNames` に従います。`numbered` なら、その制約の元になった確認事項の id（`q3` など）を名前の先頭に付けます（`"q3: android パッケージを import しないこと".konsist { }`）。`plain` なら上の例のままです。
+制約の名前は、1-3 の `constraintNames` に従います。`numbered` なら、その制約の元になった確認事項の id（`q3` や `cq2` など）を名前の先頭に付けます（`"q3: android パッケージを import しないこと".konsist { }`）。`plain` なら上の例のままです。
 
 #### 既存の静的解析との分担
 
@@ -803,7 +803,7 @@ sh $CLI add template --role ViewModel --files '${name}ViewModel.kt' --params fea
 
 未完了の項目が残っていれば失敗の形式が、すべて終わっていれば成功の形式が出ます。違反の件数、確認したいことの件数と回答済みの件数、変更したファイル数は JSON から拾われます。
 
-`summary` の出力に続けて文章にするのは、**未回答の確認事項だけ**です（`summary` が `- <id> <問い> → 推奨: <推奨>` の形で列挙します）。回答済みのものは件数のままにします。**ここは人が読んで判断する箇所なので、例外的にあなたが文章にします。** それ以外は `summary` の出力をそのまま使います。回答はレポートの URL を示してブラウザで書いてもらい、`sh $CLI answers import <json>` で取り込みます（チャットで来た答えは `answers set`。1-2 と同じ）。
+`summary` の出力に続けて文章にするのは、**未回答の確認事項だけ**です（`summary` が `- <id> <問い> → 推奨: <推奨>` の形で列挙します）。回答済みのものは件数のままにします。**ここは人が読んで判断する箇所なので、例外的にあなたが文章にします。** それ以外は `summary` の出力をそのまま使います。回答は、id が `cq` で始まるものはレポート、`q` で始まるものはチェックリストの URL を示してブラウザで書いてもらい、`sh $CLI answers import <json>` で取り込みます（チャットで来た答えは `answers set`。書き込み先は id で決まります。1-2 と同じ）。
 
 > **ここでセッションを終えてよい。** 次のセッションは、この手順書を再取得したあと `sh <KATACHI_CLI> summary` を実行し、出力の「再開」の欄にある次の節を `guide` で読む。前のセッションの結果はチェックリストとレポートにある。会話の記憶に頼らない。
 
@@ -813,7 +813,7 @@ sh $CLI add template --role ViewModel --files '${name}ViewModel.kt' --params fea
 
 やることは 1 つです。ユーザの指摘を、確認事項（`sh $CLI answers`）と残した違反（チェックリストの `violations`）に照らして定義を直し、`sh $CLI test` で件数を確かめます。直した定義で `[UnexpectedFile]` が増えていないか、要約の差分で見てください。
 
-ユーザの回答が確認事項の答えになっているなら、`sh $CLI answers set <id> "<回答>"` で記録してから直します。指摘が新しい確認事項を生むなら `add question` に足します。
+ユーザの回答が確認事項の答えになっているなら、`sh $CLI answers set <id> "<回答>"` で記録してから直します（`--target` は要りません。書き込み先は id で決まります）。指摘が新しい確認事項を生むなら `add question` に足します。
 
 > **ここでセッションを終えてよい。** 次のセッションは、この手順書を再取得したあと `sh <KATACHI_CLI> summary` を実行し、出力の「再開」の欄にある次の節を `guide` で読む。前のセッションの結果はチェックリストとレポートにある。会話の記憶に頼らない。
 

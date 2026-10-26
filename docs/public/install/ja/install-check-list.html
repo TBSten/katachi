@@ -1464,6 +1464,7 @@
   // { id, recommendation, radios, free, card }
   var answerCards = [];
 
+  // チェックリストの確認事項の id は q<n>（レポートは cq<n>。katachi-install.sh の QUESTION_ID_PY と同じ）
   function questionId(item, index) {
     return blank(item.id) ? 'q' + (index + 1) : String(item.id);
   }

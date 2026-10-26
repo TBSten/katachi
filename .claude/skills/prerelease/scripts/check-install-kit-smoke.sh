@@ -267,14 +267,14 @@ case_preferences() {
 	[ ! -d "$(lockdir "${d}")" ] && ok "preferences set のあとにロックが残らない" || ng "preferences set のあとにロックが残らない" "lock remains"
 }
 
-# add question は id を q1 から順に採番する
+# add codebase-question は id を cq1 から順に採番する（チェックリストの q<n> と重ねない）
 case_add_question_ids() {
 	d=$(inited qid)
 	add_cq "${d}" C1 r1
 	add_cq "${d}" C2 r2
 	add_cq "${d}" C3 r3
 	ids=$(jget "${d}" report '" ".join(q.get("id") or "-" for q in d["questions"])')
-	[ "${ids}" = "q1 q2 q3" ] && ok "add question は id を q1 から順に採番する" || ng "add question は id を q1 から順に採番する" "ids=${ids}"
+	[ "${ids}" = "cq1 cq2 cq3" ] && ok "add codebase-question は id を cq1 から順に採番する" || ng "add codebase-question は id を cq1 から順に採番する" "ids=${ids}"
 }
 
 # answers import は無い id を飛ばして件数を出す
@@ -284,12 +284,12 @@ case_answers_import() {
 	add_cq "${d}" C1 r1
 	add_cq "${d}" C2 r2
 	add_cq "${d}" C3 r3
-	printf '{"target":"report","answers":{"q2":{"answer":"A2","note":null},"q9":{"answer":"nope"}}}\n' >"${WORK}/ans.json"
+	printf '{"target":"report","answers":{"cq2":{"answer":"A2","note":null},"cq9":{"answer":"nope"}}}\n' >"${WORK}/ans.json"
 	(cd "${d}" && ${KSH} "${c}" answers import "${WORK}/ans.json") >"${WORK}/ans.import.log" 2>&1
 	st=$?
-	[ "${st}" -eq 0 ] && grep -q '取り込みました: 回答 1 件（未回答 2 件）' "${WORK}/ans.import.log" && grep -q 'q9' "${WORK}/ans.import.log" &&
+	[ "${st}" -eq 0 ] && grep -q '取り込みました: 回答 1 件（未回答 2 件）' "${WORK}/ans.import.log" && grep -q 'cq9' "${WORK}/ans.import.log" &&
 		ok "answers import は無い id を飛ばして件数を出す" || ng "answers import は無い id を飛ばして件数を出す" "st=${st} $(cat "${WORK}/ans.import.log")"
-	a=$(jget "${d}" report '(d["answers"]["q2"]["answer"], bool(d["answers"]["q2"].get("answeredAt")), "q9" in d["answers"])')
+	a=$(jget "${d}" report '(d["answers"]["cq2"]["answer"], bool(d["answers"]["cq2"].get("answeredAt")), "cq9" in d["answers"])')
 	[ "${a}" = "('A2', True, False)" ] && ok "answers import は answers に answeredAt つきで入れ、無い id は入れない" || ng "answers import は answers に answeredAt つきで入れ、無い id は入れない" "a=${a}"
 	[ ! -d "$(lockdir "${d}")" ] && ok "answers import のあとにロックが残らない" || ng "answers import のあとにロックが残らない" "lock remains"
 }
@@ -310,7 +310,7 @@ case_summary_answers() {
 	(cd "${d}" && ${KSH} "${c}" summary) >"${WORK}/ans.summary2.log" 2>&1
 	st=$?
 	if [ "${st}" -eq 0 ] && grep -q '^✅' "${WORK}/ans.summary2.log" && grep -q 'レポート.*回答済み 1 件.*未回答 2 件' "${WORK}/ans.summary2.log" &&
-		grep -q -- '- q1 C1 → 推奨: r1' "${WORK}/ans.summary2.log" && grep -q -- '- q3 C3 → 推奨: r3' "${WORK}/ans.summary2.log" && ! grep -q 'C2' "${WORK}/ans.summary2.log" &&
+		grep -q -- '- cq1 C1 → 推奨: r1' "${WORK}/ans.summary2.log" && grep -q -- '- cq3 C3 → 推奨: r3' "${WORK}/ans.summary2.log" && ! grep -q 'C2' "${WORK}/ans.summary2.log" &&
 		! grep -q '^再開:' "${WORK}/ans.summary2.log"; then
 		ok "summary は回答済みを件数だけ、未回答だけ列挙する"
 	else
@@ -703,6 +703,95 @@ case_data_get_key() {
 	[ "${st}" -eq 1 ] && printf '%s\n' "${out}" | grep -q 'nope' && ok "data get の無いキーは exit 1" || ng "data get の無いキーは exit 1" "st=${st} ${out}"
 }
 
+# test と compare-violations は katachi の違反の見出しだけを数え、Gradle の [Incubating] の行を数えない
+case_check_result_headings() {
+	d=$(inited chk)
+	c=$(cli "${d}")
+	w=$(wd "${d}")
+	fake_gradlew "${d}"
+	mkdir -p "${d}/architecture-test/src/test/kotlin/fx"
+	printf 'package fx\n' >"${d}/architecture-test/src/test/kotlin/fx/ProjectArchitecture.kt"
+	printf '0\n' >"${d}/fake-exit"
+	printf '> Task :architecture-test:test\nBUILD SUCCESSFUL in 3s\n' >"${d}/fake-out.txt"
+	(cd "${d}" && ${KSH} "${c}" test --save before-refactor) >/dev/null 2>&1
+	# ビルドファイルを変えた・configuration cache が切れたときに Gradle 9 が出す行
+	printf '> Task :architecture-test:test\n\n[Incubating] Problems report is available at: file:///x/build/reports/problems/problems-report.html\n\nBUILD SUCCESSFUL in 3s\n' >"${d}/fake-out.txt"
+	out=$(cd "${d}" && ${KSH} "${c}" test --save after-refactor 2>&1)
+	st=$?
+	[ "${st}" -eq 0 ] && printf '%s\n' "${out}" | grep -q '^前回との差分（previous.log 比）: 無し' && ! printf '%s\n' "${out}" | grep -q 'Incubating' &&
+		ok "test は Gradle の [Incubating] の行を前回との差分に数えない" || ng "test は Gradle の [Incubating] の行を前回との差分に数えない" "st=${st} ${out}"
+	out=$(cd "${d}" && ${KSH} "${c}" compare-violations 2>&1)
+	st=$?
+	[ "${st}" -eq 0 ] && printf '%s\n' "${out}" | grep -q '^違反の見出し: 前 0 件 / 後 0 件' && printf '%s\n' "${out}" | grep -q '^検査結果は変わっていません。' &&
+		ok "compare-violations は Gradle の [Incubating] の行を違反に数えない" || ng "compare-violations は Gradle の [Incubating] の行を違反に数えない" "st=${st} ${out}"
+	# katachi の違反の見出しは全種類を拾う。種類は katachi/src/main の check パッケージの label から集める
+	# （katachi が種類を足したのにキットが拾わなければ、ここで件数が合わなくなる）。KDoc の例の行（ * で始まる）は除く。
+	labels=$(grep -rhoE '^[[:space:]]+override val label: String( get\(\))? = "[A-Za-z]+"' "${REPO}/katachi/src/main/kotlin/me/tbsten/katachi/check" | sed -E 's/.*"([A-Za-z]+)"$/\1/' | sort -u)
+	n=0
+	{
+		printf 'ProjectArchitectureTest > the project layout matches the definition() FAILED\n'
+		printf '    me.tbsten.katachi.check.KatachiArchitectureAssertionError: Katachi check failed: 99 violations\n'
+		for l in ${labels}; do
+			printf '\n    [%s] file:///x/%s.kt\n      text\n' "${l}" "${l}"
+		done
+		printf '\n[Incubating] Problems report is available at: file:///x/build/reports/problems/problems-report.html\n[Deprecated] Something else: file:///x/y\nBUILD FAILED in 19s\n'
+	} >"${w}/tmp/test-after-refactor.log"
+	for l in ${labels}; do [ "${l}" = MissingDescription ] || n=$((n + 1)); done
+	out=$(cd "${d}" && ${KSH} "${c}" compare-violations 2>&1)
+	st=$?
+	if [ "${st}" -eq 1 ] && [ "${n}" -ge 10 ] && printf '%s\n' "${out}" | grep -q "^違反の見出し: 前 0 件 / 後 ${n} 件" &&
+		printf '%s\n' "${out}" | grep -q '^\[MissingDescription\]（比べない）: 前 0 件 / 後 1 件' &&
+		! printf '%s\n' "${out}" | grep -q 'Incubating\|Deprecated'; then
+		ok "compare-violations は katachi の違反の見出しを全種類（${n} 種）拾い、ほかの [Xxx] の行は拾わない"
+	else
+		ng "compare-violations は katachi の違反の見出しを全種類拾い、ほかの [Xxx] の行は拾わない" "st=${st} n=${n} labels=$(echo ${labels}) ${out}"
+	fi
+}
+
+# チェックリストとレポートの確認事項は id が重ならず、answers は id の側に書く（黙ってもう一方に入れない）
+case_answers_namespaces() {
+	d=$(inited ansns)
+	c=$(cli "${d}")
+	add_q "${d}" Q1 rq1
+	add_cq "${d}" C1 rc1
+	ids="$(jget "${d}" check-list '" ".join(q.get("id") or "-" for q in d["questions"])') / $(jget "${d}" report '" ".join(q.get("id") or "-" for q in d["questions"])')"
+	[ "${ids}" = "q1 / cq1" ] && ok "チェックリストの確認事項は q<n>、レポートの確認事項は cq<n> で採番する" ||
+		ng "チェックリストの確認事項は q<n>、レポートの確認事項は cq<n> で採番する" "ids=${ids}"
+	out=$(cd "${d}" && ${KSH} "${c}" answers set q1 "A-check" 2>&1)
+	st=$?
+	a="$(jget "${d}" check-list '(d.get("answers") or {}).get("q1", {}).get("answer")') / $(jget "${d}" report 'sorted((d.get("answers") or {}).keys())')"
+	[ "${st}" -eq 0 ] && [ "${a}" = "A-check / []" ] && ok "answers set q1 は --target なしでもチェックリストに入れ、レポートに触らない" ||
+		ng "answers set q1 は --target なしでもチェックリストに入れ、レポートに触らない" "st=${st} a=${a} ${out}"
+	out=$(cd "${d}" && ${KSH} "${c}" answers set cq1 "A-report" 2>&1)
+	st=$?
+	a="$(jget "${d}" check-list 'sorted((d.get("answers") or {}).keys())') / $(jget "${d}" report '(d.get("answers") or {}).get("cq1", {}).get("answer")')"
+	[ "${st}" -eq 0 ] && [ "${a}" = "['q1'] / A-report" ] && ok "answers set cq1 はレポートに入れ、チェックリストに触らない" ||
+		ng "answers set cq1 はレポートに入れ、チェックリストに触らない" "st=${st} a=${a} ${out}"
+	out=$(cd "${d}" && ${KSH} "${c}" answers set q1 "wrong" --target report 2>&1)
+	st=$?
+	a="$(jget "${d}" check-list '(d.get("answers") or {}).get("q1", {}).get("answer")') / $(jget "${d}" report 'sorted((d.get("answers") or {}).keys())')"
+	[ "${st}" -ne 0 ] && [ "${a}" = "A-check / ['cq1']" ] && printf '%s\n' "${out}" | grep -q 'check-list' &&
+		ok "answers set は id と --target が食い違えば止まり、どちらにも書かない" || ng "answers set は id と --target が食い違えば止まり、どちらにも書かない" "st=${st} a=${a} ${out}"
+	printf '{"answers":{"q1":{"answer":"A-import","note":null}}}\n' >"${WORK}/ansns.json"
+	out=$(cd "${d}" && ${KSH} "${c}" answers import "${WORK}/ansns.json" 2>&1)
+	st=$?
+	a="$(jget "${d}" check-list '(d.get("answers") or {}).get("q1", {}).get("answer")') / $(jget "${d}" report 'sorted((d.get("answers") or {}).keys())')"
+	[ "${st}" -eq 0 ] && [ "${a}" = "A-import / ['cq1']" ] && ok "answers import は target の無い JSON を id の側に入れる" ||
+		ng "answers import は target の無い JSON を id の側に入れる" "st=${st} a=${a} ${out}"
+	out=$(cd "${d}" && ${KSH} "${c}" answers 2>&1)
+	st=$?
+	[ "${st}" -eq 0 ] && [ "$(printf '%s\n' "${out}" | grep -c '^対象: ')" -eq 2 ] && ok "answers（show）は --target なしならチェックリストとレポートの両方を出す" ||
+		ng "answers（show）は --target なしならチェックリストとレポートの両方を出す" "st=${st} ${out}"
+	out=$(cd "${d}" && ${KSH} "${c}" answers --target report 2>&1)
+	st=$?
+	[ "${st}" -eq 0 ] && [ "$(printf '%s\n' "${out}" | grep -c '^対象: ')" -eq 1 ] && printf '%s\n' "${out}" | grep -q '^対象: report' &&
+		ok "answers --target report は show を省略してレポートだけを出す" || ng "answers --target report は show を省略してレポートだけを出す" "st=${st} ${out}"
+	out=$(cd "${d}" && ${KSH} "${c}" summary 2>&1)
+	printf '%s\n' "${out}" | grep -q 'レポート 回答済み 1 / 未回答 0、チェックリスト 回答済み 1 / 未回答 0' &&
+		ok "summary はチェックリストの回答をチェックリストの回答済みに数える" || ng "summary はチェックリストの回答をチェックリストの回答済みに数える" "${out}"
+	[ ! -d "$(lockdir "${d}")" ] && ok "answers のあとにロックが残らない" || ng "answers のあとにロックが残らない" "lock remains"
+}
+
 # ---- 実行 ----------------------------------------------------------------------------------
 
 mkdir -p "${WORK}"
@@ -738,6 +827,8 @@ run_case scaffold_deps_conflict
 run_case scaffold_oneline_plugin_management
 run_case test
 run_case data_get_key
+run_case check_result_headings
+run_case answers_namespaces
 
 if [ -n "${ONLY}" ]; then
 	for one in $(echo "${ONLY}" | tr ',' ' '); do

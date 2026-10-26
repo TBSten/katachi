@@ -1464,6 +1464,7 @@
   // { id, recommendation, radios, free, card }
   var answerCards = [];
 
+  // Questions in the check list are q<n> (cq<n> in the report; the same as QUESTION_ID_PY in katachi-install.sh)
   function questionId(item, index) {
     return blank(item.id) ? 'q' + (index + 1) : String(item.id);
   }
