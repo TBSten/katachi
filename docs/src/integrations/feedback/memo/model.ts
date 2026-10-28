@@ -6,6 +6,8 @@ export type Note = {
 	values: Record<string, string>
 	/** 大きい textarea に書いた本文。 */
 	text: string
+	/** 中身（values か text）が最後に変わった時刻（ISO 8601）。画面には出さず、ファイルにだけ書く。 */
+	updatedAt?: string
 }
 
 /** 選んだ箇所の場所の情報。引き直し（shared/relocate.ts）と、AI が読む Markdown の両方に使う。 */
@@ -23,7 +25,7 @@ export type Locator = {
 	excerpt: string
 }
 
-export type Spot = Note & { id: string; locator: Locator }
+export type Spot = Note & { id: string; locator: Locator; /** 箇所を足した時刻（ISO 8601）。 */ createdAt?: string }
 
 export type MemoPage = {
 	/** `location.pathname`。 */
@@ -52,6 +54,12 @@ export const MEMO_LIMITS = {
 } as const
 
 export const emptyNote = (): Note => ({ values: {}, text: '' })
+
+/** values と text が同じなら true（時刻は比べない）。最終更新時刻を、中身が変わったときだけ進めるため。 */
+export const sameNoteContent = (a: Note, b: Note) =>
+	a.text === b.text &&
+	Object.keys(a.values).length === Object.keys(b.values).length &&
+	Object.entries(a.values).every(([k, v]) => b.values[k] === v)
 
 export const isNoteEmpty = (n: Note) => n.text.trim() === '' && Object.values(n.values).every((v) => v.trim() === '')
 

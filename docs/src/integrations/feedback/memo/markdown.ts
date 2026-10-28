@@ -21,6 +21,14 @@ function noteLines(note: Note): string[] {
 	return out
 }
 
+/** 時刻の行。画面には出さないが、AI がメモの新しさを判断できるようにファイルには書く。 */
+function timeLines(n: { createdAt?: string; updatedAt?: string }): string[] {
+	const rows: string[] = []
+	if (n.createdAt) rows.push(`- 作成: ${n.createdAt}`)
+	if (n.updatedAt) rows.push(`- 最終更新: ${n.updatedAt}`)
+	return rows
+}
+
 function locatorLines(l: Locator): string[] {
 	const rows: Array<[string, string | undefined]> = [
 		['種類', l.kind === 'text' ? 'テキストの選択' : '要素'],
@@ -51,12 +59,12 @@ export function toMarkdown(doc: MemoDoc, now = new Date()): string {
 		'',
 		'## ページのメモ',
 		'',
-		...(isNoteEmpty(doc.note) ? ['（なし）'] : noteLines(doc.note)),
+		...(isNoteEmpty(doc.note) ? ['（なし）'] : [...timeLines(doc.note), ...(doc.note.updatedAt ? [''] : []), ...noteLines(doc.note)]),
 	]
 	if (doc.spots.length) {
 		out.push('', '## 箇所のメモ')
 		doc.spots.forEach((s, i) => {
-			out.push('', `### ${i + 1}. ${spotTitle(s.locator)}`, '', ...locatorLines(s.locator))
+			out.push('', `### ${i + 1}. ${spotTitle(s.locator)}`, '', ...locatorLines(s.locator), ...timeLines(s))
 			const body = noteLines(s)
 			if (body.length) out.push('', ...body)
 		})
@@ -81,7 +89,8 @@ function coerceNote(v: unknown): Note {
 			if (typeof val === 'string' && k.length <= MEMO_LIMITS.fieldNameChars && val !== '') values[k] = val.slice(0, MEMO_LIMITS.fieldValueChars)
 		}
 	}
-	return { values, text: str(v.text) }
+	const updatedAt = optStr(v.updatedAt)?.slice(0, 40)
+	return { values, text: str(v.text), ...(updatedAt ? { updatedAt } : {}) }
 }
 
 function coerceSpot(v: unknown): Spot | null {
@@ -96,7 +105,8 @@ function coerceSpot(v: unknown): Spot | null {
 		...(optStr(l.heading) ? { heading: optStr(l.heading) } : {}),
 		...(optStr(l.fragment) ? { fragment: optStr(l.fragment) } : {}),
 	}
-	return { id: v.id.slice(0, 40), locator, ...coerceNote(v) }
+	const createdAt = optStr(v.createdAt)?.slice(0, 40)
+	return { id: v.id.slice(0, 40), locator, ...coerceNote(v), ...(createdAt ? { createdAt } : {}) }
 }
 
 /** 読み直せなければ null（メモが無いのではなく、壊れている・形が違う）。 */

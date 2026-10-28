@@ -3,7 +3,7 @@
 import type { MemoRequest, MemoResult } from '../core/protocol'
 import type { Call } from '../shared/rpc'
 import { parseMarkdown, toMarkdown } from './markdown'
-import { addField, emptyNote, isNoteEmpty, MEMO_LIMITS, removeField, sanitizeFields, type Locator, type MemoDoc, type MemoPage, type Note, type Spot } from './model'
+import { addField, emptyNote, isNoteEmpty, MEMO_LIMITS, removeField, sameNoteContent, sanitizeFields, type Locator, type MemoDoc, type MemoPage, type Note, type Spot } from './model'
 
 /** 保存の状態。画面の端に小さく出す。 */
 export type SaveStatus =
@@ -122,15 +122,24 @@ export function createController(deps: ControllerDeps) {
 			return { ok: true, existed }
 		},
 
-		setPageNote(note: Note) { doc = { ...doc, note }; touch() },
+		// 中身が変わったときだけ最終更新時刻を進める（同じ値の入力やフォーカスの出入りでは進めない）。
+		setPageNote(note: Note) {
+			if (sameNoteContent(doc.note, note)) return
+			doc = { ...doc, note: { values: note.values, text: note.text, updatedAt: now().toISOString() } }
+			touch()
+		},
 		setSpotNote(id: string, note: Note) {
-			doc = { ...doc, spots: doc.spots.map((s) => (s.id === id ? { ...s, ...note } : s)) }
+			const cur = doc.spots.find((s) => s.id === id)
+			if (!cur || sameNoteContent(cur, note)) return
+			const updatedAt = now().toISOString()
+			doc = { ...doc, spots: doc.spots.map((s) => (s.id === id ? { ...s, values: note.values, text: note.text, updatedAt } : s)) }
 			touch()
 		},
 		/** 箇所を足す。上限なら null。 */
 		addSpot(locator: Locator): Spot | null {
 			if (doc.spots.length >= MEMO_LIMITS.spots) return null
-			const spot: Spot = { id: newId(), locator, ...emptyNote() }
+			const at = now().toISOString()
+			const spot: Spot = { id: newId(), locator, ...emptyNote(), createdAt: at, updatedAt: at }
 			doc = { ...doc, spots: [...doc.spots, spot] }
 			touch()
 			return spot

@@ -101,7 +101,7 @@ describe('読み直しと箇所', () => {
 		await settle()
 		const b = make()
 		expect(await b.load()).toEqual({ ok: true, existed: true })
-		expect(b.doc.note).toEqual({ values: { 読みやすさ: '4' }, text: 'ページ' })
+		expect(b.doc.note).toEqual({ values: { 読みやすさ: '4' }, text: 'ページ', updatedAt: '2026-10-29T00:00:00.000Z' })
 		expect(b.doc.spots).toMatchObject([{ locator, text: '箇所' }])
 	})
 	it('箇所を消すとすぐ保存され、ファイルからも消える', async () => {
@@ -147,5 +147,44 @@ describe('読み直しと箇所', () => {
 		await vi.advanceTimersByTimeAsync(1000)
 		expect(sent.filter((s) => (s as { op: string }).op === 'save')).toHaveLength(0)
 		expect(await store.readDoc('memo/ja/guides/x.md')).toBe('# 手で書いたメモ\n')
+	})
+})
+
+describe('最終更新時刻', () => {
+	/** now を進められる版。 */
+	function setupClock() {
+		const store = createMemoryStore()
+		const handler = createMemoHandler(store)
+		let t = new Date('2026-10-29T00:00:00Z').getTime()
+		const call: MemoCall = (req) => ({ requestId: 'r', promise: handler({ ...req, requestId: 'r' }) as never, cancel() {} })
+		const c = createController({ call, page, pagePath: 'guides/x/', newId: () => 's1', now: () => new Date(t) })
+		return { store, c, advance: (ms: number) => { t += ms } }
+	}
+
+	it('ページのメモと箇所のメモに、中身が変わった時刻を記録する。箇所には足した時刻も残る', async () => {
+		const { store, c, advance } = setupClock()
+		await c.load()
+		c.setPageNote({ values: {}, text: 'a' })
+		const spot = c.addSpot({ kind: 'element', excerpt: 'x' })!
+		advance(60_000)
+		c.setSpotNote(spot.id, { values: { 読みやすさ: '2' }, text: '' })
+		c.flush()
+		await settle()
+		const saved = (await store.readDoc('memo/ja/guides/x.md'))!
+		const doc = parseMarkdown(saved)!
+		expect(doc.note.updatedAt).toBe('2026-10-29T00:00:00.000Z')
+		expect(doc.spots[0].createdAt).toBe('2026-10-29T00:00:00.000Z')
+		expect(doc.spots[0].updatedAt).toBe('2026-10-29T00:01:00.000Z')
+		expect(saved).toContain('- 最終更新: 2026-10-29T00:01:00.000Z')
+	})
+
+	it('同じ中身を入れ直しても時刻は進まず、保存も起きない', async () => {
+		const { c, advance } = setupClock()
+		await c.load()
+		c.setPageNote({ values: {}, text: 'a' })
+		const first = c.doc.note.updatedAt
+		advance(60_000)
+		c.setPageNote({ values: {}, text: 'a', updatedAt: 'ignored' })
+		expect(c.doc.note.updatedAt).toBe(first)
 	})
 })
