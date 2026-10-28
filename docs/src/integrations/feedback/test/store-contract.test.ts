@@ -130,6 +130,13 @@ describe.each(Object.keys(makers))('Store 契約 [%s]', (kind) => {
 		expect(await ids(store)).toEqual([])
 	})
 
+	it('text の関数が投げたら、記録を残さず番号も使わない', async () => {
+		const { store } = await make()
+		await expect(store.putEntry({ text: () => { throw new Error('組み立てに失敗') }, now: day })).rejects.toThrow('組み立てに失敗')
+		expect(await ids(store, 'all')).toEqual([])
+		expect((await store.putEntry({ text: 'a', now: day })).id).toBe('261029-001')
+	})
+
 	it('2 桁のころの記録も読めて、番号の数えにも入る', async () => {
 		const { store, root } = await make()
 		if (!root) return // memory は 2 桁の名前を作れない
@@ -175,6 +182,65 @@ describe('Store [file] だけの契約', () => {
 		const store = createFileStore(root)
 		await expect(store.writeDoc('link/x.md', 'x')).rejects.toThrow('外')
 		await expect(readdir(outside)).resolves.toEqual([])
+	})
+
+	it('シンボリックリンクで外を指す archived/ は使わない（一覧・読み・移し先）', async () => {
+		const base = await tmp()
+		const outside = join(base, 'outside')
+		const root = join(base, 'feedback')
+		await mkdir(outside)
+		await mkdir(root)
+		await writeFile(join(outside, '261029-009.md'), 'secret')
+		await symlink(outside, join(root, 'archived'))
+		const store = createFileStore(root)
+		expect(await ids(store, 'archived')).toEqual([])
+		await expect(store.read('261029-009')).rejects.toThrow('見つかりません')
+		await store.putEntry({ text: 'a', now: day })
+		await expect(store.archive('261029-001', 'メモ', day)).rejects.toThrow('外')
+		expect(await readdir(outside)).toEqual(['261029-009.md'])
+	})
+
+	it('壊れたリンクの archived/ も使わない', async () => {
+		const base = await tmp()
+		const root = join(base, 'feedback')
+		await mkdir(root)
+		await symlink(join(base, 'nowhere'), join(root, 'archived'))
+		const store = createFileStore(root)
+		await store.putEntry({ text: 'a', now: day })
+		await expect(store.archive('261029-001', undefined, day)).rejects.toThrow('外')
+		await expect(readdir(join(base, 'nowhere'))).rejects.toThrow()
+	})
+
+	it('シンボリックリンクで外を指す attachments/ には書かず error', async () => {
+		const base = await tmp()
+		const outside = join(base, 'outside')
+		const root = join(base, 'feedback')
+		await mkdir(outside)
+		await mkdir(root)
+		await symlink(outside, join(root, 'attachments'))
+		const store = createFileStore(root)
+		const r = await store.putAttachments([{ name: 'window.png', data: new Uint8Array([1]) }], { now: day })
+		expect(r.error).not.toBeNull()
+		expect(r.refs).toEqual({})
+		expect(await readdir(outside)).toEqual([])
+	})
+
+	it('置き場の外を指す記録（リンク）は一覧にも読みにも出さない', async () => {
+		const base = await tmp()
+		const root = join(base, 'feedback')
+		await mkdir(root)
+		await writeFile(join(base, 'secret.md'), 'secret')
+		await symlink(join(base, 'secret.md'), join(root, '261029-001.md'))
+		const store = createFileStore(root)
+		expect(await ids(store, 'all')).toEqual([])
+		await expect(store.read('261029-001')).rejects.toThrow('見つかりません')
+	})
+
+	it('書き込みに失敗したら、作ったファイルを消して投げ直す', async () => {
+		const root = join(await tmp(), 'feedback')
+		const store = createFileStore(root)
+		await expect(store.putEntry({ text: 123 as unknown as string, now: day })).rejects.toThrow()
+		expect(await readdir(root)).toEqual([])
 	})
 
 	it('repoRoot を渡すと ref が repoRoot からの相対になる', async () => {

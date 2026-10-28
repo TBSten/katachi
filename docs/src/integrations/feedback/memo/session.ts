@@ -10,22 +10,12 @@ import { createNoteEditor, type NoteEditor } from './note-editor'
 import { locatorOf, pageInfo } from './page'
 import { startPicker } from './picker'
 import { MemoUi } from './ui'
+import { guardKeys, swallowEscKeyup } from '../shared/keys'
 
 /** 光らせるあいだ（marks.ts の FLASH_MS）パネルを引っ込める。 */
 const PEEK_MS = 1800
 
 export type MemoSession = { close(): void }
-
-/** 次の Esc の keyup を toolbar に渡さない（閉じたあとに届く keyup も止めるので、セッションの外に置く）。 */
-function swallowEscKeyup() {
-	const swallow = (e: KeyboardEvent) => {
-		if (e.key !== 'Escape') return
-		e.stopPropagation()
-		window.removeEventListener('keyup', swallow, true)
-	}
-	window.addEventListener('keyup', swallow, true)
-	setTimeout(() => window.removeEventListener('keyup', swallow, true), 1000)
-}
 
 export function openMemo(o: { call: MemoCall; onClose(): void }): MemoSession {
 	const { page, pagePath } = pageInfo()
@@ -138,6 +128,8 @@ export function openMemo(o: { call: MemoCall; onClose(): void }): MemoSession {
 		ui.body.replaceChildren(el('div', 'blocked', r.message))
 	})
 
+	// キーはページに渡さない（Esc は下で扱う）。
+	guardKeys({ host: ui.host, signal: abort.signal })
 	// Esc: 選んでいる間は選ぶのをやめる。そうでなければ閉じる。入力中の IME の Esc と、field 名の入力のやめるは邪魔しない。
 	// Astro の toolbar は Esc の keyup で「開いているアプリを閉じる（無ければ toolbar を隠す）」ので、
 	// こちらで扱った Esc の keyup は toolbar に渡さない（選ぶのをやめただけでアプリが閉じたり、閉じた後に toolbar が隠れたりしないように）。

@@ -1,6 +1,6 @@
 // ファイルの Store。置き場のルート（既定 `.local/feedback/`）の下に記録・添付・メモの文書を置く。
 import { randomBytes } from 'node:crypto'
-import { appendFile, lstat, mkdir, open, readdir, readFile, realpath, rename, stat, writeFile, rm } from 'node:fs/promises'
+import { appendFile, lstat, mkdir, open, readdir, readFile, realpath, rename, writeFile, rm } from 'node:fs/promises'
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { ARCHIVE_DIR, datePrefix, formatId, idOfFileName, isEntryId, MAX_PER_DAY, nextNumber } from '../core/naming'
 import { safeRelPath } from '../core/paths'
@@ -47,6 +47,17 @@ async function resolveInside(root: string, relPath: string): Promise<string> {
 	return abs
 }
 
+/** `<root>/<name>` が使える実体のディレクトリか。シンボリックリンク（壊れたものを含む）なら false。無ければ null。 */
+async function dirState(path: string): Promise<boolean | null> {
+	try {
+		const st = await lstat(path)
+		return st.isDirectory() && !st.isSymbolicLink()
+	} catch (e) {
+		if ((e as NodeJS.ErrnoException).code === 'ENOENT') return null
+		throw e
+	}
+}
+
 /**
  * ファイルの Store を作る。
  * @param root 置き場のルート（絶対パス。無ければ作る）
@@ -59,15 +70,31 @@ export function createFileStore(root: string, repoRoot?: string): Store {
 	const dirOf = (state: EntryState) => (state === 'open' ? base : join(base, ARCHIVE_DIR))
 
 	const info = async (id: string, state: EntryState, file: string): Promise<EntryInfo> => {
-		const st = await stat(file)
+		const st = await lstat(file)
 		return { id, ref: ref(file), state, bytes: st.size, createdAt: st.birthtime.toISOString() }
 	}
+	/** 置き場の直下のディレクトリ（archived / attachments）を、実体の中のものとして用意する。リンクなら投げる。 */
+	const ensureDir = async (name: string): Promise<string> => {
+		const dir = join(base, name)
+		const ok = await dirState(dir)
+		if (ok === false) throw new Error(`置き場の外を指している、またはディレクトリではありません: ${ref(dir)}`)
+		if (ok === null) {
+			await mkdir(dir, { recursive: true })
+			if ((await dirState(dir)) !== true) throw new Error(`置き場の外を指しています: ${ref(dir)}`)
+		}
+		const back = relative(await realpath(base), await realpath(dir))
+		if (back.startsWith('..') || isAbsolute(back)) throw new Error(`置き場の外を指しています: ${ref(dir)}`)
+		return dir
+	}
+	/** 使ってよい置き場か。archived がリンクなら使わない（無い・リンクは空とみなす）。 */
+	const usable = async (state: EntryState) => state === 'open' || (await dirState(dirOf(state))) === true
 	const locate = async (id: string): Promise<{ state: EntryState; file: string }> => {
 		if (!isEntryId(id)) throw new Error(`id が不正です: ${JSON.stringify(id)}`)
 		for (const state of ['open', 'archived'] as const) {
+			if (!(await usable(state))) continue
 			const file = join(dirOf(state), `${id}.md`)
 			try {
-				if ((await stat(file)).isFile()) return { state, file }
+				if ((await lstat(file)).isFile()) return { state, file }
 			} catch {
 				// 次の置き場へ
 			}
@@ -76,12 +103,13 @@ export function createFileStore(root: string, repoRoot?: string): Store {
 	}
 	const scan = async (state: EntryState): Promise<EntryInfo[]> => {
 		const dir = dirOf(state)
+		if (!(await usable(state))) return []
 		const out: EntryInfo[] = []
 		for (const name of await namesIn(dir)) {
 			const id = idOfFileName(name)
 			if (!id) continue
 			const file = join(dir, name)
-			if ((await stat(file)).isFile()) out.push(await info(id, state, file))
+			if ((await lstat(file)).isFile()) out.push(await info(id, state, file))
 		}
 		return out
 	}
@@ -96,7 +124,7 @@ export function createFileStore(root: string, repoRoot?: string): Store {
 		async putEntry({ text, now = new Date() }) {
 			await mkdir(base, { recursive: true })
 			const prefix = datePrefix(now)
-			const names = [...(await namesIn(base)), ...(await namesIn(join(base, ARCHIVE_DIR)))]
+			const names = [...(await namesIn(base)), ...((await usable('archived')) ? await namesIn(join(base, ARCHIVE_DIR)) : [])]
 			const start = nextNumber(names, prefix)
 			if (start === null) throw new Error(`その日の連番（${MAX_PER_DAY}）を使い切りました`)
 			let attempts = 0
@@ -105,7 +133,9 @@ export function createFileStore(root: string, repoRoot?: string): Store {
 				const id = formatId(prefix, n)
 				const file = join(base, `${id}.md`)
 				// archived に同じ番号が現れた場合（別プロセスが移した直後）は使わない。
-				if ((await namesIn(join(base, ARCHIVE_DIR))).includes(`${id}.md`)) continue
+				if ((await usable('archived')) && (await namesIn(join(base, ARCHIVE_DIR))).includes(`${id}.md`)) continue
+				// 本文は open の前に組み立てる。投げても 0 バイトの記録を残さず、番号も使わない。
+				const body = typeof text === 'function' ? text(id) : text
 				let handle
 				try {
 					handle = await open(file, 'wx')
@@ -114,10 +144,14 @@ export function createFileStore(root: string, repoRoot?: string): Store {
 					throw e
 				}
 				try {
-					await handle.writeFile(typeof text === 'function' ? text(id) : text, 'utf8')
-				} finally {
-					await handle.close()
+					await handle.writeFile(body, 'utf8')
+				} catch (e) {
+					// 書けなかった記録は残さない（中身の無い記録に番号を取られない）。
+					await handle.close().catch(() => {})
+					await rm(file, { force: true })
+					throw e
 				}
+				await handle.close()
 				return { ...(await info(id, 'open', file)), attempts }
 			}
 			throw new Error(`その日の連番（${MAX_PER_DAY}）を使い切りました`)
@@ -136,9 +170,8 @@ export function createFileStore(root: string, repoRoot?: string): Store {
 		async archive(id, note, now = new Date()) {
 			const { state, file } = await locate(id)
 			if (state === 'archived') return info(id, state, file)
-			const dest = join(base, ARCHIVE_DIR, `${id}.md`)
-			await mkdir(dirname(dest), { recursive: true })
-			if (await stat(dest).then(() => true, () => false)) throw new Error(`既にあります: ${ref(dest)}`)
+			const dest = join(await ensureDir(ARCHIVE_DIR), `${id}.md`)
+			if (await lstat(dest).then(() => true, () => false)) throw new Error(`既にあります: ${ref(dest)}`)
 			await rename(file, dest)
 			if (note) await appendFile(dest, archiveNoteText(note, now), 'utf8')
 			return info(id, 'archived', dest)
@@ -149,8 +182,7 @@ export function createFileStore(root: string, repoRoot?: string): Store {
 			try {
 				if (files.length === 0) return { refs: {}, dir: null, error: '添付がありません' }
 				for (const f of files) if (!ATTACH_NAME.test(f.name)) throw new Error(`添付の名前が使えません: ${f.name}`)
-				const root0 = join(base, ATTACHMENTS_DIR)
-				await mkdir(root0, { recursive: true })
+				const root0 = await ensureDir(ATTACHMENTS_DIR)
 				let dir = join(root0, stamp(now))
 				// 同じ秒のものは -2, -3 …（mkdir を再帰なしで試し、取り合いに強くする）
 				for (let i = 1; ; i++) {

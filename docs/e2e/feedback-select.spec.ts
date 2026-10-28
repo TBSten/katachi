@@ -269,3 +269,59 @@ test.describe('PC: 右クリックのメニューから popover を開いて送�
 		await sleep(100)
 	})
 })
+
+test.describe('PC: モード中のキーはページに届かない', () => {
+	test.beforeEach(({ fb }) => test.skip(fb.mobile, 'PC の列（キーボード）'))
+
+	/** Astro の toolbar が隠れていない。 */
+	const toolbarShown = (page: import('@playwright/test').Page) =>
+		page.evaluate(() => {
+			const r = document.querySelector('astro-dev-toolbar')?.shadowRoot?.querySelector('#dev-toolbar-root')
+			return !!r && !r.hasAttribute('data-hidden')
+		})
+
+	test('textarea で打ったキーもページ上で押したキーもショートカットに届かず、PageDown でスクロールし、Esc のあとも toolbar が残る', async ({ fb }) => {
+		const { page } = fb
+		await fb.fresh()
+		// サイトのショートカットの代わり: window / document の bubble と capture の両方で数える。
+		await page.evaluate(() => {
+			const w = window as unknown as { __keys: number }
+			w.__keys = 0
+			const count = () => { w.__keys++ }
+			for (const t of ['keydown', 'keyup', 'keypress']) {
+				window.addEventListener(t, count)
+				document.addEventListener(t, count)
+				document.body.addEventListener(t, count)
+			}
+		})
+		const keys = () => page.evaluate(() => (window as unknown as { __keys: number }).__keys)
+		await fb.enter()
+		// ページの上のキー（toolbar のボタンを押した直後は toolbar にフォーカスがある。toolbar 上のキーは通すので、外す）
+		await page.evaluate(() => (document.activeElement?.shadowRoot?.activeElement as HTMLElement | null)?.blur())
+		await page.keyboard.press('/')
+		await page.keyboard.press('Control+k')
+		ok('ページ上で押したキーもショートカットに届かない', (await keys()) === 0, `count=${await keys()}`)
+		const y0 = await page.evaluate(() => scrollY)
+		await page.keyboard.press('PageDown')
+		await page.waitForTimeout(600)
+		ok('PageDown ではスクロールする', (await page.evaluate(() => scrollY)) > y0)
+		ok('PageDown もショートカットには届かない', (await keys()) === 0, `count=${await keys()}`)
+		// 入力欄の中のキー
+		await page.evaluate(() => scrollTo(0, 0))
+		await fb.pickEl(fb.para)
+		const ta = fb.inUi('.dialog textarea')
+		await ta.click()
+		await page.keyboard.type('/ abc')
+		await page.keyboard.press('Control+k')
+		await page.keyboard.press('Enter')
+		ok('textarea に文字が入る（改行も）', (await ta.inputValue()).startsWith('/ abc'), await ta.inputValue())
+		ok('textarea で打ったキーがショートカットに届かない', (await keys()) === 0, `count=${await keys()}`)
+		// Esc でモードを抜けたあと、Esc の keyup で toolbar が隠れない
+		await fb.revealToolbar()
+		ok('Esc の前は toolbar が見えている', await toolbarShown(page))
+		await page.keyboard.press('Escape')
+		await page.waitForTimeout(600)
+		ok('Esc でモードを抜ける', (await fb.rootCount()) === 0)
+		ok('Esc のあとも toolbar が見えたまま', await toolbarShown(page))
+	})
+})

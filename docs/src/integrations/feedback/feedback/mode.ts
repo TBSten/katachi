@@ -3,6 +3,7 @@ import { rectOfPick } from '../shared/anchor'
 import type { Pick } from './collect'
 import { MAX_ELEMENTS, togglePick } from '../shared/multi'
 import type { Flow } from './flow'
+import { guardKeys } from '../shared/keys'
 
 /** 長押しの選択は範囲が何度も変わる。この時間変わらなければ選び終えたとみなす。 */
 const SELECTION_DEBOUNCE_MS = 200
@@ -145,9 +146,8 @@ export function enterMode(flow: Flow) {
 		ui.setHover(null)
 		ui.showMenu(e.clientX, e.clientY, flow.openDialog)
 	}, opts)
-	document.addEventListener('keydown', (e) => {
-		if (e.key === 'Escape') { e.preventDefault(); flow.exit() }
-	}, opts)
+	// キーはページに渡さない。Esc（IME の変換中を除く）はモードを抜ける。
+	guardKeys({ host: ui.host, signal: abort.signal, onEscape: flow.exit })
 	// 選んだ枠とボタンが、スクロールや画面サイズの変更に追従するように。
 	window.addEventListener('scroll', refreshPicked, opts)
 	window.addEventListener('resize', refreshPicked, opts)

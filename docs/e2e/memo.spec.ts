@@ -214,3 +214,36 @@ test('PC: Esc・閉じる・toolbar でもう一度で UI が残らず、選ぶ�
 	await page.waitForTimeout(300)
 	ok('toolbar をもう一度押して閉じると UI が残らない', (await fb.memoRootCount()) === 0)
 })
+
+test('PC: Memo を開いている間のキーはページのショートカットに届かず、Esc のあとも toolbar が残る', async ({ fb }) => {
+	test.skip(fb.mobile, 'PC の列（キーボード）')
+	const { page } = fb
+	await fb.fresh()
+	await page.evaluate(() => {
+		const w = window as unknown as { __keys: number }
+		w.__keys = 0
+		const count = () => { w.__keys++ }
+		for (const t of ['keydown', 'keyup', 'keypress']) {
+			window.addEventListener(t, count)
+			document.addEventListener(t, count)
+		}
+	})
+	const keys = () => page.evaluate(() => (window as unknown as { __keys: number }).__keys)
+	await openMemo(fb)
+	await page.evaluate(() => (document.activeElement?.shadowRoot?.activeElement as HTMLElement | null)?.blur())
+	await page.keyboard.press('/')
+	await page.keyboard.press('Control+k')
+	ok('ページ上で押したキーはショートカットに届かない', (await keys()) === 0, `count=${await keys()}`)
+	await fb.memoUi('.page-note .note-text').click()
+	await page.keyboard.type('/ メモ')
+	ok('textarea に文字が入る', (await fb.memoUi('.page-note .note-text').inputValue()).includes('/ メモ'))
+	ok('textarea で打ったキーはショートカットに届かない', (await keys()) === 0, `count=${await keys()}`)
+	await fb.revealToolbar()
+	await page.keyboard.press('Escape')
+	await page.waitForTimeout(600)
+	ok('Esc で閉じる', (await fb.memoRootCount()) === 0)
+	ok('Esc のあとも toolbar が見えたまま', await page.evaluate(() => {
+		const r = document.querySelector('astro-dev-toolbar')?.shadowRoot?.querySelector('#dev-toolbar-root')
+		return !!r && !r.hasAttribute('data-hidden')
+	}))
+})
