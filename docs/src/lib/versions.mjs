@@ -9,10 +9,10 @@
 // 新しい版の切り方は docs/AGENTS.md の「ドキュメントの版」の節にある。
 
 /** @type {{ slug: string; label: string }[]} */
-export const archivedVersions = [{ slug: '0.3', label: 'v0.3' }, { slug: '0.2', label: 'v0.2' }];
+export const archivedVersions = [{ slug: '0.2', label: 'v0.2' }];
 
 /** @type {{ label: string }} */
-export const currentVersion = { label: 'v0.4' };
+export const currentVersion = { label: 'v0.3' };
 
 /** 凍結した版の slug。 */
 export const archivedVersionSlugs = archivedVersions.map((version) => version.slug);
