@@ -9,6 +9,8 @@ import starlightLinksValidator from 'starlight-links-validator';
 // ドキュメントの版。版の一覧は src/lib/versions.mjs にある（版を足すときに直すのはそこだけ）。
 import starlightVersions from 'starlight-versions';
 import { archivedVersions, archivedVersionSlugs, currentVersion, publicSections } from './src/lib/versions.mjs';
+// `astro dev` のときだけ dev toolbar に入るフィードバックモード。本番ビルドには何も出ない。
+import feedback from './src/integrations/feedback/index.ts';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
@@ -107,6 +109,7 @@ export default defineConfig({
 	site: 'https://tbsten.github.io',
 	base: '/katachi',
 	integrations: [
+		feedback(),
 		// starlight より前に置くこと。starlight が markdown を処理する前に
 		// ```mermaid フェンスを差し替える必要がある。
 		mermaid({ theme: 'neutral', autoTheme: true }),
