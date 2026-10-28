@@ -18,7 +18,13 @@ body:
     id: url
     attributes:
       label: Project URL
-      description: Repository, app store page, or website. Private projects are welcome too; leave this empty and describe it below.
+      description: App store page or website. Private projects are welcome too; leave this empty and describe it below.
+  - type: input
+    id: repository
+    attributes:
+      label: Repository URL (optional)
+      description: If the source is public, a link to the repository, ideally to the file with the architecture definition.
+      placeholder: https://github.com/owner/repo
   - type: dropdown
     id: project-type
     attributes:
