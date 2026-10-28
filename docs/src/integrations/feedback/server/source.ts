@@ -3,7 +3,7 @@
 // satteri は docs の直接の依存ではないため import せず、プラグインを素のオブジェクトで書く（型は最小限に自前で持つ）。
 import { relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { SRC_ATTR } from './protocol'
+import { SRC_ATTR } from '../core/protocol'
 
 /** 行番号を付ける要素。見出し・段落・リスト・表・コードブロック・引用。 */
 const TAGS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol', 'li', 'table', 'tr', 'blockquote', 'pre', 'dl', 'dt', 'dd']

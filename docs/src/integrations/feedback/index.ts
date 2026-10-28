@@ -1,23 +1,18 @@
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
 import type { AstroIntegration } from 'astro'
-import { withGit } from './git'
-import { saveFeedback } from './save'
-import { createCodeBlockPlugin, createMermaidPlugin, createSourcePlugin } from './source'
-import { APP_ID, EVENT_RESULT, EVENT_SAVE, type SavePayload, type SaveResult } from './protocol'
+import { withGit } from './server/git'
+import { saveFeedback } from './server/save'
+import { createFileStore } from './server/store'
+import { checkPayload } from './core/limits'
+import { createCodeBlockPlugin, createMermaidPlugin, createSourcePlugin } from './server/source'
+import { APP_ID, EVENT_RESULT, EVENT_SAVE, type SavePayload, type SaveResult } from './core/protocol'
 
 /** リポジトリ直下の `.local/feedback/`（このファイルは docs/src/integrations/feedback/ にある）。 */
 const defaultDir = fileURLToPath(new URL('../../../../.local/feedback/', import.meta.url))
 
 /** リポジトリ直下。行番号の付く path はここからの相対にする。 */
 const repoRoot = fileURLToPath(new URL('../../../../', import.meta.url))
-
-const isPayload = (v: unknown): v is SavePayload =>
-	typeof v === 'object' && v !== null &&
-	typeof (v as SavePayload).requestId === 'string' &&
-	typeof (v as SavePayload).comment === 'string' &&
-	((v as SavePayload).target === undefined || (v as SavePayload).target === 'page' || (v as SavePayload).target === 'site') &&
-	typeof (v as SavePayload).sections === 'object' && (v as SavePayload).sections !== null
 
 /**
  * `astro dev` のときだけ使えるフィードバックモード。
@@ -36,7 +31,7 @@ export default function feedback(): AstroIntegration {
 					id: APP_ID,
 					name: 'Feedback',
 					icon: 'lightbulb',
-					entrypoint: new URL('./app.ts', import.meta.url),
+					entrypoint: new URL('./feedback/app.ts', import.meta.url),
 				})
 			},
 			// EC など他の統合が processor に足し終えたあとで、前に行番号付け・後ろにコードブロックの付け直しを差す。
@@ -52,13 +47,20 @@ export default function feedback(): AstroIntegration {
 			'astro:server:setup': ({ toolbar }) => {
 				// 検証で本物の .local/feedback/ を汚さないよう、環境変数で上書きできる。
 				const dir = process.env.KATACHI_FEEDBACK_DIR ? resolve(process.env.KATACHI_FEEDBACK_DIR) : defaultDir
+				const store = createFileStore(dir, repoRoot)
 				toolbar.on(EVENT_SAVE, async (data: unknown) => {
-					if (!isPayload(data)) return
+					const check = checkPayload(data)
+					if (!check.ok) {
+						const requestId = (data as { requestId?: unknown } | null)?.requestId
+						if (typeof requestId === 'string') toolbar.send(EVENT_RESULT, { requestId, ok: false, error: check.reason } satisfies SaveResult)
+						return
+					}
+					const payload = data as SavePayload
 					let result: SaveResult
 					try {
-						result = { requestId: data.requestId, ok: true, file: await saveFeedback(dir, await withGit(data, repoRoot)) }
+						result = { requestId: payload.requestId, ok: true, file: await saveFeedback(store, await withGit(payload, repoRoot)) }
 					} catch (e) {
-						result = { requestId: data.requestId, ok: false, error: e instanceof Error ? e.message : String(e) }
+						result = { requestId: payload.requestId, ok: false, error: e instanceof Error ? e.message : String(e) }
 					}
 					toolbar.send(EVENT_RESULT, result)
 				})

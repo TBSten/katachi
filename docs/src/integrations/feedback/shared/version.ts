@@ -1,5 +1,5 @@
 // いま見ているページの docs の版と言語（ブラウザ側）。版の定義は src/lib/versions.mjs の 1 か所を読む。
-import { archivedVersions, currentVersion } from '../../lib/versions.mjs'
+import { archivedVersions, currentVersion } from '../../../lib/versions.mjs'
 
 /** URL の `/katachi/(ja/)(0.2/)…` から版を求める。区切りが無ければ現行。 */
 export function versionOfPage(): string {

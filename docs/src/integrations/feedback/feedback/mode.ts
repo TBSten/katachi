@@ -1,5 +1,5 @@
 // モード（toolbar のアプリを on にしている間）の操作。要素のクリック・テキストの選択・右クリックのメニュー・浮かぶボタン。
-import { rectOfPick } from './anchor'
+import { rectOfPick } from '../shared/anchor'
 import type { Pick } from './collect'
 import type { Flow } from './flow'
 

@@ -1,6 +1,6 @@
 // 選んだものから、元の Markdown / MDX のどのファイルの何行目かを求める（ブラウザ側）。
 // 本文の要素には dev のときだけ `data-fb-src="path:12-14"` が付いている（source.ts）。
-import { SRC_ATTR } from './protocol'
+import { SRC_ATTR } from '../core/protocol'
 
 export type Src = { path: string; start: number; end: number }
 

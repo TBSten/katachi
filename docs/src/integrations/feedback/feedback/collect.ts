@@ -1,8 +1,8 @@
-import { GIT_PLACEHOLDER, type Section, type SectionKey } from './protocol'
-import { blockOf, blockText, clip, fragmentParts, fragmentUrl, norm, offsetIn, previousText, squash, type FragmentParts } from './fragment'
-import { cssSelectorOf, landmarkOf, nearestHeading, xpathOf } from './locate'
-import { findForElement, findForRange, formatSrc, pageSourceFile } from './srcmap'
-import { versionOfPage } from './version'
+import { GIT_PLACEHOLDER, type Section, type SectionKey } from '../core/protocol'
+import { blockOf, blockText, clip, fragmentParts, fragmentUrl, norm, offsetIn, previousText, squash, type FragmentParts } from '../shared/fragment'
+import { cssSelectorOf, landmarkOf, nearestHeading, xpathOf } from '../shared/locate'
+import { findForElement, findForRange, formatSrc, pageSourceFile } from '../shared/srcmap'
+import { versionOfPage } from '../shared/version'
 
 /** 利用者が選んだもの。要素か、ドラッグで選んだテキストのどちらか。 */
 export type Pick =

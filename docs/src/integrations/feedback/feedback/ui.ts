@@ -1,7 +1,7 @@
-import type { SectionKey } from './protocol'
-import { placeFloating, placePopover } from './anchor'
+import type { SectionKey } from '../core/protocol'
+import { placeFloating, placePopover } from '../shared/anchor'
 import { buildDialog, type DialogHandlers, type Sections } from './dialog'
-import { el, isCoarse, isNarrow } from './dom'
+import { el, isCoarse, isNarrow } from '../shared/dom'
 import { css } from './ui.css'
 
 export type UiHandlers = {

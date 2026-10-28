@@ -1,7 +1,7 @@
 // 保存のときにサーバー側で git の情報を求める。シェルは通さず execFile で呼び、失敗したものは書かない。
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
-import type { SavePayload, Section } from './protocol'
+import type { SavePayload, Section } from '../core/protocol'
 
 const run = promisify(execFile)
 

@@ -1,7 +1,7 @@
 // 「選んだものにフィードバックを書いて保存し、UI を片付ける」流れ。モードの中でも、モードの外の右クリックでも同じ流れを使う。
-import { rectOfPick } from './anchor'
+import { rectOfPick } from '../shared/anchor'
 import { collect, type Pick } from './collect'
-import { EVENT_RESULT, EVENT_SAVE, type SavePayload, type SaveResult, type SectionKey } from './protocol'
+import { EVENT_RESULT, EVENT_SAVE, type SavePayload, type SaveResult, type SectionKey } from '../core/protocol'
 import { FeedbackUi } from './ui'
 
 const STORAGE_KEY = 'katachi-feedback:checks'

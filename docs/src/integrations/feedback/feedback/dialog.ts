@@ -1,7 +1,7 @@
 // フィードバックの入力欄（コメント・載せる情報・送信）を組み立てる。
 // 下から出るシートと選択のそばの popover で中身は同じ。popover は縦を詰めるため、載せる情報を <details> に畳む。
-import { SECTION_KEYS, SECTION_TITLES, type Section, type SectionKey } from './protocol'
-import { el } from './dom'
+import { SECTION_KEYS, SECTION_TITLES, type Section, type SectionKey } from '../core/protocol'
+import { el } from '../shared/dom'
 
 export type Sections = Partial<Record<SectionKey, Section>>
 

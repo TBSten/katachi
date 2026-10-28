@@ -13,7 +13,19 @@ export const EVENT_SAVE = 'katachi-feedback:save'
 export const EVENT_RESULT = 'katachi-feedback:result'
 
 /** ダイアログでチェックできる情報の種類。この並びがそのままダイアログと Markdown の節の並びになる。 */
-export const SECTION_KEYS = ['source', 'page', 'location', 'content', 'screen', 'browser', 'datetime', 'git'] as const
+export const SECTION_KEYS = [
+	'source',
+	'page',
+	'location',
+	'content',
+	'screenshot',
+	'screen',
+	'state',
+	'console',
+	'browser',
+	'datetime',
+	'git',
+] as const
 export type SectionKey = (typeof SECTION_KEYS)[number]
 
 /** 節ごとの見出し（Markdown とダイアログで共通）。 */
@@ -22,7 +34,10 @@ export const SECTION_TITLES: Record<SectionKey, string> = {
 	page: 'ページ',
 	location: 'ページ上の場所',
 	content: '選んだ内容',
+	screenshot: 'スクリーンショット',
 	screen: '画面',
+	state: 'サイトの状態',
+	console: 'コンソール',
 	browser: 'ブラウザ',
 	datetime: '日時',
 	git: 'git',

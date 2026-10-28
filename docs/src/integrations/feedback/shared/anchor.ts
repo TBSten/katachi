@@ -1,5 +1,5 @@
 // 選んだものの横に浮かべるボタンの位置決め。DOM に触らない純粋な計算だけを置く。
-import type { Pick } from './collect'
+import type { Pick } from '../feedback/collect'
 
 type Box = { left: number; top: number; right: number; bottom: number }
 
