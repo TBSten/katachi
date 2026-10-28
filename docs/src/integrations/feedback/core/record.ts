@@ -1,7 +1,7 @@
 // 記録（schema 1）の Markdown を組み立てる。保存（server/save.ts）と「Markdown をコピー」（feedback/copy.ts）が同じ関数を通る。
 // DOM も node: も使わない。組み立ての最後に redact を 1 回だけ掛ける。
 import { redact } from './redact'
-import { GIT_PLACEHOLDER, SECTION_KEYS, SECTION_TITLES, SERVER_SECTION_KEYS, type SavePayload, type SectionKey } from './protocol'
+import { GIT_PLACEHOLDER, GROUP_ROW_PREFIX, SECTION_KEYS, SECTION_TITLES, SERVER_SECTION_KEYS, type SavePayload, type SectionKey } from './protocol'
 
 /** 記録の形の版。frontmatter の `schema`。 */
 export const RECORD_SCHEMA = 1
@@ -31,6 +31,10 @@ const yamlString = (value: string) => JSON.stringify(value)
 /** 節の中の行を、見出し（label）で引く。 */
 const valueOf = (payload: SavePayload, key: SectionKey, label: string) =>
 	payload.sections[key]?.find(([l]) => l === label)?.[1]
+
+/** 節の中の行を、見出し（label）で全部引く（複数の要素では、要素ごとに 1 つずつ並ぶ）。 */
+const valuesOf = (payload: SavePayload, key: SectionKey, label: string) =>
+	(payload.sections[key] ?? []).filter(([l]) => l === label).map(([, v]) => v)
 
 const KNOWN_SOURCE = (v: string | undefined) => (v && !v.startsWith('不明') ? v : undefined)
 
@@ -64,6 +68,11 @@ function summaryLine(payload: SavePayload): string {
 		const title = valueOf(payload, 'page', 'title')
 		return `対象: ${pageSourceFile(payload) ?? url}（ページ全体）${title ? `「${title}」` : ''}`
 	}
+	if (kind === 'elements') {
+		const sources = valuesOf(payload, 'source', 'ソース').filter((v) => KNOWN_SOURCE(v))
+		const count = Math.max(0, ...(['source', 'location', 'content'] as const).map((k) => (payload.sections[k] ?? []).filter(([l]) => l.startsWith(GROUP_ROW_PREFIX)).length))
+		return `対象: ${count ? `${count} 個` : '複数'}の要素${sources.length ? `（${sources[0]}${sources.length > 1 || count > 1 ? ' ほか' : ''}）` : ''}`
+	}
 	const source = KNOWN_SOURCE(valueOf(payload, 'source', 'ソース'))
 	const heading = valueOf(payload, 'location', '近くの見出し')
 	const tag = valueOf(payload, 'content', 'タグ')
@@ -92,8 +101,22 @@ function frontmatter(payload: SavePayload, meta: RecordMeta, omitted: SectionKey
 		['created', meta.created.toISOString()],
 		['commit', commit && commit !== GIT_PLACEHOLDER ? commit : undefined],
 	]
+	// 複数の要素は、要素ごとの値を JSON の配列で書く（YAML の flow sequence としても読める）。
+	const multi: Record<string, string[]> = kind === 'elements'
+		? {
+			source: valuesOf(payload, 'source', 'ソース').filter((v) => KNOWN_SOURCE(v)),
+			heading: valuesOf(payload, 'location', '近くの見出し'),
+			xpath: valuesOf(payload, 'location', 'XPath'),
+			selector: valuesOf(payload, 'location', 'CSSセレクタ'),
+		}
+		: {}
 	const lines = [`schema: ${RECORD_SCHEMA}`]
-	for (const [key, value] of strings) if (value) lines.push(`${key}: ${yamlString(value)}`)
+	for (const [key, value] of strings) {
+		const list = multi[key]
+		if (list) {
+			if (list.length) lines.push(`${key}: ${JSON.stringify(list)}`)
+		} else if (value && !(kind === 'elements' && key === 'fragment')) lines.push(`${key}: ${yamlString(value)}`)
+	}
 	if (meta.dirty !== undefined) lines.push(`dirty: ${meta.dirty}`)
 	if (meta.stale !== undefined) lines.push(`stale: ${meta.stale}`)
 	lines.push(`omitted: ${JSON.stringify(omitted)}`)
@@ -123,24 +146,26 @@ export function toMarkdown(payload: SavePayload, meta: RecordMeta): string {
 	for (const key of SECTION_KEYS) {
 		const section = payload.sections[key]
 		if (!section) continue
-		const lines = section.map(([label, value]) =>
+		const lines = section.map(([label, value], i) => {
+			// 要素ごとの区切り（複数の要素）は小見出しにする。
+			if (label.startsWith(GROUP_ROW_PREFIX)) return `${i === 0 ? '' : '\n'}${label}\n`
 			// 複数行の値はコードブロックに、1行の値は箇条書きにする。
-			value.includes('\n')
-				? `- ${label}:\n\n${fence(value)}`
-				: `- ${label}: ${value}`,
-		)
+			return value.includes('\n') ? `- ${label}:\n\n${fence(value)}` : `- ${label}: ${value}`
+		})
 		parts.push(`## ${SECTION_TITLES[key]}\n\n${lines.join('\n')}`)
 	}
 	return redact(parts.join('\n\n') + '\n')
 }
 
 /**
- * 「Markdown をコピー」の文。保存と同じ関数を通すが、サーバーが保存のときに求める節（git・ビルド）と
+ * 「Markdown をコピー」の文。保存と同じ関数を通すが、サーバーが保存のときに求める節（git・ビルド）、画像（スクリーンショット）と
  * サーバーが決める値（id・commit・dirty・stale）は入らない。
  */
 export function toCopyMarkdown(payload: SavePayload, created: Date): string {
 	const sections = { ...payload.sections }
 	for (const k of SERVER_SECTION_KEYS) delete sections[k]
+	// 画像はコピーに載せられない（貼る先に添付が無い）。
+	delete sections.screenshot
 	return toMarkdown({ ...payload, sections }, { created })
 }
 

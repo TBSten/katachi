@@ -3,6 +3,7 @@
 import { SECTION_KEYS, SECTION_TITLES, type Section, type SectionKey } from '../core/protocol'
 import { el } from '../shared/dom'
 import { COPY_NOTE } from './copy'
+import type { Draft } from './drafts'
 
 export type Sections = Partial<Record<SectionKey, Section>>
 
@@ -12,6 +13,17 @@ export type DialogHandlers = {
 	onCancel: () => void
 	/** 「Markdown をコピー」。保存と同じ文をクリップボードへ。成功したか返す。 */
 	onCopy: (comment: string, checked: Sections, target?: 'page' | 'site') => Promise<boolean>
+	/** コメントかチェックが変わったとき（下書きの保存）。 */
+	onDraft?: (draft: Draft) => void
+	/** 「親を選ぶ」。選んだものを親の要素へ広げる。 */
+	onParent?: () => void
+}
+
+export type DialogExtra = {
+	/** 下書き（書きかけのコメントとチェック）。 */
+	initial?: Draft | null
+	/** 「親を選ぶ」を出せるか（まだ親がある）。 */
+	canParent?: boolean
 }
 
 export type DialogParts = {
@@ -19,6 +31,10 @@ export type DialogParts = {
 	textarea: HTMLTextAreaElement
 	submit: HTMLButtonElement
 	error: HTMLElement
+	/** 上端の見出し。popover ではここをつかんで動かす。 */
+	head: HTMLElement
+	/** 今のコメントとチェックの状態（「親を選ぶ」で開き直すときに引き継ぐ）。 */
+	draft(): Draft
 }
 
 export function buildDialog(
@@ -28,17 +44,33 @@ export function buildDialog(
 	popover: boolean,
 	/** true なら一番上に「対象」（このページ / サイト全体）の選択を置く。何も選ばずに開いたとき。 */
 	withTarget = false,
+	extra: DialogExtra = {},
 ): DialogParts {
 	const root = el('div', popover ? 'dialog popover' : 'dialog')
 	const textarea = el('textarea')
 	textarea.placeholder = 'コメント'
+	const grow = () => {
+		textarea.style.height = 'auto'
+		textarea.style.height = `${textarea.scrollHeight + 2}px`
+	}
 	if (popover) {
 		textarea.rows = 3
 		// 書くほど伸びる（上限は CSS の max-height）。
-		textarea.addEventListener('input', () => {
-			textarea.style.height = 'auto'
-			textarea.style.height = `${textarea.scrollHeight + 2}px`
-		})
+		textarea.addEventListener('input', grow)
+	}
+	if (extra.initial?.comment) {
+		textarea.value = extra.initial.comment
+		if (popover) queueMicrotask(grow)
+	}
+	// 見出し: popover ではここをつかんで動かす。「親を選ぶ」は押しても動かさない（ボタンの上のドラッグは移動にしない）。
+	const head = el('div', 'head')
+	head.append(el('h2', undefined, 'フィードバック'))
+	if (extra.canParent) {
+		const parent = el('button', 'parent', '親を選ぶ')
+		parent.type = 'button'
+		parent.title = '選んだものを、ひとつ外側の要素に広げる（Alt+↑）'
+		parent.addEventListener('click', () => h.onParent?.())
+		head.append(parent)
 	}
 	// 対象の選択（既定は「このページ」）。
 	const targetBox = el('fieldset', 'target')
@@ -54,6 +86,8 @@ export function buildDialog(
 		targetBox.append(label)
 	}
 	const checks = new Map<SectionKey, HTMLInputElement>()
+	const draft = (): Draft => ({ comment: textarea.value, checks: Object.fromEntries([...checks].map(([k, b]) => [k, b.checked])) })
+	const emitDraft = () => h.onDraft?.(draft())
 	const summaryText = el('span')
 	const updateCount = () => {
 		const on = [...checks.values()].filter((b) => b.checked).length
@@ -64,14 +98,14 @@ export function buildDialog(
 		const summary = el('summary')
 		const box = el('input')
 		box.type = 'checkbox'
-		box.checked = remembered[key] ?? true
+		box.checked = extra.initial?.checks[key] ?? remembered[key] ?? true
 		box.id = `chk-${key}`
 		checks.set(key, box)
 		const label = el('label', undefined, SECTION_TITLES[key])
 		label.htmlFor = box.id
 		// summary の中の click で details が開閉しないようにする（チェックだけ切り替えたい）。
 		box.addEventListener('click', (e) => e.stopPropagation())
-		box.addEventListener('change', updateCount)
+		box.addEventListener('change', () => { updateCount(); emitDraft() })
 		label.addEventListener('click', (e) => e.stopPropagation())
 		summary.append(box, label)
 		const pre = el('pre', undefined, sections[key]!.map(([l, v]) => `${l}: ${v}`).join('\n'))
@@ -85,8 +119,8 @@ export function buildDialog(
 	cancel.type = submit.type = 'button'
 	const copy = el('button', 'copy', 'Markdown をコピー')
 	copy.type = 'button'
-	submit.disabled = copy.disabled = true
-	textarea.addEventListener('input', () => { submit.disabled = copy.disabled = textarea.value.trim() === '' })
+	submit.disabled = copy.disabled = textarea.value.trim() === ''
+	textarea.addEventListener('input', () => { submit.disabled = copy.disabled = textarea.value.trim() === ''; emitDraft() })
 	const checkedSections = () => {
 		const checked: Sections = {}
 		for (const [k, box] of checks) if (box.checked) checked[k] = sections[k]
@@ -111,6 +145,8 @@ export function buildDialog(
 	// Cmd/Ctrl+Enter で送信。Esc はモード側の document リスナーが全体をやめる。
 	root.addEventListener('keydown', (e) => {
 		if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); doSubmit() }
+		// 文字を打つ最中の ↑ はカーソル移動に使うので、Alt を押したときだけ親を選ぶ。
+		if (e.key === 'ArrowUp' && e.altKey && extra.canParent) { e.preventDefault(); h.onParent?.() }
 	})
 	const actions = el('div', 'actions')
 	actions.append(copy, cancel, submit)
@@ -119,9 +155,9 @@ export function buildDialog(
 		const infoSummary = el('summary')
 		infoSummary.append(summaryText)
 		info.append(infoSummary, ...items)
-		root.append(...(withTarget ? [targetBox] : []), textarea, info, error, actions, copyNote)
+		root.append(head, ...(withTarget ? [targetBox] : []), textarea, info, error, actions, copyNote)
 	} else {
-		root.append(el('h2', undefined, 'フィードバック'), ...(withTarget ? [targetBox] : []), textarea, ...items, error, actions, copyNote)
+		root.append(head, ...(withTarget ? [targetBox] : []), textarea, ...items, error, actions, copyNote)
 	}
-	return { root, textarea, submit, error }
+	return { root, textarea, submit, error, head, draft }
 }

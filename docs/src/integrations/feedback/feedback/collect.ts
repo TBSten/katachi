@@ -4,7 +4,7 @@ import { blockOf, blockText, clip, offsetIn } from '../shared/fragment'
 import { pageSourceFile } from '../shared/srcmap'
 import { versionOfPage } from '../shared/version'
 import { collectState } from './state'
-import { locationSection, present, sourceSection, type Pick } from '../shared/pick'
+import { groupRow, locationSection, present, rectOfPick, sourceSection, type Pick } from '../shared/pick'
 
 export type { Pick }
 
@@ -12,6 +12,8 @@ const rectOf = (r: DOMRect) =>
 	`x=${Math.round(r.x)}, y=${Math.round(r.y)}, width=${Math.round(r.width)}, height=${Math.round(r.height)}`
 
 function contentSection(pick: Exclude<Pick, { kind: 'page' }>): Section {
+	// 複数の要素: 要素ごとに `### n.` で区切って並べる。
+	if (pick.kind === 'elements') return pick.els.flatMap((el, i) => [groupRow(i + 1), ...contentSection({ kind: 'element', el })])
 	if (pick.kind === 'element') {
 		const { el } = pick
 		return present([
@@ -53,7 +55,7 @@ export function collect(pick: Pick, now = new Date()): Partial<Record<SectionKey
 	]
 	// ページ全体・サイト全体: 選んだものの節（source・location・content）は無く、ページのソースファイルは page 節に入れる。
 	if (pick.kind === 'page') page.push(['ページのソースファイル', pageFile.guessed ? `${pageFile.path}（URL からの推定）` : pageFile.path])
-	const rect = pick.kind === 'page' ? null : pick.kind === 'element' ? pick.el.getBoundingClientRect() : pick.range.getBoundingClientRect()
+	const rect = pick.kind === 'page' ? null : rectOfPick(pick)
 	const picked: { source?: Section; location?: Section; content?: Section } = pick.kind === 'page' ? {} : { source: sourceSection(pick), location: locationSection(pick), content: contentSection(pick) }
 	return {
 		...(picked.source ? { source: picked.source } : {}),
@@ -67,6 +69,7 @@ export function collect(pick: Pick, now = new Date()): Partial<Record<SectionKey
 			['入力', `pointer: coarse=${matchMedia('(pointer: coarse)').matches}, hover: none=${matchMedia('(hover: none)').matches}, maxTouchPoints=${navigator.maxTouchPoints}`],
 			['テーマ', theme === 'dark' ? 'ダーク' : 'ライト'],
 		],
+		screenshot: [['撮影', '送信するときに撮ります（画面全体に選んだ場所の赤枠を付けたものと、選んだ場所のまわりの切り抜き）']],
 		console: consoleSection(readLogEntries(globalThis)),
 		state: collectState(),
 		browser: [['UserAgent', navigator.userAgent]],

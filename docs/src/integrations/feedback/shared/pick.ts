@@ -1,25 +1,52 @@
 // 選んだもの（Pick）と、その場所の情報。Feedback と Memo の両方が使う。
 // 場所の情報（source・location の節）はここで作り、Feedback は節にして送り、Memo は構造化して保存する。
-import type { Section } from '../core/protocol'
+import { GROUP_ROW_PREFIX, type Section } from '../core/protocol'
 import { blockOf, fragmentParts, fragmentUrl, norm, offsetIn, previousText, squash, type FragmentParts } from './fragment'
 import { cssSelectorOf, landmarkOf, nearestHeading, xpathOf } from './locate'
 import { findForElement, findForRange, formatSrc, pageSourceFile } from './srcmap'
 
-/** 利用者が選んだもの。要素か、ドラッグで選んだテキストのどちらか。 */
+/** 1 か所の選び方。要素か、ドラッグで選んだテキストのどちらか。Memo はこれだけを扱う。 */
+export type SinglePick = { kind: 'element'; el: Element } | { kind: 'text'; range: Range; text: string }
+
+/** 利用者が選んだもの。 */
 export type Pick =
-	| { kind: 'element'; el: Element }
-	| { kind: 'text'; range: Range; text: string }
+	| SinglePick
+	/** Shift+クリックで足した複数の要素（Feedback だけ。2 つ以上のときだけこの形で、1 つなら element）。 */
+	| { kind: 'elements'; els: Element[] }
 	/** 何も選ばず、ページ全体・サイト全体について書く。 */
 	| { kind: 'page' }
 
+export const groupRow = (n: number): [string, string] => [`${GROUP_ROW_PREFIX}${n}.`, '']
+
+/** 複数の矩形を全部囲む矩形。 */
+export function unionRect(rects: DOMRect[]): DOMRect {
+	const left = Math.min(...rects.map((r) => r.left))
+	const top = Math.min(...rects.map((r) => r.top))
+	const right = Math.max(...rects.map((r) => r.right))
+	const bottom = Math.max(...rects.map((r) => r.bottom))
+	return new DOMRect(left, top, right - left, bottom - top)
+}
+
+/** 複数の要素を、要素ごとの節（見出しの行 `### n.` で区切る）にまとめる。 */
+function perElement(els: Element[], one: (el: Element) => Section, drop: (label: string) => boolean = () => false): Section {
+	return els.flatMap((el, i) => [groupRow(i + 1), ...one(el).filter(([l]) => !drop(l))])
+}
+
 /** 選んだものの画面上の矩形。要素なら要素、テキストなら選択範囲の外接矩形。 */
 export function rectOfPick(pick: Exclude<Pick, { kind: 'page' }>): DOMRect {
+	if (pick.kind === 'elements') return unionRect(pick.els.map((e) => e.getBoundingClientRect()))
 	return pick.kind === 'element' ? pick.el.getBoundingClientRect() : pick.range.getBoundingClientRect()
 }
 
 /** 選んだものを含む要素（テキストなら範囲全体を含む最も内側の要素）。 */
 export const containerOf = (pick: Exclude<Pick, { kind: 'page' }>): Element => {
 	if (pick.kind === 'element') return pick.el
+	// 複数の要素は、全部を含む最も内側の要素。
+	if (pick.kind === 'elements') {
+		let common: Element | null = pick.els[0]!
+		while (common && !pick.els.every((e) => common!.contains(e))) common = common.parentElement
+		return common ?? document.body
+	}
 	const node = pick.range.commonAncestorContainer
 	return node.nodeType === Node.ELEMENT_NODE ? (node as Element) : node.parentElement ?? document.body
 }
@@ -31,6 +58,10 @@ export const present = (rows: Array<[string, string | null | undefined]>): Secti
 export function sourceSection(pick: Exclude<Pick, { kind: 'page' }>): Section {
 	const page = pageSourceFile()
 	const pageRow: [string, string] = ['ページのソースファイル', page.guessed ? `${page.path}（URL からの推定）` : page.path]
+	// 複数の要素: ページのソースファイルは先頭に 1 回だけ書き（最後だと最後の要素のものに読める）、要素ごとに並べる。
+	if (pick.kind === 'elements') {
+		return [pageRow, ...perElement(pick.els, (el) => sourceSection({ kind: 'element', el }), (l) => l === 'ページのソースファイル')]
+	}
 	if (pick.kind === 'element') {
 		const found = findForElement(pick.el)
 		return found
@@ -48,6 +79,7 @@ export function sourceSection(pick: Exclude<Pick, { kind: 'page' }>): Section {
 }
 
 export function locationSection(pick: Exclude<Pick, { kind: 'page' }>): Section {
+	if (pick.kind === 'elements') return perElement(pick.els, (el) => locationSection({ kind: 'element', el }))
 	const container = containerOf(pick)
 	const heading = nearestHeading(pick.kind === 'element' ? pick.el : pick.range.startContainer)
 	const lang = document.documentElement.lang

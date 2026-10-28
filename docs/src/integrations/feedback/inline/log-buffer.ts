@@ -16,6 +16,8 @@ export const LOG_BUFFER_SCRIPT = `(function () {
     try { return JSON.stringify(v); } catch (e) { return String(v); }
   }
   function push(k, m) {
+    // スクリーンショットを撮っている間は止める（絵にするために要素を複製すると、カスタム要素の constructor が空の要素で例外を出す。記録に紛れさせない）。
+    if (window[G].muted) return;
     m = String(m);
     if (m.length > LEN) m = m.slice(0, LEN) + '…';
     buf.push({ t: Date.now(), k: k, m: m });

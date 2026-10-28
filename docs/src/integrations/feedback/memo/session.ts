@@ -1,6 +1,6 @@
 // Memo を開いてから閉じるまでの 1 回ぶん: 読み込み → 画面 → 選ぶ → 自動保存 → 片付け。
 // 閉じると、パネル・印・枠・リスナーを全部消す（保存が済んでいない分は閉じる前に送る）。
-import { containerOf, type Pick } from '../shared/pick'
+import { containerOf, type SinglePick } from '../shared/pick'
 import type { Relocated } from '../shared/relocate'
 import { el } from '../shared/dom'
 import { createCard, type Card } from './cards'
@@ -99,9 +99,11 @@ export function openMemo(o: { call: MemoCall; onClose(): void }): MemoSession {
 		stopPicker = null
 		ui.setPicking(false)
 	}
-	function onPicked(pick: Exclude<Pick, { kind: 'page' }>) {
-		stopPicker = null
-		ui.setPicking(false)
+	function onPicked(pick: SinglePick, more = false) {
+		if (!more) {
+			stopPicker = null
+			ui.setPicking(false)
+		}
 		const spot = controller.addSpot(locatorOf(pick))
 		if (!spot) return
 		// 選んだものそのものを、引き直しの結果として使う（保存した手がかりで引き直せなくても印は出す）。
@@ -110,6 +112,8 @@ export function openMemo(o: { call: MemoCall; onClose(): void }): MemoSession {
 			: { how: 'xpath', el: pick.el }
 		const card = addCard(spot)
 		sync(new Map([[spot.id, here]]))
+		// 足している途中はパネルが隠れているので、最後の 1 つのあとで欄に移る。
+		if (more) return
 		card.root.scrollIntoView({ block: 'nearest' })
 		card.editor.textarea.focus({ preventScroll: true })
 	}

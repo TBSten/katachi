@@ -53,8 +53,18 @@ export const SECTION_TITLES: Record<SectionKey, string> = {
 export const SERVER_SECTION_KEYS = ['build', 'git'] as const satisfies readonly SectionKey[]
 export const GIT_PLACEHOLDER = '（保存するときにサーバーが求めます）'
 
+/** 複数の要素の節で、要素ごとの区切りに使う行の見出し（記録では `### 1.` の小見出しの行になる。値は使わない）。 */
+export const GROUP_ROW_PREFIX = '### '
+
 /** 節の中身。キーと値の並び（値は文字列にしてから送る。サーバー側の整形を単純に保つため）。 */
 export type Section = Array<[label: string, value: string]>
+
+/** 保存の依頼に載せる添付（スクリーンショットの PNG）。サーバーが Store.putAttachments に渡し、参照を記録に書く。 */
+export type PayloadAttachment = { name: string; mime: 'image/png'; base64: string }
+
+/** スクリーンショットの添付の名前。記録の「スクリーンショット」の節に出る順。 */
+export const SHOT_WINDOW = 'window.png'
+export const SHOT_ELEMENT = 'element.png'
 
 export type SavePayload = {
 	/** 送信の対応づけ用。結果に同じ値を載せて返す。 */
@@ -62,14 +72,18 @@ export type SavePayload = {
 	comment: string
 	/** ページ全体・サイト全体へのフィードバックのとき。要素やテキストを選んだ場合は無い。 */
 	target?: 'page' | 'site'
-	/** 何を選んだか（element / text / page / site）。記録の kind になる。無ければ節の中身から推す。 */
-	kind?: 'element' | 'text' | 'page' | 'site'
+	/** 何を選んだか（element / elements / text / page / site）。記録の kind になる。無ければ節の中身から推す。 */
+	kind?: 'element' | 'elements' | 'text' | 'page' | 'site'
 	/** チェックされた節だけが入る。 */
 	sections: Partial<Record<SectionKey, Section>>
 	/** ダイアログに出ていたが、チェックを外された節。記録の omitted と「載せなかった情報」の行になる。 */
 	omitted?: SectionKey[]
 	/** ページを開いた時刻（performance.timeOrigin、ミリ秒）。ソースがそのあと変わったかの判定（stale）に使う。 */
 	pageOpenedAt?: number
+	/** スクリーンショットの PNG。「スクリーンショット」の節をチェックしたときだけ付く。 */
+	attachments?: PayloadAttachment[]
+	/** スクリーンショットを撮れなかった理由（attachments が無いとき）。記録の節に書く。 */
+	screenshotError?: string
 }
 
 export type SaveResult =

@@ -1,6 +1,7 @@
 // Feedback と Memo が共有する「殻」: shadow host・トースト・シートと popover の出し分け。
 // どちらも UI は 1 つの shadow root の下に置き、host を remove するだけで全部消える。
 import { placePopover } from './anchor'
+import { attachDrag, clampToView, parsePos, type Pos } from './drag'
 import { el } from './dom'
 
 /**
@@ -50,6 +51,11 @@ export type PanelOptions = {
 	anchor?: () => DOMRect
 	/** シートの裏に幕を敷く（Feedback）。false なら幕は無く、ページは見えたまま触れる（Memo）。 */
 	backdrop?: boolean
+	/**
+	 * 指定すると、popover を handle（header）のつかみで動かせる（シートでは動かさない）。
+	 * 動かしたら anchor を追うのをやめる。storageKey があれば localStorage に位置を覚えて次も使う。ダブルクリックで元に戻す。
+	 */
+	drag?: { handle: HTMLElement; storageKey?: string }
 }
 
 export type PanelHandle = {
@@ -61,13 +67,46 @@ export type PanelHandle = {
 	close(): void
 }
 
+/** 位置の保存。読み書きできなくても動く（プライベートウィンドウなど）。 */
+const loadPos = (key?: string): Pos | null => {
+	if (!key) return null
+	try {
+		return parsePos(localStorage.getItem(key))
+	} catch {
+		return null
+	}
+}
+const savePos = (key: string | undefined, pos: Pos | null) => {
+	if (!key) return
+	try {
+		if (pos) localStorage.setItem(key, JSON.stringify(pos))
+		else localStorage.removeItem(key)
+	} catch {
+		// 覚えられなくても動く。
+	}
+}
+
 /** panel を root に付ける。popover は anchor のそばに置き、中身の高さが変わったら置き直す。 */
 export function mountPanel(root: ShadowRoot, panel: HTMLElement, o: PanelOptions): PanelHandle {
 	let resizeObserver: ResizeObserver | null = null
 	let viewportCleanup: (() => void) | null = null
 	let outer: HTMLElement = panel
+	const abort = new AbortController()
+	/** 利用者が動かした位置。あれば anchor より優先し、画面に収め続ける。 */
+	let moved: Pos | null = o.popover ? loadPos(o.drag?.storageKey) : null
 	const update = () => {
-		if (!o.popover || !o.anchor) return
+		if (!o.popover) return
+		if (moved) {
+			// 画面の大きさや中身の高さが変わっても、はみ出さないように戻す。
+			const pos = clampToView(moved, { width: panel.offsetWidth, height: panel.offsetHeight }, { width: innerWidth, height: innerHeight })
+			Object.assign(panel.style, { left: `${pos.left}px`, top: `${pos.top}px`, right: 'auto', bottom: 'auto' })
+			return
+		}
+		if (!o.anchor) {
+			// 動かす前の位置は CSS に任せる（動かしたあとで戻したときに、inline の指定を外す）。
+			Object.assign(panel.style, { left: '', top: '', right: '', bottom: '' })
+			return
+		}
 		const pos = placePopover(o.anchor(), { width: panel.offsetWidth, height: panel.offsetHeight }, { width: innerWidth, height: innerHeight })
 		panel.style.left = `${pos.left}px`
 		panel.style.top = `${pos.top}px`
@@ -76,9 +115,24 @@ export function mountPanel(root: ShadowRoot, panel: HTMLElement, o: PanelOptions
 		root.append(panel)
 		update()
 		// 書いたり畳んだ項目を開いたりして高さが変わったら置き直す（下に入らなくなれば上へ）。
-		if (o.anchor) {
+		if (o.anchor || o.drag) {
 			resizeObserver = new ResizeObserver(update)
 			resizeObserver.observe(panel)
+		}
+		if (o.drag) {
+			attachDrag({
+				panel,
+				handle: o.drag.handle,
+				signal: abort.signal,
+				onMove(pos) {
+					moved = pos
+					update()
+				},
+				onEnd: (pos) => savePos(o.drag?.storageKey, pos),
+			})
+			// 戻す（ダブルクリック）ときは、覚えた位置も消す。
+			o.drag.handle.addEventListener('dblclick', () => { if (!moved) savePos(o.drag?.storageKey, null) }, { signal: abort.signal })
+			window.addEventListener('resize', update, { signal: abort.signal })
 		}
 	} else {
 		// シートは幕（Feedback）か、触れない枠（Memo。ページは見えたまま触れる）の中に置く。どちらもソフトキーボードで見える範囲に収める。
@@ -93,6 +147,7 @@ export function mountPanel(root: ShadowRoot, panel: HTMLElement, o: PanelOptions
 		outer,
 		update,
 		close() {
+			abort.abort()
 			resizeObserver?.disconnect()
 			viewportCleanup?.()
 			outer.remove()

@@ -1,9 +1,12 @@
 // shadow root の中だけで効く CSS。ページ側の style には何も足さない（片付けで host を消せば全部消える）。
+import { DRAG_CSS } from '../shared/drag'
 import { shellCss } from '../shared/shell.css'
 
-export const css = shellCss + `
+export const css = shellCss + DRAG_CSS + `
 .frame { position: fixed; display: none; border: 2px solid #3b82f6; background: rgba(59,130,246,.12); border-radius: 3px; }
 .frame.picked { border-color: #f59e0b; background: rgba(245,158,11,.16); }
+.frame.multi::after { content: attr(data-n); position: absolute; left: -2px; top: -18px; min-width: 16px; padding: 0 4px; font-size: 11px; line-height: 16px; text-align: center; color: #fff; background: #d97706; border-radius: 3px; }
+.banner .notice { flex-basis: 100%; font-size: 11px; color: #fcd34d; }
 .banner { flex-wrap: wrap; position: fixed; left: 12px; bottom: 56px; max-width: min(420px, calc(100vw - 24px)); padding: 8px 8px 8px 12px; display: flex; align-items: center; gap: 10px; background: #1c1c1c; color: #fff; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.3); pointer-events: auto; }
 .banner .exit, .banner .about { flex: none; min-height: 44px; min-width: 64px; padding: 0 14px; font: inherit; color: #fff; background: #3f3f46; border: 1px solid #71717a; border-radius: 6px; cursor: pointer; }
 .fab { position: fixed; display: none; min-height: 40px; padding: 0 14px; font: inherit; font-weight: 600; color: #fff; background: #2563eb; border: 0; border-radius: 20px; box-shadow: 0 4px 14px rgba(0,0,0,.35); pointer-events: auto; cursor: pointer; }
@@ -21,6 +24,11 @@ export const css = shellCss + `
 .dialog .target { display: flex; gap: 14px; margin: 0; padding: 0; border: 0; }
 .dialog .target label { display: flex; align-items: center; gap: 4px; min-height: 28px; cursor: pointer; }
 .dialog h2 { margin: 0; font-size: 15px; }
+.dialog .head { display: flex; align-items: center; gap: 8px; }
+.dialog .head h2 { flex: 1; }
+.dialog.popover .head { margin: -4px -4px 0; padding: 2px 4px; }
+.dialog .head .parent { padding: 3px 10px; font: inherit; font-size: 12px; background: #fff; border: 1px solid #d4d4d4; border-radius: 6px; cursor: pointer; }
+.dialog .head .parent:hover { background: #eef2ff; }
 .dialog textarea { width: 100%; min-height: 96px; padding: 8px; font: inherit; border: 1px solid #a3a3a3; border-radius: 6px; resize: vertical; }
 .dialog .item { border: 1px solid #e5e5e5; border-radius: 6px; padding: 4px 8px; }
 .dialog .item summary { cursor: pointer; }

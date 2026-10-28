@@ -2,12 +2,15 @@
 import { rectOfPick } from '../shared/anchor'
 import { collect, type Pick } from './collect'
 import { EVENT_RESULT, EVENT_SAVE, type SavePayload, type SaveResult, type SectionKey } from '../core/protocol'
+import { containerOf } from '../shared/pick'
+import { createRpc, type Call } from '../shared/rpc'
+import { captureShots } from './capture'
 import { copyText, copyToClipboard } from './copy'
+import { clearDraft, draftKey, loadDraft, locatorOf, saveDraft, type Draft } from './drafts'
 import { buildPayload } from './payload'
 import { FeedbackUi } from './ui'
 
 const STORAGE_KEY = 'katachi-feedback:checks'
-const SAVE_TIMEOUT_MS = 10_000
 
 // チェックの状態は覚えておくが、読み書きできなくても動くようにする（プライベートウィンドウなど）。
 function loadChecks(): Partial<Record<SectionKey, boolean>> {
@@ -38,16 +41,29 @@ export type ServerLike = {
  */
 export type Session = { ui: FeedbackUi; abort: AbortController; pick: Pick | null; sawText: boolean; quick: boolean }
 
+/** 「親を選ぶ」の行き先。選んだものを含む、ひとつ外側の要素（body・html までは広げない）。 */
+export function parentOf(pick: Pick): Element | null {
+	if (pick.kind === 'page' || pick.kind === 'elements') return null
+	// 要素なら親、テキストならそれを含む最も内側の要素（テキストの「親」）。
+	const next = pick.kind === 'element' ? pick.el.parentElement : containerOf(pick)
+	return next && next !== document.body && next !== document.documentElement ? next : null
+}
+
 export type Flow = ReturnType<typeof createFlow>
 
 export function createFlow(app: AppLike, server: ServerLike) {
 	let session: Session | null = null
-	let pending: { requestId: string; timer: ReturnType<typeof setTimeout> } | null = null
+	// 保存の依頼と結果を requestId で対応づける（時間切れもここで決着する）。
+	const rpc = createRpc<SavePayload, SaveResult>(server, EVENT_SAVE, EVENT_RESULT)
+	let pending: Call<SaveResult> | null = null
+	/** 開いている入力欄の下書きの鍵。 */
+	let draftKeyNow: string | null = null
 
 	/** 画面に出したものを残らず消す。何度呼んでも安全。 */
 	function cleanup() {
-		if (pending) clearTimeout(pending.timer)
+		pending?.cancel()
 		pending = null
+		draftKeyNow = null
 		if (!session) return
 		const s = session
 		session = null
@@ -70,50 +86,88 @@ export function createFlow(app: AppLike, server: ServerLike) {
 		return session
 	}
 
-	// サーバーからの結果。購読は外せないので1回だけ登録し、待っている送信のものだけ扱う。
-	server.on<SaveResult>(EVENT_RESULT, (result) => {
-		if (!pending || pending.requestId !== result.requestId || !session) return
-		clearTimeout(pending.timer)
+	async function submit(comment: string, checked: SavePayload['sections'], offered: SavePayload['sections'], target?: SavePayload['target']) {
+		const s = session
+		if (!s) return
+		const key = draftKeyNow
+		s.ui.setBusy(true, checked.screenshot ? '撮影中…' : undefined)
+		const payload = buildPayload({ requestId: '', comment, pick: s.pick!, offered, checked, target })
+		if (checked.screenshot) {
+			const shots = await captureShots(s.pick!)
+			if (session !== s) return // 撮っている間にやめた
+			if (shots.attachments.length) payload.attachments = shots.attachments
+			if (shots.error) payload.screenshotError = shots.error
+		}
+		const call = rpc.call(payload)
+		pending = call
+		const result = await call.promise
+		if (pending !== call || session !== s) return
 		pending = null
 		if (result.ok) {
+			if (key) clearDraft(key)
 			exit()
 			FeedbackUi.toast(`保存しました: ${result.file}`)
 		} else {
-			session.ui.showError(result.error)
+			s.ui.showError(result.error)
 		}
-	})
-
-	function submit(comment: string, checked: SavePayload['sections'], offered: SavePayload['sections'], target?: SavePayload['target']) {
-		if (!session) return
-		const requestId = `${Date.now()}-${Math.random().toString(36).slice(2)}`
-		const ui = session.ui
-		ui.setBusy(true)
-		pending = {
-			requestId,
-			timer: setTimeout(() => {
-				pending = null
-				ui.showError('サーバーから応答がありません（時間切れ）')
-			}, SAVE_TIMEOUT_MS),
-		}
-		server.send<SavePayload>(EVENT_SAVE, buildPayload({ requestId, comment, pick: session.pick!, offered, checked, target }))
 	}
 
 	function openDialog() {
+		show()
+	}
+
+	/** 入力欄を出す。initial があれば（「親を選ぶ」で開き直すとき）それを使い、無ければ下書きを探す。 */
+	function show(initial?: Draft | null) {
 		if (!session?.pick) return
 		const { ui, pick } = session
 		const sections = collect(pick)
+		const key = draftKey(location.href, locatorOf(pick))
+		draftKeyNow = key
 		ui.showDialog(sections, loadChecks(), {
 			onSubmit: (comment, checked, target) => {
 				// チェックを外した節の記憶も残したいので、出ていた節の全体で記録する。
 				const state: Partial<Record<SectionKey, boolean>> = { ...loadChecks() }
 				for (const k of Object.keys(sections) as SectionKey[]) state[k] = k in checked
 				saveChecks(state)
-				submit(comment, checked, sections, target)
+				void submit(comment, checked, sections, target)
 			},
 			onCopy: (comment, checked, target) =>
 				copyToClipboard(copyText(buildPayload({ requestId: 'copy', comment, pick, offered: sections, checked, target }))),
 			onCancel: exit,
-		}, () => (pick.kind === 'page' ? ui.bannerRect() : rectOfPick(pick)), pick.kind === 'page')
+			onDraft: (draft) => saveDraft(key, draft),
+			onParent: reparent,
+		}, () => (pick.kind === 'page' ? ui.bannerRect() : rectOfPick(pick)), pick.kind === 'page', { initial: initial ?? loadDraft(key), canParent: parentOf(pick) !== null })
+	}
+
+	/**
+	 * 選んだものを next に替えて、入力欄を開き直す。書きかけのコメントとチェックは引き継ぐ。
+	 * 「親を選ぶ」と、入力欄を開いたままの Shift+クリック（要素を足す・外す）が使う。next が null なら入力欄を閉じる。
+	 */
+	function replacePick(next: Pick | null) {
+		const s = session
+		if (!s) return
+		const carried = s.ui.dialogDraft()
+		// 引き継ぐので、元の場所の下書きは残さない（新しい場所の下書きとして保存し直される）。
+		if (draftKeyNow && s.ui.hasDialog()) clearDraft(draftKeyNow)
+		if (s.sawText) getSelection()?.removeAllRanges()
+		s.pick = next
+		s.ui.closeDialog()
+		if (!next) return
+		show(carried)
+		if (carried) saveDraft(draftKeyNow!, carried)
+	}
+
+	/** 選んだものをひとつ外側の要素に広げる。 */
+	function reparent() {
+		const next = session?.pick ? parentOf(session.pick) : null
+		if (!session || !next) return
+		session.ui.setPicked(next.getBoundingClientRect())
+		replacePick({ kind: 'element', el: next })
+	}
+
+	/** モードが session.pick を書き換えたあと（Shift+クリック）、開いている入力欄を新しい選択で開き直す。 */
+	function repick() {
+		if (session) replacePick(session.pick)
 	}
 
 	/** 何も選ばずに、ページ全体・サイト全体へのフィードバックを書く（案内の帯のボタンから）。 */
@@ -126,5 +180,5 @@ export function createFlow(app: AppLike, server: ServerLike) {
 		openDialog()
 	}
 
-	return { get session() { return session }, begin, cleanup, exit, openDialog, openPage }
+	return { get session() { return session }, begin, cleanup, exit, openDialog, openPage, repick }
 }

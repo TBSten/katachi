@@ -46,7 +46,20 @@ const pageP: SavePayload = {
 }
 const site: SavePayload = { ...pageP, kind: 'site', target: 'site' }
 
-const cases: Array<[string, SavePayload]> = [['element', element], ['text', text], ['page', pageP], ['site', site]]
+// Shift+クリックで 3 つの要素を選んだ記録。節は要素ごとに `### n.` の行で区切られる。
+const g = (n: number): [string, string] => [`### ${n}.`, '']
+const elements: SavePayload = {
+	...element, kind: 'elements', comment: '3 つとも直したい',
+	sections: {
+		source: [['ページのソースファイル', 'docs/a.mdx'], g(1), ['ソース', 'docs/a.mdx:10-12'], g(2), ['ソース', 'docs/a.mdx:30-31'], g(3), ['ソース', '不明（この要素の近くに行番号が付いていません）']],
+		page: page(),
+		location: [g(1), ['XPath', '/html/body/p[1]'], ['近くの見出し', '## 一'], g(2), ['XPath', '/html/body/p[2]'], g(3), ['XPath', '/html/body/ul/li[1]'], ['CSSセレクタ', 'ul li']],
+		content: [g(1), ['タグ', 'p'], g(2), ['タグ', 'p'], g(3), ['タグ', 'li']],
+		...common,
+	},
+}
+
+const cases: Array<[string, SavePayload]> = [['element', element], ['elements', elements], ['text', text], ['page', pageP], ['site', site]]
 
 const split = (md: string) => {
 	const m = /^---\n([\s\S]*?)\n---\n/.exec(md)!
@@ -96,6 +109,32 @@ describe.each(cases)('記録 schema 1 [%s]', (kind, payload) => {
 		expect(copied).not.toContain('## git')
 		expect(copied).not.toContain('## ビルド')
 		expect(split(copied).front.id).toBeUndefined()
+	})
+})
+
+describe('複数の要素（kind: elements）', () => {
+	const md = toMarkdown(elements, server)
+	const { front, body } = split(md)
+	it('frontmatter の source・xpath・selector・heading は要素ごとの配列。1 つだけのときは文字列のまま', () => {
+		expect(front.source).toEqual(['docs/a.mdx:10-12', 'docs/a.mdx:30-31'])
+		expect(front.xpath).toEqual(['/html/body/p[1]', '/html/body/p[2]', '/html/body/ul/li[1]'])
+		expect(front.selector).toEqual(['ul li'])
+		expect(front.heading).toEqual(['## 一'])
+		expect(front).not.toHaveProperty('fragment')
+		expect(split(toMarkdown(element, server)).front.source).toBe('docs/src/content/docs/ja/guides/layout.mdx:120-122')
+	})
+	it('要約の 1 行は「対象: N 個の要素（file:行 ほか）」', () => {
+		expect(body).toMatch(/^\n対象: 3 個の要素（docs\/a\.mdx:10-12 ほか）\n/)
+	})
+	it('選んだ内容・ページ上の場所・ソースの節は `### n.` で要素ごとに並ぶ', () => {
+		for (const title of ['ソースの位置', 'ページ上の場所', '選んだ内容']) {
+			const sec = new RegExp(`## ${title}\\n\\n([\\s\\S]*?)(?=\\n## |$)`).exec(md)![1]!
+			expect([...sec.matchAll(/^### (\d)\.$/gm)].map((m) => m[1])).toEqual(['1', '2', '3'])
+		}
+		expect(md).not.toMatch(/- ### /)
+	})
+	it('コピーの文にも同じ形で入る', () => {
+		expect(toCopyMarkdown(elements, created)).toContain('### 3.')
 	})
 })
 

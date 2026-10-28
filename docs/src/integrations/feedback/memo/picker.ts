@@ -1,6 +1,6 @@
 // 「要素を選ぶ」の操作（ブラウザ側）: hover の枠・クリック／タップで要素・テキストの選択。1 回選んだら終わる。
 // Esc でやめるのは app.ts が受ける（ここは選ぶことだけ）。
-import type { Pick } from '../shared/pick'
+import type { SinglePick } from '../shared/pick'
 
 /** この距離以内・この時間以内で離したタッチだけを「タップ」とみなす（それ以外はスクロールや長押し）。 */
 const TAP_SLOP_PX = 10
@@ -11,7 +11,8 @@ const SELECTION_DEBOUNCE_MS = 200
 export type PickerOptions = {
 	/** 自前の UI の host。ここへの操作は選ばない。 */
 	host: Element
-	onPick(pick: Exclude<Pick, { kind: 'page' }>): void
+	/** more が true なら、Shift+クリックで足しているところ（選ぶ操作は続く）。false なら、これで選び終えた。 */
+	onPick(pick: SinglePick, more: boolean): void
 	/** hover している要素の矩形（無ければ null）。 */
 	onHover(rect: DOMRect | null): void
 }
@@ -36,14 +37,14 @@ export function startPicker(o: PickerOptions): () => void {
 		o.onHover(null)
 	}
 	/** 選び終えた。続いて来る click でリンクが動かないよう、1 回だけ飲み込む。 */
-	const finish = (pick: Exclude<Pick, { kind: 'page' }>) => {
+	const finish = (pick: SinglePick) => {
 		if (done) return
 		done = true
 		stop()
 		const swallow = (e: Event) => { e.preventDefault(); e.stopPropagation() }
 		document.addEventListener('click', swallow, { capture: true, once: true })
 		setTimeout(() => document.removeEventListener('click', swallow, true), 600)
-		o.onPick(pick)
+		o.onPick(pick, false)
 	}
 	const pickText = (): boolean => {
 		const sel = getSelection()
@@ -77,6 +78,8 @@ export function startPicker(o: PickerOptions): () => void {
 		if (tap && t) finish({ kind: 'element', el: t })
 	}, opts)
 	document.addEventListener('pointercancel', () => { mouseDown = false; touchDown = null }, opts)
+	// Shift+クリックでテキストの選択が広がらないようにする（要素を足すのに使う）。
+	document.addEventListener('mousedown', (e) => { if (e.shiftKey && !isOwn(e)) e.preventDefault() }, opts)
 	document.addEventListener('mouseup', (e) => {
 		if (isOwn(e) || e.button !== 0) return
 		pickText()
@@ -97,6 +100,8 @@ export function startPicker(o: PickerOptions): () => void {
 		if ((getSelection()?.toString().trim() ?? '') !== '') return
 		// ドラッグで離した click は、押した場所と離した場所の共通の祖先に飛ぶ。要素の選択とはみなさない。
 		if (dragged) return
+		// Shift を押したままのクリックは、選ぶ操作を続けて要素を足していく。Shift を離したクリックか Esc で終える。
+		if (e.shiftKey) return o.onPick({ kind: 'element', el: t }, true)
 		finish({ kind: 'element', el: t })
 	}
 	document.addEventListener('click', onClick, opts)

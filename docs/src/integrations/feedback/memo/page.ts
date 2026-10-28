@@ -1,7 +1,7 @@
 // 今見ているページの情報と、選んだものの場所の情報（ブラウザ側）。場所の取り方は shared/pick.ts（Feedback と同じ）を使う。
 import type { Section } from '../core/protocol'
 import { clip, squash } from '../shared/fragment'
-import { locationSection, sourceSection, type Pick } from '../shared/pick'
+import { locationSection, sourceSection, type SinglePick } from '../shared/pick'
 import { pageSourceFile } from '../shared/srcmap'
 import type { Locator, MemoPage } from './model'
 
@@ -28,7 +28,7 @@ export function pageInfo(): PageInfo {
 const rowOf = (section: Section, label: string): string | undefined => section.find((r) => r[0] === label)?.[1]
 
 /** 選んだものの場所。値が無い項目は入れない（ソースが「不明（…）」のときも入れない）。 */
-export function locatorOf(pick: Exclude<Pick, { kind: 'page' }>): Locator {
+export function locatorOf(pick: SinglePick): Locator {
 	const src = sourceSection(pick)
 	const loc = locationSection(pick)
 	const source = rowOf(src, 'ソース')

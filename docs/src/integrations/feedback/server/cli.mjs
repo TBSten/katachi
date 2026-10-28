@@ -81,6 +81,9 @@ export function summarize(text) {
 	return clip(kind + [title, !front.source && target && `（${target}）`].filter(Boolean).join(' ') || '（要約なし）', 110)
 }
 
+/** 一覧のソース欄。複数の要素（kind: elements）は配列なので、先頭と件数にする。 */
+export const sourceText = (s) => (Array.isArray(s) ? (s.length > 1 ? `${s[0]} ほか${s.length - 1}件` : (s[0] ?? '-')) : (s ?? '-'))
+
 const shortPage = (url) => {
 	if (!url) return '-'
 	try {
@@ -124,7 +127,7 @@ async function main() {
 		if (rows.length === 0) return console.log(`（${state} の記録はありません: ${dir}）`)
 		for (const r of rows) {
 			const marks = [r.stale === true && 'stale', r.dirty === true && 'dirty', r.bytes === 0 && '0byte', r.state === 'archived' && 'archived'].filter(Boolean)
-			console.log([r.id, r.created, shortPage(r.page), r.source ?? '-', r.summary, marks.length ? `<${marks.join(',')}>` : ''].filter((x) => x !== '').join(' | '))
+			console.log([r.id, r.created, shortPage(r.page), sourceText(r.source), r.summary, marks.length ? `<${marks.join(',')}>` : ''].filter((x) => x !== '').join(' | '))
 		}
 		console.log(`計 ${rows.length} 件（${state}）`)
 		return

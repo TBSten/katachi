@@ -45,4 +45,18 @@ describe('limits', () => {
 		const r = checkPayload({ ...ok(), sections: { evil: [] } })
 		expect(r).toEqual({ ok: false, reason: expect.stringContaining('evil') })
 	})
+
+	it('添付: PNG の base64 は通り、base64 は全体の上限に数えない。件数・名前・中身・大きさは拒否', () => {
+		const png = { name: 'window.png', mime: 'image/png', base64: 'iVBORw0KGgo=' }
+		expect(checkPayload({ ...ok(), attachments: [png] })).toEqual({ ok: true })
+		// 2MB を超える base64 でも、10MB 以内の添付なら通る（JSON の上限は添付を除いて数える）。
+		const big = { ...png, base64: 'A'.repeat(LIMITS.payloadChars + 4) }
+		expect(checkPayload({ ...ok(), attachments: [big] })).toEqual({ ok: true })
+		expect(checkPayload({ ...ok(), attachments: Array.from({ length: LIMITS.attachmentCount + 1 }, () => png) })).toMatchObject({ ok: false })
+		expect(checkPayload({ ...ok(), attachments: [{ ...png, name: '../x.png' }] })).toMatchObject({ ok: false })
+		expect(checkPayload({ ...ok(), attachments: [{ ...png, mime: 'text/html' }] })).toMatchObject({ ok: false })
+		expect(checkPayload({ ...ok(), attachments: [{ ...png, base64: '<script>' }] })).toMatchObject({ ok: false })
+		expect(checkPayload({ ...ok(), attachments: [{ ...png, base64: 'A'.repeat(Math.ceil(LIMITS.attachmentBytes / 3) * 4 + 4) }] })).toMatchObject({ ok: false })
+		expect(checkPayload({ ...ok(), screenshotError: 'x'.repeat(LIMITS.errorChars + 1) })).toMatchObject({ ok: false })
+	})
 })

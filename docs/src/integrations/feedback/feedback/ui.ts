@@ -1,6 +1,7 @@
 import type { SectionKey } from '../core/protocol'
 import { placeFloating } from '../shared/anchor'
-import { buildDialog, type DialogHandlers, type Sections } from './dialog'
+import { buildDialog, type DialogExtra, type DialogHandlers, type Sections } from './dialog'
+import type { Draft } from './drafts'
 import { el, isCoarse, isNarrow } from '../shared/dom'
 import { createHost, mountPanel, showToast, type PanelHandle } from '../shared/shell'
 import { css } from './ui.css'
@@ -26,12 +27,15 @@ export class FeedbackUi {
 	private readonly root = this.shell.root
 	private readonly hover = el('div', 'frame')
 	private readonly picked = el('div', 'frame picked')
+	/** Shift+クリックで複数の要素を選んだときの、要素ごとの枠（番号つき）。 */
+	private multi: HTMLElement[] = []
 	private readonly bannerEl = el('div', 'banner')
 	private menu: HTMLElement | null = null
 	/** 入力欄（シートなら幕つき、popover なら popover 自身）。 */
 	private dialog: PanelHandle | null = null
 	private textarea: HTMLTextAreaElement | null = null
 	private submitButton: HTMLButtonElement | null = null
+	private readDraft: (() => Draft) | null = null
 	private errorBox: HTMLElement | null = null
 	private fab: HTMLButtonElement | null = null
 
@@ -56,7 +60,30 @@ export class FeedbackUi {
 		Object.assign(frame.style, { display: 'block', left: `${rect.left}px`, top: `${rect.top}px`, width: `${rect.width}px`, height: `${rect.height}px` })
 	}
 	setHover(rect: DOMRect | null) { this.place(this.hover, rect) }
-	setPicked(rect: DOMRect | null) { this.place(this.picked, rect) }
+	setPicked(rect: DOMRect | null) {
+		this.place(this.picked, rect)
+		this.setPickedList([])
+	}
+	/** 複数の要素の枠を、番号つきで出す。空なら枠を全部消す。 */
+	setPickedList(rects: DOMRect[]) {
+		if (rects.length) this.place(this.picked, null)
+		while (this.multi.length < rects.length) {
+			const f = el('div', 'frame picked multi')
+			this.root.append(f)
+			this.multi.push(f)
+		}
+		this.multi.forEach((f, i) => {
+			f.dataset.n = String(i + 1)
+			this.place(f, rects[i] ?? null)
+		})
+	}
+	/** 案内の帯に小さく一言出す（上限に達したときなど）。帯が無ければ通知で出す。 */
+	notice(message: string, ms = 2500) {
+		if (!this.bannerEl.isConnected) return FeedbackUi.toast(message, ms)
+		const n = el('span', 'notice', message)
+		this.bannerEl.append(n)
+		setTimeout(() => n.remove(), ms)
+	}
 	/** 案内の帯の矩形（何も選ばずに開いた popover の置き場所）。 */
 	bannerRect() { return this.bannerEl.getBoundingClientRect() }
 
@@ -103,12 +130,14 @@ export class FeedbackUi {
 	 * 入力欄を出す。幅 600px 以下は下から出るシート、それより広ければ選択のそばの popover。
 	 * popover は幕を敷かないので、ページは見えたままスクロールもできる。anchor は選んだものの今の矩形を返す。
 	 */
-	showDialog(sections: Sections, remembered: Partial<Record<SectionKey, boolean>>, h: DialogHandlers, anchor: () => DOMRect, withTarget = false) {
+	showDialog(sections: Sections, remembered: Partial<Record<SectionKey, boolean>>, h: DialogHandlers, anchor: () => DOMRect, withTarget = false, extra: DialogExtra = {}) {
 		this.hideMenu()
 		this.setFab(null)
 		const popover = !isNarrow()
-		const parts = buildDialog(sections, remembered, h, popover, withTarget)
-		this.dialog = mountPanel(this.root, parts.root, { popover, anchor, backdrop: true })
+		const parts = buildDialog(sections, remembered, h, popover, withTarget, extra)
+		// popover は見出しをつかんで動かせる。動かしたら選んだ場所を追うのをやめ、その回だけ位置を覚える（閉じれば忘れる）。
+		this.dialog = mountPanel(this.root, parts.root, { popover, anchor, backdrop: true, drag: popover ? { handle: parts.head } : undefined })
+		this.readDraft = parts.draft
 		this.textarea = parts.textarea
 		this.submitButton = parts.submit
 		this.errorBox = parts.error
@@ -119,15 +148,22 @@ export class FeedbackUi {
 	/** 入力欄だけを閉じる（モードは続く）。 */
 	closeDialog() {
 		this.dialog?.close()
-		this.dialog = this.textarea = this.submitButton = this.errorBox = null
+		this.dialog = this.textarea = this.submitButton = this.errorBox = this.readDraft = null
 	}
+	/** 今のコメントとチェックの状態。入力欄が出ていなければ null。 */
+	dialogDraft() { return this.readDraft?.() ?? null }
 	hasDialog() { return this.dialog !== null }
 	/** popover が出ているか（外のクリックの扱いがシートと違う）。 */
 	hasPopover() { return this.dialog?.popover ?? false }
 	/** コメントが書いてあるか。書いてあるうちは外のクリックで閉じない。 */
 	hasComment() { return (this.textarea?.value.trim() ?? '') !== '' }
 	/** 送信中は二重送信を防ぐ。 */
-	setBusy(busy: boolean) { if (this.submitButton) this.submitButton.disabled = busy }
+	setBusy(busy: boolean, label?: string) {
+		if (!this.submitButton) return
+		this.submitButton.disabled = busy
+		// 撮影などで時間がかかるときは、ボタンの文字で今何をしているかを見せる。
+		this.submitButton.textContent = busy && label ? label : '送信'
+	}
 	showError(message: string) { if (this.errorBox) this.errorBox.textContent = `保存できませんでした: ${message}`; this.setBusy(false) }
 
 	/** 保存を知らせる小さな通知。UI 全体が消えたあとも残すため、host ごとではなく自前の host で出す。 */

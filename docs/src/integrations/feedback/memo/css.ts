@@ -1,7 +1,8 @@
 // Memo の見た目。shadow root の中だけで効く（共通の土台は shared/shell.css.ts）。
+import { DRAG_CSS } from '../shared/drag'
 import { shellCss } from '../shared/shell.css'
 
-export const css = shellCss + `
+export const css = shellCss + DRAG_CSS + `
 .panel { pointer-events: auto; display: flex; flex-direction: column; background: #fff; border: 1px solid #d4d4d4; box-shadow: 0 8px 28px rgba(0,0,0,.3); }
 .panel[hidden], .sheet-frame[hidden] { display: none; }
 /* 幅 600px より広い: 右上の大きめの popover（最大の高さは 70vh、中身はスクロール）。 */

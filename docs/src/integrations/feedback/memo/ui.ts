@@ -5,6 +5,9 @@ import { createHost, mountPanel, type PanelHandle } from '../shared/shell'
 import type { SaveStatus } from './controller'
 import { css } from './css'
 
+/** 動かした位置を覚える localStorage の鍵（次に開いたときも同じところに出す）。 */
+const POS_KEY = 'katachi-memo:position'
+
 export type UiHandlers = {
 	onClose(): void
 	/** 「要素を選ぶ」ボタン。 */
@@ -65,7 +68,7 @@ export class MemoUi {
 		this.pill.append(el('span', undefined, '要素をクリック／タップ、またはテキストを選ぶ（Esc でやめる）'), cancel)
 		this.pill.hidden = true
 		this.root.append(this.hover, this.pill)
-		this.handle = mountPanel(this.root, this.panel, { popover, backdrop: false })
+		this.handle = mountPanel(this.root, this.panel, { popover, backdrop: false, drag: popover ? { handle: head, storageKey: POS_KEY } : undefined })
 	}
 
 	get isSheet() { return !this.handle.popover }

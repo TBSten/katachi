@@ -27,9 +27,11 @@ export default function feedback(): AstroIntegration {
 	return {
 		name: 'katachi-feedback',
 		hooks: {
-			'astro:config:setup': ({ command, addDevToolbarApp, injectScript }) => {
+			'astro:config:setup': ({ command, addDevToolbarApp, injectScript, updateConfig }) => {
 				if (command !== 'dev') return
 				isDev = true
+				// スクリーンショットの依存は撮るときに動的 import する。先に束ねておかないと、初めて撮った瞬間に Vite がページを再読み込みする。
+				updateConfig({ vite: { optimizeDeps: { include: ['modern-screenshot'] } } })
 				injectScript('head-inline', LOG_BUFFER_SCRIPT)
 				addDevToolbarApp({
 					id: APP_ID,
