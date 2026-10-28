@@ -1,0 +1,72 @@
+name: Bug report
+description: katachi behaves differently from what the docs say, or crashes.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! English or Japanese are both fine. / 日本語でも大丈夫です。
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you saw. Paste the violation output or the stack trace if there is one.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: The smallest architecture definition and file tree that shows the problem. A link to a repository is welcome.
+      placeholder: |
+        architecture {
+            "UseCase".role { ... }
+        }
+
+        src/main/kotlin/com/example/...
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Core DSL / layout check (:katachi)
+        - Konsist integration (:katachi-konsist)
+        - Konture integration (:katachi-konture)
+        - Gradle plugin
+        - Document generation / processors
+        - Templates / code generation
+        - IntelliJ plugin
+        - Install kit
+        - Docs site
+        - Other / not sure
+    validations:
+      required: true
+  - type: input
+    id: katachi-version
+    attributes:
+      label: katachi version
+      placeholder: "0.3.0"
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Kotlin, Gradle, AGP versions, project type (JVM / Android / KMP), OS, IDE version if relevant.
+      placeholder: |
+        Kotlin 2.3.x / Gradle 9.x / AGP 8.x
+        Project: Android multi-module
+        OS: macOS 26
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else

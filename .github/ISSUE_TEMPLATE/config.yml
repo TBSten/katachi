@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://tbsten.github.io/katachi/
+    about: Guides, recipes, and the API reference.
