@@ -1,12 +1,7 @@
 // 選んだものの横に浮かべるボタンの位置決め。DOM に触らない純粋な計算だけを置く。
-import type { Pick } from '../feedback/collect'
+export { rectOfPick } from './pick'
 
 type Box = { left: number; top: number; right: number; bottom: number }
-
-/** 選んだものの画面上の矩形。要素なら要素、テキストなら選択範囲の外接矩形。 */
-export function rectOfPick(pick: Exclude<Pick, { kind: 'page' }>): DOMRect {
-	return pick.kind === 'element' ? pick.el.getBoundingClientRect() : pick.range.getBoundingClientRect()
-}
 
 /**
  * ボタンの左上の座標を決める。選択のすぐ下、入らなければ上、どちらも入らなければ画面の下端に寄せる。

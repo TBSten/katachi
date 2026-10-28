@@ -114,7 +114,7 @@ export function createFileStore(root: string, repoRoot?: string): Store {
 					throw e
 				}
 				try {
-					await handle.writeFile(text, 'utf8')
+					await handle.writeFile(typeof text === 'function' ? text(id) : text, 'utf8')
 				} finally {
 					await handle.close()
 				}

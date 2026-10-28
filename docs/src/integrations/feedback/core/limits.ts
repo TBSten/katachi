@@ -50,6 +50,13 @@ export function checkPayload(v: unknown): PayloadCheck {
 			return { ok: false, reason: `節 ${key} の行が不正か、大きすぎます` }
 		}
 	}
+	if (p.kind !== undefined && !['element', 'text', 'page', 'site'].includes(p.kind)) return { ok: false, reason: 'kind が不正です' }
+	if (p.omitted !== undefined && !(Array.isArray(p.omitted) && p.omitted.length <= SECTION_KEYS.length && p.omitted.every((k) => (SECTION_KEYS as readonly string[]).includes(k)))) {
+		return { ok: false, reason: 'omitted が不正です' }
+	}
+	if (p.pageOpenedAt !== undefined && !(typeof p.pageOpenedAt === 'number' && Number.isFinite(p.pageOpenedAt))) {
+		return { ok: false, reason: 'pageOpenedAt が不正です' }
+	}
 	let size: number
 	try {
 		size = JSON.stringify(p).length

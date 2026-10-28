@@ -32,7 +32,7 @@ export function createMemoryStore(): MemoryStore {
 			const n = nextNumber(entries.keys(), prefix)
 			if (n === null) throw new Error('その日の連番を使い切りました')
 			const id = formatId(prefix, n)
-			entries.set(id, { text, state: 'open', createdAt: now.toISOString() })
+			entries.set(id, { text: typeof text === 'function' ? text(id) : text, state: 'open', createdAt: now.toISOString() })
 			return { ...info(id), attempts: 1 }
 		},
 		async list({ state = 'open' } = {}) {

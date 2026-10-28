@@ -17,6 +17,15 @@ export function sourceFileOf(payload: SavePayload): string | null {
 	return path && !path.startsWith('/') && !path.split('/').includes('..') ? path : null
 }
 
+/** ソースのファイルに未コミットの変更があるか。git が使えなければ undefined。 */
+export async function sourceDirty(repoRoot: string, file: string): Promise<boolean | undefined> {
+	try {
+		return (await git(repoRoot, ['status', '--porcelain', '--', file])) !== ''
+	} catch {
+		return undefined
+	}
+}
+
 /**
  * git 節の中身を本物の値にする。commit が求められなければ git 節ごと外す。
  * ソースのファイルが分からないときは、未コミットの変更の行だけ作らない。

@@ -2,6 +2,8 @@
 import { rectOfPick } from '../shared/anchor'
 import { collect, type Pick } from './collect'
 import { EVENT_RESULT, EVENT_SAVE, type SavePayload, type SaveResult, type SectionKey } from '../core/protocol'
+import { copyText, copyToClipboard } from './copy'
+import { buildPayload } from './payload'
 import { FeedbackUi } from './ui'
 
 const STORAGE_KEY = 'katachi-feedback:checks'
@@ -81,7 +83,7 @@ export function createFlow(app: AppLike, server: ServerLike) {
 		}
 	})
 
-	function submit(comment: string, checked: SavePayload['sections'], target?: SavePayload['target']) {
+	function submit(comment: string, checked: SavePayload['sections'], offered: SavePayload['sections'], target?: SavePayload['target']) {
 		if (!session) return
 		const requestId = `${Date.now()}-${Math.random().toString(36).slice(2)}`
 		const ui = session.ui
@@ -93,7 +95,7 @@ export function createFlow(app: AppLike, server: ServerLike) {
 				ui.showError('サーバーから応答がありません（時間切れ）')
 			}, SAVE_TIMEOUT_MS),
 		}
-		server.send<SavePayload>(EVENT_SAVE, { requestId, comment: comment.trim(), sections: checked, ...(target ? { target } : {}) })
+		server.send<SavePayload>(EVENT_SAVE, buildPayload({ requestId, comment, pick: session.pick!, offered, checked, target }))
 	}
 
 	function openDialog() {
@@ -106,8 +108,10 @@ export function createFlow(app: AppLike, server: ServerLike) {
 				const state: Partial<Record<SectionKey, boolean>> = { ...loadChecks() }
 				for (const k of Object.keys(sections) as SectionKey[]) state[k] = k in checked
 				saveChecks(state)
-				submit(comment, checked, target)
+				submit(comment, checked, sections, target)
 			},
+			onCopy: (comment, checked, target) =>
+				copyToClipboard(copyText(buildPayload({ requestId: 'copy', comment, pick, offered: sections, checked, target }))),
 			onCancel: exit,
 		}, () => (pick.kind === 'page' ? ui.bannerRect() : rectOfPick(pick)), pick.kind === 'page')
 	}

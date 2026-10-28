@@ -24,6 +24,7 @@ export const SECTION_KEYS = [
 	'console',
 	'browser',
 	'datetime',
+	'build',
 	'git',
 ] as const
 export type SectionKey = (typeof SECTION_KEYS)[number]
@@ -40,13 +41,16 @@ export const SECTION_TITLES: Record<SectionKey, string> = {
 	console: 'コンソール',
 	browser: 'ブラウザ',
 	datetime: '日時',
+	build: 'ビルド',
 	git: 'git',
 }
 
 /**
- * git 節の値は保存するときにサーバーが求める（ブラウザは知らない）。
- * ブラウザが送る git 節の中身は捨てられ、プレビューには下の GIT_PLACEHOLDER を出す。
+ * git・build 節の値は保存するときにサーバーが求める（ブラウザは知らない）。
+ * ブラウザが送るこれらの節の中身は捨てられ、プレビューには下の GIT_PLACEHOLDER を出す。
+ * 「Markdown をコピー」の文には、この 2 節は入らない。
  */
+export const SERVER_SECTION_KEYS = ['build', 'git'] as const satisfies readonly SectionKey[]
 export const GIT_PLACEHOLDER = '（保存するときにサーバーが求めます）'
 
 /** 節の中身。キーと値の並び（値は文字列にしてから送る。サーバー側の整形を単純に保つため）。 */
@@ -58,10 +62,40 @@ export type SavePayload = {
 	comment: string
 	/** ページ全体・サイト全体へのフィードバックのとき。要素やテキストを選んだ場合は無い。 */
 	target?: 'page' | 'site'
+	/** 何を選んだか（element / text / page / site）。記録の kind になる。無ければ節の中身から推す。 */
+	kind?: 'element' | 'text' | 'page' | 'site'
 	/** チェックされた節だけが入る。 */
 	sections: Partial<Record<SectionKey, Section>>
+	/** ダイアログに出ていたが、チェックを外された節。記録の omitted と「載せなかった情報」の行になる。 */
+	omitted?: SectionKey[]
+	/** ページを開いた時刻（performance.timeOrigin、ミリ秒）。ソースがそのあと変わったかの判定（stale）に使う。 */
+	pageOpenedAt?: number
 }
 
 export type SaveResult =
 	| { requestId: string; ok: true; file: string }
+	| { requestId: string; ok: false; error: string }
+
+// ---- Memo（ページ・選んだ箇所ごとのメモ） ----
+
+/** Memo の toolbar アプリの id。本番ビルドに出ていないことの確認でも、この文字列を grep する。 */
+export const MEMO_APP_ID = 'katachi-memo'
+
+/** ブラウザ → サーバー: メモの読み込み・保存の依頼（op で分ける）。 */
+export const EVENT_MEMO_REQUEST = 'katachi-memo:request'
+/** サーバー → ブラウザ: その結果。 */
+export const EVENT_MEMO_RESULT = 'katachi-memo:result'
+
+export type MemoRequest =
+	| { requestId: string; op: 'load'; lang: string; pagePath: string }
+	/**
+	 * text はメモの Markdown 全体（null ならこのページのファイルは書かず、ひな形だけ書く）。
+	 * fields は全ページ共通の field のひな形（`memo/_fields.json`）。
+	 */
+	| { requestId: string; op: 'save'; lang: string; pagePath: string; text: string | null; fields: string[] }
+
+export type MemoResult =
+	/** text が null ならそのページのメモはまだ無い。fields はひな形（無ければ既定）。 */
+	| { requestId: string; ok: true; op: 'load'; text: string | null; fields: string[] }
+	| { requestId: string; ok: true; op: 'save'; file: string | null }
 	| { requestId: string; ok: false; error: string }

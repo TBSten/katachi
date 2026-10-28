@@ -1,7 +1,7 @@
 // shadow root の中だけで効く CSS。ページ側の style には何も足さない（片付けで host を消せば全部消える）。
-export const css = `
-:host { all: initial; position: fixed; inset: 0; z-index: 2147483000; pointer-events: none; font: 13px/1.5 system-ui, sans-serif; color: #1c1c1c; }
-* { box-sizing: border-box; }
+import { shellCss } from '../shared/shell.css'
+
+export const css = shellCss + `
 .frame { position: fixed; display: none; border: 2px solid #3b82f6; background: rgba(59,130,246,.12); border-radius: 3px; }
 .frame.picked { border-color: #f59e0b; background: rgba(245,158,11,.16); }
 .banner { flex-wrap: wrap; position: fixed; left: 12px; bottom: 56px; max-width: min(420px, calc(100vw - 24px)); padding: 8px 8px 8px 12px; display: flex; align-items: center; gap: 10px; background: #1c1c1c; color: #fff; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.3); pointer-events: auto; }
@@ -11,7 +11,6 @@ export const css = `
 .menu button { display: block; width: 100%; padding: 6px 12px; border: 0; background: none; text-align: left; font: inherit; color: inherit; border-radius: 4px; cursor: pointer; }
 .menu button:hover { background: #eef2ff; }
 .menu .hint { padding: 2px 12px 4px; font-size: 11px; color: #666; white-space: nowrap; }
-.backdrop { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.35); pointer-events: auto; }
 .dialog { width: min(560px, calc(100vw - 24px)); max-height: calc(100vh - 24px); overflow: auto; padding: 16px; background: #fff; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,.4); display: flex; flex-direction: column; gap: 10px; }
 .dialog.popover .error:empty { display: none; }
 /* 幅 600px より広いとき: 選択のそばに浮かぶ popover。幕は敷かず、ページは見えたまま操作できる。 */
@@ -32,7 +31,8 @@ export const css = `
 .dialog .actions button { padding: 6px 16px; font: inherit; border-radius: 6px; border: 1px solid #a3a3a3; background: #fff; cursor: pointer; }
 .dialog .actions button.primary { background: #2563eb; border-color: #2563eb; color: #fff; }
 .dialog .actions button:disabled { opacity: .5; cursor: not-allowed; }
-.toast { position: fixed; right: 16px; bottom: 56px; padding: 8px 14px; background: #166534; color: #fff; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+.dialog .actions .copy { margin-right: auto; }
+.dialog .note { font-size: 11px; color: #737373; line-height: 1.4; }
 /* 幅 600px 以下とタッチ端末: 16px 以上の入力、44px 以上の押せる高さ。 */
 @media (max-width: 600px), (pointer: coarse) {
 	.dialog textarea, .dialog input { font-size: 16px; }

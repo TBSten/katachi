@@ -2,6 +2,7 @@
 // 下から出るシートと選択のそばの popover で中身は同じ。popover は縦を詰めるため、載せる情報を <details> に畳む。
 import { SECTION_KEYS, SECTION_TITLES, type Section, type SectionKey } from '../core/protocol'
 import { el } from '../shared/dom'
+import { COPY_NOTE } from './copy'
 
 export type Sections = Partial<Record<SectionKey, Section>>
 
@@ -9,6 +10,8 @@ export type DialogHandlers = {
 	/** チェックされた節だけを渡す。 */
 	onSubmit: (comment: string, checked: Sections, target?: 'page' | 'site') => void
 	onCancel: () => void
+	/** 「Markdown をコピー」。保存と同じ文をクリップボードへ。成功したか返す。 */
+	onCopy: (comment: string, checked: Sections, target?: 'page' | 'site') => Promise<boolean>
 }
 
 export type DialogParts = {
@@ -80,14 +83,28 @@ export function buildDialog(
 	const cancel = el('button', undefined, 'キャンセル')
 	const submit = el('button', 'primary', '送信')
 	cancel.type = submit.type = 'button'
-	submit.disabled = true
-	textarea.addEventListener('input', () => { submit.disabled = textarea.value.trim() === '' })
-	const doSubmit = () => {
-		if (submit.disabled) return
+	const copy = el('button', 'copy', 'Markdown をコピー')
+	copy.type = 'button'
+	submit.disabled = copy.disabled = true
+	textarea.addEventListener('input', () => { submit.disabled = copy.disabled = textarea.value.trim() === '' })
+	const checkedSections = () => {
 		const checked: Sections = {}
 		for (const [k, box] of checks) if (box.checked) checked[k] = sections[k]
+		return checked
+	}
+	let copyTimer: ReturnType<typeof setTimeout> | undefined
+	copy.addEventListener('click', async () => {
+		if (copy.disabled) return
+		const ok = await h.onCopy(textarea.value, checkedSections(), withTarget ? (targetInputs.site.checked ? 'site' : 'page') : undefined)
+		copy.textContent = ok ? 'コピーしました' : 'コピーできませんでした'
+		clearTimeout(copyTimer)
+		copyTimer = setTimeout(() => { copy.textContent = 'Markdown をコピー' }, 2000)
+	})
+	const copyNote = el('div', 'note', COPY_NOTE)
+	const doSubmit = () => {
+		if (submit.disabled) return
 		error.textContent = ''
-		h.onSubmit(textarea.value, checked, withTarget ? (targetInputs.site.checked ? 'site' : 'page') : undefined)
+		h.onSubmit(textarea.value, checkedSections(), withTarget ? (targetInputs.site.checked ? 'site' : 'page') : undefined)
 	}
 	submit.addEventListener('click', doSubmit)
 	cancel.addEventListener('click', h.onCancel)
@@ -96,15 +113,15 @@ export function buildDialog(
 		if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); doSubmit() }
 	})
 	const actions = el('div', 'actions')
-	actions.append(cancel, submit)
+	actions.append(copy, cancel, submit)
 	if (popover) {
 		const info = el('details', 'info')
 		const infoSummary = el('summary')
 		infoSummary.append(summaryText)
 		info.append(infoSummary, ...items)
-		root.append(...(withTarget ? [targetBox] : []), textarea, info, error, actions)
+		root.append(...(withTarget ? [targetBox] : []), textarea, info, error, actions, copyNote)
 	} else {
-		root.append(el('h2', undefined, 'フィードバック'), ...(withTarget ? [targetBox] : []), textarea, ...items, error, actions)
+		root.append(el('h2', undefined, 'フィードバック'), ...(withTarget ? [targetBox] : []), textarea, ...items, error, actions, copyNote)
 	}
 	return { root, textarea, submit, error }
 }

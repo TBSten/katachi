@@ -1,7 +1,8 @@
 import type { SectionKey } from '../core/protocol'
-import { placeFloating, placePopover } from '../shared/anchor'
+import { placeFloating } from '../shared/anchor'
 import { buildDialog, type DialogHandlers, type Sections } from './dialog'
 import { el, isCoarse, isNarrow } from '../shared/dom'
+import { createHost, mountPanel, showToast, type PanelHandle } from '../shared/shell'
 import { css } from './ui.css'
 
 export type UiHandlers = {
@@ -20,26 +21,21 @@ export type UiHandlers = {
  * 片付けは host を remove するだけで、枠・メニュー・案内・ダイアログが全部消える。
  */
 export class FeedbackUi {
-	readonly host = document.createElement('katachi-feedback-root')
-	private readonly root = this.host.attachShadow({ mode: 'open' })
+	private readonly shell = createHost('katachi-feedback-root', css)
+	readonly host = this.shell.host
+	private readonly root = this.shell.root
 	private readonly hover = el('div', 'frame')
 	private readonly picked = el('div', 'frame picked')
 	private readonly bannerEl = el('div', 'banner')
 	private menu: HTMLElement | null = null
-	/** 入力欄の一番外側（シートなら幕、popover なら popover 自身）。 */
-	private dialog: HTMLElement | null = null
-	private popover: HTMLElement | null = null
-	private anchor: (() => DOMRect) | null = null
-	private resizeObserver: ResizeObserver | null = null
+	/** 入力欄（シートなら幕つき、popover なら popover 自身）。 */
+	private dialog: PanelHandle | null = null
 	private textarea: HTMLTextAreaElement | null = null
 	private submitButton: HTMLButtonElement | null = null
 	private errorBox: HTMLElement | null = null
 	private fab: HTMLButtonElement | null = null
-	private viewportCleanup: (() => void) | null = null
 
 	constructor(private readonly handlers: UiHandlers) {
-		const style = document.createElement('style')
-		style.textContent = css
 		const banner = this.bannerEl
 		banner.append(el('span', undefined, isCoarse()
 			? '要素をタップ、または長押しでテキストを選んで → フィードバック…'
@@ -51,11 +47,8 @@ export class FeedbackUi {
 		about.type = 'button'
 		about.addEventListener('click', (e) => { e.stopPropagation(); this.handlers.onOpenPage() })
 		banner.append(about, exit)
-		this.root.append(style, this.hover, this.picked)
+		this.root.append(this.hover, this.picked)
 		if (handlers.banner !== false) this.root.append(banner)
-		// ダイアログ内のキー入力がページ側（Starlight の検索ショートカットなど）に届かないようにする。
-		for (const type of ['keydown', 'keyup', 'keypress']) this.host.addEventListener(type, (e) => e.stopPropagation())
-		document.documentElement.append(this.host)
 	}
 
 	private place(frame: HTMLElement, rect: DOMRect | null) {
@@ -115,57 +108,22 @@ export class FeedbackUi {
 		this.setFab(null)
 		const popover = !isNarrow()
 		const parts = buildDialog(sections, remembered, h, popover, withTarget)
-		if (popover) {
-			this.root.append(parts.root)
-			this.popover = parts.root
-			this.anchor = anchor
-			this.updatePopover()
-			// 書いたり「載せる情報」を開いたりして高さが変わったら置き直す（下に入らなくなれば上へ）。
-			this.resizeObserver = new ResizeObserver(() => this.updatePopover())
-			this.resizeObserver.observe(parts.root)
-			this.dialog = parts.root
-		} else {
-			const backdrop = el('div', 'backdrop')
-			backdrop.append(parts.root)
-			this.root.append(backdrop)
-			this.fitToVisualViewport(backdrop)
-			this.dialog = backdrop
-		}
+		this.dialog = mountPanel(this.root, parts.root, { popover, anchor, backdrop: true })
 		this.textarea = parts.textarea
 		this.submitButton = parts.submit
 		this.errorBox = parts.error
 		parts.textarea.focus({ preventScroll: true })
 	}
 	/** popover を選んだものの今の位置に置き直す（スクロール・画面サイズ・高さの変化のとき）。シートでは何もしない。 */
-	updatePopover() {
-		if (!this.popover || !this.anchor) return
-		const pos = placePopover(this.anchor(), { width: this.popover.offsetWidth, height: this.popover.offsetHeight }, { width: innerWidth, height: innerHeight })
-		this.popover.style.left = `${pos.left}px`
-		this.popover.style.top = `${pos.top}px`
-	}
+	updatePopover() { this.dialog?.update() }
 	/** 入力欄だけを閉じる（モードは続く）。 */
 	closeDialog() {
-		this.resizeObserver?.disconnect()
-		this.viewportCleanup?.()
-		this.dialog?.remove()
-		this.resizeObserver = this.viewportCleanup = this.dialog = this.popover = this.anchor = this.textarea = this.submitButton = this.errorBox = null
-	}
-	/** ソフトキーボードで見える範囲が縮んでも、シートが見える範囲に収まり、送信ボタンまでスクロールで届くようにする。 */
-	private fitToVisualViewport(backdrop: HTMLElement) {
-		const vv = window.visualViewport
-		if (!vv) return
-		const fit = () => {
-			backdrop.style.top = `${vv.offsetTop}px`
-			backdrop.style.height = `${vv.height}px`
-		}
-		fit()
-		vv.addEventListener('resize', fit)
-		vv.addEventListener('scroll', fit)
-		this.viewportCleanup = () => { vv.removeEventListener('resize', fit); vv.removeEventListener('scroll', fit) }
+		this.dialog?.close()
+		this.dialog = this.textarea = this.submitButton = this.errorBox = null
 	}
 	hasDialog() { return this.dialog !== null }
 	/** popover が出ているか（外のクリックの扱いがシートと違う）。 */
-	hasPopover() { return this.popover !== null }
+	hasPopover() { return this.dialog?.popover ?? false }
 	/** コメントが書いてあるか。書いてあるうちは外のクリックで閉じない。 */
 	hasComment() { return (this.textarea?.value.trim() ?? '') !== '' }
 	/** 送信中は二重送信を防ぐ。 */
@@ -173,15 +131,7 @@ export class FeedbackUi {
 	showError(message: string) { if (this.errorBox) this.errorBox.textContent = `保存できませんでした: ${message}`; this.setBusy(false) }
 
 	/** 保存を知らせる小さな通知。UI 全体が消えたあとも残すため、host ごとではなく自前の host で出す。 */
-	static toast(message: string, ms = 2000) {
-		const host = document.createElement('katachi-feedback-toast')
-		const root = host.attachShadow({ mode: 'open' })
-		const style = document.createElement('style')
-		style.textContent = css
-		root.append(style, el('div', 'toast', message))
-		document.documentElement.append(host)
-		setTimeout(() => host.remove(), ms)
-	}
+	static toast(message: string, ms = 2000) { showToast('katachi-feedback-toast', css, message, ms) }
 
 	destroy() {
 		this.closeDialog()

@@ -29,8 +29,8 @@ export type PutAttachmentsResult = {
 
 export type Store = {
 	kind: 'file' | 'memory'
-	/** 新しい記録を作る。上書きしない。番号は Inbox と archived の両方を数えて採番する。 */
-	putEntry(o: { text: string; now?: Date }): Promise<EntryInfo & { attempts: number }>
+	/** 新しい記録を作る。text が関数なら採番した id を渡して文を作る（id を frontmatter に書くため）。上書きしない。番号は Inbox と archived の両方を数えて採番する。 */
+	putEntry(o: { text: string | ((id: string) => string); now?: Date }): Promise<EntryInfo & { attempts: number }>
 	/** Inbox（置き場の直下）の `yymmdd-NNN.md` だけ。`state` で archived や両方も選べる。 */
 	list(o?: { state?: EntryState | 'all' }): Promise<EntryInfo[]>
 	read(id: string): Promise<EntryInfo & { text: string }>
