@@ -3,48 +3,49 @@ import { DRAG_CSS } from '../shared/drag'
 import { shellCss } from '../shared/shell.css'
 
 export const css = shellCss + DRAG_CSS + `
-.panel { pointer-events: auto; display: flex; flex-direction: column; background: #fff; border: 1px solid #d4d4d4; box-shadow: 0 8px 28px rgba(0,0,0,.3); }
+.panel { pointer-events: auto; display: flex; flex-direction: column; background: var(--bg); border: 1px solid var(--border); box-shadow: 0 8px 28px rgba(0,0,0,.3); }
 .panel[hidden], .sheet-frame[hidden] { display: none; }
 /* 幅 600px より広い: 右上の大きめの popover（最大の高さは 70vh、中身はスクロール）。 */
 .panel.popover { position: fixed; top: 12px; right: 12px; width: 420px; max-width: calc(100vw - 24px); max-height: 70vh; border-radius: 12px; }
-.head { flex: none; display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 14px; border-bottom: 1px solid #e5e5e5; }
+.head { flex: none; display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 14px; border-bottom: 1px solid var(--border); }
 .head h2 { margin: 0; font-size: 15px; }
-.status { flex: 1; min-width: 0; font-size: 11px; color: #737373; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.status[data-state=saved] { color: #166534; }
-.status[data-state=error] { color: #b91c1c; }
-.close { flex: none; width: 32px; height: 32px; font: inherit; font-size: 20px; line-height: 1; color: #404040; background: none; border: 0; border-radius: 6px; cursor: pointer; }
-.close:hover { background: #f0f0f0; }
+.status { flex: 1; min-width: 0; font-size: 11px; color: var(--muted); text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.status[data-state=saved] { color: var(--ok); }
+.status[data-state=error] { color: var(--danger); }
+.close { flex: none; width: 32px; height: 32px; font: inherit; font-size: 20px; line-height: 1; color: var(--fg-2); background: none; border: 0; border-radius: 6px; cursor: pointer; }
+.close:hover { background: var(--hover); }
 .body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 10px 14px 14px; display: flex; flex-direction: column; gap: 12px; }
-.section-title { margin: 0 0 4px; font-size: 12px; font-weight: 600; color: #525252; }
+.section-title { margin: 0 0 4px; font-size: 12px; font-weight: 600; color: var(--fg-2); }
 .note { display: flex; flex-direction: column; gap: 6px; }
-.fields { display: grid; grid-template-columns: max-content minmax(0, 1fr) auto; align-items: center; gap: 4px 8px; }
+.fields { display: grid; grid-template-columns: fit-content(40%) minmax(0, 1fr) auto; align-items: center; gap: 4px 8px; }
 .field { display: contents; }
-.field-label { max-width: 40vw; font-weight: 600; overflow-wrap: anywhere; }
-.field input, .add-box input { flex: 1; min-width: 0; padding: 4px 8px; font: inherit; border: 1px solid #a3a3a3; border-radius: 6px; }
-.field-drop { flex: none; width: 24px; height: 24px; padding: 0; font: inherit; color: #737373; background: none; border: 0; border-radius: 4px; cursor: pointer; }
-.field-drop:hover { background: #f0f0f0; color: #b91c1c; }
+.field-label { min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+.panel input, .panel textarea { color: var(--fg); background: var(--bg); }
+.field input, .add-box input { flex: 1; min-width: 0; padding: 4px 8px; font: inherit; border: 1px solid var(--border-strong); border-radius: 6px; }
+.field-drop { flex: none; width: 24px; height: 24px; padding: 0; font: inherit; color: var(--muted); background: none; border: 0; border-radius: 4px; cursor: pointer; }
+.field-drop:hover { background: var(--hover); color: var(--danger); }
 .add-box { display: flex; align-items: center; gap: 6px; }
-.add-field { align-self: flex-start; padding: 2px 4px; font: inherit; color: #2563eb; background: none; border: 0; cursor: pointer; }
-.add-ok, .add-cancel, .pick, .reveal, .delete, .pill-cancel { font: inherit; padding: 4px 12px; border: 1px solid #a3a3a3; border-radius: 6px; background: #fff; cursor: pointer; }
+.add-field { align-self: flex-start; padding: 2px 4px; font: inherit; color: var(--link); background: none; border: 0; cursor: pointer; }
+.add-ok, .add-cancel, .pick, .reveal, .delete, .pill-cancel { font: inherit; padding: 4px 12px; border: 1px solid var(--border-strong); border-radius: 6px; background: var(--bg); cursor: pointer; }
 .pick { align-self: flex-start; color: #fff; background: #2563eb; border-color: #2563eb; font-weight: 600; }
 .pick:disabled { opacity: .5; cursor: not-allowed; }
-.note-text { width: 100%; padding: 8px; font: inherit; border: 1px solid #a3a3a3; border-radius: 6px; resize: none; overflow: hidden; }
+.note-text { width: 100%; padding: 8px; font: inherit; border: 1px solid var(--border-strong); border-radius: 6px; resize: none; overflow: hidden; }
 .spots { display: flex; flex-direction: column; gap: 10px; }
-.card { display: flex; flex-direction: column; gap: 6px; padding: 8px; border: 1px solid #e5e5e5; border-radius: 8px; background: #fafafa; }
+.card { display: flex; flex-direction: column; gap: 6px; padding: 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--soft); }
 .card.is-lost { border-style: dashed; }
 .card.is-active { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,.25); }
 .card-head { display: flex; align-items: flex-start; gap: 8px; }
 .num, .mark { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: #f59e0b; color: #1c1c1c; font-size: 11px; font-weight: 700; }
 .where { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .where-title { overflow-wrap: anywhere; }
-.where-src, .where-quote { font-size: 11px; color: #737373; overflow-wrap: anywhere; }
-.lost { flex: none; font-size: 11px; color: #b91c1c; }
+.where-src, .where-quote { font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
+.lost { flex: none; font-size: 11px; color: var(--danger); }
 .card-foot { display: flex; justify-content: flex-end; gap: 8px; }
-.delete { color: #b91c1c; }
+.delete { color: var(--danger); }
 .reveal:disabled { opacity: .5; cursor: not-allowed; }
-.empty-hint { font-size: 12px; color: #737373; }
-.loading { color: #737373; }
-.blocked { padding: 8px; color: #b91c1c; background: #fef2f2; border-radius: 6px; }
+.empty-hint { font-size: 12px; color: var(--muted); }
+.loading { color: var(--muted); }
+.blocked { padding: 8px; color: var(--danger); background: var(--danger-bg); border-radius: 6px; }
 /* ページに出す印・光る枠・選んでいる間の枠と帯。 */
 .marks { position: fixed; inset: 0; pointer-events: none; }
 .mark { position: fixed; padding: 0; border: 1px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.4); pointer-events: auto; cursor: pointer; font-family: inherit; }

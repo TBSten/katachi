@@ -56,12 +56,25 @@ export function readFront(text) {
 	for (const line of m[1].split(/\r?\n/)) {
 		const kv = /^([A-Za-z][\w-]*):\s*(.*)$/.exec(line)
 		if (!kv) continue
-		const raw = kv[2].replace(/\s+#.*$/, '').trim()
-		try {
-			front[kv[1]] = JSON.parse(raw)
-		} catch {
-			front[kv[1]] = raw
+		// 引用符・括弧で始まる値は JSON として先に読む（値の途中の「空白 + #」はコメントではない）。読めなければコメントを切る。
+		const whole = kv[2].trim()
+		let value
+		if (/^["[]/.test(whole)) {
+			try {
+				value = JSON.parse(whole)
+			} catch {
+				// 後ろにコメントが付いた形かもしれない
+			}
 		}
+		if (value === undefined) {
+			const raw = whole.replace(/\s+#.*$/, '').trim()
+			try {
+				value = JSON.parse(raw)
+			} catch {
+				value = raw
+			}
+		}
+		front[kv[1]] = value
 	}
 	return { front, body: text.slice(m[0].length) }
 }
@@ -81,8 +94,12 @@ export function summarize(text) {
 	return clip(kind + [title, !front.source && target && `（${target}）`].filter(Boolean).join(' ') || '（要約なし）', 110)
 }
 
-/** 一覧のソース欄。複数の要素（kind: elements）は配列なので、先頭と件数にする。 */
-export const sourceText = (s) => (Array.isArray(s) ? (s.length > 1 ? `${s[0]} ほか${s.length - 1}件` : (s[0] ?? '-')) : (s ?? '-'))
+/** 一覧のソース欄。複数の要素（kind: elements）は要素の番号に対応する配列（無い要素は null）なので、分かるものの先頭と件数にする。 */
+export const sourceText = (s) => {
+	if (!Array.isArray(s)) return s ?? '-'
+	const known = s.filter((v) => v !== null && v !== undefined)
+	return known.length > 1 ? `${known[0]} ほか${known.length - 1}件` : (known[0] ?? '-')
+}
 
 const shortPage = (url) => {
 	if (!url) return '-'
@@ -107,6 +124,7 @@ async function main() {
 		const state = flags.state ?? 'open'
 		if (!['open', 'archived', 'all'].includes(state)) throw new Error(`--state は open / archived / all のどれか: ${state}`)
 		const rows = []
+		// TODO: list と read の間に archive された記録があると「見つかりません」で全体が落ちる。1 件ごとに try/catch して <gone> と出す（review L22）。
 		for (const e of await store.list({ state })) {
 			const { text } = await store.read(e.id)
 			const { front } = readFront(text)

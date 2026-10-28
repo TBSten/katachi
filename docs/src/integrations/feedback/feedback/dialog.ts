@@ -80,14 +80,19 @@ export function buildDialog(
 		input.type = 'radio'
 		input.name = 'fb-target'
 		input.value = value
-		input.checked = value === 'page'
+		input.checked = value === (extra.initial?.target ?? 'page')
 		const label = el('label')
 		label.append(input, text)
 		targetBox.append(label)
 	}
 	const checks = new Map<SectionKey, HTMLInputElement>()
-	const draft = (): Draft => ({ comment: textarea.value, checks: Object.fromEntries([...checks].map(([k, b]) => [k, b.checked])) })
+	const draft = (): Draft => ({
+		comment: textarea.value,
+		checks: Object.fromEntries([...checks].map(([k, b]) => [k, b.checked])),
+		...(withTarget ? { target: targetInputs.site.checked ? 'site' as const : 'page' as const } : {}),
+	})
 	const emitDraft = () => h.onDraft?.(draft())
+	targetBox.addEventListener('change', () => emitDraft())
 	const summaryText = el('span')
 	const updateCount = () => {
 		const on = [...checks.values()].filter((b) => b.checked).length
@@ -142,7 +147,7 @@ export function buildDialog(
 	}
 	submit.addEventListener('click', doSubmit)
 	cancel.addEventListener('click', h.onCancel)
-	// Cmd/Ctrl+Enter で送信。Esc はモード側の document リスナーが全体をやめる。
+	// Cmd/Ctrl+Enter で送信。Esc は shared/keys.ts の window の capture（quick は quick.ts）が受けて全体をやめる。
 	root.addEventListener('keydown', (e) => {
 		if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); doSubmit() }
 		// 文字を打つ最中の ↑ はカーソル移動に使うので、Alt を押したときだけ親を選ぶ。

@@ -69,6 +69,9 @@ export function createMemoryStore(): MemoryStore {
 				return { refs: {}, dir: null, error: e instanceof Error ? e.message : String(e) }
 			}
 		},
+		async removeAttachments(dir) {
+			for (const key of [...attachments.keys()]) if (key.startsWith(`${dir}/`)) attachments.delete(key)
+		},
 		async writeDoc(relPath, text) {
 			docs.set(safeRelPath(relPath), text)
 		},

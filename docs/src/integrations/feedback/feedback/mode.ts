@@ -60,27 +60,27 @@ export function enterMode(flow: Flow) {
 		touchDown = e.pointerType === 'touch' && !isOwn(e) ? { x: e.clientX, y: e.clientY, time: e.timeStamp } : null
 		if (isOwn(e) || e.button !== 0) return
 		swallowClick = false
+		// popover が出ているときは、外を押しても別の要素を選び直さない。コメントが空なら閉じ、書いてあれば書いた文を守って閉じない。
+		if (ui.hasPopover()) {
+			// Shift+クリックは、入力欄を開いたまま要素を足す・外す（click 側で扱う）。
+			if (e.shiftKey) { swallowClick = false; return }
+			swallowClick = true
+			if (!ui.hasComment()) { ui.closeDialog(); clearPick() }
+			return
+		}
 		// マウスはメニューの外、タッチはボタンが出ているときの選択の外が「やめる」。
 		// どちらもこの1回で別の要素を選び直しはしない。長押しのように click が来ない操作でも、次の押下で解除される。
-		// popover が出ているときは、外を押しても別の要素を選び直さない。コメントが空なら閉じ、書いてあれば書いた文を守って閉じない。
-	if (ui.hasPopover()) {
-		// Shift+クリックは、入力欄を開いたまま要素を足す・外す（click 側で扱う）。
-		if (e.shiftKey) { swallowClick = false; return }
-		swallowClick = true
-		if (!ui.hasComment()) { ui.closeDialog(); clearPick() }
-		return
-	}
-	const dismiss = e.pointerType === 'touch' ? s.pick !== null && !ui.hasDialog() : ui.hasMenu()
+		const dismiss = e.pointerType === 'touch' ? s.pick !== null && !ui.hasDialog() : ui.hasMenu()
 		if (dismiss) {
 			ui.hideMenu()
 			clearPick()
 			swallowClick = true
 		}
 	}, opts)
-	// iOS Safari は、click ハンドラを持たない要素（段落など）のタップでは click を出さない。
-	// document の capture リスナーは数えられないので、タッチのタップは pointerup で自分で判定して要素を選ぶ。
 	// Shift+クリックでテキストの選択が広がらないようにする（要素の選択に使う）。
 	document.addEventListener('mousedown', (e) => { if (e.shiftKey && !isOwn(e)) e.preventDefault() }, opts)
+	// iOS Safari は、click ハンドラを持たない要素（段落など）のタップでは click を出さない。
+	// document の capture リスナーは数えられないので、タッチのタップは pointerup で自分で判定して要素を選ぶ。
 	document.addEventListener('pointerup', (e) => {
 		mouseDown = false
 		const down = touchDown
@@ -153,5 +153,6 @@ export function enterMode(flow: Flow) {
 	window.addEventListener('resize', refreshPicked, opts)
 	// ページ遷移（View Transitions を使うサイトでも）に UI を持ち越さない。
 	document.addEventListener('astro:before-swap', flow.exit, opts)
+	// TODO: pagehide で UI は消すが toolbar のアプリの状態は on のまま。bfcache から戻るとボタンが on なのに UI が無い。exit()/onClose() を呼ぶか pageshow で合わせ直す（review L7）。
 	window.addEventListener('pagehide', flow.cleanup, opts)
 }

@@ -136,7 +136,7 @@ export class FeedbackUi {
 		const popover = !isNarrow()
 		const parts = buildDialog(sections, remembered, h, popover, withTarget, extra)
 		// popover は見出しをつかんで動かせる。動かしたら選んだ場所を追うのをやめ、その回だけ位置を覚える（閉じれば忘れる）。
-		this.dialog = mountPanel(this.root, parts.root, { popover, anchor, backdrop: true, drag: popover ? { handle: parts.head } : undefined })
+		this.dialog = mountPanel(this.root, parts.root, { popover, anchor, backdrop: true, drag: popover ? { handle: parts.head } : undefined, avoid: () => [this.bannerEl.getBoundingClientRect()] })
 		this.readDraft = parts.draft
 		this.textarea = parts.textarea
 		this.submitButton = parts.submit

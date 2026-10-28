@@ -84,8 +84,10 @@ export function createMarks(root: ShadowRoot, onMarkClick: (id: string) => void)
 				Object.assign(frame.style, { left: `${rect.left - 3}px`, top: `${rect.top - 3}px`, width: `${rect.width + 6}px`, height: `${rect.height + 6}px` })
 			}
 			place()
-			window.addEventListener('scroll', place, { capture: true, passive: true, signal: ac.signal })
-			setTimeout(() => frame.remove(), FLASH_MS)
+			// 枠ごとのリスナーは、枠を消すときに外す（押すたびに増えて、消えた枠のためにスクロールのたび測り続けない）。
+			const flash = new AbortController()
+			window.addEventListener('scroll', place, { capture: true, passive: true, signal: AbortSignal.any([ac.signal, flash.signal]) })
+			setTimeout(() => { frame.remove(); flash.abort() }, FLASH_MS)
 			schedule()
 			return true
 		},

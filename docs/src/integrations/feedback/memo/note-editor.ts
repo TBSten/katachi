@@ -28,6 +28,7 @@ export function createNoteEditor(initial: Note, template: readonly string[], h: 
 	const root = el('div', 'note')
 	const fieldsBox = el('div', 'fields')
 	const addBox = el('div', 'add-box')
+	// TODO: maxLength = MEMO_LIMITS.textChars が無く、100,000 字を超えて保存でき、読み直すと切れる（review L10）。
 	const textarea = el('textarea', 'note-text')
 	textarea.rows = initialRows()
 	textarea.placeholder = 'メモ'

@@ -5,7 +5,12 @@ import type { Pick as Picked } from '../shared/pick'
 import { xpathOf } from '../shared/locate'
 import { containerOf } from '../shared/pick'
 
-export type Draft = { comment: string; checks: Partial<Record<SectionKey, boolean>> }
+export type Draft = {
+	comment: string
+	checks: Partial<Record<SectionKey, boolean>>
+	/** 何も選ばずに開いたとき（ページ全体）の宛先。このページ / サイト全体は同じ鍵を共有するので、ここで覚える。 */
+	target?: 'page' | 'site'
+}
 
 const PREFIX = 'katachi-feedback:draft:'
 
@@ -21,8 +26,8 @@ const defaultStore = (): Store | null => {
 }
 
 /** 選んだ場所を表す文字列。要素は XPath、テキストは選んだ文字列と開始側ブロックの XPath、ページ全体は固定。 */
-export function locatorOf(pick: Picked, target?: 'page' | 'site'): string {
-	if (pick.kind === 'page') return `page:${target ?? 'page'}`
+export function locatorOf(pick: Picked): string {
+	if (pick.kind === 'page') return 'page'
 	if (pick.kind === 'elements') return `els:${pick.els.map((e) => xpathOf(e) ?? e.tagName).join('|')}`
 	if (pick.kind === 'element') return `el:${xpathOf(pick.el) ?? pick.el.tagName}`
 	return `text:${xpathOf(containerOf(pick)) ?? ''}:${pick.text.slice(0, 200)}`
@@ -39,7 +44,7 @@ export function loadDraft(key: string, store: Store | null = defaultStore()): Dr
 		if (typeof v.comment !== 'string') return null
 		const checks: Draft['checks'] = {}
 		for (const [k, b] of Object.entries(v.checks ?? {})) if (typeof b === 'boolean') checks[k as SectionKey] = b
-		return { comment: v.comment, checks }
+		return { comment: v.comment, checks, ...(v.target === 'page' || v.target === 'site' ? { target: v.target } : {}) }
 	} catch {
 		return null
 	}

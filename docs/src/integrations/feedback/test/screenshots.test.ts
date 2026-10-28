@@ -20,12 +20,12 @@ describe('storeScreenshots', () => {
 	it('節をチェックしていなければ何もしない', async () => {
 		const { screenshot: _s, ...sections } = base.sections
 		const store = createMemoryStore()
-		expect(await storeScreenshots(store, { ...base, sections, attachments: [att(SHOT_WINDOW)] }, now)).toEqual({ section: null, refs: [] })
+		expect(await storeScreenshots(store, { ...base, sections, attachments: [att(SHOT_WINDOW)] }, now)).toEqual({ section: null, refs: [], dir: null })
 		expect(store.attachments.size).toBe(0)
 	})
 	it('撮れなかったときは理由を節に書く（添付なし）', async () => {
 		const r = await storeScreenshots(createMemoryStore(), { ...base, screenshotError: '描画に失敗しました' }, now)
-		expect(r).toEqual({ section: [['撮れませんでした', '描画に失敗しました']], refs: [] })
+		expect(r).toEqual({ section: [['撮れませんでした', '描画に失敗しました']], refs: [], dir: null })
 		expect((await storeScreenshots(createMemoryStore(), base, now)).section![0]![1]).toContain('届きませんでした')
 	})
 	it('置けなかったときも投げずに理由を返す', async () => {

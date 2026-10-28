@@ -160,3 +160,37 @@ test('header のドラッグ（Feedback）: PC は popover が動いて画面内
 	ok('位置を localStorage に覚えていない', (await page.evaluate(() => Object.keys(localStorage).filter((k) => /position|pos/i.test(k) && k.includes('feedback')).length)) === 0)
 	await fb.esc()
 })
+
+test('モード中のキー: ページのショートカットには届かず、Space ではスクロールでき、Enter でリンクは動かない', async ({ fb, page }) => {
+	test.skip(fb.mobile, 'PC の列（キーボード）')
+	await fb.fresh()
+	await fb.enter()
+	await page.evaluate(() => {
+		const w = window as unknown as { __keys: number }
+		w.__keys = 0
+		const count = () => { w.__keys++ }
+		for (const t of ['keydown', 'keyup', 'keypress']) {
+			window.addEventListener(t, count)
+			document.addEventListener(t, count)
+		}
+		// Enter で動かないことを確かめるためのリンク（ハッシュだけ変わる）。
+		document.body.insertAdjacentHTML('afterbegin', '<a id="e2e-link" href="#e2e-hash" style="position:absolute;top:0;left:0">e2e</a>')
+		;(document.activeElement as HTMLElement | null)?.blur()
+		scrollTo(0, 0)
+	})
+	const keys = () => page.evaluate(() => (window as unknown as { __keys: number }).__keys)
+	await page.keyboard.press('/')
+	await page.keyboard.press('Control+k')
+	ok('ページ上で押したキーはショートカットに届かない', (await keys()) === 0, `count=${await keys()}`)
+	await page.keyboard.press('Space')
+	await page.waitForTimeout(600)
+	const y = await page.evaluate(() => scrollY)
+	ok('Space でページがスクロールする（既定の動作は止めない）', y > 100, `scrollY=${y}`)
+	ok('Space もショートカットには届かない', (await keys()) === 0, `count=${await keys()}`)
+	await page.evaluate(() => (document.getElementById('e2e-link') as HTMLElement).focus())
+	await page.keyboard.press('Enter')
+	await page.waitForTimeout(300)
+	ok('Enter でページのリンクは動かない（click の横取りで止まる）', new URL(page.url()).hash === '', page.url())
+	await page.evaluate(() => document.getElementById('e2e-link')?.remove())
+	await fb.esc()
+})

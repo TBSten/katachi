@@ -19,6 +19,7 @@ export const TIMEOUT_MESSAGE = 'サーバーから応答がありません（時
  * @param resultEvent 結果のイベント名
  * @param timeoutMs これを過ぎたら `{ ok: false, error }` で決着させる
  */
+// TODO: 時間切れのあとにサーバーが保存を終えると、送り直しで同じ記録が 2 件できる。requestId を記録に書いて同じ id を 2 回保存しない（review L8）。
 export function createRpc<Req extends object, Res extends WithRequestId>(server: ServerLike, sendEvent: string, resultEvent: string, timeoutMs = 10_000) {
 	const waiting = new Map<string, (res: Res) => void>()
 	server.on<Res>(resultEvent, (res) => {

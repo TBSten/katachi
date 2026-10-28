@@ -23,10 +23,18 @@ export async function saveFeedback(store: Store, payload: SavePayload, ctx: Save
 	const shots = await storeScreenshots(store, payload, now)
 	const withBuild: SavePayload = wantBuild ? { ...withServer, sections: { ...withServer.sections, build: info.section } } : withServer
 	const final: SavePayload = shots.section ? { ...withBuild, sections: { ...withBuild.sections, screenshot: shots.section } } : withBuild
+	// TODO: 同じ git status を withGit と sourceDirty で 2 回呼んでいる。1 回にまとめる（review L2）。
 	const dirty = file ? await sourceDirty(ctx.repoRoot, file) : undefined
-	const entry = await store.putEntry({
-		text: (id) => toMarkdown(final, { created: now, id, dirty, stale: info.stale, attachments: shots.refs }),
-		now,
-	})
+	let entry
+	try {
+		entry = await store.putEntry({
+			text: (id) => toMarkdown(final, { created: now, id, dirty, stale: info.stale, attachments: shots.refs }),
+			now,
+		})
+	} catch (e) {
+		// 記録が書けなかったので、先に置いた添付は誰からも参照されない。消す。
+		if (shots.dir) await store.removeAttachments(shots.dir).catch(() => {})
+		throw e
+	}
 	return `${entry.id}.md`
 }

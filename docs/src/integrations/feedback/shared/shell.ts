@@ -15,8 +15,27 @@ export function createHost(tag: string, css: string): { host: HTMLElement; root:
 	style.textContent = css
 	root.append(style)
 	for (const type of ['keydown', 'keyup', 'keypress']) host.addEventListener(type, (e) => e.stopPropagation())
+	syncColorScheme(host)
 	document.documentElement.append(host)
 	return { host, root }
+}
+
+/**
+ * host の color-scheme を、ページ（Starlight のテーマ）に合わせる。CSS の `light-dark()` はこの値で明暗を選ぶ。
+ * host は `all: initial` で color-scheme が既定に戻るので、ページの computed を写す。ページが決めていなければ OS の設定に従う。
+ * テーマの切り替え（html の data-theme の変更）にも追従し、host が外れたら監視をやめる。
+ */
+export function syncColorScheme(host: HTMLElement) {
+	const apply = () => {
+		const page = getComputedStyle(document.documentElement).colorScheme
+		host.style.colorScheme = page && page !== 'normal' ? page : 'light dark'
+	}
+	apply()
+	const observer = new MutationObserver(() => {
+		if (!host.isConnected) return observer.disconnect()
+		apply()
+	})
+	observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class', 'style'] })
 }
 
 /** 保存を知らせる小さな通知。UI 全体が消えたあとも残すため、自前の host で出す。 */
@@ -56,6 +75,8 @@ export type PanelOptions = {
 	 * 動かしたら anchor を追うのをやめる。storageKey があれば localStorage に位置を覚えて次も使う。ダブルクリックで元に戻す。
 	 */
 	drag?: { handle: HTMLElement; storageKey?: string }
+	/** 覆ってはいけない矩形を返す（下端の案内の帯など）。popover を置くときに避ける。 */
+	avoid?: () => DOMRect[]
 }
 
 export type PanelHandle = {
@@ -107,7 +128,7 @@ export function mountPanel(root: ShadowRoot, panel: HTMLElement, o: PanelOptions
 			Object.assign(panel.style, { left: '', top: '', right: '', bottom: '' })
 			return
 		}
-		const pos = placePopover(o.anchor(), { width: panel.offsetWidth, height: panel.offsetHeight }, { width: innerWidth, height: innerHeight })
+		const pos = placePopover(o.anchor(), { width: panel.offsetWidth, height: panel.offsetHeight }, { width: innerWidth, height: innerHeight }, (o.avoid?.() ?? []).filter((r) => r.width > 0 && r.height > 0))
 		panel.style.left = `${pos.left}px`
 		panel.style.top = `${pos.top}px`
 	}

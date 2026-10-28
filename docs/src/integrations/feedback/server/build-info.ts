@@ -46,6 +46,7 @@ export async function integrationHash(dir = integrationDir): Promise<string> {
  * ページを開いた後にソースが変わったか。mtime の方が新しければ true。
  * 開いた時刻が分からない（古いブラウザ側など）ときは判定しない。
  */
+// TODO: stale はサーバーの mtime とブラウザの時計を比べる。--host で別の端末から送ると時計のずれで取り違える。ページを返した時点のサーバー時刻を使う（review L15）。
 export function isStale(sourceMtimeMs: number, pageOpenedAtMs: number | undefined): boolean | undefined {
 	if (pageOpenedAtMs === undefined || !Number.isFinite(pageOpenedAtMs)) return undefined
 	return sourceMtimeMs > pageOpenedAtMs

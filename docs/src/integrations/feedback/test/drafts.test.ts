@@ -1,5 +1,7 @@
 // @vitest-environment happy-dom
 import { beforeEach, describe, expect, it } from 'vitest'
+import { buildDialog } from '../feedback/dialog'
+import type { Draft } from '../feedback/drafts'
 import { clearDraft, draftKey, loadDraft, locatorOf, saveDraft } from '../feedback/drafts'
 
 beforeEach(() => sessionStorage.clear())
@@ -40,6 +42,30 @@ describe('drafts', () => {
 		const range = document.createRange()
 		range.selectNodeContents(el)
 		expect(locatorOf({ kind: 'text', range, text: '本文' })).toMatch(/^text:.*:本文$/)
-		expect(locatorOf({ kind: 'page' }, 'site')).toBe('page:site')
+		expect(locatorOf({ kind: 'page' })).toBe('page')
+	})
+})
+
+describe('下書きの宛先（このページ / サイト全体）', () => {
+	const open = (initial?: Draft) => {
+		const drafts: Array<{ target?: 'page' | 'site' }> = []
+		const parts = buildDialog({ page: [['URL', 'x']] }, {}, { onSubmit() {}, onCopy: async () => true, onCancel() {}, onDraft: (d) => drafts.push(d) }, true, true, { initial })
+		document.body.append(parts.root)
+		return { parts, drafts }
+	}
+	const radio = (root: HTMLElement, value: string) => root.querySelector<HTMLInputElement>(`input[name="fb-target"][value="${value}"]`)!
+	it('サイト全体を選んで書いた下書きは、開き直すとサイト全体のまま', () => {
+		const { parts, drafts } = open()
+		radio(parts.root, 'site').checked = true
+		radio(parts.root, 'site').dispatchEvent(new Event('change', { bubbles: true }))
+		expect(drafts.at(-1)!.target).toBe('site')
+		const key = draftKey('http://x/', 'page')
+		saveDraft(key, { ...parts.draft(), comment: '全体への意見' })
+		const back = open(loadDraft(key)!)
+		expect(radio(back.parts.root, 'site').checked).toBe(true)
+		expect(radio(back.parts.root, 'page').checked).toBe(false)
+	})
+	it('宛先の無い下書き（旧形）は「このページ」', () => {
+		expect(radio(open({ comment: 'a', checks: {} }).parts.root, 'page').checked).toBe(true)
 	})
 })

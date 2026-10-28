@@ -31,9 +31,11 @@ async function resolveInside(root: string, relPath: string): Promise<string> {
 	const rel = relative(root, abs)
 	if (rel === '' || rel.startsWith('..') || isAbsolute(rel)) throw new Error(`置き場の外には出せません: ${relPath}`)
 	let probe = abs
+	let exists = false
 	for (;;) {
 		try {
 			await lstat(probe)
+			exists = true
 			break
 		} catch {
 			if (probe === root) break
@@ -41,7 +43,11 @@ async function resolveInside(root: string, relPath: string): Promise<string> {
 		}
 	}
 	const realRoot = await realpath(root).catch(() => root)
-	const realProbe = await realpath(probe).catch(() => probe)
+	// 実在するのに実体が求められない（壊れたリンク）なら、外を指しているかもしれないので拒否する。
+	const realProbe = await realpath(probe).catch((): string => {
+		if (exists) throw new Error(`置き場の外を指している可能性があります（リンクの先が無い）: ${relPath}`)
+		return probe
+	})
 	const back = relative(realRoot, realProbe)
 	if (back.startsWith('..') || isAbsolute(back)) throw new Error(`置き場の外を指しています: ${relPath}`)
 	return abs
@@ -179,6 +185,7 @@ export function createFileStore(root: string, repoRoot?: string): Store {
 
 		/** `<root>/attachments/<YYYYMMDD-HHMMSS>/<name>`。失敗しても投げず error に入れる。 */
 		async putAttachments(files: Attachment[], { now = new Date() } = {}): Promise<PutAttachmentsResult> {
+			let created: string | null = null
 			try {
 				if (files.length === 0) return { refs: {}, dir: null, error: '添付がありません' }
 				for (const f of files) if (!ATTACH_NAME.test(f.name)) throw new Error(`添付の名前が使えません: ${f.name}`)
@@ -190,6 +197,7 @@ export function createFileStore(root: string, repoRoot?: string): Store {
 					try {
 						await mkdir(candidate)
 						dir = candidate
+						created = candidate
 						break
 					} catch (e) {
 						if ((e as NodeJS.ErrnoException).code !== 'EEXIST') throw e
@@ -202,8 +210,20 @@ export function createFileStore(root: string, repoRoot?: string): Store {
 				}
 				return { refs, dir: ref(dir), error: null }
 			} catch (e) {
+				// 途中まで置いたものは残さない。
+				if (created) await rm(created, { recursive: true, force: true }).catch(() => {})
 				return { refs: {}, dir: null, error: e instanceof Error ? e.message : String(e) }
 			}
+		},
+
+		async removeAttachments(dir) {
+			const abs = resolve(refBase, dir)
+			const attachmentsRoot = join(base, ATTACHMENTS_DIR)
+			const rel = relative(attachmentsRoot, abs)
+			// attachments/ の直下の 1 フォルダだけ消す。それ以外（外・attachments/ 自身・入れ子）は消さない。
+			if (rel === '' || rel.startsWith('..') || isAbsolute(rel) || rel.includes(sep)) return
+			if ((await dirState(abs)) !== true) return
+			await rm(abs, { recursive: true, force: true })
 		},
 
 		/** 同じディレクトリの tmp に書いてから rename する。読み手に書きかけが見えない。 */

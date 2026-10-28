@@ -1,5 +1,5 @@
 // Store の契約テスト。file と memory に同じテストを掛ける。新しい実装を足したら make に 1 つ足すだけでよい。
-import { mkdir, mkdtemp, readdir, readFile, stat, symlink, writeFile, rm } from 'node:fs/promises'
+import { mkdir, mkdtemp, readdir, realpath, readFile, stat, symlink, writeFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
@@ -259,5 +259,26 @@ describe('Store [file] だけの契約', () => {
 		const a = await store.putAttachments(f, { now: day })
 		const b = await store.putAttachments(f, { now: day })
 		expect(a.dir).not.toBe(b.dir)
+	})
+})
+
+describe('壊れたリンクの途中のディレクトリ（file）', () => {
+	it('外を指す壊れたリンクの下への書き込みは「外」を理由に拒否する（mkdir の失敗に頼らない）', async () => {
+		// macOS の tmpdir は /var → /private/var のリンクの下。実体にして、ルート自身がリンク越しにならない条件で確かめる。
+		const base = await realpath(await tmp())
+		const root = join(base, 'feedback')
+		const outside = join(base, 'outside')
+		await mkdir(join(root, 'memo'), { recursive: true })
+		await mkdir(outside)
+		await symlink(join(outside, 'newdir'), join(root, 'memo', 'ja'))
+		const store = createFileStore(root)
+		await expect(store.writeDoc('memo/ja/x.md', 'x')).rejects.toThrow('外')
+		await expect(store.readDoc('memo/ja/x.md')).rejects.toThrow('外')
+		expect(await readdir(outside)).toEqual([])
+	})
+	it('置き場がまだ無くても、ふつうの書き込みは通る', async () => {
+		const store = createFileStore(join(await realpath(await tmp()), 'new-root'))
+		await store.writeDoc('memo/ja/x.md', 'x')
+		expect(await store.readDoc('memo/ja/x.md')).toBe('x')
 	})
 })

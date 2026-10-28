@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
 import type { AstroIntegration } from 'astro'
 import { createBuildContext } from './server/build-info'
+import { lanWarning } from './server/host'
 import { saveFeedback } from './server/save'
 import { createFileStore } from './server/store'
 import { registerMemoServer } from './memo/server'
@@ -57,7 +58,11 @@ export default function feedback(): AstroIntegration {
 				list.unshift(createSourcePlugin(repoRoot))
 				list.push(createCodeBlockPlugin())
 			},
-			'astro:server:setup': ({ toolbar }) => {
+			'astro:server:setup': ({ toolbar, server, logger }) => {
+				if (!isDev) return
+				// LAN に開いているときは警告する（LAN からの書き込み・読み出しは止めない。大きさの上限は core/limits.ts）。
+				const warning = lanWarning(server.config.server.host)
+				if (warning) logger.warn(warning)
 				// 検証で本物の .local/feedback/ を汚さないよう、環境変数で上書きできる。
 				const dir = process.env.KATACHI_FEEDBACK_DIR ? resolve(process.env.KATACHI_FEEDBACK_DIR) : defaultDir
 				const store = createFileStore(dir, repoRoot)

@@ -116,12 +116,29 @@ describe('複数の要素（kind: elements）', () => {
 	const md = toMarkdown(elements, server)
 	const { front, body } = split(md)
 	it('frontmatter の source・xpath・selector・heading は要素ごとの配列。1 つだけのときは文字列のまま', () => {
-		expect(front.source).toEqual(['docs/a.mdx:10-12', 'docs/a.mdx:30-31'])
 		expect(front.xpath).toEqual(['/html/body/p[1]', '/html/body/p[2]', '/html/body/ul/li[1]'])
-		expect(front.selector).toEqual(['ul li'])
-		expect(front.heading).toEqual(['## 一'])
+		// 値の無い要素は null。詰めないので、n 番目が `### n.` の要素に対応する。
+		expect(front.source).toEqual(['docs/a.mdx:10-12', 'docs/a.mdx:30-31', null])
+		expect(front.selector).toEqual([null, null, 'ul li'])
+		expect(front.heading).toEqual(['## 一', null, null])
 		expect(front).not.toHaveProperty('fragment')
 		expect(split(toMarkdown(element, server)).front.source).toBe('docs/src/content/docs/ja/guides/layout.mdx:120-122')
+	})
+	it('先頭の要素だけソースも見出しも無くても、配列は要素の番号とずれない', () => {
+		const p: SavePayload = {
+			...elements,
+			sections: {
+				...elements.sections,
+				source: [['ページのソースファイル', 'docs/a.mdx'], g(1), ['ソース', '不明（この要素の近くに行番号が付いていません）'], g(2), ['ソース', 'docs/a.mdx:30-31']],
+				location: [g(1), ['XPath', '/html/body/header'], g(2), ['XPath', '/html/body/main/p[2]'], ['CSSセレクタ', 'main p'], ['近くの見出し', '## 二']],
+				content: [g(1), ['タグ', 'header'], g(2), ['タグ', 'p']],
+			},
+		}
+		const f = split(toMarkdown(p, server)).front
+		expect(f.source).toEqual([null, 'docs/a.mdx:30-31'])
+		expect(f.heading).toEqual([null, '## 二'])
+		expect(f.selector).toEqual([null, 'main p'])
+		expect(f.xpath).toEqual(['/html/body/header', '/html/body/main/p[2]'])
 	})
 	it('要約の 1 行は「対象: N 個の要素（file:行 ほか）」', () => {
 		expect(body).toMatch(/^\n対象: 3 個の要素（docs\/a\.mdx:10-12 ほか）\n/)
@@ -170,5 +187,22 @@ describe('記録の細部', () => {
 	it('引用符や改行を含む値でも frontmatter が壊れない', () => {
 		const p = { ...element, sections: { ...element.sections, location: [['XPath', 'a"b\\c'], ['近くの見出し', '## "x": y']] as Section } }
 		expect(split(toMarkdown(p, server)).front.xpath).toBe('a"b\\c')
+	})
+})
+
+describe('redact と frontmatter', () => {
+	const withHeading = (heading: string, secret = false): SavePayload => ({
+		requestId: 'r', comment: secret ? 'Cookie: session=abc123def456' : 'c', kind: 'element',
+		sections: { location: [['XPath', '/html/body/p'], ['近くの見出し', heading]] },
+	})
+	it('見出しに「Cookie: …」があっても frontmatter の引用符が壊れず、YAML として読める', () => {
+		const md = toMarkdown(withHeading('## Cookie: の扱い'), server)
+		expect(split(md).front.heading).toBe('## Cookie: ***')
+	})
+	it('秘密情報は frontmatter の値でも本文でも伏せる', () => {
+		const md = toMarkdown(withHeading('## token=abcdef123456 の扱い', true), server)
+		expect(md).not.toContain('abcdef123456')
+		expect(md).not.toContain('abc123def456')
+		expect(split(md).front.heading).toBe('## token=*** の扱い')
 	})
 })

@@ -34,3 +34,6 @@ subagent が「自分が変えていないファイル」を HEAD で上書き�
 
 ## 日付
 長いセッションでは `date` を見て、HISTORY.md の日付に使う。
+
+## repo-copy の dev で保存した記録を信用しない
+E2E など、docs を写し（repo-copy）で動かした dev で保存した記録は、`dirty` と、コンソール節の print.css の読み込み失敗が写し由来になる。本物の docs では出ない。消化の根拠にしない。

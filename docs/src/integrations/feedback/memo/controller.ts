@@ -1,4 +1,4 @@
-// メモの状態（ページのメモ・箇所のメモ・field のひな形）と、自動保存。DOM には触らない（画面は app.ts がつなぐ）。
+// メモの状態（ページのメモ・箇所のメモ・field のひな形）と、自動保存。DOM には触らない（画面は session.ts がつなぐ）。
 // 入力が止まって debounceMs たったら保存する。保存中の変更は、終わったあとにもう 1 回保存する。
 import type { MemoRequest, MemoResult } from '../core/protocol'
 import type { Call } from '../shared/rpc'
@@ -60,6 +60,7 @@ export function createController(deps: ControllerDeps) {
 			while (dirty) {
 				dirty = false
 				// 何も書いていないページに、空のファイルは作らない（全部消したあとでも、元から無ければ作らない）。ひな形だけは書く。
+				// TODO: 同じページのメモを 2 か所で開くと、後から保存した側がファイル全体を上書きする。読み込み時の updated を載せて食い違いを断る（review L11）。
 				const skipDoc = !existed && isNoteEmpty(doc.note) && doc.spots.length === 0
 				setStatus({ kind: 'saving' })
 				const res = await deps.call({ op: 'save', lang: deps.page.lang, pagePath: deps.pagePath, text: skipDoc ? null : toMarkdown(doc, now()), fields: template }).promise

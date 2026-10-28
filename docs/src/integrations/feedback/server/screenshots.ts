@@ -14,11 +14,13 @@ export type ScreenshotResult = {
 	section: Section | null
 	/** frontmatter の attachments に書く参照。 */
 	refs: string[]
+	/** 添付のまとめ先（記録が書けなかったとき消すために返す）。置かなければ null。 */
+	dir: string | null
 }
 
 export async function storeScreenshots(store: Store, payload: SavePayload, now: Date): Promise<ScreenshotResult> {
-	if (!payload.sections.screenshot) return { section: null, refs: [] }
-	const failed = (reason: string): ScreenshotResult => ({ section: [['撮れませんでした', reason]], refs: [] })
+	if (!payload.sections.screenshot) return { section: null, refs: [], dir: null }
+	const failed = (reason: string): ScreenshotResult => ({ section: [['撮れませんでした', reason]], refs: [], dir: null })
 	const attachments = payload.attachments ?? []
 	if (attachments.length === 0) return failed(payload.screenshotError || 'ブラウザから画像が届きませんでした')
 	const put = await store.putAttachments(
@@ -29,5 +31,5 @@ export async function storeScreenshots(store: Store, payload: SavePayload, now: 
 	const section: Section = attachments.map((a) => [LABELS[a.name] ?? a.name, put.refs[a.name]!])
 	// 切り抜きだけ撮れなかったとき（選んだ場所が画面の外など）は、その旨を添える。
 	if (payload.screenshotError) section.push(['撮れなかったもの', payload.screenshotError])
-	return { section, refs: attachments.map((a) => put.refs[a.name]!) }
+	return { section, refs: attachments.map((a) => put.refs[a.name]!), dir: put.dir }
 }

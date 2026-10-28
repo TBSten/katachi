@@ -53,4 +53,13 @@ describe('cli の elements の扱い', () => {
 		expect(run(`c.summarize(${JSON.stringify(text)})`)).toBe('[elements] 直す')
 		expect(run(`c.readFront(${JSON.stringify(text)}).front.source`)).toEqual(['a:1-2', 'b:3'])
 	})
+	it('値の無い要素（null）があっても一覧のソース欄と読み込みが動く', () => {
+		expect(run(`[c.sourceText([null, 'a:1-2', null, 'b:3']), c.sourceText([null, null]), c.sourceText([null, 'a:1-2'])]`)).toEqual(['a:1-2 ほか1件', '-', 'a:1-2'])
+		const text = '---\nschema: 1\nkind: "elements"\nsource: [null,"b:3"]\n---\n\n# x\n'
+		expect(run(`c.readFront(${JSON.stringify(text)}).front.source`)).toEqual([null, 'b:3'])
+	})
+	it('readFront は値の途中の「空白 + #」をコメントとして切らない', () => {
+		const text = '---\nschema: 1\nselector: "main #install > p"\nheading: "## Step #2"\nsource: "docs/a.mdx:1" # コメント\nkind: text # 末尾のコメント\n---\n\n# x\n'
+		expect(run(`c.readFront(${JSON.stringify(text)}).front`)).toMatchObject({ selector: 'main #install > p', heading: '## Step #2', source: 'docs/a.mdx:1', kind: 'text' })
+	})
 })

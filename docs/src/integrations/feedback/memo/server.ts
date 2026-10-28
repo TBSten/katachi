@@ -1,4 +1,5 @@
 // Memo のサーバー側。読み込み・保存の依頼を Store の readDoc / writeDoc につなぐ（node: は Store の中だけ）。
+// TODO: サーバー側のコードが memo/（ブラウザだけの置き場）にある。server/memo.ts へ移す。feedback/drafts.ts の型名 Store は DraftStorage などに改める（review L20）。
 import { EVENT_MEMO_REQUEST, EVENT_MEMO_RESULT, type MemoRequest, type MemoResult } from '../core/protocol'
 import type { Store } from '../server/store-types'
 import { FIELDS_PATH, MEMO_LIMITS, memoDocPath, parseFields, sanitizeFields, serializeFields } from './model'

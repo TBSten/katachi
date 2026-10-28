@@ -1,6 +1,7 @@
 // スクリーンショットの添付: 要素・テキスト・ページ宛でそれぞれ撮れること、外せば撮らず記憶されること。
 import { test, ok, sleep } from './helpers/fixtures'
 import { attachmentAbs, files, frontKey, pngInfo, readRecord } from './helpers/store'
+import { MIN_COLORS, MIN_LUMINANCE_STD, pixelStats } from './helpers/pixels'
 import type { Fb } from './helpers/fb'
 
 /** 添付の検証。要素・テキストは window.png と element.png の 2 枚、ページは window.png だけ。 */
@@ -10,6 +11,11 @@ async function checkAttachments(fb: Fb, kind: string, md: string, withElement: b
 	ok(`${kind}: 「## スクリーンショット」の節に参照が書かれる`, md.includes('## スクリーンショット') && att.every((a) => md.includes(a)))
 	const infos = att.map((a) => ({ a, ...pngInfo(attachmentAbs(a)) }))
 	ok(`${kind}: PNG が実在し壊れていない`, infos.every((i) => i.sig && i.bytes > 2000), JSON.stringify(infos.map((i) => [i.a.split('/').slice(-2).join('/'), i.w, i.h, i.bytes])))
+	// 真っ白（全面が 1 色。例: 不正な属性で複製が空になる）でも赤枠だけで 2000 バイトは超えるので、画素のばらつきも見る。
+	for (const i of infos) {
+		const st = await pixelStats(attachmentAbs(i.a))
+		ok(`${kind}: ${i.a.split('/').pop()} は真っ白でない（色 ${st.colors} 種類・輝度の標準偏差 ${st.luminanceStd.toFixed(1)}）`, st.colors >= MIN_COLORS && st.luminanceStd >= MIN_LUMINANCE_STD, JSON.stringify(st))
+	}
 	const win = infos.find((i) => i.a.endsWith('window.png'))
 	const vp = fb.page.viewportSize()!
 	const sc = Math.min(await fb.page.evaluate(() => devicePixelRatio), 2)

@@ -26,7 +26,8 @@ export const GUIDE_LINE =
 	'案内: katachi の docs サイトへのフィードバック。日本語が原本（docs/src/content/docs/ja/）、英語は翻訳。文の決まりは docs/AGENTS.md と docs/prh.yml。'
 
 /** YAML の1行に安全に載せるため、JSON 文字列として書く（JSON の文字列は YAML のダブルクォートと互換）。 */
-const yamlString = (value: string) => JSON.stringify(value)
+// 秘密情報の伏せ字は、引用符をつける前に値ごとに掛ける（行末までを伏せる規則が閉じ引用符を巻き込まないように）。
+const yamlString = (value: string) => JSON.stringify(redact(value))
 
 /** 節の中の行を、見出し（label）で引く。 */
 const valueOf = (payload: SavePayload, key: SectionKey, label: string) =>
@@ -35,6 +36,24 @@ const valueOf = (payload: SavePayload, key: SectionKey, label: string) =>
 /** 節の中の行を、見出し（label）で全部引く（複数の要素では、要素ごとに 1 つずつ並ぶ）。 */
 const valuesOf = (payload: SavePayload, key: SectionKey, label: string) =>
 	(payload.sections[key] ?? []).filter(([l]) => l === label).map(([, v]) => v)
+
+/**
+ * 複数の要素で、要素ごと（`### n.` の区切りごと）に 1 つずつ値を引く。要素の数だけ並べ、値の無い要素（不明を含む）は null。
+ * 配列の番号が `### n.` の番号（から 1 を引いたもの）に必ず対応する。
+ */
+function perElement(payload: SavePayload, key: SectionKey, label: string, count: number, accept: (v: string) => boolean = () => true): Array<string | null> {
+	const out: Array<string | null> = Array.from({ length: count }, () => null)
+	let index = -1
+	for (const [l, v] of payload.sections[key] ?? []) {
+		if (l.startsWith(GROUP_ROW_PREFIX)) index++
+		else if (index >= 0 && index < count && l === label && out[index] === null && accept(v)) out[index] = v
+	}
+	return out
+}
+
+/** 複数の要素の数（`### n.` の区切りが一番多い節に合わせる）。 */
+const elementCount = (payload: SavePayload) =>
+	Math.max(0, ...(['source', 'location', 'content'] as const).map((k) => (payload.sections[k] ?? []).filter(([l]) => l.startsWith(GROUP_ROW_PREFIX)).length))
 
 const KNOWN_SOURCE = (v: string | undefined) => (v && !v.startsWith('不明') ? v : undefined)
 
@@ -70,7 +89,7 @@ function summaryLine(payload: SavePayload): string {
 	}
 	if (kind === 'elements') {
 		const sources = valuesOf(payload, 'source', 'ソース').filter((v) => KNOWN_SOURCE(v))
-		const count = Math.max(0, ...(['source', 'location', 'content'] as const).map((k) => (payload.sections[k] ?? []).filter(([l]) => l.startsWith(GROUP_ROW_PREFIX)).length))
+		const count = elementCount(payload)
 		return `対象: ${count ? `${count} 個` : '複数'}の要素${sources.length ? `（${sources[0]}${sources.length > 1 || count > 1 ? ' ほか' : ''}）` : ''}`
 	}
 	const source = KNOWN_SOURCE(valueOf(payload, 'source', 'ソース'))
@@ -102,19 +121,21 @@ function frontmatter(payload: SavePayload, meta: RecordMeta, omitted: SectionKey
 		['commit', commit && commit !== GIT_PLACEHOLDER ? commit : undefined],
 	]
 	// 複数の要素は、要素ごとの値を JSON の配列で書く（YAML の flow sequence としても読める）。
-	const multi: Record<string, string[]> = kind === 'elements'
+	// 配列は要素の数で固定し、値の無い要素は null（詰めない）。n 番目の値は `### n.` の要素のもの。
+	const n = kind === 'elements' ? elementCount(payload) : 0
+	const multi: Record<string, Array<string | null>> = kind === 'elements'
 		? {
-			source: valuesOf(payload, 'source', 'ソース').filter((v) => KNOWN_SOURCE(v)),
-			heading: valuesOf(payload, 'location', '近くの見出し'),
-			xpath: valuesOf(payload, 'location', 'XPath'),
-			selector: valuesOf(payload, 'location', 'CSSセレクタ'),
+			source: perElement(payload, 'source', 'ソース', n, (v) => KNOWN_SOURCE(v) !== undefined),
+			heading: perElement(payload, 'location', '近くの見出し', n),
+			xpath: perElement(payload, 'location', 'XPath', n),
+			selector: perElement(payload, 'location', 'CSSセレクタ', n),
 		}
 		: {}
 	const lines = [`schema: ${RECORD_SCHEMA}`]
 	for (const [key, value] of strings) {
 		const list = multi[key]
 		if (list) {
-			if (list.length) lines.push(`${key}: ${JSON.stringify(list)}`)
+			if (list.some((v) => v !== null)) lines.push(`${key}: ${JSON.stringify(list.map((v) => (v === null ? null : redact(v))))}`)
 		} else if (value && !(kind === 'elements' && key === 'fragment')) lines.push(`${key}: ${yamlString(value)}`)
 	}
 	if (meta.dirty !== undefined) lines.push(`dirty: ${meta.dirty}`)
@@ -139,7 +160,8 @@ export function toMarkdown(payload: SavePayload, meta: RecordMeta): string {
 	const title = comment.split('\n')[0]!.trim()
 	const omitted = omittedOf(payload)
 
-	const head = [frontmatter(payload, meta, omitted), summaryLine(payload), GUIDE_LINE]
+	const front = frontmatter(payload, meta, omitted)
+	const head = [summaryLine(payload), GUIDE_LINE]
 	if (meta.stale) head.push('注意: ページを開いた後にソースのファイルが変わっています。記録の位置はずれているかもしれません。')
 	if (omitted.length) head.push(`（載せなかった情報: ${omitted.map((k) => SECTION_TITLES[k]).join('、')}）`)
 	const parts = [...head, `# ${title}`, comment]
@@ -154,7 +176,8 @@ export function toMarkdown(payload: SavePayload, meta: RecordMeta): string {
 		})
 		parts.push(`## ${SECTION_TITLES[key]}\n\n${lines.join('\n')}`)
 	}
-	return redact(parts.join('\n\n') + '\n')
+	// frontmatter は値ごとに redact 済み。本文だけに掛ける（YAML の引用符を壊さない）。
+	return `${front}\n\n${redact(parts.join('\n\n') + '\n')}`
 }
 
 /**

@@ -17,6 +17,7 @@ async function expectClean(fb: Fb, what: string, baseline?: { list: () => Promis
 	if (baseline) ok(`${what}: リスナーが元に戻る`, (await baseline.list()) === baseline.base, `${baseline.base} vs ${await baseline.list()}`)
 }
 
+// TODO: 表にスクショを撮って送る経路・保存失敗の経路・ページ遷移・quick の終わらせ方が無い。leftovers も body 直下の他の要素に広げる（review L16）。
 test.describe('Feedback の終わらせ方', () => {
 	const routes: [string, (fb: Fb) => Promise<void>][] = [
 		['モードに入って Esc', async (fb) => { await fb.enter(); await fb.esc() }],

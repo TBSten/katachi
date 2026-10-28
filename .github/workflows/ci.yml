@@ -175,6 +175,12 @@ jobs:
         working-directory: docs
         run: pnpm install --frozen-lockfile
 
+      # Unit tests (vitest) of the dev-only feedback mode and memo: the store contract, the record format,
+      # and the patterns the dist check greps for. The E2E (Playwright) is not run in CI.
+      - name: Test docs
+        working-directory: docs
+        run: pnpm run test
+
       - name: Build docs
         working-directory: docs
         run: pnpm run build

@@ -13,6 +13,7 @@ export function spotTitle(l: Locator): string {
 	return l.heading?.replace(/^#+\s*/, '') || (l.excerpt ? `「${l.excerpt}」` : l.source ?? '（場所の手がかりなし）')
 }
 
+// TODO: 本文の行頭の # をエスケープしない。core/record.ts の escapeHeadings を使う（review L13）。
 function noteLines(note: Note): string[] {
 	const out: string[] = []
 	for (const [k, v] of Object.entries(note.values)) if (v.trim() !== '') out.push(`- ${k}: ${v.replace(/\s*\n\s*/g, ' ')}`)

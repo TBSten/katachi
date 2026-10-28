@@ -49,6 +49,7 @@ export function frameRects(pick: Pick): DOMRect[] {
 }
 
 /** 画面（viewport）を絵にした canvas。スクロールしている分は、動かして合わせる。 */
+// TODO: modern-screenshot が複製の途中で投げると sandbox の iframe（#__SANDBOX__…）が body に残る。createContext を自前で作って try/finally で destroyContext する（review L6）。
 async function renderViewport(scale: number): Promise<HTMLCanvasElement> {
 	const { domToCanvas } = await import('modern-screenshot')
 	return domToCanvas(document.documentElement, {

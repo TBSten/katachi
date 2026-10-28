@@ -33,6 +33,8 @@ export function placePopover(
 	rect: Box,
 	size: { width: number; height: number },
 	view: { width: number; height: number },
+	/** 覆ってはいけない矩形（下端の案内の帯など）。 */
+	avoid: Box[] = [],
 ): { left: number; top: number } {
 	const clamp = (v: number, max: number) => Math.min(Math.max(v, 0), max)
 	const inView = {
@@ -41,5 +43,16 @@ export function placePopover(
 		top: clamp(rect.top, view.height),
 		bottom: clamp(rect.bottom, view.height),
 	}
-	return placeFloating(inView, size, view)!
+	const pos = placeFloating(inView, size, view)!
+	const margin = 8
+	const hits = (p: { left: number; top: number }) =>
+		avoid.some((a) => p.left < a.right && p.left + size.width > a.left && p.top < a.bottom && p.top + size.height > a.top)
+	if (!hits(pos)) return pos
+	// 選んだものの上 → 帯の真上 → 帯の真下、の順に、画面に収まって帯を覆わない置き場所を探す。見つからなければそのまま。
+	const tops = [inView.top - 8 - size.height, ...avoid.flatMap((a) => [a.top - 8 - size.height, a.bottom + 8])]
+	for (const top of tops) {
+		const p = { left: pos.left, top }
+		if (top >= margin && top + size.height + margin <= view.height && !hits(p)) return p
+	}
+	return pos
 }

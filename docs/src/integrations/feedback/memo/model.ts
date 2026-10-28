@@ -122,6 +122,7 @@ const SEGMENT = /^[\p{L}\p{N}_][\p{L}\p{N}._-]*$/u
  * `memo/<言語>/<ページのパス>.md`（置き場からの相対）。pagePath は base と言語を除いた `guides/x/`（空ならトップ）。
  * 使えない文字・`..` を含むものは投げる。
  */
+// TODO: トップ（空）と index/ が同じファイルになる。URL エンコードされた slug（日本語）は投げる。pagePathOf で decodeURIComponent、トップは予約名にする（review L12）。
 export function memoDocPath(lang: string, pagePath: string): string {
 	if (!LANG.test(lang)) throw new Error(`言語が使えません: ${JSON.stringify(lang)}`)
 	const segs = pagePath.split('/').filter((s) => s !== '')

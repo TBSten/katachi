@@ -38,6 +38,8 @@ export type Store = {
 	archive(id: string, note?: string, now?: Date): Promise<EntryInfo>
 	/** 添付（スクリーンショットなど）を置く。 */
 	putAttachments(files: Attachment[], o?: { now?: Date }): Promise<PutAttachmentsResult>
+	/** `putAttachments` が返した `dir` ごと添付を消す（保存が失敗したときの後片付け）。無ければ何もしない。置き場の外・attachments/ の外は消さない。 */
+	removeAttachments(dir: string): Promise<void>
 	/** 置き場のルートの中の文書を上書きする（メモ機能）。tmp に書いて rename する。 */
 	writeDoc(relPath: string, text: string): Promise<void>
 	/** 無ければ null。 */

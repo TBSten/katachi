@@ -15,6 +15,8 @@ export const LIMITS = {
 	payloadChars: 2_000_000,
 	/** 添付 1 つの大きさ（バイト）。 */
 	attachmentBytes: 10_000_000,
+	/** 1 件の保存に載る添付の合計の大きさ（バイト）。 */
+	attachmentTotalBytes: 30_000_000,
 	/** 添付の数。 */
 	attachmentCount: 8,
 	/** 添付の名前の文字数。 */
@@ -35,10 +37,13 @@ const isRow = (r: unknown): boolean =>
 	r[0].length <= LIMITS.labelChars &&
 	r[1].length <= LIMITS.valueChars
 
+// TODO: ATTACH_NAME が server/store-types.ts と二重。core に 1 つ置いて server から import する（review L19）。
 const ATTACH_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]*$/
 const BASE64 = /^[A-Za-z0-9+/]*={0,2}$/
 /** base64 の文字数の上限（元のバイト数 × 4/3、切り上げ）。 */
 const maxBase64Chars = Math.ceil(LIMITS.attachmentBytes / 3) * 4
+/** 添付全部の base64 の文字数の上限。 */
+const maxTotalBase64Chars = Math.ceil(LIMITS.attachmentTotalBytes / 3) * 4
 
 /** 添付の形と大きさ。 */
 function checkAttachments(p: Partial<SavePayload>): PayloadCheck {
@@ -46,6 +51,7 @@ function checkAttachments(p: Partial<SavePayload>): PayloadCheck {
 	if (!Array.isArray(p.attachments) || p.attachments.length > LIMITS.attachmentCount) {
 		return { ok: false, reason: `attachments が不正か、多すぎます（上限 ${LIMITS.attachmentCount} 件）` }
 	}
+	let total = 0
 	for (const a of p.attachments as unknown[]) {
 		const v = a as Partial<PayloadAttachment> | null
 		if (typeof v !== 'object' || v === null) return { ok: false, reason: 'attachments の要素が不正です' }
@@ -53,6 +59,8 @@ function checkAttachments(p: Partial<SavePayload>): PayloadCheck {
 		if (v.mime !== 'image/png') return { ok: false, reason: 'attachments は PNG だけです' }
 		if (typeof v.base64 !== 'string' || !BASE64.test(v.base64)) return { ok: false, reason: 'attachments の中身が不正です' }
 		if (v.base64.length > maxBase64Chars) return { ok: false, reason: `添付が大きすぎます（上限 ${LIMITS.attachmentBytes} バイト）` }
+		total += v.base64.length
+		if (total > maxTotalBase64Chars) return { ok: false, reason: `添付の合計が大きすぎます（上限 ${LIMITS.attachmentTotalBytes} バイト）` }
 	}
 	return { ok: true }
 }
@@ -65,6 +73,7 @@ export function checkPayload(v: unknown): PayloadCheck {
 		return { ok: false, reason: 'requestId が不正です' }
 	}
 	if (typeof p.comment !== 'string') return { ok: false, reason: 'comment が文字列ではありません' }
+	// TODO: 空のコメントを受け口でも断る（comment.trim() === ''）。行のラベルは 1 行（改行なし）に限る（review L14）。
 	if (p.comment.length > LIMITS.commentChars) return { ok: false, reason: `comment が長すぎます（上限 ${LIMITS.commentChars} 文字）` }
 	if (p.target !== undefined && p.target !== 'page' && p.target !== 'site') return { ok: false, reason: 'target が不正です' }
 	if (typeof p.sections !== 'object' || p.sections === null || Array.isArray(p.sections)) {
