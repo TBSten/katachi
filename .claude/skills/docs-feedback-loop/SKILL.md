@@ -17,7 +17,9 @@ docs サイト（`docs/src/integrations/feedback/`）の dev 限定のフィー�
 - 記録として数える: Inbox の**直下**の `yymmdd-NNN.md`（旧形の `yymmdd-NN.md` も）。
 - 数えない: `archived/`、`attachments/`（スクショ）、`memo/`（メモ機能。記録としては数えず archive もしないが、消化の文脈として読む。下の「メモも見る」）、`HISTORY.md`、`test-260925/` などその他のフォルダ。
 - 記録の形は 2 つ。どちらも読む。書き換えない。
-  - 新形（`schema: 1`）: frontmatter に `id`・`kind`（element / text / page / site）・`source`・`stale`・`dirty`・`omitted`・`attachments` など。本文の冒頭に「対象:」「案内:」の行。
+  - 新形（`schema: 1`）: frontmatter に `id`・`kind`（element / text / elements / page / site）・`source`・`stale`・`dirty`・`omitted`・`attachments` など。本文の冒頭に「対象:」「案内:」の行。
+    - `kind: elements`（Shift+クリックで複数の要素を選んだ件）: frontmatter の `source`・`xpath`・`selector`・`heading` が**配列**になる（要素の数だけ並び、順番が `### n.` の番号に対応する）。本文の「ソースの位置」「ページ上の場所」「選んだ内容」の節は、要素ごとに `### 1.` `### 2.` … の小見出しで並ぶ。要約の行は「対象: 3 個の要素（… ほか）」。`cli list` の `[elements]` で見分ける。
+    - スクリーンショット: `attachments` に添付の PNG（`attachments/<時刻>/window.png` と、要素・テキスト・複数の要素なら `element.png`）のパスが書かれ、本文の「スクリーンショット」の節にも同じパスが載る。パスは dev のリポジトリのルートからの相対で、実体は置き場の `attachments/<時刻>/`。画像は**担当に Read で見させる**（`window.png` が画面全体、`element.png` が選んだ要素・全部を囲む切り抜き）。文章だけでは分からない見た目の指摘（崩れ・配置・図）は、画像を見てから判断する。archive は記録の .md だけを移し、添付は `attachments/` に残るので、archive 後もパスは有効。
   - 旧形（`schema` 無し。`261028-001`〜）: frontmatter は `page`・`created` など数個。キーが無いことは「情報が無い」であって、異常ではない。
 
 ## cli
@@ -70,10 +72,10 @@ node $C archive <id> --note "<1行>"                # archived/ に移し、末�
 
 `.local/notion-ticket/rules.md` に従う。hook が、掴んだチケットが無いと Edit / Write / commit を止める。
 
-- loop を 1 回回すごとに**チケットを 1 枚**作って「AI:進行中」にし、`python3 .local/notion-ticket/ticket.py` で掴む。置き場は「版 > ドキュメント > …」の下。名前は `chore: docs フィードバックの消化（<日付>）` のように。
+- loop を 1 回回すごとに**チケットを 1 枚**作って「AI:実装中」にし（Next 列に終了見込みを書く）、`python3 .local/notion-ticket/ticket.py` で掴む。置き場は「版 > ドキュメント > …」の下。名前は `chore: docs フィードバックの消化（<日付>）` のように。
 - 本文は DB のテンプレートの形。背景情報に、消化した記録の id と要約を並べる。
 - **設計型の件は別のチケット**に切り出す（質問・判断待ちの節を付けて「人間:判断待ち」）。両方の背景情報に相手を `<mention url="…"/>` で貼る。
-- 対応しきったら「人間:確認中」にして `## 成果` を書く。「完了」「中止」にするのは人。
+- 対応しきったら「人間:解決済 (確認中)」にして `## 成果` を書き、Next 列を空にする。「クローズ」「中止」にするのは人（設計型を切り出した `質問:` チケットは、回答を反映したら AI がクローズにする）。
 
 ## docs の直し方
 

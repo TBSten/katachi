@@ -25,6 +25,7 @@
 {記録の一覧}
 記録は `node docs/src/integrations/feedback/server/cli.mjs read <id>` で全部読むこと。置き場の直接の変更・移動・削除はしない。
 記録には新形（schema: 1。source・stale・dirty などがある）と旧形（page と created だけ）がある。無い項目は「情報が無い」だけで異常ではない。
+`kind: elements` の記録は、frontmatter の source・xpath・selector・heading が配列で、本文の節が `### n.` で要素ごとに並ぶ。`attachments` にスクリーンショットの PNG があれば、Read で画像を見てから判断する（パスは dev のリポジトリのルートからの相対）。
 {各件の要約}
 `stale: true` は、記録のあとにソースが変わったこと。source の行番号は今のソースとずれているかもしれない。まず `git log` で、すでに直っていないかを確かめる。
 

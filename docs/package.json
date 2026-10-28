@@ -13,6 +13,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "test": "vitest run",
+    "test:e2e": "playwright test -c e2e",
     "lint:text": "textlint \"src/content/docs/ja/**/*.mdx\" \"../README.ja.md\" \"public/install/ja/index.md\""
   },
   "dependencies": {
@@ -30,6 +31,7 @@
     "starlight-versions": "^0.10.1"
   },
   "devDependencies": {
+    "@playwright/test": "1.58.2",
     "@types/js-yaml": "^4.0.9",
     "happy-dom": "^21.0.4",
     "modern-screenshot": "^4.7.0",

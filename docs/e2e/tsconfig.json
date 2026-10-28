@@ -1,0 +1,6 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": { "allowJs": true, "noEmit": true },
+  "include": ["**/*.ts", "**/*.mjs"],
+  "exclude": ["test-results", "playwright-report"]
+}
