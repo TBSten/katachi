@@ -20,19 +20,26 @@ body:
       label: What you expected
     validations:
       required: true
+  - type: input
+    id: reproduce-repository
+    attributes:
+      label: Reproduction repository (optional)
+      description: A public repository or branch where the problem happens.
+      placeholder: https://github.com/owner/repo/tree/branch
   - type: textarea
     id: reproduce
     attributes:
-      label: How to reproduce
-      description: The smallest architecture definition and file tree that shows the problem. A link to a repository is welcome.
+      label: How to reproduce (optional)
+      description: Steps, and the smallest architecture definition and file tree that shows the problem.
       placeholder: |
+        1. ./gradlew :architecture-test:test
+        2. ...
+
         architecture {
             "UseCase".role { ... }
         }
 
         src/main/kotlin/com/example/...
-    validations:
-      required: true
   - type: dropdown
     id: area
     attributes:
