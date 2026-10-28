@@ -179,6 +179,12 @@ jobs:
         working-directory: docs
         run: pnpm run build
 
+      # The feedback mode and the memo are dev-only (`astro dev`); the build must carry no trace of
+      # them. Looks for their ids, the source-line attribute and the log buffer's global in dist/.
+      - name: Check no dev tools in dist
+        working-directory: docs
+        run: sh scripts/check-no-dev-tools-in-dist.sh dist
+
   # katachi-intellij-plugin is a standalone Gradle build (see its settings.gradle.kts), so the
   # root `check` above never reaches it. checkIdePlugin runs `buildPlugin test verifyPreview`
   # through the plugin's own wrapper; `test` runs `uiTest` (the property-based and Compose UI
