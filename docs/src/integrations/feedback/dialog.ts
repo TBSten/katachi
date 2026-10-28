@@ -7,7 +7,7 @@ export type Sections = Partial<Record<SectionKey, Section>>
 
 export type DialogHandlers = {
 	/** チェックされた節だけを渡す。 */
-	onSubmit: (comment: string, checked: Sections) => void
+	onSubmit: (comment: string, checked: Sections, target?: 'page' | 'site') => void
 	onCancel: () => void
 }
 
@@ -23,6 +23,8 @@ export function buildDialog(
 	remembered: Partial<Record<SectionKey, boolean>>,
 	h: DialogHandlers,
 	popover: boolean,
+	/** true なら一番上に「対象」（このページ / サイト全体）の選択を置く。何も選ばずに開いたとき。 */
+	withTarget = false,
 ): DialogParts {
 	const root = el('div', popover ? 'dialog popover' : 'dialog')
 	const textarea = el('textarea')
@@ -34,6 +36,19 @@ export function buildDialog(
 			textarea.style.height = 'auto'
 			textarea.style.height = `${textarea.scrollHeight + 2}px`
 		})
+	}
+	// 対象の選択（既定は「このページ」）。
+	const targetBox = el('fieldset', 'target')
+	const targetInputs: Record<'page' | 'site', HTMLInputElement> = { page: el('input'), site: el('input') }
+	for (const [value, text] of [['page', 'このページ'], ['site', 'サイト全体']] as const) {
+		const input = targetInputs[value]
+		input.type = 'radio'
+		input.name = 'fb-target'
+		input.value = value
+		input.checked = value === 'page'
+		const label = el('label')
+		label.append(input, text)
+		targetBox.append(label)
 	}
 	const checks = new Map<SectionKey, HTMLInputElement>()
 	const summaryText = el('span')
@@ -72,7 +87,7 @@ export function buildDialog(
 		const checked: Sections = {}
 		for (const [k, box] of checks) if (box.checked) checked[k] = sections[k]
 		error.textContent = ''
-		h.onSubmit(textarea.value, checked)
+		h.onSubmit(textarea.value, checked, withTarget ? (targetInputs.site.checked ? 'site' : 'page') : undefined)
 	}
 	submit.addEventListener('click', doSubmit)
 	cancel.addEventListener('click', h.onCancel)
@@ -87,9 +102,9 @@ export function buildDialog(
 		const infoSummary = el('summary')
 		infoSummary.append(summaryText)
 		info.append(infoSummary, ...items)
-		root.append(textarea, info, error, actions)
+		root.append(...(withTarget ? [targetBox] : []), textarea, info, error, actions)
 	} else {
-		root.append(el('h2', undefined, 'フィードバック'), textarea, ...items, error, actions)
+		root.append(el('h2', undefined, 'フィードバック'), ...(withTarget ? [targetBox] : []), textarea, ...items, error, actions)
 	}
 	return { root, textarea, submit, error }
 }

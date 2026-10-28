@@ -63,7 +63,7 @@ export function createFlow(app: AppLike, server: ServerLike) {
 	/** 新しい1回ぶんを始める。すでに出ていれば null。 */
 	function begin(quick: boolean): Session | null {
 		if (session) return null
-		const ui = new FeedbackUi({ onExit: exit, onOpen: openDialog, banner: !quick })
+		const ui = new FeedbackUi({ onExit: exit, onOpen: openDialog, onOpenPage: openPage, banner: !quick })
 		session = { ui, abort: new AbortController(), pick: null, sawText: false, quick }
 		return session
 	}
@@ -81,7 +81,7 @@ export function createFlow(app: AppLike, server: ServerLike) {
 		}
 	})
 
-	function submit(comment: string, checked: SavePayload['sections']) {
+	function submit(comment: string, checked: SavePayload['sections'], target?: SavePayload['target']) {
 		if (!session) return
 		const requestId = `${Date.now()}-${Math.random().toString(36).slice(2)}`
 		const ui = session.ui
@@ -93,7 +93,7 @@ export function createFlow(app: AppLike, server: ServerLike) {
 				ui.showError('サーバーから応答がありません（時間切れ）')
 			}, SAVE_TIMEOUT_MS),
 		}
-		server.send<SavePayload>(EVENT_SAVE, { requestId, comment: comment.trim(), sections: checked })
+		server.send<SavePayload>(EVENT_SAVE, { requestId, comment: comment.trim(), sections: checked, ...(target ? { target } : {}) })
 	}
 
 	function openDialog() {
@@ -101,16 +101,26 @@ export function createFlow(app: AppLike, server: ServerLike) {
 		const { ui, pick } = session
 		const sections = collect(pick)
 		ui.showDialog(sections, loadChecks(), {
-			onSubmit: (comment, checked) => {
+			onSubmit: (comment, checked, target) => {
 				// チェックを外した節の記憶も残したいので、出ていた節の全体で記録する。
 				const state: Partial<Record<SectionKey, boolean>> = { ...loadChecks() }
 				for (const k of Object.keys(sections) as SectionKey[]) state[k] = k in checked
 				saveChecks(state)
-				submit(comment, checked)
+				submit(comment, checked, target)
 			},
 			onCancel: exit,
-		}, () => rectOfPick(pick))
+		}, () => (pick.kind === 'page' ? ui.bannerRect() : rectOfPick(pick)), pick.kind === 'page')
 	}
 
-	return { get session() { return session }, begin, cleanup, exit, openDialog }
+	/** 何も選ばずに、ページ全体・サイト全体へのフィードバックを書く（案内の帯のボタンから）。 */
+	function openPage() {
+		if (!session || session.ui.hasDialog()) return
+		session.pick = { kind: 'page' }
+		session.ui.setPicked(null)
+		session.ui.setFab(null)
+		if (session.sawText) getSelection()?.removeAllRanges()
+		openDialog()
+	}
+
+	return { get session() { return session }, begin, cleanup, exit, openDialog, openPage }
 }

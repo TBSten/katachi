@@ -4,7 +4,7 @@ import type { Pick } from './collect'
 type Box = { left: number; top: number; right: number; bottom: number }
 
 /** 選んだものの画面上の矩形。要素なら要素、テキストなら選択範囲の外接矩形。 */
-export function rectOfPick(pick: Pick): DOMRect {
+export function rectOfPick(pick: Exclude<Pick, { kind: 'page' }>): DOMRect {
 	return pick.kind === 'element' ? pick.el.getBoundingClientRect() : pick.range.getBoundingClientRect()
 }
 

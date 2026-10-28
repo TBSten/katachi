@@ -27,7 +27,7 @@ export function enterMode(flow: Flow) {
 	const refreshPicked = () => {
 		const p = s.pick
 		ui.setPicked(p?.kind === 'element' ? p.el.getBoundingClientRect() : null)
-		ui.setFab(p && !ui.hasDialog() ? rectOfPick(p) : null)
+		ui.setFab(p && p.kind !== 'page' && !ui.hasDialog() ? rectOfPick(p) : null)
 		ui.updatePopover()
 	}
 	const clearPick = () => {

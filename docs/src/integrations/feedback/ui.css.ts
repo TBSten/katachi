@@ -4,8 +4,8 @@ export const css = `
 * { box-sizing: border-box; }
 .frame { position: fixed; display: none; border: 2px solid #3b82f6; background: rgba(59,130,246,.12); border-radius: 3px; }
 .frame.picked { border-color: #f59e0b; background: rgba(245,158,11,.16); }
-.banner { position: fixed; left: 12px; bottom: 56px; max-width: min(420px, calc(100vw - 24px)); padding: 8px 8px 8px 12px; display: flex; align-items: center; gap: 10px; background: #1c1c1c; color: #fff; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.3); pointer-events: auto; }
-.banner .exit { flex: none; min-height: 44px; min-width: 64px; padding: 0 14px; font: inherit; color: #fff; background: #3f3f46; border: 1px solid #71717a; border-radius: 6px; cursor: pointer; }
+.banner { flex-wrap: wrap; position: fixed; left: 12px; bottom: 56px; max-width: min(420px, calc(100vw - 24px)); padding: 8px 8px 8px 12px; display: flex; align-items: center; gap: 10px; background: #1c1c1c; color: #fff; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.3); pointer-events: auto; }
+.banner .exit, .banner .about { flex: none; min-height: 44px; min-width: 64px; padding: 0 14px; font: inherit; color: #fff; background: #3f3f46; border: 1px solid #71717a; border-radius: 6px; cursor: pointer; }
 .fab { position: fixed; display: none; min-height: 40px; padding: 0 14px; font: inherit; font-weight: 600; color: #fff; background: #2563eb; border: 0; border-radius: 20px; box-shadow: 0 4px 14px rgba(0,0,0,.35); pointer-events: auto; cursor: pointer; }
 .menu { position: fixed; min-width: 160px; padding: 4px; background: #fff; border: 1px solid #d4d4d4; border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,.25); pointer-events: auto; }
 .menu button { display: block; width: 100%; padding: 6px 12px; border: 0; background: none; text-align: left; font: inherit; color: inherit; border-radius: 4px; cursor: pointer; }
@@ -19,6 +19,8 @@ export const css = `
 .dialog.popover textarea { min-height: 4.6em; max-height: 40vh; resize: none; }
 .dialog.popover .info > summary { cursor: pointer; padding: 2px 0; color: #404040; }
 .dialog.popover .info .item { margin-top: 4px; }
+.dialog .target { display: flex; gap: 14px; margin: 0; padding: 0; border: 0; }
+.dialog .target label { display: flex; align-items: center; gap: 4px; min-height: 28px; cursor: pointer; }
 .dialog h2 { margin: 0; font-size: 15px; }
 .dialog textarea { width: 100%; min-height: 96px; padding: 8px; font: inherit; border: 1px solid #a3a3a3; border-radius: 6px; resize: vertical; }
 .dialog .item { border: 1px solid #e5e5e5; border-radius: 6px; padding: 4px 8px; }
@@ -35,6 +37,8 @@ export const css = `
 @media (max-width: 600px), (pointer: coarse) {
 	.dialog textarea, .dialog input { font-size: 16px; }
 	.dialog .item summary { display: flex; align-items: center; min-height: 44px; }
+	.dialog .target label { min-height: 44px; }
+	.dialog .target input { width: 22px; height: 22px; margin: 0; }
 	.dialog .item input[type=checkbox] { width: 22px; height: 22px; margin: 0; }
 	.dialog .item label { display: flex; align-items: center; min-height: 44px; flex: 1; }
 	.dialog .actions button { min-height: 44px; min-width: 88px; }

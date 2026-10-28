@@ -9,6 +9,8 @@ export type UiHandlers = {
 	onExit: () => void
 	/** 選択のそばに浮かぶ「フィードバック…」ボタン。 */
 	onOpen: () => void
+	/** 案内の帯の「このページ・サイトについて…」。何も選ばずに開く。 */
+	onOpenPage: () => void
 	/** false なら案内を出さない（モードの外で、右クリックから開いたとき）。 */
 	banner?: boolean
 }
@@ -22,6 +24,7 @@ export class FeedbackUi {
 	private readonly root = this.host.attachShadow({ mode: 'open' })
 	private readonly hover = el('div', 'frame')
 	private readonly picked = el('div', 'frame picked')
+	private readonly bannerEl = el('div', 'banner')
 	private menu: HTMLElement | null = null
 	/** 入力欄の一番外側（シートなら幕、popover なら popover 自身）。 */
 	private dialog: HTMLElement | null = null
@@ -37,14 +40,17 @@ export class FeedbackUi {
 	constructor(private readonly handlers: UiHandlers) {
 		const style = document.createElement('style')
 		style.textContent = css
-		const banner = el('div', 'banner')
+		const banner = this.bannerEl
 		banner.append(el('span', undefined, isCoarse()
 			? '要素をタップ、または長押しでテキストを選んで → フィードバック…'
 			: '要素をクリック、またはテキストを選んで → フィードバック…（右クリックでも）/ Esc でやめる'))
 		const exit = el('button', 'exit', 'やめる')
 		exit.type = 'button'
 		exit.addEventListener('click', (e) => { e.stopPropagation(); this.handlers.onExit() })
-		banner.append(exit)
+		const about = el('button', 'about', 'このページ・サイトについて…')
+		about.type = 'button'
+		about.addEventListener('click', (e) => { e.stopPropagation(); this.handlers.onOpenPage() })
+		banner.append(about, exit)
 		this.root.append(style, this.hover, this.picked)
 		if (handlers.banner !== false) this.root.append(banner)
 		// ダイアログ内のキー入力がページ側（Starlight の検索ショートカットなど）に届かないようにする。
@@ -58,6 +64,8 @@ export class FeedbackUi {
 	}
 	setHover(rect: DOMRect | null) { this.place(this.hover, rect) }
 	setPicked(rect: DOMRect | null) { this.place(this.picked, rect) }
+	/** 案内の帯の矩形（何も選ばずに開いた popover の置き場所）。 */
+	bannerRect() { return this.bannerEl.getBoundingClientRect() }
 
 	/** 選んだものの近くに「フィードバック…」ボタンを出す。rect が null か画面の外なら隠す。 */
 	setFab(rect: DOMRect | null) {
@@ -102,11 +110,11 @@ export class FeedbackUi {
 	 * 入力欄を出す。幅 600px 以下は下から出るシート、それより広ければ選択のそばの popover。
 	 * popover は幕を敷かないので、ページは見えたままスクロールもできる。anchor は選んだものの今の矩形を返す。
 	 */
-	showDialog(sections: Sections, remembered: Partial<Record<SectionKey, boolean>>, h: DialogHandlers, anchor: () => DOMRect) {
+	showDialog(sections: Sections, remembered: Partial<Record<SectionKey, boolean>>, h: DialogHandlers, anchor: () => DOMRect, withTarget = false) {
 		this.hideMenu()
 		this.setFab(null)
 		const popover = !isNarrow()
-		const parts = buildDialog(sections, remembered, h, popover)
+		const parts = buildDialog(sections, remembered, h, popover, withTarget)
 		if (popover) {
 			this.root.append(parts.root)
 			this.popover = parts.root
