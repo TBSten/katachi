@@ -1,5 +1,9 @@
 import { SECTION_KEYS, SECTION_TITLES, type Section, type SectionKey } from './protocol'
+import { placeFloating } from './anchor'
 import { css } from './ui.css'
+
+/** 画面の主な入力がタッチかどうか（案内文と載せる情報の切り替えに使う）。 */
+export const isCoarse = () => matchMedia('(pointer: coarse)').matches
 
 type Sections = Partial<Record<SectionKey, Section>>
 
@@ -8,6 +12,13 @@ const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: 
 	if (cls) e.className = cls
 	if (text) e.textContent = text
 	return e
+}
+
+export type UiHandlers = {
+	/** 案内の「やめる」ボタン。Esc と同じ動きにする。 */
+	onExit: () => void
+	/** 選択のそばに浮かぶ「フィードバック…」ボタン。 */
+	onOpen: () => void
 }
 
 export type DialogHandlers = {
@@ -29,11 +40,20 @@ export class FeedbackUi {
 	private dialog: HTMLElement | null = null
 	private submitButton: HTMLButtonElement | null = null
 	private errorBox: HTMLElement | null = null
+	private fab: HTMLButtonElement | null = null
+	private viewportCleanup: (() => void) | null = null
 
-	constructor() {
+	constructor(private readonly handlers: UiHandlers) {
 		const style = document.createElement('style')
 		style.textContent = css
-		const banner = el('div', 'banner', '要素をクリック、またはテキストを選んで右クリック → フィードバック / Esc でやめる')
+		const banner = el('div', 'banner')
+		banner.append(el('span', undefined, isCoarse()
+			? '要素をタップ、または長押しでテキストを選んで → フィードバック…'
+			: '要素をクリック、またはテキストを選んで → フィードバック…（右クリックでも）/ Esc でやめる'))
+		const exit = el('button', 'exit', 'やめる')
+		exit.type = 'button'
+		exit.addEventListener('click', (e) => { e.stopPropagation(); this.handlers.onExit() })
+		banner.append(exit)
 		this.root.append(style, this.hover, this.picked, banner)
 		// ダイアログ内のキー入力がページ側（Starlight の検索ショートカットなど）に届かないようにする。
 		for (const type of ['keydown', 'keyup', 'keypress']) this.host.addEventListener(type, (e) => e.stopPropagation())
@@ -46,6 +66,25 @@ export class FeedbackUi {
 	}
 	setHover(rect: DOMRect | null) { this.place(this.hover, rect) }
 	setPicked(rect: DOMRect | null) { this.place(this.picked, rect) }
+
+	/** 選んだものの近くに「フィードバック…」ボタンを出す。rect が null か画面の外なら隠す。 */
+	setFab(rect: DOMRect | null) {
+		if (!rect) return void (this.fab && (this.fab.style.display = 'none'))
+		if (!this.fab) {
+			const fab = el('button', 'fab', 'フィードバック…')
+			fab.type = 'button'
+			// 押した瞬間にページ側の選択が解除されたりフォーカスが移ったりしないようにする。
+			fab.addEventListener('pointerdown', (e) => e.preventDefault())
+			fab.addEventListener('click', (e) => { e.stopPropagation(); this.handlers.onOpen() })
+			this.root.append(fab)
+			this.fab = fab
+		}
+		this.fab.style.display = 'block'
+		const pos = placeFloating(rect, { width: this.fab.offsetWidth, height: this.fab.offsetHeight }, { width: innerWidth, height: innerHeight })
+		if (!pos) return void (this.fab.style.display = 'none')
+		this.fab.style.left = `${pos.left}px`
+		this.fab.style.top = `${pos.top}px`
+	}
 
 	showMenu(x: number, y: number, onChoose: () => void) {
 		this.hideMenu()
@@ -65,6 +104,7 @@ export class FeedbackUi {
 
 	showDialog(sections: Sections, remembered: Partial<Record<SectionKey, boolean>>, h: DialogHandlers) {
 		this.hideMenu()
+		this.setFab(null)
 		const backdrop = el('div', 'backdrop')
 		const dialog = el('div', 'dialog')
 		const textarea = el('textarea')
@@ -112,10 +152,24 @@ export class FeedbackUi {
 		dialog.append(el('h2', undefined, 'フィードバック'), textarea, ...items, error, actions)
 		backdrop.append(dialog)
 		this.root.append(backdrop)
+		this.fitToVisualViewport(backdrop)
 		this.dialog = backdrop
 		this.submitButton = submit
 		this.errorBox = error
 		textarea.focus()
+	}
+	/** ソフトキーボードで見える範囲が縮んでも、シートが見える範囲に収まり、送信ボタンまでスクロールで届くようにする。 */
+	private fitToVisualViewport(backdrop: HTMLElement) {
+		const vv = window.visualViewport
+		if (!vv) return
+		const fit = () => {
+			backdrop.style.top = `${vv.offsetTop}px`
+			backdrop.style.height = `${vv.height}px`
+		}
+		fit()
+		vv.addEventListener('resize', fit)
+		vv.addEventListener('scroll', fit)
+		this.viewportCleanup = () => { vv.removeEventListener('resize', fit); vv.removeEventListener('scroll', fit) }
 	}
 	hasDialog() { return this.dialog !== null }
 	/** 送信中は二重送信を防ぐ。 */
@@ -134,6 +188,7 @@ export class FeedbackUi {
 	}
 
 	destroy() {
+		this.viewportCleanup?.()
 		this.host.remove()
 	}
 }

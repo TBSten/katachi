@@ -76,6 +76,7 @@ export function collect(pick: Pick, now = new Date()): Partial<Record<SectionKey
 	sections.screen = [
 		['viewport', `${innerWidth} x ${innerHeight}`],
 		['devicePixelRatio', String(devicePixelRatio)],
+		['入力', `pointer: coarse=${matchMedia('(pointer: coarse)').matches}, hover: none=${matchMedia('(hover: none)').matches}, maxTouchPoints=${navigator.maxTouchPoints}`],
 		['テーマ', theme === 'dark' ? 'ダーク' : 'ライト'],
 	]
 	sections.browser = [['UserAgent', navigator.userAgent]]
