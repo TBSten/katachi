@@ -1,30 +1,16 @@
-import { SECTION_KEYS, SECTION_TITLES, type Section, type SectionKey } from './protocol'
-import { placeFloating } from './anchor'
+import type { SectionKey } from './protocol'
+import { placeFloating, placePopover } from './anchor'
+import { buildDialog, type DialogHandlers, type Sections } from './dialog'
+import { el, isCoarse, isNarrow } from './dom'
 import { css } from './ui.css'
-
-/** 画面の主な入力がタッチかどうか（案内文と載せる情報の切り替えに使う）。 */
-export const isCoarse = () => matchMedia('(pointer: coarse)').matches
-
-type Sections = Partial<Record<SectionKey, Section>>
-
-const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string) => {
-	const e = document.createElement(tag)
-	if (cls) e.className = cls
-	if (text) e.textContent = text
-	return e
-}
 
 export type UiHandlers = {
 	/** 案内の「やめる」ボタン。Esc と同じ動きにする。 */
 	onExit: () => void
 	/** 選択のそばに浮かぶ「フィードバック…」ボタン。 */
 	onOpen: () => void
-}
-
-export type DialogHandlers = {
-	/** チェックされた節だけを渡す。 */
-	onSubmit: (comment: string, checked: Sections) => void
-	onCancel: () => void
+	/** false なら案内を出さない（モードの外で、右クリックから開いたとき）。 */
+	banner?: boolean
 }
 
 /**
@@ -37,7 +23,12 @@ export class FeedbackUi {
 	private readonly hover = el('div', 'frame')
 	private readonly picked = el('div', 'frame picked')
 	private menu: HTMLElement | null = null
+	/** 入力欄の一番外側（シートなら幕、popover なら popover 自身）。 */
 	private dialog: HTMLElement | null = null
+	private popover: HTMLElement | null = null
+	private anchor: (() => DOMRect) | null = null
+	private resizeObserver: ResizeObserver | null = null
+	private textarea: HTMLTextAreaElement | null = null
 	private submitButton: HTMLButtonElement | null = null
 	private errorBox: HTMLElement | null = null
 	private fab: HTMLButtonElement | null = null
@@ -54,7 +45,8 @@ export class FeedbackUi {
 		exit.type = 'button'
 		exit.addEventListener('click', (e) => { e.stopPropagation(); this.handlers.onExit() })
 		banner.append(exit)
-		this.root.append(style, this.hover, this.picked, banner)
+		this.root.append(style, this.hover, this.picked)
+		if (handlers.banner !== false) this.root.append(banner)
 		// ダイアログ内のキー入力がページ側（Starlight の検索ショートカットなど）に届かないようにする。
 		for (const type of ['keydown', 'keyup', 'keypress']) this.host.addEventListener(type, (e) => e.stopPropagation())
 		document.documentElement.append(this.host)
@@ -86,77 +78,69 @@ export class FeedbackUi {
 		this.fab.style.top = `${pos.top}px`
 	}
 
-	showMenu(x: number, y: number, onChoose: () => void) {
+	/** hint があればメニューの下に小さく添える。 */
+	showMenu(x: number, y: number, onChoose: () => void, hint?: string) {
 		this.hideMenu()
 		const menu = el('div', 'menu')
 		const item = el('button', undefined, 'フィードバック…')
 		item.type = 'button'
+		// 押した瞬間にページ側の選択が解除されないようにする。
+		item.addEventListener('pointerdown', (e) => e.preventDefault())
 		item.addEventListener('click', (e) => { e.stopPropagation(); onChoose() })
 		menu.append(item)
-		// 画面の端で切れないよう、見えている範囲に収める。
-		menu.style.left = `${Math.min(x, innerWidth - 180)}px`
-		menu.style.top = `${Math.min(y, innerHeight - 50)}px`
+		if (hint) menu.append(el('div', 'hint', hint))
 		this.root.append(menu)
+		// 画面の端で切れないよう、置いてから大きさを測って見えている範囲に収める。
+		menu.style.left = `${Math.max(0, Math.min(x, innerWidth - menu.offsetWidth - 8))}px`
+		menu.style.top = `${Math.max(0, Math.min(y, innerHeight - menu.offsetHeight - 8))}px`
 		this.menu = menu
 	}
 	hideMenu() { this.menu?.remove(); this.menu = null }
 	hasMenu() { return this.menu !== null }
 
-	showDialog(sections: Sections, remembered: Partial<Record<SectionKey, boolean>>, h: DialogHandlers) {
+	/**
+	 * 入力欄を出す。幅 600px 以下は下から出るシート、それより広ければ選択のそばの popover。
+	 * popover は幕を敷かないので、ページは見えたままスクロールもできる。anchor は選んだものの今の矩形を返す。
+	 */
+	showDialog(sections: Sections, remembered: Partial<Record<SectionKey, boolean>>, h: DialogHandlers, anchor: () => DOMRect) {
 		this.hideMenu()
 		this.setFab(null)
-		const backdrop = el('div', 'backdrop')
-		const dialog = el('div', 'dialog')
-		const textarea = el('textarea')
-		textarea.placeholder = 'コメント'
-		const checks = new Map<SectionKey, HTMLInputElement>()
-		const items = SECTION_KEYS.filter((k) => sections[k]).map((key) => {
-			const details = el('details', 'item')
-			const summary = el('summary')
-			const box = el('input')
-			box.type = 'checkbox'
-			box.checked = remembered[key] ?? true
-			box.id = `chk-${key}`
-			checks.set(key, box)
-			const label = el('label', undefined, SECTION_TITLES[key])
-			label.htmlFor = box.id
-			// summary の中の click で details が開閉しないようにする（チェックだけ切り替えたい）。
-			box.addEventListener('click', (e) => e.stopPropagation())
-			label.addEventListener('click', (e) => e.stopPropagation())
-			summary.append(box, label)
-			const pre = el('pre', undefined, sections[key]!.map(([l, v]) => `${l}: ${v}`).join('\n'))
-			details.append(summary, pre)
-			return details
-		})
-		const error = el('div', 'error')
-		const cancel = el('button', undefined, 'キャンセル')
-		const submit = el('button', 'primary', '送信')
-		cancel.type = submit.type = 'button'
-		submit.disabled = true
-		textarea.addEventListener('input', () => { submit.disabled = textarea.value.trim() === '' })
-		const doSubmit = () => {
-			if (submit.disabled) return
-			const checked: Sections = {}
-			for (const [k, box] of checks) if (box.checked) checked[k] = sections[k]
-			error.textContent = ''
-			h.onSubmit(textarea.value, checked)
+		const popover = !isNarrow()
+		const parts = buildDialog(sections, remembered, h, popover)
+		if (popover) {
+			this.root.append(parts.root)
+			this.popover = parts.root
+			this.anchor = anchor
+			this.updatePopover()
+			// 書いたり「載せる情報」を開いたりして高さが変わったら置き直す（下に入らなくなれば上へ）。
+			this.resizeObserver = new ResizeObserver(() => this.updatePopover())
+			this.resizeObserver.observe(parts.root)
+			this.dialog = parts.root
+		} else {
+			const backdrop = el('div', 'backdrop')
+			backdrop.append(parts.root)
+			this.root.append(backdrop)
+			this.fitToVisualViewport(backdrop)
+			this.dialog = backdrop
 		}
-		submit.addEventListener('click', doSubmit)
-		cancel.addEventListener('click', h.onCancel)
-		// Cmd/Ctrl+Enter で送信。Esc は mode 側の document リスナーが全体をやめる。
-		dialog.addEventListener('keydown', (e) => {
-			if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); doSubmit() }
-		})
-		const actions = el('div', 'actions')
-		actions.append(cancel, submit)
-		dialog.append(el('h2', undefined, 'フィードバック'), textarea, ...items, error, actions)
-		backdrop.append(dialog)
-		this.root.append(backdrop)
-		this.fitToVisualViewport(backdrop)
-		this.dialog = backdrop
-		this.submitButton = submit
-		this.errorBox = error
-		textarea.focus()
+		this.textarea = parts.textarea
+		this.submitButton = parts.submit
+		this.errorBox = parts.error
+		parts.textarea.focus({ preventScroll: true })
+	}
+	/** popover を選んだものの今の位置に置き直す（スクロール・画面サイズ・高さの変化のとき）。シートでは何もしない。 */
+	updatePopover() {
+		if (!this.popover || !this.anchor) return
+		const pos = placePopover(this.anchor(), { width: this.popover.offsetWidth, height: this.popover.offsetHeight }, { width: innerWidth, height: innerHeight })
+		this.popover.style.left = `${pos.left}px`
+		this.popover.style.top = `${pos.top}px`
+	}
+	/** 入力欄だけを閉じる（モードは続く）。 */
+	closeDialog() {
+		this.resizeObserver?.disconnect()
+		this.viewportCleanup?.()
+		this.dialog?.remove()
+		this.resizeObserver = this.viewportCleanup = this.dialog = this.popover = this.anchor = this.textarea = this.submitButton = this.errorBox = null
 	}
 	/** ソフトキーボードで見える範囲が縮んでも、シートが見える範囲に収まり、送信ボタンまでスクロールで届くようにする。 */
 	private fitToVisualViewport(backdrop: HTMLElement) {
@@ -172,6 +156,10 @@ export class FeedbackUi {
 		this.viewportCleanup = () => { vv.removeEventListener('resize', fit); vv.removeEventListener('scroll', fit) }
 	}
 	hasDialog() { return this.dialog !== null }
+	/** popover が出ているか（外のクリックの扱いがシートと違う）。 */
+	hasPopover() { return this.popover !== null }
+	/** コメントが書いてあるか。書いてあるうちは外のクリックで閉じない。 */
+	hasComment() { return (this.textarea?.value.trim() ?? '') !== '' }
 	/** 送信中は二重送信を防ぐ。 */
 	setBusy(busy: boolean) { if (this.submitButton) this.submitButton.disabled = busy }
 	showError(message: string) { if (this.errorBox) this.errorBox.textContent = `保存できませんでした: ${message}`; this.setBusy(false) }
@@ -188,7 +176,7 @@ export class FeedbackUi {
 	}
 
 	destroy() {
-		this.viewportCleanup?.()
+		this.closeDialog()
 		this.host.remove()
 	}
 }

@@ -29,3 +29,22 @@ export function placeFloating(
 	if (above >= margin) return { left, top: above }
 	return { left, top: Math.max(margin, view.height - size.height - margin) }
 }
+
+/**
+ * popover の左上の座標を決める。置き方は placeFloating と同じだが、選択が画面の外に出ても隠さない。
+ * 選択の矩形を画面の中に押し込んでから置くので、選択が画面の上へ出れば上端、下へ出れば下端に留まる。
+ */
+export function placePopover(
+	rect: Box,
+	size: { width: number; height: number },
+	view: { width: number; height: number },
+): { left: number; top: number } {
+	const clamp = (v: number, max: number) => Math.min(Math.max(v, 0), max)
+	const inView = {
+		left: clamp(rect.left, view.width),
+		right: clamp(rect.right, view.width),
+		top: clamp(rect.top, view.height),
+		bottom: clamp(rect.bottom, view.height),
+	}
+	return placeFloating(inView, size, view)!
+}

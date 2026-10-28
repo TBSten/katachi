@@ -10,8 +10,15 @@ export const css = `
 .menu { position: fixed; min-width: 160px; padding: 4px; background: #fff; border: 1px solid #d4d4d4; border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,.25); pointer-events: auto; }
 .menu button { display: block; width: 100%; padding: 6px 12px; border: 0; background: none; text-align: left; font: inherit; color: inherit; border-radius: 4px; cursor: pointer; }
 .menu button:hover { background: #eef2ff; }
+.menu .hint { padding: 2px 12px 4px; font-size: 11px; color: #666; white-space: nowrap; }
 .backdrop { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.35); pointer-events: auto; }
 .dialog { width: min(560px, calc(100vw - 24px)); max-height: calc(100vh - 24px); overflow: auto; padding: 16px; background: #fff; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,.4); display: flex; flex-direction: column; gap: 10px; }
+.dialog.popover .error:empty { display: none; }
+/* 幅 600px より広いとき: 選択のそばに浮かぶ popover。幕は敷かず、ページは見えたまま操作できる。 */
+.dialog.popover { position: fixed; left: 0; top: 0; width: 360px; max-width: calc(100vw - 16px); max-height: calc(100vh - 16px); padding: 10px; gap: 8px; border-radius: 10px; border: 1px solid #d4d4d4; box-shadow: 0 8px 28px rgba(0,0,0,.3); pointer-events: auto; }
+.dialog.popover textarea { min-height: 4.6em; max-height: 40vh; resize: none; }
+.dialog.popover .info > summary { cursor: pointer; padding: 2px 0; color: #404040; }
+.dialog.popover .info .item { margin-top: 4px; }
 .dialog h2 { margin: 0; font-size: 15px; }
 .dialog textarea { width: 100%; min-height: 96px; padding: 8px; font: inherit; border: 1px solid #a3a3a3; border-radius: 6px; resize: vertical; }
 .dialog .item { border: 1px solid #e5e5e5; border-radius: 6px; padding: 4px 8px; }
