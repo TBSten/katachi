@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "katachiVersion": "0.2.0",
-  "generatedAt": "2026-10-17T23:45:49Z",
+  "katachiVersion": "0.3.0",
+  "generatedAt": "2026-10-29T15:34:33Z",
   "errors": [
     {
       "phase": "entryPoint",

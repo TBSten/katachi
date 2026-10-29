@@ -1,16 +1,16 @@
 package com.example.sample
 
-import com.example.sample.groups.appGroup
-import com.example.sample.groups.dataGroup
-import com.example.sample.groups.featureGroup
-import com.example.sample.groups.gradleGroup
-import com.example.sample.groups.testingGroup
-import com.example.sample.groups.toolGroup
-import com.example.sample.groups.uiGroup
-import com.example.sample.roles.featureComponent
-import com.example.sample.roles.featureTest
-import com.example.sample.roles.route
-import com.example.sample.roles.viewModel
+import com.example.sample.app.appGroup
+import com.example.sample.data.dataGroup
+import com.example.sample.feature.featureComponent
+import com.example.sample.feature.featureGroup
+import com.example.sample.feature.featureTest
+import com.example.sample.feature.route
+import com.example.sample.feature.viewModel
+import com.example.sample.gradle.gradleGroup
+import com.example.sample.testing.testingGroup
+import com.example.sample.tool.toolGroup
+import com.example.sample.ui.uiGroup
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -41,7 +41,7 @@ import me.tbsten.katachi.dsl.pascalCase
  * declaration site capture, which reads the JVM stack trace.
  *
  * Since the definition is split one declaration per file, the declaration site tests below
- * are also the proof that the split is free: a role written in `roles/ScreenRole.kt` must
+ * are also the proof that the split is free: a role written in `feature/ScreenRole.kt` must
  * report `ScreenRole.kt`, not the `ProjectArchitecture.kt` that called into it — which no
  * longer contains a single `group` or role call of its own.
  *
@@ -129,7 +129,7 @@ class ProjectArchitectureSpec : FreeSpec({
         // katachi walks the stack trace past its own frames to capture the declaration site,
         // so the `"Gradle".group { }` written inside `gradle()` and the `name { }` inside it
         // collapse onto the first frame outside katachi -- the `gradle()` call in
-        // `groups/GradleGroup.kt` -- rather than onto their own lines. This is not an exception
+        // `gradle/GradleGroup.kt` -- rather than onto their own lines. This is not an exception
         // to the "one declaration per file" convention; it shows there really is only one site.
         val gradleGroup = projectArchitecture.allGroups.single { it.qualifiedName == "Gradle" }
         gradleGroup.declaredAt.fileName shouldBe "GradleGroup.kt"
@@ -307,14 +307,14 @@ private val violationsHeldBackByBaseline: List<String> = listOf(
     "[UnexpectedFile] feature/home/src/main/kotlin/com/example/sample/feature/home/HomeFormatter.kt",
 )
 
-/** `"Gradle"` itself or anything nested under it -- see `groups/GradleGroup.kt`. */
+/** `"Gradle"` itself or anything nested under it -- see `gradle/GradleGroup.kt`. */
 private fun String.isGradleGroupSubtree(): Boolean = this == "Gradle" || startsWith("Gradle.")
 
 /**
  * Every Kotlin source of this test source set, keyed by file name, so a captured line
  * number can be compared against what is actually written there.
  *
- * The declarations sit one per file under `groups/` and `roles/`, so the lookup is by file
+ * The declarations sit one per file under the group directories, so the lookup is by file
  * name rather than by a fixed path: that is all a [me.tbsten.katachi.dsl.DeclarationSite]
  * carries, and it keeps the test from having to know which package a role was moved into.
  *

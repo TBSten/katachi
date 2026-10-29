@@ -16,7 +16,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
  *
  * Looks at [ArchitectureProcessContext.groups] as well as [ArchitectureProcessContext.roles]:
  * `tool/Git` tags itself directly, the way every role in this sample used to, while
- * `groups/GradleGroup.kt` tags the whole `"Gradle"` group, which reaches every role
+ * `gradle/GradleGroup.kt` tags the whole `"Gradle"` group, which reaches every role
  * `me.tbsten.katachi.dsl.gradle.gradle` declares under it in one line. A role counts as
  * platform-owned when it carries the tag itself, or when its
  * [me.tbsten.katachi.dsl.Role.groupPath] sits inside a group that does -- and a role that has

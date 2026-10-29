@@ -16,7 +16,7 @@ import kotlin.io.path.name
  * (`contract/gutter/sources/<sample>`), as text: the line must hold `.template`.
  *
  * `DefinitionGutterRealShapeTest` covers the same thing through the PSI for `sample/jvm`'s `ServiceRole.kt` (a ◆ on the
- * `template` identifier of line 57).
+ * `template` identifier of line 59).
  */
 class RealTemplateDeclaredAtContractTest {
     private fun sourceFiles(sample: String): List<Path> {
@@ -43,10 +43,10 @@ class RealTemplateDeclaredAtContractTest {
     }
 
     @Test
-    fun `jvm の ServiceRole の template は 57 行目に宣言されている`() {
+    fun `jvm の ServiceRole の template は 59 行目に宣言されている`() {
         val ref = DefinitionFixtures.definition("real-jvm-definition").roles
             .flatMap { role -> role.layout.mapNotNull { it.template } }
             .single { it.specifier == "domain.Service" }
-        assertEquals(57, ref.declaredAt?.line)
+        assertEquals(59, ref.declaredAt?.line)
     }
 }

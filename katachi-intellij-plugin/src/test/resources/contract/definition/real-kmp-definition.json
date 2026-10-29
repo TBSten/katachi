@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "katachiVersion": "0.2.0",
-  "generatedAt": "2026-10-25T16:14:27Z",
+  "katachiVersion": "0.3.0",
+  "generatedAt": "2026-10-29T15:18:57Z",
   "projectRoot": "/__ROOT__",
   "architecture": {
     "declaredAt": {
       "fileName": "ProjectArchitecture.kt",
-      "line": 52
+      "line": 53
     },
     "files": "gitTracked",
     "baseline": "katachi-baseline.json"
@@ -21,7 +21,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "FeatureGroup.kt",
-        "line": 29
+        "line": 30
       }
     },
     {
@@ -33,7 +33,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "UiGroup.kt",
-        "line": 26
+        "line": 27
       }
     },
     {
@@ -871,7 +871,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "RouteRole.kt",
-        "line": 19
+        "line": 20
       },
       "layout": [
         {
@@ -882,7 +882,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "RouteRole.kt",
-            "line": 46
+            "line": 47
           },
           "modulePath": null,
           "pathInModule": "feature",
@@ -903,7 +903,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "RouteRole.kt",
-            "line": 46
+            "line": 47
           },
           "modulePath": null,
           "pathInModule": "feature/*",
@@ -931,7 +931,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "RouteRole.kt",
-            "line": 46
+            "line": 47
           },
           "modulePath": null,
           "pathInModule": "feature/*/src",
@@ -959,7 +959,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "RouteRole.kt",
-            "line": 46
+            "line": 47
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain",
@@ -987,7 +987,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "RouteRole.kt",
-            "line": 46
+            "line": 47
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin",
@@ -1015,7 +1015,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "RouteRole.kt",
-            "line": 46
+            "line": 47
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com",
@@ -1043,7 +1043,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "RouteRole.kt",
-            "line": 46
+            "line": 47
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example",
@@ -1071,7 +1071,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "RouteRole.kt",
-            "line": 46
+            "line": 47
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp",
@@ -1099,7 +1099,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "RouteRole.kt",
-            "line": 46
+            "line": 47
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp/feature",
@@ -1127,7 +1127,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "RouteRole.kt",
-            "line": 46
+            "line": 47
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*",
@@ -1161,7 +1161,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "RouteRole.kt",
-            "line": 47
+            "line": 48
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/*Route.kt",
@@ -1205,7 +1205,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "FeatureComponentRole.kt",
-        "line": 26
+        "line": 28
       },
       "layout": [
         {
@@ -1216,7 +1216,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 59
+            "line": 61
           },
           "modulePath": null,
           "pathInModule": "feature",
@@ -1237,7 +1237,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 59
+            "line": 61
           },
           "modulePath": null,
           "pathInModule": "feature/*",
@@ -1265,7 +1265,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 59
+            "line": 61
           },
           "modulePath": null,
           "pathInModule": "feature/*/src",
@@ -1293,7 +1293,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 59
+            "line": 61
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain",
@@ -1321,7 +1321,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 59
+            "line": 61
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin",
@@ -1349,7 +1349,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 59
+            "line": 61
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com",
@@ -1377,7 +1377,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 59
+            "line": 61
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example",
@@ -1405,7 +1405,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 59
+            "line": 61
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp",
@@ -1433,7 +1433,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 59
+            "line": 61
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp/feature",
@@ -1461,7 +1461,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 59
+            "line": 61
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*",
@@ -1495,7 +1495,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 59
+            "line": 61
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/component",
@@ -1529,7 +1529,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 61
+            "line": 63
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/component/*.kt",
@@ -1560,7 +1560,7 @@
             "title": null,
             "declaredAt": {
               "fileName": "FeatureComponentRole.kt",
-              "line": 62
+              "line": 64
             }
           },
           "matchedFiles": ["feature/home/src/commonMain/kotlin/com/example/kmp/feature/home/component/HomeUserCard.kt"],
@@ -1578,7 +1578,7 @@
           "range": "Subtree",
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 85
+            "line": 87
           },
           "layoutPath": null,
           "anchors": ["feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/component"],
@@ -1602,7 +1602,7 @@
                       "text": "@Composable internal fun HomeUserCard(...)",
                       "declaredAt": {
                         "fileName": "FeatureComponentRole.kt",
-                        "line": 91
+                        "line": 93
                       }
                     }
                   ],
@@ -1625,7 +1625,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "ScreenPreviewRole.kt",
-        "line": 21
+        "line": 23
       },
       "layout": [
         {
@@ -1636,7 +1636,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ScreenPreviewRole.kt",
-            "line": 53
+            "line": 55
           },
           "modulePath": null,
           "pathInModule": "feature",
@@ -1657,7 +1657,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ScreenPreviewRole.kt",
-            "line": 53
+            "line": 55
           },
           "modulePath": null,
           "pathInModule": "feature/*",
@@ -1678,7 +1678,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ScreenPreviewRole.kt",
-            "line": 53
+            "line": 55
           },
           "modulePath": null,
           "pathInModule": "feature/*/src",
@@ -1699,7 +1699,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ScreenPreviewRole.kt",
-            "line": 53
+            "line": 55
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain",
@@ -1720,7 +1720,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ScreenPreviewRole.kt",
-            "line": 53
+            "line": 55
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin",
@@ -1741,7 +1741,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ScreenPreviewRole.kt",
-            "line": 53
+            "line": 55
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com",
@@ -1762,7 +1762,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ScreenPreviewRole.kt",
-            "line": 53
+            "line": 55
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example",
@@ -1783,7 +1783,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ScreenPreviewRole.kt",
-            "line": 53
+            "line": 55
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp",
@@ -1804,7 +1804,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ScreenPreviewRole.kt",
-            "line": 53
+            "line": 55
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp/feature",
@@ -1825,7 +1825,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ScreenPreviewRole.kt",
-            "line": 53
+            "line": 55
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*",
@@ -1846,7 +1846,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ScreenPreviewRole.kt",
-            "line": 54
+            "line": 56
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/*Preview.kt",
@@ -1868,7 +1868,7 @@
           "range": "Subtree",
           "declaredAt": {
             "fileName": "ScreenPreviewRole.kt",
-            "line": 58
+            "line": 60
           },
           "layoutPath": null,
           "anchors": ["feature/*/src/commonMain/kotlin/com/example/kmp/feature/*"],
@@ -1892,7 +1892,7 @@
                       "text": "@Preview private fun *Preview(...)",
                       "declaredAt": {
                         "fileName": "ScreenPreviewRole.kt",
-                        "line": 64
+                        "line": 66
                       }
                     }
                   ],
@@ -1908,7 +1908,7 @@
                       "text": "@Preview private fun *Preview(...)",
                       "declaredAt": {
                         "fileName": "ScreenPreviewRole.kt",
-                        "line": 64
+                        "line": 66
                       }
                     }
                   ],
@@ -1924,7 +1924,7 @@
                       "text": "@Preview private fun *Preview(...)",
                       "declaredAt": {
                         "fileName": "ScreenPreviewRole.kt",
-                        "line": 64
+                        "line": 66
                       }
                     }
                   ],
@@ -1948,7 +1948,7 @@
                       "text": "@Preview private fun *Preview(...)",
                       "declaredAt": {
                         "fileName": "ScreenPreviewRole.kt",
-                        "line": 64
+                        "line": 66
                       }
                     }
                   ],
@@ -1964,7 +1964,7 @@
                       "text": "@Preview private fun *Preview(...)",
                       "declaredAt": {
                         "fileName": "ScreenPreviewRole.kt",
-                        "line": 64
+                        "line": 66
                       }
                     }
                   ],
@@ -1987,7 +1987,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "ComponentRole.kt",
-        "line": 10
+        "line": 11
       },
       "layout": [
         {
@@ -1998,7 +1998,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentRole.kt",
-            "line": 37
+            "line": 38
           },
           "modulePath": null,
           "pathInModule": "ui",
@@ -2019,7 +2019,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentRole.kt",
-            "line": 38
+            "line": 39
           },
           "modulePath": null,
           "pathInModule": "ui/src",
@@ -2040,7 +2040,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentRole.kt",
-            "line": 38
+            "line": 39
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain",
@@ -2061,7 +2061,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentRole.kt",
-            "line": 38
+            "line": 39
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin",
@@ -2082,7 +2082,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentRole.kt",
-            "line": 38
+            "line": 39
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com",
@@ -2103,7 +2103,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentRole.kt",
-            "line": 38
+            "line": 39
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example",
@@ -2124,7 +2124,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentRole.kt",
-            "line": 38
+            "line": 39
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp",
@@ -2145,7 +2145,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentRole.kt",
-            "line": 38
+            "line": 39
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp/ui",
@@ -2166,7 +2166,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentRole.kt",
-            "line": 38
+            "line": 39
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp/ui/component",
@@ -2187,7 +2187,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentRole.kt",
-            "line": 38
+            "line": 39
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp/ui/component/*.kt",
@@ -2212,7 +2212,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "ThemeRole.kt",
-        "line": 9
+        "line": 10
       },
       "layout": [
         {
@@ -2223,7 +2223,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ThemeRole.kt",
-            "line": 33
+            "line": 34
           },
           "modulePath": null,
           "pathInModule": "ui",
@@ -2244,7 +2244,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ThemeRole.kt",
-            "line": 34
+            "line": 35
           },
           "modulePath": null,
           "pathInModule": "ui/src",
@@ -2265,7 +2265,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ThemeRole.kt",
-            "line": 34
+            "line": 35
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain",
@@ -2286,7 +2286,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ThemeRole.kt",
-            "line": 34
+            "line": 35
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin",
@@ -2307,7 +2307,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ThemeRole.kt",
-            "line": 34
+            "line": 35
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com",
@@ -2328,7 +2328,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ThemeRole.kt",
-            "line": 34
+            "line": 35
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example",
@@ -2349,7 +2349,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ThemeRole.kt",
-            "line": 34
+            "line": 35
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp",
@@ -2370,7 +2370,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ThemeRole.kt",
-            "line": 34
+            "line": 35
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp/ui",
@@ -2391,7 +2391,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ThemeRole.kt",
-            "line": 34
+            "line": 35
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp/ui/theme",
@@ -2412,7 +2412,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ThemeRole.kt",
-            "line": 34
+            "line": 35
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp/ui/theme/*.kt",
@@ -2437,7 +2437,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "UiCoreRole.kt",
-        "line": 10
+        "line": 11
       },
       "layout": [
         {
@@ -2448,7 +2448,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "UiCoreRole.kt",
-            "line": 38
+            "line": 39
           },
           "modulePath": null,
           "pathInModule": "ui",
@@ -2469,7 +2469,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "UiCoreRole.kt",
-            "line": 39
+            "line": 40
           },
           "modulePath": null,
           "pathInModule": "ui/src",
@@ -2490,7 +2490,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "UiCoreRole.kt",
-            "line": 39
+            "line": 40
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain",
@@ -2511,7 +2511,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "UiCoreRole.kt",
-            "line": 39
+            "line": 40
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin",
@@ -2532,7 +2532,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "UiCoreRole.kt",
-            "line": 39
+            "line": 40
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com",
@@ -2553,7 +2553,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "UiCoreRole.kt",
-            "line": 39
+            "line": 40
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example",
@@ -2574,7 +2574,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "UiCoreRole.kt",
-            "line": 39
+            "line": 40
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp",
@@ -2595,7 +2595,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "UiCoreRole.kt",
-            "line": 39
+            "line": 40
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp/ui",
@@ -2616,7 +2616,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "UiCoreRole.kt",
-            "line": 39
+            "line": 40
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp/ui/core",
@@ -2637,7 +2637,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "UiCoreRole.kt",
-            "line": 39
+            "line": 40
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp/ui/core/*.kt",
@@ -2662,7 +2662,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "ComponentPreviewRole.kt",
-        "line": 14
+        "line": 16
       },
       "layout": [
         {
@@ -2673,7 +2673,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentPreviewRole.kt",
-            "line": 40
+            "line": 42
           },
           "modulePath": null,
           "pathInModule": "ui",
@@ -2694,7 +2694,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentPreviewRole.kt",
-            "line": 41
+            "line": 43
           },
           "modulePath": null,
           "pathInModule": "ui/src",
@@ -2715,7 +2715,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentPreviewRole.kt",
-            "line": 41
+            "line": 43
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain",
@@ -2736,7 +2736,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentPreviewRole.kt",
-            "line": 41
+            "line": 43
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin",
@@ -2757,7 +2757,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentPreviewRole.kt",
-            "line": 41
+            "line": 43
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com",
@@ -2778,7 +2778,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentPreviewRole.kt",
-            "line": 41
+            "line": 43
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example",
@@ -2799,7 +2799,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentPreviewRole.kt",
-            "line": 41
+            "line": 43
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp",
@@ -2820,7 +2820,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentPreviewRole.kt",
-            "line": 41
+            "line": 43
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp/ui",
@@ -2841,7 +2841,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentPreviewRole.kt",
-            "line": 41
+            "line": 43
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp/ui/component",
@@ -2862,7 +2862,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentPreviewRole.kt",
-            "line": 41
+            "line": 43
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp/ui/component/preview",
@@ -2883,7 +2883,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentPreviewRole.kt",
-            "line": 41
+            "line": 43
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp/ui/component/preview/*Preview.kt",
@@ -2908,7 +2908,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "PreviewRootRole.kt",
-        "line": 15
+        "line": 17
       },
       "layout": [
         {
@@ -2919,7 +2919,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "PreviewRootRole.kt",
-            "line": 39
+            "line": 41
           },
           "modulePath": null,
           "pathInModule": "ui",
@@ -2940,7 +2940,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "PreviewRootRole.kt",
-            "line": 40
+            "line": 42
           },
           "modulePath": null,
           "pathInModule": "ui/src",
@@ -2961,7 +2961,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "PreviewRootRole.kt",
-            "line": 40
+            "line": 42
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain",
@@ -2982,7 +2982,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "PreviewRootRole.kt",
-            "line": 40
+            "line": 42
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin",
@@ -3003,7 +3003,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "PreviewRootRole.kt",
-            "line": 40
+            "line": 42
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com",
@@ -3024,7 +3024,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "PreviewRootRole.kt",
-            "line": 40
+            "line": 42
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example",
@@ -3045,7 +3045,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "PreviewRootRole.kt",
-            "line": 40
+            "line": 42
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp",
@@ -3066,7 +3066,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "PreviewRootRole.kt",
-            "line": 40
+            "line": 42
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp/ui",
@@ -3087,7 +3087,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "PreviewRootRole.kt",
-            "line": 40
+            "line": 42
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp/ui/preview",
@@ -3108,7 +3108,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "PreviewRootRole.kt",
-            "line": 40
+            "line": 42
           },
           "modulePath": null,
           "pathInModule": "ui/src/commonMain/kotlin/com/example/kmp/ui/preview/PreviewRoot.kt",
@@ -3133,7 +3133,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "NavigationRole.kt",
-        "line": 10
+        "line": 12
       },
       "layout": [
         {
@@ -3144,7 +3144,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "NavigationRole.kt",
-            "line": 40
+            "line": 42
           },
           "modulePath": null,
           "pathInModule": "navigation",
@@ -3165,7 +3165,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "NavigationRole.kt",
-            "line": 41
+            "line": 43
           },
           "modulePath": null,
           "pathInModule": "navigation/src",
@@ -3186,7 +3186,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "NavigationRole.kt",
-            "line": 41
+            "line": 43
           },
           "modulePath": null,
           "pathInModule": "navigation/src/commonMain",
@@ -3207,7 +3207,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "NavigationRole.kt",
-            "line": 41
+            "line": 43
           },
           "modulePath": null,
           "pathInModule": "navigation/src/commonMain/kotlin",
@@ -3228,7 +3228,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "NavigationRole.kt",
-            "line": 41
+            "line": 43
           },
           "modulePath": null,
           "pathInModule": "navigation/src/commonMain/kotlin/com",
@@ -3249,7 +3249,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "NavigationRole.kt",
-            "line": 41
+            "line": 43
           },
           "modulePath": null,
           "pathInModule": "navigation/src/commonMain/kotlin/com/example",
@@ -3270,7 +3270,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "NavigationRole.kt",
-            "line": 41
+            "line": 43
           },
           "modulePath": null,
           "pathInModule": "navigation/src/commonMain/kotlin/com/example/kmp",
@@ -3291,7 +3291,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "NavigationRole.kt",
-            "line": 41
+            "line": 43
           },
           "modulePath": null,
           "pathInModule": "navigation/src/commonMain/kotlin/com/example/kmp/navigation",
@@ -3312,7 +3312,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "NavigationRole.kt",
-            "line": 41
+            "line": 43
           },
           "modulePath": null,
           "pathInModule": "navigation/src/commonMain/kotlin/com/example/kmp/navigation/*.kt",
@@ -3337,7 +3337,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "RepositoryInterfaceRole.kt",
-        "line": 22
+        "line": 25
       },
       "layout": [
         {
@@ -3348,7 +3348,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "RepositoryInterfaceRole.kt",
-            "line": 57
+            "line": 60
           },
           "modulePath": null,
           "pathInModule": "data",
@@ -3369,7 +3369,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "RepositoryInterfaceRole.kt",
-            "line": 58
+            "line": 61
           },
           "modulePath": null,
           "pathInModule": "data/src",
@@ -3390,7 +3390,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "RepositoryInterfaceRole.kt",
-            "line": 58
+            "line": 61
           },
           "modulePath": null,
           "pathInModule": "data/src/commonMain",
@@ -3411,7 +3411,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "RepositoryInterfaceRole.kt",
-            "line": 58
+            "line": 61
           },
           "modulePath": null,
           "pathInModule": "data/src/commonMain/kotlin",
@@ -3432,7 +3432,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "RepositoryInterfaceRole.kt",
-            "line": 58
+            "line": 61
           },
           "modulePath": null,
           "pathInModule": "data/src/commonMain/kotlin/com",
@@ -3453,7 +3453,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "RepositoryInterfaceRole.kt",
-            "line": 58
+            "line": 61
           },
           "modulePath": null,
           "pathInModule": "data/src/commonMain/kotlin/com/example",
@@ -3474,7 +3474,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "RepositoryInterfaceRole.kt",
-            "line": 58
+            "line": 61
           },
           "modulePath": null,
           "pathInModule": "data/src/commonMain/kotlin/com/example/kmp",
@@ -3495,7 +3495,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "RepositoryInterfaceRole.kt",
-            "line": 58
+            "line": 61
           },
           "modulePath": null,
           "pathInModule": "data/src/commonMain/kotlin/com/example/kmp/data",
@@ -3516,7 +3516,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "RepositoryInterfaceRole.kt",
-            "line": 58
+            "line": 61
           },
           "modulePath": null,
           "pathInModule": "data/src/commonMain/kotlin/com/example/kmp/data/user",
@@ -3537,7 +3537,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "RepositoryInterfaceRole.kt",
-            "line": 59
+            "line": 62
           },
           "modulePath": null,
           "pathInModule": "data/src/commonMain/kotlin/com/example/kmp/data/user/*Repository.kt",
@@ -3556,7 +3556,7 @@
             "title": null,
             "declaredAt": {
               "fileName": "RepositoryInterfaceRole.kt",
-              "line": 60
+              "line": 63
             }
           },
           "matchedFiles": ["data/src/commonMain/kotlin/com/example/kmp/data/user/UserRepository.kt"],
@@ -3574,7 +3574,7 @@
           "range": "Subtree",
           "declaredAt": {
             "fileName": "RepositoryInterfaceRole.kt",
-            "line": 77
+            "line": 80
           },
           "layoutPath": null,
           "anchors": ["data/src/commonMain/kotlin/com/example/kmp/data/user"],
@@ -3598,7 +3598,7 @@
                       "text": "interface UserRepository",
                       "declaredAt": {
                         "fileName": "RepositoryInterfaceRole.kt",
-                        "line": 84
+                        "line": 87
                       }
                     }
                   ],
@@ -5426,7 +5426,7 @@
       "name": "GroupDefinition",
       "groupPath": ["testing"],
       "title": "Group definition",
-      "summary": "groups/<Name>Group.kt, one group of the definition, which lists its roles by calling their functions",
+      "summary": "<group>/<Name>Group.kt, one group of the definition, which lists its roles by calling their functions",
       "documented": null,
       "declaredAt": {
         "fileName": "GroupDefinitionRole.kt",
@@ -5441,6 +5441,210 @@
           "description": null,
           "declaredAt": {
             "fileName": "GroupDefinitionRole.kt",
+            "line": 26
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "architecture-test/src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GroupDefinitionRole.kt",
+            "line": 27
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "architecture-test/src/test",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GroupDefinitionRole.kt",
+            "line": 27
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "architecture-test/src/test/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GroupDefinitionRole.kt",
+            "line": 27
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "architecture-test/src/test/kotlin/com",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GroupDefinitionRole.kt",
+            "line": 27
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 5,
+          "path": "architecture-test/src/test/kotlin/com/example",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GroupDefinitionRole.kt",
+            "line": 27
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com/example",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 6,
+          "path": "architecture-test/src/test/kotlin/com/example/kmp",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GroupDefinitionRole.kt",
+            "line": 27
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com/example/kmp",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 7,
+          "path": "architecture-test/src/test/kotlin/com/example/kmp/**",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GroupDefinitionRole.kt",
+            "line": 27
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com/example/kmp/**",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 8,
+          "path": "architecture-test/src/test/kotlin/com/example/kmp/**/*Group.kt",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GroupDefinitionRole.kt",
+            "line": 27
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com/example/kmp/**/*Group.kt",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["architecture-test/src/test/kotlin/com/example/kmp/app/AppGroup.kt", "architecture-test/src/test/kotlin/com/example/kmp/data/DataGroup.kt", "architecture-test/src/test/kotlin/com/example/kmp/feature/FeatureGroup.kt", "architecture-test/src/test/kotlin/com/example/kmp/gradle/GradleGroup.kt", "architecture-test/src/test/kotlin/com/example/kmp/testing/TestingGroup.kt", "architecture-test/src/test/kotlin/com/example/kmp/tool/ToolGroup.kt", "architecture-test/src/test/kotlin/com/example/kmp/ui/UiGroup.kt"],
+          "matchedCount": 7,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "testing.RoleDefinition",
+      "name": "RoleDefinition",
+      "groupPath": ["testing"],
+      "title": "Role definition",
+      "summary": "<group>/<Name>Role.kt, one role of the definition, with where its files live",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "RoleDefinitionRole.kt",
+        "line": 8
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "architecture-test",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "RoleDefinitionRole.kt",
             "line": 24
           },
           "modulePath": null,
@@ -5461,7 +5665,7 @@
           "required": false,
           "description": null,
           "declaredAt": {
-            "fileName": "GroupDefinitionRole.kt",
+            "fileName": "RoleDefinitionRole.kt",
             "line": 25
           },
           "modulePath": null,
@@ -5482,7 +5686,7 @@
           "required": false,
           "description": null,
           "declaredAt": {
-            "fileName": "GroupDefinitionRole.kt",
+            "fileName": "RoleDefinitionRole.kt",
             "line": 25
           },
           "modulePath": null,
@@ -5503,7 +5707,7 @@
           "required": false,
           "description": null,
           "declaredAt": {
-            "fileName": "GroupDefinitionRole.kt",
+            "fileName": "RoleDefinitionRole.kt",
             "line": 25
           },
           "modulePath": null,
@@ -5524,7 +5728,7 @@
           "required": false,
           "description": null,
           "declaredAt": {
-            "fileName": "GroupDefinitionRole.kt",
+            "fileName": "RoleDefinitionRole.kt",
             "line": 25
           },
           "modulePath": null,
@@ -5545,7 +5749,7 @@
           "required": false,
           "description": null,
           "declaredAt": {
-            "fileName": "GroupDefinitionRole.kt",
+            "fileName": "RoleDefinitionRole.kt",
             "line": 25
           },
           "modulePath": null,
@@ -5566,7 +5770,7 @@
           "required": false,
           "description": null,
           "declaredAt": {
-            "fileName": "GroupDefinitionRole.kt",
+            "fileName": "RoleDefinitionRole.kt",
             "line": 25
           },
           "modulePath": null,
@@ -5582,16 +5786,16 @@
         },
         {
           "index": 7,
-          "path": "architecture-test/src/test/kotlin/com/example/kmp/groups",
+          "path": "architecture-test/src/test/kotlin/com/example/kmp/**",
           "kind": "Directory",
           "required": false,
           "description": null,
           "declaredAt": {
-            "fileName": "GroupDefinitionRole.kt",
+            "fileName": "RoleDefinitionRole.kt",
             "line": 25
           },
           "modulePath": null,
-          "pathInModule": "architecture-test/src/test/kotlin/com/example/kmp/groups",
+          "pathInModule": "architecture-test/src/test/kotlin/com/example/kmp/**",
           "captures": [],
           "moduleCapture": null,
           "template": null,
@@ -5603,224 +5807,20 @@
         },
         {
           "index": 8,
-          "path": "architecture-test/src/test/kotlin/com/example/kmp/groups/*Group.kt",
+          "path": "architecture-test/src/test/kotlin/com/example/kmp/**/*Role.kt",
           "kind": "File",
           "required": false,
           "description": null,
           "declaredAt": {
-            "fileName": "GroupDefinitionRole.kt",
+            "fileName": "RoleDefinitionRole.kt",
             "line": 25
           },
           "modulePath": null,
-          "pathInModule": "architecture-test/src/test/kotlin/com/example/kmp/groups/*Group.kt",
+          "pathInModule": "architecture-test/src/test/kotlin/com/example/kmp/**/*Role.kt",
           "captures": [],
           "moduleCapture": null,
           "template": null,
-          "matchedFiles": ["architecture-test/src/test/kotlin/com/example/kmp/groups/AppGroup.kt", "architecture-test/src/test/kotlin/com/example/kmp/groups/DataGroup.kt", "architecture-test/src/test/kotlin/com/example/kmp/groups/FeatureGroup.kt", "architecture-test/src/test/kotlin/com/example/kmp/groups/GradleGroup.kt", "architecture-test/src/test/kotlin/com/example/kmp/groups/TestingGroup.kt", "architecture-test/src/test/kotlin/com/example/kmp/groups/ToolGroup.kt", "architecture-test/src/test/kotlin/com/example/kmp/groups/UiGroup.kt"],
-          "matchedCount": 7,
-          "matchedFilesTruncated": false,
-          "synthetic": false,
-          "place": false
-        }
-      ],
-      "constraints": []
-    },
-    {
-      "qualifiedName": "testing.RoleDefinition",
-      "name": "RoleDefinition",
-      "groupPath": ["testing"],
-      "title": "Role definition",
-      "summary": "roles/<Name>Role.kt, one role of the definition, with where its files live",
-      "documented": null,
-      "declaredAt": {
-        "fileName": "RoleDefinitionRole.kt",
-        "line": 8
-      },
-      "layout": [
-        {
-          "index": 0,
-          "path": "architecture-test",
-          "kind": "Directory",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "RoleDefinitionRole.kt",
-            "line": 22
-          },
-          "modulePath": null,
-          "pathInModule": "architecture-test",
-          "captures": [],
-          "moduleCapture": null,
-          "template": null,
-          "matchedFiles": [],
-          "matchedCount": null,
-          "matchedFilesTruncated": false,
-          "synthetic": false,
-          "place": false
-        },
-        {
-          "index": 1,
-          "path": "architecture-test/src",
-          "kind": "Directory",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "RoleDefinitionRole.kt",
-            "line": 23
-          },
-          "modulePath": null,
-          "pathInModule": "architecture-test/src",
-          "captures": [],
-          "moduleCapture": null,
-          "template": null,
-          "matchedFiles": [],
-          "matchedCount": null,
-          "matchedFilesTruncated": false,
-          "synthetic": false,
-          "place": false
-        },
-        {
-          "index": 2,
-          "path": "architecture-test/src/test",
-          "kind": "Directory",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "RoleDefinitionRole.kt",
-            "line": 23
-          },
-          "modulePath": null,
-          "pathInModule": "architecture-test/src/test",
-          "captures": [],
-          "moduleCapture": null,
-          "template": null,
-          "matchedFiles": [],
-          "matchedCount": null,
-          "matchedFilesTruncated": false,
-          "synthetic": false,
-          "place": false
-        },
-        {
-          "index": 3,
-          "path": "architecture-test/src/test/kotlin",
-          "kind": "Directory",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "RoleDefinitionRole.kt",
-            "line": 23
-          },
-          "modulePath": null,
-          "pathInModule": "architecture-test/src/test/kotlin",
-          "captures": [],
-          "moduleCapture": null,
-          "template": null,
-          "matchedFiles": [],
-          "matchedCount": null,
-          "matchedFilesTruncated": false,
-          "synthetic": false,
-          "place": false
-        },
-        {
-          "index": 4,
-          "path": "architecture-test/src/test/kotlin/com",
-          "kind": "Directory",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "RoleDefinitionRole.kt",
-            "line": 23
-          },
-          "modulePath": null,
-          "pathInModule": "architecture-test/src/test/kotlin/com",
-          "captures": [],
-          "moduleCapture": null,
-          "template": null,
-          "matchedFiles": [],
-          "matchedCount": null,
-          "matchedFilesTruncated": false,
-          "synthetic": false,
-          "place": false
-        },
-        {
-          "index": 5,
-          "path": "architecture-test/src/test/kotlin/com/example",
-          "kind": "Directory",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "RoleDefinitionRole.kt",
-            "line": 23
-          },
-          "modulePath": null,
-          "pathInModule": "architecture-test/src/test/kotlin/com/example",
-          "captures": [],
-          "moduleCapture": null,
-          "template": null,
-          "matchedFiles": [],
-          "matchedCount": null,
-          "matchedFilesTruncated": false,
-          "synthetic": false,
-          "place": false
-        },
-        {
-          "index": 6,
-          "path": "architecture-test/src/test/kotlin/com/example/kmp",
-          "kind": "Directory",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "RoleDefinitionRole.kt",
-            "line": 23
-          },
-          "modulePath": null,
-          "pathInModule": "architecture-test/src/test/kotlin/com/example/kmp",
-          "captures": [],
-          "moduleCapture": null,
-          "template": null,
-          "matchedFiles": [],
-          "matchedCount": null,
-          "matchedFilesTruncated": false,
-          "synthetic": false,
-          "place": false
-        },
-        {
-          "index": 7,
-          "path": "architecture-test/src/test/kotlin/com/example/kmp/roles",
-          "kind": "Directory",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "RoleDefinitionRole.kt",
-            "line": 23
-          },
-          "modulePath": null,
-          "pathInModule": "architecture-test/src/test/kotlin/com/example/kmp/roles",
-          "captures": [],
-          "moduleCapture": null,
-          "template": null,
-          "matchedFiles": [],
-          "matchedCount": null,
-          "matchedFilesTruncated": false,
-          "synthetic": false,
-          "place": false
-        },
-        {
-          "index": 8,
-          "path": "architecture-test/src/test/kotlin/com/example/kmp/roles/*Role.kt",
-          "kind": "File",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "RoleDefinitionRole.kt",
-            "line": 23
-          },
-          "modulePath": null,
-          "pathInModule": "architecture-test/src/test/kotlin/com/example/kmp/roles/*Role.kt",
-          "captures": [],
-          "moduleCapture": null,
-          "template": null,
-          "matchedFiles": ["architecture-test/src/test/kotlin/com/example/kmp/roles/ActivityEntrypointRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/ActualImplementationRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/AndroidManifestRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/AndroidResourceRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/AppRootRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/BaselineFileRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/ComponentPreviewRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/ComponentRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/CustomProcessorRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/DefinitionEntryRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/DefinitionSectionsRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/DocumentationRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/ExpectDeclarationRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/FakeRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/FeatureComponentRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/GeneratedDocumentationRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/GitRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/GroupDefinitionRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/LayoutSnapshotRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/NavigationRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/PreviewRootRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/ProcessorMetadataRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/ProcessorSpecRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/ProjectArchitectureSpecRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/ProjectArchitectureTestRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/RepositoryImplementationRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/RepositoryInterfaceRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/RoleDefinitionRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/RouteRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/ScreenPreviewRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/ScreenRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/TestRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/ThemeRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/UiCoreRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/ViewModelRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/roles/XcodeProjectRole.kt"],
+          "matchedFiles": ["architecture-test/src/test/kotlin/com/example/kmp/app/ActivityEntrypointRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/app/AndroidManifestRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/app/AndroidResourceRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/app/AppRootRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/app/XcodeProjectRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/data/ActualImplementationRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/data/ExpectDeclarationRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/data/RepositoryImplementationRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/data/RepositoryInterfaceRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/feature/FeatureComponentRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/feature/RouteRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/feature/ScreenPreviewRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/feature/ScreenRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/feature/ViewModelRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/testing/BaselineFileRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/testing/CustomProcessorRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/testing/DefinitionEntryRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/testing/DefinitionSectionsRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/testing/FakeRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/testing/GeneratedDocumentationRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/testing/GroupDefinitionRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/testing/LayoutSnapshotRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/testing/ProcessorMetadataRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/testing/ProcessorSpecRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/testing/ProjectArchitectureSpecRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/testing/ProjectArchitectureTestRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/testing/RoleDefinitionRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/testing/TestRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/tool/DocumentationRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/tool/GitRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/ui/ComponentPreviewRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/ui/ComponentRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/ui/NavigationRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/ui/PreviewRootRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/ui/ThemeRole.kt", "architecture-test/src/test/kotlin/com/example/kmp/ui/UiCoreRole.kt"],
           "matchedCount": 36,
           "matchedFilesTruncated": false,
           "synthetic": false,
@@ -6816,7 +6816,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "GeneratedDocumentationRole.kt",
-        "line": 14
+        "line": 15
       },
       "layout": [
         {
@@ -6827,7 +6827,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GeneratedDocumentationRole.kt",
-            "line": 57
+            "line": 58
           },
           "modulePath": null,
           "pathInModule": "docs",
@@ -6848,7 +6848,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GeneratedDocumentationRole.kt",
-            "line": 61
+            "line": 62
           },
           "modulePath": null,
           "pathInModule": "docs/README.md",
@@ -6869,7 +6869,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GeneratedDocumentationRole.kt",
-            "line": 65
+            "line": 66
           },
           "modulePath": null,
           "pathInModule": "docs/**",
@@ -6890,7 +6890,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GeneratedDocumentationRole.kt",
-            "line": 65
+            "line": 66
           },
           "modulePath": null,
           "pathInModule": "docs/**/*.md",
@@ -6915,7 +6915,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "LayoutSnapshotRole.kt",
-        "line": 15
+        "line": 16
       },
       "layout": [
         {
@@ -6926,7 +6926,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "LayoutSnapshotRole.kt",
-            "line": 55
+            "line": 56
           },
           "modulePath": null,
           "pathInModule": "snapshots",
@@ -6947,7 +6947,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "LayoutSnapshotRole.kt",
-            "line": 59
+            "line": 60
           },
           "modulePath": null,
           "pathInModule": "snapshots/layout.txt",
@@ -7008,7 +7008,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "ActivityEntrypointRole.kt",
-        "line": 10
+        "line": 12
       },
       "layout": [
         {
@@ -7019,7 +7019,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ActivityEntrypointRole.kt",
-            "line": 42
+            "line": 44
           },
           "modulePath": null,
           "pathInModule": "app",
@@ -7040,7 +7040,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ActivityEntrypointRole.kt",
-            "line": 42
+            "line": 44
           },
           "modulePath": null,
           "pathInModule": "app/android",
@@ -7061,7 +7061,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ActivityEntrypointRole.kt",
-            "line": 43
+            "line": 45
           },
           "modulePath": null,
           "pathInModule": "app/android/src",
@@ -7082,7 +7082,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ActivityEntrypointRole.kt",
-            "line": 43
+            "line": 45
           },
           "modulePath": null,
           "pathInModule": "app/android/src/main",
@@ -7103,7 +7103,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ActivityEntrypointRole.kt",
-            "line": 43
+            "line": 45
           },
           "modulePath": null,
           "pathInModule": "app/android/src/main/kotlin",
@@ -7124,7 +7124,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ActivityEntrypointRole.kt",
-            "line": 43
+            "line": 45
           },
           "modulePath": null,
           "pathInModule": "app/android/src/main/kotlin/com",
@@ -7145,7 +7145,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ActivityEntrypointRole.kt",
-            "line": 43
+            "line": 45
           },
           "modulePath": null,
           "pathInModule": "app/android/src/main/kotlin/com/example",
@@ -7166,7 +7166,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ActivityEntrypointRole.kt",
-            "line": 43
+            "line": 45
           },
           "modulePath": null,
           "pathInModule": "app/android/src/main/kotlin/com/example/kmp",
@@ -7187,7 +7187,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ActivityEntrypointRole.kt",
-            "line": 43
+            "line": 45
           },
           "modulePath": null,
           "pathInModule": "app/android/src/main/kotlin/com/example/kmp/app",
@@ -7208,7 +7208,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ActivityEntrypointRole.kt",
-            "line": 43
+            "line": 45
           },
           "modulePath": null,
           "pathInModule": "app/android/src/main/kotlin/com/example/kmp/app/MainActivity.kt",
@@ -7233,7 +7233,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "AppRootRole.kt",
-        "line": 10
+        "line": 12
       },
       "layout": [
         {
@@ -7244,7 +7244,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "AppRootRole.kt",
-            "line": 35
+            "line": 37
           },
           "modulePath": null,
           "pathInModule": "app",
@@ -7265,7 +7265,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "AppRootRole.kt",
-            "line": 35
+            "line": 37
           },
           "modulePath": null,
           "pathInModule": "app/android",
@@ -7286,7 +7286,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "AppRootRole.kt",
-            "line": 36
+            "line": 38
           },
           "modulePath": null,
           "pathInModule": "app/android/src",
@@ -7307,7 +7307,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "AppRootRole.kt",
-            "line": 36
+            "line": 38
           },
           "modulePath": null,
           "pathInModule": "app/android/src/main",
@@ -7328,7 +7328,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "AppRootRole.kt",
-            "line": 36
+            "line": 38
           },
           "modulePath": null,
           "pathInModule": "app/android/src/main/kotlin",
@@ -7349,7 +7349,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "AppRootRole.kt",
-            "line": 36
+            "line": 38
           },
           "modulePath": null,
           "pathInModule": "app/android/src/main/kotlin/com",
@@ -7370,7 +7370,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "AppRootRole.kt",
-            "line": 36
+            "line": 38
           },
           "modulePath": null,
           "pathInModule": "app/android/src/main/kotlin/com/example",
@@ -7391,7 +7391,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "AppRootRole.kt",
-            "line": 36
+            "line": 38
           },
           "modulePath": null,
           "pathInModule": "app/android/src/main/kotlin/com/example/kmp",
@@ -7412,7 +7412,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "AppRootRole.kt",
-            "line": 36
+            "line": 38
           },
           "modulePath": null,
           "pathInModule": "app/android/src/main/kotlin/com/example/kmp/app",
@@ -7433,7 +7433,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "AppRootRole.kt",
-            "line": 36
+            "line": 38
           },
           "modulePath": null,
           "pathInModule": "app/android/src/main/kotlin/com/example/kmp/app/AppRoot.kt",
@@ -7578,7 +7578,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "AndroidResourceRole.kt",
-        "line": 8
+        "line": 9
       },
       "layout": [
         {
@@ -7589,7 +7589,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "AndroidResourceRole.kt",
-            "line": 37
+            "line": 38
           },
           "modulePath": null,
           "pathInModule": "app",
@@ -7610,7 +7610,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "AndroidResourceRole.kt",
-            "line": 37
+            "line": 38
           },
           "modulePath": null,
           "pathInModule": "app/android",
@@ -7631,7 +7631,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "AndroidResourceRole.kt",
-            "line": 38
+            "line": 39
           },
           "modulePath": null,
           "pathInModule": "app/android/src",
@@ -7652,7 +7652,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "AndroidResourceRole.kt",
-            "line": 38
+            "line": 39
           },
           "modulePath": null,
           "pathInModule": "app/android/src/main",
@@ -7673,7 +7673,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "AndroidResourceRole.kt",
-            "line": 38
+            "line": 39
           },
           "modulePath": null,
           "pathInModule": "app/android/src/main/res",
@@ -7694,7 +7694,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "AndroidResourceRole.kt",
-            "line": 38
+            "line": 39
           },
           "modulePath": null,
           "pathInModule": "app/android/src/main/res/*",
@@ -7715,7 +7715,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "AndroidResourceRole.kt",
-            "line": 38
+            "line": 39
           },
           "modulePath": null,
           "pathInModule": "app/android/src/main/res/*/*.xml",
@@ -7740,7 +7740,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "XcodeProjectRole.kt",
-        "line": 16
+        "line": 17
       },
       "layout": [
         {
@@ -7751,7 +7751,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "XcodeProjectRole.kt",
-            "line": 44
+            "line": 45
           },
           "modulePath": null,
           "pathInModule": "app",
@@ -7772,7 +7772,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "XcodeProjectRole.kt",
-            "line": 44
+            "line": 45
           },
           "modulePath": null,
           "pathInModule": "app/ios",
@@ -8639,7 +8639,7 @@
         {
           "name": "namespace of a library module follows the module path",
           "backend": "custom",
-          "checkClass": "com.example.kmp.groups.GradleGroupKt$$Lambda$122/0x000000080109d0f8",
+          "checkClass": "com.example.kmp.gradle.GradleGroupKt$$Lambda$122/0x000000f00109d0f8",
           "range": "Subtree",
           "declaredAt": {
             "fileName": "GradleGroup.kt",

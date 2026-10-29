@@ -140,7 +140,7 @@ class ProjectArchitectureSpec : FreeSpec({
         // katachi walks the stack trace past its own frames to find the declaration site, so
         // the `"Gradle".group { }` written inside `gradle()` and each `name { }` in it are not
         // attributed to their own lines but to the first frame outside katachi -- the
-        // `gradle()` call in `groups/GradleGroup.kt`. This is not an exception to the
+        // `gradle()` call in `gradle/GradleGroup.kt`. This is not an exception to the
         // "one declaration per file" rule; it shows that there really is a single declaration site.
         val gradleGroup = projectArchitecture.allGroups.single { it.qualifiedName == "Gradle" }
         gradleGroup.declaredAt.fileName shouldBe "GradleGroup.kt"
@@ -330,5 +330,5 @@ private fun architectureDefinitionSources(): Map<String, List<String>> {
         .associate { it.name to it.readLines() }
 }
 
-/** `"Gradle"` itself or anything nested under it -- see `groups/GradleGroup.kt`. */
+/** `"Gradle"` itself or anything nested under it -- see `gradle/GradleGroup.kt`. */
 private fun String.isGradleGroupSubtree(): Boolean = this == "Gradle" || startsWith("Gradle.")

@@ -11,8 +11,8 @@ integration test. `ProjectArchitectureSpec` checks the assembled definition,
 `OmittedRoleSelfCheckSpec` pins what katachi reports for a definition with a group left
 out, and `ProjectRootSpec` watches the result of the project root lookup.
 
-Files named `*Spec.kt` directly under the package (outside `groups/`, `roles/` and
-`processors/`) are this role. Putting one in `roles/` gives an `[UnexpectedFile]`. The
+Files named `*Spec.kt` directly under the package (outside the group directories and
+`processors/`) are this role. Putting one in a group directory gives an `[UnexpectedFile]`. The
 specs of the custom processors are the ProcessorSpec role.
 
 ## Placement

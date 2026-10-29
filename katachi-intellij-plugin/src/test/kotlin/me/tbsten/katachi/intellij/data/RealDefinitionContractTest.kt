@@ -163,7 +163,7 @@ class RealDefinitionContractTest {
     }
 
     @Test
-    fun `sample-jvm の HealthService は ServiceRole の 80 行目の class HealthService で Allowed になり 照合を通しても同じ答えが出る`() {
+    fun `sample-jvm の HealthService は ServiceRole の 82 行目の class HealthService で Allowed になり 照合を通しても同じ答えが出る`() {
         val sample = samples.first { it.name == "jvm" }
         val definition = sample.definition
         val lookup = DefinitionLookup(listOf(definitionSnapshot(definition)))
@@ -177,7 +177,7 @@ class RealDefinitionContractTest {
         assertEquals("HealthService", declaration.name)
         assertEquals(DeclarationVerdict.Allowed, declaration.verdict)
         assertEquals(listOf("internal.optional() class HealthService"), declaration.rules.map { it.text })
-        assertEquals(listOf(DeclarationSiteRef("ServiceRole.kt", 80)), declaration.rules.map { it.declaredAt })
+        assertEquals(listOf(DeclarationSiteRef("ServiceRole.kt", 82)), declaration.rules.map { it.declaredAt })
         assertEquals(true, answer.declarations.declarationsChecked)
 
         // The Konsist constraint of the same role covers the file too, and does not explain.

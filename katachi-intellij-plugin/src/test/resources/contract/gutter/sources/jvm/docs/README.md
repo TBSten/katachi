@@ -83,8 +83,8 @@ Tests that check behaviour, this definition itself, and the documentation and sn
 - [Test code](./testing/Test.md) ... Tests placed in src/test/kotlin, keeping the same package structure as the main code
 - [Architecture definition entry](./testing/ArchitectureDefinitionEntry.md) ... The one file whose `architecture { }` gathers every group, so the definition can be read from here
 - [Document section definition](./testing/DocumentSectionDefinition.md) ... The headings this project declares for itself, so roles and groups can write under them
-- [Group definition](./testing/GroupDefinition.md) ... One `groups/<Name>Group.kt` per group, saying what the group is made of by calling role functions
-- [Role definition](./testing/RoleDefinition.md) ... One `roles/<Name>Role.kt` per role, holding its description, its layout and its constraints
+- [Group definition](./testing/GroupDefinition.md) ... One `<Name>Group.kt` per group, in the directory named after the group, saying what the group is made of by calling role functions
+- [Role definition](./testing/RoleDefinition.md) ... One `<Name>Role.kt` per role, in the directory of the group that calls it, holding its description, its layout and its constraints
 - [Processor definition](./testing/ProcessorDefinition.md) ... A custom processor that reads the definition, registered in `architecture-test/build.gradle.kts`
 - [Architecture test](./testing/ArchitectureTest.md) ... The one test that checks the whole project against the definition
 - [Integration spec](./testing/IntegrationSpec.md) ... katachi's own integration tests, run against this real project

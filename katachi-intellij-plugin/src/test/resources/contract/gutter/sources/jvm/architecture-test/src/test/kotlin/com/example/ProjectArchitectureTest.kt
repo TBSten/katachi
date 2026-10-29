@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test
  *
  * `FileConstraintCheck()` is passed explicitly because katachi never runs a constraint nobody
  * asked for: `assert()` alone would leave the `konsist { }` and `ktFileContent { }` constraints
- * of the roles (`roles/ServiceRole.kt` holds one of each) reported as
+ * of the roles (`domain/ServiceRole.kt` holds one of each) reported as
  * `[UncheckedFileConstraint] reason=NotEvaluated` instead of evaluated.
  *
  * Everything else in this module - the `*Spec` files - is katachi's own integration test

@@ -1,13 +1,13 @@
 package com.example
 
-import com.example.groups.apiGroup
-import com.example.groups.dataGroup
-import com.example.groups.domainGroup
-import com.example.groups.gradleGroup
-import com.example.groups.testingGroup
-import com.example.groups.toolGroup
-import com.example.roles.applicationConfig
-import com.example.roles.loggingConfig
+import com.example.api.apiGroup
+import com.example.app.applicationConfig
+import com.example.app.loggingConfig
+import com.example.data.dataGroup
+import com.example.domain.domainGroup
+import com.example.gradle.gradleGroup
+import com.example.testing.testingGroup
+import com.example.tool.toolGroup
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -174,7 +174,7 @@ class ProjectArchitectureSpec : FreeSpec({
         // katachi walks the stack trace past its own frames to capture the declaration site, so
         // the `"Gradle".group { }` written inside `gradle()` and every `name { }` inside it
         // are attributed not to their own lines but to the first frame outside katachi -- the
-        // `gradle()` call in `groups/GradleGroup.kt`. This is not an exception to the "one
+        // `gradle()` call in `gradle/GradleGroup.kt`. This is not an exception to the "one
         // declaration, one file" rule; it shows that there really is only one declaration site.
         val gradleGroup = projectArchitecture.allGroups.single { it.qualifiedName == "Gradle" }
         gradleGroup.declaredAt.fileName shouldBe "GradleGroup.kt"
@@ -277,11 +277,11 @@ class ProjectArchitectureSpec : FreeSpec({
         overNothing.validate() shouldBe emptyList()
     }
 
-    "a konsist with scope = DirectOnly does not descend into groups/ and roles/, and with Subtree it descends and fails there" {
+    "a konsist with scope = DirectOnly does not descend into the group directories, and with Subtree it descends and fails there" {
         // A self-contained definition, not one of this sample's roles: a user's roles should not
         // need `DirectOnly`. Passing proves nothing on its own, since a constraint that covered
-        // nothing would pass too. Taking the flag away has to make the same rule reach `groups/`
-        // and `roles/`, where every file declares exactly what it forbids.
+        // nothing would pass too. Taking the flag away has to make the same rule reach the group
+        // directories, where every file declares exactly what it forbids.
         fun unsatisfiedPaths(scope: FileConstraintRange): List<String> = architecture {
             "testing".group {
                 "Definition".role {
@@ -304,15 +304,15 @@ class ProjectArchitectureSpec : FreeSpec({
 
         unsatisfiedPaths(DirectOnly) shouldBe emptyList()
         unsatisfiedPaths(Subtree) shouldContain
-            "architecture-test/src/test/kotlin/com/example/roles/ServiceRole.kt"
+            "architecture-test/src/test/kotlin/com/example/domain/ServiceRole.kt"
     }
 
     "a correct definition reports nothing but the violations held back by the baseline" {
         // The same run ProjectArchitectureTest makes, read as a list rather than as a thrown
         // error, so a failure here names the violations instead of only the message.
         // `FileConstraintCheck()` matches what `ProjectArchitectureTest` itself passes: without
-        // it, the `konsist { }` constraints in `roles/ServiceRole.kt` and
-        // `roles/ArchitectureDefinitionEntryRole.kt`, and the `ktFileContent { }` of the
+        // it, the `konsist { }` constraints in `domain/ServiceRole.kt` and
+        // `testing/ArchitectureDefinitionEntryRole.kt`, and the `ktFileContent { }` of the
         // application's roles, would come back as `[UncheckedFileConstraint] reason=NotEvaluated`
         // instead of being evaluated.
         //
@@ -353,7 +353,7 @@ private val violationsHeldBackByBaseline: List<String> = listOf(
     "[UnsatisfiedFileConstraint] src/main/kotlin/com/example/service/LegacyStatusService.kt",
 )
 
-/** `"Gradle"` itself or anything nested under it -- see `groups/GradleGroup.kt`. */
+/** `"Gradle"` itself or anything nested under it -- see `gradle/GradleGroup.kt`. */
 private fun String.isGradleGroupSubtree(): Boolean = this == "Gradle" || startsWith("Gradle.")
 
 /**

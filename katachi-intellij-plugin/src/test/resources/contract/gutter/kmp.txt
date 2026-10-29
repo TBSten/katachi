@@ -45,9 +45,9 @@ roles: app.AndroidManifest
 
 == app/android/src/main/kotlin/com/example/kmp/app/AppRoot.kt
 roles: app.AppRoot
-    app.AppRoot declared at AppRootRole.kt:10 | fun DeclarationContainerScope.appRoot() = "AppRoot".role {
+    app.AppRoot declared at AppRootRole.kt:12 | fun DeclarationContainerScope.appRoot() = "AppRoot".role {
 26 | ◆ | katachi: app.AppRoot
-    menu | ◇ Role app.AppRoot — App root | AppRootRole.kt:10
+    menu | ◇ Role app.AppRoot — App root | AppRootRole.kt:12
     menu | == Other files of app.AppRoot
     menu | (disabled) — No other file yet
     menu | -----
@@ -56,9 +56,9 @@ roles: app.AppRoot
 
 == app/android/src/main/kotlin/com/example/kmp/app/MainActivity.kt
 roles: app.ActivityEntrypoint
-    app.ActivityEntrypoint declared at ActivityEntrypointRole.kt:10 | fun DeclarationContainerScope.activityEntrypoint() = "ActivityEntrypoint".role {
+    app.ActivityEntrypoint declared at ActivityEntrypointRole.kt:12 | fun DeclarationContainerScope.activityEntrypoint() = "ActivityEntrypoint".role {
 14 | ◆ | katachi: app.ActivityEntrypoint
-    menu | ◇ Role app.ActivityEntrypoint — Activity entrypoint | ActivityEntrypointRole.kt:10
+    menu | ◇ Role app.ActivityEntrypoint — Activity entrypoint | ActivityEntrypointRole.kt:12
     menu | == Other files of app.ActivityEntrypoint
     menu | (disabled) — No other file yet
     menu | -----
@@ -67,9 +67,9 @@ roles: app.ActivityEntrypoint
 
 == app/android/src/main/res/values/strings.xml
 roles: app.AndroidResource
-    app.AndroidResource declared at AndroidResourceRole.kt:8 | fun DeclarationContainerScope.androidResource() = "AndroidResource".role {
+    app.AndroidResource declared at AndroidResourceRole.kt:9 | fun DeclarationContainerScope.androidResource() = "AndroidResource".role {
 1 | ◆ | katachi: app.AndroidResource
-    menu | ◇ Role app.AndroidResource — Android resources | AndroidResourceRole.kt:8
+    menu | ◇ Role app.AndroidResource — Android resources | AndroidResourceRole.kt:9
     menu | == Other files of app.AndroidResource
     menu | (disabled) — No other file yet
     menu | -----
@@ -161,7 +161,7 @@ roles: testing.ProjectArchitectureSpec
 == architecture-test/src/test/kotlin/com/example/kmp/ProjectArchitecture.kt
 roles: testing.DefinitionEntry
     testing.DefinitionEntry declared at DefinitionEntryRole.kt:8 | fun DeclarationContainerScope.definitionEntry() = "DefinitionEntry".role {
-52 | ◆ | katachi: testing.DefinitionEntry
+53 | ◆ | katachi: testing.DefinitionEntry
     menu | ◇ Role testing.DefinitionEntry — Definition entrypoint | DefinitionEntryRole.kt:8
     menu | == Other files of testing.DefinitionEntry
     menu | (disabled) — No other file yet
@@ -208,114 +208,430 @@ roles: testing.ProjectArchitectureSpec
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
-== architecture-test/src/test/kotlin/com/example/kmp/groups/AppGroup.kt
+== architecture-test/src/test/kotlin/com/example/kmp/app/ActivityEntrypointRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+12 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
+    menu | == Other files of testing.RoleDefinition (35)
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidResourceRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AppRootRole.kt | architecture-test/…/com/example/kmp/app
+    menu | XcodeProjectRole.kt | architecture-test/…/com/example/kmp/app
+    menu | ActualImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | ExpectDeclarationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryInterfaceRole.kt | architecture-test/…/com/example/kmp/data
+    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/feature
+    menu | RouteRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenPreviewRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenRole.kt | architecture-test/…/example/kmp/feature
+    menu | ViewModelRole.kt | architecture-test/…/example/kmp/feature
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | (disabled) … and 20 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Reload Definition
+
+== architecture-test/src/test/kotlin/com/example/kmp/app/AndroidManifestRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+7 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
+    menu | == Other files of testing.RoleDefinition (35)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidResourceRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AppRootRole.kt | architecture-test/…/com/example/kmp/app
+    menu | XcodeProjectRole.kt | architecture-test/…/com/example/kmp/app
+    menu | ActualImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | ExpectDeclarationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryInterfaceRole.kt | architecture-test/…/com/example/kmp/data
+    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/feature
+    menu | RouteRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenPreviewRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenRole.kt | architecture-test/…/example/kmp/feature
+    menu | ViewModelRole.kt | architecture-test/…/example/kmp/feature
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | (disabled) … and 20 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Reload Definition
+
+== architecture-test/src/test/kotlin/com/example/kmp/app/AndroidResourceRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+9 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
+    menu | == Other files of testing.RoleDefinition (35)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AppRootRole.kt | architecture-test/…/com/example/kmp/app
+    menu | XcodeProjectRole.kt | architecture-test/…/com/example/kmp/app
+    menu | ActualImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | ExpectDeclarationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryInterfaceRole.kt | architecture-test/…/com/example/kmp/data
+    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/feature
+    menu | RouteRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenPreviewRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenRole.kt | architecture-test/…/example/kmp/feature
+    menu | ViewModelRole.kt | architecture-test/…/example/kmp/feature
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | (disabled) … and 20 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Reload Definition
+
+== architecture-test/src/test/kotlin/com/example/kmp/app/AppGroup.kt
 roles: testing.GroupDefinition
     testing.GroupDefinition declared at GroupDefinitionRole.kt:8 | fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
 20 | ◆ | katachi: testing.GroupDefinition
     menu | ◇ Role testing.GroupDefinition — Group definition | GroupDefinitionRole.kt:8
     menu | == Other files of testing.GroupDefinition (6)
-    menu | DataGroup.kt | architecture-test/…/example/kmp/groups
-    menu | FeatureGroup.kt | architecture-test/…/example/kmp/groups
-    menu | GradleGroup.kt | architecture-test/…/example/kmp/groups
-    menu | TestingGroup.kt | architecture-test/…/example/kmp/groups
-    menu | ToolGroup.kt | architecture-test/…/example/kmp/groups
-    menu | UiGroup.kt | architecture-test/…/example/kmp/groups
+    menu | DataGroup.kt | architecture-test/…/com/example/kmp/data
+    menu | FeatureGroup.kt | architecture-test/…/example/kmp/feature
+    menu | GradleGroup.kt | architecture-test/…/example/kmp/gradle
+    menu | TestingGroup.kt | architecture-test/…/example/kmp/testing
+    menu | ToolGroup.kt | architecture-test/…/com/example/kmp/tool
+    menu | UiGroup.kt | architecture-test/…/com/example/kmp/ui
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
-== architecture-test/src/test/kotlin/com/example/kmp/groups/DataGroup.kt
+== architecture-test/src/test/kotlin/com/example/kmp/app/AppRootRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+12 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
+    menu | == Other files of testing.RoleDefinition (35)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidResourceRole.kt | architecture-test/…/com/example/kmp/app
+    menu | XcodeProjectRole.kt | architecture-test/…/com/example/kmp/app
+    menu | ActualImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | ExpectDeclarationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryInterfaceRole.kt | architecture-test/…/com/example/kmp/data
+    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/feature
+    menu | RouteRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenPreviewRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenRole.kt | architecture-test/…/example/kmp/feature
+    menu | ViewModelRole.kt | architecture-test/…/example/kmp/feature
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | (disabled) … and 20 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Reload Definition
+
+== architecture-test/src/test/kotlin/com/example/kmp/app/XcodeProjectRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+17 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
+    menu | == Other files of testing.RoleDefinition (35)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidResourceRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AppRootRole.kt | architecture-test/…/com/example/kmp/app
+    menu | ActualImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | ExpectDeclarationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryInterfaceRole.kt | architecture-test/…/com/example/kmp/data
+    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/feature
+    menu | RouteRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenPreviewRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenRole.kt | architecture-test/…/example/kmp/feature
+    menu | ViewModelRole.kt | architecture-test/…/example/kmp/feature
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | (disabled) … and 20 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Reload Definition
+
+== architecture-test/src/test/kotlin/com/example/kmp/data/ActualImplementationRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+16 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
+    menu | == Other files of testing.RoleDefinition (35)
+    menu | ExpectDeclarationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryInterfaceRole.kt | architecture-test/…/com/example/kmp/data
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidResourceRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AppRootRole.kt | architecture-test/…/com/example/kmp/app
+    menu | XcodeProjectRole.kt | architecture-test/…/com/example/kmp/app
+    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/feature
+    menu | RouteRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenPreviewRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenRole.kt | architecture-test/…/example/kmp/feature
+    menu | ViewModelRole.kt | architecture-test/…/example/kmp/feature
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | (disabled) … and 20 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Reload Definition
+
+== architecture-test/src/test/kotlin/com/example/kmp/data/DataGroup.kt
 roles: testing.GroupDefinition
     testing.GroupDefinition declared at GroupDefinitionRole.kt:8 | fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
 19 | ◆ | katachi: testing.GroupDefinition
     menu | ◇ Role testing.GroupDefinition — Group definition | GroupDefinitionRole.kt:8
     menu | == Other files of testing.GroupDefinition (6)
-    menu | AppGroup.kt | architecture-test/…/example/kmp/groups
-    menu | FeatureGroup.kt | architecture-test/…/example/kmp/groups
-    menu | GradleGroup.kt | architecture-test/…/example/kmp/groups
-    menu | TestingGroup.kt | architecture-test/…/example/kmp/groups
-    menu | ToolGroup.kt | architecture-test/…/example/kmp/groups
-    menu | UiGroup.kt | architecture-test/…/example/kmp/groups
+    menu | AppGroup.kt | architecture-test/…/com/example/kmp/app
+    menu | FeatureGroup.kt | architecture-test/…/example/kmp/feature
+    menu | GradleGroup.kt | architecture-test/…/example/kmp/gradle
+    menu | TestingGroup.kt | architecture-test/…/example/kmp/testing
+    menu | ToolGroup.kt | architecture-test/…/com/example/kmp/tool
+    menu | UiGroup.kt | architecture-test/…/com/example/kmp/ui
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
-== architecture-test/src/test/kotlin/com/example/kmp/groups/FeatureGroup.kt
-roles: testing.GroupDefinition
-    testing.GroupDefinition declared at GroupDefinitionRole.kt:8 | fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
-29 | ◆ | katachi: testing.GroupDefinition
-    menu | ◇ Role testing.GroupDefinition — Group definition | GroupDefinitionRole.kt:8
-    menu | == Other files of testing.GroupDefinition (6)
-    menu | AppGroup.kt | architecture-test/…/example/kmp/groups
-    menu | DataGroup.kt | architecture-test/…/example/kmp/groups
-    menu | GradleGroup.kt | architecture-test/…/example/kmp/groups
-    menu | TestingGroup.kt | architecture-test/…/example/kmp/groups
-    menu | ToolGroup.kt | architecture-test/…/example/kmp/groups
-    menu | UiGroup.kt | architecture-test/…/example/kmp/groups
+== architecture-test/src/test/kotlin/com/example/kmp/data/ExpectDeclarationRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+20 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
+    menu | == Other files of testing.RoleDefinition (35)
+    menu | ActualImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryInterfaceRole.kt | architecture-test/…/com/example/kmp/data
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidResourceRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AppRootRole.kt | architecture-test/…/com/example/kmp/app
+    menu | XcodeProjectRole.kt | architecture-test/…/com/example/kmp/app
+    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/feature
+    menu | RouteRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenPreviewRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenRole.kt | architecture-test/…/example/kmp/feature
+    menu | ViewModelRole.kt | architecture-test/…/example/kmp/feature
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | (disabled) … and 20 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
-== architecture-test/src/test/kotlin/com/example/kmp/groups/GradleGroup.kt
-roles: testing.GroupDefinition
-    testing.GroupDefinition declared at GroupDefinitionRole.kt:8 | fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
-16 | ◆ | katachi: testing.GroupDefinition
-    menu | ◇ Role testing.GroupDefinition — Group definition | GroupDefinitionRole.kt:8
-    menu | == Other files of testing.GroupDefinition (6)
-    menu | AppGroup.kt | architecture-test/…/example/kmp/groups
-    menu | DataGroup.kt | architecture-test/…/example/kmp/groups
-    menu | FeatureGroup.kt | architecture-test/…/example/kmp/groups
-    menu | TestingGroup.kt | architecture-test/…/example/kmp/groups
-    menu | ToolGroup.kt | architecture-test/…/example/kmp/groups
-    menu | UiGroup.kt | architecture-test/…/example/kmp/groups
+== architecture-test/src/test/kotlin/com/example/kmp/data/RepositoryImplementationRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+16 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
+    menu | == Other files of testing.RoleDefinition (35)
+    menu | ActualImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | ExpectDeclarationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryInterfaceRole.kt | architecture-test/…/com/example/kmp/data
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidResourceRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AppRootRole.kt | architecture-test/…/com/example/kmp/app
+    menu | XcodeProjectRole.kt | architecture-test/…/com/example/kmp/app
+    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/feature
+    menu | RouteRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenPreviewRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenRole.kt | architecture-test/…/example/kmp/feature
+    menu | ViewModelRole.kt | architecture-test/…/example/kmp/feature
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | (disabled) … and 20 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
-== architecture-test/src/test/kotlin/com/example/kmp/groups/TestingGroup.kt
+== architecture-test/src/test/kotlin/com/example/kmp/data/RepositoryInterfaceRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+25 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
+    menu | == Other files of testing.RoleDefinition (35)
+    menu | ActualImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | ExpectDeclarationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidResourceRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AppRootRole.kt | architecture-test/…/com/example/kmp/app
+    menu | XcodeProjectRole.kt | architecture-test/…/com/example/kmp/app
+    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/feature
+    menu | RouteRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenPreviewRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenRole.kt | architecture-test/…/example/kmp/feature
+    menu | ViewModelRole.kt | architecture-test/…/example/kmp/feature
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | (disabled) … and 20 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Reload Definition
+
+== architecture-test/src/test/kotlin/com/example/kmp/feature/FeatureComponentRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+28 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
+    menu | == Other files of testing.RoleDefinition (35)
+    menu | RouteRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenPreviewRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenRole.kt | architecture-test/…/example/kmp/feature
+    menu | ViewModelRole.kt | architecture-test/…/example/kmp/feature
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidResourceRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AppRootRole.kt | architecture-test/…/com/example/kmp/app
+    menu | XcodeProjectRole.kt | architecture-test/…/com/example/kmp/app
+    menu | ActualImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | ExpectDeclarationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryInterfaceRole.kt | architecture-test/…/com/example/kmp/data
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | (disabled) … and 20 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Reload Definition
+
+== architecture-test/src/test/kotlin/com/example/kmp/feature/FeatureGroup.kt
 roles: testing.GroupDefinition
     testing.GroupDefinition declared at GroupDefinitionRole.kt:8 | fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
 30 | ◆ | katachi: testing.GroupDefinition
     menu | ◇ Role testing.GroupDefinition — Group definition | GroupDefinitionRole.kt:8
     menu | == Other files of testing.GroupDefinition (6)
-    menu | AppGroup.kt | architecture-test/…/example/kmp/groups
-    menu | DataGroup.kt | architecture-test/…/example/kmp/groups
-    menu | FeatureGroup.kt | architecture-test/…/example/kmp/groups
-    menu | GradleGroup.kt | architecture-test/…/example/kmp/groups
-    menu | ToolGroup.kt | architecture-test/…/example/kmp/groups
-    menu | UiGroup.kt | architecture-test/…/example/kmp/groups
+    menu | AppGroup.kt | architecture-test/…/com/example/kmp/app
+    menu | DataGroup.kt | architecture-test/…/com/example/kmp/data
+    menu | GradleGroup.kt | architecture-test/…/example/kmp/gradle
+    menu | TestingGroup.kt | architecture-test/…/example/kmp/testing
+    menu | ToolGroup.kt | architecture-test/…/com/example/kmp/tool
+    menu | UiGroup.kt | architecture-test/…/com/example/kmp/ui
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
-== architecture-test/src/test/kotlin/com/example/kmp/groups/ToolGroup.kt
-roles: testing.GroupDefinition
-    testing.GroupDefinition declared at GroupDefinitionRole.kt:8 | fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
-15 | ◆ | katachi: testing.GroupDefinition
-    menu | ◇ Role testing.GroupDefinition — Group definition | GroupDefinitionRole.kt:8
-    menu | == Other files of testing.GroupDefinition (6)
-    menu | AppGroup.kt | architecture-test/…/example/kmp/groups
-    menu | DataGroup.kt | architecture-test/…/example/kmp/groups
-    menu | FeatureGroup.kt | architecture-test/…/example/kmp/groups
-    menu | GradleGroup.kt | architecture-test/…/example/kmp/groups
-    menu | TestingGroup.kt | architecture-test/…/example/kmp/groups
-    menu | UiGroup.kt | architecture-test/…/example/kmp/groups
+== architecture-test/src/test/kotlin/com/example/kmp/feature/RouteRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+20 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
+    menu | == Other files of testing.RoleDefinition (35)
+    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenPreviewRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenRole.kt | architecture-test/…/example/kmp/feature
+    menu | ViewModelRole.kt | architecture-test/…/example/kmp/feature
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidResourceRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AppRootRole.kt | architecture-test/…/com/example/kmp/app
+    menu | XcodeProjectRole.kt | architecture-test/…/com/example/kmp/app
+    menu | ActualImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | ExpectDeclarationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryInterfaceRole.kt | architecture-test/…/com/example/kmp/data
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | (disabled) … and 20 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
-== architecture-test/src/test/kotlin/com/example/kmp/groups/UiGroup.kt
+== architecture-test/src/test/kotlin/com/example/kmp/feature/ScreenPreviewRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+23 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
+    menu | == Other files of testing.RoleDefinition (35)
+    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/feature
+    menu | RouteRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenRole.kt | architecture-test/…/example/kmp/feature
+    menu | ViewModelRole.kt | architecture-test/…/example/kmp/feature
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidResourceRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AppRootRole.kt | architecture-test/…/com/example/kmp/app
+    menu | XcodeProjectRole.kt | architecture-test/…/com/example/kmp/app
+    menu | ActualImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | ExpectDeclarationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryInterfaceRole.kt | architecture-test/…/com/example/kmp/data
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | (disabled) … and 20 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Reload Definition
+
+== architecture-test/src/test/kotlin/com/example/kmp/feature/ScreenRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+22 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
+    menu | == Other files of testing.RoleDefinition (35)
+    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/feature
+    menu | RouteRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenPreviewRole.kt | architecture-test/…/example/kmp/feature
+    menu | ViewModelRole.kt | architecture-test/…/example/kmp/feature
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidResourceRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AppRootRole.kt | architecture-test/…/com/example/kmp/app
+    menu | XcodeProjectRole.kt | architecture-test/…/com/example/kmp/app
+    menu | ActualImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | ExpectDeclarationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryInterfaceRole.kt | architecture-test/…/com/example/kmp/data
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | (disabled) … and 20 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Reload Definition
+
+== architecture-test/src/test/kotlin/com/example/kmp/feature/ViewModelRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+20 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
+    menu | == Other files of testing.RoleDefinition (35)
+    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/feature
+    menu | RouteRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenPreviewRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenRole.kt | architecture-test/…/example/kmp/feature
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidResourceRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AppRootRole.kt | architecture-test/…/com/example/kmp/app
+    menu | XcodeProjectRole.kt | architecture-test/…/com/example/kmp/app
+    menu | ActualImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | ExpectDeclarationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryInterfaceRole.kt | architecture-test/…/com/example/kmp/data
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | (disabled) … and 20 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Reload Definition
+
+== architecture-test/src/test/kotlin/com/example/kmp/gradle/GradleGroup.kt
 roles: testing.GroupDefinition
     testing.GroupDefinition declared at GroupDefinitionRole.kt:8 | fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
-26 | ◆ | katachi: testing.GroupDefinition
+16 | ◆ | katachi: testing.GroupDefinition
     menu | ◇ Role testing.GroupDefinition — Group definition | GroupDefinitionRole.kt:8
     menu | == Other files of testing.GroupDefinition (6)
-    menu | AppGroup.kt | architecture-test/…/example/kmp/groups
-    menu | DataGroup.kt | architecture-test/…/example/kmp/groups
-    menu | FeatureGroup.kt | architecture-test/…/example/kmp/groups
-    menu | GradleGroup.kt | architecture-test/…/example/kmp/groups
-    menu | TestingGroup.kt | architecture-test/…/example/kmp/groups
-    menu | ToolGroup.kt | architecture-test/…/example/kmp/groups
+    menu | AppGroup.kt | architecture-test/…/com/example/kmp/app
+    menu | DataGroup.kt | architecture-test/…/com/example/kmp/data
+    menu | FeatureGroup.kt | architecture-test/…/example/kmp/feature
+    menu | TestingGroup.kt | architecture-test/…/example/kmp/testing
+    menu | ToolGroup.kt | architecture-test/…/com/example/kmp/tool
+    menu | UiGroup.kt | architecture-test/…/com/example/kmp/ui
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
@@ -375,938 +691,622 @@ roles: testing.ProcessorSpec
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
-== architecture-test/src/test/kotlin/com/example/kmp/roles/ActivityEntrypointRole.kt
-roles: testing.RoleDefinition
-    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-10 | ◆ | katachi: testing.RoleDefinition
-    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
-    menu | == Other files of testing.RoleDefinition (35)
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | (disabled) … and 20 more
-    menu | -----
-    menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Reload Definition
-
-== architecture-test/src/test/kotlin/com/example/kmp/roles/ActualImplementationRole.kt
-roles: testing.RoleDefinition
-    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-16 | ◆ | katachi: testing.RoleDefinition
-    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
-    menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | (disabled) … and 20 more
-    menu | -----
-    menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Reload Definition
-
-== architecture-test/src/test/kotlin/com/example/kmp/roles/AndroidManifestRole.kt
-roles: testing.RoleDefinition
-    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-7 | ◆ | katachi: testing.RoleDefinition
-    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
-    menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | (disabled) … and 20 more
-    menu | -----
-    menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Reload Definition
-
-== architecture-test/src/test/kotlin/com/example/kmp/roles/AndroidResourceRole.kt
-roles: testing.RoleDefinition
-    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-8 | ◆ | katachi: testing.RoleDefinition
-    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
-    menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | (disabled) … and 20 more
-    menu | -----
-    menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Reload Definition
-
-== architecture-test/src/test/kotlin/com/example/kmp/roles/AppRootRole.kt
-roles: testing.RoleDefinition
-    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-10 | ◆ | katachi: testing.RoleDefinition
-    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
-    menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | (disabled) … and 20 more
-    menu | -----
-    menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Reload Definition
-
-== architecture-test/src/test/kotlin/com/example/kmp/roles/BaselineFileRole.kt
+== architecture-test/src/test/kotlin/com/example/kmp/testing/BaselineFileRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 13 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
     menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/roles
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/testing
+    menu | FakeRole.kt | architecture-test/…/example/kmp/testing
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/testing
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorMetadataRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureTestRole.kt | architecture-test/…/example/kmp/testing
+    menu | RoleDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | TestRole.kt | architecture-test/…/example/kmp/testing
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
     menu | (disabled) … and 20 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
-== architecture-test/src/test/kotlin/com/example/kmp/roles/ComponentPreviewRole.kt
+== architecture-test/src/test/kotlin/com/example/kmp/testing/CustomProcessorRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-14 | ◆ | katachi: testing.RoleDefinition
+8 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
     menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/testing
+    menu | FakeRole.kt | architecture-test/…/example/kmp/testing
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/testing
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorMetadataRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureTestRole.kt | architecture-test/…/example/kmp/testing
+    menu | RoleDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | TestRole.kt | architecture-test/…/example/kmp/testing
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
     menu | (disabled) … and 20 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
-== architecture-test/src/test/kotlin/com/example/kmp/roles/ComponentRole.kt
+== architecture-test/src/test/kotlin/com/example/kmp/testing/DefinitionEntryRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+8 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
+    menu | == Other files of testing.RoleDefinition (35)
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/testing
+    menu | FakeRole.kt | architecture-test/…/example/kmp/testing
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/testing
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorMetadataRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureTestRole.kt | architecture-test/…/example/kmp/testing
+    menu | RoleDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | TestRole.kt | architecture-test/…/example/kmp/testing
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | (disabled) … and 20 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Reload Definition
+
+== architecture-test/src/test/kotlin/com/example/kmp/testing/DefinitionSectionsRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+8 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
+    menu | == Other files of testing.RoleDefinition (35)
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/testing
+    menu | FakeRole.kt | architecture-test/…/example/kmp/testing
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/testing
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorMetadataRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureTestRole.kt | architecture-test/…/example/kmp/testing
+    menu | RoleDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | TestRole.kt | architecture-test/…/example/kmp/testing
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | (disabled) … and 20 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Reload Definition
+
+== architecture-test/src/test/kotlin/com/example/kmp/testing/FakeRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 10 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
     menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/testing
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/testing
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorMetadataRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureTestRole.kt | architecture-test/…/example/kmp/testing
+    menu | RoleDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | TestRole.kt | architecture-test/…/example/kmp/testing
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
     menu | (disabled) … and 20 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
-== architecture-test/src/test/kotlin/com/example/kmp/roles/CustomProcessorRole.kt
+== architecture-test/src/test/kotlin/com/example/kmp/testing/GeneratedDocumentationRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+15 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
+    menu | == Other files of testing.RoleDefinition (35)
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/testing
+    menu | FakeRole.kt | architecture-test/…/example/kmp/testing
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorMetadataRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureTestRole.kt | architecture-test/…/example/kmp/testing
+    menu | RoleDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | TestRole.kt | architecture-test/…/example/kmp/testing
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | (disabled) … and 20 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Reload Definition
+
+== architecture-test/src/test/kotlin/com/example/kmp/testing/GroupDefinitionRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 8 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
     menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/testing
+    menu | FakeRole.kt | architecture-test/…/example/kmp/testing
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/testing
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorMetadataRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureTestRole.kt | architecture-test/…/example/kmp/testing
+    menu | RoleDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | TestRole.kt | architecture-test/…/example/kmp/testing
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
     menu | (disabled) … and 20 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
-== architecture-test/src/test/kotlin/com/example/kmp/roles/DefinitionEntryRole.kt
+== architecture-test/src/test/kotlin/com/example/kmp/testing/LayoutSnapshotRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+16 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
+    menu | == Other files of testing.RoleDefinition (35)
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/testing
+    menu | FakeRole.kt | architecture-test/…/example/kmp/testing
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/testing
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorMetadataRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureTestRole.kt | architecture-test/…/example/kmp/testing
+    menu | RoleDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | TestRole.kt | architecture-test/…/example/kmp/testing
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | (disabled) … and 20 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Reload Definition
+
+== architecture-test/src/test/kotlin/com/example/kmp/testing/ProcessorMetadataRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 8 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
     menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/testing
+    menu | FakeRole.kt | architecture-test/…/example/kmp/testing
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/testing
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureTestRole.kt | architecture-test/…/example/kmp/testing
+    menu | RoleDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | TestRole.kt | architecture-test/…/example/kmp/testing
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
     menu | (disabled) … and 20 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
-== architecture-test/src/test/kotlin/com/example/kmp/roles/DefinitionSectionsRole.kt
+== architecture-test/src/test/kotlin/com/example/kmp/testing/ProcessorSpecRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 8 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
     menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/testing
+    menu | FakeRole.kt | architecture-test/…/example/kmp/testing
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/testing
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorMetadataRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureTestRole.kt | architecture-test/…/example/kmp/testing
+    menu | RoleDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | TestRole.kt | architecture-test/…/example/kmp/testing
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
     menu | (disabled) … and 20 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
-== architecture-test/src/test/kotlin/com/example/kmp/roles/DocumentationRole.kt
+== architecture-test/src/test/kotlin/com/example/kmp/testing/ProjectArchitectureSpecRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+9 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
+    menu | == Other files of testing.RoleDefinition (35)
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/testing
+    menu | FakeRole.kt | architecture-test/…/example/kmp/testing
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/testing
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorMetadataRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureTestRole.kt | architecture-test/…/example/kmp/testing
+    menu | RoleDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | TestRole.kt | architecture-test/…/example/kmp/testing
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | (disabled) … and 20 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Reload Definition
+
+== architecture-test/src/test/kotlin/com/example/kmp/testing/ProjectArchitectureTestRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+9 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
+    menu | == Other files of testing.RoleDefinition (35)
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/testing
+    menu | FakeRole.kt | architecture-test/…/example/kmp/testing
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/testing
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorMetadataRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | RoleDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | TestRole.kt | architecture-test/…/example/kmp/testing
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | (disabled) … and 20 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Reload Definition
+
+== architecture-test/src/test/kotlin/com/example/kmp/testing/RoleDefinitionRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+8 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
+    menu | == Other files of testing.RoleDefinition (35)
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/testing
+    menu | FakeRole.kt | architecture-test/…/example/kmp/testing
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/testing
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorMetadataRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureTestRole.kt | architecture-test/…/example/kmp/testing
+    menu | TestRole.kt | architecture-test/…/example/kmp/testing
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | (disabled) … and 20 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Reload Definition
+
+== architecture-test/src/test/kotlin/com/example/kmp/testing/TestRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+14 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
+    menu | == Other files of testing.RoleDefinition (35)
+    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/testing
+    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/testing
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/testing
+    menu | FakeRole.kt | architecture-test/…/example/kmp/testing
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/testing
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorMetadataRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProcessorSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureSpecRole.kt | architecture-test/…/example/kmp/testing
+    menu | ProjectArchitectureTestRole.kt | architecture-test/…/example/kmp/testing
+    menu | RoleDefinitionRole.kt | architecture-test/…/example/kmp/testing
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | (disabled) … and 20 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Reload Definition
+
+== architecture-test/src/test/kotlin/com/example/kmp/testing/TestingGroup.kt
+roles: testing.GroupDefinition
+    testing.GroupDefinition declared at GroupDefinitionRole.kt:8 | fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
+30 | ◆ | katachi: testing.GroupDefinition
+    menu | ◇ Role testing.GroupDefinition — Group definition | GroupDefinitionRole.kt:8
+    menu | == Other files of testing.GroupDefinition (6)
+    menu | AppGroup.kt | architecture-test/…/com/example/kmp/app
+    menu | DataGroup.kt | architecture-test/…/com/example/kmp/data
+    menu | FeatureGroup.kt | architecture-test/…/example/kmp/feature
+    menu | GradleGroup.kt | architecture-test/…/example/kmp/gradle
+    menu | ToolGroup.kt | architecture-test/…/com/example/kmp/tool
+    menu | UiGroup.kt | architecture-test/…/com/example/kmp/ui
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Reload Definition
+
+== architecture-test/src/test/kotlin/com/example/kmp/tool/DocumentationRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 6 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
     menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/roles
+    menu | GitRole.kt | architecture-test/…/com/example/kmp/tool
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidResourceRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AppRootRole.kt | architecture-test/…/com/example/kmp/app
+    menu | XcodeProjectRole.kt | architecture-test/…/com/example/kmp/app
+    menu | ActualImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | ExpectDeclarationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryInterfaceRole.kt | architecture-test/…/com/example/kmp/data
+    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/feature
+    menu | RouteRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenPreviewRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenRole.kt | architecture-test/…/example/kmp/feature
+    menu | ViewModelRole.kt | architecture-test/…/example/kmp/feature
     menu | (disabled) … and 20 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
-== architecture-test/src/test/kotlin/com/example/kmp/roles/ExpectDeclarationRole.kt
-roles: testing.RoleDefinition
-    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-20 | ◆ | katachi: testing.RoleDefinition
-    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
-    menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | (disabled) … and 20 more
-    menu | -----
-    menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Reload Definition
-
-== architecture-test/src/test/kotlin/com/example/kmp/roles/FakeRole.kt
-roles: testing.RoleDefinition
-    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-10 | ◆ | katachi: testing.RoleDefinition
-    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
-    menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | (disabled) … and 20 more
-    menu | -----
-    menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Reload Definition
-
-== architecture-test/src/test/kotlin/com/example/kmp/roles/FeatureComponentRole.kt
-roles: testing.RoleDefinition
-    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-26 | ◆ | katachi: testing.RoleDefinition
-    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
-    menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | (disabled) … and 20 more
-    menu | -----
-    menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Reload Definition
-
-== architecture-test/src/test/kotlin/com/example/kmp/roles/GeneratedDocumentationRole.kt
+== architecture-test/src/test/kotlin/com/example/kmp/tool/GitRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 14 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
     menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
+    menu | DocumentationRole.kt | architecture-test/…/com/example/kmp/tool
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidResourceRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AppRootRole.kt | architecture-test/…/com/example/kmp/app
+    menu | XcodeProjectRole.kt | architecture-test/…/com/example/kmp/app
+    menu | ActualImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | ExpectDeclarationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryInterfaceRole.kt | architecture-test/…/com/example/kmp/data
+    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/feature
+    menu | RouteRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenPreviewRole.kt | architecture-test/…/example/kmp/feature
+    menu | ScreenRole.kt | architecture-test/…/example/kmp/feature
+    menu | ViewModelRole.kt | architecture-test/…/example/kmp/feature
     menu | (disabled) … and 20 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
-== architecture-test/src/test/kotlin/com/example/kmp/roles/GitRole.kt
-roles: testing.RoleDefinition
-    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-14 | ◆ | katachi: testing.RoleDefinition
-    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
-    menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | (disabled) … and 20 more
+== architecture-test/src/test/kotlin/com/example/kmp/tool/ToolGroup.kt
+roles: testing.GroupDefinition
+    testing.GroupDefinition declared at GroupDefinitionRole.kt:8 | fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
+15 | ◆ | katachi: testing.GroupDefinition
+    menu | ◇ Role testing.GroupDefinition — Group definition | GroupDefinitionRole.kt:8
+    menu | == Other files of testing.GroupDefinition (6)
+    menu | AppGroup.kt | architecture-test/…/com/example/kmp/app
+    menu | DataGroup.kt | architecture-test/…/com/example/kmp/data
+    menu | FeatureGroup.kt | architecture-test/…/example/kmp/feature
+    menu | GradleGroup.kt | architecture-test/…/example/kmp/gradle
+    menu | TestingGroup.kt | architecture-test/…/example/kmp/testing
+    menu | UiGroup.kt | architecture-test/…/com/example/kmp/ui
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
-== architecture-test/src/test/kotlin/com/example/kmp/roles/GroupDefinitionRole.kt
-roles: testing.RoleDefinition
-    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-8 | ◆ | katachi: testing.RoleDefinition
-    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
-    menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | (disabled) … and 20 more
-    menu | -----
-    menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Reload Definition
-
-== architecture-test/src/test/kotlin/com/example/kmp/roles/LayoutSnapshotRole.kt
-roles: testing.RoleDefinition
-    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-15 | ◆ | katachi: testing.RoleDefinition
-    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
-    menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | (disabled) … and 20 more
-    menu | -----
-    menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Reload Definition
-
-== architecture-test/src/test/kotlin/com/example/kmp/roles/NavigationRole.kt
-roles: testing.RoleDefinition
-    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-10 | ◆ | katachi: testing.RoleDefinition
-    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
-    menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | (disabled) … and 20 more
-    menu | -----
-    menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Reload Definition
-
-== architecture-test/src/test/kotlin/com/example/kmp/roles/PreviewRootRole.kt
-roles: testing.RoleDefinition
-    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-15 | ◆ | katachi: testing.RoleDefinition
-    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
-    menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | (disabled) … and 20 more
-    menu | -----
-    menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Reload Definition
-
-== architecture-test/src/test/kotlin/com/example/kmp/roles/ProcessorMetadataRole.kt
-roles: testing.RoleDefinition
-    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-8 | ◆ | katachi: testing.RoleDefinition
-    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
-    menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | (disabled) … and 20 more
-    menu | -----
-    menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Reload Definition
-
-== architecture-test/src/test/kotlin/com/example/kmp/roles/ProcessorSpecRole.kt
-roles: testing.RoleDefinition
-    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-8 | ◆ | katachi: testing.RoleDefinition
-    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
-    menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | (disabled) … and 20 more
-    menu | -----
-    menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Reload Definition
-
-== architecture-test/src/test/kotlin/com/example/kmp/roles/ProjectArchitectureSpecRole.kt
-roles: testing.RoleDefinition
-    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-9 | ◆ | katachi: testing.RoleDefinition
-    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
-    menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | (disabled) … and 20 more
-    menu | -----
-    menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Reload Definition
-
-== architecture-test/src/test/kotlin/com/example/kmp/roles/ProjectArchitectureTestRole.kt
-roles: testing.RoleDefinition
-    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-9 | ◆ | katachi: testing.RoleDefinition
-    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
-    menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | (disabled) … and 20 more
-    menu | -----
-    menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Reload Definition
-
-== architecture-test/src/test/kotlin/com/example/kmp/roles/RepositoryImplementationRole.kt
+== architecture-test/src/test/kotlin/com/example/kmp/ui/ComponentPreviewRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 16 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
     menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
+    menu | ComponentRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | NavigationRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | PreviewRootRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | ThemeRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | UiCoreRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidResourceRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AppRootRole.kt | architecture-test/…/com/example/kmp/app
+    menu | XcodeProjectRole.kt | architecture-test/…/com/example/kmp/app
+    menu | ActualImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | ExpectDeclarationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryInterfaceRole.kt | architecture-test/…/com/example/kmp/data
+    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/feature
     menu | (disabled) … and 20 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
-== architecture-test/src/test/kotlin/com/example/kmp/roles/RepositoryInterfaceRole.kt
+== architecture-test/src/test/kotlin/com/example/kmp/ui/ComponentRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-22 | ◆ | katachi: testing.RoleDefinition
+11 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
     menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
+    menu | ComponentPreviewRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | NavigationRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | PreviewRootRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | ThemeRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | UiCoreRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidResourceRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AppRootRole.kt | architecture-test/…/com/example/kmp/app
+    menu | XcodeProjectRole.kt | architecture-test/…/com/example/kmp/app
+    menu | ActualImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | ExpectDeclarationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryInterfaceRole.kt | architecture-test/…/com/example/kmp/data
+    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/feature
     menu | (disabled) … and 20 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
-== architecture-test/src/test/kotlin/com/example/kmp/roles/RoleDefinitionRole.kt
+== architecture-test/src/test/kotlin/com/example/kmp/ui/NavigationRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-8 | ◆ | katachi: testing.RoleDefinition
+12 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
     menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
+    menu | ComponentPreviewRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | ComponentRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | PreviewRootRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | ThemeRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | UiCoreRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidResourceRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AppRootRole.kt | architecture-test/…/com/example/kmp/app
+    menu | XcodeProjectRole.kt | architecture-test/…/com/example/kmp/app
+    menu | ActualImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | ExpectDeclarationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryInterfaceRole.kt | architecture-test/…/com/example/kmp/data
+    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/feature
     menu | (disabled) … and 20 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
-== architecture-test/src/test/kotlin/com/example/kmp/roles/RouteRole.kt
+== architecture-test/src/test/kotlin/com/example/kmp/ui/PreviewRootRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-19 | ◆ | katachi: testing.RoleDefinition
+17 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
     menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
+    menu | ComponentPreviewRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | ComponentRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | NavigationRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | ThemeRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | UiCoreRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidResourceRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AppRootRole.kt | architecture-test/…/com/example/kmp/app
+    menu | XcodeProjectRole.kt | architecture-test/…/com/example/kmp/app
+    menu | ActualImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | ExpectDeclarationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryInterfaceRole.kt | architecture-test/…/com/example/kmp/data
+    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/feature
     menu | (disabled) … and 20 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
-== architecture-test/src/test/kotlin/com/example/kmp/roles/ScreenPreviewRole.kt
-roles: testing.RoleDefinition
-    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-21 | ◆ | katachi: testing.RoleDefinition
-    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
-    menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | (disabled) … and 20 more
-    menu | -----
-    menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Reload Definition
-
-== architecture-test/src/test/kotlin/com/example/kmp/roles/ScreenRole.kt
-roles: testing.RoleDefinition
-    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-22 | ◆ | katachi: testing.RoleDefinition
-    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
-    menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | (disabled) … and 20 more
-    menu | -----
-    menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Reload Definition
-
-== architecture-test/src/test/kotlin/com/example/kmp/roles/TestRole.kt
-roles: testing.RoleDefinition
-    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-14 | ◆ | katachi: testing.RoleDefinition
-    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
-    menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | (disabled) … and 20 more
-    menu | -----
-    menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Reload Definition
-
-== architecture-test/src/test/kotlin/com/example/kmp/roles/ThemeRole.kt
-roles: testing.RoleDefinition
-    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-9 | ◆ | katachi: testing.RoleDefinition
-    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
-    menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | (disabled) … and 20 more
-    menu | -----
-    menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Reload Definition
-
-== architecture-test/src/test/kotlin/com/example/kmp/roles/UiCoreRole.kt
+== architecture-test/src/test/kotlin/com/example/kmp/ui/ThemeRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 10 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
     menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
+    menu | ComponentPreviewRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | ComponentRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | NavigationRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | PreviewRootRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | UiCoreRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidResourceRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AppRootRole.kt | architecture-test/…/com/example/kmp/app
+    menu | XcodeProjectRole.kt | architecture-test/…/com/example/kmp/app
+    menu | ActualImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | ExpectDeclarationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryInterfaceRole.kt | architecture-test/…/com/example/kmp/data
+    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/feature
     menu | (disabled) … and 20 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
-== architecture-test/src/test/kotlin/com/example/kmp/roles/ViewModelRole.kt
+== architecture-test/src/test/kotlin/com/example/kmp/ui/UiCoreRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-20 | ◆ | katachi: testing.RoleDefinition
+11 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
     menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
+    menu | ComponentPreviewRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | ComponentRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | NavigationRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | PreviewRootRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | ThemeRole.kt | architecture-test/…/com/example/kmp/ui
+    menu | ActivityEntrypointRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidManifestRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AndroidResourceRole.kt | architecture-test/…/com/example/kmp/app
+    menu | AppRootRole.kt | architecture-test/…/com/example/kmp/app
+    menu | XcodeProjectRole.kt | architecture-test/…/com/example/kmp/app
+    menu | ActualImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | ExpectDeclarationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryImplementationRole.kt | architecture-test/…/com/example/kmp/data
+    menu | RepositoryInterfaceRole.kt | architecture-test/…/com/example/kmp/data
+    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/feature
     menu | (disabled) … and 20 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
 
-== architecture-test/src/test/kotlin/com/example/kmp/roles/XcodeProjectRole.kt
-roles: testing.RoleDefinition
-    testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-16 | ◆ | katachi: testing.RoleDefinition
-    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
-    menu | == Other files of testing.RoleDefinition (35)
-    menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
-    menu | ActualImplementationRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidManifestRole.kt | architecture-test/…/example/kmp/roles
-    menu | AndroidResourceRole.kt | architecture-test/…/example/kmp/roles
-    menu | AppRootRole.kt | architecture-test/…/example/kmp/roles
-    menu | BaselineFileRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentPreviewRole.kt | architecture-test/…/example/kmp/roles
-    menu | ComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | CustomProcessorRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionEntryRole.kt | architecture-test/…/example/kmp/roles
-    menu | DefinitionSectionsRole.kt | architecture-test/…/example/kmp/roles
-    menu | DocumentationRole.kt | architecture-test/…/example/kmp/roles
-    menu | ExpectDeclarationRole.kt | architecture-test/…/example/kmp/roles
-    menu | FakeRole.kt | architecture-test/…/example/kmp/roles
-    menu | FeatureComponentRole.kt | architecture-test/…/example/kmp/roles
-    menu | (disabled) … and 20 more
+== architecture-test/src/test/kotlin/com/example/kmp/ui/UiGroup.kt
+roles: testing.GroupDefinition
+    testing.GroupDefinition declared at GroupDefinitionRole.kt:8 | fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
+27 | ◆ | katachi: testing.GroupDefinition
+    menu | ◇ Role testing.GroupDefinition — Group definition | GroupDefinitionRole.kt:8
+    menu | == Other files of testing.GroupDefinition (6)
+    menu | AppGroup.kt | architecture-test/…/com/example/kmp/app
+    menu | DataGroup.kt | architecture-test/…/com/example/kmp/data
+    menu | FeatureGroup.kt | architecture-test/…/example/kmp/feature
+    menu | GradleGroup.kt | architecture-test/…/example/kmp/gradle
+    menu | TestingGroup.kt | architecture-test/…/example/kmp/testing
+    menu | ToolGroup.kt | architecture-test/…/com/example/kmp/tool
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
@@ -1375,11 +1375,11 @@ roles: data.ExpectDeclaration
 
 == data/src/commonMain/kotlin/com/example/kmp/data/user/UserRepository.kt
 roles: data.RepositoryInterface
-    data.RepositoryInterface declared at RepositoryInterfaceRole.kt:22 | fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role {
-4 | ◆ | katachi: data.RepositoryInterface — allowed by interface UserRepository (RepositoryInterfaceRole.kt:84)
-    allowed at RepositoryInterfaceRole.kt:84 | required(`interface`, fileName) {
-    menu | ◆ Allowed by interface UserRepository | RepositoryInterfaceRole.kt:84
-    menu | ◇ Role data.RepositoryInterface — Repository interface | RepositoryInterfaceRole.kt:22
+    data.RepositoryInterface declared at RepositoryInterfaceRole.kt:25 | fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role {
+4 | ◆ | katachi: data.RepositoryInterface — allowed by interface UserRepository (RepositoryInterfaceRole.kt:87)
+    allowed at RepositoryInterfaceRole.kt:87 | required(`interface`, fileName) {
+    menu | ◆ Allowed by interface UserRepository | RepositoryInterfaceRole.kt:87
+    menu | ◇ Role data.RepositoryInterface — Repository interface | RepositoryInterfaceRole.kt:25
     menu | == Other files of data.RepositoryInterface
     menu | (disabled) — No other file yet
     menu | -----
@@ -1416,9 +1416,9 @@ roles: data.ActualImplementation
 
 == docs/README.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | ActivityEntrypoint.md | docs/app
     menu | AndroidManifest.md | docs/app
@@ -1442,9 +1442,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/app/ActivityEntrypoint.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | AndroidManifest.md | docs/app
     menu | AndroidResource.md | docs/app
@@ -1468,9 +1468,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/app/AndroidManifest.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | ActivityEntrypoint.md | docs/app
     menu | AndroidResource.md | docs/app
@@ -1494,9 +1494,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/app/AndroidResource.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | ActivityEntrypoint.md | docs/app
     menu | AndroidManifest.md | docs/app
@@ -1520,9 +1520,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/app/AppRoot.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | ActivityEntrypoint.md | docs/app
     menu | AndroidManifest.md | docs/app
@@ -1546,9 +1546,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/app/README.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | ActivityEntrypoint.md | docs/app
     menu | AndroidManifest.md | docs/app
@@ -1572,9 +1572,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/app/XcodeProject.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | ActivityEntrypoint.md | docs/app
     menu | AndroidManifest.md | docs/app
@@ -1598,9 +1598,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/data/ActualImplementation.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | ExpectDeclaration.md | docs/data
     menu | README.md | docs/data
@@ -1624,9 +1624,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/data/ExpectDeclaration.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | ActualImplementation.md | docs/data
     menu | README.md | docs/data
@@ -1650,9 +1650,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/data/README.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | ActualImplementation.md | docs/data
     menu | ExpectDeclaration.md | docs/data
@@ -1676,9 +1676,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/data/RepositoryImplementation.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | ActualImplementation.md | docs/data
     menu | ExpectDeclaration.md | docs/data
@@ -1702,9 +1702,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/data/RepositoryInterface.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | ActualImplementation.md | docs/data
     menu | ExpectDeclaration.md | docs/data
@@ -1728,9 +1728,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/feature/FeatureComponent.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | README.md | docs/feature
     menu | Route.md | docs/feature
@@ -1754,9 +1754,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/feature/README.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | FeatureComponent.md | docs/feature
     menu | Route.md | docs/feature
@@ -1780,9 +1780,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/feature/Route.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | FeatureComponent.md | docs/feature
     menu | README.md | docs/feature
@@ -1806,9 +1806,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/feature/Screen.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | FeatureComponent.md | docs/feature
     menu | README.md | docs/feature
@@ -1832,9 +1832,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/feature/ScreenPreview.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | FeatureComponent.md | docs/feature
     menu | README.md | docs/feature
@@ -1858,9 +1858,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/feature/ViewModel.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | FeatureComponent.md | docs/feature
     menu | README.md | docs/feature
@@ -1884,9 +1884,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/testing/BaselineFile.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | CustomProcessor.md | docs/testing
     menu | DefinitionEntry.md | docs/testing
@@ -1910,9 +1910,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/testing/CustomProcessor.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | BaselineFile.md | docs/testing
     menu | DefinitionEntry.md | docs/testing
@@ -1936,9 +1936,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/testing/DefinitionEntry.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | BaselineFile.md | docs/testing
     menu | CustomProcessor.md | docs/testing
@@ -1962,9 +1962,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/testing/DefinitionSections.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | BaselineFile.md | docs/testing
     menu | CustomProcessor.md | docs/testing
@@ -1988,9 +1988,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/testing/Fake.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | BaselineFile.md | docs/testing
     menu | CustomProcessor.md | docs/testing
@@ -2014,9 +2014,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/testing/GeneratedDocumentation.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | BaselineFile.md | docs/testing
     menu | CustomProcessor.md | docs/testing
@@ -2040,9 +2040,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/testing/GroupDefinition.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | BaselineFile.md | docs/testing
     menu | CustomProcessor.md | docs/testing
@@ -2066,9 +2066,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/testing/LayoutSnapshot.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | BaselineFile.md | docs/testing
     menu | CustomProcessor.md | docs/testing
@@ -2092,9 +2092,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/testing/ProcessorMetadata.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | BaselineFile.md | docs/testing
     menu | CustomProcessor.md | docs/testing
@@ -2118,9 +2118,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/testing/ProcessorSpec.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | BaselineFile.md | docs/testing
     menu | CustomProcessor.md | docs/testing
@@ -2144,9 +2144,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/testing/ProjectArchitectureSpec.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | BaselineFile.md | docs/testing
     menu | CustomProcessor.md | docs/testing
@@ -2170,9 +2170,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/testing/ProjectArchitectureTest.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | BaselineFile.md | docs/testing
     menu | CustomProcessor.md | docs/testing
@@ -2196,9 +2196,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/testing/README.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | BaselineFile.md | docs/testing
     menu | CustomProcessor.md | docs/testing
@@ -2222,9 +2222,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/testing/RoleDefinition.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | BaselineFile.md | docs/testing
     menu | CustomProcessor.md | docs/testing
@@ -2248,9 +2248,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/testing/Test.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | BaselineFile.md | docs/testing
     menu | CustomProcessor.md | docs/testing
@@ -2274,9 +2274,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/ui/Component.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | ComponentPreview.md | docs/ui
     menu | Navigation.md | docs/ui
@@ -2300,9 +2300,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/ui/ComponentPreview.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | Component.md | docs/ui
     menu | Navigation.md | docs/ui
@@ -2326,9 +2326,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/ui/Navigation.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | Component.md | docs/ui
     menu | ComponentPreview.md | docs/ui
@@ -2352,9 +2352,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/ui/PreviewRoot.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | Component.md | docs/ui
     menu | ComponentPreview.md | docs/ui
@@ -2378,9 +2378,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/ui/README.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | Component.md | docs/ui
     menu | ComponentPreview.md | docs/ui
@@ -2404,9 +2404,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/ui/Theme.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | Component.md | docs/ui
     menu | ComponentPreview.md | docs/ui
@@ -2430,9 +2430,9 @@ roles: testing.GeneratedDocumentation
 
 == docs/ui/UiCore.md
 roles: testing.GeneratedDocumentation
-    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:14 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:15 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
 1 | ◆ | katachi: testing.GeneratedDocumentation
-    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:14
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:15
     menu | == Other files of testing.GeneratedDocumentation (39)
     menu | Component.md | docs/ui
     menu | ComponentPreview.md | docs/ui
@@ -2474,9 +2474,9 @@ roles: Gradle.BuildScript
 
 == feature/home/src/commonMain/kotlin/com/example/kmp/feature/home/HomeRoute.kt
 roles: feature.Route
-    feature.Route declared at RouteRole.kt:19 | fun DeclarationContainerScope.route() = "Route".role {
+    feature.Route declared at RouteRole.kt:20 | fun DeclarationContainerScope.route() = "Route".role {
 15 | ◆ | katachi: feature.Route
-    menu | ◇ Role feature.Route — Route | RouteRole.kt:19
+    menu | ◇ Role feature.Route — Route | RouteRole.kt:20
     menu | == Other files of feature.Route (1)
     menu | SettingsRoute.kt | feature/…/example/kmp/feature/settings
     menu | -----
@@ -2496,29 +2496,29 @@ roles: feature.Screen
 
 == feature/home/src/commonMain/kotlin/com/example/kmp/feature/home/HomeScreenPreview.kt
 roles: feature.ScreenPreview
-    feature.ScreenPreview declared at ScreenPreviewRole.kt:21 | fun DeclarationContainerScope.screenPreview() = "ScreenPreview".role {
-16 | ◆ | katachi: feature.ScreenPreview — allowed by @Preview private fun *Preview(...) (ScreenPreviewRole.kt:64)
-    allowed at ScreenPreviewRole.kt:64 | allow(annotated("Preview"), private, `fun`, "*Preview")
-    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenPreviewRole.kt:64
-    menu | ◇ Role feature.ScreenPreview — Screen preview | ScreenPreviewRole.kt:21
+    feature.ScreenPreview declared at ScreenPreviewRole.kt:23 | fun DeclarationContainerScope.screenPreview() = "ScreenPreview".role {
+16 | ◆ | katachi: feature.ScreenPreview — allowed by @Preview private fun *Preview(...) (ScreenPreviewRole.kt:66)
+    allowed at ScreenPreviewRole.kt:66 | allow(annotated("Preview"), private, `fun`, "*Preview")
+    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenPreviewRole.kt:66
+    menu | ◇ Role feature.ScreenPreview — Screen preview | ScreenPreviewRole.kt:23
     menu | == Other files of feature.ScreenPreview (1)
     menu | SettingsScreenPreview.kt | feature/…/example/kmp/feature/settings
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
-24 | ◆ | katachi: feature.ScreenPreview — allowed by @Preview private fun *Preview(...) (ScreenPreviewRole.kt:64)
-    allowed at ScreenPreviewRole.kt:64 | allow(annotated("Preview"), private, `fun`, "*Preview")
-    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenPreviewRole.kt:64
-    menu | ◇ Role feature.ScreenPreview — Screen preview | ScreenPreviewRole.kt:21
+24 | ◆ | katachi: feature.ScreenPreview — allowed by @Preview private fun *Preview(...) (ScreenPreviewRole.kt:66)
+    allowed at ScreenPreviewRole.kt:66 | allow(annotated("Preview"), private, `fun`, "*Preview")
+    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenPreviewRole.kt:66
+    menu | ◇ Role feature.ScreenPreview — Screen preview | ScreenPreviewRole.kt:23
     menu | == Other files of feature.ScreenPreview (1)
     menu | SettingsScreenPreview.kt | feature/…/example/kmp/feature/settings
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
-32 | ◆ | katachi: feature.ScreenPreview — allowed by @Preview private fun *Preview(...) (ScreenPreviewRole.kt:64)
-    allowed at ScreenPreviewRole.kt:64 | allow(annotated("Preview"), private, `fun`, "*Preview")
-    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenPreviewRole.kt:64
-    menu | ◇ Role feature.ScreenPreview — Screen preview | ScreenPreviewRole.kt:21
+32 | ◆ | katachi: feature.ScreenPreview — allowed by @Preview private fun *Preview(...) (ScreenPreviewRole.kt:66)
+    allowed at ScreenPreviewRole.kt:66 | allow(annotated("Preview"), private, `fun`, "*Preview")
+    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenPreviewRole.kt:66
+    menu | ◇ Role feature.ScreenPreview — Screen preview | ScreenPreviewRole.kt:23
     menu | == Other files of feature.ScreenPreview (1)
     menu | SettingsScreenPreview.kt | feature/…/example/kmp/feature/settings
     menu | -----
@@ -2540,11 +2540,11 @@ roles: feature.ViewModel
 
 == feature/home/src/commonMain/kotlin/com/example/kmp/feature/home/component/HomeUserCard.kt
 roles: feature.FeatureComponent
-    feature.FeatureComponent declared at FeatureComponentRole.kt:26 | fun DeclarationContainerScope.featureComponent() = "FeatureComponent".role {
-10 | ◆ | katachi: feature.FeatureComponent — allowed by @Composable internal fun HomeUserCard(...) (FeatureComponentRole.kt:91)
-    allowed at FeatureComponentRole.kt:91 | required(annotated("Composable"), internal, `fun`, fileName)
-    menu | ◆ Allowed by @Composable internal fun HomeUserCard(...) | FeatureComponentRole.kt:91
-    menu | ◇ Role feature.FeatureComponent — Screen component | FeatureComponentRole.kt:26
+    feature.FeatureComponent declared at FeatureComponentRole.kt:28 | fun DeclarationContainerScope.featureComponent() = "FeatureComponent".role {
+10 | ◆ | katachi: feature.FeatureComponent — allowed by @Composable internal fun HomeUserCard(...) (FeatureComponentRole.kt:93)
+    allowed at FeatureComponentRole.kt:93 | required(annotated("Composable"), internal, `fun`, fileName)
+    menu | ◆ Allowed by @Composable internal fun HomeUserCard(...) | FeatureComponentRole.kt:93
+    menu | ◇ Role feature.FeatureComponent — Screen component | FeatureComponentRole.kt:28
     menu | == Other files of feature.FeatureComponent
     menu | (disabled) — No other file yet
     menu | -----
@@ -2572,9 +2572,9 @@ roles: Gradle.BuildScript
 
 == feature/settings/src/commonMain/kotlin/com/example/kmp/feature/settings/SettingsRoute.kt
 roles: feature.Route
-    feature.Route declared at RouteRole.kt:19 | fun DeclarationContainerScope.route() = "Route".role {
+    feature.Route declared at RouteRole.kt:20 | fun DeclarationContainerScope.route() = "Route".role {
 10 | ◆ | katachi: feature.Route
-    menu | ◇ Role feature.Route — Route | RouteRole.kt:19
+    menu | ◇ Role feature.Route — Route | RouteRole.kt:20
     menu | == Other files of feature.Route (1)
     menu | HomeRoute.kt | feature/…/com/example/kmp/feature/home
     menu | -----
@@ -2594,20 +2594,20 @@ roles: feature.Screen
 
 == feature/settings/src/commonMain/kotlin/com/example/kmp/feature/settings/SettingsScreenPreview.kt
 roles: feature.ScreenPreview
-    feature.ScreenPreview declared at ScreenPreviewRole.kt:21 | fun DeclarationContainerScope.screenPreview() = "ScreenPreview".role {
-11 | ◆ | katachi: feature.ScreenPreview — allowed by @Preview private fun *Preview(...) (ScreenPreviewRole.kt:64)
-    allowed at ScreenPreviewRole.kt:64 | allow(annotated("Preview"), private, `fun`, "*Preview")
-    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenPreviewRole.kt:64
-    menu | ◇ Role feature.ScreenPreview — Screen preview | ScreenPreviewRole.kt:21
+    feature.ScreenPreview declared at ScreenPreviewRole.kt:23 | fun DeclarationContainerScope.screenPreview() = "ScreenPreview".role {
+11 | ◆ | katachi: feature.ScreenPreview — allowed by @Preview private fun *Preview(...) (ScreenPreviewRole.kt:66)
+    allowed at ScreenPreviewRole.kt:66 | allow(annotated("Preview"), private, `fun`, "*Preview")
+    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenPreviewRole.kt:66
+    menu | ◇ Role feature.ScreenPreview — Screen preview | ScreenPreviewRole.kt:23
     menu | == Other files of feature.ScreenPreview (1)
     menu | HomeScreenPreview.kt | feature/…/com/example/kmp/feature/home
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
-22 | ◆ | katachi: feature.ScreenPreview — allowed by @Preview private fun *Preview(...) (ScreenPreviewRole.kt:64)
-    allowed at ScreenPreviewRole.kt:64 | allow(annotated("Preview"), private, `fun`, "*Preview")
-    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenPreviewRole.kt:64
-    menu | ◇ Role feature.ScreenPreview — Screen preview | ScreenPreviewRole.kt:21
+22 | ◆ | katachi: feature.ScreenPreview — allowed by @Preview private fun *Preview(...) (ScreenPreviewRole.kt:66)
+    allowed at ScreenPreviewRole.kt:66 | allow(annotated("Preview"), private, `fun`, "*Preview")
+    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenPreviewRole.kt:66
+    menu | ◇ Role feature.ScreenPreview — Screen preview | ScreenPreviewRole.kt:23
     menu | == Other files of feature.ScreenPreview (1)
     menu | HomeScreenPreview.kt | feature/…/com/example/kmp/feature/home
     menu | -----
@@ -2700,9 +2700,9 @@ roles: Gradle.BuildScript
 
 == navigation/src/commonMain/kotlin/com/example/kmp/navigation/Destination.kt
 roles: ui.Navigation
-    ui.Navigation declared at NavigationRole.kt:10 | fun DeclarationContainerScope.navigation() = "Navigation".role {
+    ui.Navigation declared at NavigationRole.kt:12 | fun DeclarationContainerScope.navigation() = "Navigation".role {
 4 | ◆ | katachi: ui.Navigation
-    menu | ◇ Role ui.Navigation — Navigation | NavigationRole.kt:10
+    menu | ◇ Role ui.Navigation — Navigation | NavigationRole.kt:12
     menu | == Other files of ui.Navigation (1)
     menu | Navigator.kt | navigation/…/com/example/kmp/navigation
     menu | -----
@@ -2711,9 +2711,9 @@ roles: ui.Navigation
 
 == navigation/src/commonMain/kotlin/com/example/kmp/navigation/Navigator.kt
 roles: ui.Navigation
-    ui.Navigation declared at NavigationRole.kt:10 | fun DeclarationContainerScope.navigation() = "Navigation".role {
+    ui.Navigation declared at NavigationRole.kt:12 | fun DeclarationContainerScope.navigation() = "Navigation".role {
 14 | ◆ | katachi: ui.Navigation
-    menu | ◇ Role ui.Navigation — Navigation | NavigationRole.kt:10
+    menu | ◇ Role ui.Navigation — Navigation | NavigationRole.kt:12
     menu | == Other files of ui.Navigation (1)
     menu | Destination.kt | navigation/…/com/example/kmp/navigation
     menu | -----
@@ -2733,9 +2733,9 @@ roles: Gradle.SettingsScript
 
 == snapshots/layout.txt
 roles: testing.LayoutSnapshot
-    testing.LayoutSnapshot declared at LayoutSnapshotRole.kt:15 | fun DeclarationContainerScope.layoutSnapshot() = "LayoutSnapshot".role {
+    testing.LayoutSnapshot declared at LayoutSnapshotRole.kt:16 | fun DeclarationContainerScope.layoutSnapshot() = "LayoutSnapshot".role {
 1 | ◆ | katachi: testing.LayoutSnapshot
-    menu | ◇ Role testing.LayoutSnapshot — Layout snapshot | LayoutSnapshotRole.kt:15
+    menu | ◇ Role testing.LayoutSnapshot — Layout snapshot | LayoutSnapshotRole.kt:16
     menu | == Other files of testing.LayoutSnapshot
     menu | (disabled) — No other file yet
     menu | -----
@@ -2791,9 +2791,9 @@ roles: Gradle.BuildScript
 
 == ui/src/commonMain/kotlin/com/example/kmp/ui/component/PrimaryButton.kt
 roles: ui.Component
-    ui.Component declared at ComponentRole.kt:10 | fun DeclarationContainerScope.component() = "Component".role {
+    ui.Component declared at ComponentRole.kt:11 | fun DeclarationContainerScope.component() = "Component".role {
 13 | ◆ | katachi: ui.Component
-    menu | ◇ Role ui.Component — Shared component | ComponentRole.kt:10
+    menu | ◇ Role ui.Component — Shared component | ComponentRole.kt:11
     menu | == Other files of ui.Component
     menu | (disabled) — No other file yet
     menu | -----
@@ -2802,9 +2802,9 @@ roles: ui.Component
 
 == ui/src/commonMain/kotlin/com/example/kmp/ui/component/preview/PrimaryButtonPreview.kt
 roles: ui.ComponentPreview
-    ui.ComponentPreview declared at ComponentPreviewRole.kt:14 | fun DeclarationContainerScope.componentPreview() = "ComponentPreview".role {
+    ui.ComponentPreview declared at ComponentPreviewRole.kt:16 | fun DeclarationContainerScope.componentPreview() = "ComponentPreview".role {
 18 | ◆ | katachi: ui.ComponentPreview
-    menu | ◇ Role ui.ComponentPreview — Component preview | ComponentPreviewRole.kt:14
+    menu | ◇ Role ui.ComponentPreview — Component preview | ComponentPreviewRole.kt:16
     menu | == Other files of ui.ComponentPreview
     menu | (disabled) — No other file yet
     menu | -----
@@ -2813,9 +2813,9 @@ roles: ui.ComponentPreview
 
 == ui/src/commonMain/kotlin/com/example/kmp/ui/core/UiState.kt
 roles: ui.UiCore
-    ui.UiCore declared at UiCoreRole.kt:10 | fun DeclarationContainerScope.uiCore() = "UiCore".role {
+    ui.UiCore declared at UiCoreRole.kt:11 | fun DeclarationContainerScope.uiCore() = "UiCore".role {
 9 | ◆ | katachi: ui.UiCore
-    menu | ◇ Role ui.UiCore — UI core | UiCoreRole.kt:10
+    menu | ◇ Role ui.UiCore — UI core | UiCoreRole.kt:11
     menu | == Other files of ui.UiCore
     menu | (disabled) — No other file yet
     menu | -----
@@ -2824,9 +2824,9 @@ roles: ui.UiCore
 
 == ui/src/commonMain/kotlin/com/example/kmp/ui/preview/PreviewRoot.kt
 roles: ui.PreviewRoot
-    ui.PreviewRoot declared at PreviewRootRole.kt:15 | fun DeclarationContainerScope.previewRoot() = "PreviewRoot".role {
+    ui.PreviewRoot declared at PreviewRootRole.kt:17 | fun DeclarationContainerScope.previewRoot() = "PreviewRoot".role {
 20 | ◆ | katachi: ui.PreviewRoot
-    menu | ◇ Role ui.PreviewRoot — Preview root | PreviewRootRole.kt:15
+    menu | ◇ Role ui.PreviewRoot — Preview root | PreviewRootRole.kt:17
     menu | == Other files of ui.PreviewRoot
     menu | (disabled) — No other file yet
     menu | -----
@@ -2835,9 +2835,9 @@ roles: ui.PreviewRoot
 
 == ui/src/commonMain/kotlin/com/example/kmp/ui/theme/AppTheme.kt
 roles: ui.Theme
-    ui.Theme declared at ThemeRole.kt:9 | fun DeclarationContainerScope.theme() = "Theme".role {
+    ui.Theme declared at ThemeRole.kt:10 | fun DeclarationContainerScope.theme() = "Theme".role {
 14 | ◆ | katachi: ui.Theme
-    menu | ◇ Role ui.Theme — Theme | ThemeRole.kt:9
+    menu | ◇ Role ui.Theme — Theme | ThemeRole.kt:10
     menu | == Other files of ui.Theme
     menu | (disabled) — No other file yet
     menu | -----

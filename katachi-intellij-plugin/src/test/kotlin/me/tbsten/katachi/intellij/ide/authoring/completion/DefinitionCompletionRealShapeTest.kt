@@ -31,10 +31,10 @@ internal class DefinitionCompletionRealShapeTest : AnalysisTestBase() {
         service.emit(DefinitionState.Ready(listOf(snapshot), Freshness.Fresh))
     }
 
-    /** Opens `ServiceRole.kt` with [text] in a function (so its first line is line 2) and makes the real `.template` of line 57 resolve to that line. */
+    /** Opens `ServiceRole.kt` with [text] in a function (so its first line is line 2) and makes the real `.template` of line 59 resolve to that line. */
     private fun open(text: String) {
         myFixture.configureByText("ServiceRole.kt", AuthoringFixtures.inFunction(text.trimIndent()))
-        service.resolveWith(DeclarationSiteRef("ServiceRole.kt", 57), ResolvedSite.Found(myFixture.file.virtualFile, 2))
+        service.resolveWith(DeclarationSiteRef("ServiceRole.kt", 59), ResolvedSite.Found(myFixture.file.virtualFile, 2))
     }
 
     private fun offered(): List<String> {

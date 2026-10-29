@@ -13,7 +13,7 @@ import me.tbsten.katachi.dsl.metadata
  * write it through. [PlatformOwnedFilesProcessor] is the only thing that reads it.
  *
  * Written on [MetadataScope] rather than only on `RoleScope`, the same choice [MetadataScope]'s
- * own KDoc walks through: `groups/GradleGroup.kt` tags the whole `"Gradle"` group with
+ * own KDoc walks through: `gradle/GradleGroup.kt` tags the whole `"Gradle"` group with
  * `owner = "platform"`, which reaches every role `gradle()` declares underneath it in one line,
  * and tags one of those roles again through the `buildScript { }` hook, whose receiver is a
  * [MetadataScope] as well. `tool/Git` tags itself directly. A processor that wants "every file

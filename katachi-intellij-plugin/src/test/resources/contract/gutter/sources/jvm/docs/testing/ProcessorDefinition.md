@@ -20,4 +20,4 @@ block of `architecture-test/build.gradle.kts`.
 
 ## Forbidden contents
 
-- A group or a role. Those go in `groups/` and `roles/`
+- A group or a role. Those go in `<Name>Group.kt` and `<Name>Role.kt`

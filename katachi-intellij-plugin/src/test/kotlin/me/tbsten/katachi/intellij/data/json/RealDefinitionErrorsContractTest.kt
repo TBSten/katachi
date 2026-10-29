@@ -62,9 +62,9 @@ class RealDefinitionErrorsContractTest {
         val errors = errorsOf("real-jvm-wildcard-errors")
 
         assertEquals(listOf("me.tbsten.katachi.dsl.KatachiTemplateOnWildcardException"), errors.errors.map { it.exceptionClassName })
-        assertEquals(DeclarationSiteRef("ServiceRole.kt", 57), errors.errors.single().site)
+        assertEquals(DeclarationSiteRef("ServiceRole.kt", 59), errors.errors.single().site)
         val mark = marksOf(errors).single()
-        assertEquals(57, mark.line)
+        assertEquals(59, mark.line)
         assertEquals(DefinitionMarkSource.Error, mark.source)
         assertTrue(".template" in linesOf("ServiceRole.kt")[mark.line - 1])
     }
@@ -88,8 +88,8 @@ class RealDefinitionErrorsContractTest {
         assertEquals(listOf(DefinitionProblemKind.TemplatePreviewFailed, DefinitionProblemKind.TemplateSetPreviewFailed), kinds)
         assertEquals(setOf("me.tbsten.katachi.dsl.KatachiUnknownTemplateCaptureException"), definition.problems.map { it.exception }.toSet())
         val marks = marksOf(DefinitionErrors.None, definition)
-        assertEquals(listOf(58, 58), marks.map { it.line })
+        assertEquals(listOf(60, 60), marks.map { it.line })
         assertEquals(setOf(DefinitionMarkSource.Problem), marks.map { it.source }.toSet())
-        assertTrue("captureValue" in linesOf("ServiceRole.kt")[57])
+        assertTrue("captureValue" in linesOf("ServiceRole.kt")[59])
     }
 }

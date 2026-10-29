@@ -9,8 +9,8 @@ DocumentSections.kt, the section headings every group and role writes through
 one file beside `ProjectArchitecture.kt` that every group and role reads, and it is named
 exactly for the same reason: anything else that slips in next to the definition becomes
 an `[UnexpectedFile]`. A helper that only the roles of one group read sits in that
-group's file instead (`featureSources` and `FeatureModule` in `groups/FeatureGroup.kt`,
-`DataDomain` in `groups/DataGroup.kt`).
+group's file instead (`featureSources` and `FeatureModule` in `feature/FeatureGroup.kt`,
+`DataDomain` in `data/DataGroup.kt`).
 
 ## Placement
 

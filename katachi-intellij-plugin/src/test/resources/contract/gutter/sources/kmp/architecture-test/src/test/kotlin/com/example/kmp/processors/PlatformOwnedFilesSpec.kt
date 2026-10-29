@@ -1,12 +1,12 @@
 package com.example.kmp.processors
 
-import com.example.kmp.groups.appGroup
-import com.example.kmp.groups.dataGroup
-import com.example.kmp.groups.featureGroup
-import com.example.kmp.groups.gradleGroup
-import com.example.kmp.groups.testingGroup
-import com.example.kmp.groups.uiGroup
+import com.example.kmp.app.appGroup
+import com.example.kmp.data.dataGroup
+import com.example.kmp.feature.featureGroup
+import com.example.kmp.gradle.gradleGroup
 import com.example.kmp.projectArchitecture
+import com.example.kmp.testing.testingGroup
+import com.example.kmp.ui.uiGroup
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -24,7 +24,7 @@ import me.tbsten.katachi.processor.process
  * The processor API is `@ExperimentalKatachiApi`, so this file opts in. That opt-in is the
  * wall doing its job: a real consumer of the published `katachi` artifact writes exactly this
  * to depend on a shape that is still moving, which is different from writing `owner = "..."`
- * in [com.example.kmp.groups.gradleGroup] -- that needs no opt-in, because the sugar hides it.
+ * in [com.example.kmp.gradle.gradleGroup] -- that needs no opt-in, because the sugar hides it.
  */
 @OptIn(ExperimentalKatachiApi::class)
 class PlatformOwnedFilesSpec : FreeSpec({
@@ -73,7 +73,7 @@ class PlatformOwnedFilesSpec : FreeSpec({
 
 /**
  * Every file `owner = "platform"` reaches through the `"Gradle"` group -- tagged as a whole in
- * `groups/GradleGroup.kt` -- shared by both tests above so the file list is written once.
+ * `gradle/GradleGroup.kt` -- shared by both tests above so the file list is written once.
  * `tool/Git`'s `.gitignore` is deliberately not here: it is the one file that tells the two
  * tests apart.
  */
