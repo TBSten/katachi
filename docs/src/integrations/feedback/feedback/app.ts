@@ -2,14 +2,18 @@
 import type { DevToolbarApp } from 'astro'
 import { createFlow } from './flow'
 import { enterMode } from './mode'
+import { setLinkSelectMode, setupAltSelect } from './linkselect'
 import { setupQuick } from './quick'
 
 export default {
 	init(_canvas, app, server) {
 		const flow = createFlow(app, server)
-		// モードの外でも、テキストを選んで右クリックしたらフィードバックできるようにする（常設のリスナーはこの1つ）。
+		// モードの外でも、テキストを選んで右クリックしたらフィードバックできるようにする（常設のリスナーは、これの contextmenu と下の Alt の keydown の 2 つ）。
 		setupQuick(flow)
+		// リンクカード（a::before の覆い）の中の文字を、モードの中と Alt+ドラッグで選べるようにする。
+		setupAltSelect(() => flow.session !== null && !flow.session.quick)
 		app.onToggled(({ state }) => {
+			setLinkSelectMode(state)
 			if (state) {
 				// モードの外から開いていた分は、モードに入る前に片付ける。
 				if (flow.session?.quick) flow.cleanup()

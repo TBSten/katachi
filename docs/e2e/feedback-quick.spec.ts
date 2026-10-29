@@ -10,7 +10,7 @@ test.describe('モードの外の右クリック（PC）', () => {
 		const probe = await attachListenerProbe(page)
 		const lBaseList = await probe.list()
 		const lBase = probe.count(lBaseList)
-		ok('常設のリスナーは contextmenu 1 つだけ', lBaseList === 'document:contextmenu', lBaseList)
+		ok('常設のリスナーは contextmenu と keydown（Alt）の 2 つだけ', lBaseList === 'document:contextmenu document:keydown', lBaseList)
 		const attrsBefore = await fb.attrs()
 		const before = files().length
 		const sel = await fb.selectRange(0, 14)
