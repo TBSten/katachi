@@ -21,4 +21,4 @@ owns, so it is a file of its own next to the entry.
 
 ## Forbidden contents
 
-- A group or a role. Those go in `groups/` and `roles/`
+- A group or a role. Those go in `<Name>Group.kt` and `<Name>Role.kt`

@@ -37,7 +37,7 @@ dependencies {
     // For the @Language("markdown") on allowedContents / forbiddenContents in DocumentSections.kt.
     // The annotation is not needed at run time, hence testCompileOnly.
     testCompileOnly(libs.jetbrainsAnnotations)
-    // The Konture backend behind the one `konture { }` constraint (`roles/ModelRole.kt`).
+    // The Konture backend behind the one `konture { }` constraint (`core/ModelRole.kt`).
     // Substituted with `:katachi-konture` of the included build, like `libs.katachi`. This is the
     // sample that shows `konture { }` because it is the one that writes neither `konsist { }` nor
     // `ktFileContent { }`: Konture 1.0.1 cannot share a test classpath with the Konsist 0.17.3

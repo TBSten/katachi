@@ -106,8 +106,8 @@ testing.GroupDefinition	architecture-test/src/test	Directory	optional
 testing.GroupDefinition	architecture-test/src/test/kotlin	Directory	optional
 testing.GroupDefinition	architecture-test/src/test/kotlin/com	Directory	optional
 testing.GroupDefinition	architecture-test/src/test/kotlin/com/example	Directory	optional
-testing.GroupDefinition	architecture-test/src/test/kotlin/com/example/groups	Directory	optional
-testing.GroupDefinition	architecture-test/src/test/kotlin/com/example/groups/*Group.kt	File	optional
+testing.GroupDefinition	architecture-test/src/test/kotlin/com/example/**	Directory	optional
+testing.GroupDefinition	architecture-test/src/test/kotlin/com/example/**/*Group.kt	File	optional
 testing.IntegrationSpec	architecture-test	Directory	optional
 testing.IntegrationSpec	architecture-test/src	Directory	optional
 testing.IntegrationSpec	architecture-test/src/test	Directory	optional
@@ -131,8 +131,8 @@ testing.RoleDefinition	architecture-test/src/test	Directory	optional
 testing.RoleDefinition	architecture-test/src/test/kotlin	Directory	optional
 testing.RoleDefinition	architecture-test/src/test/kotlin/com	Directory	optional
 testing.RoleDefinition	architecture-test/src/test/kotlin/com/example	Directory	optional
-testing.RoleDefinition	architecture-test/src/test/kotlin/com/example/roles	Directory	optional
-testing.RoleDefinition	architecture-test/src/test/kotlin/com/example/roles/*Role.kt	File	optional
+testing.RoleDefinition	architecture-test/src/test/kotlin/com/example/**	Directory	optional
+testing.RoleDefinition	architecture-test/src/test/kotlin/com/example/**/*Role.kt	File	optional
 testing.Test	src	Directory	optional
 testing.Test	src/test	Directory	optional
 testing.Test	src/test/kotlin	Directory	optional

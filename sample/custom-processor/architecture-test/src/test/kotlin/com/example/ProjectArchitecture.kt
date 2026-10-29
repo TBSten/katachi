@@ -1,9 +1,9 @@
 package com.example
 
-import com.example.groups.coreGroup
-import com.example.groups.gradleGroup
-import com.example.groups.testingGroup
-import com.example.groups.toolGroup
+import com.example.core.coreGroup
+import com.example.gradle.gradleGroup
+import com.example.testing.testingGroup
+import com.example.tool.toolGroup
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
 
@@ -16,9 +16,10 @@ import me.tbsten.katachi.dsl.architecture
  * `processors/` are what a reader came for, and the `testing/Processor` role is what declares
  * them.
  *
- * The definition is split one declaration per file: `roles/<Name>Role.kt` holds one role and
- * `groups/<Name>Group.kt` holds one group, which says what it is made of by calling the role
- * functions in order. None of those functions may be `inline`: katachi captures the declaration
+ * The definition is split one declaration per file: `<Name>Group.kt` holds one group, in the
+ * directory named after it (`core/CoreGroup.kt`), and says what it is made of by calling the role
+ * functions in order. `<Name>Role.kt` holds one role, in the directory of the group that calls
+ * it (`core/StoreRole.kt`). None of those functions may be `inline`: katachi captures the declaration
  * site from the stack, and an inlined frame reports the caller's file with a line number past
  * its end.
  *

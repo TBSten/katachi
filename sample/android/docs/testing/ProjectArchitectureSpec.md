@@ -10,8 +10,8 @@ integration test. `ProjectArchitectureSpec` checks the assembled definition,
 `LayoutSnapshotSpec` compares the flattened layout with the snapshot, and
 `ProjectRootSpec` watches the result of the project root lookup.
 
-Files named `*Spec.kt` directly under the package (outside `groups/` and `roles/`) are
-this role. Putting one in `roles/` gives an `[UnexpectedFile]`.
+Files named `*Spec.kt` directly under the package (outside the group directories) are
+this role. Putting one in a group directory gives an `[UnexpectedFile]`.
 
 ## Placement
 

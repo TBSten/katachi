@@ -9,7 +9,7 @@ besides katachi's own ones, "Allowed contents" and "Forbidden contents", and the
 each role or group writes them with. They are a vocabulary the role files share and no
 role owns, so they are a file of their own next to the entry. A heading only one group
 writes stays in that group's file instead: "Test policy" is declared in
-`groups/ApiGroup.kt`.
+`api/ApiGroup.kt`.
 
 ## Placement
 
@@ -23,4 +23,4 @@ writes stays in that group's file instead: "Test policy" is declared in
 
 ## Forbidden contents
 
-- A group or a role. Those go in `groups/` and `roles/`
+- A group or a role. Those go in `<Name>Group.kt` and `<Name>Role.kt`

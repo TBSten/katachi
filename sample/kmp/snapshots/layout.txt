@@ -238,8 +238,8 @@ testing.GroupDefinition	architecture-test/src/test/kotlin	Directory	optional
 testing.GroupDefinition	architecture-test/src/test/kotlin/com	Directory	optional
 testing.GroupDefinition	architecture-test/src/test/kotlin/com/example	Directory	optional
 testing.GroupDefinition	architecture-test/src/test/kotlin/com/example/kmp	Directory	optional
-testing.GroupDefinition	architecture-test/src/test/kotlin/com/example/kmp/groups	Directory	optional
-testing.GroupDefinition	architecture-test/src/test/kotlin/com/example/kmp/groups/*Group.kt	File	optional
+testing.GroupDefinition	architecture-test/src/test/kotlin/com/example/kmp/**	Directory	optional
+testing.GroupDefinition	architecture-test/src/test/kotlin/com/example/kmp/**/*Group.kt	File	optional
 testing.LayoutSnapshot	snapshots	Directory	optional
 testing.LayoutSnapshot	snapshots/layout.txt	File	required
 testing.ProcessorMetadata	architecture-test	Directory	optional
@@ -283,8 +283,8 @@ testing.RoleDefinition	architecture-test/src/test/kotlin	Directory	optional
 testing.RoleDefinition	architecture-test/src/test/kotlin/com	Directory	optional
 testing.RoleDefinition	architecture-test/src/test/kotlin/com/example	Directory	optional
 testing.RoleDefinition	architecture-test/src/test/kotlin/com/example/kmp	Directory	optional
-testing.RoleDefinition	architecture-test/src/test/kotlin/com/example/kmp/roles	Directory	optional
-testing.RoleDefinition	architecture-test/src/test/kotlin/com/example/kmp/roles/*Role.kt	File	optional
+testing.RoleDefinition	architecture-test/src/test/kotlin/com/example/kmp/**	Directory	optional
+testing.RoleDefinition	architecture-test/src/test/kotlin/com/example/kmp/**/*Role.kt	File	optional
 testing.Test	app	Directory	optional
 testing.Test	app/android	Directory	optional
 testing.Test	app/android/src	Directory	optional

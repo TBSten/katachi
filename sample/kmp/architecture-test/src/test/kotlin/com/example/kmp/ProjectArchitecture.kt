@@ -1,12 +1,12 @@
 package com.example.kmp
 
-import com.example.kmp.groups.appGroup
-import com.example.kmp.groups.dataGroup
-import com.example.kmp.groups.featureGroup
-import com.example.kmp.groups.gradleGroup
-import com.example.kmp.groups.testingGroup
-import com.example.kmp.groups.toolGroup
-import com.example.kmp.groups.uiGroup
+import com.example.kmp.app.appGroup
+import com.example.kmp.data.dataGroup
+import com.example.kmp.feature.featureGroup
+import com.example.kmp.gradle.gradleGroup
+import com.example.kmp.testing.testingGroup
+import com.example.kmp.tool.toolGroup
+import com.example.kmp.ui.uiGroup
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
@@ -30,9 +30,10 @@ import me.tbsten.katachi.dsl.architecture
  * can be shared by every test and by `katachiDocs`, which generates `docs/` from it.
  *
  * This file does nothing but call the seven group functions. The definition itself is split
- * one declaration per file: a role named `"UiCore"` is declared in the `roles` package, in
- * `UiCoreRole.kt`, and a group named `"Gradle"` in the `groups` package, in `GradleGroup.kt`.
- * The file name is the whole of the convention, so nothing has to be written down twice.
+ * one declaration per file: a role named `"UiCore"` is declared in `ui/UiCoreRole.kt`, the directory of the
+ * group that calls it, and a group named `"Gradle"` in `gradle/GradleGroup.kt`, the directory named
+ * after it, with the package following the directory.
+ * The file name and the directory are the whole of the convention, so nothing has to be written down twice.
  *
  * Both kinds are plain `DeclarationContainerScope` extension functions — the scope
  * `architecture { }` and `"...".group { }` share — so a role can be moved into another group
@@ -45,7 +46,7 @@ import me.tbsten.katachi.dsl.architecture
  * line, by reading the captured line back out of the source.
  *
  * `baseline()` holds back the violations recorded in `katachi-baseline.json`
- * (declared by `roles/BaselineFileRole.kt`). One is left in on purpose, as the demo of it: the
+ * (declared by `testing/BaselineFileRole.kt`). One is left in on purpose, as the demo of it: the
  * `user` directory in `androidMain` of `:data`.
  */
 @OptIn(ExperimentalKatachiApi::class)

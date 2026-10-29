@@ -6,7 +6,7 @@ deliberately made invisible to `settings.gradle.kts`.
 That is the reason this directory exists. A real KMP repository mixes directories Gradle manages with
 directories it does not, and katachi has to be able to write both. The role that owns this directory is
 `app/XcodeProject`
-([`architecture-test/src/test/kotlin/com/example/kmp/roles/XcodeProjectRole.kt`](../../architecture-test/src/test/kotlin/com/example/kmp/roles/XcodeProjectRole.kt)),
+([`architecture-test/src/test/kotlin/com/example/kmp/app/XcodeProjectRole.kt`](../../architecture-test/src/test/kotlin/com/example/kmp/app/XcodeProjectRole.kt)),
 which declares `"app/ios".ignore()` to stop the check inside it. What goes in it is decided by Xcode, not by katachi.
 
 ## What is committed and what is not

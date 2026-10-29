@@ -40,8 +40,8 @@ The katachi definition, the three processors of your own that read it, and the g
 
 - [Architecture definition entry](./testing/ArchitectureDefinitionEntry.md) ... The one file whose `architecture { }` gathers every group, so the definition can be read from here
 - [Document section definition](./testing/DocumentSectionDefinition.md) ... The headings this project declares for itself, so roles and groups can write under them
-- [Group definition](./testing/GroupDefinition.md) ... One group of the katachi definition, declared in `groups/<Name>Group.kt`
-- [Role definition](./testing/RoleDefinition.md) ... One role of the katachi definition, declared in `roles/<Name>Role.kt`
+- [Group definition](./testing/GroupDefinition.md) ... One group of the katachi definition, declared in `<Name>Group.kt`, in the directory named after the group
+- [Role definition](./testing/RoleDefinition.md) ... One role of the katachi definition, declared in `<Name>Role.kt`, in the directory of the group that calls it
 - [Architecture test](./testing/ArchitectureTest.md) ... The one test that checks the whole project against the definition
 - [Integration spec](./testing/IntegrationSpec.md) ... The tests that call the processors through the API, and katachi's own sentinel run against this real project
 - [Processor](./testing/Processor.md) ... The ArchitectureProcessor implementations this project wrote itself. They read the definition and produce something

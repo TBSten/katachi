@@ -1,12 +1,12 @@
 package com.example.sample
 
-import com.example.sample.groups.appGroup
-import com.example.sample.groups.dataGroup
-import com.example.sample.groups.featureGroup
-import com.example.sample.groups.gradleGroup
-import com.example.sample.groups.testingGroup
-import com.example.sample.groups.toolGroup
-import com.example.sample.groups.uiGroup
+import com.example.sample.app.appGroup
+import com.example.sample.data.dataGroup
+import com.example.sample.feature.featureGroup
+import com.example.sample.gradle.gradleGroup
+import com.example.sample.testing.testingGroup
+import com.example.sample.tool.toolGroup
+import com.example.sample.ui.uiGroup
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
@@ -14,16 +14,17 @@ import me.tbsten.katachi.dsl.architecture
 /**
  * The architecture of this sample, written the way a user of katachi would write it.
  *
- * The definition is split one declaration per file: `roles/<Name>Role.kt` holds one role and
- * `groups/<Name>Group.kt` holds one group, which says what it is made of by calling the role
- * functions in order. Both are extensions on `DeclarationContainerScope` — the scope that
- * `architecture { }` and `"...".group { }` share — so a role can be moved into another group
- * without touching the role's own file. This file only calls the seven group functions, so it
+ * The definition is split one declaration per file: `<Name>Group.kt` holds one group, in the
+ * directory named after it (`ui/UiGroup.kt`), and says what it is made of by calling the role
+ * functions in order. `<Name>Role.kt` holds one role, in the directory of the group that calls
+ * it (`ui/ThemeRole.kt`). Both are extensions on `DeclarationContainerScope` — the scope that
+ * `architecture { }` and `"...".group { }` share — so a role moves into another group by
+ * moving its file, with its body unchanged. This file only calls the seven group functions, so it
  * stays short no matter how many roles the app grows.
  *
  * The file *names* carry the convention, so nothing has to be written twice: a role named
- * `"UiCore"` belongs in `roles/UiCoreRole.kt`, a group named `"Gradle"` in
- * `groups/GradleGroup.kt`.
+ * `"UiCore"` belongs in `ui/UiCoreRole.kt`, a group named `"Gradle"` in
+ * `gradle/GradleGroup.kt`.
  *
  * None of those functions may be `inline`. An inlined frame reports the caller's file with a
  * line number past its end, and katachi captures the declaration site from the stack, so the
@@ -45,7 +46,7 @@ import me.tbsten.katachi.dsl.architecture
  * — which is how the sample notices if capturing the declaration site ever breaks.
  *
  * `baseline()` holds back the violations recorded in `katachi-baseline.json`
- * (declared by `roles/BaselineFileRole.kt`). Two are left in on purpose, as the demo of it:
+ * (declared by `testing/BaselineFileRole.kt`). Two are left in on purpose, as the demo of it:
  * `HomeFormatter.kt` in `:feature:home` and the `legacy` package of `:data`.
  */
 @OptIn(ExperimentalKatachiApi::class)

@@ -2,11 +2,13 @@
 
 # Role definition
 
-roles/<Name>Role.kt, one role of the definition, with where its files live
+<group>/<Name>Role.kt, one role of the definition, with where its files live
 
-One role of the definition per file, in `roles/<Name>Role.kt`, and the file name says
-which role it is. Only `*Role.kt` may sit in `roles/`, so a shared helper slipping in
-as another kind of file becomes an `[UnexpectedFile]`.
+One role of the definition per file, in `<group>/<Name>Role.kt`, and the file name says
+which role it is. The directory is the one of the group that calls the role
+(`feature/ScreenRole.kt`, because `featureGroup()` calls `screen()`). A role that no
+group calls sits next to `ProjectArchitecture.kt`. A file that is not a `*Group.kt` or
+`*Role.kt` in a group directory, such as a shared helper, becomes an `[UnexpectedFile]`.
 
 `:architecture-test` is a plain `kotlin("jvm")` module that belongs to no layer of the
 app. It is not an Android module because katachi is a JVM library and the definition can
@@ -21,8 +23,9 @@ once it says something.
 
 | Path | When to use |
 |---|---|
-| `architecture-test/src/test/kotlin/com/example/sample/roles/*Role.kt` |  |
+| `architecture-test/src/test/kotlin/com/example/sample/**/*Role.kt` |  |
+| `architecture-test/src/test/kotlin/com/example/sample/*/*Role.kt` |  |
 
 ## Examples
 
-- `roles/ScreenRole.kt` ... The declaration of the Screen role
+- `feature/ScreenRole.kt` ... The declaration of the Screen role

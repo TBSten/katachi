@@ -10,7 +10,7 @@ writes. The definition it runs is described by the DefinitionEntry, GroupDefinit
 RoleDefinition roles, and kept apart from this file because the definition's job is to
 describe the project.
 
-Files named `*Test.kt` directly under the package (outside `groups/`, `roles/` and
+Files named `*Test.kt` directly under the package (outside the group directories and
 `processors/`) are this role. That tells them apart from the roles of the definition in
 the same module.
 

@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test
  *
  * `FileConstraintCheck()` is passed because katachi never runs a constraint nobody asked for:
  * `assert()` alone would leave this project's one constraint (the `konture { }` of the `Model`
- * role in `roles/ModelRole.kt`) reported as `[UncheckedFileConstraint] reason=NotEvaluated`
+ * role in `core/ModelRole.kt`) reported as `[UncheckedFileConstraint] reason=NotEvaluated`
  * instead of evaluated. The other three samples pass it for their `ktFileContent { }` and
  * `konsist { }` constraints.
  *

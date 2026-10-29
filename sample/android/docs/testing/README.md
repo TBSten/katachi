@@ -15,7 +15,7 @@ the ledger of violations held back.
 The architecture definition is not mixed into the test code because the two say
 different things. The definition says "what shape it has", the tests say "how it
 behaves". Both live in `:architecture-test` and are told apart by file location and
-name (`ProjectArchitecture.kt` plus `groups/` and `roles/` are the definition; the
+name (`ProjectArchitecture.kt` plus the `*Group.kt` and `*Role.kt` files in the group directories are the definition; the
 `*Spec.kt` and `*Test.kt` at the top of the package are tests). People who rewrite the
 definition and people who add tests are usually doing different things, so they are
 separate entries in the documentation too.
@@ -48,8 +48,8 @@ sits here with the generated files.
 | [Architecture spec](./ProjectArchitectureSpec.md) | Tests that verify the definition and katachi itself, kept in src/test/kotlin of :architecture-test |
 | [Definition entrypoint](./DefinitionEntry.md) | ProjectArchitecture.kt, which only calls the group functions and belongs to no layer |
 | [Definition sections](./DefinitionSections.md) | DocumentSections.kt, the section headings every group and role writes through |
-| [Group definition](./GroupDefinition.md) | groups/<Name>Group.kt, one group of the definition, which lists its roles by calling their functions |
-| [Role definition](./RoleDefinition.md) | roles/<Name>Role.kt, one role of the definition, with where its files live |
+| [Group definition](./GroupDefinition.md) | <group>/<Name>Group.kt, one group of the definition, which lists its roles by calling their functions |
+| [Role definition](./RoleDefinition.md) | <group>/<Name>Role.kt, one role of the definition, with where its files live |
 | [Generated documentation](./GeneratedDocumentation.md) | Markdown written out from this definition and committed to the repository |
 | [Layout snapshot](./LayoutSnapshot.md) | A record of every line of this definition once flattened, so people can review changes to the definition as a diff |
 | [baseline (ledger of held-back violations)](./BaselineFile.md) | A ledger of the violations that already existed when katachi was adopted, held back so the test does not fail |
@@ -63,8 +63,12 @@ architecture-test/src/test/kotlin/com/example/sample/
   *Spec.kt                                                   Architecture spec
   ProjectArchitecture.kt                                     Definition entrypoint
   DocumentSections.kt                                        Definition sections
-  groups/*Group.kt                                           Group definition
-  roles/*Role.kt                                             Role definition
+  **/
+    *Group.kt                                                Group definition
+    *Role.kt                                                 Role definition
+  */
+    *Group.kt                                                Group definition
+    *Role.kt                                                 Role definition
 docs/
   README.md                                                  Generated documentation
   **/*.md                                                    Generated documentation

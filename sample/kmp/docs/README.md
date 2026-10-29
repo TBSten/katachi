@@ -101,8 +101,8 @@ Test doubles, the test code itself, the katachi architecture definition, the doc
 - [Test code](./testing/Test.md) ... The tests of each module. commonTest for KMP modules, src/test for pure Android / pure JVM modules
 - [Definition entrypoint](./testing/DefinitionEntry.md) ... ProjectArchitecture.kt, which only calls the group functions and belongs to no layer
 - [Definition sections](./testing/DefinitionSections.md) ... DocumentSections.kt, the section headings every group and role writes through
-- [Group definition](./testing/GroupDefinition.md) ... groups/<Name>Group.kt, one group of the definition, which lists its roles by calling their functions
-- [Role definition](./testing/RoleDefinition.md) ... roles/<Name>Role.kt, one role of the definition, with where its files live
+- [Group definition](./testing/GroupDefinition.md) ... <group>/<Name>Group.kt, one group of the definition, which lists its roles by calling their functions
+- [Role definition](./testing/RoleDefinition.md) ... <group>/<Name>Role.kt, one role of the definition, with where its files live
 - [Architecture test](./testing/ProjectArchitectureTest.md) ... The single JUnit test that runs the definition, kept in src/test/kotlin of :architecture-test
 - [Architecture spec](./testing/ProjectArchitectureSpec.md) ... Tests that verify the definition and katachi itself, kept in src/test/kotlin of :architecture-test
 - [Custom processor](./testing/CustomProcessor.md) ... Processors a user adds beside the check katachi ships, kept in the processors package of :architecture-test

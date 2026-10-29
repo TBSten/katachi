@@ -1,12 +1,12 @@
 package com.example
 
-import com.example.groups.apiGroup
-import com.example.groups.appGroup
-import com.example.groups.dataGroup
-import com.example.groups.domainGroup
-import com.example.groups.gradleGroup
-import com.example.groups.testingGroup
-import com.example.groups.toolGroup
+import com.example.api.apiGroup
+import com.example.app.appGroup
+import com.example.data.dataGroup
+import com.example.domain.domainGroup
+import com.example.gradle.gradleGroup
+import com.example.testing.testingGroup
+import com.example.tool.toolGroup
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
@@ -14,12 +14,14 @@ import me.tbsten.katachi.dsl.architecture
 /**
  * The architecture of this sample, described with katachi.
  *
- * The definition is split one declaration per file: `roles/<Name>Role.kt` holds one role and
- * `groups/<Name>Group.kt` holds one group, which says what it is made of by calling the role
- * functions in order. Both are extensions on `DeclarationContainerScope` - the scope that
- * `architecture { }` and `"...".group { }` share - so a role can be moved into another group
- * without touching the role's own file. This file only calls the seven group functions (the `Endpoint` template set is declared
- * inside `groups/ApiGroup.kt`, in the `api` group), so it
+ * The definition is split one declaration per file: `<Name>Group.kt` holds one group, in
+ * the directory named after it (`domain/DomainGroup.kt`), and says what it is made of by
+ * calling the role functions in order. `<Name>Role.kt` holds one role, in the directory of the
+ * group that calls it (`domain/ServiceRole.kt`); a role no group calls would sit here, next to
+ * this file. Both are extensions on `DeclarationContainerScope` - the scope that
+ * `architecture { }` and `"...".group { }` share - so a role moves into another group by moving
+ * its file, with its body unchanged. This file only calls the seven group functions (the `Endpoint` template set is declared
+ * inside `api/ApiGroup.kt`, in the `api` group), so it
  * stays short no matter how many roles the project grows.
  *
  * None of those functions may be `inline`. An inlined frame reports the caller's file with a
@@ -37,7 +39,7 @@ import me.tbsten.katachi.dsl.architecture
  * covered by some role, and anything else fails `ProjectArchitectureTest`.
  *
  * `baseline()` holds back the violations recorded in `katachi-baseline.json`
- * (declared by `roles/BaselineFileRole.kt`). Three are left in on purpose, as the demo of it: see
+ * (declared by `testing/BaselineFileRole.kt`). Three are left in on purpose, as the demo of it: see
  * `service/LegacyHealthCheck.kt`, `service/LegacyStatusService.kt` and
  * `controller/health/LegacyStatusController.kt`.
  */

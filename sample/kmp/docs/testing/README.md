@@ -38,8 +38,8 @@ is the text seen by whoever reviews the diff of a changed definition.
 | [Test code](./Test.md) | The tests of each module. commonTest for KMP modules, src/test for pure Android / pure JVM modules |
 | [Definition entrypoint](./DefinitionEntry.md) | ProjectArchitecture.kt, which only calls the group functions and belongs to no layer |
 | [Definition sections](./DefinitionSections.md) | DocumentSections.kt, the section headings every group and role writes through |
-| [Group definition](./GroupDefinition.md) | groups/<Name>Group.kt, one group of the definition, which lists its roles by calling their functions |
-| [Role definition](./RoleDefinition.md) | roles/<Name>Role.kt, one role of the definition, with where its files live |
+| [Group definition](./GroupDefinition.md) | <group>/<Name>Group.kt, one group of the definition, which lists its roles by calling their functions |
+| [Role definition](./RoleDefinition.md) | <group>/<Name>Role.kt, one role of the definition, with where its files live |
 | [Architecture test](./ProjectArchitectureTest.md) | The single JUnit test that runs the definition, kept in src/test/kotlin of :architecture-test |
 | [Architecture spec](./ProjectArchitectureSpec.md) | Tests that verify the definition and katachi itself, kept in src/test/kotlin of :architecture-test |
 | [Custom processor](./CustomProcessor.md) | Processors a user adds beside the check katachi ships, kept in the processors package of :architecture-test |
@@ -57,8 +57,9 @@ app/android/src/test/kotlin/com/example/kmp/app/*{Spec,Test}.kt  Test code
 architecture-test/src/test/kotlin/com/example/kmp/
   ProjectArchitecture.kt                                         Definition entrypoint
   DocumentSections.kt                                            Definition sections
-  groups/*Group.kt                                               Group definition
-  roles/*Role.kt                                                 Role definition
+  **/
+    *Group.kt                                                    Group definition
+    *Role.kt                                                     Role definition
   *Test.kt                                                       Architecture test
   *Spec.kt                                                       Architecture spec
   processors/

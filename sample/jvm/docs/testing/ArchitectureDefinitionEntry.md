@@ -15,7 +15,7 @@ definition out keeps the application's main source set at one.
 
 The one constraint keeps the entry a table of contents: it declares no group or role
 itself (an extension function on `DeclarationContainerScope`), because those are
-declared in `groups/` and `roles/`.
+declared in `<Name>Group.kt` and `<Name>Role.kt`, in the directory named after each group.
 
 ## Placement
 
@@ -33,6 +33,6 @@ declared in `groups/` and `roles/`.
 
 ## Forbidden contents
 
-- A group or a role declared in this file. Those go in `groups/` and `roles/`
+- A group or a role declared in this file. Those go in `<Name>Group.kt` and `<Name>Role.kt`
 - Application code. Creating `src/main/kotlin` in `:architecture-test` fails as files that
   no role covers

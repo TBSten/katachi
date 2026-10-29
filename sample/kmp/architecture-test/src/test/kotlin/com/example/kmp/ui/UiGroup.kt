@@ -1,0 +1,63 @@
+package com.example.kmp.ui
+
+import com.example.kmp.feature.featureGroup
+import com.example.kmp.forbiddenContents
+import com.example.kmp.ui.component
+import com.example.kmp.ui.componentPreview
+import com.example.kmp.ui.navigation
+import com.example.kmp.ui.previewRoot
+import com.example.kmp.ui.theme
+import com.example.kmp.ui.uiCore
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+/**
+ * The shared UI modules a screen draws from: `:ui` and `:navigation`.
+ *
+ * The per-feature roles (`Screen` / `ViewModel` / `Route`) live in [featureGroup] instead. See
+ * the note there for why the two are separate groups.
+ *
+ * Every layout here starts at the directory the build puts the module in (`"ui"`), then the
+ * source set (`"commonMain".sourceSet`), then the package, written out as
+ * `com/example/kmp/ui`.
+ *
+ * Component / Theme / UiCore all live in the one `:ui` module. They used to be
+ * `:ui:component` / `:ui:theme` / `:ui:core`; now they are packages of `:ui`, which is the
+ * shape katachi has to be able to describe.
+ */
+fun DeclarationContainerScope.uiGroup() = "ui".group {
+    title = "UI"
+    summary = ":ui and :navigation. Shared UI that belongs to no screen, and the definition of destinations"
+    description = """
+        Two shared modules that screens draw from. Whatever belongs to no particular screen
+        gathers here.
+
+        `:ui` is one module split into packages: `component` (parts), `theme` (appearance),
+        `core` (the types for screen state) and `preview` (the base for previews), each one role.
+        The previews of components are here too, in `component/preview` right below the
+        components; the previews of screens are in the feature group.
+        They used to be separate modules such as `:ui:component`, but were merged into packages.
+        katachi needs to be able to say "this role is this package of this module", and it is
+        also the shape more often seen in real projects.
+
+        `:navigation` sits in the same group but does not depend on Compose. It holds only the
+        list of destinations and the current location; how to show them is the job of `AppRoot`
+        in `:app:android`. It is on the side that screens draw from, like `:ui`, so it is placed
+        in this group.
+
+        Every layout starts from the module's directory, then the source set, then the package.
+        The policy of the whole sample is to write exactly what the build says.
+    """.trimIndent()
+    forbiddenContents = """
+        - Per-screen Screen / ViewModel / Route. Those belong to the feature group
+        - Dependencies on feature modules. Dependencies always point from a feature to `:ui` /
+          `:navigation`; a single reference the other way makes the shared modules grow with every
+          screen added
+    """.trimIndent()
+
+    component()
+    theme()
+    uiCore()
+    componentPreview()
+    previewRoot()
+    navigation()
+}

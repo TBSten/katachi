@@ -1,16 +1,16 @@
 package com.example.kmp
 
-import com.example.kmp.groups.appGroup
-import com.example.kmp.groups.dataGroup
-import com.example.kmp.groups.featureGroup
-import com.example.kmp.groups.gradleGroup
-import com.example.kmp.groups.testingGroup
-import com.example.kmp.groups.toolGroup
-import com.example.kmp.groups.uiGroup
-import com.example.kmp.roles.featureComponent
-import com.example.kmp.roles.route
-import com.example.kmp.roles.screenPreview
-import com.example.kmp.roles.viewModel
+import com.example.kmp.app.appGroup
+import com.example.kmp.data.dataGroup
+import com.example.kmp.feature.featureComponent
+import com.example.kmp.feature.featureGroup
+import com.example.kmp.feature.route
+import com.example.kmp.feature.screenPreview
+import com.example.kmp.feature.viewModel
+import com.example.kmp.gradle.gradleGroup
+import com.example.kmp.testing.testingGroup
+import com.example.kmp.tool.toolGroup
+import com.example.kmp.ui.uiGroup
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe

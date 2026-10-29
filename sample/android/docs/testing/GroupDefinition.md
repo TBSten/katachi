@@ -2,12 +2,15 @@
 
 # Group definition
 
-groups/<Name>Group.kt, one group of the definition, which lists its roles by calling their functions
+<group>/<Name>Group.kt, one group of the definition, which lists its roles by calling their functions
 
-One group of the definition per file, in `groups/<Name>Group.kt`, and the file name
-says which group it is. A group says what it is made of by calling the role functions
-in order. Only `*Group.kt` may sit in `groups/`, so a shared helper slipping in as
-another kind of file becomes an `[UnexpectedFile]`.
+One group of the definition per file, in `<group>/<Name>Group.kt`, and the file name
+says which group it is. The directory is the group's name as written in
+`"ui".group { }`, lower case and joined (`ui/UiGroup.kt`), and a group inside a group
+sits in a directory inside it. A group says what it is made of by calling the role
+functions in order, and the roles it calls sit beside it in that directory. A file that
+is not a `*Group.kt` or `*Role.kt` in there, such as a shared helper, becomes an
+`[UnexpectedFile]`.
 
 `:architecture-test` is a plain `kotlin("jvm")` module that belongs to no layer of the
 app. It is not an Android module because katachi is a JVM library and the definition can
@@ -22,8 +25,9 @@ group says something.
 
 | Path | When to use |
 |---|---|
-| `architecture-test/src/test/kotlin/com/example/sample/groups/*Group.kt` |  |
+| `architecture-test/src/test/kotlin/com/example/sample/**/*Group.kt` |  |
+| `architecture-test/src/test/kotlin/com/example/sample/*/*Group.kt` |  |
 
 ## Examples
 
-- `groups/UiGroup.kt` ... The declaration of the ui group
+- `ui/UiGroup.kt` ... The declaration of the ui group

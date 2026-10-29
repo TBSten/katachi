@@ -102,8 +102,8 @@ What exists to verify the app: shared fakes, tests, the architecture definition,
 - [Architecture spec](./testing/ProjectArchitectureSpec.md) ... Tests that verify the definition and katachi itself, kept in src/test/kotlin of :architecture-test
 - [Definition entrypoint](./testing/DefinitionEntry.md) ... ProjectArchitecture.kt, which only calls the group functions and belongs to no layer
 - [Definition sections](./testing/DefinitionSections.md) ... DocumentSections.kt, the section headings every group and role writes through
-- [Group definition](./testing/GroupDefinition.md) ... groups/<Name>Group.kt, one group of the definition, which lists its roles by calling their functions
-- [Role definition](./testing/RoleDefinition.md) ... roles/<Name>Role.kt, one role of the definition, with where its files live
+- [Group definition](./testing/GroupDefinition.md) ... <group>/<Name>Group.kt, one group of the definition, which lists its roles by calling their functions
+- [Role definition](./testing/RoleDefinition.md) ... <group>/<Name>Role.kt, one role of the definition, with where its files live
 - [Generated documentation](./testing/GeneratedDocumentation.md) ... Markdown written out from this definition and committed to the repository
 - [Layout snapshot](./testing/LayoutSnapshot.md) ... A record of every line of this definition once flattened, so people can review changes to the definition as a diff
 - [baseline (ledger of held-back violations)](./testing/BaselineFile.md) ... A ledger of the violations that already existed when katachi was adopted, held back so the test does not fail

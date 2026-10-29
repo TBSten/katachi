@@ -2,11 +2,13 @@
 
 # Role definition
 
-roles/<Name>Role.kt, one role of the definition, with where its files live
+<group>/<Name>Role.kt, one role of the definition, with where its files live
 
-One role of the definition per file, in `roles/<Name>Role.kt`, and the file name says
-which role it is (the role `"UiCore"` is in `roles/UiCoreRole.kt`). Only `*Role.kt` may
-sit in `roles/`, so a shared helper slipping in as another kind of file becomes an
+One role of the definition per file, in `<group>/<Name>Role.kt`, and the file name says
+which role it is (the role `"UiCore"` is in `ui/UiCoreRole.kt`, because `uiGroup()`
+calls `uiCore()`). The directory is the one of the group that calls the role. A role
+that no group calls sits next to `ProjectArchitecture.kt`. A file that is not a
+`*Group.kt` or `*Role.kt` in a group directory, such as a shared helper, becomes an
 `[UnexpectedFile]`.
 
 Not called from anywhere on its own: add the call to the group this role belongs to
@@ -16,8 +18,8 @@ once it says something.
 
 | Path | When to use |
 |---|---|
-| `architecture-test/src/test/kotlin/com/example/kmp/roles/*Role.kt` |  |
+| `architecture-test/src/test/kotlin/com/example/kmp/**/*Role.kt` |  |
 
 ## Examples
 
-- `roles/ScreenRole.kt` ... The declaration of the Screen role
+- `feature/ScreenRole.kt` ... The declaration of the Screen role

@@ -447,15 +447,15 @@ val sampleBuilds = listOf(
                     ),
                 ),
                 SampleTemplateRun(
-                    args = listOf("template=RoleDefinition", "name=KatachiSmoke"),
+                    args = listOf("template=RoleDefinition", "name=KatachiSmoke", "group=ui"),
                     generatedFiles = listOf(
-                        "architecture-test/src/test/kotlin/com/example/sample/roles/KatachiSmokeRole.kt",
+                        "architecture-test/src/test/kotlin/com/example/sample/ui/KatachiSmokeRole.kt",
                     ),
                 ),
                 SampleTemplateRun(
-                    args = listOf("template=GroupDefinition", "name=KatachiSmoke"),
+                    args = listOf("template=GroupDefinition", "name=KatachiSmoke", "dir=katachismoke"),
                     generatedFiles = listOf(
-                        "architecture-test/src/test/kotlin/com/example/sample/groups/KatachiSmokeGroup.kt",
+                        "architecture-test/src/test/kotlin/com/example/sample/katachismoke/KatachiSmokeGroup.kt",
                     ),
                 ),
             ),

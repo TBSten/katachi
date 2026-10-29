@@ -9,9 +9,9 @@ JUnit test that calls `projectArchitecture.assert()`. This is the only test a pr
 adopting katachi writes. The tests in which a feature module checks its own ViewModel
 are a different role (feature test) and live in each feature's `src/test`.
 
-Files named `*Test.kt` directly under the package (outside `groups/` and `roles/`) are
+Files named `*Test.kt` directly under the package (outside the group directories) are
 this role. That tells them apart from the architecture definition roles in the same
-module: putting a test in `roles/` gives an `[UnexpectedFile]`, and conversely a
+module: putting a test in a group directory gives an `[UnexpectedFile]`, and conversely a
 definition helper cannot be placed next to the test.
 
 ## Placement

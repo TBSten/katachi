@@ -2,7 +2,7 @@
 
 # Group definition
 
-One group of the katachi definition, declared in `groups/<Name>Group.kt`
+One group of the katachi definition, declared in `<Name>Group.kt`, in the directory named after the group
 
 One group per file, named after the group with a `Group` suffix. The function inside says what
 the group is made of by calling the role functions in order.
@@ -14,12 +14,12 @@ and an inlined frame reports the caller's file with a line number past its end.
 
 | Path | When to use |
 |---|---|
-| `architecture-test/src/test/kotlin/com/example/groups/*Group.kt` |  |
+| `architecture-test/src/test/kotlin/com/example/**/*Group.kt` |  |
 
 ## Examples
 
-- `groups/CoreGroup.kt` ... A group made of three roles
+- `core/CoreGroup.kt` ... A group made of three roles
 
 ## Forbidden contents
 
-Role declarations. A role belongs to the role definition role, in `roles/`.
+Role declarations. A role belongs to the role definition role, in the directory of the group that calls it.
