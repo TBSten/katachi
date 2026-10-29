@@ -33,9 +33,9 @@ class RealTemplateSetContractTest {
         samples.forEach { expected ->
             val rows = rowsOf(expected.sample)
             val sets = rows.filter { it.set != null }
-            assertEquals(expected.sample, listOf(expected.set), sets.map { it.template })
+            assertTrue("${expected.sample}: ${expected.set} not in ${sets.map { it.template }}", expected.set in sets.map { it.template })
             val plain = rows.filter { it.set == null }.map { it.template }.toSet()
-            val set = sets.single()
+            val set = sets.single { it.template == expected.set }
             val members = requireNotNull(set.set).members.map { it.template }
             assertEquals(expected.sample, expected.members, members)
             assertTrue("${expected.sample}: members $members not in $plain", plain.containsAll(expected.members))
@@ -45,7 +45,7 @@ class RealTemplateSetContractTest {
     @Test
     fun `組の行は組のパラメータと全メンバのファイルと生成コマンドを持つ`() {
         samples.forEach { expected ->
-            val set = rowsOf(expected.sample).single { it.set != null }
+            val set = rowsOf(expected.sample).single { it.template == expected.set }
             val detail = requireNotNull(set.detail) { "${expected.sample}: the set has no detail" }
             assertEquals(expected.sample, listOf(expected.parameter), detail.parameters.map { it.name })
             assertEquals(expected.sample, expected.members.size, requireNotNull(set.set).members.size)
@@ -60,7 +60,7 @@ class RealTemplateSetContractTest {
         samples.forEach { expected ->
             val rows = rowsOf(expected.sample)
             assertEquals(expected.sample, rows.indexOfFirst { it.set != null }, rows.indexOfLast { it.set == null } + 1)
-            assertEquals(expected.sample, expected.set.substringBeforeLast('.'), rows.single { it.set != null }.groupPath)
+            assertEquals(expected.sample, expected.set.substringBeforeLast('.'), rows.single { it.template == expected.set }.groupPath)
         }
     }
 }
