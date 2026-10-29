@@ -1,9 +1,9 @@
 // Playwright の webServer.command から呼ぶ。docs を写し（repo-copy）、写しの中で astro dev を立てる。
 // 終了の合図（SIGTERM / SIGINT）が来たら dev も止める。
 import { spawn, spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, rmSync, symlinkSync } from 'node:fs'
+import { existsSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { COPY_DOCS, DOCS_DIR, FEEDBACK_OUT, PORT, REPO_ROOT } from './env.mjs'
+import { COPY_CONFIG, COPY_DOCS, DOCS_DIR, FEEDBACK_OUT, PORT, REPO_ROOT, VITE_CACHE } from './env.mjs'
 
 mkdirSync(COPY_DOCS, { recursive: true })
 const rsync = spawnSync(
@@ -16,12 +16,22 @@ for (const name of ['node_modules', 'public']) {
 	const link = join(COPY_DOCS, name)
 	if (!existsSync(link)) symlinkSync(join(DOCS_DIR, name), link)
 }
+// Vite のキャッシュを写し専用にする（env.mjs の VITE_CACHE）。設定は本物の astro.config.mjs を読み、cacheDir だけ差し替える。
+writeFileSync(
+	join(COPY_DOCS, COPY_CONFIG),
+	[
+		'// e2e/dev-server.mjs が書く。手で直さない。',
+		"import config from './astro.config.mjs'",
+		`export default { ...config, vite: { ...config.vite, cacheDir: ${JSON.stringify(VITE_CACHE)} } }`,
+		'',
+	].join('\n'),
+)
 // 前回の記録を持ち越さない
 rmSync(FEEDBACK_OUT, { recursive: true, force: true })
 mkdirSync(FEEDBACK_OUT, { recursive: true })
 
 // AI エージェントの環境では astro が背景に回って終わってしまうので、前面で動かす（--ignore-lock）。
-const dev = spawn('pnpm', ['exec', 'astro', 'dev', '--port', String(PORT), '--strictPort', '--ignore-lock'], {
+const dev = spawn('pnpm', ['exec', 'astro', 'dev', '--config', COPY_CONFIG, '--port', String(PORT), '--strictPort', '--ignore-lock'], {
 	cwd: COPY_DOCS,
 	stdio: 'inherit',
 	env: {

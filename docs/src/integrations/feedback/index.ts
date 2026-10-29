@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 import type { AstroIntegration } from 'astro'
 import { createBuildContext } from './server/build-info'
 import { lanWarning } from './server/host'
+import { devViteConfig } from './server/optimize-deps'
 import { saveFeedback } from './server/save'
 import { createFileStore } from './server/store'
 import { registerMemoServer } from './memo/server'
@@ -31,8 +32,8 @@ export default function feedback(): AstroIntegration {
 			'astro:config:setup': ({ command, addDevToolbarApp, injectScript, updateConfig }) => {
 				if (command !== 'dev') return
 				isDev = true
-				// スクリーンショットの依存は撮るときに動的 import する。先に束ねておかないと、初めて撮った瞬間に Vite がページを再読み込みする。
-				updateConfig({ vite: { optimizeDeps: { include: ['modern-screenshot'] } } })
+				// 撮影の依存と toolbar アプリの入口を Vite の事前バンドルから外す（理由は server/optimize-deps.ts）。
+				updateConfig({ vite: devViteConfig() })
 				injectScript('head-inline', LOG_BUFFER_SCRIPT)
 				addDevToolbarApp({
 					id: APP_ID,

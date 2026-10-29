@@ -1,9 +1,10 @@
-import { defineToolbarApp } from 'astro/toolbar'
+// astro/toolbar の defineToolbarApp は使わず、型だけを astro から取る（astro/toolbar を import すると Vite の deps/ を経由する。理由は server/optimize-deps.ts）。
+import type { DevToolbarApp } from 'astro'
 import { createFlow } from './flow'
 import { enterMode } from './mode'
 import { setupQuick } from './quick'
 
-export default defineToolbarApp({
+export default {
 	init(_canvas, app, server) {
 		const flow = createFlow(app, server)
 		// モードの外でも、テキストを選んで右クリックしたらフィードバックできるようにする（常設のリスナーはこの1つ）。
@@ -18,4 +19,4 @@ export default defineToolbarApp({
 			}
 		})
 	},
-})
+} satisfies DevToolbarApp

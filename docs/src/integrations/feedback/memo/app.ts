@@ -1,11 +1,12 @@
 // Memo の toolbar アプリ。押すとパネルが開き、もう一度押す・×・Esc で閉じる（UI は全部消える）。
-import { defineToolbarApp } from 'astro/toolbar'
+// astro/toolbar の defineToolbarApp は使わず、型だけを astro から取る（astro/toolbar を import すると Vite の deps/ を経由する。理由は server/optimize-deps.ts）。
+import type { DevToolbarApp } from 'astro'
 import { EVENT_MEMO_REQUEST, EVENT_MEMO_RESULT, type MemoResult } from '../core/protocol'
 import { createRpc } from '../shared/rpc'
 import type { MemoCall } from './controller'
 import { openMemo, type MemoSession } from './session'
 
-export default defineToolbarApp({
+export default {
 	init(_canvas, app, server) {
 		const rpc = createRpc<Parameters<MemoCall>[0], MemoResult>(server, EVENT_MEMO_REQUEST, EVENT_MEMO_RESULT)
 		let session: MemoSession | null = null
@@ -26,4 +27,4 @@ export default defineToolbarApp({
 			})
 		})
 	},
-})
+} satisfies DevToolbarApp
