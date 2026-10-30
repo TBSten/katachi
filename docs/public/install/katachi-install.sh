@@ -4538,10 +4538,10 @@ cmd_compare_violations() {
 	say ""
 	say "リファクタリングで振る舞いが変わっています。前のログを取り直すのではなく、定義のほうを直してください。
 分けた定義ファイルが [UnexpectedFile] になっているなら、${MODULE_DIR}/ を受け持つ Role の layout { } が
-<group>/<role>/<Role>.kt の深さまで受け入れていません。" \
+定義のファイルの最大の深さ（<group>/<sub>/<Role>Role.kt など）まで受け入れていません。" \
 		"The refactoring changed the behavior. Fix the definition instead of capturing the before log again.
 If the split definition files show up as [UnexpectedFile], the layout { } of the Role that owns
-${MODULE_DIR}/ does not accept files as deep as <group>/<role>/<Role>.kt."
+${MODULE_DIR}/ does not accept files as deep as the deepest definition file (e.g. <group>/<sub>/<Role>Role.kt)."
 	exit 1
 }
 

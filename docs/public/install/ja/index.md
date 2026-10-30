@@ -665,10 +665,10 @@ sh $CLI test --save before-refactor
 
 **リファクタリングのチェックリスト** 上から順に見て、当てはまらないものは飛ばしてかまいません。
 
-- [ ] **ファイル・パッケージを分けた。** 1-3 の `oneRolePerFile` が `yes` なら、1 Role 1 ファイル（`<group>/<role>/<Role>.kt`）、1 group 1 ファイル（`<group>/<Group>.kt`）、`ProjectArchitecture.kt` は group を呼ぶだけ。命名規則は下の「定義のファイルの置き方」。`no` なら、この項目は飛ばす
+- [ ] **ファイル・パッケージを分けた。** 1-3 の `oneRolePerFile` が `yes` なら、1 Role 1 ファイル（`<group>/<Role>Role.kt`）、1 group 1 ファイル（`<group>/<Group>Group.kt`）、`ProjectArchitecture.kt` は group を呼ぶだけ。命名規則は下の「定義のファイルの置き方」。`no` なら、この項目は飛ばす
 - [ ] **group 名・ディレクトリ名が `.gitignore` に当たっていない。** group 名に `build` / `out` など `.gitignore` に当たる名前を使わない（例: `buildLogic`）。分けたあと `git ls-files --others --ignored --exclude-standard <検査用モジュール>/src` を実行し、何も出力されないこと（定義のファイルが無視されていないこと）を確かめる。無視されたファイルは `gitTracked()` に載らず、定義の抜けに気づけない
 - [ ] **分割に使う関数を `inline` にしていない。** katachi は違反の宣言位置をスタックトレースから読むので、`inline` にすると行番号がずれる
-- [ ] **分けた定義ファイルが検査に通る。** 定義ファイル自身も検査の対象です。検査用モジュールを受け持つ Role の `layout { }` が `<group>/<role>/<Role>.kt` の深さまで受け入れること
+- [ ] **分けた定義ファイルが検査に通る。** 定義ファイル自身も検査の対象です。検査用モジュールを受け持つ Role の `layout { }` が、定義のファイルの最大の深さ（`<group>/<sub>/<Role>Role.kt` など。入れ子の group の深さ + 1）まで受け入れること
 - [ ] **1 つの Role = 1 種類のファイル。** すべての Role を 3-2 の「1 つの Role = 1 種類のファイル」の3つの問いで見直した。`lint` の警告が 0 件か、残すものは理由を `sh $CLI warn 3 "..."` に書いた
 - [ ] **Gradle まわりは `gradle()` の1行。** Gradle のファイルを手書きの Role で宣言していない（`buildSrc` と `includeBuild` したビルドは除く）。ビルドファイルへの制約（レポートで `constraintOnly` の印が付いたもの）は、`gradle { buildScript { } }` などの hook に書いた（1 つのモジュールだけを見る制約は、`subject.files` をパスで絞った）
 - [ ] **受け皿の Role が残っていない。** `anyFile()` / `ignore()` の寄せ集めや、「その場所なら何でもよい」`layout` の Role に、ファイル名のパターンか中身の制約（`ktFileContent { }` / `konsist { }`）が付いている（3-2 の「配置だけで終わらせない」）
@@ -684,13 +684,15 @@ sh $CLI test --save before-refactor
 ```
 <パッケージ>/test/architecture/
 ├── ProjectArchitecture.kt            architecture { } の本体。group の関数を呼ぶだけ
-├── <group>/<Group>.kt                group の定義               例: domain/Domain.kt
-└── <group>/<role>/<Role>.kt          Role の定義                 例: domain/useCase/UseCase.kt
+├── <Role>Role.kt                     group に属さない Role の定義   例: ProjectReadmeRole.kt
+├── <group>/<Group>Group.kt           group の定義               例: app/AppGroup.kt
+├── <group>/<Role>Role.kt             その group が呼ぶ Role の定義  例: app/EntrypointRole.kt
+└── <group>/<sub>/<Sub>Group.kt       入れ子の group の定義       例: domain/model/ModelGroup.kt
 ```
 
-- ディレクトリ名は group 名・ Role 名を先頭小文字にしたもの（`useCase`）、ファイル名は先頭大文字（`UseCase.kt`）。package 宣言はディレクトリに合わせる
-- group の中の group は、同じ形で1段深くする（`domain/model/Model.kt`、`domain/model/entity/Entity.kt`）。1-3 の `nestedGroups` が `no` なら group は 1 段だけにし、入れ子の代わりに名前で分ける
-- group に属さない Role は `<role>/<Role>.kt`（例: `projectReadme/ProjectReadme.kt`）
+- ディレクトリ名は group 名を先頭小文字にしたもの（`domain`）。Role にはディレクトリを作らない。ファイル名は group が `<Group>Group.kt`（`AppGroup.kt`）、Role が `<Role>Role.kt`（`EntrypointRole.kt`）。関数名は先頭小文字（`fun DeclarationContainerScope.appGroup()`、`entrypoint()`）。package 宣言はディレクトリに合わせる
+- group の中の group は、同じ形で1段深くする（`domain/model/ModelGroup.kt`、その中の Role は `domain/model/EntityRole.kt`）。1-3 の `nestedGroups` が `no` なら group は 1 段だけにし、入れ子の代わりに名前で分ける
+- group に属さない Role は定義のルート直下の `<Role>Role.kt`（例: `ProjectReadmeRole.kt`）。Role は、それを呼ぶ group のディレクトリに置く
 - 1ファイルに書くのは group か Role の**1つだけ**。group のファイルは、その下の Role の関数を呼ぶだけにする
 - 分けた関数は `DeclarationContainerScope` の拡張関数にし、呼ぶ側で import する（拡張関数は完全修飾名では呼べない）
 
