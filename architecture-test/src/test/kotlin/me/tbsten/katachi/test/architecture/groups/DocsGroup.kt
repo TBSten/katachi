@@ -2,6 +2,7 @@ package me.tbsten.katachi.test.architecture.groups
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.test.architecture.roles.apiDocsModule
+import me.tbsten.katachi.test.architecture.roles.docsScript
 import me.tbsten.katachi.test.architecture.roles.docsSite
 import me.tbsten.katachi.test.architecture.roles.internalGuide
 import me.tbsten.katachi.test.architecture.roles.projectDocument
@@ -22,6 +23,7 @@ fun DeclarationContainerScope.docsGroup() = "docs".group {
     title = "ドキュメント"
 
     docsSite()
+    docsScript()
     internalGuide()
     projectDocument()
     apiDocsModule()

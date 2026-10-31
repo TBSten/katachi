@@ -2,6 +2,8 @@ package me.tbsten.katachi.test.architecture.groups
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.test.architecture.roles.architectureDefinition
+import me.tbsten.katachi.test.architecture.roles.docsE2eTest
+import me.tbsten.katachi.test.architecture.roles.docsUnitTest
 import me.tbsten.katachi.test.architecture.roles.spec
 import me.tbsten.katachi.test.architecture.roles.specSupport
 
@@ -25,4 +27,6 @@ fun DeclarationContainerScope.testingGroup() = "testing".group {
     spec()
     specSupport()
     architectureDefinition()
+    docsE2eTest()
+    docsUnitTest()
 }

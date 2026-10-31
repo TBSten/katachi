@@ -8,6 +8,8 @@ import me.tbsten.katachi.test.architecture.roles.dokkaPlugin
 import me.tbsten.katachi.test.architecture.roles.git
 import me.tbsten.katachi.test.architecture.roles.ideDictionary
 import me.tbsten.katachi.test.architecture.roles.ideRunConfiguration
+import me.tbsten.katachi.test.architecture.roles.installScript
+import me.tbsten.katachi.test.architecture.roles.issueTemplate
 
 /**
  * The roles of the tooling around the project that is not the build itself.
@@ -29,4 +31,6 @@ fun DeclarationContainerScope.toolGroup() = "tool".group {
     ideDictionary()
     dokkaPlugin()
     benchmark()
+    issueTemplate()
+    installScript()
 }
