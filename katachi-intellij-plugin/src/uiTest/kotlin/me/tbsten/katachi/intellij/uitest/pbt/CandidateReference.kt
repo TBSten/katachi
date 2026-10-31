@@ -98,7 +98,10 @@ internal object CandidateReference {
             var last = 0
             for (match in capturePart.findAll(segment)) {
                 append(segment.substring(last, match.range.first))
-                append(entered[match.groupValues[1]]?.takeIf { it.isNotBlank() } ?: return null)
+                val value = entered[match.groupValues[1]]?.takeIf { it.isNotBlank() } ?: return null
+                // katachi refuses such a value for the capture itself, whatever the text around it makes (`c0=..` in `a${c0}Dir` is no directory).
+                if (refusedAsCaptureValue(value)) return null
+                append(value)
                 last = match.range.last + 1
             }
             append(segment.substring(last))
@@ -107,6 +110,21 @@ internal object CandidateReference {
         // A control character (a line break typed into the field) is no directory name katachi takes, so the levels below it offer nothing.
         if (text.any { Character.isISOControl(it) }) return null
         return text
+    }
+
+    /**
+     * Whether katachi takes [value] as no capture value, written here from its rule and not by calling the plugin's: a value that is
+     * blank, `.` or `..`, holds a path separator, a character no file name may have (or a control or line-separating one), starts
+     * or ends in whitespace, ends in a dot, or names a Windows reserved device (`CON`, `COM1`, …, with or without an extension).
+     */
+    private fun refusedAsCaptureValue(value: String): Boolean {
+        if (value.isBlank() || value == "." || value == "..") return true
+        if (value.any { it == '/' || it == '\\' }) return true
+        val unusable = "*?[]{}:\"<>|"
+        if (value.any { it in unusable || Character.isISOControl(it) || Character.getType(it).let { t -> t == Character.LINE_SEPARATOR.toInt() || t == Character.PARAGRAPH_SEPARATOR.toInt() } }) return true
+        if (value.first().isWhitespace() || value.last().isWhitespace() || value.last() == '.') return true
+        val reserved = setOf("CON", "PRN", "AUX", "NUL") + (1..9).flatMap { listOf("COM$it", "LPT$it") }
+        return value.substringBefore('.').uppercase() in reserved
     }
 
     /** The first pattern of [patterns] that holds `${capture}`, as the plugin picks the file whose path a capture sits in. */
