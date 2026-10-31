@@ -36,11 +36,12 @@ class ArchModuleNameSmokeTest {
         project.resolve(STRAY).also { it.parent.toFile().mkdirs() }.writeText("package com.example.service.helpers\n\nclass NoRoleProbe\n")
         val service = project.resolve(SERVICE).toString()
         val stray = project.resolve(STRAY).toString()
+        val allowedBy = ServiceRoleFacts.of(project).let { "allowed by ${it.allowedDeclaration} (ServiceRole.kt:${it.allowedLine})" }
 
         ide.run(project) { _, bridge ->
             // 1. The ◆ names the line of the rule exactly as with :architecture-test.
             openFile(SERVICE, waitForCodeAnalysis = false)
-            waitForSmoke("the ◆ on HealthService", bridge, service, timeout = 15.minutes) { "allowed by internal.optional() class HealthService (ServiceRole.kt:80)" in bridge.describeGutter(service) }
+            waitForSmoke("the ◆ on HealthService", bridge, service, timeout = 15.minutes) { allowedBy in bridge.describeGutter(service) }
             bridge.shot(ide.screenshots, "1-service-gutter")
 
             // 2. The check's row in the menu runs the module under its real path.

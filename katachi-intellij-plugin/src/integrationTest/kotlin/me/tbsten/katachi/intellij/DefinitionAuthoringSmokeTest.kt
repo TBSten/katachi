@@ -35,8 +35,10 @@ class DefinitionAuthoringSmokeTest {
         assertTrue(brokenLine > 0, "$LAYOUT_LINE is not in RepositoryRole.kt")
         // `.template { }` needs its import and the opt-in; both go on lines the file already has, so the mistake's line number stays.
         val brokenText = original.replace(LAYOUT_LINE, BROKEN_LINE)
-            .replaceFirst("package com.example.roles", "@file:OptIn(me.tbsten.katachi.ExperimentalKatachiApi::class) package com.example.roles")
+            .replaceFirst(REPOSITORY_PACKAGE, "@file:OptIn(me.tbsten.katachi.ExperimentalKatachiApi::class) $REPOSITORY_PACKAGE")
             .replaceFirst("import me.tbsten.katachi.dsl.kotlin.ktFile", "import me.tbsten.katachi.dsl.kotlin.ktFile; import me.tbsten.katachi.dsl.template")
+        // replaceFirst changes nothing when the text is gone; a mistake without its opt-in or import would fail for another reason.
+        assertTrue("@file:OptIn" in brokenText && "import me.tbsten.katachi.dsl.template" in brokenText, "RepositoryRole.kt no longer has the package line or the ktFile import the mistake is stitched onto")
         val quote = serviceText.indexOf(CAPTURE_VALUE) + CAPTURE_VALUE.length
 
         ide.run(project) { _, bridge ->
@@ -92,9 +94,10 @@ class DefinitionAuthoringSmokeTest {
     }
 
     private companion object {
-        const val ROLES = "architecture-test/src/test/kotlin/com/example/roles"
-        const val REPOSITORY = "$ROLES/RepositoryRole.kt"
-        const val SERVICE = "$ROLES/ServiceRole.kt"
+        const val EXAMPLE = "architecture-test/src/test/kotlin/com/example"
+        const val REPOSITORY = "$EXAMPLE/data/RepositoryRole.kt"
+        const val SERVICE = "$EXAMPLE/domain/ServiceRole.kt"
+        const val REPOSITORY_PACKAGE = "package com.example.data"
         const val BANNER = "banner=katachi could not read the definition"
         const val CAPTURE_VALUE = "captureValue(\""
         const val LAYOUT_LINE = "mainSourceSet / kotlin / \"com/example/repository\" / \"*Repository\".ktFile()"

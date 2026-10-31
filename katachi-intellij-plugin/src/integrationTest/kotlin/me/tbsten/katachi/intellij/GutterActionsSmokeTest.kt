@@ -32,7 +32,7 @@ class GutterActionsSmokeTest {
 
     @Test
     fun `検査 quick fix banner 生成ダイアログの生成とキャンセルが利用者の操作の列のとおりに動く`() {
-        // `internal` is rejected by the "Must be public" constraint; the second file lacks what the role's ktFileContent requires.
+        // `internal` is rejected by the Service role's ktFileContent constraint; the second file lacks what the role's ktFileContent requires.
         val project = ide.prepareCopy { copy ->
             copy.resolve(PROBE).writeText("package com.example.service\n\ninternal class ProbeService\n")
             copy.resolve(BANNER).writeText("package com.example.service\n")
@@ -41,6 +41,7 @@ class GutterActionsSmokeTest {
         val probe = project.resolve(PROBE).toString()
         val banner = project.resolve(BANNER).toString()
         val health = project.resolve(SERVICE).toString()
+        val ruleLine = ServiceRoleFacts.of(project).allowedLine
 
         ide.run(project) { ideProject, bridge ->
             // 1. Run the check from the ◆ of the planted file; the underline comes when the check has run.
@@ -56,10 +57,10 @@ class GutterActionsSmokeTest {
 
             // 2. The quick fix: both fixes are listed, "Go to the rule" opens the rule's file at the rule's line.
             val highlight = bridge.describeHighlights(probe).lines().first { it.startsWith("highlight=ERROR|3:") }
-            assertTrue("Go to the rule (ServiceRole.kt:94)" in highlight && "Run the check again" in highlight, highlight)
-            assertEquals("applied=Go to the rule (ServiceRole.kt:94)", bridge.applyFix(probe, 3, "Go to the rule"))
-            waitForSmoke("ServiceRole.kt open at line 94", bridge, probe, timeout = 1.minutes, interval = 1.seconds) {
-                runCatching { bridge.describeCaret() }.getOrDefault("") == "caret=ServiceRole.kt|94"
+            assertTrue("Go to the rule (ServiceRole.kt:$ruleLine)" in highlight && "Run the check again" in highlight, highlight)
+            assertEquals("applied=Go to the rule (ServiceRole.kt:$ruleLine)", bridge.applyFix(probe, 3, "Go to the rule"))
+            waitForSmoke("ServiceRole.kt open at line $ruleLine", bridge, probe, timeout = 1.minutes, interval = 1.seconds) {
+                runCatching { bridge.describeCaret() }.getOrDefault("") == "caret=ServiceRole.kt|$ruleLine"
             }
             bridge.shot(ide.screenshots, "2-go-to-the-rule")
 

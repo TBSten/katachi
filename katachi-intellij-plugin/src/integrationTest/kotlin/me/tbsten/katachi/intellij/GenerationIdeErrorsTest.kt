@@ -114,7 +114,7 @@ class GenerationIdeErrorsTest {
      * unnamed-wildcard file declaration for the same file named with `capture("name")` and templated.
      */
     private fun addTemplates(sampleJvm: Path) {
-        val role = sampleJvm.resolve("architecture-test/src/test/kotlin/com/example/roles/RepositoryRole.kt")
+        val role = sampleJvm.resolve("architecture-test/src/test/kotlin/com/example/data/RepositoryRole.kt")
         val existing = "\"*Repository\".ktFile()"
         val source = role.readText()
         check(existing in source) { "$role no longer declares the Repository file the way this test expects" }
