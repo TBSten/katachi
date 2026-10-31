@@ -176,7 +176,7 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
       --katachi <version> katachi のバージョン（既定: init が記録した版。
                           無ければ GitHub の最新リリース）
       --kotlin <version>  Kotlin のバージョン（既定: プロジェクトから検出）
-      --no-konsist        katachi-konsist を使わない構成で生成する（konsist { } も ktFileContent { } も書けない）。
+      --no-konsist        katachi-konsist を使わない構成で生成する（ktFileContent { } が書けない）。
                           assert() に FileConstraintCheck() を渡さないので、gradle { } の hook に
                           書いた fileConstraint も評価されず、test は [UncheckedFileConstraint] で
                           失敗する（How to fix: Pass FileConstraintCheck() to assert()）
@@ -372,7 +372,7 @@ Usage:
       --katachi <version> katachi version (default: the one init recorded,
                           otherwise the latest release)
       --kotlin <version>  Kotlin version (default: detected from the project)
-      --no-konsist        Generate a setup that does not use katachi-konsist (no konsist { } or ktFileContent { }).
+      --no-konsist        Generate a setup that does not use katachi-konsist (no ktFileContent { }).
                           assert() gets no FileConstraintCheck(), so a fileConstraint written in a
                           gradle { } hook is not evaluated either, and the test fails with
                           [UncheckedFileConstraint] (How to fix: Pass FileConstraintCheck() to assert())
@@ -2468,7 +2468,7 @@ write_test_kt() {
 	*) _test_name="the project matches its declaration" ;;
 	esac
 
-	# konsist あり: FileConstraintCheck() を渡す（渡さないと konsist { } などの制約が評価されない）。
+	# konsist あり: FileConstraintCheck() を渡す（渡さないと ktFileContent { } などの制約が評価されない）。
 	# FileConstraintCheck は実験的 API なので opt-in が要る。
 	if [ "$_konsist" = "yes" ]; then
 		_assert_line="        projectArchitecture.assert(FileConstraintCheck())"
@@ -3656,7 +3656,7 @@ cmd_data() {
 # docs --topic の名前。llms-full.txt のページ見出し（`# ...`）に対応する。並びはガイドのサイドバーの順。
 # 名前はドキュメントの URL の末尾（guides/layout → layout）に合わせる。手順書の 3-1 / 6-C / 6-D が
 # layout / role / basic-api / kt-file-content / document-generation / template を指す。
-# konsist { } の説明は role（「中身に制約をかける」）と basic-api にあり、専用のページは無い。
+# ktFileContent { } の説明は kt-file-content と basic-api（6 節）にある。
 DOCS_TOPICS="motivation first-architecture faq comparison basic-api role layout kt-file-content document-generation template baseline processor recipes android-three-layer gradle ai-agent ktlint detekt git github roadmap"
 
 # $1（topic）に対応するページ見出しの文言を出す。知らない名前なら何も出さず 1 を返す。

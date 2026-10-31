@@ -431,7 +431,7 @@ JVM toolchain は、プロジェクトに既にある設定（ほかのモジュ
 
 例外は、生成されたファイルを変えないとビルドがそもそも動かない場合だけです。これは上のルールより優先します。ただしその場合はスクリプト側のバグなので、`add changed` に理由を書いて記録し、`questions` にも登録してください。
 
-`konsist { }` も `ktFileContent { }` も使わない方針が決まっている場合だけ `--no-konsist` を付ける（どちらも katachi-konsist に入っている）。この構成ではテストが `assert()` に `FileConstraintCheck()` を渡さないので、`gradle { }` の hook に書いた `fileConstraint` も評価されず、test は `[UncheckedFileConstraint]` で失敗する（How to fix は `Pass FileConstraintCheck() to assert()`）。決まっていなければデフォルトのままでよい。
+`ktFileContent { }` を使わない方針が決まっている場合だけ `--no-konsist` を付ける（`ktFileContent { }` は katachi-konsist に入っている）。この構成ではテストが `assert()` に `FileConstraintCheck()` を渡さないので、`gradle { }` の hook に書いた `fileConstraint` も評価されず、test は `[UncheckedFileConstraint]` で失敗する（How to fix は `Pass FileConstraintCheck() to assert()`）。決まっていなければデフォルトのままでよい。
 
 作成できたら `sh $CLI check 2-1`。
 
@@ -519,7 +519,7 @@ sh $CLI docs --topic basic-api
 sh $CLI docs --topic kt-file-content     # ktFileContent { } を使うときだけ
 ```
 
-ガイドを話題ごとに切り出して取得し、ファイルのパスを出します。そのファイルを読んでください。**ガイド全体（`sh $CLI docs`）を読まないこと。** 定義を書くのに要るのは上の 4 つだけです。`konsist { }` の書き方は `role` の「中身に制約をかける」（取得される英語版では "Constraining the contents"）と、`basic-api` の 7 節（"7. Constraining a file’s contents with `"...".konsist { }`"）にあります。話題の一覧は `sh $CLI docs --topics` で出ます。どれもすでに取得済みなら取り直しません。
+ガイドを話題ごとに切り出して取得し、ファイルのパスを出します。そのファイルを読んでください。**ガイド全体（`sh $CLI docs`）を読まないこと。** 定義を書くのに要るのは上の 4 つだけです。`ktFileContent { }` の書き方は `kt-file-content`（`sh $CLI docs --topic kt-file-content`）と、`basic-api` の 6 節（取得される英語版では "6. Defining the declarations a file may contain with `ktFileContent { }`"）にあります。話題の一覧は `sh $CLI docs --topics` で出ます。どれもすでに取得済みなら取り直しません。
 
 **取得されるのは英語版です。** ドキュメントサイトのデフォルトロケールが英語で、この形式はデフォルトロケールのぶんしか生成されないためです。DSL の API 名は言語に依らないので、定義を書くうえでは差し支えない。
 
@@ -549,7 +549,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope   // 定義を関数に�
 import me.tbsten.katachi.dsl.gradle.*                    // mainSourceSet / testSourceSet / kotlin / gradle() / `/` 演算子
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
-import me.tbsten.katachi.konsist.konsist                 // konsist { } を書くとき
 import me.tbsten.katachi.konsist.declarations.ktFileContent   // ktFileContent { } を書くとき（実験的な API）
 ```
 
@@ -563,13 +562,13 @@ import me.tbsten.katachi.konsist.declarations.ktFileContent   // ktFileContent {
 
 #### 1 つの Role = 1 種類のファイル
 
-**Role（`"Name".role { }`）は1種類のファイルを表します。種類の違うファイルを束ねるのは group（`"name".group { }`）です。** 1つの Role に種類の違うファイルを詰めると、その Role の `summary` も `konsist { }` も全部のファイルには当てはまらなくなり、生成ドキュメントにも「何でも入る箱」が載ります。
+**Role（`"Name".role { }`）は1種類のファイルを表します。種類の違うファイルを束ねるのは group（`"name".group { }`）です。** 1つの Role に種類の違うファイルを詰めると、その Role の `summary` も `ktFileContent { }` も全部のファイルには当てはまらなくなり、生成ドキュメントにも「何でも入る箱」が載ります。
 
 同じ Role に入れてよいかは、次の3つで判定します。1つでも答えが「いいえ」のファイルがあれば、Role を分けてください。
 
 - その Role の `summary` 1文で、どのファイルも説明できるか
 - どのファイルも同じ命名・置き方の規則に従っているか（例外を列挙して足していないか）
-- その Role に書く `konsist { }` の制約が、どのファイルにも当てはまるか
+- その Role に書く `ktFileContent { }` の制約が、どのファイルにも当てはまるか
 
 逆に **1ファイル1 Role でもありません。** `*UseCase.kt` が 18 本あれば、Role は `UseCase` の1つです。違反の `How to fix:` が出す雛形は Role 名がファイル名（`"GetUserUseCase"` など）なので、そのまま貼らず種類の名前に直してください。
 
@@ -614,26 +613,36 @@ import me.tbsten.katachi.konsist.declarations.ktFileContent   // ktFileContent {
 
 #### 配置だけで終わらせない
 
-**ステップ1で読んだドキュメントの規約を、中身の制約（`ktFileContent { }` / `konsist { }`）の候補として棚卸ししてください。** 配置だけの定義は、ファイルが正しい場所にあることしか言いません。`ktFileContent { }` は実験的な API なので、書くファイルに opt-in（`@file:OptIn(ExperimentalKatachiApi::class)`）が要ります。書き方は `sh $CLI docs --topic kt-file-content` で取得します。
+**ステップ1で読んだドキュメントの規約を、中身の制約（`ktFileContent { }`）の候補として棚卸ししてください。** 配置だけの定義は、ファイルが正しい場所にあることしか言いません。`ktFileContent { }` は実験的な API なので、書くファイルに opt-in（`@file:OptIn(ExperimentalKatachiApi::class)`）が要ります。書き方は `sh $CLI docs --topic kt-file-content` で取得します。
 
 **受け皿の Role を作らないこと。** `commonMain/**/*.kt` のように「その場所なら何でもよい」という layout は、検査しているようで何も検査していません。実際に導入後の検証で、**同じ責務のテストが別の場所に作られてそのまま受理された**例があります。受け皿になってしまう場合は、最低でもどちらかを付けてください。
 
 - ファイル名のパターン（`"*ViewModel".ktFile()` のように）
-- 中身の制約を1つ（「この Role のファイルは何を宣言するか」。`ktFileContent { }` か `konsist { }` で書く）
+- 中身の制約を1つ（「この Role のファイルは何を宣言するか」。`ktFileContent { }` で書く）
 
-ファイルの import を見る制約は、`classes()` ではなく `files` に書きます。ドキュメントの規約の多くは「これを import しない」の形です。
+ファイルの import を見る制約は、`ktFileContent { }` の `import` に書きます。書いた `import` だけが許可されるので、「これを import しない」は、その import を並べないことで表せます。ドキュメントの規約の多くはこの形です。
 
 ```kt
 "ViewModel".role {
     layout { /* ... */ }
 
-    "android パッケージを import しないこと".konsist {
-        files.mustNot { file -> file.imports.any { it.name.startsWith("android.") } }
+    ktFileContent {
+        `package`("com.example.viewModel")
+
+        // android.** を並べない。import すると違反になる
+        `import`("kotlin.**")
+        `import`("kotlinx.coroutines.**")
+        `import`("androidx.lifecycle.**")
+        `import`("com.example.**")
+
+        required(`class`, fileName) {
+            allow(anythingElse)
+        }
     }
 }
 ```
 
-制約の名前は、1-3 の `constraintNames` に従います。`numbered` なら、その制約の元になった確認事項の id（`q3` や `cq2` など）を名前の先頭に付けます（`"q3: android パッケージを import しないこと".konsist { }`）。`plain` なら上の例のままです。
+制約の名前は、1-3 の `constraintNames` に従います。`numbered` なら、その制約の元になった確認事項の id（`q3` や `cq2` など）を名前の先頭に付けます（`"q3: android パッケージを import しないこと".ktFileContent { }`）。`plain` なら上の例のままです。
 
 #### 既存の静的解析との分担
 
@@ -671,7 +680,7 @@ sh $CLI test --save before-refactor
 - [ ] **分けた定義ファイルが検査に通る。** 定義ファイル自身も検査の対象です。検査用モジュールを受け持つ Role の `layout { }` が、定義のファイルの最大の深さ（`<group>/<sub>/<Role>Role.kt` など。入れ子の group の深さ + 1）まで受け入れること
 - [ ] **1 つの Role = 1 種類のファイル。** すべての Role を 3-2 の「1 つの Role = 1 種類のファイル」の3つの問いで見直した。`lint` の警告が 0 件か、残すものは理由を `sh $CLI warn 3 "..."` に書いた
 - [ ] **Gradle まわりは `gradle()` の1行。** Gradle のファイルを手書きの Role で宣言していない（`buildSrc` と `includeBuild` したビルドは除く）。ビルドファイルへの制約（レポートで `constraintOnly` の印が付いたもの）は、`gradle { buildScript { } }` などの hook に書いた（1 つのモジュールだけを見る制約は、`subject.files` をパスで絞った）
-- [ ] **受け皿の Role が残っていない。** `anyFile()` / `ignore()` の寄せ集めや、「その場所なら何でもよい」`layout` の Role に、ファイル名のパターンか中身の制約（`ktFileContent { }` / `konsist { }`）が付いている（3-2 の「配置だけで終わらせない」）
+- [ ] **受け皿の Role が残っていない。** `anyFile()` / `ignore()` の寄せ集めや、「その場所なら何でもよい」`layout` の Role に、ファイル名のパターンか中身の制約（`ktFileContent { }`）が付いている（3-2 の「配置だけで終わらせない」）
 - [ ] **説明がそろっている。** Role と group に `title` / `summary` / `description`、Role に `example()`（実例のファイル名）。中身はステップ 1 のレポートの `roles` から取る。1-2 の指針で `documented = false` にすると決めた Role には、そう書いてある
 - [ ] **重複を共通化した。** 同じ `layout` を複数の Role に書き写していない（関数に切り出す）。パッケージのディレクトリのような何度も出る値を `val` に切り出した
 - [ ] **検査結果が前後で変わらない。** 下の「前後で比べる」が「変わっていません」で終わる

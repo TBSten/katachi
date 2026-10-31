@@ -431,7 +431,7 @@ The JVM toolchain reuses the N the project already sets: `jvmToolchain(N)` or `J
 
 The one exception is when the generated file has to change for the build to run at all. That takes priority over the rule above — but it means the script has a bug, so record it with `add changed` giving the reason, and register it in `questions` as well.
 
-Add `--no-konsist` only if it has been decided to use neither `konsist { }` nor `ktFileContent { }` (both come with katachi-konsist). With this setup the test passes no `FileConstraintCheck()` to `assert()`, so a `fileConstraint` written in a `gradle { }` hook is not evaluated either, and the test fails with `[UncheckedFileConstraint]` (its How to fix is `Pass FileConstraintCheck() to assert()`). If it hasn't been decided, leave the default as is.
+Add `--no-konsist` only if it has been decided not to use `ktFileContent { }` (it comes with katachi-konsist). With this setup the test passes no `FileConstraintCheck()` to `assert()`, so a `fileConstraint` written in a `gradle { }` hook is not evaluated either, and the test fails with `[UncheckedFileConstraint]` (its How to fix is `Pass FileConstraintCheck() to assert()`). If it hasn't been decided, leave the default as is.
 
 Once it's created, run `sh $CLI check 2-1`.
 
@@ -519,7 +519,7 @@ sh $CLI docs --topic basic-api
 sh $CLI docs --topic kt-file-content     # only when using ktFileContent { }
 ```
 
-This fetches the guide cut out by topic and prints the file's path. Read that file. **Do not read the whole guide (`sh $CLI docs`).** The four above are all you need to write the definition. How to write `konsist { }` is in "Constraining the contents" of `role` and in section 7 of `basic-api` ("7. Constraining a file’s contents with `"...".konsist { }`"). `sh $CLI docs --topics` lists the topics. Anything already fetched is not fetched again.
+This fetches the guide cut out by topic and prints the file's path. Read that file. **Do not read the whole guide (`sh $CLI docs`).** The four above are all you need to write the definition. How to write `ktFileContent { }` is in `kt-file-content` (`sh $CLI docs --topic kt-file-content`) and in section 6 of `basic-api` ("6. Defining the declarations a file may contain with `ktFileContent { }`"). `sh $CLI docs --topics` lists the topics. Anything already fetched is not fetched again.
 
 **What is fetched is the English version.** The site's default locale is English, and this format is generated only for the default locale. DSL API names do not depend on the language, so this is no obstacle to writing the definition.
 
@@ -549,7 +549,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope   // when splitting the d
 import me.tbsten.katachi.dsl.gradle.*                    // mainSourceSet / testSourceSet / kotlin / gradle() / the `/` operator
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
-import me.tbsten.katachi.konsist.konsist                 // when writing konsist { }
 import me.tbsten.katachi.konsist.declarations.ktFileContent   // when writing ktFileContent { } (an experimental API)
 ```
 
@@ -563,13 +562,13 @@ You can write `title = "..."` and `description = "..."` at the top of `architect
 
 #### One Role = one kind of file
 
-**A Role (`"Name".role { }`) stands for one kind of file. What bundles different kinds of files is a group (`"name".group { }`).** Pack different kinds of files into one Role and neither its `summary` nor its `konsist { }` fits all of them any more, and the generated documentation shows a box that anything goes into.
+**A Role (`"Name".role { }`) stands for one kind of file. What bundles different kinds of files is a group (`"name".group { }`).** Pack different kinds of files into one Role and neither its `summary` nor its `ktFileContent { }` fits all of them any more, and the generated documentation shows a box that anything goes into.
 
 Decide whether files belong in the same Role with these three questions. If any file gets a "no", split the Role.
 
 - Does the Role's one-sentence `summary` describe every file?
 - Does every file follow the same naming and placement rule (rather than exceptions listed one by one)?
-- Does every `konsist { }` constraint you would write for the Role apply to every file?
+- Does every `ktFileContent { }` constraint you would write for the Role apply to every file?
 
 The other way round, **it is not one Role per file either.** Eighteen `*UseCase.kt` files are one Role, `UseCase`. The snippet a violation's `How to fix:` offers names the Role after the file (`"GetUserUseCase"` and so on), so do not paste it as is — rename it to the kind.
 
@@ -614,26 +613,36 @@ In the field tests of the install kit, these shapes turned up in 13 projects.
 
 #### Do not stop at placement
 
-**Take the conventions you read in step 1 and go through them as candidates for constraints on the contents (`ktFileContent { }` / `konsist { }`).** A definition that only says where files go only ever tells you that a file is in the right place. `ktFileContent { }` is an experimental API, so the file that uses it needs the opt-in (`@file:OptIn(ExperimentalKatachiApi::class)`). Fetch how to write it with `sh $CLI docs --topic kt-file-content`.
+**Take the conventions you read in step 1 and go through them as candidates for constraints on the contents (`ktFileContent { }`).** A definition that only says where files go only ever tells you that a file is in the right place. `ktFileContent { }` is an experimental API, so the file that uses it needs the opt-in (`@file:OptIn(ExperimentalKatachiApi::class)`). Fetch how to write it with `sh $CLI docs --topic kt-file-content`.
 
 **Do not write catch-all Roles.** A layout like `commonMain/**/*.kt` — "anything, as long as it is here" — looks like a check and is not one. In a real adoption this let **a test for the same responsibility be created somewhere else entirely, and accepted.** If a Role would end up a catch-all, give it at least one of the following.
 
 - a pattern in the file name (`"*ViewModel".ktFile()`)
-- one constraint on the contents (what a file of this Role declares; write it with `ktFileContent { }` or `konsist { }`)
+- one constraint on the contents (what a file of this Role declares; write it with `ktFileContent { }`)
 
-A constraint on a file's imports goes on `files`, not `classes()`. Many of a project's conventions are of the form "do not import this".
+A constraint on a file's imports goes in the `import` entries of `ktFileContent { }`. Only the `import`s you write are allowed, so "do not import this" is expressed by not listing that import. Many of a project's conventions are of this form.
 
 ```kt
 "ViewModel".role {
     layout { /* ... */ }
 
-    "Does not import the android package".konsist {
-        files.mustNot { file -> file.imports.any { it.name.startsWith("android.") } }
+    ktFileContent {
+        `package`("com.example.viewModel")
+
+        // android.** is not listed. Importing it is a violation
+        `import`("kotlin.**")
+        `import`("kotlinx.coroutines.**")
+        `import`("androidx.lifecycle.**")
+        `import`("com.example.**")
+
+        required(`class`, fileName) {
+            allow(anythingElse)
+        }
     }
 }
 ```
 
-Constraint names follow `constraintNames` from 1-3. With `numbered`, prefix the name with the id of the question the constraint came from (`q3`, `cq2` and so on), as in `"q3: Does not import the android package".konsist { }`. With `plain`, it is as in the example above.
+Constraint names follow `constraintNames` from 1-3. With `numbered`, prefix the name with the id of the question the constraint came from (`q3`, `cq2` and so on), as in `"q3: Does not import the android package".ktFileContent { }`. With `plain`, it is as in the example above.
 
 #### Dividing the work with the static analysis already there
 
@@ -671,7 +680,7 @@ Tidy up the 3-2 definition **without changing the check result.** When unsure ab
 - [ ] **The split definition files pass the check.** The definition files are checked too. The `layout { }` of the Role that covers the verification module accepts files as deep as the deepest definition file (e.g. `<group>/<sub>/<Role>Role.kt`: the depth of the nested groups + 1)
 - [ ] **One Role = one kind of file.** Every Role has been gone over with the three questions of "One Role = one kind of file" in 3-2. `lint` reports 0 warnings, or the reason for each one kept is written with `sh $CLI warn 3 "..."`
 - [ ] **Gradle is the one line `gradle()`.** No Gradle files are declared in hand-written Roles (except `buildSrc` and builds added with `includeBuild`). Constraints on build files (the ones marked `constraintOnly` in the report) were written in a hook such as `gradle { buildScript { } }` (a constraint that looks at one module only narrows `subject.files` by path)
-- [ ] **No catch-all Roles are left.** Roles that gather `anyFile()` / `ignore()`, or whose `layout` means "anything, as long as it is here", have a file name pattern or a constraint on the contents (`ktFileContent { }` / `konsist { }`) ("Do not stop at placement" in 3-2)
+- [ ] **No catch-all Roles are left.** Roles that gather `anyFile()` / `ignore()`, or whose `layout` means "anything, as long as it is here", have a file name pattern or a constraint on the contents (`ktFileContent { }`) ("Do not stop at placement" in 3-2)
 - [ ] **The descriptions are complete.** `title` / `summary` / `description` on Roles and groups, and `example()` (the name of a real file) on Roles. Take the content from `roles` in the step 1 report. The Roles you decided to give `documented = false` by the 1-2 guidelines say so
 - [ ] **Duplication is shared.** The same `layout` is not copied into several Roles (pull it out into a function). A value that keeps coming up, like a package directory, is pulled out into a `val`
 - [ ] **The check result is the same before and after.** "Compare before and after" below ends with "has not changed"
