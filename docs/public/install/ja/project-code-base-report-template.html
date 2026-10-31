@@ -1214,7 +1214,7 @@
     nodes.forEach(function (node) { host.appendChild(node); });
   }
 
-  // ---- 各節の組み立て ----
+  // ---- 各セクションの組み立て ----
   function renderMeta(meta) {
     mount('meta', [defs('kv', [
       ['プロジェクト名', value(meta.projectName, 'meta.projectName')],
@@ -1762,8 +1762,8 @@
     mount('error', [box]);
   }
 
-  // ビューポート上端より上にある最後の節を現在地とする。
-  // 交差の順に任せると短い節が次の節に上書きされ、上方向のスクロールでも更新されないため
+  // ビューポート上端より上にある最後のセクションを現在地とする。
+  // 交差の順に任せると短いセクションが次のセクションに上書きされ、上方向のスクロールでも更新されないため
   function highlightToc() {
     var links = Array.prototype.slice.call(document.querySelectorAll('#toc a'));
     if (!links.length) return;
@@ -1778,8 +1778,8 @@
       var view = window.innerHeight;
       var rest = Math.max(0, document.documentElement.scrollHeight - view - window.pageYOffset);
       // 上端ちょうどだと端数で判定がぶれるので、少しだけ下に線を引く。
-      // 最後の1画面ぶんはどの節ももう上端まで来られないので、そこだけ線を下げていく。
-      // こうしないと末尾の節が一度も現在地にならない
+      // 最後の1画面ぶんはどのセクションももう上端まで来られないので、そこだけ線を下げていく。
+      // こうしないと末尾のセクションが一度も現在地にならない
       var line = 24;
       if (rest < view && document.documentElement.scrollHeight - view >= view) {
         line = 24 + (view - 24) * (1 - rest / view);
@@ -1788,7 +1788,7 @@
       for (var i = 0; i < sections.length; i += 1) {
         if (sections[i] && sections[i].getBoundingClientRect().top <= line) index = i;
       }
-      // 末尾まで来たら最後の節
+      // 末尾まで来たら最後のセクション
       if (rest <= 2) index = links.length - 1;
       links.forEach(function (a, i) { a.classList.toggle('active', i === index); });
     }

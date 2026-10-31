@@ -194,11 +194,11 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
       --force             既存の検査用モジュールを上書きする
       --dry-run           何も書かずに、何をするかだけ出力する
 
-  sh katachi-install.sh guide [<節 ID>] [--refresh]
-      手順書（index.md）を節ごとに出す。引数なしは目次（<ID>、見出し、行数をタブ区切りで 1 行ずつ）。
-      <節 ID> は見出しの番号（0-1、3-2、5、6-A など。6-1〜6-4 は 6-A〜6-D に読み替える）。
-      章（1 など）に番号つきの節があれば、前書きと「含む節:」だけを出す。
-      各節の最後に次の節のコマンドを付ける。手順書は init が取る。--refresh で取り直す。
+  sh katachi-install.sh guide [<セクション ID>] [--refresh]
+      手順書（index.md）をセクションごとに出す。引数なしは目次（<ID>、見出し、行数をタブ区切りで 1 行ずつ）。
+      <セクション ID> は見出しの番号（0-1、3-2、5、6-A など。6-1〜6-4 は 6-A〜6-D に読み替える）。
+      章（1 など）に番号つきのセクションがあれば、前書きと「含むセクション:」だけを出す。
+      各セクションの最後に次のセクションのコマンドを付ける。手順書は init が取る。--refresh で取り直す。
 
   sh katachi-install.sh data get <対象> [<キー>] [--id <id>]
       埋め込まれた JSON を標準出力に出す。HTML 本体は読まなくてよい。
@@ -1612,7 +1612,7 @@ cmd_init() {
 				"Placed:             $(file_uri "$_rp")"
 		fi
 
-		# 手順書も取っておく。以降は guide <節 ID> が節ごとに出す（全文を一度に読ませないため）。
+		# 手順書も取っておく。以降は guide <セクション ID> がセクションごとに出す（全文を一度に読ませないため）。
 		# 言語を変えて init し直したときに前の言語のものが残らないよう、毎回取り直す。
 		fetch_once "$KATACHI_DOCS/install/$KATACHI_LANG/index.md" "$init_workdir/tmp/cache/index.md" yes
 		note "手順書:             $(file_uri "$init_workdir/tmp/cache/index.md") （sh <CLI> guide で目次）" \
@@ -2706,7 +2706,7 @@ catalog_alias_camel() {
 }
 
 # [$1] の別名 $2 を Kotlin DSL のアクセサにして出す（libs.junit.bom / libs.plugins.katachi）。
-# 同じ節に $2 を接頭辞とする別名（katachi に対する katachi-konsist）があれば、Gradle は
+# 同じテーブルに $2 を接頭辞とする別名（katachi に対する katachi-konsist）があれば、Gradle は
 # libs.katachi を group にするので、.asProvider() を付けた形で出す。
 catalog_accessor_of_alias() {
 	_coa=$(catalog_norm_alias "$2")
@@ -2734,7 +2734,7 @@ catalog_is_remapped() {
 }
 
 # scaffold が catalog に足す項目を決める。結果は次の変数に入れる。
-#   SC_CAT_<節>      追記する行（改行区切り。無ければ空）。節は VERSIONS / LIBRARIES / PLUGINS
+#   SC_CAT_<テーブル>      追記する行（改行区切り。無ければ空）。テーブルは VERSIONS / LIBRARIES / PLUGINS
 #   SC_CATALOG_ADDED 追記する行が 1 つでもあれば yes（一覧は catalog_additions が出す）
 #   SC_CAT_FALLBACK  catalog に書けない理由（ja|en）。空なら書ける
 #   SC_ACC_*         build.gradle.kts に書くアクセサ（PLUGIN / KATACHI / KONSIST / JUNIT_BOM /
@@ -2865,7 +2865,7 @@ plan_catalog_item() {
 	PC_ACCESSOR=$(catalog_accessor_of_alias "$_pi_section" "$_pi_alias")
 }
 
-# plan_catalog_entries が足すと決めた行を「[節] 行」の形で、節の順（versions / libraries / plugins）に出す。
+# plan_catalog_entries が足すと決めた行を「[テーブル] 行」の形で、テーブルの順（versions / libraries / plugins）に出す。
 # 「作成する内容」と「作成しました」が使う。
 catalog_additions() {
 	[ -z "$SC_CAT_VERSIONS" ] || printf '%s\n' "$SC_CAT_VERSIONS" | sed 's/^/[versions] /'
@@ -2874,7 +2874,7 @@ catalog_additions() {
 }
 
 # plan_catalog_entries の結果（SC_CAT_*）を gradle/libs.versions.toml に書く。
-# 追記は節の末尾（次の [ の直前。末尾の空行より前）。節が無ければファイルの末尾に作る。
+# 追記はテーブルの末尾（次の [ の直前。末尾の空行より前）。テーブルが無ければファイルの末尾に作る。
 # .bak に退避 → awk → mv。失敗したら戻して止まる。足すものが無ければ何もしない。
 write_catalog_entries() {
 	[ -n "${SC_CAT_VERSIONS}${SC_CAT_LIBRARIES}${SC_CAT_PLUGINS}" ] || return 0
@@ -2890,7 +2890,7 @@ write_catalog_entries() {
 		}
 		function flush_section() {
 			if (section != "" && pending(section) != "" && !done[section]) { print pending(section); done[section] = 1 }
-			# 節の末尾の空行は、追記した行の後ろに戻す
+			# テーブルの末尾の空行は、追記した行の後ろに戻す
 			printf "%s", blanks
 			blanks = ""
 		}
@@ -3656,7 +3656,7 @@ cmd_data() {
 # docs --topic の名前。llms-full.txt のページ見出し（`# ...`）に対応する。並びはガイドのサイドバーの順。
 # 名前はドキュメントの URL の末尾（guides/layout → layout）に合わせる。手順書の 3-1 / 6-C / 6-D が
 # layout / role / basic-api / kt-file-content / document-generation / template を指す。
-# ktFileContent { } の説明は kt-file-content と basic-api（6 節）にある。
+# ktFileContent { } の説明は kt-file-content と basic-api（6 番のセクション）にある。
 DOCS_TOPICS="motivation first-architecture faq comparison basic-api role layout kt-file-content document-generation template baseline processor recipes android-three-layer gradle ai-agent ktlint detekt git github roadmap"
 
 # $1（topic）に対応するページ見出しの文言を出す。知らない名前なら何も出さず 1 を返す。
@@ -3817,15 +3817,15 @@ $(print_docs_topics)"
 	printf '%s\n' "$_dest"
 }
 
-# ---------------------------------------------------------------- guide（手順書を節ごとに）
+# ---------------------------------------------------------------- guide（手順書をセクションごとに）
 
-# 手順書（index.md）を節に切る awk。python は使わない（guide は python3 を要らないままにする）。
+# 手順書（index.md）をセクションに切る awk。python は使わない（guide は python3 を要らないままにする）。
 #   -v mode=toc           目次。1 行 = <ID>\t<見出し>\t<行数>
-#   -v mode=body -v want=<ID>   その節の本文。見つからなければ exit 1
+#   -v mode=body -v want=<ID>   そのセクションの本文。見つからなければ exit 1
 #   -v mode=next -v want=<ID>   目次の順で次の ID（最後なら何も出さない）
-# 節になる見出しは `## N.`、`## 6-A.`〜`## 6-D.`、`### N-M.` だけ。番号の無い見出し（`### 始める前に`、
-# `#### ...`）は節にならず、直前の番号つき節に含まれる。コードフェンス（行頭の ```）の内側は見出しに数えない。
-# 章（H2）に番号つきの節（H3）があるときは、章の本文は前書き（最初の H3 の直前まで）＋「含む節:」の 1 行。
+# セクションになる見出しは `## N.`、`## 6-A.`〜`## 6-D.`、`### N-M.` だけ。番号の無い見出し（`### 始める前に`、
+# `#### ...`）はセクションにならず、直前の番号つきセクションに含まれる。コードフェンス（行頭の ```）の内側は見出しに数えない。
+# 章（H2）に番号つきのセクション（H3）があるときは、章の本文は前書き（最初の H3 の直前まで）＋「含むセクション:」の 1 行。
 # この変数の中に \' を書かないこと（sh の単引用符）。
 GUIDE_AWK='
 /^```/ { fence = !fence }
@@ -3844,7 +3844,7 @@ GUIDE_AWK='
 END {
 	for (i = 1; i <= n; i++) {
 		# 本文の終わり: H3 は次の番号つき見出しの直前、H2 は次の H2 の直前。ただし H2 の直後に H3 が
-		# 続く（子の節がある）なら前書きだけ（最初の H3 の直前まで）にして、含む節を並べる。
+		# 続く（子のセクションがある）なら前書きだけ（最初の H3 の直前まで）にして、含むセクションを並べる。
 		e = NR
 		kids[i] = ""
 		if (i < n) {
@@ -3908,7 +3908,7 @@ cmd_guide() {
 			;;
 		-*) die "guide: 知らないオプションです: ${1}" "guide: unknown option: ${1}" ;;
 		*)
-			[ -z "$_gd_id" ] || die "guide: 節 ID は 1 つだけです（${_gd_id} と ${1}）" \
+			[ -z "$_gd_id" ] || die "guide: セクション ID は 1 つだけです（${_gd_id} と ${1}）" \
 				"guide: give only one section id (${_gd_id} and ${1})"
 			_gd_id="$1"
 			shift
@@ -3933,8 +3933,8 @@ cmd_guide() {
 		return 0
 	fi
 	_gd_id=$(guide_section_id "$_gd_id")
-	if ! awk -v mode=body -v want="$_gd_id" -v inc="$(pick "含む節" "Sections")" "$GUIDE_AWK" "$_gd_file"; then
-		warn "知らない節 ID です: ${_gd_id} 。使える ID は目次のとおりです。" \
+	if ! awk -v mode=body -v want="$_gd_id" -v inc="$(pick "含むセクション" "Sections")" "$GUIDE_AWK" "$_gd_file"; then
+		warn "知らないセクション ID です: ${_gd_id} 。使える ID は目次のとおりです。" \
 			"Unknown section id: ${_gd_id} . The ids you can use are in the table of contents."
 		print_guide_toc "$_gd_file"
 		exit 1
@@ -4741,7 +4741,7 @@ def t(ja, en):
     return en if EN else ja
 '
 
-# チェックリストの項目 ID → 手順書の節 ID（guide <節 ID>）。check の「次」（CHECK_PY）と
+# チェックリストの項目 ID → 手順書のセクション ID（guide <セクション ID>）。check の「次」（CHECK_PY）と
 # summary の「再開」（SUMMARY_PY）が同じ対応表を使うために、PY_LANG と同じ流儀で両方の先頭に流し込む。
 #   0-1 .. 4-3 はそのまま / 5-1, 5-2 は 5（5 章は小見出しに番号が無い）/ 6-1 .. 6-4 は None
 #   （6-A〜6-D は「次」の計算に入れない。summary の完了形が Next action で示す）
@@ -4800,8 +4800,8 @@ for i in ids:
 json.dump(data, open(dest, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
 if done:
     print(t("完了にしました: %s", "Marked as done: %s") % ", ".join(ids))
-    # 次に読む節。done でない最初の項目（チェックリストの順 = 手順書の目次の順）を section_of で
-    # 節 ID にする。None（6-x）か未完了が無ければ出さない。CLI のパスは sh 側が環境変数で渡す。
+    # 次に読むセクション。done でない最初の項目（チェックリストの順 = 手順書の目次の順）を section_of で
+    # セクション ID にする。None（6-x）か未完了が無ければ出さない。CLI のパスは sh 側が環境変数で渡す。
     cli = os.environ.get("KATACHI_CHECK_CLI")
     pending = [i for i in known if not known[i].get("done")]
     section = section_of(pending[0]) if pending else None
@@ -4815,7 +4815,7 @@ cmd_check() {
 	[ $# -gt 0 ] || die "check: 項目 id を1つ以上指定してください（例: check 1-1 1-2）" \
 		"check: specify one or more item ids (for example: check 1-1 1-2)"
 	require_workdir
-	# 完了後の「次: sh <CLI> guide <節 ID>」を CHECK_PY が組み立てるために、CLI のパスを渡す。
+	# 完了後の「次: sh <CLI> guide <セクション ID>」を CHECK_PY が組み立てるために、CLI のパスを渡す。
 	KATACHI_CHECK_CLI="$WORKDIR/tmp/katachi-install.sh"
 	export KATACHI_CHECK_CLI
 	edit_checklist "$SECTION_OF_PY
@@ -5711,7 +5711,7 @@ cmd_verify() {
 }
 
 # argv: 1 = チェックリストの JSON, 2 = レポートの JSON, 3 = MODULE_DIR（相対パス）, 4 = MODULE_GRADLE_PATH（:a:b）,
-#       5 = このスクリプトのパス（再開欄の `sh <CLI> guide <節>`）, 6 = 定義のディレクトリ, 7 = その有無（yes / no）
+#       5 = このスクリプトのパス（再開欄の `sh <CLI> guide <セクション>`）, 6 = 定義のディレクトリ, 7 = その有無（yes / no）
 # 先頭に PY_LANG と SECTION_OF_PY（section_of）を流し込む。
 SUMMARY_PY='
 import json, os, sys
@@ -5783,7 +5783,7 @@ if len(done) < len(items):
     first = next((i for i in items if not i.get("done")), None)
     section = section_of(first["id"]) if first else None
     if section:
-        print(t("  次の節: sh %s guide %s", "  Next section: sh %s guide %s") % (cli, section))
+        print(t("  次のセクション: sh %s guide %s", "  Next section: sh %s guide %s") % (cli, section))
     if def_exists:
         print(t("  定義: %s", "  Definition: %s") % file_uri(def_dir))
     else:

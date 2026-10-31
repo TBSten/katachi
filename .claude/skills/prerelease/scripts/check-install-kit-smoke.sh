@@ -145,13 +145,13 @@ run_case() {
 
 # ---- ケース ----------------------------------------------------------------------------------
 
-# guide は目次に全節の ID を順に出す
+# guide は目次に全セクションの ID を順に出す
 case_guide_toc() {
 	d=$(inited guide)
 	out=$(${KSH} "$(cli "${d}")" guide 2>"${WORK}/guide.toc.err")
 	ids=$(printf '%s\n' "${out}" | awk -F'\t' 'NF == 3 { printf "%s ", $1 }')
 	want_ids="0 0-1 0-2 0-3 1 1-1 1-2 1-3 2 2-1 2-2 3 3-1 3-2 3-3 4 4-1 4-2 4-3 5 6 6-0 6-A 6-B 6-C 6-D "
-	[ "${ids}" = "${want_ids}" ] && ok "guide は目次に全節の ID を順に出す" || ng "guide は目次に全節の ID を順に出す" "ids=${ids}"
+	[ "${ids}" = "${want_ids}" ] && ok "guide は目次に全セクションの ID を順に出す" || ng "guide は目次に全セクションの ID を順に出す" "ids=${ids}"
 	# 手順書冒頭の目次（- <ID> — <見出し>）と同じ並び
 	toc_ids=$(sed -n '/^\*\*目次\*\*/,/^## 0\./p' "${SITE}/install/ja/index.md" | sed -n 's/^[[:space:]]*- \([0-9][-0-9A-D]*\) — .*/\1 /p' | tr -d '\n')
 	[ "${toc_ids}" = "${ids}" ] && ok "guide の目次は手順書冒頭の目次と一致する" || ng "guide の目次は手順書冒頭の目次と一致する" "toc=${toc_ids}"
@@ -173,20 +173,20 @@ case_guide_fence() {
 	else
 		ng "guide はコードフェンスの中の # を見出しに数えない" "st=${st} $(printf '%s\n' "${out}" | head -n 3)"
 	fi
-	printf '%s\n' "${out}" | head -n 1 | grep -q '^### 0-1\.' && ok "guide <節> は見出し行から始まる" || ng "guide <節> は見出し行から始まる" "$(printf '%s\n' "${out}" | head -n 1)"
+	printf '%s\n' "${out}" | head -n 1 | grep -q '^### 0-1\.' && ok "guide <セクション> は見出し行から始まる" || ng "guide <セクション> は見出し行から始まる" "$(printf '%s\n' "${out}" | head -n 1)"
 }
 
-# guide <節> は次の節のコマンドで終わる
+# guide <セクション> は次のセクションのコマンドで終わる
 case_guide_next() {
 	d="${WORK}/guide"
 	[ -d "${d}" ] || d=$(inited guide)
 	c=$(cli "${d}")
 	last=$(${KSH} "${c}" guide 3-2 2>&1 | tail -n 1)
-	[ "${last}" = "次: sh ${c} guide 3-3" ] && ok "guide <節> は次の節のコマンドで終わる" || ng "guide <節> は次の節のコマンドで終わる" "last=${last}"
+	[ "${last}" = "次: sh ${c} guide 3-3" ] && ok "guide <セクション> は次のセクションのコマンドで終わる" || ng "guide <セクション> は次のセクションのコマンドで終わる" "last=${last}"
 	last=$(${KSH} "${c}" guide 6-D 2>&1 | tail -n 1)
 	case "${last}" in
-	次:*) ng "guide の最後の節には次が付かない" "last=${last}" ;;
-	*) ok "guide の最後の節には次が付かない" ;;
+	次:*) ng "guide の最後のセクションには次が付かない" "last=${last}" ;;
+	*) ok "guide の最後のセクションには次が付かない" ;;
 	esac
 	a=$(${KSH} "${c}" guide 6-1 2>&1)
 	b=$(${KSH} "${c}" guide 6-A 2>&1)
@@ -196,15 +196,15 @@ case_guide_next() {
 	[ "${st}" -eq 1 ] && printf '%s\n' "${out}" | grep -q '^0-1	' && ok "guide の知らない ID は目次を出して exit 1" || ng "guide の知らない ID は目次を出して exit 1" "st=${st}"
 }
 
-# check の次の節は 5-1 と 5-2 を guide 5 に読み替える
+# check の次のセクションは 5-1 と 5-2 を guide 5 に読み替える
 case_check_next() {
 	d=$(inited chk)
 	c=$(cli "${d}")
 	out=$(${KSH} "${c}" check 0-1 2>&1)
-	printf '%s\n' "${out}" | grep -q "^次: sh ${c} guide 0-2\$" && ok "check の次は未完了の最初の項目の節" || ng "check の次は未完了の最初の項目の節" "${out}"
+	printf '%s\n' "${out}" | grep -q "^次: sh ${c} guide 0-2\$" && ok "check の次は未完了の最初の項目のセクション" || ng "check の次は未完了の最初の項目のセクション" "${out}"
 	${KSH} "${c}" check 0-2 1-1 1-2 1-3 2-1 2-2 3-1 3-2 3-3 >/dev/null 2>&1
 	out=$(${KSH} "${c}" check 4-1 4-2 4-3 2>&1)
-	printf '%s\n' "${out}" | grep -q "^次: sh ${c} guide 5\$" && ok "check の次の節は 5-1 と 5-2 を guide 5 に読み替える" || ng "check の次の節は 5-1 と 5-2 を guide 5 に読み替える" "${out}"
+	printf '%s\n' "${out}" | grep -q "^次: sh ${c} guide 5\$" && ok "check の次のセクションは 5-1 と 5-2 を guide 5 に読み替える" || ng "check の次のセクションは 5-1 と 5-2 を guide 5 に読み替える" "${out}"
 	out=$(${KSH} "${c}" check 5-1 5-2 2>&1)
 	printf '%s\n' "${out}" | grep -q '^次:' && ng "check は未完了が無ければ次を出さない（6-x は数えない）" "${out}" || ok "check は未完了が無ければ次を出さない（6-x は数えない）"
 }
@@ -326,7 +326,7 @@ case_summary_resume() {
 	(cd "${d}" && ${KSH} "${c}" summary) >"${WORK}/resume.log" 2>&1
 	st=$?
 	if [ "${st}" -eq 0 ] && grep -q '^再開:' "${WORK}/resume.log" && grep -q '終わった項目: 0-1 0-2 1-1$' "${WORK}/resume.log" &&
-		grep -q "次の節: sh ${c} guide 1-2" "${WORK}/resume.log" &&
+		grep -q "次のセクション: sh ${c} guide 1-2" "${WORK}/resume.log" &&
 		grep -q '定義: まだ無い（scaffold 未実行。meta.moduleDir = static-analysis/katachi）' "${WORK}/resume.log"; then
 		ok "summary は scaffold 前でも止まらず再開の欄に「まだ無い」を出す"
 	else
