@@ -9,7 +9,7 @@ tags:
   Purpose of this page: to let a user who understands katachi's motivation add katachi to their own project. That includes configuring the Gradle module and the surrounding setup.
 */}
 
-import { Aside, Tabs, TabItem, Steps, Badge } from '@astrojs/starlight/components';
+import { Aside, Tabs, TabItem, Steps, Badge, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 This page walks you through adding katachi to a Gradle project, writing your first `architecture { }` definition, and getting the test to pass.
 
@@ -34,11 +34,13 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
 
         <details>
         <summary>Additional options</summary>
-        - **If your architecture documentation lives outside the codebase** (in Notion, for example), include a link to it in the prompt.
-        - By default the AI agent creates an `architecture-test` module and writes the architecture definition there.
-          - **To use a different module**, add a prompt such as `Create the test in <module>`.
-        - As a matter of context hygiene, **start a fresh session dedicated to setting up katachi**.
-            - For Claude Code or Codex CLI: clear the session with `/clear`, then enter the prompt.
+
+        | Item | Details |
+        |---|---|
+        | **Additional documentation** | If your architecture documentation lives outside the codebase (in Notion, for example), include a link to it in the prompt. |
+        | **Module** | By default the AI agent creates an `architecture-test` module and writes the architecture definition there. To use a different module, add a prompt such as `Create the test in <module>`. |
+        | **Session** | As a matter of context hygiene, we recommend starting a fresh session dedicated to setting up katachi. For Claude Code or Codex CLI, clear the session with `/clear`, then enter the prompt. |
+
         </details>
 
     2. **Review** the changes the AI agent made to your project and adjust them as needed.
@@ -67,10 +69,10 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
 
         ```kotlin title="settings.gradle.kts"
         pluginManagement {
-            repositories {
-                gradlePluginPortal()
-                mavenCentral()
-            }
+          repositories {
+            gradlePluginPortal()
+            mavenCentral()
+          }
         }
 
         include(":architecture-test")
@@ -86,33 +88,33 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
         import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
         plugins {
-            kotlin("jvm") version "<Kotlin version>"
-            id("me.tbsten.katachi") version "<katachi version>"
+          kotlin("jvm") version "<Kotlin version>"
+          id("me.tbsten.katachi") version "<katachi version>"
         }
 
         kotlin {
-            jvmToolchain(17)
+          jvmToolchain(17)
         }
 
         tasks.test {
-            useJUnitPlatform()
-            // The files being checked are not inputs of the Test task, so run it every time (and keep its result out of the build cache)
-            outputs.upToDateWhen { false }
-            outputs.cacheIf { false }
-            // Print the list of violations to the console
-            testLogging { exceptionFormat = TestExceptionFormat.FULL }
+          useJUnitPlatform()
+          // The files being checked are not inputs of the Test task, so run it every time (and keep its result out of the build cache)
+          outputs.upToDateWhen { false }
+          outputs.cacheIf { false }
+          // Print the list of violations to the console
+          testLogging { exceptionFormat = TestExceptionFormat.FULL }
         }
 
         dependencies {
-            testImplementation("me.tbsten.katachi:katachi:<katachi version>")
-            testImplementation("me.tbsten.katachi:katachi-konsist:<katachi version>")
-            testImplementation(platform("org.junit:junit-bom:5.14.4"))
-            testImplementation("org.junit.jupiter:junit-jupiter")
-            testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+          testImplementation("me.tbsten.katachi:katachi:<katachi version>")
+          testImplementation("me.tbsten.katachi:katachi-konsist:<katachi version>")
+          testImplementation(platform("org.junit:junit-bom:5.14.4"))
+          testImplementation("org.junit.jupiter:junit-jupiter")
+          testRuntimeOnly("org.junit.platform:junit-platform-launcher")
         }
 
         katachi {
-            architecture = "com.example.projectArchitecture"
+          architecture = "com.example.projectArchitecture"
         }
         ```
 
@@ -121,11 +123,11 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
 
         Use Kotlin **2.2 or later**. Earlier Kotlin versions cannot read the metadata of katachi's libraries.
 
-        `ktFile()`, `konsist { }` and others are declared with context parameters. **Below Kotlin 2.4** they cannot be called without the following option (do not add it on 2.4 or later; it causes a warning).
+        `ktFile()`, `ktFileContent { }` and others are declared with context parameters. **Below Kotlin 2.4** they cannot be called without the following option (do not add it on 2.4 or later; it causes a warning).
 
         ```kotlin title="architecture-test/build.gradle.kts"
         kotlin {
-            compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")
+          compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")
         }
         ```
 
@@ -147,15 +149,15 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
         import me.tbsten.katachi.dsl.kotlin.ktFile
 
         val projectArchitecture = architecture {
-            gradle() // Gradle's files: the wrapper, settings, build scripts and so on
-            "domain".group {
-                "UseCase".role {
-                    summary = "A single app-specific behavior that occurs on a screen"
-                    layout {
-                        "domain/src/main/kotlin/usecase" / "*UseCase".ktFile()
-                    }
-                }
+          gradle() // Gradle's files: the wrapper, settings, build scripts and so on
+          "domain".group {
+            "UseCase".role {
+              summary = "A single app-specific behavior that occurs on a screen"
+              layout {
+                "domain/src/main/kotlin/usecase" / "*UseCase".ktFile()
+              }
             }
+          }
         }
         ```
 
@@ -173,16 +175,16 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
         import org.junit.jupiter.api.Test
 
         class ProjectArchitectureTest {
-            @Test
-            fun `the project structure matches the definition`() {
-                projectArchitecture.assert()
-            }
+          @Test
+          fun `the project structure matches the definition`() {
+            projectArchitecture.assert()
+          }
         }
         ```
 
         This is the only test your project writes. Every violation in the repository lands in a single failure message, so there is no point in splitting the test up per rule.
 
-        Once you write `konsist { }` or `ktFileContent { }`, change the call to `projectArchitecture.assert(FileConstraintCheck())`. With `assert()` as is, the constraints are not checked, and the test fails with `[UncheckedFileConstraint]`.
+        Once you write `ktFileContent { }`, change the call to `projectArchitecture.assert(FileConstraintCheck())`. With `assert()` as is, the constraints are not checked, and the test fails with `[UncheckedFileConstraint]`.
 
     5. **Run it**
 
@@ -230,6 +232,34 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
     <TabItem label="Verify manually">
         1. Think of a piece of code that breaks an architecture rule and actually create that source file.
         2. Run `./gradlew :architecture-test:test` and confirm that the architecture test fails.
+
+            <details>
+            <summary>Example output on failure</summary>
+
+            If you place `GetUserUseCase.kt` somewhere that was never declared, the violation is reported like this.
+
+            ```text nocollapse
+            Katachi check failed: 1 violation (Unexpected: 1)
+
+            [UnexpectedFile] file:///path/to/project/src/main/kotlin/com/example/project/GetUserUseCase.kt
+              No role is defined for this file.
+
+              Nearby locations:
+                UseCase file:///path/to/project/src/main/kotlin/com/example/project/useCase/
+
+              How to fix:
+                - Move it to one of the locations above
+                - Delete it if it is not needed
+                - Add a new role for it:
+                    "GetUserUseCase".role {
+                      summary = "TODO"
+                      layout {
+                        "src/main/kotlin/com/example/project" / "GetUserUseCase".ktFile()
+                      }
+                    }
+            ```
+
+            </details>
     </TabItem>
 </Tabs>
 
@@ -281,10 +311,25 @@ To keep the quality up, run the katachi architecture test regularly by wiring it
 
 ## Next steps
 
-To deepen your understanding of katachi and refine your architecture definition, read the following guides.
-
-- [Basic API](/katachi/guides/basic-api/) ... Learn the APIs you pick up first when writing a katachi definition.
-- [Role](/katachi/guides/role/) ... Learn how to write a Role, the basic unit of a definition, and how to think about splitting them.
-- [Layout](/katachi/guides/layout/) ... Learn how to write a Layout that enforces your directory structure.
-
-You can read the other guides, such as document generation, code generation from templates, and baseline, from "Guides" in the sidebar.
+<CardGrid>
+  <LinkCard
+    title="Basic API"
+    href="/katachi/guides/basic-api/"
+    description="Learn the APIs you pick up first when writing a katachi definition."
+  />
+  <LinkCard
+    title="Role"
+    href="/katachi/guides/role/"
+    description="Learn how to write a Role, the basic unit of a definition, and how to think about splitting them."
+  />
+  <LinkCard
+    title="Layout"
+    href="/katachi/guides/layout/"
+    description="Learn how to write a Layout that enforces your directory structure."
+  />
+  <LinkCard
+    title="sample/jvm"
+    href="https://github.com/TBSten/katachi/tree/main/sample/jvm"
+    description="A working example: a minimal Ktor server with a definition added."
+  />
+</CardGrid>

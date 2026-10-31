@@ -1,57 +1,36 @@
 ---
-title: Layout システムでディレクトリ構成を厳守させる
+title: Layout
 sidebar:
   label: Layout
-description: layout { } でディレクトリ構成とファイル名を宣言し、宣言していない場所にファイルが増えたら落とす方法。
+description: Layout API でディレクトリ構成とファイル名を宣言し、宣言していない場所にファイルが増えたら違反にする方法。
 tags:
   - intermediate
 ---
 
 {/*
-  このページの目的: katachi のアーキテクチャ定義における重要な要素である Role の layout 周辺の使い方を深く網羅的に理解すること。
+  このページの目的: katachi のアーキテクチャ定義における重要な要素である Role の Layout API の使い方を深く網羅的に理解すること。
 */}
 
-import { Aside, FileTree } from "@astrojs/starlight/components";
+import { Aside, FileTree, CardGrid, LinkCard } from "@astrojs/starlight/components";
 
-`layout { }` でディレクトリ構成とファイル名を宣言し、宣言外のファイルを違反にします。このページでは、置き場所の書き方と、検査するファイルの決め方、宣言を省く `anyFile()` と `ignore()` を説明します。
+`layout { }` API は katachi の最も重要な API の一つです。
+
+Layout API でディレクトリ構成とファイル名を宣言し、宣言外のファイルを違反にします。このページでは、置き場所の書き方と、検査するファイルの決め方、宣言を省く `anyFile()` と `ignore()` を説明します。
 
 ## ファイルをどこに置けるかを定義する
 
-Role に対応するファイルをどこに置けるかを定義するのが `layout { }` です。
+Role に対応するファイルをどこに置けるかを定義するのが Layout API（`layout { }`）です。
 
 ```kt {3-5}
 architecture {
-    "UseCase".role {
-        // UseCase は useCase/ の中の *UseCase.kt にだけ置けます
-        layout {
-            "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
-        }
+  "UseCase".role {
+    // UseCase は useCase/ の中の *UseCase.kt にだけ置けます
+    layout {
+      "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
     }
+  }
 }
 ```
-
-## 検査の対象になるファイル
-
-`layout { }` と照らし合わせるファイルは、`architecture { }` の `files` で決まります。デフォルトは `gitTracked()` です。
-
-- `gitTracked()`（デフォルト）... git が追跡しているファイルと、追跡していないが ignore もされていないファイル（`git ls-files --cached --others --exclude-standard` の結果）。`.gitignore` で除外したディレクトリの中にあっても、追跡しているファイルは対象です（`.idea/*` を除外しつつ `!.idea/codeStyles/` で戻したもの、`git add -f` で足したもの）。
-- `wholeTree()` ... プロジェクトルートより下のすべてのファイル。`build/` や `.gradle/` も対象になるので、`ignore()` で外します。
-
-どちらでも `.git/` だけは対象になりません。`.gradle/` と `.idea/` はほかのディレクトリと同じ扱いで、宣言が無ければ `[UnexpectedDirectory]` になります。
-
-`gitTracked()` では、`.gitignore` に書いたものに Role は要りません。逆に、追跡しているファイルにはすべて Role が要ります。`.idea/` の中に追跡しているファイルがあれば、それも宣言します。
-
-```kt
-architecture {
-    "IdeCodeStyle".role {
-        layout {
-            ".idea" / "codeStyles" / "*.xml".file()
-        }
-    }
-}
-```
-
-親ディレクトリが ignore されていると、`!.idea/codeStyles/` のような戻すパターンを書いても、追跡していないファイルは戻りません（git の仕様です）。追跡していないファイルは katachi からも見えません。`"Project.xml".file()` のように名前を固定で書いた宣言なら `[MissingFile]` になりますが、この例の `"*.xml"` のようなパターンの宣言では何も報告されません。
 
 ## 置き場所の書き方を選ぶ
 
@@ -63,7 +42,7 @@ architecture {
 
 ```kt
 layout {
-    "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+  "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
 }
 ```
 
@@ -73,10 +52,10 @@ layout {
 
 ```kt
 layout {
-    "src/main/kotlin/com/example/useCase" {
-        "Get*UseCase".ktFile()
-        "Update*UseCase".ktFile()
-    }
+  "src/main/kotlin/com/example/useCase" {
+    "Get*UseCase".ktFile()
+    "Update*UseCase".ktFile()
+  }
 }
 ```
 
@@ -84,10 +63,10 @@ layout {
 
 ```kt
 layout {
-    "src/main/kotlin/com/example/useCase" {
-        description = "複数の画面から使われるもの"
-        "*UseCase".ktFile()
-    }
+  "src/main/kotlin/com/example/useCase" {
+    description = "複数の画面から使われるもの"
+    "*UseCase".ktFile()
+  }
 }
 ```
 
@@ -99,7 +78,7 @@ layout {
 
 ```kt
 layout {
-    "generated" { anyFile() }
+  "generated" { anyFile() }
 }
 ```
 
@@ -109,8 +88,8 @@ layout {
     - generated/
         - Foo.kt 通る
         - schema.json 通る
-        - nested/ 落ちる（サブディレクトリは宣言が無い）
-            - Bar.kt 落ちる
+        - nested/ 違反（サブディレクトリは宣言が無い）
+            - Bar.kt 違反
 </FileTree>
 
 ### `ignore()` — 以下すべての検査をやめる
@@ -119,7 +98,7 @@ layout {
 
 ```kt
 layout {
-    "build".ignore()
+  "build".ignore()
 }
 ```
 
@@ -136,61 +115,108 @@ layout {
 `anyFile()` と `ignore()` は任意のファイルの配置を許可しますが、これは **deny by default の逃げ道** です。注意して使ってください。
 
 「宣言するのが面倒だから」で ignore, anyFile を乱用すると katachi を入れた意味が薄れます。
-**機械的に生成されるもの** や、 **別のツールが構成を決めているもの** に限って使ってください。
+**機械的に生成されるもの** や、 **katachi 以外のツールが構成を決めているもの** に限って使ってください。
 </Aside>
 
 ## パスを定数に切り出す
 
 すべての Role にディレクトリのパスを丸ごと書くのは非効率です。
-意味のある単位でパスを定数にしましょう。
+意味のある単位でパスを定数にするのがおすすめです。
 
 ```kt {1,6}
 val appPackageDir = "src/main/kotlin/com/example"
 
 architecture {
-    "UseCase".role {
-        layout {
-            appPackageDir / "useCase" / "*UseCase".ktFile()
-        }
+  "UseCase".role {
+    layout {
+      appPackageDir / "useCase" / "*UseCase".ktFile()
     }
+  }
 }
 ```
+
+## 検査の対象になるファイル
+
+Layout API と照らし合わせるファイルは、`architecture { }` の `files` で決まります。デフォルトは `gitTracked()` です。
+
+<details>
+<summary>`gitTracked()` と `wholeTree()` の違い、追跡しているファイルの扱い</summary>
+
+- `gitTracked()`（デフォルト）... git が追跡しているファイルと、追跡していないが ignore もされていないファイル（`git ls-files --cached --others --exclude-standard` の結果）。`.gitignore` で除外したディレクトリの中にあっても、追跡しているファイルは対象です（`.idea/*` を除外しつつ `!.idea/codeStyles/` で戻したもの、`git add -f` で足したもの）。
+- `wholeTree()` ... プロジェクトルートより下のすべてのファイル。`build/` や `.gradle/` も対象になるので、`ignore()` で外します。
+
+どちらでも `.git/` だけは対象になりません。`.gradle/` と `.idea/` はほかのディレクトリと同じ扱いで、宣言が無ければ `[UnexpectedDirectory]` になります。
+
+`gitTracked()` では、`.gitignore` に書いたものに Role は要りません。逆に、追跡しているファイルにはすべて Role が要ります。`.idea/` の中に追跡しているファイルがあれば、それも宣言します。
+
+```kt
+architecture {
+  "IdeCodeStyle".role {
+    layout {
+      ".idea" / "codeStyles" / "*.xml".file()
+    }
+  }
+}
+```
+
+親ディレクトリが ignore されていると、`!.idea/codeStyles/` のような戻すパターンを書いても、追跡していないファイルは戻りません（git の仕様です）。追跡していないファイルは katachi からも見えません。`"Project.xml".file()` のように名前を固定で書いた宣言なら `[MissingFile]` になりますが、この例の `"*.xml"` のようなパターンの宣言では何も報告されません。
+
+</details>
 
 ## まとめ
 
 ここまでの書き方を全部使った完成形です。
 
-```kt {1,6-8,16,23}
+```kt {1,6-8,16,23} nocollapse
 val appPackageDir = "src/main/kotlin/com/example"  // パスは定数に切り出せる
 
 architecture {
-    "UseCase".role {
-        layout {
-            appPackageDir / "useCase" / "*UseCase".ktFile()   // "/" で繋いで置き場所を宣言する
-            appPackageDir {                                    // ブロックで囲んでも同じ宣言になる
-                "feature" / "useCase" / "*UseCase".ktFile()
-            }
-        }
+  "UseCase".role {
+    layout {
+      appPackageDir / "useCase" / "*UseCase".ktFile()   // "/" で繋いで置き場所を宣言する
+      appPackageDir {                                    // ブロックで囲んでも同じ宣言になる
+        "feature" / "useCase" / "*UseCase".ktFile()
+      }
     }
+  }
 
-    "GeneratedFile".role {
-        summary = "ツールが生成するファイル"
-        layout {
-            "generated" { anyFile() }   // 直下ならどんなファイルでもよい（サブディレクトリは不可）
-        }
+  "GeneratedFile".role {
+    summary = "ツールが生成するファイル"
+    layout {
+      "generated" { anyFile() }   // 直下ならどんなファイルでもよい（サブディレクトリは不可）
     }
+  }
 
-    "BuildOutput".role {
-        summary = "ビルドの出力"
-        layout {
-            "build".ignore()            // それより下は検査しない
-        }
+  "BuildOutput".role {
+    summary = "ビルドの出力"
+    layout {
+      "build".ignore()            // それより下は検査しない
     }
+  }
 }
 ```
 
 ## 次のステップ
 
-- [Role](/katachi/ja/guides/role/) ... 定義が大きくなってきたときに、ファイルと関数へ切り分ける方法を学びましょう。
-- [テンプレートからコード生成](/katachi/ja/guides/generate-code-from-template/#生成先にワイルドカードがあるときは名前を付けて値を渡す) ... 生成先のワイルドカードに名前を付ける `capture()` の書き方を学びましょう。layout の検査だけなら `capture()` は要らず、`*` のままで構いません。
-- [初めてのアーキテクチャ定義](/katachi/ja/get-started/first-architecture/) ... あなたのプロジェクトに katachi を導入して、実際に宣言を書いてみましょう。
+<CardGrid>
+  <LinkCard
+    title="Role"
+    href="/katachi/ja/guides/role/"
+    description="定義が大きくなってきたときに、ファイルと関数へ切り分ける方法を学びましょう。"
+  />
+  <LinkCard
+    title="テンプレートからコード生成"
+    href="/katachi/ja/guides/generate-code-from-template/#生成先にワイルドカードがあるときは名前を付けて値を渡す"
+    description="生成先のワイルドカードに名前を付ける書き方を学びましょう。Layout API の検査だけなら名前は要らず、ワイルドカードのままで構いません。"
+  />
+  <LinkCard
+    title="初めてのアーキテクチャ定義"
+    href="/katachi/ja/get-started/first-architecture/"
+    description="あなたのプロジェクトに katachi を導入して、実際に宣言を書いてみましょう。"
+  />
+  <LinkCard
+    title="sample/jvm の IdeCodeStyleRole.kt"
+    href="https://github.com/TBSten/katachi/blob/main/sample/jvm/architecture-test/src/test/kotlin/com/example/tool/IdeCodeStyleRole.kt"
+    description="リポジトリで共有する IDE 設定の Role です。.idea の中で置いてよいファイルだけを宣言した実例です。"
+  />
+</CardGrid>

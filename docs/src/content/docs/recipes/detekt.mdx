@@ -32,9 +32,9 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 
 val projectArchitecture = architecture {
-    "Tools".group {
-        detekt()
-    }
+  "Tools".group {
+    detekt()
+  }
 }
 
 // roles/Detekt.kt
@@ -46,23 +46,25 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 private const val detektConfigDir = "config/detekt"
 
 fun DeclarationContainerScope.detekt() =
-    "Detekt".group {
-        "Config".role {
-            title = "detekt config file"
-            summary = "YAML that enables or disables detekt rules and sets thresholds"
-            layout {
-                detektConfigDir / "*.yml".file()
-            }
-        }
+  "Detekt".group {
+    documented = false
 
-        "Baseline".role {
-            title = "detekt baseline"
-            summary = "baseline.xml that tolerates existing findings (may be absent)"
-            layout {
-                detektConfigDir / "baseline.xml".file().optional()
-            }
-        }
+    "Config".role {
+      title = "detekt config file"
+      summary = "YAML that enables or disables detekt rules and sets thresholds"
+      layout {
+        detektConfigDir / "*.yml".file()
+      }
     }
+
+    "Baseline".role {
+      title = "detekt baseline"
+      summary = "baseline.xml that tolerates existing findings (may be absent)"
+      layout {
+        detektConfigDir / "baseline.xml".file().optional()
+      }
+    }
+  }
 ```
 
 <SnippetIsStartingPoint />

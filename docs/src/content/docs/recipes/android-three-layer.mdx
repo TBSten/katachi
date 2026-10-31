@@ -119,11 +119,10 @@ const val appPackageDir = "com/example/project"
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.konsist.konsist
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 fun DeclarationContainerScope.uiState() = "UiState".role {
   summary = "Holds the state a screen renders, as an immutable value"
@@ -131,13 +130,16 @@ fun DeclarationContainerScope.uiState() = "UiState".role {
     "app" / mainSourceSet / kotlin / appPackageDir / "ui/*" / "*UiState".ktFile()
   }
 
-  shouldBeImmutable()
-}
+  // HomeUiState.kt holds a data class HomeUiState that has only val properties
+  ktFileContent {
+    `package`(matchingDirectory)
+    `import`("**")
 
-private fun RoleScope.shouldBeImmutable() =
-  "All properties are val".konsist {
-    classes().must { klass -> klass.properties().all { it.isVal } }
+    required(data, `class`, fileName) {
+      allow(`val`, "*")      // var is not allowed, so mutable state is a violation
+    }
   }
+}
 ```
 
 </TabItem>
@@ -353,11 +355,11 @@ fun DeclarationContainerScope.dataSource() = "DataSource".role {
 
 A real definition that splits the layers into groups and the kinds of files into Roles is in [ProjectArchitecture.kt in sample/android](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/ProjectArchitecture.kt). The sample has no domain layer and splits its modules by screen, so its definition is shaped differently from the one on this page.
 
-When you use `ktFileContent { }` and `konsist { }`, you need the setup described in [Define an allow list of the declarations a file may contain](/katachi/guides/kt-file-content/#installation).
+When you use `ktFileContent { }`, you need the setup described in [Define an allow list of the declarations a file may contain](/katachi/guides/kt-file-content/#installation).
 
 ## AndroidManifest.xml and the res/ Role
 
-Android files that belong to none of the three layers also need Roles. `:app` has only one `AndroidManifest.xml`, so write its name as it is. The layout inside `res/` is decided by the Android resource system, so use `ignore()` for it. The next two are quoted from [AndroidManifestRole.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/roles/AndroidManifestRole.kt) and [AndroidResourceRole.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/roles/AndroidResourceRole.kt) in sample/android.
+Android files that belong to none of the three layers also need Roles. `:app` has only one `AndroidManifest.xml`, so write its name as it is. The layout inside `res/` is decided by the Android resource system, so use `ignore()` for it. The next two are quoted from [AndroidManifestRole.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/app/AndroidManifestRole.kt) and [AndroidResourceRole.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/app/AndroidResourceRole.kt) in sample/android.
 
 ```kt {8,20}
 // roles/AndroidManifest.kt
@@ -384,7 +386,7 @@ fun DeclarationContainerScope.androidResource() = "AndroidResource".role {
 }
 ```
 
-In `ProjectArchitecture.kt`, put them into the `:app` group, as in `"app".group { androidManifest(); androidResource() }`. The sample also places the `MainActivity` and `MainApplication` Roles in the same group ([AppGroup.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/groups/AppGroup.kt)).
+In `ProjectArchitecture.kt`, put them into the `:app` group, as in `"app".group { androidManifest(); androidResource() }`. The sample also places the `MainActivity` and `MainApplication` Roles in the same group ([AppGroup.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/app/AppGroup.kt)).
 
 <SnippetIsStartingPoint>
 For example, if your product uses Dagger Hilt, you might add a check for the `@HiltViewModel` annotation on ViewModels, or a check that repository implementation classes have an `@Inject` constructor — customizations like these will likely be necessary.

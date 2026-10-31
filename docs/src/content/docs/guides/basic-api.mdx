@@ -1,6 +1,6 @@
 ---
 title: Basic API
-description: Just seven things to remember. architecture / group / Role / layout / ktFileContent / konsist / assert.
+description: Just six things to remember. architecture / group / Role / layout / ktFileContent / assert.
 tags:
   - beginner
 ---
@@ -9,7 +9,7 @@ tags:
   Purpose of this page: to help users understand katachi's basic API well enough to define their own project's architecture. To give them the big picture of the API katachi provides.
 */}
 
-import { Aside, FileTree } from '@astrojs/starlight/components';
+import { Aside, FileTree, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 This page introduces katachi's core API.
 Once you know these, you should understand the basics of using katachi.
@@ -90,15 +90,25 @@ In katachi, only files with a declared Role are allowed to exist in the project.
 
 In other words, adopting katachi requires you to enumerate the Roles that match your project's conventions.
 
-### Reading more about Role
+### Role details
 
 For Role, also see [Role definitions in depth](/katachi/guides/role/).
+
+<CardGrid>
+  <LinkCard
+    title="Role"
+    description="Learn how to write a description for a Role, and how to constrain where files live and what they contain."
+    href="/katachi/guides/role/"
+  />
+</CardGrid>
 
 ## 4. Grouping Roles with `"...".group { }`
 
 `"Name".group { }` is a block for grouping Roles together.
 
 For example, in Clean architecture, `UseCase` and `RepositoryInterface` are both **roles in the same domain layer**.
+
+In this case, you can express that hierarchy by wrapping the Roles in `"...".group { }`, as below.
 
 ```kt {2}
 architecture {
@@ -111,9 +121,34 @@ architecture {
 
 Expressing a group like "the domain layer" in the DSL makes the relationships and hierarchy between roles clear. Grouping Roles at a sensible granularity is important for building an architecture definition that's easy to understand.
 
-### Reading more about Role groups
+### Nested Role groups
+
+`"...".group { }` can be nested.
+
+```kt {3,6}
+architecture {
+  "domain".group {
+    "usecase".group {
+      "UseCase".role { /* ... */ }
+    }
+    "repository".group {
+      "RepositoryInterface".role { /* ... */ }
+    }
+  }
+}
+```
+
+### Role group details
 
 For grouping Roles, also see [Role definitions in depth](/katachi/guides/role/).
+
+<CardGrid>
+  <LinkCard
+    title="Role"
+    description="Learn how to group Roles with group, and how to design Roles that stay easy to maintain."
+    href="/katachi/guides/role/#grouping-roles"
+  />
+</CardGrid>
 
 ## 5. Defining where files may exist with `layout { }`
 
@@ -146,15 +181,19 @@ Say an AI Agent tries to place a new UseCase file at `src/main/kotlin/com/exampl
     - GetUserUseCase.kt ⭐️ where the declaration puts it
 </FileTree>
 
-### Reading more about layout
+### Layout details
 
 For `layout { }`, also see [Layout definitions in depth](/katachi/guides/layout/).
 
-## 6. Defining the declarations a file may contain with `ktFileContent { }`
+<CardGrid>
+  <LinkCard
+    title="Layout"
+    description="Learn the two ways to write where files may live, and when to use anyFile(), which allows any file, and ignore(), which excludes paths from the check."
+    href="/katachi/guides/layout/"
+  />
+</CardGrid>
 
-<Aside type="note" title="Draft written by AI">
-This section and the `ktFileContent { }` row in the summary table are a draft written by AI. `ktFileContent { }` is an experimental feature added in v0.3.
-</Aside>
+## 6. Defining the declarations a file may contain with `ktFileContent { }`
 
 `ktFileContent { }` is the block that defines, as an allow list, the package, imports, and declarations that may be placed in a Role's files.
 
@@ -177,16 +216,16 @@ architecture {
 // GetUserUseCase.kt may contain only the package com.example.useCase declaration and class GetUserUseCase
 ```
 
-Declarations placed in `GetUserUseCase.kt` either pass or fail like this.
+Declarations placed in `GetUserUseCase.kt` either pass or are a violation, like this.
 
 ```kt title="GetUserUseCase.kt"
 package com.example.useCase
 
 class GetUserUseCase { /* ... */ }   // passes: matches the required line
-fun helper() {}                      // fails: no line matches
+fun helper() {}                      // violation: no line matches
 ```
 
-The declaration that fails is reported like this (some lines are omitted).
+The declaration that is a violation is reported like this (some lines are omitted).
 
 ```text
 [UnsatisfiedFileConstraint] file:///path/to/project/src/main/kotlin/com/example/useCase/GetUserUseCase.kt
@@ -195,56 +234,46 @@ The declaration that fails is reported like this (some lines are omitted).
   Not allowed: fun helper()
 ```
 
-The lines you write become the allow list, and nothing may be placed for a kind you wrote no line for (deny by default). This example has no import line, so the file may not have a single import. The members of a class are an allow list of the lines in its `{ }`, and `allow(anythingElse)` means "anything". `fileName` holds the name of the file being checked (`GetUserUseCase` for `GetUserUseCase.kt`).
+The lines you write become the allow list, and nothing may be placed for a kind you wrote no line for (deny by default). This example has no import line, so the file may not have a single import. The members of a class are an allow list of the lines in its `{ }`, and `allow(anythingElse)` means "anything".
 
 `ktFileContent { }` lives in the separate `katachi-konsist` module. To check it, call `assert(FileConstraintCheck())` instead of `assert()` in the test. With `assert()` alone it is not checked, and the test fails with `[UncheckedFileConstraint]`.
 
-### Reading more about `ktFileContent { }`
+### `ktFileContent { }` details
 
 For `ktFileContent { }`, also see [Define an allow list of the declarations a file may contain](/katachi/guides/kt-file-content/).
-
-## 7. Constraining a file's contents with `"...".konsist { }`
-
-You can set constraints on the files of a declared Role using [Konsist](https://docs.konsist.lemonappdev.com/). Write the constraints that `ktFileContent { }` can't express here.
-
-```kt {7}
-architecture {
-  "UseCase".role {
-    layout {
-      "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
-    }
-
-    "has exactly one invoke function".konsist {
-      classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
-    }
-  }
-}
-```
-
-The constraints apply to the files specified in `layout { }`, and the constraints themselves are written with the Konsist API. If a class doesn't satisfy a constraint, the name you gave it appears as-is in the report (some lines are omitted).
-
-```text
-[UnsatisfiedFileConstraint] file:///path/to/project/src/main/kotlin/com/example/useCase/GetUserUseCase.kt
-  Role: UseCase / FileConstraint: "has exactly one invoke function"
-  Declaration: GetUserUseCase (line 3)
-```
-
-To check the constraints, call `assert(FileConstraintCheck())` instead of `assert()` in the test. With `assert()` alone the constraints are not evaluated, and the test fails with `[UncheckedFileConstraint]`.
 
 ## Summary
 
 | API | What it does |
 |---|---|
-| `architecture { }` | The entry point that defines the architecture of the whole project |
-| `assert()` | Checks that files are placed as defined. It is the one line you call from a test, and nothing happens without it |
-| `"Name".role { }` | Declares the role (Role) that a file appearing in the project plays |
-| `"Name".group { }` | Brings Roles together to build a hierarchy. Using it is optional |
-| `layout { }` | Defines where the files for that Role may be placed |
-| `ktFileContent { }` | Defines, as an allow list, the package, imports, and declarations that may be placed in that Role's files |
-| `"Name".konsist { }` | Applies constraints to the contents of that Role's files with Konsist. The constraint name appears directly in the violation report |
+| `architecture { }` | The entry point that defines the architecture of the whole project. |
+| `assert()` | Checks that files are placed as defined. It is the one line you call from a test, and nothing happens without it. |
+| `"Name".role { }` | Declares the role (Role) that a file appearing in the project plays. |
+| `"Name".group { }` | Brings Roles together to build a hierarchy. Using it is optional. |
+| `layout { }` | Defines where the files for that Role may be placed. |
+| `ktFileContent { }` | Defines, as an allow list, the package, imports, and declarations that may be placed in that Role's files. |
 
 ## Next steps
 
-- [Your first architecture definition](/katachi/get-started/first-architecture/) ... Introduce katachi into your project and actually write these seven things.
-- [Role](/katachi/guides/role/) ... Learn how to write descriptions for roles, and how to keep the definition from becoming a copy of your directory structure.
-- [Layout](/katachi/guides/layout/) ... Learn how to write out placements, and when to reach for the deny-by-default escape hatches `anyFile()` / `ignore()`.
+<CardGrid>
+  <LinkCard
+    title="Your first architecture definition"
+    href="/katachi/get-started/first-architecture/"
+    description="Introduce katachi into your project and actually write these six things."
+  />
+  <LinkCard
+    title="Role"
+    href="/katachi/guides/role/"
+    description="Learn how to write descriptions for roles, and how to keep the definition from becoming a copy of your directory structure."
+  />
+  <LinkCard
+    title="Layout"
+    href="/katachi/guides/layout/"
+    description="Learn how to write where files may live, and when to use the escape hatches from deny by default: allowing any file and excluding paths from the check."
+  />
+  <LinkCard
+    title="ProjectArchitecture.kt in sample/jvm"
+    href="https://github.com/TBSten/katachi/blob/main/sample/jvm/architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt"
+    description="The entry point of a definition written with these APIs. It only calls the groups."
+  />
+</CardGrid>

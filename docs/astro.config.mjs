@@ -37,7 +37,7 @@ const sidebar = (() => {
 			item('guides/basic-api', { en: 'The basic API', ja: '基本的な API' }),
 			item('guides/role', { en: 'Role', ja: 'Role' }),
 			item('guides/layout', { en: 'Layout', ja: 'Layout' }),
-			item('guides/kt-file-content', { en: '[AI-generated] File content allow list', ja: 'ktFileContent' }),
+			item('guides/kt-file-content', { en: 'ktFileContent', ja: 'ktFileContent' }),
 			item('guides/document-generation', { en: 'Document generation', ja: 'ドキュメント生成' }),
 			item('guides/generate-code-from-template', { en: 'Generate code from template', ja: 'テンプレートからコード生成' }),
 			item('guides/baseline', { en: 'Baseline', ja: 'Baseline' }),
@@ -55,7 +55,8 @@ const sidebar = (() => {
 			item('recipes/github', { en: 'GitHub', ja: 'GitHub' }),
 		),
 		link('/api-docs/', { en: 'API reference', ja: 'API リファレンス' }),
-		item('roadmap', { en: 'Roadmap', ja: 'ロードマップ' }),
+		item('showcase', { en: 'Showcase', ja: 'ショーケース' }),
+		item('roadmap',{ en: 'Roadmap', ja: 'ロードマップ' }),
 	]
 })()
 

@@ -12,15 +12,7 @@ tags:
 
 import SnippetIsStartingPoint from '../../../../components/SnippetIsStartingPoint.astro';
 
-import { LinkCard } from '@astrojs/starlight/components';
-
-ktlint では、lint rule の無効化などを .editorconfig ファイルで設定できます。
-
-<LinkCard
-  title="ktlint"
-  description="Kotlin の linter / formatter。設定は .editorconfig に書く。"
-  href="https://ktlint.github.io/ktlint/latest/"
-/>
+[ktlint](https://ktlint.github.io/ktlint/latest/) では、lint rule の無効化などを .editorconfig ファイルで設定できます。
 
 .editorconfig とベースライン（`ktlint-baseline.xml`）は、アーキテクチャ定義に書いて katachi に伝えておくのがおすすめです。
 
@@ -32,9 +24,9 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 
 val projectArchitecture = architecture {
-    "Tools".group {
-        ktlint()
-    }
+  "Tools".group {
+    ktlint()
+  }
 }
 
 // roles/Ktlint.kt
@@ -44,23 +36,25 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.ktlint() =
-    "Ktlint".group {
-        "EditorConfig".role {
-            title = "EditorConfig"
-            summary = "ktlint のルールを設定するファイル"
-            layout {
-                "**/.editorconfig".file()
-            }
-        }
+  "Ktlint".group {
+    documented = false
 
-        "Baseline".role {
-            title = "ktlint ベースライン"
-            summary = "既存の違反を許容するために ktlint が書き出すファイル"
-            layout {
-                "**/ktlint-baseline.xml".file()
-            }
-        }
+    "EditorConfig".role {
+      title = "EditorConfig"
+      summary = "ktlint のルールを設定するファイル"
+      layout {
+        "**/.editorconfig".file()
+      }
     }
+
+    "Baseline".role {
+      title = "ktlint ベースライン"
+      summary = "既存の違反を許容するために ktlint が書き出すファイル"
+      layout {
+        "**/ktlint-baseline.xml".file()
+      }
+    }
+  }
 ```
 
 {/* TODO: C16 コードの直後にサンプルへのリンクが無い（sample/ に ktlint の例が無い） → 先に sample に ktlint の Role を足し、コードの直後にそのファイルへのリンクを1行置く */}

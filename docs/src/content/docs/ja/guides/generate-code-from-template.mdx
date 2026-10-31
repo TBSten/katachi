@@ -9,46 +9,46 @@ tags:
   このページの目的: katachi のテンプレート生成機能について深く網羅的に理解してもらうこと。
 */}
 
-import { Aside, FileTree } from '@astrojs/starlight/components';
+import { Aside, FileTree, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 layout の宣言に `.template { }` を追加すると、そのファイルをコードとして生成できます。
 
 ```kt {4-5,21-22} nocollapse
 "UseCase".role {
-    layout {
-        "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" /
-            "${capture("name")}UseCase".ktFile()
-                .template {
-                    val name = captureValue("name")
-                    """
-                        package com.example.core.domain.useCase
+  layout {
+    "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" /
+      "${capture("name")}UseCase".ktFile()
+        .template {
+          val name = captureValue("name")
+          """
+            package com.example.core.domain.useCase
 
-                        interface ${name}UseCase {
-                            suspend operator fun invoke()
-                        }
-                    """.trimIndent()
-                }
-    }
+            interface ${name}UseCase {
+              suspend operator fun invoke()
+            }
+          """.trimIndent()
+        }
+  }
 }
 
 "UseCaseImplementation".role {
-    layout {
-        "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" /
-            "${capture("name")}UseCaseImpl".ktFile()
-                .template {
-                    val name = captureValue("name")
-                    val implBody by stringParameter(default = """TODO("${name}UseCase の実装")""")
-                    """
-                        package com.example.core.domain.useCase
+  layout {
+    "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" /
+      "${capture("name")}UseCaseImpl".ktFile()
+        .template {
+          val name = captureValue("name")
+          val implBody by stringParameter(default = """TODO("${name}UseCase の実装")""")
+          """
+            package com.example.core.domain.useCase
 
-                        class ${name}UseCaseImpl : ${name}UseCase {
-                            override suspend fun invoke() {
-                                $implBody
-                            }
-                        }
-                    """.trimIndent()
-                }
-    }
+            class ${name}UseCaseImpl : ${name}UseCase {
+              override suspend fun invoke() {
+                $implBody
+              }
+            }
+          """.trimIndent()
+        }
+  }
 }
 ```
 
@@ -89,12 +89,12 @@ layout の宣言に `.template { }` を追加すると、そのファイルを�
 
 ```kt {4}
 "${capture("name")}UseCaseImpl".ktFile()
-    .template {
-        val name = captureValue("name")
-        val implBody by stringParameter(default = """TODO("${name}UseCase の実装")""")
+  .template {
+    val name = captureValue("name")
+    val implBody by stringParameter(default = """TODO("${name}UseCase の実装")""")
 
-        // ...
-    }
+    // ...
+  }
 ```
 
 プロパティの名前がそのままパラメータの名前になります。 `val implBody by stringParameter(default = ...)` は `--arg implBody=...` で渡すパラメータを宣言します。
@@ -124,7 +124,7 @@ capture とパラメータは、1回の実行で生成するテンプレート�
 
 ```kt {2}
 layout {
-    "feature" / capture("feature") / "src" / "main" / "kotlin" / "*ViewModel".ktFile()
+  "feature" / capture("feature") / "src" / "main" / "kotlin" / "*ViewModel".ktFile()
 }
 ```
 
@@ -136,24 +136,24 @@ layout {
 
 ```kt {3-5,7-8} nocollapse
 "FeatureComponent".role {
-    layout {
-        "feature" / capture("feature") / "commonMain".sourceSet / kotlin /
-            "com/example/kmp/feature" / capture("feature") / "component" /
-            "${capture("name")}".ktFile()
-                .template {
-                    val feature = captureValue("feature")
-                    val name = captureValue("name")
+  layout {
+    "feature" / capture("feature") / "commonMain".sourceSet / kotlin /
+      "com/example/kmp/feature" / capture("feature") / "component" /
+      "${capture("name")}".ktFile()
+        .template {
+          val feature = captureValue("feature")
+          val name = captureValue("name")
 
-                    """
-                        package com.example.kmp.feature.$feature.component
+          """
+            package com.example.kmp.feature.$feature.component
 
-                        @Composable
-                        internal fun $name(title: String) {
-                            Text(text = title)
-                        }
-                    """.trimIndent()
-                }
-    }
+            @Composable
+            internal fun $name(title: String) {
+              Text(text = title)
+            }
+          """.trimIndent()
+        }
+  }
 }
 ```
 
@@ -172,23 +172,23 @@ capture の名前は、そのまま `--arg` の引数名になります。 テ�
 
 ```kt {3-4} nocollapse
 "FeatureReadme".role {
-    layout {
-        "docs" / capture("feature") / "README.md".file()
-            .template {
-                val feature = captureValue("feature")
-                """
-                    # $feature
+  layout {
+    "docs" / capture("feature") / "README.md".file()
+      .template {
+        val feature = captureValue("feature")
+        """
+          # $feature
 
-                    ## 責務
+          ## 責務
 
-                    TODO
+          TODO
 
-                    ## 公開する API
+          ## 公開する API
 
-                    TODO
-                """.trimIndent()
-            }
-    }
+          TODO
+        """.trimIndent()
+      }
+  }
 }
 ```
 
@@ -219,11 +219,11 @@ capture の名前は、そのまま `--arg` の引数名になります。 テ�
 import me.tbsten.katachi.gradle.KatachiOnExisting
 
 katachi {
-    processors {
-        template {
-            onExisting = KatachiOnExisting.SKIP
-        }
+  processors {
+    template {
+      onExisting = KatachiOnExisting.SKIP
     }
+  }
 }
 ```
 
@@ -241,46 +241,24 @@ katachi {
 
 詳細には、パラメータの一覧、生成先のパスとファイルの中身、`katachiTemplate` のコマンドが表示されます。
 
-## IDE から生成する（実験的）
-
-IntelliJ IDEA / Android Studio のプラグインを入れると、テンプレートの一覧・パラメータの入力・生成を IDE の中で済ませられます。`--arg` を組み立てる必要はありません。実験的な機能なので、画面や振る舞いは今後の版で変わることがあります。
-
-JetBrains Marketplace には公開していません。次の手順で、GitHub Releases の zip から入れます。
-
-1. [GitHub Releases](https://github.com/TBSten/katachi/releases/latest) から `katachi-intellij-plugin-<版>.zip` をダウンロードします。
-2. IDE の **Settings → Plugins** で ⚙ → **Install Plugin from Disk…** を選び、zip を展開せずに指定します。
-3. 再起動を求められたら IDE を再起動します。
-
-IntelliJ IDEA 2026.1 と Android Studio Quail（2026.1）以降で使えます。
-
-プロジェクトに katachi 0.2.0 以降の Gradle プラグインが入っていて、Gradle の同期が済んでいる必要があります。
-
-次の3か所から生成できます。画面の言語は IDE の言語（日本語または英語）に従います。
-
-- 右端の **katachi** Tool Window
-- Project ツリーで右クリック → **New → katachi**
-- テンプレートに合うファイルを開いたときに、エディタの上に出る通知
-
-IDE を更新しても、プラグインは自動では更新されません。新しい版は Releases から入れ直します。
-
 ## まとめ
 
 このページで扱った書き方を全部使うと、テンプレートは次のようになります。
 
 ```kt nocollapse
 "FeatureReadme".role {
-    layout {
-        "docs" / capture("feature") / "README.md".file()
-            .template {
-                val feature = captureValue("feature")
-                val summary by stringParameter(default = "TODO")
-                """
-                    # $feature
+  layout {
+    "docs" / capture("feature") / "README.md".file()
+      .template {
+        val feature = captureValue("feature")
+        val summary by stringParameter(default = "TODO")
+        """
+          # $feature
 
-                    $summary
-                """.trimIndent()
-            }
-    }
+          $summary
+        """.trimIndent()
+      }
+  }
 }
 ```
 
@@ -292,6 +270,25 @@ IDE を更新しても、プラグインは自動では更新されません。�
 
 ## 次のステップ
 
-- [ドキュメント生成](/katachi/ja/guides/document-generation/) ... 同じ定義から、コードではなくドキュメントを生成する方法を学びましょう。
-- [ArchitectureProcessor とそのカスタマイズ](/katachi/ja/guides/processor/) ... テンプレート生成も ArchitectureProcessor の1つです。自分で別の成果物を出す方法を学びましょう。
-- [Layout システムでディレクトリ構成を厳守させる](/katachi/ja/guides/layout/) ... `.template { }` を付ける宣言の書き方と、`capture()` の使いどころを学びましょう。
+<CardGrid>
+  <LinkCard
+    title="ドキュメント生成"
+    href="/katachi/ja/guides/document-generation/"
+    description="同じ定義から、コードではなくドキュメントを生成する方法を学びましょう。"
+  />
+  <LinkCard
+    title="ArchitectureProcessor とそのカスタマイズ"
+    href="/katachi/ja/guides/processor/"
+    description="テンプレート生成も ArchitectureProcessor の1つです。自分で別の成果物を出す方法を学びましょう。"
+  />
+  <LinkCard
+    title="Layout"
+    href="/katachi/ja/guides/layout/"
+    description="テンプレートを宣言に付ける書き方と、ワイルドカードに名前を付けるキャプチャの使いどころを学びましょう。"
+  />
+  <LinkCard
+    title="sample/jvm の ApiGroup.kt"
+    href="https://github.com/TBSten/katachi/blob/main/sample/jvm/architecture-test/src/test/kotlin/com/example/api/ApiGroup.kt"
+    description="api の group の中でテンプレートセットを宣言している実例です。"
+  />
+</CardGrid>

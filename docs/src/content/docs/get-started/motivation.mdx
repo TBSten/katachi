@@ -9,7 +9,7 @@ tags:
   The purpose of this page: to help users who have never used katachi understand where katachi fits and how it differs from other tools such as Konsist. It is not to teach the details of the API.
 */}
 
-import { Aside, FileTree, LinkCard } from '@astrojs/starlight/components';
+import { Aside, FileTree, LinkCard, CardGrid } from '@astrojs/starlight/components';
 import CodeComparison from '../../../components/CodeComparison';
 
 This page explains the problem katachi solves and how it differs in position from other tools such as Konsist.
@@ -27,7 +27,7 @@ There's also a 5-minute slide deck that gives you the big picture of katachi.
 
 Being the diligent developer you are, your project surely has a `/docs` directory that spells out the overall structure and the rules for every component.
 
-But the sentence "a UseCase is written like this" in that documentation has no power to enforce anything. A newcomer who does not know the project's rules, or an AI agent that is uncertain by nature, can break those rules without effort.
+But the sentence "a UseCase is written like this" in that documentation has no power to enforce anything. A newcomer who does not know the project's rules, or an AI agent that is uncertain by nature, can easily ignore those rules.
 
 ## Konsist alone is not enough
 
@@ -39,11 +39,11 @@ Konsist lets you write your project's rules as unit tests.
 class UseCaseKonsistTest {
   @Test
   fun `a UseCase has exactly one invoke function`() {
-      Konsist
-          .scopeFromProject()
-          .classes()
-          .withNameEndingWith("UseCase")
-          .assertTrue { it.functions().map { function -> function.name } == listOf("invoke") }
+    Konsist
+      .scopeFromProject()
+      .classes()
+      .withNameEndingWith("UseCase")
+      .assertTrue { it.functions().map { function -> function.name } == listOf("invoke") }
   }
 }
 ```
@@ -101,9 +101,9 @@ class GetUserUseCase {
 
 <FileTree>
 - src/main/kotlin/com/example/project/
-  - **GetUserUseCase.kt** ❌ placed somewhere that was never declared
+  - **GetUserUseCase.kt** ❌ somewhere that was never declared
   - useCase/
-    - UpdateUserUseCase.kt ⭐️ exactly where the declaration says
+    - UpdateUserUseCase.kt ⭐️ exactly where the declaration says it should be
 </FileTree>
 
 Running the unit test that includes katachi reports the error like this:
@@ -223,16 +223,16 @@ $ ./gradlew katachiTemplate --arg template=UseCase,UseCaseImplementation --arg n
         layout {
           "src/main/kotlin/com/example/project/useCase" /
             "${capture("name")}UseCase".ktFile()
-                .template {
-                  val name = captureValue("name")
-                  """
-                    package com.example.project.useCase
+              .template {
+                val name = captureValue("name")
+                """
+                  package com.example.project.useCase
 
-                    interface ${name}UseCase {
-                      suspend operator fun invoke()
-                    }
-                  """.trimIndent()
-                }
+                  interface ${name}UseCase {
+                    suspend operator fun invoke()
+                  }
+                """.trimIndent()
+              }
         }
       }
 
@@ -240,18 +240,18 @@ $ ./gradlew katachiTemplate --arg template=UseCase,UseCaseImplementation --arg n
         layout {
           "src/main/kotlin/com/example/project/useCase" /
             "${capture("name")}UseCaseImpl".ktFile()
-                .template {
-                  val name = captureValue("name")
-                  """
-                    package com.example.project.useCase
+              .template {
+                val name = captureValue("name")
+                """
+                  package com.example.project.useCase
 
-                    class ${name}UseCaseImpl : ${name}UseCase {
-                      override suspend fun invoke() {
-                        // Write the behavior here
-                      }
+                  class ${name}UseCaseImpl : ${name}UseCase {
+                    override suspend fun invoke() {
+                      // Write the behavior here
                     }
-                  """.trimIndent()
-                }
+                  }
+                """.trimIndent()
+              }
         }
       }
       // ...
@@ -298,9 +298,9 @@ See [Generating code from a template](/katachi/guides/generate-code-from-templat
 
 </details>
 
-## katachi and Konsist
+## Verify file contents too
 
-katachi works together with Konsist: it verifies the project as a whole, then checks each individual file.
+When you write `ktFileContent { }`, katachi verifies the project as a whole, then checks the contents of each individual file as well.
 
 ```kt
 val projectArchitecture = architecture {
@@ -311,10 +311,14 @@ val projectArchitecture = architecture {
     }
 
     // what its contents should look like
-    "has exactly one invoke function".konsist {
-      classes()
-        .withNameEndingWith("UseCase")
-        .must { it.functions().map { function -> function.name } == listOf("invoke") }
+    ktFileContent {
+      `package`("**")
+      `import`("**")
+
+      required(`class`, fileName) {
+        required(suspend.optional(), operator, `fun`, "invoke")(anyArgs()) // exactly one invoke function
+        allow(private, anythingElse)                                       // any other public declaration is forbidden
+      }
     }
   }
 }
@@ -322,11 +326,29 @@ val projectArchitecture = architecture {
 
 When the test calls `assert(FileConstraintCheck())`, placement violations and content violations line up in one and the same report.
 
-The recommended split is to test the structure of the whole project with katachi, then check the contents of each file with Konsist.
+The recommended split is to test the structure of the whole project with katachi, then check the contents of each file with `ktFileContent { }`.
 
 ## Next steps
 
-- [Your first architecture definition](/katachi/get-started/first-architecture/) ... Add a katachi architecture definition to your own project and see what it does for you.
-- [FAQ](/katachi/get-started/faq/) ... Understand the thinking behind katachi through the questions people ask most.
-- [Role definitions](/katachi/guides/role/) ... Learn about the Role, the basic unit of an architecture definition in katachi.
-- [Layout](/katachi/guides/layout/) ... Learn about Layout, how katachi defines directory structure.
+<CardGrid>
+  <LinkCard
+    title="Your first architecture definition"
+    href="/katachi/get-started/first-architecture/"
+    description="Add a katachi architecture definition to your own project and see what it does for you."
+  />
+  <LinkCard
+    title="FAQ"
+    href="/katachi/get-started/faq/"
+    description="Understand the thinking behind katachi through the questions people ask most."
+  />
+  <LinkCard
+    title="Role definitions"
+    href="/katachi/guides/role/"
+    description="Learn about the Role, the basic unit of an architecture definition in katachi."
+  />
+  <LinkCard
+    title="Layout"
+    href="/katachi/guides/layout/"
+    description="Learn about Layout, how katachi defines directory structure."
+  />
+</CardGrid>

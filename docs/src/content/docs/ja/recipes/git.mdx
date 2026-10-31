@@ -20,48 +20,50 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 
 val projectArchitecture = architecture {
-    "Tools".group {
-        git()
-    }
+  "Tools".group {
+    git()
+  }
 }
 ```
 
 `git()` の中身は `roles/Git.kt` に置きます。
 
-```kt title=roles/Git.kt {8,16,24}
+```kt title=roles/Git.kt {10,18,26}
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.git() =
-    "Git".group {
-        "GitIgnore".role {
-            title = "Git 無視設定"
-            summary = "Git に渡さないファイルの一覧（.gitignore）"
-            layout {
-                "**/.gitignore".file()
-            }
-        }
+  "Git".group {
+    documented = false
 
-        "GitKeep".role {
-            title = "Git 空ディレクトリ保持"
-            summary = "ディレクトリを残すための空ファイル（.gitkeep）"
-            layout {
-                "**/.gitkeep".file()
-            }
-        }
-
-        "GitAttributes".role {
-            title = "Git 属性"
-            summary = "改行コードや diff の扱いなど、パスごとの属性（.gitattributes）"
-            layout {
-                "**/.gitattributes".file()
-            }
-        }
+    "GitIgnore".role {
+      title = "Git 無視設定"
+      summary = "Git に渡さないファイルの一覧（.gitignore）"
+      layout {
+        "**/.gitignore".file()
+      }
     }
+
+    "GitKeep".role {
+      title = "Git 空ディレクトリ保持"
+      summary = "ディレクトリを残すための空ファイル（.gitkeep）"
+      layout {
+        "**/.gitkeep".file()
+      }
+    }
+
+    "GitAttributes".role {
+      title = "Git 属性"
+      summary = "改行コードや diff の扱いなど、パスごとの属性（.gitattributes）"
+      layout {
+        "**/.gitattributes".file()
+      }
+    }
+  }
 ```
 
-サンプルでは `.gitignore` だけを1つの Role で宣言しています（[sample/jvm の GitRole.kt](https://github.com/TBSten/katachi/blob/main/sample/jvm/architecture-test/src/test/kotlin/com/example/roles/GitRole.kt)）。
+サンプルでは `.gitignore` だけを1つの Role で宣言しています（[sample/jvm の GitRole.kt](https://github.com/TBSten/katachi/blob/main/sample/jvm/architecture-test/src/test/kotlin/com/example/tool/GitRole.kt)）。
 
 <SnippetIsStartingPoint />

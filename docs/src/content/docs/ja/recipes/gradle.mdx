@@ -21,15 +21,15 @@ import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gradle.gradle
 
 val projectArchitecture = architecture {
-    gradle() // gradle.kts, gradle wrapper などが documented = false で宣言されます
+  gradle() // gradle.kts, gradle wrapper などが documented = false で宣言されます
 }
 ```
 
-custom-processor のサンプルは、同じ1行で宣言しています（[sample/custom-processor の GradleGroup.kt](https://github.com/TBSten/katachi/blob/main/sample/custom-processor/architecture-test/src/test/kotlin/com/example/groups/GradleGroup.kt)）。jvm・android・kmp のサンプルは `gradle { buildScript { … } }` と書いて、ビルドスクリプトにサンプル独自の制約を足しています（[sample/jvm の GradleGroup.kt](https://github.com/TBSten/katachi/blob/main/sample/jvm/architecture-test/src/test/kotlin/com/example/groups/GradleGroup.kt)）。
+custom-processor のサンプルは、同じ1行で宣言しています（[sample/custom-processor の GradleGroup.kt](https://github.com/TBSten/katachi/blob/main/sample/custom-processor/architecture-test/src/test/kotlin/com/example/gradle/GradleGroup.kt)）。jvm・android・kmp のサンプルは `gradle { buildScript { … } }` と書いて、ビルドスクリプトにサンプル独自の制約を足しています（[sample/jvm の GradleGroup.kt](https://github.com/TBSten/katachi/blob/main/sample/jvm/architecture-test/src/test/kotlin/com/example/gradle/GradleGroup.kt)）。
 
 ## composite build / buildSrc を利用している場合
 
-`gradle()` は `build-logic` などの included build と `buildSrc` を宣言しません。その中のビルドスクリプトと規約プラグインは、自分で宣言します。
+`gradle()` は `build-logic` などの included build と `buildSrc` を宣言しません。その中のビルドスクリプトとconvention pluginは、自分で宣言します。
 
 次の `ProjectArchitecture.kt` が全体の形です。`"Build"` group の中に、3つの Role を並べます。
 
@@ -47,13 +47,13 @@ const val buildConventionDir = "build-logic" // buildSrc を利用する場合�
 const val conventionSourceDir = "$buildConventionDir/src/main/kotlin"
 
 val projectArchitecture = architecture {
-    gradle()
+  gradle()
 
-    "Build".group {
-        documented = false
+  "Build".group {
+    documented = false
 
-        // BuildScript、ConventionPluginScript、ConventionPluginSource の3つの Role を、この中に書きます
-    }
+    // BuildScript、ConventionPluginScript、ConventionPluginSource の3つの Role を、この中に書きます
+  }
 }
 ```
 
@@ -61,48 +61,48 @@ val projectArchitecture = architecture {
 
 ```kt
 "BuildScript".role {
-    summary = "included build / buildSrc 自身のビルドスクリプト"
-    layout {
-        buildConventionDir {
-            "build.gradle".ktsFile()
-            "settings.gradle".ktsFile().optional() // buildSrc では無くてもよい
-        }
+  summary = "included build / buildSrc 自身のビルドスクリプト"
+  layout {
+    buildConventionDir {
+      "build.gradle".ktsFile()
+      "settings.gradle".ktsFile().optional() // buildSrc では無くてもよい
     }
+  }
 }
 ```
 
-### 規約プラグインのスクリプトを宣言する
+### convention pluginのスクリプトを宣言する
 
 ```kt
 "ConventionPluginScript".role {
-    summary = "各モジュールが plugins { id(\"...\") } で適用する、規約プラグインのスクリプト"
-    layout {
-        conventionSourceDir {
-            "${capture("name")}.gradle".ktsFile()
-                .template {
-                    """
-                        plugins {
-                            kotlin("jvm")
-                        }
-                    """.trimIndent()
-                }
+  summary = "各モジュールが plugins { id(\"...\") } で適用する、convention pluginのスクリプト"
+  layout {
+    conventionSourceDir {
+      "${capture("name")}.gradle".ktsFile()
+        .template {
+          """
+            plugins {
+              kotlin("jvm")
+            }
+          """.trimIndent()
         }
     }
+  }
 
-    // ./gradlew katachiTemplate --arg template=Build.ConventionPluginScript --arg name=kotlin-library
+  // ./gradlew katachiTemplate --arg template=Build.ConventionPluginScript --arg name=kotlin-library
 }
 ```
 
-### 規約プラグインから使う Kotlin のクラスを宣言する
+### convention pluginから使う Kotlin のクラスを宣言する
 
 ```kt
 "ConventionPluginSource".role {
-    summary = "規約プラグインのスクリプトから使う、ヘルパーの Kotlin クラス"
-    layout {
-        conventionSourceDir {
-            "**" / "*".ktFile() // パッケージを切ったクラスも許す
-        }
+  summary = "convention pluginのスクリプトから使う、ヘルパーの Kotlin クラス"
+  layout {
+    conventionSourceDir {
+      "**" / "*".ktFile() // パッケージを切ったクラスも許す
     }
+  }
 }
 ```
 

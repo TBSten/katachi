@@ -9,7 +9,7 @@ tags:
   The purpose of this page: to understand how the architecture definition and ArchitectureProcessor work, and how to write and run your own ArchitectureProcessor.
 */}
 
-import { Aside, Tabs, TabItem, LinkCard } from "@astrojs/starlight/components"
+import { Aside, Tabs, TabItem, LinkCard, CardGrid } from "@astrojs/starlight/components"
 
 This page explains ArchitectureProcessor, one of katachi's key elements, to deepen your understanding of katachi.
 
@@ -22,11 +22,11 @@ katachi's `ArchitectureProcessor` is an interface that does something based on a
 ```kt
 @ExperimentalKatachiApi
 public interface ArchitectureProcessor<Args, R> {
-    // Parser for the arguments
-    public val argsSerializer: KSerializer<Args>
+  // Parser for the arguments
+  public val argsSerializer: KSerializer<Args>
 
-    // Does something
-    public fun process(context: ArchitectureProcessContext<Args>): Result<R>
+  // Does something
+  public fun process(context: ArchitectureProcessContext<Args>): Result<R>
 }
 ```
 
@@ -45,13 +45,11 @@ For how to use it, see [RoleDocCoverage.kt in sample/custom-processor](https://g
 
 Broadly speaking, katachi consists of two elements: the **architecture definition** and **ArchitectureProcessor**.
 
-The following diagram shows how one architecture definition is used by both the built-in ArchitectureProcessors and the ArchitectureProcessors you write yourself.
-
 ```mermaid
 flowchart LR
     D["architecture { }<br/>Architecture definition"]
     D --> Layout["LayoutCheck<br/>Validates placement"]
-    D --> Konsist["FileConstraintCheck<br/>Evaluates konsist { } and ktFileContent { } constraints"]
+    D --> FileConstraint["FileConstraintCheck<br/>Evaluates ktFileContent { } constraints"]
     D --> Doc["GenerateDocumentation<br/>Generates documentation"]
     D --> Template["GenerateCodeFromTemplate<br/>Generates code"]
     D -.-> Custom["Your ArchitectureProcessor<br/>Aggregation, extraction, output to other formats"]
@@ -87,7 +85,7 @@ katachi ships with five ArchitectureProcessors.
         </tr>
         <tr>
             <td><code>FileConstraintCheck</code></td>
-            <td>Evaluates the file constraints written on Roles, such as <code>{"konsist { }"}</code> and <code>{"ktFileContent { }"}</code>. Passed as <code>projectArchitecture.assert(FileConstraintCheck())</code>.</td>
+            <td>Evaluates the file constraints written on Roles, such as <code>{"ktFileContent { }"}</code>. Passed as <code>projectArchitecture.assert(FileConstraintCheck())</code>.</td>
             <td></td>
         </tr>
         <tr>
@@ -132,12 +130,12 @@ To run an ArchitectureProcessor from the command line, it needs to be registered
 
 ```kts title="architecture-test/build.gradle.kts" {5-6}
 katachi {
-    processors {
-        // ...
+  processors {
+    // ...
 
-        // ⭐️ Specify the ArchitectureProcessor name and its corresponding class name
-        register("someProcessor", "com.example.SomeProcessor")
-    }
+    // ⭐️ Specify the ArchitectureProcessor name and its corresponding class name
+    register("someProcessor", "com.example.SomeProcessor")
+  }
 }
 ```
 
@@ -145,17 +143,17 @@ You can also set default values at the same time as registering.
 
 ```kts title="architecture-test/build.gradle.kts"
 katachi {
-    processors {
-        // Write defaults at the same time you register
-        register("someProcessor", "com.example.SomeProcessor") {
-            arg("someArg1", "someValue1")
-        }
-
-        // Add defaults to an already-registered key
-        args("docs") {
-            arg("mode", "check")
-        }
+  processors {
+    // Write defaults at the same time you register
+    register("someProcessor", "com.example.SomeProcessor") {
+      arg("someArg1", "someValue1")
     }
+
+    // Add defaults to an already-registered key
+    args("docs") {
+      arg("mode", "check")
+    }
+  }
 }
 ```
 
@@ -206,17 +204,17 @@ Specify the return type at run time as the type argument.
 ```kt {2,3}
 // Define an object that implements ArchitectureProcessorNoArg
 object CountFilesPerRole : ArchitectureProcessorNoArg<Map<String, Int>> {
-    override fun process(context: ArchitectureProcessNoArgContext): Result<Map<String, Int>> = runCatching {
-        // context.architecture    ... the architecture definition
-        // context.roles / groups  ... the defined Roles / groups
-        // context.declaredEntries ... the flattened list of declarations from layout
-        // context.filesOf(role)   ... the actual files that matched that Role
-        // context.rawArgs         ... the arguments passed, as raw names and values
-        // context.log()           ... outputs progress
+  override fun process(context: ArchitectureProcessNoArgContext): Result<Map<String, Int>> = runCatching {
+    // context.architecture    ... the architecture definition
+    // context.roles / groups  ... the defined Roles / groups
+    // context.declaredEntries ... the flattened list of declarations from layout
+    // context.filesOf(role)   ... the actual files that matched that Role
+    // context.rawArgs         ... the arguments passed, as raw names and values
+    // context.log()           ... outputs progress
 
-        context.log("Counting files per role...")
-        context.roles.associate { role -> role.name to context.filesOf(role).size }
-    }
+    context.log("Counting files per role...")
+    context.roles.associate { role -> role.name to context.filesOf(role).size }
+  }
 }
 ```
 
@@ -226,8 +224,8 @@ katachi uses [kotlinx.serialization](https://github.com/kotlin/kotlinx.serializa
 
 ```kts {3} title="architecture-test/build.gradle.kts" 
 plugins {
-    kotlin("jvm") version "<kotlin-version>"
-    kotlin("plugin.serialization") version "<kotlin-version>"
+  kotlin("jvm") version "<kotlin-version>"
+  kotlin("plugin.serialization") version "<kotlin-version>"
 }
 ```        
 
@@ -237,22 +235,22 @@ Specify the argument type as the first type argument and the return type as the 
 
 ```kt {1, 3, 5, 16-17} nocollapse
 object CountFilesPerRole : ArchitectureProcessor<CountFilesPerRole.Args, Map<String, Int>> {
-    // Pass the type of the value received via --arg, and how to read it
-    override val argsSerializer: KSerializer<Args> = Args.serializer()
+  // Pass the type of the value received via --arg, and how to read it
+  override val argsSerializer: KSerializer<Args> = Args.serializer()
 
-    override fun process(context: ArchitectureProcessContext<Args>): Result<Map<String, Int>> = runCatching {
-        // Refer to the arguments using context.args
-        val args: CountFilesPerRole.Args = context.args
-        val prefix = args.prefix
+  override fun process(context: ArchitectureProcessContext<Args>): Result<Map<String, Int>> = runCatching {
+    // Refer to the arguments using context.args
+    val args: CountFilesPerRole.Args = context.args
+    val prefix = args.prefix
 
-        context.log("Counting files per role under $prefix...")
-        context.roles
-            .filter { role -> role.qualifiedName.startsWith(prefix) }
-            .associate { role -> role.name to context.filesOf(role).size }
-    }
+    context.log("Counting files per role under $prefix...")
+    context.roles
+      .filter { role -> role.qualifiedName.startsWith(prefix) }
+      .associate { role -> role.name to context.filesOf(role).size }
+  }
 
-    @Serializable
-    data class Args(val prefix: String = "")
+  @Serializable
+  data class Args(val prefix: String = "")
 }
 ```
 
@@ -271,16 +269,16 @@ var MetadataScope.obsolete: Boolean? by Obsolete
 
 // Processor side
 object ObsoleteRoles : ArchitectureProcessorNoArg<List<String>> {
-    override fun process(context: ArchitectureProcessNoArgContext): Result<List<String>> = runCatching {
-        context.roles.filter { it[Obsolete] == true }.map { it.name }
-    }
+  override fun process(context: ArchitectureProcessNoArgContext): Result<List<String>> = runCatching {
+    context.roles.filter { it[Obsolete] == true }.map { it.name }
+  }
 }
 
 // Usage side
 architecture {
-    "UseCase".role {
-        obsolete = true
-    }
+  "UseCase".role {
+    obsolete = true
+  }
 }
 ```
 
@@ -314,9 +312,9 @@ If you want it runnable from a program as an API, providing an API is recommende
 
         ```kts title="architecture-test/build.gradle.kts"
         katachi {
-            processors {
-                register("countFilesPerRole", "com.example.processors.CountFilesPerRole")
-            }
+          processors {
+            register("countFilesPerRole", "com.example.processors.CountFilesPerRole")
+          }
         }
         ```
 
@@ -341,30 +339,47 @@ Provide the way to run it as documentation, such as in the processor's KDoc, so 
 
 A custom processor is complete once you implement `ArchitectureProcessor` and provide how to run it as an extension function on `Architecture`.
 
-```kt
+```kt nocollapse
 object CountFilesPerRole : ArchitectureProcessor<CountFilesPerRole.Args, Map<String, Int>> {
-    override val argsSerializer: KSerializer<Args> = Args.serializer()
+  override val argsSerializer: KSerializer<Args> = Args.serializer()
 
-    override fun process(context: ArchitectureProcessContext<Args>): Result<Map<String, Int>> = runCatching {
-        val prefix = context.args.prefix
-        context.log("Counting files per role under $prefix...")
-        context.roles
-            .filter { role -> role.qualifiedName.startsWith(prefix) }
-            .associate { role -> role.name to context.filesOf(role).size }
-    }
+  override fun process(context: ArchitectureProcessContext<Args>): Result<Map<String, Int>> = runCatching {
+    val prefix = context.args.prefix
+    context.log("Counting files per role under $prefix...")
+    context.roles
+      .filter { role -> role.qualifiedName.startsWith(prefix) }
+      .associate { role -> role.name to context.filesOf(role).size }
+  }
 
-    @Serializable
-    data class Args(val prefix: String = "")
+  @Serializable
+  data class Args(val prefix: String = "")
 }
 
 fun Architecture.countFilesPerRole(): Map<String, Int> =
-    process(CountFilesPerRole, CountFilesPerRole.Args()).getOrThrow()
+  process(CountFilesPerRole, CountFilesPerRole.Args()).getOrThrow()
 ```
 
 ## Next steps
 
-- [ArchitectureProcessor API reference](/katachi/api-docs/katachi/me.tbsten.katachi.processor/-architecture-processor/index.html) ... The `ArchitectureProcessor` type and the APIs you can use in `process`.
-- [Document generation](/katachi/guides/document-generation/) ... The biggest built-in processor built on the same mechanism.
-    - See also the [KDoc](https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.docs/-generate-documentation/index.html) and [source code](https://github.com/TBSten/katachi/blob/main/katachi/src/main/kotlin/me/tbsten/katachi/docs/GenerateDocumentation.kt#L92) of the document generation ArchitectureProcessor.
-- [Generating code from a template](/katachi/guides/generate-code-from-template/) ... The processor that produces code from the definition.
-    - See also the [KDoc](https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.template/-generate-code-from-template/index.html) and [source code](https://github.com/TBSten/katachi/blob/main/katachi/src/main/kotlin/me/tbsten/katachi/template/GenerateCodeFromTemplate.kt#L124) of the code-from-template ArchitectureProcessor.
+<CardGrid>
+  <LinkCard
+    title="ArchitectureProcessor API reference"
+    href="/katachi/api-docs/katachi/me.tbsten.katachi.processor/-architecture-processor/index.html"
+    description="The ArchitectureProcessor type and the APIs you can use in its body."
+  />
+  <LinkCard
+    title="Document generation"
+    href="/katachi/guides/document-generation/"
+    description="The biggest built-in processor built on the same mechanism."
+  />
+  <LinkCard
+    title="Generating code from a template"
+    href="/katachi/guides/generate-code-from-template/"
+    description="The processor that produces code from the definition."
+  />
+  <LinkCard
+    title="The processors in sample/custom-processor"
+    href="https://github.com/TBSten/katachi/tree/main/sample/custom-processor/architecture-test/src/test/kotlin/com/example/processors"
+    description="The three processors: one with no arguments, one with arguments, and one that checks."
+  />
+</CardGrid>

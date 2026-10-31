@@ -21,11 +21,11 @@ import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gradle.gradle
 
 val projectArchitecture = architecture {
-    gradle() // Declares gradle.kts, the Gradle wrapper, and the like with documented = false
+  gradle() // Declares gradle.kts, the Gradle wrapper, and the like with documented = false
 }
 ```
 
-The custom-processor sample declares it with the same single line ([GradleGroup.kt in sample/custom-processor](https://github.com/TBSten/katachi/blob/main/sample/custom-processor/architecture-test/src/test/kotlin/com/example/groups/GradleGroup.kt)). The jvm, android, and kmp samples write `gradle { buildScript { … } }` and add constraints of the sample's own to the build scripts ([GradleGroup.kt in sample/jvm](https://github.com/TBSten/katachi/blob/main/sample/jvm/architecture-test/src/test/kotlin/com/example/groups/GradleGroup.kt)).
+The custom-processor sample declares it with the same single line ([GradleGroup.kt in sample/custom-processor](https://github.com/TBSten/katachi/blob/main/sample/custom-processor/architecture-test/src/test/kotlin/com/example/gradle/GradleGroup.kt)). The jvm, android, and kmp samples write `gradle { buildScript { … } }` and add constraints of the sample's own to the build scripts ([GradleGroup.kt in sample/jvm](https://github.com/TBSten/katachi/blob/main/sample/jvm/architecture-test/src/test/kotlin/com/example/gradle/GradleGroup.kt)).
 
 ## When you use a composite build / buildSrc
 
@@ -47,13 +47,13 @@ const val buildConventionDir = "build-logic" // Use "buildSrc" instead if you us
 const val conventionSourceDir = "$buildConventionDir/src/main/kotlin"
 
 val projectArchitecture = architecture {
-    gradle()
+  gradle()
 
-    "Build".group {
-        documented = false
+  "Build".group {
+    documented = false
 
-        // Write the three Roles BuildScript, ConventionPluginScript, and ConventionPluginSource inside here
-    }
+    // Write the three Roles BuildScript, ConventionPluginScript, and ConventionPluginSource inside here
+  }
 }
 ```
 
@@ -61,13 +61,13 @@ val projectArchitecture = architecture {
 
 ```kt
 "BuildScript".role {
-    summary = "The build scripts of the included build / buildSrc itself"
-    layout {
-        buildConventionDir {
-            "build.gradle".ktsFile()
-            "settings.gradle".ktsFile().optional() // buildSrc may go without one
-        }
+  summary = "The build scripts of the included build / buildSrc itself"
+  layout {
+    buildConventionDir {
+      "build.gradle".ktsFile()
+      "settings.gradle".ktsFile().optional() // buildSrc may go without one
     }
+  }
 }
 ```
 
@@ -75,21 +75,21 @@ val projectArchitecture = architecture {
 
 ```kt
 "ConventionPluginScript".role {
-    summary = "Convention plugin scripts that each module applies with plugins { id(\"...\") }"
-    layout {
-        conventionSourceDir {
-            "${capture("name")}.gradle".ktsFile()
-                .template {
-                    """
-                        plugins {
-                            kotlin("jvm")
-                        }
-                    """.trimIndent()
-                }
+  summary = "Convention plugin scripts that each module applies with plugins { id(\"...\") }"
+  layout {
+    conventionSourceDir {
+      "${capture("name")}.gradle".ktsFile()
+        .template {
+          """
+            plugins {
+              kotlin("jvm")
+            }
+          """.trimIndent()
         }
     }
+  }
 
-    // ./gradlew katachiTemplate --arg template=Build.ConventionPluginScript --arg name=kotlin-library
+  // ./gradlew katachiTemplate --arg template=Build.ConventionPluginScript --arg name=kotlin-library
 }
 ```
 
@@ -97,12 +97,12 @@ val projectArchitecture = architecture {
 
 ```kt
 "ConventionPluginSource".role {
-    summary = "Helper Kotlin classes used by the convention plugin scripts"
-    layout {
-        conventionSourceDir {
-            "**" / "*".ktFile() // also allows classes in packages
-        }
+  summary = "Helper Kotlin classes used by the convention plugin scripts"
+  layout {
+    conventionSourceDir {
+      "**" / "*".ktFile() // also allows classes in packages
     }
+  }
 }
 ```
 

@@ -12,15 +12,7 @@ tags:
 
 import SnippetIsStartingPoint from '../../../components/SnippetIsStartingPoint.astro';
 
-import { LinkCard } from '@astrojs/starlight/components';
-
-ktlint lets you configure things like disabling lint rules through the .editorconfig file.
-
-<LinkCard
-  title="ktlint"
-  description="A linter / formatter for Kotlin. Configuration lives in .editorconfig."
-  href="https://ktlint.github.io/ktlint/latest/"
-/>
+[ktlint](https://ktlint.github.io/ktlint/latest/) lets you configure things like disabling lint rules through the .editorconfig file.
 
 We recommend declaring .editorconfig and the baseline (`ktlint-baseline.xml`) in your architecture definition so katachi knows about them.
 
@@ -32,9 +24,9 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 
 val projectArchitecture = architecture {
-    "Tools".group {
-        ktlint()
-    }
+  "Tools".group {
+    ktlint()
+  }
 }
 
 // roles/Ktlint.kt
@@ -44,23 +36,25 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.ktlint() =
-    "Ktlint".group {
-        "EditorConfig".role {
-            title = "EditorConfig"
-            summary = "The file that configures ktlint's rules"
-            layout {
-                "**/.editorconfig".file()
-            }
-        }
+  "Ktlint".group {
+    documented = false
 
-        "Baseline".role {
-            title = "ktlint baseline"
-            summary = "The file ktlint writes out to tolerate existing violations"
-            layout {
-                "**/ktlint-baseline.xml".file()
-            }
-        }
+    "EditorConfig".role {
+      title = "EditorConfig"
+      summary = "The file that configures ktlint's rules"
+      layout {
+        "**/.editorconfig".file()
+      }
     }
+
+    "Baseline".role {
+      title = "ktlint baseline"
+      summary = "The file ktlint writes out to tolerate existing violations"
+      layout {
+        "**/ktlint-baseline.xml".file()
+      }
+    }
+  }
 ```
 
 <SnippetIsStartingPoint />

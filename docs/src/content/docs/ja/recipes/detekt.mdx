@@ -32,9 +32,9 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 
 val projectArchitecture = architecture {
-    "Tools".group {
-        detekt()
-    }
+  "Tools".group {
+    detekt()
+  }
 }
 
 // roles/Detekt.kt
@@ -46,23 +46,25 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 private const val detektConfigDir = "config/detekt"
 
 fun DeclarationContainerScope.detekt() =
-    "Detekt".group {
-        "Config".role {
-            title = "detekt の設定ファイル"
-            summary = "detekt のルールの有効・無効としきい値を書く YAML"
-            layout {
-                detektConfigDir / "*.yml".file()
-            }
-        }
+  "Detekt".group {
+    documented = false
 
-        "Baseline".role {
-            title = "detekt のベースライン"
-            summary = "既存の指摘を許容するための baseline.xml（無くてもよい）"
-            layout {
-                detektConfigDir / "baseline.xml".file().optional()
-            }
-        }
+    "Config".role {
+      title = "detekt の設定ファイル"
+      summary = "detekt のルールの有効・無効としきい値を書く YAML"
+      layout {
+        detektConfigDir / "*.yml".file()
+      }
     }
+
+    "Baseline".role {
+      title = "detekt のベースライン"
+      summary = "既存の指摘を許容するための baseline.xml（無くてもよい）"
+      layout {
+        detektConfigDir / "baseline.xml".file().optional()
+      }
+    }
+  }
 ```
 
 {/* TODO: C16 コードの直後にサンプルへのリンクが無い（sample/ に detekt の例が無い） → 先に sample に detekt の Role を足し、コードの直後にそのファイルへのリンクを1行置く */}

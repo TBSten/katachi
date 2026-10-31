@@ -9,7 +9,7 @@ tags:
   このページの目的: katachi のドキュメント生成機能について深く網羅的に理解してもらうこと。
 */}
 
-import { Aside, Tabs, TabItem, LinkCard, FileTree } from '@astrojs/starlight/components';
+import { Aside, Tabs, TabItem, LinkCard, FileTree, CardGrid } from '@astrojs/starlight/components';
 import CodeComparison from '../../../../components/CodeComparison';
 
 katachi は `architecture { }` 定義から markdown ドキュメントを生成できます。
@@ -20,8 +20,8 @@ build.gradle.kts に以下のように設定します。
 
 ```kts title="architecture-test/build.gradle.kts" {2-3}
 katachi {
-    // ⭐️ `architecture { }` を定義しているプロパティの FQCN を設定
-    architecture = "com.example.projectArchitecture"
+  // ⭐️ `architecture { }` を定義しているプロパティの FQCN を設定
+  architecture = "com.example.projectArchitecture"
 }
 ```
 
@@ -37,27 +37,26 @@ katachi {
 
 ```kt
 architecture {
-    title = "myapp"
+  title = "myapp"
 
-    "domain".group {
-        title = "Domain レイヤー"
-        summary = "アプリ固有の振る舞いと、その対象になる値"
+  "domain".group {
+    title = "Domain レイヤー"
+    summary = "アプリ固有の振る舞いと、その対象になる値"
 
-        "UseCase".role {
-            title = "ユースケース"
-            summary = "各画面で発生するアプリ固有の1つの振る舞い"
-            example("GetItemListUseCase", "商品の一覧")
-            example("SignInUseCase", "サインイン")
-            layout { "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" / "*UseCase".ktFile() }
-            "invoke メソッドだけを持つこと".konsist { /* ... */ }
-        }
-
-        "RepositoryInterface".role {
-            title = "リポジトリ"
-            summary = "データの取得と保存の境界"
-            layout { "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/repository" / "*Repository".ktFile() }
-        }
+    "UseCase".role {
+      title = "ユースケース"
+      summary = "各画面で発生するアプリ固有の1つの振る舞い"
+      example("GetItemListUseCase", "商品の一覧")
+      example("SignInUseCase", "サインイン")
+      layout { "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" / "*UseCase".ktFile() }
     }
+
+    "RepositoryInterface".role {
+      title = "リポジトリ"
+      summary = "データの取得と保存の境界"
+      layout { "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/repository" / "*Repository".ktFile() }
+    }
+  }
 }
 ```
 
@@ -130,10 +129,6 @@ architecture {
         |---|---|
         | `core/domain/src/main/kotlin/com/example/core/domain/useCase/*UseCase.kt` |  |
 
-        ## Constraints
-
-        - invoke メソッドだけを持つこと
-
         ## Examples
 
         - `GetItemListUseCase` ... 商品の一覧
@@ -157,9 +152,9 @@ architecture {
     </TabItem>
 </Tabs>
 
-katachi の GitHub リポジトリのサンプルでは、実際に生成したドキュメントを `sample/<name>/docs/` に置いています。具体例はこちらも参照してください。
+katachi の GitHub リポジトリ内の `sample/` に、実際に生成されたドキュメントがあります。こちらも参考にしてください。
 
-<LinkCard title="katachi の sample" href="https://github.com/TBSten/katachi/tree/main/sample" />
+<LinkCard title="sample/jvm/docs の生成例" href="https://github.com/TBSten/katachi/tree/main/sample/jvm/docs" />
 
 ## 出力先ディレクトリ
 
@@ -169,13 +164,13 @@ katachi の GitHub リポジトリのサンプルでは、実際に生成した�
 
 ```kts {6}
 katachi {
-    architecture = "com.example.projectArchitecture"
+  architecture = "com.example.projectArchitecture"
 
-    processors {
-        docs {
-            outputDir = rootProject.layout.projectDirectory.dir("docs/architecture")
-        }
+  processors {
+    docs {
+      outputDir = rootProject.layout.projectDirectory.dir("docs/architecture")
     }
+  }
 }
 ```
 
@@ -227,21 +222,19 @@ group は入れ子にでき、入れ子の group はその親の group のディ
     <CodeComparison.Panel label="Role 定義">
         ```kt
         "UseCase".role {
-            title = "UseCase"
-            summary = "各画面で発生するアプリ固有の1つの振る舞い"
-            description = """
-                UseCase はアプリ固有の1つの振る舞いを表すクラスです。
-            """.trimIndent()
+          title = "UseCase"
+          summary = "各画面で発生するアプリ固有の1つの振る舞い"
+          description = """
+            UseCase はアプリ固有の1つの振る舞いを表すクラスです。
+          """.trimIndent()
 
-            example("GetItemListUseCase", "商品の一覧を取得する")
-            example("SignInUseCase", "サインインする")
+          example("GetItemListUseCase", "商品の一覧を取得する")
+          example("SignInUseCase", "サインインする")
 
-            layout {
-                "src/main/kotlin/com/example/useCase" /
-                    "*UseCase".ktFile()
-            }
-
-            "invoke メソッドだけを持つこと".konsist { /* ... */ }
+          layout {
+            "src/main/kotlin/com/example/useCase" /
+              "*UseCase".ktFile()
+          }
         }
         ```
     </CodeComparison.Panel>
@@ -261,10 +254,6 @@ group は入れ子にでき、入れ子の group はその親の group のディ
         |---|---|
         | `src/main/kotlin/com/example/useCase/*UseCase.kt` |  |
 
-        ## Constraints                                        ← konsist { } の名前
-
-        - invoke メソッドだけを持つこと
-
         ## Examples                                          ← example()
 
         - `GetItemListUseCase` ... 商品の一覧を取得する
@@ -280,7 +269,7 @@ group に設定できるのは Role と同じ4つです。`example()` だけが�
 | プロパティ | 生成されるドキュメントでの役割 | 使用されるページ |
 |---|---|---|
 | [`title`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-group-scope/title.html) | group の README の見出し。デフォルトは group の識別子 | `README.md`, `<グループ名>/README.md` |
-| [`summary`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-group-scope/summary.html) | 親の Document map と group の節に出る1行 | `README.md`, `<グループ名>/README.md` |
+| [`summary`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-group-scope/summary.html) | 親の Document map と group のセクションに出る1行 | `README.md`, `<グループ名>/README.md` |
 | [`description`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-group-scope/description.html) | group の README の本文 | `<グループ名>/README.md` |
 | [`documented`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-group-scope/documented.html) | `false` にすると group ごとドキュメントに出ません。検査には参加します | --- |
 
@@ -291,8 +280,8 @@ group に設定できるのは Role と同じ4つです。`example()` だけが�
 
     ```kt
     "build".group {
-        documented = false
-        "VersionCatalog".role { }   // group と一緒にドキュメントから外れる
+      documented = false
+      "VersionCatalog".role { }   // group と一緒にドキュメントから外れる
     }
     ```
 
@@ -306,23 +295,23 @@ group に設定できるのは Role と同じ4つです。`example()` だけが�
     <CodeComparison.Panel label="group 定義">
         ```kt
         "domain".group {
-            title = "Domain レイヤー"
-            summary = "アプリ固有の振る舞いと、その対象になる値"
-            description = """
-                画面にも保存先にも依存しない層です。
-            """.trimIndent()
+          title = "Domain レイヤー"
+          summary = "アプリ固有の振る舞いと、その対象になる値"
+          description = """
+            画面にも保存先にも依存しない層です。
+          """.trimIndent()
 
-            "UseCase".role {
-                title = "ユースケース"
-                summary = "各画面で発生するアプリ固有の1つの振る舞い"
-                layout { "src/main/kotlin/com/example/domain/useCase" / "*UseCase".ktFile() }
-            }
+          "UseCase".role {
+            title = "ユースケース"
+            summary = "各画面で発生するアプリ固有の1つの振る舞い"
+            layout { "src/main/kotlin/com/example/domain/useCase" / "*UseCase".ktFile() }
+          }
 
-            "RepositoryInterface".role {
-                title = "リポジトリ"
-                summary = "データの取得と保存の境界"
-                layout { "src/main/kotlin/com/example/domain/repository" / "*Repository".ktFile() }
-            }
+          "RepositoryInterface".role {
+            title = "リポジトリ"
+            summary = "データの取得と保存の境界"
+            layout { "src/main/kotlin/com/example/domain/repository" / "*Repository".ktFile() }
+          }
         }
         ```
     </CodeComparison.Panel>
@@ -365,18 +354,18 @@ group に設定できるのは Role と同じ4つです。`example()` だけが�
     <CodeComparison.Panel label="architecture 定義">
         ```kt
         val projectArchitecture = architecture {
-            title = "myapp"
-            description = """
-                myapp のファイル構成です。
+          title = "myapp"
+          description = """
+            myapp のファイル構成です。
 
-                myapp は **MVVM * Clean Architecture** ベースで設計されています。
-            """.trimIndent()
+            myapp は **MVVM * Clean Architecture** ベースで設計されています。
+          """.trimIndent()
 
-            "domain".group {
-                title = "Domain レイヤー"
-                summary = "アプリ固有の振る舞いと、その対象になる値"
-                "UseCase".role { /* ... */ }
-            }
+          "domain".group {
+            title = "Domain レイヤー"
+            summary = "アプリ固有の振る舞いと、その対象になる値"
+            "UseCase".role { /* ... */ }
+          }
         }
         ```
     </CodeComparison.Panel>
@@ -426,14 +415,14 @@ var MetadataScope.testPolicy by TestPolicy
             var MetadataScope.unitTest by UnitTest
 
             val projectArchitecture = architecture {
-                "UseCase".role {
-                    title = "ユースケース"
-                    summary = "各画面で発生するアプリ固有の1つの振る舞い"
-                    example("SignInUseCase", "サインイン")
-                    layout { "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile() }
+              "UseCase".role {
+                title = "ユースケース"
+                summary = "各画面で発生するアプリ固有の1つの振る舞い"
+                example("SignInUseCase", "サインイン")
+                layout { "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile() }
 
-                    unitTest = "Repository を偽物に差し替えて、戻り値を確かめる。"
-                }
+                unitTest = "Repository を偽物に差し替えて、戻り値を確かめる。"
+              }
             }
             ```
         </CodeComparison.Panel>
@@ -468,42 +457,38 @@ var MetadataScope.testPolicy by TestPolicy
 
 </details>
 
-### `ktFileContent { }` の節
+### `ktFileContent { }` のセクション
 
-<Aside type="note" title="AI が書いた下書き">
-この節は AI が書いた下書きです。`ktFileContent { }` は v0.3 で入った実験的な機能です。
-</Aside>
-
-制約は、Role のページに自分の節を出せます。[`ktFileContent { }`](/katachi/ja/guides/kt-file-content/) を書いた Role のページには、`## Constraints` と `## Examples` のあいだに `## Kotlin file content` の節が出ます。
-`ktFileContent { }` に書いた行を、例のファイルに当てはめて表にしたものです。
+[`ktFileContent { }`](/katachi/ja/guides/kt-file-content/) を書いた Role のページには、`## Constraints` と `## Examples` のあいだに `## Kotlin file content` のセクションが出ます。
+このセクションは、`ktFileContent { }` に書いた宣言を、例のファイルに当てはめた表です。
 
 <CodeComparison>
     <CodeComparison.Panel label="Role 定義">
-        ```kt
+        ```kt nocollapse
         "ViewModel".role {
-            summary = "画面の状態を StateFlow で公開し、画面からのイベントを受け取る"
-            example("HomeViewModel", "ホーム画面の状態")
+          summary = "画面の状態を StateFlow で公開し、画面からのイベントを受け取る"
+          example("HomeViewModel", "ホーム画面の状態")
 
-            layout {
-                "feature" / capture("feature") / mainSourceSet / kotlin / "**" / "*ViewModel".ktFile()
+          layout {
+            "feature" / capture("feature") / mainSourceSet / kotlin / "**" / "*ViewModel".ktFile()
+          }
+
+          ktFileContent {
+            `package`("com.example.feature.${captureValue("feature")}")
+
+            `import`("androidx.lifecycle.**")
+            `import`("kotlinx.coroutines.**")
+
+            required(`class`, fileName).superclass("ViewModel") {
+              required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+              allow(private, anythingElse)
             }
-
-            ktFileContent {
-                `package`("com.example.feature.${captureValue("feature")}")
-
-                `import`("androidx.lifecycle.**")
-                `import`("kotlinx.coroutines.**")
-
-                required(`class`, fileName).superclass("ViewModel") {
-                    required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
-                    allow(private, anythingElse)
-                }
-            }
+          }
         }
         ```
     </CodeComparison.Panel>
     <CodeComparison.Panel label="生成されるマークダウン">
-        ```md title="ViewModel.md（抜粋）"
+        ```md title="ViewModel.md（抜粋）" nocollapse
         ## Kotlin file content
 
         Example: `HomeViewModel.kt`
@@ -543,25 +528,40 @@ var MetadataScope.testPolicy by TestPolicy
 
 title / summary / description / example / layout を全部使った Role の定義と、生成されるマークダウンは次のとおりです。
 
-```kt
+```kt nocollapse
 "UseCase".role {
-    title = "UseCase"
-    summary = "各画面で発生するアプリ固有の1つの振る舞い"
-    description = """
-        UseCase はアプリ固有の1つの振る舞いを表すクラスです。
-    """.trimIndent()
+  title = "UseCase"
+  summary = "各画面で発生するアプリ固有の1つの振る舞い"
+  description = """
+    UseCase はアプリ固有の1つの振る舞いを表すクラスです。
+  """.trimIndent()
 
-    example("GetItemListUseCase", "商品の一覧を取得する")
-    example("SignInUseCase", "サインインする")
+  example("GetItemListUseCase", "商品の一覧を取得する")
+  example("SignInUseCase", "サインインする")
 
-    layout {
-        "src/main/kotlin/com/example/useCase" /
-            "*UseCase".ktFile()
-    }
+  layout {
+    "src/main/kotlin/com/example/useCase" /
+      "*UseCase".ktFile()
+  }
 }
 ```
 
 ## 次のステップ
 
-- [テンプレートからコード生成](/katachi/ja/guides/generate-code-from-template/) ... 同じ定義からドキュメントではなくコードを生成する方法を学びましょう。
-- [ArchitectureProcessor とそのカスタマイズ](/katachi/ja/guides/processor/) ... ドキュメント生成も ArchitectureProcessor の1つです。自分で別の成果物を出す方法を学びましょう。
+<CardGrid>
+  <LinkCard
+    title="テンプレートからコード生成"
+    href="/katachi/ja/guides/generate-code-from-template/"
+    description="同じ定義からドキュメントではなくコードを生成する方法を学びましょう。"
+  />
+  <LinkCard
+    title="ArchitectureProcessor とそのカスタマイズ"
+    href="/katachi/ja/guides/processor/"
+    description="ドキュメント生成も ArchitectureProcessor の1つです。自分で別の成果物を出す方法を学びましょう。"
+  />
+  <LinkCard
+    title="sample/jvm の docs"
+    href="https://github.com/TBSten/katachi/tree/main/sample/jvm/docs"
+    description="生成されたドキュメントの実物です。group ごとのディレクトリに Role のページが並びます。"
+  />
+</CardGrid>

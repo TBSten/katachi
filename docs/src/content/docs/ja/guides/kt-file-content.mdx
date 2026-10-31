@@ -5,7 +5,7 @@ tags:
   - intermediate
 ---
 
-import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+import { Aside, CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
 
 `ktFileContent { }` を使うと、Role の Kotlin ファイルに何を置いてよいかを、`layout { }` と同じ許可リスト（allow list）で定義できます。
 
@@ -13,25 +13,25 @@ import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
 
 ```kt nocollapse {6,8-13,15-19}
 "ViewModel".role {
-    layout {
-        "feature" / capture("feature") / mainSourceSet / kotlin / "**" / "*ViewModel".ktFile()
-    }
-    ktFileContent {
-        `package`("com.example.feature.**")
+  layout {
+    "feature" / capture("feature") / mainSourceSet / kotlin / "**" / "*ViewModel".ktFile()
+  }
+  ktFileContent {
+    `package`("com.example.feature.**")
 
-        `import`("kotlin.**")
-        `import`("kotlinx.coroutines.**")
-        `import`("androidx.**")
-        `import`("dagger.hilt.**")             // @HiltViewModel
-        `import`("javax.inject.**")            // @Inject
-        `import`("com.example.domain.**")
+    `import`("kotlin.**")
+    `import`("kotlinx.coroutines.**")
+    `import`("androidx.**")
+    `import`("dagger.hilt.**")             // @HiltViewModel
+    `import`("javax.inject.**")            // @Inject
+    `import`("com.example.domain.**")
 
-        required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
-            required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
-            allow(public, `fun`, "on*")().returns("Unit")
-            allow(private, anythingElse)
-        }
+    required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
+      required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+      allow(public, `fun`, "on*")().returns("Unit")
+      allow(private, anythingElse)
     }
+  }
 }
 ```
 
@@ -50,12 +50,12 @@ import kotlinx.coroutines.flow.StateFlow
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val getUser: GetUserUseCase,
+  private val getUser: GetUserUseCase,
 ) : ViewModel() {
-    private val state = MutableStateFlow(HomeUiState())
-    val uiState: StateFlow<HomeUiState> = state
+  private val state = MutableStateFlow(HomeUiState())
+  val uiState: StateFlow<HomeUiState> = state
 
-    fun onRefresh() {}
+  fun onRefresh() {}
 }
 ```
 
@@ -77,13 +77,13 @@ import kotlinx.coroutines.flow.StateFlow
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val getUser: GetUserUseCase,
+  private val getUser: GetUserUseCase,
 ) : ViewModel() {
-    private val state = MutableStateFlow(HomeUiState())
-    val uiState: StateFlow<HomeUiState> = state
+  private val state = MutableStateFlow(HomeUiState())
+  val uiState: StateFlow<HomeUiState> = state
 
-    fun refresh() {}                                 // 名前が on で始まらない
-    val isLoading: Boolean = false                   // 許可していない public の val
+  fun refresh() {}                                 // 名前が on で始まらない
+  val isLoading: Boolean = false                   // 許可していない public の val
 }
 
 data class HomeUiState(val name: String = "")        // このファイルに置ける class は HomeViewModel だけ
@@ -97,7 +97,7 @@ data class HomeUiState(val name: String = "")        // このファイルに置
 
 ```kts title="build.gradle.kts" {2}
 dependencies {
-    testImplementation("me.tbsten.katachi:katachi-konsist:<version>")
+  testImplementation("me.tbsten.katachi:katachi-konsist:<version>")
 }
 ```
 
@@ -117,21 +117,21 @@ fun `アーキテクチャに沿ったファイル配置になっている`() {
 
 まずはファイル内で利用できる package, import 宣言を定義してみましょう。
 
-```kt
+```kt {7,9}
 "ViewModel".role {
-    layout {
-        "feature" / capture("feature") / mainSourceSet / kotlin / "**" / "*ViewModel".ktFile()
-    }
+  layout {
+    "feature" / capture("feature") / mainSourceSet / kotlin / "**" / "*ViewModel".ktFile()
+  }
 
-    ktFileContent {
-        `package`("com.example.feature.${captureValue("feature")}.**")
+  ktFileContent {
+    `package`("com.example.feature.${captureValue("feature")}.**")
 
-        `import`("kotlin.**")
-    }
+    `import`("kotlin.**")
+  }
 }
 ```
 
-このあとの節の例では `package` / `import` の行を省き、`// package / import の行は省略` とだけ書きます。写すときは、ファイルに合わせた `` `package`(…) `` / `` `import`(…) `` の行を書き足してください。
+このあとのセクションの例では `package` / `import` の行を省き、`// package / import の行は省略` とだけ書きます。写すときは、ファイルに合わせた `` `package`(…) `` / `` `import`(…) `` の行を書き足してください。
 
 ## class, interface, object 宣言を許可する
 
@@ -147,30 +147,30 @@ class, interface, object の行に `{ }` を書かないと、その宣言はメ
 
     ```kt {6, 15, 24} nocollapse
     "UseCase".role {
-        layout { /* ... */ }
+      layout { /* ... */ }
 
-        ktFileContent {
-            // package / import の行は省略
-            allow(`class`, "*UseCase") { allow(anythingElse) } // UseCase で終わる名前を持つ class
-        }
+      ktFileContent {
+        // package / import の行は省略
+        allow(`class`, "*UseCase") { allow(anythingElse) } // UseCase で終わる名前を持つ class
+      }
     }
 
     "ViewModel".role {
-        layout { /* ... */ }
+      layout { /* ... */ }
 
-        ktFileContent {
-            // package / import の行は省略
-            allow(`class`, "*ViewModel") { allow(anythingElse) } // ViewModel で終わる名前を持つ class
-        }
+      ktFileContent {
+        // package / import の行は省略
+        allow(`class`, "*ViewModel") { allow(anythingElse) } // ViewModel で終わる名前を持つ class
+      }
     }
 
     "NavigationRoute".role {
-        layout { /* ... */ }
+      layout { /* ... */ }
 
-        ktFileContent {
-            // package / import の行は省略
-            allow(data, `object`, "*Route") // Route で終わる名前を持つ data object
-        }
+      ktFileContent {
+        // package / import の行は省略
+        allow(data, `object`, "*Route") // Route で終わる名前を持つ data object
+      }
     }
     ```
 
@@ -180,30 +180,30 @@ class, interface, object の行に `{ }` を書かないと、その宣言はメ
 
     ```kt {6, 15, 24} nocollapse
     "Controller".role {
-        layout { /* ... */ }
+      layout { /* ... */ }
 
-        ktFileContent {
-            // package / import の行は省略
-            required(`class`, fileName) { allow(anythingElse) } // ファイル名と同じ名前の Controller class が必ず 1 つ
-        }
+      ktFileContent {
+        // package / import の行は省略
+        required(`class`, fileName) { allow(anythingElse) } // ファイル名と同じ名前の Controller class が必ず 1 つ
+      }
     }
 
     "Service".role {
-        layout { /* ... */ }
+      layout { /* ... */ }
 
-        ktFileContent {
-            // package / import の行は省略
-            required(`class`, fileName) { allow(anythingElse) } // ファイル名と同じ名前の Service class が必ず 1 つ
-        }
+      ktFileContent {
+        // package / import の行は省略
+        required(`class`, fileName) { allow(anythingElse) } // ファイル名と同じ名前の Service class が必ず 1 つ
+      }
     }
 
     "Model".role {
-        layout { /* ... */ }
+      layout { /* ... */ }
 
-        ktFileContent {
-            // package / import の行は省略
-            allow(data, `class`, "*") { allow(anythingElse) } // Model は data class
-        }
+      ktFileContent {
+        // package / import の行は省略
+        allow(data, `class`, "*") { allow(anythingElse) } // Model は data class
+      }
     }
     ```
 
@@ -271,17 +271,17 @@ allow(public, type, "*Repository")
 
     ```kt {6, 7} nocollapse
     "ScreenComposable".role {
-        // ...
+      // ...
 
-        ktFileContent {
-            // package / import の行は省略
-            allow(private, `val`, "*") // private 変数を許可する
-            required(`fun`, "*Screen") // Screen で終わる名前を持つ関数が1つ以上ある
+      ktFileContent {
+        // package / import の行は省略
+        allow(private, `val`, "*") // private 変数を許可する
+        required(`fun`, "*Screen") // Screen で終わる名前を持つ関数が1つ以上ある
 
-            required(`fun`, "doSomethingWithoutArg")() // 引数なしの doSomethingWithoutArg が必ずある
-            required(`fun`, "doSomethingWithSingleArg")("action: *UiAction") // 引数が1つの doSomethingWithSingleArg が必ずある
-            required(`fun`, "doSomethingWithAnyArgs")(anyArgs()) // 引数を問わない doSomethingWithAnyArgs が必ずある
-        }
+        required(`fun`, "doSomethingWithoutArg")() // 引数なしの doSomethingWithoutArg が必ずある
+        required(`fun`, "doSomethingWithSingleArg")("action: *UiAction") // 引数が1つの doSomethingWithSingleArg が必ずある
+        required(`fun`, "doSomethingWithAnyArgs")(anyArgs()) // 引数を問わない doSomethingWithAnyArgs が必ずある
+      }
     }
     ```
 
@@ -289,12 +289,12 @@ allow(public, type, "*Repository")
 
     ```kt
     required(`class`, "*ViewModel") {
-        required(`val`, "uiState", "StateFlow<*>") // uiState: StateFlow<*> が必ずある
+      required(`val`, "uiState", "StateFlow<*>") // uiState: StateFlow<*> が必ずある
     }
 
     required(`class`, "*UseCase") {
-        required(suspend.optional(), operator, `fun`, "invoke")(anyArgs()) // operator fun invoke が必ずある。suspend は付いていても無くてもよい
-        allow(private, anythingElse) // コンストラクタで受け取る Repository など
+      required(suspend.optional(), operator, `fun`, "invoke")(anyArgs()) // operator fun invoke が必ずある。suspend は付いていても無くてもよい
+      allow(private, anythingElse) // コンストラクタで受け取る Repository など
     }
     ```
 
@@ -304,27 +304,27 @@ allow(public, type, "*Repository")
 
     ```kt {6-8, 18-20} nocollapse
     "Controller".role {
-        // ...
+      // ...
 
-        ktFileContent {
-            // package / import の行は省略
-            required(`class`, fileName) {
-                allow(private, `val`, "*", "*Service") // 呼び出す Service を private val で持つ
-                allow(`fun`, "*")(anyArgs())            // ハンドラの関数。名前も引数も問わない
-            }
+      ktFileContent {
+        // package / import の行は省略
+        required(`class`, fileName) {
+          allow(private, `val`, "*", "*Service") // 呼び出す Service を private val で持つ
+          allow(`fun`, "*")(anyArgs())            // ハンドラの関数。名前も引数も問わない
         }
+      }
     }
 
     "Service".role {
-        // ...
+      // ...
 
-        ktFileContent {
-            // package / import の行は省略
-            required(`class`, fileName) {
-                allow(private, `val`, "*", "*Repository") // 呼び出す Repository を private val で持つ
-                allow(`fun`, "*")(anyArgs())
-            }
+      ktFileContent {
+        // package / import の行は省略
+        required(`class`, fileName) {
+          allow(private, `val`, "*", "*Repository") // 呼び出す Repository を private val で持つ
+          allow(`fun`, "*")(anyArgs())
         }
+      }
     }
     ```
 
@@ -369,7 +369,7 @@ allow(public, type, "*Repository")
             <td>
                 ```kt
                 required(`fun`, "*Screen")
-                    .returns("Unit")
+                  .returns("Unit")
                 ```
             </td>
             <td>
@@ -398,14 +398,14 @@ allow(`typealias`, "*Handler")
 
     ```kt {6} nocollapse
     "ViewModel".role {
-        layout { /* ... */ }
+      layout { /* ... */ }
 
-        ktFileContent {
-            // package / import の行は省略
-            required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
-                // ...
-            }
+      ktFileContent {
+        // package / import の行は省略
+        required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
+          // ...
         }
+      }
     }
     ```
 
@@ -415,27 +415,55 @@ allow(`typealias`, "*Handler")
 
     ```kt {6, 17} nocollapse
     "Controller".role {
-        layout { /* ... */ }
+      layout { /* ... */ }
 
-        ktFileContent {
-            // package / import の行は省略
-            required(annotated("RestController"), `class`, fileName) {
-                // ...
-            }
+      ktFileContent {
+        // package / import の行は省略
+        required(annotated("RestController"), `class`, fileName) {
+          // ...
         }
+      }
     }
 
     "Service".role {
-        layout { /* ... */ }
+      layout { /* ... */ }
 
-        ktFileContent {
-            // package / import の行は省略
-            required(annotated("Service"), `class`, fileName) {
-                // ...
-            }
+      ktFileContent {
+        // package / import の行は省略
+        required(annotated("Service"), `class`, fileName) {
+          // ...
         }
+      }
     }
     ```
 
   </TabItem>
 </Tabs>
+
+## まとめ
+
+- `ktFileContent { }` は、Role の Kotlin ファイルに置いてよい宣言を、許可リストで定義します。
+- 書かなかった宣言はすべて禁止されます。まず `package` と `import` を書きます。
+- class・interface・object は `required(...)` と `allow(...)` に、種類と名前を渡して許可します。メンバを持たせるには `{ }` が要ります。
+- プロパティ・関数は `val` / `var` / `fun`、typealias も同じ書き方です。アノテーションは `annotated()` で指定します。
+- 検査には `katachi-konsist` を依存に足し、`assert(FileConstraintCheck())` を呼びます。
+
+## 次のステップ
+
+<CardGrid>
+  <LinkCard
+    title="Role"
+    href="/katachi/ja/guides/role/"
+    description="Role に説明・置き場所・制約をまとめて書く方法を学びましょう。"
+  />
+  <LinkCard
+    title="Layout"
+    href="/katachi/ja/guides/layout/"
+    description="ktFileContent の対象になるファイルを、置き場所の宣言で決める方法を学びましょう。"
+  />
+  <LinkCard
+    title="sample/jvm の ServiceRole.kt"
+    href="https://github.com/TBSten/katachi/blob/main/sample/jvm/architecture-test/src/test/kotlin/com/example/domain/ServiceRole.kt"
+    description="Service の Role です。ktFileContent で package・import・クラスの中身を書いた実例です。"
+  />
+</CardGrid>

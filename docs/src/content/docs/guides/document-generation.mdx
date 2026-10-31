@@ -9,7 +9,7 @@ tags:
   Purpose of this page: to give a deep, thorough understanding of katachi's document generation.
 */}
 
-import { Aside, Tabs, TabItem, LinkCard, FileTree } from '@astrojs/starlight/components';
+import { Aside, Tabs, TabItem, LinkCard, FileTree, CardGrid } from '@astrojs/starlight/components';
 import CodeComparison from '../../../components/CodeComparison';
 
 katachi can generate Markdown documentation from an `architecture { }` definition.
@@ -20,8 +20,8 @@ Configure it in `build.gradle.kts`.
 
 ```kts title="architecture-test/build.gradle.kts" {2-3}
 katachi {
-    // ⭐️ The fully qualified name of the property holding your `architecture { }`
-    architecture = "com.example.projectArchitecture"
+  // ⭐️ The fully qualified name of the property holding your `architecture { }`
+  architecture = "com.example.projectArchitecture"
 }
 ```
 
@@ -37,27 +37,26 @@ Take the following definition as an example.
 
 ```kt
 architecture {
-    title = "myapp"
+  title = "myapp"
 
-    "domain".group {
-        title = "Domain layer"
-        summary = "App-specific behavior and the values it acts on"
+  "domain".group {
+    title = "Domain layer"
+    summary = "App-specific behavior and the values it acts on"
 
-        "UseCase".role {
-            title = "Use case"
-            summary = "A single app-specific behavior that happens on a screen"
-            example("GetItemListUseCase", "The list of items")
-            example("SignInUseCase", "Signing in")
-            layout { "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" / "*UseCase".ktFile() }
-            "has only an invoke method".konsist { /* ... */ }
-        }
-
-        "RepositoryInterface".role {
-            title = "Repository"
-            summary = "The boundary where data is fetched and saved"
-            layout { "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/repository" / "*Repository".ktFile() }
-        }
+    "UseCase".role {
+      title = "Use case"
+      summary = "A single app-specific behavior that happens on a screen"
+      example("GetItemListUseCase", "The list of items")
+      example("SignInUseCase", "Signing in")
+      layout { "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" / "*UseCase".ktFile() }
     }
+
+    "RepositoryInterface".role {
+      title = "Repository"
+      summary = "The boundary where data is fetched and saved"
+      layout { "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/repository" / "*Repository".ktFile() }
+    }
+  }
 }
 ```
 
@@ -130,10 +129,6 @@ architecture {
         |---|---|
         | `core/domain/src/main/kotlin/com/example/core/domain/useCase/*UseCase.kt` |  |
 
-        ## Constraints
-
-        - has only an invoke method
-
         ## Examples
 
         - `GetItemListUseCase` ... The list of items
@@ -157,9 +152,9 @@ architecture {
     </TabItem>
 </Tabs>
 
-The samples in katachi's GitHub repository keep actually generated documentation in `sample/<name>/docs/`. See them for concrete examples as well.
+The `sample/` directory in katachi's GitHub repository contains actually generated documentation. See it for reference as well.
 
-<LinkCard title="katachi samples" href="https://github.com/TBSten/katachi/tree/main/sample" />
+<LinkCard title="Generated example in sample/jvm/docs" href="https://github.com/TBSten/katachi/tree/main/sample/jvm/docs" />
 
 ## Output directory
 
@@ -169,13 +164,13 @@ The destination can be changed by setting `katachi.processors.docs.outputDir` in
 
 ```kts {6}
 katachi {
-    architecture = "com.example.projectArchitecture"
+  architecture = "com.example.projectArchitecture"
 
-    processors {
-        docs {
-            outputDir = rootProject.layout.projectDirectory.dir("docs/architecture")
-        }
+  processors {
+    docs {
+      outputDir = rootProject.layout.projectDirectory.dir("docs/architecture")
     }
+  }
 }
 ```
 
@@ -227,21 +222,19 @@ The documentation is generated from the properties you set on Roles and groups.
     <CodeComparison.Panel label="Role definition">
         ```kt
         "UseCase".role {
-            title = "UseCase"
-            summary = "A single app-specific behavior that happens on a screen"
-            description = """
-                A UseCase is a class representing one app-specific behavior.
-            """.trimIndent()
+          title = "UseCase"
+          summary = "A single app-specific behavior that happens on a screen"
+          description = """
+            A UseCase is a class representing one app-specific behavior.
+          """.trimIndent()
 
-            example("GetItemListUseCase", "Fetches the list of items")
-            example("SignInUseCase", "Signs in")
+          example("GetItemListUseCase", "Fetches the list of items")
+          example("SignInUseCase", "Signs in")
 
-            layout {
-                "src/main/kotlin/com/example/useCase" /
-                    "*UseCase".ktFile()
-            }
-
-            "has only an invoke method".konsist { /* ... */ }
+          layout {
+            "src/main/kotlin/com/example/useCase" /
+              "*UseCase".ktFile()
+          }
         }
         ```
     </CodeComparison.Panel>
@@ -260,10 +253,6 @@ The documentation is generated from the properties you set on Roles and groups.
         | Path | When to use |
         |---|---|
         | `src/main/kotlin/com/example/useCase/*UseCase.kt` |  |
-
-        ## Constraints                                        ← the name of konsist { }
-
-        - has only an invoke method
 
         ## Examples                                          ← example()
 
@@ -291,8 +280,8 @@ A group takes the same four properties a Role does. Only `example()` is missing.
 
     ```kt
     "build".group {
-        documented = false
-        "VersionCatalog".role { }   // leaves the documentation together with the group
+      documented = false
+      "VersionCatalog".role { }   // leaves the documentation together with the group
     }
     ```
 
@@ -306,23 +295,23 @@ The following group definition produces the Markdown on the right.
     <CodeComparison.Panel label="group definition">
         ```kt
         "domain".group {
-            title = "Domain layer"
-            summary = "App-specific behavior and the values it acts on"
-            description = """
-                The layer that depends on neither the screens nor the storage.
-            """.trimIndent()
+          title = "Domain layer"
+          summary = "App-specific behavior and the values it acts on"
+          description = """
+            The layer that depends on neither the screens nor the storage.
+          """.trimIndent()
 
-            "UseCase".role {
-                title = "Use case"
-                summary = "A single app-specific behavior that happens on a screen"
-                layout { "src/main/kotlin/com/example/domain/useCase" / "*UseCase".ktFile() }
-            }
+          "UseCase".role {
+            title = "Use case"
+            summary = "A single app-specific behavior that happens on a screen"
+            layout { "src/main/kotlin/com/example/domain/useCase" / "*UseCase".ktFile() }
+          }
 
-            "RepositoryInterface".role {
-                title = "Repository"
-                summary = "The boundary where data is fetched and saved"
-                layout { "src/main/kotlin/com/example/domain/repository" / "*Repository".ktFile() }
-            }
+          "RepositoryInterface".role {
+            title = "Repository"
+            summary = "The boundary where data is fetched and saved"
+            layout { "src/main/kotlin/com/example/domain/repository" / "*Repository".ktFile() }
+          }
         }
         ```
     </CodeComparison.Panel>
@@ -365,18 +354,18 @@ The heading and description of the top page (the `README.md` right under the out
     <CodeComparison.Panel label="architecture definition">
         ```kt
         val projectArchitecture = architecture {
-            title = "myapp"
-            description = """
-                The file layout of myapp.
+          title = "myapp"
+          description = """
+            The file layout of myapp.
 
-                myapp is designed on top of **MVVM * Clean Architecture**.
-            """.trimIndent()
+            myapp is designed on top of **MVVM * Clean Architecture**.
+          """.trimIndent()
 
-            "domain".group {
-                title = "Domain layer"
-                summary = "App-specific behavior and the values it acts on"
-                "UseCase".role { /* ... */ }
-            }
+          "domain".group {
+            title = "Domain layer"
+            summary = "App-specific behavior and the values it acts on"
+            "UseCase".role { /* ... */ }
+          }
         }
         ```
     </CodeComparison.Panel>
@@ -426,14 +415,14 @@ var MetadataScope.testPolicy by TestPolicy
             var MetadataScope.unitTest by UnitTest
 
             val projectArchitecture = architecture {
-                "UseCase".role {
-                    title = "Use case"
-                    summary = "A single app-specific behavior that happens on a screen"
-                    example("SignInUseCase", "Signing in")
-                    layout { "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile() }
+              "UseCase".role {
+                title = "Use case"
+                summary = "A single app-specific behavior that happens on a screen"
+                example("SignInUseCase", "Signing in")
+                layout { "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile() }
 
-                    unitTest = "Replace the repository with a fake and check the return value."
-                }
+                unitTest = "Replace the repository with a fake and check the return value."
+              }
             }
             ```
         </CodeComparison.Panel>
@@ -470,40 +459,36 @@ var MetadataScope.testPolicy by TestPolicy
 
 ### The `ktFileContent { }` section
 
-<Aside type="note" title="Draft written by AI">
-This section is a draft written by AI. `ktFileContent { }` is an experimental feature added in v0.3.
-</Aside>
-
-A constraint can add a section of its own to a Role's page. The page of a Role that has [`ktFileContent { }`](/katachi/guides/kt-file-content/) gets a `## Kotlin file content` section between `## Constraints` and `## Examples`.
-It is a table made by applying the lines you wrote in `ktFileContent { }` to an example file.
+The page of a Role that has [`ktFileContent { }`](/katachi/guides/kt-file-content/) gets a `## Kotlin file content` section between `## Constraints` and `## Examples`.
+This section is a table made by applying the declarations you wrote in `ktFileContent { }` to an example file.
 
 <CodeComparison>
     <CodeComparison.Panel label="Role definition">
-        ```kt
+        ```kt nocollapse
         "ViewModel".role {
-            summary = "Exposes the screen's state as a StateFlow and receives events from the screen"
-            example("HomeViewModel", "The home screen's state")
+          summary = "Exposes the screen's state as a StateFlow and receives events from the screen"
+          example("HomeViewModel", "The home screen's state")
 
-            layout {
-                "feature" / capture("feature") / mainSourceSet / kotlin / "**" / "*ViewModel".ktFile()
+          layout {
+            "feature" / capture("feature") / mainSourceSet / kotlin / "**" / "*ViewModel".ktFile()
+          }
+
+          ktFileContent {
+            `package`("com.example.feature.${captureValue("feature")}")
+
+            `import`("androidx.lifecycle.**")
+            `import`("kotlinx.coroutines.**")
+
+            required(`class`, fileName).superclass("ViewModel") {
+              required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+              allow(private, anythingElse)
             }
-
-            ktFileContent {
-                `package`("com.example.feature.${captureValue("feature")}")
-
-                `import`("androidx.lifecycle.**")
-                `import`("kotlinx.coroutines.**")
-
-                required(`class`, fileName).superclass("ViewModel") {
-                    required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
-                    allow(private, anythingElse)
-                }
-            }
+          }
         }
         ```
     </CodeComparison.Panel>
     <CodeComparison.Panel label="Generated Markdown">
-        ```md title="ViewModel.md (excerpt)"
+        ```md title="ViewModel.md (excerpt)" nocollapse
         ## Kotlin file content
 
         Example: `HomeViewModel.kt`
@@ -545,23 +530,38 @@ Here is a Role definition that uses title, summary, description, example, and la
 
 ```kt
 "UseCase".role {
-    title = "UseCase"
-    summary = "A single app-specific behavior that happens on a screen"
-    description = """
-        A UseCase is a class representing one app-specific behavior.
-    """.trimIndent()
+  title = "UseCase"
+  summary = "A single app-specific behavior that happens on a screen"
+  description = """
+    A UseCase is a class representing one app-specific behavior.
+  """.trimIndent()
 
-    example("GetItemListUseCase", "Fetches the list of items")
-    example("SignInUseCase", "Signs in")
+  example("GetItemListUseCase", "Fetches the list of items")
+  example("SignInUseCase", "Signs in")
 
-    layout {
-        "src/main/kotlin/com/example/useCase" /
-            "*UseCase".ktFile()
-    }
+  layout {
+    "src/main/kotlin/com/example/useCase" /
+      "*UseCase".ktFile()
+  }
 }
 ```
 
 ## Next steps
 
-- [Generating code from a template](/katachi/guides/generate-code-from-template/) ... Learn how to generate code, rather than documentation, from the same definition.
-- [ArchitectureProcessor and customizing it](/katachi/guides/processor/) ... Document generation is one ArchitectureProcessor too. Learn how to produce other outputs of your own.
+<CardGrid>
+  <LinkCard
+    title="Generating code from a template"
+    href="/katachi/guides/generate-code-from-template/"
+    description="Learn how to generate code, rather than documentation, from the same definition."
+  />
+  <LinkCard
+    title="ArchitectureProcessor and customizing it"
+    href="/katachi/guides/processor/"
+    description="Document generation is one ArchitectureProcessor too. Learn how to produce other outputs of your own."
+  />
+  <LinkCard
+    title="docs in sample/jvm"
+    href="https://github.com/TBSten/katachi/tree/main/sample/jvm/docs"
+    description="The generated documentation. Role pages are laid out in a directory per group."
+  />
+</CardGrid>

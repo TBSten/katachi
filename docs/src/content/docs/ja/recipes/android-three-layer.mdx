@@ -119,11 +119,10 @@ const val appPackageDir = "com/example/project"
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.konsist.konsist
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 fun DeclarationContainerScope.uiState() = "UiState".role {
   summary = "画面が描画に使う状態を、変更されない値として持つ"
@@ -131,13 +130,16 @@ fun DeclarationContainerScope.uiState() = "UiState".role {
     "app" / mainSourceSet / kotlin / appPackageDir / "ui/*" / "*UiState".ktFile()
   }
 
-  shouldBeImmutable()
-}
+  // HomeUiState.kt には、val のプロパティだけを持つ data class HomeUiState を置く
+  ktFileContent {
+    `package`(matchingDirectory)
+    `import`("**")
 
-private fun RoleScope.shouldBeImmutable() =
-  "プロパティはすべて val であること".konsist {
-    classes().must { klass -> klass.properties().all { it.isVal } }
+    required(data, `class`, fileName) {
+      allow(`val`, "*")      // var は許可しないので、書き換えられる状態は違反になる
+    }
   }
+}
 ```
 
 </TabItem>
@@ -353,11 +355,11 @@ fun DeclarationContainerScope.dataSource() = "DataSource".role {
 
 層を group に、ファイルの種類を Role に分けた実際の定義は、[sample/android の ProjectArchitecture.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/ProjectArchitecture.kt) にあります。サンプルはドメイン層を持たず、画面ごとにモジュールを分けた構成なので、このページの定義とは形が違います。
 
-`ktFileContent { }` と `konsist { }` を使うときは、[ファイルの中で定義できる宣言の許可リストを定義する](/katachi/ja/guides/kt-file-content/#インストール)の設定が要ります。
+`ktFileContent { }` を使うときは、[ファイルの中で定義できる宣言の許可リストを定義する](/katachi/ja/guides/kt-file-content/#インストール)の設定が要ります。
 
 ## AndroidManifest.xml と res/ の Role
 
-3層のどこにも入らない Android のファイルにも Role が要ります。`:app` の `AndroidManifest.xml` は1つしか無いので名前をそのまま書き、`res/` の中の構成は Android のリソースシステムが決めるので `ignore()` にします。次の2つは [sample/android の AndroidManifestRole.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/roles/AndroidManifestRole.kt) と [AndroidResourceRole.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/roles/AndroidResourceRole.kt) から引用したものです。
+3層のどこにも入らない Android のファイルにも Role が要ります。`:app` の `AndroidManifest.xml` は1つしか無いので名前をそのまま書き、`res/` の中の構成は Android のリソースシステムが決めるので `ignore()` にします。次の2つは [sample/android の AndroidManifestRole.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/app/AndroidManifestRole.kt) と [AndroidResourceRole.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/app/AndroidResourceRole.kt) から引用したものです。
 
 ```kt {8,20}
 // roles/AndroidManifest.kt
@@ -384,7 +386,7 @@ fun DeclarationContainerScope.androidResource() = "AndroidResource".role {
 }
 ```
 
-`ProjectArchitecture.kt` では、`"app".group { androidManifest(); androidResource() }` のように `:app` の group に入れます。サンプルでは同じ group に `MainActivity` と `MainApplication` の Role も置いています（[AppGroup.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/groups/AppGroup.kt)）。
+`ProjectArchitecture.kt` では、`"app".group { androidManifest(); androidResource() }` のように `:app` の group に入れます。サンプルでは同じ group に `MainActivity` と `MainApplication` の Role も置いています（[AppGroup.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/app/AppGroup.kt)）。
 
 <SnippetIsStartingPoint>
 たとえばプロダクトで Dagger Hilt を使っているなら、ViewModel に `@HiltViewModel` アノテーションが付いているかの検査や、Repository の実装クラスに `@Inject` コンストラクタがあるかの検査を追加するなど、さらにカスタマイズが必要になるでしょう。

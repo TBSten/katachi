@@ -9,46 +9,46 @@ tags:
   The purpose of this page: to give the reader a deep, thorough understanding of katachi's template generation feature.
 */}
 
-import { Aside, FileTree } from '@astrojs/starlight/components';
+import { Aside, FileTree, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 Add `.template { }` to a layout declaration and that file can be generated as code.
 
 ```kt {4-5,21-22} nocollapse
 "UseCase".role {
-    layout {
-        "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" /
-            "${capture("name")}UseCase".ktFile()
-                .template {
-                    val name = captureValue("name")
-                    """
-                        package com.example.core.domain.useCase
+  layout {
+    "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" /
+      "${capture("name")}UseCase".ktFile()
+        .template {
+          val name = captureValue("name")
+          """
+            package com.example.core.domain.useCase
 
-                        interface ${name}UseCase {
-                            suspend operator fun invoke()
-                        }
-                    """.trimIndent()
-                }
-    }
+            interface ${name}UseCase {
+              suspend operator fun invoke()
+            }
+          """.trimIndent()
+        }
+  }
 }
 
 "UseCaseImplementation".role {
-    layout {
-        "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" /
-            "${capture("name")}UseCaseImpl".ktFile()
-                .template {
-                    val name = captureValue("name")
-                    val implBody by stringParameter(default = """TODO("Implement ${name}UseCase")""")
-                    """
-                        package com.example.core.domain.useCase
+  layout {
+    "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" /
+      "${capture("name")}UseCaseImpl".ktFile()
+        .template {
+          val name = captureValue("name")
+          val implBody by stringParameter(default = """TODO("Implement ${name}UseCase")""")
+          """
+            package com.example.core.domain.useCase
 
-                        class ${name}UseCaseImpl : ${name}UseCase {
-                            override suspend fun invoke() {
-                                $implBody
-                            }
-                        }
-                    """.trimIndent()
-                }
-    }
+            class ${name}UseCaseImpl : ${name}UseCase {
+              override suspend fun invoke() {
+                $implBody
+              }
+            }
+          """.trimIndent()
+        }
+  }
 }
 ```
 
@@ -89,12 +89,12 @@ Declare the parameters a generation run can pass with `--arg`, inside the templa
 
 ```kt {4}
 "${capture("name")}UseCaseImpl".ktFile()
-    .template {
-        val name = captureValue("name")
-        val implBody by stringParameter(default = """TODO("Implement ${name}UseCase")""")
+  .template {
+    val name = captureValue("name")
+    val implBody by stringParameter(default = """TODO("Implement ${name}UseCase")""")
 
-        // ...
-    }
+    // ...
+  }
 ```
 
 The property's name is the parameter's name, as is. `val implBody by stringParameter(default = ...)` declares the parameter passed as `--arg implBody=...`.
@@ -124,7 +124,7 @@ A capture and a parameter are each one, by name, across every template a single 
 
 ```kt {2}
 layout {
-    "feature" / capture("feature") / "src" / "main" / "kotlin" / "*ViewModel".ktFile()
+  "feature" / capture("feature") / "src" / "main" / "kotlin" / "*ViewModel".ktFile()
 }
 ```
 
@@ -136,24 +136,24 @@ The name is used when passing a value with `--arg`. Left as `*`, a template can'
 
 ```kt {3-5,7-8} nocollapse
 "FeatureComponent".role {
-    layout {
-        "feature" / capture("feature") / "commonMain".sourceSet / kotlin /
-            "com/example/kmp/feature" / capture("feature") / "component" /
-            "${capture("name")}".ktFile()
-                .template {
-                    val feature = captureValue("feature")
-                    val name = captureValue("name")
+  layout {
+    "feature" / capture("feature") / "commonMain".sourceSet / kotlin /
+      "com/example/kmp/feature" / capture("feature") / "component" /
+      "${capture("name")}".ktFile()
+        .template {
+          val feature = captureValue("feature")
+          val name = captureValue("name")
 
-                    """
-                        package com.example.kmp.feature.$feature.component
+          """
+            package com.example.kmp.feature.$feature.component
 
-                        @Composable
-                        internal fun $name(title: String) {
-                            Text(text = title)
-                        }
-                    """.trimIndent()
-                }
-    }
+            @Composable
+            internal fun $name(title: String) {
+              Text(text = title)
+            }
+          """.trimIndent()
+        }
+  }
 }
 ```
 
@@ -172,23 +172,23 @@ A capture's name becomes the `--arg` argument name, as is. Inside the template, 
 
 ```kt {3-4} nocollapse
 "FeatureReadme".role {
-    layout {
-        "docs" / capture("feature") / "README.md".file()
-            .template {
-                val feature = captureValue("feature")
-                """
-                    # $feature
+  layout {
+    "docs" / capture("feature") / "README.md".file()
+      .template {
+        val feature = captureValue("feature")
+        """
+          # $feature
 
-                    ## Responsibility
+          ## Responsibility
 
-                    TODO
+          TODO
 
-                    ## Public API
+          ## Public API
 
-                    TODO
-                """.trimIndent()
-            }
-    }
+          TODO
+        """.trimIndent()
+      }
+  }
 }
 ```
 
@@ -219,11 +219,11 @@ You can also set the default in build.gradle.kts.
 import me.tbsten.katachi.gradle.KatachiOnExisting
 
 katachi {
-    processors {
-        template {
-            onExisting = KatachiOnExisting.SKIP
-        }
+  processors {
+    template {
+      onExisting = KatachiOnExisting.SKIP
     }
+  }
 }
 ```
 
@@ -241,46 +241,24 @@ The **`katachiTemplates` task** shows which templates exist, and what to pass to
 
 The detail shows the list of parameters, the destination path and the file's contents, and a `katachiTemplate` command.
 
-## Generating from the IDE (experimental)
-
-With the IntelliJ IDEA / Android Studio plugin installed, you can list templates, fill in their parameters and generate, all inside the IDE. You do not have to assemble `--arg`. It is experimental, so its screens and behavior may change in later versions.
-
-It is not published on JetBrains Marketplace. Install it from the zip on GitHub Releases:
-
-1. Download `katachi-intellij-plugin-<version>.zip` from [GitHub Releases](https://github.com/TBSten/katachi/releases/latest).
-2. In the IDE, open **Settings → Plugins**, choose ⚙ → **Install Plugin from Disk…**, and select the zip without extracting it.
-3. Restart the IDE if it asks you to.
-
-It works with IntelliJ IDEA 2026.1 and Android Studio Quail (2026.1) or later.
-
-The project needs the katachi Gradle plugin 0.2.0 or later, and Gradle must be synced.
-
-You can generate from three places. The screens follow the IDE's language (Japanese or English).
-
-- The **katachi** tool window on the right edge
-- Right-click in the Project tree → **New → katachi**
-- The notification that appears above the editor when you open a file that a template fits
-
-Updating the IDE does not update the plugin. Install a newer version from Releases again.
-
 ## Summary
 
 Using every way of writing covered on this page, a template looks like this.
 
 ```kt nocollapse
 "FeatureReadme".role {
-    layout {
-        "docs" / capture("feature") / "README.md".file()
-            .template {
-                val feature = captureValue("feature")
-                val summary by stringParameter(default = "TODO")
-                """
-                    # $feature
+  layout {
+    "docs" / capture("feature") / "README.md".file()
+      .template {
+        val feature = captureValue("feature")
+        val summary by stringParameter(default = "TODO")
+        """
+          # $feature
 
-                    $summary
-                """.trimIndent()
-            }
-    }
+          $summary
+        """.trimIndent()
+      }
+  }
 }
 ```
 
@@ -292,6 +270,25 @@ Using every way of writing covered on this page, a template looks like this.
 
 ## Next steps
 
-- [Generating documentation](/katachi/guides/document-generation/) ... Learn how to generate documentation, not code, from the same definition.
-- [ArchitectureProcessor and customizing it](/katachi/guides/processor/) ... Template generation is one ArchitectureProcessor too. Learn how to produce other outputs of your own.
-- [Enforce directory structure with the Layout system](/katachi/guides/layout/) ... Learn how to write the declarations that take `.template { }`, and where `capture()` helps.
+<CardGrid>
+  <LinkCard
+    title="Generating documentation"
+    href="/katachi/guides/document-generation/"
+    description="Learn how to generate documentation, not code, from the same definition."
+  />
+  <LinkCard
+    title="ArchitectureProcessor and customizing it"
+    href="/katachi/guides/processor/"
+    description="Template generation is one ArchitectureProcessor too. Learn how to produce other outputs of your own."
+  />
+  <LinkCard
+    title="Layout"
+    href="/katachi/guides/layout/"
+    description="Learn how to attach a template to a declaration, and when to name a wildcard with capture."
+  />
+  <LinkCard
+    title="ApiGroup.kt in sample/jvm"
+    href="https://github.com/TBSten/katachi/blob/main/sample/jvm/architecture-test/src/test/kotlin/com/example/api/ApiGroup.kt"
+    description="An example that declares a template set inside the api group."
+  />
+</CardGrid>
