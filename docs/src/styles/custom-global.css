@@ -1,69 +1,107 @@
+/* === レイアウト（幅・余白） === */
+
 * {
-  --sl-sidebar-width: 14rem;
+	--sl-sidebar-width: 14rem;
 }
 
 :root {
-  --sl-content-width: 75rem;
+	--sl-content-width: 75rem;
+	--sl-content-pad-x: 1.5rem;
 }
 
-/*
- * A table wider than the text column scrolls sideways inside the column instead of pushing the
- * page wider. macOS hides overlay scrollbars until you scroll, so a table cut at the right edge
- * looked broken rather than scrollable: keep a thin scrollbar visible, and shade the side that
- * has more to show (the `local` gradients cover the shade once that edge is reached).
- * The covers stay opaque across the whole 1rem shade, or a table that does not scroll keeps a
- * faint shade at both edges. `max-content` keeps the block as wide as the table, so the shade
- * sits at the table's edge rather than at the edge of the column.
- */
-.sl-markdown-content table {
-  display: block;
-  width: max-content;
-  max-width: 100%;
-  overflow-x: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--sl-color-gray-4) transparent;
-  background:
-    linear-gradient(to right, var(--sl-color-bg) 1rem, transparent) left center / 1.5rem 100% no-repeat local,
-    linear-gradient(to left, var(--sl-color-bg) 1rem, transparent) right center / 1.5rem 100% no-repeat local,
-    radial-gradient(farthest-side at 0 50%, rgb(0 0 0 / 0.25), transparent) left center / 1rem 100% no-repeat scroll,
-    radial-gradient(farthest-side at 100% 50%, rgb(0 0 0 / 0.25), transparent) right center / 1rem 100% no-repeat scroll;
+@media (min-width: 50.01rem) {
+	:root {
+		--sl-content-pad-x: 4rem;
+	}
 }
 
-table .sl-badge {
-  white-space: nowrap;
+@media (min-width: 72.01rem) {
+	:root {
+		--sl-content-pad-x: 6rem;
+	}
 }
 
-/*
- * Keep each tab label on one line. Starlight lets the tabs shrink to the width of the page,
- * so a label such as "domain/README.md" wraps mid-word. The tab list already scrolls
- * sideways (.tablist-wrapper has overflow-x: auto), so labels that do not fit scroll
- * instead of wrapping.
- */
-starlight-tabs .tab {
-  flex-shrink: 0;
+.content-panel {
+	padding-block: 2.54rem;
 }
 
-starlight-tabs .tab > [role='tab'] {
-  white-space: nowrap;
+.site-title {
+	--sl-nav-gap: 1rem;
 }
+
+/* === コードの行の強調（Expressive Code） === */
+
+* {
+	--ec-tm-markBg: #cfe6ff;
+	--ec-tm-markBrdCol: #70a7e1;
+	--ec-tm-lineMarkerAccentWd: 0.25rem;
+}
+
+/* === 見出し === */
 
 .sl-heading-wrapper.level-h2 {
-  margin-top: 3rem;
-  border-top: 1px solid var(--sl-color-gray-6);
-  padding-top: 1.5rem;
+	margin-top: 3rem;
+	border-top: 1px solid var(--sl-color-gray-6);
+	padding-top: 1.5rem;
 }
 
 /* The first h2 of a page needs no divider: nothing above it to separate from. */
 .sl-heading-wrapper.level-h2:not(.sl-heading-wrapper.level-h2 ~ .sl-heading-wrapper.level-h2) {
-  border-top: none;
-  padding-top: 0;
+	border-top: none;
+	padding-top: 0;
 }
 
 .sl-heading-wrapper.level-h3 {
-  margin-top: 2.5rem;
+	margin-top: 2.5rem;
 }
 
+/* === 表 === */
+
+.sl-markdown-content table {
+	display: block;
+	width: max-content;
+	max-width: 100%;
+	overflow-x: auto;
+	scrollbar-width: thin;
+	scrollbar-color: var(--sl-color-gray-4) transparent;
+	background:
+		linear-gradient(to right, var(--sl-color-bg) 1rem, transparent) left center / 1.5rem 100% no-repeat local,
+		linear-gradient(to left, var(--sl-color-bg) 1rem, transparent) right center / 1.5rem 100% no-repeat local,
+		radial-gradient(farthest-side at 0 50%, rgb(0 0 0 / 0.25), transparent) left center / 1rem 100% no-repeat scroll,
+		radial-gradient(farthest-side at 100% 50%, rgb(0 0 0 / 0.25), transparent) right center / 1rem 100% no-repeat scroll;
+}
+
+table td,
+table th {
+	min-width: 4rem;
+}
+
+table .sl-badge {
+	white-space: nowrap;
+}
+
+/* 比較表の「何を見るか」「どう走るか」列がスマホ幅で潰れないようにする */
+.comparison-table :is(th, td):nth-child(2) {
+	min-width: 12rem;
+}
+
+.comparison-table :is(th, td):nth-child(3) {
+	min-width: 8rem;
+}
+
+/* === タブ === */
+
+starlight-tabs .tab {
+	flex-shrink: 0;
+}
+
+starlight-tabs .tab > [role='tab'] {
+	white-space: nowrap;
+}
+
+/* === 折りたたみ（details） === */
+
 .sl-markdown-content details {
-  margin-inline: 0.5rem;
-  padding-block: 0.25rem;
+	margin-inline: 0.5rem;
+	padding-block: 0.25rem;
 }

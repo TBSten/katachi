@@ -1,6 +1,8 @@
 /* Top page only. The page follows the supplied reference's typography, cadence, and surfaces,
  * while every code sample remains a normal Starlight/Expressive Code fence. */
 
+/* === 色のトークン === */
+
 /* Starlight and nova both hold their dark values on :root and override for light with
  * [data-theme='light']. These tokens keep the same shape so the page is never light-on-dark
  * before the theme script runs, or with JavaScript off.
@@ -27,6 +29,8 @@
 	--katachi-dim: #b9bec6;
 }
 
+/* === Starlight・nova の上書き === */
+
 /* Starlight renders the frontmatter title before splash content. The page has its own h1,
  * so keeping that generated title would create a duplicate "katachi" line above the hero. */
 main:has(.katachi-home) .content-panel:has(> .sl-container > h1#_top) {
@@ -41,12 +45,18 @@ main:has(.katachi-home) .content-panel:has(> .sl-container > h1#_top) {
 	overflow-y: visible;
 }
 
-.katachi-home :is(h1, h2, h3, p) {
-	margin: 0;
-}
-
 .katachi-home .sl-anchor-link {
 	display: none;
+}
+
+.katachi-home :is(.expressive-code, [data-nova-code-container]) {
+	margin-block: 0;
+}
+
+/* === 共通（節の枠・文字の型） === */
+
+.katachi-home :is(h1, h2, h3, p) {
+	margin: 0;
 }
 
 .katachi-home > section {
@@ -60,10 +70,6 @@ main:has(.katachi-home) .content-panel:has(> .sl-container > h1#_top) {
 .katachi-home__cta {
 	max-width: 66.25rem;
 	margin-inline: auto;
-}
-
-.katachi-home__hero {
-	padding-block: clamp(4.5rem, 11vh, 8.5rem) clamp(4.75rem, 10vh, 7.75rem);
 }
 
 .katachi-home__eyebrow,
@@ -84,6 +90,21 @@ main:has(.katachi-home) .content-panel:has(> .sl-container > h1#_top) {
 	letter-spacing: -0.07em;
 }
 
+.katachi-home__split-copy h2,
+.katachi-home__cta h2 {
+	font-size: clamp(1.75rem, 3.4vw, 2.4rem);
+	font-weight: 700;
+	line-height: 1.4;
+	letter-spacing: -0.035em;
+	color: var(--katachi-ink);
+}
+
+/* === ヒーロー（hero） === */
+
+.katachi-home__hero {
+	padding-block: clamp(4.5rem, 11vh, 8.5rem) clamp(4.75rem, 10vh, 7.75rem);
+}
+
 .katachi-home__hero h1 {
 	display: block;
 	margin-top: 1.3rem;
@@ -101,39 +122,6 @@ main:has(.katachi-home) .content-panel:has(> .sl-container > h1#_top) {
 	height: 0.2rem;
 	margin-top: 2.1rem;
 	background: var(--katachi-accent);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-	.katachi-home__hero h1 {
-		animation: katachi-hero-spotlight 1150ms cubic-bezier(0.3, 0.7, 0.2, 1) both;
-	}
-
-	.katachi-home__accent {
-		transform-origin: left center;
-		animation: katachi-hero-rule 600ms cubic-bezier(0.16, 1, 0.3, 1) 800ms both;
-	}
-}
-
-@keyframes katachi-hero-spotlight {
-	from {
-		opacity: 0;
-		clip-path: circle(0 at 15% 50%);
-	}
-
-	to {
-		opacity: 1;
-		clip-path: circle(125% at 15% 50%);
-	}
-}
-
-@keyframes katachi-hero-rule {
-	from {
-		transform: scaleX(0);
-	}
-
-	to {
-		transform: scaleX(1);
-	}
 }
 
 .katachi-home__lead {
@@ -181,9 +169,40 @@ main:has(.katachi-home) .content-panel:has(> .sl-container > h1#_top) {
 	margin-top: 2.75rem;
 }
 
-.katachi-home :is(.expressive-code, [data-nova-code-container]) {
-	margin-block: 0;
+@media (prefers-reduced-motion: no-preference) {
+	.katachi-home__hero h1 {
+		animation: katachi-hero-spotlight 1150ms cubic-bezier(0.3, 0.7, 0.2, 1) both;
+	}
+
+	.katachi-home__accent {
+		transform-origin: left center;
+		animation: katachi-hero-rule 600ms cubic-bezier(0.16, 1, 0.3, 1) 800ms both;
+	}
 }
+
+@keyframes katachi-hero-spotlight {
+	from {
+		opacity: 0;
+		clip-path: circle(0 at 15% 50%);
+	}
+
+	to {
+		opacity: 1;
+		clip-path: circle(125% at 15% 50%);
+	}
+}
+
+@keyframes katachi-hero-rule {
+	from {
+		transform: scaleX(0);
+	}
+
+	to {
+		transform: scaleX(1);
+	}
+}
+
+/* === 説明とコードを左右に並べる節（split） === */
 
 .katachi-home__split {
 	display: grid;
@@ -206,18 +225,11 @@ main:has(.katachi-home) .content-panel:has(> .sl-container > h1#_top) {
 	color: var(--katachi-muted);
 }
 
-.katachi-home__split-copy h2,
-.katachi-home__cta h2 {
-	font-size: clamp(1.75rem, 3.4vw, 2.4rem);
-	font-weight: 700;
-	line-height: 1.4;
-	letter-spacing: -0.035em;
-	color: var(--katachi-ink);
-}
-
 .katachi-home__split-copy strong {
 	color: var(--katachi-ink);
 }
+
+/* --- ファイルツリーの枠（tree） --- */
 
 .katachi-home__tree {
 	min-width: 0;
@@ -262,6 +274,8 @@ main:has(.katachi-home) .content-panel:has(> .sl-container > h1#_top) {
 .katachi-home__tree :is(.expressive-code, [data-nova-code-container]) pre {
 	background: transparent;
 }
+
+/* === 3 つの柱（pillars） === */
 
 .katachi-home__pillars {
 	display: grid;
@@ -329,6 +343,27 @@ main:has(.katachi-home) .content-panel:has(> .sl-container > h1#_top) {
 	transition: color 320ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+@media (min-width: 50.01rem) {
+	.katachi-home__pillars .katachi-home__pillar {
+		opacity: 0.3;
+	}
+
+	.katachi-home__pillars[data-active-pillar='0'] .katachi-home__pillar:nth-child(1),
+	.katachi-home__pillars[data-active-pillar='1'] .katachi-home__pillar:nth-child(2),
+	.katachi-home__pillars[data-active-pillar='2'] .katachi-home__pillar:nth-child(3) {
+		opacity: 1;
+	}
+
+	.katachi-home__pillars[data-active-pillar='0'] .katachi-home__pillar-words span:nth-child(1),
+	.katachi-home__pillars[data-active-pillar='1'] .katachi-home__pillar-words span:nth-child(2),
+	.katachi-home__pillars[data-active-pillar='2'] .katachi-home__pillar-words span:nth-child(3) {
+		color: var(--katachi-ink);
+		transform: scale(1.08);
+	}
+}
+
+/* === AI エージェント向けの帯（agents） === */
+
 .katachi-home__agents {
 	max-width: none !important;
 	margin-inline: calc(50% - 50vw) !important;
@@ -358,24 +393,7 @@ main:has(.katachi-home) .content-panel:has(> .sl-container > h1#_top) {
 	margin-top: 1.65rem;
 }
 
-@media (min-width: 50.01rem) {
-	.katachi-home__pillars .katachi-home__pillar {
-		opacity: 0.3;
-	}
-
-	.katachi-home__pillars[data-active-pillar='0'] .katachi-home__pillar:nth-child(1),
-	.katachi-home__pillars[data-active-pillar='1'] .katachi-home__pillar:nth-child(2),
-	.katachi-home__pillars[data-active-pillar='2'] .katachi-home__pillar:nth-child(3) {
-		opacity: 1;
-	}
-
-	.katachi-home__pillars[data-active-pillar='0'] .katachi-home__pillar-words span:nth-child(1),
-	.katachi-home__pillars[data-active-pillar='1'] .katachi-home__pillar-words span:nth-child(2),
-	.katachi-home__pillars[data-active-pillar='2'] .katachi-home__pillar-words span:nth-child(3) {
-		color: var(--katachi-ink);
-		transform: scale(1.08);
-	}
-}
+/* === 最後の誘導（cta）とカード === */
 
 .katachi-home__cta {
 	padding-block: clamp(5.5rem, 14vh, 9.5rem) clamp(6rem, 16vh, 10.5rem);
@@ -431,12 +449,16 @@ main:has(.katachi-home) .content-panel:has(> .sl-container > h1#_top) {
 	color: var(--katachi-muted);
 }
 
+/* === 狭い幅（スマホ） === */
+
 @media (max-width: 50rem) {
+	/* hero */
 	.katachi-home__hero h1 {
 		font-size: clamp(2.7rem, 11.5vw, 4rem);
 		letter-spacing: -0.06em;
 	}
 
+	/* split・pillars: 1 列にする */
 	.katachi-home__split,
 	.katachi-home__pillars {
 		grid-template-columns: minmax(0, 1fr);
@@ -446,6 +468,7 @@ main:has(.katachi-home) .content-panel:has(> .sl-container > h1#_top) {
 		order: 2;
 	}
 
+	/* pillars: 言葉の並びを上に貼り付けるタブにする */
 	.katachi-home__pillar {
 		min-height: auto;
 		padding-block: 2.5rem;
@@ -479,6 +502,7 @@ main:has(.katachi-home) .content-panel:has(> .sl-container > h1#_top) {
 		color: var(--katachi-ink);
 	}
 
+	/* cards: 1 列にする */
 	.katachi-home__cards {
 		grid-template-columns: minmax(0, 1fr);
 	}
