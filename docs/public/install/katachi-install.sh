@@ -3670,7 +3670,7 @@ docs_topic_title() {
 	comparison) printf '%s\n' "Comparison with other tools" ;;
 	basic-api) printf '%s\n' "Basic API" ;;
 	role) printf '%s\n' "Role" ;;
-	layout) printf '%s\n' "Enforce directory structure with the Layout system" ;;
+	layout) printf '%s\n' "Layout" ;;
 	kt-file-content) printf '%s\n' "ktFileContent" ;;
 	document-generation) printf '%s\n' "Document generation" ;;
 	template) printf '%s\n' "Generating code from a template" ;;
@@ -3776,6 +3776,13 @@ $(print_docs_topics)"
 			rm -f "$_topic_dest"
 			die "$(file_uri "$_dest") に見出し「${_topic_title}」がありません。ガイドの見出しが変わったか、取得物が古いかです（--refresh で取り直す）。" \
 				"No heading \"${_topic_title}\" in $(file_uri "$_dest") . The guide's heading may have changed, or the copy is old (add --refresh)."
+		fi
+		# 切り出した範囲が凍結した版（/0.2/ など /<数字>.<数字>/ を指すリンクを持つページ）なら、
+		# 現行ページの見出しが変わって写しのほうを拾ったということ。黙って出さずに止める。
+		if grep -Eq '\]\(/[^)/]+/[0-9]+\.[0-9]+/' "$_topic_dest"; then
+			rm -f "$_topic_dest"
+			die "docs --topic ${_topic}: 見出し「${_topic_title}」で切り出した範囲が凍結した版（/0.2/ など）のページです。現行ページの見出しが変わった可能性があります（docs_topic_title を直す）。" \
+				"docs --topic ${_topic}: the range cut by heading \"${_topic_title}\" is a frozen-version page (such as /0.2/). The current page's heading may have changed (fix docs_topic_title)."
 		fi
 		# 行数と見出しは標準エラーに出す。標準出力はパスだけ（機械が読む）。
 		printf '%s\n' "$(pick "${_topic_lines} 行（llms-full.txt の「${_topic_title}」）" \

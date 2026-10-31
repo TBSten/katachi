@@ -46,7 +46,7 @@ REPO=$(git rev-parse --show-toplevel) || exit 2
 [ -n "${WORK}" ] || WORK="${REPO}/.local/tmp/install-kit-smoke"
 case "${WORK}" in /*) ;; *) WORK="${REPO}/${WORK}" ;; esac
 [ -n "${LLMS}" ] || LLMS="${REPO}/docs/dist/llms-full.txt"
-KIT="${REPO}/docs/public/install/katachi-install.sh"
+KIT="${KATACHI_KIT_OVERRIDE:-${REPO}/docs/public/install/katachi-install.sh}"
 SITE="${WORK}/site"
 KSH="${KSH:-sh}"
 K=$(sed -n 's/^kotlin[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' "${REPO}/gradle/libs.versions.toml" | head -1)
@@ -222,7 +222,7 @@ case_docs_topic() {
 		ng "docs --topic は保存先のパスを出す" "st=${st} p=${p} $(cat "${WORK}/topic.err")"
 		return
 	fi
-	head -n 1 "${p}" | grep -q '^# Enforce directory structure' && ok "docs --topic layout はページの見出しから始まる" || ng "docs --topic layout はページの見出しから始まる" "$(head -n 1 "${p}")"
+	head -n 1 "${p}" | grep -q '^# Layout$' && ok "docs --topic layout はページの見出しから始まる" || ng "docs --topic layout はページの見出しから始まる" "$(head -n 1 "${p}")"
 	n=$(awk '/^```/ { c = !c; next } !c && /^# /' "${p}" | wc -l | tr -d ' ')
 	[ "${n}" = "1" ] && ok "docs --topic の # の見出しは 1 つ" || ng "docs --topic の # の見出しは 1 つ" "n=${n}"
 	grep -q 'Roadmap' "${p}" && ng "docs --topic layout は古い版の写しを含めない" "Roadmap が含まれる" || ok "docs --topic layout は古い版の写しを含めない"
@@ -233,6 +233,15 @@ case_docs_topic() {
 	else
 		ng "docs --topics は対応表を出す" "st=${st} $(printf '%s\n' "${out}" | head -n 3)"
 	fi
+	# 全話題が、見出しを見つけて、凍結した版（/0.2/ など）の写しを切り出さずに終わる
+	bad=""
+	for t in $(${KSH} "${c}" docs --topics 2>/dev/null | cut -f1); do
+		tp=$(${KSH} "${c}" docs --topic "${t}" 2>"${WORK}/topic-${t}.err")
+		if [ $? -ne 0 ] || [ ! -s "${tp}" ] || grep -Eq '\]\(/[^)/]+/[0-9]+\.[0-9]+/' "${tp}"; then
+			bad="${bad} ${t}($(head -n 1 "${WORK}/topic-${t}.err" | cut -c1-80))"
+		fi
+	done
+	[ -z "${bad}" ] && ok "docs --topic は全話題で見出しが見つかり、凍結した版を切り出さない" || ng "docs --topic は全話題で見出しが見つかり、凍結した版を切り出さない" "${bad}"
 	out=$(${KSH} "${c}" docs --topic nope 2>&1)
 	st=$?
 	[ "${st}" -eq 1 ] && printf '%s\n' "${out}" | grep -q 'layout' && ok "docs --topic の知らない名前は一覧を出して止まる" || ng "docs --topic の知らない名前は一覧を出して止まる" "st=${st}"
