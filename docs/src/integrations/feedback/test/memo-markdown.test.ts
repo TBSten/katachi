@@ -42,6 +42,29 @@ describe('toMarkdown', () => {
 	})
 })
 
+describe('toMarkdown: field の種類', () => {
+	const fields = [{ name: '確認', type: 'check' as const }, { name: '評価', type: 'select' as const, options: ['良い', '悪い'] }]
+	const md = (values: Record<string, string>) => toMarkdown({ page, note: { values, text: '' }, spots: [] }, now, fields)
+	it('check は [x]、select は選んだ値', () => {
+		expect(md({ 確認: 'true', 評価: '悪い' })).toContain('## ページのメモ\n\n- 確認: [x]\n- 評価: 悪い')
+	})
+	it('外れた check は値が無いので行を出さない', () => {
+		expect(md({ 評価: '良い' })).not.toContain('確認')
+	})
+	it('型の合わない値は値のまま書く（check に 7・選択肢に無い値）', () => {
+		const out = md({ 確認: '7', 評価: '普通' })
+		expect(out).toContain('- 確認: 7\n- 評価: 普通')
+	})
+	it('箇所のメモも同じ書き方。末尾の JSON は値の文字列のまま', () => {
+		const out = toMarkdown({ page, note: { values: {}, text: '' }, spots: [{ id: 's', locator: { kind: 'element', excerpt: 'e' }, values: { 確認: 'true' }, text: '' }] }, now, fields)
+		expect(out).toContain('- 確認: [x]')
+		expect(parseMarkdown(out)?.spots[0].values).toEqual({ 確認: 'true' })
+	})
+	it('ひな形を渡さなければ、check の値も文字のまま（前の書き方）', () => {
+		expect(toMarkdown({ page, note: { values: { 確認: 'true' }, text: '' }, spots: [] }, now)).toContain('- 確認: true')
+	})
+})
+
 describe('読み直し', () => {
 	it('同じ Markdown から同じ内容に戻る', () => {
 		expect(parseMarkdown(toMarkdown(doc, now))).toEqual(doc)

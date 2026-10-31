@@ -100,16 +100,19 @@ export const EVENT_MEMO_REQUEST = 'katachi-memo:request'
 /** サーバー → ブラウザ: その結果。 */
 export const EVENT_MEMO_RESULT = 'katachi-memo:result'
 
+/** 通信で送る field のひな形 1 つ（memo/fields.ts の FieldDef と同じ形。受け取った側は sanitizeFields で整え直す）。 */
+export type MemoFieldDef = { name: string; type: 'text' | 'check' | 'select'; options?: string[] }
+
 export type MemoRequest =
 	| { requestId: string; op: 'load'; lang: string; pagePath: string }
 	/**
 	 * text はメモの Markdown 全体（null ならこのページのファイルは書かず、ひな形だけ書く）。
 	 * fields は全ページ共通の field のひな形（`memo/_fields.json`）。
 	 */
-	| { requestId: string; op: 'save'; lang: string; pagePath: string; text: string | null; fields: string[] }
+	| { requestId: string; op: 'save'; lang: string; pagePath: string; text: string | null; fields: MemoFieldDef[] }
 
 export type MemoResult =
 	/** text が null ならそのページのメモはまだ無い。fields はひな形（無ければ既定）。 */
-	| { requestId: string; ok: true; op: 'load'; text: string | null; fields: string[] }
+	| { requestId: string; ok: true; op: 'load'; text: string | null; fields: MemoFieldDef[] }
 	| { requestId: string; ok: true; op: 'save'; file: string | null }
 	| { requestId: string; ok: false; error: string }

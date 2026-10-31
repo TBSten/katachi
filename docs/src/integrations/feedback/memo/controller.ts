@@ -3,7 +3,8 @@
 import type { MemoRequest, MemoResult } from '../core/protocol'
 import type { Call } from '../shared/rpc'
 import { parseMarkdown, toMarkdown } from './markdown'
-import { addField, emptyNote, isNoteEmpty, MEMO_LIMITS, removeField, sameNoteContent, sanitizeFields, type Locator, type MemoDoc, type MemoPage, type Note, type Spot } from './model'
+import { addField, removeField, sameFields, sanitizeFields, type FieldDef } from './fields'
+import { emptyNote, isNoteEmpty, MEMO_LIMITS, sameNoteContent, type Locator, type MemoDoc, type MemoPage, type Note, type Spot } from './model'
 
 /** 保存の状態。画面の端に小さく出す。 */
 export type SaveStatus =
@@ -37,7 +38,7 @@ export function createController(deps: ControllerDeps) {
 	const debounceMs = deps.debounceMs ?? 500
 	const newId = deps.newId ?? (() => Math.random().toString(36).slice(2, 10))
 	const now = deps.now ?? (() => new Date())
-	let template: string[] = []
+	let template: FieldDef[] = []
 	let doc: MemoDoc = { page: deps.page, note: emptyNote(), spots: [] }
 	let existed = false
 	let blocked: string | null = null
@@ -46,7 +47,7 @@ export function createController(deps: ControllerDeps) {
 	let timer: ReturnType<typeof setTimeout> | undefined
 	let status: SaveStatus = { kind: 'loading' }
 	const statusListeners = new Set<(s: SaveStatus) => void>()
-	const templateListeners = new Set<(t: readonly string[]) => void>()
+	const templateListeners = new Set<(t: readonly FieldDef[]) => void>()
 
 	const setStatus = (s: SaveStatus) => {
 		status = s
@@ -63,7 +64,7 @@ export function createController(deps: ControllerDeps) {
 				// TODO: 同じページのメモを 2 か所で開くと、後から保存した側がファイル全体を上書きする。読み込み時の updated を載せて食い違いを断る（review L11）。
 				const skipDoc = !existed && isNoteEmpty(doc.note) && doc.spots.length === 0
 				setStatus({ kind: 'saving' })
-				const res = await deps.call({ op: 'save', lang: deps.page.lang, pagePath: deps.pagePath, text: skipDoc ? null : toMarkdown(doc, now()), fields: template }).promise
+				const res = await deps.call({ op: 'save', lang: deps.page.lang, pagePath: deps.pagePath, text: skipDoc ? null : toMarkdown(doc, now(), template), fields: template }).promise
 				if (res.ok) {
 					if (!skipDoc) existed = true
 					if (!dirty) setStatus({ kind: 'saved', at: now() })
@@ -86,18 +87,18 @@ export function createController(deps: ControllerDeps) {
 		timer = setTimeout(() => void run(), debounceMs)
 	}
 
-	function setTemplate(next: string[]) {
+	function setTemplate(next: FieldDef[]) {
 		template = next
 		for (const l of templateListeners) l(template)
 	}
 
 	return {
 		get doc() { return doc },
-		get template(): readonly string[] { return template },
+		get template(): readonly FieldDef[] { return template },
 		get status() { return status },
 		get blocked() { return blocked },
 		onStatus(l: (s: SaveStatus) => void) { statusListeners.add(l); return () => statusListeners.delete(l) },
-		onTemplate(l: (t: readonly string[]) => void) { templateListeners.add(l); return () => templateListeners.delete(l) },
+		onTemplate(l: (t: readonly FieldDef[]) => void) { templateListeners.add(l); return () => templateListeners.delete(l) },
 
 		/** サーバーから読み込む。失敗しても投げず、理由を返す（そのあいだは保存しない）。 */
 		async load(): Promise<LoadOutcome> {
@@ -151,10 +152,10 @@ export function createController(deps: ControllerDeps) {
 			touch()
 			this.flush()
 		},
-		/** field を全ページ共通のひな形に足す。 */
-		addField(name: string) {
-			const next = addField(template, name)
-			if (next.length === template.length) return
+		/** field を全ページ共通のひな形に足す（文字列はテキストの field）。同じ名前があれば種類・選択肢を置き換える。 */
+		addField(field: string | FieldDef) {
+			const next = addField(template, field)
+			if (sameFields(next, template)) return
 			setTemplate(next)
 			touch()
 		},

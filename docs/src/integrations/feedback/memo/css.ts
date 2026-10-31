@@ -20,11 +20,23 @@ export const css = shellCss + DRAG_CSS + `
 .fields { display: grid; grid-template-columns: fit-content(40%) minmax(0, 1fr) auto; align-items: center; gap: 4px 8px; }
 .field { display: contents; }
 .field-label { min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
-.panel input, .panel textarea { color: var(--fg); background: var(--bg); }
-.field input, .add-box input { flex: 1; min-width: 0; padding: 4px 8px; font: inherit; border: 1px solid var(--border-strong); border-radius: 6px; }
+.panel input, .panel textarea, .panel select { color: var(--fg); background: var(--bg); }
+.field input:not([type=checkbox]), .add-box input { flex: 1; min-width: 0; padding: 4px 8px; font: inherit; border: 1px solid var(--border-strong); border-radius: 6px; }
 .field-drop { flex: none; width: 24px; height: 24px; padding: 0; font: inherit; color: var(--muted); background: none; border: 0; border-radius: 4px; cursor: pointer; }
 .field-drop:hover { background: var(--hover); color: var(--danger); }
+.field select, .add-box select { min-width: 0; padding: 4px 6px; font: inherit; border: 1px solid var(--border-strong); border-radius: 6px; }
+.field-select { justify-self: stretch; }
+.field-check { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.field-check input { flex: none; width: 18px; height: 18px; margin: 0; accent-color: #2563eb; }
+.field-raw { font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
+.field-raw[hidden], .add-options[hidden], .add-error[hidden] { display: none; }
 .add-box { display: flex; align-items: center; gap: 6px; }
+.add-form { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.add-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.add-row .add-input { flex: 1 1 140px; }
+.add-type { flex: none; }
+.add-options { width: 100%; padding: 4px 8px; font: inherit; border: 1px solid var(--border-strong); border-radius: 6px; resize: vertical; }
+.add-error { font-size: 12px; color: var(--danger); }
 .add-field { align-self: flex-start; padding: 2px 4px; font: inherit; color: var(--link); background: none; border: 0; cursor: pointer; }
 .add-ok, .add-cancel, .pick, .reveal, .delete, .pill-cancel { font: inherit; padding: 4px 12px; border: 1px solid var(--border-strong); border-radius: 6px; background: var(--bg); cursor: pointer; }
 .pick { align-self: flex-start; color: #fff; background: #2563eb; border-color: #2563eb; font-weight: 600; }
@@ -58,7 +70,8 @@ export const css = shellCss + DRAG_CSS + `
 /* 幅 600px 以下とタッチ端末: 16px 以上の入力、44px 以上の押せる高さ。 */
 @media (max-width: 600px), (pointer: coarse) {
 	.panel input, .panel textarea { font-size: 16px; }
-	.field input, .add-box input { min-height: 44px; }
+	.field input:not([type=checkbox]), .field select, .add-box input, .add-box select { min-height: 44px; }
+	.field-check input { width: 24px; height: 24px; }
 	.add-field, .add-ok, .add-cancel, .pick, .reveal, .delete, .pill-cancel { min-height: 44px; }
 	.field-drop { width: 44px; height: 44px; }
 	.close { width: 44px; height: 44px; }

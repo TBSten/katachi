@@ -1,6 +1,7 @@
 // 箇所ごとのメモの欄: 場所の見出し・note の入力欄・場所を表示・削除。
 import { el } from '../shared/dom'
 import { spotTitle } from './markdown'
+import type { FieldDef } from './fields'
 import type { Spot } from './model'
 import { createNoteEditor, type NoteEditor, type NoteEditorHandlers } from './note-editor'
 
@@ -21,7 +22,7 @@ function whereLines(spot: Spot): HTMLElement {
 	return box
 }
 
-export function createCard(spot: Spot, template: readonly string[], h: CardHandlers): Card {
+export function createCard(spot: Spot, template: readonly FieldDef[], h: CardHandlers): Card {
 	const root = el('article', 'card')
 	root.dataset.spot = spot.id
 	const num = el('span', 'num')

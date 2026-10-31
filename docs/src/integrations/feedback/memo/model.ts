@@ -47,6 +47,10 @@ export const MEMO_LIMITS = {
 	fieldValueChars: 500,
 	/** ひな形の field の数。 */
 	fields: 30,
+	/** select の field の選択肢の数。 */
+	fieldOptions: 20,
+	/** 選択肢 1 つの文字数。 */
+	fieldOptionChars: 40,
 	/** 1 ページの箇所の数。 */
 	spots: 200,
 	/** 保存する Markdown 全体の文字数（受け口の検査）。 */
@@ -63,52 +67,7 @@ export const sameNoteContent = (a: Note, b: Note) =>
 
 export const isNoteEmpty = (n: Note) => n.text.trim() === '' && Object.values(n.values).every((v) => v.trim() === '')
 
-// ---- field のひな形 ----
-
-/** 最初のひな形。 */
-export const DEFAULT_FIELDS: readonly string[] = ['読みやすさ']
-
-/** field 名として使える形にする。空・長すぎるものは null。 */
-export function normalizeFieldName(name: string): string | null {
-	const n = name.replace(/\s+/g, ' ').trim()
-	return n === '' || n.length > MEMO_LIMITS.fieldNameChars ? null : n
-}
-
-/** ひな形に足す。既にあれば同じ配列を返す。 */
-export function addField(template: readonly string[], name: string): string[] {
-	const n = normalizeFieldName(name)
-	if (!n || template.includes(n) || template.length >= MEMO_LIMITS.fields) return [...template]
-	return [...template, n]
-}
-
-/** ひな形から外す。メモの値は触らない（外した field の値はファイルに残る）。 */
-export function removeField(template: readonly string[], name: string): string[] {
-	return template.filter((f) => f !== name)
-}
-
-/** `_fields.json` の中身を読む。壊れていたり形が違えば既定。 */
-export function parseFields(json: string | null): string[] {
-	if (json === null) return [...DEFAULT_FIELDS]
-	try {
-		const v = JSON.parse(json) as { fields?: unknown }
-		if (!Array.isArray(v.fields)) return [...DEFAULT_FIELDS]
-		return sanitizeFields(v.fields)
-	} catch {
-		return [...DEFAULT_FIELDS]
-	}
-}
-
-/** 文字列以外・空・重複・多すぎるものを落とす。 */
-export function sanitizeFields(list: unknown[]): string[] {
-	let out: string[] = []
-	for (const f of list) {
-		if (typeof f !== 'string') continue
-		out = addField(out, f)
-	}
-	return out
-}
-
-export const serializeFields = (fields: readonly string[]) => `${JSON.stringify({ fields }, null, 2)}\n`
+// field のひな形（`_fields.json`）の型と規則は fields.ts。
 
 // ---- 保存先 ----
 
@@ -130,11 +89,7 @@ export function memoDocPath(lang: string, pagePath: string): string {
 	return `memo/${lang}/${segs.length ? segs.join('/') : 'index'}.md`
 }
 
-// ---- 見える field ----
-
-/** 画面に出す field。ひな形の順。値は無ければ空。 */
-export const visibleFields = (template: readonly string[], note: Note): Array<[name: string, value: string]> =>
-	template.map((f) => [f, note.values[f] ?? ''])
+// ---- field の値 ----
 
 /** 値を書き換えた新しい Note（空の値は消す。外した field の値は残る）。 */
 export function withValue(note: Note, name: string, value: string): Note {

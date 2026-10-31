@@ -77,6 +77,58 @@ test('field を足すとひな形に保存され、別のページでも同じ f
 	await closeByButton(fb)
 })
 
+test('チェックと選択肢の field を足す → 値を入れる → 見える Markdown と _fields.json → 再読み込みで戻る → 外す・「—」で値が消える', async ({ fb }) => {
+	const { page } = fb
+	const ui = fb.memoUi
+	await fb.fresh()
+	await openMemo(fb)
+	// チェックの field
+	await fb.act(ui('.page-note .add-field'))
+	ok('種類の選択の既定はテキスト・選択肢の入力は隠れている', (await ui('.page-note .add-type').inputValue()) === 'text' && !(await ui('.page-note .add-options').isVisible()))
+	await ui('.page-note .add-input').fill('確認')
+	await ui('.page-note .add-type').selectOption('check')
+	await ui('.page-note .add-input').press('Enter')
+	// 選択肢の field: 0 個では足せない → 入れ直して足す
+	await fb.act(ui('.page-note .add-field'))
+	await ui('.page-note .add-input').fill('評価')
+	await ui('.page-note .add-type').selectOption('select')
+	ok('「選択肢」を選ぶと選択肢の入力が出る', await ui('.page-note .add-options').isVisible())
+	await ui('.page-note .add-options').press('Enter')
+	ok('選択肢が 0 個なら足さず、理由を出す', (await ui('.page-note .add-error').isVisible()) && (await ui('.page-note .field').count()) === 2)
+	await ui('.page-note .add-options').fill('良い, 普通\n悪い')
+	await ui('.page-note .add-options').press('Enter')
+	ok('3 種類の field の行が並ぶ', (await ui('.page-note .field-label').allTextContents()).join() === '読みやすさ,確認,評価' && (await ui('.page-note .field input[type=checkbox]').count()) === 1 && (await ui('.page-note .field select').count()) === 1)
+	ok('select の選択肢は「—」と入れた 3 つ', (await ui('.page-note .field select option').allTextContents()).join() === '—,良い,普通,悪い')
+	ok('_fields.json: テキストは文字列のまま、チェックと選択肢はオブジェクト', await waitFor(() => readFields() === `${JSON.stringify({ fields: ['読みやすさ', { name: '確認', type: 'check' }, { name: '評価', type: 'select', options: ['良い', '普通', '悪い'] }] }, null, 2)}\n`), readFields())
+	// 値を入れる
+	await fb.act(ui('.page-note .field input[type=checkbox]'))
+	await ui('.page-note .field select').selectOption('普通')
+	ok('見える部分に - 確認: [x] と - 評価: 普通', await waitFor(() => /- 確認: \[x\]\n- 評価: 普通/.test(readMemo(DOC) ?? '')), readMemo(DOC)?.split('## ページのメモ')[1]?.slice(0, 200))
+	ok('末尾の JSON は値の文字列のまま', /"values":\{"確認":"true","評価":"普通"\}/.test(readMemo(DOC) ?? ''))
+	await fb.shot('5-field-types')
+	await closeByButton(fb)
+	// 再読み込みして戻る
+	await page.reload({ waitUntil: 'networkidle' })
+	await page.waitForTimeout(1200)
+	await openMemo(fb)
+	ok('再読み込みしてもチェックが入ったまま', await ui('.page-note .field input[type=checkbox]').isChecked())
+	ok('再読み込みしても選んだ選択肢のまま', (await ui('.page-note .field select').inputValue()) === '普通')
+	// 外す・「—」に戻す
+	await fb.act(ui('.page-note .field input[type=checkbox]'))
+	ok('チェックを外すと行が消える', await waitFor(() => { const m = readMemo(DOC) ?? ''; return !m.includes('- 確認:') && m.includes('- 評価: 普通') }), readMemo(DOC)?.split('## ページのメモ')[1]?.slice(0, 200))
+	await ui('.page-note .field select').selectOption('')
+	ok('「—」に戻すと値が消える', await waitFor(() => { const m = readMemo(DOC) ?? ''; return !m.includes('- 評価:') && /"values":\{\}/.test(m) }))
+	// 箇所のメモにも同じ field が出る
+	await fb.act(ui('.pick'))
+	await page.waitForTimeout(300)
+	await fb.act(fb.para, { position: { x: 8, y: 8 } })
+	await page.waitForTimeout(500)
+	ok('箇所のメモにもチェックと選択肢の field が出る', (await ui('.card .field input[type=checkbox]').count()) === 1 && (await ui('.card .field select').count()) === 1)
+	await ui('.card .field select').selectOption('悪い')
+	ok('箇所のメモの select の値も保存される', await waitFor(() => /### 1\.[\s\S]*- 評価: 悪い/.test(readMemo(DOC) ?? '')))
+	await closeByButton(fb)
+})
+
 test('要素・テキストを選んで箇所のメモを書く → 印 → 閉じる → 再読み込み → 印が同じ箇所に戻る', async ({ fb }) => {
 	const { page } = fb
 	const ui = fb.memoUi

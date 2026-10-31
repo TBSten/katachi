@@ -2,7 +2,8 @@
 // TODO: サーバー側のコードが memo/（ブラウザだけの置き場）にある。server/memo.ts へ移す。feedback/drafts.ts の型名 Store は DraftStorage などに改める（review L20）。
 import { EVENT_MEMO_REQUEST, EVENT_MEMO_RESULT, type MemoRequest, type MemoResult } from '../core/protocol'
 import type { Store } from '../server/store-types'
-import { FIELDS_PATH, MEMO_LIMITS, memoDocPath, parseFields, sanitizeFields, serializeFields } from './model'
+import { parseFields, sanitizeFields, serializeFields } from './fields'
+import { FIELDS_PATH, MEMO_LIMITS, memoDocPath } from './model'
 
 /** 依頼の形を確かめる。理由つきで返す。 */
 export function checkRequest(v: unknown): { ok: true; req: MemoRequest } | { ok: false; requestId?: string; reason: string } {
@@ -42,7 +43,7 @@ export function createMemoHandler(store: Store) {
 		}
 		// ひな形は変わったときだけ書く。
 		const current = await store.readDoc(FIELDS_PATH)
-		const next = serializeFields(req.fields)
+		const next = serializeFields(sanitizeFields(req.fields))
 		if (current !== next) await store.writeDoc(FIELDS_PATH, next)
 		if (req.text === null) return { requestId: req.requestId, ok: true, op: 'save', file: null }
 		await store.writeDoc(path, req.text)

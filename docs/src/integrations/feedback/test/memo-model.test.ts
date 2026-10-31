@@ -1,26 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { addField, DEFAULT_FIELDS, emptyNote, isNoteEmpty, memoDocPath, normalizeFieldName, parseFields, removeField, sanitizeFields, serializeFields, visibleFields, withValue } from '../memo/model'
+import { emptyNote, isNoteEmpty, memoDocPath, withValue } from '../memo/model'
 
-describe('field のひな形', () => {
-	it('最初は「読みやすさ」だけ', () => {
-		expect(parseFields(null)).toEqual(['読みやすさ'])
-		expect([...DEFAULT_FIELDS]).toEqual(['読みやすさ'])
-	})
-	it('足す: 空白を詰める・重複と空は足さない', () => {
-		expect(addField(['a'], '  b   c ')).toEqual(['a', 'b c'])
-		expect(addField(['a'], 'a')).toEqual(['a'])
-		expect(addField(['a'], '   ')).toEqual(['a'])
-		expect(normalizeFieldName('x'.repeat(41))).toBeNull()
-	})
-	it('外す: ひな形から消えるだけで、メモの値は残る', () => {
-		const t = removeField(['a', 'b'], 'a')
-		expect(t).toEqual(['b'])
-		const note = { values: { a: '残る', b: 'x' }, text: '' }
-		expect(visibleFields(t, note)).toEqual([['b', 'x']])
-		expect(note.values.a).toBe('残る')
-		// ひな形に戻せば値がまた見える
-		expect(visibleFields(addField(t, 'a'), note)).toEqual([['b', 'x'], ['a', '残る']])
-	})
+describe('field の値', () => {
 	it('値の更新: 空にすると消える・元の Note は変えない', () => {
 		const n = emptyNote()
 		const n2 = withValue(n, 'a', 'v')
@@ -28,17 +9,8 @@ describe('field のひな形', () => {
 		expect(n.values).toEqual({})
 		expect(withValue(n2, 'a', '').values).toEqual({})
 	})
-	it('メモごとに別の値（ひな形は共有・値は別）', () => {
-		const t = ['読みやすさ']
-		expect(visibleFields(t, withValue(emptyNote(), '読みやすさ', '3'))).toEqual([['読みやすさ', '3']])
-		expect(visibleFields(t, emptyNote())).toEqual([['読みやすさ', '']])
-	})
-	it('_fields.json の読み書き: 壊れていれば既定、形が違えば落とす', () => {
-		expect(parseFields(serializeFields(['a', 'b']))).toEqual(['a', 'b'])
-		expect(parseFields('{oops')).toEqual(['読みやすさ'])
-		expect(parseFields('{"fields":"x"}')).toEqual(['読みやすさ'])
-		expect(sanitizeFields(['a', 1, 'a', '', ' b '])).toEqual(['a', 'b'])
-		expect(parseFields('{"fields":[]}')).toEqual([])
+	it('長すぎる値は上限で切る', () => {
+		expect(withValue(emptyNote(), 'a', 'x'.repeat(600)).values.a).toHaveLength(500)
 	})
 	it('isNoteEmpty', () => {
 		expect(isNoteEmpty(emptyNote())).toBe(true)

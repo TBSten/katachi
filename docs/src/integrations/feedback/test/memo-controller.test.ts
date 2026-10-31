@@ -124,17 +124,45 @@ describe('読み直しと箇所', () => {
 		a.setPageNote({ values: { 密度: '高', 読みやすさ: '3' }, text: '' })
 		a.flush()
 		await settle()
-		expect(a.template).toEqual(['読みやすさ', '密度'])
+		expect(a.template).toEqual([{ name: '読みやすさ', type: 'text' }, { name: '密度', type: 'text' }])
 		a.removeField('密度')
 		a.flush()
 		await settle()
-		expect(a.template).toEqual(['読みやすさ'])
+		expect(a.template).toEqual([{ name: '読みやすさ', type: 'text' }])
 		expect(parseMarkdown((await store.readDoc('memo/ja/guides/x.md'))!)?.note.values).toEqual({ 密度: '高', 読みやすさ: '3' })
 		// 別のページ
 		const other = createController({ call: (() => { const h = createMemoHandler(store); return (req: never) => ({ requestId: 'r', cancel() {}, promise: h({ ...(req as object), requestId: 'r' }) as never }) })() as unknown as MemoCall, page: { ...page, path: '/katachi/ja/other/' }, pagePath: 'other/' })
 		await other.load()
-		expect(other.template).toEqual(['読みやすさ'])
+		expect(other.template).toEqual([{ name: '読みやすさ', type: 'text' }])
 		expect(other.doc.note).toEqual({ values: {}, text: '' })
+	})
+	it('field の種類: check と select を足すと _fields.json にオブジェクトで書き、見える Markdown は種類に合わせる', async () => {
+		const { make, store, sent } = setup()
+		const a = make()
+		await a.load()
+		a.addField({ name: '確認', type: 'check' })
+		a.addField({ name: '評価', type: 'select', options: ['良い', '悪い'] })
+		a.setPageNote({ values: { 確認: 'true', 評価: '良い' }, text: '' })
+		a.flush()
+		await settle()
+		expect(JSON.parse((await store.readDoc('memo/_fields.json'))!).fields).toEqual(['読みやすさ', { name: '確認', type: 'check' }, { name: '評価', type: 'select', options: ['良い', '悪い'] }])
+		const md = (await store.readDoc('memo/ja/guides/x.md'))!
+		expect(md).toContain('- 確認: [x]\n- 評価: 良い')
+		expect(parseMarkdown(md)?.note.values).toEqual({ 確認: 'true', 評価: '良い' })
+		// 同じ名前を別の種類で足し直すと種類が変わり、値は残る
+		a.addField({ name: '確認', type: 'text' })
+		expect(a.template.map((f) => f.type)).toEqual(['text', 'text', 'select'])
+		expect(a.doc.note.values.確認).toBe('true')
+		await vi.advanceTimersByTimeAsync(600)
+		// 同じ定義を足し直しても保存は起きない
+		const saves = sent.length
+		a.addField({ name: '評価', type: 'select', options: ['良い', '悪い'] })
+		await vi.advanceTimersByTimeAsync(600)
+		expect(sent.length).toBe(saves)
+		// 読み直すとひな形の種類が戻る
+		const b = make()
+		await b.load()
+		expect(b.template).toEqual([{ name: '読みやすさ', type: 'text' }, { name: '確認', type: 'text' }, { name: '評価', type: 'select', options: ['良い', '悪い'] }])
 	})
 	it('読み直せない既存ファイルは上書きしない', async () => {
 		const { make, store, sent } = setup()

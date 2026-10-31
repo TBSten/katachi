@@ -1,5 +1,6 @@
 // メモの Markdown の組み立てと読み直し。AI が読む見た目（frontmatter + 節）に、読み直し用の JSON を末尾の HTML コメントで持つ。
 // 読み直しはコメントの JSON から行う（見える部分は AI 向けの出力。手で直しても読み直しには効かない）。
+import { displayValue, type FieldDef } from './fields'
 import { emptyNote, isNoteEmpty, MEMO_LIMITS, type Locator, type MemoDoc, type MemoPage, type Note, type Spot } from './model'
 
 const MARKER = '<!-- katachi-memo:data v1'
@@ -14,9 +15,12 @@ export function spotTitle(l: Locator): string {
 }
 
 // TODO: 本文の行頭の # をエスケープしない。core/record.ts の escapeHeadings を使う（review L13）。
-function noteLines(note: Note): string[] {
+// 値はひな形の種類に合わせて見せる（check は `[x]`）。ひな形から外した field と型の合わない値は、値のまま書く。
+function noteLines(note: Note, fields: readonly FieldDef[]): string[] {
 	const out: string[] = []
-	for (const [k, v] of Object.entries(note.values)) if (v.trim() !== '') out.push(`- ${k}: ${v.replace(/\s*\n\s*/g, ' ')}`)
+	for (const [k, v] of Object.entries(note.values)) {
+		if (v.trim() !== '') out.push(`- ${k}: ${displayValue(fields.find((f) => f.name === k), v).replace(/\s*\n\s*/g, ' ')}`)
+	}
 	if (out.length && note.text.trim() !== '') out.push('')
 	if (note.text.trim() !== '') out.push(note.text.replace(/\s+$/, ''))
 	return out
@@ -43,8 +47,11 @@ function locatorLines(l: Locator): string[] {
 	return ['- 場所', ...rows.filter((r): r is [string, string] => !!r[1]).map(([k, v]) => `  - ${k}: ${v}`)]
 }
 
-/** メモ全体を Markdown にする。ページのメモも箇所のメモも空なら、本文は空の節だけ（呼び出し側が書くかを決める）。 */
-export function toMarkdown(doc: MemoDoc, now = new Date()): string {
+/**
+ * メモ全体を Markdown にする。ページのメモも箇所のメモも空なら、本文は空の節だけ（呼び出し側が書くかを決める）。
+ * fields は見える部分の値の書き方を決めるひな形（末尾の JSON には影響しない）。
+ */
+export function toMarkdown(doc: MemoDoc, now = new Date(), fields: readonly FieldDef[] = []): string {
 	const { page } = doc
 	const out: string[] = [
 		'---',
@@ -60,13 +67,13 @@ export function toMarkdown(doc: MemoDoc, now = new Date()): string {
 		'',
 		'## ページのメモ',
 		'',
-		...(isNoteEmpty(doc.note) ? ['（なし）'] : [...timeLines(doc.note), ...(doc.note.updatedAt ? [''] : []), ...noteLines(doc.note)]),
+		...(isNoteEmpty(doc.note) ? ['（なし）'] : [...timeLines(doc.note), ...(doc.note.updatedAt ? [''] : []), ...noteLines(doc.note, fields)]),
 	]
 	if (doc.spots.length) {
 		out.push('', '## 箇所のメモ')
 		doc.spots.forEach((s, i) => {
 			out.push('', `### ${i + 1}. ${spotTitle(s.locator)}`, '', ...locatorLines(s.locator), ...timeLines(s))
-			const body = noteLines(s)
+			const body = noteLines(s, fields)
 			if (body.length) out.push('', ...body)
 		})
 	}
