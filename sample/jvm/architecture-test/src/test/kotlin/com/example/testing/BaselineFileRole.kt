@@ -22,8 +22,8 @@ fun DeclarationContainerScope.baselineFile() = "BaselineFile".role {
 
         This sample deliberately leaves three entries in as a demo of baseline:
         `service/LegacyHealthCheck.kt` (`[UnexpectedFile]`, since it is not `*Service.kt`),
-        `service/LegacyStatusService.kt` (`internal`, so it violates the `Must be public`
-        constraint) and `controller/health/LegacyStatusController.kt` (`[CaptureMismatch]`, since
+        `service/LegacyStatusService.kt` (`internal`, so it violates the `ktFileContent`
+        constraint of the Service role, which requires a `public` class) and `controller/health/LegacyStatusController.kt` (`[CaptureMismatch]`, since
         `controller/health/` may hold only `HealthController.kt`).
 
         Do not write it by hand. It is updated in one of two ways.
