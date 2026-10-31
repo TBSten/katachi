@@ -5,6 +5,7 @@ import { LOG_GLOBAL } from '../core/console-section'
 import { cropRect } from '../core/crop'
 import { SHOT_ELEMENT, SHOT_WINDOW, type PayloadAttachment } from '../core/protocol'
 import { rectOfPick, type Pick } from '../shared/pick'
+import { planPrune, pruneFilter } from './prune'
 
 export type Shots = {
 	attachments: PayloadAttachment[]
@@ -48,18 +49,43 @@ export function frameRects(pick: Pick): DOMRect[] {
 	return lines.length ? lines : [pick.range.getBoundingClientRect()]
 }
 
+/** 画像・フォントを待つ時間の上限（ms）。既定の 30 秒では、読み込まれない画像があると送信が 30 秒止まる。 */
+const LOAD_TIMEOUT = 3000
+
+/**
+ * まだ読み込まれていない `loading="lazy"` の画像を、fn の間だけ `loading="eager"` にする（終わったら、失敗しても元に戻す）。
+ * modern-screenshot は撮る前に文書の全 img の読み込みを待つが、画面外の lazy の画像は読み込みが始まらないので、時間切れまで待ってしまう。
+ */
+export async function withEagerImages<T>(doc: Document, fn: () => Promise<T>): Promise<T> {
+	const changed = [...doc.querySelectorAll('img')].filter((img) => img.loading === 'lazy' && !img.complete)
+	for (const img of changed) img.loading = 'eager'
+	try {
+		return await fn()
+	} finally {
+		for (const img of changed) img.loading = 'lazy'
+	}
+}
+
 /** 画面（viewport）を絵にした canvas。スクロールしている分は、動かして合わせる。 */
 // TODO: modern-screenshot が複製の途中で投げると sandbox の iframe（#__SANDBOX__…）が body に残る。createContext を自前で作って try/finally で destroyContext する（review L6）。
-async function renderViewport(scale: number): Promise<HTMLCanvasElement> {
+export async function renderViewport(scale: number, opts: { prune?: boolean } = {}): Promise<HTMLCanvasElement> {
 	const { domToCanvas } = await import('modern-screenshot')
-	return domToCanvas(document.documentElement, {
-		width: innerWidth,
-		height: innerHeight,
-		scale,
-		style: { transform: `translate(${-scrollX}px, ${-scrollY}px)`, transformOrigin: '0 0' },
-		filter: (n) => !shouldSkip(n),
-		onCloneEachNode: stripInvalidAttributes,
-	})
+	// 画面から遠い要素は箱だけ残して中身を複製しない（prune.ts）。opts.prune = false は e2e で絵を比べるためだけに使う。
+	// 測るのは複製の直前（filter の最初の呼び出し）。画像を待つ間に読み込まれた画像で配置が変わっても、変わったあとの配置で決める。
+	let keep: ((n: Node) => boolean) | null = opts.prune === false ? () => true : null
+	const kept = (n: Node) => (keep ??= pruneFilter(planPrune(document.documentElement, innerHeight)))(n)
+	return withEagerImages(document, () =>
+		domToCanvas(document.documentElement, {
+			width: innerWidth,
+			height: innerHeight,
+			scale,
+			style: { transform: `translate(${-scrollX}px, ${-scrollY}px)`, transformOrigin: '0 0' },
+			filter: (n) => kept(n) && !shouldSkip(n),
+			// timeout は画像を待つ時間だけでなく、画像・フォントの fetch の時間切れにも使われる（遅い外部画像は空の画像になる）。
+			timeout: LOAD_TIMEOUT,
+			onCloneEachNode: stripInvalidAttributes,
+		}),
+	)
 }
 
 /** numbered なら、枠の左上に番号を付ける（複数の要素。記録の `### 1.` と対応する）。 */

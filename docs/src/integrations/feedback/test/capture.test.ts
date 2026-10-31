@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest'
-import { blobToBase64, frameRects, shouldSkip, stripInvalidAttributes } from '../feedback/capture'
+import { blobToBase64, frameRects, shouldSkip, stripInvalidAttributes, withEagerImages } from '../feedback/capture'
 import { parentOf } from '../feedback/flow'
 
 describe('capture の部品', () => {
@@ -53,5 +53,39 @@ describe('parentOf（親を選ぶ）', () => {
 		const range = document.createRange()
 		range.selectNodeContents(text)
 		expect(parentOf({ kind: 'text', range, text: '本文' })!.id).toBe('a')
+	})
+})
+
+describe('withEagerImages（画面外の lazy の画像を待ち続けない）', () => {
+	/** complete を決め打ちした img（happy-dom は読み込まないので）。 */
+	function img(loading: 'lazy' | 'eager', complete: boolean) {
+		const i = document.createElement('img')
+		i.loading = loading
+		i.src = 'https://example.invalid/a.png'
+		Object.defineProperty(i, 'complete', { value: complete })
+		document.body.append(i)
+		return i
+	}
+	it('読み込まれていない lazy だけを、撮る間 eager にし、撮ったあと lazy に戻す', async () => {
+		document.body.innerHTML = ''
+		const pending = img('lazy', false)
+		const loaded = img('lazy', true)
+		const eager = img('eager', false)
+		const during = await withEagerImages(document, async () => [pending.loading, loaded.loading, eager.loading])
+		expect(during).toEqual(['eager', 'lazy', 'eager'])
+		expect([pending.loading, loaded.loading, eager.loading]).toEqual(['lazy', 'lazy', 'eager'])
+	})
+	it('撮影が失敗しても lazy に戻す', async () => {
+		document.body.innerHTML = ''
+		const pending = img('lazy', false)
+		await expect(withEagerImages(document, async () => {
+			expect(pending.loading).toBe('eager')
+			throw new Error('boom')
+		})).rejects.toThrow('boom')
+		expect(pending.loading).toBe('lazy')
+	})
+	it('fn の戻り値をそのまま返す', async () => {
+		document.body.innerHTML = ''
+		expect(await withEagerImages(document, async () => 42)).toBe(42)
 	})
 })

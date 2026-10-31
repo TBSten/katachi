@@ -4,6 +4,7 @@ import { collect, type Pick } from './collect'
 import { EVENT_RESULT, EVENT_SAVE, type SavePayload, type SaveResult, type SectionKey } from '../core/protocol'
 import { containerOf } from '../shared/pick'
 import { createRpc, type Call } from '../shared/rpc'
+import { busyTicker } from './busy'
 import { captureShots } from './capture'
 import { copyText, copyToClipboard } from './copy'
 import { clearDraft, draftKey, loadDraft, locatorOf, saveDraft, type Draft } from './drafts'
@@ -90,19 +91,27 @@ export function createFlow(app: AppLike, server: ServerLike) {
 		const s = session
 		if (!s) return
 		const key = draftKeyNow
-		s.ui.setBusy(true, checked.screenshot ? '撮影中…' : undefined)
-		const payload = buildPayload({ requestId: '', comment, pick: s.pick!, offered, checked, target })
-		if (checked.screenshot) {
-			const shots = await captureShots(s.pick!)
-			if (session !== s) return // 撮っている間にやめた
-			if (shots.attachments.length) payload.attachments = shots.attachments
-			if (shots.error) payload.screenshotError = shots.error
+		// ボタンの文字で段階を見せる: 撮影中… → 保存中…（2 秒を超えたら経過秒数も）。
+		const busy = busyTicker((label) => s.ui.setBusy(true, label))
+		let result: SaveResult
+		try {
+			busy.stage(checked.screenshot ? '撮影中…' : '保存中…')
+			const payload = buildPayload({ requestId: '', comment, pick: s.pick!, offered, checked, target })
+			if (checked.screenshot) {
+				const shots = await captureShots(s.pick!)
+				if (session !== s) return // 撮っている間にやめた
+				if (shots.attachments.length) payload.attachments = shots.attachments
+				if (shots.error) payload.screenshotError = shots.error
+				busy.stage('保存中…')
+			}
+			const call = rpc.call(payload)
+			pending = call
+			result = await call.promise
+			if (pending !== call || session !== s) return
+			pending = null
+		} finally {
+			busy.stop()
 		}
-		const call = rpc.call(payload)
-		pending = call
-		const result = await call.promise
-		if (pending !== call || session !== s) return
-		pending = null
 		if (result.ok) {
 			if (key) clearDraft(key)
 			exit()
