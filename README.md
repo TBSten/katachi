@@ -26,7 +26,7 @@ From this one definition, you get the following three things.
 - **Documentation**: `./gradlew katachiDocs` writes out Markdown for each Role
 - **Code scaffolding**: `./gradlew katachiTemplate --arg template=UseCase --arg name=GetUser` creates a file where the definition says it belongs. It can also be generated from an IntelliJ IDEA / Android Studio plugin (experimental) ([how to install](https://tbsten.github.io/katachi/guides/generate-code-from-template/))
 
-You can also write rules about a file's contents — being public, for example — with `konsist { }`. How this differs from Konsist, detekt and ArchUnit is in [Comparison with other tools](https://tbsten.github.io/katachi/get-started/comparison-with-other-tools/).
+You can also write rules about a file's contents — holding a single public class, for example — with `ktFileContent { }`. How this differs from Konsist, detekt and ArchUnit is in [Comparison with other tools](https://tbsten.github.io/katachi/get-started/comparison-with-other-tools/).
 
 **Supported**: JVM, Android and KMP projects. Put the definition and its test in a JVM module. JDK 17+, Kotlin 2.2+, Gradle 8.0+.
 
@@ -108,7 +108,7 @@ The full walkthrough — importing, and handing it off to an AI agent — is in 
 - **Below Kotlin 2.4**: you need `compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")` (don't add it from 2.4 on — it becomes a warning)
 - **`Failed to load JUnit Platform`**: you're missing `junit-platform-launcher`
 - **`Cannot create Launcher without at least one TestEngine` / `did not discover any tests to execute`**: you're missing a JUnit engine (`junit-jupiter`). On Gradle 8, if another engine (kotest, for example) is present, this may not fail at all: the build stays `BUILD SUCCESSFUL` while the check silently does nothing
-- **Writing `konsist { }` fails with `[UncheckedFileConstraint]`**: write `assert(FileConstraintCheck())`
+- **Writing `ktFileContent { }` fails with `[UncheckedFileConstraint]`**: write `assert(FileConstraintCheck())`
 
 </details>
 
@@ -128,7 +128,7 @@ The full walkthrough — importing, and handing it off to an AI agent — is in 
 | Module | What it is |
 |---|---|
 | `me.tbsten.katachi:katachi` | The main library (JVM) |
-| `me.tbsten.katachi:katachi-konsist` | Only if you use `konsist { }` |
+| `me.tbsten.katachi:katachi-konsist` | Only if you use `ktFileContent { }` |
 | Gradle plugin `me.tbsten.katachi` | Tasks such as `katachiDocs` and `katachiTemplate`. Pair it with the same version of the library |
 
 ## Contribution

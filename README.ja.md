@@ -26,7 +26,7 @@
 - **ドキュメント**: `./gradlew katachiDocs` が Role ごとの Markdown を書き出します
 - **コードの雛形**: `./gradlew katachiTemplate --arg template=UseCase --arg name=GetUser` が、定義どおりの場所にファイルを作ります。IntelliJ IDEA / Android Studio のプラグイン（実験的）からも生成できます（[導入](https://tbsten.github.io/katachi/ja/guides/generate-code-from-template/)）
 
-ファイルの中身の規則（「public であること」など）も `konsist { }` で書けます。Konsist・detekt・ArchUnit との違いは [他ツールとの比較](https://tbsten.github.io/katachi/ja/get-started/comparison-with-other-tools/) にあります。
+ファイルの中身の規則（「public な class を1つだけ置く」など）も `ktFileContent { }` で書けます。Konsist・detekt・ArchUnit との違いは [他ツールとの比較](https://tbsten.github.io/katachi/ja/get-started/comparison-with-other-tools/) にあります。
 
 **対応**: JVM / Android / KMP のプロジェクト。定義とテストは JVM のモジュールに置きます。JDK 17+・Kotlin 2.2+・Gradle 8.0+。
 
@@ -71,7 +71,7 @@ dependencies {
 katachi { architecture = "com.example.projectArchitecture" }
 ```
 
-katachi が検査するのはリポジトリ全体のファイルですが、Gradle が Test タスクの入力として見ているのはテストのクラスパスだけです。`outputs.upToDateWhen { false }` が無いと、ファイルを足しても `:architecture-test:test` が `UP-TO-DATE` で飛ばされ、違反があっても緑のままになります。`outputs.cacheIf { false }` は、ビルドキャッシュを有効にしているときに前の結果が使い回されないようにするための指定です。`testLogging { exceptionFormat = TestExceptionFormat.FULL }` が無いと、テストが落ちてもコンソールには例外のクラス名の1行しか出ず、違反の一覧が読めません。
+katachi が検査するのはリポジトリ全体のファイルですが、Gradle が Test タスクの入力として見ているのはテストのクラスパスだけです。`outputs.upToDateWhen { false }` が無いと、ファイルを足しても `:architecture-test:test` が `UP-TO-DATE` で飛ばされ、違反があっても緑のままになります。`outputs.cacheIf { false }` は、ビルドキャッシュを有効にしているときに前の結果が使い回されないようにするための指定です。`testLogging { exceptionFormat = TestExceptionFormat.FULL }` が無いと、テストが失敗してもコンソールには例外のクラス名の1行しか出ず、違反の一覧が読めません。
 
 定義とテストを書きます。
 
@@ -108,7 +108,7 @@ class ProjectArchitectureTest {
 - **Kotlin 2.4 未満**: `compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")` が要ります（2.4 以降では付けないでください。警告になります）
 - **`Failed to load JUnit Platform`**: `junit-platform-launcher` が足りません
 - **`Cannot create Launcher without at least one TestEngine` / `did not discover any tests to execute`**: JUnit のエンジン（`junit-jupiter`）が足りません。Gradle 8 では、ほかのエンジン（kotest など）があるとエラーにならず、`BUILD SUCCESSFUL` のまま検査が空振りすることがあります
-- **`konsist { }` を書いたら `[UncheckedFileConstraint]` で落ちる**: `assert(FileConstraintCheck())` と書きます
+- **`ktFileContent { }` を書いたら `[UncheckedFileConstraint]` で失敗する**: `assert(FileConstraintCheck())` と書きます
 
 </details>
 
@@ -128,7 +128,7 @@ class ProjectArchitectureTest {
 | モジュール | 内容 |
 |---|---|
 | `me.tbsten.katachi:katachi` | 本体（JVM） |
-| `me.tbsten.katachi:katachi-konsist` | `konsist { }` を使うときだけ |
+| `me.tbsten.katachi:katachi-konsist` | `ktFileContent { }` を使うときだけ |
 | Gradle plugin `me.tbsten.katachi` | `katachiDocs` / `katachiTemplate` などのタスク。同じ版の本体と組み合わせます |
 
 ## Contribution
