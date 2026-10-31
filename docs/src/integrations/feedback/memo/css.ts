@@ -6,7 +6,7 @@ export const css = shellCss + DRAG_CSS + `
 .panel { pointer-events: auto; display: flex; flex-direction: column; background: var(--bg); border: 1px solid var(--border); box-shadow: 0 8px 28px rgba(0,0,0,.3); }
 .panel[hidden], .sheet-frame[hidden] { display: none; }
 /* 幅 600px より広い: 右上の大きめの popover（最大の高さは 70vh、中身はスクロール）。 */
-.panel.popover { position: fixed; top: 12px; right: 12px; width: 420px; max-width: calc(100vw - 24px); max-height: 70vh; border-radius: 12px; }
+.panel.popover { position: fixed; top: 12px; right: 12px; width: 300px; max-width: calc(100vw - 24px); max-height: 70vh; border-radius: 12px; }
 .head { flex: none; display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 14px; border-bottom: 1px solid var(--border); }
 .head h2 { margin: 0; font-size: 15px; }
 .status { flex: 1; min-width: 0; font-size: 11px; color: var(--muted); text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
