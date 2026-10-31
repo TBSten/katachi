@@ -9,16 +9,13 @@ Repositories it needs, and returns a model. `HealthService.currentHealth()` for 
 returns the result of `HealthRepository.load()`, but this is where decisions go when they
 multiply.
 
-The file name is `*Service.kt`, one class per file. Among the application's roles, only
-this one writes a constraint with `konsist { }`, "Must be public", so accidentally adding
-`internal` fails the test. You notice before it can no longer be referenced from a
-Controller in another package.
-
-The rest of the shape is written with `ktFileContent { }`, the way the file itself is
-written: the one class is named after the file, it holds nothing but the Repositories it
-receives and its functions, and the file imports models and Repositories only. An
-`io.ktor` import fails the test, which is how "knowledge of HTTP stops at the API layer"
-is held.
+The file name is `*Service.kt`, one class per file. The shape is written with
+`ktFileContent { }`, the way the file itself is written: the one class is public and named
+after the file, it holds nothing but the Repositories it receives and its functions, and
+the file imports models and Repositories only. Accidentally adding `internal` fails the
+test, so you notice before the class can no longer be referenced from a Controller in
+another package. An `io.ktor` import fails it too, which is how "knowledge of HTTP stops
+at the API layer" is held.
 
 ## Placement
 
@@ -28,8 +25,7 @@ is held.
 
 ## Constraints
 
-- [Must import models and Repositories only, never HTTP (ktFileContent)](#kotlin-file-content)
-- Must be public
+- [Must be public and import models and Repositories only, never HTTP (ktFileContent)](#kotlin-file-content)
 
 ## Kotlin file content
 
@@ -46,9 +42,9 @@ Example: `HealthService.kt`
 
 | Declaration | |
 |---|---|
-| `internal.optional() class HealthService` | required |
+| `public class HealthService` | required |
 
-### Members of `internal.optional() class HealthService`
+### Members of `public class HealthService`
 
 | Member | |
 |---|---|

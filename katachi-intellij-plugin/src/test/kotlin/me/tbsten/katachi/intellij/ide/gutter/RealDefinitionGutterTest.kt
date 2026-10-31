@@ -314,7 +314,7 @@ internal class RealDefinitionGutterTest : AnnotatorTestBase() {
     }
 
     private companion object {
-        /** `(ServiceRole.kt:80)` in a tooltip: where the line that allowed the declaration was written. */
+        /** `(ServiceRole.kt:76)` in a tooltip: where the line that allowed the declaration was written. */
         /** The rows that are shown disabled on purpose: nothing to list, and the count of the siblings the list cut. */
         val INFORMATION_ROWS = listOf("(disabled) — No other file yet", "(disabled) … and ")
 

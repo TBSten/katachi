@@ -91,7 +91,7 @@ class ViolationBindingTest {
         val violation = AnnotationFixtures.unsatisfied(path, "HealthService", line = 7)
         val target = ViolationBinding.targetOf(violation)
         assertEquals(
-            "katachi: \"Must be public\" (domain.Service) rejected HealthService — declared at ServiceRole.kt:94\n" + violation.message,
+            "katachi: \"${AnnotationFixtures.CONSTRAINT}\" (domain.Service) rejected HealthService — declared at ServiceRole.kt:94\n" + violation.message,
             ViolationAnnotations.hoverOf(violation, target, stale = false),
         )
     }
@@ -105,7 +105,7 @@ class ViolationBindingTest {
         )
         val violation = AnnotationFixtures.unsatisfied(path)
         assertEquals(
-            "katachi: [UnsatisfiedFileConstraint] Role: domain.Service / FileConstraint: \"Must be public\"",
+            "katachi: [UnsatisfiedFileConstraint] Role: domain.Service / FileConstraint: \"${AnnotationFixtures.CONSTRAINT}\"",
             ViolationAnnotations.hoverOf(violation, ViolationBinding.targetOf(violation), stale = false),
         )
         val unchecked = AnnotationFixtures.unchecked(path)

@@ -8,14 +8,12 @@ import com.example.forbiddenContents
 import com.example.testing.test
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.konsist.declarations.ktFileContent
-import me.tbsten.katachi.konsist.konsist
 
 /** The role holding one application-specific behaviour, built out of repositories. */
 fun DeclarationContainerScope.service() = "Service".role {
@@ -27,16 +25,13 @@ fun DeclarationContainerScope.service() = "Service".role {
         returns the result of `HealthRepository.load()`, but this is where decisions go when they
         multiply.
 
-        The file name is `*Service.kt`, one class per file. Among the application's roles, only
-        this one writes a constraint with `konsist { }`, "Must be public", so accidentally adding
-        `internal` fails the test. You notice before it can no longer be referenced from a
-        Controller in another package.
-
-        The rest of the shape is written with `ktFileContent { }`, the way the file itself is
-        written: the one class is named after the file, it holds nothing but the Repositories it
-        receives and its functions, and the file imports models and Repositories only. An
-        `io.ktor` import fails the test, which is how "knowledge of HTTP stops at the API layer"
-        is held.
+        The file name is `*Service.kt`, one class per file. The shape is written with
+        `ktFileContent { }`, the way the file itself is written: the one class is public and named
+        after the file, it holds nothing but the Repositories it receives and its functions, and
+        the file imports models and Repositories only. Accidentally adding `internal` fails the
+        test, so you notice before the class can no longer be referenced from a Controller in
+        another package. An `io.ktor` import fails it too, which is how "knowledge of HTTP stops
+        at the API layer" is held.
     """.trimIndent()
     allowedContents = """
         Only application-specific procedures, decisions and assembly may be placed here.
@@ -53,7 +48,6 @@ fun DeclarationContainerScope.service() = "Service".role {
     example("HealthService", "Getting the server running status")
     // ./gradlew :architecture-test:katachiTemplate --arg template=domain.Service --arg name=User
     layout {
-        mustBePublic()
         mainSourceSet / kotlin / "com/example/service" /
             "${capture("name")}Service".ktFile()
                 .template {
@@ -72,27 +66,17 @@ fun DeclarationContainerScope.service() = "Service".role {
     // What a Service file may hold, in the order the file lists it. Each kind is an allow list
     // of the lines written for it, and nothing else may be there: the package, the imports, the
     // one class and that class's members. The template above writes a file that passes it.
-    "Must import models and Repositories only, never HTTP".ktFileContent {
+    "Must be public and import models and Repositories only, never HTTP".ktFileContent {
         `package`("com.example.service")
 
         // The domain knows the models and the Repositories, and nothing of HTTP.
         `import`("com.example.model.**")
         `import`("com.example.repository.**")
 
-        required(internal.optional(), `class`, fileName) { // class HealthService; "Must be public" says the visibility
+        required(public, `class`, fileName) {              // class HealthService; `internal` fails here
             allow(private, `val`, "*", "*Repository")      // the Repositories it is built from
             allow(`fun`, "*")                              // the behaviour a Controller calls
         }
     }
 }
 
-// Kept in this file rather than in a shared one: the declaration site is the first frame
-// outside katachi, so a violation keeps naming the role that owns the rule.
-//
-// The samples' one `konsist { }` constraint on application code (katachi's guide: "Konsist integration"): the one
-// line that shows a backend-written constraint next to katachi's own layout vocabulary. It covers only
-// the `.kt` files this role declares, never the project's `build.gradle.kts`.
-private fun LayoutScope.mustBePublic() =
-    "Must be public".konsist {
-        classes().must { it.hasPublicOrDefaultModifier }
-    }

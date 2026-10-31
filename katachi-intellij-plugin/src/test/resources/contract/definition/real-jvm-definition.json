@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "katachiVersion": "0.3.0",
-  "generatedAt": "2026-10-29T15:18:38Z",
+  "generatedAt": "2026-10-31T11:52:20Z",
   "projectRoot": "/__ROOT__",
   "architecture": {
     "declaredAt": {
@@ -604,7 +604,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "ServiceRole.kt",
-        "line": 21
+        "line": 19
       },
       "layout": [
         {
@@ -615,7 +615,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ServiceRole.kt",
-            "line": 57
+            "line": 51
           },
           "modulePath": null,
           "pathInModule": "src",
@@ -636,7 +636,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ServiceRole.kt",
-            "line": 57
+            "line": 51
           },
           "modulePath": null,
           "pathInModule": "src/main",
@@ -657,7 +657,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ServiceRole.kt",
-            "line": 57
+            "line": 51
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin",
@@ -678,7 +678,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ServiceRole.kt",
-            "line": 57
+            "line": 51
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin/com",
@@ -699,7 +699,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ServiceRole.kt",
-            "line": 57
+            "line": 51
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin/com/example",
@@ -720,7 +720,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ServiceRole.kt",
-            "line": 57
+            "line": 51
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin/com/example/service",
@@ -741,7 +741,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ServiceRole.kt",
-            "line": 58
+            "line": 52
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin/com/example/service/*Service.kt",
@@ -760,7 +760,7 @@
             "title": null,
             "declaredAt": {
               "fileName": "ServiceRole.kt",
-              "line": 59
+              "line": 53
             }
           },
           "matchedFiles": ["src/main/kotlin/com/example/service/HealthService.kt", "src/main/kotlin/com/example/service/LegacyStatusService.kt"],
@@ -772,13 +772,13 @@
       ],
       "constraints": [
         {
-          "name": "Must import models and Repositories only, never HTTP (ktFileContent)",
+          "name": "Must be public and import models and Repositories only, never HTTP (ktFileContent)",
           "backend": "ktFileContent",
           "checkClass": "me.tbsten.katachi.konsist.declarations.internal.KtFileContentConstraint",
           "range": "Subtree",
           "declaredAt": {
             "fileName": "ServiceRole.kt",
-            "line": 75
+            "line": 69
           },
           "layoutPath": null,
           "anchors": ["src/main/kotlin/com/example/service"],
@@ -799,10 +799,10 @@
                   "verdict": "Allowed",
                   "rules": [
                     {
-                      "text": "internal.optional() class HealthService",
+                      "text": "public class HealthService",
                       "declaredAt": {
                         "fileName": "ServiceRole.kt",
-                        "line": 82
+                        "line": 76
                       }
                     }
                   ],
@@ -820,41 +820,23 @@
                   "kind": "class",
                   "name": "LegacyStatusService",
                   "line": 11,
-                  "verdict": "Allowed",
+                  "verdict": "Mismatched",
                   "rules": [
                     {
-                      "text": "internal.optional() class LegacyStatusService",
+                      "text": "public class LegacyStatusService",
                       "declaredAt": {
                         "fileName": "ServiceRole.kt",
-                        "line": 82
+                        "line": 76
                       }
                     }
                   ],
-                  "difference": null
+                  "difference": "modifiers (missing: public)"
                 }
               ],
               "missing": [],
               "unexplainedReason": null
             }
           ]
-        },
-        {
-          "name": "Must be public",
-          "backend": "konsist",
-          "checkClass": "me.tbsten.katachi.konsist.internal.KonsistFileConstraint",
-          "range": "Subtree",
-          "declaredAt": {
-            "fileName": "ServiceRole.kt",
-            "line": 96
-          },
-          "layoutPath": null,
-          "anchors": ["src/main/kotlin/com/example/service"],
-          "entries": [6],
-          "coverage": {
-            "files": ["src/main/kotlin/com/example/service/*Service.kt"],
-            "anyFileDirectories": []
-          },
-          "fileDeclarations": null
         }
       ]
     },
@@ -1694,7 +1676,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "ArchitectureDefinitionEntryRole.kt",
-        "line": 10
+        "line": 13
       },
       "layout": [
         {
@@ -1705,7 +1687,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ArchitectureDefinitionEntryRole.kt",
-            "line": 37
+            "line": 42
           },
           "modulePath": null,
           "pathInModule": "architecture-test",
@@ -1726,7 +1708,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ArchitectureDefinitionEntryRole.kt",
-            "line": 38
+            "line": 43
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src",
@@ -1747,7 +1729,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ArchitectureDefinitionEntryRole.kt",
-            "line": 38
+            "line": 43
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src/test",
@@ -1768,7 +1750,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ArchitectureDefinitionEntryRole.kt",
-            "line": 38
+            "line": 43
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src/test/kotlin",
@@ -1789,7 +1771,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ArchitectureDefinitionEntryRole.kt",
-            "line": 38
+            "line": 43
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src/test/kotlin/com",
@@ -1810,7 +1792,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ArchitectureDefinitionEntryRole.kt",
-            "line": 38
+            "line": 43
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src/test/kotlin/com/example",
@@ -1831,7 +1813,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ArchitectureDefinitionEntryRole.kt",
-            "line": 42
+            "line": 43
           },
           "modulePath": null,
           "pathInModule": "architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt",
@@ -1847,22 +1829,47 @@
       ],
       "constraints": [
         {
-          "name": "Must not declare a group or a role in the entry file",
-          "backend": "konsist",
-          "checkClass": "me.tbsten.katachi.konsist.internal.KonsistFileConstraint",
+          "name": "Must not declare a group or a role in the entry file (ktFileContent)",
+          "backend": "ktFileContent",
+          "checkClass": "me.tbsten.katachi.konsist.declarations.internal.KtFileContentConstraint",
           "range": "Subtree",
           "declaredAt": {
             "fileName": "ArchitectureDefinitionEntryRole.kt",
-            "line": 39
+            "line": 48
           },
-          "layoutPath": "architecture-test/src/test/kotlin/com/example",
+          "layoutPath": null,
           "anchors": ["architecture-test/src/test/kotlin/com/example"],
           "entries": [6],
           "coverage": {
             "files": ["architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt"],
             "anyFileDirectories": []
           },
-          "fileDeclarations": null
+          "fileDeclarations": [
+            {
+              "file": "architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt",
+              "declarationsChecked": true,
+              "declarations": [
+                {
+                  "kind": "val",
+                  "name": "projectArchitecture",
+                  "line": 46,
+                  "verdict": "Allowed",
+                  "rules": [
+                    {
+                      "text": "val projectArchitecture: Architecture",
+                      "declaredAt": {
+                        "fileName": "ArchitectureDefinitionEntryRole.kt",
+                        "line": 54
+                      }
+                    }
+                  ],
+                  "difference": null
+                }
+              ],
+              "missing": [],
+              "unexplainedReason": null
+            }
+          ]
         }
       ]
     },
@@ -3314,7 +3321,7 @@
         {
           "name": "fails the build on every compiler warning",
           "backend": "custom",
-          "checkClass": "com.example.gradle.GradleGroupKt$$Lambda$90/0x0000007001096120",
+          "checkClass": "com.example.gradle.GradleGroupKt$$Lambda$90/0x00000003010920f0",
           "range": "Subtree",
           "declaredAt": {
             "fileName": "GradleGroup.kt",

@@ -113,7 +113,7 @@ internal class DebugBridgeGutterTest : AnnotatorTestBase() {
         val banner = lines.first { "|file|" in it }
         assertTrue(banner, banner.startsWith("highlight=ERROR|file|katachi: [UnsatisfiedFileConstraint] Missing: class DefaultGetUserUseCase : GetUserUseCase (UseCaseRole.kt:20)"))
         val ranged = lines.first { "|3:" in it }
-        assertTrue(ranged, ranged.startsWith("highlight=ERROR|3:16-3:29|katachi: \"Must be public\" (domain.Service) rejected HealthService — declared at ServiceRole.kt:94\\n"))
+        assertTrue(ranged, ranged.startsWith("highlight=ERROR|3:16-3:29|katachi: \"${AnnotationFixtures.CONSTRAINT}\" (domain.Service) rejected HealthService — declared at ServiceRole.kt:94\\n"))
         assertTrue(ranged, ranged.endsWith("|Go to the rule (ServiceRole.kt:94);Run the check again"))
     }
 

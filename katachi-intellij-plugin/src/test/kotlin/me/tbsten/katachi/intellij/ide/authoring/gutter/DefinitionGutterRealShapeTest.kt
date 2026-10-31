@@ -34,7 +34,7 @@ internal class DefinitionGutterRealShapeTest : DefinitionGutterTestBase() {
     fun `test sample の本物の ServiceRole kt では 役割の行と 補間つきの file entry に続く template の行に ◆ が出る`() {
         val marks = openedRealMarks()
 
-        assertEquals(listOf(21, 59), marks.map { it.line })
+        assertEquals(listOf(19, 53), marks.map { it.line })
         assertEquals(listOf("\"", "template"), marks.map { it.leaf })
         assertEquals("katachi: domain.Service — 2 files", marks[0].tooltip)
         assertEquals("katachi: generate from domain.Service", marks[1].tooltip)

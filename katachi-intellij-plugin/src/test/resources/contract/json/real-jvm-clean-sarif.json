@@ -6,7 +6,7 @@
       "tool": {
         "driver": {
           "name": "katachi",
-          "semanticVersion": "0.2.0",
+          "semanticVersion": "0.3.0",
           "informationUri": "https://tbsten.github.io/katachi/",
           "rules": []
         }

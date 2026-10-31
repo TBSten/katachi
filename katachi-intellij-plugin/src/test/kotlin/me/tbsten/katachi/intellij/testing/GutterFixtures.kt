@@ -57,7 +57,10 @@ internal object GutterFixtures {
         }
     """.trimIndent()
 
-    /** The line of sample/jvm's `ServiceRole.kt` that allows `class HealthService`: `` `class`(fileName) { ``. */
+    /**
+     * A line that allows `class HealthService`, after the one of sample/jvm's `ServiceRole.kt`
+     * (`` required(public, `class`, fileName) { `` there); the text and the line number are the fakes' own.
+     */
     val SERVICE_RULE: RuleRef = RuleRef("class HealthService", DeclarationSiteRef("ServiceRole.kt", 80))
 }
 

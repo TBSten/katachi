@@ -12,6 +12,7 @@ import me.tbsten.katachi.intellij.ide.gutter.annotator.quickFixesOf
 import me.tbsten.katachi.intellij.model.DefinitionState
 import me.tbsten.katachi.intellij.model.Freshness
 import me.tbsten.katachi.intellij.model.ViolationsState
+import me.tbsten.katachi.intellij.testing.AnnotationFixtures
 import me.tbsten.katachi.intellij.testing.KtFileContentGolden
 import me.tbsten.katachi.intellij.testing.SarifResult
 import me.tbsten.katachi.intellij.testing.sarifText
@@ -124,8 +125,8 @@ internal class GutterWiringTest : GutterWiringTestBase() {
     }
 
     private fun rejected(declaration: String, level: String = "error") = SarifResult(
-        "UnsatisfiedFileConstraint", SOURCE, 3, "Role: domain.Service / FileConstraint: Must be public",
-        properties = mapOf("role" to "domain.Service", "constraint" to "Must be public", "declaration" to declaration, "declaredAt" to "ServiceRole.kt:94"),
+        "UnsatisfiedFileConstraint", SOURCE, 3, "Role: domain.Service / FileConstraint: ${AnnotationFixtures.CONSTRAINT}",
+        properties = mapOf("role" to "domain.Service", "constraint" to AnnotationFixtures.CONSTRAINT, "declaration" to declaration, "declaredAt" to "ServiceRole.kt:94"),
         level = level,
     )
 
@@ -154,7 +155,7 @@ internal class GutterWiringTest : GutterWiringTestBase() {
         val first = annotatedByRefresher()
         assertEquals(listOf(null to ERROR, "HealthService" to ERROR), first.map { it.text to it.severity })
         assertEquals(3, first.last().line)
-        assertTrue(first.last().description, first.last().description.startsWith("katachi: \"Must be public\" (domain.Service) rejected HealthService — declared at ServiceRole.kt:94"))
+        assertTrue(first.last().description, first.last().description.startsWith("katachi: \"${AnnotationFixtures.CONSTRAINT}\" (domain.Service) rejected HealthService — declared at ServiceRole.kt:94"))
         assertEquals(
             "katachi: [UnsatisfiedFileConstraint] Missing: class DefaultGetUserUseCase : GetUserUseCase (${goldenMissing.properties.getValue("declaredAt")})",
             first.first().description,

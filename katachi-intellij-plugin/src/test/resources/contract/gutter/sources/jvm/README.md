@@ -5,8 +5,8 @@
 A sample that defines, with katachi, **a small single-module HTTP server** written in Ktor.
 
 It declares as roles what goes in each of the API, domain and data layers, and checks the placement of files with `assert()`.
-One role also has a constraint written with `konsist { }`: "Must be public".
-The entry of the definition itself also has a `konsist { }` constraint: it declares no group or role.
+The roles also say what their Kotlin files may hold with `ktFileContent { }`, for example that a Service is a public class.
+The entry of the definition itself also has a `ktFileContent { }` constraint: it declares no group or role.
 The same definition generates the documentation in [`docs/`](docs/README.md), and there is also one custom processor that reads the definition.
 
 katachi is pulled in from the repository source with `includeBuild("../..")`, but it is written the same way a user would write it:
@@ -17,11 +17,11 @@ katachi is pulled in from the repository source with `includeBuild("../..")`, bu
 | File                                                                                                 | What it shows                                                                                                   |
 |----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
 | [`ProjectArchitecture.kt`](architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt)         | The body of `architecture { }`. It only calls the 7 groups (the `Endpoint` template set is declared inside the api group); each group lives in its own directory with the roles it calls, one declaration per file       |
-| [`domain/ServiceRole.kt`](architecture-test/src/test/kotlin/com/example/domain/ServiceRole.kt)             | A role that writes a constraint with `konsist { }` in addition to `layout { }`. It doubles as an example of generating `*Service.kt` with the `.template { }` attached to a file declaration |
+| [`domain/ServiceRole.kt`](architecture-test/src/test/kotlin/com/example/domain/ServiceRole.kt)             | A role that writes what its file may hold with `ktFileContent { }` in addition to `layout { }`: one public class named after the file, importing models and Repositories only. It doubles as an example of generating `*Service.kt` with the `.template { }` attached to a file declaration |
 | [`api/ControllerRole.kt`](architecture-test/src/test/kotlin/com/example/api/ControllerRole.kt)       | An example of naming a directory's `*` with `capture("resource")`, deriving the file name from it (`${capture("resource").pascalCase}Controller`) and reading it back from `.template { }` with `captureValue("resource")`. The value is used as-is in a package, so it is rejected with `require(...)`. In the IDE plugin, the `resource` field offers the directories that exist now (`health`) as candidates. `controller/health/LegacyStatusController.kt` deliberately breaks the derivation and is held back by the baseline as a `[CaptureMismatch]` |
 | [`api/ApiGroup.kt`](architecture-test/src/test/kotlin/com/example/api/ApiGroup.kt) | `"Endpoint".templateSet { }`, declared inside `apiGroup()` next to the roles it generates: a Controller and a Service generated together from one `resource` (`--arg template=api.Endpoint`), each member given its own value by `arg(...)` |
-| [`testing/ArchitectureDefinitionEntryRole.kt`](architecture-test/src/test/kotlin/com/example/testing/ArchitectureDefinitionEntryRole.kt) | The definition split into one role per kind of file: the entry, `<group>/*Group.kt` ([`GroupDefinitionRole.kt`](architecture-test/src/test/kotlin/com/example/testing/GroupDefinitionRole.kt)) and `<group>/*Role.kt` ([`RoleDefinitionRole.kt`](architecture-test/src/test/kotlin/com/example/testing/RoleDefinitionRole.kt)). The entry also carries a `konsist { }` constraint |
-| [`ProjectArchitectureTest.kt`](architecture-test/src/test/kotlin/com/example/ProjectArchitectureTest.kt) | The only test a user writes. It calls `assert(FileConstraintCheck())` so that `konsist { }` is evaluated too              |
+| [`testing/ArchitectureDefinitionEntryRole.kt`](architecture-test/src/test/kotlin/com/example/testing/ArchitectureDefinitionEntryRole.kt) | The definition split into one role per kind of file: the entry, `<group>/*Group.kt` ([`GroupDefinitionRole.kt`](architecture-test/src/test/kotlin/com/example/testing/GroupDefinitionRole.kt)) and `<group>/*Role.kt` ([`RoleDefinitionRole.kt`](architecture-test/src/test/kotlin/com/example/testing/RoleDefinitionRole.kt)). The entry also carries a `ktFileContent { }` constraint |
+| [`ProjectArchitectureTest.kt`](architecture-test/src/test/kotlin/com/example/ProjectArchitectureTest.kt) | The only test a user writes. It calls `assert(FileConstraintCheck())` so that `ktFileContent { }` is evaluated too              |
 | [`processors/RoleNames.kt`](architecture-test/src/test/kotlin/com/example/processors/RoleNames.kt)       | A minimal example of a custom processor that receives arguments with `--arg`                                                                |
 | [`katachi-baseline.json`](katachi-baseline.json) | The baseline ledger. It deliberately leaves three entries, `service/LegacyHealthCheck.kt`, `service/LegacyStatusService.kt` and `controller/health/LegacyStatusController.kt`, held back ([`../README.md`](../README.md#baseline)) |
 
@@ -32,7 +32,7 @@ No Android SDK is needed. It runs with JDK 17 alone.
 ```sh
 cd sample/jvm
 
-# Check file placement and the konsist { } constraints
+# Check file placement and the ktFileContent { } constraints
 ./gradlew :architecture-test:test
 
 # Generate the documentation into docs/ from the definition

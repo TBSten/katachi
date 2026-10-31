@@ -1,10 +1,13 @@
+@file:OptIn(ExperimentalKatachiApi::class)
+
 package com.example.testing
 
 import com.example.forbiddenContents
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.konsist.konsist
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /** The role of the entry point of the katachi definition, which belongs to no layer of the application. */
 fun DeclarationContainerScope.architectureDefinitionEntry() = "ArchitectureDefinitionEntry".role {
@@ -20,9 +23,11 @@ fun DeclarationContainerScope.architectureDefinitionEntry() = "ArchitectureDefin
         layer of the application. The application is the root project (`:`), so moving the
         definition out keeps the application's main source set at one.
 
-        The one constraint keeps the entry a table of contents: it declares no group or role
-        itself (an extension function on `DeclarationContainerScope`), because those are
-        declared in `<Name>Group.kt` and `<Name>Role.kt`, in the directory named after each group.
+        The one constraint, written with `ktFileContent { }`, keeps the entry a table of
+        contents: the file holds `val projectArchitecture` and nothing else, so it declares no
+        group or role itself (an extension function on `DeclarationContainerScope`), because
+        those are declared in `<Name>Group.kt` and `<Name>Role.kt`, in the directory named after
+        each group.
     """.trimIndent()
     forbiddenContents = """
         - A group or a role declared in this file. Those go in `<Name>Group.kt` and `<Name>Role.kt`
@@ -35,12 +40,17 @@ fun DeclarationContainerScope.architectureDefinitionEntry() = "ArchitectureDefin
         // definition has to give itself a role like everything else. The module path
         // resolves to `architecture-test/`, which is where the files actually are.
         "architecture-test" {
-            testSourceSet / kotlin / "com/example" {
-                "Must not declare a group or a role in the entry file".konsist {
-                    functions().mustNot { it.receiverType?.name == "DeclarationContainerScope" }
-                }
-                "ProjectArchitecture".ktFile()
-            }
+            testSourceSet / kotlin / "com/example" / "ProjectArchitecture".ktFile()
         }
+    }
+    // The entry holds the one `val` and nothing else: a `fun` declared here, such as a group
+    // or a role written as an extension on `DeclarationContainerScope`, fails the test.
+    "Must not declare a group or a role in the entry file".ktFileContent {
+        `package`("com.example")
+
+        `import`("com.example.**")       // the group functions it calls
+        `import`("me.tbsten.katachi.**") // architecture { } itself
+
+        required(`val`, "projectArchitecture", "Architecture")
     }
 }

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "katachiVersion": "0.3.0",
-  "generatedAt": "2026-10-29T15:18:47Z",
+  "generatedAt": "2026-10-31T11:53:00Z",
   "projectRoot": "/__ROOT__",
   "architecture": {
     "declaredAt": {
@@ -2453,7 +2453,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentRole.kt",
-            "line": 61
+            "line": 62
           },
           "modulePath": null,
           "pathInModule": "ui",
@@ -2474,7 +2474,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentRole.kt",
-            "line": 62
+            "line": 63
           },
           "modulePath": null,
           "pathInModule": "ui/src",
@@ -2495,7 +2495,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentRole.kt",
-            "line": 62
+            "line": 63
           },
           "modulePath": null,
           "pathInModule": "ui/src/main",
@@ -2516,7 +2516,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentRole.kt",
-            "line": 62
+            "line": 63
           },
           "modulePath": null,
           "pathInModule": "ui/src/main/kotlin",
@@ -2537,7 +2537,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentRole.kt",
-            "line": 62
+            "line": 63
           },
           "modulePath": null,
           "pathInModule": "ui/src/main/kotlin/com",
@@ -2558,7 +2558,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentRole.kt",
-            "line": 62
+            "line": 63
           },
           "modulePath": null,
           "pathInModule": "ui/src/main/kotlin/com/example",
@@ -2579,7 +2579,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentRole.kt",
-            "line": 62
+            "line": 63
           },
           "modulePath": null,
           "pathInModule": "ui/src/main/kotlin/com/example/sample",
@@ -2600,7 +2600,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentRole.kt",
-            "line": 62
+            "line": 63
           },
           "modulePath": null,
           "pathInModule": "ui/src/main/kotlin/com/example/sample/ui",
@@ -2621,7 +2621,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentRole.kt",
-            "line": 62
+            "line": 63
           },
           "modulePath": null,
           "pathInModule": "ui/src/main/kotlin/com/example/sample/ui/component",
@@ -2642,7 +2642,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ComponentRole.kt",
-            "line": 62
+            "line": 63
           },
           "modulePath": null,
           "pathInModule": "ui/src/main/kotlin/com/example/sample/ui/component/*.kt",
@@ -2661,7 +2661,7 @@
             "title": null,
             "declaredAt": {
               "fileName": "ComponentRole.kt",
-              "line": 63
+              "line": 64
             }
           },
           "matchedFiles": ["ui/src/main/kotlin/com/example/sample/ui/component/AppButton.kt"],
@@ -2679,7 +2679,7 @@
           "range": "Subtree",
           "declaredAt": {
             "fileName": "ComponentRole.kt",
-            "line": 97
+            "line": 98
           },
           "layoutPath": null,
           "anchors": ["ui/src/main/kotlin/com/example/sample/ui/component"],
@@ -2703,7 +2703,7 @@
                       "text": "@Composable public fun AppButton(...)",
                       "declaredAt": {
                         "fileName": "ComponentRole.kt",
-                        "line": 103
+                        "line": 104
                       }
                     }
                   ],
@@ -2719,7 +2719,7 @@
                       "text": "public enum class AppButton*",
                       "declaredAt": {
                         "fileName": "ComponentRole.kt",
-                        "line": 105
+                        "line": 106
                       }
                     }
                   ],
@@ -2735,7 +2735,7 @@
                       "text": "@Preview private fun *Preview(...)",
                       "declaredAt": {
                         "fileName": "ComponentRole.kt",
-                        "line": 104
+                        "line": 105
                       }
                     }
                   ],
@@ -2751,7 +2751,7 @@
                       "text": "@Preview private fun *Preview(...)",
                       "declaredAt": {
                         "fileName": "ComponentRole.kt",
-                        "line": 104
+                        "line": 105
                       }
                     }
                   ],
@@ -2767,7 +2767,7 @@
                       "text": "@Preview private fun *Preview(...)",
                       "declaredAt": {
                         "fileName": "ComponentRole.kt",
-                        "line": 104
+                        "line": 105
                       }
                     }
                   ],

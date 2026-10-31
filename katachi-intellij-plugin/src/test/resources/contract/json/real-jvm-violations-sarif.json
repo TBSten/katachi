@@ -6,7 +6,7 @@
       "tool": {
         "driver": {
           "name": "katachi",
-          "semanticVersion": "0.2.0",
+          "semanticVersion": "0.3.0",
           "informationUri": "https://tbsten.github.io/katachi/",
           "rules": [
             {
@@ -58,7 +58,7 @@
           "ruleIndex": 0,
           "level": "error",
           "message": {
-            "text": "The file matches a pattern of role api.Controller, but the levels named by capture(\"resource\") do not agree.\nPattern: src/main/kotlin/com/example/controller/${resource}/<resource.pascalCase>Controller.kt\nresource: \"health\" at level 7\nresource.pascalCase: \"LegacyStatus\" at level 8 (expected \"Health\", from resource = \"health\")\nDeclared at: ControllerRole.kt:78\n\nHow to fix:\n  - Move it so that every level named resource reads \"health\":\n      src/main/kotlin/com/example/controller/health/HealthController.kt\n  - Delete it if it is not needed\n  - If the file name need not follow the directory, drop .pascalCase at ControllerRole.kt:78"
+            "text": "The file matches a pattern of role api.Controller, but the levels named by capture(\"resource\") do not agree.\nPattern: src/main/kotlin/com/example/controller/${resource}/<resource.pascalCase>Controller.kt\nresource: \"health\" at level 7\nresource.pascalCase: \"LegacyStatus\" at level 8 (expected \"Health\", from resource = \"health\")\nDeclared at: ControllerRole.kt:82\n\nHow to fix:\n  - Move it so that every level named resource reads \"health\":\n      src/main/kotlin/com/example/controller/health/HealthController.kt\n  - Delete it if it is not needed\n  - If the file name need not follow the directory, drop .pascalCase at ControllerRole.kt:82"
           },
           "locations": [
             {
@@ -75,11 +75,11 @@
               "id": 1,
               "physicalLocation": {
                 "artifactLocation": {
-                  "uri": "architecture-test/src/test/kotlin/com/example/roles/ControllerRole.kt",
+                  "uri": "architecture-test/src/test/kotlin/com/example/api/ControllerRole.kt",
                   "uriBaseId": "%SRCROOT%"
                 },
                 "region": {
-                  "startLine": 78
+                  "startLine": 82
                 }
               },
               "message": {
@@ -98,7 +98,7 @@
           "ruleIndex": 1,
           "level": "error",
           "message": {
-            "text": "No role is defined for this file.\n\nNearby locations:\n  domain.Service src/main/kotlin/com/example/service/ (*Service.kt)\n  api.KtorPlugin src/main/kotlin/com/example/plugin/ (*.kt)\n  domain.Model   src/main/kotlin/com/example/model/ (*.kt)\n\nHow to fix:\n  - Move it to one of the locations above, with a name matching the pattern in parentheses\n  - Delete it if it is not needed\n  - Add a new role for it:\n      \"LegacyHealthCheck\".role {\n        summary = \"TODO\"\n        layout {\n          \"src/main/kotlin/com/example/service\" / \"LegacyHealthCheck\".ktFile()\n        }\n      }"
+            "text": "No role is defined for this file.\n\nNearby locations:\n  domain.Service src/main/kotlin/com/example/service/ (*Service.kt)\n  api.KtorPlugin src/main/kotlin/com/example/plugin/ (*.kt)\n  domain.Model   src/main/kotlin/com/example/model/ ([A-Z]*.kt)\n\nHow to fix:\n  - Move it to one of the locations above, with a name matching the pattern in parentheses\n  - Delete it if it is not needed\n  - Add a new role for it:\n      \"LegacyHealthCheck\".role {\n        summary = \"TODO\"\n        layout {\n          \"src/main/kotlin/com/example/service\" / \"LegacyHealthCheck\".ktFile()\n        }\n      }"
           },
           "locations": [
             {
@@ -121,7 +121,7 @@
           "ruleIndex": 2,
           "level": "error",
           "message": {
-            "text": "Role: domain.Service / FileConstraint: \"Must be public\"\nDeclaration: LegacyStatusService (line 3)\nDeclared at: ServiceRole.kt:94"
+            "text": "Role: domain.Service / FileConstraint: \"Must be public and import models and Repositories only, never HTTP (ktFileContent)\"\nDeclaration: LegacyStatusService (line 11)\nNot allowed: internal class LegacyStatusService\nExpected: public class LegacyStatusService\nDiffers in: modifiers (missing: public)\nDeclared at: ServiceRole.kt:76\n\nHow to fix:\n  - Change the declaration to: public class LegacyStatusService\n  - Or change the line at ServiceRole.kt:76 if the declaration is right"
           },
           "locations": [
             {
@@ -131,7 +131,7 @@
                   "uriBaseId": "%SRCROOT%"
                 },
                 "region": {
-                  "startLine": 3
+                  "startLine": 11
                 }
               }
             }
@@ -141,11 +141,11 @@
               "id": 1,
               "physicalLocation": {
                 "artifactLocation": {
-                  "uri": "architecture-test/src/test/kotlin/com/example/roles/ServiceRole.kt",
+                  "uri": "architecture-test/src/test/kotlin/com/example/domain/ServiceRole.kt",
                   "uriBaseId": "%SRCROOT%"
                 },
                 "region": {
-                  "startLine": 94
+                  "startLine": 76
                 }
               },
               "message": {
@@ -158,9 +158,9 @@
             "severity": "Error",
             "path": "src/main/kotlin/com/example/service/LegacyStatusService.kt",
             "role": "domain.Service",
-            "constraint": "Must be public",
+            "constraint": "Must be public and import models and Repositories only, never HTTP (ktFileContent)",
             "declaration": "LegacyStatusService",
-            "declaredAt": "ServiceRole.kt:94"
+            "declaredAt": "ServiceRole.kt:76"
           }
         }
       ]

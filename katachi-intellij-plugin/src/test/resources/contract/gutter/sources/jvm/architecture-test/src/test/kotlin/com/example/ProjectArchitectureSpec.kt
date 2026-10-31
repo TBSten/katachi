@@ -9,7 +9,6 @@ import com.example.gradle.gradleGroup
 import com.example.testing.testingGroup
 import com.example.tool.toolGroup
 import io.kotest.core.spec.style.FreeSpec
-import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
@@ -23,9 +22,6 @@ import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.Documented
 import me.tbsten.katachi.dsl.Examples
-import me.tbsten.katachi.dsl.FileConstraintRange
-import me.tbsten.katachi.dsl.FileConstraintRange.DirectOnly
-import me.tbsten.katachi.dsl.FileConstraintRange.Subtree
 import me.tbsten.katachi.dsl.FileSelection
 import me.tbsten.katachi.dsl.Title
 import me.tbsten.katachi.dsl.architecture
@@ -37,7 +33,6 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.pascalCase
 import me.tbsten.katachi.dsl.wholeTree
-import me.tbsten.katachi.konsist.konsist
 
 /**
  * Checks that [projectArchitecture] builds into the model we expect, and that the check it
@@ -229,8 +224,8 @@ class ProjectArchitectureSpec : FreeSpec({
         // an empty traversal passes just as happily. Dropping `app/Entrypoint` leaves
         // `Application.kt` in a directory other roles still claim, so the file itself has to
         // be reached and matched for this to fail - which is the part being proven here.
-        // `FileConstraintCheck()` is passed so the `konsist { }` and `ktFileContent { }`
-        // constraints are evaluated rather than reported as `[UncheckedFileConstraint]` alongside it.
+        // `FileConstraintCheck()` is passed so the `ktFileContent { }` constraints are evaluated
+        // rather than reported as `[UncheckedFileConstraint]` alongside it.
         // `validate()` does not read the baseline, so the two violations it holds back are here too.
         architectureWithoutEntrypointRole.validate(FileConstraintCheck()).map { "[${it.label}] ${it.path}" }
             .shouldContainExactlyInAnyOrder(
@@ -277,44 +272,13 @@ class ProjectArchitectureSpec : FreeSpec({
         overNothing.validate() shouldBe emptyList()
     }
 
-    "a konsist with scope = DirectOnly does not descend into the group directories, and with Subtree it descends and fails there" {
-        // A self-contained definition, not one of this sample's roles: a user's roles should not
-        // need `DirectOnly`. Passing proves nothing on its own, since a constraint that covered
-        // nothing would pass too. Taking the flag away has to make the same rule reach the group
-        // directories, where every file declares exactly what it forbids.
-        fun unsatisfiedPaths(scope: FileConstraintRange): List<String> = architecture {
-            "testing".group {
-                "Definition".role {
-                    layout {
-                        "architecture-test" {
-                            testSourceSet / kotlin / "com/example" {
-                                "Must not declare a group or a role at the top of com.example".konsist(scope = scope) {
-                                    functions().mustNot { it.receiverType?.name == "DeclarationContainerScope" }
-                                }
-                                "*".ktFile()
-                                "**" / "*".ktFile()
-                            }
-                        }
-                    }
-                }
-            }
-        }.validate(FileConstraintCheck())
-            .filter { it.label == "UnsatisfiedFileConstraint" }
-            .map { it.path }
-
-        unsatisfiedPaths(DirectOnly) shouldBe emptyList()
-        unsatisfiedPaths(Subtree) shouldContain
-            "architecture-test/src/test/kotlin/com/example/domain/ServiceRole.kt"
-    }
-
     "a correct definition reports nothing but the violations held back by the baseline" {
         // The same run ProjectArchitectureTest makes, read as a list rather than as a thrown
         // error, so a failure here names the violations instead of only the message.
         // `FileConstraintCheck()` matches what `ProjectArchitectureTest` itself passes: without
-        // it, the `konsist { }` constraints in `domain/ServiceRole.kt` and
-        // `testing/ArchitectureDefinitionEntryRole.kt`, and the `ktFileContent { }` of the
-        // application's roles, would come back as `[UncheckedFileConstraint] reason=NotEvaluated`
-        // instead of being evaluated.
+        // it, the `ktFileContent { }` of the roles (`domain/ServiceRole.kt`,
+        // `testing/ArchitectureDefinitionEntryRole.kt` and the other application roles) would come
+        // back as `[UncheckedFileConstraint] reason=NotEvaluated` instead of being evaluated.
         //
         // `validate()` does not read the baseline, so what `katachi-baseline.json` holds back
         // is all that may come back: the three violations left in on purpose, and nothing else.

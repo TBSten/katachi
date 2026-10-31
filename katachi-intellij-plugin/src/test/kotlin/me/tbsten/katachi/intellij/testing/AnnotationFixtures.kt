@@ -20,7 +20,10 @@ import java.nio.file.Path
 internal object AnnotationFixtures {
     val MODULE: ModuleId = module(":arch").id
 
-    /** Where the check says `"Must be public"` was written. */
+    /** The name of the `ktFileContent { }` of sample/jvm's `ServiceRole.kt`, as the check writes it in `constraint`. */
+    const val CONSTRAINT: String = "Must be public and import models and Repositories only, never HTTP (ktFileContent)"
+
+    /** Where the check says [CONSTRAINT] was written (the fakes' own line, not the sample's). */
     const val RULE_AT: String = "ServiceRole.kt:94"
 
     /** `UnsatisfiedFileConstraint`: [declaration] was rejected at [line] of [path]; with neither, a violation of the whole file. */
@@ -28,7 +31,7 @@ internal object AnnotationFixtures {
         path: Path,
         declaration: String? = null,
         line: Int? = null,
-        constraint: String = "Must be public",
+        constraint: String = CONSTRAINT,
         role: String = "domain.Service",
         level: SarifLevel = SarifLevel.Error,
         declaredAt: String = RULE_AT,

@@ -45,6 +45,8 @@ class RealDefinitionContractTest {
         val allowedByAnythingElse: Int,
         /** Tracked files no role holds (an `UnexpectedFile`, a file in an `UnexpectedDirectory`, or a `CaptureMismatch`) that the sample's `katachi-baseline.json` holds back on purpose, in `git ls-files` order. */
         val heldBack: List<String> = emptyList(),
+        /** Declarations (`<file> <name>`) a `ktFileContent { }` rejects that the sample's `katachi-baseline.json` holds back on purpose. */
+        val rejectedDeclarations: List<String> = emptyList(),
     ) {
         val fixture: String get() = "real-$name-definition"
         val definition: DefinitionModel get() = DefinitionFixtures.definition(fixture)
@@ -55,11 +57,12 @@ class RealDefinitionContractTest {
 
     private val samples = listOf(
         Sample(
-            "jvm", roles = 30, groups = 8, constraints = 7, explainedFiles = 6, declarations = 6, allowedByAnythingElse = 0,
+            "jvm", roles = 30, groups = 8, constraints = 6, explainedFiles = 7, declarations = 7, allowedByAnythingElse = 0,
             heldBack = listOf(
                 "src/main/kotlin/com/example/controller/health/LegacyStatusController.kt",
                 "src/main/kotlin/com/example/service/LegacyHealthCheck.kt",
             ),
+            rejectedDeclarations = listOf("src/main/kotlin/com/example/service/LegacyStatusService.kt LegacyStatusService"),
         ),
         Sample("android", roles = 37, groups = 8, constraints = 10, explainedFiles = 15, declarations = 28, allowedByAnythingElse = 0,
             heldBack = listOf(
@@ -142,10 +145,12 @@ class RealDefinitionContractTest {
                 sample.allowedByAnythingElse,
                 explained.sumOf { (_, file) -> file.declarations.count { it.verdict == DeclarationVerdict.AllowedByAnythingElse } },
             )
-            assertTrue(
-                "${sample.name}: every real declaration is allowed (the samples pass their own check)",
-                explained.all { (_, file) -> file.declarations.all { it.verdict.isAllowed } && file.missing.isEmpty() },
+            assertEquals(
+                "${sample.name}: every real declaration is allowed but the ones the baseline holds back (the samples pass their own check)",
+                sample.rejectedDeclarations,
+                explained.flatMap { (_, file) -> file.declarations.filterNot { it.verdict.isAllowed }.map { "${file.file} ${it.name}" } },
             )
+            assertTrue("${sample.name}: no declaration is missing", explained.all { (_, file) -> file.missing.isEmpty() })
             // The other backends do not explain.
             val others = definition.roles.flatMap { it.constraints }.filter { it.backend != ConstraintBackend.KtFileContent }
             assertTrue("${sample.name}: only ktFileContent writes fileDeclarations", others.all { it.fileDeclarations.isNullOrEmpty() })
@@ -163,7 +168,7 @@ class RealDefinitionContractTest {
     }
 
     @Test
-    fun `sample-jvm の HealthService は ServiceRole の 82 行目の class HealthService で Allowed になり 照合を通しても同じ答えが出る`() {
+    fun `sample-jvm の HealthService は ServiceRole の 76 行目の public class HealthService で Allowed になり 照合を通しても同じ答えが出る`() {
         val sample = samples.first { it.name == "jvm" }
         val definition = sample.definition
         val lookup = DefinitionLookup(listOf(definitionSnapshot(definition)))
@@ -176,14 +181,14 @@ class RealDefinitionContractTest {
         assertEquals(SourceDeclarationKind.Class, declaration.kind)
         assertEquals("HealthService", declaration.name)
         assertEquals(DeclarationVerdict.Allowed, declaration.verdict)
-        assertEquals(listOf("internal.optional() class HealthService"), declaration.rules.map { it.text })
-        assertEquals(listOf(DeclarationSiteRef("ServiceRole.kt", 82)), declaration.rules.map { it.declaredAt })
+        assertEquals(listOf("public class HealthService"), declaration.rules.map { it.text })
+        assertEquals(listOf(DeclarationSiteRef("ServiceRole.kt", 76)), declaration.rules.map { it.declaredAt })
         assertEquals(true, answer.declarations.declarationsChecked)
 
-        // The Konsist constraint of the same role covers the file too, and does not explain.
+        // Matching the path finds the same role, whose one constraint is the ktFileContent { } that explained the file.
         val roles = lookup.forPath(health, Freshness.Fresh) ?: throw AssertionError("no definition above $health")
         assertEquals(listOf("domain.Service"), roles.matches.map { it.role.qualifiedName })
-        assertEquals(setOf(ConstraintBackend.KtFileContent, ConstraintBackend.Konsist), roles.constraints.map { it.constraint.backend }.toSet())
+        assertEquals(listOf(ConstraintBackend.KtFileContent), roles.constraints.map { it.constraint.backend })
         assertEquals(MatchOutcome.Matched, roles.outcome)
     }
 

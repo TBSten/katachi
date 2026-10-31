@@ -2427,9 +2427,9 @@ roles: Gradle.BuildScript
 == ui/src/main/kotlin/com/example/sample/ui/component/AppButton.kt
 roles: ui.Component
     ui.Component declared at ComponentRole.kt:18 | fun DeclarationContainerScope.component() = "Component".role {
-18 | ◆ | katachi: ui.Component — allowed by @Composable public fun AppButton(...) (ComponentRole.kt:103)
-    allowed at ComponentRole.kt:103 | required(annotated("Composable"), public, `fun`, fileName)
-    menu | ◆ Allowed by @Composable public fun AppButton(...) | ComponentRole.kt:103
+18 | ◆ | katachi: ui.Component — allowed by @Composable public fun AppButton(...) (ComponentRole.kt:104)
+    allowed at ComponentRole.kt:104 | required(annotated("Composable"), public, `fun`, fileName)
+    menu | ◆ Allowed by @Composable public fun AppButton(...) | ComponentRole.kt:104
     menu | ◇ Role ui.Component — Shared component | ComponentRole.kt:18
     menu | == Other files of ui.Component
     menu | (disabled) — No other file yet
@@ -2437,9 +2437,9 @@ roles: ui.Component
     menu | + New ui.Component from template…
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
-37 | ◆ | katachi: ui.Component — allowed by public enum class AppButton* (ComponentRole.kt:105)
-    allowed at ComponentRole.kt:105 | allow(public, enum, `class`, "$fileName*") // entries only (Filled, Outlined): no { }, so no members
-    menu | ◆ Allowed by public enum class AppButton* | ComponentRole.kt:105
+37 | ◆ | katachi: ui.Component — allowed by public enum class AppButton* (ComponentRole.kt:106)
+    allowed at ComponentRole.kt:106 | allow(public, enum, `class`, "$fileName*") // entries only (Filled, Outlined): no { }, so no members
+    menu | ◆ Allowed by public enum class AppButton* | ComponentRole.kt:106
     menu | ◇ Role ui.Component — Shared component | ComponentRole.kt:18
     menu | == Other files of ui.Component
     menu | (disabled) — No other file yet
@@ -2447,9 +2447,9 @@ roles: ui.Component
     menu | + New ui.Component from template…
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
-47 | ◆ | katachi: ui.Component — allowed by @Preview private fun *Preview(...) (ComponentRole.kt:104)
-    allowed at ComponentRole.kt:104 | allow(annotated("Preview"), private, `fun`, "*Preview")
-    menu | ◆ Allowed by @Preview private fun *Preview(...) | ComponentRole.kt:104
+47 | ◆ | katachi: ui.Component — allowed by @Preview private fun *Preview(...) (ComponentRole.kt:105)
+    allowed at ComponentRole.kt:105 | allow(annotated("Preview"), private, `fun`, "*Preview")
+    menu | ◆ Allowed by @Preview private fun *Preview(...) | ComponentRole.kt:105
     menu | ◇ Role ui.Component — Shared component | ComponentRole.kt:18
     menu | == Other files of ui.Component
     menu | (disabled) — No other file yet
@@ -2457,9 +2457,9 @@ roles: ui.Component
     menu | + New ui.Component from template…
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
-55 | ◆ | katachi: ui.Component — allowed by @Preview private fun *Preview(...) (ComponentRole.kt:104)
-    allowed at ComponentRole.kt:104 | allow(annotated("Preview"), private, `fun`, "*Preview")
-    menu | ◆ Allowed by @Preview private fun *Preview(...) | ComponentRole.kt:104
+55 | ◆ | katachi: ui.Component — allowed by @Preview private fun *Preview(...) (ComponentRole.kt:105)
+    allowed at ComponentRole.kt:105 | allow(annotated("Preview"), private, `fun`, "*Preview")
+    menu | ◆ Allowed by @Preview private fun *Preview(...) | ComponentRole.kt:105
     menu | ◇ Role ui.Component — Shared component | ComponentRole.kt:18
     menu | == Other files of ui.Component
     menu | (disabled) — No other file yet
@@ -2467,9 +2467,9 @@ roles: ui.Component
     menu | + New ui.Component from template…
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Reload Definition
-65 | ◆ | katachi: ui.Component — allowed by @Preview private fun *Preview(...) (ComponentRole.kt:104)
-    allowed at ComponentRole.kt:104 | allow(annotated("Preview"), private, `fun`, "*Preview")
-    menu | ◆ Allowed by @Preview private fun *Preview(...) | ComponentRole.kt:104
+65 | ◆ | katachi: ui.Component — allowed by @Preview private fun *Preview(...) (ComponentRole.kt:105)
+    allowed at ComponentRole.kt:105 | allow(annotated("Preview"), private, `fun`, "*Preview")
+    menu | ◆ Allowed by @Preview private fun *Preview(...) | ComponentRole.kt:105
     menu | ◇ Role ui.Component — Shared component | ComponentRole.kt:18
     menu | == Other files of ui.Component
     menu | (disabled) — No other file yet

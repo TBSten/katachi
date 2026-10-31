@@ -28,7 +28,7 @@ internal class ViolationAnnotatorTest : AnnotatorTestBase() {
 
     private fun openSource(text: String = source) = open(fileName, text)
 
-    private val rejectedHover = "katachi: \"Must be public\" (domain.Service) rejected HealthService — declared at ServiceRole.kt:94"
+    private val rejectedHover = "katachi: \"${AnnotationFixtures.CONSTRAINT}\" (domain.Service) rejected HealthService — declared at ServiceRole.kt:94"
 
     fun `test 拒否された宣言の名前に 検査の level の色で下線が付き ホバーは規則と宣言元を言う`() {
         openSource()
@@ -159,11 +159,11 @@ internal class ViolationAnnotatorTest : AnnotatorTestBase() {
         checkRan(
             listOf(
                 AnnotationFixtures.unsatisfied(pathOf("Other.kt"), "HealthService", line = 3),
-                AnnotationFixtures.unsatisfied(path, "HealthService", line = 3, constraint = "Must be public"),
+                AnnotationFixtures.unsatisfied(path, "HealthService", line = 3, constraint = AnnotationFixtures.CONSTRAINT),
                 AnnotationFixtures.unsatisfied(path, "HealthService", line = 3, constraint = "Must end with Impl"),
             ),
         )
-        assertEquals(listOf("Must be public", "Must end with Impl"), annotated().map { it.description.substringAfter("\"").substringBefore("\"") })
+        assertEquals(listOf(AnnotationFixtures.CONSTRAINT, "Must end with Impl"), annotated().map { it.description.substringAfter("\"").substringBefore("\"") })
     }
 
     fun `test コンパイルエラーのあるファイルにも 注釈が出る`() {

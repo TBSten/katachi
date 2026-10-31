@@ -42,17 +42,17 @@ class RealSarifContractTest {
             listOf(
                 SarifLocation(root.resolve("src/main/kotlin/com/example/controller/health/LegacyStatusController.kt"), null),
                 SarifLocation(root.resolve("src/main/kotlin/com/example/service/LegacyHealthCheck.kt"), null),
-                SarifLocation(root.resolve("src/main/kotlin/com/example/service/LegacyStatusService.kt"), 3),
+                SarifLocation(root.resolve("src/main/kotlin/com/example/service/LegacyStatusService.kt"), 11),
             ),
             results.map { it.location },
         )
 
         val constraint = results[2]
-        assertEquals(listOf(SarifLocation(root.resolve("architecture-test/src/test/kotlin/com/example/roles/ServiceRole.kt"), 94)), constraint.related)
+        assertEquals(listOf(SarifLocation(root.resolve("architecture-test/src/test/kotlin/com/example/domain/ServiceRole.kt"), 76)), constraint.related)
         assertEquals("domain.Service", constraint.properties["role"])
-        assertEquals("Must be public", constraint.properties["constraint"])
+        assertEquals("Must be public and import models and Repositories only, never HTTP (ktFileContent)", constraint.properties["constraint"])
         assertEquals("LegacyStatusService", constraint.properties["declaration"])
-        assertEquals("ServiceRole.kt:94", constraint.properties["declaredAt"])
+        assertEquals("ServiceRole.kt:76", constraint.properties["declaredAt"])
         assertEquals("Unexpected", results[0].properties["kind"])
         assertEquals("Unexpected", results[1].properties["kind"])
         assertTrue(results[0].message.startsWith("The file matches a pattern of role api.Controller, but the levels named by capture(\"resource\") do not agree."))

@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
   "katachiVersion": "0.3.0",
-  "generatedAt": "2026-10-29T15:34:32Z",
+  "generatedAt": "2026-10-31T11:54:19Z",
   "errors": [
     {
       "phase": "processor",
       "processor": "internalDefinitionJson",
       "exception": "me.tbsten.katachi.dsl.KatachiTemplateOnWildcardException",
-      "message": "`.template { }` at ServiceRole.kt:59 is attached to \"src/main/kotlin/com/example/service/*Service.kt\" of role \"domain.Service\", whose path still holds an unnamed wildcard.\nGenerating a file needs a value for every level the path leaves open, and an unnamed * or **, or a ?, [...] or {...}, has no --arg name for that value to arrive as.\nName every remaining * with capture(\"...\"), such as \"${capture(\"name\")}Repository.kt\".file(), and write ?, [...] and {...} out as the name the file will have.",
+      "message": "`.template { }` at ServiceRole.kt:53 is attached to \"src/main/kotlin/com/example/service/*Service.kt\" of role \"domain.Service\", whose path still holds an unnamed wildcard.\nGenerating a file needs a value for every level the path leaves open, and an unnamed * or **, or a ?, [...] or {...}, has no --arg name for that value to arrive as.\nName every remaining * with capture(\"...\"), such as \"${capture(\"name\")}Repository.kt\".file(), and write ?, [...] and {...} out as the name the file will have.",
       "declaredAt": {
         "fileName": "ServiceRole.kt",
-        "line": 59
+        "line": 53
       }
     }
   ]
