@@ -2,15 +2,7 @@ package me.tbsten.katachi.test.architecture
 
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.test.architecture.groups.backendGroup
-import me.tbsten.katachi.test.architecture.groups.docsGroup
-import me.tbsten.katachi.test.architecture.groups.gradleGroup
-import me.tbsten.katachi.test.architecture.groups.idePluginGroup
-import me.tbsten.katachi.test.architecture.groups.libraryGroup
-import me.tbsten.katachi.test.architecture.groups.pluginGroup
-import me.tbsten.katachi.test.architecture.groups.sampleGroup
-import me.tbsten.katachi.test.architecture.groups.testingGroup
-import me.tbsten.katachi.test.architecture.groups.toolGroup
+import me.tbsten.katachi.test.architecture.groups.*
 
 // Where each module keeps its production sources, below its own `src/main/kotlin`, and its test
 // sources below `src/test/kotlin`. Written out rather than derived from the module name:
