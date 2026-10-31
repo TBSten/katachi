@@ -15,7 +15,7 @@ gradle wrapper を持ち、`includeBuild("../..")` で katachi をこのリポ�
 
 どのサンプルも katachi の定義は `:architecture-test` に置いてある。`kotlin("jvm")` の素のモジュールで、
 アプリのどのモジュールにも依存しない。利用者が書くテストは JUnit 5 の `ProjectArchitectureTest` 1本で、
-4サンプルとも同じ形で、どれも `assert(FileConstraintCheck())` を呼ぶ（`jvm` / `android` / `kmp` は katachi-konsist の `ktFileContent { }` / `konsist { }`、`custom-processor` は katachi-konture の `konture { }` で制約を書いている。2つは同じテストモジュールに置けない）。
+4サンプルとも同じ形で、どれも `assert(FileConstraintCheck())` を呼ぶ（`jvm` / `android` / `kmp` は katachi-konsist の `ktFileContent { }`、`custom-processor` は katachi-konture の `konture { }` で制約を書いている。2つは同じテストモジュールに置けない）。
 それ以外の `*Spec`（kotest）は katachi 自身の結合テストで、katachi を使うだけのプロジェクトには要らない。
 
 ## 実物に近い中身にしてある理由
@@ -57,7 +57,7 @@ katachi が表現できなければならない形の中で最もよく出てく
 
 | サンプル | 残してある違反 |
 |---|---|
-| `jvm` | `service/LegacyHealthCheck.kt`（`[UnexpectedFile]`）、`service/LegacyStatusService.kt`（`internal` なので `konsist { }` の制約違反）、`controller/health/LegacyStatusController.kt`（`[CaptureMismatch]`） |
+| `jvm` | `service/LegacyHealthCheck.kt`（`[UnexpectedFile]`）、`service/LegacyStatusService.kt`（`internal` なので `ktFileContent { }` の制約違反）、`controller/health/LegacyStatusController.kt`（`[CaptureMismatch]`） |
 | `android` | `:feature:home` の `HomeFormatter.kt`（`[UnexpectedFile]`）、`:data` の `legacy/`（`[UnexpectedDirectory]`） |
 | `kmp` | `:data` の `androidMain` にある `user/`（`[UnexpectedDirectory]`） |
 

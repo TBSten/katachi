@@ -39,9 +39,9 @@ dependencies {
     testCompileOnly(libs.jetbrainsAnnotations)
     // The Konture backend behind the one `konture { }` constraint (`core/ModelRole.kt`).
     // Substituted with `:katachi-konture` of the included build, like `libs.katachi`. This is the
-    // sample that shows `konture { }` because it is the one that writes neither `konsist { }` nor
-    // `ktFileContent { }`: Konture 1.0.1 cannot share a test classpath with the Konsist 0.17.3
-    // both of those run on (they need different kotlin-compiler-embeddable versions).
+    // sample that shows `konture { }` because it is the one that does not write `ktFileContent { }`:
+    // Konture 1.0.1 cannot share a test classpath with the Konsist 0.17.3 that `ktFileContent { }`
+    // runs on (they need different kotlin-compiler-embeddable versions).
     testImplementation(libs.katachiKonture)
     testImplementation(libs.kotestRunnerJunit5)
     testImplementation(libs.kotestAssertionsCore)

@@ -18,7 +18,8 @@ the body wrapped in `PreviewRoot { }` from the `preview` package of `:ui`, so th
 and background are decided in one place. It passes only state. `ktFileContent { }`
 checks the declarations of the file: the part named after it, its `private` previews and
 the type it picks its look with. "Is wrapped in `PreviewRoot`" is in a function's body,
-which `ktFileContent { }` does not read; it would take `konsist { }` (see sample/jvm).
+which `ktFileContent { }` does not read, so it is held by this description and by the
+template, which writes the preview wrapped from the start.
 
 File names are not restricted to `*.kt`, because parts are expected to multiply.
 
