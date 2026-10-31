@@ -2,6 +2,7 @@
 // 種類が「選択肢」のときだけ、選択肢の入力（カンマか改行で区切る）が出る。Enter で足す・Esc でやめる。
 // 選択肢の入力の中では Shift+Enter で改行する。選択肢が 0 個・多すぎる・長すぎるときは足さず、理由を出して入力に戻す。
 import { el } from '../shared/dom'
+import { onKeyInside } from '../shared/keys'
 import { normalizeFieldName, sanitizeOptions, splitOptions, type FieldDef, type FieldType } from './fields'
 import { MEMO_LIMITS } from './model'
 
@@ -73,7 +74,7 @@ export function createAddFieldBox(onAdd: (field: FieldDef) => void): HTMLElement
 		})
 		for (const input of [name, type, options] as HTMLElement[]) {
 			input.dataset.esc = 'local' // Esc は追加のやめるに使う（パネル全体は閉じない）
-			input.addEventListener('keydown', (e: KeyboardEvent) => {
+			onKeyInside(input, 'keydown', (e) => {
 				if (e.isComposing) return
 				if (e.key === 'Escape') { e.preventDefault(); showAddButton() }
 				if (e.key === 'Enter' && !(input === options && e.shiftKey)) { e.preventDefault(); commit() }

@@ -2,6 +2,7 @@
 // 下から出るシートと選択のそばの popover で中身は同じ。popover は縦を詰めるため、載せる情報を <details> に畳む。
 import { SECTION_KEYS, SECTION_TITLES, type Section, type SectionKey } from '../core/protocol'
 import { el } from '../shared/dom'
+import { onKeyInside } from '../shared/keys'
 import { COPY_NOTE } from './copy'
 import type { Draft } from './drafts'
 
@@ -148,7 +149,8 @@ export function buildDialog(
 	submit.addEventListener('click', doSubmit)
 	cancel.addEventListener('click', h.onCancel)
 	// Cmd/Ctrl+Enter で送信。Esc は shared/keys.ts の window の capture（quick は quick.ts）が受けて全体をやめる。
-	root.addEventListener('keydown', (e) => {
+	// モード中は guardKeys が window の capture でキーを止めるので、addEventListener ではなく onKeyInside で付ける。
+	onKeyInside(root, 'keydown', (e) => {
 		if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); doSubmit() }
 		// 文字を打つ最中の ↑ はカーソル移動に使うので、Alt を押したときだけ親を選ぶ。
 		if (e.key === 'ArrowUp' && e.altKey && extra.canParent) { e.preventDefault(); h.onParent?.() }

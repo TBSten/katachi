@@ -4,12 +4,17 @@ import { placePopover } from './anchor'
 import { attachDrag, clampToView, parsePos, type Pos } from './drag'
 import { el } from './dom'
 
+/** 自前の UI の host に付ける印。モード中のフォーカスの見張り（focus.ts）が、Feedback とメモの UI を見分けるのに使う。 */
+export const DEV_UI_ATTR = 'data-katachi-dev-ui'
+
 /**
- * shadow host を作って画面に付ける。ダイアログ内のキー入力がページ側（Starlight の検索ショートカットなど）に届かないようにする。
- * css は shadow root の先頭の <style> に入る。
+ * shadow host を作って画面に付ける。css は shadow root の先頭の <style> に入る。
+ * モード中のキーは window の capture で止める（keys.ts の guardKeys）。ここの host の bubble の止めは、guardKeys の無い間
+ * （クイックの入力欄など）にページの bubble のリスナー（Starlight の Ctrl+K など）へ届かせないための控え。
  */
 export function createHost(tag: string, css: string): { host: HTMLElement; root: ShadowRoot } {
 	const host = document.createElement(tag)
+	host.setAttribute(DEV_UI_ATTR, '')
 	const root = host.attachShadow({ mode: 'open' })
 	const style = document.createElement('style')
 	style.textContent = css
@@ -24,6 +29,8 @@ export function createHost(tag: string, css: string): { host: HTMLElement; root:
  * host の color-scheme を、ページ（Starlight のテーマ）に合わせる。CSS の `light-dark()` はこの値で明暗を選ぶ。
  * host は `all: initial` で color-scheme が既定に戻るので、ページの computed を写す。ページが決めていなければ OS の設定に従う。
  * テーマの切り替え（html の data-theme の変更）にも追従し、host が外れたら監視をやめる。
+ * host は `<html>` の直下に置くので、`<html>` の子の増減も見る。属性だけを見ると、テーマが変わるまで observer と外した host が残り、
+ * 開け閉めのたびに溜まる。
  */
 export function syncColorScheme(host: HTMLElement) {
 	const apply = () => {
@@ -31,11 +38,11 @@ export function syncColorScheme(host: HTMLElement) {
 		host.style.colorScheme = page && page !== 'normal' ? page : 'light dark'
 	}
 	apply()
-	const observer = new MutationObserver(() => {
+	const observer = new MutationObserver((records) => {
 		if (!host.isConnected) return observer.disconnect()
-		apply()
+		if (records.some((r) => r.type === 'attributes')) apply()
 	})
-	observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class', 'style'] })
+	observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class', 'style'], childList: true })
 }
 
 /** 保存を知らせる小さな通知。UI 全体が消えたあとも残すため、自前の host で出す。 */
