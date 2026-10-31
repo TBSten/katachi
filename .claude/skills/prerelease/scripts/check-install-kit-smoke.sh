@@ -682,12 +682,12 @@ case_test() {
 	st=$?
 	[ "${st}" -eq 1 ] && printf '%s\n' "${out}" | grep -q '^結果: Katachi check failed: 1 violation (Unexpected: 1)' && printf '%s\n' "${out}" | grep -q '^  + \[UnexpectedFile\] file:///x/settings.gradle.kts.bak' &&
 		ok "test は例外のクラス名つきの単数の結果行でも検査が落ちたと判定する" || ng "test は例外のクラス名つきの単数の結果行でも検査が落ちたと判定する" "st=${st} ${out}"
-	# 検査の違反は無いが、検査用モジュールのほかのテストが落ちた（コンパイルエラーとは別の文面で exit 1）
+	# 検査の違反は無いが、検査用モジュールのほかのテストが失敗した（コンパイルエラーとは別の文面で exit 1）
 	printf 'ProjectRootSpec > walking up from the working directory FAILED\n    org.opentest4j.AssertionFailedError: expected:<sample> but was:<copy>\n\nProjectArchitectureTest > the project layout matches the definition() PASSED\n\n2 tests completed, 1 failed\n> Task :architecture-test:test FAILED\nFAILURE: Build failed with an exception.\n> There were failing tests. See the report at: file:///x/index.html\nBUILD FAILED in 19s\n' >"${d}/fake-out.txt"
 	out=$(${KSH} "${c}" test 2>&1)
 	st=$?
-	[ "${st}" -eq 1 ] && printf '%s\n' "${out}" | grep -q '^結果: 検査の違反は出ていませんが、検査用モジュールのほかのテストが落ちています' && printf '%s\n' "${out}" | grep -q '^ProjectRootSpec > walking up from the working directory FAILED' &&
-		ok "test はほかのテストが落ちたときは検査まで届いていないと言わずに exit 1" || ng "test はほかのテストが落ちたときは検査まで届いていないと言わずに exit 1" "st=${st} ${out}"
+	[ "${st}" -eq 1 ] && printf '%s\n' "${out}" | grep -q '^結果: 検査の違反は出ていませんが、検査用モジュールのほかのテストが失敗しています' && printf '%s\n' "${out}" | grep -q '^ProjectRootSpec > walking up from the working directory FAILED' &&
+		ok "test はほかのテストが失敗したときは検査まで届いていないと言わずに exit 1" || ng "test はほかのテストが失敗したときは検査まで届いていないと言わずに exit 1" "st=${st} ${out}"
 }
 
 # data get のキー指定は部分だけ出す

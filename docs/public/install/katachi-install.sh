@@ -71,7 +71,7 @@ KOTEST_VERSION="6.2.5"
 
 # 検査用モジュールの置き場所（Gradle ルートからの相対パス）の既定。実際の値は
 # resolve_module_dir が MODULE_DIR（相対パス）と MODULE_GRADLE_PATH（:a:b の形）に入れる。
-# どちらも resolve_module_dir を呼ぶまでは未定義（set -u で落ちる。呼び忘れに気づくため）。
+# どちらも resolve_module_dir を呼ぶまでは未定義（set -u で失敗する。呼び忘れに気づくため）。
 MODULE_DIR_DEFAULT="architecture-test"
 
 # ---------------------------------------------------------------- 出力
@@ -85,7 +85,7 @@ MODULE_DIR_DEFAULT="architecture-test"
 #
 # メッセージに日本語を混ぜるときは、変数展開を必ず ${VAR} と波括弧で閉じること。
 # $VAR の直後に非 ASCII（全角の閉じ括弧など）が続くと、macOS の bash 3.2 は続くバイトを
-# 変数名の一部と誤読し、set -u と相まって "unbound variable" で落ちる。メッセージが
+# 変数名の一部と誤読し、set -u と相まって "unbound variable" で失敗する。メッセージが
 # 出ないまま終了するので気づきにくい。これまでに4回踏んでいる。
 pick() {
 	if [ $# -ge 2 ] && [ "${KATACHI_LANG:-ja}" = "en" ]; then
@@ -190,7 +190,7 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
                           gradle/libs.versions.toml があれば catalog）。catalog は toml に
                           無い項目だけを足し、build.gradle.kts は libs.katachi のように参照する。
                           別名が別の用途で使われていると、明示したときは止まり、
-                          既定のときは literal に落とす
+                          既定のときは literal にする
       --force             既存の検査用モジュールを上書きする
       --dry-run           何も書かずに、何をするかだけ出力する
 
@@ -300,7 +300,7 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
       （手順書 3-2 は before-refactor、3-3 は after-refactor。compare-violations の既定と同じ）。
       -- より後ろは ./gradlew にそのまま渡す（-Dkatachi.maxViolations=all など）。
       要約: JDK、ログのパス、結果の行、[MissingDescription] の件数、前回（previous.log）との差分。
-      0 = 通った、1 = 検査が落ちた、2 = 検査まで届かない（コンパイルエラー、gradlew 無し、定義ディレクトリ無し）。
+      0 = 通った、1 = 検査が失敗した、2 = 検査まで届かない（コンパイルエラー、gradlew 無し、定義ディレクトリ無し）。
       このスクリプトが Gradle を起動するのはこのコマンドだけ。
 
   sh katachi-install.sh verify
@@ -905,7 +905,7 @@ lock_release() {
 #           > 環境変数 KATACHI_LANG > ja
 # init の既定を en にしているのは、チェックリストとレポートの既定に合わせるため（手順書が
 # 「省略すると英語」と書いている）。init は必ず記録するので、init 後のコマンドが ja の既定に
-# 落ちることはない。落ちるのは init の前に --help などを呼んだときだけ。
+# 失敗することはない。失敗するのは init の前に --help などを呼んだときだけ。
 resolve_lang() {
 	if [ "${1:-}" = "init" ]; then
 		KATACHI_LANG="${KATACHI_LANG:-en}"
@@ -949,7 +949,7 @@ set_lang_option() {
 	esac
 }
 
-# 取得したものを1行ずつ記録する。あとから人間が何を落としたのか追えるように。
+# 取得したものを1行ずつ記録する。あとから人間が何を省いたのか追えるように。
 record_fetch() {
 	[ -n "${MANIFEST:-}" ] || return 0
 	mkdir -p "${MANIFEST%/*}"
@@ -1044,7 +1044,7 @@ fetch_latest_version() {
 
 # 開発者向けの KATACHI_MAVEN_LOCAL が効いているか。環境変数か、init が作業用ディレクトリに
 # 残した記録のどちらかで有効になる。scaffold のたびに付け忘れると、~/.m2 にしか無い版を
-# 解決できずに Gradle が落ちるため、init で一度付ければ済むようにしてある。
+# 解決できずに Gradle が失敗するため、init で一度付ければ済むようにしてある。
 maven_local_enabled() {
 	case "${KATACHI_MAVEN_LOCAL:-}" in
 	1 | yes | true) return 0 ;;
@@ -1077,7 +1077,7 @@ require_katachi_version() {
 # プロジェクトが使っている Kotlin のバージョンを推定して標準出力に出す。
 # 1. version catalog の kotlin = "..."
 # 2. 各 build ファイルの `kotlin("jvm") version "..."` / `org.jetbrains.kotlin...version "..."`
-# "2.4.10" -> "2 4"。"2.3.0-RC" のような接尾辞は落とす。読めなければ空を返す。
+# "2.4.10" -> "2 4"。"2.3.0-RC" のような接尾辞は取り除く。読めなければ空を返す。
 kotlin_major_minor() {
 	printf '%s' "$1" | sed -n 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\).*/\1 \2/p'
 }
@@ -1102,7 +1102,7 @@ detect_kotlin_version() {
 		fi
 	fi
 
-	# build ファイルから拾う。行コメントは先に落とす（コメント内の version を
+	# build ファイルから拾う。行コメントは先に取り除く（コメント内の version を
 	# 拾って、存在しないバージョンを書き込むのを避ける）。
 	_v=$(find . -maxdepth 3 \( -name 'build.gradle.kts' -o -name 'build.gradle' \) 2>/dev/null |
 		while IFS= read -r _f; do
@@ -1490,7 +1490,7 @@ cmd_init() {
 
 	# katachi は「未追跡だが ignore もされていない」ファイルも検査する
 	# （git ls-files --others --exclude-standard 相当）。作業用ディレクトリが
-	# それに当たると、ステップ4で必ず [UnexpectedFile] として落ちる。
+	# それに当たると、ステップ4で必ず [UnexpectedFile] として失敗する。
 	# 「提案してください」だけだと後回しにされ、原因不明の失敗になる。
 	if ! path_is_ignored "$init_workdir"; then
 		warn "${init_workdir_uri} は git から見えています。このままだとステップ4で必ず失敗します。
@@ -1506,7 +1506,7 @@ cmd_init() {
 	# 作業用ディレクトリ以外にも、未追跡で ignore もされていないものがあれば同じ問題を起こす。
 	# --directory でディレクトリ単位に畳むので、2万件あっても数行で済む。
 	if is_git_repo; then
-		# 作業用ディレクトリは上で専用の警告を出しているので落とす。git は --directory で
+		# 作業用ディレクトリは上で専用の警告を出しているので除く。git は --directory で
 		# 一番浅い未追跡ディレクトリに畳むため、workdir が tmp/install-katachi なら
 		# "tmp/" として出てくる。前方一致で両向きに判定する。
 		_untracked=$(
@@ -1842,7 +1842,7 @@ cmd_scaffold() {
 			;;
 		--katachi)
 			need_value "$1" "${2:-}"
-			# init と同じく、先頭の v は落とす。
+			# init と同じく、先頭の v は取り除く。
 			sc_version="${2#v}"
 			shift 2
 			;;
@@ -1945,7 +1945,7 @@ cmd_scaffold() {
 	# context parameters は 2.4 で言語に入った。2.2 / 2.3 系では呼ぶ側に
 	# -Xcontext-parameters が要り、2.4 以降で付けると
 	# "The argument '-Xcontext-parameters' is redundant" の警告が出る
-	# （allWarningsAsErrors な CI を落とす）。だから出し分ける。
+	# （allWarningsAsErrors な CI を失敗させる）。だから出し分ける。
 	if [ "$sc_kmaj" -eq 2 ] && [ "$sc_kmin" -lt 4 ]; then
 		sc_context_flag="yes"
 	else
@@ -2006,7 +2006,7 @@ cmd_scaffold() {
 
 	# 依存の書き方: --deps > preferences.dependencyStyle > gradle/libs.versions.toml があれば catalog > literal。
 	# catalog に決めても、書けない事情（別名の衝突、settings で別のファイルを libs にしている）があれば
-	# literal に落とす。--deps catalog を明示したときだけ、衝突は止まる（黙って literal にしない）。
+	# literal にする。--deps catalog を明示したときだけ、衝突は止まる（黙って literal にしない）。
 	sc_deps_from=""
 	if [ -n "$sc_deps" ]; then
 		sc_deps_from="--deps|--deps"
@@ -2051,7 +2051,7 @@ cmd_scaffold() {
 		fi
 	fi
 	# placement が module（サブプロジェクトだけが版付き）で catalog に Kotlin JVM の別名があれば、
-	# 版を直書きせずその別名で apply する（同じ版でも id が違えば落ちるので、別名から取る）。
+	# 版を直書きせずその別名で apply する（同じ版でも id が違えば失敗するので、別名から取る）。
 	sc_kotlin_plugin_from=""
 	if [ "$sc_deps" = "catalog" ] && [ "$kotlin_placement" = "module" ]; then
 		_sc_kalias=$(catalog_alias_for plugins "org.jetbrains.kotlin.jvm")
@@ -2261,7 +2261,7 @@ in ${sc_root_build_uri} (create plugins { } if there is none)."
 	say ""
 	say "次: sh ${_sc_cli} test
     architecture { } が空なので、すべてのファイルが Unexpected として報告されて
-    落ちるのが正常です。Unexpected 以外のエラーが出た場合だけが問題です。" \
+    失敗するのが正常です。Unexpected 以外のエラーが出た場合だけが問題です。" \
 		"Next: sh ${_sc_cli} test
     architecture { } is empty, so every file is reported as Unexpected and the test
     fails. That is expected. Only errors other than Unexpected are a problem."
@@ -2379,13 +2379,13 @@ $_tc_block$_ctx_note
 
 	# Kotlin plugin の行は catalog でも版なしの kotlin("jvm") のまま（placement が module のときは
 	# 版付きか catalog の別名）。catalog に寄せたくなった人が alias(libs.plugins.kotlin.jvm) に
-	# 書き換えて落ちないように、理由と書き方をコメントで残す。
+	# 書き換えて失敗しないように、理由と書き方をコメントで残す。
 	_kotlin_plugin_note=""
 	if [ "$_deps" = "catalog" ] && [ "$_kotlin_plugin" = 'kotlin("jvm")' ]; then
 		case "$KATACHI_LANG" in
 		ja)
 			_kotlin_plugin_note='    // alias(libs.plugins.kotlin.jvm) と書かない。build-logic（includeBuild）経由で Kotlin plugin が
-    // classpath にあると "already on the classpath with an unknown version" で落ちる。版なしの
+    // classpath にあると "already on the classpath with an unknown version" で失敗する。版なしの
     // kotlin("jvm") か、カタログに寄せるなら id(libs.plugins.kotlin.jvm.get().pluginId) を使う。
 '
 			;;
@@ -2724,7 +2724,7 @@ catalog_accessor_of_alias() {
 }
 
 # settings の versionCatalogs { } が、既定の gradle/libs.versions.toml 以外を libs にしているか。
-# そのときは toml に足しても libs から見えないので、scaffold は literal に落とす。
+# そのときは toml に足しても libs から見えないので、scaffold は literal にする。
 catalog_is_remapped() {
 	[ -f "${SETTINGS_FILE:-}" ] || return 1
 	_cir=$(sed 's://.*::' "$SETTINGS_FILE")
@@ -2959,12 +2959,12 @@ kotest_version_literal() {
 	printf '%s\n' "${_kvl:-$KOTEST_VERSION}"
 }
 
-# $1 のトップレベルの plugins { } と buildscript { } の中身だけを出す（行コメントは落とす）。
+# $1 のトップレベルの plugins { } と buildscript { } の中身だけを出す（行コメントは取り除く）。
 # 宣言がクラスパスに効くのはこの2か所だけ。subprojects { } の中の
 # plugins.withId("org.jetbrains.kotlin.jvm") / pluginManager.withPlugin(...) /
 # apply(plugin = "...") は「そのプラグインが当たっていたら」という参照で、載せはしない。
 #
-# 行コメントは `//` の前が `:` でないものだけ落とす。`uri("https://...")` の `//` から先を
+# 行コメントは `//` の前が `:` でないものだけ取り除く。`uri("https://...")` の `//` から先を
 # 消すと閉じ括弧 `}` も消え、括弧の深さがずれて後ろの plugins { } を見落とす。
 # 文字列の中の `{` `}` も同じ理由で数えない。
 root_plugin_blocks() {
@@ -3039,7 +3039,7 @@ root_applies_convention_plugin() {
 #
 # includeBuild のビルドは buildSrc と違い、ルートがそこの plugin を apply して初めてクラスパスに
 # 載る。build-logic に依存があってもルートが何も apply していなければ、版なしの kotlin("jvm") は
-# plugin not found で落ちるので、root_applies_convention_plugin も見る。
+# plugin not found で失敗するので、root_applies_convention_plugin も見る。
 kotlin_plugin_in_buildsrc() {
 	_kb_pat="kotlin-gradle-plugin|kotlin\\(\"gradle-plugin\""
 	_kb_accs=$(catalog_kotlin_accessors_joined libraries)
@@ -3063,7 +3063,7 @@ kotlin_plugin_in_buildsrc() {
 # ルート以外のプロジェクトのどれかが、Kotlin Gradle plugin のプラグインを**版付きで**
 # 要求しているか（kotlin("multiplatform") version "..." / alias(libs.plugins.<別名>)）。
 # このときルートに版付きで足すと、そのプロジェクト側の要求が "already on the classpath
-# with an unknown version" で落ちる（kdoctor）。同じ版でも、id が違えば落ちる。
+# with an unknown version" で失敗する（kdoctor）。同じ版でも、id が違えば失敗する。
 #
 # 別の settings を持つディレクトリ（includeBuild される build-logic など）は別のビルドなので
 # ここでは見ない（そこに Kotlin Gradle plugin の依存があるかは kotlin_plugin_in_buildsrc が見る）。
@@ -3101,9 +3101,9 @@ kotlin_plugin_requested_by_subprojects() {
 #   add    どこにも無い。ルートに id("org.jetbrains.kotlin.jvm") version ... apply false を足す
 #   module サブプロジェクトだけが版付きで持っている。ルートには足さず、モジュールに版を書く
 #
-# コメントを落としてから見る。`// TODO: org.jetbrains.kotlin.jvm ...` を「宣言済み」と
+# コメントを取り除いてから見る。`// TODO: org.jetbrains.kotlin.jvm ...` を「宣言済み」と
 # 誤判定すると、ルートに何も足されないまま版なしの kotlin("jvm") が書かれ、Gradle が
-# plugin not found で落ちる。
+# plugin not found で失敗する。
 kotlin_plugin_placement() {
 	if kotlin_plugin_declared_in "$ROOT_BUILD_FILE" || kotlin_plugin_in_buildsrc; then
 		echo root
@@ -3232,7 +3232,7 @@ add_settings_include() {
 #   include ':a',\n    ':b'         -> `':b'` の行（Groovy）
 # include の直後の1文字で includeBuild を弾いている（B は [^A-Za-z0-9_] に入らない）。
 # { } の中の include（if や forEach の中）は数えない。そこに足すと条件つきになる。
-# 行コメントは先に落とす。文字列の中の括弧は数えない。
+# 行コメントは先に取り除く。文字列の中の括弧は数えない。
 settings_include_end() {
 	sed 's://.*::' "$1" | awk '
 		function scan(s,    i, c, q) {
@@ -4024,7 +4024,7 @@ INCLUDED = included_builds()
 
 
 def in_included_build(where):
-    # where は "/build-logic/build.gradle.kts" や ":build-logic/..." の形。先頭の区切りを落として比べる
+    # where は "/build-logic/build.gradle.kts" や ":build-logic/..." の形。先頭の区切りを取り除いて比べる
     w = where.replace("\\", "/").replace(":", "/").lstrip("/")
     return any(w == d or w.startswith(d + "/") for d in INCLUDED)
 
@@ -4443,7 +4443,7 @@ cmd_lint() {
 # 形だけで拾うと違反 0 件でも「増えた 1 件」になる。利用者が自分で定義した違反の種類は比べない。
 # 宣言位置（ProjectArchitecture.kt:42 など）はファイルを分ければ変わるのが正しいので比べない。
 # [MissingDescription] は説明を書き足せば減るのが正しいので、比べる対象から外して別に数える。
-# 要約の行の「, N warnings」も同じ理由で落とす。
+# 要約の行の「, N warnings」も同じ理由で取り除く。
 # $1 = ログ, $2 = 出力先
 # 「Katachi check failed:」の行は、Gradle のテスト出力では例外のクラス名が前に付く
 # （`    me.tbsten.katachi.check.KatachiArchitectureAssertionError: Katachi check failed: ...`）。
@@ -4549,7 +4549,7 @@ ${MODULE_DIR}/ does not accept files as deep as the deepest definition file (e.g
 
 # 検査用モジュールのテストを走らせ、ログは全文を残し、標準出力には要約だけを出す。
 # エージェントがログを grep して回らないようにするためのもの。Gradle を起動するのはこのコマンドだけ。
-#   0 = 通った / 1 = 検査が落ちた / 2 = 検査まで届かない（gradlew 無し、projectRoot 無し、定義ディレクトリ無し、
+#   0 = 通った / 1 = 検査が失敗した / 2 = 検査まで届かない（gradlew 無し、projectRoot 無し、定義ディレクトリ無し、
 #   コンパイルエラーなど）。2 の理由は warn で出し、die は使わない（終了コードを 2 に揃えるため）。
 # 環境変数（JAVA_HOME を含む）はそのまま継ぐ。どの JDK で動くかは detect_gradle_jdk の結果を先頭に出す。
 cmd_test() {
@@ -4631,10 +4631,10 @@ cmd_test() {
 
 	# 検査まで届いていなければ、要約のしようがない。ログの末尾だけ見せて 2 で返す。
 	if ! has_check_result "$_ts_log"; then
-		# 検査の違反は出ていないが、検査用モジュールのほかのテスト（利用者が足した spec など）が落ちた。
-		# コンパイルエラーと取り違えないよう、別の文面で 1（検査用モジュールの test が落ちた）を返す。
+		# 検査の違反は出ていないが、検査用モジュールのほかのテスト（利用者が足した spec など）が失敗した。
+		# コンパイルエラーと取り違えないよう、別の文面で 1（検査用モジュールの test が失敗した）を返す。
 		if grep -q 'There were failing tests' "$_ts_log"; then
-			say "結果: 検査の違反は出ていませんが、検査用モジュールのほかのテストが落ちています（Gradle の終了コード ${_ts_status}）。ログの FAILED の行:" \
+			say "結果: 検査の違反は出ていませんが、検査用モジュールのほかのテストが失敗しています（Gradle の終了コード ${_ts_status}）。ログの FAILED の行:" \
 				"Result: no violations, but other tests in the verification module failed (Gradle exit code ${_ts_status}). FAILED lines in the log:"
 			grep -E 'FAILED$' "$_ts_log" | head -n 30
 			return 1
@@ -5950,7 +5950,7 @@ trap lock_release EXIT
 trap 'lock_release; exit 130' INT TERM
 
 # 自前で --help を読まないサブコマンドは、ここで使い方を出す。値として --help を
-# 読んで「値がありません」と落ちたり、作業用ディレクトリが無いと言って止まったりしないように。
+# 読んで「値がありません」と失敗したり、作業用ディレクトリが無いと言って止まったりしないように。
 case "${1:-}" in
 data | check | uncheck | warn | lint | compare-violations | verify | summary | guide | test | preferences | answers)
 	if wants_help "$@"; then
@@ -5988,7 +5988,7 @@ guide)
 	;;
 test)
 	shift
-	# 2 = 検査まで届かない、1 = 検査が落ちた。return の値をそのまま終了コードにする。
+	# 2 = 検査まで届かない、1 = 検査が失敗した。return の値をそのまま終了コードにする。
 	cmd_test "$@" || exit $?
 	;;
 check)

@@ -2,7 +2,7 @@
 
 [katachi](https://tbsten.github.io/katachi) をインストールする手順です。ユーザのコードベースに合ったアーキテクチャ定義を作成していきます。
 
-**この手順書は全文を一度に読まないこと。** Web 取得ツールの要約は手順を落とすので、原文を保存してから節ごとに読む: `curl -fsSL -o <保存先>/install.md https://tbsten.github.io/katachi/install/ja/index.md`。0 章は保存したファイルを `sed -n '/^## 0\./,/^## 1\./p'` のように切って読む。`init` のあとは `sh $CLI guide <節 ID>` が節だけを出す（`sh $CLI guide` で目次）。各節の終わりに次の節のコマンドが出る。
+**この手順書は全文を一度に読まないこと。** Web 取得ツールの要約は手順を取りこぼすので、原文を保存してから節ごとに読む: `curl -fsSL -o <保存先>/install.md https://tbsten.github.io/katachi/install/ja/index.md`。0 章は保存したファイルを `sed -n '/^## 0\./,/^## 1\./p'` のように切って読む。`init` のあとは `sh $CLI guide <節 ID>` が節だけを出す（`sh $CLI guide` で目次）。各節の終わりに次の節のコマンドが出る。
 
 **目次**（節 ID と見出し。本文は `sh $CLI guide <節 ID>` で取り出す）
 
@@ -420,14 +420,14 @@ sh $CLI scaffold --package com.example.app
 
 - 検査用モジュール（デフォルト `architecture-test/`）の `build.gradle.kts` の作成。Kotlin JVM と katachi の Gradle plugin（`me.tbsten.katachi`）を入れ、`katachi { architecture = "<パッケージ>.test.architecture.projectArchitecture" }` で定義の置き場所を plugin に教える。plugin は katachi の依存を足さないので、`testImplementation("me.tbsten.katachi:katachi:<version>")` なども一緒に書かれる。`tasks.test { }` には `outputs.upToDateWhen { false }` と `outputs.cacheIf { false }` も書かれる。katachi が検査するファイル（リポジトリ全体）は Test タスクの入力に入っていないので、これが無いとファイルを足したり動かしたりしても Gradle がテストを `UP-TO-DATE` として飛ばし、違反があっても緑のままになる
 - `ProjectArchitecture.kt` と `ProjectArchitectureTest.kt` の作成（`testFramework` が `kotest` なら `FunSpec` の形）
-- `gradle/libs.versions.toml` への追記（`dependencyStyle` が `catalog` のとき）。`katachi` / `katachiKonsist` / JUnit の別名を `[versions]` / `[libraries]` / `[plugins]` に足し、`build.gradle.kts` はそれを `libs.katachi` のように参照する。すでに同じものを指す別名があればそれを使う。Kotlin plugin の行だけは catalog でも `kotlin("jvm")`（版なし）のまま。`alias(libs.plugins.kotlin.jvm)` と書くと、build-logic（includeBuild）経由で Kotlin plugin が classpath にあるとき "already on the classpath with an unknown version" で落ちるため。カタログに寄せるなら `id(libs.plugins.kotlin.jvm.get().pluginId)` の形になる
-- ルートの build ファイルへの Kotlin JVM プラグインの追加（ルートの `plugins { }` / `buildscript { }` か `buildSrc` に Kotlin のプラグインがすでにあれば何もしない。サブプロジェクトだけが版付きで宣言している場合は、ルートには足さず検査用モジュール側に版を書く。このとき Gradle が `The Kotlin Gradle plugin was loaded multiple times in different subprojects ...` と警告しますが、この構成では想定どおりなのでそのままにしてください。ルートに足したり版を消したりすると、今度はプラグインの解決で落ちます）
+- `gradle/libs.versions.toml` への追記（`dependencyStyle` が `catalog` のとき）。`katachi` / `katachiKonsist` / JUnit の別名を `[versions]` / `[libraries]` / `[plugins]` に足し、`build.gradle.kts` はそれを `libs.katachi` のように参照する。すでに同じものを指す別名があればそれを使う。Kotlin plugin の行だけは catalog でも `kotlin("jvm")`（版なし）のまま。`alias(libs.plugins.kotlin.jvm)` と書くと、build-logic（includeBuild）経由で Kotlin plugin が classpath にあるとき "already on the classpath with an unknown version" で失敗するため。カタログに寄せるなら `id(libs.plugins.kotlin.jvm.get().pluginId)` の形になる
+- ルートの build ファイルへの Kotlin JVM プラグインの追加（ルートの `plugins { }` / `buildscript { }` か `buildSrc` に Kotlin のプラグインがすでにあれば何もしない。サブプロジェクトだけが版付きで宣言している場合は、ルートには足さず検査用モジュール側に版を書く。このとき Gradle が `The Kotlin Gradle plugin was loaded multiple times in different subprojects ...` と警告しますが、この構成では想定どおりなのでそのままにしてください。ルートに足したり版を消したりすると、今度はプラグインの解決で失敗します）
 - settings ファイルへの `include(":architecture-test")` の追加（Groovy の `settings.gradle` なら `include ':architecture-test'`。`--module-dir static-analysis/katachi` なら `include(":static-analysis:katachi")`。すでにあれば何もしない）
 - settings ファイルの `pluginManagement { repositories { } }` への `mavenCentral()` の追加。katachi の Gradle plugin は Maven Central にあるため（すでにあれば何もしない。`pluginManagement { }` が無ければ作る）
 
 プラグインのバージョン衝突、JUnit の engine、JVM toolchain（下記）、プロジェクトの Kotlin バージョンに応じたコンパイラオプション、Android / KMP プロジェクトでの扱いは**すべてスクリプトが決めています。** Kotlin 2.4 未満なら `-Xcontext-parameters` を書き込み（これが無いと DSL を1つも呼べません）、2.4 以降では付けません（付けると redundant の警告になるため）。Kotlin 2.2 未満ならその旨を伝えて止まります。katachi の metadata をそのコンパイラが読めないためです。生成されたファイルを読んで直したくなっても、直さないこと。
 
-JVM toolchain は、プロジェクトに既にある設定（ほかのモジュールの `jvmToolchain(N)`、`JavaLanguageVersion.of(N)`、buildSrc・build-logic の中の同じ書き方、version catalog や `val` から読む形）と同じ N を使います。katachi は JDK 17 以上が要るので、見つかった N が 17 未満なら使いません。設定が見つからないときは `jvmToolchain` を書かず、Gradle を動かしている JDK をそのまま使います（JDK 17 が無く toolchain の自動取得も無い環境で落ちないため）。どちらにしたかは scaffold の出力とチェックリストの「JVM toolchain」に残ります。`doctor` と `scaffold` は Gradle が使う JDK が 17 以上かも確かめ、未満なら直し方を出して止まります。
+JVM toolchain は、プロジェクトに既にある設定（ほかのモジュールの `jvmToolchain(N)`、`JavaLanguageVersion.of(N)`、buildSrc・build-logic の中の同じ書き方、version catalog や `val` から読む形）と同じ N を使います。katachi は JDK 17 以上が要るので、見つかった N が 17 未満なら使いません。設定が見つからないときは `jvmToolchain` を書かず、Gradle を動かしている JDK をそのまま使います（JDK 17 が無く toolchain の自動取得も無い環境で失敗しないため）。どちらにしたかは scaffold の出力とチェックリストの「JVM toolchain」に残ります。`doctor` と `scaffold` は Gradle が使う JDK が 17 以上かも確かめ、未満なら直し方を出して止まります。
 
 例外は、生成されたファイルを変えないとビルドがそもそも動かない場合だけです。これは上のルールより優先します。ただしその場合はスクリプト側のバグなので、`add changed` に理由を書いて記録し、`questions` にも登録してください。
 
@@ -484,7 +484,7 @@ JDK: 21（JAVA_HOME）
 
 違反の表示件数はデフォルトで 10 件です。導入中は数十〜百件出るので、全件が要るときは `sh $CLI test -- -Dkatachi.maxViolations=all` で出します（`--` より後ろは `./gradlew` にそのまま渡り、katachi の Gradle plugin がテストの JVM に届けます）。テストのコードに `maxViolations` を書く必要はありません。
 
-**この形で落ちていれば配線は正しい**ということです。
+**この形で失敗していれば配線は正しい**ということです。
 
 Gradle を初めて動かすと、Kotlin 2.x が `.kotlin/` を作ります。プロジェクトの `.gitignore` に無いと `[UnexpectedDirectory] .kotlin` が出ます。Gradle が作る `.gradle/` も同じです。`init` の警告（未追跡で ignore もされていないもの）と同じ扱いで、`.gitignore` に足すかどうかをユーザに確認してください。`.idea/` の中に git が追跡しているファイル（`.idea/codeStyles/` など）があれば、それも検査の対象なので、ステップ 3 で Role を書いて宣言します（中身を検査しないなら `ignore()` でよい）。`.gitignore` を自分で書き換えないこと。`Unexpected` 以外のエラー、たとえばコンパイルエラー、依存の解決失敗、`Could not start Gradle Test Executor` のようなものが出た場合だけが問題です（要約は `結果: 検査まで届いていません` になり、ログの末尾が添えられます）。
 
@@ -492,7 +492,7 @@ Gradle を初めて動かすと、Kotlin 2.x が `.kotlin/` を作ります。�
 
 `scaffold` が「buildscript { } を持つため自動で書き換えませんでした」と言った場合は、**出力に示された1行をルートの build ファイルに足してください。** 足すまで必ず失敗します。「pluginManagement { } の形を読み取れなかった」「include 文の終わりを読み取れなかった」と言った場合も同じで、出力に示されたものを settings ファイルに足してください。
 
-`Unexpected` だけで落ちることを確認したら、作成・変更されたファイルを記録して `sh $CLI check 2-2`。
+`Unexpected` だけで失敗することを確認したら、作成・変更されたファイルを記録して `sh $CLI check 2-2`。
 
 ```sh
 sh $CLI add changed --path "architecture-test/build.gradle.kts" --change "新規" --summary "検査用モジュールのビルド定義"
@@ -587,7 +587,7 @@ import me.tbsten.katachi.konsist.declarations.ktFileContent   // ktFileContent {
 | 誤り（1つの Role に詰めたもの） | 直し方 |
 |---|---|
 | `Gradle` に `settings.gradle.kts`・`gradle.properties`・`gradlew`・version catalog・wrapper、さらに `.gitignore` や `README.md` まで | Gradle のファイルは `gradle()` の1行に置き換え、`.gitignore` や `README.md` はそれぞれ別の Role にする |
-| `ProjectMeta` / `RootDoc` に `README`・`LICENSE`・`CONTRIBUTING`・`CLAUDE.md` | `ProjectReadme` / `License` / … と1種類ずつ Role にし、group で束ねる。Role 名を `Readme` にすると、ドキュメント生成で索引の `README.md` と大文字小文字だけ違う名前になり、`katachiDocs` が落ちる |
+| `ProjectMeta` / `RootDoc` に `README`・`LICENSE`・`CONTRIBUTING`・`CLAUDE.md` | `ProjectReadme` / `License` / … と1種類ずつ Role にし、group で束ねる。Role 名を `Readme` にすると、ドキュメント生成で索引の `README.md` と大文字小文字だけ違う名前になり、`katachiDocs` が失敗する |
 | `AgentAndCiConfig` に `.claude/`・`.github/`・`.run/` | ツールごとに Role にする（中身を検査しないなら、それぞれ `ignore()` でよい） |
 | `AndroidApp` にモジュールの中身まるごと（Manifest・Activity・`res/`・`build.gradle.kts`） | モジュールは group にし、中は種類ごとの Role にする |
 | 本体と、そのテストを同じ Role に | テストは別の Role にする |
@@ -642,7 +642,7 @@ import me.tbsten.katachi.konsist.declarations.ktFileContent   // ktFileContent {
 判断はこうします。
 
 - **Role に結びつく規約は katachi に書く。** 「ViewModel は Repository を直接呼ばない」は ViewModel という Role の定義そのものです。他のツールが似た検査をしていても、katachi 側にあることで「この Role とは何か」が1箇所に揃います
-- **省いてよいのは、既存のツールがコンパイルエラーとして落としていて、かつファイル単位で抑制できないものだけです。** 抑制できるなら katachi 側にも書く価値があります
+- **省いてよいのは、既存のツールがコンパイルエラーとして失敗させていて、かつファイル単位で抑制できないものだけです。** 抑制できるなら katachi 側にも書く価値があります
 - 迷ったら書く。制約は後から消せます
 
 `<検査用モジュール>/src/test/kotlin/<パッケージ>/test/architecture/ProjectArchitecture.kt` の `architecture { }` を埋める。
@@ -655,7 +655,7 @@ import me.tbsten.katachi.konsist.declarations.ktFileContent   // ktFileContent {
 sh $CLI test --save before-refactor
 ```
 
-ここで求めるのは**コンパイルが通り、検査が最後まで走ること**です。`Katachi check failed: ...` で落ちるのはかまいません（違反と向き合うのはステップ 4）。コンパイルエラーや Gradle のエラーで検査まで届かないときは、直してから取り直してください。
+ここで求めるのは**コンパイルが通り、検査が最後まで走ること**です。`Katachi check failed: ...` で失敗するのはかまいません（違反と向き合うのはステップ 4）。コンパイルエラーや Gradle のエラーで検査まで届かないときは、直してから取り直してください。
 
 作成・変更したファイルを `changedFiles` に `data merge` で記載し、`sh $CLI check 3-2`。定義を走査し、種類の違うファイルを抱えていそうな Role を列挙します（`lint`）。ここで出たものは 3-3 のチェックリストで扱います。
 
@@ -709,7 +709,7 @@ sh $CLI compare-violations
 
 `compare-violations` は2つのログから検査結果（要約の1行と、違反ごとの `[種類] パス`）を取り出して比べます。宣言位置の行番号は比べません。`[MissingDescription]` は説明を書き足せば減るのが正しいので、件数だけ出します。**違いが出たら、前のログを取り直さずに定義を直してください。** リファクタリングで振る舞いが変わっています。
 
-**前のログが緑（違反 0 件）のときは、0 件と 0 件の比較になり、分割で定義が緩んだこと（受け皿が増えたなど）は検出できません。** その場合は、分割の後に既知の違反を1つ作って落ちることも確かめてください。どの Role にも当たらないファイルを一時的に置いて `sh $CLI test` を実行し、`[UnexpectedFile]` で落ちたら、そのファイルを消します。
+**前のログが緑（違反 0 件）のときは、0 件と 0 件の比較になり、分割で定義が緩んだこと（受け皿が増えたなど）は検出できません。** その場合は、分割の後に既知の違反を1つ作って失敗することも確かめてください。どの Role にも当たらないファイルを一時的に置いて `sh $CLI test` を実行し、`[UnexpectedFile]` で失敗したら、そのファイルを消します。
 
 作成・変更したファイルを `changedFiles` に記載し（分けたファイルはディレクトリでまとめて1件でよい）、`sh $CLI check 3-3`。`lint` がもう一度走ります。`lint` は失敗にはしない点検も出します（1-3 の方針に対する「平たい group」「分けていないファイル」、`documented = false` の候補）。出たものは上のチェックリストに照らして直すか、残す理由を `warn 3` に書きます。
 
@@ -735,11 +735,11 @@ sh $CLI test
 
 残した違反が 10 件を超えても、`sh $CLI test -- -Dkatachi.maxViolations=all` で全件見られます。テストのコードに `maxViolations` を書く必要はありません。
 
-**残す違反が多く、ユーザが「今ある違反は許容して、新しい違反だけで落としたい」と望む場合は、baseline を提案できます。** 実験的な機能（`@ExperimentalKatachiApi`）なので、使うかどうかは `questions` でユーザに確認してから入れてください。使う場合の手順は次のとおりです。
+**残す違反が多く、ユーザが「今ある違反は許容して、新しい違反だけで失敗させたい」と望む場合は、baseline を提案できます。** 実験的な機能（`@ExperimentalKatachiApi`）なので、使うかどうかは `questions` でユーザに確認してから入れてください。使う場合の手順は次のとおりです。
 
 - `ProjectArchitecture.kt` の `architecture { }` に `baseline()` を書き、`val projectArchitecture` に `@OptIn(ExperimentalKatachiApi::class)` を付ける。baseline のファイルはデフォルトで `katachi-baseline.json`（プロジェクトルート）
 - baseline のファイルも検査の対象なので、Role を1つ足して `layout { }` で宣言する（例: `"BaselineFile".role { layout { "katachi-baseline.json".file() } }`）。宣言しないと baseline のファイル自身が `[UnexpectedFile]` になり、これは baseline に入れられない
-- `sh $CLI test -- -Dkatachi.baseline.update=true` で、今ある違反を baseline のファイルに書き出す。以降は baseline のファイルに無い違反だけでテストが落ちる。違反を直すと、その項目が `[StaleBaselineEntry]` で落ちるので、`sh $CLI test -- -Dkatachi.baseline.prune=true` で消す（CI（`CI=true`）では update も prune も拒否される）
+- `sh $CLI test -- -Dkatachi.baseline.update=true` で、今ある違反を baseline のファイルに書き出す。以降は baseline のファイルに無い違反だけでテストが失敗する。違反を直すと、その項目が `[StaleBaselineEntry]` で失敗するので、`sh $CLI test -- -Dkatachi.baseline.prune=true` で消す（CI（`CI=true`）では update も prune も拒否される）
 
 許容した違反も `violations` に書いてください。baseline のファイルに入れても、違反が消えたわけではありません。
 
@@ -891,7 +891,7 @@ jobs:
 
 既存の CI が emulator や複数の OS を回す matrix のジョブ 1 本だけのときは、その各要素で毎回 `:architecture-test:test` が走らないように、**matrix の外に別のジョブとして足します。** 新しい yaml ファイルは作らず、同じ workflow ファイルの `jobs:` に上の `architecture` ジョブを足してください。
 
-6-C で生成したドキュメントをコミットしている場合は、同じジョブに次の1行を足す。`--arg mode=check` は何も書かずにディスク上のページと比べ、定義と食い違っていれば落ちる（定義を変えたのにドキュメントを生成し直し忘れた、を捕まえる）。
+6-C で生成したドキュメントをコミットしている場合は、同じジョブに次の1行を足す。`--arg mode=check` は何も書かずにディスク上のページと比べ、定義と食い違っていれば失敗する（定義を変えたのにドキュメントを生成し直し忘れた、を捕まえる）。
 
 ```yaml
       - run: ./gradlew :architecture-test:katachiDocs --arg mode=check
@@ -913,7 +913,7 @@ Pull request 作成時・Merge request 作成時・pre-push hook など、スト
 
 1. `architecture { }` の先頭に `title = "..."` と `description = "..."` を書く（3-2 で書いていれば飛ばす）。ルートページの見出しと本文になる。
 2. `./gradlew :architecture-test:katachiDocs` で生成し、`architecture-test/build/katachi/docs/` を確かめる。
-3. **生成物をコミットするかをユーザに提案する。** デフォルトの出力先は `build/` の下なのでコミットされない。コミットするなら次の3つを揃える。1つでも欠けると、テストか CI が落ちるか、ドキュメントが気づかないうちに古くなる。
+3. **生成物をコミットするかをユーザに提案する。** デフォルトの出力先は `build/` の下なのでコミットされない。コミットするなら次の3つを揃える。1つでも欠けると、テストか CI が失敗するか、ドキュメントが気づかないうちに古くなる。
    - 検査用モジュールの `build.gradle.kts` の `katachi { }` に出力先を書く（`architecture = ...` の行はそのまま）
 
      ```kts
@@ -927,7 +927,7 @@ Pull request 作成時・Merge request 作成時・pre-push hook など、スト
      }
      ```
 
-   - その場所を Role として `layout { }` に宣言する。宣言しないと生成したページが `gitTracked()` に拾われ、`:architecture-test:test` が `[UnexpectedFile]` / `[UnexpectedDirectory]` で落ちる。索引の `README.md` と、Role ・group ごとの `*.md` の両方を覆う
+   - その場所を Role として `layout { }` に宣言する。宣言しないと生成したページが `gitTracked()` に拾われ、`:architecture-test:test` が `[UnexpectedFile]` / `[UnexpectedDirectory]` で失敗する。索引の `README.md` と、Role ・group ごとの `*.md` の両方を覆う
 
      ```kt
      "ArchitectureDocs".role {
@@ -962,7 +962,7 @@ Pull request 作成時・Merge request 作成時・pre-push hook など、スト
 **始める前に、テンプレートからコード生成のページを読む。** `sh $CLI docs --topic template` で取得します（日本語版は https://tbsten.github.io/katachi/ja/guides/generate-code-from-template/ ）。`.template { }` で書ける語（`stringParameter()` などの `*Parameter()`）、生成先のパスを書かない理由、既存ファイルがあるときの扱いはここに書いてあります。シグネチャに迷ったら、推測で書かずに 3-1 の「API に迷ったら」の llms.txt を読んでください（`.template { }` の入口は https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.dsl/template.html.md ）。
 
 1. 提案を確かめる（`sh $CLI data get report templates`）。
-2. その Role の `layout { }` の、ファイルの宣言に `.template { }` を付ける。**`.template` は拡張関数なので、書くファイルに `import me.tbsten.katachi.dsl.template` を足す**（`captureValue()` などはブロックの中で使えるので import は要らない）。**`.template { }`・`capture()`・`captureValue()` は実験的な API なので、そのファイルに `@file:OptIn(ExperimentalKatachiApi::class)` と `import me.tbsten.katachi.ExperimentalKatachiApi` も足す。** 足さないと `This katachi API is experimental. …` でコンパイルが落ちる（メッセージに付け方が出る）。**中身は `basedOn` のファイルを元にする。** 生成先のパスは `layout { }` の宣言そのものが決めるので、テンプレート側には書かない
+2. その Role の `layout { }` の、ファイルの宣言に `.template { }` を付ける。**`.template` は拡張関数なので、書くファイルに `import me.tbsten.katachi.dsl.template` を足す**（`captureValue()` などはブロックの中で使えるので import は要らない）。**`.template { }`・`capture()`・`captureValue()` は実験的な API なので、そのファイルに `@file:OptIn(ExperimentalKatachiApi::class)` と `import me.tbsten.katachi.ExperimentalKatachiApi` も足す。** 足さないと `This katachi API is experimental. …` でコンパイルが失敗する（メッセージに付け方が出る）。**中身は `basedOn` のファイルを元にする。** 生成先のパスは `layout { }` の宣言そのものが決めるので、テンプレート側には書かない
 
    ```kt
    @file:OptIn(ExperimentalKatachiApi::class)
@@ -987,7 +987,7 @@ Pull request 作成時・Merge request 作成時・pre-push hook など、スト
    }
    ```
 
-   **生成先のディレクトリにワイルドカード（`*`）がある Role は、その `*` に `capture()` で名前を付ける。** 検査の結果は変わらない。名前の無い `*` や `**` が残ったまま `.template { }` を付けると、layout を展開する時点（`sh $CLI test` の `assert()`）でエラーになる。値はテンプレートの中で `captureValue("名前")` で読む（`stringParameter()` で宣言し直さないこと。名前がぶつかって落ちる）
+   **生成先のディレクトリにワイルドカード（`*`）がある Role は、その `*` に `capture()` で名前を付ける。** 検査の結果は変わらない。名前の無い `*` や `**` が残ったまま `.template { }` を付けると、layout を展開する時点（`sh $CLI test` の `assert()`）でエラーになる。値はテンプレートの中で `captureValue("名前")` で読む（`stringParameter()` で宣言し直さないこと。名前がぶつかって失敗する）
 
    ```kt
    @file:OptIn(ExperimentalKatachiApi::class)
@@ -1022,7 +1022,7 @@ Pull request 作成時・Merge request 作成時・pre-push hook など、スト
    **パッケージのディレクトリ名がモジュールのディレクトリ名と違う（モジュール `appConfig` とディレクトリ `appconfig` など）なら、そのディレクトリの `*` にもモジュールとは別の名前を付け、その `captureValue()` を package に使う。** モジュールの名前（`captureValue("feature")`）を package に入れると、ディレクトリと食い違う package が書かれ、検査もコンパイルも通るので気づけない。
 
    使えるのは `stringParameter()` / `booleanParameter()` / `intParameter()`（`default = ...` も可）、`enumParameter()`（`entries` かデフォルト値を渡す）、それに生成先のワイルドカードに名前を付ける `capture("名前")`（layout のディレクトリ・ファイル名のどこにでも埋め込める）と、その値を読む `captureValue("名前")`（template の中）だけです。これ以外の語を推測で足さないこと。
-3. テンプレート独自のパラメータ（`--arg name=...`）は、モジュール側の設定なしにそのまま渡せる。受け付けるのは、名指しした Role の `.template { }` が宣言した名前と、`layout { }` のワイルドカードに付けた名前だけで、打ち間違いはこれまでどおり `Unknown processor argument(s): ...` で落ちる。
+3. テンプレート独自のパラメータ（`--arg name=...`）は、モジュール側の設定なしにそのまま渡せる。受け付けるのは、名指しした Role の `.template { }` が宣言した名前と、`layout { }` のワイルドカードに付けた名前だけで、打ち間違いはこれまでどおり `Unknown processor argument(s): ...` で失敗する。
 4. 1本生成し、**直後に検査が通ること**を確かめる。`--arg template=` には、group があれば `group名.Role 名`、無ければ Role 名を書く。
 
    ```sh
@@ -1037,7 +1037,7 @@ Pull request 作成時・Merge request 作成時・pre-push hook など、スト
    sh $CLI test
    ```
 
-   `test` が落ちたら、`.template { }` を付けたファイルの宣言のパスが正しいかを確かめる。
+   `test` が失敗したら、`.template { }` を付けたファイルの宣言のパスが正しいかを確かめる。
 5. **生成したファイルは確認用なので消す**（ユーザが残すと言った場合を除く）。消したあと、もう一度 `sh $CLI test` が通ることを確かめる。
 
 作成・変更したファイルを `add changed` で記録し、`sh $CLI check 6-4`。
