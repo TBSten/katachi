@@ -20,6 +20,7 @@ import me.tbsten.katachi.intellij.testing.branch
 import me.tbsten.katachi.intellij.testing.capture
 import me.tbsten.katachi.intellij.testing.definitionModel
 import me.tbsten.katachi.intellij.testing.definitionSnapshot
+import me.tbsten.katachi.intellij.testing.englishAuthoring
 import me.tbsten.katachi.intellij.testing.layoutEntry
 import me.tbsten.katachi.intellij.testing.module
 import me.tbsten.katachi.intellij.testing.roleModel
@@ -71,9 +72,9 @@ class CompletionCandidatesPropertyTest {
     fun `captureValue の候補は結んだテンプレートの capture を1つずつ`() = runBlocking<Unit> {
         checkAll(config, scenarioArb) { scenario ->
             val binding = bindTemplate(scenario.fileName, scenario.line, scenario.snapshots, scenario.resolves) ?: return@checkAll
-            val names = captureCandidates(binding).map { it.text }
+            val names = captureCandidates(binding, englishAuthoring).map { it.text }
             assertEquals("$scenario", binding.template.detail!!.captures.map { it.name }.distinct(), names)
-            assertTrue("$scenario", captureCandidates(binding).all { it.tailText == " (${binding.template.template})" })
+            assertTrue("$scenario", captureCandidates(binding, englishAuthoring).all { it.tailText == " (${binding.template.template})" })
         }
     }
 
@@ -85,11 +86,11 @@ class CompletionCandidatesPropertyTest {
                 val detail = template.detail!!
                 val expected = (detail.captures.map { it.name } + detail.parameters.map { it.name } + detail.branches.flatMap { b -> b.addedParameters.map { it.name } })
                     .toSet()
-                val names = argCandidates(template.template, scenario.snapshots).map { it.text }
+                val names = argCandidates(template.template, scenario.snapshots, englishAuthoring).map { it.text }
                 assertEquals("$scenario ${template.template}", expected, names.toSet())
                 assertEquals("$scenario ${template.template}", names.size, names.distinct().size)
             }
-            assertEquals("$scenario", emptyList<String>(), argCandidates("no.such.template", scenario.snapshots).map { it.text })
+            assertEquals("$scenario", emptyList<String>(), argCandidates("no.such.template", scenario.snapshots, englishAuthoring).map { it.text })
         }
     }
 
@@ -115,7 +116,7 @@ class CompletionCandidatesPropertyTest {
             val offered = templateSpecCandidates(scenario.snapshots).map { it.text }
             for (set in scenario.setRows) {
                 assertTrue("$scenario ${set.template}", set.template !in offered)
-                assertEquals("$scenario ${set.template}", emptyList<String>(), argCandidates(set.template, scenario.snapshots).map { it.text })
+                assertEquals("$scenario ${set.template}", emptyList<String>(), argCandidates(set.template, scenario.snapshots, englishAuthoring).map { it.text })
             }
         }
     }
@@ -125,11 +126,11 @@ class CompletionCandidatesPropertyTest {
     fun `arg の候補は 短い指定でも完全な指定と同じ`() = runBlocking<Unit> {
         checkAll(config, scenarioArb) { scenario ->
             for (template in scenario.allTemplates) {
-                val full = argCandidates(template.template, scenario.snapshots).map { it.text }
+                val full = argCandidates(template.template, scenario.snapshots, englishAuthoring).map { it.text }
                 val plainRole = template.roleName.substringAfterLast('.')
                 val short = listOfNotNull(plainRole, template.summary.id?.let { "$plainRole.$it" })
                 for (spec in short) {
-                    assertEquals("$scenario $spec", full, argCandidates(spec, scenario.snapshots).map { it.text })
+                    assertEquals("$scenario $spec", full, argCandidates(spec, scenario.snapshots, englishAuthoring).map { it.text })
                 }
             }
         }

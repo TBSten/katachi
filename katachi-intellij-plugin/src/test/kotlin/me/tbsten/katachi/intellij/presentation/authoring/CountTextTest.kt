@@ -3,6 +3,7 @@ package me.tbsten.katachi.intellij.presentation.authoring
 import me.tbsten.katachi.intellij.model.LayoutEntryKind
 import me.tbsten.katachi.intellij.model.LayoutEntryModel
 import me.tbsten.katachi.intellij.presentation.gutter.RoleFileCount
+import me.tbsten.katachi.intellij.testing.englishAuthoring
 import me.tbsten.katachi.intellij.testing.layoutEntry
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -25,33 +26,33 @@ class CountTextTest {
             Triple(3, true, "3 files"),
         )
         for ((count, required, expected) in rows) {
-            assertEquals("count=$count required=$required", expected, CountText.of(listOf(entry(count, required)), stale = false))
+            assertEquals("count=$count required=$required", expected, CountText.of(listOf(entry(count, required)), stale = false, englishAuthoring))
         }
-        assertEquals("? files", CountText.of(listOf(entry(null)), stale = false))
-        assertEquals("? files", CountText.of(listOf(entry(null, required = true)), stale = false))
+        assertEquals("? files", CountText.of(listOf(entry(null)), stale = false, englishAuthoring))
+        assertEquals("? files", CountText.of(listOf(entry(null, required = true)), stale = false, englishAuthoring))
     }
 
     @Test
     fun `一覧が切られた行は 並んだファイルの数に プラスを付ける`() {
-        assertEquals("$LISTED+ files", CountText.of(listOf(entry(900, cut = true)), stale = false))
-        assertEquals("$LISTED+ files", CountText.of(listOf(entry(900, required = true, cut = true)), stale = false))
+        assertEquals("$LISTED+ files", CountText.of(listOf(entry(900, cut = true)), stale = false, englishAuthoring))
+        assertEquals("$LISTED+ files", CountText.of(listOf(entry(900, required = true, cut = true)), stale = false, englishAuthoring))
     }
 
     @Test
     fun `古い答えは 末尾に stale が付き 全部の組み合わせで 付くか付かないかだけが違う`() {
         val entries = listOf(entry(0), entry(0, required = true), entry(1), entry(3), entry(null), entry(900, cut = true))
         for (entry in entries) {
-            val fresh = CountText.of(listOf(entry), stale = false)
-            assertEquals("$fresh (stale)", CountText.of(listOf(entry), stale = true))
+            val fresh = CountText.of(listOf(entry), stale = false, englishAuthoring)
+            assertEquals("$fresh (stale)", CountText.of(listOf(entry), stale = true, englishAuthoring))
         }
     }
 
     @Test
     fun `wildcard の module key で宣言が複数の entry になったら 合計を言い modules の数を stale の前に付ける`() {
         val two = listOf(entry(2), entry(1).copy(matchedFiles = listOf("b/G.kt")))
-        assertEquals("3 files (2 modules)", CountText.of(two, stale = false, modules = 2))
-        assertEquals("3 files (2 modules) (stale)", CountText.of(two, stale = true, modules = 2))
-        assertEquals("3 files", CountText.of(two, stale = false, modules = 1))
+        assertEquals("3 files (2 modules)", CountText.of(two, stale = false, englishAuthoring, modules = 2))
+        assertEquals("3 files (2 modules) (stale)", CountText.of(two, stale = true, englishAuthoring, modules = 2))
+        assertEquals("3 files", CountText.of(two, stale = false, englishAuthoring, modules = 1))
     }
 
     @Test
@@ -60,11 +61,11 @@ class CountTextTest {
             for (required in listOf(false, true)) {
                 val entries = listOf(entry(count, required))
                 val number = RoleFileCount.of(entries)
-                val text = CountText.of(entries, stale = false)
+                val text = CountText.of(entries, stale = false, englishAuthoring)
                 when (number) {
                     null -> assertEquals("? files", text)
                     0 -> assertEquals(if (required) "missing (required)" else "no files", text)
-                    else -> assertEquals(CountText.filesText(number), text)
+                    else -> assertEquals(englishAuthoring.files(number), text)
                 }
             }
         }
@@ -73,12 +74,7 @@ class CountTextTest {
     @Test
     fun `file entry の無い行は 0 件として扱う`() {
         val directory = layoutEntry("a", kind = LayoutEntryKind.Directory)
-        assertEquals("no files", CountText.of(listOf(directory), stale = false))
-    }
-
-    @Test
-    fun `役割の ◆ の tooltip と同じ言い方を 使う`() {
-        for (count in listOf(null, 0, 1, 5)) assertEquals(CountText.filesText(count), DefinitionGutterMarks.filesText(count))
+        assertEquals("no files", CountText.of(listOf(directory), stale = false, englishAuthoring))
     }
 
     private companion object {

@@ -19,6 +19,7 @@ import me.tbsten.katachi.intellij.presentation.authoring.DefinitionMarkSource
 import me.tbsten.katachi.intellij.presentation.gutter.AnnotationSeverity
 import me.tbsten.katachi.intellij.testing.definitionModel
 import me.tbsten.katachi.intellij.testing.definitionSnapshot
+import me.tbsten.katachi.intellij.testing.englishAuthoring
 import me.tbsten.katachi.intellij.testing.layoutEntry
 import me.tbsten.katachi.intellij.testing.module
 import me.tbsten.katachi.intellij.testing.roleModel
@@ -78,7 +79,7 @@ class DefinitionErrorTargetsPropertyTest {
             val snapshot = definitionSnapshot(definitionModel(role).copy(problems = problems), module(":arch"))
             val lineCount = random.nextInt(0, 50)
 
-            val marks = DefinitionErrorTargets.marksOf(errors, listOf(snapshot), definitionStale, here, lineCount)
+            val marks = DefinitionErrorTargets.marksOf(errors, listOf(snapshot), definitionStale, here, lineCount, englishAuthoring)
 
             val label = "seed=$caseSeed lineCount=$lineCount"
             for (mark in marks) {

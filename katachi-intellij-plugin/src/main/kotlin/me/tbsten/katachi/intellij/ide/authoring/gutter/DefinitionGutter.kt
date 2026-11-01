@@ -3,6 +3,7 @@ package me.tbsten.katachi.intellij.ide.authoring.gutter
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
+import me.tbsten.katachi.intellij.ide.authoring.BundleAuthoringStrings
 import me.tbsten.katachi.intellij.ide.definition.DefinitionModelService
 import me.tbsten.katachi.intellij.ide.gutter.GutterPorts
 import me.tbsten.katachi.intellij.ide.gutter.HighlightingRefresher
@@ -55,7 +56,7 @@ internal object DefinitionGutter {
         return bound.anchors.zip(bound.bound).mapNotNull { (psi, binding) ->
             val module = binding.declarations.firstOrNull()?.module ?: return@mapNotNull null
             val projectRoot = bound.projectRootOf(module) ?: return@mapNotNull null
-            val mark = DefinitionGutterMarks.of(binding, bound.definitionFile, projectRoot, bound.stale) ?: return@mapNotNull null
+            val mark = DefinitionGutterMarks.of(binding, bound.definitionFile, projectRoot, bound.stale, BundleAuthoringStrings) ?: return@mapNotNull null
             val leaf = sdkCall("find the leaf of a definition anchor") { psi.leaf.element }.getOrNull() ?: return@mapNotNull null
             PlacedDefinitionGutterMark(leaf, mark)
         }

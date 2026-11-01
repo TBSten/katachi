@@ -27,7 +27,7 @@ internal class CapturedMenu(
     /** The rows as they are right now: [available] says which platform actions exist, the running checks are read here. */
     fun model(available: MenuAvailability): MenuModel {
         val running = runningChecks?.value?.contains(input.module.id) == true
-        return MenuModel.of(input, available.copy(checkRunning = running))
+        return MenuModel.of(input, available.copy(checkRunning = running), BundleGutterStrings)
     }
 }
 
@@ -43,7 +43,7 @@ internal object GutterMenuCapture {
         cache: MutableMap<DeclarationSiteRef, ResolvedSite>,
     ): CapturedMenu {
         val bare = MenuInputs.of(mark, placed.roles)
-        val sites = MenuModel.of(bare, EVERYTHING).sites.map { it.site }
+        val sites = MenuModel.of(bare, EVERYTHING, BundleGutterStrings).sites.map { it.site }
         val module = bare.module.id
         val resolved = sites.associateWith { site ->
             cache.getOrPut(site) {

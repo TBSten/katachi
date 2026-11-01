@@ -43,25 +43,25 @@ internal data class ErrorNotificationModel(
  * Which lines of a definition file katachi's mistakes and problems underline, and in which colour (design 2.4, D-7). Pure:
  * `DefinitionErrorAnnotator` finds, for the file it draws, which site is in it and hands that in as [marksOf]'s `lineOf`.
  *
- * - A mistake is an error; once the definition changed after it was read it is a weak warning starting with `(stale) `.
+ * - A mistake is an error; once the definition changed after it was read it is a weak warning starting with
+ *   [AuthoringStrings.stalePrefix] (`(stale) `). The rest of the hover is katachi's own sentence.
  * - A problem of a template or a template set is a warning (a weak warning while the definition is stale). A
  *   `TemplatePreviewFailed` without a `declaredAt` goes to the line of the entry whose `.template { }` it names; a
  *   `TemplateSetPreviewFailed` without one is not drawn (the set's own line is not in the JSON).
  * - A site that is not in the file, or whose file has no such line, draws nothing: the notification still names it.
  *
  * ```kotlin
- * val marks = DefinitionErrorTargets.marksOf(errors, snapshots, definitionStale = false, lineOf = { module, site -> lineIn(file, module, site) }, lineCount = document.lineCount)
+ * val marks = DefinitionErrorTargets.marksOf(errors, snapshots, definitionStale = false, lineOf = { module, site -> lineIn(file, module, site) }, lineCount = document.lineCount, strings)
  * ```
  */
 internal object DefinitionErrorTargets {
-    private const val STALE_PREFIX: String = "(stale) "
-
     fun marksOf(
         errors: DefinitionErrors,
         definitions: List<DefinitionSnapshot>,
         definitionStale: Boolean,
         lineOf: (ModuleId, DeclarationSiteRef) -> Int?,
         lineCount: Int,
+        strings: AuthoringStrings,
     ): List<DefinitionMark> {
         fun placed(line: Int?): Int? = line?.takeIf { it >= 1 && lineCount >= 1 }?.coerceAtMost(lineCount)
         val fromErrors = errors.errors.mapIndexedNotNull { index, error ->
@@ -70,7 +70,7 @@ internal object DefinitionErrorTargets {
             DefinitionMark(
                 line = line,
                 severity = if (errors.stale) AnnotationSeverity.WeakWarning else AnnotationSeverity.Error,
-                hover = (if (errors.stale) STALE_PREFIX else "") + "katachi: " + error.message,
+                hover = (if (errors.stale) strings.stalePrefix else "") + "katachi: " + error.message,
                 source = DefinitionMarkSource.Error,
                 module = error.module,
                 errorIndex = index,
@@ -85,7 +85,7 @@ internal object DefinitionErrorTargets {
                 DefinitionMark(
                     line = line,
                     severity = if (definitionStale) AnnotationSeverity.WeakWarning else AnnotationSeverity.Warning,
-                    hover = (if (definitionStale) STALE_PREFIX else "") + hoverOfProblem(problem),
+                    hover = (if (definitionStale) strings.stalePrefix else "") + hoverOfProblem(problem),
                     source = DefinitionMarkSource.Problem,
                     module = snapshot.module.id,
                     errorIndex = null,

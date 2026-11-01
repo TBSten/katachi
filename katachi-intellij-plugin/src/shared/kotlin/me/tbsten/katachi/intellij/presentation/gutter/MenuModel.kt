@@ -67,11 +67,11 @@ internal data class MenuModel(val title: String, val items: List<MenuItem>) {
          * [input] was captured when the ◆ was drawn.
          *
          * ```kotlin
-         * val menu = MenuModel.of(MenuInputs.of(mark, fileRoles), MenuAvailability(runCheck = true, refresh = true, checkRunning = false))
+         * val menu = MenuModel.of(MenuInputs.of(mark, fileRoles), MenuAvailability(runCheck = true, refresh = true, checkRunning = false), strings)
          * menu.items.first() // the line that links to what allowed the declaration
          * ```
          */
-        fun of(input: MenuInput, availability: MenuAvailability): MenuModel = MenuModels.build(input, availability)
+        fun of(input: MenuInput, availability: MenuAvailability, strings: GutterStrings): MenuModel = MenuModels.build(input, availability, strings)
     }
 }
 
@@ -117,46 +117,46 @@ internal data class MenuInput(
 )
 
 internal object MenuModels {
-    fun build(input: MenuInput, availability: MenuAvailability): MenuModel {
+    fun build(input: MenuInput, availability: MenuAvailability, strings: GutterStrings): MenuModel {
         val items = mutableListOf<MenuItem>()
         val needsRefreshToSee = input.roles.any { it.explanation == BoundExplanation.NotComputed }
-        val refresh = refreshRow(availability)
+        val refresh = refreshRow(availability, strings)
         if (input.stale && !needsRefreshToSee) items += refresh
         val single = input.roles.singleOrNull()
         val newInSection = single?.templates?.isNotEmpty() == true
         for (role in input.roles) {
             if (single == null) items += MenuItem.Section(role.role.qualifiedName)
-            items += roleItems(input, role, availability, separateNew = newInSection)
+            items += roleItems(input, role, availability, strings, separateNew = newInSection)
         }
         if (!newInSection) items += MenuItem.Separator
-        items += runCheckRow(input, availability)
+        items += runCheckRow(input, availability, strings)
         if (!(input.stale && !needsRefreshToSee)) items += refresh
         return MenuModel(input.title, items)
     }
 
-    private fun roleItems(input: MenuInput, role: RoleMenuInput, availability: MenuAvailability, separateNew: Boolean): List<MenuItem> {
+    private fun roleItems(input: MenuInput, role: RoleMenuInput, availability: MenuAvailability, strings: GutterStrings, separateNew: Boolean): List<MenuItem> {
         val items = mutableListOf<MenuItem>()
-        explanationRow(input, role, availability)?.let { items += it }
+        explanationRow(input, role, availability, strings)?.let { items += it }
         if (role.missing.isNotEmpty()) {
-            items += MenuItem.Section("Missing in this file (${role.missing.size})")
-            items += role.missing.map { rule -> siteRow(input, rule.text, rule.declaredAt) }
+            items += MenuItem.Section(strings.missingSection(role.missing.size))
+            items += role.missing.map { rule -> siteRow(input, rule.text, rule.declaredAt, strings) }
             // Without it the Role row reads as one more missing rule.
             items += MenuItem.Separator
         }
-        items += roleRow(input, role)
-        items += siblingItems(role, input.stale)
-        newItem(input, role)?.let {
+        items += roleRow(input, role, strings)
+        items += siblingItems(role, input.stale, strings)
+        newItem(input, role, strings)?.let {
             if (separateNew) items += MenuItem.Separator
             items += it
         }
         return items
     }
 
-    private fun explanationRow(input: MenuInput, role: RoleMenuInput, availability: MenuAvailability): MenuItem.Row? {
+    private fun explanationRow(input: MenuInput, role: RoleMenuInput, availability: MenuAvailability, strings: GutterStrings): MenuItem.Row? {
         val explanation = role.explanation ?: return null
         val declaration = when (explanation) {
             BoundExplanation.NotComputed -> return MenuItem.Row(
-                "⟳ Reload Definition to see what allows this",
+                strings.menuReloadToSee,
                 target = MenuTarget.Refresh,
                 enabled = availability.refresh,
             )
@@ -164,50 +164,49 @@ internal object MenuModels {
         }
         val first = declaration.rules.firstOrNull()
         val more = if (declaration.rules.size > 1) " +${declaration.rules.size - 1}" else ""
-        val ruleText = (first?.text ?: "a line katachi did not record") + more
+        val ruleText = (first?.text ?: strings.unrecordedRule) + more
         return when (val verdict = declaration.verdict) {
             DeclarationVerdict.Allowed, DeclarationVerdict.AllowedByAnythingElse ->
-                siteRow(input, "◆ Allowed by $ruleText", first?.declaredAt)
-            DeclarationVerdict.Prohibited -> siteRow(input, "◆ Prohibited by $ruleText", first?.declaredAt)
+                siteRow(input, strings.menuAllowedBy(ruleText), first?.declaredAt, strings)
+            DeclarationVerdict.Prohibited -> siteRow(input, strings.menuProhibitedBy(ruleText), first?.declaredAt, strings)
             DeclarationVerdict.Mismatched ->
-                siteRow(input, "◆ Does not match $ruleText" + declaration.difference?.let { ": $it" }.orEmpty(), first?.declaredAt)
-            DeclarationVerdict.Unexpected -> siteRow(input, "◆ Not allowed — see ktFileContent", role.constraintSite)
-            is DeclarationVerdict.Unknown -> MenuItem.Row("◆ Judged ${verdict.jsonName} by a newer katachi")
+                siteRow(input, strings.menuMismatched(ruleText) + declaration.difference?.let { ": $it" }.orEmpty(), first?.declaredAt, strings)
+            DeclarationVerdict.Unexpected -> siteRow(input, strings.menuUnexpected, role.constraintSite, strings)
+            is DeclarationVerdict.Unknown -> MenuItem.Row(strings.menuJudgedByNewer(verdict.jsonName))
         }
     }
 
     /** A row that opens [site] of the definition; it cannot be chosen when the site was not recorded or was not found. */
-    private fun siteRow(input: MenuInput, text: String, site: DeclarationSiteRef?): MenuItem.Row {
+    private fun siteRow(input: MenuInput, text: String, site: DeclarationSiteRef?, strings: GutterStrings): MenuItem.Row {
         if (site == null) return MenuItem.Row(text)
         val reason = input.unresolved[site]
         return if (reason == null) {
             MenuItem.Row(text, site.shown(), MenuTarget.Site(input.module.id, site))
         } else {
-            MenuItem.Row(text, "(declaration not found: $reason)", MenuTarget.Site(input.module.id, site), enabled = false)
+            MenuItem.Row(text, strings.declarationNotFound(reason), MenuTarget.Site(input.module.id, site), enabled = false)
         }
     }
 
-    private fun roleRow(input: MenuInput, role: RoleMenuInput): MenuItem.Row {
+    private fun roleRow(input: MenuInput, role: RoleMenuInput, strings: GutterStrings): MenuItem.Row {
         val what = (role.role.title ?: role.role.summary)?.lineSequence()?.firstOrNull()?.takeIf { it.isNotBlank() }
-        val text = "◇ Role ${role.role.qualifiedName}" + what?.let { " — $it" }.orEmpty()
-        return siteRow(input, text, role.role.declaredAt)
+        val text = strings.roleRow(role.role.qualifiedName) + what?.let { " — $it" }.orEmpty()
+        return siteRow(input, text, role.role.declaredAt, strings)
     }
 
     /** The files the definition listed. A file made since is not among them, which the heading says while the answer is [stale]. */
-    private fun siblingItems(role: RoleMenuInput, stale: Boolean): List<MenuItem> {
+    private fun siblingItems(role: RoleMenuInput, stale: Boolean, strings: GutterStrings): List<MenuItem> {
         val siblings = role.siblings
         val name = role.role.qualifiedName
-        val note = if (stale) ", stale" else ""
-        if (siblings.files.isEmpty()) return listOf(MenuItem.Section("Other files of $name" + if (stale) " (stale)" else ""), MenuItem.Row("— No other file yet"))
+        if (siblings.files.isEmpty()) return listOf(MenuItem.Section(strings.siblingsSection(name, null, stale)), MenuItem.Row(strings.noSibling))
         val rows = siblings.files.map { path ->
             MenuItem.Row(SiblingFiles.nameOf(path), SiblingFiles.shortDirectory(SiblingFiles.parentOf(path)), MenuTarget.OpenFile(role.projectRoot.resolve(path)))
         }
-        val more = if (siblings.more > 0) listOf(MenuItem.Row("… and ${siblings.more} more")) else emptyList()
-        return listOf(MenuItem.Section("Other files of $name (${siblings.files.size + siblings.more}$note)")) + rows + more
+        val more = if (siblings.more > 0) listOf(MenuItem.Row(strings.moreSiblings(siblings.more))) else emptyList()
+        return listOf(MenuItem.Section(strings.siblingsSection(name, siblings.files.size + siblings.more, stale))) + rows + more
     }
 
-    private fun newItem(input: MenuInput, role: RoleMenuInput): MenuItem? {
-        val text = "+ New ${role.role.qualifiedName} from template…"
+    private fun newItem(input: MenuInput, role: RoleMenuInput, strings: GutterStrings): MenuItem? {
+        val text = strings.newFromTemplate(role.role.qualifiedName)
         val rows = role.templates.map { MenuItem.Row(it.label, target = MenuTarget.Generate(it.id, input.file)) }
         return when (rows.size) {
             0 -> null
@@ -216,17 +215,17 @@ internal object MenuModels {
         }
     }
 
-    private fun runCheckRow(input: MenuInput, availability: MenuAvailability): MenuItem.Row {
-        if (availability.checkRunning) return MenuItem.Row("▶ Checking…", enabled = false, target = MenuTarget.RunCheck)
+    private fun runCheckRow(input: MenuInput, availability: MenuAvailability, strings: GutterStrings): MenuItem.Row {
+        if (availability.checkRunning) return MenuItem.Row(strings.checking, enabled = false, target = MenuTarget.RunCheck)
         return MenuItem.Row(
-            "▶ Run the check (${input.module.taskPath("test")})",
+            strings.runCheck(input.module.taskPath("test")),
             target = MenuTarget.RunCheck,
             enabled = availability.runCheck,
         )
     }
 
-    private fun refreshRow(availability: MenuAvailability): MenuItem.Row =
-        MenuItem.Row("⟳ Reload Definition", target = MenuTarget.Refresh, enabled = availability.refresh)
+    private fun refreshRow(availability: MenuAvailability, strings: GutterStrings): MenuItem.Row =
+        MenuItem.Row(strings.reload, target = MenuTarget.Refresh, enabled = availability.refresh)
 
     private fun DeclarationSiteRef.shown(): String = "$fileName:$line"
 }

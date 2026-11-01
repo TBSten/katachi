@@ -60,10 +60,10 @@ internal data class RoleMark(
 
 /**
  * One ◆: where it goes, the roles that hold the file, and for a declaration what allowed it. [tooltip] is what
- * the gutter shows on hover, in English (design 2.7, U-11).
+ * the gutter shows on hover, in the IDE's language (design 2.7, [GutterStrings]).
  *
  * ```kotlin
- * val marks = GutterMarks.of(GutterInput(roles, explanations, declarations, SourceFileKind.Kotlin, stale = false))
+ * val marks = GutterMarks.of(GutterInput(roles, explanations, declarations, SourceFileKind.Kotlin, stale = false), strings)
  * marks.single().tooltip // katachi: domain.Service — allowed by class HealthService (ServiceRole.kt:80)
  * ```
  */

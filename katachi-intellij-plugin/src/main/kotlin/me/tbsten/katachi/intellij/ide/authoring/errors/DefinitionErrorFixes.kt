@@ -14,7 +14,7 @@ import me.tbsten.katachi.intellij.ide.sdkCall
 
 /**
  * "Reload Definition": reads the definition through Gradle again, as `katachi.RefreshDefinition` does (design 2.4). The name is
- * ide-review-screens' name for the operation, English in both languages like the other quick fixes.
+ * ide-review-screens' name for the operation ("定義を読み直す" in Japanese), like the other quick fixes.
  *
  * The service is the one the annotation was worked out from, so the fix does not look it up again. It writes nothing:
  * `startInWriteAction` is false and there is no preview.

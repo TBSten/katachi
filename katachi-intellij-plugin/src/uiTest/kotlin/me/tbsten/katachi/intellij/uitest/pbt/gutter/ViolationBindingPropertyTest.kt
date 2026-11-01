@@ -16,6 +16,7 @@ import me.tbsten.katachi.intellij.presentation.gutter.RuleSite
 import me.tbsten.katachi.intellij.presentation.gutter.ViolationAnnotations
 import me.tbsten.katachi.intellij.presentation.gutter.ViolationBinding
 import me.tbsten.katachi.intellij.testing.AnnotationFixtures
+import me.tbsten.katachi.intellij.testing.englishGutter
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -127,10 +128,10 @@ class ViolationBindingPropertyTest {
             val reduced = if (random.nextBoolean()) violation else violation.copy(properties = violation.properties.filterKeys { random.nextBoolean() })
             val target = ViolationBinding.targetOf(reduced)
             val stale = random.nextBoolean()
-            val hover = ViolationAnnotations.hoverOf(reduced, target, stale)
+            val hover = ViolationAnnotations.hoverOf(reduced, target, stale, englishGutter)
             val where = "seed=$caseSeed stale=$stale $hover"
-            assertEquals(where, stale, hover.startsWith(ViolationAnnotations.STALE))
-            assertTrue(where, hover.removePrefix(ViolationAnnotations.STALE).startsWith("katachi: "))
+            assertEquals(where, stale, hover.startsWith(englishGutter.stalePrefix))
+            assertTrue(where, hover.removePrefix(englishGutter.stalePrefix).startsWith("katachi: "))
             assertFalse(where, hover.contains("null"))
             if (target is AnnotationTarget.AtDeclaration) assertTrue(where, hover.contains("rejected ${target.name}"))
         }

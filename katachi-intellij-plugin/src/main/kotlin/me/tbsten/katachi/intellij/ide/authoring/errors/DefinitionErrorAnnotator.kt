@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiFile
 import com.intellij.xml.util.XmlStringUtil
+import me.tbsten.katachi.intellij.ide.authoring.BundleAuthoringStrings
 import me.tbsten.katachi.intellij.ide.definition.ResolvedSite
 import me.tbsten.katachi.intellij.ide.gutter.GutterPorts
 import me.tbsten.katachi.intellij.ide.gutter.HighlightingRefresher
@@ -83,7 +84,7 @@ internal class DefinitionErrorAnnotator(
         }
         val planned = ReadAction.nonBlocking<List<PlannedDefinitionMark>> {
             val document = input.file.viewProvider.document ?: return@nonBlocking emptyList()
-            DefinitionErrorTargets.marksOf(errors, snapshots, stale, { module, site -> sites[module to site] }, document.lineCount).mapNotNull { mark ->
+            DefinitionErrorTargets.marksOf(errors, snapshots, stale, { module, site -> sites[module to site] }, document.lineCount, BundleAuthoringStrings).mapNotNull { mark ->
                 val range = AnnotationRanges.lineRange(document, mark.line) ?: return@mapNotNull null
                 PlannedDefinitionMark(
                     range = range,

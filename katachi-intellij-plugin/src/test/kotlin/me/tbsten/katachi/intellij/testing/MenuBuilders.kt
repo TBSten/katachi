@@ -38,7 +38,7 @@ internal fun markOf(
     explanations: List<RoleFileDeclarations> = emptyList(),
     stale: Boolean = false,
     index: Int = 0,
-): GutterMark = GutterMarks.of(GutterInput(roles, explanations, declarations, SourceFileKind.Kotlin, stale))[index]
+): GutterMark = GutterMarks.of(GutterInput(roles, explanations, declarations, SourceFileKind.Kotlin, stale), englishGutter)[index]
 
 /** The menu input of [mark] with the definition sites in [unresolved] not found. */
 internal fun menuInputOf(mark: GutterMark, roles: FileRoles, unresolved: Map<DeclarationSiteRef, String> = emptyMap()): MenuInput =

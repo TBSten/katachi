@@ -15,6 +15,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.xml.util.XmlStringUtil
 import me.tbsten.katachi.intellij.ide.definition.DefinitionModelService
 import me.tbsten.katachi.intellij.ide.definition.ResolvedSite
+import me.tbsten.katachi.intellij.ide.gutter.BundleGutterStrings
 import me.tbsten.katachi.intellij.ide.gutter.GutterPorts
 import me.tbsten.katachi.intellij.ide.gutter.HighlightingRefresher
 import me.tbsten.katachi.intellij.ide.sdkCall
@@ -91,7 +92,7 @@ internal class KatachiViolationAnnotator(private val portsOf: (Project) -> Gutte
                 PlannedAnnotation(
                     range = rangeOf(input.file, document, target),
                     severity = ViolationAnnotations.severityOf(violation.level, stale),
-                    hover = ViolationAnnotations.hoverOf(violation, target, stale),
+                    hover = ViolationAnnotations.hoverOf(violation, target, stale, BundleGutterStrings),
                     module = violation.module,
                     rule = rules[index],
                 )

@@ -9,6 +9,7 @@ import me.tbsten.katachi.intellij.model.StaleReason
 import me.tbsten.katachi.intellij.testing.DEFINITION_INSTANT
 import me.tbsten.katachi.intellij.testing.definitionModel
 import me.tbsten.katachi.intellij.testing.definitionSnapshot
+import me.tbsten.katachi.intellij.testing.englishGutter
 import me.tbsten.katachi.intellij.testing.fileRoles
 import me.tbsten.katachi.intellij.testing.layoutEntry
 import me.tbsten.katachi.intellij.testing.roleModel
@@ -57,7 +58,7 @@ class GutterStateTest {
     private fun tooltipAfter(freshness: Freshness): String {
         val service = roleModel("domain.Service", layoutEntry("a/A.kt"))
         val roles = fileRoles("a/A.kt", service, freshness = freshness)
-        val marks = GutterMarks.of(GutterInput(roles, emptyList(), emptyList(), SourceFileKind.Other, stale = true))
+        val marks = GutterMarks.of(GutterInput(roles, emptyList(), emptyList(), SourceFileKind.Other, stale = true), englishGutter)
         return marks.single().tooltip
     }
 
@@ -87,12 +88,12 @@ class GutterStateTest {
             LoadFailure.IncompatibleJson(path, "roles[0]", "missing key") to "the definition JSON does not fit this plugin, so katachi and the plugin differ in version",
             LoadFailure.Cancelled to "the read was cancelled",
         )
-        for ((failure, summary) in expected) assertEquals("$failure", summary, GutterTooltips.summary(failure))
+        for ((failure, summary) in expected) assertEquals("$failure", summary, GutterTooltips.summary(failure, englishGutter))
     }
 
     @Test
     fun `Gradle のその他の失敗は 最初の空でない行を 空白を詰めて 長すぎれば切って言う`() {
-        val other = { lines: List<String> -> GutterTooltips.summary(LoadFailure.Gradle(GradleFailure.Other(lines))) }
+        val other = { lines: List<String> -> GutterTooltips.summary(LoadFailure.Gradle(GradleFailure.Other(lines)), englishGutter) }
         assertEquals("Could not connect to the daemon", other(listOf("  ", "Could not   connect\tto the daemon  ", "second")))
         assertEquals("Gradle failed", other(emptyList()))
         assertEquals("Gradle failed", other(listOf("  ", "")))

@@ -12,6 +12,7 @@ import me.tbsten.katachi.intellij.testing.ALL_ACTIONS
 import me.tbsten.katachi.intellij.testing.DEFINITION_ROOT
 import me.tbsten.katachi.intellij.testing.GutterFixtures
 import me.tbsten.katachi.intellij.testing.declarationModel
+import me.tbsten.katachi.intellij.testing.englishGutter
 import me.tbsten.katachi.intellij.testing.fileDeclarations
 import me.tbsten.katachi.intellij.testing.fileRoles
 import me.tbsten.katachi.intellij.testing.layoutEntry
@@ -55,7 +56,7 @@ class MenuModelTest {
     ): MenuModel {
         val roles = fileRoles(path, role)
         val mark = markOf(roles, sources, listOf(explained(role, *declarations.toTypedArray(), missing = missing)), stale, index)
-        return MenuModel.of(menuInputOf(mark, roles, unresolved), availability)
+        return MenuModel.of(menuInputOf(mark, roles, unresolved), availability, englishGutter)
     }
 
     @Test
@@ -201,7 +202,7 @@ class MenuModelTest {
     fun `ファイルに 1 つの ◆ には許可元の行が無く Role の行から始まる`() {
         val roles = fileRoles(GutterFixtures.REPOSITORY_PATH, roleModel("data.Repository", layoutEntry(GutterFixtures.REPOSITORY_PATH)))
         val mark = markOf(roles, listOf(SourceDeclaration(SourceDeclarationKind.Class, "HealthRepository", 5)))
-        val menu = MenuModel.of(menuInputOf(mark, roles), ALL_ACTIONS)
+        val menu = MenuModel.of(menuInputOf(mark, roles), ALL_ACTIONS, englishGutter)
         assertEquals("◇ Role data.Repository | RepositoryRole.kt:1", menu.shown().first())
         assertEquals("HealthRepository.kt — data.Repository", menu.title)
         assertEquals(setOf(MenuTarget.Site(module.id, DeclarationSiteRef("RepositoryRole.kt", 1))), menu.sites)
@@ -212,7 +213,7 @@ class MenuModelTest {
         val handler = roleModel("api.Handler", layoutEntry(path, matchedFiles = listOf(path, "src/api/Other.kt")))
         val roles = fileRoles(path, service, handler)
         val mark = markOf(roles, listOf(healthService), listOf(explained(service, allowedHealthService), explained(handler, allowedHealthService)))
-        val shown = MenuModel.of(menuInputOf(mark, roles), ALL_ACTIONS).shown()
+        val shown = MenuModel.of(menuInputOf(mark, roles), ALL_ACTIONS, englishGutter).shown()
         assertEquals(listOf("== domain.Service", "== api.Handler"), shown.filter { it.startsWith("== ") && !it.startsWith("== Other") })
         assertEquals(1, shown.count { it.startsWith("▶ Run") })
         assertEquals(1, shown.count { it == "⟳ Reload Definition" })

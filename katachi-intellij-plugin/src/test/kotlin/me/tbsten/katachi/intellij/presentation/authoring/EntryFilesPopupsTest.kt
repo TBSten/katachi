@@ -1,5 +1,6 @@
 package me.tbsten.katachi.intellij.presentation.authoring
 
+import me.tbsten.katachi.intellij.testing.englishAuthoring
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -15,7 +16,7 @@ class EntryFilesPopupsTest {
 
     @Test
     fun `ファイルがあれば ファイル名の行を並べ 選ぶと開くファイルは プロジェクトの根からの絶対パス`() {
-        val popup = EntryFilesPopups.of(input(listOf("core/*Service.kt"), listOf("core/A.kt", "core/B.kt")), nothing)
+        val popup = EntryFilesPopups.of(input(listOf("core/*Service.kt"), listOf("core/A.kt", "core/B.kt")), englishAuthoring, nothing)
 
         assertEquals("core/*Service.kt", popup.title)
         assertEquals(listOf("A.kt", "B.kt"), popup.rows.map { it.text })
@@ -27,7 +28,7 @@ class EntryFilesPopupsTest {
     fun `200 を超えたら 200 件で打ち切り 残りの数を 開けない行で言う`() {
         val files = List(250) { "d/F$it.kt" }
 
-        val popup = EntryFilesPopups.of(input(listOf("d/*.kt"), files), nothing)
+        val popup = EntryFilesPopups.of(input(listOf("d/*.kt"), files), englishAuthoring, nothing)
 
         assertEquals(ENTRY_POPUP_FILE_LIMIT + 1, popup.rows.size)
         assertEquals("… and 50 more (open the tool window)", popup.rows.last().text)
@@ -36,14 +37,14 @@ class EntryFilesPopupsTest {
 
     @Test
     fun `JSON が一覧を切っていたら 数は切る前のもので 残りを数える`() {
-        val popup = EntryFilesPopups.of(input(listOf("d/*.kt"), listOf("d/A.kt", "d/B.kt"), count = 900), nothing)
+        val popup = EntryFilesPopups.of(input(listOf("d/*.kt"), listOf("d/A.kt", "d/B.kt"), count = 900), englishAuthoring, nothing)
 
         assertEquals("… and 898 more (open the tool window)", popup.rows.last().text)
     }
 
     @Test
     fun `件数が分からない行は 検査がまだと言う`() {
-        val popup = EntryFilesPopups.of(input(listOf("d/*.kt"), emptyList(), count = null), nothing)
+        val popup = EntryFilesPopups.of(input(listOf("d/*.kt"), emptyList(), count = null), englishAuthoring, nothing)
 
         assertEquals(listOf("— File count unknown (the check has not run)"), popup.rows.map { it.text })
     }
@@ -52,7 +53,7 @@ class EntryFilesPopupsTest {
     fun `0 件の行は glob を言い その directory に実際にあるファイルを並べる`() {
         val asked = mutableListOf<Pair<String, Int>>()
 
-        val popup = EntryFilesPopups.of(input(listOf("src/main/kotlin/com/example/*Servise.kt"), emptyList())) { directory, limit ->
+        val popup = EntryFilesPopups.of(input(listOf("src/main/kotlin/com/example/*Servise.kt"), emptyList()), englishAuthoring) { directory, limit ->
             asked += directory to limit
             listOf("HealthService.kt", "PingService.kt")
         }
@@ -67,7 +68,7 @@ class EntryFilesPopupsTest {
 
     @Test
     fun `directory のファイルは 50 個までで 超えたら 続きがあると言う`() {
-        val popup = EntryFilesPopups.of(input(listOf("d/*.kt"), emptyList())) { _, limit -> List(limit) { "F$it.kt" } }
+        val popup = EntryFilesPopups.of(input(listOf("d/*.kt"), emptyList()), englishAuthoring) { _, limit -> List(limit) { "F$it.kt" } }
 
         assertEquals("… and more", popup.rows.last().text)
         assertEquals(ENTRY_POPUP_DIRECTORY_LIMIT, popup.rows.count { it.target != null })
@@ -75,14 +76,14 @@ class EntryFilesPopupsTest {
 
     @Test
     fun `directory が空か無いときは そう言う`() {
-        val popup = EntryFilesPopups.of(input(listOf("missing/*.kt"), emptyList()), nothing)
+        val popup = EntryFilesPopups.of(input(listOf("missing/*.kt"), emptyList()), englishAuthoring, nothing)
 
         assertEquals(listOf("— No file matches missing/*.kt", "— There is no file in missing"), popup.rows.map { it.text })
     }
 
     @Test
     fun `wildcard の module key で glob が複数なら glob ごとに見出しと一覧が並ぶ`() {
-        val popup = EntryFilesPopups.of(input(listOf("a/*.kt", "b/*.kt"), emptyList())) { directory, _ -> listOf("From${directory.uppercase()}.kt") }
+        val popup = EntryFilesPopups.of(input(listOf("a/*.kt", "b/*.kt"), emptyList()), englishAuthoring) { directory, _ -> listOf("From${directory.uppercase()}.kt") }
 
         assertEquals("a/*.kt, b/*.kt", popup.title)
         assertEquals(

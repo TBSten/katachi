@@ -38,18 +38,18 @@ internal data class DefinitionGutterMark(
     val stale: Boolean,
 ) {
     /** The menu as it is now. */
-    fun menu(availability: DefinitionMenuAvailability): DefinitionMenuModel = DefinitionMenus.build(this, availability)
+    fun menu(availability: DefinitionMenuAvailability, strings: AuthoringStrings): DefinitionMenuModel = DefinitionMenus.build(this, availability, strings)
 }
 
 /**
  * The ◆ a bound anchor gets, or `null` for an anchor that has none (an entry, or one nothing in the model matches).
  *
  * ```kotlin
- * val mark = DefinitionGutterMarks.of(bound, definitionFile, projectRoot, stale = false)
+ * val mark = DefinitionGutterMarks.of(bound, definitionFile, projectRoot, stale = false, strings)
  * ```
  */
 internal object DefinitionGutterMarks {
-    fun of(bound: BoundAnchor, definitionFile: Path, projectRoot: Path, stale: Boolean): DefinitionGutterMark? {
+    fun of(bound: BoundAnchor, definitionFile: Path, projectRoot: Path, stale: Boolean, strings: AuthoringStrings): DefinitionGutterMark? {
         val kind = when (bound.anchor.kind) {
             AnchorKind.Role -> DefinitionGutterMarkKind.Role
             AnchorKind.Template -> DefinitionGutterMarkKind.Template
@@ -68,8 +68,8 @@ internal object DefinitionGutterMarks {
             DefinitionGutterMarkKind.Role -> roles
         }
         val tooltip = when (kind) {
-            DefinitionGutterMarkKind.Role -> roleTooltip(shown, stale)
-            DefinitionGutterMarkKind.Template -> "katachi: generate from ${shown.joinToString(", ") { it.name }}" + staleNote(stale)
+            DefinitionGutterMarkKind.Role -> roleTooltip(shown, stale, strings)
+            DefinitionGutterMarkKind.Template -> "katachi: " + strings.generateFrom(shown.joinToString(", ") { it.name }) + staleNote(stale, strings)
         }
         return DefinitionGutterMark(kind, tooltip, module, definitionFile, projectRoot, shown, stale)
     }
@@ -83,14 +83,11 @@ internal object DefinitionGutterMarks {
 
     private fun choiceOf(module: ModuleId, template: TemplateRef) = DefinitionTemplateChoice(TemplateId(module, template.specifier), template.title ?: template.specifier)
 
-    private fun roleTooltip(roles: List<DefinitionRoleInput>, stale: Boolean): String {
+    private fun roleTooltip(roles: List<DefinitionRoleInput>, stale: Boolean, strings: AuthoringStrings): String {
         val names = roles.joinToString(", ") { it.name }
         val counts = roles.map { it.count }
-        return "katachi: $names — ${filesText(if (counts.any { it == null }) null else counts.sumOf { it ?: 0 })}" + staleNote(stale)
+        return "katachi: $names — ${strings.files(if (counts.any { it == null }) null else counts.sumOf { it ?: 0 })}" + staleNote(stale, strings)
     }
 
-    private fun staleNote(stale: Boolean): String = if (stale) " (stale)" else ""
-
-    /** `no files`, `1 file`, `3 files`, and `? files` for a count nobody knows (see [CountText.filesText]). */
-    fun filesText(count: Int?): String = CountText.filesText(count)
+    private fun staleNote(stale: Boolean, strings: AuthoringStrings): String = if (stale) strings.staleSuffix else ""
 }

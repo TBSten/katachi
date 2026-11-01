@@ -4,6 +4,7 @@ import me.tbsten.katachi.intellij.model.TemplateId
 import me.tbsten.katachi.intellij.model.declarations
 import me.tbsten.katachi.intellij.testing.declaredAt
 import me.tbsten.katachi.intellij.testing.definitionModel
+import me.tbsten.katachi.intellij.testing.englishAuthoring
 import me.tbsten.katachi.intellij.testing.layoutEntry
 import me.tbsten.katachi.intellij.testing.module
 import me.tbsten.katachi.intellij.testing.roleModel
@@ -35,7 +36,7 @@ class DefinitionGutterMarksTest {
         AnchorBinding.bind(listOf(Anchor(kind, name, line)), definitionModel(*roles).declarations(arch)).single()
 
     private fun mark(role: me.tbsten.katachi.intellij.model.RoleModel = role(), stale: Boolean = false) =
-        DefinitionGutterMarks.of(bound(AnchorKind.Role, "Service", 2, role), definitionFile, root, stale)!!
+        DefinitionGutterMarks.of(bound(AnchorKind.Role, "Service", 2, role), definitionFile, root, stale, englishAuthoring)!!
 
     private fun shown(model: DefinitionMenuModel) = model.items.map {
         when (it) {
@@ -58,12 +59,12 @@ class DefinitionGutterMarksTest {
         val stale = mark(stale = true)
 
         assertEquals("katachi: domain.Service — 3 files (stale)", stale.tooltip)
-        assertEquals("⟳ Reload Definition", shown(stale.menu(both)).first())
+        assertEquals("⟳ Reload Definition", shown(stale.menu(both, englishAuthoring)).first())
     }
 
     @Test
     fun `役割の menu は ファイル 生成 チェック 読み直しの順`() {
-        val menu = mark().menu(both)
+        val menu = mark().menu(both, englishAuthoring)
 
         assertEquals(
             listOf(
@@ -83,14 +84,14 @@ class DefinitionGutterMarksTest {
 
     @Test
     fun `ファイルが無い役割は その旨の行を出し template が無ければ Generate も出さない`() {
-        val menu = mark(role(emptyList(), templated = false)).menu(both)
+        val menu = mark(role(emptyList(), templated = false)).menu(both, englishAuthoring)
 
         assertEquals(listOf("— No file yet (disabled)", "---", "▶ Run the check (:arch:test)", "⟳ Reload Definition"), shown(menu))
     }
 
     @Test
     fun `200 個を超える分は 残りの数と ツールウィンドウへの案内になる`() {
-        val menu = mark(role(files(250), templated = false)).menu(both)
+        val menu = mark(role(files(250), templated = false)).menu(both, englishAuthoring)
 
         assertEquals(200 + 1, menu.items.takeWhile { it !is DefinitionMenuItem.Separator }.size)
         assertEquals("… and 50 more (open the tool window)", (menu.items[200] as DefinitionMenuItem.Row).text)
@@ -112,7 +113,7 @@ class DefinitionGutterMarksTest {
             layoutEntry("b/*.kt", index = 1).declaredAt(file, 5).withTemplate("domain.Service.b", file, 6, title = "B"),
         ).declaredAt(file, 2)
 
-        val menu = mark(two).menu(both)
+        val menu = mark(two).menu(both, englishAuthoring)
 
         val generate = menu.items.filterIsInstance<DefinitionMenuItem.Submenu>().single()
         assertEquals(listOf("domain.Service.a", "B"), generate.rows.map { it.text })
@@ -120,25 +121,25 @@ class DefinitionGutterMarksTest {
 
     @Test
     fun `チェックと読み直しの action が無ければ その行は選べない`() {
-        val menu = mark().menu(DefinitionMenuAvailability(runCheck = false, refresh = false))
+        val menu = mark().menu(DefinitionMenuAvailability(runCheck = false, refresh = false), englishAuthoring)
 
         assertEquals(listOf(false, false), menu.rows().takeLast(2).map { it.enabled })
     }
 
     @Test
     fun `template の ◆ は その template から生成する行と ツールウィンドウで見る行だけ`() {
-        val template = DefinitionGutterMarks.of(bound(AnchorKind.Template, "*.kt", 4, role()), definitionFile, root, stale = false)!!
+        val template = DefinitionGutterMarks.of(bound(AnchorKind.Template, "*.kt", 4, role()), definitionFile, root, stale = false, englishAuthoring)!!
 
         assertEquals("katachi: generate from domain.Service", template.tooltip)
-        assertEquals(listOf("+ Generate from this template…", "⊞ Show in the tool window"), shown(template.menu(both)))
+        assertEquals(listOf("+ Generate from this template…", "⊞ Show in the tool window"), shown(template.menu(both, englishAuthoring)))
         val id = TemplateId(arch, "domain.Service.service")
-        assertEquals(listOf(DefinitionMenuTarget.Generate(id, definitionFile), DefinitionMenuTarget.Reveal(id)), template.menu(both).rows().map { it.target })
+        assertEquals(listOf(DefinitionMenuTarget.Generate(id, definitionFile), DefinitionMenuTarget.Reveal(id)), template.menu(both, englishAuthoring).rows().map { it.target })
     }
 
     @Test
     fun `entry の anchor と 何にも結ばれない anchor には ◆ が無い`() {
-        assertNull(DefinitionGutterMarks.of(bound(AnchorKind.Entry, "*.kt", 3, role()), definitionFile, root, false))
-        assertNull(DefinitionGutterMarks.of(bound(AnchorKind.Role, "Nope", 2, role()), definitionFile, root, false))
+        assertNull(DefinitionGutterMarks.of(bound(AnchorKind.Entry, "*.kt", 3, role()), definitionFile, root, false, englishAuthoring))
+        assertNull(DefinitionGutterMarks.of(bound(AnchorKind.Role, "Nope", 2, role()), definitionFile, root, false, englishAuthoring))
     }
 
     @Test
@@ -160,11 +161,11 @@ class DefinitionGutterMarksTest {
             layoutEntry("b/*Repo.kt", index = 1).declaredAt(file, 5).withTemplate("domain.Service.b", file, 6),
         ).declaredAt(file, 2)
 
-        val second = DefinitionGutterMarks.of(bound(AnchorKind.Template, "*Repo.kt", 6, two), definitionFile, root, stale = false)!!
+        val second = DefinitionGutterMarks.of(bound(AnchorKind.Template, "*Repo.kt", 6, two), definitionFile, root, stale = false, englishAuthoring)!!
 
         assertEquals(
             listOf(DefinitionMenuTarget.Generate(TemplateId(arch, "domain.Service.b"), definitionFile), DefinitionMenuTarget.Reveal(TemplateId(arch, "domain.Service.b"))),
-            second.menu(both).rows().map { it.target },
+            second.menu(both, englishAuthoring).rows().map { it.target },
         )
     }
 
@@ -179,7 +180,7 @@ class DefinitionGutterMarksTest {
 
         assertEquals("katachi: domain.Service — ? files", unknownMark.tooltip)
         assertNull(unknownMark.roles.single().count)
-        assertEquals("— File count unknown (the check has not run) (disabled)", shown(unknownMark.menu(both)).first())
+        assertEquals("— File count unknown (the check has not run) (disabled)", shown(unknownMark.menu(both, englishAuthoring)).first())
     }
 
     @Test
@@ -187,7 +188,7 @@ class DefinitionGutterMarksTest {
         val known = roleModel("a.Service", layoutEntry("a/*.kt", matchedFiles = files(2)).declaredAt(file, 3)).declaredAt(file, 2)
         val unknown = roleModel("b.Service", layoutEntry("b/*.kt").declaredAt(file, 3).let { it.copy(matchedCount = null) }).declaredAt(file, 2)
 
-        val both2 = DefinitionGutterMarks.of(bound(AnchorKind.Role, "Service", 2, known, unknown), definitionFile, root, false)!!
+        val both2 = DefinitionGutterMarks.of(bound(AnchorKind.Role, "Service", 2, known, unknown), definitionFile, root, false, englishAuthoring)!!
 
         assertEquals("katachi: a.Service, b.Service — ? files", both2.tooltip)
     }
@@ -201,10 +202,10 @@ class DefinitionGutterMarksTest {
     fun `同じ template の行に 2つの役割が結ばれたら 両方の template を サブメニューで選べ ツールウィンドウでも両方見られる`() {
         val roles = twoRolesOfOneHelper()
 
-        val template = DefinitionGutterMarks.of(bound(AnchorKind.Template, "*Service.kt", 4, *roles), definitionFile, root, stale = false)!!
+        val template = DefinitionGutterMarks.of(bound(AnchorKind.Template, "*Service.kt", 4, *roles), definitionFile, root, stale = false, englishAuthoring)!!
 
         assertEquals("katachi: generate from a.Service, b.Service", template.tooltip)
-        val menu = template.menu(both)
+        val menu = template.menu(both, englishAuthoring)
         val submenus = menu.items.filterIsInstance<DefinitionMenuItem.Submenu>()
         assertEquals(listOf("+ Generate from this template…", "⊞ Show in the tool window"), submenus.map { it.text })
         assertEquals(listOf("a.Service: Service", "b.Service: Service"), submenus[0].rows.map { it.text })
@@ -220,7 +221,7 @@ class DefinitionGutterMarksTest {
 
     @Test
     fun `役割の ◆ に2つの役割が結ばれたら それぞれの template だけを それぞれの節に出す`() {
-        val role = DefinitionGutterMarks.of(bound(AnchorKind.Role, "Service", 2, *twoRolesOfOneHelper()), definitionFile, root, stale = false)!!
+        val role = DefinitionGutterMarks.of(bound(AnchorKind.Role, "Service", 2, *twoRolesOfOneHelper()), definitionFile, root, stale = false, englishAuthoring)!!
 
         assertEquals("katachi: a.Service, b.Service — 2 files", role.tooltip)
         assertEquals(listOf("a.Service.service"), role.roles[0].templates.map { it.id.template })

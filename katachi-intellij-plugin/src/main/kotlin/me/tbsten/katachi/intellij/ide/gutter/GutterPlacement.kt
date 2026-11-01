@@ -53,7 +53,7 @@ internal object GutterPlacement {
         val fileState = ports.fileState(virtualFile)
         val generatedAt = service.definitionOf(roles.module.id)?.definition?.generatedAt
         val stale = GutterFreshness.isStale(state, roles.freshness, fileState.modifiedAt, generatedAt, fileState.unsaved)
-        val marks = GutterMarks.of(GutterInput(roles, explanations, sources.map { it.declaration }, kind, stale))
+        val marks = GutterMarks.of(GutterInput(roles, explanations, sources.map { it.declaration }, kind, stale), BundleGutterStrings)
         val placed = marks.mapNotNull { mark -> leafOf(file, mark.target, sources)?.let { PlacedMark(it, mark) } }
         return placed.takeIf { it.isNotEmpty() }?.let { PlacedFile(service, roles, it) }
     }

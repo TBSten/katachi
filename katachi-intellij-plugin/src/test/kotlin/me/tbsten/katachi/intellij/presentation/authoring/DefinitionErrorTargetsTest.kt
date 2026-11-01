@@ -12,6 +12,7 @@ import me.tbsten.katachi.intellij.model.TemplateRef
 import me.tbsten.katachi.intellij.presentation.gutter.AnnotationSeverity
 import me.tbsten.katachi.intellij.testing.definitionModel
 import me.tbsten.katachi.intellij.testing.definitionSnapshot
+import me.tbsten.katachi.intellij.testing.englishAuthoring
 import me.tbsten.katachi.intellij.testing.layoutEntry
 import me.tbsten.katachi.intellij.testing.module
 import me.tbsten.katachi.intellij.testing.roleModel
@@ -47,7 +48,7 @@ class DefinitionErrorTargetsTest {
     }
 
     private fun marks(errors: DefinitionErrors, snapshots: List<DefinitionSnapshot> = emptyList(), definitionStale: Boolean = false, lineCount: Int = 20) =
-        DefinitionErrorTargets.marksOf(errors, snapshots, definitionStale, here, lineCount)
+        DefinitionErrorTargets.marksOf(errors, snapshots, definitionStale, here, lineCount, englishAuthoring)
 
     @Test
     fun `誤りは その行に error で 改行込みの全文がホバーになる`() {

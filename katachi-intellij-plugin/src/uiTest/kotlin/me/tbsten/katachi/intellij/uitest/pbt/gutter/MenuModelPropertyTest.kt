@@ -22,6 +22,7 @@ import me.tbsten.katachi.intellij.presentation.gutter.RoleMenuInput
 import me.tbsten.katachi.intellij.presentation.gutter.SiblingFiles
 import me.tbsten.katachi.intellij.presentation.gutter.TemplateChoice
 import me.tbsten.katachi.intellij.testing.DEFINITION_ROOT
+import me.tbsten.katachi.intellij.testing.englishGutter
 import me.tbsten.katachi.intellij.testing.layoutEntry
 import me.tbsten.katachi.intellij.testing.module
 import me.tbsten.katachi.intellij.testing.roleModel
@@ -82,7 +83,7 @@ class MenuModelPropertyTest {
     private fun scenario(random: Random): Scenario {
         val roles = roleNames.shuffled(random).take(random.nextInt(1, 3)).map { role(random, it) }
         val bare = MenuInput("title", DEFINITION_ROOT.resolve("dir0/F0.kt"), module, random.nextBoolean(), roles)
-        val sites = MenuModel.of(bare, ALL).sites.map { it.site }
+        val sites = MenuModel.of(bare, ALL, englishGutter).sites.map { it.site }
         val unresolved = sites.filter { random.nextInt(3) == 0 }.associateWith { "gone" }
         val availability = MenuAvailability(random.nextBoolean(), random.nextBoolean(), random.nextBoolean())
         return Scenario(bare.copy(unresolved = unresolved), availability)
@@ -95,7 +96,7 @@ class MenuModelPropertyTest {
     fun `押せる行には飛び先があり 見つからない宣言元の行は押せず その理由を右に言う`() = runBlocking<Unit> {
         checkAll(config, Arb.long()) { caseSeed ->
             val (input, availability) = scenario(Random(caseSeed))
-            val menu = MenuModel.of(input, availability)
+            val menu = MenuModel.of(input, availability, englishGutter)
             for (row in menu.rows()) {
                 val where = "seed=$caseSeed $row"
                 if (row.enabled) assertTrue(where, row.target != null)
@@ -107,7 +108,7 @@ class MenuModelPropertyTest {
                 if (target is MenuTarget.Site && target.site !in input.unresolved) assertTrue(where, row.enabled)
             }
             // The sites are known before anything is resolved: what is unfound or available changes no row's place.
-            assertEquals("seed=$caseSeed", MenuModel.of(input.copy(unresolved = emptyMap()), ALL).sites, menu.sites)
+            assertEquals("seed=$caseSeed", MenuModel.of(input.copy(unresolved = emptyMap()), ALL, englishGutter).sites, menu.sites)
         }
     }
 
@@ -116,7 +117,7 @@ class MenuModelPropertyTest {
     fun `検査の行は 1 つで 押せるのは アクションがあり走っていないときだけ 更新は定義が古ければ先頭にある`() = runBlocking<Unit> {
         checkAll(config, Arb.long()) { caseSeed ->
             val (input, availability) = scenario(Random(caseSeed))
-            val menu = MenuModel.of(input, availability)
+            val menu = MenuModel.of(input, availability, englishGutter)
             val where = "seed=$caseSeed ${menu.items}"
             val runs = menu.rows().filter { it.target == MenuTarget.RunCheck }
             assertEquals(where, 1, runs.size)
@@ -138,7 +139,7 @@ class MenuModelPropertyTest {
     fun `兄弟の行は 15 件まで このファイルのパスを指さず 次のファイルの行は Role ごとに テンプレートの数だけ`() = runBlocking<Unit> {
         checkAll(config, Arb.long()) { caseSeed ->
             val (input, availability) = scenario(Random(caseSeed))
-            val menu = MenuModel.of(input, availability)
+            val menu = MenuModel.of(input, availability, englishGutter)
             val where = "seed=$caseSeed"
             val opens = menu.rows().mapNotNull { (it.target as? MenuTarget.OpenFile)?.path }
             assertFalse(where, input.file in opens)

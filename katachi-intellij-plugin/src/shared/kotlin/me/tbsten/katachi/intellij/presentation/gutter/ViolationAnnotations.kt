@@ -9,11 +9,12 @@ internal enum class AnnotationSeverity { Error, Warning, WeakWarning, Informatio
 /**
  * What the editor shows of a violation (design 2.5): the colour from SARIF's `level`, and the hover. Pure.
  *
- * The hover is English only (design U-11): it quotes the report, which is English.
+ * The hover's own words are in the IDE's language ([GutterStrings]); what it quotes of the report (the constraint, the message)
+ * is katachi's, in English.
  *
  * ```kotlin
  * val severity = ViolationAnnotations.severityOf(violation.level, stale = state.stale)
- * val hover = ViolationAnnotations.hoverOf(violation, target, stale = state.stale)
+ * val hover = ViolationAnnotations.hoverOf(violation, target, stale = state.stale, strings)
  * ```
  */
 internal object ViolationAnnotations {
@@ -37,29 +38,25 @@ internal object ViolationAnnotations {
      * The hover of [violation]. A violation of a declaration says which constraint of which role rejected it and where
      * the constraint was written, then the report's message. A missing declaration says its kind, the message's
      * `Missing:` line and where the rule was written. One without a declaration (an unchecked file) says its kind and
-     * the first line of the message. A check that may be out of date starts with `(stale) `.
+     * the first line of the message. A check that may be out of date starts with [GutterStrings.stalePrefix] (`(stale) `).
      */
-    fun hoverOf(violation: ViolationModel, target: AnnotationTarget, stale: Boolean): String {
+    fun hoverOf(violation: ViolationModel, target: AnnotationTarget, stale: Boolean, strings: GutterStrings): String {
         val head = when (target) {
-            is AnnotationTarget.AtDeclaration -> declarationHead(violation, target.name)
+            is AnnotationTarget.AtDeclaration -> declarationHead(violation, target.name, strings)
             else -> kindHead(violation)
         }
         val body = if (target is AnnotationTarget.AtDeclaration) violation.message.trim() else ""
-        return (if (stale) STALE else "") + listOf(head, body).filter { it.isNotEmpty() }.joinToString("\n")
+        return (if (stale) strings.stalePrefix else "") + listOf(head, body).filter { it.isNotEmpty() }.joinToString("\n")
     }
 
-    /** The text of a hover that starts the way [hoverOf] does with `stale`; the tests and the debug bridge read the prefix from here. */
-    const val STALE: String = "(stale) "
-
-    private fun declarationHead(violation: ViolationModel, declaration: String): String {
+    private fun declarationHead(violation: ViolationModel, declaration: String, strings: GutterStrings): String {
         val properties = violation.properties
-        val parts = buildList {
-            properties["constraint"]?.takeIf { it.isNotBlank() }?.let { add("\"$it\"") }
-            properties["role"]?.takeIf { it.isNotBlank() }?.let { add("($it)") }
-            add("rejected $declaration")
-            properties["declaredAt"]?.takeIf { it.isNotBlank() }?.let { add("— declared at $it") }
-        }
-        return "katachi: " + parts.joinToString(" ")
+        val by = listOfNotNull(
+            properties["constraint"]?.takeIf { it.isNotBlank() }?.let { "\"$it\"" },
+            properties["role"]?.takeIf { it.isNotBlank() }?.let { "($it)" },
+        ).joinToString(" ")
+        val declaredAt = properties["declaredAt"]?.takeIf { it.isNotBlank() }?.let { " " + strings.declaredAt(it) }.orEmpty()
+        return "katachi: " + strings.rejected(by, declaration) + declaredAt
     }
 
     private fun kindHead(violation: ViolationModel): String {

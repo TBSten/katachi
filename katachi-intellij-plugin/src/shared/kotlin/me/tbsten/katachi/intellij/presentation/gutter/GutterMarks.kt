@@ -35,23 +35,23 @@ internal data class GutterInput(
  * - Any other `.kt` file gets one, at its first declaration (or its head); `.kts` and other files one at the head.
  *
  * ```kotlin
- * val marks = GutterMarks.of(GutterInput(roles, explanations, declarations, SourceFileKind.Kotlin, stale = false))
+ * val marks = GutterMarks.of(GutterInput(roles, explanations, declarations, SourceFileKind.Kotlin, stale = false), strings)
  * ```
  */
 internal object GutterMarks {
-    fun of(input: GutterInput): List<GutterMark> {
+    fun of(input: GutterInput, strings: GutterStrings): List<GutterMark> {
         val fileRoles = input.roles ?: return emptyList()
         if (fileRoles.outcome != MatchOutcome.Matched) return emptyList()
         val reloadFailure = reloadFailureOf(fileRoles.freshness)
         val roles = fileRoles.matches.map { it.role }.distinctBy { it.qualifiedName }
         if (roles.isEmpty()) return emptyList()
-        if (input.fileKind != SourceFileKind.Kotlin) return listOf(oneForFile(MarkTarget.FileHead, roles, input, missing = false, reloadFailure))
+        if (input.fileKind != SourceFileKind.Kotlin) return listOf(oneForFile(MarkTarget.FileHead, roles, input, missing = false, reloadFailure, strings))
 
         val restricting = roles.associateWith { role -> restrictingExplanationOf(role, input.explanations) }
             .filterValues { it != null }
         val first = input.declarations.minByOrNull { it.line }
         if (restricting.isEmpty() || first == null) {
-            return listOf(oneForFile(first?.let(MarkTarget::Declaration) ?: MarkTarget.FileHead, roles, input, missing = true, reloadFailure))
+            return listOf(oneForFile(first?.let(MarkTarget::Declaration) ?: MarkTarget.FileHead, roles, input, missing = true, reloadFailure, strings))
         }
 
         val bound = restricting.mapValues { (_, explanation) ->
@@ -66,7 +66,7 @@ internal object GutterMarks {
                 placement = MarkPlacement.PerDeclaration,
                 roles = roleMarks,
                 stale = input.stale,
-                tooltip = GutterTooltips.of(roleMarks, input.stale, reloadFailure),
+                tooltip = GutterTooltips.of(roleMarks, input.stale, reloadFailure, strings),
             )
         }
     }
@@ -75,9 +75,16 @@ internal object GutterMarks {
     private fun reloadFailureOf(freshness: Freshness): LoadFailure? =
         ((freshness as? Freshness.Stale)?.reason as? StaleReason.ReloadFailed)?.failure
 
-    private fun oneForFile(target: MarkTarget, roles: List<RoleModel>, input: GutterInput, missing: Boolean, reloadFailure: LoadFailure?): GutterMark {
+    private fun oneForFile(
+        target: MarkTarget,
+        roles: List<RoleModel>,
+        input: GutterInput,
+        missing: Boolean,
+        reloadFailure: LoadFailure?,
+        strings: GutterStrings,
+    ): GutterMark {
         val roleMarks = roles.map { role -> RoleMark(role, null, if (missing) missingOf(role, input.explanations) else emptyList()) }
-        return GutterMark(target, MarkPlacement.OnePerFile, roleMarks, input.stale, GutterTooltips.of(roleMarks, input.stale, reloadFailure))
+        return GutterMark(target, MarkPlacement.OnePerFile, roleMarks, input.stale, GutterTooltips.of(roleMarks, input.stale, reloadFailure, strings))
     }
 
     /**
@@ -96,31 +103,31 @@ internal object GutterMarks {
 
 /**
  * The ◆'s hover text: `katachi: <roles>[ — <what allowed it>][ (stale)]`, and when the definition could not be read again
- * a second line saying why (design 2.2, 2.6). English only (U-11).
+ * a second line saying why (design 2.2, 2.6), in the IDE's language ([GutterStrings]).
  */
 internal object GutterTooltips {
-    fun of(roles: List<RoleMark>, stale: Boolean, reloadFailure: LoadFailure? = null): String {
+    fun of(roles: List<RoleMark>, stale: Boolean, reloadFailure: LoadFailure?, strings: GutterStrings): String {
         val names = roles.joinToString(", ") { it.role.qualifiedName }
-        val explanation = roles.firstNotNullOfOrNull { it.explanation }?.let { " — ${describe(it)}" }.orEmpty()
-        val staleMark = if (stale && explanation.isNotEmpty()) " (stale)" else ""
-        val failure = reloadFailure?.let { "\nThe definition could not be read again: ${summary(it)}" }.orEmpty()
+        val explanation = roles.firstNotNullOfOrNull { it.explanation }?.let { " — ${describe(it, strings)}" }.orEmpty()
+        val staleMark = if (stale && explanation.isNotEmpty()) strings.staleSuffix else ""
+        val failure = reloadFailure?.let { "\n" + strings.reloadFailed(summary(it, strings)) }.orEmpty()
         return "katachi: $names$explanation$staleMark$failure"
     }
 
-    /** One line (no line break, at most [SUMMARY_LIMIT] characters) on why a read of the definition failed. */
-    fun summary(failure: LoadFailure): String = when (failure) {
+    /** One line (no line break, at most [SUMMARY_LIMIT] characters) on why a read of the definition failed. Gradle's own line is quoted as it is. */
+    fun summary(failure: LoadFailure, strings: GutterStrings): String = when (failure) {
         is LoadFailure.Gradle -> when (val gradle = failure.failure) {
-            is GradleFailure.CompilationFailed -> "the definition does not compile"
-            is GradleFailure.TaskNotFound -> "Gradle does not know the task, so the project needs a sync"
-            is GradleFailure.ArchitectureNotSet -> "katachi { architecture } is not set"
-            is GradleFailure.ProcessorRejected -> "katachi refused the command line"
-            is GradleFailure.DefinitionRejected -> "katachi found the definition wrong"
-            is GradleFailure.Other -> oneLine(gradle.details.firstOrNull { it.isNotBlank() }) ?: "Gradle failed"
+            is GradleFailure.CompilationFailed -> strings.failureCompilation
+            is GradleFailure.TaskNotFound -> strings.failureTaskNotFound
+            is GradleFailure.ArchitectureNotSet -> strings.failureArchitectureNotSet
+            is GradleFailure.ProcessorRejected -> strings.failureProcessorRejected
+            is GradleFailure.DefinitionRejected -> strings.failureDefinitionRejected
+            is GradleFailure.Other -> oneLine(gradle.details.firstOrNull { it.isNotBlank() }) ?: strings.failureGradle
         }
-        is LoadFailure.JsonMissing -> "the task wrote no definition JSON"
-        is LoadFailure.MalformedJson -> "the definition JSON is cut off"
-        is LoadFailure.IncompatibleJson -> "the definition JSON does not fit this plugin, so katachi and the plugin differ in version"
-        LoadFailure.Cancelled -> "the read was cancelled"
+        is LoadFailure.JsonMissing -> strings.failureJsonMissing
+        is LoadFailure.MalformedJson -> strings.failureJsonMalformed
+        is LoadFailure.IncompatibleJson -> strings.failureJsonIncompatible
+        LoadFailure.Cancelled -> strings.failureCancelled
     }
 
     private fun oneLine(text: String?): String? =
@@ -128,24 +135,24 @@ internal object GutterTooltips {
 
     private const val SUMMARY_LIMIT = 120
 
-    fun describe(explanation: BoundExplanation): String = when (explanation) {
-        BoundExplanation.NotComputed -> "not computed yet. Reload Definition."
+    fun describe(explanation: BoundExplanation, strings: GutterStrings): String = when (explanation) {
+        BoundExplanation.NotComputed -> strings.notComputed
         is BoundExplanation.Explained -> {
             val declaration = explanation.declaration
             when (val verdict = declaration.verdict) {
-                DeclarationVerdict.Allowed, DeclarationVerdict.AllowedByAnythingElse -> "allowed by ${rules(declaration.rules)}"
-                DeclarationVerdict.Prohibited -> "prohibited by ${rules(declaration.rules)}"
+                DeclarationVerdict.Allowed, DeclarationVerdict.AllowedByAnythingElse -> strings.allowedBy(rules(declaration.rules, strings))
+                DeclarationVerdict.Prohibited -> strings.prohibitedBy(rules(declaration.rules, strings))
                 DeclarationVerdict.Mismatched ->
-                    "does not match ${rules(declaration.rules)}" + declaration.difference?.let { ": $it" }.orEmpty()
-                DeclarationVerdict.Unexpected -> "no line in ktFileContent allows this (UnsatisfiedFileConstraint in the check)"
-                is DeclarationVerdict.Unknown -> "judged ${verdict.jsonName} by a newer katachi"
+                    strings.mismatched(rules(declaration.rules, strings)) + declaration.difference?.let { ": $it" }.orEmpty()
+                DeclarationVerdict.Unexpected -> strings.unexpected
+                is DeclarationVerdict.Unknown -> strings.judgedByNewer(verdict.jsonName)
             }
         }
     }
 
     /** The first line that decided, where it was written, and how many more did: `class HealthService (ServiceRole.kt:80) +1`. */
-    fun rules(rules: List<RuleRef>): String {
-        val first = rules.firstOrNull() ?: return "a line katachi did not record"
+    fun rules(rules: List<RuleRef>, strings: GutterStrings): String {
+        val first = rules.firstOrNull() ?: return strings.unrecordedRule
         val site = first.declaredAt?.let { " (${it.fileName}:${it.line})" }.orEmpty()
         val more = if (rules.size > 1) " +${rules.size - 1}" else ""
         return "${first.text}$site$more"

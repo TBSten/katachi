@@ -14,6 +14,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import me.tbsten.katachi.intellij.ide.authoring.AuthoringPorts
+import me.tbsten.katachi.intellij.ide.authoring.BundleAuthoringStrings
 import me.tbsten.katachi.intellij.ide.definition.ResolvedSite
 import me.tbsten.katachi.intellij.ide.sdkCall
 import me.tbsten.katachi.intellij.model.DefinitionSnapshot
@@ -112,8 +113,8 @@ internal fun completionCandidatesFor(site: CompletionSite, file: PsiFile, snapsh
                 val resolved = service?.resolve(snapshot.module.id, ref)
                 resolved is ResolvedSite.Found && resolved.file == file.virtualFile
             }
-            binding?.let(::captureCandidates).orEmpty()
+            binding?.let { captureCandidates(it, BundleAuthoringStrings) }.orEmpty()
         }
         CompletionSite.TemplateSpec -> templateSpecCandidates(snapshots)
-        is CompletionSite.ArgName -> argCandidates(site.spec, snapshots)
+        is CompletionSite.ArgName -> argCandidates(site.spec, snapshots, BundleAuthoringStrings)
     }

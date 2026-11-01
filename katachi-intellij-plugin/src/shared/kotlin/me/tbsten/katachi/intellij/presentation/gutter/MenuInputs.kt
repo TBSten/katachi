@@ -10,7 +10,7 @@ import me.tbsten.katachi.intellij.model.TemplateId
  *
  * ```kotlin
  * val input = MenuInputs.of(mark, fileRoles)
- * val menu = MenuModel.of(input, availability)
+ * val menu = MenuModel.of(input, availability, strings)
  * ```
  */
 internal object MenuInputs {

@@ -3,6 +3,7 @@ package me.tbsten.katachi.intellij.presentation.gutter
 import me.tbsten.katachi.intellij.testing.AnnotationFixtures
 import me.tbsten.katachi.intellij.testing.DefinitionFixtures
 import me.tbsten.katachi.intellij.testing.KtFileContentGolden
+import me.tbsten.katachi.intellij.testing.englishGutter
 import org.junit.Assert.assertEquals
 import org.junit.Assume.assumeTrue
 import org.junit.Test
@@ -38,19 +39,19 @@ class KtFileContentGoldenBindingTest {
         val declaredAt = missing.properties.getValue("declaredAt")
         assertEquals(
             "katachi: [UnsatisfiedFileConstraint] Missing: class DefaultGetUserUseCase : GetUserUseCase ($declaredAt)",
-            ViolationAnnotations.hoverOf(missing, ViolationBinding.targetOf(missing), stale = false),
+            ViolationAnnotations.hoverOf(missing, ViolationBinding.targetOf(missing), stale = false, englishGutter),
         )
         val member = KtFileContentGolden.byDeclaration("CounterViewModel.count")
         assertEquals(
             "katachi: [UnsatisfiedFileConstraint] Missing: public val count: Int in class CounterViewModel (${member.properties.getValue("declaredAt")})",
-            ViolationAnnotations.hoverOf(member, ViolationBinding.targetOf(member), stale = true).removePrefix(ViolationAnnotations.STALE),
+            ViolationAnnotations.hoverOf(member, ViolationBinding.targetOf(member), stale = true, englishGutter).removePrefix(englishGutter.stalePrefix),
         )
     }
 
     @Test
     fun `足りない宣言のホバーは 「rejected」とは言わず 古い検査には stale が付く`() {
         val missing = KtFileContentGolden.byDeclaration("DefaultHomeViewModel")
-        val hover = ViolationAnnotations.hoverOf(missing, ViolationBinding.targetOf(missing), stale = true)
+        val hover = ViolationAnnotations.hoverOf(missing, ViolationBinding.targetOf(missing), stale = true, englishGutter)
         assertEquals(true, hover.startsWith("(stale) katachi: [UnsatisfiedFileConstraint] Missing: class DefaultHomeViewModel : HomeViewModel ("))
         assertEquals(false, "rejected" in hover)
     }
@@ -58,7 +59,7 @@ class KtFileContentGoldenBindingTest {
     @Test
     fun `余計な宣言のホバーは 制約と Role と宣言元を名指しして 続けて報告の本文`() {
         val rejected = KtFileContentGolden.byDeclaration("GetUserUseCaseImpl")
-        val hover = ViolationAnnotations.hoverOf(rejected, ViolationBinding.targetOf(rejected), stale = false)
+        val hover = ViolationAnnotations.hoverOf(rejected, ViolationBinding.targetOf(rejected), stale = false, englishGutter)
         assertEquals(
             "katachi: \"ktFileContent\" (Screen) rejected GetUserUseCaseImpl — declared at ${rejected.properties.getValue("declaredAt")}\n${rejected.message.trim()}",
             hover,

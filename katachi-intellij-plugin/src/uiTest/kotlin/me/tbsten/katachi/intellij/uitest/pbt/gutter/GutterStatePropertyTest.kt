@@ -21,6 +21,7 @@ import me.tbsten.katachi.intellij.testing.DEFINITION_INSTANT
 import me.tbsten.katachi.intellij.testing.DefinitionStateScripts
 import me.tbsten.katachi.intellij.testing.definitionModel
 import me.tbsten.katachi.intellij.testing.definitionSnapshot
+import me.tbsten.katachi.intellij.testing.englishGutter
 import me.tbsten.katachi.intellij.testing.fileRoles
 import me.tbsten.katachi.intellij.testing.layoutEntry
 import me.tbsten.katachi.intellij.testing.roleModel
@@ -65,7 +66,7 @@ class GutterStatePropertyTest {
 
     private fun tooltip(freshness: Freshness, stale: Boolean): String {
         val roles = fileRoles(path, role, freshness = freshness)
-        return GutterMarks.of(GutterInput(roles, emptyList(), emptyList(), SourceFileKind.Other, stale)).single().tooltip
+        return GutterMarks.of(GutterInput(roles, emptyList(), emptyList(), SourceFileKind.Other, stale), englishGutter).single().tooltip
     }
 
     // covers: 読み直しの失敗
@@ -84,10 +85,10 @@ class GutterStatePropertyTest {
             assertEquals("seed=$caseSeed the first line is the same whatever the reload did", fresh, lines.first())
             if (reason is StaleReason.ReloadFailed) {
                 assertEquals("seed=$caseSeed $withReason", 2, lines.size)
-                assertEquals("seed=$caseSeed", "The definition could not be read again: ${GutterTooltips.summary(failure)}", lines[1])
-                assertFalse("seed=$caseSeed a summary is one line", GutterTooltips.summary(failure).contains('\n'))
-                assertTrue("seed=$caseSeed ${GutterTooltips.summary(failure)}", GutterTooltips.summary(failure).length <= 120 || failure !is LoadFailure.Gradle)
-                assertTrue("seed=$caseSeed", GutterTooltips.summary(failure).isNotBlank())
+                assertEquals("seed=$caseSeed", "The definition could not be read again: ${GutterTooltips.summary(failure, englishGutter)}", lines[1])
+                assertFalse("seed=$caseSeed a summary is one line", GutterTooltips.summary(failure, englishGutter).contains('\n'))
+                assertTrue("seed=$caseSeed ${GutterTooltips.summary(failure, englishGutter)}", GutterTooltips.summary(failure, englishGutter).length <= 120 || failure !is LoadFailure.Gradle)
+                assertTrue("seed=$caseSeed", GutterTooltips.summary(failure, englishGutter).isNotBlank())
             } else {
                 assertEquals("seed=$caseSeed $withReason", 1, lines.size)
             }

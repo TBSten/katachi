@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
 import me.tbsten.katachi.intellij.ide.KatachiBundle
+import me.tbsten.katachi.intellij.ide.authoring.BundleAuthoringStrings
 import me.tbsten.katachi.intellij.ide.gutter.GutterNavigation
 import me.tbsten.katachi.intellij.ide.gutter.GutterPorts
 import me.tbsten.katachi.intellij.ide.sdkCall
@@ -65,7 +66,7 @@ internal class EntryFilesCodeVisionProvider(
         val project = editor.project ?: return
         val navigation = GutterNavigation(project, portsOf(project).notify)
         background {
-            val popup = sdkCall("read the files behind the Code Vision") { EntryFilesPopups.of(input) { directory, limit -> DirectoryListing.namesIn(input.projectRoot, directory, limit) } }.getOrNull()
+            val popup = sdkCall("read the files behind the Code Vision") { EntryFilesPopups.of(input, BundleAuthoringStrings) { directory, limit -> DirectoryListing.namesIn(input.projectRoot, directory, limit) } }.getOrNull()
             if (popup != null) ApplicationManager.getApplication().invokeLater { show(editor, textRange, popup) { navigation.openFile(it) } }
         }
     }

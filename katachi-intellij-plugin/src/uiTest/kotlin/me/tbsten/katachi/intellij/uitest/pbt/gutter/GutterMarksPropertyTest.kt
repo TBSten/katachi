@@ -17,6 +17,7 @@ import me.tbsten.katachi.intellij.presentation.gutter.SourceFileKind
 import me.tbsten.katachi.intellij.testing.DefinitionStateScripts
 import me.tbsten.katachi.intellij.testing.definitionModel
 import me.tbsten.katachi.intellij.testing.definitionSnapshot
+import me.tbsten.katachi.intellij.testing.englishGutter
 import me.tbsten.katachi.intellij.testing.fileDeclarations
 import me.tbsten.katachi.intellij.testing.fileRoles
 import me.tbsten.katachi.intellij.testing.layoutEntry
@@ -67,7 +68,7 @@ class GutterMarksPropertyTest {
     fun `縛っている Role があり宣言があれば宣言ごと そうでなければファイルに 1 つ`() = runBlocking<Unit> {
         checkAll(config, Arb.long()) { caseSeed ->
             val (input, restricting) = scenario(Random(caseSeed))
-            val marks = GutterMarks.of(input)
+            val marks = GutterMarks.of(input, englishGutter)
             val perDeclaration = input.fileKind == SourceFileKind.Kotlin && restricting.isNotEmpty() && input.declarations.isNotEmpty()
             if (perDeclaration) {
                 assertEquals("seed=$caseSeed", input.declarations.size, marks.size)
@@ -88,7 +89,7 @@ class GutterMarksPropertyTest {
     fun `ツールチップは Role の名前で始まり 説明があるときだけ古さの印が付く`() = runBlocking<Unit> {
         checkAll(config, Arb.long()) { caseSeed ->
             val (input, _) = scenario(Random(caseSeed))
-            for (mark in GutterMarks.of(input)) {
+            for (mark in GutterMarks.of(input, englishGutter)) {
                 val names = mark.roles.joinToString(", ") { it.role.qualifiedName }
                 assertTrue("seed=$caseSeed ${mark.tooltip}", mark.tooltip.startsWith("katachi: $names"))
                 val explained = mark.roles.any { it.explanation != null }
@@ -108,8 +109,8 @@ class GutterMarksPropertyTest {
             val (input, _) = scenario(random)
             val outcome = outcomes[random.nextInt(outcomes.size)]
             val unmatched = input.copy(roles = input.roles?.copy(outcome = outcome))
-            assertEquals("seed=$caseSeed $outcome", emptyList<Any>(), GutterMarks.of(unmatched))
-            assertEquals(emptyList<Any>(), GutterMarks.of(input.copy(roles = null)))
+            assertEquals("seed=$caseSeed $outcome", emptyList<Any>(), GutterMarks.of(unmatched, englishGutter))
+            assertEquals(emptyList<Any>(), GutterMarks.of(input.copy(roles = null), englishGutter))
         }
     }
 

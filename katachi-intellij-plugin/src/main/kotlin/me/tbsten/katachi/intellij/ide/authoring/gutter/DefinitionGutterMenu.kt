@@ -17,6 +17,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.ui.awt.RelativePoint
 import me.tbsten.katachi.intellij.ide.KatachiBundle
+import me.tbsten.katachi.intellij.ide.authoring.BundleAuthoringStrings
 import me.tbsten.katachi.intellij.ide.gutter.GutterActions
 import me.tbsten.katachi.intellij.ide.gutter.GutterMenu
 import me.tbsten.katachi.intellij.ide.gutter.GutterNavigation
@@ -69,6 +70,7 @@ internal class DefinitionGutterMenu(
 
     private fun model(): DefinitionMenuModel = mark.menu(
         DefinitionMenuAvailability(runCheck = ports.action(GutterMenu.RUN_CHECK) != null, refresh = ports.action(GutterMenu.REFRESH) != null),
+        BundleAuthoringStrings,
     )
 
     private fun groupOf(model: DefinitionMenuModel, context: DataContext): DefaultActionGroup {

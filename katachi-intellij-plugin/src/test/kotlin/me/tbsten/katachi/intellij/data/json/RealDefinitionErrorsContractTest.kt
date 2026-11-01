@@ -9,6 +9,7 @@ import me.tbsten.katachi.intellij.presentation.authoring.DefinitionMark
 import me.tbsten.katachi.intellij.presentation.authoring.DefinitionMarkSource
 import me.tbsten.katachi.intellij.testing.ContractFixtures
 import me.tbsten.katachi.intellij.testing.definitionSnapshot
+import me.tbsten.katachi.intellij.testing.englishAuthoring
 import me.tbsten.katachi.intellij.testing.module
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -48,6 +49,7 @@ class RealDefinitionErrorsContractTest {
             definitionStale = false,
             lineOf = { _, site -> site.line.takeIf { it <= linesOf(site.fileName).size } },
             lineCount = 10_000,
+            strings = englishAuthoring,
         )
     }
 

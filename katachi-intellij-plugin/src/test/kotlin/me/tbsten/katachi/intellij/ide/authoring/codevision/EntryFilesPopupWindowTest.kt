@@ -3,6 +3,7 @@ package me.tbsten.katachi.intellij.ide.authoring.codevision
 import com.intellij.openapi.util.Disposer
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.ui.popup.list.ListPopupImpl
+import me.tbsten.katachi.intellij.ide.authoring.BundleAuthoringStrings
 import me.tbsten.katachi.intellij.presentation.authoring.EntryFilesInput
 import me.tbsten.katachi.intellij.presentation.authoring.EntryFilesPopupModel
 import me.tbsten.katachi.intellij.presentation.authoring.EntryFilesPopups
@@ -15,6 +16,7 @@ internal class EntryFilesPopupWindowTest : BasePlatformTestCase() {
 
     private fun noMatchModel(): EntryFilesPopupModel = EntryFilesPopups.of(
         EntryFilesInput(patterns = listOf("core/service/*Servise.kt"), files = emptyList(), count = 0, projectRoot = root),
+        BundleAuthoringStrings,
     ) { _, _ -> listOf("Another.kt", "Other.kt") }
 
     fun `test 選べる行は ファイルのある行だけで 見出しと もっと件数の行は選べない`() {

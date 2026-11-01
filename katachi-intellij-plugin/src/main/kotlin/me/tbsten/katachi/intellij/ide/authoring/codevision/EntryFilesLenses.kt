@@ -1,6 +1,7 @@
 package me.tbsten.katachi.intellij.ide.authoring.codevision
 
 import com.intellij.openapi.util.TextRange
+import me.tbsten.katachi.intellij.ide.authoring.BundleAuthoringStrings
 import me.tbsten.katachi.intellij.ide.authoring.gutter.DefinitionGutter
 import me.tbsten.katachi.intellij.ide.gutter.GutterPorts
 import me.tbsten.katachi.intellij.ide.sdkCall
@@ -43,7 +44,7 @@ internal object EntryFilesLenses {
                 count = RoleFileCount.of(entries),
                 projectRoot = projectRoot,
             )
-            EntryFilesLens(leaf.textRange, CountText.of(entries, bound.stale, modules), input)
+            EntryFilesLens(leaf.textRange, CountText.of(entries, bound.stale, BundleAuthoringStrings, modules), input)
         }
     }
 }

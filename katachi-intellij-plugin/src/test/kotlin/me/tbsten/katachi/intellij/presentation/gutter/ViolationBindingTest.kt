@@ -4,6 +4,7 @@ import me.tbsten.katachi.intellij.model.DeclarationSiteRef
 import me.tbsten.katachi.intellij.model.SarifLevel
 import me.tbsten.katachi.intellij.model.SarifLocation
 import me.tbsten.katachi.intellij.testing.AnnotationFixtures
+import me.tbsten.katachi.intellij.testing.englishGutter
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -92,7 +93,7 @@ class ViolationBindingTest {
         val target = ViolationBinding.targetOf(violation)
         assertEquals(
             "katachi: \"${AnnotationFixtures.CONSTRAINT}\" (domain.Service) rejected HealthService — declared at ServiceRole.kt:94\n" + violation.message,
-            ViolationAnnotations.hoverOf(violation, target, stale = false),
+            ViolationAnnotations.hoverOf(violation, target, stale = false, englishGutter),
         )
     }
 
@@ -101,17 +102,17 @@ class ViolationBindingTest {
         val missing = AnnotationFixtures.missing(path, declaredAt = "ServiceRole.kt:94")
         assertEquals(
             "katachi: [UnsatisfiedFileConstraint] Missing: class DefaultGetUserUseCase : GetUserUseCase (ServiceRole.kt:94)",
-            ViolationAnnotations.hoverOf(missing, ViolationBinding.targetOf(missing), stale = false),
+            ViolationAnnotations.hoverOf(missing, ViolationBinding.targetOf(missing), stale = false, englishGutter),
         )
         val violation = AnnotationFixtures.unsatisfied(path)
         assertEquals(
             "katachi: [UnsatisfiedFileConstraint] Role: domain.Service / FileConstraint: \"${AnnotationFixtures.CONSTRAINT}\"",
-            ViolationAnnotations.hoverOf(violation, ViolationBinding.targetOf(violation), stale = false),
+            ViolationAnnotations.hoverOf(violation, ViolationBinding.targetOf(violation), stale = false, englishGutter),
         )
         val unchecked = AnnotationFixtures.unchecked(path)
         assertEquals(
             "katachi: [UncheckedFile] Katachi failed while checking this file, so nothing is known about it.",
-            ViolationAnnotations.hoverOf(unchecked, AnnotationTarget.FileLevel, stale = false),
+            ViolationAnnotations.hoverOf(unchecked, AnnotationTarget.FileLevel, stale = false, englishGutter),
         )
     }
 
@@ -120,7 +121,7 @@ class ViolationBindingTest {
         val violation = AnnotationFixtures.missing(path, declaredAt = "ServiceRole.kt:94")
         assertEquals(
             "(stale) katachi: [UnsatisfiedFileConstraint] Missing: class DefaultGetUserUseCase : GetUserUseCase (ServiceRole.kt:94)",
-            ViolationAnnotations.hoverOf(violation, AnnotationTarget.FileLevel, stale = true),
+            ViolationAnnotations.hoverOf(violation, AnnotationTarget.FileLevel, stale = true, englishGutter),
         )
     }
 
@@ -129,7 +130,7 @@ class ViolationBindingTest {
         val bare = AnnotationFixtures.unsatisfied(path, "A", 3).let { it.copy(properties = mapOf("declaration" to "A")) }
         assertEquals(
             "katachi: rejected A\n" + bare.message,
-            ViolationAnnotations.hoverOf(bare, AnnotationTarget.AtDeclaration("A", 3), stale = false),
+            ViolationAnnotations.hoverOf(bare, AnnotationTarget.AtDeclaration("A", 3), stale = false, englishGutter),
         )
     }
 

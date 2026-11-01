@@ -61,15 +61,15 @@ internal fun bindTemplate(
 }
 
 /** The capture names of the bound template, for `captureValue("…")`. */
-internal fun captureCandidates(binding: TemplateBinding): List<CompletionCandidate> {
+internal fun captureCandidates(binding: TemplateBinding, strings: AuthoringStrings): List<CompletionCandidate> {
     val template = binding.template
     // The complete specifier, so that a capture of another template of the same role (`ui.Screen.a` / `ui.Screen.b`) reads differently.
     val tail = " (${template.template})"
     val detail = template.detail
     if (detail == null) {
-        return template.summary.captureNames.distinct().map { CompletionCandidate(it, CAPTURE_TYPE, tail) }
+        return template.summary.captureNames.distinct().map { CompletionCandidate(it, strings.capture, tail) }
     }
-    return detail.captures.distinctBy { it.name }.map { CompletionCandidate(it.name, captureTypeOf(it), tail) }
+    return detail.captures.distinctBy { it.name }.map { CompletionCandidate(it.name, captureTypeOf(it, strings), tail) }
 }
 
 /**
@@ -90,15 +90,15 @@ internal fun templateSpecCandidates(snapshots: List<DefinitionSnapshot>): List<C
  * The names `arg("…")` accepts for the member that runs [spec], read the way `template("…")` reads it ([resolveMemberTemplate]):
  * its parameters in any branch, and its captures, each name once. Empty when [spec] names no member template, or not one only.
  */
-internal fun argCandidates(spec: String, snapshots: List<DefinitionSnapshot>): List<CompletionCandidate> {
+internal fun argCandidates(spec: String, snapshots: List<DefinitionSnapshot>, strings: AuthoringStrings): List<CompletionCandidate> {
     val template = resolveMemberTemplate(spec, membersOf(snapshots)) ?: return emptyList()
     val detail = template.detail
     if (detail == null) {
-        val names = (template.summary.parameterNames.map { it to PARAMETER_TYPE } + template.summary.captureNames.map { it to CAPTURE_TYPE })
+        val names = (template.summary.parameterNames.map { it to strings.parameter } + template.summary.captureNames.map { it to strings.capture })
         return names.distinctBy { it.first }.map { (name, type) -> CompletionCandidate(name, type) }
     }
     return allParametersOf(detail).map { parameter ->
-        val type = (parameter as? ParameterModel.CaptureParam)?.let(::captureTypeOf) ?: PARAMETER_TYPE
+        val type = (parameter as? ParameterModel.CaptureParam)?.let { captureTypeOf(it, strings) } ?: strings.parameter
         CompletionCandidate(parameter.name, type)
     }
 }
@@ -132,8 +132,8 @@ internal fun resolveMemberTemplate(spec: String, members: List<TemplateModel>): 
     return listOfNotNull(readAsRole, readAsRoleAndId).distinctBy { it.template }.singleOrNull()
 }
 
-private fun captureTypeOf(capture: ParameterModel.CaptureParam): String =
-    if (capture.places.any { it.isModule }) MODULE_CAPTURE_TYPE else PATH_CAPTURE_TYPE
+private fun captureTypeOf(capture: ParameterModel.CaptureParam, strings: AuthoringStrings): String =
+    if (capture.places.any { it.isModule }) strings.moduleCapture else strings.pathCapture
 
 /** What typing may match besides the specifier: the role's name, the template's id, and the specifier from each of its dots on. */
 private fun aliasesOf(template: TemplateModel): List<String> {
@@ -141,8 +141,3 @@ private fun aliasesOf(template: TemplateModel): List<String> {
     val tails = spec.split('.').indices.drop(1).map { spec.split('.').drop(it).joinToString(".") }
     return (tails + listOfNotNull(template.roleName.substringAfterLast('.'), template.summary.id)).distinct()
 }
-
-private const val PATH_CAPTURE_TYPE = "path capture"
-private const val MODULE_CAPTURE_TYPE = "module capture"
-private const val CAPTURE_TYPE = "capture"
-private const val PARAMETER_TYPE = "parameter"
