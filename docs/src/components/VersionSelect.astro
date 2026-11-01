@@ -1,0 +1,136 @@
+---
+/**
+ * 版の切り替え。starlight-versions の VersionSelect.astro の写しで、行く先の決め方だけが違う。
+ *
+ * プラグインのものは今のパスに版の区切りを付け替えるだけなので、その版に無いページ
+ * （トップページ・版を切ったあとに足したページ）では 404 になる。ここでは行く先のページが
+ * 無いとき、その版のトップ、無ければその版の最初のページへ送る（src/lib/version-destination.ts）。
+ */
+import { basename } from 'node:path';
+import { getCollection } from 'astro:content';
+import { Icon } from '@astrojs/starlight/components';
+import { archivedVersions, currentVersion } from '../lib/versions.mjs';
+import { firstSlug, pagePath, pageSlug, resolveVersionPath } from '../lib/version-destination';
+
+const { id, locale } = Astro.locals.starlightRoute;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const versionSlugs = archivedVersions.map((version) => version.slug);
+
+// 公開されるページ。トップページは content collection に無い .astro のページなので足す。
+const available = new Set<string>([`${base}/`, `${base}/ja/`]);
+for (const entry of await getCollection('docs')) available.add(`${base}/${entry.id}/`);
+// entry.id は '0.2' が '02' に変わるので、版の slug はファイル名（0.2.json）から取る。
+const sidebars = new Map(
+	(await getCollection('versions')).map((entry) => [basename(entry.filePath ?? '', '.json'), entry.data.sidebar]),
+);
+
+const slug = pageSlug(id, locale, versionSlugs);
+const pageVersion = archivedVersions.find((version) => id.split('/').slice(locale ? 1 : 0)[0] === version.slug);
+const localeSegment = locale === 'root' ? undefined : locale;
+
+const options = [{ slug: undefined, label: currentVersion.label }, ...archivedVersions].map((version) => ({
+	label: version.label,
+	selected: version.slug === pageVersion?.slug,
+	value: resolveVersionPath(
+		{ base, locale: localeSegment, version: version.slug, slug },
+		available,
+		firstSlug(version.slug ? sidebars.get(version.slug) : undefined),
+	),
+}));
+---
+
+<starlight-version-select>
+	<label>
+		<span class="sr-only">{Astro.locals.t('starlightVersions.select.accessibleLabel')}</span>
+		<Icon name="seti:clock" class="icon label-icon" />
+		<select autocomplete="off">
+			{options.map((option) => <option selected={option.selected} value={option.value}>{option.label}</option>)}
+		</select>
+		<Icon name="down-caret" class="icon caret-icon" />
+	</label>
+</starlight-version-select>
+
+<style>
+	label {
+		--sl-versions-label-icon-size: 0.875rem;
+		--sl-versions-caret-icon-size: 1.25rem;
+
+		align-items: center;
+		color: var(--sl-color-gray-1);
+		display: flex;
+		gap: 0.25rem;
+		position: relative;
+	}
+
+	label:hover {
+		color: var(--sl-color-gray-2);
+	}
+
+	.icon {
+		pointer-events: none;
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+	}
+
+	.label-icon {
+		font-size: var(--sl-versions-label-icon-size);
+		inset-inline-start: 0;
+	}
+
+	.caret-icon {
+		font-size: var(--sl-versions-caret-icon-size);
+		inset-inline-end: 0;
+	}
+
+	select {
+		appearance: none;
+		background-color: transparent;
+		border: 0;
+		color: inherit;
+		cursor: pointer;
+		padding-block: 0.625rem;
+		padding-inline: calc(var(--sl-versions-label-icon-size) + 0.375rem)
+			calc(var(--sl-versions-caret-icon-size) + 0.25rem);
+		text-overflow: ellipsis;
+		width: 6.5em;
+	}
+
+	option {
+		background-color: var(--sl-color-bg-nav);
+		color: var(--sl-color-gray-1);
+	}
+
+	@media (min-width: 50rem) {
+		select {
+			font-size: var(--sl-text-sm);
+		}
+	}
+</style>
+
+<script>
+	customElements.define(
+		'starlight-version-select',
+		class StarlightVersionSelect extends HTMLElement {
+			constructor() {
+				super();
+
+				const select = this.querySelector('select');
+				if (!select) return;
+
+				select.addEventListener('change', (event) => {
+					if (event.currentTarget instanceof HTMLSelectElement) {
+						globalThis.location.pathname = event.currentTarget.value;
+					}
+				});
+
+				// bfcache から戻ったとき、選択がこのページの版とずれないように戻す。
+				window.addEventListener('pageshow', (event) => {
+					if (!event.persisted) return;
+					const markupSelectedIndex = select.querySelector<HTMLOptionElement>('option[selected]')?.index;
+					if (markupSelectedIndex !== select.selectedIndex) select.selectedIndex = markupSelectedIndex ?? 0;
+				});
+			}
+		},
+	);
+</script>
