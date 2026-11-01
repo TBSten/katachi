@@ -18,6 +18,10 @@ fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
         A role that only a role needs (a private helper such as `ServiceRole`'s constraint) stays
         in the file that uses it, so the declaration site a violation names is the role that
         owns the rule.
+
+        A role function must not be `inline`: katachi captures the declaration site from the
+        stack, and an inlined frame would point at a line nobody wrote. `ProjectArchitectureSpec`
+        checks that each captured line holds its declaration.
     """.trimIndent()
     forbiddenContents = """
         - A group. Those go in `<Name>Group.kt`, in the directory named after the group

@@ -5,6 +5,9 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 fun DeclarationContainerScope.installScript() = "InstallScript".role {
     title = "インストールスクリプト"
     summary = "katachi を別のプロジェクトに導入する Kotlin script（下書き）"
+    description = """
+        スクリプトは setup DSL の下書きで、まだどこにも配線されていません。
+    """.trimIndent()
     example("install-katachi.main.kts", "setupKatachi { } で導入の内容を書く")
     layout {
         "install-katachi.main.kts".file()

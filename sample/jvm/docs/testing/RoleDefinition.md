@@ -14,6 +14,10 @@ A role that only a role needs (a private helper such as `ServiceRole`'s constrai
 in the file that uses it, so the declaration site a violation names is the role that
 owns the rule.
 
+A role function must not be `inline`: katachi captures the declaration site from the
+stack, and an inlined frame would point at a line nobody wrote. `ProjectArchitectureSpec`
+checks that each captured line holds its declaration.
+
 ## Placement
 
 | Path | When to use |

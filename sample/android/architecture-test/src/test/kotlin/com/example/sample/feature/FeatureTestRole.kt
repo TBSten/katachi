@@ -31,6 +31,10 @@ fun DeclarationContainerScope.featureTest() = "FeatureTest".role {
         template=feature.FeatureTest.home --arg name=ViewModel` produces `HomeViewModelTest.kt`.
         The content differs per screen (the fake and its arguments, the expected `Content`), so
         it is chosen by id rather than by passing values.
+
+        Unlike the other feature roles, this one lists the modules by name, through
+        `FeatureModule` in `FeatureGroup.kt`. A test file in a module missing from it is
+        reported as a violation.
     """.trimIndent()
     forbiddenContents = """
         - A real Repository (`*RepositoryImpl`). Swap in the fakes from `:testing` instead

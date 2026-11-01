@@ -19,6 +19,10 @@ template=feature.FeatureTest.home --arg name=ViewModel` produces `HomeViewModelT
 The content differs per screen (the fake and its arguments, the expected `Content`), so
 it is chosen by id rather than by passing values.
 
+Unlike the other feature roles, this one lists the modules by name, through
+`FeatureModule` in `FeatureGroup.kt`. A test file in a module missing from it is
+reported as a violation.
+
 ## Placement
 
 | Path | When to use |

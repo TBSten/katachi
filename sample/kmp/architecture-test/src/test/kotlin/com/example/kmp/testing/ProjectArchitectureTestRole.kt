@@ -18,6 +18,11 @@ fun DeclarationContainerScope.projectArchitectureTest() = "ProjectArchitectureTe
         Files named `*Test.kt` directly under the package (outside the group directories and
         `processors/`) are this role. That tells them apart from the roles of the definition in
         the same module.
+
+        The test passes `FileConstraintCheck()` to `assert()` because katachi runs no constraint
+        nobody asked for. Without it, the `ktFileContent { }` of every role goes unchecked and is
+        reported as `[UncheckedFileConstraint]` (reason `NotEvaluated`). When the report cuts off
+        violations, `./gradlew :architecture-test:test -Dkatachi.maxViolations=all` shows all of them.
     """.trimIndent()
     forbiddenContents = """
         - Tests of katachi itself (`*Spec.kt`). They are the ProjectArchitectureSpec role

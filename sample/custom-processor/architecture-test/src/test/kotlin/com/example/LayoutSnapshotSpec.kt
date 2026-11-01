@@ -62,6 +62,9 @@ private fun File.write(text: String) {
 private fun flattenCurrentLayout(): List<LayoutEntry> {
     val fileSystem = RealFileSystem()
     val projectRoot = findProjectRoot(fileSystem)
+    // gradle() declares every module's build script under a ":**" key. Without the module index,
+    // flattenLayout keeps that key as one unexpanded pattern, so the snapshot would not list each
+    // module's build script.
     val modules = moduleIndex(fileSystem, projectRoot.path, projectArchitecture.moduleResolver)
     return projectArchitecture.flattenLayout(modules)
 }

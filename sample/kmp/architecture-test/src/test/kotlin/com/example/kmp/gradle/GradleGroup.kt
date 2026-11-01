@@ -19,6 +19,15 @@ private val NAMESPACE = Regex("""namespace\s*=\s*"([^"]+)"""")
 private const val LIBRARY_BLOCK = "androidLibrary {"
 
 fun DeclarationContainerScope.gradleGroup() = gradle {
+    description = """
+        Besides katachi's Gradle roles, this project adds one rule to the build scripts: the
+        `namespace` of a library module is `com.example.kmp` followed by its module path. It is
+        written inside `buildScript { }` instead of a Role of this project's own, because
+        `build.gradle.kts` is a file katachi's `gradle()` already places, and a second Role
+        claiming it would make the file ambiguous. Only build scripts that contain an
+        `androidLibrary {` block are checked, and the root build script has no module path, so it
+        is skipped by path before its text is read.
+    """.trimIndent()
     owner = "platform"
 
     buildScript {

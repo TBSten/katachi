@@ -16,6 +16,13 @@ fun DeclarationContainerScope.architectureTest() = "ArchitectureTest".role {
 
         The file name is `*Test.kt`. The `*Spec` files next to it are katachi's own integration
         tests, which have a role of their own.
+
+        `FileConstraintCheck()` is passed explicitly because katachi never runs a constraint
+        nobody asked for: with a bare `assert()`, the `ktFileContent { }` constraints of the
+        roles are reported as `[UncheckedFileConstraint]` (`NotEvaluated`) instead of evaluated.
+        When there are more violations than the report shows, run
+        `./gradlew :architecture-test:test -Dkatachi.maxViolations=all`. katachi's Gradle plugin
+        hands the property on to the test JVM, so the test does not change.
     """.trimIndent()
     forbiddenContents = """
         - Tests of the application. Those go in the root project's test source set (the Test role)

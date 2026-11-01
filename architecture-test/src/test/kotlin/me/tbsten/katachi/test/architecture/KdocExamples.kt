@@ -84,6 +84,8 @@ private fun hasNothingAfterItsBlockTags(kDocText: String): Boolean {
     return true
 }
 
+// The text fallback is load bearing: Konsist 0.17.3 does not know context parameters, so `kDoc` is always null
+// for a `context(...)` declaration. Konsist stays first because it alone answers a primary-constructor `val`.
 private fun kDocOf(declaration: KoBaseDeclaration): String? =
     (declaration as? KoKDocProvider)?.kDoc?.text ?: kDocAbove(declaration)
 

@@ -10,6 +10,10 @@ import me.tbsten.katachi.konsist.konsist
 fun DeclarationContainerScope.idePluginSource() = "IdePluginSource".role {
     title = "IDE プラグインの実装"
     summary = "Tool Window の登録と、plugin 本体と preview の両方でコンパイルする Compose (Jewel) の画面"
+    description = """
+        `src/shared/kotlin` の Compose は、plugin 本体（IDE 同梱の Jewel）と headless preview（standalone Jewel）の両方でコンパイルします。
+        そのため preview は、出荷されるコードそのものを描きます。
+    """.trimIndent()
     example("KatachiToolWindowFactory.kt", "Tool Window に Compose の画面を載せる")
     example("KatachiToolWindowContent.kt", "Tool Window の画面。preview と共有する")
     layout {

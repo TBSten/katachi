@@ -21,6 +21,9 @@ import me.tbsten.katachi.test.architecture.KONTURE_MAIN_PACKAGE
 fun DeclarationContainerScope.kontureBackend() = "KontureBackend".role {
     title = "Konture バックエンド"
     summary = "konture { } を layout { } の中に書けるようにする。katachi の public な面だけに乗る"
+    description = """
+        katachi の public な面だけに乗ります。`katachi-konture/build.gradle.kts` で `@ExperimentalKatachiApi` だけに opt-in し、`@InternalKatachiApi` には opt-in しないことで、ビルドが強制しています。
+    """.trimIndent()
     example("Konture.kt", "\"...\".konture { } の入口")
     example("KontureConstraintScope.kt", "Konture の規則の入口 files / classes / functions / properties")
     layout {

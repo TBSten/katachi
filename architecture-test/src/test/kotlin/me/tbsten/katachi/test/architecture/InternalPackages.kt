@@ -31,6 +31,8 @@ private fun isInternalApi(declaration: KoBaseDeclaration): Boolean =
 private fun isDirectSubtypeOfAny(declaration: KoBaseDeclaration, names: Set<String>): Boolean =
     directSupertypeNamesOf(declaration).any { it in names }
 
+// Read off the declaration's text, not `parents()`: that resolves source declarations across the whole
+// repository (samples included) and ran the test JVM out of memory.
 private fun directSupertypeNamesOf(declaration: KoBaseDeclaration): List<String> {
     val name = (declaration as? KoNameProvider)?.name ?: return emptyList()
     val text = (declaration as? KoTextProvider)?.text ?: return emptyList()

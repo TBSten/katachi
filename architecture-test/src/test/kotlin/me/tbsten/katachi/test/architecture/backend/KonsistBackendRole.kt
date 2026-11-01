@@ -21,6 +21,10 @@ import me.tbsten.katachi.test.architecture.KONSIST_MAIN_PACKAGE
 fun DeclarationContainerScope.konsistBackend() = "KonsistBackend".role {
     title = "Konsist バックエンド"
     summary = "konsist { } を layout { } の中に書けるようにする。katachi の public な面だけに乗る"
+    description = """
+        `katachi-konsist/build.gradle.kts` で opt-in しているのは `@ExperimentalKatachiApi` だけです。
+        IDE プラグインに判定の経緯を渡す `declarations/internal` の 2 ファイルだけが、`@file:OptIn(InternalKatachiApi::class)` で katachi の `dsl.internal` を使っています。
+    """.trimIndent()
     example("Konsist.kt", "\"...\".konsist { } の入口")
     example("KonsistScope.kt", "Konsist の問い合わせ語彙 + must / mustNot / mustBeEmpty")
     layout {

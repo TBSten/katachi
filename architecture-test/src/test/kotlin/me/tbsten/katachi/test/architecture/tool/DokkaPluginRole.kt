@@ -15,6 +15,10 @@ import me.tbsten.katachi.test.architecture.DOKKA_MAIN_PACKAGE
 fun DeclarationContainerScope.dokkaPlugin() = "DokkaPlugin".role {
     title = "Dokka プラグイン"
     summary = "API リファレンスに Featured（ページの節とサイドバー）・サイドバーの package の階層表示と、AI エージェント向けの llms.txt・ページごとの Markdown を足す、このリポジトリ専用の Dokka プラグイン"
+    description = """
+        ライブラリの層ではなく、公開もしない道具なので、層のルールは持たず、`KDOC_TAG_ORDER_RULE` だけを当てます。
+        サブパッケージは `**` を使わず 1 つずつ挙げているので、増やすときはここに足します。
+    """.trimIndent()
     example("KatachiDokkaPlugin.kt", "拡張の登録だけを持つプラグイン本体")
     example("FeaturedTagTransformer.kt", "@featured の付いた宣言に印を付ける")
     example("ModuleFragmentStrategy.kt", "モジュールごとの run が残した断片を、束ねる run で回収する")

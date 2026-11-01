@@ -5,6 +5,11 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 fun DeclarationContainerScope.projectDocument() = "ProjectDocument".role {
     title = "プロジェクト文書"
     summary = "リポジトリを開いた人が最初に読むもの"
+    description = """
+        README・LICENSE・CONTRIBUTING は `docs/` の外にありますが、最初に読まれる文書なので、この group に置いています。
+        `tool` group は機械向けで生成ドキュメントから外れているため、置き場にできません。
+        group はディレクトリではなく、一緒に属する役割の集まりです。
+    """.trimIndent()
     example("README.md", "katachi が何で、どう入れるか")
     example("CONTRIBUTING.md", "katachi 自体を直す人向けの案内")
     example("LICENSE", "ライセンス")

@@ -7,6 +7,10 @@ import me.tbsten.katachi.dsl.gradle.testSourceSet
 fun DeclarationContainerScope.gradlePlugin() = "GradlePlugin".role {
     title = "プラグイン本体"
     summary = "processor ごとのタスク（katachiDocs など）を登録する plugin。利用者の Gradle デーモンに読まれるので Java で書く"
+    description = """
+        このモジュールのソースは全部 `.java` です。Konsist 0.17.3 は `.kt` しか読めないので `konsist { }` は置けません
+        （置くと `KatachiKonsistNoKotlinFilesException` になります）。同じ理由で Gradle group にも `konsist { }` はありません。
+    """.trimIndent()
     example("KatachiPlugin.java", "plugin 本体。登録キーごとに katachi<Key> タスクを登録する")
     example("KatachiProcessorTask.java", "processor を1つ決め打ちにし、test の runtimeClasspath で JVM を起動するタスク")
     example("KatachiExtension.java", "利用者が書く katachi { } ブロック")

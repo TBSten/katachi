@@ -32,6 +32,8 @@ object RoleDocCoverage : ArchitectureProcessorNoArg<RoleDocCoverage.Report> {
 
         if (documented.isEmpty()) `throw`(IllegalStateException("no documented roles"))
 
+        // A gap must be a failure(...): the task reads only the Result, so a success carrying a
+        // "missing" report would print [OK]. throw(...) above is for a run that has nothing to check.
         for (role in documented) {
             if (role[Summary].isNullOrBlank()) {
                 failure(IllegalStateException("${role.qualifiedName}: no summary"))
