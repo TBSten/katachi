@@ -20,12 +20,6 @@ import com.example.sample.ui.component.AppButtonEmphasis
 import com.example.sample.ui.core.UiState
 import com.example.sample.ui.preview.PreviewRoot
 
-/**
- * The home screen, wired to its [HomeViewModel].
- *
- * This overload is what [homeScreen] calls, from the same module. It only collects state and
- * forwards events, so the stateless overload below stays previewable and testable.
- */
 @Composable
 internal fun HomeScreen(
     onNavigateToSettings: () -> Unit,
@@ -41,7 +35,6 @@ internal fun HomeScreen(
     )
 }
 
-/** The home screen as a function of its state. */
 @Composable
 internal fun HomeScreen(
     uiState: UiState<HomeContent>,

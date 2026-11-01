@@ -2,7 +2,6 @@ package me.tbsten.katachi.test.architecture.tool
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/** The role of the forms GitHub offers when someone opens an issue. */
 fun DeclarationContainerScope.issueTemplate() = "IssueTemplate".role {
     title = "Issue テンプレート"
     summary = "GitHub で issue を立てるときに出る入力フォームの定義"

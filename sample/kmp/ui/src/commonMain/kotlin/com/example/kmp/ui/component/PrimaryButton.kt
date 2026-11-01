@@ -5,10 +5,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
-/**
- * The button used for the main action of a screen. Shared by every feature module, which is
- * why it lives in the `component` package of `:ui` rather than next to one screen.
- */
 @Composable
 fun PrimaryButton(
     label: String,

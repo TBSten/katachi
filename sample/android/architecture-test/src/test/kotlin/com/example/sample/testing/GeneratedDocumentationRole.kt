@@ -4,13 +4,6 @@ import com.example.sample.forbiddenContents
 import com.example.sample.tool.documentation
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/**
- * The role of the pages `katachiDocs` writes out of this very definition.
- *
- * The counterpart of [documentation]: that one is prose a person writes and this one is not
- * written by hand at all. They are separate roles rather than one "documents" bucket precisely
- * because that difference is the only thing worth knowing about either of them.
- */
 fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
     title = "Generated documentation"
     summary = "Markdown written out from this definition and committed to the repository"

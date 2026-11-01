@@ -5,7 +5,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/** The role of the one test a project adopting katachi writes. */
 fun DeclarationContainerScope.architectureTest() = "ArchitectureTest".role {
     title = "Architecture test"
     summary = "The one test that checks the whole project against the definition"

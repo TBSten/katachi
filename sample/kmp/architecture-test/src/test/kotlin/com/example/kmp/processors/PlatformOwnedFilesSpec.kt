@@ -13,19 +13,6 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.processor.process
 
-/**
- * A processor written outside `:katachi`, run against this sample's own definition.
- *
- * [PlatformOwnedFilesProcessor] and the [Owner] key it reads are both declared in this sample,
- * not in katachi. That is the whole point of this file: a user can add a processor of their
- * own on top of the one katachi ships (`assert()` / [me.tbsten.katachi.check.LayoutCheck]),
- * using nothing but the published processor API.
- *
- * The processor API is `@ExperimentalKatachiApi`, so this file opts in. That opt-in is the
- * wall doing its job: a real consumer of the published `katachi` artifact writes exactly this
- * to depend on a shape that is still moving, which is different from writing `owner = "..."`
- * in [com.example.kmp.gradle.gradleGroup] -- that needs no opt-in, because the sugar hides it.
- */
 @OptIn(ExperimentalKatachiApi::class)
 class PlatformOwnedFilesSpec : FreeSpec({
     "collects every file of the roles tagged owner = \"platform\"" {
@@ -71,12 +58,6 @@ class PlatformOwnedFilesSpec : FreeSpec({
     }
 })
 
-/**
- * Every file `owner = "platform"` reaches through the `"Gradle"` group -- tagged as a whole in
- * `gradle/GradleGroup.kt` -- shared by both tests above so the file list is written once.
- * `tool/Git`'s `.gitignore` is deliberately not here: it is the one file that tells the two
- * tests apart.
- */
 private val platformOwnedFilesWithoutGit = listOf(
     "app/android/build.gradle.kts",
     "architecture-test/build.gradle.kts",

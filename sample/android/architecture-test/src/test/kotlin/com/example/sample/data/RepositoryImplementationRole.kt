@@ -12,7 +12,6 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 
-/** The role of the production implementation of a repository interface. */
 fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation".role {
     title = "Repository implementation"
     summary = "The implementation of a repository interface, in :data, next to the interface"
@@ -66,7 +65,6 @@ fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementa
     }
 }
 
-/** The implementation [repositoryImplementation]'s `.template { }` writes, for one [DataDomain]. */
 private fun repositoryImplContent(domain: DataDomain, name: String): String {
     val repository = "${domain.name}${name}Repository"
     val packageName = "com.example.sample.data.${domain.packageName}"

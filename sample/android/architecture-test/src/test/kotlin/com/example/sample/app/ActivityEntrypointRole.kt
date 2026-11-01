@@ -6,7 +6,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/** The role of the Activity Android starts the app with. */
 fun DeclarationContainerScope.activityEntrypoint() = "ActivityEntrypoint".role {
     title = "Activity entrypoint"
     summary = "The single Activity Android launches, kept in :app"

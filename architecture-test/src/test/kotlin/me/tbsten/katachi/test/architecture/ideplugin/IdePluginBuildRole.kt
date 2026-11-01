@@ -3,13 +3,6 @@ package me.tbsten.katachi.test.architecture.ideplugin
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 
-/**
- * The role of the IDE plugin's build: an independent Gradle build with its own wrapper.
- *
- * Independent because one Gradle build cannot mix two versions of the Kotlin Gradle Plugin, and
- * the plugin has to be compiled with a Kotlin no newer than the one bundled in its target IDE.
- * So it is written as a plain directory, the same way `BuildLogic` writes `buildSrc`.
- */
 fun DeclarationContainerScope.idePluginBuild() = "IdePluginBuild".role {
     title = "IDE プラグインのビルド"
     summary = "IDE プラグインの独立した Gradle ビルド。対象の IDE に同梱された Kotlin・Jewel に版を揃える"

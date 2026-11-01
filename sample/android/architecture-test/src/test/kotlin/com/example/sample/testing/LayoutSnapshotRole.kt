@@ -4,15 +4,6 @@ import com.example.sample.forbiddenContents
 import com.example.sample.tool.git
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/**
- * The role of the flattened form of this definition, kept as text so a change to it is read
- * as a diff.
- *
- * The second of the machine-written roles, after [generatedDocumentation]. Both are produced
- * out of this very definition and both are committed rather than left in `build/`, because a
- * generated artifact nobody can open is worth nothing. Outside `build/` means inside
- * `files = gitTracked()`, which is why each of them needs a role of its own.
- */
 fun DeclarationContainerScope.layoutSnapshot() = "LayoutSnapshot".role {
     title = "Layout snapshot"
     summary = "A record of every line of this definition once flattened, so people can review changes to the definition as a diff"

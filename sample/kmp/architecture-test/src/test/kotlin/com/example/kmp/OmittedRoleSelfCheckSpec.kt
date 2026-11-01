@@ -22,24 +22,6 @@ import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.architecture
 
-/**
- * **This is katachi's own verification, not something a user of katachi writes.**
- *
- * [ProjectArchitectureTest] proves that the check passes on a repository that matches its
- * definition. On its own that proves very little: a check that never reports anything passes
- * just as well. So this spec builds definitions that are deliberately incomplete — the real
- * one minus one group of roles — and pins down exactly what katachi reports for each.
- *
- * It uses `validate()`, which hands the violations back instead of throwing. That function is
- * `@InternalKatachiApi` on purpose: a user asserts, and this file is not a user.
- *
- * `validate()` answers with the warnings too. The full definition has none, so every line of
- * the expectations below comes from the group each one drops, or from the baseline.
- *
- * `FileConstraintCheck()` is passed as [ProjectArchitectureTest] passes it, so the
- * `ktFileContent { }` of the roles kept in each definition are checked rather than reported as
- * `[UncheckedFileConstraint]`. The files still match them, so they add nothing to the expectations.
- */
 @OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
 class OmittedRoleSelfCheckSpec : FreeSpec({
     "dropping a role makes the files only that role covered Unexpected" {
@@ -118,20 +100,10 @@ class OmittedRoleSelfCheckSpec : FreeSpec({
     }
 })
 
-/** The directory of `:feature:home`'s common sources, where `HomeScreen.kt` lives. */
 private const val HOME_SOURCES = "feature/home/src/commonMain/kotlin/com/example/kmp/feature/home"
 
-/**
- * The violation left in the project on purpose, as the demo of `baseline()`, and
- * recorded in `katachi-baseline.json`. `validate()` reports it; `assert()` holds it back. The
- * definition without `data` does not report it, because the walk stops at `data/src`.
- */
 private const val HELD_BACK_BY_BASELINE: String =
     "[UnexpectedDirectory] data/src/androidMain/kotlin/com/example/kmp/data/user"
 
-/**
- * `[UnexpectedFile] path`, with [Violation.path] relative to the project root. A report block's
- * first line has the same shape, but prints the path as a `file:///...` URI.
- */
 @OptIn(InternalKatachiApi::class)
 private fun List<Violation>.labels(): List<String> = map { "[${it.label}] ${it.path}" }

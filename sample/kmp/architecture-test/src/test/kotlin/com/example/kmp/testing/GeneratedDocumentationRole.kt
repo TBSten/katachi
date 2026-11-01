@@ -4,14 +4,6 @@ import com.example.kmp.forbiddenContents
 import com.example.kmp.tool.documentation
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/**
- * The role of the pages `katachiDocs` writes out of this very definition.
- *
- * A generated artifact kept outside `build/` is an ordinary file as far as the check is
- * concerned: `files` is left at the default `gitTracked()`, so the pages are offered to it and a
- * directory no role claims is a violation. Declaring the role is what buys them a place in the
- * repository, where a reader finds them without running anything.
- */
 fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
     title = "Generated documentation"
     summary = "Markdown written from this definition and committed to the repository"

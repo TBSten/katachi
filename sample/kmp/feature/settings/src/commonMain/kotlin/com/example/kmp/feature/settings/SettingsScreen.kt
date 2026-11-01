@@ -14,7 +14,6 @@ import com.example.kmp.ui.component.PrimaryButton
 import com.example.kmp.ui.core.UiState
 import com.example.kmp.ui.theme.AppSpacing
 
-/** The settings screen, bound to its state holder. */
 @Composable
 internal fun SettingsScreen(
     viewModel: SettingsViewModel,
@@ -28,7 +27,6 @@ internal fun SettingsScreen(
     )
 }
 
-/** The same screen without the state holder. */
 @Composable
 internal fun SettingsContent(
     state: UiState<SettingsUi>,

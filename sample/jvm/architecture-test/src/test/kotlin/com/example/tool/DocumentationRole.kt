@@ -3,7 +3,6 @@ package com.example.tool
 import com.example.data.repository
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/** The role of the prose that explains this sample to whoever opens it. */
 fun DeclarationContainerScope.documentation() = "Documentation".role {
     title = "Documentation"
     summary = "README.md and other explanations for people reading the repository"

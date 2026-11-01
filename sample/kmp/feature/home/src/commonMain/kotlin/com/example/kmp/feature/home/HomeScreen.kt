@@ -15,7 +15,6 @@ import com.example.kmp.ui.component.PrimaryButton
 import com.example.kmp.ui.core.UiState
 import com.example.kmp.ui.theme.AppSpacing
 
-/** The home screen, bound to its state holder. */
 @Composable
 internal fun HomeScreen(
     viewModel: HomeViewModel,
@@ -29,10 +28,6 @@ internal fun HomeScreen(
     )
 }
 
-/**
- * The same screen without the state holder, so it can be previewed and tested with a plain
- * [UiState].
- */
 @Composable
 internal fun HomeContent(
     state: UiState<List<String>>,

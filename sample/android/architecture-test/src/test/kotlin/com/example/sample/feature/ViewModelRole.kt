@@ -12,7 +12,6 @@ import me.tbsten.katachi.dsl.pascalCase
 import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 
-/** The role holding one screen's state, named after the feature module it belongs to. */
 fun DeclarationContainerScope.viewModel() = "ViewModel".role {
     title = "ViewModel"
     summary = "An androidx.lifecycle.ViewModel that exposes screen state as a StateFlow and receives events"

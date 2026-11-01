@@ -2,7 +2,6 @@ package me.tbsten.katachi.test.architecture.tool
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/** The role of what CI runs: the workflows and the scripts they call. */
 fun DeclarationContainerScope.ci() = "Ci".role {
     title = "CI"
     summary = "GitHub Actions のワークフローと、そこから呼ばれるスクリプト"

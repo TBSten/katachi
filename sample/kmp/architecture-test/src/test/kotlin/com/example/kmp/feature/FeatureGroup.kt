@@ -9,24 +9,6 @@ import com.example.kmp.forbiddenContents
 import com.example.kmp.ui.uiGroup
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/**
- * Roles of one feature: what every `:feature:<name>` module holds.
- *
- * Kept apart from [uiGroup] because the two differ in how they grow. A feature module is a
- * place where things are *expected* to multiply — the directory `"feature" / "*"`
- * stands for however many there are — while `:ui` and
- * `:navigation` are shared modules where adding something is a design decision. Folding both
- * into one group would hide that difference in the generated documentation, and would mix two
- * shapes of `layout` inside a single group.
- *
- * The `*` after `feature` stands for whatever directory sits under it, so adding
- * `:feature:profile` needs no edit here. What the check does tie together is the module and its
- * files, the same way sample/android does: Screen / ViewModel / Route name the module directory
- * and the package directory alike with `capture("feature")` and write the file name as
- * `${capture("feature").pascalCase}Screen`, so a `ProfileScreen.kt` in `:feature:home` is
- * reported as `[CaptureMismatch]`. FeatureComponent uses the same `capture("feature")`, so its
- * template is given one value (`--arg feature=home`) to pick the module it generates into.
- */
 fun DeclarationContainerScope.featureGroup() = "feature".group {
     title = "Feature"
     summary = "One module per screen. :feature:<name> always holds a Screen / ViewModel / Route"

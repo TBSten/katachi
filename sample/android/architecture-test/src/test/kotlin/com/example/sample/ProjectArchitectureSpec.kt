@@ -30,26 +30,6 @@ import me.tbsten.katachi.dsl.Title
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.pascalCase
 
-/**
- * Checks that [projectArchitecture] builds into the model we meant to declare, and that the
- * check it drives really looks at this repository.
- *
- * **katachi's own integration test. A project adopting katachi does not write this** — it
- * writes [ProjectArchitectureTest] and nothing else. This one is run from a real Gradle test
- * task of a sample project rather than from katachi's own JVM tests, and what it guards is
- * that nothing in the surrounding toolchain quietly breaks the DSL — above all the
- * declaration site capture, which reads the JVM stack trace.
- *
- * Since the definition is split one declaration per file, the declaration site tests below
- * are also the proof that the split is free: a role written in `feature/ScreenRole.kt` must
- * report `ScreenRole.kt`, not the `ProjectArchitecture.kt` that called into it — which no
- * longer contains a single `group` or role call of its own.
- *
- * The last test is the one that keeps the rest honest: `assert()` passing proves nothing on
- * its own, because a traversal that reached no file at all would also pass. Removing one
- * group from an otherwise identical definition has to turn exactly that group's files into
- * violations.
- */
 @OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
 class ProjectArchitectureSpec : FreeSpec({
     "every declared group is in the model, in declaration order" {
@@ -256,15 +236,8 @@ class ProjectArchitectureSpec : FreeSpec({
     }
 })
 
-/** The directory of `:feature:home`'s sources, where `HomeScreen.kt` lives. */
 private const val HOME_SOURCES = "feature/home/src/main/kotlin/com/example/sample/feature/home"
 
-/**
- * [projectArchitecture] with `feature.Screen` removed, and nothing else changed: the feature
- * group is rebuilt from the same role functions, so the roles it keeps are the real ones and
- * only the omission is written out. Deliberately broken, and kept out of
- * `ProjectArchitecture.kt` for the same reason [architectureWithoutToolRoles] is.
- */
 private val architectureWithoutScreenRole: Architecture = architecture {
     "feature".group {
         // screen() — omitted on purpose. `HomeScreen.kt` and `SettingsScreen.kt` lose their role.
@@ -281,13 +254,6 @@ private val architectureWithoutScreenRole: Architecture = architecture {
     toolGroup()
 }
 
-/**
- * [projectArchitecture] with `toolGroup()` left out, used by the last test above.
- *
- * Deliberately broken, and deliberately kept out of `ProjectArchitecture.kt`: that file is
- * what a user reads as the worked example of a definition, and a definition that is meant to
- * fail has no place in it.
- */
 private val architectureWithoutToolRoles: Architecture = architecture {
     featureGroup()
     uiGroup()
@@ -298,29 +264,13 @@ private val architectureWithoutToolRoles: Architecture = architecture {
     // toolGroup() — omitted on purpose. `.gitignore` and `README.md` lose their role.
 }
 
-/**
- * The violations left in the project on purpose, as the demo of `baseline()`, and
- * recorded in `katachi-baseline.json`. `validate()` reports them; `assert()` holds them back.
- */
 private val violationsHeldBackByBaseline: List<String> = listOf(
     "[UnexpectedDirectory] data/src/main/kotlin/com/example/sample/data/legacy",
     "[UnexpectedFile] feature/home/src/main/kotlin/com/example/sample/feature/home/HomeFormatter.kt",
 )
 
-/** `"Gradle"` itself or anything nested under it -- see `gradle/GradleGroup.kt`. */
 private fun String.isGradleGroupSubtree(): Boolean = this == "Gradle" || startsWith("Gradle.")
 
-/**
- * Every Kotlin source of this test source set, keyed by file name, so a captured line
- * number can be compared against what is actually written there.
- *
- * The declarations sit one per file under the group directories, so the lookup is by file
- * name rather than by a fixed path: that is all a [me.tbsten.katachi.dsl.DeclarationSite]
- * carries, and it keeps the test from having to know which package a role was moved into.
- *
- * A test task's working directory is its module directory, but that is a default a build
- * file can change, so the source set is looked up by walking up from wherever the tests run.
- */
 private fun declarationSourceLines(): Map<String, List<String>> {
     val relativePath = "src/test/kotlin/com/example/sample"
     // `getProperty` is a platform type; the JVM always defines `user.dir`.

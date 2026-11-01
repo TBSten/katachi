@@ -13,18 +13,6 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 
-/**
- * The role of a part one screen draws and no other: the feature-local counterpart of Component.
- *
- * This sample's example of generating into one of several modules. The module directory and
- * its package directory are both named `feature` -- one capture name on two levels says the two
- * read the same value -- so `--arg feature=home` picks `:feature:home` as the one place the
- * template writes to, the template reads the package back with `captureValue("feature")`, and
- * the check reports a part whose package does not match its module as `[CaptureMismatch]`. A
- * `feature` that is not a module is not refused. `:feature:home` holds one of them,
- * `HomeUserCard.kt`, which the home screen draws; `checkSampleKmp` generates another and checks
- * it before deleting it again.
- */
 fun DeclarationContainerScope.featureComponent() = "FeatureComponent".role {
     title = "Screen component"
     summary = "A @Composable used by only one screen. Placed as <Name>*.kt in the component package of the commonMain of :feature:<name>"

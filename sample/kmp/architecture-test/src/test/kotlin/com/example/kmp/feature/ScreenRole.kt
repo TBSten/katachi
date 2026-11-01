@@ -10,15 +10,6 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.pascalCase
 
-/**
- * The role of one screen's UI: the `@Composable` its feature module is named after.
- *
- * The layout names the module directory and the package directory alike, `capture("feature")`,
- * and derives the file name from it: `${capture("feature").pascalCase}Screen`. So `:feature:home`
- * may hold `HomeScreen.kt` and nothing else named `*Screen.kt` (a `ProfileScreen.kt` there is
- * reported as `[CaptureMismatch]`), without the feature modules being listed one by one. A
- * module without a screen is not reported: a pattern with a wildcard is never required.
- */
 fun DeclarationContainerScope.screen() = "Screen".role {
     title = "Screen"
     summary = "The @Composable of one screen. Subscribes to the ViewModel's StateFlow and draws by combining Components"

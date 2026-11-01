@@ -4,10 +4,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/**
- * The role of the IDE plugin's headless preview: the harness that renders the tool window to PNGs
- * without an IDE, and the golden PNGs `verifyPreview` compares against.
- */
 fun DeclarationContainerScope.idePluginPreview() = "IdePluginPreview".role {
     title = "IDE プラグインの画面プレビュー"
     summary = "Tool Window の画面を IDE なしで PNG に焼く仕組みと、verifyPreview が比べる golden の PNG"

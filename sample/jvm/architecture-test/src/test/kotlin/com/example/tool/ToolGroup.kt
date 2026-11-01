@@ -5,11 +5,6 @@ import com.example.tool.git
 import com.example.tool.ideCodeStyle
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/**
- * Roles of the tools around the project that are not the build itself.
- *
- * Like the `Gradle` group, these are checked but kept out of the generated documentation.
- */
 fun DeclarationContainerScope.toolGroup() = "tool".group {
     documented = false
     title = "Tool configuration"

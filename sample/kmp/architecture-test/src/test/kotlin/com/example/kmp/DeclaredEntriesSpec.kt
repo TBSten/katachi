@@ -7,21 +7,6 @@ import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.processor.process
 
-/**
- * `ArchitectureProcessContext.declaredEntries`, read from outside `:katachi`.
- *
- * Two things are being stood on here, and both of them need to be stood on from *this* side of
- * the wall. `:katachi` opts its own module in to every marker it publishes, so a spec written
- * there cannot tell a reachable API from an unreachable one -- this file can, because the only
- * opt-in it writes is the one a real consumer would write.
- *
- * - `LayoutEntry` and `LayoutEntryKind` have to be reachable with `@ExperimentalKatachiApi`
- *   alone. They used to be `@InternalKatachiApi`, which made `context.declaredEntries` an API
- *   member whose elements nobody outside katachi was allowed to touch.
- * - `declaredEntries` and `filesOf` answer different questions, and a wildcard directory is
- *   where that shows. This sample writes `"feature" / "*"` in five places, so it is the
- *   one that can say so against a real checkout instead of against an invented tree.
- */
 @OptIn(ExperimentalKatachiApi::class)
 class DeclaredEntriesSpec : FreeSpec({
     "a processor that only looks at declarations can read paths from declaredEntries" {

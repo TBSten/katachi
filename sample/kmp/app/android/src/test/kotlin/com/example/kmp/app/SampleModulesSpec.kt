@@ -9,15 +9,6 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 
-/**
- * The Compose-free parts of the sample's own code.
- *
- * Every other module of this build is Kotlin Multiplatform with only Android and iOS
- * targets, so `:app:android` is where anything that is not a `@Composable` gets exercised.
- * (`:architecture-test` is a JVM module too, but it holds the katachi definition and
- * nothing of the app.) The screens themselves are not tested here: that would need a
- * Compose test runtime, which is outside what this sample is for.
- */
 class SampleModulesSpec : FreeSpec({
     "Navigator starts at home" {
         Navigator().current.value shouldBe Destination.Home

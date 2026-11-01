@@ -6,7 +6,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/** The role of the Application class Android creates before any Activity. */
 fun DeclarationContainerScope.applicationEntrypoint() = "ApplicationEntrypoint".role {
     title = "Application entrypoint"
     summary = "The single Application class Android creates at process start, kept in :app"

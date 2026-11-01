@@ -4,7 +4,6 @@ import com.example.data.repository
 import com.example.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/** The role of the code style IntelliJ IDEA shares through the repository. */
 fun DeclarationContainerScope.ideCodeStyle() = "IdeCodeStyle".role {
     title = "IDE code style"
     summary = "The code style IntelliJ IDEA shares through the repository"

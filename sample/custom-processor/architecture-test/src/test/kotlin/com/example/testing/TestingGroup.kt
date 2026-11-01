@@ -12,14 +12,6 @@ import com.example.testing.processor
 import com.example.testing.roleDefinition
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/**
- * The architecture definition, the processors this project writes, and what the two produce.
- *
- * The code all lives in `:architecture-test`, a module that belongs to no layer of the
- * application, and it is split into roles rather than kept as one because the direction of
- * reading differs: the definition describes the shape, a processor reads that shape, and `docs/`
- * and `snapshots/` are what was written out of it.
- */
 fun DeclarationContainerScope.testingGroup() = "testing".group {
     title = "Definition and processors"
     summary = "The katachi definition, the three processors of your own that read it, and the generated documentation"

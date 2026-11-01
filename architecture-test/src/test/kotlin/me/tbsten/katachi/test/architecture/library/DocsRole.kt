@@ -19,13 +19,6 @@ import me.tbsten.katachi.test.architecture.keepsBlockTagsLast
 import me.tbsten.katachi.test.architecture.showsExample
 import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
 
-/**
- * The role of the layer that turns a definition into Markdown.
- *
- * A sibling of `Check` rather than a part of it: both read the same declarations and produce
- * something from them, and neither is more privileged than the other. It sits after `Check` in
- * the layer table only because nothing imports it yet, which makes it the cheapest place to put.
- */
 fun DeclarationContainerScope.docs() = "Docs".role {
     title = "ドキュメント生成"
     summary = "宣言から役割リファレンスの Markdown を組み立て、書き出す層"
@@ -47,7 +40,6 @@ fun DeclarationContainerScope.docs() = "Docs".role {
     }
 }
 
-/** The layer this role is: the entry of the layer table its import lines are built from. */
 private const val LAYER: String = "docs"
 
 // Written here rather than in a shared file: katachi captures the first frame outside itself as

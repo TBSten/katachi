@@ -5,12 +5,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/**
- * The test code of the app itself.
- *
- * Android puts its tests in `src/test`; a KMP module puts them in `commonTest`. Both shapes
- * are one role here.
- */
 fun DeclarationContainerScope.test() = "Test".role {
     title = "Test code"
     summary = "The tests of each module. commonTest for KMP modules, " +

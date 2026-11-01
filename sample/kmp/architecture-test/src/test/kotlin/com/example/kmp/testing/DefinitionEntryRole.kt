@@ -4,7 +4,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/** The role of the single file that assembles the whole definition. */
 fun DeclarationContainerScope.definitionEntry() = "DefinitionEntry".role {
     title = "Definition entrypoint"
     summary = "ProjectArchitecture.kt, which only calls the group functions and belongs to no layer"

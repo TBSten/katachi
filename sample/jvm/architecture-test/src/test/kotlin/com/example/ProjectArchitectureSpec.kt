@@ -34,25 +34,6 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.pascalCase
 import me.tbsten.katachi.dsl.wholeTree
 
-/**
- * Checks that [projectArchitecture] builds into the model we expect, and that the check it
- * drives actually looks at this project.
- *
- * katachi's own integration test, not part of adopting katachi: a project that uses katachi
- * writes `ProjectArchitectureTest` and nothing else. katachi's unit tests prove the DSL and
- * the traversal work in isolation; this proves they still work when the definition is
- * written by a user, in a user's build, against a katachi resolved through a composite
- * build.
- *
- * Since the definition was split one declaration per file, it also proves the harder half:
- * declaration sites still point at the file the user wrote, even though
- * `ProjectArchitecture.kt` no longer contains a single `group` or role call of its own.
- *
- * `validate()` is `@InternalKatachiApi` on purpose - a user asserts, and does not read the
- * violations - so this file opts in where a user would not have to. Reading metadata off a
- * declaration (`role[Title]`) is `@ExperimentalKatachiApi` for a different reason: the shape
- * is still moving. Writing it in the definition - `title = "..."` - needs neither.
- */
 @OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
 class ProjectArchitectureSpec : FreeSpec({
     "every declared group is in the model" {
@@ -287,16 +268,6 @@ class ProjectArchitectureSpec : FreeSpec({
     }
 })
 
-/**
- * A [FileSelection] written the way a project outside katachi writes one: it hands the walk a
- * view in which the project holds no files at all.
- *
- * `fileSystemFor` is `@ExperimentalKatachiApi` because [KatachiFileSystem] and [ProjectRoot]
- * are, so implementing it costs an explicit opt-in — the same one a user takes on to write
- * their own `FileSelection`, which is exactly what this sample stands in for. Nothing else
- * here is katachi's privilege: `GitTracked` and `WholeTree` implement the same interface with
- * the same one method.
- */
 @OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
 private object SelectsNothing : FileSelection {
     override fun fileSystemFor(
@@ -307,29 +278,14 @@ private object SelectsNothing : FileSelection {
     }
 }
 
-/**
- * The violations left in the project on purpose, as the demo of `baseline()`, and
- * recorded in `katachi-baseline.json`. `validate()` reports them; `assert()` holds them back.
- */
 private val violationsHeldBackByBaseline: List<String> = listOf(
     "[CaptureMismatch] src/main/kotlin/com/example/controller/health/LegacyStatusController.kt",
     "[UnexpectedFile] src/main/kotlin/com/example/service/LegacyHealthCheck.kt",
     "[UnsatisfiedFileConstraint] src/main/kotlin/com/example/service/LegacyStatusService.kt",
 )
 
-/** `"Gradle"` itself or anything nested under it -- see `gradle/GradleGroup.kt`. */
 private fun String.isGradleGroupSubtree(): Boolean = this == "Gradle" || startsWith("Gradle.")
 
-/**
- * [projectArchitecture] with `app/Entrypoint` removed, and nothing else changed.
- *
- * Deliberately broken, and deliberately kept out of `ProjectArchitecture.kt`: a reader
- * looking for the definition to copy should never meet it. Splitting one role per file pays
- * for itself here — the `app` group is rebuilt by calling `applicationConfig()` and `loggingConfig()`, so the
- * roles it keeps are the real ones and only the omission is written out. Before the split, `appRoles()`
- * declared both roles at once and the remaining one had to be copied by hand, where it could
- * drift away from the definition it was standing in for.
- */
 private val architectureWithoutEntrypointRole: Architecture = architecture {
     apiGroup()
     domainGroup()
@@ -343,18 +299,8 @@ private val architectureWithoutEntrypointRole: Architecture = architecture {
     toolGroup()
 }
 
-/** Cached so that reading a source file once per declaration does not hit the disk again. */
 private val sourceLineCache = mutableMapOf<String, List<String>>()
 
-/**
- * The lines of one file of the architecture definition, so a captured line number can be
- * compared against what is actually written there.
- *
- * A test task's working directory is its module directory - here
- * `sample/jvm/architecture-test` - but that is a default a build file can change, so the
- * source root is looked up by walking up from wherever the tests run, and the file itself
- * by name, so moving a role into another package needs no change here.
- */
 private fun sourceLinesOf(fileName: String): List<String> = sourceLineCache.getOrPut(fileName) {
     // `getProperty` is a platform type; the JVM always defines `user.dir`.
     val workingDir = File(requireNotNull(System.getProperty("user.dir"))).absoluteFile

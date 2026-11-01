@@ -13,16 +13,6 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 
-/**
- * The role of a feature module's own unit tests, which stand the ViewModel on `:testing`'s fakes.
- *
- * Named module by module through [FeatureModule], so that the template can write into one of
- * them: `HomeViewModelTest.kt` fits only `:feature:home`'s pattern.
- *
- * Not the directory captures FeatureComponent uses, because what the test arranges differs per
- * screen: the template is a `when` over [FeatureModule], which a new module cannot slip past,
- * while a captured value is only a string.
- */
 fun DeclarationContainerScope.featureTest() = "FeatureTest".role {
     title = "Screen test"
     summary = "A test in src/test of :feature:<name> that runs the ViewModel with fakes from :testing"
@@ -77,7 +67,6 @@ fun DeclarationContainerScope.featureTest() = "FeatureTest".role {
     }
 }
 
-/** The body [featureTest]'s `.template { }` writes, for one [FeatureModule]. */
 private fun featureTestContent(feature: FeatureModule, name: String): String {
     val testClass = "${feature.name}${name}Test"
     val viewModel = "${feature.name}ViewModel"

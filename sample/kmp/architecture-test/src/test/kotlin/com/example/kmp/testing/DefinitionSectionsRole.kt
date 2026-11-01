@@ -4,7 +4,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/** The role of the section headings every group and role writes through. */
 fun DeclarationContainerScope.definitionSections() = "DefinitionSections".role {
     title = "Definition sections"
     summary = "DocumentSections.kt, the section headings every group and role writes through"

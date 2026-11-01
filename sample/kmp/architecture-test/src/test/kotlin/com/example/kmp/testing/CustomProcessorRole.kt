@@ -4,7 +4,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/** The role of the processors this sample adds on top of the check katachi ships. */
 fun DeclarationContainerScope.customProcessor() = "CustomProcessor".role {
     title = "Custom processor"
     summary = "Processors a user adds beside the check katachi ships, kept in the processors package of :architecture-test"

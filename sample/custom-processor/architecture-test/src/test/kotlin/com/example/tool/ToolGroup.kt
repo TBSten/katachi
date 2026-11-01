@@ -4,11 +4,6 @@ import com.example.tool.documentation
 import com.example.tool.git
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/**
- * Roles of what sits around the project without being the build or the application.
- *
- * Like the `Gradle` group `gradle()` declares, these are checked but kept out of the generated documentation.
- */
 fun DeclarationContainerScope.toolGroup() = "tool".group {
     documented = false
     title = "Tool configuration"

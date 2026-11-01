@@ -18,10 +18,6 @@ import com.example.kmp.navigation.Destination
 import com.example.kmp.navigation.Navigator
 import com.example.kmp.ui.theme.AppTheme
 
-/**
- * The whole app below the platform entry point: theme, navigation bar, and the route that
- * matches the current destination.
- */
 @Composable
 fun AppRoot(
     repository: UserRepository,

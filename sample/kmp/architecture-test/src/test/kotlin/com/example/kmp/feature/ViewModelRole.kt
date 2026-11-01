@@ -11,12 +11,6 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.pascalCase
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 
-/**
- * The state holder of one screen, named after the feature module it sits in.
- *
- * Written the same way as [screen]: `capture("feature")` on the module directory and the
- * package directory, and the file name derived from it, `${capture("feature").pascalCase}ViewModel`.
- */
 fun DeclarationContainerScope.viewModel() = "ViewModel".role {
     title = "ViewModel"
     summary = "An androidx.lifecycle.ViewModel that holds screen state. " +

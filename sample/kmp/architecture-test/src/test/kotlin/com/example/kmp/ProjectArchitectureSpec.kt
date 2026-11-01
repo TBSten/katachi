@@ -16,17 +16,6 @@ import me.tbsten.katachi.dsl.Summary
 import me.tbsten.katachi.dsl.Title
 import me.tbsten.katachi.dsl.pascalCase
 
-/**
- * Checks the definition under `src/test/kotlin/com/example/kmp` against the model katachi
- * builds from it: names, titles, summaries and declaration sites.
- *
- * Whether the repository matches that definition is a different question, asked by
- * [ProjectArchitectureTest] with one `assert()`.
- *
- * Titles, summaries and examples are metadata on the declaration, read back as `role[Title]`.
- * That read is `@ExperimentalKatachiApi` — the shape still moves — while writing it in the
- * definition (`title = "..."`) needs no opt-in at all.
- */
 @OptIn(ExperimentalKatachiApi::class)
 class ProjectArchitectureSpec : FreeSpec({
     "every declared group is in the model" {
@@ -308,15 +297,6 @@ class ProjectArchitectureSpec : FreeSpec({
     }
 })
 
-/**
- * The definition's source files, keyed by file name, so a captured line number can be
- * compared against what is actually written there.
- *
- * A test task's working directory is its module directory -- here `architecture-test`, one
- * level below the sample root -- but that is a default a build file can change, so the
- * source root is looked up by walking up from wherever the tests run. File names are unique
- * across the tree, which is what makes a flat map enough.
- */
 private fun architectureDefinitionSources(): Map<String, List<String>> {
     val relativePath = "src/test/kotlin/com/example/kmp"
     // `getProperty` is a platform type; the JVM always defines `user.dir`.
@@ -330,5 +310,4 @@ private fun architectureDefinitionSources(): Map<String, List<String>> {
         .associate { it.name to it.readLines() }
 }
 
-/** `"Gradle"` itself or anything nested under it -- see `gradle/GradleGroup.kt`. */
 private fun String.isGradleGroupSubtree(): Boolean = this == "Gradle" || startsWith("Gradle.")

@@ -5,20 +5,6 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import java.io.File
 
-/**
- * Sentinel for katachi's project-root detection.
- *
- * katachi locates the project root by walking up from the working directory to the first
- * `gradlew`, and every path in the layout is relative to what it finds. The tests run from
- * `sample/jvm/architecture-test`, one level deeper
- * than before, so the walk passes through a module directory first - which is exactly the
- * normal case for a multi-module project, and must still land on `sample/jvm`.
- *
- * That only works because `sample/jvm` carries its own wrapper. If someone ever deletes it
- * to "clean up duplication", the walk would run past `sample/` and hit the katachi
- * repository root, and every path in the layout would be wrong. This test fails first, and
- * says why.
- */
 class ProjectRootSpec : FreeSpec({
     "walking up from the working directory, the first gradlew found belongs to this sample" {
         val workingDirectory = File(System.getProperty("user.dir")).absoluteFile

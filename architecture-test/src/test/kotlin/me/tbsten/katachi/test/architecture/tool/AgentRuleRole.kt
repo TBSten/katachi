@@ -2,7 +2,6 @@ package me.tbsten.katachi.test.architecture.tool
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/** The role of what Claude Code reads before it touches this repository: `CLAUDE.md` and `.claude/`. */
 fun DeclarationContainerScope.agentRule() = "AgentRule".role {
     title = "エージェント設定"
     summary = "Claude Code が読むルールとスキル"

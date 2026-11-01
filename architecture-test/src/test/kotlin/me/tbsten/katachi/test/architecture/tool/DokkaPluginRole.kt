@@ -12,21 +12,6 @@ import me.tbsten.katachi.test.architecture.keepsBlockTagsLast
 import me.tbsten.katachi.test.architecture.publicDeclarationsOf
 import me.tbsten.katachi.test.architecture.DOKKA_MAIN_PACKAGE
 
-/**
- * The role of `:tool:dokka`, the Dokka plugin behind this repository's own API reference.
- *
- * It is tooling rather than a layer of the library: nothing depends on it but the Dokka runs of
- * `generateApiDocs`, and it is never published. So it carries none of the layer rules of the
- * `library` group, and it sits in the undocumented `tool` group.
- *
- * One rule of the `library` group does apply: `KDOC_TAG_ORDER_RULE`. This plugin runs inside the
- * same `generateApiDocs` its own bug would break, so a KDoc here that puts a heading or a
- * paragraph after its block tags is worth catching before it reaches Dokka, same as in the
- * library itself. See `KdocExamples.kt`.
- *
- * Each subpackage is listed rather than matched with `**`, so a new one has to be declared here
- * on purpose.
- */
 fun DeclarationContainerScope.dokkaPlugin() = "DokkaPlugin".role {
     title = "Dokka プラグイン"
     summary = "API リファレンスに Featured（ページの節とサイドバー）・サイドバーの package の階層表示と、AI エージェント向けの llms.txt・ページごとの Markdown を足す、このリポジトリ専用の Dokka プラグイン"

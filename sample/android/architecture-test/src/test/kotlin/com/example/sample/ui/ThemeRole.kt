@@ -6,7 +6,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/** The role of the one place colours, typography and shapes are decided. */
 fun DeclarationContainerScope.theme() = "Theme".role {
     title = "Theme"
     summary = "Colors, typography and shapes, kept in the theme package of the :ui module"

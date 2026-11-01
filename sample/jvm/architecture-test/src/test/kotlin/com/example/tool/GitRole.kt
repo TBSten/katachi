@@ -3,7 +3,6 @@ package com.example.tool
 import com.example.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/** The role of the version control configuration. */
 fun DeclarationContainerScope.git() = "Git".role {
     title = "Git configuration"
     summary = "Version control configuration files"

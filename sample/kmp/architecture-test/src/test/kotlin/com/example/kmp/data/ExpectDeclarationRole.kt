@@ -10,13 +10,6 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 
-/**
- * The role that only exists because this is a KMP project: the `expect` half.
- *
- * `commonMain` declares `expect`, and [actualImplementation] supplies the `actual` in
- * `androidMain` / `iosMain`. The files have to sit in the same package, so the package is part
- * of what these two roles describe.
- */
 fun DeclarationContainerScope.expectDeclaration() = "ExpectDeclaration".role {
     title = "Expect declaration"
     summary = "The :data module's platform package. The expect declaration in commonMain that the common side calls"

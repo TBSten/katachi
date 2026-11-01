@@ -4,19 +4,6 @@ import com.example.sample.tool.documentation
 import com.example.sample.tool.git
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/**
- * Roles of the tools a repository carries that are neither the app nor its build: git and
- * the prose that explains the sample, plus whatever else earns a place later (CI,
- * formatters, editor settings).
- *
- * They sit in their own group rather than in katachi's `Gradle` group, because a group is
- * declared exactly once and each of these files belongs to a different tool. Like the build
- * scripts, they are checked but not documented.
- *
- * This group is also what `ProjectArchitectureSpec` leaves out to prove the check is not
- * passing by accident: drop it and the two files it covers turn into violations, on top of the
- * ones the baseline holds back, which are there either way.
- */
 fun DeclarationContainerScope.toolGroup() = "tool".group {
     documented = false
     title = "Tools"

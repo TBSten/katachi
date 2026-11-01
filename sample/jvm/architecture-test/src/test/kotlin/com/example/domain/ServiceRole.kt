@@ -15,7 +15,6 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 
-/** The role holding one application-specific behaviour, built out of repositories. */
 fun DeclarationContainerScope.service() = "Service".role {
     title = "Service"
     summary = "Owns one application-specific behaviour, realized by combining Repositories"

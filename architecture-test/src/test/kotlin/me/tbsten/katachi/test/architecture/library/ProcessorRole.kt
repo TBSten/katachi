@@ -19,7 +19,6 @@ import me.tbsten.katachi.test.architecture.keepsBlockTagsLast
 import me.tbsten.katachi.test.architecture.showsExample
 import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
 
-/** The role of the entry point a user implements to turn one walk into whatever they need. */
 fun DeclarationContainerScope.processor() = "Processor".role {
     title = "プロセッサ"
     summary = "1度の走査の結果を受け取って、好きな形に変換する入口"
@@ -40,7 +39,6 @@ fun DeclarationContainerScope.processor() = "Processor".role {
     }
 }
 
-/** The layer this role is: the entry of the layer table its import lines are built from. */
 private const val LAYER: String = "processor"
 
 // Written here rather than in a shared file: katachi captures the first frame outside itself as
@@ -63,7 +61,6 @@ private fun LayoutScope.packageAndLayerImports() =
         allow(anythingElse)
     }
 
-/** The four later-layer imports only `DefinitionErrorReport` may keep; any other file importing them fails. */
 private val DEFINITION_ERROR_REPORT_IMPORTS: Array<String> = arrayOf(
     "me.tbsten.katachi.ide.internal.DeclarationSiteJson",
     "me.tbsten.katachi.ide.internal.siteOf",

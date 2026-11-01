@@ -6,7 +6,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/** The role of the single base every `@Preview` wraps its body in. */
 fun DeclarationContainerScope.previewRoot() = "PreviewRoot".role {
     title = "Preview base"
     summary = "The base every @Preview wraps its body in, kept in the preview package of :ui. Decides the theme and background in one place, and takes darkTheme to show light and dark"

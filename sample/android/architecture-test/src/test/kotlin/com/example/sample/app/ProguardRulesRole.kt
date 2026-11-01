@@ -3,7 +3,6 @@ package com.example.sample.app
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 
-/** The role of the shrinker rules of the app. */
 fun DeclarationContainerScope.proguardRules() = "ProguardRules".role {
     title = "Proguard rules"
     summary = "proguard-rules.pro of :app, the rules the code shrinker reads"

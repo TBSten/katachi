@@ -2,7 +2,6 @@ package me.tbsten.katachi.test.architecture.docs
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/** The role of the conventions the agents and the maintainers read out of the repository. */
 fun DeclarationContainerScope.internalGuide() = "InternalGuide".role {
     title = "内部向けガイド"
     summary = "エージェントと人が読む、このリポジトリの Kotlin の規約"

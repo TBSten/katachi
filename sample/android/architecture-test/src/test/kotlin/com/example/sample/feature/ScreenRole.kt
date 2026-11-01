@@ -15,14 +15,6 @@ import me.tbsten.katachi.dsl.pascalCase
 import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 
-/**
- * The role of one screen's UI: the `@Composable` its feature module is named after.
- *
- * The layout names the module directory and the package directory alike, `capture("feature")`,
- * and derives the file name from it: `${capture("feature").pascalCase}Screen`. So `:feature:home`
- * may hold `HomeScreen.kt` and nothing else named `*Screen.kt`, without the feature modules
- * being listed one by one.
- */
 fun DeclarationContainerScope.screen() = "Screen".role {
     title = "Screen"
     summary = "A @Composable that implements the UI of one screen. One <Name>Screen.kt per :feature:<name>"

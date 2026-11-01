@@ -6,7 +6,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/** The `MaterialTheme` setup and the design tokens around it: the `theme` package of `:ui`. */
 fun DeclarationContainerScope.theme() = "Theme".role {
     title = "Theme"
     summary = "The theme package of the :ui module. The MaterialTheme setup and the design tokens for color and spacing"

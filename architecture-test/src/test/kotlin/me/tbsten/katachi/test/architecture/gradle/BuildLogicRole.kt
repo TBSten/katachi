@@ -4,7 +4,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 
-/** The role of `buildSrc`, a build of its own that module discovery never reaches. */
 fun DeclarationContainerScope.buildLogic() = "BuildLogic".role {
     title = "ビルドロジック"
     summary = "buildSrc の convention plugin と、それらが共有する型。モジュール探索には出てこない別ビルド"

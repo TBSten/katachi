@@ -7,7 +7,6 @@ import com.example.sample.data.repositoryInterface
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/** Roles of the data layer: what `:data` holds. */
 fun DeclarationContainerScope.dataGroup() = "data".group {
     title = "Data layer"
     summary = "What :data holds: fetching and storing data"
@@ -53,29 +52,12 @@ fun DeclarationContainerScope.dataGroup() = "data".group {
     }
 }
 
-/**
- * What `:data` keeps a package for, by name: `User` is the `user` package.
- *
- * Read twice, so the list is written once. The Repository roles' `layout { }` declare one
- * package per entry, and requires every file in it to start with that entry's name
- * (`user/User*Repository.kt`); each entry's own id (`--arg template=data.RepositoryInterface.user`) is
- * what the Repository templates take, and Fake reads the same name back from `repository`.
- *
- * A fixed list rather than a directory `capture(...)` is what lets `layout { }` require that:
- * a directory capture's value is not something the layout itself can read while it is still
- * being declared. So "every file below
- * `user/` starts with `User`" cannot be written as one pattern parameterised by a capture; each
- * domain's own literal package and prefix has to be written out. Choosing where a generated file
- * goes, rather than constraining its name, is the one thing a plain `capture(...)` would still do.
- */
 enum class DataDomain {
     User,
     Settings,
     ;
 
-    /** The package below `com.example.sample.data`, `user`. */
     val packageName: String get() = name.lowercase()
 
-    /** The id both Repository templates answer to for this domain: `user` for [User]. */
     val templateId: String get() = name.replaceFirstChar(Char::lowercaseChar)
 }

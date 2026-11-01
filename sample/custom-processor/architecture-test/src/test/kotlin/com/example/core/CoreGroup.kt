@@ -6,14 +6,6 @@ import com.example.core.store
 import com.example.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/**
- * Roles of the application itself: the smallest thing the processors can be pointed at.
- *
- * It is one group and not three layers on purpose. This sample's subject is in `testing`, and a
- * layered application here would invite a reader to compare architectures instead of reading
- * processors -- `sample/jvm`, `sample/android` and `sample/kmp` are where that comparison
- * belongs.
- */
 fun DeclarationContainerScope.coreGroup() = "core".group {
     title = "Application"
     summary = "A small app that only reads notes and lists them. What the processors read"

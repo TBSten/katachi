@@ -5,7 +5,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/** The role of the tests of this sample's processors and of katachi's own sentinel, which a project merely using katachi does not need. */
 fun DeclarationContainerScope.integrationSpec() = "IntegrationSpec".role {
     title = "Integration spec"
     summary = "The tests that call the processors through the API, and katachi's own sentinel run against this real project"

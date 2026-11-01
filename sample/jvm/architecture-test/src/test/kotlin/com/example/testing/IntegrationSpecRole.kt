@@ -5,7 +5,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/** The role of katachi's own integration tests, which a project merely using katachi does not need. */
 fun DeclarationContainerScope.integrationSpec() = "IntegrationSpec".role {
     title = "Integration spec"
     summary = "katachi's own integration tests, run against this real project"

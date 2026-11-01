@@ -12,25 +12,6 @@ import com.example.sample.testing.projectArchitectureTest
 import com.example.sample.testing.roleDefinition
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/**
- * Roles that exist for testing: the shared fakes in `:testing`, the tests themselves, the
- * architecture definition, the two things that definition is written out as, and the baseline
- * of the violations held back.
- *
- * The definition lives in `:architecture-test`, a module that belongs to no layer of the
- * application. It is still code someone has to maintain, so it gets a role of its own
- * rather than hiding inside the test roles: the definition roles (`DefinitionEntry`,
- * `DefinitionSections`, `GroupDefinition`, `RoleDefinition`) describe the shape,
- * `ProjectArchitectureTest` and `ProjectArchitectureSpec` assert behaviour. The two share one module and are told apart by where the file sits:
- * the definition is `ProjectArchitecture.kt` plus the `Group.kt` and `Role.kt` files in the
- * group directories, and everything `*Spec.kt` or `*Test.kt` at the top of the
- * package is a test.
- *
- * `:architecture-test` is also the second module whose package does not follow its module
- * path — it would be `com/example/sample/architectureTest` — so the roles
- * of this module write `com/example/sample` out as a key, while `:testing` writes
- * `com/example/sample/testing`.
- */
 fun DeclarationContainerScope.testingGroup() = "testing".group {
     title = "Testing"
     summary = "What exists to verify the app: shared fakes, tests, the architecture definition, generated docs, the layout snapshot and the baseline"

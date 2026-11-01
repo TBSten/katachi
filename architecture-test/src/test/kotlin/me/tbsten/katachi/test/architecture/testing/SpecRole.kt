@@ -6,12 +6,6 @@ import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.testSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/**
- * The role of a test that confirms one behaviour.
- *
- * It reaches across every module that has tests, `:architecture-test` included. That module checks itself
- * like everything else — the price of the recommended setup, and the point of it.
- */
 fun DeclarationContainerScope.spec() = "Spec".role {
     title = "スペック"
     summary = "kotest の FreeSpec。振る舞いを1つ確かめる"

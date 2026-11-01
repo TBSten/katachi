@@ -19,14 +19,6 @@ import me.tbsten.katachi.test.architecture.keepsBlockTagsLast
 import me.tbsten.katachi.test.architecture.showsExample
 import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
 
-/**
- * The role of the last layer: the one line a user writes, the single walk behind it, and the
- * report it throws.
- *
- * The function name shadows nothing — `kotlin.check` always takes a `Boolean`, so the
- * zero-argument call in `library/LibraryGroup.kt` can only resolve to this extension. The naming
- * rule is followed rather than bent, because `DeclarationSiteSpec` checks it mechanically.
- */
 fun DeclarationContainerScope.check() = "Check".role {
     title = "検査"
     summary = "利用者が呼ぶ assert() と、宣言に導かれた1度だけの走査、その結果と報告の組み立て"
@@ -46,7 +38,6 @@ fun DeclarationContainerScope.check() = "Check".role {
     }
 }
 
-/** The layer this role is: the entry of the layer table its import lines are built from. */
 private const val LAYER: String = "check"
 
 // Written here rather than in a shared file: katachi captures the first frame outside itself as

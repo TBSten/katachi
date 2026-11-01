@@ -9,14 +9,6 @@ import com.example.kmp.app.xcodeProject
 import com.example.kmp.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/**
- * The two applications: the Android one Gradle builds, and the iOS one Xcode builds.
- *
- * `:app:android` is the one nested module path of this sample, and it is also the one module
- * whose package does not follow it: the sources sit in `com.example.kmp.app`, not in
- * `com.example.kmp.app.android`. So the roles below write the package out as `com/example/kmp/app` —
- * a module that does not follow the rule should say so rather than bend it.
- */
 fun DeclarationContainerScope.appGroup() = "app".group {
     title = "App"
     summary = "The Android app that Gradle builds and the iOS app that Xcode builds"

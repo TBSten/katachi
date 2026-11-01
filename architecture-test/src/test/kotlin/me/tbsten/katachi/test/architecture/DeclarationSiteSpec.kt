@@ -8,35 +8,6 @@ import java.io.File
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.pascalCase
 
-/**
- * Guards the naming rule the split of this definition rests on, and the stack capture that
- * makes it observable.
- *
- * [projectArchitecture] no longer holds a single `group` or role call of its own, so every
- * declaration site has to come out of a `*Group.kt` or `*Role.kt` file. Nothing else in this module
- * reads `declaredAt`: `ProjectArchitectureSpec` asserts the layout and `RoleCoverageSpec` the
- * wildcards, and both stay green if an `inline` slips onto a declaration function or if katachi
- * starts capturing one frame further out. The three samples have carried this test since they
- * were split; the largest of the four definitions had no equivalent until now.
- *
- * Reading metadata off a declaration is `@ExperimentalKatachiApi` because the shape is still
- * moving. Writing it in the definition needs no opt-in.
- *
- * ## The `Gradle` group is a second exception, narrower than the whole subtree
- *
- * `gradle()` declares its own group, the nested `GradleWrapper` group with its three roles, and
- * four more roles (`SettingsScript`, `BuildScript`, `GradleProperties`, `VersionCatalog`) from
- * inside katachi's own `me.tbsten.katachi.dsl.gradle.GradleGroup.kt`, so their captured frame is
- * not that file but the first one outside katachi -- the `gradle { }` call in this project's own
- * `gradle/GradleGroup.kt`. Every one of those collapses onto that single line, which is
- * exactly what `Gradle は gradle() を呼んだ1箇所にまとめて宣言されている` below checks.
- *
- * `Gradle.BuildLogic` is declared inside the same `gradle { }` block but is not one of
- * those: `buildLogic()` is a plain call to a function written in `gradle/BuildLogicRole.kt`, and
- * the role itself -- `"BuildLogic".role { }` -- is literally written there, so its own frame is
- * outside katachi already and the walk never reaches `gradle/GradleGroup.kt` at all. It is
- * checked by the ordinary per-file rule below, same as any other role.
- */
 @OptIn(ExperimentalKatachiApi::class)
 class DeclarationSiteSpec : FreeSpec({
     "group ごとに、その group の名前から決まるファイルで宣言されている" {
@@ -44,8 +15,8 @@ class DeclarationSiteSpec : FreeSpec({
         // group named `"debug-menu"` belongs in `DebugMenuGroup.kt`, and `pascalCase` is the
         // same conversion katachi applies to a captured wildcard.
         //
-        // `gradle()`'s own group and roles are declared inside katachi, not here -- see the
-        // class KDoc -- so they are excluded and checked separately below.
+        // `gradle()`'s own group and roles are declared inside katachi, not here, so they
+        // are excluded and checked separately below.
         projectArchitecture.allGroups.filterNot { it.qualifiedName in gradleOwnDeclarations }.forEach { group ->
             group.declaredAt.fileName shouldBe "${group.name.pascalCase}Group.kt"
         }
@@ -110,14 +81,6 @@ class DeclarationSiteSpec : FreeSpec({
     }
 })
 
-/**
- * The groups and roles `gradle()` declares from inside itself -- everything
- * whose declaration site collapses onto the single `gradle { }` call in `gradle/GradleGroup.kt`
- * of this project. `Gradle.BuildLogic` is deliberately not in this set; see the class KDoc.
- *
- * `internal` rather than `private`: `RoleCoverageSpec` reads it too, to carve the same roles
- * out of its own check for a different reason -- see the comment there.
- */
 internal val gradleOwnDeclarations = setOf(
     "Gradle",
     "Gradle.GradleWrapper",
@@ -131,16 +94,8 @@ internal val gradleOwnDeclarations = setOf(
     "Gradle.DaemonJvmProperties",
 )
 
-/** Cached so that reading a source file once per declaration does not hit the disk again. */
 private val sourceLineCache = mutableMapOf<String, List<String>>()
 
-/**
- * The lines of one file of the architecture definition, so a captured line number can be
- * compared against what is actually written there.
- *
- * The file is looked up by name under the source root rather than by path, so moving a
- * declaration from one group's directory to another needs no change here.
- */
 private fun sourceLinesOf(fileName: String): List<String> = sourceLineCache.getOrPut(fileName) {
     // `getProperty` is a platform type; the JVM always defines `user.dir`.
     val workingDir = File(requireNotNull(System.getProperty("user.dir"))).absoluteFile

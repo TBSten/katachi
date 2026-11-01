@@ -5,7 +5,6 @@ import com.example.domain.service
 import com.example.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/** Roles of the domain layer: the behaviour and the values the application is about. */
 fun DeclarationContainerScope.domainGroup() = "domain".group {
     title = "Domain"
     summary = "The application-specific behaviour, and the values it acts on"

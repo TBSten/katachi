@@ -9,16 +9,6 @@ import com.example.sample.ui.theme
 import com.example.sample.ui.uiCore
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/**
- * Roles of the shared UI: what `:ui` and `:navigation` hold.
- *
- * The per-feature roles (`Screen` / `ViewModel` / `Route`) live in [featureGroup] instead.
- * See the note there for why the two are separate groups.
- *
- * `:ui` is one module split into packages: `component` / `theme` / `core` / `preview` are
- * named as what they are — one more level below the module's own package
- * `com/example/sample/ui`.
- */
 fun DeclarationContainerScope.uiGroup() = "ui".group {
     title = "UI (shared layer)"
     summary = "UI shared across features: the four packages of :ui, and :navigation"

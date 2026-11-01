@@ -19,13 +19,6 @@ import me.tbsten.katachi.test.architecture.keepsBlockTagsLast
 import me.tbsten.katachi.test.architecture.showsExample
 import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
 
-/**
- * The role of the layer that turns a role's `template { }` into files in the repository.
- *
- * A sibling of `Docs`: both read the declarations and produce something from them, and both keep
- * the same split — a pure function builds a map of path to contents, and one thin shell puts it on
- * a disk. It sits after `Docs` in the layer table only because nothing imports it.
- */
 fun DeclarationContainerScope.template() = "Template".role {
     title = "テンプレート生成"
     summary = "役割の template { } を replay して、layout が示す場所へファイルを書き出す層"
@@ -45,7 +38,6 @@ fun DeclarationContainerScope.template() = "Template".role {
     }
 }
 
-/** The layer this role is: the entry of the layer table its import lines are built from. */
 private const val LAYER: String = "template"
 
 // Written here rather than in a shared file: katachi captures the first frame outside itself as

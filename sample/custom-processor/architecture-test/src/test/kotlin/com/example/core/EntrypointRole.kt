@@ -6,7 +6,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/** The role of starting the process and assembling the application. */
 fun DeclarationContainerScope.entrypoint() = "Entrypoint".role {
     title = "Entrypoint"
     summary = "Starting the process. The only file that has `main()`"

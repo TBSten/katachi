@@ -14,17 +14,6 @@ import com.example.testing.roleDefinition
 import com.example.testing.test
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/**
- * Roles of the test code, the architecture definition itself, and the two things that
- * definition is written out as.
- *
- * The definition lives in `:architecture-test`, a module that belongs to no layer of the
- * application. It is still code someone has to maintain, so it gets a role of its own rather
- * than hiding inside `Test`: the architecture definition roles describe the shape and `Test` asserts
- * behaviour. `GeneratedDocumentation` and `LayoutSnapshot` are the shape written out — as
- * pages for a reader, and as one flattened line per entry for a reviewer's `git diff`.
- * `BaselineFile` is the ledger of the violations held back, which the test writes too.
- */
 fun DeclarationContainerScope.testingGroup() = "testing".group {
     title = "Testing"
     summary = "Tests that check behaviour, this definition itself, and the documentation and snapshot written out from it"

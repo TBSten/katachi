@@ -3,7 +3,6 @@ package com.example.kmp.app
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 
-/** The role of the manifest that declares the app to Android. */
 fun DeclarationContainerScope.androidManifest() = "AndroidManifest".role {
     title = "Android manifest"
     summary = "AndroidManifest.xml of :app:android, which declares the app to Android"

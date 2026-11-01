@@ -15,13 +15,6 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 
-/**
- * The interface through which the app touches data: the `user` package of `:data`.
- *
- * There is no `settings` package beside it. Unlike sample/android this sample has no
- * SettingsRepository, and the settings screen reads `:data` through UserRepository and
- * `platformName()`.
- */
 fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role {
     title = "Repository interface"
     summary = "The :data module's user package. The interface through which the app reads data"

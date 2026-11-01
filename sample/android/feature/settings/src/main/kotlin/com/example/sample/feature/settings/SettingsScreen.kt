@@ -23,7 +23,6 @@ import com.example.sample.ui.component.AppButtonEmphasis
 import com.example.sample.ui.core.UiState
 import com.example.sample.ui.preview.PreviewRoot
 
-/** The settings screen, wired to its [SettingsViewModel]. */
 @Composable
 internal fun SettingsScreen(
     onNavigateUp: () -> Unit,
@@ -39,7 +38,6 @@ internal fun SettingsScreen(
     )
 }
 
-/** The settings screen as a function of its state. */
 @Composable
 internal fun SettingsScreen(
     uiState: UiState<SettingsContent>,

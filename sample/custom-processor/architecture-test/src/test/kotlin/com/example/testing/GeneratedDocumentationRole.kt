@@ -4,12 +4,6 @@ import com.example.forbiddenContents
 import com.example.tool.documentation
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/**
- * The role of the pages `katachiDocs` writes out of this very definition.
- *
- * A generated artifact that lives outside `build/` needs a role like anything else: the default
- * `files = gitTracked()` offers it to the check, and a directory no role claims is a violation.
- */
 fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
     title = "Generated documentation"
     summary = "Markdown written out of this definition and committed to the repository"

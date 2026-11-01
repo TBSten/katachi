@@ -19,14 +19,6 @@ import me.tbsten.katachi.test.architecture.keepsBlockTagsLast
 import me.tbsten.katachi.test.architecture.showsExample
 import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
 
-/**
- * The role of the root package of `:katachi`.
- *
- * One of the two places where the kind of file and the package layer come apart, and the role
- * follows the kind: these files are markers and exception bases rather than a layer of their
- * own, which is why the layer they are checked as is the empty one that everything may depend
- * on.
- */
 fun DeclarationContainerScope.marker() = "Marker".role {
     title = "マーカーと例外基底"
     summary = "どの層にも属さず、すべての層が依存してよいもの"
@@ -47,7 +39,6 @@ fun DeclarationContainerScope.marker() = "Marker".role {
     }
 }
 
-/** The empty name is the root package itself, the first entry of the layer table. */
 private const val LAYER: String = ""
 
 // The rules are written here, in the role's own file, rather than in a shared one: katachi

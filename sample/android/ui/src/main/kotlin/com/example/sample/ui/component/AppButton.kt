@@ -8,12 +8,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.sample.ui.preview.PreviewRoot
 
-/**
- * Shared button.
- *
- * Feature modules call this instead of Material's [Button] so that a change of shape or
- * emphasis lands everywhere at once.
- */
 @Composable
 fun AppButton(
     text: String,
@@ -33,12 +27,9 @@ fun AppButton(
     }
 }
 
-/** How much weight an [AppButton] carries on the screen it sits on. */
 enum class AppButtonEmphasis {
-    /** The single main action of a screen. */
     Filled,
 
-    /** A secondary action, shown next to a [Filled] one. */
     Outlined,
 }
 

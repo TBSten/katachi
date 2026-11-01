@@ -10,20 +10,6 @@ import com.example.kmp.ui.theme
 import com.example.kmp.ui.uiCore
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/**
- * The shared UI modules a screen draws from: `:ui` and `:navigation`.
- *
- * The per-feature roles (`Screen` / `ViewModel` / `Route`) live in [featureGroup] instead. See
- * the note there for why the two are separate groups.
- *
- * Every layout here starts at the directory the build puts the module in (`"ui"`), then the
- * source set (`"commonMain".sourceSet`), then the package, written out as
- * `com/example/kmp/ui`.
- *
- * Component / Theme / UiCore all live in the one `:ui` module. They used to be
- * `:ui:component` / `:ui:theme` / `:ui:core`; now they are packages of `:ui`, which is the
- * shape katachi has to be able to describe.
- */
 fun DeclarationContainerScope.uiGroup() = "ui".group {
     title = "UI"
     summary = ":ui and :navigation. Shared UI that belongs to no screen, and the definition of destinations"

@@ -4,13 +4,6 @@ import com.example.kmp.forbiddenContents
 import com.example.kmp.processors.owner
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/**
- * What git needs to be told about this project.
- *
- * No `title` here on purpose: an undocumented role has no display name to show, so this is the
- * one place in this sample that exercises the default — the role name itself.
- * `ProjectArchitectureSpec` asserts it.
- */
 fun DeclarationContainerScope.git() = "Git".role {
     summary = ".gitignore. Keeps build outputs and Xcode working files out of Git"
     documented = false

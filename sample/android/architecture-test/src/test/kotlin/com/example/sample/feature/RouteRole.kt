@@ -14,7 +14,6 @@ import me.tbsten.katachi.dsl.pascalCase
 import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 
-/** The role of a feature module's only public entry: where the rest of the app navigates to. */
 fun DeclarationContainerScope.route() = "Route".role {
     title = "Route"
     summary = "The destination of a screen. The only entrance a feature exposes to the outside"

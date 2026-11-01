@@ -6,7 +6,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/** The role of the processors this project writes itself. This sample's subject. */
 fun DeclarationContainerScope.processor() = "Processor".role {
     title = "Processor"
     summary = "The ArchitectureProcessor implementations this project wrote itself. They read the definition and produce something"

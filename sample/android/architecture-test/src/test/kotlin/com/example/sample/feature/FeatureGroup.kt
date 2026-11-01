@@ -16,28 +16,6 @@ import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.pascalCase
 
-/**
- * Roles of one feature: what every `:feature:<name>` module holds.
- *
- * Kept apart from [uiGroup] because the two differ in how they grow. A feature module is a
- * place where things are *expected* to multiply — it is written as the directory `"feature" / "*"` —
- * while `:ui` and `:navigation` are shared
- * modules where adding something is a design decision. Folding both into one group would
- * hide that difference in the generated documentation, and would mix two shapes of `layout`
- * inside a single group.
- *
- * This is the group written loosely on purpose. The `*` after `feature` stands for whatever directory sits
- * under it, so adding `:feature:profile` needs no edit here. What the check does tie together is
- * the module and its files: Screen / ViewModel / Route name the module directory and the package
- * directory alike with `capture("feature")` and write the file name as
- * `${capture("feature").pascalCase}Screen`, so a `ProfileScreen.kt` in `:feature:home` is
- * reported as `[CaptureMismatch]`. A missing `HomeScreen.kt` is still not reported: a pattern
- * with a wildcard is never required. FeatureTest is the one role that lists the modules (see
- * [FeatureModule]) and so keeps that tie too.
- *
- * The roles below start from the same place, so that place is written once as
- * [featureSources] — this project's own addition to the layout vocabulary, not katachi's.
- */
 fun DeclarationContainerScope.featureGroup() = "feature".group {
     title = "Structure of each screen"
     summary = "A module per screen. Each :feature:<name> holds one Screen / ViewModel / Route, and grows with screen parts and tests"
@@ -106,65 +84,21 @@ fun DeclarationContainerScope.featureGroup() = "feature".group {
     }
 }
 
-/**
- * Where a feature module keeps its Kotlin sources: `feature/<module>/src/main/kotlin` plus the
- * module's own package, which is the start of every path in this group.
- *
- * **This is the project's own vocabulary, written exactly the way katachi writes its own.**
- * `mainSourceSet` and `kotlin` are not members of `LayoutScope`; each is a function taking
- * the scope as a context parameter, so one more of them can be added from outside katachi —
- * from here — and reads at the call site like the ones that shipped with it. `with(layoutScope)`
- * is what hands the scope on to them.
- *
- * [feature] is the one directory name that varies per feature, and it is written twice: the
- * module directory and the package directory below the source set are the same name. With the
- * default `*` the two are checked apart, as any module and any package. A role passes
- * `capture("feature")` instead to tie them together: the check then allows only a file whose two
- * levels read the same value, and a template fills both from one `--arg feature=`.
- *
- * `internal` and declared next to the group rather than inside one role's file, because the
- * roles of this group read it. The directory entries it builds are attributed to this
- * file; the `*.kt` entries that follow the `/` still belong to the role that wrote them, so a
- * violation keeps naming the role.
- */
 context(layoutScope: LayoutScope)
 internal fun featureSources(feature: String = "*"): LayoutDirectory = with(layoutScope) {
     "feature" / feature / mainSourceSet / kotlin / "com/example/sample/feature" / feature
 }
 
-/**
- * The feature modules this project has, by name: `Home` is `:feature:home`.
- *
- * Only for a template whose *content* differs per module. FeatureTest arranges a different
- * fake for each screen, so its template is a `when` over this enum, and [eachFeatureModule]
- * declares its layout module by module, one `.template` per module with the module's own id
- * (`--arg template=feature.FeatureTest.home`); a new module fails to compile there until the
- * new screen is taught to it. The other feature roles do not list modules; they use the
- * directory `"feature" / "*"`.
- *
- * The check keeps it honest in one direction: an entry whose module was deleted is reported
- * as that module's missing `build.gradle.kts`. A new module missing from it is not reported
- * until a file of that role is put there, which then shows up as `[UnexpectedFile]`
- * — add the entry when adding the module to `settings.gradle.kts`.
- */
 enum class FeatureModule {
     Home,
     Settings,
     ;
 
-    /** The module directory, `feature/home`. */
     val directory: String get() = "feature/${name.lowercase()}"
 
-    /** The package directory below the source set, `com/example/sample/feature/home`. */
     val packageDirectory: String get() = "com/example/sample/feature/${name.lowercase()}"
 }
 
-/**
- * Declares [block] once for every [FeatureModule], inside that module's directory.
- *
- * The concrete counterpart of `featureSources()`: where that one matches any module, this one
- * hands the [FeatureModule] to [block], for a template that branches on it.
- */
 context(layoutScope: LayoutScope)
 internal fun eachFeatureModule(block: LayoutDirectoryScope.(FeatureModule) -> Unit) {
     with(layoutScope) {

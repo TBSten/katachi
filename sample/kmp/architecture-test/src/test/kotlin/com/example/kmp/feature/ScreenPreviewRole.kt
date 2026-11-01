@@ -12,14 +12,6 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 
-/**
- * The `@Preview` functions of a screen.
- *
- * Unlike sample/android, which keeps its `@Preview` functions in the same file as the
- * composable they render, this sample puts them in a `<Target>Preview.kt` file beside it.
- * Both shapes are common; having one sample of each is the point. A component's previews are
- * the neighboring [componentPreview] role.
- */
 fun DeclarationContainerScope.screenPreview() = "ScreenPreview".role {
     title = "Screen preview"
     summary = "A private @Composable annotated with @Preview for a screen. Placed in <Target>Preview.kt in the feature " +

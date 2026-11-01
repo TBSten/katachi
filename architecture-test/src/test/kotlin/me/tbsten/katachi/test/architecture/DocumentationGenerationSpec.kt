@@ -13,24 +13,6 @@ import me.tbsten.katachi.docs.DocumentationMode
 import me.tbsten.katachi.docs.GenerateDocumentation
 import me.tbsten.katachi.processor.process
 
-/**
- * Runs documentation generation against the real definition of this repository.
- *
- * Every other spec of the generator builds pages out of a definition written for that one spec:
- * two groups, three roles, one `layout { }`. This one runs it over twenty-odd roles, eight
- * groups, two of them `documented = false`, `konsist { }` blocks on most of the library roles,
- * and `layout { }` blocks naming four Gradle modules — the combination nothing assembled by hand
- * covers, and the one a user actually has.
- *
- * It asks almost nothing of the output. What a page says is pinned in `:katachi`'s own specs
- * against definitions small enough to write out in full; asserting the same here would pin this
- * repository's role names into a test that has no opinion about them. What it does assert is
- * that generation gets all the way to the end — path collisions, case collisions and broken
- * links are all raised from inside, so "no exception" is the claim being made.
- *
- * It writes into a temporary directory rather than into `build/`, so that nothing it leaves
- * behind can reach `gitTracked()` or the next run.
- */
 @OptIn(ExperimentalKatachiApi::class)
 class DocumentationGenerationSpec : FreeSpec({
     "この定義のドキュメントが最後まで生成できる" {
@@ -85,7 +67,6 @@ class DocumentationGenerationSpec : FreeSpec({
     }
 })
 
-/** A directory outside the repository, removed however the block ends. */
 private fun <R> withTemporaryOutput(block: (File) -> R): R {
     val directory = Files.createTempDirectory("katachi-architecture-docs").toFile()
     return try {

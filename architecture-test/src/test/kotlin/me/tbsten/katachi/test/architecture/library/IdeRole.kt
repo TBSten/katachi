@@ -19,13 +19,6 @@ import me.tbsten.katachi.test.architecture.keepsBlockTagsLast
 import me.tbsten.katachi.test.architecture.showsExample
 import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
 
-/**
- * The role of the layer that hands the definition to the katachi IDE plugin.
- *
- * It reads what every layer before it knows -- the declarations, the walk, the constraints, the
- * templates -- and writes it as one JSON file. Nothing imports it; the Gradle plugin registers its
- * processor by name.
- */
 fun DeclarationContainerScope.ide() = "Ide".role {
     title = "IDE への受け渡し"
     summary = "定義・走査の結果・テンプレートを、IDE プラグインが読む 1 つの JSON に書き出す層"
@@ -42,7 +35,6 @@ fun DeclarationContainerScope.ide() = "Ide".role {
     }
 }
 
-/** The layer this role is: the entry of the layer table its import lines are built from. */
 private const val LAYER: String = "ide"
 
 // Written here rather than in a shared file: katachi captures the first frame outside itself as

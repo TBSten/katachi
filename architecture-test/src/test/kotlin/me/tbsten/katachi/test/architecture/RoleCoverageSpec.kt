@@ -9,28 +9,6 @@ import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.process
 
-/**
- * Guards the one thing neither the layout check nor a `konsist { }` can say: that a wildcard
- * declaration still matches something.
- *
- * Deny by default only watches the other direction. A file no role declared is an
- * `[UnexpectedFile]`, and a declaration **without** a wildcard that matches nothing is a
- * `[MissingFile]` — but a declaration **with** one is optional by nature
- * (`LayoutEntry.required` is false for every pattern), because a place that fills up over time
- * has to be allowed to be empty today. That is the hole: rename a package, delete a layer, or
- * mistype a glob, and the definition goes on passing while describing a repository that no
- * longer exists.
- *
- * Konsist cannot close it either. `KonsistScope` deliberately shadows Konsist's
- * `assertNotEmpty`, on the grounds that katachi reports things that exist and are wrong.
- *
- * This replaces the third assertion of the spec that used to live at
- * `katachi/src/test/kotlin/me/tbsten/katachi/test/PackageDependencySpec.kt`, which asked that
- * no layer of `:katachi` had become empty. It is checked per declaration rather than per role,
- * for a reason worth writing down: a role that also declares a build script of its own would
- * answer "this role owns at least one file" with `true` from that one file alone, and so would
- * catch nothing.
- */
 @OptIn(ExperimentalKatachiApi::class, InternalKatachiApi::class)
 class RoleCoverageSpec : FreeSpec({
     "役割" - {
@@ -60,13 +38,6 @@ class RoleCoverageSpec : FreeSpec({
     }
 })
 
-/**
- * Whether any file the declaring role owns is actually matched by [entry].
- *
- * `filesOf` answers with every file that role's layout allowed, so the glob is re-applied here
- * to pin the answer to this one declaration. An `anyFile()` entry is a directory pattern
- * rather than a file one, so it is matched against each file's parent.
- */
 @OptIn(ExperimentalKatachiApi::class, InternalKatachiApi::class)
 private fun ArchitectureProcessContext<Unit>.matchesSomething(entry: LayoutEntry): Boolean {
     val owned = filesOf(entry.role)

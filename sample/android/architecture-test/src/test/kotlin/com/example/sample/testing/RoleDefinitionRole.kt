@@ -8,7 +8,6 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
 
-/** The role of a file that declares one role of the definition. */
 fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
     title = "Role definition"
     summary = "<group>/<Name>Role.kt, one role of the definition, with where its files live"

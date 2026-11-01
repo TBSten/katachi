@@ -10,7 +10,6 @@ import me.tbsten.katachi.test.architecture.KATACHI_TEST_PACKAGE
 import me.tbsten.katachi.test.architecture.KONSIST_TEST_PACKAGE
 import me.tbsten.katachi.test.architecture.KONTURE_TEST_PACKAGE
 
-/** The role of test code that is not itself a test: fixtures, fakes, shared assembly. */
 fun DeclarationContainerScope.specSupport() = "SpecSupport".role {
     title = "テストの道具"
     summary = "スペックではないテストコード。フィクスチャ、偽物のファイルシステム、共通の組み立て"

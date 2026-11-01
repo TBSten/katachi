@@ -5,7 +5,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/** The role of the types the UI layer itself is built out of. */
 fun DeclarationContainerScope.uiCore() = "UiCore".role {
     title = "UI foundation"
     summary = "Types that form the foundation of the UI layer, kept in the core package of the :ui module"

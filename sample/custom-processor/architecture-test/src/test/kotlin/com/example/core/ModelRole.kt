@@ -7,14 +7,6 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konture.konture
 
-/**
- * The role of the values the application is about.
- *
- * This is also the one role of the sample with a constraint on the files' contents, written with
- * `konture { }` (katachi's guide: "Konture integration"). It sits directly on the role, so it
- * covers every file the `layout { }` below matches, and is evaluated only when the test passes
- * `FileConstraintCheck()` to `assert()`.
- */
 fun DeclarationContainerScope.model() = "Model".role {
     title = "Model"
     summary = "The values the application handles. Holds data classes, enums and value objects"

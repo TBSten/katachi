@@ -17,16 +17,6 @@ import com.example.kmp.testing.roleDefinition
 import com.example.kmp.testing.test
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/**
- * Test doubles, the test code itself, the architecture definition it checks, and the two
- * things that definition is written out as.
- *
- * The definition is not a corner of `Test`, because it is not test code: it describes the
- * project, and the test that asserts it is one line. It is split by kind of file
- * (`DefinitionEntry`, `GroupDefinition`, `RoleDefinition` and so on) rather than kept as one
- * catch-all role. Giving it roles is also what keeps `:architecture-test` from being a
- * directory nobody declared.
- */
 fun DeclarationContainerScope.testingGroup() = "testing".group {
     title = "Testing support"
     summary = "Test doubles, the test code itself, the katachi architecture definition, the documents and snapshot written from it, and the ledger of shelved violations"

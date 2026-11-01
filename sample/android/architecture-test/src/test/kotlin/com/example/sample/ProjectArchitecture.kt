@@ -11,44 +11,6 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
 
-/**
- * The architecture of this sample, written the way a user of katachi would write it.
- *
- * The definition is split one declaration per file: `<Name>Group.kt` holds one group, in the
- * directory named after it (`ui/UiGroup.kt`), and says what it is made of by calling the role
- * functions in order. `<Name>Role.kt` holds one role, in the directory of the group that calls
- * it (`ui/ThemeRole.kt`). Both are extensions on `DeclarationContainerScope` — the scope that
- * `architecture { }` and `"...".group { }` share — so a role moves into another group by
- * moving its file, with its body unchanged. This file only calls the seven group functions, so it
- * stays short no matter how many roles the app grows.
- *
- * The file *names* carry the convention, so nothing has to be written twice: a role named
- * `"UiCore"` belongs in `ui/UiCoreRole.kt`, a group named `"Gradle"` in
- * `gradle/GradleGroup.kt`.
- *
- * None of those functions may be `inline`. An inlined frame reports the caller's file with a
- * line number past its end, and katachi captures the declaration site from the stack, so the
- * violation would point at a line nobody wrote. Written once here rather than repeated in
- * twenty-nine files; [ProjectArchitectureSpec] is what actually holds the line.
- *
- * Every `layout { }` is written as directories, in terms of Gradle's own vocabulary: the module
- * directory (`"ui"`, `"feature" / "*"`), the source set inside it (`mainSourceSet`) and the
- * package written out as a string. `"feature" / "*"` is the one to read first — the `*` matches
- * whichever feature module exists, and a template picks one by naming the directory with a
- * capture (`--arg feature=home`), which names the module directory and its package alike.
- *
- * Building this value reads nothing from disk — the `layout { }` blocks are deferred until
- * a check runs — so it is safe to hold in a top level `val`.
- *
- * [ProjectArchitectureTest] is the whole of what a user writes. [ProjectArchitectureSpec]
- * is katachi's own integration test on top of it, and asserts among other things that every
- * declaration's `declaredAt` points at the file it is actually written in — not at this one
- * — which is how the sample notices if capturing the declaration site ever breaks.
- *
- * `baseline()` holds back the violations recorded in `katachi-baseline.json`
- * (declared by `testing/BaselineFileRole.kt`). Two are left in on purpose, as the demo of it:
- * `HomeFormatter.kt` in `:feature:home` and the `legacy` package of `:data`.
- */
 @OptIn(ExperimentalKatachiApi::class)
 val projectArchitecture: Architecture = architecture {
     title = "katachi-sample-android"

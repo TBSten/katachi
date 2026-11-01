@@ -6,14 +6,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/**
- * The `preview` package of `:ui`.
- *
- * `PreviewRoot` is the only thing in it, and every `@Preview` in the sample goes through it
- * instead of writing `AppTheme { }` itself. Kept apart from [componentPreview] and
- * [screenPreview], whose names are close to it, because they are different things: one is the
- * wrapper, the others are what the wrapper is used by.
- */
 fun DeclarationContainerScope.previewRoot() = "PreviewRoot".role {
     title = "Preview root"
     summary = "The preview package of the :ui module. Wraps the content of a @Preview in AppTheme and Surface"

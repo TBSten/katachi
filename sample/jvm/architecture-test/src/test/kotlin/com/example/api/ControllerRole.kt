@@ -18,17 +18,6 @@ import me.tbsten.katachi.dsl.pascalCase
 import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 
-/**
- * The role that faces HTTP: one request in, one service call, one response out.
- *
- * Each controller sits in a package of its own resource, `controller/health/HealthController.kt`,
- * and that level is `capture("resource")` rather than `"*"`. The file name is derived from it,
- * `${capture("resource").pascalCase}Controller`, so the directory decides the file name: the
- * check allows `HealthController.kt` in `controller/health/` and reports anything else there as
- * `[CaptureMismatch]` (`LegacyStatusController.kt` is one, held back by the baseline). The name
- * is also what lets the template below be told where to generate: `--arg resource=user` writes
- * `controller/user/UserController.kt`, and a resource that has no package yet gets a new one.
- */
 fun DeclarationContainerScope.controller() = "Controller".role {
     title = "Controller"
     summary = "Receives one HTTP request, calls the matching Service and returns the result"

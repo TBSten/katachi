@@ -8,7 +8,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/** The composable that assembles the whole app, called by [activityEntrypoint]. */
 fun DeclarationContainerScope.appRoot() = "AppRoot".role {
     title = "App root"
     summary = "The whole-app @Composable that MainActivity calls via setContent, kept in :app:android"

@@ -12,7 +12,6 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 
-/** The role of the interface callers depend on to fetch and store data. */
 fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role {
     title = "Repository interface"
     summary = "The interface for fetching and storing data, in :data, in one package per subject (user / settings)"
@@ -41,8 +40,8 @@ fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role
     example("UserRepository", "The interface for fetching and storing the user")
     // One package per DataDomain, and a file name has to start with that domain's name: a
     // directory `capture(...)` has no value the layout could read back to write that requirement
-    // once, so it is written out per domain instead (see DataDomain's KDoc). `capture(...)`
-    // would still be enough to just choose which package a generated file goes in.
+    // once, so it is written out per domain instead. `capture(...)` would still be enough to
+    // just choose which package a generated file goes in.
     // Written twice: the line with no wildcard makes the domain's own `UserRepository.kt` required,
     // while the capturing line only allows more repositories (`UserCacheRepository.kt`) next to it.
     //
@@ -81,7 +80,6 @@ fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role
     }
 }
 
-/** The interface [repositoryInterface]'s `.template { }` writes, for one [DataDomain]. */
 private fun repositoryInterfaceContent(domain: DataDomain, name: String): String {
     val repository = "${domain.name}${name}Repository"
     val packageName = "com.example.sample.data.${domain.packageName}"

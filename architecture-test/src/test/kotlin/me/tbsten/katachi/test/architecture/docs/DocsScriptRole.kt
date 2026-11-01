@@ -2,7 +2,6 @@ package me.tbsten.katachi.test.architecture.docs
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/** The role of the shell scripts that inspect the docs site's output. */
 fun DeclarationContainerScope.docsScript() = "DocsScript".role {
     title = "ドキュメントサイトの検査スクリプト"
     summary = "サイトのビルド結果を検査するシェルスクリプト"

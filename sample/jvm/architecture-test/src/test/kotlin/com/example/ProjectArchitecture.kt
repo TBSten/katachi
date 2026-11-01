@@ -11,38 +11,6 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
 
-/**
- * The architecture of this sample, described with katachi.
- *
- * The definition is split one declaration per file: `<Name>Group.kt` holds one group, in
- * the directory named after it (`domain/DomainGroup.kt`), and says what it is made of by
- * calling the role functions in order. `<Name>Role.kt` holds one role, in the directory of the
- * group that calls it (`domain/ServiceRole.kt`); a role no group calls would sit here, next to
- * this file. Both are extensions on `DeclarationContainerScope` - the scope that
- * `architecture { }` and `"...".group { }` share - so a role moves into another group by moving
- * its file, with its body unchanged. This file only calls the seven group functions (the `Endpoint` template set is declared
- * inside `api/ApiGroup.kt`, in the `api` group), so it
- * stays short no matter how many roles the project grows.
- *
- * None of those functions may be `inline`. An inlined frame reports the caller's file with a
- * line number past its end, and katachi captures the declaration site from the stack, so the
- * violation would point at a line nobody wrote. Written once here rather than repeated in
- * twenty-one files; `ProjectArchitectureSpec` is what actually holds the line.
- *
- * Every role carries a `layout { }` saying where its files may live, written in terms of
- * Gradle: the application is the root project itself, `"architecture-test" / ...` is the
- * module holding this definition, `mainSourceSet` and `testSourceSet` are the source sets,
- * and the package directory is written out as a plain string. None of it is a new kind of
- * declaration — a source set is the directory `src/<name>`.
- *
- * katachi denies by default, so this is an allow list: every file in the project has to be
- * covered by some role, and anything else fails `ProjectArchitectureTest`.
- *
- * `baseline()` holds back the violations recorded in `katachi-baseline.json`
- * (declared by `testing/BaselineFileRole.kt`). Three are left in on purpose, as the demo of it: see
- * `service/LegacyHealthCheck.kt`, `service/LegacyStatusService.kt` and
- * `controller/health/LegacyStatusController.kt`.
- */
 @OptIn(ExperimentalKatachiApi::class)
 val projectArchitecture: Architecture = architecture {
     title = "Ktor sample app"

@@ -18,26 +18,6 @@ import me.tbsten.katachi.test.architecture.keepsBlockTagsLast
 import me.tbsten.katachi.test.architecture.showsExample
 import me.tbsten.katachi.test.architecture.KONTURE_MAIN_PACKAGE
 
-/**
- * The role of `:katachi-konture`, the second constraint backend and the Konsist backend's sibling.
- *
- * ## Why no layer rule here
- *
- * Same reason as `KonsistBackend`: `konture` shares the last entry of the layer table, so the
- * layers it may not import are none, and a rule with an empty forbidden list is green by
- * construction. The backend touching only katachi's *public* surface is enforced by the build
- * (`@ExperimentalKatachiApi` opted into, `@InternalKatachiApi` deliberately not). See
- * `katachi-konture/build.gradle.kts`.
- *
- * The other rules apply for the reasons given on `KonsistBackend`: public declarations are a
- * surface a reader meets (`KDOC_EXAMPLE_RULE` / `KDOC_TAG_ORDER_RULE`), the machinery lives in
- * `konture.internal` (`INTERNAL_PACKAGE_RULE`), and the package follows the directory
- * (`` `package`(matchingDirectory) `` in `ktFileContent { }`, next to the same `` `import`("**") ``).
- *
- * The rules themselves are written with `katachi-konsist` (`ktFileContent { }` and `konsist { }`),
- * not Konture: this definition's own rules are Konsist's job, and the two cannot share a
- * classpath anyway.
- */
 fun DeclarationContainerScope.kontureBackend() = "KontureBackend".role {
     title = "Konture バックエンド"
     summary = "konture { } を layout { } の中に書けるようにする。katachi の public な面だけに乗る"
@@ -62,7 +42,7 @@ fun DeclarationContainerScope.kontureBackend() = "KontureBackend".role {
 private fun LayoutScope.packageMatchesDirectory() =
     ktFileContent {
         `package`(matchingDirectory)
-        // No layer comes after this one, and what of katachi it may reach is the build's opt-in (see the role).
+        // No layer comes after this one, and what of katachi it may reach is the build's opt-in (see `katachi-konture/build.gradle.kts`).
         `import`("**")
         // What a declaration may be is left to the `konsist { }` rules below, which read the KDoc and the `.internal` line.
         allow(anythingElse)

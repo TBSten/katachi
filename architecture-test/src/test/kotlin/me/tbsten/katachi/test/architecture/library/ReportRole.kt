@@ -19,13 +19,6 @@ import me.tbsten.katachi.test.architecture.keepsBlockTagsLast
 import me.tbsten.katachi.test.architecture.showsExample
 import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
 
-/**
- * The role of the machine-readable report: the violations of one run as a SARIF 2.1.0 file,
- * for GitHub code scanning and reviewdog to turn into annotations on a pull request.
- *
- * It shares a layer with `check`: `assertWith` writes the report, and the report reads the
- * violations and the report blocks, so neither can come before the other. See `LayerImports.kt`.
- */
 fun DeclarationContainerScope.report() = "Report".role {
     title = "レポート出力"
     summary = "1度の検査の違反を SARIF 2.1.0 のファイルにして、GitHub の PR に注釈として載せるためのもの"
@@ -48,7 +41,6 @@ fun DeclarationContainerScope.report() = "Report".role {
     }
 }
 
-/** The layer this role is: the entry of the layer table its import lines are built from. */
 private const val LAYER: String = "report"
 
 // Written here rather than in a shared file: katachi captures the first frame outside itself as

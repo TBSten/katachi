@@ -5,7 +5,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/** The role of the one test a user writes: the check that runs the definition. */
 fun DeclarationContainerScope.projectArchitectureTest() = "ProjectArchitectureTest".role {
     title = "Architecture test"
     summary = "The single JUnit test that runs the definition, kept in src/test/kotlin of :architecture-test"

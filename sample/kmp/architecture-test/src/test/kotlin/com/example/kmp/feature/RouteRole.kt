@@ -10,13 +10,6 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.pascalCase
 
-/**
- * What binds a screen to a navigation destination, named after its feature module.
- *
- * The third of the three files a feature module holds, written like [screen] and [viewModel]:
- * `capture("feature")` on the module and package directories, and the file name
- * `${capture("feature").pascalCase}Route` derived from it.
- */
 fun DeclarationContainerScope.route() = "Route".role {
     title = "Route"
     summary = "Ties a screen to a navigation Destination and also takes on creating the ViewModel"

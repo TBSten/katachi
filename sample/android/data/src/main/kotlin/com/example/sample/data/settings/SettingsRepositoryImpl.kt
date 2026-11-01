@@ -1,10 +1,5 @@
 package com.example.sample.data.settings
 
-/**
- * Production implementation of [SettingsRepository].
- *
- * Kept in memory: this sample is built and inspected, never run against real storage.
- */
 class SettingsRepositoryImpl : SettingsRepository {
     private var darkThemeEnabled = false
 

@@ -8,10 +8,6 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.testApplication
 
-/**
- * Proves the sample is a working Ktor application, not just a directory tree that
- * compiles. A layout check that passes over dead code is not worth much.
- */
 class HealthRouteTest : FreeSpec({
     "GET /health returns 200 and status=UP" {
         testApplication {

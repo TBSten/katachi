@@ -5,7 +5,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.kmp.ui.core.UiState
 import com.example.kmp.ui.preview.PreviewRoot
 
-/** Previews of [SettingsContent]. The platform string is hard-coded: a preview has none. */
 @Preview
 @Composable
 private fun SettingsLoadedPreview() {

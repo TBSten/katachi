@@ -3,13 +3,6 @@ package com.example.testing
 import com.example.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/**
- * The role of the recorded layout snapshot, which `LayoutSnapshotSpec` writes and compares.
- *
- * The snapshot lives inside the sample, so the allow list has to claim it like anything else
- * that is generated and not under `build/`. This is the same arrangement `GeneratedDocumentation`
- * has, which is why the two sit next to each other.
- */
 fun DeclarationContainerScope.layoutSnapshot() = "LayoutSnapshot".role {
     title = "Layout snapshot"
     summary = "Text recording the flattened result of `layout { }`, for katachi's own self-verification"

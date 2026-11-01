@@ -5,7 +5,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/** The role of a custom processor this sample writes itself. */
 fun DeclarationContainerScope.processorDefinition() = "ProcessorDefinition".role {
     title = "Processor definition"
     summary = "A custom processor that reads the definition, registered in `architecture-test/build.gradle.kts`"

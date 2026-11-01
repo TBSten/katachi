@@ -6,12 +6,6 @@ import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.sourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/**
- * The role of `:benchmark`, the JMH benchmarks of katachi's own performance.
- *
- * Never published and not part of `check`: it is run on demand or by a scheduled job, so it
- * carries none of the library's layer rules and sits in the undocumented `tool` group.
- */
 fun DeclarationContainerScope.benchmark() = "Benchmark".role {
     title = "性能ベンチマーク"
     summary = "JMH で walk・ロール照合・layout 評価・Konsist 解析・初回の assert() を測る、公開しないモジュール。実プロジェクトでの計測と gradle-profiler のシナリオも置く"

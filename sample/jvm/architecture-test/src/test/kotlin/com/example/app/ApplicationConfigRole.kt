@@ -4,7 +4,6 @@ import com.example.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 
-/** The role of the file the server reads to know its port and its entry module. */
 fun DeclarationContainerScope.applicationConfig() = "ApplicationConfig".role {
     title = "Application configuration"
     summary = "The configuration file loaded at startup: the port and the module to apply"

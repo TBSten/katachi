@@ -12,14 +12,6 @@ import me.tbsten.katachi.konsist.konsist
 import me.tbsten.katachi.test.architecture.*
 import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
 
-/**
- * The role of the general-purpose helpers that know nothing about architecture definitions.
- *
- * Second in the layer table, right after the root package: what lives here is written against
- * the standard library alone, so every layer above may use it and it may use none of them. A
- * helper that needs a role, a layout or a file system is not general-purpose, and belongs to the
- * layer whose words it speaks.
- */
 fun DeclarationContainerScope.util() = "Util".role {
     title = "汎用の道具"
     summary = "アーキテクチャ定義を知らない、標準ライブラリだけで書かれた道具"
@@ -36,7 +28,6 @@ fun DeclarationContainerScope.util() = "Util".role {
     }
 }
 
-/** The layer this role is: the entry of the layer table its import lines are built from. */
 private const val LAYER: String = "util"
 
 // Written here rather than in a shared file: katachi captures the first frame outside itself as

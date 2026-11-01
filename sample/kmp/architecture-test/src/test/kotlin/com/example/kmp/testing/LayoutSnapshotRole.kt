@@ -4,15 +4,6 @@ import com.example.kmp.forbiddenContents
 import com.example.kmp.tool.git
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/**
- * The role of the flattened form of this definition, kept as text so a change to it is read
- * as a diff.
- *
- * The sibling of [generatedDocumentation]: both are written by a machine out of this very
- * definition and both are committed rather than left in `build/`, because a generated artifact
- * nobody can open is worth nothing. Outside `build/` means inside `files = gitTracked()`, which
- * is why each of them needs a role of its own.
- */
 fun DeclarationContainerScope.layoutSnapshot() = "LayoutSnapshot".role {
     title = "Layout snapshot"
     summary = "A record of this definition, flattened and written out in full. It exists so a person can review changes to the definition as a diff"

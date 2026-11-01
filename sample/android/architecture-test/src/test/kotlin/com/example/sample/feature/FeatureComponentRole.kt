@@ -13,17 +13,6 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 
-/**
- * The role of a widget one screen uses and no other: the feature-local counterpart of Component.
- *
- * Its layout names the module directory and the package directory below it alike,
- * `capture("feature")`. One name for two levels is what lets the template below pick its place
- * with one `--arg feature=home`, lets the template read the value back with
- * `captureValue("feature")` to build the package, and lets the check hold the two directories to
- * the same name: a part filed under the wrong package is a `[CaptureMismatch]`. The price of the
- * loose directory is that a `feature` that is not a module is created as it is, and the file name
- * is not tied to the module name.
- */
 fun DeclarationContainerScope.featureComponent() = "FeatureComponent".role {
     title = "Screen part"
     summary = "A @Composable used by only one screen. Placed as <Name>*.kt in the component package of :feature:<name>"

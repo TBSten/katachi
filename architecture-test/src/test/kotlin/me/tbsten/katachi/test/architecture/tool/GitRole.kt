@@ -2,7 +2,6 @@ package me.tbsten.katachi.test.architecture.tool
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/** The role of the version control settings. */
 fun DeclarationContainerScope.git() = "Git".role {
     title = "Git 設定"
     summary = "バージョン管理の設定ファイル"

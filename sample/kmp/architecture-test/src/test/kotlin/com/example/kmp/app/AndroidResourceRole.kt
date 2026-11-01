@@ -5,7 +5,6 @@ import com.example.kmp.ui.theme
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 
-/** What the Android build needs beside the Kotlin sources of `:app:android`. */
 fun DeclarationContainerScope.androidResource() = "AndroidResource".role {
     title = "Android resources"
     summary = "The resource XML under res/ of :app:android. Only :app:android has them"

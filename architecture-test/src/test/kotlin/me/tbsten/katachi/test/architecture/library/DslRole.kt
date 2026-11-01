@@ -19,14 +19,6 @@ import me.tbsten.katachi.test.architecture.keepsBlockTagsLast
 import me.tbsten.katachi.test.architecture.showsExample
 import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
 
-/**
- * The role of the layer that receives a definition and holds the declared model.
- *
- * The other place where the kind of file and the package layer come apart: `dsl.gradle` and
- * `dsl.kotlin` are the layout vocabulary rather than the core of the DSL, and `dsl.files` is
- * the file system the walk reads; they are still this layer because that is where they sit in
- * the dependency table. See the `description`.
- */
 fun DeclarationContainerScope.dsl() = "Dsl".role {
     title = "DSL"
     summary = "architecture { } / group { } / role { } / layout { } の受け皿と、宣言されたモデル。走査するファイル集合の選択と、その下のファイルシステム"
@@ -59,7 +51,6 @@ fun DeclarationContainerScope.dsl() = "Dsl".role {
     }
 }
 
-/** The layer this role is: the entry of the layer table its import lines are built from. */
 private const val LAYER: String = "dsl"
 
 // Written here rather than in a shared file: katachi captures the first frame outside itself as

@@ -9,18 +9,6 @@ import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.processor.process
 
-/**
- * [RoleSummaryReportProcessor] run twice with two different `write` lambdas: once collecting, once
- * comparing. Nothing in [RoleSummaryReportProcessor] branches on which mode is running -- the mode is
- * entirely the lambda's business: for an `ArchitectureProcessorNoArg<Unit>`, writing and checking
- * differ only in the lambda that is injected.
- *
- * This file's own `@OptIn(ExperimentalKatachiApi::class)` is needed for calling
- * [me.tbsten.katachi.processor.process] below, which is itself `@ExperimentalKatachiApi`.
- * [RoleSummaryReportProcessor] opts in separately, because implementing
- * [me.tbsten.katachi.processor.ArchitectureProcessorNoArg] is a second place the experimental
- * marker has to be crossed -- both files doing it independently is the point.
- */
 @OptIn(ExperimentalKatachiApi::class)
 class RoleSummaryReportSpec : FreeSpec({
     "write mode: passing a collecting lambda gathers one MD per role" {
@@ -60,14 +48,11 @@ class RoleSummaryReportSpec : FreeSpec({
     }
 })
 
-/** Two roles at the root, standing in for a report generated before a role was removed. */
 private val twoRoleArchitecture: Architecture = architecture {
     "First".role { }
     "Second".role { }
 }
 
-/** [twoRoleArchitecture] with `Second` removed, standing in for the definition after it moved
- * on without regenerating the report. */
 private val oneRoleArchitecture: Architecture = architecture {
     "First".role { }
 }

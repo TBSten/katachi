@@ -3,13 +3,6 @@ package com.example.kmp.testing
 import com.example.kmp.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-/**
- * The role of the baseline file that `baseline()` in `ProjectArchitecture.kt`
- * names.
- *
- * The file is a file of the project like any other, so `files = gitTracked()` hands it to the
- * check and it needs a role; without one the test fails with `[UnexpectedFile]` about it.
- */
 fun DeclarationContainerScope.baselineFile() = "BaselineFile".role {
     title = "Baseline (ledger of held-back violations)"
     summary = "A ledger that records violations already present when katachi was introduced and holds them back without failing the test"

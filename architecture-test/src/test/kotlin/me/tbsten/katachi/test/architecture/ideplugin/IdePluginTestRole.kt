@@ -4,10 +4,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/**
- * The role of the IDE plugin's tests: plain JUnit for pure logic, BasePlatformTestCase with the
- * Analysis API for what needs the platform, and property-based and UI tests on standalone Compose.
- */
 fun DeclarationContainerScope.idePluginTest() = "IdePluginTest".role {
     title = "IDE プラグインのテスト"
     summary = "IDE を起動しない JUnit 4 のテスト。純ロジックは素の JUnit、プラットフォームが要るものは BasePlatformTestCase + Analysis API"

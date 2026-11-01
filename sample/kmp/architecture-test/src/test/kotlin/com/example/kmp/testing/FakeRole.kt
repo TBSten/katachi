@@ -6,7 +6,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/** Test doubles other modules' tests reach for, gathered in the `:testing` module. */
 fun DeclarationContainerScope.fake() = "Fake".role {
     title = "Fake"
     summary = "Fake implementations in the commonMain of :testing, used from the tests of other modules"

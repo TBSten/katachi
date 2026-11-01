@@ -7,25 +7,6 @@ import com.example.tool.toolGroup
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
 
-/**
- * The architecture of this sample, described with katachi.
- *
- * This is the fourth sample, and the only one whose subject is **how a user writes a processor**.
- * The application it describes -- three files under `src/main/kotlin` -- is as small as it can
- * be while still giving the roles something to cover; the three processors in
- * `processors/` are what a reader came for, and the `testing/Processor` role is what declares
- * them.
- *
- * The definition is split one declaration per file: `<Name>Group.kt` holds one group, in the
- * directory named after it (`core/CoreGroup.kt`), and says what it is made of by calling the role
- * functions in order. `<Name>Role.kt` holds one role, in the directory of the group that calls
- * it (`core/StoreRole.kt`). None of those functions may be `inline`: katachi captures the declaration
- * site from the stack, and an inlined frame reports the caller's file with a line number past
- * its end.
- *
- * katachi denies by default, so this is an allow list: every file in the project has to be
- * covered by some role, and anything else fails `ProjectArchitectureTest`.
- */
 val projectArchitecture: Architecture = architecture {
     title = "Custom processor sample"
     description = "A sample that shows only how to write your own processor that reads a katachi definition. " +

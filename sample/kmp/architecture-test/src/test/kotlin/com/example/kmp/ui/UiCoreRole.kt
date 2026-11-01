@@ -7,7 +7,6 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/** The UI foundation no screen owns: the `core` package of `:ui`. */
 fun DeclarationContainerScope.uiCore() = "UiCore".role {
     title = "UI core"
     summary = "The core package of the :ui module. The screen-independent foundation of the UI, such as UiState"
