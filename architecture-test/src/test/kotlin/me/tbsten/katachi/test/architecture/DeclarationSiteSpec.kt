@@ -13,7 +13,7 @@ import me.tbsten.katachi.dsl.pascalCase
  * makes it observable.
  *
  * [projectArchitecture] no longer holds a single `group` or role call of its own, so every
- * declaration site has to come out of a `groups/` or `roles/` file. Nothing else in this module
+ * declaration site has to come out of a `*Group.kt` or `*Role.kt` file. Nothing else in this module
  * reads `declaredAt`: `ProjectArchitectureSpec` asserts the layout and `RoleCoverageSpec` the
  * wildcards, and both stay green if an `inline` slips onto a declaration function or if katachi
  * starts capturing one frame further out. The three samples have carried this test since they
@@ -28,13 +28,13 @@ import me.tbsten.katachi.dsl.pascalCase
  * four more roles (`SettingsScript`, `BuildScript`, `GradleProperties`, `VersionCatalog`) from
  * inside katachi's own `me.tbsten.katachi.dsl.gradle.GradleGroup.kt`, so their captured frame is
  * not that file but the first one outside katachi -- the `gradle { }` call in this project's own
- * `groups/GradleGroup.kt`. Every one of those collapses onto that single line, which is
+ * `gradle/GradleGroup.kt`. Every one of those collapses onto that single line, which is
  * exactly what `Gradle は gradle() を呼んだ1箇所にまとめて宣言されている` below checks.
  *
  * `Gradle.BuildLogic` is declared inside the same `gradle { }` block but is not one of
- * those: `buildLogic()` is a plain call to a function written in `roles/BuildLogicRole.kt`, and
+ * those: `buildLogic()` is a plain call to a function written in `gradle/BuildLogicRole.kt`, and
  * the role itself -- `"BuildLogic".role { }` -- is literally written there, so its own frame is
- * outside katachi already and the walk never reaches `groups/GradleGroup.kt` at all. It is
+ * outside katachi already and the walk never reaches `gradle/GradleGroup.kt` at all. It is
  * checked by the ordinary per-file rule below, same as any other role.
  */
 @OptIn(ExperimentalKatachiApi::class)
@@ -101,8 +101,8 @@ class DeclarationSiteSpec : FreeSpec({
     }
 
     "Gradle.BuildLogic は gradle() の内側から buildLogic() で足されるが、宣言位置は自分のファイル" {
-        // block() に渡した buildLogic() 自体はこの project の groups/GradleGroup.kt から
-        // 呼ばれるが、"BuildLogic".role { } という呼び出しそのものは roles/BuildLogicRole.kt に
+        // block() に渡した buildLogic() 自体はこの project の gradle/GradleGroup.kt から
+        // 呼ばれるが、"BuildLogic".role { } という呼び出しそのものは gradle/BuildLogicRole.kt に
         // 書かれているので、宣言位置はそちらに残る。gradle() が内部で持つ役割と違って、
         // katachi のフレームを一切経由しない。
         val buildLogic = projectArchitecture.allRoles.single { it.qualifiedName == "Gradle.BuildLogic" }
@@ -112,7 +112,7 @@ class DeclarationSiteSpec : FreeSpec({
 
 /**
  * The groups and roles `gradle()` declares from inside itself -- everything
- * whose declaration site collapses onto the single `gradle { }` call in `groups/GradleGroup.kt`
+ * whose declaration site collapses onto the single `gradle { }` call in `gradle/GradleGroup.kt`
  * of this project. `Gradle.BuildLogic` is deliberately not in this set; see the class KDoc.
  *
  * `internal` rather than `private`: `RoleCoverageSpec` reads it too, to carve the same roles
@@ -139,7 +139,7 @@ private val sourceLineCache = mutableMapOf<String, List<String>>()
  * compared against what is actually written there.
  *
  * The file is looked up by name under the source root rather than by path, so moving a
- * declaration between `groups/` and `roles/` needs no change here.
+ * declaration from one group's directory to another needs no change here.
  */
 private fun sourceLinesOf(fileName: String): List<String> = sourceLineCache.getOrPut(fileName) {
     // `getProperty` is a platform type; the JVM always defines `user.dir`.

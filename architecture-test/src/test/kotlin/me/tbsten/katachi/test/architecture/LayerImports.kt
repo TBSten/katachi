@@ -41,7 +41,7 @@ package me.tbsten.katachi.test.architecture
  * together because the two backends are siblings and neither is "after" the other. Nothing in
  * `:katachi` can import either — the Gradle dependency runs the other way — so their entry is
  * not a rule that might break but a copy of one that cannot. It is listed so that the layer
- * rules in `roles/` name a complete set of forbidden targets rather than falling silent at the
+ * rules in `library/` name a complete set of forbidden targets rather than falling silent at the
  * end of the table.
  */
 private val LAYERS: List<List<String>> =

@@ -2,7 +2,15 @@ package me.tbsten.katachi.test.architecture
 
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.test.architecture.groups.*
+import me.tbsten.katachi.test.architecture.backend.backendGroup
+import me.tbsten.katachi.test.architecture.docs.docsGroup
+import me.tbsten.katachi.test.architecture.gradle.gradleGroup
+import me.tbsten.katachi.test.architecture.ideplugin.idePluginGroup
+import me.tbsten.katachi.test.architecture.library.libraryGroup
+import me.tbsten.katachi.test.architecture.plugin.pluginGroup
+import me.tbsten.katachi.test.architecture.sample.sampleGroup
+import me.tbsten.katachi.test.architecture.testing.testingGroup
+import me.tbsten.katachi.test.architecture.tool.toolGroup
 
 // Where each module keeps its production sources, below its own `src/main/kotlin`, and its test
 // sources below `src/test/kotlin`. Written out rather than derived from the module name:
@@ -51,8 +59,9 @@ const val ARCHITECTURE_TEST_PACKAGE: String = "me/tbsten/katachi/test/architectu
  *
  * ## How the definition is split
  *
- * `roles/<Name>Role.kt` holds one role and `groups/<Name>Group.kt` holds one group, which says
- * what it is made of by calling the role functions in order. Both are extensions on
+ * The files are nested by group, the same shape the samples use. `<group>/<Name>Group.kt` holds
+ * one group, which says what it is made of by calling the role functions in order, and
+ * `<group>/<Name>Role.kt` beside it holds one role of that group. Both are extensions on
  * `DeclarationContainerScope` — the scope `architecture { }` and `"...".group { }` share — so
  * a role can be moved into another group without touching the role's own file. This file only
  * calls the nine group functions.
@@ -62,9 +71,9 @@ const val ARCHITECTURE_TEST_PACKAGE: String = "me/tbsten/katachi/test/architectu
  * violation would point at a line nobody wrote. Written once here rather than repeated in
  * thirty files; `DeclarationSiteSpec` is what actually holds the line.
  *
- * Three helpers sit next to this file rather than under `roles/`: `LayerImports.kt`,
- * `InternalPackages.kt` and `KdocExamples.kt` are read by roles of more than one group, and `roles/` is declared to hold
- * nothing but `*Role.kt`.
+ * Three helpers sit next to this file rather than under a group's directory: `LayerImports.kt`,
+ * `InternalPackages.kt` and `KdocExamples.kt` are read by roles of more than one group, and a
+ * group's directory is declared to hold nothing but `*Group.kt` and `*Role.kt`.
  *
  * ## Why this package is `me.tbsten.katachi.test.architecture`
  *
