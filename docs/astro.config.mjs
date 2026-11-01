@@ -55,8 +55,7 @@ const sidebar = (() => {
 			item('recipes/github', { en: 'GitHub', ja: 'GitHub' }),
 		),
 		link('/api-docs/', { en: 'API reference', ja: 'API リファレンス' }),
-		item('showcase', { en: 'Showcase', ja: 'ショーケース' }),
-		item('roadmap',{ en: 'Roadmap', ja: 'ロードマップ' }),
+		item('roadmap', { en: 'Roadmap', ja: 'ロードマップ' }),
 	]
 })()
 
