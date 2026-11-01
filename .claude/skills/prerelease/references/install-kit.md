@@ -22,7 +22,7 @@ sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/r
 - スモーク（`check-install-kit-smoke.sh`。Gradle を起動しない）: 合成のプロジェクトにサブコマンドを当て、終了コードと出力の
   grep で確かめる。guide の目次とフェンス、docs --topic、preferences、answers、summary の再開欄、add の 8 並列と件数検査、
   ロックの待ちと残骸、init の既存ファイルと --module-dir、lint の exit 1 と制約 Role の緩和、add role / excluded の拒否、
-  scaffold --deps の衝突、test の exit 2 と要約、data get のキー、の 24 ケース（69 判定）。`docs --topic` は
+  scaffold --deps の衝突、test の exit 2 と要約、data get のキー、違反の打ち切り（maxViolations=all・compare-violations の停止）、緑のときの警告、古い Kotlin の警告、add changed の重複、docs --topic の取得元とキットの不具合での停止、の 32 ケース（104 判定）。`docs --topic` は
   `docs/dist/llms-full.txt` を読む（無ければ `--llms-full <path>` か、docs の build）。`KSH=dash` で kit を別のシェルで動かせる。
   fixture の本番の前に回し、全部緑にしてから Gradle を使う方へ進む
 - やること（スクリプトの冒頭のコメントに詳細）:

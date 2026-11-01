@@ -202,7 +202,13 @@ case_check_next() {
 	c=$(cli "${d}")
 	out=$(${KSH} "${c}" check 0-1 2>&1)
 	printf '%s\n' "${out}" | grep -q "^次: sh ${c} guide 0-2\$" && ok "check の次は未完了の最初の項目のセクション" || ng "check の次は未完了の最初の項目のセクション" "${out}"
-	${KSH} "${c}" check 0-2 1-1 1-2 1-3 2-1 2-2 3-1 3-2 3-3 >/dev/null 2>&1
+	# 項目の無いセクション（0-3、章の前書き）を飛ばさず、目次の順で次に読むものを指す
+	out=$(${KSH} "${c}" check 0-2 2>&1)
+	printf '%s\n' "${out}" | grep -q "^次: sh ${c} guide 0-3\$" && ok "check 0-2 の次は項目の無い 0-3" || ng "check 0-2 の次は項目の無い 0-3" "${out}"
+	${KSH} "${c}" check 1-1 1-2 1-3 2-1 >/dev/null 2>&1
+	out=$(${KSH} "${c}" check 2-2 2>&1)
+	printf '%s\n' "${out}" | grep -q "^次: sh ${c} guide 3\$" && ok "check 2-2 の次は章 3 の前書き" || ng "check 2-2 の次は章 3 の前書き" "${out}"
+	${KSH} "${c}" check 3-1 3-2 3-3 >/dev/null 2>&1
 	out=$(${KSH} "${c}" check 4-1 4-2 4-3 2>&1)
 	printf '%s\n' "${out}" | grep -q "^次: sh ${c} guide 5\$" && ok "check の次のセクションは 5-1 と 5-2 を guide 5 に読み替える" || ng "check の次のセクションは 5-1 と 5-2 を guide 5 に読み替える" "${out}"
 	out=$(${KSH} "${c}" check 5-1 5-2 2>&1)
@@ -222,6 +228,7 @@ case_docs_topic() {
 		ng "docs --topic は保存先のパスを出す" "st=${st} p=${p} $(cat "${WORK}/topic.err")"
 		return
 	fi
+	grep -q '^取得元: file://' "${WORK}/topic.err" && ok "docs --topic は取得元を標準エラーに出す" || ng "docs --topic は取得元を標準エラーに出す" "$(cat "${WORK}/topic.err")"
 	head -n 1 "${p}" | grep -q '^# Layout$' && ok "docs --topic layout はページの見出しから始まる" || ng "docs --topic layout はページの見出しから始まる" "$(head -n 1 "${p}")"
 	n=$(awk '/^```/ { c = !c; next } !c && /^# /' "${p}" | wc -l | tr -d ' ')
 	[ "${n}" = "1" ] && ok "docs --topic の # の見出しは 1 つ" || ng "docs --topic の # の見出しは 1 つ" "n=${n}"
@@ -319,11 +326,20 @@ case_summary_answers() {
 	(cd "${d}" && ${KSH} "${c}" summary) >"${WORK}/ans.summary2.log" 2>&1
 	st=$?
 	if [ "${st}" -eq 0 ] && grep -q '^✅' "${WORK}/ans.summary2.log" && grep -q 'レポート.*回答済み 1 件.*未回答 2 件' "${WORK}/ans.summary2.log" &&
-		grep -q -- '- cq1 C1 → 推奨: r1' "${WORK}/ans.summary2.log" && grep -q -- '- cq3 C3 → 推奨: r3' "${WORK}/ans.summary2.log" && ! grep -q 'C2' "${WORK}/ans.summary2.log" &&
-		! grep -q '^再開:' "${WORK}/ans.summary2.log"; then
+		grep -q -- '- cq1 C1 → 推奨: r1' "${WORK}/ans.summary2.log" && grep -q -- '- cq3 C3 → 推奨: r3' "${WORK}/ans.summary2.log" && ! grep -q 'C2' "${WORK}/ans.summary2.log"; then
 		ok "summary は回答済みを件数だけ、未回答だけ列挙する"
 	else
 		ng "summary は回答済みを件数だけ、未回答だけ列挙する" "st=${st} $(cat "${WORK}/ans.summary2.log")"
+	fi
+	# 成功の形式にも再開の欄（手順書の区切りが読ませる）。6-0 と、未実施の 6-A〜6-C（提案が無いので 6-D は出さない）
+	(cd "${d}" && ${KSH} "${c}" uncheck 6-1 6-3 6-4) >/dev/null 2>&1
+	(cd "${d}" && ${KSH} "${c}" summary) >"${WORK}/ans.summary3.log" 2>&1
+	if grep -q '^再開:' "${WORK}/ans.summary3.log" && grep -q "レビューの指摘を直す: sh ${c} guide 6-0\$" "${WORK}/ans.summary3.log" &&
+		grep -q "guide 6-A\$" "${WORK}/ans.summary3.log" && grep -q "guide 6-C\$" "${WORK}/ans.summary3.log" &&
+		! grep -q "guide 6-B\$" "${WORK}/ans.summary3.log" && ! grep -q "guide 6-D\$" "${WORK}/ans.summary3.log"; then
+		ok "summary の成功の形式にも再開の欄（6-0 と未実施の 6-A〜6-D）を出す"
+	else
+		ng "summary の成功の形式にも再開の欄（6-0 と未実施の 6-A〜6-D）を出す" "$(cat "${WORK}/ans.summary3.log")"
 	fi
 }
 
@@ -801,6 +817,119 @@ case_answers_namespaces() {
 	[ ! -d "$(lockdir "${d}")" ] && ok "answers のあとにロックが残らない" || ng "answers のあとにロックが残らない" "lock remains"
 }
 
+# test はいつも -Dkatachi.maxViolations=all を渡し、打ち切りのログは差分も compare-violations も比べない（11 件目以降を見逃さない）
+case_test_truncated() {
+	d=$(inited trunc)
+	c=$(cli "${d}")
+	w=$(wd "${d}")
+	fake_gradlew "${d}"
+	mkdir -p "${d}/architecture-test/src/test/kotlin/fx"
+	printf 'package fx\n' >"${d}/architecture-test/src/test/kotlin/fx/ProjectArchitecture.kt"
+	printf '1\n' >"${d}/fake-exit"
+	# 全件のログ（12 件）。12 件目だけを入れ替えた 2 本を作る
+	full() {
+		printf '> Task :architecture-test:test\nKatachi check failed: 12 violations (Unexpected: 12)\n'
+		for n in 01 02 03 04 05 06 07 08 09 10 11; do printf '  [UnexpectedFile] file:///x/f%s.txt\n' "${n}"; done
+		printf '  [UnexpectedFile] file:///x/%s.txt\nBUILD FAILED\n' "$1"
+	}
+	full zz-before >"${d}/fake-out.txt"
+	out=$(cd "${d}" && ${KSH} "${c}" test --save before-refactor 2>&1)
+	grep -q '^ARGS: .* -Dkatachi.maxViolations=all' "${w}/tmp/test/latest.log" && ok "test は -Dkatachi.maxViolations=all を Gradle に渡す" ||
+		ng "test は -Dkatachi.maxViolations=all を Gradle に渡す" "$(head -n 1 "${w}/tmp/test/latest.log")"
+	(cd "${d}" && ${KSH} "${c}" test -- -Dkatachi.maxViolations=3) >/dev/null 2>&1
+	grep -q '^ARGS: .*-Dkatachi.maxViolations=3' "${w}/tmp/test/latest.log" && ! grep -q 'maxViolations=all' "${w}/tmp/test/latest.log" &&
+		ok "test は -- の後ろの -Dkatachi.maxViolations を優先し、all を足さない" || ng "test は -- の後ろの -Dkatachi.maxViolations を優先し、all を足さない" "$(head -n 1 "${w}/tmp/test/latest.log")"
+	full zz-after >"${d}/fake-out.txt"
+	(cd "${d}" && ${KSH} "${c}" test --save after-refactor) >/dev/null 2>&1
+	out=$(cd "${d}" && ${KSH} "${c}" compare-violations 2>&1)
+	st=$?
+	[ "${st}" -eq 1 ] && printf '%s\n' "${out}" | grep -q '増えた 1 件 / 減った 1 件' && printf '%s\n' "${out}" | grep -q 'zz-after' &&
+		ok "compare-violations は全件のログなら 12 件目の入れ替わりを見つける" || ng "compare-violations は全件のログなら 12 件目の入れ替わりを見つける" "st=${st} ${out}"
+	# 打ち切りのログ（先頭 10 件）。katachi の既定の形
+	{
+		printf '> Task :architecture-test:test\nKatachi check failed: 12 violations (Unexpected: 12)\n'
+		for n in 01 02 03 04 05 06 07 08 09 10; do printf '  [UnexpectedFile] file:///x/f%s.txt\n' "${n}"; done
+		printf '\n  Showing first 10 (2 more)\n    To show every block, run with -Dkatachi.maxViolations=all, or set maxViolations in assert().\nBUILD FAILED\n'
+	} >"${d}/fake-out.txt"
+	out=$(cd "${d}" && ${KSH} "${c}" test --save after-refactor 2>&1)
+	printf '%s\n' "${out}" | grep -q '^前回との差分（previous.log 比）: 比べません' && ! printf '%s\n' "${out}" | grep -q '減った' &&
+		printf '%s\n' "${out}" | grep -q '^省略: Showing first 10 (2 more)' &&
+		ok "test は打ち切りのログと全件のログを比べない（偽の差分を出さない）" || ng "test は打ち切りのログと全件のログを比べない（偽の差分を出さない）" "${out}"
+	out=$(cd "${d}" && ${KSH} "${c}" compare-violations 2>&1)
+	st=$?
+	[ "${st}" -eq 2 ] && printf '%s\n' "${out}" | grep -q '比べません' && printf '%s\n' "${out}" | grep -q 'test-after-refactor.log : Showing first 10 (2 more)' &&
+		! printf '%s\n' "${out}" | grep -q '変わっていません' &&
+		ok "compare-violations は打ち切りのログがあれば比べずに exit 2" || ng "compare-violations は打ち切りのログがあれば比べずに exit 2" "st=${st} ${out}"
+}
+
+# test は通ったときも警告の件数と見出しを要約に出す
+case_test_warnings() {
+	d=$(inited warns)
+	c=$(cli "${d}")
+	fake_gradlew "${d}"
+	mkdir -p "${d}/architecture-test/src/test/kotlin/fx"
+	printf 'package fx\n' >"${d}/architecture-test/src/test/kotlin/fx/ProjectArchitecture.kt"
+	printf '0\n' >"${d}/fake-exit"
+	printf '> Task :architecture-test:test\n\nKatachi check found 2 warnings. Warnings never fail the check.\n\n[AmbiguousLayout] file:///x/Diagnostic.kt\n  text\n\n[MissingDescription] file:///x/Role.kt\n  text\n\nBUILD SUCCESSFUL in 3s\n' >"${d}/fake-out.txt"
+	out=$(cd "${d}" && ${KSH} "${c}" test 2>&1)
+	st=$?
+	[ "${st}" -eq 0 ] && printf '%s\n' "${out}" | grep -q '^結果: 検査は通りました（違反 0 件）' && printf '%s\n' "${out}" | grep -q '^警告: 2 件' &&
+		printf '%s\n' "${out}" | grep -q '^  \[AmbiguousLayout\] file:///x/Diagnostic.kt' && ! printf '%s\n' "${out}" | grep -q '^  \[MissingDescription\]' &&
+		ok "test は通ったときも警告の件数と見出しを出す" || ng "test は通ったときも警告の件数と見出しを出す" "st=${st} ${out}"
+}
+
+# init と doctor は Kotlin 2.2 未満を警告し（Gradle の版も見る）、init の「次:」をユーザへの確認に差し替える
+case_kotlin_too_old() {
+	d=$(fresh oldkt)
+	sed -i.orig 's/version "[^"]*"/version "1.9.10"/' "${d}/build.gradle.kts" && rm -f "${d}/build.gradle.kts.orig"
+	mkdir -p "${d}/gradle/wrapper"
+	printf 'distributionUrl=https\\://services.gradle.org/distributions/gradle-7.5.1-bin.zip\n' >"${d}/gradle/wrapper/gradle-wrapper.properties"
+	out=$(cd "${d}" && ${KSH} "${KIT}" doctor 2>&1)
+	st=$?
+	[ "${st}" -eq 0 ] && printf '%s\n' "${out}" | grep -q 'Kotlin は 1.9.10 です' && printf '%s\n' "${out}" | grep -q 'Gradle も上げる必要があります.*7.5.1' &&
+		ok "doctor は Kotlin 2.2 未満を警告し、Gradle 7.6.3 未満なら Gradle も上げると言う" || ng "doctor は Kotlin 2.2 未満を警告し、Gradle 7.6.3 未満なら Gradle も上げると言う" "st=${st} ${out}"
+	out=$(cd "${d}" && ${KSH} "${KIT}" init --katachi 0.3.0 --workdir .local/install-katachi 2>&1)
+	st=$?
+	[ "${st}" -eq 0 ] && printf '%s\n' "${out}" | grep -q 'ユーザに確認してください' && printf '%s\n' "${out}" | grep -q '同意なしに上げないこと' &&
+		printf '%s\n' "${out}" | tail -n 1 | grep -q '^次: Kotlin 1.9.10 を上げてよいかをユーザに確認してください' &&
+		ok "init は Kotlin 2.2 未満を警告し、次の行をユーザへの確認にする" || ng "init は Kotlin 2.2 未満を警告し、次の行をユーザへの確認にする" "st=${st} ${out}"
+	# 上げてから init し直すと、チェックリストの Kotlin の記録も新しい版になる
+	sed -i.orig "s/version \"1.9.10\"/version \"${K}\"/" "${d}/build.gradle.kts" && rm -f "${d}/build.gradle.kts.orig"
+	out=$(cd "${d}" && ${KSH} "${KIT}" init --katachi 0.3.0 --workdir .local/install-katachi 2>&1)
+	m=$(${KSH} "$(cli "${d}")" data get check-list meta.kotlin 2>/dev/null)
+	[ "${m}" = "${K}" ] && printf '%s\n' "${out}" | tail -n 1 | grep -q "^次: sh .*/tmp/katachi-install.sh check 0-1 0-2" &&
+		ok "init のやり直しは meta.kotlin を新しい版にし、次は check 0-1 0-2" || ng "init のやり直しは meta.kotlin を新しい版にし、次は check 0-1 0-2" "meta.kotlin=${m} $(printf '%s\n' "${out}" | tail -n 1)"
+}
+
+# add changed は記録済みのパスなら何もせず 0 で終わる（記録し直さなくてよい）
+case_add_changed_dup() {
+	d=$(inited chg)
+	c=$(cli "${d}")
+	(cd "${d}" && ${KSH} "${c}" add changed --path a.kts --change "新規" --summary s1) >/dev/null 2>&1
+	out=$(cd "${d}" && ${KSH} "${c}" add changed --path a.kts --change "変更" --summary s2 2>&1)
+	st=$?
+	n=$(jget "${d}" check-list '(len(d["changedFiles"]), d["changedFiles"][0]["summary"])')
+	[ "${st}" -eq 0 ] && [ "${n}" = "(1, 's1')" ] && printf '%s\n' "${out}" | grep -q '記録済みです: a.kts' && [ ! -d "$(lockdir "${d}")" ] &&
+		ok "add changed は記録済みのパスなら何もせず 0 で終わる" || ng "add changed は記録済みのパスなら何もせず 0 で終わる" "st=${st} n=${n} ${out}"
+}
+
+# docs --topic の見出しが全文に無いのは、キットの不具合として止まる（内部の関数名で直し方を言わない）
+case_docs_topic_kit_bug() {
+	s2="${WORK}/site-renamed"
+	rm -rf "${s2}"
+	mkdir -p "${s2}"
+	cp -R "${SITE}/install" "${s2}/install"
+	sed 's/^# Layout$/# Layout (renamed)/' "${SITE}/llms-full.txt" >"${s2}/llms-full.txt"
+	d=$(fresh topicbug)
+	(cd "${d}" && KATACHI_DOCS="file://${s2}" ${KSH} "${KIT}" init --katachi 0.3.0 --workdir .local/install-katachi) >/dev/null 2>&1
+	# スモークは KATACHI_DOCS を export しているので（init の記録より環境変数が勝つ）、こちらにも付ける
+	out=$(KATACHI_DOCS="file://${s2}" ${KSH} "$(cli "${d}")" docs --topic layout 2>&1)
+	st=$?
+	[ "${st}" -eq 1 ] && printf '%s\n' "${out}" | grep -q 'インストールキットの不具合です' && printf '%s\n' "${out}" | grep -q 'スクリプトは直さないでください' &&
+		! printf '%s\n' "${out}" | grep -q 'docs_topic_title' &&
+		ok "docs --topic は見出しが無ければキットの不具合として止まり、関数名を言わない" || ng "docs --topic は見出しが無ければキットの不具合として止まり、関数名を言わない" "st=${st} ${out}"
+}
+
 # ---- 実行 ----------------------------------------------------------------------------------
 
 mkdir -p "${WORK}"
@@ -838,6 +967,11 @@ run_case test
 run_case data_get_key
 run_case check_result_headings
 run_case answers_namespaces
+run_case test_truncated
+run_case test_warnings
+run_case kotlin_too_old
+run_case add_changed_dup
+run_case docs_topic_kit_bug
 
 if [ -n "${ONLY}" ]; then
 	for one in $(echo "${ONLY}" | tr ',' ' '); do

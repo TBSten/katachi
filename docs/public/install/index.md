@@ -12,7 +12,7 @@ Both drive the same script, which is shared:
 https://tbsten.github.io/katachi/install/katachi-install.sh
 ```
 
-The language only decides which checklist and report templates get fetched. Pass it once:
+The language decides which guide, checklist and report templates get fetched, and the language of the script's output. Pass it once:
 
 ```sh
 sh katachi-install.sh init --lang en   # or --lang ja

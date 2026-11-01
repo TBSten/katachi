@@ -292,14 +292,18 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
       既定は <作業用ディレクトリ>/tmp/test-before-refactor.log と test-after-refactor.log。
       [MissingDescription] の警告は、説明を書き足せば減るのが正しいので件数だけ出す。
       変わっていなければ 0、変わっていれば差分を出して 1 を返す。
+      どちらかが違反を先頭の数件だけ出したログ（Showing first ...）なら、比べずに 2 を返す。
 
   sh katachi-install.sh test [--save <名前>] [-- <gradle の引数>...]
       検査用モジュールのテスト（./gradlew <module>:test）を実行し、要約だけを出す。
       ログの全文は <作業用ディレクトリ>/tmp/test/<UTC 時刻>.log（latest.log にも写し、
       前の latest.log は previous.log に回す）。--save <名前> で tmp/test-<名前>.log にも写す
       （手順書 3-2 は before-refactor、3-3 は after-refactor。compare-violations の既定と同じ）。
-      -- より後ろは ./gradlew にそのまま渡す（-Dkatachi.maxViolations=all など）。
-      要約: JDK、ログのパス、結果の行、[MissingDescription] の件数、前回（previous.log）との差分。
+      -- より後ろは ./gradlew にそのまま渡す（-Dkatachi.baseline.update=true など）。
+      違反がいつも全件ログに出るよう、-Dkatachi.maxViolations=all も渡す（-- の後ろで
+      -Dkatachi.maxViolations を渡せば、そちらを使う）。
+      要約: JDK、ログのパス、結果の行、[MissingDescription] の件数、通ったときの警告の件数と見出し、
+      前回（previous.log）との差分。
       0 = 通った、1 = 検査が失敗した、2 = 検査まで届かない（コンパイルエラー、gradlew 無し、定義ディレクトリ無し）。
       このスクリプトが Gradle を起動するのはこのコマンドだけ。
 
@@ -496,15 +500,18 @@ Usage:
       [MissingDescription] warnings should go down as descriptions are added, so only
       their counts are shown.
       Returns 0 if nothing changed; otherwise prints the difference and returns 1.
+      If either log shows only the first few violations (Showing first ...), returns 2 without comparing.
 
   sh katachi-install.sh test [--save <name>] [-- <gradle arguments>...]
       Runs the test module's tests (./gradlew <module>:test) and prints only a summary.
       The full log goes to <working directory>/tmp/test/<UTC time>.log (also copied to latest.log;
       the previous latest.log becomes previous.log). --save <name> also copies it to tmp/test-<name>.log
       (before-refactor in step 3-2, after-refactor in step 3-3; the defaults of compare-violations).
-      Everything after -- is passed to ./gradlew as is (such as -Dkatachi.maxViolations=all).
-      Summary: the JDK, the log path, the result line, the number of [MissingDescription], and the
-      difference from the previous run (previous.log).
+      Everything after -- is passed to ./gradlew as is (such as -Dkatachi.baseline.update=true).
+      It also passes -Dkatachi.maxViolations=all so that the log always holds every violation
+      (give -Dkatachi.maxViolations after -- to use your own value instead).
+      Summary: the JDK, the log path, the result line, the number of [MissingDescription], the number
+      and headings of warnings when the check passes, and the difference from the previous run (previous.log).
       0 = passed, 1 = the check failed, 2 = the check was not reached (compile error, no gradlew,
       no definition directory). This is the only command of this script that starts Gradle.
 
@@ -1082,6 +1089,72 @@ kotlin_major_minor() {
 	printf '%s' "$1" | sed -n 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\).*/\1 \2/p'
 }
 
+# $1（Kotlin の版）が KOTLIN_MIN_MAJOR.KOTLIN_MIN_MINOR より古ければ 0。読めない・足りていれば 1。
+kotlin_too_old() {
+	_kt_mm=$(kotlin_major_minor "$1")
+	[ -n "$_kt_mm" ] || return 1
+	_kt_maj=${_kt_mm% *}
+	_kt_min=${_kt_mm#* }
+	[ "$_kt_maj" -lt "$KOTLIN_MIN_MAJOR" ] && return 0
+	[ "$_kt_maj" -eq "$KOTLIN_MIN_MAJOR" ] && [ "$_kt_min" -lt "$KOTLIN_MIN_MINOR" ] && return 0
+	return 1
+}
+
+# Kotlin Gradle Plugin 2.2 が要る Gradle の下限。
+KGP_MIN_GRADLE="7.6.3"
+
+# Gradle wrapper の版（gradle/wrapper/gradle-wrapper.properties の distributionUrl）。読めなければ空。
+detect_gradle_wrapper_version() {
+	[ -f "gradle/wrapper/gradle-wrapper.properties" ] || return 0
+	sed -n -E 's/^[[:space:]]*distributionUrl[[:space:]]*=.*gradle-([0-9][0-9.]*[0-9A-Za-z.-]*)-(bin|all)\.zip.*/\1/p' \
+		gradle/wrapper/gradle-wrapper.properties | head -n 1
+}
+
+# 版 $1 が $2 より古ければ 0。数字の部分（7.6.3 の 3 つまで）だけを比べる。
+version_lt() {
+	awk -v a="$1" -v b="$2" 'BEGIN {
+		na = split(a, x, "."); nb = split(b, y, ".")
+		for (i = 1; i <= 3; i++) {
+			p = (i <= na) ? x[i] + 0 : 0; q = (i <= nb) ? y[i] + 0 : 0
+			if (p < q) exit 0
+			if (p > q) exit 1
+		}
+		exit 1
+	}'
+}
+
+# Kotlin が古いときの文面（init と doctor の警告、scaffold の停止で同じものを使う）。$1 = Kotlin の版、
+# $2 = scaffold なら scaffold の停止向け（「scaffold で止まります」を言わない）。
+# Gradle のルートで呼ぶ（wrapper の版を読むため）。Kotlin を上げるのは既存のビルドの変更なので、利用者の同意を取らせる。
+kotlin_too_old_message() {
+	_ko_gradle=$(detect_gradle_wrapper_version)
+	if [ -z "$_ko_gradle" ]; then
+		_ko_gradle_ja="Kotlin Gradle Plugin ${KOTLIN_MIN_MAJOR}.${KOTLIN_MIN_MINOR} は Gradle ${KGP_MIN_GRADLE} 以上が要ります。Gradle の版を読めなかったので、足りなければ Gradle も上げます。"
+		_ko_gradle_en="Kotlin Gradle Plugin ${KOTLIN_MIN_MAJOR}.${KOTLIN_MIN_MINOR} needs Gradle ${KGP_MIN_GRADLE} or later. The Gradle version could not be read; upgrade Gradle too if it is older."
+	elif version_lt "$_ko_gradle" "$KGP_MIN_GRADLE"; then
+		_ko_gradle_ja="Gradle も上げる必要があります。Kotlin Gradle Plugin ${KOTLIN_MIN_MAJOR}.${KOTLIN_MIN_MINOR} は Gradle ${KGP_MIN_GRADLE} 以上が要り、このプロジェクトは ${_ko_gradle} です（gradle/wrapper/gradle-wrapper.properties）。"
+		_ko_gradle_en="Gradle needs upgrading too. Kotlin Gradle Plugin ${KOTLIN_MIN_MAJOR}.${KOTLIN_MIN_MINOR} needs Gradle ${KGP_MIN_GRADLE} or later, and this project uses ${_ko_gradle} (gradle/wrapper/gradle-wrapper.properties)."
+	else
+		_ko_gradle_ja="Gradle（${_ko_gradle}）はそのままで足ります（Kotlin Gradle Plugin ${KOTLIN_MIN_MAJOR}.${KOTLIN_MIN_MINOR} は Gradle ${KGP_MIN_GRADLE} 以上）。"
+		_ko_gradle_en="Gradle (${_ko_gradle}) is recent enough (Kotlin Gradle Plugin ${KOTLIN_MIN_MAJOR}.${KOTLIN_MIN_MINOR} needs Gradle ${KGP_MIN_GRADLE} or later)."
+	fi
+	if [ "${2:-}" = "scaffold" ]; then
+		_ko_when_ja="ユーザに確認してください（手順書 0-2 の「Kotlin が古いとき」）。"
+		_ko_when_en="Ask the user (\"When Kotlin is too old\" in step 0-2 of the guide)."
+	else
+		_ko_when_ja="このままでは 2-1 の scaffold で止まります。ステップ 1 の解析に入る前に、ユーザに確認してください（手順書 0-2 の「Kotlin が古いとき」）。"
+		_ko_when_en="As it is, scaffold in step 2-1 will stop. Ask the user before starting the analysis in step 1 (\"When Kotlin is too old\" in step 0-2 of the guide)."
+	fi
+	pick "このプロジェクトの Kotlin は ${1} です。katachi は Kotlin ${KOTLIN_MIN_MAJOR}.${KOTLIN_MIN_MINOR} 以降が要ります（古いコンパイラは katachi の metadata を読めず、architecture などがすべて Unresolved reference になる）。
+    ${_ko_when_ja}
+    Kotlin を上げるのは既存のビルドの変更なので、同意なしに上げないこと。同意を得たら Kotlin を ${KOTLIN_MIN_MAJOR}.${KOTLIN_MIN_MINOR} 以降に上げます。
+    ${_ko_gradle_ja}" \
+		"This project uses Kotlin ${1}. katachi needs Kotlin ${KOTLIN_MIN_MAJOR}.${KOTLIN_MIN_MINOR} or later (older compilers cannot read katachi's metadata, and every symbol such as architecture becomes an Unresolved reference).
+    ${_ko_when_en}
+    Upgrading Kotlin changes the existing build, so do not do it without the user's consent. Once they agree, upgrade Kotlin to ${KOTLIN_MIN_MAJOR}.${KOTLIN_MIN_MINOR} or later.
+    ${_ko_gradle_en}"
+}
+
 detect_kotlin_version() {
 	if [ -f "gradle/libs.versions.toml" ]; then
 		# `[versions]` の中の `kotlin = "..."` だけを見る。`[libraries]` にも
@@ -1533,9 +1606,15 @@ cmd_init() {
 	fi
 
 	kotlin_version=$(detect_kotlin_version)
+	kotlin_old="no"
 	if [ -n "$kotlin_version" ]; then
 		note "Kotlin:             ${kotlin_version}（プロジェクトから検出）" \
 			"Kotlin:             ${kotlin_version} (detected from the project)"
+		# 古ければ止めずに強く警告する（作業用ディレクトリは作り、記録を残せるようにする）。最後の「次:」も差し替える。
+		if kotlin_too_old "$kotlin_version"; then
+			kotlin_old="yes"
+			warn "$(kotlin_too_old_message "$kotlin_version")"
+		fi
 	else
 		warn "Kotlin のバージョンを検出できませんでした。scaffold に --kotlin で渡してください。" \
 			"Could not detect the Kotlin version. Pass it to scaffold with --kotlin."
@@ -1593,6 +1672,8 @@ cmd_init() {
 			# 版と置き場所だけは今回の値にそろえる（--katachi / --module-dir で変えた場合）。記入済みの欄は触らない。
 			[ "$init_version" = "UNKNOWN" ] || update_checklist_meta "$_cl" version "$init_version"
 			[ "$MODULE_DIR" = "$_init_recorded_module_dir" ] || update_checklist_meta "$_cl" moduleDir "$MODULE_DIR"
+			# Kotlin を上げてから init し直したときに、記録が古い版のまま残らないように。
+			[ -z "${kotlin_version:-}" ] || update_checklist_meta "$_cl" kotlin "$kotlin_version"
 		else
 			fetch_once "$KATACHI_DOCS/install/$KATACHI_LANG/install-check-list.html" "$_cl" yes
 			write_checklist_data "$_cl" \
@@ -1637,8 +1718,14 @@ cmd_init() {
 	say "以降は ${init_workdir_uri}/tmp/katachi-install.sh を使ってください（再ダウンロードは不要です）。" \
 		"From now on, use ${init_workdir_uri}/tmp/katachi-install.sh (no need to download it again)."
 	say ""
-	say "次: プロジェクトを解析して ${init_workdir_uri}/project-code-base-report.html を埋めてください。" \
-		"Next: analyze the project and fill in ${init_workdir_uri}/project-code-base-report.html."
+	if [ "$kotlin_old" = "yes" ]; then
+		say "次: Kotlin ${kotlin_version} を上げてよいかをユーザに確認してください（上の [!]。手順書 0-2 の「Kotlin が古いとき」）。上げるまでステップ 1 に進まないこと。" \
+			"Next: ask the user whether Kotlin ${kotlin_version} may be upgraded (the [!] above; \"When Kotlin is too old\" in step 0-2 of the guide). Do not go on to step 1 until it is upgraded."
+	else
+		# 手順書の順: 0-2 の終わりで check 0-1 0-2 → check が次（0-3）を案内する。
+		say "次: sh ${init_workdir_abs}/tmp/katachi-install.sh check 0-1 0-2（続けて、出力の「次:」のセクションを読む）" \
+			"Next: sh ${init_workdir_abs}/tmp/katachi-install.sh check 0-1 0-2 (then read the section its \"Next:\" line names)"
+	fi
 }
 
 # このスクリプト自身を作業用ディレクトリへ置く。以降のステップはそちらを使う。
@@ -1932,14 +2019,8 @@ cmd_scaffold() {
 
 	if [ "$sc_kmaj" -lt "$KOTLIN_MIN_MAJOR" ] ||
 		{ [ "$sc_kmaj" -eq "$KOTLIN_MIN_MAJOR" ] && [ "$sc_kmin" -lt "$KOTLIN_MIN_MINOR" ]; }; then
-		die "katachi ${sc_version} は Kotlin ${KOTLIN_MIN_MAJOR}.${KOTLIN_MIN_MINOR} 以降が必要です（このプロジェクトは ${sc_kotlin}）。
-    それより古いコンパイラは katachi の metadata を読めず、architecture などの
-    シンボルがすべて Unresolved reference になります。プロジェクトの Kotlin を
-    上げてから、もう一度実行してください。" \
-			"katachi ${sc_version} needs Kotlin ${KOTLIN_MIN_MAJOR}.${KOTLIN_MIN_MINOR} or later (this project uses ${sc_kotlin}).
-    Older compilers cannot read katachi's metadata, and every symbol such as
-    architecture becomes an Unresolved reference. Upgrade the project's Kotlin,
-    then run this again."
+		die "$(kotlin_too_old_message "$sc_kotlin" scaffold)
+    $(pick "上げてから、scaffold をもう一度実行してください。" "After upgrading, run scaffold again.")"
 	fi
 
 	# context parameters は 2.4 で言語に入った。2.2 / 2.3 系では呼ぶ側に
@@ -2184,7 +2265,8 @@ cmd_scaffold() {
 				"$(file_uri "$CATALOG_FILE") (nothing appended; every entry was already there)"
 		fi
 	fi
-	[ "$root_needs_plugin" = "yes" ] && say "${sc_root_build_uri} （Kotlin JVM プラグインを apply false で追加）" \
+	# buildscript { } があって書き換えなかったときは出さない（下の警告が、手で足す1行を出す）。
+	[ "$root_needs_plugin" = "yes" ] && [ -z "${ROOT_PLUGIN_MANUAL:-}" ] && say "${sc_root_build_uri} （Kotlin JVM プラグインを apply false で追加）" \
 		"${sc_root_build_uri} (added the Kotlin JVM plugin with apply false)"
 	[ "$settings_needs_include" = "yes" ] && [ -z "$SETTINGS_INCLUDE_MANUAL" ] &&
 		say "${sc_settings_uri} （include を追加）" \
@@ -3768,21 +3850,41 @@ $(print_docs_topics)"
 		_name="llms-full.txt"
 		_url="$KATACHI_DOCS/$_name"
 		_dest="$WORKDIR/tmp/cache/$_name"
+		_topic_cached="no"
+		[ -s "$_dest" ] && [ "$_refresh" = "no" ] && _topic_cached="yes"
 		fetch_once "$_url" "$_dest" "$_refresh"
+		# 取得元は標準エラーに出す（全文・--api と同じ）。本番以外に向けた導入で、本番から取っていないかを確かめられるように。
+		if [ "$_topic_cached" = "yes" ]; then
+			printf '%s\n' "$(pick "取得元: ${_url}（取得済みのものを使いました。取り直すなら --refresh）" \
+				"Source: ${_url} (used the copy already fetched; add --refresh to fetch it again)")" >&2
+		else
+			printf '%s\n' "$(pick "取得元: ${_url}" "Source: ${_url}")" >&2
+		fi
 		_topic_dest="$WORKDIR/tmp/cache/topics/$_topic.md"
 		mkdir -p "${_topic_dest%/*}"
 		_topic_lines=$(extract_docs_topic "$_dest" "$_topic_title" "$_topic_dest")
+		# 見出しが無い・凍結した版を拾った、はどちらもキットの不具合（話題と見出しの対応表 docs_topic_title が
+		# ガイドとずれた）。利用者のエージェントにスクリプトを直させず、ユーザに伝えて全文から該当ページだけ読ませる。
+		if [ "${_topic_lines:-0}" -eq 0 ] && [ "$_topic_cached" = "yes" ]; then
+			rm -f "$_topic_dest"
+			die "$(file_uri "$_dest") に見出し「${_topic_title}」がありません。取得済みの全文が古い可能性があります。--refresh を付けて取り直してください（sh ${WORKDIR}/tmp/katachi-install.sh docs --topic ${_topic} --refresh）。" \
+				"No heading \"${_topic_title}\" in $(file_uri "$_dest") . The copy fetched earlier may be old. Fetch it again with --refresh (sh ${WORKDIR}/tmp/katachi-install.sh docs --topic ${_topic} --refresh)."
+		fi
 		if [ "${_topic_lines:-0}" -eq 0 ]; then
 			rm -f "$_topic_dest"
-			die "$(file_uri "$_dest") に見出し「${_topic_title}」がありません。ガイドの見出しが変わったか、取得物が古いかです（--refresh で取り直す）。" \
-				"No heading \"${_topic_title}\" in $(file_uri "$_dest") . The guide's heading may have changed, or the copy is old (add --refresh)."
+			die "docs --topic ${_topic}: ガイドの全文に見出し「${_topic_title}」がありません。インストールキットの不具合です（このスクリプトが知っている見出しが、ガイドとずれています）。
+    スクリプトは直さないでください。ユーザにこの出力を伝えたうえで、全文 $(file_uri "$_dest") から、この話題にあたるページ（行頭の \"# \" の見出しから次の \"# \" の見出しの手前まで）だけを読んで進めてください。" \
+				"docs --topic ${_topic}: the full guide has no heading \"${_topic_title}\". This is a bug in the install kit (the headings this script knows no longer match the guide).
+    Do not edit the script. Tell the user about this output, then read only the page for this topic (from its line-leading \"# \" heading up to the next one) in the full text $(file_uri "$_dest") and go on."
 		fi
 		# 切り出した範囲が凍結した版（/0.2/ など /<数字>.<数字>/ を指すリンクを持つページ）なら、
 		# 現行ページの見出しが変わって写しのほうを拾ったということ。黙って出さずに止める。
 		if grep -Eq '\]\(/[^)/]+/[0-9]+\.[0-9]+/' "$_topic_dest"; then
 			rm -f "$_topic_dest"
-			die "docs --topic ${_topic}: 見出し「${_topic_title}」で切り出した範囲が凍結した版（/0.2/ など）のページです。現行ページの見出しが変わった可能性があります（docs_topic_title を直す）。" \
-				"docs --topic ${_topic}: the range cut by heading \"${_topic_title}\" is a frozen-version page (such as /0.2/). The current page's heading may have changed (fix docs_topic_title)."
+			die "docs --topic ${_topic}: 見出し「${_topic_title}」で切り出したページが、古い版（/0.2/ など）の写しでした。インストールキットの不具合です（このスクリプトが知っている見出しが、ガイドの現行ページとずれています）。
+    スクリプトは直さないでください。ユーザにこの出力を伝えたうえで、全文 $(file_uri "$_dest") の前半（現行の版）から、この話題にあたるページだけを読んで進めてください。" \
+				"docs --topic ${_topic}: the page cut by heading \"${_topic_title}\" is a copy of an older version (such as /0.2/). This is a bug in the install kit (the headings this script knows no longer match the guide's current pages).
+    Do not edit the script. Tell the user about this output, then read only the page for this topic in the first part (the current version) of the full text $(file_uri "$_dest") and go on."
 		fi
 		# 行数と見出しは標準エラーに出す。標準出力はパスだけ（機械が読む）。
 		printf '%s\n' "$(pick "${_topic_lines} 行（llms-full.txt の「${_topic_title}」）" \
@@ -3881,6 +3983,17 @@ END {
 	}
 }
 '
+
+# 手順書の目次のセクション ID を空白区切りで KATACHI_GUIDE_TOC に入れる（check の「次」と summary の「再開」が、
+# 項目の無いセクション（0-3 や章の前書き）を飛ばさないために使う。SECTION_OF_PY の next_section）。
+# 手順書がまだ無ければ空のまま（未完了の最初の項目のセクションを出す）。
+export_guide_toc() {
+	KATACHI_GUIDE_TOC=""
+	if [ -s "$WORKDIR/tmp/cache/index.md" ]; then
+		KATACHI_GUIDE_TOC=$(awk -v mode=toc "$GUIDE_AWK" "$WORKDIR/tmp/cache/index.md" | cut -f1 | tr '\n' ' ')
+	fi
+	export KATACHI_GUIDE_TOC
+}
 
 # チェックリストの 6-1〜6-4 を手順書の 6-A〜6-D に読み替える。
 guide_section_id() {
@@ -4477,6 +4590,17 @@ count_missing_description() {
 	grep -c -E '^[[:space:]]*\[MissingDescription\] ' "$1" || :
 }
 
+# katachi が違反を先頭 N 件だけ出したログなら、その行（Showing first N (M more...)）を出す。全件なら何も出さない。
+# 打ち切ったログはログに出た見出ししか比べられず、11 件目以降の入れ替わりを見逃す。全件のログと比べると
+# 偽の差分も出る。だから test の差分と compare-violations は、どちらかが打ち切りなら比べない。
+truncated_line_of() {
+	grep -E '^[[:space:]]*Showing first ' "$1" | sed -e 's/^[[:space:]]*//' | head -n 1
+}
+
+# -Dkatachi.maxViolations の値。test が Gradle にいつも渡す（全件をログに出し、差分と compare-violations が
+# 11 件目以降も比べられるようにする）。利用者が -- の後ろで -Dkatachi.maxViolations を渡したら、そちらを使う。
+TEST_MAX_VIOLATIONS_ARG="-Dkatachi.maxViolations=all"
+
 # extract_check_result で揃えた 2 つ（$1 = 前, $2 = 後）の差分を出す。compare-violations と test が共有する。
 #   増えた N 件 / 減った M 件
 #     + <後だけにある行>
@@ -4514,6 +4638,24 @@ cmd_compare_violations() {
 			die "$(file_uri "$_cv_f") に検査の結果がありません。コンパイルエラーなどで検査まで届いていません。直してから取り直してください。" \
 				"$(file_uri "$_cv_f") has no check result. The build did not get as far as the check (a compile error, for example). Fix it and capture the log again."
 	done
+	# どちらかが先頭 N 件で打ち切ったログなら比べない（11 件目以降の入れ替わりを見逃し、全件のログとは偽の差分が出る）。
+	_cv_trunc=""
+	for _cv_f in "$_cv_before" "$_cv_after"; do
+		_cv_t=$(truncated_line_of "$_cv_f")
+		[ -n "$_cv_t" ] && _cv_trunc="${_cv_trunc}    $(file_uri "$_cv_f") : ${_cv_t}
+"
+	done
+	if [ -n "$_cv_trunc" ]; then
+		warn "違反を先頭の数件だけ出したログがあるので、比べません。ログに出ていない違反が入れ替わっても気づけず、全件のログと比べると偽の差分が出るためです。
+${_cv_trunc}    打ち切られたほうを、全件で取り直してください。sh ${WORKDIR}/tmp/katachi-install.sh test --save <名前> はいつも全件を出します（-Dkatachi.maxViolations=all を Gradle に渡す）。
+    前のログ（before-refactor）を取り直すときは、定義をリファクタリング前に戻してから取ります。
+    取り直しても打ち切られるなら、テストのコードの assert() に maxViolations が書いてあります（-D より優先される）。外してから取り直してください。" \
+			"Not comparing: a log shows only the first few violations. Violations missing from the log could swap without being noticed, and comparing with a full log shows a false difference.
+${_cv_trunc}    Capture the cut-off one again with every violation. sh ${WORKDIR}/tmp/katachi-install.sh test --save <name> always prints them all (it passes -Dkatachi.maxViolations=all to Gradle).
+    To capture the before log (before-refactor) again, put the definition back to how it was before the refactoring first.
+    If it is still cut off, the test code passes maxViolations to assert() (that wins over -D). Remove it and capture again."
+		exit 2
+	fi
 
 	mkdir -p "$WORKDIR/tmp/cache"
 	_cv_a="$WORKDIR/tmp/cache/.cv-before.$$"
@@ -4580,6 +4722,14 @@ cmd_test() {
 			"test: unknown option: ${1} (put arguments for Gradle after --)" ;;
 		esac
 	done
+
+	# 違反をいつも全件ログに出す（差分と compare-violations が 11 件目以降も比べられるように）。
+	# 利用者が -- の後ろで -Dkatachi.maxViolations を渡していれば、そちらを使う。
+	_ts_has_max="no"
+	for _ts_arg in "$@"; do
+		case "$_ts_arg" in -Dkatachi.maxViolations=*) _ts_has_max="yes" ;; esac
+	done
+	[ "$_ts_has_max" = "yes" ] || set -- "$@" "$TEST_MAX_VIOLATIONS_ARG"
 
 	require_commands "$REQ_TEST"
 	require_workdir
@@ -4664,9 +4814,32 @@ cmd_test() {
 	if [ "${_ts_md:-0}" -gt 0 ]; then
 		say "[MissingDescription]: ${_ts_md} 件（説明を書けば減る）" "[MissingDescription]: ${_ts_md} (goes down as descriptions are written)"
 	fi
+	# 警告（[AmbiguousLayout] など。検査は失敗させない）。通ったときもログにだけ出て、要約を読むエージェントが
+	# 気づけないので、件数と見出しを出す。[MissingDescription] は上の行で数えたので見出しには並べない。
+	# 失敗したときは結果の行に「, N warnings」が付き、見出しは違反と一緒に差分に出る。
+	if [ "$_ts_rc" -eq 0 ]; then
+		_ts_wn=$(sed -n -E 's/^[[:space:]]*Katachi check found ([0-9]+) warnings?\..*/\1/p' "$_ts_log" | head -n 1)
+		if [ -n "$_ts_wn" ] && [ "$_ts_wn" -gt 0 ]; then
+			say "警告: ${_ts_wn} 件（検査は失敗させない。内容を見て、直すか残すかを決める）" \
+				"Warnings: ${_ts_wn} (they never fail the check; read them and decide whether to fix or keep each)"
+			grep -E "$VIOLATION_HEADING_LINE" "$_ts_log" | grep -v -E '^[[:space:]]*\[MissingDescription\] ' |
+				sed -e 's/^[[:space:]]*/  /' | head -n "$PRINT_CHECK_DIFF_MAX"
+		fi
+	fi
+
+	# 打ち切りの行（katachi が先頭 N 件だけ出したとき）。test はいつも全件を出すよう Gradle に渡すので、
+	# 出るのは利用者が -Dkatachi.maxViolations=<数> を渡したか、テストの assert() に maxViolations を書いたとき。
+	_ts_omit=$(truncated_line_of "$_ts_log")
+	_ts_prev_omit=""
+	[ -f "$_ts_dir/previous.log" ] && _ts_prev_omit=$(truncated_line_of "$_ts_dir/previous.log")
 
 	# 前回（previous.log）との差分。前回が無い・検査まで届いていなければ出さない。
-	if [ -f "$_ts_dir/previous.log" ] && has_check_result "$_ts_dir/previous.log"; then
+	# どちらかが打ち切りのログなら比べない（ログに出ていない違反を比べられず、全件のログとは偽の差分が出る）。
+	if [ -f "$_ts_dir/previous.log" ] && has_check_result "$_ts_dir/previous.log" &&
+		{ [ -n "$_ts_omit" ] || [ -n "$_ts_prev_omit" ]; }; then
+		say "前回との差分（previous.log 比）: 比べません（違反を先頭の数件だけ出したログがあるため）" \
+			"Difference from the previous run (vs previous.log): not compared (a log shows only the first few violations)"
+	elif [ -f "$_ts_dir/previous.log" ] && has_check_result "$_ts_dir/previous.log"; then
 		_ts_a="$_ts_dir/.prev.$$"
 		_ts_b="$_ts_dir/.cur.$$"
 		# 件数は違反の見出し（[種類] ...）だけで数える。「Katachi check failed: N violations」の行は
@@ -4685,11 +4858,9 @@ cmd_test() {
 		rm -f "$_ts_a" "$_ts_b"
 	fi
 
-	# 打ち切りの行（katachi が先頭 N 件だけ出したとき）。全件の出し方を添える。
-	_ts_omit=$(grep -E '^[[:space:]]*Showing first ' "$_ts_log" | sed -e 's/^[[:space:]]*//' | head -n 1)
 	if [ -n "$_ts_omit" ]; then
-		say "省略: ${_ts_omit}。全件は -- -Dkatachi.maxViolations=all" \
-			"Omitted: ${_ts_omit}. For everything, pass -- -Dkatachi.maxViolations=all"
+		say "省略: ${_ts_omit}。-Dkatachi.maxViolations に数を渡したか、テストの assert() に maxViolations が書いてあります（全件を出すには、どちらも外す）" \
+			"Omitted: ${_ts_omit}. Either -Dkatachi.maxViolations was given a number, or the test passes maxViolations to assert() (remove both to see everything)"
 	fi
 	return "$_ts_rc"
 }
@@ -4760,6 +4931,25 @@ def section_of(item_id):
     if item_id.startswith("6-"):
         return None
     return item_id
+
+
+def next_section(items):
+    # 次に読むセクション。未完了の最初の項目のセクションを U とし、手順書の目次（sh 側が KATACHI_GUIDE_TOC に
+    # 空白区切りで渡す）で U より前にある完了済みの項目のうち最後のものの、目次で次のセクションを返す。
+    # 項目を持たないセクション（0-3、章の前書き 1・3・4 など）を飛ばさないため。目次が無ければ U。
+    pending = [i["id"] for i in items if not i.get("done") and section_of(i["id"])]
+    if not pending:
+        return None
+    target = section_of(pending[0])
+    toc = os.environ.get("KATACHI_GUIDE_TOC", "").split()
+    if target not in toc:
+        return target
+    limit = toc.index(target)
+    done = [toc.index(section_of(i["id"])) for i in items
+            if i.get("done") and section_of(i["id"]) in toc and toc.index(section_of(i["id"])) < limit]
+    if not done:
+        return target
+    return toc[max(done) + 1]
 '
 
 # 確認事項（questions）の id。チェックリストは q<n>、レポートは cq<n>（codebase-question）と接頭辞を分ける。
@@ -4810,8 +5000,7 @@ if done:
     # 次に読むセクション。done でない最初の項目（チェックリストの順 = 手順書の目次の順）を section_of で
     # セクション ID にする。None（6-x）か未完了が無ければ出さない。CLI のパスは sh 側が環境変数で渡す。
     cli = os.environ.get("KATACHI_CHECK_CLI")
-    pending = [i for i in known if not known[i].get("done")]
-    section = section_of(pending[0]) if pending else None
+    section = next_section([known[i] for i in known])
     if cli and section:
         print(t("次: sh %s guide %s", "Next: sh %s guide %s") % (cli, section))
 else:
@@ -4825,6 +5014,7 @@ cmd_check() {
 	# 完了後の「次: sh <CLI> guide <セクション ID>」を CHECK_PY が組み立てるために、CLI のパスを渡す。
 	KATACHI_CHECK_CLI="$WORKDIR/tmp/katachi-install.sh"
 	export KATACHI_CHECK_CLI
+	export_guide_toc
 	edit_checklist "$SECTION_OF_PY
 $CHECK_PY" true "$@"
 	# 定義を書き終えた時点と整え終えた時点で、Role の取り違えを拾う。
@@ -5036,6 +5226,12 @@ idf = IDENTITY.get(kind)
 if idf is not None and entry.get(idf) is not None:
     for row in rows:
         if row.get(idf) == entry[idf]:
+            # 作成・変更したファイル（changed）は、記録済みのパスをまた変えることがよくある（2-2 で記録した
+            # build.gradle.kts を 6-C で変えるなど）。記録し直さなくてよいので、止めずに何もしないで終える（3 = 変更なし）。
+            if kind == "changed":
+                sys.stderr.write(t("その path は記録済みです: %s（記録し直さなくて構いません。何も変えていません）\n",
+                                   "That path is already recorded: %s (no need to record it again; nothing was changed)\n") % entry[idf])
+                sys.exit(3)
             sys.stderr.write(t("その %s はすでに登録されています: %s\n", "That %s is already recorded: %s\n") % (idf, entry[idf]))
             sys.stderr.write(t("二重に記録しないため追記しませんでした。\n", "Not appended, to avoid recording it twice.\n"))
             sys.stderr.write(t("書き換えたい場合は data get で取り出し、直してから data set してください。\n",
@@ -5144,7 +5340,16 @@ cmd_add() {
 	# 抜き取り、残りをそのまま標準エラーに流す。
 	_new="$_html.new.$$"
 	_err="$_html.err.$$"
-	if printf '%s\n%s\n%s' "$PY_LANG" "$QUESTION_ID_PY" "$ADD_PY" | python3 - "$_cur" "$_new" "$_target" "$_kind" "$_included" "$@" 2>"$_err"; then
+	_add_st=0
+	printf '%s\n%s\n%s' "$PY_LANG" "$QUESTION_ID_PY" "$ADD_PY" | python3 - "$_cur" "$_new" "$_target" "$_kind" "$_included" "$@" 2>"$_err" || _add_st=$?
+	if [ "$_add_st" -eq 3 ]; then
+		# 記録済みの changed（ADD_PY が 3 で返す）。書き込まずに 0 で終える。
+		grep -v '^before=\|^array=' "$_err" >&2 || :
+		rm -f "$_cur" "$_new" "$_err"
+		lock_release
+		return 0
+	fi
+	if [ "$_add_st" -eq 0 ]; then
 		grep -v '^before=\|^array=' "$_err" >&2 || :
 		_before=$(sed -n 's/^before=//p' "$_err" | head -n 1)
 		_array=$(sed -n 's/^array=//p' "$_err" | head -n 1)
@@ -5787,8 +5992,7 @@ if len(done) < len(items):
     print(t("  作業用ディレクトリ: %s", "  Working directory: %s")
           % (file_uri(workdir) if workdir else t("<作業用ディレクトリ>", "<working directory>")))
     print(t("  終わった項目: %s", "  Done: %s") % (" ".join(i["id"] for i in done) or "-"))
-    first = next((i for i in items if not i.get("done")), None)
-    section = section_of(first["id"]) if first else None
+    section = next_section(items)
     if section:
         print(t("  次のセクション: sh %s guide %s", "  Next section: sh %s guide %s") % (cli, section))
     if def_exists:
@@ -5871,6 +6075,31 @@ for i in optional_items:
                   % (tpl.get("role") or t("(未記入)", "(blank)"), files, params))
         continue
     print("    - %s" % HINT.get(i["id"], i.get("label", i["id"])))
+
+# 再開の欄（成功の形式でも出す）。手順書は 6・6-0・6-A〜6-D の末尾の区切りで、次のセッションに
+# この欄の「次のセクション」を読ませる。どれに進むかはユーザの依頼で決まるので、候補を並べる。
+OPTIONAL_TITLE = {
+    "6-1": ("6-A", t("導入できたことを確かめる", "confirm that the installation works")),
+    "6-2": ("6-B", t("CI に組み込む", "add it to CI")),
+    "6-3": ("6-C", t("ドキュメント生成をセットアップする", "set up documentation generation")),
+    "6-4": ("6-D", t("テンプレートからのコード生成をセットアップする", "set up code generation from templates")),
+}
+print()
+print(t("再開:", "Resume:"))
+print(t("  作業用ディレクトリ: %s", "  Working directory: %s")
+      % (file_uri(workdir) if workdir else t("<作業用ディレクトリ>", "<working directory>")))
+print(t("  終わった項目: %s", "  Done: %s")
+      % " ".join(i["id"] for i in list(items) + list(optional_items) if i.get("done")))
+print(t("  次のセクション（ユーザの依頼に合わせて選ぶ）:", "  Next section (pick the one the user asked for):"))
+print(t("    - レビューの指摘を直す: sh %s guide 6-0", "    - Fix what the review pointed out: sh %s guide 6-0") % cli)
+for i in optional_items:
+    if i.get("done") or i["id"] not in OPTIONAL_TITLE:
+        continue
+    # テンプレートの提案が無ければ 6-D は勧めない（Next action と同じ）
+    if i["id"] == "6-4" and not report_templates:
+        continue
+    sec, title = OPTIONAL_TITLE[i["id"]]
+    print("    - %s: sh %s guide %s" % (title, cli, sec))
 '
 
 cmd_summary() {
@@ -5900,6 +6129,7 @@ cmd_summary() {
 	_def=$(definition_dir)
 	_def_exists="no"
 	[ -d "$_def" ] && _def_exists="yes"
+	export_guide_toc
 
 	# `set -e` の下では、条件に置かないと python の失敗で後始末に届かない。
 	if printf '%s\n%s\n%s\n%s' "$PY_LANG" "$SECTION_OF_PY" "$QUESTION_ID_PY" "$SUMMARY_PY" | python3 - "$_a" "$_b" "$MODULE_DIR" "$MODULE_GRADLE_PATH" "$_cli" "$_def" "$_def_exists"; then
@@ -5935,6 +6165,16 @@ cmd_doctor() {
 		"All required commands are available (${REQ_ALL})."
 	# java はコマンドの有無ではなく、Gradle が使う JDK の版を確かめる（JAVA_HOME だけのこともあるため REQ_* には入れない）。
 	check_gradle_jdk
+	# Kotlin の版も、重いステップ 1 の解析より前に分かるようにする（古いと 2-1 の scaffold で止まる）。
+	# 止めはしない（init も同じ警告を出す）。Gradle のルートで実行されたときだけ見る。
+	_dr_kotlin=$(detect_kotlin_version)
+	if [ -n "$_dr_kotlin" ]; then
+		if kotlin_too_old "$_dr_kotlin"; then
+			warn "$(kotlin_too_old_message "$_dr_kotlin")"
+		else
+			note "Kotlin: ${_dr_kotlin}"
+		fi
+	fi
 }
 
 # ---------------------------------------------------------------- entry

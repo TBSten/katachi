@@ -139,7 +139,7 @@ sh /tmp/katachi-install.sh init --lang en
 
 If the user has specified where the verification module goes, add `--module-dir <path relative to the Gradle root>` (for example `--module-dir static-analysis/katachi`). Without it, it is `architecture-test`. To change it later, record it with `preferences set moduleDir=<path>` in step 1-3.
 
-The script was already fetched in 0-1. **`curl` runs only once across the whole procedure** — `init` copies itself into the working directory, and every command from here on uses that copy.
+The script was already fetched in 0-1. **The script is `curl`ed only once across the whole procedure** — `init` copies itself into the working directory, and every command from here on uses that copy.
 
 This command does all of the following. **Do not redo any of this by hand.**
 
@@ -148,7 +148,7 @@ This command does all of the following. **Do not redo any of this by hand.**
 - Checking whether it's under Git management (warns if not)
 - Deciding on and creating the working directory (inside a `.gitignore`d location if one exists, otherwise `tmp/install-katachi/`)
 - Fetching the latest version of katachi (if it is below 0.3.0, which this procedure assumes, it stops before creating anything)
-- Detecting the Kotlin version the project uses
+- Detecting the Kotlin version the project uses (it warns if it is older than 2.2; see "When Kotlin is too old" below)
 - Placing `check-list.html` and `project-code-base-report.html`
 - Fetching this document (the original text that `guide` prints section by section. To fetch it again, `sh $CLI guide --refresh`)
 - Initializing the checklist's JSON (working directory / version / project root / date-time / Kotlin / Git / where the verification module goes)
@@ -171,7 +171,7 @@ KATACHI_MODULE_PATH=:architecture-test
 
 **All commands from here on are run with the `KATACHI_CLI` path.** The one in `/tmp` is not used. Read `:architecture-test:` in this document as `KATACHI_MODULE_PATH`, and `architecture-test/` as `KATACHI_MODULE_DIR` (they are the same unless you changed `--module-dir`).
 
-Once this is done, run `sh $CLI check 0-1 0-2`.
+Once this is done, run `sh $CLI check 0-1 0-2`. The last `Next:` line of `init` points to this command too.
 
 **If it stops, handle it exactly as the output says.** Do not invent a workaround. To change the working directory, re-run with `--workdir <path>`; to pin a version, re-run with `--katachi <version>` (`scaffold` uses the version `init` recorded. Re-running without `--katachi` keeps the version recorded last time).
 
@@ -180,6 +180,8 @@ Once this is done, run `sh $CLI check 0-1 0-2`.
 **If `init` warns that the working directory is visible to git, pass that on to the user** and suggest adding it to `.gitignore`. It happens when the project has no already-ignored place to put it. katachi checks files that are untracked but not ignored, so left alone the working directory itself becomes an `[UnexpectedFile]` in step 4 (and the checklist and the report can end up in their commits). Do not edit `.gitignore` yourself.
 
 **If it lists things that are "untracked and not ignored", the reason is the same.** Ask the user whether to declare each of them in the definition or add it to `.gitignore`.
+
+**When Kotlin is too old.** If `init` warns something like "This project uses Kotlin 1.9.10. katachi needs Kotlin 2.2 or later", ask the user before starting the analysis in step 1 (`doctor` prints the same warning). As it is, `scaffold` in 2-1 will stop, and the analysis up to that point is wasted. Upgrading Kotlin changes the existing build, so do not do it without the user's consent. Once they agree, upgrade Kotlin to 2.2 or later. Kotlin Gradle Plugin 2.2 needs Gradle 7.6.3 or later, so if the warning says "Gradle needs upgrading too", upgrade Gradle as well. Fixing build errors caused by the upgrade is also a change to the existing build, so tell the user what you will change before fixing them. Once `./gradlew` builds, run `init` again (the files already filled in are not broken, and the Kotlin version recorded in the check list becomes the new one), and record the files you changed with `add changed` from 0-3. If the user decides not to upgrade, tell them that katachi cannot be installed in this project, and stop there.
 
 The top level of the working directory holds only `check-list.html` and `project-code-base-report.html`, which people open, plus `tmp/`. The copy of the script, the fetched files (`tmp/cache/`), and any notes or logs all go inside `<KATACHI_WORKDIR>/tmp/`. Do not add anything to the top level.
 
@@ -222,7 +224,7 @@ sh $CLI add tool      --name ktlint --configPath ".editorconfig" --declareInKata
 sh $CLI add excluded  --path "..." --reason "..."
 ```
 
-`--options` and `--allowed` / `--forbidden` / `--examples` **can be passed multiple times.** Passing an unknown field name stops it and lists the names that are available. It also stops when you pass no fields at all, and when the same `--path` or `--name` is already recorded — so a blank row and a duplicate row cannot get in.
+`--options` and `--allowed` / `--forbidden` / `--examples` **can be passed multiple times.** Passing an unknown field name stops it and lists the names that are available. It also stops when you pass no fields at all, and when the same `--path` or `--name` is already recorded — so a blank row and a duplicate row cannot get in. Only `add changed` ends without doing anything (exit code 0) when the path is already recorded. If you change a recorded file again later, there is no need to record it again.
 
 `add` also stops in the following two cases.
 
@@ -274,7 +276,7 @@ sh $CLI warn 4 "Left 2 architecture violations in place"   # attach a warning to
 sh $CLI warn 4 --clear         # clear the warning
 ```
 
-`check` **stops if you pass an id it doesn't recognize.** A typo is never silently ignored. After marking items done it prints one line, `Next: sh $CLI guide <section ID>`, so read that section next.
+`check` **stops if you pass an id it doesn't recognize.** A typo is never silently ignored. After marking items done it prints one line, `Next: sh $CLI guide <section ID>`, so read that section next. It points to the next section to read in table-of-contents order, including 0-3 and the chapter introductions (`guide 3` and so on), which have no items.
 
 `warn`'s step id is **0 through 6** (that's as far as the checklist's steps go). A step with a warning turns yellow, and stays expanded even once it's complete.
 
@@ -358,7 +360,7 @@ In `modules`, write `path` / `kind` / `responsibility` / `buildFile` for each mo
 - **Write Role candidates as a tree of groups.** Nest groups in the order "module → layer → kind", and do not line up 8 or more Roles in one group (if they do, split the group)
 - **`build.gradle.kts` / `settings.gradle.kts` / `gradle.properties` / the version catalog are covered by `gradle()`.** Do not make a Role per kind of module. `add role` refuses them too (except `buildSrc` and builds added with `includeBuild`). The exception is a constraint you want to put on a build file (that the namespace matches the package, say); record it with `add role --constraint-only --note <reason>`. In the definition it does not become a Role: write the constraint in a hook such as `gradle { buildScript { } }`. A hook's constraint receives the build files of every module, so to look at one module only, narrow them inside the constraint (the Gradle paragraph under "One Role = one kind of file" in 3-2)
 - **What gets `documented = false`:** (1) generated output (build output, committed generated code), (2) build and tool configuration (`.editorconfig`, CI yaml, lint configuration), (3) single-file helpers (README, LICENSE, `.gitignore`). Only Roles that are useful to a reader go into the generated documentation
-- **For the Android staples (`AndroidManifest.xml`, `res/`), copy the recipe and adapt it.** Base them on the definition at https://tbsten.github.io/katachi/recipes/android-three-layer/
+- **For the Android staples (`AndroidManifest.xml`, `res/`), copy the recipe and adapt it.** Base them on the definition fetched with `sh $CLI docs --topic android-three-layer`
 
 This task can consume a large amount of context, so launch subagents where available, as appropriate (as in the table at the top: subagents read and draft, and the main agent writes).
 
@@ -425,7 +427,7 @@ This command does the following.
 - Adding `include(":architecture-test")` to the settings file (`include ':architecture-test'` for a Groovy `settings.gradle`; `include(":static-analysis:katachi")` for `--module-dir static-analysis/katachi`; does nothing if it's already there)
 - Adding `mavenCentral()` to `pluginManagement { repositories { } }` in the settings file, because the katachi Gradle plugin is published to Maven Central (does nothing if it's already there; creates `pluginManagement { }` if there is none)
 
-Plugin version conflicts, the JUnit engine, the JVM toolchain (below), the compiler options the project's Kotlin version needs, and handling for Android / KMP projects are **all decided by the script.** Below Kotlin 2.4 it writes `-Xcontext-parameters`, which the DSL cannot be called without; from 2.4 on it leaves the flag out, because there it only warns that it is redundant. Below Kotlin 2.2 it stops and says so — katachi's metadata cannot be read by a compiler that old. Even if you feel like fixing something after reading the generated files, do not fix it.
+Plugin version conflicts, the JUnit engine, the JVM toolchain (below), the compiler options the project's Kotlin version needs, and handling for Android / KMP projects are **all decided by the script.** Below Kotlin 2.4 it writes `-Xcontext-parameters`, which the DSL cannot be called without; from 2.4 on it leaves the flag out, because there it only warns that it is redundant. Below Kotlin 2.2 it stops and says so — katachi's metadata cannot be read by a compiler that old (`init` warns about it first; see "When Kotlin is too old" in 0-2). Even if you feel like fixing something after reading the generated files, do not fix it.
 
 The JVM toolchain reuses the N the project already sets: `jvmToolchain(N)` or `JavaLanguageVersion.of(N)` in another module, the same forms inside buildSrc or build-logic, or a value read from the version catalog or a `val`. katachi needs JDK 17 or later, so an N below 17 is not used. When no setting is found it writes no `jvmToolchain` and simply uses the JDK that runs Gradle (so it does not fail where JDK 17 is missing and no toolchain download is configured). Which of the two happened is recorded in the scaffold output and in the "JVM toolchain" field of the checklist. `doctor` and `scaffold` also check that the JDK Gradle uses is 17 or later, and stop with a fix if it is not.
 
@@ -482,15 +484,15 @@ In the log, a paragraph of the following shape follows for each violation (an ex
         }
 ```
 
-By default 10 violations are shown. During adoption there are usually dozens to a hundred, so when you need all of them, use `sh $CLI test -- -Dkatachi.maxViolations=all` (everything after `--` is passed to `./gradlew` as is, and katachi's Gradle plugin delivers it to the test JVM). There is no need to write `maxViolations` in the test code.
+katachi shows only 10 violations by default, but `sh $CLI test` always writes all of them to the log (it passes `-Dkatachi.maxViolations=all` to `./gradlew`, and katachi's Gradle plugin delivers it to the test JVM). This lets the diff against the previous run and `compare-violations` in 3-3 compare the 11th violation onward too. Do not write `maxViolations` in the test code. If you do, that value wins and the log is cut off.
 
 **Failing in this shape means the wiring is correct.**
 
-The first Gradle run makes `.kotlin/` (Kotlin 2.x). If the project's `.gitignore` does not have it, `[UnexpectedDirectory] .kotlin` shows up. So does the `.gradle/` that Gradle creates. Treat them the same as the untracked-file warning from `init`: ask the user whether to add them to `.gitignore`. If git tracks files inside `.idea/` (such as `.idea/codeStyles/`), they are checked too, so declare them by writing a Role in step 3 (if you do not check their contents, `ignore()` is enough). Do not edit `.gitignore` yourself. Only an error that is not `Unexpected` is a problem — a compile error, a dependency resolution failure, something like `Could not start Gradle Test Executor` (the summary then says `Result: The check did not run`, with the tail of the log attached).
+The first Gradle run makes `.kotlin/` (Kotlin 2.x). If the project's `.gitignore` does not have it, `[UnexpectedDirectory] .kotlin` shows up. So does the `.gradle/` that Gradle creates. Treat them the same as the untracked-file warning from `init`: ask the user whether to add them to `.gitignore`. If git tracks files inside `.idea/` (such as `.idea/codeStyles/`), they are checked too, so declare them by writing a Role in step 3 (if you do not check their contents, `ignore()` is enough). Do not edit `.gitignore` yourself. Only an error that is not `Unexpected` is a problem — a compile error, a dependency resolution failure, something like `Could not start Gradle Test Executor` (the summary then says `Result: the check was not reached`, with the tail of the log attached).
 
 In that case, following the same policy as step 4, **attempt to fix errors unrelated to katachi (Gradle, Java, dependency resolution).** Only if it still can't be resolved, pass the output to the user exactly as it is and ask for their judgment.
 
-If `scaffold` says "Did not rewrite automatically because a buildscript { } is present," **add the single line shown in the output to the root build file.** It will keep failing until you add it. The same goes for "could not read the shape of pluginManagement { }" and "could not read where the include statement ends": add what the output shows to the settings file.
+If `scaffold` says "has a buildscript { } block, so it was not edited automatically," **add the single line shown in the output to the root build file.** It will keep failing until you add it. The same goes for "could not read the shape of pluginManagement { }" and "could not read where the include statement ends": add what the output shows to the settings file.
 
 Once you have confirmed it fails with `Unexpected` only, record the files that were created or changed, then run `sh $CLI check 2-2`.
 
@@ -522,6 +524,8 @@ sh $CLI docs --topic kt-file-content     # only when using ktFileContent { }
 This fetches the guide cut out by topic and prints the file's path. Read that file. **Do not read the whole guide (`sh $CLI docs`).** The four above are all you need to write the definition. How to write `ktFileContent { }` is in `kt-file-content` (`sh $CLI docs --topic kt-file-content`) and in section 6 of `basic-api` ("6. Defining the declarations a file may contain with `ktFileContent { }`"). `sh $CLI docs --topics` lists the topics. Anything already fetched is not fetched again.
 
 **What is fetched is the English version.** The site's default locale is English, and this format is generated only for the default locale. DSL API names do not depend on the language, so this is no obstacle to writing the definition.
+
+If `docs --topic` stops saying "This is a bug in the install kit", do not edit the script; tell the user about the output. Read only that topic's page in the full-text file the output names, and go on.
 
 Once you've finished reading, run `sh $CLI check 3-1`.
 
@@ -666,7 +670,7 @@ sh $CLI test --save before-refactor
 
 What you need here is **for it to compile and for the check to run to the end.** Failing with `Katachi check failed: ...` is fine (violations are dealt with in step 4). If a compile error or a Gradle error keeps the check from running, fix it and run it again.
 
-Record the files you created or changed in `changedFiles` with `data merge`, then run `sh $CLI check 3-2`. It scans the definition and lists the Roles that look like they hold different kinds of files (`lint`). What it lists is dealt with in the 3-3 checklist.
+Record the files you created or changed with `add changed` (the split files can be one entry by directory or wildcard; files already recorded in 2-2 need not be recorded again), then run `sh $CLI check 3-2`. It scans the definition and lists the Roles that look like they hold different kinds of files (`lint`). What it lists is dealt with in the 3-3 checklist.
 
 ### 3-3. Refactor the definition
 
@@ -718,9 +722,11 @@ sh $CLI compare-violations
 
 `compare-violations` pulls the check result out of the two logs (the summary line, and `[Kind] path` for each violation) and compares them. It does not compare the line numbers of declaration sites. `[MissingDescription]` should go down as you add descriptions, so it only prints the counts. **If there is a difference, fix the definition rather than taking the earlier log again.** The refactoring has changed the behavior.
 
+If either log shows only the first few violations (it has a `Showing first ...` line), `compare-violations` stops without comparing (exit code 2), because violations missing from the log cannot be compared. `test` always prints them all, so this does not normally happen. If it stops, capture the cut-off log again as the output says.
+
 **If the earlier log was green (0 violations), this is 0 against 0, and it cannot tell you that the split loosened the definition (a catch-all crept in, say).** In that case, also make one known violation after the split and confirm it fails: put a file that no Role covers somewhere temporarily, run `sh $CLI test`, and once it fails with `[UnexpectedFile]`, delete that file.
 
-Record the files you created or changed in `changedFiles` (the split files can be one entry by directory), then run `sh $CLI check 3-3`. `lint` runs again. `lint` also prints inspections that do not fail it (a "flat group" or an "unsplit file" against the 1-3 preferences, and candidates for `documented = false`). Fix what it prints against the checklist above, or write the reason for keeping it with `warn 3`.
+Record the files you created or changed with `add changed` (the split files can be one entry by directory; files already recorded need not be recorded again), then run `sh $CLI check 3-3`. `lint` runs again. `lint` also prints inspections that do not fail it (a "flat group" or an "unsplit file" against the 1-3 preferences, and candidates for `documented = false`). Fix what it prints against the checklist above, or write the reason for keeping it with `warn 3`.
 
 ## 4. Verify
 
@@ -730,7 +736,7 @@ Record the files you created or changed in `changedFiles` (the split files can b
 sh $CLI test
 ```
 
-Read the summary. Do not grep the log. Only when you need the full text, read the path on the summary's `Log:` line. The summary shows the result line, the `[MissingDescription]` count, and the diff against the previous run (violations added and violations removed). With 0 violations it is `Result: The check passed (0 violations)`.
+Read the summary. Do not grep the log. Only when you need the full text, read the path on the summary's `Log:` line. The summary shows the result line, the `[MissingDescription]` count, and the diff against the previous run (violations added and violations removed). With 0 violations it is `Result: the check passed (0 violations)`. If the check passes with warnings (`[AmbiguousLayout]` and the like, which never fail the check), a `Warnings: N` line and the warnings' headings are printed too. Decide whether to fix or keep warnings by the policy in 4-2 as well, and if you keep them, write them with `warn 4`.
 
 ### 4-2. How to handle errors
 
@@ -742,7 +748,7 @@ Read the summary. Do not grep the log. Only when you need the full text, read th
   - Record errors you leave in place in the checklist's `violations` (`violation` / `location` / `whyNotFixed` / `suggestion`).
   - Put anything you want the user to decide into **the checklist's** `questions` (`sh $CLI add question ...`). The report also has an array with the same name, but that one is for "inconsistencies in the codebase" noticed during step 1 — its purpose is different.
 
-Even if more than 10 violations are left, you can see all of them with `sh $CLI test -- -Dkatachi.maxViolations=all`. There is no need to write `maxViolations` in the test code.
+Even if more than 10 violations are left, the log of `sh $CLI test` holds all of them. There is no need to write `maxViolations` in the test code.
 
 **If many violations remain and the user wants to "tolerate what is there now and fail only on new ones", you can propose the baseline.** It is an experimental feature (`@ExperimentalKatachiApi`), so ask the user in `questions` before putting it in. To use it:
 
@@ -812,7 +818,7 @@ sh $CLI add template --role ViewModel --files '${name}ViewModel.kt' --params fea
 
 If you judge that no Role suits a template, record nothing. What you record shows up in the "Next action" of `summary` and in the report's "Template proposals". **Do not write `.template { }` here.** That happens in 6-D, after the user agrees.
 
-If incomplete items remain, the failure format is printed; if everything is done, the success format is printed. The number of violations, the number of questions and how many of them are answered, and the number of changed files are pulled from the JSON.
+If incomplete items remain, the failure format is printed; if everything is done, the success format is printed. Both formats end with a "Resume" field (the section the next session reads). The number of violations, the number of questions and how many of them are answered, and the number of changed files are pulled from the JSON.
 
 The only thing you write out in prose after `summary`'s output is **the unanswered questions** (`summary` lists them as `- <id> <question> → recommended: <recommendation>`). Leave the answered ones as a count. **This part is meant for a human to read and decide on, so as an exception you write the text yourself here.** Everywhere else, use `summary`'s output as is. For the answers, show the URL of the report for ids starting with `cq` and of the checklist for ids starting with `q`, have them written in the browser, then import them with `sh $CLI answers import <json>` (an answer that arrives in chat goes through `answers set`, which writes where the id belongs, as in 1-2).
 
@@ -855,7 +861,7 @@ Before you start, **write down which Role you expect each new file to belong to.
 
 When using a past PR as the task, check how it was merged with `gh pr view <number> --json mergeCommit,commits`; "before" is **the parent of the PR's first commit** (`git rev-parse <first commit>^`) and "after" is the merge commit. With a rebase merge, `mergeCommit^1` is "just before the last commit", which does not compare the whole PR.
 
-When verifying in parallel, give each subagent its own output and temporary files under `<KATACHI_WORKDIR>/tmp/verify/<name>/`, and let only the parent write to the working directory (`add` / `data merge`). A worktree cannot reach the working directory under `.local/`, so pass absolute paths.
+When verifying in parallel, give each subagent its own output and temporary files under `<KATACHI_WORKDIR>/tmp/verify/<name>/`, and let only the parent write to the working directory (`add` / `data merge`). A worktree cannot reach the working directory (`KATACHI_WORKDIR`), so pass absolute paths.
 
 When done, run `sh $CLI check 6-1`.
 
@@ -918,7 +924,7 @@ When done, run `sh $CLI check 6-2`.
 
 Do this only if the user wants it.
 
-**Before you start, read the documentation generation page.** Fetch it with `sh $CLI docs --topic document-generation` (also at https://tbsten.github.io/katachi/guides/document-generation/ ). What the generated pages contain, the Role you have to declare when you move the output, and what `--arg mode=check` does are all there. Do not fetch the whole guide.
+**Before you start, read the documentation generation page.** Fetch it with `sh $CLI docs --topic document-generation` (also at https://tbsten.github.io/katachi/guides/document-generation/ ). What the generated pages contain and how to write the output location (`outputDir`) are there. The Role you have to declare when you move the output is in step 3 below, and what `--arg mode=check` does is at the end of 6-B. Do not fetch the whole guide.
 
 1. Write `title = "..."` and `description = "..."` at the top of `architecture { }` (skip this if you did in 3-2). They become the heading and body of the root page.
 2. Generate with `./gradlew :architecture-test:katachiDocs` and check `architecture-test/build/katachi/docs/`.

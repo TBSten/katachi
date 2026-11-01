@@ -139,7 +139,7 @@ sh /tmp/katachi-install.sh init --lang ja
 
 検査用モジュールの置き場所をユーザが指定している場合は `--module-dir <Gradle ルートからの相対パス>` を付けます（例: `--module-dir static-analysis/katachi`）。指定が無ければ `architecture-test` です。あとから変えるときはステップ 1-3 の `preferences set moduleDir=<path>` で記録します。
 
-スクリプトは 0-1 で取得済みです。**`curl` は手順全体で1回だけ**で、`init` が自分自身を作業用ディレクトリにコピーするので、以降のコマンドはそちらを使います。
+スクリプトは 0-1 で取得済みです。**スクリプトの `curl` は手順全体で1回だけ**で、`init` が自分自身を作業用ディレクトリにコピーするので、以降のコマンドはそちらを使います。
 
 このコマンドが以下をすべて行う。**同じことを手作業でやり直さないこと。**
 
@@ -148,7 +148,7 @@ sh /tmp/katachi-install.sh init --lang ja
 - Git 管理下かの確認（無ければ警告する）
 - 作業用ディレクトリの決定と作成（`.gitignore` されている置き場があればその中、無ければ `tmp/install-katachi/`）
 - katachi の最新バージョンの取得（この手順が前提にする 0.3.0 より前なら、何も作らずに止まる）
-- プロジェクトが使っている Kotlin バージョンの検出
+- プロジェクトが使っている Kotlin バージョンの検出（2.2 より古ければ警告する。下の「Kotlin が古いとき」）
 - `check-list.html` と `project-code-base-report.html` の配置
 - この手順書の取得（`guide` がセクションごとに出すための原文。取り直すときは `sh $CLI guide --refresh`）
 - チェックリストの JSON の初期化（作業用ディレクトリ / バージョン / プロジェクトルート / 日時 / Kotlin / Git / 検査用モジュールの置き場所）
@@ -171,7 +171,7 @@ KATACHI_MODULE_PATH=:architecture-test
 
 **以降のコマンドはすべて `KATACHI_CLI` のパスで実行します。** `/tmp` のほうは使いません。この手順書に出てくる `:architecture-test:` は `KATACHI_MODULE_PATH` に、`architecture-test/` は `KATACHI_MODULE_DIR` に読み替えてください（`--module-dir` を変えていなければそのままです）。
 
-ここまで終わったら `sh $CLI check 0-1 0-2`。
+ここまで終わったら `sh $CLI check 0-1 0-2`。`init` の最後の `次:` の行もこのコマンドを指します。
 
 **止まったら、出力に書かれているとおりに対処する。** 推測で回避策を作らない。作業用ディレクトリを変えたい場合は `--workdir <path>`、バージョンを固定したい場合は `--katachi <version>` を付けて実行し直す（`init` が記録した版を `scaffold` も使います。`--katachi` なしでやり直したときは、前回記録した版をそのまま使います）。
 
@@ -180,6 +180,8 @@ KATACHI_MODULE_PATH=:architecture-test
 **`init` が「作業用ディレクトリが git から見えています」と警告した場合は、それをユーザに伝えて** `.gitignore` への追加を提案してください。すでに ignore されている置き場がプロジェクトに無いときに起きます。katachi は未追跡でも ignore されていないファイルを検査するので、放っておくとステップ 4 で作業用ディレクトリ自体が `[UnexpectedFile]` になります（チェックリストとレポートがユーザのコミットに入る原因にもなります）。`.gitignore` を自分で書き換えないこと。
 
 **「未追跡で ignore もされていないものがあります」と一覧が出た場合も、理由は同じです。** 一覧のものを定義で宣言するか `.gitignore` に足すかを、ユーザに確認してください。
+
+**Kotlin が古いとき。** `init` が「このプロジェクトの Kotlin は 1.9.10 です。katachi は Kotlin 2.2 以降が要ります」のように警告したら、ステップ 1 の解析に入る前にユーザに確認します（`doctor` も同じ警告を出します）。このままでは 2-1 の `scaffold` で止まり、それまでの解析が無駄になります。Kotlin を上げるのは既存のビルドの変更なので、同意なしに上げないこと。同意を得たら Kotlin を 2.2 以降に上げます。Kotlin Gradle Plugin 2.2 は Gradle 7.6.3 以上が要るので、警告が「Gradle も上げる必要があります」と言ったら Gradle も上げます。上げたことで出たビルドエラーを直すのも既存のビルドの変更なので、何を変えるかをユーザに伝えてから直します。`./gradlew` でビルドが通ったら `init` をもう一度実行し（記入済みのファイルは壊れず、チェックリストの Kotlin の記録が新しい版になります）、変えたファイルを 0-3 の `add changed` で記録します。ユーザが上げないと決めたら、このプロジェクトには katachi を導入できないことを伝えて終えます。
 
 作業用ディレクトリの直下に置くのは、人が開く `check-list.html` と `project-code-base-report.html`、それに `tmp/` だけです。スクリプトの写し、取得したファイルの置き場（`tmp/cache/`）、メモやログなどの一時ファイルは、すべて `<KATACHI_WORKDIR>/tmp/` の中に置いてください。直下には何も足さないこと。
 
@@ -222,7 +224,7 @@ sh $CLI add tool      --name ktlint --configPath ".editorconfig" --declareInKata
 sh $CLI add excluded  --path "..." --reason "..."
 ```
 
-`--options` と `--allowed` / `--forbidden` / `--examples` は**複数回渡せます**。知らない項目名を渡すと、使える名前を並べて止まります。項目を1つも渡さなかったとき、および同じ `--path` / `--name` がすでに登録されているときも止まります。空の行や重複した行が入らないようにするためです。
+`--options` と `--allowed` / `--forbidden` / `--examples` は**複数回渡せます**。知らない項目名を渡すと、使える名前を並べて止まります。項目を1つも渡さなかったとき、および同じ `--path` / `--name` がすでに登録されているときも止まります。空の行や重複した行が入らないようにするためです。ただし `add changed` だけは記録済みのパスなら何もせずに終わります（終了コード 0）。記録したファイルをあとでまた変えても、記録し直す必要はありません。
 
 `add` は、次の 2 つの場合にも止まります。
 
@@ -274,7 +276,7 @@ sh $CLI warn 4 "アーキテクチャ違反を 2 件残しました"   # その�
 sh $CLI warn 4 --clear         # 警告を消す
 ```
 
-`check` は**知らない id を渡すと止まります**。打ち間違いに気づけないまま進むことはありません。完了にしたあと `次: sh $CLI guide <セクション ID>` を 1 行出すので、次はそのセクションを読みます。
+`check` は**知らない id を渡すと止まります**。打ち間違いに気づけないまま進むことはありません。完了にしたあと `次: sh $CLI guide <セクション ID>` を 1 行出すので、次はそのセクションを読みます。指すのは目次の順で次に読むセクションで、項目の無い 0-3 や章の前書き（`guide 3` など）も含みます。
 
 `warn` のステップ id は **0〜6** です（チェックリストのステップはそこまで）。付けたステップは黄色になり、完了していても開いたまま表示されます。
 
@@ -358,7 +360,7 @@ sh $CLI data merge report <KATACHI_WORKDIR>/tmp/roles.json
 - **Role 候補は group の木として書く。** group は「モジュール → 層 → 種類」の順で入れ子にし、1 つの group に Role を 8 個以上並べない（並ぶなら group を切る）
 - **`build.gradle.kts` / `settings.gradle.kts` / `gradle.properties` / version catalog は `gradle()` が受け持つ。** モジュール種別ごとの Role を作らない。`add role` も拒む（`buildSrc` と `includeBuild` したビルドは除く）。例外は、ビルドファイルに制約（namespace とパッケージの一致など）を付けたいもので、`add role --constraint-only --note <理由>` で記録する。定義では Role にせず、制約を `gradle { buildScript { } }` などの hook に書く。hook の制約は全モジュールのビルドファイルを受け取るので、1 つのモジュールだけを見るなら制約の中で絞る（3-2 の「1 つの Role = 1 種類のファイル」の Gradle の段落）
 - **`documented = false` にするもの:** (1) 生成物（build 出力、コミットされた生成コード）、(2) ビルド・ツールの設定（`.editorconfig`、CI の yaml、lint の設定）、(3) 1 ファイルしかない補助（README、LICENSE、`.gitignore`）。利用者が読んで役に立つ Role だけを生成ドキュメントに載せる
-- **Android の定番（`AndroidManifest.xml`、`res/`）は、レシピをコピーして合わせる。** https://tbsten.github.io/katachi/ja/recipes/android-three-layer/ の定義を元にする
+- **Android の定番（`AndroidManifest.xml`、`res/`）は、レシピをコピーして合わせる。** `sh $CLI docs --topic android-three-layer` で取得した定義を元にする
 
 このタスクはコンテキストを多く消費しうるので、利用できる場合は適宜 subagent を起動するなどしてください（冒頭の分担表のとおり、subagent は読み取りと下書きまでで、書き込みは本体が行います）。
 
@@ -425,7 +427,7 @@ sh $CLI scaffold --package com.example.app
 - settings ファイルへの `include(":architecture-test")` の追加（Groovy の `settings.gradle` なら `include ':architecture-test'`。`--module-dir static-analysis/katachi` なら `include(":static-analysis:katachi")`。すでにあれば何もしない）
 - settings ファイルの `pluginManagement { repositories { } }` への `mavenCentral()` の追加。katachi の Gradle plugin は Maven Central にあるため（すでにあれば何もしない。`pluginManagement { }` が無ければ作る）
 
-プラグインのバージョン衝突、JUnit の engine、JVM toolchain（下記）、プロジェクトの Kotlin バージョンに応じたコンパイラオプション、Android / KMP プロジェクトでの扱いは**すべてスクリプトが決めています。** Kotlin 2.4 未満なら `-Xcontext-parameters` を書き込み（これが無いと DSL を1つも呼べません）、2.4 以降では付けません（付けると redundant の警告になるため）。Kotlin 2.2 未満ならその旨を伝えて止まります。katachi の metadata をそのコンパイラが読めないためです。生成されたファイルを読んで直したくなっても、直さないこと。
+プラグインのバージョン衝突、JUnit の engine、JVM toolchain（下記）、プロジェクトの Kotlin バージョンに応じたコンパイラオプション、Android / KMP プロジェクトでの扱いは**すべてスクリプトが決めています。** Kotlin 2.4 未満なら `-Xcontext-parameters` を書き込み（これが無いと DSL を1つも呼べません）、2.4 以降では付けません（付けると redundant の警告になるため）。Kotlin 2.2 未満ならその旨を伝えて止まります。katachi の metadata をそのコンパイラが読めないためです（`init` が先に警告します。0-2 の「Kotlin が古いとき」）。生成されたファイルを読んで直したくなっても、直さないこと。
 
 JVM toolchain は、プロジェクトに既にある設定（ほかのモジュールの `jvmToolchain(N)`、`JavaLanguageVersion.of(N)`、buildSrc・build-logic の中の同じ書き方、version catalog や `val` から読む形）と同じ N を使います。katachi は JDK 17 以上が要るので、見つかった N が 17 未満なら使いません。設定が見つからないときは `jvmToolchain` を書かず、Gradle を動かしている JDK をそのまま使います（JDK 17 が無く toolchain の自動取得も無い環境で失敗しないため）。どちらにしたかは scaffold の出力とチェックリストの「JVM toolchain」に残ります。`doctor` と `scaffold` は Gradle が使う JDK が 17 以上かも確かめ、未満なら直し方を出して止まります。
 
@@ -482,7 +484,7 @@ JDK: 21（JAVA_HOME）
         }
 ```
 
-違反の表示件数はデフォルトで 10 件です。導入中は数十〜百件出るので、全件が要るときは `sh $CLI test -- -Dkatachi.maxViolations=all` で出します（`--` より後ろは `./gradlew` にそのまま渡り、katachi の Gradle plugin がテストの JVM に届けます）。テストのコードに `maxViolations` を書く必要はありません。
+katachi は違反をデフォルトで 10 件までしか出しませんが、`sh $CLI test` はいつも全件をログに出します（`-Dkatachi.maxViolations=all` を `./gradlew` に渡し、katachi の Gradle plugin がテストの JVM に届けます）。前回との差分や 3-3 の `compare-violations` が 11 件目以降も比べられるようにするためです。テストのコードに `maxViolations` を書かないこと。書くとその値が優先され、ログが打ち切られます。
 
 **この形で失敗していれば配線は正しい**ということです。
 
@@ -522,6 +524,8 @@ sh $CLI docs --topic kt-file-content     # ktFileContent { } を使うときだ�
 ガイドを話題ごとに切り出して取得し、ファイルのパスを出します。そのファイルを読んでください。**ガイド全体（`sh $CLI docs`）を読まないこと。** 定義を書くのに要るのは上の 4 つだけです。`ktFileContent { }` の書き方は `kt-file-content`（`sh $CLI docs --topic kt-file-content`）と、`basic-api` の 6 番のセクション（取得される英語版では "6. Defining the declarations a file may contain with `ktFileContent { }`"）にあります。話題の一覧は `sh $CLI docs --topics` で出ます。どれもすでに取得済みなら取り直しません。
 
 **取得されるのは英語版です。** ドキュメントサイトのデフォルトロケールが英語で、この形式はデフォルトロケールのぶんしか生成されないためです。DSL の API 名は言語に依らないので、定義を書くうえでは差し支えない。
+
+`docs --topic` が「インストールキットの不具合です」と言って止まったら、スクリプトを直さず、その出力をユーザに伝えてください。出力が示す全文のファイルから、その話題のページだけを読んで進めます。
 
 読み終えたら `sh $CLI check 3-1`。
 
@@ -666,7 +670,7 @@ sh $CLI test --save before-refactor
 
 ここで求めるのは**コンパイルが通り、検査が最後まで走ること**です。`Katachi check failed: ...` で失敗するのはかまいません（違反と向き合うのはステップ 4）。コンパイルエラーや Gradle のエラーで検査まで届かないときは、直してから取り直してください。
 
-作成・変更したファイルを `changedFiles` に `data merge` で記載し、`sh $CLI check 3-2`。定義を走査し、種類の違うファイルを抱えていそうな Role を列挙します（`lint`）。ここで出たものは 3-3 のチェックリストで扱います。
+作成・変更したファイルを `add changed` で記録し（分けたファイルはディレクトリやワイルドカードでまとめて 1 件。2-2 で記録済みのファイルは記録し直さなくてよい）、`sh $CLI check 3-2`。定義を走査し、種類の違うファイルを抱えていそうな Role を列挙します（`lint`）。ここで出たものは 3-3 のチェックリストで扱います。
 
 ### 3-3. 定義をリファクタリングする
 
@@ -718,9 +722,11 @@ sh $CLI compare-violations
 
 `compare-violations` は2つのログから検査結果（要約の1行と、違反ごとの `[種類] パス`）を取り出して比べます。宣言位置の行番号は比べません。`[MissingDescription]` は説明を書き足せば減るのが正しいので、件数だけ出します。**違いが出たら、前のログを取り直さずに定義を直してください。** リファクタリングで振る舞いが変わっています。
 
+どちらかのログが違反を先頭の数件だけ出したもの（`Showing first ...` の行がある）なら、`compare-violations` は比べずに止まります（終了コード 2）。ログに出ていない違反は比べられないためです。`test` はいつも全件を出すので、ふだんは起きません。止まったら、出力のとおりに打ち切られたほうを取り直します。
+
 **前のログが緑（違反 0 件）のときは、0 件と 0 件の比較になり、分割で定義が緩んだこと（受け皿が増えたなど）は検出できません。** その場合は、分割の後に既知の違反を1つ作って失敗することも確かめてください。どの Role にも当たらないファイルを一時的に置いて `sh $CLI test` を実行し、`[UnexpectedFile]` で失敗したら、そのファイルを消します。
 
-作成・変更したファイルを `changedFiles` に記載し（分けたファイルはディレクトリでまとめて1件でよい）、`sh $CLI check 3-3`。`lint` がもう一度走ります。`lint` は失敗にはしない点検も出します（1-3 の方針に対する「平たい group」「分けていないファイル」、`documented = false` の候補）。出たものは上のチェックリストに照らして直すか、残す理由を `warn 3` に書きます。
+作成・変更したファイルを `add changed` で記録し（分けたファイルはディレクトリでまとめて1件でよい。記録済みのファイルは記録し直さなくてよい）、`sh $CLI check 3-3`。`lint` がもう一度走ります。`lint` は失敗にはしない点検も出します（1-3 の方針に対する「平たい group」「分けていないファイル」、`documented = false` の候補）。出たものは上のチェックリストに照らして直すか、残す理由を `warn 3` に書きます。
 
 ## 4. 検証する
 
@@ -730,7 +736,7 @@ sh $CLI compare-violations
 sh $CLI test
 ```
 
-要約を読みます。ログを grep しないこと。全文が要るときだけ、要約の `ログ:` の行にあるパスを読みます。要約には、結果の 1 行、`[MissingDescription]` の件数、前回の実行との差分（増えた違反・減った違反）が出ます。違反が 0 件なら `結果: 検査は通りました（違反 0 件）` です。
+要約を読みます。ログを grep しないこと。全文が要るときだけ、要約の `ログ:` の行にあるパスを読みます。要約には、結果の 1 行、`[MissingDescription]` の件数、前回の実行との差分（増えた違反・減った違反）が出ます。違反が 0 件なら `結果: 検査は通りました（違反 0 件）` です。通ったときに警告（`[AmbiguousLayout]` など。検査は失敗させない）があれば、`警告: N 件` の行と警告の見出しも出ます。警告も 4-2 の方針で直すか残すかを決め、残すなら `warn 4` に書きます。
 
 ### 4-2. エラーとの向き合い方
 
@@ -742,7 +748,7 @@ sh $CLI test
   - そのままにするエラーはチェックリストの `violations` に記載する（`violation` / `location` / `whyNotFixed` / `suggestion`）。
   - ユーザに判断してほしいことは**チェックリストの** `questions` に入れる（`sh $CLI add question ...`）。レポート側にも同名の配列があるが、そちらはステップ 1 で気づいた「コードベースの揺れ」を書く場所で、用途が違う。
 
-残した違反が 10 件を超えても、`sh $CLI test -- -Dkatachi.maxViolations=all` で全件見られます。テストのコードに `maxViolations` を書く必要はありません。
+残した違反が 10 件を超えても、`sh $CLI test` のログには全件が出ます。テストのコードに `maxViolations` を書く必要はありません。
 
 **残す違反が多く、ユーザが「今ある違反は許容して、新しい違反だけで失敗させたい」と望む場合は、baseline を提案できます。** 実験的な機能（`@ExperimentalKatachiApi`）なので、使うかどうかは `questions` でユーザに確認してから入れてください。使う場合の手順は次のとおりです。
 
@@ -812,7 +818,7 @@ sh $CLI add template --role ViewModel --files '${name}ViewModel.kt' --params fea
 
 当てられる Role が無いと判断したら、何も記録しなくて構いません。記録したものは `summary` の「Next action」とレポートの「テンプレートの提案」に出ます。**`.template { }` をここで書かないこと。** 書くのはユーザが同意した後の 6-D です。
 
-未完了の項目が残っていれば失敗の形式が、すべて終わっていれば成功の形式が出ます。違反の件数、確認したいことの件数と回答済みの件数、変更したファイル数は JSON から拾われます。
+未完了の項目が残っていれば失敗の形式が、すべて終わっていれば成功の形式が出ます。どちらの形式にも、末尾に「再開」の欄（次のセッションが読むセクション）が出ます。違反の件数、確認したいことの件数と回答済みの件数、変更したファイル数は JSON から拾われます。
 
 `summary` の出力に続けて文章にするのは、**未回答の確認事項だけ**です（`summary` が `- <id> <問い> → 推奨: <推奨>` の形で列挙します）。回答済みのものは件数のままにします。**ここは人が読んで判断する箇所なので、例外的にあなたが文章にします。** それ以外は `summary` の出力をそのまま使います。回答は、id が `cq` で始まるものはレポート、`q` で始まるものはチェックリストの URL を示してブラウザで書いてもらい、`sh $CLI answers import <json>` で取り込みます（チャットで来た答えは `answers set`。書き込み先は id で決まります。1-2 と同じ）。
 
@@ -855,7 +861,7 @@ sh $CLI add template --role ViewModel --files '${name}ViewModel.kt' --params fea
 
 過去の PR を題材にするときは、`gh pr view <番号> --json mergeCommit,commits` でマージ方法を確かめ、before は **PR の最初のコミットの親**（`git rev-parse <最初のコミット>^`）、after はマージコミットにします。rebase merge では `mergeCommit^1` が「最後の 1 コミットの手前」になり、PR 全体を比べられません。
 
-並行で検証するときは、出力先と一時ファイルを subagent ごとに `<KATACHI_WORKDIR>/tmp/verify/<名前>/` に分け、作業用ディレクトリへの書き込み（`add` / `data merge`）は親だけが行います。worktree の中からは `.local/` の作業用ディレクトリに届かないので、絶対パスを渡してください。
+並行で検証するときは、出力先と一時ファイルを subagent ごとに `<KATACHI_WORKDIR>/tmp/verify/<名前>/` に分け、作業用ディレクトリへの書き込み（`add` / `data merge`）は親だけが行います。worktree の中からは作業用ディレクトリ（`KATACHI_WORKDIR`）に届かないので、絶対パスを渡してください。
 
 終わったら `sh $CLI check 6-1`。
 
@@ -918,7 +924,7 @@ Pull request 作成時・Merge request 作成時・pre-push hook など、スト
 
 ユーザが望んだ場合だけ行う。
 
-**始める前に、ドキュメント生成のページを読む。** `sh $CLI docs --topic document-generation` で取得します（日本語版は https://tbsten.github.io/katachi/ja/guides/document-generation/ ）。生成されるページの中身、出力先を変えたときに要る Role の宣言、`--arg mode=check` の意味はここに書いてあります。ガイド全体を取らないこと。
+**始める前に、ドキュメント生成のページを読む。** `sh $CLI docs --topic document-generation` で取得します（日本語版は https://tbsten.github.io/katachi/ja/guides/document-generation/ ）。生成されるページの中身と、出力先（`outputDir`）の書き方はここに書いてあります。出力先を変えたときに要る Role の宣言は下の手順 3 に、`--arg mode=check` の意味は 6-B の末尾にあります。ガイド全体を取らないこと。
 
 1. `architecture { }` の先頭に `title = "..."` と `description = "..."` を書く（3-2 で書いていれば飛ばす）。ルートページの見出しと本文になる。
 2. `./gradlew :architecture-test:katachiDocs` で生成し、`architecture-test/build/katachi/docs/` を確かめる。
