@@ -4,7 +4,8 @@
 [![CI](https://github.com/TBSten/katachi/actions/workflows/ci.yml/badge.svg)](https://github.com/TBSten/katachi/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue)](./LICENSE)
 
-**「どのファイルをどこに置くか」を Kotlin で定義し、そこからアーキテクチャテスト・ドキュメント・コードの雛形を作るライブラリです。**
+**「どのファイルをどこに置くか」を Kotlin
+で定義し、そこからアーキテクチャテスト・ドキュメント・コードの雛形を作るライブラリです。**
 
 [English](./README.md) | 日本語 ・ [ドキュメント](https://tbsten.github.io/katachi/ja/)
 
@@ -24,11 +25,14 @@
 
 - **テスト**: 定義に無い場所のファイルを報告します。定義したものだけを許す方式なので、置き場所がいつの間にか増えません
 - **ドキュメント**: `./gradlew katachiDocs` が Role ごとの Markdown を書き出します
-- **コードの雛形**: `./gradlew katachiTemplate --arg template=UseCase --arg name=GetUser` が、定義どおりの場所にファイルを作ります。IntelliJ IDEA / Android Studio のプラグイン（実験的）からも生成できます（[導入](https://tbsten.github.io/katachi/ja/guides/generate-code-from-template/)）
+- **コードの雛形**: `./gradlew katachiTemplate --arg template=UseCase --arg name=GetUser`
+  が、定義どおりの場所にファイルを作ります。（[導入](https://tbsten.github.io/katachi/ja/guides/generate-code-from-template/)）
 
-ファイルの中身の規則（「public な class を1つだけ置く」など）も `ktFileContent { }` で書けます。Konsist・detekt・ArchUnit との違いは [他ツールとの比較](https://tbsten.github.io/katachi/ja/get-started/comparison-with-other-tools/) にあります。
+ファイルの中身の規則（「public な class を1つだけ置く」など）も `ktFileContent { }` で書けます。Konsist・detekt・ArchUnit
+との違いは [他ツールとの比較](https://tbsten.github.io/katachi/ja/get-started/comparison-with-other-tools/) にあります。
 
-**対応**: JVM / Android / KMP のプロジェクト。定義とテストは JVM のモジュールに置きます。JDK 17+・Kotlin 2.2+・Gradle 8.0+。
+**対応**: JVM / Android / KMP のプロジェクト。定義とテストは JVM のモジュールに置きます。JDK 17+・Kotlin 2.2+・Gradle
+8.0+。
 
 ## はじめる
 
@@ -71,7 +75,10 @@ dependencies {
 katachi { architecture = "com.example.projectArchitecture" }
 ```
 
-katachi が検査するのはリポジトリ全体のファイルですが、Gradle が Test タスクの入力として見ているのはテストのクラスパスだけです。`outputs.upToDateWhen { false }` が無いと、ファイルを足しても `:architecture-test:test` が `UP-TO-DATE` で飛ばされ、違反があっても緑のままになります。`outputs.cacheIf { false }` は、ビルドキャッシュを有効にしているときに前の結果が使い回されないようにするための指定です。`testLogging { exceptionFormat = TestExceptionFormat.FULL }` が無いと、テストが失敗してもコンソールには例外のクラス名の1行しか出ず、違反の一覧が読めません。
+katachi が検査するのはリポジトリ全体のファイルですが、Gradle が Test タスクの入力として見ているのはテストのクラスパスだけです。
+`outputs.upToDateWhen { false }` が無いと、ファイルを足しても `:architecture-test:test` が `UP-TO-DATE`
+で飛ばされ、違反があっても緑のままになります。`outputs.cacheIf { false }` は、ビルドキャッシュを有効にしているときに前の結果が使い回されないようにするための指定です。
+`testLogging { exceptionFormat = TestExceptionFormat.FULL }` が無いと、テストが失敗してもコンソールには例外のクラス名の1行しか出ず、違反の一覧が読めません。
 
 定義とテストを書きます。
 
@@ -98,38 +105,43 @@ class ProjectArchitectureTest {
 ./gradlew :architecture-test:katachiDocs    # ドキュメントを architecture-test/build/katachi/docs に書き出す
 ```
 
-最初は、定義していないファイルやディレクトリが違反として出ます。出てきたパスごとに、定義に足すかファイルを消すかを決めていきます。数が多くてすぐには片付かない場合は、今ある違反を [baseline](https://tbsten.github.io/katachi/ja/guides/baseline/) でとりあえず許容し、新しい違反だけをエラーにすることもできます。
+最初は、定義していないファイルやディレクトリが違反として出ます。出てきたパスごとに、定義に足すかファイルを消すかを決めていきます。数が多くてすぐには片付かない場合は、今ある違反を [baseline](https://tbsten.github.io/katachi/ja/guides/baseline/)
+でとりあえず許容し、新しい違反だけをエラーにすることもできます。
 
-手順の全体（import・AI Agent に任せる方法）は [初めてのアーキテクチャ定義](https://tbsten.github.io/katachi/ja/get-started/first-architecture/) にあります。
+手順の全体（import・AI Agent
+に任せる方法）は [初めてのアーキテクチャ定義](https://tbsten.github.io/katachi/ja/get-started/first-architecture/) にあります。
 
 <details>
 <summary><b>うまく動かないとき</b></summary>
 
-- **Kotlin 2.4 未満**: `compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")` が要ります（2.4 以降では付けないでください。警告になります）
+- **Kotlin 2.4 未満**: `compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")` が要ります（2.4
+  以降では付けないでください。警告になります）
 - **`Failed to load JUnit Platform`**: `junit-platform-launcher` が足りません
-- **`Cannot create Launcher without at least one TestEngine` / `did not discover any tests to execute`**: JUnit のエンジン（`junit-jupiter`）が足りません。Gradle 8 では、ほかのエンジン（kotest など）があるとエラーにならず、`BUILD SUCCESSFUL` のまま検査が空振りすることがあります
+- **`Cannot create Launcher without at least one TestEngine` / `did not discover any tests to execute`**: JUnit のエンジン（
+  `junit-jupiter`）が足りません。Gradle 8 では、ほかのエンジン（kotest など）があるとエラーにならず、`BUILD SUCCESSFUL`
+  のまま検査が空振りすることがあります
 - **`ktFileContent { }` を書いたら `[UncheckedFileConstraint]` で失敗する**: `assert(FileConstraintCheck())` と書きます
 
 </details>
 
 ## もっと知る
 
-| やりたいこと | ページ |
-|---|---|
-| Role・group の書き方 | [基本的な API](https://tbsten.github.io/katachi/ja/guides/basic-api/)、[Role](https://tbsten.github.io/katachi/ja/guides/role/) |
-| 置き場所の書き方 | [Layout](https://tbsten.github.io/katachi/ja/guides/layout/) |
-| ファイルの中身も検査する | [ktFileContent](https://tbsten.github.io/katachi/ja/guides/kt-file-content/) |
+| やりたいこと                   | ページ                                                                                                                                                                                     |
+|--------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Role・group の書き方           | [基本的な API](https://tbsten.github.io/katachi/ja/guides/basic-api/)、[Role](https://tbsten.github.io/katachi/ja/guides/role/)                                                            |
+| 置き場所の書き方               | [Layout](https://tbsten.github.io/katachi/ja/guides/layout/)                                                                                                                               |
+| ファイルの中身も検査する       | [ktFileContent](https://tbsten.github.io/katachi/ja/guides/kt-file-content/)                                                                                                               |
 | ドキュメント・コードを生成する | [ドキュメント生成](https://tbsten.github.io/katachi/ja/guides/document-generation/)、[テンプレートからコード生成](https://tbsten.github.io/katachi/ja/guides/generate-code-from-template/) |
-| 既存の違反を許容して導入する | [baseline](https://tbsten.github.io/katachi/ja/guides/baseline/) |
-| 実際の定義を見る | [サンプル](CONTRIBUTING.ja.md#サンプル)、[レシピ](https://tbsten.github.io/katachi/ja/recipes/) |
+| 既存の違反を許容して導入する   | [baseline](https://tbsten.github.io/katachi/ja/guides/baseline/)                                                                                                                           |
+| 実際の定義を見る               | [サンプル](CONTRIBUTING.ja.md#サンプル)、[レシピ](https://tbsten.github.io/katachi/ja/recipes/)                                                                                            |
 
 ## モジュール
 
-| モジュール | 内容 |
-|---|---|
-| `me.tbsten.katachi:katachi` | 本体（JVM） |
-| `me.tbsten.katachi:katachi-konsist` | `ktFileContent { }` を使うときだけ |
-| Gradle plugin `me.tbsten.katachi` | `katachiDocs` / `katachiTemplate` などのタスク。同じ版の本体と組み合わせます |
+| モジュール                          | 内容                                                                         |
+|-------------------------------------|------------------------------------------------------------------------------|
+| `me.tbsten.katachi:katachi`         | 本体（JVM）                                                                  |
+| `me.tbsten.katachi:katachi-konsist` | `ktFileContent { }` を使うときだけ                                           |
+| Gradle plugin `me.tbsten.katachi`   | `katachiDocs` / `katachiTemplate` などのタスク。同じ版の本体と組み合わせます |
 
 ## Contribution
 
