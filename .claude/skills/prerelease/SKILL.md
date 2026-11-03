@@ -26,6 +26,7 @@ flowchart LR
     P --> D["5. 実装とドキュメント<br/>check-docs-against-impl"]
     P --> CI["8. CI と同等のチェック<br/>run-ci-checks.py"]
     P --> DR["11. ドキュメントのルール適合<br/>チェックリスト → ページ群ごとに照合"]
+    P --> TX["10-4. IDE プラグインの文言の日英<br/>list-ide-plugin-texts.py"]
     V --> V1["public"] & V2["@InternalKatachiApi"] & V3["@ExperimentalKatachiApi"]
     T --> B["6-1. ビルドと配信<br/>generateApiDocs → pnpm build → pnpm preview"]
     B --> C1["6. 巡回 en"] & C2["6. 巡回 ja"] & C3["6. 巡回 api-docs"]
@@ -34,15 +35,16 @@ flowchart LR
     E2 -- " Gradle を空ける " --> D & B
     B -- " Gradle を空ける " --> IK["9-1. インストールキット<br/>check-install-kit.sh"]
     IK --> IE["9-2. 統合テスト<br/>手順書どおりに導入 ja / en<br/>＋手順書のレビュー"]
-    V1 & V2 & V3 & R & D & DR & C1 & C2 & C3 & CI & N & E2 & IE --> Rep["7. 報告"]
+    V1 & V2 & V3 & R & D & DR & TX & C1 & C2 & C3 & CI & N & E2 & IE --> Rep["7. 報告"]
 ```
 
-- 1 が通ったら、2・3・4・8・11 を並列に始める。3 と 6 の中は、区分ごとの subagent をさらに並列にする。
+- 1 が通ったら、2・3・4・8・10-4・11 を並列に始める。3 と 6 の中は、区分ごとの subagent をさらに並列にする。
 - 8 は Gradle を長く使う（10〜20 分）。8 が終わったら続けて 10-1（IDE プラグインの nightly 相当。既定 scale 20 で
   約30〜35分）、そのあと 10-2（IDE プラグインの E2E。実 IDE を起動するテスト2本、1本あたり起動込みで2分半〜3分が目安）を
   走らせる。5 のサンプルを動かす作業と 6-1 は、10-2 が終わってから始める。
 - 9 も Gradle を長く使う（15〜20 分）。6-1 の `generateApiDocs` が終わってから始める（巡回を先に始めたいので 6-1 を先にする）。
   5 のサンプルを動かす作業とは、どちらかが終わるのを待って重ねない。
+- 10-4 は Gradle を使わず数秒で材料が出て、判定の subagent もファイルを書き換えないので、どの手順とも重ねてよい。
 - 11 は Gradle を使わず、日本語の原本だけを読んでファイルを書き換えないので、2 を待たず、Gradle を使う作業とも重ねてよい
   （subagent が主で、オーケストレータの手はほぼ要らない）。
 - 6 は 2 を待つ。英語のページを訳し直してからビルドしないと、古い英語を巡回することになる。
@@ -70,6 +72,7 @@ flowchart LR
 | `ide-plugin-nightly.md`          | 10-1     |
 | `ide-plugin-e2e.md`              | 10-2     |
 | `ide-plugin-zip.md`              | 10-3     |
+| `ide-plugin-texts.md`            | 10-4     |
 | `install-kit.md`                 | 9-1      |
 | `install-e2e.md`                 | 9-2      |
 | `TODO.html`                      | 途中から・オーケストレータ（利用者がやること・決めることだけ） |
@@ -77,7 +80,7 @@ flowchart LR
 
 ログ・材料・中間ファイルはすべて `.local/release-v<版>/tmp/` の下に置く。例: `tmp/release-note-material.txt`、
 `tmp/ci-checks/`（コマンドごとのログ）、`tmp/ide-plugin-nightly/`（uiTest のログ）、`tmp/ide-plugin-e2e/`
-（integrationTest のログ）、`tmp/install-kit/`（fixture とログ）、`tmp/docs-rules/`（ルールのチェックリストと `part-*.md`）、`tmp/pages-<区分>.txt`、`tmp/crawl/`
+（integrationTest のログ）、`tmp/install-kit/`（fixture とログ）、`tmp/docs-rules/`（ルールのチェックリストと `part-*.md`）、`tmp/ide-plugin-texts.md`（10-4 の材料）、`tmp/pages-<区分>.txt`、`tmp/crawl/`
 （巡回の生データ）、`tmp/logs/`（pnpm や gradle のログ）、`tmp/visibility-<区分>.md`（区分ごとの一覧）、subagent の
 `part-*.md` などの下書き。subagent に任せるときも、この置き場所を渡す。
 
@@ -120,7 +123,7 @@ Playwright で全ページを巡回させる（直させない）。結果は `s
 priority 10 の警告。結果は `ci-checks.md`、ログは `tmp/ci-checks/`。
 詳細: [references/ci-checks.md](references/ci-checks.md)
 
-## 10. IDE プラグインの nightly 相当のチェックと E2E
+## 10. IDE プラグインの nightly 相当のチェック・E2E・配る zip・文言の日英
 
 - 10-1: `run-ide-plugin-nightly.py` で `ide-plugin-nightly.yml` の `pbt` ジョブ（uiTest の property-based tests を
   20倍の系列数で）を手元で走らせる。オーケストレータが自分で走らせてよい。1つでも落ちたら priority 10 の警告。
@@ -134,6 +137,11 @@ priority 10 の警告。結果は `ci-checks.md`、ログは `tmp/ci-checks/`。
   （実験的。プラグインの版は katachi と別で、catalog の `katachiIntellij`）。`buildPlugin` で作った zip の `plugin.xml` の版・説明文・
   change-notes が合っているか、publish.yml が添付する名前と合っているかを見る。説明文と change-notes の版は直書きなので、版を上げるたびに古いまま残りやすい。
   食い違いは priority 8 の警告。結果は `ide-plugin-zip.md`。
+- 10-4: 文言の日英。`list-ide-plugin-texts.py --base <基準>` で、bundle を通っていない英語・日本語の直書き、訳し忘れの鍵
+  （bundle とツールウィンドウ）、plugin.xml の直書きを候補として出し（`tmp/ide-plugin-texts.md`）、subagent（sonnet）に画面に出る直し忘れか意図した英語かを
+  判定させる（直させない）。鍵の突き合わせは 8 のテストが見るが、直書きはテストで拾えない。直し忘れは priority 5 か 3
+  （ja にしか無い鍵は 9）。基準から文言の置き場が変わっていれば、日本語の IDE での目視を `TODO.html` に載せる。
+  結果は `ide-plugin-texts.md`。
 
 詳細: [references/ide-plugin-nightly.md](references/ide-plugin-nightly.md)
 
