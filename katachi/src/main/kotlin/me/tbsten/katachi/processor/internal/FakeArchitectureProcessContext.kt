@@ -7,32 +7,6 @@ import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 
-/**
- * A context that answers exactly as the real one does and remembers what was logged.
- *
- * It delegates to the real implementation rather than reimplementing it, so a spec written
- * against this is a spec about the real walk: the only thing that differs is where
- * [ArchitectureProcessContext.log] goes. Meant for katachi's own processor specs: run it against an
- * in-memory [architecture] and read [logs] back, without capturing standard output.
- *
- * ## Example 1: check what a processor reported, without capturing standard output
- * ```kt
- * @OptIn(ExperimentalKatachiApi::class)
- * class GenerateDocumentationSpec : FreeSpec({
- *     "walks the roles and says so" {
- *         val context = FakeArchitectureProcessContext(
- *             architecture = architecture { "domain".group { "UseCase".role { } } },
- *             args = GenerateDocumentation.Args(outputDir = "build/katachi/docs"),
- *             fileSystem = RealFileSystem(),
- *         )
- *
- *         GenerateDocumentation.process(context).getOrThrow()
- *
- *         context.logs.first() shouldStartWith "Writing "
- *     }
- * })
- * ```
- */
 internal class FakeArchitectureProcessContext<Args>(
     architecture: Architecture,
     args: Args,
@@ -49,27 +23,6 @@ internal class FakeArchitectureProcessContext<Args>(
         rawArgs = rawArgs,
     )
 
-    /**
-     * What [ArchitectureProcessContext.log] was called with, in order.
-     *
-     * ## Example 1: read back what a processor logged
-     * ```kt
-     * @OptIn(ExperimentalKatachiApi::class)
-     * class GenerateDocumentationSpec : FreeSpec({
-     *     "walks the roles and says so" {
-     *         val context = FakeArchitectureProcessContext(
-     *             architecture = architecture { "domain".group { "UseCase".role { } } },
-     *             args = GenerateDocumentation.Args(outputDir = "build/katachi/docs"),
-     *             fileSystem = RealFileSystem(),
-     *         )
-     *
-     *         GenerateDocumentation.process(context).getOrThrow()
-     *
-     *         context.logs.first() shouldStartWith "Writing "
-     *     }
-     * })
-     * ```
-     */
     val logs: List<String> get() = recorded.toList()
 
     override val architecture: Architecture get() = real.architecture

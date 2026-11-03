@@ -8,23 +8,9 @@ import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.internal.fileUri
 
-/**
- * How the git invocation went wrong.
- *
- * One subtype per way it can, each holding what its own sentence needs. Internal bookkeeping:
- * the set grows with whatever katachi asks git for.
- *
- * ## Example 1: tell a missing git from a failing one
- * ```kt
- * shouldThrow<KatachiGitUnavailableException> { gitTrackedFileSystem(delegate, notARepository) }
- *     .problem.shouldBeInstanceOf<GitProblem.Failed>()
- * ```
- */
 internal sealed interface GitProblem {
-    /** The sentence this problem contributes, for the [command] that was run in [root]. */
     fun explain(command: String, root: FsPath): String
 
-    /** The process could not be started at all — usually git is not installed. */
     object CannotStart : GitProblem {
         override fun explain(command: String, root: FsPath): String =
             "Cannot run `$command` in ${fileUri(root.value)}. katachi checks the files git " +
@@ -32,7 +18,6 @@ internal sealed interface GitProblem {
                 "whole directory tree instead."
     }
 
-    /** The process started but did not finish in time. */
     class TimedOut(
         val seconds: Long,
     ) : GitProblem {
@@ -40,7 +25,6 @@ internal sealed interface GitProblem {
             "`$command` in ${fileUri(root.value)} did not finish within $seconds seconds."
     }
 
-    /** The process finished, with a non-zero exit code. */
     class Failed(
         val exitCode: Int,
         val stderr: String,
@@ -50,17 +34,6 @@ internal sealed interface GitProblem {
     }
 }
 
-/**
- * A view of [delegate] that only shows the files git considers part of the project.
- *
- * A directory is visible when at least one visible file sits somewhere below it, so an
- * entirely ignored directory such as `build/` disappears rather than showing up empty.
- *
- * Paths outside [root] are passed through untouched: the filter is about what belongs to the
- * project, and nothing outside the project is part of that question.
- *
- * @param trackedPaths paths relative to [root], `/` separated, as `git ls-files` prints them.
- */
 internal class GitTrackedFileSystem(
     private val delegate: KatachiFileSystem,
     private val root: FsPath,
@@ -113,16 +86,9 @@ internal class GitTrackedFileSystem(
         path in visibleFiles || path in visibleDirectories
 }
 
-/**
- * A view of the tree that can tell a directory holds none of the project's files at all.
- *
- * The module search runs on the unfiltered tree, so that a module whose build file the view
- * leaves out is still found. It asks this to skip what the view drops wholesale instead:
- * `node_modules/` or a site's output under `gitTracked()` can be thousands of directories that
- * the walk never enters, and no module found in there could ever have a file checked.
- */
+// The module search runs on the unfiltered tree; it asks this to skip directories the view drops wholesale
+// (node_modules etc.).
 internal interface OutsideProjectDirectories {
-    /** `true` only when nothing at or below [directory] is visible through this view. */
     fun holdsNothingOfTheProject(directory: FsPath): Boolean
 }
 
@@ -135,41 +101,16 @@ private val GIT_LS_FILES: List<String> = listOf(
     "-z",
 )
 
-/**
- * Asks git whether [root] is inside a work tree.
- *
- * This is the question that decides whether [me.tbsten.katachi.dsl.FileSelection.GitTracked] applies, and it is
- * deliberately asked of git rather than answered by looking for a `.git` entry at [root].
- * A Gradle project frequently sits below the repository root — katachi's own samples do,
- * and so does any build inside a monorepo — and there `.git` is further up while
- * `git ls-files` run at [root] still reports exactly that subtree.
- *
- * Returns `false` when git is missing or says no, which makes the check fall back to
- * walking the whole tree. A failure *after* git has claimed the root is a different matter
- * and is reported: see [gitLsFiles].
- */
+// Ask git rather than look for `.git` at root: a project may sit below the repository root. Failures after git
+// claims the root are reported by gitLsFiles.
 internal fun isInsideGitWorkTree(root: FsPath): Boolean =
     runGit(root, "rev-parse", "--is-inside-work-tree")?.trim() == "true"
 
-/**
- * Wraps [delegate] so that only the files git reports for [root] are visible.
- *
- * git is run **once**, at the root, and the answer is kept as a set. The traversal above
- * this never spawns a process.
- *
- * @throws KatachiGitUnavailableException when git cannot be run or fails.
- */
+// git runs once at the root and the answer is kept as a set.
 internal fun gitTrackedFileSystem(delegate: KatachiFileSystem, root: FsPath): KatachiFileSystem =
     GitTrackedFileSystem(delegate, root, gitLsFiles(root))
 
-/**
- * Runs `git ls-files --cached --others --exclude-standard -z` in [root].
- *
- * `--cached` is what git tracks, `--others --exclude-standard` adds files that are not
- * tracked yet but are not ignored either — a file gets checked the moment it is written,
- * without waiting for a `git add`. `-z` keeps names with spaces or non-ASCII characters
- * intact, which git would otherwise quote.
- */
+// `--others --exclude-standard` includes untracked, non-ignored files; `-z` keeps unusual file names unquoted.
 private fun gitLsFiles(root: FsPath): List<String> {
     val commandLine = GIT_LS_FILES.joinToString(" ")
     val process = try {

@@ -59,15 +59,6 @@ public fun interface ModulePackage {
     /**
      * Returns the package directory of [modulePath], relative to that module's own directory.
      *
-     * ## Example 1: Ask a strategy for one module's package directory
-     * ```kt
-     * import me.tbsten.katachi.dsl.gradle.ModulePackage
-     *
-     * val flat = ModulePackage { modulePath -> "com/example/${modulePath.substringAfterLast(':')}" }
-     *
-     * flat.packageDirectoryOf(":core:data") // "com/example/data"
-     * ```
-     *
      * @param modulePath the Gradle module path of the module being evaluated, such as
      *   `":core:data"`. The leading `:` may be absent, and `":"` is the root project.
      * @return a `/` separated directory path, such as `com/example/core/data`. It may not be
@@ -100,15 +91,6 @@ public enum class HyphenFolding {
     /**
      * `fuga-piyo` becomes `fugaPiyo`: the first word as written, every later word with its
      * first character upper-cased.
-     *
-     * ## Example 1: Fold the way capitalizedModuleNamePackage does
-     * ```kt
-     * import me.tbsten.katachi.dsl.gradle.HyphenFolding
-     * import me.tbsten.katachi.dsl.gradle.moduleNamePackage
-     *
-     * val modulePackage = moduleNamePackage(hyphens = HyphenFolding.Capitalize)
-     * // :hoge:fuga-piyo -> hoge/fugaPiyo
-     * ```
      */
     Capitalize,
 
@@ -117,15 +99,6 @@ public enum class HyphenFolding {
      *
      * No character changes case, so `Fuga-Piyo` becomes `FugaPiyo`. Module names are lower
      * case by convention, which is where this option's usual description comes from.
-     *
-     * ## Example 1: Join the words with nothing between them
-     * ```kt
-     * import me.tbsten.katachi.dsl.gradle.HyphenFolding
-     * import me.tbsten.katachi.dsl.gradle.moduleNamePackage
-     *
-     * val modulePackage = moduleNamePackage(hyphens = HyphenFolding.Concatenate)
-     * // :hoge:fuga-piyo -> hoge/fugapiyo
-     * ```
      */
     Concatenate,
 }
@@ -290,7 +263,6 @@ public fun ModulePackage.resolveFor(modulePath: String?): String {
     return directory
 }
 
-/** `com.example`, `com/example` and `com.example.` all split into `[com, example]`. */
 private fun splitBasePackage(basePackage: String): List<String> =
     basePackage.split('.', '/').filter { it.isNotBlank() }
 

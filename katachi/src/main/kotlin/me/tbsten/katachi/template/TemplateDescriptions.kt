@@ -88,10 +88,9 @@ public class TemplateSummary internal constructor(
     /** This template's named wildcards, which a run also takes as `--arg`. See [TemplateCapturePreview]. */
     public val captures: List<TemplateCapturePreview>,
     /**
-     * Whether this template's preview could not be built -- a capture and a parameter sharing a
-     * name, say. Such a template is still listed, since one that cannot be previewed is not one
-     * that cannot be run: a real run may give every value the preview could only guess at.
-     * [DescribeTemplates] with `--arg template=` of this template, or an actual run, says why.
+     * Whether this template's preview could not be built, such as when a capture and a parameter share a name.
+     *
+     * The template is still listed and may still run; describing it alone says why.
      */
     public val conflict: Boolean,
 ) {
@@ -145,7 +144,7 @@ public class TemplateDetail internal constructor(
     public val summary: String?,
     /** The parameters this template declares with the preview's values, in declaration order. */
     public val parameters: List<TemplateParameterPreview>,
-    /** The one file this template produces with the preview's values, in a list for the JSON's sake. */
+    /** The file this template produces with the preview's values; always one entry. */
     public val files: List<TemplateFilePreview>,
     /** The other Boolean and enum values that change this template's content or its parameters. */
     public val branches: List<TemplateBranch>,
@@ -197,8 +196,7 @@ public class TemplateParameterPreview internal constructor(
 }
 
 /**
- * One named wildcard of a template, as a run takes it: a `capture("...")` level of its declared
- * path, or a name `":...".module { }`'s key gave a module wildcard.
+ * One named wildcard of a template, as a run takes it: a `capture("...")` in its declared path or in a module key.
  *
  * A name used in several places is listed once per place, so that where a value lands can be read
  * from the list. Its preview value, where one appears in [TemplateDetail.files], is `${name}`, as
@@ -224,30 +222,27 @@ public class TemplateCapturePreview internal constructor(
     /** Whether it names a directory level or a module wildcard. */
     public val kind: TemplateCaptureKind,
     /**
-     * Where it sits: for a [TemplateCaptureKind.PathCapture], the flattened file pattern it is a
-     * level of, with a `*` standing for it; for a [TemplateCaptureKind.ModuleCapture], the module
-     * key (`:feature:*`).
+     * Where it sits: the file pattern, or the module key (`:feature:*`), with a `*` standing for it.
      */
     public val pattern: String,
     /**
-     * Which level of [pattern][TemplateCapturePreview.pattern] it is, 0-based: the `/`-separated
-     * level of a file pattern, or the position among the `*`s of a module key.
+     * Which level of [pattern][TemplateCapturePreview.pattern] it is, 0-based.
+     *
+     * The `/`-separated level of a file pattern, or the position among the `*`s of a module key.
      */
     public val position: Int,
     /**
-     * The pattern of the one segment this capture sits in, `${fileName}Screen.kt` for a partial
-     * match -- `${name}` in place of every plain capture that segment holds and `<name.transform>`
-     * in place of every derived one, itself included.
+     * The pattern of the segment this capture sits in, such as `${fileName}Screen.kt`.
+     *
+     * `${name}` stands for each plain capture, and `<name.transform>` for each derived one.
      */
     public val segment: String,
-    /**
-     * Which `*` of its level this occurrence is, 0-based over every unescaped `*` of the level,
-     * for a [TemplateCaptureKind.PathCapture]; `0` for a module capture.
-     */
+    /** Which `*` of its level this occurrence is, 0-based, for a [TemplateCaptureKind.PathCapture]; `0` for a module capture. */
     public val wildcardIndex: Int = 0,
     /**
-     * The naming conversion of a derived occurrence (`"pascalCase"`), which a run does not take a
-     * `--arg` for but derives from the plain capture of the same [name]; `null` for a plain one.
+     * The naming conversion of a derived occurrence, such as `"pascalCase"`; `null` for a plain one.
+     *
+     * A derived occurrence takes no `--arg` of its own: its value comes from the plain capture of the same [name].
      */
     public val transform: String? = null,
 ) {
@@ -338,9 +333,10 @@ public class TemplateFilePreview internal constructor(
     /** The file name, with the preview's values filled in: `${name}Repository.kt`. */
     public val fileName: String,
     /**
-     * Where the file would land, relative to the project root, or `null` when the layout does
-     * not decide it: it sits below a module capture, whose module only the modules that exist
-     * could pick. A directory `capture("...")` names is shown as `${name}`.
+     * Where the file would land, relative to the project root, or `null` below a module capture.
+     *
+     * Below a module capture, only the modules that exist could pick the path. A directory
+     * `capture("...")` names is shown as `${name}`.
      */
     public val path: String?,
     /** This template's captures that appear on [pattern][TemplateFilePreview.pattern], by name. */
@@ -376,10 +372,9 @@ public class TemplateBranch internal constructor(
     /** The value it was changed to, as `--arg` spells it. */
     public val value: String,
     /**
-     * File names this template would produce with [value][TemplateBranch.value] and not with the
-     * preview's value. A template describes exactly one file once it renders, so this is empty
-     * unless [value][TemplateBranch.value] makes rendering fail where the preview's own value did
-     * not.
+     * File names produced with [value][TemplateBranch.value] and not with the preview's value.
+     *
+     * Usually empty, since a template produces one file.
      */
     public val addedFiles: List<String>,
     /**
@@ -388,8 +383,9 @@ public class TemplateBranch internal constructor(
      */
     public val removedFiles: List<String>,
     /**
-     * Parameters declared with [value][TemplateBranch.value] and not with the preview's value, such
-     * as one written inside `if (withImpl) { }`, previewed the way [TemplateDetail.parameters] are.
+     * Parameters declared with [value][TemplateBranch.value] and not with the preview's value.
+     *
+     * Such as one written inside `if (withImpl) { }`, previewed the way [TemplateDetail.parameters] are.
      */
     public val addedParameters: List<TemplateParameterPreview>,
     /**

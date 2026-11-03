@@ -6,20 +6,14 @@ import me.tbsten.katachi.KatachiDeclarationException
 /**
  * The processor key the run was started for names nothing registered.
  *
- * Each `katachi<Key>` task of the Gradle plugin passes a key it registered itself, so this is
- * reached only by a run started some other way.
+ * The Gradle tasks only pass keys that are registered, so this is reached only when the
+ * processor JVM is started by hand.
  *
  * ## Example 1: an unregistered processor key
- * ```kt
- * val thrown = shouldThrow<KatachiProcessorNotFoundException> {
- *     runProcessors(
- *         architecture = architecture { },
- *         registry = emptyMap(),
- *         processorKeys = listOf("layout"),
- *         rawArgs = emptyMap(),
- *     )
- * }
- * thrown.key shouldBe "layout"
+ * ```sh
+ * # nothing is registered as "roleNames" in architecture-test/build.gradle.kts
+ * java -cp "$TEST_RUNTIME_CLASSPATH" me.tbsten.katachi.processor.internal.MainKt \
+ *     --entry-point=com.example.GeneratedKatachiEntryPoint --processor=roleNames
  * ```
  *
  * @property key the key that was passed and matched nothing.
@@ -53,19 +47,27 @@ public class KatachiProcessorNotFoundException internal constructor(
 )
 
 /**
- * A registered processor class could be neither read as a singleton nor constructed.
+ * A registered processor class could be neither read as a Kotlin `object` nor constructed without arguments.
  *
- * katachi looks for a Kotlin `object`'s `INSTANCE` field first, and a no-argument constructor
- * second; this is thrown once both have failed.
+ * Write the processor as an `object`, or give its class a no-argument constructor.
  *
- * ## Example 1: a class with no `INSTANCE` field and no no-argument constructor
+ * ## Example 1: a processor whose only constructor takes an argument
  * ```kt
- * class NeedsAnArgument(val prefix: String)
- *
- * val thrown = shouldThrow<KatachiProcessorNotInstantiableException> {
- *     instantiateProcessor(NeedsAnArgument::class.java)
+ * class NeedsAnArgument(val prefix: String) : ArchitectureProcessorNoArg<Int> {
+ *     override fun process(context: ArchitectureProcessNoArgContext) = runCatching { 0 }
  * }
- * thrown.type shouldBe NeedsAnArgument::class.java
+ * ```
+ *
+ * ```kts
+ * katachi {
+ *     processors {
+ *         register("needsAnArgument", "com.example.processors.NeedsAnArgument")
+ *     }
+ * }
+ * ```
+ *
+ * ```sh
+ * ./gradlew :architecture-test:katachiNeedsAnArgument  # fails with this exception
  * ```
  *
  * @property type the registered processor class.
@@ -101,14 +103,18 @@ public class KatachiProcessorNotInstantiableException internal constructor(
 /**
  * A registered class was instantiated, but it is not an [ArchitectureProcessor].
  *
- * ## Example 1: a registered class that is not a processor
- * ```kt
- * class NotAProcessor
- *
- * val thrown = shouldThrow<KatachiProcessorTypeException> {
- *     instantiateProcessor(NotAProcessor::class.java)
+ * ## Example 1: a registration that points at the wrong class
+ * ```kts
+ * katachi {
+ *     processors {
+ *         // RoleNamesFormatter is a helper, not an ArchitectureProcessor
+ *         register("roleNames", "com.example.processors.RoleNamesFormatter")
+ *     }
  * }
- * thrown.type shouldBe NotAProcessor::class.java
+ * ```
+ *
+ * ```sh
+ * ./gradlew :architecture-test:katachiRoleNames  # fails with this exception
  * ```
  *
  * @property type the registered processor class.
@@ -130,15 +136,17 @@ public class KatachiProcessorTypeException internal constructor(
 /**
  * The entry point class the Gradle plugin generates could not be read.
  *
+ * Run the processor through its own task, such as `./gradlew katachiDocs`, and check that
+ * `katachi { architecture = ... }` is set in the module's `build.gradle.kts`.
+ *
  * ## Example 1: an entry point class that was never generated
- * ```kt
- * val thrown = shouldThrow<KatachiEntryPointNotFoundException> {
- *     loadEntryPoint("me.tbsten.katachi.generated.GeneratedKatachiEntryPoint")
- * }
- * thrown.className shouldBe "me.tbsten.katachi.generated.GeneratedKatachiEntryPoint"
+ * ```sh
+ * # The katachi<Key> tasks generate it first; a JVM started by hand may not find it.
+ * java -cp "$TEST_RUNTIME_CLASSPATH" me.tbsten.katachi.processor.internal.MainKt \
+ *     --entry-point=com.example.NotGenerated --processor=docs
  * ```
  *
- * @property className the fully qualified name `main()` was handed with `--entry-point`.
+ * @property className the fully qualified name passed with `--entry-point`.
  */
 @ExperimentalKatachiApi
 public class KatachiEntryPointNotFoundException internal constructor(
@@ -165,22 +173,20 @@ public class KatachiEntryPointNotFoundException internal constructor(
 )
 
 /**
- * A processor of the run was not run, because another one could not say which `--arg` names it
- * takes.
+ * A processor of the run was not run, because another one could not say which `--arg` names it takes.
  *
- * Every `--arg` of a run is checked against what all of its processors accept before any of them
- * runs, so that a misspelt name is refused rather than silently left to a default. A processor
- * whose [ArchitectureProcessor.undeclaredArgNames] threw leaves that check without an answer, and
- * running the others anyway could run them on a typo. That processor is reported with what it
- * threw; the others with this.
+ * Every `--arg` is checked against what all processors of the run accept before any of them runs.
+ * When one processor's [ArchitectureProcessor.undeclaredArgNames] throws, that check has no
+ * answer, so the others are not run. The failing processor is reported with what it threw; the
+ * others with this.
  *
  * ## Example 1: two processors, one of which cannot read its template
- * ```kt
- * // ./gradlew katachiRun --processor=docs,template --arg template=Broken
- * // [FAILED] docs
- * //   Processor "docs" was not run: template failed before any processor ran, ...
- * // [FAILED] template
- * //   (what template's undeclaredArgNames threw)
+ * ```sh
+ * ./gradlew :architecture-test:katachiProcessors --processor docs --processor template --arg template=Broken
+ * # [FAILED] docs
+ * #   Processor "docs" was not run: template failed before any processor ran, ...
+ * # [FAILED] template
+ * #   (what template's undeclaredArgNames threw)
  * ```
  *
  * @property key the processor that was not run.

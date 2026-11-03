@@ -9,16 +9,13 @@ import me.tbsten.katachi.dsl.files.internal.isInsideGitWorkTree
 /**
  * Which files the check considers part of the project.
  *
- * This is not a way to exclude files. `layout { }` is where a directory is declared and, if
- * it should not be looked into, marked `ignore()` — with a role and a `summary` around it,
- * so the reason ends up in the generated documentation. This setting answers the question
- * before that one: which files are the project's at all.
+ * This is not a way to exclude files: mark a directory `ignore()` in `layout { }` for that, so
+ * the reason ends up in the generated documentation. This setting decides which files are the
+ * project's at all.
  *
- * [GitTracked] and [WholeTree] are the two katachi ships, and they are ordinary
- * implementations of this interface rather than a closed set. A project whose sources are
- * listed by something other than git — a Bazel workspace, a generated manifest, an in-house
- * tool — writes its own and assigns it to `files` the same way; [fileSystemFor] is the one
- * thing it has to answer.
+ * katachi ships [GitTracked] (the default) and [WholeTree]. A project whose sources are listed by
+ * something else (a Bazel workspace, a generated manifest) implements [fileSystemFor] and assigns
+ * its own selection to `files`.
  *
  * ## Example 1: keep the default (gitTracked())
  * ```kt
@@ -70,24 +67,6 @@ public interface FileSelection {
      * still lists but answers nothing is reported as unexpected.
      *
      * Marked [ExperimentalKatachiApi] because [KatachiFileSystem] and [ProjectRoot] are.
-     * Implementing this means reaching into how the check runs, and that surface can change
-     * between releases — which is worth saying out loud, not worth forbidding.
-     *
-     * ## Example 1: pass the tree through untouched
-     * ```kt
-     * import me.tbsten.katachi.ExperimentalKatachiApi
-     * import me.tbsten.katachi.dsl.FileSelection
-     * import me.tbsten.katachi.dsl.files.KatachiFileSystem
-     * import me.tbsten.katachi.dsl.files.ProjectRoot
-     *
-     * @OptIn(ExperimentalKatachiApi::class)
-     * object Everything : FileSelection {
-     *     override fun fileSystemFor(
-     *         delegate: KatachiFileSystem,
-     *         projectRoot: ProjectRoot,
-     *     ): KatachiFileSystem = delegate
-     * }
-     * ```
      */
     @ExperimentalKatachiApi
     public fun fileSystemFor(
@@ -102,22 +81,12 @@ public interface FileSelection {
      * A file git does not manage cannot be given a role. `.DS_Store` turns up in every
      * directory, `local.properties` is per machine, `build/` is generated output.
      *
-     * A file tracked below an ignored directory — `.idea` ignored with `!.idea/codeStyles/`
-     * taken back, or one added with `git add -f` — is reported by `--cached` and checked like
-     * any other. A file
-     * that is *not* tracked below an ignored directory is not reported even when a `!` pattern
-     * names it; that is git's rule, and katachi does not add to it.
+     * A file tracked below an ignored directory (one added with `git add -f`, say) is checked
+     * like any other. A project below the repository root (a monorepo, a submodule) works too.
      *
-     * Whether git applies is decided by asking git, not by looking for a `.git` next to the
-     * project root. A Gradle project often sits below the repository root — a sample inside
-     * the library's own repository, a build in a monorepo, a submodule — and there
-     * `.git` is somewhere above while `git ls-files` run at the project root still answers
-     * correctly, with paths relative to that directory.
-     *
-     * When git says the root is not inside a work tree, or git is not installed, this behaves
-     * like [WholeTree]. When git *does* claim the root but then fails, the check fails with
-     * [KatachiGitUnavailableException] instead of quietly walking everything, because that would
-     * give different results on a developer's machine and on CI.
+     * When the root is not inside a git work tree, or git is not installed, this behaves like
+     * [WholeTree]. When git claims the root but then fails, the check fails with
+     * [KatachiGitUnavailableException] rather than giving different results on CI.
      *
      * ## Example 1: select it explicitly
      * ```kt

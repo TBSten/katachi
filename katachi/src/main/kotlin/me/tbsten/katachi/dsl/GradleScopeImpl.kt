@@ -8,15 +8,8 @@ import me.tbsten.katachi.dsl.internal.declareRoleAt
 import me.tbsten.katachi.dsl.internal.declareTemplateSetAt
 import org.intellij.lang.annotations.Language
 
-/**
- * What the `gradle { }` block writes, kept until katachi has declared its own roles.
- *
- * Metadata goes straight to [group]. A hook only records its block, read back by
- * [hooksOf] while the role it names is declared. A role or group of the user's own takes its
- * declaration site now, while the user's frame is still on the stack, and is declared by
- * [declareDeferred] afterwards, so that katachi's roles come first and a clash with one of
- * them reports katachi's as the first declaration.
- */
+// Roles/groups of the user's own take their declaration site immediately (user frame still on the stack) but are
+// declared later via declareDeferred, so katachi's roles come first.
 internal class GradleScopeImpl(internal val group: GroupScope) : GradleScope {
     private val hooks = EnumMap<GradleRoleKind, MutableList<GradleRoleScope.() -> Unit>>(GradleRoleKind::class.java)
     private val deferred = mutableListOf<() -> Unit>()
@@ -82,16 +75,13 @@ internal class GradleScopeImpl(internal val group: GroupScope) : GradleScope {
         hooks.getOrPut(kind) { mutableListOf() } += block
     }
 
-    /** The blocks written for [kind], in the order they were written. */
     fun hooksOf(kind: GradleRoleKind): List<GradleRoleScope.() -> Unit> = hooks[kind].orEmpty()
 
-    /** Declares the roles and groups the block wrote, in the order it wrote them. */
     fun declareDeferred() {
         deferred.forEach { it() }
     }
 }
 
-/** A hook's view of one role `gradle()` declares: its constraints and metadata, nothing else. */
 internal class GradleRoleScopeImpl(internal val role: RoleScope) : GradleRoleScope {
     override fun fileConstraint(
         name: String?,

@@ -7,21 +7,20 @@ import kotlin.enums.EnumEntries
 import kotlin.reflect.KProperty
 
 /**
- * Receiver of `.template(id, title) { -> String }`: the parameters a generated file is filled
- * in from, and the block's return value, which is that file's content.
+ * Receiver of `.template { }`: declares the parameters a generated file is filled in from, and returns its content.
  *
  * A template is attached to the file declaration itself, because that declaration already says
  * where the file lands: in `"useCase" / "${capture("name")}UseCase.kt".file().template { ... }`
  * the block returns only the content, and the path is the declaration's own.
  *
  * The block is stored, not evaluated, exactly like [RoleScope.layout] — `architecture { }` runs
- * long before anyone passes `--arg`. It is replayed once per run, with the values of that run
+ * long before anyone passes `--arg`. It runs once per generation, with the values of that run
  * bound, so a parameter read anywhere inside it is an ordinary value of the type it was declared
  * with, and Kotlin's own string templates are the whole templating language.
  *
  * Every parameter is read as its `--arg <name>=<value>`, whatever its type. A value that does not
  * fit the type, and a value that is missing, are not reported where the parameter is declared:
- * they are collected over the whole replay and reported together once it ends.
+ * they are collected over the whole block and reported together once it ends.
  *
  * ## Example 1: declare a template on a file declaration
  * ```kt
@@ -33,13 +32,15 @@ import kotlin.reflect.KProperty
  *                     .template {
  *                         val name = captureValue("name")
  *                         val implBody by stringParameter(default = """TODO("not implemented")""")
+ *                         val suspending by booleanParameter(default = true) // --arg suspending=false
+ *                         val modifier = if (suspending) "suspend " else ""
  *                         """
  *                         interface ${name}UseCase {
- *                             suspend operator fun invoke()
+ *                             ${modifier}operator fun invoke()
  *                         }
  *
  *                         class ${name}UseCaseImpl : ${name}UseCase {
- *                             override suspend fun invoke() {
+ *                             override ${modifier}fun invoke() {
  *                                 $implBody
  *                             }
  *                         }
@@ -49,7 +50,6 @@ import kotlin.reflect.KProperty
  *         }
  *     }
  * }
- * arch.allRoles.single().name shouldBe "UseCase"
  * ```
  *
  * ## Example 2: two file declarations, each with its own id, choosing what goes in them from typed parameters
@@ -80,7 +80,6 @@ import kotlin.reflect.KProperty
  *         }
  *     }
  * }
- * arch.allRoles.single().name shouldBe "Repository"
  * ```
  *
  * @see LayoutFile.template
@@ -100,18 +99,6 @@ public sealed interface TemplateScope {
      * A parameter with no [default] must be given a value on every run. A [default] is an
      * ordinary Kotlin expression evaluated where it is written, so it may read the parameters
      * declared above it.
-     *
-     * ## Example 1: declare a required parameter and one with a default
-     * ```kt
-     * "useCase" / "${capture("name")}UseCase.kt".file()
-     *     .template {
-     *         val implBody by stringParameter(default = """TODO("not implemented")""")
-     *         val comment by stringParameter()
-     *
-     *         // ./gradlew katachiTemplate --arg template=UseCase --arg name=GetUser --arg comment=hello
-     *         "// $comment: ${captureValue("name")}UseCase { $implBody }"
-     *     }
-     * ```
      */
     public fun stringParameter(default: String? = null): TemplateParameter<String>
 
@@ -119,17 +106,6 @@ public sealed interface TemplateScope {
      * Declares a parameter read as a `Boolean`, named by its property like [stringParameter].
      *
      * `true` or `false`, in lower case. Any other word is refused, never read as `false`.
-     *
-     * ## Example 1: change the content on a Boolean flag
-     * ```kt
-     * "repository" / "${capture("name")}Repository.kt".file()
-     *     .template {
-     *         val name = captureValue("name")
-     *         val suspending by booleanParameter(default = true) // --arg suspending=false
-     *         val modifier = if (suspending) "suspend " else ""
-     *         "interface ${name}Repository { ${modifier}fun all(): List<$name> }"
-     *     }
-     * ```
      */
     public fun booleanParameter(default: Boolean? = null): TemplateParameter<Boolean>
 
@@ -137,16 +113,6 @@ public sealed interface TemplateScope {
      * Declares a parameter read as an `Int`, named by its property like [stringParameter].
      *
      * A whole number in decimal, such as `20` or `-1`, within the range of `Int`.
-     *
-     * ## Example 1: put a number into the generated code
-     * ```kt
-     * "${capture("name")}Pager.kt".file()
-     *     .template {
-     *         val name = captureValue("name")
-     *         val pageSize by intParameter(default = 20) // --arg pageSize=50
-     *         "const val ${name}_PAGE_SIZE: Int = $pageSize"
-     *     }
-     * ```
      */
     public fun intParameter(default: Int? = null): TemplateParameter<Int>
 
@@ -179,24 +145,13 @@ public sealed interface TemplateScope {
      *
      * One of the entry names, spelled exactly as declared in Kotlin -- not lower-cased the way
      * `onExisting=skip` is. The entries are taken from [default]'s own enum class.
-     *
-     * ## Example 1: pick an entry, with one to fall back on
-     * ```kt
-     * enum class Visibility { Public, Internal }
-     *
-     * "${capture("name")}.kt".file()
-     *     .template {
-     *         val name = captureValue("name")
-     *         val visibility by enumParameter(default = Visibility.Public) // --arg visibility=Internal
-     *         "${visibility.name.lowercase()} class $name"
-     *     }
-     * ```
      */
     public fun <E : Enum<E>> enumParameter(default: E): TemplateParameter<E>
 
     /**
-     * Reads the value of this declaration's named wildcard [name]: a `capture("...")` level of
-     * the path it sits on, whether part of a directory, a file name, or the module key.
+     * Reads the value of the `capture("...")` named [name] on this declaration's path.
+     *
+     * The capture may be a whole directory level, part of one, or part of the file name.
      *
      * It arrives as `--arg <name>=<value>`, the same value that decides the directory the file
      * is generated into, so the package or a class name built from it cannot disagree with where
@@ -209,30 +164,15 @@ public sealed interface TemplateScope {
      * string `${name}`. The value is checked as one directory level and nothing more, so a template
      * that puts it into a package or a class name tidies or refuses a `-` itself.
      *
-     * ## Example 1: build the package from the directory the file is generated into
-     * ```kt
-     * "Screen".role {
-     *     layout {
-     *         "feature" / capture("feature") / "${capture("name")}Screen.kt".file()
-     *             .template {
-     *                 val name = captureValue("name")
-     *                 val feature = captureValue("feature") // --arg feature=home
-     *                 "package com.example.feature.$feature\n\nfun ${name}Screen() {}"
-     *             }
-     *     }
-     * }
-     * ```
-     *
      * @throws KatachiUnknownTemplateCaptureException when this declaration names no wildcard
      *   [name].
      */
     public fun captureValue(name: String): String
 
     /**
-     * Whether this replay is a preview (`katachiTemplates` / `DescribeTemplates`) rather than an
-     * actual run (`katachiTemplate` / [me.tbsten.katachi.template.GenerateCodeFromTemplate]).
+     * Whether this run is a preview (`katachiTemplates`) rather than an actual generation (`katachiTemplate`).
      *
-     * A preview replays the block with every parameter and [captureValue] read as a stand-in
+     * A preview runs the block with every parameter and [captureValue] read as a stand-in
      * string, `${name}`, rather than a value someone actually passed. A template that checks such
      * a value -- refusing one that is not alphanumeric, say -- would refuse the stand-in the same
      * way it refuses a bad one from a real run, and so could never be previewed. `isPreview` is how
@@ -259,7 +199,7 @@ public sealed interface TemplateScope {
  *
  * Read it and an ordinary value of the type it was declared with comes back, so a template is
  * written in Kotlin's own string templates and nothing else. The value is whatever `--arg <name>=<value>` carried for the run
- * being replayed, or the default it was declared with.
+ * being generated, or the default it was declared with.
  *
  * ## Example 1: declare two parameters, one of them with a default
  * ```kt
@@ -284,7 +224,6 @@ public class TemplateParameter<out T> internal constructor(
     internal val default: T?,
     internal val declaredAt: DeclarationSite,
 ) {
-    /** The property this was written through, or `null` while it has not reached one yet. */
     internal var name: String? = null
         private set
 
@@ -317,18 +256,6 @@ public class TemplateParameter<out T> internal constructor(
      *
      * Also binds the name, for the same reason [provideDelegate] does: whichever of the two the
      * compiler reaches first is the one that names the parameter.
-     *
-     * ## Example 1: read a parameter as the `String` it stands for
-     * ```kt
-     * "UseCase.kt".file()
-     *     .template {
-     *         val name by stringParameter()
-     *
-     *         // `name` is an ordinary String here, so Kotlin's own string templates are the whole
-     *         // templating language.
-     *         "interface ${name}UseCase"
-     *     }
-     * ```
      */
     public operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
         bindTo(property.name)

@@ -5,20 +5,8 @@ import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.ModulePath
 
-/**
- * What this entry's plain `capture("...")` names took from [path], by name: empty when the
- * entry does not match [path] or names nothing.
- *
- * A [LayoutEntryKind.File] entry is matched against [path] itself and an
- * [LayoutEntryKind.AnyFile] entry against its directory, the rule [FileConstraintCoverage.covers]
- * covers a file by. No other kind names a file.
- *
- * A name written on two levels reads the first level's value: [captureMismatchOf] has already
- * held the two to the same value for any file the entry allows. A derived occurrence has no
- * name of its own and gives nothing. A module key that names only some of its `*`s, or that was
- * never resolved to a module (a layout read without the project, whose module path is still a
- * pattern), gives nothing rather than a guess.
- */
+// A name written on two levels reads the first level's value. Unresolved module keys give nothing rather than a
+// guess.
 internal fun LayoutEntry.captureValuesOf(path: String): Map<String, String> {
     if (captureVariants.isEmpty()) return emptyMap()
     val target = matchTargetOf(path) ?: return emptyMap()
@@ -33,13 +21,6 @@ internal fun LayoutEntry.captureValuesOf(path: String): Map<String, String> {
     return values
 }
 
-/**
- * What this entry's file name level alone takes from [fileName]: `"${capture("name")}ViewModel.kt"`
- * gives `name = Home` for `HomeViewModel.kt`. Empty for an entry that is not a file, whose last
- * level does not match [fileName], or that names nothing there.
- *
- * For an example that is only a file name, where the levels above it are not known.
- */
 internal fun LayoutEntry.captureValuesOfFileName(fileName: String): Map<String, String> {
     if (kind != LayoutEntryKind.File || captureVariants.isEmpty()) return emptyMap()
     val levels = path.split(Glob.PATH_SEPARATOR)
@@ -58,58 +39,31 @@ internal fun LayoutEntry.captureValuesOfFileName(fileName: String): Map<String, 
     return values
 }
 
-/**
- * Whether this entry allows a file at [path]: its pattern matches (the file itself, or its
- * directory for an `anyFile()` entry), and no bound capture holds the file back. The one rule
- * [me.tbsten.katachi.check.internal.LayoutIndex.rolesOf] and [FileConstraintCoverage.covers]
- * share, so a constraint never covers a file the check reports.
- */
+// The single rule shared with LayoutIndex.rolesOf and FileConstraintCoverage.covers, so a constraint never covers
+// a file the check reports.
 internal fun LayoutEntry.allows(path: String): Boolean {
     val target = matchTargetOf(path) ?: return false
     return glob.matches(target) && captureMismatchOf(path) == null
 }
 
-/** One occurrence of a variant, with what the file holds at it. */
 internal class CaptureOccurrenceValue(val capture: PathCapture, val value: String)
 
-/**
- * One occurrence of a bound name, as a `[CaptureMismatch]` lists it. [expected] is `null` for the
- * first plain occurrence of the name, whose value the others are held to.
- */
 internal class CaptureOccurrenceDetail(
     val name: String,
     val transform: CaptureTransform?,
-    /** 0-based level of the file's path. */
     val level: Int,
     val value: String,
     val expected: String?,
 )
 
-/**
- * Why a bound variant held a file back: every occurrence of a bound name, and the path the file
- * would have if each level read what the first plain occurrence of its name reads -- `null`
- * when a value that path needs could not be read.
- */
 internal class CaptureMismatchDetail(
     val variant: LayoutCaptures,
     val occurrences: List<CaptureOccurrenceDetail>,
     val expectedPath: String?,
 )
 
-/**
- * What holds a file at [path] back from this entry, or `null` when the entry allows it (or does
- * not match it at all, which is a question for the pattern, not for this).
- *
- * Decided per variant: a variant that is not [LayoutCaptures.isBound] -- [LayoutCaptures.NONE]
- * included -- allows every file the pattern matches, so one such variant allows the file
- * whatever the others say. A bound variant allows the file only when every plain occurrence of
- * a name reads the first one's value and every derived occurrence reads its conversion of that
- * value, as plain string equality. When every variant holds the file back, the first declared
- * one says why.
- *
- * A name a module key gives is compared only once the key was resolved to a module, the rule
- * [captureValuesOf] reads it by; a layout read without the project compares nothing on it.
- */
+// A variant that is not bound allows every file the pattern matches, so one such variant allows the file whatever
+// the others say.
 internal fun LayoutEntry.captureMismatchOf(path: String): CaptureMismatchDetail? {
     if (captureVariants.isEmpty() || captureVariants.any { !it.isBound }) return null
     val target = matchTargetOf(path) ?: return null
@@ -122,7 +76,6 @@ internal fun LayoutEntry.captureMismatchOf(path: String): CaptureMismatchDetail?
     return first
 }
 
-/** [path] itself for a file entry, its directory for an `anyFile()` entry, `null` for a kind that names no file. */
 private fun LayoutEntry.matchTargetOf(path: String): String? = when (kind) {
     LayoutEntryKind.File -> path
     // A file at the root has no directory to match: the root is no directory a role can claim,
@@ -131,7 +84,6 @@ private fun LayoutEntry.matchTargetOf(path: String): String? = when (kind) {
     else -> null
 }
 
-/** One occurrence with its value, before the expected value is known. [capture] is `null` for a module key's. */
 private class BoundOccurrence(
     val name: String,
     val transform: CaptureTransform?,
@@ -181,12 +133,6 @@ private fun LayoutEntry.mismatchOf(variant: LayoutCaptures, path: String, groups
     return CaptureMismatchDetail(variant, details, expectedPath)
 }
 
-/**
- * [path] with the part each bound occurrence matched replaced by its expected value, and every
- * other character -- unnamed `*` and `**`, `?`, `[...]`, `{...}`, escapes -- kept as the file has it.
- * The parts are found by where [Glob.matchRanges] says each wildcard matched, so only what a
- * capture named is ever rewritten.
- */
 private fun LayoutEntry.expectedPathOf(
     variant: LayoutCaptures,
     path: String,
@@ -204,12 +150,7 @@ private fun LayoutEntry.expectedPathOf(
     return if (kind == LayoutEntryKind.AnyFile) "$expected/${path.substringAfterLast('/')}" else expected
 }
 
-/**
- * The value each of [captures] read, in order: the [PathCapture.wildcardIndex]-th single-level
- * group of its level. A `**` is never on a level with a capture, so the single-level groups of
- * one level are exactly its `*`s left to right. A capture whose group is not there (an entry
- * whose pattern has fewer `*`s than captures, which flattening never produces) is left out.
- */
+// A `**` is never on a level with a capture, so a level's single-level groups are its `*`s left to right.
 private inline fun occurrenceValuesOf(
     captures: List<PathCapture>,
     glob: Glob,
@@ -222,28 +163,19 @@ private inline fun occurrenceValuesOf(
 private fun groupValueOf(glob: Glob, groups: List<String>, level: Int, wildcardIndex: Int): String? =
     groupIndexOf(glob, level, wildcardIndex)?.let { groups.getOrNull(it) }
 
-/** The index into [Glob.groupKinds] of the [wildcardIndex]-th `*` of [level], or `null` when it has fewer. */
 private fun groupIndexOf(glob: Glob, level: Int, wildcardIndex: Int): Int? =
     glob.groupKinds.indices.filter {
         glob.groupKinds[it] == GlobGroupKind.Single && glob.groupSegments[it] == level
     }.getOrNull(wildcardIndex)
 
-/** The 0-based level of the last segment of this entry's module directory, or `-1` for the root project or no module. */
 private fun LayoutEntry.moduleDirectoryLevel(): Int {
     val levels = path.split(Glob.PATH_SEPARATOR).size
     val inModule = if (pathInModule.isEmpty()) 0 else pathInModule.split(Glob.PATH_SEPARATOR).size
     return levels - inModule - 1
 }
 
-/**
- * The values a module key's names take from the module this entry was resolved to, as
- * `name to value` pairs in the key's order: a name the key gave twice appears twice, once per
- * `*`. Empty when the key gave no name, named only some of its `*`s, or was never resolved.
- *
- * [modulePath] is the module the entry sits in. Read without the project it is the key itself,
- * holding `*` or a `<name>` placeholder where a module's name belongs -- a character Gradle
- * refuses in a project name, so a path holding one names no real module and gives nothing.
- */
+// Read without the project, the key is itself, with `*` or `<name>` where a module's name belongs. Empty for
+// unnamed, partly named or unresolved keys.
 private fun moduleOccurrencesOf(capture: ModuleCapture, modulePath: String?): List<Pair<String, String>> {
     if (modulePath == null || capture.names.isEmpty()) return emptyList()
     if (modulePath.any { it in UNRESOLVED_MODULE_CHARACTERS }) return emptyList()
@@ -257,13 +189,8 @@ private fun moduleOccurrencesOf(capture: ModuleCapture, modulePath: String?): Li
     return capture.names.mapIndexedNotNull { index, name -> wildcards.getOrNull(index)?.let { name to it } }
 }
 
-/**
- * [moduleOccurrencesOf] by name, the first `*` of a name keeping it. A key naming two `*`s alike
- * was only expanded to modules where they read the same, so the second is never different.
- */
 private fun MutableMap<String, String>.putModuleValues(capture: ModuleCapture, modulePath: String?) {
     for ((name, value) in moduleOccurrencesOf(capture, modulePath)) putIfAbsent(name, value)
 }
 
-/** What only an unresolved module key holds: its own `*`, or a `<name>` placeholder. */
 private const val UNRESOLVED_MODULE_CHARACTERS: String = "*<>"

@@ -1,9 +1,7 @@
 package me.tbsten.katachi.dsl
 
 /**
- * Receiver of the block `gradle { }` takes: a [GroupScope] with one hook per role
- * `gradle()` declares, so that a constraint or a metadata value can be written on a role
- * katachi itself owns.
+ * Receiver of `gradle { }`: a [GroupScope] with one hook per Gradle role, for writing constraints and metadata on it.
  *
  * Everything a group block takes is still written here — `title`, `summary`, `documented`,
  * `owner = "..."` and the project's own `"X".role { }` / `"X".group { }` — and the hooks come on
@@ -23,11 +21,6 @@ package me.tbsten.katachi.dsl
  * | [gradleProperties] | `Gradle.GradleProperties` | `gradle.properties` |
  * | [versionCatalog] | `Gradle.VersionCatalog` | `*.versions.toml` directly inside `gradle` |
  * | [daemonJvmProperties] | `Gradle.DaemonJvmProperties` | `gradle/gradle-daemon-jvm.properties` |
- *
- * The three wrapper hooks sit flat beside the others rather than inside a `gradleWrapper { }`
- * of their own: a hook and a role correspond one to one by name, and the table above is the
- * whole mapping. The interface lives in `me.tbsten.katachi.dsl` next to [GroupScope], which is
- * sealed, while `gradle()` itself stays in `me.tbsten.katachi.dsl.gradle`.
  *
  * ## Example 1: a constraint on the build scripts, and a role of the project's own
  * ```kt
@@ -57,113 +50,41 @@ package me.tbsten.katachi.dsl
 public sealed interface GradleScope : GroupScope {
     /**
      * Opens `Gradle.GradleWrapper.LauncherScript`, the role of `gradlew` and `gradlew.bat`.
-     *
-     * ## Example 1: ask something of the launcher scripts
-     * ```kt
-     * gradle {
-     *     launcherScript {
-     *         fileConstraint("uses LF line endings") { subject -> emptyList() }
-     *     }
-     * }
-     * ```
      */
     public fun launcherScript(block: GradleRoleScope.() -> Unit)
 
     /**
      * Opens `Gradle.GradleWrapper.WrapperJar`, the role of `gradle/wrapper/gradle-wrapper.jar`.
-     *
-     * ## Example 1: ask something of the wrapper jar
-     * ```kt
-     * gradle {
-     *     wrapperJar {
-     *         fileConstraint("is the jar the pinned Gradle version ships") { subject -> emptyList() }
-     *     }
-     * }
-     * ```
      */
     public fun wrapperJar(block: GradleRoleScope.() -> Unit)
 
     /**
      * Opens `Gradle.GradleWrapper.WrapperProperties`, the role of `gradle/wrapper/gradle-wrapper.properties`.
-     *
-     * ## Example 1: ask something of the wrapper properties
-     * ```kt
-     * gradle {
-     *     wrapperProperties {
-     *         fileConstraint("pins a distribution with a checksum") { subject -> emptyList() }
-     *     }
-     * }
-     * ```
      */
     public fun wrapperProperties(block: GradleRoleScope.() -> Unit)
 
     /**
      * Opens `Gradle.SettingsScript`, the role of `settings.gradle.kts` or `settings.gradle`.
-     *
-     * ## Example 1: ask something of the settings script
-     * ```kt
-     * gradle {
-     *     settingsScript {
-     *         fileConstraint("lists the modules in alphabetical order") { subject -> emptyList() }
-     *     }
-     * }
-     * ```
      */
     public fun settingsScript(block: GradleRoleScope.() -> Unit)
 
     /**
      * Opens `Gradle.BuildScript`, the role of every module's `build.gradle.kts` or `build.gradle`.
-     *
-     * ## Example 1: ask something of every build script
-     * ```kt
-     * gradle {
-     *     buildScript {
-     *         fileConstraint("fails the build on every compiler warning") { subject -> emptyList() }
-     *     }
-     * }
-     * ```
      */
     public fun buildScript(block: GradleRoleScope.() -> Unit)
 
     /**
      * Opens `Gradle.GradleProperties`, the role of `gradle.properties`.
-     *
-     * ## Example 1: ask something of gradle.properties
-     * ```kt
-     * gradle {
-     *     gradleProperties {
-     *         fileConstraint("turns the configuration cache on") { subject -> emptyList() }
-     *     }
-     * }
-     * ```
      */
     public fun gradleProperties(block: GradleRoleScope.() -> Unit)
 
     /**
      * Opens `Gradle.VersionCatalog`, the role of every `*.versions.toml` directly inside `gradle`.
-     *
-     * ## Example 1: ask something of the version catalogs
-     * ```kt
-     * gradle {
-     *     versionCatalog {
-     *         fileConstraint("has no snapshot version") { subject -> emptyList() }
-     *     }
-     * }
-     * ```
      */
     public fun versionCatalog(block: GradleRoleScope.() -> Unit)
 
     /**
      * Opens `Gradle.DaemonJvmProperties`, the role of `gradle/gradle-daemon-jvm.properties`.
-     *
-     * ## Example 1: ask something of the daemon JVM properties
-     * ```kt
-     * gradle {
-     *     daemonJvmProperties {
-     *         fileConstraint("pins the daemon to the toolchain the build compiles with") { subject -> emptyList() }
-     *     }
-     * }
-     * ```
      */
     public fun daemonJvmProperties(block: GradleRoleScope.() -> Unit)
 }

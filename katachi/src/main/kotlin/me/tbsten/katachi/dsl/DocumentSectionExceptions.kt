@@ -6,9 +6,7 @@ import me.tbsten.katachi.KatachiDeclarationException
 /**
  * Thrown when `documentSection()` was given a blank heading.
  *
- * A section is written out as its heading and the Markdown below it, so a section with no heading
- * is a body attached to nothing. It is raised where the section is declared rather than where a
- * page is generated, because that is where the fix is.
+ * It is raised where the section is declared, which is where the fix is.
  *
  * ## Example 1: catch a section declared without a heading
  * ```kt
@@ -34,9 +32,7 @@ public class KatachiUnnamedDocumentSectionException internal constructor(
  * Thrown when a section was declared below more sections than Markdown has heading levels for.
  *
  * A top level section is written as `##` and every level below it adds one `#`, so the seventh
- * level would be written as `#######` — which Markdown reads as text, not as a heading. Rather
- * than generate a page whose structure silently stops matching the declaration, katachi refuses
- * the section where it is declared.
+ * level would be `#######`, which Markdown does not read as a heading.
  *
  * ## Example 1: catch a section nested one level too deep
  * ```kt

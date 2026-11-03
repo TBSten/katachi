@@ -3,23 +3,16 @@ package me.tbsten.katachi.check.internal
 import me.tbsten.katachi.check.KatachiInvalidBaselineFileException
 import me.tbsten.katachi.check.KatachiInvalidBaselineFileException.Problem
 
-/**
- * How deep arrays and objects may nest. A baseline file nests three levels; the limit is there
- * so that a broken file fails with a message instead of a [StackOverflowError].
- */
+// Bounds nesting so a broken file fails with a message instead of a StackOverflowError.
 private const val MAX_DEPTH: Int = 64
 
-/** The byte order mark an editor may put at the start of a file. It says nothing about content. */
 private const val BYTE_ORDER_MARK: Char = '\uFEFF'
 
-/** A number as RFC 8259 writes one, in ASCII digits only. */
 private val JSON_NUMBER = Regex("-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?")
 
-/** A parsed JSON value and the line it starts on. */
 internal sealed interface JsonNode {
     val line: Int
 
-    /** An object, its members in the order the file lists them; a name appears at most once. */
     class Obj(override val line: Int, val members: List<Pair<String, JsonNode>>) : JsonNode
     class Arr(override val line: Int, val items: List<JsonNode>) : JsonNode
     class Str(override val line: Int, val value: String) : JsonNode
@@ -28,15 +21,9 @@ internal sealed interface JsonNode {
     class Null(override val line: Int) : JsonNode
 }
 
-/** The complaint about line [line] of [file]. */
 internal fun invalidBaseline(file: String, line: Int, problem: Problem, detail: String): KatachiInvalidBaselineFileException =
     KatachiInvalidBaselineFileException(file, line, problem, detail)
 
-/**
- * The first merge conflict marker in [text] as its line and the marker, or `null` when there is
- * none. Looked for before the JSON is, because a marker breaks the JSON somewhere else entirely,
- * and "not valid JSON at line 12" would hide what happened.
- */
 internal fun mergeConflictMarkerIn(text: String): Pair<Int, String>? {
     text.lineSequence().forEachIndexed { index, line ->
         for (marker in listOf("<<<<<<<", "=======", ">>>>>>>")) {
@@ -49,10 +36,6 @@ internal fun mergeConflictMarkerIn(text: String): Pair<Int, String>? {
     return null
 }
 
-/**
- * A strict JSON reader (RFC 8259) that keeps track of the line it is on: one object never has a
- * name twice, and a number is written in ASCII digits.
- */
 internal class JsonReader(private val text: String, private val file: String) {
     private var position = 0
     private var line = 1

@@ -27,55 +27,31 @@ import me.tbsten.katachi.template.internal.writeTemplateDescriptionJson
 /**
  * Lists the templates of a definition, or explains one: its parameters and the file it produces.
  *
- * Registered under the key `templates`, so `./gradlew katachiTemplates` works without
- * registering anything. It is the companion of [GenerateCodeFromTemplate]: this one says what a
- * template takes and what it would write, that one writes it.
+ * Registered by default under the key `templates`. [GenerateCodeFromTemplate] writes the file;
+ * this one only says what a template takes and what it would write.
  *
  * ## What it prints
  *
- * Without `--arg template=`, every declared template: its complete specifier, title and the role
- * it belongs to, the names of its parameters and its named wildcards -- and, after them, every
- * template set with its parameters and members. With `--arg template=` naming a template set, that
- * set in full: its parameters, and for each member the values the set passes it and the file it
- * would write. With `--arg template=` naming a template, that one template in full: each parameter's type, default, accepted values and whether it is
- * required; the wildcards its `layout { }` names with `capture(...)`, which a run also takes as
- * `--arg`; its file's path, as its own declaration decides it, and its contents; the other
- * Boolean and enum values that change its content or its parameters; and a `katachiTemplate`
- * command to paste.
+ * Without `--arg template=`, every template with its specifier, title, role, parameters and
+ * named wildcards, followed by every template set. With `--arg template=` naming a template set,
+ * that set's parameters and, for each member, the values it passes and the file it would write.
+ * With `--arg template=` naming a template, each parameter's type, default and accepted values,
+ * the wildcards its `layout { }` names with `capture(...)`, a preview of its file's path and
+ * contents, and a `katachiTemplate` command to paste.
  *
- * ## How the file is previewed
+ * In the preview, a String parameter or a capture shows as `${name}`. A Boolean, Int or enum
+ * parameter is given its default (or `true`, `0` or its first entry), and the output says which.
+ * A file below a module capture is shown without a path.
  *
- * A template is Kotlin code, so its content exists only once its parameters have values. A
- * String parameter is given a placeholder of its own name, `${name}`, so the contents show where
- * each value goes. A Boolean, Int or enum parameter cannot hold one, so it is given its default,
- * or `true`, `0` or its first entry when it has none -- and the output says which it was. A
- * capture reads as `${name}` too, in the path as in the contents -- except a module capture,
- * whose module only the modules that exist could pick, so such a file is shown without a path.
- *
- * It reads nothing but the declarations, and writes nothing unless `--arg format=json` asks it
- * to -- which also lists the modules, as "The JSON form" below says.
- *
- * ## The JSON form
- *
- * With `--arg format=json` it writes every template, listed and explained, to the one file
- * `--arg output=` names, and still prints the list. The katachi IDE plugin reads that file: the
- * Gradle plugin registers this processor a second time under the internal key
- * `internalTemplatesJson` with both arguments set, and that task is not meant to be run by hand.
- * A template whose preview fails is listed without a detail rather than failing the run.
- *
- * The JSON also says, for a template whose file sits below a module capture, where that file
- * lands in each module that exists and that the capture can pick -- what the text form leaves
- * open. That one part reads the project's modules, and only when such a template is declared.
+ * It reads only the declarations and writes nothing, except with `--arg format=json`, which is
+ * for the katachi IDE plugin.
  *
  * ## What it answers
  *
  * A [TemplateList] or a [TemplateDetail]. A `--arg template=` naming more than one template is a
  * `failure` carrying [KatachiMultipleTemplatesToDescribeException], one no declaration answers to
  * [KatachiUnknownTemplateException], and one that answers to more than one
- * [KatachiAmbiguousTemplateException]. With `format=json`, a missing `output` is
- * [KatachiTemplateJsonOutputMissingException], a `template` given too is
- * [KatachiTemplateJsonWithTemplateException], and a file that cannot be written is
- * [KatachiTemplateJsonIoException]. Nothing is thrown out of `process`.
+ * [KatachiAmbiguousTemplateException]. Nothing is thrown out of `process`.
  *
  * ## Example 1: list the templates, then explain one
  * ```kt
@@ -86,8 +62,7 @@ import me.tbsten.katachi.template.internal.writeTemplateDescriptionJson
  * projectArchitecture.process(DescribeTemplates, DescribeTemplates.Args(template = "data.Repository.repository")).getOrThrow()
  * ```
  *
- * From the command line -- no registration needed, the Gradle plugin registers it under
- * `templates`:
+ * ## Example 2: from the command line
  * ```sh
  * ./gradlew :architecture-test:katachiTemplates
  * ./gradlew :architecture-test:katachiTemplates --arg template=data.Repository.repository
@@ -117,7 +92,6 @@ public object DescribeTemplates : ArchitectureProcessor<DescribeTemplates.Args, 
             }
         }
 
-    /** The list of every template and template set. */
     private fun listAll(context: ArchitectureProcessContext<Args>): TemplateList {
         val table = declaredTemplatesOf(context.declaredEntries)
         return TemplateList(
@@ -126,7 +100,6 @@ public object DescribeTemplates : ArchitectureProcessor<DescribeTemplates.Args, 
         )
     }
 
-    /** The detail of the one template or template set [specifier] names. */
     private fun describeOne(context: ArchitectureProcessContext<Args>, specifier: String): TemplateDescription {
         val table = declaredTemplatesOf(context.declaredEntries)
         return when (val target = resolveTemplateTarget(listOf(specifier), table, context.architecture.allTemplateSets)) {
@@ -143,7 +116,6 @@ public object DescribeTemplates : ArchitectureProcessor<DescribeTemplates.Args, 
         }
     }
 
-    /** Lists every template, and writes them with their details as JSON to [output]. */
     private fun writeJson(context: ArchitectureProcessContext<Args>, output: String): TemplateList {
         val table: List<DeclaredTemplate> = declaredTemplatesOf(context.declaredEntries)
         val list = listAll(context)
@@ -154,15 +126,30 @@ public object DescribeTemplates : ArchitectureProcessor<DescribeTemplates.Args, 
     }
 
     /**
-     * Which template to explain; `null` lists them all.
+     * The arguments of [DescribeTemplates]: which template to explain, or none to list them all.
      *
-     * ## Example 1: from code and from the command line
+     * ## Example 1: in code
      * ```kt
-     * import me.tbsten.katachi.template.DescribeTemplates
-     *
-     * // ./gradlew katachiTemplates --arg template=data.Repository.repository
      * DescribeTemplates.Args(template = "data.Repository.repository")
      * ```
+     *
+     * ## Example 2: on the command line
+     * ```sh
+     * ./gradlew :architecture-test:katachiTemplates --arg template=data.Repository.repository
+     * ```
+     *
+     * ## Example 3: as a default in `build.gradle.kts`
+     * ```kts
+     * katachi {
+     *     processors {
+     *         args("templates") {
+     *             arg("template", "data.Repository.repository")
+     *         }
+     *     }
+     * }
+     * ```
+     *
+     * A `--arg` of the same name wins over the build script.
      *
      * @constructor Takes the template to explain, or nothing to list them all.
      */
@@ -171,39 +158,33 @@ public object DescribeTemplates : ArchitectureProcessor<DescribeTemplates.Args, 
         /**
          * The template to explain, by `role.id` (or `role` alone for its one template), as
          * `katachiTemplate` accepts it. `null` lists every template.
-         *
-         * A `String` rather than a one-element `List`: writing `Args(template = "data.Repository.repository")`
-         * from Kotlin is the natural way to name one thing, and a `List` would add a second,
-         * meaningless "no template" (an empty list) beside `null`.
          */
         val template: String? = null,
-        /**
-         * Whether to print the answer only, or to write every template as JSON as well.
-         *
-         * `json` is what the Gradle plugin's internal `internalTemplatesJson` task passes for the
-         * katachi IDE plugin; it is not a format meant to be read by hand.
-         */
+        /** Whether to only print the answer, or also write every template as JSON for the katachi IDE plugin. */
         val format: DescribeTemplatesFormat = DescribeTemplatesFormat.Text,
         /**
-         * The file `format=json` writes, relative to the working directory -- under Gradle, the
-         * module directory -- or absolute. Required with `format=json`, unused otherwise.
+         * The file `format=json` writes; required with `format=json`, unused otherwise.
+         *
+         * Relative to the working directory (under Gradle, the module directory), or absolute.
          */
         val output: String? = null,
     )
 }
 
 /**
- * What [DescribeTemplates] produces besides its printed answer.
+ * The output format of [DescribeTemplates]: printed text only, or JSON written to a file as well.
  *
- * ## Example 1: write the JSON the IDE plugin reads
+ * The JSON form is what the katachi IDE plugin reads; the Gradle plugin runs it for the IDE, so
+ * there is no need to pass it by hand. With `Json`, a missing `output` fails with
+ * [KatachiTemplateJsonOutputMissingException], a `template` given too with
+ * [KatachiTemplateJsonWithTemplateException], and a file that cannot be written with
+ * [KatachiTemplateJsonIoException].
+ *
+ * ## Example 1: write the JSON
  * ```kt
- * import me.tbsten.katachi.template.DescribeTemplates
- * import me.tbsten.katachi.template.DescribeTemplatesFormat
- *
- * // ./gradlew katachiInternalTemplatesJson, which passes these two for you
  * DescribeTemplates.Args(
  *     format = DescribeTemplatesFormat.Json,
- *     output = "build/katachi/internalTemplatesJson/templateDescription.json",
+ *     output = "build/katachi/templateDescription.json",
  * )
  * ```
  *

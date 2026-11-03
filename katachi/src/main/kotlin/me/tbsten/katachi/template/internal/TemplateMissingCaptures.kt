@@ -14,10 +14,8 @@ import me.tbsten.katachi.dsl.internal.fillCapturedPath
 import me.tbsten.katachi.internal.catching
 import me.tbsten.katachi.template.KatachiMissingTemplateCaptureException
 
-/** One declaration of a capture name: the file entry it sits on, and the variant that names it. */
 private class CaptureDeclaration(val entry: LayoutEntry, val variant: LayoutCaptures)
 
-/** The first file entry of [entries] naming [name], in declaration order. */
 private fun declarationOf(entries: List<LayoutEntry>, name: String): CaptureDeclaration? {
     for (entry in entries) {
         if (entry.kind != LayoutEntryKind.File || entry.synthetic) continue
@@ -27,10 +25,6 @@ private fun declarationOf(entries: List<LayoutEntry>, name: String): CaptureDecl
     return null
 }
 
-/**
- * [declaration]'s path with every capture of it written as `<name>` -- `feature/<feature>/src/...`
- * -- and a derived one as `<name.transform>`.
- */
 private fun displayPatternOf(declaration: CaptureDeclaration): String =
     fillCapturedPath(
         declaration.entry.path,
@@ -38,7 +32,6 @@ private fun displayPatternOf(declaration: CaptureDeclaration): String =
         declaration.variant.names.associateWith { "<$it>" },
     ) { capture -> "<${capture.name}${capture.transform?.let { ".${it.spelling}" }.orEmpty()}>" }
 
-/** How [name] is written in the layout: `capture("feature")`, or the module key that names it. */
 private fun declaredWithOf(declaration: CaptureDeclaration?, name: String): String {
     val module = declaration?.variant?.moduleCapture?.takeIf { name in it.names }
         ?: return "capture(\"$name\")"
@@ -49,13 +42,6 @@ private fun declaredWithOf(declaration: CaptureDeclaration?, name: String): Stri
     return "\"$filled\".module { }"
 }
 
-/**
- * The exception for a run that gave [names] of [role] no value, with each capture's declaration
- * found in [entries] and the values [existingValues] lists for it.
- *
- * One builder for both ways a capture is needed -- a file whose place names it, and
- * `captureValue(...)` -- so that the two read the same.
- */
 internal fun missingCaptureException(
     role: Role,
     entries: List<LayoutEntry>,
@@ -86,14 +72,6 @@ internal fun missingCaptureException(
     )
 }
 
-/**
- * What already exists for each capture of [entries], read off the project on demand: the
- * directories below a `capture("...")` level, or what the `*` of a module key picks in the modules
- * that exist.
- *
- * Only asked for once a run has already failed for want of a value, so the project is read only
- * then; a directory above the capture that holds a wildcard of its own lists nothing.
- */
 internal fun existingCaptureValues(
     entries: List<LayoutEntry>,
     fileSystem: KatachiFileSystem,
@@ -117,7 +95,6 @@ internal fun existingCaptureValues(
     }
 }
 
-/** The directories below the level [name] names in [declaration], when the path above it names one directory. */
 private fun existingDirectoriesAt(
     declaration: CaptureDeclaration,
     name: String,

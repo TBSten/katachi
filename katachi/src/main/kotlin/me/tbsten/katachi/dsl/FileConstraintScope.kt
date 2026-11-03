@@ -7,20 +7,17 @@ import me.tbsten.katachi.dsl.internal.captureDeclarationSite
  * A DSL receiver a constraint can be written on: a role block, and every block inside a
  * `layout { }`.
  *
- * Where it is written decides what it covers. Directly on a role it covers the union of every
- * `layout { }` that role declares; inside a directory block it covers that block's own subtree
- * and nothing else — or, with `scope = FileConstraintRange.DirectOnly`, only the files that block declares directly,
- * leaving out what its nested directories declare. That is the whole of the scoping rule, and
- * it is why this is an interface shared by the two receivers rather than one function on each
- * of them.
- *
- * `ArchitectureScope` and `GroupScope` deliberately do **not** get it: a group holds roles, not
- * files, so there would be no set of files for a constraint written there to be about.
+ * Where it is written decides what it covers. Directly on a role it covers every `layout { }`
+ * that role declares; inside a directory block it covers that block's own subtree, or with
+ * `scope = FileConstraintRange.DirectOnly` only the files that block declares directly.
+ * `architecture { }` and groups do not offer it: they hold roles, not files.
  *
  * ## Example 1: constrain one directory, and the whole role
  * ```kt
  * "UseCase".role {
- *     fileConstraint("has an invoke function") { subject -> /* every place below */ emptyList() }
+ *     fileConstraint("leaves no TODO") { subject ->
+ *         subject.files.filter { it.endsWith("Todo.kt") }.map { FileConstraintFailure(it) }
+ *     }
  *     layout {
  *         "core/domain" {
  *             fileConstraint("is usable from outside") { subject -> /* core/domain only */ emptyList() }
@@ -48,29 +45,8 @@ public sealed interface FileConstraintScope {
     /**
      * Declares a constraint over the files the block around it matched.
      *
-     * The block is stored, not evaluated: it runs when a check that evaluates constraints
-     * runs, against the files the one walk of the project found. Building `architecture { }`
-     * therefore reads nothing and runs nothing, the same way `layout { }` is deferred.
-     *
-     * ## Example 1: a constraint written by hand, without any backend
-     * ```kt
-     * "UseCase".role {
-     *     fileConstraint("leaves no TODO") { subject ->
-     *         subject.files.filter { it.endsWith(".kt") }.map { FileConstraintFailure(it) }
-     *     }
-     *     layout { "core/domain/useCase" { "*UseCase.kt".file() } }
-     * }
-     * ```
-     *
-     * ## Example 2: point the report somewhere other than the calling line
-     * ```kt
-     * "UseCase".role {
-     *     fileConstraint("has an invoke function", DeclarationSite("DomainRules.kt", 12)) { subject ->
-     *         emptyList()
-     *     }
-     *     layout { "core/domain/useCase" { "*UseCase.kt".file() } }
-     * }
-     * ```
+     * The block is stored, not evaluated: it runs when a check that evaluates constraints runs
+     * (see `FileConstraintCheck`), against the files that exist.
      *
      * @param name what to call it, shown in the report next to the role. `null` means it is
      *   named by its declaration site alone. It must hold at least one non-whitespace
@@ -84,10 +60,10 @@ public sealed interface FileConstraintScope {
      * @param check what to ask of the covered files.
      * @throws KatachiFileConstraintNameException when [name] is blank or holds a line break.
      * @throws KatachiFileConstraintDirectOnlyWithoutDirectoryException when [scope] is
-     *   [FileConstraintRange.DirectOnly] somewhere with no directory of its own: directly on a role, directly under
-     *   `layout { }`, or in `":".module { }`.
+     *   [FileConstraintRange.DirectOnly] somewhere with no directory of its own: directly on a
+     *   role or directly under `layout { }`.
      * @throws KatachiFileConstraintDirectOnlyCoversNothingException when [scope] is
-     *   [FileConstraintRange.DirectOnly] and the block declares no file directly, so the constraint could never see one.
+     *   [FileConstraintRange.DirectOnly] and the block declares no file directly.
      */
     @ExperimentalKatachiApi
     public fun fileConstraint(

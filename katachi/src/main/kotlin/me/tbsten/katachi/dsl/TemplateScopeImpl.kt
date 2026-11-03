@@ -8,37 +8,21 @@ import me.tbsten.katachi.dsl.internal.TemplateParameterOrigin
 import me.tbsten.katachi.dsl.internal.TemplateParameterType
 import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 
-/**
- * Collects one replay of a `.template { }` block.
- *
- * A fresh instance per replay: the values differ from run to run, and nothing a previous run
- * bound may leak into the next one. Unlike the parameters and captures it tracks, the block's
- * return value -- the file's content -- is not collected here: [me.tbsten.katachi.dsl.internal.evaluateTemplate]
- * reads it straight off the call that runs the block against this scope.
- */
 internal class TemplateScopeImpl(
     private val roleName: String,
     private val values: Map<String, String>,
-    /** The names the role's `layout { }` gave its wildcards, which [captureValue] may read. */
     private val captureNames: Set<String> = emptySet(),
     override val isPreview: Boolean = false,
 ) : TemplateScope, TemplateParameterBinder {
-    /** Every parameter handed out, named or not. The unnamed ones are the mistake to report. */
     private val created = mutableListOf<TemplateParameter<*>>()
 
-    /** The named ones, in declaration order. */
     private val named = linkedMapOf<String, TemplateParameter<*>>()
 
-    /** Names read during this replay that had nothing to read. */
     private val missing = linkedSetOf<String>()
 
-    /**
-     * Capture names read during this replay that the run gave no value. Kept apart from [missing]
-     * because a capture is a String and never decides a branch, see [branchedOnStandIn].
-     */
+    // Kept apart from `missing`: a capture is a String and never decides a branch (see branchedOnStandIn).
     private val missingCaptures = linkedSetOf<String>()
 
-    /** Values this run passed that their parameter could not read, by name, in declaration order. */
     private val invalid = linkedMapOf<String, InvalidTemplateValue>()
 
     override fun stringParameter(default: String?): TemplateParameter<String> =
@@ -133,10 +117,8 @@ internal class TemplateScopeImpl(
         return parameter.type.standIn(name)
     }
 
-    /** The names declared so far, which is what a caller asks for before a run. */
     fun parameterNames(): Set<String> = named.keys.toSet()
 
-    /** Where and how each named parameter was declared, which a capture conflicting with it points at. */
     fun parameterOrigins(): Map<String, TemplateParameterOrigin> =
         named.mapValues {
             TemplateParameterOrigin(
@@ -147,24 +129,15 @@ internal class TemplateScopeImpl(
             )
         }
 
-    /** The named parameters declared so far, in declaration order, types and defaults included. */
     fun parameters(): List<TemplateParameter<*>> = named.values.toList()
 
-    /**
-     * Whether a value that could decide a branch was replaced by a stand-in: one that could not
-     * be read, or a missing one of a type other than String. A missing String only decides a
-     * branch in the rare template that compares it, and treating it as one would stop a
-     * misspelt `--arg nmae=User` from being reported as the unknown name it is.
-     */
+    // A missing String is excluded: it rarely decides a branch, and counting it would hide a misspelt `--arg` as
+    // an unknown name.
     fun branchedOnStandIn(): Boolean =
         invalid.isNotEmpty() ||
             missing.any { named[it]?.type != TemplateParameterType.StringType }
 
-    /**
-     * Refuses a parameter that never reached a property, which is `val name = stringParameter()`
-     * with the `by` left out. Such a parameter has no name, so no `--arg` can ever reach it and
-     * whatever interpolated it got the object instead of a value.
-     */
+    // Catches `stringParameter()` written without `by`: it has no name, so no `--arg` can reach it.
     fun requireEveryParameterNamed(declaredAt: DeclarationSite) {
         val unnamed = created.filter { it.name == null }
         if (unnamed.isEmpty()) return
@@ -176,11 +149,7 @@ internal class TemplateScopeImpl(
         )
     }
 
-    /**
-     * Reports every value the run passed that could not be read, together with every value it
-     * was missing, at once. The unreadable ones come first: a stand-in may have taken the replay
-     * down a branch that is why the others went missing.
-     */
+    // Unreadable values are reported first: a stand-in may have steered the replay and caused the missing ones.
     fun requireEveryValueReadable(declaredAt: DeclarationSite, cause: Throwable?) {
         if (invalid.isEmpty()) return
         val missingNames = (missing + missingCaptures).sorted()
@@ -195,12 +164,6 @@ internal class TemplateScopeImpl(
         )
     }
 
-    /**
-     * Reports every value the run was missing at once, rather than one per attempt.
-     *
-     * With [capturesApart], only the parameters: the captures are named in the message as missing
-     * too, and are the caller's to report once every parameter has a value.
-     */
     fun requireEveryValuePresent(declaredAt: DeclarationSite, cause: Throwable?, capturesApart: Boolean = false) {
         if (missing.isEmpty() && (capturesApart || missingCaptures.isEmpty())) return
         val names = (if (capturesApart) missing else missing + missingCaptures).sorted()
@@ -214,10 +177,8 @@ internal class TemplateScopeImpl(
         )
     }
 
-    /** The capture names read during this replay that the run gave no value, in the order they were read. */
     fun missingCaptureNames(): List<String> = missingCaptures.toList()
 
-    /** What each of [names] accepts, for the ones that do not accept anything. */
     private fun acceptedDescriptionsOf(names: List<String>): Map<String, String> =
         names.mapNotNull { name ->
             named[name]?.type?.acceptedDescription?.let { name to it }

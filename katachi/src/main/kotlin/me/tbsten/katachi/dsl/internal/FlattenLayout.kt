@@ -23,16 +23,13 @@ import me.tbsten.katachi.dsl.Role
 /**
  * Evaluates every `layout { }` block of every role and flattens them into one list.
  *
- * This is the first step of the check and the only place the deferred blocks are run.
- * Entries come out in declaration order — roles in the order they were declared, and within
+ * The `layout { }` blocks run here, so a mistake in one is thrown from this call. Entries come out in declaration order — roles in the order they were declared, and within
  * a role a directory before the entries below it.
  *
  * A role that declares the same path twice, which `/` chains sharing a prefix do all the
  * time, contributes one entry for it. Two *different* roles claiming the same path each
  * contribute their own entry: that is allowed, and both show up in the generated
  * documentation.
- *
- * Public only for katachi's own samples, which pin their layout down in a snapshot with it.
  *
  * ## Example 1: Read every path a definition declares, without touching a project
  * ```kt
@@ -47,14 +44,9 @@ import me.tbsten.katachi.dsl.Role
  * val declaredPaths = projectArchitecture.flattenLayout().map { it.path }
  * ```
  *
- * @param moduleIndex the project's modules, which `"...".module { }` keys are expanded
- *   against. The default index has not listed the project at all: a key naming one module
- *   still resolves through [Architecture.moduleResolver], because where `:core:data` lives
- *   needs no tree, while a key with a wildcard is kept as the pattern it was written as —
- *   `":feature:*"` contributes one module's worth of entries whose paths still hold the
- *   wildcard, not one module's worth per feature module that happens to exist. Pass the real
- *   index whenever the file system is at hand: expanding a wildcard key to the modules it
- *   matches is what the check needs, and nothing else can do it.
+ * @param moduleIndex the project's modules, which wildcard module paths are expanded against.
+ *   By default no module is listed, so a wildcard module path stays as written; pass a real
+ *   [ModuleIndex] to expand it to the modules that exist.
  * @throws KatachiGlobSyntaxException when a layout key cannot be read as a path pattern.
  */
 @InternalKatachiApi
@@ -62,63 +54,24 @@ public fun Architecture.flattenLayout(
     moduleIndex: ModuleIndex = ModuleIndex.unresolved(moduleResolver),
 ): List<LayoutEntry> = evaluateLayout(moduleIndex).entries
 
-/**
- * Evaluates this role's `layout { }` blocks. See [Architecture.flattenLayout].
- *
- * ## Example 1: Read one role's declared paths on their own
- * ```kt
- * import me.tbsten.katachi.dsl.kotlin.ktFile
- *
- * val projectArchitecture = architecture {
- *     "domain".group {
- *         "UseCase".role { layout { "useCase" / "*UseCase".ktFile() } }
- *     }
- * }
- *
- * val useCase = projectArchitecture.allRoles.single { it.name == "UseCase" }
- * val declaredPaths = useCase.flattenLayout().map { it.path }
- * ```
- */
 internal fun Role.flattenLayout(
     moduleIndex: ModuleIndex = ModuleIndex.unresolved(ModuleResolver.Conventional),
 ): List<LayoutEntry> = evaluateLayout(moduleIndex).entries
 
-/**
- * What running the deferred blocks produced: where files may live, and what is asked of them.
- *
- * The two come out of one evaluation because they cannot be worked out apart. Which files a
- * constraint covers *is* the set of entries the block around it declared, so evaluating the
- * blocks twice would be the same work done twice and one more chance for the two answers to
- * stop agreeing — the same reason the walk answers its own two questions at once.
- *
- * It also keeps each role's own evaluation, and whether that one reached a wildcard module key,
- * so that the next evaluation of the same definition can take over every role whose answer
- * cannot differ. See [Architecture.evaluateLayout].
- */
+// One evaluation yields both entries and constraints: evaluating twice would duplicate work and risk the two
+// answers diverging.
 internal class LayoutEvaluation(
     val entries: List<LayoutEntry>,
     val fileConstraints: List<DeclaredFileConstraint>,
-    /** The index's resolver, which is everything but the module list a layout reads from it. */
     val resolver: ModuleResolver,
-    /**
-     * Whether a layout key with a wildcard was expanded -- the only point where the answer
-     * depends on which modules the index listed. See [ModuleIndex.reportingWildcardKeys].
-     */
+    // Only an expanded wildcard key makes the answer depend on the module list; see
+    // ModuleIndex.reportingWildcardKeys.
     val readsModuleList: Boolean,
-    /** Each role's own evaluation, in [Architecture.allRoles] order. Empty for one role's. */
     val byRole: Map<Role, LayoutEvaluation> = emptyMap(),
 )
 
-/**
- * [flattenLayout], with the constraints kept.
- *
- * A role that [reusing] evaluated without reaching a wildcard module key is taken from it
- * rather than evaluated again, provided both indexes share the resolver: that role's answer
- * cannot depend on which modules an index listed. This is what spares one run a second
- * evaluation of every `layout { }` block, when both the declarations alone and the walk want
- * them. A role that did reach a wildcard key is evaluated again, because there the two
- * readings really do differ.
- */
+// A role evaluated without reaching a wildcard module key is reused from `reusing` when resolvers match: its
+// answer cannot depend on the module list.
 internal fun Architecture.evaluateLayout(
     moduleIndex: ModuleIndex,
     reusing: LayoutEvaluation? = null,
@@ -151,7 +104,6 @@ internal fun Architecture.evaluateLayout(
     )
 }
 
-/** [Role.flattenLayout], with the constraints kept. */
 internal fun Role.evaluateLayout(moduleIndex: ModuleIndex): LayoutEvaluation {
     var readsModuleList = false
     val index = moduleIndex.reportingWildcardKeys { readsModuleList = true }
@@ -213,37 +165,21 @@ internal fun Role.evaluateLayout(moduleIndex: ModuleIndex): LayoutEvaluation {
     )
 }
 
-/** A path claimed by the same role twice as the same kind of thing is one entry. */
 private data class EntryKey(val path: String, val kind: LayoutEntryKind)
 
-/**
- * What a module package is written as in [LayoutEntry.pathInModule].
- *
- * `**` and not the resolved directory, because the package is a strategy: one `modulePackage`
- * stands for a different directory in every module it is evaluated for, and a reader of one
- * role's page is being shown the declaration rather than one module's expansion of it.
- */
+// `**`, not the resolved directory: one modulePackage strategy stands for a different directory in every module.
 private const val MODULE_PACKAGE_PLACEHOLDER: String = "**"
 
-/**
- * The capture occurrences seen from the root down to the node being flattened, with where each
- * was written. A name written twice along the way is not refused: it is the declaration that
- * the two levels read the same value (see [LayoutCaptures.isBound]).
- */
+// A name written twice along the path is allowed: it declares that the two levels read the same value.
 private class CaptureTrail(
     val pathCaptures: List<PathCapture>,
-    /** Where each of [pathCaptures] was written, by index. */
     val declaredAt: List<DeclarationSite>,
     val moduleCapture: ModuleCapture?,
 ) {
     fun toCaptures(): LayoutCaptures? =
         LayoutCaptures(pathCaptures, moduleCapture).takeUnless { it.isEmpty }
 
-    /**
-     * Refuses a derived occurrence no plain occurrence of its name sits on this path, the module
-     * key's names counted. Asked only for a declaration the check matches files by, so a plain
-     * capture below the derived one has been seen by then.
-     */
+    // Asked only for declarations files are matched by, so plain captures below the derived one have been seen.
     fun requireDerivedHaveSources(role: Role, path: String) {
         val plain = moduleCapture?.names.orEmpty() + pathCaptures.filter { it.transform == null }.map { it.name }
         pathCaptures.forEachIndexed { index, capture ->
@@ -264,7 +200,6 @@ private class CaptureTrail(
     }
 }
 
-/** This trail extended with what [child], the [segmentIndex]-th level of its path, names. */
 private fun CaptureTrail.enter(child: LayoutNode, segmentIndex: Int): CaptureTrail {
     val moduleNames = child.moduleCaptureNames?.filterNotNull()
     val pattern = child.moduleCapturePattern
@@ -326,12 +261,6 @@ private fun collectInto(
     }
 }
 
-/**
- * Turns the constraints of one block into what the check evaluates.
- *
- * Every constraint of one block shares the same covered entries and the same anchor, so the
- * work is done once and handed to each of them.
- */
 private fun declaredFileConstraintsOf(
     role: Role,
     declarations: List<FileConstraintDeclaration>,
@@ -378,14 +307,8 @@ private fun declaredFileConstraintsOf(
 
 private fun coverageOf(covered: List<LayoutEntry>): FileConstraintCoverage = FileConstraintCoverage(covered)
 
-/**
- * The entries a [FileConstraintRange.DirectOnly] constraint covers: [owned] themselves, whose `anyFile()` opens
- * exactly the files directly inside them, and the files declared as their immediate children.
- *
- * A child *directory* is left out even when it is `anyFile()`, because what it opens is a level
- * further down. One node is one path segment, so `"ksp" / "*".ktFile()` and
- * `"ksp" { "*".ktFile() }` are the same tree and are both left out.
- */
+// Child directories are left out even when `anyFile()`: that opens a level further down. `"ksp" / "*".ktFile()`
+// and `"ksp" { "*".ktFile() }` are one tree.
 private fun directEntries(
     owned: List<LayoutNode>,
     entries: Map<EntryKey, LayoutEntry>,
@@ -401,7 +324,6 @@ private fun directEntries(
     return keys.mapNotNull { entries[it] }
 }
 
-/** The entries of [owned]'s subtrees, in the order the blocks declared them. */
 private fun coveredEntries(
     owned: List<LayoutNode>,
     entries: Map<EntryKey, LayoutEntry>,
@@ -412,13 +334,7 @@ private fun coveredEntries(
     return keys.mapNotNull { entries[it] }
 }
 
-/**
- * Every entry key at or below [node], leaving out what a `module { }` block injected.
- *
- * Only the node is skipped, not the key: a user who wrote `"build.gradle.kts".file()` of their
- * own in the same block declared the same path, and that node is theirs. The key is taken
- * from it, so a path both of them reached is covered.
- */
+// Skip only the injected node, not its key: a user-written `build.gradle.kts` at the same path still counts.
 private fun collectKeys(
     node: LayoutNode,
     byNode: Map<LayoutNode, EntryKey>,
@@ -428,14 +344,8 @@ private fun collectKeys(
     for (child in node.children) collectKeys(child, byNode, into)
 }
 
-/**
- * The directories a report opens a constraint's block with.
- *
- * A block with a directory of its own is that directory. Without one — a constraint on the
- * role itself, or directly under `layout { }` — the answer is worked out from what it covers:
- * the directories files were declared in, with the ones nested inside another dropped, so
- * that a role living in two distant places names both rather than their common ancestor.
- */
+// With no anchor path, drop directories nested inside another so a role in two distant places names both, not
+// their common ancestor.
 private fun anchorsOf(anchorPath: String?, covered: List<LayoutEntry>): List<String> {
     if (anchorPath != null) return listOf(anchorPath)
     val directories = covered.mapNotNull {
@@ -498,11 +408,7 @@ private fun LayoutNode.entryKind(): LayoutEntryKind = when {
     else -> LayoutEntryKind.Directory
 }
 
-/**
- * Adds where the pattern was written to whatever the glob compiler complained about. The
- * layout blocks are deferred, so this is the first moment a bad key can be noticed at all,
- * and by then the stack no longer points anywhere useful.
- */
+// Layout blocks are deferred, so the stack no longer points at the key; attach where the pattern was written.
 private fun compilePath(path: String, role: Role, declaredAt: DeclarationSite): Glob =
     try {
         Glob.compile(path, Glob.PATH_SEPARATOR)
@@ -514,18 +420,7 @@ private fun compilePath(path: String, role: Role, declaredAt: DeclarationSite): 
         )
     }
 
-/**
- * Keeps the first declaration's position and description, and requires the path when any of
- * the declarations did.
- *
- * [LayoutEntry.synthetic] is ANDed rather than kept from either side: a role that wrote
- * `"build.gradle.kts".file()` itself, alongside what `.module { }` injected at the same path,
- * declared that path on its own account and it is no longer only the sugar's doing.
- *
- * [LayoutEntry.place] is ORed, for the mirror-image reason: a path a role reached twice, once as
- * a plain directory on the way somewhere and once by opening a `module { }` block on it, does
- * have a block to write a `description = "..."` in.
- */
+// synthetic is ANDed (a user-written `build.gradle.kts` at the same path makes it theirs); place is ORed.
 private fun LayoutEntry.mergedWith(other: LayoutEntry): LayoutEntry = LayoutEntry(
     path = path,
     glob = glob,
@@ -548,13 +443,8 @@ private fun LayoutEntry.mergedWith(other: LayoutEntry): LayoutEntry = LayoutEntr
     metadata = mergedMetadata(this, other),
 )
 
-/**
- * Merges the metadata of two declarations of the same path. `Template` is compared by identity
- * -- see [me.tbsten.katachi.dsl.internal.Template] -- so two `.template { }` on different
- * declarations of one path collide as [KatachiDuplicateTemplateException], the same exception a
- * `.template { }` written twice on one declaration raises; every other key collides as
- * [KatachiConflictingLayoutMetadataException].
- */
+// Template is compared by identity, so two `.template { }` on one path collide as
+// KatachiDuplicateTemplateException.
 private fun mergedMetadata(first: LayoutEntry, second: LayoutEntry): MetadataValues =
     first.metadata.mergedWith(second.metadata) { key, firstValue, secondValue ->
         if (key === Template) {
@@ -576,27 +466,15 @@ private fun mergedMetadata(first: LayoutEntry, second: LayoutEntry): MetadataVal
         )
     }
 
-/**
- * Every distinct way the declarations of one path named its wildcards. A declaration that named
- * nothing is kept as [LayoutCaptures.NONE] once another did name something, so that template
- * generation can still see there was a declaration leaving its `*` unnamed.
- */
+// A declaration naming nothing is kept as NONE once another named something, so template generation sees the
+// unnamed `*`.
 private fun mergedCaptureVariants(first: List<LayoutCaptures>, second: List<LayoutCaptures>): List<LayoutCaptures> {
     if (first.isEmpty() && second.isEmpty()) return emptyList()
     return (first.ifEmpty { listOf(LayoutCaptures.NONE) } + second.ifEmpty { listOf(LayoutCaptures.NONE) }).distinct()
 }
 
-/**
- * Everything a `.template { }` can get wrong that is visible without running it, checked once
- * per role: every path it is attached to is fully named, and its `id`s -- among the role's
- * distinct templates, a wildcard module key's repeats of one `LayoutTemplate` instance counted
- * once -- are neither missing nor duplicated.
- *
- * Checked here, once flattening has walked every node of every `layout { }` block, rather than
- * where `.template { }` is called: an id collision may only exist between two declarations that
- * are both still being built when either of them runs, and whether a wildcard is named or not
- * can only be answered once the node it sits on has its final [LayoutNode.captureSegment].
- */
+// Checked after flattening has walked every node, once per role, not where `.template { }` is called; a wildcard
+// module key's repeats of one LayoutTemplate count once.
 private fun requireTemplatesAreWellFormed(role: Role, nodes: Set<LayoutNode>) {
     for (node in nodes) {
         val template = node.metadata[Template] ?: continue
@@ -637,16 +515,8 @@ private fun requireTemplatesAreWellFormed(role: Role, nodes: Set<LayoutNode>) {
     )
 }
 
-/**
- * Whether [this] or any of its ancestors, up to the root, holds a `*`, `**`, `?`, `[...]` or `{...}` no capture names.
- *
- * A module key's wildcard is checked separately from an ordinary segment's: by the time its
- * directory reaches [LayoutNode.segment], every capture token in it -- named or not -- has
- * already been read and replaced with a plain `*` by [me.tbsten.katachi.dsl.internal.ModulePattern.compile],
- * so [LayoutNode.captureSegment] is always `null` there and cannot answer "was this one named".
- * [LayoutNode.moduleCaptureNames], set once on the directory a module key opened (see
- * [LayoutScopeImpl.expandModulePath]), is what still carries that answer.
- */
+// A module key's wildcards are checked separately: ModulePattern.compile already replaced every capture token with
+// a plain `*`, so captureSegment is always null there.
 private fun LayoutNode.hasUnnamedWildcardInChain(): Boolean {
     var current: LayoutNode? = this
     while (current != null) {
@@ -664,17 +534,8 @@ private fun LayoutNode.hasUnnamedWildcardInChain(): Boolean {
     return false
 }
 
-/**
- * Whether this one node's own [LayoutNode.segment] holds a `*` [LayoutNode.captureSegment] does
- * not account for: a plain `**` (never nameable), a `?`, `[...]` or `{...}` (never nameable), or more
- * capturing `*` than there are captures. A derived capture counts as named: a template fills it from its plain capture's
- * value, so nothing is left for a run to guess.
- *
- * The count, not an exact character-by-character match, is what keeps this simple for the common
- * case -- a whole node either has one `*` (named or not) or is built entirely from tokens -- while
- * still catching a plain, un-captured `*` written alongside a capture in one segment. See
- * [me.tbsten.katachi.dsl.internal.CaptureSegment].
- */
+// A derived capture counts as named (filled from its plain capture); compared by count, not character by
+// character.
 private fun LayoutNode.hasOwnUnnamedWildcard(): Boolean {
     if (segment == "**") return true
     // `?`, `[...]` and `{...}` cannot be given a name, so any of them is a wildcard nothing names.
@@ -683,7 +544,6 @@ private fun LayoutNode.hasOwnUnnamedWildcard(): Boolean {
     return GlobLexer.capturingStarCount(segment) > namedCount
 }
 
-/** [LayoutNode.pathFromDeclaration], with every capture shown as `${capture("name")}` instead of `*`. */
 private fun LayoutNode.pathWithCaptureNames(): String {
     val segments = generateSequence(this) { it.parent }
         .map { it.captureSegment?.display() ?: it.segment }

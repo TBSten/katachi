@@ -69,17 +69,13 @@ public class KatachiUnknownTemplateCaptureException internal constructor(
 /**
  * A capture name of a role is also the name of another input of its template.
  *
- * A capture's value arrives as `--arg <name>=...`, exactly as a template parameter's does and as
- * `GenerateCodeFromTemplate`'s own `template` and `onExisting` do. Two inputs answering to one
- * `--arg` cannot be given different values, and which of them a value was meant for is not
- * something the command line can say.
+ * A capture's value arrives as `--arg <name>=...`, just like a template parameter's and like the
+ * generator's own `template` and `onExisting`, so two inputs of one name could not be given
+ * different values. Rename the capture or the parameter.
  *
- * Found whenever the template is used -- generated, asked for the names it accepts, or explained
- * by `katachiTemplates --arg template=...` -- because `layout { }` and `.template { }` are both
- * replayed only then; the check (`assert()`) does not run templates. Every branch a preview can
- * reach is replayed, so a parameter declared only inside `if (withImpl) { }` is found on a run that
- * does not set `withImpl` as well. The list of templates does not throw it: such a template is
- * listed with `conflict: true`.
+ * Thrown when the template is generated or explained, not by `assert()`. A parameter declared only
+ * inside a branch such as `if (withImpl) { }` is found even on a run that does not take that branch.
+ * The list of templates does not throw it; such a template is listed with `conflict: true`.
  *
  * ## Example 1: catch a capture and a parameter of the same name
  * ```kt
@@ -117,9 +113,10 @@ public class KatachiTemplateParameterConflictException internal constructor(
     /** The name both of them answer to. */
     public val name: String,
     /**
-     * What else answers to [name][KatachiTemplateParameterConflictException.name]:
-     * `stringParameter()` and its siblings, or `GenerateCodeFromTemplate.Args.template` /
-     * `GenerateCodeFromTemplate.Args.onExisting`.
+     * What else answers to [name][KatachiTemplateParameterConflictException.name].
+     *
+     * A parameter declared with `stringParameter()` and its siblings, or the generator's own
+     * `template` / `onExisting`.
      */
     public val conflictsWith: String,
     /** Where a layout path naming the capture was declared. */
@@ -161,10 +158,8 @@ public class KatachiTemplateParameterConflictException internal constructor(
  * read the same `--arg` string two different ways, and two different defaults would leave one of
  * them silently unused whenever the run's `--arg` list leaves the value out.
  *
- * Found the same way [KatachiTemplateParameterConflictException] is: generated, asked for the
- * names it accepts, or explained by `katachiTemplates --arg template=...`, since `.template { }`
- * is only replayed then. Every branch a preview can reach is replayed, so a parameter declared
- * only inside `if (withImpl) { }` is compared on a run that does not set `withImpl` too.
+ * Thrown when the templates are generated or explained, not by `assert()`, the same way as
+ * [KatachiTemplateParameterConflictException].
  *
  * ## Example 1: two templates disagree on a shared parameter's type
  * ```kt
@@ -226,5 +221,4 @@ public class KatachiTemplateParameterTypeConflictException internal constructor(
     },
 )
 
-/** `label` with its default, the way a message reads a parameter's full signature: `String (default = "x")`. */
 private fun String.asParameterSignature(default: String?): String = default?.let { "$this (default = $it)" } ?: this

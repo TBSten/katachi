@@ -11,12 +11,6 @@ import me.tbsten.katachi.template.TemplateParameterPreview
 import me.tbsten.katachi.template.TemplateSetDetail
 import me.tbsten.katachi.template.TemplateSetSummary
 
-/**
- * [list] as the lines `katachiTemplates` prints: one line per template, then how to go further.
- *
- * Lines rather than one string, because the run prefixes each logged line with its processor's
- * key: a multi-line message would lose the prefix after its first line.
- */
 internal fun templateListLines(list: TemplateList): List<String> = buildList {
     if (list.templates.isEmpty() && list.templateSets.isEmpty()) {
         add("No declaration attaches a template { }.")
@@ -46,7 +40,6 @@ private fun templateLines(list: TemplateList): List<String> = buildList {
     )
 }
 
-/** The template sets of a list: `Template sets (1):`, then one line each and the members below it. */
 private fun templateSetLines(sets: List<TemplateSetSummary>): List<String> = buildList {
     add("Template sets (${sets.size}):")
     for (set in sets) {
@@ -61,7 +54,6 @@ private fun templateSetLines(sets: List<TemplateSetSummary>): List<String> = bui
     }
 }
 
-/** [detail] as the lines `katachiTemplates --arg template=<a template set>` prints. */
 internal fun templateSetDetailLines(detail: TemplateSetDetail): List<String> = buildList {
     add("Template set ${headingOf(detail.templateSet, detail.title)}")
     detail.summary?.let { add("  $it") }
@@ -87,7 +79,6 @@ internal fun templateSetDetailLines(detail: TemplateSetDetail): List<String> = b
     add("  ${detail.exampleCommand}")
 }
 
-/** [detail] as the lines `katachiTemplates --arg template=...` prints. */
 internal fun templateDetailLines(detail: TemplateDetail): List<String> = buildList {
     add("Template ${headingOf(detail.template, detail.title)}")
     add("  role: ${detail.roleName}")
@@ -144,7 +135,6 @@ internal fun templateDetailLines(detail: TemplateDetail): List<String> = buildLi
     add("  ${detail.exampleCommand}")
 }
 
-/** `name: String, required` / `withImpl: Boolean, default true, accepts true or false`. */
 private fun parameterLine(parameter: TemplateParameterPreview): String = buildString {
     append(parameter.name).append(": ").append(parameter.typeName)
     val default = parameter.default
@@ -154,11 +144,6 @@ private fun parameterLine(parameter: TemplateParameterPreview): String = buildSt
     }
 }
 
-/**
- * A path capture as `feature: level 2 of <file pattern>`, a module capture as
- * `feature: wildcard 1 of module :feature:*, ...`. A name's second occurrence adds
- * `(the same value)`, and a derived one reads `feature.pascalCase: level 9 of ..., derived from feature`.
- */
 private fun captureLine(capture: TemplateCapturePreview, repeated: Boolean): String = when (capture.kind) {
     TemplateCaptureKind.PathCapture -> {
         val transform = capture.transform
@@ -175,7 +160,6 @@ private fun captureLine(capture: TemplateCapturePreview, repeated: Boolean): Str
             (if (repeated) " (the same value)" else "")
 }
 
-/** `name=${name} (placeholder), withImpl=true (default)`. */
 private fun previewValuesLine(parameters: List<TemplateParameterPreview>): String {
     if (parameters.isEmpty()) return "no parameters"
     return parameters.joinToString(", ") { parameter ->

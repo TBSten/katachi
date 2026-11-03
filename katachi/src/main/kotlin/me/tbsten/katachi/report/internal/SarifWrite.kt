@@ -8,14 +8,8 @@ import me.tbsten.katachi.internal.catching
 import me.tbsten.katachi.internal.fileUri
 import me.tbsten.katachi.report.toSarif
 
-/**
- * What `assertWith` calls between the baseline and the throw: writes [violations] as SARIF to the
- * file `-Dkatachi.report.sarif` names, and does nothing when it names none.
- *
- * A failure to write is said on standard error and swallowed -- the report is a side effect of
- * the check, and a full disk must not turn a passing check red or hide a failing one's message.
- * Only what `catching` lets through is caught; the JVM giving up still ends the run.
- */
+// A failed write is said on stderr and swallowed: the report must neither turn a passing check red nor hide a
+// failing one's message.
 internal fun writeSarifIfRequested(
     violations: List<Violation>,
     projectRoot: FsPath,
@@ -46,10 +40,6 @@ internal fun writeSarifIfRequested(
     }
 }
 
-/**
- * Writes [text] to [file] -- or, from the second write to the same [file] in this JVM on, to its
- * numbered sibling (`katachi-2.sarif`) -- and returns the path actually written.
- */
 internal fun writeSarifText(
     file: FsPath,
     text: String,
@@ -61,7 +51,6 @@ internal fun writeSarifText(
     return target
 }
 
-/** [file] itself for the first write, `name-<n>.ext` next to it for the [n]th. */
 internal fun numberedSarifPath(file: FsPath, n: Int): FsPath {
     if (n <= 1) return file
     val name = file.name

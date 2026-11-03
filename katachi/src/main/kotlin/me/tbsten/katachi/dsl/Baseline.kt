@@ -13,10 +13,8 @@ import me.tbsten.katachi.KatachiDeclarationException
  * does: where a file sits is exactly what katachi checks. The same key may be recorded more than
  * once, with a count.
  *
- * It is written on the definition rather than passed to `assert()` so that every way of running
- * a check — the test, and a check registered as a processor — reads the same ledger. It holds
- * temporary debt only: something meant to stay is declared in `layout { }` instead, where it
- * gets a role and a reason.
+ * Every way of running a check (the test, or a check registered as a processor) reads the same
+ * ledger. It is for temporary debt only: something meant to stay is declared in `layout { }`.
  *
  * The file itself is a file of the project like any other, so a `layout { }` has to allow it.
  * An `[UnexpectedFile]` about it is always reported and never recorded.
@@ -48,7 +46,6 @@ import me.tbsten.katachi.KatachiDeclarationException
 public class Baseline internal constructor(
     /** The baseline file, relative to the project root and `/` separated. */
     public val path: String,
-    /** Where `baseline(...)` was called; not part of what makes two baselines equal. */
     internal val declaredAt: DeclarationSite = DeclarationSite.Unknown,
 ) {
     /** Equal when both read the same [path][Baseline.path]. */

@@ -43,15 +43,6 @@ public class FileConstraintDocumentContext internal constructor(
      * the constraint covers, which lists the project's files once; otherwise, when there is no
      * such file or no project to list, a stand-in named `Sample.kt`. [FileConstraintExampleFile.source]
      * says which of the three it is.
-     *
-     * ## Example 1: say which file the section was worked out for
-     * ```kt
-     * val example = context.exampleFile
-     * val line = when (example.source) {
-     *     FileConstraintExampleSource.Placeholder -> "No example: the rules are shown for `${example.fileName}`."
-     *     else -> "Example: `${example.fileName}`"
-     * }
-     * ```
      */
     public val exampleFile: FileConstraintExampleFile by lazy(exampleFile)
 

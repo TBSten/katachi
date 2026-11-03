@@ -11,9 +11,7 @@ import org.intellij.lang.annotations.Language
  *
  * The five properties below are metadata under the hood — sugar over [Title], [Summary],
  * [Description], [Documented] and [Examples] — and a processor adds its own words the same
- * way, with `var RoleScope.owner by Owner`. They are members rather than extensions because
- * they are what a definition is mostly made of: an import per word would be a tax on the
- * common case.
+ * way, with `var RoleScope.owner by Owner`.
  *
  * ## Example 1: set a role's properties
  * ```kt
@@ -22,8 +20,16 @@ import org.intellij.lang.annotations.Language
  *         "UseCase".role {
  *             title = "Use case"
  *             summary = "A single app-specific behavior that happens on a screen"
+ *             description = """
+ *                 The UI calls use cases only; it never touches a repository directly.
+ *             """.trimIndent()
  *             example("GetUserUseCase", "Fetches a user")
  *             example("SignOutUseCase")
+ *             layout { "useCase" / "*UseCase".ktFile() }
+ *         }
+ *         "Generated".role {
+ *             documented = false // left out of the generated documentation, still checked
+ *             layout { "generated" { anyFile() } }
  *         }
  *     }
  * }
@@ -33,16 +39,6 @@ import org.intellij.lang.annotations.Language
 public sealed interface RoleScope : MetadataScope, FileConstraintScope {
     /**
      * Display name. Defaults to the role name.
-     *
-     * ## Example 1: separate the identifier from the display name
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group {
-     *         "UseCase".role { title = "Use case" }
-     *     }
-     * }
-     * arch.allRoles.single()[Title] shouldBe "Use case"
-     * ```
      */
     @get:Language("markdown")
     @set:Language("markdown")
@@ -50,16 +46,6 @@ public sealed interface RoleScope : MetadataScope, FileConstraintScope {
 
     /**
      * One paragraph describing what this role is for.
-     *
-     * ## Example 1: set a summary
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group {
-     *         "UseCase".role { summary = "A single app-specific behavior that happens on a screen" }
-     *     }
-     * }
-     * arch.allRoles.single()[Summary] shouldBe "A single app-specific behavior that happens on a screen"
-     * ```
      */
     @get:Language("markdown")
     @set:Language("markdown")
@@ -71,24 +57,6 @@ public sealed interface RoleScope : MetadataScope, FileConstraintScope {
      * Write [summary] for the one line that lands in a table cell, and this for everything
      * that needs more room. The text is kept exactly as written, newlines included, and
      * katachi adds no structure of its own: the headings inside are yours to choose.
-     *
-     * ## Example 1: give a role a body with sections of its own
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group {
-     *         "UseCase".role {
-     *             summary = "A single app-specific behavior that happens on a screen"
-     *             description = """
-     *                 The UI calls use cases only; it never touches a repository directly.
-     *
-     *                 ### What it must not do
-     *                 - Depending on an Android type
-     *             """.trimIndent()
-     *         }
-     *     }
-     * }
-     * arch.allRoles.single()[Description].orEmpty().lines().size shouldBe 4
-     * ```
      */
     @get:Language("markdown")
     @set:Language("markdown")
@@ -97,34 +65,14 @@ public sealed interface RoleScope : MetadataScope, FileConstraintScope {
     /**
      * Set to `false` to keep this role out of the generated documentation. It still takes
      * part in the check.
-     *
-     * ## Example 1: keep a role out of the generated documentation
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group {
-     *         "UseCase".role { documented = false }
-     *     }
-     * }
-     * arch.allRoles.single()[Documented] shouldBe false
-     * ```
      */
     public var documented: Boolean
 
     /**
-     * Adds a concrete example. Call it once per example; the examples are kept in the
-     * order they were added. [description] may be left out when the name speaks for itself.
+     * Adds a concrete example.
      *
-     * ## Example 1: add a concrete example, with and without a description
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group {
-     *         "UseCase".role {
-     *             example("GetUserUseCase", "Fetches a user")
-     *             example("SignOutUseCase")
-     *         }
-     *     }
-     * }
-     * ```
+     * Call it once per example; the examples are kept in the
+     * order they were added. [description] may be left out when the name speaks for itself.
      */
     public fun example(name: String, description: String? = null)
 
@@ -132,17 +80,6 @@ public sealed interface RoleScope : MetadataScope, FileConstraintScope {
      * Declares where files of this role may live. Call it once per place.
      *
      * The block is stored, not evaluated: see [LayoutDeclaration].
-     *
-     * ## Example 1: declare where a role's files may live
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group {
-     *         "UseCase".role {
-     *             layout { }
-     *         }
-     *     }
-     * }
-     * ```
      *
      * @featured
      */
@@ -153,10 +90,6 @@ internal class RoleScopeImpl(private val roleName: String) : RoleScope {
     val metadata = MetadataBuilder()
     val layouts = mutableListOf<LayoutDeclaration>()
 
-    /**
-     * Constraints written straight on the role, which cover the union of every `layout { }`
-     * it declares. See [FileConstraintScope.fileConstraint].
-     */
     val fileConstraints = mutableListOf<FileConstraintDeclaration>()
 
     override var title: String

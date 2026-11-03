@@ -27,29 +27,23 @@ import me.tbsten.katachi.template.internal.templateRunFor
 import me.tbsten.katachi.template.internal.writeTemplateFiles
 
 /**
- * Writes the files [Args.template] names into the project: one per specifier, together, as one
- * set.
+ * Writes the files [Args.template] names into the project, all of them together as one set.
  *
- * `architecture { }` already knows where every kind of file may live. This is that knowledge used
- * for something other than refusing: a `.template { }` block already sits on the file declaration
- * whose path names where it goes, so generation only has to fill that path's captures in with the
- * run's values and write the result.
+ * A `.template { }` block sits on a file declaration in `layout { }`, so the path is already
+ * known; generation fills the path's captures with the run's values and writes the result.
+ * Registered by default under the key `template`.
  *
  * ## What it reads and what it writes
  *
- * A template's own parameters -- `stringParameter()` and its siblings -- and its captures arrive
- * as ordinary `--arg` entries and are read off [ArchitectureProcessContext.rawArgs], because a
- * `@Serializable` class cannot declare a field per template. Which of them are allowed is decided
- * before any processor runs; this object only fills in what it was given.
+ * A template's own parameters (`stringParameter()` and its siblings) and its captures are passed
+ * as ordinary `--arg` entries.
  *
- * **The output is the repository itself, not `build/`.** Documentation generation defaults to a
- * directory below `build/`, which keeps it out of `gitTracked()` and so out of the check. There is
- * no such net here, so every generated path is checked against its own declared pattern and
- * against leaving the project before anything is written.
+ * **The output is the repository itself, not `build/`.** Every generated path is checked against
+ * its declared pattern, and against leaving the project, before anything is written.
  *
  * **Two or more specifiers write together, as one set.** If any one of them fails -- a value is
  * missing, a file is already there under [OnExisting.Fail], two templates resolve to the same
- * path -- nothing is written, exactly as running one alone would leave nothing half done.
+ * path -- nothing is written.
  *
  * ## What it answers
  *
@@ -69,34 +63,17 @@ import me.tbsten.katachi.template.internal.writeTemplateFiles
  * ).getOrThrow()
  * ```
  *
- * From code, a template's own parameters cannot be given: `process` takes [Args] and nothing
- * else, and they differ per template, so they are not fields of it. This runs a template whose
+ * From code, a template's own parameters cannot be given, so this runs only a template whose
  * parameters all have defaults. A template that needs `--arg name=...` is run from the command
- * line, as in Example 3.
+ * line, as in Example 2.
  *
- * ## Example 2: leave the whole set alone when any of it is already there
- * ```kt
- * import me.tbsten.katachi.processor.process
- * import me.tbsten.katachi.template.GenerateCodeFromTemplate
- * import me.tbsten.katachi.template.OnExisting
- *
- * projectArchitecture.process(
- *     GenerateCodeFromTemplate,
- *     GenerateCodeFromTemplate.Args(template = listOf("UseCase"), onExisting = OnExisting.Skip),
- * ).getOrThrow()
- * ```
- *
- * ## Example 3: generate a pair together, from the command line
- *
- * No registration or configuration needed: the templates' own parameters and captures are `--arg`
- * names this module accepts without asking.
+ * ## Example 2: generate a pair together, from the command line
  * ```sh
- * # No registration needed: the Gradle plugin registers it under `template`.
  * ./gradlew :architecture-test:katachiTemplate \
  *     --arg template=data.Repository.repository,data.Repository.repositoryImpl --arg name=User
  * ```
  *
- * ## Example 4: generate below a directory, named with `capture()`
+ * ## Example 3: generate below a directory, named with `capture()`
  *
  * A wildcard directory names no single directory, so the layout names its `*`s and the run gives
  * their values.
@@ -106,7 +83,7 @@ import me.tbsten.katachi.template.internal.writeTemplateFiles
  *     --arg template=feature.Screen --arg feature=home --arg name=Home
  * ```
  *
- * ## Example 5: generate a template set
+ * ## Example 4: generate a template set
  *
  * A template set gathers several templates under one name, and gives each member the values its
  * own block passes with `arg(...)`. Only the set's own parameters are `--arg` names.
@@ -152,19 +129,7 @@ public object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromT
             )
         }
 
-    /**
-     * The parameters `--arg template=` chose, so that the run's own check knows them.
-     *
-     * Exactly the names every chosen template's `.template { }` declared for this run's values,
-     * together with the names its `layout { }` gave its wildcards with `capture(...)` -- not
-     * "anything", which is what would put a hole in the check this answers for. Reading nothing
-     * off disk is what keeps deciding "is this key a typo" free of a project walk: choosing the
-     * template and listing its parameters both work from the declarations alone.
-     *
-     * When those values leave the names in doubt -- a value that decides a branch could not be
-     * read, or was missing -- the run is failed here with that value's own exception, before any
-     * processor runs, rather than judged by names that may belong to the wrong branch.
-     */
+    /** The parameters and capture names of the templates `--arg template=` chose. */
     override fun undeclaredArgNames(context: ArchitectureProcessContext<*>): Set<String> {
         val raw = context.rawArgs[TEMPLATE_ARG] ?: return emptySet()
         // Deliberately not caught. A specifier no template answers to used to be swallowed here
@@ -216,17 +181,12 @@ public object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromT
     }
 
     /**
-     * Which templates to run, together as one set, and what to do about a file that is already
-     * there.
+     * Which templates to run, together as one set, and what to do about a file that is already there.
      *
-     * A template's own parameters are deliberately **not** here. They differ from template to
-     * template, and a `@Serializable` class is one fixed set of fields -- so they travel as plain
-     * `--arg` entries and are read off [ArchitectureProcessContext.rawArgs] instead.
+     * A template's own parameters are not here: they differ from template to template, so they are
+     * passed as plain `--arg` entries.
      *
-     * The two values can be given three ways: from code, as `--arg` on the command line, or as the
-     * module's default in the Gradle plugin's `template { }` block. A `--arg` wins over the block.
-     *
-     * ## Example 1: from code, a set of two templates from a group
+     * ## Example 1: in code, a set of two templates from a group
      * ```kt
      * import me.tbsten.katachi.template.GenerateCodeFromTemplate
      * import me.tbsten.katachi.template.OnExisting
@@ -237,13 +197,13 @@ public object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromT
      * )
      * ```
      *
-     * ## Example 2: from the command line
+     * ## Example 2: on the command line
      * ```sh
      * ./gradlew :architecture-test:katachiTemplate \
      *     --arg template=domain.UseCase --arg onExisting=skip --arg name=GetUser
      * ```
      *
-     * ## Example 3: as the module's default
+     * ## Example 3: as the module's default in `build.gradle.kts`
      * ```kts
      * // architecture-test/build.gradle.kts
      * import me.tbsten.katachi.gradle.KatachiOnExisting
@@ -257,19 +217,20 @@ public object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromT
      * }
      * ```
      *
+     * A `--arg` of the same name wins over the `template { }` block.
+     *
      * @constructor Takes the templates to run and, optionally, what to do about an existing file.
      */
     @Serializable
     public data class Args(
         /**
-         * The templates to run, each by `role.id` (or `role` alone while that role has one
-         * template), a leading group written `group.role.id`. `--arg template=a,b` splits on `,`.
+         * The templates to run, each by `role.id`, or `role` alone while that role has one template.
          *
-         * Instead of templates, this can be one template set (`group.NewFeature`, or its name
-         * alone while one set has it): its members are generated together, and nothing else may
-         * be listed with it.
+         * A leading group is written `group.role.id`. `--arg template=a,b` splits on `,`.
          *
-         * No default: there is no sensible template to pick for someone who did not say.
+         * Instead of templates, this can be one template set (`group.NewFeature`, or its name alone
+         * while one set has it): its members are generated together, and nothing else may be listed
+         * with it.
          */
         val template: List<String>,
         /** What to do when any of the files these templates produce is already on disk. */
@@ -280,20 +241,16 @@ public object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromT
 /**
  * What [GenerateCodeFromTemplate] does when a file it would write is already there.
  *
- * **All three decide about the whole set, never about one file.** A run is a set of files that
- * belong together, so writing the ones that were free and leaving the rest produces a tree that
- * nothing on disk explains. `--arg onExisting=` is spelled apart from documentation generation's
- * `--arg mode=` on purpose: every selected processor's arguments share one namespace in a run, and
- * two different questions must not answer to one word.
+ * **Every choice applies to the whole set, never to one file**, so a run never leaves a set
+ * partly regenerated.
  *
- * ## Example 1: pick the answer from the command line
+ * ## Example 1: pick the answer
  * ```kt
- * import me.tbsten.katachi.template.GenerateCodeFromTemplate
- * import me.tbsten.katachi.template.OnExisting
- *
- * // ./gradlew katachiTemplate --arg template=UseCase \
- * //   --arg onExisting=overwrite
  * GenerateCodeFromTemplate.Args(template = listOf("UseCase"), onExisting = OnExisting.Overwrite)
+ * ```
+ *
+ * ```sh
+ * ./gradlew :architecture-test:katachiTemplate --arg template=UseCase --arg onExisting=overwrite
  * ```
  *
  * @see GenerateCodeFromTemplate
@@ -305,12 +262,7 @@ public enum class OnExisting {
     @SerialName("fail")
     Fail,
 
-    /**
-     * Write nothing and succeed, which is what makes re-running a template harmless.
-     *
-     * It skips the run rather than the file, for the reason above: a partly regenerated set is
-     * worse than one that was left alone.
-     */
+    /** Write nothing and succeed, which makes re-running a template harmless. */
     @SerialName("skip")
     Skip,
 

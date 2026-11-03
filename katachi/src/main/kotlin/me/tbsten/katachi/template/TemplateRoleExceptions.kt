@@ -6,10 +6,9 @@ import me.tbsten.katachi.KatachiDeclarationException
 /**
  * `--arg template=` named something no template answers to.
  *
- * Almost always a typo, a template whose role or id was renamed, or a group left out of a
- * qualified name -- [GenerateCodeFromTemplate.Args.template] says how a specifier is read. The message
- * lists what the definition does declare, since the fix is one of those specifiers and reading
- * them is faster than opening the definition.
+ * Usually a typo, a renamed role or id, or a group left out of a qualified name. The message lists
+ * the specifiers the definition declares; [GenerateCodeFromTemplate.Args.template] says how a
+ * specifier is read.
  *
  * ## Example 1: catch a misspelt specifier
  * ```kt
@@ -119,9 +118,8 @@ public class KatachiAmbiguousTemplateException internal constructor(
  * `--arg template=` was given a set of specifiers that cannot mean what a run needs: none at all,
  * one that is empty, or two that name the same template.
  *
- * A run's values and its `onExisting` cover the whole set, and writing is all-or-nothing (see
- * [GenerateCodeFromTemplate]), so a specifier that could not have been meant is refused before any
- * of that runs, rather than silently ignored or generated twice.
+ * Refused before anything is generated, rather than ignored or generated twice. A template set
+ * must also be named alone.
  *
  * ## Example 1: catch a run given the same specifier twice
  * ```kt

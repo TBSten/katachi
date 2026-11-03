@@ -4,13 +4,13 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiDeclarationException
 
 /**
- * `--entry-point` was passed more than once.
+ * `--entry-point` was passed more than once to a processor run.
  *
- * ## Example 1: catch a command line that names two entry points
- * ```kt
- * shouldThrow<KatachiDuplicateEntryPointOptionException> {
- *     main(arrayOf("--entry-point=a.B", "--entry-point=c.D", "--processor=layout"))
- * }
+ * ## Example 1: two entry points on one command line
+ * ```sh
+ * # The katachi<Key> tasks never do this; it happens when the processor JVM is started by hand.
+ * java -cp "$TEST_RUNTIME_CLASSPATH" me.tbsten.katachi.processor.internal.MainKt \
+ *     --entry-point=a.B --entry-point=c.D --processor=layout
  * ```
  *
  * @property argument the second `--entry-point` token, as it was written.
@@ -31,11 +31,16 @@ public class KatachiDuplicateEntryPointOptionException internal constructor(
 )
 
 /**
- * The command line named no entry point to load.
+ * The processor run was started without an `--entry-point` to load.
  *
- * ## Example 1: catch a run that was started without the generated entry point
- * ```kt
- * shouldThrow<KatachiMissingEntryPointOptionException> { main(arrayOf("--processor=layout")) }
+ * Start the run with the processor's own Gradle task, such as `./gradlew katachiDocs`, which
+ * always passes it.
+ *
+ * ## Example 1: a run started without the generated entry point
+ * ```sh
+ * # The katachi<Key> tasks never do this; it happens when the processor JVM is started by hand.
+ * java -cp "$TEST_RUNTIME_CLASSPATH" me.tbsten.katachi.processor.internal.MainKt \
+ *     --processor=layout
  * ```
  */
 @ExperimentalKatachiApi
@@ -53,13 +58,16 @@ public class KatachiMissingEntryPointOptionException internal constructor() :
     )
 
 /**
- * The command line named no processor to run.
+ * The processor run named no `--processor` to run.
  *
- * ## Example 1: catch a run that selected nothing
- * ```kt
- * shouldThrow<KatachiMissingProcessorSelectionException> {
- *     main(arrayOf("--entry-point=com.example.GeneratedKatachiEntryPoint"))
- * }
+ * Start the run with the processor's own Gradle task, such as `./gradlew katachiDocs`, which
+ * passes its key.
+ *
+ * ## Example 1: a run that selected nothing
+ * ```sh
+ * # The katachi<Key> tasks never do this; it happens when the processor JVM is started by hand.
+ * java -cp "$TEST_RUNTIME_CLASSPATH" me.tbsten.katachi.processor.internal.MainKt \
+ *     --entry-point=com.example.GeneratedKatachiEntryPoint
  * ```
  */
 @ExperimentalKatachiApi
@@ -80,13 +88,13 @@ public class KatachiMissingProcessorSelectionException internal constructor() :
     )
 
 /**
- * A token on the command line is none of the three katachi reads.
+ * A token on the processor command line is none of the options katachi reads.
  *
- * ## Example 1: catch a misspelled option
- * ```kt
- * shouldThrow<KatachiUnknownProcessorOptionException> {
- *     main(arrayOf("--entry-point=com.example.GeneratedKatachiEntryPoint", "--processors=docs"))
- * }
+ * ## Example 1: a misspelled option
+ * ```sh
+ * # The katachi<Key> tasks never do this; it happens when the processor JVM is started by hand.
+ * java -cp "$TEST_RUNTIME_CLASSPATH" me.tbsten.katachi.processor.internal.MainKt \
+ *     --entry-point=com.example.GeneratedKatachiEntryPoint --processors=docs
  * ```
  *
  * @property argument the token, as it was written.
@@ -110,21 +118,15 @@ public class KatachiUnknownProcessorOptionException internal constructor(
 )
 
 /**
- * An `--arg` token is not a `key=value` pair.
+ * An `--arg` token on the processor command line is not a `key=value` pair.
  *
- * Covers both halves of the same mistake: no `=` at all, and an empty key before it.
+ * Covers both a token with no `=` and one with an empty key before it.
  *
- * ## Example 1: catch an --arg with nothing to split on
- * ```kt
- * shouldThrow<KatachiInvalidProcessorArgOptionException> {
- *     main(
- *         arrayOf(
- *             "--entry-point=com.example.GeneratedKatachiEntryPoint",
- *             "--processor=docs",
- *             "--arg=name",
- *         ),
- *     )
- * }
+ * ## Example 1: an --arg with nothing to split on
+ * ```sh
+ * # The katachi<Key> tasks never do this; it happens when the processor JVM is started by hand.
+ * java -cp "$TEST_RUNTIME_CLASSPATH" me.tbsten.katachi.processor.internal.MainKt \
+ *     --entry-point=com.example.GeneratedKatachiEntryPoint --processor=docs --arg=name
  * ```
  *
  * @property argument the `--arg` token, as it was written.
@@ -145,20 +147,14 @@ public class KatachiInvalidProcessorArgOptionException internal constructor(
 )
 
 /**
- * The same `--arg` key was passed twice.
+ * The same `--arg` key was passed twice on the processor command line.
  *
- * ## Example 1: catch a key passed twice
- * ```kt
- * shouldThrow<KatachiDuplicateProcessorArgException> {
- *     main(
- *         arrayOf(
- *             "--entry-point=com.example.GeneratedKatachiEntryPoint",
- *             "--processor=template",
- *             "--arg=template=GetUser",
- *             "--arg=template=PutUser",
- *         ),
- *     )
- * }
+ * ## Example 1: a key passed twice
+ * ```sh
+ * # The katachi<Key> tasks never do this; it happens when the processor JVM is started by hand.
+ * java -cp "$TEST_RUNTIME_CLASSPATH" me.tbsten.katachi.processor.internal.MainKt \
+ *     --entry-point=com.example.GeneratedKatachiEntryPoint --processor=template \
+ *     --arg=template=GetUser --arg=template=PutUser
  * ```
  *
  * @property key the argument name that was given twice.
@@ -180,25 +176,17 @@ public class KatachiDuplicateProcessorArgException internal constructor(
 )
 
 /**
- * An `--arg-for` token is not `<processor key>:<name>=<value>`, or names a processor the run did
- * not select.
+ * An `--arg-for` token is not `<processor key>:<name>=<value>`, or names a processor the run did not select.
  *
- * `--arg-for` gives one argument to one processor of a run that selected several; the Gradle
- * plugin's `katachiProcessors` task sends each processor's build-script arguments this way, so
- * that `docs { outputDir = ... }` reaches `docs` only.
+ * `--arg-for` gives one argument to one processor of a run that selected several. The
+ * `katachiProcessors` task sends each processor's build-script arguments this way.
  *
- * ## Example 1: catch an --arg-for addressed to a processor that is not running
- * ```kt
- * val thrown = shouldThrow<KatachiInvalidProcessorArgForOptionException> {
- *     main(
- *         arrayOf(
- *             "--entry-point=com.example.GeneratedKatachiEntryPoint",
- *             "--processor=layout",
- *             "--arg-for=docs:outputDir=docs/architecture",
- *         ),
- *     )
- * }
- * thrown.processorKey shouldBe "docs"
+ * ## Example 1: an --arg-for addressed to a processor that is not running
+ * ```sh
+ * # The katachi<Key> tasks never do this; it happens when the processor JVM is started by hand.
+ * java -cp "$TEST_RUNTIME_CLASSPATH" me.tbsten.katachi.processor.internal.MainKt \
+ *     --entry-point=com.example.GeneratedKatachiEntryPoint --processor=layout \
+ *     --arg-for=docs:outputDir=docs/architecture
  * ```
  *
  * @property argument the `--arg-for` token, as it was written.

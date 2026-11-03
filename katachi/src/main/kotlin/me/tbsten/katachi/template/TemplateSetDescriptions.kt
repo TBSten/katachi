@@ -36,9 +36,10 @@ public class TemplateSetSummary internal constructor(
     /** The complete specifier of every member, as it resolved, in the order they were written. */
     public val members: List<String>,
     /**
-     * Whether the set's preview could not be built, so that it has no [TemplateSetDetail]. Listed
-     * anyway so that one broken set does not hide the others; `DescribeTemplates` with
-     * `--arg template=<set>`, or a run, says what is wrong.
+     * Whether the set's preview could not be built, so that it has no [TemplateSetDetail].
+     *
+     * The set is still listed; describing it alone with `--arg template=<set>`, or a run, says what is
+     * wrong.
      */
     public val conflict: Boolean,
 ) {
@@ -113,7 +114,7 @@ public class TemplateSetMemberPreview internal constructor(
     public val title: String,
     /** What the member's `arg(...)` calls pass, in the order they were written. */
     public val args: List<TemplateSetArgPreview>,
-    /** The one file the member would produce, in a list for the JSON's sake. */
+    /** The file the member would produce; always one entry. */
     public val files: List<TemplateFilePreview>,
 ) {
     /** `TemplateSetMemberPreview(<template>)`. */

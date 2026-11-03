@@ -4,23 +4,14 @@ package me.tbsten.katachi
  * Base of every error whose fix is in the definition. Catch this to treat "the definition
  * itself is wrong" as one case.
  *
- * Most are raised while `architecture { }` is being evaluated, long before any file is read.
- * The rest come later for a reason that has nothing to do with the project: a `layout { }`
- * block is deferred, so a key katachi cannot read is only noticed when the check flattens it,
- * and a declaration handed back to katachi later can turn out to belong to another definition
- * entirely. Both are the same mistake — a bad value written into a definition — seen at the
- * first moment katachi could look at it.
+ * Most are raised while `architecture { }` is being evaluated, before any file is read. Some,
+ * such as an unreadable key inside a `layout { }` block, only surface once the check runs. It
+ * extends [IllegalArgumentException]: the offending value is always one you passed to katachi.
  *
- * It extends [IllegalArgumentException] because the offending value is always something
- * the caller passed to katachi.
- *
- * **A third-party architecture-checking backend may name this as its base.** The constructor
- * is open for that: a check plugged into katachi rejects definitions written for it — a
- * misspelled rule, a block that expects nothing — and those are the same mistake as a bad
- * role name, so a caller who catches this should catch them too. Follow the same rules
- * katachi's own exceptions follow: name it `<Prefix><What>Exception` so the stack trace says
- * whose it is, build the message inside the class rather than taking one as a parameter, and
- * point at the declaration site.
+ * **A third-party architecture-checking backend may name this as its base** when it rejects a
+ * definition written for it (a misspelled rule, a block that expects nothing). Name the
+ * subclass `<Prefix><What>Exception`, build the message inside the class, and include the
+ * declaration site.
  *
  * ## Example 1: catch every declaration-time error the same way
  * ```kt
@@ -53,9 +44,8 @@ public abstract class KatachiDeclarationException @ExperimentalKatachiApi public
  * Base of every error raised while a check is running: the definition is fine, but the
  * environment it was asked to run in is not.
  *
- * It extends [IllegalStateException] because nothing is wrong with the values that were
- * passed in — git is missing, the project root cannot be found, and the fix is out in the
- * environment rather than in `architecture { }`.
+ * Examples are a missing git executable or a project root that cannot be found; the fix is in
+ * the environment rather than in `architecture { }`.
  *
  * ## Example 1: tell an environment problem apart from a failed check
  * ```kt
@@ -77,15 +67,9 @@ public abstract class KatachiCheckException internal constructor(
  * There is nothing for the caller to fix: a definition cannot cause one of these, so every
  * message says so and asks for a report at https://github.com/TBSten/katachi/issues.
  *
- * It exists instead of the standard library's own preconditions so that the class name in
- * the stack trace says where the failure came from. A bare [IllegalStateException] leaves
- * the reader guessing whether their own code or katachi is at fault.
- *
- * **A third-party architecture-checking backend may name this as its base**, for the same
- * reason katachi has it: an assumption of its own broke, and the caller cannot fix it. The
- * rule about the message generalises with it — say that this is a bug in **that** library,
- * and give the address to report it at, so the reader knows the failure is not theirs and
- * where to send it.
+ * **A third-party architecture-checking backend may name this as its base** when one of its
+ * own assumptions breaks. Its message should say that this is a bug in that library and give
+ * the address to report it at.
  *
  * ## Example 1: report a katachi bug rather than treating it as a failed check
  * ```kt

@@ -23,108 +23,21 @@ import me.tbsten.katachi.dsl.internal.fillCaptures
 import me.tbsten.katachi.dsl.internal.placeholder
 import me.tbsten.katachi.internal.catching
 
-/**
- * The repository itself (a file in a worktree or a submodule), the only name the walk skips at
- * any depth whatever `files` says. Module discovery ([scanModules]) has its own skip list.
- */
+// The only name skipped at any depth regardless of `files` (a file in worktrees and submodules).
 private const val GIT_DIRECTORY_NAME: String = ".git"
 
-/**
- * What the project root is called when it is the project root itself that could not be read.
- *
- * Its path relative to itself is the empty string, which would print as a first line with
- * nothing after the label. `internal` rather than private so that the module search, which
- * names directories the same way and can fail at the root too, spells it the same way by
- * construction.
- */
+// The root relative to itself is the empty string, which would print as a label with nothing after it.
 internal const val ROOT_PATH: String = "."
 
-/**
- * Everything one walk of the tree produced.
- *
- * The walk answers two questions at once, and it has to: which files nobody declared, and
- * which role each file that was declared belongs to. They are the same traversal seen from
- * either side, so running it twice would be the same work done twice and, worse, two chances
- * for the two answers to stop agreeing.
- */
 internal class ScanResult(
-    /** Every violation of the run, already ordered by block kind. */
     val violations: List<Violation>,
-    /**
-     * Files that exist, per role that allows them, in walk order. A file two roles both allow
-     * is listed under both; a role whose declarations matched nothing is absent rather than
-     * present with an empty list, which is why reads go through `orEmpty()`.
-     */
     val filesByRole: Map<Role, List<String>>,
-    /**
-     * The files more than one role turned out to claim, grouped by the roles claiming them.
-     *
-     * Collected by the same walk rather than derived from [filesByRole] afterwards, for two
-     * reasons. [filesByRole] answers "does some role allow this file", so it holds the entries
-     * a `module { }` key injects as well, and a `build.gradle.kts` every role of a module
-     * carries is not an overlap anyone wrote. And a group has to name the lines that declared
-     * it, which is an entry, not a role.
-     */
     val fileOverlaps: List<FileOverlap>,
-    /**
-     * The constraints the layout declared, with the layout around each already evaluated.
-     *
-     * None of them has been run. They ride on the walk's result rather than being evaluated
-     * separately so that a check asks about the same entries this walk matched files against:
-     * flattening the layout a second time would be a second chance for the two to disagree
-     * about what a wildcard module key expanded to.
-     */
     val fileConstraints: List<DeclaredFileConstraint>,
-    /**
-     * The evaluation of the layout the walk was driven by, kept so that reading the
-     * declarations afterwards can take over every role it holds that no wildcard module key
-     * made depend on the project. See [evaluateLayout].
-     */
     val layout: LayoutEvaluation,
-    /**
-     * Where the walk started, absolute — the one value a constraint backend needs that is not
-     * project relative, because a parser cannot be pointed at a relative path.
-     */
     val projectRoot: FsPath,
 )
 
-/**
- * The one walk everything is built on, reached through the context an
- * [me.tbsten.katachi.processor.ArchitectureProcessor] is handed -- which runs it at most once,
- * so that a run answering both "what is wrong" and "what does this role own" walks the tree
- * once.
- *
- * Finding the root, selecting the files and evaluating the definition are not caught. Each
- * produces the one thing the walk needs, so a failure in any of them leaves nothing to check
- * and nothing to report — there is no "the rest of the run" to save.
- *
- * **The search for the modules is the exception, and it is caught per directory.** That
- * reasoning does not reach it: a directory whose listing fails costs the modules below that
- * one directory, while every sibling subtree still answers which modules it holds. So the
- * search hands back what it found together with the directories it could not read, and those
- * ride into the report as [UncheckedDirectory] blocks with
- * [UncheckedDirectoryReason.ModulesNotDiscovered] — which is what keeps a wildcard module key
- * quietly expanding to too few modules from looking like a project that simply has too few.
- *
- * The project root is looked for in [fileSystem] itself, unfiltered: a marker such as
- * `.git/HEAD` belongs to none of the file sets `files` can select, so the search has to run
- * before the selection is applied. The module index is built the same way, because a module
- * whose `build.gradle.kts` a file set happens to leave out is still a module, and a module
- * path key with a wildcard would otherwise quietly expand to nothing. The one thing the search
- * takes from the selection is which directories it drops wholesale — under `gitTracked()`, a
- * directory git reports nothing below, such as `node_modules/`. The walk never enters those,
- * so a module in there could never have a file checked, while a module that is only not
- * tracked yet is still reported by git and still found.
- *
- * [reusing] is an evaluation of this definition already made -- in practice the one
- * `declaredEntries` made -- and every role of it that reached no wildcard module key is taken
- * over rather than evaluated a second time. See [evaluateLayout].
- *
- * @throws me.tbsten.katachi.dsl.KatachiProjectRootNotFoundException when no directory above
- *   the working directory carries a Gradle, Maven or git marker.
- * @throws me.tbsten.katachi.dsl.KatachiGitUnavailableException when `files = gitTracked()` and
- *   the project root is a git repository, but git cannot be run.
- */
 internal fun Architecture.scanProject(
     fileSystem: KatachiFileSystem,
     reusing: LayoutEvaluation? = null,
@@ -148,41 +61,20 @@ internal fun Architecture.scanProject(
     ).run()
 }
 
-/**
- * One walk of the tree below the project root.
- *
- * The walk is driven by the declarations, not by the tree: it descends into a directory only
- * while some role still has something to say about what is inside it, and reports the
- * directory itself otherwise.
- *
- * It also never gives up on the whole run because of one path. Every unit that can answer on
- * its own — a child of a directory, a listing, a required declaration — is wrapped in
- * [catching], and whatever comes out of it becomes an [UncheckedFile] or an
- * [UncheckedDirectory] rather than the end of the check. One run that reports everything is
- * the whole point of `assert()`, and a file that throws is almost never the file the reader
- * came to fix.
- */
 private class Scan(
     private val fileSystem: KatachiFileSystem,
     private val root: FsPath,
     private val evaluation: LayoutEvaluation,
-    /**
-     * What the search for the modules could not read, which happened before this walk started
-     * and belongs in the same report. See [scanProject].
-     */
     private val moduleFailures: List<UncheckedDirectory>,
 ) {
     private val layout = LayoutIndex(evaluation.entries)
 
     private val violations = mutableListOf<Violation>()
 
-    /** Every file the walk reached, as a project relative path. */
     private val visitedFiles = mutableSetOf<String>()
 
-    /** The files each role turned out to own, in walk order. See [ScanResult.filesByRole]. */
     private val filesByRole = LinkedHashMap<Role, MutableList<String>>()
 
-    /** The files more than one role claimed, grouped as they are found. See [FileOverlaps]. */
     private val fileOverlaps = FileOverlaps()
 
     fun run(): ScanResult {
@@ -234,13 +126,6 @@ private class Scan(
         }
     }
 
-    /**
-     * One child of a directory, with everything done for it held to that child.
-     *
-     * This is where the walk is cut into independent pieces: a sibling is another turn of the
-     * loop above, and anything deeper is cut up again by the [walk] this ends up calling. So
-     * what a failure here actually costs is this one path.
-     */
     private fun visitChild(child: FsPath, path: String) {
         // Before asking whether it is a directory: in a worktree or a submodule `.git` is a file.
         if (child.name == GIT_DIRECTORY_NAME) return
@@ -306,4 +191,3 @@ private class Scan(
         )
     }
 }
-

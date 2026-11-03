@@ -20,30 +20,14 @@ import me.tbsten.katachi.template.TemplateParameterKind
 import me.tbsten.katachi.template.TemplateParameterPreview
 import me.tbsten.katachi.template.TemplateSummary
 
-/**
- * How many times the parameters are replayed before the preview settles for what it has.
- *
- * A value can declare more parameters (`if (withImpl) { val implName by ... }`), and those need
- * values of their own, so the replay runs until the set stops changing. Real templates settle in
- * two; the bound only keeps a template that flips between branches from looping.
- */
+// Replays stop at MAX_REPLAYS so a template whose parameters never settle cannot loop.
 private const val MAX_REPLAYS: Int = 16
 
-/** The values a preview runs a template with, and the parameters those values declare. */
 internal class PreviewValues(
     val parameters: List<DeclaredTemplateParameter>,
     val values: Map<String, String>,
 )
 
-/**
- * [template] as one line of the list. [DeclaredTemplate.entries] is where the captures are read
- * from.
- *
- * Never fails over one template: a capture and a parameter sharing a name leave
- * [TemplateSummary.conflict] `true`, as any other template that cannot be previewed does, so that
- * one broken declaration does not cost the list -- or the IDE, which reads the same list -- every
- * other template. [templateDetailOf] and a run of the template say what is wrong.
- */
 internal fun templateSummaryOf(template: DeclaredTemplate): TemplateSummary {
     val captureNames = captureNamesOf(template.entries)
     val preview = previewValuesOf(template.template, template.role.qualifiedName, captureNames)
@@ -63,11 +47,6 @@ internal fun templateSummaryOf(template: DeclaredTemplate): TemplateSummary {
     )
 }
 
-/**
- * [template] explained: its parameters, and the file it produces rendered with stand-in values.
- *
- * Reads nothing off disk: the path comes from [DeclaredTemplate.entries], the declared layout.
- */
 internal fun templateDetailOf(template: DeclaredTemplate): TemplateDetail {
     val captureNames = captureNamesOf(template.entries)
     val preview = previewValuesOf(template.template, template.role.qualifiedName, captureNames)
@@ -87,16 +66,9 @@ internal fun templateDetailOf(template: DeclaredTemplate): TemplateDetail {
     )
 }
 
-/** `.template { }`'s own `title`, falling back to [DeclaredTemplate.id], then to the role's `title`. */
 internal fun titleOf(template: DeclaredTemplate): String =
     template.title ?: template.id ?: template.role[Title] ?: template.role.qualifiedName
 
-/**
- * The values to preview [template] with, replayed until the parameters they declare settle.
- *
- * [fixed] wins over the stand-in of the parameter it names, which is how a branch is explored.
- * Every capture in [captureNames] reads as its placeholder, `${name}`, as a String parameter does.
- */
 internal fun previewValuesOf(
     template: LayoutTemplate,
     roleName: String,
@@ -118,23 +90,9 @@ internal fun previewValuesOf(
     return PreviewValues(parameters, values)
 }
 
-/**
- * How many runs [parameterOriginsOnEveryBranch] spends looking for branches. Each Boolean or
- * enum value is one branch and combinations multiply, so the walk stops here; real templates
- * have a handful of switches and are covered long before.
- */
+// Each Boolean or enum value is one branch and combinations multiply, so the walk stops at MAX_BRANCH_RUNS.
 private const val MAX_BRANCH_RUNS: Int = 64
 
-/**
- * Every parameter [template] declares on the branches a preview can reach, with where each was
- * declared, together with those [values] declare.
- *
- * Breadth first from the preview's own values: every other value of each Boolean or enum
- * parameter, then every other value of the parameters *those* runs declare, and so on, until
- * nothing is left or [MAX_BRANCH_RUNS] runs were spent. A branch taken on an Int or String value
- * cannot be enumerated, which is why [values] -- the run's own -- are replayed as well. Like the
- * replays it is made of, this never throws.
- */
 internal fun parameterOriginsOnEveryBranch(
     template: LayoutTemplate,
     roleName: String,
@@ -168,7 +126,6 @@ internal fun parameterOriginsOnEveryBranch(
     return origins
 }
 
-/** The value a preview fills [parameter] with, spelt as `--arg` would, and why. */
 internal fun previewValueOf(parameter: DeclaredTemplateParameter): Pair<String, PreviewValueSource> {
     val type = parameter.type
     if (type == TemplateParameterType.StringType) {
@@ -205,20 +162,6 @@ private fun kindOf(type: TemplateParameterType<*>): TemplateParameterKind = when
     is TemplateParameterType.EnumType<*> -> TemplateParameterKind.EnumParameter
 }
 
-/**
- * [template]'s one file, previewed: its declared pattern, its path with [preview]'s values filled
- * in, and its [content].
- *
- * A capture reads as `${name}` in the path exactly as it does in the content -- there is no real
- * value to fill a preview's path with, only the same placeholder a String parameter gets -- and a
- * derived occurrence as `<name.transform>`, the value katachi derives from that one. A
- * module capture is the one exception: which module it would pick is a question only the modules
- * that exist could answer, so [TemplateFilePreview.path] is `null` whenever one is present, as
- * [TemplateFilePreview.pattern] (the declared shape, captures included) still is not.
- *
- * [captureValues] are the values a template set's `arg(...)` gave plain captures: the path reads
- * them in place of the placeholders, the pattern does not.
- */
 internal fun filePreviewOf(
     template: DeclaredTemplate,
     preview: PreviewValues,
@@ -250,19 +193,6 @@ internal fun filePreviewOf(
     )
 }
 
-/**
- * Every other value of a Boolean or enum parameter that changes this template's content or the
- * parameters it declares.
- *
- * One parameter at a time, the rest kept at the preview's values: the combinations of several
- * would grow with every parameter, and one at a time already answers "what does this switch do".
- * A value the template cannot render with is left out rather than reported -- the detail is about
- * what the template does, and `katachiTemplate` reports a failure with that value itself.
- *
- * [TemplateBranch.addedFiles] / [TemplateBranch.removedFiles] stay empty: a template describes
- * exactly one file, so no value changes *which* file it is -- only whether it can be rendered at
- * all (in which case the branch is skipped, as it always was) or what it and its parameters are.
- */
 private fun branchesOf(
     template: DeclaredTemplate,
     captureNames: Set<String>,
@@ -297,16 +227,6 @@ private fun branchesOf(
     return branches
 }
 
-/**
- * A `katachiTemplate` command for [template] with every capture and every required parameter
- * given a value -- a String parameter its own name with the first letter upper-cased, and a
- * capture `<name>`.
- *
- * A capture is left as a slot on purpose. Its value is a directory or a module of the user's own
- * project, and no word the preview could make up is one: a command that ran as pasted would
- * generate into a directory nobody asked for. A shell refuses the `<`, so the slot has to be
- * filled before the command runs at all.
- */
 private fun exampleCommandOf(
     template: DeclaredTemplate,
     captureNames: Set<String>,

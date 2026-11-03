@@ -23,55 +23,22 @@ public enum class LayoutEntryKind {
     /**
      * A directory, `"..." { }`. Its contents are whatever the entries below it declare, so
      * an empty block means nothing may live there.
-     *
-     * ## Example 1: read back a directory a layout declared
-     * ```kt
-     * val arch = architecture { "domain".group { "UseCase".role { layout { "useCase" { } } } } }
-     * arch.process { context -> context.declaredEntries.single().kind } shouldBe
-     *     LayoutEntryKind.Directory
-     * ```
      */
     Directory,
 
     /**
      * A file, `"...".file()`. [LayoutEntry.path] may hold `*` or `**`.
-     *
-     * ## Example 1: collect every path a definition declares as a file
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group { "UseCase".role { layout { "useCase" / "GetUserUseCase".ktFile() } } }
-     * }
-     * arch.process { context ->
-     *     context.declaredEntries.filter { it.kind == LayoutEntryKind.File }.map { it.path }
-     * } shouldContainExactly listOf("useCase/GetUserUseCase.kt")
-     * ```
      */
     File,
 
     /**
      * A directory that also allows any file directly inside it, `anyFile()`. A file one
      * level further down is not covered.
-     *
-     * ## Example 1: find the directories a definition left open
-     * ```kt
-     * val arch = architecture { "build".group { "Generated".role { layout { "generated" { anyFile() } } } } }
-     * arch.process { context ->
-     *     context.declaredEntries.filter { it.kind == LayoutEntryKind.AnyFile }.map { it.path }
-     * } shouldContainExactly listOf("generated")
-     * ```
      */
     AnyFile,
 
     /**
      * A directory nothing below is checked in, at any depth, `ignore()`.
-     *
-     * ## Example 1: list what a definition stops looking at
-     * ```kt
-     * val arch = architecture { "build".group { "Output".role { layout { "build".ignore() } } } }
-     * arch.process { context ->
-     *     context.declaredEntries.filter { it.kind == LayoutEntryKind.Ignore }.map { it.path }
-     * } shouldContainExactly listOf("build")
-     * ```
      */
     Ignore,
 }
@@ -79,10 +46,8 @@ public enum class LayoutEntryKind {
 /**
  * One line of the flattened layout: a path pattern, and the role that claims it.
  *
- * Roles declare where their own files may live and nothing else, so no single place in the
- * DSL holds the whole tree. The check builds that view by flattening every role's
- * `layout { }` into these entries and walking the real tree against them, and a processor
- * reads the same view through [me.tbsten.katachi.processor.ArchitectureProcessContext.declaredEntries].
+ * Every role's `layout { }` is flattened into these entries, and a processor reads them through
+ * [me.tbsten.katachi.processor.ArchitectureProcessContext.declaredEntries].
  *
  * It says what was *declared*, not what exists: an entry is here whether or not a file sits
  * at its path. What exists is
@@ -99,40 +64,25 @@ public enum class LayoutEntryKind {
  *     "domain.UseCase useCase Directory",
  *     "domain.UseCase useCase/GetUserUseCase.kt File",
  * )
+ *
+ * // Files the definition insists on, and where each was declared
+ * arch.process { context ->
+ *     context.declaredEntries.filter { it.required }.map { "${it.path} ${it.declaredAt} ${it.description}" }
+ * }
  * ```
  */
 @ExperimentalKatachiApi
 public class LayoutEntry internal constructor(
     /**
      * Path pattern relative to the project root, `/` separated, never starting with `/`.
-     *
-     * ## Example 1: read the declared paths
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group { "UseCase".role { layout { "useCase" / "GetUserUseCase".ktFile() } } }
-     * }
-     * arch.process { context -> context.declaredEntries.map { it.path } } shouldContainExactly
-     *     listOf("useCase", "useCase/GetUserUseCase.kt")
-     * ```
      */
     public val path: String,
     /**
-     * [path][LayoutEntry.path] compiled. `Glob.hasWildcard` is what made a declaration optional by
-     * itself.
+     * [path][LayoutEntry.path] compiled into a matcher, for katachi's own tooling.
      */
     @property:InternalKatachiApi public val glob: Glob,
     /**
      * What the declaration says about this path.
-     *
-     * ## Example 1: keep only the files a definition declared
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group { "UseCase".role { layout { "useCase" / "GetUserUseCase".ktFile() } } }
-     * }
-     * arch.process { context ->
-     *     context.declaredEntries.filter { it.kind == LayoutEntryKind.File }.map { it.path }
-     * } shouldContainExactly listOf("useCase/GetUserUseCase.kt")
-     * ```
      */
     public val kind: LayoutEntryKind,
     /**
@@ -142,133 +92,35 @@ public class LayoutEntry internal constructor(
      * directory, so a directory only shows up once it holds a file, and the files it holds
      * report it themselves. A file holding a wildcard, or marked `optional()`, is not
      * required either.
-     *
-     * ## Example 1: list the files a definition insists on
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group {
-     *         "UseCase".role { layout { "useCase" / "GetUserUseCase".ktFile(); "useCase" / "*.kt".file() } }
-     *     }
-     * }
-     * arch.process { context -> context.declaredEntries.filter { it.required }.map { it.path } } shouldContainExactly
-     *     listOf("useCase/GetUserUseCase.kt")
-     * ```
      */
     public val required: Boolean,
     /**
      * The role that declared this path.
-     *
-     * ## Example 1: group the declared paths by the role that claims them
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group { "UseCase".role { layout { "useCase" / "GetUserUseCase".ktFile() } } }
-     * }
-     * arch.process { context ->
-     *     context.declaredEntries.groupBy({ it.role.qualifiedName }, { it.path })
-     * } shouldBe mapOf("domain.UseCase" to listOf("useCase", "useCase/GetUserUseCase.kt"))
-     * ```
      */
     public val role: Role,
     /**
      * Where inside the `layout { }` block this path was written.
-     *
-     * ## Example 1: point a report back at the line that declared a path
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group { "UseCase".role { layout { "useCase" / "GetUserUseCase".ktFile() } } }
-     * }
-     * arch.process { context -> context.declaredEntries.first().declaredAt.fileName } shouldBe
-     *     "ProjectArchitecture.kt"
-     * ```
      */
     public val declaredAt: DeclarationSite,
     /**
      * The `description = "..."` of this directory, when it has one.
-     *
-     * ## Example 1: read the descriptions a definition wrote on its directories
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group {
-     *         "UseCase".role { layout { "useCase" { description = "Behavior for each screen" } } }
-     *     }
-     * }
-     * arch.process { context -> context.declaredEntries.single().description } shouldBe "Behavior for each screen"
-     * ```
      */
     public val description: String?,
-    /**
-     * Whether this entry is one of the two lines a `module { }` block injects (`build`, and
-     * `build.gradle.kts`) rather than something the user wrote.
-     *
-     * Internal: it exists for `ambiguousLayoutsOf` to drop what the sugar duplicates on
-     * every role that shares a module, not for a processor to read. See
-     * [me.tbsten.katachi.dsl.internal.LayoutNode.synthetic], which this carries forward, and
-     * `mergedWith`, which keeps it `true` only while every declaration of this path stayed
-     * synthetic: a user who wrote `"build.gradle.kts".file()` themselves takes that path back.
-     */
+    // Marks the two lines `module { }` injects; mergedWith keeps it true only while every declaration of this path
+    // stayed synthetic.
     internal val synthetic: Boolean,
-    /**
-     * Whether this entry is one of the places its role may live in — the directory a
-     * `"...".module { }` key opened, for a module other than the root project.
-     *
-     * Internal: it exists for `missingDescriptionsOf` to find the blocks a `description = "..."`
-     * could be written in, not for a processor to read. See [me.tbsten.katachi.dsl.internal.LayoutNode.place],
-     * which this carries forward and whose KDoc says why only module keys carry it, and
-     * `mergedWith`, which ORs it: one declaration opening a block at a path is enough to make it
-     * somewhere a description belongs.
-     */
+    // Only module-key directories (non-root) carry it; mergedWith ORs it.
     internal val place: Boolean,
-    /**
-     * The Gradle module path this entry sits in, as written in the `module { }` key, or `null`
-     * when no module key opened the block it was declared in.
-     *
-     * Internal: it exists so that documentation can show `:core:domain` next to a path that has
-     * that module's directory taken off the front, not for a processor to read. A wildcard key
-     * stays as it was written, because [me.tbsten.katachi.dsl.internal.ModuleIndex] leaves it that way
-     * when nothing has listed the project.
-     */
     internal val modulePath: String?,
-    /**
-     * [path][LayoutEntry.path] as the declaration reads inside its module: the module's own
-     * directory taken off the front, and every level a module package produced folded into a single
-     * `**`.
-     *
-     * Equal to [path][LayoutEntry.path] when [modulePath] is `null` or names the root project,
-     * neither of which has a directory of its own to take off.
-     *
-     * Internal for the same reason [modulePath] is. It is derived while the tree is flattened
-     * because that is the last moment the marks survive -- a flattened path is a string, and a
-     * string cannot say which of its levels the user wrote.
-     */
+    // Derived while flattening: afterwards a path is a string and cannot say which levels were module package
+    // marks.
     internal val pathInModule: String,
-    /**
-     * The names each declaration of this path gave its wildcards — `capture("...")` levels and
-     * `":...:${capture("...")}".module { }` names — one variant per distinct declaration. Empty when no
-     * declaration named anything; once one did, a declaration that named nothing is kept as
-     * [me.tbsten.katachi.dsl.internal.LayoutCaptures.NONE] beside it.
-     *
-     * Internal: it exists for template generation to fill the named levels in, not for the
-     * check, which reads a named wildcard exactly as a plain `*`. More than one variant is
-     * possible because the same path declared twice folds into one entry.
-     */
+    // More than one variant is possible: the same path declared twice folds into one entry, with NONE kept beside
+    // named variants.
     internal val captureVariants: List<LayoutCaptures> = emptyList(),
-    /**
-     * The one variant of [captureVariants] the declaration `.template { }` was actually attached
-     * to, or `null` while none of this path's declarations carries a template.
-     *
-     * A path can fold two declarations into one entry (the same doc [captureVariants] describes),
-     * and only one of them may ever carry `.template { }` -- design draft section 7. When the
-     * other declaration named nothing (`"*.kt".file()` merged with
-     * `capture("name").ktFile().template { }`), [captureVariants] holds `[NONE, {name}]` in
-     * whichever order the two declarations were written in, and reading `.firstOrNull()` off it
-     * would silently pick the untemplated one on the wrong order. Template generation and preview
-     * read this instead of guessing at [captureVariants]'s order.
-     */
+    // Read this, not captureVariants.firstOrNull(): variant order follows declaration order and could pick the
+    // untemplated one.
     internal val templateCaptures: LayoutCaptures? = null,
-    /**
-     * What `.metadata { }` — including the `.template { }` sugar over it — wrote on the
-     * declaration this entry came from. Read with [get], the same way [Role]'s own metadata is.
-     */
     internal val metadata: MetadataValues = MetadataValues.EMPTY,
 ) {
     /**
@@ -289,7 +141,9 @@ public class LayoutEntry internal constructor(
      *         "Dao".role { layout { "legacy" / "*Dao".ktFile().metadata { obsolete = true } } }
      *     }
      * }
-     * arch.flattenLayout().single { it.kind == LayoutEntryKind.File }[Obsolete] shouldBe true
+     * arch.process { context ->
+ *     context.declaredEntries.single { it.kind == LayoutEntryKind.File }[Obsolete]
+ * } shouldBe true
      * ```
      */
     @ExperimentalKatachiApi

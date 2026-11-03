@@ -8,14 +8,9 @@ import me.tbsten.katachi.dsl.DeclarationSite
 /**
  * A run gave no value for a capture its role's template needs.
  *
- * `capture("feature")` in a `layout { }` stands for a directory that template generation fills
- * in from `--arg feature=...`, and `":feature:${capture("feature")}".module { }` for a module.
- * Without the value there is no directory, and choosing one would be inventing the answer.
- *
- * The same exception, with the same message, whichever way the capture was needed: a file whose
- * place names it, or a template that reads it with `captureValue(...)`. A place that needs it fails
- * the file even when a place without captures would take it: writing there instead would drop the
- * forgotten `--arg` without a word.
+ * `capture("feature")` in a `layout { }` stands for a directory (or, in a module key, a module)
+ * that the run names with `--arg feature=...`. katachi does not pick one when the value is
+ * missing, even if another place of the role names no capture.
  *
  * ## Example 1: catch a run that did not say which feature to generate into
  * ```kt
@@ -52,27 +47,15 @@ public class KatachiMissingTemplateCaptureException internal constructor(
     public val fileName: String?,
     /** The capture names without a value, in declaration order. */
     public val names: List<String>,
-    /**
-     * Each layout pattern naming one of [names][KatachiMissingTemplateCaptureException.names], with
-     * every capture of it written as `<name>` in place of its `*`, and the names of
-     * [names][KatachiMissingTemplateCaptureException.names] it holds.
-     */
+    /** Each layout pattern that names a missing capture, written with `<name>` for each capture, to the names it holds. */
     public val missing: Map<String, List<String>>,
     /**
      * For each of [names][KatachiMissingTemplateCaptureException.names], where the layout declares
      * it.
      */
     public val captureDeclaredAt: Map<String, DeclarationSite>,
-    /**
-     * For each of [names][KatachiMissingTemplateCaptureException.names], the values that pick a
-     * directory or a module that exists now, sorted. Empty when none could be listed -- the
-     * directory above the capture holds a wildcard of its own, or the project could not be read.
-     */
+    /** For each missing capture, the values that pick an existing directory or module, sorted; empty when none could be listed. */
     public val existingValues: Map<String, List<String>>,
-    /**
-     * How each of [names][KatachiMissingTemplateCaptureException.names] is declared:
-     * `capture("feature")` or `":feature:${capture("feature")}".module { }`.
-     */
     internal val declaredWith: Map<String, String>,
     /**
      * Where the file declaration that could not be placed, or the `.template { }` that read the
@@ -115,15 +98,11 @@ public class KatachiMissingTemplateCaptureException internal constructor(
 /**
  * A capture was given a value that cannot be one directory level.
  *
- * A capture is one level of a path, exactly like the `*` it replaces. A value that is empty or
- * blank, that climbs (`.` or `..`), that holds a separator, or that holds a character no file name
- * may hold would make generation write somewhere the layout does not describe -- or outside the
- * project. What Windows refuses or silently changes is refused on every platform, so that a value
- * means the same directory wherever the run happens: a trailing `.` or space (Windows drops it,
- * and `home.` would land in `home`) and a reserved device name such as `CON`.
+ * A capture is one level of a path, like the `*` it replaces. An empty value, `.` or `..`, a
+ * separator, or a character no file name may hold is refused. So is what Windows refuses or
+ * silently changes (a trailing `.` or space, a device name such as `CON`), on every platform.
  *
- * A module capture's value is one level of the module path -- `home` of `:feature:home` -- and is
- * checked by the same rule.
+ * A module capture's value is one level of the module path: `home` of `:feature:home`.
  *
  * ## Example 1: catch a value that spans two levels
  * ```kt
@@ -146,17 +125,13 @@ public class KatachiInvalidTemplateCaptureValueException internal constructor(
     /** The value the run passed. */
     public val value: String,
     /**
-     * What is wrong: with [value][KatachiInvalidTemplateCaptureValueException.value] itself when
-     * [segment][KatachiInvalidTemplateCaptureValueException.segment] is `null`, with
-     * [segment][KatachiInvalidTemplateCaptureValueException.segment] otherwise.
+     * What is wrong with the value, or with [segment][KatachiInvalidTemplateCaptureValueException.segment] when it is not `null`.
      */
     public val problem: Problem,
     /**
-     * The whole path segment [value][KatachiInvalidTemplateCaptureValueException.value] landed in,
-     * with every capture of it filled in -- `"a."` for `"${capture("x")}."` given `--arg x=a`.
-     * `null` when [problem][KatachiInvalidTemplateCaptureValueException.problem] is about
-     * [value][KatachiInvalidTemplateCaptureValueException.value] on its own, such as one holding a
-     * `/`, rather than about the segment it partially filled.
+     * The path segment the value landed in, with captures filled in; `null` when the problem is with the value alone.
+     *
+     * For example `"a."` for `"${capture("x")}."` given `--arg x=a`.
      */
     public val segment: String? = null,
     /** Where a layout path naming the capture was declared. */
@@ -223,8 +198,10 @@ public class KatachiInvalidTemplateCaptureValueException internal constructor(
         Separator("it holds a path separator"),
 
         /**
-         * The value holds a character no file name may hold: `*`, `:` and the rest Windows refuses,
-         * a control character (DEL included) or a line separator such as U+2028.
+         * The value holds a character no file name may hold.
+         *
+         * `*`, `:` and the rest Windows refuses, a control character (DEL included), or a line separator
+         * such as U+2028.
          */
         UncreatableCharacter("it holds a character a directory name cannot hold"),
 
@@ -253,15 +230,10 @@ public class KatachiInvalidTemplateCaptureValueException internal constructor(
 /**
  * A module capture was given a value that names no existing module.
  *
- * A wildcard module key, `":feature:${capture("feature")}".module { }`, stands for the modules
- * that exist. Generating into one that does not would put files in a directory no module owns,
- * and the next `assert()` would report it as `[UnexpectedDirectory]`. Refused even when another
- * place of the role would take the file: the value was passed on purpose, and generating
- * somewhere else would drop it without a word.
- *
- * A [KatachiCheckException], like [KatachiExistingTemplateFileException]: the definition is right
- * and so is the shape of the value; what is wrong is that the project does not hold the module
- * (yet), or that the value names another than intended.
+ * A module key with a capture, such as `":feature:${capture("feature")}"`, stands for the modules
+ * that exist. Files written into a module that does not exist would be reported as
+ * `[UnexpectedDirectory]` by the next check. Pass an existing module's name, or create the module
+ * first.
  *
  * ## Example 1: catch a misspelt module
  * ```kt
@@ -293,9 +265,9 @@ public class KatachiTemplateModuleNotFoundException internal constructor(
      */
     public val existing: List<String>,
     /**
-     * For each of [existing][KatachiTemplateModuleNotFoundException.existing], in the same order,
-     * the `--arg`s that pick it: `"--arg feature=home"`, or `"--arg feature=home --arg layer=data"`
-     * for a key of two names.
+     * The `--arg`s that pick each of [existing][KatachiTemplateModuleNotFoundException.existing], in the same order.
+     *
+     * Such as `"--arg feature=home"`, or `"--arg feature=home --arg layer=data"` for a key of two names.
      */
     public val existingArgs: List<String>,
     /** Where the file declaration being placed was written. */

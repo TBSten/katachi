@@ -7,25 +7,13 @@ import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.internal.displayExistingPath
 import me.tbsten.katachi.internal.displayPath
 
-/**
- * Indent of everything inside a block. A fragment meant to be copied adds another step.
- *
- * `internal` rather than private so that `FileConstraintBlocks.kt` — split off this file for size
- * — indents to the same depth by construction rather than by copying the string.
- */
 internal const val STEP: String = "  "
 
 /**
  * The violations, written out for the standard output of a test.
  *
- * What an agent reads is that output, so what is not in it does not exist; and what is good
- * for an agent turns out to be good for a person too. Hence: no colour and no character
- * outside ASCII, one block per violation with its parts always in the same order, every path
- * a `file:///...` absolute URI a reader can open as it stands — except a pattern, and the DSL
- * fragment meant for pasting — and the counts on the first line rather than the last, because
- * long output gets cut off at the end.
- *
- * Only a [Severity.Error] violation can make `assert()` fail, so this text has three shapes:
+ * ASCII only, one block per violation, every path a `file:///...` URI, and the counts on the
+ * first line. The text has three shapes:
  * - **Any error present** — the usual failure report (summary, error blocks, the error
  *   truncation line, the sentences saying what could not be checked), and — if there are any —
  *   a Warning section appended after it.
@@ -39,12 +27,9 @@ internal const val STEP: String = "  "
  * println(report)
  * ```
  *
- * @param maxViolations the combined budget for the two sections: how many error blocks and how
- *   many warning blocks this writes out, together. A section with nothing in it spends none of
- *   it; when only one severity is present, that section gets the whole budget; when both are,
- *   warnings take a slice of it — never fewer than one block, never more than there are
- *   warnings — capped at a quarter, and errors take what is left. Either truncation line says
- *   how many more were left out of its own section; the summary counts every error either way.
+ * @param maxViolations how many error and warning blocks this writes out, together. When both
+ *   severities are present, warnings take at least one block and at most a quarter; the summary
+ *   counts every error either way.
  * @param projectRoot what the violations' relative paths are resolved against to print them as
  *   `file:///...` URIs. `null` prints them as the violations carry them, relative to the root.
  */
@@ -102,10 +87,6 @@ public fun List<Violation>.report(
     }
 }
 
-/**
- * [report], followed by [trailer]: lines about the run as a whole that come last, after every
- * truncation line, so that cutting blocks away never cuts them too. Empty [trailer] is [report].
- */
 internal fun List<Violation>.reportWithTrailer(
     maxViolations: Int,
     projectRoot: FsPath?,
@@ -116,20 +97,6 @@ internal fun List<Violation>.reportWithTrailer(
     return if (report.isEmpty()) trailer.joinToString("\n") else report + "\n\n" + trailer.joinToString("\n")
 }
 
-/**
- * Which indices of [violations] a report shows when it can only afford [max] blocks, in
- * ascending order — chosen, never reordered, so the report keeps the caller's own order among
- * the blocks it does show.
- *
- * The budget is split fairly across the kinds that actually turned up, not across all of
- * [ViolationKind]: a run with only [ViolationKind.Unexpected] violations should not lose a slot
- * to a [ViolationKind.Missing] that has nothing to show. Every kind present gets one block
- * first, budget allowing; what is left is handed out one at a time, in [ViolationKind.entries]
- * order, to whichever kind still has more to show, until the budget or every kind runs out.
- *
- * [report] calls this once for the errors and once for the warnings, each with its own slice of
- * the overall budget, so [violations] here never mixes the two severities.
- */
 private fun shownIndicesOf(violations: List<Violation>, max: Int): List<Int> {
     val indicesByKind = violations.indices.groupBy { violations[it].kind }
     val quota = ViolationKind.entries.associateWith { 0 }.toMutableMap()
@@ -163,14 +130,7 @@ private fun shownIndicesOf(violations: List<Violation>, max: Int): List<Int> {
         .sorted()
 }
 
-/**
- * The failure report's first line: how many errors, broken down by kind, with the warning
- * count tacked on outside the parentheses.
- *
- * The warning count sits outside the per-kind breakdown on purpose: that breakdown answers
- * "why did the check fail", and folding a warning's kind into it would misread as one more
- * reason to fix something, when nothing here failed because of it.
- */
+// The warning count stays outside the per-kind breakdown, which explains why the run failed.
 private fun summaryLine(errors: List<Violation>, warningCount: Int): String {
     val counted = ViolationKind.entries
         .map { kind -> kind to errors.count { it.kind == kind } }
@@ -185,33 +145,12 @@ private fun summaryLine(errors: List<Violation>, warningCount: Int): String {
     }
 }
 
-/**
- * The heading the Warning section opens with, whether it stands alone (nothing failed) or is
- * appended after a failure report.
- *
- * The second sentence stays the same regardless of the count on purpose. Written to agree with
- * the count ("does" / "do not fail the check"), it would sit right under a first line that just
- * said the check *did* fail whenever a run holds both errors and warnings, reading as if the
- * report contradicted itself one line down.
- */
+// The second sentence stays the same for any count, on purpose.
 private fun warningHeading(count: Int): String {
     val noun = if (count == 1) "warning" else "warnings"
     return "Katachi check found $count $noun. Warnings never fail the check."
 }
 
-/**
- * The "Showing first N (M more)" line for one severity's own slice of the budget — `null` when
- * nothing of that severity was left out. The caller hangs [TRUNCATION_HINT] under it, indented
- * one [STEP], so the line that says blocks were cut is also the line that says how to see them.
- *
- * @param noun appended right after the shown count: `""` for the error section, so it reads
- *   `Showing first 10 (4 more: ...)` exactly as it always has, and `" warnings"` for the Warning
- *   section.
- * @param withBreakdown whether a kind-by-kind breakdown is appended when more than one kind is
- *   hiding something. Off for the Warning section: a warning's own kind already names it on the
- *   block's first line ([Violation.label]), so repeating the same two names here would say
- *   nothing a reader does not already have.
- */
 private fun truncationLine(
     all: List<Violation>,
     shown: List<Violation>,
@@ -233,15 +172,6 @@ private fun truncationLine(
     return "Showing first ${shown.size}$noun ($hidden more$breakdown)"
 }
 
-/**
- * Sentences at the end of a report saying what the run could not finish, in this order: paths
- * (files and/or directories), constraints, then checks that threw. Empty when the run saw all
- * of them.
- *
- * The paths sentence follows what actually failed: files, directories, or `paths` when both
- * did, because no single noun covers the two and a report that says "files" about a directory
- * sends the reader to the wrong place.
- */
 private fun uncheckedLines(violations: List<Violation>): List<String> = buildList {
     val files = violations.count { it is UncheckedFile }
     val directories = violations.count { it is UncheckedDirectory }
@@ -262,12 +192,6 @@ private fun uncheckedLines(violations: List<Violation>): List<String> = buildLis
     if (checks > 0) add("$checks ${if (checks == 1) "check" else "checks"} could not be run.")
 }
 
-/**
- * The report block of one violation: its `[label] path` line first, then what the kind has to say.
- *
- * `internal` rather than private so that the SARIF report (`report.internal`) can build its
- * `message.text` from the same lines, and the two can never word one violation differently.
- */
 internal fun blockOf(violation: Violation, root: String?): List<String> = when (violation) {
     is UnexpectedFile -> unexpectedFileBlock(violation, root)
     is UnexpectedDirectory -> unexpectedDirectoryBlock(violation, root)
@@ -333,16 +257,6 @@ private fun unexpectedDirectoryBlock(violation: UnexpectedDirectory, root: Strin
     addAll(fragment(roleSuggestionFor(violation.path, isDirectory = true)))
 }
 
-/**
- * A file a pattern matched, held back because the levels one capture name ties together read
- * different values.
- *
- * The lines after the first say, per name, what every level read and what it was held to, and
- * the How to fix names the one place the file would be allowed -- `expectedPath` resolved like
- * `MissingFile`'s first line, a URI for a file that does not exist yet -- before the usual
- * "delete it". The last items depend on what failed: two plain levels can be given different
- * names; a derived level can drop its conversion.
- */
 private fun captureMismatchBlock(violation: CaptureMismatch, root: String?): List<String> = buildList {
     val failed = violation.occurrences.filter { it.expected != null && it.expected != it.value }
     val failedNames = failed.map { it.name }.distinct()
@@ -383,7 +297,6 @@ private fun captureMismatchBlock(violation: CaptureMismatch, root: String?): Lis
     }
 }
 
-/** `"home" at level 2`, plus ` (expected "settings"<from>)` when the level was held to something else. */
 private fun occurrenceText(occurrence: CaptureOccurrence, from: String = ""): String {
     val expected = occurrence.expected
     val held = if (expected != null && expected != occurrence.value) " (expected \"$expected\"$from)" else ""
@@ -413,16 +326,6 @@ private fun uncheckedFileBlock(violation: UncheckedFile, root: String?): List<St
     "$STEP$STEP- If it is, report this at https://github.com/TBSten/katachi/issues with the cause above",
 )
 
-/**
- * A directory that threw.
- *
- * The two reasons differ in one sentence and in nothing else: what to do about an unreadable
- * directory is the same either way, and only what was lost with it differs.
- * [UncheckedDirectoryReason.NotWalked] costs everything below the directory;
- * [UncheckedDirectoryReason.ModulesNotDiscovered] costs the modules at and below it, while the
- * walk still looked inside — so reusing the first sentence for the second would tell the
- * reader nothing there was checked when it was.
- */
 private fun uncheckedDirectoryBlock(violation: UncheckedDirectory, root: String?): List<String> = listOf(
     "[${violation.label}] ${displayExistingPath(root, violation.path)}",
     when (violation.reason) {
@@ -450,11 +353,6 @@ private fun uncheckedCheckBlock(violation: UncheckedCheck, root: String?): List<
     "$STEP$STEP- Report it at https://github.com/TBSten/katachi/issues if the check is one of katachi's",
 )
 
-/**
- * A violation declared outside katachi. The block is the first line plus what [Violation.details]
- * states about it, and nothing else: katachi does not know what the violation means, so it
- * writes no sentence about it and offers no "How to fix:".
- */
 private fun foreignBlock(violation: Violation, root: String?): List<String> = buildList {
     // A blank path has nothing to resolve: `<empty>` stays the marker it is rather than
     // turning into a URI of a file named `<empty>`.
@@ -463,38 +361,18 @@ private fun foreignBlock(violation: Violation, root: String?): List<String> = bu
     for (detail in violation.details) add("$STEP${oneLine(detail.label)}: ${oneLine(detail.value)}")
 }
 
-/**
- * Keeps a value written outside katachi — or by a user, such as a constraint name — inside one
- * line of a block. A newline in a label would break the very thing an agent greps for
- * (`grep -A 20 "^\["`). Trimming is not politeness here; it is what keeps the format a format.
- */
+// A newline in a label would break what agents grep for (`^\[`).
 internal fun oneLine(value: String): String =
     value.lineSequence().firstOrNull()?.trim().orEmpty().ifEmpty { "<empty>" }
 
-/**
- * A failure in one line: its type and the first line of its message, which is what an issue
- * needs to be worth opening.
- *
- * The stack trace is left out. It points into katachi rather than at the project, and
- * printing one per block would bury every violation the reader came for. This is the first line
- * of a `Cause:` entry only; [causeLines] adds the lines of the message after it.
- */
+// Stack trace deliberately omitted: it points into katachi, not the project.
 internal fun causeLine(cause: Throwable): String {
     val type = cause::class.qualifiedName ?: cause::class.java.name
     val message = cause.message?.lineSequence()?.firstOrNull()?.trim()
     return if (message.isNullOrEmpty()) type else "$type: $message"
 }
 
-/**
- * A failure as the lines of a block's `Cause:` entry: [causeLine] first, then every further line
- * of the message one step deeper.
- *
- * The whole message is kept because a katachi exception writes what went wrong on its first line
- * and the reason and the way out on the lines after it; the first line alone says what is
- * broken and not what to do. Blank lines of the message are dropped: inside a block a blank line
- * is what sets `Cause:` apart from `How to fix:`, so one inside the cause could not be told from
- * that separator.
- */
+// Stack trace deliberately omitted: it points into katachi, not the project.
 internal fun causeLines(cause: Throwable): List<String> {
     val rest = cause.message?.lines()?.drop(1).orEmpty()
         .map { it.trimEnd() }
@@ -503,5 +381,4 @@ internal fun causeLines(cause: Throwable): List<String> {
     return listOf("${STEP}Cause: ${causeLine(cause)}") + rest
 }
 
-/** Indents a copyable fragment one step further than the list it hangs under. */
 private fun fragment(lines: List<String>): List<String> = lines.map { "$STEP$STEP$STEP$STEP$it" }

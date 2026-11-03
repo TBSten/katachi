@@ -13,48 +13,19 @@ import me.tbsten.katachi.internal.catching
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import java.util.IdentityHashMap
 
-/** The file a section is worked out for when the role has no example and the project no file. */
 private const val PLACEHOLDER_FILE_NAME: String = "Sample.kt"
 
-/** What a role example without an extension is read as: the name of a Kotlin file. */
 private const val KOTLIN_EXTENSION: String = ".kt"
 
-/** One section a constraint wrote about itself, as the page holds it. */
 internal class ConstraintSection(val markdown: String)
 
-/**
- * One entry of a role page's `## Constraints` list: a named constraint.
- *
- * [section] is the section that constraint wrote, or `null` when it wrote none. A constraint
- * that was folded into another -- the same check handed to several modules -- points at the
- * section it was folded into. The page turns the section into a link to its first heading (see
- * [rolePage]): the id of a heading depends on the other headings of the page, which only the page
- * knows.
- */
 internal class ConstraintListItem(val name: String, val section: ConstraintSection?)
 
-/** What a role's constraints put on its page: the list entries and the sections they wrote. */
 internal class ConstraintDocumentation(
     val items: List<ConstraintListItem>,
     val sections: List<ConstraintSection>,
 )
 
-/**
- * What [constraints] -- the constraints of [role], in the order they were written -- put on the
- * role's page: one list item per named declaration, and the sections, empty ones left out. See
- * [FileConstraint.documentSection].
- *
- * One section per constraint, not per declaration of it: a constraint written inside a wildcard
- * module key can be handed out once per module, and the same check would otherwise describe
- * itself once for each. Handed out means either the same check (one `fileConstraint(check = x)`
- * given to every module) or a check of its own per module (a block that builds its check, such as
- * `ktFileContent { }`, run once per module) -- the latter is recognised by being written at the
- * same place under the same name. Declarations folded into one are listed once: the list item of a
- * name is not repeated for each module it was handed to, and it links to the section it was folded
- * into. Whatever a constraint throws is not caught
- * -- a constraint that cannot describe itself is a mistake in the definition, the kind the page
- * generation stops on.
- */
 internal fun constraintSectionsOf(
     context: ArchitectureProcessContext<*>,
     role: Role,
@@ -105,22 +76,9 @@ internal fun constraintSectionsOf(
     return ConstraintDocumentation(items, sections)
 }
 
-/**
- * [section] as a page holds it: the blank lines around it dropped, so that one blank line
- * separates it from the section before it however it was written. `null` for a blank section,
- * which says nothing and gets no place on the page.
- */
 private fun sectionBody(section: String): String? =
     section.lines().dropWhile { it.isBlank() }.joinToString("\n").trimEnd().ifEmpty { null }
 
-/**
- * The file a section shows its rules for: the role's first example, the first file of the
- * project [coverage] covers, or a stand-in. See [FileConstraintDocumentContext.exampleFile].
- *
- * The project is listed only on the second branch, and a project that cannot be listed -- no
- * root, a tree that refuses to be read -- falls through to the stand-in rather than stopping the
- * page: the example is an illustration, and the rules it illustrates come from the definition.
- */
 private fun exampleFileOf(
     context: ArchitectureProcessContext<*>,
     role: Role,

@@ -8,12 +8,6 @@ import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.KatachiForeignProcessContextException
 
-/**
- * The context every `process` entry point builds.
- *
- * `withArgs` passes [walk] along by reference rather than rebuilding it, which is what keeps
- * one run at one walk of the project and one set of evaluated constraints.
- */
 internal class RealArchitectureProcessContext<Args>(
     internal val walk: ProjectWalk,
     override val args: Args,
@@ -44,15 +38,6 @@ internal class RealArchitectureProcessContext<Args>(
     override fun toString(): String = "ArchitectureProcessContext(args=$args, $walk)"
 }
 
-/**
- * The walk behind [this], for katachi's own checks.
- *
- * [me.tbsten.katachi.check.LayoutCheck] and [me.tbsten.katachi.check.FileConstraintCheck] read
- * violations, constraints and the project root, none of which is on the public
- * [ArchitectureProcessContext]: a processor does not read violations off the context, it *is* a
- * check and produces them. This door exists only so that katachi's own checks can be processors
- * among others instead of a second walk of the tree.
- */
 internal val ArchitectureProcessContext<*>.projectWalk: ProjectWalk
     get() = when (this) {
         is RealArchitectureProcessContext<*> -> walk
@@ -61,27 +46,8 @@ internal val ArchitectureProcessContext<*>.projectWalk: ProjectWalk
         else -> throw KatachiForeignProcessContextException(this::class.java.name)
     }
 
-/**
- * The tree [this] context's walk reads, which katachi's own specs point at a tree that only
- * exists in memory.
- *
- * Not on [ArchitectureProcessContext] itself: [KatachiFileSystem] has no in-memory implementation
- * outside `:katachi`, so a processor written elsewhere tests against a real checkout instead and
- * has no reason to reach for this.
- */
 internal val ArchitectureProcessContext<*>.fileSystem: KatachiFileSystem get() = projectWalk.fileSystem
 
-/**
- * The same run with different arguments: everything else, the one walk of the project included,
- * is shared.
- *
- * This is how `+` composition and a CLI run naming several processors stay at one walk. Not on
- * [ArchitectureProcessContext] itself: deciding what a processor's arguments are is katachi's
- * job, not a processor's.
- *
- * @param onLog where the derived context sends [ArchitectureProcessContext.log]. `null` keeps
- *   this context's own.
- */
 internal fun <Args, A> ArchitectureProcessContext<Args>.withArgs(
     args: A,
     onLog: ((String) -> Unit)? = null,

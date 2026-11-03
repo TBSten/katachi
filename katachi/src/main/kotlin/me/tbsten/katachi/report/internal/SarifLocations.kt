@@ -18,33 +18,25 @@ import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.internal.fileUri
 import me.tbsten.katachi.report.SarifContext
 
-/** The `uriBaseId` every path below the repository root is written against. */
 internal const val SRCROOT: String = "%SRCROOT%"
 
-/** One `physicalLocation`: where, and -- when known -- which line. */
 internal class SarifLocation(
     val uri: String,
     val uriBaseId: String?,
     val startLine: Int?,
 )
 
-/** One `relatedLocations[]` entry: a location and what it is to the violation. */
 internal class SarifRelatedLocation(
     val location: SarifLocation,
     val message: String,
 )
 
-/** Where one result points: its `locations[0]` and its `relatedLocations[]`. */
 internal class SarifLocations(
     val primary: SarifLocation,
     val related: List<SarifRelatedLocation>,
 )
 
-/**
- * The repository root and the prefix from it down to the project root, checked against each
- * other: a prefix the project root does not actually end with is dropped, so that a `uri` and
- * the base it is relative to can never disagree.
- */
+// A prefix the project root does not actually end with is dropped, so a uri and its base never disagree.
 internal class RepositoryBase(projectRoot: FsPath, requestedPrefix: String) {
     val prefix: String
     val root: FsPath
@@ -65,22 +57,15 @@ internal class RepositoryBase(projectRoot: FsPath, requestedPrefix: String) {
         }
     }
 
-    /** The `originalUriBaseIds` entry: the repository root as a `file:///.../` URI. */
     val uri: String get() = fileUri(root.value) + "/"
 }
 
-/**
- * Decides where each violation is placed, and remembers why any of them could not be placed at
- * the line that declared it. Built once per document: the source roots are walked once and the
- * index of file names is kept.
- */
 internal class SarifLocationResolver(
     private val context: SarifContext,
     private val base: RepositoryBase,
 ) {
     private val notes = LinkedHashSet<String>()
 
-    /** The reasons a declaration site stayed unresolved, one sentence each, first seen first. */
     val notifications: List<String> get() = notes.toList()
 
     private val filesByName: Map<String, List<FsPath>> by lazy {
@@ -93,10 +78,6 @@ internal class SarifLocationResolver(
     fun locationsOf(violation: Violation): SarifLocations =
         SarifLocations(primaryOf(violation), relatedOf(violation))
 
-    /**
-     * Where the result points, in the order the design fixes: the file itself when it exists,
-     * the line that declared it, the `architecture { }` call, and as a last resort a bare name.
-     */
     private fun primaryOf(violation: Violation): SarifLocation {
         if (violation is StaleBaselineEntry) {
             val baselineFile = context.projectRoot / violation.baselinePath
@@ -153,11 +134,9 @@ internal class SarifLocationResolver(
         else -> emptyList()
     }
 
-    /** [site] as a location when it resolves to one file, and nothing said about it otherwise. */
     private fun resolvedLocationOf(site: DeclarationSite): SarifLocation? =
         (lookup(site) as? SiteLookup.Found)?.let { locationOf(it.file, lineOf(site)) }
 
-    /** The declaration site a violation of this type carries, or `null` when it has none. */
     private fun declaredSiteOf(violation: Violation): DeclarationSite? = when (violation) {
         is MissingFile -> violation.declaredAt
         is CaptureMismatch -> violation.declaredAt
@@ -168,17 +147,11 @@ internal class SarifLocationResolver(
         else -> null
     }
 
-    /** A violation's path as an absolute path: below the project root unless it already is one. */
     private fun pathOf(path: String): FsPath {
         val parsed = FsPath.of(path)
         return if (parsed.isAbsolute) parsed else context.projectRoot / path
     }
 
-    /**
-     * [file] as a location: relative to the repository root when it sits below the project
-     * root, an absolute `file:///` URI with no base when it does not (source roots can point
-     * anywhere). Either way the path is percent-encoded into a URI.
-     */
     private fun locationOf(file: FsPath, line: Int?): SarifLocation {
         val relative = file.relativeTo(context.projectRoot)
             ?: return SarifLocation(fileUri(file.value), uriBaseId = null, startLine = line)
@@ -208,7 +181,6 @@ internal class SarifLocationResolver(
         notes += "$reason $subject placed at $landing."
     }
 
-    /** A path for a notification: relative to the project root when it can be, deterministic either way. */
     private fun display(path: FsPath): String {
         val relative = path.relativeTo(context.projectRoot) ?: return path.value
         return relative.ifEmpty { "." }
@@ -231,19 +203,14 @@ internal class SarifLocationResolver(
 
     private fun lineOf(site: DeclarationSite): Int? = site.lineNumber.takeIf { it > 0 }
 
-    /**
-     * The line a violation carries for the file itself, when it is one SARIF accepts.
-     * `UnsatisfiedFileConstraint.line` is filled in by backends outside katachi, and a `0` or a
-     * negative number from one of them would fail the schema (`startLine` is at least 1) and
-     * with it the whole upload, so it is treated as "no line".
-     */
+    // Backends outside katachi may give 0 or a negative line; startLine must be at least 1 or the whole upload
+    // fails, so treat it as no line.
     private fun lineOf(violation: Violation): Int? =
         (violation as? UnsatisfiedFileConstraint)?.line?.takeIf { it > 0 }
 
     private sealed interface SiteLookup {
         class Found(val file: FsPath) : SiteLookup
 
-        /** Not resolved, with the sentence saying why -- `null` for a site that was never captured. */
         class Missing(val reason: String?) : SiteLookup
     }
 

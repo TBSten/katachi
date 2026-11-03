@@ -6,13 +6,7 @@ import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.dsl.files.ProjectRoot
 
-/**
- * A kind of file that marks the top of a project. Same set as Konsist's root providers, so a
- * project that works with Konsist works with katachi without extra configuration.
- *
- * Only which directory carries one matters: [findProjectRoot] stops at the first directory
- * that carries any of them, whichever kind it is.
- */
+// Same set as Konsist's root providers, so a project that works with Konsist works with katachi.
 internal enum class ProjectRootMarker(val markerPaths: List<String>) {
     Gradle(
         listOf(

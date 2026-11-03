@@ -8,37 +8,15 @@ import me.tbsten.katachi.dsl.KatachiChainedCaptureTransformException
 import me.tbsten.katachi.dsl.KatachiStrayCaptureTokenException
 import me.tbsten.katachi.dsl.KatachiUnknownCaptureTransformException
 
-/**
- * Wraps [name] -- and the [transform] a derived capture carries, as `name.spelling` -- between
- * two characters of the Unicode private use area, which never appear in a layout key someone
- * typed by hand.
- *
- * `capture(name)` hands this back as an ordinary `String`, so it can be embedded anywhere a
- * layout key is built with Kotlin's own string templates -- `"${capture("x")}Screen"`,
- * `"feature-${capture("x")}"`, `capture("x") / "src"`. Every place that reads a finished key
- * (a file name, a directory key, a module path) looks for this token before handing the key to
- * [me.tbsten.katachi.dsl.internal.Glob]: [parseCaptureSegment] strips it back out, and
- * substitutes a plain `*` for the glob compiler, which is what keeps a named capture matched
- * exactly like an unnamed wildcard. A name holds no `.` (see `requireValidIdentifier`), so the
- * `.` before a transform's spelling is the one separator the token needs.
- */
+// The private-use marks never appear in hand-typed keys; every reader of a finished key must strip them via
+// parseCaptureSegment. A name holds no `.`, so `.` is the one separator.
 internal fun captureToken(name: String, transform: CaptureTransform? = null): String =
     "$CAPTURE_TOKEN_START$name${transform?.let { "$TRANSFORM_SEPARATOR${it.spelling}" }.orEmpty()}$CAPTURE_TOKEN_END"
 
-/** Whether [this] embeds a [captureToken] anywhere. */
 internal fun String.containsCaptureToken(): Boolean = CAPTURE_TOKEN_START in this
 
-/**
- * Refuses [text] if it embeds a `capture(...)` token: it was read somewhere other than a layout
- * key, which is the only place a token is stripped back out.
- *
- * Called wherever katachi takes a `String` from the DSL that is not itself a layout key --
- * `description`, a `fileConstraint` name, and, once a `.template { }` block has been evaluated,
- * its returned content.
- *
- * @param where a short noun phrase for the message, such as `"a description"`.
- * @throws KatachiStrayCaptureTokenException when [text] embeds a token.
- */
+// Tokens are stripped only from layout keys; reject them wherever else a DSL String is read (description,
+// constraint name, template content).
 internal fun requireNoCaptureToken(text: String, where: String, declaredAt: DeclarationSite) {
     if (!text.containsCaptureToken()) return
     val start = text.indexOf(CAPTURE_TOKEN_START)
@@ -51,22 +29,8 @@ internal fun requireNoCaptureToken(text: String, where: String, declaredAt: Decl
     )
 }
 
-/**
- * [this], a `String` a naming conversion was applied to, as the derived capture token that
- * conversion makes of it -- or `null` when [this] holds no token at all, which is the common
- * case and the one every `nameWords` caller outside a layout key takes: nothing is parsed and no
- * stack is walked for a plain name.
- *
- * | receiver | result |
- * |---|---|
- * | no token | `null`: the caller converts the characters as it always did |
- * | one plain token and nothing else | the token with [transform] attached; the characters are not changed |
- * | one token that already carries a conversion | [KatachiChainedCaptureTransformException] |
- * | a token beside other text, or two tokens | [KatachiCaptureTransformOnMixedTextException] |
- *
- * The declaration site is read only on the way to an exception, inside this function, so it has
- * to stay a real (non-inline) frame for `captureDeclarationSite` to skip past.
- */
+// Must stay a real (non-inline) frame so captureDeclarationSite can skip past it; the site is read only when
+// throwing.
 internal fun String.asTransformedCaptureToken(transform: CaptureTransform): String? {
     if (!containsCaptureToken()) return null
     val start = indexOf(CAPTURE_TOKEN_START)
@@ -94,15 +58,12 @@ internal fun String.asTransformedCaptureToken(transform: CaptureTransform): Stri
     return captureToken(name, transform)
 }
 
-/** Every token of [text] written as `${capture("name")}` / `${capture("name").pascalCase}`, the rest kept as it is. */
 internal fun displayCaptureTokens(text: String): String =
     CAPTURE_TOKEN.replace(text) { match -> displayOf(match.groupValues[1]) }
 
-/** The names of every token in [text], in order, conversions dropped. */
 private fun captureNamesIn(text: String): List<String> =
     CAPTURE_TOKEN.findAll(text).map { it.groupValues[1].substringBefore(TRANSFORM_SEPARATOR) }.toList()
 
-/** `${capture("name")}` or `${capture("name").pascalCase}` for what sits between a token's two marks. */
 private fun displayOf(inner: String): String {
     val name = inner.substringBefore(TRANSFORM_SEPARATOR)
     val transform = inner.substringAfter(TRANSFORM_SEPARATOR, missingDelimiterValue = "")
@@ -115,32 +76,17 @@ private const val TRANSFORM_SEPARATOR: Char = '.'
 
 private val CAPTURE_TOKEN: Regex = Regex("$CAPTURE_TOKEN_START([^$CAPTURE_TOKEN_END]*)$CAPTURE_TOKEN_END")
 
-/** One piece of a [CaptureSegment]: plain text, or the capture a `capture(...)` token stood for. */
 internal sealed interface SegmentPart {
     data class Literal(val text: String) : SegmentPart
 
-    /** [transform] is `null` for a plain capture, which takes a `--arg` value of its own. */
     data class Capture(val name: String, val transform: CaptureTransform?) : SegmentPart
 }
 
-/**
- * One capture of a [CaptureSegment], with which `*` of the segment it is: [wildcardIndex] counts
- * every unescaped `*` the glob compiler reads out of the segment, named or not, from the left.
- */
 internal data class SegmentCapture(val name: String, val transform: CaptureTransform?, val wildcardIndex: Int)
 
-/**
- * One `/`-level of a layout key, once its `capture(...)` tokens have been read back out.
- *
- * Built once, by [parseCaptureSegment], and kept on the [LayoutNode] that segment became: the
- * check reads [globSegment], where every token is already a plain `*`, and the levels of
- * [captures] are what a bound capture is compared on and what template generation fills a
- * `--arg` value into.
- */
 internal class CaptureSegment(
     val parts: List<SegmentPart>,
 ) {
-    /** The captures of this segment, in the order they appear, each with its `*`'s index. */
     val captures: List<SegmentCapture> = buildList {
         // Each capture is the `*` at its own offset in [globSegment]; the `*` before it that
         // stand for a value are the ones the glob lexer calls capturing.
@@ -157,13 +103,10 @@ internal class CaptureSegment(
         }
     }
 
-    /** The names this segment's tokens carry, in the order they appear, a derived one's included. */
     val names: List<String> = captures.map { it.name }
 
-    /** [parts], with every capture read as a plain `*` -- what the glob compiler is given. */
     val globSegment: String = globSegmentOf(parts)
 
-    /** For a message: every token shown as `${capture("name")}` (`.pascalCase` kept), exactly as it was written. */
     fun display(): String = parts.joinToString("") { part ->
         when (part) {
             is SegmentPart.Literal -> part.text
@@ -181,17 +124,7 @@ private fun globSegmentOf(parts: List<SegmentPart>): String = parts.joinToString
     }
 }
 
-/**
- * Reads [segment] back into a [CaptureSegment], or `null` when it holds no `capture(...)` token
- * at all -- the common case, for which nothing further has to be done.
- *
- * @throws KatachiAdjacentCaptureException when two tokens sit next to each other with no literal
- *   between them, or a token sits next to a literal `*`: substituting both for `*` would fuse
- *   into `**`, which the glob compiler reads as the unrelated "any depth" wildcard rather than
- *   as two single levels.
- * @throws KatachiUnknownCaptureTransformException when a token names a conversion `Naming.kt`
- *   does not have -- which no layout can write, since only those conversions make a token.
- */
+// Adjacent tokens, or a token beside a literal `*`, would fuse into `**` (any depth), so they are rejected.
 internal fun parseCaptureSegment(segment: String, declaredAt: DeclarationSite): CaptureSegment? {
     if (!segment.containsCaptureToken()) return null
     val parts = mutableListOf<SegmentPart>()
@@ -228,12 +161,7 @@ internal fun parseCaptureSegment(segment: String, declaredAt: DeclarationSite): 
     return result
 }
 
-/**
- * Rejects a token that [GlobLexer] reads inside `{...}` or `[...]`: a `*` there is never handed
- * back as a value, so the name could not be read.
- *
- * @throws KatachiCaptureInsideBracketsException when a token sits inside brackets.
- */
+// A `*` inside `{...}` or `[...]` is never handed back as a value, so a name there could not be read.
 private fun requireNoCapturesInsideBrackets(segment: CaptureSegment, declaredAt: DeclarationSite) {
     val tokens = GlobLexer.scanLeniently(segment.globSegment)
     var offset = 0
@@ -258,11 +186,7 @@ private fun requireNoCapturesInsideBrackets(segment: CaptureSegment, declaredAt:
     }
 }
 
-/**
- * Rejects a token that abuts another wildcard -- another token, or a literal `*` -- with no
- * literal between them. A lone token with nothing beside it at all (the start or end of the
- * segment) is fine: that is the ordinary "one whole level" case `capture("x")` alone supports.
- */
+// A lone token covering a whole level is fine; abutting wildcards are not.
 private fun requireNoAdjacentCaptures(segment: CaptureSegment, declaredAt: DeclarationSite) {
     // A token touches whatever character sits right against it: the last character of a
     // literal before it, or the first character of a literal after it.

@@ -9,28 +9,8 @@ import me.tbsten.katachi.dsl.internal.DeclaredByGradle
 import me.tbsten.katachi.dsl.internal.Glob
 import me.tbsten.katachi.dsl.internal.GlobLexer
 
-/** How many locations an `[UnexpectedFile]` block offers. */
 private const val NEARBY_LIMIT: Int = 3
 
-/**
- * The places a file could be moved to, and the order they are offered in.
- *
- * A place is a directory a role declared a file in, or wrote `anyFile()` in, with the file
- * name pattern it declared there. A directory that only exists to hold another directory is
- * not one of them: `core/domain`, passed through on the way to the `useCase` directory below
- * it, accepts nothing itself. A directory the role stopped checking in is left out for the
- * same reason: moving a file there hides it instead of giving it a role. What a
- * `module { }` key injected and what `gradle()` declared are left out too, because nobody
- * wrote "put a file here" on that line -- the build script `gradle()` declares in every
- * module is not synthetic (a `buildScript { }` constraint covers it), so its role is told
- * apart by [DeclaredByGradle] rather than by the entry.
- *
- * For one file, every place is filled in with the file's own path ([instantiate]), and the
- * ones that could hold a file of its name are ordered by how far its directory is from
- * theirs: the levels that differ first, then whether the name fits the pattern, then the
- * characters that differ, then declaration order. Three are kept; a place sharing nothing
- * with the file is never one of them.
- */
 internal class NearbyCandidates(entries: List<LayoutEntry>) {
     private val candidates: List<NearbyCandidate> = entries.candidates()
 
@@ -69,7 +49,6 @@ internal class NearbyCandidates(entries: List<LayoutEntry>) {
     }
 }
 
-/** One declared place, read once: the role, its directory pattern by level, and its file name pattern. */
 private class NearbyCandidate(
     val role: Role,
     val segments: List<NearbySegment>,
@@ -81,7 +60,6 @@ private class NearbyCandidate(
     fun matchesName(name: String): Boolean = fileGlob?.matches(name) ?: true
 }
 
-/** A candidate filled in for one file, with its distances; the characters are only counted on a tie. */
 private class Ranked(
     val candidate: NearbyCandidate,
     val directory: List<String>,

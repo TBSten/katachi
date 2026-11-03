@@ -6,13 +6,7 @@ import me.tbsten.katachi.dsl.LayoutModule
 import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.ModuleAwareLayoutScope
 
-/**
- * Runs [block] once per module [modulePath] stands for, the way `.module { }` does.
- *
- * What `gradle()` declares the build scripts with. Unlike the public `.module { }` and
- * `expandModulePath`, this is not deprecated: `Gradle.BuildScript` is declared for every module
- * katachi finds, after the sugar is gone too.
- */
+// Not deprecated, unlike `.module { }`: Gradle.BuildScript is declared for every module katachi finds.
 internal fun LayoutScope.expandModules(
     modulePath: String,
     block: LayoutDirectoryScope.() -> Unit,

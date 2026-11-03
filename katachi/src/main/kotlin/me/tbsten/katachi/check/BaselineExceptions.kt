@@ -5,7 +5,6 @@ import me.tbsten.katachi.KatachiCheckException
 import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.dsl.DeclarationSite
 
-/** How the messages below tell the reader to create or rebuild the file. */
 private const val UPDATE_COMMAND: String = "./gradlew <module>:test -Dkatachi.baseline.update=true"
 
 /**
@@ -52,11 +51,12 @@ public class KatachiInvalidBaselineFileException internal constructor(
     /** What is wrong. */
     public val problem: Problem,
     /**
-     * The value the message is built around: what the parser expected for [Problem.NotJson], the
-     * field name for [Problem.MissingField], [Problem.DuplicateField] and [Problem.UnknownField],
-     * what the value should have been for [Problem.WrongType], the count for
-     * [Problem.CountBelowOne], the line of the first occurrence for [Problem.DuplicateEntry], and
-     * the marker for [Problem.MergeConflict].
+     * The value the message names; what it holds depends on [problem].
+     *
+     * What the parser expected for [Problem.NotJson], the field name for [Problem.MissingField],
+     * [Problem.DuplicateField] and [Problem.UnknownField], what the value should have been for
+     * [Problem.WrongType], the count for [Problem.CountBelowOne], the line of the first occurrence
+     * for [Problem.DuplicateEntry], and the marker for [Problem.MergeConflict].
      */
     public val detail: String,
 ) : KatachiCheckException(
@@ -199,10 +199,9 @@ public class KatachiBaselineWriteException internal constructor(
  * One check class ran more than once in this test run against the same baseline file and found
  * different violations.
  *
- * The baseline files a check's entries under its class name alone, so each run answers for all
- * of them: it reports the entries it did not find as stale, and an update or a prune replaces
- * them with its own. Two runs finding different things would take turns deleting each other's
- * entries. This is thrown instead, by the later run, before it writes anything.
+ * The baseline files a check's entries under its class name alone, so two runs finding
+ * different things would take turns deleting each other's entries. The later run throws this
+ * before it writes anything.
  *
  * It happens when two `assert(...)` calls pass the same check class configured differently, or
  * when two definitions with different layouts name the same baseline file.

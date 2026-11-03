@@ -15,13 +15,18 @@ import org.intellij.lang.annotations.Language
 /**
  * Receiver of `architecture { }`.
  *
- * It holds groups and roles, exactly as a group block does — see [DeclarationContainerScope].
- * The root is a container like any other, so a small definition, or the first example anyone
- * reads, does not have to invent a group before it can name a role.
+ * It holds groups and roles exactly as a group block does (see [DeclarationContainerScope]),
+ * so a small definition does not have to invent a group before it can name a role.
  *
  * ## Example 1: declare groups and roles inside architecture { }
  * ```kt
  * val arch = architecture {
+ *     title = "myapp"
+ *     description = "How this repository is laid out. One page per role."
+ *     files = wholeTree()
+ *     baseline()
+ *
+ *     "BaselineFile".role { layout { "katachi-baseline.json".file() } }
  *     "Readme".role { layout { "README.md".file() } }
  *     "domain".group {
  *         "UseCase".role { }
@@ -34,18 +39,7 @@ public sealed interface ArchitectureScope : DeclarationContainerScope {
     /**
      * What the whole definition is called: the heading of the generated root page.
      *
-     * Written here rather than passed in by whoever runs the generator, because it is a fact
-     * about the project and not about one run of one tool. `null` or unwritten leaves the root
-     * page its own default heading.
-     *
-     * ## Example 1: name the definition
-     * ```kt
-     * val arch = architecture {
-     *     title = "myapp"
-     *     "domain".group { "UseCase".role { } }
-     * }
-     * arch[Title] shouldBe "myapp"
-     * ```
+     * `null` or unwritten leaves the root page its own default heading.
      */
     @get:Language("markdown")
     @set:Language("markdown")
@@ -54,35 +48,14 @@ public sealed interface ArchitectureScope : DeclarationContainerScope {
     /**
      * One paragraph under the root page's heading, as Markdown, kept exactly as written.
      *
-     * The place to say what the repository is and how to read what follows. Unwritten, the root
-     * page goes straight from its heading to the document map.
-     *
-     * ## Example 1: describe the repository on its root page
-     * ```kt
-     * val arch = architecture {
-     *     title = "myapp"
-     *     description = "このリポジトリの構成。役割ごとに1ページある。"
-     *     "domain".group { "UseCase".role { } }
-     * }
-     * arch[Description] shouldBe "このリポジトリの構成。役割ごとに1ページある。"
-     * ```
+     * Say what the repository is and how to read what follows. Unwritten, the root page goes
+     * straight from its heading to the document map.
      */
     @get:Language("markdown")
     @set:Language("markdown")
     public var description: String?
 
-    /**
-     * Which files of the project the check looks at. Defaults to [gitTracked].
-     *
-     * ## Example 1: walk the whole tree instead of only git-tracked files
-     * ```kt
-     * val arch = architecture {
-     *   files = wholeTree()
-     *   "domain".group { "UseCase".role { } }
-     * }
-     * arch.files shouldBe FileSelection.WholeTree
-     * ```
-     */
+    /** Which files of the project the check looks at. Defaults to [gitTracked]. */
     public var files: FileSelection
 
     /**
@@ -113,15 +86,6 @@ public sealed interface ArchitectureScope : DeclarationContainerScope {
      * `-Dkatachi.baseline.update=true`, and a `layout { }` has to allow it like any other file.
      * Called again, the later path replaces the earlier one.
      *
-     * ## Example 1: hold back the violations recorded in katachi-baseline.json
-     * ```kt
-     * val arch = architecture {
-     *     baseline()
-     *     "BaselineFile".role { layout { "katachi-baseline.json".file() } }
-     * }
-     * arch.baseline?.path shouldBe "katachi-baseline.json"
-     * ```
-     *
      * @param path relative to the project root, `/` separated, written the one way it can be: no
      *   `.` or `..` segment, no empty segment and no trailing `/`.
      * @throws KatachiInvalidBaselinePathException when [path] is empty, absolute, contains a `\`,
@@ -138,13 +102,7 @@ internal class ArchitectureScopeImpl : ArchitectureScope {
     private val roles = mutableListOf<Role>()
     private val templateSets = mutableListOf<TemplateSetDeclaration>()
 
-    /**
-     * One namespace for groups and roles alike, exactly as a group block keeps one.
-     *
-     * A top level group's `qualifiedName` is its bare name, and so is a root role's, so
-     * `"domain".group { }` and `"domain".role { }` would both answer to `"domain"` and nothing
-     * could say which one a reference means. Sharing the reservations is how that is said.
-     */
+    // Groups and roles share one namespace: a top-level group and a root role have the same qualifiedName.
     private val declaredNames = DeclaredNames()
 
     override var title: String?

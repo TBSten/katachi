@@ -16,14 +16,7 @@ import me.tbsten.katachi.check.UnsatisfiedFileConstraint
 import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.check.ViolationKind
 
-/**
- * What identifies one entry of the baseline: which check, which rule, which path — plus, for a
- * failed constraint, which role, constraint and declaration. Never a line number: adding a line
- * above a violation must not turn it into a new one.
- *
- * Ordered the way the file lists entries within a check: path, then rule, then the rest, with a
- * missing value before a present one.
- */
+// Never include a line number: adding a line above a violation must not make it a new one.
 internal data class BaselineKey(
     val check: String,
     val rule: String,
@@ -44,22 +37,14 @@ internal data class BaselineKey(
     }
 }
 
-/** How the baseline treats a kind of violation. */
 internal enum class BaselineRule {
-    /** Keyed by check, label and path. */
     ByPath,
 
-    /** Keyed by check, label and path, plus the role, constraint name and declaration name. */
     ByDeclaration,
 
-    /** Never held back: a hole in the run, a warning, or the baseline talking about itself. */
     NotHeldBack,
 }
 
-/**
- * The rule for [violation]. Every violation katachi declares has a branch of its own —
- * `BaselineKeyCoverageSpec` holds that — and anything else is read by its severity and kind.
- */
 internal fun baselineRuleOf(violation: Violation): BaselineRule = when (violation) {
     is UnexpectedFile -> BaselineRule.ByPath
     is UnexpectedDirectory -> BaselineRule.ByPath
@@ -84,10 +69,6 @@ internal fun baselineRuleOf(violation: Violation): BaselineRule = when (violatio
     }
 }
 
-/**
- * The key [violation] is filed under when [check] reported it, or `null` when the baseline never
- * holds it back. A Warning never has a key, whatever its type.
- */
 internal fun baselineKeyOf(check: String, violation: Violation): BaselineKey? {
     if (violation.severity != Severity.Error) return null
     return when (baselineRuleOf(violation)) {

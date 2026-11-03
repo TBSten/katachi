@@ -22,19 +22,16 @@ import java.util.concurrent.atomic.AtomicInteger
 /**
  * The check that evaluates `fileConstraint { }` blocks — the `konsist { }` ones included.
  *
- * It is not run unless it is asked for. `assert()` walks the tree and checks the layout;
- * `assert(FileConstraintCheck())` does that *and* runs the constraints. Making it explicit is
- * what lets a definition holding rules nobody evaluated be reported rather than pass quietly:
- * a constraint no check took responsibility for comes back as
- * [UncheckedFileConstraintReason.NotEvaluated].
+ * It is not run unless it is asked for. `assert()` checks the layout only;
+ * `assert(FileConstraintCheck())` also runs the constraints. A constraint no check evaluated is
+ * reported as [UncheckedFileConstraintReason.NotEvaluated] rather than passing quietly.
  *
- * Passing it twice changes nothing — the second instance finds every constraint already
- * answered for and returns nothing, so no violation is counted twice.
+ * Passing it twice changes nothing: no violation is counted twice. A constraint that could not
+ * be evaluated is reported as an [UncheckedFileConstraint].
  *
- * It answers through [me.tbsten.katachi.check.assertNoErrors], like [LayoutCheck]: a constraint
- * that could not be evaluated is reported as an [UncheckedFileConstraint] in that answer rather
- * than thrown, and whatever else stops it is a `Result.failure` rather than a throw out of
- * `process`.
+ * Like [LayoutCheck], it is not registered with the Gradle plugin by default. The module still
+ * needs `me.tbsten.katachi:katachi-konsist` on its test classpath for the `konsist { }` blocks
+ * to be evaluated at all.
  *
  * ## Evaluating in parallel
  *
@@ -82,10 +79,6 @@ import java.util.concurrent.atomic.AtomicInteger
  * )
  * ```
  *
- * Like [LayoutCheck], it is not registered by default. The module still needs
- * `me.tbsten.katachi:katachi-konsist` on its test classpath for the `konsist { }` blocks to be
- * evaluated at all.
- *
  * @property parallelism how many constraints may be evaluated at once; `1`, the default,
  *   evaluates them one at a time on the calling thread.
  * @throws KatachiInvalidFileConstraintParallelismException when
@@ -94,7 +87,6 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 @ExperimentalKatachiApi
 public class FileConstraintCheck(
-    /** How many constraints may be evaluated at once; `1`, the default, takes them in turn. */
     public val parallelism: Int = 1,
 ) : ArchitectureProcessorNoArg<List<Violation>> {
     init {
@@ -126,14 +118,7 @@ public class FileConstraintCheck(
         if (parallelism == 1) "FileConstraintCheck" else "FileConstraintCheck(parallelism=$parallelism)"
 }
 
-/**
- * [pending] evaluated on up to [parallelism] threads, answered in declaration order.
- *
- * Only the constraints themselves leave the calling thread. The walk's bookkeeping -- which
- * files a block covers, which constraints were evaluated -- is kept on it, in the order the
- * one-at-a-time path keeps it: a constraint is marked evaluated as its answer is collected, so a
- * throw that ends the run leaves the ones after it unevaluated there too.
- */
+// Constraint bookkeeping stays on the calling thread, in sequential order: a constraint is marked evaluated when its answer is collected.
 private fun evaluateInParallel(
     walk: ProjectWalk,
     pending: List<DeclaredFileConstraint>,
@@ -169,12 +154,7 @@ private fun evaluateInParallel(
     }
 }
 
-/**
- * One constraint, evaluated against the files this run's walk found for it.
- *
- * Each constraint is caught on its own, for the reason the walk catches each file on its own:
- * one broken rule must not take the answers of every other rule with it.
- */
+// Caught per constraint: one broken rule must not take the answers of the other rules with it.
 private fun violationsOf(
     walk: ProjectWalk,
     declared: DeclaredFileConstraint,

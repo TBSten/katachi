@@ -13,41 +13,16 @@ import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.internal.catching
 import me.tbsten.katachi.internal.fileUri
 
-/** The role name a report suggests for the baseline file, the one its documentation uses. */
 internal const val BASELINE_ROLE_NAME: String = "BaselineFile"
 
-/**
- * A run after the baseline had its say.
- *
- * @property violations what the run reports now: the violations the ledger did not hold back,
- *   the stale entries, and everything no check is accountable for, sorted by kind.
- * @property trailer the lines that end a failure report, or go to standard error when nothing
- *   failed: how much was held back, and how much was reported because an entry was exceeded.
- * @property notices what the run did to the file, for standard error whatever the result.
- */
 internal class BaselineOutcome(
     val violations: List<Violation>,
     val trailer: List<String>,
     val notices: List<String>,
 )
 
-/**
- * Compares what [ran] found with [baseline], updating or pruning the file first when [mode]
- * says so.
- *
- * What the layout says about the baseline file itself is taken out of [ran] before anything
- * else. An `[UnexpectedFile]` about it, recorded, would hold back the one report that says the
- * file is not declared, and an update run twice would record it for good: it is reported as it
- * is instead. A `[MissingFile]` about it only arises in the update that is creating it, and is
- * dropped: recorded, it would turn stale the moment the file is written.
- *
- * @param unattributed violations no single check is accountable for (constraints nothing
- *   evaluated). They take no part in the comparison and are passed through.
- * @param declared whether a `layout { }` allows the baseline file itself; only read by an update.
- * @throws KatachiBaselineNotFoundException when the file is missing and [mode] does not create it.
- * @throws KatachiBaselineCheckConflictException when a check of [ran] found something else
- *   against the same file earlier in this JVM.
- */
+// UnexpectedFile / MissingFile about the baseline file itself are taken out of `ran` first:
+// recording them would hide the "not declared" report or go stale once the file is written.
 internal fun applyBaseline(
     baseline: Baseline,
     projectRoot: FsPath,
@@ -136,11 +111,7 @@ internal fun applyBaseline(
     return BaselineOutcome(violations, trailer, notices)
 }
 
-/**
- * Throws when a check of [checked] found something other than an earlier run of it against
- * the same [file] in this JVM. Checked before anything is read or written, so the later run
- * leaves the file as it was.
- */
+// Must run before anything is read or written, so a conflicting run leaves the file untouched.
 private fun refuseConflicts(
     baseline: Baseline,
     file: String,
@@ -177,7 +148,6 @@ private fun updateSummary(
         "${countOf(entries, "entry", "entries")} (+$added, -$removed)."
 }
 
-/** The entries an update left alone because their check did not run, or `null` when none. */
 private fun keptLine(after: BaselineLedger, ran: List<CheckedViolations>): String? {
     val ranChecks = ran.mapTo(HashSet()) { it.check }
     val kept = after.entries.keys.filter { it.check !in ranChecks }

@@ -4,15 +4,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
 
-/**
- * The [ArchitectureProcessNoArgContext] an [me.tbsten.katachi.processor.ArchitectureProcessorNoArg]
- * is handed: [base] seen through the no-argument type.
- *
- * A named class rather than an anonymous object so that [projectWalk] and [withArgs] can see
- * through it to [base]. katachi's own checks are no-argument processors and read the walk off
- * the context they are given; behind an opaque wrapper they would find neither a real nor a
- * fake context.
- */
+// Named, not anonymous: projectWalk and withArgs must see through it to base.
 @OptIn(ExperimentalKatachiApi::class)
 internal class NoArgContextView(
     internal val base: ArchitectureProcessContext<Unit>,

@@ -19,23 +19,11 @@ private const val SARIF_VERSION: String = "2.1.0"
 private const val TOOL_NAME: String = "katachi"
 private const val INFORMATION_URI: String = "https://tbsten.github.io/katachi/"
 
-/**
- * The most results one run may carry and still be accepted by GitHub code scanning, which
- * rejects the whole upload -- every result, not the ones over the line -- past it. From
- * "SARIF results file limits", https://docs.github.com/en/code-security/code-scanning/
- * integrating-with-code-scanning/sarif-support-for-code-scanning (Results per run: 25,000).
- * `maxViolations` does not apply to the report; this is the one cut it makes.
- */
+// GitHub rejects the whole upload past 25,000 results per run; maxViolations does not apply to the report.
 internal const val GITHUB_MAX_RESULTS: Int = 25_000
 
-/**
- * The SARIF 2.1.0 document for [violations]: one run, its rules, its results and, when a
- * declaration site could not be placed, the notifications saying why.
- *
- * Keys are written in one fixed order and nothing that varies between two runs over the same
- * input -- a time stamp, a fingerprint, a machine-specific path inside a message -- goes in, so
- * that a golden file can hold the whole output.
- */
+// Fixed key order and nothing run-dependent (time stamp, fingerprint, machine path), so a golden file can hold
+// the output.
 internal fun sarifDocumentOf(violations: List<Violation>, context: SarifContext): SarifJson {
     val base = RepositoryBase(context.projectRoot, context.repositoryPrefix)
     val kept = resultsWithinGitHubLimit(violations)
@@ -58,12 +46,7 @@ internal fun sarifDocumentOf(violations: List<Violation>, context: SarifContext)
     }
 }
 
-/**
- * [violations] as they are while they fit in one run; past [GITHUB_MAX_RESULTS], the errors
- * first and then the warnings, in their original order within each, cut at the limit -- so
- * that what GitHub drops is the least severe, and what it shows is what the baseline would
- * have to hold back.
- */
+// Past the limit errors are kept first, then warnings, so GitHub drops the least severe.
 private fun resultsWithinGitHubLimit(violations: List<Violation>): List<Violation> {
     if (violations.size <= GITHUB_MAX_RESULTS) return violations
     // `sortedBy` is stable, so each severity keeps the order `assertWith` handed over.
@@ -143,19 +126,14 @@ private fun physicalLocationOf(location: SarifLocation): SarifJson = sarifObject
     location.startLine?.let { put("region", sarifObject { put("startLine", it) }) }
 }
 
-/**
- * The report block of [violation] without its `[label] path` line and without the one step of
- * indent every other line of a block carries. Paths stay relative -- `root = null` -- because a
- * `file:///` URI would differ from one machine to the next. A block that is only its first line
- * keeps that line: GitHub refuses an empty message.
- */
+// Paths stay relative (root = null) because file:/// URIs differ per machine; a block of only its first line
+// keeps it, GitHub refuses an empty message.
 internal fun sarifMessageOf(violation: Violation): String {
     val block = blockOf(violation, root = null)
     val rest = block.drop(1).map { it.removePrefix(STEP) }
     return if (rest.isEmpty()) block.first() else rest.joinToString("\n")
 }
 
-/** What the violation is made of, for whoever reads the file by machine. A `null` value is left out. */
 private fun propertiesOf(violation: Violation): SarifJson = sarifObject {
     put("kind", violation.kind.name)
     put("severity", violation.severity.name)

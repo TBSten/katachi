@@ -28,44 +28,30 @@ public data class DeclarationSite(
     override fun toString(): String = "$fileName:$lineNumber"
 
     /**
-     * Where a [DeclarationSite] comes from: [capture] for the line that called into the DSL, and
-     * [Unknown] as the stand-in when the real one could not be captured.
+     * Where a [DeclarationSite] comes from.
      *
-     * ## Example 1: fall back when there is no real site
+     * [capture] for the line that called into the DSL, and [Unknown] as the stand-in when the
+     * real one could not be captured.
+     *
+     * ## Example 1: capture the current line, or fall back when there is no real site
      * ```kt
-     * val site = DeclarationSite.Unknown
+     * // ProjectArchitecture.kt
+     * val declaredAt = DeclarationSite.capture()
+     * declaredAt.fileName shouldBe "ProjectArchitecture.kt"
+     *
+     * DeclarationSite.Unknown.fileName shouldBe "<unknown>"
      * ```
      */
     public companion object {
-        /**
-         * Used when the call site cannot be determined from the stack trace.
-         *
-         * ## Example 1: read the fallback value
-         * ```kt
-         * DeclarationSite.Unknown.fileName shouldBe "<unknown>"
-         * ```
-         */
+        /** Used when the call site cannot be determined from the stack trace. */
         public val Unknown: DeclarationSite = DeclarationSite("<unknown>", -1)
 
         /**
          * The line that called into katachi: the first stack frame outside `me.tbsten.katachi.`.
          *
-         * katachi's own artifacts -- `katachi-konsist` included -- are inside, so a DSL function
-         * one of them adds can call this from inside itself and get the line its user wrote, which
-         * is what a report should point back at. Everything else is outside: katachi's own specs
-         * (`me.tbsten.katachi.test.`), and code in any other package, so a wrapper of your own gets
-         * its own line from this -- take the site from your caller instead, as
-         * `fileConstraint(declaredAt = ...)` does. [Unknown] when no frame is outside.
-         *
-         * Not `inline`, and it must not be reached through an `inline` function either: a frame
-         * inlined into its caller carries a line number remapped past the end of the file.
-         *
-         * ## Example 1: remember the line that declared a rule
-         * ```kt
-         * // ProjectArchitecture.kt
-         * val declaredAt = DeclarationSite.capture()
-         * declaredAt.fileName shouldBe "ProjectArchitecture.kt"
-         * ```
+         * Called from a wrapper of your own, it returns the wrapper's line; take the site from
+         * your caller instead, as `fileConstraint(declaredAt = ...)` does. Do not call it through
+         * an `inline` function, whose line numbers are remapped. [Unknown] when no frame is outside.
          */
         @ExperimentalKatachiApi
         public fun capture(): DeclarationSite = captureDeclarationSite()

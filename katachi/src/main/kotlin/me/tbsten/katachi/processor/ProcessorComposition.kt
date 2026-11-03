@@ -10,29 +10,21 @@ import me.tbsten.katachi.processor.internal.StringMapDecoder
 import me.tbsten.katachi.processor.internal.withArgs
 
 /**
- * Two checks as one, reporting into a single list.
+ * Two processors as one, reporting into a single list.
  *
- * Both run on **one walk of the project**: the combined processor hands each half the same
- * context with only the arguments swapped, so nothing is traversed twice and the two halves
- * cannot disagree about the files they are both describing.
+ * Both run on **one walk of the project**, so nothing is traversed twice. Fields of the same name
+ * in the two argument types are shared: the same `--arg` value reaches both halves.
  *
- * `@ExperimentalKatachiApi` for a concrete reason: the serializer behind the combined
- * arguments only works with katachi's own `StringMapDecoder`, so it is not a serializer in the
- * general sense and would fail against JSON. Composition is for building a run in code; the
- * Gradle plugin's one-task-per-processor route (`katachi<Key>`) takes a different path.
- *
- * **Fields of the same name in the two argument types are shared, not rejected.** The same
- * `--arg` value is handed to both halves. That is a deliberate bet that one name means one
- * thing; two processors using one name for two different things is the author's problem.
+ * The combined arguments can only be decoded from `--arg` values, not from JSON or another
+ * format. Composition is for building a run in code; to run several registered processors from
+ * the command line, use the `katachiProcessors` task.
  *
  * ## What the combined answer is
  *
  * Both halves always run. The combination passes only when both do, and then its list is the
- * two lists joined. When a half answers with a failure, that failure is the combination's
- * answer -- the first half's when both fail, with the second's attached as a suppressed
- * exception -- and a half that throws ends the call. A failing half's list is whatever its
- * failure carries: to have two checks' violations merged into one report, pass them to
- * `assert(check, more)` or `assertNoErrors(check, more)` instead.
+ * two lists joined. When a half fails, that failure is the answer -- the first half's when both
+ * fail, with the second's attached as suppressed. To merge two checks' violations into one
+ * report, pass them to `assert(check, more)` or `assertNoErrors(check, more)` instead.
  *
  * ## Example 1: run two processors as one, on one walk
  * ```kt
@@ -53,6 +45,8 @@ import me.tbsten.katachi.processor.internal.withArgs
  *
  * val names = projectArchitecture.process(GroupNames + RoleNames, Unit to Unit).getOrThrow()
  * ```
+ *
+ * @see KatachiProcessorArgsDecoderException
  */
 @ExperimentalKatachiApi
 public operator fun <Args1, Args2, R> ArchitectureProcessor<Args1, List<R>>.plus(
@@ -89,13 +83,7 @@ private class CombinedProcessor<Args1, Args2, R>(
     override fun toString(): String = "($first + $second)"
 }
 
-/**
- * The two argument types seen as one flat set of `--arg` names.
- *
- * A name declared by both is registered once, and the whole `values` map is handed to both
- * halves, so such a name reaches both. Building the descriptor twice with the same name would
- * throw, which is the only reason the deduplication has to be explicit.
- */
+// A name declared by both is registered once: building the descriptor twice with the same name throws.
 private class CombinedArgsSerializer<A, B>(
     private val aSerializer: KSerializer<A>,
     private val bSerializer: KSerializer<B>,

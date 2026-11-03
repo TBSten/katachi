@@ -30,7 +30,7 @@ import me.tbsten.katachi.dsl.internal.TemplateParameterType
  *         }
  *     }
  * }
- * // Raised when the template is replayed, not where it was written.
+ * // Raised when the template runs, not where it was written.
  * arch.allRoles.single().name shouldBe "UseCase"
  * ```
  *
@@ -42,7 +42,6 @@ public class KatachiUnboundTemplateParameterException internal constructor(
     public val role: String,
     /** Where each unnamed parameter was declared. */
     public val parameterSites: List<DeclarationSite>,
-    /** The function the first unnamed one was declared with, for the fix to quote. */
     internal val declaredWith: String,
     /** Where `.template { }` was written. */
     public val declaredAt: DeclarationSite,
@@ -85,7 +84,7 @@ public class KatachiUnboundTemplateParameterException internal constructor(
  *         }
  *     }
  * }
- * // Raised when the template is replayed, not where it was written.
+ * // Raised when the template runs, not where it was written.
  * arch.allRoles.single().name shouldBe "UseCase"
  * ```
  *
@@ -138,7 +137,7 @@ public class KatachiDuplicateTemplateParameterException internal constructor(
  *         }
  *     }
  * }
- * // Raised when the template is replayed, not where it was written.
+ * // Raised when the template runs, not where it was written.
  * arch.allRoles.single().name shouldBe "UseCase"
  * ```
  *
@@ -150,7 +149,6 @@ public class KatachiTemplateParameterReusedException internal constructor(
     public val firstName: String,
     /** The property name it was then asked to answer to as well. */
     public val secondName: String,
-    /** The function it was declared with, for the fix to quote. */
     internal val declaredWith: String,
     /** Where the parameter was declared. */
     public val declaredAt: DeclarationSite,
@@ -171,7 +169,7 @@ public class KatachiTemplateParameterReusedException internal constructor(
 /**
  * The run had no value for one or more parameters, and no default to fall back on.
  *
- * Every missing name is reported at once: the template is replayed to the end first, so that a
+ * Every missing name is reported at once: the template runs to the end first, so that a
  * second run is not needed to learn about the second missing value.
  *
  * ## Example 1: declare a template whose run can be short of values
@@ -199,21 +197,19 @@ public class KatachiTemplateParameterReusedException internal constructor(
  */
 @ExperimentalKatachiApi
 public class KatachiMissingTemplateParameterException internal constructor(
-    /** The role whose template was replayed. */
+    /** The role whose template was run. */
     public val role: String,
     /** Every name the run was short of, sorted. */
     public val names: List<String>,
-    /**
-     * What each of [names][KatachiMissingTemplateParameterException.names] accepts, for the ones
-     * not declared with `stringParameter()`.
-     */
     internal val accepted: Map<String, String>,
     /** Where `.template { }` was written. */
     public val declaredAt: DeclarationSite,
     cause: Throwable?,
     /**
      * The captures the template read with `captureValue(...)` that the run gave no value either,
-     * sorted. They are not in [names][KatachiMissingTemplateParameterException.names]: a capture is
+     * sorted.
+     *
+     * They are not in [names][KatachiMissingTemplateParameterException.names]: a capture is
      * not a parameter, and is reported on its own once every parameter has a value.
      */
     public val missingCaptures: List<String> = emptyList(),
@@ -245,7 +241,7 @@ public class KatachiMissingTemplateParameterException internal constructor(
  * A run passed a value that its parameter cannot read as the type it was declared with.
  *
  * Every such value is reported at once, together with any value the run was missing: the
- * template is replayed to the end first. A value that does not fit is refused rather than read
+ * template runs to the end first. A value that does not fit is refused rather than read
  * as `false`, `0` or the default -- a guess there would produce the wrong files without a word.
  *
  * ## Example 1: declare a template whose run can pass an unreadable value
@@ -276,7 +272,7 @@ public class KatachiMissingTemplateParameterException internal constructor(
  */
 @ExperimentalKatachiApi
 public class KatachiInvalidTemplateParameterValueException internal constructor(
-    /** The role whose template was replayed. */
+    /** The role whose template was run. */
     public val role: String,
     /** Every parameter whose value could not be read, in declaration order. */
     public val names: List<String>,
@@ -362,17 +358,14 @@ public class KatachiEmptyEnumTemplateParameterException internal constructor(
     },
 )
 
-/** `--arg a=<value> --arg b=<value>`: a shape to paste, with no `|` a shell would take as a pipe. */
 private fun argPlaceholders(names: List<String>): String =
     names.joinToString(" ") { "--arg $it=<value>" }
 
-/** `withImpl takes true or false; pageSize takes a whole number.`, or `null` when all take anything. */
 private fun acceptedLine(names: List<String>, accepted: Map<String, String>): String? {
     val parts = names.mapNotNull { name -> accepted[name]?.let { "$name takes $it" } }
     return if (parts.isEmpty()) null else parts.joinToString("; ", postfix = ".")
 }
 
-/** One unreadable value, as one line: what was passed, what the parameter is, what it takes. */
 private fun problemLine(problem: InvalidTemplateValue): String {
     val type = problem.type
     val head = """${problem.name}="${problem.raw}": ${problem.name} is ${articleFor(type.declaredWith)} """ +
@@ -396,5 +389,4 @@ private fun problemLine(problem: InvalidTemplateValue): String {
     }
 }
 
-/** `an` before `intParameter()` / `enumParameter()`, `a` before the rest. */
 private fun articleFor(word: String): String = if (word.first() in "aeiou") "an" else "a"

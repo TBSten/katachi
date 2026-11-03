@@ -5,12 +5,6 @@ import me.tbsten.katachi.dsl.KatachiInvalidTemplateSetMemberException
 import me.tbsten.katachi.dsl.KatachiInvalidTemplateSetMemberException.Problem
 import me.tbsten.katachi.dsl.LayoutEntry
 
-/**
- * Refuses a `template("...")` of [sets] that names no template, more than one, or a template
- * already listed by the same set, against the templates [entries] declare.
- *
- * @throws KatachiInvalidTemplateSetMemberException at the first member that cannot be used.
- */
 internal fun requireTemplateSetMembersResolve(sets: List<TemplateSetDeclaration>, entries: List<LayoutEntry>) {
     if (sets.isEmpty()) return
     val candidates = LinkedHashMap<Pair<Any, LayoutTemplate>, SpecifierCandidate>()

@@ -18,10 +18,6 @@ import me.tbsten.katachi.template.KatachiInvalidTemplateCaptureValueException
 import me.tbsten.katachi.template.TemplateCaptureKind
 import me.tbsten.katachi.template.TemplateCapturePreview
 
-/**
- * Every capture name [entries] declare, each with the first place that declares it, in
- * declaration order. [entries] are one template's own -- [DeclaredTemplate.entries], usually one.
- */
 internal fun captureSitesOf(entries: List<LayoutEntry>): Map<String, DeclarationSite> {
     val sites = LinkedHashMap<String, DeclarationSite>()
     for (entry in entries) {
@@ -32,21 +28,8 @@ internal fun captureSitesOf(entries: List<LayoutEntry>): Map<String, Declaration
     return sites
 }
 
-/** The capture names of [entries], in declaration order. See [captureSitesOf]. */
 internal fun captureNamesOf(entries: List<LayoutEntry>): Set<String> = captureSitesOf(entries).keys
 
-/**
- * Refuses a run whose values would give a capture the same name as another input of the chosen
- * templates: a parameter any of them declares on any branch, or an argument of the processor
- * itself ([TEMPLATE_ARG] / [ON_EXISTING_ARG]).
- *
- * Checked across every template of the run at once, not one at a time: two different templates
- * sharing a capture name is fine and by design -- `--arg name=User` fills both -- but a template
- * that declares a *parameter* under a name another of the run's templates already uses as a
- * capture, or as a parameter of a different kind, is not: both would read `--arg name=...`, and
- * nothing would say which reading was meant. Any branch of a template's parameters is walked, not
- * only the one [values] take -- see [parameterOriginsOnEveryBranch].
- */
 internal fun requireNoConflicts(templates: List<DeclaredTemplate>, values: Map<String, String>) {
     val captureSites = LinkedHashMap<String, DeclarationSite>()
     val ownerOf = LinkedHashMap<String, DeclaredTemplate>()
@@ -104,14 +87,6 @@ internal fun requireNoConflicts(templates: List<DeclaredTemplate>, values: Map<S
     }
 }
 
-/**
- * Refuses a value [values] gives a capture of [entries] that cannot be one directory level -- or,
- * for a module capture, one level of the module path.
- *
- * Checks the value alone, exactly as it was passed. A capture that only fills part of a segment
- * (`"${capture("x")}."`) can still turn a fine value into a segment the file system refuses --
- * see [requireValidFilledSegments], which checks the other half.
- */
 internal fun requireValidCaptureValues(role: Role, entries: List<LayoutEntry>, values: Map<String, String>) {
     val moduleCaptureNames = moduleCaptureNamesOf(entries)
     for ((name, site) in captureSitesOf(entries)) {
@@ -128,15 +103,6 @@ internal fun requireValidCaptureValues(role: Role, entries: List<LayoutEntry>, v
     }
 }
 
-/**
- * Refuses a run whose values, once filled into [entry]'s path, would land a directory-level
- * capture ([LayoutCaptures.pathCaptures]) in a segment the file system refuses -- checked on the
- * *whole* segment, not the value alone, since a partial match (`"${capture("x")}."`) can combine a
- * fine value with the pattern's own literal text into one that is not. A module capture is not
- * checked here: its value picks an existing module, whose directory is not built out of it.
- *
- * Called once every capture [entry] needs has a value, so every segment it names can be filled.
- */
 internal fun requireValidFilledSegments(
     role: Role,
     entry: LayoutEntry,
@@ -177,14 +143,10 @@ internal fun requireValidFilledSegments(
     }
 }
 
-/** The names [entries] give the `*`s of a module key, as opposed to a `capture("...")` level. */
 internal fun moduleCaptureNamesOf(entries: List<LayoutEntry>): Set<String> =
     entries.flatMapTo(LinkedHashSet()) { entry -> entry.captureVariants.flatMap { it.moduleCapture?.names.orEmpty() } }
 
-/**
- * The device names Windows reserves in every directory, whatever the extension: `CON` and
- * `con.txt` alike open the console rather than a file.
- */
+// Windows reserves these in every directory whatever the extension (con.txt opens the console).
 private val WINDOWS_RESERVED_NAMES: Set<String> =
     setOf("CON", "PRN", "AUX", "NUL") + (1..9).flatMap { listOf("COM$it", "LPT$it") }
 
@@ -203,14 +165,6 @@ private fun captureValueProblemOf(value: String): KatachiInvalidTemplateCaptureV
     else -> null
 }
 
-/**
- * The same problems [captureValueProblemOf] finds in a value on its own, checked instead on a
- * whole filled-in segment: not [KatachiInvalidTemplateCaptureValueException.Problem.Empty] (an
- * empty value is already refused on its own) and not
- * [KatachiInvalidTemplateCaptureValueException.Problem.Separator] or
- * [KatachiInvalidTemplateCaptureValueException.Problem.UncreatableCharacter] (the layout's own
- * literal text is trusted, and a value cannot introduce either -- see [captureValueProblemOf]).
- */
 private fun filledSegmentProblemOf(segment: String): KatachiInvalidTemplateCaptureValueException.Problem? = when {
     segment.isBlank() -> KatachiInvalidTemplateCaptureValueException.Problem.Blank
     segment == "." || segment == ".." -> KatachiInvalidTemplateCaptureValueException.Problem.DotSegment
@@ -223,21 +177,8 @@ private fun filledSegmentProblemOf(segment: String): KatachiInvalidTemplateCaptu
     else -> null
 }
 
-/**
- * Characters a generated file or directory name may not hold.
- *
- * `*`, `?`, `[`, `]`, `{` and `}` are katachi's glob metacharacters or the ones it rejects, so a
- * name holding them would be compared against the layout as a literal and then created on disk as
- * a file nothing can name back. The rest are what Windows refuses outright; katachi's own check
- * has to give the same answer on every platform, so they are refused everywhere.
- */
 internal const val UNCREATABLE_CHARACTERS: String = "*?[]{}:\"<>|"
 
-/**
- * Whether [character] may not be part of a directory name katachi creates: one of
- * [UNCREATABLE_CHARACTERS], or a character that is not printed as itself on one line -- a control
- * character (DEL and the C1 range included) or a line or paragraph separator such as U+2028.
- */
 internal fun isUncreatableInName(character: Char): Boolean =
     character in UNCREATABLE_CHARACTERS ||
         Character.isISOControl(character) ||
@@ -245,21 +186,11 @@ internal fun isUncreatableInName(character: Char): Boolean =
             it == Character.LINE_SEPARATOR.toInt() || it == Character.PARAGRAPH_SEPARATOR.toInt()
         }
 
-/**
- * What [capture] reads as in a generated path, out of a run's [values]: the value of its name,
- * converted for a derived occurrence. `null` when the run gave the name no value.
- */
 internal fun filledValueOf(capture: PathCapture, values: Map<String, String>): String? =
     values[capture.name]?.let { value -> capture.transform?.apply?.invoke(value) ?: value }
 
-/** [PathCapture.placeholder], as a function reference for the fill calls here. */
 internal fun placeholderOf(capture: PathCapture): String = capture.placeholder()
 
-/**
- * The captures of one template as `DescribeTemplates` lists them: one per module wildcard and one
- * per file pattern a directory capture sits in -- the places this template can generate into --
- * in declaration order. [entries] is one template's own ([DeclaredTemplate.entries]).
- */
 internal fun capturePreviewsOf(entries: List<LayoutEntry>): List<TemplateCapturePreview> {
     // Keyed by what a preview says rather than by the preview: the public class declares no `equals`.
     val previews = LinkedHashMap<List<Any?>, TemplateCapturePreview>()
@@ -295,21 +226,14 @@ internal fun capturePreviewsOf(entries: List<LayoutEntry>): List<TemplateCapture
     return previews.values.toList()
 }
 
-/**
- * The pattern of one segment of [entry]'s path, every capture shown as its placeholder:
- * `${fileName}Screen.kt` for the file-name level of a partial match, a whole `${name}` for a
- * level one capture fills entirely, `<feature.pascalCase>Screen.kt` for a derived one.
- */
 private fun segmentPatternOf(entry: LayoutEntry, variant: LayoutCaptures, segmentIndex: Int): String {
     val onSegment = variant.pathCaptures.filter { it.segmentIndex == segmentIndex }
     return fillCapturedSegments(entry.path, onSegment) { placeholderOf(it) }.getOrNull(segmentIndex)
         ?: entry.path.split('/').getOrNull(segmentIndex).orEmpty()
 }
 
-/** `${name}`: what a capture or a String parameter reads as in a preview. */
 internal fun placeholderOf(name: String): String = "\$" + "{" + name + "}"
 
-/** [value] as `--arg` spells it: an enum entry by its name, anything else by `toString`. */
 internal fun argSpellingOf(value: Any): String = when (value) {
     is Enum<*> -> value.name
     else -> value.toString()

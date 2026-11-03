@@ -1,12 +1,5 @@
 package me.tbsten.katachi.check.internal
 
-/**
- * A role declaration for [path], ready to paste into the definition.
- *
- * The point is that the reader — a person or an agent — does not have to go and read the
- * layout DSL to answer a report. The name is a guess, and `summary = "TODO"` says out loud
- * that the guess is not the finished declaration.
- */
 internal fun roleSuggestionFor(
     path: String,
     isDirectory: Boolean,
@@ -20,13 +13,7 @@ internal fun roleSuggestionFor(
     "}",
 )
 
-/**
- * The layout line of a suggestion.
- *
- * A directory gets `ignore()` rather than an empty block: an empty block means *nothing may
- * live here*, which would turn one report into one per file inside. Someone who wants the
- * files to have roles writes them out instead, which the block above the fragment says.
- */
+// A directory gets ignore(), not an empty block: an empty block means nothing may live there and would report every file inside.
 internal fun layoutLineFor(path: String, isDirectory: Boolean): String {
     if (isDirectory) return "\"$path\" { ignore() }"
     val directory = path.parentPath()
@@ -35,21 +22,12 @@ internal fun layoutLineFor(path: String, isDirectory: Boolean): String {
     return if (directory.isEmpty()) file else "\"$directory\" / $file"
 }
 
-/** `"GetUser".ktFile()` for `GetUser.kt`, and `"libs.versions.toml".file()` for the rest. */
 private fun fileCallFor(name: String): String = when {
     name.endsWith(KTS_SUFFIX) -> "\"${name.dropLast(KTS_SUFFIX.length)}\".ktsFile()"
     name.endsWith(KT_SUFFIX) -> "\"${name.dropLast(KT_SUFFIX.length)}\".ktFile()"
     else -> "\"$name\".file()"
 }
 
-/**
- * A role name guessed from a file or directory name.
- *
- * Every run of characters a role name cannot hold splits the name, and each part is
- * capitalised, so that `libs.versions.toml` suggests `LibsVersionsToml` and
- * `tmp-experiment` suggests `TmpExperiment`. The extension of a Kotlin file is dropped
- * first, since `TokenRefresherKt` would read as a mistake.
- */
 private fun suggestedRoleName(name: String): String {
     val base = when {
         name.endsWith(KTS_SUFFIX) -> name.dropLast(KTS_SUFFIX.length)

@@ -22,23 +22,14 @@ import me.tbsten.katachi.processor.ArchitectureProcessor
  *
  * ## What it does and does not touch
  *
- * It reads the declarations and nothing else. `konsist { }` blocks are never run, no file of the
- * project is opened, and a repository full of violations still generates -- documentation says
- * what the rules *are*, and whether the repository keeps them is the check's answer, not this
- * one's.
+ * It reads the declarations and nothing else. File constraints are never run, no file of the
+ * project is opened, and a repository full of violations still generates: documentation says
+ * what the rules *are*.
  *
  * The one exception is a constraint that describes itself on its role's page
  * (`FileConstraint.documentSection`) with an example file, for a role that names no
  * `example(...)`: finding that file lists the project's files once. A project that cannot be
  * listed gives a stand-in example instead of a failure.
- *
- * ## Why this object is the only part that does IO
- *
- * Building the pages is a pure function from a context to a map of path to text. Everything that
- * can be wrong about the output -- a heading, a table, a link that resolves nowhere -- is decided
- * there and pinned by specs comparing two strings. This object adds the one thing a spec cannot
- * compare and a pure function cannot do: it puts the map on a disk. Keeping the split means
- * [DocumentationMode.Check] is not a second implementation of anything, only a second ending.
  *
  * ## What it answers
  *
@@ -177,9 +168,7 @@ public object GenerateDocumentation : ArchitectureProcessor<GenerateDocumentatio
 /**
  * Whether [GenerateDocumentation] writes its pages or compares them.
  *
- * Two endings of one run rather than two processors, because everything before the ending is
- * the same function: a second processor would have to build the same pages the same way, and
- * "the check and the generator disagree" is the one failure neither of them could report.
+ * Both build exactly the same pages, so a check never disagrees with what a write produces.
  *
  * ## Example 1: pick the ending from the command line
  * ```kt
@@ -205,10 +194,4 @@ public enum class DocumentationMode {
     Check,
 }
 
-/**
- * Where the pages go when `--arg outputDir=` is not given.
- *
- * `docs` is the registry key the plugin registers this processor under, so the path a user sees
- * in `build/` and the task they run (`katachiDocs`) name the same thing.
- */
 private const val DEFAULT_OUTPUT_DIR: String = "build/katachi/docs"

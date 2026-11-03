@@ -21,23 +21,6 @@ import me.tbsten.katachi.template.KatachiTemplateModuleNotFoundException
 import me.tbsten.katachi.template.KatachiTemplatePathMismatchException
 import me.tbsten.katachi.template.KatachiTemplatePathOutsideProjectException
 
-/**
- * What running the templates [specifiers] name, with [values], would put in the project: path to
- * contents.
- *
- * A pure function from declarations and values to a map, exactly as documentation generation is.
- * Everything that can be wrong about the output -- an unknown or ambiguous specifier, a capture
- * with no value, a value the file system refuses, two templates writing the same path -- is
- * decided here and can be pinned by a spec comparing two maps. [specifiers] may instead be one
- * template set, whose members are generated together with the values each `arg(...)` gives them
- * ([templateSetFilesFor]). [writeTemplateFiles] adds the one
- * thing a spec cannot compare.
- *
- * Paths are relative to the **project root**, `/` separated, which is what a `layout { }`
- * declares. The file system is read only when [values] fill in a module capture: which modules
- * exist is what such a value is checked against, and [modules] is asked for them then, once --
- * after every problem the declarations alone can show has been reported.
- */
 internal fun templateFilesFor(
     context: ArchitectureProcessContext<*>,
     specifiers: List<String>,
@@ -47,13 +30,8 @@ internal fun templateFilesFor(
     },
 ): Map<String, String> = templateRunFor(context, specifiers, values, modules).files
 
-/**
- * The files [templateFilesFor] builds, and the template set they came from (`null` when the
- * specifiers named templates), so that the caller need not resolve the specifiers a second time.
- */
 internal class TemplateRun(val files: Map<String, String>, val templateSet: TemplateSetDeclaration?)
 
-/** [templateFilesFor], together with the template set the specifiers named. */
 internal fun templateRunFor(
     context: ArchitectureProcessContext<*>,
     specifiers: List<String>,
@@ -89,7 +67,6 @@ internal fun templateRunFor(
     return TemplateRun(files, templateSet = null)
 }
 
-/** What running [template] with [values] would produce: its resolved path, and its content. */
 internal fun templateFileFor(
     context: ArchitectureProcessContext<*>,
     template: DeclaredTemplate,
@@ -153,15 +130,6 @@ internal fun templateFileFor(
     return path to content
 }
 
-/**
- * The one [me.tbsten.katachi.dsl.LayoutEntry] [template]'s declaration names, with a module
- * capture's wildcard resolved against the modules [modules] lists.
- *
- * [template.entries][DeclaredTemplate.entries] already answers this when the declaration names no
- * module capture -- the common case. A module capture is a *kind* of module until a run's values
- * pick one that exists, so such a template is re-flattened against the real project only then, and
- * only when every name the capture needs already has a value.
- */
 private fun resolvedEntryFor(
     role: Role,
     template: DeclaredTemplate,
@@ -209,26 +177,11 @@ private fun moduleNotFoundFor(role: Role, miss: ModuleMiss, template: DeclaredTe
         declaredAt = template.declaredAt,
     )
 
-/**
- * Refuses a resolved path that leaves the project.
- *
- * [me.tbsten.katachi.dsl.LayoutEntry.path] is documented as relative to the project root, so
- * reaching this means a `layout { }` block named a directory that climbs out. Checked rather than
- * trusted because what is about to be written is the user's own source tree: everything else
- * katachi writes lands below `build/`, and that net is gone here.
- */
 private fun requireInsideProject(role: Role, path: String, declaredAt: DeclarationSite) {
     val climbs = path.startsWith('/') || path.split('/').any { it == ".." }
     if (!climbs) return
     throw KatachiTemplatePathOutsideProjectException(role = role.qualifiedName, path = path, declaredAt = declaredAt)
 }
 
-/**
- * [this] as a text file's contents: ending in a newline, the way every other file in the tree does.
- *
- * Deliberately unused by [templateFilesFor]: the design draft's section 1 keeps `.template { }`'s
- * return value exactly as written, with no trailing newline added, so that "Kotlin's own string
- * templates" stays literally true. Kept for a caller that still wants the old behaviour.
- */
 internal fun String.withFinalNewline(): String =
     if (isEmpty() || endsWith("\n")) this else this + "\n"

@@ -4,15 +4,11 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiDeclarationException
 
 /**
- * A derived capture -- `capture("m").camelCase` -- sits on a path that holds no plain
- * `capture("m")` for it to be derived from: neither on a level of the path nor among the names
- * of the module key above it.
+ * A derived capture such as `capture("m").camelCase` sits on a path with no plain `capture("m")` to derive it from.
  *
- * The check compares a derived level with the conversion of its plain capture's value, so
- * without a plain capture there would be nothing to compare it with and the derivation would be
- * written but never checked. Noticed when the layout is flattened, for every file declaration
- * (`"...".file()` / `anyFile()`) the derived capture sits above; the plain capture may be above
- * or below it on that path.
+ * A derived level is checked against the converted value of its plain capture, so without one
+ * nothing would be checked. The plain capture may sit above or below the derived one on the
+ * same path.
  *
  * ## Example 1: catch a derived capture whose plain capture is on another path
  * ```kt
@@ -99,8 +95,7 @@ public class KatachiChainedCaptureTransformException internal constructor(
 )
 
 /**
- * A naming conversion was applied to a `String` that holds a capture token beside other text,
- * or more than one token: `"${capture("x")}Screen".pascalCase`.
+ * A naming conversion was applied to a string holding a capture beside other text, as in `"${capture("x")}Screen".pascalCase`.
  *
  * A conversion on a token makes a derived capture of that one token's value. On a string with
  * text around it, whether the literal text is meant to change as well is a guess katachi does
@@ -185,10 +180,9 @@ public class KatachiCaptureTransformInModuleKeyException internal constructor(
  * Two `capture(...)` tokens sit next to each other with no literal between them, or one sits
  * next to a plain `*`.
  *
- * A capture is checked as a plain `*`, so two of them touching would substitute to `**` --
- * which the glob compiler reads as the unrelated "match any depth" wildcard rather than as two
- * single levels next to each other. There would also be no way to tell, from a matched path,
- * where one capture's value ends and the next begins.
+ * A capture matches like a plain `*`, so two of them touching would read as `**`, the "any depth"
+ * wildcard, and there would be no way to tell where one capture's value ends and the next begins.
+ * Put a literal character such as `-` or `/` between them.
  *
  * ## Example 1: catch two captures written back to back
  * ```kt
@@ -267,13 +261,10 @@ public class KatachiCaptureInsideBracketsException internal constructor(
 )
 
 /**
- * A `capture(...)` token was found somewhere other than a layout key: in a `description`, a
- * `fileConstraint` name, or the string a `.template { }` block returned.
+ * `capture(...)` was used outside a layout key, such as in a `description`, a `fileConstraint` name or a template's text.
  *
- * `capture(...)` hands back a token meant to be read by the layout DSL, which strips it back out
- * before the key reaches the glob compiler. Nothing else in katachi knows to do that, so the
- * token would otherwise leak into text a person reads as the private-use characters it is made
- * of.
+ * `capture(...)` only has a meaning inside a layout key. To read a captured value in a template,
+ * use `captureValue("name")` inside the `.template { }` block.
  *
  * ## Example 1: catch a capture read outside a layout key
  * ```kt

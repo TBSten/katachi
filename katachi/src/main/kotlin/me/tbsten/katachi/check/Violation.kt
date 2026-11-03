@@ -6,65 +6,30 @@ import me.tbsten.katachi.dsl.Role
 /**
  * One problem found by a check.
  *
- * The check returns these as a list rather than throwing, so that they can be filtered (a baseline
- * does), written out or counted without any of it being a rewrite. `assert()` is the thin layer on
- * top that turns a non-empty list into a failure.
- *
- * A violation carries everything its report block needs and nothing else: the wording lives
- * in the report, not here. A violation declared outside katachi has no block of its own,
- * though, so [details] is the door it uses to carry values in instead.
- *
- * It sits next to the walk rather than next to `assert()` because the walk is what produces
- * one. Deciding that a file no role allows is an `UnexpectedFile` is the same decision as
- * deciding not to descend into the directory it sits in, so splitting the two would mean a
- * second vocabulary that mirrors this one line for line. What `me.tbsten.katachi.check` holds
- * instead is what a caller does with the list: word it, fail a test with it, ignore part of it.
+ * Checks return these as a list, so they can be filtered, counted or written out; `assert()`
+ * turns a list holding an error into a test failure. A check of your own implements this
+ * interface, and uses [details] to say what its report block should show.
  *
  * ## Example 1: inspect the violations after a failed check
  * ```kt
  * val failure = shouldThrow<KatachiArchitectureAssertionError> { projectArchitecture.assert() }
  * failure.violations.filter { it.severity == Severity.Error }.map { it.path }
+ * failure.violations.groupBy { it.kind }
+ * failure.violations.forEach { println("[${it.label}] ${it.path}") }
  * ```
  */
 public interface Violation {
-    /**
-     * Which kind of problem this is.
-     *
-     * ## Example 1: group violations for a report, one block per kind
-     * ```kt
-     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
-     *     projectArchitecture.assert()
-     * }
-     * failure.violations.groupBy { it.kind }
-     * ```
-     */
+    /** Which kind of problem this is. */
     public val kind: ViolationKind
 
-    /**
-     * Whether this fails the check.
-     *
-     * ## Example 1: separate failing violations from warnings
-     * ```kt
-     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
-     *     projectArchitecture.assert()
-     * }
-     * val (failures, warnings) = failure.violations.partition { it.severity == Severity.Error }
-     * ```
-     */
+    /** Whether this fails the check. */
     public val severity: Severity
 
     /**
      * The path the block's first line names, relative to the project root and `/` separated.
+     *
      * Where something actually is for [ViolationKind.Unexpected], where it was declared to be
      * for [ViolationKind.Missing], and where the check gave up for [ViolationKind.Failed].
-     *
-     * ## Example 1: list where every violation was found
-     * ```kt
-     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
-     *     projectArchitecture.assert()
-     * }
-     * failure.violations.map { it.path }
-     * ```
      */
     public val path: String
 
@@ -73,30 +38,14 @@ public interface Violation {
      *
      * `[label] path` is the report block's first line with the path left relative to the project
      * root; the report itself prints that path as a `file:///...` URI.
-     *
-     * ## Example 1: print each violation with its label
-     * ```kt
-     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
-     *     projectArchitecture.assert()
-     * }
-     * failure.violations.forEach { println("[${it.label}] ${it.path}") }
-     * ```
      */
     public val label: String
 
     /**
-     * What a report block states about this violation when katachi does not know its type,
-     * one entry per line, in this order.
+     * What the report block of a violation you declared yourself states, one entry per line.
      *
-     * katachi's own violations leave this empty: their blocks are written in `ViolationReport`,
-     * because those blocks have shapes a flat list cannot hold — a nested list of nearby
-     * locations, a copyable DSL fragment, a "How to fix" section whose contents depend on the
-     * kind. That file stays the one place a reader looks to change how a report reads.
-     *
-     * A violation declared outside katachi has no block there, because the report cannot switch
-     * on a type it has never seen. So it says what it knows, and it says it as **values**: one
-     * label and one value per entry, one line each, no leading marker and no indentation of its
-     * own.
+     * katachi's own violations leave this empty; their blocks are worded by katachi. Each entry is
+     * one label and one value, printed on one line in this order.
      *
      * ## Example 1: word a violation an artifact of your own produces
      * ```kt
@@ -110,9 +59,8 @@ public interface Violation {
 /**
  * A place a role declared, offered as somewhere an unexpected file could move to.
  *
- * A declared place may hold wildcards (`feature` / `*` / `src/main/kotlin`); what is offered here is
- * that place with the unexpected file's own path filled into them, so the directory is one
- * the file could actually be moved to.
+ * Wildcards in the declared place (`feature` / `*` / `src/main/kotlin`) are filled in from the
+ * unexpected file's own path, so the directory is one the file could actually be moved to.
  *
  * ## Example 1: read the nearby locations suggested for an unexpected file
  * ```kt
@@ -120,37 +68,20 @@ public interface Violation {
  *     projectArchitecture.assert()
  * }
  * val unexpectedFile = failure.violations.filterIsInstance<UnexpectedFile>().first()
- * unexpectedFile.nearby.map { "${it.directory} ${it.filePattern ?: "(any name)"}" }
+ * unexpectedFile.nearby.map { "${it.role.qualifiedName}: ${it.directory} ${it.filePattern ?: "(any name)"}" }
  * ```
  */
 public class NearbyLocation internal constructor(
-    /**
-     * The role that may put files there.
-     *
-     * ## Example 1: read which role may put files at a nearby location
-     * ```kt
-     * unexpectedFile.nearby.first().role.qualifiedName
-     * ```
-     */
+    /** The role that may put files there. */
     public val role: Role,
     /**
      * The directory, relative to the project root, with the file's own path filled into every
      * wildcard. Never empty, never holds a wildcard.
-     *
-     * ## Example 1: read the directory a nearby role's files may live in
-     * ```kt
-     * unexpectedFile.nearby.first().directory
-     * ```
      */
     public val directory: String,
     /**
      * The file name pattern the role declared there (`*Screen.kt`), or `null` when the role
      * wrote `anyFile()`.
-     *
-     * ## Example 1: read the name a file has to have at a nearby location
-     * ```kt
-     * unexpectedFile.nearby.first().filePattern
-     * ```
      */
     public val filePattern: String?,
 ) {
@@ -168,26 +99,13 @@ public class NearbyLocation internal constructor(
  *     projectArchitecture.assert()
  * }
  * failure.violations.filterIsInstance<UnexpectedFile>().map { it.path }
+ * failure.violations.filterIsInstance<UnexpectedFile>().first().nearby
  * ```
  */
 public class UnexpectedFile internal constructor(
     override val path: String,
-    /**
-     * Declared directories close to this file, nearest first. May be empty.
-     *
-     * ## Example 1: suggest where an unexpected file could move to
-     * ```kt
-     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
-     *     projectArchitecture.assert()
-     * }
-     * failure.violations.filterIsInstance<UnexpectedFile>().first().nearby
-     * ```
-     */
+    /** Declared directories close to this file, nearest first. May be empty. */
     public val nearby: List<NearbyLocation>,
-    /**
-     * The role name the report suggests declaring, or `null` to guess one from the file name.
-     * Set for the baseline file, which the documentation calls `"BaselineFile"`.
-     */
     internal val suggestedRole: String? = null,
 ) : Violation {
     override val kind: ViolationKind get() = ViolationKind.Unexpected
@@ -200,9 +118,8 @@ public class UnexpectedFile internal constructor(
 /**
  * A directory that exists although no role's layout mentions it.
  *
- * Reported instead of everything below it. Nothing inside a directory no role knows about
- * has a role either, so listing two hundred files would bury the one thing to fix, which is
- * the directory itself. The check does not descend past one of these.
+ * Reported instead of everything below it: the check does not descend into it, so the one thing
+ * to fix is not buried under every file inside.
  *
  * ## Example 1: list every directory nothing declared
  * ```kt
@@ -233,34 +150,15 @@ public class UnexpectedDirectory internal constructor(
  * val failure = shouldThrow<KatachiArchitectureAssertionError> {
  *     projectArchitecture.assert()
  * }
- * failure.violations.filterIsInstance<MissingFile>().map { it.path }
+ * failure.violations.filterIsInstance<MissingFile>()
+ *     .map { "${it.path}, declared by ${it.role.qualifiedName} at ${it.declaredAt}" }
  * ```
  */
 public class MissingFile internal constructor(
     override val path: String,
-    /**
-     * The role that declared the file.
-     *
-     * ## Example 1: read which role declared a missing file
-     * ```kt
-     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
-     *     projectArchitecture.assert()
-     * }
-     * failure.violations.filterIsInstance<MissingFile>().first().role.qualifiedName
-     * ```
-     */
+    /** The role that declared the file. */
     public val role: Role,
-    /**
-     * Where in the `layout { }` block it was declared.
-     *
-     * ## Example 1: point back at where the missing file was declared
-     * ```kt
-     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
-     *     projectArchitecture.assert()
-     * }
-     * failure.violations.filterIsInstance<MissingFile>().first().declaredAt
-     * ```
-     */
+    /** Where in the `layout { }` block it was declared. */
     public val declaredAt: DeclarationSite,
 ) : Violation {
     override val kind: ViolationKind get() = ViolationKind.Missing
@@ -273,10 +171,8 @@ public class MissingFile internal constructor(
 /**
  * A file the check failed at, so nothing is known about it.
  *
- * The walk keeps going past one of these: the file that threw is usually unrelated to the
- * violations the reader came for, and losing the whole report over it would leave them with nothing
- * to fix. What was lost is exactly this one path, and saying so is what
- * [cause][UncheckedFile.cause] and the count at the end of the report are for.
+ * The check keeps going past one of these, so only this one path is lost; the rest of the
+ * report is still complete.
  *
  * ## Example 1: list the files a run could not look at
  * ```kt
@@ -298,18 +194,7 @@ public class MissingFile internal constructor(
  */
 public class UncheckedFile internal constructor(
     override val path: String,
-    /**
-     * What was thrown while the file was being checked.
-     *
-     * ## Example 1: keep only the failures that came from the file system
-     * ```kt
-     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
-     *     projectArchitecture.assert()
-     * }
-     * failure.violations.filterIsInstance<UncheckedFile>()
-     *     .filter { it.cause is java.io.IOException }
-     * ```
-     */
+    /** What was thrown while the file was being checked. */
     public val cause: Throwable,
 ) : Violation {
     override val kind: ViolationKind get() = ViolationKind.Failed
@@ -322,10 +207,8 @@ public class UncheckedFile internal constructor(
 /**
  * What a directory was being read for when it threw, and therefore what was lost with it.
  *
- * Two values, and only two, because a directory is read twice by one run and the two readings
- * lose different things. The distinction is not cosmetic: saying "nothing below it was
- * checked" about a search failure would be a claim the run cannot back up, since the walk that
- * comes after it looks into that same directory perfectly well.
+ * A run reads a directory twice, once to find the Gradle modules and once to check the layout,
+ * and the two failures lose different things.
  *
  * ## Example 1: tell an unreadable directory from one whose modules went unfound
  * ```kt
@@ -337,35 +220,14 @@ public class UncheckedFile internal constructor(
  * ```
  */
 public enum class UncheckedDirectoryReason {
-    /**
-     * The walk failed at the directory, so nothing below it was checked.
-     *
-     * ## Example 1: list the directories whose contents nothing looked at
-     * ```kt
-     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
-     *     projectArchitecture.assert()
-     * }
-     * failure.violations.filterIsInstance<UncheckedDirectory>()
-     *     .filter { it.reason == UncheckedDirectoryReason.NotWalked }
-     *     .map { it.path }
-     * ```
-     */
+    /** The walk failed at the directory, so nothing below it was checked. */
     NotWalked,
 
     /**
-     * The search for the project's Gradle modules failed at the directory, so a module key may
-     * stand for fewer modules than the project has. What the walk itself found below it is
-     * unaffected.
+     * The search for Gradle modules failed at the directory, so a module wildcard may match fewer
+     * modules than the project has.
      *
-     * ## Example 1: explain a `:feature:*` key that expanded to too few modules
-     * ```kt
-     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
-     *     projectArchitecture.assert()
-     * }
-     * failure.violations.filterIsInstance<UncheckedDirectory>()
-     *     .filter { it.reason == UncheckedDirectoryReason.ModulesNotDiscovered }
-     *     .map { it.path }
-     * ```
+     * What the layout check found below it is unaffected.
      */
     ModulesNotDiscovered,
 }
@@ -373,10 +235,8 @@ public enum class UncheckedDirectoryReason {
 /**
  * A directory the check failed at, so part of what it would have said is unknown.
  *
- * Reported instead of everything inside it, the way [UnexpectedDirectory] is: the run never
- * got the directory's contents, so there is one path to report and it is this one. Its
- * siblings are unaffected — and which of the two readings failed, which is what decides how
- * much was lost, is [reason][UncheckedDirectory.reason].
+ * Reported instead of everything inside it, the way [UnexpectedDirectory] is; its siblings are
+ * unaffected. [reason][UncheckedDirectory.reason] says how much was lost.
  *
  * ## Example 1: list the directories a run could not look into
  * ```kt
@@ -392,37 +252,15 @@ public enum class UncheckedDirectoryReason {
  *     projectArchitecture.assert()
  * }
  * failure.violations.filterIsInstance<UncheckedDirectory>().forEach {
- *     println("${it.path}: ${it.cause}")
+ *     println("${it.path} (${it.reason}): ${it.cause}")
  * }
  * ```
  */
 public class UncheckedDirectory internal constructor(
     override val path: String,
-    /**
-     * Which of the two readings of the directory failed. See [UncheckedDirectoryReason].
-     *
-     * ## Example 1: branch on how much a failed directory cost
-     * ```kt
-     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
-     *     projectArchitecture.assert()
-     * }
-     * failure.violations.filterIsInstance<UncheckedDirectory>().single().reason shouldBe
-     *     UncheckedDirectoryReason.ModulesNotDiscovered
-     * ```
-     */
+    /** Which of the two readings of the directory failed. See [UncheckedDirectoryReason]. */
     public val reason: UncheckedDirectoryReason,
-    /**
-     * What was thrown while the directory was being checked.
-     *
-     * ## Example 1: keep only the failures that came from the file system
-     * ```kt
-     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
-     *     projectArchitecture.assert()
-     * }
-     * failure.violations.filterIsInstance<UncheckedDirectory>()
-     *     .filter { it.cause is java.io.IOException }
-     * ```
-     */
+    /** What was thrown while the directory was being checked. */
     public val cause: Throwable,
 ) : Violation {
     override val kind: ViolationKind get() = ViolationKind.Failed

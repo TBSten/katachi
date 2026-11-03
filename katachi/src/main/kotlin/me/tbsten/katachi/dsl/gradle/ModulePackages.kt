@@ -10,16 +10,6 @@ import me.tbsten.katachi.dsl.internal.MODULE_PACKAGE_DEPRECATION
 import me.tbsten.katachi.dsl.internal.markModulePackage
 
 /**
- * Continues a `/` chain, or opens a block, at the package directory of the module being
- * evaluated.
- *
- * A [ModulePackage] is a strategy rather than a path, so every one of these first asks it
- * for the directory of the module this block belongs to and then carries on with the plain
- * directory key that came back. `modulePackage / "user"` and `"com/example/data" / "user"`
- * declare the same thing; the first says *why*.
- */
-
-/**
  * Continues a `/` chain with the package directory of the module being evaluated.
  *
  * **Deprecated** since 0.3, removed in 0.5. See [ModulePackage] for what to write instead.

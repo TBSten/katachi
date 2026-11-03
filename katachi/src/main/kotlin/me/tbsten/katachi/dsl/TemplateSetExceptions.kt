@@ -4,8 +4,9 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiDeclarationException
 
 /**
- * A `"name".templateSet { }` is written in a way that cannot work, found while its block is
- * replayed: when `architecture { }` is evaluated, or when files are generated or previewed.
+ * A `"name".templateSet { }` is written in a way that cannot work.
+ *
+ * Thrown when `architecture { }` is evaluated, or when files are generated or previewed.
  *
  * [problem] says which of the seven it is, and [name] carries the parameter or `arg` it is
  * about when there is one.
@@ -39,7 +40,9 @@ public class KatachiInvalidTemplateSetException internal constructor(
     /** Where the problem is: the line to change. */
     public val declaredAt: DeclarationSite,
     /**
-     * The line the problem repeats or contradicts, or `null` when there is none. A parameter read
+     * The line the problem repeats or contradicts, or `null` when there is none.
+     *
+     * A parameter read
      * outside a member has none: [declaredAt] is the line the parameter is declared on, which is
      * also the line Kotlin attributes a read of a local delegated property to.
      */
@@ -77,7 +80,7 @@ public class KatachiInvalidTemplateSetException internal constructor(
         /** One member was given the same `arg` name twice. */
         DuplicateArg,
 
-        /** A later replay declared different members than the declaring one did. */
+        /** The set's block declared different members on a later run than when `architecture { }` was evaluated. */
         MembersChanged,
     }
 }
@@ -161,9 +164,10 @@ public class KatachiInvalidTemplateSetMemberException internal constructor(
     /** Which way the member is wrong. */
     public val problem: Problem,
     /**
-     * The templates the specifier could have meant: those it matched when [problem] is
-     * [Problem.Ambiguous], every declared template when it is [Problem.Unknown], and the one
-     * template both members name when it is [Problem.Duplicate].
+     * The templates the specifier could have meant.
+     *
+     * Those it matched when [problem] is [Problem.Ambiguous], every declared template when it is
+     * [Problem.Unknown], and the one template both members name when it is [Problem.Duplicate].
      */
     public val candidates: List<String>,
     /** Where the `template(...)` was written. */

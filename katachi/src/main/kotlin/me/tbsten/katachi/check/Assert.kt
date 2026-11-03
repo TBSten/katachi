@@ -33,13 +33,6 @@ public const val DEFAULT_MAX_VIOLATIONS: Int = 10
  * }
  * val paths = failure.violations.map { it.path }
  * ```
- *
- * @param maxViolations the combined budget the message's error blocks and warning blocks share.
- *   [violations][KatachiArchitectureAssertionError.violations] holds every violation of the run
- *   either way, warnings included.
- * @param projectRoot what the message resolves each path against to print it as a `file:///...`
- *   URI. `null` leaves the paths relative to the project root, as
- *   [violations][KatachiArchitectureAssertionError.violations] carries them.
  */
 public class KatachiArchitectureAssertionError internal constructor(
     /**
@@ -55,8 +48,8 @@ public class KatachiArchitectureAssertionError internal constructor(
 /**
  * Checks the project against this definition and fails the calling test if anything is off.
  *
- * One call, one test: a report holding every violation costs an agent one run to read, while
- * a test per rule costs it one run per violation.
+ * One call, one test: the report holds every violation, so one run is enough to see them all.
+ * This overload runs [LayoutCheck] alone; the overload taking checks runs those on the same walk.
  *
  * ## Example 1: Writing the one test that checks the project
  *
@@ -71,9 +64,6 @@ public class KatachiArchitectureAssertionError internal constructor(
  *     }
  * }
  * ```
- *
- * The overload taking checks runs those on the same walk as well; this one runs [LayoutCheck]
- * alone.
  *
  * ## Example 2: show every violation without touching the test
  *
@@ -102,6 +92,10 @@ public class KatachiArchitectureAssertionError internal constructor(
  *   counted on their section's own last line, and this is about the message only — the check
  *   always looks at everything.
  * @throws KatachiArchitectureAssertionError when the check found anything that fails it.
+ * @throws me.tbsten.katachi.dsl.KatachiProjectRootNotFoundException when no project root is found
+ *   above the working directory.
+ * @throws me.tbsten.katachi.dsl.KatachiGitUnavailableException when the project is in a git work
+ *   tree but git cannot be run.
  * @featured
  */
 public fun Architecture.assert(maxViolations: Int? = null): Unit {
@@ -119,9 +113,6 @@ public fun Architecture.assert(maxViolations: Int? = null): Unit {
  * naming the check and what it threw, and every other check still reports what it found.
  * `VirtualMachineError`, `LinkageError`, `InterruptedException` and `AssertionError` thrown out
  * of a check are never caught, and pass straight through.
- *
- * The first check is a separate parameter rather than part of the vararg so that `assert()` and
- * `assert(10)` never reach this overload.
  *
  * ## Example 1: run a check of your own alongside the layout check, in the one test
  * ```kt
@@ -146,6 +137,10 @@ public fun Architecture.assert(maxViolations: Int? = null): Unit {
  *   always looks at everything.
  * @throws KatachiArchitectureAssertionError when anything that ran found something that fails
  *   it, a check that threw included.
+ * @throws me.tbsten.katachi.dsl.KatachiProjectRootNotFoundException when no project root is found
+ *   above the working directory.
+ * @throws me.tbsten.katachi.dsl.KatachiGitUnavailableException when the project is in a git work
+ *   tree but git cannot be run.
  */
 @ExperimentalKatachiApi
 public fun Architecture.assert(
@@ -161,13 +156,8 @@ public fun Architecture.assert(
  * not throw.
  *
  * It throws exactly where [assert] throws, with the same message, and prints the same warnings
- * to standard error. What it adds is the return value: every violation of the run, from the
- * same single walk of the project. A test that wants to fail on errors **and** look at the
- * warnings calls this once, instead of paying for the walk -- git, module discovery, every
- * constraint backend -- twice.
- *
- * The walk is not remembered between calls: each call looks at the project as it is now, so a
- * file added or removed since the last call is never missed.
+ * to standard error. A test that wants to fail on errors **and** look at the warnings calls
+ * this once instead of walking the project twice. Each call looks at the project as it is now.
  *
  * Keep [assert] for a test function written with an expression body
  * (`fun test() = projectArchitecture.assert()`): with this function there, the test would
@@ -187,6 +177,10 @@ public fun Architecture.assert(
  *   share, as for [assert]: written here, else `-Dkatachi.maxViolations`, else
  *   [DEFAULT_MAX_VIOLATIONS].
  * @throws KatachiArchitectureAssertionError when the check found anything that fails it.
+ * @throws me.tbsten.katachi.dsl.KatachiProjectRootNotFoundException when no project root is found
+ *   above the working directory.
+ * @throws me.tbsten.katachi.dsl.KatachiGitUnavailableException when the project is in a git work
+ *   tree but git cannot be run.
  * @return every violation of the run, sorted as the report sorts them: only warnings, or
  *   nothing, since any error throws instead.
  * @see assert
@@ -213,6 +207,10 @@ public fun Architecture.assertNoErrors(maxViolations: Int? = null): List<Violati
  *   [DEFAULT_MAX_VIOLATIONS].
  * @throws KatachiArchitectureAssertionError when anything that ran found something that fails
  *   it, a check that threw included.
+ * @throws me.tbsten.katachi.dsl.KatachiProjectRootNotFoundException when no project root is found
+ *   above the working directory.
+ * @throws me.tbsten.katachi.dsl.KatachiGitUnavailableException when the project is in a git work
+ *   tree but git cannot be run.
  * @return every violation of the run: only warnings, or nothing, since any error throws instead.
  */
 @ExperimentalKatachiApi

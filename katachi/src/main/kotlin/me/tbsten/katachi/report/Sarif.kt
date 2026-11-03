@@ -16,8 +16,7 @@ import me.tbsten.katachi.report.internal.sarifDocumentOf
 import me.tbsten.katachi.report.internal.writeSarifText
 
 /**
- * What a SARIF document needs beyond the violations themselves: where the project is, where to
- * look for the files that declared things, and how to reach the disk.
+ * What a SARIF document needs beyond the violations: the project root, where declaring files live, and how to reach the disk.
  *
  * `assert()` builds one of these by itself from `-Dkatachi.report.sarif` and
  * `-Dkatachi.report.sourceRoots`. Build one by hand to turn violations you already hold into
@@ -46,21 +45,23 @@ public class SarifContext(
     /** The project root, absolute. Every [Violation.path] is relative to it. */
     public val projectRoot: FsPath,
     /**
-     * The directories a [DeclarationSite.fileName] is looked for in, recursively. Empty means no
-     * declaration site can be placed, and every violation without a file of its own falls back
-     * to the file name alone.
+     * The directories a [DeclarationSite.fileName] is looked for in, recursively.
+     *
+     * Empty means no declaration site can be placed, and a violation without a file of its own shows
+     * the file name alone.
      */
     public val sourceRoots: List<FsPath> = emptyList(),
     /**
-     * Where [projectRoot] sits inside its repository, as `git rev-parse --show-prefix` prints it:
-     * `"android/"` with the trailing `/`, or `""` when the project root is the repository root.
-     * Every `uri` is written below the repository root so that GitHub can match it to a file
-     * of the checkout.
+     * Where [projectRoot] sits inside its repository, as `git rev-parse --show-prefix` prints it.
+     *
+     * `"android/"` with the trailing `/`, or `""` when the project root is the repository root. Every
+     * `uri` is written below the repository root so that GitHub can match it to a file of the checkout.
      */
     public val repositoryPrefix: String = "",
     /**
-     * Where `architecture { }` was called -- the last place a violation can point at when it has
-     * neither a file nor a declaration site. `null` leaves only the file name as the last resort.
+     * Where `architecture { }` was called: the last place a violation can point at.
+     *
+     * Used when a violation has neither a file nor a declaration site. `null` leaves only the file name.
      */
     public val architectureDeclaredAt: DeclarationSite? = null,
     /** What `tool.driver.semanticVersion` says. The running katachi's own version by default. */

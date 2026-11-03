@@ -12,10 +12,8 @@ import me.tbsten.katachi.dsl.internal.MetadataBuilder
  *
  * Metadata attached this way lands on the **leaf** of whatever was declared — the file, or the
  * innermost directory of a `/` chain — and is not inherited: a value on a directory says
- * nothing about what is beneath it. It changes nothing about the flattened layout or the
- * check: the flattened entry's path, kind, `required` and `description` are the same with or
- * without it, and a processor reads it back off [LayoutEntry] with the same `[key]` syntax a
- * role's metadata is read with.
+ * nothing about what is beneath it. It changes nothing about the check; a processor reads it
+ * back off [LayoutEntry] with the same `[key]` syntax a role's metadata is read with.
  *
  * ## Example 1: attach metadata to a declared file and read it back off the flattened entry
  * ```kt
@@ -30,11 +28,12 @@ import me.tbsten.katachi.dsl.internal.MetadataBuilder
  *     }
  * }
  *
- * arch.flattenLayout().single { it.kind == LayoutEntryKind.File }[Obsolete] shouldBe true
+ * arch.process { context ->
+ *     context.declaredEntries.single { it.kind == LayoutEntryKind.File }[Obsolete]
+ * } shouldBe true
  * ```
  */
 @KatachiDsl
 public sealed interface LayoutDeclarationScope : MetadataScope
 
-/** Backs [LayoutDeclarationScope]. One instance per call to `.metadata { }`, wrapping the node's own builder. */
 internal class LayoutDeclarationScopeImpl(val metadata: MetadataBuilder) : LayoutDeclarationScope

@@ -1,12 +1,6 @@
 package me.tbsten.katachi.report.internal
 
-/**
- * The JSON a SARIF document is made of: objects, arrays, strings, whole numbers and Booleans.
- *
- * A tree of its own rather than `template.internal.JsonEncoder`: that one sits in a later layer
- * and is driven by a serializer, while a SARIF document is assembled by hand with every key in a
- * fixed order so that two runs over the same violations write the same bytes.
- */
+// Own tree, not JsonEncoder (later layer): keys keep a fixed order so two runs write the same bytes.
 internal sealed interface SarifJson {
     class Str(val value: String) : SarifJson
     class Num(val value: Int) : SarifJson
@@ -15,7 +9,6 @@ internal sealed interface SarifJson {
     class Arr(val items: List<SarifJson>) : SarifJson
 }
 
-/** Collects the members of one object, in the order they are put, skipping `null` values. */
 internal class SarifObjectBuilder {
     private val members = mutableListOf<Pair<String, SarifJson>>()
 
@@ -35,7 +28,6 @@ internal class SarifObjectBuilder {
         if (value != null) members += name to value
     }
 
-    /** Puts [items] as an array, or nothing at all when it is empty and [omitWhenEmpty] holds. */
     fun put(name: String, items: List<SarifJson>, omitWhenEmpty: Boolean = false) {
         if (items.isEmpty() && omitWhenEmpty) return
         members += name to SarifJson.Arr(items)
@@ -47,11 +39,6 @@ internal class SarifObjectBuilder {
 internal inline fun sarifObject(block: SarifObjectBuilder.() -> Unit): SarifJson.Obj =
     SarifObjectBuilder().apply(block).build()
 
-/**
- * The document as text: two-space indent, LF line breaks, one line break at the end, `{}` and
- * `[]` on one line only when empty, `"` `\` and the control characters escaped and everything
- * else -- `/` and non-ASCII included -- written as it is.
- */
 internal fun SarifJson.render(): String {
     val out = StringBuilder()
     writeTo(out, indent = 0)

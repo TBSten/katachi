@@ -5,16 +5,13 @@ import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.internal.displayPath
 
-/** How many of the offending paths a message names before it stops listing them. */
 private const val LISTED_PATHS: Int = 3
 
 /**
  * A constraint answered about files it was never asked about.
  *
- * A backend that has quietly stopped seeing the right files has no way of finding out on its
- * own: every rejection it invents about a path outside the subject would be dropped, and the
- * run would look like a rule that holds. So katachi refuses the whole answer instead, and the
- * constraint is reported as one nothing is known about.
+ * katachi refuses the whole answer rather than dropping those rejections, which would make the
+ * rule look satisfied, and reports the constraint as an [UncheckedFileConstraint].
  *
  * ## Example 1: catch a backend that answered about the wrong files
  * ```kt
@@ -23,54 +20,17 @@ private const val LISTED_PATHS: Int = 3
  * }
  * failure.violations.filterIsInstance<UncheckedFileConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiFileConstraintSubjectException>()
+ *     .outside shouldBe listOf("build.gradle.kts")
  * ```
- *
- * @property role the qualified name of the role whose layout the constraint was written in.
- * @property constraintName what the constraint was called, or `null`.
- * @property declaredAt where the constraint was written.
- * @property outside the paths that were answered about but never handed over.
- * @param projectRoot what the message resolves
- *   [outside][KatachiFileConstraintSubjectException.outside] against to print `file:///...` URIs.
- *   `null` prints them as they are.
  */
 public class KatachiFileConstraintSubjectException internal constructor(
-    /**
-     * The qualified name of the role whose layout the constraint was written in.
-     *
-     * ## Example 1: read back which role's constraint misbehaved
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiFileConstraintSubjectException>().role shouldBe "domain.UseCase"
-     * ```
-     */
+    /** The qualified name of the role whose layout the constraint was written in. */
     public val role: String,
-    /**
-     * What the constraint was called, or `null` when it was declared without a name.
-     *
-     * ## Example 1: name the rule that answered about the wrong files
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiFileConstraintSubjectException>().constraintName shouldBe "Internal only"
-     * ```
-     */
+    /** What the constraint was called, or `null` when it was declared without a name. */
     public val constraintName: String?,
-    /**
-     * Where the constraint was written.
-     *
-     * ## Example 1: jump to the constraint whose backend went off course
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiFileConstraintSubjectException>().declaredAt.fileName shouldBe
-     *     "ProjectArchitecture.kt"
-     * ```
-     */
+    /** Where the constraint was written. */
     public val declaredAt: DeclarationSite,
-    /**
-     * The paths the constraint answered about that were never handed to it.
-     *
-     * ## Example 1: read back the paths that were not part of the subject
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiFileConstraintSubjectException>().outside shouldBe
-     *     listOf("build.gradle.kts")
-     * ```
-     */
+    /** The paths the constraint answered about that were never handed to it. */
     public val outside: List<String>,
     projectRoot: FsPath? = null,
 ) : KatachiDeclarationException(
@@ -97,8 +57,8 @@ public class KatachiFileConstraintSubjectException internal constructor(
 /**
  * `FileConstraintCheck(parallelism = ...)` was given fewer than one thread.
  *
- * There is no "zero threads" that could mean anything sensible, and quietly treating it as one
- * would hide a miscalculated value (`availableProcessors() - 1` on a one-core CI runner).
+ * It is not treated as one, so a miscalculated value (`availableProcessors() - 1` on a
+ * one-core CI runner) does not go unnoticed.
  *
  * ## Example 1: catch a parallelism that was worked out to zero
  * ```kt
@@ -106,9 +66,6 @@ public class KatachiFileConstraintSubjectException internal constructor(
  *     FileConstraintCheck(parallelism = 0)
  * }.parallelism shouldBe 0
  * ```
- *
- * @property parallelism the value that was passed.
- * @property declaredAt where the check was created.
  */
 public class KatachiInvalidFileConstraintParallelismException internal constructor(
     /** The value that was passed. */

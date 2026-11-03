@@ -29,9 +29,9 @@ import me.tbsten.katachi.dsl.kotlin.ktsFile
  * is a catalog, and whether a build writes its scripts in Kotlin or Groovy is not the
  * definition's business.
  *
- * Build scripts are declared for the modules katachi finds, the same modules a `":**"` module
- * key expands to, so the list of modules is never written twice. What else lives inside a
- * module is left to the project's own roles.
+ * Build scripts are declared for every module katachi finds in the project, so the list of
+ * modules is never written twice. What else lives inside a module is left to the project's own
+ * roles.
  *
  * A hook of [GradleScope] opens one of these roles for a constraint or a metadata value of the
  * project's own — `buildScript { fileConstraint("...") { subject -> ... } }` — without taking
@@ -39,9 +39,8 @@ import me.tbsten.katachi.dsl.kotlin.ktsFile
  * duplicate of katachi's role and is refused with [KatachiDuplicateDeclarationException];
  * the constraint belongs in the hook.
  *
- * Every group and role here sets `documented = false` for itself. The generated
- * documentation already drops a whole group that opted out, but the metadata is not
- * inherited, and a processor reading `role[Documented]` should get the same answer.
+ * Every group and role here sets `documented = false`, so a processor reading `role[Documented]`
+ * gets `false` for each of them.
  *
  * `buildSrc` and an included `build-logic` build are not declared: what they hold is code,
  * and how it is laid out is the project's decision. Declare them in [block].
@@ -82,14 +81,10 @@ import me.tbsten.katachi.dsl.kotlin.ktsFile
  *
  * @param requireWrapper whether a missing wrapper file is reported. `false` still allows the
  *   wrapper files; it only stops asking for them.
- * @param block evaluated inside the `"Gradle"` group, before katachi's own roles are declared.
- *   A hook (`buildScript { }` and the others of [GradleScope]) only records its block, which is
- *   applied while katachi declares the role it names; `title` / `summary` / `owner = ...` are
- *   written to the group at once; a `"X".role { }` or `"X".group { }` takes its declaration
- *   site at once and is declared after katachi's eight roles, in the order written. So the
- *   roles of the project's own come after katachi's, and a role named like one of katachi's
- *   (`"BuildScript".role { }`) is the duplicate, not katachi's — write its constraint in the
- *   matching hook instead.
+ * @param block written inside the `"Gradle"` group: hooks such as `buildScript { }` for katachi's
+ *   roles, and `"X".role { }` / `"X".group { }` for the project's own, which come after katachi's
+ *   roles.
+ * @throws KatachiDuplicateDeclarationException when [block] declares a role named like one of katachi's.
  * @see me.tbsten.katachi.dsl.GradleScope
  */
 public fun DeclarationContainerScope.gradle(
@@ -146,10 +141,6 @@ public fun DeclarationContainerScope.gradle(
     scope.declareDeferred()
 }
 
-/**
- * One role of [gradle]: out of the documentation, with the layout katachi decides, and with
- * whatever the matching hook of [scope] wrote on top.
- */
 private fun GroupScope.gradleRole(
     kind: GradleRoleKind,
     summary: String,

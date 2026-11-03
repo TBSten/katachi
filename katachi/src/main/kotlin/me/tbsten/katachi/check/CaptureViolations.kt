@@ -4,10 +4,12 @@ import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.Role
 
 /**
- * A file that matches a role's pattern, except that the levels one `capture("...")` name ties
- * together do not hold the same value -- `feature/home/.../feature/settings/HomeUserCard.kt`
- * against a path that names both `feature` levels alike -- or a derived level
- * (`${capture("feature").pascalCase}Screen`) does not read the conversion of its plain capture.
+ * A file that matches a role's pattern except that the levels tied together by one capture name
+ * do not hold the same value.
+ *
+ * For example `feature/home/.../feature/settings/HomeUserCard.kt` against a path that names both
+ * `feature` levels alike, or a derived level (`${capture("feature").pascalCase}Screen`) that does
+ * not read the conversion of its plain capture.
  *
  * Reported in place of [UnexpectedFile] when no other role allows the file either: the file
  * does have a pattern that nearly fits, and the block says which levels disagree and where the
@@ -66,8 +68,9 @@ public class CaptureOccurrence internal constructor(
     /** What the file holds at that level. */
     public val value: String,
     /**
-     * What the level was held to: the first plain occurrence's value, converted for a derived
-     * one. `null` for the first plain occurrence itself, which the others are held to.
+     * What the level was held to, or `null` for the first plain occurrence itself.
+     *
+     * That is the first plain occurrence's value, converted for a derived occurrence.
      */
     public val expected: String?,
 ) {

@@ -21,18 +21,8 @@ import java.util.IdentityHashMap
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 
-/**
- * One run's worth of reading: the declarations, the single walk of the project, and the
- * bookkeeping a run of checks shares.
- *
- * It is a class of its own rather than fields on [RealArchitectureProcessContext] because
- * `withArgs` hands the same run to another processor. If the walk, the set of evaluated
- * constraints and the constraint scratch lived on the context, each `withArgs` would fork
- * them -- and a forked "evaluated" set is the quietest way this library can break: the
- * constraints one check answered for would still look unevaluated to the run that reports
- * them, or the other way round. One object, passed along by reference, makes that impossible
- * to get wrong.
- */
+// withArgs shares this by reference: a forked evaluated-constraints set would make answered constraints look
+// unevaluated to the run that reports.
 internal class ProjectWalk(
     val architecture: Architecture,
     val fileSystem: KatachiFileSystem,
@@ -79,16 +69,10 @@ internal class ProjectWalk(
 
     val declaredFileConstraints: List<DeclaredFileConstraint> get() = scan.fileConstraints
 
-    /**
-     * The entries the walk evaluated: [declaredEntries] with each wildcard module key expanded to
-     * the modules that exist. Reading it walks the project, as [filesOf] does.
-     */
     val resolvedEntries: List<LayoutEntry> get() = scan.layout.entries
 
-    /** Where the walk started -- what a report resolves each relative path against. */
     val projectRoot: FsPath get() = scan.projectRoot
 
-    /** Where the walk started, absolute -- what a constraint backend opens files from. */
     val projectRootPath: String get() = projectRoot.value
 
     // `DeclaredFileConstraint` declares no `equals`, exactly as `Role` does not, so this is a set
@@ -103,7 +87,6 @@ internal class ProjectWalk(
         evaluated += constraint
     }
 
-    /** The constraints nothing answered for, which the run has to report rather than drop. */
     val unevaluatedFileConstraints: List<DeclaredFileConstraint>
         get() = declaredFileConstraints.filterNot { it in evaluated }
 
@@ -123,10 +106,6 @@ internal class ProjectWalk(
     private val filesByCoverage: MutableMap<FileConstraintCoverage, Pair<Role, List<String>>> =
         IdentityHashMap()
 
-    /**
-     * The files [constraint] covers, in walk order: the role's own files narrowed by the
-     * constraint's coverage. Constraints of one block get the same read-only list.
-     */
     fun filesUnder(constraint: DeclaredFileConstraint): List<String> {
         val cached = filesByCoverage[constraint.coverage]
         if (cached != null && cached.first === constraint.role) return cached.second

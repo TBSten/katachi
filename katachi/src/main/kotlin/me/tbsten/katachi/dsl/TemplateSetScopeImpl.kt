@@ -14,15 +14,8 @@ import me.tbsten.katachi.dsl.internal.TemplateSetMemberReplay
 import me.tbsten.katachi.dsl.internal.TemplateSetMode
 import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 
-/** The `--arg` names `katachiTemplate` reads itself, which a parameter of a set cannot take. */
 private val RESERVED_PARAMETER_NAMES: Set<String> = setOf(TEMPLATE_ARG, ON_EXISTING_ARG)
 
-/**
- * Collects one replay of a `"name".templateSet { }` block.
- *
- * A fresh instance per replay, as [TemplateScopeImpl] is: the mode and the values differ from
- * replay to replay, and nothing one replay bound may leak into the next.
- */
 internal class TemplateSetScopeImpl(
     private val specifier: String,
     private val mode: TemplateSetMode,
@@ -31,7 +24,6 @@ internal class TemplateSetScopeImpl(
     override var title: String? = null
     override var summary: String? = null
 
-    /** Every parameter handed out, named or not. The unnamed ones are the mistake to report. */
     private val created = mutableListOf<TemplateParameter<*>>()
     private val named = linkedMapOf<String, TemplateParameter<*>>()
     private val duplicates = mutableListOf<Pair<TemplateParameter<*>, TemplateParameter<*>>>()
@@ -145,7 +137,6 @@ internal class TemplateSetScopeImpl(
         return parameter.type.standIn(name)
     }
 
-    /** The named parameters, in declaration order, types and defaults included. */
     fun parameters(): List<DeclaredTemplateParameter> =
         named.map { (name, parameter) ->
             DeclaredTemplateParameter(name = name, type = parameter.type, default = parameter.default)
@@ -159,11 +150,6 @@ internal class TemplateSetScopeImpl(
 
     fun invalidValues(): Map<String, InvalidTemplateValue> = invalid.toMap()
 
-    /**
-     * Refuses what is wrong with the parameters themselves, once the block has ended, which is
-     * the first moment all of them are known: a name `katachiTemplate` reads itself, the same
-     * name twice, and a parameter written without `by`.
-     */
     fun requireWellFormed() {
         named.entries.firstOrNull { it.key in RESERVED_PARAMETER_NAMES }?.let { (name, parameter) ->
             throw KatachiInvalidTemplateSetException(
@@ -204,7 +190,6 @@ internal class TemplateSetScopeImpl(
     }
 }
 
-/** Collects the `arg` calls of one member's block. */
 internal class TemplateSetMemberScopeImpl(
     private val templateSet: String,
     override val isPreview: Boolean,

@@ -1,20 +1,9 @@
 package me.tbsten.katachi.dsl
 
 /**
- * Names for the file selections katachi ships with, written on top of [FileSelection] and
- * nothing else.
- *
- * Neither is a member of [ArchitectureScope]: each takes the scope as a context parameter,
- * which is exactly what a project writes when it gives its own [FileSelection] a name —
- * `bazelSources()` next to these two, resolved the same way and refused in the same places.
- * Nothing here is katachi's privilege.
- */
-
-/**
  * Only the files git reports for this project. See [FileSelection.GitTracked].
  *
- * This is the default, so writing it changes nothing. It is here for a definition that would
- * rather say out loud which files it looks at than let the reader assume.
+ * This is the default, so writing it changes nothing; write it to make the choice explicit.
  *
  * ## Example 1: Say the default out loud
  * ```kt

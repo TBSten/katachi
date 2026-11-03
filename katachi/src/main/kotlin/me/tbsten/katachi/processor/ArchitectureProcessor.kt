@@ -8,37 +8,21 @@ import me.tbsten.katachi.processor.internal.NoArgContextView
 /**
  * Something that reads an architecture definition and answers with a [kotlin.Result] of [R].
  *
- * katachi had two fixed outputs -- the check, and documentation generation -- and no way for
- * anyone else to add a third. This is that way in: the check is one processor among others,
- * not a privileged one.
- *
- * It takes one parameter, [ArchitectureProcessContext], and nothing else. A later version that
- * has one more thing to hand a processor adds a member there, and every processor written
- * against this keeps compiling.
- *
- * A processor holds no state -- the definition arrives on the context -- so it can be written
- * as an `object`, and **there is nothing a user has to subclass.** A processor with settings is
- * still free to be a class.
- *
- * [R] may be [Unit]: a processor is allowed to have effects. It is deliberately not `suspend`,
- * which would force every plain JUnit or kotest test calling into it to wrap the call in
- * `runBlocking`.
+ * The layout check, documentation generation and template generation are all processors; this
+ * is how you add your own. A processor holds no state -- the definition arrives on
+ * [ArchitectureProcessContext] -- so it can be written as an `object`. [R] may be [Unit] for a
+ * processor that exists for its effect.
  *
  * ## How [process] answers
  *
- * Write the body inside `runCatching { }`, and **when the answer is that the run does not pass,
- * throw inside it.** The exception's message is what a reader of the build log sees:
- * a `katachi<Key>` task reports `[FAILED]` and prints it, and reports `[OK]` with the value
- * otherwise.
+ * Write the body inside `runCatching { }`, and **throw inside it when the run does not pass.**
+ * The exception's message is what the build log shows: a `katachi<Key>` task reports `[FAILED]`
+ * with it, and `[OK]` with the value otherwise.
  *
- * A check that reports `Violation`s says "I found something" by ending its body with
- * `me.tbsten.katachi.check.assertNoErrors`, which throws a `KatachiArchitectureAssertionError` when
- * there is an error among them. `assert()` and `assertNoErrors()` put that exception's violations
- * into their one report; any other failure is read there as "this check could not do its job", and
- * becomes one `UncheckedCheck`. On the command line both are `[FAILED]`.
- *
- * The runner and `assert()` still catch a processor that throws out of `process` instead, and
- * treat it as the same failure, but a processor is expected not to.
+ * A check that reports `Violation`s ends its body with `me.tbsten.katachi.check.assertNoErrors`,
+ * which throws a `KatachiArchitectureAssertionError` when there is an error among them.
+ * `assert()` and `assertNoErrors()` report those violations; any other failure is reported as
+ * one `UncheckedCheck`.
  *
  * ## Example 1: a processor with typed arguments, written as an object
  * ```kt
@@ -63,7 +47,21 @@ import me.tbsten.katachi.processor.internal.NoArgContextView
  * val count: Int = projectArchitecture.process(CountRoles, CountRoles.Args("Get")).getOrThrow()
  * ```
  *
- * ## Example 2: a check that makes the run fail when it found something
+ * ## Example 2: register it and run it from the command line
+ * ```kts
+ * // architecture-test/build.gradle.kts
+ * katachi {
+ *     processors {
+ *         register("countRoles", "com.example.processors.CountRoles")
+ *     }
+ * }
+ * ```
+ *
+ * ```sh
+ * ./gradlew :architecture-test:katachiCountRoles --arg prefix=Get
+ * ```
+ *
+ * ## Example 3: a check that makes the run fail when it found something
  * ```kt
  * import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
  * import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
@@ -83,81 +81,41 @@ public interface ArchitectureProcessor<Args, R> {
     /**
      * How a `--arg key=value` map becomes [Args].
      *
-     * A processor author writes one `@Serializable data class` and gets every field typed,
-     * instead of a getter per primitive type. A processor that takes no arguments does not
-     * write this at all -- see [ArchitectureProcessorNoArg].
-     *
-     * ## Example 1: hand over the generated serializer
-     * ```kt
-     * object CountRoles : ArchitectureProcessor<CountRoles.Args, Int> {
-     *     override val argsSerializer: KSerializer<Args> = Args.serializer()
-     *
-     *     override fun process(context: ArchitectureProcessContext<Args>): Result<Int> =
-     *         runCatching { context.roles.count { it.name.startsWith(context.args.prefix) } }
-     *
-     *     @Serializable
-     *     data class Args(val prefix: String = "")
-     * }
-     * ```
+     * Write one `@Serializable data class` and hand over its serializer. A processor that takes no
+     * arguments does not write this at all -- see [ArchitectureProcessorNoArg].
      */
     public val argsSerializer: KSerializer<Args>
 
     /**
      * Reads [context] and answers: `success` when the run passes, `failure` when it does not.
-     * Write the body inside `runCatching { }` and throw inside it to fail -- see this interface's
-     * own KDoc for how a check's findings are told apart from any other failure.
      *
-     * ## Example 1: answer from the declarations alone
-     * ```kt
-     * object RoleCount : ArchitectureProcessorNoArg<Int> {
-     *     override fun process(context: ArchitectureProcessNoArgContext): Result<Int> =
-     *         runCatching { context.roles.size }
-     * }
-     * ```
+     * Write the body inside `runCatching { }` and throw inside it to fail.
      */
     public fun process(context: ArchitectureProcessContext<Args>): Result<R>
 
     /**
-     * The `--arg` names this one run may carry beyond the ones [argsSerializer] declares.
+     * The `--arg` names this run may carry beyond the ones [argsSerializer] declares.
      *
-     * A processor whose vocabulary depends on the definition rather than on its own type has no
-     * field to declare those names as: a template's parameters differ from role to role, so
-     * `Args` cannot name them and `checkNoUnknownArgs` would call every one of them a typo. This
-     * is where such a processor says what this particular run made legal -- `--arg template=UseCase`
-     * turns `name` and `implBody` into names, and nothing else into names.
-     *
-     * **Every selected processor is asked, with no build-script step in between.** A name this
-     * answers with is accepted for the run; a name nothing answers with is still a typo.
+     * For a processor whose arguments depend on the definition rather than on its own type. A
+     * template's parameters differ from role to role, so `--arg template=UseCase` makes `name` and
+     * `implBody` valid names for that run. A name no selected processor accepts is reported as a typo.
      *
      * ## The contract
      *
-     * - **Called before any processor of the run runs**, so [context] carries the run's raw
-     *   arguments and the declarations, and **nothing here may read the file system.** An
-     *   implementation that walks the project would make deciding "is this key a typo" cost a
-     *   full scan.
-     * - **Answer [emptySet] when there is nothing to say**, rather than throwing to mean it.
-     *   Throwing is for the one case where nothing can be said because the run is already
-     *   wrong -- a role name no role answers to, say. Then it ends the run, and it should:
-     *   a processor that cannot tell a typo from a parameter has no answer to give, and
-     *   "nothing" would be a wrong one stated as fact. The exception a build script sees is
-     *   this one, so make it name what the user got wrong. This is called with no net for
-     *   every selected processor, so whatever it throws ends the run.
-     * - `context.args` is **not** this processor's `Args` yet -- decoding happens after this
-     *   check. Read [ArchitectureProcessContext.rawArgs] instead.
+     * - Called before any processor of the run runs. **Do not read the file system here**: read
+     *   the declarations and [ArchitectureProcessContext.rawArgs].
+     * - `context.args` is not decoded yet. Read [ArchitectureProcessContext.rawArgs] instead.
+     * - Answer [emptySet] when there is nothing to add. Throw only when the run is already wrong,
+     *   such as a role name no role answers to; the exception ends the run, so make its message
+     *   name what the user got wrong.
      *
      * ## Example 1: take one argument per role the definition declares
      * ```kt
-     * import me.tbsten.katachi.processor.ArchitectureProcessContext
-     * import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
-     * import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
-     *
      * object AnnotateRoles : ArchitectureProcessorNoArg<Unit> {
      *     override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> =
      *         runCatching { for ((role, note) in context.rawArgs) context.log("$role: $note") }
      *
-     *     // `--arg domain/UseCase="owned by the platform team"`. The keys come from the
-     *     // definition rather than from this processor, so no Args class can hold them as
-     *     // fields -- which is the whole reason this method exists.
+     *     // --arg domain.UseCase="owned by the platform team"
      *     override fun undeclaredArgNames(context: ArchitectureProcessContext<*>): Set<String> =
      *         context.roles.map { it.qualifiedName }.toSet()
      * }
@@ -169,10 +127,8 @@ public interface ArchitectureProcessor<Args, R> {
 /**
  * An [ArchitectureProcessor] that takes no arguments.
  *
- * It carries the [argsSerializer] boilerplate, and hands [process] an
- * [ArchitectureProcessNoArgContext]: the same context, with `args` deprecated because there is
- * nothing in it to read. The `ArchitectureProcessContext<Unit>` overload that katachi calls is
- * implemented here and forwards to it.
+ * It needs no [argsSerializer], and its [process] receives an [ArchitectureProcessNoArgContext],
+ * which has no `args` to read.
  *
  * ## Example 1: a processor that exists for its effect
  * ```kt
@@ -199,24 +155,12 @@ public interface ArchitectureProcessorNoArg<R> : ArchitectureProcessor<Unit, R> 
     override fun process(context: ArchitectureProcessContext<Unit>): Result<R> =
         this.process(context as? ArchitectureProcessNoArgContext ?: NoArgContextView(context))
 
-    /**
-     * Reads [context] and answers, exactly as [ArchitectureProcessor.process] does, without the
-     * `args` a processor with no arguments has nothing to read from.
-     *
-     * ## Example 1: answer from the declarations alone
-     * ```kt
-     * object RoleCount : ArchitectureProcessorNoArg<Int> {
-     *     override fun process(context: ArchitectureProcessNoArgContext): Result<Int> =
-     *         runCatching { context.roles.size }
-     * }
-     * ```
-     */
+    /** Reads [context] and answers, exactly as [ArchitectureProcessor.process] does. */
     public fun process(context: ArchitectureProcessNoArgContext): Result<R>
 }
 
 /**
- * The context an [ArchitectureProcessorNoArg] reads: an [ArchitectureProcessContext] whose
- * `args` is deprecated, because a processor that takes no arguments has nothing in it.
+ * The context an [ArchitectureProcessorNoArg] reads: an [ArchitectureProcessContext] with no `args` to read.
  *
  * ## Example 1: read the declarations in a processor without arguments
  * ```kt

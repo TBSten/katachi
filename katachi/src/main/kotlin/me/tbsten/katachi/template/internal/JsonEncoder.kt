@@ -9,25 +9,7 @@ import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 import me.tbsten.katachi.template.KatachiUnsupportedTemplateJsonValueException
 
-/**
- * [value] as a JSON document: UTF-8 text without a BOM, indented by two spaces, ending in one
- * line break.
- *
- * The writing half of `StringMapDecoder`. `kotlinx-serialization-json` would do this, and was not
- * added: katachi already depends on `kotlinx-serialization-core` alone, and a user's test runtime
- * classpath should not grow for a file only the IDE plugin reads.
- *
- * The rules are part of the contract with the katachi IDE plugin, which parses this output:
- * - every key is written, in declaration order: `null` as `null`, an empty list as `[]`
- * - an enum is written by its serial name
- * - `"` `\` and the control characters are escaped; everything else, `/` and non-ASCII included,
- *   is written as it is
- * - a list of plain values stays on one line (`["a", "b"]`), a list of objects one per line
- *
- * Only what the template descriptions hold is supported: objects, lists, strings, whole numbers,
- * Booleans, enums and `null`. A map, a fraction or a polymorphic value is refused with
- * [KatachiUnsupportedTemplateJsonValueException], since no type written here carries one.
- */
+// UTF-8 without a BOM, two-space indent, ending in one line break.
 internal fun <T> encodeToJson(serializer: SerializationStrategy<T>, value: T): String {
     var root: JsonNode? = null
     NodeEncoder(container = null) { root = it }.encodeSerializableValue(serializer, value)
@@ -118,11 +100,6 @@ private fun StringBuilder.appendJsonString(value: String): StringBuilder {
     return append('"')
 }
 
-/**
- * Builds the [JsonNode] tree of one value. The root has no [container] and hands its value to
- * [emit]; every structure below it gets an encoder of its own, whose [emit] puts the finished
- * structure into the parent under the element being written.
- */
 private class NodeEncoder(
     private val container: JsonNode?,
     private val emit: (JsonNode) -> Unit,

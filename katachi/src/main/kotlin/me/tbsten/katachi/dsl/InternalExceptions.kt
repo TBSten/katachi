@@ -4,7 +4,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiInternalException
 
 /**
- * A layout scope reached the Gradle vocabulary without knowing which module it is in.
+ * A layout scope reached the Gradle vocabulary without knowing which module it is in; this is a bug in katachi.
  *
  * ## Example 1: report it instead of treating it as a bad definition
  * ```kt
@@ -28,7 +28,7 @@ public class KatachiUnsupportedLayoutScopeException internal constructor(
 )
 
 /**
- * A layout key was split into no level at all, so there is no node to hang the declaration on.
+ * A layout key was split into no level at all; this is a bug in katachi.
  *
  * ## Example 1: report it instead of treating it as a bad definition
  * ```kt
@@ -52,7 +52,7 @@ public class KatachiEmptyLayoutChainException internal constructor(
 )
 
 /**
- * A node recorded a second `.template { }` without a first one on record to compare it against.
+ * A path recorded a second `.template { }` with no first one to compare it against; this is a bug in katachi.
  *
  * ## Example 1: report it instead of treating it as a bad definition
  * ```kt
@@ -80,11 +80,10 @@ public class KatachiMissingFirstTemplateException internal constructor(
 )
 
 /**
- * A capture token named a conversion `Naming.kt` does not have.
+ * A capture carried a naming conversion katachi does not know; this is a bug in katachi.
  *
- * Only the six naming conversions make a derived capture token, and each writes its own
- * spelling into it, so a layout cannot reach this: it would mean the token was built by hand
- * or the conversions and the parser have drifted apart.
+ * Only katachi's own conversions (`camelCase`, `pascalCase` and the like) can be applied to a
+ * capture, so no definition can cause this.
  *
  * ## Example 1: report it rather than work around it
  * ```kt

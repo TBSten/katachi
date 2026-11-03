@@ -5,8 +5,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import org.intellij.lang.annotations.Language
 
 /**
- * Receiver of `"name".templateSet { }`: gathers several templates under one name, so that one
- * `--arg template=<name>` generates all of them as a single set.
+ * Receiver of `"name".templateSet { }`: gathers templates so one `--arg template=<name>` generates them all.
  *
  * The block runs once when `architecture { }` is evaluated. That fixes the set's own parameters
  * (the `...Parameter()` functions, written through `by` like a template's) and which templates

@@ -4,15 +4,6 @@ import me.tbsten.katachi.dsl.LayoutDirectory
 import me.tbsten.katachi.dsl.LayoutScope
 
 /**
- * Where a Gradle module keeps its sources, named as Gradle names it.
- *
- * Every declaration below is written through [LayoutScope]'s own directory key and nothing
- * else — `"main".sourceSet` *is* `"src/main" { }` — which is why a source set and a plain
- * directory cannot come apart, and why a project can write its own `androidTestSourceSet`
- * the same way.
- */
-
-/**
  * The source set directory `src/<this>`, and nothing more than that.
  *
  * `"commonMain".sourceSet` is `src/commonMain`. `kotlin` is not implied — write [kotlin]

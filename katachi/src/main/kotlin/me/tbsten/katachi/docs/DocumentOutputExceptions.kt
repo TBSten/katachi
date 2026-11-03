@@ -9,14 +9,9 @@ import me.tbsten.katachi.internal.fileUri
 /**
  * The documentation on disk is not what the definition produces.
  *
- * Answered only by `--arg mode=check`, which compares instead of writing, and answered rather
- * than thrown: [GenerateDocumentation] returns it as `Result.failure`. The definition is fine
- * and katachi is fine -- what is out of date is the output directory of an earlier run, which
- * is why this is a check failure about the environment rather than a bad declaration: the fix
- * is to regenerate and commit, not to edit `architecture { }`.
- *
- * All three kinds are reported together. Fixing them is one command either way, and a reader
- * who sees only the first of five learns nothing about whether the rest are the same mistake.
+ * Only [DocumentationMode.Check] (`--arg mode=check`) produces it, and [GenerateDocumentation]
+ * returns it as `Result.failure` rather than throwing. The fix is to regenerate and commit, not
+ * to edit `architecture { }`. Missing, different and extra pages are reported together.
  *
  * ## Example 1: list the stale pages a CI job found
  * ```kt
@@ -68,10 +63,8 @@ public class KatachiStaleDocumentationException internal constructor(
 /**
  * katachi could not read or write a file of the output directory.
  *
- * The one failure of documentation generation that is about neither the definition nor katachi:
- * the directory does not exist and cannot be created, the file is read only, the disk is full.
- * It names the output directory as well as the page, because the usual cause is an `outputDir`
- * that points somewhere other than where its author thought.
+ * For example the directory cannot be created, the file is read only, or the disk is full. The
+ * usual cause is an `outputDir` that points somewhere other than intended.
  *
  * ## Example 1: say which directory a failing run was writing into
  * ```kt

@@ -6,7 +6,9 @@ import me.tbsten.katachi.dsl.internal.TemplateSetDeclaration
 import me.tbsten.katachi.dsl.internal.get
 
 /**
- * A group of roles. One group is one documentation output directory; it says nothing
+ * A group of roles.
+ *
+ * One group is one documentation output directory; it says nothing
  * about where the files physically live, so the roles of one group may be spread over
  * several modules. Groups can nest.
  *
@@ -16,107 +18,53 @@ import me.tbsten.katachi.dsl.internal.get
  * [metadata()][me.tbsten.katachi.dsl.metadata], and whoever writes the definition adds a whole
  * section of the generated page with [documentSection].
  *
- * ## Example 1: declare nested groups
+ * ## Example 1: declare nested groups and read them back
  * ```kt
  * val arch = architecture {
  *     "domain".group {
+ *         documented = false
  *         "model".group {
  *             "ValueObject".role { }
  *         }
  *         "UseCase".role { }
  *     }
  * }
+ *
+ * val domain = arch.groups.single()
+ * domain.name shouldBe "domain"
+ * domain.roles.map { it.name } shouldContainExactly listOf("UseCase")
+ * domain.groups.single().path shouldContainExactly listOf("domain", "model")
+ * domain.groups.single().qualifiedName shouldBe "domain.model"
+ * domain[Documented] shouldBe false
+ * println(domain.declaredAt) // where `"domain".group { }` was written
  * ```
  */
 public class Group internal constructor(
     /**
      * Identifier. Matches `[A-Za-z][A-Za-z0-9_-]*`.
-     *
-     * ## Example 1: read the declared group name
-     * ```kt
-     * val arch = architecture { "domain".group { } }
-     * arch.groups.single().name shouldBe "domain"
-     * ```
      */
     public val name: String,
-    /** What was written on this group beyond its identity. Read through [get]. */
     internal val metadata: MetadataValues,
     /**
      * Names from the outermost group down to this one.
-     *
-     * ## Example 1: read the path of a nested group
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group {
-     *         "model".group { }
-     *     }
-     * }
-     * val model = arch.groups.single().groups.single()
-     * model.path shouldContainExactly listOf("domain", "model")
-     * ```
      */
     public val path: List<String>,
     /**
      * Nested groups, in declaration order.
-     *
-     * ## Example 1: read the groups declared directly inside this one
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group {
-     *         "model".group { }
-     *         "UseCase".role { }
-     *     }
-     * }
-     * arch.groups.single().groups.map { it.name } shouldContainExactly listOf("model")
-     * ```
      */
     public val groups: List<Group>,
     /**
      * Roles declared directly in this group, in declaration order.
-     *
-     * ## Example 1: read the roles declared directly inside this group
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group {
-     *         "model".group { "ValueObject".role { } }
-     *         "UseCase".role { }
-     *     }
-     * }
-     * arch.groups.single().roles.map { it.name } shouldContainExactly listOf("UseCase")
-     * ```
      */
     public val roles: List<Role>,
     /**
      * Where `"name".group { }` was written.
-     *
-     * ## Example 1: read where a group was declared
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group {
-     *         "UseCase".role {
-     *             layout { }
-     *         }
-     *     }
-     * }
-     * arch.allGroups.single().declaredAt shouldBe DeclarationSite("DeclarationSiteSpec.kt", 16)
-     * ```
      */
     public val declaredAt: DeclarationSite,
-    /** The template sets declared directly in this group, in declaration order. */
     internal val templateSets: List<TemplateSetDeclaration> = emptyList(),
 ) {
     /**
      * [path][Group.path] joined with `.`, e.g. `domain.model`.
-     *
-     * ## Example 1: read the qualified name of a nested group
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group {
-     *         "model".group { }
-     *     }
-     * }
-     * arch.groups.single().groups.single().qualifiedName shouldBe "domain.model"
-     * ```
      */
     public val qualifiedName: String = path.joinToString(".")
 
@@ -135,14 +83,6 @@ public class Group internal constructor(
      *     "domain".group { owner = "platform" }
      * }
      * arch.groups.single()[Owner] shouldBe "platform"
-     * ```
-     *
-     * ## Example 2: read one of the keys katachi ships
-     * ```kt
-     * val arch = architecture {
-     *     "build".group { documented = false }
-     * }
-     * arch.groups.single()[Documented] shouldBe false
      * ```
      */
     @ExperimentalKatachiApi

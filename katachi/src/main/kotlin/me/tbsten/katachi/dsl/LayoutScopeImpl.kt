@@ -17,46 +17,18 @@ import me.tbsten.katachi.dsl.internal.markSynthetic
 import me.tbsten.katachi.dsl.internal.requireValidIdentifier
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 
-/**
- * Implements both receivers of the layout DSL, and [ModuleAwareLayoutScope] with them. The
- * root of a `layout { }` block is handed out as [LayoutScope], which hides `description`,
- * `anyFile()` and `ignore()`; a directory block is handed out as [LayoutDirectoryScope],
- * which shows them. What the scope knows while it is being evaluated — the module at hand,
- * and how to resolve a module path — is reached through [ModuleAwareLayoutScope], so that the
- * utility layer never names this class.
- *
- * `/` works by re-parenting. `"gradle" / "libs.versions.toml".file()` evaluates the right
- * side first, so the file is declared in this scope and then moved under the directory the
- * left side created. Moving the *outermost* node of the right side is what makes a
- * multi-level key such as `"x" / "app/ios" { }` land as `x/app/ios`.
- *
- * Only the core vocabulary is implemented here. `"...".ktFile()` and the Gradle vocabulary
- * are ordinary functions taking a [LayoutScope] as a context parameter, written on top of
- * what this class provides — see [me.tbsten.katachi.dsl.kotlin.ktFile] and the `me.tbsten.katachi.dsl.gradle` package.
- * A source set is `"src/<name>" { }` and a module package is a directory key, so
- * neither needs anything of its own here: that is why `mainSourceSet / kotlin` and
- * `mainSourceSet { kotlin { } }` cannot come apart — they run the same code.
- */
+// `/` re-parents: the right side is evaluated first, then its outermost node is moved under the directory the left
+// side created.
 internal class LayoutScopeImpl(
     private val container: LayoutNode,
     private val moduleIndex: ModuleIndex,
     private val moduleContext: ModuleContext?,
-    /**
-     * Where every block of this one `layout { }` files what it declared, shared by every scope
-     * the block creates below it.
-     *
-     * One list per `layout { }` rather than one per scope, because the order sites are closed
-     * in is the order a report reads them in, and that order only exists across the whole
-     * block.
-     */
+    // One list per `layout { }`, not per scope: report order is the order sites are closed in, which only exists
+    // across the whole block.
     private val sites: MutableList<FileConstraintSite>,
-    /**
-     * The site every declaration of this block records, or `null` to read it off the stack.
-     * Set for a layout katachi itself wrote; see [me.tbsten.katachi.dsl.internal.isWrittenByKatachi].
-     */
+    // null reads the site off the stack; set for a layout katachi wrote itself (see isWrittenByKatachi).
     private val pinnedSite: DeclarationSite? = null,
 ) : LayoutDirectoryScope, ModuleAwareLayoutScope {
-    /** Constraints written directly in *this* block. A nested block collects its own. */
     private val fileConstraints = mutableListOf<FileConstraintDeclaration>()
 
     override val currentModulePath: String?
@@ -171,7 +143,6 @@ internal class LayoutScopeImpl(
     override fun capture(name: String, block: LayoutDirectoryScope.() -> Unit): LayoutDirectory =
         capture(name).invoke(block)
 
-    /** See [me.tbsten.katachi.dsl.gradle.expandModulePath], the opt-in API this backs. */
     override fun expandModulePath(modulePath: String, block: LayoutDirectoryScope.() -> Unit): LayoutModule {
         val declaredAt = siteHere()
         requireLayoutRoot(modulePath, declaredAt)
@@ -233,14 +204,8 @@ internal class LayoutScopeImpl(
         return LayoutModule(declared, moduleDirectories)
     }
 
-    /**
-     * Records the constraints written in this block, together with what the block owns.
-     *
-     * Called when the block finishes, because a constraint covers what the block turned out to
-     * declare and that is not complete until then. A block that wrote no constraint records
-     * nothing: a site with no declaration would only make the evaluation walk subtrees nobody
-     * asked about.
-     */
+    // Called at block end: a constraint covers what the block declared, complete only then. A block with no
+    // constraint records nothing.
     fun closeSite(owned: List<LayoutNode>, anchor: LayoutNode?) {
         if (fileConstraints.isEmpty()) return
         sites += FileConstraintSite(
@@ -250,14 +215,6 @@ internal class LayoutScopeImpl(
         )
     }
 
-    /**
-     * The two lines every Gradle module has. Written through the same vocabulary a user
-     * writes, so that what a module block adds is the same declaration a hand written block
-     * would make.
-     *
-     * Both are marked as katachi's own, which keeps them out of what a constraint written in
-     * the module block covers. See [LayoutNode.synthetic].
-     */
     private fun expandModuleDefaults() {
         "build".ignore().markSynthetic()
         "build.gradle".ktsFile().markSynthetic()
@@ -273,23 +230,15 @@ internal class LayoutScopeImpl(
 
     private fun siteHere(): DeclarationSite = pinnedSite ?: captureDeclarationSite()
 
-    /**
-     * A module path is relative to nothing: it is resolved to a directory below the project
-     * root. Writing one inside a directory block would quietly put that directory in front
-     * of the answer, so it is refused instead.
-     */
+    // A module path is relative to nothing; inside a directory block it would silently be prefixed by that
+    // directory, so refuse it.
     private fun requireLayoutRoot(key: String, declaredAt: DeclarationSite) {
         if (container.parent == null && moduleContext == null) return
         throw KatachiModuleOutsideLayoutRootException(modulePath = key, declaredAt = declaredAt)
     }
 }
 
-/**
- * Adds where the module path was written to whatever the pattern compiler complained about.
- *
- * The layout blocks are deferred, so this is the first moment a bad key can be noticed at
- * all, and by then the stack no longer points anywhere useful.
- */
+// Layout blocks are deferred, so the stack no longer points at the key; attach where the module path was written.
 private fun compileModulePath(key: String, declaredAt: DeclarationSite): ModulePattern =
     try {
         ModulePattern.compile(key, declaredAt)
@@ -301,12 +250,7 @@ private fun compileModulePath(key: String, declaredAt: DeclarationSite): ModuleP
         )
     }
 
-/**
- * Whether every name the key gave twice -- `":${capture("a")}:${capture("a")}"` -- reads one
- * value in this module: the same name is a claim that the levels hold the same value, so a module
- * where they differ is not one the key names. A key kept as a pattern reads the same placeholder
- * for both and passes, as does a key naming nothing twice.
- */
+// A name used twice in a key must read one value in the module; a key kept as a pattern passes.
 private fun ModuleTarget.readsOneValuePerName(): Boolean {
     val names = captureNames ?: return true
     val byName = names.withIndex().filter { it.value != null }.groupBy({ it.value }, { it.index })

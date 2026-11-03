@@ -12,13 +12,7 @@ import me.tbsten.katachi.dsl.RoleScopeImpl
 import me.tbsten.katachi.dsl.TemplateSetScope
 import me.tbsten.katachi.dsl.TemplateSetScopeImpl
 
-/**
- * Validates the name, takes it in [declaredNames], then evaluates [block] to collect the
- * nested groups, the roles and the metadata.
- *
- * The name is reserved before [block] runs so that a block which reaches back into this
- * same scope cannot slip a second declaration of the same name past the check.
- */
+// The name is reserved before the block runs so a block reaching back into this scope cannot declare it twice.
 internal fun declareGroup(
     name: String,
     parentPath: List<String>,
@@ -43,17 +37,8 @@ internal fun declareGroup(
     )
 }
 
-/**
- * Validates the name, takes it in [declaredNames], then evaluates [block] to collect the
- * role's properties.
- *
- * The name is reserved before [block] runs, for the same reason as in `declareGroup`.
- *
- * @throws KatachiFileConstraintWithoutLayoutException when the role wrote a constraint but no
- *   `layout { }`. It is decided here, at the end of the block, because that is the first
- *   moment both lists are complete — and it needs nothing else: no file is read, and no
- *   module index is consulted.
- */
+// Reserved before the block runs, as in declareGroup. The layout-less constraint check lives here: the first point
+// where both lists are complete.
 internal fun declareRole(
     name: String,
     groupPath: List<String>,
@@ -85,13 +70,7 @@ internal fun declareRole(
     )
 }
 
-/**
- * Validates the name, takes it in [declaredNames], then replays [block] once in Declare mode to
- * learn the set's parameters and members.
- *
- * The name is reserved before [block] runs, for the same reason as in [declareGroup]. The block
- * of each member is not run here: it needs values that do not exist yet.
- */
+// Reserved before the block runs. Member blocks are not run here: they need values that do not exist yet.
 internal fun declareTemplateSet(
     name: String,
     groupPath: List<String>,

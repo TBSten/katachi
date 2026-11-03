@@ -9,13 +9,9 @@ import me.tbsten.katachi.dsl.DeclarationSite
 /**
  * Two declarations produce the same page of the generated documentation.
  *
- * A page is named after an identifier, and the DSL already refuses a group and a role of the
- * same name in the same container -- so the one way left to collide is a role named `README`,
- * which is the name the container's own page takes.
- *
- * It fails rather than warns, and it fails rather than letting the later page win. Writing one
- * page over another loses whatever the first one said, and a generator that quietly drops a role
- * is worse than one that stops: the reader of the output has no way to notice.
+ * A page is named after an identifier, so in practice this is a role named `README`, which is
+ * the name the container's own page takes. Generation stops rather than letting one page
+ * overwrite the other.
  *
  * ## Example 1: what raises it
  * ```kt
@@ -64,14 +60,8 @@ public class KatachiDocumentPathCollisionException internal constructor(
 /**
  * Two declarations produce pages that are one file on a case insensitive filesystem.
  *
- * Distinct from [KatachiDocumentPathCollisionException], which is about two declarations landing
- * on the very same path. Here the paths differ -- `UseCase.md` is not `usecase.md` -- and the
- * generated map holds both, so nothing is lost until the pages are written out. On macOS and
- * Windows one then silently overwrites the other, and on Linux both survive: the same definition
- * produces different documentation depending on who ran the generator.
- *
- * It fails rather than warns for the same reason the exact collision does. A page that is only
- * sometimes there is worse than one that is never there, because nobody looks for it.
+ * Here the paths differ only in case (`UseCase.md` and `usecase.md`). On macOS and Windows one
+ * would overwrite the other while Linux keeps both, so generation stops on every platform.
  *
  * ## Example 1: what raises it
  * ```kt
@@ -115,7 +105,9 @@ public class KatachiDocumentPathCaseCollisionException internal constructor(
  *
  * ## Example 1: read what a failure was about
  * ```kt
- * val broken = shouldThrow<KatachiBrokenDocumentLinkException> { projectArchitecture.assert() }
+ * val broken = shouldThrow<KatachiBrokenDocumentLinkException> {
+ *     projectArchitecture.process(GenerateDocumentation, GenerateDocumentation.Args()).getOrThrow()
+ * }
  *
  * broken.links.single().source shouldBe "domain/UseCase.md"
  * broken.links.single().resolved shouldBe "data/Repository.md"
@@ -135,9 +127,8 @@ public class BrokenDocumentLink internal constructor(
      */
     public val target: String,
     /**
-     * Where [target][BrokenDocumentLink.target] lands when followed from
-     * [source][BrokenDocumentLink.source], or `null` when it climbs above the output root and so
-     * lands nowhere katachi could have generated anything.
+     * Where [target][BrokenDocumentLink.target] lands, or `null` when it climbs above the output
+     * root.
      */
     public val resolved: String?,
 )
@@ -145,19 +136,14 @@ public class BrokenDocumentLink internal constructor(
 /**
  * The generated documentation links somewhere it did not generate.
  *
- * A link between two generated pages is built from the identifiers of the definition and from
- * the distance between the two pages, both of which katachi decides -- so a link that does not
- * resolve is katachi's mistake and not a definition's. That is what makes this an internal
- * error rather than a declaration one, and why it stops generation instead of warning: the
- * output of a run that quietly links nowhere looks exactly like the output of a correct one.
- *
- * Every broken link of the whole run is reported at once. One at a time would mean generating,
- * reading one line, fixing, and generating again, for as many rounds as there are mistakes.
+ * katachi builds every link between generated pages itself, so a link that does not resolve is
+ * a bug in katachi; the one exception is a relative link written by hand in a role's
+ * `description`. Every broken link of the run is reported at once.
  *
  * ## Example 1: report it instead of treating it as a bad definition
  * ```kt
  * try {
- *     projectArchitecture.assert()
+ *     projectArchitecture.process(GenerateDocumentation, GenerateDocumentation.Args()).getOrThrow()
  * } catch (cause: KatachiBrokenDocumentLinkException) {
  *     println("katachi bug, ${cause.links.size} links point nowhere. Please report it.")
  * }
@@ -194,5 +180,4 @@ public class KatachiBrokenDocumentLinkException internal constructor(
     },
 )
 
-/** What the link turned out to mean, in the words the message needs. */
 private fun BrokenDocumentLink.landing(): String = resolved ?: "outside the output root"

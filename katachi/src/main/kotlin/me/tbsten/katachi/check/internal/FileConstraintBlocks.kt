@@ -6,28 +6,6 @@ import me.tbsten.katachi.check.UnsatisfiedFileConstraint
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.internal.displayPath
 
-/**
- * The report blocks of the two constraint violations.
- *
- * Split out of `ViolationReport.kt` on size alone — that file is the one place a reader looks
- * to change how a report reads, and it is already at the top of what this repository asks a
- * file to be. The shared pieces (`STEP`, `oneLine`, `causeLine`) moved up to `internal` in the
- * same move, so there is still exactly one definition of each.
- */
-
-/**
- * A constraint that said no.
- *
- * Everything after the context lines is the constraint's own: its reasons, what it would have
- * allowed, and its `How to fix:`. katachi adds none of them. The block a constraint holds is an
- * arbitrary Kotlin expression, so katachi does not know what would satisfy it, and a report that
- * guessed would be inventing a claim -- a constraint that says nothing gets the four context
- * lines and no more.
- *
- * Every line a constraint wrote is folded onto one line with [oneLine], like a constraint's
- * name, except the code under a fix: that is meant for pasting, so its own indentation is kept
- * and a line break in it starts another line.
- */
 internal fun unsatisfiedFileConstraintBlock(violation: UnsatisfiedFileConstraint, root: String?): List<String> = buildList {
     add("[${violation.label}] ${constraintPath(root, violation.path, violation.declaredAt)}")
     add(
@@ -51,32 +29,14 @@ internal fun unsatisfiedFileConstraintBlock(violation: UnsatisfiedFileConstraint
     }
 }
 
-/**
- * Where a report says [this] was declared: the line of the rule that said no when the constraint
- * named one, the constraint's own site otherwise. The text block's `Declared at:` and the SARIF
- * report both read it, so the two never point at different lines.
- */
 internal val UnsatisfiedFileConstraint.reportedDeclaredAt: DeclarationSite
     get() = ruleDeclaredAt ?: declaredAt
 
-/**
- * The code under one fix, indented two steps past its `- `: as written, but with each element's
- * line breaks starting lines of their own, and trailing spaces dropped so that a blank line of
- * the fragment stays blank.
- */
 private fun codeLines(code: List<String>): List<String> =
     code.flatMap { it.lines() }
         .map { it.trimEnd() }
         .map { if (it.isEmpty()) it else "$STEP$STEP$STEP$STEP$it" }
 
-/**
- * A constraint nothing could answer for.
- *
- * The two reasons print the same context and differ in one sentence and in whether there is a
- * cause to show. `How to fix:` is three lines for [UncheckedFileConstraintReason.Failed] and says
- * nothing about whose bug it is: the cause may be katachi's, the backend's, or the rule's, and
- * a line that always blamed katachi would be wrong most of the time.
- */
 internal fun uncheckedFileConstraintBlock(violation: UncheckedFileConstraint, root: String?): List<String> = buildList {
     add("[${violation.label}] ${constraintPath(root, violation.path, violation.declaredAt)}")
     when (violation.reason) {
@@ -108,10 +68,6 @@ internal fun uncheckedFileConstraintBlock(violation: UncheckedFileConstraint, ro
     }
 }
 
-/**
- * The role and, when it has one, the constraint's name — folded onto one line each, because a
- * name is written by a user and a report block's shape is what an agent greps against.
- */
 private fun constraintLine(role: String, constraintName: String?): String =
     if (constraintName == null) {
         "Role: $role"
@@ -119,30 +75,15 @@ private fun constraintLine(role: String, constraintName: String?): String =
         "Role: $role / FileConstraint: \"${oneLine(constraintName)}\""
     }
 
-/** What inside the file was rejected, or nothing when the backend works per whole file. */
 private fun declarationLine(declaration: String?, line: Int?): String? = when {
     declaration == null -> null
     line == null -> "Declaration: ${oneLine(declaration)}"
     else -> "Declaration: ${oneLine(declaration)} (line $line)"
 }
 
-/**
- * Which `layout { }` block the constraint sits in, as a resolved directory.
- *
- * Never the key as written: `":feature:*"` is evaluated once per feature module, so printing
- * the key would give every one of those blocks the same context line and leave the reader
- * unable to tell which module the failure is about.
- */
+// Prints the resolved directory, never the key as written: `":feature:*"` would give every module block the same context.
 private fun inLayout(root: String?, layoutPath: String?): String =
     if (layoutPath == null) "" else " (layout of ${displayPath(root, layoutPath)})"
 
-/**
- * The path a constraint block opens with, as a URI — unless it is the file name the constraint
- * was declared in.
- *
- * That is the last fallback of `DeclaredFileConstraint.reportPath`, used when the layout declared no
- * path at all: a source file name, not a path below the project root, so resolving it against
- * the root would point at a file that is not there.
- */
 private fun constraintPath(root: String?, path: String, declaredAt: DeclarationSite): String =
     if (path == declaredAt.fileName) path else displayPath(root, path)

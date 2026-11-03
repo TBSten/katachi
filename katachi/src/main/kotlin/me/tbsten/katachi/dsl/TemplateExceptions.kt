@@ -4,11 +4,10 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiDeclarationException
 
 /**
- * `.template { }` was attached to the same file declaration twice: once directly, by calling it
- * twice on the same value, or once each on two declarations of the same path.
+ * `.template { }` was attached twice to one file declaration, or once each to two declarations of the same path.
  *
  * A file has one template so that `--arg template=` never has to be told which of them was
- * meant. Two file names built to differ -- Repository.kt and RepositoryImpl.kt -- are two
+ * meant. Two file names built to differ, such as Repository.kt and RepositoryImpl.kt, are two
  * declarations, each with its own `.template { }`; a role that really wants two ways to fill
  * in the *same* path has nowhere for the second to go.
  *
@@ -164,11 +163,10 @@ public class KatachiMissingTemplateIdException internal constructor(
 )
 
 /**
- * `.template { }` was attached to a declaration whose path still holds a `*` or a `**` that no
- * `capture("...")` names, or any `?`, `[...]` or `{...}`, which cannot be named at all.
+ * `.template { }` was attached to a path that still holds an unnamed `*` / `**`, or a `?`, `[...]` or `{...}`.
  *
- * Generating a file needs a value for every level its path leaves open, and an unnamed wildcard
- * has nowhere for that value to come from: no `--arg` name reaches it.
+ * Generating a file needs a value for every level its path leaves open, and no `--arg` name
+ * reaches an unnamed wildcard. Name every `*` with `capture("...")`.
  *
  * ## Example 1: catch a template on a path with an unnamed wildcard
  * ```kt

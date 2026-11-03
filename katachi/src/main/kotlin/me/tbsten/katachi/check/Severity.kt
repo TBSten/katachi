@@ -12,26 +12,9 @@ package me.tbsten.katachi.check
  * ```
  */
 public enum class Severity {
-    /**
-     * `assert()` throws because of it.
-     *
-     * ## Example 1: count how many violations fail the check
-     * ```kt
-     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
-     *     projectArchitecture.assert()
-     * }
-     * failure.violations.count { it.severity == Severity.Error }
-     * ```
-     */
+    /** `assert()` throws because of it. */
     Error,
 
-    /**
-     * Reported next to the errors, but never the reason a check fails.
-     *
-     * ## Example 1: check whether a violation is only informational
-     * ```kt
-     * projectArchitecture.assertNoErrors().first().severity == Severity.Warning
-     * ```
-     */
+    /** Reported next to the errors, but never the reason a check fails. */
     Warning,
 }

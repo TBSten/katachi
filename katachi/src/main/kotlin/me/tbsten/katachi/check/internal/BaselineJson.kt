@@ -4,19 +4,9 @@ import me.tbsten.katachi.check.KatachiInvalidBaselineFileException
 import me.tbsten.katachi.check.KatachiInvalidBaselineFileException.Problem
 import me.tbsten.katachi.check.KatachiUnsupportedBaselineVersionException
 
-/**
- * The version of the file format this katachi writes, and the newest it reads.
- */
 internal const val BASELINE_FORMAT_VERSION: Int = 1
 
-/**
- * [ledger] as the text of a baseline file: one entry per line, checks in name order and entries
- * in key order, `count` left out when it is 1, LF line breaks and one at the end.
- *
- * Written by hand rather than through a serializer so that the one-entry-per-line shape holds:
- * adding or removing an entry is then a one-line diff, and two branches touching different
- * entries do not conflict.
- */
+// Hand-written, one entry per line: diffs stay one line and branches do not conflict. Do not switch to a serializer.
 internal fun renderBaseline(ledger: BaselineLedger): String = buildString {
     append("{\n")
     append("  \"version\": ").append(BASELINE_FORMAT_VERSION).append(",\n")
@@ -39,10 +29,7 @@ internal fun renderBaseline(ledger: BaselineLedger): String = buildString {
     append("}\n")
 }
 
-/**
- * One entry exactly as [renderBaseline] writes it on its line, without the indent and the comma.
- * The SARIF report searches the baseline file for this text to point at the entry's line.
- */
+// The SARIF report searches the baseline file for this exact text; keep it in sync with renderBaseline.
 internal fun baselineEntryLine(key: BaselineKey, count: Int): String =
     StringBuilder().appendEntry(key, count).toString()
 
@@ -79,25 +66,11 @@ private fun StringBuilder.appendJsonString(value: String): StringBuilder {
     return append('"')
 }
 
-/** The fields a baseline file has at the top. */
 private val DOCUMENT_FIELDS = setOf("version", "checks")
 
-/** The fields an entry has. */
 private val ENTRY_FIELDS = setOf("rule", "path", "role", "constraint", "declaration", "count")
 
-/**
- * Reads the text of a baseline file.
- *
- * Parsed by hand: `:katachi` depends on `kotlinx-serialization-core` alone, and a user's test
- * classpath should not grow a JSON library for one small file. Doing it here also lets every
- * complaint name the line it is about. Strict on purpose -- an unknown field, a name given twice
- * -- because the file is katachi's own output, and anything else in it is a hand edit or a merge
- * that would otherwise be read as something it is not.
- *
- * @param file the file as a `file:///...` URI, for the messages.
- * @throws KatachiInvalidBaselineFileException when the text is not a baseline file.
- * @throws KatachiUnsupportedBaselineVersionException when a newer katachi wrote it.
- */
+// Hand-written parser: :katachi must not put a JSON library on users' test classpath.
 internal fun parseBaseline(text: String, file: String): BaselineLedger {
     mergeConflictMarkerIn(text)?.let { (line, marker) -> throw invalidBaseline(file, line, Problem.MergeConflict, marker) }
     val root = JsonReader(text, file).readDocument()
@@ -151,7 +124,6 @@ private fun JsonNode.Obj.requireKnownFields(known: Set<String>, file: String) {
     throw invalidBaseline(file, unknown.second.line, Problem.UnknownField, unknown.first)
 }
 
-/** This number as an [Int], telling a fraction apart from a number too large to hold. */
 private fun JsonNode.wholeNumber(name: String, file: String): Int {
     val text = (this as? JsonNode.Num)?.text
         ?: throw invalidBaseline(file, line, Problem.WrongType, "\"$name\" must be a whole number")

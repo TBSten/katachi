@@ -7,14 +7,13 @@ import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 import me.tbsten.katachi.dsl.internal.requireValidIdentifier
 
 /**
- * Attaches a template to this file declaration: `.template { }`'s block is stored, replayed
- * once per run with that run's `--arg` values bound, and its return value becomes the file's
- * content. It is sugar over `.metadata { }`, over a key katachi does not expose -- see
- * [LayoutDeclarationScope].
+ * Attaches a template to this file declaration; the block's return value becomes the generated file's content.
+ *
+ * The block runs once per generation, with that run's `--arg` values available through
+ * [TemplateScope.captureValue].
  *
  * The file's directory and name are never repeated inside the block: they already come from
- * this declaration's own path, `capture("...")` levels included, which is what
- * [TemplateScope.captureValue] reads them back through. There is no `content { }` either --
+ * this declaration's own path, `capture("...")` levels included. There is no `content { }` either --
  * the block's own return value is the whole of what a template writes.
  *
  * [id] tells this template apart from another one on the same role, in `--arg
@@ -36,7 +35,6 @@ import me.tbsten.katachi.dsl.internal.requireValidIdentifier
  *         }
  *     }
  * }
- * arch.allRoles.single().name shouldBe "UseCase"
  * ```
  *
  * @param id unique within the role, following the same character rule as a role name

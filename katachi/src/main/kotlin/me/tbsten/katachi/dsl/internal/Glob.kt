@@ -3,21 +3,8 @@ package me.tbsten.katachi.dsl.internal
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.dsl.KatachiGlobSyntaxException
 
-/**
- * What a pattern captured when it matched.
- *
- * ## Example 1: read what a trailing `**` captured, one element per level
- * ```kt
- * Glob.compile(":feature:**", Glob.MODULE_SEPARATOR).match(":feature:home:impl")
- *     .shouldNotBeNull().wildcards shouldContainExactly listOf("home", "impl")
- * ```
- */
 internal class GlobMatch(
-    /**
-     * One element per `*`, and one element **per level** for a `**`, in the order the
-     * wildcards appear in the pattern. A `**` that matched no level contributes nothing, so
-     * `":feature:**"` against `:feature` captures an empty list.
-     */
+    // A `**` contributes one element per level it matched, and none when it matched no level.
     val wildcards: List<String>,
 ) {
     override fun toString(): String = "GlobMatch($wildcards)"
@@ -26,7 +13,7 @@ internal class GlobMatch(
 internal enum class GlobGroupKind { Single, Recursive }
 
 /**
- * katachi's glob, translated to a regular expression.
+ * A compiled glob pattern, in the same syntax as a layout key.
  *
  * | syntax | meaning |
  * |---|---|
@@ -38,11 +25,11 @@ internal enum class GlobGroupKind { Single, Recursive }
  *
  * `?`, `[...]` and `{...}` never become a captured value. Prefix any of `* \ { } ? [ ] ,` with
  * `\` to mean it literally. Anything the syntax cannot read is rejected with a
- * [GlobProblem] rather than guessed at.
+ * [KatachiGlobSyntaxException] rather than guessed at.
  *
  * A whole-segment `*` (as in `feature` then `*` below it) is still at least one character in practice, because a
  * real path has no empty level. A `*` mixed with other characters (`app_icon*.xml`) may
- * match nothing and then captures `""`. Syntax is read by [GlobLexer].
+ * match nothing and then captures `""`.
  *
  * The same class matches module paths (`:` separated) and file paths (`/` separated): the
  * separator is the only difference, so `*` and `**` cannot come to mean two different things.
@@ -50,84 +37,33 @@ internal enum class GlobGroupKind { Single, Recursive }
  * Matching is case sensitive on every platform, including a case insensitive macOS volume,
  * so that a check gives the same answer locally and on CI.
  *
- * The JDK's `PathMatcher` is not used: it answers yes or no, and katachi has to hand the
- * matched parts back to the user as `wildcards`.
- *
- * ## Example 1: the same syntax reads a module path and a file path
+ * ## Example 1: a `*` never crosses a separator
  * ```kt
- * val glob = Glob.compile(":feature:*", Glob.MODULE_SEPARATOR)
- * glob.matches(":feature:home") shouldBe true
- * glob.matches(":feature") shouldBe false
+ * val glob = Glob.compile("*UseCase.kt")
+ * glob.matches("GetUserUseCase.kt") shouldBe true
+ * glob.matches("useCase/GetUserUseCase.kt") shouldBe false
  * ```
  */
 @InternalKatachiApi
 public class Glob private constructor(
-    /** The pattern as written. Two patterns are the same only when these strings are equal. */
     internal val pattern: String,
-    /** `/` for file paths, `:` for module paths. */
     internal val separator: Char,
     private val segments: List<String>,
     private val regex: Regex,
-    /**
-     * One entry per capturing wildcard, in the order the wildcards were written.
-     *
-     * Read back so that a pattern can count its own wildcards without a second parser — see
-     * [ModulePattern.wildcardPlaceholders], which needs to know how many a match *would* have
-     * captured before any match has happened.
-     */
+    // Lets a pattern count its own wildcards without a second parser (see ModulePattern.wildcardPlaceholders).
     internal val groupKinds: List<GlobGroupKind>,
-    /**
-     * For each entry of [groupKinds], the segment it sits in: 0-based, counted after a leading
-     * separator, so `":feature:*:**"` reads `[1, 2]`.
-     *
-     * What lets a caller tell which level a wildcard captured, for a name given to that level
-     * (see `LayoutEntry.captureValuesOf`) rather than to the n-th wildcard of the whole path.
-     */
     internal val groupSegments: List<Int>,
-    /**
-     * The segments before the first one holding a wildcard, with their escapes undone: what
-     * any path this pattern matches has to start with, level for level.
-     *
-     * Empty for a rooted pattern (`:feature:*`), which is read from its first level instead
-     * of from the separator in front of it. Lets an index hand a path only the patterns
-     * that could match it without a second parser.
-     */
+    // Segments before the first wildcard, escapes undone; a rooted pattern (`:feature:*`) reads from its first
+    // level.
     internal val literalPrefix: List<String>,
-    /**
-     * Whether the pattern contains an unescaped `*`, `**`, `?`, `[` or `{`. Such a declaration
-     * is optional by nature.
-     *
-     * ## Example 1: tell a literal pattern apart from one with a wildcard
-     * ```kt
-     * Glob.compile("build.gradle.kts").hasWildcard shouldBe false
-     * Glob.compile("*.kt").hasWildcard shouldBe true
-     * Glob.compile("build.gradle{,.kts}").hasWildcard shouldBe true
-     * ```
-     */
     internal val hasWildcard: Boolean,
 ) {
 
     /**
      * Whether [path] matches in full.
-     *
-     * ## Example 1: a wildcard never crosses into a path it does not fully cover
-     * ```kt
-     * val glob = Glob.compile("*UseCase.kt")
-     * glob.matches("GetUserUseCase.kt") shouldBe true
-     * glob.matches("useCase/GetUserUseCase.kt") shouldBe false
-     * ```
      */
     public fun matches(path: String): Boolean = regex.matches(path)
 
-    /**
-     * The match and what it captured, or `null` when [path] does not match.
-     *
-     * ## Example 1: read back what a single `*` captured
-     * ```kt
-     * Glob.compile("*UseCase.kt").match("GetUserUseCase.kt")
-     *     .shouldNotBeNull().wildcards shouldContainExactly listOf("GetUser")
-     * ```
-     */
     internal fun match(path: String): GlobMatch? {
         val result = regex.matchEntire(path) ?: return null
         val wildcards = mutableListOf<String>()
@@ -142,57 +78,20 @@ public class Glob private constructor(
         return GlobMatch(wildcards)
     }
 
-    /**
-     * The raw text each wildcard matched, one entry per [groupKinds] entry and in the same order,
-     * or `null` when [path] does not match.
-     *
-     * Unlike [match], a `**` is not split into levels and is kept even when it matched nothing
-     * (as `""`), so that the n-th entry always belongs to the n-th wildcard -- the shape
-     * [groupSegments] is indexed by.
-     *
-     * ## Example 1: read what each wildcard of a module path matched
-     * ```kt
-     * Glob.compile(":feature:*:**", Glob.MODULE_SEPARATOR).matchGroups(":feature:home:ui:list") shouldBe
-     *     listOf("home", "ui:list")
-     * Glob.compile(":feature:*:**", Glob.MODULE_SEPARATOR).matchGroups(":feature:home") shouldBe
-     *     listOf("home", "")
-     * ```
-     */
+    // Unlike match, `**` is not split into levels and is kept even when it matched nothing (""), so the n-th entry
+    // belongs to the n-th wildcard.
     internal fun matchGroups(path: String): List<String>? {
         val result = regex.matchEntire(path) ?: return null
         return groupKinds.indices.map { index -> result.groupValues.getOrElse(index + 1) { "" } }
     }
 
-    /**
-     * Where each capturing wildcard matched in [path], one entry per [groupKinds] entry in the
-     * same order, or `null` when [path] does not match. A `**` that matched no level is `null`.
-     *
-     * Lets a caller swap only the captured parts of the path for something else and keep the
-     * rest (the `?`, `[...]` and `{...}` characters, and the unnamed wildcards) as the file has them.
-     *
-     * ## Example 1: find where the `*` of a name matched
-     * ```kt
-     * Glob.compile("app_icon*.xml").matchRanges("app_icon_dark.xml") shouldBe listOf(8..12)
-     * ```
-     */
+    // A `**` that matched no level is null.
     internal fun matchRanges(path: String): List<IntRange?>? {
         val result = regex.matchEntire(path) ?: return null
         return groupKinds.indices.map { index -> result.groups[index + 1]?.range }
     }
 
-    /**
-     * Rejects a pattern whose `**` is anywhere but at the end, or that has more than one.
-     *
-     * Module paths call this. Flattening `**` level by level means every level it matches
-     * lands at the end of `wildcards`, so a `**` in the middle would shift the index of the
-     * `*` after it from one match to the next.
-     *
-     * ## Example 1: reject a `**` that is not the pattern's last segment
-     * ```kt
-     * val glob = Glob.compile(":feature:**:impl", Glob.MODULE_SEPARATOR)
-     * shouldThrow<KatachiGlobSyntaxException> { glob.requireAtMostOneTrailingDoubleStar() }
-     * ```
-     */
+    // Module paths only: a `**` in the middle would shift the index of later `*`s from one match to the next.
     internal fun requireAtMostOneTrailingDoubleStar() {
         val positions = segments.indices.filter { segments[it] == DOUBLE_STAR }
         if (positions.size > 1) {
@@ -211,52 +110,11 @@ public class Glob private constructor(
 
     override fun toString(): String = "Glob($pattern)"
 
-    /**
-     * Where a [Glob] is built: [compile] parses a pattern, and [PATH_SEPARATOR] /
-     * [MODULE_SEPARATOR] are the separators the two DSLs give it.
-     *
-     * ## Example 1: compile the same syntax for a file path and a module path
-     * ```kt
-     * Glob.compile("*.kt", Glob.PATH_SEPARATOR).matches("Foo.kt") shouldBe true
-     * Glob.compile(":feature:*", Glob.MODULE_SEPARATOR).matches(":feature:home") shouldBe true
-     * ```
-     */
     internal companion object {
-        /**
-         * Separator of a file path.
-         *
-         * ## Example 1: compile a file path pattern with it
-         * ```kt
-         * val glob = Glob.compile("core/data/Repository.kt", Glob.PATH_SEPARATOR)
-         * glob.matches("core/data/Repository.kt") shouldBe true
-         * ```
-         */
         const val PATH_SEPARATOR: Char = '/'
 
-        /**
-         * Separator of a Gradle module path.
-         *
-         * ## Example 1: compile a module path pattern with it
-         * ```kt
-         * val glob = Glob.compile(":feature:*", Glob.MODULE_SEPARATOR)
-         * glob.matches(":feature:home") shouldBe true
-         * ```
-         */
         const val MODULE_SEPARATOR: Char = ':'
 
-        /**
-         * Translates [pattern] into a regular expression.
-         *
-         * ## Example 1: compile a pattern whose `**` matches any depth of path
-         * ```kt
-         * val glob = Glob.compile("**")
-         * glob.matches("useCase") shouldBe true
-         * glob.matches("useCase/GetUserUseCase.kt") shouldBe true
-         * ```
-         *
-         * @throws KatachiGlobSyntaxException when the pattern is empty, has an empty segment,
-         *   uses `**` as part of a larger segment, or has a `[...]` or `{...}` that cannot be read.
-         */
         fun compile(pattern: String, separator: Char = PATH_SEPARATOR): Glob {
             if (pattern.isEmpty()) throw KatachiGlobSyntaxException(pattern, GlobProblem.EmptyPattern)
 
@@ -331,7 +189,6 @@ public class Glob private constructor(
 
         private const val REGEX_METACHARACTERS: String = "\\.[]{}()*+-?^$|&/<>"
 
-        /** The segments before the first one holding a wildcard, with their escapes undone. */
         private fun literalPrefixOf(segments: List<List<GlobToken>>): List<String> {
             val prefix = mutableListOf<String>()
             for (segment in segments) {
@@ -344,10 +201,7 @@ public class Glob private constructor(
         private fun escapeForRegex(character: Char): String =
             if (character in REGEX_METACHARACTERS) "\\$character" else character.toString()
 
-        /**
-         * The regular expression of one segment. [kinds] gets one entry per capturing `*`, so
-         * that the n-th group of the whole expression is the n-th entry.
-         */
+        // kinds gets one entry per capturing `*`, so the n-th regex group is the n-th entry.
         private fun tokensExpression(
             tokens: List<GlobToken>,
             escapedSeparator: String,

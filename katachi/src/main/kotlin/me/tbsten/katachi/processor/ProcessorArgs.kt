@@ -8,14 +8,12 @@ import me.tbsten.katachi.processor.internal.StringMapDecoder
 /**
  * Decodes [values] into the type [deserializer] describes.
  *
- * **Unknown keys are not judged here.** [values] may hold keys meant for another processor of
- * the same run; `StringMapDecoder` only looks at the names its own descriptor carries, so the
- * rest goes past untouched. Deciding that a key belongs to nobody is `checkNoUnknownArgs`'s
- * job, and it is done once for the whole run.
+ * **Keys the type does not declare are ignored here**, since [values] may hold keys meant for
+ * another processor of the same run. A key no processor of the run declares is reported
+ * separately, before any processor starts.
  *
  * **A comma splits only when the receiving field is a `List<T>` or a `Set<T>`.** `--arg
- * tags=a,b` read into a `String` field is the string `"a,b"`, which is also the way out when a
- * value has to contain a comma. There is no escape syntax.
+ * tags=a,b` read into a `String` field is the string `"a,b"`. There is no escape syntax.
  *
  * ## Example 1: read one processor's arguments out of the run's `--arg` map
  * ```kt

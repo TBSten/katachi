@@ -5,20 +5,16 @@ import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.FileConstraintSubject
 
 /**
- * A constraint that can say, for each file it covers, which of its lines allowed or rejected each
- * top-level declaration of that file -- the answer the katachi IDE plugin shows next to a
- * declaration.
+ * A file constraint that can say which of its lines allowed or rejected each top-level declaration of a file.
  *
- * It is the IDE plugin's way in, not something a user implements. `:katachi` cannot import
- * `:katachi-konsist`, so the definition task (`DescribeDefinition`) finds the constraints that
- * explain themselves by this interface; `ktFileContent { }` is the one that does. An explanation
- * must decide each declaration exactly as [me.tbsten.katachi.dsl.FileConstraint.evaluate] judges
- * it: a declaration whose verdict is not allowed is one the check rejects, and a missing line is
- * one the check reports missing.
+ * Tools such as the IDE plugin show this next to each declaration; `ktFileContent { }`
+ * implements it. An explanation must decide each declaration exactly as
+ * [me.tbsten.katachi.dsl.FileConstraint.evaluate] judges it: a declaration whose verdict is not
+ * allowed is one the check rejects, and a missing line is one the check reports missing.
  *
  * ## Example 1: explain the declarations of the files a subject covers
  * ```kt
- * val explaining = declared.check as? DeclarationExplaining
+ * val explaining = constraint as? DeclarationExplaining
  * val explained: List<FileDeclarationsExplanation>? = explaining?.explainDeclarations(subject)
  * explained?.forEach { file ->
  *     file.declarations.filter { it.verdict == DeclarationVerdict.Allowed }.map { it.name }
@@ -31,15 +27,12 @@ import me.tbsten.katachi.dsl.FileConstraintSubject
 public interface DeclarationExplaining {
     /**
      * One explanation per covered file the constraint reads, in the order of
-     * [FileConstraintSubject.files]. A file the constraint does not read (not a `.kt` file, for
+     * [FileConstraintSubject.files].
+     *
+     * A file the constraint does not read (not a `.kt` file, for
      * `ktFileContent { }`) is left out. A file whose own rules could not be worked out is still
      * listed, with [FileDeclarationsExplanation.unexplainedReason]; what fails for every file at
      * once is thrown.
-     *
-     * ## Example 1: the explanation of one file, by its path
-     * ```kt
-     * explaining.explainDeclarations(subject).single { it.file == "src/main/kotlin/HealthService.kt" }
-     * ```
      */
     public fun explainDeclarations(subject: FileConstraintSubject): List<FileDeclarationsExplanation>
 }
@@ -60,7 +53,9 @@ public class FileDeclarationsExplanation(
     /** Project relative, `/` separated, as [FileConstraintSubject.files] names it. */
     public val file: String,
     /**
-     * Whether the top-level declarations of this file were judged. `ktFileContent { }` judges them
+     * Whether the top-level declarations of this file were judged.
+     *
+     * `ktFileContent { }` judges them
      * even when it writes no declaration line (deny by default: then none is allowed), so this is
      * `false` only when the file could not be explained ([unexplainedReason]), with [declarations] empty.
      */
@@ -71,7 +66,9 @@ public class FileDeclarationsExplanation(
     public val missing: List<RuleExplanation>,
     /**
      * Why this file could not be explained -- the type of what was thrown and the first line of its
-     * message -- or `null` when it was. When set, [declarations] and [missing] are empty.
+     * message -- or `null` when it was.
+     *
+     * When set, [declarations] and [missing] are empty.
      */
     public val unexplainedReason: String?,
 ) {
@@ -100,9 +97,11 @@ public class DeclarationExplanation(
     /** Whether a line allowed it, and how. */
     public val verdict: DeclarationVerdict,
     /**
-     * The lines that decided it: every allowed line it matches for [DeclarationVerdict.Allowed],
-     * the matching `allow(..., anythingElse)` lines, the prohibiting line, or the line whose name it matches
-     * for [DeclarationVerdict.Mismatched]. Empty for [DeclarationVerdict.Unexpected].
+     * The lines that decided it; empty for [DeclarationVerdict.Unexpected].
+     *
+     * Every allowed line it matches for [DeclarationVerdict.Allowed], the matching
+     * `allow(..., anythingElse)` lines, the prohibiting line, or the line whose name it matches
+     * for [DeclarationVerdict.Mismatched].
      */
     public val rules: List<RuleExplanation>,
     /** What differs from the line, for [DeclarationVerdict.Mismatched]; `null` otherwise. */

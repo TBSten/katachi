@@ -19,9 +19,7 @@ import me.tbsten.katachi.dsl.internal.attachMetadata
  * ```
  */
 public class LayoutDirectory internal constructor(
-    /** Outermost node of the chain this expression created; the one `/` re-parents. */
     internal val top: LayoutNode,
-    /** Innermost node; where the next level attaches. */
     internal val leaf: LayoutNode,
 ) {
     /**
@@ -55,10 +53,11 @@ public class LayoutDirectory internal constructor(
 /**
  * A file declared in a `layout { }` block.
  *
- * ## Example 1: Declaring a file at the project root
+ * ## Example 1: Declaring a file at the project root, and one that may be absent
  * ```kt
  * layout {
  *   "libs.versions.toml".file()
+ *   "gradle" / "gradle-daemon-jvm.properties".file().optional()
  * }
  * ```
  */
@@ -71,13 +70,6 @@ public class LayoutFile internal constructor(
      *
      * A declaration holding a `*` or a `**` is already optional on its own: such a place is
      * one that fills up over time, and zero matches is a normal state for it.
-     *
-     * ## Example 1: Making a declared file optional
-     * ```kt
-     * layout {
-     *   "gradle" / "libs.versions.toml".file().optional()
-     * }
-     * ```
      */
     public fun optional(): LayoutFile {
         leaf.optional = true
@@ -87,9 +79,6 @@ public class LayoutFile internal constructor(
     /**
      * Attaches metadata to this file, the same way `owner = "..."` attaches it to a role. See
      * [LayoutDeclarationScope].
-     *
-     * `.template { }` is the one katachi ships this way itself: `"...".ktFile().template { }`
-     * is sugar over `"...".ktFile().metadata { }` writing a key katachi does not expose.
      *
      * ## Example 1: attach metadata to a declared file
      * ```kt
@@ -127,14 +116,8 @@ public class LayoutFile internal constructor(
  * ```
  */
 public class LayoutModule internal constructor(
-    /** The nodes the declaration added, one group per module it expanded to. */
     internal val declared: List<LayoutNode>,
-    /**
-     * The directory node of each expansion, one per module the key stood for -- what
-     * [metadata] writes into. Empty when the key was `":".module { }`: the root project has
-     * no directory of its own, only the layout root every other block shares, so there is
-     * nowhere for a value written here to attach that would not also describe everything else.
-     */
+    // Empty for `":".module { }`: the root project has no directory of its own, so nothing to attach metadata to.
     internal val moduleDirectories: List<LayoutNode> = emptyList(),
 ) {
     /**
@@ -193,9 +176,8 @@ public class LayoutModule internal constructor(
 /**
  * A `layout { }` block that has been declared but not evaluated.
  *
- * Blocks are deferred on purpose: the same `architecture { }` value is read by tests and by
- * documentation generation, so building it must not touch the file system or run any
- * check. Evaluating one is what `flattenLayout()` does.
+ * Blocks are deferred on purpose: building an `architecture { }` value never touches the file
+ * system or runs a check. The blocks run when the architecture is checked or processed.
  *
  * ## Example 1: Reading a role's declared `layout { }` blocks back
  * ```kt
@@ -207,26 +189,14 @@ public class LayoutModule internal constructor(
  *   }
  * }
  *
- * arch.allRoles.single().layouts.single()
+ * arch.allRoles.single().layouts.single().declaredAt // where `layout { }` was written
  * ```
  */
 public class LayoutDeclaration internal constructor(
     /**
      * Where `layout { }` was written.
-     *
-     * ## Example 1: Reading where a role's `layout { }` block was written
-     * ```kt
-     * val arch = architecture {
-     *   "domain".group {
-     *     "UseCase".role { layout { } }
-     *   }
-     * }
-     *
-     * arch.allRoles.single().layouts.single().declaredAt
-     * ```
      */
     public val declaredAt: DeclarationSite,
-    /** The block itself. Evaluated by the checker, not by the DSL. */
     internal val block: LayoutScope.() -> Unit,
 ) {
     /** `LayoutDeclaration(<declaredAt>)`. */

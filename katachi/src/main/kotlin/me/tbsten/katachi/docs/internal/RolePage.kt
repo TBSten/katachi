@@ -4,20 +4,6 @@ import me.tbsten.katachi.dsl.Examples
 import me.tbsten.katachi.dsl.Role
 import java.util.IdentityHashMap
 
-/**
- * The page of one role: what it is, where its files may live, what is asked of them.
- *
- * Every section is a function of its own, and a section with nothing to say appends nothing --
- * not an empty heading. A section katachi does not write itself arrives the same way: the
- * constraints of the role write their own ([ConstraintDocumentation.sections], each starting with its own
- * heading, see `FileConstraint.documentSection`), placed after the list of the constraints' names
- * and before the examples. The last call is the other section katachi does not name: whatever the
- * definition declared for itself, written after everything katachi knows how to assemble.
- *
- * The body is assembled with plain string building rather than through a model of the document.
- * A model would have to be designed for sections nobody has written yet, and the sections do not
- * share enough to be worth one: a table, a bullet list and a block of the user's own Markdown.
- */
 internal fun rolePage(
     role: Role,
     placements: List<Placement>,
@@ -38,12 +24,6 @@ internal fun rolePage(
     appendLine()
 }
 
-/**
- * Where the role's files may live: one row per declared pattern.
- *
- * The Module column appears only when some row has a module to show. Without one, every cell in
- * the column would be empty, so the table drops it and starts at Path.
- */
 private fun StringBuilder.appendPlacements(placements: List<Placement>) {
     if (placements.isEmpty()) return
     val withModule = placements.any { it.module != null }
@@ -68,14 +48,6 @@ private fun StringBuilder.appendPlacements(placements: List<Placement>) {
     }
 }
 
-/**
- * The id of the first heading of each section the constraints wrote, as the docs site gives it.
- *
- * Ids are handed out in page order and a repeated one gets a numeric suffix, so the headings
- * before the sections -- [head] and the `## Constraints` heading, if the list has one -- are
- * counted too: a section titled `## Placement` is `#placement-1`, not the `#placement` above it.
- * A section with no heading has no entry.
- */
 private fun sectionSlugsOf(
     head: String,
     constraints: ConstraintDocumentation,
@@ -91,16 +63,6 @@ private fun sectionSlugsOf(
     return slugs
 }
 
-/**
- * The named constraints, as they were named.
- *
- * A constraint that wrote a section of its own (see [ConstraintSection]) is listed as a link to
- * that section's first heading ([slugs]), so the page does not name a rule in one place and describe it in
- * another with nothing joining the two. One that wrote none is listed by its name alone.
- *
- * Only the named ones reach here -- an unnamed constraint has nothing to print -- which is the
- * point of being able to name one: writing a name is what puts a rule on the page.
- */
 private fun StringBuilder.appendFileConstraints(
     items: List<ConstraintListItem>,
     slugs: Map<ConstraintSection, String>,
@@ -117,17 +79,10 @@ private fun StringBuilder.appendFileConstraints(
     )
 }
 
-/**
- * [name] as the text of a Markdown link.
- *
- * A name is a sentence its author wrote, so it may hold the characters that end or reshape a link
- * (`]`, `\`) or that Markdown reads as markup; each gets a backslash in front of it.
- */
 private fun linkText(name: String): String = name.replace(LINK_TEXT_SPECIAL) { "\\${it.value}" }
 
 private val LINK_TEXT_SPECIAL = Regex("""[\\\[\]`*_<>]""")
 
-/** The sections the role's constraints wrote about themselves, as they wrote them. */
 private fun StringBuilder.appendConstraintSections(sections: List<ConstraintSection>) {
     for (section in sections) {
         append(SECTION_BREAK)
@@ -135,12 +90,6 @@ private fun StringBuilder.appendConstraintSections(sections: List<ConstraintSect
     }
 }
 
-/**
- * The concrete examples, as `name ... description`.
- *
- * An example with no description prints its name alone -- no `...` and nothing after it, since
- * there is nothing to separate it from.
- */
 private fun StringBuilder.appendExamples(role: Role) {
     val examples = role[Examples].orEmpty()
     if (examples.isEmpty()) return

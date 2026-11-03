@@ -9,19 +9,6 @@ import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.report.internal.SarifEnvironment
 import me.tbsten.katachi.report.internal.writeSarifIfRequested
 
-/**
- * `assert()` against [fileSystem]. See `validate(fileSystem)`.
- *
- * As with `assert(maxViolations)`, the overload taking checks runs those too; this one runs
- * [me.tbsten.katachi.check.LayoutCheck] alone.
- *
- * ## Example 1: assert against a fake tree, capping how many violations the message spells out
- * ```kt
- * shouldThrow<KatachiArchitectureAssertionError> {
- *     definition.assert(fakeFileSystem, maxViolations = 5)
- * }
- * ```
- */
 internal fun Architecture.assert(
     fileSystem: KatachiFileSystem,
     maxViolations: Int? = null,
@@ -29,24 +16,6 @@ internal fun Architecture.assert(
     assertWith(fileSystem, emptyList(), maxViolations)
 }
 
-/**
- * `assert()` with more checks than the layout one, all on the same walk of the project.
- *
- * [me.tbsten.katachi.check.LayoutCheck] runs whether or not it is in the arguments, and passing
- * it anyway changes nothing — see `validate(check, vararg more)` for why, for what happens when
- * a check throws, and for the four throwables that are never swallowed.
- *
- * The first check is a separate parameter rather than part of the vararg so that this cannot
- * be reached by `assert()`, `assert(10)` or `assert(fileSystem)`: those three keep meaning
- * exactly what they meant before this overload existed.
- *
- * ## Example 1: run a check of your own against a tree that only exists in memory
- * ```kt
- * shouldThrow<KatachiArchitectureAssertionError> {
- *     definition.assert(fakeFileSystem, TodoCheck())
- * }
- * ```
- */
 internal fun Architecture.assert(
     fileSystem: KatachiFileSystem,
     check: ArchitectureProcessor<Unit, List<Violation>>,
@@ -56,16 +25,11 @@ internal fun Architecture.assert(
     assertWith(fileSystem, listOf(check) + more, maxViolations)
 }
 
-/**
- * `assertNoErrors()` against [fileSystem]: [assert] that also hands back every violation of the
- * run, warnings included.
- */
 internal fun Architecture.assertNoErrors(
     fileSystem: KatachiFileSystem,
     maxViolations: Int? = null,
 ): List<Violation> = assertWith(fileSystem, emptyList(), maxViolations)
 
-/** `assertNoErrors(check, vararg more)` against [fileSystem]. */
 internal fun Architecture.assertNoErrors(
     fileSystem: KatachiFileSystem,
     check: ArchitectureProcessor<Unit, List<Violation>>,
@@ -73,27 +37,6 @@ internal fun Architecture.assertNoErrors(
     maxViolations: Int? = null,
 ): List<Violation> = assertWith(fileSystem, listOf(check) + more, maxViolations)
 
-/**
- * What all four `assert` overloads and all four `assertNoErrors` overloads are:
- * [me.tbsten.katachi.check.internal.validateWith], then the baseline if the definition has one,
- * then throw if anything is an error.
- *
- * Nothing failed when there is no [Severity.Error] violation, even if there are warnings — so
- * there is no [KatachiArchitectureAssertionError] to carry them. Standard error is what is left:
- * `report()` already renders a Warning-only list as the Warning section alone (see `report`'s
- * own doc), so the same call that builds the failure message below builds this one too, and the
- * two can never say something different about the same run.
- *
- * Returns every violation of the run the baseline did not hold back when it does not throw,
- * which is what `assertNoErrors()` hands back and `assert()` drops.
- *
- * Between the baseline and the throw, the same violations are written out as a SARIF file when
- * `-Dkatachi.report.sarif=<path>` asks for one -- see [writeSarifIfRequested]. Nothing about
- * the throw or the output changes when it is not asked for, or when the write fails.
- *
- * [maxViolations] is what the test wrote, `null` when it wrote nothing; the budget the message
- * is cut to comes out of [resolveMaxViolations], which also reads `-Dkatachi.maxViolations`.
- */
 internal fun Architecture.assertWith(
     fileSystem: KatachiFileSystem,
     checks: List<ArchitectureProcessor<Unit, List<Violation>>>,

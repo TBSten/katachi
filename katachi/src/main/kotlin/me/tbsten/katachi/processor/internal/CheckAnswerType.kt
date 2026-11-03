@@ -7,15 +7,8 @@ import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.lang.reflect.WildcardType
 
-/**
- * Whether the class of [processor] declares its answer as a `List` of [Violation] -- which is
- * what makes a processor a check -- or `null` when its declaration does not say, because the
- * answer is a type parameter.
- *
- * Read off the declaration rather than the answer, because an empty list is a list of anything:
- * a processor answering with no names would otherwise be compared with the baseline, and fail
- * for want of a baseline file it never needed.
- */
+// Read off the declaration, not the answer: an empty list is a list of anything, and would be compared with a
+// baseline file it never needed.
 internal fun declaresViolationList(processor: ArchitectureProcessor<*, *>): Boolean? {
     val answer = answerTypeOf(processor::class.java) ?: return null
     val list = answer as? ParameterizedType ?: return false
@@ -27,7 +20,6 @@ internal fun declaresViolationList(processor: ArchitectureProcessor<*, *>): Bool
     return (elementClass as? Class<*>)?.let { Violation::class.java.isAssignableFrom(it) } ?: false
 }
 
-/** The `R` of `ArchitectureProcessor<Args, R>` as [type] declares it, or `null` if it is not a class. */
 private fun answerTypeOf(type: Type): Type? {
     var current: Class<*>? = type as? Class<*> ?: return null
     while (current != null) {
@@ -39,7 +31,6 @@ private fun answerTypeOf(type: Type): Type? {
     return null
 }
 
-/** The answer type [supertype] fixes, looking through interfaces that extend the processor ones. */
 private fun answerOfInterface(supertype: Type?): Type? {
     val parameterized = supertype as? ParameterizedType
     val raw = (parameterized?.rawType ?: supertype) as? Class<*> ?: return null
@@ -51,5 +42,4 @@ private fun answerOfInterface(supertype: Type?): Type? {
     return raw.genericInterfaces.firstNotNullOfOrNull(::answerOfInterface)
 }
 
-/** `null` for a type parameter, which says nothing about what the answer is. */
 private fun Type.takeUnlessVariable(): Type? = takeUnless { it is java.lang.reflect.TypeVariable<*> }

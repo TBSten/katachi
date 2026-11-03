@@ -23,36 +23,18 @@ import me.tbsten.katachi.processor.KatachiProcessorNotRunException
 import me.tbsten.katachi.processor.KatachiProcessorTypeException
 import me.tbsten.katachi.processor.decodeFromStringMap
 
-/**
- * How many of a `runProcessors` call's processors succeeded and how many failed.
- *
- * `main()` reads [failed] to decide the process's exit status, and [failures] to tell the IDE
- * plugin which mistakes of the definition stopped the run; a spec reads them to assert on the run
- * as a whole without re-parsing the printed summary line.
- */
 internal data class ProcessorRunSummary(
     val succeeded: Int,
     val failed: Int,
     val failures: List<ProcessorFailure> = emptyList(),
 )
 
-/** What the processor registered as [key] failed with. */
 internal class ProcessorFailure(val key: String, val cause: Throwable) {
     override fun toString(): String = "ProcessorFailure($key, $cause)"
 }
 
-/**
- * Turns a registered processor class into a running [ArchitectureProcessor].
- *
- * Tries a Kotlin `object`'s singleton `INSTANCE` field first, then a no-argument constructor.
- * Both are read reflectively and made accessible, since a generated caller outside the class's
- * own module cannot otherwise reach a non-public declaration.
- *
- * @throws KatachiProcessorNotInstantiableException when neither an `INSTANCE` field nor a
- *   no-argument constructor is there.
- * @throws KatachiProcessorTypeException when [type] was instantiated but is not an
- *   [ArchitectureProcessor].
- */
+// INSTANCE and the constructor are made accessible: a generated caller outside the class's module cannot reach
+// non-public declarations.
 internal fun instantiateProcessor(type: Class<*>): ArchitectureProcessor<*, *> {
     val instance = runCatching {
         type.getDeclaredField("INSTANCE").apply { isAccessible = true }.get(null)
@@ -63,29 +45,7 @@ internal fun instantiateProcessor(type: Class<*>): ArchitectureProcessor<*, *> {
     return instance as? ArchitectureProcessor<*, *> ?: throw KatachiProcessorTypeException(type)
 }
 
-/**
- * Runs every processor of [processorKeys] against [architecture], each with its own slice of
- * [rawArgs], on one walk of [fileSystem], and prints a report through [out].
- *
- * Resolving every key and instantiating every processor happens before any of them runs, so a
- * mistake in the second key of three costs nothing the first already did. Likewise
- * `--arg` names are checked against the union of every selected processor's arguments before any
- * of them runs -- see `checkNoUnknownArgs`.
- *
- * One processor's failure does not stop the others: each result is collected independently, and
- * the summary at the end reports how many of each there were. A processor fails the run by
- * answering `Result.failure` or by throwing; both are reported as `[FAILED]` with the
- * exception's message, and a `success` is `[OK]` with its value.
- *
- * @param argsFor arguments for one processor only, by processor key: what `--arg-for` carries.
- *   A processor is given its own entry here with [rawArgs] laid over it, so a command-line
- *   `--arg` wins over a build-script value exactly as it does for a single-processor run. Each
- *   entry's names are checked against its own processor alone.
- * @param out where the report's lines go. Defaults to [println], but a spec passes
- *   `mutableListOf<String>::add` instead so the run can be asserted on without capturing standard
- *   output.
- * @param baselineEnvironment where the definition's baseline is read from, when it has one.
- */
+// Every key is resolved, every processor instantiated and --arg names checked before any of them runs.
 internal fun runProcessors(
     architecture: Architecture,
     registry: Map<String, Class<*>>,
@@ -197,21 +157,9 @@ internal fun runProcessors(
     return ProcessorRunSummary(succeeded = succeeded, failed = failed, failures = failures)
 }
 
-/**
- * A check's answer after the baseline held part of it back: what is left, and the lines saying
- * how much was held back. Only ever a success -- anything left that fails is a failure instead.
- */
 private class HeldBack(val violations: List<Violation>, val trailer: List<String>)
 
-/**
- * [this] result of [processor], compared with the definition's baseline when there is one and
- * the processor is a check -- its class declares a list of violations as its answer (see
- * [declaresViolationList]), or it failed with a [KatachiArchitectureAssertionError] carrying them.
- *
- * Only compared, never updated: `-Dkatachi.baseline.update` belongs to the architecture test,
- * which runs the same checks together. A run here reads the ledger the definition names, so no
- * argument is needed for it.
- */
+// Only compared, never updated: -Dkatachi.baseline.update belongs to the architecture test.
 private fun Result<Any?>.againstBaseline(
     architecture: Architecture,
     processor: ArchitectureProcessor<*, *>,
@@ -252,10 +200,6 @@ private fun Result<Any?>.againstBaseline(
     }
 }
 
-/**
- * One element of a processor's answer, as a line. A [Violation] is written as its report's first
- * line, with the path as a `file:///...` URI; anything else through `toString`.
- */
 private fun lineOf(element: Any?, projectRoot: String?): String =
     if (element is Violation) {
         "[${element.label}] ${displayPath(projectRoot, element.path)}"
@@ -263,15 +207,7 @@ private fun lineOf(element: Any?, projectRoot: String?): String =
         element.toString()
     }
 
-/**
- * Holds a processor together with its own `Args` type, after the type has been captured.
- *
- * The registry is a `Map<String, Class<*>>`, so what comes back out of it is an
- * `ArchitectureProcessor<*, *>` and the `Args` type is gone. Kotlin gives it back for the
- * length of one call: passing the star-projected processor to [erase] captures both type
- * parameters, and inside this class the serializer, the decoded arguments and `process` are
- * the same `Args` again -- checked by the compiler rather than asserted with a cast.
- */
+// Passing the star-projected processor to erase captures both type parameters, so no cast is needed.
 private class ErasedProcessor<Args, R>(
     private val processor: ArchitectureProcessor<Args, R>,
 ) {
@@ -285,7 +221,6 @@ private class ErasedProcessor<Args, R>(
     }
 }
 
-/** Captures [processor]'s type parameters so its arguments can be decoded without a cast. */
 private fun <Args, R> erase(
     processor: ArchitectureProcessor<Args, R>,
 ): ErasedProcessor<Args, R> = ErasedProcessor(processor)

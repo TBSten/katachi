@@ -10,9 +10,8 @@ import me.tbsten.katachi.internal.fileUri
 /**
  * Two templates of the same run resolve to the same generated path.
  *
- * `--arg template=a,b` writes one set of files, and two templates claiming the same path is not
- * something a run can resolve on its own -- keeping one and dropping the other would depend on
- * which happened to be listed first, and nothing on disk would explain it.
+ * Give the templates different capture values so their paths differ, or drop one of them from
+ * `--arg template=`.
  *
  * ## Example 1: catch two templates that generate into the same path
  * ```kt
@@ -60,12 +59,9 @@ public class KatachiDuplicateTemplateOutputException internal constructor(
 /**
  * A file the template would have written is already there.
  *
- * The default, because these files land in the user's own source tree: overwriting one silently is
- * how work gets lost, and there is no undo below a generator. Nothing was written -- not even the
- * files that were free -- so the repository is exactly as it was before the run.
- *
- * The katachi IDE plugin reads the first line of the message and the indented `file:///` lines
- * under it to mark the files that are in the way, so keep their shape.
+ * Thrown under the default [OnExisting.Fail]. Nothing was written, not even the files that were
+ * free. Pass `--arg onExisting=skip` to leave the set alone, or `--arg onExisting=overwrite` to
+ * replace the files.
  *
  * ## Example 1: re-run a template over a file it already produced
  * ```kt
@@ -113,9 +109,8 @@ public class KatachiExistingTemplateFileException internal constructor(
 /**
  * katachi could not write one of the generated files.
  *
- * The one failure of generation that is about neither the definition nor katachi: the directory is
- * read only, the disk is full, the checkout is on a mounted volume that went away. It names the
- * project root as well as the path, because the usual surprise is *where* a layout resolved to.
+ * The directory is read only, the disk is full, or the volume went away. Check also that the
+ * layout resolves where you expect, relative to [projectRoot][KatachiTemplateIoException.projectRoot].
  *
  * ## Example 1: say which file a failing run was writing
  * ```kt
@@ -161,11 +156,9 @@ public class KatachiTemplateIoException internal constructor(
 /**
  * A name katachi needs while it works is already taken by a file in the source tree.
  *
- * Generated files are written to `.katachi-new` and the files they replace wait under
- * `.katachi-old`, so that a run that fails partway can put everything back. Both names belong to
- * katachi for the length of a run. A file already sitting at one of them would be written over and
- * then removed, which is the one thing generation promises never to do -- so the run stops before
- * writing anything at all.
+ * While a template runs, katachi writes through files ending in `.katachi-new` and
+ * `.katachi-old`. A file of yours with such a name would be overwritten and removed, so the run
+ * stops before writing anything. Move or rename the file.
  *
  * ## Example 1: stop rather than write over a file wearing a reserved suffix
  * ```kt
@@ -212,15 +205,9 @@ public class KatachiReservedTemplatePathException internal constructor(
 /**
  * A generated file resolved to somewhere outside the project, through a link in the source tree.
  *
- * A `layout { }` declares paths relative to the project root, and a path that climbs out of it is
- * refused where it is written. That check reads the text of the path, which is the whole of it
- * until a directory along the way turns out to be a symbolic link: `src/main/kotlin` can be a link
- * to anywhere, and following it lands a generated file in a tree the definition never described --
- * silently, since the log reports the path as declared.
- *
- * So the real location is resolved once more just before writing. The paths this names are the ones
- * the definition asked for; [resolved][KatachiTemplateEscapesProjectException.resolved] is where
- * the file system says they actually go.
+ * A directory along the declared path is a symbolic link out of the project, so the file would land
+ * where the definition does not describe. Nothing is written.
+ * [resolved][KatachiTemplateEscapesProjectException.resolved] is where the file would actually go.
  *
  * ## Example 1: refuse to follow a link out of the project
  * ```kt
@@ -269,10 +256,8 @@ public class KatachiTemplateEscapesProjectException internal constructor(
 /**
  * Something that is not a regular file is sitting where a generated file goes.
  *
- * Usually a directory: a role whose layout says `useCase/GetUser.kt` in a tree where `GetUser.kt`
- * is a package directory. Replacing it is not a thing generation is willing to do even under
- * [OnExisting.Overwrite], which answers for files whose contents can be put back, not for a
- * directory whose contents are not this run's to move.
+ * Usually a directory. It is never replaced, even under [OnExisting.Overwrite]. Nothing is
+ * written; move what is there, or change the layout.
  *
  * ## Example 1: refuse a target that is a directory
  * ```kt

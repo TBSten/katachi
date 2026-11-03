@@ -7,37 +7,32 @@ import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 import me.tbsten.katachi.dsl.internal.get
 
 /**
- * The whole architecture definition: what was declared in `architecture { }` — the groups,
- * the roles written straight into the root, and through the groups every other role.
+ * The whole architecture definition: the groups and roles declared in `architecture { }`.
  *
- * Building this value runs no check and reads nothing from the file system. The same
- * value is meant to be held in a top level `val` and read both by tests and by
- * documentation generation.
+ * Building this value runs no check and reads nothing from the file system. Hold it in a top
+ * level `val` and read it from tests and from documentation generation alike.
  *
  * ## Example 1: the value returned by architecture { }
  * ```kt
  * val projectArchitecture: Architecture = architecture {
+ *     files = wholeTree()
+ *     "Readme".role { }
  *     "domain".group {
  *         "UseCase".role { }
+ *         "model".group { "ValueObject".role { } }
  *     }
  * }
+ *
+ * projectArchitecture.groups.map { it.name } shouldBe listOf("domain")
+ * projectArchitecture.roles.map { it.qualifiedName } shouldBe listOf("Readme")
+ * projectArchitecture.allGroups.map { it.qualifiedName } shouldBe listOf("domain", "domain.model")
+ * projectArchitecture.allRoles.map { it.qualifiedName } shouldBe
+ *     listOf("Readme", "domain.UseCase", "domain.model.ValueObject")
+ * projectArchitecture.declaredAt.fileName shouldBe "ProjectArchitecture.kt"
  * ```
  */
 public class Architecture internal constructor(
-    /**
-     * Top level groups, in declaration order.
-     *
-     * ## Example 1: read the groups declared at the root
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group {
-     *         "UseCase".role { }
-     *         "Repository".role { }
-     *     }
-     * }
-     * arch.groups.map { it.name } shouldContainExactly listOf("domain")
-     * ```
-     */
+    /** Top level groups, in declaration order. */
     public val groups: List<Group>,
     /**
      * Roles declared straight into `architecture { }`, outside any group, in declaration
@@ -45,50 +40,12 @@ public class Architecture internal constructor(
      *
      * Their [group path][Role.groupPath] is empty, so their qualified name is the role name
      * alone. The root is a container like a group, and this is what it holds of its own.
-     *
-     * ## Example 1: read the roles declared at the root
-     * ```kt
-     * val arch = architecture {
-     *     "Readme".role { }
-     *     "domain".group { "UseCase".role { } }
-     * }
-     * arch.roles.map { it.qualifiedName } shouldContainExactly listOf("Readme")
-     * ```
      */
     public val roles: List<Role>,
-    /**
-     * Which files of the project the check looks at.
-     *
-     * ## Example 1: walk the whole tree instead of only git-tracked files
-     * ```kt
-     * val arch = architecture {
-     *     files = wholeTree()
-     *     "domain".group { "UseCase".role { } }
-     * }
-     * arch.files shouldBe FileSelection.WholeTree
-     * ```
-     */
+    /** Which files of the project the check looks at. */
     public val files: FileSelection,
-    /**
-     * How a module path written in a `layout { }` becomes a directory.
-     *
-     * Leaves the public API together with `.module { }` in katachi 0.5.
-     *
-     * ## Example 1: replace the resolution rule for module paths
-     * ```kt
-     * val architecture = architecture {
-     *     moduleResolver = ModuleResolver { module ->
-     *         if (module.value == ":app") "apps/android" else module.segments.joinToString("/")
-     *     }
-     *     "domain".group { "UseCase".role { } }
-     * }
-     * architecture.moduleResolver.directoryOf(ModulePath.of(":app")) shouldBe "apps/android"
-     * ```
-     */
+    /** How a module path written in a `layout { }` becomes a directory. */
     public val moduleResolver: ModuleResolver,
-    /**
-     * What was written on `architecture { }` itself, beyond the declarations. Read through [get].
-     */
     internal val metadata: MetadataValues,
     /**
      * The ledger of violations `assert()` holds back, or `null` when nothing is held back. See
@@ -99,39 +56,14 @@ public class Architecture internal constructor(
     /**
      * Where `architecture { }` itself was called, as `FileName.kt:42`.
      *
-     * The last place a report can point at when a violation has no file of its own -- a
-     * directory nobody declared, a check that threw -- and no declaration site either.
-     * [DeclarationSite.Unknown] when the call could not be found on the stack.
-     *
-     * ## Example 1: read where the definition was written
-     * ```kt
-     * val arch = architecture { "domain".group { "UseCase".role { } } }
-     * arch.declaredAt.fileName shouldBe "ProjectArchitecture.kt"
-     * ```
+     * A report points here when a violation has neither a file nor a declaration site of its
+     * own. [DeclarationSite.Unknown] when the call could not be found on the stack.
      */
     @ExperimentalKatachiApi
     public val declaredAt: DeclarationSite = DeclarationSite.Unknown,
-    /** The template sets declared directly in `architecture { }`, in declaration order. */
     internal val templateSets: List<TemplateSetDeclaration> = emptyList(),
 ) {
-    /**
-     * Every group, parents before their children, in declaration order.
-     *
-     * ## Example 1: read nested groups together with their parents
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group {
-     *         "model".group {
-     *             "value".group {
-     *                 "ValueObject".role { }
-     *             }
-     *         }
-     *     }
-     * }
-     * arch.allGroups.map { it.qualifiedName } shouldContainExactly
-     *     listOf("domain", "domain.model", "domain.model.value")
-     * ```
-     */
+    /** Every group, parents before their children, in declaration order. */
     public val allGroups: List<Group> = groups.flatMap { it.selfAndDescendants() }
 
     /**
@@ -139,30 +71,9 @@ public class Architecture internal constructor(
      *
      * A container's own roles come before the roles of the containers inside it, which is the
      * order [allGroups] already puts groups in.
-     *
-     * ## Example 1: read every role across every group
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group { "Repository".role { } }
-     *     "data".group { "Repository".role { } }
-     * }
-     * arch.allRoles.map { it.qualifiedName } shouldContainExactly
-     *     listOf("domain.Repository", "data.Repository")
-     * ```
-     *
-     * ## Example 2: a role declared at the root is one of them
-     * ```kt
-     * val arch = architecture {
-     *     "Readme".role { }
-     *     "domain".group { "UseCase".role { } }
-     * }
-     * arch.allRoles.map { it.qualifiedName } shouldContainExactly
-     *     listOf("Readme", "domain.UseCase")
-     * ```
      */
     public val allRoles: List<Role> = roles + allGroups.flatMap { it.roles }
 
-    /** Every template set: the root's own first, then those of every group in [allGroups] order. */
     internal val allTemplateSets: List<TemplateSetDeclaration> =
         templateSets + allGroups.flatMap { it.templateSets }
 
@@ -218,9 +129,6 @@ public class Architecture internal constructor(
  * and call them from the block. Note that an extension function cannot be called by its
  * fully qualified name, so the split files have to be imported.
  *
- * This function is deliberately not `inline`: the declaration sites are read off the
- * stack trace, and inlining remaps the line numbers past the end of the caller's file.
- *
  * ## Example 1: define an architecture with architecture { }
  * ```kt
  * val projectArchitecture = architecture {
@@ -248,6 +156,8 @@ public class Architecture internal constructor(
  * }
  * ```
  *
+ * @throws me.tbsten.katachi.KatachiDeclarationException when a declaration in the block is
+ *   invalid, such as a duplicated or malformed name.
  * @featured
  */
 public fun architecture(block: ArchitectureScope.() -> Unit): Architecture {

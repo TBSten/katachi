@@ -12,11 +12,12 @@ import me.tbsten.katachi.check.internal.assertNoErrors
  *
  * **This is how a check written outside katachi says "I found something".** Call it last, inside
  * the `runCatching { }` that is the body of `process`: the throw becomes the check's
- * `Result.failure`, which is what lets `assert()` and `assertNoErrors()` put the violations into
- * the one report instead of calling the check broken, and what makes a `katachi<Key>` task print
- * the same report and exit non-zero. The constructor of [KatachiArchitectureAssertionError] is not
- * public, and does not need to be: this is the one way in. Any other failure is a check that could
- * not run, and becomes one [UncheckedCheck] instead.
+ * `Result.failure`, so `assert()` and `assertNoErrors()` put the violations into the one report,
+ * and a `katachi<Key>` task prints the same report and exits non-zero. Any other failure is a
+ * check that could not run, and becomes one [UncheckedCheck] instead.
+ *
+ * The message is cut to `-Dkatachi.maxViolations` blocks when that is given, else to
+ * [DEFAULT_MAX_VIOLATIONS], exactly as `assert()` cuts its own.
  *
  * ## Example 1: a check of your own that reports through the same report as the layout check
  * ```kt
@@ -44,9 +45,6 @@ import me.tbsten.katachi.check.internal.assertNoErrors
  *         }
  * }
  * ```
- *
- * The message is cut to `-Dkatachi.maxViolations` blocks when that is given, else to
- * [DEFAULT_MAX_VIOLATIONS], exactly as `assert()` cuts its own.
  *
  * @throws KatachiArchitectureAssertionError when any violation of this list is a
  *   [Severity.Error].

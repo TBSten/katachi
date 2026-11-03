@@ -9,31 +9,13 @@ import me.tbsten.katachi.dsl.Role
  * ## Example 1: read who claims an ambiguous path
  * ```kt
  * val ambiguous = projectArchitecture.assertNoErrors().filterIsInstance<AmbiguousLayout>().first()
- * ambiguous.claims.map { it.role.qualifiedName }
+ * ambiguous.claims.map { "${it.role.qualifiedName} (${it.declaredAt})" }
  * ```
  */
 public class LayoutClaim internal constructor(
-    /**
-     * The role making this claim.
-     *
-     * ## Example 1: read which role made one claim
-     * ```kt
-     * val ambiguous = projectArchitecture.assertNoErrors()
-     *     .filterIsInstance<AmbiguousLayout>().first()
-     * ambiguous.claims.first().role.qualifiedName
-     * ```
-     */
+    /** The role making this claim. */
     public val role: Role,
-    /**
-     * Where the role declared this path.
-     *
-     * ## Example 1: point a report back at the line that declared one claim
-     * ```kt
-     * val ambiguous = projectArchitecture.assertNoErrors()
-     *     .filterIsInstance<AmbiguousLayout>().first()
-     * ambiguous.claims.first().declaredAt
-     * ```
-     */
+    /** Where the role declared this path. */
     public val declaredAt: DeclarationSite,
 ) {
     /** `<role> (<declaredAt>)`, for a log line or a test failure message. */
@@ -44,24 +26,18 @@ public class LayoutClaim internal constructor(
  * Two or more roles claim the same thing, so a file there belongs to every one of them at once
  * and which of them it is actually for is not decided.
  *
- * It is raised two ways, and [overlappingFiles][AmbiguousLayout.overlappingFiles] is how they are
- * told apart. Either the roles wrote the **same pattern text**, which the declarations say by
- * themselves and which holds whether or not a file is there yet; or their patterns are different
- * but a walk of the project found them landing on the **same real files**, which is the case
- * `"*.kt"` against `"*ViewModel.kt"` in one directory produces and which no comparison of the text
- * could see.
+ * It is raised two ways, told apart by [overlappingFiles][AmbiguousLayout.overlappingFiles]:
+ * the roles wrote the **same pattern text**, or their patterns differ but land on the **same real
+ * files** (`"*.kt"` against `"*ViewModel.kt"` in one directory).
  *
- * A file claimed by more than one role is allowed — a file is fine as long as *some* role allows
- * it — but every `konsist { }` of every one of those roles is then checked against it, which is
- * what makes an overlap nobody meant worth a warning.
- *
- * Katachi never raises this to [Severity.Error]: an intentional overlap is not a mistake, and
- * deciding which role a shared path belongs to is a judgment call the definitions' authors have
- * to make, not something a check can resolve on their behalf.
+ * Such a file is allowed, but every file constraint of every one of those roles is checked
+ * against it. katachi never raises this to [Severity.Error]: an intentional overlap is not a
+ * mistake.
  *
  * ## Example 1: list the paths more than one role claims outright
  * ```kt
- * projectArchitecture.assertNoErrors().filterIsInstance<AmbiguousLayout>().map { it.path }
+ * projectArchitecture.assertNoErrors().filterIsInstance<AmbiguousLayout>()
+ *     .associate { it.path to it.claims.map { claim -> claim.role.qualifiedName } }
  * ```
  *
  * ## Example 2: tell the two ways it is raised apart
@@ -79,30 +55,14 @@ public class AmbiguousLayout internal constructor(
      * When [overlappingFiles][AmbiguousLayout.overlappingFiles] is not empty, a role that named the
      * file comes before one that only left its directory open with `anyFile()`, and the declaration
      * order holds within each of those two groups.
-     *
-     * ## Example 1: read every role that claims one ambiguous path
-     * ```kt
-     * projectArchitecture.assertNoErrors().filterIsInstance<AmbiguousLayout>().first().claims
-     * ```
      */
     public val claims: List<LayoutClaim>,
     /**
-     * Every file the walk found all of [claims][AmbiguousLayout.claims] claiming, in walk order,
-     * with [path][AmbiguousLayout.path] first — or empty when this was raised from the declarations
-     * alone.
+     * Every existing file all of the claims cover, [path][AmbiguousLayout.path] first.
      *
-     * Empty is the exact statement "no walk found this": the roles wrote the same pattern text, and
-     * whether a file sits at it was never asked. Non-empty means the opposite — these files exist
-     * and each of them belongs to all of [claims][AmbiguousLayout.claims] at once. One warning
-     * covers the whole group however long this list is, so reading it is how a caller finds the
-     * rest.
+     * Empty when the roles only wrote the same pattern text.
      *
-     * ## Example 1: count the files an overlap actually affects
-     * ```kt
-     * projectArchitecture.assertNoErrors()
-     *     .filterIsInstance<AmbiguousLayout>()
-     *     .associate { it.path to it.overlappingFiles.size }
-     * ```
+     * One warning covers the whole group however long this list is, so read it to find the rest.
      */
     public val overlappingFiles: List<String>,
 ) : Violation {
@@ -117,51 +77,26 @@ public class AmbiguousLayout internal constructor(
  * A role that may live in more than one place, with one of those places saying nothing about
  * when it is the right one.
  *
- * A place is a directory a `"...".module { }` key opened for the role. One place needs no
- * explanation: everything the role owns is there. From two on, a reader deciding where to put a new
- * file has a choice to make, and `description = "..."` is the sentence that makes it for them.
- *
- * Katachi never raises this to [Severity.Error]: a definition with the sentence missing is
- * accurate, only terse, and the file it would have guided is still allowed exactly where the
- * layout says it is.
+ * A place is a directory the role's layout opens, for example one per module. From two places
+ * on, someone adding a file has a choice to make, and `description = "..."` tells them which place
+ * is right. katachi never raises this to [Severity.Error].
  *
  * ## Example 1: list the places that still owe an explanation
  * ```kt
- * projectArchitecture.assertNoErrors().filterIsInstance<MissingDescription>().map { it.path }
+ * projectArchitecture.assertNoErrors().filterIsInstance<MissingDescription>()
+ *     .map { "${it.role.qualifiedName} at ${it.path} (also ${it.otherPlaces}), ${it.declaredAt}" }
  * ```
  */
 public class MissingDescription internal constructor(
     override val path: String,
-    /**
-     * The role that may live at [path][MissingDescription.path].
-     *
-     * ## Example 1: read which role left a place unexplained
-     * ```kt
-     * projectArchitecture.assertNoErrors()
-     *     .filterIsInstance<MissingDescription>().first().role.qualifiedName
-     * ```
-     */
+    /** The role that may live at [path][MissingDescription.path]. */
     public val role: Role,
     /**
      * The role's other places, in declaration order. Never empty — a role with one place is
      * never reported.
-     *
-     * ## Example 1: read what a place has to be told apart from
-     * ```kt
-     * projectArchitecture.assertNoErrors()
-     *     .filterIsInstance<MissingDescription>().first().otherPlaces
-     * ```
      */
     public val otherPlaces: List<String>,
-    /**
-     * Where the block that should carry the description was opened.
-     *
-     * ## Example 1: point back at the block a description belongs in
-     * ```kt
-     * projectArchitecture.assertNoErrors()
-     *     .filterIsInstance<MissingDescription>().first().declaredAt
-     * ```
-     */
+    /** Where the block that should carry the description was opened. */
     public val declaredAt: DeclarationSite,
 ) : Violation {
     override val kind: ViolationKind get() = ViolationKind.Unexplained

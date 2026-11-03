@@ -15,17 +15,6 @@ import me.tbsten.katachi.template.KatachiInvalidTemplateSetArgException.Problem
 import me.tbsten.katachi.template.KatachiMissingTemplateCaptureException
 import me.tbsten.katachi.template.KatachiTemplateSetParameterValueException
 
-/**
- * What running [set] with [values] would put in the project: path to contents, members in the
- * order they were written.
- *
- * [values] are the set's own parameters. Each member receives only what its `arg(...)` calls
- * passed, so the same template can be a member of two sets, or of a set and a run of its own,
- * without the values of one leaking into the other. All members are built before the caller
- * writes any of them, so a member that fails leaves nothing behind.
- *
- * [table] is every declared template, as [declaredTemplatesOf] lists them.
- */
 internal fun templateSetFilesFor(
     context: ArchitectureProcessContext<*>,
     set: TemplateSetDeclaration,
@@ -56,12 +45,6 @@ internal fun templateSetFilesFor(
     return files
 }
 
-/**
- * Refuses a run that left a parameter of [set] without a value or gave one it cannot read.
- *
- * A parameter with no default is required even when no member reads it, so the check is on the
- * declaration, not only on what the replay happened to read.
- */
 private fun requireSetParametersUsable(
     set: TemplateSetDeclaration,
     values: Map<String, String>,
@@ -83,10 +66,6 @@ private fun requireSetParametersUsable(
     )
 }
 
-/**
- * The names [template] accepts as `arg` when [member] gives it its values: its captures, and its
- * parameters on any branch. Sorted.
- */
 internal fun acceptedArgNamesOf(template: DeclaredTemplate, member: TemplateSetMemberReplay): List<String> {
     val captureNames = captureNamesOf(template.entries)
     val parameterNames = parameterOriginsOnEveryBranch(
@@ -98,7 +77,6 @@ internal fun acceptedArgNamesOf(template: DeclaredTemplate, member: TemplateSetM
     return (captureNames + parameterNames).sorted()
 }
 
-/** Refuses an `arg` name that is neither a capture nor a parameter (on any branch) of [template]. */
 internal fun requireMemberArgNamesKnown(
     set: TemplateSetDeclaration,
     member: TemplateSetMemberReplay,
@@ -118,11 +96,6 @@ internal fun requireMemberArgNamesKnown(
     )
 }
 
-/**
- * One member's file, with the member's own problems told apart from the rest: see
- * [asMemberArgProblem]. Anything else (a bad capture value, a file that exists) is the member's own
- * and is thrown as it is.
- */
 private fun memberFile(
     context: ArchitectureProcessContext<*>,
     set: TemplateSetDeclaration,
@@ -132,13 +105,6 @@ private fun memberFile(
 ): Pair<String, String> =
     asMemberArgProblem(set, member, template) { templateFileFor(context, template, member.args, modules) }
 
-/**
- * Runs [block], which evaluates [template] with the values [member] passes it, and turns the
- * failures that are the set's mistake into [KatachiInvalidTemplateSetArgException]: values the
- * member needed and did not get ([Problem.Missing]) and values its parameters could not read
- * ([Problem.InvalidValue]). The exception says where in the set to fix it, with the original as
- * its cause. Shared by a run and a preview, so that both tell the same story.
- */
 internal fun <T> asMemberArgProblem(
     set: TemplateSetDeclaration,
     member: TemplateSetMemberReplay,

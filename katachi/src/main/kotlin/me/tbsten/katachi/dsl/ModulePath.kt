@@ -20,68 +20,44 @@ import me.tbsten.katachi.dsl.internal.GlobProblem
  *
  * ## Example 1: build one from a string and read it back
  * ```kt
- * ModulePath.of(":core:data").value shouldBe ":core:data"
+ * val data = ModulePath.of("core:data")    // the leading `:` may be left out
+ * data.value shouldBe ":core:data"
+ * data.segments shouldContainExactly listOf("core", "data")
+ * data.name shouldBe "data"
+ * data.parent shouldBe ModulePath.of(":core")
+ * ModulePath.of(":core").child("data") shouldBe data
+ * ModulePath.of(":") shouldBe ModulePath.ROOT
+ * ModulePath.ROOT.isRoot shouldBe true
  * ```
  */
 public class ModulePath private constructor(
     /**
      * The names between the `:`, outermost first. Empty for [ROOT].
-     *
-     * ## Example 1: read out the levels in order
-     * ```kt
-     * ModulePath.of(":core:data:remoteApi").segments shouldContainExactly
-     *     listOf("core", "data", "remoteApi")
-     * ```
      */
     public val segments: List<String>,
 ) {
     /**
      * The path as katachi prints it: `":core:data"`, or `":"` for the root project.
-     *
-     * ## Example 1: check the printed form
-     * ```kt
-     * ModulePath.of("core:data").value shouldBe ":core:data"
-     * ```
      */
     public val value: String = ":" + segments.joinToString(":")
 
     /**
      * Whether this is the root project, `":"`.
-     *
-     * ## Example 1: tell the root project apart from the rest
-     * ```kt
-     * ModulePath.ROOT.isRoot shouldBe true
-     * ```
      */
     public val isRoot: Boolean get() = segments.isEmpty()
 
     /**
      * The innermost name — `"data"` for `:core:data`. Empty for [ROOT].
-     *
-     * ## Example 1: read the innermost name
-     * ```kt
-     * ModulePath.of(":core:data").name shouldBe "data"
-     * ```
      */
     public val name: String get() = segments.lastOrNull() ?: ""
 
     /**
      * The module one level up, or `null` at [ROOT].
-     *
-     * ## Example 1: walk up one level
-     * ```kt
-     * ModulePath.of(":core:data").parent shouldBe ModulePath.of(":core")
-     * ```
      */
     public val parent: ModulePath? get() = if (isRoot) null else ModulePath(segments.dropLast(1))
 
     /**
      * The module named [name] directly below this one.
-     *
-     * ## Example 1: build a direct child
-     * ```kt
-     * ModulePath.of(":core").child("data") shouldBe ModulePath.of(":core:data")
-     * ```
      */
     public fun child(name: String): ModulePath = ModulePath(segments + name)
 
@@ -107,21 +83,11 @@ public class ModulePath private constructor(
     public companion object {
         /**
          * The root project, `":"`.
-         *
-         * ## Example 1: refer to the root project
-         * ```kt
-         * ModulePath.of(":") shouldBe ModulePath.ROOT
-         * ```
          */
         public val ROOT: ModulePath = ModulePath(emptyList())
 
         /**
          * Reads [raw] as a module path, with or without its leading `:`.
-         *
-         * ## Example 1: read a path with or without its leading `:`
-         * ```kt
-         * ModulePath.of(":core:data") shouldBe ModulePath.of("core:data")
-         * ```
          *
          * @throws KatachiGlobSyntaxException when [raw] is empty, has an empty segment
          *   (`":core::data"`, `":core:"`), or still holds a `*`: this is one module's path, not a
@@ -142,7 +108,6 @@ public class ModulePath private constructor(
             return ModulePath(segments)
         }
 
-        /** Gradle's module path separator, the same character katachi's glob splits on. */
         private const val SEPARATOR: Char = ':'
     }
 }

@@ -9,18 +9,8 @@ import me.tbsten.katachi.dsl.internal.RuleExplanation
 import me.tbsten.katachi.internal.catching
 import me.tbsten.katachi.processor.internal.ProjectWalk
 
-/**
- * The `fileDeclarations` of each constraint that explains its declarations, asked of it with the
- * subject the check hands it: the same files, capture values and per-run memo, so the answer is
- * the check's.
- *
- * At most [maxExplainedFiles] files are explained in all, in the order the constraints are
- * declared; a constraint past that budget explains a first part of its files or none, and
- * [reportTruncation] adds one `ExplanationTruncated` to [problems]. Only `.kt` files count against the
- * budget. A declaration the backend could not place at a line is left out, since the JSON's `line` is
- * an `int`. A constraint that throws gets
- * `null` and an `ExplanationFailed`, and the rest still answer.
- */
+// Only .kt files count against the budget; a declaration the backend cannot place at a line is left out (JSON
+// line is an int).
 internal class DeclarationExplanations(
     private val walk: ProjectWalk,
     private val maxExplainedFiles: Int,
@@ -29,7 +19,6 @@ internal class DeclarationExplanations(
     private var explained: Int = 0
     private var truncated: Boolean = false
 
-    /** The `fileDeclarations` of [declared], or `null` when it does not explain its declarations or failed to. */
     fun of(declared: DeclaredFileConstraint): List<FileDeclarationsJson>? {
         val explaining = declared.check as? DeclarationExplaining ?: return null
         val files = walk.filesUnder(declared)
@@ -59,7 +48,6 @@ internal class DeclarationExplanations(
         return answer.map(::fileDeclarationsJsonOf)
     }
 
-    /** Adds the one `ExplanationTruncated` problem, when the budget cut any constraint short. */
     fun reportTruncation() {
         if (!truncated) return
         problems += DefinitionProblemJson(
@@ -71,7 +59,6 @@ internal class DeclarationExplanations(
     }
 }
 
-/** The only files a `ktFileContent { }` reads, and so the only ones the budget counts. */
 private const val KOTLIN_EXTENSION: String = ".kt"
 
 private fun fileDeclarationsJsonOf(file: FileDeclarationsExplanation): FileDeclarationsJson = FileDeclarationsJson(

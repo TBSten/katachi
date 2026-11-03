@@ -29,18 +29,10 @@ public class KatachiUnresolvableModulePatternException internal constructor(
 /**
  * Turns a Gradle module path into the directory that holds it.
  *
- * This is the only thing that is replaceable, and it does one thing: module path in,
- * directory out. Nothing else about a module goes through here — a source set is the plain
- * directory `src/<name>`, and a package directory is derived by whatever strategy the user
- * assigned to their own `modulePackage`. Keeping those out is what lets katachi resolve modules
- * without reading anything from Gradle.
- *
- * The default, [Conventional], replaces `:` with `/`. That is right for every project that
- * has not customised `projectDir`, which in practice means every new project. A build that
- * has customised it replaces the resolver. A resolver replaced this way is asked about the
- * modules the layout names. It is not asked which modules exist: expanding `":feature:*"`
- * walks the tree looking for a `build.gradle.kts` or `build.gradle`: katachi does not read the
- * list of modules from Gradle, the Gradle plugin included.
+ * The default, [Conventional], replaces `:` with `/`, which is right for every project that
+ * has not customised `projectDir`. A build that has customised it replaces the resolver.
+ * The resolver is not asked which modules exist: katachi finds modules by looking for a
+ * `build.gradle.kts` or `build.gradle` in the tree, never by reading Gradle.
  *
  * Leaves the public API together with `.module { }` in katachi 0.5.
  *
@@ -51,6 +43,9 @@ public class KatachiUnresolvableModulePatternException internal constructor(
  *     if (module.value == ":app") "apps/android" else module.segments.joinToString("/")
  *   }
  * }
+ *
+ * ModuleResolver.Conventional.directoryOf(ModulePath.of(":core:data")) shouldBe "core/data"
+ * ModuleResolver.Conventional.directoryOf(ModulePath.ROOT) shouldBe "" // the project root
  * ```
  */
 public fun interface ModuleResolver {
@@ -59,11 +54,6 @@ public fun interface ModuleResolver {
      *
      * The empty string means the project root itself, which is what the root project
      * resolves to.
-     *
-     * ## Example 1: check the default conversion
-     * ```kt
-     * ModuleResolver.Conventional.directoryOf(ModulePath.of(":core:data")) shouldBe "core/data"
-     * ```
      */
     public fun directoryOf(module: ModulePath): String
 
@@ -82,11 +72,6 @@ public fun interface ModuleResolver {
         /**
          * The default: `:` becomes `/`, so `:core:data` is `core/data` and `":"` is the
          * project root.
-         *
-         * ## Example 1: resolve the root project
-         * ```kt
-         * ModuleResolver.Conventional.directoryOf(ModulePath.ROOT) shouldBe ""
-         * ```
          */
         public val Conventional: ModuleResolver = ConventionalModuleResolver
     }

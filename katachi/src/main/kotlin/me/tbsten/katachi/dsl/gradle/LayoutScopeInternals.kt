@@ -11,25 +11,7 @@ import me.tbsten.katachi.dsl.ModuleAwareLayoutScope
 import me.tbsten.katachi.dsl.internal.MODULE_SCOPE_DEPRECATION
 
 /**
- * The part of a layout scope a utility layer cannot reach through the public vocabulary.
- *
- * [LayoutScope] declares what a layout *says*; these three hand out what the scope *knows*
- * while it is being evaluated, which [ModuleAwareLayoutScope] declares. `"...".ktFile()`
- * needs none of them — it is written against `file()` alone — but the Gradle vocabulary in
- * this package does: expanding `":feature:*"` needs the project's modules, and
- * `modulePackage` and `wildcards` need the module the block is currently being evaluated for.
- *
- * They are extensions on [LayoutScope] rather than plain members of [ModuleAwareLayoutScope]
- * because `context(layoutScope: LayoutScope)` is the shape every utility is written in, a
- * project's own as much as katachi's. They are public for the same reason: a project whose
- * build is unusual enough to need its own `.module { }` should be able to write one. They are
- * [ExperimentalKatachiApi] because what a scope knows grows with the DSL, and the opt-in is
- * what says their shape can still change.
- */
-
-/**
- * The module this scope is being evaluated for, as katachi prints it (`":feature:home"`),
- * or `null` directly under `layout { }` and inside a plain directory block.
+ * The module this scope is being evaluated for, such as `":feature:home"`, or `null` outside a module block.
  *
  * **Deprecated** since 0.3, removed in 0.5. See [expandModulePath] for what to write instead.
  *
@@ -51,8 +33,7 @@ public val LayoutScope.currentModulePath: String?
     get() = moduleAware().currentModulePath
 
 /**
- * What the module path's wildcards captured for the module being evaluated, or `null`
- * outside a module block, where there is no module path to have captured anything.
+ * What the module path's wildcards captured for the module being evaluated, or `null` outside a module block.
  *
  * **Deprecated** since 0.3, removed in 0.5. See [expandModulePath] for what to write instead.
  *
@@ -135,13 +116,6 @@ public fun LayoutScope.expandModulePath(
     block: LayoutDirectoryScope.() -> Unit,
 ): LayoutModule = moduleAware().expandModulePath(modulePath, block)
 
-/**
- * The scope seen as what it knows, which is what this package is written against.
- *
- * Every scope katachi hands to a `layout { }` block implements [ModuleAwareLayoutScope], so
- * this holds; it is written as one function so that failing loudly when it does not has one
- * place.
- */
 private fun LayoutScope.moduleAware(): ModuleAwareLayoutScope =
     this as? ModuleAwareLayoutScope
         ?: throw KatachiUnsupportedLayoutScopeException(this::class.simpleName ?: "unknown scope")

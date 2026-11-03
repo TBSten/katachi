@@ -5,43 +5,24 @@ import me.tbsten.katachi.check.internal.ROOT_PATH
 /**
  * A check handed to `assert(...)` that threw, so nothing it would have reported is known.
  *
- * The path is `"."`: a processor is about the project as a whole, and `"."` is already how
- * the walk names the project root when it is the root itself that could not be read.
+ * Its path is always `"."`, the project root, since a check is about the project as a whole.
  *
  * ## Example 1: list the checks a run could not finish
  * ```kt
  * val failure = shouldThrow<KatachiArchitectureAssertionError> {
  *     projectArchitecture.assert(TodoCheck())
  * }
- * failure.violations.filterIsInstance<UncheckedCheck>().map { it.check }
+ * failure.violations.filterIsInstance<UncheckedCheck>()
+ *     .forEach { println("${it.check}: ${it.cause}") }
  * ```
  */
 public class UncheckedCheck internal constructor(
     /**
      * The processor's qualified class name, or its JVM name when a qualified name is not
      * available (an anonymous or local class).
-     *
-     * ## Example 1: list which checks a run could not finish
-     * ```kt
-     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
-     *     projectArchitecture.assert(TodoCheck())
-     * }
-     * failure.violations.filterIsInstance<UncheckedCheck>().map { it.check }
-     * ```
      */
     public val check: String,
-    /**
-     * What the check threw.
-     *
-     * ## Example 1: read what went wrong before reporting it as a bug
-     * ```kt
-     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
-     *     projectArchitecture.assert(TodoCheck())
-     * }
-     * failure.violations.filterIsInstance<UncheckedCheck>()
-     *     .forEach { println("${it.check}: ${it.cause}") }
-     * ```
-     */
+    /** What the check threw. */
     public val cause: Throwable,
 ) : Violation {
     override val path: String get() = ROOT_PATH

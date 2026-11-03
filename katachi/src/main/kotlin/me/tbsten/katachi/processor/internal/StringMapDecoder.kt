@@ -10,29 +10,9 @@ import kotlinx.serialization.modules.SerializersModule
 import me.tbsten.katachi.internal.ArgValueParsing
 import me.tbsten.katachi.processor.KatachiUnsupportedProcessorArgException
 
-/**
- * Reads a `@Serializable` class out of the flat `key=value` map a `--arg` line produces.
- *
- * `kotlinx-serialization-properties` would have done most of this, and was not used: it
- * ignores keys it does not know, and noticing a mistyped `--arg` key is the point (see
- * `checkNoUnknownArgs`).
- *
- * **A comma splits only when the receiving field is a `List<T>` or a `Set<T>`.** `--arg
- * tags=a,b` read into a `String` field is the two-character-longer string `"a,b"`, which is
- * also the way out when a value has to contain a comma. There is no escape syntax.
- *
- * `Map` fields and nested `@Serializable` classes are refused rather than half-read: one
- * `--arg` line has no way to express nesting.
- *
- * ## Example 1: decode one processor's arguments
- * ```kt
- * @Serializable
- * data class Args(val roleName: String, val tags: List<String> = emptyList())
- *
- * decodeFromStringMap(Args.serializer(), mapOf("roleName" to "GetUser", "tags" to "a,b")) shouldBe
- *     Args(roleName = "GetUser", tags = listOf("a", "b"))
- * ```
- */
+// kotlinx-serialization-properties is not used: it ignores unknown keys, and noticing a mistyped --arg key is
+// the point.
+// A comma splits only when the receiving field is a List or a Set.
 internal class StringMapDecoder(
     val values: Map<String, String>,
 ) : AbstractDecoder() {
@@ -102,7 +82,6 @@ internal class StringMapDecoder(
     override fun decodeNotNullMark(): Boolean = true
 }
 
-/** `a,b,c` handed out one element at a time. An empty string is an empty collection. */
 private class SplitDecoder(private val parts: List<String>) : AbstractDecoder() {
     override val serializersModule: SerializersModule = EmptySerializersModule()
 
@@ -140,14 +119,8 @@ private class SplitDecoder(private val parts: List<String>) : AbstractDecoder() 
 private fun splitArgValue(raw: String): List<String> =
     if (raw.isEmpty()) emptyList() else raw.split(',')
 
-/**
- * Where a processor's `--arg` string becomes a value. The rules themselves are
- * [ArgValueParsing]'s, shared with a template's typed parameters.
- *
- * Every failure is a `SerializationException` so that `decodeFromStringMap` can turn it into a
- * katachi exception in one place. `"abc".toInt()` would throw `NumberFormatException`, which
- * is not one and would escape uncaught.
- */
+// Every failure must be a SerializationException (not NumberFormatException) so decodeFromStringMap can convert
+// it in one place.
 private object ArgValues {
     fun int(raw: String): Int = ArgValueParsing.int(raw) ?: fail(raw, "Int")
     fun long(raw: String): Long = ArgValueParsing.long(raw) ?: fail(raw, "Long")
@@ -158,13 +131,7 @@ private object ArgValues {
     fun boolean(raw: String): Boolean = ArgValueParsing.boolean(raw) ?: fail(raw, "Boolean")
     fun char(raw: String): Char = ArgValueParsing.char(raw) ?: fail(raw, "Char")
 
-    /**
-     * An enum names its own accepted spellings, unlike every other type here.
-     *
-     * "Cannot read \"Skip\" as OnExisting" leaves a reader to guess whether the spelling is
-     * wrong, the case is wrong, or the value was never a thing -- and the answer is written down
-     * right here in the descriptor. `Int` has nothing comparable to offer.
-     */
+    // An enum names its accepted spellings in its descriptor, so the message lists them.
     fun enumIndex(descriptor: SerialDescriptor, raw: String): Int {
         val names = (0 until descriptor.elementsCount).map(descriptor::getElementName)
         return ArgValueParsing.enumIndex(names, raw)

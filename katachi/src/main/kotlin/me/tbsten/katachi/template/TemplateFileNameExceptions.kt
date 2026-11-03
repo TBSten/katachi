@@ -8,8 +8,8 @@ import me.tbsten.katachi.dsl.DeclarationSite
 /**
  * A role's layout resolves a generated file to a path outside the project.
  *
- * Every other thing katachi writes lands below `build/`; these files land in the user's own source
- * tree, so the one path that must never be reachable is checked rather than assumed.
+ * Generated files are written into the repository itself, so a path that climbs out of the
+ * project root is refused. Remove the `..` from the role's `layout { }`.
  *
  * ## Example 1: catch a layout that climbs out of the project root
  * ```kt
@@ -58,12 +58,10 @@ public class KatachiTemplatePathOutsideProjectException internal constructor(
 )
 
 /**
- * A run's values, once filled into a template's declared path, produced a path that template's
- * own `layout { }` pattern does not match.
+ * A template's generated path does not match its own `layout { }` pattern, which is a bug in katachi.
  *
- * The path this template generates is worked out from the same declaration its `layout { }` and
- * its `.template { }` share, so the two cannot disagree once every value has passed capture
- * validation -- reaching this means the value checks upstream of it missed something.
+ * Nothing in a definition or in the run's values can cause this. Please report it at
+ * https://github.com/TBSten/katachi/issues.
  *
  * ## Example 1: report it rather than treating it as a failed run
  * ```kt
@@ -104,14 +102,9 @@ public class KatachiTemplatePathMismatchException internal constructor(
 )
 
 /**
- * A template whose path runs through a module capture found no declaration of itself once the
- * layout was flattened again against the module the run's values picked.
+ * A template below a module capture could not be found again for the module the run picked, which is a bug in katachi.
  *
- * Re-flattening the same `layout { }` against that module reaches the very `.template { }` call
- * the template was listed from, so this cannot happen once the module has been found -- reaching
- * this means katachi lost track of which declaration the template is. Refused rather than
- * generated from the un-resolved declaration, which still holds `<name>` in place of what
- * `wildcard(name)` reads and would write that text into the path.
+ * Nothing is generated. Please report it at https://github.com/TBSten/katachi/issues.
  *
  * ## Example 1: report it rather than treating it as a failed run
  * ```kt

@@ -5,8 +5,7 @@ import me.tbsten.katachi.KatachiDeclarationException
 /**
  * What is being named by a declaration the DSL rejected.
  *
- * It is carried by the exception rather than baked into its message so that a caller who
- * catches one can branch on it, and so that a group and a role are worded the same way.
+ * Read it from the caught exception to branch on what kind of name was rejected.
  *
  * ## Example 1: tell a duplicated group from a duplicated role
  * ```kt
@@ -20,61 +19,24 @@ import me.tbsten.katachi.KatachiDeclarationException
  * ```
  */
 public enum class DeclarationKind(
-    /** How this kind is written inside a message, `"group"` or `"role"`. */
     internal val label: String,
-    /** The rule the last line of a duplicate declaration message states. */
     internal val uniquenessRule: String,
-    /** The last line of an invalid name message: what to do when the name wanted is not an identifier. */
     internal val invalidNameHint: String = "Use `title` for a human readable display name.",
 ) {
-    /**
-     * A `"...".group { }` declaration.
-     *
-     * ## Example 1: match on a rejected group declaration
-     * ```kt
-     * val thrown = shouldThrow<KatachiInvalidIdentifierException> {
-     *     architecture { "use case".group { } }
-     * }
-     * thrown.kind shouldBe DeclarationKind.Group
-     * ```
-     */
+    /** A `"...".group { }` declaration. */
     Group(
         label = "group",
         uniquenessRule = "Group names must be unique among the groups declared under the same parent.",
     ),
 
-    /**
-     * A `"..." { }` role declaration inside a group.
-     *
-     * ## Example 1: match on a rejected role declaration
-     * ```kt
-     * val thrown = shouldThrow<KatachiInvalidIdentifierException> {
-     *     architecture { "domain".group { "use case".role { } } }
-     * }
-     * thrown.kind shouldBe DeclarationKind.Role
-     * ```
-     */
+    /** A `"...".role { }` declaration. */
     Role(
         label = "role",
         uniquenessRule = "Role names must be unique within a group. The same name may be reused " +
             "in a different group.",
     ),
 
-    /**
-     * A `capture("...")` in a `layout { }`, or a name given to `":...:${capture("...")}".module { }`.
-     *
-     * ## Example 1: match on a rejected capture name
-     * ```kt
-     * val thrown = shouldThrow<KatachiInvalidIdentifierException> {
-     *     architecture {
-     *         "ui".group {
-     *             "Screen".role { layout { "feature" / capture("1feature") / "*Screen".ktFile() } }
-     *         }
-     *     }.flattenLayout()
-     * }
-     * thrown.kind shouldBe DeclarationKind.Capture
-     * ```
-     */
+    /** A `capture("...")` in a `layout { }`. */
     Capture(
         label = "capture",
         uniquenessRule = "Capture names must be unique along one path. The same name may be reused " +
@@ -83,22 +45,7 @@ public enum class DeclarationKind(
             "so it follows the same rule as a role name.",
     ),
 
-    /**
-     * The `id` of a `.template(id = "...") { }`.
-     *
-     * ## Example 1: match on a rejected template id
-     * ```kt
-     * val thrown = shouldThrow<KatachiInvalidIdentifierException> {
-     *     architecture {
-     *         "domain".group {
-     *             "UseCase".role { layout { "*UseCase.kt".file()
-     *                 .template(id = "not valid") { "" } } }
-     *         }
-     *     }
-     * }
-     * thrown.kind shouldBe DeclarationKind.TemplateId
-     * ```
-     */
+    /** The `id` of a `.template(id = "...") { }`. */
     TemplateId(
         label = "template id",
         uniquenessRule = "A template id must be unique within its role. See KatachiDuplicateTemplateIdException.",
@@ -106,17 +53,7 @@ public enum class DeclarationKind(
             "the same rule as a role name.",
     ),
 
-    /**
-     * A `"...".templateSet { }` declaration.
-     *
-     * ## Example 1: match on a rejected template set declaration
-     * ```kt
-     * val thrown = shouldThrow<KatachiInvalidIdentifierException> {
-     *     architecture { "new feature".templateSet { } }
-     * }
-     * thrown.kind shouldBe DeclarationKind.TemplateSet
-     * ```
-     */
+    /** A `"...".templateSet { }` declaration. */
     TemplateSet(
         label = "template set",
         uniquenessRule = "Template set names must be unique among the groups, roles and template sets " +
@@ -127,7 +64,7 @@ public enum class DeclarationKind(
 }
 
 /**
- * A group name, a role name or a capture name is not a valid identifier.
+ * A declared name (group, role, capture, template id or template set) is not a valid identifier.
  *
  * ## Example 1: catch an invalid name
  * ```kt
@@ -156,9 +93,11 @@ public class KatachiInvalidIdentifierException internal constructor(
 )
 
 /**
- * A name was taken twice in one scope: the same group name directly under the same parent,
- * the same role name inside the same group, or a group and a role of the same name declared
- * side by side — groups and roles share one namespace in every container.
+ * A name was declared twice in one scope.
+ *
+ * That is the same group name directly under the same parent, the same role name inside the same
+ * group, or a group and a role of the same name side by side: groups and roles share one
+ * namespace in every container.
  *
  * ## Example 1: catch a group declared twice under the same parent
  * ```kt
@@ -183,12 +122,12 @@ public class KatachiInvalidIdentifierException internal constructor(
  * ```
  *
  * @property kind whether the rejected declaration was a group's, a role's or a template set's.
- * @property firstKind whether the declaration that took the name first was a group's, a role's or a template set's.
- *   It differs from [kind][KatachiDuplicateDeclarationException.kind] when a group and a role
- *   collided, and telling the two cases apart is what the last line of the message does.
+ * @property firstKind whether the declaration that took the name first was a group's, a role's or
+ *   a template set's. It differs from [kind][KatachiDuplicateDeclarationException.kind] when a
+ *   group and a role collided.
  * @property name the duplicated name.
  * @property scope where the two declarations collided, such as `the root of architecture { }`
- *   or `group "domain/user"`. It is a value the message is built from, not the message.
+ *   or `group "domain/user"`.
  * @property firstDeclaredAt where the name was declared the first time.
  * @property declaredAt where the rejected second declaration was written.
  */

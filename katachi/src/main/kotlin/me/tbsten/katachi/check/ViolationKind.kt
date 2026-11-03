@@ -3,13 +3,10 @@ package me.tbsten.katachi.check
 import me.tbsten.katachi.ExperimentalKatachiApi
 
 /**
- * What kind of problem a violation is — which is the same thing as what the reader has to do
- * about it, so a report groups its blocks by this.
+ * What kind of problem a violation is, which is also what you have to do about it; a report
+ * groups its blocks by this.
  *
- * The declaration order is the order the blocks appear in a report. [Failed] stays last no
- * matter what — the check sorts blocks with `sortedBy { it.kind.ordinal }`, and every
- * existing report's ordering depends on [Failed] being the last kind — while a new entry goes in
- * wherever it actually belongs among the rest, ahead of [Failed].
+ * The declaration order is the order the blocks appear in a report, with [Failed] always last.
  *
  * ## Example 1: count violations by kind
  * ```kt
@@ -21,58 +18,27 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  */
 public enum class ViolationKind {
     /**
-     * Something exists that no role allows -- a file or directory nothing declared, or a file
-     * whose bound captures disagree ([CaptureMismatch]). Delete it, move it, or declare it.
+     * Something exists that no role allows. Delete it, move it, or declare it.
      *
-     * ## Example 1: list files and directories nothing declared
-     * ```kt
-     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
-     *     projectArchitecture.assert()
-     * }
-     * failure.violations.filter { it.kind == ViolationKind.Unexpected }
-     * ```
+     * A file or directory nothing declared, or a file whose bound captures disagree
+     * ([CaptureMismatch]).
      */
     Unexpected,
 
-    /**
-     * Something declared does not exist. Create it, or drop the declaration.
-     *
-     * ## Example 1: list declarations with nothing at their path yet
-     * ```kt
-     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
-     *     projectArchitecture.assert()
-     * }
-     * failure.violations.filter { it.kind == ViolationKind.Missing }
-     * ```
-     */
+    /** Something declared does not exist. Create it, or drop the declaration. */
     Missing,
 
     /**
      * A constraint declared with `fileConstraint { }` — `konsist { }` included — does not hold.
      * Fix the code, or the constraint.
-     *
-     * ## Example 1: list the constraints that failed
-     * ```kt
-     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
-     *     projectArchitecture.assert(FileConstraintCheck())
-     * }
-     * failure.violations.filter { it.kind == ViolationKind.FileConstraint }
-     * ```
      */
     FileConstraint,
 
     /**
-     * An entry of the baseline holds back more violations than the project still has: some of
-     * what it held back was fixed. Shrink the entry so the fixed violation cannot come back
-     * unnoticed.
+     * A baseline entry holds back more violations than the project still has. Shrink the entry.
      *
-     * The last kind that fails a check by what it found; everything after it either only warns
-     * or says the check could not look.
-     *
-     * ## Example 1: list the baseline entries that are out of date
-     * ```kt
-     * failure.violations.filter { it.kind == ViolationKind.Stale }
-     * ```
+     * Some of what it held back was fixed; shrinking it keeps the fixed violation from coming
+     * back unnoticed.
      */
     @ExperimentalKatachiApi
     Stale,
@@ -81,26 +47,14 @@ public enum class ViolationKind {
      * Two or more declarations claim the same thing, so which one it belongs to is not decided.
      * Decide, and drop or narrow the rest.
      *
-     * Katachi itself only ever reports this kind with [Severity.Warning]: nothing that carries
-     * it is, on its own, a reason `assert()` fails.
-     *
-     * ## Example 1: list what more than one declaration claims
-     * ```kt
-     * projectArchitecture.assertNoErrors().filter { it.kind == ViolationKind.Ambiguous }
-     * ```
+     * katachi only reports this kind with [Severity.Warning].
      */
     Ambiguous,
 
     /**
      * A declaration does not say what it is for. Write the missing explanation.
      *
-     * Katachi itself only ever reports this kind with [Severity.Warning]: nothing that carries
-     * it is, on its own, a reason `assert()` fails.
-     *
-     * ## Example 1: list declarations missing their explanation
-     * ```kt
-     * projectArchitecture.assertNoErrors().filter { it.kind == ViolationKind.Unexplained }
-     * ```
+     * katachi only reports this kind with [Severity.Warning].
      */
     Unexplained,
 
@@ -108,17 +62,7 @@ public enum class ViolationKind {
      * The check itself failed at a path, so that path is neither allowed nor reported.
      *
      * A run holding one of these is a partial result: everything else in the report was
-     * checked, and the path named here was not. The failure is kept rather than dropped
-     * because a check that quietly skips what it could not look at is a check with a hole
-     * in it.
-     *
-     * ## Example 1: tell a partial result from a complete one
-     * ```kt
-     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
-     *     projectArchitecture.assert()
-     * }
-     * val partial = failure.violations.any { it.kind == ViolationKind.Failed }
-     * ```
+     * checked, and the path named here was not.
      */
     Failed,
 }

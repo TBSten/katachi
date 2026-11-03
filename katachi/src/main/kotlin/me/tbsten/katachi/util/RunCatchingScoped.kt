@@ -59,18 +59,15 @@ public inline fun <R> runCatchingScoped(block: RunCatchingScopedScope.() -> R): 
     }
 
 /**
- * What a [runCatchingScoped] block can do besides returning: record a failure and carry on, or
- * stop here.
+ * What a [runCatchingScoped] block can do besides returning: record a failure and carry on, or stop here.
  *
- * An interface so that the list of what was recorded, and the way the block is ended, are not
- * reachable from the block itself -- only the two words below are.
- *
- * ## Example 1: stop at the first thing that makes the rest meaningless
+ * ## Example 1: record what is wrong, and stop when the rest would be meaningless
  * ```kt
  * import me.tbsten.katachi.util.runCatchingScoped
  *
  * val result: Result<String> = runCatchingScoped {
  *     val root = System.getenv("PROJECT_ROOT") ?: `throw`(IllegalStateException("PROJECT_ROOT is not set"))
+ *     if (!root.startsWith("/")) failure(IllegalStateException("PROJECT_ROOT is not absolute"))
  *     root.trimEnd('/')
  * }
  * ```
@@ -82,35 +79,10 @@ public interface RunCatchingScopedScope {
      * Ends the block now, and makes [exception] the failure [runCatchingScoped] returns.
      *
      * Anything recorded with [failure] before this is dropped.
-     *
-     * ## Example 1: give up when there is nothing to go on
-     * ```kt
-     * import me.tbsten.katachi.util.runCatchingScoped
-     *
-     * val result = runCatchingScoped<Int> {
-     *     val roles = emptyList<String>()
-     *     if (roles.isEmpty()) `throw`(IllegalStateException("no roles to check"))
-     *     roles.size
-     * }
-     * result.exceptionOrNull()?.message shouldBe "no roles to check"
-     * ```
      */
     public fun `throw`(exception: Throwable): Nothing
 
-    /**
-     * Records [exception] and lets the block carry on.
-     *
-     * ## Example 1: note a problem and keep going
-     * ```kt
-     * import me.tbsten.katachi.util.runCatchingScoped
-     *
-     * val result = runCatchingScoped {
-     *     failure(IllegalStateException("UseCase has no summary"))
-     *     "checked every role"
-     * }
-     * result.isFailure shouldBe true
-     * ```
-     */
+    /** Records [exception] and lets the block carry on. */
     public fun failure(exception: Throwable)
 }
 

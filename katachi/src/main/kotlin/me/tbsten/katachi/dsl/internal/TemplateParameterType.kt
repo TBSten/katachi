@@ -3,31 +3,19 @@ package me.tbsten.katachi.dsl.internal
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.internal.ArgValueParsing
 
-/**
- * What a template parameter reads its `--arg` string as.
- *
- * Everything that differs between `stringParameter()` and its typed siblings is here, so the
- * binding, naming and reporting around a parameter are one piece of code for every type.
- */
 internal sealed interface TemplateParameterType<out T> {
-    /** The function the user wrote, for messages: `booleanParameter()`. */
     val declaredWith: String
 
-    /** `String`, `Boolean`, `Int`, or the enum's simple name. */
     val label: String
 
-    /** Every spelling accepted, where the list is short enough to print. Empty otherwise. */
     val acceptedValues: List<String>
 
-    /** How a message says what is accepted: `true or false`. `null` when anything is. */
     val acceptedDescription: String?
 
     fun parse(raw: String): ParsedArgValue<T>
 
-    /** A value to keep the replay going with when there is none, or none that can be read. */
     fun standIn(name: String): T
 
-    /** A value to show in "e.g. --arg name=..." for a parameter declared with [default]. */
     fun exampleValue(default: Any?): String
 
     data object StringType : TemplateParameterType<String> {
@@ -73,7 +61,7 @@ internal sealed interface TemplateParameterType<out T> {
         override fun exampleValue(default: Any?): String = default?.toString() ?: "0"
     }
 
-    /** [entries] is never empty: `enumParameter()` refuses an enum without one before this. */
+    // entries is never empty: enumParameter() refuses an empty enum earlier.
     class EnumType<E : Enum<E>>(val entries: List<E>) : TemplateParameterType<E> {
         override val declaredWith: String = "enumParameter()"
         override val label: String = entries.first().declaringJavaClass.simpleName
@@ -88,26 +76,20 @@ internal sealed interface TemplateParameterType<out T> {
     }
 }
 
-/** `A`, `A or B`, `A, B or C`. */
 private fun List<String>.joinAsAlternatives(): String =
     if (size <= 1) joinToString() else dropLast(1).joinToString(", ") + " or " + last()
 
-/** What reading one `--arg` string came to. */
 internal sealed interface ParsedArgValue<out T> {
     data class Parsed<out T>(val value: T) : ParsedArgValue<T>
     data class Invalid(val reason: InvalidArgReason) : ParsedArgValue<Nothing>
 }
 
-/** Why a `--arg` string could not be read. */
 internal enum class InvalidArgReason {
-    /** Not a spelling of the type at all: `yes` for a Boolean, `3.5` for an Int. */
     NotAValue,
 
-    /** A whole number, but not one an Int holds. */
     OutOfRange,
 }
 
-/** One value a run passed that its parameter could not read. The material of the message. */
 internal class InvalidTemplateValue(
     val name: String,
     val raw: String,

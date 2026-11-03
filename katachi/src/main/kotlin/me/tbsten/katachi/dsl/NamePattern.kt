@@ -6,15 +6,12 @@ import me.tbsten.katachi.dsl.internal.Glob
 import me.tbsten.katachi.dsl.internal.GlobProblem
 
 /**
- * A name or a dotted path, matched the way `layout { }` matches a path: `*` is zero characters or
- * more within one level, `**` is any number of levels, and `?`, `[abc]` and `{a,b}` are one
- * character, one character of a list and one of a few alternatives.
+ * A glob pattern for a name or a dotted path, such as a declaration name, an import or a package.
  *
- * It is the glob of a layout key, opened up for a backend that matches something other than a
- * file path -- a declaration name, an import, a package. A second matcher would drift apart from
- * the first, so this one wraps the same glob: every wildcard reads as it does in a layout key, a
- * malformed `{` or `[` is refused the same way, and `\` makes the next character literal.
- * In a type, a `?` stays the nullable marker rather than a one-character wildcard.
+ * Every wildcard reads as it does in a layout key: `*` is zero characters or more within one
+ * level, `**` is any number of levels, `?`, `[abc]` and `{a,b}` are one character, one of a list
+ * and one of a few alternatives, and `\` makes the next character literal. In a type, a `?`
+ * stays the nullable marker rather than a one-character wildcard.
  *
  * The separator says what a level is. With `'.'`, `kotlinx.coroutines.*` matches
  * `kotlinx.coroutines.launch` but not `kotlinx.coroutines.flow.Flow`, and `**` crosses the dots.
@@ -33,8 +30,10 @@ import me.tbsten.katachi.dsl.internal.GlobProblem
  * ```kt
  * val impl = NamePattern.compile("*Impl")
  * impl.matches("UserRepositoryImpl") shouldBe true
+ * impl.pattern shouldBe "*Impl"
  * impl.hasWildcard shouldBe true
  * NamePattern.compile("HomeViewModel").hasWildcard shouldBe false
+ * shouldThrow<KatachiGlobSyntaxException> { NamePattern.compile("on{Click") }
  * ```
  *
  * @see LayoutScope for the same glob written as a layout key.
@@ -45,47 +44,24 @@ public class NamePattern private constructor(
 ) {
     /**
      * The pattern as it was written, escapes included.
-     *
-     * ## Example 1: read back what was compiled
-     * ```kt
-     * NamePattern.compile("""Foo\*""").pattern shouldBe """Foo\*"""
-     * ```
      */
     public val pattern: String get() = glob.pattern
 
     /**
      * What a level is split on, or `null` when the pattern has no levels.
-     *
-     * ## Example 1: tell an import pattern from a name pattern
-     * ```kt
-     * NamePattern.compile("kotlin.**", separator = '.').separator shouldBe '.'
-     * NamePattern.compile("*Impl").separator shouldBe null
-     * ```
      */
     public val separator: Char? get() = glob.separator.takeUnless { it == NO_SEPARATOR }
 
     /**
-     * Whether the pattern holds a `*` or a `**`. An escaped `\*` does not count: a pattern
-     * without a wildcard matches exactly one text, which is what makes a line naming it required.
+     * Whether the pattern holds a `*` or a `**`.
      *
-     * ## Example 1: tell a name that is fixed from one that is not
-     * ```kt
-     * NamePattern.compile("HomeViewModel").hasWildcard shouldBe false
-     * NamePattern.compile("*ViewModel").hasWildcard shouldBe true
-     * NamePattern.compile("""Star\*""").hasWildcard shouldBe false
-     * ```
+     * An escaped `\*` does not count: a pattern
+     * without a wildcard matches exactly one text, which is what makes a line naming it required.
      */
     public val hasWildcard: Boolean get() = glob.hasWildcard
 
     /**
      * Whether [text] matches the whole pattern.
-     *
-     * ## Example 1: a `*` never crosses a separator
-     * ```kt
-     * val pattern = NamePattern.compile("com.example.*", separator = '.')
-     * pattern.matches("com.example.App") shouldBe true
-     * pattern.matches("com.example.feature.Home") shouldBe false
-     * ```
      */
     public fun matches(text: String): Boolean = glob.matches(text)
 
@@ -111,13 +87,6 @@ public class NamePattern private constructor(
         /**
          * Reads [pattern], refusing it when it is not one katachi's glob can read.
          *
-         * ## Example 1: compile, then match
-         * ```kt
-         * NamePattern.compile("on*").matches("onRefresh") shouldBe true
-         * NamePattern.compile("on{Click,Tap}").matches("onTap") shouldBe true
-         * shouldThrow<KatachiGlobSyntaxException> { NamePattern.compile("on{Click") }
-         * ```
-         *
          * @param pattern the pattern, in the glob syntax of a layout key.
          * @param separator what one level is split on -- `'.'` for an import or a package --
          *   or `null` for a name, which has no levels.
@@ -134,8 +103,4 @@ public class NamePattern private constructor(
     }
 }
 
-/**
- * The separator a pattern without levels is compiled with: a character no name, import or
- * package spells, so splitting on it never cuts anything.
- */
 private const val NO_SEPARATOR: Char = '\u0000'

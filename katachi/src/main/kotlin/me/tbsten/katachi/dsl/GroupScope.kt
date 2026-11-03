@@ -24,8 +24,15 @@ import org.intellij.lang.annotations.Language
  *     "domain".group {
  *         title = "Domain"
  *         summary = "The rules of the product, with nothing about how they are delivered"
+ *         description = """
+ *             ### What does not belong here
+ *             - Anything about how the product is delivered
+ *         """.trimIndent()
  *         "UseCase".role { }
  *         "model".group { }
+ *     }
+ *     "build".group {
+ *         documented = false // left out of the generated documentation, still checked
  *     }
  * }
  * ```
@@ -34,16 +41,6 @@ import org.intellij.lang.annotations.Language
 public sealed interface GroupScope : DeclarationContainerScope {
     /**
      * Display name of this group. Defaults to the group name.
-     *
-     * ## Example 1: separate the identifier from the display name
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group {
-     *         title = "Domain"
-     *     }
-     * }
-     * arch.groups.single()[Title] shouldBe "Domain"
-     * ```
      */
     @get:Language("markdown")
     @set:Language("markdown")
@@ -51,14 +48,6 @@ public sealed interface GroupScope : DeclarationContainerScope {
 
     /**
      * One paragraph describing what this group is for.
-     *
-     * ## Example 1: set a summary
-     * ```kt
-     * val arch = architecture {
-     *     "api".group { summary = "Everything that faces HTTP" }
-     * }
-     * arch.groups.single()[Summary] shouldBe "Everything that faces HTTP"
-     * ```
      */
     @get:Language("markdown")
     @set:Language("markdown")
@@ -69,21 +58,6 @@ public sealed interface GroupScope : DeclarationContainerScope {
      *
      * Write [summary] for the one line, and this for everything that needs more room. The text is
      * kept exactly as written, newlines included, and katachi adds no structure of its own.
-     *
-     * ## Example 1: give a group a body with sections of its own
-     * ```kt
-     * val arch = architecture {
-     *     "api".group {
-     *         description = """
-     *             Everything that faces HTTP is here.
-     *
-     *             ### What does not belong here
-     *             - A decision the domain should be making
-     *         """.trimIndent()
-     *     }
-     * }
-     * arch.groups.single()[Description].orEmpty().lines().size shouldBe 4
-     * ```
      */
     @get:Language("markdown")
     @set:Language("markdown")
@@ -97,17 +71,6 @@ public sealed interface GroupScope : DeclarationContainerScope {
      * nested groups, whatever they wrote themselves. The value itself is not copied onto them
      * (each keeps what it wrote, as all metadata does), so a processor of your own that reads it
      * walks up [Role.groupPath].
-     *
-     * ## Example 1: keep a group out of the generated documentation
-     * ```kt
-     * val arch = architecture {
-     *     "build".group {
-     *         documented = false
-     *         "VersionCatalog".role { }
-     *     }
-     * }
-     * arch.groups.single()[Documented] shouldBe false
-     * ```
      */
     public var documented: Boolean
 }
@@ -160,7 +123,6 @@ internal class GroupScopeImpl(private val path: List<String>) : GroupScope {
         declareTemplateSetAt(name = this, declaredAt = captureDeclarationSite(), block = block)
     }
 
-    /** Declares a group with a site taken earlier, for a block that defers its declarations. */
     fun declareGroupAt(name: String, declaredAt: DeclarationSite, block: GroupScope.() -> Unit) {
         groups += declareGroup(
             name = name,
@@ -171,7 +133,6 @@ internal class GroupScopeImpl(private val path: List<String>) : GroupScope {
         )
     }
 
-    /** Declares a role with a site taken earlier, for a block that defers its declarations. */
     fun declareRoleAt(name: String, declaredAt: DeclarationSite, block: RoleScope.() -> Unit) {
         roles += declareRole(
             name = name,
@@ -182,7 +143,6 @@ internal class GroupScopeImpl(private val path: List<String>) : GroupScope {
         )
     }
 
-    /** Declares a template set with a site taken earlier, for a block that defers its declarations. */
     fun declareTemplateSetAt(name: String, declaredAt: DeclarationSite, block: TemplateSetScope.() -> Unit) {
         templateSets += declareTemplateSet(
             name = name,

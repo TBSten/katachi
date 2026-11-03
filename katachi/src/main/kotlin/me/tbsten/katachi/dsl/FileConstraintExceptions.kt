@@ -4,10 +4,8 @@ import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.KatachiInternalException
 import kotlin.reflect.KClass
 
-/** A line break rendered so that a message stays one line, whatever was written. */
 private fun oneLine(value: String): String = value.replace("\r", "\\r").replace("\n", "\\n")
 
-/** A class as a message names it, qualified when it can be. */
 private fun nameOf(type: KClass<*>): String = type.qualifiedName ?: type.java.name
 
 /**
@@ -24,32 +22,11 @@ private fun nameOf(type: KClass<*>): String = type.qualifiedName ?: type.java.na
  *     }
  * }.declaredAt.fileName shouldBe "ProjectArchitecture.kt"
  * ```
- *
- * @property name the rejected name, as written, with its line breaks escaped.
- * @property declaredAt where the constraint was written.
  */
 public class KatachiFileConstraintNameException internal constructor(
-    /**
-     * The rejected name, as written.
-     *
-     * ## Example 1: read back the name that was rejected
-     * ```kt
-     * shouldThrow<KatachiFileConstraintNameException> {
-     *     architecture { "UseCase".role { fileConstraint("   ") { emptyList() }; layout { } } }
-     * }.name shouldBe "   "
-     * ```
-     */
+    /** The rejected name, as written. */
     public val name: String,
-    /**
-     * Where the constraint was written.
-     *
-     * ## Example 1: jump to the line that declared the rejected constraint
-     * ```kt
-     * shouldThrow<KatachiFileConstraintNameException> {
-     *     architecture { "UseCase".role { fileConstraint("   ") { emptyList() }; layout { } } }
-     * }.declaredAt.lineNumber shouldBeGreaterThan 0
-     * ```
-     */
+    /** Where the constraint was written. */
     public val declaredAt: DeclarationSite,
 ) : KatachiDeclarationException(
     message = buildString {
@@ -68,12 +45,8 @@ public class KatachiFileConstraintNameException internal constructor(
 /**
  * A role declared a constraint but no `layout { }` to evaluate it over.
  *
- * Nothing would ever run it: a constraint is about the files the layout around it matched, and
- * a role with no layout matches none. Refusing it here, while `architecture { }` is still
- * being evaluated, is what keeps such a definition from looking green.
- *
- * A role whose only layout is a wildcard module key that currently matches nothing is **not**
- * rejected: that is a place waiting to fill up, not a definition that cannot work.
+ * A role with no layout matches no files, so the constraint could never run. A role whose layout
+ * currently matches nothing is **not** rejected: that is a place waiting to fill up.
  *
  * ## Example 1: catch a constraint that has nothing to be about
  * ```kt
@@ -85,32 +58,11 @@ public class KatachiFileConstraintNameException internal constructor(
  *     }
  * }.role shouldBe "UseCase"
  * ```
- *
- * @property role the name of the role the constraint was written on.
- * @property declaredAt where the first constraint of that role was written.
  */
 public class KatachiFileConstraintWithoutLayoutException internal constructor(
-    /**
-     * The name of the role the constraint was written on.
-     *
-     * ## Example 1: read back which role could not hold a constraint
-     * ```kt
-     * shouldThrow<KatachiFileConstraintWithoutLayoutException> {
-     *     architecture { "UseCase".role { fileConstraint { emptyList() } } }
-     * }.role shouldBe "UseCase"
-     * ```
-     */
+    /** The name of the role the constraint was written on. */
     public val role: String,
-    /**
-     * Where the first constraint of that role was written.
-     *
-     * ## Example 1: jump to the constraint that has nothing to be about
-     * ```kt
-     * shouldThrow<KatachiFileConstraintWithoutLayoutException> {
-     *     architecture { "UseCase".role { fileConstraint { emptyList() } } }
-     * }.declaredAt.fileName shouldBe "ProjectArchitecture.kt"
-     * ```
-     */
+    /** Where the first constraint of that role was written. */
     public val declaredAt: DeclarationSite,
 ) : KatachiDeclarationException(
     message = buildString {
@@ -130,10 +82,9 @@ public class KatachiFileConstraintWithoutLayoutException internal constructor(
  * A constraint asked for `scope = FileConstraintRange.DirectOnly` somewhere that has no directory
  * of its own.
  *
- * "Directly in" needs one directory to be directly in. A role lives wherever its `layout { }`
- * blocks put it, and directly under `layout { }` or inside `":".module { }` the block writes
- * into the project root, which every other block of that `layout { }` shares. Ignoring the
- * flag there would leave a constraint that checks something other than what it says.
+ * "Directly in" needs one directory. A constraint written on the role spans all its layouts, and
+ * one written directly under `layout { }` sits at the project root, which every other block
+ * shares.
  *
  * Written on a role, this is thrown while `architecture { }` is evaluated. Written inside a
  * `layout { }`, it is thrown when the layout is evaluated, because `layout { }` is deferred.
@@ -151,9 +102,6 @@ public class KatachiFileConstraintWithoutLayoutException internal constructor(
  *     }
  * }.declaredAt.fileName shouldBe "ProjectArchitecture.kt"
  * ```
- *
- * @property name what the constraint was called, or `null` when it was declared without a name.
- * @property declaredAt where the constraint was written.
  */
 public class KatachiFileConstraintDirectOnlyWithoutDirectoryException internal constructor(
     /** What the constraint was called, or `null` when it was declared without a name. */
@@ -184,9 +132,7 @@ public class KatachiFileConstraintDirectOnlyWithoutDirectoryException internal c
  * directly.
  *
  * Such a constraint could never see a file: everything the block declares sits in a nested
- * directory. The file `.module { }` adds by itself, `build.gradle.kts`, does not count, since
- * a constraint written in a module block never covers it. This is a mistake in the definition,
- * not an empty directory, so it is refused rather than left to pass as green.
+ * directory.
  *
  * Thrown when the layout is evaluated, because `layout { }` is deferred.
  *
@@ -207,15 +153,11 @@ public class KatachiFileConstraintDirectOnlyWithoutDirectoryException internal c
  * shouldThrow<KatachiFileConstraintDirectOnlyCoversNothingException> { arch.assert() }
  *     .layoutPath shouldBe "util"
  * ```
- *
- * @property name what the constraint was called, or `null` when it was declared without a name.
- * @property layoutPath the directory the constraint was written in, resolved.
- * @property declaredAt where the constraint was written.
  */
 public class KatachiFileConstraintDirectOnlyCoversNothingException internal constructor(
     /** What the constraint was called, or `null` when it was declared without a name. */
     public val name: String?,
-    /** The directory the constraint was written in, resolved (`core/domain` for `":core:domain"`). */
+    /** The directory the constraint was written in, relative to the project root. */
     public val layoutPath: String,
     /** Where the constraint was written. */
     public val declaredAt: DeclarationSite,
@@ -237,7 +179,6 @@ public class KatachiFileConstraintDirectOnlyCoversNothingException internal cons
     },
 )
 
-/** A constraint as a message names it: its name in quotes, or a placeholder when it has none. */
 private fun labelOf(name: String?): String = if (name == null) "(unnamed)" else "\"${oneLine(name)}\""
 
 /**
@@ -248,47 +189,16 @@ private fun labelOf(name: String?): String = if (name == null) "(unnamed)" else 
  * try {
  *     projectArchitecture.assert(FileConstraintCheck())
  * } catch (cause: KatachiFileConstraintMemoTypeException) {
- *     println("scratch key ${cause.key} is used by two checks")
+ *     println("scratch key ${cause.key}: ${cause.expected} asked for, ${cause.actual} stored")
  * }
  * ```
- *
- * @property key the key, as its `toString()` prints it.
- * @property expected the type the reader asked for.
- * @property actual the type the value already stored under that key has.
  */
 public class KatachiFileConstraintMemoTypeException internal constructor(
-    /**
-     * The key, as its `toString()` prints it.
-     *
-     * ## Example 1: read back which key two checks fought over
-     * ```kt
-     * shouldThrow<KatachiFileConstraintMemoTypeException> {
-     *     subject.memo("scope", Int::class) { 1 }
-     * }.key shouldBe "scope"
-     * ```
-     */
+    /** The key, as its `toString()` prints it. */
     public val key: String,
-    /**
-     * The type the reader asked for.
-     *
-     * ## Example 1: read back the type that was asked for
-     * ```kt
-     * shouldThrow<KatachiFileConstraintMemoTypeException> {
-     *     subject.memo("scope", Int::class) { 1 }
-     * }.expected shouldBe Int::class
-     * ```
-     */
+    /** The type the reader asked for. */
     public val expected: KClass<*>,
-    /**
-     * The type the value already stored under that key has.
-     *
-     * ## Example 1: read back the type that was already there
-     * ```kt
-     * shouldThrow<KatachiFileConstraintMemoTypeException> {
-     *     subject.memo("scope", Int::class) { 1 }
-     * }.actual shouldBe String::class
-     * ```
-     */
+    /** The type the value already stored under that key has. */
     public val actual: KClass<*>,
 ) : KatachiInternalException(
     message = buildString {

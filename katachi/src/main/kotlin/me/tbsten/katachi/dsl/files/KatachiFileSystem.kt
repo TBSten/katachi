@@ -5,15 +5,10 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 /**
  * Every file system access katachi makes, in four operations.
  *
- * The surface is deliberately this small. There is **no operation that reads a file's
- * contents**: katachi itself only ever looks at the structure of the tree — which names sit
- * in which directory. Reading contents is the job of `katachi-konsist`, which needs real
- * files anyway.
- *
- * Keeping it to four operations is what makes the in-memory implementation used by katachi's
- * own tests cheap, and it is also what lets a filtered view — the one `files = gitTracked()`
- * hands the walk, or a [me.tbsten.katachi.dsl.FileSelection] of your own — wrap a real tree without the traversal
- * above it knowing.
+ * There is **no operation that reads a file's contents**: katachi only looks at which names sit
+ * in which directory. Because the surface is this small, a filtered view such as
+ * `files = gitTracked()` or a [me.tbsten.katachi.dsl.FileSelection] of your own can wrap a real
+ * tree.
  *
  * ## Example 1: a minimal implementation of the four operations
  * ```kt
@@ -30,49 +25,25 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 public interface KatachiFileSystem {
     /**
      * Where the check starts looking for the project root. Always absolute.
-     *
-     * ## Example 1: read where a file system starts looking
-     * ```kt
-     * fun describe(fileSystem: KatachiFileSystem): String =
-     *     "Searching from ${fileSystem.workingDirectory}"
-     * ```
      */
     public val workingDirectory: FsPath
 
     /**
      * Whether anything — file or directory — sits at [path].
-     *
-     * ## Example 1: check whether a marker file sits at a path
-     * ```kt
-     * fun hasSettings(fileSystem: KatachiFileSystem): Boolean =
-     *     fileSystem.exists(fileSystem.workingDirectory / "settings.gradle.kts")
-     * ```
      */
     public fun exists(path: FsPath): Boolean
 
     /**
      * Whether [path] is a directory the traversal may descend into. A symbolic link is never
      * a directory, so the traversal cannot be sent around a cycle.
-     *
-     * ## Example 1: decide whether to descend into a path
-     * ```kt
-     * fun sourcesOf(fileSystem: KatachiFileSystem): List<FsPath> {
-     *     val src = fileSystem.workingDirectory / "src"
-     *     return if (fileSystem.isDirectory(src)) fileSystem.list(src) else emptyList()
-     * }
-     * ```
      */
     public fun isDirectory(path: FsPath): Boolean
 
     /**
      * The direct children of [directory], **sorted by name**, so that the order of a report
-     * does not depend on the OS. Empty when [directory] is not a directory.
+     * does not depend on the OS.
      *
-     * ## Example 1: read a directory's children, sorted by name
-     * ```kt
-     * fun childNames(fileSystem: KatachiFileSystem): List<String> =
-     *     fileSystem.list(fileSystem.workingDirectory).map { it.name }
-     * ```
+     * Empty when [directory] is not a directory.
      */
     public fun list(directory: FsPath): List<FsPath>
 }

@@ -6,18 +6,15 @@ import me.tbsten.katachi.KatachiDeclarationException
 /**
  * No processor of the run knows some `--arg` name that was passed.
  *
- * The check is done once for the whole run, against the union of every selected processor's
- * arguments, so a name only `template` knows is accepted even while running alongside `docs`,
- * which takes none. A key that belongs to nobody is almost always a typo, and silently
- * ignoring it -- the way `kotlinx-serialization-properties` does -- would turn that typo into
- * a processor quietly running with a default value instead of the one that was meant.
+ * A key is accepted when any selected processor of the run takes it. A key nobody takes is
+ * almost always a typo, and ignoring it would let the processor run with a default value
+ * instead of the one that was meant.
  *
- * A processor may also name arguments for this run's values alone -- a template does, for its
- * parameters -- and then a name declared inside a branch such as `if (withImpl) { }` is known only
- * on the runs whose values take that branch. The message says so when that is possible, since
- * such a key is spelled right and the fix is the value that opens its branch, not the key.
+ * A template's parameter declared inside a branch such as `if (withImpl) { }` is known only on
+ * runs whose values take that branch. The message says so when that is possible: then the key
+ * is spelled right, and the fix is the value that opens its branch.
  *
- * ## Example 1: catch a mistyped `--arg` key
+ * ## Example 1: a mistyped `--arg` key
  * ```kt
  * object GenerateOne : ArchitectureProcessor<GenerateOne.Args, Unit> {
  *     override val argsSerializer: KSerializer<Args> = Args.serializer()
@@ -28,16 +25,11 @@ import me.tbsten.katachi.KatachiDeclarationException
  *     @Serializable
  *     data class Args(val roleName: String)
  * }
+ * ```
  *
- * val thrown = shouldThrow<KatachiUnknownProcessorArgException> {
- *     runProcessors(
- *         architecture = architecture { },
- *         registry = mapOf("generate" to GenerateOne::class.java),
- *         processorKeys = listOf("generate"),
- *         rawArgs = mapOf("roleNam" to "X", "roleName" to "Y"),
- *     )
- * }
- * thrown.known shouldContain "roleName"
+ * ```sh
+ * # registered as "generate"; `roleNam` is not a field of Args
+ * ./gradlew :architecture-test:katachiGenerate --arg roleNam=X
  * ```
  *
  * @property unknown the `--arg` keys that matched no processor's arguments.
@@ -79,11 +71,9 @@ public class KatachiUnknownProcessorArgException internal constructor(
 )
 
 /**
- * A processor's `@Serializable` arguments could not be read from the `--arg` values handed to
- * it.
+ * A processor's `@Serializable` arguments could not be read from the `--arg` values handed to it.
  *
- * Wraps [Throwable.cause], the underlying `SerializationException` `decodeFromStringMap`
- * caught, whose own message names the field.
+ * [Throwable.cause] is the underlying `SerializationException`, whose message names the field.
  *
  * ## Example 1: a required field left out of `--arg`
  * ```kt
@@ -150,25 +140,21 @@ public class KatachiUnsupportedProcessorArgException internal constructor(
 )
 
 /**
- * An `argsSerializer` combined with `+` (see the `ArchitectureProcessor` combination in
- * `ProcessorComposition.kt`) was handed to a `Decoder` other than
- * katachi's own `StringMapDecoder`.
+ * The arguments of processors combined with `+` were decoded from something other than `--arg` values.
+ *
+ * Run the combined processor through `Architecture.process(...)`, or decode each processor's own
+ * `Args` separately.
  *
  * ## Example 1: a combined serializer only decodes from `--arg` values
  * ```kt
- * @OptIn(ExperimentalSerializationApi::class)
- * object NotAStringMapDecoder : AbstractDecoder() {
- *     override val serializersModule: SerializersModule = EmptySerializersModule()
- *     override fun decodeElementIndex(descriptor: SerialDescriptor): Int = CompositeDecoder.DECODE_DONE
- * }
- *
- * val combined = (LayoutCheck() + FileConstraintCheck()).argsSerializer
+ * val combined = LayoutCheck() + FileConstraintCheck()
  * shouldThrow<KatachiProcessorArgsDecoderException> {
- *     combined.deserialize(NotAStringMapDecoder)
+ *     Json.decodeFromString(combined.argsSerializer, "{}")
  * }
  * ```
  *
  * @property decoder the class name of the decoder that was used.
+ * @see plus
  */
 @ExperimentalKatachiApi
 public class KatachiProcessorArgsDecoderException internal constructor(
@@ -188,23 +174,20 @@ public class KatachiProcessorArgsDecoderException internal constructor(
 )
 
 /**
- * An `argsSerializer` combined with `+` (see the `ArchitectureProcessor` combination in
- * `ProcessorComposition.kt`) was asked to encode.
+ * The arguments of processors combined with `+` were asked to be encoded, which katachi does not support.
  *
- * ## Example 1: a combined serializer has nowhere to write values back to
+ * Read each processor's own `Args` value directly instead.
+ *
+ * ## Example 1: a combined serializer cannot write values back
  * ```kt
- * @OptIn(ExperimentalSerializationApi::class)
- * object NoOpEncoder : AbstractEncoder() {
- *     override val serializersModule: SerializersModule = EmptySerializersModule()
- * }
- *
- * val combined = (LayoutCheck() + FileConstraintCheck()).argsSerializer
+ * val combined = LayoutCheck() + FileConstraintCheck()
  * shouldThrow<KatachiProcessorArgsNotEncodableException> {
- *     combined.serialize(NoOpEncoder, Unit to Unit)
+ *     Json.encodeToString(combined.argsSerializer, Unit to Unit)
  * }
  * ```
  *
  * @property serialName the combined serializer's serial name.
+ * @see plus
  */
 @ExperimentalKatachiApi
 public class KatachiProcessorArgsNotEncodableException internal constructor(

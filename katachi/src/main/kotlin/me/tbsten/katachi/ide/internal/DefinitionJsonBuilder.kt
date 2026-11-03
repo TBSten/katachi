@@ -21,7 +21,6 @@ import me.tbsten.katachi.processor.internal.definitionErrorsOf
 import me.tbsten.katachi.template.internal.TemplateDescriptionJson
 import java.util.IdentityHashMap
 
-/** What [definitionJsonOf] is told besides the walk: the arguments of the run and when it ran. */
 internal class DefinitionJsonOptions(
     val maxMatchedFiles: Int,
     val explainDeclarations: Boolean,
@@ -30,24 +29,8 @@ internal class DefinitionJsonOptions(
     val generatedAt: String,
 )
 
-/**
- * The whole of `definition.json` for one run: the declarations, what the walk found for each entry,
- * and [templates] as `templateDescription.json` holds them.
- *
- * A walk that cannot run (no project root, no git) does not fail the run: the entries are then the
- * declared ones, nothing knows its files, and `problems` says why. The IDE still learns every role.
- *
- * [placementsFailure] is why the module placements of [templates] could not be read, when they
- * could not: the templates are then listed without them. A walk that failed too already says why
- * in `problems`, so it adds nothing there.
- *
- * [previewFailures] is why each template or set listed without a detail has none; `problems` then
- * says where it was written and what threw.
- *
- * @throws KatachiDeclarationException when the walk could not flatten the layout because the
- *   definition itself is wrong. There is no honest `definition.json` for such a definition, so
- *   none is made: the run fails, and `definition-errors.json` says where.
- */
+// A walk that cannot run does not fail the run (entries are the declared ones, problems says why); a wrong
+// definition (KatachiDeclarationException) does, and then no JSON is written.
 internal fun definitionJsonOf(
     walk: ProjectWalk,
     templates: TemplateDescriptionJson,
@@ -116,14 +99,8 @@ internal fun definitionJsonOf(
     )
 }
 
-/** The entries and constraints the JSON describes: the walk's, or the declared ones without it. */
 private class WalkedLayout(val entries: List<LayoutEntry>, val constraints: List<DeclaredFileConstraint>)
 
-/**
- * The layout as declared, for a run whose walk failed: wildcard module keys left unexpanded, which
- * `problems` says when there are any. A definition that cannot even be evaluated describes no
- * entry at all rather than failing the run.
- */
 private fun declaredLayoutOf(architecture: Architecture, problems: MutableList<DefinitionProblemJson>): WalkedLayout {
     val evaluation = catching { architecture.evaluateLayout(ModuleIndex.unresolved(architecture.moduleResolver)) }
         .getOrNull() ?: return WalkedLayout(emptyList(), emptyList())
@@ -157,10 +134,6 @@ private fun groupJsonOf(group: Group): GroupJson = GroupJson(
     declaredAt = siteOf(group.declaredAt),
 )
 
-/**
- * One entry, with the files of its role it matched: a file entry by its pattern, an `anyFile()`
- * directory by the file's parent. [files] is `null` when the walk did not run.
- */
 private fun layoutEntryJsonOf(index: Int, entry: LayoutEntry, files: List<String>?, maxMatchedFiles: Int): LayoutEntryJson {
     val matched = when {
         files == null -> null
@@ -207,11 +180,6 @@ private fun layoutEntryJsonOf(index: Int, entry: LayoutEntry, files: List<String
     )
 }
 
-/**
- * One constraint. The entries it covers are the role's entries whose pattern is one of its
- * coverage's patterns, which for a `DirectOnly` constraint are only the entries directly in its
- * block.
- */
 private fun constraintJsonOf(
     declared: DeclaredFileConstraint,
     roleEntries: List<LayoutEntry>,
@@ -243,18 +211,15 @@ private fun constraintJsonOf(
     )
 }
 
-/** Why each template and template set that is listed without a detail has none. */
 internal class TemplatePreviewFailures(
     val templates: Map<String, Throwable>,
     val templateSets: Map<String, Throwable>,
 ) {
     companion object {
-        /** No exception known: the problems then carry no site and no class. */
         val None: TemplatePreviewFailures = TemplatePreviewFailures(emptyMap(), emptyMap())
     }
 }
 
-/** One problem per template or template set that is listed but has no detail, since its preview failed. */
 private fun templatePreviewProblemsOf(
     templates: TemplateDescriptionJson,
     failures: TemplatePreviewFailures,
@@ -284,22 +249,19 @@ private fun templatePreviewProblemsOf(
     return templateProblems + setProblems
 }
 
-/** Where [failure] was written, as `definition-errors.json` would say it; `null` when nothing says. */
 internal fun problemSiteOf(failure: Throwable): DeclarationSiteJson? =
     definitionErrorSiteOf(failure)?.let(::siteOf)
 
-/** [site] as the JSON writes it: `null` for a site that could not be captured. */
 internal fun siteOf(site: DeclarationSite): DeclarationSiteJson? =
     if (site == DeclarationSite.Unknown) null else DeclarationSiteJson(fileName = site.fileName, line = site.lineNumber)
 
-/** The type of [cause] and the first line of its message, for a one-line problem. */
 internal fun oneLineOf(cause: Throwable): String {
     val message = cause.message?.lineSequence()?.firstOrNull()?.trim().orEmpty()
     val type = cause::class.simpleName ?: cause::class.java.name
     return if (message.isEmpty()) type else "$type: $message"
 }
 
-/** [this] grouped by the key [keyOf] gives, compared by identity: a `Role` declares no `equals`. */
+// Role declares no equals, so group by identity.
 private fun <T> List<T>.groupByIdentity(keyOf: (T) -> Role): Map<Role, List<T>> {
     val grouped = IdentityHashMap<Role, MutableList<T>>()
     for (item in this) grouped.getOrPut(keyOf(item)) { mutableListOf() } += item

@@ -10,9 +10,7 @@ import me.tbsten.katachi.internal.fileUri
 /**
  * `--arg format=json` was given without `--arg output=`, so there is nowhere to write the JSON.
  *
- * The Gradle plugin passes both to its `katachiInternalTemplatesJson` task. Seeing this means the
- * two were separated: a run started by hand, or an `args("internalTemplatesJson") { }` block that
- * replaced one of them.
+ * Pass `--arg output=<path>`, or drop `--arg format=json` to print the list as text.
  *
  * ## Example 1: catch a JSON run that names no file
  * ```kt
@@ -50,8 +48,7 @@ public class KatachiTemplateJsonOutputMissingException internal constructor() : 
 /**
  * `--arg format=json` and `--arg template=` were given together.
  *
- * The JSON form always holds every template, so one to narrow it to would be silently ignored.
- * Refusing says so instead.
+ * The JSON form always holds every template. Drop one of the two.
  *
  * ## Example 1: catch a JSON run narrowed to one template
  * ```kt
@@ -94,8 +91,8 @@ public class KatachiTemplateJsonWithTemplateException internal constructor(
 /**
  * `--arg template=` named more than one template while describing (rather than generating).
  *
- * `katachiTemplates --arg template=` explains one template at a time; a run of it says nothing
- * about a *set* the way `katachiTemplate` does, so more than one specifier has nowhere to go.
+ * `katachiTemplates --arg template=` explains one template at a time. Pass one specifier, or none
+ * to list every template.
  *
  * ## Example 1: catch a describe run given two templates
  * ```kt
@@ -175,10 +172,10 @@ public class KatachiTemplateJsonIoException internal constructor(
 )
 
 /**
- * The JSON form of the template list met a value it has no way to write.
+ * The JSON form of the template list met a value it has no way to write, which is a bug in katachi.
  *
- * It writes katachi's own template descriptions, and every value they hold is one it supports. A
- * run cannot cause this; only a change to those types that the writer was not taught about can.
+ * Nothing in a definition can cause this. Please report it at
+ * https://github.com/TBSten/katachi/issues with [kind].
  *
  * ## Example 1: report it rather than treating it as a failed run
  * ```kt

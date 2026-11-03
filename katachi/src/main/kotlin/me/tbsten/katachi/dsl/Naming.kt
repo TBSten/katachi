@@ -6,8 +6,8 @@ import me.tbsten.katachi.dsl.internal.asTransformedCaptureToken
 /**
  * The words [this] name is made of, lower case and in order.
  *
- * One rule, used by every conversion below and by the `modulePackage` strategies, so that a
- * module name folds the same way wherever katachi folds it:
+ * One rule, used by every conversion below, so that a name folds the same way wherever katachi
+ * folds it:
  *
  * | in the name | read as |
  * |---|---|
@@ -66,7 +66,7 @@ public val String.nameWords: List<String>
 /**
  * `debug-menu` as `DebugMenu`.
  *
- * Written on a captured wildcard, this is what ties a file name to the module it sits in.
+ * Written on a captured wildcard, this ties a file name to the directory it sits in.
  * A name that holds no word at all (`""`, `"--"`) converts to the empty string, and a name
  * starting with a digit keeps it (`2fa` stays `2fa`), because there is no capital form of a
  * digit to move to.
@@ -77,10 +77,11 @@ public val String.nameWords: List<String>
  * "remoteAPI".pascalCase shouldBe "RemoteApi"
  * ```
  *
- * ## Example 2: build a file name from a name
+ * ## Example 2: tie a file name to the directory it sits in
  * ```kt
- * val feature = "debug-menu"
- * mainSourceSet / kotlin / "com/example/debug" / "${feature.pascalCase}Screen".ktFile()
+ * layout {
+ *   "feature" / capture("feature") / "${capture("feature").pascalCase}Screen".ktFile()
+ * }
  * ```
  */
 public val String.pascalCase: String
