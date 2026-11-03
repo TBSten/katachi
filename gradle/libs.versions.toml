@@ -14,7 +14,7 @@ kotest = "6.2.5"
 # The Kotlin parser behind `konsist { }`. Only `:katachi-konsist` and the samples that use it
 # see this; `:katachi` itself depends only on kotlinx.serialization (below), for decoding
 # processor arguments.
-konsist = "0.17.3"
+konsist = "0.18.1"
 # The Kotlin parser and rule vocabulary behind `konture { }`. Only `:katachi-konture` and the
 # samples that use it see this. It cannot share a test classpath with Konsist (different
 # kotlin-compiler-embeddable), so a module uses one backend or the other.
