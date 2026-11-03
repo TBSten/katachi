@@ -5,13 +5,13 @@ import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.FileConstraintScope
 import me.tbsten.katachi.konsist.declarations.internal.KtFileContentConstraint
 
-/** The name the report prints next to the role for a `ktFileContent { }` without a name of its own. */
 private const val KT_FILE_CONTENT_NAME: String = "ktFileContent"
 
 /**
- * Declares what the role's Kotlin files may hold -- their package, their imports, the
- * declarations directly in them and the members of their classes -- written the way the file
- * itself is written.
+ * Declares what the role's Kotlin files may hold, written the way the file itself is written.
+ *
+ * It covers their package, their imports, the declarations directly in them and the members of
+ * their classes.
  *
  * - **Nothing is allowed that no line allows (deny by default).** An empty `ktFileContent { }`
  *   rejects the file's package declaration, every import and every declaration. The package, the
@@ -107,9 +107,10 @@ public fun ktFileContent(block: KtFileContentScope.() -> Unit) {
 }
 
 /**
- * [ktFileContent] with a name for the block, written the way `"...".konsist { }` names its
- * constraint: `this` is a sentence about the shape ("the shape of a view model"), not an
- * identifier.
+ * [ktFileContent] with a name for the block, printed in the report next to the role.
+ *
+ * `this` is a sentence about the shape ("the shape of a view model"), not an identifier, as with
+ * `"...".konsist { }`.
  *
  * The report prints it as `<name> (ktFileContent)` next to the role, and so does the role's page, so
  * that a role's several constraints can be told apart and the reader still sees what kind of
@@ -146,11 +147,7 @@ public fun String.ktFileContent(block: KtFileContentScope.() -> Unit) {
     declareKtFileContent(fileConstraintScope, namedAfter(this), block, DeclarationSite.capture())
 }
 
-/**
- * `<name> (ktFileContent)`. A name `fileConstraint` refuses is passed on as written, so that it is
- * refused the way `"...".konsist { }` refuses it, with the name the caller wrote in the exception
- * rather than with the suffix added.
- */
+// A refused name is passed on without the suffix so the exception shows the name as written.
 private fun namedAfter(name: String): String = if (isRefusedName(name)) name else "$name ($KT_FILE_CONTENT_NAME)"
 
 // TODO: a copy of the rule `fileConstraint` applies to a name (blank, or holding a line break), kept

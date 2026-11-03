@@ -17,13 +17,18 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 @ExperimentalKatachiApi
 public enum class KtFileContentModifierProblem {
     /**
-     * Two modifiers no declaration carries together, such as `allow(public, internal, ...)` or
-     * `allow(data, sealed, ...)`, in every candidate of the line: `allow(public or internal, internal, ...)`
+     * Two modifiers no declaration carries together, such as `allow(public, internal, ...)` or `allow(data, sealed, ...)`.
+     *
+     * It is refused only when every candidate of the line conflicts: `allow(public or internal, internal, ...)`
      * keeps the internal one and is not refused.
      */
     Conflicting,
 
-    /** A modifier only a member can carry (`override`, `protected`, `inner`, `companion`), or `abstract` / `open` on a fun, val or var, written directly in the file. */
+    /**
+     * A modifier only a class member can carry, written directly in the file.
+     *
+     * That is `override`, `protected`, `inner`, `companion`, or `abstract` / `open` on a fun, val or var.
+     */
     OnlyInClassBody,
 
     /** A modifier the kind cannot carry, such as `` allow(data, `interface`, ...) `` or `` allow(const, `fun`, ...) ``, leaving no candidate. */
@@ -120,10 +125,11 @@ public enum class KtFileContentLineProblem {
     AnnotatedWithoutNames,
 
     /**
-     * A value written on a line of its own and never passed to `allow(...)` or `required(...)`: a
-     * modifier or annotations (`annotated("Inject")` or `private` alone), a kind (`` `class` ``
-     * alone), or `anythingElse`. A value made and not used, as in `` mapOf("a" to `class`) ``, is refused too: make
-     * only the values a line is written with.
+     * A value written on a line of its own and never passed to `allow(...)` or `required(...)`.
+     *
+     * The value is a modifier or annotations (`annotated("Inject")` or `private` alone), a kind
+     * (`` `class` `` alone), or `anythingElse`. A value made and not used, as in
+     * `` mapOf("a" to `class`) ``, is refused too: make only the values a line is written with.
      */
     DanglingModifiers,
 
@@ -140,8 +146,9 @@ public enum class KtFileContentLineProblem {
     OptionalTwice,
 
     /**
-     * `.optional()` on one side of an `or`, as in `internal.optional() or private`: `.optional()`
-     * goes on the whole `or`, `(internal or private).optional()`.
+     * `.optional()` on one side of an `or`, as in `internal.optional() or private`.
+     *
+     * Put `.optional()` on the whole `or` instead: `(internal or private).optional()`.
      */
     OptionalInsideOr,
 
@@ -152,8 +159,10 @@ public enum class KtFileContentLineProblem {
     OptionalOnAnythingElse,
 
     /**
-     * A `.optional()` modifier on a `not.allow(...)` line, which prohibits what carries the
-     * modifiers it writes whatever else it carries, so an optional one changes nothing.
+     * A `.optional()` modifier on a `not.allow(...)` line, where it changes nothing.
+     *
+     * A `not.allow(...)` line prohibits what carries the modifiers it writes whatever else it
+     * carries, so an optional one adds nothing.
      */
     OptionalAfterNot,
 

@@ -3,7 +3,6 @@ package me.tbsten.katachi.konsist
 import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.dsl.DeclarationSite
 
-/** How a message names a constraint: by its name when it has one, by where it was written otherwise. */
 private fun namedFileConstraint(constraintName: String?, declaredAt: DeclarationSite): String =
     constraintName?.let { "\"$it\"" } ?: "declared at $declaredAt"
 
@@ -20,8 +19,9 @@ private fun namedFileConstraint(constraintName: String?, declaredAt: Declaration
  * val failure = shouldThrow<KatachiArchitectureAssertionError> {
  *     projectArchitecture.assert(FileConstraintCheck())
  * }
- * failure.violations.filterIsInstance<UncheckedFileConstraint>()
+ * val cause = failure.violations.filterIsInstance<UncheckedFileConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiKonsistNoExpectationException>()
+ * cause.declaredAt.fileName shouldBe "ProjectArchitecture.kt"
  * ```
  *
  * @property role the qualified name of the role whose layout the constraint was written in.
@@ -29,33 +29,11 @@ private fun namedFileConstraint(constraintName: String?, declaredAt: Declaration
  * @property declaredAt where the constraint was written.
  */
 public class KatachiKonsistNoExpectationException internal constructor(
-    /**
-     * The qualified name of the role whose layout the constraint was written in.
-     *
-     * ## Example 1: read back which role holds the empty block
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiKonsistNoExpectationException>().role shouldBe "domain.UseCase"
-     * ```
-     */
+    /** The qualified name of the role whose layout the constraint was written in. */
     public val role: String,
-    /**
-     * What the constraint was called, or `null` when it was declared without a name.
-     *
-     * ## Example 1: name the rule that expects nothing
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiKonsistNoExpectationException>().constraintName shouldBe "Internal only"
-     * ```
-     */
+    /** What the constraint was called, or `null` when it was declared without a name. */
     public val constraintName: String?,
-    /**
-     * Where the constraint was written.
-     *
-     * ## Example 1: jump to the empty block
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiKonsistNoExpectationException>().declaredAt.fileName shouldBe
-     *     "ProjectArchitecture.kt"
-     * ```
-     */
+    /** Where the constraint was written. */
     public val declaredAt: DeclarationSite,
 ) : KatachiDeclarationException(
     message = buildString {
@@ -75,10 +53,8 @@ public class KatachiKonsistNoExpectationException internal constructor(
 /**
  * A `konsist { }` constraint that covers files, none of which Konsist can parse.
  *
- * Konsist 0.17.3 parses a file only when its name ends in `.kt` — `.kts` scripts included,
- * they are not parsed. A constraint covering, say, only `build.gradle.kts` would therefore be
- * handed an empty scope and pass by empty truth, which is the one answer this backend must
- * never give silently.
+ * Konsist parses only files whose name ends in `.kt`; `.kts` scripts are skipped. A constraint
+ * covering, say, only `build.gradle.kts` would see nothing and pass, so it is reported instead.
  *
  * A constraint covering **no** files at all is a different thing and is not an error: that is
  * a place waiting to fill up, and the layout check already treats it as normal.
@@ -88,8 +64,9 @@ public class KatachiKonsistNoExpectationException internal constructor(
  * val failure = shouldThrow<KatachiArchitectureAssertionError> {
  *     projectArchitecture.assert(FileConstraintCheck())
  * }
- * failure.violations.filterIsInstance<UncheckedFileConstraint>()
+ * val cause = failure.violations.filterIsInstance<UncheckedFileConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiKonsistNoKotlinFilesException>()
+ * cause.given shouldBe 1
  * ```
  *
  * @property role the qualified name of the role whose layout the constraint was written in.
@@ -98,41 +75,13 @@ public class KatachiKonsistNoExpectationException internal constructor(
  * @property given how many files the constraint covered.
  */
 public class KatachiKonsistNoKotlinFilesException internal constructor(
-    /**
-     * The qualified name of the role whose layout the constraint was written in.
-     *
-     * ## Example 1: read back the role with nothing parseable under it
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiKonsistNoKotlinFilesException>().role shouldBe "build.Script"
-     * ```
-     */
+    /** The qualified name of the role whose layout the constraint was written in. */
     public val role: String,
-    /**
-     * What the constraint was called, or `null` when it was declared without a name.
-     *
-     * ## Example 1: name the rule that has nothing to parse
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiKonsistNoKotlinFilesException>().constraintName shouldBe "Convention"
-     * ```
-     */
+    /** What the constraint was called, or `null` when it was declared without a name. */
     public val constraintName: String?,
-    /**
-     * Where the constraint was written.
-     *
-     * ## Example 1: jump to the rule to rewrite as a plain `fileConstraint { }`
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiKonsistNoKotlinFilesException>().declaredAt.lineNumber
-     * ```
-     */
+    /** Where the constraint was written. */
     public val declaredAt: DeclarationSite,
-    /**
-     * How many files the constraint covered, none of which Konsist parses.
-     *
-     * ## Example 1: read back how many files were covered but unreadable
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiKonsistNoKotlinFilesException>().given shouldBe 1
-     * ```
-     */
+    /** How many files the constraint covered, none of which Konsist parses. */
     public val given: Int,
 ) : KatachiDeclarationException(
     message = buildString {
@@ -142,7 +91,7 @@ public class KatachiKonsistNoKotlinFilesException internal constructor(
                 "a .kt file Konsist can parse.",
         )
         appendLine(
-            "Konsist 0.17.3 parses .kt files only, .kts scripts included in what it skips, so " +
+            "Konsist 0.18.1 parses .kt files only, .kts scripts included in what it skips, so " +
                 "this block would be asked of an empty scope and pass without looking at " +
                 "anything.",
         )
@@ -167,8 +116,9 @@ public class KatachiKonsistNoKotlinFilesException internal constructor(
  * val failure = shouldThrow<KatachiArchitectureAssertionError> {
  *     projectArchitecture.assert(FileConstraintCheck())
  * }
- * failure.violations.filterIsInstance<UncheckedFileConstraint>()
+ * val cause = failure.violations.filterIsInstance<UncheckedFileConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiKonsistDirectAssertionException>()
+ * cause.spelling shouldBe "assertTrue"
  * ```
  *
  * @property spelling the assertion that ran, or the exception type when Konsist threw it.
@@ -177,11 +127,6 @@ public class KatachiKonsistDirectAssertionException internal constructor(
     /**
      * The assertion that ran, or the Konsist exception type when the call is not one katachi
      * shadows.
-     *
-     * ## Example 1: read back which assertion was called
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiKonsistDirectAssertionException>().spelling shouldBe "assertTrue"
-     * ```
      */
     public val spelling: String,
     cause: Throwable?,
@@ -211,21 +156,15 @@ public class KatachiKonsistDirectAssertionException internal constructor(
  * val failure = shouldThrow<KatachiArchitectureAssertionError> {
  *     projectArchitecture.assert(FileConstraintCheck())
  * }
- * failure.violations.filterIsInstance<UncheckedFileConstraint>()
+ * val cause = failure.violations.filterIsInstance<UncheckedFileConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiKonsistUnlocatableDeclarationException>()
+ * cause.declaration
  * ```
  *
  * @property declaration the simple type name of the element that could not be located.
  */
 public class KatachiKonsistUnlocatableDeclarationException internal constructor(
-    /**
-     * The simple type name of the element that could not be located.
-     *
-     * ## Example 1: read back which Konsist type had no path
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiKonsistUnlocatableDeclarationException>().declaration
-     * ```
-     */
+    /** The simple type name of the element that could not be located. */
     public val declaration: String,
 ) : KatachiDeclarationException(
     message = buildString {

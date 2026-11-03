@@ -17,25 +17,12 @@ import io.github.baole.konture.impl.psi.MapSymbolLookup
 import io.github.baole.konture.impl.psi.SymbolLookup
 import java.io.File
 
-/**
- * What Konture needs to know about the covered files before parsing any one of them: the
- * classes and type aliases they declare, so that `B` written in one file resolves to
- * `com.example.B` declared in another.
- *
- * Opaque on purpose. Konture's `SymbolLookup` is internal, and keeping its name inside this
- * file is what keeps the suppression above to one file.
- */
+// Opaque on purpose: Konture's `SymbolLookup` is internal, and keeping its name inside this file keeps the suppression to one file.
 internal class KontureSymbols private constructor(private val lookup: SymbolLookup) {
-    /**
-     * Konture's parse of [file], or `null` when the file does not exist.
-     *
-     * `FileDeclaration.filePath` is `file.absolutePath` as handed in, not a canonical path, so
-     * the caller can compare it with what it asked for.
-     */
+    // `FileDeclaration.filePath` is `file.absolutePath` as handed in, not canonical, so the caller can compare it with what it asked for.
     fun parse(file: File): FileDeclaration? = PsiParser.parseFile(file, lookup)
 
     companion object {
-        /** The symbols declared across [files], read the way Konture's own loader reads a source set. */
         fun of(files: List<File>): KontureSymbols = KontureSymbols(
             MapSymbolLookup(
                 declaredClasses = PsiParser.getDeclaredClassFqNames(files),

@@ -29,8 +29,8 @@ import me.tbsten.katachi.dsl.KatachiDsl
  *   built with `scopeFromExternalDirectories`, which Konsist documents as not resolving its
  *   own project root, so both are relative to whatever root Konsist inferred rather than to
  *   the project katachi walked. Use `KoScope` queries and the paths in the report instead.
- * - **`.kts` files are never in the scope.** Konsist 0.17.3 parses a file only when its name
- *   ends in `.kt` (`File.isKotlinFile`), so a `build.gradle.kts` or any other script inside
+ * - **`.kts` files are never in the scope.** Konsist parses a file only when its name
+ *   ends in `.kt`, so a `build.gradle.kts` or any other script inside
  *   what a constraint covers is invisible here however the layout was written. A rule about
  *   build scripts has to be written as a plain `fileConstraint { }` reading the text itself.
  * - **`assertArchitecture` is not shadowed.** It is a member extension of
@@ -52,6 +52,15 @@ import me.tbsten.katachi.dsl.KatachiDsl
  *     declarations().mustNot { it.toString().contains("TODO") }
  * }
  * ```
+ *
+ * ## Example 3: an empty list with a reason, in place of Konsist's own assertions
+ * ```kt
+ * "is not usable from outside".konsist {
+ *     classes().filter { it.hasPublicOrDefaultModifier }
+ *         .mustBeEmpty("this layer is internal", listOf("Make the class internal"))
+ *     // classes().assertTrue { it.hasInternalModifier }  // compile error: use must { }
+ * }
+ * ```
  */
 @KatachiDsl
 public interface KonsistScope : KoScope {
@@ -65,21 +74,6 @@ public interface KonsistScope : KoScope {
      * There is no `Sequence` overload. Konsist's sequence queries end with `.toList()`, and a
      * constraint has to hold every rejection at once anyway to report them in walk order.
      *
-     * ## Example 1: every use case exposes `invoke`
-     * ```kt
-     * "has an invoke function".konsist {
-     *     classes().withNameEndingWith("UseCase")
-     *         .must { klass -> klass.hasFunction { it.name == "invoke" } }
-     * }
-     * ```
-     *
-     * ## Example 2: a query that is not about classes
-     * ```kt
-     * konsist {
-     *     functions().must { it.hasPublicOrDefaultModifier }
-     * }
-     * ```
-     *
      * @param predicate what has to hold. `true` keeps the element, `false` rejects it.
      */
     public fun <T : KoBaseProvider> List<T>.must(predicate: (T) -> Boolean)
@@ -90,13 +84,6 @@ public interface KonsistScope : KoScope {
      * The exact inverse of [must], written separately because `must { !it.hasX }` reads as a
      * double negative at the call site and the report cannot tell the two apart.
      *
-     * ## Example 1: no use case depends on the Android framework
-     * ```kt
-     * "does not depend on Android".konsist {
-     *     files.mustNot { file -> file.imports.any { it.name.startsWith("android.") } }
-     * }
-     * ```
-     *
      * @param predicate what must not hold. `true` rejects the element, `false` keeps it.
      */
     public fun <T : KoBaseProvider> List<T>.mustNot(predicate: (T) -> Boolean)
@@ -106,13 +93,6 @@ public interface KonsistScope : KoScope {
      *
      * This is how "there must be none of these" is written: narrow with Konsist's query
      * vocabulary until the list holds exactly what is forbidden, then say so.
-     *
-     * ## Example 1: no public class is left in an internal layer
-     * ```kt
-     * "is not usable from outside".konsist {
-     *     classes().filter { it.hasPublicOrDefaultModifier }.mustBeEmpty()
-     * }
-     * ```
      */
     public fun <T : KoBaseProvider> List<T>.mustBeEmpty()
 
@@ -129,16 +109,6 @@ public interface KonsistScope : KoScope {
      *     - Move the class to :core:data
      * ```
      *
-     * ## Example 1: say why the rule exists and how to satisfy it
-     * ```kt
-     * "use cases are interfaces".konsist {
-     *     classes().must(
-     *         reason = "a use case is an interface; its implementation lives in :core:data",
-     *         howToFix = listOf("Move the class to :core:data"),
-     *     ) { false }
-     * }
-     * ```
-     *
      * @param reason why the rule exists, printed as `Reason: <reason>` on one line.
      * @param howToFix the fixes to offer, one `How to fix:` item each, or empty for none.
      * @param predicate what has to hold. `true` keeps the element, `false` rejects it.
@@ -151,15 +121,6 @@ public interface KonsistScope : KoScope {
 
     /**
      * [mustNot], with the reason and how to fix a rejection. See the `must(reason)` overload.
-     *
-     * ## Example 1: forbid the Android framework, and say what to do instead
-     * ```kt
-     * konsist {
-     *     files.mustNot("the domain layer runs on the JVM alone", listOf("Receive the value from the caller")) { file ->
-     *         file.imports.any { it.name.startsWith("android.") }
-     *     }
-     * }
-     * ```
      *
      * @param reason why the rule exists, printed as `Reason: <reason>` on one line.
      * @param howToFix the fixes to offer, one `How to fix:` item each, or empty for none.
@@ -174,14 +135,6 @@ public interface KonsistScope : KoScope {
     /**
      * [mustBeEmpty], with the reason and how to fix a rejection. See the `must(reason)` overload.
      *
-     * ## Example 1: no public class in an internal layer, with the fix
-     * ```kt
-     * konsist {
-     *     classes().filter { it.hasPublicOrDefaultModifier }
-     *         .mustBeEmpty("this layer is internal", listOf("Make the class internal"))
-     * }
-     * ```
-     *
      * @param reason why the rule exists, printed as `Reason: <reason>` on one line.
      * @param howToFix the fixes to offer, one `How to fix:` item each, or empty for none.
      */
@@ -190,25 +143,9 @@ public interface KonsistScope : KoScope {
         howToFix: List<String> = emptyList(),
     )
 
-    // ---------------------------------------------------------------------------------------
-    // Konsist's own twelve assertions, shadowed.
-    //
-    // Each one is declared here with the same name, the same receiver shape, the same
-    // parameter list and the same type bound as the top level extension in
-    // `com.lemonappdev.konsist.api.verify`. A member of the receiver's own scope beats an
-    // imported top level extension, so writing one inside a `konsist { }` block resolves to
-    // these -- and these are compile errors.
-    //
-    // It is one declaration per *spelling*, not one per idea: shadowing only
-    // `List<E?>.assertTrue` would leave `classes().first().assertTrue { }` and
-    // `classes().asSequence().assertTrue { }` resolving straight back to Konsist.
-    //
-    // Each carries a body rather than being abstract, for two separate reasons. `KonsistScopeImpl`
-    // must not have to override a deprecated member (that override is itself a warning, and this
-    // module holds itself to zero). And the body throws rather than doing nothing, so that a call
-    // written under `@Suppress("DEPRECATION_ERROR")` fails loudly instead of passing silently --
-    // `Nothing` rather than `Unit` says so in the type.
-    // ---------------------------------------------------------------------------------------
+    // Shadows must match `com.lemonappdev.konsist.api.verify` signature by signature, one per
+    // receiver spelling, or a call resolves back to Konsist. Bodies are concrete and throw so
+    // implementations need not override deprecated members and suppressed calls fail loudly.
 
     /**
      * Konsist's own assertion over a list. Not usable here.
@@ -216,12 +153,6 @@ public interface KonsistScope : KoScope {
      * It throws on the first rejection and describes it in prose, so katachi could not say
      * which declarations were rejected — and the first line of a report block is a path a
      * reader can open.
-     *
-     * ## Example 1: what to write instead
-     * ```kt
-     * classes().assertTrue { it.hasInternalModifier }   // compile error
-     * classes().must { it.hasInternalModifier }         // ok
-     * ```
      */
     @Deprecated(
         "katachi cannot see which declarations assertTrue rejected. Use must / mustNot / mustBeEmpty.",
@@ -235,15 +166,7 @@ public interface KonsistScope : KoScope {
         function: (E) -> Boolean?,
     ): Nothing = throw KatachiKonsistDirectAssertionException(spelling = "assertTrue", cause = null)
 
-    /**
-     * Konsist's own assertion over a list. Not usable here — see [assertTrue].
-     *
-     * ## Example 1: what to write instead
-     * ```kt
-     * classes().assertFalse { it.hasPublicOrDefaultModifier }   // compile error
-     * classes().mustNot { it.hasPublicOrDefaultModifier }       // ok
-     * ```
-     */
+    /** Konsist's own assertion over a list. Not usable here — see [assertTrue]. */
     @Deprecated(
         "katachi cannot see which declarations assertFalse rejected. Use must / mustNot / mustBeEmpty.",
         ReplaceWith("mustNot(function)"),
@@ -256,15 +179,7 @@ public interface KonsistScope : KoScope {
         function: (E) -> Boolean?,
     ): Nothing = throw KatachiKonsistDirectAssertionException(spelling = "assertFalse", cause = null)
 
-    /**
-     * Konsist's own assertion over a single declaration. Not usable here — see [assertTrue].
-     *
-     * ## Example 1: what to write instead
-     * ```kt
-     * classes().first().assertTrue { it.hasInternalModifier }   // compile error
-     * classes().take(1).must { it.hasInternalModifier }         // ok
-     * ```
-     */
+    /** Konsist's own assertion over a single declaration. Not usable here — see [assertTrue]. */
     @Deprecated(
         "katachi cannot see which declaration assertTrue rejected. Use must / mustNot / mustBeEmpty.",
         ReplaceWith("listOfNotNull(this).must(function)"),
@@ -277,15 +192,7 @@ public interface KonsistScope : KoScope {
         function: (E) -> Boolean?,
     ): Nothing = throw KatachiKonsistDirectAssertionException(spelling = "assertTrue", cause = null)
 
-    /**
-     * Konsist's own assertion over a single declaration. Not usable here — see [assertTrue].
-     *
-     * ## Example 1: what to write instead
-     * ```kt
-     * classes().first().assertFalse { it.hasPublicOrDefaultModifier }   // compile error
-     * classes().take(1).mustNot { it.hasPublicOrDefaultModifier }       // ok
-     * ```
-     */
+    /** Konsist's own assertion over a single declaration. Not usable here — see [assertTrue]. */
     @Deprecated(
         "katachi cannot see which declaration assertFalse rejected. Use must / mustNot / mustBeEmpty.",
         ReplaceWith("listOfNotNull(this).mustNot(function)"),
@@ -303,12 +210,6 @@ public interface KonsistScope : KoScope {
      *
      * There is no sequence form of [must] either: a constraint holds every rejection at once
      * so that it can report them in walk order, so end the query with `.toList()`.
-     *
-     * ## Example 1: what to write instead
-     * ```kt
-     * classes().asSequence().assertTrue { it.hasInternalModifier }   // compile error
-     * classes().asSequence().toList().must { it.hasInternalModifier } // ok
-     * ```
      */
     @Deprecated(
         "katachi cannot see which declarations assertTrue rejected. Use toList() then must / mustNot.",
@@ -322,15 +223,7 @@ public interface KonsistScope : KoScope {
         function: (E) -> Boolean?,
     ): Nothing = throw KatachiKonsistDirectAssertionException(spelling = "assertTrue", cause = null)
 
-    /**
-     * Konsist's own assertion over a sequence. Not usable here — see [assertTrue].
-     *
-     * ## Example 1: what to write instead
-     * ```kt
-     * classes().asSequence().assertFalse { it.hasPublicOrDefaultModifier }      // compile error
-     * classes().asSequence().toList().mustNot { it.hasPublicOrDefaultModifier } // ok
-     * ```
-     */
+    /** Konsist's own assertion over a sequence. Not usable here — see [assertTrue]. */
     @Deprecated(
         "katachi cannot see which declarations assertFalse rejected. Use toList() then must / mustNot.",
         ReplaceWith("toList().mustNot(function)"),
@@ -343,15 +236,7 @@ public interface KonsistScope : KoScope {
         function: (E) -> Boolean?,
     ): Nothing = throw KatachiKonsistDirectAssertionException(spelling = "assertFalse", cause = null)
 
-    /**
-     * Konsist's own null assertion. Not usable here — see [assertTrue].
-     *
-     * ## Example 1: what to write instead
-     * ```kt
-     * classes().firstOrNull().assertNull()                          // compile error
-     * classes().filter { it.hasInternalModifier }.mustBeEmpty()     // ok
-     * ```
-     */
+    /** Konsist's own null assertion. Not usable here — see [assertTrue]. */
     @Deprecated(
         "katachi cannot report an assertion that names no declaration. Use mustBeEmpty.",
         ReplaceWith("listOfNotNull(this).mustBeEmpty()"),
@@ -368,12 +253,6 @@ public interface KonsistScope : KoScope {
      * katachi has no word for "there must be at least one of these": a report block names
      * something that exists and is wrong, and an absence has no path to name. Declare the file
      * in `layout { }` instead, which is what makes a missing file a `[MissingFile]` block.
-     *
-     * ## Example 1: what to write instead
-     * ```kt
-     * classes().firstOrNull().assertNotNull()                     // compile error
-     * layout { "useCase" / "*UseCase".ktFile() }                  // ok, and a better report
-     * ```
      */
     @Deprecated(
         "katachi reports things that exist and are wrong. Declare the file in layout { } instead.",
@@ -384,15 +263,7 @@ public interface KonsistScope : KoScope {
         testName: String? = null,
     ): Nothing = throw KatachiKonsistDirectAssertionException(spelling = "assertNotNull", cause = null)
 
-    /**
-     * Konsist's own emptiness assertion over a list. Not usable here — see [assertTrue].
-     *
-     * ## Example 1: what to write instead
-     * ```kt
-     * classes().filter { it.hasPublicOrDefaultModifier }.assertEmpty()     // compile error
-     * classes().filter { it.hasPublicOrDefaultModifier }.mustBeEmpty()     // ok
-     * ```
-     */
+    /** Konsist's own emptiness assertion over a list. Not usable here — see [assertTrue]. */
     @Deprecated(
         "katachi cannot see which declarations assertEmpty rejected. Use mustBeEmpty.",
         ReplaceWith("mustBeEmpty()"),
@@ -407,12 +278,6 @@ public interface KonsistScope : KoScope {
     /**
      * Konsist's own non-emptiness assertion over a list. Not usable here — see [assertNotNull]
      * for why katachi has no word for it.
-     *
-     * ## Example 1: what to write instead
-     * ```kt
-     * classes().assertNotEmpty()                     // compile error
-     * layout { "useCase" / "*UseCase".ktFile() }     // ok, and a better report
-     * ```
      */
     @Deprecated(
         "katachi reports things that exist and are wrong. Declare the file in layout { } instead.",
@@ -424,15 +289,7 @@ public interface KonsistScope : KoScope {
         testName: String? = null,
     ): Nothing = throw KatachiKonsistDirectAssertionException(spelling = "assertNotEmpty", cause = null)
 
-    /**
-     * Konsist's own emptiness assertion over a sequence. Not usable here — see [assertTrue].
-     *
-     * ## Example 1: what to write instead
-     * ```kt
-     * classes().asSequence().assertEmpty()              // compile error
-     * classes().asSequence().toList().mustBeEmpty()     // ok
-     * ```
-     */
+    /** Konsist's own emptiness assertion over a sequence. Not usable here — see [assertTrue]. */
     @Deprecated(
         "katachi cannot see which declarations assertEmpty rejected. Use toList() then mustBeEmpty.",
         ReplaceWith("toList().mustBeEmpty()"),
@@ -447,12 +304,6 @@ public interface KonsistScope : KoScope {
     /**
      * Konsist's own non-emptiness assertion over a sequence. Not usable here — see
      * [assertNotNull] for why katachi has no word for it.
-     *
-     * ## Example 1: what to write instead
-     * ```kt
-     * classes().asSequence().assertNotEmpty()        // compile error
-     * layout { "useCase" / "*UseCase".ktFile() }     // ok, and a better report
-     * ```
      */
     @Deprecated(
         "katachi reports things that exist and are wrong. Declare the file in layout { } instead.",

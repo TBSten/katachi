@@ -5,28 +5,23 @@ import me.tbsten.katachi.dsl.FileConstraintScope
 import me.tbsten.katachi.konture.internal.KontureFileConstraint
 
 /**
- * Declares a named constraint over the files the block around it matched, written with
- * Konture's `files { } / classes { } / functions { } / properties { }` rules.
+ * Declares a named constraint over the files the block around it matched, written with Konture's rules.
+ *
+ * The rules are written with `files { }`, `classes { }`, `functions { }` and `properties { }`.
  *
  * `this` is the name the report prints next to the role, so it is a sentence about the code
  * ("does not depend on Compose") rather than an identifier. Where the call is written decides
  * what it covers: directly on a role it covers the union of every `layout { }` that role
  * declares, inside a directory block it covers that block's subtree and nothing else, or only
- * the files that block declares directly with `scope = FileConstraintRange.DirectOnly`. That is
- * [FileConstraintScope]'s rule, not this function's — `konture { }` is one backend among several
- * and passes `scope` through unchanged.
+ * the files that block declares directly with `scope = FileConstraintRange.DirectOnly`.
  *
  * The block is stored, not run. It runs when a check that evaluates constraints runs, which
- * means `architecture { }` still reads no files and parses no Kotlin. When it does run, the
- * covered `.kt` files alone are parsed into a Konture project graph — no Gradle plugin and no
- * `layout_v2.json` — and every rule in the block is evaluated without throwing, so that each
- * violation becomes one report block pointing at one file.
+ * means `architecture { }` still reads no files and parses no Kotlin. Only the covered `.kt`
+ * files are parsed, without Konture's Gradle plugin, and each violation becomes one report block
+ * pointing at one file.
  *
- * `FileConstraintScope` is taken as a context parameter rather than as a receiver so that the call
- * reads the same as katachi's own layout vocabulary and needs no import of the scope type.
- * `architecture { }` and `group { }` do not implement [FileConstraintScope], so writing
- * `konture { }` there does not compile: a group holds roles, not files, so there would be no
- * set of files for the block to be about.
+ * It can be written on a role or inside its `layout { }`, but not directly in `architecture { }`
+ * or `group { }`: those hold roles, not files, so the call does not compile there.
  *
  * ## Example 1: one rule over everywhere the role lives
  * ```kt

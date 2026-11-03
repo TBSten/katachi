@@ -1,47 +1,23 @@
 package me.tbsten.katachi.konsist.declarations.internal
 
-/*
- * Whether one declaration line matches one declaration, piece by piece. The judging asks
- * `fullMatch` and `nameMatches`; `DeclarationDifferences.kt` asks the pieces to say what differs.
- */
-
-/**
- * The line matches the declaration in full: name, kind with modifiers and annotations, and the
- * details. An allowed or required line asks for the declaration's modifiers exactly; a `not.` line
- * only for the ones it writes.
- */
 internal fun fullMatch(rule: DeclarationRule, fact: DeclarationFact): Boolean =
     nameMatches(rule, fact) && rule.shapes.any { shapeMatches(it, fact, exact = !rule.prohibited) } && detailsMatch(rule, fact)
 
-/** The line's name pattern matches the declaration's name, and none of its `except` does. */
 internal fun nameMatches(rule: DeclarationRule, fact: DeclarationFact): Boolean =
     rule.name.matches(fact.name) && rule.except.none { it.matches(fact.name) }
 
-/**
- * The declaration is of [shape]'s kind and carries every modifier and annotation it asks for --
- * and, when [exact], no modifier it does not allow.
- */
 internal fun shapeMatches(shape: Shape, fact: DeclarationFact, exact: Boolean): Boolean =
     fact.kind == shape.kind && modifiersSatisfied(shape.modifiers, fact) &&
         (!exact || extraModifiersOf(shape.modifiers, fact).isEmpty())
 
-/** The declaration carries every modifier and annotation of [set]. An empty set is satisfied by anything. */
 internal fun modifiersSatisfied(set: ModifierSet, fact: DeclarationFact): Boolean =
     missingModifiersOf(set, fact).isEmpty() && missingAnnotationsOf(set, fact).isEmpty()
 
-/**
- * The modifiers of [set] the declaration does not carry, in Kotlin's order. `public` is carried
- * by a declaration that writes it and by one that writes no visibility at all, as in Kotlin.
- */
+// `public` counts as carried by a declaration that writes no visibility at all, as in Kotlin.
 internal fun missingModifiersOf(set: ModifierSet, fact: DeclarationFact): List<ModifierName> =
     set.modifiers.filterNot { hasModifier(fact, it) }.sortedBy { it.ordinal }
 
-/**
- * The modifiers the declaration carries that [set] neither asks for nor lets be, in Kotlin's
- * order. `public` is never one of them: Kotlin reads a declaration with no visibility as public,
- * so writing it or not says the same. Nor is one that takes the place of a modifier [set] asks
- * for and the declaration lacks (`private` where `public` is asked): the missing one says it.
- */
+// `public` is never extra (no visibility reads as public), nor is a modifier that takes the place of a missing one (`private` where `public` is asked).
 internal fun extraModifiersOf(set: ModifierSet, fact: DeclarationFact): List<ModifierName> {
     val allowed = set.modifiers + set.alsoAllowed
     val missing = missingModifiersOf(set, fact).toSet()
@@ -50,7 +26,6 @@ internal fun extraModifiersOf(set: ModifierSet, fact: DeclarationFact): List<Mod
         .sortedBy { it.ordinal }
 }
 
-/** The annotations of [set] the declaration does not carry, in the order written. */
 internal fun missingAnnotationsOf(set: ModifierSet, fact: DeclarationFact): List<AnnotationRule> =
     set.annotations.filterNot { rule -> fact.annotations.any { annotationMatches(rule, it) } }
 
@@ -58,7 +33,6 @@ private fun hasModifier(fact: DeclarationFact, modifier: ModifierName): Boolean 
     modifier in fact.modifiers ||
         (modifier == ModifierName.Public && fact.modifiers.none { it in ModifierName.VISIBILITIES })
 
-/** A simple name is compared with the simple name; a full name with every full name the annotation may stand for. */
 private fun annotationMatches(rule: AnnotationRule, annotation: AnnotationFact): Boolean =
     if (rule.qualified) {
         annotation.qualifiedCandidates.any { rule.pattern.matches(it) }
@@ -66,14 +40,12 @@ private fun annotationMatches(rule: AnnotationRule, annotation: AnnotationFact):
         rule.pattern.matches(annotation.simpleName)
     }
 
-/** Supertypes, property type, parameters and return type, each only when the line asks about it. */
 private fun detailsMatch(rule: DeclarationRule, fact: DeclarationFact): Boolean =
     missingSuperclassesOf(rule, fact).isEmpty() &&
         propertyTypeMatches(rule, fact) &&
         parametersMatch(rule, fact) &&
         returnTypeMatches(rule, fact)
 
-/** The `.superclass(...)` of the line that none of the declaration's supertypes matches. */
 internal fun missingSuperclassesOf(rule: DeclarationRule, fact: DeclarationFact): List<SuperclassRule> =
     rule.superclasses.filterNot { superclass ->
         fact.supertypes.any { supertype ->
@@ -81,14 +53,12 @@ internal fun missingSuperclassesOf(rule: DeclarationRule, fact: DeclarationFact)
         }
     }
 
-/** No type asked for, or a written type that matches it. An inferred type matches nothing. */
 internal fun propertyTypeMatches(rule: DeclarationRule, fact: DeclarationFact): Boolean {
     val expected = rule.propertyType ?: return true
     val actual = fact.propertyType ?: return false
     return expected.canonical.matches(actual.canonical)
 }
 
-/** No parameters asked for, or as many parameters as asked, each matching both its name and its type, in order. */
 internal fun parametersMatch(rule: DeclarationRule, fact: DeclarationFact): Boolean {
     val expected = rule.parameters ?: return true
     val actual = fact.parameters ?: return false
@@ -98,13 +68,11 @@ internal fun parametersMatch(rule: DeclarationRule, fact: DeclarationFact): Bool
 private fun parameterMatches(rule: ParameterRule, fact: ParameterFact): Boolean =
     rule.name.matches(fact.name) && rule.type.canonical.matches(fact.type.canonical)
 
-/** No return type asked for, or one (written, or `Unit` for a block body) that matches it. */
 internal fun returnTypeMatches(rule: DeclarationRule, fact: DeclarationFact): Boolean {
     val expected = rule.returnType ?: return true
     val actual = fact.returnType ?: return false
     return expected.canonical.matches(actual.canonical)
 }
 
-/** The declaration matches one of the alternatives of an `allow(..., anythingElse)`. */
 internal fun anythingElseMatches(rule: AnythingElseRule, fact: DeclarationFact): Boolean =
     rule.alternatives.any { modifiersSatisfied(it, fact) }

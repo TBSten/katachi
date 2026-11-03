@@ -7,23 +7,9 @@ import me.tbsten.katachi.dsl.FileConstraintExampleSource
 import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentUnknownCaptureException
 import me.tbsten.katachi.konsist.declarations.KtFileContentScope
 
-/*
- * The `## Kotlin file content` section of a role's page: the rules of `ktFileContent { }` as
- * tables, worked out for the role's example file -- the block is evaluated per file, so a table
- * can only show what it says about one.
- */
-
 private const val HEADING: String = "## Kotlin file content"
 
-/**
- * The section for [block], evaluated for [context]'s example file. A kind it writes no line for
- * is said to allow nothing, as the check reads it.
- *
- * A katachi exception -- a mistake in the definition, such as a `captureValue` name the layout
- * does not capture -- is thrown, which stops the pages. Anything else the block throws is most
- * likely about the example's values, so the section says the rules could not be shown and the
- * pages go on.
- */
+// A katachi exception (a mistake in the definition) is thrown and stops the pages; anything else the block throws is likely about the example's values, so the pages go on.
 internal fun ktFileContentSection(
     block: KtFileContentScope.() -> Unit,
     context: FileConstraintDocumentContext,
@@ -83,7 +69,6 @@ private const val NO_DECLARATION_LINE: String = "No declaration line is written,
 
 private const val NO_MEMBERS: String = "No members are allowed."
 
-/** The kinds whose declarations have members, and so whose lines say what members they may have. */
 private val KINDS_WITH_MEMBERS: Set<DeclarationKindName> =
     setOf(DeclarationKindName.Class, DeclarationKindName.Interface, DeclarationKindName.Object)
 
@@ -118,16 +103,8 @@ private fun declarationTable(heading: String, list: DeclarationListRules): Strin
     } + listOfNotNull(listOf(ANYTHING_ELSE, NOT_ALLOWED).takeIf { list.allowsOnlyByNot() })
 }
 
-/**
- * The last row of a table whose lines are all `not.` lines: they still make an allow list, so
- * what they do not prohibit is not allowed either.
- */
 private const val ANYTHING_ELSE: String = "(anything else)"
 
-/**
- * A `### Members of ...` section for every allowed line of a class, an interface or an object,
- * outer classes before their nested ones. A line without `{ }` allows no member, as an empty one does.
- */
 private fun memberSections(list: DeclarationListRules, outer: List<String>): List<String> = list.lines.flatMap { rule ->
     if (rule.prohibited || rule.shapes.none { it.kind in KINDS_WITH_MEMBERS }) return@flatMap emptyList()
     val members = rule.members
@@ -138,7 +115,6 @@ private fun memberSections(list: DeclarationListRules, outer: List<String>): Lis
     listOf("$heading\n\n$body") + members?.let { memberSections(it, path) }.orEmpty()
 }
 
-/** The line as written, without the `not ` a status column says and the `except` a cell lists. */
 private fun lineWithoutNotAndExcept(rule: DeclarationRule): String = renderDeclaration(
     shapes = rule.shapes,
     name = rule.name.written,
@@ -162,22 +138,14 @@ private fun statusOf(prohibited: Boolean, required: Boolean): String = when {
 private fun exceptCells(except: List<NameRule>): String =
     if (except.isEmpty()) "" else " except " + except.joinToString(", ") { code(it.written) }
 
-/** A Markdown table with [header], one row per element of [rows]. */
 private fun table(header: List<String>, rows: () -> List<List<String>>): String = buildList {
     add(header.joinToString(" | ", "| ", " |").replace("|  |", "| |"))
     add(header.joinToString("|", "|", "|") { "---" })
     for (row in rows()) add(row.joinToString(" | ", "| ", " |") { it.replace("|", "\\|") })
 }.joinToString("\n")
 
-/** [text] as inline code, with enough backticks around it to hold the ones it contains. */
 private fun code(text: String): String = if ('`' in text) "`` $text ``" else "`$text`"
 
-/**
- * The type of [cause] and the first line of its message, on one line.
- *
- * Only the first line is kept because the result is a single line of a generated page. A report's
- * `Cause:` section prints every line of the message, so this is shorter than what a report shows.
- */
 private fun causeLineOf(cause: Throwable): String {
     val type = cause::class.qualifiedName ?: cause::class.java.name
     val message = cause.message?.lineSequence()?.firstOrNull()?.trim()

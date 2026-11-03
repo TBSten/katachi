@@ -45,9 +45,9 @@ import me.tbsten.katachi.dsl.KatachiDsl
  *   inheritance chain through a class the constraint does not cover, and a bare name under two
  *   or more wildcard imports stays unresolved when its class is not covered. Cover the whole
  *   hierarchy, or write the type's fully qualified name.
- * - **It cannot share a test module with `katachi-konsist`.** Konsist 0.17.3 needs
- *   kotlin-compiler-embeddable 2.0.21 and Konture 1.0.1 needs 2.4.20; whichever Gradle resolves
- *   to, one of the two fails to parse. Put `konture { }` and `konsist { }` in different test
+ * - **It cannot share a test module with `katachi-konsist`.** Konsist and Konture need different
+ *   versions of kotlin-compiler-embeddable; whichever Gradle resolves to, one of the two fails to
+ *   parse. Put `konture { }` and `konsist { }` in different test
  *   modules.
  * - **Konture's baseline, reports and severities are not used.** Every violation lands in
  *   katachi's report and katachi's baseline is the one that applies; Konture's baseline, HTML /
@@ -99,13 +99,6 @@ public interface KontureConstraintScope : KontureDefaultGraphShadows {
     /**
      * A Konture rule over the covered files, as `FilesRuleBuilder` spells it.
      *
-     * ## Example 1: every covered file is named after what it holds
-     * ```kt
-     * konture {
-     *     files { should() nameEndsWith "UseCase.kt" }
-     * }
-     * ```
-     *
      * @param block the rule, in Konture's `that() ... should() ...` vocabulary.
      */
     public fun files(block: FilesRuleBuilder.() -> Unit)
@@ -113,13 +106,6 @@ public interface KontureConstraintScope : KontureDefaultGraphShadows {
     /**
      * A Konture rule over the classes declared in the covered files, as `ClassesRuleBuilder`
      * spells it.
-     *
-     * ## Example 1: every class is internal
-     * ```kt
-     * konture {
-     *     classes { should().beInternal() }
-     * }
-     * ```
      *
      * @param block the rule, in Konture's `that() ... should() ...` vocabulary.
      */
@@ -129,13 +115,6 @@ public interface KontureConstraintScope : KontureDefaultGraphShadows {
      * A Konture rule over the functions declared in the covered files, top level and member, as
      * `FunctionsRuleBuilder` spells it.
      *
-     * ## Example 1: every `invoke` is public
-     * ```kt
-     * konture {
-     *     functions { that() haveName "invoke"; should().bePublic() }
-     * }
-     * ```
-     *
      * @param block the rule, in Konture's `that() ... should() ...` vocabulary.
      */
     public fun functions(block: FunctionsRuleBuilder.() -> Unit)
@@ -143,13 +122,6 @@ public interface KontureConstraintScope : KontureDefaultGraphShadows {
     /**
      * A Konture rule over the properties declared in the covered files, top level and member, as
      * `PropertiesRuleBuilder` spells it.
-     *
-     * ## Example 1: no mutable property
-     * ```kt
-     * konture {
-     *     properties { should().beVal() }
-     * }
-     * ```
      *
      * @param block the rule, in Konture's `that() ... should() ...` vocabulary.
      */

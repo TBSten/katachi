@@ -4,9 +4,11 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.konsist.declarations.internal.allowWriter
 
 /**
- * The `allow(...)` lines for a property: the modifiers and annotations (none to ten of them), then
- * `` `val` ``, `` `var` `` or both joined with `or`, then the name and, optionally, the type
- * written in the source (package names and spaces aside; an inferred type matches no type).
+ * The `allow(...)` lines for a property: modifiers and annotations, `` `val` `` or `` `var` ``, the name, and optionally the type.
+ *
+ * Up to ten modifiers and annotations can be written, and `` `val` or `var` `` allows both. The
+ * type is matched against the type written in the source, ignoring package names and spaces; an
+ * inferred type matches no type.
  *
  * ## Example 1: a state holder typed after the file, and constants
  * ```kt

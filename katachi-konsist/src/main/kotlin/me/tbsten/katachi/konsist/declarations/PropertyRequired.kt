@@ -4,8 +4,10 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.konsist.declarations.internal.requiredWriter
 
 /**
- * The `required(...)` lines for a property: written as `allow(...)` is, and the property has to be
- * there -- that name when it is not a pattern, at least one matching property when it is.
+ * The `required(...)` lines for a property that has to be there, written as `allow(...)` is.
+ *
+ * A name that is not a pattern asks for that property; a pattern asks for at least one matching
+ * property.
  *
  * ## Example 1: the state a view model exposes
  * ```kt

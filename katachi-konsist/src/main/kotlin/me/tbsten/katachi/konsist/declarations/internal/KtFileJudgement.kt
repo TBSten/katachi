@@ -6,23 +6,11 @@ import me.tbsten.katachi.dsl.FileConstraintSubject
 import me.tbsten.katachi.konsist.KatachiKonsistNoKotlinFilesException
 import me.tbsten.katachi.konsist.internal.konsistScopeOf
 
-/** The only files Konsist reads, and so the only files a `ktFileContent { }` is about. */
 private const val KOTLIN_EXTENSION: String = ".kt"
 
-/** One file's facts within a run, shared by every `ktFileContent { }` that covers it. */
 private data class KtFileFactsKey(val absolutePath: String)
 
-/**
- * Reads [subject]'s `.kt` files in turn and judges each against the rules [rulesOf] builds for it,
- * returning what does not match: per file, the package, then the imports, then the declarations
- * and their members in line order, and what is missing last.
- *
- * The files are parsed the way `konsist { }` parses them (`konsistScopeOf`), so a file both read
- * in one run is parsed once.
- *
- * @param rulesOf the rules of one file, given project relative.
- * @throws KatachiKonsistNoKotlinFilesException when the covered files hold no `.kt` file.
- */
+// Parsed the way `konsist { }` parses them (`konsistScopeOf`), so a file both read in one run is parsed once.
 internal fun judgeKtFiles(
     subject: FileConstraintSubject,
     rulesOf: (file: String) -> FileRules,
@@ -34,28 +22,14 @@ internal fun judgeKtFiles(
         failuresOf(judgeKtFile(facts, rules), input.file, rules)
     }
 
-/** One `.kt` file of a subject: the rules the block wrote for it, and its facts when Konsist read it. */
 internal class KtFileInput(
-    /** Project relative. */
     val file: String,
-    /** The rules of this file, or what the block threw while writing them. */
     val rules: Result<FileRules>,
     factsOf: () -> KtFileFacts?,
 ) {
-    /** What Konsist read off the file, written down on first use; `null` when Konsist did not read it. */
     val facts: KtFileFacts? by lazy(LazyThreadSafetyMode.NONE, factsOf)
 }
 
-/**
- * The `.kt` files of [subject], each with its rules and its facts: what [judgeKtFiles] judges, and
- * what the IDE's explanation decides the same way. Empty when [subject] covers nothing.
- *
- * [rulesOf] decides whether a block that throws ends the whole run (the check) or only that file's
- * answer (the explanation). A file the block writes no line for stays in the list, and is judged
- * like any other: with nothing allowed, whatever it holds is wrong.
- *
- * @throws KatachiKonsistNoKotlinFilesException when the covered files hold no `.kt` file.
- */
 internal fun readKtFiles(
     subject: FileConstraintSubject,
     rulesOf: (file: String) -> Result<FileRules>,
@@ -77,7 +51,6 @@ internal fun readKtFiles(
     }
 }
 
-/** What is wrong with one file, in the order the report shows it. */
 internal fun judgeKtFile(facts: KtFileFacts, rules: FileRules): List<KtFileFinding> {
     val packageFinding = judgePackage(rules.packages, facts)
     val imports = judgeImports(rules.imports, facts.imports)
@@ -87,7 +60,6 @@ internal fun judgeKtFile(facts: KtFileFacts, rules: FileRules): List<KtFileFindi
     return located + lineless
 }
 
-/** Whether the report places [this] at a line of the file: a package that is not declared has none. */
 private fun KtFileFinding.hasLine(): Boolean = when (this) {
     is UnexpectedPackage -> packageName != null
     is ProhibitedPackage -> packageName != null

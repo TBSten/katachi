@@ -8,14 +8,8 @@ import io.github.baole.konture.PropertiesRuleBuilder
 import io.github.baole.konture.core.model.ViolationReport
 import me.tbsten.katachi.konture.KontureConstraintScope
 
-/**
- * Which of the four builders a rule came from.
- *
- * Decides how a violation is read back: Konture reports a file and a property both as a
- * `CustomSubject`, so the subject's type alone cannot tell them apart.
- */
+// Konture reports a file and a property both as a `CustomSubject`, so the subject's type alone cannot tell the builders apart.
 internal enum class SuiteKind(
-    /** The word the report and the exceptions use for this kind. */
     val label: String,
 ) {
     Files("files"),
@@ -24,30 +18,17 @@ internal enum class SuiteKind(
     Properties("properties"),
 }
 
-/**
- * One rule a block declared, held until the block has finished.
- *
- * Declaring and evaluating are kept apart so that "the block declared no rule" can be said
- * before any rule has run, and so that every rule runs under one `audited { }`.
- */
+// Declaring and evaluating are kept apart so an empty block is refused before any rule runs, and every rule runs under one `audited { }`.
 internal class Suite(
     val kind: SuiteKind,
-    /** Runs Konture's `check()` for this rule. Only meaningful inside `audited { }`. */
+    // Only meaningful inside `audited { }`.
     val check: () -> ViolationReport,
 )
 
-/**
- * The receiver a `konture { }` block actually runs against: four builders bound to one graph.
- *
- * Each entry point makes Konture's own builder, bound to [graph] rather than to Konture's
- * default one, calls `allowEmpty()` so that a `that()` selecting nothing is green (the layout
- * check is what says whether a file is missing), runs the block to let it spell the rule, and
- * stores the `check()` for later. Nothing is evaluated here.
- */
+// `allowEmpty()` is called so that a `that()` selecting nothing is green; the layout check is what says whether a file is missing.
 internal class KontureConstraintScopeImpl(private val graph: ProjectGraph) : KontureConstraintScope {
     private val collected = mutableListOf<Suite>()
 
-    /** Every rule the block declared, in declaration order. Empty is refused, not answered. */
     val suites: List<Suite> get() = collected
 
     override fun files(block: FilesRuleBuilder.() -> Unit) {

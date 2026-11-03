@@ -12,18 +12,13 @@ import me.tbsten.katachi.konsist.internal.KonsistFileConstraint
  * ("is not exposed outside its feature") rather than an identifier. Where the call is written decides
  * what it covers: directly on a role it covers the union of every `layout { }` that role
  * declares, inside a directory block it covers that block's subtree and nothing else, or only
- * the files that block declares directly with `scope = FileConstraintRange.DirectOnly`. That is
- * [FileConstraintScope]'s rule, not this function's — `konsist { }` is one backend among several
- * and passes `scope` through unchanged.
+ * the files that block declares directly with `scope = FileConstraintRange.DirectOnly`.
  *
  * The block is stored, not run. It runs when a check that evaluates constraints runs, which
  * means `architecture { }` still reads no files and parses no Kotlin.
  *
- * `FileConstraintScope` is taken as a context parameter rather than as a receiver so that the call
- * reads the same as katachi's own layout vocabulary and needs no import of the scope type.
- * `architecture { }` and `group { }` do not implement [FileConstraintScope], so writing
- * `konsist { }` there does not compile: a group holds roles, not files, so there would be no
- * set of files for the block to be about.
+ * It can be written on a role or inside its `layout { }`, but not directly in `architecture { }`
+ * or `group { }`: those hold roles, not files, so the call does not compile there.
  *
  * ## Example 1: one rule, on one module
  * ```kt

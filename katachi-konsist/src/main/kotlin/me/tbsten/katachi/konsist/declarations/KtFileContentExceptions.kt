@@ -34,51 +34,18 @@ import me.tbsten.katachi.konsist.declarations.internal.applicableKinds
  */
 @ExperimentalKatachiApi
 public class KatachiKtFileContentModifierException internal constructor(
-    /**
-     * The line as katachi reads it, with the stand-in values filled in: `data interface Sample`.
-     *
-     * ## Example 1: read back the line that was refused
-     * ```kt
-     * error.line shouldBe "public internal class Sample"
-     * ```
-     */
+    /** The line as katachi reads it, with the stand-in values filled in: `data interface Sample`. */
     public val line: String,
-    /**
-     * What is wrong with the modifiers.
-     *
-     * ## Example 1: tell two modifiers that exclude each other from one the kind cannot carry
-     * ```kt
-     * error.problem shouldBe KtFileContentModifierProblem.Conflicting
-     * ```
-     */
+    /** What is wrong with the modifiers. */
     public val problem: KtFileContentModifierProblem,
     /**
      * The modifiers the problem is about, in the order Kotlin writes them: both of a conflicting
      * pair, or the one that cannot be where it is.
-     *
-     * ## Example 1: read which modifiers conflict
-     * ```kt
-     * error.modifiers shouldBe listOf("public", "internal")
-     * ```
      */
     public val modifiers: List<String>,
-    /**
-     * The kind the modifier cannot be on, or `null` when the problem is not about a kind.
-     *
-     * ## Example 1: read which kind could not carry the modifier
-     * ```kt
-     * error.kind shouldBe "interface"
-     * ```
-     */
+    /** The kind the modifier cannot be on, or `null` when the problem is not about a kind. */
     public val kind: String?,
-    /**
-     * Where the line was written.
-     *
-     * ## Example 1: jump to the line to fix
-     * ```kt
-     * error.declaredAt.fileName shouldBe "UiStateRole.kt"
-     * ```
-     */
+    /** Where the line was written. */
     public val declaredAt: DeclarationSite,
 ) : KatachiDeclarationException(message = modifierMessage(line, problem, modifiers, kind, declaredAt))
 
@@ -105,42 +72,21 @@ public class KatachiKtFileContentModifierException internal constructor(
  */
 @ExperimentalKatachiApi
 public class KatachiKtFileContentPatternException internal constructor(
-    /**
-     * The pattern as it was written.
-     *
-     * ## Example 1: read back the pattern that could not be read
-     * ```kt
-     * error.pattern shouldBe "androidx..compose"
-     * ```
-     */
+    /** The pattern as it was written. */
     public val pattern: String,
-    /**
-     * Which part of the line the pattern was written for.
-     *
-     * ## Example 1: tell an import pattern from a name
-     * ```kt
-     * error.what shouldBe KtFileContentPatternKind.Import
-     * ```
-     */
+    /** Which part of the line the pattern was written for. */
     public val what: KtFileContentPatternKind,
-    /**
-     * Where the pattern was written.
-     *
-     * ## Example 1: jump to the pattern to fix
-     * ```kt
-     * error.declaredAt.lineNumber
-     * ```
-     */
+    /** Where the pattern was written. */
     public val declaredAt: DeclarationSite,
     cause: KatachiGlobSyntaxException?,
-    /** Why the pattern is refused when the glob reads it but katachi would read it wrongly. */
     problem: KtFileContentPatternRefusal? = null,
 ) : KatachiDeclarationException(message = patternMessage(pattern, what, declaredAt, cause, problem), cause = cause)
 
 /**
- * A line of `ktFileContent { }` written in a way that cannot mean anything, raised while the
- * definition is read: `.except(...)` on an allowed line, two `{ }`, a `typealias` in a class, and
- * the rest of [KtFileContentLineProblem].
+ * A line of `ktFileContent { }` written in a way that cannot mean anything, raised while the definition is read.
+ *
+ * Examples are `.except(...)` on an allowed line, two `{ }`, a `typealias` in a class, and the rest
+ * of [KtFileContentLineProblem].
  *
  * ## Example 1: catch `.except(...)` on a line that does not start with `not.`
  * ```kt
@@ -157,37 +103,16 @@ public class KatachiKtFileContentPatternException internal constructor(
  */
 @ExperimentalKatachiApi
 public class KatachiKtFileContentLineException internal constructor(
-    /**
-     * What is wrong with the line.
-     *
-     * ## Example 1: tell which mistake the line made
-     * ```kt
-     * error.problem shouldBe KtFileContentLineProblem.BodyWrittenTwice
-     * ```
-     */
+    /** What is wrong with the line. */
     public val problem: KtFileContentLineProblem,
-    /**
-     * The line as katachi reads it, with the stand-in values filled in: `import kotlin.**`.
-     *
-     * ## Example 1: read back the line
-     * ```kt
-     * error.line shouldBe "import kotlin.**"
-     * ```
-     */
+    /** The line as katachi reads it, with the stand-in values filled in: `import kotlin.**`. */
     public val line: String,
-    /**
-     * Where the line was written.
-     *
-     * ## Example 1: jump to the line to fix
-     * ```kt
-     * error.declaredAt.fileName shouldBe "ScreenRole.kt"
-     * ```
-     */
+    /** Where the line was written. */
     public val declaredAt: DeclarationSite,
     /**
-     * The parameter the problem is about, as written without the spaces around it (`"String"` for
-     * [KtFileContentLineProblem.ParameterWithoutName]); `null` for a problem that is not about one
-     * parameter.
+     * The parameter the problem is about, without surrounding spaces, or `null` when the problem is not about one.
+     *
+     * For [KtFileContentLineProblem.ParameterWithoutName] it is, for example, `"String"`.
      */
     public val parameter: String? = null,
 ) : KatachiDeclarationException(message = lineMessage(problem, line, declaredAt, parameter))
@@ -223,7 +148,6 @@ private fun modifierMessage(
         .joinToString("\n")
 }
 
-/** `class or object`: the kinds the first of [modifiers] can be put on, in the order Kotlin's keywords are listed. */
 private fun applicableKindsOf(modifiers: List<String>): String {
     val modifier = ModifierName.entries.firstOrNull { it.keyword == modifiers.firstOrNull() } ?: return "nothing"
     val kinds = DeclarationKindName.entries.filter { it in modifier.applicableKinds() }.map { it.keyword }
@@ -393,6 +317,5 @@ private fun lineMessage(problem: KtFileContentLineProblem, line: String, at: Dec
     return listOf(what, why, how).joinToString("\n")
 }
 
-/** Why a parameter of a `fun` line is written the way it is, for both of the problems about one. */
 private const val PARAMETER_FORM: String =
     "A parameter is written the way Kotlin writes it, \"name: Type\": a name pattern and a type pattern, split at the first ':'."

@@ -5,11 +5,6 @@ import me.tbsten.katachi.konsist.declarations.internal.DeclarationKindName
 import me.tbsten.katachi.konsist.declarations.internal.VocabularyWord
 import me.tbsten.katachi.konsist.declarations.internal.renderKinds
 
-/*
- * The kinds of declaration, and `anythingElse`: values passed to `allow(...)` after the modifiers.
- * A kind on its own writes nothing, and is refused when the block ends, as a modifier is.
- */
-
 /**
  * A class, an interface, an object, or any mix of them made with `or`, passed to `allow(...)`
  * where the kind goes.

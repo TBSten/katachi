@@ -12,47 +12,19 @@ import me.tbsten.katachi.dsl.FileConstraintReason
 import me.tbsten.katachi.konsist.KatachiKonsistUnlocatableDeclarationException
 import me.tbsten.katachi.konsist.KonsistScope
 
-/**
- * One element a block rejected: enough to open a report block on, and what the rule that
- * rejected it said about itself.
- *
- * A `data class` so that the same declaration rejected twice — by two `must` calls in one
- * block, or by a query that lists it twice — collapses to one entry in the set that holds
- * these, as long as both said the same (or nothing). Two different declarations of one file
- * stay two, and so does one declaration rejected by two rules giving different reasons: each
- * reason is something the reader has to fix.
- */
+// A data class so that one declaration rejected twice collapses to one entry; rejections with different reasons stay separate.
 internal data class RejectedElement(
-    /** Absolute, `/` separated, as Konsist reported it. Made project relative on the way out. */
     val absolutePath: String,
-    /** What Konsist calls it, or `null` for an element carrying no name. */
     val name: String?,
-    /** 1-based, or `null` when Konsist could not place it — a whole file, for instance. */
     val line: Int?,
-    /** Why the rule exists, as `must(reason) { }` gave it, or `null` for a rule that gave none. */
     val reason: String? = null,
-    /** The fixes `must(reason, howToFix) { }` offered. */
     val howToFix: List<String> = emptyList(),
 )
 
-/**
- * The receiver a `konsist { }` block actually runs against: Konsist's scope, plus a collector.
- *
- * Everything Konsist offers arrives by delegation, so a query reads exactly as it would in a
- * plain Konsist test. What is different is the end of the query: [must], [mustNot] and
- * [mustBeEmpty] record rather than throw, so one block can reject four declarations and the
- * report can open four blocks at four paths.
- *
- * It also counts how many times it was asked anything. A block that queries Konsist and never
- * ends the query rejects nothing, which is indistinguishable in a report from a rule every
- * file satisfies — so [expectations] is what lets `KonsistFileConstraint` refuse that answer
- * instead of returning it.
- */
+// Counts expectations: a block that queries but never ends the query rejects nothing, which a report cannot tell from a rule every file satisfies.
 internal class KonsistScopeImpl(scope: KoScope) : KonsistScope, KoScope by scope {
-    /** Insertion ordered, so rejections come back in the order the block produced them. */
     private val collected = LinkedHashSet<RejectedElement>()
 
-    /** How many times this block said what it wants. Zero is refused, not answered. */
     private var asked: Int = 0
 
     val rejected: List<RejectedElement> get() = collected.toList()
@@ -102,15 +74,7 @@ internal class KonsistScopeImpl(scope: KoScope) : KonsistScope, KoScope by scope
     }
 }
 
-/**
- * What katachi can say about one rejected element.
- *
- * The three narrowings are `as?` rather than `as` on purpose, and they are not the same kind
- * of optional. A path is required — a report block opens with one, so an element without one
- * is refused rather than reported — while a name and a line are what the element happens to
- * carry: a file declaration has a name and no location at all, and the report simply says
- * less about it.
- */
+// `as?` on purpose: a path is required (a report block opens with one), a name and a line are what the element happens to carry.
 private fun rejectedElementOf(element: KoBaseProvider): RejectedElement {
     val located = element as? KoPathProvider
         ?: throw KatachiKonsistUnlocatableDeclarationException(
@@ -124,14 +88,7 @@ private fun rejectedElementOf(element: KoBaseProvider): RejectedElement {
     )
 }
 
-/**
- * The 1-based line of [element], or `null` when it does not have one.
- *
- * Konsist computes `location` from PSI offsets and documents it as able to throw when there
- * is none, so the read itself is wrapped rather than the value merely checked. A line katachi
- * failed to read is a report that says a little less; a run that died reading one would be a
- * report that says nothing at all.
- */
+// Konsist's `location` can throw when there is none, so the read itself is wrapped rather than the value merely checked.
 internal fun lineOf(element: KoBaseProvider, path: String): Int? {
     val location = (element as? KoLocationProvider)
         ?.let { runCatching { it.location }.getOrNull() }
@@ -143,10 +100,6 @@ internal fun lineOf(element: KoBaseProvider, path: String): Int? {
     return rest.substringBefore(':').toIntOrNull()
 }
 
-/**
- * One rejection, with its path written the way every other path in a report is written, and the
- * rule's reason and fixes as the report's `Reason:` line and `How to fix:` list.
- */
 internal fun RejectedElement.toFileConstraintFailure(projectRoot: String): FileConstraintFailure =
     FileConstraintFailure(
         file = absolutePath.removePrefix("$projectRoot/"),
@@ -156,6 +109,5 @@ internal fun RejectedElement.toFileConstraintFailure(projectRoot: String): FileC
         howToFix = howToFix.map { FileConstraintFix(it) },
     )
 
-/** The label `must(reason) { }`'s reason is printed under: `Reason: <reason>`. */
 private const val REASON_LABEL: String = "Reason"
 

@@ -4,9 +4,9 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.konsist.declarations.internal.allowWriter
 
 /**
- * The `allow(...)` lines for a fun interface: `` `fun` `` and `` `interface` `` written one after
- * the other, as Kotlin writes `fun interface`, with the modifiers and annotations (none to ten of
- * them) in front.
+ * The `allow(...)` lines for a fun interface, written `` `fun`, `interface` `` as Kotlin writes it.
+ *
+ * The modifiers and annotations (none to ten of them) go in front.
  *
  * A [TypeKind] other than `` `interface` `` keeps only its interface: `` allow(`fun`, type, "*") ``
  * is a fun interface, and `` allow(`fun`, `class`, "*") `` is refused.

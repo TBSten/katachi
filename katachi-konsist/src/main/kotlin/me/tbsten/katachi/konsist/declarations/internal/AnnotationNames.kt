@@ -1,18 +1,8 @@
 package me.tbsten.katachi.konsist.declarations.internal
 
-/*
- * Which full names an annotation written in a file may stand for, so that
- * `annotated("androidx.compose.runtime.Composable")` matches `@Composable` as well as
- * `@androidx.compose.runtime.Composable`. Read off the file's own imports and package: nothing is
- * resolved, so every name the annotation could be is a candidate -- except that, as in Kotlin, a
- * name an explicit import (or its alias) gives is that name only, hiding the same name in the
- * file's package, in a star import and in the default imports.
- */
+// Nothing is resolved: an explicit import (or its alias) gives that name only, hiding the same name in the package,
+// in a star import and in the default imports.
 
-/**
- * The packages Kotlin imports into every file, whose annotations are written without an import:
- * `@JvmInline` is `kotlin.jvm.JvmInline`.
- */
 private val DEFAULT_IMPORTS: List<String> = listOf(
     "kotlin",
     "kotlin.annotation",
@@ -26,15 +16,10 @@ private val DEFAULT_IMPORTS: List<String> = listOf(
     "java.lang",
 )
 
-/** One import as the candidates need it: its path, and the alias it is written with, if any. */
 internal class ImportedName(val path: String, val alias: String?, val isWildcard: Boolean) {
     override fun toString(): String = "ImportedName($path)"
 }
 
-/**
- * The annotation written as [annotationText] (`@Composable`, `@get:JvmName("x")`), in a file whose
- * package is [packageName] and whose imports are [imports].
- */
 internal fun annotationFactOf(annotationText: String, packageName: String?, imports: List<ImportedName>): AnnotationFact {
     val written = writtenAnnotationName(annotationText)
     val simpleName = written.substringAfterLast('.')
@@ -51,10 +36,6 @@ internal fun annotationFactOf(annotationText: String, packageName: String?, impo
     return AnnotationFact(simpleName, candidates)
 }
 
-/**
- * The name an annotation is written with: without its `@`, without a use-site target (`get:`),
- * and without its arguments or type arguments.
- */
 internal fun writtenAnnotationName(annotationText: String): String {
     val withoutAt = annotationText.trim().removePrefix("@")
     val withoutTarget = withoutAt.substringBefore('(').let { head ->

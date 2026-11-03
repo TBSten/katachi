@@ -1,32 +1,15 @@
 package me.tbsten.katachi.konsist.declarations.internal
 
-/*
- * Kotlin source read as text, for the few things Konsist's parse does not give: the supertypes of
- * a header, the type of an extension property, and what is written before a `context(...)`.
- *
- * Every reader here works on `codeOnly(text)`, where comments and the insides of string and
- * character literals are blanked out, so that a `:`, a `,` or a bracket inside one is never taken
- * for code. Blanking keeps every offset, so a range found in the code is the same range of the text.
- */
+// Readers work on `codeOnly(text)`, where comments and string/character literal contents are blanked so a `:`, `,` or bracket inside one is never taken for code.
+// Blanking keeps every offset, so a range found in the code is the same range of the text.
 
-/**
- * [text] with every comment, and what every string and character literal holds, made spaces. A
- * line break stays a line break, and the quotes stay: `"a(b" // c` reads `"   "     `.
- *
- * Block comments nest, as in Kotlin. A template's expression (`${...}`) is blanked with its string.
- */
 internal fun codeOnly(text: String): String {
     val out = StringBuilder(text)
     CodeBlanker(text, out).code(0, inTemplate = false)
     return out.toString()
 }
 
-/** One pass over a text, writing its blanked form into [out] (a copy of the text). */
 private class CodeBlanker(private val text: String, private val out: StringBuilder) {
-    /**
-     * Code from [start], up to the end of the text, or -- [inTemplate] -- up to and with the `}`
-     * that closes a template's `${`. Returns the index after what was read.
-     */
     fun code(start: Int, inTemplate: Boolean): Int {
         var index = start
         var braces = 0
@@ -119,14 +102,12 @@ private class CodeBlanker(private val text: String, private val out: StringBuild
         return if (index < text.length && text[index] == '\'') index + 1 else index
     }
 
-    /** The template whose `${` is at [start], blanked with what it holds. Returns the index after its `}`. */
     private fun template(start: Int): Int {
         val end = code(start + 2, inTemplate = true)
         blank(start, end)
         return end
     }
 
-    /** Makes the characters in [from] until [until] spaces, keeping line breaks. */
     private fun blank(from: Int, until: Int) {
         for (index in from until minOf(until, text.length)) {
             if (text[index] != '\n') out.setCharAt(index, ' ')
@@ -136,14 +117,7 @@ private class CodeBlanker(private val text: String, private val out: StringBuild
 
 private const val RAW_QUOTES: String = "\"\"\""
 
-/**
- * For each index of [code], whether it is outside every `(...)` and `<...>`. A bracket itself is
- * never outside.
- *
- * Angle brackets are only counted outside parentheses: inside them is a constructor's parameter
- * list or a call's arguments, where `<` may be a comparison. A `>` closes only an open `<`, and
- * never as the end of `->`.
- */
+// Angle brackets are counted only outside parentheses (where `<` may be a comparison); a `>` closes only an open `<`, never the end of `->`.
 internal fun topLevelOf(code: String): BooleanArray {
     val topLevel = BooleanArray(code.length)
     var parens = 0
@@ -161,11 +135,9 @@ internal fun topLevelOf(code: String): BooleanArray {
     return topLevel
 }
 
-/** Whether the keyword [word] starts at [index] of [code], not as part of a longer name. */
 internal fun keywordAt(code: String, index: Int, word: String): Boolean =
     code.startsWith(word, index) &&
         !isNameChar(code.getOrNull(index - 1)) &&
         !isNameChar(code.getOrNull(index + word.length))
 
-/** A character a Kotlin name may hold. */
 internal fun isNameChar(char: Char?): Boolean = char != null && (char.isLetterOrDigit() || char == '_')

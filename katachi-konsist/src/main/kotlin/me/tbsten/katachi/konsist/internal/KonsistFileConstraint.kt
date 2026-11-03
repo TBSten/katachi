@@ -8,17 +8,8 @@ import me.tbsten.katachi.konsist.KatachiKonsistDirectAssertionException
 import me.tbsten.katachi.konsist.KatachiKonsistNoExpectationException
 import me.tbsten.katachi.konsist.KonsistScope
 
-/**
- * What `konsist { }` stores, and what running it comes to.
- *
- * Three things happen here and each of them is a way this backend could otherwise go quiet.
- * The scope is built from the covered files alone, so a block cannot reach a file its layout
- * does not cover. The block is run with Konsist's own assertions turned into failures rather
- * than left to throw prose katachi could not report. And a block that asked for nothing is
- * refused, because "rejected nothing" and "was never asked" read identically in a report.
- */
+// A block that asked for nothing is refused: "rejected nothing" and "was never asked" read identically in a report.
 internal class KonsistFileConstraint(
-    /** The block as written. Run once per constraint per run, never at declaration time. */
     private val block: KonsistScope.() -> Unit,
 ) : FileConstraint {
     override fun evaluate(subject: FileConstraintSubject): List<FileConstraintFailure> {

@@ -3,11 +3,9 @@ package me.tbsten.katachi.konture
 import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.dsl.DeclarationSite
 
-/** How a message names a constraint: by its name when it has one, by where it was written otherwise. */
 private fun namedFileConstraint(constraintName: String?, declaredAt: DeclarationSite): String =
     constraintName?.let { "\"$it\"" } ?: "declared at $declaredAt"
 
-/** The first line of a throwable, the way a report quotes a cause. */
 private fun Throwable.firstLine(): String = toString().lineSequence().first()
 
 /**
@@ -24,8 +22,9 @@ private fun Throwable.firstLine(): String = toString().lineSequence().first()
  * val failure = shouldThrow<KatachiArchitectureAssertionError> {
  *     projectArchitecture.assert(FileConstraintCheck())
  * }
- * failure.violations.filterIsInstance<UncheckedFileConstraint>()
+ * val cause = failure.violations.filterIsInstance<UncheckedFileConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiKontureNoExpectationException>()
+ * cause.declaredAt.fileName shouldBe "ProjectArchitecture.kt"
  * ```
  *
  * @property role the qualified name of the role whose layout the constraint was written in.
@@ -33,33 +32,11 @@ private fun Throwable.firstLine(): String = toString().lineSequence().first()
  * @property declaredAt where the constraint was written.
  */
 public class KatachiKontureNoExpectationException internal constructor(
-    /**
-     * The qualified name of the role whose layout the constraint was written in.
-     *
-     * ## Example 1: read back which role holds the empty block
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiKontureNoExpectationException>().role shouldBe "domain.UseCase"
-     * ```
-     */
+    /** The qualified name of the role whose layout the constraint was written in. */
     public val role: String,
-    /**
-     * What the constraint was called, or `null` when it was declared without a name.
-     *
-     * ## Example 1: name the rule that expects nothing
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiKontureNoExpectationException>().constraintName shouldBe "Internal only"
-     * ```
-     */
+    /** What the constraint was called, or `null` when it was declared without a name. */
     public val constraintName: String?,
-    /**
-     * Where the constraint was written.
-     *
-     * ## Example 1: jump to the empty block
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiKontureNoExpectationException>().declaredAt.fileName shouldBe
-     *     "ProjectArchitecture.kt"
-     * ```
-     */
+    /** Where the constraint was written. */
     public val declaredAt: DeclarationSite,
 ) : KatachiDeclarationException(
     message = buildString {
@@ -82,10 +59,8 @@ public class KatachiKontureNoExpectationException internal constructor(
 /**
  * A `konture { }` constraint that covers files, none of which Konture can parse.
  *
- * Konture 1.0.1 parses a file only when its name ends in `.kt` — `.kts` scripts included,
- * they are not parsed. A constraint covering, say, only `build.gradle.kts` would therefore be
- * handed an empty graph and pass by empty truth, which is the one answer this backend must
- * never give silently.
+ * Konture parses only files whose name ends in `.kt`; `.kts` scripts are skipped. A constraint
+ * covering, say, only `build.gradle.kts` would see nothing and pass, so it is reported instead.
  *
  * A constraint covering **no** files at all is a different thing and is not an error: that is
  * a place waiting to fill up, and the layout check already treats it as normal.
@@ -95,8 +70,9 @@ public class KatachiKontureNoExpectationException internal constructor(
  * val failure = shouldThrow<KatachiArchitectureAssertionError> {
  *     projectArchitecture.assert(FileConstraintCheck())
  * }
- * failure.violations.filterIsInstance<UncheckedFileConstraint>()
+ * val cause = failure.violations.filterIsInstance<UncheckedFileConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiKontureNoKotlinFilesException>()
+ * cause.given shouldBe 1
  * ```
  *
  * @property role the qualified name of the role whose layout the constraint was written in.
@@ -105,41 +81,13 @@ public class KatachiKontureNoExpectationException internal constructor(
  * @property given how many files the constraint covered.
  */
 public class KatachiKontureNoKotlinFilesException internal constructor(
-    /**
-     * The qualified name of the role whose layout the constraint was written in.
-     *
-     * ## Example 1: read back the role with nothing parseable under it
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiKontureNoKotlinFilesException>().role shouldBe "build.Script"
-     * ```
-     */
+    /** The qualified name of the role whose layout the constraint was written in. */
     public val role: String,
-    /**
-     * What the constraint was called, or `null` when it was declared without a name.
-     *
-     * ## Example 1: name the rule that has nothing to parse
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiKontureNoKotlinFilesException>().constraintName shouldBe "Convention"
-     * ```
-     */
+    /** What the constraint was called, or `null` when it was declared without a name. */
     public val constraintName: String?,
-    /**
-     * Where the constraint was written.
-     *
-     * ## Example 1: jump to the rule to rewrite as a plain `fileConstraint { }`
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiKontureNoKotlinFilesException>().declaredAt.lineNumber
-     * ```
-     */
+    /** Where the constraint was written. */
     public val declaredAt: DeclarationSite,
-    /**
-     * How many files the constraint covered, none of which Konture parses.
-     *
-     * ## Example 1: read back how many files were covered but unreadable
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiKontureNoKotlinFilesException>().given shouldBe 1
-     * ```
-     */
+    /** How many files the constraint covered, none of which Konture parses. */
     public val given: Int,
 ) : KatachiDeclarationException(
     message = buildString {
@@ -183,41 +131,13 @@ public class KatachiKontureNoKotlinFilesException internal constructor(
  * @property suite which kind of rule was refused: `files`, `classes`, `functions` or `properties`.
  */
 public class KatachiKontureRuleRefusedException internal constructor(
-    /**
-     * The qualified name of the role whose layout the constraint was written in.
-     *
-     * ## Example 1: read back which role holds the refused rule
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiKontureRuleRefusedException>().role shouldBe "domain.UseCase"
-     * ```
-     */
+    /** The qualified name of the role whose layout the constraint was written in. */
     public val role: String,
-    /**
-     * What the constraint was called, or `null` when it was declared without a name.
-     *
-     * ## Example 1: name the constraint holding the refused rule
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiKontureRuleRefusedException>().constraintName shouldBe "Naming"
-     * ```
-     */
+    /** What the constraint was called, or `null` when it was declared without a name. */
     public val constraintName: String?,
-    /**
-     * Where the constraint was written.
-     *
-     * ## Example 1: jump to the block to add the missing `should()`
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiKontureRuleRefusedException>().declaredAt.lineNumber
-     * ```
-     */
+    /** Where the constraint was written. */
     public val declaredAt: DeclarationSite,
-    /**
-     * Which kind of rule was refused: `files`, `classes`, `functions` or `properties`.
-     *
-     * ## Example 1: read back which suite Konture refused
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiKontureRuleRefusedException>().suite shouldBe "classes"
-     * ```
-     */
+    /** Which kind of rule was refused: `files`, `classes`, `functions` or `properties`. */
     public val suite: String,
     cause: AssertionError,
 ) : KatachiDeclarationException(
@@ -256,8 +176,9 @@ public class KatachiKontureRuleRefusedException internal constructor(
  * val failure = shouldThrow<KatachiArchitectureAssertionError> {
  *     projectArchitecture.assert(FileConstraintCheck())
  * }
- * failure.violations.filterIsInstance<UncheckedFileConstraint>()
+ * val cause = failure.violations.filterIsInstance<UncheckedFileConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiKontureDirectAssertionException>()
+ * cause.spelling
  * ```
  *
  * @property spelling the exception type that came out of the block.
@@ -266,23 +187,11 @@ public class KatachiKontureRuleRefusedException internal constructor(
  *   declaring its rules.
  */
 public class KatachiKontureDirectAssertionException internal constructor(
-    /**
-     * The exception type that came out of the block.
-     *
-     * ## Example 1: read back what was thrown
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiKontureDirectAssertionException>().spelling shouldBe "AssertionError"
-     * ```
-     */
+    /** The exception type that came out of the block. */
     public val spelling: String,
     /**
      * Which kind of rule was being evaluated when the assertion fired, or `null` when it fired
      * while the block was still declaring its rules.
-     *
-     * ## Example 1: tell a predicate that asserted from a block that asserted
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiKontureDirectAssertionException>().suite shouldBe "classes"
-     * ```
      */
     public val suite: String?,
     cause: Throwable?,
@@ -331,8 +240,9 @@ public class KatachiKontureDirectAssertionException internal constructor(
  * val failure = shouldThrow<KatachiArchitectureAssertionError> {
  *     projectArchitecture.assert(FileConstraintCheck())
  * }
- * failure.violations.filterIsInstance<UncheckedFileConstraint>()
+ * val cause = failure.violations.filterIsInstance<UncheckedFileConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiKontureDefaultGraphException>()
+ * cause.spelling
  * ```
  *
  * @property spelling the entry point that was written, or the exception type Konture threw.
@@ -341,11 +251,6 @@ public class KatachiKontureDefaultGraphException internal constructor(
     /**
      * The entry point that was written, or the exception type Konture threw when the call is not
      * one katachi shadows.
-     *
-     * ## Example 1: read back which entry point was used
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiKontureDefaultGraphException>().spelling shouldBe "architecture"
-     * ```
      */
     public val spelling: String,
     cause: Throwable?,

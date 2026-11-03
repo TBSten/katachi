@@ -37,6 +37,7 @@ public sealed interface Prohibition : DeclarationAllow
  * ```kt
  * ktFileContent {
  *     `package`("**")
+ *     not.`package`("com.example.legacy.**")
  *     `import`("**")
  *     not.`import`("android.**").except("android.os.Parcelable")
  *     allow(anythingElse)
@@ -50,14 +51,10 @@ public class FileProhibition internal constructor(
     internal val writer: AllowWriter = AllowWriter(file.declarations, prohibited = true)
 
     /**
-     * Prohibits the imports whose path matches [pattern], `.` separated: `*` is one level, `**`
-     * any number of them, zero included: `"com.example.legacy.**"` prohibits `com.example.legacy`
-     * itself as well, so a class import `com.example.Legacy` is prohibited by `"com.example.Legacy.**"`.
+     * Prohibits the imports whose path matches [pattern], a `.` separated path where `*` is one level and `**` any number.
      *
-     * ## Example 1: no other feature
-     * ```kt
-     * not.`import`("com.example.feature.**").except("com.example.feature.${captureValue("feature")}.**")
-     * ```
+     * `**` matches zero levels too: `"com.example.legacy.**"` prohibits `com.example.legacy`
+     * itself as well, so a class import `com.example.Legacy` is prohibited by `"com.example.Legacy.**"`.
      *
      * @throws KatachiKtFileContentPatternException when [pattern] is not a path katachi reads.
      */
@@ -66,11 +63,6 @@ public class FileProhibition internal constructor(
     /**
      * Prohibits the packages matching [pattern], `.` separated. `**` is any number of levels, zero included: `"com.example.legacy.**"`
      * prohibits `com.example.legacy` itself as well.
-     *
-     * ## Example 1: nothing left in the legacy package
-     * ```kt
-     * not.`package`("com.example.legacy.**")
-     * ```
      *
      * @throws KatachiKtFileContentPatternException when [pattern] is not a path katachi reads.
      */

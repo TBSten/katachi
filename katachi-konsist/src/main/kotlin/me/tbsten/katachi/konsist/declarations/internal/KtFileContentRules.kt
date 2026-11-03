@@ -3,12 +3,6 @@ package me.tbsten.katachi.konsist.declarations.internal
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.NamePattern
 
-/*
- * The rules one evaluation of a `ktFileContent { }` block wrote for one file: what the matching
- * reads, and nothing else. Immutable once built.
- */
-
-/** The kinds of declaration a line can name, with the keyword Kotlin spells each with. */
 internal enum class DeclarationKindName(val keyword: String) {
     Class("class"),
     Interface("interface"),
@@ -19,10 +13,7 @@ internal enum class DeclarationKindName(val keyword: String) {
     TypeAlias("typealias"),
 }
 
-/**
- * The modifiers a line can ask for, declared in the order Kotlin's coding conventions write them,
- * which is the order every rendering prints them in.
- */
+// Declared in the order Kotlin's coding conventions write modifiers, which is the order every rendering prints them in.
 internal enum class ModifierName(val keyword: String) {
     Public("public"),
     Protected("protected"),
@@ -57,60 +48,40 @@ internal enum class ModifierName(val keyword: String) {
     }
 }
 
-/** One name or path pattern: [written] as it was written (after `fileName` and the like were filled in). */
 internal data class NameRule(val written: String, val pattern: NamePattern) {
     val hasWildcard: Boolean get() = pattern.hasWildcard
 
-    /** Whether [written] holds a `*`: a line that matches names it was never written for. */
     val hasStar: Boolean get() = '*' in written
 
     fun matches(text: String): Boolean = pattern.matches(text)
 }
 
-/** A type as written, and the pattern its canonical form (see `canonicalType`) is matched with. */
 internal data class TypeRule(val written: String, val canonical: NamePattern)
 
-/** One parameter of a `fun` line: [written] as it was written (`"id: String"`), and its name and type patterns. */
 internal data class ParameterRule(val written: String, val name: NameRule, val type: TypeRule)
 
-/**
- * One `.superclass("...")`. [byName] when it was written without type arguments, so that it
- * matches a supertype whatever its arguments are (`Repository` matches `Repository<User>`).
- */
+// byName: written without type arguments, so it matches a supertype whatever its arguments are (`Repository` matches `Repository<User>`).
 internal data class SuperclassRule(val written: String, val byName: Boolean, val pattern: NamePattern)
 
-/** One name of `annotated(...)`. [qualified] when it holds a `.` and is matched as a full name. */
 internal data class AnnotationRule(val written: String, val qualified: Boolean, val pattern: NamePattern)
 
-/**
- * One set of modifiers and annotations that all have to be on a declaration.
- *
- * On a declaration line (not on an `anythingElse` or a `not.` line), the declaration may carry no
- * other modifier than these, [optional]'s and [bundled]'s; `public` is never counted as another.
- */
+// On a declaration line the declaration may carry no modifier beyond these, `optional` and `bundled`; `public` is never counted as another.
 internal data class ModifierSet(
     val modifiers: Set<ModifierName>,
     val annotations: List<AnnotationRule>,
-    /** Each `.optional()` value of the line, as written: modifiers the declaration may carry or not. */
     val optional: List<List<ModifierName>> = emptyList(),
-    /**
-     * The other alternatives of the `or`s [modifiers] were chosen from: `(suspend or inline)` asks for
-     * at least one of them, so a declaration carrying both still matches. Never printed.
-     */
+    // The other alternatives of the `or`s `modifiers` were chosen from: `(suspend or inline)` needs one, so a declaration carrying both still matches. Never printed.
     val bundled: Set<ModifierName> = emptySet(),
 ) {
     val isEmpty: Boolean get() = modifiers.isEmpty() && annotations.isEmpty()
 
-    /** Every modifier the declaration may carry besides [modifiers]. */
     val alsoAllowed: Set<ModifierName> get() = optional.flatten().toSet() + bundled
 
     operator fun plus(modifier: ModifierName): ModifierSet = copy(modifiers = modifiers + modifier)
 
-    /** This set with [more] added, each annotation once, in the order first written. */
     fun withAnnotations(more: List<AnnotationRule>): ModifierSet =
         copy(annotations = (annotations + more).distinctBy { it.written })
 
-    /** Everything this set and [other] ask for together. */
     fun union(other: ModifierSet): ModifierSet = ModifierSet(
         modifiers = modifiers + other.modifiers,
         annotations = (annotations + other.annotations).distinctBy { it.written },
@@ -123,39 +94,23 @@ internal data class ModifierSet(
     }
 }
 
-/** One candidate of a line: a set of modifiers on one kind. Combinations no declaration can have are already gone. */
 internal data class Shape(val modifiers: ModifierSet, val kind: DeclarationKindName)
 
-/** Where a list of declarations sits: directly in the file, or inside a class's `{ }`. */
 internal enum class Placement { File, ClassBody }
 
-/** A line of a declaration list: a declaration line or an `allow(..., anythingElse)`, in the order they were written. */
 internal sealed interface DeclarationListEntry {
     val declaredAt: DeclarationSite
 }
 
-/** One declaration line, allowed or (with `not.`) prohibited. */
 internal class DeclarationRule(
-    /** One or more. */
     val shapes: List<Shape>,
     val name: NameRule,
-    /** Empty means not asked about. Every one of them has to be among the declaration's supertypes. */
     val superclasses: List<SuperclassRule>,
-    /** `null` means not asked about. */
     val propertyType: TypeRule?,
-    /** `null` means not asked about (not written, or `anyArgs()`); empty means no parameter. */
     val parameters: List<ParameterRule>?,
-    /** `null` means not asked about. */
     val returnType: TypeRule?,
-    /**
-     * `null` when the line has no `{ }`: its declaration may then have no members, as with an empty
-     * `{ }` (see [DeclarationListRules.membersOfBodilessLine]).
-     */
+    // null when the line has no `{ }`: its declaration may then have no members, as with an empty `{ }`.
     val members: DeclarationListRules?,
-    /**
-     * Written with `required(...)`: a declaration has to match it -- one or more, the name written
-     * with or without `*`. A line written with `allow(...)` only lets what it matches be.
-     */
     val required: Boolean,
     val prohibited: Boolean,
     val except: List<NameRule>,
@@ -164,42 +119,30 @@ internal class DeclarationRule(
     override fun toString(): String = "DeclarationRule(${renderRule(this)})"
 }
 
-/** One `allow(..., anythingElse)`: any declaration matching one of [alternatives] is allowed. */
 internal class AnythingElseRule(
-    /** A single empty set means anything at all. */
     val alternatives: List<ModifierSet>,
     override val declaredAt: DeclarationSite,
 ) : DeclarationListEntry {
     override fun toString(): String = "AnythingElseRule(${renderAnythingElse(this)})"
 }
 
-/**
- * The allow list of the declarations directly in a file, or of the members of one class. With no
- * entries, it allows nothing: a kind no line is written for is denied, not left unchecked.
- */
+// With no entries it allows nothing: a kind no line is written for is denied, not left unchecked.
 internal class DeclarationListRules(
     val placement: Placement,
-    /** Every line, in the order it was written. */
     val entries: List<DeclarationListEntry>,
-    /** The `ktFileContent { }` call for a file; the class line for a class's members. */
     val declaredAt: DeclarationSite,
-    /** Whether these are the members of a class line written without `{ }`, which the line allows none of. */
     val withoutBody: Boolean = false,
 ) {
-    /** The declaration lines, in the order they were written. */
     val lines: List<DeclarationRule> = entries.filterIsInstance<DeclarationRule>()
 
-    /** The `allow(..., anythingElse)` lines, in the order they were written. */
     val anythingElse: List<AnythingElseRule> = entries.filterIsInstance<AnythingElseRule>()
 
     companion object {
-        /** The members of [line], a class line written without `{ }`: an empty allow list, as an empty `{ }` is. */
         fun membersOfBodilessLine(line: DeclarationRule): DeclarationListRules =
             DeclarationListRules(Placement.ClassBody, emptyList(), line.declaredAt, withoutBody = true)
     }
 }
 
-/** One import line, which only allows (or with `not.` prohibits). Its path is matched with `.` as the separator. */
 internal class ImportRule(
     val path: NameRule,
     val prohibited: Boolean,
@@ -209,16 +152,12 @@ internal class ImportRule(
     override fun toString(): String = "ImportRule(${renderImport(this)})"
 }
 
-/** What a package line asks the file's package to be. */
 internal sealed interface PackageTarget {
-    /** A path pattern, separated by `.`. */
     class Pattern(val rule: NameRule) : PackageTarget
 
-    /** The directories of the file below its source set's `kotlin/`, joined with `.`. */
     data object MatchingDirectory : PackageTarget
 }
 
-/** One package line. */
 internal class PackageRule(
     val target: PackageTarget,
     val prohibited: Boolean,
@@ -228,20 +167,11 @@ internal class PackageRule(
     override fun toString(): String = "PackageRule(${renderPackage(this)})"
 }
 
-/**
- * Everything one evaluation of the block wrote, for one file. Deny by default: a kind no line is
- * written for allows nothing of that kind.
- */
 internal class FileRules(
-    /** Empty means no package may be declared (a file declaring none is fine). */
     val packages: List<PackageRule>,
-    /** Empty means no import is allowed. */
     val imports: List<ImportRule>,
-    /** With no entries, no declaration is allowed directly in the file. */
     val declarations: DeclarationListRules,
-    /** Where `ktFileContent { }` was called. */
     val declaredAt: DeclarationSite,
 ) {
-    /** Whether the block wrote no line at all for this file, which then allows nothing in it. */
     val isEmpty: Boolean get() = packages.isEmpty() && imports.isEmpty() && declarations.entries.isEmpty()
 }

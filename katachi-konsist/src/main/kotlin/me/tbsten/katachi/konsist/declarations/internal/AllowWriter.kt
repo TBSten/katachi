@@ -31,18 +31,9 @@ import me.tbsten.katachi.konsist.declarations.TypeRequired
 import me.tbsten.katachi.konsist.declarations.TypeKind
 import me.tbsten.katachi.konsist.declarations.TypeLine
 
-/**
- * What every `allow(...)` and `required(...)` overload hands its values to: the lines of [list],
- * allowed ones, prohibited ones for `not.allow(...)`, or required ones for `required(...)`.
- *
- * Each overload only says which kind it was given. What a line is made of is worked out here, in
- * one place: every value passed counts as used, each has to belong to [list]'s block, and the
- * candidates are every combination of one alternative of each [Modifiers] with each kind.
- */
 internal class AllowWriter(
     private val list: DeclarationListBuilder,
     private val prohibited: Boolean,
-    /** The lines are written with `required(...)`: a declaration has to match each. */
     private val required: Boolean = false,
 ) {
     fun type(modifiers: List<Modifiers>, kind: TypeKind, name: String, body: (ClassBodyScope.() -> Unit)?): TypeLine {
@@ -51,7 +42,6 @@ internal class AllowWriter(
         return TypeLine(line)
     }
 
-    /** A fun interface: [kind] with the modifier `fun`, which keeps only an interface. */
     fun funInterface(
         modifiers: List<Modifiers>,
         fn: FunctionKind,
@@ -96,30 +86,16 @@ internal class AllowWriter(
         return list.declare(shapes, prohibited, required, name)
     }
 
-    /**
-     * @throws KatachiKtFileContentLineException with [problem] when one of [modifiers] is
-     *   `.optional()`, on a line that does not read the modifiers it does not write.
-     */
     private fun refuseOptional(modifiers: List<Modifiers>, problem: KtFileContentLineProblem, line: () -> String) {
         if (modifiers.none { it.isOptional }) return
         throw KatachiKtFileContentLineException(problem, line(), DeclarationSite.capture())
     }
 
-    /**
-     * Marks [words] as used, then refuses one of another block.
-     *
-     * @throws me.tbsten.katachi.konsist.declarations.KatachiKtFileContentLineException when a word
-     *   belongs to another block than [list]'s, [line] being how the line reads.
-     */
     private fun use(words: List<VocabularyWord>, line: () -> String) {
         words.forEach { it.trace.use() }
         words.forEach { it.requireIn(list, line) }
     }
 
-    /**
-     * Every combination of one alternative of each required one of [modifiers] (the empty set for
-     * none), each carrying the `.optional()` ones and the other alternatives of its `or`s.
-     */
     private fun alternativesOf(modifiers: List<Modifiers>): List<ModifierSet> {
         val optional = modifiers.filter { it.isOptional }.map { value -> value.alternatives.flatMap { it.modifiers }.distinct() }
         return modifiers.filterNot { it.isOptional }.fold(listOf(ModifierSet.EMPTY.copy(optional = optional))) { sets, next ->
@@ -133,11 +109,7 @@ internal class AllowWriter(
     override fun toString(): String = "AllowWriter($list, prohibited=$prohibited, required=$required)"
 }
 
-/*
- * The writer behind each `allow(...)` and `required(...)` interface. Kotlin has no internal member
- * in an interface, so the overloads reach it through these: every implementation of the interfaces
- * is one of the classes below, which the sealed hierarchy lets `when` check without an `else`.
- */
+// Kotlin has no internal member in an interface, so the overloads reach the writer through these.
 
 private fun writerOf(target: DeclarationAllow): AllowWriter = when (target) {
     is DeclarationListScopeImpl -> target.writer
@@ -175,7 +147,6 @@ internal val AnythingElseAllow.allowWriter: AllowWriter
         is DeclarationAllow -> writerOf(this)
     }
 
-/** The writer of the `required(...)` lines: only a scope has one, `not.` does not. */
 private fun requiredWriterOf(target: DeclarationRequired): AllowWriter = when (target) {
     is DeclarationListScopeImpl -> target.requiredWriter
 }

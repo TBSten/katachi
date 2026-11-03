@@ -7,10 +7,10 @@ import me.tbsten.katachi.konsist.declarations.internal.VocabularyWord
 import me.tbsten.katachi.konsist.declarations.internal.renderModifierAlternatives
 
 /**
- * A modifier or annotations to pass to `allow(...)` in front of the kind: `public`,
- * `annotated("Serializable")`, `internal or private`, `suspend.optional()`.
+ * A modifier or annotations to pass to `allow(...)` in front of the kind.
  *
- * It holds one or more alternatives, each a modifier or a set of annotations; `or` puts the
+ * Examples are `public`, `annotated("Serializable")`, `internal or private` and
+ * `suspend.optional()`. It holds one or more alternatives, each a modifier or a set of annotations; `or` puts the
  * alternatives of both sides together. A declaration line matches a declaration whose modifiers
  * are exactly the ones written, as in its Kotlin source: a modifier the line does not write may
  * not be on the declaration, except `public` and `final`, which Kotlin writes for none. A modifier
@@ -42,7 +42,6 @@ import me.tbsten.katachi.konsist.declarations.internal.renderModifierAlternative
 public class Modifiers internal constructor(
     internal val alternatives: List<ModifierSet>,
     internal val word: VocabularyWord,
-    /** Made by [optional]: the declaration may carry one of the alternatives, or none. */
     internal val isOptional: Boolean = false,
 ) {
     /**
@@ -64,8 +63,9 @@ public class Modifiers internal constructor(
     }
 
     /**
-     * These modifiers may be on the declaration, or not: `suspend.optional()` matches both
-     * `fun execute` and `suspend fun execute`, and `(internal or private).optional()` no visibility,
+     * These modifiers may be on the declaration, or not.
+     *
+     * `suspend.optional()` matches both `fun execute` and `suspend fun execute`, and `(internal or private).optional()` no visibility,
      * `internal` or `private`. It is about one modifier of a line; it does not make the line's
      * declaration one that may be missing, which is what `allow(...)` in place of `required(...)` says.
      *

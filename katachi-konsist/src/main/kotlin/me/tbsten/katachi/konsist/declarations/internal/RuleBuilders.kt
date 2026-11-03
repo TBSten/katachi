@@ -7,35 +7,20 @@ import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentLineException
 import me.tbsten.katachi.konsist.declarations.KtFileContentLineProblem
 import me.tbsten.katachi.konsist.declarations.KtFileContentPatternKind
 
-/*
- * What one evaluation of the block writes into, line by line, before it is frozen into the model
- * of `KtFileContentRules.kt`. A line is registered when `allow(...)` or `required(...)` is called,
- * and the calls chained after it (`.superclass(...)`, `.returns(...)`) change that same line.
- */
-
-/**
- * One run of the block: which list a new line goes to, and whether the run is still going.
- *
- * A line is written into the list of the block whose vocabulary made it, and only while that block
- * is the innermost one being run. That keeps a value kept in a variable from putting a line into
- * another block, or into a run that already ended, without anyone noticing.
- */
+// A line goes only into the list of the block whose vocabulary made it, and only while that block is the innermost one running:
+// otherwise a value kept in a variable would put a line into another block, or an ended run, unnoticed.
 internal class EvaluationSession(val input: EvaluationInput) {
     private var current: DeclarationListBuilder? = null
     private var closed = false
 
     val patterns: PatternCache get() = input.patterns
 
-    /** The values of the vocabulary written in this run, to find the ones no line was written with. */
     val values: ValueTraces = ValueTraces()
 
-    /** Whether the run has not ended yet. */
     val isOpen: Boolean get() = !closed
 
-    /** Whether [list] is the innermost block being run, the only one a new line may go to. */
     fun isCurrent(list: DeclarationListBuilder): Boolean = !closed && current === list
 
-    /** Runs [body] with [list] as the innermost block. */
     fun <T> within(list: DeclarationListBuilder, body: () -> T): T {
         val outer = current
         current = list
@@ -46,16 +31,11 @@ internal class EvaluationSession(val input: EvaluationInput) {
         }
     }
 
-    /**
-     * @throws KatachiKtFileContentLineException when a value of the vocabulary -- a modifier, an
-     *   annotation, a kind, `anythingElse` -- was written on a line of its own and never passed to `allow(...)`.
-     */
     fun failOnDanglingValues() {
         val dangling = values.firstDangling() ?: return
         throw KatachiKtFileContentLineException(KtFileContentLineProblem.DanglingModifiers, dangling.text(), dangling.declaredAt)
     }
 
-    /** Ends the run: nothing can be written into it any more. */
     fun close() {
         closed = true
         current = null
@@ -64,36 +44,21 @@ internal class EvaluationSession(val input: EvaluationInput) {
     override fun toString(): String = "EvaluationSession($input, open=$isOpen)"
 }
 
-/** Something a declaration list holds: a declaration line still being written, or a finished `anythingElse` line. */
 internal sealed interface DeclarationListEntryBuilder {
     fun build(): DeclarationListEntry
 }
 
-/** An entry that is complete as soon as it is written. */
 private class WrittenEntry(private val entry: DeclarationListEntry) : DeclarationListEntryBuilder {
     override fun build(): DeclarationListEntry = entry
 }
 
-/** The lines of the declarations directly in a file, or of the members of one class. */
 internal class DeclarationListBuilder(
     val session: EvaluationSession,
     val placement: Placement,
-    /** The `ktFileContent { }` call for a file; the class line for a class's members. */
     val declaredAt: DeclarationSite,
 ) {
     private val entries = mutableListOf<DeclarationListEntryBuilder>()
 
-    /**
-     * Registers a declaration line: candidates [raw] (not checked yet) named [name], one that has to
-     * be there when [required] (written with `required(...)`).
-     *
-     * @throws KatachiKtFileContentLineException when this list is not the block being written, or
-     *   for a `typealias` inside a class.
-     * @throws me.tbsten.katachi.konsist.declarations.KatachiKtFileContentPatternException when
-     *   [name] is not a pattern katachi reads.
-     * @throws me.tbsten.katachi.konsist.declarations.KatachiKtFileContentModifierException when no
-     *   declaration can have the modifiers.
-     */
     fun declare(raw: List<Shape>, prohibited: Boolean, required: Boolean, name: String): DeclarationLineBuilder {
         val line = renderDeclaration(raw, name, prohibited)
         ensureCurrent(line)
@@ -106,14 +71,6 @@ internal class DeclarationListBuilder(
         return DeclarationLineBuilder(this, shapes, nameRule, prohibited, required, declaredAt).also { entries += it }
     }
 
-    /**
-     * Registers an `allow(..., anythingElse)` that allows what matches one of [alternatives].
-     *
-     * @throws KatachiKtFileContentLineException when this list is not the block being written, or
-     *   when the line starts with `not.`.
-     * @throws me.tbsten.katachi.konsist.declarations.KatachiKtFileContentModifierException when a set
-     *   of modifiers cannot be on one declaration, or not here.
-     */
     fun addAnythingElse(alternatives: List<ModifierSet>, prohibited: Boolean) {
         val line = renderAnythingElseLine(alternatives, prohibited)
         ensureCurrent(line)
@@ -123,7 +80,6 @@ internal class DeclarationListBuilder(
         entries += WrittenEntry(AnythingElseRule(kept, declaredAt))
     }
 
-    /** @throws KatachiKtFileContentLineException when this list is not the innermost block being run. */
     fun ensureCurrent(line: String) {
         if (session.isCurrent(this)) return
         throw KatachiKtFileContentLineException(KtFileContentLineProblem.OutsideItsBlock, line, DeclarationSite.capture())
@@ -134,13 +90,11 @@ internal class DeclarationListBuilder(
     override fun toString(): String = "DeclarationListBuilder($placement, ${entries.size} lines)"
 }
 
-/** One declaration line while the calls chained after `allow(...)` are still changing it. */
 internal class DeclarationLineBuilder(
     private val list: DeclarationListBuilder,
     private val shapes: List<Shape>,
     private val name: NameRule,
     private val prohibited: Boolean,
-    /** Written with `required(...)`: a declaration has to match it. */
     private val required: Boolean,
     private val declaredAt: DeclarationSite,
 ) : DeclarationListEntryBuilder {
@@ -155,7 +109,6 @@ internal class DeclarationLineBuilder(
 
     private val session: EvaluationSession get() = list.session
 
-    /** The line as written so far. */
     val text: String
         get() = renderDeclaration(
             shapes = shapes,
@@ -178,7 +131,7 @@ internal class DeclarationLineBuilder(
         propertyType = session.patterns.typeRule(type)
     }
 
-    /** [written] `null` is `anyArgs()`: written, but asking nothing. Each one is `"name: Type"`. */
+    // null is `anyArgs()`: written, but asking nothing.
     fun writeParameters(written: List<String>?) {
         ensureOpen()
         if (parametersWritten) throw problem(KtFileContentLineProblem.ParametersWrittenTwice)
@@ -189,10 +142,7 @@ internal class DeclarationLineBuilder(
         parameters = texts?.map(::parameterRule)
     }
 
-    /**
-     * [written] split at its first `:`, which a parameter name never holds, into a name pattern and
-     * a type pattern. The type may hold more, as in `(result: String) -> Unit`.
-     */
+    // Split at the first `:`, which a parameter name never holds; the type may hold more, as in `(result: String) -> Unit`.
     private fun parameterRule(written: String): ParameterRule {
         val colon = written.indexOf(':')
         val name = if (colon < 0) "" else written.substring(0, colon).trim()
@@ -212,7 +162,6 @@ internal class DeclarationLineBuilder(
         returnType = session.patterns.typeRule(type)
     }
 
-    /** Runs [body] as the members of this line, which from now on are an allow list of their own. */
     fun writeBody(body: ClassBodyScope.() -> Unit) {
         ensureOpen()
         if (prohibited) throw problem(KtFileContentLineProblem.BodyOnProhibited)
@@ -243,7 +192,6 @@ internal class DeclarationLineBuilder(
         declaredAt = declaredAt,
     )
 
-    /** A chained call reached after the run ended changes nothing anyone reads, so it is refused. */
     private fun ensureOpen() {
         if (session.isOpen) return
         throw KatachiKtFileContentLineException(KtFileContentLineProblem.OutsideItsBlock, text, DeclarationSite.capture())

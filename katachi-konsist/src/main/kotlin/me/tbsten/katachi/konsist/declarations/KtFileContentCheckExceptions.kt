@@ -22,41 +22,13 @@ import me.tbsten.katachi.dsl.DeclarationSite
  */
 @ExperimentalKatachiApi
 public class KatachiKtFileContentUnknownCaptureException internal constructor(
-    /**
-     * The name `captureValue` was asked for.
-     *
-     * ## Example 1: read back the misspelled name
-     * ```kt
-     * error.name shouldBe "featur"
-     * ```
-     */
+    /** The name `captureValue` was asked for. */
     public val name: String,
-    /**
-     * The qualified name of the role the block is written for.
-     *
-     * ## Example 1: read back the role
-     * ```kt
-     * error.role shouldBe "ViewModel"
-     * ```
-     */
+    /** The qualified name of the role the block is written for. */
     public val role: String,
-    /**
-     * The names the role's layout does capture, in the order they were written.
-     *
-     * ## Example 1: list the names that would have worked
-     * ```kt
-     * error.available shouldBe listOf("feature")
-     * ```
-     */
+    /** The names the role's layout does capture, in the order they were written. */
     public val available: List<String>,
-    /**
-     * Where `ktFileContent { }` was called.
-     *
-     * ## Example 1: jump to the block
-     * ```kt
-     * error.declaredAt.fileName shouldBe "ViewModelRole.kt"
-     * ```
-     */
+    /** Where `ktFileContent { }` was called. */
     public val declaredAt: DeclarationSite,
 ) : KatachiDeclarationException(
     message = listOf(
@@ -87,41 +59,13 @@ public class KatachiKtFileContentUnknownCaptureException internal constructor(
  */
 @ExperimentalKatachiApi
 public class KatachiKtFileContentCaptureUnavailableException internal constructor(
-    /**
-     * The name `captureValue` was asked for.
-     *
-     * ## Example 1: read back the name
-     * ```kt
-     * error.name shouldBe "feature"
-     * ```
-     */
+    /** The name `captureValue` was asked for. */
     public val name: String,
-    /**
-     * The file being checked, project relative.
-     *
-     * ## Example 1: read back which file had no value
-     * ```kt
-     * error.file shouldBe "core/Foo.kt"
-     * ```
-     */
+    /** The file being checked, project relative. */
     public val file: String,
-    /**
-     * The qualified name of the role the block is written for.
-     *
-     * ## Example 1: read back the role
-     * ```kt
-     * error.role shouldBe "ViewModel"
-     * ```
-     */
+    /** The qualified name of the role the block is written for. */
     public val role: String,
-    /**
-     * Where `ktFileContent { }` was called.
-     *
-     * ## Example 1: jump to the block
-     * ```kt
-     * error.declaredAt.lineNumber
-     * ```
-     */
+    /** Where `ktFileContent { }` was called. */
     public val declaredAt: DeclarationSite,
     projectRoot: String,
 ) : KatachiDeclarationException(
@@ -151,32 +95,11 @@ public class KatachiKtFileContentCaptureUnavailableException internal constructo
  */
 @ExperimentalKatachiApi
 public class KatachiKtFileContentDuplicateException internal constructor(
-    /**
-     * The qualified name of the role.
-     *
-     * ## Example 1: read back the role
-     * ```kt
-     * error.role shouldBe "ViewModel"
-     * ```
-     */
+    /** The qualified name of the role. */
     public val role: String,
-    /**
-     * Where the block that ran first was written.
-     *
-     * ## Example 1: jump to the first block
-     * ```kt
-     * error.firstDeclaredAt.lineNumber
-     * ```
-     */
+    /** Where the block that ran first was written. */
     public val firstDeclaredAt: DeclarationSite,
-    /**
-     * Where the second block was written.
-     *
-     * ## Example 1: jump to the second block
-     * ```kt
-     * error.declaredAt.lineNumber
-     * ```
-     */
+    /** Where the second block was written. */
     public val declaredAt: DeclarationSite,
 ) : KatachiDeclarationException(
     message = listOf(
@@ -186,10 +109,6 @@ public class KatachiKtFileContentDuplicateException internal constructor(
     ).joinToString("\n"),
 )
 
-/**
- * [relative] under [projectRoot] as a `file:///...` URI, the form every report prints a path in so
- * that a terminal shows it as a link.
- */
 private fun fileUriOf(projectRoot: String, relative: String): String {
     val slashed = "${projectRoot.trimEnd('/')}/$relative".replace('\\', '/')
     val path = if (slashed.startsWith("/")) slashed else "/$slashed"

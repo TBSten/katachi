@@ -7,15 +7,17 @@ import io.kotest.matchers.ints.shouldBeGreaterThan
 import java.io.File
 
 /**
- * Every `public` declaration of `:katachi-konture`'s main sources carries a KDoc with a worked
- * example.
+ * Every `public` declaration of `:katachi-konture`'s main sources carries a KDoc, and every one
+ * written at the top level of its file -- a type or a top-level function -- a worked example.
+ *
+ * A member needs no example of its own, as `docs/internal/kotlin/kotlin.md` says: its type's
+ * example shows how it is called.
  *
  * The whole repository carries this rule as `KDOC_EXAMPLE_RULE`, a `konsist { }` on every role
  * of `:katachi` and on this module's own role — see
  * `architecture-test/src/test/kotlin/me/tbsten/katachi/test/architecture/KdocExamples.kt`.
  * That is the rule; this spec is a second reading of it, kept because it is the one that fails
- * inside this module's own `test` task rather than in `:architecture-test`, and because it is
- * deliberately stricter: it asks every line starting with `public `, `override` included.
+ * inside this module's own `test` task rather than in `:architecture-test`.
  *
  * Reads sources as text: parsing Kotlin would be a far bigger thing to maintain than the rule
  * it guards.
@@ -37,13 +39,14 @@ private fun sourceRoot(): File {
 private fun sourceFiles(): List<File> =
     sourceRoot().walkTopDown().filter { it.isFile && it.extension == "kt" }.sortedBy { it.path }.toList()
 
-/** One `public` declaration whose KDoc does not show how to use it. */
+/** One `public` declaration with no KDoc, or a top-level one whose KDoc does not show how to use it. */
 private class UndocumentedDeclaration(val file: File, val line: Int, val declaration: String) {
     fun describe(): String = "${file.path}:$line  $declaration"
 }
 
 /**
- * Whether the KDoc block ending just above [index] holds an example.
+ * Whether the KDoc block ending just above [index] holds an example -- or, when [exampleRequired]
+ * is false, whether there is a KDoc at all.
  *
  * Blank lines, annotations and `context(...)` receivers sit between a KDoc and what it
  * documents, so they are stepped over. This module's shadowed Konture entry points carry
@@ -52,7 +55,7 @@ private class UndocumentedDeclaration(val file: File, val line: Int, val declara
  * depth is tracked back to whichever line opens that block. A declaration with no KDoc at all
  * reads as undocumented, which is the same failure.
  */
-private fun hasExampleAbove(lines: List<String>, index: Int): Boolean {
+private fun hasExampleAbove(lines: List<String>, index: Int, exampleRequired: Boolean): Boolean {
     var cursor = index - 1
     while (cursor >= 0) {
         val trimmed = lines[cursor].trim()
@@ -79,15 +82,17 @@ private fun hasExampleAbove(lines: List<String>, index: Int): Boolean {
         }
         break
     }
-    if (cursor < 0 || lines[cursor].trim() != "*/") return false
+    // A member's KDoc is often one line (`/** ... */`), so the block's end is any line ending in `*/`.
+    if (cursor < 0 || !lines[cursor].trim().endsWith("*/")) return false
     val end = cursor
     while (cursor >= 0 && !lines[cursor].trim().startsWith("/**")) cursor--
     if (cursor < 0) return false
-    return lines.subList(cursor, end + 1).any { it.contains(EXAMPLE_HEADING) }
+    return !exampleRequired || lines.subList(cursor, end + 1).any { it.contains(EXAMPLE_HEADING) }
 }
 
 /**
- * Every `public` declaration of [file] with no example above it.
+ * Every `public` declaration of [file] with no KDoc above it, or with no example in it when written
+ * at the top level.
  *
  * A KDoc line is never a declaration: every line of one starts with `*` once trimmed, so a
  * `public …` written inside a fenced example cannot be mistaken for the real thing.
@@ -101,7 +106,7 @@ private fun undocumentedIn(file: File): List<UndocumentedDeclaration> {
             inKdoc = !trimmed.endsWith("*/")
         } else if (inKdoc && trimmed.endsWith("*/")) {
             inKdoc = false
-        } else if (!inKdoc && trimmed.startsWith("public ") && !hasExampleAbove(lines, index)) {
+        } else if (!inKdoc && trimmed.startsWith("public ") && !hasExampleAbove(lines, index, exampleRequired = line.startsWith("public "))) {
             return@mapIndexedNotNull UndocumentedDeclaration(file, index + 1, trimmed)
         }
         null
@@ -110,10 +115,10 @@ private fun undocumentedIn(file: File): List<UndocumentedDeclaration> {
 
 class KonturePublicApiSpec : FreeSpec({
     ":katachi-konture の公開 API の KDoc" - {
-        "public 宣言がすべて利用例つきの KDoc を持つ" {
+        "public 宣言がすべて KDoc を持ち、トップレベルの宣言の KDoc は利用例を含む" {
             val undocumented = sourceFiles().flatMap { undocumentedIn(it) }.map { it.describe() }
 
-            withClue("`$EXAMPLE_HEADING N: ...` + ```kt フェンスの無い public 宣言: $undocumented") {
+            withClue("KDoc の無い public 宣言か、`$EXAMPLE_HEADING N: ...` + ```kt フェンスの無いトップレベルの public 宣言: $undocumented") {
                 undocumented.shouldBeEmpty()
             }
         }

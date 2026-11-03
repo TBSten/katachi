@@ -5,45 +5,30 @@ import me.tbsten.katachi.KatachiInternalException
 /**
  * Konsist did not hand back every file katachi asked it to parse.
  *
- * The scope is built by parsing an exact set of absolute file paths, one by one. If a file is
- * gone by the time it is parsed, or Konsist reports it under a path that does not compare
- * equal — a separator, a symlink, a case difference — it drops out of the scope, the block sees
- * fewer declarations than it should, and the constraint passes for the wrong reason. Counting
- * is what makes that loud instead of silent.
+ * Files missing from the scope would let the constraint pass without looking at them, so the
+ * constraint is reported as unchecked instead.
  *
- * **This is katachi's bug, not the caller's.** Nothing a definition can say causes it, which
- * is why the base is [KatachiInternalException] and why the message asks for a report.
+ * **This is a bug in katachi, not in your definition.** Nothing you write causes it; please
+ * report it at https://github.com/TBSten/katachi/issues.
  *
  * ## Example 1: recognise it as a katachi bug rather than a failed rule
  * ```kt
  * val failure = shouldThrow<KatachiArchitectureAssertionError> {
  *     projectArchitecture.assert(FileConstraintCheck())
  * }
- * failure.violations.filterIsInstance<UncheckedFileConstraint>()
+ * val cause = failure.violations.filterIsInstance<UncheckedFileConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiKonsistScopeIncompleteException>()
+ * cause.given shouldBe 3
+ * cause.visible shouldBe 2
  * ```
  *
  * @property given how many files katachi asked Konsist for.
  * @property visible how many of them came back in the scope.
  */
 public class KatachiKonsistScopeIncompleteException internal constructor(
-    /**
-     * How many files katachi asked Konsist for.
-     *
-     * ## Example 1: read back how many files were expected
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiKonsistScopeIncompleteException>().given shouldBe 3
-     * ```
-     */
+    /** How many files katachi asked Konsist for. */
     public val given: Int,
-    /**
-     * How many of them came back in the scope.
-     *
-     * ## Example 1: read back how many files made it into the scope
-     * ```kt
-     * cause.shouldBeInstanceOf<KatachiKonsistScopeIncompleteException>().visible shouldBe 2
-     * ```
-     */
+    /** How many of them came back in the scope. */
     public val visible: Int,
 ) : KatachiInternalException(
     message = buildString {

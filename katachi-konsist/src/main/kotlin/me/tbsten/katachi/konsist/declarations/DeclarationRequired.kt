@@ -3,9 +3,10 @@ package me.tbsten.katachi.konsist.declarations
 import me.tbsten.katachi.ExperimentalKatachiApi
 
 /**
- * Every `required(...)` a declaration line is written with: the same overloads as `allow(...)`
- * -- modifiers and annotations, then the kind, then the name -- for a declaration that has to be
- * there. It is written directly in the file and inside the `{ }` of a class line; `not.` has none.
+ * Every `required(...)` a declaration line is written with, for a declaration that has to be there.
+ *
+ * It has the same overloads as `allow(...)`: modifiers and annotations, then the kind, then the
+ * name. It is written directly in the file and inside the `{ }` of a class line; `not.` has none.
  *
  * - **`allow(...)` lets a declaration be; `required(...)` also asks for it.** A required line is an
  *   allow list entry too: what it matches need not be written again with `allow(...)`.

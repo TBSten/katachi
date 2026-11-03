@@ -91,7 +91,8 @@ private fun hasExampleAbove(lines: List<String>, index: Int, exampleRequired: Bo
         }
         break
     }
-    if (cursor < 0 || lines[cursor].trim() != "*/") return false
+    // A member's KDoc is often one line (`/** ... */`), so the block's end is any line ending in `*/`.
+    if (cursor < 0 || !lines[cursor].trim().endsWith("*/")) return false
     val end = cursor
     while (cursor >= 0 && !lines[cursor].trim().startsWith("/**")) cursor--
     if (cursor < 0) return false

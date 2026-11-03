@@ -9,18 +9,6 @@ import me.tbsten.katachi.dsl.internal.DeclarationVerdict
 import me.tbsten.katachi.dsl.internal.FileDeclarationsExplanation
 import me.tbsten.katachi.dsl.internal.RuleExplanation
 
-/*
- * The IDE's explanation of a file: how each top-level declaration was decided, by which lines.
- * It reads the same rules, the same facts and the same `judgeDeclarations` the check does -- only
- * what it keeps differs -- so a declaration it calls allowed is one the check lets be.
- */
-
-/**
- * [subject]'s `.kt` files explained, in order. A file whose block throws is still listed, with the
- * reason; what fails for every file at once ([readKtFiles]'s exceptions) is thrown.
- *
- * @param rulesOf the rules of one file, given project relative.
- */
 internal fun explainKtFiles(
     subject: FileConstraintSubject,
     rulesOf: (file: String) -> FileRules,
@@ -32,7 +20,6 @@ internal fun explainKtFiles(
         explainKtFile(input.file, facts, rules)
     }
 
-/** One file explained against [rules]: its own declarations, decided as `judgeKtFile` decides them. */
 internal fun explainKtFile(file: String, facts: KtFileFacts, rules: FileRules): FileDeclarationsExplanation {
     val findings = judgeDeclarations(rules.declarations, facts.declarations)
     return FileDeclarationsExplanation(
@@ -72,17 +59,13 @@ private fun ruleExplanationOf(rule: AnythingElseRule): RuleExplanation = RuleExp
 private fun unexplained(file: String, reason: String): FileDeclarationsExplanation =
     FileDeclarationsExplanation(file, declarationsChecked = false, emptyList(), emptyList(), unexplainedReason = reason)
 
-/** The type of [cause] and the first line of its message. */
 private fun reasonOf(cause: Throwable): String {
     val message = cause.message?.lineSequence()?.firstOrNull()?.trim().orEmpty()
     val type = cause::class.simpleName ?: cause::class.java.name
     return if (message.isEmpty()) type else "$type: $message"
 }
 
-/**
- * [block]'s answer, or what it threw -- except what has to end the run: the JVM giving up, a
- * broken classpath, an interrupt.
- */
+// Rethrows what has to end the run: the JVM giving up, a broken classpath, an interrupt.
 private inline fun <T> runCatchingPerFile(block: () -> T): Result<T> =
     runCatching(block).onFailure { cause ->
         if (cause is VirtualMachineError || cause is LinkageError || cause is InterruptedException) throw cause

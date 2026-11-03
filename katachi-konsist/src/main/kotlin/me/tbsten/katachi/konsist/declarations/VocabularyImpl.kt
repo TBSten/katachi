@@ -10,10 +10,6 @@ import me.tbsten.katachi.konsist.declarations.internal.annotationRule
 import me.tbsten.katachi.konsist.declarations.internal.renderKinds
 import me.tbsten.katachi.konsist.declarations.internal.renderModifierAlternatives
 
-/**
- * The one implementation of [DeclarationVocabulary], which both scopes delegate to: each word is a
- * new value of [list]'s block, kept to be asked about when the run ends.
- */
 internal class VocabularyImpl(private val list: DeclarationListBuilder) : DeclarationVocabulary {
     override val public: Modifiers get() = modifier(ModifierName.Public)
     override val protected: Modifiers get() = modifier(ModifierName.Protected)

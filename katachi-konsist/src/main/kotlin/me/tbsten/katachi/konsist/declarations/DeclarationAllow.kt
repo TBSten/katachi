@@ -3,8 +3,9 @@ package me.tbsten.katachi.konsist.declarations
 import me.tbsten.katachi.ExperimentalKatachiApi
 
 /**
- * Every `allow(...)` a declaration line is written with: the modifiers and annotations, then the
- * kind, then the name -- the order Kotlin writes the declaration in. It is the same in the file,
+ * Every `allow(...)` a declaration line is written with: modifiers and annotations, then kind, then name.
+ *
+ * That is the order Kotlin writes the declaration in. It is the same in the file,
  * inside the `{ }` of a class line, and after `not.`, where the line prohibits what it matches.
  *
  * - **The modifiers are the declaration's, as its Kotlin source writes them**, in any order: each

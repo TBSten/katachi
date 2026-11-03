@@ -11,13 +11,6 @@ import me.tbsten.katachi.konsist.declarations.internal.DeclarationKindName.TypeA
 import me.tbsten.katachi.konsist.declarations.internal.DeclarationKindName.Val
 import me.tbsten.katachi.konsist.declarations.internal.DeclarationKindName.Var
 
-/*
- * Which modifiers a line may combine, and on which kinds. A line whose
- * combination no declaration can have is refused while the definition is read, rather than
- * left to match nothing.
- */
-
-/** Groups of modifiers of which one declaration carries at most one. */
 internal val EXCLUSIVE_GROUPS: List<Set<ModifierName>> = listOf(
     ModifierName.VISIBILITIES,
     setOf(ModifierName.Data, ModifierName.Sealed, ModifierName.Enum, ModifierName.Value, ModifierName.Annotation),
@@ -25,18 +18,15 @@ internal val EXCLUSIVE_GROUPS: List<Set<ModifierName>> = listOf(
     setOf(ModifierName.Expect, ModifierName.Actual),
 )
 
-/** Modifiers Kotlin accepts only on a member, in the order a message names the first of them. */
 private val CLASS_BODY_ONLY: List<ModifierName> =
     listOf(ModifierName.Protected, ModifierName.Inner, ModifierName.Companion, ModifierName.Override)
 
-/** Modifiers a fun, val or var can carry only as a member. */
 private val MEMBER_ONLY_ON_CALLABLES: List<ModifierName> = listOf(ModifierName.Abstract, ModifierName.Open)
 
 private val CALLABLE_KINDS: Set<DeclarationKindName> = setOf(Function, Val, Var)
 
 private val ALL_KINDS: Set<DeclarationKindName> = DeclarationKindName.entries.toSet()
 
-/** The kinds [this] can be put on. Whether it may be written directly in the file is checked separately. */
 internal fun ModifierName.applicableKinds(): Set<DeclarationKindName> = when (this) {
     ModifierName.Public, ModifierName.Internal, ModifierName.Private,
     ModifierName.Protected, ModifierName.Expect, ModifierName.Actual,
@@ -58,17 +48,7 @@ internal fun ModifierName.applicableKinds(): Set<DeclarationKindName> = when (th
     ModifierName.Lateinit -> setOf(Var)
 }
 
-/**
- * [raw] with every candidate no declaration can have removed, in order: a set holding two
- * modifiers that exclude each other, and a modifier on a kind that cannot carry it. Only when no
- * candidate is left is the line refused, as `allow(public or internal, internal, ...)` still
- * matches an internal declaration.
- *
- * The `.optional()` modifiers are checked the same way, each `.optional()` value on its own: see [checkOptional].
- *
- * @throws KatachiKtFileContentModifierException when every set holds two modifiers that exclude
- *   each other, a set uses a member-only modifier directly in the file, or no candidate is left.
- */
+// Refused only when no candidate is left: `allow(public or internal, internal, ...)` still matches an internal declaration.
 internal fun validatedShapes(
     raw: List<Shape>,
     placement: Placement,
@@ -104,13 +84,6 @@ internal fun validatedShapes(
     )
 }
 
-/**
- * The alternatives of an `allow(..., anythingElse)` that can be on one declaration: no kind is
- * named, so only the sets holding two modifiers that exclude each other are removed, and whether
- * each may be written where it is is checked.
- *
- * @throws KatachiKtFileContentModifierException as [validatedShapes] does for its first two checks.
- */
 internal fun validatedAnythingElse(
     alternatives: List<ModifierSet>,
     placement: Placement,
@@ -122,14 +95,7 @@ internal fun validatedAnythingElse(
     return sets
 }
 
-/**
- * Refuses a `.optional()` value of [shapes] that could never be on their declarations: one with a
- * member-only modifier directly in the file, one no kind of the line can carry, and one every
- * modifier of which excludes a required modifier of every candidate (`allow(internal, private.optional(), ...)`).
- * A value with one modifier that fits is kept, as `(internal or private).optional()` is next to `internal`.
- *
- * @throws KatachiKtFileContentModifierException for such a value.
- */
+// A value with one modifier that fits is kept, as `(internal or private).optional()` is next to `internal`.
 private fun checkOptional(shapes: List<Shape>, placement: Placement, line: String, declaredAt: DeclarationSite) {
     for (group in shapes.first().modifiers.optional) {
         val sorted = group.sortedBy { it.ordinal }
@@ -170,24 +136,16 @@ private fun checkOptional(shapes: List<Shape>, placement: Placement, line: Strin
     }
 }
 
-/** The modifier of [required] that excludes [modifier] (another of one of its groups), or `null`. */
 internal fun excludedBy(modifier: ModifierName, required: Set<ModifierName>): ModifierName? = EXCLUSIVE_GROUPS
     .filter { modifier in it }
     .firstNotNullOfOrNull { group -> required.firstOrNull { it != modifier && it in group } }
 
-/** Whether a kind is one a `typealias` line names, which only the file can hold. */
 internal fun List<Shape>.namesTypeAlias(): Boolean = any { it.kind == TypeAlias }
 
-/** The modifiers of [set] that exclude each other, in Kotlin's order, or `null` when there are none. */
 private fun conflictIn(set: ModifierSet): List<ModifierName>? = EXCLUSIVE_GROUPS
     .map { group -> set.modifiers.filter { it in group }.sortedBy { it.ordinal } }
     .firstOrNull { it.size >= 2 }
 
-/**
- * [sets] without the ones holding two modifiers that exclude each other.
- *
- * @throws KatachiKtFileContentModifierException when every one of them does, naming the first pair.
- */
 private fun withoutConflicts(sets: List<ModifierSet>, line: String, declaredAt: DeclarationSite): List<ModifierSet> {
     val kept = sets.filter { conflictIn(it) == null }
     if (kept.isNotEmpty() || sets.isEmpty()) return kept

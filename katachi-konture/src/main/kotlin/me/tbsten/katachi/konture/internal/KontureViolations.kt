@@ -5,42 +5,15 @@ import io.github.baole.konture.core.model.Violation
 import me.tbsten.katachi.dsl.FileConstraintFailure
 import me.tbsten.katachi.konture.KatachiKontureUnlocatableViolationException
 
-/**
- * One place a block rejected: enough to open a report block on, and nothing more.
- *
- * A `data class` so that the same declaration rejected twice — by two rules in one block, or by
- * two assertions of one rule — collapses to one entry in the set that holds these. Two different
- * declarations of one file stay two.
- */
+// A data class so that one declaration rejected twice collapses to one entry.
 internal data class KontureViolationSite(
-    /** Project relative, `/` separated, spelled as in `FileConstraintSubject.files`. */
     val file: String,
-    /** The simple name of the rejected declaration, or `null` for a whole file. */
     val declaration: String?,
-    /** 1-based, or `null` when the violation is about the whole file or Konture could not place it. */
     val line: Int?,
 )
 
-/**
- * Where [violation] is, written the way katachi's report wants it.
- *
- * What a Konture violation carries depends on the builder that made it, and the builder is
- * known only to the caller, hence [kind]:
- *
- * - `files`: a `CustomSubject` named after the file at `line = 1`, the line being a convention
- *   rather than a fact. A violation that points at the subject's own location is about the whole
- *   file, so it carries no declaration and no line; one that points elsewhere keeps its line.
- * - `classes`: a `ClassSubject`, whose `simpleName` is the declaration.
- * - `functions` and `properties`: a subject named `pkg[.Class].name`, of which the last segment
- *   is the declaration.
- *
- * The path is made project relative by [covered], which also accepts another spelling of a
- * covered file; a violation on a file the constraint never asked about has no block to appear
- * in, and is a katachi bug.
- *
- * @throws KatachiKontureUnlocatableViolationException when the violation carries no location,
- *   or one that is not a covered file.
- */
+// What a violation carries depends on the builder, so the caller passes `kind`: `files` is named after the file at line 1 (a convention; a location equal to the subject's means the whole file),
+// `classes` use `simpleName`, `functions` and `properties` use the last segment of `pkg[.Class].name`.
 internal fun siteOf(
     kind: SuiteKind,
     violation: Violation,
@@ -76,6 +49,5 @@ internal fun siteOf(
     return KontureViolationSite(file = relative, declaration = declaration, line = line)
 }
 
-/** One rejection, with its path written the way every other path in a report is written. */
 internal fun KontureViolationSite.toFileConstraintFailure(): FileConstraintFailure =
     FileConstraintFailure(file = file, declaration = declaration, line = line)

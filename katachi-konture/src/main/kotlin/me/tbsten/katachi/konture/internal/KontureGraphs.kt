@@ -13,59 +13,21 @@ import me.tbsten.katachi.konture.KatachiKontureGraphIncompleteException
 import me.tbsten.katachi.konture.KatachiKontureNoKotlinFilesException
 import me.tbsten.katachi.konture.KatachiKontureParseException
 
-/**
- * The only file extension Konture 1.0.1 parses.
- *
- * `.kts` is deliberately absent: Konture's `getDeclaredClassFqNames` reads `.kt` only, so a
- * `build.gradle.kts` inside what a constraint covers would never resolve symbols for the rest
- * and would be a count mismatch waiting to happen. `KontureAssumptionsSpec` (12) pins it.
- */
+// `.kts` is deliberately absent: Konture reads `.kt` only, so a script would never resolve symbols and would be a count mismatch waiting to happen.
 private const val PARSED_EXTENSION: String = ".kt"
 
-/** The one build and the one module of a synthesized graph. Only Konture's own messages ever print them. */
 private const val BUILD_ID: String = ":"
 private const val MODULE_PATH: String = ":"
 
-/**
- * The one source set every parsed file belongs to: `main`, production, JVM.
- *
- * Konture's builders select `SourceSets.production()` by default, and `membershipsFor` would
- * invent this same membership for a file with none. It is written out rather than left to the
- * fallback so that the graph says what it means, the way Konture's own loader does.
- */
 private val MAIN: SourceSetId = SourceSetId(MODULE_PATH, "main", SourceSetKind.JVM, SourceSetRole.PRODUCTION)
 
-/** `Module.sourceSets` for the same source set, as the Gradle plugin would have written it. */
 private val MAIN_SOURCE_SET: SourceSet =
     SourceSet(name = "main", kind = "KOTLIN_JVM", production = true, srcDirs = emptyList())
 
-/**
- * The memo key of one run's graph over one set of files.
- *
- * Backend specific, as `FileConstraintSubject.memo` asks: two constraints over the same files
- * share one graph, and nothing but this module can collide on the key.
- */
+// Backend specific, as `FileConstraintSubject.memo` asks: nothing but this module can collide on the key.
 internal data class KontureGraphKey(val files: List<String>)
 
-/**
- * A Konture project graph holding exactly the `.kt` files [subject] covers, and nothing else.
- *
- * Each wanted file is parsed on its own, so a constraint costs the files it covers rather than
- * everything under their directories, and a sibling it does not cover is never read. The graph
- * is memoised for the run under [KontureGraphKey], so two constraints over the same files parse
- * once. Across runs, Konture's own content-hashed `IncrementalAstCache` answers for an
- * unchanged file.
- *
- * Konture has no public parser, so the parse comes from [KontureSymbols]; the graph itself is
- * assembled with public constructors. Paths are absolute throughout, and the graph's
- * `filePath`s are compared with what was asked for before anything is trusted.
- *
- * @throws KatachiKontureNoKotlinFilesException when the constraint covers files but none that
- *   Konture parses, so the rules would be asked of an empty graph and pass by empty truth.
- * @throws KatachiKontureGraphIncompleteException when a wanted file could not be parsed as the
- *   file katachi asked for — it vanished after the walk, or Konture reports another file.
- * @throws KatachiKontureParseException when Konture's parser threw on a file that exists.
- */
+// Konture has no public parser, so the parse comes from `KontureSymbols`; the graph's `filePath`s are compared with what was asked for before anything is trusted.
 internal fun kontureGraphOf(subject: FileConstraintSubject): ProjectGraph {
     val wanted = subject.files
         .filter { it.endsWith(PARSED_EXTENSION) }
@@ -104,14 +66,7 @@ internal fun kontureGraphOf(subject: FileConstraintSubject): ProjectGraph {
     }
 }
 
-/**
- * Konture's parse of each of [wanted] that still exists and came back as the file asked for.
- *
- * A file that is gone, or a parse that Konture reports for another file, is left out, so the
- * caller's count check turns it into an exception rather than a graph that silently lacks it.
- * Every file is stamped with the one source set, the way Konture's own loader stamps a source
- * set's files.
- */
+// A gone file or a parse for another file is left out, so the caller's count check throws rather than building a graph that silently lacks it.
 private fun parsedFilesOf(wanted: List<String>): List<FileDeclaration> {
     // Deleted since the walk: left out, so that it becomes the count mismatch that names the problem.
     val files = wanted.map(::File).filter { it.isFile }
@@ -132,14 +87,7 @@ private fun parsedFilesOf(wanted: List<String>): List<FileDeclaration> {
     }
 }
 
-/**
- * Whether this parse is of [file], whatever spelling Konture gave it.
- *
- * Konture's parse cache is keyed by canonical path but keeps the `filePath` of the first parse
- * in this JVM, so the same file asked for under another spelling (`src/../src/`, `/tmp` against
- * `/private/tmp`, a symlinked worktree) comes back under the first one. The spellings are
- * compared first, because that costs nothing; the file system is asked only when they differ.
- */
+// Konture's parse cache keeps the `filePath` of the first parse in this JVM, so compare spellings first (free) and ask the file system only when they differ.
 private fun FileDeclaration.isAbout(file: File): Boolean {
     val reported = File(filePath)
     return reported.invariantSeparatorsPath == file.invariantSeparatorsPath ||

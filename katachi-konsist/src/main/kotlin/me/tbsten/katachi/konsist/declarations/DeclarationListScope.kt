@@ -25,6 +25,18 @@ import me.tbsten.katachi.dsl.KatachiDsl
  *     }
  * }
  * ```
+ *
+ * ## Example 2: names from the file and its path, a prohibition, and any parameters
+ * ```kt
+ * ktFileContent {
+ *     `package`("com.example.feature.${captureValue("feature")}")
+ *     allow(`class`, fileName) {
+ *         allow(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+ *         allow(`fun`, "on*")(anyArgs())
+ *     }
+ *     not.allow(`class`, "*Impl").except("DefaultImpl")
+ * }
+ * ```
  */
 @KatachiDsl
 @ExperimentalKatachiApi
@@ -33,21 +45,11 @@ public sealed interface DeclarationListScope : DeclarationVocabulary, Declaratio
      * The name of the file being checked, up to its first `.`: `Platform.android.kt` is
      * `Platform`. A plain `String`: the block runs once per file, so `replace`, `removePrefix` and
      * the rest work, and an `if` can tell files apart.
-     *
-     * ## Example 1: the state type named after the view model's file
-     * ```kt
-     * allow(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
-     * ```
      */
     public val fileName: String
 
     /**
      * What `capture(name)` in the role's layout took from the path of the file being checked.
-     *
-     * ## Example 1: the package named after the feature directory
-     * ```kt
-     * `package`("com.example.feature.${captureValue("feature")}")
-     * ```
      *
      * @throws KatachiKtFileContentUnknownCaptureException when the role's layout captures no
      *   [name], found when the check starts.
@@ -59,22 +61,12 @@ public sealed interface DeclarationListScope : DeclarationVocabulary, Declaratio
     /**
      * Starts a prohibited line, `not.allow(...)`: what it matches is a violation, even when an
      * allowed line matches it too.
-     *
-     * ## Example 1: no implementation class but the default one
-     * ```kt
-     * not.allow(`class`, "*Impl").except("DefaultImpl")
-     * ```
      */
     public val not: Prohibition
 
     /**
      * "Any parameters", for a function line that reads better with it than without; the same as
      * writing no parameters.
-     *
-     * ## Example 1: functions starting with `on`, whatever their parameters
-     * ```kt
-     * allow(`fun`, "on*")(anyArgs())
-     * ```
      */
     public fun anyArgs(): AnyArgs
 }
@@ -105,69 +97,47 @@ public sealed interface DeclarationListScope : DeclarationVocabulary, Declaratio
  *     }
  * }
  * ```
+ *
+ * ## Example 2: every package matches where its file is
+ * ```kt
+ * ktFileContent {
+ *     `package`(matchingDirectory)
+ *     `import`("**")
+ *     allow(anythingElse)
+ * }
+ * ```
  */
 @KatachiDsl
 @ExperimentalKatachiApi
 public sealed interface KtFileContentScope : DeclarationListScope {
-    /**
-     * Starts a prohibited line, which here can also be an import or a package.
-     *
-     * ## Example 1: every import but the Android framework's
-     * ```kt
-     * `import`("**")
-     * not.`import`("android.**")
-     * ```
-     */
+    /** Starts a prohibited line, which here can also be an import or a package. */
     override val not: FileProhibition
 
     /**
-     * Allows the packages matching [pattern], `.` separated: `*` is one level, `**` any number of
-     * levels, zero included: `"com.example.**"` matches `com.example` itself as well as `com.example.feature`.
+     * Allows the packages matching [pattern], a `.` separated path where `*` is one level and `**` any number.
+     *
+     * `**` matches zero levels too: `"com.example.**"` matches `com.example` itself as well as `com.example.feature`.
      * A package no package line matches is a violation, and with no package line written, every
      * declared package is one. A file that declares no package is matched only by a pattern of `**`
      * levels alone (`"**"`), so it passes `` `package`("**") `` and no other pattern.
-     *
-     * ## Example 1: the packages of the feature the file is in
-     * ```kt
-     * `package`("com.example.feature.${captureValue("feature")}.**")
-     * ```
      *
      * @throws KatachiKtFileContentPatternException when [pattern] is not a path katachi reads.
      */
     public fun `package`(pattern: String): PackageLine
 
-    /**
-     * Allows the package that matches the file's own directory: [matchingDirectory].
-     *
-     * ## Example 1: every package matches where its file is
-     * ```kt
-     * `package`(matchingDirectory)
-     * ```
-     */
+    /** Allows the package that matches the file's own directory: [matchingDirectory]. */
     public fun `package`(directory: MatchingDirectory): PackageLine
 
-    /**
-     * The file's own directory below its source set's `kotlin/`, as a package.
-     *
-     * ## Example 1: every package matches where its file is
-     * ```kt
-     * `package`(matchingDirectory)
-     * ```
-     */
+    /** The file's own directory below its source set's `kotlin/`, as a package. */
     public val matchingDirectory: MatchingDirectory
 
     /**
-     * Allows the imports whose path matches [pattern], `.` separated: `*` is one level, `**` any
-     * number of levels, zero included: `"com.example.App.**"` matches the class import
+     * Allows the imports whose path matches [pattern], a `.` separated path where `*` is one level and `**` any number.
+     *
+     * `**` matches zero levels too: `"com.example.App.**"` matches the class import
      * `com.example.App` itself as well as `com.example.App.Companion`. An import line only allows:
      * a file that does not import it is fine. A star import `import a.b.*` is matched as the path
      * `a.b.*`; an alias is not looked at.
-     *
-     * ## Example 1: imports of Kotlin and of the domain layer only
-     * ```kt
-     * `import`("kotlin.**")
-     * `import`("com.example.domain.**")
-     * ```
      *
      * @throws KatachiKtFileContentPatternException when [pattern] is not a path katachi reads.
      */

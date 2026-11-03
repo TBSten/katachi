@@ -6,35 +6,17 @@ import me.tbsten.katachi.dsl.FileConstraintFailure
 import me.tbsten.katachi.dsl.FileConstraintFix
 import me.tbsten.katachi.dsl.FileConstraintReason
 
-/*
- * The findings of one file worded as report blocks. Every line katachi writes here is ASCII;
- * only the names the user wrote and the file holds may be anything else.
- *
- * The `declaration` of a failure is what the baseline keys it by, so it never holds a line
- * number: `GetUserUseCaseImpl`, `HomeViewModel.isLoading`, `import android.content.Context`,
- * `package com.example.feature.homex`.
- */
+// A failure's `declaration` is what the baseline keys it by, so it never holds a line number.
 
 private const val NOT_ALLOWED: String = "Not allowed"
 private const val MISSING: String = "Missing"
 
-/**
- * What the block wrote no line for this file says on the file's first failure: the reason everything
- * in it is rejected, which a condition in the block (`if (fileName ...)`) is the likely cause of.
- */
 private val NOTHING_WRITTEN_NOTE: FileConstraintReason = FileConstraintReason(
     "Note",
     "ktFileContent { } wrote no line for this file, so nothing is allowed in it " +
         "(a condition in the block, such as if (fileName ...), may have left it out)",
 )
 
-/**
- * The [findings] of the file at [path] (project relative), whose rules are [rules], worded in the
- * same order. The fix that opens up a list no line allows -- `` `import`("**") ``,
- * `allow(anythingElse)` and the like -- is given once per list, on its first failure, so that a
- * file of many imports does not repeat it for each; a file the block wrote no line for says so on
- * its first failure.
- */
 internal fun failuresOf(findings: List<KtFileFinding>, path: String, rules: FileRules): List<FileConstraintFailure> {
     val opened = mutableListOf<OpeningKey>()
     return findings.mapIndexed { index, finding ->
@@ -46,7 +28,6 @@ internal fun failuresOf(findings: List<KtFileFinding>, path: String, rules: File
     }
 }
 
-/** The list whose opening fix a finding gives: its lines (by identity) and the classes it is the members of. */
 private class OpeningKey(val lines: Any, val containers: List<String>) {
     fun sameAs(other: OpeningKey): Boolean = lines === other.lines && containers == other.containers
 }
@@ -57,10 +38,6 @@ private fun openingKeyOf(finding: KtFileFinding, rules: FileRules): OpeningKey? 
     else -> null
 }
 
-/**
- * [finding] about the file at [path] (project relative), whose rules are [rules]. [opening] says
- * whether to give the fix that opens up its whole list, which [failuresOf] gives once per list.
- */
 private fun failureOf(finding: KtFileFinding, path: String, rules: FileRules, opening: Boolean): FileConstraintFailure = when (finding) {
     is UnexpectedDeclaration -> unexpectedDeclarationFailure(finding, path, opening)
     is ProhibitedDeclaration -> prohibitedDeclarationFailure(finding, path)
@@ -183,27 +160,17 @@ private fun missingDeclarationFailure(finding: MissingDeclaration, path: String)
     )
 }
 
-/** For a line some files can do without: write it with `allow(...)`, which lets it be without asking for it. */
 private fun notRequiredFix(rule: DeclarationRule): FileConstraintFix =
     FileConstraintFix("If some files do not need it, write allow(...) in place of required(...) at ${rule.declaredAt}")
 
-/**
- * The fixes of a missing line whose name a declaration of another shape has: the declaration is
- * there, so it is its shape, or the line, that needs changing.
- */
 private fun foundFixes(found: DeclarationFact, rule: DeclarationRule): List<FileConstraintFix> = extraModifierFixes(rule, found) + listOf(
     FileConstraintFix("Change the declaration" + (found.line?.let { " at line $it" } ?: "") + " to: ${renderRuleAsDeclaration(rule)}"),
     FileConstraintFix("Or change the line at ${rule.declaredAt} if the declaration is right"),
     notRequiredFix(rule),
 )
 
-/**
- * When the declaration carries modifiers the line does not allow (`suspend`), the two ways to make
- * them agree: let the line accept them, or take them off the declaration. Nothing otherwise.
- *
- * A fun interface's `fun` is a kind of the vocabulary, not a modifier value, so it cannot be made
- * `.optional()`: the line is told to write `` `fun`, `interface` `` instead.
- */
+// A fun interface's `fun` is a kind of the vocabulary, not a modifier value, so it cannot be `.optional()`:
+// the line is told to write `fun`, `interface` instead.
 private fun extraModifierFixes(rule: DeclarationRule, fact: DeclarationFact): List<FileConstraintFix> {
     val extra = extraModifiersOf(closestShapeOf(rule, fact).modifiers, fact).takeIf { it.isNotEmpty() } ?: return emptyList()
     val optional = extra.filter { it != ModifierName.Fun }
@@ -218,27 +185,17 @@ private fun extraModifierFixes(rule: DeclarationRule, fact: DeclarationFact): Li
     )
 }
 
-/**
- * The line that allows [fact] and nothing else of its kind and name: every modifier it carries,
- * as a line has to write them all, then its kind. A fun interface's `fun` goes right before
- * `` `interface` ``. Annotations are left out, as a line asks for none it does not write.
- */
 private fun allowLineOf(fact: DeclarationFact): String {
     val modifiers = fact.modifiers.filter { it != ModifierName.Fun }.sortedBy { it.ordinal }.map { it.keyword }
     val kinds = listOfNotNull("`fun`".takeIf { ModifierName.Fun in fact.modifiers }, "`${fact.kind.keyword}`")
     return "allow(${(modifiers + kinds + namePatternLiteral(fact.name)).joinToString(", ")})"
 }
 
-/** The fixes of an import that should not be there: remove it, or allow it at [site] with [code]. */
 private fun removeImportFixes(site: DeclarationSite, code: String, allowing: Boolean): List<FileConstraintFix> = listOf(
     FileConstraintFix("Remove the import and receive what it needs from outside"),
     if (allowing) allowItFix(site, code) else exceptFixWithCode("If this import is fine, exclude it from the prohibited line at $site:", code),
 )
 
-/**
- * The fix that comes first when no line at all is written for [list]: the list allows nothing, and
- * what lets everything through. `null` when a line is written.
- */
 private fun nothingWrittenFix(list: DeclarationListContext): FileConstraintFix? {
     val rules = list.rules
     if (rules.entries.isNotEmpty()) return null
@@ -332,10 +289,6 @@ private fun unexpectedPackageFailure(finding: UnexpectedPackage, path: String, b
     )
 }
 
-/**
- * [packageName], declared in a file whose block, at [site], writes no package line: no package may
- * be declared. [directoryPackage] is what the file's directory reads as.
- */
 private fun undeclaredPackageFailure(
     packageName: String,
     line: Int?,
@@ -359,7 +312,6 @@ private fun undeclaredPackageFailure(
     ruleDeclaredAt = site,
 )
 
-/** For a package that is the file's directory: allow every file the package its directory names. */
 private fun matchingDirectoryFix(site: DeclarationSite): FileConstraintFix =
     FileConstraintFix("Or allow the package each file's directory names, at $site:", code = listOf("`package`(matchingDirectory)"))
 
@@ -385,14 +337,9 @@ private fun prohibitedPackageFailure(finding: ProhibitedPackage, path: String): 
     )
 }
 
-/** `Allowed here` for the file's declarations, `Allowed members of class X` for a class's. */
 private fun headingOf(list: DeclarationListContext): String =
     list.container?.let { "Allowed members of ${renderContainer(it)}" } ?: "Allowed here"
 
-/**
- * The allowed lines and `anythingElse` lines of the list, in the order written, a required line no
- * declaration matches marked `(missing)`. The `not.` lines are left out: they allow nothing.
- */
 private fun allowedEntriesOf(list: DeclarationListContext): List<String> = list.rules.entries.mapNotNull { entry ->
     when (entry) {
         is DeclarationRule -> when {
@@ -404,10 +351,8 @@ private fun allowedEntriesOf(list: DeclarationListContext): List<String> = list.
     }
 }
 
-/** ` in class HomeViewModel` for a member, nothing for a declaration of the file. */
 private fun inContainer(list: DeclarationListContext): String = list.container?.let { " in ${renderContainer(it)}" }.orEmpty()
 
-/** An `anythingElse` line that asks for one visibility and nothing more, in every alternative. */
 private fun AnythingElseRule.allowsOnlyVisibilities(): Boolean = alternatives.all { set ->
     set.annotations.isEmpty() && set.modifiers.size == 1 && set.modifiers.single() in ModifierName.VISIBILITIES
 }

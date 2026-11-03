@@ -1,19 +1,9 @@
 package me.tbsten.katachi.konsist.declarations.internal
 
-/*
- * Rules written back the way Kotlin would write the declaration they describe, for a report, an
- * exception and the role page alike: `@HiltViewModel public class HomeViewModel : ViewModel`,
- * `suspend.optional() fun execute(...)`,
- * `public fun on*(): Unit`, `not class *Impl except DefaultImpl`, `private (anything)`.
- */
-
-/** What an `anythingElse` line prints after its modifiers. */
 internal const val ANYTHING: String = "(anything)"
 
-/** What a `package`(matchingDirectory) line prints in place of a package. */
 internal const val THE_FILES_DIRECTORY: String = "(the file's directory)"
 
-/** One declaration line: `<prefix> <name><details>`, with `not ` and ` except ...` when prohibited. */
 internal fun renderRule(rule: DeclarationRule): String = renderDeclaration(
     shapes = rule.shapes,
     name = rule.name.written,
@@ -25,10 +15,7 @@ internal fun renderRule(rule: DeclarationRule): String = renderDeclaration(
     except = rule.except.map { it.written },
 )
 
-/**
- * [rule] as the Kotlin declaration it asks for, for a fix that tells what to change the
- * declaration to: the `.optional()` modifiers left out, as the declaration may do without them.
- */
+// The `.optional()` modifiers are left out, as the declaration may do without them.
 internal fun renderRuleAsDeclaration(rule: DeclarationRule): String = renderDeclaration(
     shapes = rule.shapes.map { it.copy(modifiers = it.modifiers.copy(optional = emptyList())) },
     name = rule.name.written,
@@ -40,23 +27,15 @@ internal fun renderRuleAsDeclaration(rule: DeclarationRule): String = renderDecl
     except = rule.except.map { it.written },
 )
 
-/** `(anything)`, `private (anything)`, `(internal or private) (anything)`. */
 internal fun renderAnythingElse(rule: AnythingElseRule): String =
     listOf(renderModifierAlternatives(rule.alternatives), ANYTHING).filter { it.isNotEmpty() }.joinToString(" ")
 
-/** An `anythingElse` line still being written, with `not ` in front when [prohibited]: `not private (anything)`. */
 internal fun renderAnythingElseLine(alternatives: List<ModifierSet>, prohibited: Boolean): String =
     notOf(prohibited) + listOf(renderModifierAlternatives(alternatives), ANYTHING).filter { it.isNotEmpty() }.joinToString(" ")
 
-/** `import kotlin.**`, `not import android.** except android.os.**`. */
 internal fun renderImport(rule: ImportRule): String =
     renderImport(rule.path.written, rule.prohibited, rule.except.map { it.written })
 
-/**
- * `package com.example.**`, or for `matchingDirectory` `package (the file's directory)` -- or,
- * when [directoryPackage] says what the file's directory reads as,
- * `package com.example.home  (the file's directory)`.
- */
 internal fun renderPackage(rule: PackageRule, directoryPackage: String? = null): String {
     val target = when (val target = rule.target) {
         is PackageTarget.Pattern -> target.rule.written
@@ -65,18 +44,12 @@ internal fun renderPackage(rule: PackageRule, directoryPackage: String? = null):
     return renderPackage(target, rule.prohibited, rule.except.map { it.written })
 }
 
-/** The import line as written, also for one still being built. */
 internal fun renderImport(path: String, prohibited: Boolean, except: List<String>): String =
     "${notOf(prohibited)}import $path${exceptOf(except)}"
 
-/** The package line as written, also for one still being built. */
 internal fun renderPackage(target: String, prohibited: Boolean, except: List<String>): String =
     "${notOf(prohibited)}package $target${exceptOf(except)}"
 
-/**
- * One declaration line from its parts, also for one still being built (an exception names the line
- * it was raised for before the line is complete).
- */
 internal fun renderDeclaration(
     shapes: List<Shape>,
     name: String,
@@ -100,16 +73,7 @@ internal fun renderDeclaration(
     append(exceptOf(except))
 }
 
-/**
- * What comes before the name: the annotations, the modifiers and the kind of every candidate.
- *
- * - one candidate: `@A public data class`
- * - every combination of some sets and some kinds: the sets, then the kinds, each group in
- *   `( ... or ... )` when there is more than one -- `(class or interface)`,
- *   `sealed (class or interface)`, `(internal or private) data object`. What every set shares at
- *   its start or its end is written once outside the group, as it was written in front of `or`.
- * - anything else: every candidate in full, `(class or public interface)`.
- */
+// Tokens every set starts or ends with are written once outside the `( ... or ... )` group, as they were written in front of `or`.
 internal fun renderShapes(shapes: List<Shape>): String {
     val distinct = shapes.distinct()
     if (distinct.isEmpty()) return ""
@@ -127,25 +91,17 @@ internal fun renderShapes(shapes: List<Shape>): String {
     }
 }
 
-/** `class`, `(class or interface)`: the kinds of a kind value, as `toString` and an exception print it. */
 internal fun renderKinds(kinds: List<DeclarationKindName>): String =
     kinds.singleOrNull()?.keyword ?: kinds.joinToString(" or ", "(", ")") { it.keyword }
 
-/** `@A @B public data`, `suspend.optional()`: as [tokensOf] lists them. Empty for none. */
 internal fun renderModifierSet(set: ModifierSet): String = tokensOf(set).joinToString(" ")
 
-/** The alternatives of an `anythingElse` line or of a `Modifiers`: `private`, `(internal or private)`, or nothing. */
 internal fun renderModifierAlternatives(sets: List<ModifierSet>): String =
     renderAlternativesOrNull(sets.distinct())
         ?: sets.distinct().joinToString(" or ", "(", ")") { renderModifierSet(it).ifEmpty { NO_MODIFIER } }
 
-/** How a set with nothing in it reads when it has to be printed among others. */
 private const val NO_MODIFIER: String = "no modifier"
 
-/**
- * The annotations as written, then the modifiers in Kotlin's order, each `.optional()` value as
- * written (`suspend.optional()`, `(internal or private).optional()`) at the place of its first modifier.
- */
 private fun tokensOf(set: ModifierSet): List<String> {
     val required = set.modifiers.map { it.ordinal to it.keyword }
     val optional = set.optional.filter { it.isNotEmpty() }.map { group ->
@@ -154,14 +110,10 @@ private fun tokensOf(set: ModifierSet): List<String> {
     return set.annotations.map { "@${it.written}" } + (required + optional).sortedBy { it.first }.map { it.second }
 }
 
-/** `suspend.optional()`, `(internal or private).optional()`. */
 private fun renderOptional(group: List<ModifierName>): String =
     (group.singleOrNull()?.keyword ?: group.joinToString(" or ", "(", ")") { it.keyword }) + ".optional()"
 
-/**
- * [sets] as one group, or `null` when one of several is empty (`(public or )` cannot be written).
- * Tokens every set starts or ends with are taken out of the group.
- */
+// null when one of several sets is empty: `(public or )` cannot be written.
 private fun renderAlternativesOrNull(sets: List<ModifierSet>): String? {
     if (sets.size == 1) return renderModifierSet(sets.single())
     val tokens = sets.map(::tokensOf)

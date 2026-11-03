@@ -4,8 +4,9 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.konsist.declarations.internal.requiredWriter
 
 /**
- * The `required(...)` lines for a fun interface: `` `fun` `` and `` `interface` `` one after the
- * other, as on an `allow(...)` line, and the fun interface has to be there.
+ * The `required(...)` lines for a fun interface that has to be there.
+ *
+ * `` `fun` `` and `` `interface` `` are written one after the other, as on an `allow(...)` line.
  *
  * ## Example 1: a listener named after the file
  * ```kt
