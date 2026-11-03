@@ -7,7 +7,6 @@ plugins {
 
 kotlin {
     jvmToolchain(17)
-    // Every compiler warning fails the build, so none accumulate unnoticed.
     compilerOptions {
         allWarningsAsErrors.set(true)
     }
@@ -15,14 +14,10 @@ kotlin {
 
 tasks.test {
     useJUnitPlatform()
-    // The tests check the whole repository, which is not an input of this task: without this,
-    // adding or moving a file would leave the task UP-TO-DATE and the check would be skipped.
     outputs.upToDateWhen { false }
     outputs.cacheIf { false }
     testLogging {
         events("passed", "failed", "skipped")
-        // The violations are listed in the assertion message; without FULL the console shows
-        // only the exception type and the line that threw it.
         exceptionFormat = TestExceptionFormat.FULL
     }
     systemProperty(
@@ -33,27 +28,17 @@ tasks.test {
 
 dependencies {
     testImplementation(libs.katachi)
-    // For the @Language("markdown") on allowedContents / forbiddenContents in DocumentSections.kt.
-    // The annotation is not needed at run time, so testCompileOnly.
     testCompileOnly(libs.jetbrainsAnnotations)
-    // `ktFileContent { }` in the roles: what a Kotlin file of the role may hold. It is checked by
-    // `FileConstraintCheck()`, which `ProjectArchitectureTest` passes.
     testImplementation(libs.katachiKonsist)
     testImplementation(libs.kotestRunnerJunit5)
     testImplementation(libs.kotestAssertionsCore)
 
-    // `ProjectArchitectureTest` is a plain JUnit 5 test -- the form a user writes. kotest's
-    // runner puts the Jupiter API on the compile classpath but registers only kotest's own
-    // engine, so without `junit-jupiter` (API plus engine) that test would compile and then be
-    // discovered by nothing. The BOM also lines up the junit-platform kotest brings in.
     testImplementation(platform(libs.junitBom))
     testImplementation(libs.junitJupiter)
     testRuntimeOnly(libs.junitPlatformLauncher)
 }
 
 katachi {
-    // Writes the violations as SARIF 2.1.0 to build/reports/katachi/katachi.sarif (this module's
-    // Test task is `test`). The root build's checkSample*Build checks the file after the run.
     report {
         sarif = true
     }
