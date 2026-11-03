@@ -42,8 +42,8 @@ class TemplateSetRowsTest {
         form = form,
     )
 
-    private fun uiRowOf(state: KatachiScreenState, row: ModuleTemplate): TemplateRowUi =
-        listItemsOf(state, JapaneseKatachiStrings).filterIsInstance<ListItemUi.Row>().first { it.row.id == row.id }.row
+    private fun uiRowOf(state: KatachiScreenState, row: ModuleTemplate, strings: KatachiStrings = JapaneseKatachiStrings): TemplateRowUi =
+        listItemsOf(state, strings).filterIsInstance<ListItemUi.Row>().first { it.row.id == row.id }.row
 
     @Test
     fun `組の行には組のバッジとメンバの題を中黒でつないだ行が付く`() {
@@ -53,6 +53,16 @@ class TemplateSetRowsTest {
         assertEquals("組", set.badge)
         assertEquals("Screen・ViewModel", set.memberLine)
         assertEquals("メンバ 2 件: Screen・ViewModel", set.memberTooltip)
+    }
+
+    @Test
+    fun `英語の IDE ではメンバの題をカンマでつなぐ`() {
+        val ui = uiRowOf(stateOf(setRow, repoRow), setRow, EnglishKatachiStrings)
+
+        val set = ui.set ?: throw AssertionError("set row")
+        assertEquals("set", set.badge)
+        assertEquals("Screen, ViewModel", set.memberLine)
+        assertEquals("2 members: Screen, ViewModel", set.memberTooltip)
     }
 
     @Test

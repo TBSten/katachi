@@ -151,6 +151,7 @@ internal object EnglishKatachiStrings : KatachiStrings {
     // ---- L-S: template-set ----
     override val setBadge = "set"
     override fun setMembers(count: Int) = if (count == 1) "1 member" else "$count members"
+    override val setMemberSeparator = ", "
 
     // ---- L-A: ide-authoring ----
     override val definitionRejected = "katachi could not read the definition."

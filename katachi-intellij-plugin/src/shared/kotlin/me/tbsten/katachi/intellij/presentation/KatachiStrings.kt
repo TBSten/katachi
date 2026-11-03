@@ -168,6 +168,9 @@ internal interface KatachiStrings : CandidateStrings {
     /** The tooltip lead of a template set's member line: how many templates the set runs. */
     fun setMembers(count: Int): String
 
+    /** What joins the member titles in a template set's member line. */
+    val setMemberSeparator: String
+
     // ---- L-A: ide-authoring ----
     /** The heading of the load error when katachi could not read the definition (a mistake in it, design 2.5). */
     val definitionRejected: String

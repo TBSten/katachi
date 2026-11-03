@@ -129,11 +129,9 @@ private fun baseRowOf(hit: SearchHit, state: KatachiScreenState, strings: Katach
 private fun setRowOf(set: TemplateSetModel?, strings: KatachiStrings): SetRowUi? {
     if (set == null) return null
     if (set.members.isEmpty()) return SetRowUi(strings.setBadge)
-    val titles = set.members.joinToString(MEMBER_SEPARATOR) { it.title }
+    val titles = set.members.joinToString(strings.setMemberSeparator) { it.title }
     return SetRowUi(strings.setBadge, titles, "${strings.setMembers(set.members.size)}: $titles")
 }
-
-private const val MEMBER_SEPARATOR = "・"
 
 /** "filled 2/3" of a folded form: shown fields holding a value (Booleans always do). */
 private fun filledNoteOf(row: ModuleTemplate, state: KatachiScreenState, strings: KatachiStrings): String {

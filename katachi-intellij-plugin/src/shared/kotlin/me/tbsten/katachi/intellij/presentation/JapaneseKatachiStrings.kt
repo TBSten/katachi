@@ -150,6 +150,7 @@ internal object JapaneseKatachiStrings : KatachiStrings {
     // ---- L-S: template-set ----
     override val setBadge = "組"
     override fun setMembers(count: Int) = "メンバ $count 件"
+    override val setMemberSeparator = "・"
 
     // ---- L-A: ide-authoring ----
     override val definitionRejected = "katachi が定義を読めませんでした。"
