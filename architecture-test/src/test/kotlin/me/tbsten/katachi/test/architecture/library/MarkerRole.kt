@@ -3,21 +3,12 @@ package me.tbsten.katachi.test.architecture.library
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.LayoutScope
-import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 import me.tbsten.katachi.konsist.konsist
-import me.tbsten.katachi.test.architecture.INTERNAL_PACKAGE_RULE
-import me.tbsten.katachi.test.architecture.KDOC_EXAMPLE_RULE
-import me.tbsten.katachi.test.architecture.KDOC_TAG_ORDER_RULE
-import me.tbsten.katachi.test.architecture.laterLayerImportsOf
-import me.tbsten.katachi.test.architecture.misplacedDeclarationsOf
-import me.tbsten.katachi.test.architecture.publicDeclarationsOf
-import me.tbsten.katachi.test.architecture.keepsBlockTagsLast
-import me.tbsten.katachi.test.architecture.showsExample
-import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
+import me.tbsten.katachi.test.architecture.*
 
 fun DeclarationContainerScope.marker() = "Marker".role {
     title = "マーカーと例外基底"
@@ -49,7 +40,6 @@ private const val LAYER: String = ""
 private fun LayoutScope.packageAndLayerImports() =
     ktFileContent {
         `package`(matchingDirectory)
-        `import`("**")
         laterLayerImportsOf(LAYER).forEach { not.`import`(it) }
         // What the root package is for: the opt-in markers and the exception bases a user catches,
         allow(public, annotation, `class`, "*KatachiApi")

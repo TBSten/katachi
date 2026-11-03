@@ -12,16 +12,6 @@ import me.tbsten.katachi.test.architecture.sample.sampleGroup
 import me.tbsten.katachi.test.architecture.testing.testingGroup
 import me.tbsten.katachi.test.architecture.tool.toolGroup
 
-// Where each module keeps its production sources, below its own `src/main/kotlin`, and its test
-// sources below `src/test/kotlin`. Written out rather than derived from the module name:
-// `:katachi` is the root package itself and `:katachi-konsist` and `:katachi-konture` sit *inside* it, as
-// `me.tbsten.katachi.konsist` and `me.tbsten.katachi.konture`, because the backend is one more package of the library rather than
-// a library of its own.
-//
-// Test code lives one level deeper than production code, under `me.tbsten.katachi.test`, and that
-// is load bearing rather than a convention: `isKatachiFrame` (katachi's `dsl/internal/DeclarationSites.kt`) skips every frame under
-// `me.tbsten.katachi.` except `me.tbsten.katachi.test.`, and outside it `declaredAt` would point into kotest.
-
 const val KATACHI_MAIN_PACKAGE: String = "me/tbsten/katachi"
 
 const val KONSIST_MAIN_PACKAGE: String = "me/tbsten/katachi/konsist"
@@ -36,12 +26,8 @@ const val KONSIST_TEST_PACKAGE: String = "me/tbsten/katachi/test/konsist"
 
 const val KONTURE_TEST_PACKAGE: String = "me/tbsten/katachi/test/konture"
 
-const val DOKKA_TEST_PACKAGE: String = "me/tbsten/katachi/test/dokka"
-
 const val ARCHITECTURE_TEST_PACKAGE: String = "me/tbsten/katachi/test/architecture"
 
-// None of the group functions called here (nor the roles they call) may be `inline`: an inlined frame
-// reports the caller's file with a line number past its end. `DeclarationSiteSpec` is what checks it.
 val projectArchitecture: Architecture = architecture {
     libraryGroup()
     backendGroup()
