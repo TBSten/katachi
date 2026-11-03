@@ -21,20 +21,9 @@ import org.jetbrains.kotlin.psi.KtObjectDeclaration
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtTypeAlias
 
-/** A top-level declaration and the leaf its ◆ is keyed on: its name's identifier. */
 internal data class SourceDeclarationPsi(val declaration: SourceDeclaration, val leaf: SmartPsiElementPointer<PsiElement>)
 
-/**
- * The top-level declarations of a `.kt` file as the gutter binds them (design 2.1, 2.4): read from the PSI alone,
- * without resolving or the indexes, so they are there in dumb mode. Cached on the file until it changes. A Kotlin
- * script gives none (`ktFileContent { }` does not look at `.kts`), nor do `@file:` annotations and imports.
- *
- * Call under a read lock, from the background.
- *
- * ```kotlin
- * val declarations = SourceDeclarations.of(ktFile).map { it.declaration }
- * ```
- */
+// Read from the PSI alone (no resolve, no index) so it works in dumb mode. Call under a read lock, from the background.
 internal object SourceDeclarations {
     fun of(file: KtFile): List<SourceDeclarationPsi> =
         sdkCall("read the top-level declarations of ${file.name}") {
@@ -55,7 +44,6 @@ internal object SourceDeclarations {
         }
     }
 
-    /** The kinds katachi names (design 2.4); an anonymous or unknown declaration (a script's, an error's) gets none. */
     private fun kindOf(declaration: KtDeclaration): SourceDeclarationKind? = when (declaration) {
         is KtClass -> if (declaration.isInterface()) SourceDeclarationKind.Interface else SourceDeclarationKind.Class
         is KtObjectDeclaration -> if (declaration.isObjectLiteral()) null else SourceDeclarationKind.Object
@@ -65,17 +53,12 @@ internal object SourceDeclarations {
         else -> null
     }
 
-    /** Where the declaration starts as katachi counts lines: its first annotation or modifier, after its KDoc. */
     fun startOffsetOf(declaration: KtDeclaration): Int =
         generateSequence(declaration.firstChild) { it.nextSibling }
             .firstOrNull { it !is PsiComment && it !is PsiWhiteSpace }
             ?.textRange?.startOffset
             ?: declaration.textRange.startOffset
 
-    /**
-     * The first leaf of [element] (or after it) that is not white space: where a ◆ for the whole file goes. A plain text file is
-     * one leaf, so one that holds only white space is not a leaf to put it on.
-     */
     fun firstLeafOf(element: PsiElement): PsiElement? =
         generateSequence(PsiTreeUtil.firstChild(element)) { PsiTreeUtil.nextLeaf(it) }
             .firstOrNull { it !is PsiWhiteSpace && it.textLength > 0 && it.text.isNotBlank() }

@@ -42,28 +42,11 @@ import java.awt.datatransfer.StringSelection
 import java.io.IOException
 import java.nio.file.Path
 
-/**
- * [IdeEffects] over the IntelliJ API. Every effect is dropped once [project] is disposed (E-49), and
- * UI work hops to the EDT itself, so the ViewModel may call from any thread.
- *
- * Every SDK call goes through [sdkCall]: an effect the IDE failed at is logged and reported through
- * the return value where the screen shows it (no label, files not opened, "stop" at a conflict),
- * and never reaches the ViewModel as an exception, which would turn a finished generation into a
- * failed one.
- */
+// SDK failures must not reach the ViewModel as exceptions: that would turn a finished generation into a failed one.
 internal class IdeEffectsImpl(
     private val project: Project,
-    /** Marks the save of `saveAllDocuments` as the plugin's own for the file watcher (design 4.8). */
     private val ownSave: OwnSaveMark = OwnSaveMark(),
-    /**
-     * Where a Role's `declaredAt` is among the definition's test sources (T-10). Asked when the user opens a definition, not at
-     * construction: the project service that owns the resolver is built after its ports. A test passes its own.
-     */
     private val siteResolver: () -> DeclarationSiteResolver? = { KatachiProjectService.getInstance(project).siteResolver },
-    /**
-     * Runs first inside the SDK calls of the generation from an entry, with [EntrySdkCall] naming which;
-     * a test throws from it to play the IDE failing there. Does nothing in the IDE.
-     */
     private val entrySdkProbe: (EntrySdkCall) -> Unit = {},
 ) : IdeEffects {
     override suspend fun saveAllDocuments() {
@@ -78,12 +61,6 @@ internal class IdeEffectsImpl(
         return name.takeIf { put?.isSuccess == true }
     }
 
-    /**
-     * Refreshes from the nearest ancestor the VFS already knows, so new directories appear with
-     * their files; files that were already loaded (overwritten, maybe open) are marked dirty so
-     * their editors reload (spec 04). Synchronous, on a background thread. A refresh the IDE fails
-     * at leaves the files as the VFS knew them; [openFiles] finds them anyway.
-     */
     override suspend fun refreshFiles(paths: List<Path>) {
         if (paths.isEmpty() || project.isDisposed) return
         withContext(Dispatchers.IO) {
@@ -162,11 +139,6 @@ internal class IdeEffectsImpl(
         }.isSuccess
     } == true
 
-    /**
-     * Writes through the VFS (`VfsUtil.saveText`), so the file is saved at once and its Document, if open,
-     * follows without becoming unsaved (S2 (a3)). Opens it whatever "open after generation" says
-     * (decision 13); a file the editor failed to open is still written, and a balloon says so.
-     */
     override suspend fun writeProvisionalFile(path: Path, text: String): Boolean {
         val file = onEdt {
             sdkCall("write the provisional file $path") {
@@ -184,7 +156,7 @@ internal class IdeEffectsImpl(
         return true
     }
 
-    /** Call inside a write action. */
+    // Call inside a write action.
     private fun writeFile(path: Path, text: String): VirtualFile {
         val directory = VfsUtil.createDirectoryIfMissing(path.parent.toString()) ?: throw IOException("The VFS did not create ${path.parent}")
         val name = path.fileName.toString()
@@ -193,7 +165,6 @@ internal class IdeEffectsImpl(
         return file
     }
 
-    /** The open Document's text when there is one (unsaved edits included), else the disk's (decision 12). */
     override suspend fun currentText(path: Path): CharSequence? = withContext(Dispatchers.IO) {
         val shown = sdkCall("read the Document of $path") {
             readAction { cachedDocumentOf(path)?.immutableCharSequence }
@@ -201,7 +172,6 @@ internal class IdeEffectsImpl(
         shown ?: NioProjectFileSystem.readText(path)
     }
 
-    /** `true` when the IDE cannot tell: a generation then stops rather than overwrite what may be unsaved. */
     override suspend fun hasUnsavedChanges(path: Path): Boolean = withContext(Dispatchers.IO) {
         sdkCall("ask whether $path has unsaved changes") {
             readAction { cachedDocumentOf(path)?.let { FileDocumentManager.getInstance().isDocumentUnsaved(it) } == true }
@@ -218,10 +188,6 @@ internal class IdeEffectsImpl(
         sdkCall("find the package of $directory") { readAction { packageOfDirectory(project, directory) } }.getOrNull()
     }
 
-    /**
-     * Makes each open Document show what Gradle wrote even when the VFS missed the change (same length and
-     * time, S2 (a)). A Document with unsaved edits is left to the platform, which asks the user.
-     */
     override suspend fun reloadFromDisk(paths: List<Path>) {
         if (paths.isEmpty()) return
         onEdt {
@@ -238,7 +204,6 @@ internal class IdeEffectsImpl(
         }
     }
 
-    /** Always shown, the tool window or not: the user started it from the editor or the New menu. */
     override fun notifyEntryGenerationFailed(failure: EntryGenerationFailure) = warn(entryFailureText(failure))
 
     override fun notifyEntryGenerationRefused(refusal: EntryGenerationRefusal) = warn(entryRefusalText(refusal))
@@ -252,12 +217,10 @@ internal class IdeEffectsImpl(
             .notify(project)
     }
 
-    /** Runs [block] on the EDT unless the project is gone; `null` when it was. */
     private suspend fun <T> onEdt(block: suspend () -> T): T? = withContext(Dispatchers.EDT) {
         if (project.isDisposed) null else block()
     }
 
-    /** Runs [block], which does [action], on the EDT later, unless the project is gone by then. */
     private fun later(action: String, block: () -> Unit) {
         sdkCall("schedule: $action") {
             ApplicationManager.getApplication().invokeLater({ sdkCall(action, block) }, project.disposed)
@@ -265,20 +228,15 @@ internal class IdeEffectsImpl(
     }
 }
 
-/** Which SDK call of the generation from an entry [IdeEffectsImpl]'s probe is in. */
 internal enum class EntrySdkCall {
-    /** Creating the directories and writing the provisional file. */
     WriteAction,
 
-    /** `FileEditorManager`: opening the provisional file. */
     Editor,
 }
 
-/** Call in a read action. The Document the IDE holds for [path], if any; loads nothing. */
 private fun cachedDocumentOf(path: Path): Document? =
     LocalFileSystem.getInstance().findFileByNioFile(path)?.let { FileDocumentManager.getInstance().getCachedDocument(it) }
 
-/** Called inside [sdkCall]. */
 private fun knownAncestorOf(path: Path): VirtualFile? {
     val fileSystem = LocalFileSystem.getInstance()
     var current: Path? = path.parent
@@ -289,10 +247,6 @@ private fun knownAncestorOf(path: Path): VirtualFile? {
     return null
 }
 
-/**
- * The docs page for [page] in [language] (`ja` or `en`, the tool window's language): Japanese under `ja/`, English at the root.
- * There is no "update" page yet, so Update points at the install page.
- */
 internal fun docsUrlOf(page: DocsPage, language: String = KatachiBundle.message("toolWindow.language")): String {
     val prefix = if (language == "ja") "ja/" else ""
     return DOCS_ROOT + prefix + when (page) {

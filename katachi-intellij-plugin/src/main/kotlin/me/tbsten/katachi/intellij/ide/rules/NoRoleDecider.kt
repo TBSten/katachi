@@ -15,29 +15,13 @@ import me.tbsten.katachi.intellij.presentation.rules.decideNoRoleNotification
 import me.tbsten.katachi.intellij.presentation.rules.shouldEnsureDefinitionLoaded
 import java.nio.file.Path
 
-/** A file the "no role holds this file" notification shows for, and what its clicks reach (the `VirtualFile`s [decision] cannot hold). */
 internal class NoRoleFound(
     val decision: NoRoleDecision.NoRole,
-    /** Where each of [NoRoleDecision.NoRole.nearby] is declared, position by position. */
     val nearbySites: List<ResolvedSite>,
-    /** Where `architecture { }` is written. */
     val architectureSite: ResolvedSite?,
 )
 
-/**
- * Gathers [NoRoleInput] for [file] and decides. Runs in the background under a read lock: `forFile` and the
- * declaration lookups (`resolve`) are for the background thread (design 4). `null`: no notification. A file that
- * some role holds ends here after one cached `forFile`, without asking the VCS or resolving anything.
- *
- * Side effects, all of the platform's kind: it starts the definition's load when nothing was read (unless the user
- * turned loading without a user action off), tells the memory to recompute all notifications whenever the definition's
- * state changes, and, while the file shows the notification, to recompute it when its VCS status changes.
- *
- * ```kotlin
- * val found = decideNoRole(ports, file, path) ?: return null
- * found.decision.nearby  // the rows of the popup
- * ```
- */
+// Runs in the background under a read lock: `forFile` and `resolve` are for the background thread.
 internal fun decideNoRole(ports: RulesPorts, file: VirtualFile, path: Path): NoRoleFound? {
     val settings = ports.settings()
     if (!settings.notificationsEnabled || !settings.notifyOnNoRole) return null
@@ -86,7 +70,6 @@ internal fun decideNoRole(ports: RulesPorts, file: VirtualFile, path: Path): NoR
     return NoRoleFound(noRole, nearbySites, architectureSite)
 }
 
-/** The baseline the definition names, read through [ports]; a definition without `architecture { }` is [BaselineReading.Missing], so the wording stays conditional. */
 private fun baselineOf(ports: RulesPorts, projectRoot: Path, architecture: ArchitectureModel?): BaselineReading {
     architecture ?: return BaselineReading.Missing
     val name = architecture.baseline ?: return BaselineReading.NotConfigured

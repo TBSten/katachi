@@ -34,23 +34,7 @@ import me.tbsten.katachi.intellij.model.answer
 import java.nio.file.Path
 import java.time.Instant
 
-/**
- * The violations of the definition modules' last check, read from their SARIF files (design 4.7), and the
- * check run from the IDE. IntelliJ-free: `KatachiViolationsService` feeds it the file changes and exposes it.
- *
- * - [read] reads every module's SARIF files into one [ViolationsState.Ready]; none at all is
- *   [ViolationsState.NotRun]. A file cut off by a write still running is read again [retryDelayMillis]
- *   later, up to [retries] times, then [ViolationsState.Unreadable] keeps the previous answer.
- * - While [runCheck] runs a module's check, its SARIF files going away (the test task deletes the last
- *   report first) keep that module's previous results instead of flashing "not run".
- * - A change of the project after the read marks the answer stale; the results stay.
- *
- * ```kotlin
- * val store = ViolationsStore(scope, runner, NioProjectFileSystem, modules = { definitionModules })
- * store.runCheck(module.id).await()
- * val here = store.forPath(file)
- * ```
- */
+// A SARIF file cut off by a running write is read again; while `runCheck` runs, vanished reports keep the module's previous results.
 internal class ViolationsStore(
     private val scope: CoroutineScope,
     private val runner: GradleTaskRunner,
@@ -60,17 +44,9 @@ internal class ViolationsStore(
     private val retryDelayMillis: Long = RETRY_DELAY_MILLIS,
     private val retries: Int = RETRIES,
     private val clock: () -> Instant = Instant::now,
-    /**
-     * A check ended (well, or with failing tests) but left no SARIF: `report { sarif = true }` is missing (decision U-4).
-     * A check that failed to compile or never found its task does not say anything about the report: not here.
-     */
     private val onSarifMissing: (KatachiModule) -> Unit = {},
-    /**
-     * Called before [module]'s SARIF files are listed, off the EDT. The IDE makes the VFS know the report
-     * directories here, so that a report written by a terminal's Gradle reaches the file watcher (design 4.7).
-     */
+    // Call before listing the module's SARIF files, off the EDT, so the VFS knows the report.
     private val beforeRead: (KatachiModule) -> Unit = {},
-    /** Where an unexpected exception of a background read or check is reported (a WARN in the IDE log). */
     private val onError: (message: String, cause: Throwable) -> Unit = { _, _ -> },
 ) {
     private val mutableState = MutableStateFlow<ViolationsState>(ViolationsState.NotRun)
@@ -85,10 +61,6 @@ internal class ViolationsStore(
 
     @Volatile private var index: Pair<ViolationsState.Ready, Map<Path, List<ViolationModel>>>? = null
 
-    /**
-     * Reads the SARIF files again, in the background. Whatever goes wrong (a report directory deleted while it is
-     * listed, a parser surprise) ends as [ViolationsState.Unreadable] with the previous answer, never as an exception of [scope].
-     */
     fun refresh(): Job = scope.launch {
         try {
             read()
@@ -102,7 +74,6 @@ internal class ViolationsStore(
         }
     }
 
-    /** Reads every definition module's SARIF files now (no Gradle) and publishes the result. */
     suspend fun read() = readLock.withLock {
         val previous = mutableState.value.answer
         val running = mutableRunning.value
@@ -144,7 +115,6 @@ internal class ViolationsStore(
         }
     }
 
-    /** What the file watcher saw (design 4.7): a new SARIF is read, any other change of the project makes the answer stale. */
     fun onFilesChanged(changes: FileChanges) {
         when {
             changes.sarifChanged.isNotEmpty() -> refresh()
@@ -154,7 +124,6 @@ internal class ViolationsStore(
         }
     }
 
-    /** The violations whose `locations[0]` is [path]. */
     fun forPath(path: Path): List<ViolationModel> {
         val ready = mutableState.value.answer ?: return emptyList()
         val current = index?.takeIf { it.first === ready } ?: (ready to indexOf(ready.runs)).also { index = it }
@@ -163,10 +132,6 @@ internal class ViolationsStore(
 
     fun forModule(module: ModuleId): List<ViolationModel> = mutableState.value.answer?.runs.orEmpty().filter { it.module == module }
 
-    /**
-     * Runs [module]'s `test` task ([CHECK_TASK]) through [runner], then reads the SARIF files. A second call
-     * while it runs returns the same run. An unknown module fails without running Gradle.
-     */
     fun runCheck(module: ModuleId): Deferred<GradleRunOutcome> = synchronized(checkLock) {
         checks[module]?.let { return it }
         val target = modules().firstOrNull { it.id == module } ?: return CompletableDeferred(GradleRunOutcome.Failed)
@@ -199,11 +164,6 @@ internal class ViolationsStore(
         }
     }
 
-    /**
-     * Whether [module]'s check ended without a SARIF in a way that points at the missing `report { sarif = true }`: it
-     * succeeded, or its tests failed (the common case: `assert()` fails on a violation). Not a compile error, a
-     * missing task or a rejected command line.
-     */
     private fun leftNoReport(module: KatachiModule, outcome: GradleRunOutcome, output: List<String>): Boolean {
         val reachedTests = when (outcome) {
             GradleRunOutcome.Succeeded -> true
@@ -242,12 +202,10 @@ internal class ViolationsStore(
     }
 
     companion object {
-        /** The task a check runs in the definition module: katachi's `assert()` runs in its tests. */
         const val CHECK_TASK: String = "test"
         const val RETRY_DELAY_MILLIS: Long = 300L
         const val RETRIES: Int = 3
     }
 }
 
-/** An unexpected exception as one line for the state's reason. */
 private fun messageOf(e: Exception): String = listOfNotNull(e::class.simpleName, e.message).joinToString(": ")

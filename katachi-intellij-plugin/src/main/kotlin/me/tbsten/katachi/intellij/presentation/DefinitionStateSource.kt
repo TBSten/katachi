@@ -15,26 +15,13 @@ import me.tbsten.katachi.intellij.model.startLoading
 import me.tbsten.katachi.intellij.model.unavailable
 import java.time.Instant
 
-/**
- * What of the tool window's state the definition model depends on (design 3: the ViewModel's state is
- * the one source; the definitions are derived from it as the placement index is). Two states with the
- * same source give the same [DefinitionState], so typing in the form changes nothing.
- *
- * ```kotlin
- * val source = DefinitionStateSource.of(viewModel.state.value, started, loadsWithoutUser)
- * val next = nextDefinitionState(current, lastSource, source, Instant.now())
- * ```
- */
 internal data class DefinitionStateSource(
     val phase: ScreenPhase,
     val modules: List<KatachiModule>,
-    /** The list on screen: the cached JSON, then the latest load. */
     val snapshots: List<DescriptionSnapshot>,
     val loading: Boolean,
-    /** A reload failed while a list stays on screen. */
     val failure: LoadFailure?,
     val loadStarted: Boolean,
-    /** The setting "load without a user action" when the source was taken. */
     val loadsWithoutUser: Boolean,
 ) {
     companion object {
@@ -50,21 +37,6 @@ internal data class DefinitionStateSource(
     }
 }
 
-/**
- * The [DefinitionState] after [current] once the tool window's state goes from [previous] to [source], at
- * [now] (design 4.3). An answer is never dropped: it moves to `Loading(previous)`, `Unavailable(previous)`
- * or a stale `Ready`.
- *
- * - Nothing to read: the synced data has no definition module ([DefinitionUnavailableReason.NoDefinition] /
- *   [DefinitionUnavailableReason.NotSynced]), or every module is katachi 0.2.x ([DefinitionUnavailableReason.KatachiTooOld]).
- * - A load running: [DefinitionState.Loading].
- * - A load failed: the answer goes stale ([StaleReason.ReloadFailed]), or with none [DefinitionUnavailableReason.LoadFailed].
- * - A list read: [DefinitionState.Ready]. The same list as before (a cancelled load, a form change) keeps the
- *   answer as it was, a stale mark included. A list read from the disk's cache that no load of this session
- *   confirmed (loading without the user is off) is stale: the definition may have changed since.
- * - Modules found, nothing read: [DefinitionState.NotLoaded], or with loading without the user off
- *   [DefinitionUnavailableReason.LoadingWithoutUserDisabled].
- */
 internal fun nextDefinitionState(
     current: DefinitionState,
     previous: DefinitionStateSource?,
@@ -102,7 +74,6 @@ private fun unavailableReasonOf(source: DefinitionStateSource): DefinitionUnavai
     return null
 }
 
-/** The definition part of each snapshot that has one (a templates-only module has none), in list order. */
 internal fun definitionsOf(snapshots: List<DescriptionSnapshot>): List<DefinitionSnapshot> = snapshots.mapNotNull { snapshot ->
     snapshot.definition?.let { DefinitionSnapshot(snapshot.module, it, snapshot.templates, snapshot.katachiVersion, snapshot.loadedAt) }
 }

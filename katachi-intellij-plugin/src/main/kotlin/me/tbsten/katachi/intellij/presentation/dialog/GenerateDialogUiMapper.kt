@@ -7,24 +7,6 @@ import me.tbsten.katachi.intellij.ui.dialog.GenerateDialogUiState
 import me.tbsten.katachi.intellij.ui.dialog.ListNoticeUi
 import me.tbsten.katachi.intellij.ui.dialog.TargetNoticeUi
 
-/**
- * [state] as the Composable draws it: the two select boxes, the form, the target path with its
- * notice, and the button. Worded from [strings] (the field errors and hints).
- *
- * A definition reads as its Gradle path, prefixed with the linked root's name when the definitions
- * come from more than one linked root, as the tool window's module headers do.
- *
- * A template reads as `role › title`; where that still repeats (the same role and title in two
- * modules, or two ids under one title), the template id and then the module are added, so no two
- * entries of the select box read alike.
- *
- * `refusal` (E3's pre-check saying no) is not part of [GenerateDialogState]; the frame that owns
- * the generation passes it in.
- *
- * ```kotlin
- * val ui = dialogUiStateOf(viewModel.state.value, BundleGenerateDialogStrings)
- * ```
- */
 internal fun dialogUiStateOf(state: GenerateDialogState, strings: GenerateDialogStrings, refusal: String? = null): GenerateDialogUiState {
     val manyRoots = state.definitions.map { it.linkedRootPath }.distinct().size > 1
     return GenerateDialogUiState(
@@ -55,7 +37,6 @@ internal fun dialogUiStateOf(state: GenerateDialogState, strings: GenerateDialog
 private fun definitionLabelOf(module: KatachiModule, withRoot: Boolean): String =
     if (withRoot) "${module.rootName} › ${module.gradlePath}" else module.gradlePath
 
-/** One label per candidate, `role › title`, made unique by the id and then the module where it repeats. */
 private fun templateLabelsOf(candidates: List<ModuleTemplate>): List<String> {
     val base = candidates.map { "${it.template.roleName} › ${it.template.title}" }
     val withId = candidates.mapIndexed { i, c -> if (base.count { it == base[i] } > 1) "${base[i]} (${c.template.template})" else base[i] }

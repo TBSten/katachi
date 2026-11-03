@@ -12,12 +12,6 @@ import me.tbsten.katachi.intellij.model.KatachiModule
 import me.tbsten.katachi.intellij.model.ModuleTemplate
 import me.tbsten.katachi.intellij.model.TemplateId
 
-/**
- * Carries out the intents that only hand something to the IDE (open, copy, show the log, sync) and
- * the ones that run Gradle outside loading and generating ("show cause").
- *
- * Split from [KatachiToolWindowViewModel] to keep that one about loading and generating.
- */
 internal class IdeIntentHandler(
     private val scope: CoroutineScope,
     private val runner: GradleTaskRunner,
@@ -26,7 +20,6 @@ internal class IdeIntentHandler(
     private val state: () -> KatachiScreenState,
     private val update: ((KatachiScreenState) -> KatachiScreenState) -> Unit,
 ) {
-    /** Returns `false` for an intent this handler does not own. */
     fun handle(intent: KatachiIntent): Boolean {
         when (intent) {
             KatachiIntent.ShowLog -> effects.showLog()
@@ -45,7 +38,6 @@ internal class IdeIntentHandler(
         return true
     }
 
-    /** ⋯ › Open Definition: the Role's `declaredAt` of the row's module, opened by the IDE (T-10). */
     private fun openDefinition(id: TemplateId) {
         val row = rowOf(id) ?: return
         val snapshots = state().snapshots
@@ -54,7 +46,6 @@ internal class IdeIntentHandler(
         scope.launch { effects.openDeclaration(row.module, row.template.roleName, site) }
     }
 
-    /** Runs `katachiTemplates --arg template=X` and shows its text under the row (E-07). */
     private fun showCause(id: TemplateId) {
         val row = rowOf(id) ?: return
         if (state().view.causes[id] is CauseState.Loading) return
@@ -84,7 +75,6 @@ internal class IdeIntentHandler(
     }
 }
 
-/** "Copy command": the `./gradlew` line that generates [row] with the current inputs. */
 internal fun commandLineOf(row: ModuleTemplate, form: FormState): String {
     val detail = row.template.detail ?: return ""
     val args = templateArgsOf(row.template.template, detail, form.inputsOf(row.id), form.onExisting)
@@ -97,7 +87,6 @@ private val GRADLE_NOISE = listOf("> Task ", "> Configure ", "BUILD ", "Deprecat
 
 private val ACTIONABLE_TASKS = Regex("""\d+ actionable tasks?:.*""")
 
-/** The output of "show cause" without Gradle's bookkeeping lines and the blank lines around it. Provisional. */
 internal fun causeLinesOf(output: List<String>): List<String> {
     val kept = output.filterNot { line -> GRADLE_NOISE.any { line.startsWith(it) } || line.matches(ACTIONABLE_TASKS) }
     return kept.dropWhile { it.isBlank() }.dropLastWhile { it.isBlank() }

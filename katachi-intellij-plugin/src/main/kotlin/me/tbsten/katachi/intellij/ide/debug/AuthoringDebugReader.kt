@@ -34,30 +34,11 @@ import org.jetbrains.kotlin.psi.KtStringTemplateExpression
 import java.awt.Component
 import java.nio.file.Paths
 
-/**
- * What the three doors of the debug bridge for writing a definition read (ide-authoring design 5, kept apart from [KatachiDebugBridge]
- * and [GutterDebugReader] so that the quality lane's doors are not touched): [describeDefinitionErrors], [describeCompletion] and
- * [describeDefinitionGutter]. Each answers `key=value` lines, a text value on one line (a line break is `\n`), as the Driver smoke
- * asserts on them.
- *
- * ```kotlin
- * val lines = AuthoringDebugReader(project).describeDefinitionErrors("/work/src/test/kotlin/RepositoryRole.kt").lines()
- * // "definitionErrors=/work/...", "errors=1", "stale=false", "error=:architecture-test|EntryPoint|java.lang.IllegalStateException|RepositoryRole.kt:12|..."
- * ```
- */
 internal class AuthoringDebugReader(
     private val project: Project,
     private val onScreen: (Component) -> Boolean = { it.isShowing },
-    /** What the ◆ and the Code Vision read of the project; a test swaps it for fakes. */
     private val portsOf: (Project) -> GutterPorts = GutterPorts::of,
 ) {
-    /**
-     * The mistakes katachi found in the definition and where the IDE put them in [path]: `definitionErrors`, `errors`, `stale`, one
-     * `error=<module>|<phase>|<exception>|<File.kt:line or none>|<first line>` each, then `highlights` with one `highlight` each
-     * (the underlines of the file, as [GutterDebugReader.describeHighlights] reads them) and `banners` with one `banner=<text>|<links>`
-     * each, read from the parts on screen. A banner is one of the definition error notification's (marked by
-     * [DefinitionErrorNotificationProvider.BANNER_KEY]), not any katachi panel.
-     */
     fun describeDefinitionErrors(path: String): String {
         val errors = project.service<AuthoringPorts>().definition()?.definitionErrors?.value
         val lines = mutableListOf("definitionErrors=$path", "errors=${errors?.errors?.size ?: 0}", "stale=${errors?.stale ?: false}")
@@ -74,12 +55,6 @@ internal class AuthoringDebugReader(
         return lines.joinToString("\n")
     }
 
-    /**
-     * What a completion at [offset] (0-based, in the document) of [path] would offer: `completion=<path>|<offset>`, `site` (`CaptureValue(line)`,
-     * `TemplateSpec`, `ArgName(spec)` or `none`), `candidates` and one `candidate=<text>|<type text>|<tail text>` each, in the order the
-     * contributor lists them. It runs the contributor's own computation, not a completion popup (which is the platform's), so
-     * it says what the names are, and whether the place is one.
-     */
     fun describeCompletion(path: String, offset: Int): String {
         val header = "completion=$path|$offset"
         val file = psiFileOf(path) ?: return "$header\nopen=false"
@@ -96,13 +71,6 @@ internal class AuthoringDebugReader(
         return (listOf(header, "open=true") + lines).joinToString("\n")
     }
 
-    /**
-     * The definition side of [path], a definition file open in the editor: `definitionGutter`, `open`, `marks` and one
-     * `mark=<line>|<leaf>|<tooltip>` for each ◆ the daemon drew, each followed by the rows its menu lists (`item=<text>|<right side>|enabled or
-     * disabled`, `section`, `separator`, `submenu` with `subitem`), then `lenses` and one `lens=<line>|<text>` for each Code Vision.
-     * The ◆ are read from what the daemon drew; the Code Vision from the provider's own computation (the platform draws those as inlays
-     * a smoke cannot read).
-     */
     fun describeDefinitionGutter(path: String): String {
         val file = LocalFileSystem.getInstance().findFileByNioFile(Paths.get(path))
         val document = file?.let { FileDocumentManager.getInstance().getCachedDocument(it) }
@@ -139,7 +107,6 @@ internal class AuthoringDebugReader(
         PsiManager.getInstance(project).findFile(file) as? KtFile
     }
 
-    /** A ◆ as the daemon drew it: its `mark=` line, read under the read action, and the menu its click opens. */
     private class DrawnMark(val line: String, val menu: DefinitionGutterMenu?)
 
     private fun definitionMarkersOf(document: Document): List<LineMarkerInfo<*>> =

@@ -9,13 +9,9 @@ import me.tbsten.katachi.intellij.presentation.replacePlaceholders
 import me.tbsten.katachi.intellij.presentation.resolveExpectedPath
 import java.nio.file.Path
 
-/** The file the dialog's inputs produce, as far as the IDE can tell before katachi runs. */
 internal data class DialogTarget(
-    /** Relative to the definition's project root, `/` separated; a capture not filled in stays `${name}`, a derived part `<name>` (or `<name.transform>` while `name` is not filled in). */
     val relativePath: String,
-    /** [relativePath] under the root, when nothing in it is left open; `null` otherwise. */
     val absolute: Path?,
-    /** Every capture is filled but a module-derived `<x>` remains: only katachi knows the file (spike S1 §5). */
     val derivedUndecided: Boolean,
 ) {
     companion object {
@@ -27,37 +23,10 @@ private val TOKEN = Regex("""\$\{([^}]*)}|<([^>/]*)>""")
 
 private val CAPTURE_PLACEHOLDER = Regex("""\$\{([^}]*)}""")
 
-/**
- * [DialogTarget.relativePath] as the dialog shows it: a capture not filled in reads `<name>`, the way the capture's hint and the New
- * menu spell it (a derived `<x>` is left as it is). Only what is drawn (and read by the tests and screen readers) changes; the
- * path katachi is asked for is [DialogTarget.relativePath] itself.
- *
- * ```kotlin
- * displayTargetPathOf("feature/\${feature}/\${name}.kt") // "feature/<feature>/<name>.kt"
- * ```
- */
 internal fun displayTargetPathOf(relativePath: String): String = CAPTURE_PLACEHOLDER.replace(relativePath) { "<${it.groupValues[1]}>" }
 
-/** `<name.transform>`: a level katachi derives from `name` by a named conversion (design capture-check 3.9). */
 private val DERIVED = Regex("""<([A-Za-z_][A-Za-z0-9_]*)\.([A-Za-z_][A-Za-z0-9_]*)>""")
 
-/**
- * [detail]'s file pattern with [inputs] put in (the sample path of the dialog, issue 1 and spike S1 §4).
- *
- * Below a module capture the JSON's `modulePlacements` describes, the module the inputs pick gives
- * the whole path instead (its directory as katachi's `ModuleResolver` answers it, the names built
- * from the value as katachi spells them). While they pick none, the pattern is used as below.
- *
- * A module-derived `<x>` has no value the JSON tells, so a segment holding one is taken from
- * [origin] (the origin's path relative to [root]) as long as every name that segment reads is still
- * the value [seeds] gave it: the origin is the one place whose spelling of `<x>` is known. A
- * notification's file therefore comes out as itself when nothing was rewritten (decision 21).
- * Anywhere else a `<x>` stays and the target is left to katachi.
- *
- * ```kotlin
- * dialogTargetOf(detail, mapOf("feature" to "home", "name" to "Home"), seeds, root, root.resolve("feature/home/ui"))
- * ```
- */
 internal fun dialogTargetOf(
     detail: TemplateDetailModel,
     inputs: Map<String, String>,
@@ -96,15 +65,9 @@ internal fun dialogTargetOf(
 
 private fun readsDerived(segment: String): Boolean = TOKEN.findAll(segment).any { it.groupValues[2].isNotEmpty() }
 
-/** The capture and derived names [segment] reads (`<x.t>` reads `x`). */
 private fun namesOf(segment: String): List<String> =
     TOKEN.findAll(segment).map { it.groupValues[1].ifEmpty { it.groupValues[2].substringBefore('.') } }.toList()
 
-/**
- * [text] with every `<x.t>` whose `x` [valueOf] knows replaced by `t` of that value, the way katachi fills a derived
- * level; one whose `x` is not known yet, or whose `t` this plugin does not have, stays as written. A `<x>` without a
- * conversion is a module key's and is never filled here.
- */
 internal fun fillDerived(text: String, valueOf: (String) -> String?): String = DERIVED.replace(text) { match ->
     val source = valueOf(match.groupValues[1])
     val conversion = conversionOf(match.groupValues[2])

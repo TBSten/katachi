@@ -6,27 +6,9 @@ import me.tbsten.katachi.intellij.model.LayoutEntryModel
 import me.tbsten.katachi.intellij.model.NearbyRole
 import me.tbsten.katachi.intellij.model.RoleModel
 
-/** How many places [DefinitionMatcher] offers for a file nobody holds, as katachi's `[UnexpectedFile]` block does. */
 private const val NEARBY_LIMIT: Int = 3
 
-/**
- * The places a file could be moved to, and the order they are offered in: a port of katachi's `NearbyCandidates`
- * (design violations-output 2.2 and 2.3), so the notification names the places the `[UnexpectedFile]` block names.
- *
- * A place is a directory a role declared a file in, or wrote `anyFile()` in, with the file name pattern it declared
- * there. A directory that only holds another directory, one the role `ignore()`s, the project root, and what a
- * `module { }` block injected (`synthetic`) or `gradle()` declared (a role of the `Gradle` group) are not places. A pattern with two `**` has no single way of being filled in.
- *
- * For one file, every place is filled in with the file's own path ([instantiate]), and the ones that could hold a file
- * of its name ([acceptsExtension]) and start where the file starts are ordered by the levels that differ, then whether
- * the name fits the pattern, then the characters that differ, then declaration order. Three are kept. The cut-offs
- * (the level count bounds the distance from below; the characters are only counted on a tie) do not change the answer:
- * `MatcherReference` of the property tests keeps none of them and has to agree.
- *
- * ```kotlin
- * NearbyPlaces(slots).nearbyOf("core/domain/usecase/GetUserUseCase.kt") // domain.UseCase -> core/domain/useCase, ...
- * ```
- */
+// Port of katachi's `NearbyCandidates`; the cut-offs must not change the answer (`MatcherReference` in the property tests keeps none and has to agree).
 internal class NearbyPlaces(entries: List<Pair<RoleModel, LayoutEntryModel>>) {
     private val candidates: List<Candidate> = entries.candidates()
 
@@ -61,7 +43,6 @@ internal class NearbyPlaces(entries: List<Pair<RoleModel, LayoutEntryModel>>) {
     }
 }
 
-/** One declared place, read once: the role, its directory pattern by level, and its file name pattern (`null` for `anyFile()`). */
 private class Candidate(
     val role: RoleModel,
     val entry: LayoutEntryModel,
@@ -74,7 +55,6 @@ private class Candidate(
     fun matchesName(name: String): Boolean = fileGlob?.matches(name) ?: true
 }
 
-/** A candidate filled in for one file, with its distances; the characters are only counted on a tie. */
 private class Ranked(val candidate: Candidate, val directory: List<String>, fileDirectory: List<String>, fileName: String) {
     val segments: Int = segmentDistance(fileDirectory, directory)
     val nameMismatch: Int = if (candidate.matchesName(fileName)) 0 else 1
@@ -83,10 +63,6 @@ private class Ranked(val candidate: Candidate, val directory: List<String>, file
 
 private val RANKING: Comparator<Ranked> = compareBy({ it.segments }, { it.nameMismatch }, { it.characters }, { it.candidate.order })
 
-/**
- * Whether `gradle()` declared the role. The definition JSON carries no `DeclaredByGradle`, so the group stands in:
- * every role `gradle()` declares sits under the `Gradle` group (`Gradle.BuildScript`, `Gradle.GradleWrapper.WrapperJar`, ...).
- */
 private fun RoleModel.isDeclaredByGradle(): Boolean = groupPath.firstOrNull() == GRADLE_GROUP
 
 private const val GRADLE_GROUP: String = "Gradle"

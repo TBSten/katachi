@@ -12,25 +12,13 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 
-/**
- * Reads the `katachi-baseline.json` files the "no role holds this file" notification asks about, and remembers them.
- *
- * [reading] is for the background thread (it reads the disk). A file is read again when it changed on disk since the
- * last read (its modification time and size), and [onBaselineChanged], called by the file watcher, drops what was read
- * and redraws every notification. The paths that were asked about are the ones the watcher follows ([watchedFiles]).
- * A `"version"` the plugin does not know is logged at WARN once per read, and treated as unreadable.
- *
- * ```kotlin
- * val reading = project.service<KatachiBaselineService>().reading(projectRoot.resolve("katachi-baseline.json"))
- * ```
- */
+// `reading` is for the background thread (it reads the disk).
 @Service(Service.Level.PROJECT)
 internal class KatachiBaselineService(private val project: Project) {
     private class Remembered(val stamp: String, val reading: BaselineReading)
 
     private val remembered = ConcurrentHashMap<Path, Remembered>()
 
-    /** The baseline files read so far, absolute and normalized: what the file watcher compares VFS events with. */
     val watchedFiles: Set<Path> get() = remembered.keys.toSet()
 
     fun reading(file: Path): BaselineReading {
@@ -48,7 +36,6 @@ internal class KatachiBaselineService(private val project: Project) {
         }!!.reading
     }
 
-    /** A baseline file changed: forget what was read and draw the notifications again. */
     fun onBaselineChanged() {
         val files = remembered.keys.toList()
         remembered.clear()

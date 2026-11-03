@@ -12,26 +12,10 @@ import me.tbsten.katachi.intellij.model.DetectionResult
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
-/**
- * Whether the synced Gradle data has a katachi definition module, kept until the next Gradle sync.
- *
- * Reading it walks every module's tasks and source sets, and the line marker provider asks at every highlight (each key
- * stroke) of every Kotlin file, and the editor notification and the definition ports at every decision, in projects without
- * katachi too. One cache per project serves all three. A sync ends the answer ([ProjectDataImportListener])
- * and draws the open files again, so a ◆ that was not there for want of a module appears without an edit;
- * a read that fails, or that finds no synced data yet, is not kept.
- *
- * ```kotlin
- * if (!DefinitionModulePresence.getInstance(project).hasDefinitionModule()) return null
- * ```
- */
+// Cached per project because reading walks every module's tasks; a sync invalidates it, and a failed or empty read is not kept.
 @Service(Service.Level.PROJECT)
 internal class DefinitionModulePresence(
     private val project: Project,
-    /**
-     * Reads the synced data when nothing is kept: `null` while there is none yet (the cache of the sync data is not back
-     * after opening the project), which is answered "no" but not kept. A test that gives it the answer of its fake synced data replaces the service with its own.
-     */
     private val readSynced: () -> Boolean?,
 ) : Disposable {
     @Suppress("unused") // Called by the platform.
@@ -55,7 +39,6 @@ internal class DefinitionModulePresence(
         }
     }
 
-    /** The kept answer, or [read]'s (the synced data) when there is none. [read] may throw, or return `null` for no synced data yet; nothing is kept then. */
     fun hasDefinitionModule(read: () -> Boolean? = readSynced): Boolean {
         val seen = generation.get()
         kept.get()?.takeIf { it.generation == seen }?.let { return it.found }
@@ -65,11 +48,6 @@ internal class DefinitionModulePresence(
         return found
     }
 
-    /**
-     * The synced data changed: forget the answer, and draw the open files again. The files drawn before the sync ended
-     * had no ◆ because the answer was "no", and nothing else tells the daemon the answer is now "yes": the platform's
-     * own restart on a root change is not something to rely on. A sync that ends without a change draws what was drawn.
-     */
     private fun syncEnded(reason: String) {
         invalidate()
         sdkCall("draw the open files again after the $reason") { HighlightingRefresher.getInstance(project).redrawNow(reason) }
@@ -79,7 +57,6 @@ internal class DefinitionModulePresence(
         }
     }
 
-    /** Forgets the kept answer: the synced data changed. */
     fun invalidate() {
         generation.incrementAndGet()
         kept.set(null)

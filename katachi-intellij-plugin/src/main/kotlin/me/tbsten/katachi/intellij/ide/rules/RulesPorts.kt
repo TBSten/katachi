@@ -12,29 +12,14 @@ import me.tbsten.katachi.intellij.presentation.rules.RuleSettings
 import me.tbsten.katachi.intellij.presentation.rules.VcsTracking
 import java.nio.file.Path
 
-/**
- * What the "no role holds this file" notification reads of one project, as `NotificationPorts` is for the template
- * notification. Tests swap the definition service (a fake), the settings and the VCS; the platform uses [of], which
- * is wired to the real services.
- *
- * Every function is called in the background under a read lock and may throw: the provider runs them inside `sdkCall`.
- *
- * ```kotlin
- * val ports = RulesPorts.of(project)
- * val service = ports.definitions() ?: return null   // null: a project without katachi
- * ```
- */
+// Every function is called in the background under a read lock and may throw: the provider runs them inside `sdkCall`.
 internal class RulesPorts(
-    /** The definition service, or `null` in a project without katachi (no service is created there, decision 17). */
     val definitions: () -> DefinitionModelService?,
     val settings: () -> RuleSettings,
     val memory: () -> EditorNotificationMemoryService,
-    /** What the VCS says of the file for a first draw; a file the VCS has not scanned yet reads as untracked. */
     val vcs: (VirtualFile) -> VcsTracking,
-    /** What the VCS says once it has scanned the file, `null` before: what a drawn notification is compared with. */
     val vcsIfSettled: (VirtualFile) -> VcsTracking? = vcs,
     val effects: () -> RuleEffects,
-    /** What the baseline file [baseline] names (relative to the definition's project root [projectRoot]) says. Reads the disk. */
     val baseline: (projectRoot: Path, baseline: String) -> BaselineReading = { _, _ -> BaselineReading.Missing },
 ) {
     companion object {
@@ -50,7 +35,6 @@ internal class RulesPorts(
     }
 }
 
-/** The no-role notification's part of the katachi settings. */
 internal fun ruleSettingsOf(settings: KatachiSettings): RuleSettings = RuleSettings(
     notifyOnNoRole = settings.notifyOnNoRole,
     notificationsEnabled = settings.editorNotificationEnabled,

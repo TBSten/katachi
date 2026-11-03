@@ -25,23 +25,8 @@ import me.tbsten.katachi.intellij.presentation.authoring.DefinitionErrorTargets
 import me.tbsten.katachi.intellij.presentation.authoring.DefinitionMarkSource
 import me.tbsten.katachi.intellij.presentation.gutter.AnnotationSeverity
 
-/**
- * Underlines, in the definition file, what katachi found wrong with the definition (ide-authoring design 2.4): a mistake that
- * stopped it from being read in red on the line it was written, and a template or a template set that will fail when it is used
- * (`problems[]`) in yellow. Each mistake has the quick fixes "Reload Definition" and "Show the whole message".
- *
- * The lines come from [DefinitionErrorTargets]; this finds, in the background, which site is in the file ([DefinitionModelService.resolve]
- * can walk the test sources) and puts the result on the PSI in [apply]. The 3-argument [collectInformation] is overridden so a
- * file with a compile error is annotated too (F-7). It works in dumb mode (the PSI and the Document only). There is no switch for
- * it: a definition that cannot be read has no reason to be silent.
- *
- * ```xml
- * <externalAnnotator language="kotlin" implementationClass="me.tbsten.katachi.intellij.ide.authoring.errors.DefinitionErrorAnnotator"/>
- * ```
- */
 internal class DefinitionErrorAnnotator(
     private val portsOf: (Project) -> GutterPorts,
-    /** Puts the dialog of "Show the whole message" on screen; a test replaces it. */
     private val showMessage: (Project, String) -> Unit = ::showErrorDialog,
 ) : ExternalAnnotator<DefinitionErrorInput, DefinitionErrorOutput>(),
     DumbAware {
@@ -121,7 +106,7 @@ internal class DefinitionErrorAnnotator(
         AnnotationSeverity.Information -> HighlightSeverity.INFORMATION
     }
 
-    /** The hover is HTML: a message's `<T>` and `&` must show, and its lines stay lines. */
+    // The hover is HTML: a message's `<T>` and `&` must show, and its lines stay lines.
     private fun tooltipOf(hover: String): String =
         XmlStringUtil.wrapInHtml(hover.lines().joinToString("<br>") { StringUtil.escapeXmlEntities(it) })
 }

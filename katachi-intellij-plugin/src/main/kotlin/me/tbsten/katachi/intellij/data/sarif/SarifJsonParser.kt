@@ -15,25 +15,6 @@ import java.nio.file.Path
 private const val SARIF_VERSION: String = "2.1.0"
 private const val SRCROOT: String = "%SRCROOT%"
 
-/**
- * Reads the results of one `katachi.sarif` (design 4.7), only what the IDE shows: the rules'
- * `id` / `name` / default `level`, the base `originalUriBaseIds["%SRCROOT%"]`, and each result's
- * `ruleId`, `level`, `message.text`, `locations[0]`, `relatedLocations[]` and `properties`. Everything
- * else is ignored, and a key a result lacks reads as empty rather than failing the file.
- *
- * A location's `uri` becomes an absolute path: `%SRCROOT%` is joined to the base, `file:///` is taken
- * as it is, and each segment is percent-decoded and the result normalized (`.` is the project root). A path that does not exist is kept (`MissingFile`
- * points at one). A location whose `uri` cannot be made absolute (relative, no base) is dropped.
- *
- * ```kotlin
- * val violations = parseSarifJson(path.readText(), path, module.id)
- * val here = violations.filter { it.location?.path == file.toNioPath() }
- * ```
- *
- * @throws KatachiMalformedSarifException when [text] is not JSON.
- * @throws KatachiUnsupportedSarifVersionException when `version` is not `2.1.0`.
- * @throws KatachiIncompatibleSarifException when `runs` is missing.
- */
 internal fun parseSarifJson(text: String, file: Path, module: ModuleId): List<ViolationModel> {
     val document = try {
         parseJsonText(text, file)
@@ -82,7 +63,6 @@ private fun locationOf(location: JsonValue, base: Path?): SarifLocation? {
     return SarifLocation(path, physical.obj("region").int("startLine"))
 }
 
-/** [uri] as an absolute path, or `null` when it is relative and [uriBaseId] is not one this reads (or [base] is missing). */
 private fun pathOfUri(uri: String, uriBaseId: String?, base: Path?): Path? {
     if (uri.startsWith("file:")) return pathOfFileUri(uri)
     if (uriBaseId != SRCROOT || base == null) return null
@@ -102,7 +82,6 @@ private fun decodeSegment(segment: String): String =
         segment
     }
 
-/** The `properties` object as text: a string stays, a number or boolean is written as it is, `null` and nested values are left out. */
 private fun propertiesOf(properties: JsonValue?): Map<String, String> {
     val members = (properties as? JsonValue.JsonObject)?.members ?: return emptyMap()
     val result = LinkedHashMap<String, String>()

@@ -9,57 +9,20 @@ import me.tbsten.katachi.intellij.presentation.entry.EntryOrigin
 import me.tbsten.katachi.intellij.presentation.entry.PlacementMatch
 import java.nio.file.Path
 
-/**
- * Which templates fit a file or a directory, for every loaded architecture definition (spike S1).
- *
- * Built off the EDT from the loaded snapshots (issue 4) and immutable, so the notification's
- * background thread and the New menu's `update()` read it without locks. Per definition, paths are
- * taken relative to that definition's project root ([placementRootOf]) and matched with [PathPattern].
- *
- * Left out: templates whose preview failed (`conflict: true`, no details) or that have a parameter
- * kind this plugin does not know, patterns with an unnamed `*` / `**`, templates without files.
- * Templates without captures are in, as fixed paths. A template below a module capture that katachi
- * describes (`modulePlacements`) is matched against its path in each existing module instead of its
- * declared pattern: a file or directory in no existing module does not fit it, and one in a module
- * decides the module capture -- wherever katachi's `ModuleResolver` put that module.
- *
- * A template set is indexed by its first member's first file, for directories only ([matchesForFile] leaves it out).
- *
- * Matches come in index order: definitions in the order given, then JSON order within each.
- *
- * ```kotlin
- * val index = TemplatePlacementIndex.build(snapshots) { placementRootOf(it, NioProjectFileSystem) }
- * index.matchesForFile(file).firstOrNull()?.decided // every capture of the file
- * ```
- */
 internal class TemplatePlacementIndex private constructor(
-    /** The definitions indexed, in order. */
     val definitions: List<KatachiModule>,
     private val entries: List<Entry>,
 ) {
-    /**
-     * One indexed template: where its patterns start, its declared [pattern], and -- below a module
-     * capture katachi described (`modulePlacements`) -- one pattern per existing module ([choices]),
-     * which then decide instead of [pattern]. `null` [choices] for every other template.
-     * [inMemberNames]: a template set's file the set's names could not write, so the names it has are the member's
-     * and decide nothing for the set (they go to [PlacementMatch.undecided]).
-     */
     private class Entry(val template: ModuleTemplate, val root: Path, val pattern: PathPattern?, val choices: List<Choice>?, val inMemberNames: Boolean = false)
 
-    /** One existing module a module capture can pick: its values, and the file's path there as a pattern. */
     private class Choice(val values: Map<String, String>, val pattern: PathPattern)
 
-    /**
-     * The templates [file] (absolute) is the target of. A template set is never one: it is not "the file that fits"
-     * but several files at once, so the editor notification and the gutter do not offer it (template-set design 8.4).
-     */
     fun matchesForFile(file: Path): List<PlacementMatch> = entries.mapNotNull { entry ->
         if (entry.template.template.set != null) return@mapNotNull null
         val hit = entry.fileHit(file) ?: return@mapNotNull null
         entry.toMatch(hit.match, hit.moduleValues)
     }
 
-    /** How [Entry] matches [file] (absolute): the match, the module capture values of the module it is in, and the pattern that matched. */
     private class FileHit(val match: SegmentMatch, val moduleValues: Map<String, String>, val pattern: PathPattern)
 
     private fun Entry.fileHit(file: Path): FileHit? {
@@ -71,7 +34,6 @@ internal class TemplatePlacementIndex private constructor(
         }
     }
 
-    /** The templates that can create a file under [directory] (absolute), with the remaining path. */
     fun matchesForDirectory(directory: Path): List<PlacementMatch> = entries.mapNotNull { entry ->
         val relative = relativeSegments(entry.root, directory) ?: return@mapNotNull null
         val choices = entry.choices ?: return@mapNotNull entry.pattern?.matchDirectory(relative)?.let { entry.toMatch(it) }
@@ -85,11 +47,6 @@ internal class TemplatePlacementIndex private constructor(
         }
     }
 
-    /**
-     * [template]'s captures [origin] decides: the dialog's initial values, recomputed when the user
-     * picks another template (decision 4). Empty when [template] does not fit [origin]. Backs the
-     * real `CaptureSeedPort`.
-     */
     fun seedsFor(origin: EntryOrigin, template: TemplateId): Map<String, String> {
         val matches = when (origin) {
             is EntryOrigin.EditorFile -> matchesForFile(origin.path)
@@ -101,11 +58,6 @@ internal class TemplatePlacementIndex private constructor(
         return matches.firstOrNull { it.id == template }?.decided.orEmpty()
     }
 
-    /**
-     * [template]'s captures a sibling file at [file] decides, without the ones that name the file: those in the pattern's
-     * last segment and in no segment above it (`${name}` of `${name}Screen.kt`). A capture the last segment shares with a
-     * directory above (`feature`) is the sibling's, and carries over.
-     */
     private fun siblingSeeds(file: Path, template: TemplateId): Map<String, String> {
         val hit = entries.firstOrNull { it.template.id == template }?.fileHit(file) ?: return emptyMap()
         val segments = hit.pattern.segments
@@ -132,7 +84,6 @@ internal class TemplatePlacementIndex private constructor(
     companion object {
         val EMPTY: TemplatePlacementIndex = TemplatePlacementIndex(emptyList(), emptyList())
 
-        /** The index of [snapshots] (definition order kept); [rootOf] gives each definition's pattern root. */
         fun build(snapshots: List<DescriptionSnapshot>, rootOf: (KatachiModule) -> Path): TemplatePlacementIndex {
             val entries = snapshots.flatMap { snapshot ->
                 val root = rootOf(snapshot.module)
@@ -159,7 +110,6 @@ internal class TemplatePlacementIndex private constructor(
             return Entry(template, root, pattern, choices, inMemberNames)
         }
 
-        /** [path]'s segments below [root], or `null` when it is [root] itself or outside it. */
         private fun relativeSegments(root: Path, path: Path): List<String>? {
             val normalizedRoot = root.normalize()
             val normalized = path.normalize()
@@ -185,11 +135,6 @@ private val ROOT_MARKERS: List<String> = listOf(
     ".git/refs",
 )
 
-/**
- * The directory [module]'s patterns are relative to: katachi's project root, the first directory up
- * from [KatachiModule.directory] with a Gradle wrapper, a Maven wrapper or `.git` (katachi's
- * `findProjectRoot`), else [KatachiModule.linkedRootPath] (spike S1 section 1).
- */
 internal fun placementRootOf(module: KatachiModule, fileSystem: ProjectFileSystem): Path {
     var current: Path? = module.directory
     while (current != null) {

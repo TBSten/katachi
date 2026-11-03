@@ -25,32 +25,12 @@ import me.tbsten.katachi.intellij.model.TemplateRef
 import java.nio.file.Path
 import java.nio.file.Paths
 
-/** The `schemaVersion` values of `definition.json` this plugin reads. */
 internal val SUPPORTED_DEFINITION_SCHEMA_VERSIONS: List<Int> = listOf(1)
 
-/** What `definition.json` held: the definition, and the templates part read the way `templateDescription.json` is. */
 internal data class ParsedDefinitionJson(val definition: DefinitionModel, val templates: List<TemplateModel>)
 
-/**
- * Reads `definition.json` (design 1.x) into a [DefinitionModel] and its templates.
- *
- * Unknown keys are ignored. Every key of the contract is required, `null` only where the contract
- * allows it, except `fileDeclarations` of a constraint, which a katachi from before the gutter does
- * not write (its absence reads as `null`), the `synthetic` and `place` flags of a layout entry (absent reads as `false`), and
- * the `wildcardIndex` / `transform` of a capture (absent reads as `0` / `null`).
- * `generatedAt` must be an ISO-8601 instant. A `kind`, `backend`, `range`, declaration `kind`, `verdict`
- * or problem `kind` this plugin does not know is kept as an unknown value instead of failing the
- * file. The `templates` part goes to [parseTemplateDescriptionJson].
- *
- * ```kotlin
- * val parsed = parseDefinitionJson(path.readText(), path)
- * val roles = parsed.definition.roles
- * ```
- *
- * @throws KatachiMalformedDefinitionJsonException when [text] is not JSON.
- * @throws KatachiUnsupportedDefinitionSchemaException when `schemaVersion` is not one this plugin reads.
- * @throws KatachiIncompatibleDefinitionJsonException when a required key is missing or mistyped.
- */
+// Keys an older katachi does not write (`fileDeclarations`, `synthetic`, `place`, `wildcardIndex`, `transform`) are optional;
+// unknown kinds are kept as unknown values instead of failing the file.
 internal fun parseDefinitionJson(text: String, file: Path): ParsedDefinitionJson {
     val document = try {
         parseJsonText(text, file)
@@ -74,7 +54,6 @@ internal fun parseDefinitionJson(text: String, file: Path): ParsedDefinitionJson
     return ParsedDefinitionJson(definition, templatesOf(root.obj("templates"), file))
 }
 
-/** The templates part, whose own errors are reported as the definition's, located under `templates`. */
 private fun templatesOf(templates: DefinitionJsonReader, file: Path): List<TemplateModel> = try {
     parseTemplateDescriptionJson(templates.raw, file)
 } catch (failure: KatachiIncompatibleTemplateJsonException) {

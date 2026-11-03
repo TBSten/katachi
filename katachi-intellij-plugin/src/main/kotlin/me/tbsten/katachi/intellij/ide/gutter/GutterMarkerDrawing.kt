@@ -16,19 +16,8 @@ import me.tbsten.katachi.intellij.presentation.gutter.GutterMark
 import java.util.Collections
 import java.util.IdentityHashMap
 
-/**
- * What the two line marker providers (the Kotlin one and the one for every other language) do with the daemon's
- * elements: ask [GutterPlacement] where the ◆ go and turn each into a [LineMarkerInfo] with its tooltip and menu.
- *
- * Call from the provider's `collectSlowLineMarkers` (the daemon's background thread).
- *
- * ```kotlin
- * override fun collectSlowLineMarkers(elements: MutableList<out PsiElement>, result: MutableCollection<in LineMarkerInfo<*>>) =
- *     GutterMarkerDrawing.collect(elements, result, portsOf) { file -> file !is KtFile }
- * ```
- */
+// Call from `collectSlowLineMarkers` (the daemon's background thread).
 internal object GutterMarkerDrawing {
-    /** [accepts] says whether the provider draws on the file at all; the ◆ of a file's other provider are not its business. */
     fun collect(
         elements: MutableList<out PsiElement>,
         result: MutableCollection<in LineMarkerInfo<*>>,
@@ -51,7 +40,6 @@ internal object GutterMarkerDrawing {
         for ((leaf, mark) in drawn) result += markerOf(file.project, ports, leaf, mark, menus.of(mark))
     }
 
-    /** The gutter draws the tooltip as HTML, so a rule's `<T>` and `&` are escaped for it; the accessible name stays the raw text. */
     private fun markerOf(project: Project, ports: GutterPorts, leaf: PsiElement, mark: GutterMark, menu: CapturedMenu?): LineMarkerInfo<PsiElement> =
         LineMarkerInfo(
             leaf,
@@ -62,26 +50,19 @@ internal object GutterMarkerDrawing {
             GutterIconRenderer.Alignment.LEFT,
         ) { mark.tooltip }
 
-    /**
-     * The range the gutter keys the ◆ on: [leaf]'s, without the white space it starts with. A plain text file is one leaf from
-     * its first line, and the ◆ belongs on the first line that has something in it.
-     */
     private fun rangeOf(leaf: PsiElement): TextRange {
         val range = leaf.textRange
         val skipped = leaf.text.length - leaf.text.trimStart().length
         return if (skipped in 1 until range.length) TextRange(range.startOffset + skipped, range.endOffset) else range
     }
 
-    /** [text] as the HTML the gutter shows: its characters escaped, a new line a `<br>`. */
     fun htmlOf(text: String): String = StringUtil.escapeXmlEntities(text).replace("\n", "<br>")
 }
 
-/** The menus of one call's ◆, looked up in the background. The ◆ of a file share the role's sites, so each is resolved once. */
 private class MenuCaptures(private val ports: GutterPorts, private val placed: PlacedFile, private val file: VirtualFile) {
     private val resolved = HashMap<DeclarationSiteRef, ResolvedSite>()
     private val running = sdkCall("read the running checks") { ports.violations()?.runningChecks }.getOrNull()
 
-    /** `null` when the menu could not be put together: the ◆ is still drawn, it just opens nothing. */
     fun of(mark: GutterMark): CapturedMenu? =
         sdkCall("capture the menu of ${mark.tooltip}") { GutterMenuCapture.capture(placed, mark, file, running, resolved) }.getOrNull()
 }

@@ -8,20 +8,6 @@ import com.intellij.psi.PsiElement
 import me.tbsten.katachi.intellij.ide.KatachiBundle
 import javax.swing.Icon
 
-/**
- * The ◆ of a Kotlin file (`.kt` and `.kts`) whose path a role holds (design 2.1): one per top-level declaration when a
- * role's `ktFileContent { }` restricts them, else one for the file. Listed in `Settings | Editor | General | Gutter
- * Icons` as "katachi roles of source files".
- *
- * Everything is computed in [collectSlowLineMarkers] (the daemon's background thread); the EDT only shows the
- * tooltip and the menu from what was captured. Works in dumb mode: it reads the PSI's top-level declarations,
- * never an index.
- *
- * ```kotlin
- * // plugin.xml
- * // <codeInsight.lineMarkerProvider language="kotlin" implementationClass="...KatachiDeclarationLineMarkerProvider"/>
- * ```
- */
 internal class KatachiDeclarationLineMarkerProvider(private val portsOf: (Project) -> GutterPorts) : LineMarkerProviderDescriptor(), DumbAware {
     constructor() : this(GutterPorts::of)
 
@@ -38,7 +24,7 @@ internal class KatachiDeclarationLineMarkerProvider(private val portsOf: (Projec
     }
 
     companion object {
-        /** What `Settings | Editor | General | Gutter Icons` keys the switch by: the Kotlin provider's and the other languages' share it. */
+        // Shared with KatachiFileLineMarkerProvider: one Gutter Icons switch for both.
         const val ID: String = "me.tbsten.katachi.intellij.gutter"
     }
 }

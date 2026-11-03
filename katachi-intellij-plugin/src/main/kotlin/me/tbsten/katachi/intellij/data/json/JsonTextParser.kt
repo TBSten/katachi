@@ -2,15 +2,6 @@ package me.tbsten.katachi.intellij.data.json
 
 import java.nio.file.Path
 
-/**
- * Parses [text] as one JSON document (RFC 8259). A leading BOM is skipped: katachi writes none, but
- * an editor saving the file by hand might.
- *
- * A name given twice in one object keeps the first value, or with [rejectDuplicateNames] is a failure (a baseline file
- * is katachi's own output, and katachi refuses a repeated name there).
- *
- * @throws KatachiMalformedTemplateJsonException when [text] is empty, cut off or not JSON.
- */
 internal fun parseJsonText(text: String, file: Path, rejectDuplicateNames: Boolean = false): JsonValue =
     JsonTextParser(text, file, rejectDuplicateNames).parseDocument()
 

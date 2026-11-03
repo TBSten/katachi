@@ -1,28 +1,6 @@
 package me.tbsten.katachi.intellij.data.placement
 
-/**
- * What is written into the output file before `katachiTemplate` finishes (design decision 16): for
- * a file type that can hold comments, a `package` line (.kt and .java, when the package is known)
- * and a comment with the [notice] and the real command; for any other, nothing. Generation
- * overwrites it, a failure leaves it as the instruction.
- *
- * Every line of the values carries the comment marker, and what would close a comment early is
- * escaped, so no value leaves the comment; the result is empty by [EmptyFileRule].
- *
- * ```
- * ProvisionalContent.of("Home.kt", "./gradlew :arch:katachiTemplate", "Generating...", "a.b")
- * // package a.b
- * //
- * // // Generating...
- * // // ./gradlew :arch:katachiTemplate
- * ```
- */
 internal object ProvisionalContent {
-    /**
-     * The provisional content of [fileName]: [notice] (may span lines) then [command] as comment
-     * lines; [packageName] only for .kt and .java, and only when it is a dotted identifier.
-     * Empty when [fileName]'s type has no comment syntax.
-     */
     fun of(fileName: String, command: String, notice: String, packageName: String? = null): String {
         val syntax = CommentSyntax.forFileName(fileName) ?: return ""
         val out = StringBuilder()
@@ -31,7 +9,6 @@ internal object ProvisionalContent {
         return out.toString()
     }
 
-    /** Whether [current] is exactly what [of] wrote ([provisional]); one changed character is not. */
     fun isStillProvisional(current: CharSequence, provisional: String): Boolean = current.contentEquals(provisional)
 
     private fun packageLineOf(fileName: String, packageName: String?): String? {

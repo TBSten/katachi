@@ -20,29 +20,10 @@ import java.nio.file.Path
 import java.util.function.Function
 import javax.swing.JComponent
 
-/**
- * The editor notification on a file no role holds, the one the test would report as UnexpectedFile
- * (design 2): a warning with the nearest role, [Nearby roles...] (a popup that jumps to a declaration or copies the
- * draft of a role), [Open definition], ⚙ and ×. A file some role holds, an `ignore()`d one and a library file get nothing.
- *
- * [collectNotificationData] runs in the background under a read lock, so the whole decision is made there: the
- * definition's answer, the VCS, the lookup of the declarations, then the pure `decideNoRoleNotification`. The
- * template notification may want the same file: both providers ask `arbitrateNotifications`, and this one returns
- * `null` unless it wins, so a file never shows two katachi notifications. The returned function only builds the
- * panel on the EDT.
- *
- * Whatever an SDK call throws on the way means no notification, never an IDE error; control flow (a restarting read
- * action) is thrown again.
- *
- * ```xml
- * <editorNotificationProvider implementation="me.tbsten.katachi.intellij.ide.notification.NoRoleNotificationProvider"/>
- * ```
- */
+// collectNotificationData runs in the background under a read lock and returns null unless this notification wins `arbitrateNotifications`.
 internal class NoRoleNotificationProvider(
     private val portsOf: (Project) -> RulesPorts,
-    /** What the template notification decides for the file, to arbitrate with. */
     private val templateDecisionOf: (Project, VirtualFile, Path) -> NotificationDecision,
-    /** Opens the popup of the nearby roles under the link; a test records the group instead. */
     private val showPopup: (JComponent, DefaultActionGroup) -> Unit = ::showNoRolePopup,
 ) : EditorNotificationProvider, DumbAware {
     @Suppress("unused") // Called by the platform.
@@ -62,7 +43,6 @@ internal class NoRoleNotificationProvider(
         }
     }
 
-    /** `null`: no notification. Runs in the background under the read lock. */
     private fun decide(project: Project, ports: RulesPorts, file: VirtualFile, path: Path): NoRoleFound? {
         val found = decideNoRole(ports, file, path) ?: return null
         // Only a file with something to show asks the template side, which reads the index and the Document.

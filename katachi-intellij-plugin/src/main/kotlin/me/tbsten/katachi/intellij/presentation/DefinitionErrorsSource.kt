@@ -5,27 +5,7 @@ import me.tbsten.katachi.intellij.model.GradleFailure
 import me.tbsten.katachi.intellij.model.LoadFailure
 import java.time.Instant
 
-/**
- * What happened to the definition's mistakes when the tool window's state went from [previous] to
- * [source] at [now] (design 2.3), or `null` when nothing did. Derived from the same source as the
- * definition state, so the two never disagree about which load is the latest.
- *
- * - A load starting is [DefinitionErrorsEvent.LoadStarted].
- * - A load ending is [DefinitionErrorsEvent.LoadRejected] when katachi found the definition wrong,
- *   [DefinitionErrorsEvent.Cancelled], [DefinitionErrorsEvent.LoadFailedOther] for any other failure, and
- *   [DefinitionErrorsEvent.LoadOk] when the load replaced the list on screen (one that left it as it was is a cancel).
- * - A load that ends with a failure the screen already showed before it started is a cancel: the ViewModel keeps the
- *   banner of an earlier load while a new one runs, and a cancel leaves it, so only a failure that is a new object
- *   (`applyLoadFailed` makes one every time) counts as this load's.
- * - A load that ends without the loading state having been seen (the two states of the ViewModel were merged into
- *   one) still counts, once: a rejection is [DefinitionErrorsEvent.LoadRejected], and the list replaced after a failure
- *   was on screen is [DefinitionErrorsEvent.LoadOk].
- *
- * ```kotlin
- * val event = definitionErrorsEventOf(lastSource, source, Instant.now()) ?: return
- * errors = errors.after(event)
- * ```
- */
+// A failure already on screen before the load started counts as a cancel: only a new failure object (`applyLoadFailed` makes one every time) is this load's.
 internal fun definitionErrorsEventOf(
     previous: DefinitionStateSource?,
     source: DefinitionStateSource,

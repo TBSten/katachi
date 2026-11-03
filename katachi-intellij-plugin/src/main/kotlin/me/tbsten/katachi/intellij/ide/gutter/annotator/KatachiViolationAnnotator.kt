@@ -29,21 +29,7 @@ import me.tbsten.katachi.intellij.presentation.gutter.RuleSite
 import me.tbsten.katachi.intellij.presentation.gutter.ViolationAnnotations
 import me.tbsten.katachi.intellij.presentation.gutter.ViolationBinding
 
-/**
- * Draws the violations of the last check in the source file (design 2.5): `UnsatisfiedFileConstraint` under the name of
- * the declaration it rejected, or on its line, or in a banner over the editor when it names neither; `UncheckedFile` in
- * the banner. `UnexpectedFile` is not drawn: a file no role holds is the editor notification's.
- *
- * The answers come from [GutterPorts.violations] (already read into memory), found in [doAnnotate] on the background
- * thread; [apply] on the EDT only creates the annotations. The 3-argument [collectInformation] is overridden so a file
- * with a compile error is annotated too (U-12). A check that may be out of date draws one step weaker. Off with
- * `Show katachi violations in the editor`. Works in dumb mode: the declarations are read from the PSI alone.
- *
- * ```kotlin
- * // plugin.xml
- * // <externalAnnotator language="kotlin" implementationClass="...annotator.KatachiViolationAnnotator"/>
- * ```
- */
+// doAnnotate runs on the background thread, apply on the EDT; the 3-argument collectInformation is overridden so a file with a compile error is annotated too.
 internal class KatachiViolationAnnotator(private val portsOf: (Project) -> GutterPorts) :
     ExternalAnnotator<AnnotatorInput, AnnotatorOutput>(),
     DumbAware {
@@ -101,7 +87,6 @@ internal class KatachiViolationAnnotator(private val portsOf: (Project) -> Gutte
         return AnnotatorOutput(input.virtualFile, ports, planned)
     }
 
-    /** Under the name of the declaration if the file still has it, else on the line the check saw if it has text, else `null`: the banner. */
     private fun rangeOf(file: PsiFile, document: Document?, target: AnnotationTarget): TextRange? {
         if (document == null) return null
         return when (target) {
@@ -112,7 +97,6 @@ internal class KatachiViolationAnnotator(private val portsOf: (Project) -> Gutte
         }
     }
 
-    /** Where the report says the rule was written. The definition model finds a `FileName.kt:NN`; a related location is already a path. */
     private fun ruleOf(violation: ViolationModel, definitions: DefinitionModelService?, found: MutableMap<RuleSite, RuleTarget?>): RuleTarget? {
         val site = ViolationBinding.ruleSiteOf(violation) ?: return null
         return found.getOrPut(site) {
@@ -145,7 +129,6 @@ internal class KatachiViolationAnnotator(private val portsOf: (Project) -> Gutte
         AnnotationSeverity.Information -> HighlightSeverity.INFORMATION
     }
 
-    /** The hover is HTML: a rule's `<T>` and `&` must show, and the message's lines stay lines. */
     private fun tooltipOf(hover: String): String =
         XmlStringUtil.wrapInHtml(hover.lines().joinToString("<br>") { StringUtil.escapeXmlEntities(it) })
 }

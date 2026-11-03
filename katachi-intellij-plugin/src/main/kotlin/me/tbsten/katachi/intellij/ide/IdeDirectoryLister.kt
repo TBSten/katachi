@@ -10,18 +10,7 @@ import me.tbsten.katachi.intellij.data.placement.DirectoryLister
 import java.nio.file.Files
 import java.nio.file.Path
 
-/**
- * [DirectoryLister] over the disk (`java.nio`: Gradle writes behind the IDE's back, so the VFS may be behind) minus
- * the directories the IDE excludes from [project] (`build/` and the like), which it answers from the index in a read
- * action. A directory the VFS does not know yet cannot be excluded, so it is kept.
- *
- * Call it off the EDT. A cancelled read action ends this with a [CancellationException] (its control-flow
- * exception wrapped), never a logged failure.
- *
- * ```kotlin
- * val names = IdeDirectoryLister(project).childDirectories(root.resolve("feature")) // ["home", "settings"]
- * ```
- */
+// Call off the EDT. A cancelled read action ends with a `CancellationException` (wrapped control flow), never a logged failure.
 internal class IdeDirectoryLister(private val project: Project) : DirectoryLister {
     override fun childDirectories(directory: Path): List<String> {
         val names = try {

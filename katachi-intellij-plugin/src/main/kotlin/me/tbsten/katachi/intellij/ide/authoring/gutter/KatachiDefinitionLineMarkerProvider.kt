@@ -16,19 +16,6 @@ import java.util.Collections
 import java.util.IdentityHashMap
 import javax.swing.Icon
 
-/**
- * The ◆ of a definition file (ide-authoring design 4.3): one on a role, `"Service".role {`, that lists the files it holds and
- * offers to generate; one on a `.template { }`, that generates from it. Listed in `Settings | Editor | General | Gutter Icons`
- * as "katachi definition", a switch of its own, apart from the source side's.
- *
- * Everything is computed in [collectSlowLineMarkers] (the daemon's background thread); the EDT only shows the tooltip and the
- * menu. Works in dumb mode: it reads the PSI, never an index.
- *
- * ```kotlin
- * // plugin.xml
- * // <codeInsight.lineMarkerProvider language="kotlin" implementationClass="...KatachiDefinitionLineMarkerProvider"/>
- * ```
- */
 internal class KatachiDefinitionLineMarkerProvider(private val portsOf: (Project) -> GutterPorts) : LineMarkerProviderDescriptor(), DumbAware {
     constructor() : this(GutterPorts::of)
 
@@ -59,7 +46,6 @@ internal class KatachiDefinitionLineMarkerProvider(private val portsOf: (Project
     }
 
     companion object {
-        /** What `Settings | Editor | General | Gutter Icons` keys the switch by. */
         const val ID: String = "me.tbsten.katachi.intellij.authoring.gutter"
     }
 }

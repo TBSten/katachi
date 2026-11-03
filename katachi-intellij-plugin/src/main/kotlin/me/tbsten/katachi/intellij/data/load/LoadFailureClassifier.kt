@@ -11,14 +11,8 @@ private val COMPILE_TASK_FAILED = Regex("""Execution failed for task '[^']*:comp
 private val KATACHI_MAIN_EXCEPTION = Regex("""^Exception in thread "main" (me\.tbsten\.katachi\.[\w.$]+)(?:: (.*))?$""")
 private val STACK_FRAME = Regex("""^\s+at .+|^\s*\.\.\. \d+ more$""")
 
-/** How many trailing lines "Details" shows for a failure it cannot name. */
 private const val TAIL_LINES = 15
 
-/**
- * Names the cause of a failed Gradle run from its output (spec 02 "エラー"): the definition does
- * not compile, the task is unknown (stale sync), `architecture` is not set, katachi rejected the
- * command line, or something else. Used for loading and for a generation that never reached katachi.
- */
 internal fun classifyGradleFailure(output: List<String>): GradleFailure {
     val lines = output.map(::stripAnsi)
 
@@ -53,7 +47,6 @@ internal fun classifyGradleFailure(output: List<String>): GradleFailure {
 private fun taskPathOf(projectPath: String, taskName: String): String =
     if (taskName.startsWith(":")) taskName else if (projectPath == ":" || projectPath.isEmpty()) ":$taskName" else "$projectPath:$taskName"
 
-/** The line at [index] and the ones after it, up to a blank line. */
 private fun paragraphFrom(lines: List<String>, index: Int): List<String> =
     lines.drop(index).takeWhile { it.isNotBlank() }
 

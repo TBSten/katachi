@@ -12,19 +12,6 @@ import org.jetbrains.annotations.TestOnly
 import javax.swing.Action
 import javax.swing.JComponent
 
-/**
- * The dialog that asks what to do about files that already exist (spec 03 "衝突ダイアログ"): the files as
- * katachiTemplate reported them, and what to do about the whole template. The dialog that fills in a template's
- * arguments is `KatachiGenerateDialog`; this one only comes up during a generation.
- *
- * ```
- * ┌ Files already exist (2 / 3: Repository) ─────────────┐
- * │ 📄 data/…/UserRepositoryImpl.kt                      │
- * │ ( ) Overwrite  (•) Do not write this template and go on │
- * │                          [Stop Here]  [Continue]     │
- * └──────────────────────────────────────────────────────┘
- * ```
- */
 internal class ConflictDialog(
     private val project: Project,
     private val question: ConflictQuestion,
@@ -56,10 +43,8 @@ internal class ConflictDialog(
     // "Continue" first so Enter confirms; "Stop here" is the cancel action, so Esc and closing stop too.
     override fun createActions(): Array<Action> = arrayOf(okAction, cancelAction)
 
-    /** What the user picked; closing the dialog any other way stops (the safe answer). */
     val choice: ConflictChoice get() = conflictChoiceOf(exitCode == OK_EXIT_CODE, overwriteButton.isSelected)
 
-    /** Picks the radio button and presses "Continue", for tests that cannot click a modal dialog. */
     @TestOnly
     fun continueWith(overwrite: Boolean) {
         (if (overwrite) overwriteButton else skipButton).isSelected = true
@@ -72,34 +57,24 @@ internal class ConflictDialog(
     }
 }
 
-/** "Continue" with the radio button, or "stop here". */
 internal fun conflictChoiceOf(continued: Boolean, overwrite: Boolean): ConflictChoice = when {
     !continued -> ConflictChoice.Stop
     overwrite -> ConflictChoice.Overwrite
     else -> ConflictChoice.SkipAndContinue
 }
 
-/** The path shown in the dialog: relative to the run's (shared, E-05) linked root when inside it. */
 private fun displayPathOf(path: java.nio.file.Path, question: ConflictQuestion): String {
     val root = question.templateIds.first().module.linkedRootPath
     return if (path.startsWith(root)) root.relativize(path).toString().replace('\\', '/') else path.toString()
 }
 
-/** The dialog's title names every template the run covers, its own last segment each. */
 private fun conflictNameOf(question: ConflictQuestion): String =
     question.templateIds.joinToString(", ") { it.template.substringAfterLast('.') }
 
-/**
- * Shows [ConflictDialog], or answers with the test hook when one is set, as `TestDialogManager` does
- * for `Messages`: a modal dialog cannot be clicked in a headless test.
- */
 internal object ConflictDialogs {
     @Volatile private var testAnswer: ((ConflictQuestion) -> ConflictChoice)? = null
 
-    /**
-     * Call on the EDT. A dialog the IDE fails to show answers [ConflictChoice.Stop], the safe answer,
-     * which the result shows at that template.
-     */
+    // Call on the EDT. A dialog that fails to show answers `ConflictChoice.Stop`, the safe answer.
     fun ask(project: Project, question: ConflictQuestion): ConflictChoice {
         testAnswer?.let { return it(question) }
         return sdkCall("ask about the existing files of ${question.templateIds.joinToString(", ") { it.template }}") {

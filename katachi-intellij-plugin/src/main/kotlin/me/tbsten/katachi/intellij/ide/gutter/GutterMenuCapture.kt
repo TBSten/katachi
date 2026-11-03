@@ -12,26 +12,18 @@ import me.tbsten.katachi.intellij.presentation.gutter.MenuInput
 import me.tbsten.katachi.intellij.presentation.gutter.MenuInputs
 import me.tbsten.katachi.intellij.presentation.gutter.MenuModel
 
-/**
- * What a ◆ keeps for its menu. It is built in the background when the ◆ is drawn (the definition's sites are looked up
- * there) and read on the EDT when the ◆ is pressed, which only lays the rows out from it.
- */
 internal class CapturedMenu(
     val input: MenuInput,
     val file: VirtualFile,
-    /** Where each site the menu can open is; a site not found is [ResolvedSite.Unresolved] (and in [MenuInput.unresolved]). */
     val resolved: Map<DeclarationSiteRef, ResolvedSite>,
-    /** The modules whose check is running, read when the menu opens; `null` while nothing provides violations. */
     val runningChecks: StateFlow<Set<ModuleId>>?,
 ) {
-    /** The rows as they are right now: [available] says which platform actions exist, the running checks are read here. */
     fun model(available: MenuAvailability): MenuModel {
         val running = runningChecks?.value?.contains(input.module.id) == true
         return MenuModel.of(input, available.copy(checkRunning = running), BundleGutterStrings)
     }
 }
 
-/** Resolves the sites of a ◆'s menu. A file's ◆ share their sites (the role's), so [cache] keeps each answer for the whole file. */
 internal object GutterMenuCapture {
     private val EVERYTHING = MenuAvailability(runCheck = true, refresh = true, checkRunning = false)
 

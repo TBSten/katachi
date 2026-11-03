@@ -9,14 +9,6 @@ import me.tbsten.katachi.intellij.presentation.fieldSlotsOf
 import me.tbsten.katachi.intellij.presentation.validateField
 import java.nio.file.Path
 
-/**
- * [core] as the dialog shows it. [checked] is the last answer of the existing-file check and the
- * file it was about: shown only while it is still the target.
- *
- * [Generate] can be pressed when the selected template is still listed, every shown field is valid
- * (a required one filled in) and the target is not a file with content (issue 6). A check still
- * running does not block: generating checks again before writing anything (E3).
- */
 internal fun dialogStateOf(
     core: DialogCore,
     request: GenerateDialogRequest,

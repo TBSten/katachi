@@ -1,25 +1,9 @@
 package me.tbsten.katachi.intellij.data.definition
 
-/**
- * [items] bucketed by the literal levels their pattern starts with, so a path is only tried against
- * the patterns that could match it. A port of katachi's `PrefixGlobIndex`.
- *
- * A pattern can only match a path whose leading levels are its [KatachiGlob.literalPrefix], so the
- * buckets to read are the path's own leading levels, from none up to all of them. Every candidate is
- * still matched in full: the buckets only skip patterns, they never decide a match.
- *
- * ```kotlin
- * val index = PrefixGlobIndex(entries) { KatachiGlob.compile(it.pattern) }
- * index.matching("core/domain/Foo.kt") // the entries whose pattern matches, in the order given
- * ```
- */
+// Buckets only skip patterns; every candidate is still matched in full.
 internal class PrefixGlobIndex<T>(private val items: List<T>, globOf: (T) -> KatachiGlob) {
     private val globs: List<KatachiGlob> = items.map(globOf)
 
-    /**
-     * Indices into [items], ascending, keyed by the literal levels joined with `/`. A pattern with
-     * another separator (a module path) goes to the empty key, which every path reads.
-     */
     private val buckets: Map<String, IntArray> = globs.indices
         .groupBy { index ->
             val glob = globs[index]
@@ -27,7 +11,6 @@ internal class PrefixGlobIndex<T>(private val items: List<T>, globOf: (T) -> Kat
         }
         .mapValues { (_, indices) -> indices.toIntArray() }
 
-    /** The items whose pattern matches [path], in the order they were given. */
     fun matching(path: String): List<T> {
         val candidates = candidatesOf(path)
         if (candidates.isEmpty()) return emptyList()
@@ -36,7 +19,6 @@ internal class PrefixGlobIndex<T>(private val items: List<T>, globOf: (T) -> Kat
         return candidates.filter { globs[it].matches(path) }.map { items[it] }
     }
 
-    /** Whether any item's pattern matches [path]. */
     fun anyMatches(path: String): Boolean = candidatesOf(path).any { globs[it].matches(path) }
 
     private fun candidatesOf(path: String): IntArray {

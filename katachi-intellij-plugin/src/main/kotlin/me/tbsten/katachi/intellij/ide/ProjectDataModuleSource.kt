@@ -17,13 +17,6 @@ import org.jetbrains.plugins.gradle.util.gradleIdentityPathOrNull
 import org.jetbrains.plugins.gradle.util.gradlePathOrNull
 import java.nio.file.Path
 
-/**
- * Reads the Gradle builds linked to [project] and their synced data (`ProjectDataManager`), without
- * running Gradle (spec 01).
- *
- * When the IDE fails to hand the data over, [read] throws [KatachiSyncedDataUnreadableException],
- * which the ViewModel shows as a load error with its message.
- */
 internal class ProjectDataModuleSource(private val project: Project) : SyncedProjectSource {
     override fun read(): SyncedProject = sdkCall("read the Gradle sync data") {
         val linked = GradleSettings.getInstance(project).linkedProjectsSettings.map { it.externalProjectPath }
@@ -36,7 +29,6 @@ internal class ProjectDataModuleSource(private val project: Project) : SyncedPro
     }.getOrElse { throw KatachiSyncedDataUnreadableException(it) }
 }
 
-/** The IDE threw while handing over the Gradle sync data; [cause] is what it threw. */
 internal class KatachiSyncedDataUnreadableException(
     override val cause: Throwable,
 ) : IllegalStateException(
@@ -47,7 +39,6 @@ internal class KatachiSyncedDataUnreadableException(
     cause,
 )
 
-/** [structures] (one per linked root that has synced) as the detector reads them. */
 internal fun syncedProjectOf(structures: List<DataNode<ProjectData>>): SyncedProject =
     if (structures.isEmpty()) SyncedProject.NotSynced else SyncedProject.Synced(structures.map(::syncedRootOf))
 
@@ -77,10 +68,6 @@ private fun syncedModuleOf(moduleNode: DataNode<ModuleData>): SyncedModule {
     )
 }
 
-/**
- * The path `runTask` accepts from the linked root: the identity path, which in a composite build
- * prefixes the included build (`:included:arch`). Falls back to the module id before Gradle 8.
- */
 private fun gradlePathOf(module: ModuleData): String =
     module.gradleIdentityPathOrNull ?: module.gradlePathOrNull ?: module.id
 

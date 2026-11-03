@@ -14,26 +14,14 @@ import me.tbsten.katachi.intellij.presentation.gutter.MarkTarget
 import me.tbsten.katachi.intellij.presentation.gutter.SourceFileKind
 import org.jetbrains.kotlin.psi.KtFile
 
-/** A ◆ and the PSI leaf it is drawn on. */
 internal data class PlacedMark(val leaf: PsiElement, val mark: GutterMark)
 
-/** The ◆ of a file with what they were computed from: the menu of each reads the definition's answer and resolves sites with the service. */
 internal data class PlacedFile(val service: DefinitionModelService, val roles: FileRoles, val marks: List<PlacedMark>)
 
-/**
- * The ◆ of one file with the leaves they go on: what the definition and the PSI say, put through [GutterMarks].
- * The line marker providers draw them; the debug bridge describes them.
- *
- * Call under a read lock, from the background: it asks the definition model, which may read the disk.
- *
- * ```kotlin
- * val placed = GutterPlacement.of(psiFile, GutterPorts.of(project))
- * ```
- */
+// Call under a read lock, from the background: it asks the definition model, which may read the disk.
 internal object GutterPlacement {
     fun of(file: PsiFile, ports: GutterPorts): List<PlacedMark> = ofFile(file, ports)?.marks.orEmpty()
 
-    /** [of] with the definition's answer the marks came from; `null` when the file gets no ◆. */
     fun ofFile(file: PsiFile, ports: GutterPorts): PlacedFile? {
         if (!ports.hasDefinitionModule()) return null
         val service = ports.definitions() ?: return null
@@ -71,7 +59,6 @@ internal object GutterPlacement {
         MarkTarget.FileHead -> headOf(file)
     }
 
-    /** The `package` line of a `.kt` file, else the first leaf that is not white space. */
     private fun headOf(file: PsiFile): PsiElement? {
         val packageDirective = (file as? KtFile)?.takeUnless { it.isScript() }?.packageDirective?.takeIf { it.textLength > 0 }
         return packageDirective?.let(SourceDeclarations::firstLeafOf) ?: SourceDeclarations.firstLeafOf(file)

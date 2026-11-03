@@ -27,57 +27,18 @@ import me.tbsten.katachi.intellij.presentation.entry.GenerateDialogRequest
 import java.nio.file.Path
 import kotlin.coroutines.CoroutineContext
 
-/**
- * The generate dialog's ViewModel, IntelliJ-free (issue 9), so the dialog's behaviour is tested
- * without an IDE: template and definition selection, the form with the decided captures as editable
- * initial values (issue 1), the target path, the existing-file notice (issue 6) and whether
- * [Generate] can be pressed. Generating makes one file from one template (issue 2).
- *
- * The rules (the transitions are in `DialogTransitions.kt`):
- *
- * - **Candidates**: every usable template of every definition is offered, not only those that fit
- *   the origin (issue 0); the request's template starts selected, in its own definition (decision 10).
- *   The definition select box shows with two or more definitions; picking one offers its templates.
- * - **Switching templates** (decision 4): the captures the origin decides are asked of [seeds] for the
- *   new template; the other fields keep the value of the same-named, linking field of the previous
- *   template; the rest start empty.
- * - **The list changes while open** ([GenerateDialogIntent.ListChanged]): the selected template stays
- *   when it is still there; when it is gone the first template of the same definition takes its
- *   place with a notice; with none left [Generate] cannot be pressed.
- * - **The existing-file check** ([checkTarget], the same check [Generate] runs) is asked again when
- *   the target file changes (an input or a selection), when the list changes, and when files were
- *   written outside the dialog ([GenerateDialogIntent.FilesChangedOutside]). It runs on
- *   [checkContext], after [settle] (typing in bursts checks once), and a newer check cancels an older one.
- *
- * Dispatched on the EDT: [scope] runs on it, so the state is only written there.
- *
- * ```kotlin
- * val vm = GenerateDialogViewModel(scope, request, templatesOf(snapshots), seeds, generation::checkTarget, rootOf)
- * vm.dispatch(GenerateDialogIntent.Input("name", "Profile"))
- * vm.generationRequest() // one template (issue 2), or null while [Generate] cannot be pressed
- * ```
- */
+// Dispatched on the EDT: scope runs on it, so the state is only written there.
 internal class GenerateDialogViewModel(
     private val scope: CoroutineScope,
     private val request: GenerateDialogRequest,
-    /** Every template of every definition, in list order. */
     candidates: List<ModuleTemplate>,
     private val seeds: CaptureSeedPort,
-    /** `SingleFileGeneration.checkTarget`: the same check [Generate] runs (issue 6). */
     private val checkTarget: suspend (Path?) -> TargetState,
-    /**
-     * The directory a definition's patterns are relative to (`placementRootOf`, which checks files).
-     * Remembered per definition here and forgotten after a list change or an outside write; how often it
-     * really reads the disk is the frame's choice (the real one finds each root once, when the dialog opens).
-     */
     private val rootOf: (KatachiModule) -> Path,
     private val checkContext: CoroutineContext = Dispatchers.Default,
     private val settle: suspend () -> Unit = { delay(CHECK_DEBOUNCE_MILLIS) },
-    /** Told when checking the target failed unexpectedly (the frame logs it; the ViewModel knows no logger of the IDE). */
     private val onUnexpectedCheckFailure: (Throwable) -> Unit = {},
-    /** Reads the directories behind the capture fields' candidates (design 3.3), on [checkContext] after [settle]; none by default. */
     candidateLister: DirectoryLister = DirectoryLister { emptyList() },
-    /** Told when reading the directories failed (the frame logs it). */
     onCandidateFailure: (Throwable) -> Unit = {},
 ) {
     private var core: DialogCore = initialCoreOf(usableTemplatesOf(candidates), request.initialTemplate, ::seedsOf)
@@ -100,7 +61,6 @@ internal class GenerateDialogViewModel(
     )
     private val requestedFields = HashSet<FieldId>()
 
-    /** The String fields shown as a text area (design D-2); dropped when the selected template changes. */
     private var multiline: Set<String> = emptySet()
 
     private val mutableState = MutableStateFlow(stateOf())
@@ -133,11 +93,6 @@ internal class GenerateDialogViewModel(
         syncCandidates(force)
     }
 
-    /**
-     * Asks for the directory candidates of the selected template's shown capture fields and lets go of the others'
-     * (design 3.3): when the field appears (the template was selected), when a value above it changes, and, [force]d,
-     * when the files changed or the list was reloaded. The loader ignores a request whose key did not change.
-     */
     private fun syncCandidates(force: Boolean) {
         val state = mutableState.value
         val template = state.selected
@@ -157,7 +112,6 @@ internal class GenerateDialogViewModel(
         }
     }
 
-    /** What [Generate] runs: the selected template with the inputs; `null` while it cannot be pressed. */
     fun generationRequest(): SingleFileGenerationRequest? {
         val state = mutableState.value
         val template = state.selected ?: return null
@@ -176,7 +130,6 @@ internal class GenerateDialogViewModel(
     private fun stateOf(): GenerateDialogState =
         dialogStateOf(core, request, ::rootOfCached, checked).copy(captureCandidates = captureCandidates, multiline = multiline)
 
-    /** Starts the existing-file check when the target is not the one checked (or being checked), or when [force]d. */
     private fun recheckIfMoved(force: Boolean) {
         val target = mutableState.value.target
         if (!force && target == checkingTarget) return
@@ -202,7 +155,6 @@ internal class GenerateDialogViewModel(
     }
 
     companion object {
-        /** How long typing must pause before the target is checked. */
         const val CHECK_DEBOUNCE_MILLIS: Long = 300
     }
 }

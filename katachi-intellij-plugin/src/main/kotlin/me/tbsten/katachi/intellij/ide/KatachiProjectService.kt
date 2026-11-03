@@ -66,25 +66,17 @@ import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
-/** The ports the ViewModel runs on. Tests swap the synced data and Gradle for fakes. */
 internal data class KatachiPorts(
     val syncedProject: SyncedProjectSource,
     val runner: GradleTaskRunner,
     val fileSystem: ProjectFileSystem,
     val effects: IdeEffects,
-    /** `null`: the real [EntryEffectsImpl]. Tests of the notification and the New menu pass a fake. */
     val entryEffects: EntryEffects? = null,
-    /** `null`: whether the platform is importing a Gradle project now. Tests play an import with it. */
     val importInProgress: (() -> Boolean)? = null,
-    /** `null`: `EditorNotifications.updateAllNotifications()`. Tests record the calls. */
     val refreshNotifications: (() -> Unit)? = null,
-    /** `null`: [TemplatePlacementIndex.build] over [placementRootOf]. Tests wrap it to see where it runs. */
     val buildIndex: ((List<DescriptionSnapshot>) -> TemplatePlacementIndex)? = null,
-    /** `null`: a new one fed by the IDE's ExternalSystem tasks. Tests play a Gradle build with it. */
     val gradleActivity: GradleActivity? = null,
-    /** How long the automatic reload waits after the last save of a test source (design 4.8). Tests shorten it. */
     val autoReloadDelayMillis: Long = AutoReload.AUTO_RELOAD_DELAY_MILLIS,
-    /** Set while [effects] saves the editors for a load: the file watcher's events of that save are not changes of the user. */
     val ownSave: OwnSaveMark = OwnSaveMark(),
 ) {
     companion object {
@@ -101,16 +93,7 @@ internal data class KatachiPorts(
     }
 }
 
-/**
- * Owns the tool window's ViewModel for one project, and with it everything that runs: loads,
- * generations and listeners live in [scope], which the platform cancels when the project closes,
- * so a running Gradle build is cancelled too (E-49).
- *
- * Created the first time the tool window is shown, so a project nobody looks at never runs Gradle.
- * The New menu and the editor notification create it too, but only when the synced data has a
- * definition module (issue 11, decision 17); they share its list through [placementIndex] and start
- * the load with [ensureLoaded]. Syncs and definition changes are followed whoever created it.
- */
+// Created lazily so a project nobody looks at never runs Gradle.
 @OptIn(ExperimentalCoroutinesApi::class) // mapLatest: a newer list cancels the index still being built.
 @Service(Service.Level.PROJECT)
 internal class KatachiProjectService(
@@ -123,13 +106,8 @@ internal class KatachiProjectService(
 
     private val settings: KatachiSettings? = sdkCall("read the katachi settings") { KatachiSettings.getInstance(project) }.getOrNull()
 
-    /** Whether Gradle runs in the IDE for this project: this plugin's builds and the IDE's (design U-12). */
     val gradleActivity: GradleActivity = ports.gradleActivity ?: GradleActivity()
 
-    /**
-     * The project's one Gradle runner: the tool window, the entries, the generation from an entry and the
-     * check (`katachi.RunCheck`) all run through it, one build at a time, so they never fight over the same `build/`.
-     */
     val gradleRunner: GradleTaskRunner = SerialGradleTaskRunner(ports.runner, gradleActivity)
 
     private val fileSystem: ProjectFileSystem = ports.fileSystem
@@ -141,21 +119,14 @@ internal class KatachiProjectService(
     private val buildIndex: (List<DescriptionSnapshot>) -> TemplatePlacementIndex =
         ports.buildIndex ?: { snapshots -> TemplatePlacementIndex.build(snapshots) { placementRootOf(it, fileSystem) } }
 
-    /** Imports running now, as the listener saw them start and end. */
     private val importsRunning = AtomicInteger(0)
 
-    /** The generations started from the entries (E3 writes, E1 reads). Memory only. */
     val ledger: EntryGenerationLedger = EntryGenerationLedger()
 
-    /** What the notification's links and the New menu's items ask of the IDE. */
     val entryEffects: EntryEffects = ports.entryEffects ?: EntryEffectsImpl(project)
 
     private val mutablePlacementIndex = MutableStateFlow<PlacementIndexState>(PlacementIndexState.NotLoaded)
 
-    /**
-     * The placement index of the loaded list, built off the EDT from [viewModel]'s state, the one
-     * source of the list (issues 4, 11). Each change updates the editor notifications.
-     */
     val placementIndex: StateFlow<PlacementIndexState> = mutablePlacementIndex.asStateFlow()
 
     val viewModel: KatachiToolWindowViewModel = KatachiToolWindowViewModel(
@@ -174,36 +145,20 @@ internal class KatachiProjectService(
 
     private val definitionPublisher = DefinitionStatePublisher(scope, viewModel, loadsWithoutUser = ::loadsWithoutUser)
 
-    /**
-     * The definition model (design 4.3), derived from [viewModel]'s state as [placementIndex] is: one load
-     * path. `KatachiDefinitionService` publishes it to the two features.
-     */
     val definitions: StateFlow<DefinitionState> = definitionPublisher.state
 
-    /** The mistakes katachi found in the definition, from the same changes as [definitions] (ide-authoring design 2.3). */
     val definitionErrors: StateFlow<DefinitionErrors> = definitionPublisher.errors
 
-    /** Where the definition's `FileName.kt:NN` are, among the definition modules' test sources (design 4.6). */
     val siteResolver: DeclarationSiteResolver = DeclarationSiteResolver(project, scope)
 
     private val autoReload = AutoReload(scope, viewModel.state, gradleActivity, ports.autoReloadDelayMillis) {
         withContext(Dispatchers.EDT) { viewModel.reloadIfIdle() }
     }
 
-    /** Whether an automatic reload waits for its delay or for Gradle. */
     val isAutoReloadPending: Boolean get() = autoReload.isPending
 
-    /**
-     * The generation from the editor notification and the New menu (E3) over this project's one runner,
-     * list, index and ledger, so it never overlaps a load of the tool window.
-     */
     val entryGeneration: SingleFileGeneration = SingleFileGeneration(effects, gradleRunner, fileSystem, this, ledger)
 
-    /**
-     * Runs [request] off the EDT in [scope]: closing the project cancels it, and with it Gradle (E-49).
-     * Failures reach the user as balloons from the generation itself; a refusal (the target got content
-     * after the dialog checked it) as a balloon from here.
-     */
     fun generateFromEntry(request: SingleFileGenerationRequest): Deferred<SingleFileGenerationResult> =
         scope.async(Dispatchers.Default) {
             entryGeneration.run(request).also { result ->
@@ -259,14 +214,6 @@ internal class KatachiProjectService(
         }
     }
 
-    /**
-     * Files changed (the file watcher, design 4.8): a change of a definition module's sources or build script
-     * shows the "definition changed" banner and marks the definition stale, and drops the walk of its test
-     * sources. A change of its test sources with "reload when saved" on reloads once the user stops saving
-     * and Gradle is idle. Saves this plugin makes before a load or a generation are its own (`OwnSaveMark`):
-     * the load reads what they wrote, so they neither mark the definition stale nor schedule a reload. Nothing
-     * loaded in this session (loading without the user turned off): a change does not start one.
-     */
     fun onFilesChanged(changes: FileChanges) {
         // A directory created or removed changes the candidates of the capture fields on screen (design 3.3). This is called
         // inside the VFS's write action: the roots are looked up on the disk, so leave it (the ViewModel is thread-safe there).
@@ -279,22 +226,12 @@ internal class KatachiProjectService(
         autoReload.schedule()
     }
 
-    /** An explicit update of the definition (design 4.5 `refresh`): a sync re-detects, the rest reload through Gradle. */
     fun refreshDefinition(reason: RefreshReason) {
         dispatchOnEdt(if (reason == RefreshReason.SyncCompleted) KatachiIntent.SyncCompleted else KatachiIntent.Reload)
     }
 
-    /**
-     * The definition modules as the file watcher sees them, with their test source roots: the ones in the synced
-     * data too before anything was detected, so that the SARIF of a project nobody loaded is followed.
-     */
     fun watchedModules(): List<WatchedModule> = definitionModules().map { WatchedModule(it, siteResolver.testRootsOf(it)) }
 
-    /**
-     * The definition modules for the check and the SARIF reading: the ones the tool window's detection found, else
-     * the ones in the synced data (no Gradle), so that they are known before anything was loaded (the check
-     * from Find Action, the SARIF already on disk). Reads the synced data at most once between two syncs: call it off the EDT.
-     */
     fun definitionModules(): List<KatachiModule> =
         viewModel.definitionModules.ifEmpty { modulesInSyncedData ?: readModulesInSyncedData().also { modulesInSyncedData = it } }
 
@@ -307,7 +244,6 @@ internal class KatachiProjectService(
             else -> emptyList()
         }
 
-    /** The project roots under which a change makes the check's results stale: each definition's, else its Gradle root. */
     fun projectRoots(): List<Path> {
         val answered = definitions.value.answer?.definitions.orEmpty().mapNotNull { it.definition?.projectRoot }
         return answered.ifEmpty { definitionModules().map { it.linkedRootPath }.distinct() }
@@ -321,15 +257,8 @@ internal class KatachiProjectService(
 
     private val ensureScheduled = AtomicBoolean(false)
 
-    /** An entry asked during a Gradle import: it runs once the import ends (decision 16). */
     @Volatile private var ensureAfterImport = false
 
-    /**
-     * Starts detecting and loading the list if nothing did yet (issues 11, 18). Callable from any
-     * thread any number of times (a read action that restarts calls it again): it hops to the EDT
-     * and loads once, and never waits. During a Gradle import it waits for the import to end.
-     * With loading without the user turned off it only reads the synced data and the cached JSON.
-     */
     fun ensureLoaded() {
         if (viewModel.loadStarted.value) return
         // Many calls while one hop is queued make that one hop.
@@ -345,13 +274,8 @@ internal class KatachiProjectService(
         }
     }
 
-    /** [path] is about to be written by this plugin: not a definition change (E-44). */
     override fun registerOwnWrite(path: Path) = viewModel.registerOwnWrite(path)
 
-    /**
-     * Re-reads [module]'s templates for a generation through [gradleRunner] and publishes them to
-     * the tool window and [placementIndex] before returning (decision 1). Waits for a running load.
-     */
     override suspend fun reloadForGeneration(module: KatachiModule): GenerationCatalogReload =
         when (val result = viewModel.reloadForGeneration(module)) {
             is LoadResult.Failed -> GenerationCatalogReload.Failed(result.failure)
@@ -364,10 +288,6 @@ internal class KatachiProjectService(
             }
         }
 
-    /**
-     * The latest index and the list it was built from, so one list is indexed (and notified) once,
-     * even when the collector and [reloadForGeneration] ask for it at the same moment.
-     */
     private var lastIndex: Pair<List<DescriptionSnapshot>, TemplatePlacementIndex>? = null
     private val indexLock = Any()
 
@@ -397,7 +317,7 @@ internal class KatachiProjectService(
         if (!project.isDisposed) EditorNotifications.getInstance(project).updateAllNotifications()
     }
 
-    /** The ViewModel is driven from the EDT only; IDE listeners call from anywhere. */
+    // The ViewModel is driven from the EDT only; IDE listeners may call from anywhere.
     private fun dispatchOnEdt(intent: KatachiIntent) {
         scope.launch(Dispatchers.EDT) { viewModel.dispatch(intent) }
     }
@@ -405,7 +325,6 @@ internal class KatachiProjectService(
     override fun dispose() = Unit
 
     companion object {
-        /** Call inside [sdkCall]. */
         fun getInstance(project: Project): KatachiProjectService = project.service()
     }
 }

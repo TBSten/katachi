@@ -6,17 +6,7 @@ import java.lang.ref.WeakReference
 import java.util.Collections
 import java.util.WeakHashMap
 
-/**
- * The no-role panel each editor shows now, for [me.tbsten.katachi.intellij.ide.debug.KatachiDebugBridge.describeNoRole]: the
- * platform keeps its panels to itself, and the Swing tree they hang in differs between the IDE and the headless tests.
- * A panel is entered when built and every editor of a file is dropped when the provider decides the file has none, so it
- * says what the platform shows. Weak on both sides: it never keeps an editor or a panel alive.
- *
- * ```kotlin
- * NoRolePanels.register(panel)         // when the panel is built
- * NoRolePanels.of(editor)?.lines       // what the bridge reports
- * ```
- */
+// Weak on both sides: it must never keep an editor or a panel alive.
 internal object NoRolePanels {
     private val panels: MutableMap<FileEditor, WeakReference<NoRolePanel>> = Collections.synchronizedMap(WeakHashMap())
 

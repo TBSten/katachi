@@ -6,13 +6,7 @@ import java.nio.file.Files
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 
-/**
- * Reads the baseline file at [file] (UTF-8, as katachi writes it). Plain disk work; call it off the EDT.
- *
- * ```kotlin
- * val reading = readBaselineFile(projectRoot.resolve("katachi-baseline.json"))
- * ```
- */
+// Plain disk work: call it off the EDT.
 internal fun readBaselineFile(file: Path): BaselineReading {
     val text = try {
         Files.readString(file)

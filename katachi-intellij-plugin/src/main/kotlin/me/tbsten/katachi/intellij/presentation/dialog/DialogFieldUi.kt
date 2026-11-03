@@ -12,11 +12,6 @@ import me.tbsten.katachi.intellij.presentation.fieldErrorText
 import me.tbsten.katachi.intellij.presentation.suggestionsOf
 import me.tbsten.katachi.intellij.ui.dialog.GenerateDialogStrings
 
-/**
- * The selected template's fields as the form draws them: the tool window's [FieldUi] over the
- * dialog's [GenerateDialogField]s, worded from [strings]. No link (a tool window notion). A String
- * field has the tool window's one-line / several-lines switch (design D-2), kept in [GenerateDialogState.multiline].
- */
 internal fun dialogFieldsUiOf(state: GenerateDialogState, strings: GenerateDialogStrings): List<FieldUi> {
     val selected = state.selected ?: return emptyList()
     val detail = selected.template.detail ?: return emptyList()

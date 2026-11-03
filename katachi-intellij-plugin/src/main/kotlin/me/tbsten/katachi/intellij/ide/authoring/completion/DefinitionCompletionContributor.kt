@@ -28,23 +28,8 @@ import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtStringTemplateExpression
 
-/**
- * Offers the names of the definition inside the strings that ask for one (ide-authoring design 3.1): the capture
- * names in `captureValue("…")`, the templates in a `templateSet`'s `template("…")`, the names a member takes in
- * `arg("…")`. The candidates are the latest answer of the definition JSON; with none, nothing is offered and Gradle
- * is not started (`ensureLoaded` is the existing, once-only way of asking for a first read).
- *
- * `DumbAware`, as the candidates come from the JSON and the place from the PSI. It never calls `stopHere()`: Kotlin's
- * and the platform's own candidates stay in the list. Ours carry a priority ([PRIORITY]), which is what puts them above
- * the neighbouring file names the platform offers inside a path-like string; the order of contributors does not.
- *
- * A choice replaces the whole text between the quotes, not only the part before the caret ([beforeCompletion]), so
- * `captureValue("na|me2")` becomes `captureValue("name")` on Tab.
- *
- * ```xml
- * <completion.contributor language="kotlin" order="first" implementationClass="...DefinitionCompletionContributor"/>
- * ```
- */
+// Never call `stopHere()`: Kotlin's and the platform's candidates stay in the list; the `PRIORITY` ranks ours above path-like file names.
+// A choice replaces the whole text between the quotes.
 internal class DefinitionCompletionContributor : CompletionContributor(), DumbAware {
 
     override fun beforeCompletion(context: CompletionInitializationContext) {
@@ -86,7 +71,6 @@ internal class DefinitionCompletionContributor : CompletionContributor(), DumbAw
         return service.state.value.answer?.definitions
     }
 
-    /** The offsets a caret can have between the quotes of a closed string. */
     private fun KtStringTemplateExpression.contentRange(): IntRange = (textRange.startOffset + 1)..(textRange.endOffset - 1)
 
     private fun KtStringTemplateExpression.isClosed(): Boolean =
@@ -96,15 +80,10 @@ internal class DefinitionCompletionContributor : CompletionContributor(), DumbAw
         PsiTreeUtil.getParentOfType(element, KtStringTemplateExpression::class.java, false)
 
     private companion object {
-        /** Above the file names and the like the platform offers in the same string. */
         const val PRIORITY = 100.0
     }
 }
 
-/**
- * The names a string of kind [site] in [file] offers, from the definition's [snapshots]: what the contributor lists, and what the
- * debug bridge reports. Call under a read lock.
- */
 internal fun completionCandidatesFor(site: CompletionSite, file: PsiFile, snapshots: List<DefinitionSnapshot>): List<CompletionCandidate> =
     when (site) {
         is CompletionSite.CaptureValue -> {

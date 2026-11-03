@@ -30,27 +30,8 @@ import java.nio.file.Path
 import java.util.function.Function
 import javax.swing.JComponent
 
-/**
- * The editor notification on files a katachi template fits (design section 1): [Create] on an empty
- * one, [View template] on one with content, with ⚙ and ×; the text names the template when one fits. A generation
- * that failed on a file that cannot hold a comment gets [Copy Command].
- *
- * [collectNotificationData] runs in the background under a read lock (`@RequiresReadLock` in 261), so
- * the whole decision is made there: settings, the index state, the matches, the empty-file rule over
- * the cached Document or the disk, the memory and the ledger, then `decideNotification`. It returns
- * `null` for no notification. The returned function only builds the panel on the EDT. Without an index it calls `KatachiProjectService.ensureLoaded()` and shows nothing.
- *
- * A file that no role holds shows the no-role notification (`NoRoleNotificationProvider`) instead of these two links:
- * after deciding, a convenience asks `arbitrateNotifications` and gives way. A generation under way or failed does not.
- *
- * A project whose synced data has no katachi definition module gets no project service at all
- * (decision 17). Whatever an SDK call throws on the way means no notification, never an IDE error;
- * control flow (`ProcessCanceledException` when the read action restarts) is thrown again.
- *
- * ```xml
- * <editorNotificationProvider implementation="me.tbsten.katachi.intellij.ide.notification.KatachiEditorNotificationProvider"/>
- * ```
- */
+// collectNotificationData runs in the background under a read lock: decide everything there; the returned function only builds the panel on the EDT.
+// Control flow (`ProcessCanceledException` when the read action restarts) must be thrown again.
 internal class KatachiEditorNotificationProvider(
     private val portsOf: (Project) -> NotificationPorts,
     private val rulesPortsOf: (Project) -> RulesPorts,
@@ -58,7 +39,6 @@ internal class KatachiEditorNotificationProvider(
     @Suppress("unused") // Called by the platform.
     constructor() : this(NotificationPorts::of, RulesPorts::of)
 
-    /** With the real definition service on the no-role side. */
     constructor(portsOf: (Project) -> NotificationPorts) : this(portsOf, RulesPorts::of)
 
     override fun collectNotificationData(project: Project, file: VirtualFile): Function<in FileEditor, out JComponent?>? {
@@ -74,15 +54,9 @@ internal class KatachiEditorNotificationProvider(
         }
     }
 
-    /** What this notification decides for [file]; the no-role notification arbitrates with it. Runs in the background under the read lock. */
     fun templateDecisionOf(project: Project, file: VirtualFile, path: Path): NotificationDecision =
         decide(project, file, path)?.decision ?: NotificationDecision.Hidden
 
-    /**
-     * Whether [decision] is the notification this file shows. Only a convenience ([NotificationDecision.CreateFromTemplate],
-     * [NotificationDecision.ViewTemplate]) can lose, and only to a file no role holds, so the other side is asked
-     * just then.
-     */
     private fun wins(project: Project, file: VirtualFile, path: Path, decision: NotificationDecision): Boolean {
         if (decision !is NotificationDecision.CreateFromTemplate && decision !is NotificationDecision.ViewTemplate) return true
         val rule = sdkCall("decide the no-role notification of $path") { decideNoRole(rulesPortsOf(project), file, path) }.getOrNull()?.decision
@@ -90,7 +64,6 @@ internal class KatachiEditorNotificationProvider(
         return arbitrateNotifications(decision, rule) == NotificationWinner.Template
     }
 
-    /** `null`: no notification. Runs in the background under the read lock. */
     private fun decide(project: Project, file: VirtualFile, path: Path): Decided? {
         val ports = portsOf(project)
         val settings = ports.settings()
@@ -132,7 +105,6 @@ internal class KatachiEditorNotificationProvider(
         return Decided(decision, service, memory)
     }
 
-    /** The unsaved text wins over the disk (decision 12); a file without a Document is empty only when it has no bytes. */
     private fun contentOf(file: VirtualFile): FileContentState {
         val documents = FileDocumentManager.getInstance()
         val text = (documents.getCachedDocument(file) ?: documents.getDocument(file))?.immutableCharSequence
@@ -140,7 +112,6 @@ internal class KatachiEditorNotificationProvider(
         return if (empty) FileContentState.Empty else FileContentState.HasContent
     }
 
-    /** A decision to show, and what its clicks reach, fixed when it was made. */
     private class Decided(val decision: NotificationDecision, val service: KatachiProjectService, val memory: EditorNotificationMemoryService) {
         fun actionsFor(project: Project, file: VirtualFile, path: Path): NotificationPanelActions {
             // The first of the index order (decision 9); a file decides every capture (decision 21).

@@ -32,17 +32,6 @@ import me.tbsten.katachi.intellij.presentation.entry.EntryOrigin
 import me.tbsten.katachi.intellij.presentation.entry.GenerateDialogRequest
 import java.awt.event.MouseEvent
 
-/**
- * The popup a definition ◆ opens (ide-authoring design 4.3): [DefinitionMenuModel]'s rows as an action group in a
- * speed-search list. Everything it shows was captured in the background ([DefinitionGutterMark]); the first call on the EDT is [navigate].
- *
- * Generating starts the dialog from the definition file ([EntryOrigin.Definition]), which decides no capture. Running the
- * check and reloading are the foundation's actions, looked up by id when the menu opens and never run by this class.
- *
- * ```kotlin
- * LineMarkerInfo(leaf, leaf.textRange, icon, tooltip, DefinitionGutterMenu(project, ports, mark, file), alignment) { tooltip }
- * ```
- */
 internal class DefinitionGutterMenu(
     private val project: Project,
     private val ports: GutterPorts,
@@ -57,7 +46,6 @@ internal class DefinitionGutterMenu(
         }
     }
 
-    /** The popup of the menu's current rows, not shown yet; [parent] is the data context of the gutter it opens from. */
     fun createPopup(parent: DataContext): ListPopup {
         val model = model()
         val context = GutterActions.contextOf(project, file, parent)
@@ -65,7 +53,6 @@ internal class DefinitionGutterMenu(
             .createActionGroupPopup(model.title, groupOf(model, context), context, JBPopupFactory.ActionSelectionAid.SPEEDSEARCH, true)
     }
 
-    /** The menu's current rows as an action group: what the popup shows, and what a test chooses from. */
     fun actionGroup(parent: DataContext): DefaultActionGroup = groupOf(model(), GutterActions.contextOf(project, file, parent))
 
     private fun model(): DefinitionMenuModel = mark.menu(
@@ -104,7 +91,6 @@ internal class DefinitionGutterMenu(
         effects.openGenerateDialog(GenerateDialogRequest(origin, target.template, ports.seeds().seedsFor(origin, target.template)))
     }
 
-    /** One row: its text, the directory on the right, and whether it can be chosen. */
     class RowAction(val row: DefinitionMenuItem.Row, private val run: (DefinitionMenuTarget) -> Unit) : AnAction(row.text), DumbAware {
         init {
             // `AnAction(String)` reads `_` and `&` as a mnemonic: a file `activity_main.xml` keeps its `_`.
@@ -120,7 +106,6 @@ internal class DefinitionGutterMenu(
 
         override fun actionPerformed(event: AnActionEvent) = choose()
 
-        /** What choosing the row does: nothing for a row that cannot be chosen. */
         fun choose() {
             row.target?.takeIf { row.enabled }?.let(run)
         }

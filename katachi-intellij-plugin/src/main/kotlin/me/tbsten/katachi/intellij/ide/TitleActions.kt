@@ -11,7 +11,6 @@ import me.tbsten.katachi.intellij.presentation.KatachiIntent
 import me.tbsten.katachi.intellij.presentation.TitleAction
 import me.tbsten.katachi.intellij.presentation.titleActionOf
 
-/** ⟳ in the title bar, ■ while loading (spec 04 "再読み込み"). Disabled while generating (E-41). */
 internal class ReloadOrStopAction : DumbAwareAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
@@ -38,7 +37,6 @@ internal class ReloadOrStopAction : DumbAwareAction() {
     }
 }
 
-/** ⚙ in the title bar: Settings | Tools | katachi. */
 internal class OpenSettingsAction : DumbAwareAction(KatachiBundle.message("action.settings.text"), null, AllIcons.General.Settings) {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 

@@ -26,17 +26,6 @@ import me.tbsten.katachi.intellij.presentation.gutter.MenuModel
 import me.tbsten.katachi.intellij.presentation.gutter.MenuTarget
 import java.awt.event.MouseEvent
 
-/**
- * The popup a ◆ opens (design 2.3): [MenuModel]'s rows as an action group, in a speed-search list. The first call
- * on the EDT is [navigate]; everything it shows was captured in the background ([CapturedMenu]).
- *
- * The platform actions `katachi.RunCheck` and `katachi.RefreshDefinition` are the foundation's: they are looked up by id
- * when the menu opens, and a row whose action is not registered cannot be chosen.
- *
- * ```kotlin
- * LineMarkerInfo(leaf, leaf.textRange, icon, tooltip, GutterMenu(project, ports, captured), alignment) { tooltip }
- * ```
- */
 internal class GutterMenu(
     private val project: Project,
     private val ports: GutterPorts,
@@ -50,7 +39,6 @@ internal class GutterMenu(
         }
     }
 
-    /** The popup of the menu's current rows, not shown yet; [parent] is the data context of the gutter it opens from. */
     fun createPopup(parent: DataContext): ListPopup {
         val model = captured.model(availability())
         val context = contextOf(parent)
@@ -58,10 +46,8 @@ internal class GutterMenu(
             .createActionGroupPopup(model.title, groupOf(model, context), context, JBPopupFactory.ActionSelectionAid.SPEEDSEARCH, true)
     }
 
-    /** The menu's current rows as an action group: what the popup shows, and what a test chooses from. */
     fun actionGroup(parent: DataContext): DefaultActionGroup = contextOf(parent).let { groupOf(captured.model(availability()), it) }
 
-    /** The heading of the menu as it is now. */
     fun title(): String = captured.model(availability()).title
 
     private fun availability() = MenuAvailability(
@@ -70,7 +56,6 @@ internal class GutterMenu(
         checkRunning = false,
     )
 
-    /** The popup's data context with this file and project in it: `katachi.RunCheck` finds its module from the file. */
     private fun contextOf(parent: DataContext): DataContext = GutterActions.contextOf(project, captured.file, parent)
 
     private fun groupOf(model: MenuModel, context: DataContext): DefaultActionGroup {
@@ -113,7 +98,7 @@ internal class GutterMenu(
 
     private fun performAction(id: String, context: DataContext) = GutterActions.perform(project, ports, id, context)
 
-    /** A row that opens more rows. Dumb aware, or the popup would leave it out while indexing, with the rows in it. */
+    // Dumb aware, or the popup would leave the row out while indexing.
     class SubMenu(text: String, rows: List<AnAction>) : DefaultActionGroup(text, rows), DumbAware {
         init {
             isPopup = true
@@ -122,7 +107,6 @@ internal class GutterMenu(
         }
     }
 
-    /** One row: its text, the site or directory on the right, and whether it can be chosen. */
     class RowAction(val row: MenuItem.Row, private val run: (MenuTarget) -> Unit) : AnAction(row.text), DumbAware {
         init {
             // `AnAction(String)` reads `_` and `&` as a mnemonic and drops them: a sibling `activity_main.xml` or a rule `fun test_*` would be shown wrong.
@@ -138,14 +122,12 @@ internal class GutterMenu(
 
         override fun actionPerformed(event: AnActionEvent) = choose()
 
-        /** What choosing the row does: nothing for a row that cannot be chosen. */
         fun choose() {
             row.target?.takeIf { row.enabled }?.let(run)
         }
     }
 
     companion object {
-        /** The foundation's actions (ide-definition-model 4.8): the menu calls them and never starts Gradle itself. */
         const val RUN_CHECK: String = "katachi.RunCheck"
         const val REFRESH: String = "katachi.RefreshDefinition"
     }

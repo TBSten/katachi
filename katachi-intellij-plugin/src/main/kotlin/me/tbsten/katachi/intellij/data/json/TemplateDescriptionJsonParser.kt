@@ -12,32 +12,9 @@ import me.tbsten.katachi.intellij.model.TemplateModel
 import me.tbsten.katachi.intellij.model.TemplateSummaryModel
 import java.nio.file.Path
 
-/**
- * Reads `templateDescription.json` (design draft section 6, "`DescribeTemplates` / `katachiTemplates`
- * の出力と IDE の JSON") into the list's templates, in `templates[]` order, one entry per template
- * (not per role: a role with two templates is two entries sharing a `roleName`).
- *
- * Unknown keys are ignored. Every key of the contract is required, `null` only where the contract
- * allows it -- except `captures`, which a katachi from before `capture()` does not write: its
- * absence reads as no captures, and `modulePlacements`, which a katachi from before it does not
- * write: its absence leaves a file below a module capture undecided, as it used to be.
- * A `modulePlacements[]` entry goes to its template's file whose `path` is `null`
- * ([FilePreviewModel.modulePlacement]) and to the fields of its captures
- * ([ParameterModel.CaptureParam.existingModules]). A `kind` this plugin does not know makes that parameter an [ParameterModel.UnknownParam]
- * instead of failing the whole file (E-36). A `details[]` entry whose `template` is not in
- * `templates[]` is dropped, and a repeated `template` keeps its first entry.
- *
- * @throws KatachiMalformedTemplateJsonException when [text] is not JSON (E-37).
- * @throws KatachiIncompatibleTemplateJsonException when a required key is missing or mistyped (E-35).
- */
 internal fun parseTemplateDescriptionJson(text: String, file: Path): List<TemplateModel> =
     parseTemplateDescriptionJson(parseJsonText(text, file), file)
 
-/**
- * [parseTemplateDescriptionJson] over a document that is already parsed: `definition.json` carries
- * the same object under its `templates` key, and reads it through here. [file] is for error messages;
- * a location in them starts at the given [document] (`$`).
- */
 internal fun parseTemplateDescriptionJson(document: JsonValue, file: Path): List<TemplateModel> {
     val root = JsonReader(document, "$", file)
     val summaries = root.array("templates").map { it.summary() }.distinctBy { it.template }
@@ -49,22 +26,12 @@ internal fun parseTemplateDescriptionJson(document: JsonValue, file: Path): List
     return templateRows + templateSetRowsOf(root, placements)
 }
 
-/**
- * The template sets of `templateSets[]` / `templateSetDetails[]`, one row each, in `templateSets[]`
- * order. Both keys are absent in a katachi from before template sets: that reads as no sets. A set
- * without a matching `templateSetDetails[]` entry is a row without a detail (its preview failed).
- */
 private fun templateSetRowsOf(root: JsonReader, placements: Map<String, ModulePlacementModel>): List<TemplateModel> {
     val summaries = root.optionalArray("templateSets").map { it.setSummary() }.distinctBy { it.specifier }
     val details = root.optionalArray("templateSetDetails").map { it.setDetail() }.distinctBy { it.specifier }.associateBy { it.specifier }
     return summaries.map { summary -> templateSetRow(summary, details[summary.specifier], placements) }
 }
 
-/**
- * [this] with [placement] given to the file whose path the declarations leave open, and the values
- * each module capture can take given to its field. A file that already has a path is left alone:
- * the placement only answers what `path: null` asks.
- */
 private fun TemplateDetailModel.placedIn(placement: ModulePlacementModel): TemplateDetailModel = copy(
     files = files.map { file -> if (file.path == null) file.copy(modulePlacement = placement) else file },
     captures = captures.map { capture ->
@@ -73,7 +40,6 @@ private fun TemplateDetailModel.placedIn(placement: ModulePlacementModel): Templ
     },
 )
 
-/** A value at [location] in the document, read with the contract's types. */
 private class JsonReader(private val value: JsonValue, private val location: String, private val file: Path) {
 
     private fun member(key: String): JsonReader {
@@ -95,7 +61,6 @@ private class JsonReader(private val value: JsonValue, private val location: Str
 
     fun boolean(key: String): Boolean = member(key).let { it.value as? JsonValue.JsonBoolean ?: throw mismatch(it.location, "boolean", it.value) }.value
 
-    /** [array] of [key], or empty when the object has no such key (a key added to the contract later). */
     fun optionalArray(key: String): List<JsonReader> {
         val obj = value as? JsonValue.JsonObject ?: throw mismatch(location, "object", value)
         return if (key in obj.members) array(key) else emptyList()
@@ -106,10 +71,8 @@ private class JsonReader(private val value: JsonValue, private val location: Str
         return key in obj.members
     }
 
-    /** [int] of [key], or [default] when the object has no such key. */
     fun optionalInt(key: String, default: Int): Int = if (hasKey(key)) int(key) else default
 
-    /** [nullableString] of [key], or `null` when the object has no such key. */
     fun optionalNullableString(key: String): String? = if (hasKey(key)) nullableString(key) else null
 
     fun int(key: String): Int {
@@ -184,11 +147,6 @@ private class JsonReader(private val value: JsonValue, private val location: Str
         captures = captures(),
     )
 
-    /**
-     * `captures`, one [ParameterModel.CaptureParam] per name: katachi lists a name once per place. A name with derived
-     * places only (`<x.pascalCase>` without a plain `${x}`) is not a field: katachi never writes one, but it is not a
-     * `--arg` either, so it is left out rather than asked for.
-     */
     private fun captures(): List<ParameterModel.CaptureParam> {
         val places = LinkedHashMap<String, MutableList<CapturePlace>>()
         for (capture in optionalArray("captures")) {
@@ -233,7 +191,6 @@ private class JsonReader(private val value: JsonValue, private val location: Str
         content = string("content"),
     )
 
-    /** One `modulePlacements[]` entry, keyed by its template's specifier. */
     fun modulePlacement(): Pair<String, ModulePlacementModel> = string("template") to ModulePlacementModel(
         modulePattern = string("modulePattern"),
         captureNames = strings("captureNames"),

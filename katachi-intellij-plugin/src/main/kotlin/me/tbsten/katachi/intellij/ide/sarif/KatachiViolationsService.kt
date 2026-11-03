@@ -25,20 +25,6 @@ import me.tbsten.katachi.intellij.model.ModuleId
 import me.tbsten.katachi.intellij.model.ViolationModel
 import me.tbsten.katachi.intellij.model.ViolationsState
 
-/**
- * The real [ViolationsService] (design 4.7): a [ViolationsStore] over the project's definition modules,
- * run with the project's one Gradle runner (so a check never overlaps a load) and fed by the file watcher.
- * Reads the SARIF already on disk when created. Created by `DefinitionPorts` only for a project with a
- * definition module, with the `KatachiProjectService` it builds on.
- *
- * When a check ends well, or with failing tests, but leaves no SARIF, a balloon says to add `report { sarif = true }` (decision
- * U-4, `violations.sarifNotConfigured`).
- *
- * ```kotlin
- * val violations = DefinitionPorts.of(project).violations() ?: return
- * violations.runCheck(module).await()
- * ```
- */
 @Service(Service.Level.PROJECT)
 internal class KatachiViolationsService(
     private val project: Project,
@@ -68,7 +54,6 @@ internal class KatachiViolationsService(
 
     override fun runCheck(module: ModuleId): Deferred<GradleRunOutcome> = store.runCheck(module)
 
-    /** What the file watcher saw: a new SARIF is read, other changes of the project make the results stale. */
     fun onFilesChanged(changes: FileChanges) = store.onFilesChanged(changes)
 
     private companion object {

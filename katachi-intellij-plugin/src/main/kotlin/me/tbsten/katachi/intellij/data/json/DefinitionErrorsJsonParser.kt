@@ -6,22 +6,9 @@ import me.tbsten.katachi.intellij.model.DefinitionErrorPhase
 import me.tbsten.katachi.intellij.model.ModuleId
 import java.nio.file.Path
 
-/** The `schemaVersion` values of `definition-errors.json` this plugin reads. */
 internal val SUPPORTED_DEFINITION_ERRORS_SCHEMA_VERSIONS: List<Int> = listOf(1)
 
-/**
- * Reads `definition-errors.json` (design 2.1), which a katachi run given `--definition-errors` writes
- * next to `definition.json`, into the mistakes of [module]'s definition. Unknown keys are ignored.
- *
- * A file that cannot be read -- cut off, of another `schemaVersion`, a key missing or mistyped, an
- * unknown `phase` -- is as good as no file: the answer is `null` and the load is classified from
- * Gradle's output as before. This never throws, so a broken file cannot hide the failure it sits beside.
- *
- * ```kotlin
- * val errors = parseDefinitionErrorsJson(path.readText(), path, module.id) ?: return null
- * val lines = errors.mapNotNull { it.site?.line }
- * ```
- */
+// Never throws: a broken file must not hide the failure it sits beside; `null` means classify from Gradle's output.
 internal fun parseDefinitionErrorsJson(text: String, file: Path, module: ModuleId): List<DefinitionErrorModel>? = try {
     val root = DefinitionJsonReader(parseJsonText(text, file), "$", file)
     if (root.int("schemaVersion") !in SUPPORTED_DEFINITION_ERRORS_SCHEMA_VERSIONS) {

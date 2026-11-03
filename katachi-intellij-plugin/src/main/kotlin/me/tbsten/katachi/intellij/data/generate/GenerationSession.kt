@@ -27,35 +27,19 @@ import me.tbsten.katachi.intellij.model.WrittenKind
 import me.tbsten.katachi.intellij.presentation.OnExistingChoice
 import java.nio.file.Path
 
-/**
- * One `katachiTemplate` run, ready to go: every checked row it covers ([templateIds], several when
- * they share a module, design draft section 6 "IDE の複数選択"), combined into one build.
- */
 internal data class GenerationItem(
     val templateIds: List<TemplateId>,
     val module: KatachiModule,
-    /** Every `--arg` except `onExisting`, which the session sets per attempt. */
     val args: List<Pair<String, String>>,
-    /** Absolute expected paths, checked for existence when the output cannot say what was written. */
     val expectedPaths: List<Path>,
 )
 
-/** What the session reports while it runs; the ViewModel turns it into screen state. */
 internal interface GenerationListener : GradleRunListener {
     fun onItemStarted(index: Int) {}
 
     fun onItemFinished(index: Int, result: GenerationItemResult) {}
 }
 
-/**
- * Runs [items] one by one, in list order, each as its own `katachiTemplate` build -- one item may
- * cover several checked rows that share a module (design draft section 6). Stops at the first
- * failure; a conflict under `fail` asks [askConflict] whether to overwrite (run the same one again),
- * skip it (without running again) or stop.
- *
- * [cancel] stops the running build and runs nothing after it: the running one becomes
- * [GenerationItemResult.Interrupted], the rest [GenerationItemResult.NotRun] (E-21).
- */
 internal class GenerationSession(
     private val runner: GradleTaskRunner,
     private val fileSystem: ProjectFileSystem,
@@ -65,7 +49,6 @@ internal class GenerationSession(
 
     @Volatile private var running: Deferred<*>? = null
 
-    /** Whether [cancel] was called, possibly before [run] started. */
     val isCancelRequested: Boolean get() = cancelRequested
 
     fun cancel() {
@@ -103,7 +86,6 @@ internal class GenerationSession(
         }
     }
 
-    /** One build of [item]; `null` when [cancel] stopped it. */
     private suspend fun attempt(item: GenerationItem, onExisting: OnExistingChoice, listener: GenerationListener): Attempt? {
         if (cancelRequested) return null
         val output = mutableListOf<String>()

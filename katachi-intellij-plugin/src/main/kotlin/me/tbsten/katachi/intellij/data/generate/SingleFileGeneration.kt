@@ -22,66 +22,46 @@ import me.tbsten.katachi.intellij.presentation.entry.LedgerEntry
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 
-/** One template to generate from the dialog of an entry: one click makes one file (issue 2). */
 internal data class SingleFileGenerationRequest(
     val template: ModuleTemplate,
     val origin: EntryOrigin,
-    /** Captures and parameters as `--arg name=value`, in field order. */
     val args: List<Pair<String, String>>,
-    /**
-     * The file katachi will write, absolute; `null` when a module-derived `<x>` keeps it unknown until
-     * katachi runs: then no provisional file, `onExisting=fail`, and the file comes from the output (spike S1 §5).
-     */
     val target: Path?,
 )
 
-/** What is at the target before anything is written. The dialog's notice and the pre-check use the same answer (issue 6). */
 internal enum class TargetState {
     Absent,
 
-    /** Empty by the empty-file rule (unsaved Document first): katachi will overwrite it. */
     Empty,
 
-    /** Still exactly the provisional content this plugin wrote (a retry after a failure). */
     OwnProvisional,
 
-    /** Has content: not generated, never overwritten (issue 6). */
     HasContent,
 
-    /** The target is not known before katachi runs ([SingleFileGenerationRequest.target] is `null`). */
     Undecided,
 }
 
-/** Why a generation did not start; nothing was written and the dialog stays open with the reason (decision 2). */
 internal sealed interface EntryGenerationRefusal {
     data class TargetHasContent(val target: Path) : EntryGenerationRefusal
 
-    /** The module a module capture names does not exist; katachi does not create modules (spike S1 §3). */
     data class ModuleMissing(val directory: Path) : EntryGenerationRefusal
 }
 
-/** Why a generation failed after the provisional file was written: a balloon, and the notice stays in the file (decision 2). */
 internal sealed interface EntryGenerationFailure {
-    /** Re-reading the templates failed. */
     data class CatalogReloadFailed(val failure: LoadFailure) : EntryGenerationFailure
 
-    /** The template is gone from the re-read templates. */
     data object TemplateGone : EntryGenerationFailure
 
-    /** The re-read template writes elsewhere now. */
     data class TargetMoved(val newTarget: Path?) : EntryGenerationFailure
 
-    /** The provisional file was changed (on disk or unsaved) before Gradle ran: not overwritten. */
     data class ChangedMeanwhile(val target: Path) : EntryGenerationFailure
 
     data class Katachi(val failure: GenerationFailure) : EntryGenerationFailure
 
-    /** An IDE call (write action, editor) failed; [action] is what it was doing. */
     data class Ide(val action: String) : EntryGenerationFailure
 }
 
 internal sealed interface SingleFileGenerationResult {
-    /** [files]: what katachi wrote, the target first. */
     data class Generated(val files: List<Path>) : SingleFileGenerationResult
 
     data class Refused(val refusal: EntryGenerationRefusal) : SingleFileGenerationResult
@@ -89,39 +69,18 @@ internal sealed interface SingleFileGenerationResult {
     data class Failed(val failure: EntryGenerationFailure) : SingleFileGenerationResult
 }
 
-/** What re-reading the templates for a generation gave. */
 internal sealed interface GenerationCatalogReload {
-    /** The new list, already published to the tool window and the index. */
     data class Reloaded(val snapshots: List<DescriptionSnapshot>, val index: TemplatePlacementIndex) : GenerationCatalogReload
 
     data class Failed(val failure: LoadFailure) : GenerationCatalogReload
 }
 
-/**
- * The shared template list as a generation needs it. `KatachiProjectService` implements it (C1)
- * through the one serial Gradle runner, so the reload never overlaps a tool window load.
- */
 internal interface GenerationCatalogPort {
-    /** Re-runs `katachiInternalTemplatesJson` of [module] and publishes the result (JSON → shared state → index). */
     suspend fun reloadForGeneration(module: KatachiModule): GenerationCatalogReload
 
-    /** [path] is about to be written by this plugin: its VFS event is not a definition change (E-44). */
     fun registerOwnWrite(path: Path)
 }
 
-/**
- * Generates one file from an entry's dialog (issue 16, plan chapter 1 "生成の流れ", decisions 1, 2, 12, 13, 18):
- * check the target → create missing directories → write, open and save the provisional file (ledger:
- * generating) → re-read the templates and resolve the template and target again → check the file is
- * still the provisional content, on disk and in the Document → `katachiTemplate` with
- * `onExisting=overwrite` → reload → ledger: succeeded, or failed with the notice left in the file.
- *
- * IntelliJ-free: the IDE is [effects], Gradle is [runner] (the project's one serial runner).
- *
- * ```kotlin
- * when (generation.checkTarget(request.target)) { TargetState.HasContent -> showReason(); else -> generation.run(request) }
- * ```
- */
 internal class SingleFileGeneration(
     private val effects: IdeEffects,
     private val runner: GradleTaskRunner,
@@ -129,19 +88,11 @@ internal class SingleFileGeneration(
     private val catalog: GenerationCatalogPort,
     private val ledger: EntryGenerationLedger,
 ) {
-    /** The provisional content written to each target, to tell "still ours" on a retry (decision 11). */
     private val provisionals = ConcurrentHashMap<Path, String>()
 
-    /**
-     * The targets a [run] is on, from its first check: the ledger says "generating" only after the
-     * provisional file is written, and a second entry must not slip in before that (V2 L6).
-     */
+    // Claimed from the first check: a second entry must not slip in before the ledger says generating.
     private val running: MutableSet<Path> = ConcurrentHashMap.newKeySet()
 
-    /**
-     * The state of [target], unsaved Documents first (decision 12). The dialog's notice (D1) and [run]
-     * call the same check. A target a generation is running on counts as content: one generation per file.
-     */
     suspend fun checkTarget(target: Path?): TargetState {
         if (target == null) return TargetState.Undecided
         val entry = ledger.entryOf(target)
@@ -154,7 +105,6 @@ internal class SingleFileGeneration(
         return if (EmptyFileRule.isEmpty(text, target.fileName.toString())) TargetState.Empty else TargetState.HasContent
     }
 
-    /** Runs the whole flow; cancelling the caller (the project closing) stops Gradle. */
     suspend fun run(request: SingleFileGenerationRequest): SingleFileGenerationResult {
         val target = request.target ?: return runUndecided(request)
         if (checkTarget(target) == TargetState.HasContent || !running.add(target)) {
@@ -195,7 +145,6 @@ internal class SingleFileGeneration(
         }
     }
 
-    /** What was written before Gradle runs. */
     private data class Written(val request: SingleFileGenerationRequest, val target: Path, val command: String, val provisional: String)
 
     private suspend fun afterProvisional(written: Written, args: List<Pair<String, String>>): SingleFileGenerationResult {
@@ -223,10 +172,7 @@ internal class SingleFileGeneration(
         }
     }
 
-    /**
-     * Still exactly the provisional content, on disk and in the Document, and nothing unsaved (decision 12):
-     * otherwise the user typed into it or something wrote it meanwhile, and Gradle must not overwrite it.
-     */
+    // Fails if the user typed into the file or something wrote it meanwhile: Gradle must not overwrite it.
     private suspend fun isStillProvisional(target: Path, provisional: String): Boolean {
         val disk = fileSystem.readText(target) ?: return false
         if (!ProvisionalContent.isStillProvisional(disk, provisional)) return false
@@ -235,11 +181,6 @@ internal class SingleFileGeneration(
         return ProvisionalContent.isStillProvisional(shown, provisional)
     }
 
-    /**
-     * A target only katachi knows (a module-derived `<x>`, spike S1 §5): no provisional file, `onExisting=fail`,
-     * and the files come from the output. They open whatever the "open after generation" setting says, as the
-     * provisional file of [run] does (decision 13).
-     */
     private suspend fun runUndecided(request: SingleFileGenerationRequest): SingleFileGenerationResult {
         val template = when (val reload = catalog.reloadForGeneration(request.template.module)) {
             is GenerationCatalogReload.Failed -> return notified(EntryGenerationFailure.CatalogReloadFailed(reload.failure))
@@ -259,24 +200,20 @@ internal class SingleFileGeneration(
         }
     }
 
-    /** One `katachiTemplate` build of [template]; a conflict stops it (only `onExisting=fail` has one). */
     private suspend fun generate(template: ModuleTemplate, args: List<Pair<String, String>>, expected: Path?, onExisting: OnExistingChoice): GenerationItemResult {
         val session = GenerationSession(runner, fileSystem) { ConflictChoice.Stop }
         val item = GenerationItem(listOf(template.id), template.module, args, listOfNotNull(expected))
         return session.run(listOf(item), onExisting, object : GenerationListener {}).items.single().result
     }
 
-    /** The request's template in the re-read list; `null` when it is gone or cannot be generated any more. */
     private fun reresolve(snapshots: List<DescriptionSnapshot>, request: SingleFileGenerationRequest): ModuleTemplate? =
         templatesOf(snapshots).firstOrNull { it.id == request.template.id }?.takeIf { it.template.isAvailable }
 
-    /** After the provisional file: the ledger keeps "failed" (the notification offers the command, decision 14), and a balloon. */
     private fun failed(written: Written, failure: EntryGenerationFailure): SingleFileGenerationResult {
         ledger.markFailed(written.target, written.request.template.id, written.command)
         return notified(failure)
     }
 
-    /** Before anything was written: only the balloon. */
     private fun failedBeforeWriting(failure: EntryGenerationFailure): SingleFileGenerationResult = notified(failure)
 
     private fun notified(failure: EntryGenerationFailure): SingleFileGenerationResult {
@@ -291,7 +228,6 @@ internal class SingleFileGeneration(
     }
 }
 
-/** What the IDE was doing when a generation from an entry failed there: [EntryGenerationFailure.Ide.action]. */
 internal object EntryIdeAction {
     const val SAVE: String = "save the file"
     const val CREATE_DIRECTORIES: String = "create the directories"

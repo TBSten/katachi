@@ -36,21 +36,7 @@ import java.awt.Container
 import java.awt.Window
 import java.nio.file.Paths
 
-/**
- * What [KatachiDebugBridge.describeGutter], `describeHighlights`, `clickGutter`, `chooseFromGutter` and the doors beside them
- * (`describeBanners`, `applyFix`, `chooseFromGutterLater`, `setGutterIcons`) read and do: the ◆, the annotations, the banners and
- * the ◆ menu of a file open in the editor, as the `key=value` lines the Driver smoke asserts on.
- * It reads what the daemon drew (the markup model), not what the providers would compute, so it says what a user sees.
- *
- * A text value is on one line: a line break in it is written `\n`.
- *
- * ```kotlin
- * val lines = GutterDebugReader(project).describeGutter("/work/src/HealthService.kt").lines()
- * // "gutter=/work/src/HealthService.kt", "marks=1", "mark=7|menu|HealthService|katachi: domain.Service — allowed by class HealthService (ServiceRole.kt:80)"
- * ```
- */
 internal class GutterDebugReader(private val project: Project, private val onScreen: (Component) -> Boolean = { it.isShowing }) {
-    /** The katachi ◆ of [path]: `gutter`, `marks`, then one `mark=<line>|menu or nomenu|<leaf>|<tooltip>` per ◆, top to bottom. */
     fun describeGutter(path: String): String {
         val opened = openFile(path) ?: return "gutter=$path\nopen=false"
         val marks = ApplicationManager.getApplication().runReadAction<List<String>> {
@@ -63,11 +49,6 @@ internal class GutterDebugReader(private val project: Project, private val onScr
         return (listOf("gutter=$path", "open=true", "marks=${marks.size}") + marks).joinToString("\n")
     }
 
-    /**
-     * The katachi annotations of [path] (a description with `katachi: `): `highlights`, `count`, then one
-     * `highlight=<severity>|<range>|<description>|<fixes>` each. The range is `line:col-line:col` (1-based, end exclusive) or
-     * `file` for a banner over the file (see [highlightsOf]); fixes are `;` separated.
-     */
     fun describeHighlights(path: String): String {
         val opened = openFile(path) ?: return "highlights=$path\nopen=false"
         // The editors the file-level highlights hang on are the EDT's: the daemon's own readers are called there.
@@ -84,11 +65,6 @@ internal class GutterDebugReader(private val project: Project, private val onScr
         return (listOf("highlights=$path", "open=true", "count=${lines.size}") + lines).joinToString("\n")
     }
 
-    /**
-     * Opens the menu of the ◆ on [line] (1-based), reads its rows from the popup the user would get, and closes it. `menu`
-     * (the heading), then `item=<text>|<right-hand text>|enabled or disabled`, `section=<title>`, `separator` and `submenu=<text>`
-     * (its rows follow as `subitem`) in the order they are shown. `menu=none` when no ◆ is on the line.
-     */
     fun clickGutter(path: String, line: Int): String {
         val menu = menuAt(path, line) ?: return "menu=none"
         val lines = mutableListOf<String>()
@@ -103,7 +79,6 @@ internal class GutterDebugReader(private val project: Project, private val onScr
         return lines.joinToString("\n")
     }
 
-    /** Opens the menu of the ◆ on [line], writes the popup as a PNG to [out], and closes it (see [DebugScreenshots.ofPopup]); `saved=none` when no ◆ is there. */
     fun screenshotGutterMenu(path: String, line: Int, out: String): String {
         val menu = menuAt(path, line) ?: return "saved=none"
         var result = "saved=none"
@@ -116,7 +91,6 @@ internal class GutterDebugReader(private val project: Project, private val onScr
         return result
     }
 
-    /** Chooses the row of the ◆ menu on [line] whose text starts with [row], as a click on it would. `chosen=<text>` or `chosen=none`. */
     fun chooseFromGutter(path: String, line: Int, row: String): String {
         val menu = menuAt(path, line) ?: return "chosen=none"
         var chosen = "chosen=none"
@@ -130,11 +104,6 @@ internal class GutterDebugReader(private val project: Project, private val onScr
         return chosen
     }
 
-    /**
-     * The katachi banners on [path]: `banners`, `count`, then one `banner=<text>|<link>;<link>` each. A banner is read from the
-     * part on screen that draws it (an [EditorNotificationPanel] over the editor, its text a `katachi: ` line), so it is what a
-     * real IDE shows, which [describeHighlights] cannot list outside unit tests. A panel that is not on screen ([onScreen]: showing, unless a test says otherwise) is not counted.
-     */
     fun describeBanners(path: String): String {
         val file = LocalFileSystem.getInstance().findFileByNioFile(Paths.get(path)) ?: return "banners=$path\ncount=0"
         val lines = onEdtResult {
@@ -148,10 +117,6 @@ internal class GutterDebugReader(private val project: Project, private val onScr
     private fun bannerLine(panel: EditorNotificationPanel): String =
         "banner=${panel.text.oneLine()}|${UIUtil.findComponentsOfType(panel, HyperlinkLabel::class.java).joinToString(";") { it.text.oneLine() }}"
 
-    /**
-     * The panels over [file]'s editors: from each editor's component up to the part that holds this file's editor alone (the
-     * parent just before one that also holds another editor, or a window), then every panel under it.
-     */
     internal fun bannerPanelsOf(file: VirtualFile): List<EditorNotificationPanel> {
         val manager = FileEditorManager.getInstance(project)
         val others = manager.allEditors.filter { it.file != file }.map { it.component }
@@ -170,11 +135,6 @@ internal class GutterDebugReader(private val project: Project, private val onScr
         (if (node is EditorNotificationPanel) listOf(node) else emptyList()) +
             ((node as? Container)?.components.orEmpty().flatMap { panelsUnder(it) })
 
-    /**
-     * Applies the first registered fix of the katachi annotation on [line] of [path] whose text starts with [prefix] and that is
-     * available, as choosing it from the lightbulb would: `applied=<text>`, or `applied=none`. The fix runs later on the EDT
-     * (a fix may open a modal dialog), as a command.
-     */
     fun applyFix(path: String, line: Int, prefix: String): String {
         val opened = openFile(path) ?: return "applied=none"
         val editor = editorOf(path)
@@ -208,7 +168,6 @@ internal class GutterDebugReader(private val project: Project, private val onScr
         return "applied=${fix.text.oneLine()}"
     }
 
-    /** The selected text editor: `caret=<file name>|<line>` (1-based), or `caret=none`. For the smoke that checks where a fix took the user. */
     fun describeCaret(): String = onEdtResult {
         sdkCall("read the caret") {
             val editor = FileEditorManager.getInstance(project).selectedTextEditor
@@ -217,10 +176,6 @@ internal class GutterDebugReader(private val project: Project, private val onScr
         }.getOrDefault("caret=none")
     }
 
-    /**
-     * [chooseFromGutter] with the choosing left for later on the EDT: a row that opens a modal dialog would hold the call that
-     * chose it. `chosen=<text>` is answered once the choice is queued.
-     */
     fun chooseFromGutterLater(path: String, line: Int, row: String): String {
         val menu = menuAt(path, line) ?: return "chosen=none"
         var chosen = "chosen=none"
@@ -234,10 +189,6 @@ internal class GutterDebugReader(private val project: Project, private val onScr
         return chosen
     }
 
-    /**
-     * Turns the katachi switch of `Settings | Editor | General | Gutter Icons` on or off (the one both ◆ providers share) and draws the open
-     * files again: `gutterIcons=<true or false>`.
-     */
     fun setGutterIcons(enabled: Boolean): String {
         onEdt {
             sdkCall("switch the katachi gutter icons") { LineMarkerSettings.getSettings().setEnabled(KatachiDeclarationLineMarkerProvider(), enabled) }
@@ -262,10 +213,6 @@ internal class GutterDebugReader(private val project: Project, private val onScr
     private fun contextOf(path: String): DataContext =
         editorOf(path)?.let { DataManager.getInstance().getDataContext(it.contentComponent) } ?: DataContext.EMPTY_CONTEXT
 
-    /**
-     * The ◆ the daemon drew: the line markers behind the gutter icons of the document's markup model. Not
-     * `DaemonCodeAnalyzerImpl.getLineMarkers`, which is `@ApiStatus.Internal` (verifyPlugin fails on it).
-     */
     private fun markersOf(document: Document): List<LineMarkerInfo<*>> =
         sdkCall("read the line markers") {
             DocumentMarkupModel.forDocument(document, project, false)?.allHighlighters.orEmpty()
@@ -274,7 +221,6 @@ internal class GutterDebugReader(private val project: Project, private val onScr
             .filter { it.lineMarkerTooltip?.startsWith("katachi:") == true }
             .sortedBy { it.startOffset }
 
-    /** The raw text of the tooltip: the accessible name, because the tooltip itself is the HTML the gutter draws. */
     private fun tooltipOf(info: LineMarkerInfo<*>): String = info.createGutterRenderer()?.accessibleName ?: info.lineMarkerTooltip.orEmpty()
 
     private fun menuAt(path: String, line: Int): GutterMenu? {
@@ -284,19 +230,12 @@ internal class GutterDebugReader(private val project: Project, private val onScr
         }
     }
 
-    /**
-     * The ranged highlights of the document: public API, and the very list the editor draws the underlines from. A banner
-     * over the whole file (`fileLevel()`) is in it in unit tests only: `DaemonCodeAnalyzerImpl.getFileLevelHighlights`, the
-     * platform's own list of them, asserts unit-test mode, so a real IDE lists no banner here; [describeBanners] reads the
-     * banner from the component it is drawn as instead.
-     */
     private fun highlightsOf(opened: Opened): List<HighlightInfo> = sdkCall("read the highlights") {
         val found = mutableListOf<HighlightInfo>()
         DaemonCodeAnalyzerEx.processHighlights(opened.document, project, null, 0, opened.document.textLength) { found += it; true }
         found
     }.getOrDefault(emptyList())
 
-    /** Whether [info] is a banner. `HighlightInfo.isFileLevelAnnotation` is `@ApiStatus.Internal` (verifyPlugin fails on it), so it is called by name. */
     private fun isBanner(info: HighlightInfo): Boolean =
         sdkCall("ask whether a highlight is a banner") { HighlightInfo::class.java.getMethod("isFileLevelAnnotation").invoke(info) as Boolean }.getOrDefault(false)
 
@@ -335,7 +274,6 @@ internal class GutterDebugReader(private val project: Project, private val onScr
 
     private fun onEdt(block: () -> Unit) = ApplicationManager.getApplication().invokeAndWait(block)
 
-    /** [block] on the EDT, and what it returns (or throws) here. */
     private fun <T> onEdtResult(block: () -> T): T {
         var result: Result<T>? = null
         ApplicationManager.getApplication().invokeAndWait { result = runCatching(block) }

@@ -14,13 +14,6 @@ import java.nio.file.Path
 
 // What IdeEffectsImpl needs for the generation from an entry beyond the SDK calls themselves.
 
-/**
- * The balloon text of [failure] (decision 2), in the IDE's language.
- *
- * ```kotlin
- * entryFailureText(EntryGenerationFailure.TemplateGone) // "katachi: The selected template is no longer in the definition, ..."
- * ```
- */
 internal fun entryFailureText(failure: EntryGenerationFailure): String = when (failure) {
     is EntryGenerationFailure.CatalogReloadFailed -> KatachiBundle.message("generate.failed.catalogReload")
     EntryGenerationFailure.TemplateGone -> KatachiBundle.message("generate.failed.templateGone")
@@ -30,7 +23,6 @@ internal fun entryFailureText(failure: EntryGenerationFailure): String = when (f
     is EntryGenerationFailure.Ide -> KatachiBundle.message("generate.failed.ide", ideActionText(failure.action))
 }
 
-/** The balloon text of [refusal]: the dialog's own wording, as the dialog had closed (issue 6). */
 internal fun entryRefusalText(refusal: EntryGenerationRefusal): String = KatachiBundle.message(
     "dialog.generateRefused",
     when (refusal) {
@@ -44,7 +36,6 @@ private fun reasonOf(failure: GenerationFailure): String = when (failure) {
     is GenerationFailure.NotReached -> failure.failure.details.firstOrNull { it.isNotBlank() }?.trim()
 }.orEmpty()
 
-/** The IDE actions SingleFileGeneration names, in the IDE's language; any other as it is. */
 private fun ideActionText(action: String): String = when (action) {
     EntryIdeAction.SAVE -> KatachiBundle.message("generate.failed.ide.save")
     EntryIdeAction.CREATE_DIRECTORIES -> KatachiBundle.message("generate.failed.ide.createDirectories")
@@ -52,11 +43,6 @@ private fun ideActionText(action: String): String = when (action) {
     else -> action
 }
 
-/**
- * Call in a read action. The package of [directory] without PSI (spike S2 (f)): the package of its
- * nearest ancestor the VFS knows, plus the segments below it that do not exist yet; `null` outside
- * source roots or when a segment is not an identifier.
- */
 internal fun packageOfDirectory(project: Project, directory: Path): String? {
     val fileSystem = LocalFileSystem.getInstance()
     var known: VirtualFile? = null
@@ -73,7 +59,6 @@ internal fun packageOfDirectory(project: Project, directory: Path): String? {
     return name.takeIf { it.isEmpty() || it.split('.').all(::isIdentifier) }
 }
 
-/** Call in a read action. */
 private fun packageOfExisting(project: Project, directory: VirtualFile): String? {
     val index = ProjectFileIndex.getInstance(project)
     val sourceRoot = index.getSourceRootForFile(directory) ?: return null

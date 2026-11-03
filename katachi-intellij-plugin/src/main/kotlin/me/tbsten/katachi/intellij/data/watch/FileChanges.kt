@@ -4,63 +4,29 @@ import me.tbsten.katachi.intellij.model.KatachiModule
 import me.tbsten.katachi.intellij.model.ModuleId
 import java.nio.file.Path
 
-/** A definition module as the file watcher sees it: its directory and the test source roots its definition lives in. */
 internal data class WatchedModule(
     val module: KatachiModule,
-    /** The module's test source roots (design 4.6); empty when the IDE knows none, and then `src/test` stands in. */
     val testRoots: List<Path>,
 )
 
-/**
- * What a batch of file changes means to the plugin (design 4.8, 4.7): which definitions changed, which of
- * them in their test sources (what reloads by itself), which modules got a new SARIF, and whether the
- * project under a definition changed at all (the check's results go stale).
- */
 internal data class FileChanges(
-    /** A file under the module's `src/`, or its build script. */
     val definitionChanged: Set<ModuleId> = emptySet(),
-    /** A file under the module's test source roots: a candidate for the automatic reload. */
     val testSourcesChanged: Set<ModuleId> = emptySet(),
-    /** A `*.sarif` under the module's `build/reports/katachi/`. */
     val sarifChanged: Set<ModuleId> = emptySet(),
-    /** A file under a project root, outside `build/` (not a package of the sources), `.git/`, `.gradle/` and `.idea/` (`HIDDEN_DIRECTORIES`). */
     val projectChanged: Boolean = false,
-    /** A `katachi-baseline.json` the no-role notification read was changed, created or deleted. */
     val baselineChanged: Boolean = false,
 ) {
     val isEmpty: Boolean get() = definitionChanged.isEmpty() && sarifChanged.isEmpty() && !projectChanged && !baselineChanged
 }
 
-/**
- * Directory names the watcher leaves out wherever they are: the IDE's own, Gradle's and git's working files (the IDE
- * writes `.idea/workspace.xml` while the user works, the git plugin updates `.git/index`, `HEAD` and `logs/` at every
- * commit, branch switch and background fetch). This is the watcher's own list, not what katachi's walk skips: the walk
- * skips `.git` only, and a tracked file under `.idea/` (`.idea/codeStyles/`) is a file of the checked project.
- * TODO: an edit of a tracked file under `.idea/` does not count as a project change here, so it does not mark the
- *   check's results stale (design foreign-directory-scan 1.6).
- */
 private val HIDDEN_DIRECTORIES: Set<String> = setOf(".git", ".gradle", ".idea")
 
-/** Gradle's build output, `build/`, counts only outside the sources: `src/main/kotlin/com/example/build/Foo.kt` is a source. */
 private const val BUILD_DIRECTORY: String = "build"
 
 private const val SOURCES_DIRECTORY: String = "src"
 
 private val BUILD_SCRIPTS: Set<String> = setOf("build.gradle.kts", "build.gradle")
 
-/**
- * Sorts [paths] (the files of one batch of VFS events) into [FileChanges]. Only string work on paths: no
- * disk, no VFS, as an `AsyncFileListener` has to be fast (design 5 "ファイル監視"). A path under an output
- * directory is dropped first, the SARIF reports excepted. A file the plugin is writing itself ([isOwnWrite],
- * a generation's output) is not a definition change, but it does change the project.
- *
- * [baselines] are the baseline files the plugin has read (absolute, normalized): a change to one of them is [FileChanges.baselineChanged].
- *
- * ```kotlin
- * val changes = classifyChanges(paths, listOf(WatchedModule(module, testRoots)), listOf(projectRoot), { false })
- * if (module.id in changes.testSourcesChanged) scheduleReload()
- * ```
- */
 internal fun classifyChanges(
     paths: List<Path>,
     modules: List<WatchedModule>,
@@ -97,11 +63,6 @@ internal fun classifyChanges(
 
 private fun isUnderBuild(path: Path, module: KatachiModule): Boolean = path.startsWith(module.directory.resolve("build"))
 
-/**
- * Whether [path] (under the module's `build/`) may have changed its SARIF reports: a `*.sarif` under
- * `build/reports/katachi/`, or a directory on the way to one, created or deleted whole (the VFS reports the
- * topmost directory that appears or goes, and the test task deletes `build/reports/katachi/` first).
- */
 private fun isSarifChange(path: Path, module: KatachiModule): Boolean {
     val reports = module.directory.resolve(REPORTS)
     val name = path.fileName?.toString().orEmpty()
@@ -114,7 +75,6 @@ private fun isSarifChange(path: Path, module: KatachiModule): Boolean {
     }
 }
 
-/** Whether [relative] goes through `.git/`, `.gradle/` or `.idea/`, or through a `build/` that comes before any `src/`. */
 private fun isOutput(relative: Path): Boolean {
     var inSources = false
     for (segment in relative) {
@@ -128,5 +88,4 @@ private fun isOutput(relative: Path): Boolean {
     return false
 }
 
-/** Where katachi's `report { sarif = true }` writes, relative to the module (design 4.7). */
 internal const val REPORTS: String = "build/reports/katachi"

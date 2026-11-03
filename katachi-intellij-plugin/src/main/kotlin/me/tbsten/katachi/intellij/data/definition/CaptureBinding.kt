@@ -6,30 +6,11 @@ import me.tbsten.katachi.intellij.model.CaptureRef
 import me.tbsten.katachi.intellij.model.LayoutEntryKind
 import me.tbsten.katachi.intellij.model.LayoutEntryModel
 
-/** Why a bound entry held a file back: every occurrence of a bound name, and the path the file would have been allowed at. */
 internal class CaptureMismatchDetail(val occurrences: List<CaptureOccurrenceModel>, val expectedPath: String?)
 
-/** What only an unresolved module key holds: its own `*`, or a `<name>` placeholder. A module path with one names no real module. */
 private const val UNRESOLVED_MODULE_CHARACTERS: String = "*<>"
 
-/**
- * What holds a file at [path] back from [entry], whose compiled pattern is [glob], or `null` when the entry allows it
- * (or does not match it at all, which is the pattern's question). The rule of katachi's `LayoutEntry.captureMismatchOf`
- * (design capture-check 2.2 and 3.8), over the one capture variant the JSON writes per entry:
- *
- * - Bound: a name on two levels or more, or a derived occurrence (`transform != null`). An entry with no binding allows
- *   every file its pattern matches, whatever its captures read.
- * - A `File` entry reads the file's own path, an `anyFile()` entry its directory. Each occurrence reads the
- *   [CaptureRef.wildcardIndex]-th `*` of its level. A module key's names are read from [LayoutEntryModel.modulePath],
- *   only when that is a real module's path (not `*` or `<name>`), as the levels of the module's directory.
- * - The first plain occurrence of a name is the value; every other plain occurrence is held to it as a string, and a
- *   derived one to its conversion of it. A conversion this plugin does not know compares nothing.
- *
- * ```kotlin
- * captureMismatchOf(entry, glob, "feature/home/src/main/kotlin/com/example/feature/settings/HomeScreen.kt")
- *     ?.occurrences?.map { "${it.name} ${it.value} at ${it.level}" } // feature home at 1, feature settings at 7, ...
- * ```
- */
+// Mirrors katachi's `LayoutEntry.captureMismatchOf`; a conversion this plugin does not know compares nothing.
 internal fun captureMismatchOf(entry: LayoutEntryModel, glob: KatachiGlob, path: String): CaptureMismatchDetail? {
     val moduleNames = entry.moduleCapture?.names.orEmpty()
     val plainNames = moduleNames + entry.captures.filter { it.transform == null }.map { it.name }
@@ -76,24 +57,14 @@ internal fun captureMismatchOf(entry: LayoutEntryModel, glob: KatachiGlob, path:
     return CaptureMismatchDetail(details, expectedPath)
 }
 
-/** One occurrence with its value, before the expected value is known. [capture] is `null` for a module key's. */
 private class BoundOccurrence(val name: String, val transform: String?, val level: Int, val value: String, val capture: CaptureRef?)
 
-/**
- * [path] itself for a file entry, its directory for an `anyFile()` entry, `null` for a kind that names no file, or for a
- * file at the root under an `anyFile()` entry (the root is no directory a role can claim, and an empty one would be
- * matched by a `*`, which no real level is).
- */
 private fun matchTargetOf(entry: LayoutEntryModel, path: String): String? = when (entry.kind) {
     LayoutEntryKind.File -> path
     LayoutEntryKind.AnyFile -> path.parentPath().takeIf { '/' in path }
     else -> null
 }
 
-/**
- * The values a module key's names take from the module [entry] was resolved to, in the key's order, on the level of the
- * module directory's last segment. Empty when the key gave no name, named only some of its `*`s, or was never resolved.
- */
 private fun moduleOccurrencesOf(entry: LayoutEntryModel): List<BoundOccurrence> {
     val capture = entry.moduleCapture ?: return emptyList()
     val modulePath = entry.modulePath ?: return emptyList()
@@ -111,18 +82,12 @@ private fun moduleOccurrencesOf(entry: LayoutEntryModel): List<BoundOccurrence> 
     return capture.names.mapIndexedNotNull { index, name -> singles.getOrNull(index)?.let { BoundOccurrence(name, null, level, groups[it], capture = null) } }
 }
 
-/** The 0-based level of the last segment of the entry's module directory, or `-1` for the root project or no module. */
 private fun moduleDirectoryLevel(entry: LayoutEntryModel): Int {
     val levels = entry.pattern.split('/').size
     val inModule = if (entry.pathInModule.isEmpty()) 0 else entry.pathInModule.split('/').size
     return levels - inModule - 1
 }
 
-/**
- * [path] with the part each bound occurrence matched replaced by its expected value, and every other character -- unnamed
- * `*` and `**`, `?`, `[...]`, `{...}`, escapes -- kept as the file has it. The parts are found by where
- * [KatachiGlob.matchRanges] says each wildcard matched. An `anyFile()` entry keeps the file's own name below.
- */
 private fun expectedPathOf(entry: LayoutEntryModel, glob: KatachiGlob, path: String, expectedOf: Map<CaptureRef, String>): String {
     val target = matchTargetOf(entry, path) ?: return path
     val ranges = glob.matchRanges(target) ?: return path

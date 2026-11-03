@@ -13,7 +13,6 @@ import me.tbsten.katachi.intellij.presentation.entry.EntryOrigin
 import me.tbsten.katachi.intellij.presentation.entry.GenerateDialogRequest
 import me.tbsten.katachi.intellij.presentation.entry.NewMenuNode
 
-/** The actions of [nodes], for the children of New › katachi. Groups nest as submenus. */
 internal fun newMenuActionsOf(nodes: List<NewMenuNode>, resolution: NewMenuResolution, effects: EntryEffects): Array<AnAction> =
     nodes.mapNotNull { node -> actionOf(node, resolution, effects) }.toTypedArray()
 
@@ -43,11 +42,7 @@ private fun submenu(name: String, children: List<NewMenuNode>, resolution: NewMe
         group.addAll(newMenuActionsOf(children, resolution, effects).toList())
     }
 
-/**
- * One template: picking it opens the generate dialog on it, starting from the directory it fit
- * first. It does not ask the IdeView to choose a directory (that may open a popup):
- * the directories were read by `update`, and the origin is already decided.
- */
+// Does not ask the IdeView to choose a directory (that may open a popup): the directories were read by `update`.
 internal class TemplateItemAction(
     label: String,
     private val request: GenerateDialogRequest,
@@ -64,10 +59,6 @@ internal class TemplateItemAction(
     }
 }
 
-/**
- * One template set: picking it opens the tool window on its row, checked and open, the values the directory
- * decided in its fields (template-set design 8.3). Nothing is generated until the user presses Generate there.
- */
 internal class RevealSetAction(
     label: String,
     private val id: TemplateId,
@@ -85,7 +76,6 @@ internal class RevealSetAction(
     }
 }
 
-/** "Loading templates...": shown before the list is loaded, and never enabled (issue 18). */
 internal class LoadingItemAction : AnAction(), DumbAware {
     init {
         templatePresentation.setText(KatachiBundle.message("newMenu.loading"), false)

@@ -13,39 +13,21 @@ import me.tbsten.katachi.intellij.ide.gutter.GutterNavigation
 import me.tbsten.katachi.intellij.ide.sdkCall
 import java.awt.datatransfer.StringSelection
 
-/**
- * What the clicks of the "no role holds this file" notification and its popup do in the IDE. Each is called on the
- * EDT; a test records them instead.
- *
- * ```kotlin
- * effects.open(site)          // a nearby role's declaration
- * effects.copy(draft)         // "Copy a role declaration draft"
- * ```
- */
+// Each is called on the EDT.
 internal interface RuleEffects {
-    /** Opens [site]'s file at its line. */
     fun open(site: ResolvedSite.Found)
 
-    /** Puts [text] on the clipboard. */
     fun copy(text: String)
 
-    /** Reads the definition again (`katachi.RefreshDefinition`). */
     fun refreshDefinition()
 
     fun openSettings()
 }
 
-/**
- * The IDE's [RuleEffects]. A call that fails is logged by `sdkCall` and told to the user in a balloon
- * (`katachi: Could not open the definition: ...`), as the entries do.
- */
 internal class RuleEffectsImpl(
     private val project: Project,
-    /** Opens a file at a 0-based line; a test makes it throw to play an SDK call that fails. */
     private val navigate: (VirtualFile, Int) -> Unit = { file, line -> OpenFileDescriptor(project, file, line, 0).navigate(true) },
-    /** Puts text on the clipboard; replaced by a test in the same way. */
     private val setClipboard: (String) -> Unit = { CopyPasteManager.getInstance().setContents(StringSelection(it)) },
-    /** Shows the katachi settings; replaced by a test in the same way. */
     private val showSettings: () -> Unit = { ShowSettingsUtil.getInstance().showSettingsDialog(project, KatachiConfigurable::class.java) },
 ) : RuleEffects {
     override fun open(site: ResolvedSite.Found) {

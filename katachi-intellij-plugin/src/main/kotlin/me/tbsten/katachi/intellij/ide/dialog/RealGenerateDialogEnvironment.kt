@@ -20,11 +20,7 @@ import me.tbsten.katachi.intellij.model.templatesOf
 import me.tbsten.katachi.intellij.presentation.dialog.CaptureSeedPort
 import me.tbsten.katachi.intellij.presentation.entry.GenerateDialogRequest
 
-/**
- * The dialog's inputs from the project: the shared list (followed while the dialog is open), the
- * captures of the current placement index, the generation's existing-file check and the VFS.
- * Call inside `sdkCall`: it creates the project service.
- */
+// Call inside `sdkCall`: it creates the project service.
 internal fun realGenerateDialogEnvironmentOf(project: Project, request: GenerateDialogRequest): GenerateDialogEnvironment {
     val service = KatachiProjectService.getInstance(project)
     val candidates = templatesOf(service.viewModel.state.value.snapshots)
@@ -44,7 +40,6 @@ internal fun realGenerateDialogEnvironmentOf(project: Project, request: Generate
     )
 }
 
-/** Emits on every batch of VFS events; the ViewModel's own pause merges the bursts. */
 private fun vfsChanges(): Flow<Unit> = callbackFlow {
     val connection = ApplicationManager.getApplication().messageBus.connect()
     connection.subscribe(

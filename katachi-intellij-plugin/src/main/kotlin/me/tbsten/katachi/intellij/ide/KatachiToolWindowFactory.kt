@@ -13,18 +13,7 @@ import me.tbsten.katachi.intellij.ui.KatachiToolWindowContent
 import org.jetbrains.jewel.bridge.addComposeTab
 import java.time.Instant
 
-/**
- * Hosts the `katachi` tool window. Each feature is a tab of its own, so more can be added next to
- * the first one; for now there is one, "Template", which draws [KatachiProjectService]'s ViewModel
- * with the Composable shared with the headless preview. ⟳ / ■ and ⚙ sit in the title bar.
- *
- * [DumbAware]: nothing here reads PSI or indexes, so everything works while indexing (E-48).
- *
- * [JvmDefaultWithoutCompatibility]: without it the compiler writes a method into this class for each
- * default method of [ToolWindowFactory], each calling the interface's own. The Plugin Verifier then
- * reports deprecated (`isApplicable`, `isDoNotActivateOnStart`) and experimental (`getAnchor`,
- * `getIcon`, `manage`) API used by katachi, although katachi overrides none of them.
- */
+// `@JvmDefaultWithoutCompatibility` keeps the compiler from writing bridge methods that make Plugin Verifier report deprecated/experimental API.
 @JvmDefaultWithoutCompatibility
 internal class KatachiToolWindowFactory : ToolWindowFactory, DumbAware {
 
@@ -47,13 +36,9 @@ internal class KatachiToolWindowFactory : ToolWindowFactory, DumbAware {
     }
 
     companion object {
-        /** Must match the `id` of `<toolWindow>` in plugin.xml. */
+        // Must match the `id` of `<toolWindow>` in plugin.xml.
         const val TOOL_WINDOW_ID: String = "katachi"
     }
 }
 
-/**
- * The tool window's texts in the IDE's language: the language of the `KatachiBundle` file the platform
- * resolves, so the tool window always speaks the language of the menus and notifications.
- */
 internal fun toolWindowStrings(): KatachiStrings = KatachiStrings.of(KatachiBundle.message("toolWindow.language"))

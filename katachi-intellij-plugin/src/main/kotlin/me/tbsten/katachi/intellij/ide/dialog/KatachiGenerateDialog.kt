@@ -35,28 +35,7 @@ import java.awt.Dimension
 import javax.swing.JComponent
 import kotlin.coroutines.CoroutineContext
 
-/**
- * The frame of the generate dialog: a resizable [DialogWrapper] that hosts the shared Composable
- * (`GenerateDialogContent`) and whose OK button is [Generate]. The behaviour is the ViewModel's
- * (`GenerateDialogViewModel`); this class only connects it to the IDE:
- *
- * - The OK button follows the ViewModel's `canGenerate`; the title and buttons are worded from [strings].
- * - **[Generate]** asks the same existing-file check the ViewModel's notice uses. A target with content
- *   keeps the dialog open and says why (issue 6); anything else closes it with [result] set, and the
- *   caller runs the generation (the dialog writes nothing).
- * - **Esc**, the close button and Cancel close the dialog with no [result]: nothing is written.
- * - The dialog follows the shared list (`templateChanges`) and files written outside (`filesChanged`)
- *   while it is open.
- *
- * Coroutines run with `ModalityState.any()`: this dialog is modal, and a continuation of the default
- * modality would wait until it closes.
- *
- * ```kotlin
- * val dialog = KatachiGenerateDialog(project, environment)
- * dialog.show()
- * dialog.result // the request to generate, or null when cancelled
- * ```
- */
+// Coroutines run with `ModalityState.any()`: the dialog is modal, and a default-modality continuation would wait until it closes.
 internal class KatachiGenerateDialog(
     project: Project,
     private val environment: GenerateDialogEnvironment,
@@ -84,10 +63,8 @@ internal class KatachiGenerateDialog(
     private val refusalState = MutableStateFlow<String?>(null)
     private var confirming: Job? = null
 
-    /** Why [Generate] stopped without closing, as the dialog shows it; `null` when it did not. */
     val refusal: String? get() = refusalState.value
 
-    /** What to generate once the dialog closed with OK; `null` while open and after any other way out. */
     var result: SingleFileGenerationRequest? = null
         private set
 
@@ -125,7 +102,6 @@ internal class KatachiGenerateDialog(
         viewModel.dispatch(intent)
     }
 
-    /** Keeps the OK button, the template list and the target check in step with the outside. */
     private fun follow() {
         scope.launch {
             viewModel.state.collect { state -> sdkCall("enable the Generate button") { isOKActionEnabled = state.canGenerate } }
@@ -163,10 +139,6 @@ internal class KatachiGenerateDialog(
 
     override fun getDimensionServiceKey(): String = "me.tbsten.katachi.GenerateDialog"
 
-    /**
-     * [Generate]. Checks the target once more (the notice may be stale: typing is checked after a pause),
-     * and closes only when it does not have content. A second press while checking does nothing.
-     */
     override fun doOKAction() {
         if (!isOKActionEnabled || confirming?.isActive == true) return
         val request = viewModel.generationRequest() ?: return
@@ -183,24 +155,14 @@ internal class KatachiGenerateDialog(
         }
     }
 
-    /**
-     * Closing disposes the dialog, which cancels [scope] and with it the coroutine [doOKAction] closes
-     * from. The platform's own dispose (saving the window size) then checked a cancelled job and failed
-     * with "CE must not be thrown from a dispose()" (V1 2.1), so the close is not cancellable.
-     */
+    // Closing must not be cancellable: the platform's dispose() would see a cancelled job and fail with "CE must not be thrown from a dispose()".
     private fun closeWithOk() = ProgressManager.getInstance().executeNonCancelableSection { super.doOKAction() }
 
-    /**
-     * Types [value] into the field [name] the way the panel does ([GenerateDialogActions.onInput]), which also clears [refusal].
-     * For the debug bridge, whose Driver cannot reach the fields of a modal `ComposePanel`.
-     */
     internal fun input(name: String, value: String) = actions.onInput(name, value)
 
-    /** Presses [Generate], for tests that cannot click a modal dialog. */
     @TestOnly
     fun pressGenerate() = doOKAction()
 
-    /** Presses Cancel (what Esc does). */
     @TestOnly
     fun pressCancel() = doCancelAction()
 

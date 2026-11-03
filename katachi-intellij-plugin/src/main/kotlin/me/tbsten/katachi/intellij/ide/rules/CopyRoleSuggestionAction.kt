@@ -13,15 +13,6 @@ import me.tbsten.katachi.intellij.ide.definition.DefinitionPorts
 import me.tbsten.katachi.intellij.ide.sdkCall
 import me.tbsten.katachi.intellij.presentation.rules.roleSuggestionDraftFor
 
-/**
- * `katachi.CopyRoleSuggestion`: puts a `.role` declaration for the selected file on the clipboard, the draft the test's
- * report suggests under an UnexpectedFile (the popup of the no-role notification has the same row). Works on any file
- * of a project with katachi, also one a role already holds, as a starting point for a new role; Find Action reaches it.
- *
- * ```kotlin
- * ActionManager.getInstance().getAction(CopyRoleSuggestionAction.ID)
- * ```
- */
 internal class CopyRoleSuggestionAction : DumbAwareAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
@@ -43,13 +34,8 @@ internal class CopyRoleSuggestionAction : DumbAwareAction() {
     }
 
     companion object {
-        /** The `id` of the action in plugin.xml. */
         const val ID: String = "katachi.CopyRoleSuggestion"
 
-        /**
-         * The draft for [file]: relative to the definition's project root when a definition holds it, else relative to the
-         * project. `null` for a file outside both.
-         */
         internal fun draftOf(project: Project, file: VirtualFile): String? {
             val roles = DefinitionPorts.of(project).service()?.forFile(file)
             if (roles != null) return roleSuggestionDraftFor(roles.relativePath)

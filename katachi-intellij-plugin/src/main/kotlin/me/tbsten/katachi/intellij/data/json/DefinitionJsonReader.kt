@@ -4,10 +4,6 @@ import java.nio.file.Path
 import java.time.Instant
 import java.time.format.DateTimeParseException
 
-/**
- * A value at [location] in `definition.json`, read with the contract's types. A key that is missing or has
- * another type is a [KatachiIncompatibleDefinitionJsonException] naming where.
- */
 internal class DefinitionJsonReader(
     private val value: JsonValue,
     private val location: String,
@@ -32,7 +28,6 @@ internal class DefinitionJsonReader(
         if (it.value !is JsonValue.JsonObject) throw mismatch(it.location, "object", it.value)
     }
 
-    /** The object at [key], or `null` when it is `null`. A missing key is incompatible. */
     fun nullableObj(key: String): DefinitionJsonReader? {
         val found = member(key)
         return when (found.value) {
@@ -42,7 +37,6 @@ internal class DefinitionJsonReader(
         }
     }
 
-    /** The object at [key], or `null` when it is `null` or the key is absent: a key a katachi from before it does not write. */
     fun optionalNullableObj(key: String): DefinitionJsonReader? = if (hasKey(key)) nullableObj(key) else null
 
     fun string(key: String): String = member(key).stringValue("string")
@@ -57,7 +51,6 @@ internal class DefinitionJsonReader(
 
     fun boolean(key: String): Boolean = member(key).booleanValue("boolean")
 
-    /** The boolean at [key], or [default] when the key is absent: a flag a katachi from before it does not write. */
     fun optionalBoolean(key: String, default: Boolean): Boolean = if (hasKey(key)) boolean(key) else default
 
     fun nullableBoolean(key: String): Boolean? {
@@ -75,10 +68,8 @@ internal class DefinitionJsonReader(
         return if (found.value == JsonValue.JsonNull) null else found.intValue("integer or null")
     }
 
-    /** The integer at [key], or [default] when the key is absent: a key a katachi from before it does not write. */
     fun optionalInt(key: String, default: Int): Int = if (hasKey(key)) int(key) else default
 
-    /** The string at [key], `null` when it is `null` or the key is absent. */
     fun optionalNullableString(key: String): String? = if (hasKey(key)) nullableString(key) else null
 
     private fun intValue(expected: String): Int =
@@ -91,7 +82,6 @@ internal class DefinitionJsonReader(
         return if (found.value == JsonValue.JsonNull) null else found.elements("array or null")
     }
 
-    /** The array at [key], `null` when the key is absent or `null`: a key a katachi from before it does not write. */
     fun optionalNullableArray(key: String): List<DefinitionJsonReader>? =
         if (hasKey(key)) nullableArray(key) else null
 
@@ -104,10 +94,6 @@ internal class DefinitionJsonReader(
         return array.elements.mapIndexed { index, element -> DefinitionJsonReader(element, "$location[$index]", file) }
     }
 
-    /**
-     * The ISO-8601 instant at [key] such as `2026-10-04T00:30:12Z`. A string that is not one is as incompatible as a value that
-     * is not a string: katachi always writes a time, and the features compare it with a file's modification time.
-     */
     fun instant(key: String): Instant {
         val found = member(key)
         val text = found.stringValue("string (ISO-8601 instant)")

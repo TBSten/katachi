@@ -9,18 +9,6 @@ import me.tbsten.katachi.intellij.ide.KatachiBundle
 import org.jetbrains.kotlin.psi.KtFile
 import javax.swing.Icon
 
-/**
- * The ◆ of a file that is not Kotlin (`.md`, `.xml`, `.toml`, plain text, ...) whose path a role holds (design 2.1): one,
- * on the first thing in the file that is not white space. Registered for every language (`language=""`), so it is asked
- * about Kotlin files too, and leaves those to [KatachiDeclarationLineMarkerProvider], which draws `.kt` and `.kts`.
- *
- * It shares the Kotlin provider's id, so `Settings | Editor | General | Gutter Icons` has one switch for both.
- *
- * ```kotlin
- * // plugin.xml
- * // <codeInsight.lineMarkerProvider language="" implementationClass="...KatachiFileLineMarkerProvider"/>
- * ```
- */
 internal class KatachiFileLineMarkerProvider(private val portsOf: (Project) -> GutterPorts) : LineMarkerProviderDescriptor(), DumbAware {
     constructor() : this(GutterPorts::of)
 

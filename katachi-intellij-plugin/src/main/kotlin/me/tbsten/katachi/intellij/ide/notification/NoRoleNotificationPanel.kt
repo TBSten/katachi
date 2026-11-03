@@ -12,24 +12,13 @@ import javax.swing.JComponent
 
 private const val ASCII_LIMIT = 128
 
-/** What the links and buttons of the no-role panel do. Each is called on the EDT when clicked. */
 internal class NoRolePanelActions(
-    /** Opens the popup of nearby roles under the given component (the link that was clicked). */
     val showNearby: (JComponent) -> Unit,
     val openDefinition: () -> Unit,
     val openSettings: () -> Unit,
     val dismiss: () -> Unit,
 )
 
-/**
- * The two lines of the panel (design 2.2): what is wrong and, when there is a nearby role, which one; for a file held
- * back by its captures, what each level read and where the file belongs. Plain text; the panel escapes it for the label,
- * which reads HTML.
- *
- * ```kotlin
- * val lines = noRoleLines(decision)   // "No role allows this file. ...", "Nearest role: domain.UseCase (...)"
- * ```
- */
 internal class NoRoleLines(val first: String, val second: String?, val tooltip: String?)
 
 internal fun noRoleLines(decision: NoRoleDecision.NoRole): NoRoleLines {
@@ -66,20 +55,10 @@ internal fun noRoleLines(decision: NoRoleDecision.NoRole): NoRoleLines {
     )
 }
 
-/** The panel of the no-role notification, which keeps the plain [lines] it shows: [KatachiDebugBridge.describeNoRole] reads them, not the escaped HTML of the label. */
+// Keeps the plain lines: describeNoRole reads them, not the escaped HTML of the label.
 internal class NoRolePanel(val owner: FileEditor, val lines: NoRoleLines, status: EditorNotificationPanel.Status = EditorNotificationPanel.Status.Warning) : KatachiNotificationPanel(owner, status)
 
-/**
- * The panel of the "no role holds this file" notification: a warning (Info when the baseline holds the file back), the lines of [noRoleLines], then
- * [Nearby roles...] (always: the draft of a role is in its popup), [Open definition] (only when `architecture { }` can be
- * opened), ⚙ and ×. Built on the EDT from a decision made in the background; it decides nothing itself.
- *
- * Role names and paths come from the user's definition: they are escaped in the label and the tooltip, which read HTML.
- *
- * ```kotlin
- * val panel = noRoleNotificationPanel(editor, found.decision, actions)
- * ```
- */
+// Role names and paths come from the user's definition: escape them in the label and the tooltip, which read HTML.
 internal fun noRoleNotificationPanel(editor: FileEditor, decision: NoRoleDecision.NoRole, actions: NoRolePanelActions): EditorNotificationPanel {
     val lines = noRoleLines(decision)
     // A file the baseline holds back is not a violation: Info, not Warning.

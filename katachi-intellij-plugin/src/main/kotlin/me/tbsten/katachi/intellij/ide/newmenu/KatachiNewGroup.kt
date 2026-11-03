@@ -14,24 +14,7 @@ import me.tbsten.katachi.intellij.ide.notification.shouldEnsureLoaded
 import me.tbsten.katachi.intellij.ide.sdkCall
 import java.nio.file.Path
 
-/**
- * New › katachi (issue 12): [definition ›] group › role › template, for the templates that fit the
- * selected directories. Before the list is loaded, one disabled "Loading templates..." item and a
- * load started in the background, never waited for (issue 18). Hidden when katachi cannot be used
- * (not synced, not installed, the JSON failed, loading without the user turned off: issue 3); a project
- * without a katachi definition module does not even get the project service (decision 17).
- *
- * [update] and [getChildren] run in the background ([ActionUpdateThread.BGT]) and read only
- * `IdeView.getDirectories()` and the project service's index; never Gradle (issue 4).
- * Choosing a directory may show a popup, so nothing here does it: a leaf starts the dialog from
- * the directory `update` already found (decision 23).
- *
- * ```xml
- * <group id="katachi.NewGroup" class="me.tbsten.katachi.intellij.ide.newmenu.KatachiNewGroup" popup="true"/>
- * ```
- *
- * The menu has no search of its own (decided not to add one, ide-review-screens N-1); the tool window and the generate action search.
- */
+// update and getChildren run on the BGT and read only `IdeView.getDirectories()` and the index; never show a popup or run Gradle here.
 internal class KatachiNewGroup(
     private val portsOf: (Project) -> NotificationPorts,
 ) : ActionGroup(), DumbAware {
@@ -64,10 +47,6 @@ internal class KatachiNewGroup(
         val resolution: NewMenuResolution,
     )
 
-    /**
-     * `null` when nothing can be shown; an SDK call that fails hides the group instead of failing the update.
-     * A project without a katachi definition module gets no project service, as with the notification (decision 17).
-     */
     private fun contextOf(e: AnActionEvent): Context? = sdkCall("read the context of New > katachi") {
         val project = e.project ?: return@sdkCall null
         val directories = selectedDirectories(e) ?: return@sdkCall null
@@ -78,7 +57,6 @@ internal class KatachiNewGroup(
         Context(service, state, ports.settings().loadWithoutUser, directories, NewMenuResolution.of(state, directories))
     }.getOrNull()
 
-    /** The selected directories on disk, in the IdeView's order. */
     private fun selectedDirectories(e: AnActionEvent): List<Path>? {
         val view = e.getData(LangDataKeys.IDE_VIEW) ?: return emptyList()
         return view.directories.mapNotNull { directory ->
@@ -88,7 +66,6 @@ internal class KatachiNewGroup(
     }
 
     companion object {
-        /** The group's id in plugin.xml; its text is the bundle key `group.katachi.NewGroup.text`. */
         const val ID: String = "katachi.NewGroup"
     }
 }

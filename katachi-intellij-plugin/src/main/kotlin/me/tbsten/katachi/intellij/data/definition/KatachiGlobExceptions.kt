@@ -1,17 +1,8 @@
 package me.tbsten.katachi.intellij.data.definition
 
-/** Characters that mean themselves once written as `\<char>`. */
 internal const val GLOB_ESCAPABLE: String = "*\\{}?[],"
 
-/**
- * A glob pattern of the definition JSON that [KatachiGlob] cannot read. katachi only writes patterns
- * it compiled itself, so this means the plugin's port and katachi's `Glob` disagree (the conformance
- * test pins them together). The matcher drops the entry and keeps going.
- *
- * ```kotlin
- * val failure = runCatching { KatachiGlob.compile("Foo[.kt") }.exceptionOrNull() as? KatachiGlobSyntaxException
- * ```
- */
+// Reaching this means the port and katachi's `Glob` disagree; the matcher drops the entry and goes on.
 internal class KatachiGlobSyntaxException(
     val pattern: String,
     val problem: KatachiGlobProblem,
@@ -21,7 +12,6 @@ internal class KatachiGlobSyntaxException(
         "Use a katachi version and a plugin version released together.",
 )
 
-/** Why a pattern could not be read. One subtype per thing that can go wrong, as in katachi's `GlobProblem`. */
 internal sealed interface KatachiGlobProblem {
     fun explain(pattern: String): String
 
@@ -29,7 +19,6 @@ internal sealed interface KatachiGlobProblem {
         override fun explain(pattern: String): String = "A glob pattern must not be empty."
     }
 
-    /** Two separators in a row, or a trailing one. */
     data class EmptySegment(val separator: Char) : KatachiGlobProblem {
         override fun explain(pattern: String): String =
             "`$pattern` has an empty segment. Two `$separator` in a row, or a trailing `$separator`, matches nothing."

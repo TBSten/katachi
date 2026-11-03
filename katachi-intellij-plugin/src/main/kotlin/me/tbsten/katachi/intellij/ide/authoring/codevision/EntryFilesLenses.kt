@@ -11,21 +11,8 @@ import me.tbsten.katachi.intellij.presentation.authoring.EntryFilesInput
 import me.tbsten.katachi.intellij.presentation.gutter.RoleFileCount
 import org.jetbrains.kotlin.psi.KtFile
 
-/** One Code Vision of a definition file: the [text] at the end of the line of [range], and what its popup is made from. */
 internal data class EntryFilesLens(val range: TextRange, val text: String, val input: EntryFilesInput)
 
-/**
- * The Code Vision of one definition file (ide-authoring design 4.3): for each file entry (`"*Service".ktFile()`, `"x".file()`) that the
- * definition model has a declaration for, how many files it holds. The same anchors and binding as the ◆ ([DefinitionGutter.bind]),
- * so a line and its count are the same everywhere.
- *
- * Call under a read lock, from the background. It asks the definition model, so it answers nothing in a file that is not in a
- * definition module's test sources.
- *
- * ```kotlin
- * val lenses = EntryFilesLenses.of(ktFile, GutterPorts.of(project))   // "*Service".ktFile()  ->  "3 files"
- * ```
- */
 internal object EntryFilesLenses {
     fun of(file: KtFile, ports: GutterPorts): List<EntryFilesLens> {
         val bound = DefinitionGutter.bind(file, ports) ?: return emptyList()

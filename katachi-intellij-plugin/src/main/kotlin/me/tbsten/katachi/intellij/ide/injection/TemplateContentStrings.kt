@@ -20,29 +20,7 @@ import org.jetbrains.kotlin.psi.KtReturnExpression
 import org.jetbrains.kotlin.psi.KtStringTemplateExpression
 import org.jetbrains.kotlin.psi.KtWhenEntry
 
-/**
- * What kind of file this string literal is the content of, when it is (part of) the value a katachi
- * `.template { }` block returns, and `null` for every other string.
- *
- * The match is on the shape of the source only, never on resolved symbols: the architecture module
- * that holds the definition need not be indexed, analysed or even synced for its templates to be
- * highlighted, which is what lets the injector run in dumb mode. The price is that a `template` of
- * another library called the same way would be matched too; the receiver has to be one of katachi's
- * file declarations (`.ktFile()`, `.ktsFile()`, or `.file()` on a name ending in `.kt` / `.kts`),
- * which is specific enough in practice.
- *
- * ## Example 1: the strings this recognises
- * ```kt
- * "*UseCase".ktFile().template {
- *     val name by stringParameter()
- *     val unrelated = "not the content"          // null: not what the block returns
- *     """
- *         interface ${name}UseCase                // Kotlin
- *     """.trimIndent() + "\n"                     // both literals: Kotlin
- * }
- * "build.gradle".ktsFile().template { "plugins { }" } // KotlinScript
- * ```
- */
+// Matches on the shape of the source only (never resolved symbols) so it runs in dumb mode; a `template` of another library called the same way matches too.
 internal fun KtStringTemplateExpression.templateFileKind(): TemplateFileKind? {
     val value = climbToValue(this)
     val lambda = when (val parent = value.parent) {
@@ -57,11 +35,6 @@ internal fun KtStringTemplateExpression.templateFileKind(): TemplateFileKind? {
     return fileKindOfDeclaration(qualified.receiverExpression)
 }
 
-/**
- * The outermost expression whose value still is this string's value (or contains it verbatim):
- * through parentheses, `+` concatenation, `trimIndent()` and the like, and the branches of `if` /
- * `when`.
- */
 private fun climbToValue(start: KtExpression): KtExpression {
     var current: KtExpression = start
     while (true) {
@@ -85,5 +58,4 @@ private fun climbToValue(start: KtExpression): KtExpression {
 
 private const val TEMPLATE_FUNCTION = "template"
 
-/** Calls on a string that keep its text as Kotlin source: the indentation and margin helpers. */
 private val STRING_TRANSFORMS = setOf("trimIndent", "trimMargin", "trim", "trimStart", "trimEnd", "prependIndent", "replaceIndent")

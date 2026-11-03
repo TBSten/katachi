@@ -18,31 +18,15 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import javax.imageio.ImageIO
 
-/**
- * PNGs of what the IDE draws, written by the IDE itself for the Driver smoke. The desktop screenshot Starter takes is of the
- * screen, which on a machine without screen-recording permission is the wallpaper: painting the components in the IDE needs
- * no permission and shows the frame (editor, gutter, underline, balloons) or one popup, whatever is in front of it.
- *
- * ```kotlin
- * DebugScreenshots(project).ofFrame("/tmp/out/frame.png")   // "saved=/tmp/out/frame.png|1400x900"
- * ```
- */
 internal class DebugScreenshots(private val project: Project) {
-    /** The IDE window of the project, written to [path]: `saved=<path>|<width>x<height>` or `saved=none`. */
     fun ofFrame(path: String): String {
         var result = "saved=none"
         ApplicationManager.getApplication().invokeAndWait({ result = save(WindowManager.getInstance().getFrame(project), path) }, ModalityState.any())
         return result
     }
 
-    /** The content of [popup], written to [path] (call on the EDT while it is showing). */
     fun ofPopup(popup: JBPopup, path: String): String = save(popup.content, path)
 
-    /**
-     * The generate dialog's window, taken from the screen with [Robot] because its `ComposePanel` cannot be painted into an image
-     * ("Unsupported graphics configuration"). Needs the screen-capture permission of the OS and a display: without them the answer is
-     * `saved=none` (a flat capture is not written), so the smoke does not fail on it.
-     */
     fun ofDialog(path: String): String {
         var result = "saved=none"
         ApplicationManager.getApplication().invokeAndWait({

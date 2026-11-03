@@ -20,36 +20,19 @@ import me.tbsten.katachi.intellij.presentation.gutter.GutterFreshness
 import org.jetbrains.kotlin.psi.KtFile
 import java.nio.file.Path
 
-/** A ◆ of a definition file with the leaf it is keyed on. */
 internal data class PlacedDefinitionGutterMark(val leaf: PsiElement, val mark: DefinitionGutterMark)
 
-/** What [DefinitionGutter.bind] found in one definition file: [bound] is [anchors] tied to the model, in the same order. */
 internal class BoundDefinitionFile(
     private val service: DefinitionModelService,
-    /** The definition file, absolute. */
     val definitionFile: Path,
-    /** The counts may be older than the source (design 4.4). */
     val stale: Boolean,
     val anchors: List<PsiAnchor>,
     val bound: List<BoundAnchor>,
 ) {
-    /** The directory the files of [module]'s definition are relative to, or `null` when that definition is not known. */
     fun projectRootOf(module: ModuleId): Path? =
         service.definitionOf(module)?.let { it.definition?.projectRoot ?: it.module.linkedRootPath }
 }
 
-/**
- * The ◆ of one definition file (ide-authoring design 4.1-4.4): its anchors, bound to what the definition declares there, put
- * through [DefinitionGutterMarks]. The line marker provider draws them and the debug bridge describes them.
- *
- * Nothing is drawn for a file that is not in a definition module's test sources, nor while the definition was written by a
- * katachi older than the IDE reads. Answers in dumb mode: the PSI is walked without an index. Call under a read lock, from the
- * background: it asks the definition model.
- *
- * ```kotlin
- * val marks = DefinitionGutter.of(ktFile, GutterPorts.of(project))
- * ```
- */
 internal object DefinitionGutter {
     fun of(file: KtFile, ports: GutterPorts): List<PlacedDefinitionGutterMark> {
         val bound = bind(file, ports) ?: return emptyList()
@@ -62,10 +45,6 @@ internal object DefinitionGutter {
         }
     }
 
-    /**
-     * The anchors of [file] tied to what the definition declares there, or `null` when the definition side draws nothing on the file
-     * (not a definition file, the definition too old, nothing declared). The ◆ and the Code Vision of one file start from this.
-     */
     fun bind(file: KtFile, ports: GutterPorts): BoundDefinitionFile? {
         if (InjectedLanguageManager.getInstance(file.project).isInjectedFragment(file)) return null
         if (!ports.hasDefinitionModule()) return null
@@ -87,12 +66,6 @@ internal object DefinitionGutter {
         return BoundDefinitionFile(service, definitionFile, stale, anchors, bound)
     }
 
-    /**
-     * Whether the counts may be older than the source: the foundation's rule ([GutterFreshness.isStale], which also counts an
-     * edit not saved yet: the file is the one being written), or katachi found a mistake in the definition since (then the answer
-     * is the one from before the mistake, design 4.4). The file's write time is not compared: saving it is what makes the
-     * service read the definition again, and that arrives as [Freshness.Stale].
-     */
     private fun isStale(service: DefinitionModelService, state: DefinitionState, unsaved: Boolean): Boolean =
         GutterFreshness.isStale(state, state.answer?.freshness ?: Freshness.Fresh, null, null, unsaved) ||
             service.definitionErrors.value.errors.isNotEmpty()

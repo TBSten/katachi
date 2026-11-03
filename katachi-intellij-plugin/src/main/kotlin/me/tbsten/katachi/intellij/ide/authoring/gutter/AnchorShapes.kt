@@ -13,26 +13,9 @@ import org.jetbrains.kotlin.psi.KtLambdaExpression
 import org.jetbrains.kotlin.psi.KtLiteralStringTemplateEntry
 import org.jetbrains.kotlin.psi.KtStringTemplateExpression
 
-/** What a call of the definition's DSL is, as far as the definition side draws on it: the kind, the name the model is asked for, and the PSI to put the mark on. */
 internal data class AnchorShape(val kind: AnchorKind, val name: String?, val call: KtCallExpression, val leaf: PsiElement)
 
-/**
- * The shapes of ide-authoring design 4.1, read from the PSI alone (no resolve, no index), so they answer in dumb mode and
- * under K1 as under K2. Like the injection's, the match is on the spelling: a function of another library that is called the
- * same way is taken too, and an anchor the model has no declaration for draws nothing.
- *
- * | Kind | Shape | Name |
- * |---|---|---|
- * | Role | `"Name".role { }` | the string, `null` with an interpolation |
- * | Entry | `"*Name".ktFile()` / `ktsFile()` / `file()` | the last segment: an interpolation is `*`, `ktFile` adds `.kt`, `ktsFile` `.kts` |
- * | Template | `<file declaration>.template { }` | that of the entry it is called on |
- *
- * ```kotlin
- * val shape = AnchorShapes.of(callExpression) ?: return
- * ```
- */
 internal object AnchorShapes {
-    /** The shape of [call] (the selector of a `receiver.call` expression), or `null` when it is none. */
     fun of(call: KtCallExpression): AnchorShape? {
         val qualified = call.parent as? KtDotQualifiedExpression ?: return null
         if (qualified.selectorExpression !== call) return null
@@ -69,7 +52,6 @@ internal object AnchorShapes {
         return AnchorShape(AnchorKind.Template, entryName(name, fileCall.calleeName()), call, leaf)
     }
 
-    /** `"X".ktFile().optional().metadata { }` is the declaration `"X".ktFile()`: the modifiers are looked through. */
     private fun baseDeclarationOf(receiver: KtExpression?): KtDotQualifiedExpression? {
         var current = receiver as? KtDotQualifiedExpression ?: return null
         while (true) {
@@ -79,11 +61,9 @@ internal object AnchorShapes {
         }
     }
 
-    /** The text of a string with no interpolation, else `null`. */
     private fun plainName(string: KtStringTemplateExpression): String? =
         if (string.entries.all { it is KtLiteralStringTemplateEntry }) string.entries.joinToString("") { it.text } else null
 
-    /** The last `/` segment of the string, an interpolation read as `*`, ended as the file call says. */
     private fun entryName(string: KtStringTemplateExpression, fileCall: String?): String {
         val text = string.entries.joinToString("") { if (it is KtLiteralStringTemplateEntry) it.text else "*" }
         val ending = when (fileCall) {
@@ -94,7 +74,6 @@ internal object AnchorShapes {
         return (text + ending).substringAfterLast('/')
     }
 
-    /** The first leaf of [element] that has a text: the opening quote of a string, the identifier of a callee. */
     private fun firstLeaf(element: PsiElement): PsiElement? =
         generateSequence(PsiTreeUtil.firstChild(element)) { PsiTreeUtil.nextLeaf(it) }.firstOrNull { it.textLength > 0 }
             ?.takeIf { PsiTreeUtil.isAncestor(element, it, false) }

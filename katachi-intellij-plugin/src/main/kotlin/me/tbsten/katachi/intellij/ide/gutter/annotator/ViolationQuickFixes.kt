@@ -16,16 +16,6 @@ import me.tbsten.katachi.intellij.ide.gutter.GutterNavigation
 import me.tbsten.katachi.intellij.ide.gutter.GutterPorts
 import me.tbsten.katachi.intellij.ide.sdkCall
 
-/**
- * "Go to the rule (ServiceRole.kt:94)": opens the line of the definition the report names (design 2.5). The target was
- * found in the background, when the annotation was worked out.
- *
- * Neither fix writes: `startInWriteAction` is false and there is no preview.
- *
- * ```kotlin
- * builder.withFix(GoToRuleFix(ports, RuleTarget.AtPath("ServiceRole.kt:94", path, 94)))
- * ```
- */
 internal class GoToRuleFix(private val ports: GutterPorts, private val rule: RuleTarget) : IntentionAction, DumbAware {
     override fun getText(): String = KatachiBundle.message("gutter.annotation.goToRule", rule.label)
 
@@ -48,14 +38,6 @@ internal class GoToRuleFix(private val ports: GutterPorts, private val rule: Rul
     override fun generatePreview(project: Project, editor: Editor, file: PsiFile): IntentionPreviewInfo = IntentionPreviewInfo.EMPTY
 }
 
-/**
- * "Run the check again": the foundation's `katachi.RunCheck`, for the module of the file. Not offered while the action is
- * not registered.
- *
- * ```kotlin
- * builder.withFix(RunCheckAgainFix(ports, virtualFile))
- * ```
- */
 internal class RunCheckAgainFix(private val ports: GutterPorts, private val source: VirtualFile) : IntentionAction, DumbAware {
     override fun getText(): String = KatachiBundle.message("gutter.annotation.runCheck")
 

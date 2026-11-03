@@ -5,18 +5,7 @@ import com.intellij.openapi.application.ModalityState
 import me.tbsten.katachi.intellij.ide.dialog.GenerateDialogs
 import me.tbsten.katachi.intellij.ide.sdkCall
 
-/**
- * What a user does in the generate dialog on screen (typing into a field, pressing Generate or Cancel), done inside the IDE for
- * the Driver smoke. The dialog is modal and one `ComposePanel`, so Driver's own input cannot reach its fields; these send the
- * same intents the panel would. Every call runs with `ModalityState.any()`, the dialog being modal.
- *
- * ```kotlin
- * DebugDialogs().fillDialog("name", "Probe")   // "filled=name"
- * DebugDialogs().pressDialog("generate")       // "pressed=generate", or "pressed=none" while Generate is disabled
- * ```
- */
 internal class DebugDialogs {
-    /** Types [value] into the field [name] of the dialog on screen: `filled=<name>`, or `filled=none` when no dialog is up or it has no such field. */
     fun fillDialog(name: String, value: String): String = onEdt("fill the field $name of the generate dialog", "filled=none") {
         val dialog = GenerateDialogs.showing
         if (dialog == null || dialog.viewModel.state.value.fields.none { it.name == name }) {
@@ -28,10 +17,6 @@ internal class DebugDialogs {
         }
     }
 
-    /**
-     * Presses `generate` (only while the dialog's OK is enabled) or `cancel` of the dialog on screen: `pressed=generate` or
-     * `pressed=cancel`; `pressed=none` for any other button, no dialog, or a disabled Generate.
-     */
     fun pressDialog(button: String): String = onEdt("press $button of the generate dialog", "pressed=none") {
         val dialog = GenerateDialogs.showing
         when {

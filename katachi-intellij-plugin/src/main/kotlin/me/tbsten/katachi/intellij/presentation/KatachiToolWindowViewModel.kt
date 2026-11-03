@@ -41,37 +41,18 @@ import me.tbsten.katachi.intellij.model.TemplateId
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 
-/**
- * Holds the tool window's [state] and carries out [KatachiIntent]s: pure ones through
- * [applyFormIntent], the rest through the ports (synced data, Gradle, disk, IDE).
- *
- * All work runs in [scope], which the project service owns: closing the project cancels it, and
- * with it the running Gradle build (E-49). [dispatch] is called on the EDT; the work it starts runs
- * in the background, so every state change goes through `update`, and the synced data and the cached
- * JSON are read on [ioDispatcher]. Gradle runs one build at a time ([SerialGradleTaskRunner]): the
- * project service hands in its one serial runner, shared with the entries (issue 11); any other
- * runner is wrapped in one here.
- *
- * The list is loaded once per session, by whichever asks first: the tool window ([KatachiIntent.Opened])
- * or the New menu and the editor notification ([KatachiIntent.EnsureLoaded], issues 11, 18).
- */
+// dispatch is called on the EDT; work runs in the background, so every state change goes through `update`, and the synced data and cached JSON are read on ioDispatcher.
+// Gradle runs one build at a time: a runner that is not a SerialGradleTaskRunner is wrapped in one.
 internal class KatachiToolWindowViewModel(
     private val scope: CoroutineScope,
     private val syncedProject: SyncedProjectSource,
     runner: GradleTaskRunner,
     private val fileSystem: ProjectFileSystem,
     private val effects: IdeEffects,
-    /** What the project remembers (the "existing files" combo, folded modules) before anything loads. */
     initial: KatachiScreenState = KatachiScreenState(),
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-    /**
-     * Whether [KatachiIntent.EnsureLoaded] may run Gradle (the setting "load without a user action",
-     * decision 16); read at each one. When not, it only detects and shows the cached JSON.
-     */
     private val loadsWithoutUser: () -> Boolean = { true },
-    /** Reads the directories behind the capture fields' candidates (design 3.3); none by default. */
     candidateLister: DirectoryLister = DirectoryLister { emptyList() },
-    /** How long a capture field's candidates wait for typing to pause. */
     candidateSettle: suspend () -> Unit = { delay(CaptureCandidateLoader.SETTLE_MILLIS) },
 ) {
     private val mutableState = MutableStateFlow(initial)
@@ -91,29 +72,20 @@ internal class KatachiToolWindowViewModel(
 
     @Volatile private var generationLabel: String? = null
 
-    /** The files the latest generation writes or may write, absolute (E-44: not a definition change). */
     @Volatile private var ownWrites: Set<Path> = emptySet()
 
-    /** The files an entry's generation writes (E3), kept for the session: never a definition change. */
     private val entryOwnWrites: MutableSet<Path> = ConcurrentHashMap.newKeySet()
 
     private var opened = false
 
-    /** EnsureLoaded ran with loading turned off: the synced data was read, and is read again after a sync. */
     private var detectedForEntries = false
 
     private val mutableLoadStarted = MutableStateFlow(false)
 
-    /**
-     * Whether a load of the list started in this session, from the tool window, an entry, ⟳ or a
-     * generation. Only then does a sync or a definition change load again (decision 16).
-     */
     val loadStarted: StateFlow<Boolean> = mutableLoadStarted.asStateFlow()
 
-    /** Whether a detection or a load is running or queued; tests wait for it to end. */
     val isLoadRunning: Boolean get() = loadJob?.isActive == true
 
-    /** Reads capture candidates in the background; [requestedFields] is touched only under its [CaptureCandidateLoader.lock]. */
     private val candidateLoader = CaptureCandidateLoader(
         scope = scope,
         lister = candidateLister,
@@ -128,21 +100,16 @@ internal class KatachiToolWindowViewModel(
         },
     )
 
-    /** The capture fields on screen that [candidateLoader] was asked about. */
     private val requestedFields = HashSet<FieldId>()
 
-    /** The definitions' roots (`placementRootOf` checks files), asked again after the files or the list changed. */
     private val candidateRoots = ConcurrentHashMap<ModuleId, Path>()
 
     private val ideIntents = IdeIntentHandler(scope, this.runner, fileSystem, effects, { mutableState.value }, { mutableState.update(it) })
 
-    /** The definition modules found by the latest detection, for watching their files (E-44). */
     val definitionModules: List<KatachiModule> get() = mutableState.value.modules
 
-    /** Whether [path] is a file the latest generation writes, whose VFS event is not a definition change. */
     fun isOwnWrite(path: Path): Boolean = path in ownWrites || path in entryOwnWrites
 
-    /** [path] is about to be written by an entry's generation: not a definition change (E-44). */
     fun registerOwnWrite(path: Path) {
         entryOwnWrites.add(path)
     }
@@ -152,20 +119,11 @@ internal class KatachiToolWindowViewModel(
         syncCandidates()
     }
 
-    /**
-     * Files changed outside the tool window (a VFS event): the directories behind the candidates may have changed, so
-     * every capture field on screen reads again (design 3.3). Not a definition change; [KatachiIntent.DefinitionChanged] is.
-     */
     fun onFilesChanged() {
         candidateRoots.clear()
         syncCandidates(force = true)
     }
 
-    /**
-     * Asks [candidateLoader] for the capture fields shown now (checked rows with their form open) and lets go of the
-     * ones that are not shown any more. The loader ignores a request whose key did not change, so this is cheap to call
-     * after every change; [force] reads again regardless (the files changed, the definition was reloaded).
-     */
     private fun syncCandidates(force: Boolean = false) {
         // Called from the EDT (dispatch), the background (a load or a generation ended) and the VFS listener. The state is
         // read inside the lock, so a caller that got the lock later always works from a newer state than the one before it.
@@ -218,15 +176,11 @@ internal class KatachiToolWindowViewModel(
         }
     }
 
-    /** ⟳ reads the synced data again first (no Gradle), so a module added since shows too. */
     private fun reload() {
         reloadIfIdle()
     }
 
-    /**
-     * [KatachiIntent.Reload], reporting whether it started: `false` when a detection, a load or a generation is
-     * still going, whose end the caller (the automatic reload) waits for and then asks again. On the EDT.
-     */
+    // Returns false while a detection, a load or a generation is still going; the automatic reload waits for it and asks again. On the EDT.
     fun reloadIfIdle(): Boolean {
         if (mutableState.value.generation is GenerationState.Running || loadJob?.isActive == true) return false
         mutableLoadStarted.value = true
@@ -234,17 +188,12 @@ internal class KatachiToolWindowViewModel(
         return true
     }
 
-    /** The first load of the session; after a detection of [detectOnly] that may still run. */
     private fun startLoad() {
         if (mutableLoadStarted.value) return
         mutableLoadStarted.value = true
         launchLoad(detect = true, after = loadJob)
     }
 
-    /**
-     * An entry needs the list (issues 11, 18): the first load, unless one started already. With
-     * loading turned off, only the synced data and the cached JSON are read (decision 16).
-     */
     private fun ensureLoaded() {
         if (mutableLoadStarted.value) return
         if (loadsWithoutUser()) {
@@ -255,7 +204,6 @@ internal class KatachiToolWindowViewModel(
         }
     }
 
-    /** Reads the synced data and shows the cached list, without Gradle. */
     private fun detectOnly() {
         if (loadJob?.isActive == true) return
         loadJob = scope.launch {
@@ -269,11 +217,6 @@ internal class KatachiToolWindowViewModel(
         }
     }
 
-    /**
-     * Re-reads [module]'s templates for a generation from an entry and puts them in [state] before
-     * returning (decision 1), after the load that is running, if any. The other modules' lists stay.
-     * A failure leaves the list as it was: the generation reports it.
-     */
     suspend fun reloadForGeneration(module: KatachiModule): LoadResult {
         loadJob?.join()
         mutableLoadStarted.value = true
@@ -291,10 +234,6 @@ internal class KatachiToolWindowViewModel(
         return result
     }
 
-    /**
-     * A sync over a shown list: the definition modules are looked for again, and Gradle runs only
-     * when they changed (a module added or removed). A sync that changed nothing leaves the list as it is.
-     */
     private fun redetectAfterSync() {
         if (mutableState.value.generation is GenerationState.Running || loadJob?.isActive == true) return
         launchLoad(detect = true, onlyWhenModulesChanged = true)
@@ -305,7 +244,6 @@ internal class KatachiToolWindowViewModel(
         launchLoad(detect = true)
     }
 
-    /** Detects first when [detect], then loads. Whatever goes wrong, `loading` does not stay set. */
     private fun launchLoad(detect: Boolean, onlyWhenModulesChanged: Boolean = false, after: Job? = null) {
         loadJob = scope.launch {
             try {
@@ -322,10 +260,6 @@ internal class KatachiToolWindowViewModel(
         }
     }
 
-    /**
-     * Reads the synced data and shows the cached list; `false` when there is nothing to load, or when
-     * [onlyWhenModulesChanged] and the definition modules are the ones already shown.
-     */
     private suspend fun detect(onlyWhenModulesChanged: Boolean = false): Boolean {
         mutableState.update { it.copy(phase = if (it.snapshots.isEmpty()) ScreenPhase.Initializing else it.phase) }
         // Walking the synced data and parsing the cached JSON are too slow for the EDT (a large Android build).
@@ -424,7 +358,6 @@ internal class KatachiToolWindowViewModel(
         }
     }
 
-    /** A session that marks every row of the asking run waiting for the conflict dialog while it asks. */
     private fun newSession(): GenerationSession = GenerationSession(runner, fileSystem) { question ->
         val ids = question.templateIds
         mutableState.update { updateGenerationRow(it, ids, GenerationRowStatus.AwaitingConflict).withConflict(question) }
@@ -513,12 +446,7 @@ internal class KatachiToolWindowViewModel(
     }
 }
 
-/**
- * What a detection shows of [modules] until the load that follows it answers: a module already on
- * screen keeps the list on screen, and only a module not shown yet takes its [cached] JSON (E-43).
- * The cache may hold the answer of a load that was stopped, which the screen never took; showing it
- * for a module on screen would drop checks (E-45) that the load then brings back unchecked.
- */
+// The cache may hold the answer of a load that was stopped, which the screen never took: showing it for a module on screen would drop checks (E-45).
 private fun provisionalSnapshotsOf(
     modules: List<KatachiModule>,
     shown: List<DescriptionSnapshot>,
@@ -527,10 +455,6 @@ private fun provisionalSnapshotsOf(
     shown.firstOrNull { it.module.id == module.id }?.copy(module = module) ?: cached.firstOrNull { it.module.id == module.id }
 }
 
-/**
- * [detected] with the capabilities [known] modules already answered with: a sync without a task list names the
- * candidates but not their tasks (design 4.1), and what a load found out must not be forgotten by the next detection.
- */
 private fun withKnownCapabilities(detected: DetectionResult, known: List<KatachiModule>): DetectionResult {
     if (detected !is DetectionResult.TaskListMissing) return detected
     return DetectionResult.TaskListMissing(
@@ -541,7 +465,6 @@ private fun withKnownCapabilities(detected: DetectionResult, known: List<Katachi
     )
 }
 
-/** An unexpected exception as one line for the error details. */
 private fun messageOf(e: Exception): String = listOfNotNull(e::class.simpleName, e.message).joinToString(": ")
 
 private fun KatachiScreenState.withConflict(question: ConflictQuestion?): KatachiScreenState {

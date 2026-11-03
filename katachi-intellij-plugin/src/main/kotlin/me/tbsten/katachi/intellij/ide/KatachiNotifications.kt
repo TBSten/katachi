@@ -7,12 +7,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowManager
 import me.tbsten.katachi.intellij.model.GenerationReport
 
-/**
- * Balloons of the `katachi` notification group, shown only while the tool window is hidden (spec 04
- * "通知"): whoever watches the tool window already sees the result.
- */
+// Shown only while the tool window is hidden.
 internal object KatachiNotifications {
-    /** The `id` of `<notificationGroup>` in plugin.xml. */
     const val GROUP_ID: String = "katachi"
 
     fun generationFinished(project: Project, report: GenerationReport) {
@@ -29,7 +25,6 @@ internal object KatachiNotifications {
         notifyIfHidden(project, KatachiBundle.message("notification.loadFailed"), NotificationType.ERROR)
     }
 
-    /** Whether a notification would be shown now: the tool window is not on screen. */
     fun isToolWindowHidden(project: Project): Boolean =
         sdkCall("look whether the katachi tool window is shown") {
             ToolWindowManager.getInstance(project).getToolWindow(KatachiToolWindowFactory.TOOL_WINDOW_ID)?.isVisible != true

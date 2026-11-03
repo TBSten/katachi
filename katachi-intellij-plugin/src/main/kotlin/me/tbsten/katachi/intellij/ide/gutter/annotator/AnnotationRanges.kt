@@ -8,27 +8,10 @@ import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtNamedDeclaration
 
-/**
- * Where in a file an annotation goes (design 2.5): the name of a declaration, else a line. Reads the PSI's declarations
- * only, no index, so it works in dumb mode.
- *
- * Call under a read lock.
- *
- * ```kotlin
- * val range = AnnotationRanges.declarationRange(ktFile, document, "HealthService", nearLine = 7)
- *     ?: AnnotationRanges.lineRange(document, 7)
- * ```
- */
+// Reads the PSI's declarations only (no index) so it works in dumb mode. Call under a read lock.
 internal object AnnotationRanges {
-    /**
-     * The name of the declaration [name] (`Outer.member` for a member: the last name is looked for in `Outer`, and in
-     * what its members hold in turn). Of several of one name (overloads), the one that starts nearest [nearLine].
-     * `null` when the file has none.
-     *
-     * A declaration of the last name that starts exactly at [nearLine] wins wherever it sits: the `konsist { }` backend
-     * names a member by its bare name (`foo` for `Bar.foo`), and a top-level `foo` must not take its underline when the
-     * check saw `foo` on another line. The line is only a hint otherwise (the file may have been edited since the check).
-     */
+    // A declaration of the last name starting exactly at `nearLine` wins: the `konsist { }` backend names a member by its bare name,
+    // so a top-level `foo` must not take the underline meant for `Bar.foo`.
     // TODO(ide-gutter): a `konsist { }` rejection of the file itself (`KoFileDeclaration`) has the file's name and no line, and lands on the class of that name; katachi would have to say "the target is the file" in `properties` (background F-13).
     fun declarationRange(file: PsiFile, document: Document, name: String, nearLine: Int?): TextRange? {
         val ktFile = file as? KtFile ?: return null
@@ -47,7 +30,6 @@ internal object AnnotationRanges {
         return chosen?.nameIdentifier?.textRange
     }
 
-    /** From the first character that is not white space of [line] (1-based) to its end; `null` for a line the file does not have or an empty one. */
     fun lineRange(document: Document, line: Int): TextRange? {
         if (line < 1 || line > document.lineCount) return null
         val start = document.getLineStartOffset(line - 1)
@@ -58,7 +40,6 @@ internal object AnnotationRanges {
         return if (first < end) TextRange(first, end) else null
     }
 
-    /** [declarations] and, in turn, the members of each at every depth. */
     private fun allNamedDeclarations(declarations: List<KtNamedDeclaration>): List<KtNamedDeclaration> =
         declarations.flatMap { listOf(it) + allNamedDeclarations(membersOf(it)) }
 

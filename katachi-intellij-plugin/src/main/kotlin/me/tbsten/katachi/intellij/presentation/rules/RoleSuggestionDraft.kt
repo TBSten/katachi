@@ -1,25 +1,9 @@
 package me.tbsten.katachi.intellij.presentation.rules
 
-/**
- * A `.role` declaration for [relativePath], ready to paste into the definition: the same text as the
- * report of `katachi`'s check puts under an UnexpectedFile (`RoleSuggestion.kt` there), so the
- * notification and the test report give one answer. The name is a guess and `summary = "TODO"` says so.
- * TODO: for a file under a directory no role knows, the report says UnexpectedDirectory and suggests the directory `ignore()`d;
- *  this draft stays about the file, as the design's example does.
- *
- * ```kotlin
- * roleSuggestionDraftFor("core/domain/useCase/Paging.kt")
- * // "Paging".role {
- * //   summary = "TODO"
- * //   layout {
- * //     "core/domain/useCase" / "Paging".ktFile()
- * //   }
- * // }
- * ```
- */
+// Must give the same text as the report of katachi's check under an UnexpectedFile (`RoleSuggestion.kt`), so the notification and the report agree.
+// TODO: for a file under a directory no role knows, the report says UnexpectedDirectory and suggests `ignore()`ing the directory; this draft stays about the file.
 internal fun roleSuggestionDraftFor(relativePath: String): String = roleSuggestionLinesFor(relativePath).joinToString("\n")
 
-/** The guessed role name of [relativePath] (the part before the extension, split at non-alphanumerics and capitalised), `TODO` when nothing is left. */
 internal fun suggestedRoleNameFor(relativePath: String): String {
     val name = relativePath.substringAfterLast('/')
     val base = when {

@@ -13,40 +13,8 @@ import org.jetbrains.kotlin.psi.KtSimpleNameStringTemplateEntry
 import org.jetbrains.kotlin.psi.KtStringTemplateEntryWithExpression
 import org.jetbrains.kotlin.psi.KtStringTemplateExpression
 
-/**
- * Highlights the content of a katachi template as the language of the file it writes: the string a
- * `.ktFile().template { }` block returns as Kotlin, that of `.ktsFile().template { }` as a Kotlin
- * script. Which strings those are is [templateFileKind]'s business.
- *
- * `DumbAware` on purpose, like the plugin's other entries: nothing here reads an index or resolves a
- * symbol, only the PSI of the string and of the calls around it, so the highlighting is there while
- * the IDE is still indexing. Only the platform's own `MultiHostInjector` API is used (no IntelliLang,
- * no Kotlin injection internals), all of it present in Android Studio's 261 platform as well.
- *
- * The fragment is named with the extension of the file the template writes (`startInjecting`'s
- * `extension`). The K1 Kotlin plugin parses a `.kts` fragment as a script and a `.kt` one as a file;
- * the K2 plugin parses every injected Kotlin fragment as an unanalysed block code fragment instead
- * (`IDEKotlinK2KotlinParserDefinition`), in which top-level calls, declarations, `package` and
- * `import` all parse, so both kinds read without false errors either way. Nothing is resolved in a
- * fragment, so a template's imports of the app's own classes are not reported.
- *
- * An interpolation (`$name`, `${capture("x")}`) is not part of the Kotlin that is highlighted: the
- * literal pieces around it are joined into one fragment with a stand-in identifier where the value
- * goes, so `class ${name}Service` reads as `class nameService`. As what the stand-in makes of the
- * code is a guess (`${annotation}fun` becomes `katachiValuefun`), a fragment with one is marked
- * frankenstein, which keeps its syntax errors from being shown as the user's errors. A fragment
- * without one keeps them: there, what does not parse is what the template will write.
- *
- * ## Example 1: what is highlighted
- * ```kt
- * "*UseCase".ktFile().template {
- *     val name by stringParameter()
- *     """
- *         interface ${name}UseCase   // highlighted as Kotlin, `${name}` left as it is
- *     """.trimIndent()
- * }
- * ```
- */
+// PSI only (no index, no resolve) so it runs in dumb mode; K1 reads a `.kts` fragment as a script, K2 reads every fragment as a block code fragment.
+// A fragment with an interpolation is marked frankenstein: its stand-in identifier is a guess, so its syntax errors must not be shown.
 internal class KatachiTemplateInjector : MultiHostInjector, DumbAware {
 
     override fun elementsToInjectIn(): List<Class<out PsiElement>> = listOf(KtStringTemplateExpression::class.java)
@@ -69,15 +37,8 @@ internal class KatachiTemplateInjector : MultiHostInjector, DumbAware {
     }
 }
 
-/** One literal piece of the host: its range in the host, and the stand-ins for the values around it. */
 internal data class InjectionPlace(val prefix: String, val range: TextRange, val suffix: String)
 
-/**
- * The literal pieces of [host] (escapes included, the escaper decodes them), with every
- * interpolation between two pieces turned into a stand-in identifier: in front of the piece after
- * it, or after the last piece when the string ends with one. Empty when the string has no literal
- * text at all (`""`, `"$name"`).
- */
 internal fun placesOf(host: KtStringTemplateExpression): List<InjectionPlace> {
     val pieces = mutableListOf<TextRange>()
     // The stand-ins in front of each piece, and after the last one.
@@ -107,7 +68,6 @@ internal fun placesOf(host: KtStringTemplateExpression): List<InjectionPlace> {
     }
 }
 
-/** `$name` and `${name}` stand in as `name`; any other expression as [GENERIC_STAND_IN]. */
 private fun standInFor(entry: KtStringTemplateEntryWithExpression): String {
     val expression = entry.expression
     return when {
@@ -117,5 +77,4 @@ private fun standInFor(entry: KtStringTemplateEntryWithExpression): String {
     }
 }
 
-/** An identifier, so that it joins the text around it the way the value will: `${capture("name")}Service`. */
 private const val GENERIC_STAND_IN = "katachiValue"

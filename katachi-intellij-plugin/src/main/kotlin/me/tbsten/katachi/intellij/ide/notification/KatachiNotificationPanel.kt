@@ -9,7 +9,6 @@ import me.tbsten.katachi.intellij.ide.KatachiBundle
 import me.tbsten.katachi.intellij.presentation.entry.NotificationDecision
 import javax.swing.JLabel
 
-/** What the panel's links and buttons do. Each is called on the EDT when clicked. */
 internal class NotificationPanelActions(
     val create: () -> Unit,
     val viewTemplate: () -> Unit,
@@ -18,15 +17,6 @@ internal class NotificationPanelActions(
     val dismiss: () -> Unit,
 )
 
-/**
- * The panel of a katachi notification: its text, at most one link ([Create], [View Template] or [Copy Command]),
- * then ⚙ and ×, both [InplaceButton]s told apart by their tooltips. Built on the EDT from a
- * decision made in the background; it decides nothing itself.
- *
- * ```kotlin
- * val panel = katachiNotificationPanel(editor, NotificationDecision.CreateFromTemplate(matches), actions)
- * ```
- */
 internal fun katachiNotificationPanel(editor: FileEditor, decision: NotificationDecision, actions: NotificationPanelActions): EditorNotificationPanel? {
     if (decision == NotificationDecision.Hidden) return null
     val status = if (decision is NotificationDecision.FailedWithCommand) EditorNotificationPanel.Status.Warning else EditorNotificationPanel.Status.Info
@@ -61,9 +51,8 @@ internal fun katachiNotificationPanel(editor: FileEditor, decision: Notification
     return panel
 }
 
-/** An [EditorNotificationPanel] with ⚙ after the links, where the platform's own links go. Also the base of the no-role notification's panel. */
 internal open class KatachiNotificationPanel(editor: FileEditor, status: Status) : EditorNotificationPanel(editor, status) {
-    /** The tooltip of the text; the label reads it as HTML, so the caller escapes. */
+    // The tooltip is read as HTML by the label: the caller escapes.
     fun setTextTooltip(html: String) {
         // The platform's text label (`myLabel`) is deprecated for removal; the links are HyperlinkLabels, not JLabels.
         UIUtil.findComponentsOfType(this, JLabel::class.java).forEach { it.toolTipText = html }

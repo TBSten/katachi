@@ -27,57 +27,29 @@ import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 
-/**
- * One draw the refresher handed to the daemon: its number, why, for which followed service, and the state of the
- * definition at the moment it asked the daemon to restart (the daemon runs after that, so it never reads an older one).
- */
 internal data class Redraw(val seq: Long, val reason: String, val definitions: DefinitionModelService?, val definition: DefinitionState?)
 
-/**
- * Draws the gutter and the annotations of the open files again when the definition or the violations change (design
- * 2.6, U-13): the daemon recomputes on an edit, not when a service's state moves behind its back.
- *
- * A change goes [SETTLE_MILLIS] without another before the open files under a definition's root are restarted with
- * `restart(psiFile, reason)`, so a load that passes through several states draws once. Going to `Loading` draws
- * nothing: the previous answer stays until the new one arrives. When the answer goes away (`NotLoaded`, `Unavailable`
- * with nothing before it) the roots of the last draw are drawn again too, so the ◆ it left are removed at once.
- *
- * One change is one job: the settling time, the restart of every file and the record in [lastRedraw] belong to it, so a newer
- * change cancels an older one wherever it is, and the record never goes backwards. Tests and the debug bridge wait on
- * [lastRedraw] and [isBusy] instead of on a clock.
- *
- * ```kotlin
- * HighlightingRefresher.getInstance(project).follow(definitions, violations) // the first time a provider finds them
- * ```
- */
+// One change is one job: the settling time, the restart of every file and the record in `lastRedraw` belong to it, so a newer change cancels an older one and the record never goes backwards.
 @Service(Service.Level.PROJECT)
 internal class HighlightingRefresher(private val project: Project, private val scope: CoroutineScope) {
     private val followed = AtomicReference<Followed?>(null)
     private val pending = AtomicReference<Job?>(null)
 
-    /** The draw of [redrawNow]: every open file, so it does not cancel a definition's draw nor the other way round. */
     private val nowJob = AtomicReference<Job?>(null)
     private val seq = AtomicLong(0)
     private val _lastRedraw = MutableStateFlow<Redraw?>(null)
 
-    /** The last draw that reached the daemon. */
     val lastRedraw: StateFlow<Redraw?> get() = _lastRedraw
 
     private val history = AtomicReference<List<Redraw>>(emptyList())
 
-    /**
-     * The most recent draws that reached the daemon (at most [HISTORY_SIZE]), oldest first. A slow restart can finish after a
-     * newer draw, so [lastRedraw] may name an older state than a draw before it; whoever waits for "a draw in this state" looks here.
-     */
+    // A slow restart can finish after a newer draw, so `lastRedraw` may name an older state than a draw before it; waiters look here.
     internal val redraws: List<Redraw> get() = history.get()
 
-    /** Whether a draw still waits for its settling time or is restarting files. */
     val isBusy: Boolean get() = pending.get()?.isActive == true || nowJob.get()?.isActive == true
 
-    /** The roots the last draw covered: a change that takes the answer away must draw these again, though no definition names them now. */
     private val lastRoots = AtomicReference<List<Path>>(emptyList())
 
-    /** What a change restarts: the open files under these roots, or every open file when there are none. Suspends until every restart was handed to the daemon. Tests replace it to see what is restarted and when. */
     @Volatile
     var restarter: suspend (reason: String, roots: List<Path>) -> Unit = ::restartOpenFilesUnder
 
@@ -88,14 +60,11 @@ internal class HighlightingRefresher(private val project: Project, private val s
         val start: FollowStart,
     )
 
-    /** The states the refresher started following from: a change before that is the first draw's, not a redraw's. */
     internal class FollowStart(val definition: DefinitionState, val violations: Any?, val errors: DefinitionErrors = DefinitionErrors.None)
 
-    /** Where the refresher started following [definitions] from, or `null` when it does not follow them. Tests ask it what a draw is owed for. */
     internal fun followStartOf(definitions: DefinitionModelService): FollowStart? =
         followed.get()?.takeIf { it.definitions === definitions }?.start
 
-    /** Starts following the two services' states. Calling it again for the same services does nothing; for others, follows those instead. */
     fun follow(definitions: DefinitionModelService, violations: ViolationsService?) {
         val current = followed.get()
         if (current != null && current.definitions === definitions && current.violations === violations) return
@@ -140,7 +109,6 @@ internal class HighlightingRefresher(private val project: Project, private val s
         }
     }
 
-    /** Draws every open file again now, for a change that is not a state of the two services (a setting). */
     fun redrawNow(reason: String) {
         val definitions = followed.get()?.definitions
         val job = scope.launch {

@@ -21,23 +21,9 @@ import me.tbsten.katachi.intellij.presentation.authoring.EntryFilesPopups
 import org.jetbrains.kotlin.psi.KtFile
 import java.nio.file.Path
 
-/** A Code Vision whose click opens the popup of [input]; the platform hands it back to [EntryFilesCodeVisionProvider.handleClick]. */
 internal class EntryFilesEntry(text: String, providerId: String, val input: EntryFilesInput) :
     TextCodeVisionEntry(text, providerId, null, text, text, emptyList())
 
-/**
- * The count at the end of a layout line of a definition file (ide-authoring design 4.3): `"*Service".ktFile()   3 files`. Pressing it
- * opens the files the line holds, or, for a line that holds none, its glob and the files that are really in the glob's directory.
- *
- * Draws on the right of the line, in the group `katachi` of `Settings | Editor | Inlay Hints | Code Vision`. Not `DumbAware`
- * (`CodeVisionPassFactory` is not), so nothing is drawn while the project indexes; the ◆'s tooltip has the count meanwhile.
- *
- * [background] runs the reading of a directory off the click (the EDT), [show] puts the popup on screen under the lens; a test replaces both.
- *
- * ```xml
- * <codeInsight.daemonBoundCodeVisionProvider implementation="me.tbsten.katachi.intellij.ide.authoring.codevision.EntryFilesCodeVisionProvider"/>
- * ```
- */
 internal class EntryFilesCodeVisionProvider(
     private val portsOf: (Project) -> GutterPorts,
     private val background: (() -> Unit) -> Unit = { work -> ApplicationManager.getApplication().executeOnPooledThread(work) },
@@ -72,7 +58,6 @@ internal class EntryFilesCodeVisionProvider(
     }
 
     companion object {
-        /** The id the platform keys the lens by (and the settings of its group). */
         const val ID: String = "katachi.entryFiles"
     }
 }

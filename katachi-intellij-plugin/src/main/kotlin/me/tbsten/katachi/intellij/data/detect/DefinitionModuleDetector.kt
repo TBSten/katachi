@@ -5,15 +5,6 @@ import me.tbsten.katachi.intellij.model.KatachiCapability
 import me.tbsten.katachi.intellij.model.KatachiModule
 import me.tbsten.katachi.intellij.model.ModuleId
 
-/**
- * Finds the definition modules in the synced data, without running Gradle: a module is one when it
- * has `katachiInternalDefinitionJson` or `katachiInternalTemplatesJson`, whatever its name (spec 01,
- * design 4.1). Which of the two it has goes to [KatachiModule.capabilities].
- *
- * Roots come in path order and modules in Gradle path order within a root (E-05, E-32). A root whose
- * modules carry no task at all is treated as a sync without a task list (E-30), and its modules that
- * depend on katachi become candidates.
- */
 internal fun detectDefinitionModules(project: SyncedProject): DetectionResult {
     val roots = when (project) {
         SyncedProject.NotGradle -> return DetectionResult.NotGradle
@@ -52,7 +43,6 @@ internal fun detectDefinitionModules(project: SyncedProject): DetectionResult {
     }
 }
 
-/** The internal tasks among [taskNames]. Empty: not a definition module (or a sync without a task list). */
 internal fun capabilitiesOf(taskNames: Set<String>): Set<KatachiCapability> = buildSet {
     if (KatachiModule.DEFINITION_JSON_TASK in taskNames) add(KatachiCapability.Definition)
     if (KatachiModule.TEMPLATES_JSON_TASK in taskNames) add(KatachiCapability.Templates)

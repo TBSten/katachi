@@ -23,17 +23,6 @@ import me.tbsten.katachi.intellij.ide.definition.DefinitionPorts
 import me.tbsten.katachi.intellij.ide.sdkCall
 import me.tbsten.katachi.intellij.model.ModuleId
 
-/**
- * `katachi.RunCheck` (design 4.7, decision U-4): saves the files and runs the check (`:<module>:test`, which
- * writes `katachi.sarif` with `report { sarif = true }`) of the definition the selected file is under, or
- * of the only definition module, and says so in a balloon when none decides. It works before anything was loaded
- * (Find Action in a project whose tool window was never opened). The features' popups, notifications and quick fixes call this action and
- * watch `ViolationsService.runningChecks`; they never start Gradle themselves.
- *
- * ```kotlin
- * ActionManager.getInstance().getAction(RunCheckAction.ID)
- * ```
- */
 internal class RunCheckAction : DumbAwareAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
@@ -65,14 +54,9 @@ internal class RunCheckAction : DumbAwareAction() {
     }
 
     companion object {
-        /** The `id` of the action in plugin.xml. */
         const val ID: String = "katachi.RunCheck"
 
-        /**
-         * The definition [file] is a role of, else the definition module whose directory [file] is under, else the
-         * only definition module of [project]; `null` when none of these decides. Works before anything was
-         * loaded: the modules are the ones in the synced data then. Call it off the EDT.
-         */
+        // Call it off the EDT.
         fun moduleToCheck(project: Project, definition: DefinitionModelService, file: VirtualFile?): ModuleId? {
             file?.let { definition.forFile(it) }?.let { return it.module.id }
             val modules = sdkCall("find the definition modules") { KatachiProjectService.getInstance(project).definitionModules() }.getOrNull().orEmpty()

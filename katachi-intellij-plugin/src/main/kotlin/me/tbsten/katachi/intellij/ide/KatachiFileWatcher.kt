@@ -11,14 +11,6 @@ import me.tbsten.katachi.intellij.ide.sarif.KatachiViolationsService
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
 
-/**
- * Watches the files the plugin depends on through VFS events (design 4.7, 4.8) and tells each open
- * project's services: a definition module's `src/` and build script change the definition (the
- * "definition changed" banner, a stale model, and with "reload when saved" a reload after a save of its
- * test sources), a `build/reports/katachi/` SARIF changes the violations, and anything else under a
- * project root makes the violations stale. A change to a `katachi-baseline.json` the no-role notification read redraws the notifications. Projects whose project service was never created are skipped:
- * nothing of katachi runs there. Only path strings are compared here (design 5 "ファイル監視").
- */
 internal class KatachiFileWatcher : AsyncFileListener {
     override fun prepareChange(events: List<VFileEvent>): AsyncFileListener.ChangeApplier? {
         // Missing a change only misses a stale mark; the answers themselves are as they were.
@@ -52,7 +44,6 @@ internal class KatachiFileWatcher : AsyncFileListener {
         }
     }
 
-    /** One open project's services that care about file changes; the project service is `null` while nothing of katachi ran there but the baseline read. */
     private class Watching(val service: KatachiProjectService?, val violations: KatachiViolationsService?, val baselines: KatachiBaselineService?)
 
     private fun dispatch(target: Watching, changes: FileChanges) {

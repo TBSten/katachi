@@ -35,21 +35,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.resume
 
-/**
- * Runs Gradle through ExternalSystem's `runTask` (spec 06): the IDE's Gradle JDK, offline and proxy
- * settings apply, and the log lands in the Run tool window with the status bar's progress.
- *
- * The output arrives in chunks, stdout and stderr interleaved, and is split into lines per stream
- * here. Cancelling the calling coroutine cancels the ExternalSystem task, which stops the Gradle build
- * (spike S-6 decides whether the processor's child JVM stops with it), and waits a while for it to
- * end, so that the next build does not start over it and what it wrote is on disk.
- *
- * A run returns only once the platform is done with its Run tab, not as soon as the build ends: the
- * next run reuses that tab and disposes its console, and the platform still folds the tab's
- * "... finished" line on the EDT after the build ended (`foldGreetingOrFarewell`, queued from the
- * task's `onEnd`, which comes after the callback when the build failed). A console disposed before
- * that fold runs throws a NullPointerException into the IDE. See [awaitRunTabSettled].
- */
+// The next run reuses the Run tab and disposes its console: return only after the platform folded the tab's finish line on the EDT,
+// or the console disposed too early throws a NullPointerException into the IDE (`awaitRunTabSettled`).
 internal class ExternalSystemGradleTaskRunner(private val project: Project) : GradleTaskRunner {
     override suspend fun run(request: GradleRunRequest, listener: GradleRunListener): GradleRunOutcome {
         val settings = ExternalSystemTaskExecutionSettings().apply {
@@ -128,11 +115,7 @@ internal class ExternalSystemGradleTaskRunner(private val project: Project) : Gr
         return if (succeeded) GradleRunOutcome.Succeeded else GradleRunOutcome.Failed
     }
 
-    /**
-     * Completes [ended] when the task [id] ends, after the platform's own listener of the task:
-     * registered from our onStart, it comes after the listeners the task registered before starting,
-     * and the platform notifies them in order, on one thread.
-     */
+    // Registered from our onStart so it comes after the task's own listeners; the platform notifies them in order on one thread.
     private fun watchEnd(id: ExternalSystemTaskId, ended: CompletableDeferred<Unit>) {
         val watcher = object : ExternalSystemTaskNotificationListener {
             override fun onEnd(projectPath: String, id: ExternalSystemTaskId) {
@@ -144,13 +127,7 @@ internal class ExternalSystemGradleTaskRunner(private val project: Project) : Gr
         }.onFailure { ended.complete(Unit) }
     }
 
-    /**
-     * Waits until the platform has finished with this run's Run tab (see the class): until the task
-     * has ended for every listener, and then until the EDT has run what the platform queued at the
-     * end. The platform queues it with a plain `invokeLater` (EdtInvocationManager); a coroutine on
-     * `Dispatchers.EDT` goes through another queue that may overtake it, so the wait queues through
-     * the same one, behind it.
-     */
+    // Queue through `EdtInvocationManager.invokeLater`, as the platform does: a coroutine on `Dispatchers.EDT` uses another queue that may overtake it.
     private suspend fun awaitRunTabSettled(ended: CompletableDeferred<Unit>) {
         withTimeoutOrNull(STOP_TIMEOUT_MILLIS) { ended.await() }
         suspendCancellableCoroutine { continuation ->
@@ -165,15 +142,10 @@ internal class ExternalSystemGradleTaskRunner(private val project: Project) : Gr
     }
 
     private companion object {
-        /** How long a cancelled build gets to end, and an ended one to settle, before the caller moves on anyway. */
         const val STOP_TIMEOUT_MILLIS = 10_000L
     }
 }
 
-/**
- * One [OutputLineSplitter] per stream, so that a stderr chunk arriving in the middle of a stdout
- * line does not cut it (katachi's `[FAILED] template` body is indented stdout).
- */
 private class StreamLines(onLine: (String) -> Unit) {
     private val stdout = OutputLineSplitter(onLine)
     private val stderr = OutputLineSplitter(onLine)

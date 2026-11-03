@@ -17,20 +17,7 @@ import me.tbsten.katachi.intellij.presentation.rules.roleSuggestionDraftFor
 import me.tbsten.katachi.intellij.presentation.rules.suggestedRoleNameFor
 import javax.swing.JComponent
 
-/**
- * The popup of the no-role notification (design 2.3): the nearby roles (a row jumps to the declaration; one whose
- * declaration was not found is shown but cannot be pressed), a separator, the draft of a role to copy, and the
- * definition's refresh. The sites were resolved before ([NoRoleFound]), so building the group on the EDT only
- * arranges actions.
- *
- * Row texts hold role names and paths of the user's definition: each action's text is set with
- * `mayContainMnemonic = false`, otherwise a `_` or `&` in a directory would be read as a mnemonic and vanish.
- *
- * ```kotlin
- * val group = noRolePopupGroup(found, effects)
- * showNoRolePopup(link, group)
- * ```
- */
+// Action texts are set with `mayContainMnemonic = false`: a `_` or `&` in a directory would otherwise be read as a mnemonic and vanish.
 internal fun noRolePopupGroup(found: NoRoleFound, effects: RuleEffects): DefaultActionGroup {
     val group = DefaultActionGroup()
     val decision = found.decision
@@ -49,7 +36,6 @@ internal fun noRolePopupGroup(found: NoRoleFound, effects: RuleEffects): Default
     return group
 }
 
-/** `domain.UseCase -> core/domain/useCase   UseCaseRole.kt:10`, or why the declaration is not known. */
 internal fun nearbyRowText(row: NearbyRow): String {
     val head = KatachiBundle.message("popup.rules.nearby.row", row.roleName, row.directory)
     return when (val site = row.site) {
@@ -58,7 +44,6 @@ internal fun nearbyRowText(row: NearbyRow): String {
     }
 }
 
-/** Opens the popup of [group] under [component], the link that was clicked (design U-8). */
 internal fun showNoRolePopup(component: JComponent, group: DefaultActionGroup) {
     sdkCall("show the nearby roles") {
         JBPopupFactory.getInstance()
@@ -73,7 +58,6 @@ internal fun showNoRolePopup(component: JComponent, group: DefaultActionGroup) {
     }
 }
 
-/** A row of the popup: a fixed [text], which does the work of [onClick] when it is [enabled]. */
 private class RuleRow(text: String, private val enabled: Boolean = true, private val onClick: () -> Unit) : DumbAwareAction() {
     init {
         templatePresentation.setText(text, false)
