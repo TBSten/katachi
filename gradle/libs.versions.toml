@@ -1,72 +1,29 @@
-# Version catalog is a central place for you to declare and version dependencies
-# https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
-# https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format
-#
-# This catalog is the single source of truth for the Kotlin, katachi, kotest and JUnit versions.
-# Each sample under `sample/` reads it as `libs` and keeps its own catalog (`sampleLibs`)
-# for the dependencies that only that sample needs (Ktor, AGP, ...).
-
 [versions]
 katachi = "0.3.0"
 katachiIntellij = "0.2.0"
 kotlin = "2.4.10"
-kotest = "6.2.5"
-# The Kotlin parser behind `konsist { }`. Only `:katachi-konsist` and the samples that use it
-# see this; `:katachi` itself depends only on kotlinx.serialization (below), for decoding
-# processor arguments.
+kotest = "6.2.6"
 konsist = "0.18.1"
-# The Kotlin parser and rule vocabulary behind `konture { }`. Only `:katachi-konture` and the
-# samples that use it see this. It cannot share a test classpath with Konsist (different
-# kotlin-compiler-embeddable), so a module uses one backend or the other.
 konture = "1.0.1"
-# processor の引数デコード。`:katachi` の唯一の実行時依存。**1.9.0 から上げない。**
-# 1.9.0 は kotlin-stdlib 2.2.0 に依存する最後の系列で、1.10.0 は 2.3.0、1.11.0 は 2.3.20 を
-# 引き連れる（Maven Central の POM で確認）。katachi は Kotlin 2.2 の利用者が読める metadata で
-# 出すために languageVersion / apiVersion / coreLibrariesVersion を 2.2 に固定しているので、
-# 2.3 系の stdlib を推移的に持ち込むとその固定が意味を失う。
-kotlinxSerialization = "1.9.0"
-# 公開まわり。`:katachi` / `:katachi-konsist` / `:katachi-konture` / `:katachi-gradle-plugin` の4つだけを Maven Central に出す。
+kotlinxSerialization = "1.12.0"
 vanniktechPublish = "0.37.0"
-# javadoc jar を作るのに要る。Central は sources と javadoc の両方を必須にしている。
 dokka = "2.2.0"
-# JUnit を直接引くのは2か所。`:katachi-gradle-plugin` のテスト（Java だけで書かれていて
-# kotest を使えない。Kotlin plugin を付けると kotlin-stdlib が POM に載る）と、各サンプルの
-# `:architecture-test` にある利用者向けの1本 `ProjectArchitectureTest`（利用者が書く形は
-# 素の JUnit 5 なので）。本体のほかのテストは kotest 経由。サンプルは BOM ごと読むので、
-# kotest が持ち込む junit-platform もこの版にそろう。
-junit = "5.14.4"
-# 性能ベンチマーク（公開しない :benchmark だけが使う）。jmh は JMH 本体、jmhPlugin は
-# me.champeau.jmh の Gradle プラグイン。公開モジュールには入らない。
+junit = "6.1.3"
 jmh = "1.37"
-jmhPlugin = "0.7.3"
-# `@Language("markdown")` だけを使う。IDE 補完・シンタックスハイライト用の注釈で実行時には
-# 要らないため、使う側は compileOnly で引く。
-jetbrainsAnnotations = "26.0.2"
-# `:katachi` のテストだけが使う。`toSarif` の出力を SARIF 2.1.0 の JSON Schema（draft-07）で
-# 検証する。test 専用の依存で、公開物には載らない。
-jsonSchemaValidator = "1.5.6"
+jmhPlugin = "0.7.4"
+jetbrainsAnnotations = "26.1.0"
+jsonSchemaValidator = "3.0.8"
 
 [libraries]
-# katachi itself. Samples depend on it as `testImplementation(libs.katachi)`; the
-# `includeBuild("../..")` in their settings substitutes this module with the local build.
 katachi = { module = "me.tbsten.katachi:katachi", version.ref = "katachi" }
-# The konsist backend, substituted the same way `katachi` is. A sample only needs it when its
-# definition writes `konsist { }` or `ktFileContent { }`.
 katachiKonsist = { module = "me.tbsten.katachi:katachi-konsist", version.ref = "katachi" }
 konsist = { module = "com.lemonappdev:konsist", version.ref = "konsist" }
-# The konture backend, substituted the same way `katachi` is. A sample only needs it when its
-# definition writes `konture { }`.
 katachiKonture = { module = "me.tbsten.katachi:katachi-konture", version.ref = "katachi" }
 konture = { module = "io.github.baole:konture", version.ref = "konture" }
-# `KSerializer` / `AbstractDecoder` / `buildClassSerialDescriptor` だけを使う。json は要らない。
 kotlinxSerializationCore = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinxSerialization" }
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-# convention plugin から適用するため、plugin の marker artifact をライブラリとしても引く。
-# `plugins { }` の alias だけでは buildSrc のクラスパスに乗らない。
 vanniktechPublishPlugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "vanniktechPublish" }
 dokkaPlugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
-# `:tool:dokka`（このリポジトリの API リファレンス用の Dokka プラグイン）が使う。
-# 本体は Dokka の実行時に Dokka 自身が持っているので compileOnly、残りはテスト用。
 dokkaCore = { module = "org.jetbrains.dokka:dokka-core", version.ref = "dokka" }
 dokkaBase = { module = "org.jetbrains.dokka:dokka-base", version.ref = "dokka" }
 dokkaTemplating = { module = "org.jetbrains.dokka:templating-plugin", version.ref = "dokka" }
@@ -74,19 +31,13 @@ dokkaAllModulesPage = { module = "org.jetbrains.dokka:all-modules-page-plugin", 
 dokkaTestApi = { module = "org.jetbrains.dokka:dokka-test-api", version.ref = "dokka" }
 dokkaBaseTestUtils = { module = "org.jetbrains.dokka:dokka-base-test-utils", version.ref = "dokka" }
 dokkaAnalysisKotlinSymbols = { module = "org.jetbrains.dokka:analysis-kotlin-symbols", version.ref = "dokka" }
-# `:tool:dokka` の `hierarchical-no-link` のサイドバーが HTML を組むのに使う。dokka-base が runtime
-# スコープで持つ版（dokka-base 2.2.0 の POM）に合わせる。Dokka を上げたら一緒に確かめる。
-dokkaKotlinxHtml = { module = "org.jetbrains.kotlinx:kotlinx-html-jvm", version = "0.9.1" }
-# JUnit 5。version を書かないものは BOM に決めさせる。
+dokkaKotlinxHtml = { module = "org.jetbrains.kotlinx:kotlinx-html-jvm", version = "0.12.0" }
 junitBom = { module = "org.junit:junit-bom", version.ref = "junit" }
 junitJupiter = { module = "org.junit.jupiter:junit-jupiter" }
 junitJupiterParams = { module = "org.junit.jupiter:junit-jupiter-params" }
-# Gradle 9 は JUnit Platform の launcher を自分では足さない。
 junitPlatformLauncher = { module = "org.junit.platform:junit-platform-launcher" }
 kotestRunnerJunit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 kotestAssertionsCore = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
-# Not needed on the JVM (the JUnit 5 runner pulls the engine in). Kept for non-JVM
-# targets, where the engine has to be declared explicitly.
 kotestFrameworkEngine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
 jetbrainsAnnotations = { module = "org.jetbrains:annotations", version.ref = "jetbrainsAnnotations" }
 jsonSchemaValidator = { module = "com.networknt:json-schema-validator", version.ref = "jsonSchemaValidator" }
@@ -95,11 +46,7 @@ jsonSchemaValidator = { module = "com.networknt:json-schema-validator", version.
 kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-# The Compose compiler plugin has to match the Kotlin version exactly. It lives here, not
-# in a sample's own catalog, because a TOML catalog cannot reference another one: writing
-# it per sample would duplicate the Kotlin version and let the two drift apart silently.
 kotlinPluginCompose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 vanniktechPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechPublish" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
-# :benchmark だけが付ける。公開モジュールの publish 設定には関わらない。
 jmh = { id = "me.champeau.jmh", version.ref = "jmhPlugin" }
