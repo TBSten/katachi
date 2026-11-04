@@ -34,7 +34,7 @@ internal fun ktFileFactsOf(parsed: KoFileDeclaration, path: String): KtFileFacts
     val imports = file.imports.map { import ->
         ImportedName(path = import.name.removeSuffix(".*"), alias = import.alias?.name, isWildcard = import.isWildcard)
     }
-    val reader = FactReader(packageName, imports, file.text)
+    val reader = FactReader(packageName, imports)
     return KtFileFacts(
         path = path,
         packageName = packageName,
@@ -49,10 +49,7 @@ internal fun ktFileFactsOf(parsed: KoFileDeclaration, path: String): KtFileFacts
 private class FactReader(
     private val packageName: String?,
     private val imports: List<ImportedName>,
-    private val fileText: String,
 ) {
-    private val fileCode: String? by lazy { if (CONTEXT_KEYWORD in fileText) codeOnly(fileText) else null }
-
     fun declarationsOf(container: KoDeclarationProvider): List<DeclarationFact> =
         container.declarations(includeNested = false, includeLocal = false).mapNotNull(::factOf)
 
@@ -123,9 +120,7 @@ private class FactReader(
         members: List<DeclarationFact>? = null,
     ): DeclarationFact {
         val line = lineOfElement(declaration)
-        val beforeContext = line?.let { writtenBeforeContextOf(declaration, it) }
-        val annotationTexts = beforeContext?.annotationTexts.orEmpty() +
-            (declaration as? KoAnnotationProvider)?.annotations.orEmpty().map { it.text }
+        val annotationTexts = (declaration as? KoAnnotationProvider)?.annotations.orEmpty().map { it.text }
         return DeclarationFact(
             kind = kind,
             name = nameOf(declaration),
@@ -138,33 +133,12 @@ private class FactReader(
             parameters = parameters,
             returnType = returnType,
             returnTypeWritten = returnTypeWritten,
-            line = beforeContext?.let { lineAt(fileText, it.start) } ?: line?.plus(kDocLinesOf(declaration)),
+            line = line?.plus(kDocLinesOf(declaration)),
             members = members,
             inConstructor = (declaration as? KoIsConstructorDefinedProvider)?.isConstructorDefined == true,
         )
     }
-
-    private fun writtenBeforeContextOf(declaration: KoBaseDeclaration, line: Int): WrittenBeforeContext? {
-        val code = fileCode ?: return null
-        val text = (declaration as? KoTextProvider)?.text ?: return null
-        val start = fileText.indexOf(text, startOfLine(fileText, line)).takeIf { it >= 0 } ?: return null
-        return writtenBeforeContext(fileText, code, start)
-    }
 }
-
-private const val CONTEXT_KEYWORD: String = "context"
-
-private fun startOfLine(text: String, line: Int): Int {
-    var offset = 0
-    repeat(line - 1) {
-        val next = text.indexOf('\n', offset)
-        if (next < 0) return offset
-        offset = next + 1
-    }
-    return offset
-}
-
-private fun lineAt(text: String, offset: Int): Int = 1 + (0 until offset).count { text[it] == '\n' }
 
 private const val BYTE_ORDER_MARK: Char = '\uFEFF'
 

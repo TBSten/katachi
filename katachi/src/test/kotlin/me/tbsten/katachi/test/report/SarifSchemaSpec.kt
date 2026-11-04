@@ -1,9 +1,9 @@
 package me.tbsten.katachi.test.report
 
 import com.networknt.schema.InputFormat
-import com.networknt.schema.JsonSchema
-import com.networknt.schema.JsonSchemaFactory
-import com.networknt.schema.SpecVersion
+import com.networknt.schema.Schema
+import com.networknt.schema.SchemaRegistry
+import com.networknt.schema.SpecificationVersion
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -17,14 +17,14 @@ import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.report.toSarif
 
 /** The SARIF 2.1.0 schema shipped next to the goldens, loaded once. */
-private fun sarifSchema(): JsonSchema {
+private fun sarifSchema(): Schema {
     val text = checkNotNull(SarifSchemaSpec::class.java.classLoader.getResourceAsStream("sarif/sarif-schema-2.1.0.json")) {
         "sarif/sarif-schema-2.1.0.json is missing from the test resources"
     }.use { it.readBytes().toString(Charsets.UTF_8) }
-    return JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7).getSchema(text)
+    return SchemaRegistry.withDefaultDialect(SpecificationVersion.DRAFT_7).getSchema(text)
 }
 
-private fun JsonSchema.problemsIn(sarif: String): List<String> = validate(sarif, InputFormat.JSON).map { it.toString() }
+private fun Schema.problemsIn(sarif: String): List<String> = validate(sarif, InputFormat.JSON).map { it.toString() }
 
 /**
  * Every document `toSarif` writes has to pass the SARIF 2.1.0 JSON Schema: the golden, the
