@@ -44,7 +44,7 @@ class NoRoleSmokeTest {
             .skipLibrarySources()
         context.runIdeWithDriver(runTimeout = SMOKE_RUN_TIMEOUT).useDriverAndCloseIde {
             waitForProjectOpen(5.minutes)
-            waitForIndicators(singleProject(), SMOKE_INDEXING_TIMEOUT)
+            waitForImportAndIndex(singleProject())
             val probe = NoRoleProbe(this, singleProject())
             val shots = Path.of(System.getProperty("katachi.smoke.workDir")).resolve("no-role/screenshots")
             showsForUntrackedFile(probe)

@@ -3,7 +3,6 @@ package me.tbsten.katachi.intellij
 import com.intellij.driver.client.Driver
 import com.intellij.driver.sdk.Project
 import com.intellij.driver.sdk.singleProject
-import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.driver.sdk.waitForProjectOpen
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
@@ -93,7 +92,7 @@ internal class SmokeIde(name: String) {
         context.runIdeWithDriver(runTimeout = runTimeout).useDriverAndCloseIde {
             waitForProjectOpen(5.minutes)
             val ideProject = singleProject()
-            waitForIndicators(ideProject, SMOKE_INDEXING_TIMEOUT)
+            waitForImportAndIndex(ideProject)
             block(ideProject, service(SmokeBridge::class, ideProject))
         }
     }
