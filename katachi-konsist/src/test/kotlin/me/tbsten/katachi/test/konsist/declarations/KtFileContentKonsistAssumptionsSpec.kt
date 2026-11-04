@@ -11,7 +11,7 @@ import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.konsist.internal.lineOf
 
 /**
- * What the matching of `ktFileContent { }` assumes about Konsist 0.17.3, measured: each case goes
+ * What the matching of `ktFileContent { }` assumes about Konsist 0.18.1, measured: each case goes
  * red when Konsist reads a file differently, before the matching quietly does.
  */
 class KtFileContentKonsistAssumptionsSpec : FreeSpec({
@@ -119,12 +119,12 @@ class KtFileContentKonsistAssumptionsSpec : FreeSpec({
         }
     }
 
-    "context(...) の前のアノテーションは annotations に出ず、text は context の後ろから始まる（そのためテキストから読む）" {
+    "context(...) の前のアノテーションも annotations に出て、text と行はそのアノテーションから始まる" {
         parsed("package com.example\n\n@Keep\ncontext(logger: Logger)\nfun f() {}\n") { file ->
             val function = file.functions(includeNested = false, includeLocal = false).single()
-            function.annotations shouldBe emptyList()
-            function.text shouldBe "fun f() {}"
-            lineOf(function, function.path) shouldBe 5
+            function.annotations.map { it.text } shouldBe listOf("@Keep")
+            function.text shouldBe "@Keep\ncontext(logger: Logger)\nfun f() {}"
+            lineOf(function, function.path) shouldBe 3
         }
     }
 

@@ -46,7 +46,7 @@ internal fun ktFileFactsOf(parsed: KoFileDeclaration, path: String): KtFileFacts
     val imports = file.imports.map { import ->
         ImportedName(path = import.name.removeSuffix(".*"), alias = import.alias?.name, isWildcard = import.isWildcard)
     }
-    val reader = FactReader(packageName, imports, file.text)
+    val reader = FactReader(packageName, imports)
     return KtFileFacts(
         path = path,
         packageName = packageName,
@@ -60,19 +60,12 @@ internal fun ktFileFactsOf(parsed: KoFileDeclaration, path: String): KtFileFacts
 
 /**
  * Reads declarations of one file, whose package and imports say what an annotation's name may
- * stand for, and whose text is [fileText].
+ * stand for.
  */
 private class FactReader(
     private val packageName: String?,
     private val imports: List<ImportedName>,
-    private val fileText: String,
 ) {
-    /**
-     * The file blanked as `codeOnly` does, or `null` for a file that never writes `context`, where
-     * no `context(...)` can come before a declaration. Asked once per file, not once per declaration.
-     */
-    private val fileCode: String? by lazy { if (CONTEXT_KEYWORD in fileText) codeOnly(fileText) else null }
-
     /** What [container] declares directly, in the order written. */
     fun declarationsOf(container: KoDeclarationProvider): List<DeclarationFact> =
         container.declarations(includeNested = false, includeLocal = false).mapNotNull(::factOf)
@@ -144,9 +137,7 @@ private class FactReader(
         members: List<DeclarationFact>? = null,
     ): DeclarationFact {
         val line = lineOfElement(declaration)
-        val beforeContext = line?.let { writtenBeforeContextOf(declaration, it) }
-        val annotationTexts = beforeContext?.annotationTexts.orEmpty() +
-            (declaration as? KoAnnotationProvider)?.annotations.orEmpty().map { it.text }
+        val annotationTexts = (declaration as? KoAnnotationProvider)?.annotations.orEmpty().map { it.text }
         return DeclarationFact(
             kind = kind,
             name = nameOf(declaration),
@@ -159,39 +150,12 @@ private class FactReader(
             parameters = parameters,
             returnType = returnType,
             returnTypeWritten = returnTypeWritten,
-            line = beforeContext?.let { lineAt(fileText, it.start) } ?: line?.plus(kDocLinesOf(declaration)),
+            line = line?.plus(kDocLinesOf(declaration)),
             members = members,
             inConstructor = (declaration as? KoIsConstructorDefinedProvider)?.isConstructorDefined == true,
         )
     }
-
-    /**
-     * The annotations and the start of the `context(...)` written right before [declaration],
-     * which Konsist places on [line], or `null` when there is no `context(...)` there.
-     */
-    private fun writtenBeforeContextOf(declaration: KoBaseDeclaration, line: Int): WrittenBeforeContext? {
-        val code = fileCode ?: return null
-        val text = (declaration as? KoTextProvider)?.text ?: return null
-        val start = fileText.indexOf(text, startOfLine(fileText, line)).takeIf { it >= 0 } ?: return null
-        return writtenBeforeContext(fileText, code, start)
-    }
 }
-
-private const val CONTEXT_KEYWORD: String = "context"
-
-/** The offset of the 1-based [line] of [text]. */
-private fun startOfLine(text: String, line: Int): Int {
-    var offset = 0
-    repeat(line - 1) {
-        val next = text.indexOf('\n', offset)
-        if (next < 0) return offset
-        offset = next + 1
-    }
-    return offset
-}
-
-/** The 1-based line [offset] of [text] is on. */
-private fun lineAt(text: String, offset: Int): Int = 1 + (0 until offset).count { text[it] == '\n' }
 
 private const val BYTE_ORDER_MARK: Char = '\uFEFF'
 
