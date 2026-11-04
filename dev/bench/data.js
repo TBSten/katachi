@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793809193307,
+  "lastUpdate": 1793809195572,
   "repoUrl": "https://github.com/TBSten/katachi",
   "entries": {
     "JMH time": [
@@ -5474,6 +5474,54 @@ window.BENCHMARK_DATA = {
           {
             "name": "nowinandroid validate(FileConstraintCheck()) warm median",
             "value": 100.564473,
+            "unit": "ms",
+            "extra": "violations: 106 (layout) / 102 (with Konsist)\nUnexpectedFile: 81, UnexpectedDirectory: 16, MissingDescription: 5, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "programmingcafeteria@gmail.com",
+            "name": "tbsten",
+            "username": "TBSten"
+          },
+          "committer": {
+            "email": "programmingcafeteria@gmail.com",
+            "name": "tbsten",
+            "username": "TBSten"
+          },
+          "distinct": true,
+          "id": "0733e7bbef3c68c03f77a84b8ed2485256fdae69",
+          "message": "Merge branch 'claude/agitated-bell-6592c6' into landing/kdoc-and-deps-fixes\n\n依存更新で赤くなったテスト 4 件の追従（claude/agitated-bell-6592c6）を、\nKDoc の品質チェック（claude/kdoc-quality-check-5b6b64）の上に取り込む。\n\n衝突は katachi-konsist の internal/DeclarationText.kt と KonsistFacts.kt の 2 ファイル。\nどちらも追従側が「context(...) の前のアノテーションを読み直す回避処理」を消した範囲に、\nKDoc の整理が当たったもの。コードは追従側の版を取り、KDoc の整理だけをその上に\nかけ直した（コード行が追従側と一致することを、コメント行と空行を除いた diff で確認）。\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-11-04T09:41:39+09:00",
+          "tree_id": "7329c6f312f036bb3dbf93a98c80555251503897",
+          "url": "https://github.com/TBSten/katachi/commit/0733e7bbef3c68c03f77a84b8ed2485256fdae69"
+        },
+        "date": 1793809195030,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "nowinandroid validate() cold",
+            "value": 413.646478,
+            "unit": "ms",
+            "extra": "violations: 106 (layout) / 102 (with Konsist)\nUnexpectedFile: 81, UnexpectedDirectory: 16, MissingDescription: 5, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          },
+          {
+            "name": "nowinandroid validate() warm median",
+            "value": 53.217871,
+            "unit": "ms",
+            "extra": "violations: 106 (layout) / 102 (with Konsist)\nUnexpectedFile: 81, UnexpectedDirectory: 16, MissingDescription: 5, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          },
+          {
+            "name": "nowinandroid validate(FileConstraintCheck()) cold",
+            "value": 1306.993807,
+            "unit": "ms",
+            "extra": "violations: 106 (layout) / 102 (with Konsist)\nUnexpectedFile: 81, UnexpectedDirectory: 16, MissingDescription: 5, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          },
+          {
+            "name": "nowinandroid validate(FileConstraintCheck()) warm median",
+            "value": 67.620977,
             "unit": "ms",
             "extra": "violations: 106 (layout) / 102 (with Konsist)\nUnexpectedFile: 81, UnexpectedDirectory: 16, MissingDescription: 5, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
           }
