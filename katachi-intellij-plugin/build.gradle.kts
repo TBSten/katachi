@@ -169,9 +169,11 @@ intellijPlatformTesting.testIdeUi.register("integrationTest") {
 // platform into the bundled "Version Control" plugin: verifyPlugin reports it unresolved there, and only a real 263 shows
 // whether the plugin's classloader sees it. Nightly (ide-plugin-nightly.yml, job smoke-263) and on demand:
 // `./gradlew integrationTest263 --tests '*NoRoleSmokeTest*'` (it opens IDE windows).
+// An EAP or RC build stops itself about a month after its date (an "EAP Build Expired" dialog, and the Gradle import never
+// starts): move this to a newer 263 build, and to the 2026.3 release once it is out.
 intellijPlatformTesting.testIdeUi.register("integrationTest263") {
     type = IntelliJPlatformType.IntellijIdea
-    version = "263.6259.32"
+    version = "263.7307.112"
     task {
         val integrationTestSourceSet = sourceSets.getByName("integrationTest")
         testClassesDirs = integrationTestSourceSet.output.classesDirs
