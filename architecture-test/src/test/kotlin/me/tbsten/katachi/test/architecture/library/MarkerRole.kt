@@ -40,6 +40,7 @@ private const val LAYER: String = ""
 private fun LayoutScope.packageAndLayerImports() =
     ktFileContent {
         `package`(matchingDirectory)
+        `import`("**")
         laterLayerImportsOf(LAYER).forEach { not.`import`(it) }
         // What the root package is for: the opt-in markers and the exception bases a user catches,
         allow(public, annotation, `class`, "*KatachiApi")
