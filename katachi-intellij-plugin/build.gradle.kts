@@ -11,6 +11,8 @@ plugins {
     alias(libs.plugins.compose.multiplatform)
     // No version here: it is set in settings.gradle.kts, and setting it twice collides.
     id("org.jetbrains.intellij.platform")
+    // Marks the copies the sync*Sources tasks write (below) as generated in the IDE.
+    idea
 }
 
 group = "me.tbsten.katachi.intellij"
@@ -27,11 +29,31 @@ kotlin {
     compilerOptions { allWarningsAsErrors.set(true) }
 }
 
-// The UI Composables in src/shared/kotlin are compiled twice: into the plugin against the IDE's
-// bundled Jewel, and into `preview` against standalone Jewel, so the headless PNGs show what ships.
+// src/shared/kotlin is the platform-free part of the plugin: the model, the data layer, the ViewModel
+// with its UI state, and the Composables. It is compiled into the plugin against the IDE's bundled
+// Jewel, once more into `preview` against standalone Jewel (so the headless PNGs show what ships),
+// and into `uiTest` (below). src/sharedTest/kotlin is what the tests share: the fakes of the ports and
+// the builders of test data, compiled into `test` and `uiTest`.
+// Only `main` and `test` read those directories as they are. IntelliJ puts a directory in one module
+// only, and a source root inside another module's root takes it over (src/main/kotlin/…/presentation
+// listed under uiTest left main's ide/ in no module at all), so every other source set compiles a
+// copy that a sync task writes under build/generated. The IDE shows the copies as generated sources.
+fun syncedSources(sourceSetName: String, vararg directories: String): TaskProvider<Sync> =
+    tasks.register<Sync>("sync${sourceSetName.replaceFirstChar { it.uppercase() }}Sources") {
+        description = "Copies ${directories.joinToString()} for the `$sourceSetName` source set to compile."
+        directories.forEach { from(it) }
+        into(layout.buildDirectory.dir("generated/sources/$sourceSetName/kotlin"))
+    }
+fun syncedResources(sourceSetName: String, directory: String): TaskProvider<Sync> =
+    tasks.register<Sync>("sync${sourceSetName.replaceFirstChar { it.uppercase() }}Resources") {
+        description = "Copies $directory for the `$sourceSetName` source set to read."
+        from(directory)
+        into(layout.buildDirectory.dir("generated/resources/$sourceSetName"))
+    }
 sourceSets {
     main { kotlin.srcDir("src/shared/kotlin") }
-    create("preview") { kotlin.srcDir("src/shared/kotlin") }
+    test { kotlin.srcDir("src/sharedTest/kotlin") }
+    create("preview") { kotlin.srcDir(syncedSources("preview", "src/shared/kotlin")) }
 }
 val previewImplementation: Configuration = configurations.getByName("previewImplementation")
 
@@ -60,6 +82,13 @@ dependencies {
 
     // renderComposeScene lives here, Skiko included.
     previewImplementation(compose.desktop.currentOs)
+    // The ViewModel (src/shared) logs through the platform's Logger; only that jar, not the platform
+    // with its Compose (uiTest does the same below). The preview never runs the ViewModel.
+    "previewCompileOnly"(
+        files(
+            configurations.named("intellijPlatformClasspath")
+                .map { platform -> platform.filter { it.name == "util-8.jar" } })
+    )
     val jewelForIde = libs.versions.jewelForIde.get()
     previewImplementation("org.jetbrains.jewel:jewel-int-ui-standalone:${libs.versions.jewel.get()}-$jewelForIde")
     // Without it AllIconsKeys render as magenta placeholders in the standalone preview.
@@ -192,18 +221,19 @@ intellijPlatformTesting.testIdeUi.register("integrationTest263") {
 // uiTest: the property-based tests that drive the ViewModel through sequences of operations and
 // render every state they reach, and the tests that operate the real Composables (compose ui-test).
 // Both need standalone Compose, which cannot share a classpath with the IDE's bundled one, so the
-// platform-free sources they drive are compiled into this source set once more, as `preview` does
-// with src/shared/kotlin: the data layer, the ViewModel and the test fakes.
+// platform-free sources they drive (src/shared/kotlin) and the test fakes (src/sharedTest/kotlin)
+// are compiled into this source set once more, from the copies the sync tasks write (see above).
 // `test` runs it too, with few iterations; `-Pkatachi.pbt.scale=N` runs N times as many sequences.
 sourceSets {
     create("uiTest") {
         kotlin.srcDir("src/uiTest/kotlin")
-        kotlin.srcDir("src/shared/kotlin")
-        kotlin.srcDir("src/main/kotlin/me/tbsten/katachi/intellij/data")
-        kotlin.srcDir("src/main/kotlin/me/tbsten/katachi/intellij/presentation")
-        kotlin.srcDir("src/test/kotlin/me/tbsten/katachi/intellij/testing")
-        resources.srcDir("src/test/resources")
+        kotlin.srcDir(syncedSources("uiTest", "src/shared/kotlin", "src/sharedTest/kotlin"))
+        resources.srcDir(syncedResources("uiTest", "src/test/resources"))
     }
+}
+idea.module {
+    generatedSourceDirs.add(layout.buildDirectory.dir("generated/sources/preview/kotlin").get().asFile)
+    generatedSourceDirs.add(layout.buildDirectory.dir("generated/sources/uiTest/kotlin").get().asFile)
 }
 dependencies {
     "uiTestImplementation"(compose.desktop.currentOs)

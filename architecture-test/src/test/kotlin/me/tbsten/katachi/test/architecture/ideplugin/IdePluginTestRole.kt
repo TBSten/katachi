@@ -21,8 +21,6 @@ fun DeclarationContainerScope.idePluginTest() = "IdePluginTest".role {
                 // The waits for the real refresher's draw, shared by the gutter tests.
                 "RefresherWaits".ktFile()
             }
-            // Fakes of the ports and builders of test data, shared by the tests.
-            "kotlin" / "me/tbsten/katachi/intellij" / "testing" / "*".ktFile()
             // The contract goldens: katachi's JSON and `katachiTemplate` outputs the parsers read.
             "resources" / "contract" / "json" / "*.json".file()
             "resources" / "contract" / "output" / "*.log".file()
@@ -36,6 +34,9 @@ fun DeclarationContainerScope.idePluginTest() = "IdePluginTest".role {
             "resources" / "contract" / "gutter" / "*.txt".file()
             "resources" / "contract" / "gutter" / "sources" / "**" / "*".file()
         }
+        // Fakes of the ports and builders of test data, shared by `test` and `uiTest` (which compiles a copy of them:
+        // IntelliJ puts a directory in one module only, so uiTest cannot list src/test/kotlin/…/testing as its own).
+        "katachi-intellij-plugin" / "src" / "sharedTest" / "kotlin" / "me/tbsten/katachi/intellij" / "testing" / "*".ktFile()
         // The Driver smoke: a real IDE started by Starter (JUnit 5), run on demand by `integrationTest`,
         // with what the tests share (how the repository is copied for the IDE to open, ...).
         "katachi-intellij-plugin" / "src" / "integrationTest" / "kotlin" / "me/tbsten/katachi/intellij" / "**" / "*".ktFile()
