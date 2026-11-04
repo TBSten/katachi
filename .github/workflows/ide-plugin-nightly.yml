@@ -159,16 +159,25 @@ jobs:
           retention-days: 14
           if-no-files-found: ignore
 
-  # The Driver smokes on a real IDEA 2026.1 (261, the build the plugin is compiled against), one after the
-  # other in one Gradle run (they share build/integrationTest/): the gutter's surfaces and actions, the
-  # architecture module name (ide-quality), and the definition authoring (ide-authoring). Each opens a real
-  # IDE (macOS runners have a desktop session) and reads the plugin's debug bridge from inside it.
+  # The Driver smokes on a real IDEA 2026.1 (261, the build the plugin is compiled against): the gutter's surfaces and actions, the
+  # architecture module name (ide-quality), and the definition authoring (ide-authoring). Each opens a real IDE (macOS runners have
+  # a desktop session) and reads the plugin's debug bridge from inside it.
+  #
+  # One job per smoke: each IDE indexes the whole repository the sample includes (about 420 000 files, some 15 minutes on these
+  # runners) before the smoke starts, so four of them one after the other do not fit in one job.
   smoke-261:
-    name: integrationTest (gutter, module name and definition authoring smokes on IDEA 2026.1)
+    name: integrationTest ${{ matrix.smoke }} (IDEA 2026.1)
     runs-on: macos-26
-    # Locally each smoke takes a few minutes once the IDE is unpacked and sample/jvm is synced; four of them,
-    # plus a cold IDE download and the first Gradle sync.
+    # The IDE's index of the copy (SMOKE_INDEXING_TIMEOUT waits up to 40 minutes), the smoke, a cold IDE download and the build.
     timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        smoke:
+          - GutterSurfacesSmokeTest
+          - GutterActionsSmokeTest
+          - ArchModuleNameSmokeTest
+          - DefinitionAuthoringSmokeTest
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -202,10 +211,7 @@ jobs:
         working-directory: katachi-intellij-plugin
         run: >
           ./gradlew integrationTest
-          --tests '*GutterSurfacesSmokeTest*'
-          --tests '*GutterActionsSmokeTest*'
-          --tests '*ArchModuleNameSmokeTest*'
-          --tests '*DefinitionAuthoringSmokeTest*'
+          --tests '*${{ matrix.smoke }}*'
           --console=plain
           --stacktrace
 
@@ -213,7 +219,7 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v7
         with:
-          name: ide-plugin-smoke-261-reports
+          name: ide-plugin-smoke-261-${{ matrix.smoke }}-reports
           path: |
             katachi-intellij-plugin/build/reports/
             katachi-intellij-plugin/build/test-results/
@@ -222,17 +228,22 @@ jobs:
           retention-days: 14
           if-no-files-found: ignore
 
-  # The no-role notification's smoke on a real IDEA 2026.3 (263), where the VCS API (ChangeListManager,
-  # ProjectLevelVcsManager) moved into the bundled "Version Control" plugin. verifyPlugin reports those
-  # classes unresolved there (verifyPlugin-ignored-problems.txt), so this run is what shows the plugin still
-  # sees them: the smoke's untracked → `git add` wording calls them. It opens a real IDE (macOS runners
-  # have a desktop session) and drives it from inside the IDE, without real mouse or key events.
+  # The no-role notification's smoke and the definition authoring's on a real IDEA 2026.3 (263), where the VCS API
+  # (ChangeListManager, ProjectLevelVcsManager) moved into the bundled "Version Control" plugin. verifyPlugin reports those classes
+  # unresolved there (verifyPlugin-ignored-problems.txt), so this run is what shows the plugin still sees them: the no-role smoke's
+  # untracked → `git add` wording calls them. It opens a real IDE (macOS runners have a desktop session) and drives it from inside
+  # the IDE, without real mouse or key events. One job per smoke, for the same reason as smoke-261.
   smoke-263:
-    name: integrationTest263 (NoRoleSmokeTest and DefinitionAuthoringSmokeTest on IDEA 2026.3)
+    name: integrationTest263 ${{ matrix.smoke }} (IDEA 2026.3)
     runs-on: macos-26
-    # About 3 minutes locally for the no-role smoke once the IDE is unpacked, plus the authoring smoke;
-    # the limit leaves room for the 263 download and the first Gradle sync of sample/jvm inside the IDE.
-    timeout-minutes: 60
+    # The IDE's index of the copy (up to 40 minutes), the smoke, the 263 download and the build.
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        smoke:
+          - NoRoleSmokeTest
+          - DefinitionAuthoringSmokeTest
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -256,7 +267,7 @@ jobs:
           restore-keys: |
             intellij-platform-${{ runner.os }}-
 
-      # The smoke runs `git add` in its copy of the repository.
+      # The smokes run `git add` in their copy of the repository.
       - name: Configure git
         run: |
           git config --global user.email "ci@example.invalid"
@@ -266,8 +277,7 @@ jobs:
         working-directory: katachi-intellij-plugin
         run: >
           ./gradlew integrationTest263
-          --tests '*NoRoleSmokeTest*'
-          --tests '*DefinitionAuthoringSmokeTest*'
+          --tests '*${{ matrix.smoke }}*'
           --console=plain
           --stacktrace
 
@@ -275,7 +285,7 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v7
         with:
-          name: ide-plugin-smoke-263-reports
+          name: ide-plugin-smoke-263-${{ matrix.smoke }}-reports
           path: |
             katachi-intellij-plugin/build/reports/
             katachi-intellij-plugin/build/test-results/

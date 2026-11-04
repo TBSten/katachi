@@ -77,7 +77,7 @@ internal class SmokeIde(name: String) {
      */
     fun run(
         project: Path,
-        runTimeout: Duration = 40.minutes,
+        runTimeout: Duration = SMOKE_RUN_TIMEOUT,
         block: Driver.(ideProject: Project, bridge: SmokeBridge) -> Unit,
     ) {
         val ide = IdeProductProvider.IU.copy(getInstaller = { ExistingIdeInstaller(appBundle()) })
@@ -89,10 +89,11 @@ internal class SmokeIde(name: String) {
                 addSystemProperty("user.language", "en")
                 addSystemProperty("user.country", "US")
             }
+            .skipLibrarySources()
         context.runIdeWithDriver(runTimeout = runTimeout).useDriverAndCloseIde {
             waitForProjectOpen(5.minutes)
             val ideProject = singleProject()
-            waitForIndicators(ideProject, 15.minutes)
+            waitForIndicators(ideProject, SMOKE_INDEXING_TIMEOUT)
             block(ideProject, service(SmokeBridge::class, ideProject))
         }
     }
