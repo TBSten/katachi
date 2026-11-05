@@ -52,6 +52,22 @@ class KatachiMcpToolset : McpToolset {
         @McpDescription("Only the violations of this katachi definition module, such as :arch.") module: String? = null,
     ): ViolationsResult = call { it.violations(path, module) }
 
+    @McpTool(name = "katachi_refresh_definition")
+    @McpDescription(
+        "Runs Gradle to read the katachi architecture definition again, waits for it, and tells what it left: ready, or unavailable with the reason, the mistakes of the definition and why the reload failed. Call it after editing the definition module.",
+    )
+    suspend fun refreshDefinition(
+        @McpDescription("The Gradle path of the katachi definition module to read, such as :arch. Leave out for every module.") module: String? = null,
+    ): RefreshDefinitionResult = call { it.refreshDefinition(module) }
+
+    @McpTool(name = "katachi_run_check")
+    @McpDescription(
+        "Saves the open files and runs the katachi architecture check (the definition module's test task) through Gradle, waits for it, and gives the outcome with the first violations. katachi_violations lists every one.",
+    )
+    suspend fun runCheck(
+        @McpDescription("The Gradle path of the katachi definition module to check, such as :arch. Needed when the project has more than one.") module: String? = null,
+    ): RunCheckResult = call { it.runCheck(module) }
+
     private suspend fun <T> call(block: suspend (KatachiMcpTools) -> T): T {
         val project = currentCoroutineContext().project
         return try {

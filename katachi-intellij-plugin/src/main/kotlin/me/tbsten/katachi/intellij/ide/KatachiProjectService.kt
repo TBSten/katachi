@@ -48,9 +48,10 @@ import me.tbsten.katachi.intellij.ide.definition.RefreshReason
 import me.tbsten.katachi.intellij.ide.entry.EntryEffectsImpl
 import me.tbsten.katachi.intellij.model.DefinitionErrors
 import me.tbsten.katachi.intellij.model.DefinitionState
-import me.tbsten.katachi.intellij.model.DetectionResult
 import me.tbsten.katachi.intellij.model.DescriptionSnapshot
+import me.tbsten.katachi.intellij.model.DetectionResult
 import me.tbsten.katachi.intellij.model.KatachiModule
+import me.tbsten.katachi.intellij.model.LoadFailure
 import me.tbsten.katachi.intellij.model.answer
 import me.tbsten.katachi.intellij.presentation.FormState
 import me.tbsten.katachi.intellij.presentation.IdeEffects
@@ -275,6 +276,27 @@ internal class KatachiProjectService(
     }
 
     override fun registerOwnWrite(path: Path) = viewModel.registerOwnWrite(path)
+
+    /**
+     * Reads every definition module again ([module] alone when given) once the load running now has ended, and returns
+     * what it left. [DefinitionReload.Busy] while the tool window generates: a reload then would change the list under it.
+     */
+    suspend fun reloadAndAwait(module: KatachiModule? = null): DefinitionReload {
+        viewModel.awaitLoad()
+        var failure: LoadFailure? = null
+        if (module != null) {
+            if (viewModel.isGenerating) return DefinitionReload.Busy
+            failure = (viewModel.reloadForGeneration(module) as? LoadResult.Failed)?.failure
+        } else {
+            // reloadIfIdle refuses while a load runs; one may start between the join and the hop to the EDT.
+            while (true) {
+                val started = withContext(Dispatchers.EDT) { if (viewModel.isGenerating) null else viewModel.reloadIfIdle() } ?: return DefinitionReload.Busy
+                viewModel.awaitLoad()
+                if (started) break
+            }
+        }
+        return DefinitionReload.Done(definitionPublisher.settled(), definitionErrors.value, failure)
+    }
 
     override suspend fun reloadForGeneration(module: KatachiModule): GenerationCatalogReload =
         when (val result = viewModel.reloadForGeneration(module)) {

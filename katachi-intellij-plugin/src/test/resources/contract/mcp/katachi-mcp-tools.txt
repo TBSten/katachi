@@ -299,6 +299,121 @@ Lists the katachi templates (and templateSets) the definition declares: their pa
     "additionalProperties": false
 }
 
+== katachi_refresh_definition
+Runs Gradle to read the katachi architecture definition again, waits for it, and tells what it left: ready, or unavailable with the reason, the mistakes of the definition and why the reload failed. Call it after editing the definition module.
+-- input
+{
+    "type": "object",
+    "properties": {
+        "module": {
+            "type": "string",
+            "description": "The Gradle path of the katachi definition module to read, such as :arch. Leave out for every module."
+        },
+        "projectPath": {
+            "type": "string",
+            "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+        }
+    },
+    "required": [],
+    "additionalProperties": false
+}
+-- output
+{
+    "type": "object",
+    "properties": {
+        "state": {
+            "type": "string"
+        },
+        "unavailableReason": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "modules": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "stale": {
+            "type": "boolean"
+        },
+        "staleReason": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "loadFailure": {
+            "type": [
+                "object",
+                "null"
+            ],
+            "required": [
+                "kind",
+                "details"
+            ],
+            "properties": {
+                "kind": {
+                    "type": "string"
+                },
+                "details": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "definitionErrors": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "module",
+                    "phase",
+                    "exception",
+                    "message"
+                ],
+                "properties": {
+                    "module": {
+                        "type": "string"
+                    },
+                    "phase": {
+                        "type": "string"
+                    },
+                    "processor": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "exception": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "declaredAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    "required": [
+        "state",
+        "modules",
+        "stale",
+        "definitionErrors"
+    ],
+    "additionalProperties": false
+}
+
 == katachi_roles_of_file
 Tells which katachi roles hold a file of the project, as the architecture definition says: the roles, the layout entry and template of each, and, for a file no role holds, why (outcome) and the places it could move to (nearby).
 -- input
@@ -441,6 +556,105 @@ Tells which katachi roles hold a file of the project, as the architecture defini
         "roles",
         "nearby",
         "stale"
+    ],
+    "additionalProperties": false
+}
+
+== katachi_run_check
+Saves the open files and runs the katachi architecture check (the definition module's test task) through Gradle, waits for it, and gives the outcome with the first violations. katachi_violations lists every one.
+-- input
+{
+    "type": "object",
+    "properties": {
+        "module": {
+            "type": "string",
+            "description": "The Gradle path of the katachi definition module to check, such as :arch. Needed when the project has more than one."
+        },
+        "projectPath": {
+            "type": "string",
+            "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+        }
+    },
+    "required": [],
+    "additionalProperties": false
+}
+-- output
+{
+    "type": "object",
+    "properties": {
+        "module": {
+            "type": "string"
+        },
+        "outcome": {
+            "type": "string"
+        },
+        "violationCount": {
+            "type": "integer"
+        },
+        "violations": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "module",
+                    "ruleId",
+                    "label",
+                    "level",
+                    "message"
+                ],
+                "properties": {
+                    "module": {
+                        "type": "string"
+                    },
+                    "ruleId": {
+                        "type": "string"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "level": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "path": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "line": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "role": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "constraint": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                }
+            }
+        },
+        "truncated": {
+            "type": "boolean"
+        }
+    },
+    "required": [
+        "module",
+        "outcome",
+        "violationCount",
+        "violations",
+        "truncated"
     ],
     "additionalProperties": false
 }

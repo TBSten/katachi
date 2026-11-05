@@ -9,7 +9,9 @@ import com.intellij.mcpserver.McpToolFilter
 import com.intellij.mcpserver.McpToolsProvider
 import com.intellij.mcpserver.impl.McpServerService
 import com.intellij.mcpserver.impl.util.asTools
+import com.intellij.testFramework.PlatformTestUtil
 import com.intellij.testFramework.replaceService
+import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
@@ -17,6 +19,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import me.tbsten.katachi.intellij.ide.definition.DefinitionServiceTestBase
 import me.tbsten.katachi.intellij.ide.definition.KatachiDefinitionService
+import me.tbsten.katachi.intellij.ide.sarif.KatachiViolationsService
 
 /** The shell as the MCP Server calls it: the JSON arguments of a `tools/call` in, the result or the error text out. */
 internal class KatachiMcpToolsetTest : DefinitionServiceTestBase() {
@@ -24,7 +27,16 @@ internal class KatachiMcpToolsetTest : DefinitionServiceTestBase() {
         super.setUp()
         install()
         project.replaceService(KatachiDefinitionService::class.java, definition, testRootDisposable)
+        // The light project outlives the test: a service the shell creates on its own would keep this test's project service.
+        project.replaceService(KatachiViolationsService::class.java, KatachiViolationsService(project, scope), testRootDisposable)
         loaded()
+    }
+
+    /** Off the EDT while the EDT keeps dispatching: run_check and refresh_definition hop to it (saving, reloading). */
+    private fun callPumping(name: String, arguments: JsonObject): Result<McpToolCallResult> {
+        val running = scope.async { callTool(name, arguments) }
+        PlatformTestUtil.waitWithEventsDispatching({ "$name did not return" }, { running.isCompleted }, 20)
+        return runBlocking { running.await() }
     }
 
     private fun callTool(name: String, arguments: JsonObject): Result<McpToolCallResult> {
@@ -65,6 +77,20 @@ internal class KatachiMcpToolsetTest : DefinitionServiceTestBase() {
         assertEquals("katachi: :nope is not a katachi definition module. Pass one of :arch, or leave module out to read every one.", text)
     }
 
+    fun `test refresh_definition は JSON で呼べ 読み込み後の状態を返す`() {
+        val result = callPumping("katachi_refresh_definition", buildJsonObject { put("module", ":arch") }).getOrThrow()
+        assertFalse(result.text, result.isError)
+        assertEquals("\"ready\"", result.structuredContent?.get("state").toString())
+        assertEquals(2, gradle.loadRequests.size)
+    }
+
+    fun `test run_check に知らない module を渡すと Gradle を回さず mcpFail の文面で返る`() {
+        val result = callPumping("katachi_run_check", buildJsonObject { put("module", ":nope") })
+        val text = result.fold({ if (it.isError) it.text else throw AssertionError("not an error: ${it.text}") }, { it.message.orEmpty() })
+        assertEquals("katachi: :nope is not a katachi definition module. Pass one of :arch, or leave module out to read every one.", text)
+        assertEquals(emptyList<Any>(), gradle.checkRequests)
+    }
+
     fun `test 必須の引数が無ければ本体を呼ばずにエラーになる`() {
         val result = callTool("katachi_roles_of_file", buildJsonObject { })
         val isError = result.fold({ it.isError }, { true })
@@ -78,6 +104,13 @@ internal class KatachiMcpToolsetTest : DefinitionServiceTestBase() {
     }
 
     companion object {
-        val KATACHI_TOOL_NAMES: List<String> = listOf("katachi_list_roles", "katachi_list_templates", "katachi_roles_of_file", "katachi_violations")
+        val KATACHI_TOOL_NAMES: List<String> = listOf(
+            "katachi_list_roles",
+            "katachi_list_templates",
+            "katachi_refresh_definition",
+            "katachi_roles_of_file",
+            "katachi_run_check",
+            "katachi_violations",
+        )
     }
 }

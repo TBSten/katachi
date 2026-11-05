@@ -116,3 +116,46 @@ data class ViolationDto(
     val role: String? = null,
     val constraint: String? = null,
 )
+
+@Serializable
+data class RefreshDefinitionResult(
+    /** ready / unavailable / loading / notLoaded */
+    val state: String,
+    val unavailableReason: String? = null,
+    val modules: List<String>,
+    val stale: Boolean,
+    val staleReason: String? = null,
+    /** Why the reload failed, when it did; the definition answered is then the one from before (or none). */
+    val loadFailure: LoadFailureDto? = null,
+    val definitionErrors: List<DefinitionErrorDto>,
+)
+
+@Serializable
+data class LoadFailureDto(
+    /** compilationFailed / taskNotFound / architectureNotSet / processorRejected / definitionRejected / gradle / jsonMissing / malformedJson / incompatibleJson / cancelled */
+    val kind: String,
+    val details: List<String>,
+)
+
+@Serializable
+data class DefinitionErrorDto(
+    val module: String,
+    /** entryPoint / processor */
+    val phase: String,
+    val processor: String? = null,
+    val exception: String,
+    val message: String,
+    /** `Architecture.kt:12`, when katachi could tell where. */
+    val declaredAt: String? = null,
+)
+
+@Serializable
+data class RunCheckResult(
+    val module: String,
+    /** succeeded / failed / timedOut. failed is also what a check that found violations gives. */
+    val outcome: String,
+    val violationCount: Int,
+    /** The first violations of [module]; katachi_violations lists every one. */
+    val violations: List<ViolationDto>,
+    val truncated: Boolean,
+)

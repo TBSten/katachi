@@ -30,6 +30,21 @@ internal sealed class KatachiMcpToolException(message: String) : Exception(messa
             "Pass one of ${known.joinToString(", ").ifEmpty { "(none loaded)" }}, or leave module out to read every one.",
     )
 
+    class ModuleRequired(val known: List<String>) : KatachiMcpToolException(
+        "katachi: this project has more than one katachi definition module, so the tool cannot pick one. " +
+            "Pass module as one of ${known.joinToString(", ")}.",
+    )
+
+    class Busy : KatachiMcpToolException(
+        "katachi: the katachi tool window is generating files, and reloading the definition now would change the templates under it. " +
+            "Wait for the generation to finish, then call this tool again.",
+    )
+
+    class TimedOut(val what: String, val timeout: Duration) : KatachiMcpToolException(
+        "katachi: $what did not finish within $timeout. " +
+            "Gradle may still be running in the IDE; wait for it, then call this tool again.",
+    )
+
     private companion object {
         fun messageOf(reason: DefinitionUnavailableReason): String = when (reason) {
             DefinitionUnavailableReason.NotSynced ->

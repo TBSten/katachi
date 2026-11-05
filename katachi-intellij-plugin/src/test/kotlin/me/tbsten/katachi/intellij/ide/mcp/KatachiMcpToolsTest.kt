@@ -14,7 +14,7 @@ import me.tbsten.katachi.intellij.model.DefinitionUnavailableReason
  * gets for a project whose `:arch` declares the synthetic definition.
  */
 internal class KatachiMcpToolsTest : DefinitionServiceTestBase() {
-    private fun tools(): KatachiMcpTools = KatachiMcpTools(DefinitionPorts({ true }, { true }, { definition }, { FakeViolationsService() }), projectBase = root)
+    private fun tools(): KatachiMcpTools = KatachiMcpTools(DefinitionPorts({ true }, { true }, { definition }, { FakeViolationsService() }), projectBase = root, gradle = ProjectGradleActions(project))
 
     /** Runs [block] off the EDT while the EDT keeps dispatching: loading hops to the EDT, which a blocked EDT would never run. */
     private fun <T> call(block: suspend (KatachiMcpTools) -> T): Result<T> {

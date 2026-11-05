@@ -4,6 +4,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
+import me.tbsten.katachi.intellij.data.gradle.GradleRunOutcome
+import me.tbsten.katachi.intellij.ide.DefinitionReload
 import me.tbsten.katachi.intellij.ide.definition.DefinitionModelService
 import me.tbsten.katachi.intellij.ide.definition.DefinitionPorts
 import me.tbsten.katachi.intellij.ide.sarif.ViolationsService
@@ -11,12 +13,14 @@ import me.tbsten.katachi.intellij.ide.sdkCall
 import me.tbsten.katachi.intellij.model.DefinitionSnapshot
 import me.tbsten.katachi.intellij.model.DefinitionState
 import me.tbsten.katachi.intellij.model.FileRoles
+import me.tbsten.katachi.intellij.model.KatachiModule
 import me.tbsten.katachi.intellij.model.ViolationModel
 import me.tbsten.katachi.intellij.model.ViolationsState
 import me.tbsten.katachi.intellij.model.answer
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -32,7 +36,10 @@ internal class KatachiMcpTools(
     private val ports: DefinitionPorts,
     /** Where a relative path that no definition's project root holds is resolved; the project's base directory. */
     private val projectBase: Path?,
+    private val gradle: McpGradleActions,
     private val loadTimeout: Duration = LOAD_TIMEOUT,
+    private val refreshTimeout: Duration = REFRESH_TIMEOUT,
+    private val checkTimeout: Duration = CHECK_TIMEOUT,
 ) {
     suspend fun rolesOfFile(path: String): RolesOfFileResult {
         val answer = loadedAnswer()
@@ -77,6 +84,63 @@ internal class KatachiMcpTools(
             unreadableReason = (state as? ViolationsState.Unreadable)?.let { "${it.path}: ${it.reason}" },
             violations = selected.map { it.toDto() },
         )
+    }
+
+    suspend fun refreshDefinition(module: String?): RefreshDefinitionResult {
+        if (ports.service() == null) throw KatachiMcpToolException.NoDefinitionModule()
+        val target = module?.let(::definitionModuleOf)
+        val reload = withTimeoutOrNull(refreshTimeout) { gradle.reload(target) } ?: throw KatachiMcpToolException.TimedOut("reloading the katachi definition", refreshTimeout)
+        val done = when (reload) {
+            DefinitionReload.Busy -> throw KatachiMcpToolException.Busy()
+            is DefinitionReload.Done -> reload
+        }
+        val state = done.state
+        val answered = state.answer?.definitions.orEmpty().map { it.module.gradlePath }
+        val notReady = when (state) {
+            is DefinitionState.Unavailable -> "the definition cannot be loaded (${state.reason}); this is the answer from before"
+            is DefinitionState.Ready -> null
+            else -> "the definition is ${state.jsonName}"
+        }
+        val staleReason = notReady ?: state.answer?.freshness?.staleReason
+        return RefreshDefinitionResult(
+            state = state.jsonName,
+            unavailableReason = (state as? DefinitionState.Unavailable)?.reason?.name,
+            modules = if (target == null) answered else answered.filter { it == target.gradlePath },
+            stale = staleReason != null,
+            staleReason = staleReason,
+            loadFailure = (done.failure ?: state.reloadFailure)?.toDto(),
+            definitionErrors = done.errors.errors.filter { target == null || it.module == target.id }.map { it.toDto() },
+        )
+    }
+
+    suspend fun runCheck(module: String?): RunCheckResult {
+        if (ports.service() == null) throw KatachiMcpToolException.NoDefinitionModule()
+        val violations = ports.violations() ?: throw KatachiMcpToolException.NoDefinitionModule()
+        val target = if (module != null) {
+            gradle.saveDocuments()
+            definitionModuleOf(module).id
+        } else {
+            gradle.saveAndPickModule() ?: throw KatachiMcpToolException.ModuleRequired(gradle.definitionModules().map { it.gradlePath })
+        }
+        val outcome = withTimeoutOrNull(checkTimeout) { violations.runCheck(target).await() }
+        val found = violations.forModule(target)
+        return RunCheckResult(
+            module = target.gradlePath,
+            outcome = when (outcome) {
+                null -> "timedOut"
+                GradleRunOutcome.Succeeded -> "succeeded"
+                GradleRunOutcome.Failed -> "failed"
+            },
+            violationCount = found.size,
+            violations = found.take(CHECK_VIOLATIONS_SHOWN).map { it.toDto() },
+            truncated = found.size > CHECK_VIOLATIONS_SHOWN,
+        )
+    }
+
+    private fun definitionModuleOf(module: String): KatachiModule {
+        val gradlePath = gradlePathOf(module)
+        val modules = gradle.definitionModules()
+        return modules.firstOrNull { it.gradlePath == gradlePath } ?: throw KatachiMcpToolException.UnknownModule(gradlePath, modules.map { it.gradlePath })
     }
 
     /** The definitions to answer from, loading them first (up to [loadTimeout]) when nothing was read yet. */
@@ -131,8 +195,12 @@ internal class KatachiMcpTools(
 
     companion object {
         val LOAD_TIMEOUT: Duration = 60.seconds
+        val REFRESH_TIMEOUT: Duration = 5.minutes
+        val CHECK_TIMEOUT: Duration = 10.minutes
+        const val CHECK_VIOLATIONS_SHOWN: Int = 20
 
-        fun of(project: Project): KatachiMcpTools = KatachiMcpTools(DefinitionPorts.of(project), project.basePath?.let { Path.of(it) })
+        fun of(project: Project): KatachiMcpTools =
+            KatachiMcpTools(DefinitionPorts.of(project), project.basePath?.let { Path.of(it) }, McpGradleActions.of(project))
 
         /** `arch` and `:arch` both name the module `:arch`. */
         private fun gradlePathOf(module: String): String = if (module.startsWith(":")) module else ":$module"

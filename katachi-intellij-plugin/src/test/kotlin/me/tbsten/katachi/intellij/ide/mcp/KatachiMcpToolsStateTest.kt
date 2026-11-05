@@ -1,10 +1,15 @@
 package me.tbsten.katachi.intellij.ide.mcp
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.yield
+import me.tbsten.katachi.intellij.data.gradle.GradleRunOutcome
+import me.tbsten.katachi.intellij.ide.DefinitionReload
 import me.tbsten.katachi.intellij.ide.definition.DefinitionPorts
 import me.tbsten.katachi.intellij.ide.definition.FakeDefinitionModelService
 import me.tbsten.katachi.intellij.ide.sarif.FakeViolationsService
+import me.tbsten.katachi.intellij.model.DefinitionErrors
 import me.tbsten.katachi.intellij.model.DefinitionSnapshot
 import me.tbsten.katachi.intellij.model.DefinitionState
 import me.tbsten.katachi.intellij.model.DefinitionUnavailableReason
@@ -31,10 +36,12 @@ internal class KatachiMcpToolsStateTest : BasePlatformTestCase() {
 
     private val definitions = FakeDefinitionModelService()
     private val violations = FakeViolationsService()
+    private val gradle = FakeGradleActions(modules = listOf(arch))
 
     private fun tools(hasModule: Boolean = true) = KatachiMcpTools(
         DefinitionPorts({ hasModule }, { hasModule }, { definitions }, { violations }),
         projectBase = projectRoot,
+        gradle = gradle,
         loadTimeout = 100.milliseconds,
     )
 
@@ -134,5 +141,43 @@ internal class KatachiMcpToolsStateTest : BasePlatformTestCase() {
         assertEquals("unreadable", result.state)
         assertEquals("/repo/arch/build/reports/katachi/katachi.sarif: truncated", result.unreadableReason)
         assertEquals(1, result.violations.size)
+    }
+
+    fun `test ツールウィンドウが生成中なら refresh は待たずに busy で断る`() {
+        gradle.reloadWith = DefinitionReload.Busy
+        val failure = failureOf { tools().refreshDefinition(null) }
+        assertTrue("$failure", failure is KatachiMcpToolException.Busy)
+        assertEquals(listOf<KatachiModule?>(null), gradle.reloads)
+    }
+
+    fun `test refresh に module を渡すとその module だけを読み直す`() {
+        gradle.reloadWith = DefinitionReload.Done(ready, DefinitionErrors.None, null)
+        val result = runBlocking { tools().refreshDefinition("arch") }
+        assertEquals(listOf<KatachiModule?>(arch), gradle.reloads)
+        assertEquals(listOf(":arch"), result.modules)
+    }
+
+    fun `test 定義モジュールが無いプロジェクトでは Gradle の tool も同じ文面で断り Gradle を回さない`() {
+        val refresh = failureOf { tools(hasModule = false).refreshDefinition(null) }
+        val check = failureOf { tools(hasModule = false).runCheck(null) }
+        assertTrue(refresh is KatachiMcpToolException.NoDefinitionModule)
+        assertTrue(check is KatachiMcpToolException.NoDefinitionModule)
+        assertEquals(emptyList<Any>(), gradle.reloads)
+        assertEquals(0, gradle.saves)
+    }
+
+    fun `test run_check は違反が多いと先頭の件数だけ返して truncated を付ける`() {
+        val many = (1..25).map { ViolationsStateScripts.violation(arch.id, projectRoot.resolve("src/F$it.kt")) }
+        violations.emit(ViolationsState.Ready(many, DEFINITION_INSTANT, false, emptyList()))
+        val running = runBlocking {
+            val call = async { tools().runCheck(null) }
+            while (violations.runCheckCalls.isEmpty()) yield()
+            violations.finishCheck(arch.id, GradleRunOutcome.Failed)
+            call.await()
+        }
+        assertEquals("failed", running.outcome)
+        assertEquals(25, running.violationCount)
+        assertEquals(KatachiMcpTools.CHECK_VIOLATIONS_SHOWN, running.violations.size)
+        assertTrue(running.truncated)
     }
 }
