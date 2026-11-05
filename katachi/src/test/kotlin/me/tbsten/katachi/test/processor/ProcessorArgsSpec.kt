@@ -12,6 +12,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.processor.ArchitectureDeclarationContext
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
@@ -273,7 +274,7 @@ private object RoleNameProcessor : ArchitectureProcessor<RoleNameArgs, Unit> {
 private object UndeclaredNameProcessor : ArchitectureProcessorNoArg<Unit> {
     override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> = runCatching { }
 
-    override fun undeclaredArgNames(context: ArchitectureProcessContext<*>): Set<String> =
+    override fun undeclaredArgNames(context: ArchitectureDeclarationContext): Set<String> =
         setOf("greeting")
 }
 
@@ -281,7 +282,7 @@ private object UndeclaredNameProcessor : ArchitectureProcessorNoArg<Unit> {
 private object ThrowingUndeclaredNameProcessor : ArchitectureProcessorNoArg<Unit> {
     override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> = runCatching { }
 
-    override fun undeclaredArgNames(context: ArchitectureProcessContext<*>): Set<String> =
+    override fun undeclaredArgNames(context: ArchitectureDeclarationContext): Set<String> =
         throw IllegalStateException("undeclaredArgNames should not be trusted to behave")
 }
 
@@ -297,7 +298,7 @@ private object AnnotateRoles : ArchitectureProcessorNoArg<Unit> {
         for ((role, note) in context.rawArgs) context.log("$role: $note")
     }
 
-    override fun undeclaredArgNames(context: ArchitectureProcessContext<*>): Set<String> =
+    override fun undeclaredArgNames(context: ArchitectureDeclarationContext): Set<String> =
         context.roles.map { it.qualifiedName }.toSet()
 }
 

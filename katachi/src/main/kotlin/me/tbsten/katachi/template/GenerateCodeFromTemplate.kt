@@ -11,6 +11,7 @@ import me.tbsten.katachi.dsl.internal.templateParameterNames
 import me.tbsten.katachi.internal.absolutePathOf
 import me.tbsten.katachi.internal.fileUri
 import me.tbsten.katachi.internal.runProcessorCatching
+import me.tbsten.katachi.processor.ArchitectureDeclarationContext
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.internal.fileSystem
@@ -130,7 +131,7 @@ public object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromT
         }
 
     /** The parameters and capture names of the templates `--arg template=` chose. */
-    override fun undeclaredArgNames(context: ArchitectureProcessContext<*>): Set<String> {
+    override fun undeclaredArgNames(context: ArchitectureDeclarationContext): Set<String> {
         val raw = context.rawArgs[TEMPLATE_ARG] ?: return emptySet()
         // Deliberately not caught. A specifier no template answers to used to be swallowed here
         // and turned into an empty set, which made the template's own parameters unknown
