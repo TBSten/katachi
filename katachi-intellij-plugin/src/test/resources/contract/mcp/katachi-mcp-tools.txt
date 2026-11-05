@@ -1,0 +1,553 @@
+== katachi_list_roles
+Lists the roles the katachi architecture definition declares, with their groups and layout entries.
+-- input
+{
+    "type": "object",
+    "properties": {
+        "module": {
+            "type": "string",
+            "description": "The Gradle path of a katachi definition module, such as :arch. Leave out for every module."
+        },
+        "projectPath": {
+            "type": "string",
+            "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+        }
+    },
+    "required": [],
+    "additionalProperties": false
+}
+-- output
+{
+    "type": "object",
+    "properties": {
+        "modules": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "module",
+                    "roles"
+                ],
+                "properties": {
+                    "module": {
+                        "type": "string"
+                    },
+                    "roles": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "qualifiedName",
+                                "groupPath",
+                                "layout"
+                            ],
+                            "properties": {
+                                "qualifiedName": {
+                                    "type": "string"
+                                },
+                                "groupPath": {
+                                    "type": "string"
+                                },
+                                "title": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "summary": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "declaredAt": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "layout": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "required": [
+                                            "pattern",
+                                            "kind",
+                                            "required"
+                                        ],
+                                        "properties": {
+                                            "pattern": {
+                                                "type": "string"
+                                            },
+                                            "kind": {
+                                                "type": "string"
+                                            },
+                                            "required": {
+                                                "type": "boolean"
+                                            },
+                                            "description": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "template": {
+                                                "type": [
+                                                    "object",
+                                                    "null"
+                                                ],
+                                                "required": [
+                                                    "specifier"
+                                                ],
+                                                "properties": {
+                                                    "specifier": {
+                                                        "type": "string"
+                                                    },
+                                                    "id": {
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "title": {
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "stale": {
+            "type": "boolean"
+        },
+        "staleReason": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    },
+    "required": [
+        "modules",
+        "stale"
+    ],
+    "additionalProperties": false
+}
+
+== katachi_list_templates
+Lists the katachi templates (and templateSets) the definition declares: their parameters, the files they write and a katachiTemplate command that runs them.
+-- input
+{
+    "type": "object",
+    "properties": {
+        "module": {
+            "type": "string",
+            "description": "The Gradle path of a katachi definition module, such as :arch. Leave out for every module."
+        },
+        "projectPath": {
+            "type": "string",
+            "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+        }
+    },
+    "required": [],
+    "additionalProperties": false
+}
+-- output
+{
+    "type": "object",
+    "properties": {
+        "modules": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "module",
+                    "templates"
+                ],
+                "properties": {
+                    "module": {
+                        "type": "string"
+                    },
+                    "templates": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "id",
+                                "title",
+                                "roleName",
+                                "parameters",
+                                "files",
+                                "available"
+                            ],
+                            "properties": {
+                                "id": {
+                                    "type": "string"
+                                },
+                                "title": {
+                                    "type": "string"
+                                },
+                                "roleName": {
+                                    "type": "string"
+                                },
+                                "summary": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "setMembers": {
+                                    "type": [
+                                        "array",
+                                        "null"
+                                    ],
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "parameters": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "required": [
+                                            "name",
+                                            "kind",
+                                            "type",
+                                            "required"
+                                        ],
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "kind": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "string"
+                                            },
+                                            "required": {
+                                                "type": "boolean"
+                                            },
+                                            "default": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "acceptedValues": {
+                                                "type": [
+                                                    "array",
+                                                    "null"
+                                                ],
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "files": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "exampleCommand": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "available": {
+                                    "type": "boolean"
+                                },
+                                "unavailableReason": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "stale": {
+            "type": "boolean"
+        },
+        "staleReason": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    },
+    "required": [
+        "modules",
+        "stale"
+    ],
+    "additionalProperties": false
+}
+
+== katachi_roles_of_file
+Tells which katachi roles hold a file of the project, as the architecture definition says: the roles, the layout entry and template of each, and, for a file no role holds, why (outcome) and the places it could move to (nearby).
+-- input
+{
+    "type": "object",
+    "properties": {
+        "path": {
+            "type": "string",
+            "description": "The file, relative to the project root or absolute. It need not exist."
+        },
+        "projectPath": {
+            "type": "string",
+            "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+        }
+    },
+    "required": [
+        "path"
+    ],
+    "additionalProperties": false
+}
+-- output
+{
+    "type": "object",
+    "properties": {
+        "module": {
+            "type": "string"
+        },
+        "relativePath": {
+            "type": "string"
+        },
+        "outcome": {
+            "type": "string"
+        },
+        "detail": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "roles": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "qualifiedName",
+                    "pattern"
+                ],
+                "properties": {
+                    "qualifiedName": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "summary": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "pattern": {
+                        "type": "string"
+                    },
+                    "entryDescription": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "template": {
+                        "type": [
+                            "object",
+                            "null"
+                        ],
+                        "required": [
+                            "specifier"
+                        ],
+                        "properties": {
+                            "specifier": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "title": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "nearby": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "role",
+                    "directory"
+                ],
+                "properties": {
+                    "role": {
+                        "type": "string"
+                    },
+                    "directory": {
+                        "type": "string"
+                    },
+                    "filePattern": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                }
+            }
+        },
+        "stale": {
+            "type": "boolean"
+        },
+        "staleReason": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    },
+    "required": [
+        "module",
+        "relativePath",
+        "outcome",
+        "roles",
+        "nearby",
+        "stale"
+    ],
+    "additionalProperties": false
+}
+
+== katachi_violations
+Lists the violations of the last katachi architecture check, as its SARIF report says. It does not run the check; state is notRun when no report exists yet.
+-- input
+{
+    "type": "object",
+    "properties": {
+        "path": {
+            "type": "string",
+            "description": "Only the violations of this file, relative to the project root or absolute."
+        },
+        "module": {
+            "type": "string",
+            "description": "Only the violations of this katachi definition module, such as :arch."
+        },
+        "projectPath": {
+            "type": "string",
+            "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+        }
+    },
+    "required": [],
+    "additionalProperties": false
+}
+-- output
+{
+    "type": "object",
+    "properties": {
+        "state": {
+            "type": "string"
+        },
+        "readAt": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "stale": {
+            "type": "boolean"
+        },
+        "unreadableReason": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "violations": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "module",
+                    "ruleId",
+                    "label",
+                    "level",
+                    "message"
+                ],
+                "properties": {
+                    "module": {
+                        "type": "string"
+                    },
+                    "ruleId": {
+                        "type": "string"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "level": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "path": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "line": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "role": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "constraint": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    "required": [
+        "state",
+        "stale",
+        "violations"
+    ],
+    "additionalProperties": false
+}

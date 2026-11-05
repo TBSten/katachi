@@ -7,6 +7,8 @@ import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask.FailureLeve
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.compose.compiler)
+    // The @Serializable results of the MCP tools. No runtime dependency: the IDE bundles kotlinx-serialization.
+    alias(libs.plugins.kotlin.serialization)
     // Only for the standalone Compose Desktop of the headless preview.
     alias(libs.plugins.compose.multiplatform)
     // No version here: it is set in settings.gradle.kts, and setting it twice collides.
@@ -64,6 +66,8 @@ dependencies {
         bundledPlugin("org.jetbrains.kotlin")
         // Gradle sync data and ExternalSystem runTask. Pairs with <depends>com.intellij.gradle</depends>.
         bundledPlugin("com.intellij.gradle")
+        // The JetBrains MCP Server. Pairs with the optional <depends> of katachi-mcp.xml in plugin.xml.
+        bundledPlugin("com.intellij.mcpServer")
         // Jewel, Compose and Skiko come from the IDE rather than from the plugin. Each line pairs
         // with a <module name="..."/> in plugin.xml.
         bundledModule("intellij.platform.jewel.foundation")
@@ -299,7 +303,7 @@ tasks.register<Test>("testK1") {
 }
 // end of L-A
 
-// `./gradlew test -Dkatachi.gutter.golden.update=true` writes the gutter's text goldens (contract/gutter/*.txt) instead of comparing.
+// `./gradlew test -Dkatachi.gutter.golden.update=true` writes the text goldens (contract/gutter/*.txt, contract/mcp/*.txt) instead of comparing.
 tasks.test { providers.systemProperty("katachi.gutter.golden.update").orNull?.let { systemProperty("katachi.gutter.golden.update", it) } }
 
 // updatePreview / verifyPreview: run the preview main() on the standalone classpath.

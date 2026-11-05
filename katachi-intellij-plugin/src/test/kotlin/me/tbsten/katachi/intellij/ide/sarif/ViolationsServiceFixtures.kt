@@ -93,7 +93,7 @@ internal class FakeViolationsService(initial: ViolationsState = ViolationsState.
 
     // --- scripted answers and checks ---
 
-    /** What `forFile` answers for [path]. */
+    /** What `forFile` / `forPath` answer for [path]. */
     fun answer(path: Path, violations: List<ViolationModel>) {
         answers[keyOf(path)] = violations
     }
@@ -110,9 +110,13 @@ internal class FakeViolationsService(initial: ViolationsState = ViolationsState.
 
     // --- ViolationsService ---
 
-    override fun forFile(file: VirtualFile): List<ViolationModel> {
+    override fun forFile(file: VirtualFile): List<ViolationModel> = forKey(file.path)
+
+    override fun forPath(path: Path): List<ViolationModel> = forKey(keyOf(path.normalize()))
+
+    private fun forKey(key: String): List<ViolationModel> {
         val ready = state.value.answer ?: return emptyList()
-        return answers[file.path] ?: ready.runs.filter { it.location?.path?.let(::keyOf) == file.path }
+        return answers[key] ?: ready.runs.filter { it.location?.path?.let(::keyOf) == key }
     }
 
     override fun forModule(module: ModuleId): List<ViolationModel> =

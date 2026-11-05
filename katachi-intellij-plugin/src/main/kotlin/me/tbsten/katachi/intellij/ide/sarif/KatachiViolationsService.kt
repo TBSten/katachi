@@ -24,6 +24,7 @@ import me.tbsten.katachi.intellij.model.KatachiModule
 import me.tbsten.katachi.intellij.model.ModuleId
 import me.tbsten.katachi.intellij.model.ViolationModel
 import me.tbsten.katachi.intellij.model.ViolationsState
+import java.nio.file.Path
 
 @Service(Service.Level.PROJECT)
 internal class KatachiViolationsService(
@@ -47,6 +48,8 @@ internal class KatachiViolationsService(
     }
 
     override fun forModule(module: ModuleId): List<ViolationModel> = store.forModule(module)
+
+    override fun forPath(path: Path): List<ViolationModel> = store.forPath(path)
 
     override fun refresh() {
         store.refresh()
