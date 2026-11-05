@@ -1,5 +1,9 @@
+@file:OptIn(ExperimentalKatachiApi::class)
+
 package com.example.kmp.testing
 
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.diff.diffWeight
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -26,6 +30,9 @@ fun DeclarationContainerScope.definitionEntry() = "DefinitionEntry".role {
         line back.
     """.trimIndent()
     example("ProjectArchitecture.kt", "The entry point of the definition")
+    // A change to the definition changes what every check and page says, so katachiDiff
+    // puts it at the top of the heat.
+    diffWeight = 10.0
     layout {
         "architecture-test" {
             testSourceSet / kotlin / "com/example/kmp" / "ProjectArchitecture".ktFile()

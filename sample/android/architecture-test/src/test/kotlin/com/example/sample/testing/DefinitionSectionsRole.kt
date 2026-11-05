@@ -3,6 +3,7 @@
 package com.example.sample.testing
 
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.diff.diffWeight
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -21,6 +22,9 @@ fun DeclarationContainerScope.definitionSections() = "DefinitionSections".role {
         `DataDomain` in `data/DataGroup.kt`).
     """.trimIndent()
     example("DocumentSections.kt", "The section headings shared by every group and role")
+    // A change to the definition changes what every check and page says, so katachiDiff
+    // puts it at the top of the heat.
+    diffWeight = 10.0
     layout {
         "architecture-test" {
             testSourceSet / kotlin / "com/example/sample" {

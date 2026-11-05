@@ -1,5 +1,9 @@
+@file:OptIn(ExperimentalKatachiApi::class)
+
 package com.example.kmp.testing
 
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.diff.diffWeight
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -19,6 +23,9 @@ fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
         once it says something.
     """.trimIndent()
     example("feature/ScreenRole.kt", "The declaration of the Screen role")
+    // A change to the definition changes what every check and page says, so katachiDiff
+    // puts it at the top of the heat.
+    diffWeight = 10.0
     layout {
         "architecture-test" {
             testSourceSet / kotlin / "com/example/kmp" / "**" / "*Role".ktFile()
