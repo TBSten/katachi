@@ -1,7 +1,11 @@
+@file:OptIn(ExperimentalKatachiApi::class)
+
 package com.example.testing
 
 import com.example.forbiddenContents
 import com.example.tool.documentation
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.diff.diffWeight
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -19,6 +23,9 @@ fun DeclarationContainerScope.documentSectionDefinition() = "DocumentSectionDefi
         - A group or a role. Those go in `<Name>Group.kt` and `<Name>Role.kt`
     """.trimIndent()
     example("DocumentSections.kt", "The two headings and their properties")
+    // A change to the definition changes what every check and page says, so katachiDiff
+    // puts it at the top of the heat.
+    diffWeight = 10.0
     layout {
         "architecture-test" / testSourceSet / kotlin / "com/example" / "DocumentSections".ktFile()
     }

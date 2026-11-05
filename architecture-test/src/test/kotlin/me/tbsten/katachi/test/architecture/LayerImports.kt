@@ -6,7 +6,7 @@ private val LAYERS: List<List<String>> =
         listOf("util"),
         listOf("dsl"),
         listOf("processor", "check", "report"),
-        listOf("docs"),
+        listOf("docs", "diff"),
         listOf("template"),
         listOf("ide"),
         listOf("konsist", "konture"),

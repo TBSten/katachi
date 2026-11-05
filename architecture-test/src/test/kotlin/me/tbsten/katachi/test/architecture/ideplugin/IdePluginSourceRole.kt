@@ -9,10 +9,14 @@ import me.tbsten.katachi.konsist.konsist
 
 fun DeclarationContainerScope.idePluginSource() = "IdePluginSource".role {
     title = "IDE プラグインの実装"
-    summary = "Tool Window の登録と、plugin 本体と preview の両方でコンパイルする Compose (Jewel) の画面"
+    summary = "IDE に触る側（src/main）と、plugin 本体・preview・uiTest の全部でコンパイルするプラットフォーム非依存の側（src/shared）"
     description = """
-        `src/shared/kotlin` の Compose は、plugin 本体（IDE 同梱の Jewel）と headless preview（standalone Jewel）の両方でコンパイルします。
+        `src/main/kotlin` は IDE の SDK に触る側（ツールウィンドウの登録、ガター、通知、設定）です。
+        `src/shared/kotlin` はプラットフォーム非依存の側（モデル、データ層、ViewModel と UI 状態、Compose (Jewel) の画面）で、
+        plugin 本体（IDE 同梱の Jewel）と headless preview（standalone Jewel）と uiTest の全部でコンパイルします。
         そのため preview は、出荷されるコードそのものを描きます。
+        preview と uiTest は `src/shared` を直接読まず、Gradle の sync タスクが build/generated に書く写しを読みます
+        （IntelliJ は 1 つのディレクトリを 1 つのモジュールにしか置けないため）。
     """.trimIndent()
     example("KatachiToolWindowFactory.kt", "Tool Window に Compose の画面を載せる")
     example("KatachiToolWindowContent.kt", "Tool Window の画面。preview と共有する")

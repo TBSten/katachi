@@ -160,7 +160,7 @@ class KatachiProcessorsTaskFunctionalTest {
         BuildResult result = runAndFail(projectDir, gradleVersion, TASK, "--processor", "layuot");
 
         assertTrue(result.getOutput().contains("\"layuot\""), result.getOutput());
-        assertTrue(result.getOutput().contains("docs, template, templates"), result.getOutput());
+        assertTrue(result.getOutput().contains("docs, diff, template, templates"), result.getOutput());
         assertFalse(Files.exists(projectDir.resolve("build/runs.txt")), "a JVM was started");
     }
 

@@ -1,5 +1,9 @@
+@file:OptIn(ExperimentalKatachiApi::class)
+
 package com.example.kmp.testing
 
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.diff.diffWeight
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -16,6 +20,9 @@ fun DeclarationContainerScope.definitionSections() = "DefinitionSections".role {
         to the processor that reads it and sits in `processors/Owner.kt` (ProcessorMetadata).
     """.trimIndent()
     example("DocumentSections.kt", "The section headings shared by every group and role")
+    // A change to the definition changes what every check and page says, so katachiDiff
+    // puts it at the top of the heat.
+    diffWeight = 10.0
     layout {
         "architecture-test" {
             testSourceSet / kotlin / "com/example/kmp" / "DocumentSections".ktFile()

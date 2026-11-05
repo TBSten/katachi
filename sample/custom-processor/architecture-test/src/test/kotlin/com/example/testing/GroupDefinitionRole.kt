@@ -1,6 +1,10 @@
+@file:OptIn(ExperimentalKatachiApi::class)
+
 package com.example.testing
 
 import com.example.forbiddenContents
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.diff.diffWeight
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -17,6 +21,9 @@ fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
     """.trimIndent()
     forbiddenContents = "Role declarations. A role belongs to the role definition role, in the directory of the group that calls it."
     example("core/CoreGroup.kt", "A group made of three roles")
+    // A change to the definition changes what every check and page says, so katachiDiff
+    // puts it at the top of the heat.
+    diffWeight = 10.0
     layout {
         "architecture-test" / testSourceSet / kotlin / "com/example" / "**" / "*Group".ktFile()
     }
