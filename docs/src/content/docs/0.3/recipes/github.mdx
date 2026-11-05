@@ -1,0 +1,94 @@
+---
+title: GitHub
+description: An example of declaring GitHub Actions workflows and Issue and Pull
+  Request templates in architecture { }.
+tags:
+  - intermediate
+slug: 0.3/recipes/github
+---
+
+{/*
+  Purpose of this page: to show, as one copyable group, how to declare the files under `.github/` such as GitHub Actions and the Issue and Pull Request templates.
+  The steps for running the architecture test in CI themselves belong to "Your first architecture".
+  */}
+
+import SnippetIsStartingPoint from '../../../../components/SnippetIsStartingPoint.astro';
+
+You can declare the files under `.github/` as one group.
+
+## Declare everything under `.github/` in one group
+
+Calling `github()` from `ProjectArchitecture.kt` brings in all the Roles under `.github/` at once.
+
+```kt title=ProjectArchitecture.kt {8} nocollapse
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.architecture
+
+val projectArchitecture = architecture {
+  "Tools".group {
+    github()
+  }
+}
+```
+
+`github()` is written in a separate file. Its body splits into two parts: Actions and Templates.
+
+```kt title=GitHub.kt nocollapse
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+fun DeclarationContainerScope.github() =
+  "GitHub".group {
+    documented = false
+
+    // Line up the Roles from the following sections inside here
+  }
+```
+
+### Declare the GitHub Actions files
+
+```kt
+"Actions".group {
+  "Workflow".role {
+    summary = "GitHub Actions workflows"
+    layout {
+      ".github/workflows/*.yml".file()
+      ".github/workflows/*.yaml".file()
+    }
+  }
+
+  "CompositeAction".role {
+    summary = "Composite actions defined in the repository"
+    layout {
+      ".github/actions/*/action.yml".file()
+    }
+  }
+}
+```
+
+### Declare the Issue and Pull Request templates
+
+```kt
+"Templates".group {
+  "Issue".role {
+    summary = "Templates for opening an issue"
+    layout {
+      ".github/ISSUE_TEMPLATE/*.yml".file()
+      ".github/ISSUE_TEMPLATE/*.md".file()
+    }
+  }
+
+  "PullRequest".role {
+    summary = "The template for a pull request description"
+    layout {
+      ".github/PULL_REQUEST_TEMPLATE.md".file().optional()
+    }
+  }
+}
+```
+
+<SnippetIsStartingPoint />
