@@ -5,7 +5,7 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.check.FileConstraintCheck
-import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.FileConstraint
 import me.tbsten.katachi.dsl.FileConstraintAllowedList

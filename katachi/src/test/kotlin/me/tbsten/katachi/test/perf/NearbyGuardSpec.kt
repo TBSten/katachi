@@ -9,7 +9,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.measureTimedValue
 import me.tbsten.katachi.check.UnexpectedFile
-import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.test.synthetic.architecture
 import me.tbsten.katachi.test.synthetic.generateProject
 import me.tbsten.katachi.test.synthetic.inMemoryFileSystem

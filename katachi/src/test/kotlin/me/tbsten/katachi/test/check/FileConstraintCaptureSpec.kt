@@ -6,7 +6,7 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.maps.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.check.FileConstraintCheck
-import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.FileConstraintSubject
 import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.gradle.div

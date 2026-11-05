@@ -12,7 +12,7 @@ import io.kotest.matchers.string.shouldStartWith
 import java.nio.file.Files
 import me.tbsten.katachi.check.UnexpectedFile
 import me.tbsten.katachi.check.Violation
-import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.check.validate
 
 class SyntheticProjectSpec : FreeSpec({
     "生成は決定的" - {

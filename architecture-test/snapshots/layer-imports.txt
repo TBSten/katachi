@@ -11,6 +11,7 @@ check -> processor	katachi/src/main/kotlin/me/tbsten/katachi/check/LayoutCheck.k
 check -> processor	katachi/src/main/kotlin/me/tbsten/katachi/check/LayoutCheck.kt	ArchitectureProcessNoArgContext
 check -> processor	katachi/src/main/kotlin/me/tbsten/katachi/check/LayoutCheck.kt	ArchitectureProcessorNoArg
 check -> processor	katachi/src/main/kotlin/me/tbsten/katachi/check/LayoutCheck.kt	internal.projectWalk
+check -> processor	katachi/src/main/kotlin/me/tbsten/katachi/check/Validate.kt	ArchitectureProcessor
 check -> processor	katachi/src/main/kotlin/me/tbsten/katachi/check/internal/AssertWith.kt	ArchitectureProcessor
 check -> processor	katachi/src/main/kotlin/me/tbsten/katachi/check/internal/CheckResults.kt	ArchitectureProcessor
 check -> processor	katachi/src/main/kotlin/me/tbsten/katachi/check/internal/FileConstraintSubjects.kt	internal.ProjectWalk
