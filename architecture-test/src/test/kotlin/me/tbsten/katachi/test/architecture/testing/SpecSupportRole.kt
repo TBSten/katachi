@@ -53,6 +53,10 @@ fun DeclarationContainerScope.specSupport() = "SpecSupport".role {
             testSourceSet / kotlin / "**" / "*SpecSupport".ktFile()
             testSourceSet / kotlin / KONTURE_TEST_PACKAGE / "FixtureProject".ktFile()
         }
+        "katachi-script" {
+            description = "スペックが使う道具のうち、作業用ディレクトリの形を一時ディレクトリに作るもの"
+            testSourceSet / kotlin / "**" / "*SpecSupport".ktFile()
+        }
         "tool/dokka" {
             description = "Dokka プラグインのスペックが使う道具。Dokka の実行の組み立てと、@featured を付けたインラインのソース"
             testSourceSet / kotlin / "**" / "*SpecSupport".ktFile()

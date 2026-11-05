@@ -30,6 +30,7 @@ out/
 bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
+!katachi-script/cli/bin/
 
 ### NetBeans ###
 /nbproject/private/
