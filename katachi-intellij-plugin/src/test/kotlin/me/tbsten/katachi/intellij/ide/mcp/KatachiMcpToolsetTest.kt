@@ -14,9 +14,12 @@ import com.intellij.testFramework.replaceService
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import me.tbsten.katachi.intellij.ide.KatachiSettings
 import me.tbsten.katachi.intellij.ide.definition.DefinitionServiceTestBase
 import me.tbsten.katachi.intellij.ide.definition.KatachiDefinitionService
 import me.tbsten.katachi.intellij.ide.sarif.KatachiViolationsService
@@ -91,6 +94,31 @@ internal class KatachiMcpToolsetTest : DefinitionServiceTestBase() {
         assertEquals(emptyList<Any>(), gradle.checkRequests)
     }
 
+    fun `test generate は設定がオフなら mcpFail の文面で断る`() {
+        val result = callTool("katachi_generate", buildJsonObject { put("module", ":arch"); put("templates", JsonArray(listOf(JsonPrimitive("a")))) })
+        val text = result.fold({ if (it.isError) it.text else throw AssertionError("not an error: ${it.text}") }, { it.message.orEmpty() })
+        assertTrue(text, text.startsWith("katachi: generating files over MCP is turned off."))
+        assertEquals(emptyList<Any>(), gradle.generationRequests)
+    }
+
+    fun `test generate の onExisting に overwrite は渡せない`() {
+        KatachiSettings.getInstance(project).mcpAllowGenerate = true
+        try {
+            val arguments = buildJsonObject {
+                put("module", ":arch")
+                put("templates", JsonArray(listOf(JsonPrimitive("a"))))
+                put("onExisting", "overwrite")
+            }
+            val result = callTool("katachi_generate", arguments)
+            assertTrue("$result", result.fold({ it.isError }, { true }))
+            // Refused while reading the arguments: the body would have read the definition again first.
+            assertEquals(1, gradle.loadRequests.size)
+            assertEquals(emptyList<Any>(), gradle.generationRequests)
+        } finally {
+            KatachiSettings.getInstance(project).mcpAllowGenerate = false
+        }
+    }
+
     fun `test 必須の引数が無ければ本体を呼ばずにエラーになる`() {
         val result = callTool("katachi_roles_of_file", buildJsonObject { })
         val isError = result.fold({ it.isError }, { true })
@@ -105,6 +133,7 @@ internal class KatachiMcpToolsetTest : DefinitionServiceTestBase() {
 
     companion object {
         val KATACHI_TOOL_NAMES: List<String> = listOf(
+            "katachi_generate",
             "katachi_list_roles",
             "katachi_list_templates",
             "katachi_refresh_definition",

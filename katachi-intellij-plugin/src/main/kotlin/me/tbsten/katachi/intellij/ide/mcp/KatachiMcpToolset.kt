@@ -68,6 +68,17 @@ class KatachiMcpToolset : McpToolset {
         @McpDescription("The Gradle path of the katachi definition module to check, such as :arch. Needed when the project has more than one.") module: String? = null,
     ): RunCheckResult = call { it.runCheck(module) }
 
+    @McpTool(name = "katachi_generate")
+    @McpDescription(
+        "Generates files from katachi templates through Gradle, as the katachi tool window does, and tells what each run wrote. It never overwrites an existing file: a run that meets one stops there and reports the paths. Turned off unless Settings | Tools | katachi allows it.",
+    )
+    suspend fun generate(
+        @McpDescription("The Gradle path of the katachi definition module the templates belong to, such as :arch.") module: String,
+        @McpDescription("The template ids to generate, as katachi_list_templates gives them. Templates of one module run together; a templateSet runs alone.") templates: List<String>,
+        @McpDescription("The values of the parameters and captures, by name. Every template given reads the same values.") arguments: Map<String, String> = emptyMap(),
+        @McpDescription("What to do when a file to write already exists: fail stops at it, skip leaves it and writes the rest.") onExisting: McpOnExisting = McpOnExisting.Fail,
+    ): GenerateResult = call { it.generate(module, templates, arguments, onExisting) }
+
     private suspend fun <T> call(block: suspend (KatachiMcpTools) -> T): T {
         val project = currentCoroutineContext().project
         return try {

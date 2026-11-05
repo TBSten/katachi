@@ -30,6 +30,7 @@ import me.tbsten.katachi.intellij.data.detect.SyncedProjectSource
 import me.tbsten.katachi.intellij.data.detect.detectDefinitionModules
 import me.tbsten.katachi.intellij.data.generate.GenerationCatalogPort
 import me.tbsten.katachi.intellij.data.generate.GenerationCatalogReload
+import me.tbsten.katachi.intellij.data.generate.HeadlessGeneration
 import me.tbsten.katachi.intellij.data.generate.SingleFileGeneration
 import me.tbsten.katachi.intellij.data.generate.SingleFileGenerationRequest
 import me.tbsten.katachi.intellij.data.generate.SingleFileGenerationResult
@@ -160,6 +161,12 @@ internal class KatachiProjectService(
 
     val entryGeneration: SingleFileGeneration = SingleFileGeneration(effects, gradleRunner, fileSystem, this, ledger)
 
+    val headlessGeneration: HeadlessGeneration =
+        HeadlessGeneration(gradleRunner, fileSystem, this, effects, otherGenerationRunning = { viewModel.isGenerating || entryGeneration.isRunning })
+
+    /** Whether any generation runs: the tool window's, an entry's or one over MCP. */
+    val isGenerationRunning: Boolean get() = viewModel.isGenerating || entryGeneration.isRunning || headlessGeneration.isRunning
+
     fun generateFromEntry(request: SingleFileGenerationRequest): Deferred<SingleFileGenerationResult> =
         scope.async(Dispatchers.Default) {
             entryGeneration.run(request).also { result ->
@@ -279,18 +286,18 @@ internal class KatachiProjectService(
 
     /**
      * Reads every definition module again ([module] alone when given) once the load running now has ended, and returns
-     * what it left. [DefinitionReload.Busy] while the tool window generates: a reload then would change the list under it.
+     * what it left. [DefinitionReload.Busy] while anything generates: a reload then would change the templates under it.
      */
     suspend fun reloadAndAwait(module: KatachiModule? = null): DefinitionReload {
         viewModel.awaitLoad()
         var failure: LoadFailure? = null
         if (module != null) {
-            if (viewModel.isGenerating) return DefinitionReload.Busy
+            if (isGenerationRunning) return DefinitionReload.Busy
             failure = (viewModel.reloadForGeneration(module) as? LoadResult.Failed)?.failure
         } else {
             // reloadIfIdle refuses while a load runs; one may start between the join and the hop to the EDT.
             while (true) {
-                val started = withContext(Dispatchers.EDT) { if (viewModel.isGenerating) null else viewModel.reloadIfIdle() } ?: return DefinitionReload.Busy
+                val started = withContext(Dispatchers.EDT) { if (isGenerationRunning) null else viewModel.reloadIfIdle() } ?: return DefinitionReload.Busy
                 viewModel.awaitLoad()
                 if (started) break
             }

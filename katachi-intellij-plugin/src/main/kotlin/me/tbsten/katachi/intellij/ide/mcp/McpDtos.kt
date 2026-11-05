@@ -1,5 +1,6 @@
 package me.tbsten.katachi.intellij.ide.mcp
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // The results of the katachi MCP tools. Public only because the MCP Server reads them by reflection from the public
@@ -158,4 +159,45 @@ data class RunCheckResult(
     /** The first violations of [module]; katachi_violations lists every one. */
     val violations: List<ViolationDto>,
     val truncated: Boolean,
+)
+
+/** What katachi_generate does with a file that already exists. Overwriting is left to a person in the IDE. */
+@Serializable
+enum class McpOnExisting {
+    @SerialName("fail")
+    Fail,
+
+    @SerialName("skip")
+    Skip,
+}
+
+@Serializable
+data class GenerateResult(
+    val module: String,
+    /** One per katachiTemplate run: the templates of one module run together, a templateSet alone. */
+    val items: List<GenerateItemDto>,
+    /** Every file written, absolute. */
+    val writtenFiles: List<String>,
+    /** The run was cancelled at the time limit; the items it did not finish are interrupted or notRun. */
+    val timedOut: Boolean,
+)
+
+@Serializable
+data class GenerateItemDto(
+    val templates: List<String>,
+    /** generated / skipped / failed / stoppedAtConflict / interrupted / notRun */
+    val result: String,
+    /** For generated: the files katachi wrote. */
+    val files: List<GeneratedFileDto>? = null,
+    /** For skipped and stoppedAtConflict: the files that already existed. For interrupted: the expected files that exist now. */
+    val existingPaths: List<String>? = null,
+    /** For failed: what katachi or Gradle said. */
+    val message: String? = null,
+)
+
+@Serializable
+data class GeneratedFileDto(
+    val path: String,
+    /** new / overwritten */
+    val kind: String,
 )

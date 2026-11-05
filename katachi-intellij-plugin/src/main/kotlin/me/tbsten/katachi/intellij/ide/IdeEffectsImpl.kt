@@ -55,8 +55,10 @@ internal class IdeEffectsImpl(
         }
     }
 
-    override suspend fun putLocalHistoryLabel(titles: List<String>): String? {
-        val name = KatachiBundle.message("localHistory.label", titles.joinToString(", "))
+    override suspend fun putLocalHistoryLabel(titles: List<String>): String? =
+        putLocalHistoryLabelNamed(KatachiBundle.message("localHistory.label", titles.joinToString(", ")))
+
+    override suspend fun putLocalHistoryLabelNamed(name: String): String? {
         val put = onEdt { sdkCall("put the Local History label \"$name\"") { LocalHistory.getInstance().putSystemLabel(project, name) } }
         return name.takeIf { put?.isSuccess == true }
     }

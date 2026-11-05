@@ -1,3 +1,128 @@
+== katachi_generate
+Generates files from katachi templates through Gradle, as the katachi tool window does, and tells what each run wrote. It never overwrites an existing file: a run that meets one stops there and reports the paths. Turned off unless Settings | Tools | katachi allows it.
+-- input
+{
+    "type": "object",
+    "properties": {
+        "module": {
+            "type": "string",
+            "description": "The Gradle path of the katachi definition module the templates belong to, such as :arch."
+        },
+        "templates": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "The template ids to generate, as katachi_list_templates gives them. Templates of one module run together; a templateSet runs alone."
+        },
+        "arguments": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "string"
+            },
+            "description": "The values of the parameters and captures, by name. Every template given reads the same values."
+        },
+        "onExisting": {
+            "enum": [
+                "fail",
+                "skip"
+            ],
+            "description": "What to do when a file to write already exists: fail stops at it, skip leaves it and writes the rest."
+        },
+        "projectPath": {
+            "type": "string",
+            "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+        }
+    },
+    "required": [
+        "module",
+        "templates"
+    ],
+    "additionalProperties": false
+}
+-- output
+{
+    "type": "object",
+    "properties": {
+        "module": {
+            "type": "string"
+        },
+        "items": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "templates",
+                    "result"
+                ],
+                "properties": {
+                    "templates": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "result": {
+                        "type": "string"
+                    },
+                    "files": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "path",
+                                "kind"
+                            ],
+                            "properties": {
+                                "path": {
+                                    "type": "string"
+                                },
+                                "kind": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "existingPaths": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "message": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                }
+            }
+        },
+        "writtenFiles": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "timedOut": {
+            "type": "boolean"
+        }
+    },
+    "required": [
+        "module",
+        "items",
+        "writtenFiles",
+        "timedOut"
+    ],
+    "additionalProperties": false
+}
+
 == katachi_list_roles
 Lists the roles the katachi architecture definition declares, with their groups and layout entries.
 -- input

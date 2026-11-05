@@ -34,27 +34,39 @@ internal enum class BusyState { Idle, Generating, InitialLoading }
  * row counts, folded or outside the search (E-16).
  */
 internal fun generateBlockerOf(rows: List<ModuleTemplate>, form: FormState, busy: BusyState): GenerateBlocker? {
-    val checked = rows.filter { form.isSelected(it.id) }
-    if (checked.isEmpty()) return GenerateBlocker.NothingSelected
-    for (row in checked) {
-        val detail = row.template.detail
-        if (detail == null || !row.template.isAvailable) return GenerateBlocker.Unavailable(row.id)
-        val inputs = form.inputsOf(row.id)
-        for (parameter in shownParametersOf(detail, inputs)) {
-            val error = fieldErrorOf(row, detail, parameter, inputs[parameter.name]) ?: continue
-            return GenerateBlocker.InvalidField(row.id, parameter.name, error)
-        }
-    }
-    for (row in checked) {
-        val detail = row.template.detail ?: continue
-        for (file in expectedFilesOf(detail, form.inputsOf(row.id))) {
-            locationBlockerOf(row.id, file)?.let { return it }
-        }
-    }
+    if (rows.none { form.isSelected(it.id) }) return GenerateBlocker.NothingSelected
+    inputBlockersOf(rows, form).firstOrNull()?.let { return it }
     return when (busy) {
         BusyState.Idle -> null
         BusyState.Generating -> GenerateBlocker.Generating
         BusyState.InitialLoading -> GenerateBlocker.InitialLoading
+    }
+}
+
+/**
+ * Every reason the checked rows of [rows] cannot be generated with what [form] holds, in the order the footer would show
+ * them one by one: the fields of each row (an unavailable row stops its own fields), then the files whose place is unknown.
+ */
+internal fun inputBlockersOf(rows: List<ModuleTemplate>, form: FormState): List<GenerateBlocker> = buildList {
+    val checked = rows.filter { form.isSelected(it.id) }
+    for (row in checked) {
+        val detail = row.template.detail
+        if (detail == null || !row.template.isAvailable) {
+            add(GenerateBlocker.Unavailable(row.id))
+            continue
+        }
+        val inputs = form.inputsOf(row.id)
+        for (parameter in shownParametersOf(detail, inputs)) {
+            val error = fieldErrorOf(row, detail, parameter, inputs[parameter.name]) ?: continue
+            add(GenerateBlocker.InvalidField(row.id, parameter.name, error))
+        }
+    }
+    for (row in checked) {
+        val detail = row.template.detail ?: continue
+        if (!row.template.isAvailable) continue
+        for (file in expectedFilesOf(detail, form.inputsOf(row.id))) {
+            locationBlockerOf(row.id, file)?.let(::add)
+        }
     }
 }
 

@@ -104,6 +104,7 @@ internal class KatachiConfigurableTest : AnalysisTestBase() {
                 "(o) ${m("settings.open.first")}",
                 "(o) ${m("settings.open.all")}",
                 "(o) ${m("settings.open.none")}",
+                "[x] ${m("settings.mcpAllowGenerate")}",
             ),
             flatten(panel),
         )
@@ -267,6 +268,25 @@ internal class KatachiConfigurableTest : AnalysisTestBase() {
             refresher.restarter = before
             settings.showViolationsInEditor = true
             settings.autoLoadTemplates = true
+        }
+    }
+
+    fun `test MCP の生成の許可は既定でオフで 入れて適用すると設定に書かれる`() {
+        val settings = KatachiSettings.getInstance(project)
+        val box = box("settings.mcpAllowGenerate")
+        try {
+            assertFalse(box.isSelected)
+            assertFalse(settings.mcpAllowGenerate)
+
+            box.doClick()
+            assertTrue(configurable.isModified)
+            configurable.apply()
+
+            assertTrue(settings.mcpAllowGenerate)
+            configurable.reset()
+            assertTrue(box.isSelected)
+        } finally {
+            settings.mcpAllowGenerate = false
         }
     }
 }

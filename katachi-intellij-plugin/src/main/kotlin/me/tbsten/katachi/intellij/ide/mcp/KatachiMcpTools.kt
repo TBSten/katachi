@@ -4,6 +4,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
+import me.tbsten.katachi.intellij.data.generate.HeadlessGenerationRequest
+import me.tbsten.katachi.intellij.data.generate.HeadlessGenerationResult
 import me.tbsten.katachi.intellij.data.gradle.GradleRunOutcome
 import me.tbsten.katachi.intellij.ide.DefinitionReload
 import me.tbsten.katachi.intellij.ide.definition.DefinitionModelService
@@ -17,6 +19,7 @@ import me.tbsten.katachi.intellij.model.KatachiModule
 import me.tbsten.katachi.intellij.model.ViolationModel
 import me.tbsten.katachi.intellij.model.ViolationsState
 import me.tbsten.katachi.intellij.model.answer
+import me.tbsten.katachi.intellij.presentation.OnExistingChoice
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
 import kotlin.time.Duration
@@ -135,6 +138,24 @@ internal class KatachiMcpTools(
             violations = found.take(CHECK_VIOLATIONS_SHOWN).map { it.toDto() },
             truncated = found.size > CHECK_VIOLATIONS_SHOWN,
         )
+    }
+
+    suspend fun generate(module: String, templates: List<String>, arguments: Map<String, String>, onExisting: McpOnExisting): GenerateResult {
+        if (ports.service() == null) throw KatachiMcpToolException.NoDefinitionModule()
+        if (!gradle.allowsGenerate()) throw KatachiMcpToolException.GenerateTurnedOff()
+        val target = definitionModuleOf(module)
+        if (templates.isEmpty()) throw KatachiMcpToolException.InvalidArguments(listOf("templates is empty; pass at least one template id"))
+        val choice = when (onExisting) {
+            McpOnExisting.Fail -> OnExistingChoice.Fail
+            McpOnExisting.Skip -> OnExistingChoice.Skip
+        }
+        return when (val result = gradle.generate(HeadlessGenerationRequest(target, templates.distinct(), arguments, choice))) {
+            HeadlessGenerationResult.Busy -> throw KatachiMcpToolException.Busy()
+            is HeadlessGenerationResult.ReloadFailed -> throw KatachiMcpToolException.ReloadFailed(result.failure.toDto())
+            is HeadlessGenerationResult.UnknownTemplates -> throw KatachiMcpToolException.UnknownTemplates(result.unknown, result.known)
+            is HeadlessGenerationResult.Invalid -> throw KatachiMcpToolException.InvalidArguments(result.problems.map { it.text() })
+            is HeadlessGenerationResult.Ran -> result.report.toDto(target.gradlePath, result.timedOut)
+        }
     }
 
     private fun definitionModuleOf(module: String): KatachiModule {

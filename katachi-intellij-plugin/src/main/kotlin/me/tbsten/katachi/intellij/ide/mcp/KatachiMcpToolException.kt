@@ -36,8 +36,27 @@ internal sealed class KatachiMcpToolException(message: String) : Exception(messa
     )
 
     class Busy : KatachiMcpToolException(
-        "katachi: the katachi tool window is generating files, and reloading the definition now would change the templates under it. " +
-            "Wait for the generation to finish, then call this tool again.",
+        "katachi: another generation is running in the IDE (the katachi tool window, an editor notification or another MCP call). " +
+            "Wait for it to finish, then call this tool again.",
+    )
+
+    class GenerateTurnedOff : KatachiMcpToolException(
+        "katachi: generating files over MCP is turned off. Turn on '$ALLOW_GENERATE_SETTING' in Settings | Tools | katachi.",
+    )
+
+    class UnknownTemplates(val unknown: List<String>, val known: List<String>) : KatachiMcpToolException(
+        "katachi: ${unknown.joinToString(", ")} ${if (unknown.size == 1) "is not a template" else "are not templates"} of this module. " +
+            "Pass ids as katachi_list_templates gives them: ${known.joinToString(", ").ifEmpty { "(none)" }}.",
+    )
+
+    class InvalidArguments(val problems: List<String>) : KatachiMcpToolException(
+        "katachi: the arguments cannot generate the templates: ${problems.joinToString("; ")}. " +
+            "Fix them and call this tool again; katachi_list_templates lists the parameters. Nothing was written.",
+    )
+
+    class ReloadFailed(val failure: LoadFailureDto) : KatachiMcpToolException(
+        "katachi: reading the katachi definition before generating failed (${failure.kind}). " +
+            "Call katachi_refresh_definition for the details and fix the definition; nothing was written.",
     )
 
     class TimedOut(val what: String, val timeout: Duration) : KatachiMcpToolException(
@@ -45,8 +64,11 @@ internal sealed class KatachiMcpToolException(message: String) : Exception(messa
             "Gradle may still be running in the IDE; wait for it, then call this tool again.",
     )
 
-    private companion object {
-        fun messageOf(reason: DefinitionUnavailableReason): String = when (reason) {
+    companion object {
+        /** The English text of the setting, `settings.mcpAllowGenerate`: the error is English whatever language the IDE shows. */
+        const val ALLOW_GENERATE_SETTING: String = "Allow AI agents to generate files from templates over MCP"
+
+        private fun messageOf(reason: DefinitionUnavailableReason): String = when (reason) {
             DefinitionUnavailableReason.NotSynced ->
                 "katachi: the Gradle project is not synced yet. Sync the Gradle project in the IDE, then call this tool again."
             DefinitionUnavailableReason.NoDefinition ->
