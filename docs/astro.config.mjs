@@ -8,7 +8,9 @@ import starlightLlmsTxt from 'starlight-llms-txt';
 import starlightLinksValidator from 'starlight-links-validator';
 // ドキュメントの版。版の一覧は src/lib/versions.mjs にある（版を足すときに直すのはそこだけ）。
 import starlightVersions from 'starlight-versions';
-import { archivedVersions, archivedVersionSlugs, currentVersion, publicSections } from './src/lib/versions.mjs';
+import { archivedVersions, archivedVersionSlugs, base, currentVersion, publicSections } from './src/lib/versions.mjs';
+import { satteri } from '@astrojs/markdown-satteri';
+import { satteriRebaseLinks } from './src/lib/satteri-rebase-links.mjs';
 // `astro dev` のときだけ dev toolbar に入るフィードバックモード。本番ビルドには何も出ない。
 import feedback from './src/integrations/feedback/index.ts';
 import { existsSync, readFileSync, statSync } from 'node:fs';
@@ -106,8 +108,14 @@ export default defineConfig({
 	// GitHub Pages の project site として公開する: https://tbsten.github.io/katachi/
 	// `site` は `starlight-llms-txt` が絶対 URL を組むのに要る（無いと動かない）。
 	// `base` は sitemap・llms*.txt・`slug` 由来のリンクすべてに効く。
+	// 開発版のビルド（docs.yml の main 側）は `KATACHI_DOCS_BASE=/katachi/dev` で `/katachi/dev/` に出す。
+	// 値は src/lib/versions.mjs が環境変数から決める。ここに `'/katachi'` を直書きしない。
 	site: 'https://tbsten.github.io',
-	base: '/katachi',
+	base,
+	// Markdown 処理系は Astro の既定（Sätteri）のまま、本文の絶対リンク（`/katachi/...`）を base に
+	// 合わせて付け替える mdast プラグインを足す（base が `/katachi` なら何もしない）。
+	// Starlight のプラグイン（リンク検査など）は hast の段階でこの processor に足されるので、付け替えたあとを見る。
+	markdown: { processor: satteri({ mdastPlugins: [satteriRebaseLinks()] }) },
 	integrations: [
 		feedback(),
 		// starlight より前に置くこと。starlight が markdown を処理する前に
@@ -164,10 +172,10 @@ export default defineConfig({
 					// 古い版の写しの中の public/ 行きのリンク（`/katachi/0.2/api-docs/...`）も外す。starlight-versions が
 					// 版の区切りを足してしまったもので、表示の手前で src/middleware.ts が `/katachi/api-docs/...` に戻す。
 					exclude: [
-						'/katachi/',
-						'/katachi/ja/',
+						`${base}/`,
+						`${base}/ja/`,
 						...archivedVersionSlugs.flatMap((slug) =>
-							['', 'ja/'].map((locale) => `/katachi/${locale}${slug}/{${publicSections.join(',')}}/**`),
+							['', 'ja/'].map((locale) => `${base}/${locale}${slug}/{${publicSections.join(',')}}/**`),
 						),
 					],
 				}),
@@ -208,15 +216,15 @@ export default defineConfig({
 				// iOS のホーム画面と Android の追加用。favicon の SVG では拾われない。
 				{
 					tag: 'link',
-					attrs: { rel: 'apple-touch-icon', sizes: '180x180', href: '/katachi/apple-touch-icon.png' },
+					attrs: { rel: 'apple-touch-icon', sizes: '180x180', href: `${base}/apple-touch-icon.png` },
 				},
 				{
 					tag: 'link',
-					attrs: { rel: 'icon', type: 'image/png', sizes: '192x192', href: '/katachi/icon-192.png' },
+					attrs: { rel: 'icon', type: 'image/png', sizes: '192x192', href: `${base}/icon-192.png` },
 				},
 				{
 					tag: 'link',
-					attrs: { rel: 'icon', type: 'image/png', sizes: '512x512', href: '/katachi/icon-512.png' },
+					attrs: { rel: 'icon', type: 'image/png', sizes: '512x512', href: `${base}/icon-512.png` },
 				},
 				// モバイルのアドレスバーの色。アイコンの背景と揃える。
 				{

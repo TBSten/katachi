@@ -164,15 +164,46 @@ title: ...
   直すのは、ビルドが落ちる・リンクが切れるといった明らかな壊れだけ。文章の方針や言い換えの辞書が変わっても、写しは合わせない
 - 写しは textlint（`.textlintignore`）、translate-ja-en の訳の同期、check-docs-against-impl と prerelease の照合から外してある
 - public/ の下（API リファレンス・インストールキット・スライド）は版を持たない。古い版のページからのリンクは、`src/middleware.ts` が最新のものへ向け直す
+- いま書いている版のラベルは手で持たない。凍結した版の先頭から「次の minor + `-dev`」を算出する（写しの先頭が `0.3` なら `v0.4-dev`）。
+  リリースのビルドだけが `KATACHI_DOCS_VERSION_LABEL`（タグから `v0.4`）で上書きする
 
-新しい版を切る手順（v0.3 を公開するときの例）:
+### 公開サイトの構成（`.github/workflows/docs.yml`）
 
-1. `src/lib/versions.mjs` の `archivedVersions` の先頭に `{ slug: '0.3', label: 'v0.3' }` を足し、`currentVersion` のラベルを `v0.4` にする
-2. `pnpm run build` を1回回す。ビルドの開始時に、その時点の `src/content/docs/` から `src/content/docs/0.3/`・`src/content/docs/ja/0.3/`・`src/content/versions/0.3.json` ができる。一度に切れる版は1つだけ
-3. `src/content/docs/ja/0.3/` の下にできた古い版の写し（`ja/0.3/0.2/` など）を消し、もう一度 `pnpm run build` を回す。starlight-versions は日本語の写しを作るとき、凍結済みの `ja/0.2/` まで写してしまう（英語側の `0.3/` には入らない）。残すと `/katachi/ja/0.3/0.2/...` へのリンクでリンク検査が落ちる
-4. ビルド（リンク検査を含む）と `pnpm run lint:text` が通るのを確かめ、写しを生成したままコミットする
+**公開サイトの root は常に最新のリリースの docs。** main の書きかけは `/katachi/dev/` にだけ出る。
+利用者が README から着く先・検索・`llms-small.txt` はリリース済みの内容になり、「古い版」の注意も出ない。
 
-版を切るのは、その版の内容を書き終えてから、次の版の変更を入れる前にする。写しはビルドした時点の docs をそのまま写すので、次の版の変更が混ざると戻せない。
+| 置き場所 | ビルド元 | いま書いている版のラベル | 版の切り替えの選択肢 |
+|---|---|---|---|
+| `/katachi/`（と `/katachi/0.2/` などの写し） | main から辿れる最新の `v*` タグ | タグから（`v0.3`） | 現行・写し・末尾に開発版（`v0.4-dev` → `/katachi/dev/`） |
+| `/katachi/dev/`（と `/katachi/dev/0.3/` などの写し） | main | 算出（`v0.4-dev`） | 現行・写し（`/dev/` の中で閉じる） |
+
+docs.yml は 2 つを別々にビルドして 1 つの Pages に合成する。切り替えは環境変数で、`pnpm run build` を手で回すときは何も渡さなくてよい（root 相当のビルドになり、ラベルは算出）。
+
+| 環境変数 | 意味 |
+|---|---|
+| `KATACHI_DOCS_BASE` | Astro の `base`。開発版のビルドで `/katachi/dev` |
+| `KATACHI_DOCS_VERSION_LABEL` | いま書いている版のラベル。リリースのビルドでタグから渡す |
+| `KATACHI_DOCS_DEV_BASE` | 版の切り替えの末尾に足す開発版の base（`/katachi/dev`）。リリースのビルドで渡す |
+
+- 本文の絶対リンクは今までどおり公開 URL の `/katachi/...` で書く。開発版のビルドでは `src/lib/satteri-rebase-links.mjs`（Sätteri の mdast プラグイン）が
+  `/katachi/dev/...` に付け替えるので、本文に `/katachi/dev/` を書かない。`astro.config.mjs` の `markdown.processor` がその入口
+- root が変わるのは `v*` タグを push したとき（と `workflow_dispatch` で `release_ref` を指定したとき）だけ。main への push では `/dev/` しか変わらない
+- `/dev/` の中の写し（`/katachi/dev/0.3/`）は root の写しと重複するが、そのままにしている（別のビルドなので外す手段が無い。気になったら dev のビルドで写しを除く）
+- リリース済みの docs の誤字は、次のリリースまで root に出ない。急ぐときは `workflow_dispatch` に `release_ref` を渡して再ビルドする（直すのはタグ側でなく main。root に出すなら patch 版のタグを切る）
+- `v0.3.0` 以前のタグの docs は上の環境変数を知らないので、root にはそのタグ当時のまま出る（ラベルは当時の値、`/dev/` の選択肢は 0.4.0 から）
+
+### 新しい版を切る手順（v0.4 を公開するときの例）
+
+**先にタグ、あとで写し。** タグを打つと docs.yml が root をそのタグから作り直す。写しを切るのはその後の main での作業で、root には影響しない。
+
+1. v0.4 の docs を書き終える（`src/content/docs/` 直下）。ラベルは `v0.4-dev` のまま
+2. リリース（`v0.4.0` のタグ）。docs.yml の `resolve` が新しいタグを拾い、root = v0.4（ラベルはタグから）、`/katachi/0.3/` `/katachi/0.2/` は写しになる
+3. main で `src/lib/versions.mjs` の `archivedVersions` の先頭に `{ slug: '0.4', label: 'v0.4' }` を足す。ラベルの指定は無い（算出で `v0.5-dev` になる）
+4. `pnpm run build` を1回回す。ビルドの開始時に、その時点の `src/content/docs/` から `src/content/docs/0.4/`・`src/content/docs/ja/0.4/`・`src/content/versions/0.4.json` ができる。一度に切れる版は1つだけ
+5. `src/content/docs/ja/0.4/` の下にできた古い版の写し（`ja/0.4/0.3/` など）を消し、もう一度 `pnpm run build` を回す。starlight-versions は日本語の写しを作るとき、凍結済みの `ja/0.3/` まで写してしまう（英語側の `0.4/` には入らない）。残すと `/katachi/ja/0.4/0.3/...` へのリンクでリンク検査が落ちる
+6. ビルド（リンク検査を含む）・`pnpm run lint:text`・`pnpm run test` が通るのを確かめ、写しを生成したままコミットする
+
+写しを切るのは、その版の内容を書き終えてから、次の版の変更を入れる前にする。写しはビルドした時点の docs をそのまま写すので、次の版の変更が混ざると戻せない。
 
 ## `public/install/` — AI エージェント向けの配布物
 
