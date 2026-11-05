@@ -1,0 +1,62 @@
+---
+title: ktlint
+description: An example of declaring where ktlint's .editorconfig and baseline
+  live in architecture { }.
+tags:
+  - beginner
+slug: 0.3/recipes/ktlint
+---
+
+{/*
+  Purpose of this page: show the smallest example of declaring ktlint's configuration files (.editorconfig and the baseline) as Roles.
+  Separate from the Gradle recipe: it only covers where one kind of file, linter configuration, lives.
+  */}
+
+import SnippetIsStartingPoint from '../../../../components/SnippetIsStartingPoint.astro';
+
+[ktlint](https://ktlint.github.io/ktlint/latest/) lets you configure things like disabling lint rules through the .editorconfig file.
+
+We recommend declaring .editorconfig and the baseline (`ktlint-baseline.xml`) in your architecture definition so katachi knows about them.
+
+```kt collapse
+// ProjectArchitecture.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.architecture
+
+val projectArchitecture = architecture {
+  "Tools".group {
+    ktlint()
+  }
+}
+
+// roles/Ktlint.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+fun DeclarationContainerScope.ktlint() =
+  "Ktlint".group {
+    documented = false
+
+    "EditorConfig".role {
+      title = "EditorConfig"
+      summary = "The file that configures ktlint's rules"
+      layout {
+        "**/.editorconfig".file()
+      }
+    }
+
+    "Baseline".role {
+      title = "ktlint baseline"
+      summary = "The file ktlint writes out to tolerate existing violations"
+      layout {
+        "**/ktlint-baseline.xml".file()
+      }
+    }
+  }
+```
+
+<SnippetIsStartingPoint />

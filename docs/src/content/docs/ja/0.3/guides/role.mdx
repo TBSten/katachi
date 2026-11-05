@@ -1,0 +1,525 @@
+---
+title: Role
+description: Role でプロジェクトの要素を宣言する方法。group によるまとめ方と、Role 定義をファイルに分割する流儀。
+tags:
+  - intermediate
+slug: ja/0.3/guides/role
+---
+
+{/*
+  このページの目的: katachi のアーキテクチャ定義における重要な要素である Role 周辺の使い方を深く網羅的に理解すること。
+  */}
+
+import { Aside, Badge, FileTree, CardGrid, LinkCard } from "@astrojs/starlight/components";
+import CodeComparison from "../../../../../components/CodeComparison";
+
+Role は、プロジェクトに現れてよいファイルの種類を宣言する単位です。このページでは、Role の説明・置き場所・制約の書き方と、Role をグループにまとめる方法、定義が大きくなったときの分け方を説明します。
+
+## Role を定義する
+
+アーキテクチャ定義に従ったアプリには、固有の役割（Role）を持つファイルがあります。
+例えば `UseCase`, `Repository`, `Controller`, `ViewModel` などです。
+
+どんな Role があるのかは、`architecture { }` の中で定義します。
+
+```kt
+architecture {
+  // UseCase という Role を定義する
+  "UseCase".role {
+    // 説明・置き場所・制約を、この中に書く
+  }
+}
+```
+
+Role は `"名前".role { }` で宣言します。`"名前".group { }` と形がそろい、`layout { }` の中に書くディレクトリの宣言 `"src" { }` とも見分けられます。
+Role の名前はドキュメント生成などで使うため、ASCII（英字で始まり、英数字・`_`・`-` が続く）のみ使用できます。
+
+Role の説明・置き場所・制約は、その Role のブロックの中に書きます。
+
+| 書くもの | 説明 | ドキュメント |
+|---|---|---|
+| `title`・`summary`・`description` など | その Role の説明です。ドキュメント生成に使われます | このページの「説明を書く」 |
+| `layout { }` | その Role のファイルをどこに置けるかを定義します | [レイアウトの定義](/katachi/ja/0.3/guides/layout/) |
+| `ktFileContent { }` | その Role のファイルに置いてよい package・import・宣言を、許可リストで定義します | このページの「中身に制約をかける」 |
+| `.template { }` | `layout { }` で宣言したファイルに付けて、そのファイルを新しく作るときのテンプレートを定義します | [テンプレートからコード生成](/katachi/ja/0.3/guides/generate-code-from-template/) |
+
+次は、title / summary / layout / ktFileContent を1つにまとめた例です。
+
+```kt nocollapse
+architecture {
+  "UseCase".role {
+    title = "ユースケース"
+    summary = "各画面で発生するアプリ固有の1つの振る舞い"
+
+    example("GetUserUseCase", "ユーザーを取得する")
+
+    // どこに置いてよいか
+    layout {
+      "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+    }
+
+    // 中身がどうあるべきか
+    ktFileContent {
+      `package`("com.example.useCase")
+      `import`("com.example.repository.**")
+
+      required(`class`, fileName) {
+        required(suspend.optional(), operator, `fun`, "invoke")
+        allow(private, anythingElse)
+      }
+    }
+  }
+}
+```
+
+それぞれを、もう少し詳しく説明します。
+
+### 説明を書く
+
+最低限必要なのは `summary` だけです。ドキュメント生成時に Role の一覧表に表示されるテキストです。
+
+```kt
+"UseCase".role {
+  summary = "各画面で発生するアプリ固有の1つの振る舞い"
+}
+```
+
+`description` には長い説明を、`example()` には代表例を書けます。`example()` は呼んだ順に保持されます。
+
+```kt
+"UseCase".role {
+  title = "ユースケース"
+  summary = "各画面で発生するアプリ固有の1つの振る舞い"
+  description = """
+    UI からは UseCase だけを呼び、Repository を直接触らない。
+
+    ### やってはいけないこと
+    - Android の型に依存する
+  """.trimIndent()
+
+  example("GetUserUseCase", "ユーザーを取得する")
+  example("UpdateUserUseCase", "ユーザーを更新する")
+}
+```
+
+### 置き場所を宣言する
+
+置き場所を1つだけ持つ場合です。
+
+```kt
+"UseCase".role {
+  layout {
+    "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+  }
+}
+```
+
+`layout { }` は複数書けます。同じ種類のファイルが複数の場所に現れてよい、という宣言です。種類の違うファイルは、Role を分けて宣言します。
+
+```kt
+"UseCase".role {
+  // feature-home のモジュールに
+  layout {
+    "feature-home/src/main/kotlin/useCase" / "*UseCase".ktFile()
+  }
+
+  // feature-settings のモジュールにも
+  layout {
+    "feature-settings/src/main/kotlin/useCase" / "*UseCase".ktFile()
+  }
+}
+```
+
+### 置き場所の違反を確かめる
+
+宣言していない場所にファイルを置くと違反になります。
+
+```text
+src/main/kotlin/com/example/GetUserUseCase.kt   ← useCase/ の外に置いてしまった
+```
+
+テストを実行すると、katachi が近い置き場所と直し方まで1つのブロックで報告します。
+
+```text nocollapse
+Katachi check failed: 1 violation (Unexpected: 1)
+
+[UnexpectedFile] file:///path/to/project/src/main/kotlin/com/example/GetUserUseCase.kt
+  No role is defined for this file.
+
+  Nearby locations:
+    UseCase file:///path/to/project/src/main/kotlin/com/example/useCase/ (*UseCase.kt)
+
+  How to fix:
+    - Move it to one of the locations above, with a name matching the pattern in parentheses
+    - Delete it if it is not needed
+    - Add a new role for it:
+        "GetUserUseCase".role {
+          summary = "TODO"
+          layout {
+            "src/main/kotlin/com/example" / "GetUserUseCase".ktFile()
+          }
+        }
+```
+
+### 中身に制約をかける
+
+ファイルの中身への制約は、`ktFileContent { }` で書きます。ファイルに置いてよい package・import・宣言を、許可リストとして1行ずつ並べます。
+
+```kt nocollapse
+"UseCase".role {
+  layout {
+    "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+  }
+
+  ktFileContent {
+    `package`("com.example.useCase")
+    `import`("com.example.repository.**")
+
+    // ファイル名と同じ名前の class を置く。public にしてよい関数は invoke だけ
+    required(`class`, fileName) {
+      required(suspend.optional(), operator, `fun`, "invoke")
+      allow(private, anythingElse) // コンストラクタで受け取る Repository など
+    }
+  }
+}
+```
+
+制約の対象は、その Role の `layout { }` に当てはまったファイルです。`layout { }` の無い Role には制約を書けません。`ktFileContent { }` は、1つの Role に1つだけ書けます。
+
+許可リストなので、禁止したいものを1つずつ書く必要はありません。どの行にも当たらない宣言は違反になります。行に書いていない修飾子（`internal` など）が付いた宣言も、違反になります。
+
+```kt nocollapse
+"RepositoryInterface".role {
+  layout {
+    "src/main/kotlin/com/example/repository" / "*Repository".ktFile()
+  }
+
+  ktFileContent {
+    `package`("com.example.repository")
+
+    // public の interface を置く。internal を付けると、この行に当たらず違反になる
+    required(public, `interface`, fileName) {
+      allow(suspend.optional(), `fun`, "*")
+    }
+
+    // class の行は書いていないので、Impl を同じファイルに置くと違反になる
+  }
+}
+```
+
+`ktFileContent { }` の書き方は、[ファイルの中で定義できる宣言の許可リストを定義する](/katachi/ja/0.3/guides/kt-file-content/) で詳しく説明しています。
+
+### 制約の違反を確かめる
+
+許可リストのどの行にも当たらない宣言があると、違反になります。
+
+```kt title="src/main/kotlin/com/example/useCase/GetUserUseCase.kt" {8}
+package com.example.useCase
+
+import com.example.repository.UserRepository
+
+// invoke のほかに、public な関数を持っている
+class GetUserUseCase(private val repository: UserRepository) {
+  suspend operator fun invoke(id: String) = repository.find(id)
+  fun clearCache() = repository.clear()
+}
+```
+
+`ktFileContent { }` は別モジュール `katachi-konsist` に入っています。テストで `assert()` の代わりに `assert(FileConstraintCheck())` を呼ぶと、違反が配置の違反と同じレポートに並びます。レポートには、どのファイルの何行目かまで出ます（次の例は一部を省いています）。
+
+```text
+[UnsatisfiedFileConstraint] file:///path/to/project/src/main/kotlin/com/example/useCase/GetUserUseCase.kt
+  Role: UseCase / FileConstraint: "ktFileContent"
+  Declaration: GetUserUseCase.clearCache (line 8)
+  Not allowed: fun clearCache() in class GetUserUseCase
+  Allowed members of class GetUserUseCase:
+    suspend.optional() operator fun invoke(...)
+    private (anything)
+```
+
+### Role をグループにまとめる
+
+`"グループ名".group { ... }` を使うと、Roleをグループにまとめられます。
+
+```kt {2}
+architecture {
+  "domain".group {
+    "UseCase".role {
+      // ...
+    }
+
+    "RepositoryInterface".role {
+      // ...
+    }
+  }
+}
+```
+
+## Role を保守しやすく設計する
+
+### 良い Role 定義は変更を必要としない
+
+<Badge text="おすすめ" variant="success" />
+
+アプリに機能を足すたびに `architecture { }` を書き換えていると、定義がディレクトリ構造の写しになって二度手間になりがちです。`*` や `**` といったワイルドカードをうまく使って、機能を足しても定義を変えずに済むようにしましょう。
+
+### 1つの Role には1種類のファイルだけを入れる
+
+<Badge text="おすすめ" variant="success" />
+
+1つの Role は、1種類のファイルだけを表すようにしてください。
+たとえば Repository の interface と実装は、名前は似ていても別の種類のファイルです。1つの Role にまとめると、説明・制約・テンプレートが「どちらのファイルの話か」で分かれてしまいます。
+種類ごとに Role を分ければ、説明も制約もその種類のファイルだけを対象にでき、生成されるドキュメントも種類ごとのページになります。
+
+<CodeComparison>
+  <CodeComparison.Panel label="🆖 2種類のファイルを1つの Role に" labelVariant="danger">
+    ```kt {4-5} nocollapse
+    "Repository".role {
+      summary = "データの取得と保存"
+      layout {
+        "repository" / "*Repository".ktFile()      // interface
+        "repository" / "*RepositoryImpl".ktFile()  // 実装
+      }
+      ktFileContent {
+        // interface のファイルか実装のファイルかで、許可する宣言を分ける必要がある
+      }
+    }
+    ```
+  </CodeComparison.Panel>
+
+  <CodeComparison.Panel label="🆗 種類ごとに Role を分ける" labelVariant="success">
+    ```kt {1,12} nocollapse
+    "RepositoryInterface".role {
+      summary = "データの取得と保存の窓口"
+      layout { "repository" / "*Repository".ktFile() }
+      ktFileContent {
+        // package / import の行は省略
+        required(public, `interface`, fileName) {
+          allow(suspend.optional(), `fun`, "*")
+        }
+      }
+    }
+
+    "RepositoryImplementation".role {
+      summary = "RepositoryInterface の実装"
+      layout { "repository" / "*RepositoryImpl".ktFile() }
+    }
+    ```
+  </CodeComparison.Panel>
+</CodeComparison>
+
+## Role 定義を分割する
+
+プロジェクトが大きくなるほど、`architecture { }` の定義は肥大化します。
+
+`architecture { }` は Kotlin DSL なので、普通の Kotlin と同じように拡張関数へ切り出せます。
+
+ここではおすすめの **Role 定義の分割方法** を紹介します。
+
+### `architecture { }` 定義を分割する
+
+膨らみがちなのは **各 Role 内の詳細** です。
+Role ごとに拡張関数に切り出しましょう。
+
+<CodeComparison>
+  <CodeComparison.Panel label="分割前">
+    ```kt title=ProjectArchitecture.kt nocollapse
+    architecture {
+      "UseCase".role {
+        layout { 
+          "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
+        }
+        ktFileContent {
+          `package`("com.example.project.useCase")
+          `import`("com.example.project.repository.**")
+
+          required(`class`, fileName) {
+            required(suspend.optional(), operator, `fun`, "invoke")
+            allow(private, anythingElse)
+          }
+        }
+        // ...
+      }
+
+      "RepositoryInterface".role {
+        layout { 
+          "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
+        }
+        ktFileContent {
+          `package`("com.example.project.repository")
+
+          required(public, `interface`, fileName) {
+            allow(suspend.optional(), `fun`, "*")
+          }
+        }
+        // ...
+      }
+
+      // ...
+    }
+    ```
+  </CodeComparison.Panel>
+
+  <CodeComparison.Panel label="分割後" labelVariant="success">
+    <FileTree>
+      * ProjectArchitecture.kt
+      * **domain/**
+        * UseCaseRole.kt
+        * RepositoryInterfaceRole.kt
+    </FileTree>
+
+    ```kt title=ProjectArchitecture.kt
+    architecture {
+      useCase()
+      repositoryInterface()
+
+      // ...
+    }
+    ```
+
+    ```kt title=domain/UseCaseRole.kt
+    // hint: DeclarationContainerScope は architecture { } と "...".group { } のレシーバです。
+    fun DeclarationContainerScope.useCase() = "UseCase".role {
+      layout {
+        "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
+      }
+      ktFileContent {
+        `package`("com.example.project.useCase")
+        `import`("com.example.project.repository.**")
+
+        required(`class`, fileName) {
+          required(suspend.optional(), operator, `fun`, "invoke")
+          allow(private, anythingElse)
+        }
+      }
+      // ...
+    }
+    ```
+
+    ```kt title=domain/RepositoryInterfaceRole.kt
+    fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role {
+      layout {
+        "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
+      }
+      ktFileContent {
+        `package`("com.example.project.repository")
+
+        required(public, `interface`, fileName) {
+          allow(suspend.optional(), `fun`, "*")
+        }
+      }
+      // ...
+    }
+    ```
+  </CodeComparison.Panel>
+</CodeComparison>
+
+<Aside type="caution" title="KDoc に配置パターンを書くとコンパイルエラーになります">
+  切り出した関数の KDoc に `feature/*` のようなパスを書くと、Kotlin は `/*` をネストしたコメントの始まりとして読み、コンパイルエラーになります。
+
+  配置の説明は Role の `description`（文字列）に書くか、KDoc では `feature/<名前>` のように書いてください。
+</Aside>
+
+### Role 定義の中を分割する
+
+Role 定義の中でも、特に `ktFileContent { }` は、許可する import や宣言が増えて肥大化しがちです。
+
+`ktFileContent { }` は、積極的に private な拡張関数へ切り出しましょう。
+
+<CodeComparison>
+  <CodeComparison.Panel label="分割前">
+    ```kt
+    fun DeclarationContainerScope.useCase() = "UseCase".role {
+      layout {
+        "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
+      }
+      ktFileContent {
+        `package`("com.example.project.useCase")
+        `import`("com.example.project.repository.**")
+
+        required(`class`, fileName) {
+          required(suspend.optional(), operator, `fun`, "invoke")
+          allow(private, anythingElse)
+        }
+      }
+      // ...
+    }
+    ```
+  </CodeComparison.Panel>
+
+  <CodeComparison.Panel label="分割後" labelVariant="success">
+    ```kt
+    fun DeclarationContainerScope.useCase() = "UseCase".role {
+      layout {
+        "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
+      }
+
+      useCaseFileContent()
+      // ...
+    }
+
+    private fun RoleScope.useCaseFileContent() =
+      ktFileContent {
+        `package`("com.example.project.useCase")
+        `import`("com.example.project.repository.**")
+
+        required(`class`, fileName) {
+          required(suspend.optional(), operator, `fun`, "invoke")
+          allow(private, anythingElse)
+        }
+      }
+    ```
+  </CodeComparison.Panel>
+</CodeComparison>
+
+## まとめ
+
+ここまでの書き方を全部使った完成形です。Role の定義は、[Role 定義を分割する](#role-定義を分割する)のとおり、拡張関数へ切り出しています。
+
+<FileTree>
+  * ProjectArchitecture.kt
+  * **domain/**
+    * UseCaseRole.kt
+</FileTree>
+
+```kt title=ProjectArchitecture.kt nocollapse
+architecture {
+  "domain".group {
+    useCase()
+  }
+}
+```
+
+```kt title=domain/UseCaseRole.kt nocollapse
+fun DeclarationContainerScope.useCase() = "UseCase".role {
+  summary = "各画面で発生するアプリ固有の1つの振る舞い"
+
+  // 置き場所が増えても、説明はこの1箇所のまま
+  layout {
+    "core/domain/src/main/kotlin/useCase" / "*UseCase".ktFile()
+  }
+
+  useCaseFileContent()
+}
+
+private fun RoleScope.useCaseFileContent() =
+  ktFileContent {
+    `package`("com.example.useCase")
+    `import`("com.example.repository.**")
+
+    required(`class`, fileName) {
+      required(suspend.optional(), operator, `fun`, "invoke")
+      allow(private, anythingElse)
+    }
+  }
+```
+
+## 次のステップ
+
+<CardGrid>
+  <LinkCard title="Layout" href="/katachi/ja/guides/layout/" description="Roleのファイルをどこに置けるか宣言する方法を学びましょう。" />
+
+  <LinkCard title="初めてのアーキテクチャ定義" href="/katachi/ja/get-started/first-architecture/" description="あなたのプロジェクトに katachi を導入して、実際に Role を書いてみましょう。" />
+
+  <LinkCard title="sample/jvm の Role" href="https://github.com/TBSten/katachi/tree/main/sample/jvm/architecture-test/src/test/kotlin/com/example" description="group ごとのディレクトリに、1つの Role を1ファイルで書いた実物です。説明・置き場所・制約の書き方を見られます。" />
+</CardGrid>

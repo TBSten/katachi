@@ -1,0 +1,90 @@
+---
+title: GitHub
+description: GitHub Actions のワークフローや Issue・Pull Request のテンプレートを architecture { } で宣言する例。
+tags:
+  - intermediate
+slug: ja/0.3/recipes/github
+---
+
+import SnippetIsStartingPoint from '../../../../../components/SnippetIsStartingPoint.astro';
+
+`.github/` 配下のファイルを、1つの group で宣言できます。
+
+## `.github/` 配下を1つの group で宣言する
+
+`ProjectArchitecture.kt` から `github()` を呼ぶと、`.github/` 配下の Role がまとめて入ります。
+
+```kt title=ProjectArchitecture.kt {8} nocollapse
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.architecture
+
+val projectArchitecture = architecture {
+  "Tools".group {
+    github()
+  }
+}
+```
+
+`github()` は別のファイルに書きます。中は Actions と Templates の2つに分かれます。
+
+```kt title=GitHub.kt nocollapse
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+fun DeclarationContainerScope.github() =
+  "GitHub".group {
+    documented = false
+
+    // 次の節の Role を、この中に並べます
+  }
+```
+
+### GitHub Actions のファイルを宣言する
+
+```kt
+"Actions".group {
+  "Workflow".role {
+    summary = "GitHub Actions のワークフロー"
+    layout {
+      ".github/workflows/*.yml".file()
+      ".github/workflows/*.yaml".file()
+    }
+  }
+
+  "CompositeAction".role {
+    summary = "リポジトリ内で定義する composite action"
+    layout {
+      ".github/actions/*/action.yml".file()
+    }
+  }
+}
+```
+
+### Issue と Pull Request のテンプレートを宣言する
+
+```kt
+"Templates".group {
+  "Issue".role {
+    summary = "Issue を立てるときのテンプレート"
+    layout {
+      ".github/ISSUE_TEMPLATE/*.yml".file()
+      ".github/ISSUE_TEMPLATE/*.md".file()
+    }
+  }
+
+  "PullRequest".role {
+    summary = "Pull Request の説明のテンプレート"
+    layout {
+      ".github/PULL_REQUEST_TEMPLATE.md".file().optional()
+    }
+  }
+}
+```
+
+{/* TODO: C16 コードの直後にサンプルへのリンクが無い（sample/ に GitHub の例が無い） → 先に sample に .github/ の Role を足し、コードの直後にそのファイルへのリンクを1行置く */}
+
+<SnippetIsStartingPoint />

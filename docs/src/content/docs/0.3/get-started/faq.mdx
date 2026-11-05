@@ -1,0 +1,229 @@
+---
+title: FAQ
+description: Why katachi has the shape it does. Common questions about the
+  thinking behind its design.
+tags:
+  - beginner
+slug: 0.3/get-started/faq
+---
+
+{/*
+  Purpose of this page: to help readers who have read the motivation page understand katachi's design philosophy more deeply.
+  */}
+
+import { LinkCard, CardGrid, FileTree } from '@astrojs/starlight/components';
+
+This page answers **why katachi has the shape it does**.
+For how to install it and how to write definitions, see [Your first architecture definition](/katachi/0.3/get-started/first-architecture/).
+
+## Why is an undeclared file a violation?
+
+When an architecture breaks, it usually does not break because
+**someone wrote something that violates a rule**; it breaks because **something appeared
+in a place nobody had thought about.**
+
+A deny-list ("`domain` must not import `android.*`")
+**only protects you from the prohibitions you thought of.** The ways of breaking things you
+did not think of slip past the check and are accepted as they are. And those are by far the most common ones.
+
+katachi does the opposite: **it makes you write down everything that may appear.** Anything you
+did not write down is a violation. That way "we never thought about it" cannot happen,
+because the unanticipated thing is itself the violation.
+
+The one difference is **whether the things you failed to enumerate are accepted or reported as violations** — that is all.
+
+<details>
+  <summary>The same idea appears in security</summary>
+
+  Treating anything unexpected as suspicious is a habit security shares.
+
+  It is called **fail-safe defaults**, one of the design principles.
+
+  **A scheme that enumerates prohibitions lets the check miss
+  whatever it failed to enumerate.** Just as signature-based malware protection cannot stop an
+  unknown sample, **whatever slips past the list leaves an undesirable state accepted without anyone noticing.**
+  With a scheme that enumerates permissions, whatever slips past is a violation, so you notice it on the spot.
+  It is a choice of what you want to happen when something slips past.
+
+  **The price is the same as well.** Allow-lists are laborious to enumerate and heavy to
+  maintain. They are still adopted at boundaries worth defending. katachi being "heavy at the
+  start" is the same story.
+
+  That said, katachi is not a security tool. All it borrows is the shape of the decision;
+  what it defends is your architecture.
+</details>
+
+The price, honestly, is that **the start is heavy.** The test will not go green until every
+file in the project has been accounted for. Even so, we think **the fact that some files cannot
+be accounted for is itself the information.** Do you really need that file?
+
+## Won't an existing project be nothing but violations?
+
+Yes. That is a common starting point.
+
+The list of violations from the first run is, as it stands, a report saying
+**"this project contains this many files that nobody can account for."**
+katachi did not break anything; it only made visible what was already there.
+
+You will work through the reported paths one at a time, adding each to the definition,
+moving it, or deleting it.
+If you have teammates, by all means decide together with them, talking it through.
+That is itself **the team agreeing on its architecture again.**
+
+If you cannot clear them all up right away, the experimental baseline feature (`architecture { baseline() }`)
+lets you tolerate the existing violations for now and fail only on new ones.
+Tolerating them is temporary: you remove each violation from the baseline file once you fix it. See [Baseline](/katachi/0.3/guides/baseline/) for how to write it.
+
+## Konsist and ArchUnit exist — why does anything else need to?
+
+[katachi](/katachi/0.3/get-started/motivation/) and [Konsist](https://docs.konsist.lemonappdev.com/) / [ArchUnit](https://www.archunit.org/) check different ranges.
+
+| Tool | Range it checks |
+|---|---|
+| Konsist / ArchUnit | Only the narrowed-down target. Anything outside the filter is not looked at |
+| katachi | The whole project, matched against the declaration |
+
+Konsist and ArchUnit are tools that **narrow down a target and then check its contents**.
+
+```kt title="UseCaseKonsistTest.kt" {1-4}
+// narrowing happens here
+Konsist.scopeFromProject()
+  .classes()
+  .withNameEndingWith("UseCase")   
+
+  // only what the filter caught is checked
+  .assertTrue { /* ... */ }
+```
+
+Written this way, anything outside the narrowed range is never checked.
+
+<FileTree>
+  * src/main/kotlin/com/example/
+    * useCase/
+      * GetUserUseCase.kt caught by the filter
+    * UserHelper.kt not caught by the filter
+    * misc/
+      * memo.md not caught by the filter
+</FileTree>
+
+Next, katachi. It works the other way around: **it scans the whole project and matches it against the declaration.**
+Here is what each tool reports for the same three files.
+
+| File | Konsist / ArchUnit | katachi |
+|---|---|---|
+| `GetUserUseCase.kt` | Caught by the filter, so its contents are checked | No problem if it is in the declared place. A violation if it is anywhere else |
+| `UserHelper.kt` | Not caught by the filter, so nothing is reported | It matches no Role, so it is reported as a violation |
+| `misc/memo.md` | Not caught by the filter, so nothing is reported | It matches no Role, so it is reported as a violation |
+
+To find "something is here that should not be", you need **a tool that looks at the whole.**
+
+## So does Konsist become unnecessary?
+
+No, using both together is the recommended way. katachi and Konsist look at different ranges.
+
+| Tool | What it looks at | Example |
+|---|---|---|
+| katachi | **Where** a file is | A `UseCase` goes in `useCase/` |
+| katachi (`ktFileContent { }`) | The **shape of the declarations** a file may hold: package, imports, kind of declaration, name, modifiers | A `UseCase` file holds exactly one class that has `invoke` |
+| Konsist | The **contents and relations** of declarations: function bodies, what is referenced, relations across files | Every `UseCase` has a test class |
+
+`ktFileContent { }` looks at the declarations written in a file.
+It does not look at what a function body calls, or how a class from another package is used.
+That is Konsist's job.
+
+For example, "every `UseCase` has a test class" spans several files, so it is written with Konsist.
+
+```kotlin
+Konsist.scopeFromProject()
+    .classes()
+    .withNameEndingWith("UseCase")
+    .assertTrue { it.hasTestClasses() }
+```
+
+Violations within the range of `ktFileContent { }` are put into one report together with placement violations.
+Calling `assert(FileConstraintCheck())` in the test checks "where a file is" and "which declarations a file may hold" at once.
+Checking the contents and relations of declarations is done separately, in Konsist tests.
+
+And Konsist is not the only tool that occupies the "check the contents of a file" position.
+Depending on the rule you want to check, custom rules in [detekt](https://detekt.dev/) may serve as a substitute for Konsist.
+
+<CardGrid>
+  <LinkCard title="Comparison with other tools" description="How detekt and the rest — the tools that check contents — relate to katachi." href="/katachi/get-started/comparison-with-other-tools/" />
+</CardGrid>
+
+## Why is there only one test?
+
+Because **one run should tell you everything.**
+
+If you split the tests up per rule, a test stops at the first failure.
+Fix it, rerun, learn about the next violation, fix again. **You get one round trip per violation.**
+
+katachi calls `assert()` once, and every violation in the repository gathers into **a single
+failure message**. If ten things are wrong, all ten come out at once. You read it once.
+
+```text title="Example error message" {1}
+Katachi check failed: 3 violations (Unexpected: 2, Missing: 1)
+
+[UnexpectedFile] file:///path/to/project/src/main/kotlin/com/example/GetUserUseCase.kt
+  No role is defined for this file.
+
+  Nearby locations:
+    UseCase file:///path/to/project/src/main/kotlin/com/example/useCase/
+
+  How to fix:
+    - Move it to one of the locations above
+    ...
+
+[UnexpectedDirectory] file:///path/to/project/src/main/kotlin/com/example/misc
+  ...
+
+[MissingFile] file:///path/to/project/src/main/kotlin/com/example/useCase/DeleteUserUseCase.kt
+  ...
+```
+
+## If the test passes, why generate documentation?
+
+**Generating documentation is optional, but recommended**, because a test is not an explanation
+written for humans.
+
+All `assert()` guarantees is that things match the definition.
+What a newcomer or an AI agent wants to know is **why** the structure is this way, and that does
+not appear in the test output.
+
+Write that documentation separately, though, and **when the implementation changes, the documentation update gets missed and its content drifts away from the implementation.**
+Documentation that contradicts the implementation is worse than none at all, because nobody notices the contradiction and people keep working from it.
+
+So katachi **produces both from the same definition**. The `summary` and `description` you write
+in a Role are at once the subject of the check and the body of the documentation.
+
+```mermaid
+flowchart LR
+    D["architecture { }<br/>Roles, placement, descriptions"]
+    D --> T["Test<br/>check that it matches the declaration"]
+    D --> M["Docs<br/>explain what each place is for"]
+    D -.-> C["Your own Processor<br/>aggregate, extract, emit other formats"]
+
+    style D fill:#5B8DEF22,stroke:#5B8DEF,stroke-width:2px
+    style C fill:#BDBDBD22,stroke:#BDBDBD,stroke-dasharray:4 3,color:#8A8A8A
+```
+
+Figure 1. The flow of producing tests and documentation from one definition
+
+Because the architecture definition is the single source of truth, **one side going stale on its
+own is structurally impossible.**
+
+Tests and documentation are what katachi ships, but **you are not limited to those two.**
+You can pull whatever you want out of the same definition.
+For how, see [ArchitectureProcessor and customizing it](/katachi/0.3/guides/processor/).
+
+## How do I decide the names and the granularity of Roles?
+
+Use this criterion: **is the team already using that word?**
+
+A Role in katachi is not there to introduce new concepts.
+It takes a word already used out loud and in review — "this is a UseCase, right?",
+"put it in the Repository" — and writes it down as a declaration.
+
+So, **the definition is an agreement of the team**, and an important subject of review.
+Even when you have an AI agent produce the initial definition, that is no more than a guess from
+the existing code. **The team is expected to read it and agree on it in the end**.
