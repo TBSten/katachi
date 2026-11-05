@@ -12,7 +12,9 @@ import me.tbsten.katachi.dsl.internal.GlobLexer
 private const val NEARBY_LIMIT: Int = 3
 
 internal class NearbyCandidates(entries: List<LayoutEntry>) {
-    private val candidates: List<NearbyCandidate> = entries.candidates()
+    // Built on the first unexpected file, not up front: a clean walk never asks for a neighbour,
+    // and building the list compiles a glob per level of every entry.
+    private val candidates: List<NearbyCandidate> by lazy { entries.candidates() }
 
     fun nearbyOf(file: String): List<NearbyLocation> {
         val directory = file.parentPath()
