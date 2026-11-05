@@ -27,6 +27,8 @@ fun DeclarationContainerScope.idePluginSource() = "IdePluginSource".role {
                 "**" / "*".ktFile()
             }
             "main" / "resources" / "META-INF" / "plugin.xml".file()
+            // The MCP tools, read only where the JetBrains MCP Server is present (`<depends optional="true">`).
+            "main" / "resources" / "META-INF" / "katachi-mcp.xml".file()
             "main" / "resources" / "META-INF" / "pluginIcon.svg".file()
             "main" / "resources" / "META-INF" / "pluginIcon_dark.svg".file()
             "main" / "resources" / "icons" / "*.svg".file()
@@ -67,6 +69,7 @@ private val FILES_WITHOUT_SDK_CALLS: Map<String, String> = mapOf(
     "DefinitionErrorAnnotation" to "types that hold a PsiFile, a VirtualFile and a TextRange; no SDK call",
     "KatachiCodeVisionGroup" to "returns constant strings for the settings page; no SDK call",
     "NoRolePanels" to "a weak map of editors to panels; no SDK call, only SDK types as keys",
+    "KatachiMcpToolset" to "the MCP Server's entry: its `call` catches every failure of the tools itself and turns it into mcpFail (which must reach the server, so sdkCall would swallow it); the SDK calls behind it are in KatachiMcpTools' collaborators, inside sdkCall",
 )
 
 private fun callsSdkUnguarded(file: KoFileDeclaration): Boolean =

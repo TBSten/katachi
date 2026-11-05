@@ -33,6 +33,8 @@ fun DeclarationContainerScope.idePluginTest() = "IdePluginTest".role {
             // The gutter's text goldens (one per sample), and the copies of the samples' own files they are read from.
             "resources" / "contract" / "gutter" / "*.txt".file()
             "resources" / "contract" / "gutter" / "sources" / "**" / "*".file()
+            // The MCP tools' golden: their names and input / output schemas as the MCP Server lists them.
+            "resources" / "contract" / "mcp" / "*.txt".file()
         }
         // Fakes of the ports and builders of test data, shared by `test` and `uiTest` (which compiles a copy of them:
         // IntelliJ puts a directory in one module only, so uiTest cannot list src/test/kotlin/…/testing as its own).
