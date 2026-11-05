@@ -5,11 +5,15 @@
  * プラグインのものは今のパスに版の区切りを付け替えるだけなので、その版に無いページ
  * （トップページ・版を切ったあとに足したページ）では 404 になる。ここでは行く先のページが
  * 無いとき、その版のトップ、無ければその版の最初のページへ送る（src/lib/version-destination.ts）。
+ *
+ * リリースのビルド（docs.yml がタグから root を作るもの）では、末尾に開発版（main を
+ * `/katachi/dev/` に出したもの）への選択肢を足す。開発版は別のビルドなのでページの一覧が
+ * 分からず、同じ slug のページへそのまま送る（ページは増えることはあっても減ることは稀）。
  */
 import { basename } from 'node:path';
 import { getCollection } from 'astro:content';
 import { Icon } from '@astrojs/starlight/components';
-import { archivedVersions, currentVersion } from '../lib/versions.mjs';
+import { archivedVersions, currentVersion, devVersion } from '../lib/versions.mjs';
 import { firstSlug, pagePath, pageSlug, resolveVersionPath } from '../lib/version-destination';
 
 const { id, locale } = Astro.locals.starlightRoute;
@@ -37,6 +41,13 @@ const options = [{ slug: undefined, label: currentVersion.label }, ...archivedVe
 		firstSlug(version.slug ? sidebars.get(version.slug) : undefined),
 	),
 }));
+if (devVersion) {
+	options.push({
+		label: devVersion.label,
+		selected: false,
+		value: pagePath({ base: devVersion.base, locale: localeSegment, slug }),
+	});
+}
 ---
 
 <starlight-version-select>
@@ -93,7 +104,7 @@ const options = [{ slug: undefined, label: currentVersion.label }, ...archivedVe
 		padding-inline: calc(var(--sl-versions-label-icon-size) + 0.375rem)
 			calc(var(--sl-versions-caret-icon-size) + 0.25rem);
 		text-overflow: ellipsis;
-		width: 6.5em;
+		width: 7.5em;
 	}
 
 	option {
