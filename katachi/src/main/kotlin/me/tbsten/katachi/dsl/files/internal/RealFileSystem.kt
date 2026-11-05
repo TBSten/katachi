@@ -14,7 +14,7 @@ import me.tbsten.katachi.dsl.files.KatachiFileSystem
  * ```kt
  * import me.tbsten.katachi.ExperimentalKatachiApi
  * import me.tbsten.katachi.InternalKatachiApi
- * import me.tbsten.katachi.check.internal.validate
+ * import me.tbsten.katachi.check.validate
  * import me.tbsten.katachi.dsl.files.internal.RealFileSystem
  * import java.io.File
  *

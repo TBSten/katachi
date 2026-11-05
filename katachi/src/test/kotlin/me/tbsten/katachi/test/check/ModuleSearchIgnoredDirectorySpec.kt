@@ -7,7 +7,7 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import java.io.IOException
-import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.FileSelection
 import me.tbsten.katachi.dsl.architecture

@@ -18,6 +18,7 @@ import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.processor.ArchitectureDeclarationContext
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
@@ -457,7 +458,7 @@ class ProcessorRunSpec : FreeSpec({
 private object UndeclaredNamesBoomProcessor : ArchitectureProcessorNoArg<Unit> {
     override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> = runCatching { }
 
-    override fun undeclaredArgNames(context: ArchitectureProcessContext<*>): Set<String> =
+    override fun undeclaredArgNames(context: ArchitectureDeclarationContext): Set<String> =
         throw IllegalStateException("undeclared names boom")
 }
 
@@ -587,7 +588,7 @@ private object FilesReadingProcessorB : ArchitectureProcessorNoArg<List<String>>
 private object UndeclaredNameRunProcessor : ArchitectureProcessorNoArg<Unit> {
     override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> = runCatching { }
 
-    override fun undeclaredArgNames(context: ArchitectureProcessContext<*>): Set<String> =
+    override fun undeclaredArgNames(context: ArchitectureDeclarationContext): Set<String> =
         setOf("greeting")
 }
 

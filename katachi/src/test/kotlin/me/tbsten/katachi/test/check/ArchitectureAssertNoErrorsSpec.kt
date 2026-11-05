@@ -10,7 +10,7 @@ import me.tbsten.katachi.check.ViolationKind
 import me.tbsten.katachi.check.assertNoErrors
 import me.tbsten.katachi.check.internal.assert
 import me.tbsten.katachi.check.internal.assertNoErrors
-import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.FileSelection
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.files.FsPath

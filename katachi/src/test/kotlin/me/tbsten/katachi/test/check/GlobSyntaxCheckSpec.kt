@@ -6,7 +6,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import me.tbsten.katachi.check.internal.LayoutIndex
 import me.tbsten.katachi.check.internal.report
-import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.internal.flattenLayout
 

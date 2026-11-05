@@ -7,7 +7,7 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeSameInstanceAs
 import me.tbsten.katachi.check.FileConstraintCheck
-import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.FileConstraint
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile

@@ -15,7 +15,7 @@ import me.tbsten.katachi.check.assert
 import me.tbsten.katachi.check.assertNoErrors
 import me.tbsten.katachi.check.internal.assert
 import me.tbsten.katachi.check.internal.report
-import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.FileSelection
 import me.tbsten.katachi.dsl.architecture

@@ -8,7 +8,7 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.check.UnexpectedFile
 import me.tbsten.katachi.check.internal.LayoutIndex
-import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.ArchitectureScope
 import me.tbsten.katachi.dsl.gradle.gradle

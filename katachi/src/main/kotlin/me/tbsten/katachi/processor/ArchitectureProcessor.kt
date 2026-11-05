@@ -102,9 +102,11 @@ public interface ArchitectureProcessor<Args, R> {
      *
      * ## The contract
      *
-     * - Called before any processor of the run runs. **Do not read the file system here**: read
-     *   the declarations and [ArchitectureProcessContext.rawArgs].
-     * - `context.args` is not decoded yet. Read [ArchitectureProcessContext.rawArgs] instead.
+     * - Called before any processor of the run runs. [context] is the declarations and
+     *   [ArchitectureDeclarationContext.rawArgs] only: there is no `filesOf` to call, so nothing
+     *   here can walk the project.
+     * - `args` is not decoded yet, and is not on [context]. Read
+     *   [ArchitectureDeclarationContext.rawArgs] instead.
      * - Answer [emptySet] when there is nothing to add. Throw only when the run is already wrong,
      *   such as a role name no role answers to; the exception ends the run, so make its message
      *   name what the user got wrong.
@@ -116,12 +118,12 @@ public interface ArchitectureProcessor<Args, R> {
      *         runCatching { for ((role, note) in context.rawArgs) context.log("$role: $note") }
      *
      *     // --arg domain.UseCase="owned by the platform team"
-     *     override fun undeclaredArgNames(context: ArchitectureProcessContext<*>): Set<String> =
+     *     override fun undeclaredArgNames(context: ArchitectureDeclarationContext): Set<String> =
      *         context.roles.map { it.qualifiedName }.toSet()
      * }
      * ```
      */
-    public fun undeclaredArgNames(context: ArchitectureProcessContext<*>): Set<String> = emptySet()
+    public fun undeclaredArgNames(context: ArchitectureDeclarationContext): Set<String> = emptySet()
 }
 
 /**

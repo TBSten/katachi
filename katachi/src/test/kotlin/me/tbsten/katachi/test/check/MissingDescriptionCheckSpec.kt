@@ -13,7 +13,7 @@ import me.tbsten.katachi.check.MissingDescription
 import me.tbsten.katachi.check.internal.assert
 import me.tbsten.katachi.check.internal.missingDescriptionsOf
 import me.tbsten.katachi.check.internal.report
-import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.gradle.module

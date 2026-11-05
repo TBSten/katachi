@@ -25,6 +25,13 @@ tasks.test {
     outputs.upToDateWhen { false }
     outputs.cacheIf { false }
 
+    // `-Dkatachi.snapshot.update=true` on the command line sets a property of Gradle's own JVM,
+    // not of the forked test JVM, so LayerImportSnapshotSpec would never see it without this.
+    systemProperty(
+        "katachi.snapshot.update",
+        providers.systemProperty("katachi.snapshot.update").getOrElse("false"),
+    )
+
     // The violations as SARIF 2.1.0, next to the JUnit report: ci.yml hands this file to
     // GitHub's code scanning (`upload-sarif`), which annotates a pull request with them.
     //

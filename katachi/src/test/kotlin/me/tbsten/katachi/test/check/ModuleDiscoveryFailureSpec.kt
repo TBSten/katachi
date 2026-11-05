@@ -14,7 +14,7 @@ import me.tbsten.katachi.check.KatachiArchitectureAssertionError
 import me.tbsten.katachi.check.UncheckedDirectory
 import me.tbsten.katachi.check.UncheckedDirectoryReason
 import me.tbsten.katachi.check.internal.report
-import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.KatachiUnresolvableModulePatternException
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
