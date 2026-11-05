@@ -66,7 +66,11 @@ import me.tbsten.katachi.dsl.KatachiDsl
  * - **Inbound rules see only the covered files.** `onlyBeAccessedByAnyPackage` and
  *   `notBeAccessedByAnyPackage` count accesses from inside the graph, which here is the covered
  *   set. Outbound rules (`notDependOnPackages`, `onlyDependOnPackages`) read imports and
- *   usages, so they see dependencies on anything.
+ *   usages, so they see dependencies on anything — with one exception of Konture's own: the
+ *   `classes { }` forms drop every dependency on `java`, `javax` and `kotlin` (and their
+ *   subpackages) before matching, so `classes { should() notDependOnPackages "java.io.." }` is
+ *   green on a class that imports `java.io.File`. Write the same rule in `files { }` or
+ *   `functions { }`, where nothing is dropped, or use `notReferenceClass("java.io.File")`.
  * - **`.kts` files are never in the graph.** Konture parses `.kt` only, and so does katachi here.
  *   A constraint that covers only scripts is refused ([KatachiKontureNoKotlinFilesException]).
  * - **Konture's violation message does not reach the report.** A report block carries the path,
