@@ -10,6 +10,7 @@ private val LAYERS: List<List<String>> =
         listOf("template"),
         listOf("ide"),
         listOf("konsist", "konture"),
+        listOf("script"),
     )
 
 private fun layersAfter(layer: String): List<String> {

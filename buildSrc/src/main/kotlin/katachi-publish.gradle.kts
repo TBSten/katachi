@@ -85,6 +85,10 @@ mavenPublishing {
                     "Konture backend for katachi. Adds `konture { }` so an architecture " +
                         "definition can apply Konture's rules to the files a role covers."
 
+                "katachi-script" ->
+                    "The `katachi` command. What `katachi.main.kts` pulls in with " +
+                        "`@file:DependsOn`: the install kit's subcommands, written in Kotlin."
+
                 "katachi-gradle-plugin" ->
                     "Gradle plugin for katachi. Registers one task per katachi processor " +
                         "(katachiDocs, katachiTemplate, ...), each running it against the " +

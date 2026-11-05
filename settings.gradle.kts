@@ -35,6 +35,12 @@ include(":katachi-konture")
 // (Gradle 8.0 / Java 8) from the library (Kotlin 2.2 / JVM 17). See its build.gradle.kts.
 include(":katachi-gradle-plugin")
 
+// The `katachi` command (`brew install tbsten/tap/katachi`): the logic behind the `.main.kts` entry
+// point in `katachi-script/cli/`. A module of its own because the script pulls it from Maven
+// Central with `@file:DependsOn`, so it has to be a published artifact, and because it runs on the
+// user's machine outside any Gradle build, so nothing of the Gradle plugin applies to it.
+include(":katachi-script")
+
 // katachi's own architecture, declared with katachi and asserted like any other test. The
 // same recommended shape the three samples use: one independent JVM module that belongs to
 // no layer. It is not a source set of `:katachi` because the check walks from the repository

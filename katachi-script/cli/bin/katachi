@@ -1,0 +1,16 @@
+#!/bin/sh
+# The `katachi` command. Homebrew's wrapper sets KATACHI_HOME to where the kit was unpacked; run
+# from a bare tarball, it is the directory above this one.
+set -eu
+
+if [ -z "${KATACHI_HOME:-}" ]; then
+	KATACHI_HOME=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+fi
+export KATACHI_HOME
+
+if ! command -v kotlin >/dev/null 2>&1; then
+	printf '\n[x] %s\n' "kotlin is not on PATH. Install it with: brew install kotlin" >&2
+	exit 1
+fi
+
+exec kotlin "$KATACHI_HOME/katachi.main.kts" "$@"

@@ -32,6 +32,7 @@ dependencies {
     dokka(project(":katachi"))
     dokka(project(":katachi-konsist"))
     dokka(project(":katachi-konture"))
+    dokka(project(":katachi-script"))
     dokka(project(":katachi-gradle-plugin"))
 
     dokkaHtmlPlugin(project(":tool:dokka"))
@@ -39,7 +40,7 @@ dependencies {
 
 tasks.register("generateApiDocs") {
     group = "documentation"
-    description = "Aggregates the :katachi, :katachi-konsist and :katachi-konture Dokka HTML into " +
+    description = "Aggregates the :katachi, :katachi-konsist, :katachi-konture and :katachi-script Dokka HTML into " +
             "docs/public/api-docs/ for the docs site's API reference page."
     dependsOn("dokkaGenerateHtml")
     finalizedBy("verifyApiDocs")
@@ -68,7 +69,7 @@ tasks.register("verifyApiDocs") {
             "Featured sections, the llms files and the Markdown pages, and that their links lead somewhere."
     mustRunAfter("dokkaGenerateHtml")
     val apiDocs = layout.projectDirectory.dir("docs/public/api-docs").asFile
-    val modules = listOf("katachi", "katachi-konsist", "katachi-konture")
+    val modules = listOf("katachi", "katachi-konsist", "katachi-konture", "katachi-script")
     val baseUrl = providers.gradleProperty("katachi.apiDocsBaseUrl").map { it.removeSuffix("/") + "/" }.orNull
     doLast {
         val problems = mutableListOf<String>()
@@ -615,6 +616,13 @@ fun Task.runsAfterRootBuilds() {
         ":katachi-konture:build",
         ":katachi-konture:jar",
         ":katachi-konture:test",
+    )
+
+    mustRunAfter(
+        ":katachi-script:check",
+        ":katachi-script:build",
+        ":katachi-script:jar",
+        ":katachi-script:test",
     )
 
     mustRunAfter(
