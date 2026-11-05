@@ -16,6 +16,7 @@ fun DeclarationContainerScope.libraryGroup() = "library".group {
     check()
     report()
     docs()
+    diff()
     template()
     ide()
 }
