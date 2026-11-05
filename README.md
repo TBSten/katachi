@@ -24,7 +24,7 @@ From this one definition, you get the following three things.
 
 - **A test**: reports files that live somewhere the definition doesn't cover. Since only what you declare is allowed, the set of places files can end up doesn't quietly grow
 - **Documentation**: `./gradlew katachiDocs` writes out Markdown for each Role
-- **Code scaffolding**: `./gradlew katachiTemplate --arg template=UseCase --arg name=GetUser` creates a file where the definition says it belongs. It can also be generated from an IntelliJ IDEA / Android Studio plugin (experimental) ([how to install](https://tbsten.github.io/katachi/guides/generate-code-from-template/))
+- **Code scaffolding**: `./gradlew katachiTemplate --arg template=UseCase --arg name=GetUser` creates a file where the definition says it belongs ([setup](https://tbsten.github.io/katachi/guides/generate-code-from-template/))
 
 You can also write rules about a file's contents — holding a single public class, for example — with `ktFileContent { }`. How this differs from Konsist, detekt and ArchUnit is in [Comparison with other tools](https://tbsten.github.io/katachi/get-started/comparison-with-other-tools/).
 
