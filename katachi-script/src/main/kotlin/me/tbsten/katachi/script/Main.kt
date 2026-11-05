@@ -20,6 +20,7 @@ import me.tbsten.katachi.script.internal.runScript
  * ```
  *
  * @param args The command line after the command name: `data get check-list meta.moduleDir`.
+ * @featured
  */
 public fun main(args: Array<String>) {
     val status = runScript(args.toList(), ScriptContext.fromSystem())
