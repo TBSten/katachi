@@ -115,7 +115,27 @@ public class Glob private constructor(
 
         const val MODULE_SEPARATOR: Char = ':'
 
+        // A layout of R roles over M modules compiles the same few segment texts R x M times
+        // (`src`, `main`, `*Screen.kt`), and the lexer allocates per character: memoising by text
+        // is what keeps the allocation per validate() flat. Bounded so a run over many distinct
+        // patterns cannot grow the JVM, and keyed by separator too because the same text
+        // compiles to a different regex for a module path.
+        private const val MEMO_LIMIT: Int = 4096
+
+        private val memo: MutableMap<String, Glob> = java.util.Collections.synchronizedMap(
+            object : LinkedHashMap<String, Glob>(256, 0.75f, true) {
+                override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Glob>): Boolean = size > MEMO_LIMIT
+            },
+        )
+
         fun compile(pattern: String, separator: Char = PATH_SEPARATOR): Glob {
+            val key = "$separator$pattern"
+            // Not `getOrPut`: a pattern the lexer refuses must throw every time, never be cached.
+            memo[key]?.let { return it }
+            return compileUncached(pattern, separator).also { memo[key] = it }
+        }
+
+        private fun compileUncached(pattern: String, separator: Char): Glob {
             if (pattern.isEmpty()) throw KatachiGlobSyntaxException(pattern, GlobProblem.EmptyPattern)
 
             val tokens = GlobLexer.scan(pattern, separator)
