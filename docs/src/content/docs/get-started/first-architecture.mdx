@@ -236,25 +236,25 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
             <details>
             <summary>Example output on failure</summary>
 
-            If you place `GetUserUseCase.kt` somewhere that was never declared, the violation is reported like this.
+            The definition in step 3 put `*UseCase.kt` under `domain/src/main/kotlin/usecase/`. If you place `GetUserUseCase.kt` one level up, at `domain/src/main/kotlin/GetUserUseCase.kt`, the violation is reported like this.
 
             ```text nocollapse
             Katachi check failed: 1 violation (Unexpected: 1)
 
-            [UnexpectedFile] file:///path/to/project/src/main/kotlin/com/example/project/GetUserUseCase.kt
+            [UnexpectedFile] file:///path/to/project/domain/src/main/kotlin/GetUserUseCase.kt
               No role is defined for this file.
 
               Nearby locations:
-                UseCase file:///path/to/project/src/main/kotlin/com/example/project/useCase/
+                domain.UseCase file:///path/to/project/domain/src/main/kotlin/usecase/ (*UseCase.kt)
 
               How to fix:
-                - Move it to one of the locations above
+                - Move it to one of the locations above, with a name matching the pattern in parentheses
                 - Delete it if it is not needed
                 - Add a new role for it:
                     "GetUserUseCase".role {
                       summary = "TODO"
                       layout {
-                        "src/main/kotlin/com/example/project" / "GetUserUseCase".ktFile()
+                        "domain/src/main/kotlin" / "GetUserUseCase".ktFile()
                       }
                     }
             ```
