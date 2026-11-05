@@ -245,6 +245,48 @@ class KatachiPluginFunctionalTest {
 
     @ParameterizedTest(name = "Gradle {0}")
     @MethodSource("gradleVersions")
+    @DisplayName("katachiDiff は diff { } の値を既定として送り、同じ名前の --arg がそれに勝つ")
+    void diffBlockBecomesTheDefaultArgsOfKatachiDiff(String gradleVersion, @TempDir Path projectDir)
+            throws IOException {
+        writeFixture(projectDir, "Args");
+        writeTestJavaClass(projectDir, "Args", RECORD_ARGS);
+        appendBuildScript(
+                projectDir,
+                "\n"
+                        + "katachi {\n"
+                        + "    processors {\n"
+                        + "        diff {\n"
+                        + "            before = \"origin/main\"\n"
+                        + "            weights = listOf(\"Domain=2\", \"Data=0.5\")\n"
+                        + "            maxFiles = 50\n"
+                        + "            markdown {\n"
+                        + "                outputFile = layout.projectDirectory.file(\"diff-report.md\")\n"
+                        + "            }\n"
+                        + "            html {\n"
+                        + "                enable = false\n"
+                        + "            }\n"
+                        + "        }\n"
+                        + "    }\n"
+                        + "}\n");
+
+        runner(projectDir, gradleVersion, "katachiDiff", "--arg", "maxFiles=0").build();
+
+        List<String> args = Arrays.asList(argsOf(projectDir).split("\n"));
+        assertTrue(args.contains("--processor=diff"), "the task did not pass its own key:\n" + args);
+        assertTrue(args.contains("--arg=before=origin/main"), "the diff { } default was lost:\n" + args);
+        assertTrue(args.contains("--arg=weights=Domain=2,Data=0.5"), "weights did not arrive:\n" + args);
+        // A RegularFile travels as its absolute path; the temporary directory may be spelled through a symlink.
+        assertTrue(
+                args.stream().anyMatch(arg -> arg.startsWith("--arg=markdownOutputFile=/")
+                        && arg.endsWith(projectDir.getFileName() + "/diff-report.md")),
+                "markdown { outputFile } did not arrive as an absolute path:\n" + args);
+        assertTrue(args.contains("--arg=html=false"), "html { enable } did not arrive:\n" + args);
+        assertTrue(args.contains("--arg=maxFiles=0"), "--arg did not reach the entry point:\n" + args);
+        assertFalse(args.contains("--arg=maxFiles=50"), "the build script beat --arg:\n" + args);
+    }
+
+    @ParameterizedTest(name = "Gradle {0}")
+    @MethodSource("gradleVersions")
     @DisplayName("register したキーごとに katachi + 先頭大文字のタスクが説明付きででき、katachi グループにはそれ以外のタスクが無い")
     void registersOneTaskPerRegisteredKey(String gradleVersion, @TempDir Path projectDir)
             throws IOException {
@@ -267,6 +309,7 @@ class KatachiPluginFunctionalTest {
         assertEquals(
                 Arrays.asList(
                         "generateKatachiEntryPoint",
+                        "katachiDiff",
                         "katachiDocs",
                         "katachiLayout",
                         "katachiLayoutCheck",

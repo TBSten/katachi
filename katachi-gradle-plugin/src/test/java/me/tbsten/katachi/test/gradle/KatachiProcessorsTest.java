@@ -29,6 +29,7 @@ class KatachiProcessorsTest {
 
     /** Where the default documentation processor lives, as the generated source has to spell it. */
     private static final String GENERATE_DOCUMENTATION = "me.tbsten.katachi.docs.GenerateDocumentation";
+    private static final String DIFF_REPORT = "me.tbsten.katachi.diff.DiffReport";
 
     /** Where the default template processor lives, as the generated source has to spell it. */
     private static final String GENERATE_CODE_FROM_TEMPLATE =
@@ -125,7 +126,7 @@ class KatachiProcessorsTest {
     }
 
     @Test
-    @DisplayName("既定で登録されるのは docs と template と templates と internalTemplatesJson と internalDefinitionJson だけ -- layout も konsist も入らない")
+    @DisplayName("既定で登録されるのは docs と diff と template と templates と internalTemplatesJson と internalDefinitionJson だけ -- layout も konsist も入らない")
     void docsAndTemplateAreTheOnlyDefaults() {
         Map<String, String> registrations = registrations(new KatachiProcessors());
 
@@ -134,6 +135,7 @@ class KatachiProcessorsTest {
         // that the rule stays "only what :katachi itself carries".
         Map<String, String> expected = new HashMap<>();
         expected.put("docs", GENERATE_DOCUMENTATION);
+        expected.put("diff", DIFF_REPORT);
         expected.put("template", GENERATE_CODE_FROM_TEMPLATE);
         expected.put("templates", DESCRIBE_TEMPLATES);
         expected.put("internalTemplatesJson", DESCRIBE_TEMPLATES);
@@ -162,8 +164,8 @@ class KatachiProcessorsTest {
         // without giving it a second name.
         processors.register("docs", "com.example.processors.OurOwnDocs");
 
-        // Still the five defaults, with `docs` now pointing at the user's own class.
-        assertEquals(5, registrations(processors).size());
+        // Still the six defaults, with `docs` now pointing at the user's own class.
+        assertEquals(6, registrations(processors).size());
     }
 
     @Test
@@ -251,6 +253,82 @@ class KatachiProcessorsTest {
         assertThrows(
                 InvalidUserDataException.class,
                 () -> processors.template(template -> template.setTemplate(java.util.List.of())));
+    }
+
+    @Test
+    @DisplayName("diff { } に書いた値はそれぞれの --arg になり、書かなかった値は送らない")
+    void diffOptionsTravelAsTheirArgs() {
+        KatachiProcessors processors = new KatachiProcessors();
+        processors.diff(diff -> {
+            diff.setBefore("origin/main");
+            diff.setWeights(java.util.List.of("Domain=2", "Presentation.ViewModel=0.5"));
+            diff.setMaxFiles(50);
+            diff.markdown(markdown -> markdown.setOutputFile("diff-report.md"));
+            diff.html(html -> html.setEnable(false));
+        });
+
+        java.util.Map<String, String> expected = new java.util.LinkedHashMap<>();
+        expected.put("before", "origin/main");
+        expected.put("weights", "Domain=2,Presentation.ViewModel=0.5");
+        expected.put("maxFiles", "50");
+        expected.put("markdownOutputFile", "diff-report.md");
+        expected.put("html", "false");
+        assertEquals(expected, configuredArgs(processors).get("diff"));
+    }
+
+    @Test
+    @DisplayName("diff { } を書かなければ diff の引数は何も送らない")
+    void anUntouchedDiffBlockSendsNothing() {
+        assertEquals(null, configuredArgs(new KatachiProcessors()).get("diff"));
+    }
+
+    @Test
+    @DisplayName("diff { } と args(\"diff\") { } の併用は二重設定として落ちる")
+    void theDiffBlockCollidesWithTheStringForm() {
+        KatachiProcessors processors = new KatachiProcessors();
+        processors.diff(diff -> diff.setMaxFiles(10));
+        processors.args("diff", args -> args.arg("maxFiles", "20"));
+
+        InvalidUserDataException failure =
+                assertThrows(InvalidUserDataException.class, () -> configuredArgs(processors));
+
+        assertTrue(
+                failure.getMessage().contains("diff { }"),
+                "expected the message to name the typed block: " + failure.getMessage());
+    }
+
+    @Test
+    @DisplayName("diff { weights = ... } に = の無い項目やカンマ入りの項目を渡すと落ちる")
+    void anInvalidWeightEntryFails() {
+        KatachiProcessors processors = new KatachiProcessors();
+
+        InvalidUserDataException failure = assertThrows(
+                InvalidUserDataException.class,
+                () -> processors.diff(diff -> diff.setWeights(java.util.List.of("Domain"))));
+        assertTrue(failure.getMessage().contains("\"Domain\""), failure.getMessage());
+        assertThrows(
+                InvalidUserDataException.class,
+                () -> processors.diff(diff -> diff.setWeights(java.util.List.of("Domain=2,Data=3"))));
+    }
+
+    @Test
+    @DisplayName("diff { markdown { outputFile = ... } } が .. でモジュールの外に出ると落ちる")
+    void aDiffOutputFileClimbingOutFails() {
+        KatachiProcessors processors = new KatachiProcessors();
+
+        assertThrows(
+                InvalidUserDataException.class,
+                () -> processors.diff(diff -> diff.markdown(markdown -> markdown.setOutputFile("../diff-report.md"))));
+    }
+
+    @Test
+    @DisplayName("diff { html { outputFile = File } } は絶対パスで送る")
+    void aDiffOutputFileGivenAsAFileTravelsAbsolute() {
+        KatachiProcessors processors = new KatachiProcessors();
+        java.io.File file = new java.io.File("reports/diff.html");
+        processors.diff(diff -> diff.html(html -> html.setOutputFile(file)));
+
+        assertEquals(file.getAbsolutePath(), configuredArgs(processors).get("diff").get("htmlOutputFile"));
     }
 
     @Test

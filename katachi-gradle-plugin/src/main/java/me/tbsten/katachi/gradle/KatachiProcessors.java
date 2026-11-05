@@ -88,6 +88,7 @@ public class KatachiProcessors {
     private static Map<String, String> defaultRegistrations() {
         Map<String, String> defaults = new LinkedHashMap<>();
         defaults.put("docs", "me.tbsten.katachi.docs.GenerateDocumentation");
+        defaults.put("diff", "me.tbsten.katachi.diff.DiffReport");
         defaults.put("template", "me.tbsten.katachi.template.GenerateCodeFromTemplate");
         defaults.put("templates", "me.tbsten.katachi.template.DescribeTemplates");
         defaults.put(INTERNAL_TEMPLATES_JSON_KEY, "me.tbsten.katachi.template.DescribeTemplates");
@@ -189,6 +190,7 @@ public class KatachiProcessors {
     private final Map<String, KatachiProcessorOutputs> declaredOutputs = new LinkedHashMap<>();
     private final KatachiDocsOptions docs = new KatachiDocsOptions();
     private final KatachiTemplateOptions template = new KatachiTemplateOptions();
+    private final KatachiDiffOptions diff = new KatachiDiffOptions();
     private final List<Consumer<String>> keyAddedListeners = new ArrayList<>();
 
     /**
@@ -460,6 +462,33 @@ public class KatachiProcessors {
         action.execute(docs);
     }
 
+    /** What {@code katachiDiff} is given every run. See {@link #diff(Action)}. */
+    public KatachiDiffOptions getDiff() {
+        return diff;
+    }
+
+    /**
+     * Configures the diff report processor katachi ships.
+     *
+     * <p>Typed for the same reason {@link #docs(Action)} is. What is written here is each run's
+     * default; a {@code --arg} of the same name on the command line wins.
+     *
+     * <pre>{@code
+     * katachi {
+     *     processors {
+     *         diff {
+     *             before = "origin/main"
+     *             weights = listOf("Domain=2")
+     *             maxFiles = 50
+     *         }
+     *     }
+     * }
+     * }</pre>
+     */
+    public void diff(Action<? super KatachiDiffOptions> action) {
+        action.execute(diff);
+    }
+
     /** What {@code katachiTemplate} is given every run. See {@link #template(Action)}. */
     public KatachiTemplateOptions getTemplate() {
         return template;
@@ -509,6 +538,8 @@ public class KatachiProcessors {
         Map<String, Map<String, String>> copy = new LinkedHashMap<>();
         Map<String, String> docsArgs = docs.toArgs();
         putTyped(copy, KatachiDocsOptions.KEY, docsArgs, !docsArgs.isEmpty(), "docs { }");
+        Map<String, String> diffArgs = diff.toArgs();
+        putTyped(copy, KatachiDiffOptions.KEY, diffArgs, !diffArgs.isEmpty(), "diff { }");
         putTyped(
                 copy,
                 KatachiTemplateOptions.KEY,
