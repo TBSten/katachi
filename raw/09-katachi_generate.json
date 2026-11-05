@@ -1,0 +1,37 @@
+{
+  "transport": "/sse",
+  "serverInfo": {
+    "name": "IntelliJ IDEA MCP Server",
+    "version": "2026.1"
+  },
+  "request": {
+    "method": "tools/call",
+    "params": {
+      "name": "katachi_generate",
+      "arguments": {
+        "module": ":architecture-test",
+        "templates": [
+          "domain.Service"
+        ],
+        "arguments": {
+          "name": "evidence"
+        },
+        "projectPath": "/Users/tbsten/dev/katachi/.claude/worktrees/katachi-220-mcp/sample/jvm"
+      }
+    }
+  },
+  "response": {
+    "id": 4,
+    "result": {
+      "content": [
+        {
+          "text": "katachi: generating files over MCP is turned off. Turn on 'Allow AI agents to generate files from templates over MCP' in Settings | Tools | katachi.",
+          "type": "text"
+        }
+      ],
+      "isError": true
+    },
+    "jsonrpc": "2.0"
+  },
+  "elapsedSeconds": 0.0
+}

@@ -1,0 +1,55 @@
+{
+  "transport": "/sse",
+  "serverInfo": {
+    "name": "IntelliJ IDEA MCP Server",
+    "version": "2026.1"
+  },
+  "request": {
+    "method": "tools/call",
+    "params": {
+      "name": "katachi_roles_of_file",
+      "arguments": {
+        "path": "src/main/kotlin/com/example/Stray.kt",
+        "projectPath": "/Users/tbsten/dev/katachi/.claude/worktrees/katachi-220-mcp/sample/jvm"
+      }
+    }
+  },
+  "response": {
+    "id": 4,
+    "result": {
+      "content": [
+        {
+          "text": "{\"module\":\":architecture-test\",\"relativePath\":\"src/main/kotlin/com/example/Stray.kt\",\"outcome\":\"unexpected\",\"roles\":[],\"nearby\":[{\"role\":\"app.Entrypoint\",\"directory\":\"src/main/kotlin/com/example\",\"filePattern\":\"Application.kt\"},{\"role\":\"domain.Model\",\"directory\":\"src/main/kotlin/com/example/model\",\"filePattern\":\"[A-Z]*.kt\"},{\"role\":\"api.KtorPlugin\",\"directory\":\"src/main/kotlin/com/example/plugin\",\"filePattern\":\"*.kt\"}],\"stale\":false}",
+          "type": "text"
+        }
+      ],
+      "isError": false,
+      "structuredContent": {
+        "module": ":architecture-test",
+        "relativePath": "src/main/kotlin/com/example/Stray.kt",
+        "outcome": "unexpected",
+        "roles": [],
+        "nearby": [
+          {
+            "role": "app.Entrypoint",
+            "directory": "src/main/kotlin/com/example",
+            "filePattern": "Application.kt"
+          },
+          {
+            "role": "domain.Model",
+            "directory": "src/main/kotlin/com/example/model",
+            "filePattern": "[A-Z]*.kt"
+          },
+          {
+            "role": "api.KtorPlugin",
+            "directory": "src/main/kotlin/com/example/plugin",
+            "filePattern": "*.kt"
+          }
+        ],
+        "stale": false
+      }
+    },
+    "jsonrpc": "2.0"
+  },
+  "elapsedSeconds": 0.0
+}

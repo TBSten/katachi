@@ -1,0 +1,35 @@
+{
+  "transport": "/sse",
+  "serverInfo": {
+    "name": "IntelliJ IDEA MCP Server",
+    "version": "2026.1"
+  },
+  "request": {
+    "method": "tools/call",
+    "params": {
+      "name": "katachi_generate",
+      "arguments": {
+        "module": ":architecture-test",
+        "templates": [
+          "no.SuchTemplate"
+        ],
+        "arguments": {},
+        "projectPath": "/Users/tbsten/dev/katachi/.claude/worktrees/katachi-220-mcp/sample/jvm"
+      }
+    }
+  },
+  "response": {
+    "id": 4,
+    "result": {
+      "content": [
+        {
+          "text": "katachi: no.SuchTemplate is not a template of this module. Pass ids as katachi_list_templates gives them: api.Controller, api.Endpoint, domain.Service.",
+          "type": "text"
+        }
+      ],
+      "isError": true
+    },
+    "jsonrpc": "2.0"
+  },
+  "elapsedSeconds": 1.0
+}

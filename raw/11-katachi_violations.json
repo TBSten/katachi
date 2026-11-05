@@ -1,0 +1,46 @@
+{
+  "transport": "/sse",
+  "serverInfo": {
+    "name": "IntelliJ IDEA MCP Server",
+    "version": "2026.1"
+  },
+  "request": {
+    "method": "tools/call",
+    "params": {
+      "name": "katachi_violations",
+      "arguments": {
+        "path": "src/main/kotlin/com/example/Stray.kt",
+        "projectPath": "/Users/tbsten/dev/katachi/.claude/worktrees/katachi-220-mcp/sample/jvm"
+      }
+    }
+  },
+  "response": {
+    "id": 4,
+    "result": {
+      "content": [
+        {
+          "text": "{\"state\":\"ready\",\"readAt\":\"2026-11-05T19:10:26.433633680Z\",\"stale\":false,\"violations\":[{\"module\":\":architecture-test\",\"ruleId\":\"katachi.UnexpectedFile\",\"label\":\"UnexpectedFile\",\"level\":\"error\",\"message\":\"No role is defined for this file.\\n\\nNearby locations:\\n  app.Entrypoint src/main/kotlin/com/example/ (Application.kt)\\n  domain.Model   src/main/kotlin/com/example/model/ ([A-Z]*.kt)\\n  api.KtorPlugin src/main/kotlin/com/example/plugin/ (*.kt)\\n\\nHow to fix:\\n  - Move it to one of the locations above, with a name matching the pattern in parentheses\\n  - Delete it if it is not needed\\n  - Add a new role for it:\\n      \\\"Stray\\\".role {\\n        summary = \\\"TODO\\\"\\n        layout {\\n          \\\"src/main/kotlin/com/example\\\" / \\\"Stray\\\".ktFile()\\n        }\\n      }\",\"path\":\"/Users/tbsten/dev/katachi/.claude/worktrees/katachi-220-mcp/sample/jvm/src/main/kotlin/com/example/Stray.kt\"}]}",
+          "type": "text"
+        }
+      ],
+      "isError": false,
+      "structuredContent": {
+        "state": "ready",
+        "readAt": "2026-11-05T19:10:26.433633680Z",
+        "stale": false,
+        "violations": [
+          {
+            "module": ":architecture-test",
+            "ruleId": "katachi.UnexpectedFile",
+            "label": "UnexpectedFile",
+            "level": "error",
+            "message": "No role is defined for this file.\n\nNearby locations:\n  app.Entrypoint src/main/kotlin/com/example/ (Application.kt)\n  domain.Model   src/main/kotlin/com/example/model/ ([A-Z]*.kt)\n  api.KtorPlugin src/main/kotlin/com/example/plugin/ (*.kt)\n\nHow to fix:\n  - Move it to one of the locations above, with a name matching the pattern in parentheses\n  - Delete it if it is not needed\n  - Add a new role for it:\n      \"Stray\".role {\n        summary = \"TODO\"\n        layout {\n          \"src/main/kotlin/com/example\" / \"Stray\".ktFile()\n        }\n      }",
+            "path": "/Users/tbsten/dev/katachi/.claude/worktrees/katachi-220-mcp/sample/jvm/src/main/kotlin/com/example/Stray.kt"
+          }
+        ]
+      }
+    },
+    "jsonrpc": "2.0"
+  },
+  "elapsedSeconds": 0.0
+}

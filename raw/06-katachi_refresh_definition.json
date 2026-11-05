@@ -1,0 +1,39 @@
+{
+  "transport": "/sse",
+  "serverInfo": {
+    "name": "IntelliJ IDEA MCP Server",
+    "version": "2026.1"
+  },
+  "request": {
+    "method": "tools/call",
+    "params": {
+      "name": "katachi_refresh_definition",
+      "arguments": {
+        "module": ":architecture-test",
+        "projectPath": "/Users/tbsten/dev/katachi/.claude/worktrees/katachi-220-mcp/sample/jvm"
+      }
+    }
+  },
+  "response": {
+    "id": 4,
+    "result": {
+      "content": [
+        {
+          "text": "{\"state\":\"ready\",\"modules\":[\":architecture-test\"],\"stale\":false,\"definitionErrors\":[]}",
+          "type": "text"
+        }
+      ],
+      "isError": false,
+      "structuredContent": {
+        "state": "ready",
+        "modules": [
+          ":architecture-test"
+        ],
+        "stale": false,
+        "definitionErrors": []
+      }
+    },
+    "jsonrpc": "2.0"
+  },
+  "elapsedSeconds": 3.6
+}

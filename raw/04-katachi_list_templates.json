@@ -1,0 +1,110 @@
+{
+  "transport": "/sse",
+  "serverInfo": {
+    "name": "IntelliJ IDEA MCP Server",
+    "version": "2026.1"
+  },
+  "request": {
+    "method": "tools/call",
+    "params": {
+      "name": "katachi_list_templates",
+      "arguments": {
+        "module": ":architecture-test",
+        "projectPath": "/Users/tbsten/dev/katachi/.claude/worktrees/katachi-220-mcp/sample/jvm"
+      }
+    }
+  },
+  "response": {
+    "id": 4,
+    "result": {
+      "content": [
+        {
+          "text": "{\"modules\":[{\"module\":\":architecture-test\",\"templates\":[{\"id\":\"api.Controller\",\"title\":\"Controller\",\"roleName\":\"api.Controller\",\"summary\":\"Receives one HTTP request, calls the matching Service and returns the result\",\"parameters\":[{\"name\":\"resource\",\"kind\":\"capture\",\"type\":\"String\",\"required\":true}],\"files\":[\"src/main/kotlin/com/example/controller/${resource}/<resource.pascalCase>Controller.kt\"],\"exampleCommand\":\"./gradlew katachiTemplate --arg template=api.Controller --arg resource=<resource>\",\"available\":true},{\"id\":\"api.Endpoint\",\"title\":\"Endpoint\",\"roleName\":\"api.Endpoint\",\"summary\":\"A Controller and the Service it calls\",\"setMembers\":[\"api.Controller\",\"domain.Service\"],\"parameters\":[{\"name\":\"resource\",\"kind\":\"string\",\"type\":\"String\",\"required\":true}],\"files\":[\"src/main/kotlin/com/example/controller/${resource}/<resource.pascalCase>Controller.kt\",\"src/main/kotlin/com/example/service/${resource}Service.kt\"],\"exampleCommand\":\"./gradlew katachiTemplate --arg template=api.Endpoint --arg resource=<resource>\",\"available\":true},{\"id\":\"domain.Service\",\"title\":\"Service\",\"roleName\":\"domain.Service\",\"summary\":\"Owns one application-specific behaviour, realized by combining Repositories\",\"parameters\":[{\"name\":\"name\",\"kind\":\"capture\",\"type\":\"String\",\"required\":true},{\"name\":\"kdoc\",\"kind\":\"string\",\"type\":\"String\",\"required\":false,\"default\":\"Application-specific behaviour for ${name}.\"}],\"files\":[\"src/main/kotlin/com/example/service/${name}Service.kt\"],\"exampleCommand\":\"./gradlew katachiTemplate --arg template=domain.Service --arg name=<name>\",\"available\":true}]}],\"stale\":false}",
+          "type": "text"
+        }
+      ],
+      "isError": false,
+      "structuredContent": {
+        "modules": [
+          {
+            "module": ":architecture-test",
+            "templates": [
+              {
+                "id": "api.Controller",
+                "title": "Controller",
+                "roleName": "api.Controller",
+                "summary": "Receives one HTTP request, calls the matching Service and returns the result",
+                "parameters": [
+                  {
+                    "name": "resource",
+                    "kind": "capture",
+                    "type": "String",
+                    "required": true
+                  }
+                ],
+                "files": [
+                  "src/main/kotlin/com/example/controller/${resource}/<resource.pascalCase>Controller.kt"
+                ],
+                "exampleCommand": "./gradlew katachiTemplate --arg template=api.Controller --arg resource=<resource>",
+                "available": true
+              },
+              {
+                "id": "api.Endpoint",
+                "title": "Endpoint",
+                "roleName": "api.Endpoint",
+                "summary": "A Controller and the Service it calls",
+                "setMembers": [
+                  "api.Controller",
+                  "domain.Service"
+                ],
+                "parameters": [
+                  {
+                    "name": "resource",
+                    "kind": "string",
+                    "type": "String",
+                    "required": true
+                  }
+                ],
+                "files": [
+                  "src/main/kotlin/com/example/controller/${resource}/<resource.pascalCase>Controller.kt",
+                  "src/main/kotlin/com/example/service/${resource}Service.kt"
+                ],
+                "exampleCommand": "./gradlew katachiTemplate --arg template=api.Endpoint --arg resource=<resource>",
+                "available": true
+              },
+              {
+                "id": "domain.Service",
+                "title": "Service",
+                "roleName": "domain.Service",
+                "summary": "Owns one application-specific behaviour, realized by combining Repositories",
+                "parameters": [
+                  {
+                    "name": "name",
+                    "kind": "capture",
+                    "type": "String",
+                    "required": true
+                  },
+                  {
+                    "name": "kdoc",
+                    "kind": "string",
+                    "type": "String",
+                    "required": false,
+                    "default": "Application-specific behaviour for ${name}."
+                  }
+                ],
+                "files": [
+                  "src/main/kotlin/com/example/service/${name}Service.kt"
+                ],
+                "exampleCommand": "./gradlew katachiTemplate --arg template=domain.Service --arg name=<name>",
+                "available": true
+              }
+            ]
+          }
+        ],
+        "stale": false
+      }
+    },
+    "jsonrpc": "2.0"
+  },
+  "elapsedSeconds": 0.0
+}

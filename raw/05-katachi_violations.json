@@ -1,0 +1,35 @@
+{
+  "transport": "/sse",
+  "serverInfo": {
+    "name": "IntelliJ IDEA MCP Server",
+    "version": "2026.1"
+  },
+  "request": {
+    "method": "tools/call",
+    "params": {
+      "name": "katachi_violations",
+      "arguments": {
+        "projectPath": "/Users/tbsten/dev/katachi/.claude/worktrees/katachi-220-mcp/sample/jvm"
+      }
+    }
+  },
+  "response": {
+    "id": 4,
+    "result": {
+      "content": [
+        {
+          "text": "{\"state\":\"notRun\",\"stale\":false,\"violations\":[]}",
+          "type": "text"
+        }
+      ],
+      "isError": false,
+      "structuredContent": {
+        "state": "notRun",
+        "stale": false,
+        "violations": []
+      }
+    },
+    "jsonrpc": "2.0"
+  },
+  "elapsedSeconds": 0.0
+}

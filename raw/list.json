@@ -1,0 +1,2474 @@
+{
+  "transport": "/sse",
+  "serverInfo": {
+    "name": "IntelliJ IDEA MCP Server",
+    "version": "2026.1"
+  },
+  "request": {
+    "method": "tools/list",
+    "params": {}
+  },
+  "response": {
+    "id": 4,
+    "result": {
+      "tools": [
+        {
+          "name": "execute_run_configuration",
+          "inputSchema": {
+            "properties": {
+              "configurationName": {
+                "type": "string",
+                "description": "Name of the run configuration to execute"
+              },
+              "timeout": {
+                "type": "integer",
+                "description": "Timeout in milliseconds"
+              },
+              "maxLinesCount": {
+                "type": "integer",
+                "description": "Maximum number of lines to return"
+              },
+              "truncateMode": {
+                "enum": [
+                  "START",
+                  "MIDDLE",
+                  "END",
+                  "NONE"
+                ],
+                "description": "How to truncate the text: from the start, in the middle, at the end, or don't truncate at all"
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [
+              "configurationName"
+            ],
+            "type": "object"
+          },
+          "description": "Run a specific run configuration in the current project and wait up to specified timeout for it to finish.\nUse this tool to run a run configuration that you have found from the \"get_run_configurations\" tool.\nReturns the execution result including exit code, output, and success status.",
+          "outputSchema": {
+            "properties": {
+              "exitCode": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "timedOut": {
+                "type": [
+                  "boolean",
+                  "null"
+                ],
+                "description": "Indicates whether the operation was timed out. 'true' value may mean that the results may be incomplete or partial. 'false', 'null' or missing value means that the operation has not been timed out."
+              },
+              "output": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "output"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "name": "get_run_configurations",
+          "inputSchema": {
+            "properties": {
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          "description": "Returns a list of run configurations for the current project.\nRun configurations are usually used to define user the way how to run a user application, task or test suite from sources.\n\nThis tool provides additional info like command line, working directory, and environment variables if they are available.\n\nUse this tool to query the list of available run configurations in the current project.",
+          "outputSchema": {
+            "properties": {
+              "configurations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "name"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "commandLine": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "workingDirectory": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "environment": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "required": [
+              "configurations"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "name": "build_project",
+          "inputSchema": {
+            "properties": {
+              "rebuild": {
+                "type": "boolean",
+                "description": "Whether to perform full rebuild the project. Defaults to false. Effective only when `filesToRebuild` is not specified."
+              },
+              "filesToRebuild": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "If specified, only compile files with the specified paths. Paths are relative to the project root."
+              },
+              "timeout": {
+                "type": "integer",
+                "description": "Timeout in milliseconds"
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          "description": "Triggers building of the project or specified files, waits for completion, and returns build errors.\nUse this tool to build the project or compile files and get detailed information about compilation errors and warnings.\nYou have to use this tool after performing edits to validate if the edits are valid.",
+          "outputSchema": {
+            "properties": {
+              "isSuccess": {
+                "type": [
+                  "boolean",
+                  "null"
+                ],
+                "description": "Whether the build was successful"
+              },
+              "problems": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "kind": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "group": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "description": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "file": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "line": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "column": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    }
+                  }
+                },
+                "description": "A list of problems encountered during the build. May be empty if the build was successful."
+              },
+              "timedOut": {
+                "type": [
+                  "boolean",
+                  "null"
+                ],
+                "description": "Indicates whether the operation was timed out. 'true' value may mean that the results may be incomplete or partial. 'false', 'null' or missing value means that the operation has not been timed out."
+              }
+            },
+            "required": [
+              "problems"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "name": "get_file_problems",
+          "inputSchema": {
+            "properties": {
+              "filePath": {
+                "type": "string",
+                "description": "Path relative to the project root"
+              },
+              "errorsOnly": {
+                "type": "boolean",
+                "description": "Whether to include only errors or include both errors and warnings"
+              },
+              "timeout": {
+                "type": "integer",
+                "description": "Timeout in milliseconds"
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [
+              "filePath"
+            ],
+            "type": "object"
+          },
+          "description": "Analyzes the specified file for errors and warnings using IntelliJ's inspections.\nUse this tool to identify coding issues, syntax errors, and other problems in a specific file.\nReturns a list of problems found in the file, including severity, description, and location information.\nNote: Only analyzes files within the project directory.\nNote: Lines and Columns are 1-based.",
+          "outputSchema": {
+            "properties": {
+              "filePath": {
+                "type": "string"
+              },
+              "errors": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "severity",
+                    "description",
+                    "lineContent",
+                    "line",
+                    "column"
+                  ],
+                  "properties": {
+                    "severity": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "lineContent": {
+                      "type": "string"
+                    },
+                    "line": {
+                      "type": "integer"
+                    },
+                    "column": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              },
+              "timedOut": {
+                "type": [
+                  "boolean",
+                  "null"
+                ],
+                "description": "Indicates whether the operation was timed out. 'true' value may mean that the results may be incomplete or partial. 'false', 'null' or missing value means that the operation has not been timed out."
+              }
+            },
+            "required": [
+              "filePath",
+              "errors"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "name": "get_project_dependencies",
+          "inputSchema": {
+            "properties": {
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          "description": "Get a list of all dependencies defined in the project.\nReturns structured information about project library names.",
+          "outputSchema": {
+            "properties": {
+              "dependencies": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "name"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "required": [
+              "dependencies"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "name": "get_project_modules",
+          "inputSchema": {
+            "properties": {
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          "description": "Get a list of all modules in the project with their types.\nReturns structured information about each module including name and type.",
+          "outputSchema": {
+            "properties": {
+              "modules": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "name"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "required": [
+              "modules"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "name": "create_new_file",
+          "inputSchema": {
+            "properties": {
+              "pathInProject": {
+                "type": "string",
+                "description": "Path where the file should be created relative to the project root"
+              },
+              "text": {
+                "type": "string",
+                "description": "Content to write into the new file"
+              },
+              "overwrite": {
+                "type": "boolean",
+                "description": "Whether to overwrite an existing file if exists. If false, an exception is thrown in case of a conflict."
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [
+              "pathInProject"
+            ],
+            "type": "object"
+          },
+          "description": "Creates a new file at the specified path within the project directory and optionally populates it with text if provided.\nUse this tool to generate new files in your project structure.\nNote: Creates any necessary parent directories automatically"
+        },
+        {
+          "name": "find_files_by_glob",
+          "inputSchema": {
+            "properties": {
+              "globPattern": {
+                "type": "string",
+                "description": "Glob pattern to search for. The pattern must be relative to the project root. Example: `src/**/ *.java`"
+              },
+              "subDirectoryRelativePath": {
+                "type": "string",
+                "description": "Optional subdirectory relative to the project to search in."
+              },
+              "addExcluded": {
+                "type": "boolean",
+                "description": "Whether to add excluded/ignored files to the search results. Files can be excluded from a project either by user of by some ignore rules"
+              },
+              "fileCountLimit": {
+                "type": "integer",
+                "description": "Maximum number of files to return."
+              },
+              "timeout": {
+                "type": "integer",
+                "description": "Timeout in milliseconds"
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [
+              "globPattern"
+            ],
+            "type": "object"
+          },
+          "description": "Searches for all files in the project whose relative paths match the specified glob pattern.\nThe search is performed recursively in all subdirectories of the project directory or a specified subdirectory.\nUse this tool when you need to find files by a glob pattern (e.g. '**/*.txt').",
+          "outputSchema": {
+            "properties": {
+              "probablyHasMoreMatchingFiles": {
+                "type": "boolean"
+              },
+              "timedOut": {
+                "type": [
+                  "boolean",
+                  "null"
+                ],
+                "description": "Indicates whether the operation was timed out. 'true' value may mean that the results may be incomplete or partial. 'false', 'null' or missing value means that the operation has not been timed out."
+              },
+              "files": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "files"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "name": "find_files_by_name_keyword",
+          "inputSchema": {
+            "properties": {
+              "nameKeyword": {
+                "type": "string",
+                "description": "Substring to search for in file names"
+              },
+              "fileCountLimit": {
+                "type": "integer",
+                "description": "Maximum number of files to return."
+              },
+              "timeout": {
+                "type": "integer",
+                "description": "Timeout in milliseconds"
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [
+              "nameKeyword"
+            ],
+            "type": "object"
+          },
+          "description": "Searches for all files in the project whose names contain the specified keyword (case-insensitive).\nUse this tool to locate files when you know part of the filename.\nNote: Matched only names, not paths, because works via indexes.\nNote: Only searches through files within the project directory, excluding libraries and external dependencies.\nNote: Prefer this tool over other `find` tools because it's much faster, \nbut remember that this tool searches only names, not paths and it doesn't support glob patterns.",
+          "outputSchema": {
+            "properties": {
+              "probablyHasMoreMatchingFiles": {
+                "type": "boolean"
+              },
+              "timedOut": {
+                "type": [
+                  "boolean",
+                  "null"
+                ],
+                "description": "Indicates whether the operation was timed out. 'true' value may mean that the results may be incomplete or partial. 'false', 'null' or missing value means that the operation has not been timed out."
+              },
+              "files": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "files"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "name": "get_all_open_file_paths",
+          "inputSchema": {
+            "properties": {
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          "description": "Returns active editor's and other open editors' file paths relative to the project root.\n\nUse this tool to explore current open editors.",
+          "outputSchema": {
+            "properties": {
+              "activeFilePath": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "openFiles": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "openFiles"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "name": "list_directory_tree",
+          "inputSchema": {
+            "properties": {
+              "directoryPath": {
+                "type": "string",
+                "description": "Path relative to the project root"
+              },
+              "maxDepth": {
+                "type": "integer",
+                "description": "Maximum recursion depth"
+              },
+              "timeout": {
+                "type": "integer",
+                "description": "Timeout in milliseconds"
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [
+              "directoryPath"
+            ],
+            "type": "object"
+          },
+          "description": "Provides a tree representation of the specified directory in the pseudo graphic format like `tree` utility does.\nUse this tool to explore the contents of a directory or the whole project.\nYou MUST prefer this tool over listing directories via command line utilities like `ls` or `dir`.",
+          "outputSchema": {
+            "properties": {
+              "traversedDirectory": {
+                "type": "string"
+              },
+              "tree": {
+                "type": "string"
+              },
+              "errors": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "listingTimedOut": {
+                "type": [
+                  "boolean",
+                  "null"
+                ],
+                "description": "Indicates whether the operation was timed out. 'true' value may mean that the results may be incomplete or partial. 'false', 'null' or missing value means that the operation has not been timed out."
+              }
+            },
+            "required": [
+              "traversedDirectory",
+              "tree",
+              "errors"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "name": "open_file_in_editor",
+          "inputSchema": {
+            "properties": {
+              "filePath": {
+                "type": "string",
+                "description": "Path relative to the project root"
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [
+              "filePath"
+            ],
+            "type": "object"
+          },
+          "description": "Opens the specified file in the JetBrains IDE editor.\nRequires a filePath parameter containing the path to the file to open.\nThe file path can be absolute or relative to the project root."
+        },
+        {
+          "name": "reformat_file",
+          "inputSchema": {
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "Path relative to the project root"
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "type": "object"
+          },
+          "description": "Reformats a specified file in the JetBrains IDE.\nUse this tool to apply code formatting rules to a file identified by its path."
+        },
+        {
+          "name": "read_file",
+          "inputSchema": {
+            "properties": {
+              "file_path": {
+                "type": "string",
+                "description": "Path relative to the project root"
+              },
+              "mode": {
+                "type": "string",
+                "description": "Read mode: 'slice', 'lines', 'line_columns', 'offsets', or 'indentation'"
+              },
+              "start_line": {
+                "type": "integer",
+                "description": "1-based line number to start reading from"
+              },
+              "max_lines": {
+                "type": "integer",
+                "description": "Maximum number of lines to return (slice uses as line count; all modes cap output)"
+              },
+              "end_line": {
+                "type": "integer",
+                "description": "1-based end line for lines/line_columns mode (inclusive for lines; exclusive for line_columns)"
+              },
+              "start_column": {
+                "type": "integer",
+                "description": "1-based start column for line_columns mode"
+              },
+              "end_column": {
+                "type": "integer",
+                "description": "1-based end column for range read (exclusive)"
+              },
+              "start_offset": {
+                "type": "integer",
+                "description": "0-based start offset for offsets mode (requires end_offset)"
+              },
+              "end_offset": {
+                "type": "integer",
+                "description": "0-based end offset for offsets mode (exclusive)"
+              },
+              "context_lines": {
+                "type": "integer",
+                "description": "Number of context lines to include around the range (per side)"
+              },
+              "max_levels": {
+                "type": "integer",
+                "description": "Indentation mode: maximum indentation levels to include (0 = only anchor block)"
+              },
+              "include_siblings": {
+                "type": "boolean",
+                "description": "Indentation mode: include sibling blocks at the same indentation level"
+              },
+              "include_header": {
+                "type": "boolean",
+                "description": "Indentation mode: include header comments/annotations directly above anchor"
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [
+              "file_path"
+            ],
+            "type": "object"
+          },
+          "description": "        Reads a local file and returns numbered lines (1-indexed) as text.\n        Modes: slice, lines, line_columns, offsets, indentation.\n        Slice uses start_line and max_lines. Lines uses start_line/end_line (inclusive).\n        Line_columns uses start_line/start_column and end_line/end_column (end is exclusive; end_line defaults to start_line).\n        Offsets uses start_offset/end_offset (end is exclusive). Indentation uses start_line with max_levels/include_*.\n        max_lines caps the total output in all modes; context_lines applies to range modes (per side)."
+        },
+        {
+          "name": "get_file_text_by_path",
+          "inputSchema": {
+            "properties": {
+              "pathInProject": {
+                "type": "string",
+                "description": "Path relative to the project root"
+              },
+              "truncateMode": {
+                "enum": [
+                  "START",
+                  "MIDDLE",
+                  "END",
+                  "NONE"
+                ],
+                "description": "How to truncate the text: from the start, in the middle, at the end, or don't truncate at all"
+              },
+              "maxLinesCount": {
+                "type": "integer",
+                "description": "Max number of lines to return. Truncation will be performed depending on truncateMode."
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [
+              "pathInProject"
+            ],
+            "type": "object"
+          },
+          "description": "        Retrieves the text content of a file using its path relative to project root.\n        Use this tool to read file contents when you have the file's project-relative path.\n        In the case of binary files, the tool returns an error.\n        If the file is too large, the text will be truncated with '<<<...content truncated...>>>' marker and in according to the `truncateMode` parameter."
+        },
+        {
+          "name": "replace_text_in_file",
+          "inputSchema": {
+            "properties": {
+              "pathInProject": {
+                "type": "string",
+                "description": "Path to target file relative to project root"
+              },
+              "oldText": {
+                "type": "string",
+                "description": "Text to be replaced"
+              },
+              "newText": {
+                "type": "string",
+                "description": "Replacement text"
+              },
+              "replaceAll": {
+                "type": "boolean",
+                "description": "Replace all occurrences"
+              },
+              "caseSensitive": {
+                "type": "boolean",
+                "description": "Case-sensitive search"
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [
+              "pathInProject",
+              "oldText",
+              "newText"
+            ],
+            "type": "object"
+          },
+          "description": "        Replaces text in a file with flexible options for find and replace operations.\n        Use this tool to make targeted changes without replacing the entire file content.\n        This is the most efficient tool for file modifications when you know the exact text to replace.\n        \n        Requires three parameters:\n        - pathInProject: The path to the target file, relative to project root\n        - oldTextOrPatte: The text to be replaced (exact match by default)\n        - newText: The replacement text\n        \n        Optional parameters:\n        - replaceAll: Whether to replace all occurrences (default: true)\n        - caseSensitive: Whether the search is case-sensitive (default: true)\n        - regex: Whether to treat oldText as a regular expression (default: false)\n        \n        Returns one of these responses:\n        - \"ok\" when replacement happened\n        - error \"project dir not found\" if project directory cannot be determined\n        - error \"file not found\" if the file doesn't exist\n        - error \"could not get document\" if the file content cannot be accessed\n        - error \"no occurrences found\" if the old text was not found in the file\n        \n        Note: Automatically saves the file after modification"
+        },
+        {
+          "name": "search_in_files_by_regex",
+          "inputSchema": {
+            "properties": {
+              "regexPattern": {
+                "type": "string",
+                "description": "Regex patter to search for"
+              },
+              "directoryToSearch": {
+                "type": "string",
+                "description": "Directory to search in, relative to project root. If not specified, searches in the entire project."
+              },
+              "fileMask": {
+                "type": "string",
+                "description": "File mask to search for. If not specified, searches for all files. Example: `*.java`"
+              },
+              "caseSensitive": {
+                "type": "boolean",
+                "description": "Whether to search for the text in a case-sensitive manner"
+              },
+              "maxUsageCount": {
+                "type": "integer",
+                "description": "Maximum number of entries to return."
+              },
+              "timeout": {
+                "type": "integer",
+                "description": "Timeout in milliseconds"
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [
+              "regexPattern"
+            ],
+            "type": "object"
+          },
+          "description": "Searches with a regex pattern within all files in the project using IntelliJ's search engine.\nPrefer this tool over reading files with command-line tools because it's much faster.\n\nThe result occurrences are surrounded with || characters, e.g. `some text ||substring|| text`",
+          "outputSchema": {
+            "properties": {
+              "entries": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "filePath",
+                    "lineNumber",
+                    "lineText"
+                  ],
+                  "properties": {
+                    "filePath": {
+                      "type": "string"
+                    },
+                    "lineNumber": {
+                      "type": "integer"
+                    },
+                    "lineText": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "probablyHasMoreMatchingEntries": {
+                "type": "boolean"
+              },
+              "timedOut": {
+                "type": [
+                  "boolean",
+                  "null"
+                ],
+                "description": "Indicates whether the operation was timed out. 'true' value may mean that the results may be incomplete or partial. 'false', 'null' or missing value means that the operation has not been timed out."
+              }
+            },
+            "required": [
+              "entries"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "name": "search_in_files_by_text",
+          "inputSchema": {
+            "properties": {
+              "searchText": {
+                "type": "string",
+                "description": "Text substring to search for"
+              },
+              "directoryToSearch": {
+                "type": "string",
+                "description": "Directory to search in, relative to project root. If not specified, searches in the entire project."
+              },
+              "fileMask": {
+                "type": "string",
+                "description": "File mask to search for. If not specified, searches for all files. Example: `*.java`"
+              },
+              "caseSensitive": {
+                "type": "boolean",
+                "description": "Whether to search for the text in a case-sensitive manner"
+              },
+              "maxUsageCount": {
+                "type": "integer",
+                "description": "Maximum number of entries to return."
+              },
+              "timeout": {
+                "type": "integer",
+                "description": "Timeout in milliseconds"
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [
+              "searchText"
+            ],
+            "type": "object"
+          },
+          "description": "Searches for a text substring within all files in the project using IntelliJ's search engine.\nPrefer this tool over reading files with command-line tools because it's much faster.\n\nThe result occurrences are surrounded with `||` characters, e.g. `some text ||substring|| text`",
+          "outputSchema": {
+            "properties": {
+              "entries": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "filePath",
+                    "lineNumber",
+                    "lineText"
+                  ],
+                  "properties": {
+                    "filePath": {
+                      "type": "string"
+                    },
+                    "lineNumber": {
+                      "type": "integer"
+                    },
+                    "lineText": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "probablyHasMoreMatchingEntries": {
+                "type": "boolean"
+              },
+              "timedOut": {
+                "type": [
+                  "boolean",
+                  "null"
+                ],
+                "description": "Indicates whether the operation was timed out. 'true' value may mean that the results may be incomplete or partial. 'false', 'null' or missing value means that the operation has not been timed out."
+              }
+            },
+            "required": [
+              "entries"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "name": "search_file",
+          "inputSchema": {
+            "properties": {
+              "q": {
+                "type": "string",
+                "description": "Glob pattern to search for"
+              },
+              "paths": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Optional list of project-relative glob patterns to filter results. Supports '!' excludes. Trailing '/' expands to '**'. Patterns without '/' are treated as '**/pattern'. Empty strings are ignored."
+              },
+              "includeExcluded": {
+                "type": "boolean",
+                "description": "Whether to include excluded/ignored files in results"
+              },
+              "limit": {
+                "type": "integer",
+                "description": "Maximum number of results to return"
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [
+              "q"
+            ],
+            "type": "object"
+          },
+          "description": "Searches for files by glob pattern within the project.\nUse this tool when you need to match file paths using glob syntax.\n\nGlob patterns are relative to the project root.\nExamples: \"**/*.kt\", \"src/**/Foo*.java\", \"build.gradle.kts\".\nPatterns without '/' are treated as \"**/pattern\".\nPaths are optional additional glob filters relative to the project root.",
+          "outputSchema": {
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "filePath"
+                  ],
+                  "properties": {
+                    "filePath": {
+                      "type": "string"
+                    },
+                    "startLine": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "startColumn": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "endLine": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "endColumn": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "startOffset": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "endOffset": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "lineText": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              },
+              "more": {
+                "type": "boolean"
+              }
+            },
+            "required": [],
+            "type": "object"
+          }
+        },
+        {
+          "name": "search_regex",
+          "inputSchema": {
+            "properties": {
+              "q": {
+                "type": "string",
+                "description": "Regex pattern to search for"
+              },
+              "paths": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Optional list of project-relative glob patterns to filter results. Supports '!' excludes. Trailing '/' expands to '**'. Patterns without '/' are treated as '**/pattern'. Empty strings are ignored."
+              },
+              "limit": {
+                "type": "integer",
+                "description": "Maximum number of results to return"
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [
+              "q"
+            ],
+            "type": "object"
+          },
+          "description": "Searches for regex matches within project files.\nUse this tool when you need regex search with snippet results.\nResults include match coordinates when available (1-based line/column, 0-based offsets).\n\nPaths are glob patterns relative to the project root.\nExamples: [\"src/**\", \"!**/test/**\"], [\"**/*.kt\"], [\"foo/\"].",
+          "outputSchema": {
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "filePath"
+                  ],
+                  "properties": {
+                    "filePath": {
+                      "type": "string"
+                    },
+                    "startLine": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "startColumn": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "endLine": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "endColumn": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "startOffset": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "endOffset": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "lineText": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              },
+              "more": {
+                "type": "boolean"
+              }
+            },
+            "required": [],
+            "type": "object"
+          }
+        },
+        {
+          "name": "search_symbol",
+          "inputSchema": {
+            "properties": {
+              "q": {
+                "type": "string",
+                "description": "Symbol query text"
+              },
+              "paths": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Optional list of project-relative glob patterns to filter results. Supports '!' excludes. Trailing '/' expands to '**'. Patterns without '/' are treated as '**/pattern'. Empty strings are ignored."
+              },
+              "limit": {
+                "type": "integer",
+                "description": "Maximum number of results to return"
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [
+              "q"
+            ],
+            "type": "object"
+          },
+          "description": "Searches for symbols (classes, methods, fields).\nUse this tool for semantic lookup by identifier fragments.\nResults include match coordinates when available (1-based line/column, 0-based offsets).\n\nPaths are glob patterns relative to the project root.",
+          "outputSchema": {
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "filePath"
+                  ],
+                  "properties": {
+                    "filePath": {
+                      "type": "string"
+                    },
+                    "startLine": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "startColumn": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "endLine": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "endColumn": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "startOffset": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "endOffset": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "lineText": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              },
+              "more": {
+                "type": "boolean"
+              }
+            },
+            "required": [],
+            "type": "object"
+          }
+        },
+        {
+          "name": "search_text",
+          "inputSchema": {
+            "properties": {
+              "q": {
+                "type": "string",
+                "description": "Text to search for"
+              },
+              "paths": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Optional list of project-relative glob patterns to filter results. Supports '!' excludes. Trailing '/' expands to '**'. Patterns without '/' are treated as '**/pattern'. Empty strings are ignored."
+              },
+              "limit": {
+                "type": "integer",
+                "description": "Maximum number of results to return"
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [
+              "q"
+            ],
+            "type": "object"
+          },
+          "description": "Searches for a text substring within project files.\nUse this tool for fast text search with snippet results.\nResults include match coordinates when available (1-based line/column, 0-based offsets).\n\nPaths are glob patterns relative to the project root.\nExamples: [\"src/**\", \"!**/test/**\"], [\"**/*.kt\"], [\"foo/\"].",
+          "outputSchema": {
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "filePath"
+                  ],
+                  "properties": {
+                    "filePath": {
+                      "type": "string"
+                    },
+                    "startLine": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "startColumn": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "endLine": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "endColumn": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "startOffset": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "endOffset": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "lineText": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              },
+              "more": {
+                "type": "boolean"
+              }
+            },
+            "required": [],
+            "type": "object"
+          }
+        },
+        {
+          "name": "get_symbol_info",
+          "inputSchema": {
+            "properties": {
+              "filePath": {
+                "type": "string",
+                "description": "Path relative to the project root"
+              },
+              "line": {
+                "type": "integer",
+                "description": "1-based line number"
+              },
+              "column": {
+                "type": "integer",
+                "description": "1-based column number"
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [
+              "filePath",
+              "line",
+              "column"
+            ],
+            "type": "object"
+          },
+          "description": "Retrieves information about the symbol at the specified position in the specified file.\nProvides the same information as Quick Documentation feature of IntelliJ IDEA does.\n\nThis tool is useful for getting information about the symbol at the specified position in the specified file.\nThe information may include the symbol's name, signature, type, documentation, etc. It depends on a particular language.\n\nIf the position has a reference to a symbol the tool will return a piece of code with the declaration of the symbol if possible.\n\nUse this tool to understand symbols declaration, semantics, where it's declared, etc.",
+          "outputSchema": {
+            "properties": {
+              "symbolInfo": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "required": [
+                  "declarationText"
+                ],
+                "properties": {
+                  "name": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "declarationText": {
+                    "type": "string"
+                  },
+                  "declarationFile": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "declarationLine": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "language": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                }
+              },
+              "documentation": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "documentation"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "name": "rename_refactoring",
+          "inputSchema": {
+            "properties": {
+              "pathInProject": {
+                "type": "string",
+                "description": "Path relative to the project root"
+              },
+              "symbolName": {
+                "type": "string",
+                "description": "Name of the symbol to rename"
+              },
+              "newName": {
+                "type": "string",
+                "description": "New name for the symbol"
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [
+              "pathInProject",
+              "symbolName",
+              "newName"
+            ],
+            "type": "object"
+          },
+          "description": "        Renames a symbol (variable, function, class, etc.) in the specified file.\n        Use this tool to perform rename refactoring operations. \n        \n        The `rename_refactoring` tool is a powerful, context-aware utility. Unlike a simple text search-and-replace, \n        it understands the code's structure and will intelligently update ALL references to the specified symbol throughout the project,\n        ensuring code integrity and preventing broken references. It is ALWAYS the preferred method for renaming programmatic symbols.\n\n        Requires three parameters:\n            - pathInProject: The relative path to the file from the project's root directory (e.g., `src/api/controllers/userController.js`)\n            - symbolName: The exact, case-sensitive name of the existing symbol to be renamed (e.g., `getUserData`)\n            - newName: The new, case-sensitive name for the symbol (e.g., `fetchUserData`).\n            \n        Returns a success message if the rename operation was successful.\n        Returns an error message if the file or symbol cannot be found or the rename operation failed."
+        },
+        {
+          "name": "execute_terminal_command",
+          "inputSchema": {
+            "properties": {
+              "command": {
+                "type": "string",
+                "description": "Shell command to execute"
+              },
+              "executeInShell": {
+                "type": "boolean",
+                "description": "Whether to execute the command in a default user's shell (bash, zsh, etc.). \nUseful if the command is not a commandline but a shell script, or if it's important to preserve real environment of the user's terminal. \nIn the case of 'false' value the command will be started as a process"
+              },
+              "reuseExistingTerminalWindow": {
+                "type": "boolean",
+                "description": "Whether to reuse an existing terminal window. Allows to avoid creating multiple terminals"
+              },
+              "timeout": {
+                "type": "integer",
+                "description": "Timeout in milliseconds"
+              },
+              "maxLinesCount": {
+                "type": "integer",
+                "description": "Maximum number of lines to return"
+              },
+              "truncateMode": {
+                "enum": [
+                  "START",
+                  "MIDDLE",
+                  "END",
+                  "NONE"
+                ],
+                "description": "How to truncate the text: from the start, in the middle, at the end, or don't truncate at all"
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [
+              "command"
+            ],
+            "type": "object"
+          },
+          "description": "        Executes a specified shell command in the IDE's integrated terminal.\n        Use this tool to run terminal commands within the IDE environment.\n        Requires a command parameter containing the shell command to execute.\n        Important features and limitations:\n        - Checks if process is running before collecting output\n        - Limits output to 2000 lines (truncates excess)\n        - Times out after specified timeout with notification\n        - Requires user confirmation unless \"Brave Mode\" is enabled in settings\n        Returns possible responses:\n        - Terminal output (truncated if > 2000 lines)\n        - Output with interruption notice if timed out\n        - Error messages for various failure cases",
+          "outputSchema": {
+            "properties": {
+              "is_timed_out": {
+                "type": [
+                  "boolean",
+                  "null"
+                ],
+                "description": "Indicates whether the operation was timed out. 'true' value may mean that the results may be incomplete or partial. 'false', 'null' or missing value means that the operation has not been timed out."
+              },
+              "command_exit_code": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "command_output": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "command_output"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "name": "get_repositories",
+          "inputSchema": {
+            "properties": {
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          "description": "Retrieves the list of VCS roots in the project.\nThis is useful to detect all repositories in a multi-repository project.",
+          "outputSchema": {
+            "properties": {
+              "roots": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "pathRelativeToProject",
+                    "vcsName"
+                  ],
+                  "properties": {
+                    "pathRelativeToProject": {
+                      "type": "string",
+                      "description": "Path of repository relative to the project directory. Empty string means the project root"
+                    },
+                    "vcsName": {
+                      "type": "string",
+                      "description": "VCS used by this repository"
+                    }
+                  }
+                }
+              }
+            },
+            "required": [
+              "roots"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "name": "runNotebookCell",
+          "inputSchema": {
+            "properties": {
+              "file_path": {
+                "type": "string",
+                "description": "Absolute path to the .ipynb notebook"
+              },
+              "cell_id": {
+                "type": "string",
+                "description": "Optional Jupyter cell ID. If omitted, all cells are executed."
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [
+              "file_path"
+            ],
+            "type": "object"
+          },
+          "description": "      Execute one or all cells of a Jupyter notebook.\n      Parameters:\n      - file_path: absolute path to a .ipynb file.\n      - cell_id (optional): Jupyter cell ID hash (string). If omitted, the entire notebook will be executed.\n      Notes:\n      - This action runs inside the IDE on the file specified by file_path.\n      - If the file cannot be found, the action returns an error.\n      Examples:\n      - {\"file_path\": \"/abs/path/demo.ipynb\", \"cell_id\": \"13c5cec416369e19\"}\n      - {\"file_path\": \"/abs/path/demo.ipynb\"}"
+        },
+        {
+          "name": "katachi_generate",
+          "inputSchema": {
+            "properties": {
+              "module": {
+                "type": "string",
+                "description": "The Gradle path of the katachi definition module the templates belong to, such as :arch."
+              },
+              "templates": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "The template ids to generate, as katachi_list_templates gives them. Templates of one module run together; a templateSet runs alone."
+              },
+              "arguments": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "description": "The values of the parameters and captures, by name. Every template given reads the same values."
+              },
+              "onExisting": {
+                "enum": [
+                  "fail",
+                  "skip"
+                ],
+                "description": "What to do when a file to write already exists: fail stops at it, skip leaves it and writes the rest."
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [
+              "module",
+              "templates"
+            ],
+            "type": "object"
+          },
+          "description": "Generates files from katachi templates through Gradle, as the katachi tool window does, and tells what each run wrote. It never overwrites an existing file: a run that meets one stops there and reports the paths. Turned off unless Settings | Tools | katachi allows it.",
+          "outputSchema": {
+            "properties": {
+              "module": {
+                "type": "string"
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "templates",
+                    "result"
+                  ],
+                  "properties": {
+                    "templates": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "result": {
+                      "type": "string"
+                    },
+                    "files": {
+                      "type": [
+                        "array",
+                        "null"
+                      ],
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "path",
+                          "kind"
+                        ],
+                        "properties": {
+                          "path": {
+                            "type": "string"
+                          },
+                          "kind": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "existingPaths": {
+                      "type": [
+                        "array",
+                        "null"
+                      ],
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "message": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              },
+              "writtenFiles": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "timedOut": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "module",
+              "items",
+              "writtenFiles",
+              "timedOut"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "name": "katachi_list_roles",
+          "inputSchema": {
+            "properties": {
+              "module": {
+                "type": "string",
+                "description": "The Gradle path of a katachi definition module, such as :arch. Leave out for every module."
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          "description": "Lists the roles the katachi architecture definition declares, with their groups and layout entries.",
+          "outputSchema": {
+            "properties": {
+              "modules": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "module",
+                    "roles"
+                  ],
+                  "properties": {
+                    "module": {
+                      "type": "string"
+                    },
+                    "roles": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "qualifiedName",
+                          "groupPath",
+                          "layout"
+                        ],
+                        "properties": {
+                          "qualifiedName": {
+                            "type": "string"
+                          },
+                          "groupPath": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "summary": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "declaredAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "layout": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "required": [
+                                "pattern",
+                                "kind",
+                                "required"
+                              ],
+                              "properties": {
+                                "pattern": {
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "type": "string"
+                                },
+                                "required": {
+                                  "type": "boolean"
+                                },
+                                "description": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "template": {
+                                  "type": [
+                                    "object",
+                                    "null"
+                                  ],
+                                  "required": [
+                                    "specifier"
+                                  ],
+                                  "properties": {
+                                    "specifier": {
+                                      "type": "string"
+                                    },
+                                    "id": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ]
+                                    },
+                                    "title": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ]
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "stale": {
+                "type": "boolean"
+              },
+              "staleReason": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "modules",
+              "stale"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "name": "katachi_list_templates",
+          "inputSchema": {
+            "properties": {
+              "module": {
+                "type": "string",
+                "description": "The Gradle path of a katachi definition module, such as :arch. Leave out for every module."
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          "description": "Lists the katachi templates (and templateSets) the definition declares: their parameters, the files they write and a katachiTemplate command that runs them.",
+          "outputSchema": {
+            "properties": {
+              "modules": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "module",
+                    "templates"
+                  ],
+                  "properties": {
+                    "module": {
+                      "type": "string"
+                    },
+                    "templates": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "title",
+                          "roleName",
+                          "parameters",
+                          "files",
+                          "available"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "roleName": {
+                            "type": "string"
+                          },
+                          "summary": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "setMembers": {
+                            "type": [
+                              "array",
+                              "null"
+                            ],
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "parameters": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "required": [
+                                "name",
+                                "kind",
+                                "type",
+                                "required"
+                              ],
+                              "properties": {
+                                "name": {
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "type": "string"
+                                },
+                                "type": {
+                                  "type": "string"
+                                },
+                                "required": {
+                                  "type": "boolean"
+                                },
+                                "default": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "acceptedValues": {
+                                  "type": [
+                                    "array",
+                                    "null"
+                                  ],
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "files": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "exampleCommand": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "available": {
+                            "type": "boolean"
+                          },
+                          "unavailableReason": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "stale": {
+                "type": "boolean"
+              },
+              "staleReason": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "modules",
+              "stale"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "name": "katachi_refresh_definition",
+          "inputSchema": {
+            "properties": {
+              "module": {
+                "type": "string",
+                "description": "The Gradle path of the katachi definition module to read, such as :arch. Leave out for every module."
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          "description": "Runs Gradle to read the katachi architecture definition again, waits for it, and tells what it left: ready, or unavailable with the reason, the mistakes of the definition and why the reload failed. Call it after editing the definition module.",
+          "outputSchema": {
+            "properties": {
+              "state": {
+                "type": "string"
+              },
+              "unavailableReason": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "modules": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "stale": {
+                "type": "boolean"
+              },
+              "staleReason": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "loadFailure": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "required": [
+                  "kind",
+                  "details"
+                ],
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "details": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "definitionErrors": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "module",
+                    "phase",
+                    "exception",
+                    "message"
+                  ],
+                  "properties": {
+                    "module": {
+                      "type": "string"
+                    },
+                    "phase": {
+                      "type": "string"
+                    },
+                    "processor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "exception": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "declaredAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "required": [
+              "state",
+              "modules",
+              "stale",
+              "definitionErrors"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "name": "katachi_roles_of_file",
+          "inputSchema": {
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "The file, relative to the project root or absolute. It need not exist."
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "type": "object"
+          },
+          "description": "Tells which katachi roles hold a file of the project, as the architecture definition says: the roles, the layout entry and template of each, and, for a file no role holds, why (outcome) and the places it could move to (nearby).",
+          "outputSchema": {
+            "properties": {
+              "module": {
+                "type": "string"
+              },
+              "relativePath": {
+                "type": "string"
+              },
+              "outcome": {
+                "type": "string"
+              },
+              "detail": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "roles": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "qualifiedName",
+                    "pattern"
+                  ],
+                  "properties": {
+                    "qualifiedName": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "summary": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "pattern": {
+                      "type": "string"
+                    },
+                    "entryDescription": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "template": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "required": [
+                        "specifier"
+                      ],
+                      "properties": {
+                        "specifier": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "title": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "nearby": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "role",
+                    "directory"
+                  ],
+                  "properties": {
+                    "role": {
+                      "type": "string"
+                    },
+                    "directory": {
+                      "type": "string"
+                    },
+                    "filePattern": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              },
+              "stale": {
+                "type": "boolean"
+              },
+              "staleReason": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "module",
+              "relativePath",
+              "outcome",
+              "roles",
+              "nearby",
+              "stale"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "name": "katachi_run_check",
+          "inputSchema": {
+            "properties": {
+              "module": {
+                "type": "string",
+                "description": "The Gradle path of the katachi definition module to check, such as :arch. Needed when the project has more than one."
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          "description": "Saves the open files and runs the katachi architecture check (the definition module's test task) through Gradle, waits for it, and gives the outcome with the first violations. katachi_violations lists every one.",
+          "outputSchema": {
+            "properties": {
+              "module": {
+                "type": "string"
+              },
+              "outcome": {
+                "type": "string"
+              },
+              "violationCount": {
+                "type": "integer"
+              },
+              "violations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "module",
+                    "ruleId",
+                    "label",
+                    "level",
+                    "message"
+                  ],
+                  "properties": {
+                    "module": {
+                      "type": "string"
+                    },
+                    "ruleId": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "level": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "path": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "line": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "role": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "constraint": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              },
+              "truncated": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "module",
+              "outcome",
+              "violationCount",
+              "violations",
+              "truncated"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "name": "katachi_violations",
+          "inputSchema": {
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "Only the violations of this file, relative to the project root or absolute."
+              },
+              "module": {
+                "type": "string",
+                "description": "Only the violations of this katachi definition module, such as :arch."
+              },
+              "projectPath": {
+                "type": "string",
+                "description": " The project path. Pass this value ALWAYS if you are aware of it. It reduces numbers of ambiguous calls. \n In the case you know only the current working directory you can use it as the project path.\n If you're not aware about the project path you can ask user about it."
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          "description": "Lists the violations of the last katachi architecture check, as its SARIF report says. It does not run the check; state is notRun when no report exists yet.",
+          "outputSchema": {
+            "properties": {
+              "state": {
+                "type": "string"
+              },
+              "readAt": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "stale": {
+                "type": "boolean"
+              },
+              "unreadableReason": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "violations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "module",
+                    "ruleId",
+                    "label",
+                    "level",
+                    "message"
+                  ],
+                  "properties": {
+                    "module": {
+                      "type": "string"
+                    },
+                    "ruleId": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "level": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "path": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "line": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "role": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "constraint": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "required": [
+              "state",
+              "stale",
+              "violations"
+            ],
+            "type": "object"
+          }
+        }
+      ]
+    },
+    "jsonrpc": "2.0"
+  }
+}

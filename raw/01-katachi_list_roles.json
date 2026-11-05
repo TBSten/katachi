@@ -1,0 +1,1018 @@
+{
+  "transport": "/sse",
+  "serverInfo": {
+    "name": "IntelliJ IDEA MCP Server",
+    "version": "2026.1"
+  },
+  "request": {
+    "method": "tools/call",
+    "params": {
+      "name": "katachi_list_roles",
+      "arguments": {
+        "projectPath": "/Users/tbsten/dev/katachi/.claude/worktrees/katachi-220-mcp/sample/jvm"
+      }
+    }
+  },
+  "response": {
+    "id": 4,
+    "result": {
+      "content": [
+        {
+          "text": "{\"modules\":[{\"module\":\":architecture-test\",\"roles\":[{\"qualifiedName\":\"api.Controller\",\"groupPath\":\"api\",\"title\":\"Controller\",\"summary\":\"Receives one HTTP request, calls the matching Service and returns the result\",\"declaredAt\":\"ControllerRole.kt:21\",\"layout\":[{\"pattern\":\"src\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin/com\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin/com/example\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin/com/example/controller\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin/com/example/controller/*\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin/com/example/controller/*/*Controller.kt\",\"kind\":\"File\",\"required\":false,\"template\":{\"specifier\":\"api.Controller\"}}]},{\"qualifiedName\":\"api.KtorPlugin\",\"groupPath\":\"api\",\"title\":\"Ktor plugin configuration\",\"summary\":\"Applies one cross-cutting setting to the Ktor Application\",\"declaredAt\":\"KtorPluginRole.kt:13\",\"layout\":[{\"pattern\":\"src\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin/com\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin/com/example\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin/com/example/plugin\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin/com/example/plugin/*.kt\",\"kind\":\"File\",\"required\":false}]},{\"qualifiedName\":\"domain.Service\",\"groupPath\":\"domain\",\"title\":\"Service\",\"summary\":\"Owns one application-specific behaviour, realized by combining Repositories\",\"declaredAt\":\"ServiceRole.kt:18\",\"layout\":[{\"pattern\":\"src\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin/com\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin/com/example\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin/com/example/service\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin/com/example/service/*Service.kt\",\"kind\":\"File\",\"required\":false,\"template\":{\"specifier\":\"domain.Service\"}}]},{\"qualifiedName\":\"domain.Model\",\"groupPath\":\"domain\",\"title\":\"Model\",\"summary\":\"The values the domain handles, used as-is for API input and output too\",\"declaredAt\":\"ModelRole.kt:14\",\"layout\":[{\"pattern\":\"src\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin/com\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin/com/example\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin/com/example/model\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin/com/example/model/[A-Z]*.kt\",\"kind\":\"File\",\"required\":false}]},{\"qualifiedName\":\"data.Repository\",\"groupPath\":\"data\",\"title\":\"Repository\",\"summary\":\"Handles fetching and saving data, hiding data source details from the domain\",\"declaredAt\":\"RepositoryRole.kt:10\",\"layout\":[{\"pattern\":\"src\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin/com\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin/com/example\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin/com/example/repository\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin/com/example/repository/*Repository.kt\",\"kind\":\"File\",\"required\":false}]},{\"qualifiedName\":\"app.Entrypoint\",\"groupPath\":\"app\",\"title\":\"Entry point\",\"summary\":\"Starting the process and assembling the Ktor Application module\",\"declaredAt\":\"EntrypointRole.kt:8\",\"layout\":[{\"pattern\":\"src\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin/com\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin/com/example\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/kotlin/com/example/Application.kt\",\"kind\":\"File\",\"required\":true}]},{\"qualifiedName\":\"app.ApplicationConfig\",\"groupPath\":\"app\",\"title\":\"Application configuration\",\"summary\":\"The configuration file loaded at startup: the port and the module to apply\",\"declaredAt\":\"ApplicationConfigRole.kt:7\",\"layout\":[{\"pattern\":\"src\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/resources\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/resources/application.conf\",\"kind\":\"File\",\"required\":true}]},{\"qualifiedName\":\"app.LoggingConfig\",\"groupPath\":\"app\",\"title\":\"Logging configuration\",\"summary\":\"The Logback configuration: where logs go and their format\",\"declaredAt\":\"LoggingConfigRole.kt:7\",\"layout\":[{\"pattern\":\"src\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/resources\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/main/resources/logback.xml\",\"kind\":\"File\",\"required\":true}]},{\"qualifiedName\":\"testing.Test\",\"groupPath\":\"testing\",\"title\":\"Test code\",\"summary\":\"Tests placed in src/test/kotlin, keeping the same package structure as the main code\",\"declaredAt\":\"TestRole.kt:7\",\"layout\":[{\"pattern\":\"src\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/test\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/test/kotlin\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/test/kotlin/**\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"src/test/kotlin/**/*Test.kt\",\"kind\":\"File\",\"required\":false}]},{\"qualifiedName\":\"testing.ArchitectureDefinitionEntry\",\"groupPath\":\"testing\",\"title\":\"Architecture definition entry\",\"summary\":\"The one file whose `architecture { }` gathers every group, so the definition can be read from here\",\"declaredAt\":\"ArchitectureDefinitionEntryRole.kt:13\",\"layout\":[{\"pattern\":\"architecture-test\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin/com\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin/com/example\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt\",\"kind\":\"File\",\"required\":true}]},{\"qualifiedName\":\"testing.DocumentSectionDefinition\",\"groupPath\":\"testing\",\"title\":\"Document section definition\",\"summary\":\"The headings this project declares for itself, so roles and groups can write under them\",\"declaredAt\":\"DocumentSectionDefinitionRole.kt:13\",\"layout\":[{\"pattern\":\"architecture-test\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin/com\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin/com/example\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin/com/example/DocumentSections.kt\",\"kind\":\"File\",\"required\":true}]},{\"qualifiedName\":\"testing.GroupDefinition\",\"groupPath\":\"testing\",\"title\":\"Group definition\",\"summary\":\"One `<Name>Group.kt` per group, in the directory named after the group, saying what the group is made of by calling role functions\",\"declaredAt\":\"GroupDefinitionRole.kt:12\",\"layout\":[{\"pattern\":\"architecture-test\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin/com\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin/com/example\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin/com/example/**\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin/com/example/**/*Group.kt\",\"kind\":\"File\",\"required\":false}]},{\"qualifiedName\":\"testing.RoleDefinition\",\"groupPath\":\"testing\",\"title\":\"Role definition\",\"summary\":\"One `<Name>Role.kt` per role, in the directory of the group that calls it, holding its description, its layout and its constraints\",\"declaredAt\":\"RoleDefinitionRole.kt:12\",\"layout\":[{\"pattern\":\"architecture-test\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin/com\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin/com/example\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin/com/example/**\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin/com/example/**/*Role.kt\",\"kind\":\"File\",\"required\":false}]},{\"qualifiedName\":\"testing.ProcessorDefinition\",\"groupPath\":\"testing\",\"title\":\"Processor definition\",\"summary\":\"A custom processor that reads the definition, registered in `architecture-test/build.gradle.kts`\",\"declaredAt\":\"ProcessorDefinitionRole.kt:8\",\"layout\":[{\"pattern\":\"architecture-test\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin/com\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin/com/example\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin/com/example/processors\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin/com/example/processors/*.kt\",\"kind\":\"File\",\"required\":false}]},{\"qualifiedName\":\"testing.ArchitectureTest\",\"groupPath\":\"testing\",\"title\":\"Architecture test\",\"summary\":\"The one test that checks the whole project against the definition\",\"declaredAt\":\"ArchitectureTestRole.kt:9\",\"layout\":[{\"pattern\":\"architecture-test\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin/com\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin/com/example\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin/com/example/*Test.kt\",\"kind\":\"File\",\"required\":false}]},{\"qualifiedName\":\"testing.IntegrationSpec\",\"groupPath\":\"testing\",\"title\":\"Integration spec\",\"summary\":\"katachi's own integration tests, run against this real project\",\"declaredAt\":\"IntegrationSpecRole.kt:8\",\"layout\":[{\"pattern\":\"architecture-test\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin/com\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin/com/example\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/src/test/kotlin/com/example/*Spec.kt\",\"kind\":\"File\",\"required\":false}]},{\"qualifiedName\":\"testing.GeneratedDocumentation\",\"groupPath\":\"testing\",\"title\":\"Generated documentation\",\"summary\":\"Markdown written out of this definition and committed to the repository\",\"declaredAt\":\"GeneratedDocumentationRole.kt:8\",\"layout\":[{\"pattern\":\"docs\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"docs/README.md\",\"kind\":\"File\",\"required\":true},{\"pattern\":\"docs/**\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"docs/**/*.md\",\"kind\":\"File\",\"required\":false}]},{\"qualifiedName\":\"testing.LayoutSnapshot\",\"groupPath\":\"testing\",\"title\":\"Layout snapshot\",\"summary\":\"A record of every line of this definition, flattened. It exists so people can review changes to the definition as a diff\",\"declaredAt\":\"LayoutSnapshotRole.kt:8\",\"layout\":[{\"pattern\":\"snapshots\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"snapshots/layout.txt\",\"kind\":\"File\",\"required\":true}]},{\"qualifiedName\":\"testing.BaselineFile\",\"groupPath\":\"testing\",\"title\":\"Baseline (ledger of held-back violations)\",\"summary\":\"A ledger that records violations already present when katachi was introduced and holds them back without failing the test\",\"declaredAt\":\"BaselineFileRole.kt:8\",\"layout\":[{\"pattern\":\"katachi-baseline.json\",\"kind\":\"File\",\"required\":true}]},{\"qualifiedName\":\"Gradle.SettingsScript\",\"groupPath\":\"Gradle\",\"summary\":\"Which modules make up the build\",\"declaredAt\":\"GradleGroup.kt:16\",\"layout\":[{\"pattern\":\"settings.gradle.kts\",\"kind\":\"File\",\"required\":false},{\"pattern\":\"settings.gradle\",\"kind\":\"File\",\"required\":false}]},{\"qualifiedName\":\"Gradle.BuildScript\",\"groupPath\":\"Gradle\",\"summary\":\"How one module is built, one per module\",\"declaredAt\":\"GradleGroup.kt:16\",\"layout\":[{\"pattern\":\"build\",\"kind\":\"Ignore\",\"required\":false},{\"pattern\":\"build.gradle.kts\",\"kind\":\"File\",\"required\":false},{\"pattern\":\"build.gradle\",\"kind\":\"File\",\"required\":false},{\"pattern\":\"architecture-test\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"architecture-test/build\",\"kind\":\"Ignore\",\"required\":false},{\"pattern\":\"architecture-test/build.gradle.kts\",\"kind\":\"File\",\"required\":false},{\"pattern\":\"architecture-test/build.gradle\",\"kind\":\"File\",\"required\":false}]},{\"qualifiedName\":\"Gradle.GradleProperties\",\"groupPath\":\"Gradle\",\"summary\":\"Properties of the build and of the Gradle daemon\",\"declaredAt\":\"GradleGroup.kt:16\",\"layout\":[{\"pattern\":\"gradle.properties\",\"kind\":\"File\",\"required\":false}]},{\"qualifiedName\":\"Gradle.VersionCatalog\",\"groupPath\":\"Gradle\",\"summary\":\"The versions of the build's dependencies and plugins\",\"declaredAt\":\"GradleGroup.kt:16\",\"layout\":[{\"pattern\":\"gradle\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"gradle/*.versions.toml\",\"kind\":\"File\",\"required\":false}]},{\"qualifiedName\":\"Gradle.DaemonJvmProperties\",\"groupPath\":\"Gradle\",\"summary\":\"Which JVM the Gradle daemon runs on (Gradle 8.8 and later)\",\"declaredAt\":\"GradleGroup.kt:16\",\"layout\":[{\"pattern\":\"gradle\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"gradle/gradle-daemon-jvm.properties\",\"kind\":\"File\",\"required\":false}]},{\"qualifiedName\":\"Gradle.GradleWrapper.LauncherScript\",\"groupPath\":\"Gradle.GradleWrapper\",\"summary\":\"The scripts that start the wrapper, for Unix and Windows\",\"declaredAt\":\"GradleGroup.kt:16\",\"layout\":[{\"pattern\":\"gradlew\",\"kind\":\"File\",\"required\":true},{\"pattern\":\"gradlew.bat\",\"kind\":\"File\",\"required\":true}]},{\"qualifiedName\":\"Gradle.GradleWrapper.WrapperJar\",\"groupPath\":\"Gradle.GradleWrapper\",\"summary\":\"The wrapper itself, which downloads and runs Gradle\",\"declaredAt\":\"GradleGroup.kt:16\",\"layout\":[{\"pattern\":\"gradle\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"gradle/wrapper\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"gradle/wrapper/gradle-wrapper.jar\",\"kind\":\"File\",\"required\":true}]},{\"qualifiedName\":\"Gradle.GradleWrapper.WrapperProperties\",\"groupPath\":\"Gradle.GradleWrapper\",\"summary\":\"Which Gradle distribution the wrapper runs\",\"declaredAt\":\"GradleGroup.kt:16\",\"layout\":[{\"pattern\":\"gradle\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"gradle/wrapper\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\"gradle/wrapper/gradle-wrapper.properties\",\"kind\":\"File\",\"required\":true}]},{\"qualifiedName\":\"tool.Documentation\",\"groupPath\":\"tool\",\"title\":\"Documentation\",\"summary\":\"README.md and other explanations for people reading the repository\",\"declaredAt\":\"DocumentationRole.kt:6\",\"layout\":[{\"pattern\":\"README.md\",\"kind\":\"File\",\"required\":true}]},{\"qualifiedName\":\"tool.Git\",\"groupPath\":\"tool\",\"title\":\"Git configuration\",\"summary\":\"Version control configuration files\",\"declaredAt\":\"GitRole.kt:6\",\"layout\":[{\"pattern\":\".gitignore\",\"kind\":\"File\",\"required\":true}]},{\"qualifiedName\":\"tool.IdeCodeStyle\",\"groupPath\":\"tool\",\"title\":\"IDE code style\",\"summary\":\"The code style IntelliJ IDEA shares through the repository\",\"declaredAt\":\"IdeCodeStyleRole.kt:7\",\"layout\":[{\"pattern\":\".idea\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\".idea/codeStyles\",\"kind\":\"Directory\",\"required\":false},{\"pattern\":\".idea/codeStyles/Project.xml\",\"kind\":\"File\",\"required\":true},{\"pattern\":\".idea/codeStyles/codeStyleConfig.xml\",\"kind\":\"File\",\"required\":true}]}]}],\"stale\":false}",
+          "type": "text"
+        }
+      ],
+      "isError": false,
+      "structuredContent": {
+        "modules": [
+          {
+            "module": ":architecture-test",
+            "roles": [
+              {
+                "qualifiedName": "api.Controller",
+                "groupPath": "api",
+                "title": "Controller",
+                "summary": "Receives one HTTP request, calls the matching Service and returns the result",
+                "declaredAt": "ControllerRole.kt:21",
+                "layout": [
+                  {
+                    "pattern": "src",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin/com",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin/com/example",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin/com/example/controller",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin/com/example/controller/*",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin/com/example/controller/*/*Controller.kt",
+                    "kind": "File",
+                    "required": false,
+                    "template": {
+                      "specifier": "api.Controller"
+                    }
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "api.KtorPlugin",
+                "groupPath": "api",
+                "title": "Ktor plugin configuration",
+                "summary": "Applies one cross-cutting setting to the Ktor Application",
+                "declaredAt": "KtorPluginRole.kt:13",
+                "layout": [
+                  {
+                    "pattern": "src",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin/com",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin/com/example",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin/com/example/plugin",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin/com/example/plugin/*.kt",
+                    "kind": "File",
+                    "required": false
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "domain.Service",
+                "groupPath": "domain",
+                "title": "Service",
+                "summary": "Owns one application-specific behaviour, realized by combining Repositories",
+                "declaredAt": "ServiceRole.kt:18",
+                "layout": [
+                  {
+                    "pattern": "src",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin/com",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin/com/example",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin/com/example/service",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin/com/example/service/*Service.kt",
+                    "kind": "File",
+                    "required": false,
+                    "template": {
+                      "specifier": "domain.Service"
+                    }
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "domain.Model",
+                "groupPath": "domain",
+                "title": "Model",
+                "summary": "The values the domain handles, used as-is for API input and output too",
+                "declaredAt": "ModelRole.kt:14",
+                "layout": [
+                  {
+                    "pattern": "src",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin/com",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin/com/example",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin/com/example/model",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin/com/example/model/[A-Z]*.kt",
+                    "kind": "File",
+                    "required": false
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "data.Repository",
+                "groupPath": "data",
+                "title": "Repository",
+                "summary": "Handles fetching and saving data, hiding data source details from the domain",
+                "declaredAt": "RepositoryRole.kt:10",
+                "layout": [
+                  {
+                    "pattern": "src",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin/com",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin/com/example",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin/com/example/repository",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin/com/example/repository/*Repository.kt",
+                    "kind": "File",
+                    "required": false
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "app.Entrypoint",
+                "groupPath": "app",
+                "title": "Entry point",
+                "summary": "Starting the process and assembling the Ktor Application module",
+                "declaredAt": "EntrypointRole.kt:8",
+                "layout": [
+                  {
+                    "pattern": "src",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin/com",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin/com/example",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/kotlin/com/example/Application.kt",
+                    "kind": "File",
+                    "required": true
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "app.ApplicationConfig",
+                "groupPath": "app",
+                "title": "Application configuration",
+                "summary": "The configuration file loaded at startup: the port and the module to apply",
+                "declaredAt": "ApplicationConfigRole.kt:7",
+                "layout": [
+                  {
+                    "pattern": "src",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/resources",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/resources/application.conf",
+                    "kind": "File",
+                    "required": true
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "app.LoggingConfig",
+                "groupPath": "app",
+                "title": "Logging configuration",
+                "summary": "The Logback configuration: where logs go and their format",
+                "declaredAt": "LoggingConfigRole.kt:7",
+                "layout": [
+                  {
+                    "pattern": "src",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/resources",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/main/resources/logback.xml",
+                    "kind": "File",
+                    "required": true
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "testing.Test",
+                "groupPath": "testing",
+                "title": "Test code",
+                "summary": "Tests placed in src/test/kotlin, keeping the same package structure as the main code",
+                "declaredAt": "TestRole.kt:7",
+                "layout": [
+                  {
+                    "pattern": "src",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/test",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/test/kotlin",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/test/kotlin/**",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "src/test/kotlin/**/*Test.kt",
+                    "kind": "File",
+                    "required": false
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "testing.ArchitectureDefinitionEntry",
+                "groupPath": "testing",
+                "title": "Architecture definition entry",
+                "summary": "The one file whose `architecture { }` gathers every group, so the definition can be read from here",
+                "declaredAt": "ArchitectureDefinitionEntryRole.kt:13",
+                "layout": [
+                  {
+                    "pattern": "architecture-test",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin/com",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin/com/example",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt",
+                    "kind": "File",
+                    "required": true
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "testing.DocumentSectionDefinition",
+                "groupPath": "testing",
+                "title": "Document section definition",
+                "summary": "The headings this project declares for itself, so roles and groups can write under them",
+                "declaredAt": "DocumentSectionDefinitionRole.kt:13",
+                "layout": [
+                  {
+                    "pattern": "architecture-test",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin/com",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin/com/example",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin/com/example/DocumentSections.kt",
+                    "kind": "File",
+                    "required": true
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "testing.GroupDefinition",
+                "groupPath": "testing",
+                "title": "Group definition",
+                "summary": "One `<Name>Group.kt` per group, in the directory named after the group, saying what the group is made of by calling role functions",
+                "declaredAt": "GroupDefinitionRole.kt:12",
+                "layout": [
+                  {
+                    "pattern": "architecture-test",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin/com",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin/com/example",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin/com/example/**",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin/com/example/**/*Group.kt",
+                    "kind": "File",
+                    "required": false
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "testing.RoleDefinition",
+                "groupPath": "testing",
+                "title": "Role definition",
+                "summary": "One `<Name>Role.kt` per role, in the directory of the group that calls it, holding its description, its layout and its constraints",
+                "declaredAt": "RoleDefinitionRole.kt:12",
+                "layout": [
+                  {
+                    "pattern": "architecture-test",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin/com",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin/com/example",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin/com/example/**",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin/com/example/**/*Role.kt",
+                    "kind": "File",
+                    "required": false
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "testing.ProcessorDefinition",
+                "groupPath": "testing",
+                "title": "Processor definition",
+                "summary": "A custom processor that reads the definition, registered in `architecture-test/build.gradle.kts`",
+                "declaredAt": "ProcessorDefinitionRole.kt:8",
+                "layout": [
+                  {
+                    "pattern": "architecture-test",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin/com",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin/com/example",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin/com/example/processors",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin/com/example/processors/*.kt",
+                    "kind": "File",
+                    "required": false
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "testing.ArchitectureTest",
+                "groupPath": "testing",
+                "title": "Architecture test",
+                "summary": "The one test that checks the whole project against the definition",
+                "declaredAt": "ArchitectureTestRole.kt:9",
+                "layout": [
+                  {
+                    "pattern": "architecture-test",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin/com",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin/com/example",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin/com/example/*Test.kt",
+                    "kind": "File",
+                    "required": false
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "testing.IntegrationSpec",
+                "groupPath": "testing",
+                "title": "Integration spec",
+                "summary": "katachi's own integration tests, run against this real project",
+                "declaredAt": "IntegrationSpecRole.kt:8",
+                "layout": [
+                  {
+                    "pattern": "architecture-test",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin/com",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin/com/example",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/src/test/kotlin/com/example/*Spec.kt",
+                    "kind": "File",
+                    "required": false
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "testing.GeneratedDocumentation",
+                "groupPath": "testing",
+                "title": "Generated documentation",
+                "summary": "Markdown written out of this definition and committed to the repository",
+                "declaredAt": "GeneratedDocumentationRole.kt:8",
+                "layout": [
+                  {
+                    "pattern": "docs",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "docs/README.md",
+                    "kind": "File",
+                    "required": true
+                  },
+                  {
+                    "pattern": "docs/**",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "docs/**/*.md",
+                    "kind": "File",
+                    "required": false
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "testing.LayoutSnapshot",
+                "groupPath": "testing",
+                "title": "Layout snapshot",
+                "summary": "A record of every line of this definition, flattened. It exists so people can review changes to the definition as a diff",
+                "declaredAt": "LayoutSnapshotRole.kt:8",
+                "layout": [
+                  {
+                    "pattern": "snapshots",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "snapshots/layout.txt",
+                    "kind": "File",
+                    "required": true
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "testing.BaselineFile",
+                "groupPath": "testing",
+                "title": "Baseline (ledger of held-back violations)",
+                "summary": "A ledger that records violations already present when katachi was introduced and holds them back without failing the test",
+                "declaredAt": "BaselineFileRole.kt:8",
+                "layout": [
+                  {
+                    "pattern": "katachi-baseline.json",
+                    "kind": "File",
+                    "required": true
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "Gradle.SettingsScript",
+                "groupPath": "Gradle",
+                "summary": "Which modules make up the build",
+                "declaredAt": "GradleGroup.kt:16",
+                "layout": [
+                  {
+                    "pattern": "settings.gradle.kts",
+                    "kind": "File",
+                    "required": false
+                  },
+                  {
+                    "pattern": "settings.gradle",
+                    "kind": "File",
+                    "required": false
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "Gradle.BuildScript",
+                "groupPath": "Gradle",
+                "summary": "How one module is built, one per module",
+                "declaredAt": "GradleGroup.kt:16",
+                "layout": [
+                  {
+                    "pattern": "build",
+                    "kind": "Ignore",
+                    "required": false
+                  },
+                  {
+                    "pattern": "build.gradle.kts",
+                    "kind": "File",
+                    "required": false
+                  },
+                  {
+                    "pattern": "build.gradle",
+                    "kind": "File",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/build",
+                    "kind": "Ignore",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/build.gradle.kts",
+                    "kind": "File",
+                    "required": false
+                  },
+                  {
+                    "pattern": "architecture-test/build.gradle",
+                    "kind": "File",
+                    "required": false
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "Gradle.GradleProperties",
+                "groupPath": "Gradle",
+                "summary": "Properties of the build and of the Gradle daemon",
+                "declaredAt": "GradleGroup.kt:16",
+                "layout": [
+                  {
+                    "pattern": "gradle.properties",
+                    "kind": "File",
+                    "required": false
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "Gradle.VersionCatalog",
+                "groupPath": "Gradle",
+                "summary": "The versions of the build's dependencies and plugins",
+                "declaredAt": "GradleGroup.kt:16",
+                "layout": [
+                  {
+                    "pattern": "gradle",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "gradle/*.versions.toml",
+                    "kind": "File",
+                    "required": false
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "Gradle.DaemonJvmProperties",
+                "groupPath": "Gradle",
+                "summary": "Which JVM the Gradle daemon runs on (Gradle 8.8 and later)",
+                "declaredAt": "GradleGroup.kt:16",
+                "layout": [
+                  {
+                    "pattern": "gradle",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "gradle/gradle-daemon-jvm.properties",
+                    "kind": "File",
+                    "required": false
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "Gradle.GradleWrapper.LauncherScript",
+                "groupPath": "Gradle.GradleWrapper",
+                "summary": "The scripts that start the wrapper, for Unix and Windows",
+                "declaredAt": "GradleGroup.kt:16",
+                "layout": [
+                  {
+                    "pattern": "gradlew",
+                    "kind": "File",
+                    "required": true
+                  },
+                  {
+                    "pattern": "gradlew.bat",
+                    "kind": "File",
+                    "required": true
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "Gradle.GradleWrapper.WrapperJar",
+                "groupPath": "Gradle.GradleWrapper",
+                "summary": "The wrapper itself, which downloads and runs Gradle",
+                "declaredAt": "GradleGroup.kt:16",
+                "layout": [
+                  {
+                    "pattern": "gradle",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "gradle/wrapper",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "gradle/wrapper/gradle-wrapper.jar",
+                    "kind": "File",
+                    "required": true
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "Gradle.GradleWrapper.WrapperProperties",
+                "groupPath": "Gradle.GradleWrapper",
+                "summary": "Which Gradle distribution the wrapper runs",
+                "declaredAt": "GradleGroup.kt:16",
+                "layout": [
+                  {
+                    "pattern": "gradle",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "gradle/wrapper",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": "gradle/wrapper/gradle-wrapper.properties",
+                    "kind": "File",
+                    "required": true
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "tool.Documentation",
+                "groupPath": "tool",
+                "title": "Documentation",
+                "summary": "README.md and other explanations for people reading the repository",
+                "declaredAt": "DocumentationRole.kt:6",
+                "layout": [
+                  {
+                    "pattern": "README.md",
+                    "kind": "File",
+                    "required": true
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "tool.Git",
+                "groupPath": "tool",
+                "title": "Git configuration",
+                "summary": "Version control configuration files",
+                "declaredAt": "GitRole.kt:6",
+                "layout": [
+                  {
+                    "pattern": ".gitignore",
+                    "kind": "File",
+                    "required": true
+                  }
+                ]
+              },
+              {
+                "qualifiedName": "tool.IdeCodeStyle",
+                "groupPath": "tool",
+                "title": "IDE code style",
+                "summary": "The code style IntelliJ IDEA shares through the repository",
+                "declaredAt": "IdeCodeStyleRole.kt:7",
+                "layout": [
+                  {
+                    "pattern": ".idea",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": ".idea/codeStyles",
+                    "kind": "Directory",
+                    "required": false
+                  },
+                  {
+                    "pattern": ".idea/codeStyles/Project.xml",
+                    "kind": "File",
+                    "required": true
+                  },
+                  {
+                    "pattern": ".idea/codeStyles/codeStyleConfig.xml",
+                    "kind": "File",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "stale": false
+      }
+    },
+    "jsonrpc": "2.0"
+  },
+  "elapsedSeconds": 54.0
+}

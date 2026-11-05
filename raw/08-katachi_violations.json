@@ -1,0 +1,37 @@
+{
+  "transport": "/sse",
+  "serverInfo": {
+    "name": "IntelliJ IDEA MCP Server",
+    "version": "2026.1"
+  },
+  "request": {
+    "method": "tools/call",
+    "params": {
+      "name": "katachi_violations",
+      "arguments": {
+        "path": "src/main/kotlin/com/example/service/LegacyStatusService.kt",
+        "projectPath": "/Users/tbsten/dev/katachi/.claude/worktrees/katachi-220-mcp/sample/jvm"
+      }
+    }
+  },
+  "response": {
+    "id": 4,
+    "result": {
+      "content": [
+        {
+          "text": "{\"state\":\"ready\",\"readAt\":\"2026-11-05T19:10:05.153877255Z\",\"stale\":false,\"violations\":[]}",
+          "type": "text"
+        }
+      ],
+      "isError": false,
+      "structuredContent": {
+        "state": "ready",
+        "readAt": "2026-11-05T19:10:05.153877255Z",
+        "stale": false,
+        "violations": []
+      }
+    },
+    "jsonrpc": "2.0"
+  },
+  "elapsedSeconds": 0.0
+}

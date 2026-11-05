@@ -1,0 +1,54 @@
+{
+  "transport": "/sse",
+  "serverInfo": {
+    "name": "IntelliJ IDEA MCP Server",
+    "version": "2026.1"
+  },
+  "request": {
+    "method": "tools/call",
+    "params": {
+      "name": "katachi_generate",
+      "arguments": {
+        "module": ":architecture-test",
+        "templates": [
+          "domain.Service"
+        ],
+        "arguments": {
+          "name": "evidence"
+        },
+        "onExisting": "skip",
+        "projectPath": "/Users/tbsten/dev/katachi/.claude/worktrees/katachi-220-mcp/sample/jvm"
+      }
+    }
+  },
+  "response": {
+    "id": 4,
+    "result": {
+      "content": [
+        {
+          "text": "{\"module\":\":architecture-test\",\"items\":[{\"templates\":[\"domain.Service\"],\"result\":\"skipped\",\"existingPaths\":[\"/Users/tbsten/dev/katachi/.claude/worktrees/katachi-220-mcp/sample/jvm/src/main/kotlin/com/example/service/evidenceService.kt\"]}],\"writtenFiles\":[],\"timedOut\":false}",
+          "type": "text"
+        }
+      ],
+      "isError": false,
+      "structuredContent": {
+        "module": ":architecture-test",
+        "items": [
+          {
+            "templates": [
+              "domain.Service"
+            ],
+            "result": "skipped",
+            "existingPaths": [
+              "/Users/tbsten/dev/katachi/.claude/worktrees/katachi-220-mcp/sample/jvm/src/main/kotlin/com/example/service/evidenceService.kt"
+            ]
+          }
+        ],
+        "writtenFiles": [],
+        "timedOut": false
+      }
+    },
+    "jsonrpc": "2.0"
+  },
+  "elapsedSeconds": 2.4
+}
