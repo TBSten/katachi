@@ -1,5 +1,5 @@
 @file:OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION_ERROR")
 
 package me.tbsten.katachi.test.konsist.declarations
 

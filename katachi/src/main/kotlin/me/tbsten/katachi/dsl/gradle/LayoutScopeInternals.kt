@@ -1,4 +1,4 @@
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION_ERROR")
 
 package me.tbsten.katachi.dsl.gradle
 
@@ -27,7 +27,7 @@ import me.tbsten.katachi.dsl.internal.MODULE_SCOPE_DEPRECATION
  * }
  * ```
  */
-@Deprecated(message = MODULE_SCOPE_DEPRECATION, level = DeprecationLevel.WARNING)
+@Deprecated(message = MODULE_SCOPE_DEPRECATION, level = DeprecationLevel.ERROR)
 @ExperimentalKatachiApi
 public val LayoutScope.currentModulePath: String?
     get() = moduleAware().currentModulePath
@@ -50,7 +50,7 @@ public val LayoutScope.currentModulePath: String?
  *     get() = currentWildcards ?: emptyList()
  * ```
  */
-@Deprecated(message = MODULE_SCOPE_DEPRECATION, level = DeprecationLevel.WARNING)
+@Deprecated(message = MODULE_SCOPE_DEPRECATION, level = DeprecationLevel.ERROR)
 @ExperimentalKatachiApi
 public val LayoutScope.currentWildcards: List<String>?
     get() = moduleAware().currentWildcards
@@ -73,7 +73,7 @@ public val LayoutScope.currentWildcards: List<String>?
  * public fun LayoutScope.wildcardOrNull(name: String): String? = currentCaptures?.get(name)
  * ```
  */
-@Deprecated(message = MODULE_SCOPE_DEPRECATION, level = DeprecationLevel.WARNING)
+@Deprecated(message = MODULE_SCOPE_DEPRECATION, level = DeprecationLevel.ERROR)
 @ExperimentalKatachiApi
 public val LayoutScope.currentCaptures: Map<String, String>?
     get() = moduleAware().currentCaptures
@@ -109,7 +109,7 @@ public val LayoutScope.currentCaptures: Map<String, String>?
  *   the root of a `layout { }` block: a module path is resolved below the project root, so a
  *   directory around it would quietly be prepended to the answer.
  */
-@Deprecated(message = MODULE_SCOPE_DEPRECATION, level = DeprecationLevel.WARNING)
+@Deprecated(message = MODULE_SCOPE_DEPRECATION, level = DeprecationLevel.ERROR)
 @ExperimentalKatachiApi
 public fun LayoutScope.expandModulePath(
     modulePath: String,

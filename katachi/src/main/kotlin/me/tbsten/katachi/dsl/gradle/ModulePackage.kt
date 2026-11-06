@@ -1,4 +1,4 @@
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION_ERROR")
 
 package me.tbsten.katachi.dsl.gradle
 
@@ -54,7 +54,7 @@ import me.tbsten.katachi.dsl.internal.MODULE_PACKAGE_DEPRECATION
  * @see capitalizedModuleNamePackage
  * @see moduleNamePackage
  */
-@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.WARNING)
+@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.ERROR)
 public fun interface ModulePackage {
     /**
      * Returns the package directory of [modulePath], relative to that module's own directory.
@@ -86,7 +86,7 @@ public fun interface ModulePackage {
  * val modulePackage = moduleNamePackage(hyphens = HyphenFolding.Concatenate)
  * ```
  */
-@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.WARNING)
+@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.ERROR)
 public enum class HyphenFolding {
     /**
      * `fuga-piyo` becomes `fugaPiyo`: the first word as written, every later word with its
@@ -137,7 +137,7 @@ public enum class HyphenFolding {
  *   as `com/example`. Empty means the module path is the whole package.
  * @param hyphens how a hyphen inside one level is folded away.
  */
-@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.WARNING)
+@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.ERROR)
 public fun moduleNamePackage(
     basePackage: String = "",
     hyphens: HyphenFolding,
@@ -179,7 +179,7 @@ public fun moduleNamePackage(
  * @param basePackage the package every module sits under, written either as `com.example` or
  *   as `com/example`.
  */
-@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.WARNING)
+@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.ERROR)
 public fun capitalizedModuleNamePackage(basePackage: String = ""): ModulePackage =
     moduleNamePackage(basePackage = basePackage, hyphens = HyphenFolding.Capitalize)
 
@@ -250,7 +250,7 @@ public class KatachiModulePackageException internal constructor(
  * @throws KatachiModulePackageException when [modulePath] is `null`, or when the strategy
  *   returned something that is not a directory path.
  */
-@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.WARNING)
+@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.ERROR)
 @ExperimentalKatachiApi
 public fun ModulePackage.resolveFor(modulePath: String?): String {
     if (modulePath == null) {

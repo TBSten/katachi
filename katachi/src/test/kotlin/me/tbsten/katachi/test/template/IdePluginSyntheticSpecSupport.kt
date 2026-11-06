@@ -1,4 +1,4 @@
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION_ERROR")
 package me.tbsten.katachi.test.template
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.DeclarationContainerScope

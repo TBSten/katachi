@@ -1,7 +1,6 @@
 package me.tbsten.katachi.dsl.internal
 
 // The messages of the @Deprecated annotations on `.module { }` and the API that only works inside it.
-// TODO(v0.4): raise every @Deprecated that reads one of these to DeprecationLevel.ERROR.
 // TODO(v0.5): remove those declarations, then this file.
 
 internal const val MODULE_SUGAR_DEPRECATION: String =

@@ -1,4 +1,4 @@
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION_ERROR")
 package me.tbsten.katachi.test.ide
 import java.io.File
 import me.tbsten.katachi.dsl.Architecture

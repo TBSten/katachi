@@ -75,7 +75,7 @@ public sealed interface ArchitectureScope : DeclarationContainerScope {
      * }
      * ```
      */
-    @Deprecated(message = MODULE_RESOLVER_DEPRECATION, level = DeprecationLevel.WARNING)
+    @Deprecated(message = MODULE_RESOLVER_DEPRECATION, level = DeprecationLevel.ERROR)
     public var moduleResolver: ModuleResolver
 
     /**
@@ -119,7 +119,7 @@ internal class ArchitectureScopeImpl : ArchitectureScope {
 
     override var files: FileSelection = FileSelection.GitTracked
 
-    @Deprecated(message = MODULE_RESOLVER_DEPRECATION, level = DeprecationLevel.WARNING)
+    @Deprecated(message = MODULE_RESOLVER_DEPRECATION, level = DeprecationLevel.ERROR)
     override var moduleResolver: ModuleResolver = ModuleResolver.Conventional
 
     private var baseline: Baseline? = null
@@ -160,7 +160,7 @@ internal class ArchitectureScopeImpl : ArchitectureScope {
         )
     }
 
-    @Suppress("DEPRECATION")
+    @Suppress("DEPRECATION_ERROR")
     fun build(declaredAt: DeclarationSite = DeclarationSite.Unknown): Architecture = Architecture(
         groups = groups.toList(),
         roles = roles.toList(),

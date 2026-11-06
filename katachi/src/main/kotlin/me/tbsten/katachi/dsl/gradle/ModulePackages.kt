@@ -1,4 +1,4 @@
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION_ERROR")
 
 package me.tbsten.katachi.dsl.gradle
 
@@ -24,7 +24,7 @@ import me.tbsten.katachi.dsl.internal.markModulePackage
  * }
  * ```
  */
-@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.WARNING)
+@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.ERROR)
 context(layoutScope: LayoutScope)
 public operator fun String.div(child: ModulePackage): LayoutDirectory {
     val left = this
@@ -44,7 +44,7 @@ public operator fun String.div(child: ModulePackage): LayoutDirectory {
  * }
  * ```
  */
-@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.WARNING)
+@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.ERROR)
 context(layoutScope: LayoutScope)
 public operator fun LayoutDirectory.div(child: ModulePackage): LayoutDirectory {
     val left = this
@@ -64,7 +64,7 @@ public operator fun LayoutDirectory.div(child: ModulePackage): LayoutDirectory {
  * }
  * ```
  */
-@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.WARNING)
+@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.ERROR)
 context(layoutScope: LayoutScope)
 public operator fun ModulePackage.div(child: String): LayoutDirectory {
     val directory = packageDirectory()
@@ -84,7 +84,7 @@ public operator fun ModulePackage.div(child: String): LayoutDirectory {
  * }
  * ```
  */
-@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.WARNING)
+@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.ERROR)
 context(layoutScope: LayoutScope)
 public operator fun ModulePackage.div(child: LayoutDirectory): LayoutDirectory {
     val directory = packageDirectory()
@@ -103,7 +103,7 @@ public operator fun ModulePackage.div(child: LayoutDirectory): LayoutDirectory {
  * }
  * ```
  */
-@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.WARNING)
+@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.ERROR)
 context(layoutScope: LayoutScope)
 public operator fun ModulePackage.div(child: LayoutFile): LayoutFile {
     val directory = packageDirectory()
@@ -127,7 +127,7 @@ public operator fun ModulePackage.div(child: LayoutFile): LayoutFile {
  * }
  * ```
  */
-@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.WARNING)
+@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.ERROR)
 context(layoutScope: LayoutScope)
 public operator fun ModulePackage.invoke(block: LayoutDirectoryScope.() -> Unit): LayoutDirectory {
     val directory = packageDirectory()

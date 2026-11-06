@@ -1,4 +1,4 @@
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION_ERROR")
 
 package me.tbsten.katachi.dsl.gradle
 
@@ -73,7 +73,7 @@ import me.tbsten.katachi.dsl.internal.captureDeclarationSite
  * @throws me.tbsten.katachi.dsl.KatachiModuleOutsideLayoutRootException when written
  *   anywhere but directly inside `layout { }`.
  */
-@Deprecated(message = MODULE_SUGAR_DEPRECATION, level = DeprecationLevel.WARNING)
+@Deprecated(message = MODULE_SUGAR_DEPRECATION, level = DeprecationLevel.ERROR)
 context(layoutScope: LayoutScope)
 public fun String.module(block: LayoutDirectoryScope.() -> Unit): LayoutModule =
     layoutScope.expandModulePath(this, block)
@@ -149,7 +149,7 @@ public class KatachiWildcardsOutsideModuleException internal constructor(
  * @throws KatachiWildcardsOutsideModuleException when read outside a `module { }` block,
  *   where there is no module path to have captured anything.
  */
-@Deprecated(message = MODULE_WILDCARDS_DEPRECATION, level = DeprecationLevel.WARNING)
+@Deprecated(message = MODULE_WILDCARDS_DEPRECATION, level = DeprecationLevel.ERROR)
 context(layoutScope: LayoutScope)
 public val wildcards: List<String>
     get() = layoutScope.currentWildcards
@@ -177,7 +177,7 @@ public val wildcards: List<String>
  * @throws KatachiWildcardsOutsideModuleException when called outside a `module { }` block.
  * @throws KatachiUnknownCaptureException when the module key gave no wildcard that name.
  */
-@Deprecated(message = MODULE_WILDCARDS_DEPRECATION, level = DeprecationLevel.WARNING)
+@Deprecated(message = MODULE_WILDCARDS_DEPRECATION, level = DeprecationLevel.ERROR)
 @ExperimentalKatachiApi
 context(layoutScope: LayoutScope)
 public fun wildcard(name: String): String {
