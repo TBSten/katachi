@@ -3,6 +3,8 @@
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask.FailureLevel
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
@@ -18,8 +20,17 @@ plugins {
 group = "me.tbsten.katachi.intellij"
 // The plugin's own version, apart from katachi's: `katachiIntellij` in the root
 // gradle/libs.versions.toml, read through settings.gradle.kts. The zip attached to each GitHub
-// Release (publish.yml) is named after it.
-version = katachiLibs.versions.katachiIntellij.get()
+// Release (publish.yml) is named after it, and patchPluginXml writes it into plugin.xml.
+// `./gradlew buildPlugin -Pkatachi.timestampVersion` appends the build time, as in 0.2.0-261106_1850:
+// the IDE refuses "Install Plugin from Disk…" for a zip whose version it already has, so a zip built
+// from a branch could not replace the released 0.2.0 (seen while reviewing PR #10). The time is the
+// building machine's local time; the property is on when present with any value but `false`. With the
+// configuration cache (off in this build) the time would be reused from the cached configuration.
+version = katachiLibs.versions.katachiIntellij.get().let { base ->
+    val timestampVersion = providers.gradleProperty("katachi.timestampVersion").orNull
+    if (timestampVersion == null || timestampVersion == "false") base
+    else "$base-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd_HHmm"))
+}
 
 // JBR 21, which the 261 platform runs on.
 kotlin {
