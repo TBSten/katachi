@@ -19,12 +19,13 @@ import me.tbsten.katachi.test.architecture.showsExample
 
 fun DeclarationContainerScope.script() = "Script".role {
     title = "katachi-script"
-    summary = "katachi コマンドの中身。公開するのは main だけで、サブコマンドはすべて internal"
+    summary = "katachi コマンドの中身。公開するのは main と、スクリプトからコマンドを組み立てる DSL。サブコマンドの実装は internal"
     description = """
         `katachi.main.kts` が `@file:DependsOn` で引く artifact です。Kotlin で書けていないサブコマンドは、同梱の `katachi-install.sh` に渡します。
     """.trimIndent()
     example("Main.kt", "katachi.main.kts が呼ぶ main(args)")
     example("DataCommand.kt", "data get / set / merge。チェックリストとレポートの JSON を読み書きする")
+    example("ScaffoldCommand.kt", "スクリプトから katachi scaffold を組み立てる DSL。メソッド名が CLI のフラグ名")
     layout {
         "katachi-script" {
             packageMatchesDirectory()
