@@ -113,6 +113,118 @@ class KtFileContentDetailSpec : FreeSpec({
         }
     }
 
+    "アクセサ・委譲・backing field" - {
+        "getter() は書いた getter を求める" {
+            judged(kt("val a: Int get() = 1\nval b: Int = 1")) {
+                `package`("**")
+                allow(`val`, "a", "Int").getter()
+                allow(`val`, "b", "Int").getter()
+            } shouldBe listOf(
+                "b (line 4) | Not allowed: val b: Int | Expected: val b: Int.getter() | Differs in: getter (none written, expected one)",
+            )
+        }
+
+        "setter(private) は private set を求める" {
+            judged(kt("class A {\n    var a: Int = 1\n        private set\n    var b: Int = 1\n}")) {
+                `package`("**")
+                allow(`class`, "A") {
+                    allow(`var`, "a", "Int").setter(private)
+                    allow(`var`, "b", "Int").setter(private)
+                }
+            } shouldBe listOf(
+                "A.b (line 6) | Not allowed: var b: Int in class A | Expected: var b: Int.setter(private) | " +
+                    "Differs in: setter (none written, expected private set)",
+            )
+        }
+
+        "val の行の setter() は DetailNotForKind" {
+            shouldThrow<KatachiKtFileContentLineException> {
+                judged(kt("val a = 1")) {
+                    `package`("**")
+                    allow(`val`, "a").setter()
+                }
+            }.problem shouldBe KtFileContentLineProblem.DetailNotForKind
+        }
+
+        "delegatedBy(\"lazy\") は by lazy を求める" {
+            judged(kt("val a by lazy { 1 }\nval b = 1")) {
+                `package`("**")
+                allow(`val`, "a").delegatedBy("lazy")
+                allow(`val`, "b").delegatedBy("lazy")
+            } shouldBe listOf(
+                "b (line 4) | Not allowed: val b | Expected: val b.delegatedBy(lazy) | Differs in: delegate (none, expected by lazy)",
+            )
+        }
+
+        "backingField(...) は field の型を見る" {
+            judged(kt("class A {\n    val items: List<String>\n        field = mutableListOf()\n    val more: List<String>\n        field: MutableList<String> = mutableListOf()\n}")) {
+                `package`("**")
+                allow(`class`, "A") {
+                    allow(`val`, "items", "List<String>").backingField("MutableList<*>")
+                    allow(`val`, "more", "List<String>").backingField("MutableList<*>")
+                }
+            } shouldBe listOf(
+                "A.items (line 4) | Not allowed: val items: List<String> in class A | " +
+                    "Expected: val items: List<String>.backingField(MutableList<*>) | " +
+                    "Differs in: backing field (field, expected field: MutableList<*>)",
+            )
+        }
+    }
+
+    "primaryConstructor(...)" - {
+        "private と val でない引数が当たれば通る" {
+            judged(kt("class A private constructor(config: String, val id: Int)")) {
+                `package`("**")
+                allow(`class`, "A") { allow(`val`, "id") }.primaryConstructor(private, "config: String", "val id: Int")
+            }.shouldBeEmpty()
+        }
+
+        "val と書いていない引数は val のプロパティに当たらない" {
+            judged(kt("class A(val id: Int)")) {
+                `package`("**")
+                allow(`class`, "A") { allow(`val`, "id") }.primaryConstructor("id: Int")
+            } shouldBe listOf(
+                "A (line 3) | Not allowed: class A | Expected: class A.primaryConstructor(id: Int) | " +
+                    "Differs in: primary constructor (is constructor(val id: Int), expected constructor(id: Int))",
+            )
+        }
+
+        "書いていないコンストラクタは public で引数なし" {
+            judged(kt("class A")) {
+                `package`("**")
+                allow(`class`, "A").primaryConstructor(public)
+            }.shouldBeEmpty()
+        }
+
+        "可視性が違えば違いに出す" {
+            judged(kt("class A(id: Int)")) {
+                `package`("**")
+                allow(`class`, "A").primaryConstructor(private, anyArgs())
+            } shouldBe listOf(
+                "A (line 3) | Not allowed: class A | Expected: class A.primaryConstructor(private, anyArgs()) | " +
+                    "Differs in: primary constructor (is constructor(id: Int), expected private constructor(...))",
+            )
+        }
+
+        "object だけの行には書けない" {
+            shouldThrow<KatachiKtFileContentLineException> {
+                judged(kt("object A")) {
+                    `package`("**")
+                    allow(`object`, "A").primaryConstructor()
+                }
+            }.problem shouldBe KtFileContentLineProblem.DetailNotForKind
+        }
+
+        "or の修飾子は DetailModifiers" {
+            shouldThrow<KatachiKtFileContentLineException> {
+                judged(kt("class A")) {
+                    `package`("**")
+                    allow(`class`, "A").primaryConstructor(private or internal)
+                }
+            }.problem shouldBe KtFileContentLineProblem.DetailModifiers
+        }
+    }
+
     "kdoc() と本体" - {
         "kdoc() は KDoc を求める" {
             judged(kt("/** Doc. */\nfun a() {}\n\nfun b() {}")) {

@@ -89,3 +89,36 @@ private fun closingParenthesisOf(code: String, open: Int): Int? {
     return null
 }
 
+// An explicit backing field (`field = ...` or `field: Type = ...` on a line of its own under the property): null without one,
+// the type as written after its `:`, or an empty text when it writes none.
+internal fun explicitBackingFieldOf(text: String): String? {
+    val code = codeOnly(text)
+    var depth = 0
+    var lineStart = true
+    for ((index, char) in code.withIndex()) {
+        when {
+            char == '(' || char == '{' || char == '[' -> depth++
+            char == ')' || char == '}' || char == ']' -> depth = maxOf(0, depth - 1)
+            char == '\n' -> {
+                lineStart = true
+                continue
+            }
+            char.isWhitespace() -> continue
+            depth == 0 && lineStart && keywordAt(code, index, "field") -> {
+                val rest = code.substring(index + "field".length).trimStart(' ', '\t')
+                val start = code.length - rest.length
+                when (rest.firstOrNull()) {
+                    '=' -> return ""
+                    ':' -> {
+                        val typeCode = code.substring(start + 1)
+                        val top = topLevelOf(typeCode)
+                        val end = typeCode.indices.firstOrNull { (typeCode[it] == '=' || typeCode[it] == '\n') && top[it] } ?: typeCode.length
+                        return text.substring(start + 1, start + 1 + end).trim()
+                    }
+                }
+            }
+        }
+        lineStart = false
+    }
+    return null
+}

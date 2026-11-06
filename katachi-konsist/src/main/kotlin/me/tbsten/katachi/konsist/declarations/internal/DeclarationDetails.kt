@@ -61,6 +61,114 @@ internal class TypeParametersRule(val parameters: List<TypeParameterRule>) : Det
     override fun toString(): String = "TypeParametersRule($rendered)"
 }
 
+internal object GetterRule : DetailRule {
+    override val call: String get() = "getter"
+
+    override val rendered: String get() = ".getter()"
+
+    override fun matches(fact: DeclarationFact): Boolean = fact.details.property?.hasGetter == true
+
+    override fun difference(fact: DeclarationFact): String = "getter (none written, expected one)"
+
+    override fun toString(): String = "GetterRule"
+}
+
+// modifiers: those the setter has to carry; `public` is carried by a setter that writes no visibility.
+internal class SetterRule(val modifiers: Set<ModifierName>) : DetailRule {
+    override val call: String get() = "setter"
+
+    override val rendered: String get() = ".setter(${modifiers.sortedBy { it.ordinal }.joinToString(" ") { it.keyword }})"
+
+    override fun matches(fact: DeclarationFact): Boolean {
+        val property = fact.details.property ?: return false
+        return property.hasSetter && modifiers.all { carries(property.setterModifiers, it) }
+    }
+
+    override fun difference(fact: DeclarationFact): String {
+        val property = fact.details.property
+        val actual = when {
+            property == null || !property.hasSetter -> "none written"
+            else -> "is " + (property.setterModifiers.sortedBy { it.ordinal }.joinToString(" ") { it.keyword } + " set").trim()
+        }
+        val expected = (modifiers.sortedBy { it.ordinal }.joinToString(" ") { it.keyword } + " set").trim()
+        return "setter ($actual, expected $expected)"
+    }
+
+    override fun toString(): String = "SetterRule($rendered)"
+}
+
+internal class DelegateRule(val name: NameRule) : DetailRule {
+    override val call: String get() = "delegatedBy"
+
+    override val rendered: String get() = ".delegatedBy(${name.written})"
+
+    override fun matches(fact: DeclarationFact): Boolean = fact.details.property?.delegate?.let(name::matches) == true
+
+    override fun difference(fact: DeclarationFact): String {
+        val actual = fact.details.property?.delegate?.let { "is by $it" } ?: "none"
+        return "delegate ($actual, expected by ${name.written})"
+    }
+
+    override fun toString(): String = "DelegateRule($rendered)"
+}
+
+// type: null asks only for a backing field; a type asks for one written with a matching type.
+internal class BackingFieldRule(val type: TypeRule?) : DetailRule {
+    override val call: String get() = "backingField"
+
+    override val rendered: String get() = ".backingField(${type?.written.orEmpty()})"
+
+    override fun matches(fact: DeclarationFact): Boolean {
+        val property = fact.details.property ?: return false
+        if (!property.hasBackingField) return false
+        val expected = type ?: return true
+        val actual = property.backingFieldType ?: return false
+        return expected.canonical.matches(actual.canonical)
+    }
+
+    override fun difference(fact: DeclarationFact): String {
+        val property = fact.details.property
+        val actual = when {
+            property == null || !property.hasBackingField -> "none"
+            else -> "field" + (property.backingFieldType?.let { ": ${it.written}" } ?: "")
+        }
+        return "backing field ($actual, expected field${type?.let { ": ${it.written}" } ?: ""})"
+    }
+
+    override fun toString(): String = "BackingFieldRule($rendered)"
+}
+
+// parameters: null asks nothing about them (`anyArgs()`). A parameter's `val` or `var` is compared as written: `"id: Int"` is not a property.
+internal class PrimaryConstructorRule(val modifiers: Set<ModifierName>, val parameters: List<ParameterRule>?) : DetailRule {
+    override val call: String get() = "primaryConstructor"
+
+    override val rendered: String
+        get() {
+            val parts = modifiers.sortedBy { it.ordinal }.map { it.keyword } +
+                (parameters?.map { it.written } ?: listOf("anyArgs()"))
+            return ".primaryConstructor(${parts.joinToString(", ")})"
+        }
+
+    override fun matches(fact: DeclarationFact): Boolean {
+        val constructor = fact.details.primaryConstructor ?: return false
+        if (!modifiers.all { carries(constructor.modifiers, it) }) return false
+        val expected = parameters ?: return true
+        return expected.size == constructor.parameters.size &&
+            expected.zip(constructor.parameters).all { (rule, written) ->
+                parameterMatches(rule, written) && rule.modifiers.intersect(PROPERTY_WORDS) == written.modifiers.intersect(PROPERTY_WORDS)
+            }
+    }
+
+    override fun difference(fact: DeclarationFact): String {
+        val constructor = fact.details.primaryConstructor
+        val actual = if (constructor == null) "none" else "is " + renderConstructor(constructor.modifiers, renderParameters(constructor.parameters))
+        val expected = renderConstructor(modifiers, parameters?.joinToString(", ", "(", ")") { it.written } ?: "(...)")
+        return "primary constructor ($actual, expected $expected)"
+    }
+
+    override fun toString(): String = "PrimaryConstructorRule($rendered)"
+}
+
 internal object KDocRule : DetailRule {
     override val call: String get() = "kdoc"
 
@@ -85,6 +193,14 @@ internal class BodyRule(val kind: BodyKind) : DetailRule {
 
     override fun toString(): String = "BodyRule($rendered)"
 }
+
+private val PROPERTY_WORDS: Set<String> = setOf("val", "var")
+
+private fun carries(modifiers: Set<ModifierName>, modifier: ModifierName): Boolean =
+    modifier in modifiers || (modifier == ModifierName.Public && modifiers.none { it in ModifierName.VISIBILITIES })
+
+private fun renderConstructor(modifiers: Set<ModifierName>, parameters: String): String =
+    (modifiers.sortedBy { it.ordinal }.joinToString(" ") { it.keyword } + " constructor").trim() + parameters
 
 internal fun renderTypeParameter(fact: TypeParameterFact): String =
     (fact.modifiers.toList() + fact.name).joinToString(" ") + if (fact.bounds.isEmpty()) "" else " : " + fact.bounds.joinToString(" & ") { it.written }

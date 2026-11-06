@@ -81,12 +81,17 @@ private class FactReader(
         val name = nameOf(declaration)
         val annotationTexts = (declaration as? KoAnnotationProvider)?.annotations.orEmpty().map { it.text }
         val text = (declaration as? KoTextProvider)?.text.orEmpty()
+        val constructor = (declaration as? KoClassDeclaration)?.let { type ->
+            type.primaryConstructor?.let { written ->
+                ConstructorFact(modifiersOf(written), written.parameters.map(::parameterFactOf))
+            } ?: ConstructorFact(emptySet(), emptyList())
+        }
         return fact(
             declaration = declaration,
             kind = kind,
             supertypes = supertypesOf(headerTextOf(text, annotationTexts), name),
             members = (declaration as? KoDeclarationProvider)?.let(::declarationsOf).orEmpty(),
-            details = detailsOf(declaration, text, annotationTexts),
+            details = detailsOf(declaration, text, annotationTexts, primaryConstructor = constructor),
         )
     }
 
@@ -125,12 +130,21 @@ private class FactReader(
         } else {
             declaration.type?.text
         }
+        val backingField = explicitBackingFieldOf(declaration.text)
+        val property = PropertyDetailFacts(
+            hasGetter = declaration.hasGetter,
+            hasSetter = declaration.hasSetter,
+            setterModifiers = declaration.setter?.let(::modifiersOf).orEmpty(),
+            delegate = declaration.delegateName,
+            hasBackingField = backingField != null,
+            backingFieldType = backingField?.takeIf { it.isNotEmpty() }?.let(::typeTextOf),
+        )
         return fact(
             declaration = declaration,
             kind = if (declaration.isVar) DeclarationKindName.Var else DeclarationKindName.Val,
             receiver = declaration.receiverType?.text,
             propertyType = written?.let(::typeTextOf),
-            details = detailsOf(declaration, declaration.text, declaration.annotations.map { it.text }),
+            details = detailsOf(declaration, declaration.text, declaration.annotations.map { it.text }, property = property),
         )
     }
 
@@ -173,6 +187,8 @@ private class FactReader(
         text: String,
         annotationTexts: List<String>,
         body: BodyKind? = null,
+        property: PropertyDetailFacts? = null,
+        primaryConstructor: ConstructorFact? = null,
     ): DetailFacts = DetailFacts(
         contextParameters = contextParametersOf(headerTextOf(text, annotationTexts)),
         typeParameters = (declaration as? KoTypeParameterProvider)?.typeParameters.orEmpty().map { parameter ->
@@ -186,6 +202,8 @@ private class FactReader(
         },
         hasKDoc = (declaration as? KoKDocProvider)?.hasKDoc == true,
         body = body,
+        property = property,
+        primaryConstructor = primaryConstructor,
     )
 }
 

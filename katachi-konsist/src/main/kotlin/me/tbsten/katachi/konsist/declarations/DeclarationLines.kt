@@ -89,6 +89,60 @@ public class TypeLine internal constructor(
     }
 
     /**
+     * Requires the primary constructor to have exactly these parameters, in order. A parameter is written as with a function,
+     * `"name: Type"`, and also with the `val` or `var` it is written with: `"val id: Int"` is a property, while `"id: Int"`
+     * is a parameter that is not one. A class writing no primary constructor has one with no parameter.
+     * A line without `.primaryConstructor(...)` asks nothing about it.
+     *
+     * ## Example 1: a value class around one string
+     * ```kt
+     * allow(value, `class`, "*Id").primaryConstructor("val value: String")
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when written twice, on a line with no `class`, or when a parameter is not
+     *   `"name: Type"`.
+     * @throws KatachiKtFileContentPatternException when a name or a type is not a pattern katachi reads.
+     */
+    public fun primaryConstructor(vararg parameters: String): TypeLine {
+        line.writePrimaryConstructor(null, parameters.toList())
+        return this
+    }
+
+    /**
+     * Requires the primary constructor to carry [modifiers] (one visibility, such as `private`) and to have exactly these
+     * parameters, as in [primaryConstructor]. `public` is carried by a constructor that writes no visibility, as in Kotlin.
+     *
+     * ## Example 1: a class only its factory creates
+     * ```kt
+     * allow(`class`, "*Session").primaryConstructor(private, "config: Config")
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when written twice, on a line with no `class`, when [modifiers] is not
+     *   one set of modifiers (an `or`, `.optional()` or `annotated(...)`), or when a parameter is not `"name: Type"`.
+     * @throws KatachiKtFileContentPatternException when a name or a type is not a pattern katachi reads.
+     */
+    public fun primaryConstructor(modifiers: Modifiers, vararg parameters: String): TypeLine {
+        line.writePrimaryConstructor(modifiers, parameters.toList())
+        return this
+    }
+
+    /**
+     * Requires the primary constructor to carry [modifiers], whatever its parameters are.
+     *
+     * ## Example 1: a private constructor with any parameters
+     * ```kt
+     * allow(`class`, "*Session").primaryConstructor(private, anyArgs())
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when written twice, on a line with no `class`, or when [modifiers] is
+     *   not one set of modifiers.
+     */
+    public fun primaryConstructor(modifiers: Modifiers, args: AnyArgs): TypeLine {
+        line.writePrimaryConstructor(modifiers, null)
+        return this
+    }
+
+    /**
      * Requires a KDoc (`/** ... */`) on the declaration. A line without `.kdoc()` asks nothing about it.
      *
      * ## Example 1: documented declarations
@@ -369,6 +423,90 @@ public class PropertyLine internal constructor(
      */
     public fun typeParameters(vararg parameters: String): PropertyLine {
         line.writeTypeParameters(parameters.toList())
+        return this
+    }
+
+    /**
+     * Requires a getter written in the declaration (`get() = ...`). A line without `.getter()` asks nothing about it.
+     *
+     * ## Example 1: computed properties
+     * ```kt
+     * allow(`val`, "is*", "Boolean").getter()
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when written twice.
+     */
+    public fun getter(): PropertyLine {
+        line.writeGetter()
+        return this
+    }
+
+    /**
+     * Requires a setter written in the declaration, with a body (`set(value) { ... }`) or without one (`private set`).
+     * A line without `.setter(...)` asks nothing about it.
+     *
+     * ## Example 1: a var with a custom setter
+     * ```kt
+     * allow(`var`, "text", "String").setter()
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when written twice, or on a line of `val` only.
+     */
+    public fun setter(): PropertyLine {
+        line.writeSetter(null)
+        return this
+    }
+
+    /**
+     * Requires a setter written in the declaration that carries [modifiers]: one visibility, such as `private`.
+     * `public` is carried by a setter that writes no visibility, as in Kotlin.
+     *
+     * ## Example 1: state only the class itself changes
+     * ```kt
+     * allow(`var`, "*", "*").setter(private)
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when written twice, on a line of `val` only, or when [modifiers] is not
+     *   one set of modifiers (an `or`, `.optional()` or `annotated(...)`).
+     */
+    public fun setter(modifiers: Modifiers): PropertyLine {
+        line.writeSetter(modifiers)
+        return this
+    }
+
+    /**
+     * Requires the property to be delegated (`by ...`) to what [name] matches: the name of the call or the value
+     * delegated to, as in `by lazy { ... }` (`lazy`) or `by viewModels()` (`viewModels`). A line without
+     * `.delegatedBy(...)` asks nothing about it.
+     *
+     * ## Example 1: lazily computed properties
+     * ```kt
+     * allow(`val`, "*").delegatedBy("lazy")
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when written twice.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
+     */
+    public fun delegatedBy(name: String): PropertyLine {
+        line.writeDelegate(name)
+        return this
+    }
+
+    /**
+     * Requires an explicit backing field (`field = ...` under the property), whose written type matches [type] when
+     * given: `.backingField("MutableStateFlow<*>")` asks for `field: MutableStateFlow<...> = ...`.
+     * A line without `.backingField(...)` asks nothing about it.
+     *
+     * ## Example 1: a read-only view of mutable state
+     * ```kt
+     * allow(`val`, "uiState", "StateFlow<*>").backingField("MutableStateFlow<*>")
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when written twice.
+     * @throws KatachiKtFileContentPatternException when [type] is not a pattern katachi reads.
+     */
+    public fun backingField(type: String? = null): PropertyLine {
+        line.writeBackingField(type)
         return this
     }
 

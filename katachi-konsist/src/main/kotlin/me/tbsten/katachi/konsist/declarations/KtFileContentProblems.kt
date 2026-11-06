@@ -85,6 +85,9 @@ public enum class KtFileContentPatternKind(internal val label: String) {
     /** A context parameter of `.context(...)`: `"logger: Logger"`. */
     ContextParameter("context parameter"),
 
+    /** The name of what a property delegates to, in `.delegatedBy("lazy")`. */
+    Delegate("delegate"),
+
     /** A pattern of `.except(...)`. */
     Except("except"),
 }
@@ -135,6 +138,18 @@ public enum class KtFileContentLineProblem {
 
     /** A detail such as `.context(...)`, `.kdoc()` or `.setter(...)` written twice on one line. */
     DetailWrittenTwice,
+
+    /**
+     * A detail no declaration of the line's kinds has: `.setter()` on a `val` line, `.primaryConstructor(...)` on a line of
+     * `interface` or `object` only.
+     */
+    DetailNotForKind,
+
+    /**
+     * Modifiers a detail does not take: `.setter(...)` and `.primaryConstructor(...)` take one visibility, not an `or`,
+     * `.optional()` or `annotated(...)`.
+     */
+    DetailModifiers,
 
     /** `.superclass()` with no name. */
     SuperclassWithoutNames,

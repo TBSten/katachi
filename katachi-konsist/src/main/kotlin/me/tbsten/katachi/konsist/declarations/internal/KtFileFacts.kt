@@ -71,6 +71,10 @@ internal class DetailFacts(
     val hasKDoc: Boolean = false,
     // Of a function: how its body is written. null on any other declaration.
     val body: BodyKind? = null,
+    // Of a property: its accessors, delegate and backing field. null on any other declaration.
+    val property: PropertyDetailFacts? = null,
+    // Of a class: its primary constructor, which is public with no parameter when the class writes none. null on any other declaration.
+    val primaryConstructor: ConstructorFact? = null,
 ) {
     override fun toString(): String = "DetailFacts"
 
@@ -88,4 +92,21 @@ internal enum class BodyKind(val call: String, val label: String) {
     Expression("expressionBody", "an expression body"),
     Block("blockBody", "a block body"),
     None("noBody", "no body"),
+}
+
+// setterModifiers: of a setter written, even one with no body (`private set`). backingFieldType: of `field: Type = ...`, null when not written.
+internal class PropertyDetailFacts(
+    val hasGetter: Boolean,
+    val hasSetter: Boolean,
+    val setterModifiers: Set<ModifierName>,
+    val delegate: String?,
+    val hasBackingField: Boolean,
+    val backingFieldType: TypeText?,
+) {
+    override fun toString(): String = "PropertyDetailFacts"
+}
+
+// Parameters carry `val` or `var` among their modifiers when they are written with one.
+internal class ConstructorFact(val modifiers: Set<ModifierName>, val parameters: List<ParameterFact>) {
+    override fun toString(): String = "ConstructorFact"
 }

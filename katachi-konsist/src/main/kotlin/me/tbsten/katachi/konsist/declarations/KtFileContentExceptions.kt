@@ -111,8 +111,8 @@ public class KatachiKtFileContentLineException internal constructor(
     public val declaredAt: DeclarationSite,
     /**
      * The parameter the problem is about, without surrounding spaces, or `null` when the problem is not about one.
-     * For a problem of a detail (`DetailWrittenTwice`) it is the name of the detail's call,
-     * such as `"context"`.
+     * For a problem of a detail (`DetailWrittenTwice`, `DetailNotForKind`, `DetailModifiers`) it is the name of the
+     * detail's call, such as `"setter"`.
      *
      * For [KtFileContentLineProblem.ParameterWithoutName] it is, for example, `"String"`.
      */
@@ -256,6 +256,18 @@ private fun lineMessage(problem: KtFileContentLineProblem, line: String, at: Dec
             "Line \"$line\" at $at writes .${parameter.orEmpty()}(...) twice.",
             "A line asks one thing of each detail of its declaration.",
             "Keep one .${parameter.orEmpty()}(...), with everything it asks for.",
+        )
+
+        KtFileContentLineProblem.DetailNotForKind -> Triple(
+            "Line \"$line\" at $at writes .${parameter.orEmpty()}(...), which no declaration of its kind has.",
+            "A val has no setter, and only a class has a primary constructor.",
+            "Remove .${parameter.orEmpty()}(...), or write it on a line of a kind that has it.",
+        )
+
+        KtFileContentLineProblem.DetailModifiers -> Triple(
+            "Line \"$line\" at $at gives .${parameter.orEmpty()}(...) modifiers it does not take.",
+            "A setter or a primary constructor is asked about one visibility.",
+            "Write one visibility, such as .${parameter.orEmpty()}(private), without or, .optional() or annotated(...).",
         )
 
         KtFileContentLineProblem.SuperclassWithoutNames -> Triple(
