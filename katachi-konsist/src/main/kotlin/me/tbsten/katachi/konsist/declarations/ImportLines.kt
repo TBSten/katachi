@@ -105,3 +105,23 @@ public class MatchingDirectory internal constructor() {
     /** `matchingDirectory`. */
     override fun toString(): String = "matchingDirectory"
 }
+
+/**
+ * A file annotation line just written.
+ *
+ * ## Example 1: the file annotations a file may have
+ * ```kt
+ * ktFileContent {
+ *     `package`("com.example.**")
+ *     fileAnnotation("Suppress(*unused*)")
+ *     allow(anythingElse)
+ * }
+ * ```
+ */
+@ExperimentalKatachiApi
+public class FileAnnotationLine internal constructor(
+    private val text: String,
+) {
+    /** The line as written: `@file:Suppress`. */
+    override fun toString(): String = text
+}

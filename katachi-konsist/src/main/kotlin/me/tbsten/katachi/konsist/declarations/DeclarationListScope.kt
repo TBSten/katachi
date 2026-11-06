@@ -142,6 +142,40 @@ public sealed interface KtFileContentScope : DeclarationListScope {
      * @throws KatachiKtFileContentPatternException when [pattern] is not a path katachi reads.
      */
     public fun `import`(pattern: String): ImportLine
+
+    /**
+     * Allows the file annotations (`@file:...`) matching [pattern]: a name as with `annotated(...)`, with the
+     * arguments in parentheses when they are asked about, as in `"Suppress(*unused*)"`. Like imports, a file
+     * annotation no line allows is a violation, and with no line written, every one is; a line only allows.
+     *
+     * ## Example 1: only @file:Suppress and @file:OptIn
+     * ```kt
+     * fileAnnotation("Suppress")
+     * fileAnnotation("OptIn")
+     * ```
+     *
+     * @throws KatachiKtFileContentPatternException when [pattern] is not a pattern katachi reads.
+     */
+    public fun fileAnnotation(pattern: String): FileAnnotationLine
+
+    /**
+     * Requires each `expect` declaration of the file to have an `actual` one of the same kind and name in each of
+     * [sourceSets]: in the same directory under `src/<source set>/` and in a file of the same name, or of the same
+     * name with a platform suffix (`Platform.kt` or `Platform.android.kt`). Only the file's own declarations are
+     * looked at, not their members.
+     *
+     * ## Example 1: what commonMain expects, androidMain and iosMain write
+     * ```kt
+     * ktFileContent {
+     *     `package`(matchingDirectory)
+     *     allow(expect, anythingElse)
+     *     actualsIn("androidMain", "iosMain")
+     * }
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when no source set is given, or one is blank or holds a `/`.
+     */
+    public fun actualsIn(vararg sourceSets: String)
 }
 
 /**

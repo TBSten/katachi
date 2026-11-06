@@ -88,6 +88,9 @@ public enum class KtFileContentPatternKind(internal val label: String) {
     /** The name of what a property delegates to, in `.delegatedBy("lazy")`. */
     Delegate("delegate"),
 
+    /** A file annotation line: `fileAnnotation("Suppress")`. */
+    FileAnnotation("file annotation"),
+
     /** A pattern of `.except(...)`. */
     Except("except"),
 }
@@ -135,6 +138,9 @@ public enum class KtFileContentLineProblem {
 
     /** `.returns(...)` written twice. */
     ReturnTypeWrittenTwice,
+
+    /** `actualsIn()` with no source set, or one that is blank or holds a `/`: name a source set, such as `"androidMain"`. */
+    ActualsWithoutSourceSets,
 
     /** A detail such as `.context(...)`, `.kdoc()` or `.setter(...)` written twice on one line. */
     DetailWrittenTwice,

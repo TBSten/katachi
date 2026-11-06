@@ -47,6 +47,9 @@ private fun failureOf(finding: KtFileFinding, path: String, rules: FileRules, op
     is ProhibitedImport -> prohibitedImportFailure(finding, path)
     is UnexpectedPackage -> unexpectedPackageFailure(finding, path, rules.declaredAt)
     is ProhibitedPackage -> prohibitedPackageFailure(finding, path)
+    is UnexpectedFileAnnotation -> unexpectedFileAnnotationFailure(finding, path, rules.declaredAt)
+    is ProhibitedFileAnnotation -> prohibitedFileAnnotationFailure(finding, path)
+    is MissingActual -> missingActualFailure(finding, path)
 }
 
 private fun unexpectedDeclarationFailure(finding: UnexpectedDeclaration, path: String, opening: Boolean): FileConstraintFailure {

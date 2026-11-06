@@ -12,6 +12,13 @@ internal class FileBuilder(
     val declarations: DeclarationListBuilder = DeclarationListBuilder(session, Placement.File, declaredAt)
     private val packages = mutableListOf<PackageLineBuilder>()
     private val imports = mutableListOf<ImportLineBuilder>()
+    private val fileAnnotations = mutableListOf<FileAnnotationRule>()
+    private val actuals = mutableListOf<ActualsRule>()
+
+    fun declareFileAnnotation(pattern: String, prohibited: Boolean): FileAnnotationRule =
+        fileAnnotationRule(pattern, prohibited).also { fileAnnotations += it }
+
+    fun declareActuals(sourceSets: List<String>): ActualsRule = actualsRule(sourceSets).also { actuals += it }
 
     fun declareImport(pattern: String, prohibited: Boolean): ImportLineBuilder {
         declarations.ensureCurrent(renderImport(pattern, prohibited, emptyList()))
@@ -39,6 +46,8 @@ internal class FileBuilder(
         imports = imports.map { it.build() },
         declarations = declarations.build(),
         declaredAt = declaredAt,
+        fileAnnotations = fileAnnotations.toList(),
+        actuals = actuals.toList(),
     )
 
     override fun toString(): String =

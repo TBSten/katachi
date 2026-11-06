@@ -252,6 +252,12 @@ private fun lineMessage(problem: KtFileContentLineProblem, line: String, at: Dec
             "Keep one .returns(...).",
         )
 
+        KtFileContentLineProblem.ActualsWithoutSourceSets -> Triple(
+            "Line \"$line\" at $at names no source set to look for the actual declarations in.",
+            "Each source set is the name of a directory under src/, such as androidMain, without a path.",
+            "Write the source sets, such as actualsIn(\"androidMain\", \"iosMain\").",
+        )
+
         KtFileContentLineProblem.DetailWrittenTwice -> Triple(
             "Line \"$line\" at $at writes .${parameter.orEmpty()}(...) twice.",
             "A line asks one thing of each detail of its declaration.",

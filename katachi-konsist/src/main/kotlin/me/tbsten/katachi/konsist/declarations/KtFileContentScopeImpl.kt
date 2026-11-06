@@ -3,6 +3,7 @@ package me.tbsten.katachi.konsist.declarations
 import me.tbsten.katachi.konsist.declarations.internal.AllowWriter
 import me.tbsten.katachi.konsist.declarations.internal.DeclarationKindName
 import me.tbsten.katachi.konsist.declarations.internal.VocabularyWord
+import me.tbsten.katachi.konsist.declarations.internal.renderFileAnnotation
 import me.tbsten.katachi.konsist.declarations.internal.DeclarationListBuilder
 import me.tbsten.katachi.konsist.declarations.internal.FileBuilder
 
@@ -35,6 +36,13 @@ internal class KtFileContentScopeImpl(
     override fun `package`(directory: MatchingDirectory): PackageLine = PackageLine(file.declareMatchingDirectory())
 
     override fun `import`(pattern: String): ImportLine = ImportLine(file.declareImport(pattern, prohibited = false))
+
+    override fun fileAnnotation(pattern: String): FileAnnotationLine =
+        FileAnnotationLine(renderFileAnnotation(file.declareFileAnnotation(pattern, prohibited = false)))
+
+    override fun actualsIn(vararg sourceSets: String) {
+        file.declareActuals(sourceSets.toList())
+    }
 
     override fun toString(): String = "KtFileContentScope(${file.session.input})"
 }

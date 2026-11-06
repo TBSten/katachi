@@ -8,6 +8,7 @@ internal class KtFileFacts(
     val packageLine: Int?,
     val imports: List<ImportFact>,
     val declarations: List<DeclarationFact>,
+    val fileAnnotations: List<FileAnnotationFact> = emptyList(),
 ) {
     override fun toString(): String = "KtFileFacts($path)"
 }

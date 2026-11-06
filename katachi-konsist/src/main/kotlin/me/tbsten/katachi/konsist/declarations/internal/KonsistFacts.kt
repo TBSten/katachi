@@ -49,6 +49,9 @@ internal fun ktFileFactsOf(parsed: KoFileDeclaration, path: String): KtFileFacts
             ImportFact(path = if (imported.isWildcard) "${imported.path}.*" else imported.path, line = lineOfElement(import))
         },
         declarations = reader.declarationsOf(file),
+        fileAnnotations = file.annotations.map { annotation ->
+            FileAnnotationFact(annotationFactOf(annotation.text, packageName, imports), collapseSpaces(annotation.text), lineOfElement(annotation))
+        },
     )
 }
 

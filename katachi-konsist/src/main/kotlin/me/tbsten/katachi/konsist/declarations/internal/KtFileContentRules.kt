@@ -199,6 +199,9 @@ internal class FileRules(
     val imports: List<ImportRule>,
     val declarations: DeclarationListRules,
     val declaredAt: DeclarationSite,
+    val fileAnnotations: List<FileAnnotationRule> = emptyList(),
+    val actuals: List<ActualsRule> = emptyList(),
 ) {
-    val isEmpty: Boolean get() = packages.isEmpty() && imports.isEmpty() && declarations.entries.isEmpty()
+    val isEmpty: Boolean
+        get() = packages.isEmpty() && imports.isEmpty() && declarations.entries.isEmpty() && fileAnnotations.isEmpty() && actuals.isEmpty()
 }

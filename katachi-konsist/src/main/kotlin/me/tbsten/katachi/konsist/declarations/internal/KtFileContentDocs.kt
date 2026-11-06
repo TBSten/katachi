@@ -55,6 +55,9 @@ internal fun ktFileContentSection(
         add(exampleLine)
         add(if (rules.packages.isEmpty()) NO_PACKAGE_LINE else packageTable(rules.packages))
         add(if (rules.imports.isEmpty()) NO_IMPORT_LINE else importTable(rules.imports))
+        // Most files have no file annotation, so the table is left out when no line is written.
+        if (rules.fileAnnotations.isNotEmpty()) add(fileAnnotationTable(rules.fileAnnotations))
+        rules.actuals.forEach { add("Each `expect` declaration needs an `actual` one in: ${it.sourceSets.joinToString(", ") { name -> code(name) }}") }
         add(if (declarations.entries.isEmpty()) NO_DECLARATION_LINE else declarationTable("Declaration", declarations))
         addAll(memberSections(declarations, outer = emptyList()))
     }
@@ -85,6 +88,11 @@ private fun packageTable(rules: List<PackageRule>): String = table(listOf("Packa
 private fun importTable(rules: List<ImportRule>): String = table(listOf("Import", "")) {
     // An import line only allows: it is never required.
     rules.map { rule -> listOf(code(rule.path.written) + exceptCells(rule.except), statusOf(rule.prohibited, required = false)) } +
+        listOfNotNull(listOf(ANYTHING_ELSE, NOT_ALLOWED).takeIf { rules.all { it.prohibited } })
+}
+
+private fun fileAnnotationTable(rules: List<FileAnnotationRule>): String = table(listOf("File annotation", "")) {
+    rules.map { rule -> listOf(code("@file:" + rule.annotation.written.removePrefix("@").removePrefix("file:")), statusOf(rule.prohibited, required = false)) } +
         listOfNotNull(listOf(ANYTHING_ELSE, NOT_ALLOWED).takeIf { rules.all { it.prohibited } })
 }
 
