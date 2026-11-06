@@ -1,5 +1,5 @@
 #!/bin/sh
-# The `katachi` command. Homebrew's wrapper sets KATACHI_HOME to where the kit was unpacked; run
+# The `katachi` command. Homebrew's wrapper sets KATACHI_HOME to where katachi.main.kts was unpacked; run
 # from a bare tarball, it is the directory above this one.
 set -eu
 

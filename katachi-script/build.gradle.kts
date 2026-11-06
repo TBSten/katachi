@@ -34,13 +34,36 @@ tasks.processResources {
     }
 }
 
+// The guide and the two templates `init` places and `guide` reads, bundled so that neither needs
+// the network (KATACHI-228). They are written for the install kit, so its commands are rewritten
+// into `katachi <subcommand>` on the way: `sh $CLI init` in the guide, `sh katachi-install.sh check`
+// in the pages. The prose that explains the kit itself (chapter 0) is left for people to rewrite.
+val bundleInstallKit = tasks.register<Sync>("bundleInstallKit") {
+    description = "Copies the install guide and templates from docs/public/install into the resources, with the kit's commands rewritten."
+    from(rootProject.layout.projectDirectory.dir("docs/public/install")) {
+        include("ja/index.md", "en/index.md")
+        include("ja/install-check-list.html", "en/install-check-list.html")
+        include("ja/project-code-base-report-template.html", "en/project-code-base-report-template.html")
+        filter { line: String ->
+            line.replace("sh \$CLI ", "katachi ")
+                .replace("sh /tmp/katachi-install.sh ", "katachi ")
+                .replace("sh <KATACHI_CLI> ", "katachi ")
+                .replace("sh katachi-install.sh ", "katachi ")
+        }
+    }
+    into(layout.buildDirectory.dir("generated/installKit/META-INF/katachi-script/install"))
+}
+
+sourceSets.main {
+    resources.srcDir(bundleInstallKit.map { layout.buildDirectory.dir("generated/installKit").get() })
+}
+
 // What `brew install tbsten/tap/katachi` unpacks: the `.main.kts` entry point pinned to this
-// version, its `bin/katachi` wrapper, and the install kit script the unported subcommands are
-// handed to. The kit script is the one the docs site serves, copied rather than linked so the
-// tarball stands on its own.
+// version and its `bin/katachi` wrapper. Every subcommand is in the katachi-script artifact the
+// entry point pulls in, so the install kit script is no longer part of it (KATACHI-229).
 val cliDist = tasks.register<Sync>("cliDist") {
     group = "distribution"
-    description = "Assembles the katachi command (katachi.main.kts, bin/katachi, katachi-install.sh) under build/cli."
+    description = "Assembles the katachi command (katachi.main.kts, bin/katachi) under build/cli."
     val katachiVersion = version.toString()
     inputs.property("katachiVersion", katachiVersion)
     from(layout.projectDirectory.dir("cli")) {
@@ -48,7 +71,6 @@ val cliDist = tasks.register<Sync>("cliDist") {
             expand("katachiVersion" to katachiVersion)
         }
     }
-    from(rootProject.layout.projectDirectory.file("docs/public/install/katachi-install.sh"))
     into(layout.buildDirectory.dir("cli/katachi-cli-$katachiVersion"))
     filePermissions { unix("rwxr-xr-x") }
 }

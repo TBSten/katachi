@@ -5,7 +5,6 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.writeText
 import me.tbsten.katachi.script.internal.ScriptContext
-import me.tbsten.katachi.script.internal.ShellRunner
 import me.tbsten.katachi.script.internal.runScript
 
 internal class RecordedRun(val status: Int, val out: String, val err: String)
@@ -15,12 +14,11 @@ internal fun runCapturing(
     cwd: Path,
     args: List<String>,
     env: Map<String, String> = emptyMap(),
-    runner: ShellRunner = ShellRunner { _, _ -> error("the kit script must not be called here") },
 ): RecordedRun {
     val out = StringBuilder()
     val err = StringBuilder()
     val context = ScriptContext(cwd, env, { out.appendLine(it) }, { err.appendLine(it) })
-    val status = runScript(args, context, runner)
+    val status = runScript(args, context)
     return RecordedRun(status, out.toString(), err.toString())
 }
 

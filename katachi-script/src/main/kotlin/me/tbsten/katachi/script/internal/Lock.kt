@@ -17,12 +17,17 @@ import kotlin.io.path.writeText
 
 /**
  * The kit's write lock, kept compatible with the shell script so that a `katachi data merge`
- * and a `sh katachi-install.sh add` running side by side still take turns: a directory made with
+ * and a `sh katachi-install.sh add` (a working directory set up with the old install kit) running
+ * side by side still take turns: a directory made with
  * `mkdir`, a `pid` file inside, and the same place for it (`<workdir>/tmp/cache/.lock` for a file
  * under the working directory, `<file>.lock` otherwise).
  */
 internal class WorkdirLock private constructor(private val directory: Path) {
     fun release() {
+        remove()
+    }
+
+    private fun remove() {
         directory.resolve("pid").deleteIfExists()
         directory.resolve("pid.tmp").deleteIfExists()
         runCatching { Files.deleteIfExists(directory) }
@@ -53,7 +58,7 @@ internal class WorkdirLock private constructor(private val directory: Path) {
                     return WorkdirLock(directory)
                 }
                 if (isStale(directory)) {
-                    WorkdirLock(directory).release()
+                    WorkdirLock(directory).remove()
                     continue
                 }
                 if (waited >= wait) {
@@ -84,5 +89,21 @@ internal class WorkdirLock private constructor(private val directory: Path) {
             }
             return ProcessHandle.of(pid).map { !it.isAlive }.orElse(true)
         }
+    }
+}
+
+/**
+ * Runs [block] holding the lock for [target]. A command that already holds it (an `add` that
+ * read the JSON before writing it back) does not take it again; only the one that took it lets go.
+ */
+internal inline fun <T> ScriptContext.withLock(target: Path, block: () -> T): T {
+    if (heldLock != null) return block()
+    val lock = WorkdirLock.acquire(this, target)
+    heldLock = lock
+    try {
+        return block()
+    } finally {
+        heldLock = null
+        lock.release()
     }
 }

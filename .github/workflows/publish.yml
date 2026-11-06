@@ -77,8 +77,8 @@ jobs:
   # The IDE plugin (experimental) is not on JetBrains Marketplace: its zip is attached to the GitHub
   # Release instead, and users install it from disk. No `needs`: it runs, and can be re-run, apart
   # from Maven Central. macOS as ci.yml's ide-plugin job, the only place buildPlugin runs in CI; only
-  # The `katachi` command for Homebrew: katachi-cli-<version>.tar.gz (katachi.main.kts, bin/katachi,
-  # katachi-install.sh) attached to the release, and the formula in TBSten/homebrew-tap pointed at
+  # The `katachi` command for Homebrew: katachi-cli-<version>.tar.gz (katachi.main.kts, bin/katachi)
+  # attached to the release, and the formula in TBSten/homebrew-tap pointed at
   # it. The script inside resolves me.tbsten.katachi:katachi-script from Maven Central at first
   # run, so this waits for `publish`; the formula still only installs once Central has synced.
   #

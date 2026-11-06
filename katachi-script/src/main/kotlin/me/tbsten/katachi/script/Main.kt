@@ -8,8 +8,8 @@ import me.tbsten.katachi.script.internal.runScript
  * Runs the `katachi` command with [args] and exits the JVM with its status.
  *
  * `katachi.main.kts` (the file `brew install tbsten/tap/katachi` puts behind the `katachi`
- * command) is this one call. Subcommands written in Kotlin run here; the rest are handed to
- * `katachi-install.sh` next to the script, or to the copy `init` left in the working directory.
+ * command) is this one call. Every subcommand runs here, in this JVM; the guide and the templates
+ * `init` places ship inside this artifact, so nothing is downloaded but what `docs` fetches.
  *
  * ## Example 1: the entry point script
  *
