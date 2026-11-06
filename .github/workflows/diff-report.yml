@@ -1,0 +1,130 @@
+name: Diff report (PR)
+
+# Posts katachi's own architecture diff report (`katachiDiff`, the Markdown flavour) as a comment on
+# every pull request: which roles and groups the change lands in, with the heat per role and the
+# files per role. Before is the pull request's base and after is its head, compared the way GitHub
+# does (`base...head`), so the report matches the "Files changed" tab.
+#
+# One comment per pull request. A later run on the same pull request removes the comment the
+# earlier run left (found by the marker on its first line) and posts a fresh one at the end of
+# the timeline, so the newest head's report is always the one a reviewer sees last.
+#
+# Two jobs, so that the token that writes the comment never meets the head's code: `report` builds
+# and runs the checkout with a read-only token and hands the Markdown over as an artifact; `comment`
+# checks nothing out, and only downloads that artifact and posts it.
+#
+# `pull_request` rather than `pull_request_target`: the latter is blocked by default for public
+# repositories from 2026-12-02, and running the head's code with the base's write token is exactly
+# what it would mean. The price is a pull request from a fork: its GITHUB_TOKEN is read-only, so
+# `comment` is skipped for it and the report stays in the job summary and the artifact.
+
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+
+# A push while a report is being made cancels it: only the newest head is worth reporting on.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # The first line of the comment, and what a later run looks for to find the earlier one.
+  COMMENT_MARKER: '<!-- katachi-diff-report -->'
+  REPORT_DIR: architecture-test/build/katachi/diff
+
+jobs:
+  report:
+    name: katachiDiff base...head
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # The head itself, not the merge commit `pull_request` would check out: `after` is the head.
+      # The whole history, because `git diff base...head` needs the merge base and `gh pr view`
+      # resolves refs that are not in a shallow clone.
+      - name: Checkout head
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      # `pr=` makes the processor ask `gh pr view` for the base and head SHAs and compare them with
+      # `...`, and link each file to the pull request's "Files changed" tab. gh is preinstalled on
+      # the runner; GH_TOKEN is what it reads the (public) pull request with.
+      - name: Run katachiDiff
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          ./gradlew :architecture-test:katachiDiff
+          --arg pr=${{ github.event.pull_request.number }}
+          --stacktrace
+
+      - name: Assemble the comment
+        run: >
+          python3 .github/scripts/diff-report-comment.py "${REPORT_DIR}"
+          --head ${{ github.event.pull_request.head.sha }}
+          --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          --marker "${COMMENT_MARKER}"
+          > "${RUNNER_TEMP}/comment.md"
+
+      # The same text as the comment, where a fork's pull request (no comment) can still read it.
+      - name: Write the job summary
+        run: cat "${RUNNER_TEMP}/comment.md" >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Upload the comment
+        uses: actions/upload-artifact@v7
+        with:
+          name: diff-report-comment
+          path: ${{ runner.temp }}/comment.md
+          retention-days: 1
+
+      # The HTML report and the full Markdown, for a reviewer who wants more than the comment.
+      - name: Upload the report
+        uses: actions/upload-artifact@v7
+        with:
+          name: diff-report
+          path: ${{ env.REPORT_DIR }}/
+          retention-days: 14
+
+  comment:
+    name: comment on the pull request
+    needs: report
+    # A fork's GITHUB_TOKEN cannot write comments; the summary and the artifact are its report.
+    if: ${{ !github.event.pull_request.head.repo.fork }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Download the comment
+        uses: actions/download-artifact@v8
+        with:
+          name: diff-report-comment
+          path: ${{ runner.temp }}
+
+      # Delete, then create: the fresh comment lands at the end of the timeline, under whatever
+      # was said since the last push. Editing the old one in place would leave it where it was.
+      - name: Replace the comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          comments="repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments"
+          gh api --paginate "${comments}" \
+            --jq ".[] | select(.body | startswith(\"${COMMENT_MARKER}\")) | .id" \
+            | while read -r id; do
+                echo "Deleting the earlier report comment ${id}"
+                gh api -X DELETE "repos/${GITHUB_REPOSITORY}/issues/comments/${id}"
+              done
+          gh api -X POST "${comments}" -F "body=@${RUNNER_TEMP}/comment.md" --jq .html_url
