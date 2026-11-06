@@ -1,0 +1,496 @@
+{
+  "templates": [
+    {
+      "template": "AllTypes",
+      "id": null,
+      "title": "全部の型",
+      "roleName": "AllTypes",
+      "summary": "string / boolean / int / enum を既定値ありなしで1つずつ持つ",
+      "parameterNames": ["name", "label", "enabled", "verbose", "count", "pageSize", "mode", "fallbackMode"],
+      "captures": [],
+      "conflict": false
+    },
+    {
+      "template": "Counter",
+      "id": null,
+      "title": "カウンター",
+      "roleName": "Counter",
+      "summary": null,
+      "parameterNames": ["name"],
+      "captures": [],
+      "conflict": false
+    },
+    {
+      "template": "a.Shallow",
+      "id": null,
+      "title": "浅い",
+      "roleName": "a.Shallow",
+      "summary": "Boolean と enum の分岐で引数が増減する",
+      "parameterNames": ["name", "withImpl", "withTest", "style", "implSuffix"],
+      "captures": [],
+      "conflict": false
+    },
+    {
+      "template": "a.b.Middle",
+      "id": null,
+      "title": "Middle",
+      "roleName": "a.b.Middle",
+      "summary": null,
+      "parameterNames": ["name"],
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "src/main/kotlin/a/b/*",
+          "position": 5,
+          "segment": "${name}",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ],
+      "conflict": true
+    },
+    {
+      "template": "a.b.c.Deep",
+      "id": null,
+      "title": "a.b.c.Deep",
+      "roleName": "a.b.c.Deep",
+      "summary": null,
+      "parameterNames": ["name", "itemName"],
+      "captures": [],
+      "conflict": false
+    },
+    {
+      "template": "other.Broken",
+      "id": null,
+      "title": "壊れたテンプレート",
+      "roleName": "other.Broken",
+      "summary": null,
+      "parameterNames": ["name"],
+      "captures": [],
+      "conflict": true
+    },
+    {
+      "template": "other.Wildcard",
+      "id": null,
+      "title": "other.Wildcard",
+      "roleName": "other.Wildcard",
+      "summary": "生成先のモジュールが決まらない",
+      "parameterNames": [],
+      "captures": [
+        {
+          "name": "feature",
+          "kind": "ModuleCapture",
+          "pattern": ":feature:*",
+          "position": 0,
+          "segment": ":feature:${feature}",
+          "wildcardIndex": 0,
+          "transform": null
+        },
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "feature/*/src/main/kotlin/*Screen.kt",
+          "position": 5,
+          "segment": "${name}Screen.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ],
+      "conflict": false
+    }
+  ],
+  "details": [
+    {
+      "template": "AllTypes",
+      "id": null,
+      "title": "全部の型",
+      "roleName": "AllTypes",
+      "summary": "string / boolean / int / enum を既定値ありなしで1つずつ持つ",
+      "parameters": [
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder"
+        },
+        {
+          "name": "label",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": "ラベル",
+          "acceptedValues": [],
+          "isRequired": false,
+          "previewValue": "${label}",
+          "previewValueSource": "Placeholder"
+        },
+        {
+          "name": "enabled",
+          "kind": "BooleanParameter",
+          "typeName": "Boolean",
+          "default": null,
+          "acceptedValues": ["true", "false"],
+          "isRequired": true,
+          "previewValue": "true",
+          "previewValueSource": "StandIn"
+        },
+        {
+          "name": "verbose",
+          "kind": "BooleanParameter",
+          "typeName": "Boolean",
+          "default": "false",
+          "acceptedValues": ["true", "false"],
+          "isRequired": false,
+          "previewValue": "false",
+          "previewValueSource": "Default"
+        },
+        {
+          "name": "count",
+          "kind": "IntParameter",
+          "typeName": "Int",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "0",
+          "previewValueSource": "StandIn"
+        },
+        {
+          "name": "pageSize",
+          "kind": "IntParameter",
+          "typeName": "Int",
+          "default": "20",
+          "acceptedValues": [],
+          "isRequired": false,
+          "previewValue": "20",
+          "previewValueSource": "Default"
+        },
+        {
+          "name": "mode",
+          "kind": "EnumParameter",
+          "typeName": "SyntheticMode",
+          "default": null,
+          "acceptedValues": ["Compact", "Expanded"],
+          "isRequired": true,
+          "previewValue": "Compact",
+          "previewValueSource": "StandIn"
+        },
+        {
+          "name": "fallbackMode",
+          "kind": "EnumParameter",
+          "typeName": "SyntheticMode",
+          "default": "Compact",
+          "acceptedValues": ["Compact", "Expanded"],
+          "isRequired": false,
+          "previewValue": "Compact",
+          "previewValueSource": "Default"
+        }
+      ],
+      "files": [
+        {
+          "pattern": "src/main/kotlin/allTypes/AllTypes.kt",
+          "fileName": "AllTypes.kt",
+          "path": "src/main/kotlin/allTypes/AllTypes.kt",
+          "captures": [],
+          "parameters": ["name", "label", "enabled", "verbose", "count", "pageSize", "mode", "fallbackMode"],
+          "content": "// ${label} true false 0 20 Compact Compact\nclass ${name}\n"
+        }
+      ],
+      "branches": [
+        {
+          "parameterName": "enabled",
+          "value": "false",
+          "addedFiles": [],
+          "removedFiles": [],
+          "addedParameters": [],
+          "removedParameters": []
+        },
+        {
+          "parameterName": "verbose",
+          "value": "true",
+          "addedFiles": [],
+          "removedFiles": [],
+          "addedParameters": [],
+          "removedParameters": []
+        },
+        {
+          "parameterName": "mode",
+          "value": "Expanded",
+          "addedFiles": [],
+          "removedFiles": [],
+          "addedParameters": [],
+          "removedParameters": []
+        },
+        {
+          "parameterName": "fallbackMode",
+          "value": "Expanded",
+          "addedFiles": [],
+          "removedFiles": [],
+          "addedParameters": [],
+          "removedParameters": []
+        }
+      ],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=AllTypes --arg name=Name --arg enabled=true --arg count=0 --arg mode=Compact",
+      "captures": []
+    },
+    {
+      "template": "Counter",
+      "id": null,
+      "title": "カウンター",
+      "roleName": "Counter",
+      "summary": null,
+      "parameters": [
+        {
+          "name": "name",
+          "kind": "IntParameter",
+          "typeName": "Int",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "0",
+          "previewValueSource": "StandIn"
+        }
+      ],
+      "files": [
+        {
+          "pattern": "src/main/kotlin/counter/Counter.kt",
+          "fileName": "Counter.kt",
+          "path": "src/main/kotlin/counter/Counter.kt",
+          "captures": [],
+          "parameters": ["name"],
+          "content": "const val COUNTER: Int = 0\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=Counter --arg name=0",
+      "captures": []
+    },
+    {
+      "template": "a.Shallow",
+      "id": null,
+      "title": "浅い",
+      "roleName": "a.Shallow",
+      "summary": "Boolean と enum の分岐で引数が増減する",
+      "parameters": [
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder"
+        },
+        {
+          "name": "withImpl",
+          "kind": "BooleanParameter",
+          "typeName": "Boolean",
+          "default": "true",
+          "acceptedValues": ["true", "false"],
+          "isRequired": false,
+          "previewValue": "true",
+          "previewValueSource": "Default"
+        },
+        {
+          "name": "withTest",
+          "kind": "BooleanParameter",
+          "typeName": "Boolean",
+          "default": "false",
+          "acceptedValues": ["true", "false"],
+          "isRequired": false,
+          "previewValue": "false",
+          "previewValueSource": "Default"
+        },
+        {
+          "name": "style",
+          "kind": "EnumParameter",
+          "typeName": "SyntheticStyle",
+          "default": "Plain",
+          "acceptedValues": ["Plain", "Fancy", "Minimal"],
+          "isRequired": false,
+          "previewValue": "Plain",
+          "previewValueSource": "Default"
+        },
+        {
+          "name": "implSuffix",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": "Impl",
+          "acceptedValues": [],
+          "isRequired": false,
+          "previewValue": "${implSuffix}",
+          "previewValueSource": "Placeholder"
+        }
+      ],
+      "files": [
+        {
+          "pattern": "src/main/kotlin/a/Shallow.kt",
+          "fileName": "Shallow.kt",
+          "path": "src/main/kotlin/a/Shallow.kt",
+          "captures": [],
+          "parameters": ["name", "withImpl", "withTest", "style", "implSuffix"],
+          "content": "interface ${name}\nclass ${name}${implSuffix} : ${name}\n"
+        }
+      ],
+      "branches": [
+        {
+          "parameterName": "withImpl",
+          "value": "false",
+          "addedFiles": [],
+          "removedFiles": [],
+          "addedParameters": [],
+          "removedParameters": ["implSuffix"]
+        },
+        {
+          "parameterName": "withTest",
+          "value": "true",
+          "addedFiles": [],
+          "removedFiles": [],
+          "addedParameters": [
+            {
+              "name": "testName",
+              "kind": "StringParameter",
+              "typeName": "String",
+              "default": "${name}Test",
+              "acceptedValues": [],
+              "isRequired": false,
+              "previewValue": "${testName}",
+              "previewValueSource": "Placeholder"
+            }
+          ],
+          "removedParameters": []
+        },
+        {
+          "parameterName": "style",
+          "value": "Fancy",
+          "addedFiles": [],
+          "removedFiles": [],
+          "addedParameters": [
+            {
+              "name": "decoration",
+              "kind": "StringParameter",
+              "typeName": "String",
+              "default": "*",
+              "acceptedValues": [],
+              "isRequired": false,
+              "previewValue": "${decoration}",
+              "previewValueSource": "Placeholder"
+            }
+          ],
+          "removedParameters": []
+        }
+      ],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=a.Shallow --arg name=Name",
+      "captures": []
+    },
+    {
+      "template": "a.b.c.Deep",
+      "id": null,
+      "title": "a.b.c.Deep",
+      "roleName": "a.b.c.Deep",
+      "summary": null,
+      "parameters": [
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder"
+        },
+        {
+          "name": "itemName",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": "${name}Item",
+          "acceptedValues": [],
+          "isRequired": false,
+          "previewValue": "${itemName}",
+          "previewValueSource": "Placeholder"
+        }
+      ],
+      "files": [
+        {
+          "pattern": "src/main/kotlin/a/b/c/Deep.kt",
+          "fileName": "Deep.kt",
+          "path": "src/main/kotlin/a/b/c/Deep.kt",
+          "captures": [],
+          "parameters": ["name", "itemName"],
+          "content": "class ${name}\nclass ${itemName}\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=a.b.c.Deep --arg name=Name",
+      "captures": []
+    },
+    {
+      "template": "other.Wildcard",
+      "id": null,
+      "title": "other.Wildcard",
+      "roleName": "other.Wildcard",
+      "summary": "生成先のモジュールが決まらない",
+      "parameters": [],
+      "files": [
+        {
+          "pattern": "feature/${feature}/src/main/kotlin/${name}Screen.kt",
+          "fileName": "${name}Screen.kt",
+          "path": null,
+          "captures": ["feature", "name"],
+          "parameters": [],
+          "content": "fun ${name}Screen() {}\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=other.Wildcard --arg feature=<feature> --arg name=<name>",
+      "captures": [
+        {
+          "name": "feature",
+          "kind": "ModuleCapture",
+          "pattern": ":feature:*",
+          "position": 0,
+          "segment": ":feature:${feature}",
+          "wildcardIndex": 0,
+          "transform": null
+        },
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "feature/*/src/main/kotlin/*Screen.kt",
+          "position": 5,
+          "segment": "${name}Screen.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ]
+    }
+  ],
+  "modulePlacements": [
+    {
+      "template": "other.Wildcard",
+      "modulePattern": ":feature:*",
+      "captureNames": ["feature"],
+      "modules": [
+        {
+          "values": ["home"],
+          "modulePath": ":feature:home",
+          "directory": "feature/home",
+          "path": "feature/home/src/main/kotlin/${name}Screen.kt"
+        },
+        {
+          "values": ["settings"],
+          "modulePath": ":feature:settings",
+          "directory": "feature/settings",
+          "path": "feature/settings/src/main/kotlin/${name}Screen.kt"
+        }
+      ]
+    }
+  ],
+  "templateSets": [],
+  "templateSetDetails": []
+}

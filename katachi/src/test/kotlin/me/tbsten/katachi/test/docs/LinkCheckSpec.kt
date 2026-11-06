@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.docs
 
 import io.kotest.assertions.throwables.shouldNotThrowAny
@@ -16,7 +14,6 @@ import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /**
@@ -269,11 +266,11 @@ class LinkCheckSpec : FreeSpec({
                 "domain".group {
                     "UseCase".role {
                         title = "ユースケース"
-                        layout { ":core:domain".module { mainSourceSet / kotlin / "*UseCase".ktFile() } }
+                        layout { "core/domain" { mainSourceSet / kotlin / "*UseCase".ktFile() } }
                     }
                     "Repository".role {
                         title = "リポジトリ"
-                        layout { ":core:domain".module { mainSourceSet / kotlin / "*Repository".ktFile() } }
+                        layout { "core/domain" { mainSourceSet / kotlin / "*Repository".ktFile() } }
                     }
                 }
             }
@@ -295,7 +292,7 @@ class LinkCheckSpec : FreeSpec({
             val arch = architecture {
                 "domain".group {
                     "UseCase".role {
-                        layout { ":core:domain".module { mainSourceSet / kotlin / "*UseCase".ktFile() } }
+                        layout { "core/domain" { mainSourceSet / kotlin / "*UseCase".ktFile() } }
                     }
                 }
             }

@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.check
 
 import io.kotest.core.spec.style.FreeSpec
@@ -12,7 +10,6 @@ import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.ArchitectureScope
 import me.tbsten.katachi.dsl.gradle.gradle
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
@@ -233,7 +230,7 @@ class NearbySpec : FreeSpec({
             // nearest place of all; nobody wrote that line, so it is not offered.
             val definition = architectureOf {
                 "app".group {
-                    "Main".role { layout { ":app".module { "src/main/kotlin" / "*".ktFile() } } }
+                    "Main".role { layout { "app" { "src/main/kotlin" / "*".ktFile() } } }
                 }
                 "build".group {
                     "Convention".role { layout { "app/conventions" / "*.gradle.kts".file() } }

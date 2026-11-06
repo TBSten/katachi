@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.check
 
 import io.kotest.core.spec.style.FreeSpec
@@ -8,7 +6,6 @@ import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.dsl.ArchitectureScope
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.internal.flattenLayout
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.check.AmbiguousLayout
 import me.tbsten.katachi.check.internal.FileOverlap
@@ -93,8 +90,8 @@ class AmbiguousFilesSpec : FreeSpec({
         "module { } が注入する build.gradle.kts は重なり扱いにならない" {
             val overlaps = overlapsOf("app/build.gradle.kts") {
                 "app".group {
-                    "Foo".role { layout { ":app".module { "Foo".ktFile() } } }
-                    "Bar".role { layout { ":app".module { "Bar".ktFile() } } }
+                    "Foo".role { layout { "app" { "Foo".ktFile() } } }
+                    "Bar".role { layout { "app" { "Bar".ktFile() } } }
                 }
             }
 
@@ -104,8 +101,8 @@ class AmbiguousFilesSpec : FreeSpec({
         "両方の役割が build.gradle.kts を自分で書いたときは重なりになる" {
             val overlaps = overlapsOf("app/build.gradle.kts") {
                 "app".group {
-                    "Foo".role { layout { ":app".module { "build.gradle.kts".file() } } }
-                    "Bar".role { layout { ":app".module { "build.gradle.kts".file() } } }
+                    "Foo".role { layout { "app" { "build.gradle.kts".file() } } }
+                    "Bar".role { layout { "app" { "build.gradle.kts".file() } } }
                 }
             }
 

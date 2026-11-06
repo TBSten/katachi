@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.docs
 
 import io.kotest.assertions.withClue
@@ -9,12 +7,9 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.gradle.ModulePackage
-import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
 import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 
@@ -26,8 +21,6 @@ import me.tbsten.katachi.dsl.kotlin.ktsFile
  * 宣言位置が kotest 内部を指すようになる。
  */
 class DirectoryTreeSpec : FreeSpec({
-    val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example")
-
     "ツリーの見た目" - {
         "ネストしたディレクトリが木になり、役割一覧表とグループ一覧の間に入る" {
             val arch = architecture {
@@ -35,16 +28,16 @@ class DirectoryTreeSpec : FreeSpec({
                     "UseCase".role {
                         title = "ユースケース"
                         layout {
-                            ":core:domain".module {
-                                mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile()
+                            "core/domain" {
+                                mainSourceSet / kotlin / "com/example/core/domain" / "useCase" / "*UseCase".ktFile()
                             }
                         }
                     }
                     "Repository".role {
                         title = "リポジトリ"
                         layout {
-                            ":core:domain".module {
-                                mainSourceSet / kotlin / modulePackage / "repository" / "*Repository".ktFile()
+                            "core/domain" {
+                                mainSourceSet / kotlin / "com/example/core/domain" / "repository" / "*Repository".ktFile()
                             }
                         }
                     }
@@ -66,10 +59,9 @@ class DirectoryTreeSpec : FreeSpec({
                 ## Placement in this group
 
                 ```
-                :core:domain
-                  src/main/kotlin/**/
-                    useCase/*UseCase.kt        ユースケース
-                    repository/*Repository.kt  リポジトリ
+                core/domain/src/main/kotlin/com/example/core/domain/
+                  useCase/*UseCase.kt        ユースケース
+                  repository/*Repository.kt  リポジトリ
                 ```
 
                 ## Groups
@@ -83,7 +75,7 @@ class DirectoryTreeSpec : FreeSpec({
                 "domain".group {
                     "UseCase".role {
                         title = "ユースケース"
-                        layout { ":core:domain".module { mainSourceSet / kotlin / "*UseCase".ktFile() } }
+                        layout { "core/domain" { mainSourceSet / kotlin / "*UseCase".ktFile() } }
                     }
                 }
             }
@@ -95,86 +87,8 @@ class DirectoryTreeSpec : FreeSpec({
         }
     }
 
-    "モジュール" - {
-        "複数のモジュールがそれぞれの見出しの下に並ぶ" {
-            val arch = architecture {
-                "domain".group {
-                    "UseCase".role {
-                        title = "ユースケース"
-                        layout {
-                            ":core:domain".module { mainSourceSet / kotlin / "useCase" / "*UseCase".ktFile() }
-                            ":feature:*".module { mainSourceSet / kotlin / "useCase" / "*UseCase".ktFile() }
-                        }
-                    }
-                }
-            }
-
-            withClue("並び順は DSL の出現順。定義を読んだ順にドキュメントが並ぶほうが対応を追いやすい") {
-                arch.tree("domain/README.md") shouldBe
-                    """
-                    :core:domain
-                      src/main/kotlin/useCase/*UseCase.kt  ユースケース
-
-                    :feature:*
-                      src/main/kotlin/useCase/*UseCase.kt  ユースケース
-                    """.trimIndent()
-            }
-        }
-
-        "ワイルドカードのモジュールキーは展開されずパターンのまま出る" {
-            val arch = architecture {
-                "feature".group {
-                    "Screen".role {
-                        title = "画面"
-                        layout { ":feature:*".module { mainSourceSet / kotlin / "*Screen".ktFile() } }
-                    }
-                }
-            }
-
-            arch.tree("feature/README.md") shouldBe
-                """
-                :feature:*
-                  src/main/kotlin/*Screen.kt  画面
-                """.trimIndent()
-        }
-
-        "modulePackage は展開せず ** のまま出る" {
-            val arch = architecture {
-                "domain".group {
-                    "UseCase".role {
-                        title = "ユースケース"
-                        layout {
-                            ":core:domain".module {
-                                mainSourceSet / kotlin / modulePackage / "*UseCase".ktFile()
-                            }
-                        }
-                    }
-                }
-            }
-
-            withClue("modulePackage はモジュールごとに違うディレクトリを指す戦略で、1つの値ではない") {
-                arch.tree("domain/README.md") shouldContain "**/"
-            }
-        }
-
-        "ルートプロジェクトの module { } は : の見出しで出る" {
-            val arch = architecture {
-                "build".group {
-                    "GradleRoot".role {
-                        title = "ルートの Gradle ファイル"
-                        layout { ":".module { "settings.gradle".ktsFile() } }
-                    }
-                }
-            }
-
-            arch.tree("build/README.md") shouldBe
-                """
-                :
-                  settings.gradle.kts  ルートの Gradle ファイル
-                """.trimIndent()
-        }
-
-        "module { } の外で書いた宣言は、モジュールの見出しを持たずルートからのパスで出る" {
+    "パスの出し方" - {
+        "宣言はルートからのパスで出る" {
             val arch = architecture {
                 "tool".group {
                     "Script".role {
@@ -196,7 +110,7 @@ class DirectoryTreeSpec : FreeSpec({
                     "Resource".role {
                         title = "リソース"
                         layout {
-                            ":app".module {
+                            "app" {
                                 mainSourceSet {
                                     "res".ignore()
                                     "assets" { anyFile() }
@@ -222,11 +136,11 @@ class DirectoryTreeSpec : FreeSpec({
                 "domain".group {
                     "UseCase".role {
                         title = "ユースケース"
-                        layout { ":core:domain".module { mainSourceSet / kotlin / "*.kt".file() } }
+                        layout { "core/domain" { mainSourceSet / kotlin / "*.kt".file() } }
                     }
                     "Repository".role {
                         title = "リポジトリ"
-                        layout { ":core:domain".module { mainSourceSet / kotlin / "*.kt".file() } }
+                        layout { "core/domain" { mainSourceSet / kotlin / "*.kt".file() } }
                     }
                 }
             }
@@ -234,8 +148,7 @@ class DirectoryTreeSpec : FreeSpec({
             withClue("衝突はエラーにしない。同じ場所に複数の役割が置けるのは設定として正当であり得る") {
                 arch.tree("domain/README.md") shouldBe
                     """
-                    :core:domain
-                      src/main/kotlin/*.kt  ユースケース, リポジトリ
+                    core/domain/src/main/kotlin/*.kt  ユースケース, リポジトリ
                     """.trimIndent()
             }
         }
@@ -246,7 +159,7 @@ class DirectoryTreeSpec : FreeSpec({
                     "UseCase".role {
                         title = "ユースケース"
                         layout {
-                            ":core:domain".module {
+                            "core/domain" {
                                 mainSourceSet / kotlin / "useCase" {
                                     "*UseCase".ktFile()
                                     "*UseCaseImpl".ktFile()
@@ -259,10 +172,9 @@ class DirectoryTreeSpec : FreeSpec({
 
             arch.tree("domain/README.md") shouldBe
                 """
-                :core:domain
-                  src/main/kotlin/useCase/
-                    *UseCase.kt      ユースケース
-                    *UseCaseImpl.kt  ユースケース
+                core/domain/src/main/kotlin/useCase/
+                  *UseCase.kt      ユースケース
+                  *UseCaseImpl.kt  ユースケース
                 """.trimIndent()
         }
 
@@ -289,11 +201,11 @@ class DirectoryTreeSpec : FreeSpec({
                 "domain".group {
                     "UseCase".role {
                         title = "ユースケース"
-                        layout { ":core:domain".module { mainSourceSet / kotlin / "useCase" / "*UseCase".ktFile() } }
+                        layout { "core/domain" { mainSourceSet / kotlin / "useCase" / "*UseCase".ktFile() } }
                     }
                     "Internal".role {
                         documented = false
-                        layout { ":core:domain".module { mainSourceSet / kotlin / "internal" / "*.kt".file() } }
+                        layout { "core/domain" { mainSourceSet / kotlin / "internal" / "*.kt".file() } }
                     }
                 }
             }
@@ -308,36 +220,21 @@ class DirectoryTreeSpec : FreeSpec({
                 "domain".group {
                     "UseCase".role {
                         title = "ユースケース"
-                        layout { ":core:domain".module { mainSourceSet / kotlin / "*UseCase".ktFile() } }
+                        layout { "core/domain" { mainSourceSet / kotlin / "*UseCase".ktFile() } }
                     }
                     "model".group {
                         "Entity".role {
                             title = "エンティティ"
-                            layout { ":core:model".module { mainSourceSet / kotlin / "*Entity".ktFile() } }
+                            layout { "core/model" { mainSourceSet / kotlin / "*Entity".ktFile() } }
                         }
                     }
                 }
             }
 
             withClue("group の境界を跨ぐツリーは「どの group の話か」が消える") {
-                arch.tree("domain/README.md") shouldNotContain ":core:model"
+                arch.tree("domain/README.md") shouldNotContain "core/model"
             }
-            arch.tree("domain/model/README.md") shouldContain ":core:model"
-        }
-
-        "module { } が注入する build/ と build.gradle.kts は出ない" {
-            val arch = architecture {
-                "domain".group {
-                    "UseCase".role {
-                        title = "ユースケース"
-                        layout { ":core:domain".module { mainSourceSet / kotlin / "*UseCase".ktFile() } }
-                    }
-                }
-            }
-
-            withClue("katachi が書いた2行なので、モジュールを名乗るすべての group に同じ行が並んでしまう") {
-                arch.tree("domain/README.md") shouldNotContain "build"
-            }
+            arch.tree("domain/model/README.md") shouldContain "core/model"
         }
 
         "layout { } が空なら節ごと出ない" {
@@ -386,7 +283,7 @@ class DirectoryTreeSpec : FreeSpec({
                 "Changelog".role { layout { "CHANGELOG.md".file() } }
                 "domain".group {
                     "UseCase".role {
-                        layout { ":core:domain".module { mainSourceSet / kotlin / "*UseCase".ktFile() } }
+                        layout { "core/domain" { mainSourceSet / kotlin / "*UseCase".ktFile() } }
                     }
                 }
             }
@@ -400,7 +297,7 @@ class DirectoryTreeSpec : FreeSpec({
             val arch = architecture {
                 "domain".group {
                     "UseCase".role {
-                        layout { ":core:domain".module { mainSourceSet / kotlin / "*UseCase".ktFile() } }
+                        layout { "core/domain" { mainSourceSet / kotlin / "*UseCase".ktFile() } }
                     }
                 }
             }
@@ -414,13 +311,13 @@ class DirectoryTreeSpec : FreeSpec({
             "feature".group {
                 "Screen".role {
                     title = "画面"
-                    layout { ":feature:*".module { mainSourceSet / kotlin / "*Screen".ktFile() } }
+                    layout { "feature/*" { mainSourceSet / kotlin / "*Screen".ktFile() } }
                 }
             }
         }
 
-        withClue("読んだら ForbiddenFileSystem が投げる。実在するモジュールを数えに行っていない証拠でもある") {
-            arch.tree("feature/README.md") shouldContain ":feature:*"
+        withClue("読んだら ForbiddenFileSystem が投げる。実在するディレクトリを数えに行っていない証拠でもある") {
+            arch.tree("feature/README.md") shouldContain "feature/*"
         }
     }
 })

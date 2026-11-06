@@ -333,8 +333,8 @@ private fun uncheckedDirectoryBlock(violation: UncheckedDirectory, root: String?
             "${STEP}Katachi failed while checking this directory. Nothing below it was checked."
 
         UncheckedDirectoryReason.ModulesNotDiscovered ->
-            "${STEP}Katachi failed while looking for modules here, so a module key may have " +
-                    "expanded to fewer modules than the project has."
+            "${STEP}Katachi failed while looking for modules here, so gradle() may have declared " +
+                    "the build scripts of fewer modules than the project has."
     },
     *causeLines(violation.cause).toTypedArray(),
     "",

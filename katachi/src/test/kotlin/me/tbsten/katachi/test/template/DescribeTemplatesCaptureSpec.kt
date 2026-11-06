@@ -1,12 +1,9 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.template
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.pascalCase
 import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.processor.process
@@ -47,23 +44,6 @@ class DescribeTemplatesCaptureSpec : FreeSpec({
         val detail = arch.process(DescribeTemplates, DescribeTemplates.Args(template = "feature.Screen"))
             .getOrThrow() as TemplateDetail
         detail.captures.single().segment shouldBe "\${fileName}Screen.kt"
-    }
-
-    "モジュールの capture は module key 全体を segment に持つ" {
-        val arch = architectureOf {
-            "feature".group {
-                "BuildFile".role {
-                    layout { ":feature:${capture("feature")}".module { "module.txt".file().template { "" } } }
-                }
-            }
-        }
-        val detail = arch.process(DescribeTemplates, DescribeTemplates.Args(template = "feature.BuildFile"))
-            .getOrThrow() as TemplateDetail
-        val capture = detail.captures.single()
-        capture.kind shouldBe TemplateCaptureKind.ModuleCapture
-        capture.pattern shouldBe ":feature:*"
-        capture.position shouldBe 0
-        capture.segment shouldBe ":feature:\${feature}"
     }
 
     "同じ名前の2か所は position ごとに一覧に出て、一覧の captures と exampleCommand は元の名前だけ" {

@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.check
 
 import io.kotest.core.spec.style.FreeSpec
@@ -10,8 +8,6 @@ import me.tbsten.katachi.check.FileConstraintCheck
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.FileConstraint
 import me.tbsten.katachi.dsl.gradle.*
-import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.dsl.kotlin.ktsFile
 
 /**
  * The files each constraint is handed, when one run narrows them once per block.
@@ -154,40 +150,6 @@ class FileConstraintFilesSharingSpec : FreeSpec({
 
             useCases.subjects.single().files shouldBe listOf("shared/GetUserUseCase.kt")
             repositories.subjects.single().files shouldBe listOf("shared/UserRepository.kt")
-        }
-
-        "ワイルドカードのモジュールキーの制約は、モジュールごとにそのモジュールのファイルだけを受け取る" {
-            val recording = RecordingFileConstraint()
-            val arch = architectureOf {
-                "feature".group {
-                    "Screen".role {
-                        layout {
-                            ":".module { "settings.gradle".ktsFile() }
-                            ":feature:*".module {
-                                fileConstraint("screens", check = recording)
-                                mainSourceSet / kotlin / "*Screen".ktFile()
-                            }
-                        }
-                    }
-                }
-            }
-
-            arch.validate(
-                repositoryOf {
-                    "build.gradle.kts"()
-                    "settings.gradle.kts"()
-                    "feature" {
-                        "home" { "build.gradle.kts"(); "src/main/kotlin" { "HomeScreen.kt"() } }
-                        "cart" { "build.gradle.kts"(); "src/main/kotlin" { "CartScreen.kt"() } }
-                    }
-                },
-                FileConstraintCheck(),
-            )
-
-            recording.subjects.map { it.paths to it.files } shouldBe listOf(
-                listOf("feature/cart") to listOf("feature/cart/src/main/kotlin/CartScreen.kt"),
-                listOf("feature/home") to listOf("feature/home/src/main/kotlin/HomeScreen.kt"),
-            )
         }
     }
 

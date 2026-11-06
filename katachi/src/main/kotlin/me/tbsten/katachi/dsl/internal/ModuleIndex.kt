@@ -171,8 +171,8 @@ public class ModuleIndex internal constructor(
 private fun normalizeDirectory(directory: String): String =
     directory.split('/', '\\').filter { it.isNotEmpty() && it != "." }.joinToString("/")
 
-// Named `*`s become `<name>` placeholders because ModulePackage strategies split the whole module path, not only
-// the wildcards.
+// Named `*`s become `<name>` placeholders so that a reader of the unresolved path can tell a named level from a
+// plain `*`.
 private fun ModulePattern.unresolvedModulePath(captureNames: List<String?>?): String =
     if (captureNames == null) pattern else filledIn(wildcardPlaceholders(captureNames))
 

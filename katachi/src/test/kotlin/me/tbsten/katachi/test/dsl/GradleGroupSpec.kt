@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.dsl
 
 import io.kotest.core.spec.style.FreeSpec
@@ -18,7 +16,6 @@ import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gradle.gradle
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.test.check.architectureOf
 import me.tbsten.katachi.test.check.labels
@@ -95,7 +92,7 @@ class GradleGroupSpec : FreeSpec({
             }
             architectureOf {
                 gradle()
-                "App".role { layout { ":app".module { mainSourceSet / kotlin / "Main".ktFile() } } }
+                "App".role { layout { "app" { mainSourceSet / kotlin / "Main".ktFile() } } }
             }.validate(build).labels().shouldBeEmpty()
         }
 

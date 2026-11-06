@@ -156,28 +156,3 @@ public class KatachiDuplicateDeclarationException internal constructor(
         }
     },
 )
-
-/**
- * A `"...".module { }` key was written somewhere other than directly inside `layout { }`.
- *
- * ## Example 1: catch a module key nested inside a directory block
- * ```kt
- * shouldThrow<KatachiModuleOutsideLayoutRootException> {
- *     layout {
- *         "app" { ":core:data".module { } }
- *     }
- * }.modulePath shouldBe ":core:data"
- * ```
- *
- * @property modulePath the module path as it was written, without its `.module { }`.
- * @property declaredAt where it was written.
- */
-public class KatachiModuleOutsideLayoutRootException internal constructor(
-    public val modulePath: String,
-    public val declaredAt: DeclarationSite,
-) : KatachiDeclarationException(
-    message = "`$modulePath`.module { } at $declaredAt is not directly inside `layout { }`. A module " +
-        "path is resolved to a directory below the project root, so it cannot be " +
-        "nested in another directory. Move it up, or write the directory it lives in " +
-        "as a plain key.",
-)

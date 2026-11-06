@@ -78,10 +78,10 @@
       "captures": [
         {
           "name": "feature",
-          "kind": "ModuleCapture",
-          "pattern": ":feature:*",
-          "position": 0,
-          "segment": ":feature:${feature}",
+          "kind": "PathCapture",
+          "pattern": "feature/*/src/main/kotlin/*Page.kt",
+          "position": 1,
+          "segment": "${feature}",
           "wildcardIndex": 0,
           "transform": null
         },
@@ -242,7 +242,7 @@
         {
           "pattern": "feature/${feature}/src/main/kotlin/${name}Page.kt",
           "fileName": "${name}Page.kt",
-          "path": null,
+          "path": "feature/${feature}/src/main/kotlin/${name}Page.kt",
           "captures": ["feature", "name"],
           "parameters": [],
           "content": "fun ${name}Page() {}\n"
@@ -253,10 +253,10 @@
       "captures": [
         {
           "name": "feature",
-          "kind": "ModuleCapture",
-          "pattern": ":feature:*",
-          "position": 0,
-          "segment": ":feature:${feature}",
+          "kind": "PathCapture",
+          "pattern": "feature/*/src/main/kotlin/*Page.kt",
+          "position": 1,
+          "segment": "${feature}",
           "wildcardIndex": 0,
           "transform": null
         },
@@ -272,27 +272,7 @@
       ]
     }
   ],
-  "modulePlacements": [
-    {
-      "template": "ui.Screen",
-      "modulePattern": ":feature:*",
-      "captureNames": ["feature"],
-      "modules": [
-        {
-          "values": ["home"],
-          "modulePath": ":feature:home",
-          "directory": "feature/home",
-          "path": "feature/home/src/main/kotlin/${name}Page.kt"
-        },
-        {
-          "values": ["settings"],
-          "modulePath": ":feature:settings",
-          "directory": "feature/settings",
-          "path": "feature/settings/src/main/kotlin/${name}Page.kt"
-        }
-      ]
-    }
-  ],
+  "modulePlacements": [],
   "templateSets": [
     {
       "templateSet": "Starter",
@@ -524,7 +504,7 @@
             {
               "pattern": "feature/${feature}/src/main/kotlin/${name}Page.kt",
               "fileName": "${name}Page.kt",
-              "path": null,
+              "path": "feature/${feature}/src/main/kotlin/${name}Page.kt",
               "captures": ["feature", "name"],
               "parameters": [],
               "content": "fun ${name}Page() {}\n"

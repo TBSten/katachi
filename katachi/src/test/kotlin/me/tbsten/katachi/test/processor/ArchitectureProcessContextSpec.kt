@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.processor
 
 import io.kotest.assertions.throwables.shouldThrow
@@ -9,8 +7,8 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.files.KatachiFileSystem
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.dsl.kotlin.ktsFile
 import me.tbsten.katachi.processor.KatachiUnknownRoleException
 import me.tbsten.katachi.processor.internal.process
 import me.tbsten.katachi.processor.internal.withArgs
@@ -170,19 +168,18 @@ class ArchitectureProcessContextSpec : FreeSpec({
         }
     }
 
-    "ワイルドカードの module キー" - {
+    "ワイルドカードのディレクトリ" - {
         // declaredEntries は宣言だけを読む（ファイルシステムに触らない）ので、
-        // ":feature:*" が何モジュールに化けるかを知りようがない。知りようがないことと
+        // "feature/*" が何ディレクトリに化けるかを知りようがない。知りようがないことと
         // 「1つも無い」ことは別なので、展開せずパターン1件として残す。filesOf は実際に
         // 歩くので展開後が見える。この食い違いは仕様であって、KDoc の1段落だけに
         // 任せておくと次の誰かが黙って壊す。
         val definition = architectureOf {
-            "feature".group { "Module".role { layout { ":feature:*".module { } } } }
+            "feature".group { "Module".role { layout { "feature/*" { "build.gradle".ktsFile() } } } }
         }
         val patternEntries = listOf(
             "feature",
             "feature/*",
-            "feature/*/build",
             "feature/*/build.gradle.kts",
         )
         val tree = repositoryOf {
@@ -206,9 +203,9 @@ class ArchitectureProcessContextSpec : FreeSpec({
             )
         }
 
-        "実在するモジュールが何個あっても declaredEntries は変わらない" {
+        "実在するディレクトリが何個あっても declaredEntries は変わらない" {
             // 実在数だけ展開してしまう実装との差はここに出る。パターンのままなら、
-            // モジュールを増やしても減らしても宣言の見え方は1件のまま動かない。
+            // ディレクトリを増やしても減らしても宣言の見え方は1件のまま動かない。
             fun declaredPathsWith(vararg modules: String): List<String> = definition.process(
                 repositoryOf { modules.forEach { name -> "feature/$name/build.gradle.kts"() } },
             ) { context -> context.declaredEntries.map { it.path } }
@@ -218,26 +215,25 @@ class ArchitectureProcessContextSpec : FreeSpec({
             declaredPathsWith() shouldBe patternEntries
         }
 
-        "ワイルドカードの module キーを読んでもファイルシステムには触らない" {
-            // パターンのまま残すのにモジュール一覧は要らない、が守りたい性質。実在
-            // モジュールを数えに行く実装に戻したらここで落ちる。
+        "ワイルドカードのディレクトリを読んでもファイルシステムには触らない" {
+            // パターンのまま残すのにディレクトリ一覧は要らない、が守りたい性質。実在
+            // ディレクトリを数えに行く実装に戻したらここで落ちる。
             definition.process(ForbiddenFileSystem) { context ->
                 context.declaredEntries.map { it.path }
             } shouldBe patternEntries
         }
 
-        "ワイルドカードを含まない module キーなら declaredEntries にも現れる" {
+        "ワイルドカードを含まないキーなら declaredEntries にも現れる" {
             // パターンのまま残るのはワイルドカードのときだけ、という線引きの固定。
-            // モジュールを名指しするキーは、どこに置かれるかを resolver だけで答えられる。
+            // ディレクトリを名指しするキーは、どこに置かれるかを宣言だけで答えられる。
             val literal = architectureOf {
-                "feature".group { "Module".role { layout { ":feature:home".module { } } } }
+                "feature".group { "Module".role { layout { "feature/home" { "build.gradle".ktsFile() } } } }
             }
 
             literal.process(tree) { context -> context.declaredEntries.map { it.path } } shouldBe
                 listOf(
                     "feature",
                     "feature/home",
-                    "feature/home/build",
                     "feature/home/build.gradle.kts",
                 )
         }

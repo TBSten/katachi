@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.check
 
 import io.kotest.core.spec.style.FreeSpec
@@ -9,7 +7,6 @@ import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.internal.flattenLayout
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.check.AmbiguousLayout
 import me.tbsten.katachi.check.internal.ambiguousLayoutsOf
@@ -90,7 +87,7 @@ class AmbiguousLayoutSpec : FreeSpec({
 
         "path のテキストが違えば警告にならない" {
             val entries = twoRoles(
-                { ":feature:*".module { "Screen".ktFile() } },
+                { "feature/*" { "Screen".ktFile() } },
                 { "feature/home" { "Screen".ktFile() } },
             )
 
@@ -122,11 +119,11 @@ class AmbiguousLayoutSpec : FreeSpec({
         }
     }
 
-    "module { } の定型" - {
-        "2つの役割が同じモジュールを .module { } で書いても build / build.gradle.kts に警告は出ない" {
+    "同じディレクトリ" - {
+        "2つの役割が同じディレクトリを開いても、ディレクトリ自体には警告は出ない" {
             val entries = twoRoles(
-                { ":app".module { } },
-                { ":app".module { } },
+                { "app" { } },
+                { "app" { } },
             )
 
             ambiguousLayoutsOf(entries).shouldBeEmpty()
@@ -134,8 +131,8 @@ class AmbiguousLayoutSpec : FreeSpec({
 
         "両方の役割が build.gradle.kts を自分で書くと、その path にだけ警告が出る" {
             val entries = twoRoles(
-                { ":app".module { "build.gradle.kts".file() } },
-                { ":app".module { "build.gradle.kts".file() } },
+                { "app" { "build.gradle.kts".file() } },
+                { "app" { "build.gradle.kts".file() } },
             )
 
             val warnings = ambiguousLayoutsOf(entries).filterIsInstance<AmbiguousLayout>()
@@ -147,8 +144,8 @@ class AmbiguousLayoutSpec : FreeSpec({
             // The other role's copy is still the sugar's own declaration, so after dropping
             // synthetic entries only one role's claim is left on this path.
             val entries = twoRoles(
-                { ":app".module { "build.gradle.kts".file() } },
-                { ":app".module { } },
+                { "app" { "build.gradle.kts".file() } },
+                { "app" { } },
             )
 
             ambiguousLayoutsOf(entries).shouldBeEmpty()

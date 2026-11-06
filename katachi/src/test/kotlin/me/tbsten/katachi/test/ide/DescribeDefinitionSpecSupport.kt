@@ -1,4 +1,3 @@
-@file:Suppress("DEPRECATION")
 package me.tbsten.katachi.test.ide
 import java.io.File
 import me.tbsten.katachi.dsl.Architecture
@@ -9,7 +8,6 @@ import me.tbsten.katachi.dsl.FileConstraintRange
 import me.tbsten.katachi.dsl.FileConstraintSubject
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.files.KatachiFileSystem
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.internal.DeclarationExplaining
 import me.tbsten.katachi.dsl.internal.DeclarationExplanation
 import me.tbsten.katachi.dsl.internal.DeclarationVerdict
@@ -143,13 +141,13 @@ internal fun basicProject(): KatachiFileSystem = fakeFileSystem(workingDirectory
     }
 }
 
-/** `modules`: a wildcard module key with a named capture, expanded to the two modules that exist. */
+/** `modules`: a wildcard directory with a named capture, matched by the two modules that exist. */
 internal fun modulesDefinition(): Architecture = architecture {
     files = wholeTree()
     "feature".group {
         "Screen".role {
             layout {
-                ":feature:${capture("feature")}".module {
+                "feature/${capture("feature")}" {
                     "src/main/kotlin" / "${capture("name")}Screen.kt".file().template(id = "screen", title = "Screen") {
                         "fun ${captureValue("name")}Screen() {}\n"
                     }

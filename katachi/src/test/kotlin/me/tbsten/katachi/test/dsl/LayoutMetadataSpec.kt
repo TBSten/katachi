@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.dsl
 
 import io.kotest.assertions.throwables.shouldThrow
@@ -7,11 +5,9 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.dsl.KatachiConflictingLayoutMetadataException
-import me.tbsten.katachi.dsl.KatachiMetadataWithoutEntryException
 import me.tbsten.katachi.dsl.LayoutDeclarationScope
 import me.tbsten.katachi.dsl.MetadataKey
 import me.tbsten.katachi.dsl.MetadataScope
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.metadata
 
@@ -44,13 +40,11 @@ class LayoutMetadataSpec : FreeSpec({
             entries.single { it.path == "dir" }[Obsolete].shouldBeNull()
         }
 
-        "モジュールの宣言に付けた値は展開したディレクトリに付く" {
+        "ワイルドカードのディレクトリに付けた値はそのディレクトリに付く" {
             val entries = layoutOf {
-                ":feature:*".module { "A".file() }.metadata { obsolete = true }
+                "feature/*" { "A".file() }.metadata { obsolete = true }
             }
 
-            // プロジェクトを見ていないインデックスでは、キーはパターンのまま1つのディレクトリ
-            // （"feature/*"）に展開される。それがモジュールの開いたディレクトリそのもの。
             entries.single { it.path == "feature/*" }[Obsolete] shouldBe true
         }
 
@@ -86,16 +80,6 @@ class LayoutMetadataSpec : FreeSpec({
 
             entries.single { it.path == "dir" }[Obsolete] shouldBe true
             entries.single { it.path == "dir/A" }[Obsolete].shouldBeNull()
-        }
-    }
-
-    ":\".module { }.metadata { }" - {
-        "ルートプロジェクトの module には付ける先が無く KatachiMetadataWithoutEntryException" {
-            val thrown = shouldThrow<KatachiMetadataWithoutEntryException> {
-                layoutOf { ":".module { "README.md".file() }.metadata { obsolete = true } }
-            }
-
-            thrown.modulePath shouldBe ":"
         }
     }
 

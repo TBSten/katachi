@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.check
 
 import io.kotest.core.spec.style.FreeSpec
@@ -9,10 +7,7 @@ import me.tbsten.katachi.check.FileConstraintCheck
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.FileConstraintSubject
 import me.tbsten.katachi.dsl.LayoutScope
-import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
-import me.tbsten.katachi.dsl.gradle.mainSourceSet
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.pascalCase
 import me.tbsten.katachi.test.dsl.files.FakeFileSystem
@@ -102,41 +97,6 @@ class FileConstraintCaptureSpec : FreeSpec({
 
             subject.captureNames.toList() shouldBe listOf("source")
             subject.captureValuesOf("data/user-remote.kt") shouldBe mapOf("source" to "remote")
-        }
-    }
-
-    "モジュールの capture" - {
-        val modules = repositoryOf {
-            "feature/home" { "build.gradle.kts"(); "src/main/kotlin" { "HomeScreen.kt"() } }
-            "feature/settings" { "build.gradle.kts"(); "src/main/kotlin" { "SettingsScreen.kt"() } }
-        }
-
-        "モジュールキーの capture は、そのファイルのモジュールの名前になる" {
-            val subject = subjectsOf(modules) {
-                ":feature:${capture("feature")}".module { mainSourceSet / kotlin / "*Screen".ktFile() }
-            }.single()
-
-            subject.captureValuesOf("feature/home/src/main/kotlin/HomeScreen.kt") shouldBe mapOf("feature" to "home")
-            subject.captureValuesOf("feature/settings/src/main/kotlin/SettingsScreen.kt") shouldBe
-                mapOf("feature" to "settings")
-        }
-
-        "名前はモジュールのものが先、パスのものが後に並ぶ" {
-            val subject = subjectsOf(modules) {
-                ":feature:${capture("feature")}".module { mainSourceSet / kotlin / "${capture("name")}Screen".ktFile() }
-            }.single()
-
-            subject.captureNames.toList() shouldBe listOf("feature", "name")
-            subject.captureValuesOf("feature/home/src/main/kotlin/HomeScreen.kt") shouldBe
-                mapOf("feature" to "home", "name" to "Home")
-        }
-
-        "一部の * にだけ名前を付けたモジュールキーは、どの名前がどの * か分からないので値を取らない" {
-            val tree = repositoryOf { "lib/core/data" { "build.gradle.kts"(); "Data.kt"() } }
-            val subject = subjectsOf(tree) { ":lib:*:${capture("part")}".module { "*.kt".file() } }.single()
-
-            subject.captureNames.toList() shouldBe listOf("part")
-            subject.captureValuesOf("lib/core/data/Data.kt").shouldBeEmpty()
         }
     }
 

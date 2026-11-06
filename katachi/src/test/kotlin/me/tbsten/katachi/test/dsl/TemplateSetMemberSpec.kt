@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.dsl
 
 import io.kotest.assertions.throwables.shouldNotThrowAny
@@ -14,7 +12,6 @@ import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.KatachiInvalidTemplateSetMemberException
 import me.tbsten.katachi.dsl.KatachiInvalidTemplateSetMemberException.Problem
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.processor.internal.process
@@ -160,12 +157,12 @@ class TemplateSetMemberSpec : FreeSpec({
         }
     }
 
-    "モジュールの capture の下のテンプレートをメンバにした組" - {
+    "ディレクトリの capture の下のテンプレートをメンバにした組" - {
         fun moduleDefinition(member: String): Architecture = architectureOf {
             "feature".group {
                 "Screen".role {
                     layout {
-                        ":feature:${capture("feature")}".module {
+                        "feature/${capture("feature")}" {
                             "Screen.kt".file().template { "// screen" }
                         }
                     }

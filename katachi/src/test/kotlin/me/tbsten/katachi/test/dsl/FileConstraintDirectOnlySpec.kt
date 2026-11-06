@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.dsl
 
 import io.kotest.assertions.throwables.shouldThrow
@@ -11,7 +9,6 @@ import me.tbsten.katachi.dsl.KatachiFileConstraintDirectOnlyCoversNothingExcepti
 import me.tbsten.katachi.dsl.KatachiFileConstraintDirectOnlyWithoutDirectoryException
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 
@@ -138,7 +135,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
                 "domain".group {
                     "UseCase".role {
                         layout {
-                            ":core:domain".module {
+                            "core/domain" {
                                 fileConstraint("module root", scope = FileConstraintRange.DirectOnly, check = silent())
                                 "README.md".file()
                                 mainSourceSet / KOTLIN_DIRECTORY / "*UseCase".ktFile()
@@ -159,7 +156,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
                 "build".group {
                     "Scripts".role {
                         layout {
-                            ":core:domain".module {
+                            "core/domain" {
                                 fileConstraint("build script", scope = FileConstraintRange.DirectOnly, check = silent())
                                 "build.gradle".ktsFile()
                             }
@@ -228,15 +225,13 @@ class FileConstraintDirectOnlySpec : FreeSpec({
             thrown.name shouldBe null
         }
 
-        "\":\".module { } の中に書くと layout の評価時に落ちる" {
+        "\"\" { } の中に書くと layout の評価時に落ちる" {
             val arch = architecture {
                 "build".group {
                     "Settings".role {
                         layout {
-                            ":".module {
-                                fileConstraint("root project", scope = FileConstraintRange.DirectOnly, check = silent())
-                                "settings.gradle".ktsFile()
-                            }
+                            fileConstraint("root project", scope = FileConstraintRange.DirectOnly, check = silent())
+                            "settings.gradle".ktsFile()
                         }
                     }
                 }
@@ -276,7 +271,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
                 "domain".group {
                     "UseCase".role {
                         layout {
-                            ":core:domain".module {
+                            "core/domain" {
                                 fileConstraint("module root", scope = FileConstraintRange.DirectOnly, check = silent())
                                 mainSourceSet / KOTLIN_DIRECTORY / "*UseCase".ktFile()
                             }

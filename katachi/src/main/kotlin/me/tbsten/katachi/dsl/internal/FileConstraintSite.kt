@@ -35,7 +35,7 @@ internal class FileConstraintSite(
     val declarations: List<FileConstraintDeclaration>,
     // Excludes entries a `module { }` block injected; see LayoutNode.synthetic.
     val owned: List<LayoutNode>,
-    // null directly under `layout { }` and inside `":".module { }`, whose directory is the project root.
+    // null directly under `layout { }` and inside the root project's expansion, whose directory is the project root.
     val anchor: LayoutNode?,
 )
 

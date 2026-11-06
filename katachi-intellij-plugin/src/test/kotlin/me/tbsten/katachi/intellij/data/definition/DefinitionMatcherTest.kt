@@ -241,8 +241,9 @@ class DefinitionMatcherTest {
 
     @Test
     fun `katachi が書いた module の定義でも build_gradle_kts は Matched で build の下は Ignored`() {
-        // synthetic-definition-structure.json is what the real task wrote for `":feature:*".module { }`: the injected entries are in it.
-        val subject = DefinitionMatcher(DefinitionFixtures.definition("synthetic-definition-structure"))
+        // handwritten-module-capture-definition.json is what katachi 0.3's real task wrote for `":feature:*".module { }`:
+        // the injected entries are in it. It is kept by hand since katachi 0.4 removed `.module { }`.
+        val subject = DefinitionMatcher(DefinitionFixtures.definition("handwritten-module-capture-definition"))
         for (module in listOf("feature/home", "feature/settings")) {
             val script = subject.matchFile("$module/build.gradle.kts")
             assertEquals(MatchOutcome.Matched, script.outcome)
@@ -258,7 +259,7 @@ class DefinitionMatcherTest {
     @Test
     fun `synthetic と place の entry を除くと build_gradle_kts は Unexpected で build の下は UnexpectedUnder になる`() {
         // What the definition looked like when the JSON left them out: the answers the check never gives.
-        val model = DefinitionFixtures.definition("synthetic-definition-structure")
+        val model = DefinitionFixtures.definition("handwritten-module-capture-definition")
         val withoutInjected = model.copy(roles = model.roles.map { role -> role.copy(layout = role.layout.filterNot { it.synthetic || it.place }) })
         val subject = DefinitionMatcher(withoutInjected)
         assertEquals(MatchOutcome.Unexpected, subject.matchFile("feature/home/build.gradle.kts").outcome)

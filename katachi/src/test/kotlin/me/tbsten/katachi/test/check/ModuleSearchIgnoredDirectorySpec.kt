@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.check
 
 import io.kotest.core.spec.style.FreeSpec
@@ -15,12 +13,7 @@ import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.dsl.files.ProjectRoot
 import me.tbsten.katachi.dsl.files.internal.GitTrackedFileSystem
-import me.tbsten.katachi.dsl.gradle.kotlin
-import me.tbsten.katachi.dsl.gradle.mainSourceSet
-import me.tbsten.katachi.dsl.gradle.module
-import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.dsl.kotlin.ktsFile
-import me.tbsten.katachi.dsl.LayoutScope
+import me.tbsten.katachi.dsl.gradle.gradle
 import me.tbsten.katachi.test.dsl.files.failingToListAt
 
 /**
@@ -32,8 +25,9 @@ import me.tbsten.katachi.test.dsl.files.failingToListAt
  * walk under `gitTracked()` never enters such a directory either, so no module found there
  * could ever have had a file checked.
  *
- * The selection here is [GitTrackedFileSystem] over a fake with a fixed list, standing in for
- * what `git ls-files --cached --others --exclude-standard` would print.
+ * The search is reached through `gradle()`, which declares the build script of every module it
+ * finds. The selection here is [GitTrackedFileSystem] over a fake with a fixed list, standing in
+ * for what `git ls-files --cached --others --exclude-standard` would print.
  */
 class ModuleSearchIgnoredDirectorySpec : FreeSpec({
     "git が何も報告しないディレクトリ" - {
@@ -49,35 +43,21 @@ class ModuleSearchIgnoredDirectorySpec : FreeSpec({
         "モジュール探索でも中を list しない" {
             val recording = RecordingFileSystem(tree)
 
-            gitReporting(reported) {
-                ":".module { "settings.gradle".ktsFile() }
-                ":*".module { }
-            }.validate(recording)
+            gitReporting(reported).validate(recording)
 
             recording.listed.filter { it.startsWith("/repo/dist") || it.startsWith("/repo/node_modules") }
                 .shouldBeEmpty()
         }
 
-        "中のモジュールはワイルドカードに展開されない" {
-            // Before, `:dist` was found and its build file — which the walk never sees — came
-            // back as missing although it is sitting right there on disk.
-            gitReporting(reported) {
-                ":".module { "settings.gradle".ktsFile() }
-                ":*".module { }
-            }.validate(tree).labels().shouldBeEmpty()
-        }
-
         "中の読めないディレクトリは検査できなかったと報告しない" {
-            gitReporting(reported) {
-                ":".module { "settings.gradle".ktsFile() }
-                ":*".module { }
-            }.validate(tree.failingToListAt("/repo/node_modules/pkg") { IOException("cannot list it") })
+            gitReporting(reported)
+                .validate(tree.failingToListAt("/repo/node_modules/pkg") { IOException("cannot list it") })
                 .labels().shouldBeEmpty()
         }
     }
 
     "git が報告するものは今までどおり探索する" - {
-        "まだ add していない新しいモジュールも見つかり、中の宣言外のファイルは Unexpected になる" {
+        "まだ add していない新しいモジュールも見つかり、その build.gradle.kts は許可され、宣言外のファイルは Unexpected になる" {
             val tree = repositoryOf {
                 "settings.gradle.kts"()
                 "build.gradle.kts"()
@@ -87,25 +67,7 @@ class ModuleSearchIgnoredDirectorySpec : FreeSpec({
             gitReporting(
                 // `feature/home/*` are what `--others` adds: not tracked yet, not ignored.
                 listOf("settings.gradle.kts", "build.gradle.kts", "feature/home/build.gradle.kts", "feature/home/Stray.kt"),
-            ) {
-                ":".module { "settings.gradle".ktsFile() }
-                ":feature:*".module { }
-            }.validate(tree).labels() shouldBe listOf("[UnexpectedFile] feature/home/Stray.kt")
-        }
-
-        "build.gradle.kts だけが報告されないモジュールも見つかる" {
-            val tree = repositoryOf {
-                "settings.gradle.kts"()
-                "build.gradle.kts"()
-                "feature" { "home" { "build.gradle.kts"(); "src/main/kotlin" { "HomeScreen.kt"() } } }
-            }
-
-            gitReporting(
-                listOf("settings.gradle.kts", "build.gradle.kts", "feature/home/src/main/kotlin/HomeScreen.kt"),
-            ) {
-                ":".module { "settings.gradle".ktsFile() }
-                ":feature:*".module { mainSourceSet / kotlin / "HomeScreen".ktFile() }
-            }.validate(tree).labels() shouldBe listOf("[MissingFile] feature/home/build.gradle.kts")
+            ).validate(tree).labels() shouldBe listOf("[UnexpectedFile] feature/home/Stray.kt")
         }
 
         "1つのパスとして報告されるディレクトリ（サブモジュール、入れ子のリポジトリ）の中も探索する" {
@@ -116,9 +78,7 @@ class ModuleSearchIgnoredDirectorySpec : FreeSpec({
             }
             val recording = RecordingFileSystem(tree)
 
-            gitReporting(listOf("settings.gradle.kts", "build.gradle.kts", "libs/vendored")) {
-                ":".module { "settings.gradle".ktsFile() }
-            }.validate(recording)
+            gitReporting(listOf("settings.gradle.kts", "build.gradle.kts", "libs/vendored")).validate(recording)
 
             recording.listed shouldContain "/repo/libs/vendored"
         }
@@ -132,19 +92,19 @@ class ModuleSearchIgnoredDirectorySpec : FreeSpec({
         }
         val recording = RecordingFileSystem(tree)
 
-        layoutArchitecture { ":".module { "settings.gradle".ktsFile() } }.validate(recording)
+        architectureOf { gradle(requireWrapper = false) }.validate(recording)
 
         recording.listed shouldContain "/repo/node_modules/pkg/android"
     }
 })
 
-/** An architecture whose `files` shows only [reported], the way `gitTracked()` does. */
-private fun gitReporting(reported: List<String>, block: LayoutScope.() -> Unit): Architecture = architecture {
+/** An architecture of `gradle()` alone, whose `files` shows only [reported], the way `gitTracked()` does. */
+private fun gitReporting(reported: List<String>): Architecture = architecture {
     files = object : FileSelection {
         override fun fileSystemFor(delegate: KatachiFileSystem, projectRoot: ProjectRoot): KatachiFileSystem =
             GitTrackedFileSystem(delegate, projectRoot.path, reported)
     }
-    "app".group { "Role".role { layout(block) } }
+    gradle(requireWrapper = false)
 }
 
 /** [delegate], remembering every directory it was asked to list. */

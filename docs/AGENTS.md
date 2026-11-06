@@ -301,7 +301,7 @@ prerelease の手順 11（ドキュメントがガイドのルールに沿って
 - **ガイドのルールを守った見本だけを書く。** コード例は利用者がそのまま写す。ルールに反する例は、悪い形を広める。
   - 🆖 1つの Role に interface と実装を入れた例（`"Repository".role { layout { "*Repository".ktFile(); "*RepositoryImpl".ktFile() } }`）
   - 🆗 `"RepositoryInterface"` と `"RepositoryImplementation"` に分けた例（Role のガイドの「1つの Role には1種類のファイルだけを入れる」）
-- **廃止予定の書き方は例に使わない。** `.module { }` は廃止する予定で、API は残っているが、例に使うと利用者がその形を写して、あとで書き直すことになる。ドキュメント・サンプル・リポジトリ自身の定義のどこにも書かない。
+- **廃止した書き方は例に使わない。** `.module { }` は 0.4 で削除した（0.3 で非推奨）。古い版のドキュメントにはまだあるが、現行のドキュメント・サンプル・リポジトリ自身の定義のどこにも書かない。
   - 🆖 `":core:domain".module { mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile() }`
   - 🆗 `"core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" / "*UseCase".ktFile()`（`modulePackage` や `wildcard()` も `.module { }` の中でしか使えないので書かない。モジュールごとに名前を変えたいときは、ディレクトリの `*` に `capture()` で名前を付ける）
 - **Role の宣言は `"名前".role { }` で書く。** v0.2 までの `"名前" { }` は v0.3 からコンパイルエラーになるので、例に書かない。`.role` を付けるのは Role の宣言だけで、`layout { }` の中のディレクトリの宣言 `"src" { }` はそのまま。

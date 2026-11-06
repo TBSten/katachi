@@ -1,14 +1,9 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.dsl
 
 import kotlin.random.Random
 import me.tbsten.katachi.dsl.LayoutDirectory
 import me.tbsten.katachi.dsl.LayoutFile
 import me.tbsten.katachi.dsl.LayoutScope
-import me.tbsten.katachi.dsl.gradle.module
-import me.tbsten.katachi.dsl.gradle.wildcard
-import me.tbsten.katachi.dsl.gradle.wildcards
 
 /*
  * Random `layout { }` blocks for the property specs of capture().
@@ -44,29 +39,12 @@ internal sealed interface RNode {
     /** `a / b / c { children }`. [segs] is never empty. */
     data class Dir(val segs: List<RSeg>, val children: List<RNode>) : RNode
 
-    /**
-     * `a / b / "name".file()`. A `{W}` in [name] is the module's first wildcard value, read with
-     * `wildcards[0]` or, when the module names it, `wildcard(name)`.
-     */
+    /** `a / b / "name".file()`. */
     data class File(val dirs: List<RSeg>, val name: String) : RNode
-
-    /**
-     * `":feature:*".module { children }`, written directly inside `layout { }`. [captureName] is
-     * the name the module's `*` is given in both spellings; [chosen] gives it [NAMED_CAPTURE] in
-     * the named spelling only.
-     */
-    data class Module(
-        val children: List<RNode>,
-        val captureName: String? = null,
-        val chosen: Boolean = false,
-    ) : RNode
 }
 
 /** The name the one `*` a property spec replaces is given. */
 internal const val NAMED_CAPTURE: String = "picked"
-
-/** The key every random module is declared with, so the fake trees know where modules live. */
-internal const val RANDOM_MODULE_KEY: String = ":feature:*"
 
 /** Directory names the generators draw from, overlapping the fake trees on purpose. */
 internal val LITERAL_DIRECTORIES: List<String> = listOf("feature", "src", "main", "kotlin", "home", "docs", "ui")
@@ -81,37 +59,20 @@ internal val PARTIAL_DIRECTORIES: List<String> = listOf("feat*", "*-impl")
 
 /** Declares [nodes] in this scope. [named] renders the chosen `*` as `capture(NAMED_CAPTURE)`. */
 internal fun LayoutScope.declare(nodes: List<RNode>, named: Boolean) {
-    nodes.forEach { declare(it, named, moduleCapture = null) }
+    nodes.forEach { declare(it, named) }
 }
 
-private fun LayoutScope.declare(node: RNode, named: Boolean, moduleCapture: String?) {
+private fun LayoutScope.declare(node: RNode, named: Boolean) {
     when (node) {
         is RNode.Dir -> open(chain(node.segs, named)) {
-            node.children.forEach { declare(it, named, moduleCapture) }
+            node.children.forEach { declare(it, named) }
         }
 
         is RNode.File -> {
-            val file = fileName(node.name, moduleCapture).file()
+            val file = node.name.file()
             if (node.dirs.isNotEmpty()) attach(chain(node.dirs, named), file)
         }
-
-        is RNode.Module -> {
-            val name = node.captureName ?: NAMED_CAPTURE.takeIf { named && node.chosen }
-            if (name == null) {
-                RANDOM_MODULE_KEY.module { node.children.forEach { declare(it, named, moduleCapture = null) } }
-            } else {
-                val key = RANDOM_MODULE_KEY.replaceFirst("*", capture(name))
-                key.module { node.children.forEach { declare(it, named, name) } }
-            }
-        }
     }
-}
-
-/** [name] with `{W}` read from the module being declared, by name when it has one. */
-private fun LayoutScope.fileName(name: String, moduleCapture: String?): String {
-    if ("{W}" !in name) return name
-    val value = if (moduleCapture != null) wildcard(moduleCapture) else wildcards[0]
-    return name.replace("{W}", value)
 }
 
 /** A `String` or a [LayoutDirectory], whichever the DSL answers for [segs] chained with `/`. */
@@ -161,30 +122,21 @@ internal fun renderDsl(nodes: List<RNode>, named: Boolean): String = buildString
     }
 
     fun line(indent: Int, text: String) = append("  ".repeat(indent)).append(text).append('\n')
-    fun node(n: RNode, indent: Int, moduleCapture: String?) {
+    fun node(n: RNode, indent: Int) {
         when (n) {
             is RNode.Dir -> {
                 line(indent, n.segs.joinToString(" / ", transform = ::seg) + " {")
-                n.children.forEach { node(it, indent + 1, moduleCapture) }
+                n.children.forEach { node(it, indent + 1) }
                 line(indent, "}")
             }
 
             is RNode.File -> {
-                val read = if (moduleCapture != null) "\${wildcard(\"$moduleCapture\")}" else "\${wildcards[0]}"
-                val file = "\"${n.name.replace("{W}", read)}\".file()"
+                val file = "\"${n.name}\".file()"
                 line(indent, (n.dirs.map(::seg) + file).joinToString(" / "))
-            }
-
-            is RNode.Module -> {
-                val name = n.captureName ?: NAMED_CAPTURE.takeIf { named && n.chosen }
-                val key = if (name == null) RANDOM_MODULE_KEY else RANDOM_MODULE_KEY.replaceFirst("*", "\${capture(\"$name\")}")
-                line(indent, "\"$key\".module {")
-                n.children.forEach { node(it, indent + 1, name) }
-                line(indent, "}")
             }
         }
     }
-    nodes.forEach { node(it, 0, null) }
+    nodes.forEach { node(it, 0) }
 }
 
 // endregion
@@ -192,11 +144,7 @@ internal fun renderDsl(nodes: List<RNode>, named: Boolean): String = buildString
 // region generation
 
 /** A random layout whose `*`s carry no mark; see [markOneStar]. */
-internal fun Random.randomLayout(withModule: Boolean = nextInt(3) == 0): List<RNode> {
-    val nodes = MutableList(nextInt(1, 4)) { node(depth = 0) }
-    if (withModule) nodes.add(nextInt(nodes.size + 1), RNode.Module(List(nextInt(1, 3)) { moduleChild() }))
-    return nodes
-}
+internal fun Random.randomLayout(): List<RNode> = List(nextInt(1, 4)) { node(depth = 0) }
 
 private fun Random.node(depth: Int): RNode =
     if (depth >= 2 || nextInt(2) == 0) {
@@ -205,11 +153,6 @@ private fun Random.node(depth: Int): RNode =
         RNode.Dir(List(nextInt(1, 3)) { seg() }, List(nextInt(0, 3)) { node(depth + 1) })
     }
 
-private fun Random.moduleChild(): RNode {
-    val name = if (nextBoolean()) "{W}ViewModel.kt" else FILE_PATTERNS.random(this)
-    return RNode.File(listOf(RSeg.Lit("src")) + List(nextInt(0, 2)) { seg() }, name)
-}
-
 private fun Random.seg(): RSeg = when (nextInt(10)) {
     in 0..4 -> RSeg.Lit(LITERAL_DIRECTORIES.random(this))
     in 5..7 -> RSeg.Star()
@@ -217,12 +160,11 @@ private fun Random.seg(): RSeg = when (nextInt(10)) {
     else -> RSeg.Partial(PARTIAL_DIRECTORIES.random(this))
 }
 
-/** How many places [nodes] has that a `capture(...)` may replace: whole-level `*`s and module keys. */
+/** How many places [nodes] has that a `capture(...)` may replace: whole-level `*`s. */
 internal fun starCount(nodes: List<RNode>): Int = nodes.sumOf { node ->
     when (node) {
         is RNode.Dir -> node.segs.count { it is RSeg.Star } + starCount(node.children)
         is RNode.File -> node.dirs.count { it is RSeg.Star }
-        is RNode.Module -> (if (node.captureName == null) 1 else 0) + starCount(node.children)
     }
 }
 
@@ -231,7 +173,6 @@ internal fun hasChosenStar(nodes: List<RNode>): Boolean = nodes.any { node ->
     when (node) {
         is RNode.Dir -> node.segs.any { it is RSeg.Star && it.chosen } || hasChosenStar(node.children)
         is RNode.File -> node.dirs.any { it is RSeg.Star && it.chosen }
-        is RNode.Module -> node.chosen || hasChosenStar(node.children)
     }
 }
 
@@ -250,11 +191,6 @@ internal fun markOneStar(nodes: List<RNode>, index: Int): List<RNode> {
         when (node) {
             is RNode.Dir -> RNode.Dir(segs(node.segs), walk(node.children))
             is RNode.File -> RNode.File(segs(node.dirs), node.name)
-            is RNode.Module -> {
-                val chosen = node.captureName == null && remaining == 0
-                if (node.captureName == null) remaining--
-                node.copy(chosen = chosen, children = walk(node.children))
-            }
         }
     }
     return walk(nodes)
@@ -283,10 +219,6 @@ private fun smallerNodes(node: RNode): Sequence<RNode> = sequence {
 
         is RNode.File -> for (i in node.dirs.indices) {
             yield(node.copy(dirs = node.dirs.filterIndexed { j, _ -> j != i }))
-        }
-
-        is RNode.Module -> for (children in smallerLayouts(node.children)) {
-            if (children.isNotEmpty()) yield(node.copy(children = children))
         }
     }
 }

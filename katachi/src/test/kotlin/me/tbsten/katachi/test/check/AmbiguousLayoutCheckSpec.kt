@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.check
 
 import io.kotest.assertions.throwables.shouldNotThrowAny
@@ -12,7 +10,6 @@ import me.tbsten.katachi.check.internal.assert
 import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.files.FsPath
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /**
@@ -42,11 +39,11 @@ class AmbiguousLayoutCheckSpec : FreeSpec({
         warnings.single().overlappingFiles.shouldBeEmpty()
     }
 
-    "\":feature:*\".module { } を2役割が書くと、実在するモジュール数によらず警告は1件" {
+    "\"feature/*\" { } を2役割が書くと、実在するモジュール数によらず警告は1件" {
         val definition = architectureOf {
             "group".group {
-                "RoleA".role { layout { ":feature:*".module { "Screen".ktFile() } } }
-                "RoleB".role { layout { ":feature:*".module { "Screen".ktFile() } } }
+                "RoleA".role { layout { "feature/*" { "Screen".ktFile() } } }
+                "RoleB".role { layout { "feature/*" { "Screen".ktFile() } } }
             }
         }
         val tree = repositoryOf {
@@ -63,20 +60,19 @@ class AmbiguousLayoutCheckSpec : FreeSpec({
             listOf("feature/*/Screen.kt")
     }
 
-    "2つの役割が同じモジュールを .module { } で書いても警告は出ない" {
+    "2つの役割が同じディレクトリを開いても、別のファイルを書いていれば警告は出ない" {
         val definition = architectureOf {
             "group".group {
-                "RoleA".role { layout { ":app".module { "Foo".ktFile() } } }
-                "RoleB".role { layout { ":app".module { "Bar".ktFile() } } }
+                "RoleA".role { layout { "app" { "Foo".ktFile() } } }
+                "RoleB".role { layout { "app" { "Bar".ktFile() } } }
             }
         }
         val tree = repositoryOf {
-            "app" { "build.gradle.kts"(); "Foo.kt"(); "Bar.kt"() }
+            "app" { "Foo.kt"(); "Bar.kt"() }
         }
 
-        // `build.gradle.kts` really is allowed by both roles — that is what makes it a file
-        // and not a violation — but neither author claimed it, so it is not an overlap
-        // either, textually or on the file the walk actually reached.
+        // The directory is opened by both roles, but no file pattern is: there is no overlap,
+        // textually or on the files the walk actually reached.
         definition.validate(tree).filterIsInstance<AmbiguousLayout>().shouldBeEmpty()
     }
 

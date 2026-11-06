@@ -121,7 +121,7 @@ internal fun Role.evaluateLayout(moduleIndex: ModuleIndex): LayoutEvaluation {
         // it declares is pinned to where its `layout { }` was declared: the user's call that
         // brought the role in, rather than whoever happened to start the check.
         val pinnedSite = declaration.declaredAt.takeIf { isWrittenByKatachi(declaration.block) }
-        val scope = LayoutScopeImpl(root, index, moduleContext = null, sites = sites, pinnedSite = pinnedSite)
+        val scope = LayoutScopeImpl(root, index, sites = sites, pinnedSite = pinnedSite)
         scope.apply(declaration.block)
         // Directly under `layout { }` there is no directory block to close the site, so the
         // root closes it: such a constraint owns that one block and not the role's others.
@@ -166,9 +166,6 @@ internal fun Role.evaluateLayout(moduleIndex: ModuleIndex): LayoutEvaluation {
 }
 
 private data class EntryKey(val path: String, val kind: LayoutEntryKind)
-
-// `**`, not the resolved directory: one modulePackage strategy stands for a different directory in every module.
-private const val MODULE_PACKAGE_PLACEHOLDER: String = "**"
 
 // A name written twice along the path is allowed: it declares that the two levels read the same value.
 private class CaptureTrail(
@@ -230,15 +227,6 @@ private fun collectInto(
             // The directory a module key opened is the module itself, so the path inside it
             // starts over from there.
             child.place -> emptyList()
-            // Consecutive levels of one package are one placeholder: `com/example/core/domain`
-            // is four nodes and one `modulePackage`.
-            child.modulePackage ->
-                if (inModule.lastOrNull() == MODULE_PACKAGE_PLACEHOLDER) {
-                    inModule
-                } else {
-                    inModule + MODULE_PACKAGE_PLACEHOLDER
-                }
-
             else -> inModule + child.segment
         }
         val path = segments.joinToString("/")

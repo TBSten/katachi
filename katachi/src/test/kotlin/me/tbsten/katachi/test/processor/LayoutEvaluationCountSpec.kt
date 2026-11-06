@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.processor
 
 import io.kotest.core.spec.style.FreeSpec
@@ -8,7 +6,6 @@ import me.tbsten.katachi.check.LayoutCheck
 import me.tbsten.katachi.check.internal.assertNoErrors
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.LayoutEntry
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.processor.internal.process
@@ -22,9 +19,9 @@ import me.tbsten.katachi.test.dsl.files.ForbiddenFileSystem
  * How many times one run evaluates each role's `layout { }` block.
  *
  * `declaredEntries` (the definition read without the project) and the walk (the definition
- * read against the modules that exist) used to evaluate every block once each. The two only
- * differ for a role that wrote a wildcard module key, so every other role is evaluated once and
- * both readings share that one result. What must not change is what either reading answers.
+ * read against the project) used to evaluate every block once each. Nothing a role writes
+ * reads the project any more, so every role is evaluated once and both readings share that one
+ * result. What must not change is what either reading answers.
  */
 class LayoutEvaluationCountSpec : FreeSpec({
     "layout ブロックを評価する回数" - {
@@ -87,9 +84,9 @@ class LayoutEvaluationCountSpec : FreeSpec({
             evaluations shouldBe 1
         }
 
-        "ワイルドカードの module キーを書いた役割だけは2回、書いていない役割は1回" {
-            // The wildcard role has two different answers -- the pattern as written, and the
-            // modules that exist -- so it has to be evaluated once for each.
+        "ワイルドカードのディレクトリを書いた役割も、書いていない役割も1回" {
+            // A wildcard directory is one answer -- the pattern as written -- for both readings,
+            // so no role is evaluated twice.
             var wildcardEvaluations = 0
             var plainEvaluations = 0
             val definition = architectureOf {
@@ -97,7 +94,7 @@ class LayoutEvaluationCountSpec : FreeSpec({
                     "Module".role {
                         layout {
                             wildcardEvaluations++
-                            ":feature:*".module { }
+                            "feature/*" { }
                         }
                     }
                 }
@@ -105,19 +102,19 @@ class LayoutEvaluationCountSpec : FreeSpec({
                     "Data".role {
                         layout {
                             plainEvaluations++
-                            ":core:data".module { }
+                            "core/data" { }
                         }
                     }
                 }
             }
             val tree = repositoryOf {
-                "feature" { "home" { "build.gradle.kts"() } }
-                "core" { "data" { "build.gradle.kts"() } }
+                "feature" { "home" { } }
+                "core" { "data" { } }
             }
 
             definition.process(LayoutCheck(), tree).getOrThrow() shouldBe emptyList()
 
-            wildcardEvaluations shouldBe 2
+            wildcardEvaluations shouldBe 1
             plainEvaluations shouldBe 1
         }
     }
@@ -127,14 +124,14 @@ class LayoutEvaluationCountSpec : FreeSpec({
             "feature".group {
                 "Module".role {
                     layout {
-                        ":feature:*".module { "src" / "*.kt".file() }
+                        "feature/*" { "src" / "*.kt".file() }
                     }
                 }
             }
             "core".group {
                 "Data".role {
                     layout {
-                        ":core:data".module { "src" / "Repository.kt".file() }
+                        "core/data" { "src" / "Repository.kt".file() }
                         "docs" / "README.md".file()
                     }
                 }
@@ -142,10 +139,10 @@ class LayoutEvaluationCountSpec : FreeSpec({
         }
         val tree = repositoryOf {
             "feature" {
-                "home" { "build.gradle.kts"(); "src" { "Home.kt"() } }
-                "settings" { "build.gradle.kts"() }
+                "home" { "src" { "Home.kt"() } }
+                "settings" { }
             }
-            "core" { "data" { "build.gradle.kts"(); "src" { "Repository.kt"(); "Extra.kt"() } } }
+            "core" { "data" { "src" { "Repository.kt"(); "Extra.kt"() } } }
             "tmp" { "scratch.txt"() }
         }
 
@@ -189,12 +186,8 @@ class LayoutEvaluationCountSpec : FreeSpec({
             val fresh = definition.filesOfEveryRole(readDeclaredFirst = false)
 
             fresh shouldBe listOf(
-                listOf(
-                    "feature/home/build.gradle.kts",
-                    "feature/home/src/Home.kt",
-                    "feature/settings/build.gradle.kts",
-                ),
-                listOf("core/data/build.gradle.kts", "core/data/src/Repository.kt"),
+                listOf("feature/home/src/Home.kt"),
+                listOf("core/data/src/Repository.kt"),
             )
             definition.filesOfEveryRole(readDeclaredFirst = true) shouldBe fresh
         }

@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.check
 
 import io.kotest.core.spec.style.FreeSpec
@@ -10,9 +8,6 @@ import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.camelCase
 import me.tbsten.katachi.dsl.flatCase
-import me.tbsten.katachi.dsl.gradle.module
-import me.tbsten.katachi.dsl.gradle.wildcard
-import me.tbsten.katachi.dsl.gradle.wildcards
 import me.tbsten.katachi.dsl.kebabCase
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.pascalCase
@@ -91,22 +86,6 @@ class CaptureCheckSpec : FreeSpec({
             named.shouldNotBeEmpty()
             named shouldBe plain
         }
-
-        "モジュールの capture（wildcard(name) と wildcards[0] が同じファイル名を作る）" {
-            val named = violationsOf {
-                ":feature:${capture("feature")}".module {
-                    "src" / "${wildcard("feature").replaceFirstChar(Char::uppercaseChar)}ViewModel".ktFile()
-                }
-            }
-            val plain = violationsOf {
-                ":feature:*".module {
-                    "src" / "${wildcards[0].replaceFirstChar(Char::uppercaseChar)}ViewModel".ktFile()
-                }
-            }
-
-            named.shouldNotBeEmpty()
-            named shouldBe plain
-        }
     }
 
     "同じ名前を2回使ったパスは値が一致するファイルだけを許す" - {
@@ -154,13 +133,13 @@ class CaptureCheckSpec : FreeSpec({
                 listOf("[CaptureMismatch] docs/home/settings/c.md")
         }
 
-        "モジュールキーの名前とパスの名前の束縛は展開したモジュール名で比べる" {
+        "ブロックで開いたディレクトリの名前と中のパスの名前の束縛は、開いたディレクトリ名で比べる" {
             val tree = repositoryOf {
-                "feature/home" { "build.gradle.kts"(); "src" { "home" { "A.kt"() }; "settings" { "B.kt"() } } }
+                "feature/home" { "src" { "home" { "A.kt"() }; "settings" { "B.kt"() } } }
             }
 
             violationsIn(tree) {
-                ":feature:${capture("feature")}".module { "src" / capture("feature") / "*.kt".file() }
+                "feature" / capture("feature") { "src" / capture("feature") / "*.kt".file() }
             } shouldBe listOf("[CaptureMismatch] feature/home/src/settings/B.kt")
         }
 
@@ -226,13 +205,13 @@ class CaptureCheckSpec : FreeSpec({
             } shouldBe listOf("[CaptureMismatch] home/SettingsScreen.kt")
         }
 
-        "派生の元がモジュールキーの名前でも比べる" {
+        "派生の元がブロックで開いたディレクトリの名前でも比べる" {
             val tree = repositoryOf {
-                "feature/home" { "build.gradle.kts"(); "src" { "HomeScreen.kt"(); "CartScreen.kt"() } }
+                "feature/home" { "src" { "HomeScreen.kt"(); "CartScreen.kt"() } }
             }
 
             violationsIn(tree) {
-                ":feature:${capture("f")}".module { "src" / "${capture("f").pascalCase}Screen".ktFile() }
+                "feature" / capture("f") { "src" / "${capture("f").pascalCase}Screen".ktFile() }
             } shouldBe listOf("[CaptureMismatch] feature/home/src/CartScreen.kt")
         }
     }

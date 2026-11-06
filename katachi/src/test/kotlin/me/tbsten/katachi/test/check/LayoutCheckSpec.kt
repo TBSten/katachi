@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.check
 
 import io.kotest.assertions.throwables.shouldNotThrowAny
@@ -13,9 +11,8 @@ import me.tbsten.katachi.check.FileConstraintCheck
 import me.tbsten.katachi.check.LayoutCheck
 import me.tbsten.katachi.check.internal.assert
 import me.tbsten.katachi.check.validate
-import me.tbsten.katachi.dsl.KatachiModuleOutsideLayoutRootException
+import me.tbsten.katachi.dsl.KatachiInvalidIdentifierException
 import me.tbsten.katachi.dsl.KatachiProjectRootNotFoundException
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.processor.internal.process
 import me.tbsten.katachi.processor.process
 import me.tbsten.katachi.test.dsl.files.fakeFileSystem
@@ -83,10 +80,10 @@ class LayoutCheckSpec : FreeSpec({
 
         "定義の誤りは failure として返す" {
             val result = shouldNotThrowAny {
-                moduleOutsideLayoutRoot().process(LayoutCheck(), repositoryOf { })
+                invalidCaptureName().process(LayoutCheck(), repositoryOf { })
             }
 
-            result.exceptionOrNull().shouldBeInstanceOf<KatachiModuleOutsideLayoutRootException>()
+            result.exceptionOrNull().shouldBeInstanceOf<KatachiInvalidIdentifierException>()
         }
     }
 
@@ -99,14 +96,14 @@ class LayoutCheckSpec : FreeSpec({
         }
 
         "定義の誤り" {
-            val definition = moduleOutsideLayoutRoot()
+            val definition = invalidCaptureName()
 
             shouldThrow<KatachiDeclarationException> { definition.validate(repositoryOf { }) }
             shouldThrow<KatachiDeclarationException> { definition.assert(repositoryOf { }) }
         }
 
         "追加の check を渡しても同じ" {
-            val definition = moduleOutsideLayoutRoot()
+            val definition = invalidCaptureName()
 
             shouldThrow<KatachiDeclarationException> { definition.validate(repositoryOf { }, FileConstraintCheck()) }
         }
@@ -119,4 +116,4 @@ private fun treeWithoutRoot() = fakeFileSystem(workingDirectory = "/repo/app") {
 }
 
 /** A definition whose `layout { }` is wrong in a way only evaluating it reveals. */
-private fun moduleOutsideLayoutRoot() = layoutArchitecture { "app" { ":core:data".module { } } }
+private fun invalidCaptureName() = layoutArchitecture { "app" / capture("1feature") { } }

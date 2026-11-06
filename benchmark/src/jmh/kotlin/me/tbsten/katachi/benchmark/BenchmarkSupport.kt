@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.benchmark
 
 import java.io.File
@@ -12,7 +10,6 @@ import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 import me.tbsten.katachi.konsist.konsist
@@ -41,14 +38,9 @@ internal fun SyntheticProject.konsistArchitecture(): Architecture {
                         classes().must { it.hasPublicOrDefaultModifier }
                     }
                     layout {
-                        if (index == 0) {
-                            ":".module {
-                                description = "The root project."
-                                "settings.gradle".ktsFile()
-                            }
-                        }
+                        if (index == 0) "settings.gradle".ktsFile()
                         when (role.placement) {
-                            SyntheticPlacement.Module -> ":modules:*".module {
+                            SyntheticPlacement.Module -> "modules/*" {
                                 description = "${role.name} of every module."
                                 mainSourceSet / kotlin / role.directory / "*${role.name}".ktFile()
                             }

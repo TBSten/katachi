@@ -32,15 +32,7 @@ private fun displayPatternOf(declaration: CaptureDeclaration): String =
         declaration.variant.names.associateWith { "<$it>" },
     ) { capture -> "<${capture.name}${capture.transform?.let { ".${it.spelling}" }.orEmpty()}>" }
 
-private fun declaredWithOf(declaration: CaptureDeclaration?, name: String): String {
-    val module = declaration?.variant?.moduleCapture?.takeIf { name in it.names }
-        ?: return "capture(\"$name\")"
-    // Re-compiling an already-substituted pattern (`*`, not a capture token): nothing here can
-    // raise KatachiAdjacentCaptureException, so which declaration site is blamed does not matter.
-    val pattern = ModulePattern.compile(module.modulePattern, DeclarationSite.Unknown)
-    val filled = pattern.filledIn(module.names.map { "\${capture(\"$it\")}" })
-    return "\"$filled\".module { }"
-}
+private fun declaredWithOf(name: String): String = "capture(\"$name\")"
 
 internal fun missingCaptureException(
     role: Role,
@@ -66,7 +58,7 @@ internal fun missingCaptureException(
         missing = missing,
         captureDeclaredAt = names.mapNotNull { name -> sites[name]?.let { name to it } }.toMap(),
         existingValues = names.associateWith { name -> catching { existingValues(name) }.getOrNull().orEmpty() },
-        declaredWith = declarations.mapValues { (name, declaration) -> declaredWithOf(declaration, name) },
+        declaredWith = declarations.keys.associateWith { declaredWithOf(it) },
         declaredAt = declaredAt,
         cause = cause,
     )

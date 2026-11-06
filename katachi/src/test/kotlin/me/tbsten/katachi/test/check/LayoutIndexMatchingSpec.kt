@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.check
 
 import io.kotest.assertions.withClue
@@ -12,7 +10,6 @@ import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.internal.Glob
 import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -103,8 +100,8 @@ private val mixedDefinition: ArchitectureScope.() -> Unit = {
         }
     }
     "modules".group {
-        "Feature".role { layout { ":feature:*".module { "src" / "main" / "kotlin" / "**" / "*.kt".file() } } }
-        "App".role { layout { ":app".module { "src" { anyFile() } } } }
+        "Feature".role { layout { "feature/*" { "src" / "main" / "kotlin" / "**" / "*.kt".file() } } }
+        "App".role { layout { "app" { "src" { anyFile() } } } }
     }
 }
 
@@ -220,7 +217,7 @@ class LayoutIndexMatchingSpec : FreeSpec({
         val index = LayoutIndex(
             entriesOf {
                 "modules".group {
-                    "Feature".role { layout { ":feature:*".module { "src" / "main" / "*.kt".file() } } }
+                    "Feature".role { layout { "feature/*" { "src" / "main" / "*.kt".file() } } }
                 }
             },
         )

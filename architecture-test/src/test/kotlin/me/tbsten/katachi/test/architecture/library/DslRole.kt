@@ -36,7 +36,7 @@ fun DeclarationContainerScope.dsl() = "Dsl".role {
     """.trimIndent()
     example("LayoutScope.kt", "layout { } の受け皿。コアの語彙はこれで全部")
     example("Architecture.kt", "宣言し終わった1つの定義")
-    example("Modules.kt", "モジュールのパスをディレクトリに読み替える語彙 — dsl.gradle")
+    example("GradleGroup.kt", "gradle() が宣言する Gradle のファイル群 — dsl.gradle")
     example("FileSelection.kt", "走査するファイル集合の選び方")
     example("KatachiFileSystem.kt", "走査が触る最小のファイルシステム抽象 — dsl.files の拡張点")
     layout {

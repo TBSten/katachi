@@ -1,7 +1,6 @@
 package me.tbsten.katachi.dsl.internal
 
 import me.tbsten.katachi.dsl.DeclarationSite
-import me.tbsten.katachi.dsl.KatachiCaptureTransformInModuleKeyException
 import me.tbsten.katachi.dsl.KatachiGlobSyntaxException
 import me.tbsten.katachi.dsl.ModulePath
 import me.tbsten.katachi.dsl.ModuleResolver
@@ -85,14 +84,6 @@ internal class ModulePattern private constructor(
                     val captureSegment = parseCaptureSegment(segment, declaredAt)
                     when {
                         captureSegment != null -> {
-                            captureSegment.captures.firstOrNull { it.transform != null }?.let { derived ->
-                                throw KatachiCaptureTransformInModuleKeyException(
-                                    name = derived.name,
-                                    transform = derived.transform?.spelling ?: "",
-                                    moduleKey = displayCaptureTokens(raw),
-                                    declaredAt = declaredAt,
-                                )
-                            }
                             names += captureSegment.names
                             captureSegment.globSegment
                         }

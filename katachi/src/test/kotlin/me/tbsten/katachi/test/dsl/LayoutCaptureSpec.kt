@@ -1,17 +1,13 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.dsl
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
-import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import me.tbsten.katachi.dsl.DeclarationKind
 import me.tbsten.katachi.dsl.KatachiAdjacentCaptureException
-import me.tbsten.katachi.dsl.KatachiCaptureTransformInModuleKeyException
 import me.tbsten.katachi.dsl.KatachiCaptureTransformOnMixedTextException
 import me.tbsten.katachi.dsl.KatachiChainedCaptureTransformException
 import me.tbsten.katachi.dsl.KatachiDerivedCaptureWithoutSourceException
@@ -92,11 +88,11 @@ class LayoutCaptureSpec : FreeSpec({
             named.shape() shouldBe plain.shape()
         }
 
-        "モジュールの中に書いた capture も \"*\" と同じ shape になる（プロジェクトを見ていないインデックス）" {
+        "ワイルドカードのディレクトリの中に書いた capture も \"*\" と同じ shape になる（プロジェクトを見ていないインデックス）" {
             layoutOf {
-                ":feature:*".module { mainSourceSet / kotlin / capture("pkg") / "*.kt".file() }
+                "feature/*" { mainSourceSet / kotlin / capture("pkg") / "*.kt".file() }
             }.shape() shouldBe layoutOf {
-                ":feature:*".module { mainSourceSet / kotlin / "*" / "*.kt".file() }
+                "feature/*" { mainSourceSet / kotlin / "*" / "*.kt".file() }
             }.shape()
         }
 
@@ -104,9 +100,9 @@ class LayoutCaptureSpec : FreeSpec({
             val index = moduleIndexOf("feature/home", "feature/settings")
 
             layoutOf(index) {
-                ":feature:*".module { mainSourceSet / kotlin / capture("pkg") / "*ViewModel".ktFile() }
+                "feature/*" { mainSourceSet / kotlin / capture("pkg") / "*ViewModel".ktFile() }
             }.shape() shouldBe layoutOf(index) {
-                ":feature:*".module { mainSourceSet / kotlin / "*" / "*ViewModel".ktFile() }
+                "feature/*" { mainSourceSet / kotlin / "*" / "*ViewModel".ktFile() }
             }.shape()
         }
 
@@ -166,34 +162,6 @@ class LayoutCaptureSpec : FreeSpec({
         "ブロックをまたいだ入れ子でも同じパスなら束縛になる" {
             layoutOf { capture("x") { capture("x") / "a.kt".file() } }.at("*/*/a.kt").captureVariants.single()
                 .isBound shouldBe true
-        }
-
-        "モジュールキーの名前とパスの同名は束縛になる" {
-            val variant = layoutOf { ":feature:${capture("feature")}".module { capture("feature") / "a.kt".file() } }
-                .at("feature/*/*/a.kt").captureVariants.single()
-
-            variant.moduleCapture shouldBe ModuleCapture(":feature:*", listOf("feature"))
-            variant.pathCaptures shouldBe listOf(PathCapture(2, 0, "feature", null))
-            variant.names shouldBe listOf("feature")
-            variant.isBound shouldBe true
-        }
-
-        "1つのモジュールキーの中の同名は値が等しいモジュールだけに展開される" {
-            val index = moduleIndexOf("home/home", "home/settings", "settings/settings")
-
-            val paths = layoutOf(index) { ":${capture("a")}:${capture("a")}".module { "a.kt".file() } }.map { it.path }
-
-            paths shouldContain "home/home/a.kt"
-            paths shouldContain "settings/settings/a.kt"
-            paths shouldNotContain "home/settings/a.kt"
-        }
-
-        "名前の無い1つの * は値を比べずに今までどおり展開される" {
-            val index = moduleIndexOf("home/home", "home/settings")
-
-            val paths = layoutOf(index) { ":${capture("a")}:*".module { "a.kt".file() } }.map { it.path }
-
-            paths shouldContain "home/settings/a.kt"
         }
 
         "同じ役割の別パスで同じ名前を使うのは束縛にならない" {
@@ -269,14 +237,6 @@ class LayoutCaptureSpec : FreeSpec({
             )
         }
 
-        "モジュールキーの名前を派生の元にできる" {
-            val variant = layoutOf { ":feature:${capture("f")}".module { "${capture("f").pascalCase}Screen".ktFile() } }
-                .at("feature/*/*Screen.kt").captureVariants.single()
-
-            variant.pathCaptures shouldBe listOf(PathCapture(2, 0, "f", CaptureTransform.PascalCase))
-            variant.isBound shouldBe true
-        }
-
         "元の capture が同じパスに無い派生は KatachiDerivedCaptureWithoutSourceException" {
             val failure = shouldThrow<KatachiDerivedCaptureWithoutSourceException> {
                 layoutOf { "feature" / "${capture("m").camelCase}Screen".ktFile() }
@@ -325,16 +285,6 @@ class LayoutCaptureSpec : FreeSpec({
             shouldThrow<KatachiCaptureTransformOnMixedTextException> {
                 layoutOf { "${capture("a")}-${capture("b")}".snakeCase / "a.kt".file() }
             }.names shouldBe listOf("a", "b")
-        }
-
-        "モジュールキーの中の派生は KatachiCaptureTransformInModuleKeyException" {
-            val failure = shouldThrow<KatachiCaptureTransformInModuleKeyException> {
-                layoutOf { ":feature:${capture("f").camelCase}".module { "a.kt".file() } }
-            }
-
-            failure.name shouldBe "f"
-            failure.transform shouldBe "camelCase"
-            failure.moduleKey shouldBe ":feature:\${capture(\"f\").camelCase}"
         }
     }
 

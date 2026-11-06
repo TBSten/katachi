@@ -6,7 +6,7 @@
   "architecture": {
     "declaredAt": {
       "fileName": "DescribeDefinitionSpecSupport.kt",
-      "line": 91
+      "line": 89
     },
     "files": "wholeTree",
     "baseline": null
@@ -21,7 +21,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "DescribeDefinitionSpecSupport.kt",
-        "line": 93
+        "line": 91
       }
     }
   ],
@@ -35,7 +35,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "DescribeDefinitionSpecSupport.kt",
-        "line": 119
+        "line": 117
       },
       "layout": [
         {
@@ -46,7 +46,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 121
+            "line": 119
           },
           "modulePath": null,
           "pathInModule": "settings.gradle.kts",
@@ -67,7 +67,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 122
+            "line": 120
           },
           "modulePath": null,
           "pathInModule": "gradlew",
@@ -92,7 +92,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "DescribeDefinitionSpecSupport.kt",
-        "line": 95
+        "line": 93
       },
       "layout": [
         {
@@ -103,7 +103,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 99
+            "line": 97
           },
           "modulePath": null,
           "pathInModule": "core",
@@ -124,7 +124,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 99
+            "line": 97
           },
           "modulePath": null,
           "pathInModule": "core/domain",
@@ -145,7 +145,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 99
+            "line": 97
           },
           "modulePath": null,
           "pathInModule": "core/domain/src",
@@ -166,7 +166,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 99
+            "line": 97
           },
           "modulePath": null,
           "pathInModule": "core/domain/src/main",
@@ -187,7 +187,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 99
+            "line": 97
           },
           "modulePath": null,
           "pathInModule": "core/domain/src/main/kotlin",
@@ -208,7 +208,7 @@
           "description": "Behaviour for each screen",
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 99
+            "line": 97
           },
           "modulePath": null,
           "pathInModule": "core/domain/src/main/kotlin/useCase",
@@ -229,7 +229,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 101
+            "line": 99
           },
           "modulePath": null,
           "pathInModule": "core/domain/src/main/kotlin/useCase/*UseCase.kt",
@@ -248,7 +248,7 @@
             "title": null,
             "declaredAt": {
               "fileName": "DescribeDefinitionSpecSupport.kt",
-              "line": 101
+              "line": 99
             }
           },
           "matchedFiles": ["core/domain/src/main/kotlin/useCase/GetUserUseCase.kt", "core/domain/src/main/kotlin/useCase/LogoutUseCase.kt"],
@@ -265,7 +265,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 104
+            "line": 102
           },
           "modulePath": null,
           "pathInModule": "core/domain/build",
@@ -287,7 +287,7 @@
           "range": "Subtree",
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 102
+            "line": 100
           },
           "layoutPath": "core/domain/src/main/kotlin/useCase",
           "anchors": ["core/domain/src/main/kotlin/useCase"],
@@ -309,7 +309,7 @@
       "documented": false,
       "declaredAt": {
         "fileName": "DescribeDefinitionSpecSupport.kt",
-        "line": 107
+        "line": 105
       },
       "layout": [
         {
@@ -320,7 +320,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 110
+            "line": 108
           },
           "modulePath": null,
           "pathInModule": "core",
@@ -341,7 +341,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 110
+            "line": 108
           },
           "modulePath": null,
           "pathInModule": "core/domain",
@@ -362,7 +362,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 110
+            "line": 108
           },
           "modulePath": null,
           "pathInModule": "core/domain/src",
@@ -383,7 +383,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 110
+            "line": 108
           },
           "modulePath": null,
           "pathInModule": "core/domain/src/main",
@@ -404,7 +404,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 110
+            "line": 108
           },
           "modulePath": null,
           "pathInModule": "core/domain/src/main/kotlin",
@@ -425,7 +425,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 110
+            "line": 108
           },
           "modulePath": null,
           "pathInModule": "core/domain/src/main/kotlin/model",
@@ -446,7 +446,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 112
+            "line": 110
           },
           "modulePath": null,
           "pathInModule": "core/domain/src/main/kotlin/model/mapper",
@@ -467,7 +467,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 112
+            "line": 110
           },
           "modulePath": null,
           "pathInModule": "core/domain/src/main/kotlin/model/mapper/*Mapper.kt",
@@ -489,7 +489,7 @@
           "range": "Subtree",
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 116
+            "line": 114
           },
           "layoutPath": null,
           "anchors": ["core/domain/src/main/kotlin/model"],
@@ -507,7 +507,7 @@
           "range": "DirectOnly",
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 113
+            "line": 111
           },
           "layoutPath": "core/domain/src/main/kotlin/model",
           "anchors": ["core/domain/src/main/kotlin/model"],

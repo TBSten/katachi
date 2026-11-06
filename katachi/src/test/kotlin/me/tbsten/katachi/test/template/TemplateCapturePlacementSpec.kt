@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.template
 
 import io.kotest.assertions.throwables.shouldNotThrow
@@ -9,7 +7,6 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.dsl.KatachiTemplateOnWildcardException
 import me.tbsten.katachi.dsl.flatCase
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.dsl.pascalCase
 import me.tbsten.katachi.dsl.template
@@ -162,7 +159,7 @@ class TemplateCapturePlacementSpec : FreeSpec({
             "feature".group {
                 "Screen".role {
                     layout {
-                        ":feature:${capture("f")}".module { "${capture("f").pascalCase}Screen.kt".file().template { "" } }
+                        "feature/${capture("f")}" { "${capture("f").pascalCase}Screen.kt".file().template { "" } }
                     }
                 }
             }

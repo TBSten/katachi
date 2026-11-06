@@ -1,6 +1,4 @@
 @file:OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.konsist.declarations
 
 import io.kotest.core.spec.style.FreeSpec
@@ -18,7 +16,6 @@ import me.tbsten.katachi.dsl.files.internal.RealFileSystem
 import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.wholeTree
 import me.tbsten.katachi.ide.internal.DescribeDefinition
@@ -59,7 +56,7 @@ private fun moduleArchitecture(): Architecture = architecture {
     "Screen".role {
         layout {
             "gradlew".file()
-            ":feature:*".module {
+            "feature/*" {
                 "build.gradle.kts".file()
                 mainSourceSet / kotlin / "*Screen".ktFile()
                 ktFileContent { required(`class`, fileName) }

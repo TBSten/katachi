@@ -3,8 +3,8 @@ package me.tbsten.katachi.dsl
 import me.tbsten.katachi.dsl.internal.FileConstraintDeclaration
 import me.tbsten.katachi.dsl.internal.FileConstraintSite
 import me.tbsten.katachi.dsl.internal.GlobContext
+import me.tbsten.katachi.dsl.internal.LayoutModule
 import me.tbsten.katachi.dsl.internal.LayoutNode
-import me.tbsten.katachi.dsl.internal.ModuleContext
 import me.tbsten.katachi.dsl.internal.ModuleIndex
 import me.tbsten.katachi.dsl.internal.ModuleTarget
 import me.tbsten.katachi.dsl.internal.ModulePattern
@@ -22,7 +22,6 @@ import me.tbsten.katachi.dsl.kotlin.ktsFile
 internal class LayoutScopeImpl(
     private val container: LayoutNode,
     private val moduleIndex: ModuleIndex,
-    private val moduleContext: ModuleContext?,
     // One list per `layout { }`, not per scope: report order is the order sites are closed in, which only exists
     // across the whole block.
     private val sites: MutableList<FileConstraintSite>,
@@ -30,15 +29,6 @@ internal class LayoutScopeImpl(
     private val pinnedSite: DeclarationSite? = null,
 ) : LayoutDirectoryScope, ModuleAwareLayoutScope {
     private val fileConstraints = mutableListOf<FileConstraintDeclaration>()
-
-    override val currentModulePath: String?
-        get() = moduleContext?.modulePath
-
-    override val currentWildcards: List<String>?
-        get() = moduleContext?.wildcards
-
-    override val currentCaptures: Map<String, String>?
-        get() = moduleContext?.let { context -> context.captureNames?.let { context.captures } }
 
     override var description: String?
         get() = container.description
@@ -63,7 +53,7 @@ internal class LayoutScopeImpl(
     ) {
         name?.let { requireNoCaptureToken(it, where = "a fileConstraint name", declaredAt = declaredAt) }
         // The layout root is the project root, shared by every block of the `layout { }` and by
-        // `":".module { }` alike, so "directly in it" would not be this block's files.
+        // the root project's expansion alike, so "directly in it" would not be this block's files.
         if (scope == FileConstraintRange.DirectOnly && container.parent == null) {
             throw KatachiFileConstraintDirectOnlyWithoutDirectoryException(name = name, declaredAt = declaredAt)
         }
@@ -145,7 +135,6 @@ internal class LayoutScopeImpl(
 
     override fun expandModulePath(modulePath: String, block: LayoutDirectoryScope.() -> Unit): LayoutModule {
         val declaredAt = siteHere()
-        requireLayoutRoot(modulePath, declaredAt)
         val pattern = compileModulePath(modulePath, declaredAt)
         // Shared by every target this one key's wildcard expands to (below), so
         // `LayoutTemplate.equals` can tell a wildcard module key's replay of one `.template { }`
@@ -153,7 +142,6 @@ internal class LayoutScopeImpl(
         val expansionGroup = Any()
         // Not `expand`: a wildcard key against an index that has not listed the project stands
         // for itself rather than for nothing. See `ModuleIndex.targetsOf`.
-        val moduleDirectories = mutableListOf<LayoutNode>()
         val declared = moduleIndex.targetsOf(pattern).filter { it.readsOneValuePerName() }.flatMap { target ->
             // The root project resolves to the project root itself, which is this scope's
             // own container: an empty directory name would otherwise become an empty level.
@@ -172,26 +160,19 @@ internal class LayoutScopeImpl(
                         it.moduleCaptureNames = target.captureNames
                         it.moduleCapturePattern = target.captureNames?.let { pattern.pattern }
                         it.moduleExpansionGroup = expansionGroup
-                        moduleDirectories += it
                     }
             }
             val before = moduleDirectory.children.size
-            val scope = LayoutScopeImpl(
-                container = moduleDirectory,
-                moduleIndex = moduleIndex,
-                moduleContext = ModuleContext(target.modulePath, target.wildcards, target.captureNames),
-                sites = sites,
-                pinnedSite = pinnedSite,
-            )
+            val scope = scopeAt(moduleDirectory)
             scope.expandModuleDefaults()
             scope.block()
             val added = moduleDirectory.children.drop(before)
             if (isRootProject) {
                 // No directory carries the module path here, so the nodes the block added carry
-                // it themselves. Without this, everything a `":".module { }` declares would read
-                // as belonging to no module at all.
+                // it themselves. Without this, everything the root project's block declares would
+                // read as belonging to no module at all.
                 added.forEach { it.modulePath = target.modulePath }
-                // `":".module { }` has no directory of its own: its block declares straight
+                // The root project has no directory of its own: its block declares straight
                 // into the project root, which everything else in the `layout { }` shares. So
                 // a constraint written in it owns what this block added and nothing else, and
                 // there is no anchor directory to point a report at.
@@ -201,7 +182,7 @@ internal class LayoutScopeImpl(
             }
             added
         }
-        return LayoutModule(declared, moduleDirectories)
+        return LayoutModule(declared)
     }
 
     // Called at block end: a constraint covers what the block declared, complete only then. A block with no
@@ -223,19 +204,11 @@ internal class LayoutScopeImpl(
     private fun scopeAt(node: LayoutNode): LayoutScopeImpl = LayoutScopeImpl(
         container = node,
         moduleIndex = moduleIndex,
-        moduleContext = moduleContext,
         sites = sites,
         pinnedSite = pinnedSite,
     )
 
     private fun siteHere(): DeclarationSite = pinnedSite ?: captureDeclarationSite()
-
-    // A module path is relative to nothing; inside a directory block it would silently be prefixed by that
-    // directory, so refuse it.
-    private fun requireLayoutRoot(key: String, declaredAt: DeclarationSite) {
-        if (container.parent == null && moduleContext == null) return
-        throw KatachiModuleOutsideLayoutRootException(modulePath = key, declaredAt = declaredAt)
-    }
 }
 
 // Layout blocks are deferred, so the stack no longer points at the key; attach where the module path was written.

@@ -116,8 +116,8 @@ public class KatachiFileConstraintDirectOnlyWithoutDirectoryException internal c
         )
         appendLine(
             "DirectOnly covers the files directly in the surrounding directory. Directly on a " +
-                "role, directly under `layout { }`, or in `\":\".module { }` there is no such " +
-                "directory: the role spans all its layouts, and the project root is shared.",
+                "role or directly under `layout { }` there is no such directory: the role spans " +
+                "all its layouts, and the project root is shared.",
         )
         append(
             "Move the constraint into the directory block whose own files it is about " +
