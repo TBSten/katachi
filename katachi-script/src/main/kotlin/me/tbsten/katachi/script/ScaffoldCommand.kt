@@ -1,3 +1,6 @@
+// Generated from COMMAND_SPECS (internal/CommandSpecs.kt) by CommandBuildersSpec. Do not edit by hand:
+// change the spec and run `./gradlew :katachi-script:test --tests '*CommandBuildersSpec' -Dkatachi.golden.update=true`.
+
 package me.tbsten.katachi.script
 
 import me.tbsten.katachi.dsl.DeclarationSite
@@ -7,21 +10,25 @@ import me.tbsten.katachi.script.internal.requireOption
 import me.tbsten.katachi.script.internal.run
 
 /**
+ * Same as `katachi scaffold` on the command line, starting from this [Katachi]'s defaults: creates the test module and adds it to the build.
+ */
+public val Katachi.scaffold: ScaffoldCommand
+    get() = ScaffoldCommand(this, CommandLine(listOf("scaffold")).withNonEmpty("--package", this.defaultPackage).withNonEmpty("--katachi", this.katachiVersion).withNonEmpty("--module-dir", this.moduleDir), DeclarationSite.capture())
+
+/**
  * The `katachi scaffold` command: creates the test module and adds it to the build.
  *
  * Building one is writing `katachi scaffold ...` in a shell: the methods are named after the
  * options of `katachi scaffold --help` and add the same flag. Each returns a new
- * command; calling one twice keeps the last value. `--package` is required and is checked by
- * [execute], not while the command is built.
+ * command; calling one twice keeps the last value.
+ * `--package` is required and is checked by [execute], not while the command is built.
  *
- * ## Example 1: scaffold a Kotest module and print the line first
+ * ## Example 1: build the command, print it and run it
  *
  * ```kt
- * val scaffold = Katachi().scaffold
- *     .`package`("me.tbsten.katachi.sample")
- *     .`test-framework`(kotest)
- * println(scaffold) // katachi scaffold --package me.tbsten.katachi.sample --test-framework kotest
- * scaffold.execute()
+ * val command = Katachi().scaffold.`package`("me.tbsten.katachi.sample").`test-framework`(kotest)
+ * println(command) // katachi scaffold --package me.tbsten.katachi.sample --test-framework kotest
+ * command.execute()
  * ```
  *
  * The `execute()` above runs the same thing as this line in a shell:
@@ -30,7 +37,7 @@ import me.tbsten.katachi.script.internal.run
  * katachi scaffold --package me.tbsten.katachi.sample --test-framework kotest
  * ```
  *
- * @see Katachi.scaffold
+ * @see Katachi
  */
 public class ScaffoldCommand internal constructor(
     private val katachi: Katachi,
@@ -77,10 +84,9 @@ public class ScaffoldCommand internal constructor(
     /**
      * Same as `katachi scaffold --test-framework <junit5|kotest>` on the command line: the framework the generated tests use.
      *
-     * @param framework [kotest] or [junit5].
+     * @param framework [junit5] or [kotest].
      */
-    public fun `test-framework`(framework: TestFramework): ScaffoldCommand =
-        next(line.with("--test-framework", framework.value))
+    public fun `test-framework`(framework: TestFramework): ScaffoldCommand = next(line.with("--test-framework", framework.value))
 
     /**
      * Same as `katachi scaffold --deps <catalog|literal>` on the command line: how the dependencies are written.
@@ -118,6 +124,6 @@ public class ScaffoldCommand internal constructor(
         return katachi.run(arguments)
     }
 
-    /** The command line as typed in a shell: `katachi scaffold --package com.example.app`. Values a shell would split are quoted. */
+    /** The command line as typed in a shell: `katachi scaffold --package me.tbsten.katachi.sample --test-framework kotest`. Values a shell would split are quoted. */
     override fun toString(): String = commandText(arguments)
 }

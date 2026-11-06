@@ -11,33 +11,59 @@ import me.tbsten.katachi.script.Katachi
 import me.tbsten.katachi.script.KatachiCommand
 import me.tbsten.katachi.script.KatachiMissingCommandOptionException
 
-/** A subcommand and its options, kept in the order they were first set so the printed line stays stable. */
+/**
+ * A subcommand, its positional arguments and its options, kept in the order they were first set so
+ * the printed line stays stable. Each option is the arguments it adds: `["--force"]`,
+ * `["--lang", "ja"]` or `["nestedGroups=yes"]`.
+ */
 internal class CommandLine(
     val subcommand: List<String>,
-    private val options: List<Pair<String, String?>> = emptyList(),
+    private val positionals: List<String> = emptyList(),
+    private val options: List<Pair<String, List<String>>> = emptyList(),
     private val extra: List<String> = emptyList(),
+    private val passthrough: List<String> = emptyList(),
 ) {
-    fun with(option: String, value: String?): CommandLine {
-        val replaced = if (options.any { it.first == option }) {
-            options.map { if (it.first == option) option to value else it }
-        } else {
-            options + (option to value)
-        }
-        return CommandLine(subcommand, replaced, extra)
+    private fun copy(
+        positionals: List<String> = this.positionals,
+        options: List<Pair<String, List<String>>> = this.options,
+        extra: List<String> = this.extra,
+        passthrough: List<String> = this.passthrough,
+    ) = CommandLine(subcommand, positionals, options, extra, passthrough)
+
+    private fun replacing(option: String, tokens: List<String>): CommandLine {
+        val first = options.indexOfFirst { it.first == option }
+        if (first < 0) return copy(options = options + (option to tokens))
+        val replaced = options.filterIndexed { index, it -> index == first || it.first != option }
+            .map { if (it.first == option) option to tokens else it }
+        return copy(options = replaced)
     }
 
+    /** `--option value`, or `--option` alone when [value] is null. Replaces an earlier value. */
+    fun with(option: String, value: String?): CommandLine = replacing(option, listOfNotNull(option, value))
+
+    /** `key=value`. Replaces an earlier value. */
+    fun withKeyValue(key: String, value: String): CommandLine = replacing(key, listOf("$key=$value"))
+
+    /** `--option value` once for each of [values], after the ones given before. */
+    fun withAppended(option: String, values: List<String>): CommandLine = copy(options = options + values.map { option to listOf(option, it) })
+
     fun withFlag(option: String, enabled: Boolean): CommandLine =
-        if (enabled) with(option, null) else CommandLine(subcommand, options.filterNot { it.first == option }, extra)
+        if (enabled) with(option, null) else copy(options = options.filterNot { it.first == option })
 
     fun withNonEmpty(option: String, value: String?): CommandLine =
         if (value.isNullOrEmpty()) this else with(option, value)
 
-    fun plus(arguments: List<String>): CommandLine = CommandLine(subcommand, options, extra + arguments)
+    fun withPositionals(values: List<String>): CommandLine = copy(positionals = values)
+
+    fun plus(arguments: List<String>): CommandLine = copy(extra = extra + arguments)
+
+    fun plusPassthrough(arguments: List<String>): CommandLine = copy(passthrough = passthrough + arguments)
 
     fun has(option: String): Boolean = options.any { it.first == option } || option in extra
 
     val arguments: List<String>
-        get() = subcommand + options.flatMap { (option, value) -> listOfNotNull(option, value) } + extra
+        get() = subcommand + positionals + options.flatMap { it.second } + extra +
+            (if (passthrough.isEmpty()) emptyList() else listOf("--") + passthrough)
 }
 
 /** The line a person would type: `katachi` and [arguments], each quoted only when a POSIX shell would split or expand it. */

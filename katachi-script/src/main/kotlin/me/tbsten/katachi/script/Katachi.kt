@@ -1,8 +1,6 @@
 package me.tbsten.katachi.script
 
 import java.nio.file.Path
-import me.tbsten.katachi.dsl.DeclarationSite
-import me.tbsten.katachi.script.internal.CommandLine
 import me.tbsten.katachi.script.internal.InProcessRunner
 import me.tbsten.katachi.script.internal.RawCommand
 import me.tbsten.katachi.script.internal.SubprocessRunner
@@ -10,9 +8,11 @@ import me.tbsten.katachi.script.internal.SubprocessRunner
 /**
  * The `katachi` command, for a `.main.kts` that builds its subcommands instead of typing them.
  *
- * Each subcommand ([init], [scaffold]) starts from the defaults given here, and every option
- * method returns a new value, so one [Katachi] can hand out any number of commands. A command
- * prints as the line you would type, and [KatachiCommand.execute] runs it.
+ * Every subcommand of `katachi` has a builder: `katachi.init`, `katachi.scaffold`,
+ * `katachi.data.get(...)`, `katachi.add.role`, `katachi.preferences.set` and so on, named as the
+ * command line spells them. Each starts from the defaults given here, and every option method
+ * returns a new value, so one [Katachi] can hand out any number of commands. A command prints as
+ * the line you would type, and [KatachiCommand.execute] runs it.
  *
  * ## Example 1: lay out the test module from a script
  *
@@ -32,7 +32,7 @@ import me.tbsten.katachi.script.internal.SubprocessRunner
  * @property defaultPackage Puts `--package <defaultPackage>` on every [scaffold]. Null or empty leaves it unset.
  * @property katachiVersion Puts `--katachi <katachiVersion>` on every [init] and [scaffold]. Null leaves the choice to the command.
  * @property moduleDir Puts `--module-dir <moduleDir>` on every [init] and [scaffold].
- * @property lang Puts `--lang <lang>` on every [init].
+ * @property lang Puts `--lang <lang>` on every command that takes it: [init], [doctor] and [guide].
  * @property workdir Puts `--workdir <workdir>` on every [init]: the working directory `init` makes. Null lets `init` pick one.
  * @property cwd Where the commands run. Null is the directory the script was started in.
  * @property runner How [KatachiCommand.execute] runs a command: [CommandRunner.InProcess] by default.
@@ -52,33 +52,11 @@ public class Katachi(
     public val runner: CommandRunner = CommandRunner.InProcess,
     public val echo: Boolean = true,
 ) {
-    /** Same as `katachi init` on the command line, starting from this [Katachi]'s defaults. */
-    public val init: InitCommand
-        get() = InitCommand(
-            katachi = this,
-            line = CommandLine(listOf("init"))
-                .withNonEmpty("--workdir", workdir)
-                .withNonEmpty("--katachi", katachiVersion)
-                .withNonEmpty("--module-dir", moduleDir)
-                .withNonEmpty("--lang", lang?.value),
-        )
-
-    /** Same as `katachi scaffold` on the command line, starting from this [Katachi]'s defaults. */
-    public val scaffold: ScaffoldCommand
-        get() = ScaffoldCommand(
-            katachi = this,
-            line = CommandLine(listOf("scaffold"))
-                .withNonEmpty("--package", defaultPackage)
-                .withNonEmpty("--katachi", katachiVersion)
-                .withNonEmpty("--module-dir", moduleDir),
-            declaredAt = DeclarationSite.capture(),
-        )
-
     /**
      * Any subcommand, written out as it is typed: `command("data", "get", "check-list")` is
      * `katachi data get check-list` on the command line.
      *
-     * For the subcommands that have no builder of their own yet.
+     * For a subcommand or an option newer than this `katachi-script`; every subcommand it knows has a builder.
      *
      * ## Example 1: read a value the check list recorded
      *

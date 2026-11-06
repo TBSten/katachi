@@ -31,6 +31,12 @@ dependencies {
     testImplementation(libs.kotlinScriptingJvmHost)
 }
 
+// The script builders are generated from COMMAND_SPECS by CommandBuildersSpec; it rewrites them with
+// `./gradlew :katachi-script:test --tests '*CommandBuildersSpec' -Dkatachi.golden.update=true`.
+tasks.test {
+    providers.systemProperty("katachi.golden.update").orNull?.let { systemProperty("katachi.golden.update", it) }
+}
+
 // `katachi --version` reads this; MANIFEST's Implementation-Version is null from a class directory.
 tasks.processResources {
     val katachiVersion = version.toString()
