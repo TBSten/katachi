@@ -9,7 +9,8 @@ import me.tbsten.katachi.konsist.konsist
 import me.tbsten.katachi.test.architecture.KDOC_TAG_ORDER_RULE
 import me.tbsten.katachi.test.architecture.keepsBlockTagsLast
 import me.tbsten.katachi.test.architecture.publicDeclarationsOf
-import me.tbsten.katachi.test.architecture.DOKKA_MAIN_PACKAGE
+
+private const val DOKKA_MAIN_PACKAGE: String = "me/tbsten/katachi/dokka"
 
 fun DeclarationContainerScope.dokkaPlugin() = "DokkaPlugin".role {
     title = "Dokka プラグイン"

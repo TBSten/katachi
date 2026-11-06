@@ -5,9 +5,12 @@ import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.sourceSet
 import me.tbsten.katachi.dsl.gradle.testSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.test.architecture.KATACHI_TEST_PACKAGE
-import me.tbsten.katachi.test.architecture.KONSIST_TEST_PACKAGE
-import me.tbsten.katachi.test.architecture.KONTURE_TEST_PACKAGE
+
+private const val KATACHI_TEST_PACKAGE: String = "me/tbsten/katachi/test"
+
+private const val KONSIST_TEST_PACKAGE: String = "me/tbsten/katachi/test/konsist"
+
+private const val KONTURE_TEST_PACKAGE: String = "me/tbsten/katachi/test/konture"
 
 fun DeclarationContainerScope.specSupport() = "SpecSupport".role {
     title = "テストの道具"

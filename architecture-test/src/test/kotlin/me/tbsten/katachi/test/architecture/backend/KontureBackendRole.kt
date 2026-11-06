@@ -15,7 +15,8 @@ import me.tbsten.katachi.test.architecture.misplacedDeclarationsOf
 import me.tbsten.katachi.test.architecture.publicDeclarationsOf
 import me.tbsten.katachi.test.architecture.keepsBlockTagsLast
 import me.tbsten.katachi.test.architecture.showsExample
-import me.tbsten.katachi.test.architecture.KONTURE_MAIN_PACKAGE
+
+private const val KONTURE_MAIN_PACKAGE: String = "me/tbsten/katachi/konture"
 
 fun DeclarationContainerScope.kontureBackend() = "KontureBackend".role {
     title = "Konture バックエンド"

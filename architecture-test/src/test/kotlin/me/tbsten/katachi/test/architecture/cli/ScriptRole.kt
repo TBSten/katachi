@@ -11,11 +11,12 @@ import me.tbsten.katachi.konsist.konsist
 import me.tbsten.katachi.test.architecture.INTERNAL_PACKAGE_RULE
 import me.tbsten.katachi.test.architecture.KDOC_EXAMPLE_RULE
 import me.tbsten.katachi.test.architecture.KDOC_TAG_ORDER_RULE
-import me.tbsten.katachi.test.architecture.SCRIPT_MAIN_PACKAGE
 import me.tbsten.katachi.test.architecture.keepsBlockTagsLast
 import me.tbsten.katachi.test.architecture.misplacedDeclarationsOf
 import me.tbsten.katachi.test.architecture.publicDeclarationsOf
 import me.tbsten.katachi.test.architecture.showsExample
+
+private const val SCRIPT_MAIN_PACKAGE: String = "me/tbsten/katachi/script"
 
 fun DeclarationContainerScope.script() = "Script".role {
     title = "katachi-script"
