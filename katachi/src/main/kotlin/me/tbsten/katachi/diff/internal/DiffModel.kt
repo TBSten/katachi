@@ -22,11 +22,11 @@ internal class DiffReportModel(
     val shown: Set<FileChange> = changes.toSet(),
     /** The limit [shown] was cut to, or 0 for none. */
     val maxFiles: Int = 0,
+    /** The weighted diff lines at which a row's importance is full; every row is measured against it. */
+    val fullImportanceLines: Int = DEFAULT_FULL_IMPORTANCE_LINES,
 ) {
     /** How many changed files the per-file listings leave out. */
     val hiddenCount: Int get() = changes.size - shown.size
-    val maxRoleScore: Double = nodes.flatMap { it.roles() }.maxOfOrNull { it.score } ?: 0.0
-    val maxGroupScore: Double = nodes.maxOfOrNull { it.score } ?: 0.0
     val added: Int get() = changes.sumOf { it.added }
     val deleted: Int get() = changes.sumOf { it.deleted }
 }
@@ -72,11 +72,13 @@ internal sealed class DiffNode {
 
 internal class FileDiff(val change: FileChange, val shortPath: String)
 
-/** 0 for no change, then 1 to [HEAT_LEVELS] relative to [max]. */
-internal fun heatLevel(score: Double, max: Double): Int =
-    if (score <= 0.0 || max <= 0.0) 0 else ceil(score / max * HEAT_LEVELS).toInt().coerceIn(1, HEAT_LEVELS)
+/** 0 for no change, then 1 to [HEAT_LEVELS] out of [full]; a score past [full] stays at the top level. */
+internal fun heatLevel(score: Double, full: Int): Int =
+    if (score <= 0.0 || full <= 0) 0 else ceil(minOf(score, full.toDouble()) / full * HEAT_LEVELS).toInt().coerceIn(1, HEAT_LEVELS)
 
 internal const val HEAT_LEVELS: Int = 5
+
+internal const val DEFAULT_FULL_IMPORTANCE_LINES: Int = 400
 
 internal fun buildDiffReportModel(
     architecture: Architecture,
@@ -85,6 +87,7 @@ internal fun buildDiffReportModel(
     changes: List<FileChange>,
     weights: List<String>,
     maxFiles: Int = 0,
+    fullImportanceLines: Int = DEFAULT_FULL_IMPORTANCE_LINES,
 ): DiffReportModel {
     val weightByName = parseWeights(architecture, weights)
     val definitionWeights = definitionWeights(architecture)
@@ -123,6 +126,7 @@ internal fun buildDiffReportModel(
         changes = changes,
         shown = shownFiles(changes, nodes, maxFiles),
         maxFiles = maxFiles,
+        fullImportanceLines = fullImportanceLines,
     )
 }
 

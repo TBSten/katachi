@@ -53,19 +53,21 @@ private fun summary(model: DiffReportModel, touched: Int, listings: Set<String>,
     if (model.unassigned.isNotEmpty()) noRoleAlert(model.unassigned.size)
     // The tree ends at files, as the HTML does: group -> role -> file, then the files no role allows.
     if (model.changes.isNotEmpty()) {
-        val maxFileScore = maxFileScore(model)
+        val full = model.fullImportanceLines
         appendLine("| Role | Importance | Diff&nbsp;lines | Files |")
         appendLine("|---|---|---:|---:|")
-        for (node in model.nodes.filter { it.changed }) summaryRows(node, model, maxFileScore, depth = 0)
+        for (node in model.nodes.filter { it.changed }) summaryRows(node, model, depth = 0)
         if (model.unassigned.isNotEmpty()) {
             appendLine(
                 "| **(no role)** | | ${diffLines(model.unassigned.sumOf { it.added }, model.unassigned.sumOf { it.deleted })} | " +
                     "${model.unassigned.size} |",
             )
             val shown = model.unassigned.filter { it in model.shown }
-            for (change in shown) appendLine(fileSummaryRow(change.path, change, change.total.toDouble(), maxFileScore, depth = 1))
+            for (change in shown) appendLine(fileSummaryRow(change.path, change, change.total.toDouble(), full, depth = 1))
             moreSummaryRow(model.unassigned.size - shown.size, depth = 1)
         }
+        appendLine()
+        appendLine("_Importance: diff lines × weight, out of $full (${heatSquares(HEAT_LEVELS)} at $full or more)._")
         appendLine()
     }
     // Every role appears once: a changed one in the table above (its files in the listing), an
@@ -93,7 +95,7 @@ private fun filesByRole(model: DiffReportModel, roles: List<DiffNode.RoleNode>, 
     listingPreamble(model, names)
     for (role in roles) {
         appendLine(
-            "<details open><summary><b>${role.qualifiedName}</b> ${heatSquares(heatLevel(role.score, model.maxRoleScore))} " +
+            "<details open><summary><b>${role.qualifiedName}</b> ${heatSquares(heatLevel(role.score, model.fullImportanceLines))} " +
                 "${files(role.fileCount)}, +${role.added} -${role.deleted}</summary>",
         )
         appendLine()
@@ -164,20 +166,20 @@ private fun StringBuilder.unchangedTree(node: DiffNode, depth: Int) {
     if (node is DiffNode.GroupNode) for (child in node.children) unchangedTree(child, depth + 1)
 }
 
-private fun StringBuilder.summaryRows(node: DiffNode, model: DiffReportModel, maxFileScore: Double, depth: Int) {
-    val max = if (node is DiffNode.GroupNode) model.maxGroupScore else model.maxRoleScore
+private fun StringBuilder.summaryRows(node: DiffNode, model: DiffReportModel, depth: Int) {
+    val full = model.fullImportanceLines
     val name = if (node is DiffNode.GroupNode) "**${node.name}**" else node.name
     appendLine(
-        "| ${indent(depth)}$name | ${heatSquares(heatLevel(node.score, max))} | " +
+        "| ${indent(depth)}$name | ${heatSquares(heatLevel(node.score, full))} | " +
             "${diffLines(node.added, node.deleted)} | ${node.fileCount} |",
     )
     when (node) {
         is DiffNode.GroupNode ->
-            for (child in node.children.filter { it.changed }) summaryRows(child, model, maxFileScore, depth + 1)
+            for (child in node.children.filter { it.changed }) summaryRows(child, model, depth + 1)
         is DiffNode.RoleNode -> {
             val shown = node.files.filter { it.change in model.shown }
             for (file in shown) {
-                appendLine(fileSummaryRow(file.shortPath, file.change, file.change.total * node.weight, maxFileScore, depth + 1))
+                appendLine(fileSummaryRow(file.shortPath, file.change, file.change.total * node.weight, full, depth + 1))
             }
             moreSummaryRow(node.files.size - shown.size, depth + 1)
         }
@@ -185,21 +187,14 @@ private fun StringBuilder.summaryRows(node: DiffNode, model: DiffReportModel, ma
 }
 
 // The file count column stays empty on a file row: it counts the files under a group or a role.
-private fun fileSummaryRow(display: String, change: FileChange, score: Double, maxFileScore: Double, depth: Int): String {
+private fun fileSummaryRow(display: String, change: FileChange, score: Double, full: Int, depth: Int): String {
     val lines = if (change.binary) "binary" else diffLines(change.added, change.deleted)
     val status = if (change.status == ChangeStatus.Modified) "" else " _(${change.status.label})_"
-    return "| ${indent(depth)}`$display`$status | ${heatSquares(heatLevel(score, maxFileScore))} | $lines | |"
+    return "| ${indent(depth)}`$display`$status | ${heatSquares(heatLevel(score, full))} | $lines | |"
 }
 
 private fun StringBuilder.moreSummaryRow(hidden: Int, depth: Int) {
     if (hidden > 0) appendLine("| ${indent(depth)}…and ${if (hidden == 1) "1 more file" else "$hidden more files"} | | | |")
-}
-
-// Weighted like the role it sits under; a file no role allows counts its lines as they are, as in the HTML.
-private fun maxFileScore(model: DiffReportModel): Double {
-    val roleFiles = model.nodes.flatMap { it.roles() }.flatMap { role -> role.files.map { it.change.total * role.weight } }
-    val unassigned = model.unassigned.map { it.total.toDouble() }
-    return (roleFiles + unassigned).maxOrNull() ?: 0.0
 }
 
 private fun indent(depth: Int): String = "&nbsp;&nbsp;".repeat(depth) + if (depth > 0) "└ " else ""

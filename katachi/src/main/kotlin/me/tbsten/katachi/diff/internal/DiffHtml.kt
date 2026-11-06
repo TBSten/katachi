@@ -149,6 +149,7 @@ internal fun renderDiffHtml(model: DiffReportModel, history: CommitHistory): Str
         .replace("{{GENERATED}}", generatedAt())
         .replace("{{FILES}}", model.changes.size.toString())
         .replace("{{MAX_FILES}}", model.maxFiles.toString())
+        .replace("{{FULL_IMPORTANCE}}", model.fullImportanceLines.toString())
         .replace("{{ADDED}}", model.added.toString())
         .replace("{{DELETED}}", model.deleted.toString())
         .replace("{{TOUCHED}}", """<span data-stat="touched">$touched</span> <span class="of">of $roleCount</span>""")
