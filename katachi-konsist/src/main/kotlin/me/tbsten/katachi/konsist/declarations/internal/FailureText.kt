@@ -188,7 +188,16 @@ private fun extraModifierFixes(rule: DeclarationRule, fact: DeclarationFact): Li
 private fun allowLineOf(fact: DeclarationFact): String {
     val modifiers = fact.modifiers.filter { it != ModifierName.Fun }.sortedBy { it.ordinal }.map { it.keyword }
     val kinds = listOfNotNull("`fun`".takeIf { ModifierName.Fun in fact.modifiers }, "`${fact.kind.keyword}`")
-    return "allow(${(modifiers + kinds + namePatternLiteral(fact.name)).joinToString(", ")})"
+    val plain = "allow(${(modifiers + kinds + namePatternLiteral(fact.name)).joinToString(", ")})"
+    val receiver = fact.receiver ?: return plain
+    // A property line that names its receiver takes a type too, and no type pattern matches an inferred one.
+    val isProperty = fact.kind == DeclarationKindName.Val || fact.kind == DeclarationKindName.Var
+    val type = when {
+        !isProperty -> emptyList()
+        else -> listOf(kotlinString(fact.propertyType?.written ?: return plain))
+    }
+    val arguments = modifiers + kinds + kotlinString(receiver.written) + namePatternLiteral(fact.name) + type
+    return "allow(${arguments.joinToString(", ")})"
 }
 
 private fun removeImportFixes(site: DeclarationSite, code: String, allowing: Boolean): List<FileConstraintFix> = listOf(

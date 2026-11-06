@@ -35,8 +35,7 @@ internal class AnnotationFact(val simpleName: String, val qualifiedCandidates: S
 internal class DeclarationFact(
     val kind: DeclarationKindName,
     val name: String,
-    // Shown in a report only: a line's name is matched without it.
-    val receiver: String? = null,
+    val receiver: TypeText? = null,
     val modifiers: Set<ModifierName>,
     val annotations: List<AnnotationFact>,
     val supertypes: List<SupertypeFact>,

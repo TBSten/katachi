@@ -67,6 +67,9 @@ public enum class KtFileContentPatternKind(internal val label: String) {
     /** A `.superclass("...")`. */
     Superclass("superclass"),
 
+    /** The receiver of an extension, between the kind and the name: `` allow(`fun`, "User", "to*") ``. */
+    Receiver("receiver"),
+
     /** A name of `annotated(...)`. */
     Annotation("annotation"),
 

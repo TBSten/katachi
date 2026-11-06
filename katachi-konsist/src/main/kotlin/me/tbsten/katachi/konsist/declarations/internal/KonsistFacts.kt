@@ -124,7 +124,7 @@ private class FactReader(
         return DeclarationFact(
             kind = kind,
             name = nameOf(declaration),
-            receiver = receiver?.let(::collapseSpaces),
+            receiver = receiver?.let { typeTextOf(withoutOuterParentheses(it.trim())) },
             modifiers = (declaration as? KoModifierProvider)?.modifiers.orEmpty()
                 .mapNotNullTo(LinkedHashSet()) { MODIFIERS_BY_KEYWORD[it.type] },
             annotations = annotationTexts.map { annotationFactOf(it, packageName, imports) },

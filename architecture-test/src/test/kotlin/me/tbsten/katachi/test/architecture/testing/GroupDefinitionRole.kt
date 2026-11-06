@@ -28,5 +28,5 @@ private fun RoleScope.groupFileHoldsOnlyTheGroup() =
 
         `import`("me.tbsten.katachi.dsl.**")
 
-        required(`fun`, "*Group")()
+        required(`fun`, "DeclarationContainerScope", "*Group")()
     }

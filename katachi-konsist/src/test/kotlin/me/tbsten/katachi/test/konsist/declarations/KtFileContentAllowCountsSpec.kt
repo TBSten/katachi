@@ -50,6 +50,14 @@ private val LINES: List<KindLine> = listOf(
         { on, n -> requiredProperty(on, annotations(n), `val`, "v", "Int") },
     ) { n, status -> "$status val${dumped(n)} v type=Int" },
     KindLine(
+        { on, n -> allowExtensionFunction(on, annotations(n), `fun`, "R", "e") },
+        { on, n -> requiredExtensionFunction(on, annotations(n), `fun`, "R", "e") },
+    ) { n, status -> "$status fun${dumped(n)} e receiver=R" },
+    KindLine(
+        { on, n -> allowExtensionProperty(on, annotations(n), `val`, "R", "w", "Int") },
+        { on, n -> requiredExtensionProperty(on, annotations(n), `val`, "R", "w", "Int") },
+    ) { n, status -> "$status val${dumped(n)} w receiver=R type=Int" },
+    KindLine(
         { on, n -> allowTypeAlias(on, annotations(n), `typealias`, "T") },
         { on, n -> requiredTypeAlias(on, annotations(n), `typealias`, "T") },
     ) { n, status -> "$status typealias${dumped(n)} T" },

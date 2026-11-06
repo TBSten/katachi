@@ -18,7 +18,7 @@ internal fun renderFact(fact: DeclarationFact): String = buildString {
         fact.modifiers.sortedBy { it.ordinal }.map { it.keyword } +
         fact.kind.keyword
     append(prefix.joinToString(" ")).append(' ')
-    fact.receiver?.let { append(receiverText(it)).append('.') }
+    fact.receiver?.let { append(receiverText(it.written)).append('.') }
     append(quotedName(fact.name))
     fact.parameters?.let { append(renderParameters(it)) }
     if (fact.supertypes.isNotEmpty()) append(" : ").append(fact.supertypes.joinToString(", ") { it.written })
@@ -31,8 +31,12 @@ internal fun renderContainer(fact: DeclarationFact): String {
     return (modifiers + fact.kind.keyword + quotedName(fact.name)).joinToString(" ")
 }
 
-private fun receiverText(receiver: String): String =
+// A function type is put back in the parentheses Kotlin needs around a receiver.
+internal fun receiverText(receiver: String): String =
     if ("->" in receiver && !isParenthesised(receiver)) "($receiver)" else receiver
+
+internal fun withoutOuterParentheses(text: String): String =
+    if (isParenthesised(text)) withoutOuterParentheses(text.substring(1, text.lastIndex).trim()) else text
 
 private fun isParenthesised(text: String): Boolean {
     if (!text.startsWith("(")) return false
