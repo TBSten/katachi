@@ -74,7 +74,7 @@ node $C archive <id> --note "<1行>"                # archived/ に移し、末�
 
 `.local/notion-ticket/rules.md` に従う。hook が、掴んだチケットが無いと Edit / Write / commit を止める。
 
-- loop を 1 回回すごとに**チケットを 1 枚**作って「AI:実装中」にし（Next 列に終了見込みを書く）、`python3 .local/notion-ticket/ticket.py` で掴む。置き場は「版 > ドキュメント > …」の下。名前は `chore: docs フィードバックの消化（<日付>）` のように。
+- loop を 1 回回すごとに**チケットを 1 枚**作って「AI:実装中」にし（Next 列に終了見込みを書く）、`python3 .local/notion-ticket/ticket.py` で掴む。置き場は「版 > ドキュメント > …」の下。名前は `chore(docs): docs フィードバックの消化（<日付>）` のように（チケット名は `種別(対象): 内容` の形）。
 - docs を直さず archive だけの回にも、チケットは**要る**（1 回に 1 枚）。
 - 本文は DB のテンプレートの形。背景情報に、消化した記録の id と要約を並べる。
 - **設計型の件は別のチケット**に切り出す（質問・判断待ちの節を付けて「人間:判断待ち」）。両方の背景情報に相手を `<mention url="…"/>` で貼る。
