@@ -29,8 +29,8 @@ details{margin-top:.8rem;font-size:13px}summary{cursor:pointer;color:var(--mu)}
 <p class="msg">documented = false の group に ignore() を書くと、理由の残らない除外が 2 行でできてしまう。「除外には必ず理由が残る」という原則 3 が守られていない</p>
 <div class="cols">
 <div class="col before"><div class="lb">今</div><pre><span class="ln">&quot;Tools&quot;.group {</span><span class="ln">  documented = false        // ドキュメントに出ない</span><span class="ln">  &quot;Scripts&quot;.role { layout { &quot;scripts&quot;.ignore() } }   // summary も無い</span><span class="ln">}</span><span class="ln ng">// scripts/ は検査されず、生成ドキュメントのどこにも理由が出ない</span></pre></div>
-<div class="col after"><div class="lb">案（full.md 2746 行）</div><pre><span class="ln ok">## 検査対象外の場所</span><span class="ln ok">| Path     | Role    | Why                |</span><span class="ln ok">| scripts/ | Scripts | ⚠ summary が無い   |</span><span class="ln ok">// documented に関係なく一覧に出す。summary が無ければ Warning</span><span class="ln cm">// gradle() が注入する &quot;build&quot;.ignore() は一覧から除く</span></pre></div>
+<div class="col after"><div class="lb">案（full.md 2746 行）</div><pre><span class="ln ok">## 検査対象外の場所</span><span class="ln ok">| Path     | Role    | Why                |</span><span class="ln ok">| scripts/ | Scripts | ⚠ summary が無い   |</span><span class="ln ok">// documented に関係なく一覧に出す。summary が無ければ Warning</span><span class="ln cm">// .module { } が注入する &quot;build&quot;.ignore() は一覧から除く（v0.5 で .module { } ごと消える）</span></pre></div>
 </div>
-<div class="risks"><div class="lb">リスク・デメリット</div><ul><li><span class="tag u">利用者</span>ドキュメントを外したくて documented = false にした group が一覧に出る。既存の定義で Warning が増える</li><li><span class="tag l">ライブラリ</span>「注入された ignore()」と「利用者の ignore()」を区別する印が要る。生成ドキュメントの差分で mode=check が落ちる</li></ul></div>
+<div class="risks"><div class="lb">リスク・デメリット</div><ul><li><span class="tag u">利用者</span>ドキュメントを外したくて documented = false にした group が一覧に出る。既存の定義で Warning が増える</li><li><span class="tag l">ライブラリ</span>利用者の ignore() と katachi が足した ignore() を区別する印が要る（.module { } の削除後は不要になる見込み）。生成ドキュメントの差分で mode=check が落ちる</li></ul></div>
 <div class="note">出典: after-v0.3/index.md #29、full.md「ignore() の理由が必ず残る、という原則3の保証が成立していない」</div>
 </div></body></html>
