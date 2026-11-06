@@ -18,7 +18,7 @@ import me.tbsten.katachi.test.synthetic.inMemoryFileSystem
  * Specs that measure time or scale. `-Dkotest.tags.exclude=Perf` (forwarded to the test JVM by
  * katachi/build.gradle.kts) or `KOTEST_TAGS='!Perf'` leaves them out of a local run.
  */
-object Perf : Tag()
+internal object Perf : Tag()
 
 /**
  * Wall-clock time measured locally for one whole check of the 10k-file project below, cold (the
