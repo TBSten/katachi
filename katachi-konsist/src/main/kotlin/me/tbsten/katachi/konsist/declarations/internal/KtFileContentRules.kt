@@ -26,6 +26,7 @@ internal enum class ModifierName(val keyword: String) {
     Sealed("sealed"),
     Const("const"),
     External("external"),
+    Final("final"),
     Override("override"),
     Lateinit("lateinit"),
     Tailrec("tailrec"),
@@ -58,12 +59,27 @@ internal data class NameRule(val written: String, val pattern: NamePattern) {
 
 internal data class TypeRule(val written: String, val canonical: NamePattern)
 
-internal data class ParameterRule(val written: String, val name: NameRule, val type: TypeRule)
+// modifiers: those the parameter has to carry (`vararg`, `noinline`, `crossinline`); one not written is not asked about.
+// defaultValue: null asks nothing; a pattern asks for a default value matching it (`*` for any).
+internal data class ParameterRule(
+    val written: String,
+    val name: NameRule,
+    val type: TypeRule,
+    val modifiers: Set<String> = emptySet(),
+    val defaultValue: TypeRule? = null,
+)
 
 // byName: written without type arguments, so it matches a supertype whatever its arguments are (`Repository` matches `Repository<User>`).
 internal data class SuperclassRule(val written: String, val byName: Boolean, val pattern: NamePattern)
 
-internal data class AnnotationRule(val written: String, val qualified: Boolean, val pattern: NamePattern)
+// target and arguments: null asks nothing. arguments is matched against what is between the parentheses, spaces taken out.
+internal data class AnnotationRule(
+    val written: String,
+    val qualified: Boolean,
+    val pattern: NamePattern,
+    val target: String? = null,
+    val arguments: NamePattern? = null,
+)
 
 // On a declaration line the declaration may carry no modifier beyond these, `optional` and `bundled`; `public` is never counted as another.
 internal data class ModifierSet(

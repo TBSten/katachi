@@ -20,7 +20,13 @@ internal class TypeText(val written: String, val canonical: String) {
     override fun toString(): String = written
 }
 
-internal class ParameterFact(val name: String, val type: TypeText) {
+// modifiers: of `vararg`, `noinline` and `crossinline`, those written. defaultValue: as written after `=`, or null with none.
+internal class ParameterFact(
+    val name: String,
+    val type: TypeText,
+    val modifiers: Set<String> = emptySet(),
+    val defaultValue: String? = null,
+) {
     override fun toString(): String = "$name: ${type.written}"
 }
 
@@ -28,7 +34,13 @@ internal class SupertypeFact(val written: String, val withoutArguments: String, 
     override fun toString(): String = written
 }
 
-internal class AnnotationFact(val simpleName: String, val qualifiedCandidates: Set<String>) {
+// target: the use-site target as written (`get` of `@get:JvmName`). arguments: what is between the parentheses, spaces taken out.
+internal class AnnotationFact(
+    val simpleName: String,
+    val qualifiedCandidates: Set<String>,
+    val target: String? = null,
+    val arguments: String? = null,
+) {
     override fun toString(): String = "@$simpleName"
 }
 

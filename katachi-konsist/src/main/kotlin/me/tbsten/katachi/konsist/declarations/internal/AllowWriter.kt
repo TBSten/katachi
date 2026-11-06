@@ -68,8 +68,11 @@ internal class AllowWriter(
         return PropertyLine(line)
     }
 
-    fun typeAlias(modifiers: List<Modifiers>, kind: TypeAliasKind, name: String): TypeAliasLine =
-        TypeAliasLine(declare(modifiers, listOf(kind.word), listOf(Shape(ModifierSet.EMPTY, DeclarationKindName.TypeAlias)), name))
+    fun typeAlias(modifiers: List<Modifiers>, kind: TypeAliasKind, name: String, type: String? = null): TypeAliasLine {
+        val line = declare(modifiers, listOf(kind.word), listOf(Shape(ModifierSet.EMPTY, DeclarationKindName.TypeAlias)), name)
+        if (type != null) line.writePropertyType(type)
+        return TypeAliasLine(line)
+    }
 
     fun anythingElse(modifiers: List<Modifiers>, anything: AnythingElse) {
         val alternatives = alternativesOf(modifiers)

@@ -226,6 +226,15 @@ private fun lineMessage(problem: KtFileContentLineProblem, line: String, at: Dec
             }
         }
 
+        KtFileContentLineProblem.ParameterWithoutDefaultValue -> {
+            val head = parameter.orEmpty().substringBefore('=').trim()
+            Triple(
+                "Parameter \"$parameter\" of line \"$line\" at $at has nothing after its '='.",
+                PARAMETER_FORM,
+                "Write \"$head = *\" to ask for any default value, or leave out the '=' to ask nothing about it.",
+            )
+        }
+
         KtFileContentLineProblem.ParameterWithoutType -> {
             val name = parameter.orEmpty().substringBefore(':').trim()
             Triple(
@@ -245,12 +254,6 @@ private fun lineMessage(problem: KtFileContentLineProblem, line: String, at: Dec
             ".superclass() on line \"$line\" at $at names no supertype.",
             "superclass lists the supertypes a declaration must have, and an empty list asks for nothing.",
             "Pass at least one name, or remove .superclass().",
-        )
-
-        KtFileContentLineProblem.TypeAliasInClassBody -> Triple(
-            "Line \"$line\" at $at puts a typealias inside the { } of a class.",
-            "Kotlin declares a typealias only directly in a file, so the line could never match a member.",
-            "Move the line out of the { }, directly into ktFileContent { }.",
         )
 
         KtFileContentLineProblem.AnnotatedWithoutNames -> Triple(

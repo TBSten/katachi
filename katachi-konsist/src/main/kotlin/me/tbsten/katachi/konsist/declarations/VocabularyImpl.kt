@@ -22,6 +22,7 @@ internal class VocabularyImpl(private val list: DeclarationListBuilder) : Declar
     override val sealed: Modifiers get() = modifier(ModifierName.Sealed)
     override val const: Modifiers get() = modifier(ModifierName.Const)
     override val external: Modifiers get() = modifier(ModifierName.External)
+    override val final: Modifiers get() = modifier(ModifierName.Final)
     override val override: Modifiers get() = modifier(ModifierName.Override)
     override val lateinit: Modifiers get() = modifier(ModifierName.Lateinit)
     override val tailrec: Modifiers get() = modifier(ModifierName.Tailrec)

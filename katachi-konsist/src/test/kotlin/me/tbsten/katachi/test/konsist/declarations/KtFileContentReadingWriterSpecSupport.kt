@@ -81,8 +81,9 @@ internal fun ReadingWriter.declaration(
         GenKind.Val, GenKind.Var -> property(random, kind, head, indent, container, modifiers)
         GenKind.TypeAlias -> {
             val name = typeName(random)
-            emit(indent, head.text + "typealias $name" + random.pick(listOf(" = String", "<T> = (T) -> Unit", " = Map<String, List<Int>>")))
-            plainFact(kind, name)
+            val (written, aliased) = random.pick(listOf(" = String" to "String", "<T> = (T) -> Unit" to "(T)->Unit", " = Map<String, List<Int>>" to "Map<String,List<Int>>"))
+            emit(indent, head.text + "typealias $name" + written)
+            plainFact(kind, name).copy(propertyType = aliased)
         }
     }
     return fact.copy(

@@ -6,6 +6,7 @@ import com.lemonappdev.konsist.api.declaration.KoFileDeclaration
 import com.lemonappdev.konsist.api.declaration.KoFunctionDeclaration
 import com.lemonappdev.konsist.api.declaration.KoInterfaceDeclaration
 import com.lemonappdev.konsist.api.declaration.KoObjectDeclaration
+import com.lemonappdev.konsist.api.declaration.KoParameterDeclaration
 import com.lemonappdev.konsist.api.declaration.KoPropertyDeclaration
 import com.lemonappdev.konsist.api.declaration.KoTypeAliasDeclaration
 import com.lemonappdev.konsist.api.provider.KoAnnotationProvider
@@ -59,7 +60,7 @@ private class FactReader(
         is KoObjectDeclaration -> typeFact(declaration, DeclarationKindName.Object)
         is KoFunctionDeclaration -> functionFact(declaration)
         is KoPropertyDeclaration -> propertyFact(declaration)
-        is KoTypeAliasDeclaration -> fact(declaration, DeclarationKindName.TypeAlias)
+        is KoTypeAliasDeclaration -> fact(declaration, DeclarationKindName.TypeAlias, propertyType = typeTextOf(declaration.type.text))
         else -> null
     }
 
@@ -86,7 +87,7 @@ private class FactReader(
             declaration = declaration,
             kind = DeclarationKindName.Function,
             receiver = declaration.receiverType?.text,
-            parameters = declaration.parameters.map { ParameterFact(it.name.removeSurrounding("`"), typeTextOf(it.type.text)) },
+            parameters = declaration.parameters.map(::parameterFactOf),
             returnType = returnType,
             returnTypeWritten = written != null,
         )
@@ -125,8 +126,7 @@ private class FactReader(
             kind = kind,
             name = nameOf(declaration),
             receiver = receiver?.let { typeTextOf(withoutOuterParentheses(it.trim())) },
-            modifiers = (declaration as? KoModifierProvider)?.modifiers.orEmpty()
-                .mapNotNullTo(LinkedHashSet()) { MODIFIERS_BY_KEYWORD[it.type] },
+            modifiers = modifiersOf(declaration),
             annotations = annotationTexts.map { annotationFactOf(it, packageName, imports) },
             supertypes = supertypes,
             propertyType = propertyType,
@@ -139,6 +139,22 @@ private class FactReader(
         )
     }
 }
+
+private fun modifiersOf(declaration: Any): Set<ModifierName> =
+    (declaration as? KoModifierProvider)?.modifiers.orEmpty().mapNotNullTo(LinkedHashSet()) { MODIFIERS_BY_KEYWORD[it.type] }
+
+internal fun parameterFactOf(parameter: KoParameterDeclaration): ParameterFact = ParameterFact(
+    name = parameter.name.removeSurrounding("`"),
+    type = typeTextOf(parameter.type.text),
+    modifiers = buildSet {
+        if (parameter.isVal) add("val")
+        if (parameter.isVar) add("var")
+        if (parameter.hasVarArgModifier) add("vararg")
+        if (parameter.hasNoInlineModifier) add("noinline")
+        if (parameter.hasCrossInlineModifier) add("crossinline")
+    },
+    defaultValue = parameter.defaultValue?.let(::collapseSpaces),
+)
 
 private const val BYTE_ORDER_MARK: Char = '\uFEFF'
 

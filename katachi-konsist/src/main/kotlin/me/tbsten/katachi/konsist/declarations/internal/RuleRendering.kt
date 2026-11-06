@@ -72,7 +72,8 @@ internal fun renderDeclaration(
         append(parameters?.joinToString(", ", "(", ")") ?: "(...)")
     }
     if (superclasses.isNotEmpty()) append(" : ").append(superclasses.joinToString(", "))
-    propertyType?.let { append(": ").append(it) }
+    val aliases = shapes.isNotEmpty() && shapes.all { it.kind == DeclarationKindName.TypeAlias }
+    propertyType?.let { append(if (aliases) " = " else ": ").append(it) }
     returnType?.let { append(": ").append(it) }
     append(exceptOf(except))
 }

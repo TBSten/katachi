@@ -5,7 +5,8 @@ import me.tbsten.katachi.konsist.declarations.internal.allowWriter
 
 /**
  * The `allow(...)` lines for a type alias: the modifiers and annotations (none to ten of them),
- * then `` `typealias` ``, then the name. Only directly in the file: Kotlin has none inside a class.
+ * then `` `typealias` ``, then the name, and the type it stands for when it matters. Directly in the file
+ * or, since Kotlin 2.2 (nested type aliases), inside the `{ }` of a class.
  *
  * ## Example 1: private type aliases, and one named after the file
  * ```kt
@@ -19,54 +20,53 @@ import me.tbsten.katachi.konsist.declarations.internal.allowWriter
 @ExperimentalKatachiApi
 public sealed interface TypeAliasAllow {
     /**
-     * Writes the line for a type alias named [name], carrying no modifier (`public` and `final` aside).
+     * Writes the line for a type alias named [name], aliasing [type] when given, carrying no modifier (`public` and `final` aside).
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
-     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block, or when written inside
-     *   the `{ }` of a class, where Kotlin has no type alias.
+     * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
+     * @throws KatachiKtFileContentLineException when a value comes from another block,.
      */
     public fun allow(
         kind: TypeAliasKind,
         name: String,
-    ): TypeAliasLine = allowWriter.typeAlias(emptyList(), kind, name)
+        type: String? = null,
+    ): TypeAliasLine = allowWriter.typeAlias(emptyList(), kind, name, type)
 
     /**
-     * Writes the line for a type alias named [name], with [modifier1] in front.
+     * Writes the line for a type alias named [name], aliasing [type] when given, with [modifier1] in front.
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
-     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block, or when written inside
-     *   the `{ }` of a class, where Kotlin has no type alias.
+     * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
+     * @throws KatachiKtFileContentLineException when a value comes from another block,.
      */
     public fun allow(
         modifier1: Modifiers,
         kind: TypeAliasKind,
         name: String,
-    ): TypeAliasLine = allowWriter.typeAlias(listOf(modifier1), kind, name)
+        type: String? = null,
+    ): TypeAliasLine = allowWriter.typeAlias(listOf(modifier1), kind, name, type)
 
     /**
-     * Writes the line for a type alias named [name], with [modifier1] and [modifier2] in front.
+     * Writes the line for a type alias named [name], aliasing [type] when given, with [modifier1] and [modifier2] in front.
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
-     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block, or when written inside
-     *   the `{ }` of a class, where Kotlin has no type alias.
+     * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
+     * @throws KatachiKtFileContentLineException when a value comes from another block,.
      */
     public fun allow(
         modifier1: Modifiers,
         modifier2: Modifiers,
         kind: TypeAliasKind,
         name: String,
-    ): TypeAliasLine = allowWriter.typeAlias(listOf(modifier1, modifier2), kind, name)
+        type: String? = null,
+    ): TypeAliasLine = allowWriter.typeAlias(listOf(modifier1, modifier2), kind, name, type)
 
     /**
-     * Writes the line for a type alias named [name], with [modifier1] to [modifier3] in front.
+     * Writes the line for a type alias named [name], aliasing [type] when given, with [modifier1] to [modifier3] in front.
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
-     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block, or when written inside
-     *   the `{ }` of a class, where Kotlin has no type alias.
+     * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
+     * @throws KatachiKtFileContentLineException when a value comes from another block,.
      */
     public fun allow(
         modifier1: Modifiers,
@@ -74,15 +74,15 @@ public sealed interface TypeAliasAllow {
         modifier3: Modifiers,
         kind: TypeAliasKind,
         name: String,
-    ): TypeAliasLine = allowWriter.typeAlias(listOf(modifier1, modifier2, modifier3), kind, name)
+        type: String? = null,
+    ): TypeAliasLine = allowWriter.typeAlias(listOf(modifier1, modifier2, modifier3), kind, name, type)
 
     /**
-     * Writes the line for a type alias named [name], with [modifier1] to [modifier4] in front.
+     * Writes the line for a type alias named [name], aliasing [type] when given, with [modifier1] to [modifier4] in front.
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
-     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block, or when written inside
-     *   the `{ }` of a class, where Kotlin has no type alias.
+     * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
+     * @throws KatachiKtFileContentLineException when a value comes from another block,.
      */
     public fun allow(
         modifier1: Modifiers,
@@ -91,15 +91,15 @@ public sealed interface TypeAliasAllow {
         modifier4: Modifiers,
         kind: TypeAliasKind,
         name: String,
-    ): TypeAliasLine = allowWriter.typeAlias(listOf(modifier1, modifier2, modifier3, modifier4), kind, name)
+        type: String? = null,
+    ): TypeAliasLine = allowWriter.typeAlias(listOf(modifier1, modifier2, modifier3, modifier4), kind, name, type)
 
     /**
-     * Writes the line for a type alias named [name], with [modifier1] to [modifier5] in front.
+     * Writes the line for a type alias named [name], aliasing [type] when given, with [modifier1] to [modifier5] in front.
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
-     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block, or when written inside
-     *   the `{ }` of a class, where Kotlin has no type alias.
+     * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
+     * @throws KatachiKtFileContentLineException when a value comes from another block,.
      */
     public fun allow(
         modifier1: Modifiers,
@@ -109,15 +109,15 @@ public sealed interface TypeAliasAllow {
         modifier5: Modifiers,
         kind: TypeAliasKind,
         name: String,
-    ): TypeAliasLine = allowWriter.typeAlias(listOf(modifier1, modifier2, modifier3, modifier4, modifier5), kind, name)
+        type: String? = null,
+    ): TypeAliasLine = allowWriter.typeAlias(listOf(modifier1, modifier2, modifier3, modifier4, modifier5), kind, name, type)
 
     /**
-     * Writes the line for a type alias named [name], with [modifier1] to [modifier6] in front.
+     * Writes the line for a type alias named [name], aliasing [type] when given, with [modifier1] to [modifier6] in front.
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
-     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block, or when written inside
-     *   the `{ }` of a class, where Kotlin has no type alias.
+     * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
+     * @throws KatachiKtFileContentLineException when a value comes from another block,.
      */
     public fun allow(
         modifier1: Modifiers,
@@ -128,18 +128,18 @@ public sealed interface TypeAliasAllow {
         modifier6: Modifiers,
         kind: TypeAliasKind,
         name: String,
+        type: String? = null,
     ): TypeAliasLine = allowWriter.typeAlias(
         listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6),
-        kind, name,
+        kind, name, type,
     )
 
     /**
-     * Writes the line for a type alias named [name], with [modifier1] to [modifier7] in front.
+     * Writes the line for a type alias named [name], aliasing [type] when given, with [modifier1] to [modifier7] in front.
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
-     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block, or when written inside
-     *   the `{ }` of a class, where Kotlin has no type alias.
+     * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
+     * @throws KatachiKtFileContentLineException when a value comes from another block,.
      */
     public fun allow(
         modifier1: Modifiers,
@@ -151,18 +151,18 @@ public sealed interface TypeAliasAllow {
         modifier7: Modifiers,
         kind: TypeAliasKind,
         name: String,
+        type: String? = null,
     ): TypeAliasLine = allowWriter.typeAlias(
         listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6, modifier7),
-        kind, name,
+        kind, name, type,
     )
 
     /**
-     * Writes the line for a type alias named [name], with [modifier1] to [modifier8] in front.
+     * Writes the line for a type alias named [name], aliasing [type] when given, with [modifier1] to [modifier8] in front.
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
-     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block, or when written inside
-     *   the `{ }` of a class, where Kotlin has no type alias.
+     * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
+     * @throws KatachiKtFileContentLineException when a value comes from another block,.
      */
     public fun allow(
         modifier1: Modifiers,
@@ -175,18 +175,18 @@ public sealed interface TypeAliasAllow {
         modifier8: Modifiers,
         kind: TypeAliasKind,
         name: String,
+        type: String? = null,
     ): TypeAliasLine = allowWriter.typeAlias(
         listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6, modifier7, modifier8),
-        kind, name,
+        kind, name, type,
     )
 
     /**
-     * Writes the line for a type alias named [name], with [modifier1] to [modifier9] in front.
+     * Writes the line for a type alias named [name], aliasing [type] when given, with [modifier1] to [modifier9] in front.
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
-     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block, or when written inside
-     *   the `{ }` of a class, where Kotlin has no type alias.
+     * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
+     * @throws KatachiKtFileContentLineException when a value comes from another block,.
      */
     public fun allow(
         modifier1: Modifiers,
@@ -200,18 +200,18 @@ public sealed interface TypeAliasAllow {
         modifier9: Modifiers,
         kind: TypeAliasKind,
         name: String,
+        type: String? = null,
     ): TypeAliasLine = allowWriter.typeAlias(
         listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6, modifier7, modifier8, modifier9),
-        kind, name,
+        kind, name, type,
     )
 
     /**
-     * Writes the line for a type alias named [name], with [modifier1] to [modifier10] in front.
+     * Writes the line for a type alias named [name], aliasing [type] when given, with [modifier1] to [modifier10] in front.
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
-     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block, or when written inside
-     *   the `{ }` of a class, where Kotlin has no type alias.
+     * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
+     * @throws KatachiKtFileContentLineException when a value comes from another block,.
      */
     public fun allow(
         modifier1: Modifiers,
@@ -226,8 +226,9 @@ public sealed interface TypeAliasAllow {
         modifier10: Modifiers,
         kind: TypeAliasKind,
         name: String,
+        type: String? = null,
     ): TypeAliasLine = allowWriter.typeAlias(
         listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6, modifier7, modifier8, modifier9, modifier10),
-        kind, name,
+        kind, name, type,
     )
 }

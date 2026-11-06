@@ -90,13 +90,6 @@ class KtFileContentLineErrorSpec : FreeSpec({
     }
 
     "種類と annotated" - {
-        "クラスの中の typealias は TypeAliasInClassBody" {
-            lineErrorOf { required(`class`, "A") { required(`typealias`, "B") } }.let {
-                it.problem shouldBe KtFileContentLineProblem.TypeAliasInClassBody
-                it.line shouldBe "typealias B"
-            }
-        }
-
         "名前の無い annotated は AnnotatedWithoutNames" {
             lineErrorOf { required(annotated(), `class`, "A") }.let {
                 it.problem shouldBe KtFileContentLineProblem.AnnotatedWithoutNames
@@ -157,7 +150,6 @@ class KtFileContentLineErrorSpec : FreeSpec({
                 { required(`fun`, "x")()() },
                 { required(`fun`, "x").returns("A").returns("B") },
                 { required(`class`, "A").superclass() },
-                { required(`class`, "A") { required(`typealias`, "B") } },
                 { annotated() },
                 { not.allow(private, anythingElse) },
                 { annotated("X") },

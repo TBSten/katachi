@@ -26,6 +26,9 @@ internal fun differencesOf(rule: DeclarationRule, fact: DeclarationFact): List<S
     if (isProperty && !propertyTypeMatches(rule, fact)) {
         add("type (${isOrNotWritten(fact.propertyType)}, expected ${rule.propertyType?.written})")
     }
+    if (fact.kind == DeclarationKindName.TypeAlias && !propertyTypeMatches(rule, fact)) {
+        add("aliased type (${isOrNotWritten(fact.propertyType)}, expected ${rule.propertyType?.written})")
+    }
     val parameters = fact.parameters
     if (parameters != null && !parametersMatch(rule, fact)) {
         val actual = renderParameters(parameters)

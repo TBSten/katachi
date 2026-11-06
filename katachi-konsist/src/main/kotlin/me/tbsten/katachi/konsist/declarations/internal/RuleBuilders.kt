@@ -63,9 +63,6 @@ internal class DeclarationListBuilder(
         val line = renderDeclaration(raw, name, prohibited)
         ensureCurrent(line)
         val declaredAt = DeclarationSite.capture()
-        if (placement == Placement.ClassBody && raw.namesTypeAlias()) {
-            throw KatachiKtFileContentLineException(KtFileContentLineProblem.TypeAliasInClassBody, line, declaredAt)
-        }
         val nameRule = session.patterns.nameRule(name, KtFileContentPatternKind.Name)
         val shapes = validatedShapes(raw, placement, line, declaredAt)
         return DeclarationLineBuilder(this, shapes, nameRule, prohibited, required, declaredAt).also { entries += it }
@@ -148,19 +145,8 @@ internal class DeclarationLineBuilder(
         parameters = texts?.map(::parameterRule)
     }
 
-    // Split at the first `:`, which a parameter name never holds; the type may hold more, as in `(result: String) -> Unit`.
-    private fun parameterRule(written: String): ParameterRule {
-        val colon = written.indexOf(':')
-        val name = if (colon < 0) "" else written.substring(0, colon).trim()
-        val type = (if (colon < 0) written else written.substring(colon + 1)).trim()
-        if (name.isEmpty()) throw parameterProblem(KtFileContentLineProblem.ParameterWithoutName, written)
-        if (type.isEmpty()) throw parameterProblem(KtFileContentLineProblem.ParameterWithoutType, written)
-        return ParameterRule(
-            written = written,
-            name = session.patterns.nameRule(name, KtFileContentPatternKind.ParameterName),
-            type = session.patterns.typeRule(type),
-        )
-    }
+    private fun parameterRule(written: String): ParameterRule =
+        session.patterns.parameterRule(written) { problem -> parameterProblem(problem, written) }
 
     fun writeReturnType(type: String) {
         ensureOpen()

@@ -70,8 +70,14 @@ public enum class KtFileContentPatternKind(internal val label: String) {
     /** The receiver of an extension, between the kind and the name: `` allow(`fun`, "User", "to*") ``. */
     Receiver("receiver"),
 
-    /** A name of `annotated(...)`. */
+    /** A name of `annotated(...)`, with its use-site target and arguments when written: `annotated("get:JvmName(*)")`. */
     Annotation("annotation"),
+
+    /** What is between the parentheses of `annotated("Name(...)")`. */
+    AnnotationArguments("annotation arguments"),
+
+    /** The default value of a parameter, after its `=`: `` allow(`fun`, "load")("force: Boolean = *") ``. */
+    DefaultValue("default value"),
 
     /** A pattern of `.except(...)`. */
     Except("except"),
@@ -115,14 +121,14 @@ public enum class KtFileContentLineProblem {
     /** A parameter of a `fun` line with no type after its `:`: `("id:")`. `"id: *"` accepts any type. */
     ParameterWithoutType,
 
+    /** A parameter with nothing after its `=`: `("force: Boolean =")`. `"force: Boolean = *"` accepts any default value. */
+    ParameterWithoutDefaultValue,
+
     /** `.returns(...)` written twice. */
     ReturnTypeWrittenTwice,
 
     /** `.superclass()` with no name. */
     SuperclassWithoutNames,
-
-    /** A `typealias` line inside a class's `{ }`, where Kotlin has no typealias. */
-    TypeAliasInClassBody,
 
     /** `annotated()` with no name. */
     AnnotatedWithoutNames,
