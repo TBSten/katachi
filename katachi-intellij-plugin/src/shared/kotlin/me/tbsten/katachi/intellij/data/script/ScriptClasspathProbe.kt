@@ -23,12 +23,18 @@ internal class ScriptClasspathProbe(
 }
 
 /**
- * Runs a command and waits at most [timeoutSeconds] for it. katachi is a Kotlin script run by `kotlin`, so the
- * first run after an install compiles it: the wait is long, and it is never spent on the UI thread.
+ * Runs a command with [environment] added to the IDE's own and waits at most [timeoutSeconds] for it. katachi is a
+ * Kotlin script run by `kotlin`, so the first run after an install compiles it: the wait is long, and it is never
+ * spent on the UI thread.
  */
-internal class TimedProcessRunner(private val timeoutSeconds: Long = DEFAULT_TIMEOUT_SECONDS) : (List<String>) -> ProcessOutcome {
+internal class TimedProcessRunner(
+    private val timeoutSeconds: Long = DEFAULT_TIMEOUT_SECONDS,
+    private val environment: Map<String, String> = emptyMap(),
+) : (List<String>) -> ProcessOutcome {
     override fun invoke(command: List<String>): ProcessOutcome {
-        val process = ProcessBuilder(command).start()
+        val builder = ProcessBuilder(command)
+        builder.environment().putAll(environment)
+        val process = builder.start()
         process.outputStream.close()
         // Both streams are drained while waiting: a full pipe would block the process until the timeout.
         val stdout = StringBuilder()

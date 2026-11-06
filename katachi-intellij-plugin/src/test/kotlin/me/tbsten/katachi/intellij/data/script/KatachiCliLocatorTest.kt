@@ -33,6 +33,14 @@ internal class KatachiCliLocatorTest : TestCase() {
         assertNull(locator("/a:/b").locate())
     }
 
+    fun `test katachi に渡す PATH は 探した場所を同じ順に並べたもの`() {
+        assertEquals("/a:/opt/homebrew/bin:/usr/local/bin:/Users/me/.local/bin", locator("/a:/opt/homebrew/bin").searchPath())
+    }
+
+    fun `test IDE が PATH を持たなくても katachi に渡す PATH には brew の場所が入る`() {
+        assertEquals("/opt/homebrew/bin:/usr/local/bin:/Users/me/.local/bin", locator(null).searchPath())
+    }
+
     fun `test Windows では セミコロン区切りで bat と cmd と exe を探す`() {
         val candidates = locator("C:\\katachi\\bin;C:\\tools", windows = true).candidates().map { it.fileName.toString() }
         assertEquals(listOf("katachi.bat", "katachi.cmd", "katachi.exe", "katachi.bat", "katachi.cmd", "katachi.exe"), candidates)

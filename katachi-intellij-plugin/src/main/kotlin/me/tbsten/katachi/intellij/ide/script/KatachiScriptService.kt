@@ -97,7 +97,9 @@ internal class KatachiScriptService(private val scope: CoroutineScope) {
                 windows = SystemInfo.isWindows,
                 isExecutable = { Files.isRegularFile(it) && Files.isExecutable(it) },
             )
-            return ScriptClasspathProbe(locate = locator::locate, run = TimedProcessRunner(), exists = Files::exists).probe()
+            // The IDE's own PATH is nearly empty when it was started from the Dock, so `kotlin` would not be found.
+            val run = TimedProcessRunner(environment = mapOf("PATH" to locator.searchPath()))
+            return ScriptClasspathProbe(locate = locator::locate, run = run, exists = Files::exists).probe()
         }
     }
 }

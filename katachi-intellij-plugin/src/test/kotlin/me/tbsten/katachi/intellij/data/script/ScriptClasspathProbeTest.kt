@@ -44,6 +44,20 @@ internal class ScriptClasspathProbeTest : TestCase() {
         assertEquals(ScriptClasspath.Found(listOf(jar)), probe(cli))
     }
 
+    fun `test katachi が呼ぶ kotlin は 渡した PATH から見つかる`() {
+        if (windows) return
+        val jar = dir.resolve("katachi-script.jar").also { it.writeText("") }
+        // Like the real CLI: bin/katachi only execs `kotlin`, which an IDE started from the Dock cannot find on its own PATH.
+        val tools = Files.createDirectory(dir.resolve("tools"))
+        tools.resolve("kotlin").apply {
+            writeText("#!/bin/sh\necho \"$jar\"\n")
+            toFile().setExecutable(true)
+        }
+        val cli = fakeCli("exec kotlin")
+        val run = TimedProcessRunner(environment = mapOf("PATH" to "$tools:/usr/bin:/bin"))
+        assertEquals(ScriptClasspath.Found(listOf(jar)), ScriptClasspathProbe(locate = { cli }, run = run, exists = Files::exists).probe())
+    }
+
     fun `test CLI が無ければ CliNotFound で プロセスは起こさない`() {
         assertEquals(ScriptClasspath.CliNotFound, probe(null))
     }
