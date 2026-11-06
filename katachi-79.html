@@ -1,0 +1,36 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KATACHI-79</title><style>
+:root{--bg:#ffffff;--s1:#f6f7f9;--s2:#ffffff;--bd:#d9dde3;--tx:#1f2937;--mu:#6b7280;
+--acc:#2563eb;--acc-bg:#e8f0fe;--ok-bg:#e6f6ec;--ok-tx:#166534;--ng-bg:#fdecec;--ng-tx:#991b1b;--warn-bg:#fff4e0;--warn-tx:#92400e;
+--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--sans:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif}
+@media (prefers-color-scheme:dark){:root{--bg:#191919;--s1:#202020;--s2:#262626;--bd:#3a3a3a;--tx:#e5e7eb;--mu:#9ca3af;
+--acc:#60a5fa;--acc-bg:#1e2a44;--ok-bg:#15301f;--ok-tx:#86efac;--ng-bg:#3b1a1a;--ng-tx:#fca5a5;--warn-bg:#3a2a12;--warn-tx:#fcd34d}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--sans);font-size:14px;line-height:1.5}
+.w{border:0.5px solid var(--bd);background:var(--s1);border-radius:12px;padding:1.25rem 1.5rem;margin:8px}
+.h{display:flex;align-items:baseline;gap:.6rem;margin-bottom:.9rem;flex-wrap:wrap}
+.id{font-family:var(--mono);font-size:12px;color:var(--mu)}.t{font-weight:700;font-size:15px}
+.msg{margin:0 0 1rem;padding:.6rem .9rem;border-left:3px solid var(--acc);background:var(--acc-bg);border-radius:6px;font-weight:600}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}@media (max-width:640px){.cols{grid-template-columns:1fr}}
+.col{background:var(--s2);border:0.5px solid var(--bd);border-radius:10px;padding:.8rem .95rem;min-width:0}
+.lb{font-size:12px;font-weight:700;color:var(--mu);letter-spacing:.02em;margin-bottom:.5rem}
+.col.after .lb{color:var(--acc)}
+pre{margin:0;font-family:var(--mono);font-size:12.5px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.ln{display:block;padding:0 .4rem;border-radius:4px}.ln.ng{background:var(--ng-bg);color:var(--ng-tx)}.ln.ok{background:var(--ok-bg);color:var(--ok-tx)}
+.ln.cm{color:var(--mu)}
+.risks{margin-top:1rem;background:var(--s2);border:0.5px solid var(--bd);border-radius:10px;padding:.8rem .95rem}
+.risks .lb{margin-bottom:.4rem}
+.risks ul{margin:0;padding-left:1.1rem}.risks li{margin:.25rem 0}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:0 .45rem;border-radius:999px;margin-right:.4rem;vertical-align:middle}
+.tag.u{background:var(--warn-bg);color:var(--warn-tx)}.tag.l{background:var(--acc-bg);color:var(--acc)}
+.note{margin-top:.8rem;font-size:12.5px;color:var(--mu)}
+details{margin-top:.8rem;font-size:13px}summary{cursor:pointer;color:var(--mu)}
+</style></head><body><div class="w">
+<div class="h"><span class="id">KATACHI-79</span><span class="t">複数階層・部分一致の capture</span></div>
+<p class="msg">capture は 1 階層（と 1 階層内の部分一致）にしか名前を付けられず、com/example/home のような複数階層は名前にできない</p>
+<div class="cols">
+<div class="col before"><div class="lb">今</div><pre><span class="ln">&quot;feature&quot; / capture(&quot;feature&quot;) / ...        // 1 階層: OK</span><span class="ln">&quot;${capture(&quot;name&quot;)}Screen&quot;.ktFile()        // 部分一致: OK</span><span class="ln ng">&quot;src/main/kotlin&quot; / &quot;**&quot; / &quot;*Screen&quot;.ktFile()</span><span class="ln cm">// パッケージの複数階層は ** でしか書けず名前が無い</span><span class="ln cm">// → テンプレートの生成先が決まらない</span></pre></div>
+<div class="col after"><div class="lb">案（形は未決）</div><pre><span class="ln ok">&quot;src/main/kotlin&quot; / capture(&quot;package&quot;, multiSegment = true) /</span><span class="ln ok">    &quot;${capture(&quot;name&quot;)}Screen&quot;.ktFile()</span><span class="ln ok">// --arg package=com/example/home --arg name=Home</span></pre></div>
+</div>
+<div class="risks"><div class="lb">リスク・デメリット</div><ul><li><span class="tag u">利用者</span>複数階層の capture に派生（.pascalCase など）をどう効かせるかが直感的でない。曖昧な一致（どこまでが package か）で検査結果が揺れる</li><li><span class="tag l">ライブラリ</span>glob と capture の照合を広げる。テンプレートの生成先の決め方、IDE の候補、baseline のキーに波及</li></ul></div>
+<div class="note">出典: after-v0.3/index.md #30、full.md「capture() の未決」</div>
+</div></body></html>
