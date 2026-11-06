@@ -93,6 +93,8 @@ internal class SingleFileGeneration(
     // Claimed from the first check: a second entry must not slip in before the ledger says generating.
     private val running: MutableSet<Path> = ConcurrentHashMap.newKeySet()
 
+    val isRunning: Boolean get() = running.isNotEmpty()
+
     suspend fun checkTarget(target: Path?): TargetState {
         if (target == null) return TargetState.Undecided
         val entry = ledger.entryOf(target)

@@ -105,6 +105,11 @@ internal class KatachiConfigurable(private val project: Project) : BoundConfigur
                     row { radioButton(KatachiBundle.message("settings.open.all"), OpenAfterGeneration.All) }
                     row { radioButton(KatachiBundle.message("settings.open.none"), OpenAfterGeneration.None) }
                 }.bind(settings::openAfterGeneration)
+                row {
+                    checkBox(KatachiBundle.message("settings.mcpAllowGenerate"))
+                        .bindSelected(settings::mcpAllowGenerate)
+                        .comment(KatachiBundle.message("settings.mcpAllowGenerate.comment"))
+                }
             }
         }
     }.getOrElse { DialogPanel() }

@@ -33,6 +33,9 @@ internal class KatachiSettingsState : BaseState() {
 
     var showViolationsInEditor by property(true)
 
+    // Off until the user turns it on: an AI agent then writes files without anybody pressing Generate.
+    var mcpAllowGenerate by property(false)
+
     var collapsedModules by stringSet()
 }
 
@@ -85,6 +88,12 @@ internal class KatachiSettings : SimplePersistentStateComponent<KatachiSettingsS
         get() = state.showViolationsInEditor
         set(value) {
             state.showViolationsInEditor = value
+        }
+
+    var mcpAllowGenerate: Boolean
+        get() = state.mcpAllowGenerate
+        set(value) {
+            state.mcpAllowGenerate = value
         }
 
     var openAfterGeneration: OpenAfterGeneration

@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import me.tbsten.katachi.intellij.model.DefinitionErrors
@@ -23,13 +24,15 @@ import java.time.Instant
 
 internal class DefinitionStatePublisher(
     scope: CoroutineScope,
-    viewModel: KatachiToolWindowViewModel,
+    private val viewModel: KatachiToolWindowViewModel,
     private val loadsWithoutUser: () -> Boolean,
     private val clock: () -> Instant = Instant::now,
 ) {
     private val lock = Any()
     private val mutableState = MutableStateFlow<DefinitionState>(DefinitionState.NotLoaded)
     private var lastSource: DefinitionStateSource? = null
+
+    private val applied = MutableStateFlow<DefinitionStateSource?>(null)
 
     private var changedDuringLoad = false
 
@@ -73,5 +76,13 @@ internal class DefinitionStatePublisher(
             mutableErrors.value = errors
         }
         lastSource = source
+        applied.value = source
+    }
+
+    /** [state] once what the ViewModel shows now has been applied: the collector above runs behind the ViewModel. */
+    suspend fun settled(): DefinitionState {
+        // Compared with what the ViewModel shows at each apply, not once: the collector can skip a value the ViewModel moved past.
+        applied.first { it == DefinitionStateSource.of(viewModel.state.value, viewModel.loadStarted.value, loadsWithoutUser()) }
+        return state.value
     }
 }

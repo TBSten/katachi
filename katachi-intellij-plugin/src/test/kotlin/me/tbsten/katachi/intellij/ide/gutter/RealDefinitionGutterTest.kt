@@ -346,7 +346,7 @@ internal object GoldenFile {
         val actualLines = actual.lines()
         val first = (0 until maxOf(expectedLines.size, actualLines.size)).first { expectedLines.getOrNull(it) != actualLines.getOrNull(it) }
         throw AssertionError(
-            "${golden.path} differs from what the gutter shows, first at line ${first + 1}:\n" +
+            "${golden.path} differs from the actual text, first at line ${first + 1}:\n" +
                 "  golden: ${expectedLines.getOrNull(first)}\n  actual: ${actualLines.getOrNull(first)}\n" +
                 "The whole text is in ${copy.path}; if the change is wanted, write the golden with -D$UPDATE_PROPERTY=true and read the diff.",
         )
