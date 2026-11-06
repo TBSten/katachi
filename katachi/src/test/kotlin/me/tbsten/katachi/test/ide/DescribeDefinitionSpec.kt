@@ -146,21 +146,6 @@ class DescribeDefinitionSpec : FreeSpec({
         }
     }
 
-    "テンプレートの置き場所" - {
-        "placements が読めなかった理由は、walk が成功していれば ModulesNotListed に 1 件書く" {
-            val definition = modulesDefinition().definitionOf(modulesProject(), placementsFailure = IllegalStateException("boom\nsecond line"))
-            val problem = definition.problems.single()
-            problem.kind shouldBe DefinitionProblemKind.ModulesNotListed
-            problem.message shouldContain "IllegalStateException: boom"
-            (problem.message.contains("second line")) shouldBe false
-        }
-
-        "walk も失敗していれば WalkFailed が理由を言うので足さない" {
-            val definition = modulesDefinition().definitionOf(rootlessProject(), placementsFailure = IllegalStateException("boom"))
-            definition.problems.count { it.message.contains("boom") } shouldBe 0
-        }
-    }
-
     "constraints の entries" - {
 
         "constraints[].entries は出した layout の index を指す" {

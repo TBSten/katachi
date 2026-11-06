@@ -171,14 +171,13 @@ private data class EntryKey(val path: String, val kind: LayoutEntryKind)
 private class CaptureTrail(
     val pathCaptures: List<PathCapture>,
     val declaredAt: List<DeclarationSite>,
-    val moduleCapture: ModuleCapture?,
 ) {
     fun toCaptures(): LayoutCaptures? =
-        LayoutCaptures(pathCaptures, moduleCapture).takeUnless { it.isEmpty }
+        LayoutCaptures(pathCaptures).takeUnless { it.isEmpty }
 
     // Asked only for declarations files are matched by, so plain captures below the derived one have been seen.
     fun requireDerivedHaveSources(role: Role, path: String) {
-        val plain = moduleCapture?.names.orEmpty() + pathCaptures.filter { it.transform == null }.map { it.name }
+        val plain = pathCaptures.filter { it.transform == null }.map { it.name }
         pathCaptures.forEachIndexed { index, capture ->
             val transform = capture.transform ?: return@forEachIndexed
             if (capture.name in plain) return@forEachIndexed
@@ -193,19 +192,16 @@ private class CaptureTrail(
     }
 
     companion object {
-        val EMPTY: CaptureTrail = CaptureTrail(emptyList(), emptyList(), null)
+        val EMPTY: CaptureTrail = CaptureTrail(emptyList(), emptyList())
     }
 }
 
 private fun CaptureTrail.enter(child: LayoutNode, segmentIndex: Int): CaptureTrail {
-    val moduleNames = child.moduleCaptureNames?.filterNotNull()
-    val pattern = child.moduleCapturePattern
     val captures = child.captureSegment?.captures.orEmpty()
-    if (moduleNames == null && captures.isEmpty()) return this
+    if (captures.isEmpty()) return this
     return CaptureTrail(
         pathCaptures = pathCaptures + captures.map { PathCapture(segmentIndex, it.wildcardIndex, it.name, it.transform) },
         declaredAt = declaredAt + captures.map { child.declaredAt },
-        moduleCapture = if (moduleNames != null && pattern != null) ModuleCapture(pattern, moduleNames) else moduleCapture,
     )
 }
 
@@ -503,16 +499,12 @@ private fun requireTemplatesAreWellFormed(role: Role, nodes: Set<LayoutNode>) {
     )
 }
 
-// A module key's wildcards are checked separately: ModulePattern.compile already replaced every capture token with
-// a plain `*`, so captureSegment is always null there.
+// A module key's wildcards can never be named, so any wildcard in a module directory counts as unnamed.
 private fun LayoutNode.hasUnnamedWildcardInChain(): Boolean {
     var current: LayoutNode? = this
     while (current != null) {
         val unnamed = if (current.place) {
-            GlobLexer.hasGlobWildcard(current.segment) && (
-                GlobLexer.hasNonCapturingWildcard(current.segment) ||
-                    current.moduleCaptureNames.let { it == null || it.any { name -> name == null } }
-                )
+            GlobLexer.hasGlobWildcard(current.segment)
         } else {
             current.hasOwnUnnamedWildcard()
         }

@@ -10,8 +10,6 @@ import me.tbsten.katachi.dsl.ModuleResolver
 internal class ModulePattern private constructor(
     val pattern: String,
     private val glob: Glob?,
-    // A null entry is a plain unnamed `*`; `**` is not counted.
-    val wildcardNames: List<String?> = emptyList(),
 ) {
     val hasWildcard: Boolean get() = glob?.hasWildcard == true
 
@@ -22,33 +20,12 @@ internal class ModulePattern private constructor(
     val wildcardPlaceholders: List<String>
         get() = glob?.groupKinds.orEmpty().map { WILDCARD_PLACEHOLDER }
 
-    fun wildcardPlaceholders(captureNames: List<String?>? = wildcardNames): List<String> =
-        wildcardPlaceholders.mapIndexed { index, placeholder ->
-            captureNames?.getOrNull(index)?.let { "<$it>" } ?: placeholder
-        }
-
-    // A `**` cannot be named: how many levels it stands for is not fixed.
-    val singleWildcardCount: Int
-        get() = glob?.groupKinds.orEmpty().count { it == GlobGroupKind.Single }
-
     // ModuleResolver is deliberately not asked: a pattern is not a module, so there is nothing for a replaced
     // resolver to look up yet.
     val conventionalDirectory: String
         get() = pattern
             .removePrefix(Glob.MODULE_SEPARATOR.toString())
             .replace(Glob.MODULE_SEPARATOR, Glob.PATH_SEPARATOR)
-
-    fun filledIn(values: List<String>): String {
-        var next = 0
-        return pattern.split(Glob.MODULE_SEPARATOR).joinToString(Glob.MODULE_SEPARATOR.toString()) { segment ->
-            // A `**` is a whole level of its own and is never given a value.
-            if (segment == RECURSIVE_WILDCARD) {
-                segment
-            } else {
-                GlobLexer.replaceCapturingStars(segment) { values.getOrNull(next++) }
-            }
-        }
-    }
 
     fun matches(module: ModulePath): Boolean = match(module) != null
 
@@ -75,37 +52,21 @@ internal class ModulePattern private constructor(
             // `":"` is the root project. It is not a glob — `Glob.compile` would read the
             // separator as the start of an empty segment.
             if (normalized == Glob.MODULE_SEPARATOR.toString()) return ModulePattern(normalized, null)
-            val names = mutableListOf<String?>()
             val globSegments = normalized.substring(1).split(Glob.MODULE_SEPARATOR).map { segment ->
                 if (segment == RECURSIVE_WILDCARD) {
                     // `**` cannot be named -- there is nothing to attach a token to.
                     segment
                 } else {
                     val captureSegment = parseCaptureSegment(segment, declaredAt)
-                    when {
-                        captureSegment != null -> {
-                            names += captureSegment.names
-                            captureSegment.globSegment
-                        }
-
-                        // TODO: a `*` mixed with other characters (`feature-*`) is not counted in `names`, so it
-                        //  is never matched to a `capture(...)` index; independent of the glob syntax.
-                        segment == SINGLE_WILDCARD -> {
-                            names += null
-                            segment
-                        }
-
-                        else -> segment
-                    }
+                    captureSegment?.globSegment ?: segment
                 }
             }
             val globPattern = Glob.MODULE_SEPARATOR + globSegments.joinToString(Glob.MODULE_SEPARATOR.toString())
             val glob = Glob.compile(globPattern, Glob.MODULE_SEPARATOR)
             glob.requireAtMostOneTrailingDoubleStar()
-            return ModulePattern(globPattern, glob, names.toList())
+            return ModulePattern(globPattern, glob)
         }
 
-        private const val SINGLE_WILDCARD: String = "*"
         private const val RECURSIVE_WILDCARD: String = "**"
     }
 }

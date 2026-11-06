@@ -4,7 +4,6 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.dsl.internal.CaptureTransform
 import me.tbsten.katachi.dsl.internal.LayoutCaptures
-import me.tbsten.katachi.dsl.internal.ModuleCapture
 import me.tbsten.katachi.dsl.internal.PathCapture
 import me.tbsten.katachi.dsl.internal.fillCapturedPath
 import me.tbsten.katachi.dsl.internal.fillCapturedSegments
@@ -44,22 +43,9 @@ class CaptureFillSpec : FreeSpec({
         filled shouldBe listOf("data", "\\*unnamed0-remote.kt")
     }
 
-    "fillCapturedPath はモジュールキーの * も名前の値で埋める" {
-        val variant = LayoutCaptures(
-            pathCaptures = listOf(PathCapture(2, 0, "name", null)),
-            moduleCapture = ModuleCapture(":feature:*", listOf("feature")),
-        )
+    "fillCapturedPath はパスの capture だけを埋める" {
+        val variant = LayoutCaptures(pathCaptures = listOf(PathCapture(2, 0, "name", null)))
 
-        fillCapturedPath("feature/*/*.kt", variant, moduleValues = mapOf("feature" to "home")) { "Home" } shouldBe
-            "feature/home/Home.kt"
-    }
-
-    "fillCapturedPath はモジュールの値が無ければパスの capture だけを埋める" {
-        val variant = LayoutCaptures(
-            pathCaptures = listOf(PathCapture(2, 0, "name", null)),
-            moduleCapture = ModuleCapture(":feature:*", listOf("feature")),
-        )
-
-        fillCapturedPath("feature/*/*.kt", variant, moduleValues = emptyMap()) { "Home" } shouldBe "feature/*/Home.kt"
+        fillCapturedPath("feature/*/*.kt", variant) { "Home" } shouldBe "feature/*/Home.kt"
     }
 })

@@ -41,7 +41,6 @@ import me.tbsten.katachi.template.internal.writeTemplateDescriptionJson
  *
  * In the preview, a String parameter or a capture shows as `${name}`. A Boolean, Int or enum
  * parameter is given its default (or `true`, `0` or its first entry), and the output says which.
- * A file below a module capture is shown without a path.
  *
  * It reads only the declarations and writes nothing, except with `--arg format=json`, which is
  * for the katachi IDE plugin.

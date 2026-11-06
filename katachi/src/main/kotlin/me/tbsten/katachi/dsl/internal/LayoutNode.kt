@@ -38,11 +38,6 @@ internal class LayoutNode(
     // bound name is read by.
     var captureSegment: CaptureSegment? = null
 
-    // An entry is null when only some of the key's `*`s were named.
-    var moduleCaptureNames: List<String?>? = null
-
-    var moduleCapturePattern: String? = null
-
     // Identity shared by nodes of one wildcard module key's expansion; tells replays of one source line from two
     // separate declarations.
     var moduleExpansionGroup: Any? = null

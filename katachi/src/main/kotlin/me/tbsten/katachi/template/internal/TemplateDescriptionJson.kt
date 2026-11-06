@@ -7,11 +7,8 @@ import java.nio.file.FileSystemException
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import kotlinx.serialization.Serializable
-import me.tbsten.katachi.check.internal.moduleIndex
-import me.tbsten.katachi.dsl.files.internal.findProjectRoot
 import me.tbsten.katachi.internal.catching
 import me.tbsten.katachi.processor.ArchitectureProcessContext
-import me.tbsten.katachi.processor.internal.fileSystem
 import me.tbsten.katachi.template.KatachiTemplateJsonIoException
 import me.tbsten.katachi.template.TemplateDetail
 import me.tbsten.katachi.template.TemplateSetDetail
@@ -22,7 +19,6 @@ import me.tbsten.katachi.template.TemplateSummary
 internal class TemplateDescriptionJson(
     val templates: List<TemplateSummary>,
     val details: List<TemplateDetail>,
-    val modulePlacements: List<TemplateModulePlacement>,
     val templateSets: List<TemplateSetSummary> = emptyList(),
     val templateSetDetails: List<TemplateSetDetail> = emptyList(),
 )
@@ -30,12 +26,11 @@ internal class TemplateDescriptionJson(
 internal fun encodeTemplateDescriptionJson(
     templates: List<TemplateSummary>,
     details: List<TemplateDetail>,
-    modulePlacements: List<TemplateModulePlacement> = emptyList(),
     templateSets: List<TemplateSetSummary> = emptyList(),
     templateSetDetails: List<TemplateSetDetail> = emptyList(),
 ): String = encodeToJson(
     TemplateDescriptionJson.serializer(),
-    TemplateDescriptionJson(templates, details, modulePlacements, templateSets, templateSetDetails),
+    TemplateDescriptionJson(templates, details, templateSets, templateSetDetails),
 )
 
 internal fun encodeTemplateDescriptionJson(json: TemplateDescriptionJson): String =
@@ -44,8 +39,7 @@ internal fun encodeTemplateDescriptionJson(json: TemplateDescriptionJson): Strin
 internal fun templateDescriptionJsonOf(
     context: ArchitectureProcessContext<*>,
     table: List<DeclaredTemplate> = declaredTemplatesOf(context.declaredEntries),
-    withPlacements: Boolean = true,
-): TemplateDescriptionJson = templateDescriptionOf(context, table, withPlacements).json
+): TemplateDescriptionJson = templateDescriptionOf(context, table).json
 
 internal class TemplateDescription(
     val json: TemplateDescriptionJson,
@@ -56,7 +50,6 @@ internal class TemplateDescription(
 internal fun templateDescriptionOf(
     context: ArchitectureProcessContext<*>,
     table: List<DeclaredTemplate> = declaredTemplatesOf(context.declaredEntries),
-    withPlacements: Boolean = true,
 ): TemplateDescription {
     val templateFailures = LinkedHashMap<String, Throwable>()
     val previewed = table.mapNotNull { template ->
@@ -64,19 +57,11 @@ internal fun templateDescriptionOf(
             .onFailure { templateFailures[template.specifier] = it }
             .getOrNull()
     }
-    val placements = if (!withPlacements) {
-        emptyList()
-    } else {
-        modulePlacementsOf(previewed.map { it.first }) {
-            moduleIndex(context.fileSystem, findProjectRoot(context.fileSystem).path, context.architecture.moduleResolver)
-        }
-    }
     val sets = context.architecture.allTemplateSets
     val templateSetFailures = LinkedHashMap<String, Throwable>()
     val json = TemplateDescriptionJson(
         templates = table.map(::templateSummaryOf),
         details = previewed.map { it.second },
-        modulePlacements = placements,
         templateSets = sets.map { templateSetSummaryOf(it, table) },
         templateSetDetails = sets.mapNotNull { set ->
             catching { templateSetDetailOf(set, table) }

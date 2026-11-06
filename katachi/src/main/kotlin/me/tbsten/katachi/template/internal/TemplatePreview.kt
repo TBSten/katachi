@@ -173,13 +173,12 @@ internal fun filePreviewOf(
     // `.captureVariants.firstOrNull()`, is what is guaranteed to be this template's own variant
     // when this path folded two declarations into one entry.
     val variant = entry.templateCaptures ?: entry.captureVariants.firstOrNull() ?: LayoutCaptures.NONE
-    val pattern = fillCapturedPath(entry.path, variant, variant.names.associateWith(::placeholderOf), ::placeholderOf)
+    val pattern = fillCapturedPath(entry.path, variant, ::placeholderOf)
     val path = when {
-        variant.moduleCapture != null -> null
         captureValues.isEmpty() -> pattern
         // A plain occurrence reads the value a template set's `arg` gave it; a derived one is
         // still the placeholder, since katachi derives it from that value.
-        else -> fillCapturedPath(entry.path, variant, emptyMap()) { capture ->
+        else -> fillCapturedPath(entry.path, variant) { capture ->
             if (capture.transform == null) captureValues[capture.name] ?: placeholderOf(capture) else placeholderOf(capture)
         }
     }

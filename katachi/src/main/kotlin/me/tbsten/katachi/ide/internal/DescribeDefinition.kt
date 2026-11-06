@@ -7,7 +7,6 @@ import kotlinx.serialization.Serializable
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.internal.KatachiVersion
 import me.tbsten.katachi.internal.absolutePathOf
-import me.tbsten.katachi.internal.catching
 import me.tbsten.katachi.internal.fileUri
 import me.tbsten.katachi.internal.runProcessorCatching
 import me.tbsten.katachi.processor.ArchitectureProcessContext
@@ -62,15 +61,10 @@ public object DescribeDefinition : ArchitectureProcessor<DescribeDefinition.Args
     override fun process(context: ArchitectureProcessContext<Args>): Result<DefinitionSummary> =
         runProcessorCatching {
             val args = context.args
-            // The modules a placement needs are listed by the same project root the walk needs, so
-            // when they cannot be, the walk's own problem usually says why; one the walk does not
-            // explain is passed on as [placementsFailure].
-            val placed = catching { templateDescriptionOf(context) }
-            val described = placed.getOrElse { templateDescriptionOf(context, withPlacements = false) }
+            val described = templateDescriptionOf(context)
             val json = definitionJsonOf(
                 walk = context.projectWalk,
                 templates = described.json,
-                placementsFailure = placed.exceptionOrNull(),
                 previewFailures = TemplatePreviewFailures(described.templateFailures, described.templateSetFailures),
                 options = DefinitionJsonOptions(
                     maxMatchedFiles = args.maxMatchedFiles,

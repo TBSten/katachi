@@ -3,7 +3,6 @@ package me.tbsten.katachi.template.internal
 import me.tbsten.katachi.dsl.KatachiInvalidTemplateParameterValueException
 import me.tbsten.katachi.dsl.KatachiMissingTemplateParameterException
 import me.tbsten.katachi.dsl.internal.InvalidTemplateValue
-import me.tbsten.katachi.dsl.internal.ModuleIndex
 import me.tbsten.katachi.dsl.internal.TemplateSetDeclaration
 import me.tbsten.katachi.dsl.internal.TemplateSetMemberReplay
 import me.tbsten.katachi.dsl.internal.TemplateSetMode
@@ -20,7 +19,6 @@ internal fun templateSetFilesFor(
     set: TemplateSetDeclaration,
     table: List<DeclaredTemplate>,
     values: Map<String, String>,
-    modules: () -> ModuleIndex,
 ): Map<String, String> {
     val replay = replayTemplateSet(set, TemplateSetMode.Run(values))
     requireSetParametersUsable(set, values, replay.missing, replay.invalid.values.associate { it.name to it })
@@ -32,7 +30,7 @@ internal fun templateSetFilesFor(
         val memberValues = member.args
         requireMemberArgNamesKnown(set, member, template)
         requireNoConflicts(listOf(template), memberValues)
-        val (path, content) = memberFile(context, set, member, template, modules)
+        val (path, content) = memberFile(context, set, member, template)
         ownerOf[path]?.let { owner ->
             throw KatachiDuplicateTemplateOutputException(
                 path = path,
@@ -101,9 +99,8 @@ private fun memberFile(
     set: TemplateSetDeclaration,
     member: TemplateSetMemberReplay,
     template: DeclaredTemplate,
-    modules: () -> ModuleIndex,
 ): Pair<String, String> =
-    asMemberArgProblem(set, member, template) { templateFileFor(context, template, member.args, modules) }
+    asMemberArgProblem(set, member, template) { templateFileFor(context, template, member.args) }
 
 internal fun <T> asMemberArgProblem(
     set: TemplateSetDeclaration,
