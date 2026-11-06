@@ -15,7 +15,8 @@ import me.tbsten.katachi.test.architecture.misplacedDeclarationsOf
 import me.tbsten.katachi.test.architecture.publicDeclarationsOf
 import me.tbsten.katachi.test.architecture.keepsBlockTagsLast
 import me.tbsten.katachi.test.architecture.showsExample
-import me.tbsten.katachi.test.architecture.KONSIST_MAIN_PACKAGE
+
+private const val KONSIST_MAIN_PACKAGE: String = "me/tbsten/katachi/konsist"
 
 fun DeclarationContainerScope.konsistBackend() = "KonsistBackend".role {
     title = "Konsist バックエンド"

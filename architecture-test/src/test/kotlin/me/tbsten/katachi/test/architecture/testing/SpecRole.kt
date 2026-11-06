@@ -1,9 +1,12 @@
 package me.tbsten.katachi.test.architecture.testing
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
+import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.testSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 fun DeclarationContainerScope.spec() = "Spec".role {
     title = "スペック"
@@ -40,4 +43,19 @@ fun DeclarationContainerScope.spec() = "Spec".role {
             testSourceSet / kotlin / "**" / "*Spec".ktFile()
         }
     }
+    specIsOneFreeSpec()
 }
+
+// What a spec shares with another file of its module is `internal`; a public declaration
+// next to a spec would be a second kind of file hiding under the `*Spec.kt` name.
+@OptIn(ExperimentalKatachiApi::class)
+private fun RoleScope.specIsOneFreeSpec() =
+    "スペックのファイルはファイル名と同じ FreeSpec の class 1つと、private / internal な部品だけを持つ".ktFileContent {
+        `package`(matchingDirectory)
+
+        `import`("**")
+
+        required(`class`, fileName).superclass("FreeSpec")
+        allow(private, anythingElse)
+        allow(internal, anythingElse)
+    }
