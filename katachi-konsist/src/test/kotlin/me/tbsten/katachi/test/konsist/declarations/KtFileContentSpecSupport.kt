@@ -108,6 +108,7 @@ private fun DeclarationRule.dump(indent: String): List<String> {
     val head = buildString {
         append(indent).append(status).append(' ')
         append(shapes.joinToString("|") { it.dump() }).append(' ').append(name.written)
+        receiver?.let { append(" receiver=").append(it.written) }
         parameters?.let { types -> append(" params=(").append(types.joinToString(", ") { it.written }).append(')') }
         returnType?.let { append(" returns=").append(it.written) }
         propertyType?.let { append(" type=").append(it.written) }

@@ -100,7 +100,8 @@ public class FunctionLine internal constructor(
      * Requires exactly these parameters, in order, each written `"name: Type"`; `()` is no
      * parameter. A parameter matches when its name matches the part before the first `:` and its
      * type the part after it; spaces around either part are ignored. Default values and `vararg`
-     * are not looked at, nor are a receiver and context parameters.
+     * are not looked at, nor are context parameters. The receiver of an extension is not a
+     * parameter: it is written before the name, as in `` allow(`fun`, "User", "to*") ``.
      *
      * @throws KatachiKtFileContentLineException when the parameters were already written, or when a
      *   parameter is not `"name: Type"`: no `:`, nothing before it, or nothing after it.

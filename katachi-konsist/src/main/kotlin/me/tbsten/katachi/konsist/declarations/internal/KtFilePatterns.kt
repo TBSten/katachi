@@ -28,10 +28,13 @@ internal fun PatternCache.nameRule(written: String, what: KtFileContentPatternKi
 internal fun PatternCache.pathRule(written: String, what: KtFileContentPatternKind): NameRule =
     NameRule(written, compileOrThrow(written, written, PATH_SEPARATOR, what))
 
-internal fun PatternCache.typeRule(written: String): TypeRule {
-    refusePackageWildcard(written, KtFileContentPatternKind.Type)
-    return TypeRule(written, compileOrThrow(written, typePatternOf(written), separator = null, KtFileContentPatternKind.Type))
+internal fun PatternCache.typeRule(written: String, what: KtFileContentPatternKind = KtFileContentPatternKind.Type): TypeRule {
+    refusePackageWildcard(written, what)
+    return TypeRule(written, compileOrThrow(written, typePatternOf(written), separator = null, what))
 }
+
+// `(() -> Unit)` and `() -> Unit` are one receiver: Kotlin needs the parentheses there, a pattern does not.
+internal fun PatternCache.receiverRule(written: String): TypeRule = typeRule(withoutOuterParentheses(written.trim()), KtFileContentPatternKind.Receiver)
 
 internal fun PatternCache.superclassRule(written: String): SuperclassRule {
     refusePackageWildcard(written, KtFileContentPatternKind.Superclass)

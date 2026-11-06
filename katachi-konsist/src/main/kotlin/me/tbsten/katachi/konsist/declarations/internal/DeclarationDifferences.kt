@@ -18,6 +18,10 @@ internal fun differencesOf(rule: DeclarationRule, fact: DeclarationFact): List<S
     missingSuperclassesOf(rule, fact).takeIf { it.isNotEmpty() }?.let { missing ->
         add("superclass (missing: ${missing.joinToString(", ") { it.written }})")
     }
+    if (!receiverMatches(rule, fact)) {
+        val actual = fact.receiver?.let { "is ${it.written}" } ?: "none"
+        add("receiver ($actual, expected ${rule.receiver?.written})")
+    }
     val isProperty = fact.kind == DeclarationKindName.Val || fact.kind == DeclarationKindName.Var
     if (isProperty && !propertyTypeMatches(rule, fact)) {
         add("type (${isOrNotWritten(fact.propertyType)}, expected ${rule.propertyType?.written})")

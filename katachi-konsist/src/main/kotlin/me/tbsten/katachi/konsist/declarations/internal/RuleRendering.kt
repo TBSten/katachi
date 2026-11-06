@@ -8,6 +8,7 @@ internal fun renderRule(rule: DeclarationRule): String = renderDeclaration(
     shapes = rule.shapes,
     name = rule.name.written,
     prohibited = rule.prohibited,
+    receiver = rule.receiver?.written,
     superclasses = rule.superclasses.map { it.written },
     propertyType = rule.propertyType?.written,
     parameters = rule.parameters?.map { it.written },
@@ -20,6 +21,7 @@ internal fun renderRuleAsDeclaration(rule: DeclarationRule): String = renderDecl
     shapes = rule.shapes.map { it.copy(modifiers = it.modifiers.copy(optional = emptyList())) },
     name = rule.name.written,
     prohibited = rule.prohibited,
+    receiver = rule.receiver?.written,
     superclasses = rule.superclasses.map { it.written },
     propertyType = rule.propertyType?.written,
     parameters = rule.parameters?.map { it.written },
@@ -54,6 +56,7 @@ internal fun renderDeclaration(
     shapes: List<Shape>,
     name: String,
     prohibited: Boolean,
+    receiver: String? = null,
     superclasses: List<String> = emptyList(),
     propertyType: String? = null,
     parameters: List<String>? = null,
@@ -63,6 +66,7 @@ internal fun renderDeclaration(
     append(notOf(prohibited))
     val prefix = renderShapes(shapes)
     if (prefix.isNotEmpty()) append(prefix).append(' ')
+    receiver?.let { append(receiverText(it)).append('.') }
     append(name)
     if (shapes.isNotEmpty() && shapes.all { it.kind == DeclarationKindName.Function }) {
         append(parameters?.joinToString(", ", "(", ")") ?: "(...)")

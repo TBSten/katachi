@@ -109,7 +109,7 @@ class KtFileContentScopeIsolationSpec : FreeSpec({
         "required は allow と同じ多重定義の並びで、anythingElse を取るものだけが無い" {
             val allow = requiredShapesOf(DeclarationAllow::class.java, "allow")
             val required = requiredShapesOf(DeclarationRequired::class.java, "required")
-            required.size shouldBe 55
+            required.size shouldBe 77
             required shouldBe allow.filterNot { AnythingElse::class.java in it }.toSet()
         }
 

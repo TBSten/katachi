@@ -172,3 +172,33 @@ internal fun allowAnythingElse(on: DeclarationAllow, m: List<Modifiers>, anythin
         else -> error("allow(...) takes at most 10 modifiers: $m")
     }
 }
+
+internal fun allowExtensionFunction(on: DeclarationAllow, m: List<Modifiers>, kind: FunctionKind, receiver: String, name: String): FunctionLine = when (m.size) {
+    0 -> on.allow(kind, receiver, name)
+    1 -> on.allow(m[0], kind, receiver, name)
+    2 -> on.allow(m[0], m[1], kind, receiver, name)
+    3 -> on.allow(m[0], m[1], m[2], kind, receiver, name)
+    4 -> on.allow(m[0], m[1], m[2], m[3], kind, receiver, name)
+    5 -> on.allow(m[0], m[1], m[2], m[3], m[4], kind, receiver, name)
+    6 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], kind, receiver, name)
+    7 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], m[6], kind, receiver, name)
+    8 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], kind, receiver, name)
+    9 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], kind, receiver, name)
+    10 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], kind, receiver, name)
+    else -> error("allow(...) takes at most 10 modifiers: $m")
+}
+
+internal fun allowExtensionProperty(on: DeclarationAllow, m: List<Modifiers>, kind: PropertyKind, receiver: String, name: String, type: String): PropertyLine = when (m.size) {
+    0 -> on.allow(kind, receiver, name, type)
+    1 -> on.allow(m[0], kind, receiver, name, type)
+    2 -> on.allow(m[0], m[1], kind, receiver, name, type)
+    3 -> on.allow(m[0], m[1], m[2], kind, receiver, name, type)
+    4 -> on.allow(m[0], m[1], m[2], m[3], kind, receiver, name, type)
+    5 -> on.allow(m[0], m[1], m[2], m[3], m[4], kind, receiver, name, type)
+    6 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], kind, receiver, name, type)
+    7 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], m[6], kind, receiver, name, type)
+    8 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], kind, receiver, name, type)
+    9 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], kind, receiver, name, type)
+    10 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], kind, receiver, name, type)
+    else -> error("allow(...) takes at most 10 modifiers: $m")
+}

@@ -31,6 +31,6 @@ private fun RoleScope.roleFileHoldsOneRoleAndItsPrivateParts() =
         // What several roles share sits next to the entry; a role of another group is not one of those.
         not.`import`("me.tbsten.katachi.test.architecture.*.*.**")
 
-        required(`fun`, "*")()
+        required(`fun`, "DeclarationContainerScope", "*")()
         allow(private, anythingElse)
     }

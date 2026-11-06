@@ -119,6 +119,7 @@ private fun lineWithoutNotAndExcept(rule: DeclarationRule): String = renderDecla
     shapes = rule.shapes,
     name = rule.name.written,
     prohibited = false,
+    receiver = rule.receiver?.written,
     superclasses = rule.superclasses.map { it.written },
     propertyType = rule.propertyType?.written,
     parameters = rule.parameters?.map { it.written },

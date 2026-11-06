@@ -105,6 +105,8 @@ internal sealed interface DeclarationListEntry {
 internal class DeclarationRule(
     val shapes: List<Shape>,
     val name: NameRule,
+    // null when the line writes none: the declaration may then have any receiver, or none.
+    val receiver: TypeRule?,
     val superclasses: List<SuperclassRule>,
     val propertyType: TypeRule?,
     val parameters: List<ParameterRule>?,

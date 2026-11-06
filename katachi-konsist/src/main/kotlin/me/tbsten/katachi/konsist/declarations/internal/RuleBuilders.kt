@@ -99,6 +99,7 @@ internal class DeclarationLineBuilder(
     private val declaredAt: DeclarationSite,
 ) : DeclarationListEntryBuilder {
     private val superclasses = mutableListOf<SuperclassRule>()
+    private var receiver: TypeRule? = null
     private var propertyType: TypeRule? = null
     private var parameterTexts: List<String>? = null
     private var parameters: List<ParameterRule>? = null
@@ -114,6 +115,7 @@ internal class DeclarationLineBuilder(
             shapes = shapes,
             name = name.written,
             prohibited = prohibited,
+            receiver = receiver?.written,
             superclasses = superclasses.map { it.written },
             propertyType = propertyType?.written,
             parameters = parameterTexts,
@@ -125,6 +127,10 @@ internal class DeclarationLineBuilder(
         ensureOpen()
         if (names.isEmpty()) throw problem(KtFileContentLineProblem.SuperclassWithoutNames)
         names.mapTo(superclasses) { session.patterns.superclassRule(it) }
+    }
+
+    fun writeReceiver(type: String) {
+        receiver = session.patterns.receiverRule(type)
     }
 
     fun writePropertyType(type: String) {
@@ -181,6 +187,7 @@ internal class DeclarationLineBuilder(
     override fun build(): DeclarationRule = DeclarationRule(
         shapes = shapes,
         name = name,
+        receiver = receiver,
         superclasses = superclasses.toList(),
         propertyType = propertyType,
         parameters = parameters,

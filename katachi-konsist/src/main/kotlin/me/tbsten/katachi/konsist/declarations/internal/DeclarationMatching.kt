@@ -42,6 +42,7 @@ private fun annotationMatches(rule: AnnotationRule, annotation: AnnotationFact):
 
 private fun detailsMatch(rule: DeclarationRule, fact: DeclarationFact): Boolean =
     missingSuperclassesOf(rule, fact).isEmpty() &&
+        receiverMatches(rule, fact) &&
         propertyTypeMatches(rule, fact) &&
         parametersMatch(rule, fact) &&
         returnTypeMatches(rule, fact)
@@ -52,6 +53,12 @@ internal fun missingSuperclassesOf(rule: DeclarationRule, fact: DeclarationFact)
             superclass.pattern.matches(if (superclass.byName) supertype.withoutArguments else supertype.canonical)
         }
     }
+
+internal fun receiverMatches(rule: DeclarationRule, fact: DeclarationFact): Boolean {
+    val expected = rule.receiver ?: return true
+    val actual = fact.receiver ?: return false
+    return expected.canonical.matches(actual.canonical)
+}
 
 internal fun propertyTypeMatches(rule: DeclarationRule, fact: DeclarationFact): Boolean {
     val expected = rule.propertyType ?: return true
