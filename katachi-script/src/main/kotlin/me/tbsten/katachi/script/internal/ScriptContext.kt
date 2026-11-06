@@ -27,6 +27,7 @@ internal class ScriptContext(
     val err: (String) -> Unit,
     val clock: Clock = Clock.systemDefaultZone(),
     val http: HttpFetcher = JdkHttpFetcher,
+    val launch: ProcessLauncher = InheritingIoLauncher,
 ) {
     var lang: Lang = Lang.of(env["KATACHI_LANG"]) ?: Lang.JA
 

@@ -180,6 +180,11 @@ katachi — katachi のインストールのうち機械的にできる部分を
   katachi summary
       ユーザに返す文面を組み立てて出力する。
 
+  katachi <ファイル>.katachi.kts [<引数>...]
+      katachi のコマンドを Kotlin で並べたスクリプトを実行する。katachi と
+      defaultPackage などの既定値は最初から使える（kotlin コマンドが要る）。
+      引数はスクリプトの args に入る。
+
   katachi --help
 
 開発者向けの環境変数:
@@ -385,6 +390,11 @@ Usage:
 
   katachi summary
       Builds and prints the message to give back to the user.
+
+  katachi <file>.katachi.kts [<argument>...]
+      Runs a script that lines up katachi commands in Kotlin. katachi and the
+      defaults such as defaultPackage are there from the start (needs the kotlin
+      command). The arguments are the script's args.
 
   katachi --help
 

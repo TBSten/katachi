@@ -20,9 +20,15 @@ kotlin {
 dependencies {
     implementation(project(":katachi"))
     implementation(libs.kotlinxSerializationJson)
+    // For the `*.katachi.kts` script definition. Not `compileOnly`: a build that depends on katachi-script
+    // and has a `*.katachi.kts` gets the definition discovered, and loading it needs the scripting API.
+    implementation(libs.kotlinScriptingCommon)
+    implementation(libs.kotlinScriptingJvm)
 
     testImplementation(libs.kotestRunnerJunit5)
     testImplementation(libs.kotestAssertionsCore)
+    // Compiles a real `*.katachi.kts` against the definition, as `kotlin` and the IDE do.
+    testImplementation(libs.kotlinScriptingJvmHost)
 }
 
 // `katachi --version` reads this; MANIFEST's Implementation-Version is null from a class directory.
