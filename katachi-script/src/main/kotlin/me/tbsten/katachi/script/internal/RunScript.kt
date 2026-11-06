@@ -22,6 +22,8 @@ internal fun runScript(args: List<String>, context: ScriptContext): Int {
                 0
             }
 
+            command.endsWith(KATACHI_SCRIPT_EXTENSION) -> context.runKatachiScriptFile(command, rest)
+
             // add reads --help itself: `add role --help` lists the fields of a role.
             command in HELP_ANYWHERE && rest.any { it == "-h" || it == "--help" } -> {
                 context.out(context.usage())
@@ -55,6 +57,7 @@ private fun ScriptContext.dispatch(command: String, args: List<String>): Int = w
     "compare-violations" -> runCompareViolations(args)
     "verify" -> runVerify()
     "summary" -> runSummary()
+    "internal" -> runInternal(args)
     else -> die("知らないサブコマンドです: $command（--help を見てください）", "Unknown subcommand: $command (see --help)")
 }
 

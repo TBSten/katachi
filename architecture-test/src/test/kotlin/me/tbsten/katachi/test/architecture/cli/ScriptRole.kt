@@ -36,6 +36,8 @@ fun DeclarationContainerScope.script() = "Script".role {
             mainSourceSet / kotlin / SCRIPT_MAIN_PACKAGE / "internal" / "*".ktFile()
             // What `katachi --version` prints. Written as `version=${katachiVersion}` and expanded by `processResources`.
             mainSourceSet / "resources" / "META-INF" / "katachi-script" / "version.properties".file()
+            // Empty; its name tells `kotlin -cp` and the IDE which class is the `*.katachi.kts` script definition.
+            mainSourceSet / "resources" / "META-INF" / "kotlin" / "script" / "templates" / "me.tbsten.katachi.script.KatachiScript.classname".file()
         }
     }
 }

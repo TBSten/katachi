@@ -20,6 +20,9 @@
         A file that no role holds gets a notification with a draft of the role to copy, and
         <b>katachi: Run Architecture Check</b> runs the check.
         The screens follow the IDE's language: Japanese when the IDE is in Japanese, English otherwise.</p>
+        <p>A <code>*.katachi.kts</code> (katachi's commands written as a Kotlin script) is completed with the definition the
+        installed katachi CLI provides (<code>brew install tbsten/tap/katachi</code>). Without a CLI the script shows a notification
+        on how to get one, and nothing else of the plugin changes.</p>
         <p>Needs a Gradle project that applies the katachi Gradle plugin 0.2.0 or later (<code>id("me.tbsten.katachi")</code>);
         the gutter, the violations and templateSets need 0.3.0 or later.
         See <a href="https://tbsten.github.io/katachi/guides/generate-code-from-template/">Generate code from template</a>.</p>
@@ -66,6 +69,9 @@
     <!-- Paired with the idea.kotlin.plugin.use.k2 system property of the test task. -->
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
         <supportsKotlinPluginMode supportsK2="true"/>
+        <!-- *.katachi.kts (KATACHI-101): the definition loaded from the jars the katachi CLI names, listed in Settings | Languages & Frameworks | Kotlin | Kotlin Scripting.
+             Without a CLI it gives no definition and the banner below says so; nothing else of the plugin needs the CLI. -->
+        <scriptDefinitionsProvider implementation="me.tbsten.katachi.intellij.ide.script.KatachiScriptDefinitionsProvider"/>
     </extensions>
 
     <resource-bundle>messages.KatachiBundle</resource-bundle>
@@ -101,6 +107,8 @@
         <!-- What katachi found wrong with the definition (ide-authoring design 2.4): underlined where it was written, and a banner in the definition module's test sources. -->
         <externalAnnotator language="kotlin" implementationClass="me.tbsten.katachi.intellij.ide.authoring.errors.DefinitionErrorAnnotator"/>
         <editorNotificationProvider implementation="me.tbsten.katachi.intellij.ide.authoring.errors.DefinitionErrorNotificationProvider"/>
+        <!-- A *.katachi.kts without its definition, because the katachi CLI is missing, too old, or its answer could not be read (KATACHI-101). -->
+        <editorNotificationProvider implementation="me.tbsten.katachi.intellij.ide.script.KatachiScriptNotificationProvider"/>
         <!-- The ◆ of a definition file: a role, and a .template { } (ide-authoring design 4.3). Its own switch in Settings | Editor | General | Gutter Icons. -->
         <codeInsight.lineMarkerProvider language="kotlin" implementationClass="me.tbsten.katachi.intellij.ide.authoring.gutter.KatachiDefinitionLineMarkerProvider"/>
         <!-- How many files a layout line holds, at the end of the line (design 4.3), and its group in Settings | Editor | Inlay Hints | Code Vision. -->
