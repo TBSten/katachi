@@ -147,7 +147,7 @@ class KatachiScriptSpec : FreeSpec({
             run.status shouldBe 3
             val (command, env, cwd) = launcher.launches.single()
             command shouldBe listOf(
-                "kotlin", "-cp", scriptClasspath().joinToString(java.io.File.pathSeparator), script.toString(), "a", "--help",
+                "kotlin", "-no-reflect", "-cp", scriptClasspath().joinToString(java.io.File.pathSeparator), script.toString(), "a", "--help",
             )
             env shouldBe mapOf(KATACHI_SCRIPT_FILE_ENV to script.toString())
             cwd shouldBe project
