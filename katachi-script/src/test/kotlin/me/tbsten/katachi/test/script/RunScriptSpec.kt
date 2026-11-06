@@ -49,8 +49,17 @@ class RunScriptSpec : FreeSpec({
         for (lang in Lang.entries) {
             val context = ScriptContext(createTempDirectory("katachi-script-"), emptyMap(), {}, {}).also { it.lang = lang }
             val text = context.usage()
-            val missing = COMMAND_SPECS.flatMap { spec -> (spec.options + spec.subcommands.flatMap { it.options }).map { spec.name to it.name } }
-                .filter { (command, option) -> text.lines().none { it.contains("katachi $command") && it.contains(option) } && !text.contains("      $option") }
+            // add lists the fields of each kind in `add <kind> --help`, which reads the same ADD_KINDS.
+            val missing = COMMAND_SPECS.filter { it.name != "add" }
+                .flatMap { spec -> (spec.options + spec.subcommands.flatMap { it.options }).map { spec.name to it } }
+                .filter { (command, option) ->
+                    if (option.keyValue) {
+                        !text.contains(option.name)
+                    } else {
+                        text.lines().none { it.contains("katachi $command") && it.contains(option.name) } && !text.contains("      ${option.name}")
+                    }
+                }
+                .map { (command, option) -> command to option.name }
             missing.shouldBeEmpty()
         }
     }

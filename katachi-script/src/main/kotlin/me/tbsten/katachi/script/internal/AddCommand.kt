@@ -3,17 +3,81 @@ package me.tbsten.katachi.script.internal
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
 
-/** One kind of row `add` appends: the array it goes to, its fields, and the fields that take a list. */
-private class AddKind(val target: Target, val array: String, val scalars: List<String>, val lists: List<String>, val flags: Map<String, String> = emptyMap())
+/**
+ * One kind of row `add` appends: the array it goes to, its fields, and the fields that take a list.
+ * [docs] and [samples] are for the script builders generated from COMMAND_SPECS (`katachi.add.role.group(...)`).
+ */
+internal class AddKind(
+    val target: Target,
+    val array: String,
+    val scalars: List<String>,
+    val lists: List<String>,
+    val flags: Map<String, String> = emptyMap(),
+    val docs: Map<String, String> = emptyMap(),
+    val samples: Map<String, String> = emptyMap(),
+)
 
-private val ADD_KINDS: Map<String, AddKind> = linkedMapOf(
-    "violation" to AddKind(Target.CHECK_LIST, "violations", listOf("violation", "location", "whyNotFixed", "suggestion"), emptyList()),
-    "question" to AddKind(Target.CHECK_LIST, "questions", listOf("question", "observed", "recommendation"), listOf("options")),
+private val QUESTION_DOCS = mapOf(
+    "question" to "the question to ask",
+    "observed" to "what was seen in the codebase that raised it",
+    "recommendation" to "the answer recommended",
+    "options" to "the answers to choose from",
+)
+
+internal val ADD_KINDS: Map<String, AddKind> = linkedMapOf(
+    "violation" to AddKind(
+        Target.CHECK_LIST,
+        "violations",
+        listOf("violation", "location", "whyNotFixed", "suggestion"),
+        emptyList(),
+        docs = mapOf(
+            "violation" to "what the definition reports",
+            "location" to "where it is",
+            "whyNotFixed" to "why it is left as it is",
+            "suggestion" to "how it could be fixed",
+        ),
+        samples = mapOf("violation" to "UseCase depends on Repository", "location" to "feature/ui/HomeViewModel.kt"),
+    ),
+    "question" to AddKind(
+        Target.CHECK_LIST,
+        "questions",
+        listOf("question", "observed", "recommendation"),
+        listOf("options"),
+        docs = QUESTION_DOCS,
+        samples = mapOf("question" to "Nest groups?", "options" to "yes"),
+    ),
     // The report's questions: the same shape, another file. Where step 1 writes what varies in the codebase.
-    "codebase-question" to AddKind(Target.REPORT, "questions", listOf("question", "observed", "recommendation"), listOf("options")),
-    "changed" to AddKind(Target.CHECK_LIST, "changedFiles", listOf("path", "change", "summary"), emptyList()),
+    "codebase-question" to AddKind(
+        Target.REPORT,
+        "questions",
+        listOf("question", "observed", "recommendation"),
+        listOf("options"),
+        docs = QUESTION_DOCS,
+        samples = mapOf("question" to "Is data/ a module of its own?", "options" to "yes"),
+    ),
+    "changed" to AddKind(
+        Target.CHECK_LIST,
+        "changedFiles",
+        listOf("path", "change", "summary"),
+        emptyList(),
+        docs = mapOf("path" to "the file changed", "change" to "how it changed, such as `New`", "summary" to "what was changed in it"),
+        samples = mapOf("path" to "settings.gradle.kts", "change" to "New"),
+    ),
     // What a module is responsible for. Not called role so it is not mistaken for a katachi Role (one kind of file).
-    "module" to AddKind(Target.REPORT, "modules", listOf("path", "kind", "responsibility", "buildFile", "deviation"), emptyList()),
+    "module" to AddKind(
+        Target.REPORT,
+        "modules",
+        listOf("path", "kind", "responsibility", "buildFile", "deviation"),
+        emptyList(),
+        docs = mapOf(
+            "path" to "the directory of the module",
+            "kind" to "the kind of module, such as `feature`",
+            "responsibility" to "what the module is responsible for",
+            "buildFile" to "its build file",
+            "deviation" to "how it differs from the other modules of the same kind. Leave it out when it does not",
+        ),
+        samples = mapOf("path" to "feature/home", "kind" to "feature"),
+    ),
     // group is where the Role goes in the definition (nested with dots: feature.ui); verify requires it.
     "role" to AddKind(
         Target.REPORT,
@@ -22,11 +86,57 @@ private val ADD_KINDS: Map<String, AddKind> = linkedMapOf(
         listOf("allowed", "forbidden", "examples"),
         // A Role that exists only to put a constraint on a Gradle build file; needs --note.
         mapOf("constraint-only" to "constraintOnly"),
+        docs = mapOf(
+            "importance" to "how much the Role matters, as a number such as `5`",
+            "name" to "the name of the Role",
+            "layout" to "where its files go",
+            "naming" to "how its files are named",
+            "count" to "how many files it has, as a number",
+            "note" to "a note; the reason, with `constraint-only`",
+            "group" to "where the Role goes in the definition, nested with dots: `feature.ui`",
+            "allowed" to "what its files may depend on",
+            "forbidden" to "what its files must not depend on",
+            "examples" to "files that belong to it",
+            "constraint-only" to "records a Role that exists only to put a constraint on a Gradle build file. Needs a `note`",
+        ),
+        samples = mapOf("name" to "UseCase", "group" to "feature.domain", "examples" to "GetUserUseCase.kt"),
     ),
-    "tool" to AddKind(Target.REPORT, "tools", listOf("name", "configPath", "declareInKatachi", "note"), emptyList()),
-    "excluded" to AddKind(Target.REPORT, "excluded", listOf("path", "reason"), emptyList()),
+    "tool" to AddKind(
+        Target.REPORT,
+        "tools",
+        listOf("name", "configPath", "declareInKatachi", "note"),
+        emptyList(),
+        docs = mapOf(
+            "name" to "the name of the tool",
+            "configPath" to "where its configuration is",
+            "declareInKatachi" to "whether the definition declares it, and why",
+            "note" to "a note",
+        ),
+        samples = mapOf("name" to "detekt", "configPath" to "config/detekt.yml"),
+    ),
+    "excluded" to AddKind(
+        Target.REPORT,
+        "excluded",
+        listOf("path", "reason"),
+        emptyList(),
+        docs = mapOf("path" to "the path left out of the definition. Not one `.gitignore` leaves out already", "reason" to "why it is left out"),
+        samples = mapOf("path" to "legacy", "reason" to "to be removed"),
+    ),
     // The "what you can do next" of the end of the installation; summary and the report show it.
-    "template" to AddKind(Target.REPORT, "templates", listOf("role", "basedOn", "reason"), listOf("files", "params")),
+    "template" to AddKind(
+        Target.REPORT,
+        "templates",
+        listOf("role", "basedOn", "reason"),
+        listOf("files", "params"),
+        docs = mapOf(
+            "role" to "the Role the template makes files of",
+            "basedOn" to "the existing file it is made from",
+            "reason" to "why it helps",
+            "files" to "the files it makes",
+            "params" to "the names filled in when the template is used, such as `name`",
+        ),
+        samples = mapOf("role" to "UseCase", "params" to "name"),
+    ),
 )
 
 /** The kinds whose rows get an id (the browser's answers come back keyed by it). */
