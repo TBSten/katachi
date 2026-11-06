@@ -178,7 +178,7 @@ class DiffReportSpec : FreeSpec({
             out.resolve("diff-report.html").readText() shouldContain
                 "1 file no layout { } allows. The architecture test will fail on it."
             // The table still ends at the file, under the (no role) node.
-            markdown shouldContain "| **(no role)** | | +1&nbsp;-0 | 1 |\n| &nbsp;&nbsp;└ `notes.txt` _(added)_ | 🟥🟥🟥 | +1&nbsp;-0 | |"
+            markdown shouldContain "| **(no role)** | | +1&nbsp;-0 | 1 |\n| &nbsp;&nbsp;└ `notes.txt` _(added)_ | ${squares("🟥", 5)} | +1&nbsp;-0 | |"
             out.resolve("diff-report.files-by-role.md").exists() shouldBe false
             markdown shouldContain "# Files in no role: HEAD~1"
             markdown shouldContain "<details open><summary><b>No role</b> 1 file</summary>"
@@ -209,6 +209,29 @@ class DiffReportSpec : FreeSpec({
         }
     }
 
+    "Importance は最大の行に対する比を 5 段階に分け、段階の数だけ色マスを並べる" {
+        withRepository { repo ->
+            repo.commit("initial")
+            for (lines in 1..5) repo.write("app/f$lines/F${lines}ViewModel.kt", "a\n".repeat(lines))
+            repo.commit("change")
+
+            val out = repo.dir.resolve("out")
+            arch.process(
+                DiffReport,
+                DiffReport.Args(before = "HEAD~1", after = "HEAD", markdownOutputFile = out.resolve("diff-report.md").path, htmlOutputFile = out.resolve("diff-report.html").path),
+                RealFileSystem(repo.dir),
+            ).getOrThrow()
+
+            val summary = out.resolve("diff-report.md").readText()
+            // Level n is n squares: 1 line of 5 is level 1, 5 lines of 5 is level 5.
+            val expectedSquares = listOf(squares("🟨", 1), squares("🟨", 2), squares("🟧", 3), squares("🟧", 4), squares("🟥", 5))
+            for ((index, expected) in expectedSquares.withIndex()) {
+                val lines = index + 1
+                summary shouldContain "└ `…/f$lines/F${lines}ViewModel.kt` _(added)_ | $expected | +$lines&nbsp;-0 | |"
+            }
+        }
+    }
+
     "maxFiles を超えると一覧だけを差分の多いファイルに絞り、要約の数は全ファイルで数える" {
         withRepository { repo ->
             repo.commit("initial")
@@ -228,8 +251,8 @@ class DiffReportSpec : FreeSpec({
             val markdown = allMarkdown(out)
             markdown shouldContain "4 files changed, +8 -0. 1 of 4 roles touched, 1 file in no role."
             markdown shouldContain "Showing 2 of 4 files (maxFiles=2). Raise maxFiles to see all."
-            markdown shouldContain "└ ViewModel | 🟥🟥🟥 | +7&nbsp;-0 | 3 |"
-            markdown shouldContain "<b>Presentation.ViewModel</b> 🟥🟥🟥 3 files, +7 -0"
+            markdown shouldContain "└ ViewModel | ${squares("🟥", 5)} | +7&nbsp;-0 | 3 |"
+            markdown shouldContain "<b>Presentation.ViewModel</b> ${squares("🟥", 5)} 3 files, +7 -0"
             markdown shouldContain "`…/home/HomeViewModel.kt`"
             markdown shouldContain "`…/mypage/MyPageViewModel.kt`"
             markdown shouldNotContain "OtherViewModel.kt"
@@ -355,9 +378,9 @@ class DiffReportSpec : FreeSpec({
             summary shouldContain "GitHub links and `git diff` commands per file: [Files by role](diff-report.files-by-role.md) · " +
                 "[Files in no role](diff-report.files-in-no-role.md)"
             // The table goes down to the files, like the HTML; the commands stay in the listings.
-            summary shouldContain "| &nbsp;&nbsp;└ ViewModel | 🟥🟥🟥 | +1&nbsp;-0 | 1 |\n" +
-                "| &nbsp;&nbsp;&nbsp;&nbsp;└ `…/home/HomeViewModel.kt` _(added)_ | 🟥🟥🟥 | +1&nbsp;-0 | |"
-            summary shouldContain "| **(no role)** | | +1&nbsp;-0 | 1 |\n| &nbsp;&nbsp;└ `notes.txt` _(added)_ | 🟥🟥🟥 | +1&nbsp;-0 | |"
+            summary shouldContain "| &nbsp;&nbsp;└ ViewModel | ${squares("🟥", 5)} | +1&nbsp;-0 | 1 |\n" +
+                "| &nbsp;&nbsp;&nbsp;&nbsp;└ `…/home/HomeViewModel.kt` _(added)_ | ${squares("🟥", 5)} | +1&nbsp;-0 | |"
+            summary shouldContain "| **(no role)** | | +1&nbsp;-0 | 1 |\n| &nbsp;&nbsp;└ `notes.txt` _(added)_ | ${squares("🟥", 5)} | +1&nbsp;-0 | |"
             summary shouldNotContain "git diff "
             val byRole = out.resolve("diff-report.files-by-role.md").readText()
             byRole shouldContain "# Files by role: HEAD~1"
@@ -490,6 +513,9 @@ private class Repository(val dir: File) {
         return output
     }
 }
+
+// The Importance squares of the Markdown report, joined by U+2060 WORD JOINER so GitHub does not wrap them.
+private fun squares(square: String, count: Int): String = List(count) { square }.joinToString("\u2060")
 
 private inline fun withRepository(block: (Repository) -> Unit) {
     val dir = Files.createTempDirectory("katachi-diff").toFile()

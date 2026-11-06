@@ -220,10 +220,17 @@ private fun diffLines(added: Int, deleted: Int): String = "+$added&nbsp;-$delete
 
 private fun files(count: Int): String = if (count == 1) "1 file" else "$count files"
 
-private fun heatSquares(level: Int): String = when (level) {
-    0 -> "⬜"
-    1 -> "🟨"
-    2 -> "🟧"
-    3 -> "🟧🟧"
-    else -> "🟥🟥🟥"
+// One square per level, up to five, yellow to red. A word joiner between the squares keeps them on
+// one line: GitHub narrows a table's columns down to their widest unbreakable text, and the
+// "Importance" heading alone is narrower than five squares.
+private fun heatSquares(level: Int): String {
+    val square = when (level) {
+        0 -> return "⬜"
+        1, 2 -> "🟨"
+        3, 4 -> "🟧"
+        else -> "🟥"
+    }
+    return List(level) { square }.joinToString(WORD_JOINER)
 }
+
+private const val WORD_JOINER = "\u2060"
