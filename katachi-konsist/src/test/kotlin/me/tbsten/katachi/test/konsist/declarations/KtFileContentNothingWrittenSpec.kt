@@ -11,7 +11,6 @@ import me.tbsten.katachi.check.UncheckedFileConstraint
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.files.internal.RealFileSystem
-import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile

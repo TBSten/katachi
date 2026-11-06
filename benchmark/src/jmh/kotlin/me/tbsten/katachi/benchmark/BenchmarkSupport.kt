@@ -7,7 +7,6 @@ import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.FileSelection
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile

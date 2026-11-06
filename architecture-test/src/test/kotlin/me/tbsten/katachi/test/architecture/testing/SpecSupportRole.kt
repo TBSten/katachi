@@ -1,7 +1,6 @@
 package me.tbsten.katachi.test.architecture.testing
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.sourceSet
 import me.tbsten.katachi.dsl.gradle.testSourceSet

@@ -1,7 +1,6 @@
 package me.tbsten.katachi.test.architecture.testing
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.gradle.div
 
 fun DeclarationContainerScope.layerImportSnapshot() = "LayerImportSnapshot".role {
     title = "層の import スナップショット"

@@ -12,7 +12,6 @@ import io.kotest.matchers.string.shouldContain
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.dsl.DeclarationSite
-import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.declarations.KtFileContentScope
 import me.tbsten.katachi.konsist.declarations.internal.failuresOf

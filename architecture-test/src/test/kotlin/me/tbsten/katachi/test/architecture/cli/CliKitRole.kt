@@ -1,7 +1,6 @@
 package me.tbsten.katachi.test.architecture.cli
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.gradle.div
 
 fun DeclarationContainerScope.cliKit() = "CliKit".role {
     title = "katachi コマンドの配布物"
