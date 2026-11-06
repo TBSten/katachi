@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.docs
 
 import io.kotest.assertions.withClue
@@ -10,12 +8,8 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.gradle.ModulePackage
-import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
-import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 
@@ -27,66 +21,8 @@ import me.tbsten.katachi.dsl.kotlin.ktsFile
  * 宣言位置が kotest 内部を指すようになる。
  */
 class PlacementSpec : FreeSpec({
-    val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example")
-
-    "モジュールとパスの列" - {
-        "module { } の中の宣言は、モジュール名とモジュール内の相対パスに分かれる" {
-            val arch = architecture {
-                "domain".group {
-                    "UseCase".role {
-                        layout {
-                            ":core:domain".module {
-                                mainSourceSet / kotlin / "useCase" / "*UseCase".ktFile()
-                            }
-                        }
-                    }
-                }
-            }
-
-            arch.placementRows("domain/UseCase.md") shouldContainExactly listOf(
-                "| `:core:domain` | `src/main/kotlin/useCase/*UseCase.kt` |  |",
-            )
-        }
-
-        "modulePackage は展開せず ** のまま出る" {
-            val arch = architecture {
-                "domain".group {
-                    "UseCase".role {
-                        layout {
-                            ":core:domain".module {
-                                mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile()
-                            }
-                        }
-                    }
-                }
-            }
-
-            withClue("modulePackage はモジュールごとに違うディレクトリを指す戦略で、1つの値ではない") {
-                arch.placementRows("domain/UseCase.md") shouldContainExactly listOf(
-                    "| `:core:domain` | `src/main/kotlin/**/useCase/*UseCase.kt` |  |",
-                )
-            }
-        }
-
-        "ワイルドカードのモジュールキーは書かれたまま出る" {
-            val arch = architecture {
-                "feature".group {
-                    "Screen".role {
-                        layout {
-                            ":feature:*".module {
-                                mainSourceSet / kotlin / "*Screen".ktFile()
-                            }
-                        }
-                    }
-                }
-            }
-
-            arch.placementRows("feature/Screen.md") shouldContainExactly listOf(
-                "| `:feature:*` | `src/main/kotlin/*Screen.kt` |  |",
-            )
-        }
-
-        "module { } の外で書いた宣言は、モジュール列が無くフルパスになる" {
+    "パスの列" - {
+        "宣言はフルパスで出る" {
             val arch = architecture {
                 "tool".group {
                     "Script".role {
@@ -99,26 +35,10 @@ class PlacementSpec : FreeSpec({
                 "| `scripts/*.sh` |  |",
             )
         }
-
-        "ルートプロジェクトの module { } はモジュール列に : が出る" {
-            val arch = architecture {
-                "build".group {
-                    "GradleRoot".role {
-                        layout {
-                            ":".module { "settings.gradle".ktsFile() }
-                        }
-                    }
-                }
-            }
-
-            arch.placementRows("build/GradleRoot.md") shouldContainExactly listOf(
-                "| `:` | `settings.gradle.kts` |  |",
-            )
-        }
     }
 
-    "Module 列の有無" - {
-        "どの行もモジュールを持たなければ Module 列を出さない" {
+    "Module 列" - {
+        "Module 列は出ない" {
             val arch = architecture {
                 "tool".group {
                     "Script".role {
@@ -131,35 +51,15 @@ class PlacementSpec : FreeSpec({
             page shouldContain "| Path | When to use |"
             page shouldNotContain "Module"
         }
-
-        "1行でもモジュールを持てば Module 列を出し、持たない行は空欄にする" {
-            val arch = architecture {
-                "tool".group {
-                    "Script".role {
-                        layout {
-                            ":core".module { mainSourceSet / kotlin / "*".ktFile() }
-                            "scripts" / "*.sh".file()
-                        }
-                    }
-                }
-            }
-
-            val page = arch.page("tool/Script.md")
-            page shouldContain "| Module | Path | When to use |"
-            arch.placementRows("tool/Script.md") shouldContainExactly listOf(
-                "| `:core` | `src/main/kotlin/*.kt` |  |",
-                "|  | `scripts/*.sh` |  |",
-            )
-        }
     }
 
     "ignore() と anyFile()" - {
-        "どちらもモジュール列を持たずフルパスを出す" {
+        "どちらもフルパスを出す" {
             val arch = architecture {
                 "app".group {
                     "Resource".role {
                         layout {
-                            ":app".module {
+                            "app" {
                                 mainSourceSet {
                                     "res".ignore()
                                     "assets" { anyFile() }
@@ -178,16 +78,16 @@ class PlacementSpec : FreeSpec({
     }
 
     "When to use の列" - {
-        "module { } に書いた description が、その下の宣言の行に出る" {
+        "ディレクトリのブロックに書いた description が、その下の宣言の行に出る" {
             val arch = architecture {
                 "domain".group {
                     "UseCase".role {
                         layout {
-                            ":core:domain".module {
+                            "core/domain" {
                                 description = "複数 feature から使われるもの"
                                 mainSourceSet / kotlin / "useCase" / "*UseCase".ktFile()
                             }
-                            ":feature:*".module {
+                            "feature/*" {
                                 description = "その feature 専用のもの"
                                 mainSourceSet / kotlin / "useCase" / "*UseCase".ktFile()
                             }
@@ -198,8 +98,8 @@ class PlacementSpec : FreeSpec({
 
             withClue("同じ役割の配置が2つ以上あれば、表に全部並ぶ") {
                 arch.placementRows("domain/UseCase.md") shouldContainExactly listOf(
-                    "| `:core:domain` | `src/main/kotlin/useCase/*UseCase.kt` | 複数 feature から使われるもの |",
-                    "| `:feature:*` | `src/main/kotlin/useCase/*UseCase.kt` | その feature 専用のもの |",
+                    "| `core/domain/src/main/kotlin/useCase/*UseCase.kt` | 複数 feature から使われるもの |",
+                    "| `feature/*/src/main/kotlin/useCase/*UseCase.kt` | その feature 専用のもの |",
                 )
             }
         }
@@ -209,7 +109,7 @@ class PlacementSpec : FreeSpec({
                 "domain".group {
                     "UseCase".role {
                         layout {
-                            ":core:domain".module {
+                            "core/domain" {
                                 description = "a | b"
                                 mainSourceSet / kotlin / "*UseCase".ktFile()
                             }
@@ -219,7 +119,7 @@ class PlacementSpec : FreeSpec({
             }
 
             arch.placementRows("domain/UseCase.md") shouldContainExactly listOf(
-                "| `:core:domain` | `src/main/kotlin/*UseCase.kt` | a \\| b |",
+                "| `core/domain/src/main/kotlin/*UseCase.kt` | a \\| b |",
             )
         }
 
@@ -228,7 +128,7 @@ class PlacementSpec : FreeSpec({
                 "domain".group {
                     "UseCase".role {
                         layout {
-                            ":core:domain".module {
+                            "core/domain" {
                                 description = "モジュールの説明"
                                 mainSourceSet / kotlin / "useCase" {
                                     description = "ディレクトリの説明"
@@ -241,37 +141,19 @@ class PlacementSpec : FreeSpec({
             }
 
             arch.placementRows("domain/UseCase.md") shouldContainExactly listOf(
-                "| `:core:domain` | `src/main/kotlin/useCase/*UseCase.kt` | ディレクトリの説明 |",
+                "| `core/domain/src/main/kotlin/useCase/*UseCase.kt` | ディレクトリの説明 |",
             )
         }
     }
 
     "表に出さないもの" - {
-        "module { } が注入する build/ と build.gradle.kts は出ない" {
-            val arch = architecture {
-                "domain".group {
-                    "UseCase".role {
-                        layout {
-                            ":core:domain".module { mainSourceSet / kotlin / "*UseCase".ktFile() }
-                        }
-                    }
-                }
-            }
-
-            val page = arch.page("domain/UseCase.md")
-
-            withClue("katachi が書いた2行なので、モジュールを名乗るすべての役割のページに同じ行が並んでしまう") {
-                page shouldNotContain "build.gradle.kts"
-            }
-            page shouldNotContain "| `:core:domain` | `build` |"
-        }
 
         "宣言の途中にあるだけのディレクトリは行にならない" {
             val arch = architecture {
                 "domain".group {
                     "UseCase".role {
                         layout {
-                            ":core:domain".module { mainSourceSet / kotlin / "useCase" / "*UseCase".ktFile() }
+                            "core/domain" { mainSourceSet / kotlin / "useCase" / "*UseCase".ktFile() }
                         }
                     }
                 }

@@ -152,8 +152,8 @@ private fun resolvedEntryFor(
     val resolved = role.flattenLayout(modules().boundTo(values, misses))
         .filter { it.role === role && it[Template]?.declarationKey == key }
     misses.firstOrNull()?.let { throw moduleNotFoundFor(role, it, template) }
-    // Never fall back to `template.entries`: an un-resolved entry still holds what
-    // `wildcard(name)` read while no module was bound (`<name>`), and would write that text into
+    // Never fall back to `template.entries`: an un-resolved entry still holds the placeholder a
+    // module capture reads while no module is bound (`<name>`), and would write that text into
     // the path as a directory of its own. `resolved` is empty only when the values matched no
     // module, which `misses` above already reported.
     return resolved.firstOrNull() ?: throw KatachiTemplateEntryNotResolvedException(

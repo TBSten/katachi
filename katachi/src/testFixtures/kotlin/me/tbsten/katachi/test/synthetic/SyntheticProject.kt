@@ -29,7 +29,7 @@ class SyntheticProject internal constructor(
     val modules: List<String>,
     /** Directories no role declares. The walk reports each one once and does not descend. */
     val unknownDirectories: List<String>,
-    /** Files below a module's `build/`, which `.module { }` ignores. */
+    /** Files below a module's `build/`, which [architecture] ignores. */
     val ignoredFiles: List<String>,
     /**
      * Files directly inside a module's `src/main/kotlin`: a directory every module role
@@ -67,7 +67,7 @@ data class SyntheticRole(
 
 /** How a [SyntheticRole] is declared. */
 enum class SyntheticPlacement {
-    /** `":modules:*".module { mainSourceSet / kotlin / ... }`: one layout entry per module. */
+    /** `"modules" / "*" { mainSourceSet / kotlin / ... }`: one layout entry per module. */
     Module,
 
     /** A fixed path below the project root: one layout entry however many modules there are. */

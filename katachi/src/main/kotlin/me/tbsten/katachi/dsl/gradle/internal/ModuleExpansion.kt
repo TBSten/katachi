@@ -2,11 +2,12 @@ package me.tbsten.katachi.dsl.gradle.internal
 
 import me.tbsten.katachi.dsl.KatachiUnsupportedLayoutScopeException
 import me.tbsten.katachi.dsl.LayoutDirectoryScope
-import me.tbsten.katachi.dsl.LayoutModule
 import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.ModuleAwareLayoutScope
+import me.tbsten.katachi.dsl.internal.LayoutModule
 
-// Not deprecated, unlike `.module { }`: Gradle.BuildScript is declared for every module katachi finds.
+// The one way left into module expansion since `.module { }` was removed: Gradle.BuildScript is declared for every
+// module katachi finds.
 internal fun LayoutScope.expandModules(
     modulePath: String,
     block: LayoutDirectoryScope.() -> Unit,

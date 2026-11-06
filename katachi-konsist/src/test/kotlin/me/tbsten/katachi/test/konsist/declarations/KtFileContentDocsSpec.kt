@@ -1,15 +1,11 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.konsist.declarations
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
-import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 
@@ -235,7 +231,7 @@ class KtFileContentDocsSpec : FreeSpec({
             "Screen".role {
                 example("HomeScreen")
                 layout {
-                    ":feature:*".module {
+                    "feature/*" {
                         "build.gradle.kts".file()
                         mainSourceSet / kotlin / "*Screen".ktFile()
                         ktFileContent { required(`class`, fileName) }

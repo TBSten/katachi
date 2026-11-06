@@ -1,9 +1,7 @@
-@file:Suppress("DEPRECATION")
 package me.tbsten.katachi.test.template
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.template
 
 internal enum class SyntheticMode { Compact, Expanded }
@@ -135,7 +133,7 @@ internal fun syntheticStructureArchitecture(): Architecture = architecture {
         "Wildcard".role {
             summary = "生成先のモジュールが決まらない"
             layout {
-                ":feature:${capture("feature")}".module {
+                "feature/${capture("feature")}" {
                     "src/main/kotlin" / "${capture("name")}Screen.kt".file().template {
                         "fun ${captureValue("name")}Screen() {}\n"
                     }

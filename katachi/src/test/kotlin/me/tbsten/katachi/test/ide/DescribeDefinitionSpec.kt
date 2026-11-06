@@ -32,7 +32,7 @@ class DescribeDefinitionSpec : FreeSpec({
         "basic: group・テンプレート・anyFile・ignore・DirectOnly・ルート直下の役割" {
             checkDefinitionGolden("basic.json", basicDefinition().definitionJsonText(basicProject()))
         }
-        "modules: wildcard の module key が実在する 2 モジュールに展開される" {
+        "modules: capture を持つワイルドカードのディレクトリが実在する 2 モジュールのファイルを集める" {
             checkDefinitionGolden("modules.json", modulesDefinition().definitionJsonText(modulesProject()))
         }
         "explained: 宣言の説明を持つ制約・持たない制約・投げる制約" {
@@ -101,10 +101,9 @@ class DescribeDefinitionSpec : FreeSpec({
             definition.roles.flatMap { it.constraints }.flatMap { it.entries }.size shouldBe 4
         }
 
-        "wildcard の module key は walk が失敗すると展開されず ModulesNotListed も出る" {
+        "capture を持つワイルドカードのディレクトリは walk が失敗するとパターンのまま残る" {
             val definition = modulesDefinition().definitionOf(rootlessProject())
-            definition.problems.map { it.kind } shouldContainExactly
-                listOf(DefinitionProblemKind.WalkFailed, DefinitionProblemKind.ModulesNotListed)
+            definition.problems.map { it.kind } shouldContainExactly listOf(DefinitionProblemKind.WalkFailed)
             val layout = definition.roles.single().layout
             layout.filter { it.path.startsWith("feature/home") || it.path.startsWith("feature/settings") }.shouldBeEmpty()
             layout.mapNotNull { it.matchedCount }.shouldBeEmpty()
@@ -162,23 +161,7 @@ class DescribeDefinitionSpec : FreeSpec({
         }
     }
 
-    "module { } が足す entry" - {
-        "build.gradle.kts の File と build の Ignore も layout に出て、synthetic と place の旗が付く" {
-            val layout = modulesDefinition().definitionOf(modulesProject()).roles.single().layout
-            for (module in listOf("feature/home", "feature/settings")) {
-                val script = layout.single { it.path == "$module/build.gradle.kts" }
-                script.kind shouldBe "File"
-                script.matchedFiles shouldContainExactly listOf("$module/build.gradle.kts")
-                layout.single { it.path == "$module/build" }.kind shouldBe "Ignore"
-            }
-            for (module in listOf("feature/home", "feature/settings")) {
-                layout.single { it.path == "$module/build.gradle.kts" }.synthetic shouldBe true
-                layout.single { it.path == "$module/build" }.synthetic shouldBe true
-                layout.single { it.path == module }.place shouldBe true
-            }
-            // What the user wrote carries neither.
-            layout.filter { it.path.endsWith("Screen.kt") || it.path.endsWith("/kotlin") }.forEach { (it.synthetic || it.place) shouldBe false }
-        }
+    "constraints の entries" - {
 
         "constraints[].entries は出した layout の index を指す" {
             val role = basicDefinition().definitionOf(basicProject()).roles.first { it.qualifiedName == "domain.UseCase" }

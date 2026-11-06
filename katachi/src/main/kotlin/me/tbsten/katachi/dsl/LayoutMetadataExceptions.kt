@@ -3,46 +3,6 @@ package me.tbsten.katachi.dsl
 import me.tbsten.katachi.KatachiDeclarationException
 
 /**
- * `":".module { }.metadata { }` was called: the root project has no directory of its own for
- * a value to attach to.
- *
- * Every other `.metadata { }` call attaches to the leaf a key returned -- a file, a plain
- * directory, or the directory a module key opened. `":".module { }` opens no directory: its
- * block declares straight into the project root, which every other block of the same
- * `layout { }` shares. Writing a value there silently, on the layout root itself, would
- * describe everything else declared in the same `layout { }` as well as whatever the module
- * block itself declared, so it is refused instead of guessed at.
- *
- * ## Example 1: catch metadata attached to the root project module key
- * ```kt
- * val Owner: MetadataKey<String> = metadata()
- * var MetadataScope.owner: String? by Owner
- *
- * shouldThrow<KatachiMetadataWithoutEntryException> {
- *     layout { ":".module { }.metadata { owner = "mobile" } }
- * }
- * ```
- *
- * @property modulePath always `":"`: the only module key with no directory of its own.
- */
-public class KatachiMetadataWithoutEntryException internal constructor(
-    public val modulePath: String,
-) : KatachiDeclarationException(
-    message = buildString {
-        appendLine("""`"$modulePath".module { }.metadata { }` has nowhere to attach: the root project has no directory of its own.""")
-        appendLine(
-            "A `\":\".module { }` block declares straight into the project root, which every other " +
-                "block of the same layout { } shares, so a value written here would describe " +
-                "everything else declared in the same layout { } as well.",
-        )
-        append(
-            "Attach the metadata to one of the files or directories the block itself declares " +
-                "instead, such as `\"README.md\".file().metadata { }`.",
-        )
-    },
-)
-
-/**
  * Two declarations of the same path attached different values under the same metadata key.
  *
  * A role that declares one path twice -- two `/` chains sharing a prefix, or the same key

@@ -8,7 +8,6 @@ import com.example.kmp.testing.test
 import com.example.kmp.tool.documentation
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.sourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile

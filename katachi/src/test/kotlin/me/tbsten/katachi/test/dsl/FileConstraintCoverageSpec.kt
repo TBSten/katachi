@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.dsl
 
 import io.kotest.core.spec.style.FreeSpec
@@ -9,7 +7,6 @@ import io.kotest.matchers.shouldNotBe
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gradle.gradle
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 import me.tbsten.katachi.dsl.internal.reportPath
@@ -117,12 +114,12 @@ class FileConstraintCoverageSpec : FreeSpec({
             coverage.covers("generated/nested/Whatever.kt") shouldBe false
         }
 
-        "module の制約が build.gradle.kts を覆わない" {
+        "宣言していない build.gradle.kts は覆わない" {
             val arch = architecture {
                 "domain".group {
                     "UseCase".role {
                         layout {
-                            ":core:domain".module {
+                            "core/domain" {
                                 fileConstraint("in core/domain", check = silent())
                                 mainSourceSet / KOTLIN_DIRECTORY / "*UseCase".ktFile()
                             }
@@ -149,15 +146,13 @@ class FileConstraintCoverageSpec : FreeSpec({
             coverage.covers("app/build/x") shouldBe false
         }
 
-        "ルートプロジェクトの module の制約が build.gradle.kts を覆わない" {
+        "layout { } 直下の制約も宣言していない build.gradle.kts は覆わない" {
             val arch = architecture {
                 "build".group {
                     "Settings".role {
                         layout {
-                            ":".module {
-                                fileConstraint("root project", check = silent())
-                                "settings.gradle".ktsFile()
-                            }
+                            fileConstraint("root project", check = silent())
+                            "settings.gradle".ktsFile()
                         }
                     }
                 }
@@ -168,32 +163,12 @@ class FileConstraintCoverageSpec : FreeSpec({
             coverage.covers("build.gradle.kts") shouldBe false
         }
 
-        "ルートプロジェクトの module の制約は layout 全体ではなくそのブロックのエントリだけを覆う" {
-            val arch = architecture {
-                "build".group {
-                    "Settings".role {
-                        layout {
-                            "docs" / "*.md".file()
-                            ":".module {
-                                fileConstraint("root project", check = silent())
-                                "settings.gradle".ktsFile()
-                            }
-                        }
-                    }
-                }
-            }
-
-            val coverage = arch.declaredFileConstraints().single().coverage
-            coverage.covers("settings.gradle.kts") shouldBe true
-            coverage.covers("docs/README.md") shouldBe false
-        }
-
         "自分で書いた build.gradle.kts は覆う" {
             val arch = architecture {
                 "build".group {
                     "Scripts".role {
                         layout {
-                            ":core:domain".module {
+                            "core/domain" {
                                 fileConstraint("build script too", check = silent())
                                 "build.gradle".ktsFile()
                             }
@@ -204,46 +179,6 @@ class FileConstraintCoverageSpec : FreeSpec({
 
             arch.declaredFileConstraints().single().coverage
                 .covers("core/domain/build.gradle.kts") shouldBe true
-        }
-    }
-
-    "ワイルドカードモジュール" - {
-        "展開されたモジュールごとに1つずつ、解決済みの実パス付きで宣言される" {
-            val arch = architecture {
-                "feature".group {
-                    "Screen".role {
-                        layout {
-                            ":feature:*".module {
-                                fileConstraint("internal であること", check = silent())
-                                mainSourceSet / KOTLIN_DIRECTORY / "*Screen".ktFile()
-                            }
-                        }
-                    }
-                }
-            }
-
-            val declared = arch.declaredFileConstraints(moduleIndexOf("feature/home", "feature/cart"))
-            declared.map { it.layoutPath } shouldBe listOf("feature/cart", "feature/home")
-            declared.map { it.paths } shouldBe listOf(listOf("feature/cart"), listOf("feature/home"))
-            declared[0].coverage.covers("feature/cart/src/main/kotlin/CartScreen.kt") shouldBe true
-            declared[0].coverage.covers("feature/home/src/main/kotlin/HomeScreen.kt") shouldBe false
-        }
-
-        "1つもマッチしない役割では制約が1つも宣言されず、例外にもならない" {
-            val arch = architecture {
-                "feature".group {
-                    "Screen".role {
-                        layout {
-                            ":feature:*".module {
-                                fileConstraint("internal であること", check = silent())
-                                mainSourceSet / KOTLIN_DIRECTORY / "*Screen".ktFile()
-                            }
-                        }
-                    }
-                }
-            }
-
-            arch.declaredFileConstraints(moduleIndexOf("app")).shouldBeEmpty()
         }
     }
 

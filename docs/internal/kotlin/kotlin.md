@@ -9,7 +9,7 @@
 | private                         | そのファイル・宣言内で private なもの。                                                                                                                                                     |
 | internal                        | そのモジュール内でのみ有効なもの。他モジュールから使われていないものは、`@InternalKatachiApi` を付けて public にせずこちらにする。トップレベル宣言は `.internal` パッケージに置く（下記）。 |
 | public * InternalKatachiApi     | ライブラリの他モジュール（katachi-konsist、Gradle プラグインの生成コード、tool/dokka、リポジトリ内の architecture-test・サンプル）専用。ユーザには触って欲しくない。                        |
-| public * ExperimentalKatachiApi | ユーザに開いているが、形がまだ変わる API。ユーザが自前で katachi を拡張するためのもの（自前の `.module { }` を書くための `expandModulePath` など）もここ。                                  |
+| public * ExperimentalKatachiApi | ユーザに開いているが、形がまだ変わる API。ユーザが自前で katachi を拡張するためのもの（`capture()` や `baseline()` など）もここ。                                  |
 | public                          | ユーザが触ることのできる public な API。 **explicitApi を指定しているため、省略してはいけない。**                                                                                           |
 
 ### 内部実装は `.internal` パッケージに置く

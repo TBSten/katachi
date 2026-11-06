@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.dsl
 
 import io.kotest.assertions.throwables.shouldThrow
@@ -11,7 +9,6 @@ import me.tbsten.katachi.dsl.KatachiCaptureInsideBracketsException
 import me.tbsten.katachi.dsl.KatachiTemplateOnWildcardException
 import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.internal.PathCapture
 import me.tbsten.katachi.dsl.internal.captureValuesOf
 import me.tbsten.katachi.dsl.internal.fillCapturedSegments
@@ -75,26 +72,6 @@ class GlobSyntaxLayoutSpec : FreeSpec({
         }
     }
 
-    "モジュールキー" - {
-        "{..} はモジュール一覧に対して展開する" {
-            val entries = layoutOf(moduleIndexOf("feature/home", "feature/settings", "feature/other")) {
-                ":feature:{home,settings}".module { "A.kt".file() }
-            }
-
-            entries.map { it.path }.filter { it.endsWith("/A.kt") }.sorted() shouldBe
-                listOf("feature/home/A.kt", "feature/settings/A.kt")
-        }
-
-        "[..] と * を組み合わせたキーも展開する" {
-            val entries = layoutOf(moduleIndexOf("core/data", "core/ui", "core/arch")) {
-                ":core:[a-d]*".module { "A.kt".file() }
-            }
-
-            entries.map { it.path }.filter { it.endsWith("/A.kt") }.sorted() shouldBe
-                listOf("core/arch/A.kt", "core/data/A.kt")
-        }
-    }
-
     "capture の埋め込み" {
         val captures = listOf(PathCapture(0, 0, "x", null))
         fillCapturedSegments("*{a,*}", captures) { "v" } shouldBe listOf("v{a,*}")
@@ -117,12 +94,12 @@ class GlobSyntaxLayoutSpec : FreeSpec({
             failure.message.shouldNotBeNull() shouldContain "and write ?, [...] and {...} out"
         }
 
-        "{..} を含むモジュールキーの下の template も同じ例外" {
+        "{..} を含むディレクトリの下の template も同じ例外" {
             shouldThrow<KatachiTemplateOnWildcardException> {
                 architecture {
                     "feature".group {
                         "Screen".role {
-                            layout { ":feature:{home,settings}".module { "A.kt".file().template { "" } } }
+                            layout { "feature/{home,settings}" { "A.kt".file().template { "" } } }
                         }
                     }
                 }.flattenLayout()

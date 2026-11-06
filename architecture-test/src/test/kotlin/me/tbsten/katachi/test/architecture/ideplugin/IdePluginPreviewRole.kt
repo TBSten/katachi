@@ -1,7 +1,6 @@
 package me.tbsten.katachi.test.architecture.ideplugin
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 fun DeclarationContainerScope.idePluginPreview() = "IdePluginPreview".role {

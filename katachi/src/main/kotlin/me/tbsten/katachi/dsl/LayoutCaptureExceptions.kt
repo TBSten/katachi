@@ -136,46 +136,6 @@ public class KatachiCaptureTransformOnMixedTextException internal constructor(
         append("Apply it to the capture alone: \"$fixed\".")
     },
 )
-
-/**
- * A derived capture was written inside a module key: `":feature:${capture("f").camelCase}".module { }`.
- *
- * A module key names modules that exist, and a module's name is read from the project rather
- * than derived from another value. The key's `*` may still be named -- `capture("f")` -- and a
- * level of the path below it may then be derived from that name.
- *
- * ## Example 1: catch a conversion inside a module key
- * ```kt
- * shouldThrow<KatachiCaptureTransformInModuleKeyException> {
- *     architecture {
- *         "ui".group {
- *             "Screen".role {
- *                 layout { ":feature:${capture("f").camelCase}".module { "a.kt".file() } }
- *             }
- *         }
- *     }.flattenLayout()
- * }.name shouldBe "f"
- * ```
- *
- * @property name the capture's name.
- * @property transform the conversion that was written, such as `"camelCase"`.
- * @property moduleKey the key as it was written, each token shown as `${capture("name")}`.
- * @property declaredAt where the key was written.
- */
-@ExperimentalKatachiApi
-public class KatachiCaptureTransformInModuleKeyException internal constructor(
-    public val name: String,
-    public val transform: String,
-    public val moduleKey: String,
-    public val declaredAt: DeclarationSite,
-) : KatachiDeclarationException(
-    message = buildString {
-        appendLine("\"$moduleKey\" at $declaredAt converts a module wildcard.")
-        appendLine("A module key names an existing module, and a module's name is not derived from another value.")
-        append("Write capture(\"$name\") in the key, and put .$transform on a level of the path below it.")
-    },
-)
-
 /**
  * Two `capture(...)` tokens sit next to each other with no literal between them, or one sits
  * next to a plain `*`.

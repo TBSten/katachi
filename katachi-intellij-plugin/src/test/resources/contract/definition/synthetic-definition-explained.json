@@ -6,7 +6,7 @@
   "architecture": {
     "declaredAt": {
       "fileName": "DescribeDefinitionSpecSupport.kt",
-      "line": 179
+      "line": 177
     },
     "files": "wholeTree",
     "baseline": null
@@ -22,7 +22,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "DescribeDefinitionSpecSupport.kt",
-        "line": 181
+        "line": 179
       },
       "layout": [
         {
@@ -33,7 +33,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 183
+            "line": 181
           },
           "modulePath": null,
           "pathInModule": "src",
@@ -54,7 +54,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 183
+            "line": 181
           },
           "modulePath": null,
           "pathInModule": "src/service",
@@ -75,7 +75,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 184
+            "line": 182
           },
           "modulePath": null,
           "pathInModule": "src/service/*.kt",
@@ -96,7 +96,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 185
+            "line": 183
           },
           "modulePath": null,
           "pathInModule": "src/service/*.md",
@@ -118,7 +118,7 @@
           "range": "Subtree",
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 186
+            "line": 184
           },
           "layoutPath": "src/service",
           "anchors": ["src/service"],
@@ -192,7 +192,7 @@
           "range": "Subtree",
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 187
+            "line": 185
           },
           "layoutPath": "src/service",
           "anchors": ["src/service"],
@@ -214,7 +214,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "DescribeDefinitionSpecSupport.kt",
-        "line": 191
+        "line": 189
       },
       "layout": [
         {
@@ -225,7 +225,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 193
+            "line": 191
           },
           "modulePath": null,
           "pathInModule": "src",
@@ -246,7 +246,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 193
+            "line": 191
           },
           "modulePath": null,
           "pathInModule": "src/thrower",
@@ -267,7 +267,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 193
+            "line": 191
           },
           "modulePath": null,
           "pathInModule": "src/thrower/*.kt",
@@ -289,7 +289,7 @@
           "range": "Subtree",
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 195
+            "line": 193
           },
           "layoutPath": null,
           "anchors": ["src/thrower"],
@@ -313,11 +313,11 @@
   "problems": [
     {
       "kind": "ExplanationFailed",
-      "message": "The constraint declared at DescribeDefinitionSpecSupport.kt:195 could not explain its declarations: IllegalStateException: cannot explain Thrower",
+      "message": "The constraint declared at DescribeDefinitionSpecSupport.kt:193 could not explain its declarations: IllegalStateException: cannot explain Thrower",
       "detail": "Thrower",
       "declaredAt": {
         "fileName": "DescribeDefinitionSpecSupport.kt",
-        "line": 84
+        "line": 82
       },
       "exception": "java.lang.IllegalStateException"
     }

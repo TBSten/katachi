@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.check
 
 import io.kotest.assertions.throwables.shouldThrow
@@ -16,12 +14,10 @@ import me.tbsten.katachi.check.UncheckedDirectoryReason
 import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.KatachiUnresolvableModulePatternException
+import me.tbsten.katachi.dsl.gradle.gradle
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
-import me.tbsten.katachi.dsl.gradle.module
-import me.tbsten.katachi.dsl.gradle.wildcards
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.dsl.kotlin.ktsFile
 import me.tbsten.katachi.dsl.pascalCase
 import me.tbsten.katachi.test.dsl.files.failingAt
 import me.tbsten.katachi.test.dsl.files.failingToExistAt
@@ -30,7 +26,8 @@ import me.tbsten.katachi.test.dsl.files.failingToListAt
 /**
  * The search for the project's modules carrying on past a directory it could not read.
  *
- * It runs before the walk and used to catch nothing, so one unreadable subdirectory threw a
+ * The search is reached through `gradle()`, which declares the build script of every module it
+ * finds. It runs before the walk and used to catch nothing, so one unreadable subdirectory threw a
  * raw `IOException` out of `validate()`: no violations, no report, and katachi's own name
  * nowhere in the stack trace. The specs below fix the two halves of the answer — the modules
  * of the sibling subtrees are still found, and the directory that failed is reported.
@@ -41,10 +38,17 @@ import me.tbsten.katachi.test.dsl.files.failingToListAt
  */
 class ModuleDiscoveryFailureSpec : FreeSpec({
     /** Two feature modules and one core module, all found by their build file. */
-    val definition = layoutArchitecture {
-        ":".module { "settings.gradle".ktsFile() }
-        ":core:*".module { }
-        ":feature:*".module { mainSourceSet / kotlin / "${wildcards[0].pascalCase}Screen".ktFile() }
+    val definition = architectureOf {
+        gradle(requireWrapper = false)
+        "app".group {
+            "Screen".role {
+                layout {
+                    "feature" / capture("feature") / mainSourceSet / kotlin /
+                        "${capture("feature").pascalCase}Screen".ktFile()
+                }
+            }
+            "Core".role { layout { "core/*" { } } }
+        }
     }
     val tree = repositoryOf {
         "settings.gradle.kts"()
@@ -57,20 +61,21 @@ class ModuleDiscoveryFailureSpec : FreeSpec({
     }
 
     /**
-     * The same project named module by module.
+     * The same project with one directory named by a role, holding no build file.
      *
-     * A key without a wildcard resolves without the search having found anything, so the walk
-     * keeps looking into `feature/home` however the search went. That is what leaves a failed
-     * search as the only violation of the run.
+     * A plain directory key never asks the search for anything, so the walk keeps looking into
+     * `feature/home` however the search went, and the search asks about every directory whether
+     * or not it turns out to be a module. With nothing inside for `gradle()` to declare, a
+     * failed search is the only violation of the run.
      */
-    val namedDefinition = layoutArchitecture {
-        ":".module { "settings.gradle".ktsFile() }
-        ":feature:home".module { }
+    val namedDefinition = architectureOf {
+        gradle(requireWrapper = false)
+        "app".group { "Home".role { layout { "feature/home" { } } } }
     }
     val namedTree = repositoryOf {
         "settings.gradle.kts"()
         "build.gradle.kts"()
-        "feature" { "home" { "build.gradle.kts"() } }
+        "feature" { "home" { } }
     }
     val homeSettingsFile = "/repo/feature/home/settings.gradle.kts"
 
@@ -94,8 +99,9 @@ class ModuleDiscoveryFailureSpec : FreeSpec({
                 .validate(tree.failingToExistAt("/repo/feature/home/build.gradle.kts") { IOException("cannot read it") })
                 .labels() shouldBe listOf(
                 // `feature/cart` と `core/data` は見つかっているので、そこからは何も出ない。
-                // `feature/home` はモジュールとして数えられなかったので、走査からは未知に見える。
-                "[UnexpectedDirectory] feature/home",
+                // `feature/home` はモジュールとして数えられなかったので、その build.gradle.kts
+                // だけが宣言されていないファイルになる。
+                "[UnexpectedFile] feature/home/build.gradle.kts",
                 "[UncheckedDirectory] feature/home",
             )
         }
@@ -113,8 +119,9 @@ class ModuleDiscoveryFailureSpec : FreeSpec({
             definition
                 .validate(tree.failingToListAt("/repo/feature") { IOException("cannot list it") })
                 .labels() shouldBe listOf(
-                // `core/data` は別のサブツリーなので見つかったまま。
-                "[UnexpectedDirectory] feature",
+                // `core/data` は別のサブツリーなので見つかったまま。`feature` は探索と走査の
+                // 両方が読めなかったので、理由ごとに1件ずつ。
+                "[UncheckedDirectory] feature",
                 "[UncheckedDirectory] feature",
             )
         }
@@ -146,7 +153,7 @@ class ModuleDiscoveryFailureSpec : FreeSpec({
     }
 
     "報告" - {
-        "探索の失敗のブロックはモジュールキーの話をする" {
+        "探索の失敗のブロックは gradle() の話をする" {
             namedDefinition
                 .validate(namedTree.failingToExistAt(homeSettingsFile) { IOException("cannot read it") })
                 .report() shouldBe
@@ -154,7 +161,7 @@ class ModuleDiscoveryFailureSpec : FreeSpec({
                 Katachi check failed: 1 violation (Failed: 1)
 
                 [UncheckedDirectory] feature/home
-                  Katachi failed while looking for modules here, so a module key may have expanded to fewer modules than the project has.
+                  Katachi failed while looking for modules here, so gradle() may have declared the build scripts of fewer modules than the project has.
                   Cause: java.io.IOException: cannot read it
 
                   How to fix:
@@ -170,7 +177,7 @@ class ModuleDiscoveryFailureSpec : FreeSpec({
                 .validate(tree.failingToListAt("/repo/feature") { IOException("cannot list it") })
                 .report()
                 .lines()
-                .last() shouldBe "1 directory could not be checked."
+                .last() shouldBe "2 directories could not be checked."
         }
 
         "打ち切られてもその行は消えない" {
@@ -178,7 +185,7 @@ class ModuleDiscoveryFailureSpec : FreeSpec({
                 .validate(tree.failingToListAt("/repo/feature") { IOException("cannot list it") })
                 .report(maxViolations = 1)
                 .lines()
-                .last() shouldBe "1 directory could not be checked."
+                .last() shouldBe "2 directories could not be checked."
         }
     }
 

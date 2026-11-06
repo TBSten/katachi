@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.dsl
 
 import io.kotest.core.spec.style.FreeSpec
@@ -57,9 +55,9 @@ class LayoutUtilityLayerSpec : FreeSpec({
             val modules = moduleIndexOf("feature/home", "feature/settings")
 
             layoutOf(modules) {
-                ":feature:*".module { featureSources() / "Screen".ktFile() }
+                "feature/*" { featureSources() / "Screen".ktFile() }
             }.shape() shouldBe layoutOf(modules) {
-                ":feature:*".module { mainSourceSet / kotlin / "Screen".ktFile() }
+                "feature/*" { mainSourceSet / kotlin / "Screen".ktFile() }
             }.shape()
         }
     }

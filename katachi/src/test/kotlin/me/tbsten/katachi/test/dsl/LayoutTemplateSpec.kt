@@ -1,8 +1,5 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.dsl
 
-import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -18,7 +15,6 @@ import me.tbsten.katachi.dsl.KatachiMissingTemplateIdException
 import me.tbsten.katachi.dsl.KatachiTemplateOnWildcardException
 import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.internal.Template
 import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -150,22 +146,6 @@ class LayoutTemplateSpec : FreeSpec({
             thrown.id shouldBe "x"
         }
 
-        "モジュールのワイルドカードの展開で並ぶ、同じ LayoutTemplate インスタンスの id 重複は許される" {
-            val index = moduleIndexOf("feature/home", "feature/settings")
-
-            val entries = shouldNotThrowAny {
-                layoutOf(index) {
-                    ":feature:*".module { "Screen".file().template(id = "screen") { "" } }
-                }
-            }
-
-            // home と settings の2モジュールに展開されるが、同じ .template { } 呼び出し
-            // （＝同じ LayoutTemplate インスタンス）が両方に載っているだけなので通る。
-            val templates = entries.mapNotNull { it[Template] }
-            templates.size shouldBe 2
-            templates.distinct().size shouldBe 1
-        }
-
         "ループで作った宣言は id をループ変数から作れる（仕様の節4）" {
             val entries = layoutOf {
                 listOf("User", "Post").forEach { name ->
@@ -194,17 +174,10 @@ class LayoutTemplateSpec : FreeSpec({
             entries.single { it.kind == LayoutEntryKind.File }[Template].shouldNotBeNull()
         }
 
-        "名前の無いモジュールの * への .template も KatachiTemplateOnWildcardException" {
+        "名前の無いディレクトリの * の下の .template も KatachiTemplateOnWildcardException" {
             shouldThrow<KatachiTemplateOnWildcardException> {
-                layoutOf { ":feature:*".module { "A".file().template { "" } } }
+                layoutOf { "feature/*" { "A".file().template { "" } } }
             }
-        }
-
-        "モジュールの * に capture で名前を付ければ通る" {
-            val entries = layoutOf {
-                ":feature:${capture("feature")}".module { "A".file().template { "" } }
-            }
-            entries.single { it.path == "feature/*/A" }[Template].shouldNotBeNull()
         }
 
         "エスケープしたリテラルの \\* は名前の無いワイルドカードに数えない" {

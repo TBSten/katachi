@@ -1,9 +1,7 @@
-@file:Suppress("DEPRECATION")
 package me.tbsten.katachi.test.template
 
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.template
 
 /**
@@ -83,7 +81,7 @@ internal fun syntheticTemplateSetArchitecture(): Architecture = architecture {
     "ui".group {
         "Screen".role {
             layout {
-                ":feature:${capture("feature")}".module {
+                "feature/${capture("feature")}" {
                     "src/main/kotlin" / "${capture("name")}Page.kt".file().template {
                         "fun ${captureValue("name")}Page() {}\n"
                     }

@@ -1,17 +1,13 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.test.template
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.template.KatachiAmbiguousTemplateException
 import me.tbsten.katachi.template.KatachiUnknownTemplateException
 import me.tbsten.katachi.test.check.architectureOf
-import me.tbsten.katachi.test.dsl.moduleIndexOf
 
 /**
  * `--arg template=` resolution: how a specifier is read against the table of declared templates
@@ -182,20 +178,5 @@ class TemplateSpecifierSpec : FreeSpec({
         arch.generatedPaths("data.Repository.settings") shouldContainExactly listOf("settings/Repository.kt")
         arch.generated(listOf("data.Repository.user", "data.Repository.settings")).keys.sorted() shouldContainExactly
             listOf("settings/Repository.kt", "user/Repository.kt")
-    }
-
-    "モジュールのワイルドカードの展開は、id が同じなら引き続き1つのテンプレートにまとまる" {
-        val arch = architectureOf {
-            "feature".group {
-                "Screen".role {
-                    layout {
-                        ":feature:${capture("feature")}".module { "Screen.kt".file().template { "// screen" } }
-                    }
-                }
-            }
-        }
-        val features = { moduleIndexOf("feature/home", "feature/settings") }
-        arch.generated("feature.Screen", mapOf("feature" to "home"), features).keys.sorted() shouldContainExactly
-            listOf("feature/home/Screen.kt")
     }
 })

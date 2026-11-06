@@ -6,7 +6,7 @@
   "architecture": {
     "declaredAt": {
       "fileName": "DescribeDefinitionSpecSupport.kt",
-      "line": 147
+      "line": 145
     },
     "files": "wholeTree",
     "baseline": null
@@ -21,7 +21,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "DescribeDefinitionSpecSupport.kt",
-        "line": 149
+        "line": 147
       }
     }
   ],
@@ -35,7 +35,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "DescribeDefinitionSpecSupport.kt",
-        "line": 150
+        "line": 148
       },
       "layout": [
         {
@@ -46,7 +46,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 152
+            "line": 150
           },
           "modulePath": null,
           "pathInModule": "feature",
@@ -61,93 +61,109 @@
         },
         {
           "index": 1,
-          "path": "feature/home",
+          "path": "feature/*",
           "kind": "Directory",
           "required": false,
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 152
+            "line": 150
           },
-          "modulePath": ":feature:home",
-          "pathInModule": "",
-          "captures": [],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
+          "modulePath": null,
+          "pathInModule": "feature/*",
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
+          "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
           "matchedCount": null,
           "matchedFilesTruncated": false,
           "synthetic": false,
-          "place": true
+          "place": false
         },
         {
           "index": 2,
-          "path": "feature/home/build",
-          "kind": "Ignore",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 152
-          },
-          "modulePath": ":feature:home",
-          "pathInModule": "build",
-          "captures": [],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
-          "template": null,
-          "matchedFiles": [],
-          "matchedCount": null,
-          "matchedFilesTruncated": false,
-          "synthetic": true,
-          "place": false
-        },
-        {
-          "index": 3,
-          "path": "feature/home/build.gradle.kts",
-          "kind": "File",
-          "required": true,
-          "description": null,
-          "declaredAt": {
-            "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 152
-          },
-          "modulePath": ":feature:home",
-          "pathInModule": "build.gradle.kts",
-          "captures": [],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
-          "template": null,
-          "matchedFiles": ["feature/home/build.gradle.kts"],
-          "matchedCount": 1,
-          "matchedFilesTruncated": false,
-          "synthetic": true,
-          "place": false
-        },
-        {
-          "index": 4,
-          "path": "feature/home/src",
+          "path": "feature/*/src",
           "kind": "Directory",
           "required": false,
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 153
+            "line": 151
           },
-          "modulePath": ":feature:home",
-          "pathInModule": "src",
-          "captures": [],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
+          "modulePath": null,
+          "pathInModule": "feature/*/src",
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "feature/*/src/main",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "DescribeDefinitionSpecSupport.kt",
+            "line": 151
           },
+          "modulePath": null,
+          "pathInModule": "feature/*/src/main",
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "feature/*/src/main/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "DescribeDefinitionSpecSupport.kt",
+            "line": 151
+          },
+          "modulePath": null,
+          "pathInModule": "feature/*/src/main/kotlin",
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
+          "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
           "matchedCount": null,
@@ -157,65 +173,23 @@
         },
         {
           "index": 5,
-          "path": "feature/home/src/main",
-          "kind": "Directory",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 153
-          },
-          "modulePath": ":feature:home",
-          "pathInModule": "src/main",
-          "captures": [],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
-          "template": null,
-          "matchedFiles": [],
-          "matchedCount": null,
-          "matchedFilesTruncated": false,
-          "synthetic": false,
-          "place": false
-        },
-        {
-          "index": 6,
-          "path": "feature/home/src/main/kotlin",
-          "kind": "Directory",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 153
-          },
-          "modulePath": ":feature:home",
-          "pathInModule": "src/main/kotlin",
-          "captures": [],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
-          "template": null,
-          "matchedFiles": [],
-          "matchedCount": null,
-          "matchedFilesTruncated": false,
-          "synthetic": false,
-          "place": false
-        },
-        {
-          "index": 7,
-          "path": "feature/home/src/main/kotlin/*Screen.kt",
+          "path": "feature/*/src/main/kotlin/*Screen.kt",
           "kind": "File",
           "required": false,
           "description": null,
           "declaredAt": {
             "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 153
+            "line": 151
           },
-          "modulePath": ":feature:home",
-          "pathInModule": "src/main/kotlin/*Screen.kt",
+          "modulePath": null,
+          "pathInModule": "feature/*/src/main/kotlin/*Screen.kt",
           "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            },
             {
               "name": "name",
               "segmentIndex": 5,
@@ -223,204 +197,18 @@
               "transform": null
             }
           ],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
+          "moduleCapture": null,
           "template": {
             "specifier": "feature.Screen.screen",
             "id": "screen",
             "title": "Screen",
             "declaredAt": {
               "fileName": "DescribeDefinitionSpecSupport.kt",
-              "line": 153
+              "line": 151
             }
           },
-          "matchedFiles": ["feature/home/src/main/kotlin/HomeScreen.kt"],
-          "matchedCount": 1,
-          "matchedFilesTruncated": false,
-          "synthetic": false,
-          "place": false
-        },
-        {
-          "index": 8,
-          "path": "feature/settings",
-          "kind": "Directory",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 152
-          },
-          "modulePath": ":feature:settings",
-          "pathInModule": "",
-          "captures": [],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
-          "template": null,
-          "matchedFiles": [],
-          "matchedCount": null,
-          "matchedFilesTruncated": false,
-          "synthetic": false,
-          "place": true
-        },
-        {
-          "index": 9,
-          "path": "feature/settings/build",
-          "kind": "Ignore",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 152
-          },
-          "modulePath": ":feature:settings",
-          "pathInModule": "build",
-          "captures": [],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
-          "template": null,
-          "matchedFiles": [],
-          "matchedCount": null,
-          "matchedFilesTruncated": false,
-          "synthetic": true,
-          "place": false
-        },
-        {
-          "index": 10,
-          "path": "feature/settings/build.gradle.kts",
-          "kind": "File",
-          "required": true,
-          "description": null,
-          "declaredAt": {
-            "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 152
-          },
-          "modulePath": ":feature:settings",
-          "pathInModule": "build.gradle.kts",
-          "captures": [],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
-          "template": null,
-          "matchedFiles": ["feature/settings/build.gradle.kts"],
-          "matchedCount": 1,
-          "matchedFilesTruncated": false,
-          "synthetic": true,
-          "place": false
-        },
-        {
-          "index": 11,
-          "path": "feature/settings/src",
-          "kind": "Directory",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 153
-          },
-          "modulePath": ":feature:settings",
-          "pathInModule": "src",
-          "captures": [],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
-          "template": null,
-          "matchedFiles": [],
-          "matchedCount": null,
-          "matchedFilesTruncated": false,
-          "synthetic": false,
-          "place": false
-        },
-        {
-          "index": 12,
-          "path": "feature/settings/src/main",
-          "kind": "Directory",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 153
-          },
-          "modulePath": ":feature:settings",
-          "pathInModule": "src/main",
-          "captures": [],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
-          "template": null,
-          "matchedFiles": [],
-          "matchedCount": null,
-          "matchedFilesTruncated": false,
-          "synthetic": false,
-          "place": false
-        },
-        {
-          "index": 13,
-          "path": "feature/settings/src/main/kotlin",
-          "kind": "Directory",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 153
-          },
-          "modulePath": ":feature:settings",
-          "pathInModule": "src/main/kotlin",
-          "captures": [],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
-          "template": null,
-          "matchedFiles": [],
-          "matchedCount": null,
-          "matchedFilesTruncated": false,
-          "synthetic": false,
-          "place": false
-        },
-        {
-          "index": 14,
-          "path": "feature/settings/src/main/kotlin/*Screen.kt",
-          "kind": "File",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "DescribeDefinitionSpecSupport.kt",
-            "line": 153
-          },
-          "modulePath": ":feature:settings",
-          "pathInModule": "src/main/kotlin/*Screen.kt",
-          "captures": [
-            {
-              "name": "name",
-              "segmentIndex": 5,
-              "wildcardIndex": 0,
-              "transform": null
-            }
-          ],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
-          "template": {
-            "specifier": "feature.Screen.screen",
-            "id": "screen",
-            "title": "Screen",
-            "declaredAt": {
-              "fileName": "DescribeDefinitionSpecSupport.kt",
-              "line": 153
-            }
-          },
-          "matchedFiles": ["feature/settings/src/main/kotlin/SettingsScreen.kt"],
-          "matchedCount": 1,
+          "matchedFiles": ["feature/home/src/main/kotlin/HomeScreen.kt", "feature/settings/src/main/kotlin/SettingsScreen.kt"],
+          "matchedCount": 2,
           "matchedFilesTruncated": false,
           "synthetic": false,
           "place": false
@@ -441,10 +229,10 @@
         "captures": [
           {
             "name": "feature",
-            "kind": "ModuleCapture",
-            "pattern": ":feature:*",
-            "position": 0,
-            "segment": ":feature:${feature}",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/*Screen.kt",
+            "position": 1,
+            "segment": "${feature}",
             "wildcardIndex": 0,
             "transform": null
           },
@@ -473,7 +261,7 @@
           {
             "pattern": "feature/${feature}/src/main/kotlin/${name}Screen.kt",
             "fileName": "${name}Screen.kt",
-            "path": null,
+            "path": "feature/${feature}/src/main/kotlin/${name}Screen.kt",
             "captures": ["feature", "name"],
             "parameters": [],
             "content": "fun ${name}Screen() {}\n"
@@ -484,10 +272,10 @@
         "captures": [
           {
             "name": "feature",
-            "kind": "ModuleCapture",
-            "pattern": ":feature:*",
-            "position": 0,
-            "segment": ":feature:${feature}",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/*Screen.kt",
+            "position": 1,
+            "segment": "${feature}",
             "wildcardIndex": 0,
             "transform": null
           },
@@ -503,27 +291,7 @@
         ]
       }
     ],
-    "modulePlacements": [
-      {
-        "template": "feature.Screen.screen",
-        "modulePattern": ":feature:*",
-        "captureNames": ["feature"],
-        "modules": [
-          {
-            "values": ["home"],
-            "modulePath": ":feature:home",
-            "directory": "feature/home",
-            "path": "feature/home/src/main/kotlin/${name}Screen.kt"
-          },
-          {
-            "values": ["settings"],
-            "modulePath": ":feature:settings",
-            "directory": "feature/settings",
-            "path": "feature/settings/src/main/kotlin/${name}Screen.kt"
-          }
-        ]
-      }
-    ],
+    "modulePlacements": [],
     "templateSets": [],
     "templateSetDetails": []
   },

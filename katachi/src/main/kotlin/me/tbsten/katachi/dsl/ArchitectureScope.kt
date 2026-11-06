@@ -2,7 +2,6 @@ package me.tbsten.katachi.dsl
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.internal.DeclaredNames
-import me.tbsten.katachi.dsl.internal.MODULE_RESOLVER_DEPRECATION
 import me.tbsten.katachi.dsl.internal.MetadataBuilder
 import me.tbsten.katachi.dsl.internal.TemplateSetDeclaration
 import me.tbsten.katachi.dsl.internal.captureDeclarationSite
@@ -59,26 +58,6 @@ public sealed interface ArchitectureScope : DeclarationContainerScope {
     public var files: FileSelection
 
     /**
-     * How a module path written in a `layout { }` becomes a directory. Defaults to
-     * [ModuleResolver.Conventional].
-     *
-     * **Deprecated** since 0.3, removed in 0.5, with `.module { }`: only module keys are
-     * resolved through it. Write the directory a module lives in, in the layout.
-     *
-     * ## Example 1: Write the directory a module lives in
-     * ```kt
-     * // Before (0.2):
-     * //   moduleResolver = ModuleResolver { module -> if (module.value == ":app") "apps/android" else ... }
-     * //   layout { ":app".module { "src/main/AndroidManifest.xml".file() } }
-     * val arch = architecture {
-     *   "App".role { layout { "apps/android/src/main/AndroidManifest.xml".file() } }
-     * }
-     * ```
-     */
-    @Deprecated(message = MODULE_RESOLVER_DEPRECATION, level = DeprecationLevel.WARNING)
-    public var moduleResolver: ModuleResolver
-
-    /**
      * Holds back the violations recorded in the baseline file at [path], relative to the project
      * root. Without a call, nothing is held back. See [Baseline].
      *
@@ -119,9 +98,6 @@ internal class ArchitectureScopeImpl : ArchitectureScope {
 
     override var files: FileSelection = FileSelection.GitTracked
 
-    @Deprecated(message = MODULE_RESOLVER_DEPRECATION, level = DeprecationLevel.WARNING)
-    override var moduleResolver: ModuleResolver = ModuleResolver.Conventional
-
     private var baseline: Baseline? = null
 
     override fun baseline(path: String) {
@@ -160,12 +136,11 @@ internal class ArchitectureScopeImpl : ArchitectureScope {
         )
     }
 
-    @Suppress("DEPRECATION")
     fun build(declaredAt: DeclarationSite = DeclarationSite.Unknown): Architecture = Architecture(
         groups = groups.toList(),
         roles = roles.toList(),
         files = files,
-        moduleResolver = moduleResolver,
+        moduleResolver = ModuleResolver.Conventional,
         metadata = metadata.build(),
         baseline = baseline,
         declaredAt = declaredAt,

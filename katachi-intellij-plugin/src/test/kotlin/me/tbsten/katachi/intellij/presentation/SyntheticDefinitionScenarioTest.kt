@@ -36,7 +36,7 @@ class SyntheticDefinitionScenarioTest {
         assertEquals(listOf("a", "a › b", "a › b › c", "other"), s.groupTitles())
         assertEquals(RowMarker.Blocked, s.row(s.id("a.b.Middle")).marker)
         assertEquals(RowMarker.Blocked, s.row(s.id("other.Broken")).marker)
-        // Below a module capture, but katachi says where each module puts it: nothing to warn about.
+        // Below a path capture whose path is spelled out: nothing to warn about.
         assertEquals(RowMarker.None, s.row(s.id("other.Wildcard")).marker)
         assertTrue(s.rowIds().all { s.row(it).trailing.isEmpty() })
     }
@@ -114,7 +114,7 @@ class SyntheticDefinitionScenarioTest {
     @Test
     fun `モジュールのcaptureに今あるモジュールを入れると生成先が決まり生成できる`() = runBlocking {
         val s = ScenarioHarness(this)
-        s.loadJson = ContractFixtures.json("synthetic-structure")
+        s.loadJson = ContractFixtures.json(MODULE_CAPTURE)
         s.open()
         val wildcard = s.id("other.Wildcard")
         s.check(wildcard)
@@ -133,7 +133,7 @@ class SyntheticDefinitionScenarioTest {
     @Test
     fun `モジュールのcaptureに無いモジュールを入れると生成できず今あるモジュールを示す`() = runBlocking {
         val s = ScenarioHarness(this)
-        s.loadJson = ContractFixtures.json("synthetic-structure")
+        s.loadJson = ContractFixtures.json(MODULE_CAPTURE)
         s.open()
         val wildcard = s.id("other.Wildcard")
         s.check(wildcard)
@@ -149,7 +149,7 @@ class SyntheticDefinitionScenarioTest {
     @Test
     fun `モジュールごとの生成先を書かない古いkatachiではモジュールのcaptureの下は入力しても生成できずその理由を出す`() = runBlocking {
         val s = ScenarioHarness(this)
-        s.loadJson = ContractFixtures.json("synthetic-structure").withoutModulePlacements()
+        s.loadJson = ContractFixtures.json(MODULE_CAPTURE).withoutModulePlacements()
         s.open()
         s.check(s.id("other.Wildcard"))
         // "feature" is the module's own capture -- required like any other field, and filling it
@@ -202,6 +202,12 @@ class SyntheticDefinitionScenarioTest {
         assertEquals(listOf("1", "2"), s.katachi.runs.map { it["count"] })
     }
 }
+
+/**
+ * `synthetic-structure.json` as katachi 0.3 wrote it, when `other.Wildcard` was below `":feature:*".module { }`:
+ * kept by hand since katachi 0.4 removed `.module { }`, so that a module capture stays covered.
+ */
+private const val MODULE_CAPTURE: String = "handwritten-module-capture"
 
 /** [this] JSON as a katachi from before `modulePlacements` writes it: the key dropped. */
 private fun String.withoutModulePlacements(): String {

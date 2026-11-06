@@ -3,7 +3,6 @@ package me.tbsten.katachi.test.architecture.ideplugin
 import com.lemonappdev.konsist.api.declaration.KoFileDeclaration
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.LayoutScope
-import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 

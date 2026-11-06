@@ -25,7 +25,7 @@ import org.openjdk.jmh.annotations.Warmup
 
 /**
  * Evaluating every `layout { }` block of a generated definition and flattening it, with
- * `":modules:*".module { }` expanded against the project's modules.
+ * `"modules" / "*" { }` expanded against the project's modules.
  *
  * `flattenLayout` is the `@InternalKatachiApi` face of the evaluation the check runs first
  * (`evaluateLayout`, which also keeps the file constraints). Every DSL call records its

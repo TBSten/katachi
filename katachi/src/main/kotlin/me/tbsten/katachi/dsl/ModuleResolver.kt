@@ -29,21 +29,15 @@ public class KatachiUnresolvableModulePatternException internal constructor(
 /**
  * Turns a Gradle module path into the directory that holds it.
  *
- * The default, [Conventional], replaces `:` with `/`, which is right for every project that
- * has not customised `projectDir`. A build that has customised it replaces the resolver.
- * The resolver is not asked which modules exist: katachi finds modules by looking for a
- * `build.gradle.kts` or `build.gradle` in the tree, never by reading Gradle.
+ * [Conventional] replaces `:` with `/`, which is right for every project that has not
+ * customised `projectDir`. The resolver is not asked which modules exist: katachi finds modules
+ * by looking for a `build.gradle.kts` or `build.gradle` in the tree, never by reading Gradle.
  *
- * Leaves the public API together with `.module { }` in katachi 0.5.
+ * Since `.module { }` was removed, `architecture { }` no longer takes a resolver of the
+ * project's own: [me.tbsten.katachi.dsl.Architecture.moduleResolver] is always [Conventional].
  *
- * ## Example 1: place a module at a non-conventional directory
+ * ## Example 1: resolve a module path by convention
  * ```kt
- * val projectArchitecture = architecture {
- *   moduleResolver = ModuleResolver { module ->
- *     if (module.value == ":app") "apps/android" else module.segments.joinToString("/")
- *   }
- * }
- *
  * ModuleResolver.Conventional.directoryOf(ModulePath.of(":core:data")) shouldBe "core/data"
  * ModuleResolver.Conventional.directoryOf(ModulePath.ROOT) shouldBe "" // the project root
  * ```
@@ -62,10 +56,7 @@ public fun interface ModuleResolver {
      *
      * ## Example 1: name the default resolver explicitly
      * ```kt
-     * val projectArchitecture = architecture {
-     *     moduleResolver = ModuleResolver.Conventional
-     *     "domain".group { "UseCase".role { } }
-     * }
+     * val index = moduleIndex(fileSystem, projectRoot, ModuleResolver.Conventional)
      * ```
      */
     public companion object {

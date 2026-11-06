@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package me.tbsten.katachi.benchmark.realproject
 
 import me.tbsten.katachi.dsl.Architecture
@@ -7,7 +5,6 @@ import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gitTracked
 import me.tbsten.katachi.dsl.gradle.gradle
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 
@@ -32,34 +29,34 @@ internal fun nowInAndroidArchitecture(): Architecture = architecture {
         "FeatureApi".role {
             kotlinConstraint()
             layout {
-                ":feature:*:api".module { "src" / "*" / "kotlin" / "**" / "*".ktFile() }
+                "feature/*/api" { "src" / "*" / "kotlin" / "**" / "*".ktFile() }
             }
         }
         "FeatureImpl".role {
             kotlinConstraint()
             layout {
-                ":feature:*:impl".module { "src" / "*" / "kotlin" / "**" / "*".ktFile() }
+                "feature/*/impl" { "src" / "*" / "kotlin" / "**" / "*".ktFile() }
             }
         }
         "Core".role {
             kotlinConstraint()
             layout {
-                ":core:*".module { "src" / "*" / "kotlin" / "**" / "*".ktFile() }
+                "core/*" { "src" / "*" / "kotlin" / "**" / "*".ktFile() }
             }
         }
         "App".role {
             kotlinConstraint()
             layout {
-                ":app".module { "src" / "*" / "kotlin" / "**" / "*".ktFile() }
-                ":app-nia-catalog".module { "src" / "*" / "kotlin" / "**" / "*".ktFile() }
-                ":sync:*".module { "src" / "*" / "kotlin" / "**" / "*".ktFile() }
-                ":benchmarks".module { "src" / "*" / "kotlin" / "**" / "*".ktFile() }
-                ":lint".module { "src" / "*" / "kotlin" / "**" / "*".ktFile() }
+                "app" { "src" / "*" / "kotlin" / "**" / "*".ktFile() }
+                "app-nia-catalog" { "src" / "*" / "kotlin" / "**" / "*".ktFile() }
+                "sync/*" { "src" / "*" / "kotlin" / "**" / "*".ktFile() }
+                "benchmarks" { "src" / "*" / "kotlin" / "**" / "*".ktFile() }
+                "lint" { "src" / "*" / "kotlin" / "**" / "*".ktFile() }
             }
         }
         "AndroidResource".role {
             layout {
-                ":**".module {
+                "**" {
                     "src" / "*" / "res" / "**" / "*".file()
                     "src" / "*" / "AndroidManifest.xml".file()
                 }
@@ -67,7 +64,7 @@ internal fun nowInAndroidArchitecture(): Architecture = architecture {
         }
         "Screenshot".role {
             layout {
-                ":**".module { "src" / "*" / "screenshots" / "**" / "*.png".file() }
+                "**" { "src" / "*" / "screenshots" / "**" / "*.png".file() }
             }
         }
         "BuildLogic".role {

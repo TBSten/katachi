@@ -5,10 +5,7 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import kotlin.random.Random
 import me.tbsten.katachi.check.Violation
-import me.tbsten.katachi.check.internal.moduleIndex
 import me.tbsten.katachi.check.validate
-import me.tbsten.katachi.dsl.ModuleResolver
-import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.test.check.layoutArchitecture
 import me.tbsten.katachi.test.check.repositoryOf
 import me.tbsten.katachi.test.dsl.files.FakeFileSystem
@@ -36,31 +33,25 @@ private fun Random.filesFor(nodes: List<RNode>): Set<String> {
         is RSeg.Capture -> listOf(DIRECTORY_VALUES.random(this))
     }
 
-    fun fileName(pattern: String, moduleValue: String?): String = when (pattern) {
+    fun fileName(pattern: String): String = when (pattern) {
         "*" -> listOf("Stray.txt", "Home.kt").random(this)
-        else -> pattern.replace("{W}", moduleValue ?: "x").replace("*", listOf("", "Home", "Foo").random(this))
+        else -> pattern.replace("*", listOf("", "Home", "Foo").random(this))
     }
 
-    fun walk(list: List<RNode>, prefix: List<String>, moduleValue: String?) {
+    fun walk(list: List<RNode>, prefix: List<String>) {
         for (node in list) {
             when (node) {
                 is RNode.Dir -> repeat(nextInt(0, 3)) {
-                    walk(node.children, prefix + node.segs.flatMap(::concretize), moduleValue)
+                    walk(node.children, prefix + node.segs.flatMap(::concretize))
                 }
 
                 is RNode.File -> repeat(nextInt(0, 3)) {
-                    files += (prefix + node.dirs.flatMap(::concretize) + fileName(node.name, moduleValue)).joinToString("/")
-                }
-
-                is RNode.Module -> repeat(nextInt(0, 3)) {
-                    val value = DIRECTORY_VALUES.random(this)
-                    files += "feature/$value/build.gradle.kts"
-                    walk(node.children, listOf("feature", value), value)
+                    files += (prefix + node.dirs.flatMap(::concretize) + fileName(node.name)).joinToString("/")
                 }
             }
         }
     }
-    walk(nodes, emptyList(), null)
+    walk(nodes, emptyList())
     // Files no declaration asked for, at depths the layout may or may not reach.
     repeat(nextInt(0, 5)) {
         val directories = List(nextInt(0, 4)) { (LITERAL_DIRECTORIES + DIRECTORY_VALUES).random(this) }
@@ -77,9 +68,6 @@ private fun treeOf(files: Set<String>): FakeFileSystem = repositoryOf {
 private fun List<Violation>.reported(): List<String> =
     map { "${it.kind} ${it.severity} [${it.label}] ${it.path} ${it.details}" }.sorted()
 
-/** What a `*` a module key named reads as without the modules: `<feature>`, `<picked>` and so on. */
-private val NAMED_PLACEHOLDER = Regex("<[A-Za-z][A-Za-z0-9_-]*>")
-
 /** A result's value, or the exception's class when it failed: two spellings must fail the same way. */
 private fun <T> outcome(block: () -> T): Any = runCatching(block).fold({ it as Any }, { "threw ${it::class.qualifiedName}" })
 
@@ -88,15 +76,9 @@ private fun checkSame(trial: Trial) {
     val named: me.tbsten.katachi.dsl.LayoutScope.() -> Unit = { declare(trial.layout, named = true) }
     val plain: me.tbsten.katachi.dsl.LayoutScope.() -> Unit = { declare(trial.layout, named = false) }
     val tree = treeOf(trial.files)
-    val index = moduleIndex(tree, FsPath.of("/repo"), ModuleResolver.Conventional)
 
     val comparisons = listOf(
-        // Without the modules, a named `*` of a module key reads as `<its name>` rather than
-        // `<name>` -- a placeholder only, the one difference naming is meant to make there.
-        "flattened (unresolved index)" to { f: me.tbsten.katachi.dsl.LayoutScope.() -> Unit ->
-            outcome { layoutOf(f).shape().map { it.replace(NAMED_PLACEHOLDER, "<name>") } }
-        },
-        "flattened (the tree's modules)" to { f: me.tbsten.katachi.dsl.LayoutScope.() -> Unit -> outcome { layoutOf(index, f).shape() } },
+        "flattened" to { f: me.tbsten.katachi.dsl.LayoutScope.() -> Unit -> outcome { layoutOf(f).shape() } },
         "violations" to { f: me.tbsten.katachi.dsl.LayoutScope.() -> Unit ->
             outcome { layoutArchitecture(block = f).validate(tree).reported() }
         },
@@ -118,17 +100,15 @@ private fun Trial.describe(): String = buildString {
  * reads: the flattened entries (as [shape] shows them) and the violations over a fake tree are
  * the same, line for line.
  *
- * Layouts are drawn at random -- nested blocks, `/` chains, `*`, `**`, partial wildcards, file
- * globs and a `":feature:*"` module whose `*` is itself one of the places that can be named --
- * and the tree holds concretized copies of the declarations plus files nothing declares. A
- * counterexample is shrunk before it is reported.
+ * Layouts are drawn at random -- nested blocks, `/` chains, `*`, `**`, partial wildcards and file
+ * globs -- and the tree holds concretized copies of the declarations plus files nothing declares.
+ * A counterexample is shrunk before it is reported.
  */
 class LayoutCapturePropertySpec : FreeSpec({
     "任意の1つの * を capture に置き換えても、平坦化の結果と検査の違反の列は変わらない" {
         var tried = 0
         var bothThrew = 0
         var withViolations = 0
-        var moduleNamed = 0
         for (i in 0 until ITERATIONS) {
             val seed = FIRST_SEED + i
             val random = Random(seed)
@@ -139,7 +119,6 @@ class LayoutCapturePropertySpec : FreeSpec({
             val trial = Trial(layout, random.filesFor(layout))
             tried++
             if (runCatching { layoutOf { declare(layout, named = false) } }.isFailure) bothThrew++
-            if (layout.any { it is RNode.Module && it.chosen }) moduleNamed++
             val violations = runCatching { layoutArchitecture { declare(layout, named = false) }.validate(treeOf(trial.files)) }
             if (violations.getOrNull().orEmpty().isNotEmpty()) withViolations++
 
@@ -159,7 +138,7 @@ class LayoutCapturePropertySpec : FreeSpec({
         }
         println(
             "LayoutCapturePropertySpec: $tried layouts tried ($bothThrew rejected by the DSL in both spellings, " +
-                "$withViolations with violations, $moduleNamed naming the module's *)",
+                "$withViolations with violations)",
         )
         tried shouldBeGreaterThan ITERATIONS / 2
         // A property over trees that never violate anything would say nothing about the check.

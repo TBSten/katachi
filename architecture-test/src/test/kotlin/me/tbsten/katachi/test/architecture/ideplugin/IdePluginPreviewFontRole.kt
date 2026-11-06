@@ -1,7 +1,6 @@
 package me.tbsten.katachi.test.architecture.ideplugin
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.gradle.div
 
 fun DeclarationContainerScope.idePluginPreviewFont() = "IdePluginPreviewFont".role {
     title = "IDE プラグインのプレビューの日本語フォント"

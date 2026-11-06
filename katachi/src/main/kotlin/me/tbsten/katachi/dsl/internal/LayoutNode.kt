@@ -34,9 +34,6 @@ internal class LayoutNode(
     // Flattening hands it down the subtree so an entry knows its module without parsing the path back.
     var modulePath: String? = null
 
-    // The strategy is already spelled out level by level; this mark is the only trace left for documentation.
-    var modulePackage: Boolean = false
-
     // segment already has tokens replaced by `*`; this is the way back to which `*` a `--arg` fills and what a
     // bound name is read by.
     var captureSegment: CaptureSegment? = null
@@ -90,15 +87,6 @@ internal class Chain(val top: LayoutNode, val leaf: LayoutNode)
 internal fun LayoutDirectory.markSynthetic(): LayoutDirectory = also { markSynthetic(top, leaf) }
 
 internal fun LayoutFile.markSynthetic(): LayoutFile = also { markSynthetic(top, leaf) }
-
-internal fun LayoutDirectory.markModulePackage(): LayoutDirectory = also {
-    var current: LayoutNode? = leaf
-    while (current != null) {
-        current.modulePackage = true
-        if (current === top) return@also
-        current = current.parent
-    }
-}
 
 private fun markSynthetic(top: LayoutNode, leaf: LayoutNode) {
     var current: LayoutNode? = leaf

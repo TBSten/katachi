@@ -6,7 +6,7 @@
   "architecture": {
     "declaredAt": {
       "fileName": "IdePluginSyntheticSpecSupport.kt",
-      "line": 53
+      "line": 51
     },
     "files": "gitTracked",
     "baseline": null
@@ -21,7 +21,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "IdePluginSyntheticSpecSupport.kt",
-        "line": 71
+        "line": 69
       }
     },
     {
@@ -33,7 +33,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "IdePluginSyntheticSpecSupport.kt",
-        "line": 98
+        "line": 96
       }
     },
     {
@@ -45,7 +45,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "IdePluginSyntheticSpecSupport.kt",
-        "line": 99
+        "line": 97
       }
     },
     {
@@ -57,7 +57,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "IdePluginSyntheticSpecSupport.kt",
-        "line": 123
+        "line": 121
       }
     }
   ],
@@ -71,7 +71,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "IdePluginSyntheticSpecSupport.kt",
-        "line": 54
+        "line": 52
       },
       "layout": [
         {
@@ -82,7 +82,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 58
+            "line": 56
           },
           "modulePath": null,
           "pathInModule": "src",
@@ -103,7 +103,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 58
+            "line": 56
           },
           "modulePath": null,
           "pathInModule": "src/main",
@@ -124,7 +124,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 58
+            "line": 56
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin",
@@ -145,7 +145,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 58
+            "line": 56
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin/allTypes",
@@ -166,7 +166,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 58
+            "line": 56
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin/allTypes/AllTypes.kt",
@@ -178,7 +178,7 @@
             "title": null,
             "declaredAt": {
               "fileName": "IdePluginSyntheticSpecSupport.kt",
-              "line": 58
+              "line": 56
             }
           },
           "matchedFiles": ["src/main/kotlin/allTypes/AllTypes.kt"],
@@ -199,7 +199,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "IdePluginSyntheticSpecSupport.kt",
-        "line": 146
+        "line": 144
       },
       "layout": [
         {
@@ -210,7 +210,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 149
+            "line": 147
           },
           "modulePath": null,
           "pathInModule": "src",
@@ -231,7 +231,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 149
+            "line": 147
           },
           "modulePath": null,
           "pathInModule": "src/main",
@@ -252,7 +252,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 149
+            "line": 147
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin",
@@ -273,7 +273,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 149
+            "line": 147
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin/counter",
@@ -294,7 +294,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 149
+            "line": 147
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin/counter/Counter.kt",
@@ -306,7 +306,7 @@
             "title": null,
             "declaredAt": {
               "fileName": "IdePluginSyntheticSpecSupport.kt",
-              "line": 149
+              "line": 147
             }
           },
           "matchedFiles": ["src/main/kotlin/counter/Counter.kt"],
@@ -327,7 +327,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "IdePluginSyntheticSpecSupport.kt",
-        "line": 72
+        "line": 70
       },
       "layout": [
         {
@@ -338,7 +338,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 76
+            "line": 74
           },
           "modulePath": null,
           "pathInModule": "src",
@@ -359,7 +359,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 76
+            "line": 74
           },
           "modulePath": null,
           "pathInModule": "src/main",
@@ -380,7 +380,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 76
+            "line": 74
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin",
@@ -401,7 +401,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 76
+            "line": 74
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin/a",
@@ -422,7 +422,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 76
+            "line": 74
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin/a/Shallow.kt",
@@ -434,7 +434,7 @@
             "title": null,
             "declaredAt": {
               "fileName": "IdePluginSyntheticSpecSupport.kt",
-              "line": 76
+              "line": 74
             }
           },
           "matchedFiles": ["src/main/kotlin/a/Shallow.kt"],
@@ -455,7 +455,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "IdePluginSyntheticSpecSupport.kt",
-        "line": 110
+        "line": 108
       },
       "layout": [
         {
@@ -466,7 +466,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 113
+            "line": 111
           },
           "modulePath": null,
           "pathInModule": "src",
@@ -487,7 +487,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 113
+            "line": 111
           },
           "modulePath": null,
           "pathInModule": "src/main",
@@ -508,7 +508,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 113
+            "line": 111
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin",
@@ -529,7 +529,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 113
+            "line": 111
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin/a",
@@ -550,7 +550,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 113
+            "line": 111
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin/a/b",
@@ -571,7 +571,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 113
+            "line": 111
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin/a/b/*",
@@ -590,7 +590,7 @@
             "title": null,
             "declaredAt": {
               "fileName": "IdePluginSyntheticSpecSupport.kt",
-              "line": 113
+              "line": 111
             }
           },
           "matchedFiles": ["src/main/kotlin/a/b/Middle.kt"],
@@ -611,7 +611,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "IdePluginSyntheticSpecSupport.kt",
-        "line": 100
+        "line": 98
       },
       "layout": [
         {
@@ -622,7 +622,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 102
+            "line": 100
           },
           "modulePath": null,
           "pathInModule": "src",
@@ -643,7 +643,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 102
+            "line": 100
           },
           "modulePath": null,
           "pathInModule": "src/main",
@@ -664,7 +664,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 102
+            "line": 100
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin",
@@ -685,7 +685,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 102
+            "line": 100
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin/a",
@@ -706,7 +706,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 102
+            "line": 100
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin/a/b",
@@ -727,7 +727,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 102
+            "line": 100
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin/a/b/c",
@@ -748,7 +748,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 102
+            "line": 100
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin/a/b/c/Deep.kt",
@@ -760,7 +760,7 @@
             "title": null,
             "declaredAt": {
               "fileName": "IdePluginSyntheticSpecSupport.kt",
-              "line": 102
+              "line": 100
             }
           },
           "matchedFiles": [],
@@ -781,7 +781,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "IdePluginSyntheticSpecSupport.kt",
-        "line": 124
+        "line": 122
       },
       "layout": [
         {
@@ -792,7 +792,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 127
+            "line": 125
           },
           "modulePath": null,
           "pathInModule": "src",
@@ -813,7 +813,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 127
+            "line": 125
           },
           "modulePath": null,
           "pathInModule": "src/main",
@@ -834,7 +834,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 127
+            "line": 125
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin",
@@ -855,7 +855,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 127
+            "line": 125
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin/other",
@@ -876,7 +876,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 127
+            "line": 125
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin/other/Broken.kt",
@@ -888,7 +888,7 @@
             "title": null,
             "declaredAt": {
               "fileName": "IdePluginSyntheticSpecSupport.kt",
-              "line": 127
+              "line": 125
             }
           },
           "matchedFiles": [],
@@ -909,7 +909,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "IdePluginSyntheticSpecSupport.kt",
-        "line": 135
+        "line": 133
       },
       "layout": [
         {
@@ -920,7 +920,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 138
+            "line": 136
           },
           "modulePath": null,
           "pathInModule": "feature",
@@ -935,93 +935,109 @@
         },
         {
           "index": 1,
-          "path": "feature/home",
+          "path": "feature/*",
           "kind": "Directory",
           "required": false,
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 138
+            "line": 136
           },
-          "modulePath": ":feature:home",
-          "pathInModule": "",
-          "captures": [],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
+          "modulePath": null,
+          "pathInModule": "feature/*",
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
+          "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
           "matchedCount": null,
           "matchedFilesTruncated": false,
           "synthetic": false,
-          "place": true
+          "place": false
         },
         {
           "index": 2,
-          "path": "feature/home/build",
-          "kind": "Ignore",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 138
-          },
-          "modulePath": ":feature:home",
-          "pathInModule": "build",
-          "captures": [],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
-          "template": null,
-          "matchedFiles": [],
-          "matchedCount": null,
-          "matchedFilesTruncated": false,
-          "synthetic": true,
-          "place": false
-        },
-        {
-          "index": 3,
-          "path": "feature/home/build.gradle.kts",
-          "kind": "File",
-          "required": true,
-          "description": null,
-          "declaredAt": {
-            "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 138
-          },
-          "modulePath": ":feature:home",
-          "pathInModule": "build.gradle.kts",
-          "captures": [],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
-          "template": null,
-          "matchedFiles": ["feature/home/build.gradle.kts"],
-          "matchedCount": 1,
-          "matchedFilesTruncated": false,
-          "synthetic": true,
-          "place": false
-        },
-        {
-          "index": 4,
-          "path": "feature/home/src",
+          "path": "feature/*/src",
           "kind": "Directory",
           "required": false,
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 139
+            "line": 137
           },
-          "modulePath": ":feature:home",
-          "pathInModule": "src",
-          "captures": [],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
+          "modulePath": null,
+          "pathInModule": "feature/*/src",
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "feature/*/src/main",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 137
           },
+          "modulePath": null,
+          "pathInModule": "feature/*/src/main",
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "feature/*/src/main/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 137
+          },
+          "modulePath": null,
+          "pathInModule": "feature/*/src/main/kotlin",
+          "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
+          "moduleCapture": null,
           "template": null,
           "matchedFiles": [],
           "matchedCount": null,
@@ -1031,65 +1047,23 @@
         },
         {
           "index": 5,
-          "path": "feature/home/src/main",
-          "kind": "Directory",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 139
-          },
-          "modulePath": ":feature:home",
-          "pathInModule": "src/main",
-          "captures": [],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
-          "template": null,
-          "matchedFiles": [],
-          "matchedCount": null,
-          "matchedFilesTruncated": false,
-          "synthetic": false,
-          "place": false
-        },
-        {
-          "index": 6,
-          "path": "feature/home/src/main/kotlin",
-          "kind": "Directory",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 139
-          },
-          "modulePath": ":feature:home",
-          "pathInModule": "src/main/kotlin",
-          "captures": [],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
-          "template": null,
-          "matchedFiles": [],
-          "matchedCount": null,
-          "matchedFilesTruncated": false,
-          "synthetic": false,
-          "place": false
-        },
-        {
-          "index": 7,
-          "path": "feature/home/src/main/kotlin/*Screen.kt",
+          "path": "feature/*/src/main/kotlin/*Screen.kt",
           "kind": "File",
           "required": false,
           "description": null,
           "declaredAt": {
             "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 139
+            "line": 137
           },
-          "modulePath": ":feature:home",
-          "pathInModule": "src/main/kotlin/*Screen.kt",
+          "modulePath": null,
+          "pathInModule": "feature/*/src/main/kotlin/*Screen.kt",
           "captures": [
+            {
+              "name": "feature",
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
+            },
             {
               "name": "name",
               "segmentIndex": 5,
@@ -1097,204 +1071,18 @@
               "transform": null
             }
           ],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
+          "moduleCapture": null,
           "template": {
             "specifier": "other.Wildcard",
             "id": null,
             "title": null,
             "declaredAt": {
               "fileName": "IdePluginSyntheticSpecSupport.kt",
-              "line": 139
+              "line": 137
             }
           },
           "matchedFiles": ["feature/home/src/main/kotlin/HomeScreen.kt"],
           "matchedCount": 1,
-          "matchedFilesTruncated": false,
-          "synthetic": false,
-          "place": false
-        },
-        {
-          "index": 8,
-          "path": "feature/settings",
-          "kind": "Directory",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 138
-          },
-          "modulePath": ":feature:settings",
-          "pathInModule": "",
-          "captures": [],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
-          "template": null,
-          "matchedFiles": [],
-          "matchedCount": null,
-          "matchedFilesTruncated": false,
-          "synthetic": false,
-          "place": true
-        },
-        {
-          "index": 9,
-          "path": "feature/settings/build",
-          "kind": "Ignore",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 138
-          },
-          "modulePath": ":feature:settings",
-          "pathInModule": "build",
-          "captures": [],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
-          "template": null,
-          "matchedFiles": [],
-          "matchedCount": null,
-          "matchedFilesTruncated": false,
-          "synthetic": true,
-          "place": false
-        },
-        {
-          "index": 10,
-          "path": "feature/settings/build.gradle.kts",
-          "kind": "File",
-          "required": true,
-          "description": null,
-          "declaredAt": {
-            "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 138
-          },
-          "modulePath": ":feature:settings",
-          "pathInModule": "build.gradle.kts",
-          "captures": [],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
-          "template": null,
-          "matchedFiles": ["feature/settings/build.gradle.kts"],
-          "matchedCount": 1,
-          "matchedFilesTruncated": false,
-          "synthetic": true,
-          "place": false
-        },
-        {
-          "index": 11,
-          "path": "feature/settings/src",
-          "kind": "Directory",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 139
-          },
-          "modulePath": ":feature:settings",
-          "pathInModule": "src",
-          "captures": [],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
-          "template": null,
-          "matchedFiles": [],
-          "matchedCount": null,
-          "matchedFilesTruncated": false,
-          "synthetic": false,
-          "place": false
-        },
-        {
-          "index": 12,
-          "path": "feature/settings/src/main",
-          "kind": "Directory",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 139
-          },
-          "modulePath": ":feature:settings",
-          "pathInModule": "src/main",
-          "captures": [],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
-          "template": null,
-          "matchedFiles": [],
-          "matchedCount": null,
-          "matchedFilesTruncated": false,
-          "synthetic": false,
-          "place": false
-        },
-        {
-          "index": 13,
-          "path": "feature/settings/src/main/kotlin",
-          "kind": "Directory",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 139
-          },
-          "modulePath": ":feature:settings",
-          "pathInModule": "src/main/kotlin",
-          "captures": [],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
-          "template": null,
-          "matchedFiles": [],
-          "matchedCount": null,
-          "matchedFilesTruncated": false,
-          "synthetic": false,
-          "place": false
-        },
-        {
-          "index": 14,
-          "path": "feature/settings/src/main/kotlin/*Screen.kt",
-          "kind": "File",
-          "required": false,
-          "description": null,
-          "declaredAt": {
-            "fileName": "IdePluginSyntheticSpecSupport.kt",
-            "line": 139
-          },
-          "modulePath": ":feature:settings",
-          "pathInModule": "src/main/kotlin/*Screen.kt",
-          "captures": [
-            {
-              "name": "name",
-              "segmentIndex": 5,
-              "wildcardIndex": 0,
-              "transform": null
-            }
-          ],
-          "moduleCapture": {
-            "pattern": ":feature:*",
-            "names": ["feature"]
-          },
-          "template": {
-            "specifier": "other.Wildcard",
-            "id": null,
-            "title": null,
-            "declaredAt": {
-              "fileName": "IdePluginSyntheticSpecSupport.kt",
-              "line": 139
-            }
-          },
-          "matchedFiles": [],
-          "matchedCount": 0,
           "matchedFilesTruncated": false,
           "synthetic": false,
           "place": false
@@ -1385,10 +1173,10 @@
         "captures": [
           {
             "name": "feature",
-            "kind": "ModuleCapture",
-            "pattern": ":feature:*",
-            "position": 0,
-            "segment": ":feature:${feature}",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/*Screen.kt",
+            "position": 1,
+            "segment": "${feature}",
             "wildcardIndex": 0,
             "transform": null
           },
@@ -1745,7 +1533,7 @@
           {
             "pattern": "feature/${feature}/src/main/kotlin/${name}Screen.kt",
             "fileName": "${name}Screen.kt",
-            "path": null,
+            "path": "feature/${feature}/src/main/kotlin/${name}Screen.kt",
             "captures": ["feature", "name"],
             "parameters": [],
             "content": "fun ${name}Screen() {}\n"
@@ -1756,10 +1544,10 @@
         "captures": [
           {
             "name": "feature",
-            "kind": "ModuleCapture",
-            "pattern": ":feature:*",
-            "position": 0,
-            "segment": ":feature:${feature}",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/*Screen.kt",
+            "position": 1,
+            "segment": "${feature}",
             "wildcardIndex": 0,
             "transform": null
           },
@@ -1775,27 +1563,7 @@
         ]
       }
     ],
-    "modulePlacements": [
-      {
-        "template": "other.Wildcard",
-        "modulePattern": ":feature:*",
-        "captureNames": ["feature"],
-        "modules": [
-          {
-            "values": ["home"],
-            "modulePath": ":feature:home",
-            "directory": "feature/home",
-            "path": "feature/home/src/main/kotlin/${name}Screen.kt"
-          },
-          {
-            "values": ["settings"],
-            "modulePath": ":feature:settings",
-            "directory": "feature/settings",
-            "path": "feature/settings/src/main/kotlin/${name}Screen.kt"
-          }
-        ]
-      }
-    ],
+    "modulePlacements": [],
     "templateSets": [],
     "templateSetDetails": []
   },
@@ -1806,7 +1574,7 @@
       "detail": "a.b.Middle",
       "declaredAt": {
         "fileName": "DescribeDefinitionSpecSupport.kt",
-        "line": 225
+        "line": 223
       },
       "exception": "me.tbsten.katachi.dsl.KatachiTemplateParameterConflictException"
     },
@@ -1816,7 +1584,7 @@
       "detail": "other.Broken",
       "declaredAt": {
         "fileName": "IdePluginSyntheticSpecSupport.kt",
-        "line": 130
+        "line": 128
       },
       "exception": "java.lang.IllegalStateException"
     }

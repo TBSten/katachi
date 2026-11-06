@@ -1,4 +1,3 @@
-@file:Suppress("DEPRECATION")
 package me.tbsten.katachi.test.dsl
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
@@ -15,7 +14,6 @@ import me.tbsten.katachi.dsl.ModuleResolver
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /**
@@ -55,7 +53,7 @@ class FileConstraintDeclarationSpec : FreeSpec({
 
             // この行番号はファイル内の位置に依存する。上のブロックを動かしたら直すこと。
             arch.declaredFileConstraints().single().declaredAt shouldBe
-                DeclarationSite("FileConstraintDeclarationSpec.kt", 50)
+                DeclarationSite("FileConstraintDeclarationSpec.kt", 48)
         }
 
         "名前を付けても利用者の行を指す" {
@@ -75,7 +73,7 @@ class FileConstraintDeclarationSpec : FreeSpec({
             // この行番号はファイル内の位置に依存する。
             val declared = arch.declaredFileConstraints().single()
             declared.name shouldBe "invoke を持つこと"
-            declared.declaredAt shouldBe DeclarationSite("FileConstraintDeclarationSpec.kt", 67)
+            declared.declaredAt shouldBe DeclarationSite("FileConstraintDeclarationSpec.kt", 65)
         }
 
         "declaredAt を明示で渡せる" {
@@ -190,13 +188,13 @@ class FileConstraintDeclarationSpec : FreeSpec({
     }
 
     "flattenLayout の出力は制約の有無で変わらない" - {
-        "module を含む layout のエントリが完全に一致する" {
+        "ディレクトリのブロックを含む layout のエントリが完全に一致する" {
             val withFileConstraints = architecture {
                 "domain".group {
                     "UseCase".role {
                         fileConstraint("role wide", check = silent())
                         layout {
-                            ":core:domain".module {
+                            "core/domain" {
                                 fileConstraint("in core/domain", check = silent())
                                 mainSourceSet / KOTLIN_DIRECTORY / "*UseCase".ktFile()
                             }
@@ -208,7 +206,7 @@ class FileConstraintDeclarationSpec : FreeSpec({
                 "domain".group {
                     "UseCase".role {
                         layout {
-                            ":core:domain".module {
+                            "core/domain" {
                                 mainSourceSet / KOTLIN_DIRECTORY / "*UseCase".ktFile()
                             }
                         }
@@ -220,8 +218,6 @@ class FileConstraintDeclarationSpec : FreeSpec({
             withFileConstraints.flattenLayout().shape() shouldBe listOf(
                 "core [Directory]",
                 "core/domain [Directory]",
-                "core/domain/build [Ignore]",
-                "core/domain/build.gradle.kts [File] required",
                 "core/domain/src [Directory]",
                 "core/domain/src/main [Directory]",
                 "core/domain/src/main/kotlin [Directory]",

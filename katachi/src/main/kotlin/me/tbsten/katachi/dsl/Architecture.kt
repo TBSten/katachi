@@ -44,7 +44,12 @@ public class Architecture internal constructor(
     public val roles: List<Role>,
     /** Which files of the project the check looks at. */
     public val files: FileSelection,
-    /** How a module path written in a `layout { }` becomes a directory. */
+    /**
+     * How a module path katachi finds becomes a directory: always [ModuleResolver.Conventional].
+     *
+     * `architecture { }` stopped taking a resolver when `.module { }` was removed; the value
+     * stays here for [me.tbsten.katachi.check.internal.moduleIndex] callers.
+     */
     public val moduleResolver: ModuleResolver,
     internal val metadata: MetadataValues,
     /**

@@ -80,10 +80,10 @@
       "captures": [
         {
           "name": "feature",
-          "kind": "ModuleCapture",
-          "pattern": ":feature:*",
-          "position": 0,
-          "segment": ":feature:${feature}",
+          "kind": "PathCapture",
+          "pattern": "feature/*/src/main/kotlin/*Screen.kt",
+          "position": 1,
+          "segment": "${feature}",
           "wildcardIndex": 0,
           "transform": null
         },
@@ -440,7 +440,7 @@
         {
           "pattern": "feature/${feature}/src/main/kotlin/${name}Screen.kt",
           "fileName": "${name}Screen.kt",
-          "path": null,
+          "path": "feature/${feature}/src/main/kotlin/${name}Screen.kt",
           "captures": ["feature", "name"],
           "parameters": [],
           "content": "fun ${name}Screen() {}\n"
@@ -451,10 +451,10 @@
       "captures": [
         {
           "name": "feature",
-          "kind": "ModuleCapture",
-          "pattern": ":feature:*",
-          "position": 0,
-          "segment": ":feature:${feature}",
+          "kind": "PathCapture",
+          "pattern": "feature/*/src/main/kotlin/*Screen.kt",
+          "position": 1,
+          "segment": "${feature}",
           "wildcardIndex": 0,
           "transform": null
         },
@@ -470,27 +470,7 @@
       ]
     }
   ],
-  "modulePlacements": [
-    {
-      "template": "other.Wildcard",
-      "modulePattern": ":feature:*",
-      "captureNames": ["feature"],
-      "modules": [
-        {
-          "values": ["home"],
-          "modulePath": ":feature:home",
-          "directory": "feature/home",
-          "path": "feature/home/src/main/kotlin/${name}Screen.kt"
-        },
-        {
-          "values": ["settings"],
-          "modulePath": ":feature:settings",
-          "directory": "feature/settings",
-          "path": "feature/settings/src/main/kotlin/${name}Screen.kt"
-        }
-      ]
-    }
-  ],
+  "modulePlacements": [],
   "templateSets": [],
   "templateSetDetails": []
 }
