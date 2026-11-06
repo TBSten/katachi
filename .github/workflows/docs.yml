@@ -89,7 +89,8 @@ jobs:
       matrix:
         include:
           # root。リリースタグの docs をそのままビルドし、版の切り替えに /dev/ を足す。
-          # 古いタグ（v0.3.0）の docs は下の環境変数を知らないので無視する（ラベルは当時のまま、/dev/ の選択肢は出ない）。
+          # 古いタグ（v0.3.0）の docs は下の環境変数を知らないので無視する（ラベルは当時のまま）。
+          # /dev/ の選択肢は assemble が後から差し込む（docs/scripts/add-dev-version-option.mjs）。
           - channel: release
             ref: ${{ needs.resolve.outputs.ref }}
             base: /katachi
@@ -159,7 +160,7 @@ jobs:
 
   assemble:
     name: assemble
-    needs: build
+    needs: [ resolve, build ]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -174,6 +175,22 @@ jobs:
         with:
           name: site-dev
           path: site/dev
+
+      # 古いタグ（v0.3.0 以前）の root は、版の切り替えに開発版の選択肢を持たない。合成したあとの HTML に足す。
+      # タグ自身が選択肢を持っていれば（v0.4.0 以降）何もしない。root が v0.4.0 以降になったらこの 2 手順は消してよい。
+      - name: Checkout the script that adds the dev option
+        uses: actions/checkout@v7
+        with:
+          path: tools
+          sparse-checkout: |
+            docs/scripts
+            docs/src/lib
+          sparse-checkout-cone-mode: false
+
+      - name: Add the dev version to the root version switcher
+        env:
+          RELEASE_LABEL: ${{ needs.resolve.outputs.label }}
+        run: node tools/docs/scripts/add-dev-version-option.mjs site --dev-base /katachi/dev --release-label "${RELEASE_LABEL}"
 
       - name: Show the layout
         run: |
