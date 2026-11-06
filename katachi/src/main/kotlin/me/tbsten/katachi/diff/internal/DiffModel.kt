@@ -76,7 +76,7 @@ internal class FileDiff(val change: FileChange, val shortPath: String)
 internal fun heatLevel(score: Double, max: Double): Int =
     if (score <= 0.0 || max <= 0.0) 0 else ceil(score / max * HEAT_LEVELS).toInt().coerceIn(1, HEAT_LEVELS)
 
-internal const val HEAT_LEVELS: Int = 4
+internal const val HEAT_LEVELS: Int = 5
 
 internal fun buildDiffReportModel(
     architecture: Architecture,
