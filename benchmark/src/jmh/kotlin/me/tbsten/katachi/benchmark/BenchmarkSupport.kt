@@ -37,7 +37,15 @@ internal fun SyntheticProject.konsistArchitecture(): Architecture {
                         classes().must { it.hasPublicOrDefaultModifier }
                     }
                     layout {
-                        if (index == 0) "settings.gradle".ktsFile()
+                        if (index == 0) {
+                            "settings.gradle".ktsFile()
+                            "build.gradle".ktsFile()
+                            "build".ignore()
+                            "modules/*" {
+                                "build.gradle".ktsFile()
+                                "build".ignore()
+                            }
+                        }
                         when (role.placement) {
                             SyntheticPlacement.Module -> "modules/*" {
                                 description = "${role.name} of every module."
