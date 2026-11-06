@@ -29,11 +29,11 @@ import me.tbsten.katachi.script.internal.SubprocessRunner
  * )
  * ```
  *
- * @property defaultPackage The `--package` every [scaffold] starts with. Null or empty leaves it unset.
- * @property katachiVersion The `--katachi` every [init] and [scaffold] starts with. Null leaves the choice to the command.
- * @property moduleDir The `--module-dir` every [init] and [scaffold] starts with.
- * @property lang The `--lang` every [init] starts with.
- * @property workdir The `--workdir` every [init] starts with: the working directory `init` makes. Null lets `init` pick one.
+ * @property defaultPackage Puts `--package <defaultPackage>` on every [scaffold]. Null or empty leaves it unset.
+ * @property katachiVersion Puts `--katachi <katachiVersion>` on every [init] and [scaffold]. Null leaves the choice to the command.
+ * @property moduleDir Puts `--module-dir <moduleDir>` on every [init] and [scaffold].
+ * @property lang Puts `--lang <lang>` on every [init].
+ * @property workdir Puts `--workdir <workdir>` on every [init]: the working directory `init` makes. Null lets `init` pick one.
  * @property cwd Where the commands run. Null is the directory the script was started in.
  * @property runner How [KatachiCommand.execute] runs a command: [CommandRunner.InProcess] by default.
  * @property echo Whether [KatachiCommand.execute] prints `$ katachi ...` before it runs, as `make` does.
@@ -52,7 +52,7 @@ public class Katachi(
     public val runner: CommandRunner = CommandRunner.InProcess,
     public val echo: Boolean = true,
 ) {
-    /** `katachi init` with this [Katachi]'s defaults: makes the working directory and lays out the check list. */
+    /** Same as `katachi init` on the command line, starting from this [Katachi]'s defaults. */
     public val init: InitCommand
         get() = InitCommand(
             katachi = this,
@@ -63,7 +63,7 @@ public class Katachi(
                 .withNonEmpty("--lang", lang?.value),
         )
 
-    /** `katachi scaffold` with this [Katachi]'s defaults: creates the test module and adds it to the build. */
+    /** Same as `katachi scaffold` on the command line, starting from this [Katachi]'s defaults. */
     public val scaffold: ScaffoldCommand
         get() = ScaffoldCommand(
             katachi = this,
@@ -75,7 +75,8 @@ public class Katachi(
         )
 
     /**
-     * Any subcommand, written out as it is typed.
+     * Any subcommand, written out as it is typed: `command("data", "get", "check-list")` is
+     * `katachi data get check-list` on the command line.
      *
      * For the subcommands that have no builder of their own yet.
      *
