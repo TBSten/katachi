@@ -14,6 +14,7 @@ internal fun renderRule(rule: DeclarationRule): String = renderDeclaration(
     parameters = rule.parameters?.map { it.written },
     returnType = rule.returnType?.written,
     except = rule.except.map { it.written },
+    details = rule.details.map { it.rendered },
 )
 
 // The `.optional()` modifiers are left out, as the declaration may do without them.
@@ -27,6 +28,7 @@ internal fun renderRuleAsDeclaration(rule: DeclarationRule): String = renderDecl
     parameters = rule.parameters?.map { it.written },
     returnType = rule.returnType?.written,
     except = rule.except.map { it.written },
+    details = rule.details.map { it.rendered },
 )
 
 internal fun renderAnythingElse(rule: AnythingElseRule): String =
@@ -62,6 +64,7 @@ internal fun renderDeclaration(
     parameters: List<String>? = null,
     returnType: String? = null,
     except: List<String> = emptyList(),
+    details: List<String> = emptyList(),
 ): String = buildString {
     append(notOf(prohibited))
     val prefix = renderShapes(shapes)
@@ -76,6 +79,7 @@ internal fun renderDeclaration(
     val aliases = shapes.isNotEmpty() && shapes.all { it.kind == DeclarationKindName.TypeAlias }
     propertyType?.let { append(if (aliases) " = " else ": ").append(it) }
     returnType?.let { append(": ").append(it) }
+    details.forEach { append(it) }
     append(exceptOf(except))
 }
 

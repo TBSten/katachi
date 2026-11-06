@@ -16,6 +16,8 @@ import com.lemonappdev.konsist.api.provider.KoAnnotationProvider
 import com.lemonappdev.konsist.api.provider.KoBaseProvider
 import com.lemonappdev.konsist.api.provider.KoDeclarationProvider
 import com.lemonappdev.konsist.api.provider.KoIsConstructorDefinedProvider
+import com.lemonappdev.konsist.api.provider.KoKDocProvider
+import com.lemonappdev.konsist.api.provider.KoTypeParameterProvider
 import com.lemonappdev.konsist.api.provider.KoNameProvider
 import com.lemonappdev.konsist.api.provider.KoPathProvider
 import com.lemonappdev.konsist.api.provider.KoTextProvider
@@ -84,6 +86,7 @@ private class FactReader(
             kind = kind,
             supertypes = supertypesOf(headerTextOf(text, annotationTexts), name),
             members = (declaration as? KoDeclarationProvider)?.let(::declarationsOf).orEmpty(),
+            details = detailsOf(declaration, text, annotationTexts),
         )
     }
 
@@ -101,6 +104,16 @@ private class FactReader(
             parameters = declaration.parameters.map(::parameterFactOf),
             returnType = returnType,
             returnTypeWritten = written != null,
+            details = detailsOf(
+                declaration,
+                declaration.text,
+                declaration.annotations.map { it.text },
+                body = when {
+                    declaration.hasExpressionBody -> BodyKind.Expression
+                    declaration.hasBlockBody -> BodyKind.Block
+                    else -> BodyKind.None
+                },
+            ),
         )
     }
 
@@ -117,6 +130,7 @@ private class FactReader(
             kind = if (declaration.isVar) DeclarationKindName.Var else DeclarationKindName.Val,
             receiver = declaration.receiverType?.text,
             propertyType = written?.let(::typeTextOf),
+            details = detailsOf(declaration, declaration.text, declaration.annotations.map { it.text }),
         )
     }
 
@@ -131,6 +145,7 @@ private class FactReader(
         returnTypeWritten: Boolean = false,
         members: List<DeclarationFact>? = null,
         name: String = nameOf(declaration),
+        details: DetailFacts = detailsOf(declaration, (declaration as? KoTextProvider)?.text.orEmpty(), emptyList()),
     ): DeclarationFact {
         val line = lineOfElement(declaration)
         val annotationTexts = (declaration as? KoAnnotationProvider)?.annotations.orEmpty().map { it.text }
@@ -148,9 +163,33 @@ private class FactReader(
             line = line?.plus(kDocLinesOf(declaration)),
             members = members,
             inConstructor = (declaration as? KoIsConstructorDefinedProvider)?.isConstructorDefined == true,
+            details = details,
         )
     }
+
+    // Context parameters are read off the text, as Konsist 0.18 has no API for them (1.0 has `contextParameters`).
+    private fun detailsOf(
+        declaration: KoBaseDeclaration,
+        text: String,
+        annotationTexts: List<String>,
+        body: BodyKind? = null,
+    ): DetailFacts = DetailFacts(
+        contextParameters = contextParametersOf(headerTextOf(text, annotationTexts)),
+        typeParameters = (declaration as? KoTypeParameterProvider)?.typeParameters.orEmpty().map { parameter ->
+            TypeParameterFact(
+                // Konsist's name of a type parameter is its whole text (`reified T : Any`).
+                name = parameter.name.split(' ').filterNot { it in TYPE_PARAMETER_WORDS }.joinToString(" ")
+                    .substringBefore(':').trim().removeSurrounding("`"),
+                modifiers = parameter.modifiers.map { it.type }.filterTo(LinkedHashSet()) { it in TYPE_PARAMETER_WORDS },
+                bounds = parameter.upperBounds.map { typeTextOf(it.text) },
+            )
+        },
+        hasKDoc = (declaration as? KoKDocProvider)?.hasKDoc == true,
+        body = body,
+    )
 }
+
+private val TYPE_PARAMETER_WORDS: Set<String> = setOf("reified", "in", "out")
 
 private fun modifiersOf(declaration: Any): Set<ModifierName> =
     (declaration as? KoModifierProvider)?.modifiers.orEmpty().mapNotNullTo(LinkedHashSet()) { MODIFIERS_BY_KEYWORD[it.type] }

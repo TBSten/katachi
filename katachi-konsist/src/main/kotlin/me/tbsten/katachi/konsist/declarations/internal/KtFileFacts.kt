@@ -58,6 +58,34 @@ internal class DeclarationFact(
     val line: Int?,
     val members: List<DeclarationFact>?,
     val inConstructor: Boolean = false,
+    val details: DetailFacts = DetailFacts.NONE,
 ) {
     override fun toString(): String = "DeclarationFact(${renderFact(this)})"
+}
+
+// What the details of a line (`.context(...)`, `.kdoc()`, ...) are asked against. Each is as written; nothing is inferred.
+internal class DetailFacts(
+    // Of `context(logger: Logger)`; a context receiver (`context(Logger)`) is named `_`.
+    val contextParameters: List<ParameterFact> = emptyList(),
+    val typeParameters: List<TypeParameterFact> = emptyList(),
+    val hasKDoc: Boolean = false,
+    // Of a function: how its body is written. null on any other declaration.
+    val body: BodyKind? = null,
+) {
+    override fun toString(): String = "DetailFacts"
+
+    companion object {
+        val NONE: DetailFacts = DetailFacts()
+    }
+}
+
+// modifiers: of `reified`, `in` and `out`, those written. bounds: after its `:` and in a `where` clause.
+internal class TypeParameterFact(val name: String, val modifiers: Set<String>, val bounds: List<TypeText>) {
+    override fun toString(): String = renderTypeParameter(this)
+}
+
+internal enum class BodyKind(val call: String, val label: String) {
+    Expression("expressionBody", "an expression body"),
+    Block("blockBody", "a block body"),
+    None("noBody", "no body"),
 }

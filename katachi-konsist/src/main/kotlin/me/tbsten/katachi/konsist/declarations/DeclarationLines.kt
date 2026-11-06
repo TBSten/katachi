@@ -1,6 +1,7 @@
 package me.tbsten.katachi.konsist.declarations
 
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.konsist.declarations.internal.BodyKind
 import me.tbsten.katachi.konsist.declarations.internal.DeclarationLineBuilder
 
 /**
@@ -65,6 +66,40 @@ public class TypeLine internal constructor(
      */
     public fun except(vararg names: String): TypeLine {
         line.addExcept(names.toList())
+        return this
+    }
+
+    /**
+     * Requires exactly these type parameters, in order: a name pattern, after the `reified`, `in` or `out` it has to carry,
+     * and a bound after `:` that one of its bounds (after `:` or in a `where` clause) has to match. `"T"` matches `reified T`
+     * and `T : Any` too, as what is not written is not asked about; `.typeParameters()` asks for none. A line without
+     * `.typeParameters(...)` asks nothing about them.
+     *
+     * ## Example 1: a class with one type parameter bounded by Any
+     * ```kt
+     * allow(`class`, "*Holder").typeParameters("T : Any")
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when written twice, or when a type parameter has no name, or nothing after its `:`.
+     * @throws KatachiKtFileContentPatternException when a name or a bound is not a pattern katachi reads.
+     */
+    public fun typeParameters(vararg parameters: String): TypeLine {
+        line.writeTypeParameters(parameters.toList())
+        return this
+    }
+
+    /**
+     * Requires a KDoc (`/** ... */`) on the declaration. A line without `.kdoc()` asks nothing about it.
+     *
+     * ## Example 1: documented declarations
+     * ```kt
+     * allow(public, `class`, "*").kdoc()
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when written twice.
+     */
+    public fun kdoc(): TypeLine {
+        line.writeKDoc()
         return this
     }
 
@@ -163,6 +198,104 @@ public class FunctionLine internal constructor(
         return this
     }
 
+    /**
+     * Requires exactly these context parameters, in order, each written `"name: Type"` as with the parameters: the
+     * declaration `context(logger: Logger) fun log()` matches `.context("logger: Logger")`, and `.context()` asks for none.
+     * A context receiver (`context(Logger)`) is named `_`, so `"_: Logger"` matches it. A line without `.context(...)`
+     * asks nothing about them.
+     *
+     * ## Example 1: declarations that need a logger in their context
+     * ```kt
+     * allow(`fun`, "log*")(anyArgs()).context("*: Logger")
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when written twice, or when a parameter is not `"name: Type"`.
+     * @throws KatachiKtFileContentPatternException when a name or a type is not a pattern katachi reads.
+     */
+    public fun context(vararg parameters: String): FunctionLine {
+        line.writeContext(parameters.toList())
+        return this
+    }
+
+    /**
+     * Requires exactly these type parameters, in order: a name pattern, after the `reified`, `in` or `out` it has to carry,
+     * and a bound after `:` that one of its bounds (after `:` or in a `where` clause) has to match. `"T"` matches `reified T`
+     * and `T : Any` too, as what is not written is not asked about; `.typeParameters()` asks for none. A line without
+     * `.typeParameters(...)` asks nothing about them.
+     *
+     * ## Example 1: a reified function
+     * ```kt
+     * allow(inline, `fun`, "get*")(anyArgs()).typeParameters("reified T")
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when written twice, or when a type parameter has no name, or nothing after its `:`.
+     * @throws KatachiKtFileContentPatternException when a name or a bound is not a pattern katachi reads.
+     */
+    public fun typeParameters(vararg parameters: String): FunctionLine {
+        line.writeTypeParameters(parameters.toList())
+        return this
+    }
+
+    /**
+     * Requires a KDoc (`/** ... */`) on the declaration. A line without `.kdoc()` asks nothing about it.
+     *
+     * ## Example 1: documented declarations
+     * ```kt
+     * allow(public, `fun`, "*")(anyArgs()).kdoc()
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when written twice.
+     */
+    public fun kdoc(): FunctionLine {
+        line.writeKDoc()
+        return this
+    }
+
+    /**
+     * Requires an expression body (`fun f() = ...`). A line without `.expressionBody()`, `.blockBody()` or `.noBody()` asks nothing about the body.
+     *
+     * ## Example 1
+     * ```kt
+     * allow(`fun`, "is*")(anyArgs()).expressionBody()
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when one of the three is already written.
+     */
+    public fun expressionBody(): FunctionLine {
+        line.writeBodyKind(BodyKind.Expression)
+        return this
+    }
+
+    /**
+     * Requires a block body (`fun f() { ... }`). A line without `.expressionBody()`, `.blockBody()` or `.noBody()` asks nothing about the body.
+     *
+     * ## Example 1
+     * ```kt
+     * allow(`fun`, "run*")(anyArgs()).blockBody()
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when one of the three is already written.
+     */
+    public fun blockBody(): FunctionLine {
+        line.writeBodyKind(BodyKind.Block)
+        return this
+    }
+
+    /**
+     * Requires no body, as an abstract or `expect` function has. A line without `.expressionBody()`, `.blockBody()` or `.noBody()` asks nothing about the body.
+     *
+     * ## Example 1
+     * ```kt
+     * allow(abstract, `fun`, "*")(anyArgs()).noBody()
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when one of the three is already written.
+     */
+    public fun noBody(): FunctionLine {
+        line.writeBodyKind(BodyKind.None)
+        return this
+    }
+
     /** The line as written so far. */
     override fun toString(): String = line.text
 }
@@ -201,6 +334,59 @@ public class PropertyLine internal constructor(
         return this
     }
 
+    /**
+     * Requires exactly these context parameters, in order, each written `"name: Type"` as with the parameters: the
+     * declaration `context(logger: Logger) fun log()` matches `.context("logger: Logger")`, and `.context()` asks for none.
+     * A context receiver (`context(Logger)`) is named `_`, so `"_: Logger"` matches it. A line without `.context(...)`
+     * asks nothing about them.
+     *
+     * ## Example 1: declarations that need a logger in their context
+     * ```kt
+     * allow(`fun`, "log*")(anyArgs()).context("*: Logger")
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when written twice, or when a parameter is not `"name: Type"`.
+     * @throws KatachiKtFileContentPatternException when a name or a type is not a pattern katachi reads.
+     */
+    public fun context(vararg parameters: String): PropertyLine {
+        line.writeContext(parameters.toList())
+        return this
+    }
+
+    /**
+     * Requires exactly these type parameters, in order: a name pattern, after the `reified`, `in` or `out` it has to carry,
+     * and a bound after `:` that one of its bounds (after `:` or in a `where` clause) has to match. `"T"` matches `reified T`
+     * and `T : Any` too, as what is not written is not asked about; `.typeParameters()` asks for none. A line without
+     * `.typeParameters(...)` asks nothing about them.
+     *
+     * ## Example 1: a generic extension property
+     * ```kt
+     * allow(`val`, "List<T>", "second", "T").typeParameters("T")
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when written twice, or when a type parameter has no name, or nothing after its `:`.
+     * @throws KatachiKtFileContentPatternException when a name or a bound is not a pattern katachi reads.
+     */
+    public fun typeParameters(vararg parameters: String): PropertyLine {
+        line.writeTypeParameters(parameters.toList())
+        return this
+    }
+
+    /**
+     * Requires a KDoc (`/** ... */`) on the declaration. A line without `.kdoc()` asks nothing about it.
+     *
+     * ## Example 1: documented declarations
+     * ```kt
+     * allow(public, `val`, "*").kdoc()
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when written twice.
+     */
+    public fun kdoc(): PropertyLine {
+        line.writeKDoc()
+        return this
+    }
+
     /** The line as written so far. */
     override fun toString(): String = line.text
 }
@@ -233,6 +419,40 @@ public class TypeAliasLine internal constructor(
      */
     public fun except(vararg names: String): TypeAliasLine {
         line.addExcept(names.toList())
+        return this
+    }
+
+    /**
+     * Requires exactly these type parameters, in order: a name pattern, after the `reified`, `in` or `out` it has to carry,
+     * and a bound after `:` that one of its bounds (after `:` or in a `where` clause) has to match. `"T"` matches `reified T`
+     * and `T : Any` too, as what is not written is not asked about; `.typeParameters()` asks for none. A line without
+     * `.typeParameters(...)` asks nothing about them.
+     *
+     * ## Example 1: a generic alias
+     * ```kt
+     * allow(`typealias`, "Handler", "(T) -> Unit").typeParameters("T")
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when written twice, or when a type parameter has no name, or nothing after its `:`.
+     * @throws KatachiKtFileContentPatternException when a name or a bound is not a pattern katachi reads.
+     */
+    public fun typeParameters(vararg parameters: String): TypeAliasLine {
+        line.writeTypeParameters(parameters.toList())
+        return this
+    }
+
+    /**
+     * Requires a KDoc (`/** ... */`) on the declaration. A line without `.kdoc()` asks nothing about it.
+     *
+     * ## Example 1: documented declarations
+     * ```kt
+     * allow(public, `typealias`, "*").kdoc()
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when written twice.
+     */
+    public fun kdoc(): TypeAliasLine {
+        line.writeKDoc()
         return this
     }
 

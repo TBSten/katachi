@@ -38,6 +38,7 @@ internal fun differencesOf(rule: DeclarationRule, fact: DeclarationFact): List<S
     if (fact.kind == DeclarationKindName.Function && !returnTypeMatches(rule, fact)) {
         add("return type (${isOrNotWritten(fact.returnType)}, expected ${rule.returnType?.written})")
     }
+    rule.details.filterNot { it.matches(fact) }.forEach { add(it.difference(fact)) }
 }
 
 internal fun closestShapeOf(rule: DeclarationRule, fact: DeclarationFact): Shape = rule.shapes.minBy { shape ->

@@ -52,7 +52,8 @@ private fun detailsMatch(rule: DeclarationRule, fact: DeclarationFact): Boolean 
         receiverMatches(rule, fact) &&
         propertyTypeMatches(rule, fact) &&
         parametersMatch(rule, fact) &&
-        returnTypeMatches(rule, fact)
+        returnTypeMatches(rule, fact) &&
+        rule.details.all { it.matches(fact) }
 
 internal fun missingSuperclassesOf(rule: DeclarationRule, fact: DeclarationFact): List<SuperclassRule> =
     rule.superclasses.filterNot { superclass ->

@@ -140,6 +140,8 @@ internal class DeclarationRule(
     val prohibited: Boolean,
     val except: List<NameRule>,
     override val declaredAt: DeclarationSite,
+    // The calls chained after the line, such as `.context(...)` and `.kdoc()`, in the order written.
+    val details: List<DetailRule> = emptyList(),
 ) : DeclarationListEntry {
     override fun toString(): String = "DeclarationRule(${renderRule(this)})"
 }

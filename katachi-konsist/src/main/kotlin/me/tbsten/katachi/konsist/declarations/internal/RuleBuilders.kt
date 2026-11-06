@@ -104,6 +104,7 @@ internal class DeclarationLineBuilder(
     private var returnType: TypeRule? = null
     private var members: DeclarationListBuilder? = null
     private val except = mutableListOf<NameRule>()
+    private val details = mutableListOf<DetailRule>()
 
     private val session: EvaluationSession get() = list.session
 
@@ -118,7 +119,33 @@ internal class DeclarationLineBuilder(
             parameters = parameterTexts,
             returnType = returnType?.written,
             except = except.map { it.written },
+            details = details.map { it.rendered },
         )
+
+    fun addDetail(call: String, rule: () -> DetailRule) {
+        ensureOpen()
+        if (details.any { it.call == call }) throw detailProblem(KtFileContentLineProblem.DetailWrittenTwice, call)
+        details += rule()
+    }
+
+    fun detailParameterRule(written: String, call: String): ParameterRule =
+        session.patterns.parameterRule(written, allowProperty = call == "primaryConstructor") { problem -> parameterProblem(problem, written) }
+
+    fun typeParameterRule(written: String): TypeParameterRule =
+        session.patterns.typeParameterRule(written) { problem -> parameterProblem(problem, written) }
+
+    fun detailProblem(problem: KtFileContentLineProblem, call: String): KatachiKtFileContentLineException =
+        KatachiKtFileContentLineException(problem, text, declaredAt, parameter = call)
+
+    fun writeContext(parameters: List<String>) =
+        addDetail("context") { ContextRule(parameters.map { detailParameterRule(it.trim(), "context") }) }
+
+    fun writeTypeParameters(parameters: List<String>) =
+        addDetail("typeParameters") { TypeParametersRule(parameters.map { typeParameterRule(it) }) }
+
+    fun writeKDoc() = addDetail("kdoc") { KDocRule }
+
+    fun writeBodyKind(kind: BodyKind) = addDetail("body") { BodyRule(kind) }
 
     fun addSuperclasses(names: List<String>) {
         ensureOpen()
@@ -183,6 +210,7 @@ internal class DeclarationLineBuilder(
         prohibited = prohibited,
         except = except.toList(),
         declaredAt = declaredAt,
+        details = details.toList(),
     )
 
     private fun ensureOpen() {

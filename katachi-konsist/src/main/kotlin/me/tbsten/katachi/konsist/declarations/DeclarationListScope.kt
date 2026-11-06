@@ -149,7 +149,8 @@ public sealed interface KtFileContentScope : DeclarationListScope {
  * with the same vocabulary as directly in the file, and the words of what only a class body holds
  * ([MemberVocabulary]). Members are functions, properties (those of a primary constructor included),
  * type aliases, nested classes, interfaces and objects (companion objects included), enum entries,
- * secondary constructors and `init` blocks -- not the primary constructor or what is inherited.
+ * secondary constructors and `init` blocks -- not the primary constructor (asked with
+ * `.primaryConstructor(...)`) or what is inherited.
  *
  * ## Example 1: what a use case interface and its implementation hold
  * ```kt

@@ -79,6 +79,12 @@ public enum class KtFileContentPatternKind(internal val label: String) {
     /** The default value of a parameter, after its `=`: `` allow(`fun`, "load")("force: Boolean = *") ``. */
     DefaultValue("default value"),
 
+    /** A type parameter of `.typeParameters(...)`: `"reified T : Any"`. */
+    TypeParameter("type parameter"),
+
+    /** A context parameter of `.context(...)`: `"logger: Logger"`. */
+    ContextParameter("context parameter"),
+
     /** A pattern of `.except(...)`. */
     Except("except"),
 }
@@ -126,6 +132,9 @@ public enum class KtFileContentLineProblem {
 
     /** `.returns(...)` written twice. */
     ReturnTypeWrittenTwice,
+
+    /** A detail such as `.context(...)`, `.kdoc()` or `.setter(...)` written twice on one line. */
+    DetailWrittenTwice,
 
     /** `.superclass()` with no name. */
     SuperclassWithoutNames,

@@ -39,3 +39,53 @@ private fun endsType(rest: String, index: Int): Boolean {
 }
 
 private val TYPE_ENDING_KEYWORDS: List<String> = listOf("by", "get", "set", "where")
+
+// `context(logger: Logger, _: Clock)` in front of the declaration's keyword; a context receiver (`context(Logger)`) is named `_`.
+// The one place context parameters are read: Konsist 1.0 has `contextParameters`, which can take its place.
+internal fun contextParametersOf(header: String): List<ParameterFact> {
+    val code = codeOnly(header)
+    val keyword = DECLARATION_KEYWORD.find(code)?.range?.first ?: code.length
+    val context = CONTEXT_START.find(code)?.takeIf { it.range.first < keyword } ?: return emptyList()
+    val open = context.range.last
+    val close = closingParenthesisOf(code, open) ?: return emptyList()
+    val inside = code.substring(open + 1, close)
+    val topLevel = topLevelOf(inside)
+    val entries = mutableListOf<IntRange>()
+    var from = 0
+    for (index in inside.indices) {
+        if (inside[index] == ',' && topLevel[index]) {
+            entries += from until index
+            from = index + 1
+        }
+    }
+    entries += from until inside.length
+    return entries.mapNotNull { range ->
+        val entry = header.substring(open + 1 + range.first, open + 1 + range.last + 1).trim()
+        if (entry.isEmpty()) return@mapNotNull null
+        val entryCode = codeOnly(entry)
+        val entryTop = topLevelOf(entryCode)
+        val colon = entryCode.indices.firstOrNull { entryCode[it] == ':' && entryTop[it] }
+        val name = if (colon == null) "_" else entry.substring(0, colon).trim().removeSurrounding("`")
+        val type = if (colon == null) entry else entry.substring(colon + 1).trim()
+        ParameterFact(name, typeTextOf(type))
+    }
+}
+
+private val CONTEXT_START = Regex("""\bcontext\s*\(""")
+
+private val DECLARATION_KEYWORD = Regex("""\b(?:fun|val|var|class|interface|object|typealias|constructor)\b""")
+
+private fun closingParenthesisOf(code: String, open: Int): Int? {
+    var depth = 0
+    for (index in open until code.length) {
+        when (code[index]) {
+            '(' -> depth++
+            ')' -> {
+                depth--
+                if (depth == 0) return index
+            }
+        }
+    }
+    return null
+}
+

@@ -76,7 +76,7 @@ public sealed interface MemberVocabulary {
     /** An enum entry: `allow(entry, "RED")`. */
     public val entry: EntryKind
 
-    /** A secondary constructor: `allow(private, constructor)("token: String")`. */
+    /** A secondary constructor: `allow(private, constructor)("token: String")`. The primary one is asked with `.primaryConstructor(...)`. */
     public val constructor: ConstructorKind
 
     /** An `init { }` block: `allow(init)`. */
@@ -168,15 +168,25 @@ public sealed interface MemberRequired {
 /**
  * An enum entry line just written.
  *
- * ## Example 1
+ * ## Example 1: documented entries
  * ```kt
- * allow(enum, `class`, "Color") { allow(entry, "*") }
+ * allow(enum, `class`, "Color") { allow(entry, "*").kdoc() }
  * ```
  */
 @ExperimentalKatachiApi
 public class EntryLine internal constructor(
     internal val line: DeclarationLineBuilder,
 ) {
+    /**
+     * Requires a KDoc on the entry.
+     *
+     * @throws KatachiKtFileContentLineException when written twice.
+     */
+    public fun kdoc(): EntryLine {
+        line.writeKDoc()
+        return this
+    }
+
     /** The line as written so far. */
     override fun toString(): String = line.text
 }
@@ -212,6 +222,16 @@ public class ConstructorLine internal constructor(
      */
     public operator fun invoke(args: AnyArgs): ConstructorLine {
         line.writeParameters(null)
+        return this
+    }
+
+    /**
+     * Requires a KDoc on the constructor.
+     *
+     * @throws KatachiKtFileContentLineException when written twice.
+     */
+    public fun kdoc(): ConstructorLine {
+        line.writeKDoc()
         return this
     }
 

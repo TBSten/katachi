@@ -150,6 +150,7 @@ class KtFileContentLineErrorSpec : FreeSpec({
                 { required(`fun`, "x")()() },
                 { required(`fun`, "x").returns("A").returns("B") },
                 { required(`class`, "A").superclass() },
+                { required(`fun`, "x")().kdoc().kdoc() },
                 { annotated() },
                 { not.allow(private, anythingElse) },
                 { annotated("X") },

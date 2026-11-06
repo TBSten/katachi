@@ -111,6 +111,8 @@ public class KatachiKtFileContentLineException internal constructor(
     public val declaredAt: DeclarationSite,
     /**
      * The parameter the problem is about, without surrounding spaces, or `null` when the problem is not about one.
+     * For a problem of a detail (`DetailWrittenTwice`) it is the name of the detail's call,
+     * such as `"context"`.
      *
      * For [KtFileContentLineProblem.ParameterWithoutName] it is, for example, `"String"`.
      */
@@ -248,6 +250,12 @@ private fun lineMessage(problem: KtFileContentLineProblem, line: String, at: Dec
             "Line \"$line\" at $at writes .returns(...) twice.",
             "A function has one return type.",
             "Keep one .returns(...).",
+        )
+
+        KtFileContentLineProblem.DetailWrittenTwice -> Triple(
+            "Line \"$line\" at $at writes .${parameter.orEmpty()}(...) twice.",
+            "A line asks one thing of each detail of its declaration.",
+            "Keep one .${parameter.orEmpty()}(...), with everything it asks for.",
         )
 
         KtFileContentLineProblem.SuperclassWithoutNames -> Triple(

@@ -124,6 +124,7 @@ private fun lineWithoutNotAndExcept(rule: DeclarationRule): String = renderDecla
     propertyType = rule.propertyType?.written,
     parameters = rule.parameters?.map { it.written },
     returnType = rule.returnType?.written,
+    details = rule.details.map { it.rendered },
 )
 
 private const val OPTIONAL: String = "optional"
