@@ -126,8 +126,7 @@ public fun interface CommandRunner {
          * Runs the command in this JVM, with the same `katachi-script` the script depends on.
          *
          * No second Kotlin start-up and no version drift from a separately installed `katachi`.
-         * Subcommands not yet written in Kotlin still go to `katachi-install.sh`, which is found
-         * through `KATACHI_HOME` or in the working directory `init` made.
+         * Every subcommand is written in Kotlin, so nothing else has to be installed.
          */
         public val InProcess: CommandRunner = InProcessRunner
 
