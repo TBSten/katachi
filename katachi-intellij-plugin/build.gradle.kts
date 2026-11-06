@@ -3,10 +3,14 @@
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask.FailureLevel
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.compose.compiler)
+    // The @Serializable results of the MCP tools. No runtime dependency: the IDE bundles kotlinx-serialization.
+    alias(libs.plugins.kotlin.serialization)
     // Only for the standalone Compose Desktop of the headless preview.
     alias(libs.plugins.compose.multiplatform)
     // No version here: it is set in settings.gradle.kts, and setting it twice collides.
@@ -18,8 +22,17 @@ plugins {
 group = "me.tbsten.katachi.intellij"
 // The plugin's own version, apart from katachi's: `katachiIntellij` in the root
 // gradle/libs.versions.toml, read through settings.gradle.kts. The zip attached to each GitHub
-// Release (publish.yml) is named after it.
-version = katachiLibs.versions.katachiIntellij.get()
+// Release (publish.yml) is named after it, and patchPluginXml writes it into plugin.xml.
+// `./gradlew buildPlugin -Pkatachi.timestampVersion` appends the build time, as in 0.2.0-261106_1850:
+// the IDE refuses "Install Plugin from Disk…" for a zip whose version it already has, so a zip built
+// from a branch could not replace the released 0.2.0 (seen while reviewing PR #10). The time is the
+// building machine's local time; the property is on when present with any value but `false`. With the
+// configuration cache (off in this build) the time would be reused from the cached configuration.
+version = katachiLibs.versions.katachiIntellij.get().let { base ->
+    val timestampVersion = providers.gradleProperty("katachi.timestampVersion").orNull
+    if (timestampVersion == null || timestampVersion == "false") base
+    else "$base-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd_HHmm"))
+}
 
 // JBR 21, which the 261 platform runs on.
 kotlin {
@@ -64,6 +77,8 @@ dependencies {
         bundledPlugin("org.jetbrains.kotlin")
         // Gradle sync data and ExternalSystem runTask. Pairs with <depends>com.intellij.gradle</depends>.
         bundledPlugin("com.intellij.gradle")
+        // The JetBrains MCP Server. Pairs with the optional <depends> of katachi-mcp.xml in plugin.xml.
+        bundledPlugin("com.intellij.mcpServer")
         // Jewel, Compose and Skiko come from the IDE rather than from the plugin. Each line pairs
         // with a <module name="..."/> in plugin.xml.
         bundledModule("intellij.platform.jewel.foundation")
@@ -299,7 +314,7 @@ tasks.register<Test>("testK1") {
 }
 // end of L-A
 
-// `./gradlew test -Dkatachi.gutter.golden.update=true` writes the gutter's text goldens (contract/gutter/*.txt) instead of comparing.
+// `./gradlew test -Dkatachi.gutter.golden.update=true` writes the text goldens (contract/gutter/*.txt, contract/mcp/*.txt) instead of comparing.
 tasks.test { providers.systemProperty("katachi.gutter.golden.update").orNull?.let { systemProperty("katachi.gutter.golden.update", it) } }
 
 // updatePreview / verifyPreview: run the preview main() on the standalone classpath.

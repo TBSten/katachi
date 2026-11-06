@@ -1,0 +1,315 @@
+---
+title: Your first architecture definition
+description: How to add katachi to a Gradle project, create an
+  :architecture-test module, and write your first architecture { } definition.
+tags:
+  - beginner
+slug: 0.3/get-started/first-architecture
+---
+
+{/*
+  Purpose of this page: to let a user who understands katachi's motivation add katachi to their own project. That includes configuring the Gradle module and the surrounding setup.
+  */}
+
+import { Aside, Tabs, TabItem, Steps, Badge, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+This page walks you through adding katachi to a Gradle project, writing your first `architecture { }` definition, and getting the test to pass.
+
+If you are not yet convinced that you need katachi, read [Motivation](/katachi/0.3/get-started/motivation/) first.
+
+## Add katachi to your project
+
+<Tabs>
+  <TabItem label="Let an AI agent do it">
+    <Steps>
+      1. Start the AI agent you use and **give it this prompt**.
+
+         ```md
+         Set up katachi in this project.
+
+         - Follow https://tbsten.github.io/katachi/install/en/index.md to do it.
+         ```
+
+         * Putting the project under git first is recommended.
+         * The page the AI agent reads tells it to set katachi up **together with you**.
+
+         <details>
+           <summary>Additional options</summary>
+
+           | Item | Details |
+           |---|---|
+           | **Additional documentation** | If your architecture documentation lives outside the codebase (in Notion, for example), include a link to it in the prompt. |
+           | **Module** | By default the AI agent creates an `architecture-test` module and writes the architecture definition there. To use a different module, add a prompt such as `Create the test in <module>`. |
+           | **Session** | As a matter of context hygiene, we recommend starting a fresh session dedicated to setting up katachi. For Claude Code or Codex CLI, clear the session with `/clear`, then enter the prompt. |
+         </details>
+
+      2. **Review** the changes the AI agent made to your project and adjust them as needed.
+
+         What to look at:
+
+         * `architecture-test/src/test/kotlin/<package>/ProjectArchitecture.kt` is the entry point.
+         * The AI agent splits the architecture definition into one file per group and per Role, and puts them in packages under `ProjectArchitecture.kt`. Review those files too.
+         * If you work in a team, have your teammates (especially whoever leads it) review this closely as well.
+
+      3. **Run the architecture test** and confirm that it is all green.
+
+         ```shell
+         ./gradlew :architecture-test:test
+         ```
+
+         That completes the setup.
+    </Steps>
+  </TabItem>
+
+  <TabItem label="Install manually">
+    <Steps>
+      1. **Create the `:architecture-test` module**
+
+         This module belongs to no layer of the app. It holds nothing but the architecture definition and the test that checks it.
+
+         ```kotlin title="settings.gradle.kts"
+         pluginManagement {
+           repositories {
+             gradlePluginPortal()
+             mavenCentral()
+           }
+         }
+
+         include(":architecture-test")
+         ```
+
+         katachi's Gradle plugin is published to Maven Central, not to the Gradle Plugin Portal. Without `mavenCentral()` in `pluginManagement { }`, the plugin cannot be resolved.
+
+      2. **Declare the dependencies**
+
+         Whether your project is Android or KMP, **make this a plain `kotlin("jvm")` module**, because katachi itself is a JVM library.
+
+         ```kotlin title="architecture-test/build.gradle.kts"
+         import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
+         plugins {
+           kotlin("jvm") version "<Kotlin version>"
+           id("me.tbsten.katachi") version "<katachi version>"
+         }
+
+         kotlin {
+           jvmToolchain(17)
+         }
+
+         tasks.test {
+           useJUnitPlatform()
+           // The files being checked are not inputs of the Test task, so run it every time (and keep its result out of the build cache)
+           outputs.upToDateWhen { false }
+           outputs.cacheIf { false }
+           // Print the list of violations to the console
+           testLogging { exceptionFormat = TestExceptionFormat.FULL }
+         }
+
+         dependencies {
+           testImplementation("me.tbsten.katachi:katachi:<katachi version>")
+           testImplementation("me.tbsten.katachi:katachi-konsist:<katachi version>")
+           testImplementation(platform("org.junit:junit-bom:5.14.4"))
+           testImplementation("org.junit.jupiter:junit-jupiter")
+           testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+         }
+
+         katachi {
+           architecture = "com.example.projectArchitecture"
+         }
+         ```
+
+         <details>
+           <summary>If you use Kotlin 2.2.0 or later but earlier than 2.4.0</summary>
+
+           Use Kotlin **2.2 or later**. Earlier Kotlin versions cannot read the metadata of katachi's libraries.
+
+           `ktFile()`, `ktFileContent { }` and others are declared with context parameters. **Below Kotlin 2.4** they cannot be called without the following option (do not add it on 2.4 or later; it causes a warning).
+
+           ```kotlin title="architecture-test/build.gradle.kts"
+           kotlin {
+             compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")
+           }
+           ```
+         </details>
+
+      3. **Define the architecture.**
+
+         `architecture-test/src/test/kotlin/<package>/ProjectArchitecture.kt` is the entry point.
+
+         ```kotlin
+         // Example
+         @file:OptIn(ExperimentalKatachiApi::class)
+
+         package com.example
+
+         import me.tbsten.katachi.ExperimentalKatachiApi
+         import me.tbsten.katachi.dsl.architecture
+         import me.tbsten.katachi.dsl.gradle.gradle
+         import me.tbsten.katachi.dsl.kotlin.ktFile
+
+         val projectArchitecture = architecture {
+           gradle() // Gradle's files: the wrapper, settings, build scripts and so on
+           "domain".group {
+             "UseCase".role {
+               summary = "A single app-specific behavior that occurs on a screen"
+               layout {
+                 "domain/src/main/kotlin/usecase" / "*UseCase".ktFile()
+               }
+             }
+           }
+         }
+         ```
+
+      4. **Write the one test that checks it**
+
+         Write the following test in `ProjectArchitectureTest.kt`.
+
+         ```kotlin title="architecture-test/src/test/kotlin/<package>/ProjectArchitectureTest.kt"
+         @file:OptIn(ExperimentalKatachiApi::class)
+
+         package com.example
+
+         import me.tbsten.katachi.ExperimentalKatachiApi
+         import me.tbsten.katachi.check.assert
+         import org.junit.jupiter.api.Test
+
+         class ProjectArchitectureTest {
+           @Test
+           fun `the project structure matches the definition`() {
+             projectArchitecture.assert()
+           }
+         }
+         ```
+
+         This is the only test your project writes. Every violation in the repository lands in a single failure message, so there is no point in splitting the test up per rule.
+
+         Once you write `ktFileContent { }`, change the call to `projectArchitecture.assert(FileConstraintCheck())`. With `assert()` as is, the constraints are not checked, and the test fails with `[UncheckedFileConstraint]`.
+
+      5. **Run it**
+
+         Run the architecture test with the following command.
+
+         ```shell
+         ./gradlew :architecture-test:test
+         ```
+
+         At first the files and directories you have not declared come out as violations. katachi is an allow-list, so this is the normal starting point. Go through the reported paths and decide, one by one, whether to add them to the definition or delete them.
+    </Steps>
+  </TabItem>
+</Tabs>
+
+## Confirm that the setup works
+
+<Tabs>
+  <TabItem label="Let an AI agent verify it">
+    Hand the AI agent a real task and see that it no longer produces files that break the architecture rules.
+
+    <details>
+      <summary>If you have implementation tasks coming up</summary>
+
+      If you have tasks that are actually coming up, running one of them as a trial is the best way to measure whether katachi does its job.
+      Hand the task to the AI agent and let it run.
+
+      If the task is tracked in JIRA, Notion, or similar, passing those along works well too.
+    </details>
+
+    <details>
+      <summary>If you have nothing in particular</summary>
+
+      Have the AI agent invent a hypothetical task and check whether katachi works as a guardrail.
+
+      ```md
+      Come up with a few hypothetical tasks that are likely to come up in this project.
+      ```
+    </details>
+  </TabItem>
+
+  <TabItem label="Verify manually">
+    1. Think of a piece of code that breaks an architecture rule and actually create that source file.
+    2. Run `./gradlew :architecture-test:test` and confirm that the architecture test fails.
+
+       <details>
+         <summary>Example output on failure</summary>
+
+         The definition in step 3 put `*UseCase.kt` under `domain/src/main/kotlin/usecase/`. If you place `GetUserUseCase.kt` one level up, at `domain/src/main/kotlin/GetUserUseCase.kt`, the violation is reported like this.
+
+         ```text nocollapse
+         Katachi check failed: 1 violation (Unexpected: 1)
+
+         [UnexpectedFile] file:///path/to/project/domain/src/main/kotlin/GetUserUseCase.kt
+           No role is defined for this file.
+
+           Nearby locations:
+             domain.UseCase file:///path/to/project/domain/src/main/kotlin/usecase/ (*UseCase.kt)
+
+           How to fix:
+             - Move it to one of the locations above, with a name matching the pattern in parentheses
+             - Delete it if it is not needed
+             - Add a new role for it:
+                 "GetUserUseCase".role {
+                   summary = "TODO"
+                   layout {
+                     "domain/src/main/kotlin" / "GetUserUseCase".ktFile()
+                   }
+                 }
+         ```
+       </details>
+  </TabItem>
+</Tabs>
+
+## <Badge text="Optional" size="small" /> <br /> Wire it into CI
+
+To keep the quality up, run the katachi architecture test regularly by wiring it into CI.
+
+<Tabs>
+  <TabItem label="Github Actions">
+    Add a workflow file like this one.
+
+    ```yaml title=".github/workflows/architecture.yml"
+    name: Architecture
+
+    on:
+      push:
+        branches: [main]
+      pull_request:
+
+    permissions:
+      contents: read
+
+    jobs:
+      architecture:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v7
+
+          - uses: actions/setup-java@v6
+            with:
+              distribution: temurin
+              java-version: '17'
+
+          - uses: gradle/actions/setup-gradle@v6
+
+          - run: ./gradlew :architecture-test:test
+    ```
+  </TabItem>
+
+  <TabItem label="Other CI systems">
+    Describe a workflow like the following, in whatever form your CI system expects.
+
+    1. Set up Java.
+    2. Run `./gradlew :architecture-test:test`.
+    3. Report the result of step 2.
+  </TabItem>
+</Tabs>
+
+## Next steps
+
+<CardGrid>
+  <LinkCard title="Basic API" href="/katachi/guides/basic-api/" description="Learn the APIs you pick up first when writing a katachi definition." />
+
+  <LinkCard title="Role" href="/katachi/guides/role/" description="Learn how to write a Role, the basic unit of a definition, and how to think about splitting them." />
+
+  <LinkCard title="Layout" href="/katachi/guides/layout/" description="Learn how to write a Layout that enforces your directory structure." />
+
+  <LinkCard title="sample/jvm" href="https://github.com/TBSten/katachi/tree/main/sample/jvm" description="A working example: a minimal Ktor server with a definition added." />
+</CardGrid>

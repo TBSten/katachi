@@ -21,6 +21,9 @@ fun DeclarationContainerScope.architectureDefinition() = "ArchitectureDefinition
             testSourceSet / kotlin / ARCHITECTURE_TEST_PACKAGE / "LayerImports".ktFile()
             testSourceSet / kotlin / ARCHITECTURE_TEST_PACKAGE / "InternalPackages".ktFile()
             testSourceSet / kotlin / ARCHITECTURE_TEST_PACKAGE / "KdocExamples".ktFile()
+            // The hand-written stand-in for the plugin's generated entry point, which the
+            // `katachiDiff` task of this module loads by name.
+            testSourceSet / kotlin / ARCHITECTURE_TEST_PACKAGE / "ProjectArchitectureEntryPoint".ktFile()
             // One declaration per file, and the file name says which kind it is. A group sits
             // in the directory named after it and its roles beside it, the same shape the
             // samples use, so the directories are not listed -- a `*Group.kt` or `*Role.kt`

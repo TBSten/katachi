@@ -3,7 +3,7 @@ package me.tbsten.katachi.test.synthetic
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.test.dsl.files.fakeFileSystem
 

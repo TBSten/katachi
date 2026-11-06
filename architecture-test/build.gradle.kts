@@ -25,6 +25,13 @@ tasks.test {
     outputs.upToDateWhen { false }
     outputs.cacheIf { false }
 
+    // `-Dkatachi.snapshot.update=true` on the command line sets a property of Gradle's own JVM,
+    // not of the forked test JVM, so LayerImportSnapshotSpec would never see it without this.
+    systemProperty(
+        "katachi.snapshot.update",
+        providers.systemProperty("katachi.snapshot.update").getOrElse("false"),
+    )
+
     // The violations as SARIF 2.1.0, next to the JUnit report: ci.yml hands this file to
     // GitHub's code scanning (`upload-sarif`), which annotates a pull request with them.
     //
@@ -77,4 +84,36 @@ dependencies {
     // No `testRuntimeOnly(junitJupiterEngine)`. The samples need it because their
     // `ProjectArchitectureTest` is a plain JUnit test; every spec here is a kotest
     // `FreeSpec`, and kotest's JUnit 5 runner brings its own engine.
+}
+
+/**
+ * `./gradlew :architecture-test:katachiDiff --arg before=origin/main`, the task the katachi Gradle
+ * plugin registers in a module that applies it, written here by hand for the same reason the SARIF
+ * wiring above is: this module cannot apply the plugin of the build it belongs to. It runs the same
+ * `main` on the same test runtime classpath, with `ProjectArchitectureEntryPoint` standing in for the
+ * object the plugin would generate.
+ */
+abstract class KatachiDiffTask : JavaExec() {
+    @get:Input
+    @get:Option(option = "arg", description = "Argument of DiffReport.Args as key=value, e.g. before=origin/main. Repeatable.")
+    abstract val processorArgs: ListProperty<String>
+}
+
+tasks.register<KatachiDiffTask>("katachiDiff") {
+    group = "katachi"
+    description = "Runs katachi's DiffReport on this repository's own definition. Pass arguments with --arg key=value."
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass = "me.tbsten.katachi.processor.internal.MainKt"
+    // The processor resolves its output paths and the git range from here, as the plugin's task does.
+    workingDir = projectDir
+    argumentProviders.add(
+        CommandLineArgumentProvider {
+            listOf(
+                "--entry-point=me.tbsten.katachi.test.architecture.ProjectArchitectureEntryPoint",
+                "--processor=diff",
+            ) + processorArgs.get().map { "--arg=$it" }
+        },
+    )
+    // A git range is not an input Gradle can see, so a second run with the same arguments must still run.
+    outputs.upToDateWhen { false }
 }

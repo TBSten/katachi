@@ -86,6 +86,13 @@ internal class KatachiToolWindowViewModel(
 
     val isLoadRunning: Boolean get() = loadJob?.isActive == true
 
+    val isGenerating: Boolean get() = mutableState.value.generation is GenerationState.Running
+
+    /** Returns once the detection or load running now (if any) has ended. */
+    suspend fun awaitLoad() {
+        loadJob?.join()
+    }
+
     private val candidateLoader = CaptureCandidateLoader(
         scope = scope,
         lister = candidateLister,

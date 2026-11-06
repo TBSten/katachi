@@ -1,0 +1,5 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <mcpServer.mcpToolset implementation="me.tbsten.katachi.intellij.ide.mcp.KatachiMcpToolset"/>
+    </extensions>
+</idea-plugin>

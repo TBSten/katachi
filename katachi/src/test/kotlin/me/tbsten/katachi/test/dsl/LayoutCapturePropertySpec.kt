@@ -6,7 +6,7 @@ import io.kotest.matchers.ints.shouldBeGreaterThan
 import kotlin.random.Random
 import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.check.internal.moduleIndex
-import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.ModuleResolver
 import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.test.check.layoutArchitecture

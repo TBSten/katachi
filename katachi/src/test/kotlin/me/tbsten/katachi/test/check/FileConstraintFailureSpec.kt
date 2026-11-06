@@ -12,7 +12,7 @@ import me.tbsten.katachi.check.FileConstraintCheck
 import me.tbsten.katachi.check.UncheckedFileConstraintReason
 import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.check.internal.report
-import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.FileConstraintFailure
 import me.tbsten.katachi.dsl.FileConstraint
 import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext

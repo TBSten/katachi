@@ -16,7 +16,7 @@ import me.tbsten.katachi.check.UncheckedFileConstraint
 import me.tbsten.katachi.check.UncheckedFileConstraintReason
 import me.tbsten.katachi.check.UnsatisfiedFileConstraint
 import me.tbsten.katachi.check.internal.report
-import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.FileConstraint
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.files.internal.RealFileSystem

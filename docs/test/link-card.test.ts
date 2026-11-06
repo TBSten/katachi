@@ -12,8 +12,8 @@ const walk = (dir: string): string[] =>
 		return statSync(path).isDirectory() ? walk(path) : path.endsWith('.mdx') ? [path] : []
 	})
 
-// 過去の版（0.2/）は凍結しているので対象にしない。
-const files = walk(docsRoot).filter((f) => !relative(docsRoot, f).startsWith('0.2/'))
+// 過去の版の写し（0.2/・ja/0.3/ など。版の slug は数字で始まる）は凍結しているので対象にしない。
+const files = walk(docsRoot).filter((f) => !/^(?:ja\/)?[0-9]/.test(relative(docsRoot, f)))
 
 export const findCodeInLinkCards = (source: string): string[] =>
 	[...source.matchAll(/<LinkCard\b[\s\S]*?\/>/g)]

@@ -16,7 +16,7 @@ import me.tbsten.katachi.check.StaleBaselineEntry
 import me.tbsten.katachi.check.ViolationKind
 import me.tbsten.katachi.check.internal.BaselineEnvironment
 import me.tbsten.katachi.check.internal.assertWith
-import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.KatachiInvalidBaselinePathException

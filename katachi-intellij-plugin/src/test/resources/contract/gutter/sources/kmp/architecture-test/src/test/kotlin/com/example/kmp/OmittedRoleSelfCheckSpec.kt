@@ -19,7 +19,7 @@ import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.FileConstraintCheck
 import me.tbsten.katachi.check.UnexpectedFile
 import me.tbsten.katachi.check.Violation
-import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.architecture
 
 /**

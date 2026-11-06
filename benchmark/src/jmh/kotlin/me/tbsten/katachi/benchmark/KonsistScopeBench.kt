@@ -5,7 +5,7 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 import me.tbsten.katachi.check.FileConstraintCheck
 import me.tbsten.katachi.check.Violation
-import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.test.synthetic.generateProject

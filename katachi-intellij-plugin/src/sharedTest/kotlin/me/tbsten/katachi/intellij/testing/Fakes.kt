@@ -104,6 +104,14 @@ internal class FakeIdeEffects(
         return "katachi: before generating (${titles.joinToString(", ")})".takeIf { labelPut }
     }
 
+    val labels: MutableList<String> = Collections.synchronizedList(mutableListOf())
+
+    override suspend fun putLocalHistoryLabelNamed(name: String): String? {
+        log += "label"
+        labels += name
+        return name.takeIf { labelPut }
+    }
+
     override suspend fun refreshFiles(paths: List<Path>) {
         log += "refresh"
         refreshed += paths

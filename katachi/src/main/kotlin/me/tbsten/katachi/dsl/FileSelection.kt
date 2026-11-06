@@ -17,6 +17,15 @@ import me.tbsten.katachi.dsl.files.internal.isInsideGitWorkTree
  * something else (a Bazel workspace, a generated manifest) implements [fileSystemFor] and assigns
  * its own selection to `files`.
  *
+ * ## Why a selection of your own is allowed at all
+ *
+ * A selection can hide any path, so it is the one place a file can be left out of the check
+ * without a role, and without the reason ending up in the generated documentation. katachi
+ * accepts that opening because "which files are the project's" does not always have git for an
+ * answer: a Bazel workspace or a generated manifest is the only honest source of that list. Keep
+ * a selection to that one question. A path left out for any other reason belongs in `ignore()`,
+ * where the reason is recorded next to it.
+ *
  * ## Example 1: keep the default (gitTracked())
  * ```kt
  * val projectArchitecture = architecture {

@@ -10,7 +10,7 @@ import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.check.internal.blockOf
 import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.report.internal.sarifMessageOf
-import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.check.FileConstraintCheck
 
 /**

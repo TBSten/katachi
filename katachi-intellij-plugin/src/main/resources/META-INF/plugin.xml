@@ -49,6 +49,8 @@
     <depends>com.intellij.modules.vcs</depends>
     <!-- The Analysis API. Required, not optional: the gutter (SourceDeclarations, AnnotationRanges, GutterPlacement) and the language injection use the Kotlin plugin. -->
     <depends>org.jetbrains.kotlin</depends>
+    <!-- The MCP tools. Optional: Android Studio does not bundle the MCP Server, and there katachi-mcp.xml is not read. -->
+    <depends optional="true" config-file="katachi-mcp.xml">com.intellij.mcpServer</depends>
 
     <!-- v2 module dependencies, paired with bundledModule(...) in build.gradle.kts, so that Jewel and
          Compose are resolved from the IDE through the plugin classloader. -->

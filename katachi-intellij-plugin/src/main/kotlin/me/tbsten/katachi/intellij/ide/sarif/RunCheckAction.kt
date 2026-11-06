@@ -44,17 +44,26 @@ internal class RunCheckAction : DumbAwareAction() {
         val violations = ports.violations() ?: return
         val projectService = KatachiProjectService.getInstance(project)
         projectService.scope.launch {
-            // Gradle compiles the definition from the disk.
-            withContext(Dispatchers.EDT) {
-                sdkCall("save the files before the check") { writeIntentReadAction { FileDocumentManager.getInstance().saveAllDocuments() } }
-            }
-            val module = moduleToCheck(project, definition, file)
+            val module = saveAndPickModule(project, definition, file)
             if (module == null) notifyNoTarget(project) else violations.runCheck(module)
         }
     }
 
     companion object {
         const val ID: String = "katachi.RunCheck"
+
+        /** Saves the open documents, then picks the module to check as [moduleToCheck] does. Not on the EDT. */
+        suspend fun saveAndPickModule(project: Project, definition: DefinitionModelService, file: VirtualFile?): ModuleId? {
+            saveDocumentsForCheck()
+            return moduleToCheck(project, definition, file)
+        }
+
+        // Gradle compiles the definition from the disk.
+        suspend fun saveDocumentsForCheck() {
+            withContext(Dispatchers.EDT) {
+                sdkCall("save the files before the check") { writeIntentReadAction { FileDocumentManager.getInstance().saveAllDocuments() } }
+            }
+        }
 
         // Call it off the EDT.
         fun moduleToCheck(project: Project, definition: DefinitionModelService, file: VirtualFile?): ModuleId? {

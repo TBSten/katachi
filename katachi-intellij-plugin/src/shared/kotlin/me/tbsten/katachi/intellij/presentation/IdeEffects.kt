@@ -16,6 +16,9 @@ internal interface IdeEffects {
 
     suspend fun putLocalHistoryLabel(titles: List<String>): String?
 
+    /** A Local History label named [name] as it is; `null` when it could not be put. */
+    suspend fun putLocalHistoryLabelNamed(name: String): String? = null
+
     suspend fun refreshFiles(paths: List<Path>)
 
     suspend fun openFiles(paths: List<Path>): List<Path>

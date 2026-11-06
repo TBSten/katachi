@@ -5,7 +5,7 @@ import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.check.CaptureMismatch
 import me.tbsten.katachi.check.CaptureOccurrence
 import me.tbsten.katachi.check.internal.report
-import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.kotlin.ktFile
