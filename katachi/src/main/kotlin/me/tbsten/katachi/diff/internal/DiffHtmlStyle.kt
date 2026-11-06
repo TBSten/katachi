@@ -7,7 +7,7 @@ internal val DIFF_HTML_STYLE: String = """
   --bg: #ffffff; --bg-muted: #f3f4f6; --bg-sunken: #e5e7eb; --bg-nav: #ffffffcc;
   --line: #d1d5dc; --hairline: #e5e7eb; --wash: #99a1af4d;
   --ink: #101828; --text: #364153; --muted: #6a7282; --accent: #1e2939; --on-accent: #ffffff;
-  /* Heat is data, so it keeps a hue: the caution (amber) steps, pale -> deep. */
+  /* Importance is data, so it keeps a hue: the caution (amber) steps, pale -> deep. */
   --heat-low: #fef3c6; --heat-mid: #ffb900; --heat-high: #973c00;
   --success-low: #dcfce7; --success-high: #016630; --danger-low: #ffe2e2; --danger-high: #9f0712;
   --caution-low: #fef3c6; --caution: #ffb900; --caution-high: #973c00; --note-low: #dbeafe; --note-high: #193cb8;

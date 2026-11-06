@@ -54,7 +54,7 @@ private fun summary(model: DiffReportModel, touched: Int, listings: Set<String>,
     // The tree ends at files, as the HTML does: group -> role -> file, then the files no role allows.
     if (model.changes.isNotEmpty()) {
         val maxFileScore = maxFileScore(model)
-        appendLine("| Role | Heat | Diff lines | Files |")
+        appendLine("| Role | Importance | Diff lines | Files |")
         appendLine("|---|---|---:|---:|")
         for (node in model.nodes.filter { it.changed }) summaryRows(node, model, maxFileScore, depth = 0)
         if (model.unassigned.isNotEmpty()) {

@@ -351,7 +351,7 @@ class DiffReportSpec : FreeSpec({
             ).getOrThrow()
 
             val summary = out.resolve("diff-report.md").readText()
-            summary shouldContain "| Role | Heat | Diff lines | Files |"
+            summary shouldContain "| Role | Importance | Diff lines | Files |"
             summary shouldContain "GitHub links and `git diff` commands per file: [Files by role](diff-report.files-by-role.md) · " +
                 "[Files in no role](diff-report.files-in-no-role.md)"
             // The table goes down to the files, like the HTML; the commands stay in the listings.
