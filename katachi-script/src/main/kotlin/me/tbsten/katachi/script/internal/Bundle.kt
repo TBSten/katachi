@@ -1,0 +1,29 @@
+package me.tbsten.katachi.script.internal
+
+/**
+ * The guide and the two templates, shipped inside this artifact so that `init` and `guide` need no
+ * network. `processResources` copies them from `docs/public/install/<lang>/` and rewrites the
+ * install kit's `sh $CLI <subcommand>` into `katachi <subcommand>` on the way.
+ */
+internal object Bundle {
+    private const val ROOT = "META-INF/katachi-script/install"
+
+    const val GUIDE: String = "index.md"
+
+    const val CHECK_LIST_TEMPLATE: String = "install-check-list.html"
+
+    const val REPORT_TEMPLATE: String = "project-code-base-report-template.html"
+
+    /** Where a bundled file says it came from, in the MANIFEST and in messages. */
+    fun origin(lang: Lang, name: String): String = "katachi-script ${ScriptVersion.current()}:install/${lang.code}/$name"
+
+    fun text(lang: Lang, name: String): String {
+        val path = "$ROOT/${lang.code}/$name"
+        val stream = Bundle::class.java.classLoader.getResourceAsStream(path)
+            ?: die(
+                "katachi に同梱されているはずの $path がありません。katachi を入れ直してください（brew reinstall tbsten/tap/katachi）。",
+                "$path, which ships with katachi, is missing. Reinstall katachi (brew reinstall tbsten/tap/katachi).",
+            )
+        return stream.use { it.readBytes().toString(Charsets.UTF_8) }
+    }
+}

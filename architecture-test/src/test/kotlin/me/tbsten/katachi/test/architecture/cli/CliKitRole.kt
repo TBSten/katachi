@@ -6,7 +6,7 @@ fun DeclarationContainerScope.cliKit() = "CliKit".role {
     title = "katachi コマンドの配布物"
     summary = "Homebrew の formula が展開するもの。入口の Kotlin スクリプトと、それを kotlin で起動する sh"
     description = """
-        `./gradlew :katachi-script:cliTar` が `katachi-install.sh` と一緒に tar にし、Release に添付します。
+        `./gradlew :katachi-script:cliTar` が tar にし、Release に添付します。
         formula は `TBSten/homebrew-tap` にあり、Release のたびに publish.yml が URL と sha256 を書き換えます。
     """.trimIndent()
     example("katachi.main.kts", "@file:DependsOn で katachi-script を引いて main(args) を呼ぶ")

@@ -56,6 +56,9 @@ internal val prettyJson: Json = Json {
     prettyPrintIndent = "  "
 }
 
+/** Two-space JSON without a trailing newline, as the kit's `json.dump(..., indent=2, ensure_ascii=False)` wrote it. */
+internal fun encodePretty(element: JsonElement): String = prettyJson.encodeToString(JsonElement.serializer(), element)
+
 internal fun parseJsonOrNull(text: String): JsonElement? =
     runCatching { Json.parseToJsonElement(text) }.getOrNull()
 

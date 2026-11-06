@@ -3,6 +3,7 @@ package me.tbsten.katachi.script.internal
 import java.io.OutputStream
 import java.io.PrintStream
 import java.nio.file.Path
+import java.time.Clock
 import kotlin.io.path.Path
 import kotlin.io.path.absolute
 
@@ -16,22 +17,40 @@ internal enum class Lang(val code: String) {
     }
 }
 
+/** The name people type. Every "next:" line and every command in the bundled guide uses it. */
+internal const val CLI_COMMAND: String = "katachi"
+
 internal class ScriptContext(
     val cwd: Path,
     val env: Map<String, String>,
     val out: (String) -> Unit,
     val err: (String) -> Unit,
+    val clock: Clock = Clock.systemDefaultZone(),
+    val http: HttpFetcher = JdkHttpFetcher,
 ) {
     var lang: Lang = Lang.of(env["KATACHI_LANG"]) ?: Lang.JA
 
-    /** Where `bin/katachi` unpacked the kit; null when run from a bare `kotlin katachi.main.kts`. */
-    val home: Path? = env["KATACHI_HOME"]?.takeIf { it.isNotBlank() }?.let { cwd.resolve(it).normalize() }
+    /** `--lang` given on the command line (init / doctor); it wins over everything else. */
+    var langExplicit: Boolean = false
+
+    /** The write lock this process holds, so that a command that took it does not wait on itself. */
+    var heldLock: WorkdirLock? = null
 
     fun pick(ja: String, en: String): String = if (lang == Lang.EN) en else ja
 
     fun say(ja: String, en: String) = out(pick(ja, en))
 
+    /** A line printed the same in both languages (`KEY=VALUE`, a bare path, a blank line). */
+    fun say(text: String) = out(text)
+
+    /** The kit's `note`: an indented detail line. */
+    fun note(ja: String, en: String) = out("   " + pick(ja, en))
+
+    fun note(text: String) = out("   $text")
+
     fun warn(ja: String, en: String) = err("\n[!] ${pick(ja, en)}")
+
+    fun warn(text: String) = err("\n[!] $text")
 
     fun resolve(path: String): Path = cwd.resolve(path).normalize()
 
@@ -64,6 +83,12 @@ internal class KatachiScriptExitException(
 
 internal fun die(ja: String, en: String): Nothing = throw KatachiScriptExitException(ja, en)
 
+/** Ends the command with [status] and nothing more on stderr (what was to be said is already printed). */
+internal fun exitWith(status: Int): Nothing = throw KatachiScriptExitException("", "", status = status, plain = true)
+
+/** Stops with [ja] / [en] printed bare on stderr, as the kit's embedded python did before `sys.exit(1)`. */
+internal fun fail(ja: String, en: String, status: Int = 1): Nothing = throw KatachiScriptExitException(ja, en, status = status, plain = true)
+
 /** `--opt` without a value: the kit's `need_value`. */
 internal fun needValue(option: String, value: String?): String =
     value?.takeIf { it.isNotEmpty() } ?: die("$option に値がありません。", "$option needs a value.")
@@ -72,14 +97,15 @@ internal fun needValue(option: String, value: String?): String =
  * A path for people, as the kit's `file_uri` prints it: absolute, `file://`, with only the four
  * characters a terminal would misread percent-encoded. Not for values a program reads back.
  */
-internal fun ScriptContext.fileUri(path: String): String {
-    val absolute = resolve(path).toString()
-    val encoded = absolute
+internal fun ScriptContext.fileUri(path: String): String = fileUriOf(resolve(path))
+
+internal fun ScriptContext.fileUri(path: Path): String = fileUri(path.toString())
+
+internal fun fileUriOf(absolute: Path): String {
+    val encoded = absolute.normalize().toString()
         .replace("%", "%25")
         .replace(" ", "%20")
         .replace("#", "%23")
         .replace("?", "%3F")
     return "file://$encoded"
 }
-
-internal fun ScriptContext.fileUri(path: Path): String = fileUri(path.toString())
