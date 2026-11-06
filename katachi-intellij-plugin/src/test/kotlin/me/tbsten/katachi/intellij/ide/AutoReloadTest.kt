@@ -17,6 +17,9 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.nanoseconds
 
 /** The automatic reload's waiting (design 4.8): the delay, Gradle, the tool window's own load, and a refusal. */
 class AutoReloadTest {
@@ -29,6 +32,12 @@ class AutoReloadTest {
         scope.cancel()
     }
 
+    private companion object {
+        // Wall-clock margins are what a slow CI runner breaks: the second schedule() must land inside the first delay, so the delay
+        // is long against the 100 ms between them, and nothing asserts "not reloaded yet" at a point in time.
+        const val DELAY_MILLIS: Long = 1_000L
+    }
+
     private suspend fun waitUntil(what: String, condition: () -> Boolean) = withTimeout(5_000) {
         while (!condition()) delay(10)
     }.also { check(condition()) { what } }
@@ -36,13 +45,20 @@ class AutoReloadTest {
     @Test
     fun `待ってから一度だけ読み直し 続けて予約すれば最後からやり直す`() = runBlocking {
         val calls = AtomicInteger()
-        val autoReload = AutoReload(scope, state, activity, delayMillis = 150) { calls.incrementAndGet(); true }
+        val reloadedAt = AtomicLong()
+        val autoReload = AutoReload(scope, state, activity, delayMillis = DELAY_MILLIS) {
+            reloadedAt.set(System.nanoTime())
+            calls.incrementAndGet()
+            true
+        }
         autoReload.schedule()
         delay(100)
+        val rescheduledAt = System.nanoTime()
         autoReload.schedule()
-        delay(100)
-        assertEquals(0, calls.get())
         waitUntil("reloaded") { calls.get() == 1 }
+        // A reload of the first schedule() would come before the second one's delay is over (or before it at all).
+        val waited = (reloadedAt.get() - rescheduledAt).nanoseconds
+        assertTrue("reloaded $waited after the second schedule(), less than ${DELAY_MILLIS.milliseconds}", waited >= DELAY_MILLIS.milliseconds)
         delay(300)
         assertEquals(1, calls.get())
         assertFalse(autoReload.isPending)
