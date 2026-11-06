@@ -5,6 +5,7 @@ import java.io.IOException
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.diff.internal.DEFAULT_FULL_IMPORTANCE_LINES
 import me.tbsten.katachi.diff.internal.MarkdownFileNames
 import me.tbsten.katachi.diff.internal.buildDiffReportModel
 import me.tbsten.katachi.diff.internal.changedFiles
@@ -59,6 +60,7 @@ public object DiffReport : ArchitectureProcessor<DiffReport.Args, Unit> {
 
     override fun process(context: ArchitectureProcessContext<Args>): Result<Unit> = runProcessorCatching {
         val args = context.args
+        if (args.fullImportanceLines <= 0) throw KatachiInvalidFullImportanceLinesException(args.fullImportanceLines)
         val walk = context.projectWalk
         val root = walk.projectRoot
         val range = resolveDiffRange(root, before = args.before, after = args.after, pr = args.pr)
@@ -71,6 +73,7 @@ public object DiffReport : ArchitectureProcessor<DiffReport.Args, Unit> {
             changes = changes,
             weights = args.weights,
             maxFiles = args.maxFiles,
+            fullImportanceLines = args.fullImportanceLines,
         )
         if (!args.markdown && !args.html) throw KatachiDiffReportNothingToWriteException()
         val outputs = buildList {
@@ -125,7 +128,15 @@ public object DiffReport : ArchitectureProcessor<DiffReport.Args, Unit> {
      * DiffReport.Args(html = false, markdownOutputFile = "diff-report.md")
      * ```
      *
-     * @constructor Takes the refs, the weights, the file limit and what to write where.
+     * ## Example 4: count a smaller change as full importance
+     * ```kt
+     * import me.tbsten.katachi.diff.DiffReport
+     *
+     * // ./gradlew katachiDiff --arg before=origin/main --arg fullImportanceLines=200
+     * DiffReport.Args(before = "origin/main", fullImportanceLines = 200)
+     * ```
+     *
+     * @constructor Takes the refs, the weights, the file limit, the importance scale and what to write where.
      */
     @Serializable
     public data class Args(
@@ -167,6 +178,14 @@ public object DiffReport : ArchitectureProcessor<DiffReport.Args, Unit> {
          * left out.
          */
         val maxFiles: Int = DEFAULT_MAX_FILES,
+        /**
+         * The diff lines, after weighing, at which a row's importance is full.
+         *
+         * Every group, role and file is measured against this one number rather than against the
+         * largest row of the change, so a change of a few lines stays pale however small the rest
+         * of the change is. A row past it is shown as full. Must be 1 or more.
+         */
+        val fullImportanceLines: Int = DEFAULT_FULL_IMPORTANCE_LINES,
     )
 }
 

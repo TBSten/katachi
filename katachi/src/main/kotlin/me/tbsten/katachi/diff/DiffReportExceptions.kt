@@ -144,6 +144,31 @@ public class KatachiInvalidDefinitionDiffWeightException internal constructor(
 )
 
 /**
+ * `--arg fullImportanceLines=` is 0 or less, so there is nothing to measure the importance against.
+ *
+ * ## Example 1: a scale that fills at 200 weighted diff lines
+ * ```kt
+ * import me.tbsten.katachi.diff.DiffReport
+ *
+ * // ./gradlew katachiDiff --arg fullImportanceLines=200
+ * DiffReport.Args(fullImportanceLines = 200)
+ * ```
+ *
+ * @see DiffReport.Args.fullImportanceLines
+ */
+@ExperimentalKatachiApi
+public class KatachiInvalidFullImportanceLinesException internal constructor(
+    /** The value as given. */
+    public val fullImportanceLines: Int,
+) : KatachiDeclarationException(
+    message = buildString {
+        appendLine("Invalid fullImportanceLines $fullImportanceLines passed to the diff report.")
+        appendLine("It is the number of weighted diff lines at which a row's importance is full, so it must be 1 or more.")
+        append("Pass a positive number, such as `--arg fullImportanceLines=400`, or leave it out for the default.")
+    },
+)
+
+/**
  * [DiffReport] could not write one of its files.
  *
  * ## Example 1: say where the report was going

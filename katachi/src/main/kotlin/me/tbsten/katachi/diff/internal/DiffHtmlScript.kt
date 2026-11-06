@@ -37,6 +37,7 @@ internal val DIFF_HTML_SCRIPT: String = """
   const data = JSON.parse(document.getElementById("diff-data").textContent);
   const boxes = [...document.querySelectorAll("input[data-commit]")];
   const maxFiles = Number(document.querySelector("table").dataset.maxFiles) || 0;
+  const fullImportance = Number(document.querySelector("table").dataset.fullImportance);
   const fileRows = rows.filter(r => r.classList.contains("file") && !r.classList.contains("more"));
   const statusOf = r => r.querySelector(".status");
   const net = new Map(fileRows.map(r => [r, { added: r.dataset.added, deleted: r.dataset.deleted, binary: r.dataset.binary,
@@ -196,14 +197,11 @@ internal val DIFF_HTML_SCRIPT: String = """
   document.querySelector("[data-action=all-commits]")?.addEventListener("click", e => { e.preventDefault(); setAll(true); });
   document.querySelector("[data-action=no-commits]")?.addEventListener("click", e => { e.preventDefault(); setAll(false); });
   function render() {
-    // One scale for every row, so a role's bar is never shorter than one of its files' bars.
-    const counted = r => !r.classList.contains("more") && !r.classList.contains("filtered") && !r.classList.contains("limited");
-    const max = rows.filter(counted).reduce((m, r) => Math.max(m, value(r)), 0);
     for (const r of rows) {
       if (r.classList.contains("more")) continue;
-      const v = value(r), m = max;
+      const v = value(r);
       const bar = r.querySelector(".bar");
-      const ratio = m > 0 ? v / m : 0;
+      const ratio = Math.min(1, v / fullImportance);
       bar.style.width = v > 0 ? "max(6px, " + ratio * 100 + "%)" : "0";
       bar.style.background = heatColor(ratio);
       const a = Number(r.dataset.added), d = Number(r.dataset.deleted);
