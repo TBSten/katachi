@@ -54,12 +54,12 @@ private fun summary(model: DiffReportModel, touched: Int, listings: Set<String>,
     // The tree ends at files, as the HTML does: group -> role -> file, then the files no role allows.
     if (model.changes.isNotEmpty()) {
         val maxFileScore = maxFileScore(model)
-        appendLine("| Role | Heat | Diff lines | Files |")
+        appendLine("| Role | Importance | Diff&nbsp;lines | Files |")
         appendLine("|---|---|---:|---:|")
         for (node in model.nodes.filter { it.changed }) summaryRows(node, model, maxFileScore, depth = 0)
         if (model.unassigned.isNotEmpty()) {
             appendLine(
-                "| **(no role)** | | +${model.unassigned.sumOf { it.added }} -${model.unassigned.sumOf { it.deleted }} | " +
+                "| **(no role)** | | ${diffLines(model.unassigned.sumOf { it.added }, model.unassigned.sumOf { it.deleted })} | " +
                     "${model.unassigned.size} |",
             )
             val shown = model.unassigned.filter { it in model.shown }
@@ -145,7 +145,7 @@ private fun StringBuilder.listingPreamble(model: DiffReportModel, names: Markdow
 
 private fun StringBuilder.fileTable(rows: List<String>, hidden: Int) {
     if (rows.isNotEmpty()) {
-        appendLine("| File | Diff lines | How to see |")
+        appendLine("| File | Diff&nbsp;lines | How to see |")
         appendLine("|---|---:|---|")
         for (row in rows) appendLine(row)
         appendLine()
@@ -169,7 +169,7 @@ private fun StringBuilder.summaryRows(node: DiffNode, model: DiffReportModel, ma
     val name = if (node is DiffNode.GroupNode) "**${node.name}**" else node.name
     appendLine(
         "| ${indent(depth)}$name | ${heatSquares(heatLevel(node.score, max))} | " +
-            "+${node.added} -${node.deleted} | ${node.fileCount} |",
+            "${diffLines(node.added, node.deleted)} | ${node.fileCount} |",
     )
     when (node) {
         is DiffNode.GroupNode ->
@@ -186,7 +186,7 @@ private fun StringBuilder.summaryRows(node: DiffNode, model: DiffReportModel, ma
 
 // The file count column stays empty on a file row: it counts the files under a group or a role.
 private fun fileSummaryRow(display: String, change: FileChange, score: Double, maxFileScore: Double, depth: Int): String {
-    val lines = if (change.binary) "binary" else "+${change.added} -${change.deleted}"
+    val lines = if (change.binary) "binary" else diffLines(change.added, change.deleted)
     val status = if (change.status == ChangeStatus.Modified) "" else " _(${change.status.label})_"
     return "| ${indent(depth)}`$display`$status | ${heatSquares(heatLevel(score, maxFileScore))} | $lines | |"
 }
@@ -205,7 +205,7 @@ private fun maxFileScore(model: DiffReportModel): Double {
 private fun indent(depth: Int): String = "&nbsp;&nbsp;".repeat(depth) + if (depth > 0) "└ " else ""
 
 private fun fileRow(display: String, change: FileChange, range: DiffRange): String {
-    val lines = if (change.binary) "binary" else "+${change.added} -${change.deleted}"
+    val lines = if (change.binary) "binary" else diffLines(change.added, change.deleted)
     val links = listOfNotNull(
         range.githubUrl(change.path)?.let { "[GitHub]($it)" },
         "`${range.gitDiffCommand(change)}`",
@@ -213,6 +213,10 @@ private fun fileRow(display: String, change: FileChange, range: DiffRange): Stri
     val status = if (change.status == ChangeStatus.Modified) "" else " _(${change.status.label})_"
     return "| `${display}`$status | $lines | $links |"
 }
+
+// A no-break space keeps "+25 -26" on one line: GitHub narrows the table's columns to their
+// widest unbreakable text, and a cell that can break is the one that gives way.
+private fun diffLines(added: Int, deleted: Int): String = "+$added&nbsp;-$deleted"
 
 private fun files(count: Int): String = if (count == 1) "1 file" else "$count files"
 
