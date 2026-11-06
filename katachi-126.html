@@ -26,9 +26,9 @@ pre{margin:0;font-family:var(--mono);font-size:12.5px;line-height:1.55;white-spa
 details{margin-top:.8rem;font-size:13px}summary{cursor:pointer;color:var(--mu)}
 </style></head><body><div class="w">
 <div class="h"><span class="id">KATACHI-126</span><span class="t">ガターが { } の無いクラスのメンバの違反を出さない（deny by default）</span></div>
-<p class="msg">allow(Data, class, &quot;*Entity&quot;) だけの deny by default な Role で、ガターの ◆ は Allowed なのに check では主コンストラクタの val が違反になる。IDE と Gradle の答えが食い違う</p>
+<p class="msg">deny by default の Role で allow(data, `class`, &quot;*Entity&quot;) だけ書くと、ガターの ◆ は Allowed なのに check では主コンストラクタの val が違反になる。IDE と Gradle の答えが食い違う</p>
 <div class="cols">
-<div class="col before"><div class="lb">今</div><pre><span class="ln">// 定義: allow(Data, class, &quot;*Entity&quot;)   // deny by default</span><span class="ln">◆ data class UserEntity(          // ガター: Allowed</span><span class="ln ng">      val id: String               // check: 違反（property は allow されていない）</span><span class="ln">  )</span><span class="ln cm">// 説明（explainKtFiles）はトップレベルの宣言しか見ないため</span></pre></div>
+<div class="col before"><div class="lb">今</div><pre><span class="ln">// 定義: allow(data, `class`, &quot;*Entity&quot;)   // { } 無し、deny by default</span><span class="ln">◆ data class UserEntity(          // ガター: Allowed</span><span class="ln ng">      val id: String               // check: 違反（`val` は allow されていない）</span><span class="ln">  )</span><span class="ln cm">// 説明（explainKtFiles）はトップレベルの宣言しか見ないため</span></pre></div>
 <div class="col after"><div class="lb">案（どれにするかは要相談）</div><pre><span class="ln ok">案 A: 説明をメンバまで下ろし、◆ のツールチップに「メンバ 1 件が違反」を出す</span><span class="ln ok">案 B: トップレベルの ◆ を「Allowed（メンバに違反あり）」の別アイコンにする</span><span class="ln ok">案 C: deny by default でも { } 無しならメンバを暗黙 allow（検査側を変える）</span><span class="ln cm">// A / B は KATACHI-93（メンバの ◆）と同じ土台</span></pre></div>
 </div>
 <div class="risks"><div class="lb">リスク・デメリット</div><ul><li><span class="tag u">利用者</span>案 C は検査を緩めるので「書いていないものは禁止」の原則が崩れる。A / B はガターの情報量が増える</li><li><span class="tag u">利用者</span>直るまでは「IDE で緑なのに CI で落ちる」体験が続く（deny by default の Role で起きやすい）</li><li><span class="tag l">ライブラリ</span>DeclarationExplaining をメンバまで再帰させると説明の件数が増え、定義 JSON と IDE のキャッシュのサイズ・速度に影響。golden テストの更新</li></ul></div>

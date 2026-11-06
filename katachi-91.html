@@ -26,11 +26,11 @@ pre{margin:0;font-family:var(--mono);font-size:12.5px;line-height:1.55;white-spa
 details{margin-top:.8rem;font-size:13px}summary{cursor:pointer;color:var(--mu)}
 </style></head><body><div class="w">
 <div class="h"><span class="id">KATACHI-91</span><span class="t">DSL の誤り検出・役割名補完・打鍵ごとの再評価</span></div>
-<p class="msg">定義ファイルを書くとき Role 名の打ち間違いや存在しない group 名に IDE が気づかず、Gradle を回すまで分からない</p>
+<p class="msg">定義の DSL の誤り（テンプレートの名前の無い * など）は Gradle を回して失敗するまで分からない。IDE は打っている最中には何も言わない</p>
 <div class="cols">
-<div class="col before"><div class="lb">今</div><pre><span class="ln">&quot;Screen&quot; {</span><span class="ln ng">  dependsOn(&quot;ViewModle&quot;)   // 打ち間違い。IDE は何も言わない</span><span class="ln">}</span><span class="ln cm">// 気づくのは katachiCheck か、定義 JSON が更新されたとき</span><span class="ln cm">// IDE の表示は Gradle が書き出した定義 JSON を読むだけ</span></pre></div>
-<div class="col after"><div class="lb">案（2026-10-17 の判断: やらない）</div><pre><span class="ln ok">// PSI で architecture.kt を読み、Role 名・group 名を補完し</span><span class="ln ok">// 未定義の名前に下線を出す。打鍵ごとに再評価</span><span class="ln">&quot;Screen&quot; {</span><span class="ln ok">  dependsOn(&quot;ViewModle&quot;)   // ← 下線「ViewModle は定義されていない」</span><span class="ln">}</span><span class="ln cm">// TODO に残したのは processors { args } の補完と layout のパス補完だけ</span></pre></div>
+<div class="col before"><div class="lb">今</div><pre><span class="ln">&quot;Screen&quot;.role { layout {</span><span class="ln ng">  &quot;feature&quot; / &quot;*&quot; / ... / &quot;*Screen&quot;.ktFile().template(id = &quot;feature.Screen&quot;)</span><span class="ln">} }</span><span class="ln cm">// 名前の無い * はテンプレートの生成先が決まらず定義の誤り</span><span class="ln cm">// 気づくのは Gradle を回したとき。注釈は Gradle の失敗後に出る</span></pre></div>
+<div class="col after"><div class="lb">案（2026-10-17 の判断: やらない）</div><pre><span class="ln ok">// IDE が PSI で DSL を読み、打っている最中に誤りへ下線</span><span class="ln">&quot;feature&quot; / &quot;*&quot; / ...      // ← 下線「capture() で名前を付けて」</span><span class="ln ok">// 役割名・group 名の補完、打鍵ごとの再評価も同じ枠</span><span class="ln cm">// やらない理由: 任意の Kotlin を辿る必要があり katachi の判定と食い違う</span><span class="ln cm">// 役割名を参照する場所が DSL に無い。評価には Gradle が要る</span></pre></div>
 </div>
-<div class="risks"><div class="lb">リスク・デメリット</div><ul><li><span class="tag u">利用者</span>PSI ベースの検査は Kotlin の評価と一致しない（変数や関数で Role 名を組んだ場合）ので偽の警告が出る</li><li><span class="tag u">利用者</span>打鍵ごとの再評価は大きい定義で IDE が重くなる</li><li><span class="tag l">ライブラリ</span>DSL の意味をプラグイン側に二重実装することになり、DSL を変えるたびに両方直す。Kotlin プラグインの PSI API（K1/K2）への依存が増える</li></ul></div>
+<div class="risks"><div class="lb">リスク・デメリット</div><ul><li><span class="tag u">利用者</span>PSI で読む検査は Kotlin の評価と一致しない（/ の連鎖・ヘルパー関数・外側の capture() { } を辿れない）ので、偽の警告や見逃しが出る</li><li><span class="tag u">利用者</span>打鍵ごとの再評価は定義の評価に Gradle（コンパイル + JVM）が要るので、IDE が重くなる</li><li><span class="tag l">ライブラリ</span>DSL の意味をプラグイン側に二重実装することになり、DSL を変えるたびに両方直す。Kotlin プラグインの PSI API（K1/K2）への依存が増える</li></ul></div>
 <div class="note">出典: .local/v0.3/ide-authoring/design.md 8 節「やらない」（350〜362 行）</div>
 </div></body></html>

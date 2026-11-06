@@ -26,11 +26,11 @@ pre{margin:0;font-family:var(--mono);font-size:12.5px;line-height:1.55;white-spa
 details{margin-top:.8rem;font-size:13px}summary{cursor:pointer;color:var(--mu)}
 </style></head><body><div class="w">
 <div class="h"><span class="id">KATACHI-95</span><span class="t">役割・group 上の違反数 Code Vision と複数誤りのまとめ表示</span></div>
-<p class="msg">定義側を見ても「この Role に今いくつ違反があるか」は分からず、ファイルを 1 つずつ開くか Gradle の出力を読むしかない</p>
+<p class="msg">定義側を見ても「この Role に今いくつ違反があるか」は分からない。定義の誤りも 1 回に 1 つしか出ない</p>
 <div class="cols">
-<div class="col before"><div class="lb">今</div><pre><span class="ln">&quot;ViewModel&quot; {               // 定義側。違反の数は見えない</span><span class="ln">  ktFileContent { ... }</span><span class="ln">}</span><span class="ln cm">// 違反は各ファイルの下線と ◆ のツールチップで 1 件ずつ見る</span></pre></div>
-<div class="col after"><div class="lb">案（2026-10-17 の判断: やらない）</div><pre><span class="ln ok"> 3 violations · 12 files      ← Code Vision（定義の上に数を出す）</span><span class="ln">&quot;ViewModel&quot; {</span><span class="ln">  ktFileContent { ... }</span><span class="ln">}</span><span class="ln ok">// 1 ファイルに複数の誤りがあればツールチップに箇条書きでまとめる</span><span class="ln cm">// 判断の理由: ◆ のツールチップと注釈で足りる</span></pre></div>
+<div class="col before"><div class="lb">今</div><pre><span class="ln">&quot;ViewModel&quot;.role {          // 定義側。違反の数は見えない</span><span class="ln">  ktFileContent { ... }</span><span class="ln">}</span><span class="ln cm">// 違反は各ファイルの下線と ◆ のツールチップで 1 件ずつ見る</span><span class="ln ng">// 定義の誤りは katachi が最初の 1 つで止まるので、直すたびに次が出る</span></pre></div>
+<div class="col after"><div class="lb">案（2026-10-17 の判断: やらない）</div><pre><span class="ln ok"> 3 violations · 12 files      ← Code Vision（定義の上に数を出す）</span><span class="ln">&quot;ViewModel&quot;.role {</span><span class="ln">  ktFileContent { ... }</span><span class="ln">}</span><span class="ln ok">// 定義の誤りを止めずに続け、まとめて出す</span><span class="ln cm">// 判断の理由: ◆ のツールチップと注釈で足りる。続けると巻き添えの誤りが出る</span></pre></div>
 </div>
-<div class="risks"><div class="lb">リスク・デメリット</div><ul><li><span class="tag u">利用者</span>Code Vision の数は最後に check を回した時点の値なので編集中は古い。数だけ見て「直った」と誤解する</li><li><span class="tag u">利用者</span>常に表示されると定義ファイルの行間が広がる（IDE 設定で消せるが既定の印象が決まる）</li><li><span class="tag l">ライブラリ</span>違反を Role ごとに集計する経路（SARIF → Role）と、定義の Role 宣言位置（PSI）を結ぶ処理が要る。KATACHI-91 と同じ PSI 依存</li></ul></div>
+<div class="risks"><div class="lb">リスク・デメリット</div><ul><li><span class="tag u">利用者</span>Code Vision の数は最後に check を回した時点の値なので編集中は古い。数だけ見て「直った」と誤解する</li><li><span class="tag u">利用者</span>定義の誤りをまとめて出すと、最初の誤りの巻き添えで出た誤りも並び、どれから直すか分かりにくい</li><li><span class="tag l">ライブラリ</span>違反を Role ごとに集計する経路（SARIF → Role）と、定義の Role 宣言位置（PSI）を結ぶ処理が要る。Code Vision を 1 つに絞った設定も増える</li></ul></div>
 <div class="note">出典: .local/v0.3/ide-authoring/design.md 8 節（350〜362 行）</div>
 </div></body></html>
