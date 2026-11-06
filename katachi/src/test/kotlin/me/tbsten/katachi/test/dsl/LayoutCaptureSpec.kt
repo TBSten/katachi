@@ -18,7 +18,6 @@ import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.internal.CaptureTransform
 import me.tbsten.katachi.dsl.internal.LayoutCaptures
-import me.tbsten.katachi.dsl.internal.ModuleCapture
 import me.tbsten.katachi.dsl.internal.PathCapture
 import me.tbsten.katachi.dsl.internal.captureToken
 import me.tbsten.katachi.dsl.internal.flattenLayout
@@ -138,7 +137,7 @@ class LayoutCaptureSpec : FreeSpec({
 
         "ハイフンとアンダースコアを含む名前は通る" {
             layoutOf { capture("feature-name_2") / "a.kt".file() }.at("*").captureVariants shouldBe
-                listOf(LayoutCaptures(listOf(PathCapture(0, 0, "feature-name_2", null)), null))
+                listOf(LayoutCaptures(listOf(PathCapture(0, 0, "feature-name_2", null))))
         }
     }
 
@@ -361,10 +360,10 @@ class LayoutCaptureSpec : FreeSpec({
             }
 
             entries.at("feature/*/src/*/*ViewModel.kt").captureVariants shouldBe listOf(
-                LayoutCaptures(listOf(PathCapture(1, 0, "feature", null), PathCapture(3, 0, "layer", null)), null),
+                LayoutCaptures(listOf(PathCapture(1, 0, "feature", null), PathCapture(3, 0, "layer", null))),
             )
             entries.at("feature/*").captureVariants shouldBe listOf(
-                LayoutCaptures(listOf(PathCapture(1, 0, "feature", null)), null),
+                LayoutCaptures(listOf(PathCapture(1, 0, "feature", null))),
             )
             entries.at("feature").captureVariants shouldBe emptyList()
         }
@@ -382,7 +381,7 @@ class LayoutCaptureSpec : FreeSpec({
 
             entries.count { it.path == "feature/*/a.kt" } shouldBe 1
             entries.at("feature/*/a.kt").captureVariants shouldBe listOf(
-                LayoutCaptures(listOf(PathCapture(1, 0, "feature", null)), null),
+                LayoutCaptures(listOf(PathCapture(1, 0, "feature", null))),
                 LayoutCaptures.NONE,
             )
         }

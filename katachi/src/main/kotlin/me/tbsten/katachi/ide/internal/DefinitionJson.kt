@@ -67,7 +67,8 @@ internal class LayoutEntryJson(
     val modulePath: String?,
     val pathInModule: String,
     val captures: List<PathCaptureJson>,
-    val moduleCapture: ModuleCaptureJson?,
+    // Always null: IDE plugins before katachi 0.4 read this key as required.
+    val moduleCapture: Nothing? = null,
     val template: TemplateRefJson?,
     val matchedFiles: List<String>,
     val matchedCount: Int?,
@@ -87,9 +88,6 @@ internal class PathCaptureJson(
     val wildcardIndex: Int,
     val transform: String?,
 )
-
-@Serializable
-internal class ModuleCaptureJson(val pattern: String, val names: List<String>)
 
 @Serializable
 internal class TemplateRefJson(

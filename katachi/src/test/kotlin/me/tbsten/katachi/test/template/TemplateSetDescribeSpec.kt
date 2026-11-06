@@ -284,12 +284,12 @@ class TemplateSetDescribeSpec : FreeSpec({
             }
             arch.list().templateSets.single().conflict shouldBe true
             shouldThrow<IllegalStateException> { arch.detail() }.message shouldBe "boom"
-            val json = templateDescriptionJsonOf(FakeArchitectureProcessContext(arch, DescribeTemplates.Args(), emptyProject()), withPlacements = false)
+            val json = templateDescriptionJsonOf(FakeArchitectureProcessContext(arch, DescribeTemplates.Args(), emptyProject()))
             json.templateSetDetails shouldBe emptyList()
         }
 
         "JSON の templateSetDetails には出ず、templateSets に conflict で残る" {
-            val json = templateDescriptionJsonOf(FakeArchitectureProcessContext(unknownName, DescribeTemplates.Args(), emptyProject()), withPlacements = false)
+            val json = templateDescriptionJsonOf(FakeArchitectureProcessContext(unknownName, DescribeTemplates.Args(), emptyProject()))
             json.templateSets.single().conflict shouldBe true
             json.templateSetDetails shouldBe emptyList()
         }
@@ -299,7 +299,7 @@ class TemplateSetDescribeSpec : FreeSpec({
             val list = arch.list()
             list.templates.map { it.template } shouldContainExactly listOf("feature.FeatureScreen")
             list.templateSets.associate { it.name to it.conflict } shouldBe mapOf("Broken" to true, "Good" to false)
-            val json = templateDescriptionJsonOf(FakeArchitectureProcessContext(arch, DescribeTemplates.Args(), emptyProject()), withPlacements = false)
+            val json = templateDescriptionJsonOf(FakeArchitectureProcessContext(arch, DescribeTemplates.Args(), emptyProject()))
             json.templateSetDetails.map { it.name } shouldContainExactly listOf("Good")
         }
     }

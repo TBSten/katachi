@@ -35,7 +35,6 @@ internal fun definitionJsonOf(
     walk: ProjectWalk,
     templates: TemplateDescriptionJson,
     options: DefinitionJsonOptions,
-    placementsFailure: Throwable? = null,
     previewFailures: TemplatePreviewFailures = TemplatePreviewFailures.None,
 ): DefinitionJson {
     val architecture = walk.architecture
@@ -51,14 +50,6 @@ internal fun definitionJsonOf(
         declaredLayoutOf(architecture, problems)
     }
     val walkSucceeded = walked.isSuccess
-    if (walkSucceeded && placementsFailure != null) {
-        problems += DefinitionProblemJson(
-            kind = DefinitionProblemKind.ModulesNotListed,
-            message = "The modules of the project could not be listed, so a template below a module capture " +
-                "has no placement: ${oneLineOf(placementsFailure)}",
-            detail = null,
-        )
-    }
     val explanations = DeclarationExplanations(walk, options.maxExplainedFiles, problems)
         .takeIf { walkSucceeded && options.explainDeclarations }
     // Every entry, the ones a module { } block injects included: `LayoutIndex.rolesOf` allows a file
@@ -163,7 +154,6 @@ private fun layoutEntryJsonOf(index: Int, entry: LayoutEntry, files: List<String
                 transform = it.transform?.spelling,
             )
         },
-        moduleCapture = captures?.moduleCapture?.let { ModuleCaptureJson(pattern = it.modulePattern, names = it.names) },
         template = template?.let {
             TemplateRefJson(
                 specifier = entry.role.qualifiedName + (it.id?.let { id -> ".$id" } ?: ""),

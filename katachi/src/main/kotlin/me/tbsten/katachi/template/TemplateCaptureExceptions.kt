@@ -102,8 +102,6 @@ public class KatachiMissingTemplateCaptureException internal constructor(
  * separator, or a character no file name may hold is refused. So is what Windows refuses or
  * silently changes (a trailing `.` or space, a device name such as `CON`), on every platform.
  *
- * A module capture's value is one level of the module path: `home` of `:feature:home`.
- *
  * ## Example 1: catch a value that spans two levels
  * ```kt
  * import io.kotest.assertions.throwables.shouldThrow
@@ -136,15 +134,12 @@ public class KatachiInvalidTemplateCaptureValueException internal constructor(
     public val segment: String? = null,
     /** Where a layout path naming the capture was declared. */
     public val captureDeclaredAt: DeclarationSite,
-    /** Whether the capture names a `*` of a module key rather than a directory level. */
-    public val isModuleCapture: Boolean = false,
 ) : KatachiDeclarationException(
     message = buildString {
-        val level = if (isModuleCapture) "one level of the module path" else "one directory level"
         if (segment == null) {
             appendLine(
                 """Capture "$name" of role "$role" declared at $captureDeclaredAt was given "$value", """ +
-                    "which is not $level: ${problem.description}.",
+                    "which is not one directory level: ${problem.description}.",
             )
         } else {
             appendLine(
@@ -154,10 +149,6 @@ public class KatachiInvalidTemplateCaptureValueException internal constructor(
         }
         val lastLevel = value.split(':', '/', '\\').lastOrNull { it.isNotBlank() }
         when {
-            isModuleCapture && ':' in value && lastLevel != null -> append(
-                "A module capture is given the one level of the module path its * stands for, not the " +
-                    "module path. Pass `$lastLevel`, not `$value`: --arg $name=$lastLevel.",
-            )
             problem == Problem.Separator -> {
                 appendLine(
                     "A capture stands for exactly one level of the path, as the * it names does; " +
@@ -227,77 +218,3 @@ public class KatachiInvalidTemplateCaptureValueException internal constructor(
     }
 }
 
-/**
- * A module capture was given a value that names no existing module.
- *
- * A module key with a capture, such as `":feature:${capture("feature")}"`, stands for the modules
- * that exist. Files written into a module that does not exist would be reported as
- * `[UnexpectedDirectory]` by the next check. Pass an existing module's name, or create the module
- * first.
- *
- * ## Example 1: catch a misspelt module
- * ```kt
- * import io.kotest.assertions.throwables.shouldThrow
- * import me.tbsten.katachi.template.KatachiTemplateModuleNotFoundException
- *
- * // ./gradlew katachiTemplate --arg template=feature.Screen --arg feature=hoem --arg name=Home
- * val thrown = shouldThrow<KatachiTemplateModuleNotFoundException> { generate() }
- * thrown.existingArgs shouldBe listOf("--arg feature=home", "--arg feature=settings")
- * ```
- *
- * @see GenerateCodeFromTemplate
- */
-@ExperimentalKatachiApi
-public class KatachiTemplateModuleNotFoundException internal constructor(
-    /** The role whose template produced the file, qualified. */
-    public val role: String,
-    /** The generated file name, after the template's parameters were filled in. */
-    public val fileName: String,
-    /** The module key as written in the layout, `":feature:*"`. */
-    public val modulePattern: String,
-    /** The names the key gives its `*`s, in order, which are also their `--arg` names. */
-    public val captureNames: List<String>,
-    /** The key with the run's values put in, `":feature:hoem"`. */
-    public val modulePath: String,
-    /**
-     * Every existing module [modulePattern][KatachiTemplateModuleNotFoundException.modulePattern]
-     * matches.
-     */
-    public val existing: List<String>,
-    /**
-     * The `--arg`s that pick each of [existing][KatachiTemplateModuleNotFoundException.existing], in the same order.
-     *
-     * Such as `"--arg feature=home"`, or `"--arg feature=home --arg layer=data"` for a key of two names.
-     */
-    public val existingArgs: List<String>,
-    /** Where the file declaration being placed was written. */
-    public val declaredAt: DeclarationSite,
-) : KatachiCheckException(
-    message = buildString {
-        appendLine(
-            """Template file "$fileName" declared at $declaredAt would go into module $modulePath of role "$role", """ +
-                "which does not exist.",
-        )
-        appendLine(
-            "The module key $modulePattern stands for the modules that exist, so a file written into " +
-                "one that does not would be reported as [UnexpectedDirectory] by the next check.",
-        )
-        val names = captureNames.joinToString(" ") { "--arg $it=..." }
-        if (existing.isEmpty()) {
-            append(
-                "No module matches $modulePattern yet. Create the module first (settings.gradle.kts), " +
-                    "then pass its name as $names.",
-            )
-        } else {
-            appendLine("Modules matching $modulePattern, and the value that picks each ($names):")
-            val width = existing.maxOf { it.length }
-            existing.forEachIndexed { index, module ->
-                appendLine("  ${module.padEnd(width)}  ${existingArgs.getOrElse(index) { "" }}".trimEnd())
-            }
-            append(
-                "Pass the value, not the module path -- `home`, not `:feature:home` -- or create the " +
-                    "module first (settings.gradle.kts).",
-            )
-        }
-    },
-)

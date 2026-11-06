@@ -9,15 +9,15 @@ import me.tbsten.katachi.dsl.template
  *
  * The roles are the members; none of them is a set. `feature.FeatureScreen` and
  * `feature.FeatureViewModel` write below `src/main/kotlin/feature/<name>/`; `shared.Logger` is in
- * another group and takes a `tag`; `ui.Screen` sits below the module capture `:feature:*`, so its
- * file has no `path` and a `modulePlacements` entry in each feature module (`feature/home` and
- * `feature/settings`, as `IdePluginSyntheticJsonSpec`'s project has them).
+ * another group and takes a `tag`; `ui.Screen` sits below the directory capture
+ * `feature/${capture("feature")}`, whose candidates the IDE plugin reads from the tree (`feature/home`
+ * and `feature/settings`, as `IdePluginSyntheticJsonSpec`'s project has them).
  *
  * The sets (the order of `templateSets[]` is the order they are declared in):
  * - `Starter` (declared at the root, so `groupName` is `null`): `feature.FeatureScreen` and
  *   `feature.FeatureViewModel` with one `name`. Japanese title.
  * - `feature.NewFeature` (in a group): the two above plus `shared.Logger` (a member from another
- *   group, `tag` fed from `name` through an expression) and `ui.Screen` (the module capture:
+ *   group, `tag` fed from `name` through an expression) and `ui.Screen` (the directory capture:
  *   `feature` and `name`). `withState` is a Boolean parameter passed on as it is.
  * - `feature.Broken`: passes `feature.FeatureScreen` an `arg` it does not take, so its preview
  *   fails: `conflict: true`, no entry in `templateSetDetails`, and a `TemplateSetPreviewFailed`

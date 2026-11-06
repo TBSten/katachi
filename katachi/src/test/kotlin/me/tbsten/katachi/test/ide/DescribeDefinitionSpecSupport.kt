@@ -241,14 +241,12 @@ internal fun Architecture.definitionOf(
     maxMatchedFiles: Int = 200,
     explainDeclarations: Boolean = true,
     maxExplainedFiles: Int = 2000,
-    placementsFailure: Throwable? = null,
 ): DefinitionJson {
     val context = FakeArchitectureProcessContext(this, DescribeDefinition.Args(output = "unused.json"), fileSystem)
-    val described = templateDescriptionOf(context, withPlacements = false)
+    val described = templateDescriptionOf(context)
     return definitionJsonOf(
         walk = context.projectWalk,
         templates = described.json,
-        placementsFailure = placementsFailure,
         previewFailures = me.tbsten.katachi.ide.internal.TemplatePreviewFailures(described.templateFailures, described.templateSetFailures),
         options = DefinitionJsonOptions(
             maxMatchedFiles = maxMatchedFiles,

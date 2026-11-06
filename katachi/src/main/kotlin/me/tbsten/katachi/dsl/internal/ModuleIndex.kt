@@ -19,7 +19,6 @@ internal class ModuleTarget(
     val modulePath: String,
     val directory: String,
     val wildcards: List<String>,
-    val captureNames: List<String?>? = null,
 )
 
 /**
@@ -42,12 +41,11 @@ public class ModuleIndex internal constructor(
     // agree with a project lacking feature modules.
     private val discovered: List<ModulePath>?,
     private val onWildcardKey: (() -> Unit)? = null,
-    private val binding: ModuleBinding? = null,
 ) {
     // Empty for an unresolved index too, which is why targetsOf asks `discovered`.
     private val modules: List<ModulePath> get() = discovered.orEmpty()
 
-    internal val keepsWildcardKeys: Boolean get() = discovered == null && binding == null
+    internal val keepsWildcardKeys: Boolean get() = discovered == null
 
     // Resolves a module that does not exist so the declaration below reports the missing build file instead.
     internal fun resolve(module: ModulePath, wildcards: List<String> = emptyList()): ResolvedModule =
@@ -59,8 +57,6 @@ public class ModuleIndex internal constructor(
 
     private fun matching(pattern: ModulePattern): List<ResolvedModule> =
         modules.mapNotNull { module -> pattern.match(module)?.let { resolve(module, it) } }
-
-    internal fun matchingModules(pattern: ModulePattern): List<ResolvedModule> = matching(pattern)
 
     // A wildcard key matching nothing stands for nothing (never missing); a literal key stands for its module even
     // if absent, so deleted modules are reported.
@@ -75,19 +71,13 @@ public class ModuleIndex internal constructor(
 
     // An unresolved index cannot use expand: no match and nobody looked would both be an empty list.
     internal fun targetsOf(pattern: ModulePattern): List<ModuleTarget> {
-        // `null` once nothing was named at all, so downstream code can keep asking "did this key
-        // name anything?" with one null check, exactly as it could when a name list was a
-        // separate, all-or-nothing argument.
-        val captureNames = pattern.wildcardNames.takeIf { it.any { name -> name != null } }
         if (pattern.hasWildcard) onWildcardKey?.invoke()
-        if (binding != null && pattern.hasWildcard) return boundTargetsOf(binding, pattern, captureNames)
         return if (pattern.hasWildcard && discovered == null) {
             listOf(
                 ModuleTarget(
-                    modulePath = pattern.unresolvedModulePath(captureNames),
+                    modulePath = pattern.pattern,
                     directory = pattern.conventionalDirectory,
-                    wildcards = pattern.wildcardPlaceholders(captureNames),
-                    captureNames = captureNames,
+                    wildcards = pattern.wildcardPlaceholders,
                 ),
             )
         } else {
@@ -96,64 +86,15 @@ public class ModuleIndex internal constructor(
                     modulePath = module.path.value,
                     directory = module.directory,
                     wildcards = module.wildcards,
-                    captureNames = captureNames,
                 )
             }
         }
     }
 
-    // An unnamed key or a missing value keeps the key as itself, like an unresolved index.
-    private fun boundTargetsOf(
-        binding: ModuleBinding,
-        pattern: ModulePattern,
-        captureNames: List<String?>?,
-    ): List<ModuleTarget> {
-        // A value can only be picked by name, so a `*` left unnamed -- whether the whole key
-        // named nothing, or only some of its `*`s did -- falls back to keeping the key as a
-        // pattern, exactly as an entirely unnamed key already does.
-        val names = captureNames?.takeIf { it.all { name -> name != null } }?.filterNotNull()
-        val values = names?.map { binding.values[it] ?: return keptAsPattern(pattern, captureNames) }
-            ?: return keptAsPattern(pattern, captureNames)
-        val matching = matching(pattern)
-        // `**` may only be the last level, so the `*`s the names belong to are the first captures.
-        val picked = matching.filter { it.wildcards.take(values.size) == values }
-        if (picked.isEmpty()) {
-            binding.misses += ModuleMiss(
-                modulePattern = pattern.pattern,
-                captureNames = names,
-                modulePath = pattern.filledIn(values),
-                existing = matching.map { it.path.value },
-                existingValues = matching.map { it.wildcards.take(values.size) },
-            )
-        }
-        return picked.map { module ->
-            ModuleTarget(
-                modulePath = module.path.value,
-                directory = module.directory,
-                wildcards = module.wildcards,
-                captureNames = captureNames,
-            )
-        }
-    }
-
-    private fun keptAsPattern(pattern: ModulePattern, captureNames: List<String?>?): List<ModuleTarget> = listOf(
-        ModuleTarget(
-            modulePath = pattern.unresolvedModulePath(captureNames),
-            directory = pattern.conventionalDirectory,
-            wildcards = pattern.wildcardPlaceholders(captureNames),
-            captureNames = captureNames,
-        ),
-    )
-
-    // A value naming no existing module leaves the key with no module and is noted in misses, not refused: another
-    // of the role's places may still take the file.
-    internal fun boundTo(values: Map<String, String>, misses: MutableList<ModuleMiss>): ModuleIndex =
-        ModuleIndex(resolver = resolver, discovered = discovered, binding = ModuleBinding(values, misses))
-
     // A layout that never expands a wildcard key reads only `resolver`, so one evaluation can serve both
     // declaredEntries and the walk.
     internal fun reportingWildcardKeys(onWildcardKey: () -> Unit): ModuleIndex =
-        ModuleIndex(resolver = resolver, discovered = discovered, onWildcardKey = onWildcardKey, binding = binding)
+        ModuleIndex(resolver = resolver, discovered = discovered, onWildcardKey = onWildcardKey)
 
     override fun toString(): String = when (discovered) {
         null -> "ModuleIndex(unresolved, $resolver)"
@@ -170,21 +111,3 @@ public class ModuleIndex internal constructor(
 // are compared as strings.
 private fun normalizeDirectory(directory: String): String =
     directory.split('/', '\\').filter { it.isNotEmpty() && it != "." }.joinToString("/")
-
-// Named `*`s become `<name>` placeholders so that a reader of the unresolved path can tell a named level from a
-// plain `*`.
-private fun ModulePattern.unresolvedModulePath(captureNames: List<String?>?): String =
-    if (captureNames == null) pattern else filledIn(wildcardPlaceholders(captureNames))
-
-internal class ModuleBinding(
-    val values: Map<String, String>,
-    val misses: MutableList<ModuleMiss>,
-)
-
-internal data class ModuleMiss(
-    val modulePattern: String,
-    val captureNames: List<String>,
-    val modulePath: String,
-    val existing: List<String>,
-    val existingValues: List<List<String>>,
-)

@@ -196,7 +196,7 @@ public class TemplateParameterPreview internal constructor(
 }
 
 /**
- * One named wildcard of a template, as a run takes it: a `capture("...")` in its declared path or in a module key.
+ * One named wildcard of a template, as a run takes it: a `capture("...")` in its declared path.
  *
  * A name used in several places is listed once per place, so that where a value lands can be read
  * from the list. Its preview value, where one appears in [TemplateDetail.files], is `${name}`, as
@@ -219,16 +219,14 @@ public class TemplateParameterPreview internal constructor(
 public class TemplateCapturePreview internal constructor(
     /** The name, which is also its `--arg` name. */
     public val name: String,
-    /** Whether it names a directory level or a module wildcard. */
+    /** What kind of wildcard it names. */
     public val kind: TemplateCaptureKind,
     /**
-     * Where it sits: the file pattern, or the module key (`:feature:*`), with a `*` standing for it.
+     * Where it sits: the file pattern, with a `*` standing for it.
      */
     public val pattern: String,
     /**
-     * Which level of [pattern][TemplateCapturePreview.pattern] it is, 0-based.
-     *
-     * The `/`-separated level of a file pattern, or the position among the `*`s of a module key.
+     * Which `/`-separated level of [pattern][TemplateCapturePreview.pattern] it is, 0-based.
      */
     public val position: Int,
     /**
@@ -237,7 +235,7 @@ public class TemplateCapturePreview internal constructor(
      * `${name}` stands for each plain capture, and `<name.transform>` for each derived one.
      */
     public val segment: String,
-    /** Which `*` of its level this occurrence is, 0-based, for a [TemplateCaptureKind.PathCapture]; `0` for a module capture. */
+    /** Which `*` of its level this occurrence is, 0-based, for a [TemplateCaptureKind.PathCapture]. */
     public val wildcardIndex: Int = 0,
     /**
      * The naming conversion of a derived occurrence, such as `"pascalCase"`; `null` for a plain one.
@@ -253,9 +251,9 @@ public class TemplateCapturePreview internal constructor(
 /**
  * Which kind of named wildcard a [TemplateCapturePreview] is.
  *
- * ## Example 1: the captures that have to name an existing module
+ * ## Example 1: the captures that name a directory level
  * ```kt
- * detail.captures.filter { it.kind == TemplateCaptureKind.ModuleCapture }
+ * detail.captures.filter { it.kind == TemplateCaptureKind.PathCapture }
  * ```
  */
 @ExperimentalKatachiApi
@@ -263,9 +261,6 @@ public class TemplateCapturePreview internal constructor(
 public enum class TemplateCaptureKind {
     /** `capture("...")`: a directory level, which a run may create. */
     PathCapture,
-
-    /** A named module key's wildcard: a module wildcard, which has to name a module that exists. */
-    ModuleCapture,
 }
 
 /**
@@ -333,12 +328,11 @@ public class TemplateFilePreview internal constructor(
     /** The file name, with the preview's values filled in: `${name}Repository.kt`. */
     public val fileName: String,
     /**
-     * Where the file would land, relative to the project root, or `null` below a module capture.
+     * Where the file would land, relative to the project root.
      *
-     * Below a module capture, only the modules that exist could pick the path. A directory
-     * `capture("...")` names is shown as `${name}`.
+     * A directory `capture("...")` names is shown as `${name}`.
      */
-    public val path: String?,
+    public val path: String,
     /** This template's captures that appear on [pattern][TemplateFilePreview.pattern], by name. */
     public val captures: List<String>,
     /** This template's parameters, by name. */
@@ -346,8 +340,8 @@ public class TemplateFilePreview internal constructor(
     /** The contents, with the preview's values filled in. */
     public val content: String,
 ) {
-    /** `TemplateFilePreview(<path>)`, or the file name when the path is not known. */
-    override fun toString(): String = "TemplateFilePreview(${path ?: fileName})"
+    /** `TemplateFilePreview(<path>)`. */
+    override fun toString(): String = "TemplateFilePreview($path)"
 }
 
 /**

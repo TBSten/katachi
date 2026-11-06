@@ -5,15 +5,13 @@ import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.ModulePath
 
-// A name written on two levels reads the first level's value. Unresolved module keys give nothing rather than a
-// guess.
+// A name written on two levels reads the first level's value.
 internal fun LayoutEntry.captureValuesOf(path: String): Map<String, String> {
     if (captureVariants.isEmpty()) return emptyMap()
     val target = matchTargetOf(path) ?: return emptyMap()
     val groups = glob.matchGroups(target) ?: return emptyMap()
     val values = LinkedHashMap<String, String>()
     for (variant in captureVariants) {
-        variant.moduleCapture?.let { values.putModuleValues(it, modulePath) }
         for (occurrence in occurrenceValuesOf(variant.pathCaptures, glob, groups) { it.segmentIndex }) {
             if (occurrence.capture.transform == null) values.putIfAbsent(occurrence.capture.name, occurrence.value)
         }
@@ -89,15 +87,12 @@ private class BoundOccurrence(
     val transform: CaptureTransform?,
     val level: Int,
     val value: String,
-    val capture: PathCapture?,
+    val capture: PathCapture,
 )
 
 private fun LayoutEntry.mismatchOf(variant: LayoutCaptures, path: String, groups: List<String>): CaptureMismatchDetail? {
-    val moduleValues = variant.moduleCapture?.let { moduleOccurrencesOf(it, modulePath) }.orEmpty()
-    val pathValues = occurrenceValuesOf(variant.pathCaptures, glob, groups) { it.segmentIndex }
-    val moduleLevel = moduleDirectoryLevel()
-    val occurrences = moduleValues.map { (name, value) -> BoundOccurrence(name, null, moduleLevel, value, capture = null) } +
-        pathValues.map { BoundOccurrence(it.capture.name, it.capture.transform, it.capture.segmentIndex, it.value, it.capture) }
+    val occurrences = occurrenceValuesOf(variant.pathCaptures, glob, groups) { it.segmentIndex }
+        .map { BoundOccurrence(it.capture.name, it.capture.transform, it.capture.segmentIndex, it.value, it.capture) }
 
     val plainCount = occurrences.filter { it.transform == null }.groupingBy { it.name }.eachCount()
     val derivedNames = occurrences.filter { it.transform != null }.map { it.name }.toSet()
@@ -117,14 +112,14 @@ private fun LayoutEntry.mismatchOf(variant: LayoutCaptures, path: String, groups
             // The first plain occurrence is what the others are held to.
             occurrence.transform == null && sourcesSeen.add(occurrence.name) -> null
             source == null -> {
-                // A derived occurrence whose plain capture is only on an unresolved module key.
+                // A derived occurrence whose plain capture matched no value.
                 expectedUnknown = true
                 null
             }
             else -> occurrence.transform?.apply?.invoke(source) ?: source
         }
         if (expected != null && expected != occurrence.value) mismatched = true
-        occurrence.capture?.let { expectedOf[it] = expected ?: occurrence.value }
+        expectedOf[occurrence.capture] = expected ?: occurrence.value
         CaptureOccurrenceDetail(occurrence.name, occurrence.transform, occurrence.level, occurrence.value, expected)
     }
     if (!mismatched) return null
@@ -167,30 +162,3 @@ private fun groupIndexOf(glob: Glob, level: Int, wildcardIndex: Int): Int? =
     glob.groupKinds.indices.filter {
         glob.groupKinds[it] == GlobGroupKind.Single && glob.groupSegments[it] == level
     }.getOrNull(wildcardIndex)
-
-private fun LayoutEntry.moduleDirectoryLevel(): Int {
-    val levels = path.split(Glob.PATH_SEPARATOR).size
-    val inModule = if (pathInModule.isEmpty()) 0 else pathInModule.split(Glob.PATH_SEPARATOR).size
-    return levels - inModule - 1
-}
-
-// Read without the project, the key is itself, with `*` or `<name>` where a module's name belongs. Empty for
-// unnamed, partly named or unresolved keys.
-private fun moduleOccurrencesOf(capture: ModuleCapture, modulePath: String?): List<Pair<String, String>> {
-    if (modulePath == null || capture.names.isEmpty()) return emptyList()
-    if (modulePath.any { it in UNRESOLVED_MODULE_CHARACTERS }) return emptyList()
-    // Re-compiling a key that already compiled once: nothing here can throw, so which site is
-    // blamed does not matter.
-    val pattern = ModulePattern.compile(capture.modulePattern, DeclarationSite.Unknown)
-    // `ModuleCapture.names` drops the `*`s that were left unnamed, so only a key naming every
-    // `*` says which name is which. `**` is never named and always last, after them.
-    if (capture.names.size != pattern.singleWildcardCount) return emptyList()
-    val wildcards = pattern.match(ModulePath.of(modulePath)) ?: return emptyList()
-    return capture.names.mapIndexedNotNull { index, name -> wildcards.getOrNull(index)?.let { name to it } }
-}
-
-private fun MutableMap<String, String>.putModuleValues(capture: ModuleCapture, modulePath: String?) {
-    for ((name, value) in moduleOccurrencesOf(capture, modulePath)) putIfAbsent(name, value)
-}
-
-private const val UNRESOLVED_MODULE_CHARACTERS: String = "*<>"

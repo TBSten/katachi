@@ -6,7 +6,6 @@ import me.tbsten.katachi.dsl.internal.GlobContext
 import me.tbsten.katachi.dsl.internal.LayoutModule
 import me.tbsten.katachi.dsl.internal.LayoutNode
 import me.tbsten.katachi.dsl.internal.ModuleIndex
-import me.tbsten.katachi.dsl.internal.ModuleTarget
 import me.tbsten.katachi.dsl.internal.ModulePattern
 import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 import me.tbsten.katachi.dsl.internal.captureToken
@@ -142,7 +141,7 @@ internal class LayoutScopeImpl(
         val expansionGroup = Any()
         // Not `expand`: a wildcard key against an index that has not listed the project stands
         // for itself rather than for nothing. See `ModuleIndex.targetsOf`.
-        val declared = moduleIndex.targetsOf(pattern).filter { it.readsOneValuePerName() }.flatMap { target ->
+        val declared = moduleIndex.targetsOf(pattern).flatMap { target ->
             // The root project resolves to the project root itself, which is this scope's
             // own container: an empty directory name would otherwise become an empty level.
             val directory = target.directory
@@ -157,8 +156,6 @@ internal class LayoutScopeImpl(
                     .also {
                         it.place = true
                         it.modulePath = target.modulePath
-                        it.moduleCaptureNames = target.captureNames
-                        it.moduleCapturePattern = target.captureNames?.let { pattern.pattern }
                         it.moduleExpansionGroup = expansionGroup
                     }
             }
@@ -222,10 +219,3 @@ private fun compileModulePath(key: String, declaredAt: DeclarationSite): ModuleP
             context = GlobContext.LayoutModulePath(key = key, declaredAt = declaredAt),
         )
     }
-
-// A name used twice in a key must read one value in the module; a key kept as a pattern passes.
-private fun ModuleTarget.readsOneValuePerName(): Boolean {
-    val names = captureNames ?: return true
-    val byName = names.withIndex().filter { it.value != null }.groupBy({ it.value }, { it.index })
-    return byName.values.all { indices -> indices.map { wildcards.getOrNull(it) }.distinct().size == 1 }
-}

@@ -8,8 +8,6 @@ import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.dsl.internal.Glob
 import me.tbsten.katachi.dsl.internal.LayoutCaptures
-import me.tbsten.katachi.dsl.internal.ModuleIndex
-import me.tbsten.katachi.dsl.internal.ModulePattern
 import me.tbsten.katachi.dsl.internal.fillCapturedPath
 import me.tbsten.katachi.internal.catching
 import me.tbsten.katachi.template.KatachiMissingTemplateCaptureException
@@ -26,11 +24,7 @@ private fun declarationOf(entries: List<LayoutEntry>, name: String): CaptureDecl
 }
 
 private fun displayPatternOf(declaration: CaptureDeclaration): String =
-    fillCapturedPath(
-        declaration.entry.path,
-        declaration.variant,
-        declaration.variant.names.associateWith { "<$it>" },
-    ) { capture -> "<${capture.name}${capture.transform?.let { ".${it.spelling}" }.orEmpty()}>" }
+    fillCapturedPath(declaration.entry.path, declaration.variant) { capture -> "<${capture.name}${capture.transform?.let { ".${it.spelling}" }.orEmpty()}>" }
 
 private fun declaredWithOf(name: String): String = "capture(\"$name\")"
 
@@ -68,23 +62,8 @@ internal fun existingCaptureValues(
     entries: List<LayoutEntry>,
     fileSystem: KatachiFileSystem,
     projectRoot: () -> FsPath,
-    modules: () -> ModuleIndex,
 ): (String) -> List<String> = { name ->
-    val declaration = declarationOf(entries, name)
-    val module = declaration?.variant?.moduleCapture?.takeIf { name in it.names }
-    when {
-        declaration == null -> emptyList()
-        module != null -> {
-            val index = module.names.indexOf(name)
-            // Re-compiling an already-substituted pattern (`*`, not a capture token): nothing
-            // here can raise KatachiAdjacentCaptureException, so the declaration site is moot.
-            modules().matchingModules(ModulePattern.compile(module.modulePattern, DeclarationSite.Unknown))
-                .mapNotNull { it.wildcards.getOrNull(index) }
-                .distinct()
-                .sorted()
-        }
-        else -> existingDirectoriesAt(declaration, name, fileSystem, projectRoot)
-    }
+    declarationOf(entries, name)?.let { existingDirectoriesAt(it, name, fileSystem, projectRoot) }.orEmpty()
 }
 
 private fun existingDirectoriesAt(

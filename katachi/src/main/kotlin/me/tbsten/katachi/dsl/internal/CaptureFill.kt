@@ -29,27 +29,11 @@ internal fun fillCaptures(
     valueOf: (PathCapture) -> String?,
 ): String = fillCapturedSegments(path, captures, valueOf = valueOf).joinToString("/")
 
-// Module-key `*`s are filled only for entries flattened without modules (preview/message), where the key stays as
-// its conventional directory.
 internal fun fillCapturedPath(
     path: String,
     variant: LayoutCaptures,
-    moduleValues: Map<String, String>,
     valueOf: (PathCapture) -> String?,
-): String {
-    val filled = fillCaptures(path, variant.pathCaptures, valueOf)
-    val module = variant.moduleCapture ?: return filled
-    val values = module.names.map { moduleValues[it] ?: return filled }
-    val prefix = conventionalDirectoryOf(module.modulePattern)
-    if (filled != prefix && !filled.startsWith("$prefix/")) return filled
-    // Re-compiling an already-substituted pattern (`*`, not a capture token): nothing here can
-    // raise KatachiAdjacentCaptureException, so which declaration site is blamed does not matter.
-    val pattern = ModulePattern.compile(module.modulePattern, DeclarationSite.Unknown)
-    return conventionalDirectoryOf(pattern.filledIn(values)) + filled.removePrefix(prefix)
-}
-
-private fun conventionalDirectoryOf(modulePattern: String): String =
-    modulePattern.removePrefix(":").replace(':', '/')
+): String = fillCaptures(path, variant.pathCaptures, valueOf)
 
 internal fun PathCapture.placeholder(): String =
     transform?.let { "<$name.${it.spelling}>" } ?: ("\$" + "{" + name + "}")

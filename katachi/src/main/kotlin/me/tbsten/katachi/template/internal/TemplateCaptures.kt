@@ -8,7 +8,6 @@ import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.internal.LayoutCaptures
 import me.tbsten.katachi.dsl.internal.ON_EXISTING_ARG
-import me.tbsten.katachi.dsl.internal.ModulePattern
 import me.tbsten.katachi.dsl.internal.PathCapture
 import me.tbsten.katachi.dsl.internal.TEMPLATE_ARG
 import me.tbsten.katachi.dsl.internal.TemplateParameterOrigin
@@ -88,7 +87,6 @@ internal fun requireNoConflicts(templates: List<DeclaredTemplate>, values: Map<S
 }
 
 internal fun requireValidCaptureValues(role: Role, entries: List<LayoutEntry>, values: Map<String, String>) {
-    val moduleCaptureNames = moduleCaptureNamesOf(entries)
     for ((name, site) in captureSitesOf(entries)) {
         val value = values[name] ?: continue
         val problem = captureValueProblemOf(value) ?: continue
@@ -98,7 +96,6 @@ internal fun requireValidCaptureValues(role: Role, entries: List<LayoutEntry>, v
             value = value,
             problem = problem,
             captureDeclaredAt = site,
-            isModuleCapture = name in moduleCaptureNames,
         )
     }
 }
@@ -123,7 +120,6 @@ internal fun requireValidFilledSegments(
             value = converted,
             problem = problem,
             captureDeclaredAt = sites.getValue(capture.name),
-            isModuleCapture = false,
         )
     }
     val segments = fillCapturedSegments(entry.path, variant.pathCaptures) { filledValueOf(it, values) }
@@ -138,13 +134,9 @@ internal fun requireValidFilledSegments(
             problem = problem,
             segment = segment,
             captureDeclaredAt = sites.getValue(capture.name),
-            isModuleCapture = false,
         )
     }
 }
-
-internal fun moduleCaptureNamesOf(entries: List<LayoutEntry>): Set<String> =
-    entries.flatMapTo(LinkedHashSet()) { entry -> entry.captureVariants.flatMap { it.moduleCapture?.names.orEmpty() } }
 
 // Windows reserves these in every directory whatever the extension (con.txt opens the console).
 private val WINDOWS_RESERVED_NAMES: Set<String> =
@@ -201,13 +193,6 @@ internal fun capturePreviewsOf(entries: List<LayoutEntry>): List<TemplateCapture
     for (entry in entries) {
         if (entry.kind != LayoutEntryKind.File || entry.synthetic) continue
         for (variant in entry.captureVariants) {
-            variant.moduleCapture?.let { module ->
-                val segment = ModulePattern.compile(module.modulePattern, DeclarationSite.Unknown)
-                    .filledIn(module.names.map(::placeholderOf))
-                module.names.forEachIndexed { index, name ->
-                    add(TemplateCapturePreview(name, TemplateCaptureKind.ModuleCapture, module.modulePattern, index, segment))
-                }
-            }
             for (capture in variant.pathCaptures) {
                 add(
                     TemplateCapturePreview(

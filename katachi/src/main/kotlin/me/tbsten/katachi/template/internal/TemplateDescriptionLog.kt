@@ -155,9 +155,6 @@ private fun captureLine(capture: TemplateCapturePreview, repeated: Boolean): Str
                 (if (repeated) " (the same value)" else "")
         }
     }
-    TemplateCaptureKind.ModuleCapture ->
-        "${capture.name}: wildcard ${capture.position + 1} of module ${capture.pattern}, an existing module" +
-            (if (repeated) " (the same value)" else "")
 }
 
 private fun previewValuesLine(parameters: List<TemplateParameterPreview>): String {
@@ -173,12 +170,7 @@ private fun previewValuesLine(parameters: List<TemplateParameterPreview>): Strin
 }
 
 private fun fileLines(file: TemplateFilePreview): List<String> = buildList {
-    val path = file.path
-    if (path != null) {
-        add("  $path")
-    } else {
-        add("  ${file.fileName} -- below a module capture, whose module a run's values pick: ${file.pattern}")
-    }
+    add("  ${file.path}")
     for (line in file.content.trimEnd('\n').lines()) add("    | $line")
 }
 
