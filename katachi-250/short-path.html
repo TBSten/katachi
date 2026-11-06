@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>diff report のパス省略</title>
+<style>
+:root {
+  --bg: #ffffff; --surface-1: #f9fafb; --surface-2: #ffffff; --border: #d1d5dc;
+  --ink: #101828; --text: #364153; --muted: #6a7282;
+  --accent-bg: #fef3c6; --accent-fg: #973c00; --accent-line: #ffb900;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #030712; --surface-1: #0b1220; --surface-2: #1e2939; --border: #364153;
+    --ink: #ffffff; --text: #d1d5dc; --muted: #99a1af;
+    --accent-bg: #461901; --accent-fg: #fee685; --accent-line: #7b3306;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; padding: 16px; background: var(--bg); color: var(--text); font: 14px/1.6 var(--font-sans); }
+.widget { max-width: 820px; margin: 0 auto; border: 0.5px solid var(--border); background: var(--surface-1); border-radius: 12px; padding: 1.25rem 1.5rem; }
+h1 { font-size: 15px; margin: 0 0 1rem; color: var(--ink); font-weight: 600; }
+.row { display: grid; grid-template-columns: 72px 1fr; gap: 10px; align-items: center; margin: 6px 0; }
+.label { font-size: 12px; color: var(--muted); text-align: right; }
+.segs { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-family: var(--font-mono); font-size: 13px; }
+.seg { padding: 2px 7px; border-radius: 6px; border: 0.5px solid var(--border); background: var(--surface-2); color: var(--text); }
+.seg.wild { background: var(--accent-bg); color: var(--accent-fg); border-color: var(--accent-line); font-weight: 600; }
+.seg.fold { background: transparent; border-style: dashed; color: var(--muted); }
+.sl { color: var(--muted); }
+.arrow { grid-column: 2; color: var(--muted); font-size: 12px; padding-left: 6px; }
+.case { padding: 10px 0; border-top: 0.5px solid var(--border); }
+.case:first-of-type { border-top: 0; padding-top: 0; }
+.legend { margin-top: 12px; font-size: 12px; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; }
+.legend .seg { font-size: 11px; padding: 1px 6px; }
+</style>
+</head>
+<body>
+<div class="widget">
+  <h1>katachiDiff のパス省略: wildcard に当たった階層とファイル名だけ残る</h1>
+
+  <div class="case">
+    <div class="row"><div class="label">layout</div><div class="segs">
+      <span class="seg">hoge</span><span class="sl">/</span><span class="seg">src</span><span class="sl">/</span><span class="seg">kotlin</span><span class="sl">/</span><span class="seg">main</span><span class="sl">/</span><span class="seg">com</span><span class="sl">/</span><span class="seg">example</span><span class="sl">/</span><span class="seg wild">*</span><span class="sl">/</span><span class="seg">hoge</span><span class="sl">/</span><span class="seg wild">*</span><span class="sl">/</span><span class="seg wild">*Hoge.kt</span>
+    </div></div>
+    <div class="row"><div class="label">file</div><div class="segs">
+      <span class="seg">hoge</span><span class="sl">/</span><span class="seg">src</span><span class="sl">/</span><span class="seg">kotlin</span><span class="sl">/</span><span class="seg">main</span><span class="sl">/</span><span class="seg">com</span><span class="sl">/</span><span class="seg">example</span><span class="sl">/</span><span class="seg wild">fuga</span><span class="sl">/</span><span class="seg">hoge</span><span class="sl">/</span><span class="seg wild">fuga</span><span class="sl">/</span><span class="seg wild">FugaHoge.kt</span>
+    </div></div>
+    <div class="row"><div class="label">report</div><div class="segs">
+      <span class="seg fold">…</span><span class="sl">/</span><span class="seg wild">fuga</span><span class="sl">/</span><span class="seg fold">…</span><span class="sl">/</span><span class="seg wild">fuga</span><span class="sl">/</span><span class="seg wild">FugaHoge.kt</span>
+    </div></div>
+  </div>
+
+  <div class="case">
+    <div class="row"><div class="label">layout</div><div class="segs">
+      <span class="seg">app</span><span class="sl">/</span><span class="seg wild">**</span><span class="sl">/</span><span class="seg">ui</span><span class="sl">/</span><span class="seg wild">*Screen.kt</span>
+    </div></div>
+    <div class="row"><div class="label">file</div><div class="segs">
+      <span class="seg">app</span><span class="sl">/</span><span class="seg wild">feature</span><span class="sl">/</span><span class="seg wild">home</span><span class="sl">/</span><span class="seg">ui</span><span class="sl">/</span><span class="seg wild">HomeScreen.kt</span>
+    </div></div>
+    <div class="row"><div class="label">report</div><div class="segs">
+      <span class="seg fold">…</span><span class="sl">/</span><span class="seg wild">feature</span><span class="sl">/</span><span class="seg wild">home</span><span class="sl">/</span><span class="seg fold">…</span><span class="sl">/</span><span class="seg wild">HomeScreen.kt</span>
+    </div></div>
+    <div class="row"><div class="label">file</div><div class="segs">
+      <span class="seg">app</span><span class="sl">/</span><span class="seg">ui</span><span class="sl">/</span><span class="seg wild">RootScreen.kt</span>
+    </div></div>
+    <div class="row"><div class="label">report</div><div class="segs">
+      <span class="seg fold">…</span><span class="sl">/</span><span class="seg wild">RootScreen.kt</span>
+    </div></div>
+  </div>
+
+  <div class="case">
+    <div class="row"><div class="label">layout</div><div class="segs">
+      <span class="seg">lib</span><span class="sl">/</span><span class="seg wild">*</span><span class="sl">/</span><span class="seg">api</span><span class="sl">/</span><span class="seg fold">anyFile()</span>
+    </div></div>
+    <div class="row"><div class="label">file</div><div class="segs">
+      <span class="seg">lib</span><span class="sl">/</span><span class="seg wild">core</span><span class="sl">/</span><span class="seg">api</span><span class="sl">/</span><span class="seg wild">Thing.kt</span>
+    </div></div>
+    <div class="row"><div class="label">report</div><div class="segs">
+      <span class="seg fold">…</span><span class="sl">/</span><span class="seg wild">core</span><span class="sl">/</span><span class="seg fold">…</span><span class="sl">/</span><span class="seg wild">Thing.kt</span>
+    </div></div>
+  </div>
+
+  <div class="legend">
+    <span><span class="seg wild">wildcard に当たった階層</span> 残す</span>
+    <span><span class="seg">固定の階層</span> → <span class="seg fold">…</span> に畳む（連続は 1 つ）</span>
+    <span>ファイル名は常に残す</span>
+  </div>
+</div>
+</body>
+</html>
