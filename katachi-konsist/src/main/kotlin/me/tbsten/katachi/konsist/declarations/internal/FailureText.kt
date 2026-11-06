@@ -186,6 +186,16 @@ private fun extraModifierFixes(rule: DeclarationRule, fact: DeclarationFact): Li
 }
 
 private fun allowLineOf(fact: DeclarationFact): String {
+    when (fact.kind) {
+        DeclarationKindName.EnumEntry -> return "allow(entry, ${namePatternLiteral(fact.name)})"
+        DeclarationKindName.Init -> return "allow(init)"
+        DeclarationKindName.Constructor -> {
+            val modifiers = fact.modifiers.sortedBy { it.ordinal }.map { it.keyword }
+            val parameters = fact.parameters.orEmpty().joinToString(", ") { kotlinString(renderParameter(it)) }
+            return "allow(${(modifiers + "constructor").joinToString(", ")})($parameters)"
+        }
+        else -> Unit
+    }
     val modifiers = fact.modifiers.filter { it != ModifierName.Fun }.sortedBy { it.ordinal }.map { it.keyword }
     val kinds = listOfNotNull("`fun`".takeIf { ModifierName.Fun in fact.modifiers }, "`${fact.kind.keyword}`")
     val plain = "allow(${(modifiers + kinds + namePatternLiteral(fact.name)).joinToString(", ")})"

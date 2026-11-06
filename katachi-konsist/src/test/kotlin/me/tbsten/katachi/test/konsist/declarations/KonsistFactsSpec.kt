@@ -33,6 +33,8 @@ class KonsistFactsSpec : FreeSpec({
             "  val id: Int",
             "sealed interface B",
             "enum class C",
+            "  entry X",
+            "  entry Y",
             "value class D",
             "  val raw: String",
             "annotation class E",
@@ -120,7 +122,7 @@ class KonsistFactsSpec : FreeSpec({
         functions.map { it.returnTypeWritten } shouldBe listOf(false, false, false)
     }
 
-    "メンバ: 入れ子の enum・companion・主コンストラクタ。enum の項目・init・無名 object の中は出ない" {
+    "メンバ: 入れ子の enum・companion・主コンストラクタ・enum の項目・init。無名 object の中は出ない" {
         renderedFactsOf(
             """
             package com.example
@@ -135,7 +137,10 @@ class KonsistFactsSpec : FreeSpec({
         ) shouldBe listOf(
             "class A",
             "  private val id: Int",
+            "  init",
             "  enum class Mode",
+            "    entry X",
+            "    entry Y",
             "    fun next()",
             "  companion object Named",
             "  val listener",

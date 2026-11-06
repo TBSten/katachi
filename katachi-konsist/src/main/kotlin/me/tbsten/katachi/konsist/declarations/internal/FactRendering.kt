@@ -17,9 +17,10 @@ internal fun renderFact(fact: DeclarationFact): String = buildString {
     val prefix = fact.annotations.map { "@${it.simpleName}" } +
         fact.modifiers.sortedBy { it.ordinal }.map { it.keyword } +
         fact.kind.keyword
-    append(prefix.joinToString(" ")).append(' ')
+    append(prefix.joinToString(" "))
+    if (!fact.kind.isUnnamed) append(' ')
     fact.receiver?.let { append(receiverText(it.written)).append('.') }
-    append(quotedName(fact.name))
+    if (!fact.kind.isUnnamed) append(quotedName(fact.name))
     fact.parameters?.let { append(renderParameters(it)) }
     if (fact.supertypes.isNotEmpty()) append(" : ").append(fact.supertypes.joinToString(", ") { it.written })
     fact.propertyType?.let { append(if (fact.kind == DeclarationKindName.TypeAlias) " = " else ": ").append(it.written) }

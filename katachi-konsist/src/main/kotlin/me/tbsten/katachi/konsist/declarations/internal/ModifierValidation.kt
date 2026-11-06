@@ -25,7 +25,8 @@ private val MEMBER_ONLY_ON_CALLABLES: List<ModifierName> = listOf(ModifierName.A
 
 private val CALLABLE_KINDS: Set<DeclarationKindName> = setOf(Function, Val, Var)
 
-private val ALL_KINDS: Set<DeclarationKindName> = DeclarationKindName.entries.toSet()
+// An enum entry and an `init` block carry no modifier; a secondary constructor carries a visibility, `expect` or `actual`.
+private val ALL_KINDS: Set<DeclarationKindName> = DeclarationKindName.entries.toSet() - DeclarationKindName.EnumEntry - DeclarationKindName.Init
 
 internal fun ModifierName.applicableKinds(): Set<DeclarationKindName> = when (this) {
     ModifierName.Public, ModifierName.Internal, ModifierName.Private,

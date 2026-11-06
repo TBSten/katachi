@@ -67,8 +67,9 @@ internal fun renderDeclaration(
     val prefix = renderShapes(shapes)
     if (prefix.isNotEmpty()) append(prefix).append(' ')
     receiver?.let { append(receiverText(it)).append('.') }
-    append(name)
-    if (shapes.isNotEmpty() && shapes.all { it.kind == DeclarationKindName.Function }) {
+    val unnamed = shapes.isNotEmpty() && shapes.all { it.kind.isUnnamed }
+    if (unnamed) setLength(length - 1) else append(name)
+    if (shapes.isNotEmpty() && shapes.all { it.kind == DeclarationKindName.Function || it.kind == DeclarationKindName.Constructor }) {
         append(parameters?.joinToString(", ", "(", ")") ?: "(...)")
     }
     if (superclasses.isNotEmpty()) append(" : ").append(superclasses.joinToString(", "))

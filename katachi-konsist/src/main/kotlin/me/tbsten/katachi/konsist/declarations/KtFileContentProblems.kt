@@ -73,7 +73,7 @@ public enum class KtFileContentPatternKind(internal val label: String) {
     /** A name of `annotated(...)`, with its use-site target and arguments when written: `annotated("get:JvmName(*)")`. */
     Annotation("annotation"),
 
-    /** What is between the parentheses of `annotated("Name(...)")`. */
+    /** What is between the parentheses of `annotated("Name(...)")` or `fileAnnotation("Name(...)")`. */
     AnnotationArguments("annotation arguments"),
 
     /** The default value of a parameter, after its `=`: `` allow(`fun`, "load")("force: Boolean = *") ``. */

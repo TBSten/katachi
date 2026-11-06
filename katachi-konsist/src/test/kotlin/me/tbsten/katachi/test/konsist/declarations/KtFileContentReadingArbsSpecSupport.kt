@@ -2,6 +2,7 @@ package me.tbsten.katachi.test.konsist.declarations
 
 import kotlin.random.Random
 import me.tbsten.katachi.konsist.declarations.internal.DeclarationFact
+import me.tbsten.katachi.konsist.declarations.internal.DeclarationKindName
 import me.tbsten.katachi.konsist.declarations.internal.KtFileFacts
 import me.tbsten.katachi.konsist.declarations.internal.ModifierName
 
@@ -72,8 +73,10 @@ internal fun describeExpected(declarations: List<ExpectedFact>, indent: String =
  * [facts] as [describeExpected] writes the expected ones. An annotation shows the full name [expected] gives it
  * when that name is among the ones the facts say it may stand for.
  */
+// Enum entries, `init` blocks and secondary constructors are read too, but this reading writes them as noise only
+// (KtFileContentClassMemberSpec asks about them), so they are left out here.
 internal fun describeActual(facts: List<DeclarationFact>, expected: List<ExpectedFact>, indent: String = ""): List<String> =
-    facts.mapIndexed { index, fact -> fact to expected.getOrNull(index) }.flatMap { (fact, expectedFact) ->
+    facts.filterNot { it.kind in CLASS_BODY_ONLY_KINDS }.mapIndexed { index, fact -> fact to expected.getOrNull(index) }.flatMap { (fact, expectedFact) ->
         val head = describe(
             indent,
             fact.kind.keyword,
@@ -206,3 +209,6 @@ internal val LEADING_TRIVIA: List<String> = listOf(
     "/* class Fake : Base { ( */",
     "",
 )
+
+private val CLASS_BODY_ONLY_KINDS: Set<DeclarationKindName> =
+    setOf(DeclarationKindName.EnumEntry, DeclarationKindName.Init, DeclarationKindName.Constructor)

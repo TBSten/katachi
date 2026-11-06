@@ -146,9 +146,10 @@ public sealed interface KtFileContentScope : DeclarationListScope {
 
 /**
  * Receiver of the `{ }` of a class, interface or object line: the members of that declaration,
- * with the same vocabulary as directly in the file. Members are functions, properties (those of a
- * primary constructor included) and nested classes, interfaces and objects (companion objects
- * included) -- not constructors, `init` blocks, enum entries or what is inherited.
+ * with the same vocabulary as directly in the file, and the words of what only a class body holds
+ * ([MemberVocabulary]). Members are functions, properties (those of a primary constructor included),
+ * type aliases, nested classes, interfaces and objects (companion objects included), enum entries,
+ * secondary constructors and `init` blocks -- not the primary constructor or what is inherited.
  *
  * ## Example 1: what a use case interface and its implementation hold
  * ```kt
@@ -166,4 +167,4 @@ public sealed interface KtFileContentScope : DeclarationListScope {
  */
 @KatachiDsl
 @ExperimentalKatachiApi
-public sealed interface ClassBodyScope : DeclarationListScope
+public sealed interface ClassBodyScope : DeclarationListScope, MemberVocabulary, MemberAllow, MemberRequired

@@ -56,6 +56,7 @@ Example: `HomeViewModel.kt`
 | Member | |
 |---|---|
 | `public val state: StateFlow<UiState<*>>` | required |
+| `init` | optional |
 | `public fun *(...)` | optional |
 | `private` (anything) | optional |
 

@@ -11,6 +11,13 @@ internal enum class DeclarationKindName(val keyword: String) {
     Val("val"),
     Var("var"),
     TypeAlias("typealias"),
+    EnumEntry("entry"),
+    Constructor("constructor"),
+    Init("init"),
+    ;
+
+    // A secondary constructor and an `init` block have no name of their own, so none is shown.
+    val isUnnamed: Boolean get() = this == Constructor || this == Init
 }
 
 // Declared in the order Kotlin's coding conventions write modifiers, which is the order every rendering prints them in.

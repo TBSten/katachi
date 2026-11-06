@@ -2,6 +2,9 @@ package me.tbsten.katachi.konsist.declarations.internal
 
 import com.lemonappdev.konsist.api.declaration.KoBaseDeclaration
 import com.lemonappdev.konsist.api.declaration.KoClassDeclaration
+import com.lemonappdev.konsist.api.declaration.KoEnumConstantDeclaration
+import com.lemonappdev.konsist.api.declaration.KoInitBlockDeclaration
+import com.lemonappdev.konsist.api.declaration.KoSecondaryConstructorDeclaration
 import com.lemonappdev.konsist.api.declaration.KoFileDeclaration
 import com.lemonappdev.konsist.api.declaration.KoFunctionDeclaration
 import com.lemonappdev.konsist.api.declaration.KoInterfaceDeclaration
@@ -61,6 +64,14 @@ private class FactReader(
         is KoFunctionDeclaration -> functionFact(declaration)
         is KoPropertyDeclaration -> propertyFact(declaration)
         is KoTypeAliasDeclaration -> fact(declaration, DeclarationKindName.TypeAlias, propertyType = typeTextOf(declaration.type.text))
+        is KoEnumConstantDeclaration -> fact(declaration, DeclarationKindName.EnumEntry)
+        is KoSecondaryConstructorDeclaration -> fact(
+            declaration,
+            DeclarationKindName.Constructor,
+            parameters = declaration.parameters.map(::parameterFactOf),
+            name = DeclarationKindName.Constructor.keyword,
+        )
+        is KoInitBlockDeclaration -> fact(declaration, DeclarationKindName.Init, name = DeclarationKindName.Init.keyword)
         else -> null
     }
 
@@ -119,12 +130,13 @@ private class FactReader(
         returnType: TypeText? = null,
         returnTypeWritten: Boolean = false,
         members: List<DeclarationFact>? = null,
+        name: String = nameOf(declaration),
     ): DeclarationFact {
         val line = lineOfElement(declaration)
         val annotationTexts = (declaration as? KoAnnotationProvider)?.annotations.orEmpty().map { it.text }
         return DeclarationFact(
             kind = kind,
-            name = nameOf(declaration),
+            name = name,
             receiver = receiver?.let { typeTextOf(withoutOuterParentheses(it.trim())) },
             modifiers = modifiersOf(declaration),
             annotations = annotationTexts.map { annotationFactOf(it, packageName, imports) },

@@ -63,6 +63,7 @@ fun DeclarationContainerScope.viewModel() = "ViewModel".role {
         }
         required(internal, `class`, fileName).superclass("ViewModel") {
             required(public, `val`, "state", "StateFlow<UiState<*>>")
+            allow(init)                  // the first load
             allow(public, `fun`, "*")    // the events: reload()
             allow(private, anythingElse) // the repository and the mutable state
         }

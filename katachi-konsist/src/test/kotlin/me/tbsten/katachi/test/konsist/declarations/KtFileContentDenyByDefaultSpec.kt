@@ -159,14 +159,23 @@ class KtFileContentDenyByDefaultSpec : FreeSpec({
             } shouldBe listOf(
                 "Sample.a (line 3) | Not allowed: val a in object Sample",
                 "Port.send (line 4) | Not allowed: fun send() in interface Port",
+                "Kind.A (line 5) | Not allowed: entry A in enum class Kind",
+                "Kind.B (line 5) | Not allowed: entry B in enum class Kind",
                 "Kind.label (line 5) | Not allowed: fun label() in enum class Kind",
             )
         }
 
-        "enum の項目はメンバに数えない（今と同じ）" {
+        "enum の項目もメンバに数え、allow(entry, ...) が許す" {
             judged("package com.example\n\nenum class Sample { A, B }\n") {
                 `package`("**")
                 required(enum, `class`, fileName)
+            } shouldBe listOf(
+                "Sample.A (line 3) | Not allowed: entry A in enum class Sample",
+                "Sample.B (line 3) | Not allowed: entry B in enum class Sample",
+            )
+            judged("package com.example\n\nenum class Sample { A, B }\n") {
+                `package`("**")
+                required(enum, `class`, fileName) { allow(entry, "*") }
             }.shouldBeEmpty()
         }
 
