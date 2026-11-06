@@ -33,7 +33,8 @@ import me.tbsten.katachi.script.internal.SubprocessRunner
  * @property katachiVersion The `--katachi` every [init] and [scaffold] starts with. Null leaves the choice to the command.
  * @property moduleDir The `--module-dir` every [init] and [scaffold] starts with.
  * @property lang The `--lang` every [init] starts with.
- * @property workingDirectory Where the commands run. Null is the directory the script was started in.
+ * @property workdir The `--workdir` every [init] starts with: the working directory `init` makes. Null lets `init` pick one.
+ * @property cwd Where the commands run. Null is the directory the script was started in.
  * @property runner How [KatachiCommand.execute] runs a command: [CommandRunner.InProcess] by default.
  * @property echo Whether [KatachiCommand.execute] prints `$ katachi ...` before it runs, as `make` does.
  * @constructor Takes the defaults. Every one of them can be left out.
@@ -46,7 +47,8 @@ public class Katachi(
     public val katachiVersion: String? = null,
     public val moduleDir: String? = null,
     public val lang: Lang? = null,
-    public val workingDirectory: Path? = null,
+    public val workdir: String? = null,
+    public val cwd: Path? = null,
     public val runner: CommandRunner = CommandRunner.InProcess,
     public val echo: Boolean = true,
 ) {
@@ -55,6 +57,7 @@ public class Katachi(
         get() = InitCommand(
             katachi = this,
             line = CommandLine(listOf("init"))
+                .withNonEmpty("--workdir", workdir)
                 .withNonEmpty("--katachi", katachiVersion)
                 .withNonEmpty("--module-dir", moduleDir)
                 .withNonEmpty("--lang", lang?.value),
@@ -100,12 +103,12 @@ public class Katachi(
  */
 public fun interface CommandRunner {
     /**
-     * Runs `katachi` with [arguments] in [workingDirectory] and returns its exit code.
+     * Runs `katachi` with [arguments] in [cwd] and returns its exit code.
      *
      * @param arguments Everything after `katachi`.
-     * @param workingDirectory Where to run. Null is the current directory.
+     * @param cwd Where to run. Null is the current directory.
      */
-    public fun run(arguments: List<String>, workingDirectory: Path?): Int
+    public fun run(arguments: List<String>, cwd: Path?): Int
 
     /**
      * The runners katachi provides.

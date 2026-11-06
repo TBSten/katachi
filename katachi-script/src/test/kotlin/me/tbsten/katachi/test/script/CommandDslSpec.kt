@@ -21,8 +21,8 @@ class CommandDslSpec : FreeSpec({
     class Recording(private val statuses: List<Int> = emptyList()) : CommandRunner {
         val runs = mutableListOf<Pair<List<String>, Path?>>()
 
-        override fun run(arguments: List<String>, workingDirectory: Path?): Int {
-            runs += arguments to workingDirectory
+        override fun run(arguments: List<String>, cwd: Path?): Int {
+            runs += arguments to cwd
             return statuses.getOrElse(runs.size - 1) { 0 }
         }
     }
@@ -57,6 +57,12 @@ class CommandDslSpec : FreeSpec({
             katachi.init.offline().toString() shouldBe "katachi init --katachi 0.4.0 --module-dir static/katachi --lang ja --offline"
         }
 
+        "workdir は init の --workdir になり、cwd はコマンドラインに出ない" {
+            val katachi = Katachi(workdir = "tmp/katachi", cwd = Path.of("/somewhere"))
+            katachi.init.toString() shouldBe "katachi init --workdir tmp/katachi"
+            katachi.scaffold.toString() shouldBe "katachi scaffold"
+        }
+
         "空白や引用符を含む値だけシェル向けに引用する" {
             Katachi().init.workdir("my dir/it's").toString() shouldBe "katachi init --workdir 'my dir/it'\\''s'"
         }
@@ -74,10 +80,10 @@ class CommandDslSpec : FreeSpec({
     }
 
     "実行" - {
-        "runner に引数と作業ディレクトリを渡し、終了コードを返す" {
+        "runner に引数と cwd を渡し、終了コードを返す" {
             val runner = Recording(listOf(3))
             val dir = createTempDirectory("katachi-dsl-")
-            val katachi = Katachi(workingDirectory = dir, runner = runner, echo = false)
+            val katachi = Katachi(cwd = dir, runner = runner, echo = false)
             katachi.scaffold.`package`("com.example").execute() shouldBe 3
             runner.runs shouldBe listOf(listOf("scaffold", "--package", "com.example") to dir)
         }
@@ -102,7 +108,7 @@ class CommandDslSpec : FreeSpec({
 
         "InProcess はこの JVM の katachi-script で実行する" {
             val workdir = workdirWith("""{"meta": {"moduleDir": "architecture-test"}}""")
-            val katachi = Katachi(workingDirectory = workdir, echo = false)
+            val katachi = Katachi(cwd = workdir, echo = false)
             katachi.command("data", "get", "check-list", "meta.moduleDir").execute() shouldBe 0
             katachi.command("data", "get", "check-list", "meta.missing").execute() shouldBe 1
         }

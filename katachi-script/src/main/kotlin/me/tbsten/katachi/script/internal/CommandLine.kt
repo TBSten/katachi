@@ -51,7 +51,7 @@ internal fun shellQuote(argument: String): String =
 
 internal fun Katachi.run(arguments: List<String>): Int {
     if (echo) println("$ ${commandText(arguments)}")
-    return runner.run(arguments, workingDirectory)
+    return runner.run(arguments, cwd)
 }
 
 internal fun requireOption(line: CommandLine, option: String, declaredAt: DeclarationSite) {
@@ -65,12 +65,12 @@ internal fun requireOption(line: CommandLine, option: String, declaredAt: Declar
 }
 
 internal object InProcessRunner : CommandRunner {
-    override fun run(arguments: List<String>, workingDirectory: Path?): Int {
+    override fun run(arguments: List<String>, cwd: Path?): Int {
         // Same streams as `main`: the messages are Japanese and a POSIX locale would turn them into '?'.
         val out = utf8(System.out)
         val err = utf8(System.err)
         val context = ScriptContext(
-            cwd = (workingDirectory ?: Path("")).absolute().normalize(),
+            cwd = (cwd ?: Path("")).absolute().normalize(),
             env = System.getenv(),
             out = out::println,
             err = err::println,
@@ -82,9 +82,9 @@ internal object InProcessRunner : CommandRunner {
 }
 
 internal class SubprocessRunner(private val executable: String) : CommandRunner {
-    override fun run(arguments: List<String>, workingDirectory: Path?): Int {
+    override fun run(arguments: List<String>, cwd: Path?): Int {
         val builder = ProcessBuilder(listOf(executable) + arguments).inheritIO()
-        if (workingDirectory != null) builder.directory(workingDirectory.toFile())
+        if (cwd != null) builder.directory(cwd.toFile())
         return builder.start().waitFor()
     }
 
