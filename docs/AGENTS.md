@@ -190,7 +190,7 @@ docs.yml は 2 つを別々にビルドして 1 つの Pages に合成する。�
 - root が変わるのは `v*` タグを push したとき（と `workflow_dispatch` で `release_ref` を指定したとき）だけ。main への push では `/dev/` しか変わらない
 - `/dev/` の中の写し（`/katachi/dev/0.3/`）は root の写しと重複するが、そのままにしている（別のビルドなので外す手段が無い。気になったら dev のビルドで写しを除く）
 - リリース済みの docs の誤字は、次のリリースまで root に出ない。急ぐときは `workflow_dispatch` に `release_ref` を渡して再ビルドする（直すのはタグ側でなく main。root に出すなら patch 版のタグを切る）
-- `v0.3.0` 以前のタグの docs は上の環境変数を知らないので、root にはそのタグ当時のまま出る（ラベルは当時の値、`/dev/` の選択肢は 0.4.0 から）
+- `v0.3.0` 以前のタグの docs は上の環境変数を知らないので、root にはそのタグ当時のまま出る（ラベルは当時の値）。`/dev/` の選択肢だけは docs.yml の assemble が合成したあとの HTML に差し込む（`scripts/add-dev-version-option.mjs`。タグが選択肢を持っていれば何もしないので、root が v0.4.0 以降になったら消してよい）
 
 ### 新しい版を切る手順（v0.4 を公開するときの例）
 
