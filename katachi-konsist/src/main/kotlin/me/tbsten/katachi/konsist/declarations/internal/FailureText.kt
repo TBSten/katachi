@@ -47,6 +47,9 @@ private fun failureOf(finding: KtFileFinding, path: String, rules: FileRules, op
     is ProhibitedImport -> prohibitedImportFailure(finding, path)
     is UnexpectedPackage -> unexpectedPackageFailure(finding, path, rules.declaredAt)
     is ProhibitedPackage -> prohibitedPackageFailure(finding, path)
+    is UnexpectedFileAnnotation -> unexpectedFileAnnotationFailure(finding, path, rules.declaredAt)
+    is ProhibitedFileAnnotation -> prohibitedFileAnnotationFailure(finding, path)
+    is MissingActual -> missingActualFailure(finding, path)
 }
 
 private fun unexpectedDeclarationFailure(finding: UnexpectedDeclaration, path: String, opening: Boolean): FileConstraintFailure {
@@ -186,6 +189,16 @@ private fun extraModifierFixes(rule: DeclarationRule, fact: DeclarationFact): Li
 }
 
 private fun allowLineOf(fact: DeclarationFact): String {
+    when (fact.kind) {
+        DeclarationKindName.EnumEntry -> return "allow(entry, ${namePatternLiteral(fact.name)})"
+        DeclarationKindName.Init -> return "allow(init)"
+        DeclarationKindName.Constructor -> {
+            val modifiers = fact.modifiers.sortedBy { it.ordinal }.map { it.keyword }
+            val parameters = fact.parameters.orEmpty().joinToString(", ") { kotlinString(renderParameter(it)) }
+            return "allow(${(modifiers + "constructor").joinToString(", ")})($parameters)"
+        }
+        else -> Unit
+    }
     val modifiers = fact.modifiers.filter { it != ModifierName.Fun }.sortedBy { it.ordinal }.map { it.keyword }
     val kinds = listOfNotNull("`fun`".takeIf { ModifierName.Fun in fact.modifiers }, "`${fact.kind.keyword}`")
     val plain = "allow(${(modifiers + kinds + namePatternLiteral(fact.name)).joinToString(", ")})"

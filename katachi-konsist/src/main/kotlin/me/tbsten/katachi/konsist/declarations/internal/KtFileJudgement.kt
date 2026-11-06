@@ -19,7 +19,7 @@ internal fun judgeKtFiles(
         val rules = input.rules.getOrThrow()
         val facts = input.facts
         if (facts == null) return@flatMap emptyList()
-        failuresOf(judgeKtFile(facts, rules), input.file, rules)
+        failuresOf(judgeKtFile(facts, rules) + judgeActuals(rules.actuals, facts, File(subject.projectRoot)), input.file, rules)
     }
 
 internal class KtFileInput(
@@ -54,8 +54,9 @@ internal fun readKtFiles(
 internal fun judgeKtFile(facts: KtFileFacts, rules: FileRules): List<KtFileFinding> {
     val packageFinding = judgePackage(rules.packages, facts)
     val imports = judgeImports(rules.imports, facts.imports)
+    val fileAnnotations = judgeFileAnnotations(rules.fileAnnotations, facts.fileAnnotations)
     val declarations = judgeDeclarations(rules.declarations, facts.declarations)
-    val located = listOfNotNull(packageFinding?.takeIf { it.hasLine() }) + imports + declarations.located
+    val located = listOfNotNull(packageFinding?.takeIf { it.hasLine() }) + fileAnnotations + imports + declarations.located
     val lineless = listOfNotNull(packageFinding?.takeUnless { it.hasLine() }) + declarations.missing
     return located + lineless
 }

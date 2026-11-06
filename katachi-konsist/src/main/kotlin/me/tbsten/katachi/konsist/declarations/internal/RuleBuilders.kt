@@ -6,6 +6,7 @@ import me.tbsten.katachi.konsist.declarations.ClassBodyScopeImpl
 import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentLineException
 import me.tbsten.katachi.konsist.declarations.KtFileContentLineProblem
 import me.tbsten.katachi.konsist.declarations.KtFileContentPatternKind
+import me.tbsten.katachi.konsist.declarations.Modifiers
 
 // A line goes only into the list of the block whose vocabulary made it, and only while that block is the innermost one running:
 // otherwise a value kept in a variable would put a line into another block, or an ended run, unnoticed.
@@ -63,9 +64,6 @@ internal class DeclarationListBuilder(
         val line = renderDeclaration(raw, name, prohibited)
         ensureCurrent(line)
         val declaredAt = DeclarationSite.capture()
-        if (placement == Placement.ClassBody && raw.namesTypeAlias()) {
-            throw KatachiKtFileContentLineException(KtFileContentLineProblem.TypeAliasInClassBody, line, declaredAt)
-        }
         val nameRule = session.patterns.nameRule(name, KtFileContentPatternKind.Name)
         val shapes = validatedShapes(raw, placement, line, declaredAt)
         return DeclarationLineBuilder(this, shapes, nameRule, prohibited, required, declaredAt).also { entries += it }
@@ -107,6 +105,7 @@ internal class DeclarationLineBuilder(
     private var returnType: TypeRule? = null
     private var members: DeclarationListBuilder? = null
     private val except = mutableListOf<NameRule>()
+    private val details = mutableListOf<DetailRule>()
 
     private val session: EvaluationSession get() = list.session
 
@@ -121,7 +120,71 @@ internal class DeclarationLineBuilder(
             parameters = parameterTexts,
             returnType = returnType?.written,
             except = except.map { it.written },
+            details = details.map { it.rendered },
         )
+
+    val kinds: Set<DeclarationKindName> get() = shapes.mapTo(LinkedHashSet()) { it.kind }
+
+    // kinds: those of the line's kinds that have this detail; a line none of whose kinds has it is refused.
+    fun addDetail(call: String, kinds: Set<DeclarationKindName>? = null, rule: () -> DetailRule) {
+        ensureOpen()
+        if (details.any { it.call == call }) throw detailProblem(KtFileContentLineProblem.DetailWrittenTwice, call)
+        if (kinds != null && this.kinds.none { it in kinds }) throw detailProblem(KtFileContentLineProblem.DetailNotForKind, call)
+        details += rule()
+    }
+
+    fun detailParameterRule(written: String, call: String): ParameterRule =
+        session.patterns.parameterRule(written, allowProperty = call == "primaryConstructor") { problem -> parameterProblem(problem, written) }
+
+    fun typeParameterRule(written: String): TypeParameterRule =
+        session.patterns.typeParameterRule(written) { problem -> parameterProblem(problem, written) }
+
+    fun detailNameRule(written: String): NameRule = session.patterns.nameRule(written, KtFileContentPatternKind.Delegate)
+
+    fun detailTypeRule(written: String): TypeRule = session.patterns.typeRule(written)
+
+    // A detail's modifiers are one set of modifiers, used up by the line like the modifiers in front of it.
+    fun detailModifiers(call: String, modifiers: Modifiers): Set<ModifierName> {
+        modifiers.word.trace.use()
+        modifiers.word.requireIn(list) { text }
+        val single = modifiers.alternatives.singleOrNull()
+        if (modifiers.isOptional || single == null || single.annotations.isNotEmpty()) {
+            throw detailProblem(KtFileContentLineProblem.DetailModifiers, call)
+        }
+        return single.modifiers
+    }
+
+    fun detailProblem(problem: KtFileContentLineProblem, call: String): KatachiKtFileContentLineException =
+        KatachiKtFileContentLineException(problem, text, declaredAt, parameter = call)
+
+    fun writeContext(parameters: List<String>) =
+        addDetail("context") { ContextRule(parameters.map { detailParameterRule(it.trim(), "context") }) }
+
+    fun writeTypeParameters(parameters: List<String>) =
+        addDetail("typeParameters") { TypeParametersRule(parameters.map { typeParameterRule(it) }) }
+
+    fun writeKDoc() = addDetail("kdoc") { KDocRule }
+
+    fun writeBodyKind(kind: BodyKind) = addDetail("body") { BodyRule(kind) }
+
+    fun writeGetter() = addDetail("getter") { GetterRule }
+
+    fun writeSetter(modifiers: Modifiers?) = addDetail("setter", setOf(DeclarationKindName.Var)) {
+        SetterRule(modifiers?.let { detailModifiers("setter", it) }.orEmpty())
+    }
+
+    fun writeDelegate(name: String) = addDetail("delegatedBy") { DelegateRule(detailNameRule(name)) }
+
+    fun writeBackingField(type: String?) = addDetail("backingField") { BackingFieldRule(type?.let(::detailTypeRule)) }
+
+    // parameters: null is `anyArgs()`.
+    fun writePrimaryConstructor(modifiers: Modifiers?, parameters: List<String>?) =
+        addDetail("primaryConstructor", setOf(DeclarationKindName.Class)) {
+            PrimaryConstructorRule(
+                modifiers = modifiers?.let { detailModifiers("primaryConstructor", it) }.orEmpty(),
+                parameters = parameters?.map { detailParameterRule(it.trim(), "primaryConstructor") },
+            )
+        }
 
     fun addSuperclasses(names: List<String>) {
         ensureOpen()
@@ -148,19 +211,8 @@ internal class DeclarationLineBuilder(
         parameters = texts?.map(::parameterRule)
     }
 
-    // Split at the first `:`, which a parameter name never holds; the type may hold more, as in `(result: String) -> Unit`.
-    private fun parameterRule(written: String): ParameterRule {
-        val colon = written.indexOf(':')
-        val name = if (colon < 0) "" else written.substring(0, colon).trim()
-        val type = (if (colon < 0) written else written.substring(colon + 1)).trim()
-        if (name.isEmpty()) throw parameterProblem(KtFileContentLineProblem.ParameterWithoutName, written)
-        if (type.isEmpty()) throw parameterProblem(KtFileContentLineProblem.ParameterWithoutType, written)
-        return ParameterRule(
-            written = written,
-            name = session.patterns.nameRule(name, KtFileContentPatternKind.ParameterName),
-            type = session.patterns.typeRule(type),
-        )
-    }
+    private fun parameterRule(written: String): ParameterRule =
+        session.patterns.parameterRule(written) { problem -> parameterProblem(problem, written) }
 
     fun writeReturnType(type: String) {
         ensureOpen()
@@ -197,6 +249,7 @@ internal class DeclarationLineBuilder(
         prohibited = prohibited,
         except = except.toList(),
         declaredAt = declaredAt,
+        details = details.toList(),
     )
 
     private fun ensureOpen() {

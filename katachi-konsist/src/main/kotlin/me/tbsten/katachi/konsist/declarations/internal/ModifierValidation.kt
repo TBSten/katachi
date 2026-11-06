@@ -14,7 +14,7 @@ import me.tbsten.katachi.konsist.declarations.internal.DeclarationKindName.Var
 internal val EXCLUSIVE_GROUPS: List<Set<ModifierName>> = listOf(
     ModifierName.VISIBILITIES,
     setOf(ModifierName.Data, ModifierName.Sealed, ModifierName.Enum, ModifierName.Value, ModifierName.Annotation),
-    setOf(ModifierName.Abstract, ModifierName.Open),
+    setOf(ModifierName.Abstract, ModifierName.Open, ModifierName.Final),
     setOf(ModifierName.Expect, ModifierName.Actual),
 )
 
@@ -25,7 +25,8 @@ private val MEMBER_ONLY_ON_CALLABLES: List<ModifierName> = listOf(ModifierName.A
 
 private val CALLABLE_KINDS: Set<DeclarationKindName> = setOf(Function, Val, Var)
 
-private val ALL_KINDS: Set<DeclarationKindName> = DeclarationKindName.entries.toSet()
+// An enum entry and an `init` block carry no modifier; a secondary constructor carries a visibility, `expect` or `actual`.
+private val ALL_KINDS: Set<DeclarationKindName> = DeclarationKindName.entries.toSet() - DeclarationKindName.EnumEntry - DeclarationKindName.Init
 
 internal fun ModifierName.applicableKinds(): Set<DeclarationKindName> = when (this) {
     ModifierName.Public, ModifierName.Internal, ModifierName.Private,
@@ -35,7 +36,7 @@ internal fun ModifierName.applicableKinds(): Set<DeclarationKindName> = when (th
     ModifierName.Data -> setOf(Class, Object)
     ModifierName.Sealed -> setOf(Class, Interface)
     ModifierName.Enum, ModifierName.Value, ModifierName.Annotation, ModifierName.Inner -> setOf(Class)
-    ModifierName.Abstract, ModifierName.Open -> setOf(Class, Function, Val, Var)
+    ModifierName.Abstract, ModifierName.Open, ModifierName.Final -> setOf(Class, Function, Val, Var)
     ModifierName.Fun -> setOf(Interface)
     ModifierName.Companion -> setOf(Object)
     ModifierName.Override -> setOf(Function, Val, Var)
@@ -139,8 +140,6 @@ private fun checkOptional(shapes: List<Shape>, placement: Placement, line: Strin
 internal fun excludedBy(modifier: ModifierName, required: Set<ModifierName>): ModifierName? = EXCLUSIVE_GROUPS
     .filter { modifier in it }
     .firstNotNullOfOrNull { group -> required.firstOrNull { it != modifier && it in group } }
-
-internal fun List<Shape>.namesTypeAlias(): Boolean = any { it.kind == TypeAlias }
 
 private fun conflictIn(set: ModifierSet): List<ModifierName>? = EXCLUSIVE_GROUPS
     .map { group -> set.modifiers.filter { it in group }.sortedBy { it.ordinal } }

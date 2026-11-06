@@ -3,6 +3,7 @@ package me.tbsten.katachi.konsist.declarations
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.konsist.declarations.internal.AllowWriter
 import me.tbsten.katachi.konsist.declarations.internal.FileBuilder
+import me.tbsten.katachi.konsist.declarations.internal.renderFileAnnotation
 
 /**
  * What `not.` starts: a prohibited line, `not.allow(...)`. A declaration it matches is a violation
@@ -69,5 +70,19 @@ public class FileProhibition internal constructor(
     public fun `package`(pattern: String): PackageLine = PackageLine(file.declarePackage(pattern, prohibited = true))
 
     /** `not`. */
+    /**
+     * Prohibits the file annotations matching [pattern], even when a `fileAnnotation(...)` line allows them.
+     *
+     * ## Example 1: no warning suppressed for the whole file
+     * ```kt
+     * fileAnnotation("*")
+     * not.fileAnnotation("Suppress")
+     * ```
+     *
+     * @throws KatachiKtFileContentPatternException when [pattern] is not a pattern katachi reads.
+     */
+    public fun fileAnnotation(pattern: String): FileAnnotationLine =
+        FileAnnotationLine(renderFileAnnotation(file.declareFileAnnotation(pattern, prohibited = true)))
+
     override fun toString(): String = "not"
 }

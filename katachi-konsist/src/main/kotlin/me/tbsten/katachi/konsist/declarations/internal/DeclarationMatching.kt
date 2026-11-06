@@ -17,12 +17,13 @@ internal fun modifiersSatisfied(set: ModifierSet, fact: DeclarationFact): Boolea
 internal fun missingModifiersOf(set: ModifierSet, fact: DeclarationFact): List<ModifierName> =
     set.modifiers.filterNot { hasModifier(fact, it) }.sortedBy { it.ordinal }
 
-// `public` is never extra (no visibility reads as public), nor is a modifier that takes the place of a missing one (`private` where `public` is asked).
+// `public` and `final` are never extra (no visibility reads as public, a class or a member that is not open is final),
+// nor is a modifier that takes the place of a missing one (`private` where `public` is asked).
 internal fun extraModifiersOf(set: ModifierSet, fact: DeclarationFact): List<ModifierName> {
     val allowed = set.modifiers + set.alsoAllowed
     val missing = missingModifiersOf(set, fact).toSet()
     return fact.modifiers
-        .filter { it != ModifierName.Public && it !in allowed && excludedBy(it, missing) == null }
+        .filter { it != ModifierName.Public && it != ModifierName.Final && it !in allowed && excludedBy(it, missing) == null }
         .sortedBy { it.ordinal }
 }
 
@@ -33,19 +34,26 @@ private fun hasModifier(fact: DeclarationFact, modifier: ModifierName): Boolean 
     modifier in fact.modifiers ||
         (modifier == ModifierName.Public && fact.modifiers.none { it in ModifierName.VISIBILITIES })
 
-private fun annotationMatches(rule: AnnotationRule, annotation: AnnotationFact): Boolean =
-    if (rule.qualified) {
+internal fun annotationMatches(rule: AnnotationRule, annotation: AnnotationFact): Boolean {
+    val named = if (rule.qualified) {
         annotation.qualifiedCandidates.any { rule.pattern.matches(it) }
     } else {
         rule.pattern.matches(annotation.simpleName)
     }
+    if (!named) return false
+    if (rule.target != null && rule.target != annotation.target) return false
+    val arguments = rule.arguments ?: return true
+    val written = annotation.arguments.orEmpty()
+    return if (arguments === NO_ARGUMENTS) written.isEmpty() else arguments.matches(written)
+}
 
 private fun detailsMatch(rule: DeclarationRule, fact: DeclarationFact): Boolean =
     missingSuperclassesOf(rule, fact).isEmpty() &&
         receiverMatches(rule, fact) &&
         propertyTypeMatches(rule, fact) &&
         parametersMatch(rule, fact) &&
-        returnTypeMatches(rule, fact)
+        returnTypeMatches(rule, fact) &&
+        rule.details.all { it.matches(fact) }
 
 internal fun missingSuperclassesOf(rule: DeclarationRule, fact: DeclarationFact): List<SuperclassRule> =
     rule.superclasses.filterNot { superclass ->
@@ -72,8 +80,10 @@ internal fun parametersMatch(rule: DeclarationRule, fact: DeclarationFact): Bool
     return expected.size == actual.size && expected.zip(actual).all { (parameter, written) -> parameterMatches(parameter, written) }
 }
 
-private fun parameterMatches(rule: ParameterRule, fact: ParameterFact): Boolean =
-    rule.name.matches(fact.name) && rule.type.canonical.matches(fact.type.canonical)
+internal fun parameterMatches(rule: ParameterRule, fact: ParameterFact): Boolean =
+    rule.name.matches(fact.name) && rule.type.canonical.matches(fact.type.canonical) &&
+        fact.modifiers.containsAll(rule.modifiers) &&
+        (rule.defaultValue == null || fact.defaultValue?.let { rule.defaultValue.canonical.matches(canonicalType(it)) } == true)
 
 internal fun returnTypeMatches(rule: DeclarationRule, fact: DeclarationFact): Boolean {
     val expected = rule.returnType ?: return true

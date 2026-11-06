@@ -70,6 +70,12 @@ public sealed interface DeclarationVocabulary {
     /** Requires `external`, which only a function carries. */
     public val external: Modifiers
 
+    /**
+     * Requires `final` written in the source, as in `final override fun`. A line without it still
+     * matches a declaration that writes it: Kotlin reads a class or member that is not open as final.
+     */
+    public val final: Modifiers
+
     /** Requires `override`, on a member function or property. */
     public val override: Modifiers
 
@@ -150,7 +156,7 @@ public sealed interface DeclarationVocabulary {
     /** A mutable property, a `var` of a primary constructor included. */
     public val `var`: PropertyKind
 
-    /** A type alias. Only directly in a file: Kotlin has none inside a class. */
+    /** A type alias: directly in a file, or inside a class (nested type aliases, Kotlin 2.2 and later). */
     public val `typealias`: TypeAliasKind
 
     /**

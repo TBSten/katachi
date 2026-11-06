@@ -52,6 +52,8 @@ private fun LayoutScope.packageMatchesDirectory() =
         `package`(matchingDirectory)
         // No layer comes after this one, and what of katachi it may reach is the build's opt-in (see `katachi-konsist/build.gradle.kts`).
         `import`("**")
+        // A file reaching `:katachi`'s internals says so once at its top.
+        fileAnnotation("OptIn")
         // What a declaration may be is left to the `konsist { }` rules below, which read the KDoc and the `.internal` line.
         allow(anythingElse)
     }

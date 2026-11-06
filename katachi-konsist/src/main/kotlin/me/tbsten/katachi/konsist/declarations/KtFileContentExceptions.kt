@@ -111,6 +111,8 @@ public class KatachiKtFileContentLineException internal constructor(
     public val declaredAt: DeclarationSite,
     /**
      * The parameter the problem is about, without surrounding spaces, or `null` when the problem is not about one.
+     * For a problem of a detail (`DetailWrittenTwice`, `DetailNotForKind`, `DetailModifiers`) it is the name of the
+     * detail's call, such as `"setter"`.
      *
      * For [KtFileContentLineProblem.ParameterWithoutName] it is, for example, `"String"`.
      */
@@ -226,6 +228,15 @@ private fun lineMessage(problem: KtFileContentLineProblem, line: String, at: Dec
             }
         }
 
+        KtFileContentLineProblem.ParameterWithoutDefaultValue -> {
+            val head = parameter.orEmpty().substringBefore('=').trim()
+            Triple(
+                "Parameter \"$parameter\" of line \"$line\" at $at has nothing after its '='.",
+                PARAMETER_FORM,
+                "Write \"$head = *\" to ask for any default value, or leave out the '=' to ask nothing about it.",
+            )
+        }
+
         KtFileContentLineProblem.ParameterWithoutType -> {
             val name = parameter.orEmpty().substringBefore(':').trim()
             Triple(
@@ -241,16 +252,34 @@ private fun lineMessage(problem: KtFileContentLineProblem, line: String, at: Dec
             "Keep one .returns(...).",
         )
 
+        KtFileContentLineProblem.ActualsWithoutSourceSets -> Triple(
+            "Line \"$line\" at $at names no source set to look for the actual declarations in.",
+            "Each source set is the name of a directory under src/, such as androidMain, without a path.",
+            "Write the source sets, such as actualsIn(\"androidMain\", \"iosMain\").",
+        )
+
+        KtFileContentLineProblem.DetailWrittenTwice -> Triple(
+            "Line \"$line\" at $at writes .${parameter.orEmpty()}(...) twice.",
+            "A line asks one thing of each detail of its declaration.",
+            "Keep one .${parameter.orEmpty()}(...), with everything it asks for.",
+        )
+
+        KtFileContentLineProblem.DetailNotForKind -> Triple(
+            "Line \"$line\" at $at writes .${parameter.orEmpty()}(...), which no declaration of its kind has.",
+            "A val has no setter, and only a class has a primary constructor.",
+            "Remove .${parameter.orEmpty()}(...), or write it on a line of a kind that has it.",
+        )
+
+        KtFileContentLineProblem.DetailModifiers -> Triple(
+            "Line \"$line\" at $at gives .${parameter.orEmpty()}(...) modifiers it does not take.",
+            "A setter or a primary constructor is asked about one visibility.",
+            "Write one visibility, such as .${parameter.orEmpty()}(private), without or, .optional() or annotated(...).",
+        )
+
         KtFileContentLineProblem.SuperclassWithoutNames -> Triple(
             ".superclass() on line \"$line\" at $at names no supertype.",
             "superclass lists the supertypes a declaration must have, and an empty list asks for nothing.",
             "Pass at least one name, or remove .superclass().",
-        )
-
-        KtFileContentLineProblem.TypeAliasInClassBody -> Triple(
-            "Line \"$line\" at $at puts a typealias inside the { } of a class.",
-            "Kotlin declares a typealias only directly in a file, so the line could never match a member.",
-            "Move the line out of the { }, directly into ktFileContent { }.",
         )
 
         KtFileContentLineProblem.AnnotatedWithoutNames -> Triple(

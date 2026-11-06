@@ -142,13 +142,49 @@ public sealed interface KtFileContentScope : DeclarationListScope {
      * @throws KatachiKtFileContentPatternException when [pattern] is not a path katachi reads.
      */
     public fun `import`(pattern: String): ImportLine
+
+    /**
+     * Allows the file annotations (`@file:...`) matching [pattern]: a name as with `annotated(...)`, with the
+     * arguments in parentheses when they are asked about, as in `"Suppress(*unused*)"`. Like imports, a file
+     * annotation no line allows is a violation, and with no line written, every one is; a line only allows.
+     *
+     * ## Example 1: only @file:Suppress and @file:OptIn
+     * ```kt
+     * fileAnnotation("Suppress")
+     * fileAnnotation("OptIn")
+     * ```
+     *
+     * @throws KatachiKtFileContentPatternException when [pattern] is not a pattern katachi reads.
+     */
+    public fun fileAnnotation(pattern: String): FileAnnotationLine
+
+    /**
+     * Requires each `expect` declaration of the file to have an `actual` one of the same kind and name in each of
+     * [sourceSets]: in the same directory under `src/<source set>/` and in a file of the same name, or of the same
+     * name with a platform suffix (`Platform.kt` or `Platform.android.kt`). Only the file's own declarations are
+     * looked at, not their members.
+     *
+     * ## Example 1: what commonMain expects, androidMain and iosMain write
+     * ```kt
+     * ktFileContent {
+     *     `package`(matchingDirectory)
+     *     allow(expect, anythingElse)
+     *     actualsIn("androidMain", "iosMain")
+     * }
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when no source set is given, or one is blank or holds a `/`.
+     */
+    public fun actualsIn(vararg sourceSets: String)
 }
 
 /**
  * Receiver of the `{ }` of a class, interface or object line: the members of that declaration,
- * with the same vocabulary as directly in the file. Members are functions, properties (those of a
- * primary constructor included) and nested classes, interfaces and objects (companion objects
- * included) -- not constructors, `init` blocks, enum entries or what is inherited.
+ * with the same vocabulary as directly in the file, and the words of what only a class body holds
+ * ([MemberVocabulary]). Members are functions, properties (those of a primary constructor included),
+ * type aliases, nested classes, interfaces and objects (companion objects included), enum entries,
+ * secondary constructors and `init` blocks -- not the primary constructor (asked with
+ * `.primaryConstructor(...)`) or what is inherited.
  *
  * ## Example 1: what a use case interface and its implementation hold
  * ```kt
@@ -166,4 +202,4 @@ public sealed interface KtFileContentScope : DeclarationListScope {
  */
 @KatachiDsl
 @ExperimentalKatachiApi
-public sealed interface ClassBodyScope : DeclarationListScope
+public sealed interface ClassBodyScope : DeclarationListScope, MemberVocabulary, MemberAllow, MemberRequired

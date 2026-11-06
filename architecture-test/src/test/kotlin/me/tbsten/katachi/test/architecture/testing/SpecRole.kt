@@ -54,6 +54,10 @@ private fun RoleScope.specIsOneFreeSpec() =
         `package`(matchingDirectory)
 
         `import`("**")
+        // A spec opting in to an internal or experimental API, exercising a deprecated one or reading a backend's internals says so once at its top.
+        fileAnnotation("OptIn")
+        fileAnnotation("Suppress(*DEPRECATION*)")
+        fileAnnotation("Suppress(*INVISIBLE_*)")
 
         required(`class`, fileName).superclass("FreeSpec")
         allow(private, anythingElse)
