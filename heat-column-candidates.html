@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ja" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Heat 列名の候補</title>
+<style>
+:root{
+  --bg:#ffffff;--bg-muted:#f3f4f6;--bg-sunken:#e5e7eb;--text:#364153;--ink:#101828;--muted:#6a7282;
+  --line:#d1d5dc;--hairline:#e5e7eb;--accent:#1e2939;--on-accent:#ffffff;
+  --success-low:#dcfce7;--success-high:#016630;--danger-low:#ffe2e2;--danger-high:#9f0712;--caution-low:#fef3c6;--caution-high:#973c00;
+  --gh-bg:#ffffff;--gh-border:#d1d9e0;--gh-code:#eff1f3;--gh-text:#1f2328;
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans",Arial,sans-serif;
+  --font-mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#030712;--bg-muted:#1e2939;--bg-sunken:#1e2939;--text:#d1d5dc;--ink:#ffffff;--muted:#99a1af;
+  --line:#364153;--hairline:#1e2939;--accent:#f3f4f6;--on-accent:#030712;
+  --success-low:#032e15;--success-high:#b9f8cf;--danger-low:#460809;--danger-high:#ffc9c9;--caution-low:#461901;--caution-high:#fee685;
+  --gh-bg:#0d1117;--gh-border:#3d444d;--gh-code:#656c7633;--gh-text:#f0f6fc;}}
+:root[data-theme="dark"]{
+  --bg:#030712;--bg-muted:#1e2939;--bg-sunken:#1e2939;--text:#d1d5dc;--ink:#ffffff;--muted:#99a1af;
+  --line:#364153;--hairline:#1e2939;--accent:#f3f4f6;--on-accent:#030712;
+  --success-low:#032e15;--success-high:#b9f8cf;--danger-low:#460809;--danger-high:#ffc9c9;--caution-low:#461901;--caution-high:#fee685;
+  --gh-bg:#0d1117;--gh-border:#3d444d;--gh-code:#656c7633;--gh-text:#f0f6fc;}
+*{box-sizing:border-box}
+body{margin:0;padding:16px;background:var(--bg);color:var(--text);font:14px/1.6 var(--font-sans)}
+.page{max-width:920px;margin:0 auto}
+.box{border:.5px solid var(--line);background:var(--bg);border-radius:8px;padding:1.25rem 1.5rem;margin-bottom:16px}
+h1{font-size:18px;line-height:1.2;color:var(--ink);margin:0 0 6px;font-weight:600}
+h2{font-size:15px;line-height:1.2;color:var(--ink);margin:0 0 12px;font-weight:600}
+p.lead{margin:0 0 4px;color:var(--muted)}
+code,.mono{font-family:var(--font-mono);font-size:13px}
+.kbd{background:var(--bg-muted);border-radius:4px;padding:0 .35em}
+/* how heat is computed */
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.step{border:.5px solid var(--line);background:var(--bg-muted);border-radius:6px;padding:8px 12px;min-width:140px}
+.step b{display:block;color:var(--ink);font-size:13px;font-weight:600}
+.step span{color:var(--muted);font-size:12px}
+.arrow{color:var(--muted);font-size:16px}
+.levels{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.lv{border:.5px solid var(--line);border-radius:6px;padding:4px 10px;background:var(--bg-muted);font-size:12px;color:var(--muted)}
+.lv b{display:block;font-size:15px;letter-spacing:1px;color:var(--ink)}
+/* GitHub-looking mini table */
+.gh{background:var(--gh-bg);color:var(--gh-text);border:.5px solid var(--gh-border);border-radius:6px;padding:10px;font:14px/1.5 var(--font-sans)}
+.gh table{border-collapse:collapse;width:100%;table-layout:auto}
+.gh th,.gh td{border:1px solid var(--gh-border);padding:6px 10px;vertical-align:top;text-align:left}
+.gh th{font-weight:600;white-space:nowrap}
+.gh td.role{overflow-wrap:anywhere;width:99%}
+.gh td.r,.gh th.r{text-align:right;white-space:nowrap}
+.gh code{background:var(--gh-code);border-radius:6px;padding:.2em .4em;font-size:85%}
+.gh .sq{letter-spacing:0}
+/* cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:12px}
+@media (max-width:860px){.grid{grid-template-columns:1fr!important}}
+.card{position:relative;border:.5px solid var(--line);background:var(--bg);border-radius:8px;padding:14px 14px 12px}
+.card.rec{border:2px solid var(--accent)}
+.badge{position:absolute;top:-10px;right:12px;background:var(--accent);color:var(--on-accent);font-size:11px;font-weight:600;border-radius:4px;padding:2px 8px}
+.card h3{margin:0 0 2px;font-size:16px;color:var(--ink);font-family:var(--font-mono);font-weight:600}
+.card .mean{margin:0 0 10px;font-size:12px;color:var(--muted);min-height:3.2em}
+.meter{margin-top:10px;font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pill{border-radius:9999px;padding:1px 8px;font-size:11px;font-weight:600}
+.ok{background:var(--success-low);color:var(--success-high)}
+.ng{background:var(--danger-low);color:var(--danger-high)}
+.tight{background:var(--caution-low);color:var(--caution-high)}
+.bars{position:relative;height:10px;border-radius:4px;background:var(--bg-sunken);overflow:hidden;flex:1;min-width:90px}
+.bars i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);opacity:.75}
+.bars u{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--danger-high)}
+.ngrow{display:flex;flex-wrap:wrap;gap:8px}
+.ngrow .card{flex:1 1 260px;padding:10px 12px}
+.note{font-size:12px;color:var(--muted);margin:10px 0 0}
+.legend{font-size:12px;color:var(--muted);margin:8px 0 0}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="box">
+  <h1>Heat 列は「重み付き diff 行数の、表の最大行に対する比」= どれだけしっかり見るべきか</h1>
+  <p class="lead">Markdown レポートの各行に 0〜4 段階の色マスで出る。段階は <code>DiffModel.kt</code> の <code>heatLevel()</code>、マスは <code>DiffMarkdown.kt</code> の <code>heatSquares()</code>。</p>
+  <div class="flow" style="margin-top:12px">
+    <div class="step"><b>diff 行数 × diffWeight</b><span>= score。重みは「しっかり見るべき」Role ほど大きい</span></div>
+    <div class="arrow">→</div>
+    <div class="step"><b>score ÷ 表の最大 score</b><span>Group・Role・File ごとに最大を取る</span></div>
+    <div class="arrow">→</div>
+    <div class="step"><b>ceil(比 × 4) を 1〜4 に丸める</b><span>0 は変更なし</span></div>
+  </div>
+  <div class="levels">
+    <div class="lv"><b>⬜</b>0 変更なし</div>
+    <div class="lv"><b>🟨</b>1 〜25%</div>
+    <div class="lv"><b>🟧</b>2 〜50%</div>
+    <div class="lv"><b>🟧🟧</b>3 〜75%</div>
+    <div class="lv"><b>🟥🟥🟥</b>4 最大</div>
+  </div>
+</div>
+
+<div class="box">
+  <h2>崩れる仕組み: 列の最小幅は見出しの幅で決まる</h2>
+  <div class="grid" style="grid-template-columns:1fr 1fr">
+    <div class="card">
+      <h3 style="font-family:var(--font-sans);font-size:13px;color:var(--muted)">今（Heat）</h3>
+      <div class="gh"><table><thead><tr><th>Role</th><th class="h" data-head="Heat">Heat</th><th class="r">Diff lines</th></tr></thead>
+      <tbody><tr><td class="role">&nbsp;&nbsp;└ <code>…/DescribeDefinitionKtFileContentSpec.kt</code></td><td class="sq">🟥🟥🟥</td><td class="r">+45 -45</td></tr></tbody></table></div>
+      <div class="meter" data-meter></div>
+    </div>
+    <div class="card">
+      <h3 style="font-family:var(--font-sans);font-size:13px;color:var(--muted)">長い 1 単語にすると</h3>
+      <div class="gh"><table><thead><tr><th>Role</th><th class="h" data-head="Attention">Attention</th><th class="r">Diff lines</th></tr></thead>
+      <tbody><tr><td class="role">&nbsp;&nbsp;└ <code>…/DescribeDefinitionKtFileContentSpec.kt</code></td><td class="sq">🟥🟥🟥</td><td class="r">+45 -45</td></tr></tbody></table></div>
+      <div class="meter" data-meter></div>
+    </div>
+  </div>
+  <p class="legend">GitHub の表は長いパスの列に幅を取られると、他の列が「見出しの幅」まで縮む。🟥🟥🟥 は絵文字の間で折り返せるので、見出しが 3 マスぶん（約 52px）より狭いと 2〜3 行に割れる。上の表はこのブラウザで実際に組んでいるので、数値は今見ている環境の実測。</p>
+</div>
+
+<div class="box">
+  <h2>候補（どれも 1 単語、🟥🟥🟥 が 1 行に収まる）</h2>
+  <div class="grid" id="cands"></div>
+  <p class="note">幅の実測は Chromium + Noto Color Emoji（Linux）。Mac の Apple Color Emoji はマスが少し広く、SF Pro の見出しも少し変わるので、上の表の数値がその環境の答え。</p>
+</div>
+
+<div class="box">
+  <h2>幅が足りず外した候補</h2>
+  <div class="ngrow" id="ngs"></div>
+</div>
+
+</div>
+<script>
+const cands = [
+  {w:"Attention", rec:true, mean:"「どれだけ注目すべきか」。重みで増えた値 = レビューで注意を向ける度合い、という意味にそのまま合う。"},
+  {w:"Scrutiny",  mean:"「精査の度合い」。どれだけしっかり見るべきかを最も正確に言う語。やや硬く、Attention より少し狭い。"},
+  {w:"Importance", mean:"「重要度」。意味は通るが一般的すぎて、diff 行数由来の値だと伝わりにくい。幅は十分。"},
+  {w:"Emphasis",  mean:"「強調」。diffWeight で強調された行、という読み。Attention ほど自然ではない。"},
+  {w:"Magnitude", mean:"「変更の大きさ」。幅は十分だが、重みの意味（しっかり見るべき度合い）が落ちる。"},
+];
+const ngs = [
+  {w:"Priority", why:"意味は近いが 8 字で細く、3 マスとほぼ同じ幅で割れる"},
+  {w:"Weight", why:"6 字。割れる"},
+  {w:"Focus", why:"5 字。Heat とほぼ同じで割れる"},
+];
+const row = h => `<div class="gh"><table><thead><tr><th>Role</th><th class="h" data-head="${h}">${h}</th><th class="r">Diff lines</th></tr></thead>
+<tbody><tr><td class="role">&nbsp;&nbsp;└ <code>…/DescribeDefinitionKtFileContentSpec.kt</code></td><td class="sq">🟥🟥🟥</td><td class="r">+45 -45</td></tr>
+<tr><td class="role">&nbsp;&nbsp;└ <code>…/gradle/Modules.kt</code></td><td class="sq">🟧🟧</td><td class="r">+4 -4</td></tr></tbody></table></div>`;
+document.getElementById('cands').innerHTML = cands.map(c =>
+  `<div class="card${c.rec?' rec':''}">${c.rec?'<span class="badge">おすすめ</span>':''}<h3>${c.w}</h3><p class="mean">${c.mean}</p>${row(c.w)}<div class="meter" data-meter></div></div>`).join('');
+document.getElementById('ngs').innerHTML = ngs.map(c =>
+  `<div class="card"><h3>${c.w}</h3><p class="mean" style="min-height:0">${c.why}</p>${row(c.w)}<div class="meter" data-meter></div></div>`).join('');
+
+// Measure in the viewer's own browser: header text width vs the three squares on one line.
+const probe = document.createElement('span');
+probe.textContent = '🟥🟥🟥'; probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font:14px/1.5 ' + getComputedStyle(document.body).fontFamily;
+document.body.appendChild(probe);
+const sq = probe.getBoundingClientRect().width;
+document.querySelectorAll('.card').forEach(card => {
+  const th = card.querySelector('th.h'), m = card.querySelector('[data-meter]'), td = card.querySelector('td.sq');
+  if (!th || !m) return;
+  const r = document.createRange(); r.selectNodeContents(th);
+  const hw = r.getBoundingClientRect().width;
+  const r2 = document.createRange(); r2.selectNodeContents(td);
+  const lines = new Set([...r2.getClientRects()].map(x => Math.round(x.top))).size;
+  const margin = hw - sq;
+  const cls = lines > 1 ? 'ng' : margin < 8 ? 'tight' : 'ok';
+  const label = lines > 1 ? `${lines} 行に割れる` : margin < 8 ? '1 行（余白わずか）' : '1 行に収まる';
+  const max = 110;
+  m.innerHTML = `<span class="pill ${cls}">${label}</span><span class="bars"><i style="width:${Math.min(100, hw/max*100)}%"></i><u style="left:${sq/max*100}%"></u></span><span>見出し ${Math.round(hw)}px / 🟥🟥🟥 ${Math.round(sq)}px</span>`;
+});
+</script>
+</body>
+</html>
