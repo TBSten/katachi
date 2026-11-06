@@ -1,0 +1,538 @@
+{
+  "templates": [
+    {
+      "template": "feature.FeatureScreen",
+      "id": null,
+      "title": "feature.FeatureScreen",
+      "roleName": "feature.FeatureScreen",
+      "summary": null,
+      "parameterNames": [],
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "src/main/kotlin/feature/*/*Screen.kt",
+          "position": 4,
+          "segment": "${name}",
+          "wildcardIndex": 0,
+          "transform": null
+        },
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "src/main/kotlin/feature/*/*Screen.kt",
+          "position": 5,
+          "segment": "${name}Screen.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ],
+      "conflict": false
+    },
+    {
+      "template": "feature.FeatureViewModel",
+      "id": null,
+      "title": "feature.FeatureViewModel",
+      "roleName": "feature.FeatureViewModel",
+      "summary": null,
+      "parameterNames": ["withState"],
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "src/main/kotlin/feature/*/*ViewModel.kt",
+          "position": 4,
+          "segment": "${name}",
+          "wildcardIndex": 0,
+          "transform": null
+        },
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "src/main/kotlin/feature/*/*ViewModel.kt",
+          "position": 5,
+          "segment": "${name}ViewModel.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ],
+      "conflict": false
+    },
+    {
+      "template": "shared.Logger",
+      "id": null,
+      "title": "shared.Logger",
+      "roleName": "shared.Logger",
+      "summary": null,
+      "parameterNames": ["tag"],
+      "captures": [],
+      "conflict": false
+    },
+    {
+      "template": "ui.Screen",
+      "id": null,
+      "title": "ui.Screen",
+      "roleName": "ui.Screen",
+      "summary": null,
+      "parameterNames": [],
+      "captures": [
+        {
+          "name": "feature",
+          "kind": "ModuleCapture",
+          "pattern": ":feature:*",
+          "position": 0,
+          "segment": ":feature:${feature}",
+          "wildcardIndex": 0,
+          "transform": null
+        },
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "feature/*/src/main/kotlin/*Page.kt",
+          "position": 5,
+          "segment": "${name}Page.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ],
+      "conflict": false
+    }
+  ],
+  "details": [
+    {
+      "template": "feature.FeatureScreen",
+      "id": null,
+      "title": "feature.FeatureScreen",
+      "roleName": "feature.FeatureScreen",
+      "summary": null,
+      "parameters": [],
+      "files": [
+        {
+          "pattern": "src/main/kotlin/feature/${name}/${name}Screen.kt",
+          "fileName": "${name}Screen.kt",
+          "path": "src/main/kotlin/feature/${name}/${name}Screen.kt",
+          "captures": ["name"],
+          "parameters": [],
+          "content": "fun ${name}Screen() {}\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=feature.FeatureScreen --arg name=<name>",
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "src/main/kotlin/feature/*/*Screen.kt",
+          "position": 4,
+          "segment": "${name}",
+          "wildcardIndex": 0,
+          "transform": null
+        },
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "src/main/kotlin/feature/*/*Screen.kt",
+          "position": 5,
+          "segment": "${name}Screen.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ]
+    },
+    {
+      "template": "feature.FeatureViewModel",
+      "id": null,
+      "title": "feature.FeatureViewModel",
+      "roleName": "feature.FeatureViewModel",
+      "summary": null,
+      "parameters": [
+        {
+          "name": "withState",
+          "kind": "BooleanParameter",
+          "typeName": "Boolean",
+          "default": "true",
+          "acceptedValues": ["true", "false"],
+          "isRequired": false,
+          "previewValue": "true",
+          "previewValueSource": "Default"
+        }
+      ],
+      "files": [
+        {
+          "pattern": "src/main/kotlin/feature/${name}/${name}ViewModel.kt",
+          "fileName": "${name}ViewModel.kt",
+          "path": "src/main/kotlin/feature/${name}/${name}ViewModel.kt",
+          "captures": ["name"],
+          "parameters": ["withState"],
+          "content": "class ${name}ViewModel(val state: Boolean = true)\n"
+        }
+      ],
+      "branches": [
+        {
+          "parameterName": "withState",
+          "value": "false",
+          "addedFiles": [],
+          "removedFiles": [],
+          "addedParameters": [],
+          "removedParameters": []
+        }
+      ],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=feature.FeatureViewModel --arg name=<name>",
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "src/main/kotlin/feature/*/*ViewModel.kt",
+          "position": 4,
+          "segment": "${name}",
+          "wildcardIndex": 0,
+          "transform": null
+        },
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "src/main/kotlin/feature/*/*ViewModel.kt",
+          "position": 5,
+          "segment": "${name}ViewModel.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ]
+    },
+    {
+      "template": "shared.Logger",
+      "id": null,
+      "title": "shared.Logger",
+      "roleName": "shared.Logger",
+      "summary": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${tag}",
+          "previewValueSource": "Placeholder"
+        }
+      ],
+      "files": [
+        {
+          "pattern": "src/main/kotlin/shared/Logger.kt",
+          "fileName": "Logger.kt",
+          "path": "src/main/kotlin/shared/Logger.kt",
+          "captures": [],
+          "parameters": ["tag"],
+          "content": "val TAG = \"${tag}\"\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=shared.Logger --arg tag=Tag",
+      "captures": []
+    },
+    {
+      "template": "ui.Screen",
+      "id": null,
+      "title": "ui.Screen",
+      "roleName": "ui.Screen",
+      "summary": null,
+      "parameters": [],
+      "files": [
+        {
+          "pattern": "feature/${feature}/src/main/kotlin/${name}Page.kt",
+          "fileName": "${name}Page.kt",
+          "path": null,
+          "captures": ["feature", "name"],
+          "parameters": [],
+          "content": "fun ${name}Page() {}\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=ui.Screen --arg feature=<feature> --arg name=<name>",
+      "captures": [
+        {
+          "name": "feature",
+          "kind": "ModuleCapture",
+          "pattern": ":feature:*",
+          "position": 0,
+          "segment": ":feature:${feature}",
+          "wildcardIndex": 0,
+          "transform": null
+        },
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "feature/*/src/main/kotlin/*Page.kt",
+          "position": 5,
+          "segment": "${name}Page.kt",
+          "wildcardIndex": 0,
+          "transform": null
+        }
+      ]
+    }
+  ],
+  "modulePlacements": [
+    {
+      "template": "ui.Screen",
+      "modulePattern": ":feature:*",
+      "captureNames": ["feature"],
+      "modules": [
+        {
+          "values": ["home"],
+          "modulePath": ":feature:home",
+          "directory": "feature/home",
+          "path": "feature/home/src/main/kotlin/${name}Page.kt"
+        },
+        {
+          "values": ["settings"],
+          "modulePath": ":feature:settings",
+          "directory": "feature/settings",
+          "path": "feature/settings/src/main/kotlin/${name}Page.kt"
+        }
+      ]
+    }
+  ],
+  "templateSets": [
+    {
+      "templateSet": "Starter",
+      "name": "Starter",
+      "title": "はじめの一式",
+      "summary": null,
+      "groupName": null,
+      "parameterNames": ["name"],
+      "members": ["feature.FeatureScreen", "feature.FeatureViewModel"],
+      "conflict": false
+    },
+    {
+      "templateSet": "feature.NewFeature",
+      "name": "NewFeature",
+      "title": "新しい機能",
+      "summary": "画面・ViewModel・ログの印・ページを一度に作る",
+      "groupName": "feature",
+      "parameterNames": ["feature", "name", "withState"],
+      "members": ["feature.FeatureScreen", "feature.FeatureViewModel", "shared.Logger", "ui.Screen"],
+      "conflict": false
+    },
+    {
+      "templateSet": "feature.Broken",
+      "name": "Broken",
+      "title": "壊れた組",
+      "summary": null,
+      "groupName": "feature",
+      "parameterNames": [],
+      "members": ["feature.FeatureScreen"],
+      "conflict": true
+    }
+  ],
+  "templateSetDetails": [
+    {
+      "templateSet": "Starter",
+      "name": "Starter",
+      "title": "はじめの一式",
+      "summary": null,
+      "groupName": null,
+      "parameters": [
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder"
+        }
+      ],
+      "members": [
+        {
+          "template": "feature.FeatureScreen",
+          "title": "feature.FeatureScreen",
+          "args": [
+            {
+              "name": "name",
+              "kind": "Capture",
+              "previewValue": "${name}",
+              "parameter": "name"
+            }
+          ],
+          "files": [
+            {
+              "pattern": "src/main/kotlin/feature/${name}/${name}Screen.kt",
+              "fileName": "${name}Screen.kt",
+              "path": "src/main/kotlin/feature/${name}/${name}Screen.kt",
+              "captures": ["name"],
+              "parameters": [],
+              "content": "fun ${name}Screen() {}\n"
+            }
+          ]
+        },
+        {
+          "template": "feature.FeatureViewModel",
+          "title": "feature.FeatureViewModel",
+          "args": [
+            {
+              "name": "name",
+              "kind": "Capture",
+              "previewValue": "${name}",
+              "parameter": "name"
+            }
+          ],
+          "files": [
+            {
+              "pattern": "src/main/kotlin/feature/${name}/${name}ViewModel.kt",
+              "fileName": "${name}ViewModel.kt",
+              "path": "src/main/kotlin/feature/${name}/${name}ViewModel.kt",
+              "captures": ["name"],
+              "parameters": ["withState"],
+              "content": "class ${name}ViewModel(val state: Boolean = true)\n"
+            }
+          ]
+        }
+      ],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=Starter --arg name=<name>"
+    },
+    {
+      "templateSet": "feature.NewFeature",
+      "name": "NewFeature",
+      "title": "新しい機能",
+      "summary": "画面・ViewModel・ログの印・ページを一度に作る",
+      "groupName": "feature",
+      "parameters": [
+        {
+          "name": "feature",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${feature}",
+          "previewValueSource": "Placeholder"
+        },
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder"
+        },
+        {
+          "name": "withState",
+          "kind": "BooleanParameter",
+          "typeName": "Boolean",
+          "default": "true",
+          "acceptedValues": ["true", "false"],
+          "isRequired": false,
+          "previewValue": "true",
+          "previewValueSource": "Default"
+        }
+      ],
+      "members": [
+        {
+          "template": "feature.FeatureScreen",
+          "title": "feature.FeatureScreen",
+          "args": [
+            {
+              "name": "name",
+              "kind": "Capture",
+              "previewValue": "${name}",
+              "parameter": "name"
+            }
+          ],
+          "files": [
+            {
+              "pattern": "src/main/kotlin/feature/${name}/${name}Screen.kt",
+              "fileName": "${name}Screen.kt",
+              "path": "src/main/kotlin/feature/${name}/${name}Screen.kt",
+              "captures": ["name"],
+              "parameters": [],
+              "content": "fun ${name}Screen() {}\n"
+            }
+          ]
+        },
+        {
+          "template": "feature.FeatureViewModel",
+          "title": "feature.FeatureViewModel",
+          "args": [
+            {
+              "name": "name",
+              "kind": "Capture",
+              "previewValue": "${name}",
+              "parameter": "name"
+            },
+            {
+              "name": "withState",
+              "kind": "Parameter",
+              "previewValue": "true",
+              "parameter": "withState"
+            }
+          ],
+          "files": [
+            {
+              "pattern": "src/main/kotlin/feature/${name}/${name}ViewModel.kt",
+              "fileName": "${name}ViewModel.kt",
+              "path": "src/main/kotlin/feature/${name}/${name}ViewModel.kt",
+              "captures": ["name"],
+              "parameters": ["withState"],
+              "content": "class ${name}ViewModel(val state: Boolean = true)\n"
+            }
+          ]
+        },
+        {
+          "template": "shared.Logger",
+          "title": "shared.Logger",
+          "args": [
+            {
+              "name": "tag",
+              "kind": "Parameter",
+              "previewValue": "${name}Tag",
+              "parameter": null
+            }
+          ],
+          "files": [
+            {
+              "pattern": "src/main/kotlin/shared/Logger.kt",
+              "fileName": "Logger.kt",
+              "path": "src/main/kotlin/shared/Logger.kt",
+              "captures": [],
+              "parameters": ["tag"],
+              "content": "val TAG = \"${name}Tag\"\n"
+            }
+          ]
+        },
+        {
+          "template": "ui.Screen",
+          "title": "ui.Screen",
+          "args": [
+            {
+              "name": "feature",
+              "kind": "Capture",
+              "previewValue": "${feature}",
+              "parameter": "feature"
+            },
+            {
+              "name": "name",
+              "kind": "Capture",
+              "previewValue": "${name}",
+              "parameter": "name"
+            }
+          ],
+          "files": [
+            {
+              "pattern": "feature/${feature}/src/main/kotlin/${name}Page.kt",
+              "fileName": "${name}Page.kt",
+              "path": null,
+              "captures": ["feature", "name"],
+              "parameters": [],
+              "content": "fun ${name}Page() {}\n"
+            }
+          ]
+        }
+      ],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=feature.NewFeature --arg feature=<feature> --arg name=<name>"
+    }
+  ]
+}

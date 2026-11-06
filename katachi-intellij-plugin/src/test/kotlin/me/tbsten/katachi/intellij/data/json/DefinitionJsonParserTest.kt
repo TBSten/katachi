@@ -63,7 +63,7 @@ class DefinitionJsonParserTest {
         assertEquals(Paths.get("/repo"), definition.projectRoot)
         assertEquals("0.3.0", definition.katachiVersion)
         assertEquals(Instant.parse("2026-10-04T00:30:12Z"), definition.generatedAt)
-        assertEquals(ArchitectureModel(DeclarationSiteRef("IdePluginSyntheticSpecSupport.kt", 53), "gitTracked", null), definition.architecture)
+        assertEquals(ArchitectureModel(DeclarationSiteRef("IdePluginSyntheticSpecSupport.kt", 51), "gitTracked", null), definition.architecture)
         assertTrue(definition.architecture.isGitTracked)
         assertEquals(listOf("a", "a.b", "a.b.c", "other"), definition.groups.map { it.qualifiedName })
         assertEquals(
@@ -82,7 +82,7 @@ class DefinitionJsonParserTest {
         assertEquals(listOf("domain"), useCase.groupPath)
         assertEquals("Use case", useCase.title)
         assertEquals("One behaviour of a screen", useCase.summary)
-        assertEquals(DeclarationSiteRef("DescribeDefinitionSpecSupport.kt", 95), useCase.declaredAt)
+        assertEquals(DeclarationSiteRef("DescribeDefinitionSpecSupport.kt", 93), useCase.declaredAt)
     }
 
     @Test
@@ -96,7 +96,7 @@ class DefinitionJsonParserTest {
         assertEquals("a.b.Middle", entry.template?.specifier)
         assertEquals(listOf("src/main/kotlin/a/b/Middle.kt"), entry.matchedFiles)
         assertEquals(1, entry.matchedCount)
-        assertEquals(DeclarationSiteRef("IdePluginSyntheticSpecSupport.kt", 110), middle.declaredAt)
+        assertEquals(DeclarationSiteRef("IdePluginSyntheticSpecSupport.kt", 108), middle.declaredAt)
         val directory = middle.layout[0]
         assertNull(directory.matchedCount)
         assertEquals(LayoutEntryKind.Directory, directory.kind)
@@ -134,7 +134,7 @@ class DefinitionJsonParserTest {
         assertEquals(listOf(5, 7), whole.entryIndices)
         assertEquals(ConstraintRange.DirectOnly, direct.range)
         assertEquals(listOf("core/domain/src/main/kotlin/model"), direct.coverage.anyFileDirectories)
-        assertEquals(DeclarationSiteRef("DescribeDefinitionSpecSupport.kt", 113), direct.declaredAt)
+        assertEquals(DeclarationSiteRef("DescribeDefinitionSpecSupport.kt", 111), direct.declaredAt)
         assertNull(whole.layoutPath)
         assertEquals("core/domain/src/main/kotlin/model", direct.layoutPath)
     }
