@@ -127,6 +127,9 @@ internal val DIFF_HTML_SCRIPT: String = """
     const noRole = new Set(fileRows.filter(r => isIn(r) && r.classList.contains("unassigned-file")).map(pathOf)).size;
     stat("no-role").textContent = noRole; stat("no-role-noun").textContent = noRole === 1 ? "file" : "files";
     stat("no-role").closest(".warn-stat").hidden = noRole === 0;
+    const ignored = new Set(fileRows.filter(r => isIn(r) && r.classList.contains("ignored-file")).map(pathOf)).size;
+    stat("ignored").textContent = ignored; stat("ignored-noun").textContent = ignored === 1 ? "file" : "files";
+    stat("ignored").closest(".ignored-stat").hidden = ignored === 0;
     stat("limit").hidden = kept.size >= seen.size;
     stat("shown").textContent = kept.size; stat("limit-total").textContent = seen.size;
     const scope = stat("scope");

@@ -185,6 +185,12 @@ internal fun renderDiffHtml(model: DiffReportModel, history: CommitHistory): Str
                 """${if (model.unassigned.size == 1) "file" else "files"}</span> in no role</span></div>""",
         )
         .replace(
+            "{{IGNORED}}",
+            """<div class="ignored-stat"${if (model.ignored.isEmpty()) " hidden" else ""}><span class="num" data-stat="ignored">""" +
+                """${model.ignored.size}</span><span class="cap"><span data-stat="ignored-noun">""" +
+                """${if (model.ignored.size == 1) "file" else "files"}</span> ignored</span></div>""",
+        )
+        .replace(
             "{{LIMIT}}",
             """<p class="limit" data-stat="limit"${if (model.hiddenCount == 0) " hidden" else ""}>""" +
                 """Showing <span data-stat="shown">${model.shown.size}</span> of <span data-stat="limit-total">""" +

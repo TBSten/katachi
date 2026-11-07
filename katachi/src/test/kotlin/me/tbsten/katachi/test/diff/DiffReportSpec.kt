@@ -195,6 +195,7 @@ class DiffReportSpec : FreeSpec({
             markdown shouldContain "# Files in no role: HEAD~1"
             markdown shouldContain "<details open><summary><b>No role</b> 1 file</summary>"
             out.resolve("diff-report.html").readText() shouldNotContain "data-collapsed-default"
+            out.resolve("diff-report.html").readText() shouldContain "<div class=\"ignored-stat\" hidden>"
         }
     }
 
@@ -233,6 +234,7 @@ class DiffReportSpec : FreeSpec({
             html shouldContain "class=\"file ignored-file\""
             // The header's warning counts the no-role file alone.
             html shouldContain "data-stat=\"no-role\">1</span>"
+            html shouldContain "<div class=\"ignored-stat\"><span class=\"num\" data-stat=\"ignored\">1</span>"
         }
     }
 
@@ -256,6 +258,7 @@ class DiffReportSpec : FreeSpec({
             out.resolve("diff-report.files-in-no-role.md").exists() shouldBe false
             val html = out.resolve("diff-report.html").readText()
             html shouldContain "<div class=\"warn-stat\" hidden>"
+            html shouldContain "<div class=\"ignored-stat\"><span class=\"num\" data-stat=\"ignored\">1</span>"
             html shouldNotContain "data-key=\"no-role\""
             html shouldContain "data-collapsed-default=\"true\" data-files=\"1\" data-key=\"ignored\""
         }
