@@ -19,6 +19,10 @@
 //
 // 新しい版の切り方は docs/AGENTS.md の「ドキュメントの版」の節にある。
 
+// このファイルはブラウザでも読まれる（docs/src/integrations/feedback/shared/version.ts）。
+// ブラウザには `process` が無いので、環境変数は無いものとして読む。
+const env = globalThis.process?.env ?? {};
+
 /** @type {{ slug: string; label: string }[]} */
 export const archivedVersions = [
   { slug: '0.3', label: 'v0.3' },
@@ -45,11 +49,11 @@ export const writtenBase = '/katachi';
  * このビルドの base。`KATACHI_DOCS_BASE` で差し替える（開発版のビルドは `/katachi/dev`）。
  * `writtenBase` と違うときは src/lib/satteri-rebase-links.mjs が本文の絶対リンクを付け替える。
  */
-export const base = normalizeBase(process.env.KATACHI_DOCS_BASE ?? writtenBase);
+export const base = normalizeBase(env.KATACHI_DOCS_BASE ?? writtenBase);
 
 /** @type {{ label: string }} */
 export const currentVersion = {
-  label: process.env.KATACHI_DOCS_VERSION_LABEL || devLabelAfter(archivedVersions[0].slug),
+  label: env.KATACHI_DOCS_VERSION_LABEL || devLabelAfter(archivedVersions[0].slug),
 };
 
 /**
@@ -57,8 +61,8 @@ export const currentVersion = {
  * ラベルはこのビルドの現行の版（`v0.3`）の次（`v0.4-dev`）。
  * @type {{ label: string; base: string } | undefined}
  */
-export const devVersion = process.env.KATACHI_DOCS_DEV_BASE
-  ? { label: devLabelAfter(currentVersion.label), base: normalizeBase(process.env.KATACHI_DOCS_DEV_BASE) }
+export const devVersion = env.KATACHI_DOCS_DEV_BASE
+  ? { label: devLabelAfter(currentVersion.label), base: normalizeBase(env.KATACHI_DOCS_DEV_BASE) }
   : undefined;
 
 /**
