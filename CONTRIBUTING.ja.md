@@ -124,11 +124,12 @@ PR・チケット・調査レポートでは、変更の影響範囲を次の形
 | konsist | `ktFileContent`・`konsist { }` | `katachi-konsist/` | `konsist` |
 | konture | `konture { }` | `katachi-konture/` | `konture` |
 | Gradle plugin | タスク・`katachi { }` | `katachi-gradle-plugin/` | `gradle` |
+| Actions | 利用者が `uses:` で呼ぶ GitHub Action（`diff-report`・`diff-report-comment`） | `diff-report/`・`diff-report-comment/` | `action` |
 | CLI | `katachi` コマンド・brew | `katachi-script/cli/` | `cli` |
 | script | `*.main.kts` / `*.katachi.kts` の DSL | `katachi-script/src/` | `script` |
 | IDE plugin | ガター・ツールウィンドウ・MCP | `katachi-intellij-plugin/` | `ide` |
 | docs | ドキュメントサイト・README | `docs/`・`README*.md` | `docs` |
-| CI・開発 | workflow・PR テンプレート・CONTRIBUTING・architecture-test・benchmark・`tool/` | `.github/`・`architecture-test/`・`benchmark/`・`tool/` ほか | `ci` |
+| CI・開発 | workflow・PR テンプレート・CONTRIBUTING・architecture-test・benchmark・`tool/`（利用者に配る action は含まない。Actions へ） | `.github/`・`architecture-test/`・`benchmark/`・`tool/` ほか | `ci` |
 | sample | サンプル | `sample/` | `sample` |
 
 katachiDocs・katachiTemplate・katachiDiff は core の中の processor なので、コンポーネントとしては core に入れる。core の中の部品は、一覧のいちばん内側の名前を箇所の頭に「›」でつないで書く（例: core の下に `update: katachiDiff › Importance … 基準値 400 行で測る`。`DSL › layout ›` のように外側からたどらなくてよい）。
