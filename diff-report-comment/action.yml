@@ -1,0 +1,80 @@
+name: katachi diff report comment
+description: >
+  Posts the comment diff-report made as the pull request's katachi diff report, replacing the one an
+  earlier run left, so that the newest head's report is the one a reviewer sees last.
+author: TBSten
+
+# Usage, in a job of its own after the one that ran diff-report:
+#
+#   comment:
+#     needs: report
+#     runs-on: ubuntu-latest
+#     permissions:
+#       pull-requests: write
+#     steps:
+#       - uses: TBSten/katachi/diff-report-comment@<version>
+#
+# The job checks nothing out and builds nothing: it only downloads the comment and posts it, so the
+# write token never meets the build. A pull request from a fork is skipped with a notice, since its
+# GITHUB_TOKEN cannot write comments; its report stays in the report job's summary and artifact.
+
+branding:
+  icon: message-square
+  color: purple
+
+inputs:
+  artifact-name:
+    description: The artifact diff-report uploaded the comment as.
+    required: false
+    default: katachi-diff-report-comment
+  pr:
+    description: The pull request to comment on, as a number or URL.
+    required: false
+    default: ${{ github.event.pull_request.number }}
+  github-token:
+    description: A token that can write pull request comments.
+    required: false
+    default: ${{ github.token }}
+  marker:
+    description: The first line of the comment, the same one given to diff-report.
+    required: false
+    default: '<!-- katachi-diff-report -->'
+
+outputs:
+  skipped:
+    description: '`true` when nothing was posted because the pull request comes from a fork.'
+    value: ${{ steps.fork.outputs.skipped }}
+
+runs:
+  using: composite
+  steps:
+    - name: Skip a pull request from a fork
+      id: fork
+      shell: bash
+      env:
+        FORK: ${{ github.event.pull_request.head.repo.fork || false }}
+      run: |
+        if [ "${FORK}" = "true" ]; then
+          echo "::notice title=katachi diff report::The pull request comes from a fork, whose token cannot write comments. The report is in the job summary of the report job."
+          echo "skipped=true" >> "${GITHUB_OUTPUT}"
+        else
+          echo "skipped=false" >> "${GITHUB_OUTPUT}"
+        fi
+
+    - name: Download the comment
+      if: ${{ steps.fork.outputs.skipped != 'true' }}
+      uses: actions/download-artifact@v8
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ runner.temp }}/katachi-diff-report-comment
+
+    - name: Replace the comment
+      if: ${{ steps.fork.outputs.skipped != 'true' }}
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        ACTION_PATH: ${{ github.action_path }}
+        COMMENT_FILE: ${{ runner.temp }}/katachi-diff-report-comment/comment.md
+        PR: ${{ inputs.pr }}
+        MARKER: ${{ inputs.marker }}
+      run: bash "${ACTION_PATH}/replace-comment.sh"

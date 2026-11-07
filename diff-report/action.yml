@@ -1,0 +1,244 @@
+name: katachi diff report
+description: >
+  Runs katachiDiff on a pull request (its base...head, the way the "Files changed" tab compares) and
+  turns the Markdown report into one comment: which roles and groups the change lands in, the heat
+  per role and the files per role. The comment goes to an artifact for diff-report-comment to post,
+  and to the job summary.
+author: TBSten
+
+# Usage, in two jobs so that the token that writes the comment never meets the build:
+#
+#   on:
+#     pull_request:
+#       types: [ opened, synchronize, reopened ]
+#
+#   jobs:
+#     report:
+#       runs-on: ubuntu-latest
+#       permissions:
+#         contents: read
+#       steps:
+#         - uses: actions/checkout@v7
+#           with:
+#             ref: ${{ github.event.pull_request.head.sha }}
+#             fetch-depth: 0
+#         - uses: actions/setup-java@v6
+#           with:
+#             distribution: temurin
+#             java-version: '17'
+#         - uses: gradle/actions/setup-gradle@v6
+#         - uses: TBSten/katachi/diff-report@<version>
+#           with:
+#             task: ':architecture-test:katachiDiff'
+#
+#     comment:
+#       needs: report
+#       runs-on: ubuntu-latest
+#       permissions:
+#         pull-requests: write
+#       steps:
+#         - uses: TBSten/katachi/diff-report-comment@<version>
+#
+# What this action expects of the job:
+#
+# - The head is checked out with its whole history (`fetch-depth: 0`): `git diff base...head` needs
+#   the merge base. Check out the head itself rather than the merge commit `pull_request` gives,
+#   since the report's "after" is the head.
+# - Java and the module's Gradle build are ready to run: the module applies the katachi Gradle
+#   plugin, which registers `katachiDiff` without being asked.
+# - `gh` and `python3` are on the runner, as they are on GitHub's hosted runners.
+#
+# `comment: true` posts the comment from this job instead, for a repository that would rather have
+# one job. That job then needs `pull-requests: write`, and its build runs with that token.
+
+branding:
+  icon: git-pull-request
+  color: purple
+
+inputs:
+  task:
+    description: >
+      The katachiDiff task to run, as a Gradle task path, e.g. `:architecture-test:katachiDiff`.
+      The plain `katachiDiff` runs it in every module that applies the plugin.
+    required: false
+    default: katachiDiff
+  report-directory:
+    description: >
+      Where the task writes `diff-report.md`, relative to `working-directory`. Empty looks where
+      the plugin's task writes by default: `:architecture-test:katachiDiff` reads
+      `architecture-test/build/katachi/diff`, and the plain `katachiDiff` reads the one
+      `build/katachi/diff/diff-report.md` it finds. Set it when `arguments` moves the report.
+    required: false
+    default: ''
+  arguments:
+    description: >
+      More arguments for Gradle, one or more per line, e.g. `--arg weights=Domain=2` or
+      `--arg maxFiles=50`. `--arg pr=` is added by this action.
+    required: false
+    default: ''
+  gradle:
+    description: The command that runs Gradle, relative to the working directory.
+    required: false
+    default: ./gradlew
+  working-directory:
+    description: The directory the Gradle build is in.
+    required: false
+    default: .
+  pr:
+    description: The pull request to report on, as a number or URL.
+    required: false
+    default: ${{ github.event.pull_request.number }}
+  head-sha:
+    description: The head commit, shown in the comment's last line.
+    required: false
+    default: ${{ github.event.pull_request.head.sha }}
+  github-token:
+    description: "The token `gh pr view` reads the pull request with, and the one `comment: true` writes with."
+    required: false
+    default: ${{ github.token }}
+  marker:
+    description: >
+      The first line of the comment, and what a later run looks for to find the earlier comment.
+      Give diff-report-comment the same one.
+    required: false
+    default: '<!-- katachi-diff-report -->'
+  artifact-name:
+    description: The artifact the comment is uploaded as, for diff-report-comment to download.
+    required: false
+    default: katachi-diff-report-comment
+  report-artifact-name:
+    description: The artifact the HTML report and the full Markdown are uploaded as. Empty uploads none.
+    required: false
+    default: katachi-diff-report
+  report-retention-days:
+    description: How many days the report artifact is kept.
+    required: false
+    default: '14'
+  comment:
+    description: >
+      `true` posts the comment from this job as well, replacing the earlier one. The job then
+      needs `pull-requests: write`.
+    required: false
+    default: 'false'
+
+outputs:
+  comment-file:
+    description: The comment's Markdown on the runner.
+    value: ${{ steps.assemble.outputs.comment-file }}
+  report-directory:
+    description: Where katachiDiff wrote its report.
+    value: ${{ steps.resolve.outputs.report-directory }}
+
+runs:
+  using: composite
+  steps:
+    - name: Check the inputs
+      shell: bash
+      env:
+        PR: ${{ inputs.pr }}
+      run: |
+        if [ -z "${PR}" ]; then
+          echo "::error title=katachi diff report::No pull request to report on: run this on a pull_request event, or give the action \`pr\`."
+          exit 1
+        fi
+
+    # `pr=` makes the processor ask `gh pr view` for the base and head SHAs and compare them with
+    # `...`, and link each file to the pull request's "Files changed" tab.
+    - name: Run katachiDiff
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        GRADLE: ${{ inputs.gradle }}
+        TASK: ${{ inputs.task }}
+        PR: ${{ inputs.pr }}
+        ARGUMENTS: ${{ inputs.arguments }}
+      run: |
+        set -f
+        # shellcheck disable=SC2086 # ARGUMENTS is split into Gradle arguments on purpose.
+        "${GRADLE}" "${TASK}" --arg "pr=${PR}" ${ARGUMENTS} --stacktrace
+
+    - name: Find the report
+      id: resolve
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        TASK: ${{ inputs.task }}
+        REPORT_DIRECTORY: ${{ inputs.report-directory }}
+      run: |
+        if [ -z "${REPORT_DIRECTORY}" ] && [ "${TASK#*:}" != "${TASK}" ]; then
+          # `:a:b:katachiDiff` -> `a/b/build/katachi/diff`, `:katachiDiff` -> `build/katachi/diff`
+          module="${TASK%:*}"
+          module="${module#:}"
+          REPORT_DIRECTORY="${module//://}"
+          REPORT_DIRECTORY="${REPORT_DIRECTORY:+${REPORT_DIRECTORY}/}build/katachi/diff"
+          [ -f "${REPORT_DIRECTORY}/diff-report.md" ] || REPORT_DIRECTORY=""
+        fi
+        if [ -z "${REPORT_DIRECTORY}" ]; then
+          # Wherever the module is, the plugin's task writes under its build directory.
+          # (No mapfile: the bash of a macOS runner is 3.2.)
+          found="$(find . -path '*/build/katachi/diff/diff-report.md' -not -path '*/node_modules/*' | sort)"
+          count="$(printf '%s' "${found}" | grep -c . || true)"
+          if [ "${count}" -ne 1 ]; then
+            echo "::error title=katachi diff report::Found ${count} diff-report.md under build/katachi/diff ($(printf '%s' "${found:-none}" | tr '\n' ' ')). Give the action \`task\` as a task path such as :architecture-test:katachiDiff, or \`report-directory\`."
+            exit 1
+          fi
+          REPORT_DIRECTORY="$(dirname "${found}")"
+        fi
+        echo "report-directory=$(cd "${REPORT_DIRECTORY}" && pwd)" >> "${GITHUB_OUTPUT}"
+
+    - name: Assemble the comment
+      id: assemble
+      shell: bash
+      env:
+        ACTION_PATH: ${{ github.action_path }}
+        REPORT_DIRECTORY: ${{ steps.resolve.outputs.report-directory }}
+        HEAD_SHA: ${{ inputs.head-sha }}
+        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        MARKER: ${{ inputs.marker }}
+        GRADLE: ${{ inputs.gradle }}
+        TASK: ${{ inputs.task }}
+      run: |
+        comment_file="${RUNNER_TEMP}/katachi-diff-report/comment.md"
+        mkdir -p "$(dirname "${comment_file}")"
+        python3 "${ACTION_PATH}/assemble-comment.py" "${REPORT_DIRECTORY}" \
+          --head "${HEAD_SHA}" \
+          --run-url "${RUN_URL}" \
+          --marker "${MARKER}" \
+          --reproduce "${GRADLE} ${TASK} --arg pr=<number>" \
+          > "${comment_file}"
+        echo "comment-file=${comment_file}" >> "${GITHUB_OUTPUT}"
+
+    # The same text as the comment, where a fork's pull request (no comment) can still read it.
+    - name: Write the job summary
+      shell: bash
+      env:
+        COMMENT_FILE: ${{ steps.assemble.outputs.comment-file }}
+      run: cat "${COMMENT_FILE}" >> "${GITHUB_STEP_SUMMARY}"
+
+    - name: Upload the comment
+      uses: actions/upload-artifact@v7
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ steps.assemble.outputs.comment-file }}
+        retention-days: 1
+
+    # The HTML report and the full Markdown, for a reviewer who wants more than the comment.
+    - name: Upload the report
+      if: ${{ inputs.report-artifact-name != '' }}
+      uses: actions/upload-artifact@v7
+      with:
+        name: ${{ inputs.report-artifact-name }}
+        path: ${{ steps.resolve.outputs.report-directory }}/
+        retention-days: ${{ inputs.report-retention-days }}
+
+    - name: Replace the comment
+      if: ${{ inputs.comment == 'true' }}
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        ACTION_PATH: ${{ github.action_path }}
+        COMMENT_FILE: ${{ steps.assemble.outputs.comment-file }}
+        PR: ${{ inputs.pr }}
+        MARKER: ${{ inputs.marker }}
+      run: bash "${ACTION_PATH}/../diff-report-comment/replace-comment.sh"
