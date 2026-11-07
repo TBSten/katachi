@@ -9,9 +9,13 @@ name: Diff report (PR)
 # earlier run left (found by the marker on its first line) and posts a fresh one at the end of
 # the timeline, so the newest head's report is always the one a reviewer sees last.
 #
-# Two jobs, so that the token that writes the comment never meets the head's code: `report` builds
-# and runs the checkout with a read-only token and hands the Markdown over as an artifact; `comment`
-# checks nothing out, and only downloads that artifact and posts it.
+# Two jobs, so that the token that writes the comment never meets the build: `report` builds and
+# runs the checkout with a read-only token and hands the Markdown over as an artifact; `comment`
+# builds nothing, and only downloads that artifact and posts it.
+#
+# Both jobs are the actions in `diff-report/` and `diff-report-comment/`, which other repositories
+# use as `TBSten/katachi/diff-report` and `TBSten/katachi/diff-report-comment`; this workflow is
+# their first user, and their usage example.
 #
 # `pull_request` rather than `pull_request_target`: the latter is blocked by default for public
 # repositories from 2026-12-02, and running the head's code with the base's write token is exactly
@@ -29,11 +33,6 @@ concurrency:
 
 permissions:
   contents: read
-
-env:
-  # The first line of the comment, and what a later run looks for to find the earlier one.
-  COMMENT_MARKER: '<!-- katachi-diff-report -->'
-  REPORT_DIR: architecture-test/build/katachi/diff
 
 jobs:
   report:
@@ -59,43 +58,14 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
-      # `pr=` makes the processor ask `gh pr view` for the base and head SHAs and compare them with
-      # `...`, and link each file to the pull request's "Files changed" tab. gh is preinstalled on
-      # the runner; GH_TOKEN is what it reads the (public) pull request with.
-      - name: Run katachiDiff
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: >
-          ./gradlew :architecture-test:katachiDiff
-          --arg pr=${{ github.event.pull_request.number }}
-          --stacktrace
-
-      - name: Assemble the comment
-        run: >
-          python3 .github/scripts/diff-report-comment.py "${REPORT_DIR}"
-          --head ${{ github.event.pull_request.head.sha }}
-          --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          --marker "${COMMENT_MARKER}"
-          > "${RUNNER_TEMP}/comment.md"
-
-      # The same text as the comment, where a fork's pull request (no comment) can still read it.
-      - name: Write the job summary
-        run: cat "${RUNNER_TEMP}/comment.md" >> "${GITHUB_STEP_SUMMARY}"
-
-      - name: Upload the comment
-        uses: actions/upload-artifact@v7
+      # The same action other repositories use (`TBSten/katachi/diff-report@<version>`),
+      # from the head, so that a pull request that changes it is reported on by its own version.
+      # It runs katachiDiff with `pr=`, assembles the comment, writes it to the job summary and
+      # uploads it and the HTML report as artifacts.
+      - name: Make the report
+        uses: ./diff-report
         with:
-          name: diff-report-comment
-          path: ${{ runner.temp }}/comment.md
-          retention-days: 1
-
-      # The HTML report and the full Markdown, for a reviewer who wants more than the comment.
-      - name: Upload the report
-        uses: actions/upload-artifact@v7
-        with:
-          name: diff-report
-          path: ${{ env.REPORT_DIR }}/
-          retention-days: 14
+          task: ':architecture-test:katachiDiff'
 
   comment:
     name: comment on the pull request
@@ -105,26 +75,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
+      contents: read
       pull-requests: write
     steps:
-      - name: Download the comment
-        uses: actions/download-artifact@v8
+      # Only the actions, from the head, and nothing is built: the build is what the read-only token
+      # in `report` keeps away from this job's write token. The head's own actions are no more
+      # trusted than this workflow file, which `pull_request` also takes from the head, and a fork
+      # (whose head nobody here vetted) never gets this far.
+      - name: Checkout the actions
+        uses: actions/checkout@v7
         with:
-          name: diff-report-comment
-          path: ${{ runner.temp }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          sparse-checkout: |
+            diff-report
+            diff-report-comment
+          persist-credentials: false
 
-      # Delete, then create: the fresh comment lands at the end of the timeline, under whatever
-      # was said since the last push. Editing the old one in place would leave it where it was.
       - name: Replace the comment
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          comments="repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments"
-          gh api --paginate "${comments}" \
-            --jq ".[] | select(.body | startswith(\"${COMMENT_MARKER}\")) | .id" \
-            | while read -r id; do
-                echo "Deleting the earlier report comment ${id}"
-                gh api -X DELETE "repos/${GITHUB_REPOSITORY}/issues/comments/${id}"
-              done
-          gh api -X POST "${comments}" -F "body=@${RUNNER_TEMP}/comment.md" --jq .html_url
+        uses: ./diff-report-comment
