@@ -101,6 +101,6 @@ fun DeclarationContainerScope.component() = "Component".role {
 
         required(annotated("Composable"), public, `fun`, fileName)
         allow(annotated("Preview"), private, `fun`, "*Preview")
-        allow(public, enum, `class`, "$fileName*") // entries only (Filled, Outlined): no { }, so no members
+        allow(public, enum, `class`, "$fileName*") { allow(entry, "*") } // entries only (Filled, Outlined), no other member
     }
 }

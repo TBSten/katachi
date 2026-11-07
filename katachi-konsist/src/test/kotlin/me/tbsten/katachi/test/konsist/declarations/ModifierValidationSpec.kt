@@ -28,7 +28,7 @@ private val APPLICABLE: Map<String, Set<String>> = buildMap {
     put("data", setOf("class", "object"))
     put("sealed", setOf("class", "interface"))
     for (it in listOf("enum", "value", "annotation")) put(it, setOf("class"))
-    for (it in listOf("abstract", "open")) put(it, setOf("class", "fun", "val", "var"))
+    for (it in listOf("abstract", "open", "final")) put(it, setOf("class", "fun", "val", "var"))
     put("inner", setOf("class"))
     put("companion", setOf("object"))
     put("override", setOf("fun", "val", "var"))
@@ -42,7 +42,7 @@ private val APPLICABLE: Map<String, Set<String>> = buildMap {
 /** Modifiers only a member can carry. */
 private val CLASS_BODY_ONLY: Set<String> = setOf("protected", "inner", "companion", "override")
 
-/** Each of the 24 modifier words, by its keyword. */
+/** Each of the 25 modifier words, by its keyword. */
 private val MODIFIERS: Map<String, DeclarationVocabulary.() -> Modifiers> = mapOf(
     "public" to { public }, "protected" to { protected }, "private" to { private }, "internal" to { internal },
     "expect" to { expect }, "actual" to { actual }, "abstract" to { abstract }, "open" to { open },
@@ -50,6 +50,7 @@ private val MODIFIERS: Map<String, DeclarationVocabulary.() -> Modifiers> = mapO
     "lateinit" to { lateinit }, "tailrec" to { tailrec }, "suspend" to { suspend }, "inner" to { inner },
     "enum" to { enum }, "annotation" to { annotation }, "companion" to { companion }, "inline" to { inline },
     "value" to { value }, "infix" to { infix }, "operator" to { operator }, "data" to { data },
+    "final" to { final },
 )
 
 /** Writes a line of each kind, by its keyword, named `X`, with the modifier given in front. */
@@ -85,7 +86,6 @@ private fun expectedOutcomeOf(modifier: String, kind: String, inClassBody: Boole
     !inClassBody && modifier in CLASS_BODY_ONLY -> "${KtFileContentModifierProblem.OnlyInClassBody} [$modifier] null"
     !inClassBody && modifier in setOf("abstract", "open") && kind in setOf("fun", "val", "var") ->
         "${KtFileContentModifierProblem.OnlyInClassBody} [$modifier] $kind"
-    inClassBody && kind == "typealias" -> "${KtFileContentLineProblem.TypeAliasInClassBody}"
     kind in APPLICABLE.getValue(modifier) -> "ok $kind"
     else -> "${KtFileContentModifierProblem.NotApplicable} [$modifier] $kind"
 }

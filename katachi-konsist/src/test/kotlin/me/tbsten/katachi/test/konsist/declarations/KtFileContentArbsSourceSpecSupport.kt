@@ -85,7 +85,8 @@ private class SourceWriter(private val noise: Random?) {
             return
         }
         line(indent, "$head$constructor$supertypes {")
-        if (isEnum) line(indent + 1, "ONE, TWO;")
+        // No entries: they are members a line has to allow, which the generated lines do not write.
+        if (isEnum) line(indent + 1, ";")
         for (member in bodyMembers) declaration(member, indent + 1)
         line(indent, "}")
     }

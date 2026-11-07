@@ -285,4 +285,46 @@ class KtFileContentDocsSpec : FreeSpec({
             | (anything else) | not allowed |
         """.trimIndent()
     }
+
+    "enum の項目・init・ファイル注釈・actualsIn も表に出す" {
+        val page = rolePageOf {
+            "Platform".role {
+                example("Platform")
+                layout { "src" / "*".ktFile() }
+                ktFileContent {
+                    `package`("com.example")
+                    fileAnnotation("Suppress(*)")
+                    not.fileAnnotation("JvmName")
+                    actualsIn("androidMain", "iosMain")
+                    allow(enum, `class`, "Color") { allow(entry, "*") }
+                    allow(`class`, "Session") {
+                        allow(init)
+                        allow(private, constructor)("token: String")
+                    }
+                }
+            }
+        }.getValue("Platform.md")
+
+        page shouldContain """
+            | File annotation | |
+            |---|---|
+            | `@file:Suppress(*)` | optional |
+            | `@file:JvmName` | not allowed |
+
+            Each `expect` declaration needs an `actual` one in: `androidMain`, `iosMain`
+        """.trimIndent()
+        page shouldContain """
+            ### Members of `enum class Color`
+
+            | Member | |
+            |---|---|
+            | `entry *` | optional |
+        """.trimIndent()
+        page shouldContain """
+            | Member | |
+            |---|---|
+            | `init` | optional |
+            | `private constructor(token: String)` | optional |
+        """.trimIndent()
+    }
 })

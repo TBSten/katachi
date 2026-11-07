@@ -47,6 +47,8 @@ private fun LayoutScope.packageMatchesDirectory() =
         `package`(matchingDirectory)
         // No layer comes after this one, and what of katachi it may reach is the build's opt-in (see `katachi-konture/build.gradle.kts`).
         `import`("**")
+        // The one file reading Konture's internal parser suppresses the visibility checks for it.
+        fileAnnotation("Suppress(*INVISIBLE_*)")
         // What a declaration may be is left to the `konsist { }` rules below, which read the KDoc and the `.internal` line.
         allow(anythingElse)
     }

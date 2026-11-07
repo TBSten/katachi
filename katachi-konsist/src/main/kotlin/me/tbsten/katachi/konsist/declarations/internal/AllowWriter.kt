@@ -68,8 +68,15 @@ internal class AllowWriter(
         return PropertyLine(line)
     }
 
-    fun typeAlias(modifiers: List<Modifiers>, kind: TypeAliasKind, name: String): TypeAliasLine =
-        TypeAliasLine(declare(modifiers, listOf(kind.word), listOf(Shape(ModifierSet.EMPTY, DeclarationKindName.TypeAlias)), name))
+    fun typeAlias(modifiers: List<Modifiers>, kind: TypeAliasKind, name: String, type: String? = null): TypeAliasLine {
+        val line = declare(modifiers, listOf(kind.word), listOf(Shape(ModifierSet.EMPTY, DeclarationKindName.TypeAlias)), name)
+        if (type != null) line.writePropertyType(type)
+        return TypeAliasLine(line)
+    }
+
+    // An enum entry, a secondary constructor or an `init` block: in a class body only, and named `*` when it has no name.
+    fun member(modifiers: List<Modifiers>, kind: VocabularyWord, kindName: DeclarationKindName, name: String): DeclarationLineBuilder =
+        declare(modifiers, listOf(kind), listOf(Shape(ModifierSet.EMPTY, kindName)), name)
 
     fun anythingElse(modifiers: List<Modifiers>, anything: AnythingElse) {
         val alternatives = alternativesOf(modifiers)

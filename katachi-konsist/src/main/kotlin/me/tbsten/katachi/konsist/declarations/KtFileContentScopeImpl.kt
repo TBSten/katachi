@@ -1,6 +1,9 @@
 package me.tbsten.katachi.konsist.declarations
 
 import me.tbsten.katachi.konsist.declarations.internal.AllowWriter
+import me.tbsten.katachi.konsist.declarations.internal.DeclarationKindName
+import me.tbsten.katachi.konsist.declarations.internal.VocabularyWord
+import me.tbsten.katachi.konsist.declarations.internal.renderFileAnnotation
 import me.tbsten.katachi.konsist.declarations.internal.DeclarationListBuilder
 import me.tbsten.katachi.konsist.declarations.internal.FileBuilder
 
@@ -34,6 +37,13 @@ internal class KtFileContentScopeImpl(
 
     override fun `import`(pattern: String): ImportLine = ImportLine(file.declareImport(pattern, prohibited = false))
 
+    override fun fileAnnotation(pattern: String): FileAnnotationLine =
+        FileAnnotationLine(renderFileAnnotation(file.declareFileAnnotation(pattern, prohibited = false)))
+
+    override fun actualsIn(vararg sourceSets: String) {
+        file.declareActuals(sourceSets.toList())
+    }
+
     override fun toString(): String = "KtFileContentScope(${file.session.input})"
 }
 
@@ -41,6 +51,38 @@ internal class ClassBodyScopeImpl(
     members: DeclarationListBuilder,
 ) : DeclarationListScopeImpl(members), ClassBodyScope {
     override val not: Prohibition = MemberProhibition(members)
+
+    override val entry: EntryKind get() = EntryKind(VocabularyWord.of(list) { DeclarationKindName.EnumEntry.keyword })
+
+    override val constructor: ConstructorKind get() = ConstructorKind(VocabularyWord.of(list) { DeclarationKindName.Constructor.keyword })
+
+    override val init: InitKind get() = InitKind(VocabularyWord.of(list) { DeclarationKindName.Init.keyword })
+
+    override fun allow(kind: EntryKind, name: String): EntryLine = EntryLine(writer.member(emptyList(), kind.word, DeclarationKindName.EnumEntry, name))
+
+    override fun allow(m1: Modifiers, kind: EntryKind, name: String): EntryLine =
+        EntryLine(writer.member(listOf(m1), kind.word, DeclarationKindName.EnumEntry, name))
+
+    override fun allow(kind: ConstructorKind): ConstructorLine = ConstructorLine(writer.member(emptyList(), kind.word, DeclarationKindName.Constructor, "*"))
+
+    override fun allow(m1: Modifiers, kind: ConstructorKind): ConstructorLine =
+        ConstructorLine(writer.member(listOf(m1), kind.word, DeclarationKindName.Constructor, "*"))
+
+    override fun allow(kind: InitKind): InitLine = InitLine(writer.member(emptyList(), kind.word, DeclarationKindName.Init, "*"))
+
+    override fun required(kind: EntryKind, name: String): EntryLine =
+        EntryLine(requiredWriter.member(emptyList(), kind.word, DeclarationKindName.EnumEntry, name))
+
+    override fun required(m1: Modifiers, kind: EntryKind, name: String): EntryLine =
+        EntryLine(requiredWriter.member(listOf(m1), kind.word, DeclarationKindName.EnumEntry, name))
+
+    override fun required(kind: ConstructorKind): ConstructorLine =
+        ConstructorLine(requiredWriter.member(emptyList(), kind.word, DeclarationKindName.Constructor, "*"))
+
+    override fun required(m1: Modifiers, kind: ConstructorKind): ConstructorLine =
+        ConstructorLine(requiredWriter.member(listOf(m1), kind.word, DeclarationKindName.Constructor, "*"))
+
+    override fun required(kind: InitKind): InitLine = InitLine(requiredWriter.member(emptyList(), kind.word, DeclarationKindName.Init, "*"))
 
     override fun toString(): String = "ClassBodyScope($list)"
 }

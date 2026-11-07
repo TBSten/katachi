@@ -70,8 +70,26 @@ public enum class KtFileContentPatternKind(internal val label: String) {
     /** The receiver of an extension, between the kind and the name: `` allow(`fun`, "User", "to*") ``. */
     Receiver("receiver"),
 
-    /** A name of `annotated(...)`. */
+    /** A name of `annotated(...)`, with its use-site target and arguments when written: `annotated("get:JvmName(*)")`. */
     Annotation("annotation"),
+
+    /** What is between the parentheses of `annotated("Name(...)")` or `fileAnnotation("Name(...)")`. */
+    AnnotationArguments("annotation arguments"),
+
+    /** The default value of a parameter, after its `=`: `` allow(`fun`, "load")("force: Boolean = *") ``. */
+    DefaultValue("default value"),
+
+    /** A type parameter of `.typeParameters(...)`: `"reified T : Any"`. */
+    TypeParameter("type parameter"),
+
+    /** A context parameter of `.context(...)`: `"logger: Logger"`. */
+    ContextParameter("context parameter"),
+
+    /** The name of what a property delegates to, in `.delegatedBy("lazy")`. */
+    Delegate("delegate"),
+
+    /** A file annotation line: `fileAnnotation("Suppress")`. */
+    FileAnnotation("file annotation"),
 
     /** A pattern of `.except(...)`. */
     Except("except"),
@@ -115,14 +133,32 @@ public enum class KtFileContentLineProblem {
     /** A parameter of a `fun` line with no type after its `:`: `("id:")`. `"id: *"` accepts any type. */
     ParameterWithoutType,
 
+    /** A parameter with nothing after its `=`: `("force: Boolean =")`. `"force: Boolean = *"` accepts any default value. */
+    ParameterWithoutDefaultValue,
+
     /** `.returns(...)` written twice. */
     ReturnTypeWrittenTwice,
 
+    /** `actualsIn()` with no source set, or one that is blank or holds a `/`: name a source set, such as `"androidMain"`. */
+    ActualsWithoutSourceSets,
+
+    /** A detail such as `.context(...)`, `.kdoc()` or `.setter(...)` written twice on one line. */
+    DetailWrittenTwice,
+
+    /**
+     * A detail no declaration of the line's kinds has: `.setter()` on a `val` line, `.primaryConstructor(...)` on a line of
+     * `interface` or `object` only.
+     */
+    DetailNotForKind,
+
+    /**
+     * Modifiers a detail does not take: `.setter(...)` and `.primaryConstructor(...)` take one visibility, not an `or`,
+     * `.optional()` or `annotated(...)`.
+     */
+    DetailModifiers,
+
     /** `.superclass()` with no name. */
     SuperclassWithoutNames,
-
-    /** A `typealias` line inside a class's `{ }`, where Kotlin has no typealias. */
-    TypeAliasInClassBody,
 
     /** `annotated()` with no name. */
     AnnotatedWithoutNames,

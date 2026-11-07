@@ -33,6 +33,8 @@ class KonsistFactsSpec : FreeSpec({
             "  val id: Int",
             "sealed interface B",
             "enum class C",
+            "  entry X",
+            "  entry Y",
             "value class D",
             "  val raw: String",
             "annotation class E",
@@ -40,7 +42,7 @@ class KonsistFactsSpec : FreeSpec({
             "  fun on()",
             "object G",
             "data object H",
-            "typealias I",
+            "typealias I = String",
             "private const val J",
             "internal lateinit var k: String",
             "suspend inline fun l()",
@@ -104,7 +106,7 @@ class KonsistFactsSpec : FreeSpec({
             "abstract class A",
             "  val a: kotlinx.coroutines.flow.StateFlow< Int >",
             "  var b",
-            "  fun c(x: String, y: Int): Unit",
+            "  fun c(x: String, vararg y: Int): Unit",
             "  fun d()",
             "  fun e()",
             "  abstract fun f()",
@@ -120,7 +122,7 @@ class KonsistFactsSpec : FreeSpec({
         functions.map { it.returnTypeWritten } shouldBe listOf(false, false, false)
     }
 
-    "メンバ: 入れ子の enum・companion・主コンストラクタ。enum の項目・init・無名 object の中は出ない" {
+    "メンバ: 入れ子の enum・companion・主コンストラクタ・enum の項目・init。無名 object の中は出ない" {
         renderedFactsOf(
             """
             package com.example
@@ -135,7 +137,10 @@ class KonsistFactsSpec : FreeSpec({
         ) shouldBe listOf(
             "class A",
             "  private val id: Int",
+            "  init",
             "  enum class Mode",
+            "    entry X",
+            "    entry Y",
             "    fun next()",
             "  companion object Named",
             "  val listener",

@@ -58,7 +58,9 @@ Example: `AppButton.kt`
 
 ### Members of `public enum class AppButton*`
 
-No members are allowed.
+| Member | |
+|---|---|
+| `entry *` | optional |
 
 ## Examples
 
