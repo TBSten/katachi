@@ -14,5 +14,6 @@ fun DeclarationContainerScope.toolGroup() = "tool".group {
     dokkaPlugin()
     benchmark()
     issueTemplate()
+    pullRequestTemplate()
     installScript()
 }
