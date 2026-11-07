@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794034318212,
+  "lastUpdate": 1794034320261,
   "repoUrl": "https://github.com/TBSten/katachi",
   "entries": {
     "JMH time": [
@@ -16054,6 +16054,54 @@ window.BENCHMARK_DATA = {
           {
             "name": "nowinandroid validate(FileConstraintCheck()) warm median",
             "value": 51.66837,
+            "unit": "ms",
+            "extra": "violations: 134 (layout) / 130 (with Konsist)\nUnexpectedFile: 130, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "81161390+TBSten@users.noreply.github.com",
+            "name": "TBSten",
+            "username": "TBSten"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "bb7788e384f7063e1ec3be2c8ad53b322ed6fdcd",
+          "message": "Merge pull request #31 from TBSten/claude/KATACHI-270-core-kotlin-spec-coverage\n\nfeat(core): ktFileContent で Kotlin の書き方を一通り縛れるようにする (KATACHI-270, KATACHI-269, KATACHI-267)",
+          "timestamp": "2026-11-07T15:34:18+09:00",
+          "tree_id": "f5ab6830dde9eb773c3adf86eaa47add6425aced",
+          "url": "https://github.com/TBSten/katachi/commit/bb7788e384f7063e1ec3be2c8ad53b322ed6fdcd"
+        },
+        "date": 1794034319744,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "nowinandroid validate() cold",
+            "value": 351.55532,
+            "unit": "ms",
+            "extra": "violations: 134 (layout) / 130 (with Konsist)\nUnexpectedFile: 130, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          },
+          {
+            "name": "nowinandroid validate() warm median",
+            "value": 43.800877,
+            "unit": "ms",
+            "extra": "violations: 134 (layout) / 130 (with Konsist)\nUnexpectedFile: 130, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          },
+          {
+            "name": "nowinandroid validate(FileConstraintCheck()) cold",
+            "value": 1077.319285,
+            "unit": "ms",
+            "extra": "violations: 134 (layout) / 130 (with Konsist)\nUnexpectedFile: 130, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          },
+          {
+            "name": "nowinandroid validate(FileConstraintCheck()) warm median",
+            "value": 59.581392,
             "unit": "ms",
             "extra": "violations: 134 (layout) / 130 (with Konsist)\nUnexpectedFile: 130, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
           }
