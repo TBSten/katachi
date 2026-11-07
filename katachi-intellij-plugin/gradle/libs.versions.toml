@@ -1,37 +1,17 @@
-# The versions move together with the target IDE: bumping one alone puts the build out of step
-# with the Kotlin and Jewel bundled in that IDE.
-
 [versions]
-# IntelliJ Platform Gradle Plugin (v2). Keep equal to the plugins block of settings.gradle.kts,
-# which cannot read this catalog.
 intellijPlatformGradlePlugin = "2.18.1"
-# Build SDK: 2026.1 = build 261 (resolves to the unified IU distribution; same generation as
-# Android Studio Quail 2026.1). `intellijIdeaCommunity` no longer resolves from 253 on.
 intellijIdea = "2026.1"
-# No newer than the Kotlin bundled in build 261. The Compose Compiler plugin follows it.
 kotlin = "2.3.0"
-# Compose Multiplatform for the standalone preview only (the plugin itself uses the IDE's
-# bundled Compose). Compatible: CMP 1.8+ needs Kotlin >= 2.1.0 with the Compose Compiler plugin on
-# the Kotlin version (kotlinlang.org/docs/multiplatform/compose-compatibility-and-versioning.html).
 composeMultiplatform = "1.9.0"
-# Standalone Jewel is published as "<jewel>-<jewelForIde>"; jewelForIde is also the version of
-# com.jetbrains.intellij.platform:icons.
 jewel = "0.37.0"
 jewelForIde = "261.26222.65"
-# The platform stopped providing JUnit 4 in 2.0.0-rc1, and BasePlatformTestCase is JUnit 4 based.
 junit4 = "4.13.2"
-# The Driver smoke only (integrationTest): Starter is JUnit 5 based and resolves Kodein at runtime.
 junitJupiter = "5.11.4"
 junitPlatformLauncher = "1.11.4"
 kodein = "7.20.2"
 kotlinxCoroutines = "1.10.1"
-# The stdlib matching the kotlin-reflect that Starter depends on. Only on the smoke's runtime classpath.
 kotlinStdlibStarter = "2.3.20-RC2"
-# uiTest only: the property-based tests use kotest's generators (checkAll / Arb) as a library,
-# run from JUnit 4. 6.1 is built with a Kotlin this build's 2.3.0 can read.
 kotest = "6.1.11"
-# uiTest only: compose ui-test must match the Compose UI on the classpath, which standalone Jewel
-# raises above composeMultiplatform (Jewel 0.37 resolves 1.10.0); a mismatch fails at the first test.
 composeUiTest = "1.10.0"
 
 [libraries]
