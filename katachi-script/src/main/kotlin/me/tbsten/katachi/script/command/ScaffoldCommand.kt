@@ -1,19 +1,16 @@
 // Generated from COMMAND_SPECS (internal/CommandSpecs.kt) by CommandBuildersSpec. Do not edit by hand:
 // change the spec and run `./gradlew :katachi-script:test --tests '*CommandBuildersSpec' -Dkatachi.golden.update=true`.
 
-package me.tbsten.katachi.script
+package me.tbsten.katachi.script.command
 
 import me.tbsten.katachi.dsl.DeclarationSite
+import me.tbsten.katachi.script.Katachi
 import me.tbsten.katachi.script.internal.CommandLine
 import me.tbsten.katachi.script.internal.commandText
 import me.tbsten.katachi.script.internal.requireOption
 import me.tbsten.katachi.script.internal.run
-
-/**
- * Same as `katachi scaffold` on the command line, starting from this [Katachi]'s defaults: creates the test module and adds it to the build.
- */
-public val Katachi.scaffold: ScaffoldCommand
-    get() = ScaffoldCommand(this, CommandLine(listOf("scaffold")).withNonEmpty("--package", this.defaultPackage).withNonEmpty("--katachi", this.katachiVersion).withNonEmpty("--module-dir", this.moduleDir), DeclarationSite.capture())
+import me.tbsten.katachi.script.option.DependencyStyle
+import me.tbsten.katachi.script.option.TestFramework
 
 /**
  * The `katachi scaffold` command: creates the test module and adds it to the build.
@@ -86,7 +83,8 @@ public class ScaffoldCommand internal constructor(
      *
      * @param framework [junit5] or [kotest].
      */
-    public fun `test-framework`(framework: TestFramework): ScaffoldCommand = next(line.with("--test-framework", framework.value))
+    public fun `test-framework`(framework: TestFramework): ScaffoldCommand =
+        next(line.with("--test-framework", framework.value))
 
     /**
      * Same as `katachi scaffold --deps <catalog|literal>` on the command line: how the dependencies are written.

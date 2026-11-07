@@ -1,4 +1,9 @@
-package me.tbsten.katachi.script
+package me.tbsten.katachi.script.command
+
+import me.tbsten.katachi.script.Katachi
+import me.tbsten.katachi.script.commands
+import me.tbsten.katachi.script.error.KatachiMissingCommandOptionException
+import me.tbsten.katachi.script.executeCommands
 
 /**
  * One `katachi` command line, ready to print or to run.
@@ -67,36 +72,3 @@ public class Commands(public val commands: List<KatachiCommand>) {
     /** The command lines, one per line, as typed in a shell. */
     override fun toString(): String = commands.joinToString("\n")
 }
-
-/**
- * Puts [commands] in a [Commands] to print or run together.
- *
- * ## Example 1: show what the script will run
- *
- * ```kt
- * println(commands(katachi.init, katachi.scaffold.`package`("com.example.app")))
- * // katachi init
- * // katachi scaffold --package com.example.app
- * ```
- *
- * @param commands The commands, in the order they run.
- */
-public fun commands(vararg commands: KatachiCommand): Commands = Commands(commands.toList())
-
-/**
- * Runs [commands] in order and stops at the first one that fails: `commands(...).execute()`.
- *
- * ## Example 1: end the script with the status of the commands
- *
- * ```kt
- * val status = executeCommands(
- *     katachi.init.lang(ja),
- *     katachi.scaffold.`package`("com.example.app"),
- * )
- * kotlin.system.exitProcess(status)
- * ```
- *
- * @param commands The commands, in the order they run.
- * @return 0 when every command succeeded, otherwise the exit code of the one that failed.
- */
-public fun executeCommands(vararg commands: KatachiCommand): Int = commands(*commands).execute()

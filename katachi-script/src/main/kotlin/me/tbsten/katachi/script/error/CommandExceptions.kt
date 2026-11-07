@@ -1,7 +1,8 @@
-package me.tbsten.katachi.script
+package me.tbsten.katachi.script.error
 
 import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.dsl.DeclarationSite
+import me.tbsten.katachi.script.command.KatachiCommand
 
 /**
  * A command was run without an option its subcommand requires.

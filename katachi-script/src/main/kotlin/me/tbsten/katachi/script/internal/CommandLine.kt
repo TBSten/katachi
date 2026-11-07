@@ -6,10 +6,10 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.absolute
 import me.tbsten.katachi.dsl.DeclarationSite
-import me.tbsten.katachi.script.CommandRunner
 import me.tbsten.katachi.script.Katachi
-import me.tbsten.katachi.script.KatachiCommand
-import me.tbsten.katachi.script.KatachiMissingCommandOptionException
+import me.tbsten.katachi.script.command.CommandRunner
+import me.tbsten.katachi.script.command.KatachiCommand
+import me.tbsten.katachi.script.error.KatachiMissingCommandOptionException
 
 /**
  * A subcommand, its positional arguments and its options, kept in the order they were first set so

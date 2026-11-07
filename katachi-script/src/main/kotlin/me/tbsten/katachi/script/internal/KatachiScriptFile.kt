@@ -25,7 +25,12 @@ internal const val KATACHI_SCRIPT_EXTENSION = ".katachi.kts"
 internal const val KATACHI_SCRIPT_FILE_ENV = "KATACHI_SCRIPT_FILE"
 
 internal object KatachiScriptCompilationConfiguration : ScriptCompilationConfiguration({
-    defaultImports("me.tbsten.katachi.script.*")
+    defaultImports(
+        "me.tbsten.katachi.script.*",
+        "me.tbsten.katachi.script.command.*",
+        "me.tbsten.katachi.script.error.*",
+        "me.tbsten.katachi.script.option.*",
+    )
     jvm {
         // Named jars, not the whole class context: in the IDE the definition's class loader has the
         // IDE's own class loader as its parent, whose classpath a script must not see.

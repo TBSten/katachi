@@ -26,7 +26,8 @@ fun DeclarationContainerScope.script() = "Script".role {
     """.trimIndent()
     example("Main.kt", "katachi.main.kts が呼ぶ main(args)")
     example("DataCommand.kt", "data get / set / merge。チェックリストとレポートの JSON を読み書きする")
-    example("ScaffoldCommand.kt", "スクリプトから katachi scaffold を組み立てる DSL。メソッド名が CLI のフラグ名")
+    example("scaffold.kt", "スクリプトの入口 katachi.scaffold。ビルダーの型は command パッケージ")
+    example("command/ScaffoldCommand.kt", "スクリプトから katachi scaffold を組み立てる DSL。メソッド名が CLI のフラグ名")
     layout {
         "katachi-script" {
             packageMatchesDirectory()
@@ -34,6 +35,9 @@ fun DeclarationContainerScope.script() = "Script".role {
             publicDeclarationsShowExample()
             publicDeclarationsKeepTagsLast()
             mainSourceSet / kotlin / SCRIPT_MAIN_PACKAGE / "*".ktFile()
+            mainSourceSet / kotlin / SCRIPT_MAIN_PACKAGE / "command" / "*".ktFile()
+            mainSourceSet / kotlin / SCRIPT_MAIN_PACKAGE / "error" / "*".ktFile()
+            mainSourceSet / kotlin / SCRIPT_MAIN_PACKAGE / "option" / "*".ktFile()
             mainSourceSet / kotlin / SCRIPT_MAIN_PACKAGE / "internal" / "*".ktFile()
             // What `katachi --version` prints. Written as `version=${katachiVersion}` and expanded by `processResources`.
             mainSourceSet / "resources" / "META-INF" / "katachi-script" / "version.properties".file()
