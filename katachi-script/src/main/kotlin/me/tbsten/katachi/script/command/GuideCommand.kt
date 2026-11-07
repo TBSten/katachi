@@ -4,11 +4,10 @@
 package me.tbsten.katachi.script.command
 
 import me.tbsten.katachi.script.Katachi
-import me.tbsten.katachi.script.KatachiCommand
-import me.tbsten.katachi.script.Lang
 import me.tbsten.katachi.script.internal.CommandLine
 import me.tbsten.katachi.script.internal.commandText
 import me.tbsten.katachi.script.internal.run
+import me.tbsten.katachi.script.option.Lang
 
 /**
  * The `katachi guide` command: prints the install guide one section at a time, or its table of contents without a section.

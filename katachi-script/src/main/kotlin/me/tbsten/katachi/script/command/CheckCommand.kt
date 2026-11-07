@@ -4,7 +4,6 @@
 package me.tbsten.katachi.script.command
 
 import me.tbsten.katachi.script.Katachi
-import me.tbsten.katachi.script.KatachiCommand
 import me.tbsten.katachi.script.internal.CommandLine
 import me.tbsten.katachi.script.internal.commandText
 import me.tbsten.katachi.script.internal.run

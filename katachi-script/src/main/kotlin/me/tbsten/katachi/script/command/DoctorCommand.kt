@@ -4,11 +4,10 @@
 package me.tbsten.katachi.script.command
 
 import me.tbsten.katachi.script.Katachi
-import me.tbsten.katachi.script.KatachiCommand
-import me.tbsten.katachi.script.Lang
 import me.tbsten.katachi.script.internal.CommandLine
 import me.tbsten.katachi.script.internal.commandText
 import me.tbsten.katachi.script.internal.run
+import me.tbsten.katachi.script.option.Lang
 
 /**
  * The `katachi doctor` command: checks the JDK Gradle uses, the project's Kotlin version and whether git is there.

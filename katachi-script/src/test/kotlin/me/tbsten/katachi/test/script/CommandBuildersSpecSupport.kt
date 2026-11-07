@@ -19,15 +19,19 @@ private val HEADER = """
 
 private const val PACKAGE = "me.tbsten.katachi.script"
 
-/** Where the builders go, so the API reference of [PACKAGE] lists only the entry points and the values. */
+/** Where the builders go, so the API reference of [PACKAGE] lists only what a script types. */
 private const val COMMAND_PACKAGE = "$PACKAGE.command"
+
+/** Where the value types of the options go; [PACKAGE] keeps their bare names (`kotest`, `ja`). */
+private const val OPTION_PACKAGE = "$PACKAGE.option"
 
 /** The longest code line the generated files keep; a longer `fun ... = body` breaks after `=` as the IDE formatter does. */
 private const val MAX_LINE_LENGTH = 120
 
 /**
  * The builder sources for [specs], by path under `me/tbsten/katachi/script/`: the entry point
- * (`katachi.add`) as `add.kt`, and its builders as `command/AddCommand.kt`.
+ * (`katachi.add`) as `add.kt`, its builders as `command/AddCommand.kt`, each value type of an
+ * option as `option/Lang.kt` and their bare names as `CommandValues.kt`.
  */
 internal fun generateCommandBuilders(specs: List<CommandSpec> = COMMAND_SPECS): Map<String, String> {
     val files = linkedMapOf<String, String>()
@@ -36,7 +40,7 @@ internal fun generateCommandBuilders(specs: List<CommandSpec> = COMMAND_SPECS): 
         files["${camel(spec.name)}.kt"] = file.renderEntry()
         files["command/${pascal(spec.name)}Command.kt"] = file.renderBuilders()
     }
-    files["CommandValues.kt"] = renderValues(specs)
+    files += renderValues(specs)
     return files
 }
 
@@ -132,7 +136,6 @@ private class CommandFile(private val spec: CommandSpec) {
     fun renderBuilders(): String {
         val imports = sortedSetOf(
             "me.tbsten.katachi.script.Katachi",
-            "me.tbsten.katachi.script.KatachiCommand",
             "me.tbsten.katachi.script.internal.CommandLine",
             "me.tbsten.katachi.script.internal.commandText",
             "me.tbsten.katachi.script.internal.run",
@@ -148,14 +151,6 @@ private class CommandFile(private val spec: CommandSpec) {
             }
         }
         return source(COMMAND_PACKAGE, imports, body.toString())
-    }
-
-    private fun source(packageName: String, imports: Set<String>, body: String): String = buildString {
-        append(HEADER).append("\n\n")
-        append("package $packageName\n\n")
-        for (import in imports) append("import $import\n")
-        append("\n")
-        append(body.trimEnd()).append("\n")
     }
 
     private fun group(spec: CommandSpec, group: String, imports: MutableSet<String>): String = buildString {
@@ -267,7 +262,7 @@ private class CommandFile(private val spec: CommandSpec) {
         }
         for (option in spec.options) {
             val kind = option.kind as? OptionKind.Choice ?: continue
-            imports += "$PACKAGE.${kind.type.typeName}"
+            imports += "$OPTION_PACKAGE.${kind.type.typeName}"
         }
         val repeatable = spec.options.any { it.repeatable }
         val lines = mutableListOf(
@@ -433,7 +428,8 @@ private fun exampleLine(spec: CommandSpec, path: List<String>): String = command
 
 // region values
 
-private fun renderValues(specs: List<CommandSpec>): String {
+/** `option/<Type>.kt` for each value type of an option, and `CommandValues.kt` with the bare names. */
+private fun renderValues(specs: List<CommandSpec>): Map<String, String> {
     val uses = linkedMapOf<String, Pair<ChoiceType, String>>()
     fun visit(spec: CommandSpec, path: List<String>) {
         for (option in spec.options) {
@@ -447,15 +443,14 @@ private fun renderValues(specs: List<CommandSpec>): String {
     }
     specs.forEach { visit(it, listOf(it.name)) }
 
-    val out = StringBuilder()
-    out.append(HEADER).append("\n\n")
-    out.append("package $PACKAGE\n")
+    val files = linkedMapOf<String, String>()
     for ((type, chain) in uses.values) {
-        out.append("\n")
         val sample = Regex("""\((\w+)\)$""").find(chain)?.groupValues?.get(1)
         val lines = mutableListOf("${sentence(type.doc)}", "")
+        val imports = sortedSetOf<String>()
         if (type.bareNames) {
             val names = type.values.map { "[${camel(it.value)}]" }
+            imports += type.values.map { "$PACKAGE.${camel(it.value)}" }
             lines += "The top-level ${names.dropLast(1).joinToString(", ")} and ${names.last()} are the same values, so a script can write them bare."
             lines += ""
         }
@@ -470,22 +465,28 @@ private fun renderValues(specs: List<CommandSpec>): String {
         lines += "```"
         lines += ""
         lines += "@property value How the command line spells it."
-        out.append(doc(*lines.toTypedArray()))
-        out.append("public enum class ${type.typeName}(public val value: String) {\n")
+        val body = StringBuilder()
+        body.append(doc(*lines.toTypedArray()))
+        body.append("public enum class ${type.typeName}(public val value: String) {\n")
         for ((index, value) in type.values.withIndex()) {
-            if (index > 0) out.append("\n")
-            out.append("    /** ${value.doc} (`${value.value}`). */\n")
-            out.append("    ${pascal(value.value)}(${kotlinString(value.value)}),\n")
+            if (index > 0) body.append("\n")
+            body.append("    /** ${value.doc} (`${value.value}`). */\n")
+            body.append("    ${pascal(value.value)}(${kotlinString(value.value)}),\n")
         }
-        out.append("}\n")
-        if (type.bareNames) {
-            for (value in type.values) {
-                out.append("\n/** [${type.constant(value.value)}], to write `${camel(value.value)}` bare. */\n")
-                out.append("public val ${camel(value.value)}: ${type.typeName} = ${type.constant(value.value)}\n")
-            }
+        body.append("}\n")
+        files["option/${type.typeName}.kt"] = source(OPTION_PACKAGE, imports, body.toString())
+    }
+
+    val bare = uses.values.map { it.first }.filter { it.bareNames }
+    val body = StringBuilder()
+    for (type in bare) {
+        for (value in type.values) {
+            body.append("/** [${type.constant(value.value)}], to write `${camel(value.value)}` bare. */\n")
+            body.append("public val ${camel(value.value)}: ${type.typeName} = ${type.constant(value.value)}\n\n")
         }
     }
-    return out.toString()
+    files["CommandValues.kt"] = source(PACKAGE, bare.map { "$OPTION_PACKAGE.${it.typeName}" }.toSortedSet(), body.toString())
+    return files
 }
 
 // endregion
@@ -497,6 +498,17 @@ private fun renderValues(specs: List<CommandSpec>): String {
 private fun oneLiner(signature: String, body: String): String {
     val line = "$signature = $body"
     return if (line.length + 4 > MAX_LINE_LENGTH) "$signature =\n    $body\n" else "$line\n"
+}
+
+/** A generated file: the header, [packageName], [imports] when there are any, and [body]. */
+private fun source(packageName: String, imports: Set<String>, body: String): String = buildString {
+    append(HEADER).append("\n\n")
+    append("package $packageName\n\n")
+    if (imports.isNotEmpty()) {
+        for (import in imports) append("import $import\n")
+        append("\n")
+    }
+    append(body.trimEnd()).append("\n")
 }
 
 /** Indents every line but the empty ones, so the generated code has no trailing spaces. */

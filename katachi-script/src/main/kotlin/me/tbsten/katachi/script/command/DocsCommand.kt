@@ -3,12 +3,11 @@
 
 package me.tbsten.katachi.script.command
 
-import me.tbsten.katachi.script.ApiModule
 import me.tbsten.katachi.script.Katachi
-import me.tbsten.katachi.script.KatachiCommand
 import me.tbsten.katachi.script.internal.CommandLine
 import me.tbsten.katachi.script.internal.commandText
 import me.tbsten.katachi.script.internal.run
+import me.tbsten.katachi.script.option.ApiModule
 
 /**
  * The `katachi docs` command: fetches the katachi guide into the working directory and prints the path.

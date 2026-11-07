@@ -4,14 +4,13 @@
 package me.tbsten.katachi.script.command
 
 import me.tbsten.katachi.dsl.DeclarationSite
-import me.tbsten.katachi.script.DependencyStyle
 import me.tbsten.katachi.script.Katachi
-import me.tbsten.katachi.script.KatachiCommand
-import me.tbsten.katachi.script.TestFramework
 import me.tbsten.katachi.script.internal.CommandLine
 import me.tbsten.katachi.script.internal.commandText
 import me.tbsten.katachi.script.internal.requireOption
 import me.tbsten.katachi.script.internal.run
+import me.tbsten.katachi.script.option.DependencyStyle
+import me.tbsten.katachi.script.option.TestFramework
 
 /**
  * The `katachi scaffold` command: creates the test module and adds it to the build.

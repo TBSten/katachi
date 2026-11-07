@@ -4,11 +4,10 @@
 package me.tbsten.katachi.script.command
 
 import me.tbsten.katachi.script.Katachi
-import me.tbsten.katachi.script.KatachiCommand
-import me.tbsten.katachi.script.Target
 import me.tbsten.katachi.script.internal.CommandLine
 import me.tbsten.katachi.script.internal.commandText
 import me.tbsten.katachi.script.internal.run
+import me.tbsten.katachi.script.option.Target
 
 /**
  * The subcommands of `katachi answers`: shows and records the answers to the questions.

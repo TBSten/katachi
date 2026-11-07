@@ -36,6 +36,8 @@ fun DeclarationContainerScope.script() = "Script".role {
             publicDeclarationsKeepTagsLast()
             mainSourceSet / kotlin / SCRIPT_MAIN_PACKAGE / "*".ktFile()
             mainSourceSet / kotlin / SCRIPT_MAIN_PACKAGE / "command" / "*".ktFile()
+            mainSourceSet / kotlin / SCRIPT_MAIN_PACKAGE / "error" / "*".ktFile()
+            mainSourceSet / kotlin / SCRIPT_MAIN_PACKAGE / "option" / "*".ktFile()
             mainSourceSet / kotlin / SCRIPT_MAIN_PACKAGE / "internal" / "*".ktFile()
             // What `katachi --version` prints. Written as `version=${katachiVersion}` and expanded by `processResources`.
             mainSourceSet / "resources" / "META-INF" / "katachi-script" / "version.properties".file()

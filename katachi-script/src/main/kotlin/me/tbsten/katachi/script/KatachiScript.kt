@@ -2,8 +2,10 @@ package me.tbsten.katachi.script
 
 import java.nio.file.Path
 import kotlin.script.experimental.annotations.KotlinScript
+import me.tbsten.katachi.script.command.CommandRunner
 import me.tbsten.katachi.script.internal.KatachiScriptCompilationConfiguration
 import me.tbsten.katachi.script.internal.scriptDirectoryOf
+import me.tbsten.katachi.script.option.Lang
 
 /**
  * The base of every `*.katachi.kts` script: [katachi] and its defaults are there without any setup.

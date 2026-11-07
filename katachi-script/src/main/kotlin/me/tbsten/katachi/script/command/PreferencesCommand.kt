@@ -3,14 +3,13 @@
 
 package me.tbsten.katachi.script.command
 
-import me.tbsten.katachi.script.ConstraintNames
-import me.tbsten.katachi.script.DependencyStyle
 import me.tbsten.katachi.script.Katachi
-import me.tbsten.katachi.script.KatachiCommand
-import me.tbsten.katachi.script.TestFramework
 import me.tbsten.katachi.script.internal.CommandLine
 import me.tbsten.katachi.script.internal.commandText
 import me.tbsten.katachi.script.internal.run
+import me.tbsten.katachi.script.option.ConstraintNames
+import me.tbsten.katachi.script.option.DependencyStyle
+import me.tbsten.katachi.script.option.TestFramework
 
 /**
  * The subcommands of `katachi preferences`: shows and records how the definition is written.
