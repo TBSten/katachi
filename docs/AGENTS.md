@@ -83,6 +83,8 @@ title: ...
     - Konture との統合                                     （`konture { }`。`ktFileContent { }` と同じ位置に書く Konture の規則。katachi-konsist（`ktFileContent { }`）と同じテストモジュールには置けない）
     - ドキュメント生成
     - テンプレートからコード生成
+    - [AI生成] 差分レポート                （`katachiDiff`。PR にコメントする使い方は GitHub のレシピ、processor の表は ArchitectureProcessor）
+    - [AI生成] CLI とスクリプト            （katachi CLI と、サブコマンドを Kotlin の DSL で並べる `*.katachi.kts`）
     - Baseline                         （実験的な機能。processor の手前に置く）
     - ArchitectureProcessor とそのカスタマイズ
 - レシピ

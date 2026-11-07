@@ -42,6 +42,8 @@ const sidebar = (() => {
 			item('guides/kt-file-content', { en: 'ktFileContent', ja: 'ktFileContent' }),
 			item('guides/document-generation', { en: 'Document generation', ja: 'ドキュメント生成' }),
 			item('guides/generate-code-from-template', { en: 'Generate code from template', ja: 'テンプレートからコード生成' }),
+			item('guides/diff-report', { en: '[AI-generated] Diff report', ja: '[AI生成] 差分レポート' }),
+			item('guides/cli-and-script', { en: '[AI-generated] CLI and scripts', ja: '[AI生成] CLI とスクリプト' }),
 			item('guides/baseline', { en: 'Baseline', ja: 'Baseline' }),
 			item('guides/processor', { en: 'ArchitectureProcessor', ja: 'ArchitectureProcessor とそのカスタマイズ' }),
 		),
