@@ -19,6 +19,8 @@ import me.tbsten.katachi.intellij.testing.DefinitionStateScripts
 import me.tbsten.katachi.intellij.testing.definitionModel
 import me.tbsten.katachi.intellij.testing.definitionSnapshot
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.CyclicBarrier
+import java.util.concurrent.TimeUnit
 
 /** [HighlightingRefresher] (design 2.6, U-13) over the fakes' state sequences: what it restarts, and when not. */
 internal class HighlightingRefresherTest : AnalysisTestBase() {
@@ -197,5 +199,31 @@ internal class HighlightingRefresherTest : AnalysisTestBase() {
         awaitRedraw(since, definitions, refresher) { it is DefinitionState.Ready }
         val made = restarts.single()
         assertTrue("the root drawn before the cancelled draw is covered by the next: $made", made.contains("/w/repo") && made.contains("/w/other"))
+    }
+
+    fun `test 設定の描き直しと定義の描き直しが同時に終わっても 記録は番号順に並び lastRedraw は最後の番号`() {
+        var together = CyclicBarrier(2)
+        // Blocks the thread, not the coroutine: both draws leave their restart at the same moment and race to record.
+        refresher.restarter = { _, _ -> runCatching { together.await(5, TimeUnit.SECONDS) } }
+        refresher.follow(definitions, violations)
+        repeat(RACE_ROUNDS) { round ->
+            together = CyclicBarrier(2)
+            val since = seq()
+            definitions.emit(if (round % 2 == 0) DefinitionState.Ready(listOf(snapshot), Freshness.Fresh) else DefinitionState.Unavailable(DefinitionUnavailableReason.NotSynced, null))
+            refresher.redrawNow("the setting changed")
+            PlatformTestUtil.waitWithEventsDispatching(
+                { "round $round: two draws after #$since: ${refresher.redraws.filter { it.seq > since }} isBusy=${refresher.isBusy}" },
+                { refresher.redraws.count { it.seq > since } == 2 && !refresher.isBusy },
+                10,
+            )
+            val seqs = refresher.redraws.map { it.seq }
+            assertEquals("round $round: the records are in the order of their numbers", seqs.sorted(), seqs)
+            assertEquals("round $round: lastRedraw is the newest record", seqs.last(), refresher.lastRedraw.value?.seq)
+        }
+    }
+
+    private companion object {
+        // One round in a few dozen inverts the records without the lock, so a run without it fails most of the time.
+        const val RACE_ROUNDS = 60
     }
 }
