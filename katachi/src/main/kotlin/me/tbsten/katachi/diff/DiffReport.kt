@@ -26,7 +26,9 @@ import me.tbsten.katachi.processor.internal.projectWalk
  * Every changed file is put under each role whose `layout { }` allows it, and every group and
  * role of the definition is listed, changed or not, so a reviewer sees at a glance which part of
  * the architecture a change lands in. Unchanged groups start folded. A file no role allows is
- * listed under "(no role)".
+ * listed under "(no role)" with a warning, as the architecture test fails on it. A file under a
+ * directory the layout `ignore()`s is listed under "(ignored)" instead, folded and without the
+ * warning: the architecture test does not look at it.
  *
  * Registered under the key `diff`, so a module that applies the Gradle plugin can run
  * `./gradlew katachiDiff` without registering anything.

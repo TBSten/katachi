@@ -23,7 +23,7 @@ internal val HTML_TEMPLATE: String = """
 <div class="stats">
   <div><span class="num" data-stat="files">{{FILES}}</span><span class="cap">files changed</span></div>
   <div><span class="num"><span class="add" data-stat="added">+{{ADDED}}</span> <span class="del" data-stat="deleted">-{{DELETED}}</span></span><span class="cap">diff lines</span></div>
-  <div><span class="num">{{TOUCHED}}</span><span class="cap">roles touched</span></div>{{UNASSIGNED}}
+  <div><span class="num">{{TOUCHED}}</span><span class="cap">roles touched</span></div>{{UNASSIGNED}}{{IGNORED}}
 </div>
 {{LIMIT}}
 {{COMMITS}}

@@ -48,6 +48,8 @@ h1 { font-size: 29px; line-height: 1.2; font-weight: 600; color: var(--ink); mar
 h1 .dots { color: var(--line-strong); font-weight: 400; }
 .stats { display: flex; flex-wrap: wrap; gap: 24px; margin: 16px 0 24px; }
 .stats > div { display: flex; flex-direction: column; gap: 2px; }
+/* The display above would otherwise win over the hidden attribute and show "0 files in no role". */
+.stats > div[hidden] { display: none; }
 .stats .num { font-size: 24px; font-weight: 600; line-height: 1.2; color: var(--ink); }
 .stats .of { font-size: 16px; font-weight: 400; color: var(--muted); }
 .stats .cap { font-size: 13px; color: var(--muted); }
@@ -124,6 +126,7 @@ tr.unassigned .label, tr.unassigned .sub, tr.unassigned .toggle { color: var(--c
 tr.unassigned .sub { font-weight: 500; }
 tr.unassigned:hover > td { background: var(--caution-low); }
 tr.unassigned-file > td { background: color-mix(in srgb, var(--caution-low) 45%, transparent); }
+tr.ignored .label, tr.ignored .sub, tr.ignored .not-weighted, tr.ignored-file code.path { color: var(--muted); }
 svg.warn { width: 16px; height: 16px; vertical-align: -3px; margin-right: 6px; }
 tr.more .label { color: var(--muted); font-style: italic; }
 tr.hidden { display: none; }
