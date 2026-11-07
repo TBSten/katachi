@@ -84,6 +84,7 @@ title: ...
     - ドキュメント生成
     - テンプレートからコード生成
     - [AI生成] 差分レポート                （`katachiDiff`。PR にコメントする使い方は GitHub のレシピ、processor の表は ArchitectureProcessor）
+    - [AI生成] CLI とスクリプト            （katachi CLI と、サブコマンドを Kotlin の DSL で並べる `*.katachi.kts`）
     - Baseline                         （実験的な機能。processor の手前に置く）
     - ArchitectureProcessor とそのカスタマイズ
 - レシピ
@@ -95,7 +96,6 @@ title: ...
     - detekt
     - Git
     - GitHub
-    - [AI生成] *.katachi.kts            （katachi CLI のサブコマンドを Kotlin の DSL でスクリプトにする）
 - API リファレンス（/api-docs/）
 - ロードマップ
 ```
