@@ -36,6 +36,7 @@ internal class HighlightingRefresher(private val project: Project, private val s
     private val pending = AtomicReference<Job?>(null)
 
     private val nowJob = AtomicReference<Job?>(null)
+    private val recordLock = Any()
     private val seq = AtomicLong(0)
     private val _lastRedraw = MutableStateFlow<Redraw?>(null)
 
@@ -127,9 +128,12 @@ internal class HighlightingRefresher(private val project: Project, private val s
         // The service may have been replaced while the restart ran: a record of a world that is gone would mislead whoever waits.
         if (definitions != null && followed.get()?.definitions !== definitions) return
         onRecorded()
-        val redraw = Redraw(seq.incrementAndGet(), reason, definitions, definition)
-        history.updateAndGet { (it + redraw).takeLast(HISTORY_SIZE) }
-        _lastRedraw.value = redraw
+        // A setting's draw and a definition's draw can record at the same moment: taking the number and appending it must be one step, or the history goes 6, 5.
+        synchronized(recordLock) {
+            val redraw = Redraw(seq.incrementAndGet(), reason, definitions, definition)
+            history.updateAndGet { (it + redraw).takeLast(HISTORY_SIZE) }
+            _lastRedraw.value = redraw
+        }
     }
 
     private fun rootsOf(definitions: DefinitionModelService): List<Path> =
