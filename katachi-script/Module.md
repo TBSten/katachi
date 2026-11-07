@@ -6,5 +6,13 @@ templates `init` places ship inside the artifact.
 
 # Package me.tbsten.katachi.script
 
-The entry point `main(args)`. Everything else is internal: the subcommands, their option
-specs, the working directory lookup, and the edits to the user's Gradle files.
+The entry point `main(args)`, and where a script starts building a `katachi` command: `Katachi`,
+one entry point per subcommand (`katachi.add`, `katachi.scaffold`, ...) and the values their
+options take. The subcommands themselves, their option specs, the working directory lookup and
+the edits to the user's Gradle files are internal.
+
+# Package me.tbsten.katachi.script.command
+
+The builders the entry points return, one per subcommand (`ScaffoldCommand`, `AddRoleCommand`,
+...). A script rarely names them: it chains their methods from `katachi.<subcommand>` and calls
+`execute()`.

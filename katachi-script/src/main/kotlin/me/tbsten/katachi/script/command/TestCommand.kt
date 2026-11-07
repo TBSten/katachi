@@ -1,17 +1,13 @@
 // Generated from COMMAND_SPECS (internal/CommandSpecs.kt) by CommandBuildersSpec. Do not edit by hand:
 // change the spec and run `./gradlew :katachi-script:test --tests '*CommandBuildersSpec' -Dkatachi.golden.update=true`.
 
-package me.tbsten.katachi.script
+package me.tbsten.katachi.script.command
 
+import me.tbsten.katachi.script.Katachi
+import me.tbsten.katachi.script.KatachiCommand
 import me.tbsten.katachi.script.internal.CommandLine
 import me.tbsten.katachi.script.internal.commandText
 import me.tbsten.katachi.script.internal.run
-
-/**
- * Same as `katachi test` on the command line: runs the tests of the test module and prints only a summary.
- */
-public val Katachi.test: TestCommand
-    get() = TestCommand(this, CommandLine(listOf("test")))
 
 /**
  * The `katachi test` command: runs the tests of the test module and prints only a summary.

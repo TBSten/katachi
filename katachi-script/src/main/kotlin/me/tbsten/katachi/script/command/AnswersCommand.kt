@@ -1,19 +1,14 @@
 // Generated from COMMAND_SPECS (internal/CommandSpecs.kt) by CommandBuildersSpec. Do not edit by hand:
 // change the spec and run `./gradlew :katachi-script:test --tests '*CommandBuildersSpec' -Dkatachi.golden.update=true`.
 
-package me.tbsten.katachi.script
+package me.tbsten.katachi.script.command
 
+import me.tbsten.katachi.script.Katachi
+import me.tbsten.katachi.script.KatachiCommand
+import me.tbsten.katachi.script.Target
 import me.tbsten.katachi.script.internal.CommandLine
 import me.tbsten.katachi.script.internal.commandText
 import me.tbsten.katachi.script.internal.run
-
-/**
- * The subcommands of `katachi answers`: shows and records the answers to the questions.
- *
- * `katachi answers` is not a command of its own here: pick one of its subcommands.
- */
-public val Katachi.answers: AnswersCommandGroup
-    get() = AnswersCommandGroup(this)
 
 /**
  * The subcommands of `katachi answers`: shows and records the answers to the questions.

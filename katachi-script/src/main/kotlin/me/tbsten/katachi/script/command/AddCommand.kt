@@ -1,19 +1,13 @@
 // Generated from COMMAND_SPECS (internal/CommandSpecs.kt) by CommandBuildersSpec. Do not edit by hand:
 // change the spec and run `./gradlew :katachi-script:test --tests '*CommandBuildersSpec' -Dkatachi.golden.update=true`.
 
-package me.tbsten.katachi.script
+package me.tbsten.katachi.script.command
 
+import me.tbsten.katachi.script.Katachi
+import me.tbsten.katachi.script.KatachiCommand
 import me.tbsten.katachi.script.internal.CommandLine
 import me.tbsten.katachi.script.internal.commandText
 import me.tbsten.katachi.script.internal.run
-
-/**
- * The subcommands of `katachi add`: appends one row to an array of the check list or the report, without touching the others.
- *
- * `katachi add` is not a command of its own here: pick one of its subcommands.
- */
-public val Katachi.add: AddCommandGroup
-    get() = AddCommandGroup(this)
 
 /**
  * The subcommands of `katachi add`: appends one row to an array of the check list or the report, without touching the others.
@@ -214,7 +208,8 @@ public class AddQuestionCommand internal constructor(
      *
      * @param values Each becomes one entry of `options` of the row.
      */
-    public fun options(vararg values: String): AddQuestionCommand = next(line.withAppended("--options", values.toList()))
+    public fun options(vararg values: String): AddQuestionCommand =
+        next(line.withAppended("--options", values.toList()))
 
     /**
      * Appends [arguments] as they are, for an option this builder has no method for yet:
@@ -287,7 +282,8 @@ public class AddCodebaseQuestionCommand internal constructor(
      *
      * @param values Each becomes one entry of `options` of the row.
      */
-    public fun options(vararg values: String): AddCodebaseQuestionCommand = next(line.withAppended("--options", values.toList()))
+    public fun options(vararg values: String): AddCodebaseQuestionCommand =
+        next(line.withAppended("--options", values.toList()))
 
     /**
      * Appends [arguments] as they are, for an option this builder has no method for yet:
@@ -541,7 +537,8 @@ public class AddRoleCommand internal constructor(
      *
      * @param values Each becomes one entry of `forbidden` of the row.
      */
-    public fun forbidden(vararg values: String): AddRoleCommand = next(line.withAppended("--forbidden", values.toList()))
+    public fun forbidden(vararg values: String): AddRoleCommand =
+        next(line.withAppended("--forbidden", values.toList()))
 
     /**
      * Same as `katachi add role --examples <values>` on the command line, once for each value: files that belong to it. Calling it again adds more.
@@ -555,7 +552,8 @@ public class AddRoleCommand internal constructor(
      *
      * @param enabled False takes the option off again.
      */
-    public fun `constraint-only`(enabled: Boolean = true): AddRoleCommand = next(line.withFlag("--constraint-only", enabled))
+    public fun `constraint-only`(enabled: Boolean = true): AddRoleCommand =
+        next(line.withFlag("--constraint-only", enabled))
 
     /**
      * Appends [arguments] as they are, for an option this builder has no method for yet:

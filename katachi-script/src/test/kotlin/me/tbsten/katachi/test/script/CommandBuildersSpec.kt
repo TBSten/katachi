@@ -17,9 +17,9 @@ class CommandBuildersSpec : FreeSpec({
 
     "生成したビルダーがチェックインされたものと一致する" {
         if (updating) {
-            generated.forEach { (name, source) -> dir.resolve(name).writeText(source) }
+            generated.forEach { (path, source) -> dir.resolve(path).apply { parentFile.mkdirs() }.writeText(source) }
         }
-        val differing = generated.filter { (name, source) -> dir.resolve(name).takeIf { it.isFile }?.readText() != source }.keys
+        val differing = generated.filter { (path, source) -> dir.resolve(path).takeIf { it.isFile }?.readText() != source }.keys
         withClue(
             "Out of date with COMMAND_SPECS: $differing. Run " +
                 "`./gradlew :katachi-script:test --tests '*CommandBuildersSpec' -Dkatachi.golden.update=true`.",
@@ -29,10 +29,10 @@ class CommandBuildersSpec : FreeSpec({
     }
 
     "spec から消えたサブコマンドの生成ファイルが残っていない" {
-        if (updating) {
-            dir.listFiles().orEmpty().filter { it.isFile && it.name !in generated && it.readText().startsWith(GENERATED_HEADER) }.forEach { it.delete() }
-        }
-        val stale = dir.listFiles().orEmpty().filter { it.isFile && it.name !in generated && it.readText().startsWith(GENERATED_HEADER) }
-        stale.map { it.name } shouldBe emptyList()
+        fun stale() = dir.walkTopDown()
+            .filter { it.isFile && it.relativeTo(dir).invariantSeparatorsPath !in generated && it.readText().startsWith(GENERATED_HEADER) }
+            .toList()
+        if (updating) stale().forEach { it.delete() }
+        stale().map { it.relativeTo(dir).invariantSeparatorsPath } shouldBe emptyList()
     }
 })

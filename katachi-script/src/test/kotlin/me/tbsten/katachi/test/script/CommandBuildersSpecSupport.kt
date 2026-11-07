@@ -19,11 +19,22 @@ private val HEADER = """
 
 private const val PACKAGE = "me.tbsten.katachi.script"
 
-/** The builder sources for [specs], by file name under `me/tbsten/katachi/script/`. */
+/** Where the builders go, so the API reference of [PACKAGE] lists only the entry points and the values. */
+private const val COMMAND_PACKAGE = "$PACKAGE.command"
+
+/** The longest code line the generated files keep; a longer `fun ... = body` breaks after `=` as the IDE formatter does. */
+private const val MAX_LINE_LENGTH = 120
+
+/**
+ * The builder sources for [specs], by path under `me/tbsten/katachi/script/`: the entry point
+ * (`katachi.add`) as `add.kt`, and its builders as `command/AddCommand.kt`.
+ */
 internal fun generateCommandBuilders(specs: List<CommandSpec> = COMMAND_SPECS): Map<String, String> {
     val files = linkedMapOf<String, String>()
     for (spec in specs) {
-        files["${pascal(spec.name)}Command.kt"] = CommandFile(spec).render()
+        val file = CommandFile(spec)
+        files["${camel(spec.name)}.kt"] = file.renderEntry()
+        files["command/${pascal(spec.name)}Command.kt"] = file.renderBuilders()
     }
     files["CommandValues.kt"] = renderValues(specs)
     return files
@@ -95,45 +106,59 @@ private fun sentence(text: String): String = if (text.isEmpty() || text.endsWith
 
 // endregion
 
-/** One subcommand of `katachi` and everything under it: a builder, or a group of builders. */
+/** One subcommand of `katachi` and everything under it: an entry point, and a builder or a group of builders. */
 private class CommandFile(private val spec: CommandSpec) {
-    private val out = StringBuilder()
-    private var needsDeclarationSite = false
+    private val group = "${pascal(spec.name)}CommandGroup"
 
-    fun render(): String {
-        val body = StringBuilder()
-        if (spec.subcommands.isEmpty()) {
-            body.append(entry(spec, listOf(spec.name), receiver = "Katachi", katachi = "this"))
-            body.append("\n")
-            body.append(builder(spec, listOf(spec.name)))
+    /** `katachi.add` / `katachi.guide("3-2")`, in [PACKAGE]: what a script types first. */
+    fun renderEntry(): String {
+        val imports = sortedSetOf<String>()
+        val body = if (spec.subcommands.isEmpty()) {
+            imports += "$COMMAND_PACKAGE.${pascal(spec.name)}Command"
+            imports += "me.tbsten.katachi.script.internal.CommandLine"
+            entry(spec, listOf(spec.name), receiver = "Katachi", katachi = "this", imports)
         } else {
-            val group = "${pascal(spec.name)}CommandGroup"
-            body.append(
-                doc(
-                    "The subcommands of `katachi ${spec.name}`: ${sentence(spec.doc)}",
-                    "",
-                    "`katachi ${spec.name}` is not a command of its own here: pick one of its subcommands.",
-                ),
-            )
-            body.append("public val Katachi.${identifier(spec.name)}: $group\n    get() = $group(this)\n\n")
-            body.append(group(spec, group))
-            for (sub in spec.subcommands) {
-                body.append("\n")
-                body.append(builder(sub, listOf(spec.name, sub.name)))
-            }
+            imports += "$COMMAND_PACKAGE.$group"
+            doc(
+                "The subcommands of `katachi ${spec.name}`: ${sentence(spec.doc)}",
+                "",
+                "`katachi ${spec.name}` is not a command of its own here: pick one of its subcommands.",
+            ) + "public val Katachi.${identifier(spec.name)}: $group\n    get() = $group(this)\n"
         }
-        out.append(HEADER).append("\n\n")
-        out.append("package $PACKAGE\n\n")
-        if (needsDeclarationSite) out.append("import me.tbsten.katachi.dsl.DeclarationSite\n")
-        out.append("import me.tbsten.katachi.script.internal.CommandLine\n")
-        out.append("import me.tbsten.katachi.script.internal.commandText\n")
-        if (needsDeclarationSite) out.append("import me.tbsten.katachi.script.internal.requireOption\n")
-        out.append("import me.tbsten.katachi.script.internal.run\n\n")
-        out.append(body.toString().trimEnd()).append("\n")
-        return out.toString()
+        return source(PACKAGE, imports, body)
     }
 
-    private fun group(spec: CommandSpec, group: String): String = buildString {
+    /** The builders the entry point returns, in [COMMAND_PACKAGE]. */
+    fun renderBuilders(): String {
+        val imports = sortedSetOf(
+            "me.tbsten.katachi.script.Katachi",
+            "me.tbsten.katachi.script.KatachiCommand",
+            "me.tbsten.katachi.script.internal.CommandLine",
+            "me.tbsten.katachi.script.internal.commandText",
+            "me.tbsten.katachi.script.internal.run",
+        )
+        val body = StringBuilder()
+        if (spec.subcommands.isEmpty()) {
+            body.append(builder(spec, listOf(spec.name), imports))
+        } else {
+            body.append(group(spec, group, imports))
+            for (sub in spec.subcommands) {
+                body.append("\n")
+                body.append(builder(sub, listOf(spec.name, sub.name), imports))
+            }
+        }
+        return source(COMMAND_PACKAGE, imports, body.toString())
+    }
+
+    private fun source(packageName: String, imports: Set<String>, body: String): String = buildString {
+        append(HEADER).append("\n\n")
+        append("package $packageName\n\n")
+        for (import in imports) append("import $import\n")
+        append("\n")
+        append(body.trimEnd()).append("\n")
+    }
+
+    private fun group(spec: CommandSpec, group: String, imports: MutableSet<String>): String = buildString {
         val first = spec.subcommands.first()
         val default = spec.defaultSubcommand?.let { " `katachi ${spec.name}` alone is the same as [$it]." }.orEmpty()
         append(
@@ -156,13 +181,13 @@ private class CommandFile(private val spec: CommandSpec) {
         append("public class $group internal constructor(private val katachi: Katachi) {\n")
         for ((index, sub) in spec.subcommands.withIndex()) {
             if (index > 0) append("\n")
-            append(entry(sub, listOf(spec.name, sub.name), receiver = null, katachi = "katachi").indented())
+            append(entry(sub, listOf(spec.name, sub.name), receiver = null, katachi = "katachi", imports).indented())
         }
         append("}\n")
     }
 
     /** `katachi.doctor` / `katachi.guide("3-2")`: a property when every positional can be left out, a function when there are positionals. */
-    private fun entry(spec: CommandSpec, path: List<String>, receiver: String?, katachi: String): String = buildString {
+    private fun entry(spec: CommandSpec, path: List<String>, receiver: String?, katachi: String, imports: MutableSet<String>): String = buildString {
         val className = "${pascal(path.joinToString("-"))}Command"
         val start = startLine(spec, path, katachi)
         val declared = if (spec.options.any { it.required }) ", DeclarationSite.capture()" else ""
@@ -217,7 +242,7 @@ private class CommandFile(private val spec: CommandSpec) {
             append("public fun $prefix${identifier(spec.name)}(${params.joinToString()}): $className =\n")
             append("    $className($katachi, $start.withPositionals($values)$declared)\n")
         }
-        if (declared.isNotEmpty()) needsDeclarationSite = true
+        if (declared.isNotEmpty()) imports += "me.tbsten.katachi.dsl.DeclarationSite"
     }
 
     private fun startLine(spec: CommandSpec, path: List<String>, katachi: String): String = buildString {
@@ -232,10 +257,18 @@ private class CommandFile(private val spec: CommandSpec) {
         }
     }
 
-    private fun builder(spec: CommandSpec, path: List<String>): String = buildString {
+    private fun builder(spec: CommandSpec, path: List<String>, imports: MutableSet<String>): String = buildString {
         val className = "${pascal(path.joinToString("-"))}Command"
         val command = "katachi ${path.joinToString(" ")}"
         val required = spec.options.filter { it.required }
+        if (required.isNotEmpty()) {
+            imports += "me.tbsten.katachi.dsl.DeclarationSite"
+            imports += "me.tbsten.katachi.script.internal.requireOption"
+        }
+        for (option in spec.options) {
+            val kind = option.kind as? OptionKind.Choice ?: continue
+            imports += "$PACKAGE.${kind.type.typeName}"
+        }
         val repeatable = spec.options.any { it.repeatable }
         val lines = mutableListOf(
             "The `$command` command: ${sentence(spec.doc)}",
@@ -292,7 +325,7 @@ private class CommandFile(private val spec: CommandSpec) {
                     "@param arguments Such as `--info`.",
                 ).indented(),
             )
-            append("    public fun ${identifier(passthrough.method)}(vararg arguments: String): $className = next(line.plusPassthrough(arguments.toList()))\n")
+            append(oneLiner("public fun ${identifier(passthrough.method)}(vararg arguments: String): $className", "next(line.plusPassthrough(arguments.toList()))").indented())
         }
         append("\n")
         append(
@@ -303,7 +336,8 @@ private class CommandFile(private val spec: CommandSpec) {
                 "@param arguments Such as `\"--new-option\", \"value\"`.",
             ).indented(),
         )
-        append("    public fun arg(vararg arguments: String): $className = next(line.plus(arguments.toList()))\n\n")
+        append(oneLiner("public fun arg(vararg arguments: String): $className", "next(line.plus(arguments.toList()))").indented())
+        append("\n")
         append("    override val arguments: List<String> get() = line.arguments\n\n")
         if (required.isEmpty()) {
             append("    override fun execute(): Int = katachi.run(arguments)\n\n")
@@ -329,12 +363,12 @@ private class CommandFile(private val spec: CommandSpec) {
         when {
             kind == OptionKind.Flag -> {
                 append(doc(summary, "", "@param enabled False takes the option off again."))
-                append("public fun $name(enabled: Boolean = true): $className = next(line.withFlag(${kotlinString(option.name)}, enabled))\n")
+                append(oneLiner("public fun $name(enabled: Boolean = true): $className", "next(line.withFlag(${kotlinString(option.name)}, enabled))"))
             }
 
             option.repeatable -> {
                 append(doc(summary, "", "@param ${option.param} ${option.paramDoc.ifEmpty { "One or more values." }}"))
-                append("public fun $name(vararg ${option.param}: String): $className = next(line.withAppended(${kotlinString(option.name)}, ${option.param}.toList()))\n")
+                append(oneLiner("public fun $name(vararg ${option.param}: String): $className", "next(line.withAppended(${kotlinString(option.name)}, ${option.param}.toList()))"))
             }
 
             else -> {
@@ -346,10 +380,11 @@ private class CommandFile(private val spec: CommandSpec) {
                 val set = if (option.keyValue) "withKeyValue" else "with"
                 if (option.valueOptional) {
                     append(doc("Same as `$command ${option.name}` on the command line, without a value: ${sentence(option.doc)}"))
-                    append("public fun $name(): $className = next(line.with(${kotlinString(option.name)}, null))\n\n")
+                    append(oneLiner("public fun $name(): $className", "next(line.with(${kotlinString(option.name)}, null))"))
+                    append("\n")
                 }
                 append(doc(summary, "", "@param ${option.param} $paramDoc"))
-                append("public fun $name(${option.param}: $type): $className = next(line.$set(${kotlinString(option.name)}, $value))\n")
+                append(oneLiner("public fun $name(${option.param}: $type): $className", "next(line.$set(${kotlinString(option.name)}, $value))"))
             }
         }
     }
@@ -454,6 +489,15 @@ private fun renderValues(specs: List<CommandSpec>): String {
 }
 
 // endregion
+
+/**
+ * `$signature = $body` on one line, or broken after `=` when that line would be longer than [MAX_LINE_LENGTH]
+ * inside a class body (four spaces in), as the IDE formatter would break it.
+ */
+private fun oneLiner(signature: String, body: String): String {
+    val line = "$signature = $body"
+    return if (line.length + 4 > MAX_LINE_LENGTH) "$signature =\n    $body\n" else "$line\n"
+}
 
 /** Indents every line but the empty ones, so the generated code has no trailing spaces. */
 private fun String.indented(): String = lines().joinToString("\n") { if (it.isEmpty()) it else "    $it" }

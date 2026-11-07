@@ -1,19 +1,16 @@
 // Generated from COMMAND_SPECS (internal/CommandSpecs.kt) by CommandBuildersSpec. Do not edit by hand:
 // change the spec and run `./gradlew :katachi-script:test --tests '*CommandBuildersSpec' -Dkatachi.golden.update=true`.
 
-package me.tbsten.katachi.script
+package me.tbsten.katachi.script.command
 
+import me.tbsten.katachi.script.ConstraintNames
+import me.tbsten.katachi.script.DependencyStyle
+import me.tbsten.katachi.script.Katachi
+import me.tbsten.katachi.script.KatachiCommand
+import me.tbsten.katachi.script.TestFramework
 import me.tbsten.katachi.script.internal.CommandLine
 import me.tbsten.katachi.script.internal.commandText
 import me.tbsten.katachi.script.internal.run
-
-/**
- * The subcommands of `katachi preferences`: shows and records how the definition is written.
- *
- * `katachi preferences` is not a command of its own here: pick one of its subcommands.
- */
-public val Katachi.preferences: PreferencesCommandGroup
-    get() = PreferencesCommandGroup(this)
 
 /**
  * The subcommands of `katachi preferences`: shows and records how the definition is written.
@@ -121,7 +118,8 @@ public class PreferencesSetCommand internal constructor(
      *
      * @param enabled True for `yes`, false for `no`.
      */
-    public fun nestedGroups(enabled: Boolean): PreferencesSetCommand = next(line.withKeyValue("nestedGroups", if (enabled) "yes" else "no"))
+    public fun nestedGroups(enabled: Boolean): PreferencesSetCommand =
+        next(line.withKeyValue("nestedGroups", if (enabled) "yes" else "no"))
 
     /**
      * Same as `katachi preferences set moduleDir=<path>` on the command line: where the test module goes, recorded as `meta.moduleDir` of the check list.
@@ -135,28 +133,32 @@ public class PreferencesSetCommand internal constructor(
      *
      * @param framework [junit5] or [kotest].
      */
-    public fun testFramework(framework: TestFramework): PreferencesSetCommand = next(line.withKeyValue("testFramework", framework.value))
+    public fun testFramework(framework: TestFramework): PreferencesSetCommand =
+        next(line.withKeyValue("testFramework", framework.value))
 
     /**
      * Same as `katachi preferences set dependencyStyle=<catalog|literal>` on the command line: how `scaffold` writes the dependencies.
      *
      * @param style [catalog] or [literal].
      */
-    public fun dependencyStyle(style: DependencyStyle): PreferencesSetCommand = next(line.withKeyValue("dependencyStyle", style.value))
+    public fun dependencyStyle(style: DependencyStyle): PreferencesSetCommand =
+        next(line.withKeyValue("dependencyStyle", style.value))
 
     /**
      * Same as `katachi preferences set constraintNames=<plain|numbered>` on the command line: whether constraint names carry the question number.
      *
      * @param names [plain] or [numbered].
      */
-    public fun constraintNames(names: ConstraintNames): PreferencesSetCommand = next(line.withKeyValue("constraintNames", names.value))
+    public fun constraintNames(names: ConstraintNames): PreferencesSetCommand =
+        next(line.withKeyValue("constraintNames", names.value))
 
     /**
      * Same as `katachi preferences set oneRolePerFile=<yes|no>` on the command line: whether each Role is written in a file of its own.
      *
      * @param enabled True for `yes`, false for `no`.
      */
-    public fun oneRolePerFile(enabled: Boolean): PreferencesSetCommand = next(line.withKeyValue("oneRolePerFile", if (enabled) "yes" else "no"))
+    public fun oneRolePerFile(enabled: Boolean): PreferencesSetCommand =
+        next(line.withKeyValue("oneRolePerFile", if (enabled) "yes" else "no"))
 
     /**
      * Appends [arguments] as they are, for an option this builder has no method for yet:
