@@ -19,9 +19,11 @@ internal val DIFF_HTML_SCRIPT: String = """
     if (r.dataset.changed === "false" || r.dataset.collapsedDefault === "true") r.classList.add("collapsed");
     if (!hasKids) { const t = r.querySelector(".toggle"); if (t) t.style.visibility = "hidden"; }
   }
-  const value = r => state.score === "weighted" && !r.classList.contains("unassigned") && !isUnassignedFile(r)
+  // The no-role and ignored groups hold files no role owns, so no weight applies to them or their files.
+  const isRoleless = r => r.classList.contains("unassigned") || r.classList.contains("ignored");
+  const value = r => state.score === "weighted" && !isRoleless(r) && !isRolelessFile(r)
     ? Number(r.dataset.weighted) : Number(r.dataset.added) + Number(r.dataset.deleted);
-  const isUnassignedFile = r => { const p = byId.get(r.dataset.parent); return p && p.classList.contains("unassigned"); };
+  const isRolelessFile = r => { const p = byId.get(r.dataset.parent); return p && isRoleless(p); };
   // Three amber stops read from the theme: a low ratio is the pale one, the hottest row the deepest.
   const css = getComputedStyle(document.documentElement);
   const rgb = name => { const h = css.getPropertyValue(name).trim().replace("#", "");
@@ -78,17 +80,17 @@ internal val DIFF_HTML_SCRIPT: String = """
     // maxFiles keeps the heaviest files of the selection, each path once, then by path.
     const best = new Map();
     for (const r of fileRows.filter(isIn)) {
-      const score = r.classList.contains("unassigned-file") ? Number(r.dataset.added) + Number(r.dataset.deleted) : Number(r.dataset.weighted);
+      const score = isRolelessFile(r) ? Number(r.dataset.added) + Number(r.dataset.deleted) : Number(r.dataset.weighted);
       best.set(pathOf(r), Math.max(best.get(pathOf(r)) ?? -1, score));
     }
     const ranked = [...best.entries()].sort((x, y) => y[1] - x[1] || (x[0] < y[0] ? -1 : 1)).map(e => e[0]);
     const kept = new Set(maxFiles > 0 ? ranked.slice(0, maxFiles) : ranked);
     for (const r of fileRows) r.classList.toggle("limited", isIn(r) && !kept.has(pathOf(r)));
-    // Roles and the no-role group from their files, then groups from their children.
+    // Roles, the no-role group and the ignored group from their files, then groups from their children.
     const kids = r => children.get(r.dataset.id) || [];
     const aggregate = r => {
       let a = 0, d = 0, w = 0, n = 0;
-      if (r.classList.contains("role") || r.classList.contains("unassigned")) {
+      if (r.classList.contains("role") || isRoleless(r)) {
         let limited = 0;
         for (const f of kids(r)) {
           if (f.classList.contains("more") || !isIn(f)) continue;
@@ -107,7 +109,9 @@ internal val DIFF_HTML_SCRIPT: String = """
       r.classList.toggle("filtered", n === 0);
       const sub = r.querySelector(".sub");
       if (sub) sub.textContent = r.classList.contains("unassigned")
-        ? files(n) + " no layout { } allows. The architecture test will fail on " + (n === 1 ? "it." : "them.") : files(n);
+        ? files(n) + " no layout { } allows. The architecture test will fail on " + (n === 1 ? "it." : "them.")
+        : r.classList.contains("ignored")
+        ? files(n) + " under ignore(). The architecture test does not look at " + (n === 1 ? "it." : "them.") : files(n);
     };
     for (const r of children.get("") || []) aggregate(r);
     // The stats count each path once.
@@ -217,9 +221,9 @@ internal val DIFF_HTML_SCRIPT: String = """
       "lines-desc": (x, y) => value(y) - value(x) || x.dataset.order - y.dataset.order,
       "lines-asc": (x, y) => value(x) - value(y) || x.dataset.order - y.dataset.order,
     }[state.sort];
-    // "…and N more" stays under its siblings, and the no-role group under every group, whatever the sort.
+    // "…and N more" stays under its siblings, then the no-role group and the ignored group under every group, whatever the sort.
     const isMore = r => r.classList.contains("more") ? 1 : 0;
-    const isNoRole = r => r.classList.contains("unassigned") ? 1 : 0;
+    const isNoRole = r => r.classList.contains("unassigned") ? 1 : r.classList.contains("ignored") ? 2 : 0;
     const orderedCompare = (x, y) => isMore(x) - isMore(y) || isNoRole(x) - isNoRole(y) || compare(x, y);
     // Search and "warnings only": a row stays when it, a row above it or a row below it matches, and the
     // folding is set aside while a filter is on so that a match is never hidden in a closed group.

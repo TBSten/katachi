@@ -137,6 +137,31 @@ internal fun renderDiffHtml(model: DiffReportModel, history: CommitHistory): Str
             model.unassigned.forEachIndexed { index, change -> fileRow(id, 1, index, change, change.path, 0.0, kind = "file unassigned-file") }
             moreRow(id, 1, hidden = model.unassigned.count { it !in model.shown })
         }
+        // No warning and folded: the architecture test skips these too, they are listed only so no changed file goes missing.
+        if (model.ignored.isNotEmpty()) {
+            val id = row(
+                kind = "group ignored",
+                parent = null,
+                depth = 0,
+                order = model.nodes.size + 1,
+                added = model.ignored.sumOf { it.added },
+                deleted = model.ignored.sumOf { it.deleted },
+                weighted = 0.0,
+                cells = nameCell(
+                    0,
+                    toggle = true,
+                    label = "Ignored",
+                    sub = ignoredNote(model.ignored.size),
+                    anchor = "ignored",
+                    anchorName = "the ignored files",
+                ) +
+                    """<td class="heat"><span class="not-weighted">not weighted</span><span class="bar"></span></td>""" +
+                    """<td class="lines"></td><td class="links"></td>""",
+                extra = """ data-changed="true" data-collapsed-default="true" data-files="${model.ignored.size}" data-key="ignored"""",
+            )
+            model.ignored.forEachIndexed { index, change -> fileRow(id, 1, index, change, change.path, 0.0, kind = "file ignored-file") }
+            moreRow(id, 1, hidden = model.ignored.count { it !in model.shown })
+        }
     }
     val touched = model.nodes.sumOf { node -> node.roles().count { it.changed } }
     val roleCount = model.nodes.sumOf { it.roles().size }
@@ -268,6 +293,9 @@ private fun noRoleWarning(count: Int): String =
     } else {
         "$count files no layout { } allows. The architecture test will fail on them."
     }
+
+private fun ignoredNote(count: Int): String =
+    "${files(count)} under ignore(). The architecture test does not look at ${if (count == 1) "it" else "them"}."
 
 private fun String.escapeHtml(): String =
     replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;")

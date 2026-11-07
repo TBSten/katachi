@@ -31,6 +31,17 @@ class DiffReportSpec : FreeSpec({
         }
         "Root".role { layout { "gradlew".file(); ".gitignore".file() } }
     }
+    val ignoringArch = architecture {
+        files = wholeTree()
+        "UseCase".role { layout { "domain" / "*UseCase.kt".file() } }
+        "Root".role {
+            layout {
+                "gradlew".file()
+                ".gitignore".file()
+                "sample" { "jvm".ignore() }
+            }
+        }
+    }
 
     "変更されたファイルが role ごとに振り分けられ、変更のない group は閉じた側に出る" {
         withRepository { repo ->
@@ -184,6 +195,69 @@ class DiffReportSpec : FreeSpec({
             markdown shouldContain "# Files in no role: HEAD~1"
             markdown shouldContain "<details open><summary><b>No role</b> 1 file</summary>"
             out.resolve("diff-report.html").readText() shouldNotContain "data-collapsed-default"
+        }
+    }
+
+    "ignore() したディレクトリの変更は no role と数えず、警告なしの ignored に分けて出す" {
+        withRepository { repo ->
+            repo.write("domain/GetUserUseCase.kt", "class GetUserUseCase\n")
+            repo.commit("initial")
+            repo.write("domain/GetUserUseCase.kt", "class GetUserUseCase {\n}\n")
+            repo.write("sample/jvm/src/Foo.kt", "class Foo\n")
+            repo.write("notes.txt", "no role\n")
+            repo.commit("change")
+
+            val out = repo.dir.resolve("out")
+            ignoringArch.process(
+                DiffReport,
+                DiffReport.Args(before = "HEAD~1", after = "HEAD", markdownOutputFile = out.resolve("diff-report.md").path, htmlOutputFile = out.resolve("diff-report.html").path),
+                RealFileSystem(repo.dir),
+            ).getOrThrow()
+
+            val markdown = allMarkdown(out)
+            markdown shouldContain "3 files changed, +4 -1. 1 of 2 roles touched, 1 file in no role, 1 file ignored."
+            // Only the file the architecture test fails on is warned about.
+            markdown shouldContain "> 1 file is in no role: no layout { } allows it, so the architecture test will fail on it."
+            markdown shouldContain "| **(no role)** | | +1&nbsp;-0 | 1 |\n| &nbsp;&nbsp;└ `notes.txt` _(added)_ |"
+            markdown shouldContain "| **(ignored)** | | +1&nbsp;-0 | 1 |\n| &nbsp;&nbsp;└ `sample/jvm/src/Foo.kt` _(added)_ |"
+            markdown shouldContain "_(ignored): Files under a directory `ignore()` leaves out of the layout. " +
+                "The architecture test does not look at them._"
+            out.resolve("diff-report.files-in-no-role.md").readText() shouldNotContain "sample/jvm"
+            out.resolve("diff-report.files-by-role.md").readText() shouldContain
+                "<details><summary><b>Ignored</b> 1 file</summary>"
+
+            val html = out.resolve("diff-report.html").readText()
+            html shouldContain "1 file no layout { } allows. The architecture test will fail on it."
+            html shouldContain "1 file under ignore(). The architecture test does not look at it."
+            html shouldContain "data-key=\"ignored\""
+            html shouldContain "class=\"file ignored-file\""
+            // The header's warning counts the no-role file alone.
+            html shouldContain "data-stat=\"no-role\">1</span>"
+        }
+    }
+
+    "変更が ignore() したディレクトリだけなら警告を出さない" {
+        withRepository { repo ->
+            repo.commit("initial")
+            repo.write("sample/jvm/src/Foo.kt", "class Foo\n")
+            repo.commit("change")
+
+            val out = repo.dir.resolve("out")
+            ignoringArch.process(
+                DiffReport,
+                DiffReport.Args(before = "HEAD~1", after = "HEAD", markdownOutputFile = out.resolve("diff-report.md").path, htmlOutputFile = out.resolve("diff-report.html").path),
+                RealFileSystem(repo.dir),
+            ).getOrThrow()
+
+            val markdown = allMarkdown(out)
+            markdown shouldContain "0 of 2 roles touched, 1 file ignored."
+            markdown shouldNotContain "[!WARNING]"
+            markdown shouldNotContain "no role"
+            out.resolve("diff-report.files-in-no-role.md").exists() shouldBe false
+            val html = out.resolve("diff-report.html").readText()
+            html shouldContain "<div class=\"warn-stat\" hidden>"
+            html shouldNotContain "data-key=\"no-role\""
+            html shouldContain "data-collapsed-default=\"true\" data-files=\"1\" data-key=\"ignored\""
         }
     }
 

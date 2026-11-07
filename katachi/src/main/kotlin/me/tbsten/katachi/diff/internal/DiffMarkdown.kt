@@ -24,7 +24,7 @@ internal class MarkdownFileNames(val summary: String) {
 internal fun renderDiffMarkdown(model: DiffReportModel, names: MarkdownFileNames): Map<String, String> {
     val roles = model.nodes.flatMap { it.roles() }.filter { it.changed }
     val listings = buildMap {
-        if (roles.isNotEmpty()) put(names.filesByRole, filesByRole(model, roles, names))
+        if (roles.isNotEmpty() || model.ignored.isNotEmpty()) put(names.filesByRole, filesByRole(model, roles, names))
         if (model.unassigned.isNotEmpty()) put(names.filesInNoRole, filesInNoRole(model, names))
     }
     return mapOf(names.summary to summary(model, touched = roles.size, listings = listings.keys, names)) + listings
@@ -32,11 +32,12 @@ internal fun renderDiffMarkdown(model: DiffReportModel, names: MarkdownFileNames
 
 private fun summary(model: DiffReportModel, touched: Int, listings: Set<String>, names: MarkdownFileNames): String = buildString {
     val unassigned = if (model.unassigned.isEmpty()) "" else ", ${files(model.unassigned.size)} in no role"
+    val ignored = if (model.ignored.isEmpty()) "" else ", ${files(model.ignored.size)} ignored"
     appendLine("# Architecture diff report: ${model.range.label}")
     appendLine()
     appendLine(
         "${files(model.changes.size)} changed, +${model.added} -${model.deleted}. " +
-            "$touched of ${model.nodes.sumOf { it.roles().size }} roles touched$unassigned.",
+            "$touched of ${model.nodes.sumOf { it.roles().size }} roles touched$unassigned$ignored.",
     )
     appendLine()
     if (model.hiddenCount > 0) {
@@ -66,9 +67,22 @@ private fun summary(model: DiffReportModel, touched: Int, listings: Set<String>,
             for (change in shown) appendLine(fileSummaryRow(change.path, change, change.total.toDouble(), full, depth = 1))
             moreSummaryRow(model.unassigned.size - shown.size, depth = 1)
         }
+        if (model.ignored.isNotEmpty()) {
+            appendLine(
+                "| **(ignored)** | | ${diffLines(model.ignored.sumOf { it.added }, model.ignored.sumOf { it.deleted })} | " +
+                    "${model.ignored.size} |",
+            )
+            val shown = model.ignored.filter { it in model.shown }
+            for (change in shown) appendLine(fileSummaryRow(change.path, change, change.total.toDouble(), full, depth = 1))
+            moreSummaryRow(model.ignored.size - shown.size, depth = 1)
+        }
         appendLine()
         appendLine("_Importance: diff lines × weight, out of $full (${heatSquares(HEAT_LEVELS)} at $full or more)._")
         appendLine()
+        if (model.ignored.isNotEmpty()) {
+            appendLine("_(ignored): ${IGNORED_NOTE}_")
+            appendLine()
+        }
     }
     // Every role appears once: a changed one in the table above (its files in the listing), an
     // unchanged one in this tree, under its groups, so the tree's leaves are always roles.
@@ -104,7 +118,22 @@ private fun filesByRole(model: DiffReportModel, roles: List<DiffNode.RoleNode>, 
         appendLine("</details>")
         appendLine()
     }
+    // Folded: these are changes the definition chose not to look at, kept only so that no changed file goes missing.
+    if (model.ignored.isNotEmpty()) {
+        appendLine("<details><summary><b>Ignored</b> ${files(model.ignored.size)}</summary>")
+        appendLine()
+        appendLine("_${IGNORED_NOTE}_")
+        appendLine()
+        val shown = model.ignored.filter { it in model.shown }
+        fileTable(shown.map { fileRow(it.path, it, model.range) }, hidden = model.ignored.size - shown.size)
+        appendLine("</details>")
+        appendLine()
+    }
 }
+
+// A directory `ignore()` leaves out is skipped by the architecture test too, so no warning: it will not fail on these.
+private const val IGNORED_NOTE: String =
+    "Files under a directory `ignore()` leaves out of the layout. The architecture test does not look at them."
 
 // Files no layout { } allows are changes no role owns: keep them in view rather than folded away.
 private fun filesInNoRole(model: DiffReportModel, names: MarkdownFileNames): String = buildString {
