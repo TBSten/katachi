@@ -100,14 +100,26 @@ Keep all three headings. When a group has nothing, write "None" instead of remov
 
 ### Components
 
-Pick names from this list. "Scope" is the word used as the scope in a ticket name `type(scope): summary`.
+Pick names from this list. "Scope" is the word used as the scope in a ticket name `type(scope): summary`. For core, "Where" is the package under `katachi/src/main/kotlin/me/tbsten/katachi/`.
 
 | Component | What it covers | Where | Scope |
 |---|---|---|---|
-| core | DSL (architecture, layout, Role), checking (assert, baseline, SARIF), built-in processors | `katachi/` | `core` |
-| └ katachiDocs | Documentation generation (built-in processor) | `katachi/` | `core` |
-| └ katachiTemplate | Code generation (built-in processor) | `katachi/` | `core` |
-| └ katachiDiff | Diff report and pull request comment (built-in processor) | `katachi/` | `diff` |
+| core | The katachi library itself | `katachi/` | `core` |
+| └ DSL | The API for writing an architecture definition | `dsl/` | `core` |
+| 　└ architecture | `architecture { }`, the entry point of a definition | `dsl/` | `core` |
+| 　└ role / group | Role, group, metadata, naming, example | `dsl/` | `core` |
+| 　└ layout | `layout { }`, selecting files, `gradle()`, modules | `dsl/`, `dsl/files/`, `dsl/gradle/` | `core` |
+| 　└ fileConstraint | Constraints on file contents (what konsist and konture build on) | `dsl/` | `core` |
+| 　└ template | `.template { }`, template sets | `dsl/` | `core` |
+| └ checking | assert, validate, the shape of violations, Severity, layout warnings | `check/` | `core` |
+| 　└ baseline | Reading and writing the baseline, stale entries | `check/`, `dsl/` | `core` |
+| 　└ SARIF | The SARIF report | `report/` | `core` |
+| └ processor API | `ArchitectureProcessor`, processor arguments, composition, running | `processor/` | `core` |
+| └ IDE integration | The definition JSON the IDE plugin reads | `ide/` | `core` |
+| └ built-in processors | The processors katachi ships with | | |
+| 　└ katachiDocs | Documentation generation | `docs/` | `core` |
+| 　└ katachiTemplate | Code generation from templates | `template/` | `core` |
+| 　└ katachiDiff | Diff report and pull request comment | `diff/` | `diff` |
 | konsist | `ktFileContent`, `konsist { }` | `katachi-konsist/` | `konsist` |
 | konture | `konture { }` | `katachi-konture/` | `konture` |
 | Gradle plugin | Tasks, `katachi { }` | `katachi-gradle-plugin/` | `gradle` |
@@ -118,7 +130,7 @@ Pick names from this list. "Scope" is the word used as the scope in a ticket nam
 | CI / development | Workflows, pull request template, CONTRIBUTING, architecture-test, benchmark, `tool/` | `.github/`, `architecture-test/`, `benchmark/`, `tool/` and so on | `ci` |
 | sample | The samples | `sample/` | `sample` |
 
-katachiDocs, katachiTemplate and katachiDiff are processors inside core, so as components they belong to core. Name a part inside core at the head of the location, joined with "›" (for example, under core: `update: katachiDiff › Importance … measured against a fixed 400 lines`).
+katachiDocs, katachiTemplate and katachiDiff are processors inside core, so as components they belong to core. Name a part inside core by its innermost name in the list, at the head of the location and joined with "›" (for example, under core: `update: katachiDiff › Importance … measured against a fixed 400 lines`). There is no need to trace it from the outside, as in `DSL › layout ›`.
 
 ### Kinds of change
 
@@ -127,7 +139,7 @@ katachiDocs, katachiTemplate and katachiDiff are processors inside core, so as c
 | `new` | Something that can now be done | CLI / `new: hoge command` |
 | `update` | The look, behavior or default of an existing feature changes | core / `update: katachiDiff › Importance … measured against a fixed 400 lines` |
 | `fix` | A bug was fixed; behavior just returns to what is correct | core / `fix: katachiDiff › ignore() locations … not counted as no role` |
-| `delete` | A feature or API was removed | core / `delete: DSL › .module { } … removes the deprecated API` |
+| `delete` | A feature or API was removed | core / `delete: layout › .module { } … removes the deprecated API` |
 
 When users must rewrite their code or definitions to compile or to keep the check green, add `!` after the kind (`update!`, `delete!` and so on) and always put a Before / After right below it. That Before / After is reused as-is for the migration steps in the release notes.
 

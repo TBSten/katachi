@@ -101,14 +101,26 @@ PR・チケット・調査レポートでは、変更の影響範囲を次の形
 
 ### コンポーネント
 
-名前は次の一覧から選ぶ。「対象」はチケット名 `種別(対象): 内容` の対象に使う言葉。
+名前は次の一覧から選ぶ。「対象」はチケット名 `種別(対象): 内容` の対象に使う言葉。core の「場所」は `katachi/src/main/kotlin/me/tbsten/katachi/` から見たパッケージ。
 
 | コンポーネント | 中身 | 場所 | 対象 |
 |---|---|---|---|
-| core | DSL（architecture・layout・Role）、検査（assert・baseline・SARIF）、built-in processors | `katachi/` | `core` |
-| └ katachiDocs | ドキュメント生成（built-in processor） | `katachi/` | `core` |
-| └ katachiTemplate | コード生成（built-in processor） | `katachi/` | `core` |
-| └ katachiDiff | 差分レポート・PR コメント（built-in processor） | `katachi/` | `diff` |
+| core | katachi 本体のライブラリ | `katachi/` | `core` |
+| └ DSL | アーキテクチャ定義を書くための API | `dsl/` | `core` |
+| 　└ architecture | `architecture { }`・定義の入口 | `dsl/` | `core` |
+| 　└ role・group | Role・group・metadata・naming・example | `dsl/` | `core` |
+| 　└ layout | `layout { }`・ファイルの選び方・`gradle()`・module | `dsl/`・`dsl/files/`・`dsl/gradle/` | `core` |
+| 　└ fileConstraint | ファイルの中身への制約（konsist・konture が乗る土台） | `dsl/` | `core` |
+| 　└ template | `.template { }`・template set | `dsl/` | `core` |
+| └ 検査 | assert・validate・違反の形・Severity・layout の警告 | `check/` | `core` |
+| 　└ baseline | baseline の読み書き・古くなったエントリ | `check/`・`dsl/` | `core` |
+| 　└ SARIF | SARIF レポート | `report/` | `core` |
+| └ processor API | `ArchitectureProcessor`・processor の引数・組み合わせ・実行 | `processor/` | `core` |
+| └ IDE 連携 | IDE plugin が読む定義 JSON | `ide/` | `core` |
+| └ built-in processors | katachi が最初から持つ processor | | |
+| 　└ katachiDocs | ドキュメント生成 | `docs/` | `core` |
+| 　└ katachiTemplate | テンプレートからのコード生成 | `template/` | `core` |
+| 　└ katachiDiff | 差分レポート・PR コメント | `diff/` | `diff` |
 | konsist | `ktFileContent`・`konsist { }` | `katachi-konsist/` | `konsist` |
 | konture | `konture { }` | `katachi-konture/` | `konture` |
 | Gradle plugin | タスク・`katachi { }` | `katachi-gradle-plugin/` | `gradle` |
@@ -119,7 +131,7 @@ PR・チケット・調査レポートでは、変更の影響範囲を次の形
 | CI・開発 | workflow・PR テンプレート・CONTRIBUTING・architecture-test・benchmark・`tool/` | `.github/`・`architecture-test/`・`benchmark/`・`tool/` ほか | `ci` |
 | sample | サンプル | `sample/` | `sample` |
 
-katachiDocs・katachiTemplate・katachiDiff は core の中の processor なので、コンポーネントとしては core に入れる。core の中の部品は、箇所の頭に「›」でつないで書く（例: core の下に `update: katachiDiff › Importance … 基準値 400 行で測る`）。
+katachiDocs・katachiTemplate・katachiDiff は core の中の processor なので、コンポーネントとしては core に入れる。core の中の部品は、一覧のいちばん内側の名前を箇所の頭に「›」でつないで書く（例: core の下に `update: katachiDiff › Importance … 基準値 400 行で測る`。`DSL › layout ›` のように外側からたどらなくてよい）。
 
 ### 変更の種類
 
@@ -128,7 +140,7 @@ katachiDocs・katachiTemplate・katachiDiff は core の中の processor なの�
 | `new` | 新しくできたこと | CLI / `new: hoge コマンド` |
 | `update` | 今ある機能の見た目・挙動・既定値が変わる | core / `update: katachiDiff › Importance … 基準値 400 行で測る` |
 | `fix` | バグを直した。正しい挙動に戻るだけ | core / `fix: katachiDiff › ignore() の場所 … no role と数えない` |
-| `delete` | 機能・API を消した | core / `delete: DSL › .module { } … 非推奨 API を削除` |
+| `delete` | 機能・API を消した | core / `delete: layout › .module { } … 非推奨 API を削除` |
 
 利用者のコードや定義を書き換えないとコンパイルが通らない・検査が赤くなる変更は、種類の後ろに `!` を付け（`update!`・`delete!` など）、すぐ下に Before / After を必ず書く。書いた Before / After はそのままリリースノートの移行手順に使う。
 
