@@ -11,7 +11,7 @@ A comment body is capped at 65,536 characters by GitHub. When the listings do no
 left out and the comment says so; the summary table is what a reviewer needs first.
 
 Usage:
-    .github/scripts/diff-report-comment.py <dir with diff-report*.md> --head <sha> --run-url <url> [--marker <text>]
+    assemble-comment.py <dir with diff-report*.md> --head <sha> --run-url <url> [--marker <text>] [--reproduce <command>]
 
 Writes the comment body to standard output. The marker is the first line, so a later run can find
 and remove this comment.
@@ -75,6 +75,11 @@ def main():
     parser.add_argument("--head", required=True, help="the head commit the report was made for")
     parser.add_argument("--run-url", required=True, help="the workflow run, where the artifact with the HTML report is")
     parser.add_argument("--marker", default="<!-- katachi-diff-report -->", help="first line of the comment")
+    parser.add_argument(
+        "--reproduce",
+        default="./gradlew katachiDiff --arg pr=<number>",
+        help="the command a reader runs to make the same report locally, shown in the comment's last line",
+    )
     args = parser.parse_args()
 
     summary_path = os.path.join(args.directory, SUMMARY)
@@ -92,7 +97,7 @@ def main():
         "",
         f"<sub>katachiDiff on head `{args.head[:7]}` · base = the pull request's base, after = its head · "
         f"HTML report in the [run's artifact]({args.run_url}) · "
-        "`./gradlew :architecture-test:katachiDiff --arg pr=<number>` to reproduce</sub>",
+        f"`{args.reproduce}` to reproduce</sub>",
         "",
     ]
 

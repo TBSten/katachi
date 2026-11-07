@@ -7,6 +7,7 @@ fun DeclarationContainerScope.toolGroup() = "tool".group {
     title = "ツール設定"
 
     ci()
+    gitHubAction()
     agentRule()
     git()
     ideRunConfiguration()
