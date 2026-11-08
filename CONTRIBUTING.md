@@ -159,7 +159,7 @@ Pick names from this list. "Scope" is the word used as the scope in a ticket nam
 | script | The DSL for `*.main.kts` / `*.katachi.kts` | `katachi-script/src/` | `script` |
 | IDE plugin | Gutter, tool window, MCP | `katachi-intellij-plugin/` | `ide` |
 | docs | The documentation site, README | `docs/`, `README*.md` | `docs` |
-| CI / development | Workflows, pull request template, CONTRIBUTING, architecture-test, benchmark, `tool/` (not the actions given to users: those are Actions) | `.github/`, `architecture-test/`, `benchmark/`, `tool/` and so on | `ci` |
+| CI / development (no user impact) | Workflows, pull request template, CONTRIBUTING, architecture-test, benchmark, `tool/` (not the actions given to users: those are Actions) | `.github/`, `architecture-test/`, `benchmark/`, `tool/` and so on | `ci` |
 | sample | The samples | `sample/` | `sample` |
 
 katachiDocs, katachiTemplate and katachiDiff are processors inside core, so as components they belong to core. Name a part inside core by its innermost name in the list, at the head of the location and joined with "›" (for example, under core: `update: katachiDiff › Importance … measured against a fixed 400 lines`). There is no need to trace it from the outside, as in `DSL › layout ›`.
