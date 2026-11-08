@@ -111,3 +111,8 @@ starlight-tabs .tab > [role='tab'] {
 	margin-inline: 0.5rem;
 	padding-block: 0.25rem;
 }
+
+/* MDX が summary の前に空の p を挟むので、Steps の中では summary に上の余白が付き、上下の余白がずれる */
+.sl-markdown-content details > summary {
+	margin-top: 0;
+}

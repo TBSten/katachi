@@ -143,7 +143,7 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
 
         Use Kotlin **2.2 or later**. Earlier Kotlin versions cannot read the metadata of katachi's libraries.
 
-        `ktFile()`, `ktFileContent { }` and others are declared with context parameters. **Below Kotlin 2.4** they cannot be called without the following option (do not add it on 2.4 or later; it causes a warning).
+        `ktFile()`, `ktFileContent { }` and others are declared with context parameters. **Below Kotlin 2.4** they cannot be called without the following option.
 
         ```kotlin title="architecture-test/build.gradle.kts"
         kotlin {
