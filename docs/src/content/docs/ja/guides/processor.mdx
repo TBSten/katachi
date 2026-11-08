@@ -67,7 +67,7 @@ flowchart LR
 
 ## ビルトインの ArchitectureProcessor
 
-katachi は 5 つの ArchitectureProcessor を提供しています。
+katachi は 6 つの ArchitectureProcessor を提供しています。
 
 <table>
     <thead>
@@ -102,6 +102,11 @@ katachi は 5 つの ArchitectureProcessor を提供しています。
             <td><code>DescribeTemplates</code></td>
             <td><code>{".template { }"}</code> を持つ宣言の一覧や、1つのテンプレートのパラメータと生成されるファイルを表示します。ファイルは書きません。</td>
             <td><a href="/katachi/ja/guides/generate-code-from-template/">テンプレートからのコード生成</a></td>
+        </tr>
+        <tr>
+            <td><code>DiffReport</code><br />(<code>katachiDiff</code>)</td>
+            <td>Git の差分のファイルを Role / group に振り分け、変更がどこに影響するかを HTML と Markdown のレポートに書き出します。</td>
+            <td><a href="/katachi/ja/guides/diff-report/">Diff report</a></td>
         </tr>
     </tbody>
 </table>

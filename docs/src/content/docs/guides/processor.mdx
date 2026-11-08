@@ -67,7 +67,7 @@ The architecture definition itself doesn't execute anything. **It's `Architectur
 
 ## Built-in ArchitectureProcessors
 
-katachi ships with five ArchitectureProcessors.
+katachi ships with six ArchitectureProcessors.
 
 <table>
     <thead>
@@ -102,6 +102,11 @@ katachi ships with five ArchitectureProcessors.
             <td><code>DescribeTemplates</code></td>
             <td>Lists the declarations that have a <code>{".template { }"}</code>, or shows one template's parameters and the files it produces. It writes no files.</td>
             <td><a href="/katachi/guides/generate-code-from-template/">Generating code from a template</a></td>
+        </tr>
+        <tr>
+            <td><code>DiffReport</code><br />(<code>katachiDiff</code>)</td>
+            <td>Sorts the files in a Git diff into roles and groups, and writes an HTML and Markdown report of where the change lands.</td>
+            <td><a href="/katachi/guides/diff-report/">Diff report</a></td>
         </tr>
     </tbody>
 </table>
