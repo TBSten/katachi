@@ -90,7 +90,10 @@ class RunScriptSpec : FreeSpec({
         workdir.resolve("tmp/cache/index.md").readText() shouldContain "katachi check 0-1 0-2"
         workdir.resolve("tmp/cache/lang").readText() shouldBe "ja"
         workdir.resolve("tmp/katachi-install.sh").exists() shouldBe false
-        run.out shouldContain "KATACHI_CLI=katachi"
+        // The guide is written for the katachi command itself, so nothing is left to rewrite (KATACHI-287).
+        workdir.resolve("tmp/cache/index.md").readText() shouldNotContain "sh \$CLI"
+        workdir.resolve("tmp/cache/index.md").readText() shouldNotContain "/tmp/katachi-install.sh"
+        run.out shouldNotContain "KATACHI_CLI="
         run.out shouldContain "KATACHI_KOTLIN=2.4.10"
         run.out.trimEnd().lines().last() shouldStartWith "次: katachi check 0-1 0-2"
     }

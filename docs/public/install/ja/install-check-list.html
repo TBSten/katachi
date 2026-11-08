@@ -724,7 +724,7 @@
         },
         {
           "id": "0-2",
-          "label": "sh katachi-install.sh init を実行した（Gradle ルート / Git / 作業用ディレクトリ / バージョン検出はこれが行う）",
+          "label": "katachi init を実行した（Gradle ルート / Git / 作業用ディレクトリ / バージョン検出はこれが行う）",
           "done": false
         }
       ]
@@ -746,7 +746,7 @@
         },
         {
           "id": "1-3",
-          "label": "sh katachi-install.sh preferences で書き方の方針を聞いて記録した",
+          "label": "katachi preferences で書き方の方針を聞いて記録した",
           "done": false
         }
       ]
@@ -758,7 +758,7 @@
       "items": [
         {
           "id": "2-1",
-          "label": "sh katachi-install.sh scaffold --package <パッケージ名> を実行した",
+          "label": "katachi scaffold --package <パッケージ名> を実行した",
           "done": false
         },
         {
@@ -892,7 +892,7 @@
         },
         {
           "id": "0-2",
-          "label": "sh katachi-install.sh init を実行した（Gradle ルート / Git / 作業用ディレクトリ / バージョン検出はこれが行う）",
+          "label": "katachi init を実行した（Gradle ルート / Git / 作業用ディレクトリ / バージョン検出はこれが行う）",
           "done": true
         }
       ]
@@ -914,7 +914,7 @@
         },
         {
           "id": "1-3",
-          "label": "sh katachi-install.sh preferences で書き方の方針を聞いて記録した",
+          "label": "katachi preferences で書き方の方針を聞いて記録した",
           "done": true
         }
       ]
@@ -926,7 +926,7 @@
       "items": [
         {
           "id": "2-1",
-          "label": "sh katachi-install.sh scaffold \u002d\u002dpackage <パッケージ名> を実行した",
+          "label": "katachi scaffold \u002d\u002dpackage <パッケージ名> を実行した",
           "done": true
         },
         {
@@ -1120,7 +1120,7 @@
 
   <section class="block" id="questions">
     <h2>ユーザに確認したいこと<span class="count-badge" data-render="questionCount"></span><span class="count-badge answered-badge" data-render="answeredCount"></span></h2>
-    <p class="lede">各項目で選択肢を選ぶか、自由に書いてください。両方あれば自由記入は補足になります。書き終えたら「回答を書き出す」で JSON を保存し、AI エージェントに渡してください（<code>sh katachi-install.sh answers import &lt;json&gt;</code>）。</p>
+    <p class="lede">各項目で選択肢を選ぶか、自由に書いてください。両方あれば自由記入は補足になります。書き終えたら「回答を書き出す」で JSON を保存し、AI エージェントに渡してください（<code>katachi answers import &lt;json&gt;</code>）。</p>
     <div class="answer-actions" data-render="answerActions"></div>
     <div data-render="questions"></div>
   </section>
@@ -1464,7 +1464,7 @@
   // { id, recommendation, radios, free, card }
   var answerCards = [];
 
-  // チェックリストの確認事項の id は q<n>（レポートは cq<n>。katachi-install.sh の QUESTION_ID_PY と同じ）
+  // チェックリストの確認事項の id は q<n>（レポートは cq<n>。katachi-script の Checklist.kt の Target と同じ）
   function questionId(item, index) {
     return blank(item.id) ? 'q' + (index + 1) : String(item.id);
   }
@@ -1569,7 +1569,7 @@
       a.click();
       document.body.removeChild(a);
       setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-      setAnswerStatus(ANSWER_FILE + ' を保存しました。sh katachi-install.sh answers import <保存したファイル> で取り込めます。');
+      setAnswerStatus(ANSWER_FILE + ' を保存しました。katachi answers import <保存したファイル> で取り込めます。');
     } catch (error) {
       showManualAnswers(text, 'ダウンロードできませんでした。下の JSON を手で選んでコピーし、AI エージェントに渡してください。');
     }

@@ -47,21 +47,14 @@ tasks.processResources {
 }
 
 // The guide and the two templates `init` places and `guide` reads, bundled so that neither needs
-// the network (KATACHI-228). They are written for the install kit, so its commands are rewritten
-// into `katachi <subcommand>` on the way: `sh $CLI init` in the guide, `sh katachi-install.sh check`
-// in the pages. The prose that explains the kit itself (chapter 0) is left for people to rewrite.
+// the network (KATACHI-228). They are written for the `katachi` command (KATACHI-287), so they are
+// copied as they are.
 val bundleInstallKit = tasks.register<Sync>("bundleInstallKit") {
-    description = "Copies the install guide and templates from docs/public/install into the resources, with the kit's commands rewritten."
+    description = "Copies the install guide and templates from docs/public/install into the resources."
     from(rootProject.layout.projectDirectory.dir("docs/public/install")) {
         include("ja/index.md", "en/index.md")
         include("ja/install-check-list.html", "en/install-check-list.html")
         include("ja/project-code-base-report-template.html", "en/project-code-base-report-template.html")
-        filter { line: String ->
-            line.replace("sh \$CLI ", "katachi ")
-                .replace("sh /tmp/katachi-install.sh ", "katachi ")
-                .replace("sh <KATACHI_CLI> ", "katachi ")
-                .replace("sh katachi-install.sh ", "katachi ")
-        }
     }
     into(layout.buildDirectory.dir("generated/installKit/META-INF/katachi-script/install"))
 }
