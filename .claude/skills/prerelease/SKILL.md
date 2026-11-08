@@ -33,7 +33,7 @@ flowchart LR
     CI --> N["10-1. IDE プラグインの nightly 相当<br/>run-ide-plugin-nightly.py"]
     N --> E2["10-2. IDE プラグインの E2E<br/>run-ide-plugin-e2e.py"]
     E2 -- " Gradle を空ける " --> D & B
-    B -- " Gradle を空ける " --> IK["9-1. インストールキット<br/>check-install-kit.sh"]
+    B -- " Gradle を空ける " --> IK["9-1. インストールキット<br/>build-katachi-cli.sh → check-install-kit.sh"]
     IK --> IE["9-2. 統合テスト<br/>手順書どおりに導入 ja / en<br/>＋手順書のレビュー"]
     V1 & V2 & V3 & R & D & DR & TX & C1 & C2 & C3 & CI & N & E2 & IE --> Rep["7. 報告"]
 ```
@@ -147,12 +147,13 @@ priority 10 の警告。結果は `ci-checks.md`、ログは `tmp/ci-checks/`。
 
 ## 9. インストールキットのチェック
 
-- 9-1: 先に `check-install-kit-smoke.sh`（Gradle 無し。3〜5 分）でサブコマンドの振る舞いを確かめ、次に `check-install-kit.sh` で
-  `docs/public/install/katachi-install.sh` を合成の Gradle プロジェクト（fixture。16 種）で動かし、
-  init → scaffold → `:<検査用モジュール>:test` が「Unexpected だけで落ちる」（配線は正しい）かを確かめる。
+- 9-1: `build-katachi-cli.sh` で katachi コマンド（brew で配るのと同じ形の `bin/katachi`）を組み、先に `check-install-kit-smoke.sh`
+  （fixture の Gradle は起動しない。5〜10 分）でサブコマンドの振る舞いを確かめ、次に `check-install-kit.sh` で
+  合成の Gradle プロジェクト（fixture。16 種）に `katachi agent init` → `katachi scaffold` → `katachi agent test` を通し、
+  「Unexpected だけで落ちる」（配線は正しい）かを確かめる。
   オーケストレータが自分で走らせてよい。1つでも NG なら priority 10 の警告。結果は `install-kit.md`、fixture とログは `tmp/install-kit/`。
 - 9-2: 統合テスト。subagent（opus）が AI エージェントとして手順書（ja / en）どおりに実在のプロジェクトの写しへ最後まで導入し、
-  もう1体が手順書・スクリプト・チェックリストの食い違いを読んで確かめる。**手順書が適切か**を見る。結果は `install-e2e.md`。
+  もう1体が手順書・katachi コマンド・チェックリストの食い違いを読んで確かめる。katachi コマンドは 9-1 で組んだ今回の版を使う。**手順書が適切か**を見る。結果は `install-e2e.md`。
   6-1 の配信を配信元に使うので、9-2 が終わるまで配信を止めない。
 
 詳細: [references/install-kit.md](references/install-kit.md)

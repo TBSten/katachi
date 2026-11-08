@@ -1,13 +1,17 @@
 #!/bin/sh
-# リリース前チェックの 9（インストールキットのチェック）。
+# リリース前チェックの 9-1（インストールキットのチェック）。
 #
-# docs/public/install/katachi-install.sh を、合成の Gradle プロジェクト（fixture。定義は install-kit-fixtures.sh）で
-# 実際に動かし、init → scaffold → ./gradlew :architecture-test:test が「配線は正しい」状態になるかを確かめる。
+# katachi コマンド（katachi-script の CLI。brew で入るものと同じ形）を、合成の Gradle プロジェクト（fixture。定義は
+# install-kit-fixtures.sh）で手順書どおりに動かし、katachi agent init → katachi scaffold → katachi agent test が
+# 「配線は正しい」状態になるかを確かめる。
 #
-#   1. sh -n と /bin/bash -n（macOS の bash 3.2）で katachi-install.sh の構文を確かめる
-#   2. リポジトリの katachi を mavenLocal に publish する（fixture は KATACHI_MAVEN_LOCAL=1 でそれを使う）
+#   1. katachi コマンドを組む（build-katachi-cli.sh: publishToMavenLocal と :katachi-script:cliDist）。
+#      --cli で渡したときは組まない（publishToMavenLocal は fixture が mavenLocal から katachi を取るのに要るので、
+#      --skip-publish を付けない限り回す）
+#   2. katachi --version がリポジトリの版か（古い build や brew の別の版を回していないか）を確かめる
 #   3. fixture ごとに（順番に。Gradle を重ねない）:
-#      - KATACHI_DOCS=file://<repo>/docs/public で init --lang <ja|en> --katachi <今回の版> → scaffold
+#      - KATACHI_DOCS=file://<repo>/docs/public・KATACHI_MAVEN_LOCAL=1 で
+#        katachi agent init --lang <ja|en> --katachi <今回の版> → katachi scaffold
 #        （--lang は既定 ja。en を渡すと、出力に日本語が残っていないかも確かめる）
 #        （手順書どおり、init が Kotlin の版を検出できなかったときだけ scaffold に --kotlin を渡す）
 #        （fx_module_dir_<名前> がある fixture は init --module-dir <path>。init が出す KATACHI_MODULE_DIR /
@@ -16,34 +20,36 @@
 #      - settings に検査用モジュールの include が1回だけ、正しい位置（最後の include 文の直後）に入ったか
 #      - settings に dependencyResolutionManagement が無ければ、scaffold の警告どおり mavenLocal() と
 #        mavenCentral() を足す（fixture に repositories が無いと依存を解決できないため）
-#      - ./gradlew <KATACHI_MODULE_PATH>:test が「Unexpected だけで落ちる」なら配線は OK
+#      - katachi agent test（中で ./gradlew <KATACHI_MODULE_PATH>:test）が「Unexpected だけで落ちる」なら配線は OK
 #        （architecture { } が空なので、定義していないファイルが Unexpected になって落ちるのが正常）。
 #        構文エラー・プラグインの衝突・解決できない・Unexpected 以外の違反で落ちたら NG。通ってしまっても NG
-#      - ルートにファイルを1つ足し、--rerun なしでもう一度 test を走らせる。test タスクが UP-TO-DATE にならずに
-#        実行され、足したファイルが Unexpected として出れば OK（入力にファイルの並びが効いている）
+#      - ルートにファイルを1つ足し、--rerun なしでもう一度 katachi agent test を走らせる。test タスクが UP-TO-DATE に
+#        ならずに実行され、足したファイルが Unexpected として出れば OK（入力にファイルの並びが効いている）
 #   4. <release-dir>/install-kit.md に結果の表を書く。fixture は <release-dir>/tmp/install-kit/fixtures/、
 #      ログは <release-dir>/tmp/install-kit/logs/（作業場所の直下には人が読む成果物だけを置く）
 #      --lang en や --only を付けた実行は、install-kit-en.md / install-kit-only-<fixture>.md のように名前に付けて別に残す
 #      （ja で全 fixture の結果を上書きしないため）
 #
-# 終了コード: 全部 OK なら 0、1つでも NG なら 1、引数の誤りは 2。
+# 終了コード: 全部 OK なら 0、1つでも NG なら 1、引数の誤り・katachi コマンドが無いときは 2。
 #
 # 使い方（リポジトリの直下で。ほかの Gradle のビルドが走っていないことを pgrep -fl GradleWrapperMain で確かめてから）:
 #   sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/release-v<版>
 #   sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/release-v<版> --only agp,rootjvm
 #   sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/release-v<版> --skip-publish
 #   sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/release-v<版> --lang en --only agp
+#   sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/release-v<版> --cli /opt/homebrew/bin/katachi
 #
 # 決まり: $(...) は使わない（リポジトリの決まり）。$VAR の直後に日本語を置かない（${VAR} で閉じる。bash 3.2 が食う）。
 set -u
 
 usage() {
 	cat <<'EOF'
-使い方: sh check-install-kit.sh --release-dir .local/release-v<版> [--only <fixture>,...] [--skip-publish] [--lang <ja|en>]
+使い方: sh check-install-kit.sh --release-dir .local/release-v<版> [--only <fixture>,...] [--skip-publish] [--lang <ja|en>] [--cli <path>]
   --release-dir   作業場所（結果は <dir>/install-kit.md、fixture とログは <dir>/tmp/install-kit/。--lang en / --only の実行は名前に付けて別に残す）
   --only          指定した fixture だけ走らせる（カンマ区切り）
-  --skip-publish  publishToMavenLocal を飛ばす（直前に publish 済みのとき）
+  --skip-publish  katachi コマンドを組まない（publishToMavenLocal と cliDist。直前に build-katachi-cli.sh を回したとき）
   --lang          init に渡す言語（既定 ja）。en のときは init / scaffold の出力に日本語が残っていないかも見る
+  --cli           katachi コマンド（既定 katachi-script/build/cli/katachi-cli-<版>/bin/katachi。build-katachi-cli.sh が組む）
 EOF
 }
 
@@ -51,12 +57,14 @@ RELEASE_DIR=""
 ONLY=""
 SKIP_PUBLISH="no"
 LANG_ARG="ja"
+KATACHI=""
 while [ $# -gt 0 ]; do
 	case "$1" in
 	--release-dir) RELEASE_DIR="${2:?--release-dir に値がありません}"; shift 2 ;;
 	--only) ONLY="${2:?--only に値がありません}"; shift 2 ;;
 	--skip-publish) SKIP_PUBLISH="yes"; shift ;;
 	--lang) LANG_ARG="${2:?--lang に値がありません}"; shift 2 ;;
+	--cli) KATACHI="${2:?--cli に値がありません}"; shift 2 ;;
 	-h | --help) usage; exit 0 ;;
 	*) usage >&2; exit 2 ;;
 	esac
@@ -70,7 +78,6 @@ case "${RELEASE_DIR}" in
 *) RELEASE_DIR="${REPO}/${RELEASE_DIR}" ;;
 esac
 SCRIPTS="${REPO}/.claude/skills/prerelease/scripts"
-KIT="${REPO}/docs/public/install/katachi-install.sh"
 # 既定（ja で全 fixture）以外の実行は、名前に言語と --only を含める。再実行が全件の結果を上書きしないように。
 SUFFIX=""
 [ "${LANG_ARG}" = "ja" ] || SUFFIX="${SUFFIX}-${LANG_ARG}"
@@ -95,6 +102,14 @@ AGP=`toml_value agp "${REPO}/sample/android/gradle/sample.versions.toml"`
 	exit 2
 }
 
+# katachi コマンド。--cli が無ければ build-katachi-cli.sh が組む場所（cliDist の出力）。
+CLI_GIVEN="yes"
+if [ -z "${KATACHI}" ]; then
+	CLI_GIVEN="no"
+	KATACHI="${REPO}/katachi-script/build/cli/katachi-cli-${VERSION}/bin/katachi"
+fi
+case "${KATACHI}" in /*) ;; */*) KATACHI="`pwd`/${KATACHI}" ;; esac
+
 . "${SCRIPTS}/install-kit-fixtures.sh"
 if [ -n "${ONLY}" ]; then
 	for fx in `echo "${ONLY}" | tr ',' ' '`; do
@@ -114,29 +129,38 @@ NG=0
 OK_COUNT=0
 TOTAL=0
 
-# ---- 1. 構文 -------------------------------------------------------------------------------
-SYNTAX="OK"
-{
-	echo "### sh -n"
-	sh -n "${KIT}" 2>&1 || SYNTAX="NG"
-	echo "### /bin/bash -n"
-	/bin/bash --version | head -1
-	/bin/bash -n "${KIT}" 2>&1 || SYNTAX="NG"
-} >"${LOGS}/syntax.log" 2>&1
-echo "構文: ${SYNTAX}"
-[ "${SYNTAX}" = "OK" ] || NG=1
-
-# ---- 2. publish ----------------------------------------------------------------------------
+# ---- 1. katachi コマンドを組む（publishToMavenLocal と cliDist）-------------------------------
 PUBLISH="OK"
 if [ "${SKIP_PUBLISH}" = "yes" ]; then
 	PUBLISH="飛ばした（--skip-publish）"
 else
-	echo "publishToMavenLocal ..."
-	(cd "${REPO}" && ./gradlew publishToMavenLocal -Pkatachi.skipSigning --no-daemon --console=plain \
-		--project-cache-dir .local/tmp/gradle-cache/prerelease-install) >"${LOGS}/publish.log" 2>&1 || PUBLISH="NG"
-	echo "publish: ${PUBLISH}"
+	echo "katachi コマンドを組む（publishToMavenLocal・:katachi-script:cliDist）..."
+	sh "${SCRIPTS}/build-katachi-cli.sh" >"${LOGS}/publish.log" 2>&1 || PUBLISH="NG"
+	echo "build: ${PUBLISH}"
 	[ "${PUBLISH}" = "NG" ] && NG=1
 fi
+
+# ---- 2. katachi --version ------------------------------------------------------------------
+CLI_CHECK="OK"
+{
+	echo "### ${KATACHI} --version"
+	"${KATACHI}" --version
+	echo "exit=$?"
+} >"${LOGS}/cli-version.log" 2>&1
+if ! grep -q "^exit=0" "${LOGS}/cli-version.log"; then
+	CLI_CHECK="NG: 動かない"
+elif ! grep -v '^###' "${LOGS}/cli-version.log" | grep -qF "${VERSION}"; then
+	CLI_CHECK="NG: 版が ${VERSION} ではない"
+fi
+echo "katachi コマンド: ${CLI_CHECK}（${KATACHI}）"
+case "${CLI_CHECK}" in
+NG*)
+	NG=1
+	if [ "${CLI_GIVEN}" = "no" ] && [ "${SKIP_PUBLISH}" = "yes" ]; then
+		echo "  --skip-publish を外すか、先に sh .claude/skills/prerelease/scripts/build-katachi-cli.sh を回してください" >&2
+	fi
+	;;
+esac
 
 # ---- 3. fixture ごと -----------------------------------------------------------------------
 
@@ -146,9 +170,10 @@ find_jdk21() {
 	for _c in "${JAVA_HOME:-}" "`/usr/libexec/java_home -v 21 2>/dev/null`" \
 		/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home /opt/homebrew/opt/openjdk@21 \
 		"${HOME}"/.gradle/jdks/*21*/Contents/Home "${HOME}"/.gradle/jdks/*21* \
-		"${HOME}"/Library/Java/JavaVirtualMachines/*21*/Contents/Home /Library/Java/JavaVirtualMachines/*21*/Contents/Home; do
+		"${HOME}"/Library/Java/JavaVirtualMachines/*21*/Contents/Home /Library/Java/JavaVirtualMachines/*21*/Contents/Home \
+		/usr/lib/jvm/*21*; do
 		[ -n "${_c}" ] && [ -x "${_c}/bin/java" ] || continue
-		_v=`"${_c}/bin/java" -version 2>&1 | head -1 | sed -n 's/.*version "\([0-9]*\).*/\1/p'`
+		_v=`"${_c}/bin/java" -version 2>&1 | grep 'version "' | head -1 | sed -n 's/.*version "\([0-9]*\).*/\1/p'`
 		if [ "${_v}" = "21" ]; then
 			echo "${_c}"
 			return 0
@@ -201,6 +226,8 @@ run_fixture() { # $1 = fixture
 	setup_log="${LOGS}/${fx}-setup.log"
 	t1_log="${LOGS}/${fx}-test1.log"
 	t2_log="${LOGS}/${fx}-test2.log"
+	t1_gradle="${LOGS}/${fx}-test1-gradle.log"
+	t2_gradle="${LOGS}/${fx}-test2-gradle.log"
 	INIT="-"; SCAFFOLD="-"; INC="-"; TEST="-"; RERUN="-"; NOTE=""
 	MODULE_DIR="architecture-test"; MODULE_PATH=":architecture-test"
 
@@ -220,12 +247,13 @@ run_fixture() { # $1 = fixture
 	export KATACHI_DOCS="file://${REPO}/docs/public"
 	export KATACHI_MAVEN_LOCAL=1
 	{
-		echo "### init --lang ${LANG_ARG} --katachi ${VERSION} ${module_dir_arg}"
-		(cd "$d" && sh "${KIT}" init --lang "${LANG_ARG}" --katachi "${VERSION}" ${module_dir_arg})
+		echo "### katachi agent init --lang ${LANG_ARG} --katachi ${VERSION} ${module_dir_arg}"
+		(cd "$d" && "${KATACHI}" agent init --lang "${LANG_ARG}" --katachi "${VERSION}" ${module_dir_arg})
 		echo "init exit=$?"
 	} >"${setup_log}" 2>&1
-	cli=`sed -n 's/^KATACHI_CLI=//p' "${setup_log}" | tail -1`
-	if grep -q "^init exit=0" "${setup_log}" && [ -n "${cli}" ] && [ -f "${cli}" ]; then
+	workdir=`sed -n 's/^KATACHI_WORKDIR=//p' "${setup_log}" | tail -1`
+	case "${workdir}" in /* | "") ;; *) workdir="$d/${workdir}" ;; esac
+	if grep -q "^init exit=0" "${setup_log}" && [ -n "${workdir}" ] && [ -d "${workdir}" ]; then
 		INIT="OK"
 	else
 		INIT="NG"
@@ -252,8 +280,8 @@ run_fixture() { # $1 = fixture
 		scaffold_args=`fx_scaffold_args_${fx}`
 	fi
 	{
-		echo "### scaffold --package com.example.fx ${kotlin_arg} ${scaffold_args}"
-		(cd "$d" && sh "${cli}" scaffold --package com.example.fx ${kotlin_arg} ${scaffold_args})
+		echo "### katachi scaffold --package com.example.fx ${kotlin_arg} ${scaffold_args}"
+		(cd "$d" && "${KATACHI}" scaffold --package com.example.fx ${kotlin_arg} ${scaffold_args})
 		echo "scaffold exit=$?"
 		echo "### git diff（settings / ルートの build ファイル / version catalog）"
 		(cd "$d" && git diff -- settings.gradle.kts settings.gradle build.gradle.kts build.gradle gradle/libs.versions.toml && git status --short)
@@ -265,7 +293,7 @@ run_fixture() { # $1 = fixture
 
 	# fx_expect_<名前> を持つ fixture は、生成物の grep 検査をする（NG の理由を 1 行ずつ標準出力に出す。空なら OK）。
 	if command -v "fx_expect_${fx}" >/dev/null 2>&1; then
-		expect_ng=`"fx_expect_${fx}" "$d" "${cli}" 2>>"${setup_log}" | tr '\n' '/' | sed 's/\/$//'`
+		expect_ng=`"fx_expect_${fx}" "$d" "${KATACHI}" 2>>"${setup_log}" | tr '\n' '/' | sed 's/\/$//'`
 		if [ -n "${expect_ng}" ]; then
 			SCAFFOLD="NG: ${expect_ng}"
 			return
@@ -325,36 +353,48 @@ EOF
 		jh_name=`echo "${JAVA_HOME}" | sed 's#/Contents/Home$##; s#/libexec/openjdk.jdk$##; s#.*/##'`
 		NOTE="${NOTE:+${NOTE}、}JAVA_HOME ${jh_name}"
 	fi
-	(cd "$d" && ./gradlew "${MODULE_PATH}:test" --no-daemon --console=plain \
-		--project-cache-dir "${GRADLE_CACHE}/${fx}") >"${t1_log}" 2>&1
-	if grep -q "> Task ${MODULE_PATH}:test FAILED" "${t1_log}" &&
-		grep -qE "Katachi check failed: [0-9]+ violations? \(Unexpected: [0-9]+\)" "${t1_log}"; then
+	# 手順書どおり katachi agent test で回す（中で ./gradlew <module>:test --console=plain -Dkatachi.maxViolations=all）。
+	# katachi agent test の要約は t1_log、Gradle の出力の全文（作業用ディレクトリの tmp/test/latest.log）は t1_gradle に写す。
+	run_agent_test "${t1_log}" "${t1_gradle}"
+	if [ "${AT_EXIT}" = "1" ] && grep -q "> Task ${MODULE_PATH}:test FAILED" "${t1_gradle}" &&
+		grep -qE "Katachi check failed: [0-9]+ violations? \(Unexpected: [0-9]+\)" "${t1_gradle}"; then
 		TEST="OK（Unexpected だけで落ちた）"
-	elif grep -q "BUILD SUCCESSFUL" "${t1_log}"; then
+	elif [ "${AT_EXIT}" = "0" ]; then
 		TEST="NG: 通ってしまった（Unexpected が出ていない）"
 		return
 	else
-		reason=`failure_reason "${t1_log}"`
-		TEST="NG: ${reason}"
+		reason=`failure_reason "${t1_gradle}"`
+		TEST="NG: ${reason}（katachi agent test の終了コード ${AT_EXIT}）"
 		return
 	fi
 
 	: >"$d/katachi-rerun-probe.txt"
-	(cd "$d" && ./gradlew "${MODULE_PATH}:test" --no-daemon --console=plain \
-		--project-cache-dir "${GRADLE_CACHE}/${fx}") >"${t2_log}" 2>&1
-	task_line=`grep -E "^> Task ${MODULE_PATH}:test( |$)" "${t2_log}" | tail -1`
+	run_agent_test "${t2_log}" "${t2_gradle}"
+	task_line=`grep -E "^> Task ${MODULE_PATH}:test( |$)" "${t2_gradle}" | tail -1`
 	case "${task_line}" in
 	*UP-TO-DATE* | *FROM-CACHE* | *SKIPPED* | "")
 		RERUN="NG: 実行されなかった（${task_line:-test タスクの行が無い}）"
 		;;
 	*)
-		if grep -q "katachi-rerun-probe.txt" "${t2_log}"; then
+		if grep -q "katachi-rerun-probe.txt" "${t2_gradle}"; then
 			RERUN="OK"
 		else
 			RERUN="NG: 実行されたが、足したファイルが出ていない"
 		fi
 		;;
 	esac
+}
+
+# katachi agent test を fixture の中で回す。$1 = 要約の写し先、$2 = Gradle の出力の写し先。終了コードは AT_EXIT に入れる。
+run_agent_test() {
+	rm -f "${workdir}/tmp/test/latest.log"
+	(cd "$d" && "${KATACHI}" agent test -- --no-daemon --project-cache-dir "${GRADLE_CACHE}/${fx}") >"$1" 2>&1
+	AT_EXIT=$?
+	if [ -f "${workdir}/tmp/test/latest.log" ]; then
+		cp "${workdir}/tmp/test/latest.log" "$2"
+	else
+		: >"$2"
+	fi
 }
 
 for fx in ${FIXTURES}; do
@@ -373,6 +413,8 @@ for fx in ${FIXTURES}; do
 		REAL_GUH="${GRADLE_USER_HOME:-${HOME}/.gradle}"
 		ln -s "${REAL_GUH}/wrapper" "${ISO_HOME}/wrapper"
 		ln -s "${REAL_GUH}/caches" "${ISO_HOME}/caches"
+		# init スクリプト（社内のミラーなど、依存の取り先を差し替えているもの）は持ち込む。JDK の探し先は変えない
+		[ -d "${REAL_GUH}/init.d" ] && ln -s "${REAL_GUH}/init.d" "${ISO_HOME}/init.d"
 		export GRADLE_USER_HOME="${ISO_HOME}"
 		REAL_JAVA_HOME="${JAVA_HOME:-}"
 		if jdk21=`find_jdk21`; then
@@ -400,8 +442,8 @@ for fx in ${FIXTURES}; do
 	desc=`fx_desc_${fx}`
 	[ -n "${NOTE}" ] && desc="${desc}<br>（${NOTE}）"
 	logs="[setup](file://${LOGS}/${fx}-setup.log)"
-	[ -f "${LOGS}/${fx}-test1.log" ] && logs="${logs} / [test1](file://${LOGS}/${fx}-test1.log)"
-	[ -f "${LOGS}/${fx}-test2.log" ] && logs="${logs} / [test2](file://${LOGS}/${fx}-test2.log)"
+	[ -f "${LOGS}/${fx}-test1.log" ] && logs="${logs} / [test1](file://${LOGS}/${fx}-test1.log)（[Gradle](file://${LOGS}/${fx}-test1-gradle.log)）"
+	[ -f "${LOGS}/${fx}-test2.log" ] && logs="${logs} / [test2](file://${LOGS}/${fx}-test2.log)（[Gradle](file://${LOGS}/${fx}-test2-gradle.log)）"
 	printf '| %s | %s | %s | %s | %s | %s | %s | %s | %s |\n' \
 		"${fx}" "${desc}" "${INIT}" "${SCAFFOLD}" "${INC}" "${TEST}" "${RERUN}" "${VERDICT}" "${logs}" >>"${ROWS}"
 done
@@ -413,11 +455,11 @@ done
 	echo "- 通った: ${OK_COUNT} / ${TOTAL}"
 	echo "- 版: katachi ${VERSION} / Kotlin ${K} / AGP ${AGP}"
 	echo "- init の --lang: ${LANG_ARG}"
-	echo "- 構文（sh -n・/bin/bash -n）: ${SYNTAX}（[ログ](file://${LOGS}/syntax.log)）"
-	echo "- publishToMavenLocal: ${PUBLISH}（[ログ](file://${LOGS}/publish.log)）"
+	echo "- katachi コマンド: ${CLI_CHECK}（\`${KATACHI}\`。[--version](file://${LOGS}/cli-version.log)）"
+	echo "- katachi コマンドの build（publishToMavenLocal・cliDist）: ${PUBLISH}（[ログ](file://${LOGS}/publish.log)）"
 	echo "- スクリプト: \`.claude/skills/prerelease/scripts/check-install-kit.sh\`（fixture の定義は \`install-kit-fixtures.sh\`）"
 	echo
-	echo "test（配線）は「定義していないファイルが Unexpected として出て落ちる」なら OK。2回目は、ルートにファイルを1つ足して"
+	echo "test（配線）は \`katachi agent test\` が「定義していないファイルが Unexpected として出て落ちる」なら OK。2回目は、ルートにファイルを1つ足して"
 	echo "\`--rerun\` なしで走らせ、test タスクが実行されて足したファイルが出れば OK。形の欄の（）に検査用モジュールの置き場所と"
 	echo "テストのフレームワーク（scaffold の出力）を写している。"
 	echo
