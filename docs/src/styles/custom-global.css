@@ -37,6 +37,12 @@
 	--ec-tm-lineMarkerAccentWd: 0.25rem;
 }
 
+/* ダークモードでは明るい背景だと文字が読めないので、暗い青にする。 */
+:root[data-theme='dark'] * {
+	--ec-tm-markBg: #1c3a5e;
+	--ec-tm-markBrdCol: #4f8fd1;
+}
+
 /* === 見出し === */
 
 .sl-heading-wrapper.level-h2 {
