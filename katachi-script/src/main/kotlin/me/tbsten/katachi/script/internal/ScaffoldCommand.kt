@@ -28,13 +28,6 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
     val force = parsed.has("--force")
     val dryRun = parsed.has("--dry-run")
     val tfArg = parsed.value("--test-framework")
-    val styleArg = parsed.value("--kotest-style")
-    if (styleArg != null && tfArg == "junit5") {
-        die(
-            "--kotest-style は kotest のテストの書き方です。--test-framework junit5 とは一緒に使えません（kotest にするなら --test-framework kotest）",
-            "--kotest-style picks how a Kotest test is written, so it cannot go with --test-framework junit5 (use --test-framework kotest for Kotest)",
-        )
-    }
     val depsArg = parsed.value("--deps")
 
     val root = cwd
@@ -97,20 +90,19 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
     val rootNeedsPlugin = placement == KotlinPlacement.ADD
     var kotlinPlugin = if (placement == KotlinPlacement.MODULE) "kotlin(\"jvm\") version \"$kotlin\"" else "kotlin(\"jvm\")"
 
-    // The test framework: --test-framework > --kotest-style (which means kotest) > preferences.testFramework > detected > junit5.
+    // The test framework: --test-framework > preferences.testFramework > detected > junit5.
     val (detectedTf, detectedTfFrom) = detectTestFramework(root, module.dir)
     val testFramework = when {
         tfArg != null -> Sourced(tfArg, "--test-framework", "--test-framework")
-        styleArg != null -> Sourced("kotest", "--kotest-style を指定", "--kotest-style was given")
         else -> {
             val pref = preference("testFramework")
             when {
-                pref == "junit5" || pref == "kotest" -> Sourced(pref, "preferences.testFramework", "preferences.testFramework")
+                pref in TEST_FRAMEWORKS -> Sourced(pref, "preferences.testFramework", "preferences.testFramework")
                 else -> {
                     if (pref.isNotEmpty()) {
                         warn(
-                            "preferences.testFramework の値を知りません（$pref。junit5 か kotest）。検出した値を使います。",
-                            "Unknown value in preferences.testFramework ($pref; expected junit5 or kotest). Using the detected value instead.",
+                            "preferences.testFramework の値を知りません（$pref。junit5 / kotest / kotest-free など）。検出した値を使います。",
+                            "Unknown value in preferences.testFramework ($pref; expected junit5, kotest, kotest-free and so on). Using the detected value instead.",
                         )
                     }
                     if (detectedTfFrom != null) {
@@ -122,8 +114,9 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
             }
         }
     }
-    val tf = testFramework.value
-    val kotestStyle = if (styleArg != null) Sourced(styleArg, "--kotest-style", "--kotest-style") else Sourced(DEFAULT_KOTEST_STYLE, "既定", "the default")
+    // `kotest-free` is kotest with the test written as a FreeSpec; plain `kotest` is a FunSpec (KATACHI-301).
+    val tf = if (testFramework.value.startsWith("kotest")) "kotest" else testFramework.value
+    val kotestStyle = if (tf == "kotest") testFramework.value.removePrefix("kotest").removePrefix("-").ifEmpty { DEFAULT_KOTEST_STYLE } else DEFAULT_KOTEST_STYLE
 
     // How dependencies are written: --deps > preferences.dependencyStyle > catalog when there is one > literal.
     var deps = when {
@@ -197,9 +190,10 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
     note("Kotlin:       $kotlin")
     note("JVM toolchain: ${toolchain.ja}", "JVM toolchain: ${toolchain.en}")
     note("konsist:      ${yesNo(konsist)}")
-    note("テスト:       $tf（${testFramework.ja}）", "Test framework: $tf (${testFramework.en})")
     if (tf == "kotest") {
-        note("スタイル:     ${kotestSpecClass(kotestStyle.value)}（${kotestStyle.ja}）", "Kotest style: ${kotestSpecClass(kotestStyle.value)} (${kotestStyle.en})")
+        note("テスト:       kotest の ${kotestSpecClass(kotestStyle)}（${testFramework.ja}）", "Test framework: kotest, ${kotestSpecClass(kotestStyle)} (${testFramework.en})")
+    } else {
+        note("テスト:       $tf（${testFramework.ja}）", "Test framework: $tf (${testFramework.en})")
     }
     if (deps.value == "catalog") {
         note("依存:         catalog（${deps.ja}。${fileUri(CATALOG_FILE)} に追記）", "Dependencies: catalog (${deps.en}; appended to ${fileUri(CATALOG_FILE)})")
@@ -259,7 +253,7 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
     } else {
         architectureKt.writeText("package $pkg.test.architecture\n\nimport me.tbsten.katachi.dsl.architecture\n\nval projectArchitecture = architecture {\n}\n")
     }
-    writeTestKt(src.resolve("ProjectArchitectureTest.kt"), pkg, konsist, tf, kotestStyle.value)
+    writeTestKt(src.resolve("ProjectArchitectureTest.kt"), pkg, konsist, tf, kotestStyle)
 
     val rootPluginManual = if (rootNeedsPlugin) addRootPlugin(root, rootBuild, kotlin) else null
     val settingsIncludeManual = if (settingsNeedsInclude) addSettingsInclude(root, settings, module.gradlePath) else null
@@ -515,11 +509,11 @@ private fun ScriptContext.writeModuleBuild(file: Path, b: ModuleBuild) {
     )
 }
 
-/** The spec style `scaffold` writes a Kotest test in when `--kotest-style` is not given (KATACHI-301). */
-internal const val DEFAULT_KOTEST_STYLE: String = "fun-spec"
+/** The spec style of plain `--test-framework kotest` (KATACHI-301). */
+private const val DEFAULT_KOTEST_STYLE: String = "fun"
 
-/** The Kotest class of a `--kotest-style` value: `free-spec` is `FreeSpec`. */
-internal fun kotestSpecClass(style: String): String = style.split('-').joinToString("") { it.replaceFirstChar(Char::uppercaseChar) }
+/** The Kotest class of a spec style, the part after `kotest-` in `--test-framework kotest-free`: `free` is `FreeSpec`. */
+private fun kotestSpecClass(style: String): String = style.replaceFirstChar(Char::uppercaseChar) + "Spec"
 
 /**
  * ProjectArchitectureTest.kt. The test name follows the language too. With konsist it passes
@@ -550,20 +544,20 @@ private fun ScriptContext.writeTestKt(file: Path, pkg: String, konsist: Boolean,
 
 /** The class of ProjectArchitectureTest.kt in a Kotest [style], running [assertion] in a test named [testName]. */
 private fun kotestSpecBody(style: String, specClass: String, testName: String, assertion: String): String {
-    if (style == "annotation-spec") {
+    if (style == "annotation") {
         return "class ProjectArchitectureTest : $specClass() {\n    @Test\n    fun `$testName`() {\n        $assertion\n    }\n}\n"
     }
     // The styles that need a container around the test name it after the object the test checks.
     val container = "\"ProjectArchitecture\""
     val test = "\"$testName\""
     val blocks = when (style) {
-        "string-spec", "free-spec" -> listOf(test)
-        "should-spec" -> listOf("should($test)")
-        "describe-spec" -> listOf("describe($container)", "it($test)")
-        "behavior-spec" -> listOf("Given($container)", "Then($test)")
-        "word-spec" -> listOf("$container should", test)
-        "feature-spec" -> listOf("feature($container)", "scenario($test)")
-        "expect-spec" -> listOf("context($container)", "expect($test)")
+        "string", "free" -> listOf(test)
+        "should" -> listOf("should($test)")
+        "describe" -> listOf("describe($container)", "it($test)")
+        "behavior" -> listOf("Given($container)", "Then($test)")
+        "word" -> listOf("$container should", test)
+        "feature" -> listOf("feature($container)", "scenario($test)")
+        "expect" -> listOf("context($container)", "expect($test)")
         else -> listOf("test($test)")
     }
     return "class ProjectArchitectureTest : $specClass({\n${nestBlocks(blocks, assertion, depth = 1)}})\n"

@@ -10,7 +10,6 @@ import me.tbsten.katachi.script.internal.commandText
 import me.tbsten.katachi.script.internal.requireOption
 import me.tbsten.katachi.script.internal.run
 import me.tbsten.katachi.script.option.DependencyStyle
-import me.tbsten.katachi.script.option.KotestStyle
 import me.tbsten.katachi.script.option.TestFramework
 
 /**
@@ -80,19 +79,12 @@ public class ScaffoldCommand internal constructor(
     public fun `module-dir`(path: String): ScaffoldCommand = next(line.with("--module-dir", path))
 
     /**
-     * Same as `katachi scaffold --test-framework <junit5|kotest>` on the command line: the framework the generated tests use.
+     * Same as `katachi scaffold --test-framework <junit5|kotest|kotest-fun|kotest-string|kotest-should|kotest-describe|kotest-behavior|kotest-word|kotest-free|kotest-feature|kotest-expect|kotest-annotation>` on the command line: the framework the generated tests use.
      *
-     * @param framework [junit5] or [kotest].
+     * @param framework [junit5], [kotest], [kotestFun], [kotestString], [kotestShould], [kotestDescribe], [kotestBehavior], [kotestWord], [kotestFree], [kotestFeature], [kotestExpect] or [kotestAnnotation].
      */
     public fun `test-framework`(framework: TestFramework): ScaffoldCommand =
         next(line.with("--test-framework", framework.value))
-
-    /**
-     * Same as `katachi scaffold --kotest-style <fun-spec|string-spec|should-spec|describe-spec|behavior-spec|word-spec|free-spec|feature-spec|expect-spec|annotation-spec>` on the command line: the spec style of the generated Kotest test. Without `--test-framework`, it picks kotest.
-     *
-     * @param style [KotestStyle.FunSpec], [KotestStyle.StringSpec], [KotestStyle.ShouldSpec], [KotestStyle.DescribeSpec], [KotestStyle.BehaviorSpec], [KotestStyle.WordSpec], [KotestStyle.FreeSpec], [KotestStyle.FeatureSpec], [KotestStyle.ExpectSpec] or [KotestStyle.AnnotationSpec].
-     */
-    public fun `kotest-style`(style: KotestStyle): ScaffoldCommand = next(line.with("--kotest-style", style.value))
 
     /**
      * Same as `katachi scaffold --deps <catalog|literal>` on the command line: how the dependencies are written.

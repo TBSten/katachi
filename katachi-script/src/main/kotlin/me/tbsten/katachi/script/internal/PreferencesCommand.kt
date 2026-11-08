@@ -12,7 +12,7 @@ private val PREFERENCE_KEYS = listOf("nestedGroups", "moduleDir", "testFramework
 private fun preferenceValuesOf(key: String): List<String> = when (key) {
     "nestedGroups", "oneRolePerFile" -> listOf("yes", "no")
     "moduleDir" -> listOf("path")
-    "testFramework" -> listOf("junit5", "kotest")
+    "testFramework" -> TEST_FRAMEWORKS
     "dependencyStyle" -> listOf("catalog", "literal")
     "constraintNames" -> listOf("plain", "numbered")
     else -> emptyList()

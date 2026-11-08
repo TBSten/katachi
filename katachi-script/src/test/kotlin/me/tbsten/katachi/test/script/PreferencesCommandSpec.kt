@@ -67,7 +67,7 @@ class PreferencesCommandSpec : FreeSpec({
         val run = fixture.run("agent", "preferences", "set", "nestedGroups=no", "testFramework=spock")
 
         run.status shouldBe 1
-        run.err shouldContain "testFramework の値が違います: spock（使える値: junit5/kotest）"
+        run.err shouldContain "testFramework の値が違います: spock（使える値: junit5/kotest/kotest-fun/kotest-string/kotest-should/kotest-describe/kotest-behavior/kotest-word/kotest-free/kotest-feature/kotest-expect/kotest-annotation）"
         fixture.preferences() shouldBe JsonObject(emptyMap())
     }
 

@@ -81,24 +81,23 @@ class DoctorScaffoldSpec : FreeSpec({
             Regex(Regex.escape("include(\":architecture-test\")")).findAll(project.resolve("settings.gradle.kts").readText()).count() shouldBe 1
         }
 
-        "kotest の雛形は既定で FunSpec に書く" {
+        "--test-framework kotest は FunSpec で書く" {
             val project = gradleProject(toolchain = 21)
 
             val run = runCapturing(project, listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0", "--test-framework", "kotest"), env = javaHome())
 
             run.status shouldBe 0
-            run.out shouldContain "スタイル:     FunSpec（既定）"
+            run.out shouldContain "テスト:       kotest の FunSpec（--test-framework）"
             project.architectureTest().readText() shouldContain "class ProjectArchitectureTest : FunSpec({\n    test(\"プロジェクトの構成が定義どおりになっている\") {\n"
         }
 
-        "--kotest-style で kotest の雛形の書き方を選び、--test-framework を省けば kotest にする (KATACHI-301)" {
+        "--test-framework kotest-free のように kotest の書き方を選べる (KATACHI-301)" {
             val project = gradleProject(toolchain = 21)
 
-            val run = runCapturing(project, listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0", "--kotest-style", "free-spec"), env = javaHome())
+            val run = runCapturing(project, listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0", "--test-framework", "kotest-free"), env = javaHome())
 
             run.status shouldBe 0
-            run.out shouldContain "テスト:       kotest（--kotest-style を指定）"
-            run.out shouldContain "スタイル:     FreeSpec（--kotest-style）"
+            run.out shouldContain "テスト:       kotest の FreeSpec（--test-framework）"
             project.architectureTest().readText() shouldBe
                 """
                 |@file:OptIn(ExperimentalKatachiApi::class)
@@ -120,15 +119,15 @@ class DoctorScaffoldSpec : FreeSpec({
             project.resolve("architecture-test/build.gradle.kts").readText() shouldContain "io.kotest:kotest-runner-junit5"
         }
 
-        "入れ子の書き方は ProjectArchitecture の中にテストを置き、AnnotationSpec は @Test の関数にする" {
+        "入れ子の書き方は ProjectArchitecture の中にテストを置き、kotest-annotation は @Test の関数にする" {
             val cases = mapOf(
-                "describe-spec" to "class ProjectArchitectureTest : DescribeSpec({\n    describe(\"ProjectArchitecture\") {\n        it(\"the project matches its declaration\") {\n            projectArchitecture.assert()\n        }\n    }\n})\n",
-                "word-spec" to "class ProjectArchitectureTest : WordSpec({\n    \"ProjectArchitecture\" should {\n        \"the project matches its declaration\" {\n",
-                "annotation-spec" to "class ProjectArchitectureTest : AnnotationSpec() {\n    @Test\n    fun `the project matches its declaration`() {\n        projectArchitecture.assert()\n    }\n}\n",
+                "kotest-describe" to "class ProjectArchitectureTest : DescribeSpec({\n    describe(\"ProjectArchitecture\") {\n        it(\"the project matches its declaration\") {\n            projectArchitecture.assert()\n        }\n    }\n})\n",
+                "kotest-word" to "class ProjectArchitectureTest : WordSpec({\n    \"ProjectArchitecture\" should {\n        \"the project matches its declaration\" {\n",
+                "kotest-annotation" to "class ProjectArchitectureTest : AnnotationSpec() {\n    @Test\n    fun `the project matches its declaration`() {\n        projectArchitecture.assert()\n    }\n}\n",
             )
-            for ((style, expected) in cases) {
+            for ((framework, expected) in cases) {
                 val project = gradleProject(toolchain = 21)
-                val args = listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0", "--no-konsist", "--kotest-style", style)
+                val args = listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0", "--no-konsist", "--test-framework", framework)
 
                 runCapturing(project, args, env = javaHome() + ("KATACHI_LANG" to "en")).status shouldBe 0
 
@@ -136,17 +135,20 @@ class DoctorScaffoldSpec : FreeSpec({
             }
         }
 
-        "--kotest-style は --test-framework junit5 とは一緒に使えず、知らない書き方も止まる" {
-            val project = gradleProject(toolchain = 21)
-            val base = listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0")
+        "preferences.testFramework の kotest-<style> も読み、知らない書き方は止まる" {
+            val project = initializedProject()
+            project.resolve("build.gradle.kts").writeText("plugins {\n    kotlin(\"jvm\") version \"2.4.10\" apply false\n}\n")
+            runCapturing(project, listOf("agent", "preferences", "set", "testFramework=kotest-behavior")).status shouldBe 0
 
-            val junit5 = runCapturing(project, base + listOf("--test-framework", "junit5", "--kotest-style", "free-spec"), env = javaHome())
-            junit5.status shouldBe 1
-            junit5.err shouldContain "--kotest-style は kotest のテストの書き方です。--test-framework junit5 とは一緒に使えません"
+            val run = runCapturing(project, listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0"), env = javaHome())
 
-            val unknown = runCapturing(project, base + listOf("--kotest-style", "free"), env = javaHome())
+            run.status shouldBe 0
+            run.out shouldContain "kotest の BehaviorSpec（preferences.testFramework）"
+            project.architectureTest().readText() shouldContain "Given(\"ProjectArchitecture\") {"
+
+            val unknown = runCapturing(project, listOf("scaffold", "--package", "com.example", "--test-framework", "kotest-freee"), env = javaHome())
             unknown.status shouldBe 1
-            unknown.err shouldContain "--kotest-style は fun-spec / string-spec / should-spec"
+            unknown.err shouldContain "--test-framework は junit5 / kotest / kotest-fun /"
         }
 
         "--module-dir の置き場所に作り、init の作業用ディレクトリに記録する" {

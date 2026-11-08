@@ -128,9 +128,9 @@ public class PreferencesSetCommand internal constructor(
     public fun moduleDir(path: String): PreferencesSetCommand = next(line.withKeyValue("moduleDir", path))
 
     /**
-     * Same as `katachi agent preferences set testFramework=<junit5|kotest>` on the command line: the test framework `scaffold` picks.
+     * Same as `katachi agent preferences set testFramework=<junit5|kotest|kotest-fun|kotest-string|kotest-should|kotest-describe|kotest-behavior|kotest-word|kotest-free|kotest-feature|kotest-expect|kotest-annotation>` on the command line: the test framework `scaffold` picks.
      *
-     * @param framework [junit5] or [kotest].
+     * @param framework [junit5], [kotest], [kotestFun], [kotestString], [kotestShould], [kotestDescribe], [kotestBehavior], [kotestWord], [kotestFree], [kotestFeature], [kotestExpect] or [kotestAnnotation].
      */
     public fun testFramework(framework: TestFramework): PreferencesSetCommand =
         next(line.withKeyValue("testFramework", framework.value))

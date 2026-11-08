@@ -120,26 +120,25 @@ private val LANG_TYPE = ChoiceType(
 private val TEST_FRAMEWORK_TYPE = ChoiceType(
     "TestFramework",
     "The test framework `katachi scaffold --test-framework` lays the test module out for",
-    listOf(ChoiceValue("junit5", "JUnit 5"), ChoiceValue("kotest", "Kotest")),
-)
-private val KOTEST_STYLE_TYPE = ChoiceType(
-    "KotestStyle",
-    "The spec style `katachi scaffold --kotest-style` writes the Kotest test in",
     listOf(
-        ChoiceValue("fun-spec", "`FunSpec`, the default: `test(\"...\") { }`"),
-        ChoiceValue("string-spec", "`StringSpec`: `\"...\" { }`"),
-        ChoiceValue("should-spec", "`ShouldSpec`: `should(\"...\") { }`"),
-        ChoiceValue("describe-spec", "`DescribeSpec`: `describe(\"...\") { it(\"...\") { } }`"),
-        ChoiceValue("behavior-spec", "`BehaviorSpec`: `Given(\"...\") { Then(\"...\") { } }`"),
-        ChoiceValue("word-spec", "`WordSpec`: `\"...\" should { \"...\" { } }`"),
-        ChoiceValue("free-spec", "`FreeSpec`: `\"...\" { }`"),
-        ChoiceValue("feature-spec", "`FeatureSpec`: `feature(\"...\") { scenario(\"...\") { } }`"),
-        ChoiceValue("expect-spec", "`ExpectSpec`: `context(\"...\") { expect(\"...\") { } }`"),
-        ChoiceValue("annotation-spec", "`AnnotationSpec`: a `@Test` function, as in JUnit"),
+        ChoiceValue("junit5", "JUnit 5"),
+        ChoiceValue("kotest", "Kotest, with the test written as a `FunSpec` like `kotest-fun`"),
+        // Kotest in one spec style each (KATACHI-301): `kotest-<style>` writes a `<Style>Spec`.
+        ChoiceValue("kotest-fun", "Kotest `FunSpec`: `test(\"...\") { }`"),
+        ChoiceValue("kotest-string", "Kotest `StringSpec`: `\"...\" { }`"),
+        ChoiceValue("kotest-should", "Kotest `ShouldSpec`: `should(\"...\") { }`"),
+        ChoiceValue("kotest-describe", "Kotest `DescribeSpec`: `describe(\"...\") { it(\"...\") { } }`"),
+        ChoiceValue("kotest-behavior", "Kotest `BehaviorSpec`: `Given(\"...\") { Then(\"...\") { } }`"),
+        ChoiceValue("kotest-word", "Kotest `WordSpec`: `\"...\" should { \"...\" { } }`"),
+        ChoiceValue("kotest-free", "Kotest `FreeSpec`: `\"...\" { }`"),
+        ChoiceValue("kotest-feature", "Kotest `FeatureSpec`: `feature(\"...\") { scenario(\"...\") { } }`"),
+        ChoiceValue("kotest-expect", "Kotest `ExpectSpec`: `context(\"...\") { expect(\"...\") { } }`"),
+        ChoiceValue("kotest-annotation", "Kotest `AnnotationSpec`: a `@Test` function, as in JUnit"),
     ),
-    // Bare names such as `free-spec` are not Kotlin identifiers; scripts write `KotestStyle.FreeSpec`.
-    bareNames = false,
 )
+
+/** What `scaffold --test-framework` and `preferences.testFramework` take: junit5, kotest and kotest-<style>. */
+internal val TEST_FRAMEWORKS: List<String> = TEST_FRAMEWORK_TYPE.values.map { it.value }
 private val DEPENDENCY_STYLE_TYPE = ChoiceType(
     "DependencyStyle",
     "How `katachi scaffold --deps` writes the dependencies of the test module",
@@ -286,12 +285,6 @@ internal val COMMAND_SPECS: List<CommandSpec> = listOf(
                 doc = "the framework the generated tests use",
                 param = "framework",
                 sample = "kotest",
-            ),
-            OptionSpec(
-                "--kotest-style",
-                OptionKind.Choice(KOTEST_STYLE_TYPE),
-                doc = "the spec style of the generated Kotest test. Without `--test-framework`, it picks kotest",
-                param = "style",
             ),
             OptionSpec("--deps", OptionKind.Choice(DEPENDENCY_STYLE_TYPE), doc = "how the dependencies are written", param = "style"),
             OptionSpec("--force", OptionKind.Flag, doc = "overwrites an existing test module"),
