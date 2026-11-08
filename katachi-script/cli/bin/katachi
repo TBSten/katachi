@@ -13,4 +13,16 @@ if ! command -v kotlin >/dev/null 2>&1; then
 	exit 1
 fi
 
+# `kotlin` takes every -D… / -J… on its command line for its own JVM, even after the script, so
+# `katachi agent test -- -Dkatachi.baseline.update=true` would never see its -D…. Mark them (and anything
+# already starting with the mark); katachi-script's main() strips the mark (WRAPPER_ARG_ESCAPE).
+escape='katachi-escaped:'
+for arg do
+	shift
+	case $arg in
+	-D* | -J* | "$escape"*) set -- "$@" "$escape$arg" ;;
+	*) set -- "$@" "$arg" ;;
+	esac
+done
+
 exec kotlin "$KATACHI_HOME/katachi.main.kts" "$@"

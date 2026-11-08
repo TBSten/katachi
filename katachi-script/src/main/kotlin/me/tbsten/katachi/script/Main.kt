@@ -3,6 +3,7 @@ package me.tbsten.katachi.script
 import kotlin.system.exitProcess
 import me.tbsten.katachi.script.internal.ScriptContext
 import me.tbsten.katachi.script.internal.runScript
+import me.tbsten.katachi.script.internal.unescapeWrapperArgs
 
 /**
  * Runs the `katachi` command with [args] and exits the JVM with its status.
@@ -19,10 +20,11 @@ import me.tbsten.katachi.script.internal.runScript
  * me.tbsten.katachi.script.main(args)
  * ```
  *
- * @param args The command line after the command name: `data get check-list meta.moduleDir`.
+ * @param args The command line after the command name, as `bin/katachi` passes it: `data get check-list meta.moduleDir`.
+ *   An argument `bin/katachi` escaped so `kotlin` would not take it (`-D…`, `-J…`) is turned back here.
  * @featured
  */
 public fun main(args: Array<String>) {
-    val status = runScript(args.toList(), ScriptContext.fromSystem())
+    val status = runScript(unescapeWrapperArgs(args.toList()), ScriptContext.fromSystem())
     if (status != 0) exitProcess(status)
 }
