@@ -54,6 +54,16 @@ const sidebar = (() => {
 			item('guides/document-generation', { en: 'Document generation', ja: 'ドキュメント生成' }),
 			item('guides/generate-code-from-template', { en: 'Generate code from template', ja: 'テンプレートからコード生成' }),
 			item('guides/diff-report', { en: 'Diff report', ja: 'Diff report' }),
+			{
+				// デフォルトで閉じる（中のページを開いているときは Starlight が開く）
+				...category(
+					{ en: 'CLI and script', ja: 'CLI と script' },
+					item('guides/cli-and-script', { en: 'Overview', ja: '概要' }),
+					item('guides/cli-and-script/cli', { en: 'katachi CLI', ja: 'katachi CLI' }),
+					item('guides/cli-and-script/katachi-script', { en: 'katachi-script', ja: 'katachi-script' }),
+				),
+				collapsed: true,
+			},
 			item('guides/baseline', { en: 'Baseline', ja: 'Baseline' }),
 			item('guides/processor', { en: 'ArchitectureProcessor', ja: 'ArchitectureProcessor とそのカスタマイズ' }),
 		),

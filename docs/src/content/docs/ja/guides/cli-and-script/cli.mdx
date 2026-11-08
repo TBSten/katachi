@@ -1,0 +1,223 @@
+---
+title: "katachi CLI"
+description: katachi CLI のサブコマンド一覧と、各コマンドのオプション。
+tags:
+  - intermediate
+# サイドバーでは親が「概要」と出るので、「前へ」のラベルはページ名にする。
+prev: CLI と script
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+katachi CLI (`katachi`) は、katachi の導入・運用を AI Agent に任せるために作られたコマンドラインツールです。
+
+## インストール
+
+katachi CLI は Homebrew でインストールできます。
+
+```bash
+brew install tbsten/tap/katachi
+katachi --version
+```
+
+## コマンドリスト
+
+| コマンド | 説明 |
+|---| --- |
+| [`doctor`](#doctor) | katachi が利用する環境が整っているか チェックする。 |
+| [`scaffold`](#scaffold) | アーキテクチャテスト用のモジュール (`architecture-test`) を追加する。 |
+| [`agent`](#agent) | AI Agent 向けのサブコマンド。  |
+
+## doctor
+
+katachi を利用するのに必要な環境が整っているかをチェックします。
+
+```shell
+katachi doctor
+```
+
+<details>
+  <summary> 実行結果例 </summary>
+
+  ```
+  必要なものはそろっています（katachi 0.4.0。ガイドとテンプレートは同梱）。
+     Gradle の JDK: 17（JAVA_HOME（/Users/you/.sdkman/candidates/java/17.0.17-tem））
+     Kotlin: 2.4.10
+  ```
+
+</details>
+
+具体的には以下をチェックします。
+
+- [ ] Gradle が利用する JDK のバージョン
+- [ ] プロジェクトの Kotlin のバージョン
+- [ ] Git
+
+
+## scaffold
+
+katachi のアーキテクチャ用モジュールを新規作成します。
+
+```shell
+katachi scaffold --package com.example.app
+```
+
+<details>
+  <summary> 実行結果例 </summary>
+
+  ```
+     Gradle の JDK: 17（JAVA_HOME（/Users/you/.sdkman/candidates/java/17.0.17-tem））
+  作成する内容
+     パッケージ:   com.example.app
+     katachi:      0.4.0（この katachi コマンドの版）
+     Kotlin:       2.4.10
+     JVM toolchain: 書かない（プロジェクトに toolchain の設定が無い。Gradle の JDK を使う）
+     konsist:      yes
+     テスト:       junit5（既定。kotest の依存が見つからない）
+     依存:         catalog（検出: gradle/libs.versions.toml。file:///Users/you/demo-app/gradle/libs.versions.toml に追記）
+                  [versions] katachi = "0.4.0"
+                  [versions] junit = "5.14.4"
+                  [libraries] katachi = { module = "me.tbsten.katachi:katachi", version.ref = "katachi" }
+                  [libraries] katachiKonsist = { module = "me.tbsten.katachi:katachi-konsist", version.ref = "katachi" }
+                  [libraries] junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+                  [libraries] junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+                  [libraries] junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+                  [plugins] katachi = { id = "me.tbsten.katachi", version.ref = "katachi" }
+     モジュール:   file:///Users/you/demo-app/architecture-test/（:architecture-test。既定）
+     ソース:       file:///Users/you/demo-app/architecture-test/src/test/kotlin/com/example/app/test/architecture/
+     ルートに追加: no (file:///Users/you/demo-app/build.gradle.kts)
+     include 追加: yes (file:///Users/you/demo-app/settings.gradle.kts)
+     pluginManagement に追加: no
+
+  == 作成しました ========================================
+  file:///Users/you/demo-app/architecture-test/build.gradle.kts
+  file:///Users/you/demo-app/architecture-test/src/test/kotlin/com/example/app/test/architecture/ProjectArchitecture.kt
+  file:///Users/you/demo-app/architecture-test/src/test/kotlin/com/example/app/test/architecture/ProjectArchitectureTest.kt
+  file:///Users/you/demo-app/gradle/libs.versions.toml （次の項目を追記）
+      [versions] katachi = "0.4.0"
+      [versions] junit = "5.14.4"
+      [libraries] katachi = { module = "me.tbsten.katachi:katachi", version.ref = "katachi" }
+      [libraries] katachiKonsist = { module = "me.tbsten.katachi:katachi-konsist", version.ref = "katachi" }
+      [libraries] junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+      [libraries] junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+      [libraries] junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+      [plugins] katachi = { id = "me.tbsten.katachi", version.ref = "katachi" }
+  file:///Users/you/demo-app/settings.gradle.kts （include を追加）
+  ========================================================
+
+  次: katachi agent test
+      architecture { } が空なので、すべてのファイルが Unexpected として報告されて
+      失敗するのが正常です。Unexpected 以外のエラーが出た場合だけが問題です。
+  ```
+
+</details>
+
+デフォルトでは以下の構成で `:architecture-test` モジュールを作成します。
+
+```
+architecture-test/
+├── build.gradle.kts
+└── src/test/kotlin/com/example/app/test/architecture/
+    ├── ProjectArchitecture.kt       # architecture { } を書く
+    └── ProjectArchitectureTest.kt   # 定義どおりかを検査するテスト
+```
+
+以下のオプションを指定してカスタマイズが可能です。
+
+<table>
+    <thead>
+        <tr>
+            <th style="min-width: 14rem;">オプション</th>
+            <th style="min-width: 16rem;">説明</th>
+            <th style="min-width: 12rem;">デフォルト</th>
+            <th style="min-width: 12rem;">例</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>{'--package <package>'}</code></td>
+            <td>アプリのパッケージ名（必須）。テストのパッケージは <code>&lt;package&gt;.test.architecture</code> になります</td>
+            <td>なし（必須）</td>
+            <td><code>{'--package com.example.app'}</code></td>
+        </tr>
+        <tr>
+            <td><code>{'--katachi <version>'}</code></td>
+            <td>依存する katachi のバージョン</td>
+            <td><code>katachi agent init</code> が記録したバージョン。無ければこの katachi コマンドのバージョン</td>
+            <td><code>{'--katachi 0.4.0'}</code></td>
+        </tr>
+        <tr>
+            <td><code>{'--kotlin <version>'}</code></td>
+            <td>モジュールが前提にする Kotlin のバージョン</td>
+            <td>プロジェクトから検出（<code>gradle/libs.versions.toml</code> の <code>kotlin</code> など）</td>
+            <td><code>{'--kotlin 2.2.21'}</code></td>
+        </tr>
+        <tr>
+            <td><code>{'--no-konsist'}</code></td>
+            <td>katachi-konsist を依存に入れずに作ります。<code>ktFileContent { }</code> は使えなくなります</td>
+            <td>入れる</td>
+            <td><code>{'--no-konsist'}</code></td>
+        </tr>
+        <tr>
+            <td><code>{'--module-dir <path>'}</code></td>
+            <td>検査用モジュールを置く場所。Gradle のルートからの相対パス</td>
+            <td><code>architecture-test</code></td>
+            <td><code>{'--module-dir static-analysis/katachi'}</code></td>
+        </tr>
+        <tr>
+            <td><code>{'--test-framework <junit5 / kotest / kotest-<style>>'}</code></td>
+            <td>生成するテストと依存のテストフレームワーク。<code>kotest</code> は FunSpec。spec style を選ぶときは <code>kotest-fun</code> / <code>kotest-string</code> / <code>kotest-should</code> / <code>kotest-describe</code> / <code>kotest-behavior</code> / <code>kotest-word</code> / <code>kotest-free</code> / <code>kotest-feature</code> / <code>kotest-expect</code> / <code>kotest-annotation</code></td>
+            <td>kotest の依存がプロジェクトにあれば <code>kotest</code>、なければ <code>junit5</code></td>
+            <td><code>{'--test-framework kotest-free'}</code></td>
+        </tr>
+        <tr>
+            <td><code>{'--deps <catalog / literal>'}</code></td>
+            <td>依存の書き方。<code>catalog</code> は <code>gradle/libs.versions.toml</code> に足りない項目だけを足して <code>libs.katachi</code> のように参照し、<code>literal</code> は座標を <code>build.gradle.kts</code> に直接書きます</td>
+            <td><code>gradle/libs.versions.toml</code> があれば <code>catalog</code>、なければ <code>literal</code></td>
+            <td><code>{'--deps literal'}</code></td>
+        </tr>
+        <tr>
+            <td><code>{'--force'}</code></td>
+            <td>既存の検査用モジュールがあっても上書きします</td>
+            <td>上書きしない（既にあれば止まる）</td>
+            <td><code>{'--force'}</code></td>
+        </tr>
+    </tbody>
+</table>
+
+### `scaffold --dry-run`
+
+`--dry-run` オプションを指定すると、実際にはファイルを作成せずに、どのようなファイルが作成されるかを確認できます。
+
+## agent
+
+`agent` コマンドは AI Agent 向けのサブコマンド群です。
+
+`agent` コマンドの詳細については `katachi agent --help` で確認してください。
+
+## まとめ
+
+- `katachi` は Homebrew で入れる、katachi と同じバージョンのコマンドラインツールです
+- `doctor` で Gradle の JDK・Kotlin のバージョン・Git がそろっているかを確かめます
+- `scaffold --package <package>` で検査用モジュール `:architecture-test` を作り、ビルドに組み込みます。`--dry-run` で先に中身を確かめられます
+- `agent` の下のサブコマンドは AI Agent が導入の手順書に沿って使います
+
+## 次のステップ
+
+<CardGrid>
+  <LinkCard
+    title="初めてのアーキテクチャ定義"
+    href="/katachi/ja/get-started/first-architecture/"
+    description="scaffold で作ったモジュールに、最初の architecture { } を書く方法を学びましょう。"
+  />
+  <LinkCard
+    title="katachi-script"
+    href="/katachi/ja/guides/cli-and-script/katachi-script/"
+    description="ここで見たコマンドを *.katachi.kts に並べて、1 コマンドで実行する方法を学びましょう。"
+  />
+  <LinkCard
+    title="AI Agent"
+    href="/katachi/ja/recipes/ai-agent/"
+    description="katachi agent のサブコマンドで、AI Agent に導入を任せるレシピです。"
+  />
+</CardGrid>

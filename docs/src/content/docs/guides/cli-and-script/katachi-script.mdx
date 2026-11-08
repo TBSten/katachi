@@ -1,0 +1,194 @@
+---
+title: "katachi-script"
+description: How to write *.katachi.kts files that line up katachi commands in a Kotlin DSL, and how to run them with the katachi CLI.
+tags:
+  - intermediate
+# The sidebar shows the parent as "Overview", so the "previous" label is the page name.
+prev: CLI and script
+---
+
+import { Aside, CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
+
+{/*
+  Purpose of this page: explain how to write *.katachi.kts (the katachi.scaffold… / katachi.agent.… builders, executeCommands)
+  and how to run it with the katachi CLI. The options of each command are on the CLI page.
+*/}
+
+katachi-script is a package based on [Kotlin script](https://kotlinlang.org/docs/custom-script-deps-tutorial.html). With `*.main.kts` or `*.katachi.kts`, it gives you the same features as the katachi CLI.
+It lets you write automation scripts that operate katachi and call its commands in Kotlin instead of Shell script.
+
+<Tabs>
+<TabItem label="*.katachi.kts">
+
+```kt nocollapse title="test.katachi.kts"
+executeCommands(
+    katachi.agent.init.lang(ja),
+    katachi.scaffold.`package`("com.example.app"),
+)
+
+// This is the same as running these commands:
+//   katachi agent init --lang ja
+//   katachi scaffold --package com.example.app
+```
+
+Run it like this:
+
+```shell
+katachi test.katachi.kts
+
+# This is the same as running these commands:
+#   katachi agent init --lang ja
+#   katachi scaffold --package com.example.app
+```
+
+</TabItem>
+
+<TabItem label="*.main.kts">
+
+```kt nocollapse title="test.main.kts"
+#!/usr/bin/env kotlin
+
+@file:DependsOn("me.tbsten.katachi:katachi-script:0.4.0")
+
+import me.tbsten.katachi.script.*
+
+val katachi = Katachi(defaultPackage = "com.example.app", lang = ja)
+
+executeCommands(
+    katachi.agent.init,
+    katachi.scaffold,
+)
+```
+
+Run it like this:
+
+```shell
+kotlin test.main.kts
+
+# This is the same as running these commands:
+#   katachi agent init --lang ja
+#   katachi scaffold --package com.example.app
+```
+
+</TabItem>
+</Tabs>
+
+Note that, as of November 2026, Kotlin script is marked as Experimental.
+
+
+## Installation
+
+You need the katachi CLI to run `*.katachi.kts`.
+
+```shell
+brew install tbsten/tap/katachi
+katachi --version
+```
+
+`*.main.kts` is a standard Kotlin script, so you need the Kotlin CLI (`kotlin`).
+The katachi CLI includes the Kotlin CLI as a dependency. If you have installed the katachi CLI, you can also run `*.main.kts`. If you do not want to install the katachi CLI for some reason, you can install only the Kotlin CLI.
+
+```shell
+brew install kotlin
+kotlin -version
+```
+
+## `*.katachi.kts` and `*.main.kts`
+
+katachi supports two file formats: `*.katachi.kts` and `*.main.kts`.
+
+`*.katachi.kts` is a special file made for writing Kotlin scripts for katachi.
+**It needs the katachi CLI to run**.
+
+`*.main.kts` is a standard Kotlin script.
+If you register katachi-script as a dependency with `@file:DependsOn`, you can run katachi-related task scripts with only the Kotlin CLI.
+
+| | `*.katachi.kts` | `*.main.kts` |
+| --- | --- | --- |
+| Requires | katachi CLI | Kotlin CLI only |
+| DependsOn, import | Not needed | Needed |
+
+## Writing style
+
+<Tabs>
+  <TabItem label="*.katachi.kts">
+
+    In *.katachi.kts, you run commands with the top-level `katachi` property.
+
+    ```kts {1} title="doctor.katachi.kts"
+    katachi.doctor.execute()
+
+    // This is the same as running this command:
+    //   katachi doctor
+    ```
+
+    You can set common settings for all commands with top-level properties.
+
+    ```kts {1-2} title="setup.katachi.kts"
+    defaultPackage = "com.example.app"
+    lang = ja
+
+    executeCommands(
+        katachi.agent.init, // katachi agent init --lang ja
+        katachi.scaffold,   // katachi scaffold --package com.example.app
+    )
+    ```
+
+  </TabItem>
+
+  <TabItem label="*.main.kts">
+
+    To run each command, you need the katachi script dependency and an instance of the `Katachi` class.
+
+    ```kts {1,3,5} title="doctor.main.kts"
+    @file:DependsOn("me.tbsten.katachi:katachi-script:0.4.0")
+
+    import me.tbsten.katachi.script.*
+
+    val katachi = Katachi()
+    ```
+
+    ```kts {6-7} title="setup.main.kts"
+    @file:DependsOn("me.tbsten.katachi:katachi-script:0.4.0")
+
+    import me.tbsten.katachi.script.*
+
+    val katachi = Katachi(
+        defaultPackage = "com.example.app",
+        lang = ja,
+    )
+
+    executeCommands(
+        katachi.agent.init, // katachi agent init --lang ja
+        katachi.scaffold,   // katachi scaffold --package com.example.app
+    )
+    ```
+
+  </TabItem>
+</Tabs>
+
+## Available commands
+
+For the list of available commands, their options, and other details, see [the CLI page](../cli).
+
+## Summary
+
+- katachi-script is a package for lining up katachi CLI commands in Kotlin and running them.
+- You run `*.katachi.kts` with the katachi CLI (`katachi <file>.katachi.kts`). You can use `katachi` without `@file:DependsOn` or import.
+- You can run `*.main.kts` with only the Kotlin CLI (`kotlin <file>.main.kts`). You write `@file:DependsOn`, the import, and the `Katachi()` instance yourself.
+- You pass common settings as top-level properties in `*.katachi.kts`, and as arguments of `Katachi(...)` in `*.main.kts`.
+
+## Next steps
+
+<CardGrid>
+  <LinkCard
+    title="katachi CLI"
+    href="/katachi/guides/cli-and-script/cli/"
+    description="See the list of commands and options you can call from a script."
+  />
+  <LinkCard
+    title="Use with an AI Agent"
+    href="/katachi/recipes/ai-agent/"
+    description="Learn how to let an AI Agent set up katachi for you."
+  />
+</CardGrid>
