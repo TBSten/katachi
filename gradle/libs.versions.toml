@@ -1,6 +1,6 @@
 [versions]
-katachi = "0.3.0"
-katachiIntellij = "0.2.0"
+katachi = "0.4.0"
+katachiIntellij = "0.4.0"
 kotlin = "2.4.10"
 kotest = "6.2.6"
 konsist = "0.18.1"
