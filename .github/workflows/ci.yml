@@ -215,7 +215,26 @@ jobs:
       # The root build (which only configures here) runs on 17 like the job above; the plugin's
       # `jvmToolchain(21)` needs a 21, the JBR version the 261 platform runs on. The last one listed
       # becomes JAVA_HOME, which the plugin's wrapper inherits from the Exec task.
+      #
+      # The macOS runner has no Temurin in its tool cache, so setup-java downloads both from GitHub
+      # releases, which sometimes answers 504 for a minute (setup-java's own retries span ~45 s). One
+      # more attempt after a pause, so that a GitHub hiccup does not fail the job before any test ran.
       - name: Set up JDK 17 and 21
+        id: setup-java
+        continue-on-error: true
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: |
+            17
+            21
+
+      - name: Wait before retrying the JDK download
+        if: steps.setup-java.outcome == 'failure'
+        run: sleep 60
+
+      - name: Set up JDK 17 and 21 (retry)
+        if: steps.setup-java.outcome == 'failure'
         uses: actions/setup-java@v6
         with:
           distribution: temurin
