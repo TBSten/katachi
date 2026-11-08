@@ -122,6 +122,24 @@ private val TEST_FRAMEWORK_TYPE = ChoiceType(
     "The test framework `katachi scaffold --test-framework` lays the test module out for",
     listOf(ChoiceValue("junit5", "JUnit 5"), ChoiceValue("kotest", "Kotest")),
 )
+private val KOTEST_STYLE_TYPE = ChoiceType(
+    "KotestStyle",
+    "The spec style `katachi scaffold --kotest-style` writes the Kotest test in",
+    listOf(
+        ChoiceValue("fun-spec", "`FunSpec`, the default: `test(\"...\") { }`"),
+        ChoiceValue("string-spec", "`StringSpec`: `\"...\" { }`"),
+        ChoiceValue("should-spec", "`ShouldSpec`: `should(\"...\") { }`"),
+        ChoiceValue("describe-spec", "`DescribeSpec`: `describe(\"...\") { it(\"...\") { } }`"),
+        ChoiceValue("behavior-spec", "`BehaviorSpec`: `Given(\"...\") { Then(\"...\") { } }`"),
+        ChoiceValue("word-spec", "`WordSpec`: `\"...\" should { \"...\" { } }`"),
+        ChoiceValue("free-spec", "`FreeSpec`: `\"...\" { }`"),
+        ChoiceValue("feature-spec", "`FeatureSpec`: `feature(\"...\") { scenario(\"...\") { } }`"),
+        ChoiceValue("expect-spec", "`ExpectSpec`: `context(\"...\") { expect(\"...\") { } }`"),
+        ChoiceValue("annotation-spec", "`AnnotationSpec`: a `@Test` function, as in JUnit"),
+    ),
+    // Bare names such as `free-spec` are not Kotlin identifiers; scripts write `KotestStyle.FreeSpec`.
+    bareNames = false,
+)
 private val DEPENDENCY_STYLE_TYPE = ChoiceType(
     "DependencyStyle",
     "How `katachi scaffold --deps` writes the dependencies of the test module",
@@ -268,6 +286,12 @@ internal val COMMAND_SPECS: List<CommandSpec> = listOf(
                 doc = "the framework the generated tests use",
                 param = "framework",
                 sample = "kotest",
+            ),
+            OptionSpec(
+                "--kotest-style",
+                OptionKind.Choice(KOTEST_STYLE_TYPE),
+                doc = "the spec style of the generated Kotest test. Without `--test-framework`, it picks kotest",
+                param = "style",
             ),
             OptionSpec("--deps", OptionKind.Choice(DEPENDENCY_STYLE_TYPE), doc = "how the dependencies are written", param = "style"),
             OptionSpec("--force", OptionKind.Flag, doc = "overwrites an existing test module"),

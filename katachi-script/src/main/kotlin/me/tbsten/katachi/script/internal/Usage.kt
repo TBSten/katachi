@@ -34,6 +34,10 @@ katachi — katachi の導入と検査を手伝うコマンド
       --test-framework <junit5|kotest>
                           テストの雛形と依存（既定: preferences.testFramework。無ければ
                           kotest の依存がプロジェクトにあれば kotest、なければ junit5）
+      --kotest-style <fun-spec|string-spec|should-spec|describe-spec|behavior-spec|
+                      word-spec|free-spec|feature-spec|expect-spec|annotation-spec>
+                          kotest のテストの書き方（既定: fun-spec）。free-spec なら FreeSpec で
+                          書く。--test-framework を省くと kotest にする。junit5 とは一緒に使えない
       --deps <catalog|literal>
                           依存の書き方（既定: preferences.dependencyStyle。無ければ
                           gradle/libs.versions.toml があれば catalog）。catalog は toml に
@@ -108,6 +112,10 @@ Usage:
       --test-framework <junit5|kotest>
                           Test template and dependencies (default: preferences.testFramework;
                           otherwise kotest when the project depends on kotest, else junit5)
+      --kotest-style <fun-spec|string-spec|should-spec|describe-spec|behavior-spec|
+                      word-spec|free-spec|feature-spec|expect-spec|annotation-spec>
+                          How the Kotest test is written (default: fun-spec); free-spec writes a
+                          FreeSpec. Without --test-framework it picks kotest. Not with junit5
       --deps <catalog|literal>
                           How dependencies are written (default: preferences.dependencyStyle;
                           otherwise catalog when gradle/libs.versions.toml exists). catalog adds
