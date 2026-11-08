@@ -3,11 +3,12 @@
 
 package me.tbsten.katachi.script
 
+import me.tbsten.katachi.script.command.AgentCommandGroup
 import me.tbsten.katachi.script.command.TestCommand
 import me.tbsten.katachi.script.internal.CommandLine
 
 /**
- * Same as `katachi test` on the command line: runs the tests of the test module and prints only a summary.
+ * Same as `katachi agent test` on the command line: runs the tests of the test module and prints only a summary.
  */
-public val Katachi.test: TestCommand
-    get() = TestCommand(this, CommandLine(listOf("test")))
+public val AgentCommandGroup.test: TestCommand
+    get() = TestCommand(this.katachi, CommandLine(listOf("agent", "test")))

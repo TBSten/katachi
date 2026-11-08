@@ -3,11 +3,12 @@
 
 package me.tbsten.katachi.script
 
+import me.tbsten.katachi.script.command.AgentCommandGroup
 import me.tbsten.katachi.script.command.InitCommand
 import me.tbsten.katachi.script.internal.CommandLine
 
 /**
- * Same as `katachi init` on the command line, starting from this [Katachi]'s defaults: makes the working directory and lays out the check list and the report.
+ * Same as `katachi agent init` on the command line, starting from this [Katachi]'s defaults: makes the working directory and lays out the check list and the report.
  */
-public val Katachi.init: InitCommand
-    get() = InitCommand(this, CommandLine(listOf("init")).withNonEmpty("--workdir", this.workdir).withNonEmpty("--katachi", this.katachiVersion).withNonEmpty("--module-dir", this.moduleDir).withNonEmpty("--lang", this.lang?.value))
+public val AgentCommandGroup.init: InitCommand
+    get() = InitCommand(this.katachi, CommandLine(listOf("agent", "init")).withNonEmpty("--workdir", this.katachi.workdir).withNonEmpty("--katachi", this.katachi.katachiVersion).withNonEmpty("--module-dir", this.katachi.moduleDir).withNonEmpty("--lang", this.katachi.lang?.value))

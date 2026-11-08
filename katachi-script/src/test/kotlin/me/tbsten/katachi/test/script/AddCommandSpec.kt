@@ -17,7 +17,7 @@ class AddCommandSpec : FreeSpec({
     "violation をチェックリストに 1 件追記し、渡さなかった項目は null にする" {
         val fixture = AddFixture()
 
-        val run = fixture.run("add", "violation", "--violation", "[UnexpectedFile] a.kt", "--location", "app/a.kt")
+        val run = fixture.run("agent", "add", "violation", "--violation", "[UnexpectedFile] a.kt", "--location", "app/a.kt")
 
         run.status shouldBe 0
         run.out shouldContain "violations に1件追記しました（計 1 件）"
@@ -30,8 +30,8 @@ class AddCommandSpec : FreeSpec({
     "question には q1, q2 と id を振り、--options は何度でも渡せる" {
         val fixture = AddFixture()
 
-        fixture.run("add", "question", "--question", "A?").out shouldContain "id=q1"
-        val second = fixture.run("add", "question", "--question", "B?", "--options", "yes", "--options", "no")
+        fixture.run("agent", "add", "question", "--question", "A?").out shouldContain "id=q1"
+        val second = fixture.run("agent", "add", "question", "--question", "B?", "--options", "yes", "--options", "no")
 
         second.out shouldContain "id=q2"
         val rows = fixture.checkList()["questions"]!!.jsonArray
@@ -42,7 +42,7 @@ class AddCommandSpec : FreeSpec({
     "codebase-question はレポートに cq1 として書く" {
         val fixture = AddFixture()
 
-        fixture.run("add", "codebase-question", "--question", "Which naming?").out shouldContain "id=cq1"
+        fixture.run("agent", "add", "codebase-question", "--question", "Which naming?").out shouldContain "id=cq1"
 
         fixture.report()["questions"]!!.jsonArray.single().jsonObject["id"] shouldBe JsonPrimitive("cq1")
         fixture.checkList()["questions"]!!.jsonArray.size shouldBe 0
@@ -51,10 +51,10 @@ class AddCommandSpec : FreeSpec({
     "role の importance は数値にし、数値でなければ何も書かずに止まる" {
         val fixture = AddFixture()
 
-        fixture.run("add", "role", "--name", "Repository", "--importance", " 3 ", "--group", "data").status shouldBe 0
+        fixture.run("agent", "add", "role", "--name", "Repository", "--importance", " 3 ", "--group", "data").status shouldBe 0
         fixture.report()["roles"]!!.jsonArray.single().jsonObject["importance"] shouldBe JsonPrimitive(3)
 
-        val run = fixture.run("add", "role", "--name", "Mapper", "--importance", "high")
+        val run = fixture.run("agent", "add", "role", "--name", "Mapper", "--importance", "high")
         run.status shouldBe 1
         run.err shouldContain "--importance は数値で指定してください: high"
         fixture.report()["roles"]!!.jsonArray.size shouldBe 1
@@ -63,32 +63,32 @@ class AddCommandSpec : FreeSpec({
     "Gradle のビルドファイルを layout にした role は止まる（buildSrc と制約だけの Role は通す）" {
         val fixture = AddFixture()
 
-        val gradle = fixture.run("add", "role", "--name", "Build", "--layout", "app/build.gradle.kts")
+        val gradle = fixture.run("agent", "add", "role", "--name", "Build", "--layout", "app/build.gradle.kts")
         gradle.status shouldBe 1
         gradle.err shouldContain "Gradle のビルドファイルは gradle() が受け持ちます。Role 候補には書きません: app/build.gradle.kts"
 
-        fixture.run("add", "role", "--name", "Convention", "--layout", "buildSrc/build.gradle.kts").status shouldBe 0
+        fixture.run("agent", "add", "role", "--name", "Convention", "--layout", "buildSrc/build.gradle.kts").status shouldBe 0
 
-        val noNote = fixture.run("add", "role", "--name", "Catalog", "--layout", "gradle/libs.versions.toml", "--constraint-only")
+        val noNote = fixture.run("agent", "add", "role", "--name", "Catalog", "--layout", "gradle/libs.versions.toml", "--constraint-only")
         noNote.status shouldBe 1
         noNote.err shouldContain "--constraint-only には --note で理由（何を検査するか）を書いてください"
 
-        fixture.run("add", "role", "--name", "Catalog", "--layout", "gradle/libs.versions.toml", "--constraint-only", "--note", "versions").status shouldBe 0
+        fixture.run("agent", "add", "role", "--name", "Catalog", "--layout", "gradle/libs.versions.toml", "--constraint-only", "--note", "versions").status shouldBe 0
         val catalog = fixture.report()["roles"]!!.jsonArray.last().jsonObject
         catalog["constraintOnly"] shouldBe JsonPrimitive(true)
     }
 
     "同じ path の module は二重に書かずに止まり、changed は記録済みと言って 0 で返す" {
         val fixture = AddFixture()
-        fixture.run("add", "module", "--path", "app", "--kind", "android").status shouldBe 0
+        fixture.run("agent", "add", "module", "--path", "app", "--kind", "android").status shouldBe 0
 
-        val module = fixture.run("add", "module", "--path", "app", "--kind", "jvm")
+        val module = fixture.run("agent", "add", "module", "--path", "app", "--kind", "jvm")
         module.status shouldBe 1
         module.err shouldContain "その path はすでに登録されています: app"
         fixture.report()["modules"]!!.jsonArray.size shouldBe 1
 
-        fixture.run("add", "changed", "--path", "build.gradle.kts", "--change", "edited").status shouldBe 0
-        val changed = fixture.run("add", "changed", "--path", "build.gradle.kts", "--change", "edited")
+        fixture.run("agent", "add", "changed", "--path", "build.gradle.kts", "--change", "edited").status shouldBe 0
+        val changed = fixture.run("agent", "add", "changed", "--path", "build.gradle.kts", "--change", "edited")
         changed.status shouldBe 0
         changed.err shouldContain "その path は記録済みです: build.gradle.kts"
         fixture.checkList()["changedFiles"]!!.jsonArray.size shouldBe 1
@@ -97,7 +97,7 @@ class AddCommandSpec : FreeSpec({
     "その種類に無い項目は使える項目を挙げて止まり、module の --role には --responsibility を案内する" {
         val fixture = AddFixture()
 
-        val run = fixture.run("add", "module", "--path", "app", "--role", "ui")
+        val run = fixture.run("agent", "add", "module", "--path", "app", "--role", "ui")
 
         run.status shouldBe 1
         run.err shouldContain "--role は module で使えません"
@@ -107,7 +107,7 @@ class AddCommandSpec : FreeSpec({
 
     "項目が 1 つも無ければ空の行を作らずに止まる" {
         val fixture = AddFixture()
-        val run = fixture.run("add", "tool")
+        val run = fixture.run("agent", "add", "tool")
         run.status shouldBe 1
         run.err shouldContain "項目を1つも指定していません: add tool"
         fixture.report()["tools"]!!.jsonArray.size shouldBe 0
@@ -115,28 +115,28 @@ class AddCommandSpec : FreeSpec({
 
     "値の無い項目と知らない種類は止まる" {
         val fixture = AddFixture()
-        fixture.run("add", "excluded", "--path").err shouldContain "--path に値がありません"
-        fixture.run("add", "nothing", "--x", "y").err shouldContain "add: 知らない種類です: nothing"
-        fixture.run("add").err shouldContain "add: 種類を指定してください"
+        fixture.run("agent", "add", "excluded", "--path").err shouldContain "--path に値がありません"
+        fixture.run("agent", "add", "nothing", "--x", "y").err shouldContain "add: 知らない種類です: nothing"
+        fixture.run("agent", "add").err shouldContain "add: 種類を指定してください"
     }
 
     "add <種類> --help は init の前でも項目の一覧を出す" {
-        val run = runCapturing(createTempDirectory("katachi-script-"), listOf("add", "question", "--help"))
+        val run = runCapturing(createTempDirectory("katachi-script-"), listOf("agent", "add", "question", "--help"))
         run.status shouldBe 0
         run.out shouldContain "使える項目: --question, --observed, --recommendation, --options"
         run.out shouldContain "id は q1, q2, ... と自動で採番されます"
     }
 
     "作業用ディレクトリが無ければ init を案内して止まる" {
-        val run = runCapturing(createTempDirectory("katachi-script-"), listOf("add", "violation", "--violation", "x"))
+        val run = runCapturing(createTempDirectory("katachi-script-"), listOf("agent", "add", "violation", "--violation", "x"))
         run.status shouldBe 1
-        run.err shouldContain "先に 'katachi init' を実行してください"
+        run.err shouldContain "先に 'katachi agent init' を実行してください"
     }
 
     "init が作ったテンプレートにそのまま書ける" {
         val project = initializedProject()
 
-        val run = runCapturing(project, listOf("add", "tool", "--name", "detekt", "--configPath", "config/detekt.yml"))
+        val run = runCapturing(project, listOf("agent", "add", "tool", "--name", "detekt", "--configPath", "config/detekt.yml"))
 
         run.status shouldBe 0
         run.out shouldContain "tools に1件追記しました（計 1 件）"

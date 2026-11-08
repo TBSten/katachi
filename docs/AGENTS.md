@@ -214,7 +214,7 @@ Astro は `public/` を加工せずそのままコピーするので、`<base-ur
 
 | ファイル | 役割 |
 |---|---|
-| `<lang>/index.md` | インストール手順そのもの。エージェントは `katachi guide <セクション ID>` でセクションずつ読んで動く。`katachi` が入る前に読むのは 0 章だけ |
+| `<lang>/index.md` | インストール手順そのもの。エージェントは `katachi agent guide <セクション ID>` でセクションずつ読んで動く。`katachi` が入る前に読むのは 0 章だけ |
 | `<lang>/install-check-list.html` | 進捗と結果のチェックリスト。`init` が配置し、中の `<script type="application/json" id="checklist">` を `katachi` の `data` 系のサブコマンドが書き換える |
 | `<lang>/project-code-base-report-template.html` | コードベース解析レポートのテンプレート。`init` が配置する |
 | `katachi-install.sh` | 以前の導入キット（POSIX sh）。手順書はもう参照しない。v0.5 で配信ごと消す（KATACHI-255） |

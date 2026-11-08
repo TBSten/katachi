@@ -3,11 +3,12 @@
 
 package me.tbsten.katachi.script
 
+import me.tbsten.katachi.script.command.AgentCommandGroup
 import me.tbsten.katachi.script.command.DocsCommand
 import me.tbsten.katachi.script.internal.CommandLine
 
 /**
- * Same as `katachi docs` on the command line: fetches the katachi guide into the working directory and prints the path.
+ * Same as `katachi agent docs` on the command line: fetches the katachi guide into the working directory and prints the path.
  */
-public val Katachi.docs: DocsCommand
-    get() = DocsCommand(this, CommandLine(listOf("docs")))
+public val AgentCommandGroup.docs: DocsCommand
+    get() = DocsCommand(this.katachi, CommandLine(listOf("agent", "docs")))

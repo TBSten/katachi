@@ -14,6 +14,7 @@ import kotlin.io.path.writeText
 import me.tbsten.katachi.script.internal.COMMAND_SPECS
 import me.tbsten.katachi.script.internal.Lang
 import me.tbsten.katachi.script.internal.ScriptContext
+import me.tbsten.katachi.script.internal.agentUsage
 import me.tbsten.katachi.script.internal.usage
 
 /** Every subcommand runs in Kotlin; nothing is handed to katachi-install.sh any more (KATACHI-228 / 229). */
@@ -27,16 +28,46 @@ class RunScriptSpec : FreeSpec({
     "--help は katachi … の形の使い方を出し、sh のキットを名指ししない" {
         val run = runCapturing(createTempDirectory("katachi-script-"), listOf("--help"))
         run.status shouldBe 0
-        run.out shouldContain "katachi init"
         run.out shouldContain "katachi scaffold --package"
         run.out shouldNotContain "katachi-install.sh"
         run.out shouldNotContain "sh <CLI>"
     }
 
+    "--help は人が打つコマンドだけを並べ、agent のコマンドは agent の 1 行にまとめる" {
+        val run = runCapturing(createTempDirectory("katachi-script-"), listOf("--help"))
+        run.out shouldContain "katachi doctor"
+        run.out shouldContain "katachi lint"
+        run.out shouldContain "katachi agent <サブコマンド>"
+        run.out shouldNotContain "katachi agent init"
+        run.out shouldNotContain "katachi init"
+    }
+
+    "agent の --help は手順書のステップが使うコマンドを並べる" {
+        for (args in listOf(listOf("agent"), listOf("agent", "--help"))) {
+            val run = runCapturing(createTempDirectory("katachi-script-"), args)
+            run.status shouldBe 0
+            run.out shouldContain "katachi agent init"
+            run.out shouldContain "katachi agent check <項目 id>..."
+            run.out shouldNotContain "katachi scaffold --package"
+        }
+    }
+
+    "agent のコマンドをトップで打つと agent の下にあると言って止まる" {
+        val run = runCapturing(createTempDirectory("katachi-script-"), listOf("init", "--lang", "ja"))
+        run.status shouldBe 1
+        run.err shouldContain "init は 'katachi agent init' です"
+    }
+
+    "人が打つコマンドは agent の下には無い" {
+        val run = runCapturing(createTempDirectory("katachi-script-"), listOf("agent", "scaffold"))
+        run.status shouldBe 1
+        run.err shouldContain "katachi agent のサブコマンドではありません: scaffold"
+    }
+
     "サブコマンドの --help は値として読まずに使い方を出す" {
-        val run = runCapturing(createTempDirectory("katachi-script-"), listOf("data", "get", "--help"))
+        val run = runCapturing(createTempDirectory("katachi-script-"), listOf("agent", "data", "get", "--help"))
         run.status shouldBe 0
-        run.out shouldContain "katachi data get"
+        run.out shouldContain "katachi agent data get"
     }
 
     "知らないサブコマンドは止まる" {
@@ -48,10 +79,10 @@ class RunScriptSpec : FreeSpec({
     "使い方には spec にあるオプションがすべて載っている（ja / en）" {
         for (lang in Lang.entries) {
             val context = ScriptContext(createTempDirectory("katachi-script-"), emptyMap(), {}, {}).also { it.lang = lang }
-            val text = context.usage()
+            val text = context.usage() + "\n" + context.agentUsage()
             // add lists the fields of each kind in `add <kind> --help`, which reads the same ADD_KINDS.
             val missing = COMMAND_SPECS.filter { it.name != "add" }
-                .flatMap { spec -> (spec.options + spec.subcommands.flatMap { it.options }).map { spec.name to it } }
+                .flatMap { spec -> (spec.options + spec.subcommands.flatMap { it.options }).map { spec.path.joinToString(" ") to it } }
                 .filter { (command, option) ->
                     if (option.keyValue) {
                         !text.contains(option.name)
@@ -65,15 +96,15 @@ class RunScriptSpec : FreeSpec({
     }
 
     "guide は init の前でも同梱の手順書から目次を出す" {
-        val run = runCapturing(createTempDirectory("katachi-script-"), listOf("guide", "--lang", "en"))
+        val run = runCapturing(createTempDirectory("katachi-script-"), listOf("agent", "guide", "--lang", "en"))
         run.status shouldBe 0
         run.out shouldContain "0-2\tRun init"
     }
 
-    "guide <セクション> の次の案内は katachi guide の形" {
-        val run = runCapturing(createTempDirectory("katachi-script-"), listOf("guide", "1-1"))
+    "guide <セクション> の次の案内は katachi agent guide の形" {
+        val run = runCapturing(createTempDirectory("katachi-script-"), listOf("agent", "guide", "1-1"))
         run.status shouldBe 0
-        run.out.trimEnd().lines().last() shouldBe "次: katachi guide 1-2"
+        run.out.trimEnd().lines().last() shouldBe "次: katachi agent guide 1-2"
         run.out shouldNotContain "sh \$CLI"
     }
 
@@ -81,13 +112,13 @@ class RunScriptSpec : FreeSpec({
         val project = createTempDirectory("katachi-project-")
         project.resolve("settings.gradle.kts").writeText("rootProject.name = \"p\"\n")
         project.resolve("build.gradle.kts").writeText("plugins {\n    kotlin(\"jvm\") version \"2.4.10\"\n}\n")
-        val run = runCapturing(project, listOf("init", "--offline", "--katachi", "0.4.0", "--lang", "ja", "--workdir", ".local/install-katachi"))
+        val run = runCapturing(project, listOf("agent", "init", "--offline", "--katachi", "0.4.0", "--lang", "ja", "--workdir", ".local/install-katachi"))
         run.status shouldBe 0
         val workdir = project.resolve(".local/install-katachi")
         workdir.resolve("check-list.html").readText() shouldContain "\"version\": \"0.4.0\""
         workdir.resolve("check-list.html").readText() shouldNotContain "sh katachi-install.sh "
         workdir.resolve("project-code-base-report.html").exists() shouldBe true
-        workdir.resolve("tmp/cache/index.md").readText() shouldContain "katachi check 0-1 0-2"
+        workdir.resolve("tmp/cache/index.md").readText() shouldContain "katachi agent check 0-1 0-2"
         workdir.resolve("tmp/cache/lang").readText() shouldBe "ja"
         workdir.resolve("tmp/katachi-install.sh").exists() shouldBe false
         // The guide is written for the katachi command itself, so nothing is left to rewrite (KATACHI-287).
@@ -95,18 +126,18 @@ class RunScriptSpec : FreeSpec({
         workdir.resolve("tmp/cache/index.md").readText() shouldNotContain "/tmp/katachi-install.sh"
         run.out shouldNotContain "KATACHI_CLI="
         run.out shouldContain "KATACHI_KOTLIN=2.4.10"
-        run.out.trimEnd().lines().last() shouldStartWith "次: katachi check 0-1 0-2"
+        run.out.trimEnd().lines().last() shouldStartWith "次: katachi agent check 0-1 0-2"
     }
 
     "init のあとは同じディレクトリから作業用ディレクトリを見つけ、記録した言語で答える" {
         val project = createTempDirectory("katachi-project-")
         project.resolve("settings.gradle.kts").writeText("rootProject.name = \"p\"\n")
-        runCapturing(project, listOf("init", "--offline", "--katachi", "0.4.0", "--lang", "en", "--workdir", ".local/install-katachi")).status shouldBe 0
-        val check = runCapturing(project, listOf("check", "0-1", "0-2"))
+        runCapturing(project, listOf("agent", "init", "--offline", "--katachi", "0.4.0", "--lang", "en", "--workdir", ".local/install-katachi")).status shouldBe 0
+        val check = runCapturing(project, listOf("agent", "check", "0-1", "0-2"))
         check.status shouldBe 0
         check.out shouldContain "Marked as done: 0-1, 0-2"
-        check.out shouldContain "Next: katachi guide 0-3"
-        val verify = runCapturing(project, listOf("verify"))
+        check.out shouldContain "Next: katachi agent guide 0-3"
+        val verify = runCapturing(project, listOf("agent", "verify"))
         verify.status shouldBe 1
         verify.out shouldContain "check-list: not done 1-1"
     }

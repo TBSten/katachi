@@ -49,7 +49,7 @@ private fun ScriptContext.printSummary(cl: JMap, report: JMap, module: ModuleDir
         out(workdirLine)
         out(pick("  終わった項目: %s", "  Done: %s").format(done.joinToString(" ") { pyStr(it["id"]) }.ifEmpty { "-" }))
         nextSection(items, toc)?.let { section ->
-            say("  次のセクション: $CLI_COMMAND guide $section", "  Next section: $CLI_COMMAND guide $section")
+            say("  次のセクション: $AGENT_COMMAND guide $section", "  Next section: $AGENT_COMMAND guide $section")
         }
         if (definitionExists) {
             say("  定義: ${fileUriOf(definition)}", "  Definition: ${fileUriOf(definition)}")
@@ -130,13 +130,13 @@ private fun ScriptContext.printSummary(cl: JMap, report: JMap, module: ModuleDir
     out(workdirLine)
     out(pick("  終わった項目: %s", "  Done: %s").format((items + optionalItems).filter { truthy(it["done"]) }.joinToString(" ") { pyStr(it["id"]) }))
     say("  次のセクション（ユーザの依頼に合わせて選ぶ）:", "  Next section (pick the one the user asked for):")
-    say("    - レビューの指摘を直す: $CLI_COMMAND guide 6-0", "    - Fix what the review pointed out: $CLI_COMMAND guide 6-0")
+    say("    - レビューの指摘を直す: $AGENT_COMMAND guide 6-0", "    - Fix what the review pointed out: $AGENT_COMMAND guide 6-0")
     for (item in optionalItems) {
         val id = pyStr(item["id"])
         if (truthy(item["done"]) || id !in optionalTitles) continue
         if (id == "6-4" && templates.isEmpty()) continue
         val (section, title) = optionalTitles.getValue(id)
-        out("    - $title: $CLI_COMMAND guide $section")
+        out("    - $title: $AGENT_COMMAND guide $section")
     }
 }
 

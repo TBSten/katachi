@@ -100,8 +100,8 @@ internal fun ScriptContext.runDocs(args: List<String>): Int {
         if (lines.isEmpty() && cached) {
             dest.deleteIfExists()
             die(
-                "${fileUri(full)} に見出し「$title」がありません。取得済みの全文が古い可能性があります。--refresh を付けて取り直してください（$CLI_COMMAND docs --topic $topic --refresh）。",
-                "No heading \"$title\" in ${fileUri(full)} . The copy fetched earlier may be old. Fetch it again with --refresh ($CLI_COMMAND docs --topic $topic --refresh).",
+                "${fileUri(full)} に見出し「$title」がありません。取得済みの全文が古い可能性があります。--refresh を付けて取り直してください（$AGENT_COMMAND docs --topic $topic --refresh）。",
+                "No heading \"$title\" in ${fileUri(full)} . The copy fetched earlier may be old. Fetch it again with --refresh ($AGENT_COMMAND docs --topic $topic --refresh).",
             )
         }
         if (lines.isEmpty()) {

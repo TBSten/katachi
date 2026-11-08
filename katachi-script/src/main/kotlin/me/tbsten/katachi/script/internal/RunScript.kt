@@ -6,10 +6,19 @@ private val HELP_ANYWHERE = setOf(
     "init", "doctor", "scaffold", "docs",
 )
 
+/** `katachi agent <name>`: the steps of the install guide (KATACHI-290). */
+private val AGENT_COMMANDS: Set<String> = COMMAND_SPECS.filter { it.agent }.map { it.name }.toSet()
+
+private fun isHelp(arg: String?): Boolean = arg == "-h" || arg == "--help"
+
 internal fun runScript(args: List<String>, context: ScriptContext): Int {
     val command = args.firstOrNull() ?: ""
     val rest = args.drop(1)
     return try {
+        if (command == AGENT_GROUP) {
+            context.resolveLang(rest.firstOrNull() ?: "", rest.drop(1))
+            return context.runAgent(rest)
+        }
         context.resolveLang(command, rest)
         when {
             command == "--version" || command == "version" -> {
@@ -17,15 +26,19 @@ internal fun runScript(args: List<String>, context: ScriptContext): Int {
                 0
             }
 
-            command == "" || command == "-h" || command == "--help" -> {
+            command == "" || isHelp(command) -> {
                 context.out(context.usage())
                 0
             }
 
             command.endsWith(KATACHI_SCRIPT_EXTENSION) -> context.runKatachiScriptFile(command, rest)
 
-            // add reads --help itself: `add role --help` lists the fields of a role.
-            command in HELP_ANYWHERE && rest.any { it == "-h" || it == "--help" } -> {
+            command in AGENT_COMMANDS -> die(
+                "$command は '$AGENT_COMMAND $command' です（AI エージェントが手順書に従って使うコマンドは agent の下にあります）",
+                "$command is '$AGENT_COMMAND $command' (the commands an AI agent runs for the install guide sit under agent)",
+            )
+
+            command in HELP_ANYWHERE && rest.any(::isHelp) -> {
                 context.out(context.usage())
                 0
             }
@@ -36,6 +49,31 @@ internal fun runScript(args: List<String>, context: ScriptContext): Int {
         val message = context.pick(exit.ja, exit.en)
         if (message.isNotEmpty()) context.err(if (exit.plain) message else "\n[x] $message")
         exit.status
+    }
+}
+
+/** `katachi agent ...`: only the [AGENT_COMMANDS]; `katachi agent` alone or with --help lists them. */
+private fun ScriptContext.runAgent(args: List<String>): Int {
+    val command = args.firstOrNull()
+    val rest = args.drop(1)
+    return when {
+        command == null || isHelp(command) -> {
+            out(agentUsage())
+            0
+        }
+
+        command !in AGENT_COMMANDS -> die(
+            "$AGENT_COMMAND のサブコマンドではありません: $command（$AGENT_COMMAND --help を見てください）",
+            "Not a subcommand of $AGENT_COMMAND: $command (see $AGENT_COMMAND --help)",
+        )
+
+        // add reads --help itself: `agent add role --help` lists the fields of a role.
+        command in HELP_ANYWHERE && rest.any(::isHelp) -> {
+            out(agentUsage())
+            0
+        }
+
+        else -> dispatch(command, rest)
     }
 }
 

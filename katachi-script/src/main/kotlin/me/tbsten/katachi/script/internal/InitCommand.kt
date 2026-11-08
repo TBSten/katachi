@@ -200,8 +200,8 @@ internal fun ScriptContext.runInit(args: List<String>): Int {
     // The guide too, for people to open; `katachi guide <id>` prints it section by section. Rewritten every time, so a language change leaves nothing behind.
     placeBundled(Bundle.GUIDE, cache.resolve("index.md"), manifest)
     note(
-        "手順書:             ${fileUri(cache.resolve("index.md"))} （$CLI_COMMAND guide で目次）",
-        "Guide:              ${fileUri(cache.resolve("index.md"))} ($CLI_COMMAND guide for the table of contents)",
+        "手順書:             ${fileUri(cache.resolve("index.md"))} （$AGENT_COMMAND guide で目次）",
+        "Guide:              ${fileUri(cache.resolve("index.md"))} ($AGENT_COMMAND guide for the table of contents)",
     )
 
     say("")
@@ -218,8 +218,8 @@ internal fun ScriptContext.runInit(args: List<String>): Int {
     say("========================================================")
     say("")
     say(
-        "以降のコマンドは、このプロジェクトのルートで '$CLI_COMMAND <サブコマンド>' として実行してください（作業用ディレクトリは自動で見つけます。別の場所からは KATACHI_WORKDIR=$workdir を付ける）。",
-        "From now on, run '$CLI_COMMAND <subcommand>' in the root of this project (it finds the working directory itself; from elsewhere, set KATACHI_WORKDIR=$workdir).",
+        "以降のコマンド（'$AGENT_COMMAND <サブコマンド>'、'$CLI_COMMAND scaffold' など）は、このプロジェクトのルートで実行してください（作業用ディレクトリは自動で見つけます。別の場所からは KATACHI_WORKDIR=$workdir を付ける）。",
+        "From now on, run the commands ('$AGENT_COMMAND <subcommand>', '$CLI_COMMAND scaffold' and so on) in the root of this project (they find the working directory themselves; from elsewhere, set KATACHI_WORKDIR=$workdir).",
     )
     say("")
     if (kotlinOld) {
@@ -229,8 +229,8 @@ internal fun ScriptContext.runInit(args: List<String>): Int {
         )
     } else {
         say(
-            "次: $CLI_COMMAND check 0-1 0-2（続けて、出力の「次:」のセクションを読む）",
-            "Next: $CLI_COMMAND check 0-1 0-2 (then read the section its \"Next:\" line names)",
+            "次: $AGENT_COMMAND check 0-1 0-2（続けて、出力の「次:」のセクションを読む）",
+            "Next: $AGENT_COMMAND check 0-1 0-2 (then read the section its \"Next:\" line names)",
         )
     }
     return 0

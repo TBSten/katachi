@@ -7,15 +7,15 @@ import me.tbsten.katachi.script.numbered
 import me.tbsten.katachi.script.plain
 
 /**
- * Whether `katachi preferences set constraintNames=...` puts the question number in constraint names.
+ * Whether `katachi agent preferences set constraintNames=...` puts the question number in constraint names.
  *
  * The top-level [plain] and [numbered] are the same values, so a script can write them bare.
  *
  * ## Example 1: pass one to the command
  *
  * ```kt
- * katachi.preferences.set.constraintNames(plain)
- * katachi.preferences.set.constraintNames(ConstraintNames.Plain) // the same
+ * katachi.agent.preferences.set.constraintNames(plain)
+ * katachi.agent.preferences.set.constraintNames(ConstraintNames.Plain) // the same
  * ```
  *
  * @property value How the command line spells it.

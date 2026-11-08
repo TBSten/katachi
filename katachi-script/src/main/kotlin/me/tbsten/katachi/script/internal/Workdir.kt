@@ -61,8 +61,8 @@ internal fun ScriptContext.findWorkdir(): Path? = (lookupWorkdir() as? WorkdirLo
 internal fun ScriptContext.requireWorkdir(): Path = when (val lookup = lookupWorkdir()) {
     is WorkdirLookup.Found -> lookup.path
     WorkdirLookup.NotFound -> die(
-        "作業用ディレクトリが分かりません。先に '$CLI_COMMAND init' を実行してください。別の場所から実行するときは環境変数 KATACHI_WORKDIR で指定してください。",
-        "Cannot find the working directory. Run '$CLI_COMMAND init' first. When running from somewhere else, point KATACHI_WORKDIR at it.",
+        "作業用ディレクトリが分かりません。先に '$AGENT_COMMAND init' を実行してください。別の場所から実行するときは環境変数 KATACHI_WORKDIR で指定してください。",
+        "Cannot find the working directory. Run '$AGENT_COMMAND init' first. When running from somewhere else, point KATACHI_WORKDIR at it.",
     )
     is WorkdirLookup.Ambiguous -> die(
         "作業用ディレクトリの候補が複数あります。環境変数 KATACHI_WORKDIR でどれかを指定してください: " +

@@ -1,5 +1,6 @@
 package me.tbsten.katachi.test.script
 
+import me.tbsten.katachi.script.internal.AGENT_GROUP
 import me.tbsten.katachi.script.internal.COMMAND_SPECS
 import me.tbsten.katachi.script.internal.ChoiceType
 import me.tbsten.katachi.script.internal.CommandSpec
@@ -39,6 +40,10 @@ internal fun generateCommandBuilders(specs: List<CommandSpec> = COMMAND_SPECS): 
         val file = CommandFile(spec)
         files["${camel(spec.name)}.kt"] = file.renderEntry()
         files["command/${pascal(spec.name)}Command.kt"] = file.renderBuilders()
+    }
+    specs.firstOrNull { it.agent }?.let { first ->
+        files["${camel(AGENT_GROUP)}.kt"] = renderAgentEntry()
+        files["command/$AGENT_CLASS.kt"] = renderAgentGroup(first)
     }
     files += renderValues(specs)
     return files
@@ -110,6 +115,48 @@ private fun sentence(text: String): String = if (text.isEmpty() || text.endsWith
 
 // endregion
 
+// region agent
+
+/** What `katachi.agent` returns: the [CommandSpec.agent] commands hang off it as extensions, as the others hang off `Katachi`. */
+private val AGENT_CLASS = "${pascal(AGENT_GROUP)}CommandGroup"
+
+/** The builder class of a command: `InitCommand` for `katachi agent init`, as before it moved under agent. */
+private fun className(path: List<String>): String =
+    "${pascal((if (path.firstOrNull() == AGENT_GROUP) path.drop(1) else path).joinToString("-"))}Command"
+
+private fun renderAgentEntry(): String = source(
+    PACKAGE,
+    sortedSetOf("$COMMAND_PACKAGE.$AGENT_CLASS"),
+    doc(
+        "The subcommands of `katachi $AGENT_GROUP`: the steps an AI agent runs as it follows the install guide.",
+        "",
+        "`katachi $AGENT_GROUP` is not a command of its own here: pick one of its subcommands.",
+    ) + "public val Katachi.${identifier(AGENT_GROUP)}: $AGENT_CLASS\n    get() = $AGENT_CLASS(this)\n",
+)
+
+private fun renderAgentGroup(first: CommandSpec): String = source(
+    COMMAND_PACKAGE,
+    sortedSetOf("me.tbsten.katachi.script.Katachi"),
+    doc(
+        "The subcommands of `katachi $AGENT_GROUP`: the steps an AI agent runs as it follows the install guide",
+        "(`katachi $AGENT_GROUP init`, `katachi $AGENT_GROUP check 3-2` and so on).",
+        "",
+        "Each one is an extension of this class, named after the subcommand, and returns its builder.",
+        "",
+        "## Example 1: pick a subcommand",
+        "",
+        "```kt",
+        "val command = Katachi().${entryChain(first, first.path)}${optionChain(first)}",
+        "println(command) // ${exampleLine(first, first.path)}",
+        "command.execute()",
+        "```",
+        "",
+        "@see Katachi",
+    ) + "public class $AGENT_CLASS internal constructor(internal val katachi: Katachi)\n",
+)
+
+// endregion
+
 /** One subcommand of `katachi` and everything under it: an entry point, and a builder or a group of builders. */
 private class CommandFile(private val spec: CommandSpec) {
     private val group = "${pascal(spec.name)}CommandGroup"
@@ -117,17 +164,20 @@ private class CommandFile(private val spec: CommandSpec) {
     /** `katachi.add` / `katachi.guide("3-2")`, in [PACKAGE]: what a script types first. */
     fun renderEntry(): String {
         val imports = sortedSetOf<String>()
+        val receiver = if (spec.agent) AGENT_CLASS else "Katachi"
+        val katachi = if (spec.agent) "this.katachi" else "this"
+        if (spec.agent) imports += "$COMMAND_PACKAGE.$AGENT_CLASS"
         val body = if (spec.subcommands.isEmpty()) {
             imports += "$COMMAND_PACKAGE.${pascal(spec.name)}Command"
             imports += "me.tbsten.katachi.script.internal.CommandLine"
-            entry(spec, listOf(spec.name), receiver = "Katachi", katachi = "this", imports)
+            entry(spec, spec.path, receiver = receiver, katachi = katachi, imports)
         } else {
             imports += "$COMMAND_PACKAGE.$group"
             doc(
-                "The subcommands of `katachi ${spec.name}`: ${sentence(spec.doc)}",
+                "The subcommands of `katachi ${spec.path.joinToString(" ")}`: ${sentence(spec.doc)}",
                 "",
-                "`katachi ${spec.name}` is not a command of its own here: pick one of its subcommands.",
-            ) + "public val Katachi.${identifier(spec.name)}: $group\n    get() = $group(this)\n"
+                "`katachi ${spec.path.joinToString(" ")}` is not a command of its own here: pick one of its subcommands.",
+            ) + "public val $receiver.${identifier(spec.name)}: $group\n    get() = $group($katachi)\n"
         }
         return source(PACKAGE, imports, body)
     }
@@ -142,12 +192,12 @@ private class CommandFile(private val spec: CommandSpec) {
         )
         val body = StringBuilder()
         if (spec.subcommands.isEmpty()) {
-            body.append(builder(spec, listOf(spec.name), imports))
+            body.append(builder(spec, spec.path, imports))
         } else {
             body.append(group(spec, group, imports))
             for (sub in spec.subcommands) {
                 body.append("\n")
-                body.append(builder(sub, listOf(spec.name, sub.name), imports))
+                body.append(builder(sub, spec.path + sub.name, imports))
             }
         }
         return source(COMMAND_PACKAGE, imports, body.toString())
@@ -155,18 +205,19 @@ private class CommandFile(private val spec: CommandSpec) {
 
     private fun group(spec: CommandSpec, group: String, imports: MutableSet<String>): String = buildString {
         val first = spec.subcommands.first()
-        val default = spec.defaultSubcommand?.let { " `katachi ${spec.name}` alone is the same as [$it]." }.orEmpty()
+        val command = "katachi ${spec.path.joinToString(" ")}"
+        val default = spec.defaultSubcommand?.let { " `$command` alone is the same as [$it]." }.orEmpty()
         append(
             doc(
-                "The subcommands of `katachi ${spec.name}`: ${sentence(spec.doc)}",
+                "The subcommands of `$command`: ${sentence(spec.doc)}",
                 "",
                 "Each one returns the builder of that subcommand.$default",
                 "",
                 "## Example 1: pick a subcommand",
                 "",
                 "```kt",
-                "val command = Katachi().${entryChain(first, listOf(spec.name, first.name))}${optionChain(first)}",
-                "println(command) // ${exampleLine(first, listOf(spec.name, first.name))}",
+                "val command = Katachi().${entryChain(first, spec.path + first.name)}${optionChain(first)}",
+                "println(command) // ${exampleLine(first, spec.path + first.name)}",
                 "command.execute()",
                 "```",
                 "",
@@ -176,14 +227,14 @@ private class CommandFile(private val spec: CommandSpec) {
         append("public class $group internal constructor(private val katachi: Katachi) {\n")
         for ((index, sub) in spec.subcommands.withIndex()) {
             if (index > 0) append("\n")
-            append(entry(sub, listOf(spec.name, sub.name), receiver = null, katachi = "katachi", imports).indented())
+            append(entry(sub, spec.path + sub.name, receiver = null, katachi = "katachi", imports).indented())
         }
         append("}\n")
     }
 
     /** `katachi.doctor` / `katachi.guide("3-2")`: a property when every positional can be left out, a function when there are positionals. */
     private fun entry(spec: CommandSpec, path: List<String>, receiver: String?, katachi: String, imports: MutableSet<String>): String = buildString {
-        val className = "${pascal(path.joinToString("-"))}Command"
+        val className = className(path)
         val start = startLine(spec, path, katachi)
         val declared = if (spec.options.any { it.required }) ", DeclarationSite.capture()" else ""
         val prefix = receiver?.let { "$it." }.orEmpty()
@@ -253,7 +304,7 @@ private class CommandFile(private val spec: CommandSpec) {
     }
 
     private fun builder(spec: CommandSpec, path: List<String>, imports: MutableSet<String>): String = buildString {
-        val className = "${pascal(path.joinToString("-"))}Command"
+        val className = className(path)
         val command = "katachi ${path.joinToString(" ")}"
         val required = spec.options.filter { it.required }
         if (required.isNotEmpty()) {
@@ -441,7 +492,7 @@ private fun renderValues(specs: List<CommandSpec>): Map<String, String> {
         }
         spec.subcommands.forEach { visit(it, path + it.name) }
     }
-    specs.forEach { visit(it, listOf(it.name)) }
+    specs.forEach { visit(it, it.path) }
 
     val files = linkedMapOf<String, String>()
     for ((type, chain) in uses.values) {

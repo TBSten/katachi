@@ -10,24 +10,24 @@ import me.tbsten.katachi.script.internal.run
 import me.tbsten.katachi.script.option.Lang
 
 /**
- * The `katachi init` command: makes the working directory and lays out the check list and the report.
+ * The `katachi agent init` command: makes the working directory and lays out the check list and the report.
  *
- * Building one is writing `katachi init ...` in a shell: the methods are named after the
- * options of `katachi init --help` and add the same flag. Each returns a new
+ * Building one is writing `katachi agent init ...` in a shell: the methods are named after the
+ * options of `katachi agent init --help` and add the same flag. Each returns a new
  * command; calling one twice keeps the last value.
  *
  * ## Example 1: build the command, print it and run it
  *
  * ```kt
- * val command = Katachi().init.offline().lang(ja)
- * println(command) // katachi init --offline --lang ja
+ * val command = Katachi().agent.init.offline().lang(ja)
+ * println(command) // katachi agent init --offline --lang ja
  * command.execute()
  * ```
  *
  * The `execute()` above runs the same thing as this line in a shell:
  *
  * ```sh
- * katachi init --offline --lang ja
+ * katachi agent init --offline --lang ja
  * ```
  *
  * @see Katachi
@@ -39,42 +39,42 @@ public class InitCommand internal constructor(
     private fun next(line: CommandLine) = InitCommand(katachi, line)
 
     /**
-     * Same as `katachi init --workdir <path>` on the command line: the working directory. Without it, the command picks one.
+     * Same as `katachi agent init --workdir <path>` on the command line: the working directory. Without it, the command picks one.
      *
      * @param path Relative to where the command runs, or absolute.
      */
     public fun workdir(path: String): InitCommand = next(line.with("--workdir", path))
 
     /**
-     * Same as `katachi init --katachi <version>` on the command line: the katachi version to record. Without it, the version of this katachi command.
+     * Same as `katachi agent init --katachi <version>` on the command line: the katachi version to record. Without it, the version of this katachi command.
      *
      * @param version Such as `0.4.0`.
      */
     public fun katachi(version: String): InitCommand = next(line.with("--katachi", version))
 
     /**
-     * Same as `katachi init --module-dir <path>` on the command line: where the test module goes, relative to the Gradle root.
+     * Same as `katachi agent init --module-dir <path>` on the command line: where the test module goes, relative to the Gradle root.
      *
      * @param path Such as `static-analysis/katachi`.
      */
     public fun `module-dir`(path: String): InitCommand = next(line.with("--module-dir", path))
 
     /**
-     * Same as `katachi init --offline` on the command line: downloads nothing.
+     * Same as `katachi agent init --offline` on the command line: downloads nothing.
      *
      * @param enabled False takes the option off again.
      */
     public fun offline(enabled: Boolean = true): InitCommand = next(line.withFlag("--offline", enabled))
 
     /**
-     * Same as `katachi init --lang <en|ja>` on the command line: the language of the check list, the report and the command's messages.
+     * Same as `katachi agent init --lang <en|ja>` on the command line: the language of the check list, the report and the command's messages.
      *
      * @param lang [en] or [ja].
      */
     public fun lang(lang: Lang): InitCommand = next(line.with("--lang", lang.value))
 
     /**
-     * Same as `katachi init --force` on the command line: lays out the check list and the report again even when they are filled in.
+     * Same as `katachi agent init --force` on the command line: lays out the check list and the report again even when they are filled in.
      *
      * @param enabled False takes the option off again.
      */
@@ -82,7 +82,7 @@ public class InitCommand internal constructor(
 
     /**
      * Appends [arguments] as they are, for an option this builder has no method for yet:
-     * `arg("--new-option", "v")` is `katachi init ... --new-option v` on the command line.
+     * `arg("--new-option", "v")` is `katachi agent init ... --new-option v` on the command line.
      *
      * @param arguments Such as `"--new-option", "value"`.
      */
@@ -92,6 +92,6 @@ public class InitCommand internal constructor(
 
     override fun execute(): Int = katachi.run(arguments)
 
-    /** The command line as typed in a shell: `katachi init --offline --lang ja`. Values a shell would split are quoted. */
+    /** The command line as typed in a shell: `katachi agent init --offline --lang ja`. Values a shell would split are quoted. */
     override fun toString(): String = commandText(arguments)
 }

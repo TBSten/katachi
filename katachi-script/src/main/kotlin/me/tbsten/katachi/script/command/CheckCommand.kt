@@ -9,22 +9,22 @@ import me.tbsten.katachi.script.internal.commandText
 import me.tbsten.katachi.script.internal.run
 
 /**
- * The `katachi check` command: marks items of the check list done.
+ * The `katachi agent check` command: marks items of the check list done.
  *
- * It takes no options, so building one is writing `katachi check` in a shell.
+ * It takes no options, so building one is writing `katachi agent check` in a shell.
  *
  * ## Example 1: build the command, print it and run it
  *
  * ```kt
- * val command = Katachi().check("3-2")
- * println(command) // katachi check 3-2
+ * val command = Katachi().agent.check("3-2")
+ * println(command) // katachi agent check 3-2
  * command.execute()
  * ```
  *
  * The `execute()` above runs the same thing as this line in a shell:
  *
  * ```sh
- * katachi check 3-2
+ * katachi agent check 3-2
  * ```
  *
  * @see Katachi
@@ -37,7 +37,7 @@ public class CheckCommand internal constructor(
 
     /**
      * Appends [arguments] as they are, for an option this builder has no method for yet:
-     * `arg("--new-option", "v")` is `katachi check ... --new-option v` on the command line.
+     * `arg("--new-option", "v")` is `katachi agent check ... --new-option v` on the command line.
      *
      * @param arguments Such as `"--new-option", "value"`.
      */
@@ -47,6 +47,6 @@ public class CheckCommand internal constructor(
 
     override fun execute(): Int = katachi.run(arguments)
 
-    /** The command line as typed in a shell: `katachi check 3-2`. Values a shell would split are quoted. */
+    /** The command line as typed in a shell: `katachi agent check 3-2`. Values a shell would split are quoted. */
     override fun toString(): String = commandText(arguments)
 }

@@ -9,24 +9,24 @@ import me.tbsten.katachi.script.internal.commandText
 import me.tbsten.katachi.script.internal.run
 
 /**
- * The `katachi warn` command: puts a warning on a step of the check list, which keeps it open even when it is done.
+ * The `katachi agent warn` command: puts a warning on a step of the check list, which keeps it open even when it is done.
  *
- * Building one is writing `katachi warn ...` in a shell: the methods are named after the
- * options of `katachi warn --help` and add the same flag. Each returns a new
+ * Building one is writing `katachi agent warn ...` in a shell: the methods are named after the
+ * options of `katachi agent warn --help` and add the same flag. Each returns a new
  * command; calling one twice keeps the last value.
  *
  * ## Example 1: build the command, print it and run it
  *
  * ```kt
- * val command = Katachi().warn("4", "gradlew is missing")
- * println(command) // katachi warn 4 'gradlew is missing'
+ * val command = Katachi().agent.warn("4", "gradlew is missing")
+ * println(command) // katachi agent warn 4 'gradlew is missing'
  * command.execute()
  * ```
  *
  * The `execute()` above runs the same thing as this line in a shell:
  *
  * ```sh
- * katachi warn 4 'gradlew is missing'
+ * katachi agent warn 4 'gradlew is missing'
  * ```
  *
  * @see Katachi
@@ -38,7 +38,7 @@ public class WarnCommand internal constructor(
     private fun next(line: CommandLine) = WarnCommand(katachi, line)
 
     /**
-     * Same as `katachi warn --clear` on the command line: removes the warning instead of adding one.
+     * Same as `katachi agent warn --clear` on the command line: removes the warning instead of adding one.
      *
      * @param enabled False takes the option off again.
      */
@@ -46,7 +46,7 @@ public class WarnCommand internal constructor(
 
     /**
      * Appends [arguments] as they are, for an option this builder has no method for yet:
-     * `arg("--new-option", "v")` is `katachi warn ... --new-option v` on the command line.
+     * `arg("--new-option", "v")` is `katachi agent warn ... --new-option v` on the command line.
      *
      * @param arguments Such as `"--new-option", "value"`.
      */
@@ -56,6 +56,6 @@ public class WarnCommand internal constructor(
 
     override fun execute(): Int = katachi.run(arguments)
 
-    /** The command line as typed in a shell: `katachi warn 4 'gradlew is missing'`. Values a shell would split are quoted. */
+    /** The command line as typed in a shell: `katachi agent warn 4 'gradlew is missing'`. Values a shell would split are quoted. */
     override fun toString(): String = commandText(arguments)
 }

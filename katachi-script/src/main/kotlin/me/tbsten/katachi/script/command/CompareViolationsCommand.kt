@@ -9,22 +9,22 @@ import me.tbsten.katachi.script.internal.commandText
 import me.tbsten.katachi.script.internal.run
 
 /**
- * The `katachi compare-violations` command: compares the violations of two test logs, as before and after a refactoring of the definition.
+ * The `katachi agent compare-violations` command: compares the violations of two test logs, as before and after a refactoring of the definition.
  *
- * It takes no options, so building one is writing `katachi compare-violations` in a shell.
+ * It takes no options, so building one is writing `katachi agent compare-violations` in a shell.
  *
  * ## Example 1: build the command, print it and run it
  *
  * ```kt
- * val command = Katachi().`compare-violations`("before.log", "after.log")
- * println(command) // katachi compare-violations before.log after.log
+ * val command = Katachi().agent.`compare-violations`("before.log", "after.log")
+ * println(command) // katachi agent compare-violations before.log after.log
  * command.execute()
  * ```
  *
  * The `execute()` above runs the same thing as this line in a shell:
  *
  * ```sh
- * katachi compare-violations before.log after.log
+ * katachi agent compare-violations before.log after.log
  * ```
  *
  * @see Katachi
@@ -37,7 +37,7 @@ public class CompareViolationsCommand internal constructor(
 
     /**
      * Appends [arguments] as they are, for an option this builder has no method for yet:
-     * `arg("--new-option", "v")` is `katachi compare-violations ... --new-option v` on the command line.
+     * `arg("--new-option", "v")` is `katachi agent compare-violations ... --new-option v` on the command line.
      *
      * @param arguments Such as `"--new-option", "value"`.
      */
@@ -47,6 +47,6 @@ public class CompareViolationsCommand internal constructor(
 
     override fun execute(): Int = katachi.run(arguments)
 
-    /** The command line as typed in a shell: `katachi compare-violations before.log after.log`. Values a shell would split are quoted. */
+    /** The command line as typed in a shell: `katachi agent compare-violations before.log after.log`. Values a shell would split are quoted. */
     override fun toString(): String = commandText(arguments)
 }

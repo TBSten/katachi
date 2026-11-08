@@ -8,6 +8,7 @@ import io.kotest.matchers.string.shouldContain
 import java.nio.file.Path
 import kotlin.io.path.createTempDirectory
 import me.tbsten.katachi.script.Katachi
+import me.tbsten.katachi.script.agent
 import me.tbsten.katachi.script.add
 import me.tbsten.katachi.script.answers
 import me.tbsten.katachi.script.catalog
@@ -38,6 +39,7 @@ import me.tbsten.katachi.script.test
 import me.tbsten.katachi.script.uncheck
 import me.tbsten.katachi.script.verify
 import me.tbsten.katachi.script.warn
+import me.tbsten.katachi.script.internal.AGENT_GROUP
 import me.tbsten.katachi.script.internal.commandSpec
 import me.tbsten.katachi.script.internal.parseArgs
 
@@ -79,28 +81,28 @@ class CommandDslSpec : FreeSpec({
             katachi.scaffold.toString() shouldBe "katachi scaffold --package com.example --katachi 0.4.0 --module-dir static/katachi"
             katachi.scaffold.`package`("com.other").deps(catalog).toString() shouldBe
                 "katachi scaffold --package com.other --katachi 0.4.0 --module-dir static/katachi --deps catalog"
-            katachi.init.offline().toString() shouldBe "katachi init --katachi 0.4.0 --module-dir static/katachi --lang ja --offline"
+            katachi.agent.init.offline().toString() shouldBe "katachi agent init --katachi 0.4.0 --module-dir static/katachi --lang ja --offline"
         }
 
         "workdir は init の --workdir になり、cwd はコマンドラインに出ない" {
             val katachi = Katachi(workdir = "tmp/katachi", cwd = Path.of("/somewhere"))
-            katachi.init.toString() shouldBe "katachi init --workdir tmp/katachi"
+            katachi.agent.init.toString() shouldBe "katachi agent init --workdir tmp/katachi"
             katachi.scaffold.toString() shouldBe "katachi scaffold"
         }
 
         "空白や引用符を含む値だけシェル向けに引用する" {
-            Katachi().init.workdir("my dir/it's").toString() shouldBe "katachi init --workdir 'my dir/it'\\''s'"
+            Katachi().agent.init.workdir("my dir/it's").toString() shouldBe "katachi agent init --workdir 'my dir/it'\\''s'"
         }
 
         "arg と command は渡したものをそのまま足す" {
             Katachi().scaffold.arg("--new-option", "v").arguments shouldBe listOf("scaffold", "--new-option", "v")
-            Katachi().command("data", "get", "check-list").toString() shouldBe "katachi data get check-list"
+            Katachi().command("agent", "data", "get", "check-list").toString() shouldBe "katachi agent data get check-list"
         }
 
         "commands の toString は 1 行 1 コマンド" {
             val katachi = Katachi(defaultPackage = "com.example")
-            commands(katachi.init.lang(ja), katachi.scaffold).toString() shouldBe
-                "katachi init --lang ja\nkatachi scaffold --package com.example"
+            commands(katachi.agent.init.lang(ja), katachi.scaffold).toString() shouldBe
+                "katachi agent init --lang ja\nkatachi scaffold --package com.example"
         }
     }
 
@@ -109,81 +111,82 @@ class CommandDslSpec : FreeSpec({
 
         "Katachi の lang は --lang を取るコマンドすべてに入る" {
             Katachi(lang = ja).doctor.toString() shouldBe "katachi doctor --lang ja"
-            Katachi(lang = ja).guide("3-2").refresh().toString() shouldBe "katachi guide 3-2 --lang ja --refresh"
-            katachi.guide.toString() shouldBe "katachi guide"
+            Katachi(lang = ja).agent.guide("3-2").refresh().toString() shouldBe "katachi agent guide 3-2 --lang ja --refresh"
+            katachi.agent.guide.toString() shouldBe "katachi agent guide"
         }
 
         "入れ子のサブコマンドは位置引数を関数の引数で受ける" {
-            katachi.data.get("check-list", "meta.moduleDir").id("checklist").toString() shouldBe
-                "katachi data get check-list meta.moduleDir --id checklist"
-            katachi.data.get("report").toString() shouldBe "katachi data get report"
-            katachi.data.set("check-list", "meta.json").toString() shouldBe "katachi data set check-list meta.json"
-            katachi.data.merge("report", "patch.json").id("report").toString() shouldBe "katachi data merge report patch.json --id report"
+            katachi.agent.data.get("check-list", "meta.moduleDir").id("checklist").toString() shouldBe
+                "katachi agent data get check-list meta.moduleDir --id checklist"
+            katachi.agent.data.get("report").toString() shouldBe "katachi agent data get report"
+            katachi.agent.data.set("check-list", "meta.json").toString() shouldBe "katachi agent data set check-list meta.json"
+            katachi.agent.data.merge("report", "patch.json").id("report").toString() shouldBe "katachi agent data merge report patch.json --id report"
         }
 
         "値を省ける選択肢は引数なしでも書ける" {
-            katachi.docs.api().toString() shouldBe "katachi docs --api"
-            katachi.docs.api(ApiModule.KatachiKonsist).refresh().toString() shouldBe "katachi docs --api katachi-konsist --refresh"
-            katachi.docs.topic("layout").small().topics(false).toString() shouldBe "katachi docs --topic layout --small"
+            katachi.agent.docs.api().toString() shouldBe "katachi agent docs --api"
+            katachi.agent.docs.api(ApiModule.KatachiKonsist).refresh().toString() shouldBe "katachi agent docs --api katachi-konsist --refresh"
+            katachi.agent.docs.topic("layout").small().topics(false).toString() shouldBe "katachi agent docs --topic layout --small"
         }
 
         "test の gradle は -- の後ろに足していく" {
-            katachi.test.save("before-refactor").gradle("--info").gradle("-Dkatachi.baseline.update=true").toString() shouldBe
-                "katachi test --save before-refactor -- --info -Dkatachi.baseline.update=true"
+            katachi.agent.test.save("before-refactor").gradle("--info").gradle("-Dkatachi.baseline.update=true").toString() shouldBe
+                "katachi agent test --save before-refactor -- --info -Dkatachi.baseline.update=true"
         }
 
         "check / uncheck / warn は - で始まる値もそのまま渡す" {
-            katachi.check("1-1", "1-2").toString() shouldBe "katachi check 1-1 1-2"
-            katachi.uncheck("3-2").toString() shouldBe "katachi uncheck 3-2"
-            katachi.warn("4", "-5 lines").arguments shouldBe listOf("warn", "4", "-5 lines")
-            katachi.warn("4").clear().toString() shouldBe "katachi warn 4 --clear"
+            katachi.agent.check("1-1", "1-2").toString() shouldBe "katachi agent check 1-1 1-2"
+            katachi.agent.uncheck("3-2").toString() shouldBe "katachi agent uncheck 3-2"
+            katachi.agent.warn("4", "-5 lines").arguments shouldBe listOf("agent", "warn", "4", "-5 lines")
+            katachi.agent.warn("4").clear().toString() shouldBe "katachi agent warn 4 --clear"
         }
 
         "add は種類ごとの項目をメソッドにし、複数取る項目は足していく" {
-            katachi.add.role.name("UseCase").examples("A.kt").examples("B.kt", "C.kt").`constraint-only`().note("x").toString() shouldBe
-                "katachi add role --name UseCase --examples A.kt --examples B.kt --examples C.kt --constraint-only --note x"
-            katachi.add.`codebase-question`.question("Nest groups?").options("yes", "no").toString() shouldBe
-                "katachi add codebase-question --question 'Nest groups?' --options yes --options no"
-            katachi.add.violation.whyNotFixed("legacy").toString() shouldBe "katachi add violation --whyNotFixed legacy"
+            katachi.agent.add.role.name("UseCase").examples("A.kt").examples("B.kt", "C.kt").`constraint-only`().note("x").toString() shouldBe
+                "katachi agent add role --name UseCase --examples A.kt --examples B.kt --examples C.kt --constraint-only --note x"
+            katachi.agent.add.`codebase-question`.question("Nest groups?").options("yes", "no").toString() shouldBe
+                "katachi agent add codebase-question --question 'Nest groups?' --options yes --options no"
+            katachi.agent.add.violation.whyNotFixed("legacy").toString() shouldBe "katachi agent add violation --whyNotFixed legacy"
         }
 
         "preferences set は key=value にし、yes / no は Boolean で渡す" {
-            katachi.preferences.set
+            katachi.agent.preferences.set
                 .nestedGroups(false)
                 .testFramework(kotest)
                 .constraintNames(numbered)
                 .nestedGroups(true)
-                .toString() shouldBe "katachi preferences set nestedGroups=yes testFramework=kotest constraintNames=numbered"
-            katachi.preferences.show.toString() shouldBe "katachi preferences show"
+                .toString() shouldBe "katachi agent preferences set nestedGroups=yes testFramework=kotest constraintNames=numbered"
+            katachi.agent.preferences.show.toString() shouldBe "katachi agent preferences show"
         }
 
         "answers は show / import / set を選ぶ" {
-            katachi.answers.show.target(report).toString() shouldBe "katachi answers show --target report"
-            katachi.answers.import("answers.json").target(checkList).toString() shouldBe "katachi answers import answers.json --target check-list"
-            katachi.answers.set("cq1", "yes, both").note("agreed").toString() shouldBe "katachi answers set cq1 'yes, both' --note agreed"
+            katachi.agent.answers.show.target(report).toString() shouldBe "katachi agent answers show --target report"
+            katachi.agent.answers.import("answers.json").target(checkList).toString() shouldBe "katachi agent answers import answers.json --target check-list"
+            katachi.agent.answers.set("cq1", "yes, both").note("agreed").toString() shouldBe "katachi agent answers set cq1 'yes, both' --note agreed"
         }
 
         "引数を取らないコマンドと、省ける位置引数だけのコマンド" {
             katachi.lint.toString() shouldBe "katachi lint"
-            katachi.verify.toString() shouldBe "katachi verify"
-            katachi.summary.toString() shouldBe "katachi summary"
-            katachi.`compare-violations`.toString() shouldBe "katachi compare-violations"
-            katachi.`compare-violations`("a.log", "b.log").toString() shouldBe "katachi compare-violations a.log b.log"
+            katachi.agent.verify.toString() shouldBe "katachi agent verify"
+            katachi.agent.summary.toString() shouldBe "katachi agent summary"
+            katachi.agent.`compare-violations`.toString() shouldBe "katachi agent compare-violations"
+            katachi.agent.`compare-violations`("a.log", "b.log").toString() shouldBe "katachi agent compare-violations a.log b.log"
         }
 
         "組み立てた行は CLI の解析をそのまま通る" {
             val built: List<KatachiCommand> = listOf(
-                Katachi(defaultPackage = "com.example", lang = ja).init.offline().force(),
+                Katachi(defaultPackage = "com.example", lang = ja).agent.init.offline().force(),
                 Katachi(defaultPackage = "com.example").scaffold.`test-framework`(kotest).deps(catalog).`dry-run`(),
                 Katachi(lang = ja).doctor,
-                katachi.data.get("check-list", "meta").id("checklist"),
-                katachi.docs.api(ApiModule.Katachi).refresh(),
-                Katachi(lang = ja).guide("3-2").refresh(),
-                katachi.test.save("x").gradle("--info"),
-                katachi.answers.set("q1", "yes").note("n").target(checkList),
+                katachi.agent.data.get("check-list", "meta").id("checklist"),
+                katachi.agent.docs.api(ApiModule.Katachi).refresh(),
+                Katachi(lang = ja).agent.guide("3-2").refresh(),
+                katachi.agent.test.save("x").gradle("--info"),
+                katachi.agent.answers.set("q1", "yes").note("n").target(checkList),
             )
             for (command in built) {
-                shouldNotThrowAny { parseArgs(commandSpec(command.arguments.first()), command.arguments.drop(1)) }
+                val arguments = command.arguments.dropWhile { it == AGENT_GROUP }
+                shouldNotThrowAny { parseArgs(commandSpec(arguments.first()), arguments.drop(1)) }
             }
         }
     }
@@ -200,8 +203,8 @@ class CommandDslSpec : FreeSpec({
         "executeCommands は最初に失敗したところで止まる" {
             val runner = Recording(listOf(0, 5, 0))
             val katachi = Katachi(defaultPackage = "com.example", runner = runner, echo = false)
-            executeCommands(katachi.init, katachi.scaffold, katachi.command("summary")) shouldBe 5
-            runner.runs.map { it.first.first() } shouldBe listOf("init", "scaffold")
+            executeCommands(katachi.agent.init, katachi.scaffold, katachi.command("agent", "summary")) shouldBe 5
+            runner.runs.map { it.first.take(2) } shouldBe listOf(listOf("agent", "init"), listOf("scaffold", "--package"))
         }
 
         "--package の無い scaffold は何も実行せずに止まり、組み立てた行を指す" {
@@ -218,9 +221,9 @@ class CommandDslSpec : FreeSpec({
         "InProcess はこの JVM の katachi-script で実行する" {
             val workdir = workdirWith("""{"meta": {"moduleDir": "architecture-test"}}""")
             val katachi = Katachi(cwd = workdir, echo = false)
-            katachi.data.get("check-list", "meta.moduleDir").execute() shouldBe 0
-            katachi.data.get("check-list", "meta.missing").execute() shouldBe 1
-            katachi.command("data", "get", "check-list", "meta.moduleDir").execute() shouldBe 0
+            katachi.agent.data.get("check-list", "meta.moduleDir").execute() shouldBe 0
+            katachi.agent.data.get("check-list", "meta.missing").execute() shouldBe 1
+            katachi.command("agent", "data", "get", "check-list", "meta.moduleDir").execute() shouldBe 0
         }
     }
 })

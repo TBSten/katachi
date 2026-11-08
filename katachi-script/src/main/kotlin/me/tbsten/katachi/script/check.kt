@@ -3,20 +3,21 @@
 
 package me.tbsten.katachi.script
 
+import me.tbsten.katachi.script.command.AgentCommandGroup
 import me.tbsten.katachi.script.command.CheckCommand
 import me.tbsten.katachi.script.internal.CommandLine
 
 /**
- * Same as `katachi check <items>...` on the command line: marks items of the check list done.
+ * Same as `katachi agent check <items>...` on the command line: marks items of the check list done.
  *
  * ## Example 1: pass the arguments
  *
  * ```kt
- * val command = Katachi().check("3-2")
- * println(command) // katachi check 3-2
+ * val command = Katachi().agent.check("3-2")
+ * println(command) // katachi agent check 3-2
  * ```
  *
  * @param items The ids of the items, such as `3-2`.
  */
-public fun Katachi.check(vararg items: String): CheckCommand =
-    CheckCommand(this, CommandLine(listOf("check")).withPositionals(items.toList()))
+public fun AgentCommandGroup.check(vararg items: String): CheckCommand =
+    CheckCommand(this.katachi, CommandLine(listOf("agent", "check")).withPositionals(items.toList()))

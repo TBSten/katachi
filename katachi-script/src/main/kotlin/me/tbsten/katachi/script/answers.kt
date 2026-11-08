@@ -3,12 +3,13 @@
 
 package me.tbsten.katachi.script
 
+import me.tbsten.katachi.script.command.AgentCommandGroup
 import me.tbsten.katachi.script.command.AnswersCommandGroup
 
 /**
- * The subcommands of `katachi answers`: shows and records the answers to the questions.
+ * The subcommands of `katachi agent answers`: shows and records the answers to the questions.
  *
- * `katachi answers` is not a command of its own here: pick one of its subcommands.
+ * `katachi agent answers` is not a command of its own here: pick one of its subcommands.
  */
-public val Katachi.answers: AnswersCommandGroup
-    get() = AnswersCommandGroup(this)
+public val AgentCommandGroup.answers: AnswersCommandGroup
+    get() = AnswersCommandGroup(this.katachi)

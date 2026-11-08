@@ -3,11 +3,12 @@
 
 package me.tbsten.katachi.script
 
+import me.tbsten.katachi.script.command.AgentCommandGroup
 import me.tbsten.katachi.script.command.VerifyCommand
 import me.tbsten.katachi.script.internal.CommandLine
 
 /**
- * Same as `katachi verify` on the command line: lists what is left to fill in, and closes the last step when nothing is.
+ * Same as `katachi agent verify` on the command line: lists what is left to fill in, and closes the last step when nothing is.
  */
-public val Katachi.verify: VerifyCommand
-    get() = VerifyCommand(this, CommandLine(listOf("verify")))
+public val AgentCommandGroup.verify: VerifyCommand
+    get() = VerifyCommand(this.katachi, CommandLine(listOf("agent", "verify")))

@@ -7,15 +7,15 @@ import me.tbsten.katachi.script.checkList
 import me.tbsten.katachi.script.report
 
 /**
- * Which file `katachi answers --target` reads or writes.
+ * Which file `katachi agent answers --target` reads or writes.
  *
  * The top-level [report] and [checkList] are the same values, so a script can write them bare.
  *
  * ## Example 1: pass one to the command
  *
  * ```kt
- * katachi.answers.show.target(report)
- * katachi.answers.show.target(Target.Report) // the same
+ * katachi.agent.answers.show.target(report)
+ * katachi.agent.answers.show.target(Target.Report) // the same
  * ```
  *
  * @property value How the command line spells it.

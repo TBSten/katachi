@@ -9,8 +9,8 @@ import me.tbsten.katachi.script.option.Lang
 /**
  * The `katachi` command, for a `.main.kts` that builds its subcommands instead of typing them.
  *
- * Every subcommand of `katachi` has a builder: `katachi.init`, `katachi.scaffold`,
- * `katachi.data.get(...)`, `katachi.add.role`, `katachi.preferences.set` and so on, named as the
+ * Every subcommand of `katachi` has a builder: `katachi.agent.init`, `katachi.scaffold`,
+ * `katachi.agent.data.get(...)`, `katachi.agent.add.role`, `katachi.agent.preferences.set` and so on, named as the
  * command line spells them. Each starts from the defaults given here, and every option method
  * returns a new value, so one [Katachi] can hand out any number of commands. A command prints as
  * the line you would type, and [KatachiCommand.execute] runs it.
@@ -25,16 +25,16 @@ import me.tbsten.katachi.script.option.Lang
  * val katachi = Katachi(defaultPackage = "com.example.app")
  *
  * executeCommands(
- *     katachi.init.lang(ja),
+ *     katachi.agent.init.lang(ja),
  *     katachi.scaffold.`test-framework`(kotest),
  * )
  * ```
  *
  * @property defaultPackage Puts `--package <defaultPackage>` on every [scaffold]. Null or empty leaves it unset.
- * @property katachiVersion Puts `--katachi <katachiVersion>` on every [init] and [scaffold]. Null leaves the choice to the command.
- * @property moduleDir Puts `--module-dir <moduleDir>` on every [init] and [scaffold].
- * @property lang Puts `--lang <lang>` on every command that takes it: [init], [doctor] and [guide].
- * @property workdir Puts `--workdir <workdir>` on every [init]: the working directory `init` makes. Null lets `init` pick one.
+ * @property katachiVersion Puts `--katachi <katachiVersion>` on every `agent.init` and [scaffold]. Null leaves the choice to the command.
+ * @property moduleDir Puts `--module-dir <moduleDir>` on every `agent.init` and [scaffold].
+ * @property lang Puts `--lang <lang>` on every command that takes it: `agent.init`, [doctor] and `agent.guide`.
+ * @property workdir Puts `--workdir <workdir>` on every `agent.init`: the working directory `init` makes. Null lets `init` pick one.
  * @property cwd Where the commands run. Null is the directory the script was started in.
  * @property runner How [KatachiCommand.execute] runs a command: [CommandRunner.InProcess] by default.
  * @property echo Whether [KatachiCommand.execute] prints `$ katachi ...` before it runs, as `make` does.

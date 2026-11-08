@@ -3,11 +3,12 @@
 
 package me.tbsten.katachi.script
 
+import me.tbsten.katachi.script.command.AgentCommandGroup
 import me.tbsten.katachi.script.command.SummaryCommand
 import me.tbsten.katachi.script.internal.CommandLine
 
 /**
- * Same as `katachi summary` on the command line: prints the message to hand back to the user.
+ * Same as `katachi agent summary` on the command line: prints the message to hand back to the user.
  */
-public val Katachi.summary: SummaryCommand
-    get() = SummaryCommand(this, CommandLine(listOf("summary")))
+public val AgentCommandGroup.summary: SummaryCommand
+    get() = SummaryCommand(this.katachi, CommandLine(listOf("agent", "summary")))

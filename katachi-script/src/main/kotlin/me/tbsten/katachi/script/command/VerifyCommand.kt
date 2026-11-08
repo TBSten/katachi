@@ -9,22 +9,22 @@ import me.tbsten.katachi.script.internal.commandText
 import me.tbsten.katachi.script.internal.run
 
 /**
- * The `katachi verify` command: lists what is left to fill in, and closes the last step when nothing is.
+ * The `katachi agent verify` command: lists what is left to fill in, and closes the last step when nothing is.
  *
- * It takes no options, so building one is writing `katachi verify` in a shell.
+ * It takes no options, so building one is writing `katachi agent verify` in a shell.
  *
  * ## Example 1: build the command, print it and run it
  *
  * ```kt
- * val command = Katachi().verify
- * println(command) // katachi verify
+ * val command = Katachi().agent.verify
+ * println(command) // katachi agent verify
  * command.execute()
  * ```
  *
  * The `execute()` above runs the same thing as this line in a shell:
  *
  * ```sh
- * katachi verify
+ * katachi agent verify
  * ```
  *
  * @see Katachi
@@ -37,7 +37,7 @@ public class VerifyCommand internal constructor(
 
     /**
      * Appends [arguments] as they are, for an option this builder has no method for yet:
-     * `arg("--new-option", "v")` is `katachi verify ... --new-option v` on the command line.
+     * `arg("--new-option", "v")` is `katachi agent verify ... --new-option v` on the command line.
      *
      * @param arguments Such as `"--new-option", "value"`.
      */
@@ -47,6 +47,6 @@ public class VerifyCommand internal constructor(
 
     override fun execute(): Int = katachi.run(arguments)
 
-    /** The command line as typed in a shell: `katachi verify`. Values a shell would split are quoted. */
+    /** The command line as typed in a shell: `katachi agent verify`. Values a shell would split are quoted. */
     override fun toString(): String = commandText(arguments)
 }

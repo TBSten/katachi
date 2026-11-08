@@ -3,21 +3,22 @@
 
 package me.tbsten.katachi.script
 
+import me.tbsten.katachi.script.command.AgentCommandGroup
 import me.tbsten.katachi.script.command.WarnCommand
 import me.tbsten.katachi.script.internal.CommandLine
 
 /**
- * Same as `katachi warn <step> [<text>]` on the command line: puts a warning on a step of the check list, which keeps it open even when it is done.
+ * Same as `katachi agent warn <step> [<text>]` on the command line: puts a warning on a step of the check list, which keeps it open even when it is done.
  *
  * ## Example 1: pass the arguments
  *
  * ```kt
- * val command = Katachi().warn("4", "gradlew is missing")
- * println(command) // katachi warn 4 'gradlew is missing'
+ * val command = Katachi().agent.warn("4", "gradlew is missing")
+ * println(command) // katachi agent warn 4 'gradlew is missing'
  * ```
  *
  * @param step The id of the step, such as `4`.
  * @param text The warning. Leave it out with `.clear()`.
  */
-public fun Katachi.warn(step: String, text: String? = null): WarnCommand =
-    WarnCommand(this, CommandLine(listOf("warn")).withPositionals(listOfNotNull(step, text)))
+public fun AgentCommandGroup.warn(step: String, text: String? = null): WarnCommand =
+    WarnCommand(this.katachi, CommandLine(listOf("agent", "warn")).withPositionals(listOfNotNull(step, text)))

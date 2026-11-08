@@ -70,7 +70,7 @@ internal fun jsonBlockOf(html: Path, id: String): JsonObject {
 internal fun initializedProject(lang: String = "ja"): Path {
     val project = createTempDirectory("katachi-project-")
     project.resolve("settings.gradle.kts").writeText("rootProject.name = \"p\"\n")
-    val run = runCapturing(project, listOf("init", "--offline", "--katachi", "0.4.0", "--lang", lang, "--workdir", ".local/install-katachi"))
+    val run = runCapturing(project, listOf("agent", "init", "--offline", "--katachi", "0.4.0", "--lang", lang, "--workdir", ".local/install-katachi"))
     check(run.status == 0) { "init failed: ${run.err}" }
     return project
 }

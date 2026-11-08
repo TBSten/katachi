@@ -4,12 +4,12 @@
 package me.tbsten.katachi.script.option
 
 /**
- * The module whose API reference `katachi docs --api` fetches.
+ * The module whose API reference `katachi agent docs --api` fetches.
  *
  * ## Example 1: pass one to the command
  *
  * ```kt
- * katachi.docs.api(ApiModule.Katachi)
+ * katachi.agent.docs.api(ApiModule.Katachi)
  * ```
  *
  * @property value How the command line spells it.
