@@ -226,9 +226,19 @@ internal abstract class EditorNotificationTestBase : EntryServiceTestBase() {
 
     /** Lets the platform finish its pending notification updates: they start on the EDT, then run in the background. */
     fun settleNotifications() {
-        PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
-        notifications.completeAsyncTasks()
-        PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
+        repeat(SETTLE_ATTEMPTS) { attempt ->
+            PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
+            try {
+                notifications.completeAsyncTasks()
+            } catch (e: IllegalStateException) {
+                // completeAsyncTasks ends with `check(no update pending)`: an update the refresher starts from the background
+                // (the redraw after an edit, a ledger change) can land after its last wait and fail it; wait for that one too (KATACHI-309).
+                if (e.message != PLATFORM_CHECK_FAILED || attempt == SETTLE_ATTEMPTS - 1) throw e
+                return@repeat
+            }
+            PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
+            return
+        }
     }
 
     /** katachi's panel on [editor] once the pending updates are done; `null` when there is none. */
@@ -257,6 +267,13 @@ internal abstract class EditorNotificationTestBase : EntryServiceTestBase() {
     }
 
     fun path(relative: String): Path = root.resolve(relative)
+
+    private companion object {
+        const val SETTLE_ATTEMPTS = 5
+
+        /** What Kotlin's `check(Boolean)` without a message throws with. */
+        const val PLATFORM_CHECK_FAILED = "Check failed."
+    }
 }
 
 /** The links of the panel ([Create] or [View Template]); ⚙ and × are buttons, not links. */
