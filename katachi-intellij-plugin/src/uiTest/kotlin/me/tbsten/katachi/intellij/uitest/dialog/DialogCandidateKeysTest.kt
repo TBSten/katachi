@@ -67,11 +67,18 @@ class DialogCandidateKeysTest {
     private fun ComposeUiTest.opened(): DialogHost {
         val host = DialogHost(listOf(screen), lister = DirectoryLister { listOf("home", "settings") })
         show(host)
-        inputOf(nameTag).performTextInput("User")
-        host.settle()
-        waitForIdle()
+        type(host, nameTag, "name", "User")
         inputOf(featureTag).requestFocus()
         return host
+    }
+
+    /** Types [text] into the field tagged [tag] and waits until the dialog has it as the value of [name]. */
+    private fun ComposeUiTest.type(host: DialogHost, tag: String, name: String, text: String) {
+        inputOf(tag).performTextInput(text)
+        // The field reports from an effect, which waitForIdle does not wait for (KATACHI-312).
+        waitUntil(conditionDescription = "the dialog got $name=$text", timeoutMillis = 5_000) { "input:$name=$text" in host.calls }
+        host.settle()
+        waitForIdle()
     }
 
     private fun ComposeUiTest.press(tag: String, key: Key) {
@@ -130,9 +137,7 @@ class DialogCandidateKeysTest {
     @Test
     fun `閉じているEnterは必須が埋まっていれば生成の要求を出す`() = runComposeUiTest {
         val host = opened()
-        inputOf(featureTag).performTextInput("home")
-        host.settle()
-        waitForIdle()
+        type(host, featureTag, "feature", "home")
 
         press(featureTag, Key.Enter)
 
