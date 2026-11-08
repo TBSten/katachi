@@ -18,10 +18,16 @@ import { fileURLToPath } from 'node:url';
 
 const sidebar = (() => {
 	/** @typedef {{ en: string; ja: string; }} Label */
+	/**
+	 * サイドバーの 1 行。`category` は入れ子にできる（ガイド > ktFileContent > 概要 のような 3 階層）。
+	 * Starlight のグループ見出しは開閉するだけで押せないので、子を持つページは
+	 * 「グループ（ページ名）> 概要（そのページ）/ 子ページ」にする（KATACHI-272 の案 A）。
+	 * @typedef {{ label: string; translations: { ja: string } } & ({ slug: string } | { link: string } | { items: SidebarEntry[] })} SidebarEntry
+	 */
 	const translated = (/** @type {Label} */ label) => ({ label: label.en, translations: { ja: label.ja } })
 	const category = (
 		/** @type {Label} */ label,
-		/** @type {Array<ReturnType<typeof item> | ReturnType<typeof link>>} */ ...items
+		/** @type {SidebarEntry[]} */ ...items
 	) => ({ ...translated(label), items })
 	const item = (/** @type {string} */ slug, /** @type {Label} */ label) => ({ ...translated(label), slug })
 	const link = (/** @type {string} */ href, /** @type {Label} */ label) => ({ ...translated(label), link: href })
@@ -39,7 +45,11 @@ const sidebar = (() => {
 			item('guides/basic-api', { en: 'The basic API', ja: '基本的な API' }),
 			item('guides/role', { en: 'Role', ja: 'Role' }),
 			item('guides/layout', { en: 'Layout', ja: 'Layout' }),
-			item('guides/kt-file-content', { en: 'ktFileContent', ja: 'ktFileContent' }),
+			category(
+				{ en: 'ktFileContent', ja: 'ktFileContent' },
+				item('guides/kt-file-content', { en: 'Overview', ja: '概要' }),
+				item('guides/kt-file-content/kotlin-mapping', { en: '[AI-generated] Mapping to Kotlin features', ja: '[AI生成] Kotlin 言語機能とのマッピング' }),
+			),
 			item('guides/document-generation', { en: 'Document generation', ja: 'ドキュメント生成' }),
 			item('guides/generate-code-from-template', { en: 'Generate code from template', ja: 'テンプレートからコード生成' }),
 			item('guides/baseline', { en: 'Baseline', ja: 'Baseline' }),
