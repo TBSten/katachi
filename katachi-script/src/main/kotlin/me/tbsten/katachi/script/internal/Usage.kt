@@ -31,9 +31,12 @@ katachi — katachi の導入と検査を手伝うコマンド
                           失敗する（How to fix: Pass FileConstraintCheck() to assert()）
       --module-dir <path> 検査用モジュールの置き場所（既定: init が記録した meta.moduleDir。
                           無ければ architecture-test）。指定すると meta.moduleDir を書き換える
-      --test-framework <junit5|kotest>
+      --test-framework <junit5|kotest|kotest-<style>>
                           テストの雛形と依存（既定: preferences.testFramework。無ければ
-                          kotest の依存がプロジェクトにあれば kotest、なければ junit5）
+                          kotest の依存がプロジェクトにあれば kotest、なければ junit5）。
+                          kotest は FunSpec で書く。kotest-<style> なら kotest の別の書き方で、
+                          style は fun / string / should / describe / behavior / word / free /
+                          feature / expect / annotation（例: kotest-free で FreeSpec）
       --deps <catalog|literal>
                           依存の書き方（既定: preferences.dependencyStyle。無ければ
                           gradle/libs.versions.toml があれば catalog）。catalog は toml に
@@ -105,9 +108,12 @@ Usage:
                           [UncheckedFileConstraint] (How to fix: Pass FileConstraintCheck() to assert())
       --module-dir <path> Where the test module goes (default: meta.moduleDir recorded by init,
                           otherwise architecture-test). When given, meta.moduleDir is updated
-      --test-framework <junit5|kotest>
+      --test-framework <junit5|kotest|kotest-<style>>
                           Test template and dependencies (default: preferences.testFramework;
-                          otherwise kotest when the project depends on kotest, else junit5)
+                          otherwise kotest when the project depends on kotest, else junit5).
+                          kotest writes a FunSpec; kotest-<style> writes another Kotest style,
+                          one of fun / string / should / describe / behavior / word / free /
+                          feature / expect / annotation (kotest-free writes a FreeSpec)
       --deps <catalog|literal>
                           How dependencies are written (default: preferences.dependencyStyle;
                           otherwise catalog when gradle/libs.versions.toml exists). catalog adds
@@ -229,7 +235,7 @@ katachi doctor / katachi scaffold / katachi lint（katachi --help）を使って
   katachi agent preferences set <key>=<value> ...
       書き方の方針を表示 / 記録する（手順書 1-3）。show は 1 行 1 キーで、値と
       「推奨 / 記録済み / 検出: <根拠>」を出す。知らないキー・値は止まる。
-      key: nestedGroups (yes/no) / moduleDir (パス) / testFramework (junit5/kotest) /
+      key: nestedGroups (yes/no) / moduleDir (パス) / testFramework (junit5/kotest/kotest-<style>) /
            dependencyStyle (catalog/literal) / constraintNames (plain/numbered) /
            oneRolePerFile (yes/no)
       moduleDir はチェックリストの meta.moduleDir に、ほかは preferences に記録される。
@@ -378,7 +384,7 @@ Usage:
       Shows / records how the definition should be written (step 1-3 of the guide). show prints
       one key per line with the value and "recommended / recorded / detected: <evidence>".
       An unknown key or value stops the command.
-      key: nestedGroups (yes/no) / moduleDir (path) / testFramework (junit5/kotest) /
+      key: nestedGroups (yes/no) / moduleDir (path) / testFramework (junit5/kotest/kotest-<style>) /
            dependencyStyle (catalog/literal) / constraintNames (plain/numbered) /
            oneRolePerFile (yes/no)
       moduleDir is recorded as meta.moduleDir of the check list, the others under preferences.

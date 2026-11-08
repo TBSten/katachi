@@ -97,12 +97,12 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
         else -> {
             val pref = preference("testFramework")
             when {
-                pref == "junit5" || pref == "kotest" -> Sourced(pref, "preferences.testFramework", "preferences.testFramework")
+                pref in TEST_FRAMEWORKS -> Sourced(pref, "preferences.testFramework", "preferences.testFramework")
                 else -> {
                     if (pref.isNotEmpty()) {
                         warn(
-                            "preferences.testFramework の値を知りません（$pref。junit5 か kotest）。検出した値を使います。",
-                            "Unknown value in preferences.testFramework ($pref; expected junit5 or kotest). Using the detected value instead.",
+                            "preferences.testFramework の値を知りません（$pref。junit5 / kotest / kotest-free など）。検出した値を使います。",
+                            "Unknown value in preferences.testFramework ($pref; expected junit5, kotest, kotest-free and so on). Using the detected value instead.",
                         )
                     }
                     if (detectedTfFrom != null) {
@@ -114,7 +114,9 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
             }
         }
     }
-    val tf = testFramework.value
+    // `kotest-free` is kotest with the test written as a FreeSpec; plain `kotest` is a FunSpec (KATACHI-301).
+    val tf = if (testFramework.value.startsWith("kotest")) "kotest" else testFramework.value
+    val kotestStyle = if (tf == "kotest") testFramework.value.removePrefix("kotest").removePrefix("-").ifEmpty { DEFAULT_KOTEST_STYLE } else DEFAULT_KOTEST_STYLE
 
     // How dependencies are written: --deps > preferences.dependencyStyle > catalog when there is one > literal.
     var deps = when {
@@ -188,7 +190,11 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
     note("Kotlin:       $kotlin")
     note("JVM toolchain: ${toolchain.ja}", "JVM toolchain: ${toolchain.en}")
     note("konsist:      ${yesNo(konsist)}")
-    note("テスト:       $tf（${testFramework.ja}）", "Test framework: $tf (${testFramework.en})")
+    if (tf == "kotest") {
+        note("テスト:       kotest の ${kotestSpecClass(kotestStyle)}（${testFramework.ja}）", "Test framework: kotest, ${kotestSpecClass(kotestStyle)} (${testFramework.en})")
+    } else {
+        note("テスト:       $tf（${testFramework.ja}）", "Test framework: $tf (${testFramework.en})")
+    }
     if (deps.value == "catalog") {
         note("依存:         catalog（${deps.ja}。${fileUri(CATALOG_FILE)} に追記）", "Dependencies: catalog (${deps.en}; appended to ${fileUri(CATALOG_FILE)})")
         if (plan.added) {
@@ -247,7 +253,7 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
     } else {
         architectureKt.writeText("package $pkg.test.architecture\n\nimport me.tbsten.katachi.dsl.architecture\n\nval projectArchitecture = architecture {\n}\n")
     }
-    writeTestKt(src.resolve("ProjectArchitectureTest.kt"), pkg, konsist, tf)
+    writeTestKt(src.resolve("ProjectArchitectureTest.kt"), pkg, konsist, tf, kotestStyle)
 
     val rootPluginManual = if (rootNeedsPlugin) addRootPlugin(root, rootBuild, kotlin) else null
     val settingsIncludeManual = if (settingsNeedsInclude) addSettingsInclude(root, settings, module.gradlePath) else null
@@ -503,29 +509,63 @@ private fun ScriptContext.writeModuleBuild(file: Path, b: ModuleBuild) {
     )
 }
 
+/** The spec style of plain `--test-framework kotest` (KATACHI-301). */
+private const val DEFAULT_KOTEST_STYLE: String = "fun"
+
+/** The Kotest class of a spec style, the part after `kotest-` in `--test-framework kotest-free`: `free` is `FreeSpec`. */
+private fun kotestSpecClass(style: String): String = style.replaceFirstChar(Char::uppercaseChar) + "Spec"
+
 /**
  * ProjectArchitectureTest.kt. The test name follows the language too. With konsist it passes
  * FileConstraintCheck() (an experimental API), without which ktFileContent { } and the like are not
  * evaluated. No maxViolations: `-Dkatachi.maxViolations=all` shows them all. The kit's `write_test_kt`.
+ * A Kotest test is written in [kotestStyle] (KATACHI-301).
  */
-private fun ScriptContext.writeTestKt(file: Path, pkg: String, konsist: Boolean, testFramework: String) {
+private fun ScriptContext.writeTestKt(file: Path, pkg: String, konsist: Boolean, testFramework: String, kotestStyle: String) {
     val testName = pick("プロジェクトの構成が定義どおりになっている", "the project matches its declaration")
-    val assertLine = if (konsist) "        projectArchitecture.assert(FileConstraintCheck())" else "        projectArchitecture.assert()"
-    val text = when {
-        testFramework == "kotest" && konsist ->
-            "@file:OptIn(ExperimentalKatachiApi::class)\n\npackage $pkg.test.architecture\n\n" +
-                "import io.kotest.core.spec.style.FunSpec\nimport me.tbsten.katachi.ExperimentalKatachiApi\nimport me.tbsten.katachi.check.FileConstraintCheck\nimport me.tbsten.katachi.check.assert\n\n" +
-                "class ProjectArchitectureTest : FunSpec({\n    test(\"$testName\") {\n$assertLine\n    }\n})\n"
-        testFramework == "kotest" ->
-            "package $pkg.test.architecture\n\nimport io.kotest.core.spec.style.FunSpec\nimport me.tbsten.katachi.check.assert\n\n" +
-                "class ProjectArchitectureTest : FunSpec({\n    test(\"$testName\") {\n$assertLine\n    }\n})\n"
-        konsist ->
-            "package $pkg.test.architecture\n\n" +
-                "import me.tbsten.katachi.ExperimentalKatachiApi\nimport me.tbsten.katachi.check.FileConstraintCheck\nimport me.tbsten.katachi.check.assert\nimport org.junit.jupiter.api.Test\n\n" +
-                "class ProjectArchitectureTest {\n    @OptIn(ExperimentalKatachiApi::class)\n    @Test\n    fun `$testName`() {\n$assertLine\n    }\n}\n"
-        else ->
-            "package $pkg.test.architecture\n\nimport me.tbsten.katachi.check.assert\nimport org.junit.jupiter.api.Test\n\n" +
-                "class ProjectArchitectureTest {\n    @Test\n    fun `$testName`() {\n$assertLine\n    }\n}\n"
+    val assertion = if (konsist) "projectArchitecture.assert(FileConstraintCheck())" else "projectArchitecture.assert()"
+    val katachiImports = if (konsist) {
+        "import me.tbsten.katachi.ExperimentalKatachiApi\nimport me.tbsten.katachi.check.FileConstraintCheck\nimport me.tbsten.katachi.check.assert\n"
+    } else {
+        "import me.tbsten.katachi.check.assert\n"
+    }
+    val text = if (testFramework == "kotest") {
+        val specClass = kotestSpecClass(kotestStyle)
+        val optIn = if (konsist) "@file:OptIn(ExperimentalKatachiApi::class)\n\n" else ""
+        "${optIn}package $pkg.test.architecture\n\nimport io.kotest.core.spec.style.$specClass\n$katachiImports\n" +
+            kotestSpecBody(kotestStyle, specClass, testName, assertion)
+    } else {
+        val optIn = if (konsist) "    @OptIn(ExperimentalKatachiApi::class)\n" else ""
+        "package $pkg.test.architecture\n\n${katachiImports}import org.junit.jupiter.api.Test\n\n" +
+            "class ProjectArchitectureTest {\n$optIn    @Test\n    fun `$testName`() {\n        $assertion\n    }\n}\n"
     }
     file.writeText(text)
+}
+
+/** The class of ProjectArchitectureTest.kt in a Kotest [style], running [assertion] in a test named [testName]. */
+private fun kotestSpecBody(style: String, specClass: String, testName: String, assertion: String): String {
+    if (style == "annotation") {
+        return "class ProjectArchitectureTest : $specClass() {\n    @Test\n    fun `$testName`() {\n        $assertion\n    }\n}\n"
+    }
+    // The styles that need a container around the test name it after the object the test checks.
+    val container = "\"ProjectArchitecture\""
+    val test = "\"$testName\""
+    val blocks = when (style) {
+        "string", "free" -> listOf(test)
+        "should" -> listOf("should($test)")
+        "describe" -> listOf("describe($container)", "it($test)")
+        "behavior" -> listOf("Given($container)", "Then($test)")
+        "word" -> listOf("$container should", test)
+        "feature" -> listOf("feature($container)", "scenario($test)")
+        "expect" -> listOf("context($container)", "expect($test)")
+        else -> listOf("test($test)")
+    }
+    return "class ProjectArchitectureTest : $specClass({\n${nestBlocks(blocks, assertion, depth = 1)}})\n"
+}
+
+/** [blocks] opened one inside another (`describe(...) {`, then `it(...) {`), with [body] in the innermost. */
+private fun nestBlocks(blocks: List<String>, body: String, depth: Int): String {
+    val indent = "    ".repeat(depth)
+    val block = blocks.firstOrNull() ?: return "$indent$body\n"
+    return "$indent$block {\n${nestBlocks(blocks.drop(1), body, depth + 1)}$indent}\n"
 }

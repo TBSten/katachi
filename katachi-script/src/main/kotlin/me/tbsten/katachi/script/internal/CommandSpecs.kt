@@ -120,8 +120,25 @@ private val LANG_TYPE = ChoiceType(
 private val TEST_FRAMEWORK_TYPE = ChoiceType(
     "TestFramework",
     "The test framework `katachi scaffold --test-framework` lays the test module out for",
-    listOf(ChoiceValue("junit5", "JUnit 5"), ChoiceValue("kotest", "Kotest")),
+    listOf(
+        ChoiceValue("junit5", "JUnit 5"),
+        ChoiceValue("kotest", "Kotest, with the test written as a `FunSpec` like `kotest-fun`"),
+        // Kotest in one spec style each (KATACHI-301): `kotest-<style>` writes a `<Style>Spec`.
+        ChoiceValue("kotest-fun", "Kotest `FunSpec`: `test(\"...\") { }`"),
+        ChoiceValue("kotest-string", "Kotest `StringSpec`: `\"...\" { }`"),
+        ChoiceValue("kotest-should", "Kotest `ShouldSpec`: `should(\"...\") { }`"),
+        ChoiceValue("kotest-describe", "Kotest `DescribeSpec`: `describe(\"...\") { it(\"...\") { } }`"),
+        ChoiceValue("kotest-behavior", "Kotest `BehaviorSpec`: `Given(\"...\") { Then(\"...\") { } }`"),
+        ChoiceValue("kotest-word", "Kotest `WordSpec`: `\"...\" should { \"...\" { } }`"),
+        ChoiceValue("kotest-free", "Kotest `FreeSpec`: `\"...\" { }`"),
+        ChoiceValue("kotest-feature", "Kotest `FeatureSpec`: `feature(\"...\") { scenario(\"...\") { } }`"),
+        ChoiceValue("kotest-expect", "Kotest `ExpectSpec`: `context(\"...\") { expect(\"...\") { } }`"),
+        ChoiceValue("kotest-annotation", "Kotest `AnnotationSpec`: a `@Test` function, as in JUnit"),
+    ),
 )
+
+/** What `scaffold --test-framework` and `preferences.testFramework` take: junit5, kotest and kotest-<style>. */
+internal val TEST_FRAMEWORKS: List<String> = TEST_FRAMEWORK_TYPE.values.map { it.value }
 private val DEPENDENCY_STYLE_TYPE = ChoiceType(
     "DependencyStyle",
     "How `katachi scaffold --deps` writes the dependencies of the test module",
