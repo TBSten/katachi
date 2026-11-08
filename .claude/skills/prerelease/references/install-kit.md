@@ -1,43 +1,51 @@
 # 9. インストールキットのチェック
 
-[SKILL.md](../SKILL.md) の手順 9 の詳細。9-1（合成の fixture でスクリプトの配線を確かめる）と 9-2（手順書どおりに実在の
-プロジェクトへ導入する統合テスト）の2段。9-1 はスクリプトが壊れていないかしか見ない。手順書の抜け・曖昧さ・スクリプトとの
+[SKILL.md](../SKILL.md) の手順 9 の詳細。9-1（合成の fixture で katachi コマンドの配線を確かめる）と 9-2（手順書どおりに実在の
+プロジェクトへ導入する統合テスト）の2段。9-1 は katachi コマンドが壊れていないかしか見ない。手順書の抜け・曖昧さ・コマンドとの
 食い違いは、エージェントが実際に手順書を読んで最後までやらないと出てこないので 9-2 で見る。
 
-## 9-1. fixture でスクリプトの配線を確かめる
+## 9-1. fixture で katachi コマンドの配線を確かめる
 
-AI エージェント向けのインストールキット（`docs/public/install/` の `katachi-install.sh` と手順書）が、利用者のいろいろな形の
-Gradle プロジェクトで動くかを確かめる。キットは `docs/` の下にあり CI の検査対象外なので、壊れても誰も気づかない。
-docs/AGENTS.md の「`public/install/`」の節が「スクリプトを直したら実際の Gradle プロジェクトで動かす」と求めている3種に、
+AI エージェント向けのインストールキット（`katachi` コマンド = katachi-script の CLI と、`docs/public/install/` の手順書）が、
+利用者のいろいろな形の Gradle プロジェクトで動くかを確かめる。`:katachi-script:test` は合成の入力で1コマンドずつ見るだけなので、
+brew で配る形（`katachi.main.kts` と `bin/katachi`）で実際の Gradle プロジェクトに通すのはここだけ。
+docs/AGENTS.md の「`public/install/`」の節が「`katachi-script` を直したら実際の Gradle プロジェクトで動かす」と求めている3種に、
 これまでに不具合が出た形を足して、毎回まとめて動かす。
 
 ```shell
-sh .claude/skills/prerelease/scripts/check-install-kit-smoke.sh                                     # 先に Gradle 無しのスモーク（3〜5 分）
 pgrep -fl GradleWrapperMain                                                                          # ほかの Gradle が走っていないこと
-sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/release-v<版>        # 走らせる（16 種 × 1.5〜2 分 = 25〜35 分）
-sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/release-v<版> --only agp,rootjvm   # 一部だけ
-sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/release-v<版> --lang en --only agp,groovyinc   # 英語の出力（日本語が残れば NG）
+sh .claude/skills/prerelease/scripts/build-katachi-cli.sh                                           # katachi コマンドを組む（publishToMavenLocal・cliDist。kotlin が要る）
+sh .claude/skills/prerelease/scripts/check-install-kit-smoke.sh                                     # 先にスモーク（fixture の Gradle は起動しない。5〜10 分）
+sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/release-v<版> --skip-publish   # 走らせる（16 種 × 1.5〜2 分 = 25〜35 分）
+sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/release-v<版> --skip-publish --only agp,rootjvm   # 一部だけ
+sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/release-v<版> --skip-publish --lang en --only agp,groovyinc   # 英語の出力（日本語が残れば NG）
 ```
 
-- スモーク（`check-install-kit-smoke.sh`。Gradle を起動しない）: 合成のプロジェクトにサブコマンドを当て、終了コードと出力の
-  grep で確かめる。guide の目次とフェンス、docs --topic、preferences、answers、summary の再開欄、add の 8 並列と件数検査、
+- katachi コマンド: `build-katachi-cli.sh` が `katachi-script/build/cli/katachi-cli-<版>/bin/katachi` に組む（brew の tarball と同じ形。
+  `katachi.main.kts` の `@file:DependsOn` は `~/.m2/repository` を先に見るので、publish した katachi-script が使われる）。
+  スモークも fixture のチェックも既定でこれを使い、最初に `katachi --version` がリポジトリの版かを確かめる。
+  brew で入れた katachi など別のものを試すときは `--cli <path>` で渡す。コードを直したのに古い動きのままなら、組み直す
+  （それでも古ければ `kotlin` のスクリプトのキャッシュ。macOS では `~/Library/Caches/main.kts.compiled.cache` を消す）
+- スモーク（`check-install-kit-smoke.sh`。fixture の Gradle は起動しない）: 合成のプロジェクトに `katachi agent …` / `katachi scaffold` /
+  `katachi lint` / `katachi doctor` を当て、終了コードと出力の grep で確かめる。guide の目次とフェンス、docs --topic、preferences、answers、summary の再開欄、add の 8 並列と件数検査、
   ロックの待ちと残骸、init の既存ファイルと --module-dir、lint の exit 1 と制約 Role の緩和、add role / excluded の拒否、
-  scaffold --deps の衝突、test の exit 2 と要約、data get のキー、違反の打ち切り（maxViolations=all・compare-violations の停止）、緑のときの警告、古い Kotlin の警告、add changed の重複、docs --topic の取得元とキットの不具合での停止、の 32 ケース（104 判定）。`docs --topic` は
-  `docs/dist/llms-full.txt` を読む（無ければ `--llms-full <path>` か、docs の build）。`KSH=dash` で kit を別のシェルで動かせる。
+  scaffold --deps の衝突、test の exit 2 と要約、data get のキー、違反の打ち切り（maxViolations=all・compare-violations の停止）、緑のときの警告、古い Kotlin の警告、add changed の重複、docs --topic の取得元とキットの不具合での停止、の 32 ケース（104 判定。先頭の `katachi --version` を含む）。
+  `docs --topic` は `docs/dist/llms-full.txt` を読む（無ければ `--llms-full <path>` か、docs の build）。
   fixture の本番の前に回し、全部緑にしてから Gradle を使う方へ進む
 - やること（スクリプトの冒頭のコメントに詳細）:
-    1. `sh -n` と `/bin/bash -n`（macOS の bash 3.2）で `katachi-install.sh` の構文を確かめる
-    2. リポジトリの katachi を mavenLocal に publish する（`publishToMavenLocal -Pkatachi.skipSigning`）
+    1. katachi コマンドを組む（`build-katachi-cli.sh`。`--skip-publish` で飛ばす）
+    2. `katachi --version` がリポジトリの版かを確かめる
     3. 合成の Gradle プロジェクト（fixture。定義は `scripts/install-kit-fixtures.sh`）ごとに、順番に
-       `KATACHI_DOCS=file://<repo>/docs/public`・`KATACHI_MAVEN_LOCAL=1` で `init --lang ja --katachi <今回の版>`
-       （`fx_module_dir_<名前>` がある fixture は `--module-dir` も）→ `scaffold`（`fx_scaffold_args_<名前>` があればその引数も）→
-       `./gradlew <KATACHI_MODULE_PATH>:test`。そのあとルートにファイルを1つ足して、`--rerun` なしでもう一度 test
+       `KATACHI_DOCS=file://<repo>/docs/public`・`KATACHI_MAVEN_LOCAL=1` で `katachi agent init --lang ja --katachi <今回の版>`
+       （`fx_module_dir_<名前>` がある fixture は `--module-dir` も）→ `katachi scaffold`（`fx_scaffold_args_<名前>` があればその引数も）→
+       `katachi agent test`（中で `./gradlew <KATACHI_MODULE_PATH>:test`）。そのあとルートにファイルを1つ足して、`--rerun` なしでもう一度
+       `katachi agent test`
 - 判定（fixture ごと。1つでも NG の欄があれば NG）:
     - init・scaffold: 終了コードが 0。init が Kotlin の版を検出できなかったときだけ、手順書どおり `--kotlin` を渡す。
       `fx_expect_<名前>` がある fixture は生成物の grep 検査（toml の別名、`alias(libs.plugins.katachi)`、`FunSpec` など）も scaffold の欄
     - settings の include: 検査用モジュール（init が出す `KATACHI_MODULE_PATH`。既定 `:architecture-test`）の include が1回だけ、
       最後の include 文の直後（include が無ければ末尾）に入った
-    - test（配線）: **「定義していないファイルが Unexpected として出て落ちる」なら OK**（`architecture { }` が空なので、
+    - test（配線）: **`katachi agent test` が「定義していないファイルが Unexpected として出て落ちる」（終了コード 1）なら OK**（`architecture { }` が空なので、
       これが正常）。構文エラー・プラグインの衝突・解決できない・Unexpected 以外の違反で落ちたら NG。通ってしまっても NG
     - 2回目が走ったか: test タスクが UP-TO-DATE にならずに実行され、足したファイルが Unexpected として出た
     - settings に `dependencyResolutionManagement` が無い fixture は、scaffold の警告どおり mavenLocal() と mavenCentral() を
@@ -45,7 +53,7 @@ sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/r
     - `fx_toolchain_<名前>` がある fixture は、生成された build.gradle.kts の `jvmToolchain(N)` が期待どおりかも見る（JDK 21 だけの
       環境を GRADLE_USER_HOME の分離で再現する）
 - fixture（足すときは `install-kit-fixtures.sh` の `FIXTURES` と3つの関数 `fx_<名前>` / `fx_desc_<名前>` / `fx_anchor_<名前>` を揃える。
-  任意で `fx_module_dir_` / `fx_scaffold_args_` / `fx_expect_` / `fx_toolchain_`）:
+  任意で `fx_module_dir_` / `fx_scaffold_args_` / `fx_expect_`（`$2` が katachi コマンド） / `fx_toolchain_`）:
 
   | fixture      | 形                                                                                                   |
   |--------------|------------------------------------------------------------------------------------------------------|
@@ -68,12 +76,12 @@ sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/r
 
 - 出力: `.local/release-v<版>/install-kit.md` に結果の表（fixture / 形 / init / scaffold / settings の include /
   test（配線）/ 2回目が走ったか / 結果 / ログ）。形の欄の（）に検査用モジュールの置き場所とテストのフレームワークが出る。
-  fixture とログは `.local/release-v<版>/tmp/install-kit/`。
+  fixture とログは `.local/release-v<版>/tmp/install-kit/`（test のログは `katachi agent test` の要約と、Gradle の出力の全文 `-gradle.log` の2本）。
   1つでも NG なら終了コード 1
 - **オーケストレータが自分で走らせてよい**（判断の要らない作業。background で起動し、終わったら結果の表だけ読む）
 - Gradle を使う。8・6-1・5 のサンプルを動かす作業とは重ねない。fixture の project cache は
-  `.local/tmp/gradle-cache/prerelease-install/<fixture>`
-- `docs/public/install/` の中身は直さない。NG の原因がキットの不具合なら警告として報告する
+  `.local/tmp/gradle-cache/prerelease-install/<fixture>`（`katachi agent test -- --project-cache-dir …` で渡す）
+- `docs/public/install/` と `katachi-script/` の中身は直さない。NG の原因がキットの不具合なら警告として報告する
 - 1つでも NG なら priority 10 の警告にする（利用者がインストールで詰まる状態）。NG の欄とログの末尾から原因を1〜2行で書く
 - prerelease-check-list.md には、通った数 / 全体と、NG の fixture だけを書く
 
@@ -89,13 +97,13 @@ subagent（model: opus。手順書を読んで判断しながら進める）を�
 |---|---|---|
 | ja で導入 | 利用者に「このプロジェクトに katachi を入れて。手順は `<配信元>/install/ja/index.md`」と頼まれたエージェントとして、手順書を書いてあるとおりに最後まで（6 の返答、6-C・6-D も） | `.local/sample-app/backup/` の KMP のプロジェクトの写し（例: kmp-app-template） |
 | en で導入 | 同じく英語の手順書で最後まで（6-B は CI のファイルを書くまで、6-C も）。英語版に日本語が残っていないか、原本とのずれも見る | `.local/sample-app/backup/` の Android のプロジェクトの写し（例: nav3-recipes） |
-| 手順書のレビュー | 読むだけ。手順書とスクリプト（usage・引数・出力・エラー）、手順書とチェックリストの項目、迷う・誤解する箇所、古い API、ja と en の対応 | `docs/public/install/` 一式 |
+| 手順書のレビュー | 読むだけ。手順書と katachi コマンド（`--help`・引数・出力・エラー）、手順書とチェックリストの項目、迷う・誤解する箇所、古い API、ja と en の対応 | `docs/public/install/` 一式 |
 
 - 写しは `.local/release-v<版>/tmp/install-e2e/<担当>/project` に `rsync -a --exclude build --exclude .gradle --exclude .kotlin`
   で作り、中で `git init`（無いと `gitTracked()` が 0 件になる）。原本には触らない
 - 対象のプロジェクトは毎回同じでなくてよい。前回と違う形（モジュールの数、Groovy / Kotlin DSL、version catalog の有無）を選ぶと
   取りこぼしが減る。前回の結果は前回の作業場所の `install-e2e.md`
-- 各担当は `tmp/install-e2e/<担当>/report.md` に所見を `### [WARN / priority n/10]` の形で書く（スクリプトの不具合・手順書の問題・
+- 各担当は `tmp/install-e2e/<担当>/report.md` に所見を `### [WARN / priority n/10]` の形で書く（katachi コマンドの不具合・手順書の問題・
   訳の問題を分ける）。**直させない**。subagent がハーネスの制約でファイルを書けないことがあるので、報告の本文に所見を全部
   載せさせ、書けなかったときはオーケストレータがその本文を report.md に保存する
 - 1体 30〜45 分（コードベースを読んで定義を書く工程があるので、プロジェクトの大きさでぶれる）。2体の Gradle は別のプロジェクトなので
