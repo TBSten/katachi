@@ -21,7 +21,39 @@ katachi が必要かどうか迷う場合は、先に [モチベーション](/k
   <TabItem label="AI Agent に任せる">
     <Steps>
 
-    1. お使いの AI Agent を起動し、次のように **プロンプトを入力** してください。
+    1. 前提条件を確認する
+
+        ### **katachi CLI**
+
+          katachi には AI Agent driven でのセットアップを支援する CLI ツールが用意されています。
+          Homebrew で以下のようにインストールできます。
+
+          ```shell
+          brew install tbsten/tap/katachi
+          ```
+
+        ### Git 管理
+
+        事前にプロジェクトを git で管理しておくことをおすすめします。
+
+        ### 追加オプション
+
+          <details>
+            <summary>追加のドキュメンテーション</summary>
+            アーキテクチャに関するドキュメントがコードベースの外にある場合（例: Notion で管理しているなど）、そのリンクを用意して AI Agent がアクセスできるようにしておいてください。
+          </details>
+
+          <details>
+            <summary>モジュールなどの構成情報</summary>
+            AI Agent は、デフォルトでは `architecture-test` モジュールを作り、そこにアーキテクチャ定義を書こうとします。別のモジュールに作成したい場合は `テストは <module> に作成してください` のようなプロンプトを追加してください。
+          </details>
+
+          <details>
+            <summary>セッション</summary>
+            context 管理の一環として、katachi 導入専用のセッションを新規に開始することをおすすめします。Claude Code, Codex CLI の場合は `/clear` コマンドでセッションをクリアしてからプロンプトを入力します。
+          </details>
+
+    2. お使いの AI Agent を起動し、次のように **プロンプトを入力** してください。
 
         ```md
         このプロジェクトに katachi を導入してください。
@@ -29,28 +61,16 @@ katachi が必要かどうか迷う場合は、先に [モチベーション](/k
         - https://tbsten.github.io/katachi/install/ja/index.md に従って導入してください。
         ```
 
-        - 事前にプロジェクトを git で管理しておくことをおすすめします。
-        - AI Agent が参照するページには、プロジェクトへの katachi の導入を **あなたと一緒に** 進めるよう指示が書いてあります。
+        AI Agent が参照するページには、プロジェクトへの katachi の導入を **あなたと一緒に** 進めるよう指示が書いてあります。
 
-        <details>
-        <summary>追加のオプション</summary>
-
-        | 項目 | 詳細 |
-        |---|---|
-        | **追加のドキュメンテーション** | アーキテクチャに関するドキュメントがコードベースの外にある場合（例: Notion で管理しているなど）、プロンプトにそのリンクを含めてください。 |
-        | **モジュール** | AI Agent は、デフォルトでは `architecture-test` モジュールを作り、そこにアーキテクチャ定義を書こうとします。別のモジュールに作成したい場合は `テストは <module> に作成してください` のようなプロンプトを追加してください。 |
-        | **セッション** | context 管理の一環として、katachi 導入専用のセッションを新規に開始することをおすすめします。Claude Code, Codex CLI の場合は `/clear` コマンドでセッションをクリアしてからプロンプトを入力します。 |
-
-        </details>
-
-    2. AI Agent がプロジェクトにセットアップした差分を **レビュー** し、必要に応じて内容を修正してください。
+    3. AI Agent がプロジェクトにセットアップした差分を **レビュー** し、必要に応じて内容を修正してください。
 
         注目すべき点:
         - `architecture-test/src/test/kotlin/<パッケージ>/ProjectArchitecture.kt` がエントリーポイントです。
         - AI Agent は architecture の定義を group・Role ごとのファイルに分け、`ProjectArchitecture.kt` の下のパッケージに置きます。そのファイルもレビュー対象です。
         - チームで開発している場合は、チームメンバー（特にチームのリード）にも重点的にレビューしてもらいましょう。
 
-    3. **アーキテクチャテストを実行** し、All green になることを確認してください。
+    4. **アーキテクチャテストを実行** し、All green になることを確認してください。
 
         ```shell
         ./gradlew :architecture-test:test
@@ -206,26 +226,14 @@ katachi が必要かどうか迷う場合は、先に [モチベーション](/k
     <TabItem label="AI Agent に検証させる">
         AI Agent に実際にタスクを渡し、アーキテクチャルールに違反するファイルを生成しないことを確かめてみましょう。
 
-        <details>
-        <summary>今後発生しうる実装タスクがある場合</summary>
+        - 今後実際に発生するタスクがあるなら、それを試しに実行させて、katachi が機能するかを確かめるのが効果的です。
+          - タスクの内容を AI Agent に渡して実行させてください。
+          - JIRA や Notion などで管理しているタスクチケットがあれば、それをそのまま渡すのも手です。
+        - 架空のタスクを AI Agent に考えさせて、katachi がガードレールとして機能するか検証させましょう。
 
-        今後実際に発生するタスクがあるなら、それを試しに実行させて、katachi が機能するかを確かめるのが効果的です。
-        タスクの内容を AI Agent に渡して実行させてください。
-
-        JIRA や Notion などで管理しているタスクチケットがあれば、それをそのまま渡すのも手です。
-
-        </details>
-
-        <details>
-        <summary>特にない場合</summary>
-
-        架空のタスクを AI Agent に考えさせて、katachi がガードレールとして機能するか検証させましょう。
-
-        ```md
-        このプロジェクトで将来発生しそうな架空のタスクをいくつか考えてください。
-        ```
-
-        </details>
+          ```md
+          このプロジェクトで将来発生しそうな架空のタスクをいくつか考えてください。
+          ```
 
     </TabItem>
 
@@ -271,7 +279,7 @@ katachi が必要かどうか迷う場合は、先に [モチベーション](/k
     <TabItem label="Github Actions">
         以下のようなワークフローファイルを追加してください。
 
-        ```yaml title=".github/workflows/architecture.yml"
+        ```yaml nocollapse title=".github/workflows/architecture.yml"
         name: Architecture
 
         on:

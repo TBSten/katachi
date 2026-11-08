@@ -21,7 +21,39 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
   <TabItem label="Let an AI agent do it">
     <Steps>
 
-    1. Start the AI agent you use and **give it this prompt**.
+    1. Check the prerequisites
+
+        ### **katachi CLI**
+
+          katachi provides a CLI tool that supports setup driven by an AI Agent.
+          You can install it with Homebrew as follows.
+
+          ```shell
+          brew install tbsten/tap/katachi
+          ```
+
+        ### Git
+
+        Putting the project under git first is recommended.
+
+        ### Additional options
+
+          <details>
+            <summary>Additional documentation</summary>
+            If your architecture documentation lives outside the codebase (in Notion, for example), prepare a link to it and make sure the AI Agent can access it.
+          </details>
+
+          <details>
+            <summary>Module and other structure</summary>
+            By default the AI Agent creates an `architecture-test` module and writes the architecture definition there. To use a different module, add a prompt such as `Create the test in <module>`.
+          </details>
+
+          <details>
+            <summary>Session</summary>
+            As a matter of context hygiene, we recommend starting a fresh session dedicated to setting up katachi. For Claude Code or Codex CLI, clear the session with `/clear`, then enter the prompt.
+          </details>
+
+    2. Start the AI agent you use and **give it this prompt**.
 
         ```md
         Set up katachi in this project.
@@ -29,28 +61,16 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
         - Follow https://tbsten.github.io/katachi/install/en/index.md to do it.
         ```
 
-        - Putting the project under git first is recommended.
-        - The page the AI agent reads tells it to set katachi up **together with you**.
+        The page the AI agent reads tells it to set katachi up **together with you**.
 
-        <details>
-        <summary>Additional options</summary>
-
-        | Item | Details |
-        |---|---|
-        | **Additional documentation** | If your architecture documentation lives outside the codebase (in Notion, for example), include a link to it in the prompt. |
-        | **Module** | By default the AI agent creates an `architecture-test` module and writes the architecture definition there. To use a different module, add a prompt such as `Create the test in <module>`. |
-        | **Session** | As a matter of context hygiene, we recommend starting a fresh session dedicated to setting up katachi. For Claude Code or Codex CLI, clear the session with `/clear`, then enter the prompt. |
-
-        </details>
-
-    2. **Review** the changes the AI agent made to your project and adjust them as needed.
+    3. **Review** the changes the AI agent made to your project and adjust them as needed.
 
         What to look at:
         - `architecture-test/src/test/kotlin/<package>/ProjectArchitecture.kt` is the entry point.
         - The AI agent splits the architecture definition into one file per group and per Role, and puts them in packages under `ProjectArchitecture.kt`. Review those files too.
         - If you work in a team, have your teammates (especially whoever leads it) review this closely as well.
 
-    3. **Run the architecture test** and confirm that it is all green.
+    4. **Run the architecture test** and confirm that it is all green.
 
         ```shell
         ./gradlew :architecture-test:test
@@ -206,26 +226,14 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
     <TabItem label="Let an AI agent verify it">
         Hand the AI agent a real task and see that it no longer produces files that break the architecture rules.
 
-        <details>
-        <summary>If you have implementation tasks coming up</summary>
+        - If you have tasks that are actually coming up, running one of them as a trial is the best way to measure whether katachi does its job.
+          - Hand the task to the AI agent and let it run.
+          - If the task is tracked in JIRA, Notion, or similar, passing those along works well too.
+        - Have the AI agent invent a hypothetical task and check whether katachi works as a guardrail.
 
-        If you have tasks that are actually coming up, running one of them as a trial is the best way to measure whether katachi does its job.
-        Hand the task to the AI agent and let it run.
-
-        If the task is tracked in JIRA, Notion, or similar, passing those along works well too.
-
-        </details>
-
-        <details>
-        <summary>If you have nothing in particular</summary>
-
-        Have the AI agent invent a hypothetical task and check whether katachi works as a guardrail.
-
-        ```md
-        Come up with a few hypothetical tasks that are likely to come up in this project.
-        ```
-
-        </details>
+          ```md
+          Come up with a few hypothetical tasks that are likely to come up in this project.
+          ```
 
     </TabItem>
 
@@ -271,7 +279,7 @@ To keep the quality up, run the katachi architecture test regularly by wiring it
     <TabItem label="Github Actions">
         Add a workflow file like this one.
 
-        ```yaml title=".github/workflows/architecture.yml"
+        ```yaml nocollapse title=".github/workflows/architecture.yml"
         name: Architecture
 
         on:
