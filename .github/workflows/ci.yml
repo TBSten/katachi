@@ -215,10 +215,26 @@ jobs:
       # The root build (which only configures here) runs on 17 like the job above; the plugin's
       # `jvmToolchain(21)` needs a 21, the JBR version the 261 platform runs on. The last one listed
       # becomes JAVA_HOME, which the plugin's wrapper inherits from the Exec task.
+      #
+      # The macOS runner has no Temurin in its tool cache, so setup-java downloads both from GitHub
+      # releases, which can answer 504 for minutes at a time (setup-java's own retries span ~45 s).
+      # When that happens, take the same versions from Zulu, which Azul serves from its own CDN:
+      # nothing here asks for a vendor, so the build and the plugin's toolchain accept either.
       - name: Set up JDK 17 and 21
+        id: setup-java
+        continue-on-error: true
         uses: actions/setup-java@v6
         with:
           distribution: temurin
+          java-version: |
+            17
+            21
+
+      - name: Set up JDK 17 and 21 (Zulu, when the Temurin download failed)
+        if: steps.setup-java.outcome == 'failure'
+        uses: actions/setup-java@v6
+        with:
+          distribution: zulu
           java-version: |
             17
             21
