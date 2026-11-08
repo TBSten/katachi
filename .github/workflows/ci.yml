@@ -217,8 +217,9 @@ jobs:
       # becomes JAVA_HOME, which the plugin's wrapper inherits from the Exec task.
       #
       # The macOS runner has no Temurin in its tool cache, so setup-java downloads both from GitHub
-      # releases, which sometimes answers 504 for a minute (setup-java's own retries span ~45 s). One
-      # more attempt after a pause, so that a GitHub hiccup does not fail the job before any test ran.
+      # releases, which can answer 504 for minutes at a time (setup-java's own retries span ~45 s).
+      # When that happens, take the same versions from Zulu, which Azul serves from its own CDN:
+      # nothing here asks for a vendor, so the build and the plugin's toolchain accept either.
       - name: Set up JDK 17 and 21
         id: setup-java
         continue-on-error: true
@@ -229,15 +230,11 @@ jobs:
             17
             21
 
-      - name: Wait before retrying the JDK download
-        if: steps.setup-java.outcome == 'failure'
-        run: sleep 60
-
-      - name: Set up JDK 17 and 21 (retry)
+      - name: Set up JDK 17 and 21 (Zulu, when the Temurin download failed)
         if: steps.setup-java.outcome == 'failure'
         uses: actions/setup-java@v6
         with:
-          distribution: temurin
+          distribution: zulu
           java-version: |
             17
             21
