@@ -4,14 +4,11 @@ import starlight from '@astrojs/starlight';
 import starlightThemeNova from 'starlight-theme-nova';
 import mermaid from 'astro-mermaid';
 import starlightLlmsTxt from 'starlight-llms-txt';
-// 内部リンクの切れをビルドで落とす。腐ったリンクを公開しないための歯止め。
 import starlightLinksValidator from 'starlight-links-validator';
-// ドキュメントの版。版の一覧は src/lib/versions.mjs にある（版を足すときに直すのはそこだけ）。
 import starlightVersions from 'starlight-versions';
 import { archivedVersions, archivedVersionSlugs, base, currentVersion, publicSections } from './src/lib/versions.mjs';
 import { satteri } from '@astrojs/markdown-satteri';
 import { satteriRebaseLinks } from './src/lib/satteri-rebase-links.mjs';
-// `astro dev` のときだけ dev toolbar に入るフィードバックモード。本番ビルドには何も出ない。
 import feedback from './src/integrations/feedback/index.ts';
 import onlyDebug from './src/integrations/only-debug.ts';
 import { existsSync, readFileSync, statSync } from 'node:fs';
