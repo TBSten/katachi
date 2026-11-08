@@ -13,6 +13,7 @@ import { satteri } from '@astrojs/markdown-satteri';
 import { satteriRebaseLinks } from './src/lib/satteri-rebase-links.mjs';
 // `astro dev` のときだけ dev toolbar に入るフィードバックモード。本番ビルドには何も出ない。
 import feedback from './src/integrations/feedback/index.ts';
+import onlyDebug from './src/integrations/only-debug.ts';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
@@ -128,6 +129,7 @@ export default defineConfig({
 	markdown: { processor: satteri({ mdastPlugins: [satteriRebaseLinks()] }) },
 	integrations: [
 		feedback(),
+		onlyDebug(),
 		// starlight より前に置くこと。starlight が markdown を処理する前に
 		// ```mermaid フェンスを差し替える必要がある。
 		mermaid({ theme: 'neutral', autoTheme: true }),
@@ -209,6 +211,7 @@ export default defineConfig({
 				'./src/styles/code-comparison.css',
 				'./src/styles/custom-global.css',
 				'./src/styles/home.css',
+				'./src/styles/only-debug.css',
 			],
 			// 英語が既定で `/katachi/` 配下、日本語は `/katachi/ja/` 配下。
 			// 訳が無いページは Starlight が既定ロケールで代替し、その旨の注意を出す。
