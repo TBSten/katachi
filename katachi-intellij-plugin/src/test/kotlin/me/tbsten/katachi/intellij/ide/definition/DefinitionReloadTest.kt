@@ -145,9 +145,14 @@ internal class DefinitionReloadTest : DefinitionServiceTestBase() {
         assertTrue(history.none { it is DefinitionState.Ready && it.freshness is Freshness.Stale })
 
         // ⟳ with another unsaved edit: one load, no second one chasing the save the first made.
+        // The fake Gradle answers in a few milliseconds, faster than one poll of waitState: hold the load, so that
+        // seeing Loading does not depend on who is faster (KATACHI-307).
+        val gate = CompletableDeferred<Unit>()
+        gradle.loads += LoadAnswer(gate = gate)
         com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project) { document.setText("// typed again\n") }
         definition.refresh(RefreshReason.UserAction)
         waitState("loading") { it is DefinitionState.Loading }
+        gate.complete(Unit)
         waitState("reloaded") { it is DefinitionState.Ready && !projectService.viewModel.isLoadRunning }
         idle(1_000)
         assertEquals(2, gradle.loadRequests.size)
