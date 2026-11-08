@@ -141,7 +141,7 @@ class ProjectArchitectureTest {
 |-------------------------------------|------------------------------------------------------------------------------|
 | `me.tbsten.katachi:katachi`         | 本体（JVM）                                                                  |
 | `me.tbsten.katachi:katachi-konsist` | `ktFileContent { }` を使うときだけ                                           |
-| Gradle plugin `me.tbsten.katachi`   | `katachiDocs` / `katachiTemplate` などのタスク。同じ版の本体と組み合わせます |
+| Gradle plugin `me.tbsten.katachi`   | `katachiDocs` / `katachiTemplate` などのタスク。同じバージョンの本体と組み合わせます |
 
 ## Contribution
 
