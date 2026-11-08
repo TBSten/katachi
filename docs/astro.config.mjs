@@ -53,6 +53,7 @@ const sidebar = (() => {
 			),
 			item('guides/document-generation', { en: 'Document generation', ja: 'ドキュメント生成' }),
 			item('guides/generate-code-from-template', { en: 'Generate code from template', ja: 'テンプレートからコード生成' }),
+			item('guides/diff-report', { en: 'Diff report', ja: 'Diff report' }),
 			item('guides/baseline', { en: 'Baseline', ja: 'Baseline' }),
 			item('guides/processor', { en: 'ArchitectureProcessor', ja: 'ArchitectureProcessor とそのカスタマイズ' }),
 		),
