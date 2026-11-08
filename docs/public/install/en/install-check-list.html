@@ -724,7 +724,7 @@
         },
         {
           "id": "0-2",
-          "label": "Ran `katachi init` (this detects the Gradle root, Git, working directory, and versions)",
+          "label": "Ran `katachi agent init` (this detects the Gradle root, Git, working directory, and versions)",
           "done": false
         }
       ]
@@ -746,14 +746,14 @@
         },
         {
           "id": "1-3",
-          "label": "Asked about writing preferences with katachi preferences and recorded them",
+          "label": "Asked about writing preferences with katachi agent preferences and recorded them",
           "done": false
         }
       ]
     },
     {
       "id": "2",
-      "title": "Create the test module (default architecture-test/) and set it up as the standard katachi test module",
+      "title": "Create the test module (default architecture-test/) and set it up as the standard katachi agent test module",
       "warning": null,
       "items": [
         {
@@ -892,7 +892,7 @@
         },
         {
           "id": "0-2",
-          "label": "Ran `katachi init` (this detects the Gradle root, Git, working directory, and versions)",
+          "label": "Ran `katachi agent init` (this detects the Gradle root, Git, working directory, and versions)",
           "done": true
         }
       ]
@@ -914,14 +914,14 @@
         },
         {
           "id": "1-3",
-          "label": "Asked about writing preferences with katachi preferences and recorded them",
+          "label": "Asked about writing preferences with katachi agent preferences and recorded them",
           "done": true
         }
       ]
     },
     {
       "id": "2",
-      "title": "Create the test module (default architecture-test/) and set it up as the standard katachi test module",
+      "title": "Create the test module (default architecture-test/) and set it up as the standard katachi agent test module",
       "warning": null,
       "items": [
         {
@@ -1120,7 +1120,7 @@
 
   <section class="block" id="questions">
     <h2>Questions for you<span class="count-badge" data-render="questionCount"></span><span class="count-badge answered-badge" data-render="answeredCount"></span></h2>
-    <p class="lede">For each question, pick an option or write freely. If you do both, the free text becomes a note. When done, save the JSON with "Export answers" and hand it to the AI agent (<code>katachi answers import &lt;json&gt;</code>).</p>
+    <p class="lede">For each question, pick an option or write freely. If you do both, the free text becomes a note. When done, save the JSON with "Export answers" and hand it to the AI agent (<code>katachi agent answers import &lt;json&gt;</code>).</p>
     <div class="answer-actions" data-render="answerActions"></div>
     <div data-render="questions"></div>
   </section>
@@ -1569,7 +1569,7 @@
       a.click();
       document.body.removeChild(a);
       setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-      setAnswerStatus('Saved ' + ANSWER_FILE + '. Import it with katachi answers import <saved file>.');
+      setAnswerStatus('Saved ' + ANSWER_FILE + '. Import it with katachi agent answers import <saved file>.');
     } catch (error) {
       showManualAnswers(text, 'Could not download. Select and copy the JSON below by hand and hand it to the AI agent.');
     }
