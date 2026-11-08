@@ -1,6 +1,7 @@
 package me.tbsten.katachi.test.script
 
 import io.kotest.core.spec.style.FreeSpec
+import java.io.File
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -118,7 +119,8 @@ class RunScriptSpec : FreeSpec({
         workdir.resolve("check-list.html").readText() shouldContain "\"version\": \"0.4.0\""
         workdir.resolve("check-list.html").readText() shouldNotContain "sh katachi-install.sh "
         workdir.resolve("project-code-base-report.html").exists() shouldBe true
-        workdir.resolve("tmp/cache/index.md").readText() shouldContain "katachi agent check 0-1 0-2"
+        // The bundled guide as it is in docs/public/install (its wording is written by people, not checked here).
+        workdir.resolve("tmp/cache/index.md").readText() shouldBe File("../docs/public/install/ja/index.md").readText()
         workdir.resolve("tmp/cache/lang").readText() shouldBe "ja"
         workdir.resolve("tmp/katachi-install.sh").exists() shouldBe false
         // The guide is written for the katachi command itself, so nothing is left to rewrite (KATACHI-287).

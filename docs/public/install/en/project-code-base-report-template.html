@@ -1025,7 +1025,7 @@
 
     <section id="questions">
       <h2>7. Questions for you<span class="count-badge" data-render="questionCount"></span><span class="count-badge answered-badge" data-render="answeredCount"></span></h2>
-      <p class="lede">For each question, pick an option or write freely. If you do both, the free text becomes a note. When done, save the JSON with "Export answers" and hand it to the AI agent (<code>katachi agent answers import &lt;json&gt;</code>).</p>
+      <p class="lede">For each question, pick an option or write freely. If you do both, the free text becomes a note. When done, save the JSON with "Export answers" and hand it to the AI agent (<code>katachi answers import &lt;json&gt;</code>).</p>
       <div class="answer-actions" data-render="answerActions"></div>
       <div data-render="questions"></div>
     </section>
@@ -1603,7 +1603,7 @@
       a.click();
       document.body.removeChild(a);
       setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-      setAnswerStatus('Saved ' + ANSWER_FILE + '. Import it with katachi agent answers import <saved file>.');
+      setAnswerStatus('Saved ' + ANSWER_FILE + '. Import it with katachi answers import <saved file>.');
     } catch (error) {
       showManualAnswers(text, 'Could not download. Select and copy the JSON below by hand and hand it to the AI agent.');
     }

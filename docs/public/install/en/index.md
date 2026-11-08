@@ -2,9 +2,9 @@
 
 These are the steps to install [katachi](https://tbsten.github.io/katachi). You will create an architecture definition that fits the user's codebase.
 
-**Do not read this document in one go.** A web-fetch tool's summary drops steps. These steps run on the `katachi` command (installed with `brew install tbsten/tap/katachi`), which also ships this document. `katachi agent guide --lang en <section ID>` prints one section (`katachi agent guide --lang en` prints the table of contents; it works before `init` too, and after `init` `--lang` is not needed). Each section ends with the command for the next one. If `katachi` is not installed yet, save the original and read only chapter 0, cut out of it: `curl -fsSL -o <save location>/install.md https://tbsten.github.io/katachi/install/en/index.md`, then `sed -n '/^## 0\./,/^## 1\./p' <save location>/install.md`.
+**Do not read this document in one go.** A web-fetch tool's summary drops steps. These steps run on the `katachi` command (installed with `brew install tbsten/tap/katachi`), which also ships this document. `katachi guide --lang en <section ID>` prints one section (`katachi guide --lang en` prints the table of contents; it works before `init` too, and after `init` `--lang` is not needed). Each section ends with the command for the next one. If `katachi` is not installed yet, save the original and read only chapter 0, cut out of it: `curl -fsSL -o <save location>/install.md https://tbsten.github.io/katachi/install/en/index.md`, then `sed -n '/^## 0\./,/^## 1\./p' <save location>/install.md`.
 
-**Table of contents** (section IDs and headings; fetch the body with `katachi agent guide <section ID>`)
+**Table of contents** (section IDs and headings; fetch the body with `katachi guide <section ID>`)
 
 - 0 — Preparation
   - 0-1 — Get all permissions up front
@@ -44,7 +44,7 @@ Where subagents are available, split the work as in the table below. Only the ma
 | 1-1, 1-2 | Writing (`add` / `data merge`, one process at a time) | Reading, scanning, drafting Role candidates | JSON per section (subagents do not write) |
 | 1-3, 2 | Everything | — | — |
 | 3-1 | `docs --topic` | Finding the relevant API in the API reference (`docs --api`) | Signatures and examples only |
-| 3-2, 3-3, 4 | Editing the definition and `katachi agent test` | — | — |
+| 3-2, 3-3, 4 | Editing the definition and `katachi test` | — | — |
 | 6-A | Choosing the task and judging the result | Implementation and verification (one output directory per subagent) | Violation counts and the diff (the `test` summary) |
 | 6-B to 6-D | Everything | — | — |
 
@@ -132,7 +132,7 @@ At this point the working directory does not exist yet. Record the check at the 
 Run the following **from the Gradle root directory**.
 
 ```sh
-katachi agent init --lang en
+katachi init --lang en
 ```
 
 `--lang en` specifies that the checklist and report are fetched in English, and that **`katachi`'s output (including the `summary` text) is also in English.** **If you omit it, it is English** (because the site's default is English). Once specified it is recorded in the working directory, so later commands do not need it.
@@ -147,7 +147,7 @@ This command does all of the following. **Do not redo any of this by hand.**
 - Deciding the katachi version (the same version as the `katachi` command; if the version given with `--katachi` is below 0.3.0, which this procedure assumes, it stops before creating anything)
 - Detecting the Kotlin version the project uses (it warns if it is older than 2.2; see "When Kotlin is too old" below)
 - Placing `check-list.html` and `project-code-base-report.html`
-- Placing a copy of this document (`<KATACHI_WORKDIR>/tmp/cache/index.md`, for people to open; `guide` prints from the bundled original. To place it again, `katachi agent guide --refresh`)
+- Placing a copy of this document (`<KATACHI_WORKDIR>/tmp/cache/index.md`, for people to open; `guide` prints from the bundled original. To place it again, `katachi guide --refresh`)
 - Initializing the checklist's JSON (working directory / version / project root / date-time / Kotlin / Git / where the verification module goes)
 
 At the end, the result is printed in the following format (a few lines of guidance follow after it). The steps from here on use these values.
@@ -164,9 +164,9 @@ KATACHI_MODULE_DIR=architecture-test
 KATACHI_MODULE_PATH=:architecture-test
 ```
 
-**Run every command from here on as `katachi agent <subcommand>` in the root of the project.** `katachi` finds the working directory under the current directory by itself. When running from somewhere else, prefix it with `KATACHI_WORKDIR=<the KATACHI_WORKDIR value>`. Read `:architecture-test:` in this document as `KATACHI_MODULE_PATH`, and `architecture-test/` as `KATACHI_MODULE_DIR` (they are the same unless you changed `--module-dir`).
+**Run every command from here on as `katachi <subcommand>` in the root of the project.** `katachi` finds the working directory under the current directory by itself. When running from somewhere else, prefix it with `KATACHI_WORKDIR=<the KATACHI_WORKDIR value>`. Read `:architecture-test:` in this document as `KATACHI_MODULE_PATH`, and `architecture-test/` as `KATACHI_MODULE_DIR` (they are the same unless you changed `--module-dir`).
 
-Once this is done, run `katachi agent check 0-1 0-2`. The last `Next:` line of `init` points to this command too.
+Once this is done, run `katachi check 0-1 0-2`. The last `Next:` line of `init` points to this command too.
 
 **If it stops, handle it exactly as the output says.** Do not invent a workaround. To change the working directory, re-run with `--workdir <path>`; to pin a version, re-run with `--katachi <version>` (`scaffold` uses the version `init` recorded. Re-running without `--katachi` keeps the version recorded last time).
 
@@ -186,18 +186,18 @@ The top level of the working directory holds only `check-list.html` and `project
 
 ```sh
 # Read (only JSON is printed; there's no need to read the HTML)
-katachi agent data get report
-katachi agent data get check-list
+katachi data get report
+katachi data get check-list
 
 # Read just part of it (keys are dot-separated; a missing key stops it)
-katachi agent data get report questions
-katachi agent data get check-list meta.moduleDir
+katachi data get report questions
+katachi data get check-list meta.moduleDir
 
 # Update just part of it (deep-merged into the existing content; use this normally)
-katachi agent data merge report partial.json
+katachi data merge report partial.json
 
 # Replace it wholesale
-katachi agent data set report new.json
+katachi data set report new.json
 ```
 
 `report` and `check-list` are short names pointing to the files in the working directory.
@@ -205,14 +205,14 @@ katachi agent data set report new.json
 **`data merge` replaces arrays wholesale. It does not append.** Merge a second item and the first one disappears the instant you do. Use `add` when adding to an array.
 
 ```sh
-katachi agent add violation --violation "..." --location "..." --whyNotFixed "..." --suggestion "..."
-katachi agent add question  --question "..." --observed "..." --options "A" --options "B" --recommendation "..."
-katachi agent add codebase-question --question "..." --observed "..." --options "A" --options "B" --recommendation "..."
-katachi agent add changed   --path "..." --change "New" --summary "..."
-katachi agent add role      --importance 5 --name ViewModel --group feature.ui --layout "..." --naming "..." --allowed "..." --forbidden "..." --examples "..." --count 12
-katachi agent add module    --path app --kind "Android application" --responsibility "..." --buildFile "app/build.gradle.kts" --deviation "..."
-katachi agent add tool      --name ktlint --configPath ".editorconfig" --declareInKatachi "yes"
-katachi agent add excluded  --path "..." --reason "..."
+katachi add violation --violation "..." --location "..." --whyNotFixed "..." --suggestion "..."
+katachi add question  --question "..." --observed "..." --options "A" --options "B" --recommendation "..."
+katachi add codebase-question --question "..." --observed "..." --options "A" --options "B" --recommendation "..."
+katachi add changed   --path "..." --change "New" --summary "..."
+katachi add role      --importance 5 --name ViewModel --group feature.ui --layout "..." --naming "..." --allowed "..." --forbidden "..." --examples "..." --count 12
+katachi add module    --path app --kind "Android application" --responsibility "..." --buildFile "app/build.gradle.kts" --deviation "..."
+katachi add tool      --name ktlint --configPath ".editorconfig" --declareInKatachi "yes"
+katachi add excluded  --path "..." --reason "..."
 ```
 
 `--options` and `--allowed` / `--forbidden` / `--examples` **can be passed multiple times.** Passing an unknown field name stops it and lists the names that are available. It also stops when you pass no fields at all, and when the same `--path` or `--name` is already recorded — so a blank row and a duplicate row cannot get in. Only `add changed` ends without doing anything (exit code 0) when the path is already recorded. If you change a recorded file again later, there is no need to record it again.
@@ -234,7 +234,7 @@ katachi agent add excluded  --path "..." --reason "..."
 
 ```sh
 printf '{"overview":{"appPackage":"com.example.app"}}\n' > <KATACHI_WORKDIR>/tmp/p.json
-katachi agent data merge report <KATACHI_WORKDIR>/tmp/p.json
+katachi data merge report <KATACHI_WORKDIR>/tmp/p.json
 ```
 
 As a rule of thumb, run `data merge` **once every time a section is filled in.** For step 1 that means `overview` → `architecture` → `modules` → `directoryTree` → `roles` → `tools` → `excluded`, so 7 or more times. If you split the work across subagents, write as each subagent's result comes back. **Write with one process at a time.** Subagents do not write; the main agent writes the results it receives, in order (writes are serialized by a lock, but running them side by side only waits and is no faster).
@@ -261,13 +261,13 @@ The item ids are `0-1` `0-2` / `1-1` `1-2` `1-3` / `2-1` `2-2` / `3-1` `3-2` `3-
 **Do not rewrite the JSON yourself.** There are dedicated commands for that.
 
 ```sh
-katachi agent check 1-1 1-2          # mark as done (multiple allowed)
-katachi agent uncheck 1-2            # revert
-katachi agent warn 4 "Left 2 architecture violations in place"   # attach a warning to that step
-katachi agent warn 4 --clear         # clear the warning
+katachi check 1-1 1-2          # mark as done (multiple allowed)
+katachi uncheck 1-2            # revert
+katachi warn 4 "Left 2 architecture violations in place"   # attach a warning to that step
+katachi warn 4 --clear         # clear the warning
 ```
 
-`check` **stops if you pass an id it doesn't recognize.** A typo is never silently ignored. After marking items done it prints one line, `Next: katachi agent guide <section ID>`, so read that section next. It points to the next section to read in table-of-contents order, including 0-3 and the chapter introductions (`guide 3` and so on), which have no items.
+`check` **stops if you pass an id it doesn't recognize.** A typo is never silently ignored. After marking items done it prints one line, `Next: katachi guide <section ID>`, so read that section next. It points to the next section to read in table-of-contents order, including 0-3 and the chapter introductions (`guide 3` and so on), which have no items.
 
 `warn`'s step id is **0 through 6** (that's as far as the checklist's steps go). A step with a warning turns yellow, and stays expanded even once it's complete.
 
@@ -300,13 +300,13 @@ Take the following from them.
 | The name of the architecture and why it was chosen | `architecture.name` / `rationale` / `characteristics` |
 | Checks of their own (a Kotlin compiler plugin, custom detekt rules, ktlint) | `tools` |
 
-Write inconsistencies with `katachi agent add codebase-question ...` (`add question` goes to the checklist, which is for something else). The ids are `cq1`, `cq2`, … in the report and `q1`, `q2`, … in the checklist, so they never collide.
+Write inconsistencies with `katachi add codebase-question ...` (`add question` goes to the checklist, which is for something else). The ids are `cq1`, `cq2`, … in the report and `q1`, `q2`, … in the checklist, so they never collide.
 
 **Where the documentation and the code disagree, write it into `questions`.** Do not quietly side with the code. Whether the documentation is stale or the code has drifted is something only the user can say - and that disagreement is exactly what belongs in front of them before step 3.
 
 If there is no documentation at all, skip this section and infer from the code. Leave one line in `questions` saying so: that everything below is inferred, because the project documents nothing.
 
-Once you've read it all, run `katachi agent check 1-1`.
+Once you've read it all, run `katachi check 1-1`.
 
 ### 1-2. Scan the codebase and fill in the report
 
@@ -321,8 +321,8 @@ Follow the procedure from 0-3.
 
 ```sh
 # Write section by section, as you figure each one out
-katachi agent data merge report <KATACHI_WORKDIR>/tmp/overview.json
-katachi agent data merge report <KATACHI_WORKDIR>/tmp/roles.json
+katachi data merge report <KATACHI_WORKDIR>/tmp/overview.json
+katachi data merge report <KATACHI_WORKDIR>/tmp/roles.json
 ```
 
 The report's `meta` (project name, analysis timestamp, file count, Gradle root, Git root) **has already been filled in by `init`.** There's no need to touch it.
@@ -351,21 +351,21 @@ In `modules`, write `path` / `kind` / `responsibility` / `buildFile` for each mo
 - **Write Role candidates as a tree of groups.** Nest groups in the order "module → layer → kind", and do not line up 8 or more Roles in one group (if they do, split the group)
 - **`build.gradle.kts` / `settings.gradle.kts` / `gradle.properties` / the version catalog are covered by `gradle()`.** Do not make a Role per kind of module. `add role` refuses them too (except `buildSrc` and builds added with `includeBuild`). The exception is a constraint you want to put on a build file (that the namespace matches the package, say); record it with `add role --constraint-only --note <reason>`. In the definition it does not become a Role: write the constraint in a hook such as `gradle { buildScript { } }`. A hook's constraint receives the build files of every module, so to look at one module only, narrow them inside the constraint (the Gradle paragraph under "One Role = one kind of file" in 3-2)
 - **What gets `documented = false`:** (1) generated output (build output, committed generated code), (2) build and tool configuration (`.editorconfig`, CI yaml, lint configuration), (3) single-file helpers (README, LICENSE, `.gitignore`). Only Roles that are useful to a reader go into the generated documentation
-- **For the Android staples (`AndroidManifest.xml`, `res/`), copy the recipe and adapt it.** Base them on the definition fetched with `katachi agent docs --topic android-three-layer`
+- **For the Android staples (`AndroidManifest.xml`, `res/`), copy the recipe and adapt it.** Base them on the definition fetched with `katachi docs --topic android-three-layer`
 
 This task can consume a large amount of context, so launch subagents where available, as appropriate (as in the table at the top: subagents read and draft, and the main agent writes).
 
-Once everything is filled in, run `katachi agent check 1-2`.
+Once everything is filled in, run `katachi check 1-2`.
 
 **Put whatever you wrote into the report's `questions` in front of the user now, and get answers.** What belongs here are inconsistencies like "do screen files go directly in the package, or are subpackages allowed too" — **the answer changes how `layout` is written.** Ask after the definition is done and you will be rewriting it. **Do not leave this until after step 3.**
 
 Ask like this. Do not re-list the questions in chat.
 
 1. Once `questions` is written, show the report's URL (the path to `project-code-base-report.html`, starting with `file://`) and have the user answer in "7. Questions for you" in the browser and save the JSON with "Export answers"
-2. Import the JSON you receive with `katachi agent answers import <path to json>`. Ids that could not be imported are printed as warnings
-3. If an answer arrives in chat, import it one at a time with `katachi agent answers set <id> "<answer>"` (`--note "<supplement>"` can be added). The id decides where it goes (`cq…` is the report, `q…` the checklist)
+2. Import the JSON you receive with `katachi answers import <path to json>`. Ids that could not be imported are printed as warnings
+3. If an answer arrives in chat, import it one at a time with `katachi answers set <id> "<answer>"` (`--note "<supplement>"` can be added). The id decides where it goes (`cq…` is the report, `q…` the checklist)
 
-`katachi agent answers` prints, for the checklist and the report each, how many are answered and lists the unanswered ones.
+`katachi answers` prints, for the checklist and the report each, how many are answered and lists the unanswered ones.
 
 **Use the app package name identified in this step in step 2.**
 
@@ -374,7 +374,7 @@ Ask like this. Do not re-list the questions in chat.
 Decide first the parts of the definition's style that depend on the user's preferences. `scaffold` and `lint` read this record.
 
 ```sh
-katachi agent preferences
+katachi preferences
 ```
 
 Paste the output to the user as is and ask once: "answer only the ones you want to change from the recommendation". Do not ask one item at a time.
@@ -391,8 +391,8 @@ Paste the output to the user as is and ask once: "answer only the ones you want 
 Record the answers and mark it done. If the user says the recommendations are fine, skip `set` and just run `check`.
 
 ```sh
-katachi agent preferences set nestedGroups=yes testFramework=kotest
-katachi agent check 1-3
+katachi preferences set nestedGroups=yes testFramework=kotest
+katachi check 1-3
 ```
 
 Passing an unknown key or value stops it and lists the values that are available.
@@ -426,15 +426,15 @@ The one exception is when the generated file has to change for the build to run 
 
 Add `--no-konsist` only if it has been decided not to use `ktFileContent { }` (it comes with katachi-konsist). With this setup the test passes no `FileConstraintCheck()` to `assert()`, so a `fileConstraint` written in a `gradle { }` hook is not evaluated either, and the test fails with `[UncheckedFileConstraint]` (its How to fix is `Pass FileConstraintCheck() to assert()`). If it hasn't been decided, leave the default as is.
 
-Once it's created, run `katachi agent check 2-1`.
+Once it's created, run `katachi check 2-1`.
 
 ### 2-2. Run once with an empty definition
 
 ```sh
-katachi agent test
+katachi test
 ```
 
-`test` runs the verification module's `test` task (`./gradlew :architecture-test:test`) and summarizes the result. The full log stays in `<KATACHI_WORKDIR>/tmp/test/`, and the summary's `Log:` line shows the path. Do not start Gradle directly; throughout this document, always use `katachi agent test` (only the CI in 6-B is written in the `./gradlew` form).
+`test` runs the verification module's `test` task (`./gradlew :architecture-test:test`) and summarizes the result. The full log stays in `<KATACHI_WORKDIR>/tmp/test/`, and the summary's `Log:` line shows the path. Do not start Gradle directly; throughout this document, always use `katachi test` (only the CI in 6-B is written in the `./gradlew` form).
 
 **Failing here is the expected outcome.** `architecture { }` is empty, so by the deny-by-default principle every file is reported as `Unexpected`. The summary looks like this.
 
@@ -475,7 +475,7 @@ In the log, a paragraph of the following shape follows for each violation (an ex
         }
 ```
 
-katachi shows only 10 violations by default, but `katachi agent test` always writes all of them to the log (it passes `-Dkatachi.maxViolations=all` to `./gradlew`, and katachi's Gradle plugin delivers it to the test JVM). This lets the diff against the previous run and `compare-violations` in 3-3 compare the 11th violation onward too. Do not write `maxViolations` in the test code. If you do, that value wins and the log is cut off.
+katachi shows only 10 violations by default, but `katachi test` always writes all of them to the log (it passes `-Dkatachi.maxViolations=all` to `./gradlew`, and katachi's Gradle plugin delivers it to the test JVM). This lets the diff against the previous run and `compare-violations` in 3-3 compare the 11th violation onward too. Do not write `maxViolations` in the test code. If you do, that value wins and the log is cut off.
 
 **Failing in this shape means the wiring is correct.**
 
@@ -485,12 +485,12 @@ In that case, following the same policy as step 4, **attempt to fix errors unrel
 
 If `scaffold` says "has a buildscript { } block, so it was not edited automatically," **add the single line shown in the output to the root build file.** It will keep failing until you add it. The same goes for "could not read the shape of pluginManagement { }" and "could not read where the include statement ends": add what the output shows to the settings file.
 
-Once you have confirmed it fails with `Unexpected` only, record the files that were created or changed, then run `katachi agent check 2-2`.
+Once you have confirmed it fails with `Unexpected` only, record the files that were created or changed, then run `katachi check 2-2`.
 
 ```sh
-katachi agent add changed --path "architecture-test/build.gradle.kts" --change "New" --summary "Build definition for the verification module"
-katachi agent add changed --path "settings.gradle.kts" --change "Modified" --summary "Added include(\":architecture-test\")"
-katachi agent add changed --path "gradle/libs.versions.toml" --change "Modified" --summary "Added the katachi and JUnit aliases"
+katachi add changed --path "architecture-test/build.gradle.kts" --change "New" --summary "Build definition for the verification module"
+katachi add changed --path "settings.gradle.kts" --change "Modified" --summary "Added include(\":architecture-test\")"
+katachi add changed --path "gradle/libs.versions.toml" --change "Modified" --summary "Added the katachi and JUnit aliases"
 ```
 
 Enter the files listed in `scaffold`'s output. The output shows them as absolute URIs starting with `file://`, but `--path` still takes **the path relative to the project root** (the form in the example above). If it appended to `pluginManagement`, say so in `--summary` as well.
@@ -506,19 +506,19 @@ Write the `architecture { }` definition based on the information given to you in
 ### 3-1. Fetch the documentation by topic
 
 ```sh
-katachi agent docs --topic layout
-katachi agent docs --topic role
-katachi agent docs --topic basic-api
-katachi agent docs --topic kt-file-content     # only when using ktFileContent { }
+katachi docs --topic layout
+katachi docs --topic role
+katachi docs --topic basic-api
+katachi docs --topic kt-file-content     # only when using ktFileContent { }
 ```
 
-This fetches the guide cut out by topic and prints the file's path. Read that file. **Do not read the whole guide (`katachi agent docs`).** The four above are all you need to write the definition. How to write `ktFileContent { }` is in `kt-file-content` (`katachi agent docs --topic kt-file-content`) and in section 6 of `basic-api` ("6. Defining the declarations a file may contain with `ktFileContent { }`"). `katachi agent docs --topics` lists the topics. Anything already fetched is not fetched again.
+This fetches the guide cut out by topic and prints the file's path. Read that file. **Do not read the whole guide (`katachi docs`).** The four above are all you need to write the definition. How to write `ktFileContent { }` is in `kt-file-content` (`katachi docs --topic kt-file-content`) and in section 6 of `basic-api` ("6. Defining the declarations a file may contain with `ktFileContent { }`"). `katachi docs --topics` lists the topics. Anything already fetched is not fetched again.
 
 **What is fetched is the English version.** The site's default locale is English, and this format is generated only for the default locale. DSL API names do not depend on the language, so this is no obstacle to writing the definition.
 
 If `docs --topic` stops saying "This is a bug in the install kit", do not modify katachi; tell the user about the output. Read only that topic's page in the full-text file the output names, and go on.
 
-Once you've finished reading, run `katachi agent check 3-1`.
+Once you've finished reading, run `katachi check 3-1`.
 
 #### When unsure about an API — read the API reference's llms.txt
 
@@ -526,9 +526,9 @@ Once you've finished reading, run `katachi agent check 3-1`.
 
 | What to read | URL | Command |
 |---|---|---|
-| Index (summaries of the key APIs and links to the modules) | https://tbsten.github.io/katachi/api-docs/llms.txt | `katachi agent docs --api` |
-| `:katachi` list / full text (signatures and KDoc) | https://tbsten.github.io/katachi/api-docs/katachi/llms.txt / https://tbsten.github.io/katachi/api-docs/katachi/llms-full.txt | `katachi agent docs --api katachi` (full text) |
-| `:katachi-konsist` list / full text | https://tbsten.github.io/katachi/api-docs/katachi-konsist/llms.txt / https://tbsten.github.io/katachi/api-docs/katachi-konsist/llms-full.txt | `katachi agent docs --api katachi-konsist` (full text) |
+| Index (summaries of the key APIs and links to the modules) | https://tbsten.github.io/katachi/api-docs/llms.txt | `katachi docs --api` |
+| `:katachi` list / full text (signatures and KDoc) | https://tbsten.github.io/katachi/api-docs/katachi/llms.txt / https://tbsten.github.io/katachi/api-docs/katachi/llms-full.txt | `katachi docs --api katachi` (full text) |
+| `:katachi-konsist` list / full text | https://tbsten.github.io/katachi/api-docs/katachi-konsist/llms.txt / https://tbsten.github.io/katachi/api-docs/katachi-konsist/llms-full.txt | `katachi docs --api katachi-konsist` (full text) |
 
 To look at just one API, open the Markdown version of its page, linked from the index or the list. It is the HTML URL with `.md` appended (e.g. `RoleScope.layout` is https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/layout.html.md ). What the commands fetch stays in the working directory's `tmp/cache/`, so you don't need to re-read the whole index every time.
 
@@ -608,7 +608,7 @@ In the field tests of the install kit, these shapes turned up in 13 projects.
 
 #### Do not stop at placement
 
-**Take the conventions you read in step 1 and go through them as candidates for constraints on the contents (`ktFileContent { }`).** A definition that only says where files go only ever tells you that a file is in the right place. `ktFileContent { }` is an experimental API, so the file that uses it needs the opt-in (`@file:OptIn(ExperimentalKatachiApi::class)`). Fetch how to write it with `katachi agent docs --topic kt-file-content`.
+**Take the conventions you read in step 1 and go through them as candidates for constraints on the contents (`ktFileContent { }`).** A definition that only says where files go only ever tells you that a file is in the right place. `ktFileContent { }` is an experimental API, so the file that uses it needs the opt-in (`@file:OptIn(ExperimentalKatachiApi::class)`). Fetch how to write it with `katachi docs --topic kt-file-content`.
 
 **Do not write catch-all Roles.** A layout like `commonMain/**/*.kt` — "anything, as long as it is here" — looks like a check and is not one. In a real adoption this let **a test for the same responsibility be created somewhere else entirely, and accepted.** If a Role would end up a catch-all, give it at least one of the following.
 
@@ -656,12 +656,12 @@ Fill in the `architecture { }` in `<verification module>/src/test/kotlin/<packag
 Once written, run it once and **save the output as the baseline before refactoring.** 3-3 compares against it.
 
 ```sh
-katachi agent test --save before-refactor
+katachi test --save before-refactor
 ```
 
 What you need here is **for it to compile and for the check to run to the end.** Failing with `Katachi check failed: ...` is fine (violations are dealt with in step 4). If a compile error or a Gradle error keeps the check from running, fix it and run it again.
 
-Record the files you created or changed with `add changed` (the split files can be one entry by directory or wildcard; files already recorded in 2-2 need not be recorded again), then run `katachi agent check 3-2`. It scans the definition and lists the Roles that look like they hold different kinds of files (`lint`). What it lists is dealt with in the 3-3 checklist.
+Record the files you created or changed with `add changed` (the split files can be one entry by directory or wildcard; files already recorded in 2-2 need not be recorded again), then run `katachi check 3-2`. It scans the definition and lists the Roles that look like they hold different kinds of files (`lint`). What it lists is dealt with in the 3-3 checklist.
 
 ### 3-3. Refactor the definition
 
@@ -673,7 +673,7 @@ Tidy up the 3-2 definition **without changing the check result.** When unsure ab
 - [ ] **No group or directory name matches `.gitignore`.** Do not use a name such as `build` or `out` for a group (use e.g. `buildLogic`). After splitting, run `git ls-files --others --ignored --exclude-standard <verification module>/src` and confirm it prints nothing (no definition file is ignored). An ignored file never shows up in `gitTracked()`, so a gap in the definition goes unnoticed
 - [ ] **The functions used for splitting are not `inline`.** katachi reads a violation's declaration site off the stack trace, and `inline` shifts the line numbers
 - [ ] **The split definition files pass the check.** The definition files are checked too. The `layout { }` of the Role that covers the verification module accepts files as deep as the deepest definition file (e.g. `<group>/<sub>/<Role>Role.kt`: the depth of the nested groups + 1)
-- [ ] **One Role = one kind of file.** Every Role has been gone over with the three questions of "One Role = one kind of file" in 3-2. `lint` reports 0 warnings, or the reason for each one kept is written with `katachi agent warn 3 "..."`
+- [ ] **One Role = one kind of file.** Every Role has been gone over with the three questions of "One Role = one kind of file" in 3-2. `lint` reports 0 warnings, or the reason for each one kept is written with `katachi warn 3 "..."`
 - [ ] **Gradle is the one line `gradle()`.** No Gradle files are declared in hand-written Roles (except `buildSrc` and builds added with `includeBuild`). Constraints on build files (the ones marked `constraintOnly` in the report) were written in a hook such as `gradle { buildScript { } }` (a constraint that looks at one module only narrows `subject.files` by path)
 - [ ] **No catch-all Roles are left.** Roles that gather `anyFile()` / `ignore()`, or whose `layout` means "anything, as long as it is here", have a file name pattern or a constraint on the contents (`ktFileContent { }`) ("Do not stop at placement" in 3-2)
 - [ ] **The descriptions are complete.** `title` / `summary` / `description` on Roles and groups, and `example()` (the name of a real file) on Roles. Take the content from `roles` in the step 1 report. The Roles you decided to give `documented = false` by the 1-2 guidelines say so
@@ -707,24 +707,24 @@ Tidy up the 3-2 definition **without changing the check result.** When unsure ab
 Once tidied up, run it again the same way as in 3-2 and compare.
 
 ```sh
-katachi agent test --save after-refactor
-katachi agent compare-violations
+katachi test --save after-refactor
+katachi compare-violations
 ```
 
 `compare-violations` pulls the check result out of the two logs (the summary line, and `[Kind] path` for each violation) and compares them. It does not compare the line numbers of declaration sites. `[MissingDescription]` should go down as you add descriptions, so it only prints the counts. **If there is a difference, fix the definition rather than taking the earlier log again.** The refactoring has changed the behavior.
 
 If either log shows only the first few violations (it has a `Showing first ...` line), `compare-violations` stops without comparing (exit code 2), because violations missing from the log cannot be compared. `test` always prints them all, so this does not normally happen. If it stops, capture the cut-off log again as the output says.
 
-**If the earlier log was green (0 violations), this is 0 against 0, and it cannot tell you that the split loosened the definition (a catch-all crept in, say).** In that case, also make one known violation after the split and confirm it fails: put a file that no Role covers somewhere temporarily, run `katachi agent test`, and once it fails with `[UnexpectedFile]`, delete that file.
+**If the earlier log was green (0 violations), this is 0 against 0, and it cannot tell you that the split loosened the definition (a catch-all crept in, say).** In that case, also make one known violation after the split and confirm it fails: put a file that no Role covers somewhere temporarily, run `katachi test`, and once it fails with `[UnexpectedFile]`, delete that file.
 
-Record the files you created or changed with `add changed` (the split files can be one entry by directory; files already recorded need not be recorded again), then run `katachi agent check 3-3`. `lint` runs again. `lint` also prints inspections that do not fail it (a "flat group" or an "unsplit file" against the 1-3 preferences, and candidates for `documented = false`). Fix what it prints against the checklist above, or write the reason for keeping it with `warn 3`.
+Record the files you created or changed with `add changed` (the split files can be one entry by directory; files already recorded need not be recorded again), then run `katachi check 3-3`. `lint` runs again. `lint` also prints inspections that do not fail it (a "flat group" or an "unsplit file" against the 1-3 preferences, and candidates for `documented = false`). Fix what it prints against the checklist above, or write the reason for keeping it with `warn 3`.
 
 ## 4. Verify
 
 ### 4-1. Run the test
 
 ```sh
-katachi agent test
+katachi test
 ```
 
 Read the summary. Do not grep the log. Only when you need the full text, read the path on the summary's `Log:` line. The summary shows the result line, the `[MissingDescription]` count, and the diff against the previous run (violations added and violations removed). With 0 violations it is `Result: the check passed (0 violations)`. If the check passes with warnings (`[AmbiguousLayout]` and the like, which never fail the check), a `Warnings: N` line and the warnings' headings are printed too. Decide whether to fix or keep warnings by the policy in 4-2 as well, and if you keep them, write them with `warn 4`.
@@ -737,19 +737,19 @@ Read the summary. Do not grep the log. Only when you need the full text, read th
     - Do not silence an `[UnexpectedFile]` by adding a line to the `layout { }` of whichever existing Role is nearest. If that Role's `summary` does not describe the file, make a new Role ("One Role = one kind of file" in 3-2)
   - For ones where the fix is unclear, leave them as is and have the user confirm in a later step
   - Record errors you leave in place in the checklist's `violations` (`violation` / `location` / `whyNotFixed` / `suggestion`).
-  - Put anything you want the user to decide into **the checklist's** `questions` (`katachi agent add question ...`). The report also has an array with the same name, but that one is for "inconsistencies in the codebase" noticed during step 1 — its purpose is different.
+  - Put anything you want the user to decide into **the checklist's** `questions` (`katachi add question ...`). The report also has an array with the same name, but that one is for "inconsistencies in the codebase" noticed during step 1 — its purpose is different.
 
-Even if more than 10 violations are left, the log of `katachi agent test` holds all of them. There is no need to write `maxViolations` in the test code.
+Even if more than 10 violations are left, the log of `katachi test` holds all of them. There is no need to write `maxViolations` in the test code.
 
 **If many violations remain and the user wants to "tolerate what is there now and fail only on new ones", you can propose the baseline.** It is an experimental feature (`@ExperimentalKatachiApi`), so ask the user in `questions` before putting it in. To use it:
 
 - Write `baseline()` in `architecture { }` in `ProjectArchitecture.kt`, and put `@OptIn(ExperimentalKatachiApi::class)` on `val projectArchitecture`. The baseline file defaults to `katachi-baseline.json` (at the project root)
 - The baseline file is checked too, so add a Role that declares it in `layout { }` (e.g. `"BaselineFile".role { layout { "katachi-baseline.json".file() } }`). Without it the baseline file itself becomes an `[UnexpectedFile]`, and that one cannot go into the baseline
-- `katachi agent test -- -Dkatachi.baseline.update=true` writes the violations there now into the baseline file. From then on only violations missing from the baseline file fail the test. Once a violation is fixed, its entry fails as `[StaleBaselineEntry]`, so remove it with `katachi agent test -- -Dkatachi.baseline.prune=true` (on CI (`CI=true`) both update and prune are refused)
+- `katachi test -- -Dkatachi.baseline.update=true` writes the violations there now into the baseline file. From then on only violations missing from the baseline file fail the test. Once a violation is fixed, its entry fails as `[StaleBaselineEntry]`, so remove it with `katachi test -- -Dkatachi.baseline.prune=true` (on CI (`CI=true`) both update and prune are refused)
 
 Write the tolerated violations in `violations` too. Putting them in the baseline file does not make them go away.
 
-If you left violations in place, write one line about what was left with `katachi agent warn 4 "..."`.
+If you left violations in place, write one line about what was left with `katachi warn 4 "..."`.
 
 ### 4-3. Generate the documentation
 
@@ -761,12 +761,12 @@ The same definition can generate a page (Markdown) per Role. Running it also con
 
 The output goes to `architecture-test/build/katachi/docs/`. Check that the index `README.md` and a page per Role are there. It is under `build/`, so nothing gets committed. Committing it is handled in 6-C; do not change the output directory here.
 
-Once done, run `katachi agent check 4-1 4-2 4-3`. `Next:` shows `guide 5`.
+Once done, run `katachi check 4-1 4-2 4-3`. `Next:` shows `guide 5`.
 
 ## 5. Review the checklist
 
 ```sh
-katachi agent verify
+katachi verify
 ```
 
 This lists unfilled fields and unchecked items. **If nothing is printed, you're done** (exit code 0). Anything printed means you either forgot to investigate it or forgot to record it. Fill it in and run again.
@@ -778,7 +778,7 @@ This lists unfilled fields and unchecked items. **If nothing is printed, you're 
 ## 6. Report the result to the user
 
 ```sh
-katachi agent summary
+katachi summary
 ```
 
 **Return the output to the user exactly as it is. Do not compose the text yourself.** The output is in the language you chose with `init`'s `--lang`; there is no need to translate it.
@@ -787,7 +787,7 @@ katachi agent summary
 
 **This is a judgment call for you.** In katachi a `.template { }` can be attached to any file declaration in `layout { }`, and `:architecture-test:katachiTemplate` generates it **exactly where that declaration says it goes**. As "what you can do next" after installation, propose which Roles to give a template, and what it would contain.
 
-Work from `roles` in the step 1 report (`katachi agent data get report roles`). **The good candidates are Roles with many files of the same shape** (UseCase, ViewModel, Screen, Repository, and so on). Do not propose one for a Role with a small `count`, or one whose files each take a different shape.
+Work from `roles` in the step 1 report (`katachi data get report roles`). **The good candidates are Roles with many files of the same shape** (UseCase, ViewModel, Screen, Repository, and so on). Do not propose one for a Role with a small `count`, or one whose files each take a different shape.
 
 **Roles whose destination directory is a wildcard, like `feature/*/...`, are candidates too** (ViewModel and Screen are usually shaped this way). Name that `*` with `capture("feature")` and you can pick the destination with `--arg feature=home` (step 2 of 6-D). **Every `*` left in the destination needs a name, both the module directory's and the package directory's.** If the two get the same value, give both one name (write `capture("feature")` in two places). The only thing that can't be named is `**` (a partial match can be named with `capture()`); don't propose one for a Role whose destination is only that.
 
@@ -802,28 +802,28 @@ For each Role, decide the following and record it with `add template`.
 | `--reason` | Why this Role gets one (the count, and that the files share a shape) |
 
 ```sh
-katachi agent add template --role UseCase --files '${name}UseCase.kt' --params name --basedOn "domain/src/main/kotlin/com/example/app/domain/useCase/GetUserUseCase.kt" --reason "All 18 are interfaces and share one shape"
-katachi agent add template --role UseCaseImplementation --files '${name}UseCaseImpl.kt' --params name --basedOn "data/src/main/kotlin/com/example/app/data/useCase/GetUserUseCaseImpl.kt" --reason "All 18 implement a UseCase and share one shape"
-katachi agent add template --role ViewModel --files '${name}ViewModel.kt' --params feature --params name --basedOn "feature/home/src/main/kotlin/com/example/app/feature/home/HomeViewModel.kt" --reason "12 are one each in every feature/* module, and share one shape. The * in feature/* and the * of the package directory take the same name, so one name, feature, picks the destination"
+katachi add template --role UseCase --files '${name}UseCase.kt' --params name --basedOn "domain/src/main/kotlin/com/example/app/domain/useCase/GetUserUseCase.kt" --reason "All 18 are interfaces and share one shape"
+katachi add template --role UseCaseImplementation --files '${name}UseCaseImpl.kt' --params name --basedOn "data/src/main/kotlin/com/example/app/data/useCase/GetUserUseCaseImpl.kt" --reason "All 18 implement a UseCase and share one shape"
+katachi add template --role ViewModel --files '${name}ViewModel.kt' --params feature --params name --basedOn "feature/home/src/main/kotlin/com/example/app/feature/home/HomeViewModel.kt" --reason "12 are one each in every feature/* module, and share one shape. The * in feature/* and the * of the package directory take the same name, so one name, feature, picks the destination"
 ```
 
 If you judge that no Role suits a template, record nothing. What you record shows up in the "Next action" of `summary` and in the report's "Template proposals". **Do not write `.template { }` here.** That happens in 6-D, after the user agrees.
 
 If incomplete items remain, the failure format is printed; if everything is done, the success format is printed. Both formats end with a "Resume" field (the section the next session reads). The number of violations, the number of questions and how many of them are answered, and the number of changed files are pulled from the JSON.
 
-The only thing you write out in prose after `summary`'s output is **the unanswered questions** (`summary` lists them as `- <id> <question> → recommended: <recommendation>`). Leave the answered ones as a count. **This part is meant for a human to read and decide on, so as an exception you write the text yourself here.** Everywhere else, use `summary`'s output as is. For the answers, show the URL of the report for ids starting with `cq` and of the checklist for ids starting with `q`, have them written in the browser, then import them with `katachi agent answers import <json>` (an answer that arrives in chat goes through `answers set`, which writes where the id belongs, as in 1-2).
+The only thing you write out in prose after `summary`'s output is **the unanswered questions** (`summary` lists them as `- <id> <question> → recommended: <recommendation>`). Leave the answered ones as a count. **This part is meant for a human to read and decide on, so as an exception you write the text yourself here.** Everywhere else, use `summary`'s output as is. For the answers, show the URL of the report for ids starting with `cq` and of the checklist for ids starting with `q`, have them written in the browser, then import them with `katachi answers import <json>` (an answer that arrives in chat goes through `answers set`, which writes where the id belongs, as in 1-2).
 
-> **The session may end here.** The next session runs `katachi agent summary` in the root of the project, and reads the next section named in the "Resume" field of the output with `guide`. The previous session's results are in the checklist and the report. Do not rely on the conversation's memory.
+> **The session may end here.** The next session runs `katachi summary` in the root of the project, and reads the next section named in the "Resume" field of the output with `guide`. The previous session's results are in the checklist and the report. Do not rely on the conversation's memory.
 
 ### 6-0. Fix the definition after review
 
 This section is for when the user has looked at the `summary` output and the definition and sent back comments. It has no checklist item.
 
-There is one thing to do. Check the user's comments against the questions (`katachi agent answers`) and the violations left in place (the checklist's `violations`), fix the definition, and confirm the counts with `katachi agent test`. Look at the summary's diff to see that the fixed definition has not added any `[UnexpectedFile]`.
+There is one thing to do. Check the user's comments against the questions (`katachi answers`) and the violations left in place (the checklist's `violations`), fix the definition, and confirm the counts with `katachi test`. Look at the summary's diff to see that the fixed definition has not added any `[UnexpectedFile]`.
 
-If the user's reply answers a question, record it with `katachi agent answers set <id> "<answer>"` before fixing (no `--target` needed; the id decides where it goes). If a comment raises a new question, add it with `add question`.
+If the user's reply answers a question, record it with `katachi answers set <id> "<answer>"` before fixing (no `--target` needed; the id decides where it goes). If a comment raises a new question, add it with `add question`.
 
-> **The session may end here.** The next session runs `katachi agent summary` in the root of the project, and reads the next section named in the "Resume" field of the output with `guide`. The previous session's results are in the checklist and the report. Do not rely on the conversation's memory.
+> **The session may end here.** The next session runs `katachi summary` in the root of the project, and reads the next section named in the "Resume" field of the output with `guide`. The previous session's results are in the checklist and the report. Do not rely on the conversation's memory.
 
 ## 6-A. (After reporting in 6) Confirm the installation worked
 
@@ -848,15 +848,15 @@ Confirm a sample implementation task and carry it out.
 
 ### Run it and check
 
-Before you start, **write down which Role you expect each new file to belong to.** After running the task, run `katachi agent test`, compare the result with your expectation, and decide whether `architecture { }` needs fixing. You will find out one of three things: it was accepted as expected, it came out as an unexpected `Unexpected`, or a catch-all Role quietly accepted it.
+Before you start, **write down which Role you expect each new file to belong to.** After running the task, run `katachi test`, compare the result with your expectation, and decide whether `architecture { }` needs fixing. You will find out one of three things: it was accepted as expected, it came out as an unexpected `Unexpected`, or a catch-all Role quietly accepted it.
 
 When using a past PR as the task, check how it was merged with `gh pr view <number> --json mergeCommit,commits`; "before" is **the parent of the PR's first commit** (`git rev-parse <first commit>^`) and "after" is the merge commit. With a rebase merge, `mergeCommit^1` is "just before the last commit", which does not compare the whole PR.
 
 When verifying in parallel, give each subagent its own output and temporary files under `<KATACHI_WORKDIR>/tmp/verify/<name>/`, and let only the parent write to the working directory (`add` / `data merge`). A worktree cannot reach the working directory (`KATACHI_WORKDIR`), so pass absolute paths.
 
-When done, run `katachi agent check 6-1`.
+When done, run `katachi check 6-1`.
 
-> **The session may end here.** The next session runs `katachi agent summary` in the root of the project, and reads the next section named in the "Resume" field of the output with `guide`. The previous session's results are in the checklist and the report. Do not rely on the conversation's memory.
+> **The session may end here.** The next session runs `katachi summary` in the root of the project, and reads the next section named in the "Resume" field of the output with `guide`. The previous session's results are in the checklist and the report. Do not rely on the conversation's memory.
 
 ## 6-B. (After reporting in 6) If asked to set up CI
 
@@ -893,7 +893,7 @@ jobs:
       - run: ./gradlew :architecture-test:test
 ```
 
-If the workflow file you just created (`.github/workflows/*.yml`) is not in the `architecture { }` definition, add a Role for it (for example `".github/workflows" / "*.yml".file()`) and run `katachi agent test` to confirm it passes.
+If the workflow file you just created (`.github/workflows/*.yml`) is not in the `architecture { }` definition, add a Role for it (for example `".github/workflows" / "*.yml".file()`) and run `katachi test` to confirm it passes.
 
 If the existing CI is a single matrix job that runs emulators or several OSes, **add the job separately, outside the matrix**, so `:architecture-test:test` does not run for every matrix entry. Do not create a new yaml file; add the `architecture` job above to `jobs:` in the same workflow file.
 
@@ -907,15 +907,15 @@ If you committed the generated documentation in 6-C, add the following line to t
 
 Modify the workflow so that `./gradlew :architecture-test:test` runs and reports at an appropriate, non-intrusive time, such as on pull request creation, merge request creation, or a pre-push hook.
 
-When done, run `katachi agent check 6-2`.
+When done, run `katachi check 6-2`.
 
-> **The session may end here.** The next session runs `katachi agent summary` in the root of the project, and reads the next section named in the "Resume" field of the output with `guide`. The previous session's results are in the checklist and the report. Do not rely on the conversation's memory.
+> **The session may end here.** The next session runs `katachi summary` in the root of the project, and reads the next section named in the "Resume" field of the output with `guide`. The previous session's results are in the checklist and the report. Do not rely on the conversation's memory.
 
 ## 6-C. (After reporting in 6) Set up documentation generation
 
 Do this only if the user wants it.
 
-**Before you start, read the documentation generation page.** Fetch it with `katachi agent docs --topic document-generation` (also at https://tbsten.github.io/katachi/guides/document-generation/ ). What the generated pages contain and how to write the output location (`outputDir`) are there. The Role you have to declare when you move the output is in step 3 below, and what `--arg mode=check` does is at the end of 6-B. Do not fetch the whole guide.
+**Before you start, read the documentation generation page.** Fetch it with `katachi docs --topic document-generation` (also at https://tbsten.github.io/katachi/guides/document-generation/ ). What the generated pages contain and how to write the output location (`outputDir`) are there. The Role you have to declare when you move the output is in step 3 below, and what `--arg mode=check` does is at the end of 6-B. Do not fetch the whole guide.
 
 1. Write `title = "..."` and `description = "..."` at the top of `architecture { }` (skip this if you did in 3-2). They become the heading and body of the root page.
 2. Generate with `./gradlew :architecture-test:katachiDocs` and check `architecture-test/build/katachi/docs/`.
@@ -955,19 +955,19 @@ Do this only if the user wants it.
    **Do not use a name that matches `.gitignore`, such as `build` or `out`, for the output directory** (same as 3-3; pages you thought you committed would be ignored).
 
    **The output directory becomes katachi's.** Any `*.md` in it that this run did not generate is deleted. Do not point it at a directory holding handwritten Markdown.
-4. Generate again, and confirm `katachi agent test` passes.
+4. Generate again, and confirm `katachi test` passes.
 
-Record the files you created or changed with `add changed`, then run `katachi agent check 6-3`.
+Record the files you created or changed with `add changed`, then run `katachi check 6-3`.
 
-> **The session may end here.** The next session runs `katachi agent summary` in the root of the project, and reads the next section named in the "Resume" field of the output with `guide`. The previous session's results are in the checklist and the report. Do not rely on the conversation's memory.
+> **The session may end here.** The next session runs `katachi summary` in the root of the project, and reads the next section named in the "Resume" field of the output with `guide`. The previous session's results are in the checklist and the report. Do not rely on the conversation's memory.
 
 ## 6-D. (After reporting in 6) Set up code generation from templates
 
 Do this only for the Roles, among the proposals recorded in step 6, that the user agreed to.
 
-**Before you start, read the page on generating code from a template.** Fetch it with `katachi agent docs --topic template` (also at https://tbsten.github.io/katachi/guides/generate-code-from-template/ ). The words `.template { }` offers (the `*Parameter()` functions such as `stringParameter()`), why you don't write the destination path, and what happens when a file already exists are all there. When unsure about a signature, read the llms.txt in "When unsure about an API" in 3-1 instead of guessing (the entry point for `.template { }` is https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.dsl/template.html.md ).
+**Before you start, read the page on generating code from a template.** Fetch it with `katachi docs --topic template` (also at https://tbsten.github.io/katachi/guides/generate-code-from-template/ ). The words `.template { }` offers (the `*Parameter()` functions such as `stringParameter()`), why you don't write the destination path, and what happens when a file already exists are all there. When unsure about a signature, read the llms.txt in "When unsure about an API" in 3-1 instead of guessing (the entry point for `.template { }` is https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.dsl/template.html.md ).
 
-1. Check the proposals (`katachi agent data get report templates`).
+1. Check the proposals (`katachi data get report templates`).
 2. Attach `.template { }` to a file declaration in that Role's `layout { }`. **`.template` is an extension function, so add `import me.tbsten.katachi.dsl.template` to the file you write it in** (`captureValue()` and the like can be used inside the block, so they need no import). **`.template { }`, `capture()` and `captureValue()` are experimental APIs, so also add `@file:OptIn(ExperimentalKatachiApi::class)` and `import me.tbsten.katachi.ExperimentalKatachiApi` to that file.** Without them compilation fails with `This katachi API is experimental. …` (the message says how to opt in). **Base its content on the `basedOn` file.** The destination path comes from the `layout { }` declaration itself, so don't write it on the template's side
 
    ```kt
@@ -993,7 +993,7 @@ Do this only for the Roles, among the proposals recorded in step 6, that the use
    }
    ```
 
-   **For a Role whose destination directory has a wildcard (`*`), name that `*` with `capture()`.** The check's result doesn't change. Attaching `.template { }` to a path that still has an unnamed `*` or `**` fails when layout is expanded (`assert()` in `katachi agent test`). Read the value inside the template with `captureValue("name")` (don't redeclare it with `stringParameter()` — the names collide and it fails)
+   **For a Role whose destination directory has a wildcard (`*`), name that `*` with `capture()`.** The check's result doesn't change. Attaching `.template { }` to a path that still has an unnamed `*` or `**` fails when layout is expanded (`assert()` in `katachi test`). Read the value inside the template with `captureValue("name")` (don't redeclare it with `stringParameter()` — the names collide and it fails)
 
    ```kt
    @file:OptIn(ExperimentalKatachiApi::class)
@@ -1033,21 +1033,21 @@ Do this only for the Roles, among the proposals recorded in step 6, that the use
 
    ```sh
    ./gradlew :architecture-test:katachiTemplate --arg template=UseCase --arg name=Sample
-   katachi agent test
+   katachi test
    ```
 
    For a Role whose wildcard was named, pass that value too. **A directory's value becomes the destination path as it is, even if no such directory exists** (a typo creates the file in a directory that isn't there). Pass the name of a directory that exists.
 
    ```sh
    ./gradlew :architecture-test:katachiTemplate --arg template=ViewModel --arg feature=home --arg name=Sample
-   katachi agent test
+   katachi test
    ```
 
    If `test` fails, check that the path of the file declaration `.template { }` is attached to is right.
-5. **Delete the generated file, since it was only for checking** (unless the user says to keep it). After deleting it, confirm `katachi agent test` passes once more.
+5. **Delete the generated file, since it was only for checking** (unless the user says to keep it). After deleting it, confirm `katachi test` passes once more.
 
-Record the files you created or changed with `add changed`, then run `katachi agent check 6-4`.
+Record the files you created or changed with `add changed`, then run `katachi check 6-4`.
 
 **Steps 6-A to 6-D are optional.** The checklist treats them as optional too, and they do not count toward progress. `verify` passes without them.
 
-> **The session may end here.** The next session runs `katachi agent summary` in the root of the project, and reads the next section named in the "Resume" field of the output with `guide`. The previous session's results are in the checklist and the report. Do not rely on the conversation's memory.
+> **The session may end here.** The next session runs `katachi summary` in the root of the project, and reads the next section named in the "Resume" field of the output with `guide`. The previous session's results are in the checklist and the report. Do not rely on the conversation's memory.
