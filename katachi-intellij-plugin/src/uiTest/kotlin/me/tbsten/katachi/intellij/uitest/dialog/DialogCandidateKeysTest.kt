@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performTextInput
@@ -75,9 +76,9 @@ class DialogCandidateKeysTest {
     /** Types [text] into the field tagged [tag] and waits until the dialog has it as the value of [name]. */
     private fun ComposeUiTest.type(host: DialogHost, tag: String, name: String, text: String) {
         inputOf(tag).performTextInput(text)
-        // The field reports from an effect, which waitForIdle does not wait for (KATACHI-312).
-        waitUntil(conditionDescription = "the dialog got $name=$text", timeoutMillis = 5_000) { "input:$name=$text" in host.calls }
-        host.settle()
+        // The field reports from an effect that can run on the UI thread in the middle of a frame, and waitForIdle does not wait for
+        // it: ask the host on the UI thread (so the report and the host's redraw are over), then wait for the frame that draws it (KATACHI-312).
+        waitUntil(conditionDescription = "the dialog got $name=$text", timeoutMillis = 5_000) { runOnUiThread { "input:$name=$text" in host.calls } }
         waitForIdle()
     }
 
@@ -138,10 +139,12 @@ class DialogCandidateKeysTest {
     fun `閉じているEnterは必須が埋まっていれば生成の要求を出す`() = runComposeUiTest {
         val host = opened()
         type(host, featureTag, "feature", "home")
+        assertTrue("required fields are filled: ${runOnUiThread { host.calls }}", runOnUiThread { host.ui.canGenerate })
+        inputOf(featureTag).assertIsFocused()
 
         press(featureTag, Key.Enter)
 
-        assertEquals(1, host.generated.size)
+        assertEquals("the requests of Enter (calls: ${runOnUiThread { host.calls }})", 1, runOnUiThread { host.generated.size })
         assertEquals(screen.id, host.generated.single()?.template?.id)
     }
 
