@@ -122,7 +122,7 @@ internal fun ScriptContext.runGuide(args: List<String>): Int {
     }
     guide.next(wanted)?.let { next ->
         say("")
-        say("次: $CLI_COMMAND guide $next", "Next: $CLI_COMMAND guide $next")
+        say("次: $AGENT_COMMAND guide $next", "Next: $AGENT_COMMAND guide $next")
     }
     return 0
 }

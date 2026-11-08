@@ -9,22 +9,22 @@ import me.tbsten.katachi.script.internal.commandText
 import me.tbsten.katachi.script.internal.run
 
 /**
- * The `katachi summary` command: prints the message to hand back to the user.
+ * The `katachi agent summary` command: prints the message to hand back to the user.
  *
- * It takes no options, so building one is writing `katachi summary` in a shell.
+ * It takes no options, so building one is writing `katachi agent summary` in a shell.
  *
  * ## Example 1: build the command, print it and run it
  *
  * ```kt
- * val command = Katachi().summary
- * println(command) // katachi summary
+ * val command = Katachi().agent.summary
+ * println(command) // katachi agent summary
  * command.execute()
  * ```
  *
  * The `execute()` above runs the same thing as this line in a shell:
  *
  * ```sh
- * katachi summary
+ * katachi agent summary
  * ```
  *
  * @see Katachi
@@ -37,7 +37,7 @@ public class SummaryCommand internal constructor(
 
     /**
      * Appends [arguments] as they are, for an option this builder has no method for yet:
-     * `arg("--new-option", "v")` is `katachi summary ... --new-option v` on the command line.
+     * `arg("--new-option", "v")` is `katachi agent summary ... --new-option v` on the command line.
      *
      * @param arguments Such as `"--new-option", "value"`.
      */
@@ -47,6 +47,6 @@ public class SummaryCommand internal constructor(
 
     override fun execute(): Int = katachi.run(arguments)
 
-    /** The command line as typed in a shell: `katachi summary`. Values a shell would split are quoted. */
+    /** The command line as typed in a shell: `katachi agent summary`. Values a shell would split are quoted. */
     override fun toString(): String = commandText(arguments)
 }

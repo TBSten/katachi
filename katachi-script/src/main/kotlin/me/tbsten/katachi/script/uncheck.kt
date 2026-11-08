@@ -3,20 +3,21 @@
 
 package me.tbsten.katachi.script
 
+import me.tbsten.katachi.script.command.AgentCommandGroup
 import me.tbsten.katachi.script.command.UncheckCommand
 import me.tbsten.katachi.script.internal.CommandLine
 
 /**
- * Same as `katachi uncheck <items>...` on the command line: marks items of the check list not done.
+ * Same as `katachi agent uncheck <items>...` on the command line: marks items of the check list not done.
  *
  * ## Example 1: pass the arguments
  *
  * ```kt
- * val command = Katachi().uncheck("3-2")
- * println(command) // katachi uncheck 3-2
+ * val command = Katachi().agent.uncheck("3-2")
+ * println(command) // katachi agent uncheck 3-2
  * ```
  *
  * @param items The ids of the items, such as `3-2`.
  */
-public fun Katachi.uncheck(vararg items: String): UncheckCommand =
-    UncheckCommand(this, CommandLine(listOf("uncheck")).withPositionals(items.toList()))
+public fun AgentCommandGroup.uncheck(vararg items: String): UncheckCommand =
+    UncheckCommand(this.katachi, CommandLine(listOf("agent", "uncheck")).withPositionals(items.toList()))

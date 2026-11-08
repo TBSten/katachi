@@ -3,26 +3,27 @@
 
 package me.tbsten.katachi.script
 
+import me.tbsten.katachi.script.command.AgentCommandGroup
 import me.tbsten.katachi.script.command.GuideCommand
 import me.tbsten.katachi.script.internal.CommandLine
 
 /**
- * Same as `katachi guide` on the command line, starting from this [Katachi]'s defaults: prints the install guide one section at a time, or its table of contents without a section.
+ * Same as `katachi agent guide` on the command line, starting from this [Katachi]'s defaults: prints the install guide one section at a time, or its table of contents without a section.
  */
-public val Katachi.guide: GuideCommand
-    get() = GuideCommand(this, CommandLine(listOf("guide")).withNonEmpty("--lang", this.lang?.value))
+public val AgentCommandGroup.guide: GuideCommand
+    get() = GuideCommand(this.katachi, CommandLine(listOf("agent", "guide")).withNonEmpty("--lang", this.katachi.lang?.value))
 
 /**
- * Same as `katachi guide <section>` on the command line, starting from this [Katachi]'s defaults: prints the install guide one section at a time, or its table of contents without a section.
+ * Same as `katachi agent guide <section>` on the command line, starting from this [Katachi]'s defaults: prints the install guide one section at a time, or its table of contents without a section.
  *
  * ## Example 1: pass the arguments
  *
  * ```kt
- * val command = Katachi().guide("3-2")
- * println(command) // katachi guide 3-2
+ * val command = Katachi().agent.guide("3-2")
+ * println(command) // katachi agent guide 3-2
  * ```
  *
  * @param section The number of a heading, such as `3-2`.
  */
-public fun Katachi.guide(section: String): GuideCommand =
-    GuideCommand(this, CommandLine(listOf("guide")).withNonEmpty("--lang", this.lang?.value).withPositionals(listOf(section)))
+public fun AgentCommandGroup.guide(section: String): GuideCommand =
+    GuideCommand(this.katachi, CommandLine(listOf("agent", "guide")).withNonEmpty("--lang", this.katachi.lang?.value).withPositionals(listOf(section)))

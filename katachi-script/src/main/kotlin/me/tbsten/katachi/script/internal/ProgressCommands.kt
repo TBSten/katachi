@@ -39,7 +39,7 @@ private fun ScriptContext.markItems(ids: List<String>, done: Boolean) {
     if (done) {
         say("完了にしました: ${ids.joinToString(", ")}", "Marked as done: ${ids.joinToString(", ")}")
         nextSection(items, Guide.bundled(lang).ids)?.let { section ->
-            say("次: $CLI_COMMAND guide $section", "Next: $CLI_COMMAND guide $section")
+            say("次: $AGENT_COMMAND guide $section", "Next: $AGENT_COMMAND guide $section")
         }
     } else {
         say("未完了に戻しました: ${ids.joinToString(", ")}", "Marked as not done: ${ids.joinToString(", ")}")

@@ -3,12 +3,13 @@
 
 package me.tbsten.katachi.script
 
+import me.tbsten.katachi.script.command.AgentCommandGroup
 import me.tbsten.katachi.script.command.PreferencesCommandGroup
 
 /**
- * The subcommands of `katachi preferences`: shows and records how the definition is written.
+ * The subcommands of `katachi agent preferences`: shows and records how the definition is written.
  *
- * `katachi preferences` is not a command of its own here: pick one of its subcommands.
+ * `katachi agent preferences` is not a command of its own here: pick one of its subcommands.
  */
-public val Katachi.preferences: PreferencesCommandGroup
-    get() = PreferencesCommandGroup(this)
+public val AgentCommandGroup.preferences: PreferencesCommandGroup
+    get() = PreferencesCommandGroup(this.katachi)

@@ -54,7 +54,7 @@ class DoctorScaffoldSpec : FreeSpec({
 
             run.status shouldBe 0
             run.out shouldContain "== 作成しました"
-            run.out shouldContain "次: katachi test"
+            run.out shouldContain "次: katachi agent test"
             val src = project.resolve("architecture-test/src/test/kotlin/com/example/test/architecture")
             src.resolve("ProjectArchitecture.kt").readText() shouldContain "package com.example.test.architecture"
             src.resolve("ProjectArchitectureTest.kt").readText() shouldContain "package com.example.test.architecture"

@@ -18,7 +18,7 @@ import kotlin.io.path.writeText
  */
 class DocsCommandSpec : FreeSpec({
     "--topics は作業用ディレクトリが無くても名前と見出しを出す" {
-        val run = runCapturing(createTempDirectory("katachi-script-"), listOf("docs", "--topics"))
+        val run = runCapturing(createTempDirectory("katachi-script-"), listOf("agent", "docs", "--topics"))
         run.status shouldBe 0
         run.out shouldContain "faq\tFAQ"
         run.out shouldContain "kt-file-content\tktFileContent"
@@ -27,7 +27,7 @@ class DocsCommandSpec : FreeSpec({
     "全文を取って作業用ディレクトリに置き、stdout にはパスだけを出す" {
         val fixture = DocsFixture()
 
-        val run = fixture.run("docs")
+        val run = fixture.run("agent", "docs")
 
         run.status shouldBe 0
         val dest = fixture.workdir.resolve("tmp/cache/llms-full.txt")
@@ -39,23 +39,23 @@ class DocsCommandSpec : FreeSpec({
 
     "取得済みなら取り直さず、--refresh で取り直す" {
         val fixture = DocsFixture()
-        fixture.run("docs")
+        fixture.run("agent", "docs")
         fixture.docs.resolve("llms-full.txt").writeText("# Updated\n")
 
-        val cached = fixture.run("docs")
+        val cached = fixture.run("agent", "docs")
         cached.err shouldContain "取得済みのものを使いました。取り直すなら --refresh"
         fixture.workdir.resolve("tmp/cache/llms-full.txt").readText() shouldBe FULL
 
-        fixture.run("docs", "--refresh").status shouldBe 0
+        fixture.run("agent", "docs", "--refresh").status shouldBe 0
         fixture.workdir.resolve("tmp/cache/llms-full.txt").readText() shouldBe "# Updated\n"
     }
 
     "--small と --api は別のファイルを取る" {
         val fixture = DocsFixture()
 
-        fixture.run("docs", "--small").out.trim() shouldBe fixture.workdir.resolve("tmp/cache/llms-small.txt").toString()
-        fixture.run("docs", "--api").out.trim() shouldBe fixture.workdir.resolve("tmp/cache/api-llms.txt").toString()
-        val module = fixture.run("docs", "--api", "katachi")
+        fixture.run("agent", "docs", "--small").out.trim() shouldBe fixture.workdir.resolve("tmp/cache/llms-small.txt").toString()
+        fixture.run("agent", "docs", "--api").out.trim() shouldBe fixture.workdir.resolve("tmp/cache/api-llms.txt").toString()
+        val module = fixture.run("agent", "docs", "--api", "katachi")
 
         module.status shouldBe 0
         Path(module.out.trim()).readText() shouldBe "katachi api\n"
@@ -64,7 +64,7 @@ class DocsCommandSpec : FreeSpec({
     "--topic はその見出しのページだけを切り出す（コードの中の # は見出しにしない）" {
         val fixture = DocsFixture()
 
-        val run = fixture.run("docs", "--topic", "faq")
+        val run = fixture.run("agent", "docs", "--topic", "faq")
 
         run.status shouldBe 0
         val page = Path(run.out.trim()).readText()
@@ -74,11 +74,11 @@ class DocsCommandSpec : FreeSpec({
 
     "--topic は [AI-generated] の付いた見出しも拾う" {
         val fixture = DocsFixture()
-        Path(fixture.run("docs", "--topic", "recipes").out.trim()).readText() shouldContain "Recipe body"
+        Path(fixture.run("agent", "docs", "--topic", "recipes").out.trim()).readText() shouldContain "Recipe body"
     }
 
     "知らない話題は使える名前を挙げて止まる" {
-        val run = DocsFixture().run("docs", "--topic", "nothing")
+        val run = DocsFixture().run("agent", "docs", "--topic", "nothing")
         run.status shouldBe 1
         run.err shouldContain "docs --topic: 知らない名前です: nothing 。使える名前:\nmotivation\t"
     }
@@ -86,17 +86,17 @@ class DocsCommandSpec : FreeSpec({
     "見出しが無ければ、取り直したばかりならコマンドの不具合、取得済みなら --refresh を案内する" {
         val fixture = DocsFixture()
 
-        val fresh = fixture.run("docs", "--topic", "roadmap")
+        val fresh = fixture.run("agent", "docs", "--topic", "roadmap")
         fresh.status shouldBe 1
         fresh.err shouldContain "katachi コマンドの不具合です"
         fixture.workdir.resolve("tmp/cache/topics/roadmap.md").exists() shouldBe false
 
-        val cached = fixture.run("docs", "--topic", "roadmap")
-        cached.err shouldContain "--refresh を付けて取り直してください（katachi docs --topic roadmap --refresh）"
+        val cached = fixture.run("agent", "docs", "--topic", "roadmap")
+        cached.err shouldContain "--refresh を付けて取り直してください（katachi agent docs --topic roadmap --refresh）"
     }
 
     "古い版の写しを切り出したら止まる" {
-        val run = DocsFixture().run("docs", "--topic", "git")
+        val run = DocsFixture().run("agent", "docs", "--topic", "git")
         run.status shouldBe 1
         run.err shouldContain "古い版（/0.2/ など）の写しでした"
     }
@@ -105,7 +105,7 @@ class DocsCommandSpec : FreeSpec({
         val fixture = DocsFixture()
         fixture.docs.resolve("llms-full.txt").toFile().delete()
 
-        val run = fixture.run("docs")
+        val run = fixture.run("agent", "docs")
 
         run.status shouldBe 1
         run.err shouldContain "ダウンロードに失敗しました: ${fixture.base}/llms-full.txt"
@@ -113,9 +113,9 @@ class DocsCommandSpec : FreeSpec({
     }
 
     "作業用ディレクトリが無ければ init を案内して止まる" {
-        val run = runCapturing(createTempDirectory("katachi-script-"), listOf("docs"))
+        val run = runCapturing(createTempDirectory("katachi-script-"), listOf("agent", "docs"))
         run.status shouldBe 1
-        run.err shouldContain "先に 'katachi init' を実行してください"
+        run.err shouldContain "先に 'katachi agent init' を実行してください"
     }
 })
 

@@ -12,15 +12,15 @@ import kotlin.io.path.createTempDirectory
 class SummaryCommandSpec : FreeSpec({
     "終わっていなければ、未完了の項目と再開の手がかりを出す" {
         val project = initializedProject()
-        runCapturing(project, listOf("check", "0-1", "0-2")).status shouldBe 0
+        runCapturing(project, listOf("agent", "check", "0-1", "0-2")).status shouldBe 0
 
-        val run = runCapturing(project, listOf("summary"))
+        val run = runCapturing(project, listOf("agent", "summary"))
 
         run.status shouldBe 0
         run.out shouldContain "❌ katachi のセットアップができませんでした"
         run.out shouldContain "終わっていない項目:\n- 1-1 "
         run.out shouldContain "  終わった項目: 0-1 0-2"
-        run.out shouldContain "  次のセクション: katachi guide 0-3"
+        run.out shouldContain "  次のセクション: katachi agent guide 0-3"
         run.out shouldContain "  定義: まだ無い（scaffold 未実行。meta.moduleDir = architecture-test）"
         run.out shouldNotContain "- 6-1 "
     }
@@ -40,7 +40,7 @@ class SummaryCommandSpec : FreeSpec({
         run.out shouldContain "    - CI に `:architecture-test:test` を組み込んでください"
         run.out shouldContain "    - テンプレートからのコード生成をセットアップできます。提案は次の 1 件です"
         run.out shouldContain "        - UseCase: UseCase.kt（パラメータ: name）"
-        run.out shouldContain "    - テンプレートからのコード生成をセットアップする: katachi guide 6-D"
+        run.out shouldContain "    - テンプレートからのコード生成をセットアップする: katachi agent guide 6-D"
     }
 
     "違反も提案も無ければ ✅ で、テンプレートは勧めない" {
@@ -50,8 +50,8 @@ class SummaryCommandSpec : FreeSpec({
 
         run.out shouldContain "✅ katachi のセットアップを行いました"
         run.out shouldContain "- `:architecture-test:test` の実行結果: ✅ All green"
-        run.out shouldContain "    - レビューの指摘を直す: katachi guide 6-0"
-        run.out shouldContain "    - CI に組み込む: katachi guide 6-B"
+        run.out shouldContain "    - レビューの指摘を直す: katachi agent guide 6-0"
+        run.out shouldContain "    - CI に組み込む: katachi agent guide 6-B"
         run.out shouldNotContain "テンプレート"
     }
 
@@ -87,5 +87,5 @@ private class SummaryFixture(violations: String, optionalDone: Set<String> = emp
         )
     }
 
-    fun run(): RecordedRun = runCapturing(project, listOf("summary"), env = mapOf("KATACHI_WORKDIR" to workdir.toString()))
+    fun run(): RecordedRun = runCapturing(project, listOf("agent", "summary"), env = mapOf("KATACHI_WORKDIR" to workdir.toString()))
 }

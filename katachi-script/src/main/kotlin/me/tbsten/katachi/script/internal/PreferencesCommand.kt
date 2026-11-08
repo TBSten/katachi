@@ -100,8 +100,8 @@ internal fun ScriptContext.runPreferences(args: List<String>): Int {
     val recordedRoot = checklistMeta(checkList, "projectRoot")
     val root = if (recordedRoot.isNotEmpty() && resolve(recordedRoot).isDirectory()) resolve(recordedRoot) else cwd
     say(
-        "書き方の方針（推奨から変えたいものだけ '$CLI_COMMAND preferences set key=value' で記録してください）:",
-        "Preferences (record only what you want to change from the recommendation with '$CLI_COMMAND preferences set key=value'):",
+        "書き方の方針（推奨から変えたいものだけ '$AGENT_COMMAND preferences set key=value' で記録してください）:",
+        "Preferences (record only what you want to change from the recommendation with '$AGENT_COMMAND preferences set key=value'):",
     )
     for (key in PREFERENCE_KEYS) {
         var value: String

@@ -97,13 +97,24 @@ internal class CommandSpec(
     val rawPositionals: Boolean = false,
     /** What the command does, for the builder's KDoc: `makes the working directory and ...`. */
     val doc: String = "",
+    /**
+     * A step of the install guide an AI agent follows, typed `katachi agent <name>` (`katachi.agent.<name>` in a
+     * script). The others are for people too and stay at the top: `katachi doctor`, `katachi scaffold`.
+     */
+    val agent: Boolean = false,
 ) {
     fun option(name: String): OptionSpec? = options.firstOrNull { it.name == name }
+
+    /** As typed after `katachi`: `["agent", "init"]`, `["doctor"]`. */
+    val path: List<String> get() = if (agent) listOf(AGENT_GROUP, name) else listOf(name)
 }
+
+/** The subcommand the [CommandSpec.agent] commands sit under: `katachi agent init`. */
+internal const val AGENT_GROUP: String = "agent"
 
 private val LANG_TYPE = ChoiceType(
     "Lang",
-    "The language `katachi init --lang` records for the check list, the report and the command's own messages",
+    "The language `katachi agent init --lang` records for the check list, the report and the command's own messages",
     listOf(ChoiceValue("en", "English"), ChoiceValue("ja", "Japanese")),
 )
 private val TEST_FRAMEWORK_TYPE = ChoiceType(
@@ -121,19 +132,19 @@ private val DEPENDENCY_STYLE_TYPE = ChoiceType(
 )
 private val TARGET_TYPE = ChoiceType(
     "Target",
-    "Which file `katachi answers --target` reads or writes",
+    "Which file `katachi agent answers --target` reads or writes",
     listOf(ChoiceValue("report", "The report"), ChoiceValue("check-list", "The check list")),
 )
 private val API_MODULE_TYPE = ChoiceType(
     "ApiModule",
-    "The module whose API reference `katachi docs --api` fetches",
+    "The module whose API reference `katachi agent docs --api` fetches",
     listOf(ChoiceValue("katachi", "katachi itself"), ChoiceValue("katachi-konsist", "katachi-konsist")),
     // A bare `katachi` would clash with the `val katachi = Katachi(...)` every script has.
     bareNames = false,
 )
 private val CONSTRAINT_NAMES_TYPE = ChoiceType(
     "ConstraintNames",
-    "Whether `katachi preferences set constraintNames=...` puts the question number in constraint names",
+    "Whether `katachi agent preferences set constraintNames=...` puts the question number in constraint names",
     listOf(ChoiceValue("plain", "Names only"), ChoiceValue("numbered", "Names with the question number")),
 )
 
@@ -189,7 +200,8 @@ internal val COMMAND_SPECS: List<CommandSpec> = listOf(
     ),
     CommandSpec(
         "init",
-        listOf(
+        agent = true,
+        options = listOf(
             OptionSpec(
                 "--workdir",
                 OptionKind.Path,
@@ -265,6 +277,7 @@ internal val COMMAND_SPECS: List<CommandSpec> = listOf(
     ),
     CommandSpec(
         "data",
+        agent = true,
         subcommands = listOf(
             CommandSpec(
                 "get",
@@ -279,7 +292,8 @@ internal val COMMAND_SPECS: List<CommandSpec> = listOf(
     ),
     CommandSpec(
         "docs",
-        listOf(
+        agent = true,
+        options = listOf(
             OptionSpec("--small", OptionKind.Flag, doc = "fetches the shorter guide (`llms-small.txt`) instead of the whole one"),
             OptionSpec("--topics", OptionKind.Flag, doc = "lists the topics `--topic` takes"),
             OptionSpec(
@@ -303,16 +317,18 @@ internal val COMMAND_SPECS: List<CommandSpec> = listOf(
     ),
     CommandSpec(
         "guide",
-        listOf(
+        agent = true,
+        options = listOf(
             OptionSpec("--refresh", OptionKind.Flag, doc = "writes the working directory's copy of the guide again"),
             LANG,
         ),
-        listOf(PositionalSpec("section", doc = "The number of a heading, such as `3-2`.", sample = "3-2", required = false)),
+        positionals = listOf(PositionalSpec("section", doc = "The number of a heading, such as `3-2`.", sample = "3-2", required = false)),
         doc = "prints the install guide one section at a time, or its table of contents without a section",
     ),
     CommandSpec(
         "test",
-        listOf(
+        agent = true,
+        options = listOf(
             OptionSpec(
                 "--save",
                 OptionKind.Text,
@@ -327,12 +343,14 @@ internal val COMMAND_SPECS: List<CommandSpec> = listOf(
     ),
     CommandSpec(
         "check",
+        agent = true,
         positionals = listOf(PositionalSpec("items", doc = "The ids of the items, such as `3-2`.", sample = "3-2", variadic = true)),
         rawPositionals = true,
         doc = "marks items of the check list done",
     ),
     CommandSpec(
         "uncheck",
+        agent = true,
         positionals = listOf(PositionalSpec("items", doc = "The ids of the items, such as `3-2`.", sample = "3-2", variadic = true)),
         rawPositionals = true,
         doc = "marks items of the check list not done",
@@ -340,8 +358,9 @@ internal val COMMAND_SPECS: List<CommandSpec> = listOf(
     // warn <step id> <text> | warn <step id> --clear
     CommandSpec(
         "warn",
-        listOf(OptionSpec("--clear", OptionKind.Flag, doc = "removes the warning instead of adding one")),
-        listOf(
+        agent = true,
+        options = listOf(OptionSpec("--clear", OptionKind.Flag, doc = "removes the warning instead of adding one")),
+        positionals = listOf(
             PositionalSpec("step", doc = "The id of the step, such as `4`.", sample = "4"),
             PositionalSpec("text", doc = "The warning. Leave it out with `.clear()`.", sample = "gradlew is missing", required = false),
         ),
@@ -349,9 +368,10 @@ internal val COMMAND_SPECS: List<CommandSpec> = listOf(
         doc = "puts a warning on a step of the check list, which keeps it open even when it is done",
     ),
     // add <kind> --<field> <value>...: the fields differ by kind (see `add <kind> --help`).
-    CommandSpec("add", subcommands = ADD_SPECS, rawPositionals = true, doc = "appends one row to an array of the check list or the report, without touching the others"),
+    CommandSpec("add", agent = true, subcommands = ADD_SPECS, rawPositionals = true, doc = "appends one row to an array of the check list or the report, without touching the others"),
     CommandSpec(
         "preferences",
+        agent = true,
         subcommands = listOf(
             CommandSpec("show", doc = "prints each preference, its value and where it came from"),
             CommandSpec(
@@ -373,6 +393,7 @@ internal val COMMAND_SPECS: List<CommandSpec> = listOf(
     ),
     CommandSpec(
         "answers",
+        agent = true,
         subcommands = listOf(
             CommandSpec("show", listOf(TARGET), doc = "prints the answers to the questions. Without `--target`, those of both files"),
             CommandSpec(
@@ -397,6 +418,7 @@ internal val COMMAND_SPECS: List<CommandSpec> = listOf(
     CommandSpec("lint", doc = "lists what in the definition looks off: a Role with files of several kinds, flat groups and the like"),
     CommandSpec(
         "compare-violations",
+        agent = true,
         positionals = listOf(
             PositionalSpec("before", doc = "The log before. Without it, `tmp/test-before-refactor.log` of the working directory.", sample = "before.log", required = false),
             PositionalSpec("after", doc = "The log after. Without it, `tmp/test-after-refactor.log` of the working directory.", sample = "after.log", required = false),
@@ -404,8 +426,8 @@ internal val COMMAND_SPECS: List<CommandSpec> = listOf(
         rawPositionals = true,
         doc = "compares the violations of two test logs, as before and after a refactoring of the definition",
     ),
-    CommandSpec("verify", doc = "lists what is left to fill in, and closes the last step when nothing is"),
-    CommandSpec("summary", doc = "prints the message to hand back to the user"),
+    CommandSpec("verify", agent = true, doc = "lists what is left to fill in, and closes the last step when nothing is"),
+    CommandSpec("summary", agent = true, doc = "prints the message to hand back to the user"),
 )
 
 internal fun commandSpec(name: String): CommandSpec = COMMAND_SPECS.first { it.name == name }

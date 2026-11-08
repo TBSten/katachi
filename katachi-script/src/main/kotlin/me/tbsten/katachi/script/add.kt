@@ -4,11 +4,12 @@
 package me.tbsten.katachi.script
 
 import me.tbsten.katachi.script.command.AddCommandGroup
+import me.tbsten.katachi.script.command.AgentCommandGroup
 
 /**
- * The subcommands of `katachi add`: appends one row to an array of the check list or the report, without touching the others.
+ * The subcommands of `katachi agent add`: appends one row to an array of the check list or the report, without touching the others.
  *
- * `katachi add` is not a command of its own here: pick one of its subcommands.
+ * `katachi agent add` is not a command of its own here: pick one of its subcommands.
  */
-public val Katachi.add: AddCommandGroup
-    get() = AddCommandGroup(this)
+public val AgentCommandGroup.add: AddCommandGroup
+    get() = AddCommandGroup(this.katachi)

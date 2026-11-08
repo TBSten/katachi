@@ -3,12 +3,13 @@
 
 package me.tbsten.katachi.script
 
+import me.tbsten.katachi.script.command.AgentCommandGroup
 import me.tbsten.katachi.script.command.DataCommandGroup
 
 /**
- * The subcommands of `katachi data`: reads and writes the JSON embedded in the check list and the report.
+ * The subcommands of `katachi agent data`: reads and writes the JSON embedded in the check list and the report.
  *
- * `katachi data` is not a command of its own here: pick one of its subcommands.
+ * `katachi agent data` is not a command of its own here: pick one of its subcommands.
  */
-public val Katachi.data: DataCommandGroup
-    get() = DataCommandGroup(this)
+public val AgentCommandGroup.data: DataCommandGroup
+    get() = DataCommandGroup(this.katachi)

@@ -42,7 +42,7 @@ public interface KatachiCommand {
  *
  * ```kt
  * commands(
- *     katachi.init.lang(ja),
+ *     katachi.agent.init.lang(ja),
  *     katachi.scaffold.`package`("com.example.app"),
  * ).also {
  *     println(it)

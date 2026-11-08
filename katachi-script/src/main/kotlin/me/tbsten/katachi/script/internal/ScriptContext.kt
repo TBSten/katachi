@@ -17,8 +17,11 @@ internal enum class Lang(val code: String) {
     }
 }
 
-/** The name people type. Every "next:" line and every command in the bundled guide uses it. */
+/** The name people type. */
 internal const val CLI_COMMAND: String = "katachi"
+
+/** What the install guide's steps start with. Every "next:" line and every step command in the bundled guide uses it. */
+internal const val AGENT_COMMAND: String = "$CLI_COMMAND $AGENT_GROUP"
 
 internal class ScriptContext(
     val cwd: Path,

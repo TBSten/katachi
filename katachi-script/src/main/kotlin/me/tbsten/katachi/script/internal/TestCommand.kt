@@ -131,11 +131,11 @@ internal fun ScriptContext.runCompareViolations(args: List<String>): Int {
     if (truncated.isNotEmpty()) {
         warn(
             "違反を先頭の数件だけ出したログがあるので、比べません。ログに出ていない違反が入れ替わっても気づけず、全件のログと比べると偽の差分が出るためです。\n" +
-                "$truncated    打ち切られたほうを、全件で取り直してください。$CLI_COMMAND test --save <名前> はいつも全件を出します（-Dkatachi.maxViolations=all を Gradle に渡す）。\n" +
+                "$truncated    打ち切られたほうを、全件で取り直してください。$AGENT_COMMAND test --save <名前> はいつも全件を出します（-Dkatachi.maxViolations=all を Gradle に渡す）。\n" +
                 "    前のログ（before-refactor）を取り直すときは、定義をリファクタリング前に戻してから取ります。\n" +
                 "    取り直しても打ち切られるなら、テストのコードの assert() に maxViolations が書いてあります（-D より優先される）。外してから取り直してください。",
             "Not comparing: a log shows only the first few violations. Violations missing from the log could swap without being noticed, and comparing with a full log shows a false difference.\n" +
-                "$truncated    Capture the cut-off one again with every violation. $CLI_COMMAND test --save <name> always prints them all (it passes -Dkatachi.maxViolations=all to Gradle).\n" +
+                "$truncated    Capture the cut-off one again with every violation. $AGENT_COMMAND test --save <name> always prints them all (it passes -Dkatachi.maxViolations=all to Gradle).\n" +
                 "    To capture the before log (before-refactor) again, put the definition back to how it was before the refactoring first.\n" +
                 "    If it is still cut off, the test code passes maxViolations to assert() (that wins over -D). Remove it and capture again.",
         )

@@ -24,7 +24,7 @@ import me.tbsten.katachi.script.option.Lang
  * defaultPackage = "com.example.app"
  *
  * executeCommands(
- *     katachi.init.lang(ja),
+ *     katachi.agent.init.lang(ja),
  *     katachi.scaffold.`test-framework`(kotest),
  * )
  * ```

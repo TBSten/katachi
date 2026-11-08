@@ -15,7 +15,7 @@ class AnswersCommandSpec : FreeSpec({
     "show は両方のファイルの未回答だけを推奨つきで出す" {
         val fixture = AnswersFixture()
 
-        val run = fixture.run("answers")
+        val run = fixture.run("agent", "answers")
 
         run.status shouldBe 0
         run.out shouldContain "対象: check-list\n回答済み 1 件 / 未回答 1 件\n- q2 テストは JUnit5 にしますか → 推奨: はい"
@@ -24,7 +24,7 @@ class AnswersCommandSpec : FreeSpec({
     }
 
     "show --target で片方だけにできる" {
-        val run = AnswersFixture().run("answers", "show", "--target", "report")
+        val run = AnswersFixture().run("agent", "answers", "show", "--target", "report")
         run.out shouldContain "対象: report"
         run.out shouldNotContain "対象: check-list"
     }
@@ -32,7 +32,7 @@ class AnswersCommandSpec : FreeSpec({
     "set は id から書く先を決め、回答と注記を記録する" {
         val fixture = AnswersFixture()
 
-        val run = fixture.run("answers", "set", "q2", "いいえ", "--note", "kotest を使っている")
+        val run = fixture.run("agent", "answers", "set", "q2", "いいえ", "--note", "kotest を使っている")
 
         run.status shouldBe 0
         run.out shouldContain "対象: check-list"
@@ -47,7 +47,7 @@ class AnswersCommandSpec : FreeSpec({
     "set で --target と id の書く先が食い違えば何も書かない" {
         val fixture = AnswersFixture()
 
-        val run = fixture.run("answers", "set", "cq1", "Impl", "--target", "check-list")
+        val run = fixture.run("agent", "answers", "set", "cq1", "Impl", "--target", "check-list")
 
         run.status shouldBe 1
         run.err shouldContain "cq1 はレポート（report）の確認事項で、--target check-list と食い違うので書きませんでした。"
@@ -56,10 +56,10 @@ class AnswersCommandSpec : FreeSpec({
 
     "set は知らない id と、確認事項の形でない id を止める" {
         val fixture = AnswersFixture()
-        fixture.run("answers", "set", "q9", "x").err shouldContain "知らない id です: q9（使える id: q1, q2）"
-        fixture.run("answers", "set", "x1", "x").err shouldContain "answers set: 確認事項の id ではありません: x1"
-        fixture.run("answers", "set", "q1").err shouldContain "answers set: <id> <回答> を指定してください"
-        fixture.run("answers", "set", "q1", "a", "b").err shouldContain "answers: 引数が多すぎます: b"
+        fixture.run("agent", "answers", "set", "q9", "x").err shouldContain "知らない id です: q9（使える id: q1, q2）"
+        fixture.run("agent", "answers", "set", "x1", "x").err shouldContain "answers set: 確認事項の id ではありません: x1"
+        fixture.run("agent", "answers", "set", "q1").err shouldContain "answers set: <id> <回答> を指定してください"
+        fixture.run("agent", "answers", "set", "q1", "a", "b").err shouldContain "answers: 引数が多すぎます: b"
     }
 
     "import はブラウザで書き出した JSON を取り込み、空の回答と他方の id は飛ばす" {
@@ -75,7 +75,7 @@ class AnswersCommandSpec : FreeSpec({
             """.trimIndent(),
         )
 
-        val run = fixture.run("answers", "import", json.toString())
+        val run = fixture.run("agent", "answers", "import", json.toString())
 
         run.status shouldBe 0
         run.out shouldContain "取り込みました: 回答 1 件（未回答 0 件）"
@@ -90,10 +90,10 @@ class AnswersCommandSpec : FreeSpec({
     "import は target の無い JSON の書く先を id から決め、決められなければ止まる" {
         val fixture = AnswersFixture()
         val fromIds = fixture.workdir.resolve("q.json").also { it.writeText("""{"answers": {"q2": "はい"}}""") }
-        fixture.run("answers", "import", fromIds.toString()).out shouldContain "対象: check-list"
+        fixture.run("agent", "answers", "import", fromIds.toString()).out shouldContain "対象: check-list"
 
         val mixed = fixture.workdir.resolve("mixed.json").also { it.writeText("""{"answers": {"q2": "a", "cq1": "b"}}""") }
-        val run = fixture.run("answers", "import", mixed.toString())
+        val run = fixture.run("agent", "answers", "import", mixed.toString())
         run.status shouldBe 1
         run.err shouldContain "--target report か --target check-list を付けてください。"
     }
@@ -102,14 +102,14 @@ class AnswersCommandSpec : FreeSpec({
         val fixture = AnswersFixture()
         val broken = fixture.workdir.resolve("broken.json").also { it.writeText("{\"answers\": ") }
 
-        val run = fixture.run("answers", "import", broken.toString(), "--target", "report")
+        val run = fixture.run("agent", "answers", "import", broken.toString(), "--target", "report")
 
         run.status shouldBe 1
         run.err shouldContain "JSON として読めません: "
     }
 
     "import はファイルが無ければ止まる" {
-        val run = AnswersFixture().run("answers", "import", "nowhere.json")
+        val run = AnswersFixture().run("agent", "answers", "import", "nowhere.json")
         run.status shouldBe 1
         run.err shouldContain "ファイルがありません: "
     }

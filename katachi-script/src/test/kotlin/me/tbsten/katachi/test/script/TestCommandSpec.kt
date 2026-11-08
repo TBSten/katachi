@@ -23,7 +23,7 @@ class TestCommandSpec : FreeSpec({
             val fixture = TestFixture()
             fixture.gradleOutput(FAILED_LOG, status = 1)
 
-            val run = fixture.run("test", "--save", "before")
+            val run = fixture.run("agent", "test", "--save", "before")
 
             run.status shouldBe 1
             run.out shouldContain "結果: Katachi check failed: 2 violations"
@@ -37,7 +37,7 @@ class TestCommandSpec : FreeSpec({
             val fixture = TestFixture()
             fixture.gradleOutput(PASSED_LOG, status = 0)
 
-            fixture.run("test", "--", "--info").status shouldBe 0
+            fixture.run("agent", "test", "--", "--info").status shouldBe 0
 
             fixture.workdir.resolve("tmp/test/latest.log").readText() shouldContain
                 "args: :architecture-test:test --console=plain --info -Dkatachi.maxViolations=all"
@@ -46,10 +46,10 @@ class TestCommandSpec : FreeSpec({
         "通れば 0 で、前回との違反の差分を出す" {
             val fixture = TestFixture()
             fixture.gradleOutput(FAILED_LOG, status = 1)
-            fixture.run("test").status shouldBe 1
+            fixture.run("agent", "test").status shouldBe 1
             fixture.gradleOutput(PASSED_LOG, status = 0)
 
-            val run = fixture.run("test")
+            val run = fixture.run("agent", "test")
 
             run.status shouldBe 0
             run.out shouldContain "結果: 検査は通りました（違反 0 件）"
@@ -61,9 +61,9 @@ class TestCommandSpec : FreeSpec({
         "同じ結果が続けば差分は無しと出す" {
             val fixture = TestFixture()
             fixture.gradleOutput(FAILED_LOG, status = 1)
-            fixture.run("test")
+            fixture.run("agent", "test")
 
-            fixture.run("test").out shouldContain "前回との差分（previous.log 比）: 無し"
+            fixture.run("agent", "test").out shouldContain "前回との差分（previous.log 比）: 無し"
         }
 
         "通っても警告があれば数と見出しを出す" {
@@ -77,7 +77,7 @@ class TestCommandSpec : FreeSpec({
                 status = 0,
             )
 
-            val run = fixture.run("test")
+            val run = fixture.run("agent", "test")
 
             run.status shouldBe 0
             run.out shouldContain "警告: 1 件（検査は失敗させない。内容を見て、直すか残すかを決める）"
@@ -88,7 +88,7 @@ class TestCommandSpec : FreeSpec({
             val fixture = TestFixture()
             fixture.gradleOutput("e: file:///p/Arch.kt:3:5 Unresolved reference 'roel'.\nBUILD FAILED in 2s", status = 1)
 
-            val run = fixture.run("test")
+            val run = fixture.run("agent", "test")
 
             run.status shouldBe 2
             run.out shouldContain "結果: 検査まで届いていません（コンパイルエラーなど。Gradle の終了コード 1）。ログの末尾:"
@@ -99,7 +99,7 @@ class TestCommandSpec : FreeSpec({
             val fixture = TestFixture()
             fixture.gradleOutput("ExtraSpec > works FAILED\nThere were failing tests. See the report.", status = 1)
 
-            val run = fixture.run("test")
+            val run = fixture.run("agent", "test")
 
             run.status shouldBe 1
             run.out shouldContain "検査の違反は出ていませんが、検査用モジュールのほかのテストが失敗しています"
@@ -110,14 +110,14 @@ class TestCommandSpec : FreeSpec({
             val fixture = TestFixture()
             fixture.gradleOutput("Katachi check failed: 12 violations\n  [UnexpectedFile] a.kt\nShowing first 1 (11 more...)", status = 1)
 
-            fixture.run("test").out shouldContain "省略: Showing first 1 (11 more...)。"
+            fixture.run("agent", "test").out shouldContain "省略: Showing first 1 (11 more...)。"
         }
 
         "gradlew が無ければ Gradle を呼ばずに 2 で止まる" {
             val fixture = TestFixture()
             fixture.project.resolve("gradlew").toFile().delete()
 
-            val run = fixture.run("test")
+            val run = fixture.run("agent", "test")
 
             run.status shouldBe 2
             run.err shouldContain "gradlew がありません"
@@ -128,14 +128,14 @@ class TestCommandSpec : FreeSpec({
             val fixture = TestFixture(withDefinition = false)
             fixture.gradleOutput(PASSED_LOG, status = 0)
 
-            val run = fixture.run("test")
+            val run = fixture.run("agent", "test")
 
             run.status shouldBe 2
             run.err shouldContain "定義のディレクトリがありません"
         }
 
         "Gradle 向けの引数を -- の前に書くと止まる" {
-            val run = TestFixture().run("test", "--info")
+            val run = TestFixture().run("agent", "test", "--info")
             run.status shouldBe 1
             run.err shouldContain "test: 知らないオプションです: --info（Gradle に渡す引数は -- の後ろに）"
         }
@@ -146,7 +146,7 @@ class TestCommandSpec : FreeSpec({
             val fixture = TestFixture()
             fixture.refactorLogs(before = FAILED_LOG, after = FAILED_LOG.replace("in 4s", "in 9s"))
 
-            val run = fixture.run("compare-violations")
+            val run = fixture.run("agent", "compare-violations")
 
             run.status shouldBe 0
             run.out shouldContain "違反の見出し: 前 2 件 / 後 2 件"
@@ -161,7 +161,7 @@ class TestCommandSpec : FreeSpec({
                 after = "Katachi check failed: 2 violations\n  [UnexpectedFile] app/src/Foo.kt\n  [UnexpectedFile] architecture-test/src/test/kotlin/ui/UiRole.kt",
             )
 
-            val run = fixture.run("compare-violations")
+            val run = fixture.run("agent", "compare-violations")
 
             run.status shouldBe 1
             run.out shouldContain "検査結果が変わっています"
@@ -174,7 +174,7 @@ class TestCommandSpec : FreeSpec({
             val fixture = TestFixture()
             fixture.refactorLogs(before = FAILED_LOG, after = "Katachi check failed: 12 violations\nShowing first 10 (2 more...)")
 
-            val run = fixture.run("compare-violations")
+            val run = fixture.run("agent", "compare-violations")
 
             run.status shouldBe 2
             run.err shouldContain "違反を先頭の数件だけ出したログがあるので、比べません。"
@@ -184,14 +184,14 @@ class TestCommandSpec : FreeSpec({
             val fixture = TestFixture()
             fixture.refactorLogs(before = FAILED_LOG, after = "e: Unresolved reference\nBUILD FAILED")
 
-            val run = fixture.run("compare-violations")
+            val run = fixture.run("agent", "compare-violations")
 
             run.status shouldBe 1
             run.err shouldContain "に検査の結果がありません。"
         }
 
         "ログが無ければ保存先を案内して止まる" {
-            val run = TestFixture().run("compare-violations")
+            val run = TestFixture().run("agent", "compare-violations")
             run.status shouldBe 1
             run.err shouldContain "test-before-refactor.log がありません。./gradlew :architecture-test:test の出力をこのパスに保存してください"
         }
@@ -201,7 +201,7 @@ class TestCommandSpec : FreeSpec({
             val a = fixture.project.resolve("a.log").also { it.writeText(FAILED_LOG) }
             val b = fixture.project.resolve("b.log").also { it.writeText(FAILED_LOG) }
 
-            fixture.run("compare-violations", a.toString(), b.toString()).status shouldBe 0
+            fixture.run("agent", "compare-violations", a.toString(), b.toString()).status shouldBe 0
         }
     }
 })
