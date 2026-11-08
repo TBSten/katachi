@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>似た思想のツール</title>
+<style>
+:root{
+ --bg:#ffffff;--bg-muted:#f3f4f6;--line:#d1d5dc;--hairline:#e5e7eb;
+ --ink:#101828;--text:#364153;--muted:#6a7282;--accent:#1e2939;--on-accent:#ffffff;
+ --ok-low:#dcfce7;--ok-high:#016630;--part-low:#fef3c6;--part-high:#973c00;--ng-low:#ffe2e2;--ng-high:#9f0712;
+ --note-low:#dbeafe;--note-high:#193cb8;
+ --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif;
+ --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+ --bg:#030712;--bg-muted:#1e2939;--line:#364153;--hairline:#1e2939;
+ --ink:#ffffff;--text:#d1d5dc;--muted:#99a1af;--accent:#f3f4f6;--on-accent:#030712;
+ --ok-low:#032e15;--ok-high:#b9f8cf;--part-low:#461901;--part-high:#fee685;--ng-low:#460809;--ng-high:#ffc9c9;
+ --note-low:#162456;--note-high:#bedbff;color-scheme:dark}}
+:root[data-theme="dark"]{
+ --bg:#030712;--bg-muted:#1e2939;--line:#364153;--hairline:#1e2939;
+ --ink:#ffffff;--text:#d1d5dc;--muted:#99a1af;--accent:#f3f4f6;--on-accent:#030712;
+ --ok-low:#032e15;--ok-high:#b9f8cf;--part-low:#461901;--part-high:#fee685;--ng-low:#460809;--ng-high:#ffc9c9;
+ --note-low:#162456;--note-high:#bedbff;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;padding:8px 16px}
+main{max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+section.card{display:flex;flex-direction:column;gap:12px;padding:16px 14px 18px;background:var(--bg)}
+.eyebrow{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+h1{font-size:21px;line-height:1.35;color:var(--ink);margin:2px 0 0;font-weight:700;text-wrap:balance}
+h2.sec{font-size:19px;line-height:1.4;color:var(--ink);margin:0;font-weight:700;text-wrap:balance}
+.lead{margin:0;color:var(--text);font-size:13px}
+code,.mono{font-family:var(--mono);font-size:12px}
+code{background:var(--bg-muted);border-radius:4px;padding:1px 5px}
+.chip{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:600;border-radius:4px;padding:0 6px;white-space:nowrap;background:var(--bg-muted);color:var(--muted)}
+.ok{background:var(--ok-low);color:var(--ok-high)}
+.part{background:var(--part-low);color:var(--part-high)}
+.note{background:var(--note-low);color:var(--note-high)}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;vertical-align:middle;padding:6px 4px;border-bottom:1px solid var(--hairline)}
+th{font-size:11px;color:var(--muted);font-weight:600;background:var(--bg-muted);line-height:1.3}
+th.c,td.c{text-align:center;width:58px;white-space:nowrap}
+td.k{color:var(--ink);font-weight:600;line-height:1.3}
+td.k small{display:block;color:var(--muted);font-weight:400;font-family:var(--mono);font-size:10.5px}
+tr.me td{background:var(--note-low)}
+tr.me td.k{color:var(--note-high)}
+.dot{display:inline-block;width:13px;height:13px;border-radius:50%;border:2px solid var(--ink);vertical-align:middle}
+.dot.f{background:var(--ink)}
+.dot.h{background:linear-gradient(90deg,var(--ink) 50%,transparent 50%)}
+.dash{display:inline-block;width:14px;height:2px;background:var(--line);vertical-align:middle}
+.legend{font-size:11.5px;color:var(--muted);margin:0}
+.cards{display:flex;flex-direction:column;gap:10px}
+.c2{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.c2.top{border:2px solid var(--note-high)}
+.c2 .hd{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.c2 .nm{font-weight:700;color:var(--ink);font-size:15px}
+.c2 .rk{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.c2 .ln{display:grid;grid-template-columns:28px 1fr;gap:4px;font-size:12.5px;margin-top:4px;line-height:1.45}
+.c2 .ln .t{font-weight:700;font-size:11px;border-radius:4px;text-align:center;height:18px;line-height:18px}
+.grp{display:flex;flex-direction:column;gap:6px}
+.grp h3{margin:0;font-size:13px;color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.tg{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:1px 9px;color:var(--text)}
+.tg.s{border:2px solid var(--note-high);color:var(--note-high);font-weight:700;padding:0 8px}
+.prop{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.prop.rec{border:2px solid var(--accent)}
+.prop h3{font-size:15px;color:var(--ink);margin:0}
+.prop .score{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.prop p{margin:4px 0 0;font-size:12.5px}
+svg text{font-family:var(--sans)}
+.full td,.full th{font-size:12px;vertical-align:top}
+.full td a{color:var(--note-high)}
+footer{font-size:11.5px;color:var(--muted)}
+</style></head>
+<body><main>
+
+<!-- s0: 全体マップ -->
+<section class="card" id="s0">
+  <div class="eyebrow">KATACHI-289 · investigate(core) · 2026-11-08</div>
+  <h2 class="sec">ファイル配置を見て、1 つの定義から全部出すのは katachi だけ</h2>
+  <p class="lead">今回見た約 45 個のうち主なもの。多くは左（コードの依存を見る）か下（検査だけ）にいる。</p>
+  <svg viewBox="0 0 390 400" width="100%" role="img" aria-label="ツールの位置マップ">
+    <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--muted)"/></marker></defs>
+    <!-- grid rows -->
+    <g stroke="var(--hairline)" stroke-width="1">
+      <line x1="34" y1="40" x2="384" y2="40"/><line x1="34" y1="115" x2="384" y2="115"/><line x1="34" y1="190" x2="384" y2="190"/><line x1="34" y1="265" x2="384" y2="265"/><line x1="34" y1="340" x2="384" y2="340"/>
+    </g>
+    <g font-size="11" fill="var(--muted)" text-anchor="end">
+      <text x="28" y="44">4</text><text x="28" y="119">3</text><text x="28" y="194">2</text><text x="28" y="269">1</text><text x="28" y="344">0</text>
+    </g>
+    <text x="6" y="16" font-size="11" fill="var(--muted)">↑ 検査のほかに出すもの（図・生成・差分・baseline）</text>
+    <line x1="40" y1="372" x2="380" y2="372" stroke="var(--muted)" marker-end="url(#ar)"/>
+    <text x="40" y="390" font-size="11" fill="var(--muted)">コードの依存を見る</text>
+    <text x="380" y="390" font-size="11" fill="var(--muted)" text-anchor="end">ファイルの置き場所を見る</text>
+    <!-- highlight zone -->
+    <rect x="270" y="24" width="114" height="60" rx="8" fill="var(--note-low)"/>
+    <!-- dots: x = 40 + v*34 -->
+    <g font-size="11.5" fill="var(--text)">
+      <!-- row 4 -->
+      <circle cx="350" cy="40" r="7" fill="var(--note-high)"/><text x="350" y="64" text-anchor="middle" font-weight="700" fill="var(--note-high)" font-size="13">katachi</text>
+      <!-- row 3 -->
+      <circle cx="91" cy="115" r="5" fill="var(--ink)"/><text x="91" y="104" text-anchor="middle">dependency-cruiser</text>
+      <circle cx="125" cy="115" r="5" fill="var(--ink)"/><text x="132" y="134" text-anchor="start">Nx / Turborepo</text>
+      <!-- row 2.5 -->
+      <circle cx="193" cy="152" r="5" fill="var(--ink)"/><text x="201" y="156">Tuist</text>
+      <!-- row 2 -->
+      <circle cx="74" cy="190" r="5" fill="var(--ink)"/><text x="74" y="180" text-anchor="middle">Deptrac</text>
+      <circle cx="142" cy="190" r="5" fill="var(--ink)"/><text x="150" y="194">ProjectGuard</text>
+      <!-- row 1.5 -->
+      <circle cx="108" cy="228" r="5" fill="var(--ink)"/><text x="116" y="232">ArchUnit</text>
+      <!-- row 1 -->
+      <circle cx="74" cy="265" r="5" fill="var(--ink)"/><text x="74" y="284" text-anchor="middle">Spring Modulith</text>
+      <circle cx="176" cy="265" r="5" fill="var(--ink)"/><text x="176" y="255" text-anchor="middle">Packwerk</text>
+      <circle cx="312" cy="265" r="5" fill="var(--ink)"/><text x="312" y="255" text-anchor="middle">Rails + Zeitwerk</text>
+      <!-- row 0 -->
+      <circle cx="108" cy="340" r="5" fill="var(--ink)"/><text x="108" y="330" text-anchor="middle">Sheriff</text>
+      <circle cx="193" cy="340" r="5" fill="var(--ink)"/><text x="193" y="359" text-anchor="middle">Konsist</text>
+      <circle cx="261" cy="340" r="5" fill="var(--ink)"/><text x="261" y="330" text-anchor="middle">boundaries</text>
+      <circle cx="295" cy="340" r="5" fill="var(--ink)"/><text x="300" y="359" text-anchor="middle">Steiger</text>
+      <circle cx="363" cy="340" r="5" fill="var(--ink)"/><text x="363" y="330" text-anchor="middle">folderslint</text>
+    </g>
+  </svg>
+  <p class="legend">位置は公式ドキュメントを読んだうえでの目安（AI の判断）。boundaries = eslint-plugin-boundaries。</p>
+</section>
+
+<!-- s1: 近いツール -->
+<section class="card" id="s1">
+  <h2 class="sec">思想がいちばん近いのは eslint-plugin-boundaries</h2>
+  <p class="lead">近い順に 6 つ。どれも「依存」が主役で、文書・生成・差分を同じ定義から出すものは少ない。</p>
+  <div class="cards">
+    <div class="c2 top"><div class="hd"><span class="nm">eslint-plugin-boundaries</span><span class="chip">JS/TS</span><span class="rk">#1</span></div>
+      <div class="ln"><span class="t ok">似</span><span>パターン + capture でファイルに型を付け、どの型にも入らないファイルを禁止。依存は既定で禁止</span></div>
+      <div class="ln"><span class="t part">違</span><span>見るのは import だけ。文書・生成・差分は無い</span></div></div>
+    <div class="c2"><div class="hd"><span class="nm">Deptrac</span><span class="chip">PHP</span><span class="rk">#2</span></div>
+      <div class="ln"><span class="t ok">似</span><span>layer 間の依存は既定で全部禁止。どの layer にも入らないものを報告。baseline と図</span></div>
+      <div class="ln"><span class="t part">違</span><span>クラスと依存の単位。置き場所・名前は見ない</span></div></div>
+    <div class="c2"><div class="hd"><span class="nm">Nx / Turborepo</span><span class="chip">JS/TS</span><span class="rk">#3</span></div>
+      <div class="ln"><span class="t ok">似</span><span>tag で役割を付け、許可した tag にだけ依存できる。生成器・グラフ・affected も</span></div>
+      <div class="ln"><span class="t part">違</span><span>単位はプロジェクト。中のファイル配置は見ない</span></div></div>
+    <div class="c2"><div class="hd"><span class="nm">Spring Modulith</span><span class="chip">JVM</span><span class="rk">#4</span></div>
+      <div class="ln"><span class="t ok">似</span><span>1 つのモデルから verify() と C4 図・Module Canvas を出す。internal は既定で非公開</span></div>
+      <div class="ln"><span class="t part">違</span><span>パッケージ規約が定義。DSL で書かない</span></div></div>
+    <div class="c2"><div class="hd"><span class="nm">Sheriff</span><span class="chip">TS</span><span class="rk">#5</span></div>
+      <div class="ln"><span class="t ok">似</span><span>パスの <code>&lt;domain&gt;</code> を取り出して tag にする（capture と同じ発想）</span></div>
+      <div class="ln"><span class="t part">違</span><span>依存とカプセル化だけ</span></div></div>
+    <div class="c2"><div class="hd"><span class="nm">ProjectGuard</span><span class="chip">Android</span><span class="rk">#6</span></div>
+      <div class="ln"><span class="t ok">似</span><span>Gradle で許可リスト・baseline・Mermaid 図。Kotlin 圏で近い</span></div>
+      <div class="ln"><span class="t part">違</span><span>モジュール間の依存だけ</span></div></div>
+  </div>
+</section>
+
+<!-- s2: 3 原則 -->
+<section class="card" id="s2">
+  <h2 class="sec">3 原則目「役割の無いファイルは存在しない」を持つものは少ない</h2>
+  <table>
+    <tr><th>ツール</th><th class="c">宣言外は<br>違反</th><th class="c">役割で<br>分ける</th><th class="c">役割なし<br>は禁止</th></tr>
+    <tr class="me"><td class="k">katachi<small>Kotlin</small></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot f"></span></td></tr>
+    <tr><td class="k">eslint-plugin-boundaries<small>JS/TS · no-unknown-files</small></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot f"></span></td></tr>
+    <tr><td class="k">Deptrac<small>PHP · --fail-on-uncovered</small></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot h"></span></td></tr>
+    <tr><td class="k">ArchUnit<small>JVM · ensureAllClasses…</small></td><td class="c"><span class="dot h"></span></td><td class="c"><span class="dot h"></span></td><td class="c"><span class="dot h"></span></td></tr>
+    <tr><td class="k">Rails + Zeitwerk<small>Ruby · zeitwerk:check</small></td><td class="c"><span class="dash"></span></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot h"></span></td></tr>
+    <tr><td class="k">Steiger (FSD)<small>JS/TS</small></td><td class="c"><span class="dot h"></span></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot h"></span></td></tr>
+    <tr><td class="k">Nx / Turborepo<small>JS/TS · tag</small></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dash"></span></td></tr>
+    <tr><td class="k">Sheriff<small>TS · tag</small></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dash"></span></td></tr>
+    <tr><td class="k">go-arch-lint<small>Go · component</small></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dash"></span></td></tr>
+    <tr><td class="k">Spring Modulith<small>JVM · module</small></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dash"></span></td></tr>
+    <tr><td class="k">Freeletics plugins<small>Android · module type</small></td><td class="c"><span class="dot h"></span></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dash"></span></td></tr>
+    <tr><td class="k">jQAssistant<small>JVM · concept</small></td><td class="c"><span class="dot h"></span></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dash"></span></td></tr>
+    <tr><td class="k">Tach<small>Python</small></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot h"></span></td><td class="c"><span class="dash"></span></td></tr>
+    <tr><td class="k">dependency-cruiser<small>JS/TS · allowed</small></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot h"></span></td><td class="c"><span class="dash"></span></td></tr>
+    <tr><td class="k">ProjectGuard<small>Android</small></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot h"></span></td><td class="c"><span class="dash"></span></td></tr>
+    <tr><td class="k">Packwerk<small>Ruby</small></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot h"></span></td><td class="c"><span class="dash"></span></td></tr>
+    <tr><td class="k">Bazel visibility<small>多言語</small></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot h"></span></td><td class="c"><span class="dash"></span></td></tr>
+    <tr><td class="k">folderslint / thai-lint<small>JS / Python</small></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dash"></span></td><td class="c"><span class="dash"></span></td></tr>
+    <tr><td class="k">Konsist / Konture<small>Kotlin</small></td><td class="c"><span class="dash"></span></td><td class="c"><span class="dot h"></span></td><td class="c"><span class="dash"></span></td></tr>
+  </table>
+  <p class="legend"><span class="dot f"></span> ある　<span class="dot h"></span> 一部（依存やクラス単位だけ・設定次第）　<span class="dash"></span> 無い</p>
+</section>
+
+<!-- s3: 出すもの -->
+<section class="card" id="s3">
+  <h2 class="sec">図・生成・差分まで 1 つの設定から出すのは Nx 系と katachi</h2>
+  <table>
+    <tr><th>ツール</th><th class="c">図・<br>文書</th><th class="c">コード<br>生成</th><th class="c">git<br>差分</th><th class="c">base<br>line</th></tr>
+    <tr class="me"><td class="k">katachi<small>ファイル配置</small></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot f"></span></td></tr>
+    <tr><td class="k">Nx / Turborepo<small>プロジェクト依存</small></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dash"></span></td></tr>
+    <tr><td class="k">dependency-cruiser<small>import</small></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dash"></span></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot f"></span></td></tr>
+    <tr><td class="k">Tuist<small>Xcode 構成</small></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot h"></span></td><td class="c"><span class="dash"></span></td></tr>
+    <tr><td class="k">Deptrac<small>クラス依存</small></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dash"></span></td><td class="c"><span class="dash"></span></td><td class="c"><span class="dot f"></span></td></tr>
+    <tr><td class="k">ProjectGuard<small>モジュール依存</small></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dash"></span></td><td class="c"><span class="dash"></span></td><td class="c"><span class="dot f"></span></td></tr>
+    <tr><td class="k">ArchUnit<small>クラス依存</small></td><td class="c"><span class="dot h"></span></td><td class="c"><span class="dash"></span></td><td class="c"><span class="dash"></span></td><td class="c"><span class="dot f"></span></td></tr>
+    <tr><td class="k">Spring Modulith<small>パッケージ</small></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dash"></span></td><td class="c"><span class="dash"></span></td><td class="c"><span class="dash"></span></td></tr>
+    <tr><td class="k">Rails<small>ディレクトリ規約</small></td><td class="c"><span class="dash"></span></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dash"></span></td><td class="c"><span class="dash"></span></td></tr>
+    <tr><td class="k">Packwerk<small>定数参照</small></td><td class="c"><span class="dash"></span></td><td class="c"><span class="dash"></span></td><td class="c"><span class="dash"></span></td><td class="c"><span class="dot f"></span></td></tr>
+    <tr><td class="k">Dropbox の 2 つ<small>Gradle モジュール</small></td><td class="c"><span class="dash"></span></td><td class="c"><span class="dash"></span></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dot f"></span></td></tr>
+    <tr><td class="k">Structurizr / LikeC4<small>図だけ（検査なし）</small></td><td class="c"><span class="dot f"></span></td><td class="c"><span class="dash"></span></td><td class="c"><span class="dash"></span></td><td class="c"><span class="dash"></span></td></tr>
+    <tr><td class="k">boundaries / Konsist<small>import / クラス</small></td><td class="c"><span class="dash"></span></td><td class="c"><span class="dash"></span></td><td class="c"><span class="dash"></span></td><td class="c"><span class="dash"></span></td></tr>
+  </table>
+  <p class="legend"><span class="dot f"></span> ある　<span class="dot h"></span> 一部　<span class="dash"></span> 無い。Dropbox の 2 つ = Dependency Guard（依存の baseline）と Affected Module Detector（差分→影響モジュール）。Tuist の差分は selective testing。</p>
+</section>
+
+<!-- s4: エコシステム一覧 -->
+<section class="card" id="s4">
+  <h2 class="sec">似た思想は 7 つの分野に 45 個ほどある</h2>
+  <p class="lead">太枠は katachi に特に近いもの。</p>
+  <div class="grp"><h3>Kotlin / JVM</h3><div class="chips">
+    <span class="tg">Konsist</span><span class="tg">Konture</span><span class="tg">ArchUnit</span><span class="tg s">ProjectGuard</span><span class="tg">modules-graph-assert</span><span class="tg s">Freeletics plugins</span><span class="tg s">Spring Modulith</span><span class="tg">jMolecules</span><span class="tg">jQAssistant</span><span class="tg">Sonargraph / SonarQube Architecture</span><span class="tg">Dependency Guard</span><span class="tg">Affected Module Detector</span><span class="tg">detekt / Lint の baseline</span></div></div>
+  <div class="grp"><h3>JavaScript / TypeScript</h3><div class="chips">
+    <span class="tg s">eslint-plugin-boundaries</span><span class="tg s">dependency-cruiser</span><span class="tg s">Nx</span><span class="tg">Turborepo boundaries</span><span class="tg s">Sheriff</span><span class="tg">Steiger (FSD)</span><span class="tg">good-fences</span><span class="tg">folderslint</span><span class="tg">ls-lint</span><span class="tg">eslint-plugin-check-file</span><span class="tg">ArchUnitTS</span><span class="tg">Plop / Hygen</span><span class="tg">Next.js のファイル規約</span></div></div>
+  <div class="grp"><h3>Python</h3><div class="chips"><span class="tg s">Tach</span><span class="tg">import-linter</span><span class="tg">thai-lint</span><span class="tg">PyTestArch</span></div></div>
+  <div class="grp"><h3>Go</h3><div class="chips"><span class="tg">go-arch-lint</span><span class="tg">depguard</span><span class="tg">internal/ ディレクトリ</span></div></div>
+  <div class="grp"><h3>PHP / Ruby</h3><div class="chips"><span class="tg s">Deptrac</span><span class="tg">PHPat</span><span class="tg">PHPArkitect</span><span class="tg">Packwerk</span><span class="tg">Rails + Zeitwerk</span></div></div>
+  <div class="grp"><h3>.NET / Swift</h3><div class="chips"><span class="tg">ArchUnitNET</span><span class="tg">NetArchTest</span><span class="tg">NsDepCop</span><span class="tg">Harmonize</span><span class="tg">Tuist</span></div></div>
+  <div class="grp"><h3>言語をまたぐもの</h3><div class="chips"><span class="tg">Bazel / Pants の visibility</span><span class="tg">CODEOWNERS / Backstage</span><span class="tg">Structurizr</span><span class="tg">LikeC4</span><span class="tg">Context Mapper</span><span class="tg">JHipster JDL</span></div></div>
+</section>
+
+<!-- s5: アイデア -->
+<section class="card" id="s5">
+  <h2 class="sec">katachi に持ち込めそうなアイデアは 4 つ</h2>
+  <div class="cards">
+    <div class="prop rec"><h3>docs に Role group の図を出す</h3><div class="score">推奨度: 6 / 10</div>
+      <p>ProjectGuard・dependency-cruiser・Deptrac・Spring Modulith は同じ定義から依存図を出す。katachiDocs は Markdown だけなので、Role group の木を Mermaid で添える</p></div>
+    <div class="prop"><h3>構成のプリセットを配る</h3><div class="score">推奨度: 5 / 10</div>
+      <p>FSD（Steiger）・Freeletics・Rails は決まった構成ごと配っている。nowinandroid 風の定義を雛形として配れば導入が速い</p></div>
+    <div class="prop"><h3>Role group の「公開する Role」</h3><div class="score">推奨度: 4 / 10</div>
+      <p>Spring Modulith の internal、Sheriff の index.ts、Packwerk の privacy。group の外から使ってよい Role を宣言する。konture との棲み分けが要る</p></div>
+    <div class="prop"><h3>Role に持ち主を書いて CODEOWNERS を出す</h3><div class="score">推奨度: 3 / 10</div>
+      <p>Nx の ensure-owners は「持ち主のいないプロジェクトは違反」。役割のないファイルを許さない katachi と相性がよい</p></div>
+  </div>
+  <p class="legend">古い baseline 項目を報告する仕組み（Deptrac の skip_violations）は katachi にすでにある（StaleBaselineEntry）。「変わったファイルだけ見る」系は KATACHI-276 で扱った。</p>
+</section>
+
+<!-- full table (HTML のみ) -->
+<section class="card" id="full">
+  <h2 class="sec">一覧（似ている点・違う点）</h2>
+  <p class="lead">★ は今回公式ドキュメントで確かめたもの。無印は既知の情報で、細部は未確認。</p>
+  <table class="full">
+    <tr><th>ツール</th><th>似ている点</th><th>違う点</th></tr>
+    <tr><td class="k"><a href="https://www.npmjs.com/package/eslint-plugin-boundaries">eslint-plugin-boundaries</a> ★</td><td>elements の pattern + capture でファイルに type を付ける。no-unknown-files でどの type にも入らないファイルを禁止。element-types は default: disallow にできる</td><td>ESLint ルール。import の向きだけを見る。文書・生成・差分なし</td></tr>
+    <tr><td class="k"><a href="https://deptrac.github.io/deptrac/concepts">Deptrac</a> ★</td><td>collector でコードを layer に分ける。layer 間の依存は既定で全部禁止。uncovered（どの layer にも入らない依存）を報告・--fail-on-uncovered。skip_violations と Graphviz 図</td><td>単位はクラスと依存。置き場所・名前は見ない</td></tr>
+    <tr><td class="k"><a href="https://raw.githubusercontent.com/sverweij/dependency-cruiser/HEAD/doc/cli.md">dependency-cruiser</a> ★</td><td>allowed ルールに無い依存は違反（not-in-allowed）。dot / mermaid / d2 / html の図。known-violations で baseline。--affected で git 差分から影響範囲</td><td>import の単位。役割に名前を付ける仕組みは正規表現のグループだけ</td></tr>
+    <tr><td class="k">Nx（module boundaries・generators・graph・affected）</td><td>project に tag を付け、depConstraints の許可リストで縛る。生成器・グラフ・affected まで 1 つの workspace から</td><td>単位はプロジェクト。中のファイル配置は見ない</td></tr>
+    <tr><td class="k"><a href="https://turborepo.dev/docs/reference/boundaries">Turborepo Boundaries</a> ★</td><td>tag ごとに dependencies / dependents を allow / deny（実験的）。turbo gen と --affected もある</td><td>パッケージ単位</td></tr>
+    <tr><td class="k"><a href="https://softarc-consulting.github.io/sheriff/docs/dependency-rules">Sheriff</a> ★</td><td>tagging のパスに <code>&lt;domain&gt;</code> を書くと値を取り出して tag にする（katachi の capture）。depRules・index.ts で公開範囲</td><td>依存とカプセル化だけ</td></tr>
+    <tr><td class="k"><a href="https://github.com/feature-sliced/steiger">Steiger（Feature-Sliced Design）</a> ★</td><td>layer / slice / segment という決まった役割の語彙でフォルダ構成を検査（no-segmentless-slices など 21 ルール）</td><td>FSD 専用。自分で役割を定義する道具ではない</td></tr>
+    <tr><td class="k">Spring Modulith</td><td>トップレベルパッケージをモジュールとみなし verify()。同じモデルから C4 / PlantUML 図と Module Canvas。internal は既定で外から触れない</td><td>規約ベースで DSL は無い。単位はパッケージ</td></tr>
+    <tr><td class="k"><a href="https://github.com/rubensousa/ProjectGuard">ProjectGuard</a> ★</td><td>restrictModule は許可リスト外を禁止。baseline、HTML レポート、Mermaid の依存図</td><td>Gradle モジュールと外部ライブラリの依存だけ</td></tr>
+    <tr><td class="k"><a href="https://freeletics.github.io/freeletics-gradle-plugins/monorepo">Freeletics Gradle plugins</a> ★</td><td>モジュールの置き場所（app / core / domain / feature:*:implementation）で種類が決まり、checkDependencyRules で種類ごとのルール。ファイル名でモジュールを自動 include</td><td>Freeletics の構成専用</td></tr>
+    <tr><td class="k"><a href="https://www.github.com/jraska/modules-graph-assert">modules-graph-assert</a></td><td>モジュール名の正規表現で allowed / restricted、グラフの高さの上限、Graphviz 出力</td><td>モジュール依存だけ</td></tr>
+    <tr><td class="k">ArchUnit ★</td><td>layeredArchitecture、ensureAllClassesAreContainedInArchitecture（どの layer にも入らないクラスを違反に）、FreezingArchRule（baseline）、PlantUML 図をルールとして使う</td><td>クラスの単位。ファイルや非 Kotlin ファイルは見ない</td></tr>
+    <tr><td class="k">Konsist / <a href="https://github.com/baole/konture">Konture</a> ★</td><td>テストで構成を検査。Konture はモジュール依存・命名と baseline</td><td>宣言外を違反にはしない（書いたルールだけ検査）</td></tr>
+    <tr><td class="k">jMolecules / jQAssistant</td><td>役割（stereotype / concept ラベル）をコードに付けて、それを元に検査や文書を作る</td><td>アノテーションやグラフ DB 経由。置き場所は主役ではない</td></tr>
+    <tr><td class="k">Sonargraph / <a href="https://docs.sonarsource.com/sonarqube-server/architecture-analysis">SonarQube Architecture</a></td><td>意図したアーキテクチャを定義し、実際の依存とのずれを報告（SonarQube は 2025 年末から Java・JS/TS・Python・C#）</td><td>商用。依存が主役</td></tr>
+    <tr><td class="k"><a href="https://docs.gauge.sh/getting-started/introduction">Tach</a> ★</td><td>宣言していない依存はエラー。public interface、tach show でグラフ、tach report</td><td>Python の import 単位</td></tr>
+    <tr><td class="k">import-linter / PyTestArch</td><td>layers / independence / forbidden の契約</td><td>依存だけ</td></tr>
+    <tr><td class="k"><a href="https://thai-lint.readthedocs.io/en/latest/file-placement-linter/">thai-lint（file placement）</a> ★</td><td>global deny で「src/ と tests/ 以外の .py は禁止」が書ける。ディレクトリごとの allow / deny</td><td>正規表現だけ。役割の概念なし</td></tr>
+    <tr><td class="k"><a href="https://www.npmjs.com/package/folderslint">folderslint</a> ★</td><td>許可するディレクトリのパスを並べる（<code>*</code> / <code>**</code>）。並べた以外は違反</td><td>フォルダだけ。ファイルの役割なし</td></tr>
+    <tr><td class="k"><a href="https://ls-lint.org/2.3/configuration/the-rules.html">ls-lint</a> ★ / eslint-plugin-check-file</td><td>ディレクトリごと・拡張子ごとの命名、exists で個数</td><td>名前の書き方が中心</td></tr>
+    <tr><td class="k"><a href="https://pkg.go.dev/github.com/fe3dback/go-arch-lint">go-arch-lint</a> ★</td><td>component をパスの glob で定義し mayDependOn の許可リスト。graph コマンド</td><td>Go のパッケージ依存</td></tr>
+    <tr><td class="k">Packwerk ★</td><td>package.yml を置いたフォルダがパッケージ。宣言していない依存・private 定数の参照を違反に。package_todo.yml（旧 deprecated_references.yml）で棚上げ</td><td>Ruby の定数参照単位</td></tr>
+    <tr><td class="k">Rails + Zeitwerk</td><td>app/models など役割の決まったディレクトリ、rails generate、zeitwerk:check（ファイル名と定数名の一致）</td><td>フレームワークの固定規約</td></tr>
+    <tr><td class="k">ArchUnitNET / NetArchTest / NsDepCop / <a href="https://forums.swift.org/t/we-built-harmonize-a-modern-open-source-linter-for-swift-that-enforces-architecture-as-unit-tests/79508">Harmonize</a></td><td>各言語版の ArchUnit / Konsist。NsDepCop は許可した名前空間依存だけ通す</td><td>依存とクラスの性質</td></tr>
+    <tr><td class="k">Tuist</td><td>Swift の manifest から Xcode プロジェクトを生成、tuist graph、scaffold テンプレート、暗黙の import の検査</td><td>構成の生成が主役で、置き場所の検査は弱い</td></tr>
+    <tr><td class="k">Bazel / Pants</td><td>visibility は既定で private（Deny by default）。BUILD でパッケージを宣言</td><td>ビルドの単位</td></tr>
+    <tr><td class="k">Structurizr / LikeC4 / Context Mapper / JHipster JDL</td><td>DSL でアーキテクチャやドメインを宣言し、図やコードを出す</td><td>実コードとの検査はしない（Context Mapper・JDL は生成側）</td></tr>
+    <tr><td class="k">CODEOWNERS / Backstage / Nx ensure-owners</td><td>パスに持ち主を付ける。ensure-owners は持ち主のいないものを違反にする</td><td>役割ではなく持ち主</td></tr>
+    <tr><td class="k">Plop / Hygen / Angular schematics</td><td>雛形からファイルを作る</td><td>生成だけ。検査とつながらない</td></tr>
+  </table>
+  <footer>検証レベル: 文献（公式ドキュメント・README）の読み込みのみ。実際に動かしてはいない。KATACHI-289 / 2026-11-08</footer>
+</section>
+
+</main></body></html>
