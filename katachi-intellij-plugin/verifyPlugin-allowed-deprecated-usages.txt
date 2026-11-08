@@ -1,0 +1,10 @@
+// Deprecated API usages verifyPlugin may report, read by checkDeprecatedApiUsages in build.gradle.kts (verifyPlugin itself does
+// not fail on deprecated API). Each line: a regexp the whole line of the verifier's deprecated-usages.txt must match. Lines
+// starting with // are comments.
+//
+// IDEA 2026.3 (263) deprecates ScriptDefinitionsProvider.getDefinitionsClassPath() for getTemplateClasspath(), while on 261 and
+// 262 it is abstract and getTemplateClasspath() does not exist, so the one zip for 261 and up has to override it. 263's default
+// getTemplateClasspath() calls it, so the definition still loads there.
+// TODO(263): once sinceBuild is 263 or up, override getTemplateClasspath() in KatachiScriptDefinitionsProvider instead, delete
+// this file and checkDeprecatedApiUsages, and put FailureLevel.DEPRECATED_API_USAGES back into pluginVerification.failureLevel.
+Deprecated method kotlin\.script\.experimental\.intellij\.ScriptDefinitionsProvider\.getDefinitionsClassPath\(\) : java\.lang\.Iterable is overridden in class me\.tbsten\.katachi\.intellij\.ide\.script\.KatachiScriptDefinitionsProvider
