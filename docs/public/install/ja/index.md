@@ -164,7 +164,7 @@ KATACHI_MODULE_DIR=architecture-test
 KATACHI_MODULE_PATH=:architecture-test
 ```
 
-**以降のコマンド（`katachi agent <サブコマンド>`、`katachi scaffold` など）は、プロジェクトのルートで実行します。** 手順書のステップが使うコマンドは `katachi agent` の下にあります（一覧は `katachi agent --help`）。作業用ディレクトリは `katachi` がカレントディレクトリの下から自動で見つけます。別の場所から実行するときは `KATACHI_WORKDIR=<KATACHI_WORKDIR の値>` を前置してください。この手順書に出てくる `:architecture-test:` は `KATACHI_MODULE_PATH` に、`architecture-test/` は `KATACHI_MODULE_DIR` に読み替えてください（`--module-dir` を変えていなければそのままです）。
+**以降のコマンドは、プロジェクトのルートで `katachi agent <サブコマンド>` として実行します。** 作業用ディレクトリは `katachi` がカレントディレクトリの下から自動で見つけます。別の場所から実行するときは `KATACHI_WORKDIR=<KATACHI_WORKDIR の値>` を前置してください。この手順書に出てくる `:architecture-test:` は `KATACHI_MODULE_PATH` に、`architecture-test/` は `KATACHI_MODULE_DIR` に読み替えてください（`--module-dir` を変えていなければそのままです）。
 
 ここまで終わったら `katachi agent check 0-1 0-2`。`init` の最後の `次:` の行もこのコマンドを指します。
 

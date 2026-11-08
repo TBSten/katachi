@@ -164,7 +164,7 @@ KATACHI_MODULE_DIR=architecture-test
 KATACHI_MODULE_PATH=:architecture-test
 ```
 
-**Run every command from here on (`katachi agent <subcommand>`, `katachi scaffold` and so on) in the root of the project.** The commands the steps of this guide use sit under `katachi agent` (`katachi agent --help` lists them). `katachi` finds the working directory under the current directory by itself. When running from somewhere else, prefix it with `KATACHI_WORKDIR=<the KATACHI_WORKDIR value>`. Read `:architecture-test:` in this document as `KATACHI_MODULE_PATH`, and `architecture-test/` as `KATACHI_MODULE_DIR` (they are the same unless you changed `--module-dir`).
+**Run every command from here on as `katachi agent <subcommand>` in the root of the project.** `katachi` finds the working directory under the current directory by itself. When running from somewhere else, prefix it with `KATACHI_WORKDIR=<the KATACHI_WORKDIR value>`. Read `:architecture-test:` in this document as `KATACHI_MODULE_PATH`, and `architecture-test/` as `KATACHI_MODULE_DIR` (they are the same unless you changed `--module-dir`).
 
 Once this is done, run `katachi agent check 0-1 0-2`. The last `Next:` line of `init` points to this command too.
 
