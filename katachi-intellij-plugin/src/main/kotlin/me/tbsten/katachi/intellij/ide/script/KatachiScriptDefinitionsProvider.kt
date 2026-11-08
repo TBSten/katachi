@@ -25,6 +25,13 @@ internal class KatachiScriptDefinitionsProvider : ScriptDefinitionsProvider {
 
     override fun getDefinitionClasses(): Iterable<String> = emptyList()
 
+    /**
+     * Abstract on 261 and 262; deprecated on 263 for `getTemplateClasspath()`, whose default calls this.
+     *
+     * verifyPlugin reports this override on 263, allowed by verifyPlugin-allowed-deprecated-usages.txt. Once sinceBuild is 263
+     * or up, override `getTemplateClasspath(): Iterable<Path>` instead, remove this, and put `DEPRECATED_API_USAGES` back into
+     * `pluginVerification.failureLevel` (build.gradle.kts).
+     */
     override fun getDefinitionsClassPath(): Iterable<File> = classpathOf(KatachiScriptService.getInstance().current())
 
     override fun useDiscovery(): Boolean = true

@@ -2,6 +2,7 @@
 // Generated from the intellij-plugin-dev skill's scaffold; versions live in gradle/libs.versions.toml.
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask.FailureLevel
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -145,13 +146,15 @@ intellijPlatform {
         // katachi needs the write-intent lock on the EDT, and every way to take it in 261
         // (writeIntentReadAction, WriteIntentReadAction) is experimental. NOT_DYNAMIC: whether the
         // plugin can be loaded without a restart is a property of the plugin, not a warning.
+        // DEPRECATED_API_USAGES is checked by checkDeprecatedApiUsages instead (below), which allows the lines of
+        // verifyPlugin-allowed-deprecated-usages.txt: ignoredProblemsFile does not apply to deprecated usages.
+        // TODO(263): put DEPRECATED_API_USAGES back here and drop checkDeprecatedApiUsages once sinceBuild is 263 or up.
         failureLevel = listOf(
             FailureLevel.COMPATIBILITY_PROBLEMS,
             FailureLevel.COMPATIBILITY_WARNINGS,
             FailureLevel.INVALID_PLUGIN,
             FailureLevel.PLUGIN_STRUCTURE_WARNINGS,
             FailureLevel.MISSING_DEPENDENCIES,
-            FailureLevel.DEPRECATED_API_USAGES,
             FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
             FailureLevel.INTERNAL_API_USAGES,
             FailureLevel.OVERRIDE_ONLY_API_USAGES,
@@ -163,6 +166,51 @@ intellijPlatform {
         }
     }
 }
+
+/**
+ * Fails on each deprecated API usage the verifier reports (`<IDE>/plugins/<id>/<version>/deprecated-usages.txt`, one usage a line)
+ * unless a regular expression of [allowedUsagesFile] matches the whole line.
+ */
+abstract class CheckDeprecatedApiUsagesTask : DefaultTask() {
+    @get:InputDirectory
+    abstract val reportsDirectory: DirectoryProperty
+
+    @get:InputFile
+    abstract val allowedUsagesFile: RegularFileProperty
+
+    @TaskAction
+    fun check() {
+        val reports = reportsDirectory.get().asFile
+        val allowedFile = allowedUsagesFile.get().asFile
+        val allowed = allowedFile.readLines().filter { it.isNotBlank() && !it.startsWith("//") }.map(::Regex)
+        val usages = reports.walkTopDown().filter { it.isFile && it.name == "deprecated-usages.txt" }.flatMap { report ->
+            // The first path segment under the reports directory is the IDE the usage was found in.
+            val ide = report.relativeTo(reports).invariantSeparatorsPath.substringBefore('/')
+            report.readLines().filter { it.isNotBlank() }.map { ide to it }
+        }.toList()
+        allowed.filter { pattern -> usages.none { (_, usage) -> pattern.matches(usage) } }.forEach { pattern ->
+            logger.warn("No IDE reports the allowed deprecated usage ${pattern.pattern} any more: remove it from file://${allowedFile.absolutePath} ")
+        }
+        val unexpected = usages.filter { (_, usage) -> allowed.none { it.matches(usage) } }
+        if (unexpected.isNotEmpty()) {
+            throw GradleException(
+                """
+                |verifyPlugin reports ${unexpected.size} deprecated API usage(s) that file://${allowedFile.absolutePath} does not allow:
+                |${unexpected.joinToString("\n") { (ide, usage) -> "  $ide: $usage" }}
+                |Move to the API that replaces it. Only when every supported build (sinceBuild and up) needs the deprecated one, add a line to that file with the reason.
+                """.trimMargin()
+            )
+        }
+    }
+}
+val verifyPluginTask = tasks.named<VerifyPluginTask>("verifyPlugin")
+val checkDeprecatedApiUsages = tasks.register<CheckDeprecatedApiUsagesTask>("checkDeprecatedApiUsages") {
+    group = "verification"
+    description = "Fails on the deprecated API usages verifyPlugin reports, except the ones verifyPlugin-allowed-deprecated-usages.txt lists."
+    reportsDirectory = verifyPluginTask.flatMap { it.verificationReportsDirectory }
+    allowedUsagesFile = layout.projectDirectory.file("verifyPlugin-allowed-deprecated-usages.txt")
+}
+verifyPluginTask.configure { finalizedBy(checkDeprecatedApiUsages) }
 
 // The Driver smoke (channel D): starts a real IDE with the built plugin through Starter and drives
 // it from JUnit 5. A source set of its own, as Starter is JUnit 5 only while `test` is JUnit 4.

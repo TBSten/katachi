@@ -18,6 +18,7 @@ fun DeclarationContainerScope.idePluginBuild() = "IdePluginBuild".role {
             "settings.gradle".ktsFile()
             "gradle.properties".file()
             "verifyPlugin-ignored-problems.txt".file()
+            "verifyPlugin-allowed-deprecated-usages.txt".file()
             "gradlew".file()
             "gradlew.bat".file()
             "gradle" {

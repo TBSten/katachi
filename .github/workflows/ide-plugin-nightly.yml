@@ -108,7 +108,8 @@ jobs:
 
   # Binary compatibility of the plugin with IDEA (recommended builds) and Android Studio, which
   # `sinceBuild = "261"` with no upper bound promises (known false reports on 263 are held back by verifyPlugin-ignored-problems.txt). It downloads several IDEs (about 3 GB), so it
-  # is here and not in ci.yml.
+  # is here and not in ci.yml. verifyPlugin is finalized by checkDeprecatedApiUsages, which fails on a deprecated API usage
+  # that verifyPlugin-allowed-deprecated-usages.txt does not list.
   verify-plugin:
     name: verifyPlugin (IDEA and Android Studio)
     runs-on: macos-26
