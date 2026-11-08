@@ -50,6 +50,37 @@ All four use the plugin and `gradle()`, and commit the documentation `katachiDoc
 - `gradle/libs.versions.toml` is the single source of truth for the Kotlin, katachi, kotest and JUnit versions of the library and the samples (the IDE plugin is a standalone build and reads its own `katachi-intellij-plugin/gradle/libs.versions.toml`; only its version comes from the root's `katachi`, and `publish.yml` attaches its zip to the GitHub Release). The samples read it as `libs` and keep their own dependencies in their own catalog, `sampleLibs` (see [`sample/README.md`](sample/README.md)).
 - CI is `.github/workflows/ci.yml`: on every push to `main` and every pull request, the library and each of the four samples in their own step, the documentation site build in a `docs` job, and the IDE plugin in a job of its own on macOS. The benchmark jobs (`bench-jmh`, `bench-real-project`, `bench-store`) run on the same triggers. Their comparison only goes to the job summary, and a slowdown does not fail the build. `bench-store` adds the results to the history on `gh-pages`, on `main` only.
 
+## Trying the katachi command locally
+
+The `katachi` command lives in `katachi-script`. To try a change, publish it to mavenLocal and load it from a `*.local.main.kts` at the repository root. `*.local.main.kts` is gitignored, so keep as many throwaway scripts as you like.
+
+```shell
+./gradlew :katachi:publishToMavenLocal :katachi-script:publishToMavenLocal -Pkatachi.skipSigning
+```
+
+```kotlin
+// try.local.main.kts
+@file:DependsOn("me.tbsten.katachi:katachi-script:0.3.0") // the katachi version in gradle/libs.versions.toml
+
+import me.tbsten.katachi.script.*
+
+val katachi = Katachi(defaultPackage = "com.example.app", lang = ja)
+
+println(commands(katachi.agent.init, katachi.scaffold.`test-framework`(kotest))) // only prints the commands it built
+val status = katachi.command("--version").execute()                              // runs one (in this same JVM)
+// main(arrayOf("agent", "guide"))                                                // the same entry point as the command line
+```
+
+```shell
+kotlin try.local.main.kts
+```
+
+- Without `-Pkatachi.skipSigning`, the signing task fails on a machine with no GPG key.
+- `@file:DependsOn` looks in `~/.m2/repository` first, so no `@file:Repository` is needed.
+- Publish again after each change. If compilation still sees the old API, delete the script cache of `kotlin` (`~/Library/Caches/main.kts.compiled.cache` on macOS).
+- `execute()` on `agent init` or `scaffold` writes files into the current directory.
+- `main(...)` exits the JVM when the command ends with a non-zero status.
+
 ## Writing code
 
 - Kotlin code follows [`docs/internal/kotlin/kotlin.md`](docs/internal/kotlin/kotlin.md); exceptions and error messages follow [`docs/internal/kotlin/errors.md`](docs/internal/kotlin/errors.md).

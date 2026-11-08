@@ -51,6 +51,37 @@ katachi 自体を直す人向けの情報。使い方は [README](README.ja.md) 
 - 本体とサンプルの Kotlin / katachi / kotest / JUnit のバージョンは `gradle/libs.versions.toml` が SSoT（IDE プラグインは独立したビルドで、自分の `katachi-intellij-plugin/gradle/libs.versions.toml` を読む。版だけはルートの `katachi` を読み、リリースの zip は `publish.yml` が GitHub Release に添付する）。サンプルはこれを `libs` として読み、サンプル固有の依存は自分の catalog（`sampleLibs`）に持つ（詳細は [`sample/README.md`](sample/README.md)）
 - CI は `.github/workflows/ci.yml`。`main` への push と pull request で、本体と4つのサンプルをそれぞれ別のステップで、ドキュメントサイトのビルドを `docs` ジョブで、IDE プラグインを macOS の別のジョブで回す。同じトリガでベンチマークのジョブ（`bench-jmh`・`bench-real-project`・`bench-store`）も回す。結果の比較はジョブのサマリに出すだけで、遅くなっても落ちない。`bench-store` は `main` のときだけ結果を `gh-pages` の履歴に足す
 
+## katachi CLI を手元で試す
+
+`katachi` コマンドの中身は `katachi-script` にある。手元で直したものを試すときは、mavenLocal に publish してから、リポジトリ直下に置いた `*.local.main.kts` で読み込む。`*.local.main.kts` は gitignore してあるので、使い捨てのスクリプトを好きなだけ置いてよい。
+
+```shell
+./gradlew :katachi:publishToMavenLocal :katachi-script:publishToMavenLocal -Pkatachi.skipSigning
+```
+
+```kotlin
+// try.local.main.kts
+@file:DependsOn("me.tbsten.katachi:katachi-script:0.3.0") // gradle/libs.versions.toml の katachi の版
+
+import me.tbsten.katachi.script.*
+
+val katachi = Katachi(defaultPackage = "com.example.app", lang = ja)
+
+println(commands(katachi.agent.init, katachi.scaffold.`test-framework`(kotest))) // 組み立てたコマンドを表示するだけ
+val status = katachi.command("--version").execute()                              // 実際に動かす（同じ JVM の中で走る）
+// main(arrayOf("agent", "guide"))                                                // コマンドラインと同じ入口
+```
+
+```shell
+kotlin try.local.main.kts
+```
+
+- `-Pkatachi.skipSigning` を付けないと、GPG 鍵の無い環境では署名のタスクで落ちる
+- `@file:DependsOn` は `~/.m2/repository` を最初に見るので、`@file:Repository` は書かなくてよい
+- コードを直したら publish し直す。API を変えたのにコンパイルの結果が古いままなら、`kotlin` のスクリプトのキャッシュ（macOS では `~/Library/Caches/main.kts.compiled.cache`）を消す
+- `agent init` や `scaffold` を `execute()` すると、カレントディレクトリにファイルができる
+- `main(...)` は、コマンドが 0 以外で終わると JVM ごと終了する
+
 ## コードを書く
 
 - Kotlin のコードの書き方は [`docs/internal/kotlin/kotlin.md`](docs/internal/kotlin/kotlin.md)、例外とエラーメッセージは [`docs/internal/kotlin/errors.md`](docs/internal/kotlin/errors.md) に従う

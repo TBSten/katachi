@@ -65,6 +65,8 @@ local.properties
 
 ### AI Agent ###
 CLAUDE.local.md
+# Throwaway scripts for trying the katachi command against a local publish (see CONTRIBUTING.md).
+*.local.main.kts
 .claude/*.local.*
 .claude/worktrees/
 .local/
