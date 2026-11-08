@@ -49,7 +49,7 @@ const sidebar = (() => {
 			category(
 				{ en: 'ktFileContent', ja: 'ktFileContent' },
 				item('guides/kt-file-content', { en: 'Overview', ja: '概要' }),
-				item('guides/kt-file-content/kotlin-mapping', { en: '[AI-generated] Mapping to Kotlin features', ja: '[AI生成] Kotlin 言語機能とのマッピング' }),
+				item('guides/kt-file-content/kotlin-mapping', { en: 'Mapping to Kotlin features', ja: '言語機能との対応' }),
 			),
 			item('guides/document-generation', { en: 'Document generation', ja: 'ドキュメント生成' }),
 			item('guides/generate-code-from-template', { en: 'Generate code from template', ja: 'テンプレートからコード生成' }),

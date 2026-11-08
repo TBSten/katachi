@@ -1,5 +1,5 @@
 ---
-title: "[AI生成] Kotlin 言語機能とのマッピング"
+title: "Kotlin 言語機能とのマッピング"
 description: Kotlin の言語機能ごとに、ktFileContent { } でどう許可・禁止を書けるかの対応表。
 tags:
   - intermediate
@@ -7,7 +7,7 @@ tags:
 prev: ktFileContent
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 {/*
   このページの目的: Kotlin の言語機能（クラス・enum・typealias・修飾子など）ごとに、ktFileContent { } で
@@ -15,8 +15,697 @@ import { Aside } from '@astrojs/starlight/components';
   このページは対応表に絞る。
 */}
 
-<Aside type="note" title="AI が書いた下書き">
-  このページは AI エージェントが用意した下書きで、人の見直しが済んでいません。
+Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で許可・禁止できるかの対応表です。書き方そのものの説明は [ktFileContent の概要](/katachi/ja/guides/kt-file-content/) をご覧ください。
+
+左の列は Kotlin の書き方と、右の行が許可する Kotlin のソースの例です。行を書かなかったときの扱いは、表ごとに次のどちらかです。
+
+- **違反** … 書いていない宣言は違反になります（Deny by default）。`allow(anythingElse)` を書くと、その場所の残りをまとめて許可できます。
+- **問わない** … 行の後ろに続けて書いたときだけ見ます。書かなければ何も確かめません。
+
+## 宣言の種類
+
+ファイルの直下でも、class などの `{ }` の中でも同じ行を書きます。書いていない宣言は**違反**です。primary constructor の `.primaryConstructor(...)` だけは、書かなければ問いません。
+
+<div style="overflow-x: auto">
+<table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
+  <tr>
+    <th style="width: 20rem">Kotlin の書き方</th>
+    <th style="min-width: 20rem">ktFileContent の行</th>
+  </tr>
+  <tr>
+    <td>
+      `class` / `interface` / `object`
+      ```kt
+      class HomeViewModel
+      interface HomeUseCase
+      data object HomeRoute
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`class`, "*ViewModel") { allow(anythingElse) }
+      required(`interface`, fileName) { /* メンバの行 */ }
+      allow(data, `object`, "*Route")
+      // class, interface, object のどれでも
+      allow(type, "*")
+      // 種類を or でつなぐ
+      allow(`class` or `object`, "*")
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      `fun interface`
+      ```kt
+      fun interface ClickListener {
+        fun onClick()
+      }
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`fun`, `interface`, "*Listener") { allow(`fun`, "on*")() }
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      `companion object` / 入れ子の class
+      ```kt
+      class Session {
+        companion object
+        private data class State(val token: String)
+      }
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`class`, "Session") {
+        allow(companion, `object`, "*")
+        allow(private, data, `class`, "*State") { allow(anythingElse) }
+      }
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      `fun`
+      ```kt
+      fun onRefresh() {}
+      fun load(id: String) {}
+      ```
+    </td>
+    <td>
+      ```kt
+      // 引数なし
+      allow(`fun`, "on*")()
+      // 引数を指定
+      allow(`fun`, "load")("id: String")
+      // 引数を問わない
+      allow(`fun`, "*")(anyArgs())
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      `val` / `var`
+      ```kt
+      private val state = MutableStateFlow(0)
+      var count: Int = 0
+      const val TAG = "Home"
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(private, `val`, "*")
+      // 型も指定
+      allow(`var`, "count", "Int")
+      allow(const, `val` or `var`, "*")
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      `typealias`（ファイル直下・クラスの中）
+      ```kt
+      typealias ClickHandler = (Int) -> Unit
+
+      class Screen {
+        typealias State = ScreenState
+      }
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`typealias`, "*Handler")
+      // 右辺の型も指定
+      allow(`typealias`, "*Handler", "(*) -> Unit")
+      // Kotlin 2.2 以降の入れ子の typealias
+      allow(`class`, "Screen") { allow(`typealias`, "State") }
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      enum の項目
+      ```kt
+      enum class ThemeColor {
+        LIGHT, DARK, UNKNOWN
+      }
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(enum, `class`, "*Color") {
+        allow(entry, "*")
+        required(entry, "UNKNOWN")
+      }
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      secondary constructor / `init` ブロック
+      ```kt
+      class Session {
+        private constructor(token: String)
+        init { }
+      }
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`class`, "Session") {
+        allow(private, constructor)("token: String")
+        allow(init)
+      }
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      primary constructor（書かなければ問わない）
+      ```kt
+      value class UserId(val value: String)
+
+      class UserSession private constructor(
+        config: Config,
+      )
+      ```
+    </td>
+    <td>
+      ```kt
+      // val を書かない引数はプロパティでない引数
+      allow(value, `class`, "*Id").primaryConstructor("val value: String")
+      // 可視性だけを指定
+      allow(`class`, "*Session").primaryConstructor(private, anyArgs())
+      ```
+    </td>
+  </tr>
+</table>
+</div>
+
+<Aside type="caution">
+  class・interface・object の行に `{ }` を書かないと、その宣言はメンバを 1 つも持てません。メンバには、primary constructor のプロパティ・enum の項目・secondary constructor・`init` ブロック・クラスの中の typealias も含みます。
 </Aside>
 
-TODO
+## 修飾子
+
+修飾子は種類の前に、Kotlin のソースと同じ並びで書きます。書いた修飾子は必ず付いている必要があり、書かなかった修飾子は付いていると**違反**です（`public` と `final` を除く）。`final` と引数の修飾子は、書かなければ問いません。
+
+<div style="overflow-x: auto">
+<table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
+  <tr>
+    <th style="width: 20rem">Kotlin の書き方</th>
+    <th style="min-width: 20rem">ktFileContent の行</th>
+  </tr>
+  <tr>
+    <td>
+      可視性 `public` / `protected` / `private` / `internal`
+      ```kt
+      internal class HomeUseCaseImpl
+      private fun helper() {}
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(internal, `class`, "*Impl") { allow(anythingElse) }
+      allow(internal or private, `fun`, "*")()
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      `abstract` / `open` / `sealed` / `override` / `const` / `lateinit` / `suspend` / `inline` / `value` / `data` / `enum` / `annotation` / `companion` / `inner` / `infix` / `operator` / `tailrec` / `external` / `expect` / `actual`
+      ```kt
+      sealed interface HomeAction
+
+      class GetUser {
+        suspend operator fun invoke(id: String) {}
+      }
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(sealed, type, "*Action") { allow(anythingElse) }
+      // 付いていても無くてもよい
+      required(suspend.optional(), operator, `fun`, "invoke")(anyArgs())
+      allow(expect, anythingElse)
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      `final`（書かなければ問わない）
+      ```kt
+      final override fun toString() = "x"
+      ```
+    </td>
+    <td>
+      ```kt
+      // ソースに final と書いた宣言だけに当たる
+      allow(final, override, `fun`, "*")(anyArgs())
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      引数の `vararg` / `noinline` / `crossinline` / デフォルト値（書かなければ問わない）
+      ```kt
+      fun log(vararg args: Any) {}
+      fun save(force: Boolean = false) {}
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`fun`, "log")("vararg args: Any")
+      allow(`fun`, "run")("noinline block: () -> Unit")
+      allow(`fun`, "save")("force: Boolean = *")
+      ```
+    </td>
+  </tr>
+</table>
+</div>
+
+## シグネチャ
+
+行の後ろに続けて書いたときだけ見ます。書かなければ**問いません**。引数だけは `()` が「引数なし」の意味で、何も付けなければ問いません。
+
+<div style="overflow-x: auto">
+<table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
+  <tr>
+    <th style="width: 20rem">Kotlin の書き方</th>
+    <th style="min-width: 20rem">ktFileContent の行</th>
+  </tr>
+  <tr>
+    <td>
+      引数の名前と型
+      ```kt
+      fun update(action: HomeUiAction, now: Instant) {}
+      ```
+    </td>
+    <td>
+      ```kt
+      // 名前: 型。* はワイルドカード
+      allow(`fun`, "update")("action: *UiAction", "now: Instant")
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      戻り値の型
+      ```kt
+      fun onRefresh(): Unit {}
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`fun`, "on*")().returns("Unit")
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      拡張関数・拡張プロパティのレシーバー
+      ```kt
+      fun User.toDto(): UserDto = TODO()
+      val User.isAdmin: Boolean get() = role == ADMIN
+      ```
+    </td>
+    <td>
+      ```kt
+      // 名前の前にレシーバー
+      allow(`fun`, "User", "to*")()
+      // 拡張プロパティは型が必須
+      allow(`val`, "User", "is*", "Boolean")
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      context parameters
+      ```kt
+      context(logger: Logger)
+      fun logStart() {}
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`fun`, "log*")(anyArgs()).context("logger: Logger")
+      // context parameters が無いこと
+      allow(`fun`, "*")(anyArgs()).context()
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      型パラメータ・上限・`where` / `in` / `out` / `reified`
+      ```kt
+      inline fun <reified T : Any> getValue(): T = TODO()
+      class Box<out T>
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(inline, `fun`, "get*")(anyArgs()).typeParameters("reified T : Any")
+      allow(`class`, "Box").typeParameters("out T")
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      親クラス・実装するインターフェース
+      ```kt
+      class HomeViewModel : ViewModel()
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`class`, "*ViewModel").superclass("ViewModel") { allow(anythingElse) }
+      ```
+    </td>
+  </tr>
+</table>
+</div>
+
+## プロパティのアクセサ・委譲
+
+行の後ろに続けて書いたときだけ見ます。書かなければ**問いません**。
+
+<div style="overflow-x: auto">
+<table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
+  <tr>
+    <th style="width: 20rem">Kotlin の書き方</th>
+    <th style="min-width: 20rem">ktFileContent の行</th>
+  </tr>
+  <tr>
+    <td>
+      `get() = …`
+      ```kt
+      val isEmpty: Boolean get() = items.isEmpty()
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`val`, "is*", "Boolean").getter()
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      `set(value) { … }` / `private set`
+      ```kt
+      var text: String = ""
+        set(value) { field = value.trim() }
+      var count: Int = 0
+        private set
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`var`, "text", "String").setter()
+      allow(`var`, "*", "*").setter(private)
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      `by lazy { … }` などの委譲
+      ```kt
+      val client by lazy { HttpClient() }
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`val`, "*").delegatedBy("lazy")
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      explicit backing field（`field = …`）
+      ```kt
+      val uiState: StateFlow<HomeUiState>
+        field = MutableStateFlow(HomeUiState())
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`val`, "uiState", "StateFlow<*>").backingField("MutableStateFlow<*>")
+      ```
+    </td>
+  </tr>
+</table>
+</div>
+
+## アノテーション
+
+宣言のアノテーションは、書いた名前が付いている宣言だけに当たります。書いていないアノテーションは付いていてもよく、**問いません**。ファイル注釈（`@file:…`）だけは package・import と同じで、行の無いものは**違反**です。
+
+<div style="overflow-x: auto">
+<table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
+  <tr>
+    <th style="width: 20rem">Kotlin の書き方</th>
+    <th style="min-width: 20rem">ktFileContent の行</th>
+  </tr>
+  <tr>
+    <td>
+      宣言のアノテーション
+      ```kt
+      @HiltViewModel
+      class HomeViewModel : ViewModel()
+
+      @Composable
+      fun HomeScreen() {}
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(annotated("HiltViewModel"), `class`, fileName) { /* ... */ }
+      // 完全名でも書ける
+      allow(annotated("androidx.compose.runtime.Composable"), `fun`, "*Screen")()
+      allow(annotated("Preview") or annotated("PreviewLightDark"),
+            private, `fun`, "*Preview")()
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      アノテーションの引数
+      ```kt
+      @Deprecated("use b", level = DeprecationLevel.HIDDEN)
+      fun a() {}
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(annotated("Deprecated(*HIDDEN*)"), `fun`, "*")(anyArgs())
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      use-site target（`@get:JvmName` など）
+      ```kt
+      @get:JvmName("userName")
+      val name: String = ""
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(annotated("get:JvmName"), `val`, "*")
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      ファイル注釈 `@file:…`（書かないと違反）
+      ```kt
+      @file:Suppress("unused")
+      @file:OptIn(ExperimentalApi::class)
+      ```
+    </td>
+    <td>
+      ```kt
+      fileAnnotation("Suppress(*unused*)")
+      fileAnnotation("OptIn")
+      not.fileAnnotation("JvmName")
+      ```
+    </td>
+  </tr>
+</table>
+</div>
+
+## ファイルとソースセット
+
+`package` と `import` は、行の無いものが**違反**です。`not.` は許可の行より強い禁止で、`actualsIn` は書いたときだけ見ます。
+
+<div style="overflow-x: auto">
+<table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
+  <tr>
+    <th style="width: 20rem">Kotlin の書き方</th>
+    <th style="min-width: 20rem">ktFileContent の行</th>
+  </tr>
+  <tr>
+    <td>
+      `package`
+      ```kt
+      package com.example.feature.home
+      ```
+    </td>
+    <td>
+      ```kt
+      `package`("com.example.feature.**")
+      // ファイルのディレクトリと同じ package
+      `package`(matchingDirectory)
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      `import`
+      ```kt
+      import kotlin.time.Duration
+      import android.os.Parcelable
+      ```
+    </td>
+    <td>
+      ```kt
+      `import`("kotlin.**")
+      `import`("android.**").except("android.os.Parcelable")
+      not.`import`("java.util.Date")
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      禁止（`not.`）
+      ```kt
+      class LegacyImpl   // これだけ通る
+      ```
+    </td>
+    <td>
+      ```kt
+      // 許可の行より強い
+      not.allow(`class`, "*Impl").except("LegacyImpl")
+      not.allow(private, `fun`, "*")
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      `expect` と `actual` の対応（KMP）
+      ```kt
+      // commonMain/.../Platform.kt
+      expect fun platformName(): String
+      // androidMain/.../Platform.android.kt
+      actual fun platformName(): String = "Android"
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(expect, anythingElse)
+      // 同じディレクトリ・同じファイル名（Platform.android.kt も可）に
+      // actual が要る
+      actualsIn("androidMain", "iosMain")
+      ```
+    </td>
+  </tr>
+</table>
+</div>
+
+## 本体と KDoc
+
+行の後ろに続けて書いたときだけ見ます。書かなければ**問いません**。
+
+<div style="overflow-x: auto">
+<table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
+  <tr>
+    <th style="width: 20rem">Kotlin の書き方</th>
+    <th style="min-width: 20rem">ktFileContent の行</th>
+  </tr>
+  <tr>
+    <td>
+      KDoc（`/** … */`）
+      ```kt
+      /** 画面の状態。 */
+      class HomeUiState
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(public, `class`, "*").kdoc()
+      allow(enum, `class`, "Color") { allow(entry, "*").kdoc() }
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      関数の本体の形
+      ```kt
+      fun isEmpty() = items.isEmpty()
+      fun runAll() { /* ... */ }
+      abstract fun load()
+      ```
+    </td>
+    <td>
+      ```kt
+      // fun f() = ...
+      allow(`fun`, "is*")(anyArgs()).expressionBody()
+      // fun f() { ... }
+      allow(`fun`, "run*")(anyArgs()).blockBody()
+      // 本体なし
+      allow(abstract, `fun`, "*")(anyArgs()).noBody()
+      ```
+    </td>
+  </tr>
+</table>
+</div>
+
+## ktFileContent では書けないもの
+
+`ktFileContent { }` が見るのは「ファイルの形」までです。次のものは対象外なので、[Konsist](https://docs.konsist.lemonappdev.com/) や [detekt](https://detekt.dev/) に任せてください。
+
+<div style="overflow-x: auto">
+<table style="display: table; table-layout: fixed; width: 100%; min-width: 32rem">
+  <tr>
+    <th style="width: 20rem">Kotlin の書き方</th>
+    <th>代わりの手段</th>
+  </tr>
+  <tr>
+    <td>ローカル宣言（関数の中の class・fun・変数）</td>
+    <td>Konsist の `localClasses` / `localFunctions` / `variables`</td>
+  </tr>
+  <tr>
+    <td>無名 object（`object : Listener { … }`）</td>
+    <td>Konsist は宣言として扱いません。detekt のカスタムルールなら書けます</td>
+  </tr>
+  <tr>
+    <td>宣言の本体の中身（式・文）</td>
+    <td>detekt、Konsist</td>
+  </tr>
+  <tr>
+    <td>`.kts` の中身（`build.gradle.kts` など）</td>
+    <td>Konsist が `.kt` だけを読むため対象外です。置き場所は `layout { }` で縛れます</td>
+  </tr>
+  <tr>
+    <td>import の別名（`import a.B as C`）</td>
+    <td>`import` の行は別名を見ません。アノテーションは完全名 `annotated("a.B")` で別名越しに当たります</td>
+  </tr>
+</table>
+</div>
+
+## 次のステップ
+
+<CardGrid>
+  <LinkCard
+    title="ktFileContent"
+    href="/katachi/ja/guides/kt-file-content/"
+    description="required / allow の書き方と、katachi-konsist のインストールを確かめましょう。"
+  />
+  <LinkCard
+    title="他ツールとの比較"
+    href="/katachi/ja/get-started/comparison-with-other-tools/"
+    description="ktFileContent の外にあるものを、Konsist や detekt とどう分担するかを見てみましょう。"
+  />
+</CardGrid>

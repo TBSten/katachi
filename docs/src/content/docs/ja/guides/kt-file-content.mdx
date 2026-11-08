@@ -140,7 +140,7 @@ fun `アーキテクチャに沿ったファイル配置になっている`() {
 - `required(...)` で指定した宣言は必ず存在する必要があります。
 - `allow(...)` で指定した宣言は存在を許されます。存在しない場合も違反にはなりません。
 
-class, interface, object の行に `{ }` を書かないと、その宣言はメンバ（主コンストラクタのプロパティを含む）を1つも持てません。メンバを問わないときは `{ allow(anythingElse) }` を付けます。
+class, interface, object の行に `{ }` を書かないと、その宣言はメンバ（primary constructor のプロパティを含む）を1つも持てません。メンバを問わないときは `{ allow(anythingElse) }` を付けます。
 
 <Tabs>
   <TabItem label="Android での例">
