@@ -81,7 +81,7 @@ https://tbsten.github.io/katachi/install/ja/index.md に従って導入してく
 
 この手順には、セッションを終えてよい区切りが 3 か所あります（ステップ 6 の末尾、6-0 の末尾、6-A〜6-D の各末尾）。区切りには再開のしかたが書いてあります。
 
-以前の版で作った作業用ディレクトリ（`katachi-install.sh` で作ったものを含む）があるなら、`init --force` で作り直してください（チェックリストの JSON は消えます。古い HTML のままだと `check 1-3` が「知らない項目 id」で止まります）。
+以前のバージョンで作った作業用ディレクトリ（`katachi-install.sh` で作ったものを含む）があるなら、`init --force` で作り直してください（チェックリストの JSON は消えます。古い HTML のままだと `check 1-3` が「知らない項目 id」で止まります）。
 
 ### 0-1. 権限を先に取り切る
 
@@ -113,7 +113,7 @@ touch .katachi-probe && rm .katachi-probe
 katachi doctor --lang ja
 ```
 
-4 の `doctor` は、Gradle を動かす JDK の版、プロジェクトの Kotlin の版、`git` の有無（推奨）を確かめます。**足りないものがあれば、入れ方の手がかりと一緒に出します。** その出力をユーザに伝え、直してもらってから 4 をやり直してください。`init` も Kotlin と `git` を同じように確かめます。
+4 の `doctor` は、Gradle を動かす JDK のバージョン、プロジェクトの Kotlin のバージョン、`git` の有無（推奨）を確かめます。**足りないものがあれば、入れ方の手がかりと一緒に出します。** その出力をユーザに伝え、直してもらってから 4 をやり直してください。`init` も Kotlin と `git` を同じように確かめます。
 
 作業用ディレクトリも検査用モジュール（デフォルト `architecture-test/`）もプロジェクトルートの下に作るので、2 で両方の許可が取れます。**プローブは痕跡を残しません。** ディレクトリを作るプローブは書かないこと（検査用モジュールのディレクトリが空で残ると、ステップ 2 の `scaffold` が「すでに存在します」で止まります）。
 
@@ -144,7 +144,7 @@ katachi agent init --lang ja
 - Gradle のプロジェクトであることの確認（違えば止まる）
 - Git 管理下かの確認（無ければ警告する）
 - 作業用ディレクトリの決定と作成（`.gitignore` されている置き場があればその中、無ければ `tmp/install-katachi/`）
-- katachi のバージョンの決定（`katachi` コマンドと同じ版。`--katachi` で指定した版がこの手順が前提にする 0.3.0 より前なら、何も作らずに止まる）
+- katachi のバージョンの決定（`katachi` コマンドと同じバージョン。`--katachi` で指定したバージョンがこの手順が前提にする 0.3.0 より前なら、何も作らずに止まる）
 - プロジェクトが使っている Kotlin バージョンの検出（2.2 より古ければ警告する。下の「Kotlin が古いとき」）
 - `check-list.html` と `project-code-base-report.html` の配置
 - この手順書の写しの配置（`<KATACHI_WORKDIR>/tmp/cache/index.md`。人が開く用で、`guide` は同梱の原文から出す。置き直すときは `katachi agent guide --refresh`）
@@ -168,7 +168,7 @@ KATACHI_MODULE_PATH=:architecture-test
 
 ここまで終わったら `katachi agent check 0-1 0-2`。`init` の最後の `次:` の行もこのコマンドを指します。
 
-**止まったら、出力に書かれているとおりに対処する。** 推測で回避策を作らない。作業用ディレクトリを変えたい場合は `--workdir <path>`、バージョンを固定したい場合は `--katachi <version>` を付けて実行し直す（`init` が記録した版を `scaffold` も使います。`--katachi` なしでやり直したときは、前回記録した版をそのまま使います）。
+**止まったら、出力に書かれているとおりに対処する。** 推測で回避策を作らない。作業用ディレクトリを変えたい場合は `--workdir <path>`、バージョンを固定したい場合は `--katachi <version>` を付けて実行し直す（`init` が記録したバージョンを `scaffold` も使います。`--katachi` なしでやり直したときは、前回記録したバージョンをそのまま使います）。
 
 `init` は**何度実行しても記入済みのファイルを壊しません**。途中で失敗したらそのまま実行し直してよい。
 
@@ -176,7 +176,7 @@ KATACHI_MODULE_PATH=:architecture-test
 
 **「未追跡で ignore もされていないものがあります」と一覧が出た場合も、理由は同じです。** 一覧のものを定義で宣言するか `.gitignore` に足すかを、ユーザに確認してください。
 
-**Kotlin が古いとき。** `init` が「このプロジェクトの Kotlin は 1.9.10 です。katachi は Kotlin 2.2 以降が要ります」のように警告したら、ステップ 1 の解析に入る前にユーザに確認します（`doctor` も同じ警告を出します）。このままでは 2-1 の `scaffold` で止まり、それまでの解析が無駄になります。Kotlin を上げるのは既存のビルドの変更なので、同意なしに上げないこと。同意を得たら Kotlin を 2.2 以降に上げます。Kotlin Gradle Plugin 2.2 は Gradle 7.6.3 以上が要るので、警告が「Gradle も上げる必要があります」と言ったら Gradle も上げます。上げたことで出たビルドエラーを直すのも既存のビルドの変更なので、何を変えるかをユーザに伝えてから直します。`./gradlew` でビルドが通ったら `init` をもう一度実行し（記入済みのファイルは壊れず、チェックリストの Kotlin の記録が新しい版になります）、変えたファイルを 0-3 の `add changed` で記録します。ユーザが上げないと決めたら、このプロジェクトには katachi を導入できないことを伝えて終えます。
+**Kotlin が古いとき。** `init` が「このプロジェクトの Kotlin は 1.9.10 です。katachi は Kotlin 2.2 以降が要ります」のように警告したら、ステップ 1 の解析に入る前にユーザに確認します（`doctor` も同じ警告を出します）。このままでは 2-1 の `scaffold` で止まり、それまでの解析が無駄になります。Kotlin を上げるのは既存のビルドの変更なので、同意なしに上げないこと。同意を得たら Kotlin を 2.2 以降に上げます。Kotlin Gradle Plugin 2.2 は Gradle 7.6.3 以上が要るので、警告が「Gradle も上げる必要があります」と言ったら Gradle も上げます。上げたことで出たビルドエラーを直すのも既存のビルドの変更なので、何を変えるかをユーザに伝えてから直します。`./gradlew` でビルドが通ったら `init` をもう一度実行し（記入済みのファイルは壊れず、チェックリストの Kotlin の記録が新しいバージョンになります）、変えたファイルを 0-3 の `add changed` で記録します。ユーザが上げないと決めたら、このプロジェクトには katachi を導入できないことを伝えて終えます。
 
 作業用ディレクトリの直下に置くのは、人が開く `check-list.html` と `project-code-base-report.html`、それに `tmp/` だけです。記録や取得したファイルの置き場（`tmp/cache/`）、メモやログなどの一時ファイルは、すべて `<KATACHI_WORKDIR>/tmp/` の中に置いてください。直下には何も足さないこと。
 
@@ -407,14 +407,14 @@ katachi scaffold --package com.example.app
 
 `--package` にはステップ 1 で特定したアプリのパッケージ名を渡す。katachi のバージョンは `init` が記録したものを、Kotlin のバージョンはプロジェクトから検出したものを使うので、ふつうは他の引数は要りません。検査用モジュールの置き場所・テストのフレームワーク・依存の書き方は 1-3 で記録した方針から読みます。方針を記録せずに決め打ちしたいときだけ `--module-dir <path>` / `--test-framework junit5|kotest` / `--deps catalog|literal` を付けます。
 
-**`init` が「Kotlin のバージョンを検出できませんでした」と警告していた場合だけ**、`--kotlin <version>` を足してください。省くと `scaffold` が止まります。渡した版は、`scaffold` がチェックリストの `meta.kotlin` にも書き込みます。
+**`init` が「Kotlin のバージョンを検出できませんでした」と警告していた場合だけ**、`--kotlin <version>` を足してください。省くと `scaffold` が止まります。渡したバージョンは、`scaffold` がチェックリストの `meta.kotlin` にも書き込みます。
 
 このコマンドが以下を行う。
 
 - 検査用モジュール（デフォルト `architecture-test/`）の `build.gradle.kts` の作成。Kotlin JVM と katachi の Gradle plugin（`me.tbsten.katachi`）を入れ、`katachi { architecture = "<パッケージ>.test.architecture.projectArchitecture" }` で定義の置き場所を plugin に教える。plugin は katachi の依存を足さないので、`testImplementation("me.tbsten.katachi:katachi:<version>")` なども一緒に書かれる。`tasks.test { }` には `outputs.upToDateWhen { false }` と `outputs.cacheIf { false }` も書かれる。katachi が検査するファイル（リポジトリ全体）は Test タスクの入力に入っていないので、これが無いとファイルを足したり動かしたりしても Gradle がテストを `UP-TO-DATE` として飛ばし、違反があっても緑のままになる
 - `ProjectArchitecture.kt` と `ProjectArchitectureTest.kt` の作成（`testFramework` が `kotest` なら `FunSpec` の形）
-- `gradle/libs.versions.toml` への追記（`dependencyStyle` が `catalog` のとき）。`katachi` / `katachiKonsist` / JUnit の別名を `[versions]` / `[libraries]` / `[plugins]` に足し、`build.gradle.kts` はそれを `libs.katachi` のように参照する。すでに同じものを指す別名があればそれを使う。Kotlin plugin の行だけは catalog でも `kotlin("jvm")`（版なし）のまま。`alias(libs.plugins.kotlin.jvm)` と書くと、build-logic（includeBuild）経由で Kotlin plugin が classpath にあるとき "already on the classpath with an unknown version" で失敗するため。カタログに寄せるなら `id(libs.plugins.kotlin.jvm.get().pluginId)` の形になる
-- ルートの build ファイルへの Kotlin JVM プラグインの追加（ルートの `plugins { }` / `buildscript { }` か `buildSrc` に Kotlin のプラグインがすでにあれば何もしない。サブプロジェクトだけが版付きで宣言している場合は、ルートには足さず検査用モジュール側に版を書く。このとき Gradle が `The Kotlin Gradle plugin was loaded multiple times in different subprojects ...` と警告しますが、この構成では想定どおりなのでそのままにしてください。ルートに足したり版を消したりすると、今度はプラグインの解決で失敗します）
+- `gradle/libs.versions.toml` への追記（`dependencyStyle` が `catalog` のとき）。`katachi` / `katachiKonsist` / JUnit の別名を `[versions]` / `[libraries]` / `[plugins]` に足し、`build.gradle.kts` はそれを `libs.katachi` のように参照する。すでに同じものを指す別名があればそれを使う。Kotlin plugin の行だけは catalog でも `kotlin("jvm")`（バージョンなし）のまま。`alias(libs.plugins.kotlin.jvm)` と書くと、build-logic（includeBuild）経由で Kotlin plugin が classpath にあるとき "already on the classpath with an unknown version" で失敗するため。カタログに寄せるなら `id(libs.plugins.kotlin.jvm.get().pluginId)` の形になる
+- ルートの build ファイルへの Kotlin JVM プラグインの追加（ルートの `plugins { }` / `buildscript { }` か `buildSrc` に Kotlin のプラグインがすでにあれば何もしない。サブプロジェクトだけがバージョン付きで宣言している場合は、ルートには足さず検査用モジュール側にバージョンを書く。このとき Gradle が `The Kotlin Gradle plugin was loaded multiple times in different subprojects ...` と警告しますが、この構成では想定どおりなのでそのままにしてください。ルートに足したりバージョンを消したりすると、今度はプラグインの解決で失敗します）
 - settings ファイルへの `include(":architecture-test")` の追加（Groovy の `settings.gradle` なら `include ':architecture-test'`。`--module-dir static-analysis/katachi` なら `include(":static-analysis:katachi")`。すでにあれば何もしない）
 - settings ファイルの `pluginManagement { repositories { } }` への `mavenCentral()` の追加。katachi の Gradle plugin は Maven Central にあるため（すでにあれば何もしない。`pluginManagement { }` が無ければ作る）
 
