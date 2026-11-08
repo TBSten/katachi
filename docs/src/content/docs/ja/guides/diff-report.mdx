@@ -266,7 +266,7 @@ fork からの Pull request は token がコメントを書けないため、`di
 
 あなたのプロジェクトに レビューの Agent skill がある場合、ぜひ `katachiDiff` を実行させて レビュー成果物の中に組み込みましょう。
 
-Agent は `git diff` を自分で読むよりも、Role ごとにまとまったレポートを読む方が、変更がアーキテクチャのどこに当たるかを短く正確に把握できます。
+Agent は `git diff` を自分で読むよりも、Role ごとにまとまったレポートを読む方が、変更がアーキテクチャのどこに関わるかを短く正確に把握できます。
 
 ```md title=".agents/skills/review/SKILL.md"
 ---
@@ -277,7 +277,7 @@ description: Pull request をアーキテクチャの観点でレビューする
 1. `./gradlew :architecture-test:katachiDiff --arg before=origin/main` を実行する
 2. `architecture-test/build/katachi/diff/diff-report.md` を読み、Importance の高い Role から順に差分を確認する
 3. `diff-report.files-in-no-role.md` にファイルがあれば、定義に足すか置き場所を直すかを提案する
-4. レビュー結果の冒頭に、変更が当たった Role の一覧をレポートから引用する
+4. レビュー結果の冒頭に、変更が関わる Role の一覧をレポートから引用する
 ```
 
 ## まとめ

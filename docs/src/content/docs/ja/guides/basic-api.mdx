@@ -222,8 +222,8 @@ architecture {
 ```kt title="GetUserUseCase.kt"
 package com.example.useCase
 
-class GetUserUseCase { /* ... */ }   // 通る: required の行に当たる
-fun helper() {}                      // 違反: 当たる行が無い
+class GetUserUseCase { /* ... */ }   // 通る: required の行に一致する
+fun helper() {}                      // 違反: 一致する行が無い
 ```
 
 違反になった宣言は、次のようなレポートで報告されます（一部を省いています）。

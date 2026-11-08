@@ -263,7 +263,7 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
     </td>
     <td>
       ```kt
-      // ソースに final と書いた宣言だけに当たる
+      // ソースに final と書いた宣言だけに一致する
       allow(final, override, `fun`, "*")(anyArgs())
       ```
     </td>
@@ -460,7 +460,7 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
 
 ## アノテーション
 
-宣言のアノテーションは、書いた名前が付いている宣言だけに当たります。書いていないアノテーションは付いていてもよく、**問いません**。ファイル注釈（`@file:…`）だけは package・import と同じで、行の無いものは**違反**です。
+宣言のアノテーションは、書いた名前が付いている宣言だけに一致します。書いていないアノテーションは付いていてもよく、**問いません**。ファイル注釈（`@file:…`）だけは package・import と同じで、行の無いものは**違反**です。
 
 <div style="overflow-x: auto">
 <table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
@@ -690,7 +690,7 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
   </tr>
   <tr>
     <td>import の別名（`import a.B as C`）</td>
-    <td>`import` の行は別名を見ません。アノテーションは完全名 `annotated("a.B")` で別名越しに当たります</td>
+    <td>`import` の行は別名を見ません。アノテーションは完全名 `annotated("a.B")` で別名越しに一致します</td>
   </tr>
 </table>
 </div>
