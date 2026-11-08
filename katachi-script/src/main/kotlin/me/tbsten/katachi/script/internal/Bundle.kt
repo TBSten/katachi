@@ -2,8 +2,7 @@ package me.tbsten.katachi.script.internal
 
 /**
  * The guide and the two templates, shipped inside this artifact so that `init` and `guide` need no
- * network. `processResources` copies them from `docs/public/install/<lang>/` and rewrites the
- * install kit's `sh $CLI <subcommand>` into `katachi <subcommand>` on the way.
+ * network. `bundleInstallKit` copies them from `docs/public/install/<lang>/` as they are.
  */
 internal object Bundle {
     private const val ROOT = "META-INF/katachi-script/install"

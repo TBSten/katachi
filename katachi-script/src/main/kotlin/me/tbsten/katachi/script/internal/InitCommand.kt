@@ -212,7 +212,6 @@ internal fun ScriptContext.runInit(args: List<String>): Int {
     say("KATACHI_KOTLIN=${kotlin ?: ""}")
     say("KATACHI_GIT=${if (git) "yes" else "no"}")
     say("KATACHI_SETTINGS=${root.resolve(settings.name)}")
-    say("KATACHI_CLI=$CLI_COMMAND")
     say("KATACHI_LANG=${lang.code}")
     say("KATACHI_MODULE_DIR=$moduleDir")
     say("KATACHI_MODULE_PATH=$modulePath")
