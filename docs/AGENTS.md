@@ -79,7 +79,9 @@ title: ...
     - 基本的な API                      （覚える7つ。この節の入口）
     - Role                             （group と「Role 定義を分割する」を含む）
     - Layout                           ［ページタイトルは「Layout システムでディレクトリ構成を厳守させる」］
-    - ファイルの中で定義できる宣言の許可リストを定義する   （`ktFileContent { }`。katachi-konsist のインストールの節もここに置く）
+    - ktFileContent                    （グループ。見出しは押せないので、ページは中の「概要」に置く）
+        - ファイルの中で定義できる宣言の許可リストを定義する   ［サイドバーの表示は「概要」］（`ktFileContent { }`。katachi-konsist のインストールの節もここに置く）
+        - [AI生成] Kotlin 言語機能とのマッピング   （Kotlin の言語機能ごとの書き方の対応表。書き方の説明は概要が持つ）
     - Konture との統合                                     （`konture { }`。`ktFileContent { }` と同じ位置に書く Konture の規則。katachi-konsist（`ktFileContent { }`）と同じテストモジュールには置けない）
     - ドキュメント生成
     - テンプレートからコード生成
@@ -117,6 +119,8 @@ title: ...
   `assert()` の1行しか触らない。目立つ位置に置くと「理解しないと使えない」と言ってしまう。
   ガイドの末尾に置き、ページが自分で短い前提（2〜3行）を持つ
 - **ページタイトルとサイドバーのラベルは分けられる**（Starlight の `sidebar.label`）
+- **サイドバーは 3 階層まで入れ子にできる**（`astro.config.mjs` の `category` の中に `category`）。Starlight のグループ見出しは開閉するだけで押せないので、
+  子ページを持つページはグループにして、ページ自体は中の先頭に「概要」として置く（KATACHI-272 で決定）。親の URL は変わらない
 - **存在しないページにリンクするとビルドが落ちる。** 書けるページから順に出す
 - **`@ExperimentalKatachiApi` が要る API を使う箇所に「`@OptIn(ExperimentalKatachiApi::class)` が必要です」と書かない。**
   opt-in が無ければコンパイラがそう言い、`@RequiresOptIn` の message にも注釈名（`ExperimentalKatachiApi`）が入っているので、
