@@ -20,6 +20,8 @@
         A file that no role holds gets a notification with a draft of the role to copy, and
         <b>katachi: Run Architecture Check</b> runs the check.
         The screens follow the IDE's language: Japanese when the IDE is in Japanese, English otherwise.</p>
+        <p>AI agents can use katachi through the JetBrains MCP Server: they read the roles, templates and violations, run the check
+        and, once you allow it in Settings &gt; Tools &gt; katachi, generate from a template.</p>
         <p>A <code>*.katachi.kts</code> (katachi's commands written as a Kotlin script) is completed with the definition the
         installed katachi CLI provides (<code>brew install tbsten/tap/katachi</code>). Without a CLI the script shows a notification
         on how to get one, and nothing else of the plugin changes.</p>
@@ -28,6 +30,17 @@
         See <a href="https://tbsten.github.io/katachi/guides/generate-code-from-template/">Generate code from template</a>.</p>
     ]]></description>
     <change-notes><![CDATA[
+        <p>0.4.0 (with katachi 0.4.0; the version follows katachi's from here, so there is no 0.3.0):</p>
+        <ul>
+            <li>Tools for AI agents on the JetBrains MCP Server: read the roles, templates and violations, reload the definition,
+            run the check, and generate from a template (generation is off until you turn it on in Settings &gt; Tools &gt; katachi).
+            Not in Android Studio, which has no MCP Server.</li>
+            <li>A <code>*.katachi.kts</code> is completed with the definition the installed katachi CLI provides; without a CLI, a notification says how to get one.</li>
+            <li>The gutter, the violations under a declaration, the &#9670; and Code Vision follow the IDE's language (Japanese / English).</li>
+            <li>In English, the members of a templateSet row in the tool window are separated by ", ".</li>
+            <li>Fixed: an IDE started from the Dock (macOS) finds the kotlin command the katachi CLI runs on.</li>
+            <li>Needs IntelliJ IDEA 2026.1 (261) or later.</li>
+        </ul>
         <p>0.2.0 (with katachi 0.3.0):</p>
         <ul>
             <li>templateSet: a set of templates is listed and generated like a template.</li>
