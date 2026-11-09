@@ -34,7 +34,39 @@ Both the working directory and the verification module (`architecture-test/` by 
 
 **If any of them is blocked, tell the user what was refused.** Without 1 you cannot start, without 2 you cannot create files, without 3 you cannot verify, and without 4 you cannot run any of the steps below.
 
-**If 1 cannot find `katachi`, do not try to install it yourself.** Do not invent a workaround either, such as fetching a script and running it, or looking for a jar to put in place. Ask the user to run `brew install tbsten/tap/katachi` (it needs Homebrew; Kotlin comes with it), and run 1 again once it is installed. The same goes for `kotlin is not on PATH`: ask the user to run `brew install kotlin`.
+#### When 1 cannot find `katachi`
+
+**Do not install anything yourself.** Ask the user, with the links below, and run 1 again once they are done. Do not invent another workaround either, such as looking for a jar to put in place.
+
+**On macOS (or wherever Homebrew is already there): ask for Homebrew.**
+
+```sh
+brew install tbsten/tap/katachi    # Kotlin comes with it
+```
+
+- Homebrew itself: https://brew.sh/
+- The katachi command: https://tbsten.github.io/katachi/guides/cli-and-script/cli/
+
+If `katachi` then prints `kotlin is not on PATH`, ask for `brew install kotlin`.
+
+**Elsewhere (Linux or Windows without Homebrew): ask for the Kotlin command line compiler, and run katachi as a Kotlin script.** The `katachi` command is only a launcher for a Kotlin script that pulls `katachi-script` from Maven Central, so the same script run with `kotlin` does everything it does.
+
+- The Kotlin command line compiler (SDKMAN!, the zip from GitHub releases, and so on): https://kotlinlang.org/docs/command-line.html
+- katachi-script (running katachi from `*.main.kts`): https://tbsten.github.io/katachi/guides/cli-and-script/katachi-script/
+
+Once `kotlin -version` works, pick the working directory as in 0-2 (only its place: run `mkdir -p <workdir>/tmp`, copy nothing yet) and write this script there. `<version>` is the latest release on https://github.com/TBSten/katachi/releases without its `v`.
+
+```kotlin
+// <workdir>/tmp/katachi.main.kts
+@file:DependsOn("me.tbsten.katachi:katachi-script:<version>")
+
+me.tbsten.katachi.script.main(args)
+```
+
+From here on, **read every `katachi …` in these steps as `kotlin <workdir>/tmp/katachi.main.kts …`**, with the same arguments (`kotlin <workdir>/tmp/katachi.main.kts --version` is 1). Write that line into `<workdir>/tmp/katachi-command.txt`, so that a later session runs katachi the same way. Two differences from the `katachi` command:
+
+- `kotlin` takes every argument that starts with `-D`, `-J` or `@` for itself, even after the script. Put `katachi-escaped:` in front of such an argument (`… agent test -- katachi-escaped:-Dkatachi.baseline.update=true`); katachi removes it.
+- The first run downloads katachi-script and compiles the script, so it takes a while. Later runs use the cache.
 
 If all four pass, no permission will be asked for in any later step.
 

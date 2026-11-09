@@ -44,7 +44,8 @@ Read only the reference that fits, and inside it only the files it points you to
 └── tmp/install-katachi/                the working directory of the setup (or inside an already-ignored directory)
     ├── check-list.html                 the setup's checklist (a JSON block inside; setup 0-3 says how to edit it)
     ├── project-code-base-report.html   the codebase report from setup step 1
-    └── tmp/                            logs, fetched documentation, notes
+    └── tmp/                            logs, fetched documentation, notes; without Homebrew also katachi.main.kts and
+                                        katachi-command.txt (how to run katachi: setup 0-1)
 ```
 
 The working directory is only for the setup and is ignored by git, so it may be gone later. Nothing below needs it: `katachi agent test` keeps its logs in `<working directory>/tmp/`, or in `build/katachi/` of the project root when there is none.

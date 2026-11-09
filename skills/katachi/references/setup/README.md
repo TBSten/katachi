@@ -4,7 +4,7 @@ These are the steps to install [katachi](https://tbsten.github.io/katachi) in a 
 
 **Read one section at a time, in the order of the table below.** Open a section's file only when you reach it. Most sections end by telling you to mark their items done in the checklist (0-3 says how); then open the next row of the table.
 
-The steps use the `katachi` command (`brew install tbsten/tap/katachi`) for `doctor`, `scaffold`, `lint` and `katachi agent test`. Section 0-1 checks that it is there. The checklist and the report you fill in are copied from this skill's `assets/` (0-2).
+The steps use the `katachi` command (`brew install tbsten/tap/katachi`) for `doctor`, `scaffold`, `lint` and `katachi agent test`. Section 0-1 checks that it is there, and says how to run the same thing through the Kotlin command line compiler where there is no Homebrew. The checklist and the report you fill in are copied from this skill's `assets/` (0-2).
 
 ## Sections
 

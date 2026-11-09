@@ -10,7 +10,7 @@ The working directory holds the checklist and the report that people open, plus 
 git check-ignore -q .local && echo .local    # try .local, .tmp, tmp, .scratch in this order
 ```
 
-Use `<the first ignored one>/install-katachi`. If none is ignored, use `tmp/install-katachi` and **tell the user it is visible to git**: katachi checks files that are untracked but not ignored, so as it is, the working directory itself fails step 4 (and the checklist and the report can end up in their commits). Suggest the line for `.gitignore`. Do not edit `.gitignore` yourself. If the user named a place, use it.
+Use `<the first ignored one>/install-katachi`. If none is ignored, use `tmp/install-katachi` and **tell the user it is visible to git**: katachi checks files that are untracked but not ignored, so as it is, the working directory itself fails step 4 (and the checklist and the report can end up in their commits). Suggest the line for `.gitignore`. Do not edit `.gitignore` yourself. If the user named a place, use it. If 0-1 already made `<workdir>/tmp/` for `katachi.main.kts` (no Homebrew), keep that place.
 
 **Copy the two files.** `<skill>` is the directory of this skill (the one with `SKILL.md`), `<lang>` is `en` or `ja`:
 
