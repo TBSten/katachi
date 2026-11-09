@@ -184,6 +184,8 @@ const lineText = (v) => (v.line ? `:${v.line.start === v.line.end ? v.line.start
 /** 指摘（Review）。置き場の review/ を読む。 */
 async function review([sub, id], flags, dir) {
 	const { createReviewStore, REVIEW_SUBDIR } = await import(pathToFileURL(resolve(here, 'review.ts')).href)
+	const { pageUrlOf } = await import(pathToFileURL(resolve(here, '../review/model.ts')).href)
+	const { base: docsBase } = await import(pathToFileURL(resolve(here, '../../../lib/versions.mjs')).href)
 	const store = createReviewStore(resolve(dir, REVIEW_SUBDIR), repoRoot)
 	const data = await store.load()
 	const find = () => {
@@ -221,6 +223,7 @@ async function review([sub, id], flags, dir) {
 			`- 場所: ${v.file}${lineText(v)}${v.place === 'moved' ? `（書かれた行 ${lineText({ line: v.written }).slice(1)} から動かした）` : ''}${v.place === 'lost' ? '（quote が今のソースに見つからない。もう直っているかも）' : ''}${v.place === 'no-file' ? '（ファイルが無い）' : ''}`,
 			...(v.note ? [`- 人の一言: ${v.note}`] : []),
 			...(v.aiNote ? [`- agent の一言: ${v.aiNote}`] : []),
+			...(pageUrlOf(v.file, docsBase) ? [`- ページで開く: http://localhost:4321${pageUrlOf(v.file, docsBase)}#review=${v.id}（dev サーバーのポートに合わせる）`] : []),
 			'',
 			v.body,
 		]

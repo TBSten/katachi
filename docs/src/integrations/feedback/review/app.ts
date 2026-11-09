@@ -64,8 +64,26 @@ export default {
 				},
 			})
 		})
+		// `#review=<id>` のリンク（cli の review show が出す）で来たら、出してその指摘を開く。同じページの中でリンクを踏んだときも。
+		const follow = () => {
+			const linked = /^#review=(.+)$/.exec(location.hash)
+			if (!linked) return false
+			const id = decodeURIComponent(linked[1]!)
+			history.replaceState(history.state, '', location.pathname + location.search)
+			if (session) session.reveal(id)
+			else {
+				try {
+					sessionStorage.setItem(OPEN_KEY, id)
+				} catch {
+					// 覚えられなければ出すだけ。
+				}
+				app.toggleState({ state: true })
+			}
+			return true
+		}
+		window.addEventListener('hashchange', () => void follow())
 		// 前のページで出していたら、このページでも出す。
-		if (remembered()) app.toggleState({ state: true })
+		if (!follow() && remembered()) app.toggleState({ state: true })
 		void hint()
 	},
 } satisfies DevToolbarApp

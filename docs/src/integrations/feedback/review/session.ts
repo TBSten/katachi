@@ -14,7 +14,11 @@ import { renderInline, renderMarkdown } from './render'
 
 export type ReviewCall = (req: { op: 'load' } | { op: 'resolve'; id: string; note: string } | { op: 'reopen'; id: string }) => Promise<ReviewResult | { ok: false; error: string }>
 
-export type ReviewSession = { close(): void }
+export type ReviewSession = {
+	close(): void
+	/** id の指摘を開く（`#review=<id>` のリンク）。読み込み前なら読み込んだあとで開く。 */
+	reveal(id: string): void
+}
 
 /** 別のページへ移ったあとで開く指摘の id（sessionStorage）。 */
 export const OPEN_KEY = 'katachi-review:open'
@@ -144,8 +148,16 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		const want = store.get(session(), OPEN_KEY)
 		if (want) {
 			store.set(session(), OPEN_KEY, null)
-			if (here.some((v) => v.id === want)) open(want)
+			reveal(want)
 		}
+	}
+
+	/** id の指摘を開く。このページ（かページの無いファイル）のものだけ。開けなければ理由を知らせる。 */
+	function reveal(want: string) {
+		const v = sorted.find((x) => x.id === want)
+		if (v && (here.includes(v) || !pageUrlOf(v.file, base))) open(want)
+		else if (v) toast('その指摘はほかのページです（一覧の「ほかのページ」から開けます）', undefined, true)
+		else toast(items.some((x) => x.id === want) ? 'その指摘は絞り込みで隠れています（解決済みも出す・優先度を見直してください）' : 'その指摘は見つかりません（消されたか、見出しか file が変わったかもしれません）', undefined, true)
 	}
 
 	// ---- 印と枠 ----
@@ -774,6 +786,11 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 	void load()
 
 	return {
+		reveal(id: string) {
+			if (closed) return
+			if (loaded) reveal(id)
+			else store.set(session(), OPEN_KEY, id)
+		},
 		close() {
 			if (closed) return
 			closed = true

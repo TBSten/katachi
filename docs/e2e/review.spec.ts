@@ -234,6 +234,25 @@ test('次のページへ: ページを移って popup が開く。ページの�
 	ok('ページではないことを伝える', /サイトのページではありません/.test((await u('.pop .info').textContent()) ?? ''))
 })
 
+test('`#review=<id>` のリンクで来ると、隠していても出してその指摘を開く。同じページの中のリンクでも開く', async ({ fb }) => {
+	writeSet()
+	await fb.fresh(FAQ)
+	await toggle(fb)
+	const u = ui(fb)
+	await openRow(fb, '閉じた details の中への指摘')
+	const id = (await u('.pop').getAttribute('data-id'))!
+	// スマホのシートは toolbar に重なるので、閉じてから隠す。
+	if (fb.mobile) await fb.act(u('.pop .x'))
+	await toggle(fb)
+	ok('隠した', (await roots(fb)) === 0)
+	await fb.fresh(`${FAQ}#review=${encodeURIComponent(id)}`)
+	await u('.pop:not([hidden])').waitFor({ state: 'visible', timeout: 8000 })
+	ok('リンクの指摘が開く', (await popTitle(fb)) === '閉じた details の中への指摘')
+	ok('アドレスから #review= を消す（読み直しても開き直さない）', !fb.page.url().includes('#review='))
+	await fb.page.evaluate(() => { location.hash = '#review=e2e/nope' })
+	ok('無い指摘は知らせる', await waitFor(async () => /見つかりません/.test((await u('.toast').textContent().catch(() => '')) ?? '')))
+})
+
 test('外で指摘のファイルが書き換わったあとに解決済みにすると、読み直して知らせる（壊れない）', async ({ fb }) => {
 	writeSet()
 	await fb.fresh(FAQ)
