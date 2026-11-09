@@ -1,4 +1,4 @@
-import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdtemp, mkdir, readFile, rm, stat, utimes, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
@@ -76,6 +76,29 @@ describe('createReviewStore', () => {
 		await Promise.all(ids.map((id) => store.resolve(id, '')))
 		const after = await store.load()
 		expect(after.items.every((v) => v.status === 'resolved')).toBe(true)
+	})
+	it('別のプロセス（dev サーバーと cli）が同じファイルを同時に書いても、相手の書き換えを消さない', async () => {
+		const many = Array.from({ length: 10 }, (_, i) => `## 指摘 ${i}\n- file: ja/guides/x.mdx\n- line: 1\n`).join('\n')
+		await writeFile(join(dir, 'm.md'), many)
+		// 書き込みの順番待ちを共有しない 2 つの store で、別々のプロセスを真似る。
+		const dev = createReviewStore(dir, root)
+		const cli = createReviewStore(dir, root)
+		const ids = (await dev.load()).items.map((v) => v.id)
+		await Promise.all([...ids.slice(0, 5).map((id) => dev.resolve(id, '')), ...ids.slice(5).map((id) => cli.remove(id))])
+		const after = await dev.load()
+		expect(after.items.map((v) => [v.id, v.status])).toEqual(ids.slice(0, 5).map((id) => [id, 'resolved']))
+	})
+	it('落ちたプロセスが残した古い lock は消して書く。書いたあとは lock を残さない', async () => {
+		await writeFile(join(dir, 's1.md'), SET)
+		const store = createReviewStore(dir, root)
+		const id = (await store.load()).items[0]!.id
+		const lockPath = join(dir, 's1.md.lock')
+		await writeFile(lockPath, '')
+		const old = new Date(Date.now() - 60_000)
+		await utimes(lockPath, old, old)
+		await store.resolve(id, '')
+		expect((await store.load()).items[0]!.status).toBe('resolved')
+		await expect(stat(lockPath)).rejects.toThrow()
 	})
 	it('agent が消す・差し戻す', async () => {
 		await writeFile(join(dir, 's1.md'), SET)

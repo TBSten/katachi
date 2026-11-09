@@ -1,7 +1,7 @@
 // Review のサーバー側: 置き場の `review/*.md` を読み、指摘の行を今のソースに合わせて返す。解決済みの印の付け外しを書き戻す。
 // dev サーバー（toolbar のメッセージ）と cli（server/cli.mjs の review）の両方から使う。
 import { randomBytes } from 'node:crypto'
-import { mkdir, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
+import { mkdir, open, readdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
 import { isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { EVENT_REVIEW_REQUEST, EVENT_REVIEW_RESULT, type ReviewRequest, type ReviewResult, type ReviewSetView, type ReviewView } from '../core/protocol'
 import { applyStatus, CONTENT_DIR, NOTE_CHARS, parseReview, relocate, removeItem, SET_NAME, splitLines, type ReviewItem, type StatusPatch } from '../review/model'
@@ -20,6 +20,31 @@ function insideRepo(repoRoot: string, p: string): string | null {
 }
 
 const exists = async (abs: string) => readFile(abs, 'utf8').then((t) => t, () => null)
+
+/** ほかのプロセスの書き込みを待つ上限と、残ったままの lock を古いとみなすまでの時間。 */
+const LOCK_WAIT_MS = 3000
+const LOCK_STALE_MS = 10_000
+
+/** lock のファイルを排他で作る（O_EXCL）。取れたら、外す関数を返す。落ちたプロセスが残した古い lock は消して取り直す。 */
+async function lock(path: string): Promise<() => Promise<void>> {
+	const until = Date.now() + LOCK_WAIT_MS
+	for (;;) {
+		try {
+			const h = await open(path, 'wx')
+			await h.close()
+			return () => rm(path, { force: true })
+		} catch (e) {
+			if ((e as NodeJS.ErrnoException).code !== 'EEXIST') throw e
+			const age = await stat(path).then((s) => Date.now() - s.mtimeMs, () => 0)
+			if (age > LOCK_STALE_MS) {
+				await rm(path, { force: true })
+				continue
+			}
+			if (Date.now() > until) throw new Error(`指摘のファイルをほかが書いています（${path} が残っていれば消してください）`)
+			await new Promise((r) => setTimeout(r, 15))
+		}
+	}
+}
 
 /**
  * @param dir 指摘のファイルのフォルダ（`<置き場>/review/`）
@@ -119,16 +144,28 @@ export function createReviewStore(dir: string, repoRoot: string) {
 		return name
 	}
 
-	/** id の指摘の印を書き換える。 */
-	function patch(id: string, p: StatusPatch): Promise<void> {
+	/**
+	 * まとまりのファイルを読み、書き換えて書く。dev サーバーと cli（別のプロセス）が同じファイルを書くことがあるので、
+	 * 横に `<名前>.md.lock` を排他で作ってから読み書きする（相手の書き換えを消さない）。
+	 */
+	function rewrite(id: string, edit: (name: string, text: string) => string): Promise<void> {
 		return serial(async () => {
 			const name = setOf(id)
 			const abs = setPath(name)
-			const text = await exists(abs)
-			if (text === null) throw new Error(`指摘のファイルがありません: ${name}.md`)
-			await writeAtomic(abs, applyStatus(name, text, id, p))
+			if ((await exists(abs)) === null) throw new Error(`指摘のファイルがありません: ${name}.md`)
+			const release = await lock(`${abs}.lock`)
+			try {
+				const text = await exists(abs)
+				if (text === null) throw new Error(`指摘のファイルがありません: ${name}.md`)
+				await writeAtomic(abs, edit(name, text))
+			} finally {
+				await release()
+			}
 		})
 	}
+
+	/** id の指摘の印を書き換える。 */
+	const patch = (id: string, p: StatusPatch) => rewrite(id, (name, text) => applyStatus(name, text, id, p))
 
 	return {
 		dir,
@@ -138,14 +175,7 @@ export function createReviewStore(dir: string, repoRoot: string) {
 		/** agent が差し戻す（解決済みの印を消し、理由を ai-note に書く）。 */
 		sendBack: (id: string, aiNote: string) => patch(id, { status: 'open', aiNote }),
 		/** agent が確かめて消す。 */
-		remove: (id: string) =>
-			serial(async () => {
-				const name = setOf(id)
-				const abs = setPath(name)
-				const text = await exists(abs)
-				if (text === null) throw new Error(`指摘のファイルがありません: ${name}.md`)
-				await writeAtomic(abs, removeItem(name, text, id))
-			}),
+		remove: (id: string) => rewrite(id, (name, text) => removeItem(name, text, id)),
 	}
 }
 
