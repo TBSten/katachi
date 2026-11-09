@@ -6,7 +6,7 @@ import { isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { EVENT_REVIEW_REQUEST, EVENT_REVIEW_RESULT, type ReviewRequest, type ReviewResult, type ReviewSetView, type ReviewView } from '../core/protocol'
 import { applyStatus, CONTENT_DIR, NOTE_CHARS, parseReview, relocate, removeItem, SET_NAME, splitLines, type ReviewItem, type StatusPatch } from '../review/model'
 
-export type ReviewData = { sets: ReviewSetView[]; items: ReviewView[] }
+export type ReviewData = { sets: ReviewSetView[]; items: ReviewView[]; root: string }
 
 /** 置き場の中で、指摘のファイルを置くフォルダ。 */
 export const REVIEW_SUBDIR = 'review'
@@ -110,7 +110,7 @@ export function createReviewStore(dir: string, repoRoot: string) {
 			}
 			sets.push({ name, title: set.title, ...(set.base ? { base: set.base } : {}), file, errors })
 		}
-		return { sets, items }
+		return { sets, items, root: repoRoot }
 	}
 
 	const setOf = (id: string) => {

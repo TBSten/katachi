@@ -52,7 +52,7 @@ describe('createReviewStore', () => {
 		expect(items[0]!.place).toBe('no-file')
 	})
 	it('フォルダが無ければ空（投げない）。.md 以外と使えない名前のファイルは読まない', async () => {
-		expect(await createReviewStore(join(root, 'none'), root).load()).toEqual({ sets: [], items: [] })
+		expect(await createReviewStore(join(root, 'none'), root).load()).toEqual({ sets: [], items: [], root })
 		await writeFile(join(dir, 'memo.txt'), SET)
 		await writeFile(join(dir, '.hidden.md'), SET)
 		expect((await createReviewStore(dir, root).load()).sets).toEqual([])

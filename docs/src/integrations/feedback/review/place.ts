@@ -92,7 +92,14 @@ const union = (rects: DOMRect[]) => {
  */
 export function rectOfTarget(t: Target): DOMRect {
 	if (!t.lines.length) return shownOf(t.el).getBoundingClientRect()
-	const r = union(t.lines.map((e) => e.getBoundingClientRect()))
+	let r = union(t.lines.map((e) => e.getBoundingClientRect()))
+	// 長い行は横にはみ出す（pre の中で横スクロール）ので、見えている幅に切り詰める。
+	const pre = t.lines[0]?.closest('pre')?.getBoundingClientRect()
+	if (pre && pre.width > 0) {
+		const left = Math.max(r.left, pre.left)
+		const right = Math.min(r.right, pre.right)
+		if (right > left) r = new DOMRect(left, r.top, right - left, r.height)
+	}
 	const box = collapsedOf(t)?.querySelector('.ec-collapse__content')?.getBoundingClientRect()
 	if (!box) return r
 	const top = Math.max(r.top, box.top)

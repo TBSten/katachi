@@ -92,6 +92,8 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 	let filter: Filter = parseFilter(store.get(local(), FILTER_KEY))
 	let items: ReviewView[] = []
 	let sets: Extract<ReviewResult, { ok: true }>['sets'] = []
+	/** リポジトリ直下の絶対パス（エディタで開くのに使う）。 */
+	let repoRoot = ''
 	let sorted: ReviewView[] = []
 	let here: ReviewView[] = []
 	let loadError: string | null = null
@@ -117,6 +119,7 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		loaded = true
 		items = r.items
 		sets = r.sets
+		repoRoot = r.root ?? ''
 		return true
 	}
 
@@ -417,7 +420,22 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		x.title = '閉じる（Esc）'
 		x.setAttribute('aria-label', '閉じる')
 		x.addEventListener('click', closePop)
-		head.append(where, x)
+		head.append(where)
+		if (repoRoot && v.place !== 'no-file') {
+			// Astro の dev サーバーの「エディタで開く」（dev toolbar の Audit・Inspect と同じ口）。
+			const edit = el('button', 'edit', '開く')
+			edit.type = 'button'
+			edit.title = `エディタで開く（${loc}）`
+			edit.addEventListener('click', () => {
+				const file = `${repoRoot.replace(/\/$/, '')}/${v.file}:${v.line?.start ?? 1}:1`
+				fetch(`/__open-in-editor?file=${encodeURIComponent(file)}`).then(
+					(res) => toast(res.ok ? `エディタで開きます: ${loc}` : 'エディタで開けませんでした', undefined, !res.ok),
+					() => toast('エディタで開けませんでした', undefined, true),
+				)
+			})
+			head.append(edit)
+		}
+		head.append(x)
 
 		const body = el('div', 'pop-body')
 		const title = el('h3', 'pop-title')
@@ -567,7 +585,8 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 			t.append(b)
 		}
 		toastBox.replaceChildren(t)
-		setTimeout(() => t.remove(), UNDO_MS)
+		// 知らせるだけのものは短く。戻せるもの・警告は読んで押せるだけ残す。
+		setTimeout(() => t.remove(), undo || warn ? UNDO_MS : 2500)
 	}
 
 	// ---- 一覧のパネル ----
@@ -600,7 +619,7 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		const head = el('header', 'panel-head')
 		head.append(el('h2', undefined, '指摘'))
 		if (loaded) head.append(el('span', 'n', String(here.length)))
-		const sum = el('span', 'sum', loaded ? `このページ ${here.length} 件 · 全体 ${sorted.length} 件` : loadError ? '読み込めません' : '読み込み中…')
+		const sum = el('span', 'sum', loaded ? `このページ ${here.length} · 全体 ${sorted.length}` : loadError ? '読み込めません' : '読み込み中…')
 		const fold = el('button', 'fold', shut ? '▸' : '▾')
 		fold.type = 'button'
 		fold.title = shut ? '一覧を開く' : '一覧を畳む'

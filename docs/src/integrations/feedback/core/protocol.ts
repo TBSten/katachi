@@ -157,5 +157,6 @@ export type ReviewView = {
 export type ReviewSetView = { name: string; title: string; base?: string; file: string; errors: string[] }
 
 export type ReviewResult =
-	| { requestId: string; ok: true; sets: ReviewSetView[]; items: ReviewView[] }
+	/** root はリポジトリ直下の絶対パス（popup の「エディタで開く」に使う。dev サーバーの手元のパス）。 */
+	| { requestId: string; ok: true; sets: ReviewSetView[]; items: ReviewView[]; root?: string }
 	| { requestId: string; ok: false; error: string }

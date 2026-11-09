@@ -118,6 +118,12 @@ test('印を押すと popup。本文・何件め / 総数・前と次。× で�
 	ok('popup は画面に収まり、高さに上限がある', pop.y >= 0 && pop.y + pop.height <= vp.height + 1 && pop.height <= Math.min(vp.height * 0.6, 520) + 2, JSON.stringify(pop))
 	if (fb.mobile) ok('スマホは下からのシート（幅いっぱい）', Math.abs(pop.width - vp.width) < 2 && Math.abs(pop.y + pop.height - vp.height) < 2, JSON.stringify(pop))
 	await fb.shot('review-2-pop')
+	// 「開く」は Astro の dev サーバーの「エディタで開く」を呼ぶ（エディタは起こさないよう、ここでは横取りする）。
+	let opened = ''
+	await fb.page.route('**/__open-in-editor?**', (r) => { opened = decodeURIComponent(new URL(r.request().url()).searchParams.get('file') ?? ''); return r.fulfill({ status: 200, body: '' }) })
+	await fb.act(u('.pop .edit'))
+	ok('開く: 指摘のファイルを今の行で開く', await waitFor(async () => /\/docs\/src\/content\/docs\/ja\/get-started\/faq\.mdx:\d+:1$/.test(opened)), opened)
+	await fb.page.unroute('**/__open-in-editor?**')
 	await fb.act(u('.pop .nav .btn').nth(1))
 	await sleep(500)
 	ok('次へ進む', (await popTitle(fb)) === '閉じた details の中への指摘')

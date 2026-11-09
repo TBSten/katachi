@@ -29,6 +29,8 @@ button, input { font: inherit; }
 .wire { position: fixed; inset: 0; width: 100vw; height: 100vh; overflow: visible; pointer-events: none; z-index: 1; }
 .wire path { fill: none; stroke: var(--c); stroke-width: 2; stroke-dasharray: 5 4; opacity: .8; }
 .where-line { font-weight: 600; color: var(--fg-2); }
+.edit { flex: none; padding: 1px 7px; font: inherit; font-size: 11px; color: var(--fg-2); background: transparent; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
+.edit:hover { background: var(--hover); }
 .x { flex: none; width: 30px; height: 30px; font-size: 18px; line-height: 1; color: var(--fg-2); background: none; border: 0; border-radius: 6px; cursor: pointer; }
 .x:hover { background: var(--hover); }
 .pop-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 10px 14px; }
