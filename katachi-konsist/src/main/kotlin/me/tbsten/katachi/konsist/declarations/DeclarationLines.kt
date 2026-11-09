@@ -95,8 +95,9 @@ public class TypeLine internal constructor(
      * A line without `.primaryConstructor(...)` asks nothing about it.
      *
      * ## Example 1: a value class around one string
+     * The `val value` is a member too, so the line allows it in its `{ }`: this call only checks the parameters.
      * ```kt
-     * allow(value, `class`, "*Id").primaryConstructor("val value: String")
+     * allow(value, `class`, "*Id") { allow(`val`, "value") }.primaryConstructor("val value: String")
      * ```
      *
      * @throws KatachiKtFileContentLineException when written twice, on a line with no `class`, or when a parameter is not

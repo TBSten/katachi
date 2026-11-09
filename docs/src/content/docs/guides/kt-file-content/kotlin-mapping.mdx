@@ -73,7 +73,7 @@ You write the same lines at the top level of a file and inside the `{ }` of a cl
       `companion object` / nested class
       ```kt
       class Session {
-        companion object
+        companion object {}
         private data class State(val token: String)
       }
       ```
@@ -196,7 +196,7 @@ You write the same lines at the top level of a file and inside the `{ }` of a cl
     <td>
       ```kt
       // A parameter without val is not a property
-      allow(value, `class`, "*Id").primaryConstructor("val value: String")
+      allow(value, `class`, "*Id") { allow(`val`, "value") }.primaryConstructor("val value: String")
       // Specify only the visibility
       allow(`class`, "*Session").primaryConstructor(private, anyArgs())
       ```
@@ -248,8 +248,10 @@ Write modifiers before the kind, in the same order as in Kotlin source. A modifi
     <td>
       ```kt
       allow(sealed, type, "*Action") { allow(anythingElse) }
-      // May be present or absent
-      required(suspend.optional(), operator, `fun`, "invoke")(anyArgs())
+      allow(`class`, "GetUser") {
+        // May be present or absent
+        required(suspend.optional(), operator, `fun`, "invoke")(anyArgs())
+      }
       allow(expect, anythingElse)
       ```
     </td>
@@ -446,7 +448,7 @@ These are checked only when you chain them after a line. If you do not write the
       Explicit backing field (`field = …`)
       ```kt
       val uiState: StateFlow<HomeUiState>
-        field = MutableStateFlow(HomeUiState())
+        field: MutableStateFlow<HomeUiState> = MutableStateFlow(HomeUiState())
       ```
     </td>
     <td>
@@ -572,7 +574,8 @@ A `package` or `import` without a line is a **violation**. `not.` is a denial st
     <td>
       ```kt
       `import`("kotlin.**")
-      `import`("android.**").except("android.os.Parcelable")
+      `import`("android.**")
+      not.`import`("android.**").except("android.os.Parcelable")
       not.`import`("java.util.Date")
       ```
     </td>
@@ -586,6 +589,7 @@ A `package` or `import` without a line is a **violation**. `not.` is a denial st
     </td>
     <td>
       ```kt
+      allow(`class`, "*")
       // Stronger than an allow line
       not.allow(`class`, "*Impl").except("LegacyImpl")
       not.allow(private, `fun`, "*")
@@ -643,19 +647,23 @@ These are checked only when you chain them after a line. If you do not write the
     <td>
       Shape of a function body
       ```kt
-      fun isEmpty() = items.isEmpty()
-      fun runAll() { /* ... */ }
-      abstract fun load()
+      abstract class Repository {
+        fun isEmpty() = items.isEmpty()
+        fun runAll() { /* ... */ }
+        abstract fun load()
+      }
       ```
     </td>
     <td>
       ```kt
-      // fun f() = ...
-      allow(`fun`, "is*")(anyArgs()).expressionBody()
-      // fun f() { ... }
-      allow(`fun`, "run*")(anyArgs()).blockBody()
-      // No body
-      allow(abstract, `fun`, "*")(anyArgs()).noBody()
+      allow(abstract, `class`, "*") {
+        // fun f() = ...
+        allow(`fun`, "is*")(anyArgs()).expressionBody()
+        // fun f() { ... }
+        allow(`fun`, "run*")(anyArgs()).blockBody()
+        // No body
+        allow(abstract, `fun`, "*")(anyArgs()).noBody()
+      }
       ```
     </td>
   </tr>

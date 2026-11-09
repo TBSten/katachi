@@ -73,7 +73,7 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
       `companion object` / 入れ子の class
       ```kt
       class Session {
-        companion object
+        companion object {}
         private data class State(val token: String)
       }
       ```
@@ -196,7 +196,7 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
     <td>
       ```kt
       // val を書かない引数はプロパティでない引数
-      allow(value, `class`, "*Id").primaryConstructor("val value: String")
+      allow(value, `class`, "*Id") { allow(`val`, "value") }.primaryConstructor("val value: String")
       // 可視性だけを指定
       allow(`class`, "*Session").primaryConstructor(private, anyArgs())
       ```
@@ -248,8 +248,10 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
     <td>
       ```kt
       allow(sealed, type, "*Action") { allow(anythingElse) }
-      // 付いていても無くてもよい
-      required(suspend.optional(), operator, `fun`, "invoke")(anyArgs())
+      allow(`class`, "GetUser") {
+        // 付いていても無くてもよい
+        required(suspend.optional(), operator, `fun`, "invoke")(anyArgs())
+      }
       allow(expect, anythingElse)
       ```
     </td>
@@ -446,7 +448,7 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
       explicit backing field（`field = …`）
       ```kt
       val uiState: StateFlow<HomeUiState>
-        field = MutableStateFlow(HomeUiState())
+        field: MutableStateFlow<HomeUiState> = MutableStateFlow(HomeUiState())
       ```
     </td>
     <td>
@@ -572,7 +574,8 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
     <td>
       ```kt
       `import`("kotlin.**")
-      `import`("android.**").except("android.os.Parcelable")
+      `import`("android.**")
+      not.`import`("android.**").except("android.os.Parcelable")
       not.`import`("java.util.Date")
       ```
     </td>
@@ -586,6 +589,7 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
     </td>
     <td>
       ```kt
+      allow(`class`, "*")
       // 許可の行より強い
       not.allow(`class`, "*Impl").except("LegacyImpl")
       not.allow(private, `fun`, "*")
@@ -643,19 +647,23 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
     <td>
       関数の本体の形
       ```kt
-      fun isEmpty() = items.isEmpty()
-      fun runAll() { /* ... */ }
-      abstract fun load()
+      abstract class Repository {
+        fun isEmpty() = items.isEmpty()
+        fun runAll() { /* ... */ }
+        abstract fun load()
+      }
       ```
     </td>
     <td>
       ```kt
-      // fun f() = ...
-      allow(`fun`, "is*")(anyArgs()).expressionBody()
-      // fun f() { ... }
-      allow(`fun`, "run*")(anyArgs()).blockBody()
-      // 本体なし
-      allow(abstract, `fun`, "*")(anyArgs()).noBody()
+      allow(abstract, `class`, "*") {
+        // fun f() = ...
+        allow(`fun`, "is*")(anyArgs()).expressionBody()
+        // fun f() { ... }
+        allow(`fun`, "run*")(anyArgs()).blockBody()
+        // 本体なし
+        allow(abstract, `fun`, "*")(anyArgs()).noBody()
+      }
       ```
     </td>
   </tr>
