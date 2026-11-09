@@ -2,7 +2,8 @@ package me.tbsten.katachi.diff
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.MetadataKey
-import me.tbsten.katachi.dsl.MetadataScope
+import me.tbsten.katachi.dsl.GroupScope
+import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.metadata
 
 /**
@@ -37,10 +38,40 @@ import me.tbsten.katachi.dsl.metadata
 public val DiffWeight: MetadataKey<Double> = metadata()
 
 /**
- * Sets [DiffWeight] on a group or a role: a non-negative number, 1 when left out.
+ * Sets [DiffWeight] on a group: a non-negative number, 1 when left out. Every role of the group
+ * takes it, unless the role writes its own.
+ *
+ * Only a group and a role take a weight, so it cannot be written at the top of `architecture { }`
+ * or on a layout entry, where [DiffReport] would not read it.
  *
  * A negative value or one that is not a number fails the report with
  * [KatachiInvalidDefinitionDiffWeightException], naming where it was written.
+ *
+ * ## Example 1: weigh every role of a group twice
+ * ```kt
+ * "domain".group {
+ *     diffWeight = 2.0
+ *     "UseCase".role { layout { "domain" / "*UseCase".ktFile() } }
+ * }
+ * ```
  */
 @ExperimentalKatachiApi
-public var MetadataScope.diffWeight: Double? by DiffWeight
+public var GroupScope.diffWeight: Double? by DiffWeight
+
+/**
+ * Sets [DiffWeight] on a role: a non-negative number. Left out, the role takes the nearest group's,
+ * else 1.
+ *
+ * A negative value or one that is not a number fails the report with
+ * [KatachiInvalidDefinitionDiffWeightException], naming where it was written.
+ *
+ * ## Example 1: put a change to the definition itself at the top of the heat
+ * ```kt
+ * "RoleDefinition".role {
+ *     diffWeight = 10.0
+ *     layout { "architecture-test" / testSourceSet / kotlin / "**" / "*Role".ktFile() }
+ * }
+ * ```
+ */
+@ExperimentalKatachiApi
+public var RoleScope.diffWeight: Double? by DiffWeight

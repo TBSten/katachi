@@ -128,7 +128,7 @@ class ViolationReportSpec : FreeSpec({
                         "TmpExperiment".role {
                           summary = "TODO"
                           layout {
-                            "tmp-experiment" { ignore() }
+                            "tmp-experiment".ignore()
                           }
                         }
                 """.trimIndent()

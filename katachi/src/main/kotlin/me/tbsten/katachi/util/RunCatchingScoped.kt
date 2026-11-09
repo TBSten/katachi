@@ -1,5 +1,6 @@
 package me.tbsten.katachi.util
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.util.internal.RunCatchingScopedController
 import me.tbsten.katachi.util.internal.newRunCatchingScopedScope
 
@@ -47,6 +48,7 @@ import me.tbsten.katachi.util.internal.newRunCatchingScopedScope
  * )
  * ```
  */
+@ExperimentalKatachiApi
 public inline fun <R> runCatchingScoped(block: RunCatchingScopedScope.() -> R): Result<R> =
     runCatching {
         try {
@@ -74,6 +76,7 @@ public inline fun <R> runCatchingScoped(block: RunCatchingScopedScope.() -> R): 
  *
  * @see runCatchingScoped
  */
+@ExperimentalKatachiApi
 public interface RunCatchingScopedScope {
     /**
      * Ends the block now, and makes [exception] the failure [runCatchingScoped] returns.
@@ -108,6 +111,7 @@ public interface RunCatchingScopedScope {
  *
  * @see runCatchingScoped
  */
+@ExperimentalKatachiApi
 public class KatachiMultipleFailuresException internal constructor(
     exceptions: List<Throwable>,
 ) : RuntimeException() {

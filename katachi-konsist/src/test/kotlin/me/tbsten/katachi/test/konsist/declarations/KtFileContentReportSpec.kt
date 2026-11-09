@@ -5,7 +5,7 @@ package me.tbsten.katachi.test.konsist.declarations
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.check.internal.report
+import me.tbsten.katachi.check.internal.reportForTest
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.declarations.ktFileContent
@@ -33,7 +33,7 @@ class KtFileContentReportSpec : FreeSpec({
             }
         }
 
-        violations.report() shouldBe """
+        violations.reportForTest() shouldBe """
             Katachi check failed: 2 violations (FileConstraint: 2)
 
             [UnsatisfiedFileConstraint] core/domain/GetUserUseCase.kt
@@ -76,7 +76,7 @@ class KtFileContentReportSpec : FreeSpec({
             }
         }
 
-        violations.report() shouldBe """
+        violations.reportForTest() shouldBe """
             Katachi check failed: 1 violation (FileConstraint: 1)
 
             [UnsatisfiedFileConstraint] src/Foo.kt
@@ -118,7 +118,7 @@ class KtFileContentReportSpec : FreeSpec({
             }
         }
 
-        violations.report() shouldBe """
+        violations.reportForTest() shouldBe """
             Katachi check failed: 2 violations (FileConstraint: 2)
 
             [UnsatisfiedFileConstraint] feature/home/HomeViewModel.kt
@@ -171,7 +171,7 @@ class KtFileContentReportSpec : FreeSpec({
             }
         }
 
-        violations.report() shouldBe """
+        violations.reportForTest() shouldBe """
             Katachi check failed: 1 violation (FileConstraint: 1)
 
             [UnsatisfiedFileConstraint] src/HomeViewModel.kt
@@ -214,7 +214,7 @@ class KtFileContentReportSpec : FreeSpec({
             }
         }
 
-        violations.report() shouldBe """
+        violations.reportForTest() shouldBe """
             Katachi check failed: 1 violation (FileConstraint: 1)
 
             [UnsatisfiedFileConstraint] src/HomeViewModel.kt
@@ -243,7 +243,7 @@ class KtFileContentReportSpec : FreeSpec({
             }
         }
 
-        violations.report() shouldBe """
+        violations.reportForTest() shouldBe """
             Katachi check failed: 1 violation (FileConstraint: 1)
 
             [UnsatisfiedFileConstraint] src/HomeUiState.kt
@@ -275,7 +275,7 @@ class KtFileContentReportSpec : FreeSpec({
             }
         }
 
-        violations.report() shouldBe """
+        violations.reportForTest() shouldBe """
             Katachi check failed: 2 violations (FileConstraint: 2)
 
             [UnsatisfiedFileConstraint] feature/home/src/main/kotlin/com/example/feature/home/HomeViewModel.kt
@@ -320,6 +320,6 @@ class KtFileContentReportSpec : FreeSpec({
             }
         }
 
-        violations.report().filter { it.code > 127 } shouldBe ""
+        violations.reportForTest().filter { it.code > 127 } shouldBe ""
     }
 })

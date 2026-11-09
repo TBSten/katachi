@@ -16,12 +16,11 @@ import me.tbsten.katachi.report.internal.sarifDocumentOf
 import me.tbsten.katachi.report.internal.writeSarifText
 
 /**
- * What a SARIF document needs beyond the violations: the project root, where declaring files live, and how to reach the disk.
+ * What a SARIF document needs beyond the violations: the project root and where declaring files live.
  *
  * `assert()` builds one of these by itself from `-Dkatachi.report.sarif` and
  * `-Dkatachi.report.sourceRoots`. Build one by hand to turn violations you already hold into
- * SARIF -- a processor of your own, say -- or, in a test, to keep the disk out of it: the three
- * functions at the end are the only way the conversion touches a file.
+ * SARIF -- a processor of your own, say.
  *
  * ## Example 1: write the violations of a run as SARIF from a processor of your own
  * ```kt
@@ -35,13 +34,12 @@ import me.tbsten.katachi.report.internal.writeSarifText
  * ```
  *
  * @constructor Takes the project root, and optionally where to look for the files that declared
- *   things, the repository prefix, where the architecture was declared, the version to report,
- *   and how to reach the disk.
+ *   things, the repository prefix, where the architecture was declared, and the version to report.
  * @see toSarif
  * @see writeSarif
  */
 @ExperimentalKatachiApi
-public class SarifContext(
+public class SarifContext internal constructor(
     /** The project root, absolute. Every [Violation.path] is relative to it. */
     public val projectRoot: FsPath,
     /**
@@ -66,13 +64,19 @@ public class SarifContext(
     public val architectureDeclaredAt: DeclarationSite? = null,
     /** What `tool.driver.semanticVersion` says. The running katachi's own version by default. */
     public val toolVersion: String = KatachiVersion.current(),
-    /** Whether a regular file sits at the path. Swapped for a fake in a test. */
-    public val isFile: (FsPath) -> Boolean = ::realIsFile,
-    /** The text of the file at the path, or `null` when there is none. Reads the baseline file. */
-    public val readText: (FsPath) -> String? = ::realReadText,
-    /** Every regular file at or below the directory, sorted; empty when it is not a directory. */
-    public val filesUnder: (FsPath) -> List<FsPath> = ::realFilesUnder,
-)
+    // How the conversion reaches the disk. Only katachi swaps these, in its own tests and in `assert()`.
+    internal val isFile: (FsPath) -> Boolean = ::realIsFile,
+    internal val readText: (FsPath) -> String? = ::realReadText,
+    internal val filesUnder: (FsPath) -> List<FsPath> = ::realFilesUnder,
+) {
+    public constructor(
+        projectRoot: FsPath,
+        sourceRoots: List<FsPath> = emptyList(),
+        repositoryPrefix: String = "",
+        architectureDeclaredAt: DeclarationSite? = null,
+        toolVersion: String = KatachiVersion.current(),
+    ) : this(projectRoot, sourceRoots, repositoryPrefix, architectureDeclaredAt, toolVersion, ::realIsFile, ::realReadText, ::realFilesUnder)
+}
 
 /**
  * These violations as a SARIF 2.1.0 document, the text of a `.sarif` file.
