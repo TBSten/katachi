@@ -1,5 +1,8 @@
 #!/bin/sh
 #
+# 廃止予定: 0.4.0 から導入は katachi コマンド（brew install tbsten/tap/katachi、katachi agent …）で行う。
+# このスクリプトは 0.5.0 で消す（KATACHI-255）。
+#
 # katachi のインストールを機械的に行うスクリプト。
 #
 #   sh katachi-install.sh init
