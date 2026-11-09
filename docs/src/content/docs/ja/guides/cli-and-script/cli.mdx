@@ -85,6 +85,7 @@ katachi scaffold --package com.example.app
                   [plugins] katachi = { id = "me.tbsten.katachi", version.ref = "katachi" }
      モジュール:   file:///Users/you/demo-app/architecture-test/（:architecture-test。既定）
      ソース:       file:///Users/you/demo-app/architecture-test/src/test/kotlin/com/example/app/test/architecture/
+     build/ を無視: file:///Users/you/demo-app/architecture-test/.gitignore に /build を書く
      ルートに追加: no (file:///Users/you/demo-app/build.gradle.kts)
      include 追加: yes (file:///Users/you/demo-app/settings.gradle.kts)
      pluginManagement に追加: no
@@ -93,6 +94,7 @@ katachi scaffold --package com.example.app
   file:///Users/you/demo-app/architecture-test/build.gradle.kts
   file:///Users/you/demo-app/architecture-test/src/test/kotlin/com/example/app/test/architecture/ProjectArchitecture.kt
   file:///Users/you/demo-app/architecture-test/src/test/kotlin/com/example/app/test/architecture/ProjectArchitectureTest.kt
+  file:///Users/you/demo-app/architecture-test/.gitignore （/build を追加）
   file:///Users/you/demo-app/gradle/libs.versions.toml （次の項目を追記）
       [versions] katachi = "0.4.0"
       [versions] junit = "5.14.4"
@@ -116,6 +118,7 @@ katachi scaffold --package com.example.app
 
 ```
 architecture-test/
+├── .gitignore                       # /build（build/ がまだ無視されていないときだけ）
 ├── build.gradle.kts
 └── src/test/kotlin/com/example/app/test/architecture/
     ├── ProjectArchitecture.kt       # architecture { } を書く
