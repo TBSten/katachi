@@ -66,7 +66,7 @@ private fun extractDocsTopic(full: Path, title: String): List<String> {
  */
 internal fun ScriptContext.runDocs(args: List<String>): Int {
     val parsed = parseArgs(commandSpec("docs"), args)
-    parsed.positionals.firstOrNull()?.let { die("docs: 知らないオプションです: $it", "docs: unknown option: $it") }
+    parsed.positionals.firstOrNull()?.let { die(Messages.Docs.unknownOption(it)) }
     if (parsed.has("--topics")) {
         out(docsTopicList())
         return 0
@@ -82,9 +82,9 @@ internal fun ScriptContext.runDocs(args: List<String>): Int {
         val cached = dest.exists() && dest.fileSize() > 0 && !refresh
         fetchOnce(url, dest, refresh, manifest)
         if (cached) {
-            err(pick("取得元: $url（取得済みのものを使いました。取り直すなら --refresh）", "Source: $url (used the copy already fetched; add --refresh to fetch it again)"))
+            err(pick(Messages.Docs.sourceUsedCopyAlready(url)))
         } else {
-            err(pick("取得元: $url", "Source: $url"))
+            err(pick(Messages.Docs.source(url)))
         }
         return dest to cached
     }
@@ -92,39 +92,26 @@ internal fun ScriptContext.runDocs(args: List<String>): Int {
     val topic = parsed.value("--topic")
     if (topic != null) {
         val title = DOCS_TOPICS.firstOrNull { it.first == topic }?.second
-            ?: die("docs --topic: 知らない名前です: $topic 。使える名前:\n${docsTopicList()}", "docs --topic: unknown topic: $topic . Available topics:\n${docsTopicList()}")
+            ?: die(Messages.Docs.unknownTopicAvailableTopics(topic, docsTopicList()))
         val (full, cached) = fetch("llms-full.txt", "$base/llms-full.txt")
         val dest = cache.resolve("topics/$topic.md")
         dest.parent.createDirectories()
         val lines = extractDocsTopic(full, title)
         if (lines.isEmpty() && cached) {
             dest.deleteIfExists()
-            die(
-                "${fileUri(full)} に見出し「$title」がありません。取得済みの全文が古い可能性があります。--refresh を付けて取り直してください（$AGENT_COMMAND docs --topic $topic --refresh）。",
-                "No heading \"$title\" in ${fileUri(full)} . The copy fetched earlier may be old. Fetch it again with --refresh ($AGENT_COMMAND docs --topic $topic --refresh).",
-            )
+            die(Messages.Docs.noHeadingCopyFetched(fileUri(full), title, topic))
         }
         if (lines.isEmpty()) {
             dest.deleteIfExists()
-            die(
-                "docs --topic $topic: ガイドの全文に見出し「$title」がありません。katachi コマンドの不具合です（このコマンドが知っている見出しが、ガイドとずれています）。\n" +
-                    "    ユーザにこの出力を伝えたうえで、全文 ${fileUri(full)} から、この話題にあたるページ（行頭の \"# \" の見出しから次の \"# \" の見出しの手前まで）だけを読んで進めてください。",
-                "docs --topic $topic: the full guide has no heading \"$title\". This is a bug in the katachi command (the headings it knows no longer match the guide).\n" +
-                    "    Tell the user about this output, then read only the page for this topic (from its line-leading \"# \" heading up to the next one) in the full text ${fileUri(full)} and go on.",
-            )
+            die(Messages.Docs.fullGuideHasNo(topic, title, fileUri(full)))
         }
         // A page linking to /0.2/ and the like is an old version's copy: the current heading changed and the copy was picked up.
         if (lines.any { Regex("]\\(/[^)/]+/[0-9]+\\.[0-9]+/").containsMatchIn(it) }) {
             dest.deleteIfExists()
-            die(
-                "docs --topic $topic: 見出し「$title」で切り出したページが、古い版（/0.2/ など）の写しでした。katachi コマンドの不具合です（このコマンドが知っている見出しが、ガイドの現行ページとずれています）。\n" +
-                    "    ユーザにこの出力を伝えたうえで、全文 ${fileUri(full)} の前半（現行の版）から、この話題にあたるページだけを読んで進めてください。",
-                "docs --topic $topic: the page cut by heading \"$title\" is a copy of an older version (such as /0.2/). This is a bug in the katachi command (the headings it knows no longer match the guide's current pages).\n" +
-                    "    Tell the user about this output, then read only the page for this topic in the first part (the current version) of the full text ${fileUri(full)} and go on.",
-            )
+            die(Messages.Docs.pageCutHeadingCopy(topic, title, fileUri(full)))
         }
         dest.writeText(lines.joinToString("\n", postfix = "\n"))
-        err(pick("${lines.size} 行（llms-full.txt の「$title」）", "${lines.size} lines (\"$title\" in llms-full.txt)"))
+        err(pick(Messages.Docs.linesLlmsFullTxt(lines.size, title)))
         out(dest.toString())
         return 0
     }

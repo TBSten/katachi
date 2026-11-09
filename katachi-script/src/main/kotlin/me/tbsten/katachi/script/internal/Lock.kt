@@ -62,10 +62,7 @@ internal class WorkdirLock private constructor(private val directory: Path) {
                     continue
                 }
                 if (waited >= wait) {
-                    die(
-                        "作業用ディレクトリのロックを $wait 秒待ちましたが取れませんでした: $directory 。ほかの katachi が書き込み中か、残骸です。残骸なら rm -r で消してやり直してください",
-                        "Waited $wait seconds for the lock but could not get it: $directory . Another katachi is writing, or this is left over. If it is left over, remove it with rm -r and try again",
-                    )
+                    die(Messages.Lock.waitedSecondsLockBut(wait, directory))
                 }
                 Thread.sleep(1000)
                 waited += 1

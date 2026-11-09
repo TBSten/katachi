@@ -19,10 +19,7 @@ internal object Bundle {
     fun text(lang: Lang, name: String): String {
         val path = "$ROOT/${lang.code}/$name"
         val stream = Bundle::class.java.classLoader.getResourceAsStream(path)
-            ?: die(
-                "katachi に同梱されているはずの $path がありません。katachi を入れ直してください（brew reinstall tbsten/tap/katachi）。",
-                "$path, which ships with katachi, is missing. Reinstall katachi (brew reinstall tbsten/tap/katachi).",
-            )
+            ?: die(Messages.Bundle.whichShipsKatachiMissing(path))
         return stream.use { it.readBytes().toString(Charsets.UTF_8) }
     }
 }

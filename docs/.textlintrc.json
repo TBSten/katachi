@@ -1,10 +1,17 @@
 {
   "plugins": {
-    "mdx": true
+    "mdx": true,
+    "@textlint/text": {
+      "extensions": [
+        ".properties"
+      ]
+    }
   },
   "rules": {
     "prh": {
-      "rulePaths": ["./prh.yml"]
+      "rulePaths": [
+        "./prh.yml"
+      ]
     }
   }
 }

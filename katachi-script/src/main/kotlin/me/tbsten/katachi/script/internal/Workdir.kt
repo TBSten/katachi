@@ -60,16 +60,8 @@ internal fun ScriptContext.findWorkdir(): Path? = (lookupWorkdir() as? WorkdirLo
 
 internal fun ScriptContext.requireWorkdir(): Path = when (val lookup = lookupWorkdir()) {
     is WorkdirLookup.Found -> lookup.path
-    WorkdirLookup.NotFound -> die(
-        "作業用ディレクトリが分かりません。先に '$AGENT_COMMAND init' を実行してください。別の場所から実行するときは環境変数 KATACHI_WORKDIR で指定してください。",
-        "Cannot find the working directory. Run '$AGENT_COMMAND init' first. When running from somewhere else, point KATACHI_WORKDIR at it.",
-    )
-    is WorkdirLookup.Ambiguous -> die(
-        "作業用ディレクトリの候補が複数あります。環境変数 KATACHI_WORKDIR でどれかを指定してください: " +
-            lookup.candidates.joinToString(" ") { fileUri(it) },
-        "More than one working directory was found. Point KATACHI_WORKDIR at one of them: " +
-            lookup.candidates.joinToString(" ") { fileUri(it) },
-    )
+    WorkdirLookup.NotFound -> die(Messages.Workdir.cannotFindWorkingDirectory)
+    is WorkdirLookup.Ambiguous -> die(Messages.Workdir.workdirAmbiguous(lookup.candidates.joinToString(" ") { fileUri(it) }))
 }
 
 /** The language `init --lang` recorded, which the kit lets win over `KATACHI_LANG`. */
@@ -114,10 +106,7 @@ private val MODULE_DIR_PATTERN = Regex("^[A-Za-z0-9_][A-Za-z0-9_.-]*(/[A-Za-z0-9
 /** Stops unless [value] is a path relative to the Gradle root. init / scaffold `--module-dir` and `preferences set moduleDir` share it. */
 internal fun validateModuleDir(value: String) {
     if (!MODULE_DIR_PATTERN.matches(value)) {
-        die(
-            "--module-dir は Gradle ルートからの相対パスです（例: static-analysis/katachi）: $value",
-            "--module-dir must be a path relative to the Gradle root (for example static-analysis/katachi): $value",
-        )
+        die(Messages.Workdir.moduleDirMustPath(value))
     }
 }
 
@@ -157,16 +146,14 @@ internal fun ScriptContext.projectRoot(): Path {
 /** `<project root>/<module dir>/src/test/kotlin`. The kit's `definition_dir`. */
 internal fun ScriptContext.definitionDir(module: ModuleDir): Path = projectRoot().resolve(module.dir).resolve("src/test/kotlin").normalize()
 
-internal fun ScriptContext.definitionMissingMessage(module: ModuleDir, dir: Path): Pair<String, String> =
-    "定義のディレクトリがありません: ${fileUri(dir)} 。scaffold をまだ実行していないか、置き場所が違います（記録: meta.moduleDir = ${module.dir}。変えるなら 'preferences set moduleDir=<path>' か 'scaffold --module-dir <path>'）" to
-        "The definition directory does not exist: ${fileUri(dir)} . Either scaffold has not run yet, or the location differs (recorded: meta.moduleDir = ${module.dir}; change it with 'preferences set moduleDir=<path>' or 'scaffold --module-dir <path>')"
+internal fun ScriptContext.definitionMissingMessage(module: ModuleDir, dir: Path): Msg =
+    Messages.Workdir.definitionDirMissing(fileUri(dir), module.dir)
 
 /** Stops when the definition directory is not there (lint / compare-violations). */
 internal fun ScriptContext.requireDefinitionDir(module: ModuleDir): Path {
     val dir = definitionDir(module)
     if (dir.isDirectory()) return dir
-    val (ja, en) = definitionMissingMessage(module, dir)
-    die(ja, en)
+    die(definitionMissingMessage(module, dir))
 }
 
 /** The kit's `[ -e path ]` for a path relative to [base]. */

@@ -64,7 +64,7 @@ private fun ScriptContext.lintKinds(): List<Triple<Regex, String, Boolean>> = li
     Triple("^(changelog|changes|release[-_]?notes)", "CHANGELOG", false),
     Triple("^code[-_]of[-_]conduct", "CODE_OF_CONDUCT", false),
     Triple("^security\\.md$", "SECURITY.md", false),
-    Triple("^(claude|agents|gemini|copilot-instructions)\\.md$", pick("AI エージェント向けの指示", "AI agent instructions"), false),
+    Triple("^(claude|agents|gemini|copilot-instructions)\\.md$", pick(Messages.Lint.aiAgentInstructions), false),
     Triple("^\\.gitignore$", ".gitignore", false),
     Triple("^\\.gitattributes$", ".gitattributes", false),
     Triple("^\\.editorconfig$", ".editorconfig", false),
@@ -74,7 +74,7 @@ private fun ScriptContext.lintKinds(): List<Triple<Regex, String, Boolean>> = li
     Triple("^gemfile(\\.lock)?$", "Gemfile", false),
     Triple("^dangerfile", "Dangerfile", false),
     Triple("^(package(-lock)?\\.json|yarn\\.lock|pnpm-lock\\.yaml)$", "npm", false),
-    Triple("^(detekt|lint)[^/]*\\.(yml|yaml|xml)$", pick("静的解析の設定", "static analysis config"), false),
+    Triple("^(detekt|lint)[^/]*\\.(yml|yaml|xml)$", pick(Messages.Lint.staticAnalysisConfig), false),
 ).map { (pattern, label, gradle) -> Triple(Regex(pattern), label, gradle) }
 
 private fun tokenize(src: String): List<Token> {
@@ -332,17 +332,17 @@ internal fun ScriptContext.lintRoles() {
             }
         }
         if (kinds.size >= 2) {
-            reasons += pick("種類の違うファイルが同居しています: ", "Files of different kinds share this Role: ") +
-                kinds.entries.joinToString(" / ") { (label, names) -> pick("%s（%s）", "%s (%s)").format(label, names.toSortedSet().joinToString(", ")) }
+            reasons += pick(Messages.Lint.filesDifferentKindsShare) +
+                kinds.entries.joinToString(" / ") { (label, names) -> pick(Messages.Lint.kindFiles(label, names.toSortedSet().joinToString(", "))) }
         }
         val dots = r.catchall.map { it.second.substringAfterLast('/') }.filter { it.startsWith(".") && it.length > 1 }.toSortedSet()
         if (dots.size >= 2) {
-            reasons += pick("ツールごとの設定ディレクトリを anyFile() / ignore() でまとめています: ", "Groups per-tool config directories with anyFile() / ignore(): ") + dots.joinToString(", ")
+            reasons += pick(Messages.Lint.groupsPerToolConfig) + dots.joinToString(", ")
         }
         val segments = r.places.map { it.replace('\\', '/').split("/").toSet() }
         val hasTest = segments.any { s -> s.any { testSegment.matches(it) } }
         val hasMain = segments.any { s -> s.any { mainSegment.matches(it) } && s.none { testSegment.matches(it) } }
-        if (hasTest && hasMain) reasons += pick("本体（main）とテスト（test）のファイルを同じ Role で宣言しています", "Declares main and test files in the same Role")
+        if (hasTest && hasMain) reasons += pick(Messages.Lint.declaresMainTestFiles)
         if (reasons.isNotEmpty()) warnings += r to reasons
     }
 
@@ -371,115 +371,55 @@ internal fun ScriptContext.lintRoles() {
     )
 
     if (warnings.isEmpty() && gradleHand.isEmpty() && gradleConstrained.isEmpty() && flatGroups.isEmpty() && unsplitFiles.isEmpty() && documentedCandidates.isEmpty()) {
-        say(
-            "Role の点検: 種類の違うファイルを抱えていそうな Role は見つかりませんでした（${roles.size} 件を走査）。",
-            "Role check: no role seems to hold files of different kinds (${roles.size} scanned).",
-        )
+        say(Messages.Lint.roleCheckNoRole(roles.size))
         return
     }
     say("")
-    say("== Role の点検（失敗にはしません） ================================", "== Role check (never fails) ======================================")
-    say("定義: ${uri(root)}", "Definition: ${uri(root)}")
+    say(Messages.Lint.roleCheckNeverFails)
+    say(Messages.Lint.definition(uri(root)))
     if (warnings.isNotEmpty()) {
         say("")
-        say(
-            "種類の違うファイルを1つの Role に抱えていそうなものが ${warnings.size} 件あります（${roles.size} 件を走査）。",
-            "Roles that seem to hold files of different kinds: ${warnings.size} (${roles.size} scanned).",
-        )
+        say(Messages.Lint.rolesSeemHoldFiles(warnings.size, roles.size))
         for ((r, reasons) in warnings) {
             say("")
             say("  ${uri(r.path)}:${r.line} Role \"${r.name}\"")
             for (x in reasons) say("    - $x")
         }
         say("")
-        say(
-            "Role（\"Name\".role { }）は1種類のファイルを表し、種類の違うものを束ねるのは group です。\n" +
-                "手順書 3-2 の「1 つの Role = 1 種類のファイル」の3つの問いで見直し、分けるべきものは\n" +
-                "種類ごとの Role に分けて group で束ねてください。テキストの素朴な走査なので誤検知はあり得ます。\n" +
-                "見直して1種類だと判断したものは、そのままでかまいません。",
-            "A Role (\"Name\".role { }) stands for one kind of file; group is what bundles different kinds.\n" +
-                "Review them with the three questions of \"one Role = one kind of file\" in step 3-2 of the guide,\n" +
-                "and split what should be split into one Role per kind, bundled with group. This is a plain text\n" +
-                "scan, so false positives are possible. If you review a Role and decide it is one kind, leave it.",
-        )
+        say(Messages.Lint.roleNameRoleStands)
     }
     if (gradleHand.isNotEmpty()) {
         val names = gradleHand.map { it.first.name }.toSortedSet().joinToString(", ")
         say("")
-        say("Gradle のファイルを手書きの Role で宣言しています（Role: $names）。", "Gradle files are declared in hand-written Roles (Roles: $names).")
-        say(
-            "gradle() が wrapper・settings・ビルドスクリプト・gradle.properties・\n" +
-                "version catalog を種類ごとの Role に分けて宣言します（import me.tbsten.katachi.dsl.gradle.*）。\n" +
-                "これらの Role を消して gradle() の1行に置き換えてください。buildSrc や includeBuild した\n" +
-                "ビルドは gradle() の対象外なので、それだけは自分の Role に残します（この点検もその下は数えません）。",
-            "gradle() declares the wrapper, settings, build scripts, gradle.properties\n" +
-                "and the version catalog as one Role per kind (import me.tbsten.katachi.dsl.gradle.*).\n" +
-                "Remove these Roles and replace them with the single line gradle(). buildSrc and included\n" +
-                "builds are not covered by gradle(), so keep only those in your own Roles (this check skips them too).",
-        )
+        say(Messages.Lint.gradleFilesDeclaredHand(names))
+        say(Messages.Lint.gradleDeclaresWrapperSettings)
     }
     if (gradleConstrained.isNotEmpty()) {
         say("")
-        say("Gradle のファイルを手書きの Role で宣言し、その Role に制約を付けています:", "Gradle files are declared in hand-written Roles that also carry constraints:")
+        say(Messages.Lint.gradleFilesInConstrainedRoles)
         for ((r, name, label) in gradleConstrained.sortedWith(compareBy({ it.first.path.toString() }, { it.first.line }))) {
             val hook = hookOf[label] ?: "buildScript { }"
-            say(
-                "  ${uri(r.path)}:${r.line} Role \"${r.name}\"（${name.substringAfterLast('/')} → gradle { $hook }）",
-                "  ${uri(r.path)}:${r.line} Role \"${r.name}\" (${name.substringAfterLast('/')} -> gradle { $hook })",
-            )
+            say(Messages.Lint.gradleRoleHook(uri(r.path), r.line, r.name, name.substringAfterLast('/'), hook))
         }
-        say(
-            "配置は gradle() の 1 行に置き換え、制約は gradle { buildScript { } }（settings なら settingsScript { }、\n" +
-                "catalog なら versionCatalog { }）に移してください。buildScript { } の制約は、ルートを含む全モジュールの\n" +
-                "build.gradle(.kts) を subject.files に受け取ります。1 つのモジュールだけを見るなら、制約の中で\n" +
-                "subject.files をパスで絞ってください（例: subject.files.filter { it == \"app/build.gradle.kts\" }）。\n" +
-                "gradle { } の中に katachi の Role と同じ名前の Role（\"BuildScript\".role { } など）を書くと重複の例外に、\n" +
-                "gradle { } の外の Role でビルドファイルを宣言すると BuildScript と同じファイルを取り合って\n" +
-                "[AmbiguousLayout] になります。制約は hook に書いてください。",
-            "Replace the placement with the single line gradle() and move the constraints into\n" +
-                "gradle { buildScript { } } (settingsScript { } for settings, versionCatalog { } for the catalog).\n" +
-                "A buildScript { } constraint receives the build.gradle(.kts) of every module, the root included, in\n" +
-                "subject.files. To look at one module only, narrow subject.files by path inside the constraint\n" +
-                "(for example subject.files.filter { it == \"app/build.gradle.kts\" }).\n" +
-                "A Role inside gradle { } with the same name as one of katachi's (\"BuildScript\".role { } and so on) is a\n" +
-                "duplicate declaration error, and a Role outside gradle { } that declares a build file claims the same\n" +
-                "file as BuildScript and becomes [AmbiguousLayout]. Write the constraints in the hook.",
-        )
+        say(Messages.Lint.replacePlacementSingleLine)
     }
     if (flatGroups.isNotEmpty()) {
         say("")
-        say(
-            "平たい group（直下に Role が 8 個以上あり、group を含まない）が ${flatGroups.size} 件あります（preferences.nestedGroups = yes）。",
-            "Flat groups (8 or more Roles directly inside, no nested group): ${flatGroups.size} (preferences.nestedGroups = yes).",
-        )
-        for (g in flatGroups) say("  ${uri(g.path)}:${g.line} group \"${g.name}\"（Role ${g.directRoles} 個）", "  ${uri(g.path)}:${g.line} group \"${g.name}\" (${g.directRoles} Roles)")
-        say(
-            "group は「モジュール → 層 → 種類」の順で入れ子にし、1 つの group に Role を 8 個以上並べないでください（並ぶなら group を切る）。",
-            "Nest groups in the order module -> layer -> kind, and do not put 8 or more Roles in one group (split it when they pile up).",
-        )
+        say(Messages.Lint.flatGroupsMoreRoles(flatGroups.size))
+        for (g in flatGroups) say(Messages.Lint.groupRoles(uri(g.path), g.line, g.name, g.directRoles))
+        say(Messages.Lint.nestGroupsOrderModule)
     }
     if (unsplitFiles.isNotEmpty()) {
         say("")
-        say(
-            "分けていないファイル（1 ファイルに Role か group が 2 つ以上）が ${unsplitFiles.size} 件あります（preferences.oneRolePerFile = yes）。",
-            "Files not split (2 or more Roles or groups in one file): ${unsplitFiles.size} (preferences.oneRolePerFile = yes).",
-        )
+        say(Messages.Lint.filesNotSplitMore(unsplitFiles.size))
         for ((path, ds) in unsplitFiles) say("  ${uri(path)}: ${ds.joinToString(", ") { "${it.kind} \"${it.name}\"" }}")
-        say("1 Role 1 ファイルで書き、group はディレクトリで表してください（手順書 3-3）。", "Write one Role per file and express groups as directories (step 3-3 of the guide).")
+        say(Messages.Lint.writeOneRolePer)
     }
     if (documentedCandidates.isNotEmpty()) {
         say("")
-        say(
-            "documented = false の候補が ${documentedCandidates.size} 件あります（生成ドキュメントに載せる価値があるかを見直してください）。",
-            "Candidates for documented = false: ${documentedCandidates.size} (review whether they belong in the generated docs).",
-        )
-        for ((r, what) in documentedCandidates) say("  ${uri(r.path)}:${r.line} Role \"${r.name}\"（$what）", "  ${uri(r.path)}:${r.line} Role \"${r.name}\" ($what)")
-        say(
-            "documented = false にするもの: (1) 生成物、(2) ビルド・ツールの設定（.editorconfig、CI の yaml、lint の設定）、\n" +
-                "(3) 1 ファイルしかない補助（README、LICENSE、.gitignore）。利用者が読んで役に立つ Role だけを生成ドキュメントに載せます。",
-            "Set documented = false on: (1) generated output, (2) build and tool configuration (.editorconfig, CI yaml,\n" +
-                "lint config), (3) single-file helpers (README, LICENSE, .gitignore). Only Roles a reader benefits from belong in the generated docs.",
-        )
+        say(Messages.Lint.candidatesDocumentedFalseReview(documentedCandidates.size))
+        for ((r, what) in documentedCandidates) say(Messages.Lint.roleWhat(uri(r.path), r.line, r.name, what))
+        say(Messages.Lint.setDocumentedFalseGenerated)
     }
     say("==================================================================")
 }

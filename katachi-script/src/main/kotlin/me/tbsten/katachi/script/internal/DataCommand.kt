@@ -15,61 +15,51 @@ internal fun ScriptContext.runData(args: List<String>): Int {
     val parsed = parseArgs(commandSpec("data"), args)
     val action = parsed.subcommand ?: "get"
     val target = parsed.positionals.getOrNull(0)?.takeIf { it.isNotEmpty() }
-        ?: die(
-            "data $action: 対象を指定してください（check-list / report / ファイルパス）。",
-            "data $action: specify the target (check-list / report / a file path).",
-        )
+        ?: die(Messages.Data.specifyTargetCheckList(action))
     val html = resolveDataTarget(target)
     val htmlUri = fileUri(html)
-    if (!html.isRegularFile()) die("ファイルがありません: $htmlUri", "File not found: $htmlUri")
+    if (!html.isRegularFile()) die(Messages.Data.fileNotFound(htmlUri))
 
     var json: Path? = null
     var key = ""
     if (action != "get") {
         val jsonArg = parsed.positionals.getOrNull(1)?.takeIf { it.isNotEmpty() }
-            ?: die("data $action: JSON ファイルを指定してください。", "data $action: specify the JSON file.")
+            ?: die(Messages.Data.specifyJsonFile(action))
         json = resolve(jsonArg)
-        if (!json.isRegularFile()) die("ファイルがありません: ${fileUri(json)}", "File not found: ${fileUri(json)}")
+        if (!json.isRegularFile()) die(Messages.Data.jsonNotFound(fileUri(json)))
     } else {
         key = parsed.positionals.getOrNull(1) ?: ""
     }
-    parsed.positionals.getOrNull(2)?.let { die("data $action: 余分な引数です: $it", "data $action: unexpected argument: $it") }
+    parsed.positionals.getOrNull(2)?.let { die(Messages.Data.unexpectedArgument(action, it)) }
     var id = parsed.value("--id") ?: ""
     if (id.isEmpty()) id = guessBlockId(html)
-    val noBlockJa = "$htmlUri に id=\"$id\" の JSON ブロックが見つかりません。"
-    val noBlockEn = "No JSON block with id=\"$id\" in $htmlUri."
+    val noBlock = Messages.Data.noJsonBlock(htmlUri, id)
 
     if (action == "get") {
-        val block = extractJsonBlock(html.readText(), id) as? JsonBlock.Found ?: die(noBlockJa, noBlockEn)
+        val block = extractJsonBlock(html.readText(), id) as? JsonBlock.Found ?: die(noBlock)
         if (key.isEmpty()) {
             out(block.text.removeSuffix("\n"))
             return 0
         }
-        val root = parseJsonOrNull(block.text) ?: die(noBlockJa, noBlockEn)
+        val root = parseJsonOrNull(block.text) ?: die(noBlock)
         val node = lookupJsonPath(root, key)
         if (node == null) {
             // Exit 1 without the `[x]` prefix: callers branch on "no such key" rather than stop on it.
-            throw KatachiScriptExitException("キーがありません: $key", "No such key: $key", plain = true)
+            throw KatachiScriptExitException(Messages.Data.noSuchKey(key), plain = true)
         }
         out(renderJsonValue(node))
         return 0
     }
 
-    val jsonFile = json ?: die("data $action: JSON ファイルを指定してください。", "data $action: specify the JSON file.")
+    val jsonFile = json ?: die(Messages.Data.specifyJsonFile(action))
     val jsonText = jsonFile.readText()
     val patch = parseJsonOrNull(jsonText)
-        ?: die(
-            "${fileUri(jsonFile)} が JSON として読めません。直してからやり直してください。",
-            "${fileUri(jsonFile)} is not valid JSON. Fix it and try again.",
-        )
+        ?: die(Messages.Data.notValidJsonFix(fileUri(jsonFile)))
 
     withLock(html) {
-        writeDataBlock(html, id, action, jsonText, patch, noBlockJa, noBlockEn)
+        writeDataBlock(html, id, action, jsonText, patch, noBlock)
     }
-    say(
-        "$htmlUri の id=\"$id\" を更新しました（元は $htmlUri.bak）。",
-        "Updated id=\"$id\" in $htmlUri (the original is $htmlUri.bak).",
-    )
+    say(Messages.Data.updatedIdOriginalBak(htmlUri, id))
     return 0
 }
 
@@ -79,22 +69,18 @@ private fun ScriptContext.writeDataBlock(
     action: String,
     jsonText: String,
     patch: kotlinx.serialization.json.JsonElement,
-    noBlockJa: String,
-    noBlockEn: String,
+    noBlock: Msg,
 ) {
     val current = html.readText()
     val body = if (action == "merge") {
         val base = extractJsonBlock(current, id) as? JsonBlock.Found
-            ?: die(
-                "${noBlockJa}開始タグと閉じタグは、それぞれ行頭に単独で置かれている必要があります。",
-                "$noBlockEn The opening and closing tags must each be alone at the start of a line.",
-            )
-        val baseJson = parseJsonOrNull(base.text) ?: die("JSON をマージできませんでした。", "Could not merge the JSON.")
+            ?: die(Messages.Data.openingClosingTagsMust(noBlock))
+        val baseJson = parseJsonOrNull(base.text) ?: die(Messages.Data.couldNotMergeJson)
         encodePretty(deepMerge(baseJson, patch)) + "\n"
     } else {
         jsonText
     }
-    if (extractJsonBlock(current, id) !is JsonBlock.Found) die(noBlockJa, noBlockEn)
+    if (extractJsonBlock(current, id) !is JsonBlock.Found) die(noBlock)
 
     writeJsonBlock(html, id, body)
 }
@@ -119,7 +105,7 @@ internal fun ScriptContext.writeJsonBlock(html: Path, id: String, json: String) 
         val backup = html.resolveSibling("${html.name}.bak")
         Files.copy(html, backup, StandardCopyOption.REPLACE_EXISTING)
         val replaced = replaceJsonBlock(current, id, escapeScriptEnd(json))
-            ?: die("$htmlUri の書き換えに失敗しました。元に戻しました。", "Failed to edit $htmlUri. It was restored.")
+            ?: die(Messages.Data.failedEditRestored(htmlUri))
         val tmp = html.resolveSibling("${html.name}.tmp.${ProcessHandle.current().pid()}")
         tmp.writeText(replaced)
         Files.move(tmp, html, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE)
@@ -127,10 +113,7 @@ internal fun ScriptContext.writeJsonBlock(html: Path, id: String, json: String) 
         val written = extractJsonBlock(html.readText(), id) as? JsonBlock.Found
         if (written == null || parseJsonOrNull(written.text) == null) {
             Files.move(backup, html, StandardCopyOption.REPLACE_EXISTING)
-            die(
-                "差し込んだ結果が読み直せなかったため、元に戻しました。JSON の値に </script> のような、HTML を打ち切る文字列が含まれていないか確認してください。",
-                "The result could not be read back, so it was restored. Check that no JSON value contains a string that cuts the HTML short, such as </script>.",
-            )
+            die(Messages.Data.resultCouldNotRead)
         }
     }
 }
@@ -149,11 +132,11 @@ internal fun ScriptContext.replaceJsonBlockQuietly(html: Path, id: String, json:
 internal fun ScriptContext.mergeJsonBlockQuietly(html: Path, id: String, patch: JsonObject): String? = try {
     withLock(html) {
         val block = extractJsonBlock(html.readText(), id) as? JsonBlock.Found
-            ?: die("${fileUri(html)} に id=\"$id\" の JSON ブロックが見つかりません。", "No JSON block with id=\"$id\" in ${fileUri(html)}.")
-        val base = parseJsonOrNull(block.text) ?: die("JSON をマージできませんでした。", "Could not merge the JSON.")
+            ?: die(Messages.Data.noJsonBlockId(fileUri(html), id))
+        val base = parseJsonOrNull(block.text) ?: die(Messages.Data.couldNotMergeJson)
         replaceJsonBlockQuietly(html, id, deepMerge(base, patch))
     }
     null
 } catch (exit: KatachiScriptExitException) {
-    pick(exit.ja, exit.en)
+    pick(exit.text)
 }

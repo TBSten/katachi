@@ -5,9 +5,9 @@ import kotlin.io.path.isRegularFile
 import kotlin.io.path.readText
 
 /** Which file a short name means, with its JSON block id. */
-internal enum class Target(val cliName: String, val file: String, val blockId: String, val questionPrefix: String, val ja: String, val en: String) {
-    CHECK_LIST("check-list", CHECK_LIST_FILE, "checklist", "q", "チェックリスト", "the check list"),
-    REPORT("report", REPORT_FILE, "report", "cq", "レポート", "the report"),
+internal enum class Target(val cliName: String, val file: String, val blockId: String, val questionPrefix: String, val label: Msg) {
+    CHECK_LIST("check-list", CHECK_LIST_FILE, "checklist", "q", Messages.Checklist.checkList),
+    REPORT("report", REPORT_FILE, "report", "cq", Messages.Checklist.report),
     ;
 
     companion object {
@@ -19,10 +19,10 @@ internal enum class Target(val cliName: String, val file: String, val blockId: S
     }
 }
 
-/** The JSON of [target]'s block as plain values, or stops with [ja] / [en]. */
-internal fun ScriptContext.readTree(html: Path, id: String, ja: String, en: String): JMap {
-    val block = extractJsonBlock(html.readText(), id) as? JsonBlock.Found ?: die(ja, en)
-    return parseJsonOrNull(block.text)?.toTree().asMap() ?: die(ja, en)
+/** The JSON of [target]'s block as plain values, or stops with [unreadable]. */
+internal fun ScriptContext.readTree(html: Path, id: String, unreadable: Msg): JMap {
+    val block = extractJsonBlock(html.readText(), id) as? JsonBlock.Found ?: die(unreadable)
+    return parseJsonOrNull(block.text)?.toTree().asMap() ?: die(unreadable)
 }
 
 /**
@@ -32,9 +32,9 @@ internal fun ScriptContext.readTree(html: Path, id: String, ja: String, en: Stri
 internal fun ScriptContext.editChecklist(edit: (JMap) -> Boolean) {
     val workdir = requireWorkdir()
     val checkList = workdir.resolve(CHECK_LIST_FILE)
-    if (!checkList.isRegularFile()) die("${fileUri(checkList)} がありません。先に init を実行してください。", "${fileUri(checkList)} not found. Run init first.")
+    if (!checkList.isRegularFile()) die(Messages.Checklist.notFoundRunInit(fileUri(checkList)))
     withLock(checkList) {
-        val data = readTree(checkList, "checklist", "${fileUri(checkList)} から JSON を取り出せませんでした。", "Could not extract the JSON from ${fileUri(checkList)}.")
+        val data = readTree(checkList, "checklist", Messages.Checklist.couldNotExtractJson(fileUri(checkList)))
         if (edit(data)) replaceJsonBlockQuietly(checkList, "checklist", data.toJsonElement())
     }
 }
@@ -85,4 +85,4 @@ internal fun questionNumber(target: Target, id: Any?): Int? =
 
 internal fun targetOfQuestionId(id: Any?): Target? = Target.entries.firstOrNull { questionNumber(it, id) != null }
 
-internal fun ScriptContext.targetName(target: Target): String = pick(target.ja, target.en)
+internal fun ScriptContext.targetName(target: Target): String = pick(target.label)

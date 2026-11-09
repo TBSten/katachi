@@ -69,20 +69,14 @@ internal fun ScriptContext.runInternal(args: List<String>): Int = when (args.fir
         0
     }
 
-    else -> die(
-        "知らない internal サブコマンドです: ${args.firstOrNull().orEmpty()}",
-        "Unknown internal subcommand: ${args.firstOrNull().orEmpty()}",
-    )
+    else -> die(Messages.ScriptFile.unknownInternalSubcommand(args.firstOrNull().orEmpty()))
 }
 
 /** `katachi <file>.katachi.kts [args...]`: compiles and runs the script with `kotlin`, on the jars of this katachi. */
 internal fun ScriptContext.runKatachiScriptFile(file: String, args: List<String>): Int {
     val script = resolve(file)
     if (!script.isRegularFile()) {
-        die(
-            "スクリプトが見つかりません: ${fileUriOf(script)} ",
-            "No such script: ${fileUriOf(script)} ",
-        )
+        die(Messages.ScriptFile.noSuchScript(fileUriOf(script)))
     }
     val classpath = scriptClasspath().joinToString(java.io.File.pathSeparator)
     // -no-reflect: with a definition from -cp, `kotlin` 2.4.21 puts kotlin-reflect where the standard library
@@ -91,10 +85,7 @@ internal fun ScriptContext.runKatachiScriptFile(file: String, args: List<String>
     return try {
         launch.launch(command, mapOf(KATACHI_SCRIPT_FILE_ENV to script.toString()), cwd)
     } catch (_: IOException) {
-        die(
-            "kotlin が PATH にありません。brew install kotlin で入れてください。",
-            "kotlin is not on PATH. Install it with: brew install kotlin",
-        )
+        die(Messages.ScriptFile.kotlinNotPathInstall)
     }
 }
 

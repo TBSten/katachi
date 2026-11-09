@@ -78,7 +78,7 @@ private fun ScriptContext.printGuideToc(guide: Guide) {
     for (section in guide.sections) {
         out("${section.id}\t${section.title}\t${section.stop - section.start + 1}")
     }
-    say("6-A〜6-D はチェックリストでは 6-1〜6-4（guide 6-1 でも取り出せる）", "6-A to 6-D are 6-1 to 6-4 in the check list (guide 6-1 works too)")
+    say(Messages.Guide.dCheckListGuide)
 }
 
 /**
@@ -89,7 +89,7 @@ private fun ScriptContext.printGuideToc(guide: Guide) {
 internal fun ScriptContext.runGuide(args: List<String>): Int {
     val parsed = parseArgs(commandSpec("guide"), args)
     if (parsed.positionals.size > 1) {
-        die("guide: セクション ID は 1 つだけです（${parsed.positionals[0]} と ${parsed.positionals[1]}）", "guide: give only one section id (${parsed.positionals[0]} and ${parsed.positionals[1]})")
+        die(Messages.Guide.giveOnlyOneSection(parsed.positionals[0], parsed.positionals[1]))
     }
     val id: String? = parsed.positionals.firstOrNull()
     val refresh = parsed.has("--refresh")
@@ -112,27 +112,27 @@ internal fun ScriptContext.runGuide(args: List<String>): Int {
     val wanted = guideSectionId(id)
     val section = guide.section(wanted)
     if (section == null) {
-        warn("知らないセクション ID です: $wanted 。使える ID は目次のとおりです。", "Unknown section id: $wanted . The ids you can use are in the table of contents.")
+        warn(Messages.Guide.unknownSectionIdIds(wanted))
         printGuideToc(guide)
         return 1
     }
     guide.body(section).forEach(out)
     if (section.children.isNotEmpty()) {
         out("")
-        out("${pick("含むセクション", "Sections")}: ${section.children.joinToString(", ")}")
+        out(pick(Messages.Guide.sections(section.children.joinToString(", "))))
     }
     guide.next(wanted)?.let { next ->
         // An explicit --lang is carried into the next command: before init nothing is recorded, and without it the next
         // section comes out in the default ja, so an agent that started in en reads on in Japanese and runs init --lang ja.
         val nextCommand = "$AGENT_COMMAND guide $next" + if (langOption != null) " --lang ${lang.code}" else ""
         say("")
-        say("次: $nextCommand", "Next: $nextCommand")
+        say(Messages.Guide.next(nextCommand))
     }
     return 0
 }
 
 /** `--lang` of init / doctor / guide. The kit's `set_lang_option`. */
 internal fun ScriptContext.setLangOption(value: String) {
-    lang = Lang.of(value) ?: die("--lang は en か ja です（指定されたのは '$value'）。", "--lang must be en or ja (got '$value').")
+    lang = Lang.of(value) ?: die(Messages.Guide.langMustEnJa(value))
     langExplicit = true
 }

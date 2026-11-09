@@ -85,7 +85,7 @@ class GradleFilesSpec : FreeSpec({
         "同じ別名が別の中身なら理由を返す" {
             val root = createTempDirectory("katachi-gradle-")
             root.resolve("gradle").createDirectories().resolve("libs.versions.toml").writeText("[versions]\nkatachi = \"0.1.0\"\n")
-            planCatalogEntries(root, "0.4.0", konsist = false, testFramework = "junit5").fallback?.first shouldBe
+            planCatalogEntries(root, "0.4.0", konsist = false, testFramework = "junit5").fallback?.ja shouldBe
                 "別名 katachi が別の用途で使われています（[versions] katachi = \"0.1.0\"）"
         }
     }
