@@ -253,6 +253,24 @@ test('次のページへ: ページを移って popup が開く。ページの�
 	ok('ページではないことを伝える', /サイトのページではありません/.test((await u('.pop .info').textContent()) ?? ''))
 })
 
+test('次がほかのページの指摘なら、解決済みにしたあとページは移らずに閉じ、トーストの「次のページ」で移れる', async ({ fb }) => {
+	writeSet()
+	await fb.fresh(FAQ)
+	await toggle(fb)
+	const u = ui(fb)
+	await openRow(fb, '閉じた details の中への指摘')
+	await fb.act(u('.pop .act .btn.primary'))
+	ok('書き戻す', await waitFor(() => (readReview().match(/- status: resolved/g) ?? []).length === 2))
+	await sleep(400)
+	ok('ページは移らずに popup を閉じる', /faq/.test(fb.page.url()) && (await u('.pop').isHidden()))
+	const go = u('.toast .btn').filter({ hasText: '次のページ' })
+	ok('トーストに「次のページ ›」', (await go.count()) === 1)
+	await fb.act(go)
+	await fb.page.waitForURL(/first-architecture/)
+	await u('.pop:not([hidden])').waitFor({ state: 'visible', timeout: 8000 })
+	ok('移った先で次の指摘が開く', (await popTitle(fb)) === 'タブの中のコードの行への指摘')
+})
+
 test('`#review=<id>` のリンクで来ると、隠していても出してその指摘を開く。同じページの中のリンクでも開く', async ({ fb }) => {
 	writeSet()
 	await fb.fresh(FAQ)

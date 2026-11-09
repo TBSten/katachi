@@ -581,17 +581,18 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		// 解決済みを隠しているなら、次の指摘（無ければ前）へ進む。出しているならそのまま。
 		const stay = filter.showResolved
 		const follow = stay ? v.id : (sorted[i + 1] ?? sorted[i - 1])?.id ?? null
+		const ahead = !stay && !!sorted[i + 1]
 		rebuild()
 		const left = sorted.filter((x) => x.status === 'open' && onPage(x, { pathname: location.pathname, source, base })).length
-		toast(left ? '解決済みにしました' : '解決済みにしました。このページの未解決はもうありません', () => void reopen(v))
+		const fv = follow ? sorted.find((x) => x.id === follow) : undefined
+		// 次が別のページなら移らずに閉じる（勝手にページを移らない）。トーストの「次のページ」で移れる。
+		const away = !!fv && !onPage(fv, { pathname: location.pathname, source, base }) && !!pageUrlOf(fv.file, base)
+		const go = away && fv ? { label: ahead ? '次のページ ›' : '‹ 前のページ', title: `${ahead ? '次' : '前'}は ${shortFile(fv.file)}`, run: () => open(fv.id) } : undefined
+		toast(left ? '解決済みにしました' : '解決済みにしました。このページの未解決はもうありません', () => void reopen(v), false, go)
 		guardUntil = Date.now() + GUARD_MS
 		setTimeout(() => { if (!closed) for (const b of pop.querySelectorAll<HTMLButtonElement>('.act .btn')) b.disabled = busy }, GUARD_MS + 20)
-		if (follow && sorted.some((x) => x.id === follow)) {
-			const fv = sorted.find((x) => x.id === follow)!
-			// 次が別のページなら移らずに閉じる（勝手にページを移らない）。
-			if (onPage(fv, { pathname: location.pathname, source, base }) || !pageUrlOf(fv.file, base)) open(follow)
-			else closePop()
-		} else closePop()
+		if (fv && !away) open(fv.id)
+		else closePop()
 	}
 
 	async function reopen(v: ReviewView) {
@@ -630,7 +631,7 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		for (const b of pop.querySelectorAll<HTMLButtonElement>('.act .btn')) b.disabled = true
 	}
 
-	function toast(message: string, undo?: () => void, warn = false) {
+	function toast(message: string, undo?: () => void, warn = false, go?: { label: string; title: string; run: () => void }) {
 		const t = el('div', `toast${warn ? ' warn' : ''}`)
 		t.style.pointerEvents = 'auto'
 		t.style.display = 'flex'
@@ -641,6 +642,13 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 			const b = el('button', 'btn', '戻す')
 			b.type = 'button'
 			b.addEventListener('click', () => { t.remove(); undo() })
+			t.append(b)
+		}
+		if (go) {
+			const b = el('button', 'btn', go.label)
+			b.type = 'button'
+			b.title = go.title
+			b.addEventListener('click', () => { t.remove(); go.run() })
 			t.append(b)
 		}
 		toastBox.replaceChildren(t)
