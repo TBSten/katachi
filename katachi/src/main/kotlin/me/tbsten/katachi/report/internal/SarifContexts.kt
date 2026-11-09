@@ -40,6 +40,12 @@ internal fun conventionalSourceRoots(bases: List<FsPath>, environment: SarifEnvi
  * This context, asking [isFile] whether a regular file sits at a path instead of the disk.
  *
  * For the tests of katachi's other modules, which cannot reach the internal constructor of [SarifContext].
+ *
+ * ## Example 1: write SARIF for files that exist only in a test
+ * ```kt
+ * val context = SarifContext(projectRoot = FsPath.of("/w/repo"), toolVersion = "0.0.0-test").withIsFile { true }
+ * violations.toSarif(context)
+ * ```
  */
 @InternalKatachiApi
 public fun SarifContext.withIsFile(isFile: (FsPath) -> Boolean): SarifContext =

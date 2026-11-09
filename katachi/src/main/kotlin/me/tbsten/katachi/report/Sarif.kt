@@ -69,6 +69,10 @@ public class SarifContext internal constructor(
     internal val readText: (FsPath) -> String? = ::realReadText,
     internal val filesUnder: (FsPath) -> List<FsPath> = ::realFilesUnder,
 ) {
+    /**
+     * Takes the project root, and optionally where to look for the files that declared things, the repository
+     * prefix, where the architecture was declared, and the version to report. The conversion reads the real disk.
+     */
     public constructor(
         projectRoot: FsPath,
         sourceRoots: List<FsPath> = emptyList(),
