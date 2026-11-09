@@ -122,6 +122,22 @@ describe('findTarget', () => {
 		expect(codeLines(el, { ...src, end: 20 }, { start: 12, end: 12 })).toEqual([])
 		vi.restoreAllMocks()
 	})
+	it('行を含む要素が無ければ（タブの見出し・LinkCard の属性の行）、前後の要素のあいだから手がかりの文字で探す', () => {
+		document.body.innerHTML = `<header><a>Github Actions</a></header><main>
+			<p id="before" data-fb-src="${F}:10">Github Actions を使う前に</p>
+			<starlight-tabs><div role="tablist"><a role="tab" id="tab"><span>Github Actions</span></a></div>
+			<div role="tabpanel"><p id="after" data-fb-src="${F}:14">以下を足す</p></div></starlight-tabs>
+			<div class="card"><span class="desc" id="desc">最初の architecture { } を書く方法</span></div>
+			<p data-fb-src="${F}:30">終わり</p>
+		</main>`
+		// 前の要素（L10）の中の同じ文字・ヘッダーの文字ではなく、あいだのタブを選ぶ。いちばん内側の要素。
+		expect(findTarget(document, F, { start: 12, end: 12 }, ['Github Actions'])?.el.tagName).toBe('SPAN')
+		expect(findTarget(document, F, { start: 12, end: 12 }, ['Github Actions'])?.el.closest('#tab')).not.toBeNull()
+		expect(findTarget(document, F, { start: 20, end: 20 }, ['最初の architecture { } を書く'])?.el.id).toBe('desc')
+		// あいだに無ければ探さない（後ろの要素より先は見ない）
+		expect(findTarget(document, F, { start: 12, end: 12 }, ['終わり'])).toBeNull()
+		expect(findTarget(document, F, { start: 12, end: 12 })).toBeNull()
+	})
 	it('閉じた details の中の要素も選ぶ（見せるのは popup を開くとき）', () => {
 		document.body.innerHTML = `<details data-fb-src="${F}:1-9"><summary>s</summary><p id="in" data-fb-src="${F}:3">x</p></details>`
 		expect(findTarget(document, F, { start: 3, end: 3 })?.el.id).toBe('in')

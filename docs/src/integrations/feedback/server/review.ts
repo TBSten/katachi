@@ -4,7 +4,7 @@ import { randomBytes } from 'node:crypto'
 import { mkdir, open, readdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
 import { isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { EVENT_REVIEW_REQUEST, EVENT_REVIEW_RESULT, type ReviewRequest, type ReviewResult, type ReviewSetView, type ReviewView } from '../core/protocol'
-import { applyStatus, CONTENT_DIR, NOTE_CHARS, parseReview, relocate, removeItem, SET_NAME, splitLines, type ReviewItem, type StatusPatch } from '../review/model'
+import { applyStatus, CONTENT_DIR, NOTE_CHARS, parseReview, relocate, removeItem, SET_NAME, splitLines, textHints, type ReviewItem, type StatusPatch } from '../review/model'
 
 export type ReviewData = { sets: ReviewSetView[]; items: ReviewView[]; root: string }
 
@@ -111,7 +111,8 @@ export function createReviewStore(dir: string, repoRoot: string) {
 		}
 		if (!source) return { ...base, line: item.line, place: 'no-file' }
 		const r = relocate(item.line, item.quote, source)
-		return { ...base, line: r.line, place: r.place }
+		const hints = textHints(r.line, item.quote, source)
+		return { ...base, line: r.line, place: r.place, ...(hints.length ? { hints } : {}) }
 	}
 
 	/** 全部のまとまりを読む。読めないファイルは errors に書いて続ける。 */

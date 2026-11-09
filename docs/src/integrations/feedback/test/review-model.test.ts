@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { applyStatus, pageUrlOf, parseLine, parseReview, priorityTier, quoteMatches, relocate, removeItem } from '../review/model'
+import { applyStatus, pageUrlOf, parseLine, parseReview, priorityTier, quoteMatches, relocate, removeItem, textHints } from '../review/model'
 
 const FILE = `---
 title: リリース前チェック
@@ -183,4 +183,14 @@ describe('quoteMatches', () => {
 		['`x`  y', 'x y', true],
 		['abc', '…', false],
 	])('%s / %s', (t, q, want) => expect(quoteMatches(t, q)).toBe(want))
+})
+
+describe('textHints', () => {
+	it('行の label / title / description の値と、quote のいちばん長い部分', () => {
+		const src = ['<Tabs>', '  <TabItem label="Github Actions">', '  <LinkCard', '    title="初めて"', '    description=\'最初の architecture { } を書く\'', '  />']
+		expect(textHints({ start: 2, end: 2 }, undefined, src)).toEqual(['Github Actions'])
+		expect(textHints({ start: 3, end: 6 }, 'architecture … を書く方法', src)).toEqual(['初めて', '最初の architecture { } を書く', 'architecture'])
+		expect(textHints(null, '`a`', src)).toEqual([])
+		expect(textHints({ start: 1, end: 1 }, undefined, src)).toEqual([])
+	})
 })

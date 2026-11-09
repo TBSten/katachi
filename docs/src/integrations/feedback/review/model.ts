@@ -270,6 +270,21 @@ export function relocate(line: LineRange | null, quote: string | undefined, sour
 	return { line: { start: line.start + delta, end: line.end + delta }, place: 'moved' }
 }
 
+/**
+ * 本文に出ない行（タブの見出しの `<TabItem label="…">`、`<LinkCard description="…">` など）を、ページの文字から探す手がかり。
+ * 行（3 行まで）に書かれた label / title / description / text 属性の値と、quote の `…` で区切った部分のうち長いもの。2 文字未満は使わない。
+ */
+export function textHints(line: LineRange | null, quote: string | undefined, source: string[]): string[] {
+	const out: string[] = []
+	if (line) {
+		const text = source.slice(line.start - 1, Math.min(line.end, line.start + 2)).join('\n')
+		for (const m of text.matchAll(/\b(?:label|title|description|text)=(?:"([^"]+)"|'([^']+)')/g)) out.push(m[1] ?? m[2] ?? '')
+	}
+	const q = quote?.split('\n').find((l) => norm(l) !== '')
+	if (q) out.push(...norm(q).split(/\s*(?:…|\.\.\.)\s*/).sort((a, b) => b.length - a.length).slice(0, 1))
+	return [...new Set(out.map(norm).filter((h) => h.length >= 2))]
+}
+
 // ---- ページとソースの対応 ----
 
 /** docs の本文の置き場（リポジトリ直下から）。 */

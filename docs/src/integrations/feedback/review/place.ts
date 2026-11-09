@@ -35,7 +35,7 @@ const visible = (el: Element) => {
  * 行を含む要素のうち、いちばん狭いものを選ぶ。同じ広さなら後ろ（内側）の要素。行を含む要素が無ければ、範囲が重なる要素から選ぶ。
  * 見えていない要素（閉じた details の中など）も選ぶ。見せるのは popup を開くとき（session.ts の unhide）。
  */
-export function findTarget(root: ParentNode, file: string, line: LineRange): Target | null {
+export function findTarget(root: ParentNode, file: string, line: LineRange, hints: readonly string[] = []): Target | null {
 	const all = [...root.querySelectorAll(`[${SRC_ATTR}]`)]
 		.map((el) => ({ el, src: parseSrc(el.getAttribute(SRC_ATTR)) }))
 		.filter((c): c is { el: Element; src: Src } => c.src !== null && c.src.path === file)
@@ -47,8 +47,45 @@ export function findTarget(root: ParentNode, file: string, line: LineRange): Tar
 		return best
 	}
 	const best = pick(containing) ?? pick(overlapping)
-	if (!best) return null
-	return { el: best.el, lines: codeLines(best.el, best.src, line) }
+	if (best) return { el: best.el, lines: codeLines(best.el, best.src, line) }
+	const found = findByText(root, all, line, hints)
+	return found ? { el: found, lines: [] } : null
+}
+
+const normText = (s: string) => s.replace(/\s+/g, ' ').trim()
+const SKIP = 'script, style, template, katachi-review-root, katachi-feedback-root, astro-dev-toolbar'
+
+/**
+ * 行を含む要素が無いとき（タブの見出し・LinkCard の属性など、コンポーネントの行）、前後の要素のあいだにある文字から探す。
+ * 前 = 行より前で終わるいちばん後ろの要素、後 = 行より後ろで始まるいちばん前の要素。その間（文書の順）で、手がかりの文字を含むいちばん内側の要素。
+ * 本文の外（ヘッダー・サイドバー）は見ない（main の中だけ）。見つからなければ null（ページの見出しに出す）。
+ */
+function findByText(root: ParentNode, all: { el: Element; src: Src }[], line: LineRange, hints: readonly string[]): Element | null {
+	if (!hints.length) return null
+	const main = root.querySelector('main') ?? root.querySelector('body')
+	if (!main) return null
+	let prev: Element | null = null
+	let next: Element | null = null
+	for (const c of all) {
+		if (c.src.end < line.start && (!prev || prev.compareDocumentPosition(c.el) & Node.DOCUMENT_POSITION_FOLLOWING)) prev = c.el
+		if (c.src.start > line.end && (!next || next.compareDocumentPosition(c.el) & Node.DOCUMENT_POSITION_PRECEDING)) next = c.el
+	}
+	const inRange = (el: Element) =>
+		!el.closest(SKIP) &&
+		(!prev || (prev.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING && !prev.contains(el))) &&
+		(!next || (next.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING && !el.contains(next)))
+	const elements = [...main.querySelectorAll('*')].filter(inRange)
+	for (const hint of hints) {
+		const h = normText(hint)
+		let hit = elements.find((el) => normText(el.textContent ?? '').includes(h))
+		if (!hit) continue
+		for (let deeper: Element | undefined = hit; deeper; ) {
+			hit = deeper
+			deeper = [...hit.children].find((c) => inRange(c) && normText(c.textContent ?? '').includes(h))
+		}
+		return hit
+	}
+	return null
 }
 
 /**

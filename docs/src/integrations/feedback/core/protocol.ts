@@ -147,6 +147,8 @@ export type ReviewView = {
 	/** 指摘のファイルに書かれた行。 */
 	written: { start: number; end: number } | null
 	place: 'ok' | 'moved' | 'lost' | 'page' | 'no-file'
+	/** 本文に出ない行を、ページの文字から探す手がかり（review/model.ts の textHints）。無ければ省く。 */
+	hints?: string[]
 	status: 'open' | 'resolved'
 	note?: string
 	resolvedAt?: string

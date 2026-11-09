@@ -138,7 +138,7 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		sorted = sortItems(items.filter((v) => passes(v, filter)), base)
 		here = sorted.filter((v) => onPage(v, { pathname: location.pathname, source, base }))
 		targets.clear()
-		for (const v of here) targets.set(v.id, v.line ? findTarget(document, v.file, v.line) : null)
+		for (const v of here) targets.set(v.id, v.line ? findTarget(document, v.file, v.line, v.hints) : null)
 		if (activeId && !sorted.some((v) => v.id === activeId)) activeId = null
 		renderMarks()
 		renderPanel()
@@ -259,7 +259,7 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 			if (!m || !t) continue
 			// DOM が差し替わった（mermaid の描画など）ら探し直す。
 			if (!t.el.isConnected) {
-				if (targets.get(v.id)) targets.set(v.id, v.line ? findTarget(document, v.file, v.line) : null)
+				if (targets.get(v.id)) targets.set(v.id, v.line ? findTarget(document, v.file, v.line, v.hints) : null)
 				t = markTarget(v)
 				if (!t) { m.box.style.display = m.pin.style.display = 'none'; continue }
 			}
@@ -393,7 +393,7 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 				moved = true
 				unhide(t.el)
 				// 開いたタブ・details の中身で探し直す（見えている要素を選び直す）。
-				targets.set(id, v.line ? findTarget(document, v.file, v.line) : null)
+				targets.set(id, v.line ? findTarget(document, v.file, v.line, v.hints) : null)
 			}
 			const nt = markTarget(v)
 			// コードの行が畳んだブロックの中なら開く（「Show more」）。
