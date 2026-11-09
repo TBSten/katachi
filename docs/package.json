@@ -14,7 +14,7 @@
     "astro": "astro",
     "test": "vitest run",
     "test:e2e": "playwright test -c e2e",
-    "lint:text": "textlint \"src/content/docs/ja/**/*.mdx\" \"../README.ja.md\" \"public/install/ja/index.md\""
+    "lint:text": "textlint \"src/content/docs/ja/**/*.mdx\" \"../README.ja.md\" \"public/install/ja/index.md\" \"../katachi-intellij-plugin/src/main/resources/messages/KatachiBundle_ja.properties\""
   },
   "dependencies": {
     "@astrojs/starlight": "^0.42.2",

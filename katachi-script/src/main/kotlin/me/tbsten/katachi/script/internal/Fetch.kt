@@ -79,10 +79,7 @@ internal fun ScriptContext.docsBase(): String {
 /** Downloads [url] to [dest], or stops with what to do by hand. The kit's `download`. */
 internal fun ScriptContext.download(url: String, dest: Path) {
     val body = http.fetch(url, Duration.ofSeconds(10), Duration.ofSeconds(120), retries = 2)
-        ?: die(
-            "ダウンロードに失敗しました: $url\n  ネットワークかプロキシの設定を確認してください。\n  手動で取得する場合は、このファイルを ${fileUri(dest)} に置いてから同じコマンドをやり直してください。",
-            "Download failed: $url\n  Check your network or proxy settings.\n  To fetch it by hand, put the file at ${fileUri(dest)} and run the same command again.",
-        )
+        ?: die(Messages.Fetch.downloadFailedCheckYour(url, fileUri(dest)))
     dest.parent?.createDirectories()
     val tmp = dest.resolveSibling("${dest.name}.part.${ProcessHandle.current().pid()}")
     tmp.writeBytes(body)

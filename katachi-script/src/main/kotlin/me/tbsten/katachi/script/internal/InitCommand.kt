@@ -20,12 +20,9 @@ import kotlin.io.path.writeText
 private fun ScriptContext.warnMissingGit() {
     if (findOnPath("git") != null) return
     err(
-        "\n[!] " + pick("次のコマンドが見つかりません。無くても進めますが、あったほうが確実です:", "These commands were not found. You can go on without them, but it is safer to have them:") + "\n" +
-            "    - git: " + pick(
-                "macOS: xcode-select --install か brew install git / Debian・Ubuntu: sudo apt-get install git / Fedora: sudo dnf install git / Alpine: apk add git",
-                "macOS: xcode-select --install or brew install git / Debian, Ubuntu: sudo apt-get install git / Fedora: sudo dnf install git / Alpine: apk add git",
-            ) + "\n" +
-            "      " + pick("git が無いと Git 管理下かを判定できず、未追跡のファイルの確認も飛ばします。", "Without git, the command cannot tell whether the project is under Git, and skips the check for untracked files."),
+        "\n[!] " + pick(Messages.Init.theseCommandsNotFound) + "\n" +
+            "    - git: " + pick(Messages.Init.xcodeSelectInstallBrew) + "\n" +
+            "      " + pick(Messages.Init.withoutGitCommandCannot),
     )
 }
 
@@ -36,7 +33,7 @@ private fun ScriptContext.warnMissingGit() {
  */
 internal fun ScriptContext.runInit(args: List<String>): Int {
     val parsed = parseArgs(commandSpec("init"), args)
-    parsed.positionals.firstOrNull()?.let { die("init: 知らないオプションです: $it", "init: unknown option: $it") }
+    parsed.positionals.firstOrNull()?.let { die(Messages.Init.unknownOption(it)) }
     val workdirArg = parsed.value("--workdir") ?: ""
     val moduleDirArg = parsed.value("--module-dir")?.also(::validateModuleDir) ?: ""
     // Accept the tag form v0.3.0 too; a kept v would slip past the version check and land in build.gradle.kts.
@@ -49,9 +46,9 @@ internal fun ScriptContext.runInit(args: List<String>): Int {
 
     val root = cwd
     val settings = requireGradleRoot(root)
-    say("katachi のインストールを開始します", "Starting the katachi installation")
-    note("プロジェクトルート: ${fileUri(root)}", "Project root:       ${fileUri(root)}")
-    note("settings:          ${fileUri(settings.name)}", "settings:           ${fileUri(settings.name)}")
+    say(Messages.Init.startingKatachiInstallation)
+    note(Messages.Init.projectRoot(fileUri(root)))
+    note(Messages.Init.settings(fileUri(settings.name)))
 
     // The version: the one this command was released with, unless --katachi says otherwise.
     if (version.isEmpty()) {
@@ -65,27 +62,21 @@ internal fun ScriptContext.runInit(args: List<String>): Int {
         versionSource = VersionSource.LATEST
     }
     if (version.isEmpty()) {
-        warn(
-            "katachi のバージョンが分かりませんでした。$KATACHI_RELEASES_PAGE を見て --katachi で指定してください。",
-            "Could not tell the katachi version. Look it up at $KATACHI_RELEASES_PAGE and pass it with --katachi.",
-        )
+        warn(Messages.Init.couldNotTellKatachi)
         version = "UNKNOWN"
     } else {
         requireKatachiVersion(version, versionSource)
         note("katachi:            $version")
     }
     if (mavenLocalEnabled()) {
-        note("mavenLocal:         有効（開発者向け。scaffold が mavenLocal() を足す）", "mavenLocal:         on (for developers; scaffold adds mavenLocal())")
+        note(Messages.Init.developersScaffoldAddsMavenlocal)
     }
 
     val git = isGitRepo(root)
     if (git) {
-        note("Git:               管理下にあります", "Git:                under version control")
+        note(Messages.Init.gitUnderVersionControl)
     } else {
-        warn(
-            "Git で管理されていません。失敗したときに変更を戻せないので、先にコミットするかバックアップを取ってください。",
-            "The project is not under Git. You cannot undo the changes if something goes wrong, so commit or back up first.",
-        )
+        warn(Messages.Init.projectNotUnderGit)
     }
 
     // The working directory: inside an ignored place when there is one, otherwise tmp/.
@@ -97,9 +88,9 @@ internal fun ScriptContext.runInit(args: List<String>): Int {
     val cache = workdir.resolve("tmp/cache")
     cache.createDirectories()
     val workdirUri = fileUri(workdir)
-    note("作業用ディレクトリ:  $workdirUri", "Working directory:  $workdirUri")
+    note(Messages.Init.workingDirectory(workdirUri))
     val existing = workdir.listDirectoryEntries().count { it.name !in setOf(CHECK_LIST_FILE, REPORT_FILE, "tmp") && !it.name.endsWith(".bak") }
-    if (existing > 0) note("既存のファイルがあります（$existing 件）。上書きはしません。", "There are existing files ($existing). They are not overwritten.")
+    if (existing > 0) note(Messages.Init.thereExistingFilesThey(existing))
 
     // The test module: --module-dir > meta.moduleDir of a kept check list > the default.
     val checkList = workdir.resolve(CHECK_LIST_FILE)
@@ -111,30 +102,18 @@ internal fun ScriptContext.runInit(args: List<String>): Int {
         else -> MODULE_DIR_DEFAULT
     }
     val modulePath = moduleGradlePathOf(moduleDir)
-    note("検査用モジュール:    $moduleDir/（Gradle のパス $modulePath）", "Test module:        $moduleDir/ (Gradle path $modulePath)")
+    note(Messages.Init.testModuleGradlePath(moduleDir, modulePath))
 
     // katachi checks untracked files that are not ignored, so a visible working directory fails step 4 for sure.
     if (!pathIsIgnored(root, workdirName)) {
-        warn(
-            "$workdirUri は git から見えています。このままだとステップ4で必ず失敗します。\n" +
-                "    katachi は未追跡でも ignore されていないファイルを検査するため、この作業用ディレクトリ\n" +
-                "    自体が [UnexpectedFile] になります。ユーザに .gitignore への追加を提案してください\n" +
-                "    （勝手に書き換えないこと）。",
-            "$workdirUri is visible to git. As it is, step 4 will fail for sure.\n" +
-                "    katachi checks untracked files that are not ignored, so this working directory itself\n" +
-                "    becomes an [UnexpectedFile]. Suggest to the user that it be added to .gitignore\n" +
-                "    (do not edit .gitignore yourself).",
-        )
+        warn(Messages.Init.visibleGitStepWill(workdirUri))
     }
     if (git) {
         val untracked = runGit(root, "ls-files", "--others", "--exclude-standard", "--directory", "--no-empty-directory")?.stdout.orEmpty()
             .lines().filter { it.isNotEmpty() }.map { it.removeSuffix("/") }
             .filter { it != workdirName && !"$workdirName/".startsWith("$it/") && !"$it/".startsWith("$workdirName/") }
         if (untracked.isNotEmpty()) {
-            warn(
-                "未追跡で ignore もされていないものがあります。これらもステップ4で [UnexpectedFile] になります。\n    宣言するか、.gitignore に足すかをユーザに確認してください。",
-                "There are untracked files that are not ignored. These also become [UnexpectedFile] in step 4.\n    Ask the user whether to declare them or add them to .gitignore.",
-            )
+            warn(Messages.Init.thereUntrackedFilesNot)
             for (entry in untracked) err("       ${fileUri(entry)}")
         }
     }
@@ -142,13 +121,13 @@ internal fun ScriptContext.runInit(args: List<String>): Int {
     val kotlin = detectKotlinVersion(root)
     var kotlinOld = false
     if (kotlin != null) {
-        note("Kotlin:             $kotlin（プロジェクトから検出）", "Kotlin:             $kotlin (detected from the project)")
+        note(Messages.Init.kotlinDetectedProject(kotlin))
         if (kotlinTooOld(kotlin)) {
             kotlinOld = true
             warn(kotlinTooOldMessage(root, kotlin, forScaffold = false))
         }
     } else {
-        warn("Kotlin のバージョンを検出できませんでした。scaffold に --kotlin で渡してください。", "Could not detect the Kotlin version. Pass it to scaffold with --kotlin.")
+        warn(Messages.Init.couldNotDetectKotlin)
     }
 
     // What later commands read back: the language, the docs origin, the developer hook and the version.
@@ -159,7 +138,7 @@ internal fun ScriptContext.runInit(args: List<String>): Int {
         cache.resolve("docs").deleteIfExists()
     } else {
         cache.resolve("docs").writeText(docs)
-        note("配信元:             $docs（KATACHI_DOCS。以降のコマンドもこれを使う）", "Docs source:        $docs (KATACHI_DOCS; later commands use it too)")
+        note(Messages.Init.docsSourceKatachiDocs(docs))
     }
     if (env["KATACHI_MAVEN_LOCAL"] in setOf("1", "yes", "true")) cache.resolve("maven-local").writeText("yes")
     // Without --katachi, a rerun keeps the version the previous init recorded.
@@ -167,10 +146,7 @@ internal fun ScriptContext.runInit(args: List<String>): Int {
     val recordedVersion = versionFile.textIfNotEmpty() ?: ""
     if (versionSource != VersionSource.EXPLICIT && recordedVersion.isNotEmpty() && !force) {
         if (recordedVersion != version) {
-            note(
-                "                    → 前回の init が記録した $recordedVersion を使い続けます（今回の既定は $version。変えるなら --katachi を付けて実行し直す）",
-                "                    → keeping $recordedVersion, recorded by the previous init (this time's default is $version; to change it, run again with --katachi)",
-            )
+            note(Messages.Init.keepingRecordedPreviousInit(recordedVersion, version))
         }
         version = recordedVersion
     } else if (version == "UNKNOWN") {
@@ -181,31 +157,28 @@ internal fun ScriptContext.runInit(args: List<String>): Int {
 
     // The check list and the report. **What is already there is never overwritten**, so a rerun keeps what was filled in.
     if (checkList.exists() && checkList.fileSize() > 0 && !force) {
-        note("すでにあるので残しました: ${fileUri(checkList)}", "Kept (already there): ${fileUri(checkList)}")
+        note(Messages.Init.keptAlreadyThere(fileUri(checkList)))
         if (version != "UNKNOWN") updateChecklistMeta(checkList, "version", version)
         if (moduleDir != recordedModuleDir) updateChecklistMeta(checkList, "moduleDir", moduleDir)
         if (kotlin != null) updateChecklistMeta(checkList, "kotlin", kotlin)
     } else {
         placeBundled(Bundle.CHECK_LIST_TEMPLATE, checkList, manifest)
         writeChecklistData(checkList, workdirName, version, root, kotlin ?: "", if (git) "yes" else "no", moduleDir)
-        note("配置しました:        ${fileUri(checkList)}", "Placed:             ${fileUri(checkList)}")
+        note(Messages.Init.placed(fileUri(checkList)))
     }
     if (report.exists() && report.fileSize() > 0 && !force) {
-        note("すでにあるので残しました: ${fileUri(report)}", "Kept (already there): ${fileUri(report)}")
+        note(Messages.Init.keptReport(fileUri(report)))
     } else {
         placeBundled(Bundle.REPORT_TEMPLATE, report, manifest)
         writeReportData(report, root)
-        note("配置しました:        ${fileUri(report)}", "Placed:             ${fileUri(report)}")
+        note(Messages.Init.placedReport(fileUri(report)))
     }
     // The guide too, for people to open; `katachi guide <id>` prints it section by section. Rewritten every time, so a language change leaves nothing behind.
     placeBundled(Bundle.GUIDE, cache.resolve("index.md"), manifest)
-    note(
-        "手順書:             ${fileUri(cache.resolve("index.md"))} （$AGENT_COMMAND guide で目次）",
-        "Guide:              ${fileUri(cache.resolve("index.md"))} ($AGENT_COMMAND guide for the table of contents)",
-    )
+    note(Messages.Init.guideGuideTableContents(fileUri(cache.resolve("index.md"))))
 
     say("")
-    say("== init の結果 ==========================================", "== init result =========================================")
+    say(Messages.Init.initResult)
     say("KATACHI_WORKDIR=$workdir")
     say("KATACHI_VERSION=$version")
     say("KATACHI_PROJECT_ROOT=$root")
@@ -217,21 +190,12 @@ internal fun ScriptContext.runInit(args: List<String>): Int {
     say("KATACHI_MODULE_PATH=$modulePath")
     say("========================================================")
     say("")
-    say(
-        "以降のコマンド（'$AGENT_COMMAND <サブコマンド>'、'$CLI_COMMAND scaffold' など）は、このプロジェクトのルートで実行してください（作業用ディレクトリは自動で見つけます。別の場所からは KATACHI_WORKDIR=$workdir を付ける）。",
-        "From now on, run the commands ('$AGENT_COMMAND <subcommand>', '$CLI_COMMAND scaffold' and so on) in the root of this project (they find the working directory themselves; from elsewhere, set KATACHI_WORKDIR=$workdir).",
-    )
+    say(Messages.Init.nowRunCommandsSubcommand(workdir))
     say("")
     if (kotlinOld) {
-        say(
-            "次: Kotlin $kotlin を上げてよいかをユーザに確認してください（上の [!]。手順書 0-2 の「Kotlin が古いとき」）。上げるまでステップ 1 に進まないこと。",
-            "Next: ask the user whether Kotlin $kotlin may be upgraded (the [!] above; \"When Kotlin is too old\" in step 0-2 of the guide). Do not go on to step 1 until it is upgraded.",
-        )
+        say(Messages.Init.nextAskUserWhether(kotlin))
     } else {
-        say(
-            "次: $AGENT_COMMAND check 0-1 0-2（続けて、出力の「次:」のセクションを読む）",
-            "Next: $AGENT_COMMAND check 0-1 0-2 (then read the section its \"Next:\" line names)",
-        )
+        say(Messages.Init.nextCheckReadSection)
     }
     return 0
 }
@@ -268,10 +232,7 @@ private fun ScriptContext.writeChecklistData(file: Path, workdir: String, versio
     )
     val error = mergeJsonBlockQuietly(file, "checklist", JsonObject(mapOf("meta" to JsonObject(meta))))
     if (error != null) {
-        warn(
-            "チェックリストのメタ欄を初期化できませんでした。${fileUri(file)} を直接確認してください。\n$error",
-            "Could not initialize the meta fields of the check list. Check ${fileUri(file)} directly.\n$error",
-        )
+        warn(Messages.Init.couldNotInitializeMeta(fileUri(file), error))
     }
 }
 
@@ -301,23 +262,17 @@ private fun ScriptContext.writeReportData(file: Path, root: Path) {
     )
     val error = mergeJsonBlockQuietly(file, "report", JsonObject(mapOf("meta" to JsonObject(meta))))
     if (error != null) {
-        warn(
-            "レポートのメタ欄を初期化できませんでした。${fileUri(file)} を直接確認してください。\n$error",
-            "Could not initialize the meta fields of the report. Check ${fileUri(file)} directly.\n$error",
-        )
+        warn(Messages.Init.couldNotInitializeReportMeta(fileUri(file), error))
     }
 }
 
 /** `doctor`: what this command needs, Gradle's JDK and the project's Kotlin. The kit's `cmd_doctor`. */
 internal fun ScriptContext.runDoctor(args: List<String>): Int {
     val parsed = parseArgs(commandSpec("doctor"), args)
-    parsed.positionals.firstOrNull()?.let { die("doctor: 知らないオプションです: $it", "doctor: unknown option: $it") }
+    parsed.positionals.firstOrNull()?.let { die(Messages.Init.doctorUnknownOption(it)) }
     parsed.value("--lang")?.let(::setLangOption)
     warnMissingGit()
-    say(
-        "必要なものはそろっています（katachi ${ScriptVersion.current()}。ガイドとテンプレートは同梱）。",
-        "Everything this needs is available (katachi ${ScriptVersion.current()}; the guide and the templates ship with it).",
-    )
+    say(Messages.Init.everythingNeedsAvailableKatachi(ScriptVersion.current()))
     checkGradleJdk(cwd)
     val kotlin = detectKotlinVersion(cwd)
     if (kotlin != null) {

@@ -97,10 +97,10 @@ private fun ScriptContext.printCheckDiff(before: List<String>, after: List<Strin
     val diff = sortedDiff(before, after)
     val added = diff.count { it.startsWith("  + ") }
     val removed = diff.count { it.startsWith("  - ") }
-    out(prefix + pick("増えた $added 件 / 減った $removed 件", "Added $added / removed $removed"))
+    out(prefix + pick(Messages.Test.addedRemoved(added, removed)))
     diff.take(PRINT_CHECK_DIFF_MAX).forEach(out)
     if (diff.size > PRINT_CHECK_DIFF_MAX) {
-        say("  ほか ${diff.size - PRINT_CHECK_DIFF_MAX} 件（ログを見る）", "  and ${diff.size - PRINT_CHECK_DIFF_MAX} more (see the log)")
+        say(Messages.Test.moreSeeLog(diff.size - PRINT_CHECK_DIFF_MAX))
     }
     return false
 }
@@ -114,59 +114,34 @@ internal fun ScriptContext.runCompareViolations(args: List<String>): Int {
     val after = args.getOrNull(1)?.let(::resolve) ?: workdir.resolve("tmp/test-after-refactor.log")
     for (log in listOf(before, after)) {
         if (!log.isRegularFile()) {
-            die(
-                "${fileUri(log)} がありません。./gradlew ${module.gradlePath}:test の出力をこのパスに保存してください（手順書 3-2 / 3-3）。",
-                "${fileUri(log)} not found. Save the output of ./gradlew ${module.gradlePath}:test to this path (steps 3-2 / 3-3 of the guide).",
-            )
+            die(Messages.Test.notFoundSaveOutput(fileUri(log), module.gradlePath))
         }
         if (!hasCheckResult(log)) {
-            die(
-                "${fileUri(log)} に検査の結果がありません。コンパイルエラーなどで検査まで届いていません。直してから取り直してください。",
-                "${fileUri(log)} has no check result. The build did not get as far as the check (a compile error, for example). Fix it and capture the log again.",
-            )
+            die(Messages.Test.hasNoCheckResult(fileUri(log)))
         }
     }
     // A log cut to the first N violations cannot be compared: swaps past N go unseen, and a full log shows a false difference.
     val truncated = listOf(before, after).mapNotNull { log -> truncatedLineOf(log)?.let { "    ${fileUri(log)} : $it\n" } }.joinToString("")
     if (truncated.isNotEmpty()) {
-        warn(
-            "違反を先頭の数件だけ出したログがあるので、比べません。ログに出ていない違反が入れ替わっても気づけず、全件のログと比べると偽の差分が出るためです。\n" +
-                "$truncated    打ち切られたほうを、全件で取り直してください。$AGENT_COMMAND test --save <名前> はいつも全件を出します（-Dkatachi.maxViolations=all を Gradle に渡す）。\n" +
-                "    前のログ（before-refactor）を取り直すときは、定義をリファクタリング前に戻してから取ります。\n" +
-                "    取り直しても打ち切られるなら、テストのコードの assert() に maxViolations が書いてあります（-D より優先される）。外してから取り直してください。",
-            "Not comparing: a log shows only the first few violations. Violations missing from the log could swap without being noticed, and comparing with a full log shows a false difference.\n" +
-                "$truncated    Capture the cut-off one again with every violation. $AGENT_COMMAND test --save <name> always prints them all (it passes -Dkatachi.maxViolations=all to Gradle).\n" +
-                "    To capture the before log (before-refactor) again, put the definition back to how it was before the refactoring first.\n" +
-                "    If it is still cut off, the test code passes maxViolations to assert() (that wins over -D). Remove it and capture again.",
-        )
+        warn(Messages.Test.notComparingLogShows(truncated))
         exitWith(2)
     }
     val a = extractCheckResult(before)
     val b = extractCheckResult(after)
-    say("前: ${fileUri(before)}", "Before: ${fileUri(before)}")
-    say("後: ${fileUri(after)}", "After:  ${fileUri(after)}")
-    say("違反の見出し: 前 ${a.count { it.startsWith("[") }} 件 / 後 ${b.count { it.startsWith("[") }} 件", "Violation headings: before ${a.count { it.startsWith("[") }} / after ${b.count { it.startsWith("[") }}")
-    say(
-        "[MissingDescription]（比べない）: 前 ${countMissingDescription(before)} 件 / 後 ${countMissingDescription(after)} 件",
-        "[MissingDescription] (not compared): before ${countMissingDescription(before)} / after ${countMissingDescription(after)}",
-    )
+    say(Messages.Test.before(fileUri(before)))
+    say(Messages.Test.after(fileUri(after)))
+    say(Messages.Test.violationHeadingsBeforeAfter(a.count { it.startsWith("[") }, b.count { it.startsWith("[") }))
+    say(Messages.Test.missingdescriptionNotComparedBefore(countMissingDescription(before), countMissingDescription(after)))
     if (a == b) {
         say("")
-        say("検査結果は変わっていません。", "The check result has not changed.")
+        say(Messages.Test.checkResultHasNot)
         return 0
     }
     say("")
-    say("検査結果が変わっています（- が前だけ、+ が後だけにある行）。", "The check result has changed (- lines only in before, + lines only in after).")
+    say(Messages.Test.checkResultHasChanged)
     printCheckDiff(a, b)
     say("")
-    say(
-        "リファクタリングで振る舞いが変わっています。前のログを取り直すのではなく、定義のほうを直してください。\n" +
-            "分けた定義ファイルが [UnexpectedFile] になっているなら、${module.dir}/ を受け持つ Role の layout { } が\n" +
-            "定義のファイルの最大の深さ（<group>/<sub>/<Role>Role.kt など）まで受け入れていません。",
-        "The refactoring changed the behavior. Fix the definition instead of capturing the before log again.\n" +
-            "If the split definition files show up as [UnexpectedFile], the layout { } of the Role that owns\n" +
-            "${module.dir}/ does not accept files as deep as the deepest definition file (e.g. <group>/<sub>/<Role>Role.kt).",
-    )
+    say(Messages.Test.refactoringChangedBehaviorFix(module.dir))
     return 1
 }
 
@@ -178,7 +153,7 @@ internal fun ScriptContext.runCompareViolations(args: List<String>): Int {
 internal fun ScriptContext.runTest(args: List<String>): Int {
     val parsed = parseArgs(commandSpec("test"), args)
     parsed.positionals.firstOrNull()?.let {
-        die("test: 知らないオプションです: $it（Gradle に渡す引数は -- の後ろに）", "test: unknown option: $it (put arguments for Gradle after --)")
+        die(Messages.Test.unknownOptionPutArguments(it))
     }
     val save = parsed.value("--save")
     val gradleArgs = parsed.passthrough.toMutableList()
@@ -188,25 +163,18 @@ internal fun ScriptContext.runTest(args: List<String>): Int {
     val module = resolveModuleDir()
     val recordedRoot = checklistMeta(workdir.resolve(CHECK_LIST_FILE), "projectRoot")
     if (recordedRoot.isEmpty() || !resolve(recordedRoot).isDirectory()) {
-        warn(
-            "プロジェクトルートが分かりません（チェックリストの meta.projectRoot: '$recordedRoot'）。init をやり直してください。",
-            "Cannot find the project root (meta.projectRoot in the check list: '$recordedRoot'). Run init again.",
-        )
+        warn(Messages.Test.cannotFindProjectRoot(recordedRoot))
         return 2
     }
     val root = resolve(recordedRoot)
     val gradlew = root.resolve("gradlew")
     if (!gradlew.isRegularFile()) {
-        warn(
-            "gradlew がありません: ${fileUri(gradlew)} 。Gradle wrapper の無いプロジェクトでは、./gradlew ${module.gradlePath}:test を自分で実行してログを tmp/test-<名前>.log に保存してください。",
-            "gradlew not found: ${fileUri(gradlew)} . Without the Gradle wrapper, run ./gradlew ${module.gradlePath}:test yourself and save the log as tmp/test-<name>.log.",
-        )
+        warn(Messages.Test.withoutGradleWrapperRun(fileUri(gradlew), module.gradlePath))
         return 2
     }
     val definition = definitionDir(module)
     if (!definition.isDirectory()) {
-        val (ja, en) = definitionMissingMessage(module, definition)
-        warn(ja, en)
+        warn(definitionMissingMessage(module, definition))
         return 2
     }
 
@@ -221,11 +189,11 @@ internal fun ScriptContext.runTest(args: List<String>): Int {
 
     val jdk = detectGradleJdk(root)
     when {
-        jdk.major != null -> say("JDK: ${jdk.major}（${jdk.fromJa}）", "JDK: ${jdk.major} (${jdk.fromEn})")
-        jdk.fromJa != null -> say("JDK: 不明（${jdk.fromJa}。版を読めませんでした）", "JDK: unknown (${jdk.fromEn}; could not read the version)")
-        else -> say("JDK: 不明（JAVA_HOME も PATH の java もありません。Gradle 自身の設定に任せます）", "JDK: unknown (no JAVA_HOME and no java on PATH; leaving it to Gradle)")
+        jdk.major != null && jdk.source != null -> say(Messages.Test.jdk(jdk.major, jdk.source))
+        jdk.source != null -> say(Messages.Test.jdkUnknownCouldNot(jdk.source))
+        else -> say(Messages.Test.jdkUnknownNoJava)
     }
-    say("ログ: ${fileUri(log)}", "Log: ${fileUri(log)}")
+    say(Messages.Test.log(fileUri(log)))
 
     val command = (if (gradlew.isExecutable()) listOf("./gradlew") else listOf("sh", "./gradlew")) + listOf("${module.gradlePath}:test", "--console=plain") + gradleArgs
     val status = runToLog(command, root, log)
@@ -233,46 +201,37 @@ internal fun ScriptContext.runTest(args: List<String>): Int {
     if (save != null) {
         val copy = workdir.resolve("tmp/test-$save.log")
         Files.copy(log, copy, StandardCopyOption.REPLACE_EXISTING)
-        say("写し: ${fileUri(copy)}", "Copy: ${fileUri(copy)}")
+        say(Messages.Test.copy(fileUri(copy)))
     }
 
     val lines = log.readLinesLenientLog()
     if (!hasCheckResult(log)) {
         // No violation, but other tests of the module (a spec the user added) failed: 1, worded apart from a compile error.
         if (lines.any { it.contains("There were failing tests") }) {
-            say(
-                "結果: 検査の違反は出ていませんが、検査用モジュールのほかのテストが失敗しています（Gradle の終了コード $status）。ログの FAILED の行:",
-                "Result: no violations, but other tests in the verification module failed (Gradle exit code $status). FAILED lines in the log:",
-            )
+            say(Messages.Test.resultNoViolationsBut(status))
             lines.filter { it.endsWith("FAILED") }.take(30).forEach(out)
             return 1
         }
-        say(
-            "結果: 検査まで届いていません（コンパイルエラーなど。Gradle の終了コード $status）。ログの末尾:",
-            "Result: the check was not reached (a compile error, for example; Gradle exit code $status). Tail of the log:",
-        )
+        say(Messages.Test.resultCheckNotReached(status))
         lines.takeLast(30).forEach(out)
         return 2
     }
 
     val result = lines.firstOrNull { CHECK_FAILED_LINE.containsMatchIn(it) }?.replaceFirst(RESULT_PREFIX, "")
     val rc = if (result != null) {
-        say("結果: $result", "Result: $result")
+        say(Messages.Test.result(result))
         1
     } else {
-        say("結果: 検査は通りました（違反 0 件）", "Result: the check passed (0 violations)")
+        say(Messages.Test.resultCheckPassedViolations)
         0
     }
     val missing = countMissingDescription(log)
-    if (missing > 0) say("[MissingDescription]: $missing 件（説明を書けば減る）", "[MissingDescription]: $missing (goes down as descriptions are written)")
+    if (missing > 0) say(Messages.Test.missingdescriptionGoesDownDescriptions(missing))
     // Warnings ([AmbiguousLayout] and the like) never fail the check and only reach the log, so they are counted here.
     if (rc == 0) {
         val warnings = lines.firstNotNullOfOrNull { Regex("^\\s*Katachi check found ([0-9]+) warnings?\\..*").matchEntire(it)?.groupValues?.get(1)?.toIntOrNull() }
         if (warnings != null && warnings > 0) {
-            say(
-                "警告: $warnings 件（検査は失敗させない。内容を見て、直すか残すかを決める）",
-                "Warnings: $warnings (they never fail the check; read them and decide whether to fix or keep each)",
-            )
+            say(Messages.Test.warningsTheyNeverFail(warnings))
             lines.filter { VIOLATION_HEADING_LINE.containsMatchIn(it) && !MISSING_DESCRIPTION.containsMatchIn(it) }
                 .take(PRINT_CHECK_DIFF_MAX).forEach { out("  " + it.trimStart()) }
         }
@@ -282,26 +241,20 @@ internal fun ScriptContext.runTest(args: List<String>): Int {
     val previousOmitted = if (previous.isRegularFile()) truncatedLineOf(previous) else null
     if (previous.isRegularFile() && hasCheckResult(previous)) {
         if (omitted != null || previousOmitted != null) {
-            say(
-                "前回との差分（previous.log 比）: 比べません（違反を先頭の数件だけ出したログがあるため）",
-                "Difference from the previous run (vs previous.log): not compared (a log shows only the first few violations)",
-            )
+            say(Messages.Test.differencePreviousRunVs)
         } else {
             // Headings only: the summary line changes whenever the count does, which would add one to the difference.
             val a = extractCheckResult(previous).filter { it.startsWith("[") }
             val b = extractCheckResult(log).filter { it.startsWith("[") }
             if (a == b) {
-                say("前回との差分（previous.log 比）: 無し", "Difference from the previous run (vs previous.log): none")
+                say(Messages.Test.diffFromPreviousNone)
             } else {
-                printCheckDiff(a, b, pick("前回との差分（previous.log 比）: ", "Difference from the previous run (vs previous.log): "))
+                printCheckDiff(a, b, pick(Messages.Test.diffFromPreviousPrefix))
             }
         }
     }
     if (omitted != null) {
-        say(
-            "省略: $omitted。-Dkatachi.maxViolations に数を渡したか、テストの assert() に maxViolations が書いてあります（全件を出すには、どちらも外す）",
-            "Omitted: $omitted. Either -Dkatachi.maxViolations was given a number, or the test passes maxViolations to assert() (remove both to see everything)",
-        )
+        say(Messages.Test.omittedEitherDkatachiMaxviolations(omitted))
     }
     return rc
 }
