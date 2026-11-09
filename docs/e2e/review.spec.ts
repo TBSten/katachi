@@ -170,6 +170,9 @@ test('解決済みにする → ファイルに書き戻して次へ進む → �
 	ok('解決済みになったのは 1 件だけ（元の 1 件 + 1）', (readReview().match(/- status: resolved/g) ?? []).length === 2)
 	ok('次の指摘へ進む', (await popTitle(fb)) === '閉じた details の中への指摘')
 	ok('一覧と印から消える', /このページ 1 ·/.test((await u('.sum').textContent()) ?? ''))
+	const tb = (await u('.toast').boundingBox())!
+	const nb = (await u('.pop .act .btn.primary').boundingBox())!
+	ok('トーストが次の指摘の「解決済みにする」を覆わない', tb.y + tb.height <= nb.y || tb.y >= nb.y + nb.height || tb.x + tb.width <= nb.x || tb.x >= nb.x + nb.width, JSON.stringify({ tb, nb }))
 	await fb.act(u('.toast .btn'))
 	ok('トーストの「戻す」で元のファイルに戻る', await waitFor(() => readReview() === SET))
 	await sleep(500)

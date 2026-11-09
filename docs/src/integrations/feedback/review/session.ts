@@ -335,11 +335,13 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		pop.style.left = `${pos.left}px`
 		pop.style.top = `${pos.top}px`
 		pop.dataset.side = side
+		placeToast()
 		drawWire(here.includes(v) ? rect : null, side)
 	}
 
 	function closePop() {
 		pop.hidden = true
+		placeToast()
 		drawWire(null, null)
 		panel.classList.remove('has-pop')
 		activeId = null
@@ -632,8 +634,26 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 			t.append(b)
 		}
 		toastBox.replaceChildren(t)
+		placeToast()
 		// 知らせるだけのものは短く。戻せるもの・警告は読んで押せるだけ残す。
 		setTimeout(() => t.remove(), undo || warn ? UNDO_MS : 2500)
+	}
+
+	/**
+	 * PC では popup の真上（入らなければ真下）に、popup と同じ幅で出す。既定の右下だと、次の指摘の「解決済みにする」を覆ってしまう。
+	 * popup を閉じているとき・スマホ（上に出す）は既定の位置。
+	 */
+	function placeToast() {
+		const t = toastBox.firstElementChild as HTMLElement | null
+		if (!t) return
+		if (pop.hidden || isNarrow()) {
+			Object.assign(t.style, { left: '', top: '', right: '', bottom: '', width: '', maxWidth: '' })
+			return
+		}
+		const pr = pop.getBoundingClientRect()
+		Object.assign(t.style, { left: `${pr.left}px`, right: 'auto', bottom: 'auto', width: `${pr.width}px`, maxWidth: 'none', boxSizing: 'border-box' })
+		const h = t.offsetHeight
+		t.style.top = `${pr.top - h - 8 >= 8 ? pr.top - h - 8 : Math.min(pr.bottom + 8, innerHeight - h - 8)}px`
 	}
 
 	// ---- 一覧のパネル ----
