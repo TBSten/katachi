@@ -81,7 +81,13 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 	pop.setAttribute('aria-label', '指摘')
 	const panel = el('section', 'panel')
 	const toastBox = el('div')
-	root.append(layer, panel, pop, toastBox)
+	// 枠と popup をつなぐ線（PC だけ。popup が指摘の場所から離れていても、どこへの指摘か分かるように）。
+	const SVG = 'http://www.w3.org/2000/svg'
+	const wire = document.createElementNS(SVG, 'svg')
+	wire.setAttribute('class', 'wire')
+	const wireLine = document.createElementNS(SVG, 'path')
+	wire.append(wireLine)
+	root.append(layer, wire, panel, pop, toastBox)
 
 	let filter: Filter = parseFilter(store.get(local(), FILTER_KEY))
 	let items: ReviewView[] = []
@@ -186,9 +192,28 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		}
 	}
 
+	/**
+	 * 画面の上に貼り付いた帯（Starlight のヘッダー・スマホの目次の帯）。枠と印がその上に重ならないよう、その下端から下だけに出す。
+	 * 帯の候補は開いたときに 1 回だけ探し、位置は置き直すたびに測る。
+	 */
+	const bars = [...document.body.querySelectorAll<HTMLElement>('body > *, header, nav, [class*="toc"], mobile-starlight-toc')].filter((e) => {
+		const p = getComputedStyle(e).position
+		return (p === 'fixed' || p === 'sticky') && !e.hasAttribute('data-katachi-dev-ui') && e.localName !== 'astro-dev-toolbar'
+	})
+	function topInset(): number {
+		let inset = 0
+		for (const b of bars) {
+			const r = b.getBoundingClientRect()
+			if (r.height > 0 && r.height < 160 && r.top <= inset + 1 && r.width > innerWidth * 0.5) inset = Math.max(inset, r.bottom)
+		}
+		return inset
+	}
+
 	/** 今の位置に枠と印を置き直す（重なる印は縦にずらす）。popup も置き直す。 */
 	function refresh() {
 		if (closed) return
+		const inset = topInset()
+		layer.style.clipPath = wire.style.clipPath = inset ? `inset(${inset}px 0 0 0)` : ''
 		/** 置いた印の左端と下端（同じ列で重なれば下へずらす）。 */
 		const placed: { left: number; bottom: number }[] = []
 		for (const v of here) {
@@ -235,10 +260,28 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		return panel.getBoundingClientRect()
 	}
 
+	/** popup と枠を線でつなぐ。横に置いたときだけ（下・上に置いたときは近いので引かない）。 */
+	function drawWire(rect: DOMRect | null, side: string | null) {
+		const pr = pop.getBoundingClientRect()
+		if (!rect || pop.hidden || isNarrow() || (side !== 'right' && side !== 'left') || !(rect.width || rect.height) || rect.bottom < 0 || rect.top > innerHeight) {
+			wire.style.display = 'none'
+			return
+		}
+		const x1 = side === 'right' ? rect.right + 3 : rect.left - 3
+		const x2 = side === 'right' ? pr.left : pr.right
+		if (Math.abs(x2 - x1) < 4) { wire.style.display = 'none'; return }
+		const y1 = Math.min(Math.max(pr.top + 22, rect.top + 4), rect.bottom - 4)
+		const y2 = Math.min(Math.max(y1, pr.top + 14), pr.bottom - 14)
+		const mx = (x1 + x2) / 2
+		wireLine.setAttribute('d', `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`)
+		wire.dataset.tier = pop.dataset.tier ?? 'none'
+		wire.style.display = ''
+	}
+
 	function placePop() {
-		if (pop.hidden || !activeId || isNarrow()) return
+		if (pop.hidden || !activeId || isNarrow()) return drawWire(null, null)
 		const v = sorted.find((x) => x.id === activeId)
-		if (!v) return
+		if (!v) return drawWire(null, null)
 		const rect = anchorOf(v)
 		const view = { width: innerWidth, height: innerHeight }
 		const { side, width } = chooseSide(rect, view, 380, 280)
@@ -259,10 +302,12 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		pop.style.left = `${pos.left}px`
 		pop.style.top = `${pos.top}px`
 		pop.dataset.side = side
+		drawWire(targets.get(v.id) ? rect : null, side)
 	}
 
 	function closePop() {
 		pop.hidden = true
+		drawWire(null, null)
 		panel.classList.remove('has-pop')
 		activeId = null
 		if (autoFolded) {
@@ -357,7 +402,13 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		if (v.line) where.append(el('b', 'where-line', formatLine(v.line)), document.createTextNode(' '))
 		where.append(document.createTextNode(v.file.split('/').pop() ?? v.file))
 		const set = sets.find((s) => s.name === v.set)
-		where.title = `${v.file}${v.line ? `:${v.line.start}` : ''}\n${set?.title ?? v.set}${set?.base ? `（${set.base} の行番号）` : ''}`
+		const loc = `${v.file}${v.line ? `:${v.line.start === v.line.end ? v.line.start : `${v.line.start}-${v.line.end}`}` : ''}`
+		where.title = `${loc}\n${set?.title ?? v.set}${set?.base ? `（${set.base} の行番号）` : ''}\nクリックで「${loc}」をコピー`
+		where.setAttribute('role', 'button')
+		where.tabIndex = 0
+		const copy = () => void navigator.clipboard?.writeText(loc).then(() => toast(`コピーしました: ${loc}`), () => toast('コピーできませんでした', undefined, true))
+		where.addEventListener('click', copy)
+		onKeyInside(where, 'keydown', (e) => { if (e.key === 'Enter') copy() })
 		const x = el('button', 'x', '×')
 		x.type = 'button'
 		x.title = '閉じる（Esc）'
@@ -623,6 +674,17 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 			const ul = el('div', 'rows')
 			for (const v of loose) ul.append(row(v))
 			body.append(ul)
+		}
+		if (sets.length) {
+			const foot = el('div', 'sets')
+			for (const st of sets) {
+				const mine = items.filter((v) => v.set === st.name)
+				const line = el('div', 'set')
+				line.append(el('span', 'set-title', st.title), el('span', 'set-n', `未解決 ${mine.filter((v) => v.status === 'open').length} · 解決済み ${mine.filter((v) => v.status === 'resolved').length}`))
+				line.title = `${st.title}\n${st.file}`
+				foot.append(line)
+			}
+			body.append(foot)
 		}
 		const errors = sets.flatMap((s) => s.errors.map((e) => `${s.name}.md: ${e}`))
 		if (loadError) errors.unshift(`読み込めません: ${loadError}`)

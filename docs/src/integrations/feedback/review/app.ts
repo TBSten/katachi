@@ -4,6 +4,8 @@
 import type { DevToolbarApp } from 'astro'
 import { EVENT_REVIEW_REQUEST, EVENT_REVIEW_RESULT, type ReviewRequest, type ReviewResult } from '../core/protocol'
 import { createRpc } from '../shared/rpc'
+import { pageSourceFile } from '../shared/srcmap'
+import { onPage } from './order'
 import { OPEN_KEY, openReview, type ReviewSession } from './session'
 
 /** 出しているあいだ立てておく印（sessionStorage）。 */
@@ -34,9 +36,20 @@ export default {
 	init(_canvas, app, server) {
 		const rpc = createRpc<Req, ReviewResult>(server, EVENT_REVIEW_REQUEST, EVENT_REVIEW_RESULT)
 		let session: ReviewSession | null = null
+		/** 隠しているあいだも、このページに未解決の指摘があれば toolbar のボタンに小さな点を出す。 */
+		const hint = async () => {
+			const r = await rpc.call({ op: 'load' }).promise
+			if (!r.ok) return
+			const base = import.meta.env.BASE_URL.replace(/\/$/, '')
+			const src = pageSourceFile()
+			const where = { pathname: location.pathname, source: src.guessed ? null : src.path, base }
+			const n = r.items.filter((v) => v.status === 'open' && onPage(v, where)).length
+			app.toggleNotification({ state: n > 0, level: 'info' })
+		}
 		const close = () => {
 			session?.close()
 			session = null
+			void hint()
 		}
 		app.onToggled(({ state }) => {
 			remember(state)
@@ -53,5 +66,6 @@ export default {
 		})
 		// 前のページで出していたら、このページでも出す。
 		if (remembered()) app.toggleState({ state: true })
+		void hint()
 	},
 } satisfies DevToolbarApp

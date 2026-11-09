@@ -24,6 +24,10 @@ button, input { font: inherit; }
 .chip { flex: none; padding: 1px 7px; border-radius: 9px; background: var(--c); color: #fff; font-size: 11px; font-weight: 700; }
 .badge { flex: none; padding: 1px 7px; border-radius: 9px; font-size: 11px; font-weight: 600; color: var(--p-done); border: 1px solid currentColor; }
 .where { flex: 1; min-width: 0; font-size: 11px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.where { cursor: copy; }
+.where:hover { color: var(--fg-2); text-decoration: underline dotted; }
+.wire { position: fixed; inset: 0; width: 100vw; height: 100vh; overflow: visible; pointer-events: none; z-index: 1; }
+.wire path { fill: none; stroke: var(--c); stroke-width: 2; stroke-dasharray: 5 4; opacity: .8; }
 .where-line { font-weight: 600; color: var(--fg-2); }
 .x { flex: none; width: 30px; height: 30px; font-size: 18px; line-height: 1; color: var(--fg-2); background: none; border: 0; border-radius: 6px; cursor: pointer; }
 .x:hover { background: var(--hover); }
@@ -79,6 +83,10 @@ button, input { font: inherit; }
 .row-meta { flex: none; font-size: 11px; color: var(--muted); }
 .row-meta.warn { color: var(--danger); }
 .empty { font-size: 12px; color: var(--muted); }
+.sets { margin: 10px 0 0; padding-top: 6px; border-top: 1px solid var(--border); font-size: 11px; color: var(--muted); }
+.set { display: flex; gap: 8px; }
+.set-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.set-n { flex: none; }
 .errors { margin: 8px 0 0; padding: 6px 8px; font-size: 11px; color: var(--danger); background: var(--danger-bg); border-radius: 6px; overflow-wrap: anywhere; }
 .errors summary { cursor: pointer; font-weight: 600; }
 .errors ul { margin: 6px 0 0; padding-left: 16px; }
