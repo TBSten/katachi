@@ -112,6 +112,8 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 	const GUARD_MS = 700
 	/** popup に出す保存の失敗（別の指摘を開くと消す）。 */
 	let popError: string | null = null
+	/** 書きかけのひとこと（指摘ごと）。読み直しで popup を作り直しても消さない。 */
+	const drafts = new Map<string, string>()
 	let busy = false
 	let closed = false
 	let raf = 0
@@ -425,6 +427,10 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 			if (!pop.hidden || autoFolded) closePop()
 			return
 		}
+		// 同じ指摘を作り直すとき（読み直し・解決の付け外し）は、本文のスクロールとひとことの入力中を保つ。
+		const same = !pop.hidden && pop.dataset.id === v.id
+		const keepScroll = same ? (pop.querySelector('.pop-body')?.scrollTop ?? 0) : 0
+		const keepFocus = same && root.activeElement instanceof HTMLInputElement && pop.contains(root.activeElement)
 		pop.hidden = false
 		pop.dataset.tier = priorityTier(v.priority)
 		pop.dataset.id = v.id
@@ -494,6 +500,8 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 			input.placeholder = 'ひとこと（任意。agent が読みます）'
 			input.maxLength = 500
 			input.setAttribute('aria-label', '解決済みにするときのひとこと')
+			input.value = drafts.get(v.id) ?? ''
+			input.addEventListener('input', () => drafts.set(v.id, input.value))
 			const btn = el('button', 'btn primary', '解決済みにする')
 			btn.type = 'button'
 			btn.disabled = busy || Date.now() < guardUntil
@@ -534,6 +542,12 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		nav.append(prev, next, count)
 		foot.append(act, err, nav)
 		pop.replaceChildren(head, body, foot)
+		body.scrollTop = keepScroll
+		if (keepFocus) {
+			const input = act.querySelector('input')
+			input?.focus()
+			input?.setSelectionRange(input.value.length, input.value.length)
+		}
 		panel.classList.add('has-pop')
 		placePop()
 	}
@@ -551,6 +565,7 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		if (!r.ok) return failed(v, r.error)
 		accept(r)
 		popError = null
+		drafts.delete(v.id)
 		// 解決済みを隠しているなら、次の指摘（無ければ前）へ進む。出しているならそのまま。
 		const stay = filter.showResolved
 		const follow = stay ? v.id : (sorted[i + 1] ?? sorted[i - 1])?.id ?? null
