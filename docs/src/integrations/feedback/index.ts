@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url'
-import { resolve } from 'node:path'
+import { join, resolve } from 'node:path'
 import type { AstroIntegration } from 'astro'
 import { createBuildContext } from './server/build-info'
 import { lanWarning } from './server/host'
@@ -8,10 +8,12 @@ import { saveFeedback } from './server/save'
 import { createFileStore } from './server/store'
 import { registerMemoServer } from './memo/server'
 import { MEMO_ICON } from './memo/icon'
+import { REVIEW_ICON } from './review/icon'
+import { createReviewStore, registerReviewServer, REVIEW_SUBDIR } from './server/review'
 import { LOG_BUFFER_SCRIPT } from './inline/log-buffer'
 import { checkPayload } from './core/limits'
 import { createCodeBlockPlugin, createMermaidPlugin, createSourcePlugin } from './server/source'
-import { APP_ID, MEMO_APP_ID, EVENT_RESULT, EVENT_SAVE, type SavePayload, type SaveResult } from './core/protocol'
+import { APP_ID, MEMO_APP_ID, REVIEW_APP_ID, EVENT_RESULT, EVENT_SAVE, type SavePayload, type SaveResult } from './core/protocol'
 
 /** リポジトリ直下の `.local/feedback/`（このファイルは docs/src/integrations/feedback/ にある）。 */
 const defaultDir = fileURLToPath(new URL('../../../../.local/feedback/', import.meta.url))
@@ -48,6 +50,13 @@ export default function feedback(): AstroIntegration {
 					icon: MEMO_ICON,
 					entrypoint: new URL('./memo/app.ts', import.meta.url),
 				})
+				// docs への指摘を印と popup で出す。既定は隠したまま（押したときだけ出す）。
+				addDevToolbarApp({
+					id: REVIEW_APP_ID,
+					name: 'Review',
+					icon: REVIEW_ICON,
+					entrypoint: new URL('./review/app.ts', import.meta.url),
+				})
 			},
 			// EC など他の統合が processor に足し終えたあとで、前に行番号付け・後ろにコードブロックの付け直しを差す。
 			'astro:config:done': ({ config, logger }) => {
@@ -68,6 +77,7 @@ export default function feedback(): AstroIntegration {
 				const dir = process.env.KATACHI_FEEDBACK_DIR ? resolve(process.env.KATACHI_FEEDBACK_DIR) : defaultDir
 				const store = createFileStore(dir, repoRoot)
 				registerMemoServer(toolbar, store)
+				registerReviewServer(toolbar, createReviewStore(join(dir, REVIEW_SUBDIR), repoRoot))
 				// dev サーバーの起動時刻と、起動時の統合のハッシュ（記録のビルド節・古さの判定に使う）。
 				const build = createBuildContext()
 				toolbar.on(EVENT_SAVE, async (data: unknown) => {

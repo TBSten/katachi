@@ -4,6 +4,7 @@
 //   node docs/src/integrations/feedback/server/cli.mjs list [--state=open|archived|all] [--json]
 //   node docs/src/integrations/feedback/server/cli.mjs read <id>
 //   node docs/src/integrations/feedback/server/cli.mjs archive <id> --note "<1行>"
+//   node docs/src/integrations/feedback/server/cli.mjs review <list|show|check|remove|reopen> …   （docs への指摘。review/README.md）
 //
 // 置き場は KATACHI_FEEDBACK_DIR（無ければリポジトリ直下の .local/feedback/）。
 //
@@ -32,6 +33,11 @@ const USAGE = `使い方:
   cli.mjs list [--state=open|archived|all] [--json]   未対応（既定）の一覧。id・作成日時・ページ・ソース・要約
   cli.mjs read <id>                                    記録の全文
   cli.mjs archive <id> --note "<1行>"                  archived/ に移し、末尾に対応メモを足す
+  cli.mjs review list [--status=open|resolved|all] [--json]  指摘の一覧（既定は all）。id・状態・優先度・場所・見出し・一言
+  cli.mjs review show <id>                             指摘 1 件の全部（本文・今のソースでの行）
+  cli.mjs review check                                 指摘のファイルを検査（読めない指摘・無いファイル・quote が見つからない行）。問題があれば 1 で終わる
+  cli.mjs review remove <id>                           確かめた指摘を消す（解決済みのものだけ。--force で未解決も）
+  cli.mjs review reopen <id> --note "<理由>"           解決済みを差し戻す（ai-note に理由を書く）
 置き場: KATACHI_FEEDBACK_DIR か、リポジトリ直下の .local/feedback/`
 
 /** 位置引数と --key=value / --key value に分ける。 */
@@ -42,7 +48,7 @@ function parseArgs(argv) {
 		const a = argv[i]
 		if (!a.startsWith('--')) positional.push(a)
 		else if (a.includes('=')) flags[a.slice(2, a.indexOf('='))] = a.slice(a.indexOf('=') + 1)
-		else if (['json'].includes(a.slice(2))) flags[a.slice(2)] = true
+		else if (['json', 'force'].includes(a.slice(2))) flags[a.slice(2)] = true
 		else flags[a.slice(2)] = argv[++i] ?? ''
 	}
 	return { positional, flags }
@@ -167,7 +173,88 @@ async function main() {
 		return
 	}
 
+	if (cmd === 'review') return review(positional.slice(1), flags, dir)
+
 	throw new Error(`知らないサブコマンド: ${cmd}\n${USAGE}`)
+}
+
+const placeMark = { ok: '', moved: '<moved>', lost: '<lost>', page: '', 'no-file': '<no-file>' }
+const lineText = (v) => (v.line ? `:${v.line.start === v.line.end ? v.line.start : `${v.line.start}-${v.line.end}`}` : '')
+
+/** 指摘（Review）。置き場の review/ を読む。 */
+async function review([sub, id], flags, dir) {
+	const { createReviewStore, REVIEW_SUBDIR } = await import(pathToFileURL(resolve(here, 'review.ts')).href)
+	const store = createReviewStore(resolve(dir, REVIEW_SUBDIR), repoRoot)
+	const data = await store.load()
+	const find = () => {
+		if (!id) throw new Error(`id を指定してください: review ${sub} <id>`)
+		const v = data.items.find((x) => x.id === id)
+		if (!v) throw new Error(`指摘が見つかりません: ${id}（review list で id を確かめてください）`)
+		return v
+	}
+
+	if (!sub || sub === 'list') {
+		const status = flags.status ?? 'all'
+		if (!['open', 'resolved', 'all'].includes(status)) throw new Error(`--status は open / resolved / all のどれか: ${status}`)
+		const rows = data.items.filter((v) => status === 'all' || v.status === status)
+		if (flags.json) return console.log(JSON.stringify(rows, null, 2))
+		if (!data.sets.length) return console.log(`（指摘のファイルがありません: ${store.dir}）`)
+		for (const v of rows) {
+			const note = [v.note && `人: ${v.note}`, v.aiNote && `agent: ${v.aiNote}`].filter(Boolean).join(' / ')
+			console.log([v.id, v.status, v.priority === null ? '-' : `p${v.priority}`, `${v.file}${lineText(v)}`, clip(v.title, 70), placeMark[v.place], note && `（${clip(note, 80)}）`].filter((x) => x).join(' | '))
+		}
+		const count = (s) => data.items.filter((v) => v.status === s).length
+		console.log(`計 ${rows.length} 件（open ${count('open')} / resolved ${count('resolved')}）`)
+		return
+	}
+
+	if (sub === 'show') {
+		const v = find()
+		const set = data.sets.find((s) => s.name === v.set)
+		const out = [
+			`# ${v.title}`,
+			'',
+			`- id: ${v.id}`,
+			`- まとまり: ${set?.title ?? v.set}（${set?.file ?? ''}）`,
+			`- 状態: ${v.status}${v.resolvedAt ? `（${v.resolvedAt}）` : ''}`,
+			`- 優先度: ${v.priority === null ? '-' : `p${v.priority}`}`,
+			`- 場所: ${v.file}${lineText(v)}${v.place === 'moved' ? `（書かれた行 ${lineText({ line: v.written }).slice(1)} から動かした）` : ''}${v.place === 'lost' ? '（quote が今のソースに見つからない。もう直っているかも）' : ''}${v.place === 'no-file' ? '（ファイルが無い）' : ''}`,
+			...(v.note ? [`- 人の一言: ${v.note}`] : []),
+			...(v.aiNote ? [`- agent の一言: ${v.aiNote}`] : []),
+			'',
+			v.body,
+		]
+		return console.log(out.join('\n'))
+	}
+
+	if (sub === 'check') {
+		let problems = 0
+		for (const s of data.sets) for (const e of s.errors) { problems++; console.log(`${s.file}: ${e}`) }
+		for (const v of data.items) {
+			if (v.place === 'lost') { problems++; console.log(`${v.id}: quote が ${v.file}${lineText(v)} の近くに見つかりません（${clip(v.title, 50)}）`) }
+		}
+		const placed = data.items.filter((v) => v.place === 'moved').length
+		console.log(`指摘 ${data.items.length} 件・問題 ${problems} 件${placed ? `（quote で行を合わせたもの ${placed} 件）` : ''}: ${store.dir}`)
+		if (problems) process.exitCode = 1
+		return
+	}
+
+	if (sub === 'remove') {
+		const v = find()
+		if (v.status !== 'resolved' && !flags.force) throw new Error(`まだ解決済みではありません: ${id}（人が解決済みにしたものだけを消します。消すなら --force）`)
+		await store.remove(v.id)
+		return console.log(`removed: ${v.id}（${clip(v.title, 60)}）`)
+	}
+
+	if (sub === 'reopen') {
+		const v = find()
+		const note = typeof flags.note === 'string' ? flags.note.trim() : ''
+		if (!note) throw new Error('--note "<理由>" が必要です（何が直っていないか。人が popup で読みます）')
+		await store.sendBack(v.id, note)
+		return console.log(`reopened: ${v.id}`)
+	}
+
+	throw new Error(`知らない review のサブコマンド: ${sub}\n${USAGE}`)
 }
 
 // import されたとき（テスト）は走らせない。

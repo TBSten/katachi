@@ -1,0 +1,57 @@
+// Review の toolbar アプリ。押すと、今のページへの指摘を印と枠で出し、印を押すと popup で読める。もう一度押す・× で隠す。
+// 既定は隠したまま。出しているあいだはタブの中で覚えておき（sessionStorage）、ページを移っても出し続ける。
+// astro/toolbar の defineToolbarApp は使わず、型だけを astro から取る（理由は server/optimize-deps.ts）。
+import type { DevToolbarApp } from 'astro'
+import { EVENT_REVIEW_REQUEST, EVENT_REVIEW_RESULT, type ReviewRequest, type ReviewResult } from '../core/protocol'
+import { createRpc } from '../shared/rpc'
+import { OPEN_KEY, openReview, type ReviewSession } from './session'
+
+/** 出しているあいだ立てておく印（sessionStorage）。 */
+export const ON_KEY = 'katachi-review:on'
+
+const remember = (on: boolean) => {
+	try {
+		if (on) sessionStorage.setItem(ON_KEY, '1')
+		else {
+			sessionStorage.removeItem(ON_KEY)
+			sessionStorage.removeItem(OPEN_KEY)
+		}
+	} catch {
+		// 覚えられなくても動く（ページを移ると隠れるだけ）。
+	}
+}
+const remembered = () => {
+	try {
+		return sessionStorage.getItem(ON_KEY) === '1'
+	} catch {
+		return false
+	}
+}
+
+type Req = ReviewRequest extends infer R ? (R extends { requestId: string } ? Omit<R, 'requestId'> : never) : never
+
+export default {
+	init(_canvas, app, server) {
+		const rpc = createRpc<Req, ReviewResult>(server, EVENT_REVIEW_REQUEST, EVENT_REVIEW_RESULT)
+		let session: ReviewSession | null = null
+		const close = () => {
+			session?.close()
+			session = null
+		}
+		app.onToggled(({ state }) => {
+			remember(state)
+			if (!state) return close()
+			if (session) return
+			session = openReview({
+				call: (req) => rpc.call(req).promise,
+				// パネルの × から隠したときは、toolbar のアプリも閉じた状態に戻す。
+				onClose: () => {
+					close()
+					app.toggleState({ state: false })
+				},
+			})
+		})
+		// 前のページで出していたら、このページでも出す。
+		if (remembered()) app.toggleState({ state: true })
+	},
+} satisfies DevToolbarApp

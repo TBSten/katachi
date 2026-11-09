@@ -1,5 +1,5 @@
 #!/bin/sh
-# 本番ビルド（dist）に、dev 専用のフィードバックモードとメモの痕跡が残っていないことを確かめる。
+# 本番ビルド（dist）に、dev 専用のフィードバックモード・メモ・指摘（Review）の痕跡が残っていないことを確かめる。
 # 使い方: scripts/check-no-dev-tools-in-dist.sh <dist のフォルダ>
 # 1 件でも見つかれば、見つけたファイルと行を出して 1 で終わる。
 #
@@ -7,6 +7,7 @@
 # （docs/src/integrations/feedback/test/dist-check.test.ts）。定数を変えたらここも直す。
 #   katachi-feedback  APP_ID（core/protocol.ts）。toolbar アプリの id・イベント名の接頭辞
 #   katachi-memo      メモの toolbar アプリの id
+#   katachi-review    指摘（Review）の toolbar アプリの id
 #   data-fb-src       SRC_ATTR（core/protocol.ts）。本文の要素に付く行番号の属性
 #   __katachiFeedbackLog  LOG_GLOBAL（core/console-section.ts）。ログのバッファの window 名
 #   modern-screenshot スクショの依存（toolbar アプリの中でだけ動的 import する）
@@ -14,6 +15,7 @@ set -eu
 
 PATTERNS='katachi-feedback
 katachi-memo
+katachi-review
 data-fb-src
 __katachiFeedbackLog
 modern-screenshot'

@@ -116,3 +116,46 @@ export type MemoResult =
 	| { requestId: string; ok: true; op: 'load'; text: string | null; fields: MemoFieldDef[] }
 	| { requestId: string; ok: true; op: 'save'; file: string | null }
 	| { requestId: string; ok: false; error: string }
+
+// ---- Review（docs への指摘を、ページの上に印と popup で出す） ----
+
+/** Review の toolbar アプリの id。本番ビルドに出ていないことの確認でも、この文字列を grep する。 */
+export const REVIEW_APP_ID = 'katachi-review'
+
+/** ブラウザ → サーバー: 指摘の読み込み・解決済みの印の付け外し（op で分ける）。 */
+export const EVENT_REVIEW_REQUEST = 'katachi-review:request'
+/** サーバー → ブラウザ: その結果。 */
+export const EVENT_REVIEW_RESULT = 'katachi-review:result'
+
+export type ReviewRequest =
+	| { requestId: string; op: 'load' }
+	/** 人が解決済みにする（note は一言。空でもよい）。 */
+	| { requestId: string; op: 'resolve'; id: string; note: string }
+	/** 人が解決済みを戻す。 */
+	| { requestId: string; op: 'reopen'; id: string }
+
+/** 画面に出す指摘 1 件。行は今のソースに合わせて引き直したもの（review/model.ts の relocate）。 */
+export type ReviewView = {
+	id: string
+	set: string
+	title: string
+	priority: number | null
+	/** リポジトリ直下からのパス。 */
+	file: string
+	/** 引き直した行。null ならページ全体への指摘。 */
+	line: { start: number; end: number } | null
+	/** 指摘のファイルに書かれた行。 */
+	written: { start: number; end: number } | null
+	place: 'ok' | 'moved' | 'lost' | 'page' | 'no-file'
+	status: 'open' | 'resolved'
+	note?: string
+	resolvedAt?: string
+	aiNote?: string
+	body: string
+}
+
+export type ReviewSetView = { name: string; title: string; base?: string; file: string; errors: string[] }
+
+export type ReviewResult =
+	| { requestId: string; ok: true; sets: ReviewSetView[]; items: ReviewView[] }
+	| { requestId: string; ok: false; error: string }
