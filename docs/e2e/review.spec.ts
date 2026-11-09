@@ -195,6 +195,20 @@ test('閉じた details・選ばれていないタブ・畳んだコードの中
 	const vp = fb.page.viewportSize()!
 	ok('その行が画面に入るようスクロールする', lb.y > 0 && lb.y < vp.height, JSON.stringify(lb))
 	await fb.shot('review-3-code-line')
+
+	// 印（隠れたタブを囲む枠のそば）から開いても、タブを開いた先の行までスクロールする。
+	// Starlight は選んだタブを覚えているので、忘れさせてから読み直す（行が選ばれていないタブに隠れた状態に戻す）。
+	await fb.page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('starlight-synced-tabs')).forEach((k) => localStorage.removeItem(k)))
+	await fb.fresh(FIRST)
+	ok('タブを忘れさせると、行はまた隠れている', !(await line.evaluate((l) => l.checkVisibility())))
+	await u('.pin').first().waitFor({ state: 'visible', timeout: 5000 })
+	// スマホの一覧は下に重なるので、畳んでから印を押す。
+	if (fb.mobile && !(await u('.panel').getAttribute('class'))?.includes('is-folded')) await fb.act(u('.panel .fold'))
+	await fb.act(u('.pin').first())
+	await u('.pop:not([hidden])').waitFor({ state: 'visible', timeout: 5000 })
+	await sleep(400)
+	const lb2 = (await line.boundingBox())!
+	ok('印から開いても、その行が画面に入る', lb2.y > 0 && lb2.y < vp.height, JSON.stringify(lb2))
 })
 
 test('次のページへ: ページを移って popup が開く。ページの無いファイルは一覧から開ける', async ({ fb }) => {

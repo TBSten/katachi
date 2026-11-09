@@ -348,16 +348,19 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		}
 		const t = targets.get(id)
 		if (t) {
+			// 隠れていた（タブ・details・畳んだコード）なら、開くと場所が動くので、印から開いたときもスクロールする。
+			let moved = false
 			if (isHidden(t)) {
+				moved = true
 				unhide(t.el)
 				// 開いたタブ・details の中身で探し直す（見えている要素を選び直す）。
 				targets.set(id, v.line ? findTarget(document, v.file, v.line) : null)
 			}
 			const nt = targets.get(id)
 			// コードの行が畳んだブロックの中なら開く（「Show more」）。
-			if (nt) expandCode(nt)
+			if (nt && expandCode(nt)) moved = true
 			// scrollIntoView は畳んだコードブロックの中までスクロールしてしまうので、ページだけを動かす。開いた直後は高さが変わるので 2 フレーム待つ。
-			if (nt && opt.scroll !== false) {
+			if (nt && (opt.scroll !== false || moved)) {
 				requestAnimationFrame(() => requestAnimationFrame(() => {
 					if (closed || activeId !== id) return
 					const r = rectOfTarget(nt)
