@@ -95,10 +95,16 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
           }
         }
 
+        dependencyResolutionManagement {
+          repositories {
+            mavenCentral()
+          }
+        }
+
         include(":architecture-test")
         ```
 
-        katachi's Gradle plugin is published to Maven Central, not to the Gradle Plugin Portal. Without `mavenCentral()` in `pluginManagement { }`, the plugin cannot be resolved.
+        katachi's Gradle plugin is published to Maven Central, not to the Gradle Plugin Portal. Without `mavenCentral()` in `pluginManagement { }`, the plugin cannot be resolved. katachi, Kotlin, and JUnit dependencies also come from Maven Central, so `dependencyResolutionManagement { }` needs `mavenCentral()` too (if your project already has it, you don't need to add it).
 
     2. **Declare the dependencies**
 
@@ -244,7 +250,7 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
             <details>
             <summary>Example output on failure</summary>
 
-            The definition in step 3 put `*UseCase.kt` under `domain/src/main/kotlin/usecase/`. If you place `GetUserUseCase.kt` one level up, at `domain/src/main/kotlin/GetUserUseCase.kt`, the violation is reported like this.
+            This example is after you have dealt with the violations from step 5. The definition in step 3 put `*UseCase.kt` under `domain/src/main/kotlin/usecase/`. If you place `GetUserUseCase.kt` one level up, at `domain/src/main/kotlin/GetUserUseCase.kt`, the violation is reported like this.
 
             ```text nocollapse
             Katachi check failed: 1 violation (Unexpected: 1)

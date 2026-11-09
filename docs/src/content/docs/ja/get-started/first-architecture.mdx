@@ -95,10 +95,16 @@ katachi が必要かどうか迷う場合は、先に [モチベーション](/k
           }
         }
 
+        dependencyResolutionManagement {
+          repositories {
+            mavenCentral()
+          }
+        }
+
         include(":architecture-test")
         ```
 
-        katachi の Gradle plugin は Gradle Plugin Portal ではなく Maven Central に公開しています。`pluginManagement { }` に `mavenCentral()` が無いと、plugin を解決できません。
+        katachi の Gradle plugin は Gradle Plugin Portal ではなく Maven Central に公開しています。`pluginManagement { }` に `mavenCentral()` が無いと、plugin を解決できません。katachi・Kotlin・JUnit の依存も Maven Central から取るので、`dependencyResolutionManagement { }` にも `mavenCentral()` が要ります（プロジェクトですでに書いていれば足さなくて構いません）。
 
     2. **依存を書く**
 
@@ -244,7 +250,7 @@ katachi が必要かどうか迷う場合は、先に [モチベーション](/k
             <details>
             <summary>失敗したときの出力例</summary>
 
-            手順 3 の定義では `domain/src/main/kotlin/usecase/` に `*UseCase.kt` を置くことにしていました。その 1 つ上の `domain/src/main/kotlin/GetUserUseCase.kt` に置くと、次のように違反が報告されます。
+            手順 5 で出た違反を片付けたあとの例です。手順 3 の定義では `domain/src/main/kotlin/usecase/` に `*UseCase.kt` を置くことにしていました。その 1 つ上の `domain/src/main/kotlin/GetUserUseCase.kt` に置くと、次のように違反が報告されます。
 
             ```text nocollapse
             Katachi check failed: 1 violation (Unexpected: 1)
