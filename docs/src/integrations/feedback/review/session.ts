@@ -58,8 +58,8 @@ function placeNote(v: ReviewView, found: boolean, hasPage: boolean): { text: str
 		case 'moved': return { text: `指摘を書いたあとでソースが変わったので、${written} → ${formatLine(v.line!)} に合わせて出しています。`, warn: false }
 		case 'lost': return { text: `quote が今のソースに見つかりません。書かれた行（${written}）に出しています。もう直っているかもしれません。`, warn: true }
 		case 'no-file': return { text: `ファイルがありません: ${v.file}`, warn: true }
-		case 'page': return { text: 'ページ全体への指摘です（行の指定がありません）。', warn: false }
-		default: return found || !v.line ? null : { text: `${formatLine(v.line)} は本文に出ない行です（frontmatter・import・コメントなど）。`, warn: false }
+		case 'page': return { text: 'ページ全体への指摘です（行の指定がありません）。印はページの見出しに出しています。', warn: false }
+		default: return found || !v.line ? null : { text: `${formatLine(v.line)} は本文に出ない行です（frontmatter・import・コメントなど）。印はページの見出しに出しています。`, warn: false }
 	}
 }
 
@@ -171,6 +171,17 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 
 	const numberOf = (id: string) => sorted.findIndex((v) => v.id === id) + 1
 
+	/**
+	 * 印を置く先。本文の要素が無い指摘（ページ全体・frontmatter など本文に出ない行）は、ページの見出し（h1）に置く。
+	 * targets には本文で見つけた要素だけを入れておく（「本文の外」の表示に使う）。
+	 */
+	const markTarget = (v: ReviewView): Target | null => {
+		const t = targets.get(v.id)
+		if (t) return t
+		const h1 = document.querySelector('main h1') ?? document.querySelector('h1')
+		return h1 ? { el: h1, lines: [] } : null
+	}
+
 	/** 同じ場所（同じ要素・同じコードの行）を指す指摘は、枠を 1 つにまとめる（色はいちばん高い優先度）。 */
 	const boxes = new Map<string, HTMLElement>()
 	const placeKey = (t: Target) => `${t.el.getAttribute('data-fb-src')}|${t.lines.length ? `${[...t.el.querySelectorAll('.ec-line')].indexOf(t.lines[0]!)}+${t.lines.length}` : ''}`
@@ -180,7 +191,7 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		marks.clear()
 		boxes.clear()
 		for (const v of here) {
-			const t = targets.get(v.id)
+			const t = markTarget(v)
 			if (!t) continue
 			const tier = priorityTier(v.priority)
 			const key = placeKey(t)
@@ -240,12 +251,12 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		const placed: { left: number; bottom: number }[] = []
 		for (const v of here) {
 			const m = marks.get(v.id)
-			let t = targets.get(v.id) ?? null
+			let t = markTarget(v)
 			if (!m || !t) continue
 			// DOM が差し替わった（mermaid の描画など）ら探し直す。
 			if (!t.el.isConnected) {
-				t = v.line ? findTarget(document, v.file, v.line) : null
-				targets.set(v.id, t)
+				if (targets.get(v.id)) targets.set(v.id, v.line ? findTarget(document, v.file, v.line) : null)
+				t = markTarget(v)
 				if (!t) { m.box.style.display = m.pin.style.display = 'none'; continue }
 			}
 			const r = rectOfTarget(t)
@@ -272,13 +283,11 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 
 	/** popup を置く基準（指摘の要素・ページの見出し・パネル）。 */
 	function anchorOf(v: ReviewView): DOMRect {
-		const t = targets.get(v.id)
+		const t = here.includes(v) ? markTarget(v) : null
 		if (t) {
 			const r = rectOfTarget(t)
 			if (r.width || r.height) return r
 		}
-		const h1 = document.querySelector('main h1, h1')
-		if (onPage(v, { pathname: location.pathname, source, base }) && h1) return h1.getBoundingClientRect()
 		return panel.getBoundingClientRect()
 	}
 
@@ -324,7 +333,7 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		pop.style.left = `${pos.left}px`
 		pop.style.top = `${pos.top}px`
 		pop.dataset.side = side
-		drawWire(targets.get(v.id) ? rect : null, side)
+		drawWire(here.includes(v) ? rect : null, side)
 	}
 
 	function closePop() {
@@ -370,7 +379,7 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 			autoFolded = true
 			renderPanel()
 		}
-		const t = targets.get(id)
+		const t = here.includes(v) ? markTarget(v) : null
 		if (t) {
 			// 隠れていた（タブ・details・畳んだコード）なら、開くと場所が動くので、印から開いたときもスクロールする。
 			let moved = false
@@ -380,7 +389,7 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 				// 開いたタブ・details の中身で探し直す（見えている要素を選び直す）。
 				targets.set(id, v.line ? findTarget(document, v.file, v.line) : null)
 			}
-			const nt = targets.get(id)
+			const nt = markTarget(v)
 			// コードの行が畳んだブロックの中なら開く（「Show more」）。
 			if (nt && expandCode(nt)) moved = true
 			// scrollIntoView は畳んだコードブロックの中までスクロールしてしまうので、ページだけを動かす。開いた直後は高さが変わるので 2 フレーム待つ。
