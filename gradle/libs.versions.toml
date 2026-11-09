@@ -5,7 +5,9 @@ kotlin = "2.4.10"
 kotest = "6.2.6"
 konsist = "0.18.1"
 konture = "1.0.1"
-kotlinxSerialization = "1.12.0"
+# 1.9.0 から上げない。1.10 以降は kotlin-stdlib 2.3 / 2.4 を推移的に持ち込み、:katachi はこれを api で公開するので、
+# Kotlin 2.2 の利用者がコンパイルできなくなる（metadata 2.4 を読めない）。README の「Kotlin 2.2+」を守るための固定（KATACHI-323）。
+kotlinxSerialization = "1.9.0"
 vanniktechPublish = "0.37.0"
 dokka = "2.2.0"
 junit = "6.1.3"

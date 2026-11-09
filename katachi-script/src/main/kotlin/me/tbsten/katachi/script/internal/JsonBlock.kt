@@ -1,5 +1,6 @@
 package me.tbsten.katachi.script.internal
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -51,6 +52,8 @@ internal fun replaceJsonBlock(html: String, id: String, body: String): String? {
 /** `</script>` inside a JSON string would end the block for the browser; `<\/script>` is the same string. */
 internal fun escapeScriptEnd(json: String): String = json.replace("</script", "<\\/script")
 
+// prettyPrintIndent は kotlinx-serialization 1.9.0 では Experimental（1.9.0 に固定している理由は gradle/libs.versions.toml）。
+@OptIn(ExperimentalSerializationApi::class)
 internal val prettyJson: Json = Json {
     prettyPrint = true
     prettyPrintIndent = "  "
