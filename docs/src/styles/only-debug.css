@@ -1,0 +1,19 @@
+/*
+ * `<OnlyDebug>` の枠（src/integrations/only-debug.ts）。`astro dev` でしか出ないので、
+ * 本番ビルドの CSS に残っても使われることはない。開発用だと一目で分かる破線の枠にする。
+ */
+
+.only-debug {
+	margin-top: 2rem;
+	padding: 1rem 1.25rem;
+	border: 2px dashed var(--sl-color-orange, #d97706);
+	border-radius: 0.5rem;
+	background: color-mix(in srgb, var(--sl-color-orange-low, #fff7ed) 60%, transparent);
+}
+
+.only-debug__label {
+	margin: 0 0 1rem;
+	font-size: var(--sl-text-sm);
+	font-weight: 600;
+	color: var(--sl-color-orange-high, #9a3412);
+}

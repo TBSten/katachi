@@ -1,0 +1,49 @@
+---
+title: "CLI と script"
+description: katachi CLI のサブコマンドと、それを Kotlin の DSL で並べた *.katachi.kts を katachi CLI で実行する方法。
+tags:
+  - intermediate
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+katachi には CLI と kotlin-script 用パッケージが用意されています。
+これらを活用することで、AI Agent により厳密に従わせたり、アーキテクチャの変更を自動化して、より機械的に確実な方法でアーキテクチャの運用を支援することを可能にします。
+
+## ユースケース
+
+- katachi を AI Agent にセットアップさせる
+  - [初めての定義](../../get-started/first-architecture/) でも katachi CLI を利用するよう案内されています。
+- アーキテクチャの変更を自動化する
+  - ボイラープレートを自動生成します。
+
+## インストール
+
+katachi CLI は Homebrew でインストールできます。
+
+```bash
+brew install tbsten/tap/katachi
+katachi --version
+```
+
+katachi のバージョンと CLI のバージョンは同じです。`*.katachi.kts` を実行するときは、CLI と同じバージョンの `katachi-script` がスクリプトから使われます。
+
+## 次のステップ
+
+<CardGrid>
+  <LinkCard
+    title="katachi CLI"
+    href="/katachi/ja/guides/cli-and-script/cli/"
+    description="doctor / scaffold / agent の各コマンドとオプションを確認しましょう。"
+  />
+  <LinkCard
+    title="katachi-script"
+    href="/katachi/ja/guides/cli-and-script/katachi-script/"
+    description="コマンドを Kotlin script に並べて実行する方法を学びましょう。"
+  />
+  <LinkCard
+    title="AI Agent と一緒に使う"
+    href="/katachi/ja/recipes/ai-agent/"
+    description="AI Agent に katachi のセットアップを任せる方法を学びましょう。"
+  />
+</CardGrid>

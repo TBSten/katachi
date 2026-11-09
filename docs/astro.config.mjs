@@ -4,15 +4,13 @@ import starlight from '@astrojs/starlight';
 import starlightThemeNova from 'starlight-theme-nova';
 import mermaid from 'astro-mermaid';
 import starlightLlmsTxt from 'starlight-llms-txt';
-// 内部リンクの切れをビルドで落とす。腐ったリンクを公開しないための歯止め。
 import starlightLinksValidator from 'starlight-links-validator';
-// ドキュメントの版。版の一覧は src/lib/versions.mjs にある（版を足すときに直すのはそこだけ）。
 import starlightVersions from 'starlight-versions';
 import { archivedVersions, archivedVersionSlugs, base, currentVersion, publicSections } from './src/lib/versions.mjs';
 import { satteri } from '@astrojs/markdown-satteri';
 import { satteriRebaseLinks } from './src/lib/satteri-rebase-links.mjs';
-// `astro dev` のときだけ dev toolbar に入るフィードバックモード。本番ビルドには何も出ない。
 import feedback from './src/integrations/feedback/index.ts';
+import onlyDebug from './src/integrations/only-debug.ts';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
@@ -48,10 +46,21 @@ const sidebar = (() => {
 			category(
 				{ en: 'ktFileContent', ja: 'ktFileContent' },
 				item('guides/kt-file-content', { en: 'Overview', ja: '概要' }),
-				item('guides/kt-file-content/kotlin-mapping', { en: '[AI-generated] Mapping to Kotlin features', ja: '[AI生成] Kotlin 言語機能とのマッピング' }),
+				item('guides/kt-file-content/kotlin-mapping', { en: 'Mapping to Kotlin features', ja: '言語機能との対応' }),
 			),
 			item('guides/document-generation', { en: 'Document generation', ja: 'ドキュメント生成' }),
 			item('guides/generate-code-from-template', { en: 'Generate code from template', ja: 'テンプレートからコード生成' }),
+			item('guides/diff-report', { en: 'Diff report', ja: 'Diff report' }),
+			{
+				// デフォルトで閉じる（中のページを開いているときは Starlight が開く）
+				...category(
+					{ en: 'CLI and script', ja: 'CLI と script' },
+					item('guides/cli-and-script', { en: 'Overview', ja: '概要' }),
+					item('guides/cli-and-script/cli', { en: 'katachi CLI', ja: 'katachi CLI' }),
+					item('guides/cli-and-script/katachi-script', { en: 'katachi-script', ja: 'katachi-script' }),
+				),
+				collapsed: true,
+			},
 			item('guides/baseline', { en: 'Baseline', ja: 'Baseline' }),
 			item('guides/processor', { en: 'ArchitectureProcessor', ja: 'ArchitectureProcessor とそのカスタマイズ' }),
 		),
@@ -128,6 +137,7 @@ export default defineConfig({
 	markdown: { processor: satteri({ mdastPlugins: [satteriRebaseLinks()] }) },
 	integrations: [
 		feedback(),
+		onlyDebug(),
 		// starlight より前に置くこと。starlight が markdown を処理する前に
 		// ```mermaid フェンスを差し替える必要がある。
 		mermaid({ theme: 'neutral', autoTheme: true }),
@@ -209,6 +219,7 @@ export default defineConfig({
 				'./src/styles/code-comparison.css',
 				'./src/styles/custom-global.css',
 				'./src/styles/home.css',
+				'./src/styles/only-debug.css',
 			],
 			// 英語が既定で `/katachi/` 配下、日本語は `/katachi/ja/` 配下。
 			// 訳が無いページは Starlight が既定ロケールで代替し、その旨の注意を出す。

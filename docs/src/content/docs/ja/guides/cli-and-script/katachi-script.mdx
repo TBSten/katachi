@@ -1,0 +1,197 @@
+---
+title: "katachi-script"
+description: katachi のコマンドを Kotlin の DSL で並べる *.katachi.kts の書き方と、katachi CLI での実行方法。
+tags:
+  - intermediate
+# サイドバーでは親が「概要」と出るので、「前へ」のラベルはページ名にする。
+prev: CLI と script
+---
+
+import { Aside, CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
+
+{/*
+  このページの目的: *.katachi.kts の書き方（katachi.scaffold… / katachi.agent.… のビルダー、executeCommands）と
+  katachi CLI での実行方法を説明する。各コマンドのオプションは CLI のページが持つ。
+*/}
+
+katachi-script は [Kotlin script](https://kotlinlang.org/docs/custom-script-deps-tutorial.html) をベースにして、 `*.main.kts` または `*.katachi.kts` を使って katachi CLI と同等の機能を提供するパッケージです。
+katachi の操作・コマンド呼び出しを行う自動化スクリプトを Shell script ではなく Kotlin で記述することをサポートします。
+
+<Tabs>
+<TabItem label="*.katachi.kts">
+
+```kt nocollapse title="test.katachi.kts"
+executeCommands(
+    katachi.agent.init.lang(ja),
+    katachi.scaffold.`package`("com.example.app"),
+)
+
+// 以下のコマンド実行と同等です:
+//   katachi agent init --lang ja
+//   katachi scaffold --package com.example.app
+```
+
+以下のように実行します:
+
+```shell
+katachi test.katachi.kts
+
+# 以下のコマンド実行と同等です:
+#   katachi agent init --lang ja
+#   katachi scaffold --package com.example.app
+```
+
+</TabItem>
+
+<TabItem label="*.main.kts">
+
+```kt nocollapse title="test.main.kts"
+#!/usr/bin/env kotlin
+
+@file:DependsOn("me.tbsten.katachi:katachi-script:0.4.0")
+
+import me.tbsten.katachi.script.*
+
+val katachi = Katachi(defaultPackage = "com.example.app", lang = ja)
+
+executeCommands(
+    katachi.agent.init,
+    katachi.scaffold,
+)
+```
+
+以下のように実行します:
+
+```shell
+kotlin test.main.kts
+
+# 以下のコマンド実行と同等です:
+#   katachi agent init --lang ja
+#   katachi scaffold --package com.example.app
+```
+
+</TabItem>
+</Tabs>
+
+2026年11月現在 Kotlin script は Experimental としてマークされていることに注意してください。
+
+
+## インストール
+
+*.katachi.kts の実行には katachi CLI が必要です。
+
+```shell
+brew install tbsten/tap/katachi
+katachi --version
+```
+
+*.main.kts は標準的な Kotlin script であるため Kotlin CLI (`kotlin`) が必要です。
+katachi CLI は依存関係として Kotlin CLI を含むため、katachi CLI をインストールしておけば *.main.kts も実行できますが、なんらかの理由で katachi CLI をインストールしたくない場合は Kotlin CLI のみをインストールすることもできます。
+
+```shell
+brew install kotlin
+kotlin -version
+```
+
+## `*.katachi.kts` と `*.main.kts`
+
+katachi がサポートするファイル形式には `*.katachi.kts` と `*.main.kts` があります。
+
+`*.katachi.kts` は katachi 向けの Kotlin script を記述するために用意された特別なファイルです。
+**実行に katachi CLI を必要とします**。
+
+`*.main.kts` は標準的な Kotlin script です。
+`@file:DependsOn` で katachi-script を依存関係として登録することで、Kotlin CLI のみでも katachi 関連のタスクのスクリプト実行を可能にします。
+
+| | `*.katachi.kts` | `*.main.kts` |
+| --- | --- | --- |
+| 依存 | katachi CLI | Kotlin CLI のみ |
+| DependsOn, import | 不要 | 必要 |
+| IDE のサポート | katachi IDE plugin が必要 | 標準の IntelliJ IDEA, Android Studio のみ |
+
+## 記述スタイル
+
+<Tabs>
+  <TabItem label="*.katachi.kts">
+
+    *.katachi.kts ではトップレベルの `katachi` プロパティを利用してコマンドを実行します。
+
+    ```kts {1} title="doctor.katachi.kts"
+    katachi.doctor.execute()
+
+    // 以下のコマンド実行と同等です:
+    //   katachi doctor
+    ```
+
+    各コマンドに付与したい共通設定をトップレベルプロパティで設定できます。
+
+    ```kts {1-2} title="setup.katachi.kts"
+    defaultPackage = "com.example.app"
+    lang = ja
+
+    executeCommands(
+        katachi.agent.init, // katachi agent init --lang ja
+        katachi.scaffold,   // katachi scaffold --package com.example.app
+    )
+    ```
+
+  </TabItem>
+
+  <TabItem label="*.main.kts">
+
+    各コマンドを実行する際に katachi script の依存関係と、 `Katachi` クラスのインスタンスが必要です。
+
+    ```kts {1,3,5} title="doctor.main.kts"
+    @file:DependsOn("me.tbsten.katachi:katachi-script:0.4.0")
+
+    import me.tbsten.katachi.script.*
+
+    val katachi = Katachi()
+    ```
+
+    各コマンドに付与したい共通設定を `Katachi` クラスのインスタンスに渡して設定できます。
+
+    ```kts {6-7} title="setup.main.kts"
+    @file:DependsOn("me.tbsten.katachi:katachi-script:0.4.0")
+
+    import me.tbsten.katachi.script.*
+
+    val katachi = Katachi(
+        defaultPackage = "com.example.app",
+        lang = ja,
+    )
+
+    executeCommands(
+        katachi.agent.init, // katachi agent init --lang ja
+        katachi.scaffold,   // katachi scaffold --package com.example.app
+    )
+    ```
+
+  </TabItem>
+</Tabs>
+
+## 利用可能なコマンド
+
+利用可能なコマンドの一覧・オプションなどの詳細については [CLI のページ](../cli) を参照してください。
+
+## まとめ
+
+- katachi-script は、katachi CLI のコマンドを Kotlin で並べて実行するためのパッケージです。
+- `*.katachi.kts` は katachi CLI (`katachi <ファイル>.katachi.kts`) で実行し、`@file:DependsOn` や import なしで `katachi` が使えます。
+- `*.main.kts` は Kotlin CLI (`kotlin <ファイル>.main.kts`) だけで実行でき、`@file:DependsOn` と import、`Katachi()` のインスタンスを自分で書きます。
+- 共通の設定は、`*.katachi.kts` ではトップレベルのプロパティ、`*.main.kts` では `Katachi(...)` の引数で渡します。
+
+## 次のステップ
+
+<CardGrid>
+  <LinkCard
+    title="katachi CLI"
+    href="/katachi/ja/guides/cli-and-script/cli/"
+    description="スクリプトから呼べるコマンドとオプションの一覧を確認しましょう。"
+  />
+  <LinkCard
+    title="AI Agent と一緒に使う"
+    href="/katachi/ja/recipes/ai-agent/"
+    description="AI Agent に katachi のセットアップを任せる方法を学びましょう。"
+  />
+</CardGrid>

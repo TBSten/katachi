@@ -1,0 +1,223 @@
+---
+title: "katachi CLI"
+description: The list of katachi CLI subcommands and the options of each command.
+tags:
+  - intermediate
+# The sidebar shows the parent as "Overview", so the "previous" label is the page name.
+prev: CLI and script
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+The katachi CLI (`katachi`) is a command-line tool made so that you can leave the setup and operation of katachi to an AI Agent.
+
+## Installation
+
+You can install the katachi CLI with Homebrew.
+
+```bash
+brew install tbsten/tap/katachi
+katachi --version
+```
+
+## Command list
+
+| Command | Description |
+|---| --- |
+| [`doctor`](#doctor) | Checks that the environment katachi uses is ready. |
+| [`scaffold`](#scaffold) | Adds a module for architecture tests (`architecture-test`). |
+| [`agent`](#agent) | Subcommands for AI Agents.  |
+
+## doctor
+
+Checks that the environment needed to use katachi is ready.
+
+```shell
+katachi doctor
+```
+
+<details>
+  <summary> Example output </summary>
+
+  ```
+  Everything this needs is available (katachi 0.4.0; the guide and the templates ship with it).
+     Gradle's JDK: 17 (JAVA_HOME (/Users/you/.sdkman/candidates/java/17.0.17-tem))
+     Kotlin: 2.4.10
+  ```
+
+</details>
+
+It checks the following:
+
+- [ ] The version of the JDK that Gradle uses
+- [ ] The Kotlin version of the project
+- [ ] Git
+
+
+## scaffold
+
+Creates a new module for the katachi architecture.
+
+```shell
+katachi scaffold --package com.example.app
+```
+
+<details>
+  <summary> Example output </summary>
+
+  ```
+     Gradle's JDK: 17 (JAVA_HOME (/Users/you/.sdkman/candidates/java/17.0.17-tem))
+  What will be created
+     Package:      com.example.app
+     katachi:      0.4.0 (the version of this katachi command)
+     Kotlin:       2.4.10
+     JVM toolchain: not written (the project sets no toolchain; Gradle's JDK is used)
+     konsist:      yes
+     Test framework: junit5 (the default; no kotest dependency found)
+     Dependencies: catalog (detected: gradle/libs.versions.toml; appended to file:///Users/you/demo-app/gradle/libs.versions.toml)
+                  [versions] katachi = "0.4.0"
+                  [versions] junit = "5.14.4"
+                  [libraries] katachi = { module = "me.tbsten.katachi:katachi", version.ref = "katachi" }
+                  [libraries] katachiKonsist = { module = "me.tbsten.katachi:katachi-konsist", version.ref = "katachi" }
+                  [libraries] junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+                  [libraries] junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+                  [libraries] junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+                  [plugins] katachi = { id = "me.tbsten.katachi", version.ref = "katachi" }
+     Module:       file:///Users/you/demo-app/architecture-test/ (:architecture-test; the default)
+     Sources:      file:///Users/you/demo-app/architecture-test/src/test/kotlin/com/example/app/test/architecture/
+     Add to root:  no (file:///Users/you/demo-app/build.gradle.kts)
+     Add include:  yes (file:///Users/you/demo-app/settings.gradle.kts)
+     Add to pluginManagement: no
+
+  == Created =============================================
+  file:///Users/you/demo-app/architecture-test/build.gradle.kts
+  file:///Users/you/demo-app/architecture-test/src/test/kotlin/com/example/app/test/architecture/ProjectArchitecture.kt
+  file:///Users/you/demo-app/architecture-test/src/test/kotlin/com/example/app/test/architecture/ProjectArchitectureTest.kt
+  file:///Users/you/demo-app/gradle/libs.versions.toml (appended the following)
+      [versions] katachi = "0.4.0"
+      [versions] junit = "5.14.4"
+      [libraries] katachi = { module = "me.tbsten.katachi:katachi", version.ref = "katachi" }
+      [libraries] katachiKonsist = { module = "me.tbsten.katachi:katachi-konsist", version.ref = "katachi" }
+      [libraries] junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+      [libraries] junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+      [libraries] junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+      [plugins] katachi = { id = "me.tbsten.katachi", version.ref = "katachi" }
+  file:///Users/you/demo-app/settings.gradle.kts (added the include)
+  ========================================================
+
+  Next: katachi agent test
+      architecture { } is empty, so every file is reported as Unexpected and the test
+      fails. That is expected. Only errors other than Unexpected are a problem.
+  ```
+
+</details>
+
+By default, it creates the `:architecture-test` module with this layout.
+
+```
+architecture-test/
+├── build.gradle.kts
+└── src/test/kotlin/com/example/app/test/architecture/
+    ├── ProjectArchitecture.kt       # write architecture { } here
+    └── ProjectArchitectureTest.kt   # a test that checks the code follows the definition
+```
+
+You can customize it with the following options.
+
+<table>
+    <thead>
+        <tr>
+            <th style="min-width: 14rem;">Option</th>
+            <th style="min-width: 16rem;">Description</th>
+            <th style="min-width: 12rem;">Default</th>
+            <th style="min-width: 12rem;">Example</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>{'--package <package>'}</code></td>
+            <td>The package name of the app (required). The package of the test is <code>&lt;package&gt;.test.architecture</code></td>
+            <td>None (required)</td>
+            <td><code>{'--package com.example.app'}</code></td>
+        </tr>
+        <tr>
+            <td><code>{'--katachi <version>'}</code></td>
+            <td>The version of katachi to depend on</td>
+            <td>The version recorded by <code>katachi agent init</code>. If there is none, the version of this katachi command</td>
+            <td><code>{'--katachi 0.4.0'}</code></td>
+        </tr>
+        <tr>
+            <td><code>{'--kotlin <version>'}</code></td>
+            <td>The Kotlin version the module assumes</td>
+            <td>Detected from the project (for example, <code>kotlin</code> in <code>gradle/libs.versions.toml</code>)</td>
+            <td><code>{'--kotlin 2.2.21'}</code></td>
+        </tr>
+        <tr>
+            <td><code>{'--no-konsist'}</code></td>
+            <td>Creates the module without katachi-konsist as a dependency. You can no longer use <code>ktFileContent { }</code></td>
+            <td>Included</td>
+            <td><code>{'--no-konsist'}</code></td>
+        </tr>
+        <tr>
+            <td><code>{'--module-dir <path>'}</code></td>
+            <td>Where to put the check module. A path relative to the Gradle root</td>
+            <td><code>architecture-test</code></td>
+            <td><code>{'--module-dir static-analysis/katachi'}</code></td>
+        </tr>
+        <tr>
+            <td><code>{'--test-framework <junit5 / kotest / kotest-<style>>'}</code></td>
+            <td>The test framework for the generated test and dependencies. <code>kotest</code> means FunSpec. To pick a spec style, use <code>kotest-fun</code> / <code>kotest-string</code> / <code>kotest-should</code> / <code>kotest-describe</code> / <code>kotest-behavior</code> / <code>kotest-word</code> / <code>kotest-free</code> / <code>kotest-feature</code> / <code>kotest-expect</code> / <code>kotest-annotation</code></td>
+            <td><code>kotest</code> if the project has a kotest dependency, otherwise <code>junit5</code></td>
+            <td><code>{'--test-framework kotest-free'}</code></td>
+        </tr>
+        <tr>
+            <td><code>{'--deps <catalog / literal>'}</code></td>
+            <td>How to write the dependencies. <code>catalog</code> adds only the missing entries to <code>gradle/libs.versions.toml</code> and refers to them like <code>libs.katachi</code>. <code>literal</code> writes the coordinates directly in <code>build.gradle.kts</code></td>
+            <td><code>catalog</code> if <code>gradle/libs.versions.toml</code> exists, otherwise <code>literal</code></td>
+            <td><code>{'--deps literal'}</code></td>
+        </tr>
+        <tr>
+            <td><code>{'--force'}</code></td>
+            <td>Overwrites the check module even if it already exists</td>
+            <td>Does not overwrite (stops if it already exists)</td>
+            <td><code>{'--force'}</code></td>
+        </tr>
+    </tbody>
+</table>
+
+### `scaffold --dry-run`
+
+With the `--dry-run` option, you can see which files would be created, without actually creating them.
+
+## agent
+
+The `agent` command is a group of subcommands for AI Agents.
+
+For details of the `agent` command, run `katachi agent --help`.
+
+## Summary
+
+- `katachi` is a command-line tool that you install with Homebrew. It has the same version as katachi.
+- `doctor` checks that the Gradle JDK, the Kotlin version, and Git are ready.
+- `scaffold --package <package>` creates the check module `:architecture-test` and adds it to the build. With `--dry-run`, you can check the content first.
+- An AI Agent uses the subcommands under `agent` while following the setup guide.
+
+## Next steps
+
+<CardGrid>
+  <LinkCard
+    title="Your first architecture definition"
+    href="/katachi/get-started/first-architecture/"
+    description="Learn how to write the first architecture { } in the module created by scaffold."
+  />
+  <LinkCard
+    title="katachi-script"
+    href="/katachi/guides/cli-and-script/katachi-script/"
+    description="Learn how to line up the commands you saw here in *.katachi.kts and run them with one command."
+  />
+  <LinkCard
+    title="AI Agent"
+    href="/katachi/recipes/ai-agent/"
+    description="A recipe that lets an AI Agent set up katachi with the katachi agent subcommands."
+  />
+</CardGrid>

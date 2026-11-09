@@ -140,7 +140,7 @@ fun `アーキテクチャに沿ったファイル配置になっている`() {
 - `required(...)` で指定した宣言は必ず存在する必要があります。
 - `allow(...)` で指定した宣言は存在を許されます。存在しない場合も違反にはなりません。
 
-class, interface, object の行に `{ }` を書かないと、その宣言はメンバ（主コンストラクタのプロパティを含む）を1つも持てません。メンバを問わないときは `{ allow(anythingElse) }` を付けます。
+class, interface, object の行に `{ }` を書かないと、その宣言はメンバ（primary constructor のプロパティを含む）を1つも持てません。メンバを問わないときは `{ allow(anythingElse) }` を付けます。
 
 <Tabs>
   <TabItem label="Android での例">
@@ -151,7 +151,7 @@ class, interface, object の行に `{ }` を書かないと、その宣言はメ
 
       ktFileContent {
         // package / import の行は省略
-        allow(`class`, "*UseCase") { allow(anythingElse) } // UseCase で終わる名前を持つ class
+        required(`class`, "*UseCase") { allow(anythingElse) } // UseCase で終わる名前を持つ class
       }
     }
 
@@ -160,7 +160,7 @@ class, interface, object の行に `{ }` を書かないと、その宣言はメ
 
       ktFileContent {
         // package / import の行は省略
-        allow(`class`, "*ViewModel") { allow(anythingElse) } // ViewModel で終わる名前を持つ class
+        required(`class`, "*ViewModel") { allow(anythingElse) } // ViewModel で終わる名前を持つ class
       }
     }
 
@@ -169,7 +169,7 @@ class, interface, object の行に `{ }` を書かないと、その宣言はメ
 
       ktFileContent {
         // package / import の行は省略
-        allow(data, `object`, "*Route") // Route で終わる名前を持つ data object
+        required(data, `object`, "*Route") // Route で終わる名前を持つ data object
       }
     }
     ```
@@ -184,7 +184,7 @@ class, interface, object の行に `{ }` を書かないと、その宣言はメ
 
       ktFileContent {
         // package / import の行は省略
-        required(`class`, fileName) { allow(anythingElse) } // ファイル名と同じ名前の Controller class が必ず 1 つ
+        required(`class`, fileName) { allow(anythingElse) } // ファイル名と同じ名前の Controller class が 1 つ必要
       }
     }
 
@@ -193,7 +193,7 @@ class, interface, object の行に `{ }` を書かないと、その宣言はメ
 
       ktFileContent {
         // package / import の行は省略
-        required(`class`, fileName) { allow(anythingElse) } // ファイル名と同じ名前の Service class が必ず 1 つ
+        required(`class`, fileName) { allow(anythingElse) } // ファイル名と同じ名前の Service class が 1 つ必要
       }
     }
 
@@ -202,7 +202,7 @@ class, interface, object の行に `{ }` を書かないと、その宣言はメ
 
       ktFileContent {
         // package / import の行は省略
-        allow(data, `class`, "*") { allow(anythingElse) } // Model は data class
+        required(data, `class`, "*") { allow(anythingElse) } // Model は data class
       }
     }
     ```
@@ -276,11 +276,11 @@ allow(public, type, "*Repository")
       ktFileContent {
         // package / import の行は省略
         allow(private, `val`, "*") // private 変数を許可する
-        required(`fun`, "*Screen") // Screen で終わる名前を持つ関数が1つ以上ある
+        required(`fun`, "*Screen") // Screen で終わる名前を持つ関数が1つ以上必要
 
-        required(`fun`, "doSomethingWithoutArg")() // 引数なしの doSomethingWithoutArg が必ずある
-        required(`fun`, "doSomethingWithSingleArg")("action: *UiAction") // 引数が1つの doSomethingWithSingleArg が必ずある
-        required(`fun`, "doSomethingWithAnyArgs")(anyArgs()) // 引数を問わない doSomethingWithAnyArgs が必ずある
+        required(`fun`, "doSomethingWithoutArg")() // 引数なしの doSomethingWithoutArg が必要
+        required(`fun`, "doSomethingWithSingleArg")("action: *UiAction") // 引数が1つの doSomethingWithSingleArg が必要
+        required(`fun`, "doSomethingWithAnyArgs")(anyArgs()) // 引数を問わない doSomethingWithAnyArgs が必要
       }
     }
     ```
@@ -289,11 +289,11 @@ allow(public, type, "*Repository")
 
     ```kt
     required(`class`, "*ViewModel") {
-      required(`val`, "uiState", "StateFlow<*>") // uiState: StateFlow<*> が必ずある
+      required(`val`, "uiState", "StateFlow<*>") // uiState: StateFlow<*> が必要
     }
 
     required(`class`, "*UseCase") {
-      required(suspend.optional(), operator, `fun`, "invoke")(anyArgs()) // operator fun invoke が必ずある。suspend は付いていても無くてもよい
+      required(suspend.optional(), operator, `fun`, "invoke")(anyArgs()) // operator fun invoke が必要。suspend は付いていても無くてもよい
       allow(private, anythingElse) // コンストラクタで受け取る Repository など
     }
     ```

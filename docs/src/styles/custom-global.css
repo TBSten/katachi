@@ -37,6 +37,12 @@
 	--ec-tm-lineMarkerAccentWd: 0.25rem;
 }
 
+/* ダークモードでは明るい背景だと文字が読めないので、暗い青にする。 */
+:root[data-theme='dark'] * {
+	--ec-tm-markBg: #1c3a5e;
+	--ec-tm-markBrdCol: #4f8fd1;
+}
+
 /* === 見出し === */
 
 .sl-heading-wrapper.level-h2 {
@@ -104,4 +110,9 @@ starlight-tabs .tab > [role='tab'] {
 .sl-markdown-content details {
 	margin-inline: 0.5rem;
 	padding-block: 0.25rem;
+}
+
+/* MDX が summary の前に空の p を挟むので、Steps の中では summary に上の余白が付き、上下の余白がずれる */
+.sl-markdown-content details > summary {
+	margin-top: 0;
 }

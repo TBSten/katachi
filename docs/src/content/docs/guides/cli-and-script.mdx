@@ -1,0 +1,49 @@
+---
+title: "CLI and script"
+description: The katachi CLI subcommands, and how to run *.katachi.kts files, which line them up in a Kotlin DSL, with the katachi CLI.
+tags:
+  - intermediate
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+katachi comes with a CLI and a package for kotlin-script.
+With them, you can make AI Agents follow your rules more strictly. You can also automate architecture changes. This helps you run your architecture in a more mechanical and reliable way.
+
+## Use cases
+
+- Let an AI Agent set up katachi
+  - [Your first definition](../../get-started/first-architecture/) also tells you to use the katachi CLI.
+- Automate architecture changes
+  - Generate boilerplate automatically.
+
+## Installation
+
+You can install the katachi CLI with Homebrew.
+
+```bash
+brew install tbsten/tap/katachi
+katachi --version
+```
+
+The katachi version and the CLI version are the same. When you run a `*.katachi.kts` file, the script uses the `katachi-script` with the same version as the CLI.
+
+## Next steps
+
+<CardGrid>
+  <LinkCard
+    title="katachi CLI"
+    href="/katachi/guides/cli-and-script/cli/"
+    description="See the commands and options of doctor / scaffold / agent."
+  />
+  <LinkCard
+    title="katachi-script"
+    href="/katachi/guides/cli-and-script/katachi-script/"
+    description="Learn how to line up commands in a Kotlin script and run them."
+  />
+  <LinkCard
+    title="Use with an AI Agent"
+    href="/katachi/recipes/ai-agent/"
+    description="Learn how to let an AI Agent set up katachi for you."
+  />
+</CardGrid>

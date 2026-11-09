@@ -1,5 +1,5 @@
 ---
-title: "[AI-generated] Mapping to Kotlin language features"
+title: "Mapping to Kotlin language features"
 description: A table of how to allow or deny each Kotlin language feature with ktFileContent { }.
 tags:
   - intermediate
@@ -7,7 +7,7 @@ tags:
 prev: ktFileContent
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 {/*
   The purpose of this page: let readers look up, for each Kotlin language feature (classes, enums, typealiases,
@@ -15,8 +15,697 @@ import { Aside } from '@astrojs/starlight/components';
   The parent ktFileContent page explains how to write rules; this page is limited to the table.
 */}
 
-<Aside type="note" title="Draft written by AI">
-  This page is a draft prepared by an AI agent and has not been reviewed by a person yet.
+This is a table of what you can write in Kotlin source, and which `ktFileContent { }` line allows or denies it. For how to write the rules themselves, see the [ktFileContent overview](/katachi/guides/kt-file-content/).
+
+The left column shows Kotlin code. The right column shows the lines that allow it. If you do not write a line, each table treats it in one of two ways.
+
+- **Violation** … A declaration you do not write is a violation (deny by default). Write `allow(anythingElse)` to allow everything else in that place.
+- **Not checked** … It is checked only when you chain it after a line. If you do not write it, nothing is checked.
+
+## Kinds of declarations
+
+You write the same lines at the top level of a file and inside the `{ }` of a class or similar. A declaration you do not write is a **violation**. Only the primary constructor's `.primaryConstructor(...)` is not checked when you leave it out.
+
+<div style="overflow-x: auto">
+<table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
+  <tr>
+    <th style="width: 20rem">Kotlin code</th>
+    <th style="min-width: 20rem">ktFileContent lines</th>
+  </tr>
+  <tr>
+    <td>
+      `class` / `interface` / `object`
+      ```kt
+      class HomeViewModel
+      interface HomeUseCase
+      data object HomeRoute
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`class`, "*ViewModel") { allow(anythingElse) }
+      required(`interface`, fileName) { /* member lines */ }
+      allow(data, `object`, "*Route")
+      // Any of class, interface, object
+      allow(type, "*")
+      // Join kinds with or
+      allow(`class` or `object`, "*")
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      `fun interface`
+      ```kt
+      fun interface ClickListener {
+        fun onClick()
+      }
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`fun`, `interface`, "*Listener") { allow(`fun`, "on*")() }
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      `companion object` / nested class
+      ```kt
+      class Session {
+        companion object
+        private data class State(val token: String)
+      }
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`class`, "Session") {
+        allow(companion, `object`, "*")
+        allow(private, data, `class`, "*State") { allow(anythingElse) }
+      }
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      `fun`
+      ```kt
+      fun onRefresh() {}
+      fun load(id: String) {}
+      ```
+    </td>
+    <td>
+      ```kt
+      // No arguments
+      allow(`fun`, "on*")()
+      // Specify the arguments
+      allow(`fun`, "load")("id: String")
+      // Any arguments
+      allow(`fun`, "*")(anyArgs())
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      `val` / `var`
+      ```kt
+      private val state = MutableStateFlow(0)
+      var count: Int = 0
+      const val TAG = "Home"
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(private, `val`, "*")
+      // Specify the type too
+      allow(`var`, "count", "Int")
+      allow(const, `val` or `var`, "*")
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      `typealias` (top level or inside a class)
+      ```kt
+      typealias ClickHandler = (Int) -> Unit
+
+      class Screen {
+        typealias State = ScreenState
+      }
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`typealias`, "*Handler")
+      // Specify the right-hand type too
+      allow(`typealias`, "*Handler", "(*) -> Unit")
+      // Nested typealias, Kotlin 2.2 and later
+      allow(`class`, "Screen") { allow(`typealias`, "State") }
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      enum entries
+      ```kt
+      enum class ThemeColor {
+        LIGHT, DARK, UNKNOWN
+      }
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(enum, `class`, "*Color") {
+        allow(entry, "*")
+        required(entry, "UNKNOWN")
+      }
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Secondary constructor / `init` block
+      ```kt
+      class Session {
+        private constructor(token: String)
+        init { }
+      }
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`class`, "Session") {
+        allow(private, constructor)("token: String")
+        allow(init)
+      }
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Primary constructor (not checked if you do not write it)
+      ```kt
+      value class UserId(val value: String)
+
+      class UserSession private constructor(
+        config: Config,
+      )
+      ```
+    </td>
+    <td>
+      ```kt
+      // A parameter without val is not a property
+      allow(value, `class`, "*Id").primaryConstructor("val value: String")
+      // Specify only the visibility
+      allow(`class`, "*Session").primaryConstructor(private, anyArgs())
+      ```
+    </td>
+  </tr>
+</table>
+</div>
+
+<Aside type="caution">
+  If you do not write `{ }` on a class, interface, or object line, that declaration cannot have any members. Members include primary constructor properties, enum entries, secondary constructors, `init` blocks, and typealiases inside a class.
 </Aside>
 
-TODO
+## Modifiers
+
+Write modifiers before the kind, in the same order as in Kotlin source. A modifier you write must be present. A modifier you do not write is a **violation** if it is present (except `public` and `final`). `final` and parameter modifiers are not checked if you do not write them.
+
+<div style="overflow-x: auto">
+<table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
+  <tr>
+    <th style="width: 20rem">Kotlin code</th>
+    <th style="min-width: 20rem">ktFileContent lines</th>
+  </tr>
+  <tr>
+    <td>
+      Visibility `public` / `protected` / `private` / `internal`
+      ```kt
+      internal class HomeUseCaseImpl
+      private fun helper() {}
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(internal, `class`, "*Impl") { allow(anythingElse) }
+      allow(internal or private, `fun`, "*")()
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      `abstract` / `open` / `sealed` / `override` / `const` / `lateinit` / `suspend` / `inline` / `value` / `data` / `enum` / `annotation` / `companion` / `inner` / `infix` / `operator` / `tailrec` / `external` / `expect` / `actual`
+      ```kt
+      sealed interface HomeAction
+
+      class GetUser {
+        suspend operator fun invoke(id: String) {}
+      }
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(sealed, type, "*Action") { allow(anythingElse) }
+      // May be present or absent
+      required(suspend.optional(), operator, `fun`, "invoke")(anyArgs())
+      allow(expect, anythingElse)
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      `final` (not checked if you do not write it)
+      ```kt
+      final override fun toString() = "x"
+      ```
+    </td>
+    <td>
+      ```kt
+      // Matches only declarations with final written in the source
+      allow(final, override, `fun`, "*")(anyArgs())
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Parameter `vararg` / `noinline` / `crossinline` / default values (not checked if you do not write them)
+      ```kt
+      fun log(vararg args: Any) {}
+      fun save(force: Boolean = false) {}
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`fun`, "log")("vararg args: Any")
+      allow(`fun`, "run")("noinline block: () -> Unit")
+      allow(`fun`, "save")("force: Boolean = *")
+      ```
+    </td>
+  </tr>
+</table>
+</div>
+
+## Signatures
+
+These are checked only when you chain them after a line. If you do not write them, they are **not checked**. For arguments only, `()` means "no arguments", and writing nothing means not checked.
+
+<div style="overflow-x: auto">
+<table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
+  <tr>
+    <th style="width: 20rem">Kotlin code</th>
+    <th style="min-width: 20rem">ktFileContent lines</th>
+  </tr>
+  <tr>
+    <td>
+      Parameter names and types
+      ```kt
+      fun update(action: HomeUiAction, now: Instant) {}
+      ```
+    </td>
+    <td>
+      ```kt
+      // name: type. * is a wildcard
+      allow(`fun`, "update")("action: *UiAction", "now: Instant")
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Return type
+      ```kt
+      fun onRefresh(): Unit {}
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`fun`, "on*")().returns("Unit")
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Receiver of an extension function or extension property
+      ```kt
+      fun User.toDto(): UserDto = TODO()
+      val User.isAdmin: Boolean get() = role == ADMIN
+      ```
+    </td>
+    <td>
+      ```kt
+      // The receiver comes before the name
+      allow(`fun`, "User", "to*")()
+      // An extension property requires a type
+      allow(`val`, "User", "is*", "Boolean")
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      context parameters
+      ```kt
+      context(logger: Logger)
+      fun logStart() {}
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`fun`, "log*")(anyArgs()).context("logger: Logger")
+      // No context parameters
+      allow(`fun`, "*")(anyArgs()).context()
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Type parameters, upper bounds, `where` / `in` / `out` / `reified`
+      ```kt
+      inline fun <reified T : Any> getValue(): T = TODO()
+      class Box<out T>
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(inline, `fun`, "get*")(anyArgs()).typeParameters("reified T : Any")
+      allow(`class`, "Box").typeParameters("out T")
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Superclass and implemented interfaces
+      ```kt
+      class HomeViewModel : ViewModel()
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`class`, "*ViewModel").superclass("ViewModel") { allow(anythingElse) }
+      ```
+    </td>
+  </tr>
+</table>
+</div>
+
+## Property accessors and delegation
+
+These are checked only when you chain them after a line. If you do not write them, they are **not checked**.
+
+<div style="overflow-x: auto">
+<table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
+  <tr>
+    <th style="width: 20rem">Kotlin code</th>
+    <th style="min-width: 20rem">ktFileContent lines</th>
+  </tr>
+  <tr>
+    <td>
+      `get() = …`
+      ```kt
+      val isEmpty: Boolean get() = items.isEmpty()
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`val`, "is*", "Boolean").getter()
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      `set(value) { … }` / `private set`
+      ```kt
+      var text: String = ""
+        set(value) { field = value.trim() }
+      var count: Int = 0
+        private set
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`var`, "text", "String").setter()
+      allow(`var`, "*", "*").setter(private)
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Delegation such as `by lazy { … }`
+      ```kt
+      val client by lazy { HttpClient() }
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`val`, "*").delegatedBy("lazy")
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Explicit backing field (`field = …`)
+      ```kt
+      val uiState: StateFlow<HomeUiState>
+        field = MutableStateFlow(HomeUiState())
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(`val`, "uiState", "StateFlow<*>").backingField("MutableStateFlow<*>")
+      ```
+    </td>
+  </tr>
+</table>
+</div>
+
+## Annotations
+
+An annotation line matches only declarations that have the annotation you named. An annotation you do not write may be present and is **not checked**. Only file annotations (`@file:…`) work like package and import: one without a line is a **violation**.
+
+<div style="overflow-x: auto">
+<table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
+  <tr>
+    <th style="width: 20rem">Kotlin code</th>
+    <th style="min-width: 20rem">ktFileContent lines</th>
+  </tr>
+  <tr>
+    <td>
+      Declaration annotations
+      ```kt
+      @HiltViewModel
+      class HomeViewModel : ViewModel()
+
+      @Composable
+      fun HomeScreen() {}
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(annotated("HiltViewModel"), `class`, fileName) { /* ... */ }
+      // You can also write the fully qualified name
+      allow(annotated("androidx.compose.runtime.Composable"), `fun`, "*Screen")()
+      allow(annotated("Preview") or annotated("PreviewLightDark"),
+            private, `fun`, "*Preview")()
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Annotation arguments
+      ```kt
+      @Deprecated("use b", level = DeprecationLevel.HIDDEN)
+      fun a() {}
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(annotated("Deprecated(*HIDDEN*)"), `fun`, "*")(anyArgs())
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Use-site target (such as `@get:JvmName`)
+      ```kt
+      @get:JvmName("userName")
+      val name: String = ""
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(annotated("get:JvmName"), `val`, "*")
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      File annotation `@file:…` (violation if you do not write it)
+      ```kt
+      @file:Suppress("unused")
+      @file:OptIn(ExperimentalApi::class)
+      ```
+    </td>
+    <td>
+      ```kt
+      fileAnnotation("Suppress(*unused*)")
+      fileAnnotation("OptIn")
+      not.fileAnnotation("JvmName")
+      ```
+    </td>
+  </tr>
+</table>
+</div>
+
+## Files and source sets
+
+A `package` or `import` without a line is a **violation**. `not.` is a denial stronger than an allow line, and `actualsIn` is checked only when you write it.
+
+<div style="overflow-x: auto">
+<table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
+  <tr>
+    <th style="width: 20rem">Kotlin code</th>
+    <th style="min-width: 20rem">ktFileContent lines</th>
+  </tr>
+  <tr>
+    <td>
+      `package`
+      ```kt
+      package com.example.feature.home
+      ```
+    </td>
+    <td>
+      ```kt
+      `package`("com.example.feature.**")
+      // The same package as the file's directory
+      `package`(matchingDirectory)
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      `import`
+      ```kt
+      import kotlin.time.Duration
+      import android.os.Parcelable
+      ```
+    </td>
+    <td>
+      ```kt
+      `import`("kotlin.**")
+      `import`("android.**").except("android.os.Parcelable")
+      not.`import`("java.util.Date")
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Deny (`not.`)
+      ```kt
+      class LegacyImpl   // Only this one passes
+      ```
+    </td>
+    <td>
+      ```kt
+      // Stronger than an allow line
+      not.allow(`class`, "*Impl").except("LegacyImpl")
+      not.allow(private, `fun`, "*")
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      `expect` and `actual` pairing (KMP)
+      ```kt
+      // commonMain/.../Platform.kt
+      expect fun platformName(): String
+      // androidMain/.../Platform.android.kt
+      actual fun platformName(): String = "Android"
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(expect, anythingElse)
+      // An actual is required in the same directory and with the same file name
+      // (Platform.android.kt is also OK)
+      actualsIn("androidMain", "iosMain")
+      ```
+    </td>
+  </tr>
+</table>
+</div>
+
+## Body and KDoc
+
+These are checked only when you chain them after a line. If you do not write them, they are **not checked**.
+
+<div style="overflow-x: auto">
+<table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
+  <tr>
+    <th style="width: 20rem">Kotlin code</th>
+    <th style="min-width: 20rem">ktFileContent lines</th>
+  </tr>
+  <tr>
+    <td>
+      KDoc（`/** … */`）
+      ```kt
+      /** The state of the screen. */
+      class HomeUiState
+      ```
+    </td>
+    <td>
+      ```kt
+      allow(public, `class`, "*").kdoc()
+      allow(enum, `class`, "Color") { allow(entry, "*").kdoc() }
+      ```
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Shape of a function body
+      ```kt
+      fun isEmpty() = items.isEmpty()
+      fun runAll() { /* ... */ }
+      abstract fun load()
+      ```
+    </td>
+    <td>
+      ```kt
+      // fun f() = ...
+      allow(`fun`, "is*")(anyArgs()).expressionBody()
+      // fun f() { ... }
+      allow(`fun`, "run*")(anyArgs()).blockBody()
+      // No body
+      allow(abstract, `fun`, "*")(anyArgs()).noBody()
+      ```
+    </td>
+  </tr>
+</table>
+</div>
+
+## What ktFileContent cannot express
+
+`ktFileContent { }` checks only the "shape of a file". The items below are out of scope, so leave them to [Konsist](https://docs.konsist.lemonappdev.com/) or [detekt](https://detekt.dev/).
+
+<div style="overflow-x: auto">
+<table style="display: table; table-layout: fixed; width: 100%; min-width: 32rem">
+  <tr>
+    <th style="width: 20rem">Kotlin code</th>
+    <th>Alternative</th>
+  </tr>
+  <tr>
+    <td>Local declarations (class, fun, and variables inside a function)</td>
+    <td>Konsist `localClasses` / `localFunctions` / `variables`</td>
+  </tr>
+  <tr>
+    <td>Anonymous object (`object : Listener { … }`)</td>
+    <td>Konsist does not treat it as a declaration. You can write it as a detekt custom rule</td>
+  </tr>
+  <tr>
+    <td>Contents of a declaration body (expressions and statements)</td>
+    <td>detekt、Konsist</td>
+  </tr>
+  <tr>
+    <td>Contents of `.kts` files (such as `build.gradle.kts`)</td>
+    <td>Out of scope because Konsist reads only `.kt` files. You can restrict where they go with `layout { }`</td>
+  </tr>
+  <tr>
+    <td>Import aliases (`import a.B as C`)</td>
+    <td>An `import` line does not look at aliases. An annotation matches through an alias by its fully qualified name, `annotated("a.B")`</td>
+  </tr>
+</table>
+</div>
+
+## Next steps
+
+<CardGrid>
+  <LinkCard
+    title="ktFileContent"
+    href="/katachi/guides/kt-file-content/"
+    description="Learn how to write required / allow, and check how to install katachi-konsist."
+  />
+  <LinkCard
+    title="Comparison with other tools"
+    href="/katachi/get-started/comparison-with-other-tools/"
+    description="See how to split work with Konsist and detekt for what lies outside ktFileContent."
+  />
+</CardGrid>

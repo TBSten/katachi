@@ -185,7 +185,7 @@ Katachi check failed: 1 violation (Unexpected: 1)
 
 制約の対象は、その Role の `layout { }` に当てはまったファイルです。`layout { }` の無い Role には制約を書けません。`ktFileContent { }` は、1つの Role に1つだけ書けます。
 
-許可リストなので、禁止したいものを1つずつ書く必要はありません。どの行にも当たらない宣言は違反になります。行に書いていない修飾子（`internal` など）が付いた宣言も、違反になります。
+許可リストなので、禁止したいものを1つずつ書く必要はありません。どの行にも一致しない宣言は違反になります。行に書いていない修飾子（`internal` など）が付いた宣言も、違反になります。
 
 ```kt nocollapse
 "RepositoryInterface".role {
@@ -196,7 +196,7 @@ Katachi check failed: 1 violation (Unexpected: 1)
   ktFileContent {
     `package`("com.example.repository")
 
-    // public の interface を置く。internal を付けると、この行に当たらず違反になる
+    // public の interface を置く。internal を付けると、この行に一致せず違反になる
     required(public, `interface`, fileName) {
       allow(suspend.optional(), `fun`, "*")
     }
@@ -210,7 +210,7 @@ Katachi check failed: 1 violation (Unexpected: 1)
 
 ### 制約の違反を確かめる
 
-許可リストのどの行にも当たらない宣言があると、違反になります。
+許可リストのどの行にも一致しない宣言があると、違反になります。
 
 ```kt title="src/main/kotlin/com/example/useCase/GetUserUseCase.kt" {8}
 package com.example.useCase
