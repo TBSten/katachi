@@ -12,6 +12,8 @@ button, input { font: inherit; }
 .pin { position: fixed; display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 5px; border: 1px solid #fff; border-radius: 11px; background: var(--c); color: #fff; font-size: 11px; font-weight: 700; line-height: 1; box-shadow: 0 1px 4px rgba(0,0,0,.4); pointer-events: auto; cursor: pointer; }
 .pin.is-resolved { background: var(--p-done); opacity: .7; }
 .pin.is-active { outline: 3px solid color-mix(in srgb, var(--c) 40%, transparent); }
+.pin.is-hover { z-index: 1; transform: scale(1.25); outline: 3px solid color-mix(in srgb, var(--c) 40%, transparent); }
+.box.is-hover { border-style: solid; background: color-mix(in srgb, var(--c) 10%, transparent); }
 .pin:focus-visible { outline: 3px solid var(--link); }
 [data-tier=high] { --c: var(--p-high); } [data-tier=mid] { --c: var(--p-mid); } [data-tier=low] { --c: var(--p-low); } [data-tier=min] { --c: var(--p-min); } [data-tier=none] { --c: var(--p-none); }
 .box[data-active-tier=high] { --c: var(--p-high); } .box[data-active-tier=mid] { --c: var(--p-mid); } .box[data-active-tier=low] { --c: var(--p-low); } .box[data-active-tier=min] { --c: var(--p-min); } .box[data-active-tier=none] { --c: var(--p-none); }

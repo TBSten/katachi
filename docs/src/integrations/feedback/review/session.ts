@@ -632,6 +632,14 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		b.append(el('span', `row-meta${v.place === 'lost' || v.place === 'no-file' ? ' warn' : ''}`, meta))
 		b.title = `${v.priority !== null ? `[p${v.priority}] ` : ''}${v.title}`
 		b.addEventListener('click', () => open(v.id))
+		// 一覧の行に乗せると、ページの上のその印と枠を目立たせる（どこへの指摘かを開く前に見せる）。
+		const hover = (on: boolean) => {
+			const m = marks.get(v.id)
+			m?.pin.classList.toggle('is-hover', on)
+			m?.box.classList.toggle('is-hover', on)
+		}
+		b.addEventListener('mouseenter', () => hover(true))
+		b.addEventListener('mouseleave', () => hover(false))
 		return b
 	}
 
