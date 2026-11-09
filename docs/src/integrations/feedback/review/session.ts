@@ -527,15 +527,17 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		prev.type = next.type = 'button'
 		prev.disabled = i <= 0
 		next.disabled = i >= sorted.length - 1
+		prev.title = '前の指摘（←）'
+		next.title = '次の指摘（→）'
 		const nv = sorted[i + 1]
 		if (nv && !onPage(nv, { pathname: location.pathname, source, base }) && pageUrlOf(nv.file, base)) {
 			next.textContent = '次のページ ›'
-			next.title = `次は ${shortFile(nv.file)}`
+			next.title = `次は ${shortFile(nv.file)}（→）`
 		}
 		const pv = sorted[i - 1]
 		if (pv && !onPage(pv, { pathname: location.pathname, source, base }) && pageUrlOf(pv.file, base)) {
 			prev.textContent = '‹ 前のページ'
-			prev.title = `前は ${shortFile(pv.file)}`
+			prev.title = `前は ${shortFile(pv.file)}（←）`
 		}
 		prev.addEventListener('click', () => step(-1))
 		next.addEventListener('click', () => step(1))
