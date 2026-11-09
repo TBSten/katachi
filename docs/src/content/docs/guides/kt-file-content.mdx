@@ -169,7 +169,7 @@ If a class, interface, or object line has no `{ }`, that declaration may not hav
 
       ktFileContent {
         // package / import lines omitted
-        allow(data, `object`, "*Route") // a data object whose name ends with Route
+        required(data, `object`, "*Route") // a data object whose name ends with Route
       }
     }
     ```
@@ -202,7 +202,7 @@ If a class, interface, or object line has no `{ }`, that declaration may not hav
 
       ktFileContent {
         // package / import lines omitted
-        allow(data, `class`, "*") { allow(anythingElse) } // a Model is a data class
+        required(data, `class`, "*") { allow(anythingElse) } // a Model is a data class
       }
     }
     ```
