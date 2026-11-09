@@ -46,21 +46,43 @@ tasks.processResources {
     }
 }
 
-// The guide and the two templates `init` places and `guide` reads, bundled so that neither needs
-// the network (KATACHI-228). They are written for the `katachi` command (KATACHI-287), so they are
-// copied as they are.
+// The setup steps of the katachi skill and the two templates `init` places and `guide` reads, bundled
+// so that neither needs the network (KATACHI-228). The setup steps are one file per section under
+// skills/katachi/references/setup (KATACHI-318); `guide` cuts sections out of one text, so they are
+// joined here in reading order: the README, then step0, step1, … with each step's README first.
+val skillSetupDir = rootProject.layout.projectDirectory.dir("skills/katachi/references/setup")
+val bundleSetupGuide = tasks.register("bundleSetupGuide") {
+    description = "Joins the katachi skill's setup steps into the guide that `katachi agent guide` prints."
+    val source = skillSetupDir
+    val output = layout.buildDirectory.file("generated/setupGuide/guide.md")
+    inputs.dir(source)
+    outputs.file(output)
+    doLast {
+        val root = source.asFile
+        val steps = root.listFiles { file -> file.isDirectory && file.name.matches(Regex("step[0-9]+")) }!!
+            .sortedBy { it.name.removePrefix("step").toInt() }
+        val files = listOf(root.resolve("README.md")) + steps.flatMap { step ->
+            step.listFiles { file -> file.name.endsWith(".md") }!!
+                .sortedWith(compareBy<File> { it.name != "README.md" }.thenBy { it.name })
+        }
+        output.get().asFile.apply { parentFile.mkdirs() }.writeText(files.joinToString("\n") { it.readText() })
+    }
+}
 val bundleInstallKit = tasks.register<Sync>("bundleInstallKit") {
-    description = "Copies the install guide and templates from docs/public/install into the resources."
+    description = "Copies the setup guide and the templates into the resources."
+    from(bundleSetupGuide) {
+        into("META-INF/katachi-script/install")
+    }
     from(rootProject.layout.projectDirectory.dir("docs/public/install")) {
-        include("ja/index.md", "en/index.md")
         include("ja/install-check-list.html", "en/install-check-list.html")
         include("ja/project-code-base-report-template.html", "en/project-code-base-report-template.html")
+        into("META-INF/katachi-script/install")
     }
-    into(layout.buildDirectory.dir("generated/installKit/META-INF/katachi-script/install"))
+    into(layout.buildDirectory.dir("generated/installKitResources"))
 }
 
 sourceSets.main {
-    resources.srcDir(bundleInstallKit.map { layout.buildDirectory.dir("generated/installKit").get() })
+    resources.srcDir(bundleInstallKit.map { layout.buildDirectory.dir("generated/installKitResources").get() })
 }
 
 // What `brew install tbsten/tap/katachi` unpacks: the `.main.kts` entry point pinned to this

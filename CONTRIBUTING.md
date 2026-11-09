@@ -158,6 +158,7 @@ Pick names from this list. "Scope" is the word used as the scope in a ticket nam
 | CLI | The `katachi` command, brew | `katachi-script/cli/` | `cli` |
 | script | The DSL for `*.main.kts` / `*.katachi.kts` | `katachi-script/src/` | `script` |
 | IDE plugin | Gutter, tool window, MCP | `katachi-intellij-plugin/` | `ide` |
+| skill | The Agent Skill users install with `gh skill install TBSten/katachi katachi` (installing, adding to and updating the definition, fixing violations) | `skills/katachi/` | `skill` |
 | docs | The documentation site, README | `docs/`, `README*.md` | `docs` |
 | CI / development (no user impact) | Workflows, pull request template, CONTRIBUTING, architecture-test, benchmark, `tool/` (not the actions given to users: those are Actions) | `.github/`, `architecture-test/`, `benchmark/`, `tool/` and so on | `ci` |
 | sample | The samples | `sample/` | `sample` |

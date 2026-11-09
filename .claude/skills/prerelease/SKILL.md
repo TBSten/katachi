@@ -160,7 +160,7 @@ priority 10 の警告。結果は `ci-checks.md`、ログは `tmp/ci-checks/`。
 
 ## 11. ドキュメントがガイドのルールに沿っているか
 
-日本語の全ページ・README.ja.md・`docs/public/install/ja/` のコード例と本文が、ガイドに書かれたルール・ベストプラクティスに
+日本語の全ページ・README.ja.md・katachi skill（`skills/katachi/`）のコード例と本文が、ガイドに書かれたルール・ベストプラクティスに
 沿っているかを確かめる（直さず報告する）。ルールの出どころは既定で `docs/src/content/docs/ja/guides/` の basic-api・role・
 layout。**チェックの前に**、ほかのガイド（generate-code-from-template・processor・baseline など）と
 `docs/AGENTS.md` にもルールがあるかを確かめ、あれば対象に足して、何をどこから拾ったかを結果に書く。

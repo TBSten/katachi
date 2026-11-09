@@ -3,7 +3,7 @@
 [install-kit.md](install-kit.md) の「9-2. 統合テスト」で、各 subagent にこのファイルを読ませる。`<配信元>` は 6-1 で配信している URL（例: `http://127.0.0.1:4394/katachi`）に、
 `<katachi>` は 9-1 の `build-katachi-cli.sh` が組んだ katachi コマンドの絶対パス（`<repo>/katachi-script/build/cli/katachi-cli-<版>/bin/katachi`）に置き換えて渡す。
 
-目的: katachi の導入手順書（docs/public/install/<lang>/index.md）と katachi コマンド（`katachi agent …` / `katachi scaffold` など）を、
+目的: katachi の導入手順書（katachi skill の skills/katachi/references/setup/。英語だけ）と katachi コマンド（`katachi agent …` / `katachi scaffold` など）を、
 **実際の AI エージェントが実在のプロジェクトに導入する**のと同じように、最初から最後まで通して確かめる。
 コマンドが動くかだけでなく、**手順書が適切か**（読んで迷わないか、順番、抜け、曖昧さ、冗長さ、
 コマンドの出力やチェックリストと食い違わないか、エージェントが誤解しやすい箇所）を評価する。

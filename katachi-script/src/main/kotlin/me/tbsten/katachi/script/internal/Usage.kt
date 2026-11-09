@@ -179,11 +179,11 @@ katachi doctor / katachi scaffold / katachi lint（katachi --help）を使って
       （作業用ディレクトリは自動で見つける。別の場所からは KATACHI_WORKDIR で指定する）。
 
   katachi agent guide [<セクション ID>] [--refresh]
-      手順書（index.md）をセクションごとに出す。引数なしは目次（<ID>、見出し、行数をタブ区切りで 1 行ずつ）。
+      導入の手順書（katachi skill の references/setup。英語）をセクションごとに出す。引数なしは目次（<ID>、見出し、行数をタブ区切りで 1 行ずつ）。
       <セクション ID> は見出しの番号（0-1、3-2、5、6-A など。6-1〜6-4 は 6-A〜6-D に読み替える）。
       章（1 など）に番号つきのセクションがあれば、前書きと「含むセクション:」だけを出す。
       各セクションの最後に次のセクションのコマンドを付ける。手順書は katachi コマンドに同梱されている
-      （init の前でも読める）。--lang で言語を選ぶ。--refresh で作業用ディレクトリの tmp/cache/index.md を書き直す。
+      （init の前でも読める）。--lang はコマンドの出力の言語（手順書は英語だけ）。--refresh で作業用ディレクトリの tmp/cache/index.md を書き直す。
 
   katachi agent data get <対象> [<キー>] [--id <id>]
       埋め込まれた JSON を標準出力に出す。HTML 本体は読まなくてよい。
@@ -324,12 +324,12 @@ Usage:
       working directory themselves; from elsewhere, point KATACHI_WORKDIR at it).
 
   katachi agent guide [<section id>] [--refresh]
-      Prints the guide (index.md) one section at a time. Without an argument, prints the table of
+      Prints the setup guide (the katachi skill's references/setup, in English) one section at a time. Without an argument, prints the table of
       contents (one line per section: <id>, heading, number of lines, tab-separated).
       <section id> is the number in the heading (0-1, 3-2, 5, 6-A, ...; 6-1 to 6-4 are read as 6-A to 6-D).
       For a chapter with numbered sections (such as 1), prints only its preamble and "Sections:".
       Each section ends with the command for the next one. The guide ships with the katachi command
-      (readable before init). --lang picks the language; --refresh rewrites tmp/cache/index.md in the working directory.
+      (readable before init). --lang picks the language of the command's output (the guide is English only); --refresh rewrites tmp/cache/index.md in the working directory.
 
   katachi agent data get <target> [<key>] [--id <id>]
       Prints the embedded JSON. You do not need to read the HTML itself.

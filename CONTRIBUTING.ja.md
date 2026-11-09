@@ -159,6 +159,7 @@ PR・チケット・調査レポートでは、変更の影響範囲を次の形
 | CLI | `katachi` コマンド・brew | `katachi-script/cli/` | `cli` |
 | script | `*.main.kts` / `*.katachi.kts` の DSL | `katachi-script/src/` | `script` |
 | IDE plugin | ガター・ツールウィンドウ・MCP | `katachi-intellij-plugin/` | `ide` |
+| skill | 利用者が `gh skill install TBSten/katachi katachi` で入れる Agent Skill（導入・定義の追加と更新・違反の直し方） | `skills/katachi/` | `skill` |
 | docs | ドキュメントサイト・README | `docs/`・`README*.md` | `docs` |
 | CI・開発 (ユーザ影響無し) | workflow・PR テンプレート・CONTRIBUTING・architecture-test・benchmark・`tool/`（利用者に配る action は含まない。Actions へ） | `.github/`・`architecture-test/`・`benchmark/`・`tool/` ほか | `ci` |
 | sample | サンプル | `sample/` | `sample` |

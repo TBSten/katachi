@@ -167,9 +167,9 @@ case_guide_toc() {
 	ids=$(printf '%s\n' "${out}" | awk -F'\t' 'NF == 3 { printf "%s ", $1 }')
 	want_ids="0 0-1 0-2 0-3 1 1-1 1-2 1-3 2 2-1 2-2 3 3-1 3-2 3-3 4 4-1 4-2 4-3 5 6 6-0 6-A 6-B 6-C 6-D "
 	[ "${ids}" = "${want_ids}" ] && ok "guide は目次に全セクションの ID を順に出す" || ng "guide は目次に全セクションの ID を順に出す" "ids=${ids}"
-	# 手順書冒頭の目次（- <ID> — <見出し>）と同じ並び
-	toc_ids=$(sed -n '/^\*\*目次\*\*/,/^## 0\./p' "${SITE}/install/ja/index.md" | sed -n 's/^[[:space:]]*- \([0-9][-0-9A-D]*\) — .*/\1 /p' | tr -d '\n')
-	[ "${toc_ids}" = "${ids}" ] && ok "guide の目次は手順書冒頭の目次と一致する" || ng "guide の目次は手順書冒頭の目次と一致する" "toc=${toc_ids}"
+	# katachi skill の setup の表（| <ID> | <見出し> | <ファイル> |）と同じ並び（KATACHI-318）
+	toc_ids=$(sed -n 's/^| \([0-9][-0-9A-D]*\) | .* | \[step.*$/\1 /p' "${REPO}/skills/katachi/references/setup/README.md" | tr -d '\n')
+	[ "${toc_ids}" = "${ids}" ] && ok "guide の目次は skill の setup の表と一致する" || ng "guide の目次は skill の setup の表と一致する" "toc=${toc_ids}"
 	printf '%s\n' "${out}" | tail -n 1 | grep -q '6-A.*6-D.*6-1.*6-4' && ok "guide の目次の末尾に 6-1〜6-4 の案内" || ng "guide の目次の末尾に 6-1〜6-4 の案内" "$(printf '%s\n' "${out}" | tail -n 1)"
 	# en でも同じ ID の列
 	d_en=$(inited guide-en --lang en)
@@ -183,7 +183,7 @@ case_guide_fence() {
 	[ -d "${d}" ] || d=$(inited guide)
 	out=$(cd "${d}" && "${KATACHI}" agent guide 0-1 2>&1)
 	st=$?
-	if [ "${st}" -eq 0 ] && printf '%s\n' "${out}" | grep -q '^# 1\. katachi コマンドが入っているか' && ! printf '%s\n' "${out}" | grep -q '^### 0-2\.'; then
+	if [ "${st}" -eq 0 ] && printf '%s\n' "${out}" | grep -q '^# 1\. Is the katachi command installed' && ! printf '%s\n' "${out}" | grep -q '^### 0-2\.'; then
 		ok "guide はコードフェンスの中の # を見出しに数えない"
 	else
 		ng "guide はコードフェンスの中の # を見出しに数えない" "st=${st} $(printf '%s\n' "${out}" | head -n 3)"

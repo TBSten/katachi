@@ -95,9 +95,9 @@ subagent（model: opus。手順書を読んで判断しながら進める）を�
 
 | 担当 | やること | 対象 |
 |---|---|---|
-| ja で導入 | 利用者に「このプロジェクトに katachi を入れて。手順は `<配信元>/install/ja/index.md`」と頼まれたエージェントとして、手順書を書いてあるとおりに最後まで（6 の返答、6-C・6-D も） | `.local/sample-app/backup/` の KMP のプロジェクトの写し（例: kmp-app-template） |
-| en で導入 | 同じく英語の手順書で最後まで（6-B は CI のファイルを書くまで、6-C も）。英語版に日本語が残っていないか、原本とのずれも見る | `.local/sample-app/backup/` の Android のプロジェクトの写し（例: nav3-recipes） |
-| 手順書のレビュー | 読むだけ。手順書と katachi コマンド（`--help`・引数・出力・エラー）、手順書とチェックリストの項目、迷う・誤解する箇所、古い API、ja と en の対応 | `docs/public/install/` 一式 |
+| ja で導入 | 日本語の利用者に「このプロジェクトに katachi を入れて。手順は katachi skill（`<repo>/skills/katachi/SKILL.md`）」と頼まれたエージェントとして、手順書を書いてあるとおりに最後まで（`init --lang ja`。6 の返答、6-C・6-D も） | `.local/sample-app/backup/` の KMP のプロジェクトの写し（例: kmp-app-template） |
+| en で導入 | 同じく英語の利用者として最後まで（`init --lang en`。6-B は CI のファイルを書くまで、6-C も） | `.local/sample-app/backup/` の Android のプロジェクトの写し（例: nav3-recipes） |
+| 手順書のレビュー | 読むだけ。手順書と katachi コマンド（`--help`・引数・出力・エラー）、手順書とチェックリストの項目、迷う・誤解する箇所、古い API | `skills/katachi/` 一式と `docs/public/install/` のテンプレート |
 
 - 写しは `.local/release-v<版>/tmp/install-e2e/<担当>/project` に `rsync -a --exclude build --exclude .gradle --exclude .kotlin`
   で作り、中で `git init`（無いと `gitTracked()` が 0 件になる）。原本には触らない

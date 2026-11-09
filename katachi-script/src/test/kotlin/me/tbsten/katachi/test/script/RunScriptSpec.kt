@@ -96,6 +96,17 @@ class RunScriptSpec : FreeSpec({
         }
     }
 
+    "guide は katachi skill の setup の表の順に、どのファイルのセクションも出す（KATACHI-318）" {
+        val setup = File("../skills/katachi/references/setup")
+        val files = setupFilesInTableOrder()
+        val listed = files.map { it.relativeTo(setup).path }.toSet()
+        val onDisk = setup.walkTopDown().filter { it.isFile && it.parentFile != setup }.map { it.relativeTo(setup).path }.toSet()
+        onDisk shouldBe listed
+        val toc = runCapturing(createTempDirectory("katachi-script-"), listOf("agent", "guide")).out
+        val ids = toc.lines().filter { '\t' in it }.map { it.substringBefore('\t') }
+        ids shouldBe files.map { it.readLines().first().split(" ")[1].removeSuffix(".") }
+    }
+
     "guide は init の前でも同梱の手順書から目次を出す" {
         val run = runCapturing(createTempDirectory("katachi-script-"), listOf("agent", "guide", "--lang", "en"))
         run.status shouldBe 0
@@ -127,8 +138,8 @@ class RunScriptSpec : FreeSpec({
         workdir.resolve("check-list.html").readText() shouldContain "\"version\": \"0.4.0\""
         workdir.resolve("check-list.html").readText() shouldNotContain "sh katachi-install.sh "
         workdir.resolve("project-code-base-report.html").exists() shouldBe true
-        // The bundled guide as it is in docs/public/install (its wording is written by people, not checked here).
-        workdir.resolve("tmp/cache/index.md").readText() shouldBe File("../docs/public/install/ja/index.md").readText()
+        // The bundled guide is the katachi skill's setup steps, joined in the order of the table in its README.
+        workdir.resolve("tmp/cache/index.md").readText() shouldBe skillSetupGuide()
         workdir.resolve("tmp/cache/lang").readText() shouldBe "ja"
         workdir.resolve("tmp/katachi-install.sh").exists() shouldBe false
         // The guide is written for the katachi command itself, so nothing is left to rewrite (KATACHI-287).
@@ -170,3 +181,16 @@ class RunScriptSpec : FreeSpec({
         run.err shouldContain "--package が必要です（例: --package com.example.app）"
     }
 })
+
+/** The setup steps of the katachi skill, in the order of the table in its README (the order `guide` reads them in). */
+private fun setupFilesInTableOrder(): List<File> {
+    val setup = File("../skills/katachi/references/setup")
+    return Regex("""\| \[(step[0-9]+/[^\]]+\.md)]""").findAll(setup.resolve("README.md").readText())
+        .map { setup.resolve(it.groupValues[1]) }
+        .toList()
+}
+
+private fun skillSetupGuide(): String {
+    val setup = File("../skills/katachi/references/setup")
+    return (listOf(setup.resolve("README.md")) + setupFilesInTableOrder()).joinToString("\n") { it.readText() }
+}

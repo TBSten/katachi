@@ -1,0 +1,52 @@
+## 6-B. (After reporting in 6) If asked to set up CI
+
+Handle this as follows, based on the CI system in use. If you changed `--module-dir`, read `:architecture-test` below as that path (`KATACHI_MODULE_PATH`).
+
+### If using GitHub Actions
+
+Add a workflow like the one below. If a CI workflow already exists, use the following as a reference and modify it to run `./gradlew :architecture-test:test` (do not proliferate new yaml files just for `:architecture-test:test`).
+
+```yaml
+name: Architecture
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  architecture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17' # match the JVM toolchain N decided in 2-1 (17 or later)
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - run: ./gradlew :architecture-test:test
+```
+
+If the workflow file you just created (`.github/workflows/*.yml`) is not in the `architecture { }` definition, add a Role for it (for example `".github/workflows" / "*.yml".file()`) and run `katachi agent test` to confirm it passes.
+
+If the existing CI is a single matrix job that runs emulators or several OSes, **add the job separately, outside the matrix**, so `:architecture-test:test` does not run for every matrix entry. Do not create a new yaml file; add the `architecture` job above to `jobs:` in the same workflow file.
+
+If you committed the generated documentation in 6-C, add the following line to the same job. `--arg mode=check` writes nothing; it compares against the pages on disk and fails if they differ from the definition (it catches "changed the definition, forgot to regenerate the docs").
+
+```yaml
+      - run: ./gradlew :architecture-test:katachiDocs --arg mode=check
+```
+
+### If using something other than GitHub Actions
+
+Modify the workflow so that `./gradlew :architecture-test:test` runs and reports at an appropriate, non-intrusive time, such as on pull request creation, merge request creation, or a pre-push hook.
+
+When done, run `katachi agent check 6-2`.
+
+> **The session may end here.** The next session runs `katachi agent summary` in the root of the project, and reads the section named in the "Resume" field of the output (its file is in the table in `references/setup/README.md`; `katachi agent guide <section ID>` prints the same text). The previous session's results are in the checklist and the report. Do not rely on the conversation's memory.

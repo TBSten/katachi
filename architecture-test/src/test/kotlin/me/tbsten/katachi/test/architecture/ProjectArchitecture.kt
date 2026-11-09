@@ -10,6 +10,7 @@ import me.tbsten.katachi.test.architecture.ideplugin.idePluginGroup
 import me.tbsten.katachi.test.architecture.library.libraryGroup
 import me.tbsten.katachi.test.architecture.plugin.pluginGroup
 import me.tbsten.katachi.test.architecture.sample.sampleGroup
+import me.tbsten.katachi.test.architecture.skill.skillGroup
 import me.tbsten.katachi.test.architecture.testing.testingGroup
 import me.tbsten.katachi.test.architecture.tool.toolGroup
 
@@ -19,6 +20,7 @@ val projectArchitecture: Architecture = architecture {
     pluginGroup()
     cliGroup()
     idePluginGroup()
+    skillGroup()
     testingGroup()
     docsGroup()
     sampleGroup()

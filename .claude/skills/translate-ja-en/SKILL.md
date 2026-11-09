@@ -102,9 +102,8 @@ git diff <base> -- <原本のパス>
 
 `docs/public/install/` の追加の決まり:
 
-- `index.md` は、AI エージェントがそのまま実行する手順書。コマンドは1文字も変えない。ただし、実行させるコマンドの
-  `--lang ja` は `--lang en` にし、`install/ja/` への URL は `install/en/` にする（「日本語なら `--lang ja`
-  」のように選択肢を説明する文はそのまま）
+- `index.md` は、katachi skill への入口だけの短いページ。コマンドは1文字も変えない。手順書そのものは katachi skill
+  （`skills/katachi/`）にあり、英語だけなので訳さない（KATACHI-318）
 - `*.html` は、表示の文言だけを訳す。埋め込まれた JSON のキー、項目の `id`、`data-*` 属性、スクリプトは変えない。項目の
   `label` は訳す（手順書は項目を `check 1-1` のように `id` で指しているので、`label` の文言はつながっていない）
 
