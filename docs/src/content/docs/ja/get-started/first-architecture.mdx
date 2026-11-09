@@ -23,7 +23,7 @@ katachi が必要かどうか迷う場合は、先に [モチベーション](/k
 
     1. 前提条件を確認する
 
-        ### **katachi CLI**
+        - **katachi CLI**
 
           katachi には AI Agent driven でのセットアップを支援する CLI ツールが用意されています。
           Homebrew で以下のようにインストールできます。
@@ -32,11 +32,11 @@ katachi が必要かどうか迷う場合は、先に [モチベーション](/k
           brew install tbsten/tap/katachi
           ```
 
-        ### Git 管理
+        - Git 管理
 
-        事前にプロジェクトを git で管理しておくことをおすすめします。
+          事前にプロジェクトを git で管理しておくことをおすすめします。
 
-        ### 追加オプション
+        - 追加オプション
 
           <details>
             <summary>追加のドキュメンテーション</summary>
@@ -66,9 +66,9 @@ katachi が必要かどうか迷う場合は、先に [モチベーション](/k
     3. AI Agent がプロジェクトにセットアップした差分を **レビュー** し、必要に応じて内容を修正してください。
 
         注目すべき点:
-        - `architecture-test/src/test/kotlin/<パッケージ>/ProjectArchitecture.kt` がエントリーポイントです。
-        - AI Agent は architecture の定義を group・Role ごとのファイルに分け、`ProjectArchitecture.kt` の下のパッケージに置きます。そのファイルもレビュー対象です。
-        - チームで開発している場合は、チームメンバー（特にチームのリード）にも重点的にレビューしてもらいましょう。
+        - [ ] `architecture-test/src/test/kotlin/<パッケージ>/ProjectArchitecture.kt` がエントリーポイントです。
+        - [ ] AI Agent は architecture の定義を group・Role ごとのファイルに分け、`ProjectArchitecture.kt` の下のパッケージに置きます。そのファイルもレビュー対象です。
+        - [ ] チームで開発している場合は、チームメンバー（特にチームのリード）にも重点的にレビューしてもらいましょう。
 
     4. **アーキテクチャテストを実行** し、All green になることを確認してください。
 
