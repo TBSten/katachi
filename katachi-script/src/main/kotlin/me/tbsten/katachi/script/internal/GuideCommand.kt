@@ -93,7 +93,8 @@ internal fun ScriptContext.runGuide(args: List<String>): Int {
     }
     val id: String? = parsed.positionals.firstOrNull()
     val refresh = parsed.has("--refresh")
-    parsed.value("--lang")?.let(::setLangOption)
+    val langOption = parsed.value("--lang")
+    langOption?.let(::setLangOption)
 
     val guide = Guide.bundled(lang)
     if (refresh) {
@@ -121,8 +122,11 @@ internal fun ScriptContext.runGuide(args: List<String>): Int {
         out("${pick("含むセクション", "Sections")}: ${section.children.joinToString(", ")}")
     }
     guide.next(wanted)?.let { next ->
+        // An explicit --lang is carried into the next command: before init nothing is recorded, and without it the next
+        // section comes out in the default ja, so an agent that started in en reads on in Japanese and runs init --lang ja.
+        val nextCommand = "$AGENT_COMMAND guide $next" + if (langOption != null) " --lang ${lang.code}" else ""
         say("")
-        say("次: $AGENT_COMMAND guide $next", "Next: $AGENT_COMMAND guide $next")
+        say("次: $nextCommand", "Next: $nextCommand")
     }
     return 0
 }

@@ -109,6 +109,14 @@ class RunScriptSpec : FreeSpec({
         run.out shouldNotContain "sh \$CLI"
     }
 
+    "guide --lang を付けたときは、次の案内にも同じ --lang を付ける（init の前は言語の記録が無い）" {
+        val run = runCapturing(createTempDirectory("katachi-script-"), listOf("agent", "guide", "0", "--lang", "en"))
+        run.status shouldBe 0
+        run.out.trimEnd().lines().last() shouldBe "Next: katachi agent guide 0-1 --lang en"
+        val next = runCapturing(createTempDirectory("katachi-script-"), listOf("agent", "guide", "0-1", "--lang", "en"))
+        next.out.trimEnd().lines().last() shouldBe "Next: katachi agent guide 0-2 --lang en"
+    }
+
     "init --offline はネットワークなしで、同梱のテンプレートと手順書を置く" {
         val project = createTempDirectory("katachi-project-")
         project.resolve("settings.gradle.kts").writeText("rootProject.name = \"p\"\n")
