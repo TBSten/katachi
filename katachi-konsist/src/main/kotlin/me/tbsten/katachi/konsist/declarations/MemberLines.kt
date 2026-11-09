@@ -4,11 +4,13 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.konsist.declarations.internal.DeclarationKindName
 import me.tbsten.katachi.konsist.declarations.internal.DeclarationLineBuilder
 import me.tbsten.katachi.konsist.declarations.internal.VocabularyWord
+import me.tbsten.katachi.konsist.declarations.internal.allowWriter
+import me.tbsten.katachi.konsist.declarations.internal.requiredWriter
 
 /**
  * `entry`: the entries of an enum class, written in its `{ }`.
  *
- * ## Example 1
+ * ## Example 1: any entry
  * ```kt
  * allow(enum, `class`, "Color") { allow(entry, "*") }
  * ```
@@ -24,7 +26,7 @@ public class EntryKind internal constructor(
 /**
  * `constructor`: the secondary constructors of a class, written in its `{ }`.
  *
- * ## Example 1
+ * ## Example 1: a private constructor taking a token
  * ```kt
  * allow(`class`, "Session") { allow(private, constructor)("token: String") }
  * ```
@@ -40,7 +42,7 @@ public class ConstructorKind internal constructor(
 /**
  * `init`: the `init { }` blocks of a class, written in its `{ }`.
  *
- * ## Example 1
+ * ## Example 1: allow init blocks
  * ```kt
  * allow(`class`, "Session") { allow(init) }
  * ```
@@ -98,28 +100,325 @@ public sealed interface MemberAllow {
      *
      * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
      */
-    public fun allow(kind: EntryKind, name: String): EntryLine
+    public fun allow(kind: EntryKind, name: String): EntryLine =
+        EntryLine(allowWriter.member(emptyList(), kind.word, DeclarationKindName.EnumEntry, name))
 
     /**
-     * Allows the enum entries whose names match [name] and that carry the annotations of [m1].
+     * Allows the enum entries whose names match [name], with [modifier1] in front. An enum entry carries only annotations, such as `annotated("Deprecated")`.
      *
-     * @throws KatachiKtFileContentModifierException when [m1] holds a modifier, which an enum entry never carries.
+     * @throws KatachiKtFileContentModifierException when a modifier is given, which an enum entry never carries.
      * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
      */
-    public fun allow(m1: Modifiers, kind: EntryKind, name: String): EntryLine
-
-    /** Allows secondary constructors; the parameters are written after it as with a function: `allow(constructor)("id: Int")`. */
-    public fun allow(kind: ConstructorKind): ConstructorLine
+    public fun allow(
+        modifier1: Modifiers,
+        kind: EntryKind,
+        name: String,
+    ): EntryLine = EntryLine(allowWriter.member(listOf(modifier1), kind.word, DeclarationKindName.EnumEntry, name))
 
     /**
-     * Allows secondary constructors that carry [m1], such as `private`.
+     * Allows the enum entries whose names match [name], with [modifier1] and [modifier2] in front. An enum entry carries only annotations, such as `annotated("Deprecated")`.
      *
-     * @throws KatachiKtFileContentModifierException when [m1] holds a modifier no constructor carries.
+     * @throws KatachiKtFileContentModifierException when a modifier is given, which an enum entry never carries.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
      */
-    public fun allow(m1: Modifiers, kind: ConstructorKind): ConstructorLine
+    public fun allow(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        kind: EntryKind,
+        name: String,
+    ): EntryLine = EntryLine(allowWriter.member(listOf(modifier1, modifier2), kind.word, DeclarationKindName.EnumEntry, name))
+
+    /**
+     * Allows the enum entries whose names match [name], with [modifier1] to [modifier3] in front. An enum entry carries only annotations, such as `annotated("Deprecated")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is given, which an enum entry never carries.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
+     */
+    public fun allow(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        kind: EntryKind,
+        name: String,
+    ): EntryLine = EntryLine(allowWriter.member(listOf(modifier1, modifier2, modifier3), kind.word, DeclarationKindName.EnumEntry, name))
+
+    /**
+     * Allows the enum entries whose names match [name], with [modifier1] to [modifier4] in front. An enum entry carries only annotations, such as `annotated("Deprecated")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is given, which an enum entry never carries.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
+     */
+    public fun allow(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        kind: EntryKind,
+        name: String,
+    ): EntryLine = EntryLine(allowWriter.member(listOf(modifier1, modifier2, modifier3, modifier4), kind.word, DeclarationKindName.EnumEntry, name))
+
+    /**
+     * Allows the enum entries whose names match [name], with [modifier1] to [modifier5] in front. An enum entry carries only annotations, such as `annotated("Deprecated")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is given, which an enum entry never carries.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
+     */
+    public fun allow(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        modifier5: Modifiers,
+        kind: EntryKind,
+        name: String,
+    ): EntryLine = EntryLine(allowWriter.member(listOf(modifier1, modifier2, modifier3, modifier4, modifier5), kind.word, DeclarationKindName.EnumEntry, name))
+
+    /**
+     * Allows the enum entries whose names match [name], with [modifier1] to [modifier6] in front. An enum entry carries only annotations, such as `annotated("Deprecated")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is given, which an enum entry never carries.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
+     */
+    public fun allow(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        modifier5: Modifiers,
+        modifier6: Modifiers,
+        kind: EntryKind,
+        name: String,
+    ): EntryLine = EntryLine(allowWriter.member(listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6), kind.word, DeclarationKindName.EnumEntry, name))
+
+    /**
+     * Allows the enum entries whose names match [name], with [modifier1] to [modifier7] in front. An enum entry carries only annotations, such as `annotated("Deprecated")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is given, which an enum entry never carries.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
+     */
+    public fun allow(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        modifier5: Modifiers,
+        modifier6: Modifiers,
+        modifier7: Modifiers,
+        kind: EntryKind,
+        name: String,
+    ): EntryLine = EntryLine(allowWriter.member(listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6, modifier7), kind.word, DeclarationKindName.EnumEntry, name))
+
+    /**
+     * Allows the enum entries whose names match [name], with [modifier1] to [modifier8] in front. An enum entry carries only annotations, such as `annotated("Deprecated")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is given, which an enum entry never carries.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
+     */
+    public fun allow(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        modifier5: Modifiers,
+        modifier6: Modifiers,
+        modifier7: Modifiers,
+        modifier8: Modifiers,
+        kind: EntryKind,
+        name: String,
+    ): EntryLine = EntryLine(allowWriter.member(listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6, modifier7, modifier8), kind.word, DeclarationKindName.EnumEntry, name))
+
+    /**
+     * Allows the enum entries whose names match [name], with [modifier1] to [modifier9] in front. An enum entry carries only annotations, such as `annotated("Deprecated")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is given, which an enum entry never carries.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
+     */
+    public fun allow(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        modifier5: Modifiers,
+        modifier6: Modifiers,
+        modifier7: Modifiers,
+        modifier8: Modifiers,
+        modifier9: Modifiers,
+        kind: EntryKind,
+        name: String,
+    ): EntryLine = EntryLine(allowWriter.member(listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6, modifier7, modifier8, modifier9), kind.word, DeclarationKindName.EnumEntry, name))
+
+    /**
+     * Allows the enum entries whose names match [name], with [modifier1] to [modifier10] in front. An enum entry carries only annotations, such as `annotated("Deprecated")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is given, which an enum entry never carries.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
+     */
+    public fun allow(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        modifier5: Modifiers,
+        modifier6: Modifiers,
+        modifier7: Modifiers,
+        modifier8: Modifiers,
+        modifier9: Modifiers,
+        modifier10: Modifiers,
+        kind: EntryKind,
+        name: String,
+    ): EntryLine = EntryLine(allowWriter.member(listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6, modifier7, modifier8, modifier9, modifier10), kind.word, DeclarationKindName.EnumEntry, name))
+
+    /** Allows secondary constructors; the parameters are written after it as with a function: `allow(constructor)("id: Int")`. */
+    public fun allow(kind: ConstructorKind): ConstructorLine =
+        ConstructorLine(allowWriter.member(emptyList(), kind.word, DeclarationKindName.Constructor, "*"))
+
+    /**
+     * Allows secondary constructors, with [modifier1] in front, such as `private` or `annotated("Inject")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is one no constructor carries.
+     */
+    public fun allow(
+        modifier1: Modifiers,
+        kind: ConstructorKind,
+    ): ConstructorLine = ConstructorLine(allowWriter.member(listOf(modifier1), kind.word, DeclarationKindName.Constructor, "*"))
+
+    /**
+     * Allows secondary constructors, with [modifier1] and [modifier2] in front, such as `private` or `annotated("Inject")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is one no constructor carries.
+     */
+    public fun allow(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        kind: ConstructorKind,
+    ): ConstructorLine = ConstructorLine(allowWriter.member(listOf(modifier1, modifier2), kind.word, DeclarationKindName.Constructor, "*"))
+
+    /**
+     * Allows secondary constructors, with [modifier1] to [modifier3] in front, such as `private` or `annotated("Inject")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is one no constructor carries.
+     */
+    public fun allow(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        kind: ConstructorKind,
+    ): ConstructorLine = ConstructorLine(allowWriter.member(listOf(modifier1, modifier2, modifier3), kind.word, DeclarationKindName.Constructor, "*"))
+
+    /**
+     * Allows secondary constructors, with [modifier1] to [modifier4] in front, such as `private` or `annotated("Inject")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is one no constructor carries.
+     */
+    public fun allow(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        kind: ConstructorKind,
+    ): ConstructorLine = ConstructorLine(allowWriter.member(listOf(modifier1, modifier2, modifier3, modifier4), kind.word, DeclarationKindName.Constructor, "*"))
+
+    /**
+     * Allows secondary constructors, with [modifier1] to [modifier5] in front, such as `private` or `annotated("Inject")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is one no constructor carries.
+     */
+    public fun allow(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        modifier5: Modifiers,
+        kind: ConstructorKind,
+    ): ConstructorLine = ConstructorLine(allowWriter.member(listOf(modifier1, modifier2, modifier3, modifier4, modifier5), kind.word, DeclarationKindName.Constructor, "*"))
+
+    /**
+     * Allows secondary constructors, with [modifier1] to [modifier6] in front, such as `private` or `annotated("Inject")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is one no constructor carries.
+     */
+    public fun allow(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        modifier5: Modifiers,
+        modifier6: Modifiers,
+        kind: ConstructorKind,
+    ): ConstructorLine = ConstructorLine(allowWriter.member(listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6), kind.word, DeclarationKindName.Constructor, "*"))
+
+    /**
+     * Allows secondary constructors, with [modifier1] to [modifier7] in front, such as `private` or `annotated("Inject")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is one no constructor carries.
+     */
+    public fun allow(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        modifier5: Modifiers,
+        modifier6: Modifiers,
+        modifier7: Modifiers,
+        kind: ConstructorKind,
+    ): ConstructorLine = ConstructorLine(allowWriter.member(listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6, modifier7), kind.word, DeclarationKindName.Constructor, "*"))
+
+    /**
+     * Allows secondary constructors, with [modifier1] to [modifier8] in front, such as `private` or `annotated("Inject")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is one no constructor carries.
+     */
+    public fun allow(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        modifier5: Modifiers,
+        modifier6: Modifiers,
+        modifier7: Modifiers,
+        modifier8: Modifiers,
+        kind: ConstructorKind,
+    ): ConstructorLine = ConstructorLine(allowWriter.member(listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6, modifier7, modifier8), kind.word, DeclarationKindName.Constructor, "*"))
+
+    /**
+     * Allows secondary constructors, with [modifier1] to [modifier9] in front, such as `private` or `annotated("Inject")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is one no constructor carries.
+     */
+    public fun allow(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        modifier5: Modifiers,
+        modifier6: Modifiers,
+        modifier7: Modifiers,
+        modifier8: Modifiers,
+        modifier9: Modifiers,
+        kind: ConstructorKind,
+    ): ConstructorLine = ConstructorLine(allowWriter.member(listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6, modifier7, modifier8, modifier9), kind.word, DeclarationKindName.Constructor, "*"))
+
+    /**
+     * Allows secondary constructors, with [modifier1] to [modifier10] in front, such as `private` or `annotated("Inject")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is one no constructor carries.
+     */
+    public fun allow(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        modifier5: Modifiers,
+        modifier6: Modifiers,
+        modifier7: Modifiers,
+        modifier8: Modifiers,
+        modifier9: Modifiers,
+        modifier10: Modifiers,
+        kind: ConstructorKind,
+    ): ConstructorLine = ConstructorLine(allowWriter.member(listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6, modifier7, modifier8, modifier9, modifier10), kind.word, DeclarationKindName.Constructor, "*"))
 
     /** Allows `init { }` blocks. */
-    public fun allow(kind: InitKind): InitLine
+    public fun allow(kind: InitKind): InitLine = InitLine(allowWriter.member(emptyList(), kind.word, DeclarationKindName.Init, "*"))
 }
 
 /**
@@ -141,28 +440,325 @@ public sealed interface MemberRequired {
      *
      * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
      */
-    public fun required(kind: EntryKind, name: String): EntryLine
+    public fun required(kind: EntryKind, name: String): EntryLine =
+        EntryLine(requiredWriter.member(emptyList(), kind.word, DeclarationKindName.EnumEntry, name))
 
     /**
-     * Requires an enum entry whose name matches [name] and that carries the annotations of [m1].
+     * Requires an enum entry whose name matches [name], with [modifier1] in front. An enum entry carries only annotations, such as `annotated("Deprecated")`.
      *
-     * @throws KatachiKtFileContentModifierException when [m1] holds a modifier, which an enum entry never carries.
+     * @throws KatachiKtFileContentModifierException when a modifier is given, which an enum entry never carries.
      * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
      */
-    public fun required(m1: Modifiers, kind: EntryKind, name: String): EntryLine
-
-    /** Requires a secondary constructor. */
-    public fun required(kind: ConstructorKind): ConstructorLine
+    public fun required(
+        modifier1: Modifiers,
+        kind: EntryKind,
+        name: String,
+    ): EntryLine = EntryLine(requiredWriter.member(listOf(modifier1), kind.word, DeclarationKindName.EnumEntry, name))
 
     /**
-     * Requires a secondary constructor that carries [m1].
+     * Requires an enum entry whose name matches [name], with [modifier1] and [modifier2] in front. An enum entry carries only annotations, such as `annotated("Deprecated")`.
      *
-     * @throws KatachiKtFileContentModifierException when [m1] holds a modifier no constructor carries.
+     * @throws KatachiKtFileContentModifierException when a modifier is given, which an enum entry never carries.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
      */
-    public fun required(m1: Modifiers, kind: ConstructorKind): ConstructorLine
+    public fun required(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        kind: EntryKind,
+        name: String,
+    ): EntryLine = EntryLine(requiredWriter.member(listOf(modifier1, modifier2), kind.word, DeclarationKindName.EnumEntry, name))
+
+    /**
+     * Requires an enum entry whose name matches [name], with [modifier1] to [modifier3] in front. An enum entry carries only annotations, such as `annotated("Deprecated")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is given, which an enum entry never carries.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
+     */
+    public fun required(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        kind: EntryKind,
+        name: String,
+    ): EntryLine = EntryLine(requiredWriter.member(listOf(modifier1, modifier2, modifier3), kind.word, DeclarationKindName.EnumEntry, name))
+
+    /**
+     * Requires an enum entry whose name matches [name], with [modifier1] to [modifier4] in front. An enum entry carries only annotations, such as `annotated("Deprecated")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is given, which an enum entry never carries.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
+     */
+    public fun required(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        kind: EntryKind,
+        name: String,
+    ): EntryLine = EntryLine(requiredWriter.member(listOf(modifier1, modifier2, modifier3, modifier4), kind.word, DeclarationKindName.EnumEntry, name))
+
+    /**
+     * Requires an enum entry whose name matches [name], with [modifier1] to [modifier5] in front. An enum entry carries only annotations, such as `annotated("Deprecated")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is given, which an enum entry never carries.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
+     */
+    public fun required(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        modifier5: Modifiers,
+        kind: EntryKind,
+        name: String,
+    ): EntryLine = EntryLine(requiredWriter.member(listOf(modifier1, modifier2, modifier3, modifier4, modifier5), kind.word, DeclarationKindName.EnumEntry, name))
+
+    /**
+     * Requires an enum entry whose name matches [name], with [modifier1] to [modifier6] in front. An enum entry carries only annotations, such as `annotated("Deprecated")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is given, which an enum entry never carries.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
+     */
+    public fun required(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        modifier5: Modifiers,
+        modifier6: Modifiers,
+        kind: EntryKind,
+        name: String,
+    ): EntryLine = EntryLine(requiredWriter.member(listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6), kind.word, DeclarationKindName.EnumEntry, name))
+
+    /**
+     * Requires an enum entry whose name matches [name], with [modifier1] to [modifier7] in front. An enum entry carries only annotations, such as `annotated("Deprecated")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is given, which an enum entry never carries.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
+     */
+    public fun required(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        modifier5: Modifiers,
+        modifier6: Modifiers,
+        modifier7: Modifiers,
+        kind: EntryKind,
+        name: String,
+    ): EntryLine = EntryLine(requiredWriter.member(listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6, modifier7), kind.word, DeclarationKindName.EnumEntry, name))
+
+    /**
+     * Requires an enum entry whose name matches [name], with [modifier1] to [modifier8] in front. An enum entry carries only annotations, such as `annotated("Deprecated")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is given, which an enum entry never carries.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
+     */
+    public fun required(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        modifier5: Modifiers,
+        modifier6: Modifiers,
+        modifier7: Modifiers,
+        modifier8: Modifiers,
+        kind: EntryKind,
+        name: String,
+    ): EntryLine = EntryLine(requiredWriter.member(listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6, modifier7, modifier8), kind.word, DeclarationKindName.EnumEntry, name))
+
+    /**
+     * Requires an enum entry whose name matches [name], with [modifier1] to [modifier9] in front. An enum entry carries only annotations, such as `annotated("Deprecated")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is given, which an enum entry never carries.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
+     */
+    public fun required(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        modifier5: Modifiers,
+        modifier6: Modifiers,
+        modifier7: Modifiers,
+        modifier8: Modifiers,
+        modifier9: Modifiers,
+        kind: EntryKind,
+        name: String,
+    ): EntryLine = EntryLine(requiredWriter.member(listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6, modifier7, modifier8, modifier9), kind.word, DeclarationKindName.EnumEntry, name))
+
+    /**
+     * Requires an enum entry whose name matches [name], with [modifier1] to [modifier10] in front. An enum entry carries only annotations, such as `annotated("Deprecated")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is given, which an enum entry never carries.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
+     */
+    public fun required(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        modifier5: Modifiers,
+        modifier6: Modifiers,
+        modifier7: Modifiers,
+        modifier8: Modifiers,
+        modifier9: Modifiers,
+        modifier10: Modifiers,
+        kind: EntryKind,
+        name: String,
+    ): EntryLine = EntryLine(requiredWriter.member(listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6, modifier7, modifier8, modifier9, modifier10), kind.word, DeclarationKindName.EnumEntry, name))
+
+    /** Requires a secondary constructor; the parameters are written after it as with a function: `required(constructor)("id: Int")`. */
+    public fun required(kind: ConstructorKind): ConstructorLine =
+        ConstructorLine(requiredWriter.member(emptyList(), kind.word, DeclarationKindName.Constructor, "*"))
+
+    /**
+     * Requires a secondary constructor, with [modifier1] in front, such as `private` or `annotated("Inject")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is one no constructor carries.
+     */
+    public fun required(
+        modifier1: Modifiers,
+        kind: ConstructorKind,
+    ): ConstructorLine = ConstructorLine(requiredWriter.member(listOf(modifier1), kind.word, DeclarationKindName.Constructor, "*"))
+
+    /**
+     * Requires a secondary constructor, with [modifier1] and [modifier2] in front, such as `private` or `annotated("Inject")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is one no constructor carries.
+     */
+    public fun required(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        kind: ConstructorKind,
+    ): ConstructorLine = ConstructorLine(requiredWriter.member(listOf(modifier1, modifier2), kind.word, DeclarationKindName.Constructor, "*"))
+
+    /**
+     * Requires a secondary constructor, with [modifier1] to [modifier3] in front, such as `private` or `annotated("Inject")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is one no constructor carries.
+     */
+    public fun required(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        kind: ConstructorKind,
+    ): ConstructorLine = ConstructorLine(requiredWriter.member(listOf(modifier1, modifier2, modifier3), kind.word, DeclarationKindName.Constructor, "*"))
+
+    /**
+     * Requires a secondary constructor, with [modifier1] to [modifier4] in front, such as `private` or `annotated("Inject")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is one no constructor carries.
+     */
+    public fun required(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        kind: ConstructorKind,
+    ): ConstructorLine = ConstructorLine(requiredWriter.member(listOf(modifier1, modifier2, modifier3, modifier4), kind.word, DeclarationKindName.Constructor, "*"))
+
+    /**
+     * Requires a secondary constructor, with [modifier1] to [modifier5] in front, such as `private` or `annotated("Inject")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is one no constructor carries.
+     */
+    public fun required(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        modifier5: Modifiers,
+        kind: ConstructorKind,
+    ): ConstructorLine = ConstructorLine(requiredWriter.member(listOf(modifier1, modifier2, modifier3, modifier4, modifier5), kind.word, DeclarationKindName.Constructor, "*"))
+
+    /**
+     * Requires a secondary constructor, with [modifier1] to [modifier6] in front, such as `private` or `annotated("Inject")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is one no constructor carries.
+     */
+    public fun required(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        modifier5: Modifiers,
+        modifier6: Modifiers,
+        kind: ConstructorKind,
+    ): ConstructorLine = ConstructorLine(requiredWriter.member(listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6), kind.word, DeclarationKindName.Constructor, "*"))
+
+    /**
+     * Requires a secondary constructor, with [modifier1] to [modifier7] in front, such as `private` or `annotated("Inject")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is one no constructor carries.
+     */
+    public fun required(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        modifier5: Modifiers,
+        modifier6: Modifiers,
+        modifier7: Modifiers,
+        kind: ConstructorKind,
+    ): ConstructorLine = ConstructorLine(requiredWriter.member(listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6, modifier7), kind.word, DeclarationKindName.Constructor, "*"))
+
+    /**
+     * Requires a secondary constructor, with [modifier1] to [modifier8] in front, such as `private` or `annotated("Inject")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is one no constructor carries.
+     */
+    public fun required(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        modifier5: Modifiers,
+        modifier6: Modifiers,
+        modifier7: Modifiers,
+        modifier8: Modifiers,
+        kind: ConstructorKind,
+    ): ConstructorLine = ConstructorLine(requiredWriter.member(listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6, modifier7, modifier8), kind.word, DeclarationKindName.Constructor, "*"))
+
+    /**
+     * Requires a secondary constructor, with [modifier1] to [modifier9] in front, such as `private` or `annotated("Inject")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is one no constructor carries.
+     */
+    public fun required(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        modifier5: Modifiers,
+        modifier6: Modifiers,
+        modifier7: Modifiers,
+        modifier8: Modifiers,
+        modifier9: Modifiers,
+        kind: ConstructorKind,
+    ): ConstructorLine = ConstructorLine(requiredWriter.member(listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6, modifier7, modifier8, modifier9), kind.word, DeclarationKindName.Constructor, "*"))
+
+    /**
+     * Requires a secondary constructor, with [modifier1] to [modifier10] in front, such as `private` or `annotated("Inject")`.
+     *
+     * @throws KatachiKtFileContentModifierException when a modifier is one no constructor carries.
+     */
+    public fun required(
+        modifier1: Modifiers,
+        modifier2: Modifiers,
+        modifier3: Modifiers,
+        modifier4: Modifiers,
+        modifier5: Modifiers,
+        modifier6: Modifiers,
+        modifier7: Modifiers,
+        modifier8: Modifiers,
+        modifier9: Modifiers,
+        modifier10: Modifiers,
+        kind: ConstructorKind,
+    ): ConstructorLine = ConstructorLine(requiredWriter.member(listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6, modifier7, modifier8, modifier9, modifier10), kind.word, DeclarationKindName.Constructor, "*"))
 
     /** Requires an `init { }` block. */
-    public fun required(kind: InitKind): InitLine
+    public fun required(kind: InitKind): InitLine = InitLine(requiredWriter.member(emptyList(), kind.word, DeclarationKindName.Init, "*"))
 }
 
 /**
@@ -242,7 +838,7 @@ public class ConstructorLine internal constructor(
 /**
  * An `init { }` block line just written.
  *
- * ## Example 1
+ * ## Example 1: allow init blocks
  * ```kt
  * allow(`class`, "Session") { allow(init) }
  * ```

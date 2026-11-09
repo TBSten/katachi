@@ -19,17 +19,17 @@ class CommandSpecsSpec : FreeSpec({
 
     "選択肢の外の値は使える値を言って止まる" {
         val exit = shouldThrow<KatachiScriptExitException> { parseArgs(commandSpec("scaffold"), listOf("--deps", "maven")) }
-        exit.ja shouldBe "--deps は catalog か literal です: maven"
+        exit.text.ja shouldBe "--deps は catalog か literal です: maven"
     }
 
     "知らないオプションはサブコマンドの名前つきで止まる" {
         val exit = shouldThrow<KatachiScriptExitException> { parseArgs(commandSpec("init"), listOf("--nothing")) }
-        exit.ja shouldBe "init: 知らないオプションです: --nothing"
+        exit.text.ja shouldBe "init: 知らないオプションです: --nothing"
     }
 
     "値の要るオプションに値が無ければ止まる" {
         val exit = shouldThrow<KatachiScriptExitException> { parseArgs(commandSpec("init"), listOf("--workdir")) }
-        exit.ja shouldBe "--workdir に値がありません。"
+        exit.text.ja shouldBe "--workdir に値がありません。"
     }
 
     "入れ子のサブコマンドを選び、省略時は既定のものにする" {

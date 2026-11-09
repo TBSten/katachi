@@ -95,10 +95,10 @@ class DocsCommandSpec : FreeSpec({
         cached.err shouldContain "--refresh を付けて取り直してください（katachi agent docs --topic roadmap --refresh）"
     }
 
-    "古い版の写しを切り出したら止まる" {
+    "古いバージョンの写しを切り出したら止まる" {
         val run = DocsFixture().run("agent", "docs", "--topic", "git")
         run.status shouldBe 1
-        run.err shouldContain "古い版（/0.2/ など）の写しでした"
+        run.err shouldContain "古いバージョン（/0.2/ など）の写しでした"
     }
 
     "取れなければ手で置く場所を案内して止まる" {

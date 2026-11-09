@@ -21,11 +21,6 @@ internal const val STEP: String = "  "
  *   failure summary to hang it under.
  * - **Neither** — an empty string.
  *
- * ## Example 1: build a report of the current violations without failing anything
- * ```kt
- * val report = projectArchitecture.validate().report()
- * println(report)
- * ```
  *
  * @param maxViolations how many error and warning blocks this writes out, together. When both
  *   severities are present, warnings take at least one block and at most a quarter; the summary
@@ -33,8 +28,7 @@ internal const val STEP: String = "  "
  * @param projectRoot what the violations' relative paths are resolved against to print them as
  *   `file:///...` URIs. `null` prints them as the violations carry them, relative to the root.
  */
-@InternalKatachiApi
-public fun List<Violation>.report(
+internal fun List<Violation>.report(
     maxViolations: Int = DEFAULT_MAX_VIOLATIONS,
     projectRoot: FsPath? = null,
 ): String {
@@ -382,3 +376,18 @@ internal fun causeLines(cause: Throwable): List<String> {
 }
 
 private fun fragment(lines: List<String>): List<String> = lines.map { "$STEP$STEP$STEP$STEP$it" }
+
+/**
+ * [report], for the tests of katachi's other modules, which cannot reach it: they check the text a failing `assert()`
+ * prints for the violations they produce.
+ *
+ * ## Example 1: in a test of katachi-konsist
+ * ```kt
+ * projectArchitecture.validate(RealFileSystem(fixtureRoot)).reportForTest() shouldContain "must"
+ * ```
+ */
+@InternalKatachiApi
+public fun List<Violation>.reportForTest(
+    maxViolations: Int = DEFAULT_MAX_VIOLATIONS,
+    projectRoot: FsPath? = null,
+): String = report(maxViolations, projectRoot)

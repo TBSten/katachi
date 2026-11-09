@@ -52,7 +52,7 @@ internal fun ScriptContext.editWithBackup(file: Path, edit: (List<String>) -> Li
         bak.deleteIfExists()
     } catch (e: IOException) {
         Files.move(bak, file, StandardCopyOption.REPLACE_EXISTING)
-        die("${fileUri(file)} の書き換えに失敗しました。元に戻しました。（${e.message}）", "Failed to edit ${fileUri(file)}. It was restored. (${e.message})")
+        die(Messages.GradleFiles.failedEditRestored(fileUri(file), e.message))
     }
 }
 
@@ -270,7 +270,7 @@ internal class CatalogPlan {
     val plugins = mutableListOf<String>()
 
     /** Why the catalog cannot be used (ja to en); null when it can. */
-    var fallback: Pair<String, String>? = null
+    var fallback: Msg? = null
     var plugin = ""
     var katachi = ""
     var konsist = ""
@@ -295,8 +295,7 @@ internal fun planCatalogEntries(root: Path, version: String, konsist: Boolean, t
         val have = catalogAliasEntry(root, "versions", alias)
         if (have != null) {
             if (have.content == value) return have.alias
-            plan.fallback = "別名 $alias が別の用途で使われています（[versions] $alias = \"${have.content}\"）" to
-                "alias $alias is used for something else ([versions] $alias = \"${have.content}\")"
+            plan.fallback = Messages.GradleFiles.aliasTakenVersion(alias, have.content)
             throw CatalogConflict()
         }
         plan.versions += "$alias = \"$value\""
@@ -308,7 +307,7 @@ internal fun planCatalogEntries(root: Path, version: String, konsist: Boolean, t
         fun conflict(alias: String) {
             val other = catalogAliasEntry(root, table, alias)?.content ?: return
             if (other == content) return
-            plan.fallback = "別名 $alias が別の用途で使われています（[$table] $alias → $other）" to "alias $alias is used for something else ([$table] $alias → $other)"
+            plan.fallback = Messages.GradleFiles.aliasTakenItem(alias, table, other)
             throw CatalogConflict()
         }
         conflict(wanted)

@@ -69,7 +69,6 @@ public class FileProhibition internal constructor(
      */
     public fun `package`(pattern: String): PackageLine = PackageLine(file.declarePackage(pattern, prohibited = true))
 
-    /** `not`. */
     /**
      * Prohibits the file annotations matching [pattern], even when a `fileAnnotation(...)` line allows them.
      *
@@ -84,5 +83,6 @@ public class FileProhibition internal constructor(
     public fun fileAnnotation(pattern: String): FileAnnotationLine =
         FileAnnotationLine(renderFileAnnotation(file.declareFileAnnotation(pattern, prohibited = true)))
 
+    /** `not`. */
     override fun toString(): String = "not"
 }

@@ -15,7 +15,7 @@ internal fun roleSuggestionFor(
 
 // A directory gets ignore(), not an empty block: an empty block means nothing may live there and would report every file inside.
 internal fun layoutLineFor(path: String, isDirectory: Boolean): String {
-    if (isDirectory) return "\"$path\" { ignore() }"
+    if (isDirectory) return "\"$path\".ignore()"
     val directory = path.parentPath()
     val file = fileCallFor(path.substringAfterLast('/'))
     // A layout key may spell out several levels, so the whole directory path is one string.

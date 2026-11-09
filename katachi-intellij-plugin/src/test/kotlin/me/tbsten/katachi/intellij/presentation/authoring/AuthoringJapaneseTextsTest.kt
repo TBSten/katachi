@@ -122,9 +122,9 @@ class AuthoringJapaneseTextsTest {
         val none = EntryFilesInput(listOf("src/main/kotlin/*Servise.kt", "*.md"), emptyList(), 0, root)
         val popup = EntryFilesPopups.of(none, japaneseAuthoring) { directory, limit -> if (directory.isEmpty()) emptyList() else List(limit) { "F$it.kt" } }
         val shown = popup.rows.map { it.text }
-        assertEquals("— src/main/kotlin/*Servise.kt に当たるファイルはありません", shown[0])
+        assertEquals("— src/main/kotlin/*Servise.kt に一致するファイルはありません", shown[0])
         assertEquals("— src/main/kotlin にあるファイル:", shown[1])
-        assertTrue(shown.toString(), shown.containsAll(listOf("… ほかにもあります", "— *.md に当たるファイルはありません", "— プロジェクトのルート にファイルはありません")))
+        assertTrue(shown.toString(), shown.containsAll(listOf("… ほかにもあります", "— *.md に一致するファイルはありません", "— プロジェクトのルート にファイルはありません")))
 
         val unknown = EntryFilesPopups.of(none.copy(count = null), japaneseAuthoring) { _, _ -> emptyList() }
         assertEquals(listOf("— ファイルの数は不明（検査がまだ走っていません）"), unknown.rows.map { it.text })

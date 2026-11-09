@@ -175,6 +175,11 @@ jobs:
         working-directory: docs
         run: pnpm install --frozen-lockfile
 
+      # docs.yml runs it only on main; here it also catches the IDE plugin's KatachiBundle_ja.properties in a PR.
+      - name: Lint text (docs/prh.yml)
+        working-directory: docs
+        run: pnpm run lint:text
+
       # Unit tests (vitest) of the dev-only feedback mode and memo: the store contract, the record format,
       # and the patterns the dist check greps for. The E2E (Playwright) is not run in CI.
       - name: Test docs

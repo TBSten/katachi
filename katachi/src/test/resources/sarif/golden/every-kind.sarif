@@ -191,7 +191,7 @@
           "ruleIndex": 11,
           "level": "error",
           "message": {
-            "text": "No role is defined for this directory. Nothing below it was checked.\n\nHow to fix:\n  - Delete it if it is not needed\n  - Declare what belongs in it in the layout of an existing role\n  - Add a new role for it:\n      \"Legacy\".role {\n        summary = \"TODO\"\n        layout {\n          \"legacy\" { ignore() }\n        }\n      }"
+            "text": "No role is defined for this directory. Nothing below it was checked.\n\nHow to fix:\n  - Delete it if it is not needed\n  - Declare what belongs in it in the layout of an existing role\n  - Add a new role for it:\n      \"Legacy\".role {\n        summary = \"TODO\"\n        layout {\n          \"legacy\".ignore()\n        }\n      }"
           },
           "locations": [
             {

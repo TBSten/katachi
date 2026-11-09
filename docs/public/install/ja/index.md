@@ -470,7 +470,7 @@ JDK: 21（JAVA_HOME）
         "Gemini".role {
           summary = "TODO"
           layout {
-            ".gemini" { ignore() }
+            ".gemini".ignore()
           }
         }
 ```

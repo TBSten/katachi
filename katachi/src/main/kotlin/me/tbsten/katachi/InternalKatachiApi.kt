@@ -17,7 +17,7 @@ package me.tbsten.katachi
  * ```kt
  * import me.tbsten.katachi.ExperimentalKatachiApi
  * import me.tbsten.katachi.InternalKatachiApi
- * import me.tbsten.katachi.check.internal.report
+ * import me.tbsten.katachi.check.internal.reportForTest
  * import me.tbsten.katachi.check.validate
  * import me.tbsten.katachi.dsl.files.internal.RealFileSystem
  *
@@ -25,7 +25,7 @@ package me.tbsten.katachi
  * @OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
  * class KonsistReportSpec : FreeSpec({
  *     "names the broken constraint" {
- *         projectArchitecture.validate(RealFileSystem(fixtureRoot)).report() shouldContain "must"
+ *         projectArchitecture.validate(RealFileSystem(fixtureRoot)).reportForTest() shouldContain "must"
  *     }
  * })
  * ```

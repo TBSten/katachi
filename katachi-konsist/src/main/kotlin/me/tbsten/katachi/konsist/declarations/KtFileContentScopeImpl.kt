@@ -58,32 +58,6 @@ internal class ClassBodyScopeImpl(
 
     override val init: InitKind get() = InitKind(VocabularyWord.of(list) { DeclarationKindName.Init.keyword })
 
-    override fun allow(kind: EntryKind, name: String): EntryLine = EntryLine(writer.member(emptyList(), kind.word, DeclarationKindName.EnumEntry, name))
-
-    override fun allow(m1: Modifiers, kind: EntryKind, name: String): EntryLine =
-        EntryLine(writer.member(listOf(m1), kind.word, DeclarationKindName.EnumEntry, name))
-
-    override fun allow(kind: ConstructorKind): ConstructorLine = ConstructorLine(writer.member(emptyList(), kind.word, DeclarationKindName.Constructor, "*"))
-
-    override fun allow(m1: Modifiers, kind: ConstructorKind): ConstructorLine =
-        ConstructorLine(writer.member(listOf(m1), kind.word, DeclarationKindName.Constructor, "*"))
-
-    override fun allow(kind: InitKind): InitLine = InitLine(writer.member(emptyList(), kind.word, DeclarationKindName.Init, "*"))
-
-    override fun required(kind: EntryKind, name: String): EntryLine =
-        EntryLine(requiredWriter.member(emptyList(), kind.word, DeclarationKindName.EnumEntry, name))
-
-    override fun required(m1: Modifiers, kind: EntryKind, name: String): EntryLine =
-        EntryLine(requiredWriter.member(listOf(m1), kind.word, DeclarationKindName.EnumEntry, name))
-
-    override fun required(kind: ConstructorKind): ConstructorLine =
-        ConstructorLine(requiredWriter.member(emptyList(), kind.word, DeclarationKindName.Constructor, "*"))
-
-    override fun required(m1: Modifiers, kind: ConstructorKind): ConstructorLine =
-        ConstructorLine(requiredWriter.member(listOf(m1), kind.word, DeclarationKindName.Constructor, "*"))
-
-    override fun required(kind: InitKind): InitLine = InitLine(requiredWriter.member(emptyList(), kind.word, DeclarationKindName.Init, "*"))
-
     override fun toString(): String = "ClassBodyScope($list)"
 }
 

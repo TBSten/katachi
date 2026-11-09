@@ -93,7 +93,7 @@ internal class KatachiBundleKeysTest : TestCase() {
         assertEquals("Nearby roles…", english.getProperty("notification.rules.nearbyRoles"))
         assertEquals("baseline で許容中（{0}）。新しい違反ではありません。", japanese.getProperty("notification.rules.baselineHeld"))
         assertEquals("Held back by the baseline ({0}). This is not a new violation.", english.getProperty("notification.rules.baselineHeld"))
-        assertEquals("当たる Role がありません。テストで UnexpectedFile になります。", japanese.getProperty("notification.rules.noRole.sure"))
+        assertEquals("一致する Role がありません。テストで UnexpectedFile になります。", japanese.getProperty("notification.rules.noRole.sure"))
     }
 
     private fun rulesKeys(): List<String> = english.stringPropertyNames().filter {

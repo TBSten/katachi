@@ -20,7 +20,7 @@ import me.tbsten.katachi.check.FileConstraintCheck
 import me.tbsten.katachi.check.UncheckedFileConstraint
 import me.tbsten.katachi.check.UncheckedFileConstraintReason
 import me.tbsten.katachi.check.UnsatisfiedFileConstraint
-import me.tbsten.katachi.check.internal.report
+import me.tbsten.katachi.check.internal.reportForTest
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.FileConstraint
 import me.tbsten.katachi.dsl.architecture
@@ -111,7 +111,7 @@ class KontureFailureSpec : FreeSpec({
                 cause.given shouldBe 2
                 cause.visible shouldBe 1
 
-                val report = violations.report()
+                val report = violations.reportForTest()
                 report shouldContain "[UncheckedFileConstraint] src"
                 report shouldContain "Cause: me.tbsten.katachi.konture.KatachiKontureGraphIncompleteException: " +
                     "Katachi asked Konture for 2 files and got 1 back."
@@ -131,7 +131,7 @@ class KontureFailureSpec : FreeSpec({
             unchecked.reason shouldBe UncheckedFileConstraintReason.Failed
             unchecked.cause.shouldBeInstanceOf<KatachiKontureNoExpectationException>()
 
-            val report = violations.report()
+            val report = violations.reportForTest()
             report shouldContain "Cause: me.tbsten.katachi.konture.KatachiKontureNoExpectationException"
             report shouldContain "declares no rule"
             report shouldContain "${STEP}${STEP}- Read the cause above: it says what stopped the constraint"
@@ -151,7 +151,7 @@ class KontureFailureSpec : FreeSpec({
             unchecked.reason shouldBe UncheckedFileConstraintReason.Failed
             unchecked.cause.shouldBeInstanceOf<KatachiKontureNoKotlinFilesException>().given shouldBe 1
 
-            val report = violations.report()
+            val report = violations.reportForTest()
             report shouldContain "Cause: me.tbsten.katachi.konture.KatachiKontureNoKotlinFilesException"
             report shouldContain "none of them a .kt file Konture can parse"
         }
