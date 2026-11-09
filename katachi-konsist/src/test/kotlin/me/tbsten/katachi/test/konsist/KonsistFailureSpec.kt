@@ -15,7 +15,7 @@ import me.tbsten.katachi.check.FileConstraintCheck
 import me.tbsten.katachi.check.UncheckedFileConstraint
 import me.tbsten.katachi.check.UncheckedFileConstraintReason
 import me.tbsten.katachi.check.UnsatisfiedFileConstraint
-import me.tbsten.katachi.check.internal.report
+import me.tbsten.katachi.check.internal.reportForTest
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.FileConstraint
 import me.tbsten.katachi.dsl.architecture
@@ -97,7 +97,7 @@ class KonsistFailureSpec : FreeSpec({
                 cause.given shouldBe 2
                 cause.visible shouldBe 1
 
-                val report = violations.report()
+                val report = violations.reportForTest()
                 report shouldContain "[UncheckedFileConstraint] src"
                 // `causeLine` prints only the cause's first line — "this is katachi's own bug"
                 // lives in the exception's own second line (see `KatachiKonsistScopeIncompleteException`),
@@ -124,7 +124,7 @@ class KonsistFailureSpec : FreeSpec({
             unchecked.reason shouldBe UncheckedFileConstraintReason.Failed
             unchecked.cause.shouldBeInstanceOf<KatachiKonsistNoExpectationException>()
 
-            val report = violations.report()
+            val report = violations.reportForTest()
             report shouldContain "Cause: me.tbsten.katachi.konsist.KatachiKonsistNoExpectationException"
             report shouldContain "never called must, mustNot or mustBeEmpty"
             report shouldContain "${STEP}${STEP}- Read the cause above: it says what stopped the constraint"
@@ -144,7 +144,7 @@ class KonsistFailureSpec : FreeSpec({
             unchecked.reason shouldBe UncheckedFileConstraintReason.Failed
             unchecked.cause.shouldBeInstanceOf<KatachiKonsistNoKotlinFilesException>().given shouldBe 1
 
-            val report = violations.report()
+            val report = violations.reportForTest()
             report shouldContain "Cause: me.tbsten.katachi.konsist.KatachiKonsistNoKotlinFilesException"
             report shouldContain "none of them a .kt file Konsist can parse"
         }

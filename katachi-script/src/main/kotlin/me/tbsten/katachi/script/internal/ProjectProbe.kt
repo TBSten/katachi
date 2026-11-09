@@ -43,10 +43,7 @@ internal class GradleFile(val name: String, val dsl: Dsl)
 internal fun ScriptContext.requireGradleRoot(root: Path): GradleFile = when {
     root.resolve("settings.gradle.kts").isRegularFile() -> GradleFile("settings.gradle.kts", Dsl.KTS)
     root.resolve("settings.gradle").isRegularFile() -> GradleFile("settings.gradle", Dsl.GROOVY)
-    else -> die(
-        "settings.gradle.kts / settings.gradle が見つかりません。Gradle のルートディレクトリで実行してください（いまいるのは ${fileUri(root)}）。",
-        "settings.gradle.kts / settings.gradle not found. Run this in the Gradle root directory (you are in ${fileUri(root)}).",
-    )
+    else -> die(Messages.Probe.settingsGradleKtsSettings(fileUri(root)))
 }
 
 /** The root build file, or the name to create it under. The kit's `resolve_root_build_file`. */
@@ -136,39 +133,18 @@ internal fun ScriptContext.kotlinTooOldMessage(root: Path, version: String, forS
     val gradle = detectGradleWrapperVersion(root)
     val min = "$KOTLIN_MIN_MAJOR.$KOTLIN_MIN_MINOR"
     val gradleLine = when {
-        gradle == null -> pick(
-            "Kotlin Gradle Plugin $min は Gradle $KGP_MIN_GRADLE 以上が要ります。Gradle の版を読めなかったので、足りなければ Gradle も上げます。",
-            "Kotlin Gradle Plugin $min needs Gradle $KGP_MIN_GRADLE or later. The Gradle version could not be read; upgrade Gradle too if it is older.",
-        )
+        gradle == null -> pick(Messages.Probe.kotlinGradlePluginNeeds(min))
 
-        versionLt(gradle, KGP_MIN_GRADLE) -> pick(
-            "Gradle も上げる必要があります。Kotlin Gradle Plugin $min は Gradle $KGP_MIN_GRADLE 以上が要り、このプロジェクトは $gradle です（gradle/wrapper/gradle-wrapper.properties）。",
-            "Gradle needs upgrading too. Kotlin Gradle Plugin $min needs Gradle $KGP_MIN_GRADLE or later, and this project uses $gradle (gradle/wrapper/gradle-wrapper.properties).",
-        )
+        versionLt(gradle, KGP_MIN_GRADLE) -> pick(Messages.Probe.gradleNeedsUpgradingToo(min, gradle))
 
-        else -> pick(
-            "Gradle（$gradle）はそのままで足ります（Kotlin Gradle Plugin $min は Gradle $KGP_MIN_GRADLE 以上）。",
-            "Gradle ($gradle) is recent enough (Kotlin Gradle Plugin $min needs Gradle $KGP_MIN_GRADLE or later).",
-        )
+        else -> pick(Messages.Probe.gradleRecentEnoughKotlin(gradle, min))
     }
     val whenLine = if (forScaffold) {
-        pick("ユーザに確認してください（手順書 0-2 の「Kotlin が古いとき」）。", "Ask the user (\"When Kotlin is too old\" in step 0-2 of the guide).")
+        pick(Messages.Probe.askUserWhenKotlin)
     } else {
-        pick(
-            "このままでは 2-1 の scaffold で止まります。ステップ 1 の解析に入る前に、ユーザに確認してください（手順書 0-2 の「Kotlin が古いとき」）。",
-            "As it is, scaffold in step 2-1 will stop. Ask the user before starting the analysis in step 1 (\"When Kotlin is too old\" in step 0-2 of the guide).",
-        )
+        pick(Messages.Probe.scaffoldStepWillStop)
     }
-    return pick(
-        "このプロジェクトの Kotlin は $version です。katachi は Kotlin $min 以降が要ります（古いコンパイラは katachi の metadata を読めず、architecture などがすべて Unresolved reference になる）。\n" +
-            "    $whenLine\n" +
-            "    Kotlin を上げるのは既存のビルドの変更なので、同意なしに上げないこと。同意を得たら Kotlin を $min 以降に上げます。\n" +
-            "    $gradleLine",
-        "This project uses Kotlin $version. katachi needs Kotlin $min or later (older compilers cannot read katachi's metadata, and every symbol such as architecture becomes an Unresolved reference).\n" +
-            "    $whenLine\n" +
-            "    Upgrading Kotlin changes the existing build, so do not do it without the user's consent. Once they agree, upgrade Kotlin to $min or later.\n" +
-            "    $gradleLine",
-    )
+    return pick(Messages.Probe.projectUsesKotlinKatachi(version, min, whenLine, gradleLine))
 }
 
 private val VERSION_TOKEN = "[0-9][0-9.]*[0-9A-Za-z.-]*"
@@ -250,7 +226,7 @@ internal fun javaMajorOf(java: Path): Int? {
     return if (a == "1" && b.isNotEmpty()) b.toIntOrNull() else a.toIntOrNull()
 }
 
-internal class GradleJdk(val major: Int?, val fromJa: String?, val fromEn: String?)
+internal class GradleJdk(val major: Int?, val source: Msg?)
 
 /**
  * The JDK Gradle runs on, in Gradle's own order: the daemon toolchain, org.gradle.java.home,
@@ -261,20 +237,20 @@ internal fun ScriptContext.detectGradleJdk(root: Path): GradleJdk {
     if (daemon.isRegularFile()) {
         val pattern = Regex("^\\s*toolchainVersion\\s*=\\s*([0-9]+).*")
         daemon.readLines().firstNotNullOfOrNull { pattern.matchEntire(it)?.groupValues?.get(1) }?.let {
-            return GradleJdk(it.toInt(), "gradle/gradle-daemon-jvm.properties の toolchainVersion", "toolchainVersion in gradle/gradle-daemon-jvm.properties")
+            return GradleJdk(it.toInt(), Messages.Probe.toolchainversionGradleGradleDaemon)
         }
     }
     val gradleHome = gradlePropertiesJavaHome(root)
     if (gradleHome != null && Path(gradleHome, "bin", "java").isExecutable()) {
-        return GradleJdk(javaMajorOf(Path(gradleHome, "bin", "java")), "org.gradle.java.home（$gradleHome）", "org.gradle.java.home ($gradleHome)")
+        return GradleJdk(javaMajorOf(Path(gradleHome, "bin", "java")), Messages.Probe.gradleJavaHome(gradleHome))
     }
     val javaHome = env["JAVA_HOME"]?.takeIf { it.isNotEmpty() }
     if (javaHome != null && Path(javaHome, "bin", "java").isExecutable()) {
-        return GradleJdk(javaMajorOf(Path(javaHome, "bin", "java")), "JAVA_HOME（$javaHome）", "JAVA_HOME ($javaHome)")
+        return GradleJdk(javaMajorOf(Path(javaHome, "bin", "java")), Messages.Probe.javaHome(javaHome))
     }
     val onPath = findOnPath("java")
-    if (onPath != null) return GradleJdk(javaMajorOf(onPath), "PATH の java（$onPath）", "java on PATH ($onPath)")
-    return GradleJdk(null, null, null)
+    if (onPath != null) return GradleJdk(javaMajorOf(onPath), Messages.Probe.javaPath(onPath))
+    return GradleJdk(null, null)
 }
 
 /** The kit's `command -v`. */
@@ -296,32 +272,19 @@ private fun ScriptContext.gradlePropertiesJavaHome(root: Path): String? {
 /** Stops when Gradle's JDK is older than 17; only warns when it cannot be found or read. The kit's `check_gradle_jdk`. */
 internal fun ScriptContext.checkGradleJdk(root: Path) {
     val jdk = detectGradleJdk(root)
-    if (jdk.fromJa == null || jdk.fromEn == null) {
-        warn(
-            "Gradle を動かす JDK を見つけられませんでした（JAVA_HOME も PATH の java もありません）。katachi は JDK $JDK_MIN_MAJOR 以上が要ります。",
-            "Could not find the JDK that runs Gradle (there is no JAVA_HOME and no java on PATH). katachi needs JDK $JDK_MIN_MAJOR or later.",
-        )
+    if (jdk.source == null) {
+        warn(Messages.Probe.couldNotFindJdk)
         return
     }
-    val from = pick(jdk.fromJa, jdk.fromEn)
+    val from = pick(jdk.source)
     if (jdk.major == null) {
-        warn(
-            "Gradle を動かす JDK の版を読めませんでした（$from）。katachi は JDK $JDK_MIN_MAJOR 以上が要ります。",
-            "Could not read the version of the JDK that runs Gradle ($from). katachi needs JDK $JDK_MIN_MAJOR or later.",
-        )
+        warn(Messages.Probe.couldNotReadVersion(from))
         return
     }
     if (jdk.major < JDK_MIN_MAJOR) {
-        die(
-            "Gradle を動かす JDK が ${jdk.major} です（${jdk.fromJa}）。katachi は JDK $JDK_MIN_MAJOR 以上が要ります。\n" +
-                "    JAVA_HOME を JDK $JDK_MIN_MAJOR 以上に向けるか、org.gradle.java.home（gradle.properties）で JDK $JDK_MIN_MAJOR 以上を\n" +
-                "    指定してから、もう一度実行してください。",
-            "The JDK that runs Gradle is ${jdk.major} (${jdk.fromEn}). katachi needs JDK $JDK_MIN_MAJOR or later.\n" +
-                "    Point JAVA_HOME at JDK $JDK_MIN_MAJOR or later, or set org.gradle.java.home in gradle.properties to one,\n" +
-                "    then run this again.",
-        )
+        die(Messages.Probe.jdkRunsGradleKatachi(jdk.major, jdk.source))
     }
-    note("Gradle の JDK: ${jdk.major}（${jdk.fromJa}）", "Gradle's JDK: ${jdk.major} (${jdk.fromEn})")
+    note(Messages.Probe.gradleSJdk(jdk.major, jdk.source))
 }
 
 /** The leading number of `libs.versions.<accessor>` under `[versions]`; null when unreadable. The kit's `catalog_version_number`. */
@@ -408,7 +371,7 @@ internal fun jvmToolchainCandidates(root: Path, moduleDir: String): List<Pair<In
     return result
 }
 
-internal class Toolchain(val n: Int?, val ja: String, val en: String)
+internal class Toolchain(val n: Int?, val source: Msg)
 
 /** The N for `jvmToolchain(N)`: the largest one the project already uses, never below 17. The kit's `detect_jvm_toolchain`. */
 internal fun detectJvmToolchain(root: Path, moduleDir: String): Toolchain {
@@ -423,18 +386,16 @@ internal fun detectJvmToolchain(root: Path, moduleDir: String): Toolchain {
         }
     }
     return when {
-        best != null -> Toolchain(best.first, "${best.first}（${best.second} の設定から）", "${best.first} (from ${best.second})")
+        best != null -> Toolchain(best.first, Messages.Probe.toolchainFrom(best.first, best.second))
         old != null -> Toolchain(
             null,
-            "書かない（既存の toolchain は ${old.first}（${old.second}）で、katachi の要る $JDK_MIN_MAJOR 未満のため使わない。Gradle の JDK を使う）",
-            "not written (the existing toolchain is ${old.first} (${old.second}), below the $JDK_MIN_MAJOR katachi needs, so it is not used; Gradle's JDK is used)",
+            Messages.Probe.notWrittenExistingToolchain(old.first, old.second),
         )
         unknown != null -> Toolchain(
             null,
-            "書かない（$unknown に toolchain の設定はあるが、N を読み取れなかった。Gradle の JDK を使う）",
-            "not written ($unknown sets a toolchain but N could not be read; Gradle's JDK is used)",
+            Messages.Probe.notWrittenSetsToolchain(unknown),
         )
-        else -> Toolchain(null, "書かない（プロジェクトに toolchain の設定が無い。Gradle の JDK を使う）", "not written (the project sets no toolchain; Gradle's JDK is used)")
+        else -> Toolchain(null, Messages.Probe.notWrittenProjectSets)
     }
 }
 
@@ -452,12 +413,7 @@ internal fun ScriptContext.requireKatachiVersion(version: String, source: Versio
     val (major, minor) = majorMinor(version) ?: return
     if (major < KATACHI_MIN_MAJOR || (major == KATACHI_MIN_MAJOR && minor < KATACHI_MIN_MINOR)) {
         val min = "$KATACHI_MIN_MAJOR.$KATACHI_MIN_MINOR.0"
-        die(
-            "katachi $version はこの手順には古すぎます。手順書とこのコマンドが作る構成は katachi $min の機能（\"Name\".role { } など）で書いてあるため、$min 以降が必要です。\n" +
-                "    $KATACHI_RELEASES_PAGE で $min 以降が出ているかを確かめ、--katachi <version> で指定してやり直してください。",
-            "katachi $version is too old for this guide. The guide and the setup this command creates are written with katachi $min features (such as \"Name\".role { }), so they need $min or later.\n" +
-                "    Check $KATACHI_RELEASES_PAGE for $min or later, and run again with --katachi <version>.",
-        )
+        die(Messages.Probe.katachiTooOldGuide(version, min))
     }
 }
 

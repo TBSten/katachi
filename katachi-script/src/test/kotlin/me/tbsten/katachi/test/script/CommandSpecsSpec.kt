@@ -25,17 +25,17 @@ class CommandSpecsSpec : FreeSpec({
 
     "選択肢の外の値は使える値を言って止まる" {
         val exit = shouldThrow<KatachiScriptExitException> { parseArgs(commandSpec("scaffold"), listOf("--deps", "maven")) }
-        exit.ja shouldBe "--deps は catalog か literal です: maven"
+        exit.text.ja shouldBe "--deps は catalog か literal です: maven"
     }
 
     "知らないオプションはサブコマンドの名前つきで止まる" {
         val exit = shouldThrow<KatachiScriptExitException> { parseArgs(commandSpec("scaffold"), listOf("--nothing")) }
-        exit.ja shouldBe "scaffold: 知らないオプションです: --nothing"
+        exit.text.ja shouldBe "scaffold: 知らないオプションです: --nothing"
     }
 
     "値の要るオプションに値が無ければ止まる" {
         val exit = shouldThrow<KatachiScriptExitException> { parseArgs(commandSpec("scaffold"), listOf("--module-dir")) }
-        exit.ja shouldBe "--module-dir に値がありません。"
+        exit.text.ja shouldBe "--module-dir に値がありません。"
     }
 
     // No command has subcommands or an optional value since KATACHI-329; the parser still reads them.

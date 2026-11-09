@@ -8,8 +8,8 @@ import me.tbsten.katachi.dsl.DeclarationSite
 /**
  * A run gave no value for a capture its role's template needs.
  *
- * `capture("feature")` in a `layout { }` stands for a directory (or, in a module key, a module)
- * that the run names with `--arg feature=...`. katachi does not pick one when the value is
+ * `capture("feature")` in a `layout { }` stands for a directory that the run names with
+ * `--arg feature=...`. katachi does not pick one when the value is
  * missing, even if another place of the role names no capture.
  *
  * ## Example 1: catch a run that did not say which feature to generate into

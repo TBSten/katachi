@@ -309,7 +309,7 @@ public class FunctionLine internal constructor(
     /**
      * Requires an expression body (`fun f() = ...`). A line without `.expressionBody()`, `.blockBody()` or `.noBody()` asks nothing about the body.
      *
-     * ## Example 1
+     * ## Example 1: predicates written as one expression
      * ```kt
      * allow(`fun`, "is*")(anyArgs()).expressionBody()
      * ```
@@ -324,7 +324,7 @@ public class FunctionLine internal constructor(
     /**
      * Requires a block body (`fun f() { ... }`). A line without `.expressionBody()`, `.blockBody()` or `.noBody()` asks nothing about the body.
      *
-     * ## Example 1
+     * ## Example 1: runners written as a block
      * ```kt
      * allow(`fun`, "run*")(anyArgs()).blockBody()
      * ```
@@ -339,7 +339,7 @@ public class FunctionLine internal constructor(
     /**
      * Requires no body, as an abstract or `expect` function has. A line without `.expressionBody()`, `.blockBody()` or `.noBody()` asks nothing about the body.
      *
-     * ## Example 1
+     * ## Example 1: abstract functions without a body
      * ```kt
      * allow(abstract, `fun`, "*")(anyArgs()).noBody()
      * ```
@@ -391,13 +391,13 @@ public class PropertyLine internal constructor(
 
     /**
      * Requires exactly these context parameters, in order, each written `"name: Type"` as with the parameters: the
-     * declaration `context(logger: Logger) fun log()` matches `.context("logger: Logger")`, and `.context()` asks for none.
-     * A context receiver (`context(Logger)`) is named `_`, so `"_: Logger"` matches it. A line without `.context(...)`
-     * asks nothing about them.
+     * declaration `context(logger: Logger) val tag: String` matches `.context("logger: Logger")`, and `.context()` asks
+     * for none. A context receiver (`context(Logger)`) is named `_`, so `"_: Logger"` matches it. A line without
+     * `.context(...)` asks nothing about them.
      *
-     * ## Example 1: declarations that need a logger in their context
+     * ## Example 1: properties that need a logger in their context
      * ```kt
-     * allow(`fun`, "log*")(anyArgs()).context("*: Logger")
+     * allow(`val`, "*", "String").context("*: Logger")
      * ```
      *
      * @throws KatachiKtFileContentLineException when written twice, or when a parameter is not `"name: Type"`.

@@ -1,6 +1,5 @@
 package me.tbsten.katachi.processor.internal
 
-import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.files.KatachiFileSystem
@@ -23,7 +22,6 @@ internal fun <R> Architecture.process(
  * ```
  */
 @InternalKatachiApi
-@ExperimentalKatachiApi
 public fun <Args, R> Architecture.process(
     processor: ArchitectureProcessor<Args, R>,
     args: Args,

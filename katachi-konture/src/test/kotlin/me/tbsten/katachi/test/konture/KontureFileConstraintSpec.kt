@@ -10,7 +10,7 @@ import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.UncheckedFileConstraint
 import me.tbsten.katachi.check.UncheckedFileConstraintReason
 import me.tbsten.katachi.check.UnsatisfiedFileConstraint
-import me.tbsten.katachi.check.internal.report
+import me.tbsten.katachi.check.internal.reportForTest
 import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.konture.KatachiKontureNoExpectationException
 import me.tbsten.katachi.konture.KatachiKontureNoKotlinFilesException
@@ -34,12 +34,12 @@ class KontureFileConstraintSpec : FreeSpec({
         violations.filterIsInstance<UnsatisfiedFileConstraint>().single().path shouldBe
             "src/HomeViewModel.kt"
 
-        val report = violations.report()
+        val report = violations.reportForTest()
         report shouldContain "Katachi check failed: 1 violation (FileConstraint: 1)"
         // Without a root to resolve against, report() prints the path as the violation carries it.
         report shouldContain "[UnsatisfiedFileConstraint] src/HomeViewModel.kt"
         // With one, the first line is a file:// URI a reader -- or an agent -- can open as written.
-        violations.report(projectRoot = FsPath.of("/repo")) shouldContain
+        violations.reportForTest(projectRoot = FsPath.of("/repo")) shouldContain
             "[UnsatisfiedFileConstraint] file:///repo/src/HomeViewModel.kt"
         report shouldContain "Role: domain.UseCase / FileConstraint: \"規約\""
         report shouldContain "Declaration: HomeViewModel (line 5)"
@@ -59,7 +59,7 @@ class KontureFileConstraintSpec : FreeSpec({
             files { should() nameEndsWith "Thing.kt" }
         }
 
-        val report = violations.report()
+        val report = violations.reportForTest()
         report shouldContain "[UnsatisfiedFileConstraint] src/Helper.kt"
         report.contains("Declaration:") shouldBe false
     }
@@ -76,7 +76,7 @@ class KontureFileConstraintSpec : FreeSpec({
         unchecked.cause.shouldBeInstanceOf<KatachiKontureNoExpectationException>()
             .role shouldBe "domain.UseCase"
 
-        val report = violations.report()
+        val report = violations.reportForTest()
         report shouldContain "[UncheckedFileConstraint] src"
         report shouldContain "Katachi failed while evaluating this constraint"
         report shouldContain "declares no rule"
@@ -107,7 +107,7 @@ class KontureFileConstraintSpec : FreeSpec({
         unchecked.reason shouldBe UncheckedFileConstraintReason.NotEvaluated
         unchecked.cause shouldBe null
 
-        val report = violations.report()
+        val report = violations.reportForTest()
         report shouldContain "Nothing evaluated this constraint, so nothing is known about it."
         report shouldContain "Pass FileConstraintCheck() to assert()"
     }

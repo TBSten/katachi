@@ -9,8 +9,8 @@ import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 import me.tbsten.katachi.report.SarifContext
+import me.tbsten.katachi.report.internal.withIsFile
 import me.tbsten.katachi.report.toSarif
-import java.io.File
 
 /**
  * What a `ktFileContent { }` that fails writes into `katachi.sarif`, whole: the SARIF the IDE plugin's annotations read
@@ -51,13 +51,13 @@ class KtFileContentSarifSpec : FreeSpec({
                 }
             }
         }
-        val sarif = (violations + members).toSarif(SarifContext(projectRoot = FsPath.of("/w/repo/android"), repositoryPrefix = "android/", toolVersion = "0.0.0-test", isFile = { true }))
+        val sarif = (violations + members).toSarif(SarifContext(projectRoot = FsPath.of("/w/repo/android"), repositoryPrefix = "android/", toolVersion = "0.0.0-test").withIsFile { true })
         checkGolden("ktfilecontent.sarif", sarif)
     }
 })
 
 private fun checkGolden(name: String, actual: String) {
-    val directory = File("src/test/resources/sarif").takeIf { it.isDirectory } ?: File("katachi-konsist/src/test/resources/sarif")
+    val directory = java.io.File("src/test/resources/sarif").takeIf { it.isDirectory } ?: java.io.File("katachi-konsist/src/test/resources/sarif")
     val file = directory.resolve(name)
     if (!file.isFile || System.getProperty("katachi.golden.update").equals("true", ignoreCase = true)) {
         file.writeText(actual, Charsets.UTF_8)

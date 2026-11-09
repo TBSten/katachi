@@ -30,10 +30,7 @@ internal fun runScript(args: List<String>, context: ScriptContext): Int {
 
             command.endsWith(KATACHI_SCRIPT_EXTENSION) -> context.runKatachiScriptFile(command, rest)
 
-            command in AGENT_COMMANDS -> die(
-                "$command は '$AGENT_COMMAND $command' です（AI エージェントが katachi skill の手順で使うコマンドは agent の下にあります）",
-                "$command is '$AGENT_COMMAND $command' (the commands an AI agent runs for the katachi skill's steps sit under agent)",
-            )
+            command in AGENT_COMMANDS -> die(Messages.RunScript.commandsAiAgentRuns(command))
 
             command in HELP_ANYWHERE && rest.any(::isHelp) -> {
                 context.out(context.usage())
@@ -43,7 +40,7 @@ internal fun runScript(args: List<String>, context: ScriptContext): Int {
             else -> context.dispatch(command, rest)
         }
     } catch (exit: KatachiScriptExitException) {
-        val message = context.pick(exit.ja, exit.en)
+        val message = context.pick(exit.text)
         if (message.isNotEmpty()) context.err(if (exit.plain) message else "\n[x] $message")
         exit.status
     }
@@ -59,10 +56,7 @@ private fun ScriptContext.runAgent(args: List<String>): Int {
             0
         }
 
-        command !in AGENT_COMMANDS -> die(
-            "$AGENT_COMMAND のサブコマンドではありません: $command（$AGENT_COMMAND --help を見てください）",
-            "Not a subcommand of $AGENT_COMMAND: $command (see $AGENT_COMMAND --help)",
-        )
+        command !in AGENT_COMMANDS -> die(Messages.RunScript.notSubcommandSeeHelp(command))
 
         command in HELP_ANYWHERE && rest.any(::isHelp) -> {
             out(agentUsage())
@@ -80,7 +74,7 @@ private fun ScriptContext.dispatch(command: String, args: List<String>): Int = w
     "lint" -> runLint()
     "compare-violations" -> runCompareViolations(args)
     "internal" -> runInternal(args)
-    else -> die("知らないサブコマンドです: $command（--help を見てください）", "Unknown subcommand: $command (see --help)")
+    else -> die(Messages.RunScript.unknownSubcommandSeeHelp(command))
 }
 
 /**

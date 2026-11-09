@@ -36,19 +36,19 @@ internal class ScriptContext(
 
     /** `--lang` given on the command line (doctor); it wins over everything else. */
 
-    fun pick(ja: String, en: String): String = if (lang == Lang.EN) en else ja
+    fun pick(message: Msg): String = if (lang == Lang.EN) message.en else message.ja
 
-    fun say(ja: String, en: String) = out(pick(ja, en))
+    fun say(message: Msg) = out(pick(message))
 
     /** A line printed the same in both languages (`KEY=VALUE`, a bare path, a blank line). */
     fun say(text: String) = out(text)
 
     /** The kit's `note`: an indented detail line. */
-    fun note(ja: String, en: String) = out("   " + pick(ja, en))
+    fun note(message: Msg) = out("   " + pick(message))
 
     fun note(text: String) = out("   $text")
 
-    fun warn(ja: String, en: String) = err("\n[!] ${pick(ja, en)}")
+    fun warn(message: Msg) = err("\n[!] ${pick(message)}")
 
     fun warn(text: String) = err("\n[!] $text")
 
@@ -74,24 +74,23 @@ internal class ScriptContext(
 
 /** Stops the command the way the kit's `die` does: `[x] message` on stderr, exit 1. */
 internal class KatachiScriptExitException(
-    val ja: String,
-    val en: String,
+    val text: Msg,
     val status: Int = 1,
     /** `true` prints the message bare, for callers that branch on the exit code rather than read it. */
     val plain: Boolean = false,
-) : RuntimeException(en)
+) : RuntimeException(text.en)
 
-internal fun die(ja: String, en: String): Nothing = throw KatachiScriptExitException(ja, en)
+internal fun die(message: Msg): Nothing = throw KatachiScriptExitException(message)
 
 /** Ends the command with [status] and nothing more on stderr (what was to be said is already printed). */
-internal fun exitWith(status: Int): Nothing = throw KatachiScriptExitException("", "", status = status, plain = true)
+internal fun exitWith(status: Int): Nothing = throw KatachiScriptExitException(Msg("", ""), status = status, plain = true)
 
-/** Stops with [ja] / [en] printed bare on stderr, as the kit's embedded python did before `sys.exit(1)`. */
-internal fun fail(ja: String, en: String, status: Int = 1): Nothing = throw KatachiScriptExitException(ja, en, status = status, plain = true)
+/** Stops with [message] printed bare on stderr, as the kit's embedded python did before `sys.exit(1)`. */
+internal fun fail(message: Msg, status: Int = 1): Nothing = throw KatachiScriptExitException(message, status = status, plain = true)
 
 /** `--opt` without a value: the kit's `need_value`. */
 internal fun needValue(option: String, value: String?): String =
-    value?.takeIf { it.isNotEmpty() } ?: die("$option に値がありません。", "$option needs a value.")
+    value?.takeIf { it.isNotEmpty() } ?: die(Messages.Context.needsValue(option))
 
 /**
  * A path for people, as the kit's `file_uri` prints it: absolute, `file://`, with only the four

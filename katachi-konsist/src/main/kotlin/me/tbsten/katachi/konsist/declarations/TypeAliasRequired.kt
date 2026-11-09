@@ -23,7 +23,7 @@ public sealed interface TypeAliasRequired {
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
      * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block,.
+     * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun required(
         kind: TypeAliasKind,
@@ -36,7 +36,7 @@ public sealed interface TypeAliasRequired {
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
      * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block,.
+     * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun required(
         modifier1: Modifiers,
@@ -50,7 +50,7 @@ public sealed interface TypeAliasRequired {
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
      * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block,.
+     * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun required(
         modifier1: Modifiers,
@@ -65,7 +65,7 @@ public sealed interface TypeAliasRequired {
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
      * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block,.
+     * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun required(
         modifier1: Modifiers,
@@ -81,7 +81,7 @@ public sealed interface TypeAliasRequired {
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
      * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block,.
+     * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun required(
         modifier1: Modifiers,
@@ -98,7 +98,7 @@ public sealed interface TypeAliasRequired {
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
      * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block,.
+     * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun required(
         modifier1: Modifiers,
@@ -116,7 +116,7 @@ public sealed interface TypeAliasRequired {
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
      * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block,.
+     * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun required(
         modifier1: Modifiers,
@@ -138,7 +138,7 @@ public sealed interface TypeAliasRequired {
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
      * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block,.
+     * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun required(
         modifier1: Modifiers,
@@ -161,7 +161,7 @@ public sealed interface TypeAliasRequired {
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
      * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block,.
+     * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun required(
         modifier1: Modifiers,
@@ -185,7 +185,7 @@ public sealed interface TypeAliasRequired {
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
      * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block,.
+     * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun required(
         modifier1: Modifiers,
@@ -210,7 +210,7 @@ public sealed interface TypeAliasRequired {
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
      * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block,.
+     * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun required(
         modifier1: Modifiers,

@@ -272,7 +272,7 @@ internal fun parseArgs(spec: CommandSpec, args: List<String>): ParsedArgs {
             ?: spec.defaultSubcommand?.takeIf { first == null || first.startsWith("-") }?.let { name -> spec.subcommands.first { it.name == name } }
             ?: run {
                 val names = spec.subcommands.joinToString(" / ") { it.name }
-                die("${spec.name} のサブコマンドは $names です（指定されたのは '${first.orEmpty()}'）", "The ${spec.name} subcommands are $names (got '${first.orEmpty()}')")
+                die(Messages.CommandSpecs.subcommandsGot(spec.name, names, first.orEmpty()))
             }
         val inner = parseArgs(CommandSpec(spec.name, sub.options, sub.positionals, passthrough = sub.passthrough, rawPositionals = sub.rawPositionals), if (picked != null) args.drop(1) else args)
         return inner.withSubcommand(sub.name)
@@ -295,9 +295,9 @@ internal fun parseArgs(spec: CommandSpec, args: List<String>): ParsedArgs {
             continue
         }
         val option = spec.option(arg) ?: if (spec.passthrough != null) {
-            die("${spec.name}: 知らないオプションです: $arg（Gradle に渡す引数は -- の後ろに）", "${spec.name}: unknown option: $arg (put arguments for Gradle after --)")
+            die(Messages.CommandSpecs.unknownOptionPutArguments(spec.name, arg))
         } else {
-            die("${spec.name}: 知らないオプションです: $arg", "${spec.name}: unknown option: $arg")
+            die(Messages.CommandSpecs.unknownOption(spec.name, arg))
         }
         when (val kind = option.kind) {
             OptionKind.Flag -> {
@@ -314,9 +314,7 @@ internal fun parseArgs(spec: CommandSpec, args: List<String>): ParsedArgs {
                 }
                 val value = needValue(arg, next)
                 if (value !in kind.values) {
-                    val ja = if (kind.values.size == 2) "${kind.values[0]} か ${kind.values[1]} " else kind.values.joinToString(" / ") + " のどれか"
-                    val en = if (kind.values.size == 2) "${kind.values[0]} or ${kind.values[1]}" else "one of " + kind.values.joinToString(" / ")
-                    die("$arg は ${ja}です: $value", "$arg must be $en: $value")
+                    die(Messages.CommandSpecs.valueMustBe(arg, Messages.CommandSpecs.oneOf(kind.values), value))
                 }
                 values[arg] = value
                 index += 2

@@ -101,10 +101,7 @@ private val MODULE_DIR_PATTERN = Regex("^[A-Za-z0-9_][A-Za-z0-9_.-]*(/[A-Za-z0-9
 /** Stops unless [value] is a path relative to the Gradle root (scaffold `--module-dir`). */
 internal fun validateModuleDir(value: String) {
     if (!MODULE_DIR_PATTERN.matches(value)) {
-        die(
-            "--module-dir は Gradle ルートからの相対パスです（例: static-analysis/katachi）: $value",
-            "--module-dir must be a path relative to the Gradle root (for example static-analysis/katachi): $value",
-        )
+        die(Messages.Workdir.moduleDirMustPath(value))
     }
 }
 
@@ -144,16 +141,14 @@ internal fun ScriptContext.projectRoot(): Path {
 /** `<project root>/<module dir>/src/test/kotlin`. The kit's `definition_dir`. */
 internal fun ScriptContext.definitionDir(module: ModuleDir): Path = projectRoot().resolve(module.dir).resolve("src/test/kotlin").normalize()
 
-internal fun ScriptContext.definitionMissingMessage(module: ModuleDir, dir: Path): Pair<String, String> =
-    "定義のディレクトリがありません: ${fileUri(dir)} 。scaffold をまだ実行していないか、置き場所が違います（${module.dir}。違うなら、チェックリストの meta.moduleDir を直す）" to
-        "The definition directory does not exist: ${fileUri(dir)} . Either scaffold has not run yet, or the location differs (${module.dir}; if it is wrong, fix meta.moduleDir in the check list)"
+internal fun ScriptContext.definitionMissingMessage(module: ModuleDir, dir: Path): Msg =
+    Messages.Workdir.definitionDirMissing(fileUri(dir), module.dir)
 
 /** Stops when the definition directory is not there (lint / compare-violations). */
 internal fun ScriptContext.requireDefinitionDir(module: ModuleDir): Path {
     val dir = definitionDir(module)
     if (dir.isDirectory()) return dir
-    val (ja, en) = definitionMissingMessage(module, dir)
-    die(ja, en)
+    die(definitionMissingMessage(module, dir))
 }
 
 /** The kit's `[ -e path ]` for a path relative to [base]. */

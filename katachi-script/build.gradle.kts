@@ -35,6 +35,9 @@ dependencies {
 // `./gradlew :katachi-script:test --tests '*CommandBuildersSpec' -Dkatachi.golden.update=true`.
 tasks.test {
     providers.systemProperty("katachi.golden.update").orNull?.let { systemProperty("katachi.golden.update", it) }
+    // MessagesSpec reads the dictionary and the sources themselves, not only the compiled classes.
+    inputs.file(rootProject.layout.projectDirectory.file("docs/prh.yml")).withPropertyName("prhDictionary")
+    inputs.dir(layout.projectDirectory.dir("src/main/kotlin")).withPropertyName("mainSources")
 }
 
 // `katachi --version` reads this; MANIFEST's Implementation-Version is null from a class directory.

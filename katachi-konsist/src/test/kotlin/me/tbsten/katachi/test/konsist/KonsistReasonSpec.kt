@@ -12,7 +12,7 @@ import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.UncheckedFileConstraint
 import me.tbsten.katachi.check.UnsatisfiedFileConstraint
 import me.tbsten.katachi.check.Violation
-import me.tbsten.katachi.check.internal.report
+import me.tbsten.katachi.check.internal.reportForTest
 import me.tbsten.katachi.dsl.FileConstraintFix
 import me.tbsten.katachi.dsl.FileConstraintReason
 
@@ -29,7 +29,7 @@ private fun List<Violation>.unsatisfied(): List<UnsatisfiedFileConstraint> = fil
 
 /** Asserts that the report prints [lines] one after another, exactly as given. */
 private fun List<Violation>.shouldReportLines(vararg lines: String) {
-    report() shouldContain lines.joinToString("\n")
+    reportForTest() shouldContain lines.joinToString("\n")
 }
 
 class KonsistReasonSpec : FreeSpec({
@@ -52,7 +52,7 @@ class KonsistReasonSpec : FreeSpec({
             }
 
             violations.unsatisfied().single().howToFix.shouldBeEmpty()
-            violations.report() shouldNotContain "How to fix:"
+            violations.reportForTest() shouldNotContain "How to fix:"
             violations.shouldReportLines("  Reason: this layer is internal")
         }
 
@@ -102,8 +102,8 @@ class KonsistReasonSpec : FreeSpec({
             val violation = violations.unsatisfied().single()
             violation.reasons.shouldBeEmpty()
             violation.howToFix.shouldBeEmpty()
-            violations.report() shouldNotContain "Reason:"
-            violations.report() shouldNotContain "How to fix:"
+            violations.reportForTest() shouldNotContain "Reason:"
+            violations.reportForTest() shouldNotContain "How to fix:"
         }
 
         "同じ宣言を理由なしで 2 回落としても 1 件" {

@@ -61,4 +61,4 @@ Writes the files a role's `template { }` produces into the project.
 
 # Package me.tbsten.katachi.util
 
-Small utilities shared across katachi's own modules, such as `runCatchingScoped`.
+Small helpers for writing a processor, such as `runCatchingScoped`. They are experimental, as the processor API is.
