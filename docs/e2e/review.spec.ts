@@ -139,9 +139,16 @@ test('印を押すと popup。本文・何件め / 総数・前と次。× で�
 		ok('Esc で popup だけ閉じる（アプリは出たまま）', (await u('.pop').isHidden()) && (await roots(fb)) === 1)
 		await openRow(fb, '段落への指摘')
 	}
+	// docs を直すと Astro がページを読み直す。開いていた指摘はそのまま開き直す。閉じたあとは開かない。
+	await fb.page.reload({ waitUntil: 'networkidle' })
+	await u('.pop:not([hidden])').waitFor({ state: 'visible', timeout: 8000 })
+	ok('読み直しても同じ指摘を開いたまま', (await popTitle(fb)) === '段落への指摘')
 	await fb.act(u('.pop .x'))
 	await sleep(300)
 	ok('× で閉じる', await u('.pop').isHidden())
+	await fb.page.reload({ waitUntil: 'networkidle' })
+	await sleep(1500)
+	ok('閉じたあとに読み直すと開かない', (await roots(fb)) === 1 && (await u('.pop').isHidden()))
 })
 
 test('解決済みにする → ファイルに書き戻して次へ進む → 戻すと元のファイルに戻る。連打しても 1 件だけ', async ({ fb }) => {
@@ -204,6 +211,8 @@ test('閉じた details・選ばれていないタブ・畳んだコードの中
 
 	// 印（隠れたタブを囲む枠のそば）から開いても、タブを開いた先の行までスクロールする。
 	// Starlight は選んだタブを覚えているので、忘れさせてから読み直す（行が選ばれていないタブに隠れた状態に戻す）。
+	// 開いたままだと読み直したあとに開き直すので、先に閉じる。
+	await fb.act(u('.pop .x'))
 	await fb.page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('starlight-synced-tabs')).forEach((k) => localStorage.removeItem(k)))
 	await fb.fresh(FIRST)
 	ok('タブを忘れさせると、行はまた隠れている', !(await line.evaluate((l) => l.checkVisibility())))

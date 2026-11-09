@@ -6,7 +6,7 @@ import { EVENT_REVIEW_REQUEST, EVENT_REVIEW_RESULT, type ReviewRequest, type Rev
 import { createRpc } from '../shared/rpc'
 import { pageSourceFile } from '../shared/srcmap'
 import { onPage } from './order'
-import { OPEN_KEY, openReview, type ReviewSession } from './session'
+import { ACTIVE_KEY, OPEN_KEY, openReview, type ReviewSession } from './session'
 
 /** 出しているあいだ立てておく印（sessionStorage）。 */
 export const ON_KEY = 'katachi-review:on'
@@ -17,6 +17,7 @@ const remember = (on: boolean) => {
 		else {
 			sessionStorage.removeItem(ON_KEY)
 			sessionStorage.removeItem(OPEN_KEY)
+			sessionStorage.removeItem(ACTIVE_KEY)
 		}
 	} catch {
 		// 覚えられなくても動く（ページを移ると隠れるだけ）。

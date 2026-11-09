@@ -22,6 +22,8 @@ export type ReviewSession = {
 
 /** 別のページへ移ったあとで開く指摘の id（sessionStorage）。 */
 export const OPEN_KEY = 'katachi-review:open'
+/** 開いている指摘の id（sessionStorage）。docs を直してページが読み直されても、同じ指摘を開き直す。 */
+export const ACTIVE_KEY = 'katachi-review:active'
 const FILTER_KEY = 'katachi-review:filter'
 const FOLD_KEY = 'katachi-review:folded'
 /** 解決済みにしたあと「戻す」を出しておく時間。 */
@@ -149,7 +151,12 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		if (want) {
 			store.set(session(), OPEN_KEY, null)
 			reveal(want)
+			return
 		}
+		// 読み直す前に開いていた指摘（docs を直すと Astro がページを読み直す）。このページのものだけ、黙って開き直す。
+		const last = store.get(session(), ACTIVE_KEY)
+		if (last && here.some((v) => v.id === last)) open(last)
+		else if (last) store.set(session(), ACTIVE_KEY, null)
 	}
 
 	/** id の指摘を開く。このページ（かページの無いファイル）のものだけ。開けなければ理由を知らせる。 */
@@ -325,6 +332,7 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		drawWire(null, null)
 		panel.classList.remove('has-pop')
 		activeId = null
+		store.set(session(), ACTIVE_KEY, null)
 		if (autoFolded) {
 			autoFolded = false
 			renderPanel()
@@ -356,6 +364,7 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		}
 		if (activeId !== id) popError = null
 		activeId = id
+		store.set(session(), ACTIVE_KEY, id)
 		// popup を開いているあいだは、一覧を畳んで popup の場所を空ける（閉じれば戻す）。スマホのシートは下に重ねるので畳まない以外は同じ。
 		if (!folded && !autoFolded) {
 			autoFolded = true
