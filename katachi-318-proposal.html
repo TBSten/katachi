@@ -1,0 +1,75 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><title>KATACHI-318 手順書が大きすぎる</title>
+<style>
+:root{--bg:#f6f7f9;--s1:#ffffff;--s2:#f1f3f6;--bd:#e3e6ec;--tx:#1d2330;--mu:#5b6475;--ac:#2f5bd3;--acbg:#e8eefc;--ok:#16794a;--okbg:#e3f6ea;--ng:#b42318;--ngbg:#fde8e8;--wa:#9a5b00;--wabg:#fff3dc;--mono:ui-monospace,Menlo,monospace}
+@media (prefers-color-scheme:dark){:root{--bg:#14171c;--s1:#1c2027;--s2:#252a33;--bd:#323946;--tx:#e6e9ef;--mu:#9aa3b2;--ac:#8fb0ff;--acbg:#1f2a44;--ok:#6fd49c;--okbg:#17321f;--ng:#ff9a8f;--ngbg:#3a1d1b;--wa:#f3c06b;--wabg:#3a2c12}}
+body{margin:0;background:var(--bg);font-family:system-ui,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--tx)}
+.page{width:420px;padding:18px;box-sizing:border-box}
+.frame{background:var(--s1);border:0.5px solid var(--bd);border-radius:12px;padding:18px}
+h1{font-size:17px;margin:0 0 4px;line-height:1.4}.sub{color:var(--mu);font-size:12px;margin:0 0 14px;line-height:1.5}
+.card{background:var(--s2);border:0.5px solid var(--bd);border-radius:10px;padding:12px;margin:10px 0}
+.card.rec{border:2px solid var(--ac)}
+.head{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;flex-wrap:wrap}
+.badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
+.b-ok{background:var(--okbg);color:var(--ok)}.b-ng{background:var(--ngbg);color:var(--ng)}.b-ac{background:var(--acbg);color:var(--ac)}.b-wa{background:var(--wabg);color:var(--wa)}
+code{font-family:var(--mono);font-size:11.5px}
+.pt{font-size:12.5px;margin:4px 0;line-height:1.5}.pt b.n{color:var(--ng)}.pt b.g{color:var(--ok)}
+.lbl{font-size:11px;color:var(--mu);margin:10px 0 4px;font-weight:700}
+.bar{display:flex;align-items:center;gap:8px;font-size:12px;margin:5px 0}
+.bar .nm{width:92px;flex:none;color:var(--mu)}
+.bar .tr{flex:1;height:14px;background:var(--s1);border:0.5px solid var(--bd);border-radius:4px;overflow:hidden}
+.bar .fl{height:100%;background:var(--ng);opacity:.75}
+.bar .fl.s{background:var(--ok)}
+.bar .v{width:64px;flex:none;text-align:right;font-family:var(--mono);font-size:11px}
+.flow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.box{background:var(--s1);border:0.5px solid var(--bd);border-radius:8px;padding:9px;font-size:12px;line-height:1.5}
+.box .t{font-weight:700;margin-bottom:4px}
+.box.bad{border-color:var(--ng)}.box.good{border-color:var(--ok)}
+.files{font-family:var(--mono);font-size:11.5px;line-height:1.7;background:var(--s1);border:0.5px solid var(--bd);border-radius:6px;padding:8px;margin:8px 0}
+.files .new{color:var(--ok);font-weight:700}
+.files .c{color:var(--mu)}
+</style></head><body>
+
+<div class="page" id="s1"><div class="frame">
+<h1>困るのは「URL で最初に読む 1 回」だけ</h1>
+<p class="sub">CLI の <code>katachi agent guide &lt;ID&gt;</code> はもう節ごとに出せている。全文が丸ごと渡るのは URL を開いたときだけ。</p>
+
+<div class="lbl">いまの大きさ（ja / en）</div>
+<div class="bar"><span class="nm">ja 全文</span><span class="tr"><span class="fl" style="width:64%;display:block"></span></span><span class="v">5.4 万字</span></div>
+<div class="bar"><span class="nm">en 全文</span><span class="tr"><span class="fl" style="width:100%;display:block"></span></span><span class="v">8.5 万字</span></div>
+<div class="bar"><span class="nm">最大の節 3-2</span><span class="tr"><span class="fl s" style="width:7%;display:block"></span></span><span class="v">0.7 万字</span></div>
+<div class="bar"><span class="nm">## 0. より前</span><span class="tr"><span class="fl s" style="width:2.2%;display:block"></span></span><span class="v">0.2 万字</span></div>
+
+<div class="lbl">どこで全文が渡るか</div>
+<div class="flow">
+<div class="box bad"><div class="t">✕ URL を渡されたエージェント</div>「…/install/ja/index.md に従って」→ Web 取得で 1053 行まるごと。要約で手順が落ちる。Claude Code の Read（1 回 2.5 万トークン）も ja はおそらく超える</div>
+<div class="box good"><div class="t">○ katachi コマンド経由</div><code>katachi agent guide 3-2</code> は節だけ（最大 0.7 万字）。末尾に次の節のコマンドも出る</div>
+</div>
+<div class="pt" style="margin-top:10px">冒頭に「全文を読まないで」と書いてあるが、<b class="n">読んだあとに分かる</b>のでは遅い。</div>
+</div></div>
+
+<div class="page" id="s2"><div class="frame">
+<h1>入口だけ小さくする案がおすすめ</h1>
+<p class="sub">URL は今のまま。本文は文言を変えずに別ファイルへ移す。</p>
+
+<div class="card rec"><div class="head">A. 入口と本文を分ける <span class="badge b-ac">おすすめ 8/10</span></div>
+<div class="files"><div>install/ja/index.md</div><div class="c">　└ 入口: 目次・分担表・始め方（約 0.2 万字）</div><div>install/ja/<span class="new">guide.md</span></div><div class="c">　└ 本文: ## 0. 以降をそのまま</div></div>
+<div class="pt"><b class="g">○</b> URL・docs のリンクはそのまま。最初の 1 回が約 1/30 に</div>
+<div class="pt"><b class="g">○</b> 本文の文言は変えない（人が書いた所に手を入れない）</div>
+<div class="pt"><b class="n">△</b> CLI の同梱・テスト・lint 対象・prerelease を guide.md に向け直す</div>
+</div>
+
+<div class="card"><div class="head">B. 節ごとに 30 ファイルへ分ける <span class="badge b-wa">今は重い</span></div>
+<div class="pt"><b class="g">○</b> レビューの差分も節ごとに見やすい</div>
+<div class="pt"><b class="n">✕</b> ja/en で 60 ファイル超。節の入れ替えや訳の対応が手間</div>
+</div>
+
+<div class="card"><div class="head">C. 本文を削る <span class="badge b-wa">A のあとに</span></div>
+<div class="pt"><b class="g">○</b> 導入 1 回ぶんで読む量（全節の合計）が減る</div>
+<div class="pt"><b class="n">✕</b> 文言の判断は人の担当。AI は削れそうな所の一覧まで</div>
+</div>
+
+<div class="card"><div class="head">D. このまま <span class="badge b-ng">やらない</span></div>
+<div class="pt"><b class="n">✕</b> URL で始める導入が、要約で手順を落とし続ける</div>
+</div>
+</div></div>
+</body></html>
