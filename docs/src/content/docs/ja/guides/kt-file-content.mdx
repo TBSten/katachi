@@ -213,14 +213,14 @@ class, interface, object の行に `{ }` を書かないと、その宣言はメ
 宣言に `data`, `internal` といった修飾子が必要な場合は修飾子も渡すことができます。
 
 ```kt
-allow(public, `interface`, "*UseCase") // UseCase interface は public である必要がある。
-allow(internal, `class`, "*UseCaseImpl") // UseCaseImpl class は internal である必要がある。
+allow(public, `interface`, "*UseCase") { allow(anythingElse) } // UseCase interface は public である必要がある。
+allow(internal, `class`, "*UseCaseImpl") { allow(anythingElse) } // UseCaseImpl class は internal である必要がある。
 ```
 
 また `class`, `interface`, `object` のいずれでも良い場合は `type` を渡すこともできます。
 
 ```kt
-allow(public, type, "*Repository")
+allow(public, type, "*Repository") { allow(anythingElse) }
 ```
 
 <details>
@@ -239,7 +239,7 @@ allow(public, type, "*Repository")
             </td>
             <td>
                 ```kt
-                allow(`class`, "*ViewModel").superclass("ViewModel")
+                allow(`class`, "*ViewModel").superclass("ViewModel") { allow(anythingElse) }
                 ```
             </td>
         </tr>
@@ -251,7 +251,7 @@ allow(public, type, "*Repository")
             <td>
                 ```kt
                 // interface または class の ViewModel を許可する
-                allow(`interface` or `class`, "*ViewModel")
+                allow(`interface` or `class`, "*ViewModel") { allow(anythingElse) }
                 ```
             </td>
         </tr>

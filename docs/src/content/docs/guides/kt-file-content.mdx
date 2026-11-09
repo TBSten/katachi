@@ -213,14 +213,14 @@ If a class, interface, or object line has no `{ }`, that declaration may not hav
 If a declaration needs a modifier such as `data` or `internal`, you can pass the modifier as well.
 
 ```kt
-allow(public, `interface`, "*UseCase") // a UseCase interface must be public.
-allow(internal, `class`, "*UseCaseImpl") // a UseCaseImpl class must be internal.
+allow(public, `interface`, "*UseCase") { allow(anythingElse) } // a UseCase interface must be public.
+allow(internal, `class`, "*UseCaseImpl") { allow(anythingElse) } // a UseCaseImpl class must be internal.
 ```
 
 If any of `class`, `interface`, and `object` is fine, you can also pass `type`.
 
 ```kt
-allow(public, type, "*Repository")
+allow(public, type, "*Repository") { allow(anythingElse) }
 ```
 
 <details>
@@ -239,7 +239,7 @@ allow(public, type, "*Repository")
             </td>
             <td>
                 ```kt
-                allow(`class`, "*ViewModel").superclass("ViewModel")
+                allow(`class`, "*ViewModel").superclass("ViewModel") { allow(anythingElse) }
                 ```
             </td>
         </tr>
@@ -251,7 +251,7 @@ allow(public, type, "*Repository")
             <td>
                 ```kt
                 // allow a ViewModel that is either an interface or a class
-                allow(`interface` or `class`, "*ViewModel")
+                allow(`interface` or `class`, "*ViewModel") { allow(anythingElse) }
                 ```
             </td>
         </tr>
