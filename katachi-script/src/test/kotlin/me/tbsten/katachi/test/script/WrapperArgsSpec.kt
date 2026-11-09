@@ -7,19 +7,20 @@ import kotlin.io.path.createTempDirectory
 import kotlin.io.path.writeText
 import me.tbsten.katachi.script.internal.unescapeWrapperArgs
 
-/** `bin/katachi` hides `-D…` / `-J…` from `kotlin`, and main() gets them back as typed (KATACHI-297). */
+/** `bin/katachi` hides `-D…` / `-J…` / `@…` from `kotlin`, and main() gets them back as typed (KATACHI-297, KATACHI-325). */
 class WrapperArgsSpec : FreeSpec({
     "bin/katachi を通しても、引数は打ったとおりに main() に届く" - {
         listOf(
             "test の -- の後ろの -D" to listOf("agent", "test", "--", "-Dkatachi.baseline.update=true"),
             "-J と、値に空白や = を含む -D" to listOf("agent", "test", "--", "-Jx", "-Dkatachi.msg=a b=c", "--no-daemon"),
+            "@ で始まる値（kotlin が argfile として読む）" to listOf("agent", "add", "--allowed", "@Serializable なルート", "@"),
             "目印そのものから始まる引数" to listOf("katachi-escaped:-Dx", "katachi-escaped:"),
             "-D でも -J でもない引数" to listOf("data", "get", "check-list", "meta.moduleDir", "-d", "--", "-"),
             "引数なし" to emptyList(),
         ).forEach { (name, typed) ->
             name {
                 val reached = argsKotlinReceives(typed)
-                reached.none { it.startsWith("-D") || it.startsWith("-J") } shouldBe true
+                reached.none { it.startsWith("-D") || it.startsWith("-J") || it.startsWith("@") } shouldBe true
                 unescapeWrapperArgs(reached) shouldBe typed
             }
         }
