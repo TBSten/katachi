@@ -10,7 +10,8 @@ test.describe('モードの外の右クリック（PC）', () => {
 		const probe = await attachListenerProbe(page)
 		const lBaseList = await probe.list()
 		const lBase = probe.count(lBaseList)
-		ok('常設のリスナーは contextmenu と keydown（Alt）の 2 つだけ', lBaseList === 'document:contextmenu document:keydown', lBaseList)
+		// hashchange は Review の `#review=<id>` のリンク（同じページの中で開いたとき）を拾うためのもの。
+		ok('常設のリスナーは contextmenu と keydown（Alt）と、Review の hashchange の 3 つだけ', lBaseList === 'document:contextmenu document:keydown window:hashchange', lBaseList)
 		const attrsBefore = await fb.attrs()
 		const before = files().length
 		const sel = await fb.selectRange(0, 14)
