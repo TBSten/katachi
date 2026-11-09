@@ -65,12 +65,12 @@ public fun interface FileConstraint {
  * One file a [FileConstraint] rejected, and optionally where inside it and why.
  *
  * A `data class`, so it compares with `shouldBe` in your own tests, and the same declaration
- * rejected twice in one block counts once (twice with different [reasons] is two).
+ * rejected twice in one block counts once (twice with different [FileConstraintFailure.reasons] is two).
  *
- * Only [file] is required. The rest is printed only when it is there: `Declaration:` needs
- * [declaration], the `<label>: <text>` lines are [reasons], the indented list is [allowed],
- * `How to fix:` appears only when [howToFix] has something in it, and `Declared at:` points at
- * [ruleDeclaredAt] when the failure comes from one line of a larger rule.
+ * Only [file][FileConstraintFailure.file] is required. The rest is printed only when it is there: `Declaration:` needs
+ * [declaration][FileConstraintFailure.declaration], the `<label>: <text>` lines are [reasons][FileConstraintFailure.reasons], the indented list is [allowed][FileConstraintFailure.allowed],
+ * `How to fix:` appears only when [howToFix][FileConstraintFailure.howToFix] has something in it, and `Declared at:` points at
+ * [ruleDeclaredAt][FileConstraintFailure.ruleDeclaredAt] when the failure comes from one line of a larger rule.
  *
  * ```text
  * [UnsatisfiedFileConstraint] file:///.../GetUserUseCase.kt

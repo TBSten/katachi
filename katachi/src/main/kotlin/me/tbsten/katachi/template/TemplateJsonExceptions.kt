@@ -175,7 +175,7 @@ public class KatachiTemplateJsonIoException internal constructor(
  * The JSON form of the template list met a value it has no way to write, which is a bug in katachi.
  *
  * Nothing in a definition can cause this. Please report it at
- * https://github.com/TBSten/katachi/issues with [kind].
+ * https://github.com/TBSten/katachi/issues with [kind][KatachiUnsupportedTemplateJsonValueException.kind].
  *
  * ## Example 1: report it rather than treating it as a failed run
  * ```kt

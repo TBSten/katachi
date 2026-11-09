@@ -52,7 +52,7 @@ public class SarifContext(
      */
     public val sourceRoots: List<FsPath> = emptyList(),
     /**
-     * Where [projectRoot] sits inside its repository, as `git rev-parse --show-prefix` prints it.
+     * Where [projectRoot][SarifContext.projectRoot] sits inside its repository, as `git rev-parse --show-prefix` prints it.
      *
      * `"android/"` with the trailing `/`, or `""` when the project root is the repository root. Every
      * `uri` is written below the repository root so that GitHub can match it to a file of the checkout.

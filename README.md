@@ -47,7 +47,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
     kotlin("jvm") version "2.4.10"
-    id("me.tbsten.katachi") version "0.3.0"
+    id("me.tbsten.katachi") version "0.4.0"
 }
 
 kotlin { jvmToolchain(17) }
@@ -61,7 +61,7 @@ tasks.test {
 }
 
 dependencies {
-    testImplementation("me.tbsten.katachi:katachi:0.3.0")
+    testImplementation("me.tbsten.katachi:katachi:0.4.0")
     testImplementation(platform("org.junit:junit-bom:5.14.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

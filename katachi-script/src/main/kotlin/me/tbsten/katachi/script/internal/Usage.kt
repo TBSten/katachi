@@ -67,25 +67,27 @@ katachi — katachi の導入と検査を手伝うコマンド
   katachi --version
   katachi --help
 
-開発者向けの環境変数:
-  KATACHI_MAVEN_LOCAL=1
-      ~/.m2 に publish したリリース前の katachi で試すための口。
-      agent init に付けると作業用ディレクトリに記録され、以降の scaffold も従う。
-      「katachi は 0.3.0 以降」の確認を飛ばし（GitHub の最新を取ってきた
-      版では飛ばさない）、scaffold が settings の pluginManagement と
-      dependencyResolutionManagement の repositories に mavenLocal() を足す。
-      利用者の導入では使わない。~/.m2 へは katachi のリポジトリで
-      ./gradlew publishToMavenLocal -Pkatachi.skipSigning として出す。
-
-  KATACHI_DOCS=<URL>
-      agent docs が取りに行くガイドの配信元（既定: https://tbsten.github.io/katachi）。手順書とテンプレートは同梱なので使わない。
-      ビルド済みのサイト（docs/dist を配信したもの）か配信 URL に向ける。docs/public には
-      llms-full.txt などが無い。agent init に付けると作業用ディレクトリに記録され、以降の
-      agent docs なども従う（付けずに agent init し直すと本番に戻る）。agent docs は取得元を標準エラーに出す。
-
 scaffold は Gradle のルートディレクトリで実行してください。
 """.trimIndent()
 
+/*
+ * Environment variables for developers, kept out of --help (CLAUDE.md: what is for development is not shown in
+ * the product). The prerelease skill's scripts set them; people installing katachi never do.
+ *
+ * KATACHI_MAVEN_LOCAL=1
+ *     A hook for trying an unreleased katachi published to ~/.m2. Set it on agent init and it is recorded in the
+ *     working directory; later scaffold runs follow it. Skips the "katachi needs 0.3.0 or later" check (not for a
+ *     version fetched as the latest release from GitHub), and scaffold adds mavenLocal() to the repositories of
+ *     pluginManagement and dependencyResolutionManagement in settings. Publish to ~/.m2 from the katachi repository
+ *     with ./gradlew publishToMavenLocal -Pkatachi.skipSigning
+ *
+ * KATACHI_DOCS=<URL>
+ *     Where agent docs fetches the guide from (default: https://tbsten.github.io/katachi). The guide and the
+ *     templates ship with the command and do not use it. Point it at a built site (docs/dist, served) or a served
+ *     URL; docs/public has no llms-full.txt and the like. Set it on agent init and it is recorded in the working
+ *     directory; later commands such as agent docs follow it (running agent init again without it goes back to the
+ *     default). agent docs prints the source URL to standard error.
+ */
 private val USAGE_EN: String = """
 katachi - helps you set up and check katachi
 
@@ -145,23 +147,6 @@ Usage:
 
   katachi --version
   katachi --help
-
-Environment variables for developers:
-  KATACHI_MAVEN_LOCAL=1
-      A hook for trying an unreleased katachi published to ~/.m2.
-      Set it on agent init and it is recorded in the working directory; later scaffold runs follow it.
-      Skips the "katachi needs 0.3.0 or later" check (not for a version fetched
-      as the latest release from GitHub), and scaffold adds mavenLocal() to the
-      repositories of pluginManagement and dependencyResolutionManagement in settings.
-      Not for real installations. Publish to ~/.m2 from the katachi repository with
-      ./gradlew publishToMavenLocal -Pkatachi.skipSigning
-
-  KATACHI_DOCS=<URL>
-      Where agent docs fetches the guide from (default: https://tbsten.github.io/katachi). The guide and the templates ship with the command and do not use it.
-      Point it at a built site (docs/dist, served) or a served URL; docs/public has no
-      llms-full.txt and the like. Set it on agent init and it is recorded in the working directory;
-      later commands such as agent docs follow it (running agent init again without it goes back to the
-      default). agent docs prints the source URL to standard error.
 
 Run scaffold in the Gradle root directory.
 """.trimIndent()

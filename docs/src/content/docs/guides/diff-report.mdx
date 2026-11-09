@@ -61,11 +61,13 @@ You can improve the review experience by adding these commands to CI, a review-a
 You can set a weight on a Role in the architecture definition.
 The higher the weight, the darker the heatmap color in the Importance column, even with fewer changed lines. This makes changes to files of Roles that should not change often stand out more.
 
-```kt title=ProjectArchitecture.kt {10,17} nocollapse
+```kt title=ProjectArchitecture.kt {12,19} nocollapse
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.gradle.*
+import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.diff.diffWeight
 
 val projectArchitecture = architecture {
@@ -266,7 +268,7 @@ For a pull request from a fork, the token cannot write comments, so `diff-report
 
 If your project has a review Agent skill, make it run `katachiDiff` and include the result in the review output.
 
-An Agent can see where a change hits the architecture more quickly and more accurately by reading a report grouped by Role than by reading `git diff` itself.
+An Agent can see which parts of the architecture a change touches more quickly and more accurately by reading a report grouped by Role than by reading `git diff` itself.
 
 ```md title=".agents/skills/review/SKILL.md"
 ---
@@ -277,7 +279,7 @@ description: Review a pull request from the architecture point of view
 1. Run `./gradlew :architecture-test:katachiDiff --arg before=origin/main`
 2. Read `architecture-test/build/katachi/diff/diff-report.md` and check the diff in order, starting from the Roles with high Importance
 3. If `diff-report.files-in-no-role.md` has files, suggest either adding them to the definition or fixing where they are placed
-4. At the top of the review result, quote from the report the list of Roles that the change hit
+4. At the top of the review result, quote from the report the list of Roles the change touches
 ```
 
 ## Summary

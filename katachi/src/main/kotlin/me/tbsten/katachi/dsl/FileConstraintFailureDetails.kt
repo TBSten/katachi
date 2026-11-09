@@ -39,7 +39,7 @@ public data class FileConstraintReason(
  *     class DefaultGetUserUseCase : GetUserUseCase  (missing)
  * ```
  *
- * An empty [entries] prints `(nothing)`, which is an answer of its own: the rule allows nothing
+ * An empty [entries][FileConstraintAllowedList.entries] prints `(nothing)`, which is an answer of its own: the rule allows nothing
  * here at all.
  *
  * ## Example 1: list the declarations a file may hold
@@ -74,7 +74,7 @@ public data class FileConstraintAllowedList(
  *         allow(`class`, "GetUserUseCaseImpl")
  * ```
  *
- * [text] is printed on one line. Each element of [code] is printed indented under it as written,
+ * [text][FileConstraintFix.text] is printed on one line. Each element of [code][FileConstraintFix.code] is printed indented under it as written,
  * leading spaces kept, so a fragment of several lines keeps its own indentation; an element
  * holding line breaks is printed as that many lines.
  *

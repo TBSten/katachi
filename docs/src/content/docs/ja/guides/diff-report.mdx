@@ -61,11 +61,13 @@ katachi では `katachiDiff` を使って 差分を分析するレポートを�
 アーキテクチャ定義の Role に重みを設定することが可能です。
 重みが高いほど、Importance 列に表示されるヒートマップの色を少ない差分行数でも濃くすることができるため、頻繁に変更されるべきではない Role のファイル変更をより目立たせることができます。
 
-```kt title=ProjectArchitecture.kt {10,17} nocollapse
+```kt title=ProjectArchitecture.kt {12,19} nocollapse
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.gradle.*
+import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.diff.diffWeight
 
 val projectArchitecture = architecture {

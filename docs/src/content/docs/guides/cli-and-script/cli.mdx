@@ -85,6 +85,7 @@ katachi scaffold --package com.example.app
                   [plugins] katachi = { id = "me.tbsten.katachi", version.ref = "katachi" }
      Module:       file:///Users/you/demo-app/architecture-test/ (:architecture-test; the default)
      Sources:      file:///Users/you/demo-app/architecture-test/src/test/kotlin/com/example/app/test/architecture/
+     Ignore build/: write /build to file:///Users/you/demo-app/architecture-test/.gitignore
      Add to root:  no (file:///Users/you/demo-app/build.gradle.kts)
      Add include:  yes (file:///Users/you/demo-app/settings.gradle.kts)
      Add to pluginManagement: no
@@ -93,6 +94,7 @@ katachi scaffold --package com.example.app
   file:///Users/you/demo-app/architecture-test/build.gradle.kts
   file:///Users/you/demo-app/architecture-test/src/test/kotlin/com/example/app/test/architecture/ProjectArchitecture.kt
   file:///Users/you/demo-app/architecture-test/src/test/kotlin/com/example/app/test/architecture/ProjectArchitectureTest.kt
+  file:///Users/you/demo-app/architecture-test/.gitignore (added /build)
   file:///Users/you/demo-app/gradle/libs.versions.toml (appended the following)
       [versions] katachi = "0.4.0"
       [versions] junit = "5.14.4"
@@ -116,6 +118,7 @@ By default, it creates the `:architecture-test` module with this layout.
 
 ```
 architecture-test/
+├── .gitignore                       # /build (only when build/ is not ignored yet)
 ├── build.gradle.kts
 └── src/test/kotlin/com/example/app/test/architecture/
     ├── ProjectArchitecture.kt       # write architecture { } here

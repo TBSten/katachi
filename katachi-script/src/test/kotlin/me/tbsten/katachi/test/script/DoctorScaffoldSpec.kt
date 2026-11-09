@@ -8,6 +8,7 @@ import java.nio.file.Path
 import java.nio.file.attribute.PosixFilePermissions
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createTempDirectory
+import kotlin.io.path.exists
 import kotlin.io.path.readText
 import kotlin.io.path.setPosixFilePermissions
 import kotlin.io.path.writeText
@@ -47,6 +48,26 @@ class DoctorScaffoldSpec : FreeSpec({
     }
 
     "scaffold" - {
+        "検査用モジュールの build/ が無視されていなければ、モジュールの .gitignore に /build を書く" {
+            val project = gradleProject(toolchain = 21)
+
+            val run = runCapturing(project, listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0"), env = javaHome())
+
+            run.status shouldBe 0
+            project.resolve("architecture-test/.gitignore").readText() shouldBe "/build\n"
+            run.out shouldContain "architecture-test/.gitignore （/build を追加）"
+        }
+
+        "build/ がすでに無視されていれば .gitignore を作らない" {
+            val project = gradleProject(toolchain = 21)
+            project.resolve(".gitignore").writeText("architecture-test/build\n")
+
+            val run = runCapturing(project, listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0"), env = javaHome())
+
+            run.status shouldBe 0
+            project.resolve("architecture-test/.gitignore").exists() shouldBe false
+        }
+
         "検査用モジュールを作り、settings に include を足す" {
             val project = gradleProject(toolchain = 21)
 

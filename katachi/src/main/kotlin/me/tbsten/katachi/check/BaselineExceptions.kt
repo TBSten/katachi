@@ -51,7 +51,7 @@ public class KatachiInvalidBaselineFileException internal constructor(
     /** What is wrong. */
     public val problem: Problem,
     /**
-     * The value the message names; what it holds depends on [problem].
+     * The value the message names; what it holds depends on [problem][KatachiInvalidBaselineFileException.problem].
      *
      * What the parser expected for [Problem.NotJson], the field name for [Problem.MissingField],
      * [Problem.DuplicateField] and [Problem.UnknownField], what the value should have been for

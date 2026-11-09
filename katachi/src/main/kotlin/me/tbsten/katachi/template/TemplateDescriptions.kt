@@ -240,7 +240,7 @@ public class TemplateCapturePreview internal constructor(
     /**
      * The naming conversion of a derived occurrence, such as `"pascalCase"`; `null` for a plain one.
      *
-     * A derived occurrence takes no `--arg` of its own: its value comes from the plain capture of the same [name].
+     * A derived occurrence takes no `--arg` of its own: its value comes from the plain capture of the same [name][TemplateCapturePreview.name].
      */
     public val transform: String? = null,
 ) {

@@ -98,16 +98,16 @@ class GutterSmokeTest {
                 "allowed by ${facts.allowedDeclaration}" in bridge.describeGutter(service)
             }
             val gutter = bridge.describeGutter(service).lines()
-            assertTrue("mark=7|menu|HealthService|katachi: domain.Service — allowed by ${facts.allowedDeclaration} (ServiceRole.kt:${facts.allowedLine})" in gutter, gutter.toString())
+            assertTrue("mark=6|menu|HealthService|katachi: domain.Service — allowed by ${facts.allowedDeclaration} (ServiceRole.kt:${facts.allowedLine})" in gutter, gutter.toString())
             assertEquals(1, gutter.count { it.startsWith("mark=") }, gutter.toString())
 
             // 2. The menu: the other files of the role, the template for the next file, and the way to the rule.
             // What the user sees, painted by the IDE itself (Starter's desktop screenshot is the wallpaper without screen-recording permission).
             println("screenshot " + bridge.screenshotFrame(shots.resolve("1-service-gutter.png").toString()))
-            println("screenshot " + bridge.screenshotGutterMenu(service, 7, shots.resolve("2-service-gutter-menu.png").toString()))
+            println("screenshot " + bridge.screenshotGutterMenu(service, 6, shots.resolve("2-service-gutter-menu.png").toString()))
             Thread.sleep(10_000)
             println("screenshot " + bridge.screenshotFrame(shots.resolve("1b-service-gutter-10s-later.png").toString()))
-            val menu = bridge.clickGutter(service, 7).lines()
+            val menu = bridge.clickGutter(service, 6).lines()
             assertEquals("menu=HealthService — domain.Service", menu.first())
             assertTrue("item=◆ Allowed by ${facts.allowedDeclaration}|ServiceRole.kt:${facts.allowedLine}|enabled" in menu, menu.toString())
             assertTrue(menu.any { it.startsWith("item=LegacyStatusService.kt|") }, menu.toString())
@@ -115,7 +115,7 @@ class GutterSmokeTest {
             assertTrue("item=⟳ Reload Definition||enabled" in menu, menu.toString())
 
             // 3. Choosing the allowed-by row opens the line of ServiceRole.kt that allowed the declaration.
-            assertEquals("chosen=◆ Allowed by ${facts.allowedDeclaration}", bridge.chooseFromGutter(service, 7, "◆ Allowed by"))
+            assertEquals("chosen=◆ Allowed by ${facts.allowedDeclaration}", bridge.chooseFromGutter(service, 6, "◆ Allowed by"))
             waitFor("ServiceRole.kt in the editor", timeout = 1.minutes, interval = 1.seconds, errorMessage = { openFileOf(ideProject) }) {
                 openFileOf(ideProject).endsWith("/ServiceRole.kt")
             }

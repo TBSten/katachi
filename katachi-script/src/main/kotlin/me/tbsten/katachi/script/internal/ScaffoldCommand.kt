@@ -5,6 +5,7 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.fileSize
 import kotlin.io.path.isRegularFile
+import kotlin.io.path.readLines
 import kotlin.io.path.writeText
 
 private val PACKAGE_NAME = Regex("^[a-z][a-zA-Z0-9_]*(\\.[a-z][a-zA-Z0-9_]*)*$")
@@ -215,6 +216,12 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
         ModuleDirSource.DEFAULT -> note("モジュール:   ${fileUri(module.dir)}/（${module.gradlePath}。既定）", "Module:       ${fileUri(module.dir)}/ (${module.gradlePath}; the default)")
     }
     note("ソース:       ${fileUri(srcDir)}/", "Sources:      ${fileUri(srcDir)}/")
+    // Without it, a project that ignores only the root's /build sees the module's build/ as Unexpected files on the first test.
+    val buildDirIgnored = pathIsIgnored(root, "${module.dir}/build")
+    note(
+        "build/ を無視: ${if (buildDirIgnored) "済み（.gitignore で除外済み）" else "${fileUri(module.dir)}/.gitignore に /build を書く"}",
+        "Ignore build/: ${if (buildDirIgnored) "already (excluded by .gitignore)" else "write /build to ${fileUri(module.dir)}/.gitignore"}",
+    )
     note("ルートに追加: ${yesNo(rootNeedsPlugin)} (${fileUri(rootBuild.name)})", "Add to root:  ${yesNo(rootNeedsPlugin)} (${fileUri(rootBuild.name)})")
     if (placement == KotlinPlacement.MODULE) {
         note(
@@ -254,6 +261,8 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
         architectureKt.writeText("package $pkg.test.architecture\n\nimport me.tbsten.katachi.dsl.architecture\n\nval projectArchitecture = architecture {\n}\n")
     }
     writeTestKt(src.resolve("ProjectArchitectureTest.kt"), pkg, konsist, tf, kotestStyle)
+    val moduleGitignore = root.resolve(module.dir).resolve(".gitignore")
+    val gitignoreWritten = !buildDirIgnored && addBuildToGitignore(moduleGitignore)
 
     val rootPluginManual = if (rootNeedsPlugin) addRootPlugin(root, rootBuild, kotlin) else null
     val settingsIncludeManual = if (settingsNeedsInclude) addSettingsInclude(root, settings, module.gradlePath) else null
@@ -267,6 +276,7 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
     say(fileUri("${module.dir}/build.gradle.kts"))
     say(fileUri(architectureKt))
     say(fileUri(src.resolve("ProjectArchitectureTest.kt")))
+    if (gitignoreWritten) say("${fileUri("${module.dir}/.gitignore")} （/build を追加）", "${fileUri("${module.dir}/.gitignore")} (added /build)")
     if (deps.value == "catalog") {
         if (plan.added) {
             say("${fileUri(CATALOG_FILE)} （次の項目を追記）", "${fileUri(CATALOG_FILE)} (appended the following)")
@@ -568,4 +578,16 @@ private fun nestBlocks(blocks: List<String>, body: String, depth: Int): String {
     val indent = "    ".repeat(depth)
     val block = blocks.firstOrNull() ?: return "$indent$body\n"
     return "$indent$block {\n${nestBlocks(blocks.drop(1), body, depth + 1)}$indent}\n"
+}
+
+/**
+ * Adds `/build` to the module's [gitignore] (creating it), as Android Studio does for each module. Returns false when the
+ * line was already there.
+ */
+private fun addBuildToGitignore(gitignore: Path): Boolean {
+    val lines = if (gitignore.isRegularFile()) gitignore.readLines() else emptyList()
+    if (lines.any { it.trim() in setOf("/build", "/build/", "build", "build/") }) return false
+    val text = lines.joinToString("\n")
+    gitignore.writeText(if (text.isEmpty()) "/build\n" else "$text\n/build\n")
+    return true
 }

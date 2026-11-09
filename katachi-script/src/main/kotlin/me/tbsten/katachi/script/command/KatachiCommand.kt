@@ -51,8 +51,8 @@ public interface KatachiCommand {
  * ```
  *
  * @property commands The commands, in the order they run.
- * @constructor Takes the commands in the order they run; [commands] is the shorter way to write it.
- * @see commands
+ * @constructor Takes the commands in the order they run; [commands][me.tbsten.katachi.script.commands] is the shorter way to write it.
+ * @see me.tbsten.katachi.script.commands
  * @see executeCommands
  */
 public class Commands(public val commands: List<KatachiCommand>) {

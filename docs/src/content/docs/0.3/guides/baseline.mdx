@@ -88,7 +88,7 @@ Running the architecture test with `-Dkatachi.baseline.update=true` makes all vi
 
 It's recommended to commit the created/updated file.
 
-Violations of [`ktFileContent { }`](/katachi/0.3/guides/kt-file-content/) are recorded per declaration. Examples of the unit are `GetUserUseCaseImpl`, `HomeViewModel.isLoading`, `import android.content.Context`, or `package com.example.home`. Line numbers are not recorded, so even if you add lines to the same file and the violating line shifts, the violations you tolerated stay tolerated. (AI draft)
+Violations of [`ktFileContent { }`](/katachi/0.3/guides/kt-file-content/) are recorded per declaration. Examples of the unit are `GetUserUseCaseImpl`, `HomeViewModel.isLoading`, `import android.content.Context`, or `package com.example.home`. Line numbers are not recorded, so even if you add lines to the same file and the violating line shifts, the violations you tolerated stay tolerated.
 
 Violations tolerated by the baseline not only do not fail the test; they are also not written to the SARIF report (`report { sarif = true }`).
 
