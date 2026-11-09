@@ -469,7 +469,8 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 			btn.disabled = busy || Date.now() < guardUntil
 			const go = () => void resolve(v, input.value)
 			btn.addEventListener('click', go)
-			onKeyInside(input, 'keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); go() } })
+			// 変換の確定の Enter では送らない（Safari は確定の keydown で isComposing が false のまま keyCode 229 を出す）。
+			onKeyInside(input, 'keydown', (e) => { if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); go() } })
 			act.append(input, btn)
 		} else {
 			const line = el('span', 'resolved-line', `✓ 解決済み ${fmtTime(v.resolvedAt)}${v.note ? ` — ${v.note}` : ''}`)
@@ -524,7 +525,8 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		const stay = filter.showResolved
 		const follow = stay ? v.id : (sorted[i + 1] ?? sorted[i - 1])?.id ?? null
 		rebuild()
-		toast('解決済みにしました', () => void reopen(v))
+		const left = sorted.filter((x) => x.status === 'open' && onPage(x, { pathname: location.pathname, source, base })).length
+		toast(left ? '解決済みにしました' : '解決済みにしました。このページの未解決はもうありません', () => void reopen(v))
 		guardUntil = Date.now() + GUARD_MS
 		setTimeout(() => { if (!closed) for (const b of pop.querySelectorAll<HTMLButtonElement>('.act .btn')) b.disabled = busy }, GUARD_MS + 20)
 		if (follow && sorted.some((x) => x.id === follow)) {
