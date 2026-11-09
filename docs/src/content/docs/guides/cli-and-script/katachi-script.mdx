@@ -107,6 +107,7 @@ If you register katachi-script as a dependency with `@file:DependsOn`, you can r
 | --- | --- | --- |
 | Requires | katachi CLI | Kotlin CLI only |
 | DependsOn, import | Not needed | Needed |
+| IDE support | Needs the katachi IDE plugin | Stock IntelliJ IDEA and Android Studio are enough |
 
 ## Writing style
 
@@ -147,6 +148,8 @@ If you register katachi-script as a dependency with `@file:DependsOn`, you can r
 
     val katachi = Katachi()
     ```
+
+    You can set common settings for all commands by passing them to the `Katachi` class instance.
 
     ```kts {6-7} title="setup.main.kts"
     @file:DependsOn("me.tbsten.katachi:katachi-script:0.4.0")
