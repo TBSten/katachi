@@ -151,7 +151,7 @@ If a class, interface, or object line has no `{ }`, that declaration may not hav
 
       ktFileContent {
         // package / import lines omitted
-        allow(`class`, "*UseCase") { allow(anythingElse) } // a class whose name ends with UseCase
+        required(`class`, "*UseCase") { allow(anythingElse) } // a class whose name ends with UseCase
       }
     }
 
@@ -160,7 +160,7 @@ If a class, interface, or object line has no `{ }`, that declaration may not hav
 
       ktFileContent {
         // package / import lines omitted
-        allow(`class`, "*ViewModel") { allow(anythingElse) } // a class whose name ends with ViewModel
+        required(`class`, "*ViewModel") { allow(anythingElse) } // a class whose name ends with ViewModel
       }
     }
 
