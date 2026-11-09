@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794223097183,
+  "lastUpdate": 1794223099434,
   "repoUrl": "https://github.com/TBSten/katachi",
   "entries": {
     "JMH time": [
@@ -28014,6 +28014,54 @@ window.BENCHMARK_DATA = {
           {
             "name": "nowinandroid validate(FileConstraintCheck()) warm median",
             "value": 74.931846,
+            "unit": "ms",
+            "extra": "violations: 134 (layout) / 130 (with Konsist)\nUnexpectedFile: 130, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "81161390+TBSten@users.noreply.github.com",
+            "name": "TBSten",
+            "username": "TBSten"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1a7a072057aacf6741e89789f75305287d2f99d7",
+          "message": "Merge pull request #38 from TBSten/claude/project-thread-awvg2k\n\ndocs(guide): v0.4 のガイドに Diff report・CLI と script・言語機能との対応を足す (KATACHI-249, KATACHI-223, KATACHI-284, KATACHI-285, KATACHI-101, KATACHI-272, KATACHI-290, KATACHI-294, KATACHI-295, KATACHI-301, KATACHI-308, KATACHI-310, KATACHI-311, KATACHI-314, KATACHI-315, KATACHI-316, KATACHI-317, KATACHI-319, KATACHI-320, KATACHI-321)",
+          "timestamp": "2026-11-09T20:01:38+09:00",
+          "tree_id": "2509f67fbd8df1b5fc5fdc8636fdf5c45f200a60",
+          "url": "https://github.com/TBSten/katachi/commit/1a7a072057aacf6741e89789f75305287d2f99d7"
+        },
+        "date": 1794223098924,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "nowinandroid validate() cold",
+            "value": 223.400308,
+            "unit": "ms",
+            "extra": "violations: 134 (layout) / 130 (with Konsist)\nUnexpectedFile: 130, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          },
+          {
+            "name": "nowinandroid validate() warm median",
+            "value": 36.088127,
+            "unit": "ms",
+            "extra": "violations: 134 (layout) / 130 (with Konsist)\nUnexpectedFile: 130, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          },
+          {
+            "name": "nowinandroid validate(FileConstraintCheck()) cold",
+            "value": 858.452127,
+            "unit": "ms",
+            "extra": "violations: 134 (layout) / 130 (with Konsist)\nUnexpectedFile: 130, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          },
+          {
+            "name": "nowinandroid validate(FileConstraintCheck()) warm median",
+            "value": 49.756302,
             "unit": "ms",
             "extra": "violations: 134 (layout) / 130 (with Konsist)\nUnexpectedFile: 130, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
           }
