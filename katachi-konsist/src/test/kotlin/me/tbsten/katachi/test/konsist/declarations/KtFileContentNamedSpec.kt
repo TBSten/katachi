@@ -7,7 +7,7 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.string.shouldContain
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.check.internal.report
+import me.tbsten.katachi.check.internal.reportForTest
 import me.tbsten.katachi.dsl.KatachiFileConstraintNameException
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentDuplicateException
@@ -32,7 +32,7 @@ class KtFileContentNamedSpec : FreeSpec({
                 }
             }
 
-            violations.report() shouldContain "FileConstraint: \"UseCase の形 (ktFileContent)\""
+            violations.reportForTest() shouldContain "FileConstraint: \"UseCase の形 (ktFileContent)\""
         }
 
         "名前が無い書き方は今までどおり ktFileContent と出る" {
@@ -46,7 +46,7 @@ class KtFileContentNamedSpec : FreeSpec({
                 }
             }
 
-            violations.report() shouldContain "FileConstraint: \"ktFileContent\""
+            violations.reportForTest() shouldContain "FileConstraint: \"ktFileContent\""
         }
 
         "規則を満たすファイルでは名前を付けても違反は出ない" {

@@ -67,7 +67,7 @@
  * architecture {
  *   "...".role {
  *     // Role 内
- *     mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile()
+ *     mainSourceSet / kotlin / "**" / "useCase" / "*UseCase".ktFile()
  * 
  *     konsist { 
  *       "外から使えること".konsist {

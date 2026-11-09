@@ -24,7 +24,7 @@ public sealed interface TypeAliasAllow {
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
      * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block,.
+     * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun allow(
         kind: TypeAliasKind,
@@ -37,7 +37,7 @@ public sealed interface TypeAliasAllow {
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
      * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block,.
+     * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun allow(
         modifier1: Modifiers,
@@ -51,7 +51,7 @@ public sealed interface TypeAliasAllow {
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
      * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block,.
+     * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun allow(
         modifier1: Modifiers,
@@ -66,7 +66,7 @@ public sealed interface TypeAliasAllow {
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
      * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block,.
+     * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun allow(
         modifier1: Modifiers,
@@ -82,7 +82,7 @@ public sealed interface TypeAliasAllow {
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
      * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block,.
+     * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun allow(
         modifier1: Modifiers,
@@ -99,7 +99,7 @@ public sealed interface TypeAliasAllow {
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
      * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block,.
+     * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun allow(
         modifier1: Modifiers,
@@ -117,7 +117,7 @@ public sealed interface TypeAliasAllow {
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
      * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block,.
+     * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun allow(
         modifier1: Modifiers,
@@ -139,7 +139,7 @@ public sealed interface TypeAliasAllow {
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
      * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block,.
+     * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun allow(
         modifier1: Modifiers,
@@ -162,7 +162,7 @@ public sealed interface TypeAliasAllow {
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
      * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block,.
+     * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun allow(
         modifier1: Modifiers,
@@ -186,7 +186,7 @@ public sealed interface TypeAliasAllow {
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
      * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block,.
+     * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun allow(
         modifier1: Modifiers,
@@ -211,7 +211,7 @@ public sealed interface TypeAliasAllow {
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
      * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
-     * @throws KatachiKtFileContentLineException when a value comes from another block,.
+     * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun allow(
         modifier1: Modifiers,

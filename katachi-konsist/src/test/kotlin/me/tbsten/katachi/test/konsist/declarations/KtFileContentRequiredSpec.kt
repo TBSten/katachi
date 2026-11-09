@@ -10,7 +10,7 @@ import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.check.internal.report
+import me.tbsten.katachi.check.internal.reportForTest
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.declarations.KtFileContentScope
@@ -272,7 +272,7 @@ class KtFileContentRequiredSpec : FreeSpec({
                     allow(`object`, "*Preview")
                 }
             }
-            val report = violations.report()
+            val report = violations.reportForTest()
             report shouldContain "Missing: class Home"
             report shouldContain "- If some files do not need it, write allow(...) in place of required(...) at $line"
         }
@@ -287,7 +287,7 @@ class KtFileContentRequiredSpec : FreeSpec({
                     required(`class`, fileName)
                 }
             }
-            val report = violations.report()
+            val report = violations.reportForTest()
             report.trimEnd().endsWith("allow(`class`, \"Extra\")") shouldBe true
             report.contains(".optional()") shouldBe false
         }

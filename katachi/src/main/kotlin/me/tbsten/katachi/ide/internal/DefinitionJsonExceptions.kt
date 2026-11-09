@@ -1,6 +1,5 @@
 package me.tbsten.katachi.ide.internal
 
-import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.KatachiCheckException
 import me.tbsten.katachi.internal.absolutePathOf
 import me.tbsten.katachi.internal.fileUri
@@ -27,10 +26,9 @@ import me.tbsten.katachi.internal.fileUri
  *
  * @see DescribeDefinition
  */
-@InternalKatachiApi
-public class KatachiDefinitionJsonIoException internal constructor(
+internal class KatachiDefinitionJsonIoException(
     /** The file being written, exactly as `--arg output=` spelled it. */
-    public val output: String,
+    val output: String,
     cause: Throwable,
 ) : KatachiCheckException(
     message = buildString {

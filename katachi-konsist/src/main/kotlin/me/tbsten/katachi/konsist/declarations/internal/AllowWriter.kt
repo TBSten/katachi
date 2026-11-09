@@ -4,6 +4,7 @@ import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.konsist.declarations.AnythingElse
 import me.tbsten.katachi.konsist.declarations.AnythingElseAllow
 import me.tbsten.katachi.konsist.declarations.ClassBodyScope
+import me.tbsten.katachi.konsist.declarations.ClassBodyScopeImpl
 import me.tbsten.katachi.konsist.declarations.DeclarationAllow
 import me.tbsten.katachi.konsist.declarations.DeclarationRequired
 import me.tbsten.katachi.konsist.declarations.DeclarationListScopeImpl
@@ -16,7 +17,9 @@ import me.tbsten.katachi.konsist.declarations.FunctionKind
 import me.tbsten.katachi.konsist.declarations.FunctionLine
 import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentLineException
 import me.tbsten.katachi.konsist.declarations.KtFileContentLineProblem
+import me.tbsten.katachi.konsist.declarations.MemberAllow
 import me.tbsten.katachi.konsist.declarations.MemberProhibition
+import me.tbsten.katachi.konsist.declarations.MemberRequired
 import me.tbsten.katachi.konsist.declarations.Modifiers
 import me.tbsten.katachi.konsist.declarations.PropertyAllow
 import me.tbsten.katachi.konsist.declarations.PropertyRequired
@@ -158,6 +161,11 @@ internal val AnythingElseAllow.allowWriter: AllowWriter
         is DeclarationAllow -> writerOf(this)
     }
 
+internal val MemberAllow.allowWriter: AllowWriter
+    get() = when (this) {
+        is ClassBodyScopeImpl -> writer
+    }
+
 private fun requiredWriterOf(target: DeclarationRequired): AllowWriter = when (target) {
     is DeclarationListScopeImpl -> target.requiredWriter
 }
@@ -185,4 +193,9 @@ internal val PropertyRequired.requiredWriter: AllowWriter
 internal val TypeAliasRequired.requiredWriter: AllowWriter
     get() = when (this) {
         is DeclarationRequired -> requiredWriterOf(this)
+    }
+
+internal val MemberRequired.requiredWriter: AllowWriter
+    get() = when (this) {
+        is ClassBodyScopeImpl -> requiredWriter
     }

@@ -3,6 +3,7 @@ package me.tbsten.katachi.test.konsist.declarations
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 
 /** Enum entries, secondary constructors and `init` blocks: members like any other, denied unless a line allows them. */
 
@@ -62,6 +63,26 @@ class KtFileContentClassMemberSpec : FreeSpec({
                 "A.constructor (line 4) | Not allowed: constructor(text: String) in class A",
                 "A.init (line 5) | Not allowed: init in class A",
             )
+        }
+
+        "修飾子を 2 つ並べて、注釈付きの private な副コンストラクタを求められる" {
+            val withInject = kt("class A(val id: Int) {\n    @Inject private constructor(text: String) : this(text.length)\n}")
+            judged(withInject) {
+                `package`("**")
+                allow(`class`, "A") {
+                    allow(`val`, "id")
+                    required(annotated("Inject"), private, constructor)("text: String")
+                }
+            }.shouldBeEmpty()
+
+            val withoutInject = kt("class A(val id: Int) {\n    private constructor(text: String) : this(text.length)\n}")
+            judged(withoutInject) {
+                `package`("**")
+                allow(`class`, "A") {
+                    allow(`val`, "id")
+                    required(annotated("Inject"), private, constructor)("text: String")
+                }
+            }.joinToString("\n") shouldContain "Missing:"
         }
     }
 })

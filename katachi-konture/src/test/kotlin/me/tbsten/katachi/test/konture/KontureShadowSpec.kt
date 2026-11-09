@@ -11,7 +11,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.UncheckedFileConstraint
 import me.tbsten.katachi.check.UncheckedFileConstraintReason
-import me.tbsten.katachi.check.internal.report
+import me.tbsten.katachi.check.internal.reportForTest
 import me.tbsten.katachi.konture.KatachiKontureDefaultGraphException
 
 /**
@@ -135,7 +135,7 @@ class KontureShadowSpec : FreeSpec({
             // The `How to fix` of a failed constraint never says "this is a katachi bug" on its
             // own: the cause here is something the reader wrote, and a line that always blamed
             // katachi would be wrong most of the time.
-            val report = violations.report()
+            val report = violations.reportForTest()
             report shouldContain "- Read the cause above: it says what stopped the constraint"
             report shouldContain "- If the cause is a KatachiInternalException, report it at"
         }
