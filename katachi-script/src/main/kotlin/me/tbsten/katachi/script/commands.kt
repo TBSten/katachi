@@ -9,8 +9,8 @@ import me.tbsten.katachi.script.command.KatachiCommand
  * ## Example 1: show what the script will run
  *
  * ```kt
- * println(commands(katachi.agent.init, katachi.scaffold.`package`("com.example.app")))
- * // katachi init
+ * println(commands(katachi.doctor, katachi.scaffold.`package`("com.example.app")))
+ * // katachi doctor
  * // katachi scaffold --package com.example.app
  * ```
  *
@@ -25,7 +25,7 @@ public fun commands(vararg commands: KatachiCommand): Commands = Commands(comman
  *
  * ```kt
  * val status = executeCommands(
- *     katachi.agent.init.lang(ja),
+ *     katachi.doctor.lang(ja),
  *     katachi.scaffold.`package`("com.example.app"),
  * )
  * kotlin.system.exitProcess(status)

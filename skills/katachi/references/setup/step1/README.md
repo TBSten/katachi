@@ -2,4 +2,4 @@
 
 **This is a step where you make the judgment calls.**
 
-Walk every file committed to Git in the project and fill in the JSON inside `<KATACHI_WORKDIR>/project-code-base-report.html`. This file has already been placed by `init`. **Do not fetch the template again.**
+Walk every file committed to Git in the project and fill in the JSON inside `<KATACHI_WORKDIR>/project-code-base-report.html`. You copied it in 0-2. **Do not copy the template over it again.**

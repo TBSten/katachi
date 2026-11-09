@@ -1,6 +1,6 @@
 ## 0. Preparation
 
-**Everything that can be done mechanically is handled by the `katachi` command.** Do not supplement the steps yourself.
+**What the `katachi` command does (`doctor`, `scaffold`, `lint`, `katachi agent test`), leave to it.** Do not redo it by hand, and do not supplement the steps with workarounds of your own.
 
 You are only responsible for judgment in the following:
 
@@ -30,4 +30,4 @@ If they want to pin the working directory, they can add "use <path> as the worki
 
 There are three points in these steps where the session may end (the end of step 6, the end of 6-0, and the end of each of 6-A to 6-D). Each of them says how to resume.
 
-If there is a working directory made by an earlier version (including one made with `katachi-install.sh`), recreate it with `init --force` (the checklist's JSON is lost. With the old HTML left as it is, `check 1-3` stops with "Unknown item id").
+If there is a working directory made by an older katachi (by `katachi agent init` or `katachi-install.sh`), its checklist may lack items these steps use. Make a new working directory from this skill's templates (0-2), and carry over only what you need from the old one.

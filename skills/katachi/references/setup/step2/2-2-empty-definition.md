@@ -4,7 +4,7 @@
 katachi agent test
 ```
 
-`test` runs the verification module's `test` task (`./gradlew :architecture-test:test`) and summarizes the result. The full log stays in `<KATACHI_WORKDIR>/tmp/test/`, and the summary's `Log:` line shows the path. Do not start Gradle directly; throughout these steps, always use `katachi agent test` (only the CI in 6-B is written in the `./gradlew` form).
+`test` runs the verification module's `test` task (`./gradlew :architecture-test:test`) and summarizes the result. The full log stays in `<workdir>/tmp/test/`, and the summary's `Log:` line shows the path. Do not start Gradle directly; throughout these steps, always use `katachi agent test` (only the CI in 6-B is written in the `./gradlew` form).
 
 **Failing here is the expected outcome.** `architecture { }` is empty, so by the deny-by-default principle every file is reported as `Unexpected`. The summary looks like this.
 
@@ -49,18 +49,20 @@ katachi shows only 10 violations by default, but `katachi agent test` always wri
 
 **Failing in this shape means the wiring is correct.**
 
-The first Gradle run makes `.kotlin/` (Kotlin 2.x). If the project's `.gitignore` does not have it, `[UnexpectedDirectory] .kotlin` shows up. So does the `.gradle/` that Gradle creates. Treat them the same as the untracked-file warning from `init`: ask the user whether to add them to `.gitignore`. If git tracks files inside `.idea/` (such as `.idea/codeStyles/`), they are checked too, so declare them by writing a Role in step 3 (if you do not check their contents, `ignore()` is enough). Do not edit `.gitignore` yourself. Only an error that is not `Unexpected` is a problem — a compile error, a dependency resolution failure, something like `Could not start Gradle Test Executor` (the summary then says `Result: the check was not reached`, with the tail of the log attached).
+The first Gradle run makes `.kotlin/` (Kotlin 2.x). If the project's `.gitignore` does not have it, `[UnexpectedDirectory] .kotlin` shows up. So does the `.gradle/` that Gradle creates. Treat them the same as the untracked files you looked for in 0-2: ask the user whether to add them to `.gitignore`. If git tracks files inside `.idea/` (such as `.idea/codeStyles/`), they are checked too, so declare them by writing a Role in step 3 (if you do not check their contents, `ignore()` is enough). Do not edit `.gitignore` yourself. Only an error that is not `Unexpected` is a problem — a compile error, a dependency resolution failure, something like `Could not start Gradle Test Executor` (the summary then says `Result: the check was not reached`, with the tail of the log attached).
 
 In that case, following the same policy as step 4, **attempt to fix errors unrelated to katachi (Gradle, Java, dependency resolution).** Only if it still can't be resolved, pass the output to the user exactly as it is and ask for their judgment.
 
 If `scaffold` says "has a buildscript { } block, so it was not edited automatically," **add the single line shown in the output to the root build file.** It will keep failing until you add it. The same goes for "could not read the shape of pluginManagement { }" and "could not read where the include statement ends": add what the output shows to the settings file.
 
-Once you have confirmed it fails with `Unexpected` only, record the files that were created or changed, then run `katachi agent check 2-2`.
+Once you have confirmed it fails with `Unexpected` only, record the files that were created or changed in the checklist's `changedFiles`, then mark `2-2` done.
 
-```sh
-katachi agent add changed --path "architecture-test/build.gradle.kts" --change "New" --summary "Build definition for the verification module"
-katachi agent add changed --path "settings.gradle.kts" --change "Modified" --summary "Added include(\":architecture-test\")"
-katachi agent add changed --path "gradle/libs.versions.toml" --change "Modified" --summary "Added the katachi and JUnit aliases"
+```json
+"changedFiles": [
+  { "path": "architecture-test/build.gradle.kts", "change": "New", "summary": "Build definition for the verification module" },
+  { "path": "settings.gradle.kts", "change": "Modified", "summary": "Added include(\":architecture-test\")" },
+  { "path": "gradle/libs.versions.toml", "change": "Modified", "summary": "Added the katachi and JUnit aliases" }
+]
 ```
 
-Enter the files listed in `scaffold`'s output. The output shows them as absolute URIs starting with `file://`, but `--path` still takes **the path relative to the project root** (the form in the example above). If it appended to `pluginManagement`, say so in `--summary` as well.
+Enter the files listed in `scaffold`'s output. The output shows them as absolute URIs starting with `file://`, but `path` takes **the path relative to the project root** (the form in the example above). If it appended to `pluginManagement`, say so in `summary` as well.

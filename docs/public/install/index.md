@@ -12,7 +12,7 @@ Both point to the katachi skill, which holds the steps:
 gh skill install TBSten/katachi katachi
 ```
 
-The same steps ship with the `katachi` command (`brew install tbsten/tap/katachi`; `katachi agent guide` prints the table of contents, before init too). The steps are in English. The language passed to `katachi agent init` decides the checklist and report templates it puts in the working directory, and the language of the command's output.
+The steps run on the `katachi` command (`brew install tbsten/tap/katachi`). They are in English; the checklist and report they set up in the working directory can be English or Japanese, and the `katachi` command answers in the language of that checklist.
 
 `katachi-install.sh` (the script of 0.3.0 and earlier) is deprecated and will be removed in 0.5.0.
 

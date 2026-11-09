@@ -23,9 +23,9 @@ If the check is failing and you do not yet know why, read [../fix-violations/REA
    ./gradlew :architecture-test:test -Dkatachi.maxViolations=all
    ```
 
-   `-Dkatachi.maxViolations=all` prints every violation instead of the first 10. If the setup's working directory is still there (`katachi agent summary` works), `katachi agent test --save before` does the same and keeps the log.
+   `-Dkatachi.maxViolations=all` prints every violation instead of the first 10. `katachi agent test --save before-refactor` does the same, prints a summary and keeps the log.
 3. **Make the smallest change that says what is true now.** Declare the new thing where it belongs; do not widen an existing pattern to swallow it.
-4. **Run the check again and compare.** Every violation that went away should be one you meant to remove, and nothing should have appeared. With the working directory, `katachi agent test --save after` then `katachi agent compare-violations` does the comparison.
+4. **Run the check again and compare.** Every violation that went away should be one you meant to remove, and nothing should have appeared. `katachi agent test --save after-refactor` then `katachi agent compare-violations` does the comparison.
 5. **Make sure it still fails when it should.** If the check was green before and after, a loosened definition looks the same as a correct one. Put a file no Role covers in the area you changed, run the check, see `[UnexpectedFile]`, and delete the file.
 6. **Run `katachi lint`.** It lists Roles that look like they hold different kinds of files, hand-written Roles for Gradle files, and flat groups. Fix what it prints, or tell the user why you kept it.
 7. **Write the descriptions.** A new Role gets `summary` (one sentence that describes every file it holds), `description` if there is more to say, and `example()` with a real file. The check reports a Role without them as `[MissingDescription]`.

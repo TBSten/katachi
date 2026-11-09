@@ -105,18 +105,23 @@ private fun ScriptContext.printCheckDiff(before: List<String>, after: List<Strin
     return false
 }
 
+/**
+ * Where `test` keeps its logs: `tmp/` of the working directory when there is one, otherwise `build/katachi/`
+ * of the project root (ignored by git in a Gradle project, so the logs never become an `[UnexpectedFile]`).
+ */
+internal fun ScriptContext.testLogDir(): Path = findWorkdir()?.resolve("tmp") ?: projectRoot().resolve("build/katachi")
+
 /** `compare-violations [<before> [<after>]]`: 0 unchanged, 1 changed, 2 not comparable. */
 internal fun ScriptContext.runCompareViolations(args: List<String>): Int {
-    val workdir = requireWorkdir()
     val module = resolveModuleDir()
     requireDefinitionDir(module)
-    val before = args.getOrNull(0)?.let(::resolve) ?: workdir.resolve("tmp/test-before-refactor.log")
-    val after = args.getOrNull(1)?.let(::resolve) ?: workdir.resolve("tmp/test-after-refactor.log")
+    val before = args.getOrNull(0)?.let(::resolve) ?: testLogDir().resolve("test-before-refactor.log")
+    val after = args.getOrNull(1)?.let(::resolve) ?: testLogDir().resolve("test-after-refactor.log")
     for (log in listOf(before, after)) {
         if (!log.isRegularFile()) {
             die(
-                "${fileUri(log)} がありません。./gradlew ${module.gradlePath}:test の出力をこのパスに保存してください（手順書 3-2 / 3-3）。",
-                "${fileUri(log)} not found. Save the output of ./gradlew ${module.gradlePath}:test to this path (steps 3-2 / 3-3 of the guide).",
+                "${fileUri(log)} がありません。$AGENT_COMMAND test --save <名前> で取るか、./gradlew ${module.gradlePath}:test の出力をこのパスに保存してください（手順 3-2 / 3-3）。",
+                "${fileUri(log)} not found. Capture it with $AGENT_COMMAND test --save <name>, or save the output of ./gradlew ${module.gradlePath}:test to this path (steps 3-2 / 3-3).",
             )
         }
         if (!hasCheckResult(log)) {
@@ -184,22 +189,20 @@ internal fun ScriptContext.runTest(args: List<String>): Int {
     val gradleArgs = parsed.passthrough.toMutableList()
     if (gradleArgs.none { it.startsWith("-Dkatachi.maxViolations=") }) gradleArgs += TEST_MAX_VIOLATIONS_ARG
 
-    val workdir = requireWorkdir()
     val module = resolveModuleDir()
-    val recordedRoot = checklistMeta(workdir.resolve(CHECK_LIST_FILE), "projectRoot")
-    if (recordedRoot.isEmpty() || !resolve(recordedRoot).isDirectory()) {
+    val root = projectRoot()
+    if (!root.isDirectory()) {
         warn(
-            "プロジェクトルートが分かりません（チェックリストの meta.projectRoot: '$recordedRoot'）。init をやり直してください。",
-            "Cannot find the project root (meta.projectRoot in the check list: '$recordedRoot'). Run init again.",
+            "プロジェクトルートがありません: ${fileUri(root)}（チェックリストの meta.projectRoot）。直すか、空にしてプロジェクトのルートで実行してください。",
+            "The project root does not exist: ${fileUri(root)} (meta.projectRoot in the check list). Fix it, or empty it and run this in the root of the project.",
         )
         return 2
     }
-    val root = resolve(recordedRoot)
     val gradlew = root.resolve("gradlew")
     if (!gradlew.isRegularFile()) {
         warn(
-            "gradlew がありません: ${fileUri(gradlew)} 。Gradle wrapper の無いプロジェクトでは、./gradlew ${module.gradlePath}:test を自分で実行してログを tmp/test-<名前>.log に保存してください。",
-            "gradlew not found: ${fileUri(gradlew)} . Without the Gradle wrapper, run ./gradlew ${module.gradlePath}:test yourself and save the log as tmp/test-<name>.log.",
+            "gradlew がありません: ${fileUri(gradlew)} 。Gradle wrapper の無いプロジェクトでは、./gradlew ${module.gradlePath}:test を自分で実行してログを ${fileUri(testLogDir())}/test-<名前>.log に保存してください。",
+            "gradlew not found: ${fileUri(gradlew)} . Without the Gradle wrapper, run ./gradlew ${module.gradlePath}:test yourself and save the log as ${fileUri(testLogDir())}/test-<name>.log.",
         )
         return 2
     }
@@ -210,7 +213,7 @@ internal fun ScriptContext.runTest(args: List<String>): Int {
         return 2
     }
 
-    val dir = workdir.resolve("tmp/test")
+    val dir = testLogDir().resolve("test")
     dir.createDirectories()
     val stamp = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH-mm-ss'Z'").format(clock.instant().atOffset(ZoneOffset.UTC))
     var log = dir.resolve("$stamp.log")
@@ -231,7 +234,7 @@ internal fun ScriptContext.runTest(args: List<String>): Int {
     val status = runToLog(command, root, log)
     Files.copy(log, latest, StandardCopyOption.REPLACE_EXISTING)
     if (save != null) {
-        val copy = workdir.resolve("tmp/test-$save.log")
+        val copy = testLogDir().resolve("test-$save.log")
         Files.copy(log, copy, StandardCopyOption.REPLACE_EXISTING)
         say("写し: ${fileUri(copy)}", "Copy: ${fileUri(copy)}")
     }

@@ -42,16 +42,17 @@ Read only the reference that fits, and inside it only the files it points you to
 │       ├── ProjectArchitectureTest.kt  calls projectArchitecture.assert()
 │       └── <group>/<Role>Role.kt …     the split definition, one Role or group per file (naming: setup 3-3)
 └── tmp/install-katachi/                the working directory of the setup (or inside an already-ignored directory)
-    ├── check-list.html                 the setup's checklist (JSON inside; read and write it only with katachi agent data / check)
+    ├── check-list.html                 the setup's checklist (a JSON block inside; setup 0-3 says how to edit it)
     ├── project-code-base-report.html   the codebase report from setup step 1
     └── tmp/                            logs, fetched documentation, notes
 ```
 
-The working directory is only for the setup and is ignored by git, so it may be gone later. `katachi agent …` commands that need it (`test`, `docs`, `check`, …) stop without it; the plain Gradle tasks below always work.
+The working directory is only for the setup and is ignored by git, so it may be gone later. Nothing below needs it: `katachi agent test` keeps its logs in `<working directory>/tmp/`, or in `build/katachi/` of the project root when there is none.
 
 | What | Command |
 |---|---|
-| Run the check | `./gradlew :architecture-test:test` (with a working directory: `katachi agent test`, which keeps the full log and diffs against the previous run) |
+| Run the check | `./gradlew :architecture-test:test`, or `katachi agent test`, which prints a summary, keeps the full log and diffs against the previous run |
+| Compare two runs (before and after a change to the definition) | `katachi agent test --save before-refactor`, change, `katachi agent test --save after-refactor`, then `katachi agent compare-violations` |
 | Find Roles that hold different kinds of files, hand-written Gradle Roles, flat groups | `katachi lint` |
 | Generate a page per Role | `./gradlew :architecture-test:katachiDocs` |
 | Generate a file from a Role's `.template { }` | `./gradlew :architecture-test:katachiTemplate --arg template=<group.Role> --arg <name>=<value>` |
@@ -60,16 +61,16 @@ Read `:architecture-test` as the verification module's Gradle path when it is so
 
 ## Documentation
 
-| Topic | With a working directory | Page |
-|---|---|---|
-| Writing `layout { }` | `katachi agent docs --topic layout` | https://tbsten.github.io/katachi/guides/layout/ |
-| Roles and groups | `katachi agent docs --topic role` | https://tbsten.github.io/katachi/guides/role/ |
-| The basic API | `katachi agent docs --topic basic-api` | https://tbsten.github.io/katachi/guides/basic-api/ |
-| Constraints on contents (`ktFileContent { }`) | `katachi agent docs --topic kt-file-content` | https://tbsten.github.io/katachi/guides/kt-file-content/ |
-| Baseline (tolerate existing violations) | `katachi agent docs --topic baseline` | https://tbsten.github.io/katachi/guides/baseline/ |
-| Document generation | `katachi agent docs --topic document-generation` | https://tbsten.github.io/katachi/guides/document-generation/ |
-| Code generation from templates | `katachi agent docs --topic template` | https://tbsten.github.io/katachi/guides/generate-code-from-template/ |
+| Topic | Page |
+|---|---|
+| Writing `layout { }` | https://tbsten.github.io/katachi/guides/layout/ |
+| Roles and groups | https://tbsten.github.io/katachi/guides/role/ |
+| The basic API | https://tbsten.github.io/katachi/guides/basic-api/ |
+| Constraints on contents (`ktFileContent { }`) | https://tbsten.github.io/katachi/guides/kt-file-content/ |
+| Baseline (tolerate existing violations) | https://tbsten.github.io/katachi/guides/baseline/ |
+| Document generation | https://tbsten.github.io/katachi/guides/document-generation/ |
+| Code generation from templates | https://tbsten.github.io/katachi/guides/generate-code-from-template/ |
 
-`katachi agent docs --topics` lists every topic. The whole site in one file is https://tbsten.github.io/katachi/llms-full.txt; do not read it whole, cut out the page you need. For signatures, read the API reference: https://tbsten.github.io/katachi/api-docs/llms.txt (`katachi agent docs --api`), and the Markdown version of one API's page (its HTML URL with `.md` appended).
+The site's index for agents is https://tbsten.github.io/katachi/llms.txt. The whole site in one file is https://tbsten.github.io/katachi/llms-full.txt; do not read it whole, cut out the page you need. For signatures, read the API reference: https://tbsten.github.io/katachi/api-docs/llms.txt, and the Markdown version of one API's page (its HTML URL with `.md` appended).
 
 `capture()`, `fileConstraint`, `ktFileContent { }`, `.template { }` and `baseline()` are experimental: a file that uses one needs `@file:OptIn(ExperimentalKatachiApi::class)` and `import me.tbsten.katachi.ExperimentalKatachiApi`.

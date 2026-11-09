@@ -26,24 +26,24 @@ sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/r
   スモークも fixture のチェックも既定でこれを使い、最初に `katachi --version` がリポジトリの版かを確かめる。
   brew で入れた katachi など別のものを試すときは `--cli <path>` で渡す。コードを直したのに古い動きのままなら、組み直す
   （それでも古ければ `kotlin` のスクリプトのキャッシュ。macOS では `~/Library/Caches/main.kts.compiled.cache` を消す）
-- スモーク（`check-install-kit-smoke.sh`。fixture の Gradle は起動しない）: 合成のプロジェクトに `katachi agent …` / `katachi scaffold` /
-  `katachi lint` / `katachi doctor` を当て、終了コードと出力の grep で確かめる。guide の目次とフェンス、docs --topic、preferences、answers、summary の再開欄、add の 8 並列と件数検査、
-  ロックの待ちと残骸、init の既存ファイルと --module-dir、lint の exit 1 と制約 Role の緩和、add role / excluded の拒否、
-  scaffold --deps の衝突、test の exit 2 と要約、data get のキー、違反の打ち切り（maxViolations=all・compare-violations の停止）、緑のときの警告、古い Kotlin の警告、add changed の重複、docs --topic の取得元とキットの不具合での停止、の 32 ケース（104 判定。先頭の `katachi --version` を含む）。
-  `docs --topic` は `docs/dist/llms-full.txt` を読む（無ければ `--llms-full <path>` か、docs の build）。
+- スモーク（`check-install-kit-smoke.sh`。fixture の Gradle は起動しない）: 合成のプロジェクトに `katachi agent test` / `katachi agent compare-violations` /
+  `katachi scaffold` / `katachi lint` / `katachi doctor` を当て、終了コードと出力の grep で確かめる。作業用ディレクトリは skill の手順 0-2 どおり
+  `skills/katachi/assets/<言語>/` を写して作る。skill のテンプレートの JSON と項目 id、skill が置き換えたサブコマンドが無いこと、
+  チェックリストの言語に従う出力、作業用ディレクトリ無しの test のログの置き場、lint の exit 1 と制約 Role の緩和、scaffold --deps の衝突、
+  test の exit 2 と要約、違反の打ち切り（maxViolations=all・compare-violations の停止）、緑のときの警告、古い Kotlin の警告、の 12 ケース。
   fixture の本番の前に回し、全部緑にしてから Gradle を使う方へ進む
 - やること（スクリプトの冒頭のコメントに詳細）:
     1. katachi コマンドを組む（`build-katachi-cli.sh`。`--skip-publish` で飛ばす）
     2. `katachi --version` がリポジトリの版かを確かめる
     3. 合成の Gradle プロジェクト（fixture。定義は `scripts/install-kit-fixtures.sh`）ごとに、順番に
-       `KATACHI_DOCS=file://<repo>/docs/public`・`KATACHI_MAVEN_LOCAL=1` で `katachi agent init --lang ja --katachi <今回の版>`
-       （`fx_module_dir_<名前>` がある fixture は `--module-dir` も）→ `katachi scaffold`（`fx_scaffold_args_<名前>` があればその引数も）→
-       `katachi agent test`（中で `./gradlew <KATACHI_MODULE_PATH>:test`）。そのあとルートにファイルを1つ足して、`--rerun` なしでもう一度
+       `KATACHI_MAVEN_LOCAL=1` で `katachi doctor` → skill の手順 0-2 どおり作業用ディレクトリ（`skills/katachi/assets/ja/` を写して meta を埋める。
+       `fx_module_dir_<名前>` がある fixture は `meta.moduleDir` にその置き場所）→ `katachi scaffold`（`fx_scaffold_args_<名前>` があればその引数も）→
+       `katachi agent test`（中で `./gradlew <検査用モジュールの Gradle パス>:test`）。そのあとルートにファイルを1つ足して、`--rerun` なしでもう一度
        `katachi agent test`
 - 判定（fixture ごと。1つでも NG の欄があれば NG）:
-    - init・scaffold: 終了コードが 0。init が Kotlin の版を検出できなかったときだけ、手順書どおり `--kotlin` を渡す。
+    - 準備・scaffold: 終了コードが 0。doctor が Kotlin の版を出さなかったときだけ、手順書どおり `--kotlin` を渡す。
       `fx_expect_<名前>` がある fixture は生成物の grep 検査（toml の別名、`alias(libs.plugins.katachi)`、`FunSpec` など）も scaffold の欄
-    - settings の include: 検査用モジュール（init が出す `KATACHI_MODULE_PATH`。既定 `:architecture-test`）の include が1回だけ、
+    - settings の include: 検査用モジュール（`meta.moduleDir` から。既定 `:architecture-test`）の include が1回だけ、
       最後の include 文の直後（include が無ければ末尾）に入った
     - test（配線）: **`katachi agent test` が「定義していないファイルが Unexpected として出て落ちる」（終了コード 1）なら OK**（`architecture { }` が空なので、
       これが正常）。構文エラー・プラグインの衝突・解決できない・Unexpected 以外の違反で落ちたら NG。通ってしまっても NG
@@ -68,13 +68,13 @@ sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/r
   | catalogalias | catalog の別名の Kotlin（`jvm = { id = "org.jetbrains.kotlin.jvm" }`）                               |
   | jdkonly      | JDK 21 だけ・foojay 無し・toolchain の設定無し（`jvmToolchain` を書かない）                          |
   | tc21         | JDK 21 だけ・foojay 無し・ほかのモジュールに `jvmToolchain(21)`（21 を写す）                         |
-  | nestedmod    | `init --module-dir static-analysis/katachi`（include とタスクのパスが入れ子）                        |
+  | nestedmod    | `meta.moduleDir` が `static-analysis/katachi`（include とタスクのパスが入れ子）                        |
   | catalogwrite | catalog に `katachi` / `katachiKonsist` / `junit-*` を追記、`libs.katachi` で参照、`--force` の 2 回目で重複しない |
   | kotestdetect | catalog に `kotest-runner-junit5`（検出して `FunSpec` の雛形、依存は kotest）                        |
   | tcval        | build-logic の convention plugin に `private val jvmTarget = 21` + `jvmToolchain(jvmTarget)`（21 を読む） |
   | buildlogic   | includeBuild の build-logic に kotlin-gradle-plugin（ルートは convention を apply false。placement root） |
 
-- 出力: `.local/release-v<版>/install-kit.md` に結果の表（fixture / 形 / init / scaffold / settings の include /
+- 出力: `.local/release-v<版>/install-kit.md` に結果の表（fixture / 形 / 準備 / scaffold / settings の include /
   test（配線）/ 2回目が走ったか / 結果 / ログ）。形の欄の（）に検査用モジュールの置き場所とテストのフレームワークが出る。
   fixture とログは `.local/release-v<版>/tmp/install-kit/`（test のログは `katachi agent test` の要約と、Gradle の出力の全文 `-gradle.log` の2本）。
   1つでも NG なら終了コード 1
@@ -95,8 +95,8 @@ subagent（model: opus。手順書を読んで判断しながら進める）を�
 
 | 担当 | やること | 対象 |
 |---|---|---|
-| ja で導入 | 日本語の利用者に「このプロジェクトに katachi を入れて。手順は katachi skill（`<repo>/skills/katachi/SKILL.md`）」と頼まれたエージェントとして、手順書を書いてあるとおりに最後まで（`init --lang ja`。6 の返答、6-C・6-D も） | `.local/sample-app/backup/` の KMP のプロジェクトの写し（例: kmp-app-template） |
-| en で導入 | 同じく英語の利用者として最後まで（`init --lang en`。6-B は CI のファイルを書くまで、6-C も） | `.local/sample-app/backup/` の Android のプロジェクトの写し（例: nav3-recipes） |
+| ja で導入 | 日本語の利用者に「このプロジェクトに katachi を入れて。手順は katachi skill（`<repo>/skills/katachi/SKILL.md`）」と頼まれたエージェントとして、手順書を書いてあるとおりに最後まで（チェックリストは ja。6 の返答、6-C・6-D も） | `.local/sample-app/backup/` の KMP のプロジェクトの写し（例: kmp-app-template） |
+| en で導入 | 同じく英語の利用者として最後まで（チェックリストは en。6-B は CI のファイルを書くまで、6-C も） | `.local/sample-app/backup/` の Android のプロジェクトの写し（例: nav3-recipes） |
 | 手順書のレビュー | 読むだけ。手順書と katachi コマンド（`--help`・引数・出力・エラー）、手順書とチェックリストの項目、迷う・誤解する箇所、古い API | `skills/katachi/` 一式と `docs/public/install/` のテンプレート |
 
 - 写しは `.local/release-v<版>/tmp/install-e2e/<担当>/project` に `rsync -a --exclude build --exclude .gradle --exclude .kotlin`

@@ -20,7 +20,7 @@ internal enum class Lang(val code: String) {
 /** The name people type. */
 internal const val CLI_COMMAND: String = "katachi"
 
-/** What the install guide's steps start with. Every "next:" line and every step command in the bundled guide uses it. */
+/** What the katachi skill's steps type for the [CommandSpec.agent] commands: `katachi agent test`. */
 internal const val AGENT_COMMAND: String = "$CLI_COMMAND $AGENT_GROUP"
 
 internal class ScriptContext(
@@ -34,11 +34,7 @@ internal class ScriptContext(
 ) {
     var lang: Lang = Lang.of(env["KATACHI_LANG"]) ?: Lang.JA
 
-    /** `--lang` given on the command line (init / doctor); it wins over everything else. */
-    var langExplicit: Boolean = false
-
-    /** The write lock this process holds, so that a command that took it does not wait on itself. */
-    var heldLock: WorkdirLock? = null
+    /** `--lang` given on the command line (doctor); it wins over everything else. */
 
     fun pick(ja: String, en: String): String = if (lang == Lang.EN) en else ja
 

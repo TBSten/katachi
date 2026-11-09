@@ -26,36 +26,6 @@ internal fun JsonElement.toTree(): Any? = when (this) {
     }
 }
 
-internal fun Any?.toJsonElement(): JsonElement = when (this) {
-    null -> JsonNull
-    is JsonElement -> this
-    is String -> JsonPrimitive(this)
-    is Boolean -> JsonPrimitive(this)
-    is Number -> JsonPrimitive(this)
-    is Map<*, *> -> JsonObject(entries.associate { (key, value) -> key.toString() to value.toJsonElement() })
-    is List<*> -> JsonArray(map { it.toJsonElement() })
-    else -> JsonPrimitive(toString())
-}
-
-/** Python's truthiness, which the kit's checks (`if not i.get("done")`) relied on. */
-internal fun truthy(value: Any?): Boolean = when (value) {
-    null -> false
-    is Boolean -> value
-    is String -> value.isNotEmpty()
-    is Collection<*> -> value.isNotEmpty()
-    is Map<*, *> -> value.isNotEmpty()
-    is JsonPrimitive -> value.content.toDoubleOrNull()?.let { it != 0.0 } ?: true
-    else -> true
-}
-
-/** `str(value)` for what Python would have printed with `%s`. */
-internal fun pyStr(value: Any?): String = when (value) {
-    null -> "None"
-    is Boolean -> if (value) "True" else "False"
-    is JsonPrimitive -> value.content
-    else -> value.toString()
-}
-
 @Suppress("UNCHECKED_CAST")
 internal fun Any?.asMap(): JMap? = this as? JMap
 

@@ -1,11 +1,14 @@
 ## 5. Review the checklist
 
-```sh
-katachi agent verify
-```
+Go through both files' JSON and list what is left. **Check every point below; do not stop at the first one.**
 
-This lists unfilled fields and unchecked items. **If nothing is printed, you're done** (exit code 0). Anything printed means you either forgot to investigate it or forgot to record it. Fill it in and run again.
+- Checklist: every item of steps 0 to 4 is `done: true` (step 6 is optional and does not count)
+- Checklist: no key of `meta` is `null` or empty
+- Report: no key of `meta` or `overview` is `null` or empty
+- Report: `architecture.name` and `architecture.rationale` are filled in
+- Report: `modules`, `directoryTree` and `roles` are filled in
+- Report: every entry of `roles` has `importance`, `name`, `layout`, `naming` and `group`
 
-**Do not read the JSON yourself and eyeball it.** Item 5-1, "reviewed the entire checklist," refers to getting `verify` to pass.
+Anything left means you either forgot to investigate it or forgot to record it. Fill it in and go through the list again. Also look at the steps that carry a `warning`: each says what you left as it is, and step 6 reports it.
 
-**Once it passes, `verify` automatically marks 5-1 / 5-2 as done.** There's no need to run `check` yourself.
+Once nothing is left, mark `5-1` and `5-2` done.

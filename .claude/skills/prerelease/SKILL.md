@@ -148,8 +148,8 @@ priority 10 の警告。結果は `ci-checks.md`、ログは `tmp/ci-checks/`。
 ## 9. インストールキットのチェック
 
 - 9-1: `build-katachi-cli.sh` で katachi コマンド（brew で配るのと同じ形の `bin/katachi`）を組み、先に `check-install-kit-smoke.sh`
-  （fixture の Gradle は起動しない。5〜10 分）でサブコマンドの振る舞いを確かめ、次に `check-install-kit.sh` で
-  合成の Gradle プロジェクト（fixture。16 種）に `katachi agent init` → `katachi scaffold` → `katachi agent test` を通し、
+  （fixture の Gradle は起動しない。2〜5 分）でサブコマンドの振る舞いを確かめ、次に `check-install-kit.sh` で
+  合成の Gradle プロジェクト（fixture。16 種）に作業用ディレクトリ（skill のテンプレート）→ `katachi scaffold` → `katachi agent test` を通し、
   「Unexpected だけで落ちる」（配線は正しい）かを確かめる。
   オーケストレータが自分で走らせてよい。1つでも NG なら priority 10 の警告。結果は `install-kit.md`、fixture とログは `tmp/install-kit/`。
 - 9-2: 統合テスト。subagent（opus）が AI エージェントとして手順書（ja / en）どおりに実在のプロジェクトの写しへ最後まで導入し、

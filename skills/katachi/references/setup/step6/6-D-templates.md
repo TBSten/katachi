@@ -2,9 +2,9 @@
 
 Do this only for the Roles, among the proposals recorded in step 6, that the user agreed to.
 
-**Before you start, read the page on generating code from a template.** Fetch it with `katachi agent docs --topic template` (also at https://tbsten.github.io/katachi/guides/generate-code-from-template/ ). The words `.template { }` offers (the `*Parameter()` functions such as `stringParameter()`), why you don't write the destination path, and what happens when a file already exists are all there. When unsure about a signature, read the llms.txt in "When unsure about an API" in 3-1 instead of guessing (the entry point for `.template { }` is https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.dsl/template.html.md ).
+**Before you start, read the page on generating code from a template.** It is at https://tbsten.github.io/katachi/guides/generate-code-from-template/ . The words `.template { }` offers (the `*Parameter()` functions such as `stringParameter()`), why you don't write the destination path, and what happens when a file already exists are all there. When unsure about a signature, read the llms.txt in "When unsure about an API" in 3-1 instead of guessing (the entry point for `.template { }` is https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.dsl/template.html.md ).
 
-1. Check the proposals (`katachi agent data get report templates`).
+1. Check the proposals (`templates` in the report).
 2. Attach `.template { }` to a file declaration in that Role's `layout { }`. **`.template` is an extension function, so add `import me.tbsten.katachi.dsl.template` to the file you write it in** (`captureValue()` and the like can be used inside the block, so they need no import). **`.template { }`, `capture()` and `captureValue()` are experimental APIs, so also add `@file:OptIn(ExperimentalKatachiApi::class)` and `import me.tbsten.katachi.ExperimentalKatachiApi` to that file.** Without them compilation fails with `This katachi API is experimental. …` (the message says how to opt in). **Base its content on the `basedOn` file.** The destination path comes from the `layout { }` declaration itself, so don't write it on the template's side
 
    ```kt
@@ -83,8 +83,8 @@ Do this only for the Roles, among the proposals recorded in step 6, that the use
    If `test` fails, check that the path of the file declaration `.template { }` is attached to is right.
 5. **Delete the generated file, since it was only for checking** (unless the user says to keep it). After deleting it, confirm `katachi agent test` passes once more.
 
-Record the files you created or changed with `add changed`, then run `katachi agent check 6-4`.
+Record the files you created or changed in `changedFiles`, then mark `6-4` done.
 
-**Steps 6-A to 6-D are optional.** The checklist treats them as optional too, and they do not count toward progress. `verify` passes without them.
+**Steps 6-A to 6-D are optional.** The checklist treats them as optional too, and they do not count toward progress or step 5.
 
-> **The session may end here.** The next session runs `katachi agent summary` in the root of the project, and reads the section named in the "Resume" field of the output (its file is in the table in `references/setup/README.md`; `katachi agent guide <section ID>` prints the same text). The previous session's results are in the checklist and the report. Do not rely on the conversation's memory.
+> **The session may end here.** The next session finds the working directory (the directory with `check-list.html` below the project root), reads the checklist's JSON, and goes on from there: from the first item that is not done, or, once step 5 is done, from what the user asks for (6-0, or one of 6-A to 6-D). The sections are in the table in `references/setup/README.md`. The previous session's results are in the checklist and the report. Do not rely on the conversation's memory.

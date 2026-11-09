@@ -157,9 +157,8 @@ class DoctorScaffoldSpec : FreeSpec({
         }
 
         "preferences.testFramework の kotest-<style> も読み、知らない書き方は止まる" {
-            val project = initializedProject()
+            val project = projectWithWorkdir("""{"meta": {}, "preferences": {"testFramework": "kotest-behavior"}, "steps": []}""")
             project.resolve("build.gradle.kts").writeText("plugins {\n    kotlin(\"jvm\") version \"2.4.10\" apply false\n}\n")
-            runCapturing(project, listOf("agent", "preferences", "set", "testFramework=kotest-behavior")).status shouldBe 0
 
             val run = runCapturing(project, listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0"), env = javaHome())
 
@@ -172,8 +171,8 @@ class DoctorScaffoldSpec : FreeSpec({
             unknown.err shouldContain "--test-framework は junit5 / kotest / kotest-fun /"
         }
 
-        "--module-dir の置き場所に作り、init の作業用ディレクトリに記録する" {
-            val project = initializedProject()
+        "--module-dir の置き場所に作る" {
+            val project = projectWithWorkdir("""{"meta": {}, "steps": []}""")
             project.resolve("build.gradle.kts").writeText("plugins {\n    kotlin(\"jvm\") version \"2.4.10\" apply false\n}\n")
 
             val run = runCapturing(project, listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0", "--module-dir", "static-analysis/katachi"), env = javaHome())
@@ -181,8 +180,17 @@ class DoctorScaffoldSpec : FreeSpec({
             run.status shouldBe 0
             project.resolve("static-analysis/katachi/build.gradle.kts").readText() shouldContain "0.4.0"
             project.resolve("settings.gradle.kts").readText() shouldContain "include(\":static-analysis:katachi\")"
-            jsonBlockOf(project.installWorkdir.resolve("check-list.html"), "checklist")["meta"].toString() shouldContain
-                "\"moduleDir\":\"static-analysis/katachi\""
+        }
+
+        "--module-dir が無ければチェックリストの meta.moduleDir に作る（KATACHI-329）" {
+            val project = projectWithWorkdir("""{"meta": {"moduleDir": "static-analysis/katachi"}, "steps": []}""")
+            project.resolve("build.gradle.kts").writeText("plugins {\n    kotlin(\"jvm\") version \"2.4.10\" apply false\n}\n")
+
+            val run = runCapturing(project, listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0"), env = javaHome())
+
+            run.status shouldBe 0
+            run.out shouldContain "チェックリストの meta.moduleDir"
+            project.resolve("settings.gradle.kts").readText() shouldContain "include(\":static-analysis:katachi\")"
         }
     }
 })

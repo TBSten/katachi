@@ -13,6 +13,6 @@ These are the steps for an AI agent to install [katachi](https://tbsten.github.i
 
 The steps run on the `katachi` command (`brew install tbsten/tap/katachi`); the setup's first section checks that it is there.
 
-**If your agent cannot use skills**, the same steps ship with the `katachi` command: `katachi agent guide` prints the table of contents, and `katachi agent guide 0` the first section. Each section ends with the command for the next one. The steps are in English; pass `--lang ja` to `katachi agent init` for a Japanese checklist, report and command output.
+**If your agent cannot use skills**, read the same files from the repository, starting at https://raw.githubusercontent.com/TBSten/katachi/main/skills/katachi/SKILL.md . Links inside are relative to `skills/katachi/`. The steps are in English; the checklist and report they set up can be Japanese (step 0-2).
 
 Once katachi is set up, the same skill covers adding to and updating the definition, upgrading katachi, and fixing violations.

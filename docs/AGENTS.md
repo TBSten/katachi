@@ -214,37 +214,33 @@ docs.yml は 2 つを別々にビルドして 1 つの Pages に合成する。�
 
 写しを切るのは、その版の内容を書き終えてから、次の版の変更を入れる前にする。写しはビルドした時点の docs をそのまま写すので、次の版の変更が混ざると戻せない。
 
-## `public/install/` — AI エージェント向けの配布物
+## `public/install/` — AI エージェント向けの入口
 
-ドキュメントサイトのページではなく、**AI エージェント向けの入口と、`katachi` コマンドが同梱する素材**を置く場所。
+ドキュメントサイトのページではなく、**AI エージェント向けの入口**を置く場所。
 Astro は `public/` を加工せずそのままコピーするので、`<base-url>/install/...` で生のまま配信される。
 **手順書そのものはリポジトリ直下の katachi skill（`skills/katachi/`、英語だけ）にある**（KATACHI-318）。利用者は
 `gh skill install TBSten/katachi katachi` で入れる。手順は brew で入る `katachi` コマンド（`brew install tbsten/tap/katachi`、実装は `katachi-script`）で進める。
-`katachi-script` のビルド（`bundleSetupGuide`・`bundleInstallKit`）が、skill の `references/setup/` をつないだ手順書と `<lang>/` のテンプレート 2 つを jar に入れるので、`init` と `guide` はネットワークを使わない。
+チェックリストとレポートのテンプレートは skill の `assets/<lang>/` にあり、AI エージェントが作業用ディレクトリに写して中の JSON を直接書き換える（KATACHI-329。
+`katachi` コマンドは写したチェックリストの `meta`・`preferences`・`<html lang>` を読むだけ）。
 
 | ファイル | 役割 |
 |---|---|
-| `<lang>/index.md` | katachi skill への入口だけの短いページ（skill の入れ方と、skill を使えないエージェント向けの `katachi agent guide`）。手順は書かない |
-| `<lang>/install-check-list.html` | 進捗と結果のチェックリスト。`init` が配置し、中の `<script type="application/json" id="checklist">` を `katachi` の `data` 系のサブコマンドが書き換える |
-| `<lang>/project-code-base-report-template.html` | コードベース解析レポートのテンプレート。`init` が配置する |
-| `katachi-install.sh` | 以前の導入キット（POSIX sh）。手順書はもう参照しない。v0.5 で配信ごと消す（KATACHI-255） |
+| `index.md`・`<lang>/index.md` | katachi skill への入口だけの短いページ（skill の入れ方と、skill を使えないエージェント向けの raw URL）。手順は書かない |
+| `katachi-install.sh` | 以前の導入キット（POSIX sh）。手順書はもう参照せず、テンプレートは skill の `assets/` から取る。v0.5 で配信ごと消す（KATACHI-255） |
 
 守ること:
 
 - **手順を skill に足す前に、`katachi` のサブコマンドでできないかを考える。** 「エージェントがよしなに」は
-  環境ごとにブレる。判断が要らない工程は `katachi-script` に入れ、skill は
+  環境ごとにブレる。判断が要らない工程（Gradle への組み込み、テストの実行と要約、ログの比較）は `katachi-script` に入れ、skill は
   コマンドを1行示すだけにする
 - **skill の `references/setup/` は 1 セクション 1 ファイル。** ファイルを足したり並びを変えたりしたら、`references/setup/README.md` の表も直す
-  （`guide` はこの表と同じ順につないだものを出し、`:katachi-script:test` が一致を確かめる）。各ファイルの 1 行目は `## N.` / `### N-M.` の見出し
+  （`:katachi-script:test` が表とファイルの一致を確かめる）。各ファイルの 1 行目は `## N.` / `### N-M.` の見出し
+- **チェックリストの項目 id を変えたら、skill の手順と `assets/{en,ja}/check-list.html` の両方を直す。**
 - **生成する内容を2箇所に書かない。** モジュールの雛形は `katachi-script` の中だけにある
-- **`katachi` の出力は ja / en の2通りを並べて書く**（`say("日本語", "English")` の形）。片方だけ足さない
+- **`katachi` の出力は ja / en の2通りを並べて書く**。片方だけ足さない
 - `katachi-script` を直したら、`:katachi-script:test` に加えて**実際の Gradle プロジェクトで動かす。**
   最低限「AGP + version catalog」「ルート build ファイル無し」「Kotlin JVM が既にルートに居る」の3つ。
   リリース前には prerelease の手順 9 が、手順書どおりに実在のプロジェクトへ導入する統合テストも回す
-  （prerelease の 9-1 `check-install-kit.sh` はまだ `katachi-install.sh` を回す。`katachi` に向け直すまでは、CLI の確かめは `:katachi-script:test` と手での導入）
-- 配信元は `KATACHI_DOCS` 環境変数で差し替えられる。dev server に向けて試せる。init に渡すと作業用ディレクトリの `tmp/cache/docs` に記録され、
-  以降のコマンドもそこから取る。`docs` サブコマンドが取る `llms-full.txt` はビルドで作られるので、`docs/public` ではなく
-  ビルド済みのサイト（`docs/dist` か配信 URL）を指す
 
 ## レシピ
 

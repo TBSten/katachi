@@ -7,7 +7,7 @@ import me.tbsten.katachi.script.en
 import me.tbsten.katachi.script.ja
 
 /**
- * The language `katachi agent init --lang` records for the check list, the report and the command's own messages.
+ * The language of the command's own messages.
  *
  * The top-level [en] and [ja] are the same values, so a script can write them bare.
  *

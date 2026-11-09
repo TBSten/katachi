@@ -21,9 +21,6 @@ import kotlin.io.path.readText
 import kotlin.io.path.writeBytes
 import kotlin.io.path.writeText
 
-/** Where the guide, the templates and the docs are served from unless `KATACHI_DOCS` says otherwise. */
-internal const val KATACHI_DOCS_DEFAULT: String = "https://tbsten.github.io/katachi"
-
 internal const val KATACHI_RELEASES_API: String = "https://api.github.com/repos/TBSten/katachi/releases/latest"
 
 internal const val KATACHI_RELEASES_PAGE: String = "https://github.com/TBSten/katachi/releases"
@@ -63,46 +60,6 @@ internal object JdkHttpFetcher : HttpFetcher {
         }
         return null
     }
-}
-
-/**
- * The docs origin: `KATACHI_DOCS` > what `init` recorded in the working directory > the real site.
- * `init` records it so that a later `docs` does not quietly go back to the real site.
- */
-internal fun ScriptContext.docsBase(): String {
-    env["KATACHI_DOCS"]?.takeIf { it.isNotEmpty() }?.let { return it }
-    val recorded = findWorkdir()?.resolve("tmp/cache/docs")
-    if (recorded != null && recorded.exists() && recorded.fileSize() > 0) return recorded.readText()
-    return KATACHI_DOCS_DEFAULT
-}
-
-/** Downloads [url] to [dest], or stops with what to do by hand. The kit's `download`. */
-internal fun ScriptContext.download(url: String, dest: Path) {
-    val body = http.fetch(url, Duration.ofSeconds(10), Duration.ofSeconds(120), retries = 2)
-        ?: die(
-            "ダウンロードに失敗しました: $url\n  ネットワークかプロキシの設定を確認してください。\n  手動で取得する場合は、このファイルを ${fileUri(dest)} に置いてから同じコマンドをやり直してください。",
-            "Download failed: $url\n  Check your network or proxy settings.\n  To fetch it by hand, put the file at ${fileUri(dest)} and run the same command again.",
-        )
-    dest.parent?.createDirectories()
-    val tmp = dest.resolveSibling("${dest.name}.part.${ProcessHandle.current().pid()}")
-    tmp.writeBytes(body)
-    Files.move(tmp, dest, StandardCopyOption.REPLACE_EXISTING)
-}
-
-/** Fetches [url] into [dest] unless it is already there (or [refresh]), and notes it in the MANIFEST. */
-internal fun ScriptContext.fetchOnce(url: String, dest: Path, refresh: Boolean, manifest: Path?) {
-    if (!refresh && dest.exists() && dest.fileSize() > 0) return
-    download(url, dest)
-    recordInManifest(manifest, url, dest)
-}
-
-/** One line per file the command put in the working directory, so a person can tell later what came from where. */
-internal fun ScriptContext.recordInManifest(manifest: Path?, source: String, dest: Path) {
-    if (manifest == null) return
-    manifest.parent?.createDirectories()
-    val now = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").format(clock.instant().atOffset(ZoneOffset.UTC))
-    if (!manifest.exists()) manifest.writeText("")
-    manifest.appendText("$now\t$source\t${dest.fileSize()} bytes\t$dest\n")
 }
 
 /** The newest katachi release on GitHub without its `v`, or null when it cannot be had quickly. */

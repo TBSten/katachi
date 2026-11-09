@@ -22,10 +22,10 @@ fun DeclarationContainerScope.script() = "Script".role {
     title = "katachi-script"
     summary = "katachi コマンドの中身。公開するのは main と、スクリプトからコマンドを組み立てる DSL。サブコマンドの実装は internal"
     description = """
-        `katachi.main.kts` が `@file:DependsOn` で引く artifact です。サブコマンドはすべてここに Kotlin で書いてあり、init が置く手順書とテンプレートも artifact に同梱します（ビルド時に docs/public/install から写すので、ソースには置きません）。
+        `katachi.main.kts` が `@file:DependsOn` で引く artifact です。サブコマンドはすべてここに Kotlin で書いてあります。
     """.trimIndent()
     example("Main.kt", "katachi.main.kts が呼ぶ main(args)")
-    example("DataCommand.kt", "data get / set / merge。チェックリストとレポートの JSON を読み書きする")
+    example("TestCommand.kt", "agent test。検査用モジュールのテストを流して要約だけを出す")
     example("scaffold.kt", "スクリプトの入口 katachi.scaffold。ビルダーの型は command パッケージ")
     example("command/ScaffoldCommand.kt", "スクリプトから katachi scaffold を組み立てる DSL。メソッド名が CLI のフラグ名")
     layout {

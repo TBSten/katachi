@@ -38,21 +38,15 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
     val module = resolveModuleDir(parsed.value("--module-dir"))
     if (module.source == ModuleDirSource.ARG && module.recorded.isNotEmpty() && module.recorded != module.dir) {
         note(
-            "--module-dir ${module.dir} は init の記録（meta.moduleDir = ${module.recorded}）と違います。記録を ${module.dir} に書き換えます。",
-            "--module-dir ${module.dir} differs from what init recorded (meta.moduleDir = ${module.recorded}). The record is updated to ${module.dir}.",
+            "--module-dir ${module.dir} はチェックリストの記録（meta.moduleDir = ${module.recorded}）と違います。チェックリストのほうも ${module.dir} に直してください。",
+            "--module-dir ${module.dir} differs from the check list (meta.moduleDir = ${module.recorded}). Change the check list to ${module.dir} too.",
         )
     }
     checkGradleJdk(root)
     val toolchain = detectJvmToolchain(root, module.dir)
 
-    // The version: --katachi > what init recorded > the one this command was released with > GitHub's latest.
+    // The version: --katachi > the one this command was released with > GitHub's latest.
     var versionSource = VersionSource.EXPLICIT
-    if (version.isEmpty()) {
-        findWorkdir()?.resolve("tmp/cache/version")?.textIfNotEmpty()?.let {
-            version = it
-            versionSource = VersionSource.INIT
-        }
-    }
     if (version.isEmpty()) {
         cliKatachiVersion()?.let {
             version = it
@@ -183,7 +177,6 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
     say("作成する内容", "What will be created")
     note("パッケージ:   $pkg", "Package:      $pkg")
     when (versionSource) {
-        VersionSource.INIT -> note("katachi:      $version（init が記録した版）", "katachi:      $version (recorded by init)")
         VersionSource.CLI -> note("katachi:      $version（この katachi コマンドの版）", "katachi:      $version (the version of this katachi command)")
         VersionSource.LATEST -> note("katachi:      $version（GitHub の最新リリース）", "katachi:      $version (the latest release on GitHub)")
         VersionSource.EXPLICIT -> note("katachi:      $version")
@@ -210,8 +203,8 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
     when (module.source) {
         ModuleDirSource.ARG -> note("モジュール:   ${fileUri(module.dir)}/（${module.gradlePath}。--module-dir）", "Module:       ${fileUri(module.dir)}/ (${module.gradlePath}; from --module-dir)")
         ModuleDirSource.CHECKLIST -> note(
-            "モジュール:   ${fileUri(module.dir)}/（${module.gradlePath}。init が記録した meta.moduleDir）",
-            "Module:       ${fileUri(module.dir)}/ (${module.gradlePath}; meta.moduleDir recorded by init)",
+            "モジュール:   ${fileUri(module.dir)}/（${module.gradlePath}。チェックリストの meta.moduleDir）",
+            "Module:       ${fileUri(module.dir)}/ (${module.gradlePath}; meta.moduleDir in the check list)",
         )
         ModuleDirSource.DEFAULT -> note("モジュール:   ${fileUri(module.dir)}/（${module.gradlePath}。既定）", "Module:       ${fileUri(module.dir)}/ (${module.gradlePath}; the default)")
     }
@@ -350,13 +343,6 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
         say(rootPluginManual)
         say("")
         say(failsJa, failsEn)
-    }
-
-    // The Kotlin actually used, the toolchain and the module's place, so that verify and the later commands agree.
-    findWorkdir()?.resolve(CHECK_LIST_FILE)?.let { checkList ->
-        updateChecklistMeta(checkList, "kotlin", kotlin)
-        updateChecklistMeta(checkList, "jvmToolchain", pick(toolchain.ja, toolchain.en))
-        if (module.dir != module.recorded) updateChecklistMeta(checkList, "moduleDir", module.dir)
     }
 
     say("")

@@ -25,8 +25,8 @@ Before you start, **write down which Role you expect each new file to belong to.
 
 When using a past PR as the task, check how it was merged with `gh pr view <number> --json mergeCommit,commits`; "before" is **the parent of the PR's first commit** (`git rev-parse <first commit>^`) and "after" is the merge commit. With a rebase merge, `mergeCommit^1` is "just before the last commit", which does not compare the whole PR.
 
-When verifying in parallel, give each subagent its own output and temporary files under `<KATACHI_WORKDIR>/tmp/verify/<name>/`, and let only the parent write to the working directory (`add` / `data merge`). A worktree cannot reach the working directory (`KATACHI_WORKDIR`), so pass absolute paths.
+When verifying in parallel, give each subagent its own output and temporary files under `<workdir>/tmp/verify/<name>/`, and let only the parent write the checklist and the report. A worktree cannot reach the working directory, so pass absolute paths (and `KATACHI_WORKDIR=<workdir>` to `katachi agent test`).
 
-When done, run `katachi agent check 6-1`.
+When done, mark `6-1` done.
 
-> **The session may end here.** The next session runs `katachi agent summary` in the root of the project, and reads the section named in the "Resume" field of the output (its file is in the table in `references/setup/README.md`; `katachi agent guide <section ID>` prints the same text). The previous session's results are in the checklist and the report. Do not rely on the conversation's memory.
+> **The session may end here.** The next session finds the working directory (the directory with `check-list.html` below the project root), reads the checklist's JSON, and goes on from there: from the first item that is not done, or, once step 5 is done, from what the user asks for (6-0, or one of 6-A to 6-D). The sections are in the table in `references/setup/README.md`. The previous session's results are in the checklist and the report. Do not rely on the conversation's memory.

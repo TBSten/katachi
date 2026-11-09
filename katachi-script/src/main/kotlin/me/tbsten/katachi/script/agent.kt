@@ -6,7 +6,7 @@ package me.tbsten.katachi.script
 import me.tbsten.katachi.script.command.AgentCommandGroup
 
 /**
- * The subcommands of `katachi agent`: the steps an AI agent runs as it follows the install guide.
+ * The subcommands of `katachi agent`: what an AI agent runs for the katachi skill's steps.
  *
  * `katachi agent` is not a command of its own here: pick one of its subcommands.
  */

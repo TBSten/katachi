@@ -1,11 +1,7 @@
 package me.tbsten.katachi.script.internal
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 
 internal sealed interface JsonBlock {
     /** The lines between the tags, without the tags. */
@@ -37,58 +33,5 @@ internal fun extractJsonBlock(html: String, id: String): JsonBlock {
     return JsonBlock.Found(lines.subList(start + 1, start + 1 + end))
 }
 
-/** [html] with the block's lines replaced by [body]; null when the block is not there. */
-internal fun replaceJsonBlock(html: String, id: String, body: String): String? {
-    val lines = html.lines()
-    val start = lines.indexOf(openTag(id))
-    if (start < 0) return null
-    val end = lines.subList(start + 1, lines.size).indexOf(CLOSE_TAG)
-    if (end < 0) return null
-    val bodyLines = body.removeSuffix("\n").lines()
-    val result = lines.subList(0, start + 1) + bodyLines + lines.subList(start + 1 + end, lines.size)
-    return result.joinToString("\n")
-}
-
-/** `</script>` inside a JSON string would end the block for the browser; `<\/script>` is the same string. */
-internal fun escapeScriptEnd(json: String): String = json.replace("</script", "<\\/script")
-
-// prettyPrintIndent は kotlinx-serialization 1.9.0 では Experimental（1.9.0 に固定している理由は gradle/libs.versions.toml）。
-@OptIn(ExperimentalSerializationApi::class)
-internal val prettyJson: Json = Json {
-    prettyPrint = true
-    prettyPrintIndent = "  "
-}
-
-/** Two-space JSON without a trailing newline, as the kit's `json.dump(..., indent=2, ensure_ascii=False)` wrote it. */
-internal fun encodePretty(element: JsonElement): String = prettyJson.encodeToString(JsonElement.serializer(), element)
-
 internal fun parseJsonOrNull(text: String): JsonElement? =
     runCatching { Json.parseToJsonElement(text) }.getOrNull()
-
-/** [patch] over [base], objects merged key by key, everything else (arrays too) replaced whole. */
-internal fun deepMerge(base: JsonElement, patch: JsonElement): JsonElement {
-    if (base !is JsonObject || patch !is JsonObject) return patch
-    val merged = LinkedHashMap<String, JsonElement>(base)
-    for ((key, value) in patch) {
-        val existing = merged[key]
-        merged[key] = if (existing != null && value is JsonObject && existing is JsonObject) deepMerge(existing, value) else value
-    }
-    return JsonObject(merged)
-}
-
-/** The node at a dot-separated [key] (`meta.moduleDir`, `questions.0`), or null when the path leaves the tree. */
-internal fun lookupJsonPath(root: JsonElement, key: String): JsonElement? {
-    var node: JsonElement = root
-    for (part in key.split(".")) {
-        node = when (node) {
-            is JsonObject -> node[part] ?: return null
-            is JsonArray -> part.toIntOrNull()?.takeIf { it in node.indices }?.let { node[it] } ?: return null
-            else -> return null
-        }
-    }
-    return node
-}
-
-/** A string bare, anything else as JSON: what `data get <key>` prints. */
-internal fun renderJsonValue(node: JsonElement): String =
-    if (node is JsonPrimitive && node.isString) node.content else prettyJson.encodeToString(JsonElement.serializer(), node)

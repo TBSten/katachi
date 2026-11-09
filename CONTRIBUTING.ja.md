@@ -67,9 +67,9 @@ import me.tbsten.katachi.script.*
 
 val katachi = Katachi(defaultPackage = "com.example.app", lang = ja)
 
-println(commands(katachi.agent.init, katachi.scaffold.`test-framework`(kotest))) // 組み立てたコマンドを表示するだけ
+println(commands(katachi.doctor, katachi.scaffold.`test-framework`(kotest)))      // 組み立てたコマンドを表示するだけ
 val status = katachi.command("--version").execute()                              // 実際に動かす（同じ JVM の中で走る）
-// main(arrayOf("agent", "guide"))                                                // コマンドラインと同じ入口
+// main(arrayOf("agent", "--help"))                                               // コマンドラインと同じ入口
 ```
 
 ```shell
@@ -79,7 +79,7 @@ kotlin try.local.main.kts
 - `-Pkatachi.skipSigning` を付けないと、GPG 鍵の無い環境では署名のタスクで落ちる
 - `@file:DependsOn` は `~/.m2/repository` を最初に見るので、`@file:Repository` は書かなくてよい
 - コードを直したら publish し直す。API を変えたのにコンパイルの結果が古いままなら、`kotlin` のスクリプトのキャッシュ（macOS では `~/Library/Caches/main.kts.compiled.cache`）を消す
-- `agent init` や `scaffold` を `execute()` すると、カレントディレクトリにファイルができる
+- `scaffold` を `execute()` すると、カレントディレクトリにファイルができる
 - `main(...)` は、コマンドが 0 以外で終わると JVM ごと終了する
 
 ## コードを書く

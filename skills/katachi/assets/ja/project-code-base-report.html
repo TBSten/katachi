@@ -963,7 +963,7 @@
 
     <div data-render="error"></div>
 
-    <a class="cross-link" href="./install-check-list.html">
+    <a class="cross-link" href="./check-list.html">
       <span class="cross-link-label">インストール チェックリスト</span>
       <span class="cross-link-hint">導入作業の進捗と結果</span>
     </a>
@@ -1025,7 +1025,7 @@
 
     <section id="questions">
       <h2>7. ユーザに確認したいこと<span class="count-badge" data-render="questionCount"></span><span class="count-badge answered-badge" data-render="answeredCount"></span></h2>
-      <p class="lede">各項目で選択肢を選ぶか、自由に書いてください。両方あれば自由記入は補足になります。書き終えたら「回答を書き出す」で JSON を保存し、AI エージェントに渡してください（<code>katachi agent answers import &lt;json&gt;</code>）。</p>
+      <p class="lede">各項目で選択肢を選ぶか、自由に書いてください。両方あれば自由記入は補足になります。書き終えたら「回答を書き出す」で JSON を保存し、AI エージェントに渡してください。</p>
       <div class="answer-actions" data-render="answerActions"></div>
       <div data-render="questions"></div>
     </section>
@@ -1498,7 +1498,7 @@
   // { id, recommendation, radios, free, card }
   var answerCards = [];
 
-  // レポートの確認事項の id は cq<n>（チェックリストは q<n>。katachi-script の Checklist.kt の Target と同じ）
+  // レポートの確認事項の id は cq<n>（チェックリストは q<n>）
   function questionId(item, index) {
     return blank(item.id) ? 'cq' + (index + 1) : String(item.id);
   }
@@ -1603,7 +1603,7 @@
       a.click();
       document.body.removeChild(a);
       setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-      setAnswerStatus(ANSWER_FILE + ' を保存しました。katachi agent answers import <保存したファイル> で取り込めます。');
+      setAnswerStatus(ANSWER_FILE + ' を保存しました。AI エージェントに渡してください。');
     } catch (error) {
       showManualAnswers(text, 'ダウンロードできませんでした。下の JSON を手で選んでコピーし、AI エージェントに渡してください。');
     }

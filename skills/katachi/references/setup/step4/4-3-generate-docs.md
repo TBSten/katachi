@@ -8,4 +8,4 @@ The same definition can generate a page (Markdown) per Role. Running it also con
 
 The output goes to `architecture-test/build/katachi/docs/`. Check that the index `README.md` and a page per Role are there. It is under `build/`, so nothing gets committed. Committing it is handled in 6-C; do not change the output directory here.
 
-Once done, run `katachi agent check 4-1 4-2 4-3`. `Next:` shows `guide 5`.
+Once done, mark `4-1`, `4-2` and `4-3` done, and go on to step 5.

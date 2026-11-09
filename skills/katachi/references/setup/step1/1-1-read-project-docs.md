@@ -19,10 +19,10 @@ Take the following from them.
 | The name of the architecture and why it was chosen | `architecture.name` / `rationale` / `characteristics` |
 | Checks of their own (a Kotlin compiler plugin, custom detekt rules, ktlint) | `tools` |
 
-Write inconsistencies with `katachi agent add codebase-question ...` (`add question` goes to the checklist, which is for something else). The ids are `cq1`, `cq2`, … in the report and `q1`, `q2`, … in the checklist, so they never collide.
+Write inconsistencies into **the report's** `questions` (ids `cq1`, `cq2`, …; the checklist's `questions` are for something else, 4-2). The fields are in 0-3.
 
 **Where the documentation and the code disagree, write it into `questions`.** Do not quietly side with the code. Whether the documentation is stale or the code has drifted is something only the user can say - and that disagreement is exactly what belongs in front of them before step 3.
 
 If there is no documentation at all, skip this section and infer from the code. Leave one line in `questions` saying so: that everything below is inferred, because the project documents nothing.
 
-Once you've read it all, run `katachi agent check 1-1`.
+Once you've read it all, mark `1-1` done.

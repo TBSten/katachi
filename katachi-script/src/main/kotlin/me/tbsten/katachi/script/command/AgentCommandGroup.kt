@@ -6,16 +6,16 @@ package me.tbsten.katachi.script.command
 import me.tbsten.katachi.script.Katachi
 
 /**
- * The subcommands of `katachi agent`: the steps an AI agent runs as it follows the install guide
- * (`katachi agent init`, `katachi agent check 3-2` and so on).
+ * The subcommands of `katachi agent`: what an AI agent runs for the katachi skill's steps
+ * (`katachi agent test` and `katachi agent compare-violations`).
  *
  * Each one is an extension of this class, named after the subcommand, and returns its builder.
  *
  * ## Example 1: pick a subcommand
  *
  * ```kt
- * val command = Katachi().agent.init.offline().lang(ja)
- * println(command) // katachi agent init --offline --lang ja
+ * val command = Katachi().agent.test.save("before-refactor")
+ * println(command) // katachi agent test --save before-refactor
  * command.execute()
  * ```
  *

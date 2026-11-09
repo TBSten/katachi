@@ -53,15 +53,16 @@ class KatachiScriptSpec : FreeSpec({
         "変数を変えると、そのあとに読んだ katachi から反映される" {
             val value = evalKatachiScript(
                 """
-                val before = katachi.agent.init.arguments
+                val before = katachi.doctor.arguments
                 lang = ja
-                workdir = "tmp/katachi"
-                listOf(before, katachi.agent.init.arguments)
+                moduleDir = "static/katachi"
+                listOf(before, katachi.doctor.arguments, katachi.scaffold.arguments)
                 """.trimIndent(),
             )
             value shouldBe listOf(
-                listOf("agent", "init"),
-                listOf("agent", "init", "--workdir", "tmp/katachi", "--lang", "ja"),
+                listOf("doctor"),
+                listOf("doctor", "--lang", "ja"),
+                listOf("scaffold", "--module-dir", "static/katachi"),
             )
         }
 

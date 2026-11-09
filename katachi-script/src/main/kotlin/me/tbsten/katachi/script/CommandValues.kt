@@ -3,10 +3,8 @@
 
 package me.tbsten.katachi.script
 
-import me.tbsten.katachi.script.option.ConstraintNames
 import me.tbsten.katachi.script.option.DependencyStyle
 import me.tbsten.katachi.script.option.Lang
-import me.tbsten.katachi.script.option.Target
 import me.tbsten.katachi.script.option.TestFramework
 
 /** [Lang.En], to write `en` bare. */
@@ -56,15 +54,3 @@ public val catalog: DependencyStyle = DependencyStyle.Catalog
 
 /** [DependencyStyle.Literal], to write `literal` bare. */
 public val literal: DependencyStyle = DependencyStyle.Literal
-
-/** [ConstraintNames.Plain], to write `plain` bare. */
-public val plain: ConstraintNames = ConstraintNames.Plain
-
-/** [ConstraintNames.Numbered], to write `numbered` bare. */
-public val numbered: ConstraintNames = ConstraintNames.Numbered
-
-/** [Target.Report], to write `report` bare. */
-public val report: Target = Target.Report
-
-/** [Target.CheckList], to write `checkList` bare. */
-public val checkList: Target = Target.CheckList

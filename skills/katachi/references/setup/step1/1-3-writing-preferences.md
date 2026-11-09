@@ -1,27 +1,32 @@
 ### 1-3. Decide the writing preferences
 
-Decide first the parts of the definition's style that depend on the user's preferences. `scaffold` and `lint` read this record.
+Decide first the parts of the definition's style that depend on the user's preferences. They go into `preferences` of the checklist (`moduleDir` into `meta.moduleDir`), and `scaffold` and `lint` read them from there.
 
-```sh
-katachi agent preferences
-```
-
-Paste the output to the user as is and ask once: "answer only the ones you want to change from the recommendation". Do not ask one item at a time.
+Show the user this table, with the "Recommended" column filled in for this project, and ask once: "answer only the ones you want to change from the recommendation". Do not ask one item at a time.
 
 | key | Question | Values | Recommended | Read by |
 |---|---|---|---|---|
 | `nestedGroups` | Nest groups? | `yes` / `no` | `yes` | `lint` |
 | `moduleDir` | Where the verification module goes | Path relative to the Gradle root | `architecture-test` | `scaffold` and everything after |
-| `testFramework` | Test framework | `junit5` / `kotest` | Detected from the project | `scaffold` |
+| `testFramework` | Test framework | `junit5` / `kotest` / `kotest-<style>` | `kotest` when the project already depends on Kotest, otherwise `junit5` | `scaffold` |
 | `dependencyStyle` | How dependencies are written | `catalog` / `literal` | `catalog` if `gradle/libs.versions.toml` exists | `scaffold` |
 | `constraintNames` | Put the question's number in constraint names? | `plain` / `numbered` | `plain` | 3-2 (you read it) |
 | `oneRolePerFile` | One Role per file? | `yes` / `no` | `yes` | `lint` (3-3) |
 
-Record the answers and mark it done. If the user says the recommendations are fine, skip `set` and just run `check`.
+`kotest-<style>` is one of `fun`, `string`, `should`, `describe`, `behavior`, `word`, `free`, `feature`, `expect`, `annotation` (`kotest-free` writes a `FreeSpec`; plain `kotest` writes a `FunSpec`).
 
-```sh
-katachi agent preferences set nestedGroups=yes testFramework=kotest
-katachi agent check 1-3
+Record the answers, the recommended values included, as strings:
+
+```json
+"preferences": {
+  "nestedGroups": "yes",
+  "testFramework": "kotest",
+  "dependencyStyle": "catalog",
+  "constraintNames": "plain",
+  "oneRolePerFile": "yes"
+}
 ```
 
-Passing an unknown key or value stops it and lists the values that are available.
+and `moduleDir` in `meta.moduleDir`. A value outside the "Values" column makes `scaffold` stop and list the values it takes.
+
+Then mark `1-3` done.

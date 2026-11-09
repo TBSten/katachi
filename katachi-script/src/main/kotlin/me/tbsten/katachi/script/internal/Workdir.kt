@@ -29,10 +29,9 @@ internal const val CHECK_LIST_FILE: String = "check-list.html"
 internal const val REPORT_FILE: String = "project-code-base-report.html"
 
 /**
- * The working directory `init` made. The kit script finds it by its own location, because `init`
- * copies the script there; the `katachi` command lives in Homebrew's cellar instead, so it looks
- * at `KATACHI_WORKDIR` first and then below the current directory for the `check-list.html` that
- * `init` wrote.
+ * The working directory of the katachi skill's setup: a directory with `check-list.html` and `tmp/`,
+ * which the agent copies from the skill. It is looked up at `KATACHI_WORKDIR` first and then below
+ * the current directory. Commands that use it work without it too.
  */
 internal fun ScriptContext.lookupWorkdir(): WorkdirLookup {
     env["KATACHI_WORKDIR"]?.takeIf { it.isNotBlank() }?.let { configured ->
@@ -58,25 +57,13 @@ internal fun ScriptContext.lookupWorkdir(): WorkdirLookup {
 
 internal fun ScriptContext.findWorkdir(): Path? = (lookupWorkdir() as? WorkdirLookup.Found)?.path
 
-internal fun ScriptContext.requireWorkdir(): Path = when (val lookup = lookupWorkdir()) {
-    is WorkdirLookup.Found -> lookup.path
-    WorkdirLookup.NotFound -> die(
-        "作業用ディレクトリが分かりません。先に '$AGENT_COMMAND init' を実行してください。別の場所から実行するときは環境変数 KATACHI_WORKDIR で指定してください。",
-        "Cannot find the working directory. Run '$AGENT_COMMAND init' first. When running from somewhere else, point KATACHI_WORKDIR at it.",
-    )
-    is WorkdirLookup.Ambiguous -> die(
-        "作業用ディレクトリの候補が複数あります。環境変数 KATACHI_WORKDIR でどれかを指定してください: " +
-            lookup.candidates.joinToString(" ") { fileUri(it) },
-        "More than one working directory was found. Point KATACHI_WORKDIR at one of them: " +
-            lookup.candidates.joinToString(" ") { fileUri(it) },
-    )
-}
+private val HTML_LANG = Regex("<html[^>]*\\slang=\"([a-z]+)\"")
 
-/** The language `init --lang` recorded, which the kit lets win over `KATACHI_LANG`. */
+/** The language of the check list the katachi skill copied into [workdir]: its `<html lang="...">`. */
 internal fun recordedLang(workdir: Path): Lang? {
-    val file = workdir.resolve("tmp/cache/lang")
+    val file = workdir.resolve(CHECK_LIST_FILE)
     if (!file.isRegularFile()) return null
-    return Lang.of(file.readText().trim())
+    return Lang.of(HTML_LANG.find(file.readText().take(2000))?.groupValues?.get(1))
 }
 
 /** A non-empty file's text, or null. The kit's `[ -s file ] && cat file`. */
@@ -94,7 +81,7 @@ internal fun readJsonBlockOrNull(html: Path, id: String): JsonObject? {
 /** `meta.<key>` of the check list as a string; empty when it is missing or not a string. The kit's `read_checklist_meta`. */
 internal fun checklistMeta(checkList: Path, key: String): String = stringField(readJsonBlockOrNull(checkList, "checklist")?.get("meta"), key)
 
-/** `preferences.<key>` of the check list; empty when there is none. The kit's `read_preference`. */
+/** `preferences.<key>` of the check list; empty when there is none. */
 internal fun ScriptContext.preference(key: String): String {
     val workdir = findWorkdir() ?: return ""
     return stringField(readJsonBlockOrNull(workdir.resolve(CHECK_LIST_FILE), "checklist")?.get("preferences"), key)
@@ -111,7 +98,7 @@ internal const val MODULE_DIR_DEFAULT: String = "architecture-test"
 
 private val MODULE_DIR_PATTERN = Regex("^[A-Za-z0-9_][A-Za-z0-9_.-]*(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$")
 
-/** Stops unless [value] is a path relative to the Gradle root. init / scaffold `--module-dir` and `preferences set moduleDir` share it. */
+/** Stops unless [value] is a path relative to the Gradle root (scaffold `--module-dir`). */
 internal fun validateModuleDir(value: String) {
     if (!MODULE_DIR_PATTERN.matches(value)) {
         die(
@@ -148,7 +135,7 @@ internal fun ScriptContext.resolveModuleDir(arg: String? = null): ModuleDir {
     return module
 }
 
-/** The project root `init` recorded, or the current directory. */
+/** `meta.projectRoot` of the check list, or the current directory. */
 internal fun ScriptContext.projectRoot(): Path {
     val recorded = findWorkdir()?.let { checklistMeta(it.resolve(CHECK_LIST_FILE), "projectRoot") } ?: ""
     return if (recorded.isNotEmpty()) resolve(recorded) else cwd
@@ -158,8 +145,8 @@ internal fun ScriptContext.projectRoot(): Path {
 internal fun ScriptContext.definitionDir(module: ModuleDir): Path = projectRoot().resolve(module.dir).resolve("src/test/kotlin").normalize()
 
 internal fun ScriptContext.definitionMissingMessage(module: ModuleDir, dir: Path): Pair<String, String> =
-    "定義のディレクトリがありません: ${fileUri(dir)} 。scaffold をまだ実行していないか、置き場所が違います（記録: meta.moduleDir = ${module.dir}。変えるなら 'preferences set moduleDir=<path>' か 'scaffold --module-dir <path>'）" to
-        "The definition directory does not exist: ${fileUri(dir)} . Either scaffold has not run yet, or the location differs (recorded: meta.moduleDir = ${module.dir}; change it with 'preferences set moduleDir=<path>' or 'scaffold --module-dir <path>')"
+    "定義のディレクトリがありません: ${fileUri(dir)} 。scaffold をまだ実行していないか、置き場所が違います（${module.dir}。違うなら、チェックリストの meta.moduleDir を直す）" to
+        "The definition directory does not exist: ${fileUri(dir)} . Either scaffold has not run yet, or the location differs (${module.dir}; if it is wrong, fix meta.moduleDir in the check list)"
 
 /** Stops when the definition directory is not there (lint / compare-violations). */
 internal fun ScriptContext.requireDefinitionDir(module: ModuleDir): Path {

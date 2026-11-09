@@ -8,7 +8,7 @@ The katachi check failed: on CI, in a pull request, or locally. A violation mean
 ./gradlew :architecture-test:test -Dkatachi.maxViolations=all
 ```
 
-Without `-Dkatachi.maxViolations=all` only the first 10 are printed. The violations are in the test's failure message: in the console, or in full under `architecture-test/build/test-results/test/` (read `:architecture-test` as the verification module's path). If the setup's working directory still exists, `katachi agent test` prints a summary, keeps the full log and shows what changed since the previous run.
+Without `-Dkatachi.maxViolations=all` only the first 10 are printed. The violations are in the test's failure message: in the console, or in full under `architecture-test/build/test-results/test/` (read `:architecture-test` as the verification module's path). `katachi agent test` runs the same thing, prints a summary, keeps the full log and shows what changed since the previous run.
 
 On CI, the job log has the same output. If the failure is not a violation at all (a compile error, dependency resolution, `Could not start Gradle Test Executor`), it is a build problem: fix that first, the check has not run.
 
@@ -56,7 +56,7 @@ Run the check again. Every violation you meant to fix is gone, and nothing new a
 
 ## Tolerating what is there now
 
-If many violations are real but the team will fix them later, and the user wants the check to fail only on new ones, propose the baseline. It is experimental, so ask first. Read `katachi agent docs --topic baseline` or https://tbsten.github.io/katachi/guides/baseline/ . In short:
+If many violations are real but the team will fix them later, and the user wants the check to fail only on new ones, propose the baseline. It is experimental, so ask first. Read https://tbsten.github.io/katachi/guides/baseline/ . In short:
 
 - `baseline()` in `architecture { }` (with `@OptIn(ExperimentalKatachiApi::class)` on `val projectArchitecture`); the file is `katachi-baseline.json` at the project root by default
 - The baseline file is checked too, so declare it in a Role (`"BaselineFile".role { layout { "katachi-baseline.json".file() } }`)

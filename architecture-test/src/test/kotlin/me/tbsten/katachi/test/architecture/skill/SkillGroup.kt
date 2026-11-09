@@ -11,4 +11,5 @@ fun DeclarationContainerScope.skillGroup() = "skill".group {
     """.trimIndent()
 
     katachiSkill()
+    katachiSkillAsset()
 }

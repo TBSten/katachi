@@ -13,6 +13,6 @@ AI エージェントが [katachi](https://tbsten.github.io/katachi) を Gradle 
 
 手順は `katachi` コマンド（`brew install tbsten/tap/katachi`）で進めます。入っているかは setup の最初のセクションで確かめます。
 
-**skill を使えないエージェントでは**、同じ手順が `katachi` コマンドに同梱されています。`katachi agent guide` で目次、`katachi agent guide 0` で最初のセクションが出ます。各セクションの終わりに次のセクションのコマンドが出ます。手順は英語です。チェックリスト・レポート・コマンドの出力を日本語にするには、`katachi agent init` に `--lang ja` を付けます。
+**skill を使えないエージェントでは**、同じファイルをリポジトリから読みます。入口は https://raw.githubusercontent.com/TBSten/katachi/main/skills/katachi/SKILL.md です。中のリンクは `skills/katachi/` からの相対パスです。手順は英語ですが、手順が作るチェックリストとレポートは日本語にできます（手順 0-2）。
 
 導入のあとの定義の追加・更新、katachi の更新、違反の直し方も、同じ skill にあります。

@@ -38,11 +38,11 @@ public interface KatachiCommand {
  *
  * `toString()` puts one command per line, so the whole list can be pasted into a shell.
  *
- * ## Example 1: run init, then scaffold
+ * ## Example 1: run doctor, then scaffold
  *
  * ```kt
  * commands(
- *     katachi.agent.init.lang(ja),
+ *     katachi.doctor.lang(ja),
  *     katachi.scaffold.`package`("com.example.app"),
  * ).also {
  *     println(it)

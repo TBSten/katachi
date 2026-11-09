@@ -2,7 +2,7 @@
 
 Do this only if the user wants it.
 
-**Before you start, read the documentation generation page.** Fetch it with `katachi agent docs --topic document-generation` (also at https://tbsten.github.io/katachi/guides/document-generation/ ). What the generated pages contain and how to write the output location (`outputDir`) are there. The Role you have to declare when you move the output is in step 3 below, and what `--arg mode=check` does is at the end of 6-B. Do not fetch the whole guide.
+**Before you start, read the documentation generation page.** It is at https://tbsten.github.io/katachi/guides/document-generation/ . What the generated pages contain and how to write the output location (`outputDir`) are there. The Role you have to declare when you move the output is in step 3 below, and what `--arg mode=check` does is at the end of 6-B. Do not fetch the whole guide.
 
 1. Write `title = "..."` and `description = "..."` at the top of `architecture { }` (skip this if you did in 3-2). They become the heading and body of the root page.
 2. Generate with `./gradlew :architecture-test:katachiDocs` and check `architecture-test/build/katachi/docs/`.
@@ -44,6 +44,6 @@ Do this only if the user wants it.
    **The output directory becomes katachi's.** Any `*.md` in it that this run did not generate is deleted. Do not point it at a directory holding handwritten Markdown.
 4. Generate again, and confirm `katachi agent test` passes.
 
-Record the files you created or changed with `add changed`, then run `katachi agent check 6-3`.
+Record the files you created or changed in `changedFiles`, then mark `6-3` done.
 
-> **The session may end here.** The next session runs `katachi agent summary` in the root of the project, and reads the section named in the "Resume" field of the output (its file is in the table in `references/setup/README.md`; `katachi agent guide <section ID>` prints the same text). The previous session's results are in the checklist and the report. Do not rely on the conversation's memory.
+> **The session may end here.** The next session finds the working directory (the directory with `check-list.html` below the project root), reads the checklist's JSON, and goes on from there: from the first item that is not done, or, once step 5 is done, from what the user asks for (6-0, or one of 6-A to 6-D). The sections are in the table in `references/setup/README.md`. The previous session's results are in the checklist and the report. Do not rely on the conversation's memory.

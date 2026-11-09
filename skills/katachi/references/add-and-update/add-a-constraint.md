@@ -2,7 +2,7 @@
 
 Placement says where a file is. Many conventions are about what is inside it: "a ViewModel does not import `android.*`", "a repository implementation is `internal`", "every feature module's namespace matches its package". These are constraints on contents.
 
-Read the documentation before writing one: `katachi agent docs --topic kt-file-content` with a working directory, or https://tbsten.github.io/katachi/guides/kt-file-content/ . For signatures, the API reference: https://tbsten.github.io/katachi/api-docs/katachi-konsist/llms.txt .
+Read the documentation before writing one: https://tbsten.github.io/katachi/guides/kt-file-content/ . For signatures, the API reference: https://tbsten.github.io/katachi/api-docs/katachi-konsist/llms.txt .
 
 ## Where the rule goes
 

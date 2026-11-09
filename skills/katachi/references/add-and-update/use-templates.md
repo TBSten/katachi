@@ -21,9 +21,9 @@ If the generated file is not accepted by the check, the template's path and the 
 
 Only for a Role the user agreed to, and only one with many files of the same shape (UseCase, ViewModel, Screen, Repository, …).
 
-The full procedure, with the rules for naming wildcards, is setup section 6-D: [../setup/step6/6-D-templates.md](../setup/step6/6-D-templates.md). Skip its first step and the `katachi agent` commands if there is no working directory (use `./gradlew :architecture-test:test` instead of `katachi agent test`). In short:
+The full procedure, with the rules for naming wildcards, is setup section 6-D: [../setup/step6/6-D-templates.md](../setup/step6/6-D-templates.md). Skip its first step if there is no working directory (the report it records into is gone). In short:
 
-- Read the page first: `katachi agent docs --topic template`, or https://tbsten.github.io/katachi/guides/generate-code-from-template/ .
+- Read the page first: https://tbsten.github.io/katachi/guides/generate-code-from-template/ .
 - `.template` is an extension function (`import me.tbsten.katachi.dsl.template`), and `.template { }`, `capture()` and `captureValue()` are experimental (opt in to `ExperimentalKatachiApi`).
 - Base its content on a real file of the Role. Do not write the destination path in the template; it comes from the declaration.
 - Name every `*` left in the destination with `capture("…")`; a template on a path with an unnamed `*` or `**` fails when layout is expanded.

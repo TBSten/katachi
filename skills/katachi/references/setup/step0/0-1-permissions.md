@@ -28,7 +28,7 @@ touch .katachi-probe && rm .katachi-probe
 katachi doctor --lang en    # --lang ja for a user who works in Japanese
 ```
 
-`doctor` in 4 checks the version of the JDK that runs Gradle, the project's Kotlin version, and whether `git` is available (recommended). **If anything falls short, it says so, with hints on how to fix it.** Pass that output on to the user, have them fix it, and run 4 again. `init` checks Kotlin and `git` the same way.
+`doctor` in 4 checks the version of the JDK that runs Gradle, the project's Kotlin version, and whether `git` is available (recommended). **If anything falls short, it says so, with hints on how to fix it.** Pass that output on to the user, have them fix it, and run 4 again. Keep the `Kotlin:` line: 0-2 records it.
 
 Both the working directory and the verification module (`architecture-test/` by default) are created under the project root, so 2 earns permission for both. **The probes leave no trace.** Do not write a probe that creates a directory (an empty verification module directory left behind makes step 2's `scaffold` stop with "already exists").
 

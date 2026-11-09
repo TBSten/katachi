@@ -74,7 +74,7 @@ In the field tests of the install kit, these shapes turned up in 13 projects.
 
 #### Do not stop at placement
 
-**Take the conventions you read in step 1 and go through them as candidates for constraints on the contents (`ktFileContent { }`).** A definition that only says where files go only ever tells you that a file is in the right place. `ktFileContent { }` is an experimental API, so the file that uses it needs the opt-in (`@file:OptIn(ExperimentalKatachiApi::class)`). Fetch how to write it with `katachi agent docs --topic kt-file-content`.
+**Take the conventions you read in step 1 and go through them as candidates for constraints on the contents (`ktFileContent { }`).** A definition that only says where files go only ever tells you that a file is in the right place. `ktFileContent { }` is an experimental API, so the file that uses it needs the opt-in (`@file:OptIn(ExperimentalKatachiApi::class)`). How to write it is on the `kt-file-content` page (3-1).
 
 **Do not write catch-all Roles.** A layout like `commonMain/**/*.kt` — "anything, as long as it is here" — looks like a check and is not one. In a real adoption this let **a test for the same responsibility be created somewhere else entirely, and accepted.** If a Role would end up a catch-all, give it at least one of the following.
 
@@ -127,4 +127,10 @@ katachi agent test --save before-refactor
 
 What you need here is **for it to compile and for the check to run to the end.** Failing with `Katachi check failed: ...` is fine (violations are dealt with in step 4). If a compile error or a Gradle error keeps the check from running, fix it and run it again.
 
-Record the files you created or changed with `add changed` (the split files can be one entry by directory or wildcard; files already recorded in 2-2 need not be recorded again), then run `katachi agent check 3-2`. It scans the definition and lists the Roles that look like they hold different kinds of files (`lint`). What it lists is dealt with in the 3-3 checklist.
+Record the files you created or changed in `changedFiles` (the split files can be one entry by directory or wildcard; files already recorded in 2-2 need not be recorded again), mark `3-2` done, and run:
+
+```sh
+katachi lint
+```
+
+It scans the definition and lists the Roles that look like they hold different kinds of files. What it lists is dealt with in the 3-3 checklist.

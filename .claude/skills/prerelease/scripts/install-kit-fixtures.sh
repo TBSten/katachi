@@ -1,5 +1,5 @@
 # check-install-kit.sh が読み込む（単独では実行しない）。
-# インストールキット（katachi コマンドの agent init / scaffold / agent test）を試す、合成の Gradle プロジェクト（fixture）の定義。
+# インストールキット（katachi コマンドの doctor / scaffold / agent test と、skill のテンプレート）を試す、合成の Gradle プロジェクト（fixture）の定義。
 #
 # docs/AGENTS.md の「public/install/」の節の3種（agp / noroot / rootjvm）と、
 # これまでに不具合が出た形を1つずつ。足すときは FIXTURES・fx_<名前>・fx_desc_<名前>・fx_anchor_<名前> を揃える。
@@ -12,7 +12,7 @@
 # fx_anchor_<名前> は「scaffold が足した include の直前に来るべき行」（前後の空白を除いた中身）。
 # END は「include が無いので末尾に足される」。
 #
-# fx_module_dir_<名前>（任意）は init に渡す --module-dir（検査用モジュールの置き場所。例: static-analysis/katachi）。
+# fx_module_dir_<名前>（任意）はチェックリストの meta.moduleDir に書く検査用モジュールの置き場所（例: static-analysis/katachi）。
 # fx_scaffold_args_<名前>（任意）は scaffold に足す引数（例: --test-framework kotest）。
 # fx_expect_<名前>（任意。$1 = fixture のディレクトリ、$2 = katachi コマンド）は scaffold の生成物の検査。
 # NG の理由を 1 行ずつ標準出力に出す（何も出さなければ OK）。
