@@ -115,7 +115,7 @@ public class KatachiChainedCaptureTransformException internal constructor(
  * ```
  *
  * @property text the string the conversion was applied to, each token shown as `${capture("name")}`.
- * @property names the names of the tokens in [text], in order.
+ * @property names the names of the tokens in [text][KatachiCaptureTransformOnMixedTextException.text], in order.
  * @property transform the conversion that was applied, such as `"pascalCase"`.
  * @property declaredAt where the conversion was written.
  */

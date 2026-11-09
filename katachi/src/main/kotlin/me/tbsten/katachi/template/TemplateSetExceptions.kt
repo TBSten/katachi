@@ -68,8 +68,8 @@ public class KatachiTemplateSetParameterValueException internal constructor(
  * A member of a template set was given `arg(...)` values that its template cannot use.
  *
  * A member only receives what its `template("...") { }` block passes with `arg(...)`; a parameter
- * of the set with the same name is not passed on by itself. [problem] says which of the three it
- * is, and [declaredAt] is the line of the member's `template("...")`, which is where to add or
+ * of the set with the same name is not passed on by itself. [problem][KatachiInvalidTemplateSetArgException.problem] says which of the three it
+ * is, and [declaredAt][KatachiInvalidTemplateSetArgException.declaredAt] is the line of the member's `template("...")`, which is where to add or
  * change an `arg(...)`.
  *
  * ## Example 1: catch an arg name the member does not take
@@ -111,9 +111,9 @@ public class KatachiInvalidTemplateSetArgException internal constructor(
     public val declaredAt: DeclarationSite,
     /** The line of the template set. */
     public val templateSetDeclaredAt: DeclarationSite,
-    /** For [Problem.InvalidValue]: the value each of [names] was given, by name. Empty otherwise. */
+    /** For [Problem.InvalidValue]: the value each of [names][KatachiInvalidTemplateSetArgException.names] was given, by name. Empty otherwise. */
     public val values: Map<String, String> = emptyMap(),
-    /** For [Problem.InvalidValue]: what each of [names] takes, for the ones that do not take any string. */
+    /** For [Problem.InvalidValue]: what each of [names][KatachiInvalidTemplateSetArgException.names] takes, for the ones that do not take any string. */
     public val acceptedValues: Map<String, String> = emptyMap(),
     /** For [Problem.InvalidValue]: names the member was also given no value for, sorted. Empty otherwise. */
     public val alsoMissing: List<String> = emptyList(),

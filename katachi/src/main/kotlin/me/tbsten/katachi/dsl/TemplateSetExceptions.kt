@@ -8,7 +8,7 @@ import me.tbsten.katachi.KatachiDeclarationException
  *
  * Thrown when `architecture { }` is evaluated, or when files are generated or previewed.
  *
- * [problem] says which of the seven it is, and [name] carries the parameter or `arg` it is
+ * [problem][KatachiInvalidTemplateSetException.problem] says which of the seven it is, and [name][KatachiInvalidTemplateSetException.name] carries the parameter or `arg` it is
  * about when there is one.
  *
  * ## Example 1: catch a value read where only a member's block may read it
@@ -43,7 +43,7 @@ public class KatachiInvalidTemplateSetException internal constructor(
      * The line the problem repeats or contradicts, or `null` when there is none.
      *
      * A parameter read
-     * outside a member has none: [declaredAt] is the line the parameter is declared on, which is
+     * outside a member has none: [declaredAt][KatachiInvalidTemplateSetException.declaredAt] is the line the parameter is declared on, which is
      * also the line Kotlin attributes a read of a local delegated property to.
      */
     public val firstDeclaredAt: DeclarationSite?,
@@ -166,7 +166,7 @@ public class KatachiInvalidTemplateSetMemberException internal constructor(
     /**
      * The templates the specifier could have meant.
      *
-     * Those it matched when [problem] is [Problem.Ambiguous], every declared template when it is
+     * Those it matched when [problem][KatachiInvalidTemplateSetMemberException.problem] is [Problem.Ambiguous], every declared template when it is
      * [Problem.Unknown], and the one template both members name when it is [Problem.Duplicate].
      */
     public val candidates: List<String>,

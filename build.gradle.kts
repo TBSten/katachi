@@ -178,10 +178,16 @@ tasks.register("verifyApiDocs") {
         modules.forEach { featuredSection("$it/index.html", before = ">Packages<") }
 
         // Every HTML page has its Markdown version at its URL + ".md", and every page that is a
-        // directory (a module, a package, a type) has its llms files.
+        // directory (a module, a package, a type) has its llms files. No page links to "--root--.html",
+        // the page Dokka names when a KDoc [name] resolves to a constructor parameter, which has no page:
+        // write it as [name][Type.name] (a property) or `name` (a parameter only).
         apiDocs.walkTopDown().filter { it.isFile && it.extension == "html" && it.name != "navigation.html" }
             .forEach { html ->
                 if (!File(html.path + ".md").isFile) problems += "${html.relativeTo(apiDocs)} has no Markdown version"
+                if ("--root--.html" in html.readText()) {
+                    problems += "${html.relativeTo(apiDocs)} links to --root--.html: a KDoc [name] of a constructor parameter " +
+                            "(write [name][Type.name] or `name`)"
+                }
                 if (html.name == "index.html" && html.parentFile != apiDocs) {
                     listOf("llms.txt", "llms-full.txt").filterNot { File(html.parentFile, it).isFile }.forEach {
                         problems += "${html.parentFile.relativeTo(apiDocs)}/ has no $it"

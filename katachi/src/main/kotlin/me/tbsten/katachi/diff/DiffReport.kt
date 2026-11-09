@@ -142,11 +142,11 @@ public object DiffReport : ArchitectureProcessor<DiffReport.Args, Unit> {
      */
     @Serializable
     public data class Args(
-        /** The ref the change starts from. Ignored when [pr] is set. */
+        /** The ref the change starts from. Ignored when [pr][Args.pr] is set. */
         val before: String = "HEAD",
-        /** The ref the change ends at; empty for the working tree. Ignored when [pr] is set. */
+        /** The ref the change ends at; empty for the working tree. Ignored when [pr][Args.pr] is set. */
         val after: String = "",
-        /** A pull request number or URL, resolved with `gh pr view`. Wins over [before] and [after]. */
+        /** A pull request number or URL, resolved with `gh pr view`. Wins over [before][Args.before] and [after][Args.after]. */
         val pr: String = "",
         /**
          * `<qualified group or role name>=<number>` entries that scale the heat of what they name.

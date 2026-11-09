@@ -15,7 +15,7 @@ import me.tbsten.katachi.script.option.Lang
  * The defaults that [Katachi]'s constructor takes are top-level variables here; [katachi] reads
  * them each time it is used, so set them before the first command.
  *
- * Run one with `katachi setup.katachi.kts`. Arguments after the file name are in [args].
+ * Run one with `katachi setup.katachi.kts`. Arguments after the file name are in [args][KatachiScript.args].
  *
  * ## Example 1: lay out the test module
  *

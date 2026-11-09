@@ -21,11 +21,11 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 @ExperimentalKatachiApi
 @Serializable
 public class TemplateSetSummary internal constructor(
-    /** The complete specifier `--arg template=` accepts for this set: the group's path, then [name]. */
+    /** The complete specifier `--arg template=` accepts for this set: the group's path, then [name][TemplateSetSummary.name]. */
     public val templateSet: String,
     /** The name the set was declared with. */
     public val name: String,
-    /** The set's `title`, falling back to [name]. */
+    /** The set's `title`, falling back to [name][TemplateSetSummary.name]. */
     public val title: String,
     /** The set's `summary`, or `null` when it declares none. */
     public val summary: String?,
@@ -77,7 +77,7 @@ public class TemplateSetDetail internal constructor(
     public val templateSet: String,
     /** The name the set was declared with. */
     public val name: String,
-    /** The set's `title`, falling back to [name]. */
+    /** The set's `title`, falling back to [name][TemplateSetDetail.name]. */
     public val title: String,
     /** The set's `summary`, or `null` when it declares none. */
     public val summary: String?,
@@ -136,7 +136,7 @@ public class TemplateSetMemberPreview internal constructor(
 public class TemplateSetArgPreview internal constructor(
     /** The name on the member's side. */
     public val name: String,
-    /** Whether [name] is a capture or a parameter of the member's template. */
+    /** Whether [name][TemplateSetArgPreview.name] is a capture or a parameter of the member's template. */
     public val kind: TemplateSetArgKind,
     /** The value the preview gave it: `${p}` for a String parameter `p` of the set, passed as it is. */
     public val previewValue: String,

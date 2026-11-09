@@ -6,8 +6,8 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  * What a constraint is told when the role's page asks it for its section: see
  * [FileConstraint.documentSection].
  *
- * Built by the documentation generator, never by a caller. Everything but [exampleFile] comes
- * from the definition alone; [exampleFile] is worked out the first time it is read, and only
+ * Built by the documentation generator, never by a caller. Everything but [exampleFile][FileConstraintDocumentContext.exampleFile] comes
+ * from the definition alone; [exampleFile][FileConstraintDocumentContext.exampleFile] is worked out the first time it is read, and only
  * then may the project be listed.
  *
  * ## Example 1: title a section with the role and the example it shows

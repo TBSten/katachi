@@ -114,9 +114,9 @@ public class FileConstraintSubject internal constructor(
      * Read off the layout declarations that match [file]: `"feature" / capture("feature") / ...`
      * gives `feature`, and `"${capture("name")}Repository".ktFile()` gives `name`. A name whose
      * declaration does not match [file] is left out, so the map can be smaller than
-     * [captureNames]. A name written on two levels of one path gives one value.
+     * [captureNames][FileConstraintSubject.captureNames]. A name written on two levels of one path gives one value.
      *
-     * Meant for one of [files]. Asked about another path, it still answers with whatever the
+     * Meant for one of [files][FileConstraintSubject.files]. Asked about another path, it still answers with whatever the
      * layout's declarations say about that path rather than refusing.
      */
     public fun captureValuesOf(file: String): Map<String, String> = captureValues(file)

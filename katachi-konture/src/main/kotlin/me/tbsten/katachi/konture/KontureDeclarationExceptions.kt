@@ -156,12 +156,12 @@ public class KatachiKontureRuleRefusedException internal constructor(
 /**
  * An `AssertionError` came out of a `konture { }` block, at one of two moments.
  *
- * While the block was declaring its rules ([suite] is `null`): [KontureDefaultGraphShadows]
+ * While the block was declaring its rules ([suite][KatachiKontureDirectAssertionException.suite] is `null`): [KontureDefaultGraphShadows]
  * makes Konture's entry points to its default graph compile errors, so this is a shadow that
  * was suppressed and whose body threw, a `check()` called by hand on a builder, or Konture
  * asserting from somewhere katachi does not shadow.
  *
- * While Konture was evaluating one of the rules ([suite] names which): a predicate such as
+ * While Konture was evaluating one of the rules ([suite][KatachiKontureDirectAssertionException.suite] names which): a predicate such as
  * `satisfy { }` asserted instead of answering `true` or `false`. Konture runs the predicate on
  * each declaration and nothing catches what it throws, so the first declaration it dislikes
  * ends the rule. The one `AssertionError` Konture itself throws at that moment, for a rule with
