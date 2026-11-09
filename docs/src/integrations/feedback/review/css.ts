@@ -49,8 +49,8 @@ button, input { font: inherit; }
 .info.warn { color: var(--danger); background: var(--danger-bg); }
 .info b { font-weight: 600; }
 .pop-foot { flex: none; display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; border-top: 1px solid var(--border); }
-.act { display: flex; gap: 6px; align-items: center; }
-.act input { flex: 1; min-width: 0; padding: 4px 8px; color: var(--fg); background: var(--bg); border: 1px solid var(--border-strong); border-radius: 6px; }
+.act { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; align-items: center; }
+.act input { flex: 1 1 100%; min-width: 0; padding: 4px 8px; color: var(--fg); background: var(--bg); border: 1px solid var(--border-strong); border-radius: 6px; }
 .btn { flex: none; padding: 4px 10px; color: var(--fg); background: var(--bg); border: 1px solid var(--border-strong); border-radius: 6px; cursor: pointer; white-space: nowrap; }
 .btn:hover:not(:disabled) { background: var(--hover); }
 .btn:disabled { opacity: .45; cursor: not-allowed; }

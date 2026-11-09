@@ -186,6 +186,13 @@ test('解決済みにする → ファイルに書き戻して次へ進む → �
 	ok('解決済みの印と一言', /解決済み/.test((await u('.pop .resolved-line').textContent()) ?? '') && /直した/.test((await u('.pop .resolved-line').textContent()) ?? ''))
 	await fb.act(u('.pop .act .btn'))
 	ok('「戻す」でファイルから解決済みの行が消える', await waitFor(() => (readReview().match(/- status: resolved/g) ?? []).length === 0))
+	// 直さない: 解決済みにして、ひとことの頭に「直さない」と書く
+	await sleep(1300)
+	await u('.pop .act input').fill('誤検知')
+	await fb.act(u('.pop .act .btn.keep'))
+	ok('「直さない」はひとことの頭に「直さない」と書いて解決済みにする', await waitFor(() => readReview().includes('- status: resolved\n') && readReview().includes('- note: 直さない: 誤検知\n')), readReview().slice(0, 600))
+	await fb.act(u('.toast .btn'))
+	ok('「直さない」もトーストの「戻す」で取り消せる', await waitFor(() => !readReview().includes('- status: resolved')))
 })
 
 test('閉じた details・選ばれていないタブ・畳んだコードの中の指摘は、開くと見えるようにして光らせる', async ({ fb }) => {

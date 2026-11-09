@@ -24,6 +24,8 @@ export type ReviewSession = {
 export const OPEN_KEY = 'katachi-review:open'
 /** 開いている指摘の id（sessionStorage）。docs を直してページが読み直されても、同じ指摘を開き直す。 */
 export const ACTIVE_KEY = 'katachi-review:active'
+/** 「直さない」で解決済みにしたときの、ひとことの頭。agent はこれを見て、直ったかを確かめずに消す。 */
+export const KEEP_NOTE = '直さない'
 const FILTER_KEY = 'katachi-review:filter'
 const FOLD_KEY = 'katachi-review:folded'
 /** 解決済みにしたあと「戻す」を出しておく時間。 */
@@ -509,9 +511,15 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 			btn.disabled = busy || Date.now() < guardUntil
 			const go = () => void resolve(v, input.value)
 			btn.addEventListener('click', go)
+			// 直さないと決めたとき。解決済みにして、ひとことの頭に「直さない」と書く（agent は直ったかを確かめずに消す）。
+			const keep = el('button', 'btn keep', '直さない')
+			keep.type = 'button'
+			keep.disabled = btn.disabled
+			keep.title = '直さずに解決済みにする（ひとことの頭に「直さない」と書きます）'
+			keep.addEventListener('click', () => void resolve(v, input.value.trim() ? `${KEEP_NOTE}: ${input.value.trim()}` : KEEP_NOTE))
 			// 変換の確定の Enter では送らない（Safari は確定の keydown で isComposing が false のまま keyCode 229 を出す）。
 			onKeyInside(input, 'keydown', (e) => { if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); go() } })
-			act.append(input, btn)
+			act.append(input, keep, btn)
 		} else {
 			const line = el('span', 'resolved-line', `✓ 解決済み ${fmtTime(v.resolvedAt)}${v.note ? ` — ${v.note}` : ''}`)
 			const back = el('button', 'btn', '戻す')
