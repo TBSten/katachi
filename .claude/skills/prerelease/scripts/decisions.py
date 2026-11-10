@@ -13,6 +13,7 @@
       指摘のうち、過去の判断と同じものを出す。--drop は同じものを外したファイルを書く（既定は上書き。--out で別の場所へ）
   python3 .claude/skills/prerelease/scripts/decisions.py record-review <review.md> --decided "<日付 回 チケット>" [--to docs.md]
       Review の popup で「直さない」になった指摘（status: resolved、note の頭が「直さない」）を判断として写す。
+      人が popup に足した選択肢のうち `- decision:` の付いたもの（review/_actions.md）で解決済みにした指摘も、その decision で写す。
       写した（または既に写してあった・方針の match に合った）指摘の Review の id を出す。そのあと cli.mjs review remove <id> で消す
 """
 import argparse
@@ -28,13 +29,16 @@ DECISIONS_DIR = Path(__file__).resolve().parent.parent / "decisions"
 CONTENT_DIR = "docs/src/content/docs/"
 DECISIONS = ("直さない", "このまま", "後で", "方針")
 DECISION_KEYS = ("decision", "file", "quote", "match", "rule", "decided", "by", "revisit")
-REVIEW_KEYS = ("file", "line", "priority", "quote", "status", "note", "resolved-at", "ai-note")
+REVIEW_KEYS = ("file", "line", "priority", "quote", "status", "note", "resolved-at", "ai-note", "id")
+# Review の `- id:`（popup が印を付け外ししたときに書く、まとまりの名前を除いた id）。review/model.ts の PINNED_ID と同じ形
+PINNED_ID = re.compile(r"^[0-9a-z]{1,13}(?:-\d{1,4})?$")
+# 人が popup に足した選択肢の置き場（指摘のファイルと同じフォルダ）。review/actions.ts の ACTIONS_FILE
+ACTIONS_FILE = "_actions.md"
 FENCE = re.compile(r"^\s*(```|~~~)")
 HEAD = re.compile(r"^## \S")
 PRIORITY = re.compile(r"^\[p(\d{1,3})\]\s*(.*)$", re.I)
 # 見出しの先頭の `<decision>: `。判断のファイルの見出しはこの形。
 DECISION_PREFIX = re.compile(r"^(%s):\s*(.*)$" % "|".join(DECISIONS))
-WONT_FIX_NOTE = re.compile(r"^直さない(?:[:：]\s*(.*))?$")
 
 
 @dataclass
@@ -146,14 +150,46 @@ def fnv1a36(s):
 
 
 def review_ids(entries, set_name):
-    """Review の id（`<まとまり>/<hash>`、同じ file と見出しが続けば `-2`…）。file は書かれたまま（省略形のまま）で数える。"""
-    seen, ids = {}, []
+    """Review の id（review/model.ts の parseReview と同じ規則）。
+
+    `- id:` が書いてあればそれ（popup が印を付け外ししたときに書く。前の指摘を消してもずれない）。
+    無ければ `<まとまり>/<hash>` で、同じ file と見出しが続けば `-2`…（書いてある id とは重ねない）。file は書かれたまま（省略形のまま）で数える。
+    """
+    pins, taken = [], set()
     for e in entries:
-        key = f"{unquote(e.meta.get('file', '')).removeprefix('./')}\n{e.title}"
-        seen[key] = seen.get(key, 0) + 1
-        n = seen[key]
-        ids.append(f"{set_name}/{fnv1a36(key)}" + (f"-{n}" if n > 1 else ""))
+        v = e.meta.get("id", "")
+        pin = f"{set_name}/{v}" if PINNED_ID.match(v) else None
+        if pin in taken:
+            pin = None
+        if pin:
+            taken.add(pin)
+        pins.append(pin)
+    ids = []
+    for e, pin in zip(entries, pins):
+        if not pin:
+            h = f"{set_name}/{fnv1a36(unquote(e.meta.get('file', '')).removeprefix('./') + chr(10) + e.title)}"
+            n = 1
+            while (f"{h}-{n}" if n > 1 else h) in taken:
+                n += 1
+            pin = f"{h}-{n}" if n > 1 else h
+            taken.add(pin)
+        ids.append(pin)
     return ids
+
+
+def load_actions(review_path):
+    """指摘のファイルの隣の `_actions.md` から、`- decision:` の付いた選択肢を {名前: decision} で返す（review/actions.ts と同じ読み方）。"""
+    path = Path(review_path).parent / ACTIONS_FILE
+    if not path.exists():
+        return {}
+    entries, _ = parse(path.read_text(encoding="utf-8"), path.stem, ("agent", "decision"))
+    return {e.title: e.meta["decision"] for e in entries if e.meta.get("decision") in DECISIONS and not re.search(r"[:：]", e.title)}
+
+
+def note_head(note):
+    """note の頭（「: 」の手前）と、その後ろ（ひとこと）。"""
+    parts = re.split(r"[:：]", note or "", maxsplit=1)
+    return parts[0].strip(), (parts[1] if len(parts) > 1 else "").strip()
 
 
 # ---- 判断を読む ----
@@ -333,16 +369,19 @@ def cmd_match(args):
     return 0
 
 
-def render_decision(f, decided, by):
-    m = WONT_FIX_NOTE.match(f.meta.get("note", ""))
-    reason = (m.group(1) or "").strip() if m else ""
-    lines = [f"## 直さない: {f.title}", "- decision: 直さない", f"- file: {unquote(f.meta['file'])}"]
+def render_decision(f, decided, by, decision="直さない", label=None):
+    head, reason = note_head(f.meta.get("note", ""))
+    lines = [f"## {decision}: {f.title}", f"- decision: {decision}", f"- file: {unquote(f.meta['file'])}"]
     if f.quote:
         lines.append(f"- quote: {f.quote}")
     rule = re.search(r"^- 破っている項目:\s*(.+)$", f.body, re.M)
     if rule:
         lines.append(f"- rule: {rule.group(1).strip()}")
-    lines += [f"- decided: {decided}", f"- by: {by}", ""]
+    lines += [f"- decided: {decided}", f"- by: {by}" + (f"（選択肢「{label}」）" if label and label != decision else "")]
+    if decision == "後で":
+        # 「後で」は見直す条件が要る（load_decisions が確かめる）。人のひとことをそのまま条件にし、無ければ次の回に聞く
+        lines.append(f"- revisit: {reason or '次の prerelease で人に聞く'}")
+    lines.append("")
     lines.append(f"利用者の一言: {reason}" if reason else "利用者の一言: なし")
     summary = [l for l in f.body.split("\n") if l.strip() and not l.startswith("- 破っている項目")]
     if summary:
@@ -356,22 +395,28 @@ def cmd_record_review(args):
     ids = review_ids(findings, path.stem)
     target = args.dir / args.to
     existing = load_decisions(args.dir)
+    # 「直さない」と、人が popup に足した選択肢のうち decision の付いたもの（{名前: decision}）
+    choices = {"直さない": "直さない", **load_actions(path)}
     added, already, to_remove = [], 0, []
     for f, rid in zip(findings, ids):
-        if f.meta.get("status") != "resolved" or not WONT_FIX_NOTE.match(f.meta.get("note", "")):
+        label, _ = note_head(f.meta.get("note", ""))
+        decision = choices.get(label)
+        if f.meta.get("status") != "resolved" or not decision:
             continue
-        if any(same(f, d) and d.meta.get("decision") == "直さない" and norm(decision_title(d)) == norm(f.title) for d in existing):
+        if any(same(f, d) and d.meta.get("decision") == decision and norm(decision_title(d)) == norm(f.title) for d in existing):
             already += 1
         elif any(d.meta.get("decision") == "方針" and match_pattern(d) and same(f, d) for d in existing):
             already += 1  # 方針がまとめて扱っている（1 件ずつ写さない）
         else:
-            added.append(render_decision(f, args.decided, args.by))
+            added.append(render_decision(f, args.decided, args.by, decision, label))
         to_remove.append(rid)
     if added:
         text = target.read_text(encoding="utf-8") if target.exists() else f"# {target.stem}\n"
         target.write_text(text.rstrip("\n") + "\n\n" + "\n\n".join(added) + "\n", encoding="utf-8")
-    print(f"「直さない」{len(to_remove)} 件: 写した {len(added)} 件 / 写してあった {already} 件 → {target}")
+    names = "・".join(f"「{k}」" for k in choices)
+    print(f"{names} {len(to_remove)} 件: 写した {len(added)} 件 / 写してあった {already} 件 → {target}")
     # 後ろから消す順に出す。同じ file と見出しの指摘は `x`・`x-2` と並び順で id が振られ、`x` を先に消すと `x-2` が `x` にずれるため
+    # （popup で印を付けた指摘は `- id:` で固定されているのでずれないが、手で書いた解決済みは固定されていない）
     for rid in reversed(to_remove):
         print(f"REMOVE {rid}")
     return 0

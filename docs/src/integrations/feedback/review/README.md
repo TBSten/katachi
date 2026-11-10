@@ -118,3 +118,4 @@ popup の「直さない」「直してもらう」「解決済みにする」�
 
 - 8 個まで。見出しの直後に続く `- agent:` / `- decision:` だけを読み、ほかの行はメモとして読み飛ばす。読めない行は一覧の「読めない指摘・ファイル」と `review check` に出る。
 - agent は `review list --status=resolved` の一言の頭を見て、`review actions` の `agent` どおりに扱う。`agent` が書かれていない選択肢は人に聞く。
+- `decision` の付いた選択肢で解決済みにした指摘は、「直さない」と同じく `decisions.py record-review` が判断として写す（`review remove` の前に）。
