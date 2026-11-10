@@ -1048,10 +1048,14 @@
 
   /* Module tree */
   /* Wrap so long module names fit on narrow screens */
-  .module-row { flex-wrap: wrap; row-gap: 0; }
-  .module-row .t-name { min-width: 0; overflow-wrap: anywhere; }
-  .module-row .deviation { color: var(--caution-high); font-size: 13px; }
-  .module-row .deviation::before { content: "\2691\00a0"; }
+  .module-row { align-items: flex-start; }
+  .module-row > .tw, .module-row > .ti { margin-top: 4px; }
+  /* Name, kind and ⚑ flow as one paragraph. A long ⚑ continues beside the name and wraps */
+  .module-line { flex: 1 1 auto; min-width: 0; line-height: 24px; }
+  .module-line > .t-name { display: inline; overflow-wrap: anywhere; }
+  .module-line > .badge { margin-left: 6px; vertical-align: 1px; }
+  .module-line > .deviation { margin-left: 8px; color: var(--caution-high); font-size: 13px; overflow-wrap: anywhere; }
+  .module-line > .deviation::before { content: "\2691\00a0"; }
   .module-body { padding: 2px 0 8px 24px; }
 
   dl.fields { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: 6px 16px; margin: 4px 0 0; font-size: 14px; }
@@ -3296,17 +3300,19 @@
     var row = el(hasBody ? 'summary' : 'div', 'tree-row module-row');
     row.appendChild(el('span', 'tw'));
     row.appendChild(el('span', 'ti ' + (module ? 'ti-module' : 'ti-folder')));
+    var line = el('span', 'module-line');
+    row.appendChild(line);
     var name = el('span', 't-name');
     name.textContent = node.name;
-    row.appendChild(name);
+    line.appendChild(name);
     if (module) {
       var kind = el('span', 'badge');
       kind.appendChild(value(module.kind, 'modules[].kind'));
-      row.appendChild(kind);
+      line.appendChild(kind);
       if (!blank(module.deviation)) {
         var flag = target(el('span', 'deviation'), 'modules[path=' + (blank(module.path) ? '?' : module.path) + '].deviation', T.deviationLabel);
         flag.textContent = String(module.deviation);
-        row.appendChild(flag);
+        line.appendChild(flag);
       }
     }
     box.appendChild(row);
