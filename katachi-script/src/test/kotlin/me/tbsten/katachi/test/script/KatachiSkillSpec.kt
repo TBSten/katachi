@@ -19,6 +19,17 @@ import me.tbsten.katachi.script.internal.COMMAND_SPECS
 class KatachiSkillSpec : FreeSpec({
     val skill = File("../skills/katachi")
 
+    "SKILL.md の frontmatter は name がディレクトリ名と同じで、description は 1024 文字以内の 1 行" {
+        val lines = skill.resolve("SKILL.md").readLines()
+        lines.first() shouldBe "---"
+        val frontmatter = lines.drop(1).takeWhile { it != "---" }
+        frontmatter.first { it.startsWith("name: ") }.removePrefix("name: ") shouldBe skill.name
+        val description = frontmatter.single { it.startsWith("description: ") }.removePrefix("description: ")
+        (description.length in 1..1024) shouldBe true
+        // A plain YAML scalar ends at ": " or " #"; quote the description before writing either.
+        (": " in description || " #" in description) shouldBe false
+    }
+
     "テンプレートの JSON は ja / en とも読め、同じキーを持つ" {
         for (file in listOf("check-list.html", "project-code-base-report.html")) {
             val id = if (file == "check-list.html") "checklist" else "report"

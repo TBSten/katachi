@@ -1,6 +1,6 @@
 ---
 name: katachi
-description: Install katachi (architecture checks for Kotlin/Gradle projects, written as an architecture { } definition) into a project, add to or update an existing definition, upgrade katachi, or fix katachi violations. Use when the user asks to install or set up katachi, to change the architecture definition (a new Role, moved files, a new rule), or when the katachi check (`:architecture-test:test`) fails with violations such as [UnexpectedFile].
+description: Install katachi (architecture checks for Kotlin/Gradle projects, written as an architecture { } definition) into a project, add to or update an existing definition, upgrade katachi, or fix katachi violations. Use whenever the user asks to install, set up or try katachi ("add katachi to this project", "katachi を導入して"), to change the architecture definition (a new Role, moved files or modules, a new rule, ProjectArchitecture.kt), to upgrade katachi, or when the katachi check (`:architecture-test:test`) fails with violations such as [UnexpectedFile] ("katachi のテストが落ちた"). Use it instead of writing a definition from memory, because the steps run the katachi command and read the documentation for the exact API.
 ---
 
 # katachi
