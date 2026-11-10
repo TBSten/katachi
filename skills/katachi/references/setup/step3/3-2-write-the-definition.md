@@ -7,13 +7,13 @@
 ```kt
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.DeclarationContainerScope   // when splitting the definition into functions
-import me.tbsten.katachi.dsl.gradle.*                    // mainSourceSet / testSourceSet / kotlin / gradle() / the `/` operator
+import me.tbsten.katachi.dsl.gradle.*                    // mainSourceSet / testSourceSet / kotlin / gradle()
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 import me.tbsten.katachi.konsist.declarations.ktFileContent   // when writing ktFileContent { } (an experimental API)
 ```
 
-**Star-import `me.tbsten.katachi.dsl.gradle`.** `/` is the `div` operator, so importing names one by one leaves you unable to chain paths.
+**Star-import `me.tbsten.katachi.dsl.gradle`:** one line brings `mainSourceSet`, `testSourceSet`, `kotlin` and `gradle()`. Importing them one by one also works (`/` needs no import).
 
 **`capture()`, `fileConstraint`, `FileConstraintFailure` and `ktFileContent { }` are experimental APIs.** In a file that uses any of them, write `@file:OptIn(ExperimentalKatachiApi::class)` at the top and add `import me.tbsten.katachi.ExperimentalKatachiApi` to the imports. Without it, every place that uses one is a compile error.
 
