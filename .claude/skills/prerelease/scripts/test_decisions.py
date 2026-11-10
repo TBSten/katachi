@@ -96,6 +96,9 @@ class DecisionsTest(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("写した 2 件", out)
         self.assertEqual(out.count("REMOVE "), 2)
+        # 後ろから消す順（-2 が付いた id を先に消さないと、先頭を消したときに id がずれる）
+        removes = [l.split()[1] for l in out.splitlines() if l.startswith("REMOVE ")]
+        self.assertEqual(removes, list(reversed(D.review_ids(D.parse(REVIEW, "prerelease-test", D.REVIEW_KEYS)[0], "prerelease-test")[:2])))
         text = (self.dir / "docs.md").read_text(encoding="utf-8")
         self.assertIn("## 直さない: 指示語「これらは」", text)
         self.assertIn("利用者の一言: 前の文で並べているので通じる", text)

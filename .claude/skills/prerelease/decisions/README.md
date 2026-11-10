@@ -96,7 +96,8 @@ Review の指摘（`docs/src/integrations/feedback/review/README.md`）と同じ
   ```shell
   python3 .claude/skills/prerelease/scripts/decisions.py record-review <置き場>/review/<名前>.md \
     --decided "2026-11-10 261109-01 KATACHI-333"
-  # 写した指摘の id が出る → node docs/src/integrations/feedback/server/cli.mjs review remove <id>
+  # 写した指摘の id が消す順（後ろから）に出る → 出た順に node docs/src/integrations/feedback/server/cli.mjs review remove <id>
+  # （同じ見出しの指摘は x・x-2 と id が振られ、x を先に消すと x-2 が x にずれるので、出た順を守る）
   ```
 
   同じ見出し・同じ `file` の判断が既にあれば写さない（何度回してもよい）。

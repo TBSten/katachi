@@ -349,7 +349,8 @@ def cmd_record_review(args):
         text = target.read_text(encoding="utf-8") if target.exists() else f"# {target.stem}\n"
         target.write_text(text.rstrip("\n") + "\n\n" + "\n\n".join(added) + "\n", encoding="utf-8")
     print(f"「直さない」{len(to_remove)} 件: 写した {len(added)} 件 / 写してあった {already} 件 → {target}")
-    for rid in to_remove:
+    # 後ろから消す順に出す。同じ file と見出しの指摘は `x`・`x-2` と並び順で id が振られ、`x` を先に消すと `x-2` が `x` にずれるため
+    for rid in reversed(to_remove):
         print(f"REMOVE {rid}")
     return 0
 
