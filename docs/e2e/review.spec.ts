@@ -274,6 +274,7 @@ test('人が足した選択肢: ボタンが並び、押すとひとことの頭
 	await fb.act(u('.pop .action-chip').filter({ hasText: 'PR #65 待ち' }).locator('.action-x'))
 	ok('× で _actions.md から消す', await waitFor(() => !readActions().includes('PR #65 待ち')), readActions())
 	ok('一覧からも消える', await waitFor(async () => (await u('.pop .action-chip').count()) === 1))
+	if (!fb.mobile) ok('消したあとは名前の欄に入力が移る', await u('.pop .action-form input').first().evaluate((i) => i === (i.getRootNode() as ShadowRoot | Document).activeElement))
 	await fb.act(u('.toast .btn').filter({ hasText: '戻す' }))
 	ok('トーストの「戻す」で足し直す', await waitFor(() => readActions().includes('## PR #65 待ち\n')), readActions())
 	// 名前を押すと欄に読み込んで直せる
@@ -310,6 +311,7 @@ test('人が足した選択肢: ボタンが並び、押すとひとことの頭
 	await fb.act(u('.filters input[type=checkbox]'))
 	await sleep(400)
 	ok('解決済みの行に選んだ名前を添える', (await u('.row.is-resolved .row-tag').textContent()) === '後で', (await u('.row.is-resolved').first().textContent()) ?? '')
+	ok('札は切れるので、行の説明にひとことを全部出す', /\n人: 後で: v0\.5 で/.test((await u('.row.is-resolved').first().getAttribute('title')) ?? ''))
 	await fb.shot('review-actions-4-list')
 	await fb.act(u('.filters input[type=checkbox]'))
 	rmSync(actionsFile(), { force: true })
