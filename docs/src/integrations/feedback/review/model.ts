@@ -39,6 +39,10 @@ export type ReviewItem = {
 	resolvedAt?: string
 	/** agent の一言（差し戻しの理由など）。 */
 	aiNote?: string
+	/** ユーザ影響の有無（`- impact:`）。katachi の利用者に見える・利用者の挙動が変わるなら true。書かれていなければ省く。 */
+	impact?: Impact
+	/** popup の選択肢ごとの推奨度（`- recommend:`）。書かれた順。書かれていなければ省く。 */
+	recommend?: Recommend[]
 	/** 本文（Markdown）。 */
 	body: string
 	/** ファイルの中の位置（0 始まりの行。書き戻しに使う）。見出しの行・メタの行の終わり（その行は含まない）・指摘の終わり。 */
@@ -56,9 +60,9 @@ export type ReviewSet = {
 }
 
 /** 指摘のメタとして読むキー。本文の箇条書き（`- 該当: …` など）を飲み込まないよう、ここにあるキーだけをメタにする。 */
-const META_KEYS = ['file', 'line', 'priority', 'quote', 'status', 'note', 'resolved-at', 'ai-note', 'id'] as const
+const META_KEYS = ['file', 'line', 'priority', 'quote', 'impact', 'recommend', 'status', 'note', 'resolved-at', 'ai-note', 'id'] as const
 type MetaKey = (typeof META_KEYS)[number]
-const META_LINE = /^- (file|line|priority|quote|status|note|resolved-at|ai-note|id):(?:\s+(.*))?$/
+const META_LINE = new RegExp(`^- (${META_KEYS.join('|')}):(?:\\s+(.*))?$`)
 /** `- id:` に書く形（まとまりの名前を除いた id。`k3x9a2b` / `k3x9a2b-2`）。 */
 const PINNED_ID = /^[0-9a-z]{1,13}(?:-\d{1,4})?$/
 
@@ -91,6 +95,64 @@ export function parseLine(v: string): LineRange | null {
 }
 
 export const formatLine = (l: LineRange) => (l.start === l.end ? `L${l.start}` : `L${l.start}-${l.end}`)
+
+/** ユーザ影響（`- impact: あり` / `- impact: なし: 理由`）。user は katachi の利用者に影響するか。 */
+export type Impact = { user: boolean; reason?: string }
+
+/** 推奨度の上限（`- recommend: 直してもらう 8` の 8。0〜10）。 */
+export const RECOMMEND_MAX = 10
+
+/** popup の選択肢 1 つの推奨度。name はボタンの名前（解決済みにする・直さない・直してもらう・人が足した選択肢）。 */
+export type Recommend = { name: string; score: number }
+
+const IMPACT_YES = ['あり', '有り', '有', 'yes', 'true', 'user']
+const IMPACT_NO = ['なし', '無し', '無', 'no', 'false', 'none']
+
+/**
+ * `- impact:` の値。`あり` / `なし` のあとに `: 理由`・`（理由）`・` 理由` を付けられる（`yes` / `no` も読む）。読めなければ null。
+ */
+export function parseImpact(v: string): Impact | null {
+	const t = v.trim()
+	for (const [words, user] of [[IMPACT_YES, true], [IMPACT_NO, false]] as const) {
+		for (const w of words) {
+			const m = new RegExp(`^${w}(?:\\s*[:：]\\s*([\\s\\S]*)|\\s*[（(]([\\s\\S]*)[）)]|\\s+([\\s\\S]*))?$`, 'i').exec(t)
+			if (!m) continue
+			const reason = (m[1] ?? m[2] ?? m[3] ?? '').trim()
+			return { user, ...(reason ? { reason } : {}) }
+		}
+	}
+	return null
+}
+
+/**
+ * `- recommend:` の値。`直してもらう 8, 直さない 3` のように「選択肢の名前 推奨度」を `,`・`、` で並べる（`名前: 8`・`名前 8/10` も読む）。
+ * 推奨度は 0〜10 の整数。読めない項目は errors に入れて飛ばす。名前が選択肢にあるかはここでは見ない（選択肢はサーバーが知っている）。
+ */
+export function parseRecommend(v: string): { items: Recommend[]; errors: string[] } {
+	const items: Recommend[] = []
+	const errors: string[] = []
+	for (const part of v.split(/[,、，]/).map((p) => p.trim()).filter(Boolean)) {
+		const m = /^(.+?)\s*[:：=]?\s*(\d{1,3})(?:\s*\/\s*10)?$/.exec(part)
+		const score = m ? Number(m[2]) : NaN
+		if (!m || score > RECOMMEND_MAX) {
+			errors.push(`推奨度が読めません: ${part}（「名前 0〜${RECOMMEND_MAX}」の形）`)
+			continue
+		}
+		const name = m[1]!.trim()
+		if (items.some((x) => x.name === name)) errors.push(`推奨度の「${name}」が 2 回あります（先のものを使います）`)
+		else items.push({ name, score })
+	}
+	return { items, errors }
+}
+
+/** ユーザ影響の札の文字。 */
+export const impactLabel = (i: Impact) => (i.user ? 'ユーザ影響あり' : 'ユーザ影響なし')
+
+/** name の選択肢の推奨度（書かれていなければ null）。 */
+export const scoreOf = (r: readonly Recommend[] | undefined, name: string) => r?.find((x) => x.name === name)?.score ?? null
+
+/** 推奨度を書く形（`直してもらう 8, 直さない 3`）。 */
+export const formatRecommend = (r: readonly Recommend[]) => r.map((x) => `${x.name} ${x.score}`).join(', ')
 
 const unquote = (v: string) => v.replace(/^`+|`+$/g, '').trim()
 
@@ -159,6 +221,17 @@ export function parseReview(name: string, text: string): ReviewSet {
 			if ((REVIEW_STATUSES as readonly string[]).includes(meta.status)) status = meta.status as ReviewStatus
 			else errors.push(`${where}: status は open か resolved です: ${meta.status}（open として出します）`)
 		}
+		let impact: Impact | null = null
+		if (meta.impact) {
+			impact = parseImpact(meta.impact)
+			if (!impact) errors.push(`${where}: impact は あり か なし です: ${meta.impact}（${title}）`)
+		}
+		let recommend: Recommend[] = []
+		if (meta.recommend) {
+			const r = parseRecommend(meta.recommend)
+			recommend = r.items
+			for (const e of r.errors) errors.push(`${where}: ${e}（${title}）`)
+		}
 		const file = unquote(meta.file).replace(/^\.\//, '')
 		const key = `${file}\n${title}`
 		let pin: string | null = null
@@ -178,6 +251,8 @@ export function parseReview(name: string, text: string): ReviewSet {
 			...(meta.note ? { note: meta.note } : {}),
 			...(meta['resolved-at'] ? { resolvedAt: meta['resolved-at'] } : {}),
 			...(meta['ai-note'] ? { aiNote: meta['ai-note'] } : {}),
+			...(impact ? { impact } : {}),
+			...(recommend.length ? { recommend } : {}),
 			body,
 			span: { heading: h, metaEnd, end },
 		} })

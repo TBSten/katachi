@@ -83,6 +83,14 @@ class DecisionsTest(unittest.TestCase):
         self.assertEqual(entries[0].file, "docs/src/content/docs/ja/get-started/comparison-with-other-tools.mdx")
         self.assertIn("```md", entries[1].body)
 
+    def test_impact_and_recommend_are_meta(self):
+        # Review の `- impact:` `- recommend:`（KATACHI-351）の後ろに popup が status・note を書き足しても、メタとして読む
+        text = "## 指摘\n- file: ja/a.mdx\n- impact: あり\n- recommend: 直さない 7\n- status: resolved\n- note: 直さない\n\n本文\n"
+        entries, _ = D.parse(text, "x", D.REVIEW_KEYS)
+        self.assertEqual(entries[0].meta.get("status"), "resolved")
+        self.assertEqual(entries[0].meta.get("note"), "直さない")
+        self.assertEqual(entries[0].body, "本文")
+
     def test_review_ids_match_the_review_cli(self):
         # cli.mjs review list が出した id（prerelease-261109-01-step11 の写しで確かめた値）
         entries, _ = D.parse(REVIEW, "prerelease-261109-01-step11", D.REVIEW_KEYS)

@@ -7,10 +7,14 @@ export type Filter = {
 	minPriority: number
 	/** 解決済みも出す。 */
 	showResolved: boolean
+	/** ユーザ影響で絞る（all = 全部、user = ユーザ影響ありだけ、none = ユーザ影響なしだけ。`- impact:` の無い指摘は all のときだけ出す）。 */
+	impact: 'all' | 'user' | 'none'
 }
 
-export const DEFAULT_FILTER: Filter = { minPriority: 0, showResolved: false }
+export const DEFAULT_FILTER: Filter = { minPriority: 0, showResolved: false, impact: 'all' }
 export const PRIORITY_STEPS = [0, 3, 5, 7] as const
+/** ユーザ影響の絞り込みの選択肢（値と、一覧に出す文字）。 */
+export const IMPACT_STEPS = [['all', 'ユーザ影響: すべて'], ['user', 'ユーザ影響あり'], ['none', 'ユーザ影響なし']] as const
 
 /** 保存した文字列から読む。壊れていれば既定。 */
 export function parseFilter(raw: string | null): Filter {
@@ -19,6 +23,7 @@ export function parseFilter(raw: string | null): Filter {
 		return {
 			minPriority: (PRIORITY_STEPS as readonly number[]).includes(o.minPriority as number) ? (o.minPriority as number) : 0,
 			showResolved: o.showResolved === true,
+			impact: o.impact === 'user' || o.impact === 'none' ? o.impact : 'all',
 		}
 	} catch {
 		return { ...DEFAULT_FILTER }
@@ -26,7 +31,9 @@ export function parseFilter(raw: string | null): Filter {
 }
 
 export const passes = (v: ReviewView, f: Filter) =>
-	(f.showResolved || v.status !== 'resolved') && (v.priority === null || v.priority >= f.minPriority)
+	(f.showResolved || v.status !== 'resolved') &&
+	(v.priority === null || v.priority >= f.minPriority) &&
+	(f.impact === 'all' || (v.impact !== undefined && v.impact.user === (f.impact === 'user')))
 
 /** URL の末尾の `/` と `index.html` をそろえる。 */
 export const samePath = (a: string, b: string) => {

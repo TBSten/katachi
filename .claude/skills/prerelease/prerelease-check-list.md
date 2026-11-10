@@ -139,6 +139,7 @@
 - [ ] 違反: {TODO} 件（priority 7 以上: {TODO} 件）
 - [ ] 結果: {TODO file://.local/release-v0.0.0/docs-rules.md の絶対パス}
 - [ ] 過去の判断どおりで出さなかった: {TODO} 件 / 見直し候補 {TODO} 件（decisions/docs.md、Review に登録する前の `decisions.py match --drop` を含む）
+- [ ] Review に登録: {TODO} 件（ユーザ影響あり {TODO} 件 / なし {TODO} 件）。`review check` の問題・注意（impact・recommend の書き漏れ）0 件
 
 <details>
     <summary>memo</summary>

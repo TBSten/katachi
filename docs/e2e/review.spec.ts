@@ -318,6 +318,64 @@ test('人が足した選択肢: ボタンが並び、押すとひとことの頭
 	rmSync(actionsFile(), { force: true })
 })
 
+/** ユーザ影響と推奨度の付いた指摘（KATACHI-351）。 */
+const TAGGED = `---
+title: e2e の指摘（ユーザ影響と推奨度）
+---
+
+## [p6] 段落の言い回しが利用者を迷わせる
+- file: ja/get-started/faq.mdx
+- quote: 違うのは**列挙し損ねたものを許容するか
+- impact: あり: 読んだ利用者が deny by default の意味を取り違える
+- recommend: 直してもらう 8, 直さない 2, 後で 4
+
+本文。
+
+## [p2] details の中の作法
+- file: ja/get-started/faq.mdx
+- quote: fail-safe defaults
+- impact: なし
+- recommend: 直さない 7, 解決済みにする 3
+
+## [p1] 書いていない指摘
+- file: ja/get-started/faq.mdx
+- quote: 違うのは**列挙し損ねたものを許容するか
+`
+
+test('ユーザ影響の札と、ボタンごとの推奨度を出す。一覧はユーザ影響で絞れる', async ({ fb }) => {
+	writeSet(TAGGED, '# Review の選択肢\n\n## 後で\n- agent: v0.5 に積む\n')
+	await fb.fresh(FAQ)
+	await toggle(fb)
+	const u = ui(fb)
+	ok('ユーザ影響ありの行に「影響」の札（なし・書いていない行には出さない）', (await u('.row .row-impact').count()) === 1 && /利用者を迷わせる/.test((await u('.row:has(.row-impact)').textContent()) ?? ''))
+	await fb.shot('review-impact-0-list')
+	await openRow(fb, '利用者を迷わせる')
+	ok('popup の本文の上に「ユーザ影響あり」の札と理由', (await u('.pop .impact.is-user').textContent()) === 'ユーザ影響あり' && /取り違える/.test((await u('.pop .impact-reason').textContent()) ?? ''))
+	const rec = async (sel: string) => ((await u(`.pop .act ${sel} .rec`).count()) ? (await u(`.pop .act ${sel} .rec`).textContent()) : null)
+	ok('ボタンごとに推奨度（書いたボタンだけ）', (await rec('.btn.send')) === '推奨 8' && (await rec('.btn.keep')) === '推奨 2' && (await rec('.btn.custom')) === '推奨 4' && (await rec('.btn.primary')) === null)
+	const style = await u('.pop .act .btn.send .rec').evaluate((e) => { const s = getComputedStyle(e); return { size: parseFloat(s.fontSize), opacity: Number(s.opacity), parent: parseFloat(getComputedStyle(e.parentElement!).fontSize) } })
+	ok('推奨度は小さく薄い字', style.size < style.parent && style.opacity < 1, JSON.stringify(style))
+	ok('いちばん高い推奨度だけ少し濃くする', (await u('.pop .act .rec.is-top').count()) === 1 && (await u('.pop .act .btn.send .rec.is-top').count()) === 1)
+	ok('ボタンの説明に推奨度', /推奨度 8 \/ 10/.test((await u('.pop .act .btn.send').getAttribute('title')) ?? ''))
+	await fb.shot('review-impact-1-popup')
+	await openRow(fb, 'details の中の作法')
+	ok('なしは灰の札', (await u('.pop .impact').textContent()) === 'ユーザ影響なし' && (await u('.pop .impact.is-user').count()) === 0)
+	ok('解決済みにするにも推奨度を出せる', (await rec('.btn.primary')) === '推奨 3')
+	await fb.shot('review-impact-2-none')
+	if (fb.mobile && (await u('.pop').isVisible())) await fb.act(u('.pop .x'))
+	if ((await u('.panel').getAttribute('class'))?.includes('is-folded')) await fb.act(u('.panel .fold'))
+	await u('.filters select[aria-label="ユーザ影響で絞る"]').selectOption('user')
+	await sleep(300)
+	ok('ユーザ影響ありで絞ると 1 件', /このページ 1 ·/.test((await u('.sum').textContent()) ?? ''), (await u('.sum').textContent()) ?? '')
+	await u('.filters select[aria-label="ユーザ影響で絞る"]').selectOption('all')
+	await sleep(300)
+	ok('すべてに戻すと 3 件', /このページ 3 ·/.test((await u('.sum').textContent()) ?? ''), (await u('.sum').textContent()) ?? '')
+	await fb.act(u('.row').filter({ hasText: '利用者を迷わせる' }).first())
+	await u('.pop:not([hidden])').waitFor({ state: 'visible', timeout: 5000 })
+	await fb.act(u('.pop .act .btn.keep'))
+	ok('解決済みにしても impact と recommend の行は残る', await waitFor(() => readReview().includes('- impact: あり: 読んだ利用者') && readReview().includes('- recommend: 直してもらう 8') && readReview().includes('- note: 直さない\n')), readReview().slice(0, 600))
+})
+
 test('閉じた details・選ばれていないタブ・畳んだコードの中の指摘は、開くと見えるようにして光らせる', async ({ fb }) => {
 	writeSet()
 	await fb.fresh(FAQ)
