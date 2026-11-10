@@ -350,6 +350,7 @@
   .btn-copy { --btn-icon: var(--icon-copy); }
   .btn-comment { --btn-icon: var(--icon-comment); }
   .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 0; }
+  .toolbar-end { justify-content: flex-end; gap: 4px; }
 
   /* 見出しと値の対（2 列の grid。値は 1 行に畳む） */
   .facts {
@@ -531,6 +532,9 @@
   .qa-body { display: grid; gap: 14px; padding: 14px 16px 16px; }
   .qa-body > * { margin: 0; min-width: 0; }
   .qa-label { margin: 0 0 4px; color: var(--muted); font-size: 13px; font-weight: 600; }
+  .qa-free > summary { margin: 0; cursor: pointer; width: fit-content; }
+  .qa-free > summary:hover { color: var(--ink); }
+  .qa-free[open] > summary { margin-bottom: 4px; }
   .qa-observed p { margin: 0; }
 
   .qa-options { display: grid; gap: 6px; min-width: 0; margin: 0; padding: 0; border: 0; }
@@ -1417,7 +1421,7 @@
       <span id="progress-text"></span>
       <span class="progress-actions">
         <a class="btn btn-sm btn-quiet" id="report-link" href="./project-code-base-report.html">レポートを見る</a>
-        <button type="button" class="btn btn-sm" id="toggle-all">すべて開く</button>
+        <button type="button" class="btn btn-sm btn-quiet" id="toggle-all">すべて開く</button>
       </span>
     </div>
     <div class="progress-track">
@@ -1550,6 +1554,7 @@
       ['projectRoot', '対象プロジェクトのルート'],
       ['ranAt', '実行日時']
     ],
+    warningLabel: '警告',
     stepDoneWarning: '完了（警告）',
     stepDone: '完了',
     stepOptional: '任意',
@@ -1798,6 +1803,8 @@
       if (row.key) target(tr, row.key, row.label);
       row.cells.forEach(function (cell, i) {
         var td = el('td', monoFirst !== false && i === 0 ? 'mono' : '');
+        // row.fields があれば、セルごとにも JSON の場所をフィードバックの宛先にする
+        if (row.key && row.fields && row.fields[i]) target(td, row.key + '.' + row.fields[i], headers[i]);
         td.appendChild(clip(cell));
         tr.appendChild(td);
       });
@@ -1900,6 +1907,10 @@
     });
     var note = blank(answer.note) ? '' : String(answer.note);
     entry.free.value = found ? note : [answer.answer || '', note].filter(Boolean).join('\n');
+    openFreeIfFilled(entry);
+  }
+  function openFreeIfFilled(entry) {
+    if (entry.freeToggle && entry.free.value.replace(/\s+/g, '') !== '') entry.freeToggle.open = true;
   }
   // 推奨の先頭の文字（"B。..."）が選択肢の記号なら、その番号。そうでなければ -1
   function recommendedIndex(recommendation, count) {
@@ -1966,6 +1977,7 @@
     } else if (!blank(entry.recommendation)) {
       entry.radios.forEach(function (radio) { radio.checked = false; });
       entry.free.value = String(entry.recommendation);
+      openFreeIfFilled(entry);
     }
     onCardInput(entry);
   }
@@ -2018,7 +2030,8 @@
 
   function questionCard(item, index, answers) {
     var id = questionId(item, index);
-    var card = target(el('details', 'qa'), 'questions[id=' + id + ']', id);
+    var cardKey = 'questions[id=' + id + ']';
+    var card = target(el('details', 'qa'), cardKey, id);
     var summary = el('summary');
     var badge = el('span', 'badge qa-id');
     badge.textContent = id;
@@ -2034,7 +2047,7 @@
     summary.appendChild(state);
 
     var body = el('div', 'qa-body');
-    var observed = el('div', 'qa-observed');
+    var observed = target(el('div', 'qa-observed'), cardKey + '.observed', T.observed);
     observed.appendChild(subHeading(T.observed));
     observed.appendChild(paragraph(richText(item.observed, 'questions[].observed')));
     body.appendChild(observed);
@@ -2050,7 +2063,7 @@
       legend.textContent = T.pickOne;
       set.appendChild(legend);
       options.forEach(function (option, i) {
-        var label = el('label', 'qa-option');
+        var label = target(el('label', 'qa-option'), cardKey + '.options[' + i + ']', String.fromCharCode(65 + i));
         var radio = el('input');
         radio.type = 'radio';
         radio.name = 'answer-' + id;
@@ -2075,7 +2088,7 @@
       body.appendChild(set);
     }
 
-    var why = el('div', 'qa-why');
+    var why = target(el('div', 'qa-why'), cardKey + '.recommendation', T.recommendation);
     if (blank(item.recommendation)) {
       why.appendChild(subHeading(T.recommendation));
       why.appendChild(paragraph(unfilled('questions[].recommendation')));
@@ -2089,16 +2102,21 @@
     body.appendChild(why);
 
     var freeBox = el('div');
-    var freeLabel = el('label', 'qa-label');
-    freeLabel.setAttribute('for', 'answer-' + id + '-free');
-    freeLabel.textContent = T.freeLabel;
+    // 補足・自由記入は畳んでおく。中身があるとき・選択肢が無い質問では開く
+    var freeToggle = el('details', 'qa-free');
+    var freeSummary = el('summary', 'qa-label');
+    freeSummary.textContent = T.freeLabel;
     var free = el('textarea');
     free.id = 'answer-' + id + '-free';
+    free.setAttribute('aria-label', T.freeLabel);
     free.setAttribute('placeholder', T.freePlaceholder);
     free.addEventListener('input', function () { onCardInput(entry); });
     entry.free = free;
-    freeBox.appendChild(freeLabel);
-    freeBox.appendChild(free);
+    entry.freeToggle = freeToggle;
+    freeToggle.open = entry.radios.length === 0;
+    freeToggle.appendChild(freeSummary);
+    freeToggle.appendChild(free);
+    freeBox.appendChild(freeToggle);
     var tools = el('div', 'toolbar');
     if (!blank(item.recommendation)) {
       tools.appendChild(button(T.adoptOne, function () { adoptRecommendation(entry); }, 'btn-sm'));
@@ -2586,7 +2604,7 @@
 
     var body = el('div', 'step-body');
     if (!blank(step.warning)) {
-      var warning = el('div', 'aside aside-caution step-warning');
+      var warning = target(el('div', 'aside aside-caution step-warning'), key + '.warning', T.warningLabel);
       var warningText = el('p', 'aside-title');
       warningText.textContent = String(step.warning);
       warning.appendChild(warningText);
@@ -2727,7 +2745,8 @@
           value(item.location, 'violations[].location'),
           value(item.whyNotFixed, 'violations[].whyNotFixed'),
           value(item.suggestion, 'violations[].suggestion')
-        ]
+        ],
+        fields: ['violation', 'location', 'whyNotFixed', 'suggestion']
       };
     });
     mount('violations', [tableOf(T.violationHeaders, rows, ['25%', '25%', '25%', '25%'], false)]);
@@ -2744,7 +2763,8 @@
           value(item.path, 'changedFiles[].path'),
           value(item.change, 'changedFiles[].change'),
           value(item.summary, 'changedFiles[].summary')
-        ]
+        ],
+        fields: ['path', 'change', 'summary']
       };
     });
     mount('changedFiles', [tableOf(T.changedHeaders, rows, ['40%', '16%', '44%'])]);

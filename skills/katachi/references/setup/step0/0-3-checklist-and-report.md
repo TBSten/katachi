@@ -76,7 +76,7 @@ Feedback on the katachi codebase report (project-code-base-report.html), 2 item(
    > feature modules have ViewModels too (feature/*/src/...)
 ```
 
-`Target` points into the JSON of the file named on the first line: `roles[name=ViewModel]` is the `roles` entry whose `name` is `ViewModel`, `roles[group=app.ui]` the roles in that group, `steps[id=3].items[id=3-2]` an item of the checklist, `overview.language` a key, `directoryTree: app/src/` a line of the directory tree, and `page` the whole page. For each comment, fix that entry (check the code again if the comment says the facts are wrong), or tell the user why you did not. Then tell the user which ones you changed. The comments stay in their browser until they delete them.
+`Target` points into the JSON of the file named on the first line: `roles[name=ViewModel]` is the `roles` entry whose `name` is `ViewModel`, `roles[name=ViewModel].forbidden[0]` the first entry of its `forbidden`, `tools[name=ktlint].configPath` one field of a row, `roles[group=app.ui]` the roles in that group, `steps[id=3].items[id=3-2]` an item of the checklist, `overview.language` a key, `directoryTree: app/src/` a line of the directory tree, and `page` the whole page. For each comment, fix that entry (check the code again if the comment says the facts are wrong), or tell the user why you did not. Then tell the user which ones you changed. The comments stay in their browser until they delete them.
 
 #### Write down what you learn as you go
 

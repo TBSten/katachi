@@ -350,6 +350,7 @@
   .btn-copy { --btn-icon: var(--icon-copy); }
   .btn-comment { --btn-icon: var(--icon-comment); }
   .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 0; }
+  .toolbar-end { justify-content: flex-end; gap: 4px; }
 
   /* 見出しと値の対（2 列の grid。値は 1 行に畳む） */
   .facts {
@@ -531,6 +532,9 @@
   .qa-body { display: grid; gap: 14px; padding: 14px 16px 16px; }
   .qa-body > * { margin: 0; min-width: 0; }
   .qa-label { margin: 0 0 4px; color: var(--muted); font-size: 13px; font-weight: 600; }
+  .qa-free > summary { margin: 0; cursor: pointer; width: fit-content; }
+  .qa-free > summary:hover { color: var(--ink); }
+  .qa-free[open] > summary { margin-bottom: 4px; }
   .qa-observed p { margin: 0; }
 
   .qa-options { display: grid; gap: 6px; min-width: 0; margin: 0; padding: 0; border: 0; }
@@ -1142,7 +1146,7 @@
   ],
   "excluded": [
     { "path": "app/src/main/kotlin/**/generated/**", "reason": "コード生成の出力をコミットしているため。手で直せない" },
-    { "path": "third-party/", "reason": "外部から取り込んだソース。こちらの規約を当てない" }
+    { "path": "third-party/", "reason": "外部から取り込んだソース。こちらの規約の対象にしない" }
   ],
   "questions": [
     {
@@ -1276,7 +1280,7 @@
 
     <section id="templates" data-fb="templates" data-fb-label="8. テンプレートの提案">
       <h2>8. テンプレートの提案</h2>
-      <p class="lede">同じ形のファイルが何本もある Role に、<code>.template { }</code> を当てる提案です。導入の最後に AI エージェントが記録します。任意です。</p>
+      <p class="lede">同じ形のファイルが何本もある Role に、<code>.template { }</code> を足す提案です。導入の最後に AI エージェントが記録します。任意です。</p>
       <div data-render="templates"></div>
     </section>
   </main>
@@ -1376,6 +1380,7 @@
     rationale: 'そう判断した根拠',
     characteristics: 'プロジェクト構成上の特徴',
     moduleList: 'モジュール一覧',
+    deviationLabel: '他との違い',
     deviationLede: '⚑ は、同じ種別の他のモジュールと構成が違う点です。',
     responsibility: '責務',
     buildFile: 'ビルドファイル',
@@ -1626,6 +1631,8 @@
       if (row.key) target(tr, row.key, row.label);
       row.cells.forEach(function (cell, i) {
         var td = el('td', monoFirst !== false && i === 0 ? 'mono' : '');
+        // row.fields があれば、セルごとにも JSON の場所をフィードバックの宛先にする
+        if (row.key && row.fields && row.fields[i]) target(td, row.key + '.' + row.fields[i], headers[i]);
         td.appendChild(clip(cell));
         tr.appendChild(td);
       });
@@ -1728,6 +1735,10 @@
     });
     var note = blank(answer.note) ? '' : String(answer.note);
     entry.free.value = found ? note : [answer.answer || '', note].filter(Boolean).join('\n');
+    openFreeIfFilled(entry);
+  }
+  function openFreeIfFilled(entry) {
+    if (entry.freeToggle && entry.free.value.replace(/\s+/g, '') !== '') entry.freeToggle.open = true;
   }
   // 推奨の先頭の文字（"B。..."）が選択肢の記号なら、その番号。そうでなければ -1
   function recommendedIndex(recommendation, count) {
@@ -1794,6 +1805,7 @@
     } else if (!blank(entry.recommendation)) {
       entry.radios.forEach(function (radio) { radio.checked = false; });
       entry.free.value = String(entry.recommendation);
+      openFreeIfFilled(entry);
     }
     onCardInput(entry);
   }
@@ -1846,7 +1858,8 @@
 
   function questionCard(item, index, answers) {
     var id = questionId(item, index);
-    var card = target(el('details', 'qa'), 'questions[id=' + id + ']', id);
+    var cardKey = 'questions[id=' + id + ']';
+    var card = target(el('details', 'qa'), cardKey, id);
     var summary = el('summary');
     var badge = el('span', 'badge qa-id');
     badge.textContent = id;
@@ -1862,7 +1875,7 @@
     summary.appendChild(state);
 
     var body = el('div', 'qa-body');
-    var observed = el('div', 'qa-observed');
+    var observed = target(el('div', 'qa-observed'), cardKey + '.observed', T.observed);
     observed.appendChild(subHeading(T.observed));
     observed.appendChild(paragraph(richText(item.observed, 'questions[].observed')));
     body.appendChild(observed);
@@ -1878,7 +1891,7 @@
       legend.textContent = T.pickOne;
       set.appendChild(legend);
       options.forEach(function (option, i) {
-        var label = el('label', 'qa-option');
+        var label = target(el('label', 'qa-option'), cardKey + '.options[' + i + ']', String.fromCharCode(65 + i));
         var radio = el('input');
         radio.type = 'radio';
         radio.name = 'answer-' + id;
@@ -1903,7 +1916,7 @@
       body.appendChild(set);
     }
 
-    var why = el('div', 'qa-why');
+    var why = target(el('div', 'qa-why'), cardKey + '.recommendation', T.recommendation);
     if (blank(item.recommendation)) {
       why.appendChild(subHeading(T.recommendation));
       why.appendChild(paragraph(unfilled('questions[].recommendation')));
@@ -1917,16 +1930,21 @@
     body.appendChild(why);
 
     var freeBox = el('div');
-    var freeLabel = el('label', 'qa-label');
-    freeLabel.setAttribute('for', 'answer-' + id + '-free');
-    freeLabel.textContent = T.freeLabel;
+    // 補足・自由記入は畳んでおく。中身があるとき・選択肢が無い質問では開く
+    var freeToggle = el('details', 'qa-free');
+    var freeSummary = el('summary', 'qa-label');
+    freeSummary.textContent = T.freeLabel;
     var free = el('textarea');
     free.id = 'answer-' + id + '-free';
+    free.setAttribute('aria-label', T.freeLabel);
     free.setAttribute('placeholder', T.freePlaceholder);
     free.addEventListener('input', function () { onCardInput(entry); });
     entry.free = free;
-    freeBox.appendChild(freeLabel);
-    freeBox.appendChild(free);
+    entry.freeToggle = freeToggle;
+    freeToggle.open = entry.radios.length === 0;
+    freeToggle.appendChild(freeSummary);
+    freeToggle.appendChild(free);
+    freeBox.appendChild(freeToggle);
     var tools = el('div', 'toolbar');
     if (!blank(item.recommendation)) {
       tools.appendChild(button(T.adoptOne, function () { adoptRecommendation(entry); }, 'btn-sm'));
@@ -2458,7 +2476,7 @@
       kind.appendChild(value(module.kind, 'modules[].kind'));
       row.appendChild(kind);
       if (!blank(module.deviation)) {
-        var flag = el('span', 'deviation');
+        var flag = target(el('span', 'deviation'), 'modules[path=' + (blank(module.path) ? '?' : module.path) + '].deviation', T.deviationLabel);
         flag.textContent = String(module.deviation);
         row.appendChild(flag);
       }
@@ -2469,11 +2487,12 @@
     var body = el('div', 'tree-children');
     if (module) {
       var fields = el('dl', 'fields module-body');
-      [[T.responsibility, value(module.responsibility, 'modules[].responsibility')],
-       [T.buildFile, value(module.buildFile, 'modules[].buildFile')]].forEach(function (pair) {
+      var moduleKey = 'modules[path=' + (blank(module.path) ? '?' : module.path) + ']';
+      [[T.responsibility, value(module.responsibility, 'modules[].responsibility'), 'responsibility'],
+       [T.buildFile, value(module.buildFile, 'modules[].buildFile'), 'buildFile']].forEach(function (pair) {
         var dt = el('dt');
         dt.textContent = pair[0];
-        var dd = el('dd');
+        var dd = target(el('dd'), moduleKey + '.' + pair[2], pair[0]);
         dd.appendChild(pair[1]);
         fields.appendChild(dt);
         fields.appendChild(dd);
@@ -2536,8 +2555,8 @@
     Array.prototype.forEach.call(container.querySelectorAll('details'), function (box) { box.open = open; });
   }
   function treeTools(container) {
-    var tools = el('div', 'toolbar');
-    tools.appendChild(button(T.expandAll, function () { setAllOpen(container, true); }, 'btn-sm'));
+    var tools = el('div', 'toolbar toolbar-end');
+    tools.appendChild(button(T.expandAll, function () { setAllOpen(container, true); }, 'btn-sm btn-quiet'));
     tools.appendChild(button(T.collapseAll, function () { setAllOpen(container, false); }, 'btn-sm btn-quiet'));
     return tools;
   }
@@ -2624,6 +2643,7 @@
     });
     return ul;
   }
+  // pair は [見出し, 中身, JSON の場所]。場所があれば dd をフィードバックの宛先にする
   function fieldList(pairs) {
     var dl = el('dl', 'fields');
     pairs.forEach(function (pair) {
@@ -2631,6 +2651,7 @@
       var dt = el('dt');
       dt.textContent = pair[0];
       var dd = el('dd');
+      if (pair[2]) target(dd, pair[2], pair[0]);
       dd.appendChild(pair[1]);
       dl.appendChild(dt);
       dl.appendChild(dd);
@@ -2641,7 +2662,8 @@
   function roleNode(role, root, index) {
     var constraint = role.constraintOnly === true;
     var box = el('details', 'role-node' + (constraint ? ' constraint-only' : '') + (blank(role.name) ? ' is-empty' : ''));
-    target(box, blank(role.name) ? 'roles[' + index + ']' : 'roles[name=' + role.name + ']', blank(role.name) ? '?' : role.name);
+    var roleKey = blank(role.name) ? 'roles[' + index + ']' : 'roles[name=' + role.name + ']';
+    target(box, roleKey, blank(role.name) ? '?' : role.name);
     var row = el('summary', 'tree-row role-row');
     row.appendChild(el('span', 'tw'));
     row.appendChild(el('span', 'ti ti-role'));
@@ -2671,25 +2693,25 @@
       detail.appendChild(note);
     }
     detail.appendChild(fieldList([
-      [T.layout, blank(role.layout) ? unfilled('roles[].layout') : richText(role.layout, 'roles[].layout')],
-      [T.naming, value(role.naming, 'roles[].naming')]
+      [T.layout, blank(role.layout) ? unfilled('roles[].layout') : richText(role.layout, 'roles[].layout'), roleKey + '.layout'],
+      [T.naming, value(role.naming, 'roles[].naming'), roleKey + '.naming']
     ]));
     var rules = el('div', 'rules');
-    [[T.allowed, 'rules-col', role.allowed],
-     [T.forbidden, 'rules-col rules-deny', role.forbidden]
+    [[T.allowed, 'rules-col', role.allowed, 'allowed'],
+     [T.forbidden, 'rules-col rules-deny', role.forbidden, 'forbidden']
     ].forEach(function (spec) {
-      var col = el('div', spec[1]);
+      var col = target(el('div', spec[1]), roleKey + '.' + spec[3], spec[0]);
       var label = el('p', 'rules-head');
       label.textContent = spec[0];
       col.appendChild(label);
-      col.appendChild(bulletsOrNone(spec[2]));
+      col.appendChild(targetBullets(bulletsOrNone(spec[2]), roleKey + '.' + spec[3]));
       rules.appendChild(col);
     });
     detail.appendChild(rules);
     detail.appendChild(fieldList([
-      [T.examples, fileLinks(role.examples, root)],
-      [T.countLabel, value(role.count, 'roles[].count')],
-      [T.note, blank(role.note) ? null : text(role.note)]
+      [T.examples, targetBullets(fileLinks(role.examples, root), roleKey + '.examples'), roleKey + '.examples'],
+      [T.countLabel, value(role.count, 'roles[].count'), roleKey + '.count'],
+      [T.note, blank(role.note) ? null : text(role.note), roleKey + '.note']
     ]));
     box.appendChild(detail);
     return box;
@@ -2795,7 +2817,8 @@
           value(tool.configPath, 'tools[].configPath'),
           value(tool.declareInKatachi, 'tools[].declareInKatachi'),
           blank(tool.note) ? text('') : text(tool.note)
-        ]
+        ],
+        fields: ['name', 'configPath', 'declareInKatachi', 'note']
       };
     });
     mount('tools', [tableOf(T.tools, rows, ['18%', '22%', '30%', '30%'])]);
@@ -2807,7 +2830,8 @@
       return {
         key: blank(entry.path) ? 'excluded[' + i + ']' : 'excluded[path=' + entry.path + ']',
         label: blank(entry.path) ? String(i + 1) : String(entry.path),
-        cells: [value(entry.path, 'excluded[].path'), value(entry.reason, 'excluded[].reason')]
+        cells: [value(entry.path, 'excluded[].path'), value(entry.reason, 'excluded[].reason')],
+        fields: ['path', 'reason']
       };
     });
     mount('excluded', [tableOf(T.excluded, rows, ['40%', '60%'])]);
@@ -2825,7 +2849,8 @@
           inlineOrNone(entry.params),
           blank(entry.basedOn) ? noneInline() : richText(entry.basedOn, 'templates[].basedOn'),
           blank(entry.reason) ? text('') : text(entry.reason)
-        ]
+        ],
+        fields: ['role', 'files', 'params', 'basedOn', 'reason']
       };
     });
     mount('templates', [tableOf(T.templates, rows, ['16%', '20%', '12%', '26%', '26%'])]);
