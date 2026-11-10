@@ -7,7 +7,7 @@ The working directory holds the checklist and the report that people open, plus 
 **Pick the place.** Prefer a place `.gitignore` already ignores, so that the working directory never becomes an `[UnexpectedFile]` in step 4:
 
 ```sh
-git check-ignore -q .local && echo .local    # try .local, .tmp, tmp, .scratch in this order
+git check-ignore -q .local/ && echo .local    # try .local/, .tmp/, tmp/, .scratch/ in this order. Keep the slash: `.local` misses a `.local/` line until the directory exists
 ```
 
 Use `<the first ignored one>/install-katachi`. If none is ignored, use `tmp/install-katachi` and **tell the user it is visible to git**: katachi checks files that are untracked but not ignored, so as it is, the working directory itself fails step 4 (and the checklist and the report can end up in their commits). Suggest the line for `.gitignore`. Do not edit `.gitignore` yourself. If the user named a place, use it. If 0-1 already made `<workdir>/tmp/` for `katachi.main.kts` (no Homebrew), keep that place.

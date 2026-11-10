@@ -68,6 +68,17 @@ class DoctorScaffoldSpec : FreeSpec({
             project.resolve("architecture-test/.gitignore").exists() shouldBe false
         }
 
+        "git が build/ の行（ディレクトリの形）で無視していれば、まだ build が無くても .gitignore を作らない" {
+            val project = gradleProject(toolchain = 21)
+            ProcessBuilder("git", "init", "-q").directory(project.toFile()).start().waitFor() shouldBe 0
+            project.resolve(".gitignore").writeText("build/\n")
+
+            val run = runCapturing(project, listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0"), env = javaHome())
+
+            run.status shouldBe 0
+            project.resolve("architecture-test/.gitignore").exists() shouldBe false
+        }
+
         "検査用モジュールを作り、settings に include を足す" {
             val project = gradleProject(toolchain = 21)
 

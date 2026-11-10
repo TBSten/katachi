@@ -82,9 +82,12 @@ internal fun runProcess(command: List<String>, dir: Path, timeoutSeconds: Long =
 /** The kit's `is_git_repo`. */
 internal fun isGitRepo(dir: Path): Boolean = runGit(dir, "rev-parse", "--is-inside-work-tree")?.status == 0
 
-/** Whether git ignores [path] (relative to [dir]); without git, a plain look at `.gitignore`. The kit's `path_is_ignored`. */
+/**
+ * Whether git ignores the directory [path] (relative to [dir]); without git, a plain look at `.gitignore`. The kit's `path_is_ignored`.
+ * It asks git with a trailing slash: without it, a `build/` line does not match a directory that does not exist yet.
+ */
 internal fun pathIsIgnored(dir: Path, path: String): Boolean {
-    if (isGitRepo(dir)) return runGit(dir, "check-ignore", "-q", path)?.status == 0
+    if (isGitRepo(dir)) return runGit(dir, "check-ignore", "-q", "${path.trimEnd('/')}/")?.status == 0
     val gitignore = dir.resolve(".gitignore")
     if (!gitignore.isRegularFile()) return false
     val pattern = runCatching { Regex("^/?$path/?$") }.getOrNull() ?: return false
