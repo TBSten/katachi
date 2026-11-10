@@ -392,7 +392,7 @@ Signatures (arguments, return type, receiver, and so on) are checked only when y
 
 ## Property accessors and delegation
 
-These are checked only when you chain them after a line. If you do not write them, they are **not checked**.
+Property accessors and delegation are checked only when you chain them after a line. If you do not write them, they are **not checked**.
 
 <div style="overflow-x: auto">
 <table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
@@ -487,7 +487,7 @@ An annotation line matches only declarations that have the annotation you named.
       // You can also write the fully qualified name
       allow(annotated("androidx.compose.runtime.Composable"), `fun`, "*Screen")()
       allow(annotated("Preview") or annotated("PreviewLightDark"),
-            private, `fun`, "*Preview")()
+        private, `fun`, "*Preview")()
       ```
     </td>
   </tr>
@@ -540,7 +540,10 @@ An annotation line matches only declarations that have the annotation you named.
 
 ## Files and source sets
 
-A `package` or `import` without a line is a **violation**. `not.` is a denial stronger than an allow line, and `actualsIn` is checked only when you write it.
+A `package` or `import` without a line is a **violation**.
+
+- `not.` is a denial stronger than an allow line
+- `actualsIn` is checked only when you write it
 
 <div style="overflow-x: auto">
 <table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
@@ -584,7 +587,7 @@ A `package` or `import` without a line is a **violation**. `not.` is a denial st
     <td>
       Deny (`not.`)
       ```kt
-      class LegacyImpl   // Only this one passes
+      class LegacyImpl   // Only this one is not a violation
       ```
     </td>
     <td>
@@ -620,7 +623,7 @@ A `package` or `import` without a line is a **violation**. `not.` is a denial st
 
 ## Body and KDoc
 
-These are checked only when you chain them after a line. If you do not write them, they are **not checked**.
+Bodies and KDoc are checked only when you chain them after a line. If you do not write them, they are **not checked**.
 
 <div style="overflow-x: auto">
 <table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
