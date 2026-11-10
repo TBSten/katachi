@@ -725,6 +725,12 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		row1.append(name, decision)
 		row2.append(agent, add)
 		form.append(row1, row2)
+		// もう足せないときは欄を出さず、どうすればよいかだけを書く（スマホのシートの高さを空ける）。
+		if (!fixing && actions.length >= MAX_ACTIONS) {
+			hint.textContent = `選択肢は ${MAX_ACTIONS} 個までです。足すなら × でどれかを消してください（名前を押すと直せます）`
+			box.append(hint)
+			return box
+		}
 		box.append(form, hint)
 		sync()
 		return box

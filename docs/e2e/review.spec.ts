@@ -223,6 +223,21 @@ test('直してもらう: Feedback の記録を作って解決済みにする �
 	ok('「戻す」で指摘のファイルが元に戻る', await waitFor(() => readReview() === SET))
 })
 
+test('選択肢が 8 個あると欄を出さず、消し方と直し方だけを書く。名前を押すと直せる', async ({ fb }) => {
+	const labels = ['後で', 'PR #65 待ち', 'skill へ移すので消えるか見る', '方針を決めてから', 'このまま', '重複', '英語版だけ直す', 'v0.5']
+	writeSet(SET, `# 選択肢\n\n${labels.map((l) => `## ${l}\n- agent: なにか\n`).join('')}`)
+	await fb.fresh(FAQ)
+	await toggle(fb)
+	const u = ui(fb)
+	await openRow(fb, '段落への指摘')
+	ok('8 個がボタンで並ぶ', (await u('.pop .act .btn.custom').count()) === 8)
+	await fb.act(u('.pop .btn.plus'))
+	ok('上限なら欄を出さない', (await u('.pop .action-form').count()) === 0 && /8 個までです。足すなら × で/.test((await u('.pop .action-hint').textContent()) ?? ''))
+	ok('一覧は高さを止めて中だけスクロールする', await u('.pop .action-list').evaluate((e) => getComputedStyle(e).overflowY === 'auto'))
+	await fb.act(u('.pop .action-chip .action-pick').filter({ hasText: '重複' }))
+	ok('名前を押すと欄が出て直せる', (await u('.pop .action-form input').first().inputValue()) === '重複' && (await u('.pop .action-form .btn').textContent()) === '直す')
+	ok('前・次は見えている', await u('.pop .nav').isVisible())
+})
 test('人が足した選択肢: ボタンが並び、押すとひとことの頭に名前を書く。「＋」で足す・消す', async ({ fb }) => {
 	writeSet(SET, '# Review の選択肢\n\n## 後で\n- agent: v0.5 のチケットに積んでから review remove\n- decision: 後で\n')
 	await fb.fresh(FAQ)
