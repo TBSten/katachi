@@ -67,6 +67,7 @@ From here on, **read every `katachi …` in these steps as `kotlin <workdir>/tmp
 
 - `kotlin` takes every argument that starts with `-D`, `-J` or `@` for itself, even after the script. Put `katachi-escaped:` in front of such an argument (`… agent test -- katachi-escaped:-Dkatachi.baseline.update=true`); katachi removes it.
 - The first run downloads katachi-script and compiles the script, so it takes a while. Later runs use the cache.
+- On Windows, `katachi agent test` starts `./gradlew` through `sh`, so run these steps in WSL or Git Bash. Without either, run `gradlew.bat <module>:test --console=plain -Dkatachi.maxViolations=all` yourself and save its output as `<workdir>/tmp/test-<name>.log` (`katachi agent compare-violations` reads those).
 
 If all four pass, no permission will be asked for in any later step.
 
