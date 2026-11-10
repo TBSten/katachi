@@ -57,16 +57,16 @@ Answers to `questions` go into `answers` of the same file, keyed by the question
 }
 ```
 
-The user can answer in the browser too, in "Questions for you" on each page, and hand the answers back in one of two ways. Either way, copy the entries into `answers` of that file:
+The user can answer in the browser too, in "Questions for you" on each page. Once there is an answer or a feedback comment, a small menu appears at the bottom right of the page, and the user hands things back in one of two ways. Either way, copy the entries into `answers` of that file:
 
-- **"Copy answers"** copies text to paste into the chat: one line saying which file the answers are for, a line listing the ids still open (if any), and a ```` ```json ```` block with `{"target": "report", "answers": {"cq1": {"answer": "…", "note": "…"}}}`.
+- **"Copy all"** copies text to paste into the chat: one line saying which file the answers are for, a line listing the ids still open (if any), and a ```` ```json ```` block with `{"target": "report", "answers": {"cq1": {"answer": "…", "note": "…"}}}`. If there is feedback (below), it follows in the same paste. Only what was not copied before goes in; when everything was, all of it is copied again.
 - **"Save as JSON"** saves the same JSON as a file (`katachi-answers-report.json` / `katachi-answers-check-list.json`).
 
 `target` is `report` or `check-list`. An entry whose `note` is `null` was a plain pick.
 
 #### Feedback
 
-Both pages also have a **Feedback mode** (the button at the bottom right). The user clicks any item on the page (Shift-click adds more items to the same comment), writes a comment, and copies all comments at once. What you receive looks like this:
+Both pages also have a **Feedback mode** (the button at the bottom right). The user clicks any item on the page (Shift-click adds more items to the same comment), writes a comment, and copies all comments at once with "Copy all" in the same menu (together with any answers). What you receive looks like this:
 
 ```text
 Feedback on the katachi codebase report (project-code-base-report.html), 2 item(s). "Target" is the place in that file's JSON. …

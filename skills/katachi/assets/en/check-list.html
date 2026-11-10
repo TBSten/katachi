@@ -590,43 +590,48 @@
   .qa textarea:focus-visible, .fb-pop textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; }
   .qa.is-imported .qa-state::after { content: ""; }
 
-  /* Hand-off bar for the answers (sticks below the list of questions) */
-  .answer-dock {
-    position: sticky;
-    /* Stick flush to the bottom edge. JS moves the "Feedback" button at the bottom right above it */
-    bottom: 0;
-    z-index: 5;
+  /* The menu that copies what there is to hand over (answers, feedback). It floats at the bottom right and appears once there is at least one of either */
+  .send-bar {
+    position: fixed;
+    right: max(16px, env(safe-area-inset-right, 0px));
+    bottom: max(16px, env(safe-area-inset-bottom, 0px));
+    z-index: 32;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 10px 16px;
-    margin: 16px 0 0;
-    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+    gap: 8px 16px;
+    max-width: min(56rem, calc(100vw - 32px));
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    padding: 10px 12px 10px 16px;
     background: var(--bg);
     border: 1px solid var(--line);
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-    box-shadow: var(--shadow-md);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    font-size: 14px;
+    animation: send-in 180ms ease-out;
   }
-
-  .answer-dock:empty { display: none; }
-  /* Don't stick while the preview is open */
-  .answer-dock.is-previewing { position: static; border-radius: var(--radius-lg); }
+  .send-bar[hidden] { display: none; }
+  @keyframes send-in {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .send-bar { animation: none; }
+  }
   @media (max-width: 640px) {
-    .dock-hint { display: none; }
+    .send-bar { left: max(16px, env(safe-area-inset-left, 0px)); }
   }
-  .dock-progress { flex: 1 1 14rem; min-width: 0; }
-  .dock-count { margin: 0; color: var(--ink); font-size: 14px; font-weight: 600; }
-  .dock-hint { margin: 0; color: var(--muted); font-size: 13px; }
-  .dock-bar { height: 4px; margin-top: 6px; background: var(--bg-sunken); border-radius: 9999px; overflow: hidden; }
-  .dock-bar > span { display: block; height: 100%; width: 0; background: var(--success-high); transition: width 150ms; }
-  .dock-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-  .dock-status { flex-basis: 100%; margin: 0; color: var(--muted); font-size: 13px; }
-  .dock-status:empty { display: none; }
-  .dock-status.is-error { color: var(--danger-high); }
+  .send-summary { flex: 1 1 auto; min-width: 0; margin: 0; color: var(--ink); font-weight: 600; }
+  .send-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .send-status { flex-basis: 100%; margin: 0; color: var(--muted); font-size: 13px; }
+  .send-status:empty { display: none; }
+  .send-status.is-error { color: var(--danger-high); }
   /* A flex child grows to its content's width; min-width: 0 keeps it inside the bar */
-  .dock-preview { flex-basis: 100%; min-width: 0; max-width: 100%; font-size: 13px; }
-  .dock-preview > summary { color: var(--muted); cursor: pointer; }
-  .dock-preview pre { max-height: 14rem; margin-top: 6px; font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .send-preview { flex-basis: 100%; min-width: 0; max-width: 100%; max-height: 14rem; margin: 0; font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .send-preview[hidden] { display: none; }
+  /* Leave room at the bottom for the menu so it doesn't cover the last lines of the page */
+  body { padding-bottom: var(--send-h, 0px); }
 
   .answer-manual {
     display: block;
@@ -649,7 +654,8 @@
   .fb-fab {
     position: fixed;
     right: max(16px, env(safe-area-inset-right, 0px));
-    bottom: max(16px, env(safe-area-inset-bottom, 0px));
+    /* --send-h is the height of the menu below (0 when it is not shown); sit above it */
+    bottom: calc(max(16px, env(safe-area-inset-bottom, 0px)) + var(--send-h, 0px));
     z-index: 30;
     display: inline-flex;
     align-items: center;
@@ -811,12 +817,12 @@
   .fb-panel {
     position: fixed;
     right: max(16px, env(safe-area-inset-right, 0px));
-    bottom: calc(max(16px, env(safe-area-inset-bottom, 0px)) + 52px);
+    bottom: calc(max(16px, env(safe-area-inset-bottom, 0px)) + 52px + var(--send-h, 0px));
     z-index: 31;
     display: flex;
     flex-direction: column;
     width: min(26rem, calc(100vw - 32px));
-    max-height: min(70vh, 40rem);
+    max-height: min(70vh, 40rem, calc(100vh - 140px - var(--send-h, 0px)));
   }
 
   .fb-panel[hidden] { display: none; }
@@ -923,7 +929,7 @@
     body { background: #ffffff; color: #000000; }
     body.fb-mode { padding-top: 0; }
     .fb-fab, .fb-banner, .fb-hl, .fb-sel, .fb-pin, .fb-pop, .fb-panel,
-    .answer-dock, .toolbar, .skip-link, .cross-link, .toast { display: none !important; }
+    .send-bar, .toolbar, .skip-link, .cross-link, .toast { display: none !important; }
     a { color: #000000; }
 
     /* Folded rows print in full */
@@ -1528,11 +1534,10 @@
 
   <section class="block" id="questions" data-fb="questions" data-fb-label="Questions for you">
     <h2>Questions for you<span class="badge" data-render="questionCount"></span><span class="badge badge-success" data-render="answeredCount"></span></h2>
-    <p class="lede">Pick an option or write freely (if you do both, the free text is a note). When you're done, "Copy answers" below copies text you can paste straight into the chat with the AI agent. To hand over a file instead, use "Save as JSON". What you type stays in this browser as a draft.</p>
+    <p class="lede">Pick an option or write freely (if you do both, the free text is a note). Once you answer, a menu appears at the bottom right: "Copy all" copies text you can paste straight into the chat with the AI agent (any feedback goes in with it). To hand over a file instead, use "Save as JSON". What you type stays in this browser as a draft.</p>
     <div class="toolbar" data-render="answerActions"></div>
     <div class="qa-flow">
       <div data-render="questions"></div>
-      <div class="answer-dock" data-render="answerDock"></div>
     </div>
   </section>
 
@@ -1587,12 +1592,21 @@
     withNote: ' (with a note)',
     answeredCount: function (n) { return n + ' answered'; },
     answerProgress: function (a, t) { return 'Answered ' + a + ' of ' + t; },
-    answerHintOpen: 'You can hand over what you have answered so far; the open ones are listed for the AI agent.',
-    answerHintDone: 'All answered. Copy and paste them to the AI agent.',
-    copyAnswers: 'Copy answers',
+    sendLabel: 'What to hand to the AI agent',
+    sendCopy: 'Copy all',
+    sendClear: 'Clear',
+    sendClearTitle: 'Delete all answers and feedback',
+    sendCleared: 'Deleted all answers and feedback',
+    sendFeedback: function (n) { return 'Feedback ' + n; },
+    sendCopiedMark: ' (copied)',
+    sendPending: function (n) { return ' (' + n + ' not copied)'; },
+    sendJoin: ' / ',
+    sendAnswers: function (n) { return 'Answers ' + n; },
+    sendCopiedAgain: 'Everything had been copied, so all of it was copied again',
     saveAnswers: 'Save as JSON',
-    previewLabel: 'Preview what gets copied',
-    manualLabel: 'Answer text',
+    previewLabel: 'Preview',
+    previewHide: 'Hide preview',
+    manualLabel: 'Text to copy',
     answersMissing: 'Still open: ',
     answersCopied: 'Copied. Paste it into the chat with the AI agent.',
     answersSaved: function (file) { return 'Saved ' + file + '. Hand it to the AI agent.'; },
@@ -1602,7 +1616,7 @@
     toastCopied: 'Copied',
     toastSaved: 'Saved',
     copyFailed: 'Could not copy. Select the text below by hand and copy it.',
-    copyFailedShort: 'Could not copy. Select the text in the list by hand and copy it',
+    copyFailedShort: 'Could not copy. Select the text shown in the menu at the bottom right by hand and copy it',
     saveFailed: 'Could not save. Select the JSON below by hand and copy it.',
     // Feedback
     fbFab: 'Feedback',
@@ -1610,7 +1624,6 @@
     fbWholePageButton: 'Comment on the whole page',
     fbWholePage: 'Whole page',
     fbList: function (n) { return 'List (' + n + ')'; },
-    fbCopy: 'Copy all',
     fbExit: 'Done',
     fbPanelLabel: 'Feedback list',
     fbClose: 'Close',
@@ -1633,9 +1646,6 @@
     fbMissingHint: 'This place is no longer in the JSON. It may have been fixed or renamed.',
     fbDraftRestored: 'Restored your unsaved text.',
     fbUnsaved: 'You have unsaved text. Press Save or Cancel',
-    fbNothing: 'There is no feedback to copy.',
-    fbCopied: function (n) { return 'Copied the ' + n + ' not copied before. Paste it into the chat with the AI agent.'; },
-    fbCopiedAgain: function (n) { return 'Everything had been copied, so all ' + n + ' were copied again.'; },
     fbNoStorage: 'This browser can\'t keep it (a private window, for example). Copy before closing.',
     fbPinLabel: function (n, label) { return 'Feedback ' + n + ': ' + label; },
     fbTargetPrefix: 'Target: ',
@@ -2007,7 +2017,6 @@
   // ---- Answer fields for the questions ----
   // { id, recommendation, radios, free, card, state, picked }
   var answerCards = [];
-  var dock = null;
 
   function questionId(item, index) {
     return blank(item.id) ? PAGE.questionPrefix + (index + 1) : String(item.id);
@@ -2097,12 +2106,7 @@
       if (current) answered += 1;
     });
     mount('answeredCount', [text(answered ? T.answeredCount(answered) : '')]);
-    if (!dock) return;
-    var total = answerCards.length;
-    dock.count.textContent = T.answerProgress(answered, total);
-    dock.hint.textContent = answered < total ? T.answerHintOpen : T.answerHintDone;
-    dock.bar.style.width = total ? Math.round(answered / total * 100) + '%' : '0';
-    dock.preview.textContent = answersMessage();
+    paintSend();
   }
   function sameAnswer(a, b) {
     if (!a || !b) return !a && !b;
@@ -2148,25 +2152,140 @@
     });
     toast(filled ? T.adoptedCount(filled) : T.adoptedNone);
   }
+  // ---- One small menu at the bottom that copies what there is to hand over (answers and feedback). It appears once there is at least one of either ----
+  var SENT_KEY = 'katachi-answers-sent:' + location.href.split('#')[0];
+  var send = null;
+  // A fingerprint of the answers alone (no timestamps), to tell whether they match what was copied before
+  function answersSignature() {
+    return JSON.stringify(answerCards.map(function (entry) {
+      var current = readCard(entry);
+      return [entry.id, current ? current.answer : null, current && !blank(current.note) ? String(current.note) : null];
+    }));
+  }
+  // hasAnswers: answers still as recorded in the JSON are not counted as something to hand over
+  function sendState() {
+    var answered = answerCards.filter(function (entry) { return readCard(entry); }).length;
+    var pristine = answerCards.every(function (entry) {
+      return entry.imported ? !changedFromImported(entry) : !readCard(entry);
+    });
+    var hasAnswers = answered > 0 && !pristine;
+    var answersNew = hasAnswers && storageGet(SENT_KEY) !== answersSignature();
+    var pending = fb.items.filter(function (item) { return !item.copiedAt; });
+    // Send only what hasn't been handed over yet. If everything has been, send all of it again
+    var again = !answersNew && pending.length === 0;
+    return {
+      answered: answered,
+      total: answerCards.length,
+      hasAnswers: hasAnswers,
+      answersNew: answersNew,
+      pending: pending,
+      again: again,
+      withAnswers: hasAnswers && (answersNew || again),
+      feedback: again ? fb.items.slice() : pending
+    };
+  }
+  function sendMessage(state) {
+    var blocks = [];
+    if (state.withAnswers) blocks.push(answersMessage().replace(/\n+$/, ''));
+    if (state.feedback.length) blocks.push(fbMessage(state.feedback).replace(/\n+$/, ''));
+    return blocks.join('\n\n') + '\n';
+  }
+  function sendUi() {
+    if (send) return send;
+    var root = el('section', 'send-bar fb-ui');
+    root.hidden = true;
+    root.setAttribute('aria-label', T.sendLabel);
+    var summary = el('p', 'send-summary');
+    var actions = el('div', 'send-actions');
+    var copy = button(T.sendCopy, sendCopy, 'btn-primary btn-icon btn-copy');
+    var save = button(T.saveAnswers, downloadAnswers);
+    var clear = button(T.sendClear, sendClear, 'btn-quiet');
+    clear.setAttribute('title', T.sendClearTitle);
+    var preview = el('pre', 'send-preview');
+    preview.hidden = true;
+    var peek = button(T.previewLabel, function () {
+      preview.hidden = !preview.hidden;
+      peek.textContent = preview.hidden ? T.previewLabel : T.previewHide;
+      peek.setAttribute('aria-expanded', preview.hidden ? 'false' : 'true');
+    }, 'btn-quiet');
+    peek.setAttribute('aria-expanded', 'false');
+    actions.appendChild(copy);
+    actions.appendChild(save);
+    actions.appendChild(peek);
+    actions.appendChild(clear);
+    var status = el('p', 'send-status');
+    status.setAttribute('role', 'status');
+    var manual = el('textarea', 'answer-manual');
+    manual.setAttribute('readonly', '');
+    manual.setAttribute('aria-label', T.manualLabel);
+    manual.hidden = true;
+    [summary, actions, status, manual, preview].forEach(function (node) { root.appendChild(node); });
+    document.body.appendChild(root);
+    send = { root: root, summary: summary, save: save, status: status, manual: manual, preview: preview, peek: peek };
+    if (window.ResizeObserver) new ResizeObserver(syncSendHeight).observe(root);
+    return send;
+  }
+  // Put the menu's height in a CSS variable so the "Feedback" button and the list at the bottom right move above it
+  function syncSendHeight() {
+    var height = send && !send.root.hidden ? send.root.offsetHeight + 12 : 0;
+    document.documentElement.style.setProperty('--send-h', height + 'px');
+  }
+  function paintSend() {
+    var ui = sendUi();
+    var state = sendState();
+    var n = fb.items.length;
+    var visible = state.hasAnswers || n > 0;
+    // Show, by count, what goes into the copy right now (feedback, answers to the questions)
+    var parts = [];
+    if (n) {
+      parts.push(T.sendFeedback(n) + (state.pending.length === 0 ? T.sendCopiedMark : state.pending.length < n ? T.sendPending(state.pending.length) : ''));
+    }
+    if (state.hasAnswers) parts.push(T.sendAnswers(state.answered) + (state.answersNew ? '' : T.sendCopiedMark));
+    ui.summary.textContent = parts.join(T.sendJoin);
+    ui.save.hidden = !state.hasAnswers;
+    ui.preview.textContent = visible ? sendMessage(state) : '';
+    if (ui.root.hidden === visible) {
+      ui.root.hidden = !visible;
+      if (!visible) {
+        ui.status.textContent = '';
+        ui.manual.hidden = true;
+        if (!ui.preview.hidden) ui.peek.click();
+      }
+    }
+    syncSendHeight();
+  }
   function setAnswerStatus(message, isError) {
-    if (!dock) return;
-    dock.status.textContent = message;
-    dock.status.classList.toggle('is-error', isError === true);
-    dock.manual.hidden = true;
+    var ui = sendUi();
+    ui.status.textContent = message;
+    ui.status.classList.toggle('is-error', isError === true);
+    ui.manual.hidden = true;
   }
   // When the automatic hand-off fails, show the content so the user can select it by hand
   function showManual(content, message) {
+    var ui = sendUi();
     setAnswerStatus(message, true);
-    dock.manual.value = content;
-    dock.manual.hidden = false;
-    dock.manual.focus();
-    dock.manual.select();
+    ui.manual.value = content;
+    ui.manual.hidden = false;
+    ui.manual.focus();
+    ui.manual.select();
   }
-  function copyAnswers() {
-    var content = answersMessage();
-    copyText(content,
-      function () { setAnswerStatus(T.answersCopied); toast(T.toastCopied); },
-      function () { showManual(content, T.copyFailed); });
+  function sendCopy() {
+    var state = sendState();
+    var content = sendMessage(state);
+    copyText(content, function () {
+      if (state.withAnswers) storageSet(SENT_KEY, answersSignature());
+      var now = new Date().toISOString();
+      state.feedback.forEach(function (item) { item.copiedAt = now; });
+      var kept = state.feedback.length ? fbStore() : true;
+      fbPaint();
+      if (!kept) return;
+      // Success is only announced in a toast (to keep the menu small); the line below is for failures only
+      setAnswerStatus('');
+      toast(state.again ? T.sendCopiedAgain : T.answersCopied);
+    }, function () {
+      showManual(content, T.copyFailed);
+      toast(T.copyFailedShort, true);
+    });
   }
   function downloadAnswers() {
     var content = answersJson();
@@ -2179,14 +2298,16 @@
       a.click();
       document.body.removeChild(a);
       setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-      setAnswerStatus(T.answersSaved(PAGE.answerFile));
-      toast(T.toastSaved);
+      storageSet(SENT_KEY, answersSignature());
+      paintSend();
+      setAnswerStatus('');
+      toast(T.answersSaved(PAGE.answerFile));
     } catch (error) {
       showManual(content, T.saveFailed);
     }
   }
-  function clearAnswers() {
-    // Keep the answers and drafts from before clearing so it can be undone
+  // Clear every answer and return a function that undoes it (it keeps the answers and drafts from before)
+  function wipeAnswers() {
     var before = answerCards.map(function (entry) {
       return { entry: entry, answer: readCard(entry), draft: storageGet(draftKey(entry.id)) };
     });
@@ -2194,16 +2315,38 @@
       emptyCard(entry);
       saveDraft(entry);
     });
-    paintAnswers();
-    setAnswerStatus(T.answersCleared);
-    toast(T.answersCleared, false, { label: T.undo, run: function () {
+    return function () {
       before.forEach(function (saved) {
         emptyCard(saved.entry);
         if (saved.answer) fillCard(saved.entry, saved.answer);
         storageSet(draftKey(saved.entry.id), saved.draft);
       });
+    };
+  }
+  function clearAnswers() {
+    var restore = wipeAnswers();
+    paintAnswers();
+    toast(T.answersCleared, false, { label: T.undo, run: function () {
+      restore();
       paintAnswers();
-      setAnswerStatus(T.restored);
+      toast(T.restored);
+    } });
+  }
+  // "Clear" in the menu: removes both the answers and the feedback. The toast can undo it
+  function sendClear() {
+    var restoreAnswers = wipeAnswers();
+    var items = fb.items.slice();
+    fb.items = [];
+    fbStore();
+    paintAnswers();
+    fbPaint();
+    toast(T.sendCleared, false, { label: T.undo, run: function () {
+      restoreAnswers();
+      fb.items = items;
+      fbStore();
+      paintAnswers();
+      fbPaint();
+      toast(T.restored);
     } });
   }
 
@@ -2343,40 +2486,7 @@
     return card;
   }
 
-  function renderAnswerDock() {
-    var progress = el('div', 'dock-progress');
-    var count = el('p', 'dock-count');
-    var hint = el('p', 'dock-hint');
-    var track = el('div', 'dock-bar');
-    var bar = el('span');
-    track.appendChild(bar);
-    progress.appendChild(count);
-    progress.appendChild(hint);
-    progress.appendChild(track);
-    var actions = el('div', 'dock-actions');
-    actions.appendChild(button(T.copyAnswers, copyAnswers, 'btn-primary btn-icon btn-copy'));
-    actions.appendChild(button(T.saveAnswers, downloadAnswers));
-    var status = el('p', 'dock-status');
-    status.setAttribute('role', 'status');
-    var manual = el('textarea', 'answer-manual');
-    manual.setAttribute('readonly', '');
-    manual.setAttribute('aria-label', T.manualLabel);
-    manual.hidden = true;
-    var previewBox = el('details', 'dock-preview');
-    var previewHead = el('summary');
-    previewHead.textContent = T.previewLabel;
-    var preview = el('pre');
-    previewBox.appendChild(previewHead);
-    previewBox.appendChild(preview);
-    dock = { count: count, hint: hint, bar: bar, status: status, manual: manual, preview: preview };
-    mount('answerDock', [progress, actions, status, manual, previewBox]);
-    // While the preview is open, stop sticking so it doesn't cover the questions
-    var host = document.querySelector('[data-render="answerDock"]');
-    previewBox.addEventListener('toggle', function () {
-      host.classList.toggle('is-previewing', previewBox.open);
-      if (previewBox.open) host.scrollIntoView({ block: 'nearest' });
-      scheduleFabLift();
-    });
+  function renderAnswerActions() {
     mount('answerActions', [
       button(T.adoptAll, adoptAllRecommendations, 'btn-sm'),
       button(T.clearAll, clearAnswers, 'btn-sm btn-quiet')
@@ -2385,40 +2495,17 @@
 
   function renderQuestions(questions, answers) {
     answerCards = [];
-    dock = null;
     mount('questionCount', [text(countLabel(questions))]);
     if (!countOf(questions)) {
       mount('questions', [none()]);
-      mount('answerDock', []);
       mount('answerActions', []);
       return;
     }
     mount('questions', entries(questions).map(function (item, index) {
       return questionCard(item, index, answers);
     }));
-    renderAnswerDock();
+    renderAnswerActions();
     paintAnswers();
-  }
-
-  // When the "Feedback" button at the bottom right would cover the answer bar, move it above the bar
-  var fabLiftQueued = false;
-  function scheduleFabLift() {
-    if (fabLiftQueued) return;
-    fabLiftQueued = true;
-    requestAnimationFrame(function () { fabLiftQueued = false; liftFab(); });
-  }
-  function liftFab() {
-    var fab = fb.ui && fb.ui.fab;
-    var host = document.querySelector('[data-render="answerDock"]');
-    if (!fab) return;
-    var lift = '';
-    if (host && host.firstChild) {
-      var rect = host.getBoundingClientRect();
-      var view = window.innerHeight;
-      // When the answer bar reaches the strip where the button sits (the bottom 72px)
-      if (rect.top < view && rect.bottom > view - 72) lift = Math.round(view - rect.top + 12) + 'px';
-    }
-    fab.style.bottom = lift;
   }
 
   // ---- Feedback mode (pick an item, write a comment, copy them all and hand them to the AI agent) ----
@@ -2500,35 +2587,6 @@
     });
     return lines.join('\n');
   }
-  // Copy only what hasn't been copied yet. If everything has been, copy all of it again
-  function fbCopy() {
-    if (!fb.items.length) { fbStatus(T.fbNothing, true); return; }
-    var pending = fb.items.filter(function (item) { return !item.copiedAt; });
-    var again = pending.length === 0;
-    var sending = again ? fb.items.slice() : pending;
-    var content = fbMessage(sending);
-    copyText(content, function () {
-      var now = new Date().toISOString();
-      sending.forEach(function (item) { item.copiedAt = now; });
-      var kept = fbStore();
-      fbPaint();
-      if (!kept) return;
-      fbStatus(again ? T.fbCopiedAgain(sending.length) : T.fbCopied(sending.length));
-      toast(T.toastCopied);
-    }, function () {
-      // The manual-copy box goes inside the list, so open it if it is closed
-      fbTogglePanel(true);
-      fbStatus(T.copyFailed, true);
-      toast(T.copyFailedShort, true);
-      var box = el('textarea', 'answer-manual');
-      box.value = content;
-      box.setAttribute('readonly', '');
-      fb.ui.status.appendChild(box);
-      box.focus();
-      box.select();
-    });
-  }
-
   // For something inside a closed <details>, mark the summary of the outermost closed one
   function visibleAnchor(node) {
     var anchor = node;
@@ -2803,6 +2861,7 @@
     toast(T.fbUnsaved, true);
   }
   function fbPaint() {
+    paintSend();
     var n = fb.items.length;
     fb.ui.fabCount.textContent = n ? String(n) : '';
     fb.ui.listButton.textContent = T.fbList(n);
@@ -2931,7 +2990,6 @@
     banner.appendChild(bannerText);
     banner.appendChild(button(T.fbWholePageButton, function () { fbCompose([{ node: null, key: 'page', label: T.fbWholePage }]); }, 'btn-sm'));
     banner.appendChild(listButton);
-    banner.appendChild(button(T.fbCopy, fbCopy, 'btn-sm'));
     banner.appendChild(button(T.fbExit, function () { fbToggle(false); }, 'btn-sm'));
 
     var panel = el('section', 'fb-panel fb-ui');
@@ -2944,7 +3002,6 @@
     panelHead.appendChild(button(T.fbClose, function () { fbTogglePanel(false); }, 'btn-sm btn-quiet'));
     var listBox = el('ol', 'fb-list');
     var foot = el('div', 'fb-panel-foot');
-    foot.appendChild(button(T.fbCopy, fbCopy, 'btn-sm btn-primary btn-icon btn-copy'));
     var clearCopied = button(T.fbClearCopied(0), function () {
       fbRemove(function (item) { return !item.copiedAt; }, T.fbCopiedCleared);
     }, 'btn-sm btn-quiet');
@@ -3003,9 +3060,6 @@
       new ResizeObserver(schedulePins).observe(document.body);
       new ResizeObserver(syncBannerHeight).observe(banner);
     }
-    addEventListener('scroll', scheduleFabLift, { passive: true });
-    addEventListener('resize', scheduleFabLift);
-    scheduleFabLift();
     fbPaint();
   }
 

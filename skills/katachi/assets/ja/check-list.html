@@ -590,43 +590,48 @@
   .qa textarea:focus-visible, .fb-pop textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; }
   .qa.is-imported .qa-state::after { content: ""; }
 
-  /* 回答を AI エージェントへ渡す欄（質問の一覧の下に貼り付く） */
-  .answer-dock {
-    position: sticky;
-    /* 画面の下端にぴったり付ける。右下の「フィードバック」ボタンは JS でこの上に逃がす */
-    bottom: 0;
-    z-index: 5;
+  /* 渡すもの（回答・フィードバック）をコピーするメニュー。右下に浮かび、どちらかが 1 つでもあれば出る */
+  .send-bar {
+    position: fixed;
+    right: max(16px, env(safe-area-inset-right, 0px));
+    bottom: max(16px, env(safe-area-inset-bottom, 0px));
+    z-index: 32;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 10px 16px;
-    margin: 16px 0 0;
-    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+    gap: 8px 16px;
+    max-width: min(56rem, calc(100vw - 32px));
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    padding: 10px 12px 10px 16px;
     background: var(--bg);
     border: 1px solid var(--line);
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-    box-shadow: var(--shadow-md);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    font-size: 14px;
+    animation: send-in 180ms ease-out;
   }
-
-  .answer-dock:empty { display: none; }
-  /* 中身を見ている間は貼り付かない */
-  .answer-dock.is-previewing { position: static; border-radius: var(--radius-lg); }
+  .send-bar[hidden] { display: none; }
+  @keyframes send-in {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .send-bar { animation: none; }
+  }
   @media (max-width: 640px) {
-    .dock-hint { display: none; }
+    .send-bar { left: max(16px, env(safe-area-inset-left, 0px)); }
   }
-  .dock-progress { flex: 1 1 14rem; min-width: 0; }
-  .dock-count { margin: 0; color: var(--ink); font-size: 14px; font-weight: 600; }
-  .dock-hint { margin: 0; color: var(--muted); font-size: 13px; }
-  .dock-bar { height: 4px; margin-top: 6px; background: var(--bg-sunken); border-radius: 9999px; overflow: hidden; }
-  .dock-bar > span { display: block; height: 100%; width: 0; background: var(--success-high); transition: width 150ms; }
-  .dock-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-  .dock-status { flex-basis: 100%; margin: 0; color: var(--muted); font-size: 13px; }
-  .dock-status:empty { display: none; }
-  .dock-status.is-error { color: var(--danger-high); }
+  .send-summary { flex: 1 1 auto; min-width: 0; margin: 0; color: var(--ink); font-weight: 600; }
+  .send-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .send-status { flex-basis: 100%; margin: 0; color: var(--muted); font-size: 13px; }
+  .send-status:empty { display: none; }
+  .send-status.is-error { color: var(--danger-high); }
   /* flex の子は中身の幅まで広がるので、min-width: 0 で欄の幅に収める */
-  .dock-preview { flex-basis: 100%; min-width: 0; max-width: 100%; font-size: 13px; }
-  .dock-preview > summary { color: var(--muted); cursor: pointer; }
-  .dock-preview pre { max-height: 14rem; margin-top: 6px; font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .send-preview { flex-basis: 100%; min-width: 0; max-width: 100%; max-height: 14rem; margin: 0; font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .send-preview[hidden] { display: none; }
+  /* メニューがページの最後の行を隠さないように、その高さだけ下を空ける */
+  body { padding-bottom: var(--send-h, 0px); }
 
   .answer-manual {
     display: block;
@@ -649,7 +654,8 @@
   .fb-fab {
     position: fixed;
     right: max(16px, env(safe-area-inset-right, 0px));
-    bottom: max(16px, env(safe-area-inset-bottom, 0px));
+    /* --send-h は下のメニューの高さ（出ていなければ 0）。その上に逃がす */
+    bottom: calc(max(16px, env(safe-area-inset-bottom, 0px)) + var(--send-h, 0px));
     z-index: 30;
     display: inline-flex;
     align-items: center;
@@ -811,12 +817,12 @@
   .fb-panel {
     position: fixed;
     right: max(16px, env(safe-area-inset-right, 0px));
-    bottom: calc(max(16px, env(safe-area-inset-bottom, 0px)) + 52px);
+    bottom: calc(max(16px, env(safe-area-inset-bottom, 0px)) + 52px + var(--send-h, 0px));
     z-index: 31;
     display: flex;
     flex-direction: column;
     width: min(26rem, calc(100vw - 32px));
-    max-height: min(70vh, 40rem);
+    max-height: min(70vh, 40rem, calc(100vh - 140px - var(--send-h, 0px)));
   }
 
   .fb-panel[hidden] { display: none; }
@@ -923,7 +929,7 @@
     body { background: #ffffff; color: #000000; }
     body.fb-mode { padding-top: 0; }
     .fb-fab, .fb-banner, .fb-hl, .fb-sel, .fb-pin, .fb-pop, .fb-panel,
-    .answer-dock, .toolbar, .skip-link, .cross-link, .toast { display: none !important; }
+    .send-bar, .toolbar, .skip-link, .cross-link, .toast { display: none !important; }
     a { color: #000000; }
 
     /* 畳んだ行も紙には全部出す */
@@ -1528,11 +1534,10 @@
 
   <section class="block" id="questions" data-fb="questions" data-fb-label="ユーザに確認したいこと">
     <h2>ユーザに確認したいこと<span class="badge" data-render="questionCount"></span><span class="badge badge-success" data-render="answeredCount"></span></h2>
-    <p class="lede">選択肢を選ぶか、自由に書いてください（両方あれば自由記入は補足）。答え終えたら下の「回答をコピー」で、AI エージェントとのチャットにそのまま貼れる文がコピーされます。ファイルで渡すときは「JSON を保存」。入力はこのブラウザに下書きとして残ります。</p>
+    <p class="lede">選択肢を選ぶか、自由に書いてください（両方あれば自由記入は補足）。答えると画面の右下にメニューが出ます。「まとめてコピー」で、AI エージェントとのチャットにそのまま貼れる文がコピーされます（フィードバックがあれば一緒に入ります）。ファイルで渡すときは「JSON を保存」。入力はこのブラウザに下書きとして残ります。</p>
     <div class="toolbar" data-render="answerActions"></div>
     <div class="qa-flow">
       <div data-render="questions"></div>
-      <div class="answer-dock" data-render="answerDock"></div>
     </div>
   </section>
 
@@ -1587,12 +1592,21 @@
     withNote: '（補足あり）',
     answeredCount: function (n) { return '回答済み ' + n + ' 件'; },
     answerProgress: function (a, t) { return '回答 ' + a + ' / ' + t + ' 件'; },
-    answerHintOpen: '答えた分だけでも渡せます。未回答は AI エージェントにも伝わります。',
-    answerHintDone: 'すべて答えました。コピーして AI エージェントに貼り付けてください。',
-    copyAnswers: '回答をコピー',
+    sendLabel: 'AI エージェントに渡すもの',
+    sendCopy: 'まとめてコピー',
+    sendClear: 'クリア',
+    sendClearTitle: '回答とフィードバックをすべて消す',
+    sendCleared: '回答とフィードバックをすべて消しました',
+    sendFeedback: function (n) { return 'フィードバック ' + n + ' 件'; },
+    sendCopiedMark: '（コピー済み）',
+    sendPending: function (n) { return '（未コピー ' + n + ' 件）'; },
+    sendJoin: ' / ',
+    sendAnswers: function (n) { return '確認の回答 ' + n + ' 件'; },
+    sendCopiedAgain: 'すべてコピー済みだったので、全部をもう一度コピーしました',
     saveAnswers: 'JSON を保存',
-    previewLabel: 'コピーされる内容を見る',
-    manualLabel: '回答の内容',
+    previewLabel: '内容を見る',
+    previewHide: '内容を隠す',
+    manualLabel: 'コピーする内容',
     answersMissing: '未回答: ',
     answersCopied: 'コピーしました。AI エージェントとのチャットに貼り付けてください。',
     answersSaved: function (file) { return file + ' を保存しました。AI エージェントに渡してください。'; },
@@ -1602,7 +1616,7 @@
     toastCopied: 'コピーしました',
     toastSaved: '保存しました',
     copyFailed: 'コピーできませんでした。下の文を手で選んでコピーしてください。',
-    copyFailedShort: 'コピーできませんでした。一覧の中の文を手で選んでコピーしてください',
+    copyFailedShort: 'コピーできませんでした。右下のメニューに出た文を手で選んでコピーしてください',
     saveFailed: '保存できませんでした。下の JSON を手で選んでコピーしてください。',
     // フィードバック
     fbFab: 'フィードバック',
@@ -1610,7 +1624,6 @@
     fbWholePageButton: 'ページ全体に書く',
     fbWholePage: 'ページ全体',
     fbList: function (n) { return '一覧 (' + n + ')'; },
-    fbCopy: 'まとめてコピー',
     fbExit: '終了',
     fbPanelLabel: 'フィードバックの一覧',
     fbClose: '閉じる',
@@ -1633,9 +1646,6 @@
     fbMissingHint: 'JSON からこの場所が無くなりました。直ったか、名前が変わった可能性があります。',
     fbDraftRestored: '保存していない書きかけを戻しました。',
     fbUnsaved: '書きかけがあります。「保存」か「やめる」を押してください',
-    fbNothing: 'コピーするフィードバックがありません。',
-    fbCopied: function (n) { return 'まだコピーしていない ' + n + ' 件をコピーしました。AI エージェントとのチャットに貼り付けてください。'; },
-    fbCopiedAgain: function (n) { return 'すべてコピー済みだったので、' + n + ' 件をもう一度コピーしました。'; },
     fbNoStorage: 'このブラウザでは保存できません（プライベートウィンドウなど）。閉じる前にコピーしてください。',
     fbPinLabel: function (n, label) { return 'フィードバック ' + n + ': ' + label; },
     fbTargetPrefix: '対象: ',
@@ -2007,7 +2017,6 @@
   // ---- 確認事項の回答欄 ----
   // { id, recommendation, radios, free, card, state, picked }
   var answerCards = [];
-  var dock = null;
 
   function questionId(item, index) {
     return blank(item.id) ? PAGE.questionPrefix + (index + 1) : String(item.id);
@@ -2097,12 +2106,7 @@
       if (current) answered += 1;
     });
     mount('answeredCount', [text(answered ? T.answeredCount(answered) : '')]);
-    if (!dock) return;
-    var total = answerCards.length;
-    dock.count.textContent = T.answerProgress(answered, total);
-    dock.hint.textContent = answered < total ? T.answerHintOpen : T.answerHintDone;
-    dock.bar.style.width = total ? Math.round(answered / total * 100) + '%' : '0';
-    dock.preview.textContent = answersMessage();
+    paintSend();
   }
   function sameAnswer(a, b) {
     if (!a || !b) return !a && !b;
@@ -2148,25 +2152,140 @@
     });
     toast(filled ? T.adoptedCount(filled) : T.adoptedNone);
   }
+  // ---- 渡すもの（回答とフィードバック）を 1 か所からコピーする、画面の下の小さなメニュー。どちらかが 1 つでもあれば出る ----
+  var SENT_KEY = 'katachi-answers-sent:' + location.href.split('#')[0];
+  var send = null;
+  // 回答の中身だけの指紋（時刻を含めない）。前にコピーしたものと同じかを見る
+  function answersSignature() {
+    return JSON.stringify(answerCards.map(function (entry) {
+      var current = readCard(entry);
+      return [entry.id, current ? current.answer : null, current && !blank(current.note) ? String(current.note) : null];
+    }));
+  }
+  // hasAnswers: JSON に取り込み済みのまま変えていない回答は、渡すものに数えない
+  function sendState() {
+    var answered = answerCards.filter(function (entry) { return readCard(entry); }).length;
+    var pristine = answerCards.every(function (entry) {
+      return entry.imported ? !changedFromImported(entry) : !readCard(entry);
+    });
+    var hasAnswers = answered > 0 && !pristine;
+    var answersNew = hasAnswers && storageGet(SENT_KEY) !== answersSignature();
+    var pending = fb.items.filter(function (item) { return !item.copiedAt; });
+    // まだ渡していないものだけを送る。すべて渡し済みなら、全部をもう一度
+    var again = !answersNew && pending.length === 0;
+    return {
+      answered: answered,
+      total: answerCards.length,
+      hasAnswers: hasAnswers,
+      answersNew: answersNew,
+      pending: pending,
+      again: again,
+      withAnswers: hasAnswers && (answersNew || again),
+      feedback: again ? fb.items.slice() : pending
+    };
+  }
+  function sendMessage(state) {
+    var blocks = [];
+    if (state.withAnswers) blocks.push(answersMessage().replace(/\n+$/, ''));
+    if (state.feedback.length) blocks.push(fbMessage(state.feedback).replace(/\n+$/, ''));
+    return blocks.join('\n\n') + '\n';
+  }
+  function sendUi() {
+    if (send) return send;
+    var root = el('section', 'send-bar fb-ui');
+    root.hidden = true;
+    root.setAttribute('aria-label', T.sendLabel);
+    var summary = el('p', 'send-summary');
+    var actions = el('div', 'send-actions');
+    var copy = button(T.sendCopy, sendCopy, 'btn-primary btn-icon btn-copy');
+    var save = button(T.saveAnswers, downloadAnswers);
+    var clear = button(T.sendClear, sendClear, 'btn-quiet');
+    clear.setAttribute('title', T.sendClearTitle);
+    var preview = el('pre', 'send-preview');
+    preview.hidden = true;
+    var peek = button(T.previewLabel, function () {
+      preview.hidden = !preview.hidden;
+      peek.textContent = preview.hidden ? T.previewLabel : T.previewHide;
+      peek.setAttribute('aria-expanded', preview.hidden ? 'false' : 'true');
+    }, 'btn-quiet');
+    peek.setAttribute('aria-expanded', 'false');
+    actions.appendChild(copy);
+    actions.appendChild(save);
+    actions.appendChild(peek);
+    actions.appendChild(clear);
+    var status = el('p', 'send-status');
+    status.setAttribute('role', 'status');
+    var manual = el('textarea', 'answer-manual');
+    manual.setAttribute('readonly', '');
+    manual.setAttribute('aria-label', T.manualLabel);
+    manual.hidden = true;
+    [summary, actions, status, manual, preview].forEach(function (node) { root.appendChild(node); });
+    document.body.appendChild(root);
+    send = { root: root, summary: summary, save: save, status: status, manual: manual, preview: preview, peek: peek };
+    if (window.ResizeObserver) new ResizeObserver(syncSendHeight).observe(root);
+    return send;
+  }
+  // メニューの高さを CSS 変数に入れて、右下の「フィードバック」ボタンと一覧をその上に逃がす
+  function syncSendHeight() {
+    var height = send && !send.root.hidden ? send.root.offsetHeight + 12 : 0;
+    document.documentElement.style.setProperty('--send-h', height + 'px');
+  }
+  function paintSend() {
+    var ui = sendUi();
+    var state = sendState();
+    var n = fb.items.length;
+    var visible = state.hasAnswers || n > 0;
+    // いまコピーに入るもの（フィードバック・確認の回答）を件数で見せる
+    var parts = [];
+    if (n) {
+      parts.push(T.sendFeedback(n) + (state.pending.length === 0 ? T.sendCopiedMark : state.pending.length < n ? T.sendPending(state.pending.length) : ''));
+    }
+    if (state.hasAnswers) parts.push(T.sendAnswers(state.answered) + (state.answersNew ? '' : T.sendCopiedMark));
+    ui.summary.textContent = parts.join(T.sendJoin);
+    ui.save.hidden = !state.hasAnswers;
+    ui.preview.textContent = visible ? sendMessage(state) : '';
+    if (ui.root.hidden === visible) {
+      ui.root.hidden = !visible;
+      if (!visible) {
+        ui.status.textContent = '';
+        ui.manual.hidden = true;
+        if (!ui.preview.hidden) ui.peek.click();
+      }
+    }
+    syncSendHeight();
+  }
   function setAnswerStatus(message, isError) {
-    if (!dock) return;
-    dock.status.textContent = message;
-    dock.status.classList.toggle('is-error', isError === true);
-    dock.manual.hidden = true;
+    var ui = sendUi();
+    ui.status.textContent = message;
+    ui.status.classList.toggle('is-error', isError === true);
+    ui.manual.hidden = true;
   }
   // 自動で渡せなかったときは中身をそのまま出して、手で選んでもらう
   function showManual(content, message) {
+    var ui = sendUi();
     setAnswerStatus(message, true);
-    dock.manual.value = content;
-    dock.manual.hidden = false;
-    dock.manual.focus();
-    dock.manual.select();
+    ui.manual.value = content;
+    ui.manual.hidden = false;
+    ui.manual.focus();
+    ui.manual.select();
   }
-  function copyAnswers() {
-    var content = answersMessage();
-    copyText(content,
-      function () { setAnswerStatus(T.answersCopied); toast(T.toastCopied); },
-      function () { showManual(content, T.copyFailed); });
+  function sendCopy() {
+    var state = sendState();
+    var content = sendMessage(state);
+    copyText(content, function () {
+      if (state.withAnswers) storageSet(SENT_KEY, answersSignature());
+      var now = new Date().toISOString();
+      state.feedback.forEach(function (item) { item.copiedAt = now; });
+      var kept = state.feedback.length ? fbStore() : true;
+      fbPaint();
+      if (!kept) return;
+      // うまくいったことはトーストだけで知らせる（メニューを小さく保つ）。下の行は失敗のときだけ使う
+      setAnswerStatus('');
+      toast(state.again ? T.sendCopiedAgain : T.answersCopied);
+    }, function () {
+      showManual(content, T.copyFailed);
+      toast(T.copyFailedShort, true);
+    });
   }
   function downloadAnswers() {
     var content = answersJson();
@@ -2179,14 +2298,16 @@
       a.click();
       document.body.removeChild(a);
       setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-      setAnswerStatus(T.answersSaved(PAGE.answerFile));
-      toast(T.toastSaved);
+      storageSet(SENT_KEY, answersSignature());
+      paintSend();
+      setAnswerStatus('');
+      toast(T.answersSaved(PAGE.answerFile));
     } catch (error) {
       showManual(content, T.saveFailed);
     }
   }
-  function clearAnswers() {
-    // 戻せるように、消す前の回答と下書きを持っておく
+  // 回答を全部消して、元に戻す関数を返す（消す前の回答と下書きを持っておく）
+  function wipeAnswers() {
     var before = answerCards.map(function (entry) {
       return { entry: entry, answer: readCard(entry), draft: storageGet(draftKey(entry.id)) };
     });
@@ -2194,16 +2315,38 @@
       emptyCard(entry);
       saveDraft(entry);
     });
-    paintAnswers();
-    setAnswerStatus(T.answersCleared);
-    toast(T.answersCleared, false, { label: T.undo, run: function () {
+    return function () {
       before.forEach(function (saved) {
         emptyCard(saved.entry);
         if (saved.answer) fillCard(saved.entry, saved.answer);
         storageSet(draftKey(saved.entry.id), saved.draft);
       });
+    };
+  }
+  function clearAnswers() {
+    var restore = wipeAnswers();
+    paintAnswers();
+    toast(T.answersCleared, false, { label: T.undo, run: function () {
+      restore();
       paintAnswers();
-      setAnswerStatus(T.restored);
+      toast(T.restored);
+    } });
+  }
+  // メニューの「クリア」: 回答とフィードバックを両方消す。トーストから戻せる
+  function sendClear() {
+    var restoreAnswers = wipeAnswers();
+    var items = fb.items.slice();
+    fb.items = [];
+    fbStore();
+    paintAnswers();
+    fbPaint();
+    toast(T.sendCleared, false, { label: T.undo, run: function () {
+      restoreAnswers();
+      fb.items = items;
+      fbStore();
+      paintAnswers();
+      fbPaint();
+      toast(T.restored);
     } });
   }
 
@@ -2343,40 +2486,7 @@
     return card;
   }
 
-  function renderAnswerDock() {
-    var progress = el('div', 'dock-progress');
-    var count = el('p', 'dock-count');
-    var hint = el('p', 'dock-hint');
-    var track = el('div', 'dock-bar');
-    var bar = el('span');
-    track.appendChild(bar);
-    progress.appendChild(count);
-    progress.appendChild(hint);
-    progress.appendChild(track);
-    var actions = el('div', 'dock-actions');
-    actions.appendChild(button(T.copyAnswers, copyAnswers, 'btn-primary btn-icon btn-copy'));
-    actions.appendChild(button(T.saveAnswers, downloadAnswers));
-    var status = el('p', 'dock-status');
-    status.setAttribute('role', 'status');
-    var manual = el('textarea', 'answer-manual');
-    manual.setAttribute('readonly', '');
-    manual.setAttribute('aria-label', T.manualLabel);
-    manual.hidden = true;
-    var previewBox = el('details', 'dock-preview');
-    var previewHead = el('summary');
-    previewHead.textContent = T.previewLabel;
-    var preview = el('pre');
-    previewBox.appendChild(previewHead);
-    previewBox.appendChild(preview);
-    dock = { count: count, hint: hint, bar: bar, status: status, manual: manual, preview: preview };
-    mount('answerDock', [progress, actions, status, manual, previewBox]);
-    // 中身を見ている間は貼り付きをやめて、質問に重ならないようにする
-    var host = document.querySelector('[data-render="answerDock"]');
-    previewBox.addEventListener('toggle', function () {
-      host.classList.toggle('is-previewing', previewBox.open);
-      if (previewBox.open) host.scrollIntoView({ block: 'nearest' });
-      scheduleFabLift();
-    });
+  function renderAnswerActions() {
     mount('answerActions', [
       button(T.adoptAll, adoptAllRecommendations, 'btn-sm'),
       button(T.clearAll, clearAnswers, 'btn-sm btn-quiet')
@@ -2385,40 +2495,17 @@
 
   function renderQuestions(questions, answers) {
     answerCards = [];
-    dock = null;
     mount('questionCount', [text(countLabel(questions))]);
     if (!countOf(questions)) {
       mount('questions', [none()]);
-      mount('answerDock', []);
       mount('answerActions', []);
       return;
     }
     mount('questions', entries(questions).map(function (item, index) {
       return questionCard(item, index, answers);
     }));
-    renderAnswerDock();
+    renderAnswerActions();
     paintAnswers();
-  }
-
-  // 右下の「フィードバック」ボタンが回答欄に重なるときは、回答欄の上に逃がす
-  var fabLiftQueued = false;
-  function scheduleFabLift() {
-    if (fabLiftQueued) return;
-    fabLiftQueued = true;
-    requestAnimationFrame(function () { fabLiftQueued = false; liftFab(); });
-  }
-  function liftFab() {
-    var fab = fb.ui && fb.ui.fab;
-    var host = document.querySelector('[data-render="answerDock"]');
-    if (!fab) return;
-    var lift = '';
-    if (host && host.firstChild) {
-      var rect = host.getBoundingClientRect();
-      var view = window.innerHeight;
-      // ボタンのある帯（下から 72px）に回答欄が入っているとき
-      if (rect.top < view && rect.bottom > view - 72) lift = Math.round(view - rect.top + 12) + 'px';
-    }
-    fab.style.bottom = lift;
   }
 
   // ---- フィードバックモード（項目を選んでコメントを書き、まとめてコピーして AI エージェントに渡す） ----
@@ -2500,35 +2587,6 @@
     });
     return lines.join('\n');
   }
-  // まだコピーしていないものだけをコピーする。すべてコピー済みなら、全件をもう一度
-  function fbCopy() {
-    if (!fb.items.length) { fbStatus(T.fbNothing, true); return; }
-    var pending = fb.items.filter(function (item) { return !item.copiedAt; });
-    var again = pending.length === 0;
-    var sending = again ? fb.items.slice() : pending;
-    var content = fbMessage(sending);
-    copyText(content, function () {
-      var now = new Date().toISOString();
-      sending.forEach(function (item) { item.copiedAt = now; });
-      var kept = fbStore();
-      fbPaint();
-      if (!kept) return;
-      fbStatus(again ? T.fbCopiedAgain(sending.length) : T.fbCopied(sending.length));
-      toast(T.toastCopied);
-    }, function () {
-      // 手で選ぶ欄は一覧の中に出すので、閉じていれば開く
-      fbTogglePanel(true);
-      fbStatus(T.copyFailed, true);
-      toast(T.copyFailedShort, true);
-      var box = el('textarea', 'answer-manual');
-      box.value = content;
-      box.setAttribute('readonly', '');
-      fb.ui.status.appendChild(box);
-      box.focus();
-      box.select();
-    });
-  }
-
   // 閉じた <details> の中にあるものは、いちばん外の閉じた <details> の見出しに印を付ける
   function visibleAnchor(node) {
     var anchor = node;
@@ -2803,6 +2861,7 @@
     toast(T.fbUnsaved, true);
   }
   function fbPaint() {
+    paintSend();
     var n = fb.items.length;
     fb.ui.fabCount.textContent = n ? String(n) : '';
     fb.ui.listButton.textContent = T.fbList(n);
@@ -2931,7 +2990,6 @@
     banner.appendChild(bannerText);
     banner.appendChild(button(T.fbWholePageButton, function () { fbCompose([{ node: null, key: 'page', label: T.fbWholePage }]); }, 'btn-sm'));
     banner.appendChild(listButton);
-    banner.appendChild(button(T.fbCopy, fbCopy, 'btn-sm'));
     banner.appendChild(button(T.fbExit, function () { fbToggle(false); }, 'btn-sm'));
 
     var panel = el('section', 'fb-panel fb-ui');
@@ -2944,7 +3002,6 @@
     panelHead.appendChild(button(T.fbClose, function () { fbTogglePanel(false); }, 'btn-sm btn-quiet'));
     var listBox = el('ol', 'fb-list');
     var foot = el('div', 'fb-panel-foot');
-    foot.appendChild(button(T.fbCopy, fbCopy, 'btn-sm btn-primary btn-icon btn-copy'));
     var clearCopied = button(T.fbClearCopied(0), function () {
       fbRemove(function (item) { return !item.copiedAt; }, T.fbCopiedCleared);
     }, 'btn-sm btn-quiet');
@@ -3003,9 +3060,6 @@
       new ResizeObserver(schedulePins).observe(document.body);
       new ResizeObserver(syncBannerHeight).observe(banner);
     }
-    addEventListener('scroll', scheduleFabLift, { passive: true });
-    addEventListener('resize', scheduleFabLift);
-    scheduleFabLift();
     fbPaint();
   }
 
