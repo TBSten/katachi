@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>v0.4.0 確認 TODO</title>
+<style>
+:root{--bg:#fbfaf7;--fg:#1d1d1f;--muted:#6b6b70;--line:#e3e1dc;--card:#fff;--red:#c0392b;--amber:#b7791f;--blue:#2b6cb0;--green:#2f855a;--code:#f1efea}
+@media (prefers-color-scheme:dark){:root{--bg:#17171a;--fg:#ececef;--muted:#9a9aa2;--line:#2e2e34;--card:#1f1f23;--red:#f07167;--amber:#f6c35b;--blue:#7fb3ff;--green:#6fd39a;--code:#2a2a30}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.7 -apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+main{max-width:880px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 20px}
+.summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.pill{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px;font-size:13px}
+.pill b{margin-right:4px}
+h2{font-size:17px;margin:28px 0 8px;padding-left:10px;border-left:4px solid var(--c,var(--line))}
+h2 small{color:var(--muted);font-weight:normal;font-size:13px;margin-left:6px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0;display:grid;grid-template-columns:22px 1fr;gap:4px 10px}
+.item input{margin-top:5px;width:16px;height:16px}
+.item.done .t{text-decoration:line-through;color:var(--muted)}
+.t{font-weight:600}
+.p{font-size:11px;font-weight:700;border-radius:4px;padding:1px 6px;margin-right:6px;color:#fff;background:var(--muted);vertical-align:1px}
+.p8{background:var(--red)}.p7{background:var(--red)}.p5{background:var(--amber)}.p4,.p3,.p2{background:var(--muted)}
+.body{grid-column:2;font-size:14px;color:var(--fg)}
+.ask{grid-column:2;font-size:14px;margin-top:2px}
+.ask b{color:var(--blue)}
+details{grid-column:2;font-size:13.5px;color:var(--muted)}
+details summary{cursor:pointer}
+details ul{margin:6px 0;padding-left:20px}
+code{background:var(--code);border-radius:4px;padding:0 4px;font-size:.9em;word-break:break-all}
+a{color:var(--blue);word-break:break-all}
+</style>
+</head>
+<body>
+<main>
+<h1>v0.4.0 リリース前に確認してほしいこと（2 回目 261110-01）</h1>
+<p class="sub">2026-11-11 02:40 JST 更新 / 対象 main aaff0ea7 / チェックはこのブラウザに保存されます</p>
+<div class="summary">
+  <span class="pill"><b style="color:var(--red)">2</b>リリース前に直すか決める</span>
+  <span class="pill"><b style="color:var(--amber)">8</b>判断してほしい</span>
+  <span class="pill"><b style="color:var(--blue)">3</b>目を通してほしい</span>
+  <span class="pill"><b style="color:var(--green)">1</b>操作してほしい</span>
+  <span class="pill"><b style="color:var(--muted)">1</b>決定済み・対応中</span>
+</div>
+<h2 style="--c:var(--red)">1. リリース前に直すか決める<small>priority 7 以上。放置すると利用者が詰まる</small></h2>
+<div class="item" data-id="workdir-worktree"><input type="checkbox"><div class="t"><span class="p p8">p9</span>worktree から KATACHI_WORKDIR 付きで検査すると、メインの作業ツリーを検査して黙って通る</div>
+<div class="body">skill の 6-A が勧める <code>KATACHI_WORKDIR=&lt;workdir&gt; katachi agent test</code> は、checklist の <code>meta.projectRoot</code> で Gradle を動かす。worktree で足した新しいファイルは検査されず「違反 0 件」で通る（Mac で再現）。</div>
+<div class="ask"><b>決めてほしい:</b> (a) CLI で、いる場所が meta.projectRoot と別の作業ツリーなら警告していまの場所を検査し、6-A も直す（おすすめ。PR を出す）/ (b) 6-A の手順書だけ直す / (c) v0.5 に回す</div>
+<details><summary>詳細</summary><ul><li>skills/katachi/references/setup/step6/6-A-confirm-the-installation.md:28、katachi-script の internal/Workdir.kt:136（projectRoot()）</li><li>並列の subagent はログ（latest / previous）も共有する</li><li><a href="file:///home/claude/katachi/.local/release-v0.4.0/install-e2e.md">install-e2e.md</a></li></ul></details></div>
+<div class="item" data-id="workdir-ambiguous"><input type="checkbox"><div class="t"><span class="p p7">p7</span>作業用ディレクトリが 2 つあると、katachi コマンドが何も言わずにどちらも使わない</div>
+<div class="body">候補が 2 つだと見つからない扱いになり、moduleDir・言語・ログの置き場が既定に戻る。英語の checklist でも出力が日本語になり、moduleDir が既定と違うと「定義のディレクトリが無い」で止まるが、原因は出ない。</div>
+<div class="ask"><b>決めてほしい:</b> (a) 候補を並べて止め、KATACHI_WORKDIR で選ぶよう出す（おすすめ。PR を出す）/ (b) 手順書に「古いほうを退避してから作る」と書くだけ / (c) v0.5 に回す</div>
+<details><summary>詳細</summary><ul><li>katachi-script の internal/Workdir.kt:36-58（Ambiguous を findWorkdir が null に）、skill の step0/README.md:33</li><li><a href="file:///home/claude/katachi/.local/release-v0.4.0/install-e2e.md">install-e2e.md</a></li></ul></details></div>
+<h2 style="--c:var(--amber)">2. 判断してほしい<small>リリースは止めないが、方針が要る</small></h2>
+<div class="item" data-id="revisit-fixed-violations"><input type="checkbox"><div class="t"><span class="p p5">見直し</span>6-0 で直した違反が checklist と 6 の報告に残り続ける</div>
+<div class="body">1 回目に「後で（agent 周りの刷新後に見直す）」と決めたもの。刷新後のキットでも起き、3 担当とも同じ結論。test は違反 0 件なのに、6 の報告をやり直すと「⚠️ violations left: 1」になる。</div>
+<div class="ask"><b>決めてほしい:</b> (a) 0-3 に「6-0 で直した違反は violations から外し、0 件なら step 4 の warning を消す」の例外を足す（おすすめ。手順書だけで済む。PR を出す）/ (b) violations に fixedIn を足し、ページと報告で分けて見せる / (c) 後でのまま</div>
+<details><summary>詳細</summary><ul><li>前の判断: 2026-11-10 261109-01 KATACHI-322「後で」、revisit = PR #65 のマージ後（満たした）</li><li>原因: 0-3「Arrays: add entries, never drop them」、6-0 に片付ける指示が無い、6 の報告は violations が空でなければ ⚠️</li><li><a href="file:///home/claude/katachi/.local/release-v0.4.0/install-e2e.md">install-e2e.md</a></li></ul></details></div>
+<div class="item" data-id="skill-install-scope"><input type="checkbox"><div class="t"><span class="p p5">p6</span>gh skill install が非対話だと Claude Code が読まない場所に入る</div>
+<div class="body">非対話で走らせると project scope・github-copilot が既定になる。docs と skill の入れ方が <code>gh skill install TBSten/katachi katachi</code> だけなので、AI Agent に入れさせると迷う。</div>
+<div class="ask"><b>決めてほしい:</b> (a) 入れ方の例に Agent を選ぶ指定を足す（docs の本文なので人の担当。Feedback にして AI が直す）/ (b) このまま</div>
+<details><summary>詳細</summary><ul><li>手順書のレビュー担当の所見（gh skill install の実行そのものは確かめていない）</li></ul></details></div>
+<div class="item" data-id="skill-run-project-tests"><input type="checkbox"><div class="t"><span class="p p5">p6</span>ソースを動かしたあと、プロジェクト自身のテストを走らせる指示が無い</div>
+<div class="body">en の kdoctor では、katachi の検査は緑のまま jvmTest が落ちた。skill に「動かしたらプロジェクトのテストも走らせる」を足すか。</div>
+<div class="ask"><b>決めてほしい:</b> (a) skill の該当手順に 1 行足す（おすすめ。PR を出す）/ (b) このまま</div>
+</div>
+<div class="item" data-id="missing-description"><input type="checkbox"><div class="t"><span class="p p5">p5</span>skill の [MissingDescription] の説明が実装と違う</div>
+<div class="body">skill は「summary・description の無い Role を検査が報告する」と書き、作業の手順（3-3・4-1・fix-violations の表）がこの数を目安にしている。実装は「置き場所が 2 つ以上ある Role の、説明の無い置き場所」にだけ出し、.module の削除後は利用者の定義ではまず出ない。</div>
+<div class="ask"><b>決めてほしい:</b> (a) skill の説明を実装に合わせて直す（おすすめ。PR を出す）/ (b) 実装を「summary の無い Role に出す」に変える（v0.4.0 の挙動が変わる）/ (c) このまま</div>
+<details><summary>詳細</summary><ul><li>skills/katachi/references/add-and-update/README.md:31、fix-violations/README.md:37、setup/step3/3-3、step4/4-1</li><li>実装: katachi/src/main/kotlin/me/tbsten/katachi/report/internal/SarifRules.kt:63「A role that may live in more than one place has a place without a description.」</li><li><a href="file:///home/claude/katachi/.local/release-v0.4.0/docs-vs-impl.md">docs-vs-impl.md</a></li></ul></details></div>
+<div class="item" data-id="gradle-recipe-buildscript"><input type="checkbox"><div class="t"><span class="p p5">p5</span>recipes/gradle の例が 1 つの BuildScript Role に build と settings を入れている</div>
+<div class="body">included build / buildSrc の例で、build.gradle.kts と settings.gradle.kts を 1 つの Role にまとめている。<code>gradle()</code> は SettingsScript と BuildScript を別の Role にしていて、「1 Role 1 種類」のルールにも反する。docs の本文なので人の担当。</div>
+<div class="ask"><b>決めてほしい:</b> (a) 直してもらう（Feedback にして AI が直す）/ (b) 直さない</div>
+<details><summary>詳細</summary><ul><li>ja/recipes/gradle.mdx L63〜71、gradle() は GradleGroup.kt L19〜20</li><li><a href="file:///home/claude/katachi/.local/release-v0.4.0/docs-rules.md">docs-rules.md</a></li></ul></details></div>
+<div class="item" data-id="test-hooks-in-jar"><input type="checkbox"><div class="t"><span class="p p4">p4</span>テスト用の口（reportForTest・withIsFile）が本番の jar に入っている</div>
+<div class="body">1 回目の公開範囲の修正（PR #63）で足した <code>@InternalKatachiApi</code> の口で、konsist / konture のテストだけが使う。CLAUDE.md の「開発用の機能は本番ビルドに含めない」に照らすと、<code>testFixtures(project(":katachi"))</code> に移せば jar に入らない。</div>
+<div class="ask"><b>決めてほしい:</b> (a) このまま（Internal なので利用者には見えない）/ (b) testFixtures に移す（PR を出す）</div>
+<details><summary>詳細</summary><ul><li>ViolationReport.kt:390、SarifContexts.kt:51</li><li><a href="file:///home/claude/katachi/.local/release-v0.4.0/tmp/visibility-internal-api-judged.md">visibility-internal-api-judged.md</a></li></ul></details></div>
+<div class="item" data-id="property-allow-order"><input type="checkbox"><div class="t"><span class="p p3">p3</span>拡張プロパティの allow / required で、2 番目の文字列の意味が関数と逆</div>
+<div class="body">関数の <code>allow(`fun`, "User", "to*")</code> は「レシーバー User・名前 to*」、プロパティの <code>allow(`val`, "User", "isAdmin")</code> は「名前 User・型 isAdmin」。docs と KDoc には書いてあるが、型を書き忘れるとエラーにならず別の意味の行になる。Experimental のうちなら形を変えられる。</div>
+<div class="ask"><b>決めてほしい:</b> (a) このまま / (b) v0.5 で形を見直すチケットを切る</div>
+<details><summary>詳細</summary><ul><li>PropertyAllow 11 件・PropertyRequired 11 件（katachi-konsist）</li><li><a href="file:///home/claude/katachi/.local/release-v0.4.0/tmp/visibility-experimental-b-judged.md">visibility-experimental-b-judged.md</a></li></ul></details></div>
+<div class="item" data-id="guide-conflicts"><input type="checkbox"><div class="t">ガイド同士の食い違い（ルールの側の判断）</div>
+<div class="body">照合のときにルールの側が割れていたもの。p3 の 4 件: E1 role.mdx の例が feature ごとに layout を書く（「変更を必要としない Role」と食い違う）/ E3 テンプレートのガイドに id を書くか / E4 prh.yml の「効く」の言い換え先が禁止語の「当たる」/ E18 kotlin-mapping が not. を見本にしている（C5 と食い違う）。ほかに p1〜2 が 7 件。</div>
+<div class="ask"><b>決めてほしい:</b> 1 件ずつ (a) ルールを直す / (b) 例を直す / (c) このまま。まとめて「このまま」でもよい</div>
+<details><summary>詳細</summary><ul><li><a href="file:///home/claude/katachi/.local/release-v0.4.0/docs-rules.md">docs-rules.md</a> の「ガイド同士の食い違い（E）」</li><li>E13: AGENTS の決まり（2 スペース・group 名の大文字など）が skill（英語）に及ぶか未定。skill 側の小文字 group などの指摘はこの判断待ち</li></ul></details></div>
+
+<h2 style="--c:var(--blue)">3. 目を通してほしい</h2>
+<div class="item" data-id="release-note"><input type="checkbox"><div class="t">リリースノートの下書き</div>
+<div class="body">1 回目の下書き（OK 済み）に、katachi skill・CLI の整理・移行表の 2 行（runCatchingScoped・SarifContext の IO の口）を足した。英語。</div>
+<details><summary>詳細</summary><ul><li><a href="file:///home/claude/katachi/.local/release-v0.4.0/release-note.md">release-note.md</a></li></ul></details></div>
+<div class="item" data-id="install-e2e-minor"><input type="checkbox"><div class="t">導入の統合テスト（9-2）の軽微な所見</div>
+<div class="body">p5 以下の skill・CLI の所見（lint が別ファイルの documented = false を見ない、3-1 のページ一覧に gradle() が無い、途中で切れたセッションの入口 ほか）。直すものがあれば言ってください。</div>
+<details><summary>詳細</summary><ul><li><a href="file:///home/claude/katachi/.local/release-v0.4.0/install-e2e.md">install-e2e.md</a>（全文は Mac の .local/release-v0.4.0-261110-01-mac/install-e2e.md）</li></ul></details></div>
+<div class="item" data-id="review-step11"><input type="checkbox"><div class="t">docs の細かな指摘 146 件（Review）</div>
+<div class="body">手順 11 の p4 以下と、手順 5・6 の p4 以下の docs の指摘。dev サーバーの Review で 1 件ずつ選べる。ユーザ影響あり 95 件 / なし 51 件、どれにも推奨度付き。Mac への登録はフォルダの接続待ち。</div>
+<details><summary>詳細</summary><ul><li>置き場: /Users/tbsten/dev/katachi/.local/feedback/review/prerelease-261110-01-step11.md（登録後）</li></ul></details></div>
+
+<h2 style="--c:var(--green)">4. 操作してほしい</h2>
+<div class="item" data-id="publish"><input type="checkbox"><div class="t">v0.4.0 を publish する</div>
+<div class="body">ドキュメントの更新が終わってから、別の場で（decisions/process.md の方針）。</div>
+</div>
+
+<h2 style="--c:var(--line)">5. 決定済み・対応中<small>🔧 対応中 / ✏️ 編集済み・検証中 / ✓ 済</small></h2>
+<div class="item" data-id="fix-353"><input type="checkbox" disabled><div class="t">✏️ 方針が明らかな指摘を直す（KATACHI-353）</div>
+<div class="body">katachi-script の例の <code>katachi.agent.init</code>（p7、PR #65 で消えた）→ <code>katachi.doctor</code>、CLI の <code>--katachi</code> のデフォルトの説明、FunctionRequired の KDoc のコードブロック（p6）、rawArgs の [args]、skill の出力の写し、prerelease の浅い clone の検出。<a href="https://github.com/TBSten/katachi/pull/75">PR #75</a>。9-2 から scaffold の build/ の判定・0-2 の check-ignore・CLI のページの doctor の出力例も足した。CI 待ち。</div>
+</div>
+
+<p class="sub" style="margin-top:28px">いま走っているもの: PR #75 の CI。待っているもの: Review の 146 件を Mac に登録（フォルダの接続待ち）。Mac の分は全部終わった（CI 相当 16 / 16、10-1 178 / 178、10-2 12 / 13 は環境要因、10-3 OK、9-1 41 / 41・16 / 16、9-2 ja ✓ / en ✓）。</p>
+</main>
+<script>
+const KEY='katachi-v0.4.0-todo';
+let s={};try{s=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
+document.querySelectorAll('.item').forEach(el=>{
+  const cb=el.querySelector('input'),id=el.dataset.id;
+  cb.checked=!!s[id];el.classList.toggle('done',cb.checked);
+  cb.addEventListener('change',()=>{s[id]=cb.checked;el.classList.toggle('done',cb.checked);try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}});
+});
+</script>
+</body>
+</html>

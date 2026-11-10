@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>v0.4.0 リリース前チェック</title>
+<style>
+:root{--bg:#fbfaf7;--fg:#1d1d1f;--muted:#6b6b70;--line:#e3e1dc;--card:#fff;--red:#c0392b;--amber:#b7791f;--blue:#2b6cb0;--green:#2f855a;--code:#f1efea}
+@media (prefers-color-scheme:dark){:root{--bg:#17171a;--fg:#ececef;--muted:#9a9aa2;--line:#2e2e34;--card:#1f1f23;--red:#f07167;--amber:#f6c35b;--blue:#7fb3ff;--green:#6fd39a;--code:#2a2a30}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.7 -apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+main{max-width:880px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 20px}
+.summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.pill{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px;font-size:13px}
+.pill b{margin-right:4px}
+h2{font-size:17px;margin:28px 0 8px;padding-left:10px;border-left:4px solid var(--c,var(--line))}
+h2 small{color:var(--muted);font-weight:normal;font-size:13px;margin-left:6px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0;display:grid;grid-template-columns:22px 1fr;gap:4px 10px}
+.item input{margin-top:5px;width:16px;height:16px}
+.item.done .t{text-decoration:line-through;color:var(--muted)}
+.t{font-weight:600}
+.p{font-size:11px;font-weight:700;border-radius:4px;padding:1px 6px;margin-right:6px;color:#fff;background:var(--muted);vertical-align:1px}
+.p8{background:var(--red)}.p7{background:var(--red)}.p5{background:var(--amber)}.p4,.p3,.p2{background:var(--muted)}
+.body{grid-column:2;font-size:14px;color:var(--fg)}
+.ask{grid-column:2;font-size:14px;margin-top:2px}
+.ask b{color:var(--blue)}
+details{grid-column:2;font-size:13.5px;color:var(--muted)}
+details summary{cursor:pointer}
+details ul{margin:6px 0;padding-left:20px}
+code{background:var(--code);border-radius:4px;padding:0 4px;font-size:.9em;word-break:break-all}
+a{color:var(--blue);word-break:break-all}
+</style>
+<style>
+.badge{display:inline-block;font-weight:700;border-radius:8px;padding:2px 10px;margin-right:8px}
+.ok{background:color-mix(in srgb,var(--green) 18%,transparent);color:var(--green)}
+.warn{background:color-mix(in srgb,var(--red) 18%,transparent);color:var(--red)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin:8px 0}
+.card{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--c,var(--line));border-radius:10px;padding:10px 14px}
+.card .n{font-size:12px;color:var(--muted)}
+.card .r{font-weight:700;margin:2px 0}
+.card .l{font-size:13px}
+.card.ok-c{--c:var(--green)}.card.warn-c{--c:var(--red)}.card.note-c{--c:var(--amber)}
+.lead{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:12px 0}
+</style>
+</head>
+<body>
+<main>
+<h1><span class="badge warn">⚠️</span>v0.4.0 リリース前チェック（2 回目 261110-01）</h1>
+<p class="sub">2026-11-11 02:40 JST / 対象 main aaff0ea7 / 基準 v0.3.0</p>
+
+<div class="lead">
+  <div>v0.4.0 は差分レポート（katachiDiff）、brew で入る katachi CLI、AI Agent 向けの katachi skill、katachi-script、ktFileContent の対象拡大、IDE プラグインの MCP をまとめて出す版です。破壊的変更があり、リリースノートの移行表は 9 行です。チェックで落ちたものは無く、導入の統合テストは ja・en とも最後まで通りました。</div>
+  <p class="sub" style="margin:8px 0 0">
+    <a href="TODO.html">TODO（14 件）</a> ・ <a href="release-note.md">リリースノート</a> ・ <a href="prerelease-check-list.md">チェックリスト</a> ・ <a href="https://github.com/TBSten/katachi/pull/75">修正 PR #75</a>
+  </p>
+</div>
+
+<h2 style="--c:var(--red)">重要な警告<small>priority 7 以上</small></h2>
+<div class="item" data-id="w-workdir-worktree"><div></div><div class="t"><span class="p p8">p9</span>worktree から KATACHI_WORKDIR 付きで検査すると、メインの作業ツリーを検査して黙って通る</div>
+<div class="body">skill の 6-A が勧める使い方で、新しいファイルが検査されず「違反 0 件」になる（Mac で再現）。直すか TODO.html で決めてください。</div></div>
+<div class="item" data-id="w-workdir-ambiguous"><div></div><div class="t"><span class="p p7">p7</span>作業用ディレクトリが 2 つあると、katachi コマンドが何も言わずにどちらも使わない</div>
+<div class="body">moduleDir・言語・ログの置き場が既定に戻り、原因が出ない（Mac で再現）。直すか TODO.html で決めてください。</div></div>
+<div class="item" data-id="w-agent-init"><div></div><div class="t"><span class="p p7">p7</span>docs の katachi-script の例が消えた katachi.agent.init を使う</div>
+<div class="body">PR #75 で katachi.doctor に直した（CI 待ち）。</div></div>
+
+<h2>手順ごとの結果</h2>
+<div class="cards">
+  <div class="card ok-c"><div class="n">1. 前提チェック</div><div class="r">0.4.0 / 直前 0.3.0</div><div class="l"><a href="prerelease-check-list.md">チェックリスト</a></div></div>
+  <div class="card ok-c"><div class="n">2. 翻訳の同期</div><div class="r">訳し直し 0 組</div></div>
+  <div class="card note-c"><div class="n">3. 公開範囲</div><div class="r">要検討 29 件（p7 以上 0）</div><div class="l"><a href="visibility-check.md">visibility-check.md</a></div></div>
+  <div class="card ok-c"><div class="n">4. リリースノート</div><div class="r">移行表 9 行</div><div class="l"><a href="release-note.md">release-note.md</a></div></div>
+  <div class="card note-c"><div class="n">5. 実装とドキュメント</div><div class="r">9 件（p7 以上 1、PR #75 で修正）</div><div class="l"><a href="docs-vs-impl.md">docs-vs-impl.md</a></div></div>
+  <div class="card ok-c"><div class="n">6. サイトの巡回</div><div class="r">en 28 / ja 29 / api-docs 27 ページ・問題 6 件</div><div class="l"><a href="site-crawl.md">site-crawl.md</a> ・ <a href="screenshots/">screenshots</a></div></div>
+  <div class="card note-c"><div class="n">11. ドキュメントのルール適合</div><div class="r">44 件（p7 以上 0）・Review に 146 件</div><div class="l"><a href="docs-rules.md">docs-rules.md</a></div></div>
+  <div class="card ok-c"><div class="n">8. CI と同等</div><div class="r">Mac 16 / 16（クラウド 11 / 16 は環境要因）</div><div class="l"><a href="ci-checks.md">ci-checks.md</a></div></div>
+  <div class="card ok-c"><div class="n">10-1. IDE プラグイン nightly 相当</div><div class="r">OK・178 / 178・seed 1794324062</div><div class="l">Mac（KATACHI-352 の子ページ）</div></div>
+  <div class="card ok-c"><div class="n">10-2. IDE プラグイン E2E</div><div class="r">12 / 13（SpikeDriverTest は既知の環境要因）</div><div class="l">Mac（KATACHI-352 の子ページ）</div></div>
+  <div class="card ok-c"><div class="n">10-3・10-4. 配る zip・文言の日英</div><div class="r">zip 0.4.0 OK・直し忘れ 0 件</div><div class="l"><a href="ide-plugin-texts.md">ide-plugin-texts.md</a></div></div>
+  <div class="card ok-c"><div class="n">9-1. インストールキット（fixture）</div><div class="r">16 / 16（agp 含む）・スモーク 41 / 41</div><div class="l">Mac（KATACHI-352 の子ページ）</div></div>
+  <div class="card warn-c"><div class="n">9-2. 統合テスト</div><div class="r">ja ✓ / en ✓・所見 47 件（p7 以上 3）</div><div class="l"><a href="install-e2e.md">install-e2e.md</a></div></div>
+  <div class="card note-c"><div class="n">過去の判断（decisions/）</div><div class="r">同じで出さなかった 122 件・見直し候補 1 件・この回で書き足した 0 件</div><div class="l">.claude/skills/prerelease/decisions/</div></div>
+</div>
+
+<h2 style="--c:var(--amber)">軽微な警告<small>p6 以下</small></h2>
+<details><summary>手順ごとの内訳</summary><ul>
+  <li>3. 公開範囲: 要検討 29 件（警告 7、うち 2 件は TODO.html）（<a href="visibility-check.md">visibility-check.md</a>）</li>
+  <li>5. 実装とドキュメント: 8 件（[MissingDescription] は TODO.html）（<a href="docs-vs-impl.md">docs-vs-impl.md</a>）</li>
+  <li>6. サイトの巡回: 6 件（FunctionRequired の p6 は PR #75 で修正）（<a href="site-crawl.md">site-crawl.md</a>）</li>
+  <li>11. ドキュメントのルール適合: 44 件・E 11 件（p4 以下は Review に）（<a href="docs-rules.md">docs-rules.md</a>）</li>
+  <li>9-2. 統合テスト: p6 以下 44 件（3 件は PR #75 で修正、2 件は TODO.html）（<a href="install-e2e.md">install-e2e.md</a>）</li>
+</ul></details>
+</main>
+</body>
+</html>
