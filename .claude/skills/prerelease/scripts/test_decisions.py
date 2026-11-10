@@ -146,6 +146,17 @@ class DecisionsTest(unittest.TestCase):
         # 写した判断は形の検査を通る（「後で」の revisit も入っている）
         self.assertEqual([e.errors for e in D.load_decisions(self.dir) if e.errors], [])
 
+    def test_actions_popup_does_not_show_are_not_read(self):
+        # popup に出ない選択肢（初めからのボタンと同じ名前・同じ名前の 2 つめ・9 つめから）は読まない。
+        # 「## 直さない」に decision: 後で と書かれても、直さない の判断を上書きしない
+        heads = ["直さない", "後で", "後で", "[p3] 印", "名前: 区切り"] + [f"選択肢{i}" for i in range(1, 9)]
+        (self.root / "_actions.md").write_text(
+            "# 選択肢\n\n" + "".join(f"## {h}\n- decision: 後で\n\n" for h in heads), encoding="utf-8"
+        )
+        got = D.load_actions(self.review)
+        self.assertEqual(list(got), ["後で"] + [f"選択肢{i}" for i in range(1, 8)])
+        self.assertNotIn("直さない", got)
+
     def test_note_with_reason_in_parentheses_or_after_a_space(self):
         # 手で付けた note（「直さない（理由）」「直さない 理由」）も理由付きの「直さない」として受ける。333 で 10 件漏れた形
         self.assertEqual(D.note_choice("直さない（前の文で通じる）", ["直さない"]), ("直さない", "前の文で通じる"))

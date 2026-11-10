@@ -177,13 +177,36 @@ def review_ids(entries, set_name):
     return ids
 
 
+# review/actions.ts の labelProblem・MAX_ACTIONS と同じ決まり。
+ACTION_LABEL_CHARS = 20
+MAX_ACTIONS = 8
+RESERVED_ACTION_LABELS = ("直さない", "直してもらう", "解決済みにする", "Feedback に送った")
+
+
+def action_label_ok(label):
+    return (
+        0 < len(label) <= ACTION_LABEL_CHARS
+        and not re.search(r"[:：\n\r]", label)
+        and not re.match(r"\[p\d", label, re.I)
+        and label not in RESERVED_ACTION_LABELS
+    )
+
+
 def load_actions(review_path):
     """指摘のファイルの隣の `_actions.md` から、`- decision:` の付いた選択肢を {名前: decision} で返す（review/actions.ts と同じ読み方）。"""
     path = Path(review_path).parent / ACTIONS_FILE
     if not path.exists():
         return {}
     entries, _ = parse(path.read_text(encoding="utf-8"), path.stem, ("agent", "decision"))
-    return {e.title: e.meta["decision"] for e in entries if e.meta.get("decision") in DECISIONS and not re.search(r"[:：]", e.title)}
+    # popup に出ない選択肢（名前が読めない・同じ名前の 2 つめ・9 つめから）は、popup と同じく読まない。
+    shown, out = [], {}
+    for e in entries:
+        # parse は `[pN]` を優先度として外すので、付いていたものは名前として読めないものに数える
+        if e.priority is None and action_label_ok(e.title) and e.title not in shown and len(shown) < MAX_ACTIONS:
+            shown.append(e.title)
+            if e.meta.get("decision") in DECISIONS:
+                out[e.title] = e.meta["decision"]
+    return out
 
 
 def note_choice(note, names):
