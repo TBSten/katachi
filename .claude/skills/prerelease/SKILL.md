@@ -56,6 +56,22 @@ flowchart LR
 - 7 は、ほかの全部が返ってから。チェックリストは各 subagent が返るたびにオーケストレータが書く。8・10-1・10-2・9-1 は
   subagent を起こさずオーケストレータが自分で走らせてよい。
 
+## 過去の判断（decisions/）— 同じことを二度聞かない
+
+前の回で利用者が「直さない」「このまま」「後で」「こういう方針で」と答えた指摘は、[decisions/](decisions/README.md) に溜まっている。
+**警告・TODO を出す前に必ず照らし、同じものは出し直さない。**利用者に同じことを二度聞くのは、このチェックの失敗として扱う。
+
+- 1 の `prepare.py` が判断の件数と問題（`quote` が見つからない＝箇所が書き換わった、など）を出す。問題はチェックリストの 1 の memo に書く。
+- 手順を始めるとき（subagent に任せるならその subagent に）、[decisions/README.md](decisions/README.md) の表の「読む手順」のファイルと、
+  README の「照らし方」を渡す。手順 3 は `api.md`、5・6・11 は `docs.md`、9 は `install.md`、10 は `ide-plugin.md`、
+  8・9・10 の失敗は `environment.md`、オーケストレータは `process.md`。
+- 同じものは警告にせず、結果の末尾の「過去の判断どおり（n 件）」に見出しだけ並べる（`<details>`）。チェックリストにも件数を書く。
+- 前提が変わったもの（`revisit` の条件を満たした・中身が重くなった・箇所が書き換わった）は「見直し候補」にして、TODO.html の
+  「2. 判断してほしい」に前の判断と一緒に載せる。
+- 手順 11 の指摘を Review に登録する前に `decisions.py match <review.md> --drop` で同じものを外す（[references/docs-rules.md](references/docs-rules.md)）。
+- 利用者が答えたら、**その回のうちに** decisions/ に書き足す（TODO.html の「5. 決定済み」に移すのと同じタイミング）。Review の popup の
+  「直さない」は `decisions.py record-review` で写してから `review remove` する。書き足した判断は修正 PR に入れる（無ければ記録だけの PR）。
+
 ## 作業場所の置き方
 
 `.local/release-v<版>/` の直下には**人が読む成果物だけ**を置く。
@@ -88,6 +104,7 @@ flowchart LR
 
 `prepare.py` で今回の版と公開済みの直前の版を比べ、上がっていなければ `STOP` で止まる（ユーザに確認し、`--force` で再開）。
 通れば `.local/release-v<版>/` を作ってチェックリストを写す。以降の `<基準>` は出力の「基準（直前のタグ）」。
+出力の「過去の判断」の行（件数・問題・見直す条件）をチェックリストの 1 に写す（上の「過去の判断」）。
 詳細: [references/prepare.md](references/prepare.md)
 
 ## 2. 日本語ドキュメントを 英語ドキュメントへ翻訳同期する
@@ -175,6 +192,8 @@ layout。**チェックの前に**、ほかのガイド（generate-code-from-tem
 - 8・10-1・10-2・9-1（CI と同等のチェック・IDE プラグインの nightly 相当・IDE プラグインの E2E・インストールキット）
   が1つでも落ちていれば、それは priority 10 の警告として「⚠️ 重要な警告」に必ず載せる。
 - 上記のステップを実行してきた中で見つけた警告をサマライズし重要なものがあればユーザに警告する。
+  過去の判断と同じもの（decisions/）は警告に数えない。
+- 報告の前に、この回で利用者が答えた判断が decisions/ に書き足されているかを確かめる（`decisions.py check` が通ること）。
 - 形式は以下。この形式から外れないように厳密に処理する。
   ```
   ✅ リリース前チェック完了
@@ -203,6 +222,7 @@ layout。**チェックの前に**、ほかのガイド（generate-code-from-tem
   ## 軽微な警告
 
   - xx 件
+  - 過去の判断どおりで出さなかったもの: xx 件（decisions/）
   - 詳細: file://{prerelease-check-list.md の絶対パス}
 
   ---

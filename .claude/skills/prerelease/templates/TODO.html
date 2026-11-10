@@ -59,6 +59,12 @@ a{color:var(--blue);word-break:break-all}
 
 <h2 style="--c:var(--amber)">2. 判断してほしい<small>リリースは止めないが、方針が要る</small></h2>
 
+<!-- 過去の判断（decisions/）と同じものは載せない。前提が変わった「見直し候補」だけ、前の判断を添えて載せる。 -->
+<div class="item" data-id="example-revisit"><input type="checkbox"><div class="t">見直し候補: {前の判断の見出し}</div>
+<div class="body">{前回は「直さない」とした。今回 {何が変わったか}}</div>
+<div class="ask"><b>決めてほしい:</b> {(a) 前の判断のまま / (b) 今回は直す}</div>
+<details><summary>前の判断</summary><ul><li>{decisions/docs.md の見出し}・{decided}・{理由}</li></ul></details></div>
+
 <h2 style="--c:var(--blue)">3. 目を通してほしい</h2>
 
 <h2 style="--c:var(--green)">4. 操作してほしい</h2>
@@ -69,6 +75,8 @@ a{color:var(--blue);word-break:break-all}
 <h2 style="--c:var(--line)">5. 決定済み・対応中<small>🔧 対応中 / ✏️ 編集済み・検証中 / ✓ 済</small></h2>
 
 <div class="item" data-id="example-done"><input type="checkbox" disabled><div class="t">✓ {決まったこと}（{コミット}）</div></div>
+<!-- 「直さない」「このまま」「後で」「方針」の答えは decisions/ に書き足し、末尾に「→ decisions/<ファイル> に記録」と書く -->
+<div class="item" data-id="example-decided"><input type="checkbox" disabled><div class="t">✓ {指摘} → 直さない（{利用者の一言}）→ decisions/docs.md に記録</div></div>
 
 <p class="sub" style="margin-top:28px">{いま走っているもの・待っているもの}</p>
 </main>

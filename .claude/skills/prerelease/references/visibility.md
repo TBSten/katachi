@@ -36,5 +36,9 @@
     - 印の付いたもの（直前のリリースから増えた・変わった公開 API）は必ず目を通させる（差分は
       `git diff <基準> -- katachi/src/main katachi-konsist/src/main katachi-konture/src/main`）。
     - **直させない。**判断が要るものは警告として報告させる。
+    - **過去の判断を渡す**: [decisions/api.md](../decisions/api.md) と [decisions/README.md](../decisions/README.md) の「照らし方」。
+      判断と同じ宣言（名前と所属が同じ）は要検討にせず「過去の判断どおり」に、前提が変わったもの（宣言の形が変わった・
+      `revisit` を満たした）は「見直し候補」にさせる。
 - subagent の判断を `.local/release-v0.0.0/visibility-check.md` に足す（スクリプトが書いた一覧の、各項目の下に）。
   prerelease-check-list.md には要検討の件数と、要検討の件の警告だけを書く（件数はスクリプトが埋めている）。
+  過去の判断どおりの件数と見直し候補の件数も書く。

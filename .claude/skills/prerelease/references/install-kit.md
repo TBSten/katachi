@@ -82,7 +82,9 @@ sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/r
 - Gradle を使う。8・6-1・5 のサンプルを動かす作業とは重ねない。fixture の project cache は
   `.local/tmp/gradle-cache/prerelease-install/<fixture>`（`katachi agent test -- --project-cache-dir …` で渡す）
 - `docs/public/install/` と `katachi-script/` の中身は直さない。NG の原因がキットの不具合なら警告として報告する
-- 1つでも NG なら priority 10 の警告にする（利用者がインストールで詰まる状態）。NG の欄とログの末尾から原因を1〜2行で書く
+- 1つでも NG なら priority 10 の警告にする（利用者がインストールで詰まる状態）。NG の欄とログの末尾から原因を1〜2行で書く。
+  ただし [decisions/environment.md](../decisions/environment.md) の環境要因に該当し、別の場所（Mac・CI）で通ることを
+  確かめたものは、警告にせず「環境要因」と書く
 - prerelease-check-list.md には、通った数 / 全体と、NG の fixture だけを書く
 
 ## 9-2. 統合テスト（手順書どおりに実在のプロジェクトへ導入する）
@@ -103,6 +105,8 @@ subagent（model: opus。手順書を読んで判断しながら進める）を�
   で作り、中で `git init`（無いと `gitTracked()` が 0 件になる）。原本には触らない
 - 対象のプロジェクトは毎回同じでなくてよい。前回と違う形（モジュールの数、Groovy / Kotlin DSL、version catalog の有無）を選ぶと
   取りこぼしが減る。前回の結果は前回の作業場所の `install-e2e.md`
+- 各担当に [decisions/install.md](../decisions/install.md) と [decisions/README.md](../decisions/README.md) の「照らし方」を渡す。
+  過去の判断と同じ所見は書かずに「過去の判断どおり」に並べ、`revisit` を満たした `後で` は「見直し候補」として書かせる
 - 各担当は `tmp/install-e2e/<担当>/report.md` に所見を `### [WARN / priority n/10]` の形で書く（katachi コマンドの不具合・手順書の問題・
   訳の問題を分ける）。**直させない**。subagent がハーネスの制約でファイルを書けないことがあるので、報告の本文に所見を全部
   載せさせ、書けなかったときはオーケストレータがその本文を report.md に保存する

@@ -1,0 +1,143 @@
+# docs
+
+docs・README・手順書の文言・例への判断（手順 2・5・6・11）。形は [README.md](README.md)。
+
+## 直さない: 指示語「これらは」
+- decision: 直さない
+- file: ja/get-started/comparison-with-other-tools.mdx
+- quote: これらは **katachi と排他的とは限りません**
+- rule: D3-3（「これら」ではなく指すものを書く）
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 直し方の案: 「Konsist や ArchUnit などは、**katachi と排他的とは限りません**。」
+
+## 直さない: katachi-konsist に触れずに FileConstraintCheck() を案内している（要確認）
+- decision: 直さない
+- file: ja/get-started/motivation.mdx
+- quote: assert(FileConstraintCheck())
+- rule: A4（別モジュールにあることと `assert(FileConstraintCheck())` を、ページ間で同じ言い方にする）／C1（依存に `katachi-konsist` を足す）
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 該当: 「テストで `assert(FileConstraintCheck())` を呼ぶと…」。`ktFileContent { }` が別モジュール `katachi-konsist` に入っていることを書かない（comparison と first-architecture は書いている）
+- 直し方の案: 導入前の概説なので「`katachi-konsist` を依存に足すと」と一言添えるか、first-architecture へのリンクにする。導入ページに任せる方針なら直さない
+- 同じ指摘: faq.mdx（「テストで `assert(FileConstraintCheck())` を呼べば…」）
+
+## 直さない: 「通さないガードレール」
+- decision: 直さない
+- file: ja/get-started/motivation.mdx
+- quote: ガードレールとして働くツール
+- rule: D3-7（比喩。「通さない」も検査の結果の言い方）
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 直し方の案: 「ルールを無視したコードを検出するツール」
+
+## 直さない: 読み飛ばしても先に進める補足が caution になっている
+- decision: 直さない
+- file: ja/get-started/motivation.mdx
+- quote: :::caution[Scope の外は検証されない]
+- rule: D3-6（読み飛ばされては困る注意だけを Aside にする）。直後の段落の前置きで、読み飛ばしても先に進める補足
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 直し方の案: 地の文にして、FAQ への案内を残すか削る（D3-5）
+
+## 直さない: Role に summary が無い（要確認）
+- decision: 直さない
+- file: ja/get-started/motivation.mdx
+- quote: .role {
+- rule: B10（完成形の Role に `summary`）。`// ...` で省いた断片ではなく見えるが、`package`/`import` も無いので完成形ではないとみて p1
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 直し方の案: 断片と分かる `// ...` を足す、または `summary` を1行足す
+
+## 直さない: Role に summary が無い（要確認）
+- decision: 直さない
+- file: ja/get-started/motivation.mdx
+- quote: .role {
+- rule: B10（完成形の Role に `summary`）。`// ...` で省いた断片ではなく見えるが、`package`/`import` も無いので完成形ではないとみて p1
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 直し方の案: 断片と分かる `// ...` を足す、または `summary` を1行足す
+
+## 直さない: Role に summary が無い（要確認）
+- decision: 直さない
+- file: ja/get-started/comparison-with-other-tools.mdx
+- quote: .role {
+- rule: B10（完成形の Role に `summary`）。`// ...` で省いた断片ではなく見えるが、`package`/`import` も無いので完成形ではないとみて p1
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 直し方の案: 断片と分かる `// ...` を足す、または `summary` を1行足す
+
+## 直さない: 2 ファイル並べの例に @file:OptIn と import が無い（要確認）
+- decision: 直さない
+- file: ja/recipes/android-three-layer.mdx
+- quote: // roles/AndroidManifest.kt
+- rule: コード例は写してそのまま動く形にする（@file:OptIn と import を省かない）
+- decided: 2026-11-10 261109-01 KATACHI-322
+- by: 利用者（TODO.html、02:20 JST「やらない」）
+
+手順 11 の p5。`roles/AndroidManifest.kt` と `roles/AndroidResource.kt` を 1 つのコードブロックに並べた例（sample/android からの引用）。
+
+## 直さない: コードの直後にサンプルへのリンクが無い（TODO コメント）
+- decision: 直さない
+- file: ja/recipes/ktlint.mdx
+- quote: TODO: C16 コードの直後にサンプルへのリンクが無い
+- rule: C16（コードの直後に sample のファイルへのリンクを置く）
+- decided: 2026-11-10 261109-01 KATACHI-322
+- by: 利用者（322 のスレッド。手順 11 の p4 以下を Review に登録する前の選別）
+
+sample/ に ktlint の例が無いので、TODO コメントのまま残す。detekt・github のページも同じ判断（下の 2 件）。手順 11 で「TODO コメントが残っている」とも出さない。
+
+## 直さない: コードの直後にサンプルへのリンクが無い（TODO コメント）
+- decision: 直さない
+- file: ja/recipes/detekt.mdx
+- quote: TODO: C16 コードの直後にサンプルへのリンクが無い
+- rule: C16（コードの直後に sample のファイルへのリンクを置く）
+- decided: 2026-11-10 261109-01 KATACHI-322
+- by: 利用者（322 のスレッド。手順 11 の p4 以下を Review に登録する前の選別）
+
+ktlint と同じ。
+
+## 直さない: コードの直後にサンプルへのリンクが無い（TODO コメント）
+- decision: 直さない
+- file: ja/recipes/github.mdx
+- quote: TODO: C16 コードの直後にサンプルへのリンクが無い
+- rule: C16（コードの直後に sample のファイルへのリンクを置く）
+- decided: 2026-11-10 261109-01 KATACHI-322
+- by: 利用者（322 のスレッド。手順 11 の p4 以下を Review に登録する前の選別）
+
+ktlint と同じ。
