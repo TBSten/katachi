@@ -603,3 +603,16 @@ processor の summary・layout の無い Role、diff-report の Role、README.ja
 元の指摘:
 
 - motivation.mdx の LinkCard の description は `architecture { }`・`.template { }` をバッククォート無しで書いている。D1-4 は守っているが A2 の「コード表記」にはなっていない。どちらを優先するかの記述が無い
+
+## 直さない: 完成形と書く例に import が無い（要確認）
+- decision: 直さない
+- file: ja/guides/role.mdx
+- quote: kt title=domain/UseCaseRole.kt nocollapse
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 「完成形」と書くが package/import から始まらない断片なので D2-1 の対象外。ただしファイル全体と読まれる恐れがある（role.mdx は title にファイル名を付けている）
