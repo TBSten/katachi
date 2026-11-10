@@ -32,7 +32,7 @@ registerHooks({
 const USAGE = `使い方:
   cli.mjs list [--state=open|archived|all] [--json]   未対応（既定）の一覧。id・作成日時・ページ・ソース・要約
   cli.mjs read <id>                                    記録の全文
-  cli.mjs archive <id> --note "<1行>"                  archived/ に移し、末尾に対応メモを足す
+  cli.mjs archive <id> --note "<1行>"                  archived/ に移し、末尾に対応メモを足す（Review の「直してもらう」から来た記録なら、元の指摘も消す）
   cli.mjs review list [--status=open|resolved|all] [--json]  指摘の一覧（既定は all）。id・状態・優先度・場所・見出し・一言
   cli.mjs review show <id>                             指摘 1 件の全部（本文・今のソースでの行）
   cli.mjs review check                                 指摘のファイルを検査（読めない指摘・無いファイル・quote が見つからない行）。問題があれば 1 で終わる
@@ -170,6 +170,17 @@ async function main() {
 		if (!note) throw new Error('--note "<1行>" が必要です（何をしたか、判断待ちなら判断待ちと書く）')
 		const e = await store.archive(id, note)
 		console.log(`archived: ${e.id} -> ${e.ref}`)
+		// Review の「直してもらう」から来た記録なら、元の指摘も消す（「- Review の指摘: <id>」の行）。
+		const link = /^- Review の指摘: (\S+)$/m.exec((await store.read(e.id)).text)?.[1]
+		if (link) {
+			const { createReviewStore, REVIEW_SUBDIR } = await import(pathToFileURL(resolve(here, 'review.ts')).href)
+			const reviews = createReviewStore(resolve(dir, REVIEW_SUBDIR), repoRoot)
+			if (!(await reviews.load()).items.some((v) => v.id === link)) console.log(`Review の指摘 ${link} はもうありません（消してあります）`)
+			else {
+				await reviews.remove(link)
+				console.log(`removed review: ${link}（Review の「直してもらう」から来た記録）`)
+			}
+		}
 		return
 	}
 

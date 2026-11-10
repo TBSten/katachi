@@ -35,7 +35,7 @@ node $C read <id>                                  # 全文（先頭の `<!-- id
 node $C archive <id> --note "<1行>"                # archived/ に移し、末尾に「対応メモ: …（日付）」を足す
 ```
 
-`--note` は必須。**archive はオーケストレータだけ**が回す。`mv` を直接打たない（対応メモの書き忘れを防ぐ）。
+`--note` は必須。**archive はオーケストレータだけ**が回す。記録に `- Review の指摘: <id>` の行があれば（Review の popup の「直してもらう」から来た記録）、archive がその指摘も `.local/feedback/review/` から消す。`mv` を直接打たない（対応メモの書き忘れを防ぐ）。
 
 ## 手順
 
