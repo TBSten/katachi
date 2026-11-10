@@ -47,9 +47,9 @@ You write the same lines at the top level of a file and inside the `{ }` of a cl
       required(`interface`, fileName) { /* member lines */ }
       allow(data, `object`, "*Route")
       // Any of class, interface, object
-      allow(type, "*")
+      allow(type, "*") { allow(anythingElse) }
       // Join kinds with or
-      allow(`class` or `object`, "*")
+      allow(`class` or `object`, "*") { allow(anythingElse) }
       ```
     </td>
   </tr>
@@ -211,7 +211,7 @@ You write the same lines at the top level of a file and inside the `{ }` of a cl
 
 ## Modifiers
 
-Write modifiers before the kind, in the same order as in Kotlin source. A modifier you write must be present. A modifier you do not write is a **violation** if it is present (except `public` and `final`). `final` and parameter modifiers are not checked if you do not write them.
+Write modifiers before the kind, in the same order as in Kotlin source. A modifier you write must be present. A modifier not written in the architecture definition is a **violation** if it is present (except `public` and `final`). `final` and parameter modifiers are not checked if you do not write them.
 
 <div style="overflow-x: auto">
 <table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
@@ -291,7 +291,7 @@ Write modifiers before the kind, in the same order as in Kotlin source. A modifi
 
 ## Signatures
 
-These are checked only when you chain them after a line. If you do not write them, they are **not checked**. For arguments only, `()` means "no arguments", and writing nothing means not checked.
+Signatures (arguments, return type, receiver, and so on) are checked only when you chain them after a line. If you do not write them, they are **not checked**. For arguments only, `()` means "no arguments", and writing nothing means not checked.
 
 <div style="overflow-x: auto">
 <table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">

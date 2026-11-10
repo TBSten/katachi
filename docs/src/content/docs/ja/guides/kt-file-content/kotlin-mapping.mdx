@@ -47,9 +47,9 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
       required(`interface`, fileName) { /* メンバの行 */ }
       allow(data, `object`, "*Route")
       // class, interface, object のどれでも
-      allow(type, "*")
+      allow(type, "*") { allow(anythingElse) }
       // 種類を or でつなぐ
-      allow(`class` or `object`, "*")
+      allow(`class` or `object`, "*") { allow(anythingElse) }
       ```
     </td>
   </tr>
@@ -211,7 +211,7 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
 
 ## 修飾子
 
-修飾子は種類の前に、Kotlin のソースと同じ並びで書きます。書いた修飾子は必ず付いている必要があり、書かなかった修飾子は付いていると**違反**です（`public` と `final` を除く）。`final` と引数の修飾子は、書かなければ問いません。
+修飾子は種類の前に、Kotlin のソースと同じ並びで書きます。書いた修飾子は必ず付いている必要があり、アーキテクチャ定義に書いていない修飾子が付いていると**違反**になります（`public` と `final` を除く）。`final` と引数の修飾子は、書かなければ問いません。
 
 <div style="overflow-x: auto">
 <table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
@@ -291,7 +291,7 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
 
 ## シグネチャ
 
-行の後ろに続けて書いたときだけ見ます。書かなければ**問いません**。引数だけは `()` が「引数なし」の意味で、何も付けなければ問いません。
+シグネチャ（引数・戻り値・レシーバーなど）は、行の後ろに続けて書いたときだけ検査します。書かなければ**問いません**。引数だけは `()` が「引数なし」の意味で、何も付けなければ問いません。
 
 <div style="overflow-x: auto">
 <table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
