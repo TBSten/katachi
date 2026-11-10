@@ -65,8 +65,17 @@ describe('order', () => {
 		expect(passes(v({ priority: 9, status: 'resolved' }), { ...f, showResolved: true })).toBe(true)
 	})
 	it('壊れた・知らない絞り込みは既定に戻す', () => {
-		expect(parseFilter('{')).toEqual({ minPriority: 0, showResolved: false })
-		expect(parseFilter(JSON.stringify({ minPriority: 4, showResolved: 'yes' }))).toEqual({ minPriority: 0, showResolved: false })
+		expect(parseFilter('{')).toEqual({ minPriority: 0, showResolved: false, impact: 'all' })
+		expect(parseFilter(JSON.stringify({ minPriority: 4, showResolved: 'yes', impact: 'maybe' }))).toEqual({ minPriority: 0, showResolved: false, impact: 'all' })
+	})
+	it('ユーザ影響で絞る: all は全部、user / none は impact の書かれた指摘だけ', () => {
+		const f = parseFilter(JSON.stringify({ impact: 'user' }))
+		expect(f.impact).toBe('user')
+		expect(passes(v({ impact: { user: true } }), f)).toBe(true)
+		expect(passes(v({ impact: { user: false } }), f)).toBe(false)
+		expect(passes(v({}), f)).toBe(false)
+		expect(passes(v({ impact: { user: false } }), { ...f, impact: 'none' })).toBe(true)
+		expect(passes(v({}), { ...f, impact: 'all' })).toBe(true)
 	})
 	it('そのページの指摘か（URL かソースのパス）', () => {
 		expect(onPage(v({}), { pathname: '/katachi/ja/a/', source: null, base: '/katachi' })).toBe(true)

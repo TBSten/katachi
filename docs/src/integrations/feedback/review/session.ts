@@ -7,8 +7,8 @@ import { createHost } from '../shared/shell'
 import { pageSourceFile } from '../shared/srcmap'
 import { actionOfNote, DECISIONS, labelProblem, LABEL_CHARS, matchNote, MAX_ACTIONS, noteOf } from './actions'
 import { css } from './css'
-import { formatLine, pageUrlOf, priorityTier } from './model'
-import { groupByFile, onPage, parseFilter, passes, PRIORITY_STEPS, shortFile, sortItems, type Filter } from './order'
+import { formatLine, impactLabel, pageUrlOf, priorityTier, RECOMMEND_MAX, scoreOf } from './model'
+import { groupByFile, IMPACT_STEPS, onPage, parseFilter, passes, PRIORITY_STEPS, shortFile, sortItems, type Filter } from './order'
 import { expandCode, findTarget, isHidden, rectOfTarget, type Target } from './place'
 import { chooseSide, placeAt } from './position'
 import { renderInline, renderMarkdown } from './render'
@@ -507,6 +507,15 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		head.append(x)
 
 		const body = el('div', 'pop-body')
+		// ユーザ影響の札（`- impact:`）。理由があれば札の横に小さく添える（スマホでは title が読めないので地の文で）。
+		if (v.impact) {
+			const tags = el('div', 'tags')
+			const tag = el('span', `impact${v.impact.user ? ' is-user' : ''}`, impactLabel(v.impact))
+			tag.title = v.impact.user ? 'katachi の利用者に影響する指摘（- impact: あり）' : '利用者には影響しない指摘（- impact: なし）'
+			tags.append(tag)
+			if (v.impact.reason) tags.append(el('span', 'impact-reason', v.impact.reason))
+			body.append(tags)
+		}
 		const title = el('h3', 'pop-title')
 		title.append(renderInline(v.title))
 		body.append(title)
@@ -527,6 +536,20 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		err.setAttribute('role', 'alert')
 		err.textContent = popError ?? ''
 		err.hidden = !popError
+		/** ボタンに推奨度（`- recommend:`）を小さく薄く添える。書かれていなければ何もしない。 */
+		// いちばん高い推奨度が 1 つだけなら、その数字だけ少し濃くする（同点なら付けない。どれを勧めているかを迷わせない）。
+		const top = (() => {
+			const scores = (v.recommend ?? []).map((r) => r.score)
+			const max = Math.max(-1, ...scores)
+			return max >= 0 && scores.filter((x) => x === max).length === 1 ? max : null
+		})()
+		const rec = (b: HTMLButtonElement, name: string) => {
+			const score = scoreOf(v.recommend, name)
+			if (score === null) return b
+			b.append(el('span', `rec${score === top ? ' is-top' : ''}`, `推奨 ${score}`))
+			b.title = `${b.title ? `${b.title}\n` : ''}推奨度 ${score} / ${RECOMMEND_MAX}（指摘を書いた agent の見立て）`
+			return b
+		}
 		if (v.status === 'open') {
 			const input = el('input')
 			input.type = 'text'
@@ -541,12 +564,14 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 			btn.disabled = busy || Date.now() < guardUntil
 			const go = () => void resolve(v, input.value)
 			btn.addEventListener('click', go)
+			rec(btn, '解決済みにする')
 			// 直さないと決めたとき。解決済みにして、ひとことの頭に「直さない」と書く（agent は直ったかを確かめずに消す）。
 			const keep = el('button', 'btn keep', '直さない')
 			keep.type = 'button'
 			keep.disabled = btn.disabled
 			keep.title = '直さずに解決済みにする（ひとことの頭に「直さない」と書きます）'
 			keep.addEventListener('click', () => void resolve(v, noteOf(KEEP_NOTE, input.value), 'resolve', KEEP_NOTE))
+			rec(keep, KEEP_NOTE)
 			// 変換の確定の Enter では送らない（Safari は確定の keydown で isComposing が false のまま keyCode 229 を出す）。
 			onKeyInside(input, 'keydown', (e) => { if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); go() } })
 			// agent に直してもらうとき。Feedback の記録を作り（いつもの消化ループで読まれる）、指摘は送った印を付けて一覧から外す。
@@ -555,6 +580,7 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 			send.disabled = btn.disabled
 			send.title = 'Feedback に送って agent に直してもらう（ひとことも記録に入ります）'
 			send.addEventListener('click', () => void resolve(v, input.value, 'send'))
+			rec(send, '直してもらう')
 			// 人が足した選択肢（review/_actions.md）。押すと解決済みにして、ひとことの頭に名前を書く。「＋」で足す・消す。
 			const plus = el('button', `btn plus${editing ? ' is-on' : ''}`, actions.length ? '＋' : '＋ 選択肢')
 			plus.type = 'button'
@@ -571,7 +597,7 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 				b.disabled = btn.disabled
 				b.title = [`解決済みにして、ひとことの頭に「${a.label}」と書きます`, a.agent && `agent: ${a.agent}`, a.decision && `判断の記録: ${a.decision}`].filter(Boolean).join('\n')
 				b.addEventListener('click', () => void resolve(v, noteOf(a.label, input.value), 'resolve', a.label))
-				return b
+				return rec(b, a.label)
 			})
 			// 編集のあいだは、ひとこととボタンの代わりに編集を出す（スマホの下からのシートでも本文を押しつぶさない）。
 			if (editing) act.append(actionEditor())
@@ -921,6 +947,8 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		b.dataset.id = v.id
 		b.dataset.tier = priorityTier(v.priority)
 		b.append(el('span', 'chip', String(numberOf(v.id))), el('span', 'row-title', v.title))
+		// ユーザ影響のある指摘は、一覧でも小さな札で見分けられるようにする（無いものは札を出さず、一覧を静かに保つ）。
+		if (v.impact?.user) b.append(el('span', 'row-impact', '影響'))
 		// 解決済みは、どのボタンで解決済みにしたか（直さない・足した選択肢・Feedback に送った）を小さく添える。
 		const by = v.status === 'resolved' ? matchNote(v.note, [KEEP_NOTE, REVIEW_SENT_NOTE, ...actions.map((a) => a.label)])?.name : undefined
 		if (by) b.append(el('span', 'row-tag', by === REVIEW_SENT_NOTE ? '直してもらう' : by))
@@ -928,7 +956,7 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		const meta = !v.line ? 'ページ' : v.place === 'lost' ? '見つからない' : v.place === 'no-file' ? 'ファイル無し' : !t && onPage(v, { pathname: location.pathname, source, base }) ? `${formatLine(v.line)}・本文の外` : formatLine(v.line)
 		b.append(el('span', `row-meta${v.place === 'lost' || v.place === 'no-file' ? ' warn' : ''}`, meta))
 		// 札は短く切れるので、解決済みのひとことは行の説明に全部出す。
-		b.title = `${v.priority !== null ? `[p${v.priority}] ` : ''}${v.title}${v.status === 'resolved' && v.note ? `\n人: ${v.note}` : ''}`
+		b.title = `${v.priority !== null ? `[p${v.priority}] ` : ''}${v.title}${v.impact ? `\n${impactLabel(v.impact)}${v.impact.reason ? `: ${v.impact.reason}` : ''}` : ''}${v.status === 'resolved' && v.note ? `\n人: ${v.note}` : ''}`
 		b.addEventListener('click', () => open(v.id))
 		// 一覧の行に乗せると、ページの上のその印と枠を目立たせる（どこへの指摘かを開く前に見せる）。
 		const hover = (on: boolean) => {
@@ -986,6 +1014,16 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 			sel.append(opt)
 		}
 		sel.addEventListener('change', () => setFilter({ ...filter, minPriority: Number(sel.value) }))
+		// ユーザ影響で絞る（`- impact:` の書かれた指摘があるときだけ出す）。
+		const imp = el('select')
+		imp.setAttribute('aria-label', 'ユーザ影響で絞る')
+		for (const [value, label] of IMPACT_STEPS) {
+			const opt = el('option', undefined, label)
+			opt.value = value
+			opt.selected = filter.impact === value
+			imp.append(opt)
+		}
+		imp.addEventListener('change', () => setFilter({ ...filter, impact: imp.value as Filter['impact'] }))
 		const lab = el('label')
 		const cb = el('input')
 		cb.type = 'checkbox'
@@ -993,7 +1031,7 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		cb.addEventListener('change', () => setFilter({ ...filter, showResolved: cb.checked }))
 		const resolvedCount = items.filter((v) => v.status === 'resolved').length
 		lab.append(cb, document.createTextNode(`解決済みも出す（${resolvedCount}）`))
-		filters.append(sel, lab)
+		filters.append(sel, ...(items.some((v) => v.impact) || filter.impact !== 'all' ? [imp] : []), lab)
 		body.append(filters)
 
 		body.append(el('div', 'sec', 'このページ'))
@@ -1031,7 +1069,10 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 			for (const st of sets) {
 				const mine = items.filter((v) => v.set === st.name)
 				const line = el('div', 'set')
-				line.append(el('span', 'set-title', st.title), el('span', 'set-n', `未解決 ${mine.filter((v) => v.status === 'open').length} · 解決済み ${mine.filter((v) => v.status === 'resolved').length}`))
+				// ユーザ影響ありの未解決が何件残っているかも添える（impact の書かれたまとまりだけ）。
+				const userOpen = mine.filter((v) => v.status === 'open' && v.impact?.user).length
+				const impactText = mine.some((v) => v.impact) ? ` · 影響あり ${userOpen}` : ''
+				line.append(el('span', 'set-title', st.title), el('span', 'set-n', `未解決 ${mine.filter((v) => v.status === 'open').length}${impactText} · 解決済み ${mine.filter((v) => v.status === 'resolved').length}`))
 				line.title = `${st.title}\n${st.file}`
 				foot.append(line)
 			}

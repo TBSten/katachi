@@ -33,9 +33,9 @@ const USAGE = `使い方:
   cli.mjs list [--state=open|archived|all] [--json]   未対応（既定）の一覧。id・作成日時・ページ・ソース・要約
   cli.mjs read <id>                                    記録の全文
   cli.mjs archive <id> --note "<1行>"                  archived/ に移し、末尾に対応メモを足す（Review の「直してもらう」から来た記録なら、元の指摘も消す）
-  cli.mjs review list [--status=open|resolved|all] [--action=<名前>] [--json]  指摘の一覧（既定は all）。id・状態・優先度・場所・見出し・一言。--action は押したボタン（直さない・直してもらう・人が足した選択肢）で絞る
+  cli.mjs review list [--status=open|resolved|all] [--action=<名前>] [--impact=あり|なし] [--json]  指摘の一覧（既定は all）。id・状態・優先度・ユーザ影響・場所・見出し・一言。--action は押したボタン（直さない・直してもらう・人が足した選択肢）で、--impact はユーザ影響で絞る
   cli.mjs review show <id>                             指摘 1 件の全部（本文・今のソースでの行）
-  cli.mjs review check                                 指摘のファイルを検査（読めない指摘・無いファイル・quote が見つからない行）。問題があれば 1 で終わる
+  cli.mjs review check                                 指摘のファイルを検査（読めない指摘・無いファイル・quote が見つからない行・選択肢に無い推奨度）。問題があれば 1 で終わる。ユーザ影響・推奨度の書き漏れは「注意」に出す
   cli.mjs review remove <id>                           確かめた指摘を消す（解決済みのものだけ。--force で未解決も）
   cli.mjs review reopen <id> --note "<理由>"           解決済みを差し戻す（ai-note に理由を書く）
   cli.mjs review actions [--json]                      人が popup に足した選択肢（review/_actions.md）と、選ばれた指摘を agent がどう扱うか
@@ -192,11 +192,12 @@ async function main() {
 
 const placeMark = { ok: '', moved: '<moved>', lost: '<lost>', page: '', 'no-file': '<no-file>' }
 const lineText = (v) => (v.line ? `:${v.line.start === v.line.end ? v.line.start : `${v.line.start}-${v.line.end}`}` : '')
+const impactText = (v) => (v.impact ? (v.impact.user ? '影響あり' : '影響なし') : '影響-')
 
 /** 指摘（Review）。置き場の review/ を読む。 */
 async function review([sub, id], flags, dir) {
 	const { createReviewStore, REVIEW_SUBDIR } = await import(pathToFileURL(resolve(here, 'review.ts')).href)
-	const { pageUrlOf } = await import(pathToFileURL(resolve(here, '../review/model.ts')).href)
+	const { pageUrlOf, formatRecommend } = await import(pathToFileURL(resolve(here, '../review/model.ts')).href)
 	const { matchNote, ACTIONS_FILE } = await import(pathToFileURL(resolve(here, '../review/actions.ts')).href)
 	const { REVIEW_KEEP_NOTE: KEEP, REVIEW_SENT_NOTE } = await import(pathToFileURL(resolve(here, '../core/protocol.ts')).href)
 	const { base: docsBase } = await import(pathToFileURL(resolve(here, '../../../lib/versions.mjs')).href)
@@ -219,15 +220,19 @@ async function review([sub, id], flags, dir) {
 		const asked = typeof flags.action === 'string' ? flags.action.trim() : ''
 		const action = asked === '直してもらう' ? REVIEW_SENT_NOTE : asked
 		if (action && !choiceNames.includes(action)) console.log(`（「${asked}」という選択肢はありません。review actions で名前を確かめてください）`)
-		const rows = data.items.filter((v) => (status === 'all' || v.status === status) && (!action || choiceOf(v) === action))
+		// ユーザ影響で絞る（`- impact:` の無い指摘は、絞ると出ない）。
+		const impactFlag = typeof flags.impact === 'string' ? flags.impact.trim() : ''
+		const impactWant = { あり: true, yes: true, user: true, なし: false, no: false, none: false }[impactFlag]
+		if (impactFlag && impactWant === undefined) throw new Error(`--impact は あり / なし のどちらか: ${impactFlag}`)
+		const rows = data.items.filter((v) => (status === 'all' || v.status === status) && (!action || choiceOf(v) === action) && (impactWant === undefined || v.impact?.user === impactWant))
 		if (flags.json) return console.log(JSON.stringify(rows, null, 2))
 		if (!data.sets.length) return console.log(`（指摘のファイルがありません: ${store.dir}）`)
 		for (const v of rows) {
 			const note = [v.note && `人: ${v.note}`, v.aiNote && `agent: ${v.aiNote}`].filter(Boolean).join(' / ')
-			console.log([v.id, v.status, v.priority === null ? '-' : `p${v.priority}`, `${v.file}${lineText(v)}`, clip(v.title, 70), placeMark[v.place], note && `（${clip(note, 80)}）`].filter((x) => x).join(' | '))
+			console.log([v.id, v.status, v.priority === null ? '-' : `p${v.priority}`, impactText(v), `${v.file}${lineText(v)}`, clip(v.title, 70), placeMark[v.place], note && `（${clip(note, 80)}）`].filter((x) => x).join(' | '))
 		}
 		const count = (s) => data.items.filter((v) => v.status === s).length
-		console.log(`計 ${rows.length} 件（open ${count('open')} / resolved ${count('resolved')}）${action ? `・「${asked}」で絞り込み` : ''}`)
+		console.log(`計 ${rows.length} 件（open ${count('open')} / resolved ${count('resolved')}）${action ? `・「${asked}」で絞り込み` : ''}${impactFlag ? `・ユーザ影響 ${impactFlag} で絞り込み` : ''}`)
 		return
 	}
 
@@ -252,6 +257,8 @@ async function review([sub, id], flags, dir) {
 			`- まとまり: ${set?.title ?? v.set}（${set?.file ?? ''}）`,
 			`- 状態: ${v.status}${v.resolvedAt ? `（${v.resolvedAt}）` : ''}`,
 			`- 優先度: ${v.priority === null ? '-' : `p${v.priority}`}`,
+			`- ユーザ影響: ${v.impact ? `${v.impact.user ? 'あり' : 'なし'}${v.impact.reason ? `（${v.impact.reason}）` : ''}` : '（書かれていません）'}`,
+			...(v.recommend ? [`- 推奨度: ${formatRecommend(v.recommend)}（0〜10。popup のボタンに出る）`] : []),
 			`- 場所: ${v.file}${lineText(v)}${v.place === 'moved' ? `（書かれた行 ${lineText({ line: v.written }).slice(1)} から動かした）` : ''}${v.place === 'lost' ? '（quote が今のソースに見つからない。もう直っているかも）' : ''}${v.place === 'no-file' ? '（ファイルが無い）' : ''}`,
 			...(v.note ? [`- 人の一言: ${v.note}`] : []),
 			...((() => {
@@ -274,6 +281,11 @@ async function review([sub, id], flags, dir) {
 		for (const v of data.items) {
 			if (v.place === 'lost') { problems++; console.log(`${v.id}: quote が ${v.file}${lineText(v)} の近くに見つかりません（${clip(v.title, 50)}）`) }
 		}
+		// ユーザ影響・推奨度の書き漏れ（読めはするので問題には数えない。prerelease の登録では 0 にする）。
+		const noImpact = data.items.filter((v) => v.status === 'open' && !v.impact)
+		const noRec = data.items.filter((v) => v.status === 'open' && !v.recommend)
+		if (noImpact.length) console.log(`注意: ユーザ影響（- impact:）が無い未解決の指摘 ${noImpact.length} 件: ${noImpact.slice(0, 5).map((v) => v.id).join(', ')}${noImpact.length > 5 ? ' …' : ''}`)
+		if (noRec.length) console.log(`注意: 推奨度（- recommend:）が無い未解決の指摘 ${noRec.length} 件: ${noRec.slice(0, 5).map((v) => v.id).join(', ')}${noRec.length > 5 ? ' …' : ''}`)
 		const placed = data.items.filter((v) => v.place === 'moved').length
 		console.log(`指摘 ${data.items.length} 件・問題 ${problems} 件${placed ? `（quote で行を合わせたもの ${placed} 件）` : ''}: ${store.dir}`)
 		if (problems) process.exitCode = 1

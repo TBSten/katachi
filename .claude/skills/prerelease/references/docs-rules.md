@@ -72,7 +72,7 @@ PascalCase、`"build".ignore()` を推奨形にする、`anyFile()`/`ignore()` �
 指示に入れること:
 - **ページを直さない。**見つけたものを警告として報告するだけ。ファイルを書き換えない。
 - **自分が変えていないファイルは、差分があっても戻さない**（git の add / commit / stash / checkout / restore / reset / clean もしない）。
-- 1件ごとに、ファイルと行・該当のコードや文・破っているチェック項目の番号と根拠・priority・直し方の案を書く。
+- 1件ごとに、ファイルと行・該当のコードや文・破っているチェック項目の番号と根拠・priority・直し方の案・ユーザ影響（あり / なし と理由）・選択肢の推奨度（下の「Review に登録する」の基準）を書く。
 - 迷ったら低い priority を付け「要確認」と書く。ルールの側が曖昧・食い違っているなら、コード例の側の問題にせず「E. 食い違い」として報告する。
 - [decisions/docs.md](../decisions/docs.md) を読み、過去の判断と同じ指摘（同じファイル・同じ箇所・同じ趣旨）は書かず、
   末尾の「過去の判断どおり」に判断の見出しだけ並べる。`方針` に該当するものも同じ。同じ箇所でも中身が判断のときより
@@ -93,6 +93,37 @@ python3 .claude/skills/prerelease/scripts/decisions.py match <置き場>/review/
 ```
 
 外した件数は `docs-rules.md` の「過去の判断どおり」に足す。
+
+#### Review に登録する
+
+1 件ごとに、`- file:`・`- line:`・`- quote:` に続けて `- impact:` と `- recommend:` を書く（形は `docs/src/integrations/feedback/review/README.md`）。
+
+```md
+## [p3] Role の宣言に .role が無い
+- file: ja/guides/role.mdx
+- line: 120
+- quote: "UseCase" {
+- impact: あり: 写すと v0.3 以降でコンパイルエラーになる
+- recommend: 直してもらう 9, 直さない 1
+```
+
+`impact`（ユーザ影響）は、katachi の利用者に届くかで決める。理由を `: ` のあとに一言で書く。
+
+| impact | 該当するもの |
+|---|---|
+| `あり` | 公開される docs の本文・コード例・表・LinkCard の文字、README、skill（`skills/katachi/`）とインストールの入口（`docs/public/install/`）、CLI・IDE の出力の写し。読んだ・写した利用者が誤解する、失敗する、悪い形を広める |
+| `なし` | 画面に出ない所（MDX のコメント「このページの目的」・frontmatter の書き手向けの項目）、`docs/AGENTS.md` や `CLAUDE.md` などの書き手向けの決まり、表記ゆれ・字下げなど意味の変わらない作法、ルールの側の曖昧さ（E. 食い違い） |
+
+迷ったら `あり` にして、理由に「要確認」と書く。
+
+`recommend`（推奨度）は、popup のボタンごとに「agent ならこれを選ぶ」度合いを 0〜10 で書く。人が選ぶときの目安で、押すかどうかは人が決める。
+
+- 書ける名前は `解決済みにする`・`直さない`・`直してもらう` と、人が足した選択肢（`cli.mjs review actions` で一覧）。無い名前を書くと `review check` が問題に数える
+- 意味のある選択肢だけに付ける（たいていは 2〜3 個）。いちばん勧めるものを 7 以上にし、同じ点を並べない
+- 目安: ルールに反するコード例・誤り（p5 以上）は `直してもらう` を高く。ルールの側が曖昧・`impact: なし` の作法は `直さない` を上げる。過去の判断（decisions/）に近いものは、その判断と同じ選択肢を高く
+- `解決済みにする` は「人が自分で直す」とき。docs の本文は人が書くので、短い言い換えで人がその場で直せそうなら付ける
+
+登録したら `node docs/src/integrations/feedback/server/cli.mjs review check` を回す。問題 0 件に加えて、「注意: ユーザ影響（- impact:）が無い」「注意: 推奨度（- recommend:）が無い」も 0 件にする。
 
 priority は [check-docs-against-impl](../../check-docs-against-impl/SKILL.md) の基準表に合わせる。
 

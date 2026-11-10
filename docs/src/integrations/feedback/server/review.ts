@@ -3,7 +3,7 @@
 import { randomBytes } from 'node:crypto'
 import { mkdir, open, readdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
 import { isAbsolute, join, relative, resolve, sep } from 'node:path'
-import { EVENT_REVIEW_REQUEST, EVENT_REVIEW_RESULT, REVIEW_LINK_LABEL, REVIEW_SENT_NOTE, type ReviewAction, type ReviewDecision, type ReviewRequest, type ReviewResult, type ReviewSetView, type ReviewView, type SavePayload, type Section } from '../core/protocol'
+import { EVENT_REVIEW_REQUEST, EVENT_REVIEW_RESULT, REVIEW_BUILTIN_CHOICES, REVIEW_LINK_LABEL, REVIEW_SENT_NOTE, type ReviewAction, type ReviewDecision, type ReviewRequest, type ReviewResult, type ReviewSetView, type ReviewView, type SavePayload, type Section } from '../core/protocol'
 import { ACTIONS_FILE, addAction, parseActions, removeAction, updateAction } from '../review/actions'
 import { applyStatus, CONTENT_DIR, NOTE_CHARS, parseReview, relocate, removeItem, SET_NAME, splitLines, textHints, type ReviewItem, type StatusPatch } from '../review/model'
 
@@ -108,6 +108,8 @@ export function createReviewStore(dir: string, repoRoot: string) {
 			...(item.note ? { note: item.note } : {}),
 			...(item.resolvedAt ? { resolvedAt: item.resolvedAt } : {}),
 			...(item.aiNote ? { aiNote: item.aiNote } : {}),
+			...(item.impact ? { impact: item.impact } : {}),
+			...(item.recommend ? { recommend: item.recommend } : {}),
 			body: item.body,
 		}
 		if (!source) return { ...base, line: item.line, place: 'no-file' }
@@ -121,6 +123,10 @@ export function createReviewStore(dir: string, repoRoot: string) {
 		const cache = new Map<string, string[] | null>()
 		const sets: ReviewSetView[] = []
 		const items: ReviewView[] = []
+		const at = await exists(actionsPath)
+		const { actions, errors: actionErrors } = at === null ? { actions: [], errors: [] } : parseActions(at)
+		// `- recommend:` に書ける名前（popup に並ぶボタン）。無い名前の推奨度は出せないので、読めない指摘として知らせる。
+		const choices = new Set<string>([...REVIEW_BUILTIN_CHOICES, ...actions.map((a) => a.label)])
 		for (const name of await setNames()) {
 			const file = relative(repoRoot, setPath(name)).split(sep).join('/')
 			const text = await exists(setPath(name))
@@ -133,12 +139,13 @@ export function createReviewStore(dir: string, repoRoot: string) {
 			for (const item of set.items) {
 				const { path, source } = await resolveFile(item.file, cache)
 				if (!source) errors.push(`ファイルがありません: ${item.file}（${item.title}）`)
+				for (const r of item.recommend ?? []) {
+					if (!choices.has(r.name)) errors.push(`L${item.span.heading + 1}: 推奨度の「${r.name}」は popup の選択肢にありません（${[...choices].join(' / ')}）（${item.title}）`)
+				}
 				items.push(view(item, path, source))
 			}
 			sets.push({ name, title: set.title, ...(set.base ? { base: set.base } : {}), file, errors })
 		}
-		const at = await exists(actionsPath)
-		const { actions, errors: actionErrors } = at === null ? { actions: [], errors: [] } : parseActions(at)
 		return { sets, items, root: repoRoot, actions, actionErrors: actionErrors.map((e) => `${ACTIONS_FILE}: ${e}`) }
 	}
 
@@ -254,6 +261,7 @@ export function reviewToFeedback(v: ReviewView, note: string, page: string): Sav
 	const line = v.line ? `${v.line.start === v.line.end ? v.line.start : `${v.line.start}-${v.line.end}`}` : null
 	const comment = [`直してほしい: ${v.title}`, note.trim(), v.body.trim()].filter(Boolean).join('\n\n')
 	const content: Section = [[REVIEW_LINK_LABEL, v.id]]
+	if (v.impact) content.push(['ユーザ影響', `${v.impact.user ? 'あり' : 'なし'}${v.impact.reason ? `（${v.impact.reason}）` : ''}`])
 	if (v.place === 'lost') content.push(['注意', 'quote が今のソースに見つかりません。もう直っているかもしれません'])
 	const sections: SavePayload['sections'] = {
 		...(line ? { source: [['ソース', `${v.file}:${line}`]] as Section } : {}),

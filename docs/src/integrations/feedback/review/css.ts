@@ -2,7 +2,7 @@
 import { shellCss } from '../shared/shell.css'
 
 export const css = shellCss + `
-:host { --p-high: #dc2626; --p-mid: #ea580c; --p-low: #ca8a04; --p-min: #64748b; --p-none: #6366f1; --p-done: #16a34a; }
+:host { --p-high: #dc2626; --p-mid: #ea580c; --p-low: #ca8a04; --p-min: #64748b; --p-none: #6366f1; --p-done: #16a34a; --p-impact: light-dark(#be185d, #f9a8d4); }
 button, input { font: inherit; }
 /* 枠と印。ページは触れたまま（枠はクリックを通す。印だけ押せる）。 */
 .layer { position: fixed; inset: 0; pointer-events: none; }
@@ -55,6 +55,14 @@ button, input { font: inherit; }
 .btn:hover:not(:disabled) { background: var(--hover); }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
 .btn.primary { color: #fff; background: var(--p-done); border-color: var(--p-done); font-weight: 600; }
+/* 推奨度（- recommend:）。ボタンの文字の横に小さく薄く。押す文字の邪魔をしない。 */
+.btn .rec { margin-left: 5px; font-size: 10px; font-weight: 400; opacity: .6; font-variant-numeric: tabular-nums; }
+.btn .rec.is-top { opacity: .85; font-weight: 600; }
+/* ユーザ影響の札（- impact:）。ありは目に入る色、なしは灰の点線で静かに。 */
+.tags { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 6px; margin: 0 0 6px; }
+.impact { flex: none; padding: 1px 7px; border-radius: 9px; font-size: 11px; font-weight: 600; color: var(--muted); border: 1px dashed var(--border-strong); }
+.impact.is-user { color: var(--p-impact); background: color-mix(in srgb, var(--p-impact) 10%, transparent); border: 1px solid color-mix(in srgb, var(--p-impact) 55%, transparent); }
+.impact-reason { min-width: 0; font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
 .resolved-line { flex: 1; min-width: 0; font-size: 12px; color: var(--p-done); overflow-wrap: anywhere; }
 .nav { display: flex; align-items: center; gap: 6px; }
 .count { margin-left: auto; font-size: 11px; color: var(--muted); opacity: .8; font-variant-numeric: tabular-nums; }
@@ -108,6 +116,7 @@ button, input { font: inherit; }
 .row-title { flex: 1; min-width: 0; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .row-meta { flex: none; font-size: 11px; color: var(--muted); }
 .row-tag { flex: none; max-width: 7em; padding: 0 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; color: var(--fg-2); border: 1px dashed var(--border-strong); border-radius: 8px; }
+.row-impact { flex: none; padding: 0 5px; font-size: 10px; font-weight: 600; color: var(--p-impact); border: 1px solid color-mix(in srgb, var(--p-impact) 55%, transparent); border-radius: 8px; }
 .row-meta.warn { color: var(--danger); }
 .empty { font-size: 12px; color: var(--muted); }
 .sets { margin: 10px 0 0; padding-top: 6px; border-top: 1px solid var(--border); font-size: 11px; color: var(--muted); }

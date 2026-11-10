@@ -36,6 +36,8 @@ base: 1a7a072
 - file: ja/get-started/first-architecture.mdx
 - line: 168
 - quote: import me.tbsten.katachi.dsl.gradle.gradle
+- impact: あり: 写すとビルドが失敗する
+- recommend: 直してもらう 8, 直さない 2
 
 本文（Markdown）。箇条書き・`code`・**太字**・[リンク](https://…)・コードフェンス・引用が使える。
 - 該当: …
@@ -53,6 +55,8 @@ base: 1a7a072
 | `file` | 必須。リポジトリ直下からのパス。docs の本文は `docs/src/content/docs/` を省いて `ja/guides/role.mdx` と書いてよい。ページの無いファイル（`README.ja.md` など）も書ける（一覧の「ページの無いファイル」に出る） |
 | `line` | `168` / `160-186` / `L160〜L186`。無ければページ全体への指摘。ページ全体と、本文に出ない行（frontmatter の description・MDX のコメントなど）への指摘は、印をページの見出しに出す。タブの見出し（`<TabItem label="…">`）や `<LinkCard>` の title・description の行は、その文字をページから探して印を出す |
 | `quote` | その行に含まれる文字列。指摘を書いたあとで行がずれても、いちばん近い quote の行へ動かして出す。`…`・`...` は省略とみなす。line が無く quote だけなら、quote を含む最初の行に出す。範囲の指摘は先頭の行の文字列を書く |
+| `impact` | ユーザ影響の有無。`あり` / `なし`（`yes` / `no` も読む）。katachi の利用者に見えるか・利用者の挙動が変わるなら `あり`。後ろに `: 理由`・`（理由）` を付けられる。popup の本文の上に札（「ユーザ影響あり」「ユーザ影響なし」）で、一覧の行に「影響」の札で出る |
+| `recommend` | popup の選択肢ごとの推奨度。`直してもらう 8, 直さない 2` のように「ボタンの名前 0〜10」を `,`・`、` で並べる（`名前: 8`・`名前 8/10` も読む）。書ける名前は `解決済みにする`・`直さない`・`直してもらう` と、人が足した選択肢。ボタンの文字の横に「推奨 8」と小さく薄く出る。書かなかったボタンには出ない |
 | `status` | `open`（既定）/ `resolved`。popup の「解決済みにする」が書く |
 | `resolved-at` / `note` | 解決済みにした時刻と、人の一言。popup が書く |
 | `ai-note` | agent の一言（差し戻しの理由）。`review reopen` が書く。popup に「agent から」として出る |
@@ -64,12 +68,14 @@ base: 1a7a072
 
 ```sh
 C=docs/src/integrations/feedback/server/cli.mjs
-node $C review list [--status=open|resolved|all] [--json]   # 一覧（id・状態・優先度・今の行・見出し・一言）
+node $C review list [--status=open|resolved|all] [--json]   # 一覧（id・状態・優先度・ユーザ影響・今の行・見出し・一言）
 node $C review show <id>                                    # 1 件の全部（ページで開くリンク `…/#review=<id>` も出す）
-node $C review check                                        # 読めない指摘・無いファイル・quote が見つからない行。問題があれば 1 で終わる
+node $C review check                                        # 読めない指摘・無いファイル・quote が見つからない行・選択肢に無い推奨度。問題があれば 1 で終わる
+                                                            # 未解決の指摘の impact・recommend の書き漏れは「注意」に出す（終わりのコードは変えない）
 node $C review remove <id>                                  # 確かめた指摘を消す（解決済みのものだけ。未解決も消すなら --force）
 node $C review reopen <id> --note "<理由>"                  # 解決済みを差し戻す
 node $C review list --status=resolved --action=後で          # 押したボタン（直さない・直してもらう・足した選択肢）で絞る
+node $C review list --impact=あり                            # ユーザ影響で絞る（impact の無い指摘は出ない）
 node $C review actions [--json]                             # 人が足した選択肢と、選ばれた指摘を agent がどう扱うか
 ```
 
@@ -79,7 +85,9 @@ id は `<まとまりの名前>/<file と見出しから作る 7 文字>`。ほ�
 
 ## 画面
 
-- 一覧（右上。スマホは畳むと右上の札、開くと下）: このページの指摘・ほかのページの件数・ページの無いファイル・読めない指摘。優先度で絞る・解決済みも出す。
+- 一覧（右上。スマホは畳むと右上の札、開くと下）: このページの指摘・ほかのページの件数・ページの無いファイル・読めない指摘。優先度で絞る・ユーザ影響で絞る（`impact` の書かれた指摘があるときだけ出る）・解決済みも出す。
+- `impact` があれば、popup の本文の上に「ユーザ影響あり」（色付き）か「ユーザ影響なし」（灰の点線）の札と理由を出す。一覧の行には、ありのときだけ「影響」の札を出す。
+- `recommend` があれば、popup の各ボタンの文字の横に「推奨 8」を小さく薄く出す（指摘を書いた agent の見立て。押すかどうかは人が決める）。
 - 印を押す・一覧の行を押す → popup。前・次（ページをまたぐときは、そのページへ移ってから開く）、← → でも動く、Esc と × で閉じる（選択肢の編集中の Esc は編集だけを閉じる）。右下に「何件め / 総数」（絞り込み後の全体）。
 - 閉じた details・選ばれていないタブ・畳んだコードブロック（Show more）の中の指摘は、開くときに見えるようにする。コードブロックの中は 1 行ずつ光らせる。
 - popup を開いたまま docs を直すと（Astro がページを読み直す）、同じ指摘を開き直す。quote で今の行を探し直すので、直して quote が消えれば「もう直っているかもしれません」と出る。

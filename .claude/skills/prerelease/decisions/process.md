@@ -22,3 +22,12 @@
 - by: 利用者（322 のスレッド「popup 的に出す viewer」）
 
 細かな docs の指摘は、TODO.html や .md の表に並べず、`<置き場>/review/prerelease-<回>-step11.md` に登録して dev サーバーの Review で見てもらう（形は `docs/src/integrations/feedback/review/README.md`、1 件 1 か所）。登録の前に `decisions.py match --drop` で過去の判断と同じものを外す。
+
+## 方針: Review に登録する指摘には、ユーザ影響の札と選択肢ごとの推奨度を付ける
+- decision: 方針
+- decided: 2026-11-10 KATACHI-351
+- by: 利用者（「review ツールは ユーザ影響の有無をタグ的につける / サジェストされた各選択肢は推奨度を小さく薄い字で出す」）
+
+prerelease check などで Review に指摘を登録するときは、1 件ごとに `- impact: あり|なし`（理由を添える）と `- recommend: <ボタンの名前> 0〜10, …` を必ず書く。
+推奨度は popup のボタン（`解決済みにする`・`直さない`・`直してもらう`・人が足した選択肢）のうち、意味のあるものだけに付ける。基準は [references/docs-rules.md](../references/docs-rules.md) の「Review に登録する」。
+登録したら `cli.mjs review check` を回し、問題 0 件・「注意」0 件にする。

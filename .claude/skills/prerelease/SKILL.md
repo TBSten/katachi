@@ -69,6 +69,8 @@ flowchart LR
 - 前提が変わったもの（`revisit` の条件を満たした・中身が重くなった・箇所が書き換わった）は「見直し候補」にして、TODO.html の
   「2. 判断してほしい」に前の判断と一緒に載せる。
 - 手順 11 の指摘を Review に登録する前に `decisions.py match <review.md> --drop` で同じものを外す（[references/docs-rules.md](references/docs-rules.md)）。
+- Review に登録する指摘には、1 件ごとに `- impact: あり|なし`（ユーザ影響の有無）と `- recommend:`（popup の選択肢ごとの推奨度 0〜10）を書く
+  （decisions/process.md の方針。基準は [references/docs-rules.md](references/docs-rules.md) の「Review に登録する」）。登録したら `cli.mjs review check` の問題・注意を 0 件にする。
 - 利用者が答えたら、**その回のうちに** decisions/ に書き足す（TODO.html の「5. 決定済み」に移すのと同じタイミング）。Review の popup の
   「直さない」と、人が足した選択肢のうち decision の付いたもの（`cli.mjs review actions` で一覧）は `decisions.py record-review` で写してから
   `review remove` する。decision の無い選択肢は `review actions` の `agent` どおりに扱う。書き足した判断は修正 PR に入れる（無ければ記録だけの PR）。

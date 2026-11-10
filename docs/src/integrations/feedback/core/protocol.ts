@@ -159,6 +159,9 @@ export type ReviewAction = {
 /** 「直さない」で解決済みにしたときの、ひとことの頭。agent はこれを見て、直ったかを確かめずに消す。 */
 export const REVIEW_KEEP_NOTE = '直さない'
 
+/** popup に初めから並んでいるボタンの名前。指摘の `- recommend:` に書ける名前は、これと人が足した選択肢。 */
+export const REVIEW_BUILTIN_CHOICES = ['解決済みにする', REVIEW_KEEP_NOTE, '直してもらう'] as const
+
 /** 「直してもらう」で解決済みにしたときの、ひとことの頭（`Feedback に送った: 261110-001`）。agent は Review の側では扱わない（Feedback の記録を archive すると消える）。 */
 export const REVIEW_SENT_NOTE = 'Feedback に送った'
 /** Feedback の記録の「選んだ内容」の節で、元の指摘の id を書く行の見出し。cli の archive がこれを見て指摘を消す。 */
@@ -183,6 +186,10 @@ export type ReviewView = {
 	note?: string
 	resolvedAt?: string
 	aiNote?: string
+	/** ユーザ影響の有無（`- impact:`。review/model.ts の Impact）。書かれていなければ省く。 */
+	impact?: { user: boolean; reason?: string }
+	/** popup の選択肢ごとの推奨度（`- recommend:`。0〜10）。書かれていなければ省く。 */
+	recommend?: { name: string; score: number }[]
 	body: string
 }
 

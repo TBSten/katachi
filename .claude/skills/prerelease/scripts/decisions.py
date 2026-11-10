@@ -29,7 +29,7 @@ DECISIONS_DIR = Path(__file__).resolve().parent.parent / "decisions"
 CONTENT_DIR = "docs/src/content/docs/"
 DECISIONS = ("直さない", "このまま", "後で", "方針")
 DECISION_KEYS = ("decision", "file", "quote", "match", "rule", "decided", "by", "revisit")
-REVIEW_KEYS = ("file", "line", "priority", "quote", "status", "note", "resolved-at", "ai-note", "id")
+REVIEW_KEYS = ("file", "line", "priority", "quote", "impact", "recommend", "status", "note", "resolved-at", "ai-note", "id")
 # Review の `- id:`（popup が印を付け外ししたときに書く、まとまりの名前を除いた id）。review/model.ts の PINNED_ID と同じ形
 PINNED_ID = re.compile(r"^[0-9a-z]{1,13}(?:-\d{1,4})?$")
 # 人が popup に足した選択肢の置き場（指摘のファイルと同じフォルダ）。review/actions.ts の ACTIONS_FILE

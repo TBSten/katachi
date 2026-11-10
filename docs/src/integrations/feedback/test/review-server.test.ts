@@ -180,6 +180,15 @@ describe('Review の受け口', () => {
 		expect(md).toContain('# 直してほしい: 見出し')
 		expect(md).not.toMatch(/^## 本文の見出し/m)
 	})
+	it('推奨度の名前は、初めからのボタンと人が足した選択肢だけ。無い名前は読めない指摘に出す。impact は記録に入る', async () => {
+		await writeFile(join(dir, 's1.md'), ['## 指摘', '- file: ja/guides/x.mdx', '- impact: あり', '- recommend: 直してもらう 8, 解決済みにする 1, 後で 5, 謎 3', ''].join('\n'))
+		await writeFile(join(dir, '_actions.md'), '## 後で\n- agent: 積む\n')
+		const { sets, items } = await createReviewStore(dir, root).load()
+		expect(items[0]).toMatchObject({ impact: { user: true }, recommend: [{ name: '直してもらう', score: 8 }, { name: '解決済みにする', score: 1 }, { name: '後で', score: 5 }, { name: '謎', score: 3 }] })
+		expect(sets[0]!.errors).toEqual([expect.stringMatching(/^L1: 推奨度の「謎」は popup の選択肢にありません/)])
+		const fb = reviewToFeedback({ ...items[0]!, impact: { user: false, reason: '画面に出ない' } }, '', 'http://x/')
+		expect(fb.sections.content).toContainEqual(['ユーザ影響', 'なし（画面に出ない）'])
+	})
 	it('失敗は ok:false で返す（投げない）。requestId が無い依頼には答えない', async () => {
 		const h = createReviewHandler(createReviewStore(dir, root))
 		expect(await h({ requestId: 'r', op: 'resolve', id: 'nope/xx', note: '' })).toMatchObject({ ok: false, error: expect.stringMatching(/指摘のファイルがありません/) })

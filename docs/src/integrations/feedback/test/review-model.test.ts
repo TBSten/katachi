@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { applyStatus, pageUrlOf, parseLine, parseReview, priorityTier, quoteMatches, relocate, removeItem, textHints } from '../review/model'
+import { applyStatus, formatRecommend, impactLabel, pageUrlOf, parseImpact, parseLine, parseRecommend, parseReview, priorityTier, quoteMatches, relocate, removeItem, scoreOf, textHints } from '../review/model'
 
 const FILE = `---
 title: リリース前チェック
@@ -238,5 +238,66 @@ describe('textHints', () => {
 		expect(textHints({ start: 3, end: 6 }, 'architecture … を書く方法', src)).toEqual(['初めて', '最初の architecture { } を書く', 'architecture'])
 		expect(textHints(null, '`a`', src)).toEqual([])
 		expect(textHints({ start: 1, end: 1 }, undefined, src)).toEqual([])
+	})
+})
+
+describe('ユーザ影響（- impact:）と推奨度（- recommend:）', () => {
+	const TEXT = [
+		'## [p4] 入口の手順が古い',
+		'- file: ja/guides/x.mdx',
+		'- line: 3',
+		'- impact: あり: 写すと導入に失敗する',
+		'- recommend: 直してもらう 8, 直さない 2, 後で 5',
+		'',
+		'本文',
+		'',
+		'## MDX のコメントの言い回し',
+		'- file: ja/guides/x.mdx',
+		'- impact: なし（画面に出ない）',
+		'- recommend: 直さない 7',
+		'',
+		'## 書いていない',
+		'- file: ja/guides/x.mdx',
+		'',
+		'## 読めない',
+		'- file: ja/guides/x.mdx',
+		'- impact: たぶん',
+		'- recommend: 直してもらう 11, 直さない, 直さない 3, 直さない 4',
+		'',
+	].join('\n')
+	const set = parseReview('s', TEXT)
+	it('impact は あり / なし と理由、recommend は書かれた順に読む。メタとして読み、本文に入れない', () => {
+		expect(set.items[0]).toMatchObject({ impact: { user: true, reason: '写すと導入に失敗する' }, recommend: [{ name: '直してもらう', score: 8 }, { name: '直さない', score: 2 }, { name: '後で', score: 5 }], body: '本文' })
+		expect(set.items[1]).toMatchObject({ impact: { user: false, reason: '画面に出ない' }, recommend: [{ name: '直さない', score: 7 }], body: '' })
+		expect(set.items[2]!.impact).toBeUndefined()
+		expect(set.items[2]!.recommend).toBeUndefined()
+	})
+	it('読めない値は errors に書いて飛ばす（指摘は出す）', () => {
+		expect(set.items[3]!.impact).toBeUndefined()
+		expect(set.items[3]!.recommend).toEqual([{ name: '直さない', score: 3 }])
+		const e = set.errors.join('\n')
+		expect(e).toMatch(/impact は あり か なし です: たぶん/)
+		expect(e).toMatch(/推奨度が読めません: 直してもらう 11/)
+		expect(e).toMatch(/推奨度が読めません: 直さない（/)
+		expect(e).toMatch(/「直さない」が 2 回あります/)
+	})
+	it('parseImpact は yes / no と、区切りの違う理由も読む。似た語は読まない', () => {
+		expect(parseImpact('yes')).toEqual({ user: true })
+		expect(parseImpact('None')).toEqual({ user: false })
+		expect(parseImpact('無し 内部のコメント')).toEqual({ user: false, reason: '内部のコメント' })
+		expect(parseImpact('ありません')).toBeNull()
+		expect(parseImpact('')).toBeNull()
+	})
+	it('parseRecommend は「名前: 8」「名前 8/10」「、」区切りと、空白や # を含む名前も読む', () => {
+		expect(parseRecommend('PR #65 待ち 6、直さない: 3，直してもらう 9/10').items).toEqual([{ name: 'PR #65 待ち', score: 6 }, { name: '直さない', score: 3 }, { name: '直してもらう', score: 9 }])
+		expect(formatRecommend([{ name: 'a', score: 1 }, { name: 'b', score: 10 }])).toBe('a 1, b 10')
+		expect(scoreOf([{ name: 'a', score: 0 }], 'a')).toBe(0)
+		expect(scoreOf(undefined, 'a')).toBeNull()
+		expect(impactLabel({ user: true })).toBe('ユーザ影響あり')
+	})
+	it('解決済みにしても impact と recommend の行は残る', () => {
+		const id = set.items[0]!.id
+		const out = applyStatus('s', TEXT, id, { status: 'resolved', note: '直さない', at: '2026-11-10T00:00:00Z' })
+		expect(parseReview('s', out).items[0]).toMatchObject({ status: 'resolved', note: '直さない', impact: { user: true }, recommend: [{ name: '直してもらう', score: 8 }, {}, {}] })
 	})
 })
