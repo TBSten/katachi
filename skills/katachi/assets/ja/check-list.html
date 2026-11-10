@@ -62,6 +62,7 @@
     --icon-info: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 16v-4'/%3E%3Cpath d='M12 8h.01'/%3E%3C/svg%3E");
     --icon-alert: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3'/%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='M12 17h.01'/%3E%3C/svg%3E");
     --icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='14' height='14' x='8' y='8' rx='2' ry='2'/%3E%3Cpath d='M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2'/%3E%3C/svg%3E");
+    --icon-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
 
     /* 以前の名前（このファイルの中の古い規則が使う） */
     --surface: var(--bg);
@@ -762,6 +763,41 @@
   .fb-panel-foot .fb-status:empty { display: none; }
   .fb-panel-foot .fb-status.is-error { color: var(--danger-high); }
 
+  /* コピー・保存したときの短い知らせ（上の真ん中に出て、少しで消える） */
+  .toast {
+    position: fixed;
+    top: calc(16px + env(safe-area-inset-top, 0px));
+    left: 50%;
+    z-index: 45;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    max-width: calc(100vw - 32px);
+    padding: 8px 16px;
+    border-radius: 9999px;
+    background: var(--accent);
+    color: var(--on-accent);
+    box-shadow: var(--shadow-lg);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.5;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -8px);
+    transition: opacity 150ms, transform 150ms;
+  }
+  .toast::before {
+    content: "";
+    flex: none;
+    width: 16px;
+    height: 16px;
+    background: currentColor;
+    -webkit-mask: var(--icon-check) center / contain no-repeat;
+    mask: var(--icon-check) center / contain no-repeat;
+  }
+  .toast.is-error::before { -webkit-mask-image: var(--icon-alert); mask-image: var(--icon-alert); }
+  .toast.is-shown { opacity: 1; transform: translate(-50%, 0); }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { transition: none !important; }
   }
@@ -802,7 +838,7 @@
     body { background: #ffffff; color: #000000; }
     body.fb-mode { padding-top: 0; }
     .fb-fab, .fb-banner, .fb-hl, .fb-pin, .fb-pop, .fb-panel,
-    .answer-dock, .toolbar, .skip-link, .cross-link { display: none !important; }
+    .answer-dock, .toolbar, .skip-link, .cross-link, .toast { display: none !important; }
     a { color: #000000; }
 
     /* 畳んだ行も紙には全部出す */
@@ -1472,6 +1508,8 @@
     answersCopied: 'コピーしました。AI エージェントとのチャットに貼り付けてください。',
     answersSaved: function (file) { return file + ' を保存しました。AI エージェントに渡してください。'; },
     answersCleared: '回答を消しました（この JSON に取り込み済みの回答は、再読み込みで戻ります）。',
+    toastCopied: 'コピーしました',
+    toastSaved: '保存しました',
     copyFailed: 'コピーできませんでした。下の文を手で選んでコピーしてください。',
     saveFailed: '保存できませんでした。下の JSON を手で選んでコピーしてください。',
     // フィードバック
@@ -1792,6 +1830,29 @@
       fallback();
     }
   }
+  // コピー・保存できたことを短く知らせる。読み上げにも届くよう role="status" の 1 つを使い回す
+  var toastNode = null;
+  var toastTimer = null;
+  function toast(message, isError) {
+    if (!toastNode) {
+      toastNode = el('div', 'toast');
+      toastNode.setAttribute('role', 'status');
+      toastNode.setAttribute('aria-live', 'polite');
+      document.body.appendChild(toastNode);
+    }
+    toastNode.textContent = message;
+    // フィードバックモードの帯は狭い画面で何行にもなるので、その下に出す
+    var banner = document.querySelector('.fb-banner');
+    var bannerBottom = banner && !banner.hidden ? banner.getBoundingClientRect().bottom : 0;
+    toastNode.style.top = bannerBottom > 0 ? (bannerBottom + 8) + 'px' : '';
+    toastNode.classList.toggle('is-error', isError === true);
+    // 続けて押したときも出し直す
+    toastNode.classList.remove('is-shown');
+    void toastNode.offsetWidth;
+    toastNode.classList.add('is-shown');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastNode.classList.remove('is-shown'); }, 2400);
+  }
   function storageGet(key) {
     try { return localStorage.getItem(key); } catch (error) { return null; }
   }
@@ -1925,7 +1986,7 @@
   function copyAnswers() {
     var content = answersMessage();
     copyText(content,
-      function () { setAnswerStatus(T.answersCopied); },
+      function () { setAnswerStatus(T.answersCopied); toast(T.toastCopied); },
       function () { showManual(content, T.copyFailed); });
   }
   function downloadAnswers() {
@@ -1940,6 +2001,7 @@
       document.body.removeChild(a);
       setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
       setAnswerStatus(T.answersSaved(PAGE.answerFile));
+      toast(T.toastSaved);
     } catch (error) {
       showManual(content, T.saveFailed);
     }
@@ -2169,7 +2231,7 @@
   function fbCopy() {
     if (!fb.items.length) { fbStatus(T.fbNothing, true); return; }
     var content = fbMessage();
-    copyText(content, function () { fbStatus(T.fbCopied(fb.items.length)); }, function () {
+    copyText(content, function () { fbStatus(T.fbCopied(fb.items.length)); toast(T.toastCopied); }, function () {
       fbStatus(T.copyFailed, true);
       var box = el('textarea', 'answer-manual');
       box.value = content;
