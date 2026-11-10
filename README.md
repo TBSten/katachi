@@ -71,8 +71,6 @@ dependencies {
 katachi { architecture = "com.example.projectArchitecture" }
 ```
 
-katachi checks the files of the whole repository, but Gradle only sees the test classpath as the Test task's input. Without `outputs.upToDateWhen { false }`, `:architecture-test:test` is skipped as `UP-TO-DATE` even after you add files, and stays green even when there are violations. `outputs.cacheIf { false }` keeps a previous result from being reused when the build cache is enabled. Without `testLogging { exceptionFormat = TestExceptionFormat.FULL }`, a failing test prints only a single line with the exception's class name to the console, and you cannot read the list of violations.
-
 Write the definition and a test.
 
 ```kotlin
@@ -107,7 +105,7 @@ The full walkthrough — importing, and handing it off to an AI agent — is in 
 
 - **Below Kotlin 2.4**: you need `compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")` (don't add it from 2.4 on — it becomes a warning)
 - **`Failed to load JUnit Platform`**: you're missing `junit-platform-launcher`
-- **`Cannot create Launcher without at least one TestEngine` / `did not discover any tests to execute`**: you're missing a JUnit engine (`junit-jupiter`). On Gradle 8, if another engine (kotest, for example) is present, this may not fail at all: the build stays `BUILD SUCCESSFUL` while the check silently does nothing
+- **`Cannot create Launcher without at least one TestEngine` / `did not discover any tests to execute`**: you're missing a JUnit engine (`junit-jupiter`). On Gradle 8, if another engine (kotest, for example) is present, this may not fail at all: the build ends `BUILD SUCCESSFUL` with nothing checked
 - **Writing `ktFileContent { }` fails with `[UncheckedFileConstraint]`**: write `assert(FileConstraintCheck())`
 
 </details>

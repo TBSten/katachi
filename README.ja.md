@@ -75,11 +75,6 @@ dependencies {
 katachi { architecture = "com.example.projectArchitecture" }
 ```
 
-katachi が検査するのはリポジトリ全体のファイルですが、Gradle が Test タスクの入力として見ているのはテストのクラスパスだけです。
-`outputs.upToDateWhen { false }` が無いと、ファイルを足しても `:architecture-test:test` が `UP-TO-DATE`
-で飛ばされ、違反があっても緑のままになります。`outputs.cacheIf { false }` は、ビルドキャッシュを有効にしているときに前の結果が使い回されないようにするための指定です。
-`testLogging { exceptionFormat = TestExceptionFormat.FULL }` が無いと、テストが失敗してもコンソールには例外のクラス名の1行しか出ず、違反の一覧が読めません。
-
 定義とテストを書きます。
 
 ```kotlin
@@ -108,7 +103,7 @@ class ProjectArchitectureTest {
 最初は、定義していないファイルやディレクトリが違反として出ます。出てきたパスごとに、定義に足すかファイルを消すかを決めていきます。数が多くてすぐには片付かない場合は、今ある違反を [baseline](https://tbsten.github.io/katachi/ja/guides/baseline/)
 でとりあえず許容し、新しい違反だけをエラーにすることもできます。
 
-手順の全体（import・AI Agent
+手順の全体（import・AI エージェント
 に任せる方法）は [初めてのアーキテクチャ定義](https://tbsten.github.io/katachi/ja/get-started/first-architecture/) にあります。
 
 <details>
@@ -118,8 +113,8 @@ class ProjectArchitectureTest {
   以降では付けないでください。警告になります）
 - **`Failed to load JUnit Platform`**: `junit-platform-launcher` が足りません
 - **`Cannot create Launcher without at least one TestEngine` / `did not discover any tests to execute`**: JUnit のエンジン（
-  `junit-jupiter`）が足りません。Gradle 8 では、ほかのエンジン（kotest など）があるとエラーにならず、`BUILD SUCCESSFUL`
-  のまま検査が空振りすることがあります
+  `junit-jupiter`）が足りません。Gradle 8 では、ほかのエンジン（kotest など）があるとエラーにならず、検査の対象が空のまま
+  `BUILD SUCCESSFUL` になることがあります
 - **`ktFileContent { }` を書いたら `[UncheckedFileConstraint]` で失敗する**: `assert(FileConstraintCheck())` と書きます
 
 </details>
