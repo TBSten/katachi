@@ -1501,6 +1501,7 @@
     fbNoStorage: 'This browser can\'t keep it (a private window, for example). Copy before closing.',
     fbPinLabel: function (n, label) { return 'Feedback ' + n + ': ' + label; },
     fbTargetPrefix: 'Target: ',
+    dateFormat: function (y, mo, d, h, mi, zone) { return y + '-' + mo + '-' + d + ' ' + h + ':' + mi + (zone ? ' (' + zone + ')' : ''); },
     fbQuotePrefix: 'Quote: ',
     fbContentPrefix: 'Shows: ',
     fbQuoted: function (raw) { return '"' + raw + '"'; },
@@ -1591,6 +1592,17 @@
   function value(raw, key) {
     if (blank(raw)) return unfilled(key);
     return text(raw);
+  }
+  // Make an ISO 8601 date-time (2026-11-10T08:40:00+09:00) easy to read. Keep the string's own offset (no conversion). Anything else stays as it is
+  function dateValue(raw, key) {
+    if (blank(raw)) return unfilled(key);
+    var m = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?(Z|[+-]\d{2}:?\d{2})?$/.exec(String(raw).trim());
+    if (!m) return text(raw);
+    var zone = !m[6] ? '' : m[6] === 'Z' ? 'UTC' : m[6] === '+09:00' || m[6] === '+0900' ? 'JST' : 'UTC' + m[6];
+    var span = el('span');
+    span.textContent = T.dateFormat(m[1], m[2], m[3], m[4], m[5], zone);
+    span.setAttribute('title', String(raw));
+    return span;
   }
   // Turn whitespace-separated ASCII tokens that look like paths into <code>
   function richText(raw, key) {
@@ -3201,7 +3213,7 @@
   function renderMeta(meta) {
     mount('meta', [facts([
       [T.meta.projectName, value(meta.projectName, 'meta.projectName'), 'meta.projectName'],
-      [T.meta.analyzedAt, value(meta.analyzedAt, 'meta.analyzedAt'), 'meta.analyzedAt'],
+      [T.meta.analyzedAt, dateValue(meta.analyzedAt, 'meta.analyzedAt'), 'meta.analyzedAt'],
       [T.meta.fileCount, value(meta.fileCount, 'meta.fileCount'), 'meta.fileCount'],
       [T.meta.gradleRoot, value(meta.gradleRoot, 'meta.gradleRoot'), 'meta.gradleRoot'],
       [T.meta.gitRoot, value(meta.gitRoot, 'meta.gitRoot'), 'meta.gitRoot']

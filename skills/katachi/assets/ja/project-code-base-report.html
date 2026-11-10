@@ -1501,6 +1501,7 @@
     fbNoStorage: 'このブラウザでは保存できません（プライベートウィンドウなど）。閉じる前にコピーしてください。',
     fbPinLabel: function (n, label) { return 'フィードバック ' + n + ': ' + label; },
     fbTargetPrefix: '対象: ',
+    dateFormat: function (y, mo, d, h, mi, zone) { return y + '年' + Number(mo) + '月' + Number(d) + '日 ' + h + ':' + mi + (zone ? '（' + zone + '）' : ''); },
     fbQuotePrefix: '引用: ',
     fbContentPrefix: 'いまの内容: ',
     fbQuoted: function (raw) { return '「' + raw + '」'; },
@@ -1591,6 +1592,17 @@
   function value(raw, key) {
     if (blank(raw)) return unfilled(key);
     return text(raw);
+  }
+  // ISO 8601 の日時（2026-11-10T08:40:00+09:00）を読みやすい形にする。時差はその文字列のまま（変換しない）。それ以外の文字はそのまま
+  function dateValue(raw, key) {
+    if (blank(raw)) return unfilled(key);
+    var m = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?(Z|[+-]\d{2}:?\d{2})?$/.exec(String(raw).trim());
+    if (!m) return text(raw);
+    var zone = !m[6] ? '' : m[6] === 'Z' ? 'UTC' : m[6] === '+09:00' || m[6] === '+0900' ? 'JST' : 'UTC' + m[6];
+    var span = el('span');
+    span.textContent = T.dateFormat(m[1], m[2], m[3], m[4], m[5], zone);
+    span.setAttribute('title', String(raw));
+    return span;
   }
   // 空白で区切られた ASCII のトークンのうち、パスに見えるものを <code> にする
   function richText(raw, key) {
@@ -3201,7 +3213,7 @@
   function renderMeta(meta) {
     mount('meta', [facts([
       [T.meta.projectName, value(meta.projectName, 'meta.projectName'), 'meta.projectName'],
-      [T.meta.analyzedAt, value(meta.analyzedAt, 'meta.analyzedAt'), 'meta.analyzedAt'],
+      [T.meta.analyzedAt, dateValue(meta.analyzedAt, 'meta.analyzedAt'), 'meta.analyzedAt'],
       [T.meta.fileCount, value(meta.fileCount, 'meta.fileCount'), 'meta.fileCount'],
       [T.meta.gradleRoot, value(meta.gradleRoot, 'meta.gradleRoot'), 'meta.gradleRoot'],
       [T.meta.gitRoot, value(meta.gitRoot, 'meta.gitRoot'), 'meta.gitRoot']
