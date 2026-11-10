@@ -56,9 +56,11 @@ export type ReviewSet = {
 }
 
 /** 指摘のメタとして読むキー。本文の箇条書き（`- 該当: …` など）を飲み込まないよう、ここにあるキーだけをメタにする。 */
-const META_KEYS = ['file', 'line', 'priority', 'quote', 'status', 'note', 'resolved-at', 'ai-note'] as const
+const META_KEYS = ['file', 'line', 'priority', 'quote', 'status', 'note', 'resolved-at', 'ai-note', 'id'] as const
 type MetaKey = (typeof META_KEYS)[number]
-const META_LINE = /^- (file|line|priority|quote|status|note|resolved-at|ai-note):(?:\s+(.*))?$/
+const META_LINE = /^- (file|line|priority|quote|status|note|resolved-at|ai-note|id):(?:\s+(.*))?$/
+/** `- id:` に書く形（まとまりの名前を除いた id。`k3x9a2b` / `k3x9a2b-2`）。 */
+const PINNED_ID = /^[0-9a-z]{1,13}(?:-\d{1,4})?$/
 
 /** まとまりの名前（ファイル名）に使える形。 */
 export const SET_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$/
@@ -120,7 +122,8 @@ export function parseReview(name: string, text: string): ReviewSet {
 		if (FENCE.test(lines[i]!)) inFence = !inFence
 		else if (!inFence && /^## \S/.test(lines[i]!)) heads.push(i)
 	}
-	const seen = new Map<string, number>()
+	/** id を決める前の指摘（key は file と見出し、pin は `- id:` に書いてある id）。 */
+	const pending: { item: Omit<ReviewItem, 'id'>; key: string; pin: string | null }[] = []
 	heads.forEach((h, k) => {
 		const end = heads[k + 1] ?? lines.length
 		const where = `L${h + 1}`
@@ -158,11 +161,13 @@ export function parseReview(name: string, text: string): ReviewSet {
 		}
 		const file = unquote(meta.file).replace(/^\.\//, '')
 		const key = `${file}\n${title}`
-		const n = (seen.get(key) ?? 0) + 1
-		seen.set(key, n)
+		let pin: string | null = null
+		if (meta.id) {
+			if (PINNED_ID.test(meta.id)) pin = `${name}/${meta.id}`
+			else errors.push(`${where}: id の形が読めません: ${meta.id}（見出しから id を作ります）`)
+		}
 		const body = lines.slice(metaEnd, end).join('\n').trim()
-		items.push({
-			id: `${name}/${hash(key)}${n > 1 ? `-${n}` : ''}`,
+		pending.push({ key, pin, item: {
 			set: name,
 			title,
 			priority,
@@ -175,8 +180,29 @@ export function parseReview(name: string, text: string): ReviewSet {
 			...(meta['ai-note'] ? { aiNote: meta['ai-note'] } : {}),
 			body,
 			span: { heading: h, metaEnd, end },
-		})
+		} })
 	})
+	// id: `- id:` に書いてあればそれ（解決済みにしたときに書く。ほかの指摘を消してもずれない）。
+	// 無ければ file と見出しのハッシュで、同じものが並ぶと 2 件目から `-2`・`-3`（書いてある id とは重ねない）。
+	const taken = new Set<string>()
+	for (const p of pending) {
+		if (!p.pin) continue
+		if (taken.has(p.pin)) {
+			errors.push(`L${p.item.span.heading + 1}: 同じ id がもうあります: ${p.pin}（見出しから id を作ります）`)
+			p.pin = null
+		} else taken.add(p.pin)
+	}
+	for (const p of pending) {
+		let id = p.pin
+		if (!id) {
+			const h = `${name}/${hash(p.key)}`
+			let n = 1
+			while (taken.has(n > 1 ? `${h}-${n}` : h)) n++
+			id = n > 1 ? `${h}-${n}` : h
+			taken.add(id)
+		}
+		items.push({ id, ...p.item })
+	}
 	return { name, title: front.title || name, ...(front.base ? { base: front.base } : {}), items, errors }
 }
 
@@ -202,9 +228,15 @@ export function applyStatus(name: string, text: string, id: string, patch: Statu
 	const item = set.items.find((i) => i.id === id)
 	if (!item) throw new Error(`指摘が見つかりません（ファイルが書き換わったかもしれません。読み込み直してください）: ${id}`)
 	const lines = splitLines(text)
-	const drop = new Set<string>(['status', 'note', 'resolved-at'])
+	const drop = new Set<string>(['status', 'note', 'resolved-at', 'id'])
 	if ('aiNote' in patch) drop.add('ai-note')
-	const meta = lines.slice(item.span.heading + 1, item.span.metaEnd).filter((l) => !drop.has(META_LINE.exec(l)?.[1] ?? ''))
+	const before = lines.slice(item.span.heading + 1, item.span.metaEnd)
+	const meta = before.filter((l) => !drop.has(META_LINE.exec(l)?.[1] ?? ''))
+	// 同じ file・見出しの指摘がほかにもあるなら、印を付け外しした時点で id を書いて固定する。
+	// Feedback の記録や判断の記録が id で指すので、前の指摘を消しても（`x-2` が `x` に詰まらず）同じ指摘を指し続ける。
+	// 見出しが 1 つだけの指摘は id がずれないので書かない（ファイルを汚さない）。
+	const pinned = before.some((l) => META_LINE.exec(l)?.[1] === 'id')
+	if (pinned || set.items.some((x) => x !== item && x.file === item.file && x.title === item.title)) meta.push(`- id: ${item.id.slice(name.length + 1)}`)
 	if (patch.status === 'resolved') {
 		meta.push('- status: resolved', `- resolved-at: ${patch.at}`)
 		const note = oneLine(patch.note ?? '')

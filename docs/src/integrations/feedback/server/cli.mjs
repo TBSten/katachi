@@ -4,7 +4,7 @@
 //   node docs/src/integrations/feedback/server/cli.mjs list [--state=open|archived|all] [--json]
 //   node docs/src/integrations/feedback/server/cli.mjs read <id>
 //   node docs/src/integrations/feedback/server/cli.mjs archive <id> --note "<1行>"
-//   node docs/src/integrations/feedback/server/cli.mjs review <list|show|check|remove|reopen> …   （docs への指摘。review/README.md）
+//   node docs/src/integrations/feedback/server/cli.mjs review <list|show|check|remove|reopen|actions> …   （docs への指摘。review/README.md）
 //
 // 置き場は KATACHI_FEEDBACK_DIR（無ければリポジトリ直下の .local/feedback/）。
 //
@@ -33,11 +33,12 @@ const USAGE = `使い方:
   cli.mjs list [--state=open|archived|all] [--json]   未対応（既定）の一覧。id・作成日時・ページ・ソース・要約
   cli.mjs read <id>                                    記録の全文
   cli.mjs archive <id> --note "<1行>"                  archived/ に移し、末尾に対応メモを足す（Review の「直してもらう」から来た記録なら、元の指摘も消す）
-  cli.mjs review list [--status=open|resolved|all] [--json]  指摘の一覧（既定は all）。id・状態・優先度・場所・見出し・一言
+  cli.mjs review list [--status=open|resolved|all] [--action=<名前>] [--json]  指摘の一覧（既定は all）。id・状態・優先度・場所・見出し・一言。--action は一言の頭（直さない・人が足した選択肢）で絞る
   cli.mjs review show <id>                             指摘 1 件の全部（本文・今のソースでの行）
   cli.mjs review check                                 指摘のファイルを検査（読めない指摘・無いファイル・quote が見つからない行）。問題があれば 1 で終わる
   cli.mjs review remove <id>                           確かめた指摘を消す（解決済みのものだけ。--force で未解決も）
   cli.mjs review reopen <id> --note "<理由>"           解決済みを差し戻す（ai-note に理由を書く）
+  cli.mjs review actions [--json]                      人が popup に足した選択肢（review/_actions.md）と、選ばれた指摘を agent がどう扱うか
 置き場: KATACHI_FEEDBACK_DIR か、リポジトリ直下の .local/feedback/`
 
 /** 位置引数と --key=value / --key value に分ける。 */
@@ -196,6 +197,7 @@ const lineText = (v) => (v.line ? `:${v.line.start === v.line.end ? v.line.start
 async function review([sub, id], flags, dir) {
 	const { createReviewStore, REVIEW_SUBDIR } = await import(pathToFileURL(resolve(here, 'review.ts')).href)
 	const { pageUrlOf } = await import(pathToFileURL(resolve(here, '../review/model.ts')).href)
+	const { noteHead, ACTIONS_FILE } = await import(pathToFileURL(resolve(here, '../review/actions.ts')).href)
 	const { base: docsBase } = await import(pathToFileURL(resolve(here, '../../../lib/versions.mjs')).href)
 	const store = createReviewStore(resolve(dir, REVIEW_SUBDIR), repoRoot)
 	const data = await store.load()
@@ -209,7 +211,8 @@ async function review([sub, id], flags, dir) {
 	if (!sub || sub === 'list') {
 		const status = flags.status ?? 'all'
 		if (!['open', 'resolved', 'all'].includes(status)) throw new Error(`--status は open / resolved / all のどれか: ${status}`)
-		const rows = data.items.filter((v) => status === 'all' || v.status === status)
+		const action = typeof flags.action === 'string' ? flags.action.trim() : ''
+		const rows = data.items.filter((v) => (status === 'all' || v.status === status) && (!action || (v.status === 'resolved' && noteHead(v.note) === action)))
 		if (flags.json) return console.log(JSON.stringify(rows, null, 2))
 		if (!data.sets.length) return console.log(`（指摘のファイルがありません: ${store.dir}）`)
 		for (const v of rows) {
@@ -217,7 +220,17 @@ async function review([sub, id], flags, dir) {
 			console.log([v.id, v.status, v.priority === null ? '-' : `p${v.priority}`, `${v.file}${lineText(v)}`, clip(v.title, 70), placeMark[v.place], note && `（${clip(note, 80)}）`].filter((x) => x).join(' | '))
 		}
 		const count = (s) => data.items.filter((v) => v.status === s).length
-		console.log(`計 ${rows.length} 件（open ${count('open')} / resolved ${count('resolved')}）`)
+		console.log(`計 ${rows.length} 件（open ${count('open')} / resolved ${count('resolved')}）${action ? `・「${action}」で絞り込み` : ''}`)
+		return
+	}
+
+	if (sub === 'actions') {
+		if (flags.json) return console.log(JSON.stringify({ actions: data.actions, errors: data.actionErrors }, null, 2))
+		const n = (label) => data.items.filter((v) => v.status === 'resolved' && noteHead(v.note) === label).length
+		console.log(`初めからの選択肢: 直さない（${n('直さない')} 件。確かめずに review remove）/ 直してもらう（Feedback の消化で直して archive）/ 解決済みにする（確かめて remove か reopen）`)
+		if (!data.actions.length) console.log(`人が足した選択肢はありません（${resolve(store.dir, ACTIONS_FILE)}）`)
+		for (const a of data.actions) console.log([`${a.label}（${n(a.label)} 件）`, a.decision && `判断: ${a.decision}`, `agent: ${a.agent ?? '（書かれていません。人に聞く）'}`].filter(Boolean).join(' | '))
+		for (const e of data.actionErrors) console.log(`読めない行: ${e}`)
 		return
 	}
 
@@ -244,6 +257,7 @@ async function review([sub, id], flags, dir) {
 	if (sub === 'check') {
 		let problems = 0
 		for (const s of data.sets) for (const e of s.errors) { problems++; console.log(`${s.file}: ${e}`) }
+		for (const e of data.actionErrors) { problems++; console.log(e) }
 		for (const v of data.items) {
 			if (v.place === 'lost') { problems++; console.log(`${v.id}: quote が ${v.file}${lineText(v)} の近くに見つかりません（${clip(v.title, 50)}）`) }
 		}

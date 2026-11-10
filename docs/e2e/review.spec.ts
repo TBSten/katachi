@@ -1,6 +1,6 @@
 // Review（dev 限定。docs への指摘を印と popup で出す）。既定は隠したまま、押すと出る、popup、解決済みの付け外し、
 // 隠れた場所（閉じた details・選ばれていないタブ・畳んだコード）、ページをまたぐ前・次、壊れた指摘、外での書き換え。
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { Locator } from '@playwright/test'
 import { FEEDBACK_OUT } from './env.mjs'
@@ -55,9 +55,14 @@ details の中。
 本文
 `
 
-function writeSet(text = SET) {
+const actionsFile = () => join(FEEDBACK_OUT, 'review', '_actions.md')
+const readActions = () => (existsSync(actionsFile()) ? readFileSync(actionsFile(), 'utf8') : '')
+
+function writeSet(text = SET, actions?: string) {
 	mkdirSync(join(FEEDBACK_OUT, 'review'), { recursive: true })
 	writeFileSync(reviewFile(), text)
+	if (actions === undefined) rmSync(actionsFile(), { force: true })
+	else writeFileSync(actionsFile(), actions)
 }
 
 const ui = (fb: Fb) => (sel: string): Locator => fb.page.locator(`katachi-review-root ${sel}`)
@@ -216,6 +221,54 @@ test('直してもらう: Feedback の記録を作って解決済みにする �
 	await fb.act(u('.toast .btn').filter({ hasText: '戻す' }))
 	ok('「戻す」で記録を archive する', await waitFor(() => !files().includes(name)), files().join(','))
 	ok('「戻す」で指摘のファイルが元に戻る', await waitFor(() => readReview() === SET))
+})
+
+test('人が足した選択肢: ボタンが並び、押すとひとことの頭に名前を書く。「＋」で足す・消す', async ({ fb }) => {
+	writeSet(SET, '# Review の選択肢\n\n## 後で\n- agent: v0.5 のチケットに積んでから review remove\n- decision: 後で\n')
+	await fb.fresh(FAQ)
+	await toggle(fb)
+	const u = ui(fb)
+	await openRow(fb, '段落への指摘')
+	const later = u('.pop .act .btn.custom').filter({ hasText: '後で' })
+	ok('_actions.md の選択肢がボタンで並ぶ', (await later.count()) === 1)
+	ok('ボタンの説明に agent がすることと判断の種類', /agent: v0\.5 のチケットに積んでから review remove/.test((await later.getAttribute('title')) ?? '') && /判断の記録: 後で/.test((await later.getAttribute('title')) ?? ''))
+	await fb.shot('review-actions-1-buttons')
+	await u('.pop .act input').fill('v0.5 で見直す')
+	await fb.act(later)
+	ok('押すと解決済みにして、ひとことの頭に名前を書く', await waitFor(() => readReview().includes('- status: resolved\n') && readReview().includes('- note: 後で: v0.5 で見直す\n')), readReview().slice(0, 600))
+	ok('トーストに選んだ名前', await waitFor(async () => /「後で」で解決済みにしました/.test((await u('.toast').textContent().catch(() => '')) ?? '')))
+	await fb.act(u('.toast .btn').filter({ hasText: '戻す' }))
+	ok('「戻す」で元のファイルに戻る', await waitFor(() => readReview() === SET))
+	await sleep(500)
+	await openRow(fb, '段落への指摘')
+
+	// 「＋」で足す
+	await fb.act(u('.pop .btn.plus'))
+	ok('「＋」で選択肢の編集が開き、名前の欄に入力が移る', (await u('.pop .actions-edit').isVisible()) && (await u('.pop .action-form input').first().evaluate((i) => i === (i.getRootNode() as ShadowRoot | Document).activeElement)))
+	await u('.pop .action-form input').first().fill('直さない')
+	ok('初めからのボタンと同じ名前は足せない（理由を出す）', (await u('.pop .action-form .btn').isDisabled()) && /初めから/.test((await u('.pop .action-hint').textContent()) ?? ''))
+	await u('.pop .action-form input').first().fill('PR #65 待ち')
+	await u('.pop .action-form input').nth(1).fill('PR #65 のマージ後に見直して、消えていれば review remove')
+	await u('.pop .action-form select').selectOption('後で')
+	await fb.shot('review-actions-2-edit')
+	await fb.act(u('.pop .action-form .btn'))
+	ok('足すと _actions.md に書く', await waitFor(() => readActions().includes('## PR #65 待ち\n- agent: PR #65 のマージ後に見直して、消えていれば review remove\n- decision: 後で\n')), readActions())
+	ok('ボタンが増え、欄は空に戻る', await waitFor(async () => (await u('.pop .act .btn.custom').count()) === 2) && (await u('.pop .action-form input').first().inputValue()) === '')
+	// × で消す → 戻す
+	await fb.act(u('.pop .action-chip').filter({ hasText: 'PR #65 待ち' }).locator('.action-x'))
+	ok('× で _actions.md から消す', await waitFor(() => !readActions().includes('PR #65 待ち')), readActions())
+	ok('ボタンも消える', await waitFor(async () => (await u('.pop .act .btn.custom').count()) === 1))
+	await fb.act(u('.toast .btn').filter({ hasText: '戻す' }))
+	ok('トーストの「戻す」で足し直す', await waitFor(() => readActions().includes('## PR #65 待ち\n')), readActions())
+	await fb.act(u('.pop .btn.plus'))
+	ok('もう一度「＋」で編集を閉じる', await u('.pop .actions-edit').isHidden())
+	// 読めない行は一覧の下に出す
+	writeFileSync(actionsFile(), '## 後で: すぐ\n')
+	await fb.page.reload({ waitUntil: 'networkidle' })
+	await u('.panel').waitFor({ state: 'visible', timeout: 8000 })
+	await sleep(800)
+	ok('_actions.md の読めない行は、読めない指摘と一緒に出す', /読めない指摘・ファイル 3 件/.test((await u('.errors summary').textContent()) ?? ''), (await u('.errors summary').textContent()) ?? '')
+	rmSync(actionsFile(), { force: true })
 })
 
 test('閉じた details・選ばれていないタブ・畳んだコードの中の指摘は、開くと見えるようにして光らせる', async ({ fb }) => {

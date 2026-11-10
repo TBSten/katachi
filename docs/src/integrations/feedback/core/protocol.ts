@@ -137,6 +137,25 @@ export type ReviewRequest =
 	| { requestId: string; op: 'send'; id: string; note: string; page: string }
 	/** 送ったのを取り消す: 指摘を未解決に戻し、作った記録（`yymmdd-NNN`）は archived に移す。 */
 	| { requestId: string; op: 'unsend'; id: string; record: string }
+	/** 人が popup の「＋」で選択肢を足す（`review/_actions.md` に書き足す）。 */
+	| { requestId: string; op: 'add-action'; label: string; agent: string; decision?: ReviewDecision }
+	/** 人が選択肢を消す。 */
+	| { requestId: string; op: 'remove-action'; label: string }
+
+/** prerelease の判断の記録（`.claude/skills/prerelease/decisions/`）の decision。選択肢の `- decision:` に書ける。 */
+export type ReviewDecision = '直さない' | 'このまま' | '後で' | '方針'
+
+/** 人が足した選択肢（`review/_actions.md` の見出し 1 つ）。押すと解決済みにして、note の頭に label を書く。 */
+export type ReviewAction = {
+	label: string
+	/** agent がすること（ボタンの説明と cli の review actions に出す）。 */
+	agent?: string
+	/** 対応する判断（prerelease の decisions/ に写すとき使う）。 */
+	decision?: ReviewDecision
+}
+
+/** 「直さない」で解決済みにしたときの、ひとことの頭。agent はこれを見て、直ったかを確かめずに消す。 */
+export const REVIEW_KEEP_NOTE = '直さない'
 
 /** 「直してもらう」で解決済みにしたときの、ひとことの頭（`Feedback に送った: 261110-001`）。agent は Review の側では扱わない（Feedback の記録を archive すると消える）。 */
 export const REVIEW_SENT_NOTE = 'Feedback に送った'
@@ -170,5 +189,6 @@ export type ReviewSetView = { name: string; title: string; base?: string; file: 
 export type ReviewResult =
 	/** root はリポジトリ直下の絶対パス（popup の「エディタで開く」に使う。dev サーバーの手元のパス）。 */
 	/** sent は「直してもらう」で作った Feedback の記録の id（`yymmdd-NNN`）。 */
-	| { requestId: string; ok: true; sets: ReviewSetView[]; items: ReviewView[]; root?: string; sent?: string }
+	/** actions は人が足した選択肢、actionErrors は `_actions.md` の読めなかった行。 */
+	| { requestId: string; ok: true; sets: ReviewSetView[]; items: ReviewView[]; root?: string; sent?: string; actions?: ReviewAction[]; actionErrors?: string[] }
 	| { requestId: string; ok: false; error: string }

@@ -54,7 +54,7 @@ describe('createReviewStore', () => {
 		expect(items[0]!.place).toBe('no-file')
 	})
 	it('フォルダが無ければ空（投げない）。.md 以外と使えない名前のファイルは読まない', async () => {
-		expect(await createReviewStore(join(root, 'none'), root).load()).toEqual({ sets: [], items: [], root })
+		expect(await createReviewStore(join(root, 'none'), root).load()).toEqual({ sets: [], items: [], root, actions: [], actionErrors: [] })
 		await writeFile(join(dir, 'memo.txt'), SET)
 		await writeFile(join(dir, '.hidden.md'), SET)
 		expect((await createReviewStore(dir, root).load()).sets).toEqual([])
@@ -131,6 +131,24 @@ describe('Review の受け口', () => {
 		expect(await h({ requestId: 'r2', op: 'resolve', id, note: 'x' })).toMatchObject({ requestId: 'r2', ok: true, items: [{ id, status: 'resolved' }, {}, {}] })
 		expect(await h({ requestId: 'r3', op: 'reopen', id })).toMatchObject({ ok: true, items: [{ id, status: 'open' }, {}, {}] })
 	})
+	it('add-action / remove-action は _actions.md を書き換え、load が選択肢と読めない行を返す', async () => {
+		await writeFile(join(dir, 's1.md'), SET)
+		const h = createReviewHandler(createReviewStore(dir, root))
+		expect(await h({ requestId: 'r1', op: 'load' })).toMatchObject({ actions: [], actionErrors: [] })
+		const added = await h({ requestId: 'r2', op: 'add-action', label: '後で', agent: 'v0.5 に積む', decision: '後で' })
+		expect(added).toMatchObject({ ok: true, actions: [{ label: '後で', agent: 'v0.5 に積む', decision: '後で' }] })
+		expect(await readFile(join(dir, '_actions.md'), 'utf8')).toContain('## 後で\n- agent: v0.5 に積む\n- decision: 後で\n')
+		// _actions.md は指摘のまとまりとして読まない
+		expect((added as { sets: unknown[] }).sets).toHaveLength(1)
+		expect(await h({ requestId: 'r3', op: 'add-action', label: '後で', agent: '' })).toMatchObject({ ok: false, error: expect.stringMatching(/もうあります/) })
+		expect(await h({ requestId: 'r4', op: 'add-action', label: '直さない', agent: '' })).toMatchObject({ ok: false, error: expect.stringMatching(/初めから/) })
+		expect(await h({ requestId: 'r5', op: 'remove-action', label: '後で' })).toMatchObject({ ok: true, actions: [] })
+		expect(await h({ requestId: 'r6', op: 'remove-action', label: '後で' })).toMatchObject({ ok: false })
+		await writeFile(join(dir, '_actions.md'), '## a:b\n')
+		expect(await h({ requestId: 'r7', op: 'load' })).toMatchObject({ actions: [], actionErrors: [expect.stringMatching(/^_actions\.md: L1: /)] })
+		await rm(join(dir, '_actions.md'))
+		expect(await h({ requestId: 'r8', op: 'remove-action', label: 'x' })).toMatchObject({ ok: false, error: expect.stringMatching(/ありません/) })
+	})
 	it('send は Feedback の記録を作り、指摘に送った印を付けて解決済みにする。unsend は戻して記録を archived に移す', async () => {
 		await writeFile(join(dir, 's1.md'), SET)
 		const sent: SavePayload[] = []
@@ -172,6 +190,10 @@ describe('Review の受け口', () => {
 		[{ requestId: 'r', op: 'resolve', id: 'a/b' }, /note/],
 		[{ requestId: 'r', op: 'resolve', id: 'a/b', note: 'x'.repeat(5000) }, /長すぎ/],
 		[{ requestId: 'r', op: 'reopen' }, /id/],
+		[{ requestId: 'r', op: 'add-action', label: '' }, /label/],
+		[{ requestId: 'r', op: 'add-action', label: 'x' }, /agent/],
+		[{ requestId: 'r', op: 'add-action', label: 'x', agent: '', decision: 1 }, /decision/],
+		[{ requestId: 'r', op: 'remove-action' }, /label/],
 	])('形の違う依頼を断る %#', (req, re) => {
 		const c = checkReviewRequest(req)
 		expect(c.ok).toBe(false)
