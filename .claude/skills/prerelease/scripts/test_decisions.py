@@ -127,6 +127,37 @@ class DecisionsTest(unittest.TestCase):
         other, _ = D.parse("## [p2] 指示語「これらは」\n- file: ja/b.mdx\n- quote: これらは katachi と\n", "f", D.REVIEW_KEYS)
         self.assertIsNone(D.compare(other[0], d[0]))
 
+    def test_policy_match_covers_titles_worded_differently(self):
+        policy = textwrap.dedent("""\
+            ## 方針: 「このページの目的」のコメント（D1-1）
+            - decision: 方針
+            - file: docs/src/content/docs/**
+            - match: 目的の?コメント
+            - decided: 2026-11-10 t KATACHI-1
+            """)
+        d, _ = D.parse(policy, "docs.md", D.DECISION_KEYS)
+        for title in ("「このページの目的」のコメントが無い（D1-1）", "目的コメントが import より後（D1-1）", "目的のコメントが import の後"):
+            f, _ = D.parse(f"## [p2] {title}\n- file: ja/guides/a.mdx\n", "f", D.REVIEW_KEYS)
+            self.assertEqual(D.compare(f[0], d[0]), "same", title)
+        other, _ = D.parse("## [p3] description と本文が合っていない\n- file: ja/roadmap.mdx\n- quote: 目的コメント\n", "f", D.REVIEW_KEYS)
+        self.assertIsNone(D.compare(other[0], d[0]))
+        outside, _ = D.parse("## [p2] 目的のコメントが無い\n- file: README.md\n", "f", D.REVIEW_KEYS)
+        self.assertIsNone(D.compare(outside[0], d[0]))
+
+        # record-review は方針に合う「直さない」を 1 件ずつ写さず、id だけ出す
+        (self.dir / "docs.md").write_text("# docs\n\n" + policy, encoding="utf-8")
+        self.review.write_text("## [p2] 目的のコメントが無い（D1-1）\n- file: ja/guides/a.mdx\n- status: resolved\n- note: 直さない\n", encoding="utf-8")
+        code, out = run("--dir", str(self.dir), "record-review", str(self.review), "--decided", "x")
+        self.assertEqual(code, 0)
+        self.assertIn("写した 0 件 / 写してあった 1 件", out)
+        self.assertEqual(out.count("REMOVE "), 1)
+
+    def test_bad_match_pattern_is_an_error(self):
+        (self.dir / "docs.md").write_text("## 方針: x\n- decision: 方針\n- match: (\n- decided: x\n", encoding="utf-8")
+        errors = [e for d in D.load_decisions(self.dir) for e in d.errors]
+        self.assertTrue(any("正規表現" in e for e in errors))
+        self.assertTrue(any("file がありません" in e for e in errors))
+
     def test_glob(self):
         self.assertTrue(D.file_matches("docs/src/content/docs/ja/get-started/*", "docs/src/content/docs/ja/get-started/faq.mdx"))
         self.assertFalse(D.file_matches("docs/src/content/docs/ja/*", "docs/src/content/docs/ja/get-started/faq.mdx"))

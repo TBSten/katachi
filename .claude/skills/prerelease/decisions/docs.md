@@ -141,3 +141,36 @@ ktlint と同じ。
 - by: 利用者（322 のスレッド。手順 11 の p4 以下を Review に登録する前の選別）
 
 ktlint と同じ。
+
+## 方針: AI 下書きの印が無い（D1-2・E8）
+- decision: 方針
+- file: docs/src/content/docs/**
+- match: AI\s*下書きの印が無い
+- rule: D1-2（AI が書いたページには下書きの印）／E8（AGENTS の木とページの印が合わない）
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（チャット）
+
+利用者の一言: 「この辺りは一律直さないでいいや」
+
+範囲: docs のページに AI 下書きの印（本文先頭の `<Aside type="note" title="AI が書いた下書き">` や title の `[AI生成]`）が無い、
+AGENTS の木では [AI生成] なのにページに印が無い、という指摘は出さない。
+
+範囲の外: 印の形が決まりと違う指摘（地の文の末尾に「（AI の下書き）」と書いてある、など）は、この方針に入れずにいつもどおり見る。
+
+元の指摘（261109-01 の手順 11、4 件）: guides/diff-report・cli-and-script・cli-and-script/cli・cli-and-script/katachi-script に印が無い。
+
+## 方針: 「このページの目的」のコメント（D1-1）
+- decision: 方針
+- file: docs/src/content/docs/**
+- match: 目的の?コメント
+- rule: D1-1（frontmatter の直後、import より前に「このページの目的」のコメントを 1〜3 行）
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（チャット）
+
+利用者の一言: 「この辺りは一律直さないでいいや」
+
+範囲: 「このページの目的」のコメントが無い、import より後にある、という指摘は出さない。
+
+範囲の外: description と本文が合っていない指摘は、目的のコメントに触れていても別の指摘としていつもどおり見る（見出しが match に合わないので外れない）。
+
+元の指摘（261109-01 の手順 11、9 件）: 無い 5 件（guides/kt-file-content・diff-report・cli-and-script・cli-and-script/cli、recipes/github）、import の後 4 件（get-started/comparison-with-other-tools、guides/baseline・kt-file-content/kotlin-mapping・cli-and-script/katachi-script）。

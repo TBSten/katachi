@@ -13,7 +13,7 @@
       指摘のうち、過去の判断と同じものを出す。--drop は同じものを外したファイルを書く（既定は上書き。--out で別の場所へ）
   python3 .claude/skills/prerelease/scripts/decisions.py record-review <review.md> --decided "<日付 回 チケット>" [--to docs.md]
       Review の popup で「直さない」になった指摘（status: resolved、note の頭が「直さない」）を判断として写す。
-      写した（または既に写してあった）指摘の Review の id を出す。そのあと cli.mjs review remove <id> で消す
+      写した（または既に写してあった・方針の match に合った）指摘の Review の id を出す。そのあと cli.mjs review remove <id> で消す
 """
 import argparse
 import difflib
@@ -27,7 +27,7 @@ sys.dont_write_bytecode = True
 DECISIONS_DIR = Path(__file__).resolve().parent.parent / "decisions"
 CONTENT_DIR = "docs/src/content/docs/"
 DECISIONS = ("直さない", "このまま", "後で", "方針")
-DECISION_KEYS = ("decision", "file", "quote", "rule", "decided", "by", "revisit")
+DECISION_KEYS = ("decision", "file", "quote", "match", "rule", "decided", "by", "revisit")
 REVIEW_KEYS = ("file", "line", "priority", "quote", "status", "note", "resolved-at", "ai-note")
 FENCE = re.compile(r"^\s*(```|~~~)")
 HEAD = re.compile(r"^## \S")
@@ -185,6 +185,13 @@ def load_decisions(directory=DECISIONS_DIR):
                 e.errors.append("decision が「後で」なら「- revisit:」（見直す条件）が要ります")
             if e.meta.get("quote") and not e.meta.get("file"):
                 e.errors.append("quote があるのに file がありません")
+            if e.meta.get("match"):
+                if not e.meta.get("file"):
+                    e.errors.append("match があるのに file がありません（範囲をグロブで書く）")
+                try:
+                    re.compile(match_pattern(e))
+                except re.error as err:
+                    e.errors.append(f"match の正規表現が読めません: {err}")
             out.append(e)
     return out
 
@@ -201,6 +208,10 @@ def file_matches(pattern, f):
     return False
 
 
+def match_pattern(e):
+    return unquote(e.meta.get("match", ""))
+
+
 def title_key(t):
     """見出しを比べる形（「（要確認）」などの添え書きと空白・記号を落とす）。"""
     t = re.sub(r"[（(](要確認|要検討)[）)]", "", norm(t))
@@ -213,10 +224,19 @@ def compare(finding, decision):
     - same: file が該当し、見出しが同じ。または quote が重なり、見出しも似ている（半分以上）
     - near: file が該当し、quote は重なるが見出しが似ていない（`.role {` のような短い quote で別の指摘を消さないため、
       外さずにエージェントに見せる）
-    `方針` の本文の条件はここでは見ない（file と見出しだけ）。該当するかはエージェントが本文で判断する。
+    - match（`方針` で使う、見出しの正規表現）があれば、file が該当し見出しが match に合うものは same。
+      見出しの言い方が回ごとに揺れる「ある種類の指摘」をまとめて外すため
+    `方針` の本文の条件はここでは見ない（file・見出し・match だけ）。該当するかはエージェントが本文で判断する。
     """
     if not file_matches(decision.file, finding.file):
         return None
+    pattern = match_pattern(decision)
+    if pattern:
+        try:
+            if re.search(pattern, norm(finding.title)) or re.search(pattern, title_key(finding.title)):
+                return "same"
+        except re.error:
+            pass
     dt, ft = title_key(decision_title(decision)), title_key(finding.title)
     if dt and dt == ft:
         return "same"
@@ -342,6 +362,8 @@ def cmd_record_review(args):
             continue
         if any(same(f, d) and d.meta.get("decision") == "直さない" and norm(decision_title(d)) == norm(f.title) for d in existing):
             already += 1
+        elif any(d.meta.get("decision") == "方針" and match_pattern(d) and same(f, d) for d in existing):
+            already += 1  # 方針がまとめて扱っている（1 件ずつ写さない）
         else:
             added.append(render_decision(f, args.decided, args.by))
         to_remove.append(rid)
