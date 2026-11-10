@@ -101,15 +101,13 @@ export function addAction(text: string | null, a: ReviewAction): string {
 	if (actions.some((x) => x.label === label)) throw new Error(`「${label}」はもうあります`)
 	if (actions.length >= MAX_ACTIONS) throw new Error(`選択肢は ${MAX_ACTIONS} 個までです（_actions.md から消してください）`)
 	if (a.decision && !DECISIONS.includes(a.decision)) throw new Error(`decision は ${DECISIONS.join(' / ')} のどれかです`)
-	const agent = a.agent ? oneLine(a.agent, AGENT_CHARS) : ''
-	const block = [`## ${label}`, ...(agent ? [`- agent: ${agent}`] : []), ...(a.decision ? [`- decision: ${a.decision}`] : [])]
+	const block = blockOf(label, a)
 	const head = text === null || !text.trim() ? HEADER : splitLines(text.replace(/\n+$/, ''))
 	return [...head, ...(head[head.length - 1] === '' ? [] : ['']), ...block, ''].join('\n')
 }
 
-/** 名前が label の選択肢を消した全文を返す（見出しから次の見出しの手前まで）。無ければ投げる。 */
-export function removeAction(text: string, label: string): string {
-	const lines = splitLines(text)
+/** 名前が label の選択肢の場所（見出しの行・メタの終わり・次の見出しの手前。0 始まり）。無ければ投げる。 */
+function findAction(lines: string[], label: string): { start: number; metaEnd: number; end: number } {
 	let start = -1
 	let end = lines.length
 	let inFence = false
@@ -123,7 +121,37 @@ export function removeAction(text: string, label: string): string {
 		if (lines[i]!.slice(3).trim() === label) start = i
 	}
 	if (start < 0) throw new Error(`選択肢がありません: ${label}（読み込み直してください）`)
+	let metaEnd = start + 1
+	while (metaEnd < end && META_LINE.test(lines[metaEnd]!)) metaEnd++
+	return { start, metaEnd, end }
+}
+
+/** 見出しとメタの行（`## 名前` / `- agent:` / `- decision:`）。 */
+function blockOf(label: string, a: Omit<ReviewAction, 'label'>): string[] {
+	const agent = a.agent ? oneLine(a.agent, AGENT_CHARS) : ''
+	return [`## ${label}`, ...(agent ? [`- agent: ${agent}`] : []), ...(a.decision ? [`- decision: ${a.decision}`] : [])]
+}
+
+/** 名前が label の選択肢を消した全文を返す（見出しから次の見出しの手前まで）。無ければ投げる。 */
+export function removeAction(text: string, label: string): string {
+	const lines = splitLines(text)
+	const { start, end } = findAction(lines, label)
 	return [...lines.slice(0, start), ...lines.slice(end)].join('\n').replace(/\n{3,}/g, '\n\n')
+}
+
+/**
+ * 名前が from の選択肢を、その場で a に書き換えた全文を返す（並びと、メタの後ろの人のメモは変えない）。
+ * 名前を変えるときは、使えない名前・ほかの選択肢と同じ名前なら投げる。
+ */
+export function updateAction(text: string, from: string, a: ReviewAction): string {
+	const label = oneLine(a.label, 200)
+	const problem = labelProblem(label)
+	if (problem) throw new Error(problem)
+	if (label !== from && parseActions(text).actions.some((x) => x.label === label)) throw new Error(`「${label}」はもうあります`)
+	if (a.decision && !DECISIONS.includes(a.decision)) throw new Error(`decision は ${DECISIONS.join(' / ')} のどれかです`)
+	const lines = splitLines(text)
+	const { start, metaEnd } = findAction(lines, from)
+	return [...lines.slice(0, start), ...blockOf(label, a), ...lines.slice(metaEnd)].join('\n')
 }
 
 /** 選択肢で解決済みにするときの note（`後で` / `後で: ひとこと`）。 */
@@ -132,8 +160,24 @@ export const noteOf = (label: string, note: string) => (note.trim() ? `${label}:
 /** note の頭（「: 」の手前）。「直さない: 誤検知」なら「直さない」。 */
 export const noteHead = (note: string | undefined) => (note ?? '').split(/[:：]\s?/)[0]!.trim()
 
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+/**
+ * note がどの名前で始まるか（無ければ null）と、その後ろの理由。prerelease の decisions.py の note_choice と同じ読み方。
+ * popup は `名前` / `名前: 理由` と書く。手で付けた `名前（理由）`・`名前 (理由)`・`名前 理由` も受ける。
+ * 名前は長いものから試す（`PR #65 待ち` と `PR` のように頭が重なっても、長い方に合わせる）。
+ */
+export function matchNote(note: string | undefined, names: readonly string[]): { name: string; reason: string } | null {
+	const n = (note ?? '').trim()
+	for (const name of [...names].sort((a, b) => b.length - a.length)) {
+		const m = new RegExp(`^${escapeRe(name)}(?:\\s*[:：]\\s*([\\s\\S]*)|\\s*[（(]([\\s\\S]*)[）)]|\\s+([\\s\\S]*))?$`).exec(n)
+		if (m) return { name, reason: (m[1] ?? m[2] ?? m[3] ?? '').trim() }
+	}
+	return null
+}
+
 /** note がどの選択肢で付いたか（無ければ null）。 */
 export const actionOfNote = (note: string | undefined, actions: readonly ReviewAction[]) => {
-	const head = noteHead(note)
-	return head ? (actions.find((a) => a.label === head) ?? null) : null
+	const m = matchNote(note, actions.map((a) => a.label))
+	return m ? (actions.find((a) => a.label === m.name) ?? null) : null
 }

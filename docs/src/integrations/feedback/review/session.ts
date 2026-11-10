@@ -5,7 +5,7 @@ import { el, isNarrow } from '../shared/dom'
 import { runInsideHost, swallowEscKeyup, inToolbar, onKeyInside } from '../shared/keys'
 import { createHost } from '../shared/shell'
 import { pageSourceFile } from '../shared/srcmap'
-import { actionOfNote, DECISIONS, labelProblem, LABEL_CHARS, MAX_ACTIONS, noteHead, noteOf } from './actions'
+import { actionOfNote, DECISIONS, labelProblem, LABEL_CHARS, matchNote, MAX_ACTIONS, noteOf } from './actions'
 import { css } from './css'
 import { formatLine, pageUrlOf, priorityTier } from './model'
 import { groupByFile, onPage, parseFilter, passes, PRIORITY_STEPS, shortFile, sortItems, type Filter } from './order'
@@ -21,6 +21,7 @@ export type ReviewCall = (
 		| { op: 'send'; id: string; note: string; page: string }
 		| { op: 'unsend'; id: string; record: string }
 		| { op: 'add-action'; label: string; agent: string; decision?: ReviewDecision }
+		| { op: 'update-action'; from: string; label: string; agent: string; decision?: ReviewDecision }
 		| { op: 'remove-action'; label: string },
 ) => Promise<ReviewResult | { ok: false; error: string }>
 
@@ -117,6 +118,8 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 	let editing = false
 	/** 書きかけの選択肢（popup を作り直しても消さない）。 */
 	const actionDraft: { label: string; agent: string; decision: ReviewDecision | '' } = { label: '', agent: '', decision: '' }
+	/** 直している選択肢の名前（一覧の名前を押すと入る。null なら足す）。 */
+	let fixing: string | null = null
 	/** popup を作り直したあとで入力を移す欄（data-field）。 */
 	let focusField: string | null = null
 	/** リポジトリ直下の絶対パス（エディタで開くのに使う）。 */
@@ -366,6 +369,7 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		pop.hidden = true
 		// 選択肢の編集は閉じたら終わり（次に開いた指摘はいつものボタンで出す）。書きかけの名前は actionDraft に残る。
 		editing = false
+		stopFixing()
 		placeToast()
 		drawWire(null, null)
 		panel.classList.remove('has-pop')
@@ -633,15 +637,24 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		const done = el('button', 'btn', '閉じる')
 		done.type = 'button'
 		done.title = '選択肢の編集を閉じて、指摘の操作に戻る'
-		done.addEventListener('click', () => { editing = false; focusField = 'note'; renderPop() })
-		top.append(el('b', undefined, '選択肢を足す・消す'), done)
+		done.addEventListener('click', () => { editing = false; stopFixing(); focusField = 'note'; renderPop() })
+		top.append(el('b', undefined, '選択肢を足す・直す・消す'), done)
 		box.append(top)
 		if (actions.length) {
 			const list = el('div', 'action-list')
 			for (const a of actions) {
-				const chip = el('span', 'action-chip')
-				chip.title = [a.agent && `agent: ${a.agent}`, a.decision && `判断の記録: ${a.decision}`].filter(Boolean).join('\n')
-				chip.append(el('span', undefined, a.label))
+				const chip = el('span', `action-chip${fixing === a.label ? ' is-on' : ''}`)
+				// 名前を押すと、下の欄に読み込んで直せる（もう一度押すと足すに戻る）。
+				const pick = el('button', 'action-pick', a.label)
+				pick.type = 'button'
+				pick.title = [`「${a.label}」を直す`, a.agent && `agent: ${a.agent}`, a.decision && `判断の記録: ${a.decision}`].filter(Boolean).join('\n')
+				pick.addEventListener('click', () => {
+					fixing = fixing === a.label ? null : a.label
+					Object.assign(actionDraft, fixing ? { label: a.label, agent: a.agent ?? '', decision: a.decision ?? '' } : { label: '', agent: '', decision: '' })
+					focusField = 'action-label'
+					renderPop()
+				})
+				chip.append(pick)
 				if (a.decision && a.decision !== a.label) chip.append(el('span', 'action-decision', a.decision))
 				const x = el('button', 'action-x', '×')
 				x.type = 'button'
@@ -679,13 +692,15 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 			o.selected = d === actionDraft.decision
 			decision.append(o)
 		}
-		const add = el('button', 'btn primary', '足す')
+		// 直している選択肢が外で消えていたら、足すに戻す。
+		if (fixing && !actions.some((a) => a.label === fixing)) fixing = null
+		const add = el('button', 'btn primary', fixing ? '直す' : '足す')
 		add.type = 'button'
 		const problem = () => {
 			const label = name.value.trim()
 			if (!label) return '名前を入れてください'
-			if (actions.some((a) => a.label === label)) return `「${label}」はもうあります`
-			if (actions.length >= MAX_ACTIONS) return `選択肢は ${MAX_ACTIONS} 個までです`
+			if (label !== fixing && actions.some((a) => a.label === label)) return `「${label}」はもうあります`
+			if (!fixing && actions.length >= MAX_ACTIONS) return `選択肢は ${MAX_ACTIONS} 個までです`
 			return labelProblem(label)
 		}
 		const hint = el('p', 'action-hint')
@@ -694,7 +709,7 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 			actionDraft.agent = agent.value
 			actionDraft.decision = decision.value as ReviewDecision | ''
 			const p = name.value.trim() ? problem() : null
-			hint.textContent = p ?? '押すと解決済みにして、ひとことの頭に名前を書きます（review/_actions.md）'
+			hint.textContent = p ?? (fixing ? `「${fixing}」を直しています（名前を押すと足すに戻る）。解決済みの指摘のひとことはそのまま` : '押すと解決済みにして、ひとことの頭に名前を書きます。名前を押すと直せます（review/_actions.md）')
 			hint.classList.toggle('warn', !!p)
 			add.disabled = busy || !!problem()
 		}
@@ -715,24 +730,32 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		return box
 	}
 
+	/** 直すのをやめる（読み込んだ中身も欄から消す。足す書きかけは残す）。 */
+	function stopFixing() {
+		if (fixing) Object.assign(actionDraft, { label: '', agent: '', decision: '' })
+		fixing = null
+	}
+
 	async function addChoice() {
 		if (busy) return
 		const a = { label: actionDraft.label.trim(), agent: actionDraft.agent.trim(), ...(actionDraft.decision ? { decision: actionDraft.decision } : {}) }
 		busy = true
 		setBusy()
-		const r = await o.call({ op: 'add-action', ...a })
+		const from = fixing
+		const r = await o.call(from ? { op: 'update-action', from, ...a } : { op: 'add-action', ...a })
 		busy = false
 		if (closed) return
 		if (!r.ok) {
-			popError = `選択肢を足せません: ${r.error}`
+			popError = `選択肢を${from ? '直せません' : '足せません'}: ${r.error}`
 			return renderPop()
 		}
 		accept(r)
 		popError = null
+		fixing = null
 		Object.assign(actionDraft, { label: '', agent: '', decision: '' })
 		focusField = 'action-label'
 		renderPop()
-		toast(`「${a.label}」を足しました`)
+		toast(from ? `「${from}」を直しました` : `「${a.label}」を足しました`)
 	}
 
 	async function removeChoice(a: ReviewAction) {
@@ -891,8 +914,8 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		b.dataset.tier = priorityTier(v.priority)
 		b.append(el('span', 'chip', String(numberOf(v.id))), el('span', 'row-title', v.title))
 		// 解決済みは、どのボタンで解決済みにしたか（直さない・足した選択肢・Feedback に送った）を小さく添える。
-		const head = v.status === 'resolved' ? noteHead(v.note) : ''
-		if (head && (head === KEEP_NOTE || head === REVIEW_SENT_NOTE || actions.some((a) => a.label === head))) b.append(el('span', 'row-tag', head === REVIEW_SENT_NOTE ? '直してもらう' : head))
+		const by = v.status === 'resolved' ? matchNote(v.note, [KEEP_NOTE, REVIEW_SENT_NOTE, ...actions.map((a) => a.label)])?.name : undefined
+		if (by) b.append(el('span', 'row-tag', by === REVIEW_SENT_NOTE ? '直してもらう' : by))
 		const t = targets.get(v.id)
 		const meta = !v.line ? 'ページ' : v.place === 'lost' ? '見つからない' : v.place === 'no-file' ? 'ファイル無し' : !t && onPage(v, { pathname: location.pathname, source, base }) ? `${formatLine(v.line)}・本文の外` : formatLine(v.line)
 		b.append(el('span', `row-meta${v.place === 'lost' || v.place === 'no-file' ? ' warn' : ''}`, meta))

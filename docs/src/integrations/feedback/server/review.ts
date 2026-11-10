@@ -4,7 +4,7 @@ import { randomBytes } from 'node:crypto'
 import { mkdir, open, readdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
 import { isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { EVENT_REVIEW_REQUEST, EVENT_REVIEW_RESULT, REVIEW_LINK_LABEL, REVIEW_SENT_NOTE, type ReviewAction, type ReviewDecision, type ReviewRequest, type ReviewResult, type ReviewSetView, type ReviewView, type SavePayload, type Section } from '../core/protocol'
-import { ACTIONS_FILE, addAction, parseActions, removeAction } from '../review/actions'
+import { ACTIONS_FILE, addAction, parseActions, removeAction, updateAction } from '../review/actions'
 import { applyStatus, CONTENT_DIR, NOTE_CHARS, parseReview, relocate, removeItem, SET_NAME, splitLines, textHints, type ReviewItem, type StatusPatch } from '../review/model'
 
 export type ReviewData = { sets: ReviewSetView[]; items: ReviewView[]; root: string; actions: ReviewAction[]; actionErrors: string[] }
@@ -197,6 +197,12 @@ export function createReviewStore(dir: string, repoRoot: string) {
 		remove: (id: string) => rewrite(id, (name, text) => removeItem(name, text, id)),
 		/** 人が選択肢を足す（`_actions.md` が無ければ作る）。 */
 		addAction: (a: ReviewAction) => rewriteActions((text) => addAction(text, a)),
+		/** 人が選択肢を直す（その場で書き換える）。 */
+		updateAction: (from: string, a: ReviewAction) =>
+			rewriteActions((text) => {
+				if (text === null) throw new Error(`選択肢がありません: ${from}`)
+				return updateAction(text, from, a)
+			}),
 		/** 人が選択肢を消す。 */
 		removeAction: (label: string) =>
 			rewriteActions((text) => {
@@ -215,12 +221,15 @@ export function checkReviewRequest(v: unknown): { ok: true; req: ReviewRequest }
 	const fail = (reason: string) => ({ ok: false as const, requestId, reason })
 	if (!requestId) return fail('requestId が不正です')
 	if (o.op === 'load') return { ok: true, req: { requestId, op: 'load' } }
-	if (o.op === 'add-action' || o.op === 'remove-action') {
+	if (o.op === 'add-action' || o.op === 'update-action' || o.op === 'remove-action') {
 		if (typeof o.label !== 'string' || o.label.length === 0 || o.label.length > 200) return fail('label が不正です')
 		if (o.op === 'remove-action') return { ok: true, req: { requestId, op: 'remove-action', label: o.label } }
 		if (typeof o.agent !== 'string' || o.agent.length > 2000) return fail('agent が不正です')
 		if (o.decision !== undefined && typeof o.decision !== 'string') return fail('decision が不正です')
-		return { ok: true, req: { requestId, op: 'add-action', label: o.label, agent: o.agent, ...(o.decision ? { decision: o.decision as ReviewDecision } : {}) } }
+		const a = { label: o.label, agent: o.agent, ...(o.decision ? { decision: o.decision as ReviewDecision } : {}) }
+		if (o.op === 'add-action') return { ok: true, req: { requestId, op: 'add-action', ...a } }
+		if (typeof o.from !== 'string' || o.from.length === 0 || o.from.length > 200) return fail('from が不正です')
+		return { ok: true, req: { requestId, op: 'update-action', from: o.from, ...a } }
 	}
 	if (o.op !== 'resolve' && o.op !== 'reopen' && o.op !== 'send' && o.op !== 'unsend') return fail('op が不正です')
 	if (typeof o.id !== 'string' || o.id.length === 0 || o.id.length > 200) return fail('id が不正です')
@@ -271,6 +280,7 @@ export function createReviewHandler(store: ReviewStore, feedback?: ReviewFeedbac
 		try {
 			let sent: string | undefined
 			if (req.op === 'add-action') await store.addAction({ label: req.label, agent: req.agent, ...(req.decision ? { decision: req.decision } : {}) })
+			else if (req.op === 'update-action') await store.updateAction(req.from, { label: req.label, agent: req.agent, ...(req.decision ? { decision: req.decision } : {}) })
 			else if (req.op === 'remove-action') await store.removeAction(req.label)
 			else if (req.op === 'resolve') await store.resolve(req.id, req.note)
 			else if (req.op === 'reopen') await store.reopen(req.id)

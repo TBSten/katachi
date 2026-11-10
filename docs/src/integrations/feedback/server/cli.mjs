@@ -197,7 +197,7 @@ const lineText = (v) => (v.line ? `:${v.line.start === v.line.end ? v.line.start
 async function review([sub, id], flags, dir) {
 	const { createReviewStore, REVIEW_SUBDIR } = await import(pathToFileURL(resolve(here, 'review.ts')).href)
 	const { pageUrlOf } = await import(pathToFileURL(resolve(here, '../review/model.ts')).href)
-	const { noteHead, ACTIONS_FILE } = await import(pathToFileURL(resolve(here, '../review/actions.ts')).href)
+	const { matchNote, ACTIONS_FILE } = await import(pathToFileURL(resolve(here, '../review/actions.ts')).href)
 	const { base: docsBase } = await import(pathToFileURL(resolve(here, '../../../lib/versions.mjs')).href)
 	const store = createReviewStore(resolve(dir, REVIEW_SUBDIR), repoRoot)
 	const data = await store.load()
@@ -213,7 +213,7 @@ async function review([sub, id], flags, dir) {
 		if (!['open', 'resolved', 'all'].includes(status)) throw new Error(`--status は open / resolved / all のどれか: ${status}`)
 		const action = typeof flags.action === 'string' ? flags.action.trim() : ''
 		if (action && !['直さない', 'Feedback に送った', ...data.actions.map((a) => a.label)].includes(action)) console.log(`（「${action}」という選択肢はありません。review actions で名前を確かめてください）`)
-		const rows = data.items.filter((v) => (status === 'all' || v.status === status) && (!action || (v.status === 'resolved' && noteHead(v.note) === action)))
+		const rows = data.items.filter((v) => (status === 'all' || v.status === status) && (!action || (v.status === 'resolved' && matchNote(v.note, [action, '直さない', 'Feedback に送った', ...data.actions.map((a) => a.label)])?.name === action)))
 		if (flags.json) return console.log(JSON.stringify(rows, null, 2))
 		if (!data.sets.length) return console.log(`（指摘のファイルがありません: ${store.dir}）`)
 		for (const v of rows) {
@@ -227,7 +227,8 @@ async function review([sub, id], flags, dir) {
 
 	if (sub === 'actions') {
 		if (flags.json) return console.log(JSON.stringify({ actions: data.actions, errors: data.actionErrors }, null, 2))
-		const n = (label) => data.items.filter((v) => v.status === 'resolved' && noteHead(v.note) === label).length
+		const names = ['直さない', ...data.actions.map((a) => a.label)]
+		const n = (label) => data.items.filter((v) => v.status === 'resolved' && matchNote(v.note, names)?.name === label).length
 		console.log(`初めからの選択肢: 直さない（${n('直さない')} 件。確かめずに review remove）/ 直してもらう（Feedback の消化で直して archive）/ 解決済みにする（確かめて remove か reopen）`)
 		if (!data.actions.length) console.log(`人が足した選択肢はありません（${resolve(store.dir, ACTIONS_FILE)}）`)
 		for (const a of data.actions) console.log([`${a.label}（${n(a.label)} 件）`, a.decision && `判断: ${a.decision}`, `agent: ${a.agent ?? '（書かれていません。人に聞く）'}`].filter(Boolean).join(' | '))
@@ -248,7 +249,8 @@ async function review([sub, id], flags, dir) {
 			`- 場所: ${v.file}${lineText(v)}${v.place === 'moved' ? `（書かれた行 ${lineText({ line: v.written }).slice(1)} から動かした）` : ''}${v.place === 'lost' ? '（quote が今のソースに見つからない。もう直っているかも）' : ''}${v.place === 'no-file' ? '（ファイルが無い）' : ''}`,
 			...(v.note ? [`- 人の一言: ${v.note}`] : []),
 			...((() => {
-				const a = v.status === 'resolved' ? data.actions.find((x) => x.label === noteHead(v.note)) : undefined
+				const m = v.status === 'resolved' ? matchNote(v.note, data.actions.map((x) => x.label)) : null
+				const a = m ? data.actions.find((x) => x.label === m.name) : undefined
 				return a ? [`- 人が選んだ: ${a.label}（${a.agent ? `agent: ${a.agent}` : 'agent への一言が無い。人に聞く'}${a.decision ? `・判断: ${a.decision}` : ''}）`] : []
 			})()),
 			...(v.aiNote ? [`- agent の一言: ${v.aiNote}`] : []),

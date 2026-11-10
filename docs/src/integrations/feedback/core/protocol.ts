@@ -139,6 +139,8 @@ export type ReviewRequest =
 	| { requestId: string; op: 'unsend'; id: string; record: string }
 	/** 人が popup の「＋」で選択肢を足す（`review/_actions.md` に書き足す）。 */
 	| { requestId: string; op: 'add-action'; label: string; agent: string; decision?: ReviewDecision }
+	/** 人が選択肢を直す（名前が from の選択肢を、その場で書き換える）。 */
+	| { requestId: string; op: 'update-action'; from: string; label: string; agent: string; decision?: ReviewDecision }
 	/** 人が選択肢を消す。 */
 	| { requestId: string; op: 'remove-action'; label: string }
 

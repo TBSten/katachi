@@ -71,6 +71,9 @@ button, input { font: inherit; }
 .actions-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 12px; }
 .action-list { display: flex; flex-wrap: wrap; gap: 4px; }
 .action-chip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 2px 1px 8px; font-size: 12px; background: var(--bg); border: 1px dashed var(--border-strong); border-radius: 12px; }
+.action-chip.is-on { border-style: solid; border-color: var(--p-done); }
+.action-pick { padding: 0; font: inherit; color: var(--fg); background: none; border: 0; cursor: pointer; }
+.action-pick:hover { text-decoration: underline dotted; }
 .action-decision { padding: 0 5px; font-size: 10px; color: var(--muted); border: 1px solid var(--border); border-radius: 8px; }
 .action-x { width: 20px; height: 20px; padding: 0; font-size: 13px; line-height: 1; color: var(--fg-2); background: none; border: 0; border-radius: 10px; cursor: pointer; }
 .action-x:hover:not(:disabled) { background: var(--hover); }

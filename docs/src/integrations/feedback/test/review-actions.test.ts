@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { actionOfNote, addAction, LABEL_CHARS, labelProblem, MAX_ACTIONS, noteHead, noteOf, parseActions, removeAction } from '../review/actions'
+import { actionOfNote, addAction, LABEL_CHARS, labelProblem, matchNote, MAX_ACTIONS, noteHead, noteOf, parseActions, removeAction, updateAction } from '../review/actions'
 
 const FILE = `# Review の選択肢
 
@@ -82,6 +82,20 @@ describe('addAction / removeAction', () => {
 	})
 })
 
+describe('updateAction', () => {
+	it('その場で書き換える。並びとメタの後ろの人のメモは変えない', () => {
+		const out = updateAction(FILE, '後で', { label: 'v0.5 で', agent: 'v0.5 のチケットへ' })
+		expect(parseActions(out).actions).toEqual([{ label: 'v0.5 で', agent: 'v0.5 のチケットへ' }, { label: 'このまま' }])
+		expect(out).toContain('## v0.5 で\n- agent: v0.5 のチケットへ\n\n人向けのメモ（読まない）')
+		expect(updateAction(FILE, '後で', { label: '後で', agent: 'v0.5 に積む', decision: '後で' })).toContain('## 後で\n- agent: v0.5 に積む\n- decision: 後で\n\n人向けのメモ')
+	})
+	it('ほかの選択肢と同じ名前・使えない名前・無い選択肢は投げる', () => {
+		expect(() => updateAction(FILE, '後で', { label: 'このまま' })).toThrow(/もうあります/)
+		expect(() => updateAction(FILE, '後で', { label: 'a:b' })).toThrow(/「:」/)
+		expect(() => updateAction(FILE, 'nope', { label: 'x' })).toThrow(/ありません/)
+	})
+})
+
 describe('note', () => {
 	it('名前とひとことを「: 」でつなぐ。頭を取り出せる', () => {
 		expect(noteOf('後で', '')).toBe('後で')
@@ -92,5 +106,16 @@ describe('note', () => {
 		const actions = parseActions(FILE).actions
 		expect(actionOfNote('このまま: 読みやすい', actions)?.label).toBe('このまま')
 		expect(actionOfNote('直した', actions)).toBeNull()
+	})
+	it('手で付けた「名前（理由）」「名前 理由」も受ける。長い名前から合わせる（decisions.py の note_choice と同じ）', () => {
+		const names = ['直さない', 'PR', 'PR #65 待ち']
+		expect(matchNote('直さない（前の文で通じる）', names)).toEqual({ name: '直さない', reason: '前の文で通じる' })
+		expect(matchNote('直さない (ok)', names)).toEqual({ name: '直さない', reason: 'ok' })
+		expect(matchNote('直さない 誤検知', names)).toEqual({ name: '直さない', reason: '誤検知' })
+		expect(matchNote('直さない：誤検知', names)).toEqual({ name: '直さない', reason: '誤検知' })
+		expect(matchNote('直さない', names)).toEqual({ name: '直さない', reason: '' })
+		expect(matchNote('直さないでほしい', names)).toBeNull()
+		expect(matchNote('PR #65 待ち 消えたら remove', names)).toEqual({ name: 'PR #65 待ち', reason: '消えたら remove' })
+		expect(matchNote(undefined, names)).toBeNull()
 	})
 })

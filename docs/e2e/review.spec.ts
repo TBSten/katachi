@@ -261,6 +261,13 @@ test('人が足した選択肢: ボタンが並び、押すとひとことの頭
 	ok('一覧からも消える', await waitFor(async () => (await u('.pop .action-chip').count()) === 1))
 	await fb.act(u('.toast .btn').filter({ hasText: '戻す' }))
 	ok('トーストの「戻す」で足し直す', await waitFor(() => readActions().includes('## PR #65 待ち\n')), readActions())
+	// 名前を押すと欄に読み込んで直せる
+	await fb.act(u('.pop .action-chip .action-pick').filter({ hasText: 'PR #65 待ち' }))
+	ok('名前を押すと欄に読み込み、ボタンが「直す」になる', (await u('.pop .action-form input').first().inputValue()) === 'PR #65 待ち' && (await u('.pop .action-form .btn').textContent()) === '直す')
+	await u('.pop .action-form input').nth(1).fill('マージ後に見直す')
+	await fb.act(u('.pop .action-form .btn'))
+	ok('直すと _actions.md のその場所を書き換える', await waitFor(() => readActions().includes('## PR #65 待ち\n- agent: マージ後に見直す\n- decision: 後で\n')), readActions())
+	ok('直したあとは足すに戻る', await waitFor(async () => (await u('.pop .action-form .btn').textContent()) === '足す' && (await u('.pop .action-form input').first().inputValue()) === ''))
 	await fb.act(u('.pop .actions-top .btn'))
 	ok('「閉じる」で編集を閉じ、足した選択肢がボタンで並ぶ', (await u('.pop .actions-edit').isHidden()) && (await u('.pop .act .btn.custom').count()) === 2)
 	await fb.shot('review-actions-3-added')

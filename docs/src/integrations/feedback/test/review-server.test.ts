@@ -142,6 +142,7 @@ describe('Review の受け口', () => {
 		expect((added as { sets: unknown[] }).sets).toHaveLength(1)
 		expect(await h({ requestId: 'r3', op: 'add-action', label: '後で', agent: '' })).toMatchObject({ ok: false, error: expect.stringMatching(/もうあります/) })
 		expect(await h({ requestId: 'r4', op: 'add-action', label: '直さない', agent: '' })).toMatchObject({ ok: false, error: expect.stringMatching(/初めから/) })
+		expect(await h({ requestId: 'r4b', op: 'update-action', from: '後で', label: '後で', agent: 'v0.5 で見直す' })).toMatchObject({ ok: true, actions: [{ label: '後で', agent: 'v0.5 で見直す' }] })
 		expect(await h({ requestId: 'r5', op: 'remove-action', label: '後で' })).toMatchObject({ ok: true, actions: [] })
 		expect(await h({ requestId: 'r6', op: 'remove-action', label: '後で' })).toMatchObject({ ok: false })
 		await writeFile(join(dir, '_actions.md'), '## a:b\n')
@@ -194,6 +195,7 @@ describe('Review の受け口', () => {
 		[{ requestId: 'r', op: 'add-action', label: 'x' }, /agent/],
 		[{ requestId: 'r', op: 'add-action', label: 'x', agent: '', decision: 1 }, /decision/],
 		[{ requestId: 'r', op: 'remove-action' }, /label/],
+		[{ requestId: 'r', op: 'update-action', label: 'x', agent: '' }, /from/],
 	])('形の違う依頼を断る %#', (req, re) => {
 		const c = checkReviewRequest(req)
 		expect(c.ok).toBe(false)

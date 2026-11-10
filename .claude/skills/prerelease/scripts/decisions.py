@@ -186,10 +186,18 @@ def load_actions(review_path):
     return {e.title: e.meta["decision"] for e in entries if e.meta.get("decision") in DECISIONS and not re.search(r"[:：]", e.title)}
 
 
-def note_head(note):
-    """note の頭（「: 」の手前）と、その後ろ（ひとこと）。"""
-    parts = re.split(r"[:：]", note or "", maxsplit=1)
-    return parts[0].strip(), (parts[1] if len(parts) > 1 else "").strip()
+def note_choice(note, names):
+    """note がどの名前で始まるかと、その後ろの理由（review/actions.ts の matchNote と同じ読み方）。
+
+    popup は `名前` / `名前: 理由` と書く。手で付けた `名前（理由）`・`名前 (理由)`・`名前 理由` も理由付きとして受ける。
+    名前は長いものから試す（`PR #65 待ち` と `PR` のように頭が重なっても、長い方に合わせる）。合わなければ (None, "")。
+    """
+    note = (note or "").strip()
+    for name in sorted(names, key=len, reverse=True):
+        m = re.match(r"^%s(?:\s*[:：]\s*(.*)|\s*[（(](.*)[）)]|\s+(.*))?$" % re.escape(name), note, re.S)
+        if m:
+            return name, next((g for g in m.groups() if g), "").strip()
+    return None, ""
 
 
 # ---- 判断を読む ----
@@ -369,8 +377,8 @@ def cmd_match(args):
     return 0
 
 
-def render_decision(f, decided, by, decision="直さない", label=None):
-    head, reason = note_head(f.meta.get("note", ""))
+def render_decision(f, decided, by, decision="直さない", label="直さない"):
+    _, reason = note_choice(f.meta.get("note", ""), [label])
     lines = [f"## {decision}: {f.title}", f"- decision: {decision}", f"- file: {unquote(f.meta['file'])}"]
     if f.quote:
         lines.append(f"- quote: {f.quote}")
@@ -399,7 +407,7 @@ def cmd_record_review(args):
     choices = {"直さない": "直さない", **load_actions(path)}
     added, already, to_remove = [], 0, []
     for f, rid in zip(findings, ids):
-        label, _ = note_head(f.meta.get("note", ""))
+        label, _ = note_choice(f.meta.get("note", ""), choices)
         decision = choices.get(label)
         if f.meta.get("status") != "resolved" or not decision:
             continue

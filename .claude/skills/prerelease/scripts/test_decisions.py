@@ -146,6 +146,20 @@ class DecisionsTest(unittest.TestCase):
         # 写した判断は形の検査を通る（「後で」の revisit も入っている）
         self.assertEqual([e.errors for e in D.load_decisions(self.dir) if e.errors], [])
 
+    def test_note_with_reason_in_parentheses_or_after_a_space(self):
+        # 手で付けた note（「直さない（理由）」「直さない 理由」）も理由付きの「直さない」として受ける。333 で 10 件漏れた形
+        self.assertEqual(D.note_choice("直さない（前の文で通じる）", ["直さない"]), ("直さない", "前の文で通じる"))
+        self.assertEqual(D.note_choice("直さない (ok)", ["直さない"]), ("直さない", "ok"))
+        self.assertEqual(D.note_choice("直さない 誤検知", ["直さない"]), ("直さない", "誤検知"))
+        self.assertEqual(D.note_choice("直さない：誤検知", ["直さない"]), ("直さない", "誤検知"))
+        self.assertEqual(D.note_choice("直さない", ["直さない"]), ("直さない", ""))
+        self.assertEqual(D.note_choice("直さないでほしい", ["直さない"]), (None, ""))
+        self.assertEqual(D.note_choice("PR #65 待ち 消えたら remove", ["PR", "PR #65 待ち"]), ("PR #65 待ち", "消えたら remove"))
+        self.review.write_text(REVIEW.replace("- note: 直さない: 前の文で並べているので通じる", "- note: 直さない（前の文で並べているので通じる）"), encoding="utf-8")
+        code, out = run("--dir", str(self.dir), "record-review", str(self.review), "--decided", "2026-11-10 t KATACHI-341")
+        self.assertIn("写した 2 件", out)
+        self.assertIn("利用者の一言: 前の文で並べているので通じる", (self.dir / "docs.md").read_text(encoding="utf-8"))
+
     def test_review_ids_honor_pinned_id(self):
         # popup が印を付けた指摘は `- id:` で固定され、前の同じ見出しを消しても id がずれない（review/model.ts と同じ）
         entries, _ = D.parse(REVIEW, "s", D.REVIEW_KEYS)
