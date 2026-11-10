@@ -19,6 +19,8 @@ from pathlib import Path
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "check-docs-against-impl" / "scripts"))
 import public_api  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import decisions  # noqa: E402
 
 MAVEN_METADATA = "https://repo1.maven.org/maven2/me/tbsten/katachi/katachi/maven-metadata.xml"
 TEMPLATE = Path(__file__).resolve().parent.parent / "prerelease-check-list.md"
@@ -42,8 +44,12 @@ def maven_versions():
     return re.findall(r"<version>([^<]+)</version>", xml), None
 
 
-def fill_template(text, version, previous, previous_note, release_dir):
+def fill_template(text, version, previous, previous_note, release_dir, judged=None):
     text = text.replace("release-v0.0.0", release_dir.name)
+    if judged:
+        # 過去の判断（decisions/）の件数・問題・見直す条件
+        text = text.replace("過去の判断（decisions/）: {TODO} 件 / 問題 {TODO} 件 / 見直す条件 {TODO} 件",
+                            "過去の判断（decisions/）: %d 件 / 問題 %d 件 / 見直す条件 %d 件" % judged, 1)
     text = re.sub(r"(今回のリリースバージョン: )\{TODO\}", lambda m: m.group(1) + version, text, count=1)
     text = re.sub(r"(直前のリリースバージョン: )\{TODO\}",
                   lambda m: m.group(1) + (previous or "（無し）") + previous_note, text, count=1)
@@ -98,6 +104,7 @@ def main():
         print("      利用者に「本当にこの版で出すか」を確かめる。版を上げずに続けるなら --force を付けて作り直す")
         return 1
 
+    found, problems, revisits = decisions.inspect(root)
     release_dir = root / ".local" / f"release-v{version}"
     release_dir.mkdir(parents=True, exist_ok=True)
     checklist = release_dir / "prerelease-check-list.md"
@@ -105,12 +112,17 @@ def main():
         print(f"作業場所:            {release_dir.as_uri()}（既にある。チェックリストは上書きしなかった）")
     else:
         checklist.write_text(
-            fill_template(TEMPLATE.read_text(encoding="utf-8"), version, previous, note, release_dir),
+            fill_template(TEMPLATE.read_text(encoding="utf-8"), version, previous, note, release_dir,
+                          (len(found), len(problems), len(revisits))),
             encoding="utf-8",
         )
         print(f"作業場所:            {release_dir.as_uri()}（新しく作った）")
     print(f"チェックリスト:      {checklist.as_uri()}")
     print(f"基準（直前のタグ）:  {tag or '（無し）'}")
+    print(f"過去の判断:          {len(found)} 件（{decisions.counts_text(found)}）/ 問題 {len(problems)} 件 / 見直す条件 {len(revisits)} 件"
+          "（decisions/。手順ごとに渡す。詳細は decisions.py check）")
+    for line in problems + revisits:
+        print(f"  {line}")
     return 0
 
 

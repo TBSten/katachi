@@ -17,5 +17,7 @@ python3 .claude/skills/prerelease/scripts/run-ci-checks.py --release-dir .local/
   にコマンドごとのログを書く
 - **オーケストレータが自分で走らせてよい**（判断の要らない作業。background で起動し、終わったら結果の表だけ読む）
 - 前提: Android SDK（ルートの `local.properties` か `ANDROID_HOME`）と、IDE プラグイン用の JDK 21
-- 1つでも落ちたら priority 10 の警告にする（リリースしてはいけない状態）。落ちたステップのログの末尾から原因を1〜2行で書く
+- 1つでも落ちたら priority 10 の警告にする（リリースしてはいけない状態）。落ちたステップのログの末尾から原因を1〜2行で書く。
+  [decisions/environment.md](../decisions/environment.md) の環境要因（クラウドの root で落ちる spec、届かない Android SDK など）に
+  該当し、Mac か CI で通ることを確かめたものだけは、警告にせず「環境要因」と書く
 - prerelease-check-list.md には、通った数 / 全体と、落ちたステップだけを書く

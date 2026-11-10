@@ -143,5 +143,8 @@ Gradle を使わず数秒で終わり、ファイルを書き換えないので�
 
 ## 共通
 
-- 10-1・10-2 は1つでも落ちたら priority 10 の警告にする（8・9-1 と同じ扱い。リリースしてはいけない状態）。10-3・10-4 は各節の priority
+- 10-1・10-2 は1つでも落ちたら priority 10 の警告にする（8・9-1 と同じ扱い。リリースしてはいけない状態）。10-3・10-4 は各節の priority。
+  ただし [decisions/environment.md](../decisions/environment.md) の環境要因に該当し、別の起動のしかた（手元のターミナル・CI）で
+  通ることを確かめたものは、警告にせず「環境要因」と書く
+- 10-3・10-4 の subagent には [decisions/ide-plugin.md](../decisions/ide-plugin.md) を渡し、過去の判断と同じものは「過去の判断どおり」に並べさせる
 - prerelease-check-list.md には、10-1 は通った/落ちたとシード・scale を、10-2 は通った/落ちたを、10-3 は zip の名前と plugin.xml の版を、10-4 は区分ごとの直し忘れの件数を書く
