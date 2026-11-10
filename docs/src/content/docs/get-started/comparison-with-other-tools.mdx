@@ -74,8 +74,6 @@ You can write the nature of a role as an allow list of the declarations its file
 <details>
 <summary>A `UseCase` has exactly one `invoke` function</summary>
 
-This is the definition of the role itself.
-
 ```kt nocollapse
 "UseCase".role {
   layout {
@@ -176,7 +174,7 @@ This stops layer leaks from the contents side. Only the `import` lines you write
 This keeps serializable types from being missed.
 
 ```kt nocollapse
-"DataModel".role {
+"Dto".role {
   layout {
     "src/main/kotlin/com/example/data" / "*Dto".ktFile()
   }

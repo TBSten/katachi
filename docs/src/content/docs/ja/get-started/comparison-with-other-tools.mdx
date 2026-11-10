@@ -74,8 +74,6 @@ Role の性質を、そのファイルに置いてよい宣言の許可リスト
 <details>
 <summary>`UseCase` は `invoke` 関数を1つだけ持つ</summary>
 
-Role の定義そのものです。
-
 ```kt nocollapse
 "UseCase".role {
   layout {
@@ -176,7 +174,7 @@ Role の定義そのものです。
 シリアライズ対象の取りこぼしを防ぎます。
 
 ```kt nocollapse
-"DataModel".role {
+"Dto".role {
   layout {
     "src/main/kotlin/com/example/data" / "*Dto".ktFile()
   }
