@@ -205,3 +205,22 @@ AGENTS の木では [AI生成] なのにページに印が無い、という指�
 
 - 該当: mermaid の `D -.-> C["自作 Processor<br/>集計・抽出・別形式への出力"]` と、その後の段落「テストとドキュメントは katachi が用意しているものですが、**この2つに限りません。** … ArchitectureProcessor とそのカスタマイズ を参照してみてください。」
 - 直し方の案: 図の点線の枝と、最後の段落（processor への案内）を外す。残すなら「やりたい人だけ」の位置づけで `<details>` にする
+
+## 方針: Role に summary が無い（B10・要確認）
+- decision: 方針
+- file: **
+- match: summary.{0,12}無い
+- rule: B10（Role には title と summary を書く）
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（チャット）
+- revisit: 利用者が summary の扱いを決め直したとき（「一旦」の判断なので、求めると言われたらこの方針を消す）
+
+利用者の一言: 「summary がない系も 一旦直さないでいいや」
+
+範囲: docs・README の例の Role に summary が無い、という指摘は出さない。断片の例・「まとめ」の完成形・README の例のどれでも同じ。
+`summary・layout の無い Role` のように layout の無さと一緒に挙がった指摘も、summary の部分はこの方針で外す
+（layout が無いことだけが問題の指摘は、見出しに summary が出ないので外れない）。
+
+元の指摘（261109-01 の手順 11、10 件）: get-started/motivation・comparison-with-other-tools の Role（上の「直さない」3 件）、
+guides/layout の「まとめ」の UseCase Role、完成形の Role 3 件（kt-file-content 2・generate-code-from-template）、
+processor の summary・layout の無い Role、diff-report の Role、README.ja.md の Role。
