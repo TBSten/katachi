@@ -164,14 +164,13 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
         `architecture-test/src/test/kotlin/<package>/ProjectArchitecture.kt` is the entry point.
 
         ```kotlin
-        // Example
         @file:OptIn(ExperimentalKatachiApi::class)
 
         package com.example
 
         import me.tbsten.katachi.ExperimentalKatachiApi
         import me.tbsten.katachi.dsl.architecture
-        import me.tbsten.katachi.dsl.gradle.gradle
+        import me.tbsten.katachi.dsl.gradle.*
         import me.tbsten.katachi.dsl.kotlin.ktFile
 
         val projectArchitecture = architecture {
@@ -282,7 +281,7 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
 To keep the quality up, run the katachi architecture test regularly by wiring it into CI.
 
 <Tabs>
-    <TabItem label="Github Actions">
+    <TabItem label="GitHub Actions">
         Add a workflow file like this one.
 
         ```yaml nocollapse title=".github/workflows/architecture.yml"

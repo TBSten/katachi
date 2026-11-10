@@ -164,14 +164,13 @@ katachi が必要かどうか迷う場合は、先に [モチベーション](/k
         `architecture-test/src/test/kotlin/<パッケージ>/ProjectArchitecture.kt` がエントリーポイントです。
 
         ```kotlin
-        // 例
         @file:OptIn(ExperimentalKatachiApi::class)
 
         package com.example
 
         import me.tbsten.katachi.ExperimentalKatachiApi
         import me.tbsten.katachi.dsl.architecture
-        import me.tbsten.katachi.dsl.gradle.gradle
+        import me.tbsten.katachi.dsl.gradle.*
         import me.tbsten.katachi.dsl.kotlin.ktFile
 
         val projectArchitecture = architecture {
@@ -282,7 +281,7 @@ katachi が必要かどうか迷う場合は、先に [モチベーション](/k
 品質を維持するには、katachi のアーキテクチャテストを CI に組み込み、定期的に実行させることが大切です。
 
 <Tabs>
-    <TabItem label="Github Actions">
+    <TabItem label="GitHub Actions">
         以下のようなワークフローファイルを追加してください。
 
         ```yaml nocollapse title=".github/workflows/architecture.yml"

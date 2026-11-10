@@ -205,3 +205,12 @@ rules:
     specs:
       - from: 行に当たれば通る
         to: 行に一致すれば通る
+
+  # サービス名の表記。「Github」ではなく「GitHub」（2026-11-10 利用者の指摘、KATACHI-340）。URL の github.com は小文字なので当たらない。
+  - expected: GitHub
+    pattern: /\bGithub\b/
+    specs:
+      - from: Github Actions で回す
+        to: GitHub Actions で回す
+      - from: Github issues で受け付けています
+        to: GitHub issues で受け付けています
