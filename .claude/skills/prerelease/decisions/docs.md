@@ -187,6 +187,21 @@ AGENTS の木では [AI生成] なのにページに印が無い、という指�
 
 範囲: ページの終わりの「次のステップ」のカード（とその description）が processor を勧めている・前面に出している、という指摘は出さない。
 
-範囲の外: 本文や FAQ の中で processor を前面に出している指摘（faq の mermaid の「自作 Processor」の枝など）は、同じ D1-7 でもカードではないので、この方針に入れずにいつもどおり見る。
+範囲の外: 本文や FAQ の中で processor を前面に出している指摘は、同じ D1-7 でもカードではないので、この方針に入れずに 1 件ずつ見る（faq の「自作 Processor」の枝は利用者が popup で「直さない」にしたので、下に 1 件として書いてある）。
 
 元の指摘（261109-01 の手順 11、3 件）: guides/generate-code-from-template・document-generation・diff-report の「次のステップ」のカード。
+
+## 直さない: processor を FAQ の中で前面に出している（要確認）
+- decision: 直さない
+- file: ja/get-started/faq.mdx
+- quote: 自作 Processor
+- rule: D1-7（`processor` を前面に出さない。ほとんどの利用者は `assert()` の1行しか触らない）
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 該当: mermaid の `D -.-> C["自作 Processor<br/>集計・抽出・別形式への出力"]` と、その後の段落「テストとドキュメントは katachi が用意しているものですが、**この2つに限りません。** … ArchitectureProcessor とそのカスタマイズ を参照してみてください。」
+- 直し方の案: 図の点線の枝と、最後の段落（processor への案内）を外す。残すなら「やりたい人だけ」の位置づけで `<details>` にする
