@@ -426,7 +426,8 @@ case_removed_commands() {
 	for c in init guide docs data check summary; do
 		out=$(cd "${d}" && "${KATACHI}" agent "${c}" 2>&1)
 		st=$?
-		[ "${st}" -ne 0 ] && ok "katachi agent ${c} は無い（0 以外で終わる）" || ng "katachi agent ${c} は無い（0 以外で終わる）" "st=${st} ${out}"
+		[ "${st}" -ne 0 ] && printf '%s\n' "${out}" | grep -q 'gh skill install TBSten/katachi katachi' &&
+			ok "katachi agent ${c} は無く、skill の入れ方を出す" || ng "katachi agent ${c} は無く、skill の入れ方を出す" "st=${st} ${out}"
 	done
 	out=$("${KATACHI}" agent --help 2>&1)
 	printf '%s\n' "${out}" | grep -q 'katachi agent test' && printf '%s\n' "${out}" | grep -q 'katachi agent compare-violations' &&
