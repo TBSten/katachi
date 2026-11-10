@@ -103,6 +103,7 @@ button, input { font: inherit; }
 .row.is-resolved .chip { background: var(--p-done); }
 .row-title { flex: 1; min-width: 0; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .row-meta { flex: none; font-size: 11px; color: var(--muted); }
+.row-tag { flex: none; max-width: 7em; padding: 0 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; color: var(--fg-2); border: 1px dashed var(--border-strong); border-radius: 8px; }
 .row-meta.warn { color: var(--danger); }
 .empty { font-size: 12px; color: var(--muted); }
 .sets { margin: 10px 0 0; padding-top: 6px; border-top: 1px solid var(--border); font-size: 11px; color: var(--muted); }

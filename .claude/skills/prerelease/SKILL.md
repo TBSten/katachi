@@ -70,7 +70,8 @@ flowchart LR
   「2. 判断してほしい」に前の判断と一緒に載せる。
 - 手順 11 の指摘を Review に登録する前に `decisions.py match <review.md> --drop` で同じものを外す（[references/docs-rules.md](references/docs-rules.md)）。
 - 利用者が答えたら、**その回のうちに** decisions/ に書き足す（TODO.html の「5. 決定済み」に移すのと同じタイミング）。Review の popup の
-  「直さない」は `decisions.py record-review` で写してから `review remove` する。書き足した判断は修正 PR に入れる（無ければ記録だけの PR）。
+  「直さない」と、人が足した選択肢のうち decision の付いたもの（`cli.mjs review actions` で一覧）は `decisions.py record-review` で写してから
+  `review remove` する。decision の無い選択肢は `review actions` の `agent` どおりに扱う。書き足した判断は修正 PR に入れる（無ければ記録だけの PR）。
 
 ## 作業場所の置き方
 

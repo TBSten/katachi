@@ -5,7 +5,7 @@ import { el, isNarrow } from '../shared/dom'
 import { runInsideHost, swallowEscKeyup, inToolbar, onKeyInside } from '../shared/keys'
 import { createHost } from '../shared/shell'
 import { pageSourceFile } from '../shared/srcmap'
-import { actionOfNote, DECISIONS, labelProblem, LABEL_CHARS, MAX_ACTIONS, noteOf } from './actions'
+import { actionOfNote, DECISIONS, labelProblem, LABEL_CHARS, MAX_ACTIONS, noteHead, noteOf } from './actions'
 import { css } from './css'
 import { formatLine, pageUrlOf, priorityTier } from './model'
 import { groupByFile, onPage, parseFilter, passes, PRIORITY_STEPS, shortFile, sortItems, type Filter } from './order'
@@ -364,6 +364,8 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 
 	function closePop() {
 		pop.hidden = true
+		// 選択肢の編集は閉じたら終わり（次に開いた指摘はいつものボタンで出す）。書きかけの名前は actionDraft に残る。
+		editing = false
 		placeToast()
 		drawWire(null, null)
 		panel.classList.remove('has-pop')
@@ -655,14 +657,14 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		const form = el('div', 'action-form')
 		const name = el('input')
 		name.type = 'text'
-		name.placeholder = '名前（ボタンの文字。例: 後で）'
+		name.placeholder = '名前（例: 後で）'
 		name.maxLength = LABEL_CHARS
 		name.value = actionDraft.label
 		name.dataset.field = 'action-label'
 		name.setAttribute('aria-label', '足す選択肢の名前')
 		const agent = el('input')
 		agent.type = 'text'
-		agent.placeholder = 'agent にしてほしいこと（任意）'
+		agent.placeholder = 'agent への一言（任意）'
 		agent.maxLength = 300
 		agent.value = actionDraft.agent
 		agent.dataset.field = 'action-agent'
@@ -888,6 +890,9 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		b.dataset.id = v.id
 		b.dataset.tier = priorityTier(v.priority)
 		b.append(el('span', 'chip', String(numberOf(v.id))), el('span', 'row-title', v.title))
+		// 解決済みは、どのボタンで解決済みにしたか（直さない・足した選択肢・Feedback に送った）を小さく添える。
+		const head = v.status === 'resolved' ? noteHead(v.note) : ''
+		if (head && (head === KEEP_NOTE || head === REVIEW_SENT_NOTE || actions.some((a) => a.label === head))) b.append(el('span', 'row-tag', head === REVIEW_SENT_NOTE ? '直してもらう' : head))
 		const t = targets.get(v.id)
 		const meta = !v.line ? 'ページ' : v.place === 'lost' ? '見つからない' : v.place === 'no-file' ? 'ファイル無し' : !t && onPage(v, { pathname: location.pathname, source, base }) ? `${formatLine(v.line)}・本文の外` : formatLine(v.line)
 		b.append(el('span', `row-meta${v.place === 'lost' || v.place === 'no-file' ? ' warn' : ''}`, meta))

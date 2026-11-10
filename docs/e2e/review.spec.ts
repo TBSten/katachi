@@ -272,6 +272,17 @@ test('人が足した選択肢: ボタンが並び、押すとひとことの頭
 	await sleep(800)
 	if ((await u('.panel').getAttribute('class'))?.includes('is-folded')) await fb.act(u('.panel .fold'))
 	ok('_actions.md の読めない行は、読めない指摘と一緒に出す', /読めない指摘・ファイル 3 件/.test((await u('.errors summary').textContent()) ?? ''), (await u('.errors summary').textContent()) ?? '')
+	// 解決済みも出すと、一覧の行にどのボタンで解決済みにしたかが出る
+	writeSet(SET.replace('- note: 直した', '- note: 後で: v0.5 で'), '## 後で\n')
+	await fb.page.reload({ waitUntil: 'networkidle' })
+	await u('.panel').waitFor({ state: 'visible', timeout: 8000 })
+	await sleep(800)
+	if ((await u('.panel').getAttribute('class'))?.includes('is-folded')) await fb.act(u('.panel .fold'))
+	await fb.act(u('.filters input[type=checkbox]'))
+	await sleep(400)
+	ok('解決済みの行に選んだ名前を添える', (await u('.row.is-resolved .row-tag').textContent()) === '後で', (await u('.row.is-resolved').first().textContent()) ?? '')
+	await fb.shot('review-actions-4-list')
+	await fb.act(u('.filters input[type=checkbox]'))
 	rmSync(actionsFile(), { force: true })
 })
 

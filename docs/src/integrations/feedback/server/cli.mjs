@@ -212,6 +212,7 @@ async function review([sub, id], flags, dir) {
 		const status = flags.status ?? 'all'
 		if (!['open', 'resolved', 'all'].includes(status)) throw new Error(`--status は open / resolved / all のどれか: ${status}`)
 		const action = typeof flags.action === 'string' ? flags.action.trim() : ''
+		if (action && !['直さない', 'Feedback に送った', ...data.actions.map((a) => a.label)].includes(action)) console.log(`（「${action}」という選択肢はありません。review actions で名前を確かめてください）`)
 		const rows = data.items.filter((v) => (status === 'all' || v.status === status) && (!action || (v.status === 'resolved' && noteHead(v.note) === action)))
 		if (flags.json) return console.log(JSON.stringify(rows, null, 2))
 		if (!data.sets.length) return console.log(`（指摘のファイルがありません: ${store.dir}）`)
@@ -246,6 +247,10 @@ async function review([sub, id], flags, dir) {
 			`- 優先度: ${v.priority === null ? '-' : `p${v.priority}`}`,
 			`- 場所: ${v.file}${lineText(v)}${v.place === 'moved' ? `（書かれた行 ${lineText({ line: v.written }).slice(1)} から動かした）` : ''}${v.place === 'lost' ? '（quote が今のソースに見つからない。もう直っているかも）' : ''}${v.place === 'no-file' ? '（ファイルが無い）' : ''}`,
 			...(v.note ? [`- 人の一言: ${v.note}`] : []),
+			...((() => {
+				const a = v.status === 'resolved' ? data.actions.find((x) => x.label === noteHead(v.note)) : undefined
+				return a ? [`- 人が選んだ: ${a.label}（${a.agent ? `agent: ${a.agent}` : 'agent への一言が無い。人に聞く'}${a.decision ? `・判断: ${a.decision}` : ''}）`] : []
+			})()),
 			...(v.aiNote ? [`- agent の一言: ${v.aiNote}`] : []),
 			...(pageUrlOf(v.file, docsBase) ? [`- ページで開く: http://localhost:4321${pageUrlOf(v.file, docsBase)}#review=${v.id}（dev サーバーのポートに合わせる）`] : []),
 			'',
