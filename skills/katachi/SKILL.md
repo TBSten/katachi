@@ -72,6 +72,6 @@ Read `:architecture-test` as the verification module's Gradle path when it is so
 | Document generation | https://tbsten.github.io/katachi/guides/document-generation/ |
 | Code generation from templates | https://tbsten.github.io/katachi/guides/generate-code-from-template/ |
 
-The site's index for agents is https://tbsten.github.io/katachi/llms.txt. The whole site in one file is https://tbsten.github.io/katachi/llms-full.txt; do not read it whole, cut out the page you need. For signatures, read the API reference: https://tbsten.github.io/katachi/api-docs/llms.txt, and the Markdown version of one API's page (its HTML URL with `.md` appended).
+https://tbsten.github.io/katachi/llms.txt is the site's index for agents. The whole site in one file is https://tbsten.github.io/katachi/llms-full.txt; do not read it whole, cut out the page you need. For signatures, read the API reference: https://tbsten.github.io/katachi/api-docs/llms.txt, and the Markdown version of one API's page (its HTML URL with `.md` appended).
 
 `capture()`, `fileConstraint`, `ktFileContent { }`, `.template { }` and `baseline()` are experimental: a file that uses one needs `@file:OptIn(ExperimentalKatachiApi::class)` and `import me.tbsten.katachi.ExperimentalKatachiApi`.

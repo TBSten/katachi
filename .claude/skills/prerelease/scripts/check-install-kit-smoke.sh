@@ -298,7 +298,7 @@ case_test() {
 	out=$(cd "${d}" && "${KATACHI}" agent test --save before-refactor 2>&1)
 	st=$?
 	[ "${st}" -eq 1 ] && ok "test は検査が落ちたら exit 1" || ng "test は検査が落ちたら exit 1" "st=${st} ${out}"
-	printf '%s\n' "${out}" | head -n 1 | grep -q '^JDK: ' && ok "test の先頭は JDK の行" || ng "test の先頭は JDK の行" "$(printf '%s\n' "${out}" | head -n 1)"
+	printf '%s\n' "${out}" | grep -v '^Picked up ' | head -n 1 | grep -q '^JDK: ' && ok "test の先頭は JDK の行" || ng "test の先頭は JDK の行" "$(printf '%s\n' "${out}" | head -n 1)"
 	printf '%s\n' "${out}" | grep -q '^ログ: file://' && printf '%s\n' "${out}" | grep -q '^結果: Katachi check failed: 2 violations' &&
 		ok "test は要約（ログのパスと結果）を出す" || ng "test は要約（ログのパスと結果）を出す" "${out}"
 	[ -s "${w}/tmp/test/latest.log" ] && [ -s "${w}/tmp/test-before-refactor.log" ] && ok "test は latest.log と --save の写しを置く" ||
