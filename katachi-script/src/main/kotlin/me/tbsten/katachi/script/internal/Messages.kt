@@ -373,6 +373,13 @@ internal object Messages {
             en = "Not a subcommand of $AGENT_COMMAND: $command (see $AGENT_COMMAND --help)",
         )
 
+        fun removedForTheSkill(command: Any?): Msg = Msg(
+            ja = "$command は無くなりました。導入と定義の更新は katachi skill の手順で進めます" +
+                "（gh skill install TBSten/katachi katachi か npx skills add TBSten/katachi --skill katachi で入れる）",
+            en = "$command was removed. Installing katachi and updating the definition follow the katachi skill's steps now " +
+                "(get it with gh skill install TBSten/katachi katachi or npx skills add TBSten/katachi --skill katachi)",
+        )
+
         fun unknownSubcommandSeeHelp(command: Any?): Msg = Msg(
             ja = "知らないサブコマンドです: $command（--help を見てください）",
             en = "Unknown subcommand: $command (see --help)",

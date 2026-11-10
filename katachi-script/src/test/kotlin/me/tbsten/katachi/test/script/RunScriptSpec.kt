@@ -62,7 +62,11 @@ class RunScriptSpec : FreeSpec({
         for (command in listOf("init", "guide", "docs", "data", "add", "check", "uncheck", "warn", "verify", "summary", "preferences", "answers")) {
             val run = runCapturing(createTempDirectory("katachi-script-"), listOf("agent", command))
             run.status shouldBe 1
-            run.err shouldContain "katachi agent のサブコマンドではありません: $command"
+            run.err shouldContain "katachi agent $command は無くなりました"
+            run.err shouldContain "gh skill install TBSten/katachi katachi"
+            val top = runCapturing(createTempDirectory("katachi-script-"), listOf(command))
+            top.status shouldBe 1
+            top.err shouldContain "$command は無くなりました"
         }
     }
 

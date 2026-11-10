@@ -2,7 +2,7 @@
 
 Do this only if the user wants it.
 
-**Before you start, read the documentation generation page.** It is at https://tbsten.github.io/katachi/guides/document-generation/ . What the generated pages contain and how to write the output location (`outputDir`) are there. The Role you have to declare when you move the output is in step 3 below, and what `--arg mode=check` does is at the end of 6-B. Do not fetch the whole guide.
+**Before you start, read the documentation generation page.** It is at https://tbsten.github.io/katachi/guides/document-generation/ . What the generated pages contain and how to write the output location (`outputDir`) are there. The Role you have to declare when you move the output is in step 3 below, and what `--arg mode=check` does is at the end of 6-B. Do not fetch the whole site (llms-full.txt).
 
 1. Write `title = "..."` and `description = "..."` at the top of `architecture { }` (skip this if you did in 3-2). They become the heading and body of the root page.
 2. Generate with `./gradlew :architecture-test:katachiDocs` and check `architecture-test/build/katachi/docs/`.

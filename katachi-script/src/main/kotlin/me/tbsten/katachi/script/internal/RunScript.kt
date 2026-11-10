@@ -6,6 +6,14 @@ private val HELP_ANYWHERE = setOf("lint", "compare-violations", "test", "doctor"
 /** `katachi agent <name>`: the commands the katachi skill's steps run (KATACHI-290 / 329). */
 private val AGENT_COMMANDS: Set<String> = COMMAND_SPECS.filter { it.agent }.map { it.name }.toSet()
 
+/**
+ * The agent subcommands the katachi skill replaced (KATACHI-329). Older notes and docs still name them, with or
+ * without `agent`, so they get a pointer to the skill instead of "unknown subcommand".
+ */
+private val REMOVED_FOR_THE_SKILL = setOf(
+    "init", "guide", "docs", "data", "check", "uncheck", "warn", "verify", "add", "preferences", "answers", "summary",
+)
+
 private fun isHelp(arg: String?): Boolean = arg == "-h" || arg == "--help"
 
 internal fun runScript(args: List<String>, context: ScriptContext): Int {
@@ -32,6 +40,8 @@ internal fun runScript(args: List<String>, context: ScriptContext): Int {
 
             command in AGENT_COMMANDS -> die(Messages.RunScript.commandsAiAgentRuns(command))
 
+            command in REMOVED_FOR_THE_SKILL -> die(Messages.RunScript.removedForTheSkill("$CLI_COMMAND $command"))
+
             command in HELP_ANYWHERE && rest.any(::isHelp) -> {
                 context.out(context.usage())
                 0
@@ -55,6 +65,8 @@ private fun ScriptContext.runAgent(args: List<String>): Int {
             out(agentUsage())
             0
         }
+
+        command in REMOVED_FOR_THE_SKILL -> die(Messages.RunScript.removedForTheSkill("$AGENT_COMMAND $command"))
 
         command !in AGENT_COMMANDS -> die(Messages.RunScript.notSubcommandSeeHelp(command))
 

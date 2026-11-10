@@ -17,7 +17,7 @@ Once you've finished reading, mark `3-1` done.
 
 #### When unsure about an API — read the API reference's llms.txt
 
-**When unsure how to write an API, or about its signature or parameters, read the API reference instead of guessing.** This holds in 3-2, 3-3 and 6-D alike. Do not write an API that is not in the guide by guessing from a similar name. As in the table in `references/setup/README.md`, delegate finding the relevant API in the API reference to a subagent, and the main agent receives only the signature and the example.
+**When unsure how to write an API, or about its signature or parameters, read the API reference instead of guessing.** This holds in 3-2, 3-3 and 6-D alike. Do not write an API that is not in the documentation by guessing from a similar name. As in the table in `references/setup/README.md`, delegate finding the relevant API in the API reference to a subagent, and the main agent receives only the signature and the example.
 
 | What to read | URL |
 |---|---|
