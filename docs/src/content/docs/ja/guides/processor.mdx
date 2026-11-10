@@ -201,10 +201,8 @@ process メソッドに渡される `context` には、アーキテクチャ定�
 
 引数が必要ない ArchitectureProcessor の場合は `ArchitectureProcessorNoArg` interface を実装してください。
 
-型引数には実行時の戻り値の型を指定します。
-
 ```kt {2,3}
-// ArchitectureProcessorNoArg を実装した object を定義
+// ArchitectureProcessorNoArg<戻り値の型> を実装した object を定義
 object CountFilesPerRole : ArchitectureProcessorNoArg<Map<String, Int>> {
   override fun process(context: ArchitectureProcessNoArgContext): Result<Map<String, Int>> = runCatching {
     // context.architecture    ... アーキテクチャ定義
@@ -224,18 +222,17 @@ object CountFilesPerRole : ArchitectureProcessorNoArg<Map<String, Int>> {
 
 katachi は引数のパースに [kotlinx.serialization](https://github.com/kotlin/kotlinx.serialization) を使うため、プロジェクトに kotlinx.serialization の依存を追加してください。
 
-```kts {3} title="architecture-test/build.gradle.kts" 
+```kts title="architecture-test/build.gradle.kts" {3}
 plugins {
   kotlin("jvm") version "<kotlin-version>"
   kotlin("plugin.serialization") version "<kotlin-version>"
 }
-```        
+```
 
 引数が必要な ArchitectureProcessor の場合は `ArchitectureProcessor` interface を実装してください。
 
-第1型引数に引数の型、第2型引数に戻り値の型を指定します。
-
-```kt {1, 3, 5, 16-17} nocollapse
+```kt {2, 4, 6, 17-18} nocollapse
+// ArchitectureProcessor<引数の型, 戻り値の型> を実装した object を定義
 object CountFilesPerRole : ArchitectureProcessor<CountFilesPerRole.Args, Map<String, Int>> {
   // --arg で受け取る値の型と、その読み方を渡します
   override val argsSerializer: KSerializer<Args> = Args.serializer()
@@ -360,6 +357,7 @@ object CountFilesPerRole : ArchitectureProcessor<CountFilesPerRole.Args, Map<Str
   data class Args(val prefix: String = "")
 }
 
+/** projectArchitecture.countFilesPerRole() で実行できる */
 fun Architecture.countFilesPerRole(): Map<String, Int> =
   process(CountFilesPerRole, CountFilesPerRole.Args()).getOrThrow()
 ```
