@@ -57,7 +57,26 @@ Answers to `questions` go into `answers` of the same file, keyed by the question
 }
 ```
 
-The user can answer in the browser too: "Questions for you" on each page has an "Export answers" button that saves a JSON file (`{"target": "report", "answers": {"cq1": {"answer": "…", "note": "…"}}}`). Copy its entries into `answers` of that file.
+The user can answer in the browser too, in "Questions for you" on each page, and hand the answers back in one of two ways. Either way, copy the entries into `answers` of that file:
+
+- **"Copy answers"** copies text to paste into the chat: one line saying which file the answers are for, a line listing the ids still open (if any), and a ```` ```json ```` block with `{"target": "report", "answers": {"cq1": {"answer": "…", "note": "…"}}}`.
+- **"Save as JSON"** saves the same JSON as a file (`katachi-answers-report.json` / `katachi-answers-check-list.json`).
+
+`target` is `report` or `check-list`. An entry whose `note` is `null` was a plain pick.
+
+#### Feedback
+
+Both pages also have a **Feedback mode** (the button at the bottom right). The user clicks any item on the page, writes a comment, and copies all comments at once. What you receive looks like this:
+
+```text
+Feedback on the katachi codebase report (project-code-base-report.html), 2 item(s). "Target" is the place in that file's JSON. …
+
+1. 4. Elements (candidate roles) › app › ui › ViewModel
+   Target: roles[name=ViewModel]
+   > feature modules have ViewModels too (feature/*/src/...)
+```
+
+`Target` points into the JSON of the file named on the first line: `roles[name=ViewModel]` is the `roles` entry whose `name` is `ViewModel`, `roles[group=app.ui]` the roles in that group, `steps[id=3].items[id=3-2]` an item of the checklist, `overview.language` a key, `directoryTree: app/src/` a line of the directory tree, and `page` the whole page. For each comment, fix that entry (check the code again if the comment says the facts are wrong), or tell the user why you did not. Then tell the user which ones you changed. The comments stay in their browser until they delete them.
 
 #### Write down what you learn as you go
 
