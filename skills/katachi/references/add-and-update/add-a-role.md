@@ -34,12 +34,12 @@ The `How to fix:` of an `[UnexpectedFile]` suggests a Role named after the file 
 
 ```kt
 "Worker".role {
-    summary = "A WorkManager worker that runs one background job"
-    description = "One class per file, named after the job, extending CoroutineWorker."
-    example("app/src/main/kotlin/com/example/app/work/SyncWorker.kt")
-    layout {
-        "app" / mainSourceSet / kotlin / "com/example/app/work" / "*Worker".ktFile()
-    }
+  summary = "A WorkManager worker that runs one background job"
+  description = "One class per file, named after the job, extending CoroutineWorker."
+  example("app/src/main/kotlin/com/example/app/work/SyncWorker.kt")
+  layout {
+    "app" / mainSourceSet / kotlin / "com/example/app/work" / "*Worker".ktFile()
+  }
 }
 ```
 

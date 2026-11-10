@@ -1,6 +1,6 @@
 # Generate files from a template, or add a template
 
-A Role can carry a `.template { }` on a file declaration in its `layout { }`. `katachiTemplate` then writes a new file **exactly where that declaration says files of the Role go**, so a generated file passes the check from the start.
+A Role can carry a `.template { }` on a file declaration in its `layout { }`. `katachiTemplate` then writes a new file **exactly where that declaration says files of the Role go**, so a generated file causes no violation from the start.
 
 ## Generate a file from an existing template
 

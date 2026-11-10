@@ -12,27 +12,27 @@ Read the documentation before writing one: https://tbsten.github.io/katachi/guid
 | A build file (`build.gradle.kts`, settings, the version catalog) | `fileConstraint("…") { subject -> … }` in a `gradle { }` hook: `buildScript { }`, `settingsScript { }`, `versionCatalog { }` |
 | Any other file's contents | `fileConstraint("…") { subject -> … }` in the Role (`"X".role { fileConstraint(…) { … } }`) |
 
-`ktFileContent { }`, `fileConstraint` and `FileConstraintFailure` are experimental: the file needs `@file:OptIn(ExperimentalKatachiApi::class)` and `import me.tbsten.katachi.ExperimentalKatachiApi`.
+`ktFileContent { }`, `fileConstraint` and `FileConstraintFailure` are experimental: a file that uses one starts with `@file:OptIn(ExperimentalKatachiApi::class)` and `import me.tbsten.katachi.ExperimentalKatachiApi`.
 
 `ktFileContent { }` is allow-list based: the imports and declarations you list are what is allowed, and anything else is a violation. "Must not import X" is written by listing what may be imported and leaving X out.
 
 ```kt
 "ViewModel".role {
-    layout { /* … */ }
+  layout { /* … */ }
 
-    ktFileContent {
-        `package`("com.example.viewModel")
+  ktFileContent {
+    `package`("com.example.viewModel")
 
-        // android.** is not listed, so importing it is a violation
-        `import`("kotlin.**")
-        `import`("kotlinx.coroutines.**")
-        `import`("androidx.lifecycle.**")
-        `import`("com.example.**")
+    // android.** is not listed, so importing it is a violation
+    `import`("kotlin.**")
+    `import`("kotlinx.coroutines.**")
+    `import`("androidx.lifecycle.**")
+    `import`("com.example.**")
 
-        required(`class`, fileName) {
-            allow(anythingElse)
-        }
+    required(`class`, fileName) {
+      allow(anythingElse)
     }
+  }
 }
 ```
 
@@ -46,6 +46,6 @@ If detekt, ktlint, Android Lint or a compiler plugin checks something similar, t
 
 ## Then
 
-Run the check. A new rule often finds existing code that breaks it. Do not loosen the rule to make it pass, and do not rewrite the code without asking: list the violations for the user, with what each would take to fix. If they want to fix them later, the baseline can hold the current ones ([../fix-violations/README.md](../fix-violations/README.md), "Tolerating what is there now").
+Run the check. A new rule often finds existing code that breaks it. Do not loosen the rule to get to 0 violations, and do not rewrite the code without asking: list the violations for the user, with what each would take to fix. If they want to fix them later, the baseline can hold the current ones ([../fix-violations/README.md](../fix-violations/README.md), "Tolerating what is there now").
 
 Then make sure the rule really fires: with a green result, write one temporary file that breaks it, see the violation, and delete the file.

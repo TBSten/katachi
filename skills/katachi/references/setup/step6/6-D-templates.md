@@ -5,68 +5,58 @@ Do this only for the Roles, among the proposals recorded in step 6, that the use
 **Before you start, read the page on generating code from a template.** It is at https://tbsten.github.io/katachi/guides/generate-code-from-template/ . The words `.template { }` offers (the `*Parameter()` functions such as `stringParameter()`), why you don't write the destination path, and what happens when a file already exists are all there. When unsure about a signature, read the llms.txt in "When unsure about an API" in 3-1 instead of guessing (the entry point for `.template { }` is https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.dsl/template.html.md ).
 
 1. Check the proposals (`templates` in the report).
-2. Attach `.template { }` to a file declaration in that Role's `layout { }`. **`.template` is an extension function, so add `import me.tbsten.katachi.dsl.template` to the file you write it in** (`captureValue()` and the like can be used inside the block, so they need no import). **`.template { }`, `capture()` and `captureValue()` are experimental APIs, so also add `@file:OptIn(ExperimentalKatachiApi::class)` and `import me.tbsten.katachi.ExperimentalKatachiApi` to that file.** Without them compilation fails with `This katachi API is experimental. …` (the message says how to opt in). **Base its content on the `basedOn` file.** The destination path comes from the `layout { }` declaration itself, so don't write it on the template's side
+2. Attach `.template { }` to a file declaration in that Role's `layout { }`. **`.template` is an extension function, so add `import me.tbsten.katachi.dsl.template` to the file you write it in** (`captureValue()` and the like can be used inside the block, so they need no import). **`.template { }`, `capture()` and `captureValue()` are experimental APIs, so that file also starts with `@file:OptIn(ExperimentalKatachiApi::class)` and `import me.tbsten.katachi.ExperimentalKatachiApi`.** The examples below show only the Role, without those lines and the imports. **Base its content on the `basedOn` file.** The destination path comes from the `layout { }` declaration itself, so don't write it on the template's side
 
    ```kt
-   @file:OptIn(ExperimentalKatachiApi::class)
-
-   import me.tbsten.katachi.ExperimentalKatachiApi
-   import me.tbsten.katachi.dsl.template
-
    "UseCase".role {
-       layout {
-           "useCase" / "${capture("name")}UseCase".ktFile()
-               .template {
-                   val name = captureValue("name")
-                   """
-                       package com.example.app.domain.useCase
+     layout {
+       "domain/src/main/kotlin/com/example/app/domain/useCase" / "${capture("name")}UseCase".ktFile()
+         .template {
+           val name = captureValue("name")
+           """
+             package com.example.app.domain.useCase
 
-                       interface ${name}UseCase {
-                           suspend operator fun invoke()
-                       }
-                   """.trimIndent()
-               }
-       }
+             interface ${name}UseCase {
+               suspend operator fun invoke()
+             }
+           """.trimIndent()
+         }
+     }
    }
    ```
 
    **For a Role whose destination directory has a wildcard (`*`), name that `*` with `capture()`.** The check's result doesn't change. Attaching `.template { }` to a path that still has an unnamed `*` or `**` fails when layout is expanded (`assert()` in `katachi agent test`). Read the value inside the template with `captureValue("name")` (don't redeclare it with `stringParameter()` — the names collide and it fails)
 
    ```kt
-   @file:OptIn(ExperimentalKatachiApi::class)
-
-   import me.tbsten.katachi.ExperimentalKatachiApi
-   import me.tbsten.katachi.dsl.template
-
    "ViewModel".role {
-       layout {
-           // was "feature" / "*" / mainSourceSet / kotlin / "com/example/app/feature" / "*" / "*ViewModel".ktFile()
-           "feature" / capture("feature") / mainSourceSet / kotlin /
-               "com/example/app/feature" / capture("feature") /
-               "${capture("name")}ViewModel".ktFile()
-                   .template {
-                       val feature = captureValue("feature")   // "home" for --arg feature=home
-                       val name = captureValue("name")         // "Home" for --arg name=Home
+     layout {
+       // was "feature" / "*" / mainSourceSet / kotlin / "com/example/app/feature" / "*" / "*ViewModel".ktFile()
+       "feature" / capture("feature") / mainSourceSet / kotlin /
+         "com/example/app/feature" / capture("feature") /
+         "${capture("name")}ViewModel".ktFile()
+           .template {
+             val feature = captureValue("feature")   // "home" for --arg feature=home
+             val name = captureValue("name")         // "Home" for --arg name=Home
 
-                       """
-                           package com.example.app.feature.$feature
+             """
+               package com.example.app.feature.$feature
 
-                           class ${name}ViewModel
-                       """.trimIndent()
-                   }
-       }
+               class ${name}ViewModel
+             """.trimIndent()
+           }
+     }
    }
    ```
 
    For a directory's `*`, rewrite the `"*"` in `"feature" / "*" / ...` as `capture("feature")`. With more than one `*`, write a `capture()` for each, as in `"feature" / capture("feature") / capture("layer") / ...`.
 
-   **Name every `*` left in the directory part of the destination.** If the module directory's `*` and the package directory's `*` get the same value, as in the example above, write one name (`capture("feature")`) in both. katachi checks that the two places have the same value, and reports a file where they differ as `[CaptureMismatch]`. If the values may differ, give each its own name. If even one unnamed `*` is left, an error occurs when layout is expanded for the file with `.template { }` attached (`assert()` catches it; it doesn't wait for `katachiTemplate` to run).
+   **Name every `*` left in the directory part of the destination.** If the module directory's `*` and the package directory's `*` get the same value, as in the ViewModel example above (`"feature" / capture("feature") / … / "com/example/app/feature" / capture("feature")`), write one name (`capture("feature")`) in both. katachi checks that the two places have the same value, and reports a file where they differ as `[CaptureMismatch]`. If the values may differ, give each its own name. If even one unnamed `*` is left, an error occurs when layout is expanded for the file with `.template { }` attached (`assert()` catches it; it doesn't wait for `katachiTemplate` to run).
 
    **If the package directory's name differs from the module directory's name (module `appConfig` and directory `appconfig`, for example), give that directory's `*` its own name, separate from the module's, and use its `captureValue()` in the package.** If you put the module's name (`captureValue("feature")`) in the package, you write a package that disagrees with its directory, and since both the check and the compiler pass, you won't notice.
 
    All there is to use is `stringParameter()` / `booleanParameter()` / `intParameter()` (optionally with `default = ...`), `enumParameter()` (given `entries` or a default value), plus `capture("name")` — embeddable anywhere in a layout's directory or file name — to name a wildcard in the destination, and, to read its value, `captureValue("name")` (inside the template). Do not add other words by guessing.
 3. A template's own parameters (`--arg name=...`) can be passed as-is, with no setting needed on the module side. What is accepted is exactly the set of names the named Role's `.template { }` declares, plus the names given to wildcards in its `layout { }`; a typo still fails, as before, with `Unknown processor argument(s): ...`
-4. Generate one file, and confirm **the check passes right after**. `--arg template=` takes `group.Role` if there is a group, or just the Role name if there is none.
+4. Generate one file, and confirm **the test succeeds with 0 violations right after**. `--arg template=` takes `group.Role` if there is a group, or just the Role name if there is none.
 
    ```sh
    ./gradlew :architecture-test:katachiTemplate --arg template=UseCase --arg name=Sample
@@ -81,7 +71,7 @@ Do this only for the Roles, among the proposals recorded in step 6, that the use
    ```
 
    If `test` fails, check that the path of the file declaration `.template { }` is attached to is right.
-5. **Delete the generated file, since it was only for checking** (unless the user says to keep it). After deleting it, confirm `katachi agent test` passes once more.
+5. **Delete the generated file, since it was only for checking** (unless the user says to keep it). After deleting it, confirm `katachi agent test` reports 0 violations once more.
 
 Record the files you created or changed in `changedFiles`, then mark `6-4` done.
 

@@ -53,7 +53,7 @@ The first Gradle run makes `.kotlin/` (Kotlin 2.x). If the project's `.gitignore
 
 In that case, following the same policy as step 4, **attempt to fix errors unrelated to katachi (Gradle, Java, dependency resolution).** Only if it still can't be resolved, pass the output to the user exactly as it is and ask for their judgment.
 
-If `scaffold` says "has a buildscript { } block, so it was not edited automatically," **add the single line shown in the output to the root build file.** It will keep failing until you add it. The same goes for "could not read the shape of pluginManagement { }" and "could not read where the include statement ends": add what the output shows to the settings file.
+If `scaffold` says "has a buildscript { } block, so it was not edited automatically," **add the single line shown in the output to the root build file.** It will keep failing until you add it. The same goes for "could not read the shape of pluginManagement { }" and "could not find where the include statement ends": add what the output shows to the settings file.
 
 Once you have confirmed it fails with `Unexpected` only, record the files that were created or changed in the checklist's `changedFiles`, then mark `2-2` done.
 
@@ -65,4 +65,4 @@ Once you have confirmed it fails with `Unexpected` only, record the files that w
 ]
 ```
 
-Enter the files listed in `scaffold`'s output. The output shows them as absolute URIs starting with `file://`, but `path` takes **the path relative to the project root** (the form in the example above). If it appended to `pluginManagement`, say so in `summary` as well.
+Enter the files listed in `scaffold`'s output. The output shows them as absolute URIs starting with `file://`, but `path` takes **the path relative to the project root** (like `architecture-test/build.gradle.kts` in the JSON above). If it appended to `pluginManagement`, say so in `summary` as well.

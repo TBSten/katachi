@@ -15,7 +15,13 @@ import me.tbsten.katachi.konsist.declarations.ktFileContent   // when writing kt
 
 **Star-import `me.tbsten.katachi.dsl.gradle`:** one line brings `mainSourceSet`, `testSourceSet`, `kotlin` and `gradle()`. Importing them one by one also works (`/` needs no import).
 
-**`capture()`, `fileConstraint`, `FileConstraintFailure` and `ktFileContent { }` are experimental APIs.** In a file that uses any of them, write `@file:OptIn(ExperimentalKatachiApi::class)` at the top and add `import me.tbsten.katachi.ExperimentalKatachiApi` to the imports. Without it, every place that uses one is a compile error.
+**`capture()`, `fileConstraint`, `FileConstraintFailure` and `ktFileContent { }` are experimental APIs.** A file that uses any of them starts like this:
+
+```kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
+```
 
 **Do not rename `val projectArchitecture` or move it to another package.** `katachi { architecture = "..." }` in the verification module's `build.gradle.kts` points at that fully qualified name. Splitting the definition into functions or files is fine (3-3).
 
@@ -37,7 +43,7 @@ Files directly under the root can be written directly under `layout { }` (`"READ
 
 **For the Gradle files (the wrapper, settings, each module's build script, `gradle.properties`, the version catalog), do not write Roles yourself: write the one line `gradle()`.** katachi declares a `Gradle` group split into one Role per kind of file (it comes with the star import of `me.tbsten.katachi.dsl.gradle.*`). Only `buildSrc` and builds added with `includeBuild`, which it does not cover, need Roles of your own.
 
-When you want to check the contents of a build file (the ones marked `constraintOnly` in the report), you do not write a Role either. Write the constraint in a hook of the `gradle()` block, as in `gradle { buildScript { fileConstraint("...") { subject -> ... } } }` (`settingsScript { }` for settings, `versionCatalog { }` for the version catalog). `fileConstraint` and `FileConstraintFailure` are experimental APIs, so they need the opt-in described in the "experimental APIs" paragraph above (`@file:OptIn(ExperimentalKatachiApi::class)` and `import me.tbsten.katachi.ExperimentalKatachiApi`). A `buildScript { }` constraint receives the `build.gradle(.kts)` of every module, the root included, in `subject.files`. To look at one module only, narrow `subject.files` by path inside the constraint (for example `subject.files.filter { it == "app/build.gradle.kts" }`). Writing a Role inside `gradle { }` with the same name as one of katachi's (`"BuildScript".role { }` and so on) raises a duplicate exception. A Role outside `gradle { }` that declares a build file claims the same file as katachi's `BuildScript` and becomes `[AmbiguousLayout]`.
+When you want to check the contents of a build file (the ones marked `constraintOnly` in the report), you do not write a Role either. Write the constraint in a hook of the `gradle()` block, as in `gradle { buildScript { fileConstraint("...") { subject -> ... } } }` (`settingsScript { }` for settings, `versionCatalog { }` for the version catalog). `fileConstraint` and `FileConstraintFailure` are experimental APIs, so the file starts with the two lines in the "experimental APIs" paragraph above. A `buildScript { }` constraint receives the `build.gradle(.kts)` of every module, the root included, in `subject.files`. To look at one module only, narrow `subject.files` by path inside the constraint (for example `subject.files.filter { it == "app/build.gradle.kts" }`). Writing a Role inside `gradle { }` with the same name as one of katachi's (`"BuildScript".role { }` and so on) raises a duplicate exception. A Role outside `gradle { }` that declares a build file claims the same file as katachi's `BuildScript` and becomes `[AmbiguousLayout]`.
 
 <details>
 <summary>Common mistakes and how to fix them</summary>
@@ -74,7 +80,7 @@ In the field tests of the install kit, these shapes turned up in 13 projects.
 
 #### Do not stop at placement
 
-**Take the conventions you read in step 1 and go through them as candidates for constraints on the contents (`ktFileContent { }`).** A definition that only says where files go only ever tells you that a file is in the right place. `ktFileContent { }` is an experimental API, so the file that uses it needs the opt-in (`@file:OptIn(ExperimentalKatachiApi::class)`). How to write it is on the `kt-file-content` page (3-1).
+**Take the conventions you read in step 1 and go through them as candidates for constraints on the contents (`ktFileContent { }`).** A definition that only says where files go only ever tells you that a file is in the right place. `ktFileContent { }` is an experimental API, so the file that uses it starts with the two lines in the "experimental APIs" paragraph above. How to write it is on the `kt-file-content` page (3-1).
 
 **Do not write catch-all Roles.** A layout like `commonMain/**/*.kt` — "anything, as long as it is here" — looks like a check and is not one. In a real adoption this let **a test for the same responsibility be created somewhere else entirely, and accepted.** If a Role would end up a catch-all, give it at least one of the following.
 
@@ -85,25 +91,25 @@ A constraint on a file's imports goes in the `import` entries of `ktFileContent 
 
 ```kt
 "ViewModel".role {
-    layout { /* ... */ }
+  layout { /* ... */ }
 
-    ktFileContent {
-        `package`("com.example.viewModel")
+  ktFileContent {
+    `package`("com.example.viewModel")
 
-        // android.** is not listed. Importing it is a violation
-        `import`("kotlin.**")
-        `import`("kotlinx.coroutines.**")
-        `import`("androidx.lifecycle.**")
-        `import`("com.example.**")
+    // android.** is not listed. Importing it is a violation
+    `import`("kotlin.**")
+    `import`("kotlinx.coroutines.**")
+    `import`("androidx.lifecycle.**")
+    `import`("com.example.**")
 
-        required(`class`, fileName) {
-            allow(anythingElse)
-        }
+    required(`class`, fileName) {
+      allow(anythingElse)
     }
+  }
 }
 ```
 
-Constraint names follow `constraintNames` from 1-3. With `numbered`, prefix the name with the id of the question the constraint came from (`q3`, `cq2` and so on), as in `"q3: Does not import the android package".ktFileContent { }`. With `plain`, it is as in the example above.
+Constraint names follow `constraintNames` from 1-3. With `numbered`, prefix the name with the id of the question the constraint came from (`q3`, `cq2` and so on), as in `"q3: Does not import the android package".ktFileContent { }`. With `plain`, write the name without the id (`"Does not import the android package".ktFileContent { }`).
 
 #### Dividing the work with the static analysis already there
 

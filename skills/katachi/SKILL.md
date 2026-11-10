@@ -74,4 +74,4 @@ Read `:architecture-test` as the verification module's Gradle path when it is so
 
 https://tbsten.github.io/katachi/llms.txt is the site's index for agents. The whole site in one file is https://tbsten.github.io/katachi/llms-full.txt; do not read it whole, cut out the page you need. For signatures, read the API reference: https://tbsten.github.io/katachi/api-docs/llms.txt, and the Markdown version of one API's page (its HTML URL with `.md` appended).
 
-`capture()`, `fileConstraint`, `ktFileContent { }`, `.template { }` and `baseline()` are experimental: a file that uses one needs `@file:OptIn(ExperimentalKatachiApi::class)` and `import me.tbsten.katachi.ExperimentalKatachiApi`.
+`capture()`, `fileConstraint`, `ktFileContent { }`, `.template { }` and `baseline()` are experimental: a file that uses one starts with `@file:OptIn(ExperimentalKatachiApi::class)` and `import me.tbsten.katachi.ExperimentalKatachiApi`.
