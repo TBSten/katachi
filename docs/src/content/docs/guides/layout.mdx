@@ -173,7 +173,7 @@ architecture {
   "UseCase".role {
     layout {
       appPackageDir / "useCase" / "*UseCase".ktFile()   // join with "/" to declare where files go
-      appPackageDir {                                    // wrapping in a block declares the same thing
+      appPackageDir {                                    // wrap in a block to declare the places under it together
         "feature" / "useCase" / "*UseCase".ktFile()
       }
     }

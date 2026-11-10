@@ -174,7 +174,7 @@ architecture {
   "UseCase".role {
     layout {
       appPackageDir / "useCase" / "*UseCase".ktFile()   // "/" で繋いで置き場所を宣言する
-      appPackageDir {                                    // ブロックで囲んでも同じ宣言になる
+      appPackageDir {                                    // ブロックで囲むと、その下の置き場所をまとめて宣言できる
         "feature" / "useCase" / "*UseCase".ktFile()
       }
     }
