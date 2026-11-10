@@ -373,6 +373,11 @@
   .fact:last-child:nth-child(odd) { grid-column: 1 / -1; }
   .fact dt { color: var(--muted); font-size: 13px; line-height: 1.5; }
   .fact dd { margin: 2px 0 0; color: var(--ink); min-width: 0; }
+  /* 箇条書きなどの塊は横いっぱいに出し、畳まない */
+  .fact.fact-block { grid-column: 1 / -1; }
+  .fact-block dd { overflow-wrap: anywhere; }
+  .fact-block dd ul { margin: 2px 0 0; }
+  .fact-block dd li { margin: 0; line-height: 1.6; }
 
   @media (max-width: 560px) {
     .facts { grid-template-columns: minmax(0, 1fr); }
@@ -1698,6 +1703,18 @@
     });
     return ul;
   }
+  // 「Kotlin 2.2.20（KMP。JVM toolchain 17）」のような 1 文を、括弧の外と、括弧の中の文ごとの箇条書きにする。区切りが無ければそのまま
+  function sentenceBullets(raw, key) {
+    if (blank(raw)) return unfilled(key);
+    var whole = String(raw).trim();
+    var parts = [whole];
+    var m = /^([^（(]+?)\s*[（(]([\s\S]*)[）)]\s*$/.exec(whole);
+    if (m) parts = [m[1]].concat(m[2].split(/[。;；]\s*/));
+    else parts = whole.split(/[。;；]\s*/);
+    parts = parts.map(function (part) { return part.trim(); }).filter(function (part) { return part; });
+    if (parts.length < 2) return text(whole);
+    return bullets(parts, key);
+  }
   function bulletsOrNone(values) {
     if (blank(values)) return none();
     return bullets(values, '');
@@ -1809,13 +1826,15 @@
     var dl = el('dl', 'facts');
     pairs.forEach(function (pair) {
       if (!pair[1]) return;
-      var cell = el('div', 'fact');
-      cell.setAttribute('data-clamp', '');
+      // pair[3] が true のときは箇条書きなどの塊として、畳まずに横いっぱいで出す
+      var block = pair[3] === true;
+      var cell = el('div', block ? 'fact fact-block' : 'fact');
+      if (!block) cell.setAttribute('data-clamp', '');
       if (pair[2]) target(cell, pair[2], pair[0]);
       var dt = el('dt');
       dt.textContent = pair[0];
       var dd = el('dd');
-      dd.appendChild(clip(pair[1]));
+      dd.appendChild(block ? pair[1] : clip(pair[1]));
       cell.appendChild(dt);
       cell.appendChild(dd);
       dl.appendChild(cell);
