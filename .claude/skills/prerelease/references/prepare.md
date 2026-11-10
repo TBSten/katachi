@@ -16,6 +16,8 @@ python3 .claude/skills/prerelease/scripts/prepare.py
     - ユーザが「この版で進める」と言ったら `--force` を付けて作り直す。
 - 止まらなければ `.local/release-v<版>/` を作り、チェックリストを写して 1 の版の欄と、作業場所の中のファイルのパスの欄（3〜6・8・9）を埋める。
   出力の `WARN:`（タグと Maven Central の食い違い）は memo に書く。
+- clone が浅い・タグが無いときも `STOP:` で止まる。これは利用者に聞かず、出力のとおり `git fetch --unshallow --tags origin` で取り直して回し直す
+  （浅いままだと、直前のタグからのコミットが欠けてリリースノートの材料や API の差分が黙って少なくなる）。
 - 以降の手順の `<基準>` は、出力の「基準（直前のタグ）」。
 - 出力の最後の「過去の判断」は [decisions/](../decisions/README.md) の件数・問題・見直す条件。チェックリストの 1 の欄は
   新しく作ったときに埋まる。問題（`GONE` = ファイルが無い、`LOST` = `quote` が見つからない）と `REVISIT` は memo に写し、
