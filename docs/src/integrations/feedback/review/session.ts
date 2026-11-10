@@ -567,7 +567,9 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 				b.addEventListener('click', () => void resolve(v, noteOf(a.label, input.value), 'resolve', a.label))
 				return b
 			})
-			if (mine.length) {
+			// 編集のあいだは、ひとこととボタンの代わりに編集を出す（スマホの下からのシートでも本文を押しつぶさない）。
+			if (editing) act.append(actionEditor())
+			else if (mine.length) {
 				const row = el('div', 'custom-row')
 				row.append(...mine, plus)
 				act.append(input, row, keep, send, btn)
@@ -607,9 +609,7 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		const count = el('span', 'count', `${i + 1} / ${sorted.length}`)
 		count.title = `絞り込み後の全体での位置（このページは ${here.length} 件）`
 		nav.append(prev, next, count)
-		foot.append(act)
-		if (editing && v.status === 'open') foot.append(actionEditor())
-		foot.append(err, nav)
+		foot.append(act, err, nav)
 		pop.replaceChildren(head, body, foot)
 		body.scrollTop = keepScroll
 		if (keepFocus || focusField) {
@@ -627,6 +627,13 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 	/** 人が足した選択肢の一覧（× で消す）と、足す欄。popup の下に出す。 */
 	function actionEditor(): HTMLElement {
 		const box = el('div', 'actions-edit')
+		const top = el('div', 'actions-top')
+		const done = el('button', 'btn', '閉じる')
+		done.type = 'button'
+		done.title = '選択肢の編集を閉じて、指摘の操作に戻る'
+		done.addEventListener('click', () => { editing = false; focusField = 'note'; renderPop() })
+		top.append(el('b', undefined, '選択肢を足す・消す'), done)
+		box.append(top)
 		if (actions.length) {
 			const list = el('div', 'action-list')
 			for (const a of actions) {

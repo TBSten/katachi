@@ -67,7 +67,8 @@ button, input { font: inherit; }
 .btn.custom { border-style: dashed; }
 .btn.plus { padding: 4px 8px; color: var(--muted); border-style: dashed; border-color: var(--border); }
 .btn.plus.is-on { color: var(--fg); background: var(--soft); border-style: solid; }
-.actions-edit { display: flex; flex-direction: column; gap: 6px; padding: 8px; background: var(--soft); border-radius: 8px; }
+.actions-edit { flex: 1 1 100%; min-width: 0; display: flex; flex-direction: column; gap: 6px; padding: 8px; background: var(--soft); border-radius: 8px; }
+.actions-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 12px; }
 .action-list { display: flex; flex-wrap: wrap; gap: 4px; }
 .action-chip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 2px 1px 8px; font-size: 12px; background: var(--bg); border: 1px dashed var(--border-strong); border-radius: 12px; }
 .action-decision { padding: 0 5px; font-size: 10px; color: var(--muted); border: 1px solid var(--border); border-radius: 8px; }
