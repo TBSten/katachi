@@ -69,11 +69,11 @@ katachi scaffold --package com.example.app
      Gradle の JDK: 17（JAVA_HOME（/Users/you/.sdkman/candidates/java/17.0.17-tem））
   作成する内容
      パッケージ:   com.example.app
-     katachi:      0.4.0（この katachi コマンドの版）
+     katachi:      0.4.0（この katachi コマンドのバージョン）
      Kotlin:       2.4.10
      JVM toolchain: 書かない（プロジェクトに toolchain の設定が無い。Gradle の JDK を使う）
      konsist:      yes
-     テスト:       junit5（既定。kotest の依存が見つからない）
+     テスト:       junit5（デフォルト。kotest の依存が見つからない）
      依存:         catalog（検出: gradle/libs.versions.toml。file:///Users/you/demo-app/gradle/libs.versions.toml に追記）
                   [versions] katachi = "0.4.0"
                   [versions] junit = "5.14.4"
@@ -83,7 +83,7 @@ katachi scaffold --package com.example.app
                   [libraries] junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
                   [libraries] junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
                   [plugins] katachi = { id = "me.tbsten.katachi", version.ref = "katachi" }
-     モジュール:   file:///Users/you/demo-app/architecture-test/（:architecture-test。既定）
+     モジュール:   file:///Users/you/demo-app/architecture-test/（:architecture-test。デフォルト）
      ソース:       file:///Users/you/demo-app/architecture-test/src/test/kotlin/com/example/app/test/architecture/
      build/ を無視: file:///Users/you/demo-app/architecture-test/.gitignore に /build を書く
      ルートに追加: no (file:///Users/you/demo-app/build.gradle.kts)
