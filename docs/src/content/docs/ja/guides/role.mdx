@@ -83,7 +83,7 @@ architecture {
 }
 ```
 
-`description` には長い説明を、`example()` には代表例を書けます。`example()` は呼んだ順に保持されます。
+`description` には長い説明を、`example()` には代表例を書けます。
 
 ```kt
 "UseCase".role {
@@ -103,7 +103,7 @@ architecture {
 
 ### 置き場所を宣言する
 
-置き場所を1つだけ持つ場合です。
+Role の置き場所が 1 か所のときは、`layout { }` を 1 つ書きます。
 
 ```kt
 "UseCase".role {
@@ -238,7 +238,7 @@ class GetUserUseCase(private val repository: UserRepository) {
 
 ### Role をグループにまとめる
 
-`"グループ名".group { ... }` を使うと、Roleをグループにまとめられます。
+`"グループ名".group { }` を使うと、Role をグループにまとめられます。
 
 ```kt {2}
 architecture {
@@ -504,7 +504,6 @@ architecture {
 fun DeclarationContainerScope.useCase() = "UseCase".role {
   summary = "各画面で発生するアプリ固有の1つの振る舞い"
 
-  // 置き場所が増えても、説明はこの1箇所のまま
   layout {
     "core/domain/src/main/kotlin/useCase" / "*UseCase".ktFile()
   }
@@ -530,7 +529,7 @@ private fun RoleScope.useCaseFileContent() =
   <LinkCard
     title="Layout"
     href="/katachi/ja/guides/layout/"
-    description="Roleのファイルをどこに置けるか宣言する方法を学びましょう。"
+    description="Role のファイルをどこに置けるか宣言する方法を学びましょう。"
   />
   <LinkCard
     title="初めてのアーキテクチャ定義"

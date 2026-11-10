@@ -29,7 +29,7 @@ custom-processor のサンプルは、同じ1行で宣言しています（[samp
 
 ## composite build / buildSrc を利用している場合
 
-`gradle()` は `build-logic` などの included build と `buildSrc` を宣言しません。その中のビルドスクリプトとconvention pluginは、自分で宣言します。
+`gradle()` は `build-logic` などの included build と `buildSrc` を宣言しません。その中のビルドスクリプトと convention plugin は、自分で宣言します。
 
 次の `ProjectArchitecture.kt` が全体の形です。`"Build"` group の中に、3つの Role を並べます。
 
@@ -71,11 +71,11 @@ val projectArchitecture = architecture {
 }
 ```
 
-### convention pluginのスクリプトを宣言する
+### convention plugin のスクリプトを宣言する
 
 ```kt
 "ConventionPluginScript".role {
-  summary = "各モジュールが plugins { id(\"...\") } で適用する、convention pluginのスクリプト"
+  summary = "各モジュールが plugins { id(\"...\") } で適用する、convention plugin のスクリプト"
   layout {
     conventionSourceDir {
       "${capture("name")}.gradle".ktsFile()
@@ -93,11 +93,11 @@ val projectArchitecture = architecture {
 }
 ```
 
-### convention pluginから使う Kotlin のクラスを宣言する
+### convention plugin から使う Kotlin のクラスを宣言する
 
 ```kt
 "ConventionPluginSource".role {
-  summary = "convention pluginのスクリプトから使う、ヘルパーの Kotlin クラス"
+  summary = "convention plugin のスクリプトから使う、ヘルパーの Kotlin クラス"
   layout {
     conventionSourceDir {
       "**" / "*".ktFile() // パッケージを切ったクラスも許す
