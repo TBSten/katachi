@@ -317,6 +317,9 @@ prerelease の手順 11（ドキュメントがガイドのルールに沿って
 - **Role の宣言は `"名前".role { }` で書く。** v0.2 までの `"名前" { }` は v0.3 からコンパイルエラーになるので、例に書かない。`.role` を付けるのは Role の宣言だけで、`layout { }` の中のディレクトリの宣言 `"src" { }` はそのまま。
   - 🆖 `"UseCase" { layout { "useCase" / "*UseCase".ktFile() } }`
   - 🆗 `"UseCase".role { layout { "useCase" / "*UseCase".ktFile() } }`（`layout { }` の中で `"useCase" { "*UseCase".ktFile() }` と書くのはディレクトリの宣言なので、`.role` を付けない）
+- **group 名は大文字で始める。** Role 名と同じく `"Domain".group { }`・`"Git".group { }` のように書く。group 名はドキュメント生成のディレクトリ名・違反の表示（`Domain.UseCase`）・diff report の `weights` にそのまま出るので、例の出力もそろえる。`layout { }` の中のディレクトリ名（`"domain" / "*UseCase".ktFile()`）は実際のパスなので変えない。
+  - 🆖 `"domain".group { "UseCase".role { /* ... */ } }`
+  - 🆗 `"Domain".group { "UseCase".role { /* ... */ } }`
 - **katachi の概念は用語で書く。** 読み手がガイドの説明と結びつけられるように。
   - 🆖 「役割はたとえば次のようになるでしょう」 → 🆗 「Role はたとえば次のようになるでしょう」
   - 一般語の「役割」（「固有の役割を持つファイル」）はそのままでよい。初めて出すところは「役割（Role）」と添えてもよい

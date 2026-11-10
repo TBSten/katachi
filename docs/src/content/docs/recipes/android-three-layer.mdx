@@ -27,16 +27,16 @@ Below is an example architecture definition for a setup that adopts a domain lay
 
 ```mermaid
 flowchart LR
-    subgraph ui["ui (group)"]
+    subgraph ui["Ui (group)"]
         UiState
         ViewModel
         Screen
     end
-    subgraph domain["domain (group)"]
+    subgraph domain["Domain (group)"]
         UseCase
         DomainModel
     end
-    subgraph data["data (group)"]
+    subgraph data["Data (group)"]
         RepositoryInterface
         RepositoryImplementation
         DataSource
@@ -86,20 +86,20 @@ val projectArchitecture = architecture {
   gradle() // Gradle files such as the wrapper, settings and build scripts
 
   // https://developer.android.com/topic/architecture/ui-layer
-  "ui".group {
+  "Ui".group {
     uiState()
     viewModel()
     screen()
   }
 
   // https://developer.android.com/topic/architecture/domain-layer
-  "domain".group {
+  "Domain".group {
     useCase()
     domainModel()
   }
 
   // https://developer.android.com/topic/architecture/data-layer
-  "data".group {
+  "Data".group {
     repositoryInterface()
     repositoryImplementation()
     dataSource()
@@ -386,7 +386,7 @@ fun DeclarationContainerScope.androidResource() = "AndroidResource".role {
 }
 ```
 
-In `ProjectArchitecture.kt`, put them into the `:app` group, as in `"app".group { androidManifest(); androidResource() }`. The sample also places the `MainActivity` and `MainApplication` Roles in the same group ([AppGroup.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/app/AppGroup.kt)).
+In `ProjectArchitecture.kt`, put them into the `:app` group, as in `"App".group { androidManifest(); androidResource() }`. The sample also places the `MainActivity` and `MainApplication` Roles in the same group ([AppGroup.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/app/AppGroup.kt)).
 
 <SnippetIsStartingPoint>
 For example, if your product uses Dagger Hilt, you might add a check for the `@HiltViewModel` annotation on ViewModels, or a check that repository implementation classes have an `@Inject` constructor — customizations like these will likely be necessary.

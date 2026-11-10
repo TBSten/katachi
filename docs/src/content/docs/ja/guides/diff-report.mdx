@@ -71,13 +71,13 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.diff.diffWeight
 
 val projectArchitecture = architecture {
-  "domain".group {
+  "Domain".group {
     // group に書くと、配下の Role 全部に適用されます
     diffWeight = 2.0
 
     "UseCase".role { layout { "domain" / "*UseCase".ktFile() } }
   }
-  "testing".group {
+  "Testing".group {
     "RoleDefinition".role {
       // Role に書くと、group の値より優先されます
       diffWeight = 10.0
@@ -100,7 +100,7 @@ katachiDiff には以下のようなオプションがあります。いずれ�
     ```shell
     ./gradlew :architecture-test:katachiDiff \
       --arg before=origin/main \
-      --arg weights=domain=2,testing.RoleDefinition=10 \
+      --arg weights=Domain=2,Testing.RoleDefinition=10 \
       --arg maxFiles=0 \
       --arg html=false \
       --arg markdownOutputFile=diff-report.md
@@ -113,7 +113,7 @@ katachiDiff には以下のようなオプションがあります。いずれ�
       processors {
         diff {
           before = "origin/main"
-          weights = listOf("domain=2", "testing.RoleDefinition=10")
+          weights = listOf("Domain=2", "Testing.RoleDefinition=10")
           maxFiles = 0
           markdown {
             outputFile = layout.projectDirectory.file("diff-report.md")
@@ -167,7 +167,7 @@ Gradle script に書いた値はプロジェクトのデフォルト値になり
             <td><code>List&lt;String&gt;</code></td>
             <td><code>&lt;group または Role の修飾名&gt;=&lt;数値&gt;</code> の一覧。定義の <code>diffWeight</code> より優先されます。コマンドではカンマ区切り</td>
             <td>空</td>
-            <td><code>domain=2</code><br /><code>domain=2,testing.RoleDefinition=10</code><br /><code>sample=0.5</code>（目立たせない）</td>
+            <td><code>Domain=2</code><br /><code>Domain=2,Testing.RoleDefinition=10</code><br /><code>sample=0.5</code>（目立たせない）</td>
         </tr>
         <tr>
             <td><code>maxFiles</code></td>
@@ -257,7 +257,7 @@ jobs:
 | 入力 <br/> （`diff-report`） | 説明 | デフォルト |
 |---|---|---|
 | `task` | 実行する Gradle のタスク。`katachiDiff` だとプラグインを当てた全モジュールで実行します | `katachiDiff` |
-| `arguments` | Gradle に渡す追加の引数。1 行に 1 つ（例: `--arg weights=domain=2`）。`--arg pr=` は action が足します | 空 |
+| `arguments` | Gradle に渡す追加の引数。1 行に 1 つ（例: `--arg weights=Domain=2`）。`--arg pr=` は action が足します | 空 |
 | `working-directory` | Gradle のビルドがあるディレクトリ | `.` |
 | `comment` | `true` でこの job からコメントも貼る | `false` |
 | `report-artifact-name` | HTML レポートと Markdown 全体を上げる artifact の名前。空で上げない | `katachi-diff-report` |

@@ -175,7 +175,7 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
 
         val projectArchitecture = architecture {
           gradle() // Gradle's files: the wrapper, settings, build scripts and so on
-          "domain".group {
+          "Domain".group {
             "UseCase".role {
               summary = "A single app-specific behavior that occurs on a screen"
               layout {
@@ -258,7 +258,7 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
               No role is defined for this file.
 
               Nearby locations:
-                domain.UseCase file:///path/to/project/domain/src/main/kotlin/usecase/ (*UseCase.kt)
+                Domain.UseCase file:///path/to/project/domain/src/main/kotlin/usecase/ (*UseCase.kt)
 
               How to fix:
                 - Move it to one of the locations above, with a name matching the pattern in parentheses
