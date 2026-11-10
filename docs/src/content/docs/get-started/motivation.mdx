@@ -115,10 +115,10 @@ Katachi check failed: 1 violation (Unexpected: 1)
   No role is defined for this file.
 
   Nearby locations:
-    UseCase file:///path/to/project/src/main/kotlin/com/example/project/useCase/
+    UseCase file:///path/to/project/src/main/kotlin/com/example/project/useCase/ (*UseCase.kt)
 
   How to fix:
-    - Move it to one of the locations above
+    - Move it to one of the locations above, with a name matching the pattern in parentheses
     - Delete it if it is not needed
     - Add a new role for it:
         "GetUserUseCase".role {
@@ -197,12 +197,6 @@ Once you point the Gradle plugin at the definition with `katachi { architecture 
 Treat the project structure you defined with katachi as the single source of truth, and generate documentation that both humans and AI agents can read.
 
 See [Document generation](/katachi/guides/document-generation/) for the details.
-
-<LinkCard
-    title="Document generation"
-    description="How to generate a Markdown page per Role from the architecture { } definition."
-    href="/katachi/guides/document-generation/"
-/>
 
 </details>
 
@@ -289,12 +283,6 @@ $ ./gradlew katachiTemplate --arg template=UseCase,UseCaseImplementation --arg n
 </CodeComparison>
 
 See [Generating code from a template](/katachi/guides/generate-code-from-template/) for the details.
-
-<LinkCard
-    title="Generating code from a template"
-    description="How to write .template { }, its parameters, and what happens when a file already exists."
-    href="/katachi/guides/generate-code-from-template/"
-/>
 
 </details>
 

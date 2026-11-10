@@ -21,7 +21,7 @@ Layout API でディレクトリ構成とファイル名を宣言し、宣言外
 
 Role に対応するファイルをどこに置けるかを定義するのが Layout API（`layout { }`）です。
 
-```kt {3-5}
+```kt {4-6}
 architecture {
   "UseCase".role {
     // UseCase は useCase/ の中の *UseCase.kt にだけ置けます
@@ -74,7 +74,7 @@ layout {
 
 ### `anyFile()` — 直下のファイルだけ許す
 
-そのディレクトリの直下に限って、どんなファイルでも置けるようにします。
+そのディレクトリの直下に限って、どんなファイルでも置けるようにします。たとえば生成物のディレクトリに使います。
 
 ```kt
 layout {
@@ -86,15 +86,15 @@ layout {
 
 <FileTree>
     - generated/
-        - Foo.kt 通る
-        - schema.json 通る
+        - Foo.kt 許可される
+        - schema.json 許可される
         - nested/ 違反（サブディレクトリは宣言が無い）
             - Bar.kt 違反
 </FileTree>
 
 ### `ignore()` — 以下すべての検査をやめる
 
-そのディレクトリより下を、どの深さでも検査しなくなります。
+そのディレクトリより下を、どの深さでも検査しなくなります。たとえばビルド出力のディレクトリに使います。
 
 ```kt
 layout {
@@ -103,16 +103,16 @@ layout {
 ```
 
 <FileTree>
-    - build/ 通る（検査しない）
-        - app.jar 通る
-        - tmp/ 通る
-            - Foo.class 通る
+    - build/ 違反にならない（検査しない）
+        - app.jar 違反にならない
+        - tmp/ 違反にならない
+            - Foo.class 違反にならない
 </FileTree>
 
 `"build" { ignore() }` とブロックの中に書くこともできます。
 
 <Aside type="caution">
-`anyFile()` と `ignore()` は任意のファイルの配置を許可しますが、これは **deny by default の逃げ道** です。注意して使ってください。
+`anyFile()` と `ignore()` は任意のファイルの配置を許可しますが、これは **Deny by default の逃げ道** です。注意して使ってください。
 
 「宣言するのが面倒だから」で ignore, anyFile を乱用すると katachi を入れた意味が薄れます。
 **機械的に生成されるもの** や、 **katachi 以外のツールが構成を決めているもの** に限って使ってください。
@@ -174,7 +174,7 @@ architecture {
   "UseCase".role {
     layout {
       appPackageDir / "useCase" / "*UseCase".ktFile()   // "/" で繋いで置き場所を宣言する
-      appPackageDir {                                    // ブロックで囲んでも同じ宣言になる
+      appPackageDir {                                    // ブロックで囲むと、その下の置き場所をまとめて宣言できる
         "feature" / "useCase" / "*UseCase".ktFile()
       }
     }

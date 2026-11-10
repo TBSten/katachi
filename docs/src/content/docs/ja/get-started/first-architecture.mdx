@@ -11,7 +11,7 @@ tags:
 
 import { Aside, Tabs, TabItem, Steps, Badge, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-katachi を Gradle プロジェクトに入れ、最初の `architecture { }` 定義を書いてテストを通すまでを説明します。
+katachi を Gradle プロジェクトに入れ、最初の `architecture { }` 定義を書いて、テストが成功するところまでを説明します。
 
 katachi が必要かどうか迷う場合は、先に [モチベーション](/katachi/ja/get-started/motivation/) を読むことをおすすめします。
 
@@ -164,14 +164,13 @@ katachi が必要かどうか迷う場合は、先に [モチベーション](/k
         `architecture-test/src/test/kotlin/<パッケージ>/ProjectArchitecture.kt` がエントリーポイントです。
 
         ```kotlin
-        // 例
         @file:OptIn(ExperimentalKatachiApi::class)
 
         package com.example
 
         import me.tbsten.katachi.ExperimentalKatachiApi
         import me.tbsten.katachi.dsl.architecture
-        import me.tbsten.katachi.dsl.gradle.gradle
+        import me.tbsten.katachi.dsl.gradle.*
         import me.tbsten.katachi.dsl.kotlin.ktFile
 
         val projectArchitecture = architecture {
@@ -282,7 +281,7 @@ katachi が必要かどうか迷う場合は、先に [モチベーション](/k
 品質を維持するには、katachi のアーキテクチャテストを CI に組み込み、定期的に実行させることが大切です。
 
 <Tabs>
-    <TabItem label="Github Actions">
+    <TabItem label="GitHub Actions">
         以下のようなワークフローファイルを追加してください。
 
         ```yaml nocollapse title=".github/workflows/architecture.yml"

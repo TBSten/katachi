@@ -17,7 +17,7 @@ import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 This is a table of what you can write in Kotlin source, and which `ktFileContent { }` line allows or denies it. For how to write the rules themselves, see the [ktFileContent overview](/katachi/guides/kt-file-content/).
 
-The left column shows Kotlin code. The right column shows the lines that allow it. If you do not write a line, each table treats it in one of two ways.
+In each table, the "Kotlin code" column shows the Kotlin source, and the "ktFileContent lines" column shows the `ktFileContent { }` lines that allow it. If you do not write a line, each table treats it in one of two ways.
 
 - **Violation** … A declaration you do not write is a violation (deny by default). Write `allow(anythingElse)` to allow everything else in that place.
 - **Not checked** … It is checked only when you chain it after a line. If you do not write it, nothing is checked.
@@ -47,9 +47,9 @@ You write the same lines at the top level of a file and inside the `{ }` of a cl
       required(`interface`, fileName) { /* member lines */ }
       allow(data, `object`, "*Route")
       // Any of class, interface, object
-      allow(type, "*")
+      allow(type, "*") { allow(anythingElse) }
       // Join kinds with or
-      allow(`class` or `object`, "*")
+      allow(`class` or `object`, "*") { allow(anythingElse) }
       ```
     </td>
   </tr>
@@ -211,7 +211,7 @@ You write the same lines at the top level of a file and inside the `{ }` of a cl
 
 ## Modifiers
 
-Write modifiers before the kind, in the same order as in Kotlin source. A modifier you write must be present. A modifier you do not write is a **violation** if it is present (except `public` and `final`). `final` and parameter modifiers are not checked if you do not write them.
+Write modifiers before the kind, in the same order as in Kotlin source. A modifier you write must be present. A modifier not written in the architecture definition is a **violation** if it is present (except `public` and `final`). `final` and parameter modifiers are not checked if you do not write them.
 
 <div style="overflow-x: auto">
 <table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
@@ -291,7 +291,7 @@ Write modifiers before the kind, in the same order as in Kotlin source. A modifi
 
 ## Signatures
 
-These are checked only when you chain them after a line. If you do not write them, they are **not checked**. For arguments only, `()` means "no arguments", and writing nothing means not checked.
+Signatures (arguments, return type, receiver, and so on) are checked only when you chain them after a line. If you do not write them, they are **not checked**. For arguments only, `()` means "no arguments", and writing nothing means not checked.
 
 <div style="overflow-x: auto">
 <table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
@@ -392,7 +392,7 @@ These are checked only when you chain them after a line. If you do not write the
 
 ## Property accessors and delegation
 
-These are checked only when you chain them after a line. If you do not write them, they are **not checked**.
+Property accessors and delegation are checked only when you chain them after a line. If you do not write them, they are **not checked**.
 
 <div style="overflow-x: auto">
 <table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
@@ -487,7 +487,7 @@ An annotation line matches only declarations that have the annotation you named.
       // You can also write the fully qualified name
       allow(annotated("androidx.compose.runtime.Composable"), `fun`, "*Screen")()
       allow(annotated("Preview") or annotated("PreviewLightDark"),
-            private, `fun`, "*Preview")()
+        private, `fun`, "*Preview")()
       ```
     </td>
   </tr>
@@ -540,7 +540,10 @@ An annotation line matches only declarations that have the annotation you named.
 
 ## Files and source sets
 
-A `package` or `import` without a line is a **violation**. `not.` is a denial stronger than an allow line, and `actualsIn` is checked only when you write it.
+A `package` or `import` without a line is a **violation**.
+
+- `not.` is a denial stronger than an allow line
+- `actualsIn` is checked only when you write it
 
 <div style="overflow-x: auto">
 <table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
@@ -584,7 +587,7 @@ A `package` or `import` without a line is a **violation**. `not.` is a denial st
     <td>
       Deny (`not.`)
       ```kt
-      class LegacyImpl   // Only this one passes
+      class LegacyImpl   // Only this one is not a violation
       ```
     </td>
     <td>
@@ -620,7 +623,7 @@ A `package` or `import` without a line is a **violation**. `not.` is a denial st
 
 ## Body and KDoc
 
-These are checked only when you chain them after a line. If you do not write them, they are **not checked**.
+Bodies and KDoc are checked only when you chain them after a line. If you do not write them, they are **not checked**.
 
 <div style="overflow-x: auto">
 <table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">

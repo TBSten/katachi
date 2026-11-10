@@ -17,7 +17,7 @@ A Role is the unit that declares the kinds of files that may appear in your proj
 ## Declaring a Role
 
 An app that follows an architecture definition has files with specific roles (Roles).
-For example `UseCase`, `Repository`, `Controller`, or `ViewModel`.
+For example `UseCase`, `RepositoryInterface`, `Controller`, or `ViewModel`.
 
 You define what Roles exist inside `architecture { }`.
 
@@ -84,7 +84,7 @@ At minimum, all you need is `summary`. It is the text shown in the Role table wh
 }
 ```
 
-`description` can hold a longer explanation, and `example()` a representative example. Calls to `example()` are kept in the order you call them.
+`description` can hold a longer explanation, and `example()` a representative example.
 
 ```kt
 "UseCase".role {
@@ -104,7 +104,7 @@ At minimum, all you need is `summary`. It is the text shown in the Role table wh
 
 ### Declaring where files go
 
-This is the case where a Role has just one place to live.
+When a Role has just one place to live, write one `layout { }`.
 
 ```kt
 "UseCase".role {
@@ -239,7 +239,7 @@ class GetUserUseCase(private val repository: UserRepository) {
 
 ### Grouping Roles
 
-You can group Roles together using `"group name".group { ... }`.
+You can group Roles together using `"group name".group { }`.
 
 ```kt {2}
 architecture {
@@ -505,7 +505,6 @@ architecture {
 fun DeclarationContainerScope.useCase() = "UseCase".role {
   summary = "A single app-specific behavior that occurs on each screen"
 
-  // However many places it is put in, the description stays in this one place
   layout {
     "core/domain/src/main/kotlin/useCase" / "*UseCase".ktFile()
   }

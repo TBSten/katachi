@@ -224,3 +224,395 @@ AGENTS の木では [AI生成] なのにページに印が無い、という指�
 元の指摘（261109-01 の手順 11、10 件）: get-started/motivation・comparison-with-other-tools の Role（上の「直さない」3 件）、
 guides/layout の「まとめ」の UseCase Role、完成形の Role 3 件（kt-file-content 2・generate-code-from-template）、
 processor の summary・layout の無い Role、diff-report の Role、README.ja.md の Role。
+
+## 直さない: katachi-konsist に触れずに FileConstraintCheck() を案内している（要確認）
+- decision: 直さない
+- file: ja/get-started/faq.mdx
+- quote: assert(FileConstraintCheck())
+- rule: A4／C1
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 該当: 「テストで `assert(FileConstraintCheck())` を呼べば…」。`ktFileContent { }` が別モジュール `katachi-konsist` に入っていることを書かない
+- 直し方の案: 「`katachi-konsist` を依存に足すと」と一言添えるか、first-architecture へのリンクにする
+- 同じ指摘: motivation.mdx
+
+## 直さない: 2 行 × 1 観点の表
+- decision: 直さない
+- file: ja/get-started/faq.mdx
+- quote: 検証する範囲
+- rule: D3-11（複数のものを複数の観点で比べるときだけ表にする）
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 直し方の案: 文で書く（直後のコードと FileTree が同じことを示している）
+
+## 直さない: 本文の途中に LinkCard 1 枚
+- decision: 直さない
+- file: ja/get-started/faq.mdx
+- quote: <CardGrid>
+- rule: D3-5（別のページへ誘う）
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 該当: 本文の途中に `<CardGrid>` で `LinkCard` 1 枚（他ツールとの比較）
+- 直し方の案: 地の文のリンクにする
+
+## 直さない: 見出しの ktFileContent がコード表記でない
+- decision: 直さない
+- file: ja/get-started/comparison-with-other-tools.mdx
+- quote: Role の性質を ktFileContent で書く
+- rule: A2（API はコード表記）
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: 全部が全部コード表記にすれば良いというものではない。太字と同じくらい目立たせたいかつコードの時にのみ インラインコードにした方がいいという考え
+
+元の指摘:
+
+- 直し方の案: 見出しにバッククォート（`` `ktFileContent { }` ``）
+
+## 直さない: 完成形と書く例に import が無い（要確認）
+- decision: 直さない
+- file: ja/guides/baseline.mdx
+- quote: ここまでの設定を1つにした完成形です。
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 「完成形」と書くが package/import から始まらない断片なので D2-1 の対象外。ただしファイル全体と読まれる恐れがある（role.mdx は title にファイル名を付けている）
+
+## 直さない: 指示語（D3-3）
+- decision: 直さない
+- file: ja/guides/layout.mdx
+- quote: この例では
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: ここは指示語でいいかな
+
+元の指摘:
+
+- 直し方の案: 指すものを書く。「`generated/` の宣言では」
+
+## 直さない: 指示語（D3-3）
+- decision: 直さない
+- file: ja/guides/layout.mdx
+- quote: この例の
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 直し方の案: 指すものを書く。「上の `IdeCodeStyle` では」
+
+## 直さない: ignore() / anyFile() がコード表記でない（A2）
+- decision: 直さない
+- file: ja/guides/layout.mdx
+- quote: ignore, anyFile を乱用
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 直し方の案: `ignore()`・`anyFile()` のコード表記に
+
+## 直さない: ハイライトが閉じかっこまで含んでいる（D2-4）
+- decision: 直さない
+- file: ja/guides/kt-file-content.mdx
+- quote: {6,8-13,15-19}
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- ブロックの 19 行目は `required(...) {` を閉じる `}`
+- 直し方の案: `15-19` を `15-18` にする。`required { }` ブロック全体を指す意図なら範囲のままでよい（要確認）
+
+## 直さない: 修飾子の説明で public の扱いが書かれていない（要確認）
+- decision: 直さない
+- file: ja/guides/kt-file-content/kotlin-mapping.mdx
+- quote: public` と `final` を除く
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- `final` は次の文で説明があるが、`public` が除かれる理由が無い
+- 直し方の案: 「`public` は書かなくても付いていてよい」を一文で足す
+
+## 直さない: 指示語と半角括弧（D3-3）・「Deny by default」の表記（E12）
+- decision: 直さない
+- file: ja/guides/kt-file-content.mdx
+- quote: (これは katachi が Deny by default の原則に従うためです。)
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: 発生する現象の後にその現象が起こる理由を説明するときの「これは」は良さそう
+
+元の指摘:
+
+- 「これは」が前の文を指す
+- 案: 「全ての宣言が禁止されるのは、katachi が Deny by default の原則に従うためです。」と 1 文にする
+- 「Deny by default」の大文字始まりは E12 の判断待ち（kotlin-mapping.mdx L22 も同じ）
+
+## 直さない: 指示語（D3-3）
+- decision: 直さない
+- file: ja/guides/processor.mdx
+- quote: これらを必要に応じて参照しながら
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 直し方の案: `context.architecture` や `context.args` など指すものを書く
+
+## 直さない: 手順の途中で別のページ・リファレンスへ誘う（D3-5・要確認）
+- decision: 直さない
+- file: ja/guides/processor.mdx
+- quote: ArchitectureProcessContext
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- `ArchitectureProcessContext` の API リファレンスへ誘っている。特に `decodeFromStringMap` の細部は利用者が最初に知らなくてよい
+- 直し方の案: 「次のステップ」の API リファレンスのカードに寄せるか、削る
+
+## 直さない: 手順の途中で別のページ・リファレンスへ誘う（D3-5・要確認）
+- decision: 直さない
+- file: ja/guides/processor.mdx
+- quote: decodeFromStringMap
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- `decodeFromStringMap` の「カンマで分割される型などの細かい決まり」へ誘っている。特に `decodeFromStringMap` の細部は利用者が最初に知らなくてよい
+- 直し方の案: 「次のステップ」の API リファレンスのカードに寄せるか、削る
+
+## 直さない: API 名がコード表記でない（A2）
+- decision: 直さない
+- file: ja/guides/processor.mdx
+- quote: layout のファイルの宣言
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 直し方の案: `layout { }`
+
+## 直さない: API 名がコード表記でない（A2）
+- decision: 直さない
+- file: ja/guides/processor.mdx
+- quote: summary, description などのプロパティ
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 直し方の案: `summary`・`description`
+
+## 直さない: API 名がコード表記でない（A2）
+- decision: 直さない
+- file: ja/guides/processor.mdx
+- quote: layout を flat にした
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 直し方の案: `layout { }`
+
+## 直さない: API 名がコード表記でない（A2）
+- decision: 直さない
+- file: ja/guides/document-generation.mdx
+- quote: title / summary / description / example / layout
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 直し方の案: `example()`・`layout { }` の形
+
+## 直さない: IDE プラグインに触れている（D1-6・要確認）
+- decision: 直さない
+- file: ja/guides/cli-and-script/katachi-script.mdx
+- quote: IDE のサポート
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 表「IDE のサポート | katachi IDE plugin が必要 | 標準の IntelliJ IDEA, Android Studio のみ」
+- 根拠: D1-6「IDE プラグインは、当面 docs で案内しない」。要件の一言なので p3
+- 直し方: 「IDE のサポート」の行ごと削るか、IDE プラグインの語を外す
+
+## 直さない: Kotlin の例が 4 スペースの字下げ（D2-3）
+- decision: 直さない
+- file: ja/guides/cli-and-script/katachi-script.mdx
+- quote: executeCommands(
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 2 スペースに（`<Tabs>` の中はフェンスの字下げの分だけ入れ、コード自体を余計に字下げしない）
+
+## 直さない: Kotlin の例が 4 スペースの字下げ（D2-3）
+- decision: 直さない
+- file: ja/guides/cli-and-script/katachi-script.mdx
+- quote: executeCommands(
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 2 スペースに（`<Tabs>` の中はフェンスの字下げの分だけ入れ、コード自体を余計に字下げしない）
+
+## 直さない: Kotlin の例が 4 スペースの字下げ（D2-3）
+- decision: 直さない
+- file: ja/guides/cli-and-script/katachi-script.mdx
+- quote: executeCommands(
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 2 スペースに（`<Tabs>` の中はフェンスの字下げの分だけ入れ、コード自体を余計に字下げしない）
+
+## 直さない: Kotlin の例が 4 スペースの字下げ（D2-3）
+- decision: 直さない
+- file: ja/guides/cli-and-script/katachi-script.mdx
+- quote: Katachi(
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 2 スペースに（`<Tabs>` の中はフェンスの字下げの分だけ入れ、コード自体を余計に字下げしない）
+
+## 直さない: 指示語（D3-3）
+- decision: 直さない
+- file: ja/guides/cli-and-script.mdx
+- quote: これらを活用する
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 直し方の案: 「CLI と kotlin-script 用パッケージを活用する」
+
+## 直さない: Kotlin の例が 4 スペースの字下げ（D2-3）
+- decision: 直さない
+- file: README.ja.md
+- quote: .template
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: デフォルトは Kotlin ソースは インデント 4スペースだけど、README[.*].md だけ例外的に 2でOKとしたい
+
+元の指摘:
+
+- L15〜21・L52〜72・L87〜94。2 スペースに直す。`.template` の継続行は +2
+
+## 直さない: 例が package・import を書かず、省略とも書いていない（D2-2）
+- decision: 直さない
+- file: README.ja.md
+- quote: // architecture-test/src/test/kotlin/
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 先頭にファイルパスがあり、ファイル全体に読める
+- 直し方の案: ブロックの先頭に `// package / import の行は省略` を足す
+
+## 直さない: 「Gradle 8.0+」と index.md の「Gradle 7.6.3 以上」（要確認）
+- decision: 直さない
+- file: README.ja.md
+- quote: Kotlin 2.2+・Gradle
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: gradle のチェックはしないでいいかな... 現状の最低バージョン調べるのめんどいし...
+
+元の指摘:
+
+- 2つのページで対応バージョンの言い方が違う。`doctor` の判定に合わせて正しい値を確かめてから揃える
+
+## 直さない: A2（API のコード表記）と D1-4（LinkCard にコードを書かない）の優先（E16・p1）
+- decision: 直さない
+- file: docs/AGENTS.md
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- motivation.mdx の LinkCard の description は `architecture { }`・`.template { }` をバッククォート無しで書いている。D1-4 は守っているが A2 の「コード表記」にはなっていない。どちらを優先するかの記述が無い
+
+## 直さない: 完成形と書く例に import が無い（要確認）
+- decision: 直さない
+- file: ja/guides/role.mdx
+- quote: kt title=domain/UseCaseRole.kt nocollapse
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+- 「完成形」と書くが package/import から始まらない断片なので D2-1 の対象外。ただしファイル全体と読まれる恐れがある（role.mdx は title にファイル名を付けている）

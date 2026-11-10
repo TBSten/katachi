@@ -23,7 +23,7 @@ import { Aside, FileTree, LinkCard, TabItem, Tabs } from '@astrojs/starlight/com
 
 Android developers で公開されているアプリアーキテクチャガイドは、Android アプリケーションのベースとなるアーキテクチャとして広く知られています。
 
-以下は Domain レイヤーを採用する場合のアーキテクチャ定義の例です。
+以下は ドメイン層を採用する場合のアーキテクチャ定義の例です。
 
 ```mermaid
 flowchart LR
@@ -136,7 +136,7 @@ fun DeclarationContainerScope.uiState() = "UiState".role {
     `import`("**")
 
     required(data, `class`, fileName) {
-      allow(`val`, "*")      // var は許可しないので、書き換えられる状態は違反になる
+      allow(`val`, "*")  // var は許可しないので、書き換えられる状態は違反になる
     }
   }
 }
@@ -168,8 +168,8 @@ fun DeclarationContainerScope.viewModel() = "ViewModel".role {
 
     required(`class`, fileName).superclass("ViewModel") {
       required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
-      allow(public, `fun`, "*")          // 画面からのイベント
-      allow(private, anythingElse)     // UseCase や、書き換える側の状態
+      allow(public, `fun`, "*")  // 画面からのイベント
+      allow(private, anythingElse)  // UseCase や、書き換える側の状態
     }
   }
 }
@@ -200,7 +200,7 @@ fun DeclarationContainerScope.screen() = "Screen".role {
     `import`("**")
 
     required(annotated("Composable"), public, `fun`, fileName)
-    allow(private, anythingElse)      // 画面の部品や Preview など、private なものは何でもよい
+    allow(private, anythingElse)  // 画面の部品や Preview など、private なものは何でもよい
   }
 }
 ```
@@ -226,12 +226,12 @@ fun DeclarationContainerScope.useCase() = "UseCase".role {
 
   // GetUserUseCase.kt には class GetUserUseCase だけを置き、public な関数は invoke だけにする
   ktFileContent {
-    `package`(matchingDirectory)      // ディレクトリと同じ package
+    `package`(matchingDirectory)  // ディレクトリと同じ package
     `import`("**")
 
     required(`class`, fileName) {
       required(public, suspend.optional(), operator, `fun`, "invoke")  // suspend は付いていても無くてもよい
-      allow(private, anythingElse)      // コンストラクタで受け取る Repository など
+      allow(private, anythingElse)  // コンストラクタで受け取る Repository など
     }
   }
 }

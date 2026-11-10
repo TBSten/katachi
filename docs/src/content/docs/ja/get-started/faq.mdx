@@ -33,7 +33,7 @@ katachi は逆に、**現れてよいものを全部書かせます。** 書い�
 
     想定外のものをまず疑う考え方は、セキュリティの分野にもあります。
 
-    これは **fail-safe defaults**（安全側に倒れるデフォルト値）と呼ばれる設計原則の1つです。
+    これは **fail-safe defaults**（デフォルトの振る舞いを安全なほう、つまり許可しないほうにしておく）と呼ばれる設計原則の1つです。
 
     **禁止を列挙する方式では、列挙し損ねたものを検査が見逃してしまいます。**
     シグネチャ方式のマルウェア対策が未知の検体を止められないのと同じで、
@@ -131,9 +131,9 @@ Konsist.scopeFromProject()
 
 ```kotlin
 Konsist.scopeFromProject()
-    .classes()
-    .withNameEndingWith("UseCase")
-    .assertTrue { it.hasTestClasses() }
+  .classes()
+  .withNameEndingWith("UseCase")
+  .assertTrue { it.hasTestClasses() }
 ```
 
 `ktFileContent { }` の範囲の違反は、配置の違反と合わせて1つのレポートにまとまります。
@@ -168,10 +168,10 @@ Katachi check failed: 3 violations (Unexpected: 2, Missing: 1)
   No role is defined for this file.
 
   Nearby locations:
-    UseCase file:///path/to/project/src/main/kotlin/com/example/useCase/
+    UseCase file:///path/to/project/src/main/kotlin/com/example/useCase/ (*UseCase.kt)
 
   How to fix:
-    - Move it to one of the locations above
+    - Move it to one of the locations above, with a name matching the pattern in parentheses
     ...
 
 [UnexpectedDirectory] file:///path/to/project/src/main/kotlin/com/example/misc
@@ -181,7 +181,7 @@ Katachi check failed: 3 violations (Unexpected: 2, Missing: 1)
   ...
 ```
 
-## テストが通るなら、ドキュメント生成は要らないのでは
+## テストが成功していれば、ドキュメント生成は要らないのでは
 
 ドキュメント生成はオプション機能ですが、**使うことを推奨します。**
 テストは人間向けの説明ではないからです。
@@ -208,7 +208,7 @@ flowchart LR
 
 図 1. 1つの定義からテストとドキュメントを出す流れ
 
-アーキテクチャ定義が Single Source of Truth になるので、**片方だけが古くなることは構造上起きません。**
+アーキテクチャ定義が Single Source of Truth になるので、**片方だけが古くなることを防げます。**
 
 テストとドキュメントは katachi が用意しているものですが、**この2つに限りません。**
 同じ定義から自分で何かを取り出すこともできます。

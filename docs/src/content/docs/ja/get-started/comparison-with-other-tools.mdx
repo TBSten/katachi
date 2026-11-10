@@ -5,11 +5,11 @@ tags:
   - beginner
 ---
 
-import { CardGrid, LinkCard } from '@astrojs/starlight/components';
-
 {/*
   このページの目的: すでに他ツールの存在を知っているユーザが katachi と他ツールとの守備範囲の違いを理解できるようにすること。
 */}
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 
 katachi に似たツールとして、Konsist や ArchUnit などがあります。
@@ -73,8 +73,6 @@ Role の性質を、そのファイルに置いてよい宣言の許可リスト
 
 <details>
 <summary>`UseCase` は `invoke` 関数を1つだけ持つ</summary>
-
-Role の定義そのものです。
 
 ```kt nocollapse
 "UseCase".role {
@@ -176,7 +174,7 @@ Role の定義そのものです。
 シリアライズ対象の取りこぼしを防ぎます。
 
 ```kt nocollapse
-"DataModel".role {
+"Dto".role {
   layout {
     "src/main/kotlin/com/example/data" / "*Dto".ktFile()
   }

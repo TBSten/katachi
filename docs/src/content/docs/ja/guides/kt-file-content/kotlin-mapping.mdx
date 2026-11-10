@@ -17,7 +17,7 @@ import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で許可・禁止できるかの対応表です。書き方そのものの説明は [ktFileContent の概要](/katachi/ja/guides/kt-file-content/) をご覧ください。
 
-左の列は Kotlin の書き方と、右の行が許可する Kotlin のソースの例です。行を書かなかったときの扱いは、表ごとに次のどちらかです。
+各表の「Kotlin の書き方」の列が Kotlin のソースの例、「ktFileContent の行」の列がそれを許可する `ktFileContent { }` の行です。行を書かなかったときの扱いは、表ごとに次のどちらかです。
 
 - **違反** … 書いていない宣言は違反になります（Deny by default）。`allow(anythingElse)` を書くと、その場所の残りをまとめて許可できます。
 - **問わない** … 行の後ろに続けて書いたときだけ見ます。書かなければ何も確かめません。
@@ -47,9 +47,9 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
       required(`interface`, fileName) { /* メンバの行 */ }
       allow(data, `object`, "*Route")
       // class, interface, object のどれでも
-      allow(type, "*")
+      allow(type, "*") { allow(anythingElse) }
       // 種類を or でつなぐ
-      allow(`class` or `object`, "*")
+      allow(`class` or `object`, "*") { allow(anythingElse) }
       ```
     </td>
   </tr>
@@ -211,7 +211,7 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
 
 ## 修飾子
 
-修飾子は種類の前に、Kotlin のソースと同じ並びで書きます。書いた修飾子は必ず付いている必要があり、書かなかった修飾子は付いていると**違反**です（`public` と `final` を除く）。`final` と引数の修飾子は、書かなければ問いません。
+修飾子は種類の前に、Kotlin のソースと同じ並びで書きます。書いた修飾子は必ず付いている必要があり、アーキテクチャ定義に書いていない修飾子が付いていると**違反**になります（`public` と `final` を除く）。`final` と引数の修飾子は、書かなければ問いません。
 
 <div style="overflow-x: auto">
 <table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
@@ -291,7 +291,7 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
 
 ## シグネチャ
 
-行の後ろに続けて書いたときだけ見ます。書かなければ**問いません**。引数だけは `()` が「引数なし」の意味で、何も付けなければ問いません。
+シグネチャ（引数・戻り値・レシーバーなど）は、行の後ろに続けて書いたときだけ検査します。書かなければ**問いません**。引数だけは `()` が「引数なし」の意味で、何も付けなければ問いません。
 
 <div style="overflow-x: auto">
 <table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
@@ -392,7 +392,7 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
 
 ## プロパティのアクセサ・委譲
 
-行の後ろに続けて書いたときだけ見ます。書かなければ**問いません**。
+プロパティのアクセサ・委譲は、行の後ろに続けて書いたときだけ検査します。書かなければ**問いません**。
 
 <div style="overflow-x: auto">
 <table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
@@ -487,7 +487,7 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
       // 完全名でも書ける
       allow(annotated("androidx.compose.runtime.Composable"), `fun`, "*Screen")()
       allow(annotated("Preview") or annotated("PreviewLightDark"),
-            private, `fun`, "*Preview")()
+        private, `fun`, "*Preview")()
       ```
     </td>
   </tr>
@@ -540,7 +540,10 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
 
 ## ファイルとソースセット
 
-`package` と `import` は、行の無いものが**違反**です。`not.` は許可の行より強い禁止で、`actualsIn` は書いたときだけ見ます。
+`package` と `import` は、行の無いものが**違反**です。
+
+- `not.` は許可の行より強い禁止です
+- `actualsIn` は書いたときだけ見ます
 
 <div style="overflow-x: auto">
 <table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">
@@ -584,7 +587,7 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
     <td>
       禁止（`not.`）
       ```kt
-      class LegacyImpl   // これだけ通る
+      class LegacyImpl   // これだけは違反にならない
       ```
     </td>
     <td>
@@ -620,7 +623,7 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
 
 ## 本体と KDoc
 
-行の後ろに続けて書いたときだけ見ます。書かなければ**問いません**。
+本体と KDoc は、行の後ろに続けて書いたときだけ検査します。書かなければ**問いません**。
 
 <div style="overflow-x: auto">
 <table style="display: table; table-layout: fixed; width: 100%; min-width: 40rem">

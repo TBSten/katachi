@@ -13,6 +13,8 @@ import SnippetIsStartingPoint from '../../../../components/SnippetIsStartingPoin
 
 Claude Code や Cursor など 9 つの AI コーディングツールの設定ファイルを、ツールごとの group と Role で宣言できます。
 
+使うツールの分だけ呼びます。複数のツールの group を使うと、`AGENTS.md` は複数の Role に一致します。
+
 ## Claude Code
 
 `ProjectArchitecture.kt` から `claudeCode()` を呼び、中身は `roles/ClaudeCode.kt` に置きます。

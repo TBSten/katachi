@@ -21,7 +21,7 @@ Use the Layout API to declare the directory structure and file names; any file o
 
 The Layout API (`layout { }`) defines where the files for a Role may be placed.
 
-```kt {3-5}
+```kt {4-6}
 architecture {
   "UseCase".role {
     // A UseCase may only be placed as *UseCase.kt inside useCase/
@@ -74,7 +74,7 @@ layout {
 
 ### `anyFile()` — allow only files directly inside
 
-Allows any file to be placed, but only directly inside that directory.
+Allows any file to be placed, but only directly inside that directory. Use it for a directory of generated files, for example.
 
 ```kt
 layout {
@@ -86,15 +86,15 @@ In this example, subdirectories aren't allowed. A file one level deeper is still
 
 <FileTree>
     - generated/
-        - Foo.kt passes
-        - schema.json passes
+        - Foo.kt allowed
+        - schema.json allowed
         - nested/ violation (no declaration for a subdirectory)
             - Bar.kt violation
 </FileTree>
 
 ### `ignore()` — stop checking everything below
 
-Stops checking everything below that directory, at any depth.
+Stops checking everything below that directory, at any depth. Use it for a build output directory, for example.
 
 ```kt
 layout {
@@ -103,10 +103,10 @@ layout {
 ```
 
 <FileTree>
-    - build/ passes (not checked)
-        - app.jar passes
-        - tmp/ passes
-            - Foo.class passes
+    - build/ not a violation (not checked)
+        - app.jar not a violation
+        - tmp/ not a violation
+            - Foo.class not a violation
 </FileTree>
 
 You can also write it inside a block as `"build" { ignore() }`.
@@ -173,7 +173,7 @@ architecture {
   "UseCase".role {
     layout {
       appPackageDir / "useCase" / "*UseCase".ktFile()   // join with "/" to declare where files go
-      appPackageDir {                                    // wrapping in a block declares the same thing
+      appPackageDir {                                    // wrap in a block to declare the places under it together
         "feature" / "useCase" / "*UseCase".ktFile()
       }
     }

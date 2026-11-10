@@ -5,11 +5,11 @@ tags:
   - beginner
 ---
 
-import { CardGrid, LinkCard } from '@astrojs/starlight/components';
-
 {/*
   Purpose of this page: to help users who already know about other tools understand how the scope of katachi differs from theirs.
 */}
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 
 Tools similar to katachi include Konsist, ArchUnit, and others.
@@ -73,8 +73,6 @@ You can write the nature of a role as an allow list of the declarations its file
 
 <details>
 <summary>A `UseCase` has exactly one `invoke` function</summary>
-
-This is the definition of the role itself.
 
 ```kt nocollapse
 "UseCase".role {
@@ -176,7 +174,7 @@ This stops layer leaks from the contents side. Only the `import` lines you write
 This keeps serializable types from being missed.
 
 ```kt nocollapse
-"DataModel".role {
+"Dto".role {
   layout {
     "src/main/kotlin/com/example/data" / "*Dto".ktFile()
   }

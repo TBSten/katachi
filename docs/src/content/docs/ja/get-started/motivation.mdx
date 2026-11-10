@@ -1,6 +1,6 @@
 ---
 title: モチベーションと katachi の立ち位置
-description: アーキテクチャがドキュメントとテストに二重管理されて腐る問題と、katachi が1つの定義からその両方を出すという立ち位置。
+description: アーキテクチャがドキュメントとテストに二重管理されて、実装とずれていく問題と、katachi が1つの定義からその両方を出すという立ち位置。
 tags:
   - beginner
 ---
@@ -115,10 +115,10 @@ Katachi check failed: 1 violation (Unexpected: 1)
   No role is defined for this file.
 
   Nearby locations:
-    UseCase file:///path/to/project/src/main/kotlin/com/example/project/useCase/
+    UseCase file:///path/to/project/src/main/kotlin/com/example/project/useCase/ (*UseCase.kt)
 
   How to fix:
-    - Move it to one of the locations above
+    - Move it to one of the locations above, with a name matching the pattern in parentheses
     - Delete it if it is not needed
     - Add a new role for it:
         "GetUserUseCase".role {
@@ -197,12 +197,6 @@ Gradle plugin の `katachi { architecture = "..." }` で定義の場所を指定
 katachi で定義したプロジェクト構造を SSoT にして、人間も AI Agent も読めるドキュメントを生成しましょう。
 
 詳しくは [ドキュメント生成](/katachi/ja/guides/document-generation/) をご覧ください。
-
-<LinkCard
-    title="ドキュメント生成"
-    description="architecture { } の定義から、Role ごとの Markdown を生成する方法。"
-    href="/katachi/ja/guides/document-generation/"
-/>
 
 </details>
 
@@ -289,12 +283,6 @@ $ ./gradlew katachiTemplate --arg template=UseCase,UseCaseImplementation --arg n
 </CodeComparison>
 
 詳しくは [テンプレートからコード生成](/katachi/ja/guides/generate-code-from-template/) をご覧ください。
-
-<LinkCard
-    title="テンプレートからコード生成"
-    description=".template { } の書き方と、パラメータ・既存ファイルがあるときの扱い。"
-    href="/katachi/ja/guides/generate-code-from-template/"
-/>
 
 </details>
 

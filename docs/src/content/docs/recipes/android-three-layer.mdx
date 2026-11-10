@@ -136,7 +136,7 @@ fun DeclarationContainerScope.uiState() = "UiState".role {
     `import`("**")
 
     required(data, `class`, fileName) {
-      allow(`val`, "*")      // var is not allowed, so mutable state is a violation
+      allow(`val`, "*")  // var is not allowed, so mutable state is a violation
     }
   }
 }
@@ -168,8 +168,8 @@ fun DeclarationContainerScope.viewModel() = "ViewModel".role {
 
     required(`class`, fileName).superclass("ViewModel") {
       required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
-      allow(public, `fun`, "*")          // events from the screen
-      allow(private, anythingElse)     // UseCases, and the writable side of the state
+      allow(public, `fun`, "*")  // events from the screen
+      allow(private, anythingElse)  // UseCases, and the writable side of the state
     }
   }
 }
@@ -200,7 +200,7 @@ fun DeclarationContainerScope.screen() = "Screen".role {
     `import`("**")
 
     required(annotated("Composable"), public, `fun`, fileName)
-    allow(private, anythingElse)      // anything private is fine, such as parts of the screen and Previews
+    allow(private, anythingElse)  // anything private is fine, such as parts of the screen and Previews
   }
 }
 ```
@@ -226,12 +226,12 @@ fun DeclarationContainerScope.useCase() = "UseCase".role {
 
   // GetUserUseCase.kt contains only class GetUserUseCase, and its only public function is invoke
   ktFileContent {
-    `package`(matchingDirectory)      // the package that matches the directory
+    `package`(matchingDirectory)  // the package that matches the directory
     `import`("**")
 
     required(`class`, fileName) {
       required(public, suspend.optional(), operator, `fun`, "invoke")  // it may or may not be suspend
-      allow(private, anythingElse)      // such as the Repository received in the constructor
+      allow(private, anythingElse)  // such as the Repository received in the constructor
     }
   }
 }

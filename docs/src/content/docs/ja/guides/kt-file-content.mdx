@@ -5,11 +5,11 @@ tags:
   - intermediate
 ---
 
-import { Aside, CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
+import { CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
 
 `ktFileContent { }` を使うと、Role の Kotlin ファイルに何を置いてよいかを、`layout { }` と同じ許可リスト（allow list）で定義できます。
 
-例えば 「このファイルには ViewModel というクラスのみを配置できる」といったルールを指定することができます。
+例えば「このファイルには ViewModel というクラスのみを配置できる」といったルールを指定することができます。
 
 ```kt nocollapse {6,8-13,15-19}
 "ViewModel".role {
@@ -93,7 +93,7 @@ data class HomeUiState(val name: String = "")        // このファイルに置
 
 ## インストール
 
-`ktFileContent { }` は別アーティファクト `me.tbsten.katachi:katachi-konsist` に入っています。`build.gradle.kts` の依存に追加してください。
+`ktFileContent { }` は別モジュール `me.tbsten.katachi:katachi-konsist` に入っています。`build.gradle.kts` の依存に追加してください。
 
 ```kts title="build.gradle.kts" {2}
 dependencies {
