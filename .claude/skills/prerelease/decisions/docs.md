@@ -174,3 +174,19 @@ AGENTS の木では [AI生成] なのにページに印が無い、という指�
 範囲の外: description と本文が合っていない指摘は、目的のコメントに触れていても別の指摘としていつもどおり見る（見出しが match に合わないので外れない）。
 
 元の指摘（261109-01 の手順 11、9 件）: 無い 5 件（guides/kt-file-content・diff-report・cli-and-script・cli-and-script/cli、recipes/github）、import の後 4 件（get-started/comparison-with-other-tools、guides/baseline・kt-file-content/kotlin-mapping・cli-and-script/katachi-script）。
+
+## 方針: 次のステップのカードが processor を勧めている（D1-7・要確認）
+- decision: 方針
+- file: docs/src/content/docs/**
+- match: 次のステップ.*processor
+- rule: D1-7（`processor` を前面に出さない。ほとんどの利用者は `assert()` の 1 行しか触らない）
+- decided: 2026-11-10 261109-01 KATACHI-333
+- by: 利用者（チャット）
+
+利用者の一言: 「これ系、一律直さないで良い」
+
+範囲: ページの終わりの「次のステップ」のカード（とその description）が processor を勧めている・前面に出している、という指摘は出さない。
+
+範囲の外: 本文や FAQ の中で processor を前面に出している指摘（faq の mermaid の「自作 Processor」の枝など）は、同じ D1-7 でもカードではないので、この方針に入れずにいつもどおり見る。
+
+元の指摘（261109-01 の手順 11、3 件）: guides/generate-code-from-template・document-generation・diff-report の「次のステップ」のカード。
