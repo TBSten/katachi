@@ -140,6 +140,23 @@ describe('同じ見出しの指摘の id', () => {
 		// 戻しても id は書いたまま（記録が指している）
 		expect(applyStatus('s', sent, b!.id, { status: 'open' })).toContain(`- id: ${b!.id.slice(2)}`)
 	})
+	it('消すと、同じ見出しの残りの指摘に今の id を書く（触っていない指摘も詰まらない）', () => {
+		const t = '## 同じ\n- file: x\n\na\n\n## 同じ\n- file: x\n\nb\n\n## 同じ\n- file: x\n- id: keep\n\nc\n\n## 別\n- file: x\n'
+		const [a, b, c] = parseReview('s', t).items
+		// 真ん中を消す: 前の a は id を書き、すでに書いてある c はそのまま
+		const mid = removeItem('s', t, b!.id)
+		expect(parseReview('s', mid).items.map((i) => i.id)).toEqual([a!.id, c!.id, parseReview('s', t).items[3]!.id])
+		expect(mid).toContain(`## 同じ\n- file: x\n- id: ${a!.id.slice(2)}\n\na\n`)
+		expect(mid.match(/- id: keep/g)).toHaveLength(1)
+		expect(mid).not.toContain('\nb\n')
+		// 先頭を消す: 後ろの b は `-2` のまま
+		const first = removeItem('s', t, a!.id)
+		expect(parseReview('s', first).items.map((i) => i.id).slice(0, 2)).toEqual([b!.id, c!.id])
+		expect(first.startsWith('## 同じ\n- file: x\n- id: ')).toBe(true)
+		// 見出しが 1 つだけの指摘を消しても、ほかには何も書かない
+		const other = removeItem('s', t, parseReview('s', t).items[3]!.id)
+		expect([other.includes('## 別'), other.match(/- id:/g)?.length]).toEqual([false, 1])
+	})
 	it('書いてある id とは重ねない（あとから同じ見出しを足しても、書いてある id を取らない）', () => {
 		const t = '## 同じ\n- file: x\n- id: zzz-2\n\n## 同じ\n- file: x\n\n## 同じ\n- file: x\n'
 		expect(parseReview('s', t).items.map((i) => i.id)).toEqual(['s/zzz-2', expect.stringMatching(/^s\/[0-9a-z]+$/), expect.stringMatching(/^s\/[0-9a-z]+-2$/)])

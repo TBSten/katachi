@@ -223,6 +223,22 @@ test('直してもらう: Feedback の記録を作って解決済みにする �
 	ok('「戻す」で指摘のファイルが元に戻る', await waitFor(() => readReview() === SET))
 })
 
+test('選択肢が 8 個あると欄を出さず、消し方と直し方だけを書く。名前を押すと直せる', async ({ fb }) => {
+	const labels = ['後で', 'PR #65 待ち', 'skill へ移すので消えるか見る', '方針を決めてから', 'このまま', '重複', '英語版だけ直す', 'v0.5']
+	writeSet(SET, `# 選択肢\n\n${labels.map((l) => `## ${l}\n- agent: なにか\n`).join('')}`)
+	await fb.fresh(FAQ)
+	await toggle(fb)
+	const u = ui(fb)
+	await openRow(fb, '段落への指摘')
+	ok('8 個がボタンで並ぶ', (await u('.pop .act .btn.custom').count()) === 8)
+	await fb.act(u('.pop .btn.plus'))
+	ok('上限なら欄を出さない', (await u('.pop .action-form').count()) === 0 && /8 個までです。足すなら × で/.test((await u('.pop .action-hint').textContent()) ?? ''))
+	await fb.shot('review-actions-5-full')
+	ok('一覧は高さを止めて中だけスクロールする', await u('.pop .action-list').evaluate((e) => getComputedStyle(e).overflowY === 'auto'))
+	await fb.act(u('.pop .action-chip .action-pick').filter({ hasText: '重複' }))
+	ok('名前を押すと欄が出て直せる', (await u('.pop .action-form input').first().inputValue()) === '重複' && (await u('.pop .action-form .btn').textContent()) === '直す')
+	ok('前・次は見えている', await u('.pop .nav').isVisible())
+})
 test('人が足した選択肢: ボタンが並び、押すとひとことの頭に名前を書く。「＋」で足す・消す', async ({ fb }) => {
 	writeSet(SET, '# Review の選択肢\n\n## 後で\n- agent: v0.5 のチケットに積んでから review remove\n- decision: 後で\n')
 	await fb.fresh(FAQ)
@@ -259,6 +275,7 @@ test('人が足した選択肢: ボタンが並び、押すとひとことの頭
 	await fb.act(u('.pop .action-chip').filter({ hasText: 'PR #65 待ち' }).locator('.action-x'))
 	ok('× で _actions.md から消す', await waitFor(() => !readActions().includes('PR #65 待ち')), readActions())
 	ok('一覧からも消える', await waitFor(async () => (await u('.pop .action-chip').count()) === 1))
+	if (!fb.mobile) ok('消したあとは名前の欄に入力が移る', await u('.pop .action-form input').first().evaluate((i) => i === (i.getRootNode() as ShadowRoot | Document).activeElement))
 	await fb.act(u('.toast .btn').filter({ hasText: '戻す' }))
 	ok('トーストの「戻す」で足し直す', await waitFor(() => readActions().includes('## PR #65 待ち\n')), readActions())
 	// 名前を押すと欄に読み込んで直せる
@@ -268,6 +285,13 @@ test('人が足した選択肢: ボタンが並び、押すとひとことの頭
 	await fb.act(u('.pop .action-form .btn'))
 	ok('直すと _actions.md のその場所を書き換える', await waitFor(() => readActions().includes('## PR #65 待ち\n- agent: マージ後に見直す\n- decision: 後で\n')), readActions())
 	ok('直したあとは足すに戻る', await waitFor(async () => (await u('.pop .action-form .btn').textContent()) === '足す' && (await u('.pop .action-form input').first().inputValue()) === ''))
+	// Esc は編集だけを閉じる（popup は開いたまま。書きかけは「＋」で開き直すと残っている）
+	await u('.pop .action-form input').first().fill('書きかけ')
+	await fb.page.keyboard.press('Escape')
+	ok('編集中の Esc は編集だけを閉じる', await waitFor(async () => (await u('.pop').isVisible()) && (await u('.pop .actions-edit').isHidden()) && (await u('.pop .btn.keep').isVisible())))
+	await fb.act(u('.pop .btn.plus'))
+	ok('開き直すと書きかけが残っている', (await u('.pop .action-form input').first().inputValue()) === '書きかけ')
+	await u('.pop .action-form input').first().fill('')
 	await fb.act(u('.pop .actions-top .btn'))
 	ok('「閉じる」で編集を閉じ、足した選択肢がボタンで並ぶ', (await u('.pop .actions-edit').isHidden()) && (await u('.pop .act .btn.custom').count()) === 2)
 	await fb.shot('review-actions-3-added')
@@ -288,6 +312,7 @@ test('人が足した選択肢: ボタンが並び、押すとひとことの頭
 	await fb.act(u('.filters input[type=checkbox]'))
 	await sleep(400)
 	ok('解決済みの行に選んだ名前を添える', (await u('.row.is-resolved .row-tag').textContent()) === '後で', (await u('.row.is-resolved').first().textContent()) ?? '')
+	ok('札は切れるので、行の説明にひとことを全部出す', /\n人: 後で: v0\.5 で/.test((await u('.row.is-resolved').first().getAttribute('title')) ?? ''))
 	await fb.shot('review-actions-4-list')
 	await fb.act(u('.filters input[type=checkbox]'))
 	rmSync(actionsFile(), { force: true })

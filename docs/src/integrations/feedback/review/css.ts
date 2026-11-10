@@ -69,7 +69,8 @@ button, input { font: inherit; }
 .btn.plus.is-on { color: var(--fg); background: var(--soft); border-style: solid; }
 .actions-edit { flex: 1 1 100%; min-width: 0; display: flex; flex-direction: column; gap: 6px; padding: 8px; background: var(--soft); border-radius: 8px; }
 .actions-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 12px; }
-.action-list { display: flex; flex-wrap: wrap; gap: 4px; }
+/* 名前が長い・数が多いときも popup の本文を押しつぶさないよう、一覧は 3〜4 行で止めて中だけをスクロールする。 */
+.action-list { display: flex; flex-wrap: wrap; gap: 4px; max-height: 112px; overflow-y: auto; overscroll-behavior: contain; }
 .action-chip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 2px 1px 8px; font-size: 12px; background: var(--bg); border: 1px dashed var(--border-strong); border-radius: 12px; }
 .action-chip.is-on { border-style: solid; border-color: var(--p-done); }
 .action-pick { padding: 0; font: inherit; color: var(--fg); background: none; border: 0; cursor: pointer; }

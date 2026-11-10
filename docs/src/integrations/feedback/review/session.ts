@@ -1,7 +1,7 @@
 // Review を開いてから閉じるまでの 1 回ぶん: 読み込み → 印と枠 → popup → 解決済みの印の付け外し → 片付け。
 // 閉じると、印・枠・popup・パネル・リスナーを全部消す（host を remove するだけ）。
 import { REVIEW_KEEP_NOTE, REVIEW_SENT_NOTE, type ReviewAction, type ReviewDecision, type ReviewResult, type ReviewView } from '../core/protocol'
-import { el, isNarrow } from '../shared/dom'
+import { el, isCoarse, isNarrow } from '../shared/dom'
 import { runInsideHost, swallowEscKeyup, inToolbar, onKeyInside } from '../shared/keys'
 import { createHost } from '../shared/shell'
 import { pageSourceFile } from '../shared/srcmap'
@@ -725,6 +725,12 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		row1.append(name, decision)
 		row2.append(agent, add)
 		form.append(row1, row2)
+		// もう足せないときは欄を出さず、どうすればよいかだけを書く（スマホのシートの高さを空ける）。
+		if (!fixing && actions.length >= MAX_ACTIONS) {
+			hint.textContent = `選択肢は ${MAX_ACTIONS} 個までです。足すなら × でどれかを消してください（名前を押すと直せます）`
+			box.append(hint)
+			return box
+		}
 		box.append(form, hint)
 		sync()
 		return box
@@ -771,6 +777,8 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		}
 		accept(r)
 		popError = null
+		// 消した × は無くなるので、名前の欄へ入力を移す（キーボードで続けて操作できるように。タッチではキーボードを出さない）。
+		if (!isCoarse()) focusField = 'action-label'
 		renderPop()
 		// 消したのを取り消す（同じ名前・同じ中身で足し直す）。
 		toast(`「${a.label}」を消しました`, () => void (async () => {
@@ -919,7 +927,8 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		const t = targets.get(v.id)
 		const meta = !v.line ? 'ページ' : v.place === 'lost' ? '見つからない' : v.place === 'no-file' ? 'ファイル無し' : !t && onPage(v, { pathname: location.pathname, source, base }) ? `${formatLine(v.line)}・本文の外` : formatLine(v.line)
 		b.append(el('span', `row-meta${v.place === 'lost' || v.place === 'no-file' ? ' warn' : ''}`, meta))
-		b.title = `${v.priority !== null ? `[p${v.priority}] ` : ''}${v.title}`
+		// 札は短く切れるので、解決済みのひとことは行の説明に全部出す。
+		b.title = `${v.priority !== null ? `[p${v.priority}] ` : ''}${v.title}${v.status === 'resolved' && v.note ? `\n人: ${v.note}` : ''}`
 		b.addEventListener('click', () => open(v.id))
 		// 一覧の行に乗せると、ページの上のその印と枠を目立たせる（どこへの指摘かを開く前に見せる）。
 		const hover = (on: boolean) => {
@@ -1054,7 +1063,7 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 	renderPanel()
 
 	// 自前の UI の中のキーはページへ渡さない（Starlight の検索のショートカットなど）。入力・ボタン操作はそのまま。
-	// popup を開いているあいだ: Esc で popup を閉じる（アプリは閉じない）、← → で前・次（入力中は除く）。
+	// popup を開いているあいだ: Esc で popup を閉じる（選択肢の編集中は編集を閉じる。アプリは閉じない）、← → で前・次（入力中は除く）。
 	for (const type of ['keydown', 'keyup', 'keypress'] as const) {
 		window.addEventListener(type, (e) => {
 			if (inToolbar(e)) return
@@ -1064,7 +1073,8 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 					e.preventDefault()
 					e.stopPropagation()
 					swallowEscKeyup()
-					closePop()
+					// 選択肢を足している途中なら、まず指摘の画面へ戻る（書きかけの選択肢ごと popup を閉じない）。
+					if (editing) { editing = false; stopFixing(); focusField = 'note'; renderPop() } else closePop()
 					return
 				}
 				const t = e.composedPath()[0]

@@ -248,13 +248,23 @@ export function applyStatus(name: string, text: string, id: string, patch: Statu
 	return [...lines.slice(0, item.span.heading + 1), ...meta, ...lines.slice(item.span.metaEnd)].join('\n')
 }
 
-/** id の指摘を見出しから次の見出しの手前まで消した全文を返す。見つからなければ投げる。 */
+/** id の指摘を見出しから次の見出しの手前まで消した全文を返す。同じ見出しの残りの指摘は id を書いて固定する。見つからなければ投げる。 */
 export function removeItem(name: string, text: string, id: string): string {
 	const set = parseReview(name, text)
 	const item = set.items.find((i) => i.id === id)
 	if (!item) throw new Error(`指摘が見つかりません: ${id}`)
 	const lines = splitLines(text)
-	return [...lines.slice(0, item.span.heading), ...lines.slice(item.span.end)].join('\n')
+	// 同じ file・見出しの残りの指摘は、消すと `x-2` が `x` に詰まる。まだ id を書いていないものには今の id を書いて固定する
+	// （人に渡したリンク・Feedback の記録・判断の記録が、消したあとも同じ指摘を指すように）。
+	// 書き足しと消すのを後ろの行から順にして、まだ触っていない場所の行番号をずらさない。
+	const edits: { at: number; run: () => void }[] = [{ at: item.span.heading, run: () => lines.splice(item.span.heading, item.span.end - item.span.heading) }]
+	for (const x of set.items) {
+		if (x === item || x.file !== item.file || x.title !== item.title) continue
+		if (lines.slice(x.span.heading + 1, x.span.metaEnd).some((l) => META_LINE.exec(l)?.[1] === 'id')) continue
+		edits.push({ at: x.span.metaEnd, run: () => lines.splice(x.span.metaEnd, 0, `- id: ${x.id.slice(name.length + 1)}`) })
+	}
+	for (const e of edits.sort((a, b) => b.at - a.at)) e.run()
+	return lines.join('\n')
 }
 
 // ---- 行の引き直し ----
