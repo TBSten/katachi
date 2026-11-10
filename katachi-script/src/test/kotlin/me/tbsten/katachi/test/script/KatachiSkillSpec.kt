@@ -39,7 +39,23 @@ class KatachiSkillSpec : FreeSpec({
         (marked - ids("en")).shouldBeEmpty()
         (ids("en") - marked).shouldBeEmpty()
     }
+
+    "skill の中の相対リンクは、どれも在るファイルを指す" {
+        val broken = skill.walkTopDown().filter { it.isFile && it.extension == "md" }
+            .flatMap { file ->
+                MD_LINK.findAll(file.readText()).map { it.groupValues[1] }
+                    .filterNot { URL_SCHEME.containsMatchIn(it) || it.startsWith("#") }
+                    .filterNot { file.parentFile.resolve(it.substringBefore("#")).exists() }
+                    .map { "${file.relativeTo(skill)} -> $it" }
+            }
+            .toList()
+        broken.shouldBeEmpty()
+    }
 })
+
+/** `[text](target)`; `target` is a URL, an anchor or a path relative to the Markdown file. */
+private val MD_LINK = Regex("""\]\(([^)\s]+)\)""")
+private val URL_SCHEME = Regex("""^[a-z]+:""")
 
 /** "mark `1-2` done", "mark `4-1`, `4-2` and `4-3` done". */
 private val MARK_DONE = Regex("""[Mm]ark (`[0-9]-[0-9A-D]`(, | and )?)+ done""")
