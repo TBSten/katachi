@@ -234,7 +234,7 @@ The declaration that is a violation is reported like this (some lines are omitte
   Not allowed: fun helper()
 ```
 
-The lines you write become the allow list, and nothing may be placed for a kind you wrote no line for (deny by default). This example has no import line, so the file may not have a single import. The members of a class are an allow list of the lines in its `{ }`, and `allow(anythingElse)` means "anything".
+The lines you write become the allow list, and nothing may be placed for a kind you wrote no line for (deny by default). The `ktFileContent { }` example has no import line, so the file may not have a single import.
 
 `ktFileContent { }` lives in the separate `katachi-konsist` module. To check it, call `assert(FileConstraintCheck())` instead of `assert()` in the test. With `assert()` alone it is not checked, and the test fails with `[UncheckedFileConstraint]`.
 

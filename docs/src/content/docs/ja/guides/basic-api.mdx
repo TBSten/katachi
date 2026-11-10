@@ -235,7 +235,7 @@ fun helper() {}                      // 違反: 一致する行が無い
   Not allowed: fun helper()
 ```
 
-書いた行が許可リストになり、行を書かなかった種類には何も置けません（Deny by default）。この例には import の行が無いので、import を1つも書けません。クラスのメンバは `{ }` の中の行が許可リストで、`allow(anythingElse)` は「何でもよい」を表します。
+書いた行が許可リストになり、行を書かなかった種類には何も置けません（Deny by default）。`ktFileContent { }` の例には import の行が無いので、import を1つも書けません。
 
 `ktFileContent { }` は別モジュール `katachi-konsist` に入っています。検査するには、テストで `assert()` の代わりに `assert(FileConstraintCheck())` を呼びます。`assert()` だけでは検査されず、`[UncheckedFileConstraint]` としてテストが失敗します。
 
