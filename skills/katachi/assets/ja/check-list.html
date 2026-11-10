@@ -783,6 +783,35 @@
   }
 
   .fb-pop { position: absolute; z-index: 35; width: min(24rem, calc(100vw - 32px)); padding: 12px; }
+  .fb-pop-grip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: -6px -6px 6px;
+    padding: 2px 6px;
+    border-radius: var(--radius-md);
+    color: var(--muted);
+    font-size: 12px;
+    cursor: move;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .fb-pop-grip:hover { background: var(--bg-muted); }
+  /* つかめる所の印（点を 2 列） */
+  .fb-pop-grip::before {
+    content: "";
+    flex: none;
+    width: 8px;
+    height: 12px;
+    background: radial-gradient(circle, currentColor 1px, transparent 1.5px) 0 0 / 4px 4px;
+  }
+  .fb-pop-grip-label { flex: 1; min-width: 0; }
+  .fb-pop-reset { padding: 0 6px; }
+  .fb-pop.is-dragging { opacity: 0.92; box-shadow: var(--shadow-lg), 0 0 0 2px var(--note-high); }
+  .fb-pop-quote { margin: 0 0 6px; padding-left: 8px; border-left: 3px solid var(--line); color: var(--text); font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+  .fb-list li.fb-draft { background: var(--wash-faint); }
+  .fb-list .fb-pop-quote { margin: 4px 0 0; }
   .fb-pop-target { margin: 0 0 2px; color: var(--ink); font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; }
   .fb-pop-key { margin: 0 0 6px; color: var(--muted); font-family: var(--font-mono); font-size: 12px; overflow-wrap: anywhere; }
   .fb-pop-targets { max-height: 32vh; overflow-y: auto; margin-bottom: 2px; }
@@ -1620,7 +1649,7 @@
     saveFailed: '保存できませんでした。下の JSON を手で選んでコピーしてください。',
     // フィードバック
     fbFab: 'フィードバック',
-    fbBanner: 'フィードバックモード: コメントしたい項目をクリックしてください（Shift + クリックで複数、行の矢印で開閉）',
+    fbBanner: 'フィードバックモード: コメントしたい項目をクリックしてください（文字をドラッグで選ぶと引用、Shift + クリックで複数、行の矢印で開閉）',
     fbWholePageButton: 'ページ全体に書く',
     fbWholePage: 'ページ全体',
     fbList: function (n) { return '一覧 (' + n + ')'; },
@@ -1649,6 +1678,15 @@
     fbNoStorage: 'このブラウザでは保存できません（プライベートウィンドウなど）。閉じる前にコピーしてください。',
     fbPinLabel: function (n, label) { return 'フィードバック ' + n + ': ' + label; },
     fbTargetPrefix: '対象: ',
+    fbQuotePrefix: '引用: ',
+    fbContentPrefix: 'いまの内容: ',
+    fbQuoted: function (raw) { return '「' + raw + '」'; },
+    fbDragHint: 'ドラッグで動かせます。動かした位置は次から使います',
+    fbResetPos: '位置を戻す',
+    fbDraftMark: '書きかけ',
+    fbDraftResume: '続きを書く',
+    fbDraftDiscard: '捨てる',
+    fbDraftDiscarded: '書きかけを捨てました',
     fbTargetWithLabel: function (key, label) { return key + '（' + label + '）'; },
     fbMore: function (n) { return ' ほか ' + n + ' か所'; },
     fbTargetsCount: function (n) { return n + ' か所にまとめてコメント'; },
@@ -2544,11 +2582,82 @@
   function fbTitle(labels) {
     return labels.length > 1 ? labels[0] + T.fbMore(labels.length - 1) : labels[0];
   }
+  // quotes は文字を選んで書いたときの引用、texts は保存したときのその場所の内容（どちらも宛先と同じ並び）
   function fbTargetsOf(item) {
     var labels = fbLabels(item);
+    var quotes = Array.isArray(item.quotes) ? item.quotes : [];
+    var texts = Array.isArray(item.texts) ? item.texts : [];
     return fbKeys(item).map(function (key, i) {
-      return { key: key, label: labels[i], node: key === 'page' ? null : fbFind(key) };
+      return { key: key, label: labels[i], node: key === 'page' ? null : fbFind(key), quote: quotes[i] || '', text: texts[i] || '' };
     });
+  }
+  var FB_QUOTE_MAX = 300;
+  var FB_TEXT_MAX = 120;
+  function fbShorten(raw, max) {
+    var flat = String(raw || '').replace(/\s+/g, ' ').replace(/^ | $/g, '');
+    return flat.length > max ? flat.slice(0, max - 1) + '…' : flat;
+  }
+  // その場所に今見えている文。畳んだ <details> の中でも読めるように innerText が空なら textContent
+  function fbNodeText(node) {
+    if (!node) return '';
+    return fbShorten(node.innerText || node.textContent, FB_TEXT_MAX);
+  }
+  // ---- 書きかけ（保存していないコメント）。タブを閉じるまで sessionStorage に残し、再読み込みしても戻す ----
+  var DRAFTS_KEY = 'katachi-feedback-drafts:' + location.href.split('#')[0];
+  function fbLoadDrafts() {
+    try {
+      var raw = JSON.parse(sessionStorage.getItem(DRAFTS_KEY) || '{}');
+      var out = {};
+      Object.keys(raw || {}).forEach(function (key) {
+        var d = raw[key];
+        if (d && typeof d.text === 'string' && Array.isArray(d.targets) && d.targets.length) out[key] = d;
+      });
+      return out;
+    } catch (error) {
+      return {};
+    }
+  }
+  function fbSaveDrafts() {
+    try {
+      if (Object.keys(fb.drafts).length) sessionStorage.setItem(DRAFTS_KEY, JSON.stringify(fb.drafts));
+      else sessionStorage.removeItem(DRAFTS_KEY);
+    } catch (error) { /* 読み書きできなければメモリだけで持つ */ }
+  }
+  // 開いている入力欄の書きかけを持っておく（書き換えるたび）。変えていなければ消す
+  function fbKeepDraft(pop) {
+    if (!pop || !pop.draftKey) return;
+    if (pop.isDirty()) {
+      fb.drafts[pop.draftKey] = {
+        text: pop.area.value,
+        targets: pop.targets.map(function (target) { return { key: target.key, label: target.label, quote: target.quote || '' }; }),
+        originKey: pop.origin ? pop.origin.key : null,
+        at: new Date().toISOString()
+      };
+    } else {
+      delete fb.drafts[pop.draftKey];
+    }
+    fbSaveDrafts();
+  }
+  function fbDropDraft(key) {
+    if (!Object.prototype.hasOwnProperty.call(fb.drafts, key)) return;
+    delete fb.drafts[key];
+    fbSaveDrafts();
+  }
+  function fbDraftTargets(draft) {
+    return draft.targets.map(function (target) {
+      return { key: target.key, label: target.label, quote: target.quote || '', node: target.key === 'page' ? null : fbFind(target.key) };
+    });
+  }
+
+  // ---- 入力欄の位置。ドラッグで動かしたら覚えて、次からはそこに出す ----
+  var POP_POS_KEY = 'katachi-feedback-pop-pos';
+  function fbSavedPos() {
+    try {
+      var pos = JSON.parse(storageGet(POP_POS_KEY) || 'null');
+      return pos && typeof pos.x === 'number' && typeof pos.y === 'number' ? pos : null;
+    } catch (error) {
+      return null;
+    }
   }
   function fbFind(key) {
     var nodes = document.querySelectorAll('[data-fb]');
@@ -2579,8 +2688,12 @@
       var keys = fbKeys(item);
       var labels = fbLabels(item);
       lines.push((i + 1) + '. ' + (keys.length > 1 ? fbTitle(labels) : item.label));
+      var targets = fbTargetsOf(item);
       keys.forEach(function (key, k) {
         lines.push('   ' + T.fbTargetPrefix + (keys.length > 1 ? T.fbTargetWithLabel(key, labels[k]) : key));
+        // 引用（選んだ文字）があればそれを、無ければ保存したときのその場所の内容を添える
+        if (targets[k].quote) lines.push('   ' + T.fbQuotePrefix + T.fbQuoted(targets[k].quote));
+        else if (targets[k].text) lines.push('   ' + T.fbContentPrefix + T.fbQuoted(targets[k].text));
       });
       String(item.comment).split('\n').forEach(function (line) { lines.push('   > ' + line); });
       lines.push('');
@@ -2670,13 +2783,14 @@
   // keepDraft のときは書きかけを宛先ごとに持っておく（Esc・別の項目を開いたとき）。「やめる」と保存では捨てる
   function fbClosePop(keepDraft) {
     var pop = fb.ui.pop;
-    if (pop && fb.editing) {
-      if (keepDraft && pop.isDirty()) fb.drafts[fb.editing] = pop.area.value;
-      else delete fb.drafts[fb.editing];
+    if (pop) {
+      if (keepDraft) fbKeepDraft(pop);
+      else fbDropDraft(pop.draftKey);
     }
     if (pop) pop.remove();
     fb.ui.pop = null;
     fb.editing = null;
+    if (pop && fb.ui.list) fbPaint();
     schedulePins();
   }
   // point はクリックした位置（画面の座標）。その近くに出す
@@ -2694,15 +2808,44 @@
     var labels = targets.map(function (target) { return target.label; });
     var key = fbId(keys);
     var node = (targets.filter(function (target) { return target.node; })[0] || {}).node || null;
-    var existing = carry ? carry.origin : (fb.items.filter(function (item) { return item.key === key; })[0] || null);
+    var draft = !carry && Object.prototype.hasOwnProperty.call(fb.drafts, key) ? fb.drafts[key] : null;
+    var existing = carry ? carry.origin : (fb.items.filter(function (item) { return item.key === key || (draft && item.key === draft.originKey); })[0] || null);
     var original = existing ? existing.comment : '';
-    var restored = !carry && Object.prototype.hasOwnProperty.call(fb.drafts, key);
+    var restored = !!draft;
+    // 保存済みのものを開き直したときは、その引用を引き継ぐ（新しく文字を選んだときはそちら）
+    if (existing) {
+      fbTargetsOf(existing).forEach(function (before) {
+        targets.forEach(function (target) { if (!target.quote && target.key === before.key) target.quote = before.quote; });
+      });
+    }
+    // 書きかけに引用があれば、それを宛先に戻す
+    if (draft) {
+      targets.forEach(function (target, i) {
+        if (!target.quote && draft.targets[i] && draft.targets[i].key === target.key) target.quote = draft.targets[i].quote || '';
+      });
+    }
     fb.editing = key;
     var pop = el('div', 'fb-pop fb-ui');
     pop.setAttribute('role', 'dialog');
     pop.setAttribute('aria-label', T.fbComposeLabel);
     pop.targets = targets;
     pop.origin = existing;
+    pop.draftKey = key;
+    // つかんで動かすための帯
+    var grip = el('div', 'fb-pop-grip');
+    grip.setAttribute('title', T.fbDragHint);
+    var gripLabel = el('span', 'fb-pop-grip-label');
+    gripLabel.textContent = T.fbComposeLabel;
+    grip.appendChild(gripLabel);
+    var resetPos = button(T.fbResetPos, function () {
+      storageSet(POP_POS_KEY, null);
+      resetPos.hidden = true;
+      fbPlacePop(pop, null, node, null);
+    }, 'btn-sm btn-quiet fb-pop-reset');
+    resetPos.hidden = !fbSavedPos();
+    grip.appendChild(resetPos);
+    fbDraggable(pop, grip, function () { resetPos.hidden = false; });
+    pop.appendChild(grip);
     var head = el('div', 'fb-pop-targets');
     if (targets.length > 1) {
       var countLine = el('p', 'fb-pop-count');
@@ -2723,6 +2866,11 @@
       keyLine.textContent = target.key;
       names.appendChild(name);
       names.appendChild(keyLine);
+      if (target.quote) {
+        var quote = el('p', 'fb-pop-quote');
+        quote.textContent = T.fbQuoted(target.quote);
+        names.appendChild(quote);
+      }
       row.appendChild(names);
       if (targets.length > 1) {
         var remove = button('×', function () {
@@ -2738,12 +2886,13 @@
     area.id = 'fb-comment';
     area.setAttribute('aria-label', T.fbComposeLabel);
     area.setAttribute('placeholder', T.fbPlaceholder);
-    area.value = carry ? carry.text : restored ? fb.drafts[key] : original;
+    area.value = carry ? carry.text : restored ? draft.text : original;
     pop.area = area;
     // 文が変わったか、保存済みのものの宛先を変えたら「書きかけ」
     pop.isDirty = function () {
       return area.value.replace(/^\s+|\s+$/g, '') !== original.replace(/^\s+|\s+$/g, '') || (existing !== null && existing.key !== key);
     };
+    area.addEventListener('input', function () { fbKeepDraft(pop); });
     var actions = el('div', 'fb-pop-actions');
     function save() {
       var comment = area.value.replace(/^\s+|\s+$/g, '');
@@ -2756,6 +2905,9 @@
       if (comment) {
         var entry = { key: key, label: fbTitle(labels), comment: comment, at: new Date().toISOString() };
         if (keys.length > 1) { entry.keys = keys; entry.labels = labels; }
+        // 保存したときのその場所の内容と、引用（選んだ文字）
+        entry.texts = targets.map(function (target) { return target.node ? fbNodeText(target.node) : ''; });
+        if (targets.some(function (target) { return target.quote; })) entry.quotes = targets.map(function (target) { return target.quote || ''; });
         if (at >= 0) fb.items.splice(Math.min(fb.items.length, at), 0, entry);
         else fb.items.push(entry);
       }
@@ -2789,19 +2941,39 @@
     pop.appendChild(actions);
     document.body.appendChild(pop);
     fb.ui.pop = pop;
-    // 画面の中に出す。クリックした位置があればその下（入らなければ上）、無ければ宛先の見えている部分の下（入らなければ上）
-    var width = pop.offsetWidth;
+    fbPlacePop(pop, point, node, carry);
+    // focus でページが宛先の下まで飛ばないように
+    area.focus({ preventScroll: true });
+    if (restored || carry) area.setSelectionRange(area.value.length, area.value.length);
+    if (carry) fbKeepDraft(pop);
+    // 一覧に出ている書きかけのうち、いま開いたものを隠す
+    if (fb.ui.list && Object.keys(fb.drafts).length) fbPaint();
+    schedulePins();
+  }
+  // 入力欄を画面の中に収める（上はバナーの下、左右と下は 16px / 8px 空ける）。表示と、覚える位置の両方で使う
+  function fbClampPop(pop, top, left) {
+    var banner = fb.ui.banner;
+    var minTop = (banner && !banner.hidden ? banner.getBoundingClientRect().bottom : 0) + 8;
+    var maxTop = window.innerHeight - pop.offsetHeight - 8;
+    var maxLeft = document.documentElement.clientWidth - pop.offsetWidth - 16;
+    return { top: Math.max(minTop, Math.min(top, maxTop)), left: Math.max(16, Math.min(left, maxLeft)) };
+  }
+  // 画面の中に出す。動かして覚えた位置があればそこ。無ければクリックした位置の下（入らなければ上）、それも無ければ宛先の見えている部分の下（入らなければ上）
+  function fbPlacePop(pop, point, node, carry) {
     var height = pop.offsetHeight;
-    var viewW = document.documentElement.clientWidth;
     var viewH = window.innerHeight;
     var banner = fb.ui.banner;
     var minTop = (banner && !banner.hidden ? banner.getBoundingClientRect().bottom : 0) + 8;
     var maxTop = viewH - height - 8;
     var top;
     var left;
+    var saved = carry ? null : fbSavedPos();
     if (carry) {
       top = carry.top - window.pageYOffset;
       left = carry.left - window.pageXOffset;
+    } else if (saved) {
+      top = saved.y;
+      left = saved.x;
     } else if (point) {
       top = point.y + 12 <= maxTop ? point.y + 12 : point.y - height - 12;
       left = point.x - 24;
@@ -2816,18 +2988,42 @@
       top = minTop + 16;
       left = 16;
     }
-    top = Math.max(minTop, Math.min(top, maxTop));
-    left = Math.max(16, Math.min(left, viewW - width - 16));
-    pop.style.top = Math.round(top + window.pageYOffset) + 'px';
-    pop.style.left = Math.round(left + window.pageXOffset) + 'px';
-    // focus でページが宛先の下まで飛ばないように
-    area.focus({ preventScroll: true });
-    if (restored || carry) area.setSelectionRange(area.value.length, area.value.length);
-    schedulePins();
+    var fitted = fbClampPop(pop, top, left);
+    pop.style.top = Math.round(fitted.top + window.pageYOffset) + 'px';
+    pop.style.left = Math.round(fitted.left + window.pageXOffset) + 'px';
+  }
+  // 帯をつかんで動かす。離した位置（画面の座標）を覚える
+  function fbDraggable(pop, grip, onMoved) {
+    var start = null;
+    grip.addEventListener('pointerdown', function (event) {
+      if (event.button !== 0 || event.target.closest('button')) return;
+      event.preventDefault();
+      var rect = pop.getBoundingClientRect();
+      start = { x: event.clientX, y: event.clientY, top: rect.top, left: rect.left };
+      pop.classList.add('is-dragging');
+      if (grip.setPointerCapture) grip.setPointerCapture(event.pointerId);
+    });
+    grip.addEventListener('pointermove', function (event) {
+      if (!start) return;
+      var fitted = fbClampPop(pop, start.top + event.clientY - start.y, start.left + event.clientX - start.x);
+      pop.style.top = Math.round(fitted.top + window.pageYOffset) + 'px';
+      pop.style.left = Math.round(fitted.left + window.pageXOffset) + 'px';
+    });
+    function end() {
+      if (!start) return;
+      start = null;
+      pop.classList.remove('is-dragging');
+      var rect = pop.getBoundingClientRect();
+      storageSet(POP_POS_KEY, JSON.stringify({ x: Math.round(rect.left), y: Math.round(rect.top) }));
+      onMoved();
+    }
+    grip.addEventListener('pointerup', end);
+    grip.addEventListener('pointercancel', end);
   }
   // 入力欄を開いたまま宛先を入れ替える。書いた文と位置はそのまま
   function fbRetarget(targets) {
     var pop = fb.ui.pop;
+    fbDropDraft(pop.draftKey);
     fbCompose(targets, null, {
       text: pop.area.value,
       origin: pop.origin,
@@ -2836,20 +3032,38 @@
     });
   }
   // Shift + クリック: 宛先に足す。すでに入っていれば外す
-  function fbToggleTarget(node) {
+  // quote があるとき（文字を選んで Shift + クリック）は、すでに入っている宛先でも外さずに引用を差し替える
+  function fbToggleTarget(node, quote) {
     var pop = fb.ui.pop;
     var key = node.getAttribute('data-fb');
     var current = pop.targets.filter(function (target) { return target.key !== 'page'; });
     var next = current.filter(function (target) { return target.key !== key; });
-    if (next.length === current.length) {
+    if (next.length < current.length && quote) {
+      next = current.map(function (target) {
+        return target.key === key ? { node: target.node, key: key, label: target.label, quote: quote } : target;
+      });
+    } else if (next.length === current.length) {
       if (current.length >= FB_MAX_TARGETS) { toast(T.fbMaxTargets(FB_MAX_TARGETS), true); return; }
-      next = current.concat([{ node: node, key: key, label: fbLabel(node) }]);
+      next = current.concat([{ node: node, key: key, label: fbLabel(node), quote: quote || '' }]);
     }
     if (!next.length) {
       if (pop.isDirty()) fbNudgePop(); else fbClosePop(false);
       return;
     }
     fbRetarget(next);
+  }
+  // ページの中で文字が選ばれていれば、その文字（詰めて切ったもの）と、それを含むいちばん内側の宛先
+  function fbSelectionTarget() {
+    var selection = window.getSelection ? window.getSelection() : null;
+    if (!selection || selection.isCollapsed || !selection.rangeCount) return null;
+    var quote = fbShorten(String(selection), FB_QUOTE_MAX);
+    if (!quote) return null;
+    var container = selection.getRangeAt(0).commonAncestorContainer;
+    var host = container.nodeType === 1 ? container : container.parentElement;
+    if (!host || (host.closest && host.closest('.fb-ui'))) return null;
+    var node = host.closest && host.closest('[data-fb]');
+    if (!node) return null;
+    return { node: node, quote: quote };
   }
   // 書きかけがあるのに外側をクリックしたときは閉じずに知らせる
   function fbNudgePop() {
@@ -2872,6 +3086,52 @@
       empty.textContent = T.fbEmpty;
       listBox.appendChild(empty);
     }
+    // 保存していない書きかけ（開いている入力欄のものは除く）も一覧の最後に出す。コピーには入らない
+    var openKey = fb.ui.pop ? fb.ui.pop.draftKey : null;
+    var draftRows = [];
+    var savedKeys = {};
+    fb.items.forEach(function (item) { savedKeys[item.key] = true; });
+    Object.keys(fb.drafts).forEach(function (key) {
+      if (key === openKey) return;
+      var draft = fb.drafts[key];
+      var li = el('li', 'fb-draft');
+      var head = el('div', 'fb-item-head');
+      var mark = el('span', 'badge badge-caution');
+      mark.textContent = T.fbDraftMark;
+      var name = el('span', 'fb-item-target');
+      name.textContent = fbTitle(draft.targets.map(function (target) { return target.label; }));
+      head.appendChild(mark);
+      head.appendChild(name);
+      var keyLine = el('p', 'fb-item-key');
+      keyLine.textContent = draft.targets.map(function (target) { return target.key; }).join('\n');
+      var body = el('p', 'fb-item-text');
+      body.textContent = draft.text;
+      var actions = el('div', 'fb-item-actions');
+      actions.appendChild(button(T.fbDraftResume, function () {
+        var targets = fbDraftTargets(draft);
+        targets.forEach(function (target) { if (target.node) openAncestors(target.node); });
+        var first = targets.filter(function (target) { return target.node; })[0];
+        if (first) first.node.scrollIntoView({ block: 'center' });
+        if (!fb.on) fbToggle(true);
+        fbCompose(targets);
+      }, 'btn-sm btn-quiet'));
+      actions.appendChild(button(T.fbDraftDiscard, function () {
+        var kept = draft;
+        fbDropDraft(key);
+        fbPaint();
+        toast(T.fbDraftDiscarded, false, { label: T.undo, run: function () {
+          fb.drafts[key] = kept;
+          fbSaveDrafts();
+          fbPaint();
+        } });
+      }, 'btn-sm btn-quiet'));
+      li.appendChild(head);
+      li.appendChild(keyLine);
+      li.appendChild(body);
+      li.appendChild(actions);
+      if (savedKeys[key] || (draft.originKey && savedKeys[draft.originKey])) li.classList.add('is-edit');
+      draftRows.push(li);
+    });
     var copiedCount = fb.items.filter(function (item) { return item.copiedAt; }).length;
     fb.ui.clearCopied.hidden = copiedCount === 0;
     fb.ui.clearCopied.textContent = T.fbClearCopied(copiedCount);
@@ -2902,6 +3162,7 @@
       }
       var key = el('p', 'fb-item-key');
       key.textContent = fbKeys(item).join('\n');
+      var quotes = targets.filter(function (target) { return target.quote; });
       var body = el('p', 'fb-item-text');
       body.textContent = item.comment;
       var actions = el('div', 'fb-item-actions');
@@ -2923,10 +3184,17 @@
       }, 'btn-sm btn-quiet'));
       li.appendChild(head);
       li.appendChild(key);
+      quotes.forEach(function (target) {
+        var quote = el('p', 'fb-pop-quote');
+        quote.textContent = T.fbQuoted(target.quote);
+        li.appendChild(quote);
+      });
       li.appendChild(body);
       li.appendChild(actions);
       listBox.appendChild(li);
     });
+    draftRows.forEach(function (row) { listBox.appendChild(row); });
+    if (draftRows.length && !n) listBox.removeChild(listBox.firstChild);
     schedulePins();
   }
   function openAncestors(node) {
@@ -2970,6 +3238,7 @@
   }
   function installFeedback() {
     fb.items = fbLoad();
+    fb.drafts = fbLoadDrafts();
     var layer = el('div', 'fb-layer');
     var highlight = el('div', 'fb-hl');
     highlight.hidden = true;
@@ -3043,14 +3312,21 @@
       event.preventDefault();
       event.stopPropagation();
       var node = event.target.closest && event.target.closest('[data-fb]');
+      // 文字をドラッグで選んでいたら、選んだ文字を引用にして、それを含むいちばん内側の宛先に書く
+      // 選んだ文字と関係のない場所をクリックしたとき（前の選択が残っているだけ）は、選択を使わない
+      var picked = fbSelectionTarget();
+      if (picked && !(picked.node.contains(event.target) || event.target.contains(picked.node))) picked = null;
+      var quote = '';
+      if (picked) { node = picked.node; quote = picked.quote; }
       if (fb.ui.pop) {
-        if (event.shiftKey && node) fbToggleTarget(node);
+        if (event.shiftKey && node) fbToggleTarget(node, quote);
         else if (fb.ui.pop.isDirty()) fbNudgePop();
+        else if (picked) fbCompose([{ node: node, key: node.getAttribute('data-fb'), label: fbLabel(node), quote: quote }], { x: event.clientX, y: event.clientY });
         else fbClosePop(false);
         return;
       }
       if (!node) return;
-      fbCompose([{ node: node, key: node.getAttribute('data-fb'), label: fbLabel(node) }], { x: event.clientX, y: event.clientY });
+      fbCompose([{ node: node, key: node.getAttribute('data-fb'), label: fbLabel(node), quote: quote }], { x: event.clientX, y: event.clientY });
     }, true);
     document.addEventListener('keydown', function (event) {
       if (event.key !== 'Escape' || !fb.on) return;
