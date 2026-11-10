@@ -35,7 +35,7 @@ The one difference is **whether the things you failed to enumerate are accepted 
 
 Treating anything unexpected as suspicious is a habit security shares.
 
-It is called **fail-safe defaults**, one of the design principles.
+It is called **fail-safe defaults** (making the default behavior the safe one, that is, not allowing), one of the design principles.
 
 **A scheme that enumerates prohibitions lets the check miss
 whatever it failed to enumerate.** Just as signature-based malware protection cannot stop an
@@ -134,9 +134,9 @@ For example, "every `UseCase` has a test class" spans several files, so it is wr
 
 ```kotlin
 Konsist.scopeFromProject()
-    .classes()
-    .withNameEndingWith("UseCase")
-    .assertTrue { it.hasTestClasses() }
+  .classes()
+  .withNameEndingWith("UseCase")
+  .assertTrue { it.hasTestClasses() }
 ```
 
 Violations within the range of `ktFileContent { }` are put into one report together with placement violations.
@@ -172,10 +172,10 @@ Katachi check failed: 3 violations (Unexpected: 2, Missing: 1)
   No role is defined for this file.
 
   Nearby locations:
-    UseCase file:///path/to/project/src/main/kotlin/com/example/useCase/
+    UseCase file:///path/to/project/src/main/kotlin/com/example/useCase/ (*UseCase.kt)
 
   How to fix:
-    - Move it to one of the locations above
+    - Move it to one of the locations above, with a name matching the pattern in parentheses
     ...
 
 [UnexpectedDirectory] file:///path/to/project/src/main/kotlin/com/example/misc
@@ -213,8 +213,8 @@ flowchart LR
 
 Figure 1. The flow of producing tests and documentation from one definition
 
-Because the architecture definition is the single source of truth, **one side going stale on its
-own is structurally impossible.**
+Because the architecture definition is the single source of truth, **it keeps one side from going
+stale on its own.**
 
 Tests and documentation are what katachi ships, but **you are not limited to those two.**
 You can pull whatever you want out of the same definition.
