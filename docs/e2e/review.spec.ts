@@ -268,6 +268,13 @@ test('人が足した選択肢: ボタンが並び、押すとひとことの頭
 	await fb.act(u('.pop .action-form .btn'))
 	ok('直すと _actions.md のその場所を書き換える', await waitFor(() => readActions().includes('## PR #65 待ち\n- agent: マージ後に見直す\n- decision: 後で\n')), readActions())
 	ok('直したあとは足すに戻る', await waitFor(async () => (await u('.pop .action-form .btn').textContent()) === '足す' && (await u('.pop .action-form input').first().inputValue()) === ''))
+	// Esc は編集だけを閉じる（popup は開いたまま。書きかけは「＋」で開き直すと残っている）
+	await u('.pop .action-form input').first().fill('書きかけ')
+	await fb.page.keyboard.press('Escape')
+	ok('編集中の Esc は編集だけを閉じる', await waitFor(async () => (await u('.pop').isVisible()) && (await u('.pop .actions-edit').isHidden()) && (await u('.pop .btn.keep').isVisible())))
+	await fb.act(u('.pop .btn.plus'))
+	ok('開き直すと書きかけが残っている', (await u('.pop .action-form input').first().inputValue()) === '書きかけ')
+	await u('.pop .action-form input').first().fill('')
 	await fb.act(u('.pop .actions-top .btn'))
 	ok('「閉じる」で編集を閉じ、足した選択肢がボタンで並ぶ', (await u('.pop .actions-edit').isHidden()) && (await u('.pop .act .btn.custom').count()) === 2)
 	await fb.shot('review-actions-3-added')

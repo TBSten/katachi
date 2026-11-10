@@ -1,4 +1,8 @@
-import { describe, expect, it } from 'vitest'
+import { execFileSync } from 'node:child_process'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
+import { afterAll, describe, expect, it } from 'vitest'
 import { actionOfNote, addAction, LABEL_CHARS, labelProblem, matchNote, MAX_ACTIONS, noteHead, noteOf, parseActions, removeAction, updateAction } from '../review/actions'
 
 const FILE = `# Review の選択肢
@@ -117,5 +121,36 @@ describe('note', () => {
 		expect(matchNote('直さないでほしい', names)).toBeNull()
 		expect(matchNote('PR #65 待ち 消えたら remove', names)).toEqual({ name: 'PR #65 待ち', reason: '消えたら remove' })
 		expect(matchNote(undefined, names)).toBeNull()
+	})
+})
+
+describe('cli の review list --action / review actions', () => {
+	// cli.mjs は shebang と registerHooks を持つので、vite には読ませず Node で別に走らせる。
+	const cli = resolve(import.meta.dirname, '../server/cli.mjs')
+	const dir = mkdtempSync(join(tmpdir(), 'katachi-review-cli-'))
+	afterAll(() => rmSync(dir, { recursive: true, force: true }))
+	mkdirSync(join(dir, 'review'))
+	const item = (title: string, note: string) => `## [p3] ${title}\n- file: ja/index.mdx\n- line: 1\n- status: resolved\n- note: ${note}\n\n本文\n`
+	writeFileSync(join(dir, 'review', 's.md'), ['# テスト', '', item('あ', '後で: v0.5'), item('い', 'Feedback に送った: 261110-001'), item('う', '直さない（そのまま）'), item('え', '直した')].join('\n'))
+	writeFileSync(join(dir, 'review', '_actions.md'), '# 選択肢\n\n## 後で\n- agent: 次の prerelease で聞く\n- decision: 後で\n')
+	const run = (...args: string[]) => execFileSync('node', [cli, 'review', ...args], { encoding: 'utf8', env: { ...process.env, KATACHI_FEEDBACK_DIR: dir } })
+	const titles = (action: string) => (JSON.parse(run('list', `--action=${action}`, '--json')) as { title: string }[]).map((v) => v.title)
+
+	it('押したボタンの名前で絞る。直してもらう は「Feedback に送った」の記録を拾う', () => {
+		expect(titles('後で')).toEqual(['あ'])
+		expect(titles('直してもらう')).toEqual(['い'])
+		expect(titles('直さない')).toEqual(['う'])
+	})
+	it('無い名前は一言添えて 0 件', () => {
+		const out = run('list', '--action=なにか')
+		expect(out).toContain('「なにか」という選択肢はありません')
+		expect(out).toContain('計 0 件')
+	})
+	it('actions はボタンごとの件数と agent への一言を出す', () => {
+		const out = run('actions')
+		expect(out).toContain('直さない（1 件')
+		expect(out).toContain('直してもらう（1 件')
+		expect(out).toContain('解決済みにする（1 件')
+		expect(out).toContain('後で（1 件） | 判断: 後で | agent: 次の prerelease で聞く')
 	})
 })

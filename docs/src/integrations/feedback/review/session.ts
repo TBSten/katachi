@@ -1054,7 +1054,7 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 	renderPanel()
 
 	// 自前の UI の中のキーはページへ渡さない（Starlight の検索のショートカットなど）。入力・ボタン操作はそのまま。
-	// popup を開いているあいだ: Esc で popup を閉じる（アプリは閉じない）、← → で前・次（入力中は除く）。
+	// popup を開いているあいだ: Esc で popup を閉じる（選択肢の編集中は編集を閉じる。アプリは閉じない）、← → で前・次（入力中は除く）。
 	for (const type of ['keydown', 'keyup', 'keypress'] as const) {
 		window.addEventListener(type, (e) => {
 			if (inToolbar(e)) return
@@ -1064,7 +1064,8 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 					e.preventDefault()
 					e.stopPropagation()
 					swallowEscKeyup()
-					closePop()
+					// 選択肢を足している途中なら、まず指摘の画面へ戻る（書きかけの選択肢ごと popup を閉じない）。
+					if (editing) { editing = false; stopFixing(); focusField = 'note'; renderPop() } else closePop()
 					return
 				}
 				const t = e.composedPath()[0]
