@@ -724,6 +724,31 @@
     text-overflow: ellipsis;
   }
 
+  /* Frames around the targets while the comment box is open; numbered at the top left when there are several */
+  .fb-sel {
+    position: absolute;
+    z-index: 23;
+    border: 2px solid var(--note-high);
+    border-radius: var(--radius-sm);
+    background: var(--wash-faint);
+    pointer-events: none;
+  }
+  .fb-sel span {
+    position: absolute;
+    left: -2px;
+    top: -2px;
+    min-width: 18px;
+    padding: 0 5px;
+    border-radius: var(--radius-sm) 0 var(--radius-sm) 0;
+    background: var(--note-high);
+    color: var(--bg);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+  }
+
   .fb-pin {
     position: absolute;
     z-index: 22;
@@ -753,7 +778,26 @@
 
   .fb-pop { position: absolute; z-index: 35; width: min(24rem, calc(100vw - 32px)); padding: 12px; }
   .fb-pop-target { margin: 0 0 2px; color: var(--ink); font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; }
-  .fb-pop-key { margin: 0 0 8px; color: var(--muted); font-family: var(--font-mono); font-size: 12px; overflow-wrap: anywhere; }
+  .fb-pop-key { margin: 0 0 6px; color: var(--muted); font-family: var(--font-mono); font-size: 12px; overflow-wrap: anywhere; }
+  .fb-pop-targets { max-height: 32vh; overflow-y: auto; margin-bottom: 2px; }
+  .fb-pop-row { display: flex; align-items: flex-start; gap: 8px; }
+  .fb-pop-no {
+    display: inline-block;
+    min-width: 18px;
+    margin-right: 6px;
+    padding: 0 5px;
+    border-radius: var(--radius-sm);
+    background: var(--note-high);
+    color: var(--bg);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 18px;
+    text-align: center;
+    vertical-align: 1px;
+  }
+  .fb-pop-names { flex: 1; min-width: 0; }
+  .fb-pop-remove { flex: none; padding: 0 8px; }
+  .fb-pop-count, .fb-pop-hint { margin: 0 0 6px; color: var(--muted); font-size: 12px; line-height: 1.5; }
   .fb-pop-note { margin: 0 0 6px; color: var(--note-high); font-size: 12px; }
   .fb-pop.is-nudged { animation: fb-nudge 300ms; border-color: var(--caution-high); }
   @keyframes fb-nudge {
@@ -783,7 +827,7 @@
   .fb-item-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
   .fb-list li.is-copied .fb-item-text { color: var(--muted); }
   .fb-item-target { flex: 1; min-width: 0; color: var(--ink); font-weight: 600; overflow-wrap: anywhere; }
-  .fb-item-key { margin: 0; color: var(--muted); font-family: var(--font-mono); font-size: 12px; overflow-wrap: anywhere; }
+  .fb-item-key { margin: 0; color: var(--muted); font-family: var(--font-mono); font-size: 12px; overflow-wrap: anywhere; white-space: pre-line; }
   .fb-item-text { margin: 4px 0 0; white-space: pre-wrap; }
   .fb-item-actions { display: flex; gap: 4px; margin-top: 4px; }
   .fb-empty { padding: 16px 14px; color: var(--muted); }
@@ -878,7 +922,7 @@
 
     body { background: #ffffff; color: #000000; }
     body.fb-mode { padding-top: 0; }
-    .fb-fab, .fb-banner, .fb-hl, .fb-pin, .fb-pop, .fb-panel,
+    .fb-fab, .fb-banner, .fb-hl, .fb-sel, .fb-pin, .fb-pop, .fb-panel,
     .answer-dock, .toolbar, .skip-link, .cross-link, .toast { display: none !important; }
     a { color: #000000; }
 
@@ -1562,7 +1606,7 @@
     saveFailed: 'Could not save. Select the JSON below by hand and copy it.',
     // Feedback
     fbFab: 'Feedback',
-    fbBanner: 'Feedback mode: click the item you want to comment on (the arrow on a row opens and closes it)',
+    fbBanner: 'Feedback mode: click the item you want to comment on (Shift-click for several; the arrow on a row opens and closes it)',
     fbWholePageButton: 'Comment on the whole page',
     fbWholePage: 'Whole page',
     fbList: function (n) { return 'List (' + n + ')'; },
@@ -1595,6 +1639,12 @@
     fbNoStorage: 'This browser can\'t keep it (a private window, for example). Copy before closing.',
     fbPinLabel: function (n, label) { return 'Feedback ' + n + ': ' + label; },
     fbTargetPrefix: 'Target: ',
+    fbTargetWithLabel: function (key, label) { return key + ' (' + label + ')'; },
+    fbMore: function (n) { return ' and ' + n + ' more'; },
+    fbTargetsCount: function (n) { return 'One comment for ' + n + ' places'; },
+    fbPopHint: 'Shift-click another item to add or remove it',
+    fbRemoveTarget: function (label) { return 'Remove from targets: ' + label; },
+    fbMaxTargets: function (n) { return 'You can pick up to ' + n + ' places at once'; },
     dataError: 'Could not read the checklist data (the JSON in this file).',
     meta: [
       ['workdir', 'Working directory'],
@@ -2394,6 +2444,25 @@
     toast(T.fbNoStorage, true);
     return false;
   }
+  // One piece of feedback goes to one place, or to several picked with Shift-click. Only then does it carry keys / labels; key is those joined (the name that identifies the item)
+  var FB_MAX_TARGETS = 20;
+  function fbKeys(item) {
+    return Array.isArray(item.keys) && item.keys.length ? item.keys.map(String) : [item.key];
+  }
+  function fbLabels(item) {
+    var keys = fbKeys(item);
+    return Array.isArray(item.labels) && item.labels.length === keys.length ? item.labels.map(String) : keys.map(function () { return item.label || ''; });
+  }
+  function fbId(keys) { return keys.join(', '); }
+  function fbTitle(labels) {
+    return labels.length > 1 ? labels[0] + T.fbMore(labels.length - 1) : labels[0];
+  }
+  function fbTargetsOf(item) {
+    var labels = fbLabels(item);
+    return fbKeys(item).map(function (key, i) {
+      return { key: key, label: labels[i], node: key === 'page' ? null : fbFind(key) };
+    });
+  }
   function fbFind(key) {
     var nodes = document.querySelectorAll('[data-fb]');
     for (var i = 0; i < nodes.length; i += 1) {
@@ -2420,8 +2489,12 @@
   function fbMessage(items) {
     var lines = [T.fbIntro(items.length), ''];
     items.forEach(function (item, i) {
-      lines.push((i + 1) + '. ' + item.label);
-      lines.push('   ' + T.fbTargetPrefix + item.key);
+      var keys = fbKeys(item);
+      var labels = fbLabels(item);
+      lines.push((i + 1) + '. ' + (keys.length > 1 ? fbTitle(labels) : item.label));
+      keys.forEach(function (key, k) {
+        lines.push('   ' + T.fbTargetPrefix + (keys.length > 1 ? T.fbTargetWithLabel(key, labels[k]) : key));
+      });
       String(item.comment).split('\n').forEach(function (line) { lines.push('   > ' + line); });
       lines.push('');
     });
@@ -2477,8 +2550,8 @@
     var layer = fb.ui.layer;
     layer.textContent = '';
     var used = {};
-    fb.items.forEach(function (item, i) {
-      var node = fbFind(item.key);
+    fb.items.forEach(function (item, i) { fbTargetsOf(item).forEach(function (target) {
+      var node = target.node;
       if (!node) return;
       var anchor = visibleAnchor(node);
       var rect = anchor.getBoundingClientRect();
@@ -2500,9 +2573,28 @@
         event.preventDefault();
         event.stopPropagation();
         var pinRect = pin.getBoundingClientRect();
-        fbCompose(node, item.key, item.label, { x: pinRect.left, y: pinRect.bottom });
+        fbCompose(fbTargetsOf(item), { x: pinRect.left, y: pinRect.bottom });
       });
       layer.appendChild(pin);
+    }); });
+    // While the comment box is open, frame its targets (numbered when there are several)
+    var pop = fb.ui.pop;
+    if (!pop || !pop.targets) return;
+    pop.targets.forEach(function (target, i) {
+      if (!target.node) return;
+      var rect = visibleAnchor(target.node).getBoundingClientRect();
+      if (!rect.width && !rect.height) return;
+      var box = el('div', 'fb-sel');
+      box.style.top = (rect.top + window.pageYOffset - 2) + 'px';
+      box.style.left = (rect.left + window.pageXOffset - 2) + 'px';
+      box.style.width = (rect.width + 4) + 'px';
+      box.style.height = (rect.height + 4) + 'px';
+      if (pop.targets.length > 1) {
+        var order = el('span');
+        order.textContent = String(i + 1);
+        box.appendChild(order);
+      }
+      layer.appendChild(box);
     });
   }
   function fbHighlight(node) {
@@ -2527,35 +2619,86 @@
     if (pop) pop.remove();
     fb.ui.pop = null;
     fb.editing = null;
+    schedulePins();
   }
   // point is where the click happened (viewport coordinates); the box opens near it
-  function fbCompose(node, key, label, point) {
-    fbClosePop(true);
-    var existing = fb.items.filter(function (item) { return item.key === key; })[0] || null;
+  // targets is a list of { node, key, label }. carry is { text, origin, top, left } when reopening after adding or removing a target (the text and position carry over)
+  function fbCompose(targets, point, carry) {
+    if (carry) {
+      fb.ui.pop.remove();
+      fb.ui.pop = null;
+      fb.editing = null;
+    } else {
+      fbClosePop(true);
+    }
+    fbHighlight(null);
+    var keys = targets.map(function (target) { return target.key; });
+    var labels = targets.map(function (target) { return target.label; });
+    var key = fbId(keys);
+    var node = (targets.filter(function (target) { return target.node; })[0] || {}).node || null;
+    var existing = carry ? carry.origin : (fb.items.filter(function (item) { return item.key === key; })[0] || null);
     var original = existing ? existing.comment : '';
-    var restored = Object.prototype.hasOwnProperty.call(fb.drafts, key);
+    var restored = !carry && Object.prototype.hasOwnProperty.call(fb.drafts, key);
     fb.editing = key;
     var pop = el('div', 'fb-pop fb-ui');
     pop.setAttribute('role', 'dialog');
     pop.setAttribute('aria-label', T.fbComposeLabel);
-    var head = el('p', 'fb-pop-target');
-    head.textContent = label;
-    var keyLine = el('p', 'fb-pop-key');
-    keyLine.textContent = key;
+    pop.targets = targets;
+    pop.origin = existing;
+    var head = el('div', 'fb-pop-targets');
+    if (targets.length > 1) {
+      var countLine = el('p', 'fb-pop-count');
+      countLine.textContent = T.fbTargetsCount(targets.length);
+      head.appendChild(countLine);
+    }
+    targets.forEach(function (target, i) {
+      var row = el('div', 'fb-pop-row');
+      var names = el('div', 'fb-pop-names');
+      var name = el('p', 'fb-pop-target');
+      if (targets.length > 1) {
+        var order = el('span', 'fb-pop-no');
+        order.textContent = String(i + 1);
+        name.appendChild(order);
+      }
+      name.appendChild(text(target.label));
+      var keyLine = el('p', 'fb-pop-key');
+      keyLine.textContent = target.key;
+      names.appendChild(name);
+      names.appendChild(keyLine);
+      row.appendChild(names);
+      if (targets.length > 1) {
+        var remove = button('×', function () {
+          fbRetarget(targets.filter(function (other) { return other !== target; }));
+        }, 'btn-sm btn-quiet fb-pop-remove');
+        remove.setAttribute('aria-label', T.fbRemoveTarget(target.label));
+        remove.setAttribute('title', T.fbRemoveTarget(target.label));
+        row.appendChild(remove);
+      }
+      head.appendChild(row);
+    });
     var area = el('textarea');
     area.id = 'fb-comment';
     area.setAttribute('aria-label', T.fbComposeLabel);
     area.setAttribute('placeholder', T.fbPlaceholder);
-    area.value = restored ? fb.drafts[key] : original;
+    area.value = carry ? carry.text : restored ? fb.drafts[key] : original;
     pop.area = area;
-    pop.isDirty = function () { return area.value.replace(/^\s+|\s+$/g, '') !== original.replace(/^\s+|\s+$/g, ''); };
+    // Unsaved when the text changed, or when the targets of a saved item changed
+    pop.isDirty = function () {
+      return area.value.replace(/^\s+|\s+$/g, '') !== original.replace(/^\s+|\s+$/g, '') || (existing !== null && existing.key !== key);
+    };
     var actions = el('div', 'fb-pop-actions');
     function save() {
       var comment = area.value.replace(/^\s+|\s+$/g, '');
-      fb.items = fb.items.filter(function (item) { return item.key !== key; });
+      // Replace the item being edited (also under its name before the targets changed) and any with the same targets, keeping its position
+      var at = -1;
+      fb.items.forEach(function (item, i) {
+        if (at < 0 && (item.key === key || (existing && item.key === existing.key))) at = i;
+      });
+      fb.items = fb.items.filter(function (item) { return item.key !== key && !(existing && item.key === existing.key); });
       if (comment) {
-        var entry = { key: key, label: label, comment: comment, at: new Date().toISOString() };
-        if (existing) fb.items.splice(Math.min(fb.items.length, fbIndexBefore(existing)), 0, entry);
+        var entry = { key: key, label: fbTitle(labels), comment: comment, at: new Date().toISOString() };
+        if (keys.length > 1) { entry.keys = keys; entry.labels = labels; }
+        if (at >= 0) fb.items.splice(Math.min(fb.items.length, at), 0, entry);
         else fb.items.push(entry);
       }
       var kept = fbStore();
@@ -2574,7 +2717,11 @@
       if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); fbClosePop(true); }
     });
     pop.appendChild(head);
-    pop.appendChild(keyLine);
+    if (keys[0] !== 'page') {
+      var hint = el('p', 'fb-pop-hint');
+      hint.textContent = T.fbPopHint;
+      pop.appendChild(hint);
+    }
     if (restored) {
       var note = el('p', 'fb-pop-note');
       note.textContent = T.fbDraftRestored;
@@ -2594,7 +2741,10 @@
     var maxTop = viewH - height - 8;
     var top;
     var left;
-    if (point) {
+    if (carry) {
+      top = carry.top - window.pageYOffset;
+      left = carry.left - window.pageXOffset;
+    } else if (point) {
       top = point.y + 12 <= maxTop ? point.y + 12 : point.y - height - 12;
       left = point.x - 24;
     } else if (node) {
@@ -2614,7 +2764,34 @@
     pop.style.left = Math.round(left + window.pageXOffset) + 'px';
     // Don't let focus scroll the page down past the target
     area.focus({ preventScroll: true });
-    if (restored) area.setSelectionRange(area.value.length, area.value.length);
+    if (restored || carry) area.setSelectionRange(area.value.length, area.value.length);
+    schedulePins();
+  }
+  // Swap the targets while the box stays open. The text and position stay
+  function fbRetarget(targets) {
+    var pop = fb.ui.pop;
+    fbCompose(targets, null, {
+      text: pop.area.value,
+      origin: pop.origin,
+      top: parseFloat(pop.style.top) || 0,
+      left: parseFloat(pop.style.left) || 0
+    });
+  }
+  // Shift-click: add to the targets, or remove if already there
+  function fbToggleTarget(node) {
+    var pop = fb.ui.pop;
+    var key = node.getAttribute('data-fb');
+    var current = pop.targets.filter(function (target) { return target.key !== 'page'; });
+    var next = current.filter(function (target) { return target.key !== key; });
+    if (next.length === current.length) {
+      if (current.length >= FB_MAX_TARGETS) { toast(T.fbMaxTargets(FB_MAX_TARGETS), true); return; }
+      next = current.concat([{ node: node, key: key, label: fbLabel(node) }]);
+    }
+    if (!next.length) {
+      if (pop.isDirty()) fbNudgePop(); else fbClosePop(false);
+      return;
+    }
+    fbRetarget(next);
   }
   // When the user clicks outside with unsaved text, don't close; point it out instead
   function fbNudgePop() {
@@ -2624,11 +2801,6 @@
     pop.classList.add('is-nudged');
     pop.area.focus({ preventScroll: true });
     toast(T.fbUnsaved, true);
-  }
-  function fbIndexBefore(existing) {
-    var all = fbLoad();
-    for (var i = 0; i < all.length; i += 1) if (all[i].key === existing.key) return i;
-    return all.length;
   }
   function fbPaint() {
     var n = fb.items.length;
@@ -2653,7 +2825,9 @@
       name.textContent = item.label;
       head.appendChild(num);
       head.appendChild(name);
-      var node = item.key === 'page' ? null : fbFind(item.key);
+      var targets = fbTargetsOf(item);
+      var found = targets.filter(function (target) { return target.node; });
+      var node = found.length ? found[0].node : null;
       if (item.copiedAt) {
         var copied = el('span', 'badge badge-quiet');
         copied.textContent = T.fbCopiedMark;
@@ -2661,14 +2835,14 @@
         li.classList.add('is-copied');
       }
       // Targets that are gone from the JSON (fixed, or renamed)
-      if (item.key !== 'page' && !node) {
+      if (item.key !== 'page' && found.length < targets.length) {
         var missing = el('span', 'badge badge-caution');
         missing.textContent = T.fbMissing;
         missing.setAttribute('title', T.fbMissingHint);
         head.appendChild(missing);
       }
       var key = el('p', 'fb-item-key');
-      key.textContent = item.key;
+      key.textContent = fbKeys(item).join('\n');
       var body = el('p', 'fb-item-text');
       body.textContent = item.comment;
       var actions = el('div', 'fb-item-actions');
@@ -2681,8 +2855,9 @@
         }, 'btn-sm btn-quiet'));
       }
       actions.appendChild(button(T.fbEdit, function () {
-        if (node) { openAncestors(node); node.scrollIntoView({ block: 'center' }); }
-        fbCompose(node, item.key, item.label);
+        found.forEach(function (target) { openAncestors(target.node); });
+        if (node) node.scrollIntoView({ block: 'center' });
+        fbCompose(targets);
       }, 'btn-sm btn-quiet'));
       actions.appendChild(button(T.fbDelete, function () {
         fbRemove(function (other) { return other.key !== item.key; }, T.fbDeleted);
@@ -2754,7 +2929,7 @@
     bannerText.textContent = T.fbBanner;
     var listButton = button(T.fbList(0), function () { fbTogglePanel(); }, 'btn-sm');
     banner.appendChild(bannerText);
-    banner.appendChild(button(T.fbWholePageButton, function () { fbCompose(null, 'page', T.fbWholePage); }, 'btn-sm'));
+    banner.appendChild(button(T.fbWholePageButton, function () { fbCompose([{ node: null, key: 'page', label: T.fbWholePage }]); }, 'btn-sm'));
     banner.appendChild(listButton);
     banner.appendChild(button(T.fbCopy, fbCopy, 'btn-sm'));
     banner.appendChild(button(T.fbExit, function () { fbToggle(false); }, 'btn-sm'));
@@ -2790,10 +2965,19 @@
 
     function inUi(node) { return node.closest && node.closest('.fb-ui'); }
     document.addEventListener('mousemove', function (event) {
-      if (!fb.on || fb.ui.pop) return;
+      // While the box is open, only show the item that would be added while Shift is held
+      if (!fb.on) return;
+      if (fb.ui.pop && !event.shiftKey) { if (fb.hover) fbHighlight(null); return; }
       var node = inUi(event.target) ? null : event.target.closest && event.target.closest('[data-fb]');
       if (node !== fb.hover) fbHighlight(node);
     }, true);
+    // Keep Shift-click from extending a text selection or taking focus from the box
+    document.addEventListener('mousedown', function (event) {
+      if (fb.on && event.shiftKey && !inUi(event.target)) event.preventDefault();
+    }, true);
+    document.addEventListener('keyup', function (event) {
+      if (event.key === 'Shift' && fb.ui.pop && fb.hover) fbHighlight(null);
+    });
     document.addEventListener('click', function (event) {
       if (!fb.on || inUi(event.target)) return;
       // Only the disclosure arrow still opens and closes in the mode
@@ -2801,14 +2985,15 @@
       // In the mode, a click picks a feedback target instead of opening, closing or typing
       event.preventDefault();
       event.stopPropagation();
+      var node = event.target.closest && event.target.closest('[data-fb]');
       if (fb.ui.pop) {
-        if (fb.ui.pop.isDirty()) fbNudgePop(); else fbClosePop(false);
+        if (event.shiftKey && node) fbToggleTarget(node);
+        else if (fb.ui.pop.isDirty()) fbNudgePop();
+        else fbClosePop(false);
         return;
       }
-      var node = event.target.closest && event.target.closest('[data-fb]');
       if (!node) return;
-      fbHighlight(node);
-      fbCompose(node, node.getAttribute('data-fb'), fbLabel(node), { x: event.clientX, y: event.clientY });
+      fbCompose([{ node: node, key: node.getAttribute('data-fb'), label: fbLabel(node) }], { x: event.clientX, y: event.clientY });
     }, true);
     document.addEventListener('keydown', function (event) {
       if (event.key !== 'Escape' || !fb.on) return;

@@ -66,7 +66,7 @@ The user can answer in the browser too, in "Questions for you" on each page, and
 
 #### Feedback
 
-Both pages also have a **Feedback mode** (the button at the bottom right). The user clicks any item on the page, writes a comment, and copies all comments at once. What you receive looks like this:
+Both pages also have a **Feedback mode** (the button at the bottom right). The user clicks any item on the page (Shift-click adds more items to the same comment), writes a comment, and copies all comments at once. What you receive looks like this:
 
 ```text
 Feedback on the katachi codebase report (project-code-base-report.html), 2 item(s). "Target" is the place in that file's JSON. …
@@ -74,7 +74,14 @@ Feedback on the katachi codebase report (project-code-base-report.html), 2 item(
 1. 4. Elements (candidate roles) › app › ui › ViewModel
    Target: roles[name=ViewModel]
    > feature modules have ViewModels too (feature/*/src/...)
+
+2. 1. Overview › Main frameworks and 1 more
+   Target: overview.frameworks (1. Overview › Main frameworks)
+   Target: overview.targets (1. Overview › Targets)
+   > add the versions
 ```
+
+An entry with several `Target` lines is one comment the user put on several places at once (Shift-click); the name in parentheses is what that place is called on the page. Apply the comment to every one of them.
 
 `Target` points into the JSON of the file named on the first line: `roles[name=ViewModel]` is the `roles` entry whose `name` is `ViewModel`, `roles[name=ViewModel].forbidden[0]` the first entry of its `forbidden`, `tools[name=ktlint].configPath` one field of a row, `roles[group=app.ui]` the roles in that group, `steps[id=3].items[id=3-2]` an item of the checklist, `overview.language` a key, `directoryTree: app/src/` a line of the directory tree, and `page` the whole page. For each comment, fix that entry (check the code again if the comment says the facts are wrong), or tell the user why you did not. Then tell the user which ones you changed. The comments stay in their browser until they delete them.
 
