@@ -2,6 +2,7 @@ package me.tbsten.katachi.test.script
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.shouldBe
 import java.io.File
 import kotlinx.serialization.json.Json
@@ -9,6 +10,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import me.tbsten.katachi.script.internal.COMMAND_SPECS
 
 /**
  * The katachi skill's templates and steps agree with each other (KATACHI-329). Since the agent edits the
@@ -51,7 +53,35 @@ class KatachiSkillSpec : FreeSpec({
             .toList()
         broken.shouldBeEmpty()
     }
+
+    "skill が打たせる katachi のコマンドは、どれも CLI に在る（KATACHI-329 で消したものを使わない）" {
+        val known = COMMAND_SPECS.map { if (it.agent) "agent ${it.name}" else it.name }.toSet() + "--version"
+        val used = skill.walkTopDown().filter { it.isFile && it.extension == "md" }
+            .flatMap { file -> commandsIn(file.readText()).map { "${file.relativeTo(skill)}: katachi $it" to it } }
+            .toList()
+        used.map { it.second }.toSet().shouldContainAll("agent test", "doctor", "scaffold", "lint")
+        used.filterNot { (_, command) -> command in known || command in NAMED_AS_HISTORY }.map { it.first }.shouldBeEmpty()
+    }
 })
+
+/** Old commands the skill names on purpose, to tell an older working directory apart. */
+private val NAMED_AS_HISTORY = setOf("agent init")
+
+private val COMMAND = Regex("""^(?:\S+=\S+ )?katachi ((?:agent )?[a-z-]+)""")
+
+/** `katachi <command>` in code spans and in the lines of fenced code blocks; prose says "katachi is …" too. */
+private fun commandsIn(markdown: String): List<String> {
+    var fenced = false
+    return markdown.lines().flatMap { line ->
+        if (line.trimStart().startsWith("```")) {
+            fenced = !fenced
+            return@flatMap emptyList()
+        }
+        val spans = Regex("`([^`]+)`").findAll(line).map { it.groupValues[1] }
+        val candidates = if (fenced) sequenceOf(line.trim()) else spans
+        candidates.mapNotNull { COMMAND.find(it)?.groupValues?.get(1) }.toList()
+    }
+}
 
 /** `[text](target)`; `target` is a URL, an anchor or a path relative to the Markdown file. */
 private val MD_LINK = Regex("""\]\(([^)\s]+)\)""")

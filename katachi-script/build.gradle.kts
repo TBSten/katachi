@@ -38,6 +38,8 @@ tasks.test {
     // MessagesSpec reads the dictionary and the sources themselves, not only the compiled classes.
     inputs.file(rootProject.layout.projectDirectory.file("docs/prh.yml")).withPropertyName("prhDictionary")
     inputs.dir(layout.projectDirectory.dir("src/main/kotlin")).withPropertyName("mainSources")
+    // KatachiSkillSpec and the setup table check read the katachi skill (its steps and templates).
+    inputs.dir(rootProject.layout.projectDirectory.dir("skills/katachi")).withPropertyName("katachiSkill")
 }
 
 // `katachi --version` reads this; MANIFEST's Implementation-Version is null from a class directory.
