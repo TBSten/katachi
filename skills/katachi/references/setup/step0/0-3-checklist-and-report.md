@@ -57,7 +57,35 @@ Answers to `questions` go into `answers` of the same file, keyed by the question
 }
 ```
 
-The user can answer in the browser too: "Questions for you" on each page has an "Export answers" button that saves a JSON file (`{"target": "report", "answers": {"cq1": {"answer": "…", "note": "…"}}}`). Copy its entries into `answers` of that file.
+The user can answer in the browser too, in "Questions for you" on each page. Once there is an answer or a feedback comment, a small menu appears at the bottom right of the page, and the user hands things back in one of two ways. Either way, copy the entries into `answers` of that file:
+
+- **"Copy all"** copies text to paste into the chat: one line saying which file the answers are for, a line listing the ids still open (if any), and a ```` ```json ```` block with `{"target": "report", "answers": {"cq1": {"answer": "…", "note": "…"}}}`. If there is feedback (below), it follows in the same paste. Only what was not copied before goes in; when everything was, all of it is copied again.
+- **"Save as JSON"** saves the same JSON as a file (`katachi-answers-report.json` / `katachi-answers-check-list.json`).
+
+`target` is `report` or `check-list`. An entry whose `note` is `null` was a plain pick.
+
+#### Feedback
+
+Both pages also have a **Feedback mode** (the button at the bottom right). The user clicks any item on the page (Shift-click adds more items to the same comment), writes a comment, and copies all comments at once with "Copy all" in the same menu (together with any answers). What you receive looks like this:
+
+```text
+Feedback on the katachi codebase report (project-code-base-report.html), 2 item(s). "Target" is the place in that file's JSON. …
+
+1. 4. Elements (candidate roles) › app › ui › ViewModel
+   Target: roles[name=ViewModel]
+   > feature modules have ViewModels too (feature/*/src/...)
+
+2. 1. Overview › Main frameworks and 1 more
+   Target: overview.frameworks (1. Overview › Main frameworks)
+   Target: overview.targets (1. Overview › Targets)
+   > add the versions
+```
+
+An entry with several `Target` lines is one comment the user put on several places at once (Shift-click); the name in parentheses is what that place is called on the page. Apply the comment to every one of them.
+
+Under each `Target` there may be one more line. `Quote: "…"` is the part of the text the user selected before writing, so the comment is about those words. `Shows: "…"` is what that place said when the comment was saved (cut to about 120 characters); if your JSON no longer says that, you may have changed it since.
+
+`Target` points into the JSON of the file named on the first line: `roles[name=ViewModel]` is the `roles` entry whose `name` is `ViewModel`, `roles[name=ViewModel].forbidden[0]` the first entry of its `forbidden`, `tools[name=ktlint].configPath` one field of a row, `roles[group=app.ui]` the roles in that group, `steps[id=3].items[id=3-2]` an item of the checklist, `overview.language` a key, `directoryTree: app/src/` a line of the directory tree, and `page` the whole page. For each comment, fix that entry (check the code again if the comment says the facts are wrong), or tell the user why you did not. Then tell the user which ones you changed. The comments stay in their browser until they delete them.
 
 #### Write down what you learn as you go
 

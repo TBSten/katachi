@@ -2,48 +2,112 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>katachi Install Checklist</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>katachi Installation Checklist</title>
 <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiByb2xlPSJpbWciIGFyaWEtbGFiZWw9ImthdGFjaGkiPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTAyIiBmaWxsPSIjYTJjY2Y3Ii8+PGcgZmlsbD0iI2ZmZiI+PHBhdGggZD0iTTk2IDE2MGg2MHYyOGgtMzJ2MTM2aDMydjI4SDk2eiIvPjxyZWN0IHg9IjIxOCIgeT0iMjE4IiB3aWR0aD0iNzYiIGhlaWdodD0iNzYiLz48cGF0aCBkPSJNNDE2IDM1MmgtNjB2LTI4aDMyVjE4OGgtMzJ2LTI4aDYweiIvPjwvZz48L3N2Zz4=">
 <style>
+  /* Colors, lines, radii and shadows are copied from the katachi design system (the docs site's nova grays) */
   :root {
     color-scheme: light dark;
 
-    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN",
-      "Hiragino Sans", "Yu Gothic UI", "Meiryo", Roboto, sans-serif;
-    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans",
+      "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic UI", Meiryo, Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
     --bg: #ffffff;
-    --surface: #ffffff;
-    --surface-2: #f4f5f7;
-    --border: #e4e5e9;
-    --border-strong: #c2c5cc;
-    --text: #1a1c1f;
-    --text-muted: #5f6570;
-    --accent: #c2410c;
-    --accent-soft: rgba(194, 65, 12, 0.08);
-    --warn: #b45309;
-    --warn-soft: #fbf3e4;
-    --ok: #15803d;
+    --bg-muted: #f3f4f6;
+    --bg-sunken: #e5e7eb;
+    --line: #d1d5dc;
+    --hairline: #e5e7eb;
+    --hairline-light: #e5e7eb;
+    --line-strong: #99a1af;
+    --ink: #101828;
+    --text: #364153;
+    --muted: #6a7282;
+    --accent: #1e2939;
+    --on-accent: #ffffff;
+    --wash: #99a1af4d;
+    --wash-faint: #99a1af1a;
+    --neutral-low: #e5e7eb;
+    --neutral: #1e2939;
+    --neutral-high: #101828;
+    --note-low: #dbeafe;
+    --note: #51a2ff;
+    --note-high: #193cb8;
+    --caution-low: #fef3c6;
+    --caution: #ffb900;
+    --caution-high: #973c00;
+    --danger-low: #ffe2e2;
+    --danger: #ff6467;
+    --danger-high: #9f0712;
+    --success-low: #dcfce7;
+    --success: #05df72;
+    --success-high: #016630;
 
-    --num-size: 28px;
-    --summary-pad-y: 12px;
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --shadow-sm: 0 1px 1px rgba(0, 0, 0, 0.06), 0 2px 1px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 8px 4px rgba(0, 0, 0, 0.03), 0 5px 2px rgba(0, 0, 0, 0.03), 0 3px 2px rgba(0, 0, 0, 0.06), 0 1px 1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 25px 7px rgba(0, 0, 0, 0.01), 0 16px 6px rgba(0, 0, 0, 0.03), 0 9px 5px rgba(22, 24, 29, 0.08), 0 4px 4px rgba(0, 0, 0, 0.16), 0 4px 2px rgba(0, 0, 0, 0.04);
+
+    /* Icons (Lucide, stroke width 2). Used as masks, so they take the text color */
+    --icon-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E");
+    --icon-folder: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z'/%3E%3C/svg%3E");
+    --icon-file: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z'/%3E%3Cpath d='M14 2v4a2 2 0 0 0 2 2h4'/%3E%3C/svg%3E");
+    --icon-group: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z'/%3E%3Cpath d='m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65'/%3E%3Cpath d='m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65'/%3E%3C/svg%3E");
+    --icon-role: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z'/%3E%3Cpath d='M14 2v4a2 2 0 0 0 2 2h4'/%3E%3Cpath d='m10 13-2 2 2 2'/%3E%3Cpath d='m14 17 2-2-2-2'/%3E%3C/svg%3E");
+    --icon-module: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z'/%3E%3Cpath d='M12 22V12'/%3E%3Cpath d='m3.3 7 7.4 4.3'/%3E%3Cpath d='m20.7 7-7.4 4.3'/%3E%3C/svg%3E");
+    --icon-comment: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7.9 20A9 9 0 1 0 4 16.1L2 22Z'/%3E%3C/svg%3E");
+    --icon-info: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 16v-4'/%3E%3Cpath d='M12 8h.01'/%3E%3C/svg%3E");
+    --icon-alert: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3'/%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='M12 17h.01'/%3E%3C/svg%3E");
+    --icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='14' height='14' x='8' y='8' rx='2' ry='2'/%3E%3Cpath d='M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2'/%3E%3C/svg%3E");
+    --icon-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+
+    /* Older names, used by older rules in this file */
+    --surface: var(--bg);
+    --surface-2: var(--bg-muted);
+    --border: var(--line);
+    --border-strong: var(--line-strong);
+    --text-muted: var(--muted);
+    --accent-soft: var(--bg-muted);
+    --warn: var(--caution-high);
+    --warn-soft: var(--caution-low);
+    --ok: var(--success-high);
   }
 
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #17181b;
-      --surface: #1c1e22;
-      --surface-2: #212429;
-      --border: #2f3238;
-      --border-strong: #474b54;
-      --text: #e6e7ea;
-      --text-muted: #9aa0ab;
-      --accent: #fb923c;
-      --accent-soft: rgba(251, 146, 60, 0.14);
-      --warn: #facc15;
-      --warn-soft: #2b2411;
-      --ok: #4ade80;
+      --bg: #030712;
+      --bg-muted: #1e2939;
+      --bg-sunken: #1e2939;
+      --line: #364153;
+      --hairline: #1e2939;
+      --hairline-light: #364153;
+      --line-strong: #4a5565;
+      --ink: #ffffff;
+      --text: #d1d5dc;
+      --muted: #99a1af;
+      --accent: #f3f4f6;
+      --on-accent: #030712;
+      --neutral-low: #030712;
+      --neutral: #4a5565;
+      --neutral-high: #f3f4f6;
+      --note-low: #162456;
+      --note: #1c398e;
+      --note-high: #bedbff;
+      --caution-low: #461901;
+      --caution: #7b3306;
+      --caution-high: #fee685;
+      --danger-low: #460809;
+      --danger: #82181a;
+      --danger-high: #ffc9c9;
+      --success-low: #032e15;
+      --success: #0d542b;
+      --success-high: #b9f8cf;
+      --shadow-sm: 0 1px 1px rgba(0, 0, 0, 0.12), 0 2px 1px rgba(0, 0, 0, 0.24);
+      --shadow-md: 0 8px 4px rgba(0, 0, 0, 0.08), 0 5px 2px rgba(0, 0, 0, 0.08), 0 3px 2px rgba(0, 0, 0, 0.12), 0 1px 1px rgba(0, 0, 0, 0.15);
+      --shadow-lg: 0 25px 7px rgba(0, 0, 0, 0.03), 0 16px 6px rgba(0, 0, 0, 0.1), 0 9px 5px rgba(22, 24, 29, 0.33), 0 4px 4px rgba(0, 0, 0, 0.75), 0 4px 2px rgba(0, 0, 0, 0.25);
     }
   }
 
@@ -55,149 +119,90 @@
     background: var(--bg);
     color: var(--text);
     font-family: var(--font-sans);
-    font-size: 15px;
+    font-size: 16px;
     line-height: 1.75;
     overflow-wrap: break-word;
   }
 
   .wrap {
-    width: min(100%, 68rem);
+    width: min(100%, 72rem);
     margin: 0 auto;
-    padding-left: 24px;
-    padding-right: 24px;
+    padding-left: max(24px, env(safe-area-inset-left, 0px));
+    padding-right: max(24px, env(safe-area-inset-right, 0px));
   }
 
   @media (max-width: 480px) {
-    .wrap { padding-left: 16px; padding-right: 16px; }
+    .wrap {
+      padding-left: max(16px, env(safe-area-inset-left, 0px));
+      padding-right: max(16px, env(safe-area-inset-right, 0px));
+    }
   }
 
-  h1, h2 { line-height: 1.4; font-weight: 700; }
-  h1 { font-size: 28px; letter-spacing: -0.01em; margin: 0; }
-  h2 { font-size: 20px; margin: 0; }
+  h1, h2, h3 { color: var(--ink); font-weight: 600; line-height: 1.2; text-wrap: balance; word-break: auto-phrase; }
+  h1 { font-size: 29px; margin: 0; }
+  h2 { font-size: 24px; margin: 0 0 16px; }
+  h3 { font-size: 20px; margin: 40px 0 12px; }
   p { margin: 12px 0; }
-  a { color: var(--accent); text-underline-offset: 2px; }
+  ul, ol { padding-left: 20px; }
+  li { margin: 4px 0; }
+  a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; transition: color 150ms; }
+  a:hover { color: var(--ink); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
   code {
     font-family: var(--font-mono);
-    font-size: 0.9em;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 0.08em 0.36em;
+    font-size: 0.85em;
+    background: var(--bg-muted);
+    border-radius: var(--radius-sm);
+    padding: 0.1em 0.35em;
     overflow-wrap: anywhere;
   }
+
+  pre {
+    margin: 0;
+    padding: 12px 16px;
+    background: var(--bg-muted);
+    border: 1px solid var(--line);
+    overflow-x: auto;
+    white-space: pre;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.75;
+  }
+
+  pre code { background: none; padding: 0; font-size: 1em; }
+
+  .lede { color: var(--muted); font-size: 14px; margin: 8px 0 0; }
+  .empty { color: var(--muted); }
+  p.empty { margin: 16px 0 0; }
 
   .skip-link { position: absolute; left: -999px; top: 0; }
-  .skip-link:focus { left: 8px; top: 8px; z-index: 20; }
+  .skip-link:focus { left: 8px; top: 8px; z-index: 40; background: var(--bg); padding: 4px 8px; }
 
   /* Header */
-  .page-header { padding: 40px 0 24px; border-bottom: 1px solid var(--border); }
+  .page-header { border-bottom: 1px solid var(--hairline); }
+  .page-header .wrap { padding-top: 24px; padding-bottom: 24px; }
 
-  .notice {
-    position: relative;
-    margin: 16px 0 0;
-    padding: 12px 16px 12px 44px;
-    background: var(--surface-2);
-    border-left: 3px solid var(--accent);
-    border-radius: 0 6px 6px 0;
-    font-size: 14px;
-  }
-
-  .notice::before {
-    content: "!";
-    position: absolute;
-    left: 15px;
-    top: 15px;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: var(--accent);
-    color: var(--bg);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 18px;
-    text-align: center;
-  }
-
-
-  /* Link to the paired page */
-  .cross-link {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    grid-template-areas: "label arrow" "hint arrow";
+  .brand {
+    display: flex;
     align-items: center;
-    column-gap: 16px;
-    margin: 16px 0 0;
-    padding: 10px 14px;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--accent);
-    border-radius: 0 6px 6px 0;
+    gap: 8px;
+    margin: 0 0 20px;
     color: var(--text);
-    text-decoration: none;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.4;
   }
 
-  .cross-link:hover {
-    border-top-color: var(--border-strong);
-    border-right-color: var(--border-strong);
-    border-bottom-color: var(--border-strong);
-  }
-
-  .cross-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  /* display: grid overrides the UA's [hidden] { display: none }, so override it back */
-  .cross-link[hidden] { display: none; }
-  .cross-link-label { grid-area: label; font-size: 14px; font-weight: 700; }
-  .cross-link-hint { grid-area: hint; color: var(--text-muted); font-size: 13px; }
-
-  .cross-link::after {
-    content: "\2192";
-    grid-area: arrow;
-    color: var(--accent);
-    transition: transform 0.15s ease;
-  }
-
-  .cross-link:hover::after { transform: translateX(3px); }
-
-  /* Heading/value pairs (2 columns) */
-  .kv {
-    display: grid;
-    grid-template-columns: max-content 1fr;
-    column-gap: 24px;
-    row-gap: 10px;
-    margin: 16px 0 0;
-  }
-
-  .kv dt {
-    color: var(--text-muted);
-    font-size: 13px;
-    white-space: nowrap;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .kv dd {
-    margin: 0;
-    min-width: 0;
-    overflow-wrap: anywhere;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .kv dt:last-of-type, .kv dd:last-of-type { padding-bottom: 0; border-bottom: none; }
-
-  @media (max-width: 560px) {
-    .kv { grid-template-columns: 1fr; row-gap: 0; }
-    .kv dt { padding: 10px 0 0; border-bottom: none; }
-  }
-
-  .empty { color: var(--text-muted); margin: 16px 0 0; }
+  .brand svg { flex: none; width: 28px; height: 28px; }
+  .brand-sub { color: var(--muted); font-size: 14px; font-weight: 400; }
+  .brand-sub::before { content: "/"; margin: 0 8px 0 2px; color: var(--line-strong); }
 
   /* Unfilled marker */
   .todo {
-    color: var(--text-muted);
-    background: var(--surface-2);
-    border-bottom: 1px dashed var(--border-strong);
+    color: var(--muted);
+    background: var(--bg-muted);
+    border-bottom: 1px dashed var(--line-strong);
     border-radius: 2px;
     padding: 0 2px 1px;
     font-family: var(--font-mono);
@@ -205,473 +210,438 @@
     overflow-wrap: anywhere;
   }
 
-
-  /* Progress (sticky at top) */
-  .progress {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
+  /* Aside (note / caution / danger) */
+  .aside {
+    margin: 16px 0 0;
+    padding: 12px 16px;
+    background: var(--note-low);
+    border: 1px solid var(--note);
+    border-radius: var(--radius-lg);
+    font-size: 14px;
   }
 
-  .progress .wrap { padding-top: 10px; padding-bottom: 12px; }
+  .aside p { margin: 4px 0 0; }
 
-  .progress-row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
-  .progress-actions { display: flex; align-items: baseline; gap: 16px; flex: none; }
-  .progress-actions a { font-size: 13px; }
-
-  #progress-text { font-family: var(--font-mono); font-size: 13px; color: var(--text-muted); }
-
-  .link-button {
-    flex: none;
-    padding: 0;
-    border: none;
-    background: none;
-    color: var(--accent);
-    font-family: inherit;
-    font-size: 13px;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-    cursor: pointer;
-  }
-
-  .link-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-
-  .progress-track {
-    height: 6px;
-    margin-top: 8px;
-    border-radius: 999px;
-    background: var(--border);
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    width: 0%;
-    border-radius: 999px;
-    background: var(--accent);
-    transition: width 0.15s ease;
-  }
-
-  main { padding-top: 8px; }
-
-  /* Steps (vertical timeline + stepper) */
-  .steps { margin-top: 40px; }
-
-  /* No gap between steps; the open-state spacing comes from .step-body */
-  .step { position: relative; padding-bottom: 0; }
-
-  .step::before {
-    content: "";
-    position: absolute;
-    left: 13px;
-    /* From the bottom of this circle to the top of the next step's circle */
-    top: calc(var(--summary-pad-y) + var(--num-size));
-    bottom: calc(-1 * var(--summary-pad-y));
-    width: 2px;
-    background: var(--border);
-  }
-
-  .steps > .step:last-child::before { display: none; }
-  .step.is-done::before { background: var(--ok); }
-
-  .step > summary {
+  .aside .aside-title {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: var(--summary-pad-y) 10px var(--summary-pad-y) 0;
-    border-radius: 6px;
-    list-style: none;
-    cursor: pointer;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: var(--note-high);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.4;
   }
 
-  .step > summary::-webkit-details-marker { display: none; }
-  .step > summary:hover { background: var(--surface-2); }
-  .step > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-
-  .step > summary::after {
-    content: "\25BE";
+  .aside .aside-title::before {
+    content: "";
     flex: none;
-    margin-top: 5px;
-    color: var(--text-muted);
-    font-size: 12px;
+    width: 20px;
+    height: 20px;
+    background: currentColor;
+    -webkit-mask: var(--icon-info) center / contain no-repeat;
+    mask: var(--icon-info) center / contain no-repeat;
   }
 
-  .step:not([open]) > summary::after { content: "\25B8"; }
+  .aside-caution { background: var(--caution-low); border-color: var(--caution); }
+  .aside-caution .aside-title { color: var(--caution-high); }
+  .aside-danger { background: var(--danger-low); border-color: var(--danger); }
+  .aside-danger .aside-title { color: var(--danger-high); }
+  .aside-caution .aside-title::before, .aside-danger .aside-title::before {
+    -webkit-mask-image: var(--icon-alert);
+    mask-image: var(--icon-alert);
+  }
 
-  .step-num {
-    position: relative;
-    z-index: 1;
-    flex: none;
-    width: var(--num-size);
-    height: var(--num-size);
-    border-radius: 50%;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    color: var(--accent);
+  /* Shown when the data can't be read (avoid a blank page) */
+  .noscript-note { padding-top: 16px; }
+
+  /* Link to the paired page (LinkCard) */
+  .cross-link {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "label arrow" "hint arrow";
+    align-items: center;
+    column-gap: 16px;
+    margin: 16px 0 0;
+    padding: 12px 16px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    color: var(--text);
+    text-decoration: none;
+    transition: background-color 150ms, border-color 150ms;
+  }
+
+  .cross-link:hover { background: var(--bg-muted); border-color: var(--text); color: var(--text); }
+  /* display: grid beats the UA's [hidden] { display: none }, so override it */
+  .cross-link[hidden] { display: none; }
+  .cross-link-label { grid-area: label; color: var(--ink); font-size: 18px; font-weight: 600; line-height: 1.4; }
+  .cross-link-hint { grid-area: hint; color: var(--muted); font-size: 14px; }
+
+  .cross-link::after {
+    content: "\2192";
+    grid-area: arrow;
+    color: var(--ink);
+    transition: transform 150ms ease;
+  }
+
+  .cross-link:hover::after { transform: translateX(4px); }
+
+  /* Badge (small monospace label) */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 6px;
+    border: 1px solid var(--neutral);
+    border-radius: var(--radius-sm);
+    background: var(--neutral-low);
+    color: var(--neutral-high);
     font-family: var(--font-mono);
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 26px;
-    text-align: center;
-  }
-
-  .step-title { flex: 1; min-width: 0; font-size: 20px; font-weight: 700; line-height: 1.4; }
-
-  .step-state {
-    flex: none;
-    margin-top: 3px;
-    padding: 1px 10px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: var(--surface-2);
-    color: var(--text-muted);
-    font-family: var(--font-mono);
     font-size: 12px;
+    font-weight: 400;
     line-height: 1.6;
     white-space: nowrap;
   }
 
-  .step-state:empty { display: none; }
+  .badge:empty { display: none; }
+  .badge-success { border-color: var(--success); background: var(--success-low); color: var(--success-high); }
+  .badge-caution { border-color: var(--caution); background: var(--caution-low); color: var(--caution-high); }
+  .badge-note { border-color: var(--note); background: var(--note-low); color: var(--note-high); }
+  .badge-quiet { border-color: var(--line); background: none; color: var(--muted); }
+  h2 .badge { margin-left: 10px; font-size: 13px; vertical-align: 4px; }
 
-  .step.is-done .step-num { background: var(--ok); border-color: var(--ok); color: var(--bg); }
-  .step.is-done .step-state { background: none; border-color: var(--ok); color: var(--ok); }
-
-  /* Done, but with a warning */
-  .step.is-done.has-warning::before { background: var(--warn); }
-  .step.is-done.has-warning .step-num { background: var(--warn); border-color: var(--warn); color: var(--bg); }
-  .step.is-done.has-warning .step-state { background: none; border-color: var(--warn); color: var(--warn); }
-
-  .step-warning {
-    margin: 0 0 12px;
-    padding: 10px 14px;
-    background: var(--warn-soft);
-    border-left: 3px solid var(--warn);
-    border-radius: 0 6px 6px 0;
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
     font-size: 14px;
-  }
-
-  .progress-warn { color: var(--warn); }
-
-
-  /* Optional steps: styled like the required ones, they would look unfinished just for not being done */
-  .step.is-optional .step-num { border-style: dashed; color: var(--text-muted); }
-  .step.is-optional .step-title { color: var(--text-muted); }
-  .step.is-optional::before { border-left: 2px dashed var(--border); background: none; width: 0; }
-
-  .step-body { padding: 0 0 40px 40px; }
-
-  /* Sections other than steps */
-  .block { margin-top: 40px; }
-  .block > h2 { position: relative; padding-left: 12px; }
-
-  .block > h2::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0.22em;
-    width: 3px;
-    height: 1em;
-    border-radius: 1px;
-    background: var(--accent);
-  }
-
-  /* Checklist items */
-  .checklist { list-style: none; margin: 8px 0 0; padding: 0; }
-  .checklist li { border-bottom: 1px solid var(--border); }
-  .checklist li:last-child { border-bottom: none; }
-
-  .checklist label {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    margin: 0 -8px;
-    padding: 10px 8px;
-    border-radius: 4px;
+    line-height: 1.5;
+    white-space: nowrap;
     cursor: pointer;
+    transition: background-color 150ms, border-color 150ms, color 150ms;
   }
 
-  .checklist label:hover { background: var(--surface-2); }
+  /* display: inline-flex beats the UA's [hidden], so override it */
+  .btn[hidden] { display: none; }
 
-  .checklist input[type="checkbox"] {
+
+  .btn:hover { background: var(--bg-muted); border-color: var(--line-strong); }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
+  .btn-primary:hover { background: var(--ink); border-color: var(--ink); color: var(--on-accent); }
+  .btn-quiet { background: none; border-color: transparent; color: var(--muted); }
+  .btn-quiet:hover { background: var(--wash-faint); border-color: transparent; color: var(--ink); }
+  .btn-sm { padding: 2px 8px; font-size: 13px; }
+
+  .btn-icon::before {
+    content: "";
     flex: none;
     width: 16px;
     height: 16px;
-    margin: 0.32em 0 0;
-    accent-color: var(--accent);
+    background: currentColor;
+    -webkit-mask: var(--btn-icon) center / contain no-repeat;
+    mask: var(--btn-icon) center / contain no-repeat;
   }
 
-  .checklist .item { flex: 1; min-width: 0; }
-  .checklist input:checked + .item { color: var(--text-muted); }
+  .btn-copy { --btn-icon: var(--icon-copy); }
+  .btn-comment { --btn-icon: var(--icon-comment); }
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 0; }
+  .toolbar-end { justify-content: flex-end; gap: 4px; }
 
-  .remark { margin: 12px 0 0; font-size: 13px; color: var(--text-muted); }
+  /* Label/value pairs (a 2-column grid; each value folds to one line) */
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    margin: 16px 0 0;
+    background: var(--hairline);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
 
-  /* Table */
+  .fact { position: relative; min-width: 0; margin: 0; padding: 10px 14px; background: var(--bg); }
+  /* With an odd count, the last one spans the row so no empty cell is left */
+  .fact:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .fact dt { color: var(--muted); font-size: 13px; line-height: 1.5; }
+  .fact dd { margin: 2px 0 0; color: var(--ink); min-width: 0; }
+  /* One line while folded, bullets while open */
+  .fact-list .fact-bullets { display: none; margin: 2px 0 0; overflow-wrap: anywhere; }
+  .fact-list .fact-bullets li { margin: 0; line-height: 1.6; }
+  .fact-list.is-open .fact-bullets { display: block; }
+  .fact-list.is-open .clip { display: none; }
+
+  @media (max-width: 560px) {
+    .facts { grid-template-columns: minmax(0, 1fr); }
+    .fact:last-child:nth-child(odd) { grid-column: auto; }
+  }
+
+  /* One-line folding. Only content that overflows can be clicked open and closed */
+  .clip { display: block; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  [data-clamp].is-open .clip { overflow: visible; white-space: normal; overflow-wrap: anywhere; }
+  /* Columns that wrap and show everything (things like the violation text that must be readable) */
+  td.wrap .clip { overflow: visible; white-space: normal; overflow-wrap: anywhere; }
+  [data-clamp].is-clampable, [data-clamp].is-open { cursor: pointer; }
+  .fact[data-clamp].is-clampable:hover, .fact[data-clamp].is-open:hover { background: var(--bg-muted); }
+  .fact[data-clamp].is-clampable dd, .fact[data-clamp].is-open dd { padding-right: 20px; }
+
+  .fact[data-clamp].is-clampable::after, .fact[data-clamp].is-open::after,
+  tr[data-clamp].is-clampable > td:last-child::after, tr[data-clamp].is-open > td:last-child::after {
+    content: "";
+    position: absolute;
+    right: 12px;
+    bottom: 14px;
+    width: 14px;
+    height: 14px;
+    background: var(--muted);
+    -webkit-mask: var(--icon-chevron) center / contain no-repeat;
+    mask: var(--icon-chevron) center / contain no-repeat;
+    transform: rotate(90deg);
+    transition: transform 200ms;
+  }
+
+  .fact[data-clamp].is-open::after, tr[data-clamp].is-open > td:last-child::after { transform: rotate(-90deg); }
+  tr[data-clamp].is-clampable > td:last-child, tr[data-clamp].is-open > td:last-child { position: relative; padding-right: 32px; }
+  tr[data-clamp].is-clampable > td:last-child::after, tr[data-clamp].is-open > td:last-child::after { top: 13px; bottom: auto; }
+
+  /* Tables. Each row folds to one line and opens on click */
   .table-wrap {
     overflow-x: auto;
     margin: 16px 0 0;
-    border: 1px solid var(--border);
-    border-radius: 6px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
   }
 
-  table { border-collapse: collapse; width: 100%; min-width: 34rem; font-size: 14px; }
+  table { border-collapse: collapse; width: 100%; min-width: 36rem; font-size: 14px; table-layout: fixed; }
 
   th, td {
     text-align: left;
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--border);
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--line);
     vertical-align: top;
-    overflow-wrap: anywhere;
   }
 
   thead th {
-    background: var(--surface-2);
-    border-bottom: 2px solid var(--border-strong);
-    color: var(--text-muted);
+    background: var(--bg-muted);
+    color: var(--ink);
     font-size: 13px;
     font-weight: 600;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  tbody tr:hover { background: var(--accent-soft); }
   tbody tr:last-child td { border-bottom: none; }
-  tbody td:first-child { font-family: var(--font-mono); font-size: 13px; }
-  table.text-first tbody td:first-child { font-family: inherit; font-size: 14px; }
+  tbody tr[data-clamp].is-clampable:hover, tbody tr[data-clamp].is-open:hover { background: var(--bg-muted); }
+  td.mono { font-family: var(--font-mono); font-size: 13px; }
 
-  footer {
-    margin-top: 48px;
-    padding-top: 20px;
-    padding-bottom: 40px;
-    border-top: 1px solid var(--border);
-    color: var(--text-muted);
-    font-size: 13px;
+  /* Trees (nested <details>), shared by directories, modules and candidate roles */
+  .tree { margin: 8px 0 0; font-size: 14px; line-height: 1.5; }
+  .tree details > summary { list-style: none; }
+  .tree details > summary::-webkit-details-marker { display: none; }
+
+  .tree-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 30px;
+    padding: 3px 8px 3px 2px;
+    border-radius: var(--radius-sm);
+    transition: background-color 150ms;
   }
 
-  footer p { margin: 4px 0; }
+  summary.tree-row { cursor: pointer; }
+  summary.tree-row:hover { background: var(--bg-muted); }
+  summary.tree-row:focus-visible { outline-offset: -2px; }
 
-  @media print {
-    /* Paper stays white even when the OS is dark; redeclare tokens for light */
-    :root {
-      color-scheme: light;
-
-      --bg: #ffffff;
-      --surface: #ffffff;
-      --surface-2: #f4f5f7;
-      --border: #e4e5e9;
-      --border-strong: #c2c5cc;
-      --text: #1a1c1f;
-      --text-muted: #5f6570;
-      --accent: #c2410c;
-      --accent-soft: rgba(194, 65, 12, 0.08);
-      --warn: #b45309;
-      --warn-soft: #fbf3e4;
-      --ok: #15803d;
-    }
-
-    body { background: #ffffff; color: #000000; }
-    .progress { position: static; border-bottom: 1px solid #000; }
-    .progress-track, .notice, .step-state { background: none; }
-    .link-button, .step > summary::after, .cross-link, .skip-link { display: none; }
-    .todo { background: none; color: #000; border-bottom: 1px dashed #000; }
-
-    /* Show as an outline rather than a fill, so it still reads under default print settings that omit background graphics */
-    .step .step-num,
-    .step.is-done .step-num,
-    .step.is-done.has-warning .step-num {
-      background: none;
-      border: 1px solid var(--border-strong);
-      color: var(--text);
-    }
-
-    .step.is-done .step-num { border-color: var(--ok); color: var(--ok); }
-    .step.is-done.has-warning .step-num { border-color: var(--warn); color: var(--warn); }
-
-    .checklist label:hover, .step > summary:hover, tbody tr:hover { background: none; }
-    a { color: #000; text-decoration: underline; }
-
-    /* Bring columns hidden behind horizontal scroll onto the printed page */
-    .table-wrap { overflow: visible; }
-    table { table-layout: fixed; width: 100%; min-width: 0; }
-
-    .step, .block { break-inside: avoid; }
+  .tw, .ti {
+    flex: none;
+    width: 16px;
+    height: 16px;
   }
 
-  /* Shown when the data can't be read (avoid a blank page) */
-  .error-box {
-    margin: 16px 0 0;
-    padding: 12px 16px;
-    background: var(--warn-soft);
-    border-left: 3px solid var(--warn);
-    border-radius: 0 6px 6px 0;
-    color: var(--warn);
-    font-size: 14px;
+  summary > .tw {
+    background: var(--muted);
+    -webkit-mask: var(--icon-chevron) center / 14px no-repeat;
+    mask: var(--icon-chevron) center / 14px no-repeat;
+    transition: transform 200ms;
   }
 
-  .error-box p { margin: 4px 0 0; }
-  .error-box p:first-child { margin: 0; font-weight: 700; }
+  details[open] > summary > .tw { transform: rotate(90deg); }
 
-  .noscript-note { padding-top: 16px; }
-
-  /* Count shown beside a heading */
-  .count-badge {
-    margin-left: 10px;
-    padding: 1px 8px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: var(--surface-2);
-    color: var(--text-muted);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 400;
-    vertical-align: 2px;
-    white-space: nowrap;
+  .ti {
+    background: var(--muted);
+    -webkit-mask: var(--ti) center / contain no-repeat;
+    mask: var(--ti) center / contain no-repeat;
   }
+
+  .ti-folder { --ti: var(--icon-folder); }
+  .ti-file { --ti: var(--icon-file); }
+  .ti-group { --ti: var(--icon-group); background: var(--ink); }
+  .ti-role { --ti: var(--icon-role); }
+  .ti-module { --ti: var(--icon-module); }
+
+  .tree-children {
+    margin-left: 9px;
+    padding-left: 10px;
+    border-left: 1px solid var(--hairline-light);
+  }
+
+  .t-name { flex: none; max-width: 100%; color: var(--ink); font-family: var(--font-mono); font-size: 13px; overflow-wrap: anywhere; }
+  .t-note { min-width: 0; color: var(--muted); font-size: 12px; }
 
   /* Questions for you */
   .qa {
-    margin-top: 12px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--accent);
-    border-radius: 0 6px 6px 0;
+    margin: 12px 0 0;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
   }
 
   .qa > summary {
     display: flex;
     align-items: flex-start;
     gap: 10px;
-    padding: 10px 14px;
+    padding: 12px 16px;
+    border-radius: var(--radius-lg);
     list-style: none;
     cursor: pointer;
+    transition: background-color 150ms;
   }
 
   .qa > summary::-webkit-details-marker { display: none; }
-  .qa > summary:hover { background: var(--surface-2); }
-  .qa > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .qa[open] > summary { border-bottom: 1px solid var(--border); }
+  .qa > summary:hover { background: var(--bg-muted); }
+  .qa[open] > summary { border-bottom: 1px solid var(--hairline); border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
 
   .qa > summary::after {
-    content: "\25B8";
+    content: "";
     flex: none;
+    width: 16px;
+    height: 16px;
     margin-top: 4px;
-    color: var(--text-muted);
-    font-size: 12px;
+    background: var(--muted);
+    -webkit-mask: var(--icon-chevron) center / 14px no-repeat;
+    mask: var(--icon-chevron) center / 14px no-repeat;
+    transition: transform 200ms;
   }
 
-  .qa[open] > summary::after { content: "\25BE"; }
+  .qa[open] > summary::after { transform: rotate(90deg); }
+  .qa-id { flex: none; margin-top: 2px; }
+  .qa-main { flex: 1; min-width: 0; }
+  .qa-title { display: block; color: var(--ink); font-weight: 600; line-height: 1.5; }
+  .qa-picked { margin-top: 2px; color: var(--success-high); font-size: 13px; }
+  .qa-picked:empty { display: none; }
+  .qa-state { flex: none; margin-top: 2px; }
+  .qa-body { display: grid; gap: 14px; padding: 14px 16px 16px; }
+  .qa-body > * { margin: 0; min-width: 0; }
+  .qa-label { margin: 0 0 4px; color: var(--muted); font-size: 13px; font-weight: 600; }
+  .qa-free > summary { margin: 0; cursor: pointer; width: fit-content; }
+  .qa-free > summary:hover { color: var(--ink); }
+  .qa-free[open] > summary { margin-bottom: 4px; }
+  .qa-observed p { margin: 0; }
 
-  .qa-num {
-    flex: none;
-    margin-top: 2px;
-    padding: 0 8px;
-    border-radius: 999px;
-    background: var(--accent-soft);
-    color: var(--accent);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 22px;
-  }
+  .qa-options { display: grid; gap: 6px; min-width: 0; margin: 0; padding: 0; border: 0; }
+  .qa-options legend { padding: 0; }
 
-  .qa-title { flex: 1; min-width: 0; font-weight: 700; }
-  .qa-body { padding: 12px 14px 14px; }
-  .qa-head { margin: 0 0 4px; color: var(--text-muted); font-size: 13px; }
-  .qa-body > p { margin: 0; }
-  .qa-body > p + .qa-head, .qa-body > ol + .qa-head { margin-top: 14px; }
-  .qa-body ol { margin: 0; padding-left: 22px; list-style-type: upper-alpha; }
-  .qa-body ol li { margin: 4px 0; }
-
-  .qa-pick {
-    margin-top: 14px;
-    padding: 10px 12px;
-    background: var(--accent-soft);
-    border-radius: 6px;
-  }
-
-  .qa-pick .qa-head { color: var(--accent); }
-  .qa-pick p:last-child { margin: 0; }
-
-  .lede { color: var(--text-muted); font-size: 14px; margin: 6px 0 0; }
-
-  /* Writing preferences (rows that differ from the recommendation) */
-  tr.pref-differs td { background: var(--warn-soft); }
-  .pref-mark { color: var(--warn); font-size: 12px; white-space: nowrap; }
-
-  /* Answer fields */
-  .qa-answer { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border); }
-  .qa-answer .qa-head { display: flex; align-items: baseline; gap: 8px; }
-  .qa-answer-list { margin: 0; padding: 0; list-style: none; }
-  .qa-answer-list li { margin: 2px 0; }
-
-  .qa-answer-list label {
+  .qa-option {
     display: flex;
     align-items: flex-start;
-    gap: 8px;
-    padding: 4px 6px;
-    border-radius: 4px;
+    gap: 10px;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
     cursor: pointer;
+    transition: background-color 150ms, border-color 150ms;
   }
 
-  .qa-answer-list label:hover { background: var(--surface-2); }
-  .qa-answer-list input[type="radio"] { flex: none; margin: 0.35em 0 0; accent-color: var(--accent); }
-  .qa-answer-list .option-letter { flex: none; font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+  .qa-option:hover { background: var(--bg-muted); }
+  .qa-option.is-checked { background: var(--bg-muted); border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  .qa-option input { flex: none; margin: 0.3em 0 0; accent-color: var(--accent); }
+  .opt-key { flex: none; color: var(--muted); font-family: var(--font-mono); font-size: 12px; margin-top: 3px; }
+  .opt-text { flex: 1; min-width: 0; color: var(--ink); }
+  .qa-option .badge { flex: none; margin-top: 2px; }
 
-  .qa-answer textarea {
+  .qa-why { padding: 10px 12px; background: var(--bg-muted); border-radius: var(--radius-md); font-size: 14px; }
+  .qa-why p { margin: 0; }
+
+  .qa textarea, .fb-pop textarea {
     display: block;
     width: 100%;
-    min-height: 3.5em;
-    margin: 8px 0 0;
+    min-height: 4.5em;
     padding: 8px 10px;
-    border: 1px solid var(--border-strong);
-    border-radius: 6px;
-    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--bg);
     color: var(--text);
-    font-family: inherit;
+    font: inherit;
     font-size: 14px;
     line-height: 1.6;
     resize: vertical;
   }
 
-  .qa-answer textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .qa textarea:focus-visible, .fb-pop textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; }
+  .qa.is-imported .qa-state::after { content: ""; }
 
-  .answered-badge:empty { display: none; }
-  .answered-badge { border-color: var(--ok); color: var(--ok); }
-  .qa.is-answered > summary .qa-num { background: var(--ok); color: var(--bg); }
-  .qa-imported { color: var(--ok); font-size: 12px; font-family: var(--font-mono); }
-
-  .action-button {
-    padding: 4px 12px;
-    border: 1px solid var(--border-strong);
-    border-radius: 6px;
-    background: var(--surface);
-    color: var(--text);
-    font-family: inherit;
-    font-size: 13px;
-    line-height: 1.6;
-    cursor: pointer;
+  /* The menu that copies what there is to hand over (answers, feedback). It floats at the bottom right and appears once there is at least one of either */
+  .send-bar {
+    position: fixed;
+    right: max(16px, env(safe-area-inset-right, 0px));
+    bottom: max(16px, env(safe-area-inset-bottom, 0px));
+    z-index: 32;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    max-width: min(56rem, calc(100vw - 32px));
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    padding: 10px 12px 10px 16px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    font-size: 14px;
+    animation: send-in 180ms ease-out;
   }
-
-  .action-button:hover { background: var(--surface-2); border-color: var(--accent); }
-  .action-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .action-button.is-primary { background: var(--accent); border-color: var(--accent); color: var(--bg); }
-  .qa-answer .action-button { margin-top: 8px; }
-
-  .answer-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 0; }
-  .answer-actions:empty { display: none; }
-  .answer-status { flex-basis: 100%; margin: 0; font-size: 13px; color: var(--text-muted); }
-  .answer-status.is-error { color: var(--warn); }
-  .answer-status:empty { display: none; }
+  .send-bar[hidden] { display: none; }
+  @keyframes send-in {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .send-bar { animation: none; }
+  }
+  @media (max-width: 640px) {
+    .send-bar { left: max(16px, env(safe-area-inset-left, 0px)); }
+  }
+  .send-summary { flex: 1 1 auto; min-width: 0; margin: 0; color: var(--ink); font-weight: 600; }
+  .send-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .send-status { flex-basis: 100%; margin: 0; color: var(--muted); font-size: 13px; }
+  .send-status:empty { display: none; }
+  .send-status.is-error { color: var(--danger-high); }
+  /* A flex child grows to its content's width; min-width: 0 keeps it inside the bar */
+  .send-preview { flex-basis: 100%; min-width: 0; max-width: 100%; max-height: 14rem; margin: 0; font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .send-preview[hidden] { display: none; }
+  /* Leave room at the bottom for the menu so it doesn't cover the last lines of the page */
+  body { padding-bottom: var(--send-h, 0px); }
 
   .answer-manual {
     display: block;
+    flex-basis: 100%;
     width: 100%;
     min-height: 6em;
-    margin: 8px 0 0;
     padding: 8px 10px;
-    border: 1px solid var(--border-strong);
-    border-radius: 6px;
-    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--bg-muted);
     color: var(--text);
     font-family: var(--font-mono);
     font-size: 12px;
@@ -680,9 +650,475 @@
   /* display: block beats the UA's [hidden] { display: none }, so override it */
   .answer-manual[hidden] { display: none; }
 
+  /* Feedback mode */
+  .fb-fab {
+    position: fixed;
+    right: max(16px, env(safe-area-inset-right, 0px));
+    /* --send-h is the height of the menu below (0 when it is not shown); sit above it */
+    bottom: calc(max(16px, env(safe-area-inset-bottom, 0px)) + var(--send-h, 0px));
+    z-index: 30;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border: 1px solid var(--line);
+    border-radius: 9999px;
+    background: var(--bg);
+    color: var(--ink);
+    box-shadow: var(--shadow-md);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.5;
+    cursor: pointer;
+    transition: background-color 150ms, color 150ms;
+    --btn-icon: var(--icon-comment);
+  }
+
+  .fb-fab:hover { background: var(--bg-muted); }
+  .fb-fab[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .fb-fab .badge { border-color: currentColor; background: none; color: inherit; }
+
+  .fb-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 30;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px 12px;
+    padding: calc(8px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px));
+    background: var(--accent);
+    color: var(--on-accent);
+    font-size: 14px;
+    box-shadow: var(--shadow-md);
+  }
+
+  .fb-banner[hidden] { display: none; }
+  .fb-banner p { margin: 0; }
+  .fb-banner .btn { background: none; border-color: currentColor; color: inherit; }
+  .fb-banner .btn:hover { background: var(--wash); }
+  body.fb-mode { padding-top: var(--fb-banner-h, 48px); }
+  body.fb-mode [data-fb] { cursor: crosshair; }
+
+  .fb-hl {
+    position: absolute;
+    z-index: 24;
+    border: 2px solid var(--note-high);
+    border-radius: var(--radius-sm);
+    pointer-events: none;
+  }
+
+  .fb-hl[hidden] { display: none; }
+
+  .fb-hl span {
+    position: absolute;
+    left: -2px;
+    bottom: 100%;
+    max-width: min(32rem, 80vw);
+    padding: 1px 6px;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    background: var(--note-high);
+    color: var(--bg);
+    font-size: 12px;
+    line-height: 1.6;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Frames around the targets while the comment box is open; numbered at the top left when there are several */
+  .fb-sel {
+    position: absolute;
+    z-index: 23;
+    border: 2px solid var(--note-high);
+    border-radius: var(--radius-sm);
+    background: var(--wash-faint);
+    pointer-events: none;
+  }
+  .fb-sel span {
+    position: absolute;
+    left: -2px;
+    top: -2px;
+    min-width: 18px;
+    padding: 0 5px;
+    border-radius: var(--radius-sm) 0 var(--radius-sm) 0;
+    background: var(--note-high);
+    color: var(--bg);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+  }
+
+  .fb-pin {
+    position: absolute;
+    z-index: 22;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border: 2px solid var(--bg);
+    border-radius: 9999px;
+    background: var(--note-high);
+    color: var(--bg);
+    box-shadow: var(--shadow-sm);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .fb-pop, .fb-panel {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    font-size: 14px;
+  }
+
+  .fb-pop { position: absolute; z-index: 35; width: min(24rem, calc(100vw - 32px)); padding: 12px; }
+  .fb-pop-grip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: -6px -6px 6px;
+    padding: 2px 6px;
+    border-radius: var(--radius-md);
+    color: var(--muted);
+    font-size: 12px;
+    cursor: move;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .fb-pop-grip:hover { background: var(--bg-muted); }
+  /* A grip mark (two columns of dots) */
+  .fb-pop-grip::before {
+    content: "";
+    flex: none;
+    width: 8px;
+    height: 12px;
+    background: radial-gradient(circle, currentColor 1px, transparent 1.5px) 0 0 / 4px 4px;
+  }
+  .fb-pop-grip-label { flex: 1; min-width: 0; }
+  .fb-pop-reset { padding: 0 6px; }
+  .fb-pop.is-dragging { opacity: 0.92; box-shadow: var(--shadow-lg), 0 0 0 2px var(--note-high); }
+  .fb-pop-quote { margin: 0 0 6px; padding-left: 8px; border-left: 3px solid var(--line); color: var(--text); font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+  .fb-list li.fb-draft { background: var(--wash-faint); }
+  .fb-list .fb-pop-quote { margin: 4px 0 0; }
+  .fb-pop-target { margin: 0 0 2px; color: var(--ink); font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; }
+  .fb-pop-key { margin: 0 0 6px; color: var(--muted); font-family: var(--font-mono); font-size: 12px; overflow-wrap: anywhere; }
+  .fb-pop-targets { max-height: 32vh; overflow-y: auto; margin-bottom: 2px; }
+  .fb-pop-row { display: flex; align-items: flex-start; gap: 8px; }
+  .fb-pop-no {
+    display: inline-block;
+    min-width: 18px;
+    margin-right: 6px;
+    padding: 0 5px;
+    border-radius: var(--radius-sm);
+    background: var(--note-high);
+    color: var(--bg);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 18px;
+    text-align: center;
+    vertical-align: 1px;
+  }
+  .fb-pop-names { flex: 1; min-width: 0; }
+  .fb-pop-remove { flex: none; padding: 0 8px; }
+  .fb-pop-count, .fb-pop-hint { margin: 0 0 6px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+  .fb-pop-note { margin: 0 0 6px; color: var(--note-high); font-size: 12px; }
+  .fb-pop.is-nudged { animation: fb-nudge 300ms; border-color: var(--caution-high); }
+  @keyframes fb-nudge {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+  .fb-pop-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+  .fb-pop-actions .fb-delete { margin-right: auto; color: var(--danger-high); }
+
+  .fb-panel {
+    position: fixed;
+    right: max(16px, env(safe-area-inset-right, 0px));
+    bottom: calc(max(16px, env(safe-area-inset-bottom, 0px)) + 52px + var(--send-h, 0px));
+    z-index: 31;
+    display: flex;
+    flex-direction: column;
+    width: min(26rem, calc(100vw - 32px));
+    max-height: min(70vh, 40rem, calc(100vh - 140px - var(--send-h, 0px)));
+  }
+
+  .fb-panel[hidden] { display: none; }
+  .fb-panel-head { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--hairline); }
+  .fb-panel-head p { flex: 1; margin: 0; color: var(--ink); font-weight: 600; }
+  .fb-list { flex: 1; min-height: 0; margin: 0; padding: 0; overflow: auto; list-style: none; }
+  .fb-list li { margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--hairline); }
+  .fb-item-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+  .fb-list li.is-copied .fb-item-text { color: var(--muted); }
+  .fb-item-target { flex: 1; min-width: 0; color: var(--ink); font-weight: 600; overflow-wrap: anywhere; }
+  .fb-item-key { margin: 0; color: var(--muted); font-family: var(--font-mono); font-size: 12px; overflow-wrap: anywhere; white-space: pre-line; }
+  .fb-item-text { margin: 4px 0 0; white-space: pre-wrap; }
+  .fb-item-actions { display: flex; gap: 4px; margin-top: 4px; }
+  .fb-empty { padding: 16px 14px; color: var(--muted); }
+  .fb-panel-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 14px; }
+  .fb-panel-foot .fb-status { flex-basis: 100%; margin: 0; color: var(--muted); font-size: 13px; }
+  .fb-panel-foot .fb-status:empty { display: none; }
+  .fb-panel-foot .fb-status.is-error { color: var(--danger-high); }
+
+  /* Short notice after copying or saving (appears at the top centre and fades out) */
+  .toast {
+    position: fixed;
+    top: calc(16px + env(safe-area-inset-top, 0px));
+    left: 50%;
+    z-index: 45;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    max-width: calc(100vw - 32px);
+    padding: 8px 16px;
+    border-radius: 9999px;
+    background: var(--accent);
+    color: var(--on-accent);
+    box-shadow: var(--shadow-lg);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.5;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -8px);
+    transition: opacity 150ms, transform 150ms;
+  }
+  .toast::before {
+    content: "";
+    flex: none;
+    width: 16px;
+    height: 16px;
+    background: currentColor;
+    -webkit-mask: var(--icon-check) center / contain no-repeat;
+    mask: var(--icon-check) center / contain no-repeat;
+  }
+  .toast.is-error::before { -webkit-mask-image: var(--icon-alert); mask-image: var(--icon-alert); }
+  .toast.is-shown { opacity: 1; transform: translate(-50%, 0); }
+  .toast.is-shown.has-action { pointer-events: auto; }
+  .toast-action {
+    margin-left: 4px;
+    padding: 0 4px;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; }
+  }
+
   @media print {
-    .answer-actions, .qa-answer .action-button { display: none; }
-    .qa-answer textarea { border: 1px solid #000; }
+    /* Paper stays white even when the OS is dark; redeclare the tokens for light */
+    :root {
+      color-scheme: light;
+      --bg: #ffffff;
+      --bg-muted: #f3f4f6;
+      --bg-sunken: #e5e7eb;
+      --line: #d1d5dc;
+      --hairline: #e5e7eb;
+      --hairline-light: #e5e7eb;
+      --line-strong: #99a1af;
+      --ink: #101828;
+      --text: #364153;
+      --muted: #6a7282;
+      --accent: #1e2939;
+      --on-accent: #ffffff;
+      --neutral-low: #e5e7eb;
+      --neutral: #1e2939;
+      --neutral-high: #101828;
+      --note-low: #dbeafe;
+      --note: #51a2ff;
+      --note-high: #193cb8;
+      --caution-low: #fef3c6;
+      --caution: #ffb900;
+      --caution-high: #973c00;
+      --danger-low: #ffe2e2;
+      --danger: #ff6467;
+      --danger-high: #9f0712;
+      --success-low: #dcfce7;
+      --success: #05df72;
+      --success-high: #016630;
+    }
+
+    body { background: #ffffff; color: #000000; }
+    body.fb-mode { padding-top: 0; }
+    .fb-fab, .fb-banner, .fb-hl, .fb-sel, .fb-pin, .fb-pop, .fb-panel,
+    .send-bar, .toolbar, .skip-link, .cross-link, .toast { display: none !important; }
+    a { color: #000000; }
+
+    /* Folded rows print in full */
+    .clip { overflow: visible; white-space: normal; }
+    .table-wrap { overflow: visible; }
+    table { min-width: 0; }
+  }
+
+  /* Progress (sticky at the top) */
+  .progress {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--bg);
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  body.fb-mode .progress { top: var(--fb-banner-h, 48px); }
+  .progress .wrap { padding-top: 10px; padding-bottom: 12px; }
+  .progress-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 16px; }
+  .progress-actions { display: flex; align-items: center; gap: 8px; flex: none; }
+  #progress-text { color: var(--ink); font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  #progress-text span { color: var(--muted); font-weight: 400; }
+  #progress-text .progress-warn { color: var(--caution-high); }
+
+  .progress-track {
+    height: 4px;
+    margin-top: 8px;
+    border-radius: 9999px;
+    background: var(--bg-sunken);
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 9999px;
+    background: var(--success-high);
+    transition: width 150ms ease;
+  }
+
+  /* Steps (a vertical timeline + stepper: the numbered circles and vertical guide of Steps) */
+  .steps { margin-top: 32px; }
+  .step { position: relative; }
+
+  .step::before {
+    content: "";
+    position: absolute;
+    left: 14px;
+    /* From the bottom of this circle to the top of the next step's circle */
+    top: 42px;
+    bottom: -12px;
+    width: 1px;
+    background: var(--hairline-light);
+  }
+
+  .steps > .step:last-child::before { display: none; }
+  .step.is-done::before { background: var(--success); }
+
+  .step > summary {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 10px 12px 0;
+    border-radius: var(--radius-md);
+    list-style: none;
+    cursor: pointer;
+    transition: background-color 150ms;
+  }
+
+  .step > summary::-webkit-details-marker { display: none; }
+  .step > summary:hover { background: var(--bg-muted); }
+
+  .step > summary::after {
+    content: "";
+    flex: none;
+    width: 16px;
+    height: 16px;
+    margin-top: 6px;
+    background: var(--muted);
+    -webkit-mask: var(--icon-chevron) center / 14px no-repeat;
+    mask: var(--icon-chevron) center / 14px no-repeat;
+    transition: transform 200ms;
+  }
+
+  .step[open] > summary::after { transform: rotate(90deg); }
+
+  .step-num {
+    position: relative;
+    z-index: 1;
+    flex: none;
+    width: 29px;
+    height: 29px;
+    border-radius: 9999px;
+    background: var(--bg-sunken);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 27px;
+    text-align: center;
+  }
+
+  .step-title { flex: 1; min-width: 0; color: var(--ink); font-size: 20px; font-weight: 600; line-height: 1.4; word-break: auto-phrase; }
+  @media (max-width: 480px) { .step-title { font-size: 18px; } }
+  .step-state { flex: none; margin-top: 4px; }
+
+  .step.is-done .step-num { background: var(--success-high); border-color: var(--success-high); color: var(--bg); }
+  .step.is-done.has-warning::before { background: var(--caution); }
+  .step.is-done.has-warning .step-num { background: var(--caution-high); border-color: var(--caution-high); color: var(--bg); }
+
+  .step-warning { margin: 0 0 12px; }
+
+  /* Optional steps: styled like the required ones, they would look unfinished just for not being done */
+  .step.is-optional .step-num { border-style: dashed; background: var(--bg); color: var(--muted); }
+  .step.is-optional .step-title { color: var(--muted); }
+  .step.is-optional::before { width: 0; border-left: 1px dashed var(--line); background: none; }
+  .step-body { padding: 0 0 32px 41px; }
+
+  /* Checklist items */
+  .checklist { list-style: none; margin: 4px 0 0; padding: 0; }
+  .checklist li { margin: 0; border-bottom: 1px solid var(--hairline); }
+  .checklist li:last-child { border-bottom: none; }
+
+  .checklist label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0 -8px;
+    padding: 10px 8px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+
+  .checklist label:hover { background: var(--bg-muted); }
+  .checklist input[type="checkbox"] { flex: none; width: 16px; height: 16px; margin: 0.32em 0 0; accent-color: var(--accent); }
+  .checklist .item { flex: 1; min-width: 0; }
+  .checklist input:checked + .item { color: var(--muted); }
+  .checklist .item-id { margin-right: 8px; color: var(--muted); font-family: var(--font-mono); font-size: 12px; }
+
+  /* Sections other than the steps */
+  .block { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--hairline); }
+
+  /* Writing preferences (rows that differ from the recommendation) */
+  tr.pref-differs td { background: var(--caution-low); }
+  .pref-mark { color: var(--caution-high); font-size: 12px; white-space: nowrap; }
+
+  footer.page-footer { margin-top: 48px; border-top: 1px solid var(--hairline); }
+  footer.page-footer .wrap { padding-top: 20px; padding-bottom: 80px; color: var(--muted); font-size: 13px; }
+  footer.page-footer p { margin: 4px 0; }
+
+  @media print {
+    .progress { position: static; }
+    .step > summary::after { display: none; }
+    /* Show as an outline rather than a fill, so it still reads under default print settings that omit background graphics */
+    .step .step-num, .step.is-done .step-num, .step.is-done.has-warning .step-num { background: none; color: var(--ink); }
+    .step.is-done .step-num { border-color: var(--success-high); color: var(--success-high); }
+    .step.is-done.has-warning .step-num { border-color: var(--caution-high); color: var(--caution-high); }
+    .step, .block { break-inside: avoid; }
   }
 </style>
 </head>
@@ -690,8 +1126,8 @@
 
 <noscript>
   <div class="wrap noscript-note">
-    <div class="error-box">
-      <p>This page needs JavaScript to render.</p>
+    <div class="aside aside-danger">
+      <p class="aside-title">This page needs JavaScript to render.</p>
       <p>This page reads the JSON embedded in it to render. The data itself lives in this file's
       script type="application/json" id="checklist" block.</p>
     </div>
@@ -852,7 +1288,7 @@
         },
         {
           "id": "6-4",
-          "label": "Wrote a template and confirmed the test module's test passes right after generating one file",
+          "label": "Wrote a template and confirmed the test module's test succeeds right after generating one file",
           "done": false
         }
       ]
@@ -1020,7 +1456,7 @@
         },
         {
           "id": "6-4",
-          "label": "Wrote a template and confirmed the test module's test passes right after generating one file",
+          "label": "Wrote a template and confirmed the test module's test succeeds right after generating one file",
           "done": false
         }
       ]
@@ -1073,10 +1509,15 @@
 
 <header class="page-header">
   <div class="wrap">
-    <h1>katachi Install Checklist</h1>
-    <p class="notice">
-      An AI agent filled this in. <strong>You need to review it.</strong>
+    <p class="brand">
+      <svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="102" fill="#a2ccf7"/><g fill="#ffffff"><path d="M96 160h60v28h-32v136h32v28H96z"/><rect x="218" y="218" width="76" height="76"/><path d="M416 352h-60v-28h32V188h-32v-28h60z"/></g></svg>
+      <span>katachi</span><span class="brand-sub">setup</span>
     </p>
+    <h1>katachi Installation Checklist</h1>
+    <div class="aside">
+      <p class="aside-title">An AI agent filled this in</p>
+      <p>Please check the contents. Where something is off, use "Feedback" at the bottom right to pick the item and comment, then copy all comments and hand them to the AI agent.</p>
+    </div>
     <div data-render="error"></div>
 
     <a class="cross-link" id="cross-link" href="./project-code-base-report.html" hidden>
@@ -1084,7 +1525,9 @@
       <span class="cross-link-hint">Analysis of this project</span>
     </a>
 
-    <div data-render="meta"></div>
+    <div data-fb="meta" data-fb-label="Metadata">
+      <div data-render="meta"></div>
+    </div>
   </div>
 </header>
 
@@ -1093,8 +1536,8 @@
     <div class="progress-row">
       <span id="progress-text"></span>
       <span class="progress-actions">
-        <a id="report-link" href="./project-code-base-report.html">View report</a>
-        <button type="button" class="link-button" id="toggle-all">Expand all</button>
+        <a class="btn btn-sm btn-quiet" id="report-link" href="./project-code-base-report.html">View the report</a>
+        <button type="button" class="btn btn-sm btn-quiet" id="toggle-all">Expand all</button>
       </span>
     </div>
     <div class="progress-track">
@@ -1105,69 +1548,232 @@
 
 <main class="wrap" id="main-content">
 
-  <div class="steps" data-render="steps"></div>
+  <div class="steps" data-render="steps" data-fb="steps" data-fb-label="Steps"></div>
 
-  <section class="block" id="preferences">
+  <section class="block" id="preferences" data-fb="preferences" data-fb-label="Writing preferences">
     <h2>Writing preferences</h2>
     <p class="lede">How the definition is written, as asked in step 1-3. Values that differ from the recommendation are highlighted. The test module location is in the meta information.</p>
     <div data-render="preferences"></div>
   </section>
 
-  <section class="block" id="violations">
-    <h2>Architecture violations left unfixed<span class="count-badge" data-render="violationCount"></span></h2>
+  <section class="block" id="violations" data-fb="violations" data-fb-label="Architecture violations left unfixed">
+    <h2>Architecture violations left unfixed<span class="badge" data-render="violationCount"></span></h2>
     <div data-render="violations"></div>
   </section>
 
-  <section class="block" id="questions">
-    <h2>Questions for you<span class="count-badge" data-render="questionCount"></span><span class="count-badge answered-badge" data-render="answeredCount"></span></h2>
-    <p class="lede">For each question, pick an option or write freely. If you do both, the free text becomes a note. When done, save the JSON with "Export answers" and hand it to the AI agent.</p>
-    <div class="answer-actions" data-render="answerActions"></div>
-    <div data-render="questions"></div>
+  <section class="block" id="questions" data-fb="questions" data-fb-label="Questions for you">
+    <h2>Questions for you<span class="badge" data-render="questionCount"></span><span class="badge badge-success" data-render="answeredCount"></span></h2>
+    <p class="lede">Pick an option or write freely (if you do both, the free text is a note). Once you answer, a menu appears at the bottom right: "Copy all" copies text you can paste straight into the chat with the AI agent (any feedback goes in with it). To hand over a file instead, use "Save as JSON". What you type stays in this browser as a draft.</p>
+    <div class="toolbar" data-render="answerActions"></div>
+    <div class="qa-flow">
+      <div data-render="questions"></div>
+    </div>
   </section>
 
-  <section class="block" id="changed-files">
-    <h2>Files created or changed<span class="count-badge" data-render="changedCount"></span></h2>
+  <section class="block" id="changed-files" data-fb="changedFiles" data-fb-label="Files created or changed">
+    <h2>Files created or changed<span class="badge" data-render="changedCount"></span></h2>
     <div data-render="changedFiles"></div>
   </section>
 
 </main>
 
-<footer class="wrap">
-  <p><a href="https://tbsten.github.io/katachi/">katachi documentation</a></p>
-  <p>
-    This checklist follows the setup steps of the katachi skill
-    (<a href="https://github.com/TBSten/katachi/tree/main/skills/katachi">skills/katachi</a>)
-    and mirrors its steps.
-  </p>
+<footer class="page-footer">
+  <div class="wrap">
+    <p><a href="https://tbsten.github.io/katachi/">katachi documentation</a></p>
+    <p>
+      This checklist follows the setup steps of the katachi skill
+      (<a href="https://github.com/TBSten/katachi/tree/main/skills/katachi">skills/katachi</a>)
+      and mirrors its steps.
+    </p>
+  </div>
 </footer>
 
 <script>
 (function () {
-  // Both step headings and items are built from JSON. The HTML holds no copy
+  // Text shown on the page
+  var T = {
+    unfilled: 'Unfilled: ',
+    none: 'None',
+    unknown: 'Unknown',
+    count: function (n) { return n + (n === 1 ? ' item' : ' items'); },
+    clampHint: 'Click to show it all / fold back to one line',
+    expandAll: 'Expand all',
+    collapseAll: 'Collapse all',
+    // Questions
+    observed: 'What we observed',
+    pickOne: 'Pick an answer',
+    recommended: 'Recommended',
+    recommendation: 'Recommendation',
+    recommendationWhy: 'Why it is recommended',
+    freeLabel: 'Note or free answer',
+    freePlaceholder: 'With an option picked, this becomes a note. If no option fits, write your answer here.',
+    adoptOne: 'Use the recommendation',
+    clearOne: 'Clear this answer',
+    adoptAll: 'Use recommendations for open ones',
+    adoptedCount: function (n) { return 'Filled ' + n + ' open question' + (n === 1 ? '' : 's') + ' with the recommendation'; },
+    adoptedNone: 'No open question has a recommendation to use',
+    revertOne: 'Back to the recorded answer',
+    clearAll: 'Clear all answers',
+    imported: 'Recorded',
+    importedChanged: 'Changed from recorded',
+    answered: 'Answered',
+    unanswered: 'Open',
+    withNote: ' (with a note)',
+    answeredCount: function (n) { return n + ' answered'; },
+    answerProgress: function (a, t) { return 'Answered ' + a + ' of ' + t; },
+    sendLabel: 'What to hand to the AI agent',
+    sendCopy: 'Copy all',
+    sendClear: 'Clear',
+    sendClearTitle: 'Delete all answers and feedback',
+    sendCleared: 'Deleted all answers and feedback',
+    sendFeedback: function (n) { return 'Feedback ' + n; },
+    sendCopiedMark: ' (copied)',
+    sendPending: function (n) { return ' (' + n + ' not copied)'; },
+    sendJoin: ' / ',
+    sendAnswers: function (n) { return 'Answers ' + n; },
+    sendCopiedAgain: 'Everything had been copied, so all of it was copied again',
+    saveAnswers: 'Save as JSON',
+    previewLabel: 'Preview',
+    previewHide: 'Hide preview',
+    manualLabel: 'Text to copy',
+    answersMissing: 'Still open: ',
+    answersCopied: 'Copied. Paste it into the chat with the AI agent.',
+    answersSaved: function (file) { return 'Saved ' + file + '. Hand it to the AI agent.'; },
+    answersCleared: 'Cleared all answers',
+    undo: 'Undo',
+    restored: 'Restored.',
+    toastCopied: 'Copied',
+    toastSaved: 'Saved',
+    copyFailed: 'Could not copy. Select the text below by hand and copy it.',
+    copyFailedShort: 'Could not copy. Select the text shown in the menu at the bottom right by hand and copy it',
+    saveFailed: 'Could not save. Select the JSON below by hand and copy it.',
+    // Feedback
+    fbFab: 'Feedback',
+    fbBanner: 'Feedback mode: click the item you want to comment on (drag over text to quote it, Shift-click for several; the arrow on a row opens and closes it)',
+    fbWholePageButton: 'Comment on the whole page',
+    fbWholePage: 'Whole page',
+    fbList: function (n) { return 'List (' + n + ')'; },
+    fbExit: 'Done',
+    fbPanelLabel: 'Feedback list',
+    fbClose: 'Close',
+    fbClearAll: 'Delete all',
+    fbEmpty: 'Nothing yet. Press "Feedback", then click an item to write one.',
+    fbComposeLabel: 'Feedback',
+    fbPlaceholder: 'What is off, or what should change (⌘/Ctrl + Enter to save)',
+    fbSave: 'Save',
+    fbCancel: 'Cancel',
+    fbDelete: 'Delete',
+    fbEdit: 'Edit',
+    fbShow: 'Show',
+    fbSaved: 'Saved (kept in this browser).',
+    fbDeleted: 'Deleted',
+    fbCleared: 'Deleted all feedback',
+    fbClearCopied: function (n) { return 'Delete copied (' + n + ')'; },
+    fbCopiedCleared: 'Deleted the copied feedback',
+    fbCopiedMark: 'Copied',
+    fbMissing: 'Target not found',
+    fbMissingHint: 'This place is no longer in the JSON. It may have been fixed or renamed.',
+    fbDraftRestored: 'Restored your unsaved text.',
+    fbUnsaved: 'You have unsaved text. Press Save or Cancel',
+    fbNoStorage: 'This browser can\'t keep it (a private window, for example). Copy before closing.',
+    fbPinLabel: function (n, label) { return 'Feedback ' + n + ': ' + label; },
+    fbTargetPrefix: 'Target: ',
+    dateFormat: function (y, mo, d, h, mi, zone) { return y + '-' + mo + '-' + d + ' ' + h + ':' + mi + (zone ? ' (' + zone + ')' : ''); },
+    fbQuotePrefix: 'Quote: ',
+    fbContentPrefix: 'Shows: ',
+    fbQuoted: function (raw) { return '"' + raw + '"'; },
+    fbDragHint: 'Drag to move. The position is used from then on',
+    fbResetPos: 'Reset position',
+    fbDraftMark: 'Draft',
+    fbDraftResume: 'Continue',
+    fbDraftDiscard: 'Discard',
+    fbDraftDiscarded: 'Discarded the draft',
+    fbTargetWithLabel: function (key, label) { return key + ' (' + label + ')'; },
+    fbMore: function (n) { return ' and ' + n + ' more'; },
+    fbTargetsCount: function (n) { return 'One comment for ' + n + ' places'; },
+    fbPopHint: 'Shift-click another item to add or remove it',
+    fbRemoveTarget: function (label) { return 'Remove from targets: ' + label; },
+    fbMaxTargets: function (n) { return 'You can pick up to ' + n + ' places at once'; },
+    dataError: 'Could not read the checklist data (the JSON in this file).',
+    meta: [
+      ['workdir', 'Working directory'],
+      ['moduleDir', 'Test module location'],
+      ['version', 'katachi version'],
+      ['kotlin', 'Kotlin'],
+      ['jvmToolchain', 'JVM toolchain'],
+      ['git', 'Under Git'],
+      ['projectRoot', 'Target project root'],
+      ['ranAt', 'Ran at']
+    ],
+    warningLabel: 'Warning',
+    stepDoneWarning: 'Done (warning)',
+    stepDone: 'Done',
+    stepOptional: 'Optional',
+    progress: function (done, total, pct) { return done + ' / ' + total + ' items done (' + pct + '%)'; },
+    progressOptional: function (done, total) { return ' · optional ' + done + ' / ' + total; },
+    progressWarnings: function (n) { return ' · ' + n + ' warning' + (n === 1 ? '' : 's'); },
+    preferences: [
+      ['nestedGroups', 'Nest groups?', 'yes'],
+      ['testFramework', 'Test framework', null],
+      ['dependencyStyle', 'How dependencies are written', null],
+      ['constraintNames', 'Put question numbers in constraint names?', 'plain'],
+      ['oneRolePerFile', 'One Role per file?', 'yes']
+    ],
+    prefNotRecordedDetected: 'Not recorded (detected value is used)',
+    prefNotRecordedDefault: 'Not recorded (recommendation is used)',
+    prefDetected: 'detected',
+    prefDiffers: ' differs from the recommendation',
+    prefHeaders: ['key', 'Question', 'Value', 'Recommended'],
+    allGreen: 'None (all green)',
+    violationHeaders: ['Violation', 'Location', 'Why not fixed', 'Suggested next step'],
+    changedHeaders: ['Path', 'Added / Changed', 'Summary'],
+    answersIntro: 'These are my answers to "Questions for you" in the katachi installation checklist (check-list.html). Copy them into answers in that file\'s JSON.',
+    fbIntro: function (n) { return 'Feedback on the katachi installation checklist (check-list.html), ' + n + ' item(s). "Target" is the place in that file\'s JSON. Fix them, and reply with the reason for any you can\'t.'; }
+  };
+  var PAGE = {
+    questionPrefix: 'q',
+    answerTarget: 'check-list',
+    answerFile: 'katachi-answers-check-list.json'
+  };
   var stepNodes = [];
   var boxes = [];
-  // Whether the JSON could be read. When it couldn't, don't assert counts are 0
+
+  // Everything from here down is the same in the report and the checklist (JS can't be shared, so both files carry it)
+
+  // Whether the JSON was read. If not, don't claim a count of 0
   var dataOk = true;
 
-  // ---- DOM helpers (always set values via textContent) ----
+  // ---- DOM helpers (values always go in through textContent) ----
   function el(tag, cls) {
     var node = document.createElement(tag);
     if (cls) node.className = cls;
     return node;
   }
+  function text(raw) { return document.createTextNode(String(raw)); }
   function blank(value) {
     return value == null || value === '' || (Array.isArray(value) && value.length === 0);
   }
   function unfilled(key) {
     var span = el('span', 'todo');
-    span.textContent = 'Unfilled: ' + key;
+    span.textContent = T.unfilled + key;
     return span;
   }
   function value(raw, key) {
     if (blank(raw)) return unfilled(key);
-    return document.createTextNode(String(raw));
+    return text(raw);
   }
-  // Among whitespace-separated ASCII tokens, wrap ones that look like paths in <code>
+  // Make an ISO 8601 date-time (2026-11-10T08:40:00+09:00) easy to read. Keep the string's own offset (no conversion). Anything else stays as it is
+  function dateValue(raw, key) {
+    if (blank(raw)) return unfilled(key);
+    var m = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?(Z|[+-]\d{2}:?\d{2})?$/.exec(String(raw).trim());
+    if (!m) return text(raw);
+    var zone = !m[6] ? '' : m[6] === 'Z' ? 'UTC' : m[6] === '+09:00' || m[6] === '+0900' ? 'JST' : 'UTC' + m[6];
+    var span = el('span');
+    span.textContent = T.dateFormat(m[1], m[2], m[3], m[4], m[5], zone);
+    span.setAttribute('title', String(raw));
+    return span;
+  }
+  // Turn whitespace-separated ASCII tokens that look like paths into <code>
   function richText(raw, key) {
     if (blank(raw)) return unfilled(key);
     var box = document.createDocumentFragment();
@@ -1177,89 +1783,1605 @@
         code.textContent = token;
         box.appendChild(code);
       } else {
-        box.appendChild(document.createTextNode(token));
+        box.appendChild(text(token));
       }
     });
     return box;
   }
-  // Where an empty value is valid, show "None"
+  // Places that may be empty say "None"; places that mean "not investigated" say "Unfilled"
   function none(label) {
     var p = el('p', 'empty');
-    p.textContent = dataOk ? (label || 'None') : 'Unknown';
+    p.textContent = dataOk ? (label || T.none) : T.unknown;
     return p;
   }
-  function defs(cls, pairs) {
-    var dl = el('dl', cls);
-    pairs.forEach(function (pair) {
-      if (!pair[1]) return;
-      var dt = el('dt');
-      dt.textContent = pair[0];
-      var dd = el('dd');
-      dd.appendChild(pair[1]);
-      dl.appendChild(dt);
-      dl.appendChild(dd);
-    });
-    return dl;
+  function noneInline() {
+    var span = el('span', 'empty');
+    span.textContent = dataOk ? T.none : T.unknown;
+    return span;
   }
-  function tableOf(headers, rows, cls) {
-    var wrap = el('div', 'table-wrap');
-    var table = el('table', cls);
-    var head = el('thead');
-    var headRow = el('tr');
-    headers.forEach(function (label) {
-      var th = el('th');
-      th.textContent = label;
-      headRow.appendChild(th);
-    });
-    head.appendChild(headRow);
-    var body = el('tbody');
-    rows.forEach(function (cells) {
-      var row = el('tr');
-      cells.forEach(function (cell) {
-        var td = el('td');
-        td.appendChild(cell);
-        row.appendChild(td);
-      });
-      body.appendChild(row);
-    });
-    table.appendChild(head);
-    table.appendChild(body);
-    wrap.appendChild(table);
-    return wrap;
+  function inlineOrNone(values) {
+    if (blank(values)) return noneInline();
+    return text(values.map(String).join(' / '));
   }
-  function subHeading(label) {
-    var node = el('p', 'qa-head');
-    node.textContent = label;
-    return node;
+  function bullets(values, key) {
+    if (blank(values)) return unfilled(key);
+    var ul = el('ul');
+    values.forEach(function (item) {
+      var li = el('li');
+      li.textContent = String(item);
+      ul.appendChild(li);
+    });
+    return ul;
+  }
+  // Split one sentence like "Kotlin 2.2.20 (KMP; JVM toolchain 17)" into the part outside the parentheses and each sentence inside
+  function sentenceParts(raw) {
+    if (blank(raw)) return [];
+    var whole = String(raw).trim();
+    var parts;
+    var m = /^([^（(]+?)\s*[（(]([\s\S]*)[）)]\s*$/.exec(whole);
+    if (m) parts = [m[1]].concat(m[2].split(/[。;；]\s*/));
+    else parts = whole.split(/[。;；]\s*/);
+    return parts.map(function (part) { return part.trim(); }).filter(function (part) { return part; });
+  }
+  function bulletsOrNone(values) {
+    if (blank(values)) return none();
+    return bullets(values, '');
   }
   function paragraph(node) {
     var p = el('p');
     p.appendChild(node);
     return p;
   }
-  function record(raw) { return raw && typeof raw === 'object' ? raw : {}; }
+  function subHeading(label) {
+    var node = el('p', 'qa-label');
+    node.textContent = label;
+    return node;
+  }
+  function record(raw) { return raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {}; }
   function list(raw) { return Array.isArray(raw) ? raw.map(record) : []; }
-  // If the array is empty, return one empty object so a single "Unfilled" entry is shown
+  // If the array is empty, return one empty object so an "unfilled" entry shows
   function entries(raw) {
     var items = list(raw);
     return items.length ? items : [{}];
   }
   function countOf(raw) { return Array.isArray(raw) ? raw.length : 0; }
-  function countLabel(raw) { var n = countOf(raw); return dataOk ? n + (n === 1 ? ' item' : ' items') : 'Unknown'; }
+  function countLabel(raw) { return dataOk ? T.count(countOf(raw)) : T.unknown; }
   function mount(name, nodes) {
     var host = document.querySelector('[data-render="' + name + '"]');
     if (!host) return;
     host.textContent = '';
-    nodes.forEach(function (node) { host.appendChild(node); });
+    nodes.forEach(function (node) { if (node) host.appendChild(node); });
+  }
+  function button(label, handler, cls) {
+    var node = el('button', 'btn' + (cls ? ' ' + cls : ''));
+    node.type = 'button';
+    node.textContent = label;
+    node.addEventListener('click', handler);
+    return node;
+  }
+  // Feedback target. key is the place in the JSON; label is the name shown on screen
+  function target(node, key, label) {
+    node.setAttribute('data-fb', key);
+    if (label != null) node.setAttribute('data-fb-label', String(label));
+    return node;
   }
 
-  // ---- Steps ----
-  function stepItems(step) {
-    return list(step.items);
+  // ---- One-line folding (when a .clip inside [data-clamp] overflows, a click opens and closes it) ----
+  function clip(child) {
+    var span = el('span', 'clip');
+    if (child) span.appendChild(child);
+    return span;
   }
-  function itemRow(item, index) {
+  function refreshClamps(scope) {
+    var roots = (scope && scope.querySelectorAll ? scope : document).querySelectorAll('[data-clamp]');
+    Array.prototype.forEach.call(roots, function (root) {
+      if (root.classList.contains('is-open')) return;
+      // data-clamp-always can open even when it fits on one line (it turns into bullets when open)
+      var over = root.hasAttribute('data-clamp-always') || Array.prototype.some.call(root.querySelectorAll('.clip'), function (box) {
+        return box.scrollWidth > box.clientWidth + 1;
+      });
+      root.classList.toggle('is-clampable', over);
+      if (over) {
+        root.setAttribute('tabindex', '0');
+        root.setAttribute('aria-expanded', 'false');
+        root.setAttribute('title', T.clampHint);
+      } else {
+        root.removeAttribute('tabindex');
+        root.removeAttribute('aria-expanded');
+        root.removeAttribute('title');
+      }
+    });
+  }
+  function toggleClamp(root) {
+    var opening = !root.classList.contains('is-open');
+    root.classList.toggle('is-open', opening);
+    root.setAttribute('aria-expanded', opening ? 'true' : 'false');
+    if (!opening) refreshClamps(root.parentNode);
+    schedulePins();
+  }
+  function installClamps() {
+    document.addEventListener('click', function (event) {
+      var root = event.target.closest && event.target.closest('[data-clamp]');
+      if (!root || !(root.classList.contains('is-clampable') || root.classList.contains('is-open'))) return;
+      if (event.target.closest('a, button, input, textarea, select, summary')) return;
+      // Don't fold while the user is selecting text to copy
+      var selection = window.getSelection ? String(window.getSelection()) : '';
+      if (selection) return;
+      toggleClamp(root);
+    });
+    document.addEventListener('keydown', function (event) {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      var root = event.target;
+      if (!root.hasAttribute || !root.hasAttribute('data-clamp')) return;
+      if (!(root.classList.contains('is-clampable') || root.classList.contains('is-open'))) return;
+      event.preventDefault();
+      toggleClamp(root);
+    });
+    // Widths inside a closed <details> are only known once it opens
+    document.addEventListener('toggle', function (event) {
+      if (event.target.open) refreshClamps(event.target);
+      schedulePins();
+    }, true);
+    var queued = false;
+    addEventListener('resize', function () {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(function () { queued = false; refreshClamps(); schedulePins(); });
+    });
+  }
+
+  // Label/value pairs. pairs are [label, value node, feedback key]
+  function facts(pairs, section) {
+    var dl = el('dl', 'facts');
+    pairs.forEach(function (pair) {
+      if (!pair[1]) return;
+      // When pair[3] is a bullet list (<ul>), show one line while folded and the bullets while open
+      var list = pair[3] && pair[3].tagName === 'UL' ? pair[3] : null;
+      var cell = el('div', list ? 'fact fact-list' : 'fact');
+      cell.setAttribute('data-clamp', '');
+      if (list) cell.setAttribute('data-clamp-always', '');
+      if (pair[2]) target(cell, pair[2], pair[0]);
+      var dt = el('dt');
+      dt.textContent = pair[0];
+      var dd = el('dd');
+      dd.appendChild(clip(pair[1]));
+      if (list) { list.classList.add('fact-bullets'); dd.appendChild(list); }
+      cell.appendChild(dt);
+      cell.appendChild(dd);
+      dl.appendChild(cell);
+    });
+    return dl;
+  }
+
+  // A table. widths are the column widths (e.g. '30%'). rows are { cells, key, label }. Each row folds to one line, except the wrapCols columns, which wrap and show everything
+  function tableOf(headers, rows, widths, monoFirst, wrapCols) {
+    var wrap = el('div', 'table-wrap');
+    var table = el('table');
+    var cols = el('colgroup');
+    headers.forEach(function (label, i) {
+      var col = el('col');
+      if (widths && widths[i]) col.style.width = widths[i];
+      cols.appendChild(col);
+    });
+    table.appendChild(cols);
+    var head = el('thead');
+    var headRow = el('tr');
+    headers.forEach(function (label) {
+      var th = el('th');
+      th.textContent = label;
+      th.setAttribute('title', label);
+      headRow.appendChild(th);
+    });
+    head.appendChild(headRow);
+    var body = el('tbody');
+    rows.forEach(function (row) {
+      var tr = el('tr');
+      tr.setAttribute('data-clamp', '');
+      if (row.key) target(tr, row.key, row.label);
+      row.cells.forEach(function (cell, i) {
+        var td = el('td', [monoFirst !== false && i === 0 ? 'mono' : '', wrapCols && wrapCols.indexOf(i) >= 0 ? 'wrap' : ''].join(' ').trim());
+        // With row.fields, each cell is a feedback target at its own place in the JSON too
+        if (row.key && row.fields && row.fields[i]) target(td, row.key + '.' + row.fields[i], headers[i]);
+        td.appendChild(clip(cell));
+        tr.appendChild(td);
+      });
+      body.appendChild(tr);
+    });
+    table.appendChild(head);
+    table.appendChild(body);
+    wrap.appendChild(table);
+    return wrap;
+  }
+
+  // Copy a string to the clipboard; call fail if that's not possible
+  function copyText(value, done, fail) {
+    function fallback() {
+      var box = el('textarea');
+      box.value = value;
+      box.setAttribute('readonly', '');
+      box.style.position = 'fixed';
+      box.style.left = '-9999px';
+      document.body.appendChild(box);
+      box.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (error) { ok = false; }
+      document.body.removeChild(box);
+      if (ok) done(); else fail();
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(value).then(done, fallback);
+    } else {
+      fallback();
+    }
+  }
+  // Briefly confirm a copy or save. Reuse one role="status" element so screen readers announce it too
+  var toastNode = null;
+  var toastTimer = null;
+  // Pass action ({ label, run }) to add a button such as "Undo" and keep it up longer
+  function toast(message, isError, action) {
+    if (!toastNode) {
+      // fb-ui: so "Undo" can be pressed in feedback mode too
+      toastNode = el('div', 'toast fb-ui');
+      toastNode.setAttribute('role', 'status');
+      toastNode.setAttribute('aria-live', 'polite');
+      document.body.appendChild(toastNode);
+    }
+    toastNode.textContent = '';
+    toastNode.appendChild(text(message));
+    if (action) {
+      var actionButton = el('button', 'toast-action');
+      actionButton.type = 'button';
+      actionButton.textContent = action.label;
+      actionButton.addEventListener('click', function () {
+        clearTimeout(toastTimer);
+        toastNode.classList.remove('is-shown');
+        action.run();
+      });
+      toastNode.appendChild(actionButton);
+    }
+    toastNode.classList.toggle('has-action', !!action);
+    // The feedback banner wraps to several lines on narrow screens, so show it just below
+    var banner = document.querySelector('.fb-banner');
+    var bannerBottom = banner && !banner.hidden ? banner.getBoundingClientRect().bottom : 0;
+    toastNode.style.top = bannerBottom > 0 ? (bannerBottom + 8) + 'px' : '';
+    toastNode.classList.toggle('is-error', isError === true);
+    // Show it again when pressed repeatedly
+    toastNode.classList.remove('is-shown');
+    void toastNode.offsetWidth;
+    toastNode.classList.add('is-shown');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastNode.classList.remove('is-shown'); }, action ? 8000 : 2400);
+  }
+  function storageGet(key) {
+    try { return localStorage.getItem(key); } catch (error) { return null; }
+  }
+  function storageSet(key, raw) {
+    try {
+      if (raw == null) localStorage.removeItem(key); else localStorage.setItem(key, raw);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  // ---- Answer fields for the questions ----
+  // { id, recommendation, radios, free, card, state, picked }
+  var answerCards = [];
+
+  function questionId(item, index) {
+    return blank(item.id) ? PAGE.questionPrefix + (index + 1) : String(item.id);
+  }
+  // Drafts in progress. Rendering still works without localStorage
+  function draftKey(id) { return location.href.split('#')[0] + '#answer:' + id; }
+  function readDraft(id) {
+    try {
+      var raw = storageGet(draftKey(id));
+      return raw ? record(JSON.parse(raw)) : null;
+    } catch (error) {
+      return null;
+    }
+  }
+  function writeDraft(id, draft) { storageSet(draftKey(id), draft ? JSON.stringify(draft) : null); }
+  // State of an answer field. With an option picked, the free text is the note; without one, the free text is the answer
+  function readCard(entry) {
+    var picked = entry.radios.filter(function (radio) { return radio.checked; })[0];
+    var free = entry.free.value.replace(/^\s+|\s+$/g, '');
+    if (picked) return { answer: picked.value, note: free || null };
+    if (free) return { answer: free, note: null };
+    return null;
+  }
+  function fillCard(entry, answer) {
+    var found = false;
+    entry.radios.forEach(function (radio) {
+      radio.checked = !found && radio.value === answer.answer;
+      if (radio.checked) found = true;
+    });
+    var note = blank(answer.note) ? '' : String(answer.note);
+    entry.free.value = found ? note : [answer.answer || '', note].filter(Boolean).join('\n');
+    openFreeIfFilled(entry);
+  }
+  function openFreeIfFilled(entry) {
+    if (entry.freeToggle && entry.free.value.replace(/\s+/g, '') !== '') entry.freeToggle.open = true;
+  }
+  // If the recommendation starts with an option letter ("B. ..."), its index; otherwise -1
+  function recommendedIndex(recommendation, count) {
+    var head = blank(recommendation) ? '' : String(recommendation).replace(/^\s+/, '');
+    var match = /^([A-Z])(?![A-Za-z])/.exec(head);
+    var index = match ? match[1].charCodeAt(0) - 65 : -1;
+    return index >= 0 && index < count ? index : -1;
+  }
+  // Strip the leading option letter and separator from the recommendation
+  function recommendationReason(recommendation) {
+    return String(recommendation).replace(/^\s*[A-Z](?![A-Za-z])[\s。．.、,:：)）]*/, '');
+  }
+  function unansweredIds() {
+    return answerCards.filter(function (entry) { return !readCard(entry); }).map(function (entry) { return entry.id; });
+  }
+  function collectAnswers() {
+    var out = {};
+    var now = new Date().toISOString();
+    answerCards.forEach(function (entry) {
+      var current = readCard(entry);
+      if (!current) return;
+      out[entry.id] = { answer: current.answer, note: current.note, answeredAt: now };
+    });
+    return out;
+  }
+  function answersJson() {
+    return JSON.stringify({ target: PAGE.answerTarget, answers: collectAnswers() }, null, 2) + '\n';
+  }
+  // A form that pastes straight into chat (what the answers are for, what's unanswered, the JSON)
+  function answersMessage() {
+    var lines = [T.answersIntro];
+    var missing = unansweredIds();
+    if (missing.length) lines.push(T.answersMissing + missing.join(', '));
+    lines.push('', '```json', answersJson().replace(/\n$/, ''), '```');
+    return lines.join('\n') + '\n';
+  }
+  function paintAnswers() {
+    var answered = 0;
+    answerCards.forEach(function (entry) {
+      var current = readCard(entry);
+      entry.card.classList.toggle('is-answered', current !== null);
+      entry.state.className = current ? 'badge badge-success qa-state' : 'badge badge-quiet qa-state';
+      entry.state.textContent = current ? T.answered : T.unanswered;
+      entry.picked.textContent = current ? '→ ' + current.answer + (current.note ? T.withNote : '') : '';
+      entry.radios.forEach(function (radio) { radio.parentNode.classList.toggle('is-checked', radio.checked); });
+      if (entry.importMark) {
+        var changed = changedFromImported(entry);
+        entry.importMark.textContent = changed ? T.importedChanged : T.imported;
+        entry.importMark.className = changed ? 'badge badge-caution' : 'badge badge-note';
+        entry.revert.hidden = !changed;
+      }
+      if (current) answered += 1;
+    });
+    mount('answeredCount', [text(answered ? T.answeredCount(answered) : '')]);
+    paintSend();
+  }
+  function sameAnswer(a, b) {
+    if (!a || !b) return !a && !b;
+    var noteA = blank(a.note) ? null : String(a.note);
+    var noteB = blank(b.note) ? null : String(b.note);
+    return String(a.answer) === String(b.answer) && noteA === noteB;
+  }
+  // Whether the answer differs from the recorded one (entry.baseline is the field's state right after filling in the recorded answer)
+  function changedFromImported(entry) {
+    return !!entry.imported && !sameAnswer(readCard(entry), entry.baseline);
+  }
+  // When the recorded answer was changed, keep even a cleared answer as a draft (so a reload doesn't bring the recorded one back)
+  function saveDraft(entry) {
+    var current = readCard(entry);
+    if (!entry.imported) { writeDraft(entry.id, current); return; }
+    writeDraft(entry.id, changedFromImported(entry) ? (current || { cleared: true }) : null);
+  }
+  function emptyCard(entry) {
+    entry.radios.forEach(function (radio) { radio.checked = false; });
+    entry.free.value = '';
+  }
+  function onCardInput(entry) {
+    saveDraft(entry);
+    paintAnswers();
+  }
+  // "Use the recommendation" only works when the recommendation points at an option
+  function canAdopt(entry) {
+    return recommendedIndex(entry.recommendation, entry.radios.length) >= 0;
+  }
+  function adoptRecommendation(entry) {
+    var index = recommendedIndex(entry.recommendation, entry.radios.length);
+    if (index < 0) return;
+    entry.radios[index].checked = true;
+    onCardInput(entry);
+  }
+  // Don't overwrite answers the user picked; fill only the questions not yet answered
+  function adoptAllRecommendations() {
+    var filled = 0;
+    answerCards.forEach(function (entry) {
+      if (readCard(entry) || !canAdopt(entry)) return;
+      adoptRecommendation(entry);
+      filled += 1;
+    });
+    toast(filled ? T.adoptedCount(filled) : T.adoptedNone);
+  }
+  // ---- One small menu at the bottom that copies what there is to hand over (answers and feedback). It appears once there is at least one of either ----
+  var SENT_KEY = 'katachi-answers-sent:' + location.href.split('#')[0];
+  var send = null;
+  // A fingerprint of the answers alone (no timestamps), to tell whether they match what was copied before
+  function answersSignature() {
+    return JSON.stringify(answerCards.map(function (entry) {
+      var current = readCard(entry);
+      return [entry.id, current ? current.answer : null, current && !blank(current.note) ? String(current.note) : null];
+    }));
+  }
+  // hasAnswers: answers still as recorded in the JSON are not counted as something to hand over
+  function sendState() {
+    var answered = answerCards.filter(function (entry) { return readCard(entry); }).length;
+    var pristine = answerCards.every(function (entry) {
+      return entry.imported ? !changedFromImported(entry) : !readCard(entry);
+    });
+    var hasAnswers = answered > 0 && !pristine;
+    var answersNew = hasAnswers && storageGet(SENT_KEY) !== answersSignature();
+    var pending = fb.items.filter(function (item) { return !item.copiedAt; });
+    // Send only what hasn't been handed over yet. If everything has been, send all of it again
+    var again = !answersNew && pending.length === 0;
+    return {
+      answered: answered,
+      total: answerCards.length,
+      hasAnswers: hasAnswers,
+      answersNew: answersNew,
+      pending: pending,
+      again: again,
+      withAnswers: hasAnswers && (answersNew || again),
+      feedback: again ? fb.items.slice() : pending
+    };
+  }
+  function sendMessage(state) {
+    var blocks = [];
+    if (state.withAnswers) blocks.push(answersMessage().replace(/\n+$/, ''));
+    if (state.feedback.length) blocks.push(fbMessage(state.feedback).replace(/\n+$/, ''));
+    return blocks.join('\n\n') + '\n';
+  }
+  function sendUi() {
+    if (send) return send;
+    var root = el('section', 'send-bar fb-ui');
+    root.hidden = true;
+    root.setAttribute('aria-label', T.sendLabel);
+    var summary = el('p', 'send-summary');
+    var actions = el('div', 'send-actions');
+    var copy = button(T.sendCopy, sendCopy, 'btn-primary btn-icon btn-copy');
+    var save = button(T.saveAnswers, downloadAnswers);
+    var clear = button(T.sendClear, sendClear, 'btn-quiet');
+    clear.setAttribute('title', T.sendClearTitle);
+    var preview = el('pre', 'send-preview');
+    preview.hidden = true;
+    var peek = button(T.previewLabel, function () {
+      preview.hidden = !preview.hidden;
+      peek.textContent = preview.hidden ? T.previewLabel : T.previewHide;
+      peek.setAttribute('aria-expanded', preview.hidden ? 'false' : 'true');
+    }, 'btn-quiet');
+    peek.setAttribute('aria-expanded', 'false');
+    actions.appendChild(copy);
+    actions.appendChild(save);
+    actions.appendChild(peek);
+    actions.appendChild(clear);
+    var status = el('p', 'send-status');
+    status.setAttribute('role', 'status');
+    var manual = el('textarea', 'answer-manual');
+    manual.setAttribute('readonly', '');
+    manual.setAttribute('aria-label', T.manualLabel);
+    manual.hidden = true;
+    [summary, actions, status, manual, preview].forEach(function (node) { root.appendChild(node); });
+    document.body.appendChild(root);
+    send = { root: root, summary: summary, save: save, status: status, manual: manual, preview: preview, peek: peek };
+    if (window.ResizeObserver) new ResizeObserver(syncSendHeight).observe(root);
+    return send;
+  }
+  // Put the menu's height in a CSS variable so the "Feedback" button and the list at the bottom right move above it
+  function syncSendHeight() {
+    var height = send && !send.root.hidden ? send.root.offsetHeight + 12 : 0;
+    document.documentElement.style.setProperty('--send-h', height + 'px');
+  }
+  function paintSend() {
+    var ui = sendUi();
+    var state = sendState();
+    var n = fb.items.length;
+    var visible = state.hasAnswers || n > 0;
+    // Show, by count, what goes into the copy right now (feedback, answers to the questions)
+    var parts = [];
+    if (n) {
+      parts.push(T.sendFeedback(n) + (state.pending.length === 0 ? T.sendCopiedMark : state.pending.length < n ? T.sendPending(state.pending.length) : ''));
+    }
+    if (state.hasAnswers) parts.push(T.sendAnswers(state.answered) + (state.answersNew ? '' : T.sendCopiedMark));
+    ui.summary.textContent = parts.join(T.sendJoin);
+    ui.save.hidden = !state.hasAnswers;
+    ui.preview.textContent = visible ? sendMessage(state) : '';
+    if (ui.root.hidden === visible) {
+      ui.root.hidden = !visible;
+      if (!visible) {
+        ui.status.textContent = '';
+        ui.manual.hidden = true;
+        if (!ui.preview.hidden) ui.peek.click();
+      }
+    }
+    syncSendHeight();
+  }
+  function setAnswerStatus(message, isError) {
+    var ui = sendUi();
+    ui.status.textContent = message;
+    ui.status.classList.toggle('is-error', isError === true);
+    ui.manual.hidden = true;
+  }
+  // When the automatic hand-off fails, show the content so the user can select it by hand
+  function showManual(content, message) {
+    var ui = sendUi();
+    setAnswerStatus(message, true);
+    ui.manual.value = content;
+    ui.manual.hidden = false;
+    ui.manual.focus();
+    ui.manual.select();
+  }
+  function sendCopy() {
+    var state = sendState();
+    var content = sendMessage(state);
+    copyText(content, function () {
+      if (state.withAnswers) storageSet(SENT_KEY, answersSignature());
+      var now = new Date().toISOString();
+      state.feedback.forEach(function (item) { item.copiedAt = now; });
+      var kept = state.feedback.length ? fbStore() : true;
+      fbPaint();
+      if (!kept) return;
+      // Success is only announced in a toast (to keep the menu small); the line below is for failures only
+      setAnswerStatus('');
+      toast(state.again ? T.sendCopiedAgain : T.answersCopied);
+    }, function () {
+      showManual(content, T.copyFailed);
+      toast(T.copyFailedShort, true);
+    });
+  }
+  function downloadAnswers() {
+    var content = answersJson();
+    try {
+      var url = URL.createObjectURL(new Blob([content], { type: 'application/json' }));
+      var a = el('a');
+      a.setAttribute('href', url);
+      a.setAttribute('download', PAGE.answerFile);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      storageSet(SENT_KEY, answersSignature());
+      paintSend();
+      setAnswerStatus('');
+      toast(T.answersSaved(PAGE.answerFile));
+    } catch (error) {
+      showManual(content, T.saveFailed);
+    }
+  }
+  // Clear every answer and return a function that undoes it (it keeps the answers and drafts from before)
+  function wipeAnswers() {
+    var before = answerCards.map(function (entry) {
+      return { entry: entry, answer: readCard(entry), draft: storageGet(draftKey(entry.id)) };
+    });
+    answerCards.forEach(function (entry) {
+      emptyCard(entry);
+      saveDraft(entry);
+    });
+    return function () {
+      before.forEach(function (saved) {
+        emptyCard(saved.entry);
+        if (saved.answer) fillCard(saved.entry, saved.answer);
+        storageSet(draftKey(saved.entry.id), saved.draft);
+      });
+    };
+  }
+  function clearAnswers() {
+    var restore = wipeAnswers();
+    paintAnswers();
+    toast(T.answersCleared, false, { label: T.undo, run: function () {
+      restore();
+      paintAnswers();
+      toast(T.restored);
+    } });
+  }
+  // "Clear" in the menu: removes both the answers and the feedback. The toast can undo it
+  function sendClear() {
+    var restoreAnswers = wipeAnswers();
+    var items = fb.items.slice();
+    fb.items = [];
+    fbStore();
+    paintAnswers();
+    fbPaint();
+    toast(T.sendCleared, false, { label: T.undo, run: function () {
+      restoreAnswers();
+      fb.items = items;
+      fbStore();
+      paintAnswers();
+      fbPaint();
+      toast(T.restored);
+    } });
+  }
+
+  function questionCard(item, index, answers) {
+    var id = questionId(item, index);
+    var cardKey = 'questions[id=' + id + ']';
+    var card = target(el('details', 'qa'), cardKey, id);
+    var summary = el('summary');
+    var badge = el('span', 'badge qa-id');
+    badge.textContent = id;
+    var main = el('span', 'qa-main');
+    var title = el('span', 'qa-title');
+    title.appendChild(value(item.question, 'questions[].question'));
+    var picked = el('span', 'qa-picked clip');
+    main.appendChild(title);
+    main.appendChild(picked);
+    var state = el('span', 'badge badge-quiet qa-state');
+    summary.appendChild(badge);
+    summary.appendChild(main);
+    summary.appendChild(state);
+
+    var body = el('div', 'qa-body');
+    var observed = target(el('div', 'qa-observed'), cardKey + '.observed', T.observed);
+    observed.appendChild(subHeading(T.observed));
+    observed.appendChild(paragraph(richText(item.observed, 'questions[].observed')));
+    body.appendChild(observed);
+
+    var entry = { id: id, recommendation: item.recommendation, radios: [], free: null, card: card, state: state, picked: picked };
+    var options = Array.isArray(item.options) ? item.options : [];
+    var recommended = recommendedIndex(item.recommendation, options.length);
+    if (!options.length) {
+      body.appendChild(paragraph(unfilled('questions[].options')));
+    } else {
+      var set = el('fieldset', 'qa-options');
+      var legend = el('legend', 'qa-label');
+      legend.textContent = T.pickOne;
+      set.appendChild(legend);
+      options.forEach(function (option, i) {
+        var label = target(el('label', 'qa-option'), cardKey + '.options[' + i + ']', String.fromCharCode(65 + i));
+        var radio = el('input');
+        radio.type = 'radio';
+        radio.name = 'answer-' + id;
+        radio.id = 'answer-' + id + '-' + i;
+        radio.value = String(option);
+        radio.addEventListener('change', function () { onCardInput(entry); });
+        var key = el('span', 'opt-key');
+        key.textContent = String.fromCharCode(65 + i);
+        var optionText = el('span', 'opt-text');
+        optionText.textContent = String(option);
+        label.appendChild(radio);
+        label.appendChild(key);
+        label.appendChild(optionText);
+        if (i === recommended) {
+          var tag = el('span', 'badge badge-success');
+          tag.textContent = T.recommended;
+          label.appendChild(tag);
+        }
+        set.appendChild(label);
+        entry.radios.push(radio);
+      });
+      body.appendChild(set);
+    }
+
+    var why = target(el('div', 'qa-why'), cardKey + '.recommendation', T.recommendation);
+    if (blank(item.recommendation)) {
+      why.appendChild(subHeading(T.recommendation));
+      why.appendChild(paragraph(unfilled('questions[].recommendation')));
+    } else if (recommended >= 0) {
+      // With just "B" and no reason, the "Recommended" tag on the option is enough, so skip the box
+      var reason = recommendationReason(item.recommendation);
+      if (reason.replace(/\s+/g, '') !== '') {
+        why.appendChild(subHeading(T.recommendationWhy));
+        why.appendChild(paragraph(richText(reason, '')));
+      }
+    } else {
+      why.appendChild(subHeading(T.recommendation));
+      why.appendChild(paragraph(richText(item.recommendation, '')));
+    }
+    if (why.firstChild) body.appendChild(why);
+
+    var freeBox = el('div');
+    // Keep the note / free answer folded; open it when it has text or the question has no options
+    var freeToggle = el('details', 'qa-free');
+    var freeSummary = el('summary', 'qa-label');
+    freeSummary.textContent = T.freeLabel;
+    var free = el('textarea');
+    free.id = 'answer-' + id + '-free';
+    free.setAttribute('aria-label', T.freeLabel);
+    free.setAttribute('placeholder', T.freePlaceholder);
+    free.addEventListener('input', function () { onCardInput(entry); });
+    entry.free = free;
+    entry.freeToggle = freeToggle;
+    freeToggle.open = entry.radios.length === 0;
+    freeToggle.appendChild(freeSummary);
+    freeToggle.appendChild(free);
+    freeBox.appendChild(freeToggle);
+    var tools = el('div', 'toolbar');
+    if (recommended >= 0) {
+      tools.appendChild(button(T.adoptOne, function () { adoptRecommendation(entry); }, 'btn-sm'));
+    }
+    tools.appendChild(button(T.clearOne, function () {
+      emptyCard(entry);
+      onCardInput(entry);
+    }, 'btn-sm btn-quiet'));
+    var revert = button(T.revertOne, function () {
+      emptyCard(entry);
+      fillCard(entry, entry.imported);
+      onCardInput(entry);
+    }, 'btn-sm btn-quiet');
+    revert.hidden = true;
+    entry.revert = revert;
+    tools.appendChild(revert);
+    freeBox.appendChild(tools);
+    body.appendChild(freeBox);
+
+    // Fill in the answer already in the JSON, then the draft if it was changed from there. Unanswered cards start open
+    var imported = answers[id] ? record(answers[id]) : null;
+    if (imported) {
+      entry.imported = imported;
+      entry.importMark = el('span', 'badge badge-note');
+      main.appendChild(entry.importMark);
+      fillCard(entry, imported);
+      entry.baseline = readCard(entry);
+    }
+    var draft = readDraft(id);
+    if (draft && draft.cleared === true) {
+      if (imported) emptyCard(entry);
+    } else if (draft && !blank(draft.answer)) {
+      emptyCard(entry);
+      fillCard(entry, draft);
+    }
+    card.open = !readCard(entry);
+    answerCards.push(entry);
+
+    card.appendChild(summary);
+    card.appendChild(body);
+    return card;
+  }
+
+  function renderAnswerActions() {
+    mount('answerActions', [
+      button(T.adoptAll, adoptAllRecommendations, 'btn-sm'),
+      button(T.clearAll, clearAnswers, 'btn-sm btn-quiet')
+    ]);
+  }
+
+  function renderQuestions(questions, answers) {
+    answerCards = [];
+    mount('questionCount', [text(countLabel(questions))]);
+    if (!countOf(questions)) {
+      mount('questions', [none()]);
+      mount('answerActions', []);
+      return;
+    }
+    mount('questions', entries(questions).map(function (item, index) {
+      return questionCard(item, index, answers);
+    }));
+    renderAnswerActions();
+    paintAnswers();
+  }
+
+  // ---- Feedback mode (pick an item, write a comment, copy them all and hand them to the AI agent) ----
+  var FEEDBACK_KEY = 'katachi-feedback:' + location.href.split('#')[0];
+  // drafts are unsaved comments (per target key). They come back the next time that target is opened
+  var fb = { on: false, items: [], hover: null, editing: null, drafts: {}, ui: {} };
+
+  function fbLoad() {
+    try {
+      var raw = JSON.parse(storageGet(FEEDBACK_KEY) || '[]');
+      return Array.isArray(raw) ? raw.filter(function (item) {
+        return item && typeof item.key === 'string' && typeof item.comment === 'string';
+      }) : [];
+    } catch (error) {
+      return [];
+    }
+  }
+  // Return whether it was kept. If not, open the list with a warning and prompt a copy in a toast too
+  function fbStore() {
+    if (storageSet(FEEDBACK_KEY, fb.items.length ? JSON.stringify(fb.items) : null)) return true;
+    fbTogglePanel(true);
+    fbStatus(T.fbNoStorage, true);
+    toast(T.fbNoStorage, true);
+    return false;
+  }
+  // One piece of feedback goes to one place, or to several picked with Shift-click. Only then does it carry keys / labels; key is those joined (the name that identifies the item)
+  var FB_MAX_TARGETS = 20;
+  function fbKeys(item) {
+    return Array.isArray(item.keys) && item.keys.length ? item.keys.map(String) : [item.key];
+  }
+  function fbLabels(item) {
+    var keys = fbKeys(item);
+    return Array.isArray(item.labels) && item.labels.length === keys.length ? item.labels.map(String) : keys.map(function () { return item.label || ''; });
+  }
+  function fbId(keys) { return keys.join(', '); }
+  function fbTitle(labels) {
+    return labels.length > 1 ? labels[0] + T.fbMore(labels.length - 1) : labels[0];
+  }
+  // quotes are the selected text when a comment was written on a selection; texts are what each place said when saved (both in the same order as the targets)
+  function fbTargetsOf(item) {
+    var labels = fbLabels(item);
+    var quotes = Array.isArray(item.quotes) ? item.quotes : [];
+    var texts = Array.isArray(item.texts) ? item.texts : [];
+    return fbKeys(item).map(function (key, i) {
+      return { key: key, label: labels[i], node: key === 'page' ? null : fbFind(key), quote: quotes[i] || '', text: texts[i] || '' };
+    });
+  }
+  var FB_QUOTE_MAX = 300;
+  var FB_TEXT_MAX = 120;
+  function fbShorten(raw, max) {
+    var flat = String(raw || '').replace(/\s+/g, ' ').replace(/^ | $/g, '');
+    return flat.length > max ? flat.slice(0, max - 1) + '…' : flat;
+  }
+  // The text the place shows now. Falls back to textContent when innerText is empty (inside a closed <details>)
+  function fbNodeText(node) {
+    if (!node) return '';
+    return fbShorten(node.innerText || node.textContent, FB_TEXT_MAX);
+  }
+  // ---- Unsaved comments. Kept in sessionStorage until the tab closes, so they survive a reload ----
+  var DRAFTS_KEY = 'katachi-feedback-drafts:' + location.href.split('#')[0];
+  function fbLoadDrafts() {
+    try {
+      var raw = JSON.parse(sessionStorage.getItem(DRAFTS_KEY) || '{}');
+      var out = {};
+      Object.keys(raw || {}).forEach(function (key) {
+        var d = raw[key];
+        if (d && typeof d.text === 'string' && Array.isArray(d.targets) && d.targets.length) out[key] = d;
+      });
+      return out;
+    } catch (error) {
+      return {};
+    }
+  }
+  function fbSaveDrafts() {
+    try {
+      if (Object.keys(fb.drafts).length) sessionStorage.setItem(DRAFTS_KEY, JSON.stringify(fb.drafts));
+      else sessionStorage.removeItem(DRAFTS_KEY);
+    } catch (error) { /* Without storage, keep them in memory only */ }
+  }
+  // Keep the open box's unsaved text (on every change). Drop it when nothing changed
+  function fbKeepDraft(pop) {
+    if (!pop || !pop.draftKey) return;
+    if (pop.isDirty()) {
+      fb.drafts[pop.draftKey] = {
+        text: pop.area.value,
+        targets: pop.targets.map(function (target) { return { key: target.key, label: target.label, quote: target.quote || '' }; }),
+        originKey: pop.origin ? pop.origin.key : null,
+        at: new Date().toISOString()
+      };
+    } else {
+      delete fb.drafts[pop.draftKey];
+    }
+    fbSaveDrafts();
+  }
+  function fbDropDraft(key) {
+    if (!Object.prototype.hasOwnProperty.call(fb.drafts, key)) return;
+    delete fb.drafts[key];
+    fbSaveDrafts();
+  }
+  function fbDraftTargets(draft) {
+    return draft.targets.map(function (target) {
+      return { key: target.key, label: target.label, quote: target.quote || '', node: target.key === 'page' ? null : fbFind(target.key) };
+    });
+  }
+
+  // ---- The comment box position. Once dragged, remember it and open there next time ----
+  var POP_POS_KEY = 'katachi-feedback-pop-pos';
+  function fbSavedPos() {
+    try {
+      var pos = JSON.parse(storageGet(POP_POS_KEY) || 'null');
+      return pos && typeof pos.x === 'number' && typeof pos.y === 'number' ? pos : null;
+    } catch (error) {
+      return null;
+    }
+  }
+  function fbFind(key) {
+    var nodes = document.querySelectorAll('[data-fb]');
+    for (var i = 0; i < nodes.length; i += 1) {
+      if (nodes[i].getAttribute('data-fb') === key) return nodes[i];
+    }
+    return null;
+  }
+  // Join the names of the targets from the outside in ("4. Elements › app › ViewModel")
+  function fbLabel(node) {
+    var parts = [];
+    for (var cur = node; cur && cur !== document.body; cur = cur.parentElement) {
+      if (!cur.hasAttribute('data-fb')) continue;
+      var label = cur.getAttribute('data-fb-label');
+      if (!label && /^H[1-6]$/.test((cur.firstElementChild || {}).tagName || '')) label = cur.firstElementChild.textContent;
+      if (label) parts.unshift(label.replace(/\s+/g, ' ').trim());
+    }
+    return parts.join(' › ') || T.fbWholePage;
+  }
+  function fbStatus(message, isError) {
+    if (!fb.ui.status) return;
+    fb.ui.status.textContent = message;
+    fb.ui.status.classList.toggle('is-error', isError === true);
+  }
+  function fbMessage(items) {
+    var lines = [T.fbIntro(items.length), ''];
+    items.forEach(function (item, i) {
+      var keys = fbKeys(item);
+      var labels = fbLabels(item);
+      lines.push((i + 1) + '. ' + (keys.length > 1 ? fbTitle(labels) : item.label));
+      var targets = fbTargetsOf(item);
+      keys.forEach(function (key, k) {
+        lines.push('   ' + T.fbTargetPrefix + (keys.length > 1 ? T.fbTargetWithLabel(key, labels[k]) : key));
+        // Add the quote (the selected text) if there is one, otherwise what the place said when saved
+        if (targets[k].quote) lines.push('   ' + T.fbQuotePrefix + T.fbQuoted(targets[k].quote));
+        else if (targets[k].text) lines.push('   ' + T.fbContentPrefix + T.fbQuoted(targets[k].text));
+      });
+      String(item.comment).split('\n').forEach(function (line) { lines.push('   > ' + line); });
+      lines.push('');
+    });
+    return lines.join('\n');
+  }
+  // For something inside a closed <details>, mark the summary of the outermost closed one
+  function visibleAnchor(node) {
+    var anchor = node;
+    for (var cur = node.parentElement; cur && cur !== document.body; cur = cur.parentElement) {
+      if (cur.tagName === 'DETAILS' && !cur.open) {
+        var summary = cur.querySelector(':scope > summary');
+        if (summary && !summary.contains(node)) anchor = summary;
+      }
+    }
+    return anchor;
+  }
+  var pinsQueued = false;
+  function schedulePins() {
+    if (pinsQueued || !fb.ui.layer) return;
+    pinsQueued = true;
+    requestAnimationFrame(function () { pinsQueued = false; layoutPins(); });
+  }
+  function layoutPins() {
+    var layer = fb.ui.layer;
+    layer.textContent = '';
+    var used = {};
+    fb.items.forEach(function (item, i) { fbTargetsOf(item).forEach(function (target) {
+      var node = target.node;
+      if (!node) return;
+      var anchor = visibleAnchor(node);
+      var rect = anchor.getBoundingClientRect();
+      if (!rect.width && !rect.height) return;
+      var top = Math.round(rect.top + window.pageYOffset) - 9;
+      var left = Math.round(Math.min(rect.right, document.documentElement.clientWidth - 16) + window.pageXOffset) - 14;
+      // Shift pins that land on the same spot
+      var spot = top + ':' + left;
+      while (used[spot]) { left -= 26; spot = top + ':' + left; }
+      used[spot] = true;
+      var pin = el('button', 'fb-pin fb-ui');
+      pin.type = 'button';
+      pin.textContent = String(i + 1);
+      pin.setAttribute('aria-label', T.fbPinLabel(i + 1, item.label));
+      pin.setAttribute('title', item.comment);
+      pin.style.top = top + 'px';
+      pin.style.left = Math.max(4, left) + 'px';
+      pin.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        var pinRect = pin.getBoundingClientRect();
+        fbCompose(fbTargetsOf(item), { x: pinRect.left, y: pinRect.bottom });
+      });
+      layer.appendChild(pin);
+    }); });
+    // While the comment box is open, frame its targets (numbered when there are several)
+    var pop = fb.ui.pop;
+    if (!pop || !pop.targets) return;
+    pop.targets.forEach(function (target, i) {
+      if (!target.node) return;
+      var rect = visibleAnchor(target.node).getBoundingClientRect();
+      if (!rect.width && !rect.height) return;
+      var box = el('div', 'fb-sel');
+      box.style.top = (rect.top + window.pageYOffset - 2) + 'px';
+      box.style.left = (rect.left + window.pageXOffset - 2) + 'px';
+      box.style.width = (rect.width + 4) + 'px';
+      box.style.height = (rect.height + 4) + 'px';
+      if (pop.targets.length > 1) {
+        var order = el('span');
+        order.textContent = String(i + 1);
+        box.appendChild(order);
+      }
+      layer.appendChild(box);
+    });
+  }
+  function fbHighlight(node) {
+    var hl = fb.ui.highlight;
+    if (!node) { hl.hidden = true; fb.hover = null; return; }
+    fb.hover = node;
+    var rect = node.getBoundingClientRect();
+    hl.style.top = (rect.top + window.pageYOffset - 2) + 'px';
+    hl.style.left = (rect.left + window.pageXOffset - 2) + 'px';
+    hl.style.width = (rect.width + 4) + 'px';
+    hl.style.height = (rect.height + 4) + 'px';
+    hl.firstChild.textContent = fbLabel(node);
+    hl.hidden = false;
+  }
+  // With keepDraft, keep the unsaved text per target (Esc, opening another item). Cancel and Save drop it
+  function fbClosePop(keepDraft) {
+    var pop = fb.ui.pop;
+    if (pop) {
+      if (keepDraft) fbKeepDraft(pop);
+      else fbDropDraft(pop.draftKey);
+    }
+    if (pop) pop.remove();
+    fb.ui.pop = null;
+    fb.editing = null;
+    if (pop && fb.ui.list) fbPaint();
+    schedulePins();
+  }
+  // point is where the click happened (viewport coordinates); the box opens near it
+  // targets is a list of { node, key, label }. carry is { text, origin, top, left } when reopening after adding or removing a target (the text and position carry over)
+  function fbCompose(targets, point, carry) {
+    if (carry) {
+      fb.ui.pop.remove();
+      fb.ui.pop = null;
+      fb.editing = null;
+    } else {
+      fbClosePop(true);
+    }
+    fbHighlight(null);
+    var keys = targets.map(function (target) { return target.key; });
+    var labels = targets.map(function (target) { return target.label; });
+    var key = fbId(keys);
+    var node = (targets.filter(function (target) { return target.node; })[0] || {}).node || null;
+    var draft = !carry && Object.prototype.hasOwnProperty.call(fb.drafts, key) ? fb.drafts[key] : null;
+    var existing = carry ? carry.origin : (fb.items.filter(function (item) { return item.key === key || (draft && item.key === draft.originKey); })[0] || null);
+    var original = existing ? existing.comment : '';
+    var restored = !!draft;
+    // When reopening a saved item, keep its quotes (unless new text was just selected)
+    if (existing) {
+      fbTargetsOf(existing).forEach(function (before) {
+        targets.forEach(function (target) { if (!target.quote && target.key === before.key) target.quote = before.quote; });
+      });
+    }
+    // If the draft had quotes, put them back on the targets
+    if (draft) {
+      targets.forEach(function (target, i) {
+        if (!target.quote && draft.targets[i] && draft.targets[i].key === target.key) target.quote = draft.targets[i].quote || '';
+      });
+    }
+    fb.editing = key;
+    var pop = el('div', 'fb-pop fb-ui');
+    pop.setAttribute('role', 'dialog');
+    pop.setAttribute('aria-label', T.fbComposeLabel);
+    pop.targets = targets;
+    pop.origin = existing;
+    pop.draftKey = key;
+    // The strip to grab and move it by
+    var grip = el('div', 'fb-pop-grip');
+    grip.setAttribute('title', T.fbDragHint);
+    var gripLabel = el('span', 'fb-pop-grip-label');
+    gripLabel.textContent = T.fbComposeLabel;
+    grip.appendChild(gripLabel);
+    var resetPos = button(T.fbResetPos, function () {
+      storageSet(POP_POS_KEY, null);
+      resetPos.hidden = true;
+      fbPlacePop(pop, null, node, null);
+    }, 'btn-sm btn-quiet fb-pop-reset');
+    resetPos.hidden = !fbSavedPos();
+    grip.appendChild(resetPos);
+    fbDraggable(pop, grip, function () { resetPos.hidden = false; });
+    pop.appendChild(grip);
+    var head = el('div', 'fb-pop-targets');
+    if (targets.length > 1) {
+      var countLine = el('p', 'fb-pop-count');
+      countLine.textContent = T.fbTargetsCount(targets.length);
+      head.appendChild(countLine);
+    }
+    targets.forEach(function (target, i) {
+      var row = el('div', 'fb-pop-row');
+      var names = el('div', 'fb-pop-names');
+      var name = el('p', 'fb-pop-target');
+      if (targets.length > 1) {
+        var order = el('span', 'fb-pop-no');
+        order.textContent = String(i + 1);
+        name.appendChild(order);
+      }
+      name.appendChild(text(target.label));
+      var keyLine = el('p', 'fb-pop-key');
+      keyLine.textContent = target.key;
+      names.appendChild(name);
+      names.appendChild(keyLine);
+      if (target.quote) {
+        var quote = el('p', 'fb-pop-quote');
+        quote.textContent = T.fbQuoted(target.quote);
+        names.appendChild(quote);
+      }
+      row.appendChild(names);
+      if (targets.length > 1) {
+        var remove = button('×', function () {
+          fbRetarget(targets.filter(function (other) { return other !== target; }));
+        }, 'btn-sm btn-quiet fb-pop-remove');
+        remove.setAttribute('aria-label', T.fbRemoveTarget(target.label));
+        remove.setAttribute('title', T.fbRemoveTarget(target.label));
+        row.appendChild(remove);
+      }
+      head.appendChild(row);
+    });
+    var area = el('textarea');
+    area.id = 'fb-comment';
+    area.setAttribute('aria-label', T.fbComposeLabel);
+    area.setAttribute('placeholder', T.fbPlaceholder);
+    area.value = carry ? carry.text : restored ? draft.text : original;
+    pop.area = area;
+    // Unsaved when the text changed, or when the targets of a saved item changed
+    pop.isDirty = function () {
+      return area.value.replace(/^\s+|\s+$/g, '') !== original.replace(/^\s+|\s+$/g, '') || (existing !== null && existing.key !== key);
+    };
+    area.addEventListener('input', function () { fbKeepDraft(pop); });
+    var actions = el('div', 'fb-pop-actions');
+    function save() {
+      var comment = area.value.replace(/^\s+|\s+$/g, '');
+      // Replace the item being edited (also under its name before the targets changed) and any with the same targets, keeping its position
+      var at = -1;
+      fb.items.forEach(function (item, i) {
+        if (at < 0 && (item.key === key || (existing && item.key === existing.key))) at = i;
+      });
+      fb.items = fb.items.filter(function (item) { return item.key !== key && !(existing && item.key === existing.key); });
+      if (comment) {
+        var entry = { key: key, label: fbTitle(labels), comment: comment, at: new Date().toISOString() };
+        if (keys.length > 1) { entry.keys = keys; entry.labels = labels; }
+        // What each place says at save time, and the quotes (selected text)
+        entry.texts = targets.map(function (target) { return target.node ? fbNodeText(target.node) : ''; });
+        if (targets.some(function (target) { return target.quote; })) entry.quotes = targets.map(function (target) { return target.quote || ''; });
+        if (at >= 0) fb.items.splice(Math.min(fb.items.length, at), 0, entry);
+        else fb.items.push(entry);
+      }
+      var kept = fbStore();
+      fbClosePop(false);
+      fbPaint();
+      // Don't replace the "couldn't keep it" warning with a success message
+      if (kept) fbStatus(comment ? T.fbSaved : T.fbDeleted);
+    }
+    if (existing) {
+      actions.appendChild(button(T.fbDelete, function () { area.value = ''; save(); }, 'btn-sm btn-quiet fb-delete'));
+    }
+    actions.appendChild(button(T.fbCancel, function () { fbClosePop(false); }, 'btn-sm btn-quiet'));
+    actions.appendChild(button(T.fbSave, save, 'btn-sm btn-primary'));
+    area.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) { event.preventDefault(); save(); }
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); fbClosePop(true); }
+    });
+    pop.appendChild(head);
+    if (keys[0] !== 'page') {
+      var hint = el('p', 'fb-pop-hint');
+      hint.textContent = T.fbPopHint;
+      pop.appendChild(hint);
+    }
+    if (restored) {
+      var note = el('p', 'fb-pop-note');
+      note.textContent = T.fbDraftRestored;
+      pop.appendChild(note);
+    }
+    pop.appendChild(area);
+    pop.appendChild(actions);
+    document.body.appendChild(pop);
+    fb.ui.pop = pop;
+    fbPlacePop(pop, point, node, carry);
+    // Don't let focus scroll the page down past the target
+    area.focus({ preventScroll: true });
+    if (restored || carry) area.setSelectionRange(area.value.length, area.value.length);
+    if (carry) fbKeepDraft(pop);
+    // Hide the draft just opened from the list
+    if (fb.ui.list && Object.keys(fb.drafts).length) fbPaint();
+    schedulePins();
+  }
+  // Keep the box inside the viewport (below the banner at the top; 16px at the sides, 8px at the bottom). Used both for showing it and for the remembered position
+  function fbClampPop(pop, top, left) {
+    var banner = fb.ui.banner;
+    var minTop = (banner && !banner.hidden ? banner.getBoundingClientRect().bottom : 0) + 8;
+    var maxTop = window.innerHeight - pop.offsetHeight - 8;
+    var maxLeft = document.documentElement.clientWidth - pop.offsetWidth - 16;
+    return { top: Math.max(minTop, Math.min(top, maxTop)), left: Math.max(16, Math.min(left, maxLeft)) };
+  }
+  // Keep it inside the viewport: at the remembered position if it was dragged before; otherwise below the click point (or above if it doesn't fit), or else below the visible part of the target (or above)
+  function fbPlacePop(pop, point, node, carry) {
+    var height = pop.offsetHeight;
+    var viewH = window.innerHeight;
+    var banner = fb.ui.banner;
+    var minTop = (banner && !banner.hidden ? banner.getBoundingClientRect().bottom : 0) + 8;
+    var maxTop = viewH - height - 8;
+    var top;
+    var left;
+    var saved = carry ? null : fbSavedPos();
+    if (carry) {
+      top = carry.top - window.pageYOffset;
+      left = carry.left - window.pageXOffset;
+    } else if (saved) {
+      top = saved.y;
+      left = saved.x;
+    } else if (point) {
+      top = point.y + 12 <= maxTop ? point.y + 12 : point.y - height - 12;
+      left = point.x - 24;
+    } else if (node) {
+      var rect = visibleAnchor(node).getBoundingClientRect();
+      var shownTop = Math.max(rect.top, minTop);
+      var shownBottom = Math.min(rect.bottom, viewH);
+      if (shownBottom < shownTop) shownBottom = shownTop;
+      top = shownBottom + 8 <= maxTop ? shownBottom + 8 : shownTop - height - 8;
+      left = rect.left;
+    } else {
+      top = minTop + 16;
+      left = 16;
+    }
+    var fitted = fbClampPop(pop, top, left);
+    pop.style.top = Math.round(fitted.top + window.pageYOffset) + 'px';
+    pop.style.left = Math.round(fitted.left + window.pageXOffset) + 'px';
+  }
+  // Drag by the strip. Remember where it was dropped (viewport coordinates)
+  function fbDraggable(pop, grip, onMoved) {
+    var start = null;
+    grip.addEventListener('pointerdown', function (event) {
+      if (event.button !== 0 || event.target.closest('button')) return;
+      event.preventDefault();
+      var rect = pop.getBoundingClientRect();
+      start = { x: event.clientX, y: event.clientY, top: rect.top, left: rect.left };
+      pop.classList.add('is-dragging');
+      if (grip.setPointerCapture) grip.setPointerCapture(event.pointerId);
+    });
+    grip.addEventListener('pointermove', function (event) {
+      if (!start) return;
+      var fitted = fbClampPop(pop, start.top + event.clientY - start.y, start.left + event.clientX - start.x);
+      pop.style.top = Math.round(fitted.top + window.pageYOffset) + 'px';
+      pop.style.left = Math.round(fitted.left + window.pageXOffset) + 'px';
+    });
+    function end() {
+      if (!start) return;
+      start = null;
+      pop.classList.remove('is-dragging');
+      var rect = pop.getBoundingClientRect();
+      storageSet(POP_POS_KEY, JSON.stringify({ x: Math.round(rect.left), y: Math.round(rect.top) }));
+      onMoved();
+    }
+    grip.addEventListener('pointerup', end);
+    grip.addEventListener('pointercancel', end);
+  }
+  // Swap the targets while the box stays open. The text and position stay
+  function fbRetarget(targets) {
+    var pop = fb.ui.pop;
+    fbDropDraft(pop.draftKey);
+    fbCompose(targets, null, {
+      text: pop.area.value,
+      origin: pop.origin,
+      top: parseFloat(pop.style.top) || 0,
+      left: parseFloat(pop.style.left) || 0
+    });
+  }
+  // Shift-click: add to the targets, or remove if already there
+  // With a quote (Shift-click on selected text), an existing target keeps its place and gets the new quote instead of being removed
+  function fbToggleTarget(node, quote) {
+    var pop = fb.ui.pop;
+    var key = node.getAttribute('data-fb');
+    var current = pop.targets.filter(function (target) { return target.key !== 'page'; });
+    var next = current.filter(function (target) { return target.key !== key; });
+    if (next.length < current.length && quote) {
+      next = current.map(function (target) {
+        return target.key === key ? { node: target.node, key: key, label: target.label, quote: quote } : target;
+      });
+    } else if (next.length === current.length) {
+      if (current.length >= FB_MAX_TARGETS) { toast(T.fbMaxTargets(FB_MAX_TARGETS), true); return; }
+      next = current.concat([{ node: node, key: key, label: fbLabel(node), quote: quote || '' }]);
+    }
+    if (!next.length) {
+      if (pop.isDirty()) fbNudgePop(); else fbClosePop(false);
+      return;
+    }
+    fbRetarget(next);
+  }
+  // If text on the page is selected, that text (squeezed and cut) and the innermost target containing it
+  function fbSelectionTarget() {
+    var selection = window.getSelection ? window.getSelection() : null;
+    if (!selection || selection.isCollapsed || !selection.rangeCount) return null;
+    var quote = fbShorten(String(selection), FB_QUOTE_MAX);
+    if (!quote) return null;
+    var container = selection.getRangeAt(0).commonAncestorContainer;
+    var host = container.nodeType === 1 ? container : container.parentElement;
+    if (!host || (host.closest && host.closest('.fb-ui'))) return null;
+    var node = host.closest && host.closest('[data-fb]');
+    if (!node) return null;
+    return { node: node, quote: quote };
+  }
+  // When the user clicks outside with unsaved text, don't close; point it out instead
+  function fbNudgePop() {
+    var pop = fb.ui.pop;
+    pop.classList.remove('is-nudged');
+    void pop.offsetWidth;
+    pop.classList.add('is-nudged');
+    pop.area.focus({ preventScroll: true });
+    toast(T.fbUnsaved, true);
+  }
+  function fbPaint() {
+    paintSend();
+    var n = fb.items.length;
+    fb.ui.fabCount.textContent = n ? String(n) : '';
+    fb.ui.listButton.textContent = T.fbList(n);
+    var listBox = fb.ui.list;
+    listBox.textContent = '';
+    if (!n) {
+      var empty = el('li', 'fb-empty');
+      empty.textContent = T.fbEmpty;
+      listBox.appendChild(empty);
+    }
+    // Unsaved drafts (except the one in the open box) are listed at the end too. They are not copied
+    var openKey = fb.ui.pop ? fb.ui.pop.draftKey : null;
+    var draftRows = [];
+    var savedKeys = {};
+    fb.items.forEach(function (item) { savedKeys[item.key] = true; });
+    Object.keys(fb.drafts).forEach(function (key) {
+      if (key === openKey) return;
+      var draft = fb.drafts[key];
+      var li = el('li', 'fb-draft');
+      var head = el('div', 'fb-item-head');
+      var mark = el('span', 'badge badge-caution');
+      mark.textContent = T.fbDraftMark;
+      var name = el('span', 'fb-item-target');
+      name.textContent = fbTitle(draft.targets.map(function (target) { return target.label; }));
+      head.appendChild(mark);
+      head.appendChild(name);
+      var keyLine = el('p', 'fb-item-key');
+      keyLine.textContent = draft.targets.map(function (target) { return target.key; }).join('\n');
+      var body = el('p', 'fb-item-text');
+      body.textContent = draft.text;
+      var actions = el('div', 'fb-item-actions');
+      actions.appendChild(button(T.fbDraftResume, function () {
+        var targets = fbDraftTargets(draft);
+        targets.forEach(function (target) { if (target.node) openAncestors(target.node); });
+        var first = targets.filter(function (target) { return target.node; })[0];
+        if (first) first.node.scrollIntoView({ block: 'center' });
+        if (!fb.on) fbToggle(true);
+        fbCompose(targets);
+      }, 'btn-sm btn-quiet'));
+      actions.appendChild(button(T.fbDraftDiscard, function () {
+        var kept = draft;
+        fbDropDraft(key);
+        fbPaint();
+        toast(T.fbDraftDiscarded, false, { label: T.undo, run: function () {
+          fb.drafts[key] = kept;
+          fbSaveDrafts();
+          fbPaint();
+        } });
+      }, 'btn-sm btn-quiet'));
+      li.appendChild(head);
+      li.appendChild(keyLine);
+      li.appendChild(body);
+      li.appendChild(actions);
+      if (savedKeys[key] || (draft.originKey && savedKeys[draft.originKey])) li.classList.add('is-edit');
+      draftRows.push(li);
+    });
+    var copiedCount = fb.items.filter(function (item) { return item.copiedAt; }).length;
+    fb.ui.clearCopied.hidden = copiedCount === 0;
+    fb.ui.clearCopied.textContent = T.fbClearCopied(copiedCount);
+    fb.items.forEach(function (item, i) {
+      var li = el('li');
+      var head = el('div', 'fb-item-head');
+      var num = el('span', 'badge badge-note');
+      num.textContent = String(i + 1);
+      var name = el('span', 'fb-item-target');
+      name.textContent = item.label;
+      head.appendChild(num);
+      head.appendChild(name);
+      var targets = fbTargetsOf(item);
+      var found = targets.filter(function (target) { return target.node; });
+      var node = found.length ? found[0].node : null;
+      if (item.copiedAt) {
+        var copied = el('span', 'badge badge-quiet');
+        copied.textContent = T.fbCopiedMark;
+        head.appendChild(copied);
+        li.classList.add('is-copied');
+      }
+      // Targets that are gone from the JSON (fixed, or renamed)
+      if (item.key !== 'page' && found.length < targets.length) {
+        var missing = el('span', 'badge badge-caution');
+        missing.textContent = T.fbMissing;
+        missing.setAttribute('title', T.fbMissingHint);
+        head.appendChild(missing);
+      }
+      var key = el('p', 'fb-item-key');
+      key.textContent = fbKeys(item).join('\n');
+      var quotes = targets.filter(function (target) { return target.quote; });
+      var body = el('p', 'fb-item-text');
+      body.textContent = item.comment;
+      var actions = el('div', 'fb-item-actions');
+      if (node) {
+        actions.appendChild(button(T.fbShow, function () {
+          openAncestors(node);
+          node.scrollIntoView({ block: 'center' });
+          if (!fb.on) fbToggle(true);
+          setTimeout(function () { fbHighlight(node); }, 50);
+        }, 'btn-sm btn-quiet'));
+      }
+      actions.appendChild(button(T.fbEdit, function () {
+        found.forEach(function (target) { openAncestors(target.node); });
+        if (node) node.scrollIntoView({ block: 'center' });
+        fbCompose(targets);
+      }, 'btn-sm btn-quiet'));
+      actions.appendChild(button(T.fbDelete, function () {
+        fbRemove(function (other) { return other.key !== item.key; }, T.fbDeleted);
+      }, 'btn-sm btn-quiet'));
+      li.appendChild(head);
+      li.appendChild(key);
+      quotes.forEach(function (target) {
+        var quote = el('p', 'fb-pop-quote');
+        quote.textContent = T.fbQuoted(target.quote);
+        li.appendChild(quote);
+      });
+      li.appendChild(body);
+      li.appendChild(actions);
+      listBox.appendChild(li);
+    });
+    draftRows.forEach(function (row) { listBox.appendChild(row); });
+    if (draftRows.length && !n) listBox.removeChild(listBox.firstChild);
+    schedulePins();
+  }
+  function openAncestors(node) {
+    for (var cur = node.parentElement; cur; cur = cur.parentElement) {
+      if (cur.tagName === 'DETAILS') cur.open = true;
+    }
+  }
+  function fbToggle(on) {
+    fb.on = on;
+    document.body.classList.toggle('fb-mode', on);
+    fb.ui.fab.setAttribute('aria-pressed', on ? 'true' : 'false');
+    fb.ui.banner.hidden = !on;
+    if (!on) { fbHighlight(null); fbClosePop(true); }
+    syncBannerHeight();
+    schedulePins();
+  }
+  // The banner wraps on narrow screens, so put its real height in a CSS variable for things that stick to the top
+  function syncBannerHeight() {
+    var banner = fb.ui.banner;
+    var height = banner && !banner.hidden ? banner.offsetHeight : 0;
+    document.documentElement.style.setProperty('--fb-banner-h', height + 'px');
+  }
+  // Offer "Undo" in a toast after deleting
+  function fbRemove(keep, message) {
+    var before = fb.items.slice();
+    fb.items = fb.items.filter(keep);
+    var kept = fbStore();
+    fbPaint();
+    if (!kept) return;
+    fbStatus(message);
+    toast(message, false, { label: T.undo, run: function () {
+      fb.items = before;
+      var restoredKept = fbStore();
+      fbPaint();
+      if (restoredKept) fbStatus(T.restored);
+    } });
+  }
+  function fbTogglePanel(open) {
+    var panel = fb.ui.panel;
+    panel.hidden = open === undefined ? !panel.hidden : !open;
+  }
+  function installFeedback() {
+    fb.items = fbLoad();
+    fb.drafts = fbLoadDrafts();
+    var layer = el('div', 'fb-layer');
+    var highlight = el('div', 'fb-hl');
+    highlight.hidden = true;
+    highlight.appendChild(el('span'));
+    var fab = el('button', 'fb-fab btn-icon fb-ui');
+    fab.type = 'button';
+    fab.setAttribute('aria-pressed', 'false');
+    fab.appendChild(text(T.fbFab));
+    var fabCount = el('span', 'badge');
+    fab.appendChild(fabCount);
+    fab.addEventListener('click', function () { fbToggle(!fb.on); });
+
+    var banner = el('div', 'fb-banner fb-ui');
+    banner.hidden = true;
+    var bannerText = el('p');
+    bannerText.textContent = T.fbBanner;
+    var listButton = button(T.fbList(0), function () { fbTogglePanel(); }, 'btn-sm');
+    banner.appendChild(bannerText);
+    banner.appendChild(button(T.fbWholePageButton, function () { fbCompose([{ node: null, key: 'page', label: T.fbWholePage }]); }, 'btn-sm'));
+    banner.appendChild(listButton);
+    banner.appendChild(button(T.fbExit, function () { fbToggle(false); }, 'btn-sm'));
+
+    var panel = el('section', 'fb-panel fb-ui');
+    panel.hidden = true;
+    panel.setAttribute('aria-label', T.fbPanelLabel);
+    var panelHead = el('div', 'fb-panel-head');
+    var panelTitle = el('p');
+    panelTitle.textContent = T.fbPanelLabel;
+    panelHead.appendChild(panelTitle);
+    panelHead.appendChild(button(T.fbClose, function () { fbTogglePanel(false); }, 'btn-sm btn-quiet'));
+    var listBox = el('ol', 'fb-list');
+    var foot = el('div', 'fb-panel-foot');
+    var clearCopied = button(T.fbClearCopied(0), function () {
+      fbRemove(function (item) { return !item.copiedAt; }, T.fbCopiedCleared);
+    }, 'btn-sm btn-quiet');
+    foot.appendChild(clearCopied);
+    foot.appendChild(button(T.fbClearAll, function () {
+      if (!fb.items.length) return;
+      fbRemove(function () { return false; }, T.fbCleared);
+    }, 'btn-sm btn-quiet'));
+    var status = el('p', 'fb-status');
+    status.setAttribute('role', 'status');
+    foot.appendChild(status);
+    panel.appendChild(panelHead);
+    panel.appendChild(listBox);
+    panel.appendChild(foot);
+
+    [layer, highlight, banner, panel, fab].forEach(function (node) { document.body.appendChild(node); });
+    fb.ui = { layer: layer, highlight: highlight, fab: fab, fabCount: fabCount, banner: banner, listButton: listButton, panel: panel, list: listBox, status: status, clearCopied: clearCopied, pop: null };
+
+    function inUi(node) { return node.closest && node.closest('.fb-ui'); }
+    document.addEventListener('mousemove', function (event) {
+      // While the box is open, only show the item that would be added while Shift is held
+      if (!fb.on) return;
+      if (fb.ui.pop && !event.shiftKey) { if (fb.hover) fbHighlight(null); return; }
+      var node = inUi(event.target) ? null : event.target.closest && event.target.closest('[data-fb]');
+      if (node !== fb.hover) fbHighlight(node);
+    }, true);
+    // Keep Shift-click from extending a text selection or taking focus from the box
+    document.addEventListener('mousedown', function (event) {
+      if (fb.on && event.shiftKey && !inUi(event.target)) event.preventDefault();
+    }, true);
+    document.addEventListener('keyup', function (event) {
+      if (event.key === 'Shift' && fb.ui.pop && fb.hover) fbHighlight(null);
+    });
+    document.addEventListener('click', function (event) {
+      if (!fb.on || inUi(event.target)) return;
+      // Only the disclosure arrow still opens and closes in the mode
+      if (!fb.ui.pop && event.target.closest && event.target.closest('summary > .tw')) return;
+      // In the mode, a click picks a feedback target instead of opening, closing or typing
+      event.preventDefault();
+      event.stopPropagation();
+      var node = event.target.closest && event.target.closest('[data-fb]');
+      // If text was selected by dragging, quote it and write to the innermost target containing it
+      // If the click is somewhere unrelated to the selection (an old selection just lingering), ignore it
+      var picked = fbSelectionTarget();
+      if (picked && !(picked.node.contains(event.target) || event.target.contains(picked.node))) picked = null;
+      var quote = '';
+      if (picked) { node = picked.node; quote = picked.quote; }
+      if (fb.ui.pop) {
+        if (event.shiftKey && node) fbToggleTarget(node, quote);
+        else if (fb.ui.pop.isDirty()) fbNudgePop();
+        else if (picked) fbCompose([{ node: node, key: node.getAttribute('data-fb'), label: fbLabel(node), quote: quote }], { x: event.clientX, y: event.clientY });
+        else fbClosePop(false);
+        return;
+      }
+      if (!node) return;
+      fbCompose([{ node: node, key: node.getAttribute('data-fb'), label: fbLabel(node), quote: quote }], { x: event.clientX, y: event.clientY });
+    }, true);
+    document.addEventListener('keydown', function (event) {
+      if (event.key !== 'Escape' || !fb.on) return;
+      if (fb.ui.pop) fbClosePop(true); else fbToggle(false);
+    });
+    if (window.ResizeObserver) {
+      new ResizeObserver(schedulePins).observe(document.body);
+      new ResizeObserver(syncBannerHeight).observe(banner);
+    }
+    fbPaint();
+  }
+
+  // ---- Open folded things while printing ----
+  function openWhilePrinting() {
+    var saved = null;
+    addEventListener('beforeprint', function () {
+      var boxes = Array.prototype.slice.call(document.querySelectorAll('details'));
+      saved = boxes.map(function (box) { return [box, box.open]; });
+      boxes.forEach(function (box) { box.open = true; });
+    });
+    addEventListener('afterprint', function () {
+      if (!saved) return;
+      saved.forEach(function (pair) { pair[0].open = pair[1]; });
+      saved = null;
+    });
+  }
+
+  function renderError(message) {
+    var box = el('div', 'aside aside-danger');
+    var title = el('p', 'aside-title');
+    title.textContent = T.dataError;
+    var detail = el('p');
+    detail.textContent = message;
+    box.appendChild(title);
+    box.appendChild(detail);
+    mount('error', [box]);
+  }
+  // Shared by the report and the checklist up to here
+
+  // ---- Steps ----
+  function itemRow(item, index, stepKey) {
     var id = 'item-' + (blank(item.id) ? 'x' + index : String(item.id));
-    var li = el('li');
+    var li = target(el('li'), stepKey + '.items[' + (blank(item.id) ? index : 'id=' + item.id) + ']', blank(item.id) ? String(index + 1) : String(item.id));
     var label = el('label');
     label.setAttribute('for', id);
     var box = el('input');
@@ -1267,17 +3389,23 @@
     box.id = id;
     box.setAttribute('data-item', blank(item.id) ? '' : String(item.id));
     box.checked = item.done === true;
-    var text = el('span', 'item');
-    text.appendChild(value(item.label, 'steps[].items[].label'));
+    var body = el('span', 'item');
+    if (!blank(item.id)) {
+      var tag = el('span', 'item-id');
+      tag.textContent = String(item.id);
+      body.appendChild(tag);
+    }
+    body.appendChild(value(item.label, 'steps[].items[].label'));
     label.appendChild(box);
-    label.appendChild(text);
+    label.appendChild(body);
     li.appendChild(label);
     boxes.push(box);
     return li;
   }
   function stepBlock(step, index) {
-    var box = el('details', 'step');
     var id = blank(step.id) ? String(index) : String(step.id);
+    var key = 'steps[' + (blank(step.id) ? index : 'id=' + step.id) + ']';
+    var box = target(el('details', 'step'), key, blank(step.title) ? id : id + '. ' + step.title);
     box.setAttribute('data-step', id);
     if (step.optional === true) box.classList.add('is-optional');
 
@@ -1287,19 +3415,21 @@
     num.textContent = id;
     var title = el('span', 'step-title');
     title.appendChild(value(step.title, 'steps[].title'));
-    var state = el('span', 'step-state');
+    var state = el('span', 'badge step-state');
     summary.appendChild(num);
     summary.appendChild(title);
     summary.appendChild(state);
 
     var body = el('div', 'step-body');
     if (!blank(step.warning)) {
-      var warning = el('p', 'step-warning');
-      warning.textContent = String(step.warning);
+      var warning = target(el('div', 'aside aside-caution step-warning'), key + '.warning', T.warningLabel);
+      var warningText = el('p', 'aside-title');
+      warningText.textContent = String(step.warning);
+      warning.appendChild(warningText);
       body.appendChild(warning);
     }
     var items = el('ul', 'checklist');
-    stepItems(step).forEach(function (item, i) { items.appendChild(itemRow(item, i)); });
+    list(step.items).forEach(function (item, i) { items.appendChild(itemRow(item, i, key)); });
     body.appendChild(items);
 
     box.appendChild(summary);
@@ -1342,26 +3472,27 @@
       step.classList.toggle('has-warning', hasWarning);
       var chip = step.querySelector('.step-state');
       if (!chip) return;
-      if (complete && hasWarning) chip.textContent = 'Done (warning)';
-      else if (complete) chip.textContent = 'Done';
-      else if (optional(step) && done === 0) chip.textContent = 'Optional';
+      chip.className = 'badge step-state';
+      if (complete && hasWarning) { chip.textContent = T.stepDoneWarning; chip.classList.add('badge-caution'); }
+      else if (complete) { chip.textContent = T.stepDone; chip.classList.add('badge-success'); }
+      else if (optional(step) && done === 0) { chip.textContent = T.stepOptional; chip.classList.add('badge-quiet'); }
       else chip.textContent = done + ' / ' + nodes.length;
     });
 
     var total = boxes.length - optTotal;
     var done = checkedIn(boxes) - optDone;
     var pct = total === 0 ? 0 : Math.round((done / total) * 100);
-    var text = document.getElementById('progress-text');
-    text.textContent = done + ' / ' + total + ' items done (' + pct + '%)';
+    var line = document.getElementById('progress-text');
+    line.textContent = T.progress(done, total, pct);
     if (optTotal > 0) {
       var opt = el('span');
-      opt.textContent = ' · optional ' + optDone + ' / ' + optTotal;
-      text.appendChild(opt);
+      opt.textContent = T.progressOptional(optDone, optTotal);
+      line.appendChild(opt);
     }
     if (warnings > 0) {
       var note = el('span', 'progress-warn');
-      note.textContent = ' · ' + warnings + ' warning' + (warnings === 1 ? '' : 's');
-      text.appendChild(note);
+      note.textContent = T.progressWarnings(warnings);
+      line.appendChild(note);
     }
     document.getElementById('progress-fill').style.width = pct + '%';
   }
@@ -1379,30 +3510,17 @@
 
   // ---- The three sections after the steps ----
   function renderMeta(meta) {
-    mount('meta', [defs('kv', [
-      ['Working directory', value(meta.workdir, 'meta.workdir')],
-      ['Test module location', value(meta.moduleDir, 'meta.moduleDir')],
-      ['katachi version', value(meta.version, 'meta.version')],
-      ['Kotlin', value(meta.kotlin, 'meta.kotlin')],
-      ['JVM toolchain', value(meta.jvmToolchain, 'meta.jvmToolchain')],
-      ['Under Git', value(meta.git, 'meta.git')],
-      ['Target project root', value(meta.projectRoot, 'meta.projectRoot')],
-      ['Ran at', value(meta.ranAt, 'meta.ranAt')]
-    ])]);
+    mount('meta', [facts(T.meta.map(function (spec) {
+      var show = spec[0] === 'ranAt' ? dateValue : value;
+      return [spec[1], show(meta[spec[0]], 'meta.' + spec[0]), 'meta.' + spec[0]];
+    }))]);
   }
 
   // Writing preferences: key / question / recommendation (null means "detected", so no comparison)
-  var PREFERENCE_KEYS = [
-    ['nestedGroups', 'Nest groups?', 'yes'],
-    ['testFramework', 'Test framework', null],
-    ['dependencyStyle', 'How dependencies are written', null],
-    ['constraintNames', 'Put question numbers in constraint names?', 'plain'],
-    ['oneRolePerFile', 'One Role per file?', 'yes']
-  ];
   function renderPreferences(preferences) {
-    var known = PREFERENCE_KEYS.map(function (spec) { return spec[0]; });
+    var known = T.preferences.map(function (spec) { return spec[0]; });
     var extra = Object.keys(preferences).filter(function (key) { return known.indexOf(key) < 0; });
-    var specs = PREFERENCE_KEYS.concat(extra.map(function (key) { return [key, '', null]; }));
+    var specs = T.preferences.concat(extra.map(function (key) { return [key, '', null]; }));
     var differs = [];
     var rows = specs.map(function (spec, index) {
       var key = spec[0];
@@ -1413,333 +3531,63 @@
         valueCell.textContent = String(raw);
       } else {
         var muted = el('span', 'empty');
-        muted.textContent = spec[2] === null ? 'Not recorded (detected value is used)' : 'Not recorded (recommendation is used)';
+        muted.textContent = spec[2] === null ? T.prefNotRecordedDetected : T.prefNotRecordedDefault;
         valueCell.appendChild(muted);
       }
-      var recommended = document.createTextNode(spec[2] === null ? 'detected' : spec[2]);
       if (recorded && spec[2] !== null && String(raw) !== spec[2]) {
         differs.push(index);
         var mark = el('span', 'pref-mark');
-        mark.textContent = ' differs from the recommendation';
+        mark.textContent = T.prefDiffers;
         valueCell.appendChild(mark);
       }
-      return [document.createTextNode(key), document.createTextNode(spec[1]), valueCell, recommended];
+      return {
+        key: 'preferences.' + key,
+        label: spec[1] || key,
+        cells: [text(key), text(spec[1]), valueCell, text(spec[2] === null ? T.prefDetected : spec[2])]
+      };
     });
-    var table = tableOf(['key', 'Question', 'Value', 'Recommended'], rows);
+    var table = tableOf(T.prefHeaders, rows, ['22%', '38%', '24%', '16%']);
     var trs = table.querySelectorAll('tbody tr');
     differs.forEach(function (index) { trs[index].classList.add('pref-differs'); });
     mount('preferences', [table]);
   }
 
   function renderViolations(violations) {
-    mount('violationCount', [document.createTextNode(countLabel(violations))]);
-    if (!countOf(violations)) { mount('violations', [none('None (all green)')]); return; }
-    var rows = entries(violations).map(function (item) {
-      return [
-        value(item.violation, 'violations[].violation'),
-        value(item.location, 'violations[].location'),
-        value(item.whyNotFixed, 'violations[].whyNotFixed'),
-        value(item.suggestion, 'violations[].suggestion')
-      ];
+    mount('violationCount', [text(countLabel(violations))]);
+    if (!countOf(violations)) { mount('violations', [none(T.allGreen)]); return; }
+    var rows = entries(violations).map(function (item, i) {
+      return {
+        key: 'violations[' + i + ']',
+        label: blank(item.violation) ? String(i + 1) : String(item.violation),
+        cells: [
+          value(item.violation, 'violations[].violation'),
+          value(item.location, 'violations[].location'),
+          value(item.whyNotFixed, 'violations[].whyNotFixed'),
+          value(item.suggestion, 'violations[].suggestion')
+        ],
+        fields: ['violation', 'location', 'whyNotFixed', 'suggestion']
+      };
     });
-    mount('violations', [tableOf(['Violation', 'Location', 'Why not fixed', 'Suggested next step'], rows, 'text-first')]);
+    // The violation text must be readable, so that column wraps
+    mount('violations', [tableOf(T.violationHeaders, rows, ['25%', '25%', '25%', '25%'], false, [0])]);
   }
 
   function renderChangedFiles(changed) {
-    mount('changedCount', [document.createTextNode(countLabel(changed))]);
+    mount('changedCount', [text(countLabel(changed))]);
     if (!countOf(changed)) { mount('changedFiles', [none()]); return; }
-    var rows = entries(changed).map(function (item) {
-      return [
-        value(item.path, 'changedFiles[].path'),
-        value(item.change, 'changedFiles[].change'),
-        value(item.summary, 'changedFiles[].summary')
-      ];
+    var rows = entries(changed).map(function (item, i) {
+      return {
+        key: blank(item.path) ? 'changedFiles[' + i + ']' : 'changedFiles[path=' + item.path + ']',
+        label: blank(item.path) ? String(i + 1) : String(item.path),
+        cells: [
+          value(item.path, 'changedFiles[].path'),
+          value(item.change, 'changedFiles[].change'),
+          value(item.summary, 'changedFiles[].summary')
+        ],
+        fields: ['path', 'change', 'summary']
+      };
     });
-    mount('changedFiles', [tableOf(['Path', 'Added / Changed', 'Summary'], rows)]);
-  }
-
-  // ---- Answer fields (the report has the same functions; JS cannot be shared) ----
-  var ANSWER_TARGET = 'check-list';
-  var ANSWER_FILE = 'katachi-answers-check-list.json';
-  // { id, recommendation, radios, free, card }
-  var answerCards = [];
-
-  // Questions in the check list are q<n> (cq<n> in the report)
-  function questionId(item, index) {
-    return blank(item.id) ? 'q' + (index + 1) : String(item.id);
-  }
-  // Drafts while typing. Rendering must not break when localStorage is unavailable
-  function draftKey(id) { return location.href.split('#')[0] + '#answer:' + id; }
-  function readDraft(id) {
-    try {
-      var raw = localStorage.getItem(draftKey(id));
-      return raw ? record(JSON.parse(raw)) : null;
-    } catch (error) {
-      return null;
-    }
-  }
-  function writeDraft(id, draft) {
-    try {
-      if (draft) localStorage.setItem(draftKey(id), JSON.stringify(draft));
-      else localStorage.removeItem(draftKey(id));
-    } catch (error) { /* keep going even if it cannot be saved */ }
-  }
-  // State of the answer fields. With an option picked the free text is the note; otherwise it is the answer
-  function readCard(entry) {
-    var picked = entry.radios.filter(function (radio) { return radio.checked; })[0];
-    var free = entry.free.value.replace(/^\s+|\s+$/g, '');
-    if (picked) return { answer: picked.value, note: free || null };
-    if (free) return { answer: free, note: null };
-    return null;
-  }
-  function fillCard(entry, answer) {
-    var found = false;
-    entry.radios.forEach(function (radio) {
-      radio.checked = !found && radio.value === answer.answer;
-      if (radio.checked) found = true;
-    });
-    var note = blank(answer.note) ? '' : String(answer.note);
-    entry.free.value = found ? note : [answer.answer || '', note].filter(Boolean).join('\n');
-  }
-  function paintAnswers() {
-    var answered = 0;
-    answerCards.forEach(function (entry) {
-      var current = readCard(entry);
-      entry.card.classList.toggle('is-answered', current !== null);
-      if (current) answered += 1;
-    });
-    mount('answeredCount', [document.createTextNode(answered ? answered + ' answered' : '')]);
-  }
-  function onCardInput(entry) {
-    writeDraft(entry.id, readCard(entry));
-    paintAnswers();
-  }
-  // If the recommendation starts with an option letter ("B. ..."), pick that option; otherwise put the text in the free field
-  function adoptRecommendation(entry) {
-    var text = blank(entry.recommendation) ? '' : String(entry.recommendation).replace(/^\s+/, '');
-    var match = /^([A-Z])(?![A-Za-z])/.exec(text);
-    var index = match ? match[1].charCodeAt(0) - 65 : -1;
-    if (index >= 0 && index < entry.radios.length) {
-      entry.radios[index].checked = true;
-    } else if (text) {
-      entry.radios.forEach(function (radio) { radio.checked = false; });
-      entry.free.value = text;
-    }
-    onCardInput(entry);
-  }
-  function collectAnswers() {
-    var out = {};
-    var now = new Date().toISOString();
-    answerCards.forEach(function (entry) {
-      var current = readCard(entry);
-      if (!current) return;
-      out[entry.id] = { answer: current.answer, note: current.note, answeredAt: now };
-    });
-    return out;
-  }
-  function answersJson() {
-    return JSON.stringify({ target: ANSWER_TARGET, answers: collectAnswers() }, null, 2) + '\n';
-  }
-  function setAnswerStatus(text, isError) {
-    var status = document.getElementById('answer-status');
-    var manual = document.getElementById('answer-manual');
-    if (!status || !manual) return;
-    status.textContent = text;
-    status.classList.toggle('is-error', isError === true);
-    manual.hidden = true;
-  }
-  // When it cannot be handed over automatically, show the JSON as is to be selected by hand
-  function showManualAnswers(text, message) {
-    setAnswerStatus(message, true);
-    var manual = document.getElementById('answer-manual');
-    if (!manual) return;
-    manual.value = text;
-    manual.hidden = false;
-    manual.focus();
-    manual.select();
-  }
-  function downloadAnswers() {
-    var text = answersJson();
-    try {
-      var url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
-      var a = el('a');
-      a.setAttribute('href', url);
-      a.setAttribute('download', ANSWER_FILE);
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-      setAnswerStatus('Saved ' + ANSWER_FILE + '. Hand the saved file to the AI agent.');
-    } catch (error) {
-      showManualAnswers(text, 'Could not download. Select and copy the JSON below by hand and hand it to the AI agent.');
-    }
-  }
-  function copyAnswers() {
-    var text = answersJson();
-    function done() { setAnswerStatus('Copied the answers JSON. Paste it to the AI agent.'); }
-    function fallback() {
-      var box = el('textarea');
-      box.value = text;
-      box.setAttribute('readonly', '');
-      box.style.position = 'fixed';
-      box.style.left = '-9999px';
-      document.body.appendChild(box);
-      box.select();
-      var ok = false;
-      try { ok = document.execCommand('copy'); } catch (error) { ok = false; }
-      document.body.removeChild(box);
-      if (ok) done();
-      else showManualAnswers(text, 'Could not copy. Select and copy the JSON below by hand.');
-    }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(done, fallback);
-    } else {
-      fallback();
-    }
-  }
-  function clearAnswers() {
-    answerCards.forEach(function (entry) {
-      entry.radios.forEach(function (radio) { radio.checked = false; });
-      entry.free.value = '';
-      writeDraft(entry.id, null);
-    });
-    paintAnswers();
-    setAnswerStatus('Cleared the answers (answers already imported into this JSON come back on reload).');
-  }
-  function actionButton(label, handler, primary) {
-    var button = el('button', primary ? 'action-button is-primary' : 'action-button');
-    button.type = 'button';
-    button.textContent = label;
-    button.addEventListener('click', handler);
-    return button;
-  }
-  function renderAnswerActions() {
-    var status = el('p', 'answer-status');
-    status.id = 'answer-status';
-    var manual = el('textarea', 'answer-manual');
-    manual.id = 'answer-manual';
-    manual.setAttribute('readonly', '');
-    manual.setAttribute('aria-label', 'Answers JSON');
-    manual.hidden = true;
-    mount('answerActions', [
-      actionButton('Adopt all recommendations', function () { answerCards.forEach(adoptRecommendation); }),
-      actionButton('Export answers (download)', downloadAnswers, true),
-      actionButton('Copy answers', copyAnswers),
-      actionButton('Clear answers', clearAnswers),
-      status,
-      manual
-    ]);
-  }
-
-  function questionCard(item, index, answers) {
-    var id = questionId(item, index);
-    var card = el('details', 'qa');
-    var summary = el('summary');
-    var badge = el('span', 'qa-num');
-    badge.textContent = id;
-    var title = el('span', 'qa-title');
-    title.appendChild(value(item.question, 'questions[].question'));
-    summary.appendChild(badge);
-    summary.appendChild(title);
-
-    var body = el('div', 'qa-body');
-    body.appendChild(subHeading('What was observed'));
-    body.appendChild(paragraph(richText(item.observed, 'questions[].observed')));
-    var pick = el('div', 'qa-pick');
-    pick.appendChild(subHeading('Recommendation'));
-    pick.appendChild(paragraph(value(item.recommendation, 'questions[].recommendation')));
-    body.appendChild(pick);
-
-    // Answer fields
-    var imported = answers[id] ? record(answers[id]) : null;
-    var answer = el('div', 'qa-answer');
-    var head = subHeading('Answer');
-    if (imported) {
-      var mark = el('span', 'qa-imported');
-      mark.textContent = 'imported';
-      head.appendChild(mark);
-    }
-    answer.appendChild(head);
-    var entry = { id: id, recommendation: item.recommendation, radios: [], free: null, card: card };
-    if (blank(item.options)) {
-      answer.appendChild(paragraph(unfilled('questions[].options')));
-    } else {
-      var ul = el('ul', 'qa-answer-list');
-      item.options.forEach(function (option, i) {
-        var li = el('li');
-        var label = el('label');
-        var radio = el('input');
-        radio.type = 'radio';
-        radio.name = 'answer-' + id;
-        radio.value = String(option);
-        radio.addEventListener('change', function () { onCardInput(entry); });
-        var letter = el('span', 'option-letter');
-        letter.textContent = String.fromCharCode(65 + i);
-        var text = el('span');
-        text.textContent = String(option);
-        label.appendChild(radio);
-        label.appendChild(letter);
-        label.appendChild(text);
-        li.appendChild(label);
-        ul.appendChild(li);
-        entry.radios.push(radio);
-      });
-      answer.appendChild(ul);
-    }
-    var free = el('textarea');
-    free.setAttribute('aria-label', 'Free text for ' + id);
-    free.setAttribute('placeholder', 'Free text (becomes a note when an option is picked)');
-    free.addEventListener('input', function () { onCardInput(entry); });
-    entry.free = free;
-    answer.appendChild(free);
-    answer.appendChild(actionButton('Adopt recommendation', function () { adoptRecommendation(entry); }));
-    body.appendChild(answer);
-
-    // Show the answer imported into the JSON if any, otherwise the draft. Unanswered cards stay open
-    var initial = imported || readDraft(id);
-    if (initial) fillCard(entry, initial);
-    card.open = !initial;
-    answerCards.push(entry);
-
-    card.appendChild(summary);
-    card.appendChild(body);
-    return card;
-  }
-
-  function renderQuestions(questions, answers) {
-    answerCards = [];
-    mount('questionCount', [document.createTextNode(countLabel(questions))]);
-    if (!countOf(questions)) { mount('questions', [none()]); return; }
-    mount('questions', entries(questions).map(function (item, index) {
-      return questionCard(item, index, answers);
-    }));
-    renderAnswerActions();
-    paintAnswers();
-  }
-
-  function renderError(message) {
-    var box = el('div', 'error-box');
-    var title = el('p');
-    title.textContent = 'Could not read the checklist data (the JSON in this file).';
-    var detail = el('p');
-    detail.textContent = message;
-    box.appendChild(title);
-    box.appendChild(detail);
-    mount('error', [box]);
-  }
-
-  function openWhilePrinting() {
-    var saved = null;
-    addEventListener('beforeprint', function () {
-      var folds = Array.prototype.slice.call(document.querySelectorAll('details'));
-      saved = folds.map(function (box) { return [box, box.open]; });
-      folds.forEach(function (box) { box.open = true; });
-    });
-    addEventListener('afterprint', function () {
-      if (!saved) return;
-      saved.forEach(function (pair) { pair[0].open = pair[1]; });
-      saved = null;
-    });
+    mount('changedFiles', [tableOf(T.changedHeaders, rows, ['40%', '16%', '44%'])]);
   }
 
   function boot() {
@@ -1770,8 +3618,11 @@
     document.getElementById('toggle-all').addEventListener('click', function () {
       var opening = stepNodes.some(function (step) { return !step.open; });
       stepNodes.forEach(function (step) { step.open = opening; });
-      this.textContent = opening ? 'Collapse all' : 'Expand all';
+      this.textContent = opening ? T.collapseAll : T.expandAll;
     });
+    installClamps();
+    installFeedback();
+    refreshClamps();
     openWhilePrinting();
   }
 
