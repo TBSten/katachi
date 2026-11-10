@@ -112,7 +112,7 @@ Role については [Role 定義の詳細](/katachi/ja/guides/role/) も参照�
 
 ```kt {2}
 architecture {
-  "domain".group {
+  "Domain".group {
     "UseCase".role { /* ... */ }
     "RepositoryInterface".role { /* ... */ }
   }
@@ -127,11 +127,11 @@ Role のグループをドメインレイヤーとして DSL で表すと、Role
 
 ```kt {3,6}
 architecture {
-  "domain".group {
-    "usecase".group {
+  "Domain".group {
+    "UseCase".group {
       "UseCase".role { /* ... */ }
     }
-    "repository".group {
+    "Repository".group {
       "RepositoryInterface".role { /* ... */ }
     }
   }

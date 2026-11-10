@@ -27,16 +27,16 @@ Android developers で公開されているアプリアーキテクチャガイ�
 
 ```mermaid
 flowchart LR
-    subgraph ui["ui（group）"]
+    subgraph ui["Ui（group）"]
         UiState
         ViewModel
         Screen
     end
-    subgraph domain["domain（group）"]
+    subgraph domain["Domain（group）"]
         UseCase
         DomainModel
     end
-    subgraph data["data（group）"]
+    subgraph data["Data（group）"]
         RepositoryInterface
         RepositoryImplementation
         DataSource
@@ -86,20 +86,20 @@ val projectArchitecture = architecture {
   gradle() // wrapper・settings・build スクリプトなど Gradle のファイル
 
   // https://developer.android.com/topic/architecture/ui-layer
-  "ui".group {
+  "Ui".group {
     uiState()
     viewModel()
     screen()
   }
 
   // https://developer.android.com/topic/architecture/domain-layer
-  "domain".group {
+  "Domain".group {
     useCase()
     domainModel()
   }
 
   // https://developer.android.com/topic/architecture/data-layer
-  "data".group {
+  "Data".group {
     repositoryInterface()
     repositoryImplementation()
     dataSource()
@@ -386,7 +386,7 @@ fun DeclarationContainerScope.androidResource() = "AndroidResource".role {
 }
 ```
 
-`ProjectArchitecture.kt` では、`"app".group { androidManifest(); androidResource() }` のように `:app` の group に入れます。サンプルでは同じ group に `MainActivity` と `MainApplication` の Role も置いています（[AppGroup.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/app/AppGroup.kt)）。
+`ProjectArchitecture.kt` では、`"App".group { androidManifest(); androidResource() }` のように `:app` の group に入れます。サンプルでは同じ group に `MainActivity` と `MainApplication` の Role も置いています（[AppGroup.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/app/AppGroup.kt)）。
 
 <SnippetIsStartingPoint>
 たとえばプロダクトで Dagger Hilt を使っているなら、ViewModel に `@HiltViewModel` アノテーションが付いているかの検査や、Repository の実装クラスに `@Inject` コンストラクタがあるかの検査を追加するなど、さらにカスタマイズが必要になるでしょう。

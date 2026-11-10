@@ -39,7 +39,7 @@ katachi {
 architecture {
   title = "myapp"
 
-  "domain".group {
+  "Domain".group {
     title = "Domain レイヤー"
     summary = "アプリ固有の振る舞いと、その対象になる値"
 
@@ -65,7 +65,7 @@ architecture {
         <FileTree>
         - build/katachi/docs/
           - README.md
-          - domain/
+          - Domain/
             - README.md
             - UseCase.md
             - RepositoryInterface.md
@@ -78,22 +78,22 @@ architecture {
 
         ## Document map
 
-        ### [Domain レイヤー](./domain/README.md)
+        ### [Domain レイヤー](./Domain/README.md)
 
         アプリ固有の振る舞いと、その対象になる値
 
-        - [ユースケース](./domain/UseCase.md)
-        - [リポジトリ](./domain/RepositoryInterface.md)
+        - [ユースケース](./Domain/UseCase.md)
+        - [リポジトリ](./Domain/RepositoryInterface.md)
 
         ## Domain レイヤー
 
         アプリ固有の振る舞いと、その対象になる値
 
-        - [ユースケース](./domain/UseCase.md) ... 各画面で発生するアプリ固有の1つの振る舞い
-        - [リポジトリ](./domain/RepositoryInterface.md) ... データの取得と保存の境界
+        - [ユースケース](./Domain/UseCase.md) ... 各画面で発生するアプリ固有の1つの振る舞い
+        - [リポジトリ](./Domain/RepositoryInterface.md) ... データの取得と保存の境界
         ```
     </TabItem>
-    <TabItem label="domain/README.md">
+    <TabItem label="Domain/README.md">
         ````md collapse
         [myapp](../README.md)
 
@@ -115,7 +115,7 @@ architecture {
         ```
         ````
     </TabItem>
-    <TabItem label="domain/UseCase.md">
+    <TabItem label="Domain/UseCase.md">
         ```md collapse
         [myapp](../README.md) / [Domain レイヤー](README.md)
 
@@ -135,7 +135,7 @@ architecture {
         - `SignInUseCase` ... サインイン
         ```
     </TabItem>
-    <TabItem label="domain/RepositoryInterface.md">
+    <TabItem label="Domain/RepositoryInterface.md">
         ```md collapse
         [myapp](../README.md) / [Domain レイヤー](README.md)
 
@@ -202,7 +202,7 @@ katachi {
 
 group は入れ子にでき、入れ子の group はその親の group のディレクトリの下に出ます。
 
-ファイル名とディレクトリ名は、`title` ではなく**識別子**（`"UseCase".role { }` の `UseCase`、`"domain".group { }` の `domain`）で決まります。`title` を変えても、ファイル名は変わりません。
+ファイル名とディレクトリ名は、`title` ではなく**識別子**（`"UseCase".role { }` の `UseCase`、`"Domain".group { }` の `Domain`）で決まります。`title` を変えても、ファイル名は変わりません。
 
 ## ドキュメント生成に利用されるプロパティ
 
@@ -294,7 +294,7 @@ group に設定できるのは Role と同じ4つです。`example()` だけが�
 <CodeComparison>
     <CodeComparison.Panel label="group 定義">
         ```kt
-        "domain".group {
+        "Domain".group {
           title = "Domain レイヤー"
           summary = "アプリ固有の振る舞いと、その対象になる値"
           description = """
@@ -316,7 +316,7 @@ group に設定できるのは Role と同じ4つです。`example()` だけが�
         ```
     </CodeComparison.Panel>
     <CodeComparison.Panel label="生成されるマークダウン">
-        ````md title="domain/README.md"
+        ````md title="Domain/README.md"
         [Architecture](../README.md)                  ← パンくず
 
         # Domain レイヤー                               ← title
@@ -361,7 +361,7 @@ group に設定できるのは Role と同じ4つです。`example()` だけが�
             myapp は **MVVM * Clean Architecture** ベースで設計されています。
           """.trimIndent()
 
-          "domain".group {
+          "Domain".group {
             title = "Domain レイヤー"
             summary = "アプリ固有の振る舞いと、その対象になる値"
             "UseCase".role { /* ... */ }
@@ -379,7 +379,7 @@ group に設定できるのは Role と同じ4つです。`example()` だけが�
 
         ## Document map
 
-        ### [Domain レイヤー](./domain/README.md)
+        ### [Domain レイヤー](./Domain/README.md)
 
         アプリ固有の振る舞いと、その対象になる値
         ...

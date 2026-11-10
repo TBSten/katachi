@@ -112,7 +112,7 @@ In this case, you can express that hierarchy by wrapping the Roles in `"...".gro
 
 ```kt {2}
 architecture {
-  "domain".group {
+  "Domain".group {
     "UseCase".role { /* ... */ }
     "RepositoryInterface".role { /* ... */ }
   }
@@ -127,11 +127,11 @@ Expressing a group like "the domain layer" in the DSL makes the relationships an
 
 ```kt {3,6}
 architecture {
-  "domain".group {
-    "usecase".group {
+  "Domain".group {
+    "UseCase".group {
       "UseCase".role { /* ... */ }
     }
-    "repository".group {
+    "Repository".group {
       "RepositoryInterface".role { /* ... */ }
     }
   }

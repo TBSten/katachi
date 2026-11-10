@@ -242,7 +242,7 @@ class GetUserUseCase(private val repository: UserRepository) {
 
 ```kt {2}
 architecture {
-  "domain".group {
+  "Domain".group {
     "UseCase".role {
       // ...
     }
@@ -494,7 +494,7 @@ Role 定義の中でも、特に `ktFileContent { }` は、許可する import �
 
 ```kt title=ProjectArchitecture.kt nocollapse
 architecture {
-  "domain".group {
+  "Domain".group {
     useCase()
   }
 }

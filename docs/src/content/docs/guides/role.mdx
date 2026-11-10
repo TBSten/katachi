@@ -30,7 +30,7 @@ architecture {
 }
 ```
 
-A Role is declared with `"Name".role { }`. This matches the shape of `"name".group { }` and sets it apart from a directory declaration such as `"src" { }`, which you write inside `layout { }`.
+A Role is declared with `"Name".role { }`. This matches the shape of `"Name".group { }` and sets it apart from a directory declaration such as `"src" { }`, which you write inside `layout { }`.
 
 Because Role names are used for things like documentation generation, they must be ASCII only (starting with a letter, followed by letters, digits, `_`, or `-`).
 
@@ -243,7 +243,7 @@ You can group Roles together using `"group name".group { }`.
 
 ```kt {2}
 architecture {
-  "domain".group {
+  "Domain".group {
     "UseCase".role {
       // ...
     }
@@ -495,7 +495,7 @@ This is a complete example that uses everything covered so far. The Role definit
 
 ```kt title=ProjectArchitecture.kt nocollapse
 architecture {
-  "domain".group {
+  "Domain".group {
     useCase()
   }
 }

@@ -71,13 +71,13 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.diff.diffWeight
 
 val projectArchitecture = architecture {
-  "domain".group {
+  "Domain".group {
     // If you write it on a group, it applies to all Roles under it
     diffWeight = 2.0
 
     "UseCase".role { layout { "domain" / "*UseCase".ktFile() } }
   }
-  "testing".group {
+  "Testing".group {
     "RoleDefinition".role {
       // If you write it on a Role, it takes priority over the group's value
       diffWeight = 10.0
@@ -100,7 +100,7 @@ katachiDiff has the following options. You can set all of them when you run the 
     ```shell
     ./gradlew :architecture-test:katachiDiff \
       --arg before=origin/main \
-      --arg weights=domain=2,testing.RoleDefinition=10 \
+      --arg weights=Domain=2,Testing.RoleDefinition=10 \
       --arg maxFiles=0 \
       --arg html=false \
       --arg markdownOutputFile=diff-report.md
@@ -113,7 +113,7 @@ katachiDiff has the following options. You can set all of them when you run the 
       processors {
         diff {
           before = "origin/main"
-          weights = listOf("domain=2", "testing.RoleDefinition=10")
+          weights = listOf("Domain=2", "Testing.RoleDefinition=10")
           maxFiles = 0
           markdown {
             outputFile = layout.projectDirectory.file("diff-report.md")
@@ -167,7 +167,7 @@ A value written in the Gradle script becomes the default for the project, and `-
             <td><code>List&lt;String&gt;</code></td>
             <td>A list of <code>&lt;qualified name of a group or Role&gt;=&lt;number&gt;</code>. It takes priority over <code>diffWeight</code> in the definition. On the command, separate them with commas</td>
             <td>Empty</td>
-            <td><code>domain=2</code><br /><code>domain=2,testing.RoleDefinition=10</code><br /><code>sample=0.5</code> (make it less noticeable)</td>
+            <td><code>Domain=2</code><br /><code>Domain=2,Testing.RoleDefinition=10</code><br /><code>sample=0.5</code> (make it less noticeable)</td>
         </tr>
         <tr>
             <td><code>maxFiles</code></td>
@@ -257,7 +257,7 @@ jobs:
 | Input <br/> (`diff-report`) | Description | Default |
 |---|---|---|
 | `task` | The Gradle task to run. With `katachiDiff`, it runs in all modules that have the plugin applied | `katachiDiff` |
-| `arguments` | Extra arguments to pass to Gradle. One per line (example: `--arg weights=domain=2`). The action adds `--arg pr=` | Empty |
+| `arguments` | Extra arguments to pass to Gradle. One per line (example: `--arg weights=Domain=2`). The action adds `--arg pr=` | Empty |
 | `working-directory` | The directory that has the Gradle build | `.` |
 | `comment` | With `true`, this job also posts the comment | `false` |
 | `report-artifact-name` | The name of the artifact that uploads the HTML report and the whole Markdown. Empty to skip the upload | `katachi-diff-report` |
