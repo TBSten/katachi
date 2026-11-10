@@ -10,6 +10,7 @@ fun DeclarationContainerScope.agentRule() = "AgentRule".role {
     example("skills/verify-changes/SKILL.md", "変更後に何を回すかの手順")
     example("skills/translate-ja-en/scripts/list-targets.py", "スキルが呼ぶ補助スクリプト")
     example("skills/translate-ja-en/target-file-pattern.csv", "スキルが読むデータ（翻訳の対象の組）")
+    example("skills/prerelease/decisions/docs.md", "前の回で人が下した判断（次の回で同じことを聞かないため）")
     layout {
         // What Claude Code reads first, at the repository root (docs/ keeps its own, as docs/CLAUDE.md).
         "CLAUDE.md".file()
@@ -26,6 +27,9 @@ fun DeclarationContainerScope.agentRule() = "AgentRule".role {
             "skills" / "*" / "references" / "*.md".file()
             // The HTML a skill fills in for its report, such as prerelease's index.html and TODO.html.
             "skills" / "*" / "templates" / "*.html".file()
+            // What a person decided on earlier runs of a skill, such as prerelease's decisions/, so that the
+            // next run reads them and does not ask the same thing again.
+            "skills" / "*" / "decisions" / "*.md".file()
         }
     }
 }

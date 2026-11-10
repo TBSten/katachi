@@ -7,4 +7,6 @@
     - 結果は `.local/release-v0.0.0/docs-vs-impl.md` にまとめさせる。材料・下書き・サンプルを動かしたログは
       `.local/release-v0.0.0/tmp/docs-vs-impl/` に置かせる。
     - サンプルを動かす（Gradle を使う）作業は、8・9・6-1 と重ねない。走らせる前に `pgrep -fl GradleWrapperMain` で確かめさせる。
+    - [decisions/docs.md](../decisions/docs.md) と [decisions/README.md](../decisions/README.md) の「照らし方」を渡し、過去の判断と
+      同じ食い違いは警告にせず「過去の判断どおり」に並べさせる。
 - prerelease-check-list.md には、件数と priority 7 以上の警告だけを書く。

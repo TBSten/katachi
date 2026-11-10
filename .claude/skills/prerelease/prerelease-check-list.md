@@ -4,6 +4,7 @@
 
 - [ ] 今回のリリースバージョン: {TODO}
 - [ ] publish 済の直前のリリースバージョン: {TODO}
+- [ ] 過去の判断（decisions/）: {TODO} 件 / 問題 {TODO} 件 / 見直す条件 {TODO} 件
 
 <details>
     <summary>memo</summary>
@@ -30,6 +31,7 @@
 - [ ] public + `@InternalKatachiApi`: {TODO 件数} 件 / 要検討 {TODO} 件
 - [ ] public + `@ExperimentalKatachiApi`: {TODO 件数} 件 / 要検討 {TODO} 件
 - [ ] 一覧: {TODO file://.local/release-v0.0.0/visibility-check.md の絶対パス}
+- [ ] 過去の判断どおりで要検討にしなかった: {TODO} 件 / 見直し候補 {TODO} 件（decisions/api.md）
 
 <details>
     <summary>memo</summary>
@@ -55,6 +57,7 @@
 
 - [ ] check-docs-against-impl の結果: {TODO file://.local/release-v0.0.0/docs-vs-impl.md の絶対パス}
 - [ ] 食い違い: {TODO} 件（priority 7 以上: {TODO} 件）
+- [ ] 過去の判断どおりで出さなかった: {TODO} 件 / 見直し候補 {TODO} 件（decisions/docs.md）
 
 <details>
     <summary>memo</summary>
@@ -71,6 +74,7 @@
 - [ ] api-docs: {TODO} ページ / 問題 {TODO} 件
 - [ ] 巡回の結果: {TODO file://.local/release-v0.0.0/site-crawl.md の絶対パス}
 - [ ] スクリーンショット: {TODO file://.local/release-v0.0.0/screenshots/ の絶対パス}
+- [ ] 過去の判断どおりで出さなかった: {TODO} 件 / 見直し候補 {TODO} 件（decisions/docs.md）
 
 <details>
     <summary>memo</summary>
@@ -99,6 +103,7 @@
 - [ ] 9-2 手順書どおりに最後まで導入できた: ja {TODO} / en {TODO}
 - [ ] 9-2 所見: {TODO} 件（priority 7 以上: {TODO} 件）
 - [ ] 9-2 結果: {TODO file://.local/release-v0.0.0/install-e2e.md の絶対パス}
+- [ ] 過去の判断どおりで出さなかった: {TODO} 件 / 見直し候補 {TODO} 件（decisions/install.md・environment.md）
 
 <details>
     <summary>memo</summary>
@@ -119,6 +124,7 @@
 - [ ] 10-4 直し忘れ: 直書き {TODO} 件 / 訳し忘れの鍵 {TODO} 件 / ツールウィンドウ {TODO} 件 / ja だけの鍵 {TODO} 件 / plugin.xml {TODO} 件
 - [ ] 10-4 日本語の IDE での目視: {TODO 要る（TODO.html に載せた） / 要らない（基準から文言の置き場が変わっていない）}
 - [ ] 10-4 結果: {TODO file://.local/release-v0.0.0/ide-plugin-texts.md の絶対パス}
+- [ ] 過去の判断どおりで出さなかった: {TODO} 件 / 見直し候補 {TODO} 件（decisions/ide-plugin.md・environment.md）
 
 <details>
     <summary>memo</summary>
@@ -132,6 +138,7 @@
 - [ ] ルールの出どころに足したページ: {TODO ページ名（既定の4ページ以外）}
 - [ ] 違反: {TODO} 件（priority 7 以上: {TODO} 件）
 - [ ] 結果: {TODO file://.local/release-v0.0.0/docs-rules.md の絶対パス}
+- [ ] 過去の判断どおりで出さなかった: {TODO} 件 / 見直し候補 {TODO} 件（decisions/docs.md、Review に登録する前の `decisions.py match --drop` を含む）
 
 <details>
     <summary>memo</summary>
@@ -139,6 +146,10 @@
     {TODO}
 
 </details>
+
+## この回で書き足した判断
+
+- [ ] 利用者が答えた判断を decisions/ に書き足した: {TODO} 件（`decisions.py check` が通る）
 
 ## そのほか
 

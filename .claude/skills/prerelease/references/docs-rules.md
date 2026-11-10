@@ -74,12 +74,25 @@ PascalCase、`"build".ignore()` を推奨形にする、`anyFile()`/`ignore()` �
 - **自分が変えていないファイルは、差分があっても戻さない**（git の add / commit / stash / checkout / restore / reset / clean もしない）。
 - 1件ごとに、ファイルと行・該当のコードや文・破っているチェック項目の番号と根拠・priority・直し方の案を書く。
 - 迷ったら低い priority を付け「要確認」と書く。ルールの側が曖昧・食い違っているなら、コード例の側の問題にせず「E. 食い違い」として報告する。
+- [decisions/docs.md](../decisions/docs.md) を読み、過去の判断と同じ指摘（同じファイル・同じ箇所・同じ趣旨）は書かず、
+  末尾の「過去の判断どおり」に判断の見出しだけ並べる。`方針` に該当するものも同じ。同じ箇所でも中身が判断のときより
+  重い（priority が上がる）なら「見直し候補」として書く。
 - 書き終えたら件数（priority ごと）と、書いたファイルのパスを返す。
 
 ### 4. まとめる（オーケストレータ）
 
 `tmp/docs-rules/part-*.md` を 1 つにして `.local/release-v<版>/docs-rules.md` に書く。同じ原因（同じルール違反のコピー）は
 1件にまとめ、該当箇所を並べる。
+
+p4 以下を Review（`<置き場>/review/prerelease-<回>-step11.md`、decisions/process.md の方針）に登録するときは、登録する前に
+過去の判断と照らして同じものを外す。subagent が見落とした分もここで機械的に外れる。
+
+```shell
+python3 .claude/skills/prerelease/scripts/decisions.py match <置き場>/review/prerelease-<回>-step11.md --drop
+# SAME = 過去の判断と同じ（外した）。NEAR = 同じ箇所・quote だが見出しが違う（外さない。別の指摘か目で見る）
+```
+
+外した件数は `docs-rules.md` の「過去の判断どおり」に足す。
 
 priority は [check-docs-against-impl](../../check-docs-against-impl/SKILL.md) の基準表に合わせる。
 
@@ -102,6 +115,8 @@ priority は [check-docs-against-impl](../../check-docs-against-impl/SKILL.md) �
 | priority | 件数 |
 ## priority 7〜8 / 5〜6 / 3〜4 ...（警告は `### [WARN / priority n/10] {タイトル}`。1〜2 は <details>）
 ## ガイド同士の食い違い（E）
+## 見直し候補（過去の判断の前提が変わったもの）
+## 過去の判断どおり（n 件。<details> に判断の見出しだけ）
 ## 確かめたページ数・コード例の数
 ```
 

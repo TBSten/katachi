@@ -13,7 +13,7 @@ flowchart LR
   C -- 直っている --> D["review remove &lt;id&gt;"]
   C -- 直っていない --> E["review reopen &lt;id&gt; --note &quot;理由&quot;<br/>（open に戻り、popup に理由が出る）"]
   E --> B
-  B2["人: 「直さない」<br/>（note の頭が「直さない」）"] --> D
+  B2["人: 「直さない」<br/>（note の頭が「直さない」）"] --> R["agent: 判断として記録<br/>decisions.py record-review"] --> D
   B3["人: 「直してもらう」<br/>（Feedback の記録を作る）"] --> F["agent: いつもの Feedback の消化で直す<br/>cli archive で指摘も消える"]
 ```
 
@@ -81,5 +81,6 @@ id は `<まとまりの名前>/<file と見出しから作る 7 文字>`。ほ�
 - popup の上の「L174 faq.mdx」を押すと `file:line` をコピー、「開く」でエディタのその行を開く（Astro の dev サーバーの「エディタで開く」。エディタは `LAUNCH_EDITOR` などで選ぶ）。
 - 「解決済みにする」は次の指摘へ進む（トーストの「戻す」で取り消せる）。次がほかのページの指摘なら、ページは移らずに閉じ、トーストの「次のページ ›」で移る。保存中と進んだ直後は押せない（連打で次の指摘まで解決済みにしない）。
 - 「直さない」は直さないと決めた指摘を解決済みにする。`note` の頭に `直さない`（ひとことがあれば `直さない: <ひとこと>`）と書く。agent は直ったかを確かめずに `review remove` してよい。
+  ただし remove の前に、判断として `.claude/skills/prerelease/decisions/` に写す（`python3 .claude/skills/prerelease/scripts/decisions.py record-review <置き場>/review/<名前>.md --decided "<日付 回 チケット>"`。写した指摘の id が `REMOVE <id>` で出る）。写さずに消すと、次のリリース前チェックで同じ指摘をまた聞くことになる。
 - 「直してもらう」は、指摘を Feedback の記録（`<置き場>/yymmdd-NNN.md`）にして agent に直してもらう。記録の本文は「直してほしい: <見出し>」・ひとこと・指摘の本文で、ソースの行と `- Review の指摘: <id>` が入る。指摘は解決済みになり、`note` の頭に `Feedback に送った: <記録の id>` と書く。トーストの「戻す」で記録を archive し、指摘を未解決に戻す。
   - agent は `note` の頭が `Feedback に送った` の指摘を Review の流れ（`review list --status=resolved` で確かめる）で扱わない。記録をいつもの Feedback の消化で直し、`cli.mjs archive <記録の id>` で archive すると、`- Review の指摘:` の指摘も消える
