@@ -373,11 +373,11 @@
   .fact:last-child:nth-child(odd) { grid-column: 1 / -1; }
   .fact dt { color: var(--muted); font-size: 13px; line-height: 1.5; }
   .fact dd { margin: 2px 0 0; color: var(--ink); min-width: 0; }
-  /* Blocks such as bullet lists span the full width and don't fold */
-  .fact.fact-block { grid-column: 1 / -1; }
-  .fact-block dd { overflow-wrap: anywhere; }
-  .fact-block dd ul { margin: 2px 0 0; }
-  .fact-block dd li { margin: 0; line-height: 1.6; }
+  /* One line while folded, bullets while open */
+  .fact-list .fact-bullets { display: none; margin: 2px 0 0; overflow-wrap: anywhere; }
+  .fact-list .fact-bullets li { margin: 0; line-height: 1.6; }
+  .fact-list.is-open .fact-bullets { display: block; }
+  .fact-list.is-open .clip { display: none; }
 
   @media (max-width: 560px) {
     .facts { grid-template-columns: minmax(0, 1fr); }
@@ -1534,17 +1534,15 @@
     });
     return ul;
   }
-  // Split one sentence like "Kotlin 2.2.20 (KMP; JVM toolchain 17)" into bullets: the part outside the parentheses, then each sentence inside. Without separators, keep it as is
-  function sentenceBullets(raw, key) {
-    if (blank(raw)) return unfilled(key);
+  // Split one sentence like "Kotlin 2.2.20 (KMP; JVM toolchain 17)" into the part outside the parentheses and each sentence inside
+  function sentenceParts(raw) {
+    if (blank(raw)) return [];
     var whole = String(raw).trim();
-    var parts = [whole];
+    var parts;
     var m = /^([^（(]+?)\s*[（(]([\s\S]*)[）)]\s*$/.exec(whole);
     if (m) parts = [m[1]].concat(m[2].split(/[。;；]\s*/));
     else parts = whole.split(/[。;；]\s*/);
-    parts = parts.map(function (part) { return part.trim(); }).filter(function (part) { return part; });
-    if (parts.length < 2) return text(whole);
-    return bullets(parts, key);
+    return parts.map(function (part) { return part.trim(); }).filter(function (part) { return part; });
   }
   function bulletsOrNone(values) {
     if (blank(values)) return none();
@@ -1599,7 +1597,8 @@
     var roots = (scope && scope.querySelectorAll ? scope : document).querySelectorAll('[data-clamp]');
     Array.prototype.forEach.call(roots, function (root) {
       if (root.classList.contains('is-open')) return;
-      var over = Array.prototype.some.call(root.querySelectorAll('.clip'), function (box) {
+      // data-clamp-always can open even when it fits on one line (it turns into bullets when open)
+      var over = root.hasAttribute('data-clamp-always') || Array.prototype.some.call(root.querySelectorAll('.clip'), function (box) {
         return box.scrollWidth > box.clientWidth + 1;
       });
       root.classList.toggle('is-clampable', over);
@@ -1657,15 +1656,17 @@
     var dl = el('dl', 'facts');
     pairs.forEach(function (pair) {
       if (!pair[1]) return;
-      // When pair[3] is true, show it as a block (such as a bullet list), full width and not folded
-      var block = pair[3] === true;
-      var cell = el('div', block ? 'fact fact-block' : 'fact');
-      if (!block) cell.setAttribute('data-clamp', '');
+      // When pair[3] is a bullet list (<ul>), show one line while folded and the bullets while open
+      var list = pair[3] && pair[3].tagName === 'UL' ? pair[3] : null;
+      var cell = el('div', list ? 'fact fact-list' : 'fact');
+      cell.setAttribute('data-clamp', '');
+      if (list) cell.setAttribute('data-clamp-always', '');
       if (pair[2]) target(cell, pair[2], pair[0]);
       var dt = el('dt');
       dt.textContent = pair[0];
       var dd = el('dd');
-      dd.appendChild(block ? pair[1] : clip(pair[1]));
+      dd.appendChild(clip(pair[1]));
+      if (list) { list.classList.add('fact-bullets'); dd.appendChild(list); }
       cell.appendChild(dt);
       cell.appendChild(dd);
       dl.appendChild(cell);
@@ -2694,11 +2695,18 @@
 
   function renderOverview(overview) {
     mount('overview', [facts([
-      [T.overview.language, sentenceBullets(overview.language, 'overview.language'), 'overview.language', true],
-      [T.overview.frameworks, blank(overview.frameworks) ? noneInline() : targetBullets(bullets(overview.frameworks, ''), 'overview.frameworks'), 'overview.frameworks', true],
-      [T.overview.targets, blank(overview.targets) ? noneInline() : targetBullets(bullets(overview.targets, ''), 'overview.targets'), 'overview.targets', true],
-      [T.overview.appPackage, value(overview.appPackage, 'overview.appPackage'), 'overview.appPackage', true]
+      [T.overview.language, value(overview.language, 'overview.language'), 'overview.language', listWhenOpen(sentenceParts(overview.language), null)],
+      [T.overview.frameworks, inlineOrNone(overview.frameworks), 'overview.frameworks', listWhenOpen(overview.frameworks, 'overview.frameworks')],
+      [T.overview.appPackage, value(overview.appPackage, 'overview.appPackage'), 'overview.appPackage'],
+      [T.overview.targets, inlineOrNone(overview.targets), 'overview.targets', listWhenOpen(overview.targets, 'overview.targets')]
     ])]);
+  }
+
+  // The bullet list shown when open, only for 2 or more items. With a key, each bullet becomes a feedback target
+  function listWhenOpen(values, key) {
+    if (blank(values) || values.length < 2) return null;
+    var list = bullets(values, '');
+    return key ? targetBullets(list, key) : list;
   }
 
   function folded(label, bodyNode, key) {
