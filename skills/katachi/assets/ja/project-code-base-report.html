@@ -963,6 +963,9 @@
   .arch-name { margin: 0 0 12px; color: var(--ink); font-size: 18px; font-weight: 600; line-height: 1.5; }
 
   /* モジュールのツリー */
+  /* 長いモジュール名でも狭い画面に収まるよう折り返す */
+  .module-row { flex-wrap: wrap; row-gap: 0; }
+  .module-row .t-name { min-width: 0; overflow-wrap: anywhere; }
   .module-row .deviation { color: var(--caution-high); font-size: 13px; }
   .module-row .deviation::before { content: "\2691\00a0"; }
   .module-body { padding: 2px 0 8px 24px; }
@@ -1373,6 +1376,7 @@
     toastCopied: 'コピーしました',
     toastSaved: '保存しました',
     copyFailed: 'コピーできませんでした。下の文を手で選んでコピーしてください。',
+    copyFailedShort: 'コピーできませんでした。一覧の中の文を手で選んでコピーしてください',
     saveFailed: '保存できませんでした。下の JSON を手で選んでコピーしてください。',
     // フィードバック
     fbFab: 'フィードバック',
@@ -2193,8 +2197,13 @@
       return [];
     }
   }
+  // 保存できたかを返す。できなければ一覧を開いて警告を出し、トーストでもコピーを促す
   function fbStore() {
-    if (!storageSet(FEEDBACK_KEY, fb.items.length ? JSON.stringify(fb.items) : null)) fbStatus(T.fbNoStorage, true);
+    if (storageSet(FEEDBACK_KEY, fb.items.length ? JSON.stringify(fb.items) : null)) return true;
+    fbTogglePanel(true);
+    fbStatus(T.fbNoStorage, true);
+    toast(T.fbNoStorage, true);
+    return false;
   }
   function fbFind(key) {
     var nodes = document.querySelectorAll('[data-fb]');
@@ -2239,12 +2248,16 @@
     copyText(content, function () {
       var now = new Date().toISOString();
       sending.forEach(function (item) { item.copiedAt = now; });
-      fbStore();
+      var kept = fbStore();
       fbPaint();
+      if (!kept) return;
       fbStatus(again ? T.fbCopiedAgain(sending.length) : T.fbCopied(sending.length));
       toast(T.toastCopied);
     }, function () {
+      // 手で選ぶ欄は一覧の中に出すので、閉じていれば開く
+      fbTogglePanel(true);
       fbStatus(T.copyFailed, true);
+      toast(T.copyFailedShort, true);
       var box = el('textarea', 'answer-manual');
       box.value = content;
       box.setAttribute('readonly', '');
@@ -2356,10 +2369,11 @@
         if (existing) fb.items.splice(Math.min(fb.items.length, fbIndexBefore(existing)), 0, entry);
         else fb.items.push(entry);
       }
-      fbStore();
+      var kept = fbStore();
       fbClosePop(false);
       fbPaint();
-      fbStatus(comment ? T.fbSaved : T.fbDeleted);
+      // 保存できなかったときの警告を、成功の表示で消さない
+      if (kept) fbStatus(comment ? T.fbSaved : T.fbDeleted);
     }
     if (existing) {
       actions.appendChild(button(T.fbDelete, function () { area.value = ''; save(); }, 'btn-sm btn-quiet fb-delete'));
@@ -2516,14 +2530,15 @@
   function fbRemove(keep, message) {
     var before = fb.items.slice();
     fb.items = fb.items.filter(keep);
-    fbStore();
+    var kept = fbStore();
     fbPaint();
+    if (!kept) return;
     fbStatus(message);
     toast(message, false, { label: T.undo, run: function () {
       fb.items = before;
-      fbStore();
+      var restoredKept = fbStore();
       fbPaint();
-      fbStatus(T.restored);
+      if (restoredKept) fbStatus(T.restored);
     } });
   }
   function fbTogglePanel(open) {

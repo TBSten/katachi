@@ -963,6 +963,9 @@
   .arch-name { margin: 0 0 12px; color: var(--ink); font-size: 18px; font-weight: 600; line-height: 1.5; }
 
   /* Module tree */
+  /* Wrap so long module names fit on narrow screens */
+  .module-row { flex-wrap: wrap; row-gap: 0; }
+  .module-row .t-name { min-width: 0; overflow-wrap: anywhere; }
   .module-row .deviation { color: var(--caution-high); font-size: 13px; }
   .module-row .deviation::before { content: "\2691\00a0"; }
   .module-body { padding: 2px 0 8px 24px; }
@@ -1373,6 +1376,7 @@
     toastCopied: 'Copied',
     toastSaved: 'Saved',
     copyFailed: 'Could not copy. Select the text below by hand and copy it.',
+    copyFailedShort: 'Could not copy. Select the text in the list by hand and copy it',
     saveFailed: 'Could not save. Select the JSON below by hand and copy it.',
     // Feedback
     fbFab: 'Feedback',
@@ -2193,8 +2197,13 @@
       return [];
     }
   }
+  // Return whether it was kept. If not, open the list with a warning and prompt a copy in a toast too
   function fbStore() {
-    if (!storageSet(FEEDBACK_KEY, fb.items.length ? JSON.stringify(fb.items) : null)) fbStatus(T.fbNoStorage, true);
+    if (storageSet(FEEDBACK_KEY, fb.items.length ? JSON.stringify(fb.items) : null)) return true;
+    fbTogglePanel(true);
+    fbStatus(T.fbNoStorage, true);
+    toast(T.fbNoStorage, true);
+    return false;
   }
   function fbFind(key) {
     var nodes = document.querySelectorAll('[data-fb]');
@@ -2239,12 +2248,16 @@
     copyText(content, function () {
       var now = new Date().toISOString();
       sending.forEach(function (item) { item.copiedAt = now; });
-      fbStore();
+      var kept = fbStore();
       fbPaint();
+      if (!kept) return;
       fbStatus(again ? T.fbCopiedAgain(sending.length) : T.fbCopied(sending.length));
       toast(T.toastCopied);
     }, function () {
+      // The manual-copy box goes inside the list, so open it if it is closed
+      fbTogglePanel(true);
       fbStatus(T.copyFailed, true);
+      toast(T.copyFailedShort, true);
       var box = el('textarea', 'answer-manual');
       box.value = content;
       box.setAttribute('readonly', '');
@@ -2356,10 +2369,11 @@
         if (existing) fb.items.splice(Math.min(fb.items.length, fbIndexBefore(existing)), 0, entry);
         else fb.items.push(entry);
       }
-      fbStore();
+      var kept = fbStore();
       fbClosePop(false);
       fbPaint();
-      fbStatus(comment ? T.fbSaved : T.fbDeleted);
+      // Don't replace the "couldn't keep it" warning with a success message
+      if (kept) fbStatus(comment ? T.fbSaved : T.fbDeleted);
     }
     if (existing) {
       actions.appendChild(button(T.fbDelete, function () { area.value = ''; save(); }, 'btn-sm btn-quiet fb-delete'));
@@ -2516,14 +2530,15 @@
   function fbRemove(keep, message) {
     var before = fb.items.slice();
     fb.items = fb.items.filter(keep);
-    fbStore();
+    var kept = fbStore();
     fbPaint();
+    if (!kept) return;
     fbStatus(message);
     toast(message, false, { label: T.undo, run: function () {
       fb.items = before;
-      fbStore();
+      var restoredKept = fbStore();
       fbPaint();
-      fbStatus(T.restored);
+      if (restoredKept) fbStatus(T.restored);
     } });
   }
   function fbTogglePanel(open) {
