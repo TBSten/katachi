@@ -77,9 +77,13 @@ export default function feedback(): AstroIntegration {
 				const dir = process.env.KATACHI_FEEDBACK_DIR ? resolve(process.env.KATACHI_FEEDBACK_DIR) : defaultDir
 				const store = createFileStore(dir, repoRoot)
 				registerMemoServer(toolbar, store)
-				registerReviewServer(toolbar, createReviewStore(join(dir, REVIEW_SUBDIR), repoRoot))
 				// dev サーバーの起動時刻と、起動時の統合のハッシュ（記録のビルド節・古さの判定に使う）。
 				const build = createBuildContext()
+				// Review の「直してもらう」は、Feedback と同じ置き場に記録を作る（agent はいつもの消化ループで読む）。
+				registerReviewServer(toolbar, createReviewStore(join(dir, REVIEW_SUBDIR), repoRoot), {
+					send: async (payload) => saveFeedback(store, payload, { repoRoot, build: await build }),
+					unsend: async (record) => void (await store.archive(record, 'Review の popup で送信を取り消した')),
+				})
 				toolbar.on(EVENT_SAVE, async (data: unknown) => {
 					const check = checkPayload(data)
 					if (!check.ok) {

@@ -4,6 +4,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { Locator } from '@playwright/test'
 import { FEEDBACK_OUT } from './env.mjs'
+import { files, readRecord } from './helpers/store'
 import type { Fb } from './helpers/fb'
 import { test, ok, sleep, waitFor } from './helpers/fixtures'
 
@@ -193,6 +194,28 @@ test('解決済みにする → ファイルに書き戻して次へ進む → �
 	ok('「直さない」はひとことの頭に「直さない」と書いて解決済みにする', await waitFor(() => readReview().includes('- status: resolved\n') && readReview().includes('- note: 直さない: 誤検知\n')), readReview().slice(0, 600))
 	await fb.act(u('.toast .btn'))
 	ok('「直さない」もトーストの「戻す」で取り消せる', await waitFor(() => !readReview().includes('- status: resolved')))
+})
+
+test('直してもらう: Feedback の記録を作って解決済みにする → 戻すと記録を archive して元に戻す', async ({ fb }) => {
+	writeSet()
+	await fb.fresh(FAQ)
+	await toggle(fb)
+	const u = ui(fb)
+	const sent = () => files().filter((f) => readRecord(f).includes('- Review の指摘: e2e/'))
+	const before = sent().length
+	await openRow(fb, '段落への指摘')
+	await u('.pop .act input').fill('言い回しを直して')
+	await fb.act(u('.pop .act .btn.send'))
+	ok('Feedback の記録ができる', await waitFor(() => sent().length === before + 1), files().join(','))
+	const name = sent().at(-1)!
+	const rec = readRecord(name)
+	ok('記録に見出し・ひとこと・指摘の本文・ソースの行が入る', /# 直してほしい: 段落への指摘/.test(rec) && rec.includes('言い回しを直して') && rec.includes('段落への指摘の本文') && /source: "?docs\/src\/content\/docs\/ja\/get-started\/faq\.mdx:\d+/.test(rec), rec.slice(0, 800))
+	const id = name.replace(/\.md$/, '')
+	ok('指摘は解決済みになり、note に記録の id', await waitFor(() => readReview().includes(`- note: Feedback に送った: ${id} — 言い回しを直して\n`)), readReview().slice(0, 600))
+	ok('トーストに記録の id', await waitFor(async () => ((await u('.toast').textContent().catch(() => '')) ?? '').includes(id)))
+	await fb.act(u('.toast .btn').filter({ hasText: '戻す' }))
+	ok('「戻す」で記録を archive する', await waitFor(() => !files().includes(name)), files().join(','))
+	ok('「戻す」で指摘のファイルが元に戻る', await waitFor(() => readReview() === SET))
 })
 
 test('閉じた details・選ばれていないタブ・畳んだコードの中の指摘は、開くと見えるようにして光らせる', async ({ fb }) => {

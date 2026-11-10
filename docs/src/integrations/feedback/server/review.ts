@@ -3,7 +3,7 @@
 import { randomBytes } from 'node:crypto'
 import { mkdir, open, readdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
 import { isAbsolute, join, relative, resolve, sep } from 'node:path'
-import { EVENT_REVIEW_REQUEST, EVENT_REVIEW_RESULT, type ReviewRequest, type ReviewResult, type ReviewSetView, type ReviewView } from '../core/protocol'
+import { EVENT_REVIEW_REQUEST, EVENT_REVIEW_RESULT, REVIEW_LINK_LABEL, REVIEW_SENT_NOTE, type ReviewRequest, type ReviewResult, type ReviewSetView, type ReviewView, type SavePayload, type Section } from '../core/protocol'
 import { applyStatus, CONTENT_DIR, NOTE_CHARS, parseReview, relocate, removeItem, SET_NAME, splitLines, textHints, type ReviewItem, type StatusPatch } from '../review/model'
 
 export type ReviewData = { sets: ReviewSetView[]; items: ReviewView[]; root: string }
@@ -189,27 +189,70 @@ export function checkReviewRequest(v: unknown): { ok: true; req: ReviewRequest }
 	const fail = (reason: string) => ({ ok: false as const, requestId, reason })
 	if (!requestId) return fail('requestId が不正です')
 	if (o.op === 'load') return { ok: true, req: { requestId, op: 'load' } }
-	if (o.op !== 'resolve' && o.op !== 'reopen') return fail('op が不正です')
+	if (o.op !== 'resolve' && o.op !== 'reopen' && o.op !== 'send' && o.op !== 'unsend') return fail('op が不正です')
 	if (typeof o.id !== 'string' || o.id.length === 0 || o.id.length > 200) return fail('id が不正です')
 	if (o.op === 'reopen') return { ok: true, req: { requestId, op: 'reopen', id: o.id } }
-	if (o.op === 'resolve') {
-		if (typeof o.note !== 'string') return fail('note が文字列ではありません')
-		if (o.note.length > NOTE_CHARS * 4) return fail(`メモが長すぎます（上限 ${NOTE_CHARS} 文字）`)
-		return { ok: true, req: { requestId, op: 'resolve', id: o.id, note: o.note } }
+	if (o.op === 'unsend') {
+		if (typeof o.record !== 'string' || !/^\d{6}-\d{2,}$/.test(o.record)) return fail('record が不正です')
+		return { ok: true, req: { requestId, op: 'unsend', id: o.id, record: o.record } }
 	}
-	return fail('op が不正です')
+	if (typeof o.note !== 'string') return fail('note が文字列ではありません')
+	if (o.note.length > NOTE_CHARS * 4) return fail(`メモが長すぎます（上限 ${NOTE_CHARS} 文字）`)
+	if (o.op === 'resolve') return { ok: true, req: { requestId, op: 'resolve', id: o.id, note: o.note } }
+	if (typeof o.page !== 'string' || o.page.length > 2000) return fail('page が不正です')
+	return { ok: true, req: { requestId, op: 'send', id: o.id, note: o.note, page: o.page } }
+}
+
+/**
+ * 指摘 1 件から、Feedback の記録（保存の依頼の形）を作る。agent はいつもの消化ループ（cli list → 直す → archive）で読む。
+ * 見出しは指摘の見出し、本文は人のひとことと指摘の本文。場所は Review が持っているので、そのまま「ソースの位置」にする。
+ * 「選んだ内容」の節に元の指摘の id を書く（cli の archive がこれを見て指摘を消す）。
+ */
+export function reviewToFeedback(v: ReviewView, note: string, page: string): SavePayload {
+	const line = v.line ? `${v.line.start === v.line.end ? v.line.start : `${v.line.start}-${v.line.end}`}` : null
+	const comment = [`直してほしい: ${v.title}`, note.trim(), v.body.trim()].filter(Boolean).join('\n\n')
+	const content: Section = [[REVIEW_LINK_LABEL, v.id]]
+	if (v.place === 'lost') content.push(['注意', 'quote が今のソースに見つかりません。もう直っているかもしれません'])
+	const sections: SavePayload['sections'] = {
+		...(line ? { source: [['ソース', `${v.file}:${line}`]] as Section } : {}),
+		page: [['URL', page], ['ページのソースファイル', v.file]],
+		content,
+	}
+	return { requestId: `review-${v.id}`, comment, ...(line ? { kind: 'element' as const } : { target: 'page' as const }), sections }
+}
+
+/** 「直してもらう」で記録を書く先（Feedback の Store）。dev サーバーが渡す。 */
+export type ReviewFeedbackSink = {
+	/** 記録を保存して、ファイル名（`yymmdd-NNN.md`）を返す。 */
+	send(payload: SavePayload): Promise<string>
+	/** 送ったのを取り消す（記録を archived に移す）。 */
+	unsend(record: string): Promise<void>
 }
 
 /** 依頼 1 件を処理し、書き換えたあとの全体を返す。例外は投げず ok:false にする。 */
-export function createReviewHandler(store: ReviewStore) {
+export function createReviewHandler(store: ReviewStore, feedback?: ReviewFeedbackSink) {
 	return async (data: unknown): Promise<ReviewResult | null> => {
 		const check = checkReviewRequest(data)
 		if (!check.ok) return check.requestId ? { requestId: check.requestId, ok: false, error: check.reason } : null
 		const { req } = check
 		try {
+			let sent: string | undefined
 			if (req.op === 'resolve') await store.resolve(req.id, req.note)
 			else if (req.op === 'reopen') await store.reopen(req.id)
-			return { requestId: req.requestId, ok: true, ...(await store.load()) }
+			else if (req.op === 'send' || req.op === 'unsend') {
+				if (!feedback) throw new Error('Feedback の置き場がありません')
+				if (req.op === 'send') {
+					const v = (await store.load()).items.find((x) => x.id === req.id)
+					if (!v) throw new Error(`指摘がありません: ${req.id}（読み込み直してください）`)
+					sent = (await feedback.send(reviewToFeedback(v, req.note, req.page))).replace(/\.md$/, '')
+					const head = `${REVIEW_SENT_NOTE}: ${sent}`
+					await store.resolve(req.id, req.note.trim() ? `${head} — ${req.note.trim()}` : head)
+				} else {
+					await store.reopen(req.id)
+					await feedback.unsend(req.record)
+				}
+			}
+			return { requestId: req.requestId, ok: true, ...(await store.load()), ...(sent ? { sent } : {}) }
 		} catch (e) {
 			return { requestId: req.requestId, ok: false, error: e instanceof Error ? e.message : String(e) }
 		}
@@ -217,8 +260,8 @@ export function createReviewHandler(store: ReviewStore) {
 }
 
 /** dev サーバーの toolbar に受け口を登録する。 */
-export function registerReviewServer(toolbar: { on(event: string, cb: (data: unknown) => void): void; send(event: string, data: unknown): void }, store: ReviewStore) {
-	const handler = createReviewHandler(store)
+export function registerReviewServer(toolbar: { on(event: string, cb: (data: unknown) => void): void; send(event: string, data: unknown): void }, store: ReviewStore, feedback?: ReviewFeedbackSink) {
+	const handler = createReviewHandler(store, feedback)
 	toolbar.on(EVENT_REVIEW_REQUEST, async (data) => {
 		const result = await handler(data)
 		if (result) toolbar.send(EVENT_REVIEW_RESULT, result)

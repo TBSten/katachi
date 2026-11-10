@@ -1,6 +1,6 @@
 // Review を開いてから閉じるまでの 1 回ぶん: 読み込み → 印と枠 → popup → 解決済みの印の付け外し → 片付け。
 // 閉じると、印・枠・popup・パネル・リスナーを全部消す（host を remove するだけ）。
-import type { ReviewResult, ReviewView } from '../core/protocol'
+import { REVIEW_SENT_NOTE, type ReviewResult, type ReviewView } from '../core/protocol'
 import { el, isNarrow } from '../shared/dom'
 import { runInsideHost, swallowEscKeyup, inToolbar, onKeyInside } from '../shared/keys'
 import { createHost } from '../shared/shell'
@@ -12,7 +12,9 @@ import { expandCode, findTarget, isHidden, rectOfTarget, type Target } from './p
 import { chooseSide, placeAt } from './position'
 import { renderInline, renderMarkdown } from './render'
 
-export type ReviewCall = (req: { op: 'load' } | { op: 'resolve'; id: string; note: string } | { op: 'reopen'; id: string }) => Promise<ReviewResult | { ok: false; error: string }>
+export type ReviewCall = (
+	req: { op: 'load' } | { op: 'resolve'; id: string; note: string } | { op: 'reopen'; id: string } | { op: 'send'; id: string; note: string; page: string } | { op: 'unsend'; id: string; record: string },
+) => Promise<ReviewResult | { ok: false; error: string }>
 
 export type ReviewSession = {
 	close(): void
@@ -519,9 +521,16 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 			keep.addEventListener('click', () => void resolve(v, input.value.trim() ? `${KEEP_NOTE}: ${input.value.trim()}` : KEEP_NOTE))
 			// 変換の確定の Enter では送らない（Safari は確定の keydown で isComposing が false のまま keyCode 229 を出す）。
 			onKeyInside(input, 'keydown', (e) => { if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); go() } })
-			act.append(input, keep, btn)
+			// agent に直してもらうとき。Feedback の記録を作り（いつもの消化ループで読まれる）、指摘は送った印を付けて一覧から外す。
+			const send = el('button', 'btn send', '直してもらう')
+			send.type = 'button'
+			send.disabled = btn.disabled
+			send.title = 'Feedback に送って agent に直してもらう（ひとことも記録に入ります）'
+			send.addEventListener('click', () => void resolve(v, input.value, 'send'))
+			act.append(input, keep, send, btn)
 		} else {
-			const line = el('span', 'resolved-line', `✓ 解決済み ${fmtTime(v.resolvedAt)}${v.note ? ` — ${v.note}` : ''}`)
+			const sentNote = v.note?.startsWith(REVIEW_SENT_NOTE) ? v.note : null
+			const line = el('span', 'resolved-line', sentNote ? `→ ${sentNote}（agent が直すのを待っています）` : `✓ 解決済み ${fmtTime(v.resolvedAt)}${v.note ? ` — ${v.note}` : ''}`)
 			const back = el('button', 'btn', '戻す')
 			back.type = 'button'
 			back.disabled = busy
@@ -566,12 +575,13 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 
 	// ---- 解決済みの印 ----
 
-	async function resolve(v: ReviewView, note: string) {
+	/** 解決済みにする。how が send なら Feedback の記録を作って送った印を付ける（agent に直してもらう）。 */
+	async function resolve(v: ReviewView, note: string, how: 'resolve' | 'send' = 'resolve') {
 		if (busy || Date.now() < guardUntil) return
 		busy = true
 		setBusy()
 		const i = sorted.indexOf(v)
-		const r = await o.call({ op: 'resolve', id: v.id, note })
+		const r = await o.call(how === 'send' ? { op: 'send', id: v.id, note, page: location.href } : { op: 'resolve', id: v.id, note })
 		busy = false
 		if (closed) return
 		if (!r.ok) return failed(v, r.error)
@@ -588,18 +598,23 @@ export function openReview(o: { call: ReviewCall; onClose(): void }): ReviewSess
 		// 次が別のページなら移らずに閉じる（勝手にページを移らない）。トーストの「次のページ」で移れる。
 		const away = !!fv && !onPage(fv, { pathname: location.pathname, source, base }) && !!pageUrlOf(fv.file, base)
 		const go = away && fv ? { label: ahead ? '次のページ ›' : '‹ 前のページ', title: `${ahead ? '次' : '前'}は ${shortFile(fv.file)}`, run: () => open(fv.id) } : undefined
-		toast(left ? '解決済みにしました' : '解決済みにしました。このページの未解決はもうありません', () => void reopen(v), false, go)
+		const sent = r.ok ? r.sent : undefined
+		const done = sent ? `Feedback に送りました（${sent}）` : '解決済みにしました'
+		toast(left ? done : `${done}。このページの未解決はもうありません`, sent ? () => void unsend(v, sent) : () => void reopen(v), false, go)
 		guardUntil = Date.now() + GUARD_MS
 		setTimeout(() => { if (!closed) for (const b of pop.querySelectorAll<HTMLButtonElement>('.act .btn')) b.disabled = busy }, GUARD_MS + 20)
 		if (fv && !away) open(fv.id)
 		else closePop()
 	}
 
-	async function reopen(v: ReviewView) {
+	/** 送ったのを取り消す（指摘は未解決に戻し、作った記録は archived に移す）。 */
+	const unsend = (v: ReviewView, record: string) => reopen(v, record)
+
+	async function reopen(v: ReviewView, record?: string) {
 		if (busy) return
 		busy = true
 		setBusy()
-		const r = await o.call({ op: 'reopen', id: v.id })
+		const r = await o.call(record ? { op: 'unsend', id: v.id, record } : { op: 'reopen', id: v.id })
 		busy = false
 		if (closed) return
 		if (!r.ok) return failed(v, r.error)

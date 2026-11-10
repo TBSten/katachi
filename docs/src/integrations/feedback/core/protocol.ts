@@ -133,6 +133,15 @@ export type ReviewRequest =
 	| { requestId: string; op: 'resolve'; id: string; note: string }
 	/** 人が解決済みを戻す。 */
 	| { requestId: string; op: 'reopen'; id: string }
+	/** 人が「直してもらう」: 指摘から Feedback の記録を作り、指摘は送った印を付けて解決済みにする。page はいまのページの URL。 */
+	| { requestId: string; op: 'send'; id: string; note: string; page: string }
+	/** 送ったのを取り消す: 指摘を未解決に戻し、作った記録（`yymmdd-NNN`）は archived に移す。 */
+	| { requestId: string; op: 'unsend'; id: string; record: string }
+
+/** 「直してもらう」で解決済みにしたときの、ひとことの頭（`Feedback に送った: 261110-001`）。agent は Review の側では扱わない（Feedback の記録を archive すると消える）。 */
+export const REVIEW_SENT_NOTE = 'Feedback に送った'
+/** Feedback の記録の「選んだ内容」の節で、元の指摘の id を書く行の見出し。cli の archive がこれを見て指摘を消す。 */
+export const REVIEW_LINK_LABEL = 'Review の指摘'
 
 /** 画面に出す指摘 1 件。行は今のソースに合わせて引き直したもの（review/model.ts の relocate）。 */
 export type ReviewView = {
@@ -160,5 +169,6 @@ export type ReviewSetView = { name: string; title: string; base?: string; file: 
 
 export type ReviewResult =
 	/** root はリポジトリ直下の絶対パス（popup の「エディタで開く」に使う。dev サーバーの手元のパス）。 */
-	| { requestId: string; ok: true; sets: ReviewSetView[]; items: ReviewView[]; root?: string }
+	/** sent は「直してもらう」で作った Feedback の記録の id（`yymmdd-NNN`）。 */
+	| { requestId: string; ok: true; sets: ReviewSetView[]; items: ReviewView[]; root?: string; sent?: string }
 	| { requestId: string; ok: false; error: string }

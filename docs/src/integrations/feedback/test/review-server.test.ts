@@ -2,7 +2,9 @@ import { mkdtemp, mkdir, readFile, rm, stat, utimes, writeFile } from 'node:fs/p
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { checkReviewRequest, createReviewHandler, createReviewStore } from '../server/review'
+import { checkReviewRequest, createReviewHandler, createReviewStore, reviewToFeedback } from '../server/review'
+import { toMarkdown } from '../core/record'
+import type { SavePayload } from '../core/protocol'
 
 let root: string
 let dir: string
@@ -128,6 +130,36 @@ describe('Review の受け口', () => {
 		const id = (loaded as { items: { id: string }[] }).items[0]!.id
 		expect(await h({ requestId: 'r2', op: 'resolve', id, note: 'x' })).toMatchObject({ requestId: 'r2', ok: true, items: [{ id, status: 'resolved' }, {}, {}] })
 		expect(await h({ requestId: 'r3', op: 'reopen', id })).toMatchObject({ ok: true, items: [{ id, status: 'open' }, {}, {}] })
+	})
+	it('send は Feedback の記録を作り、指摘に送った印を付けて解決済みにする。unsend は戻して記録を archived に移す', async () => {
+		await writeFile(join(dir, 's1.md'), SET)
+		const sent: SavePayload[] = []
+		const unsent: string[] = []
+		const h = createReviewHandler(createReviewStore(dir, root), {
+			send: async (p) => { sent.push(p); return '261110-001.md' },
+			unsend: async (r) => { unsent.push(r) },
+		})
+		const id = ((await h({ requestId: 'r1', op: 'load' })) as { items: { id: string }[] }).items[0]!.id
+		const r = await h({ requestId: 'r2', op: 'send', id, note: '表現を直して', page: 'http://localhost:4321/katachi/ja/guides/x/' })
+		expect(r).toMatchObject({ ok: true, sent: '261110-001', items: [{ id, status: 'resolved', note: 'Feedback に送った: 261110-001 — 表現を直して' }, {}, {}] })
+		expect(sent[0]).toMatchObject({ kind: 'element', sections: { source: [['ソース', `${SRC}:7`]], content: [['Review の指摘', id]] } })
+		expect(sent[0]!.comment).toBe('直してほしい: import の指摘\n\n表現を直して\n\n本文')
+		expect(await h({ requestId: 'r3', op: 'unsend', id, record: '261110-001' })).toMatchObject({ ok: true, items: [{ id, status: 'open' }, {}, {}] })
+		expect(unsent).toEqual(['261110-001'])
+		expect(await readFile(join(dir, 's1.md'), 'utf8')).toBe(SET)
+	})
+	it('Feedback の置き場が無ければ send は失敗する（投げない）。record の形も確かめる', async () => {
+		await writeFile(join(dir, 's1.md'), SET)
+		const h = createReviewHandler(createReviewStore(dir, root))
+		expect(await h({ requestId: 'r', op: 'send', id: 's1/x', note: '', page: '' })).toMatchObject({ ok: false, error: expect.stringMatching(/Feedback の置き場/) })
+		expect(checkReviewRequest({ requestId: 'r', op: 'unsend', id: 'a/b', record: '../x' }).ok).toBe(false)
+	})
+	it('記録の Markdown に、元の指摘の id とソースの位置が入る（cli の archive が id を拾う）', () => {
+		const md = toMarkdown(reviewToFeedback({ id: 's1/abc', set: 's1', title: '見出し', priority: 3, file: SRC, line: { start: 5, end: 6 }, written: null, place: 'ok', status: 'open', body: '## 本文の見出し\n本文' }, '', 'http://x/'), { created: new Date('2026-11-10T00:00:00Z'), id: '261110-001' })
+		expect(md).toMatch(/^- Review の指摘: s1\/abc$/m)
+		expect(md).toContain(`source: "${SRC}:5-6"`)
+		expect(md).toContain('# 直してほしい: 見出し')
+		expect(md).not.toMatch(/^## 本文の見出し/m)
 	})
 	it('失敗は ok:false で返す（投げない）。requestId が無い依頼には答えない', async () => {
 		const h = createReviewHandler(createReviewStore(dir, root))
