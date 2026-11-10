@@ -38,7 +38,7 @@ public interface ArchitectureDeclarationContext {
     /**
      * Every `--arg` of this run, by name, exactly as the command line spelled it.
      *
-     * A processor normally reads [args]. This undecoded map is for names no fixed set of fields
+     * A processor normally reads [ArchitectureProcessContext.args]. This undecoded map is for names no fixed set of fields
      * could declare, such as the parameters a `.template { }` declares, which differ per role.
      *
      * Empty for a run started in code with `Architecture.process`.

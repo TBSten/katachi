@@ -20,7 +20,8 @@ import me.tbsten.katachi.konsist.declarations.internal.requiredWriter
  *     required(annotated("Composable"), public, `fun`, fileName)
  *     allow(annotated("Preview"), private, `fun`, "*Preview")
  * }
- * ``` *
+ * ```
+ *
  * ## Example 2: an extension function of the scope the file defines
  * ```kt
  * ktFileContent {
