@@ -170,6 +170,13 @@ class DecisionsTest(unittest.TestCase):
         self.assertIn("問題 4 件", out)
         self.assertIn("判断 5 件（直さない 4・後で 1）", out)
 
+    def test_dir_can_follow_the_subcommand(self):
+        run("--dir", str(self.dir), "record-review", str(self.review), "--decided", "2026-11-10 t KATACHI-1")
+        _, before = run("--dir", str(self.dir), "list")
+        _, after = run("list", "--dir", str(self.dir))
+        self.assertEqual(before, after)
+        self.assertIn("計 2 件（直さない 2）", after)
+
     def test_repository_decisions_are_well_formed(self):
         # リポジトリに入っている判断そのものの形（無いファイル・消えた quote は check に任せ、ここでは形だけ）
         bad = [(d.source, d.line, e) for d in D.load_decisions() for e in d.errors]
