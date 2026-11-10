@@ -17,7 +17,7 @@ import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で許可・禁止できるかの対応表です。書き方そのものの説明は [ktFileContent の概要](/katachi/ja/guides/kt-file-content/) をご覧ください。
 
-左の列は Kotlin の書き方と、右の行が許可する Kotlin のソースの例です。行を書かなかったときの扱いは、表ごとに次のどちらかです。
+各表の「Kotlin の書き方」の列が Kotlin のソースの例、「ktFileContent の行」の列がそれを許可する `ktFileContent { }` の行です。行を書かなかったときの扱いは、表ごとに次のどちらかです。
 
 - **違反** … 書いていない宣言は違反になります（Deny by default）。`allow(anythingElse)` を書くと、その場所の残りをまとめて許可できます。
 - **問わない** … 行の後ろに続けて書いたときだけ見ます。書かなければ何も確かめません。

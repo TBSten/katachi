@@ -279,7 +279,7 @@ group に設定できるのは Role と同じ4つです。`example()` だけが�
     `documented = false` にした group は、中の Role とネストした group もまとめてドキュメントに出なくなります。 中の Role が自分で何と書いていても同じです。
 
     ```kt
-    "build".group {
+    "Build".group {
       documented = false
       "VersionCatalog".role { }   // group と一緒にドキュメントから外れる
     }
@@ -289,7 +289,7 @@ group に設定できるのは Role と同じ4つです。`example()` だけが�
 
 </details>
 
-次の group 定義からは、右のマークダウンが生成されます。
+次の group 定義と、そこから生成されるマークダウンを並べて示します。
 
 <CodeComparison>
     <CodeComparison.Panel label="group 定義">
@@ -401,7 +401,7 @@ var MetadataScope.testPolicy by TestPolicy
 <details>
     <summary>セクションを入れ子にする</summary>
 
-    セクションは入れ子にできます。`TestPolicy.documentSection("ユニットテスト")` のように、親のセクションに対して宣言します。
+    セクションは入れ子にできます。`TestPolicy.documentSection("Unit test")` のように、親のセクションに対して宣言します。
     見出しのレベルは深さで決まります。 最上位が `##` で、1段深くなるごとに `#` が1つ増えます。
     親に本文を書いていなくても、子に本文があれば親の見出しは出ます。
 
@@ -411,7 +411,7 @@ var MetadataScope.testPolicy by TestPolicy
             val TestPolicy = documentSection("テスト方針")
             var MetadataScope.testPolicy by TestPolicy
 
-            val UnitTest = TestPolicy.documentSection("ユニットテスト")
+            val UnitTest = TestPolicy.documentSection("Unit test")
             var MetadataScope.unitTest by UnitTest
 
             val projectArchitecture = architecture {
@@ -446,7 +446,7 @@ var MetadataScope.testPolicy by TestPolicy
 
             ## テスト方針                                  ← 本文は無いが、子があるので出る
 
-            ### ユニットテスト                             ← 1段深いので ###
+            ### Unit test                                  ← 1段深いので ###
 
             Repository を偽物に差し替えて、戻り値を確かめる。
             ```

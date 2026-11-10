@@ -17,7 +17,7 @@ import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 This is a table of what you can write in Kotlin source, and which `ktFileContent { }` line allows or denies it. For how to write the rules themselves, see the [ktFileContent overview](/katachi/guides/kt-file-content/).
 
-The left column shows Kotlin code. The right column shows the lines that allow it. If you do not write a line, each table treats it in one of two ways.
+In each table, the "Kotlin code" column shows the Kotlin source, and the "ktFileContent lines" column shows the `ktFileContent { }` lines that allow it. If you do not write a line, each table treats it in one of two ways.
 
 - **Violation** … A declaration you do not write is a violation (deny by default). Write `allow(anythingElse)` to allow everything else in that place.
 - **Not checked** … It is checked only when you chain it after a line. If you do not write it, nothing is checked.
