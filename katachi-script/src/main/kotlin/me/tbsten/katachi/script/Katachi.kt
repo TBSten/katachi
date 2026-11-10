@@ -9,9 +9,8 @@ import me.tbsten.katachi.script.option.Lang
 /**
  * The `katachi` command, for a `.main.kts` that builds its subcommands instead of typing them.
  *
- * Every subcommand of `katachi` has a builder: `katachi.agent.init`, `katachi.scaffold`,
- * `katachi.agent.data.get(...)`, `katachi.agent.add.role`, `katachi.agent.preferences.set` and so on, named as the
- * command line spells them. Each starts from the defaults given here, and every option method
+ * Every subcommand of `katachi` has a builder: `katachi.doctor`, `katachi.scaffold`, `katachi.lint`,
+ * `katachi.agent.test` and so on, named as the command line spells them. Each starts from the defaults given here, and every option method
  * returns a new value, so one [Katachi] can hand out any number of commands. A command prints as
  * the line you would type, and [KatachiCommand.execute] runs it.
  *
@@ -25,16 +24,15 @@ import me.tbsten.katachi.script.option.Lang
  * val katachi = Katachi(defaultPackage = "com.example.app")
  *
  * executeCommands(
- *     katachi.agent.init.lang(ja),
+ *     katachi.doctor.lang(ja),
  *     katachi.scaffold.`test-framework`(kotest),
  * )
  * ```
  *
  * @property defaultPackage Puts `--package <defaultPackage>` on every [scaffold]. Null or empty leaves it unset.
- * @property katachiVersion Puts `--katachi <katachiVersion>` on every `agent.init` and [scaffold]. Null leaves the choice to the command.
- * @property moduleDir Puts `--module-dir <moduleDir>` on every `agent.init` and [scaffold].
- * @property lang Puts `--lang <lang>` on every command that takes it: `agent.init`, [doctor] and `agent.guide`.
- * @property workdir Puts `--workdir <workdir>` on every `agent.init`: the working directory `init` makes. Null lets `init` pick one.
+ * @property katachiVersion Puts `--katachi <katachiVersion>` on every [scaffold]. Null leaves the choice to the command.
+ * @property moduleDir Puts `--module-dir <moduleDir>` on every [scaffold].
+ * @property lang Puts `--lang <lang>` on every command that takes it: [doctor].
  * @property cwd Where the commands run. Null is the directory the script was started in.
  * @property runner How [KatachiCommand.execute] runs a command: [CommandRunner.InProcess] by default.
  * @property echo Whether [KatachiCommand.execute] prints `$ katachi ...` before it runs, as `make` does.
@@ -48,21 +46,20 @@ public class Katachi(
     public val katachiVersion: String? = null,
     public val moduleDir: String? = null,
     public val lang: Lang? = null,
-    public val workdir: String? = null,
     public val cwd: Path? = null,
     public val runner: CommandRunner = CommandRunner.InProcess,
     public val echo: Boolean = true,
 ) {
     /**
-     * Any subcommand, written out as it is typed: `command("data", "get", "check-list")` is
-     * `katachi data get check-list` on the command line.
+     * Any subcommand, written out as it is typed: `command("agent", "test", "--save", "x")` is
+     * `katachi agent test --save x` on the command line.
      *
      * For a subcommand or an option newer than this `katachi-script`; every subcommand it knows has a builder.
      *
-     * ## Example 1: read a value the check list recorded
+     * ## Example 1: run the check and keep its log under a name
      *
      * ```kt
-     * katachi.command("data", "get", "check-list", "meta.moduleDir").execute()
+     * katachi.command("agent", "test", "--save", "before-refactor").execute()
      * ```
      *
      * @param arguments Everything after `katachi`.

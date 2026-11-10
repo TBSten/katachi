@@ -3,7 +3,13 @@ package me.tbsten.katachi.test.script
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
+import me.tbsten.katachi.script.internal.ChoiceType
+import me.tbsten.katachi.script.internal.ChoiceValue
+import me.tbsten.katachi.script.internal.CommandSpec
 import me.tbsten.katachi.script.internal.KatachiScriptExitException
+import me.tbsten.katachi.script.internal.OptionKind
+import me.tbsten.katachi.script.internal.OptionSpec
+import me.tbsten.katachi.script.internal.PositionalSpec
 import me.tbsten.katachi.script.internal.commandSpec
 import me.tbsten.katachi.script.internal.parseArgs
 
@@ -23,33 +29,48 @@ class CommandSpecsSpec : FreeSpec({
     }
 
     "知らないオプションはサブコマンドの名前つきで止まる" {
-        val exit = shouldThrow<KatachiScriptExitException> { parseArgs(commandSpec("init"), listOf("--nothing")) }
-        exit.text.ja shouldBe "init: 知らないオプションです: --nothing"
+        val exit = shouldThrow<KatachiScriptExitException> { parseArgs(commandSpec("scaffold"), listOf("--nothing")) }
+        exit.text.ja shouldBe "scaffold: 知らないオプションです: --nothing"
     }
 
     "値の要るオプションに値が無ければ止まる" {
-        val exit = shouldThrow<KatachiScriptExitException> { parseArgs(commandSpec("init"), listOf("--workdir")) }
-        exit.text.ja shouldBe "--workdir に値がありません。"
+        val exit = shouldThrow<KatachiScriptExitException> { parseArgs(commandSpec("scaffold"), listOf("--module-dir")) }
+        exit.text.ja shouldBe "--module-dir に値がありません。"
     }
 
+    // No command has subcommands or an optional value since KATACHI-329; the parser still reads them.
     "入れ子のサブコマンドを選び、省略時は既定のものにする" {
-        parseArgs(commandSpec("data"), listOf("get", "check-list", "meta")).let {
+        val target = OptionSpec("--target", OptionKind.Text)
+        val spec = CommandSpec(
+            "answers",
+            subcommands = listOf(
+                CommandSpec("show", listOf(target)),
+                CommandSpec("get", positionals = listOf(PositionalSpec("file"), PositionalSpec("key", required = false))),
+            ),
+            defaultSubcommand = "show",
+        )
+        parseArgs(spec, listOf("get", "check-list", "meta")).let {
             it.subcommand shouldBe "get"
             it.positionals shouldBe listOf("check-list", "meta")
         }
-        parseArgs(commandSpec("answers"), listOf("--target", "report")).let {
+        parseArgs(spec, listOf("--target", "report")).let {
             it.subcommand shouldBe "show"
             it.value("--target") shouldBe "report"
         }
     }
 
     "値を省ける選択肢は、次が選択肢でなければフラグとして読む" {
-        parseArgs(commandSpec("docs"), listOf("--api", "--refresh")).let {
+        val api = ChoiceType("ApiModule", "", listOf(ChoiceValue("katachi", ""), ChoiceValue("katachi-konsist", "")))
+        val spec = CommandSpec(
+            "docs",
+            listOf(OptionSpec("--api", OptionKind.Choice(api), valueOptional = true), OptionSpec("--refresh", OptionKind.Flag)),
+        )
+        parseArgs(spec, listOf("--api", "--refresh")).let {
             it.has("--api") shouldBe true
             it.value("--api") shouldBe null
             it.has("--refresh") shouldBe true
         }
-        parseArgs(commandSpec("docs"), listOf("--api", "katachi")).value("--api") shouldBe "katachi"
+        parseArgs(spec, listOf("--api", "katachi")).value("--api") shouldBe "katachi"
     }
 
     "-- の後ろはそのまま渡す" {
@@ -59,6 +80,6 @@ class CommandSpecsSpec : FreeSpec({
     }
 
     "rawPositionals のサブコマンドは - で始まる値も位置引数にする" {
-        parseArgs(commandSpec("warn"), listOf("4", "--clear")).positionals shouldBe listOf("4", "--clear")
+        parseArgs(commandSpec("compare-violations"), listOf("before.log", "--after")).positionals shouldBe listOf("before.log", "--after")
     }
 })

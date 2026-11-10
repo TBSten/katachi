@@ -1,0 +1,1786 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>katachi Install Checklist</title>
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiByb2xlPSJpbWciIGFyaWEtbGFiZWw9ImthdGFjaGkiPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTAyIiBmaWxsPSIjYTJjY2Y3Ii8+PGcgZmlsbD0iI2ZmZiI+PHBhdGggZD0iTTk2IDE2MGg2MHYyOGgtMzJ2MTM2aDMydjI4SDk2eiIvPjxyZWN0IHg9IjIxOCIgeT0iMjE4IiB3aWR0aD0iNzYiIGhlaWdodD0iNzYiLz48cGF0aCBkPSJNNDE2IDM1MmgtNjB2LTI4aDMyVjE4OGgtMzJ2LTI4aDYweiIvPjwvZz48L3N2Zz4=">
+<style>
+  :root {
+    color-scheme: light dark;
+
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN",
+      "Hiragino Sans", "Yu Gothic UI", "Meiryo", Roboto, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #f4f5f7;
+    --border: #e4e5e9;
+    --border-strong: #c2c5cc;
+    --text: #1a1c1f;
+    --text-muted: #5f6570;
+    --accent: #c2410c;
+    --accent-soft: rgba(194, 65, 12, 0.08);
+    --warn: #b45309;
+    --warn-soft: #fbf3e4;
+    --ok: #15803d;
+
+    --num-size: 28px;
+    --summary-pad-y: 12px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17181b;
+      --surface: #1c1e22;
+      --surface-2: #212429;
+      --border: #2f3238;
+      --border-strong: #474b54;
+      --text: #e6e7ea;
+      --text-muted: #9aa0ab;
+      --accent: #fb923c;
+      --accent-soft: rgba(251, 146, 60, 0.14);
+      --warn: #facc15;
+      --warn-soft: #2b2411;
+      --ok: #4ade80;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.75;
+    overflow-wrap: break-word;
+  }
+
+  .wrap {
+    width: min(100%, 68rem);
+    margin: 0 auto;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  @media (max-width: 480px) {
+    .wrap { padding-left: 16px; padding-right: 16px; }
+  }
+
+  h1, h2 { line-height: 1.4; font-weight: 700; }
+  h1 { font-size: 28px; letter-spacing: -0.01em; margin: 0; }
+  h2 { font-size: 20px; margin: 0; }
+  p { margin: 12px 0; }
+  a { color: var(--accent); text-underline-offset: 2px; }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.08em 0.36em;
+    overflow-wrap: anywhere;
+  }
+
+  .skip-link { position: absolute; left: -999px; top: 0; }
+  .skip-link:focus { left: 8px; top: 8px; z-index: 20; }
+
+  /* Header */
+  .page-header { padding: 40px 0 24px; border-bottom: 1px solid var(--border); }
+
+  .notice {
+    position: relative;
+    margin: 16px 0 0;
+    padding: 12px 16px 12px 44px;
+    background: var(--surface-2);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    font-size: 14px;
+  }
+
+  .notice::before {
+    content: "!";
+    position: absolute;
+    left: 15px;
+    top: 15px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--bg);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+  }
+
+
+  /* Link to the paired page */
+  .cross-link {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "label arrow" "hint arrow";
+    align-items: center;
+    column-gap: 16px;
+    margin: 16px 0 0;
+    padding: 10px 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .cross-link:hover {
+    border-top-color: var(--border-strong);
+    border-right-color: var(--border-strong);
+    border-bottom-color: var(--border-strong);
+  }
+
+  .cross-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  /* display: grid overrides the UA's [hidden] { display: none }, so override it back */
+  .cross-link[hidden] { display: none; }
+  .cross-link-label { grid-area: label; font-size: 14px; font-weight: 700; }
+  .cross-link-hint { grid-area: hint; color: var(--text-muted); font-size: 13px; }
+
+  .cross-link::after {
+    content: "\2192";
+    grid-area: arrow;
+    color: var(--accent);
+    transition: transform 0.15s ease;
+  }
+
+  .cross-link:hover::after { transform: translateX(3px); }
+
+  /* Heading/value pairs (2 columns) */
+  .kv {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    column-gap: 24px;
+    row-gap: 10px;
+    margin: 16px 0 0;
+  }
+
+  .kv dt {
+    color: var(--text-muted);
+    font-size: 13px;
+    white-space: nowrap;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .kv dd {
+    margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .kv dt:last-of-type, .kv dd:last-of-type { padding-bottom: 0; border-bottom: none; }
+
+  @media (max-width: 560px) {
+    .kv { grid-template-columns: 1fr; row-gap: 0; }
+    .kv dt { padding: 10px 0 0; border-bottom: none; }
+  }
+
+  .empty { color: var(--text-muted); margin: 16px 0 0; }
+
+  /* Unfilled marker */
+  .todo {
+    color: var(--text-muted);
+    background: var(--surface-2);
+    border-bottom: 1px dashed var(--border-strong);
+    border-radius: 2px;
+    padding: 0 2px 1px;
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    overflow-wrap: anywhere;
+  }
+
+
+  /* Progress (sticky at top) */
+  .progress {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .progress .wrap { padding-top: 10px; padding-bottom: 12px; }
+
+  .progress-row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+  .progress-actions { display: flex; align-items: baseline; gap: 16px; flex: none; }
+  .progress-actions a { font-size: 13px; }
+
+  #progress-text { font-family: var(--font-mono); font-size: 13px; color: var(--text-muted); }
+
+  .link-button {
+    flex: none;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--accent);
+    font-family: inherit;
+    font-size: 13px;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+
+  .link-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .progress-track {
+    height: 6px;
+    margin-top: 8px;
+    border-radius: 999px;
+    background: var(--border);
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    background: var(--accent);
+    transition: width 0.15s ease;
+  }
+
+  main { padding-top: 8px; }
+
+  /* Steps (vertical timeline + stepper) */
+  .steps { margin-top: 40px; }
+
+  /* No gap between steps; the open-state spacing comes from .step-body */
+  .step { position: relative; padding-bottom: 0; }
+
+  .step::before {
+    content: "";
+    position: absolute;
+    left: 13px;
+    /* From the bottom of this circle to the top of the next step's circle */
+    top: calc(var(--summary-pad-y) + var(--num-size));
+    bottom: calc(-1 * var(--summary-pad-y));
+    width: 2px;
+    background: var(--border);
+  }
+
+  .steps > .step:last-child::before { display: none; }
+  .step.is-done::before { background: var(--ok); }
+
+  .step > summary {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: var(--summary-pad-y) 10px var(--summary-pad-y) 0;
+    border-radius: 6px;
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .step > summary::-webkit-details-marker { display: none; }
+  .step > summary:hover { background: var(--surface-2); }
+  .step > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .step > summary::after {
+    content: "\25BE";
+    flex: none;
+    margin-top: 5px;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  .step:not([open]) > summary::after { content: "\25B8"; }
+
+  .step-num {
+    position: relative;
+    z-index: 1;
+    flex: none;
+    width: var(--num-size);
+    height: var(--num-size);
+    border-radius: 50%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 26px;
+    text-align: center;
+  }
+
+  .step-title { flex: 1; min-width: 0; font-size: 20px; font-weight: 700; line-height: 1.4; }
+
+  .step-state {
+    flex: none;
+    margin-top: 3px;
+    padding: 1px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.6;
+    white-space: nowrap;
+  }
+
+  .step-state:empty { display: none; }
+
+  .step.is-done .step-num { background: var(--ok); border-color: var(--ok); color: var(--bg); }
+  .step.is-done .step-state { background: none; border-color: var(--ok); color: var(--ok); }
+
+  /* Done, but with a warning */
+  .step.is-done.has-warning::before { background: var(--warn); }
+  .step.is-done.has-warning .step-num { background: var(--warn); border-color: var(--warn); color: var(--bg); }
+  .step.is-done.has-warning .step-state { background: none; border-color: var(--warn); color: var(--warn); }
+
+  .step-warning {
+    margin: 0 0 12px;
+    padding: 10px 14px;
+    background: var(--warn-soft);
+    border-left: 3px solid var(--warn);
+    border-radius: 0 6px 6px 0;
+    font-size: 14px;
+  }
+
+  .progress-warn { color: var(--warn); }
+
+
+  /* Optional steps: styled like the required ones, they would look unfinished just for not being done */
+  .step.is-optional .step-num { border-style: dashed; color: var(--text-muted); }
+  .step.is-optional .step-title { color: var(--text-muted); }
+  .step.is-optional::before { border-left: 2px dashed var(--border); background: none; width: 0; }
+
+  .step-body { padding: 0 0 40px 40px; }
+
+  /* Sections other than steps */
+  .block { margin-top: 40px; }
+  .block > h2 { position: relative; padding-left: 12px; }
+
+  .block > h2::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.22em;
+    width: 3px;
+    height: 1em;
+    border-radius: 1px;
+    background: var(--accent);
+  }
+
+  /* Checklist items */
+  .checklist { list-style: none; margin: 8px 0 0; padding: 0; }
+  .checklist li { border-bottom: 1px solid var(--border); }
+  .checklist li:last-child { border-bottom: none; }
+
+  .checklist label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0 -8px;
+    padding: 10px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .checklist label:hover { background: var(--surface-2); }
+
+  .checklist input[type="checkbox"] {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    margin: 0.32em 0 0;
+    accent-color: var(--accent);
+  }
+
+  .checklist .item { flex: 1; min-width: 0; }
+  .checklist input:checked + .item { color: var(--text-muted); }
+
+  .remark { margin: 12px 0 0; font-size: 13px; color: var(--text-muted); }
+
+  /* Table */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 16px 0 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  table { border-collapse: collapse; width: 100%; min-width: 34rem; font-size: 14px; }
+
+  th, td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    overflow-wrap: anywhere;
+  }
+
+  thead th {
+    background: var(--surface-2);
+    border-bottom: 2px solid var(--border-strong);
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  tbody tr:hover { background: var(--accent-soft); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody td:first-child { font-family: var(--font-mono); font-size: 13px; }
+  table.text-first tbody td:first-child { font-family: inherit; font-size: 14px; }
+
+  footer {
+    margin-top: 48px;
+    padding-top: 20px;
+    padding-bottom: 40px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  footer p { margin: 4px 0; }
+
+  @media print {
+    /* Paper stays white even when the OS is dark; redeclare tokens for light */
+    :root {
+      color-scheme: light;
+
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --surface-2: #f4f5f7;
+      --border: #e4e5e9;
+      --border-strong: #c2c5cc;
+      --text: #1a1c1f;
+      --text-muted: #5f6570;
+      --accent: #c2410c;
+      --accent-soft: rgba(194, 65, 12, 0.08);
+      --warn: #b45309;
+      --warn-soft: #fbf3e4;
+      --ok: #15803d;
+    }
+
+    body { background: #ffffff; color: #000000; }
+    .progress { position: static; border-bottom: 1px solid #000; }
+    .progress-track, .notice, .step-state { background: none; }
+    .link-button, .step > summary::after, .cross-link, .skip-link { display: none; }
+    .todo { background: none; color: #000; border-bottom: 1px dashed #000; }
+
+    /* Show as an outline rather than a fill, so it still reads under default print settings that omit background graphics */
+    .step .step-num,
+    .step.is-done .step-num,
+    .step.is-done.has-warning .step-num {
+      background: none;
+      border: 1px solid var(--border-strong);
+      color: var(--text);
+    }
+
+    .step.is-done .step-num { border-color: var(--ok); color: var(--ok); }
+    .step.is-done.has-warning .step-num { border-color: var(--warn); color: var(--warn); }
+
+    .checklist label:hover, .step > summary:hover, tbody tr:hover { background: none; }
+    a { color: #000; text-decoration: underline; }
+
+    /* Bring columns hidden behind horizontal scroll onto the printed page */
+    .table-wrap { overflow: visible; }
+    table { table-layout: fixed; width: 100%; min-width: 0; }
+
+    .step, .block { break-inside: avoid; }
+  }
+
+  /* Shown when the data can't be read (avoid a blank page) */
+  .error-box {
+    margin: 16px 0 0;
+    padding: 12px 16px;
+    background: var(--warn-soft);
+    border-left: 3px solid var(--warn);
+    border-radius: 0 6px 6px 0;
+    color: var(--warn);
+    font-size: 14px;
+  }
+
+  .error-box p { margin: 4px 0 0; }
+  .error-box p:first-child { margin: 0; font-weight: 700; }
+
+  .noscript-note { padding-top: 16px; }
+
+  /* Count shown beside a heading */
+  .count-badge {
+    margin-left: 10px;
+    padding: 1px 8px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 400;
+    vertical-align: 2px;
+    white-space: nowrap;
+  }
+
+  /* Questions for you */
+  .qa {
+    margin-top: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+  }
+
+  .qa > summary {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .qa > summary::-webkit-details-marker { display: none; }
+  .qa > summary:hover { background: var(--surface-2); }
+  .qa > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .qa[open] > summary { border-bottom: 1px solid var(--border); }
+
+  .qa > summary::after {
+    content: "\25B8";
+    flex: none;
+    margin-top: 4px;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  .qa[open] > summary::after { content: "\25BE"; }
+
+  .qa-num {
+    flex: none;
+    margin-top: 2px;
+    padding: 0 8px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 22px;
+  }
+
+  .qa-title { flex: 1; min-width: 0; font-weight: 700; }
+  .qa-body { padding: 12px 14px 14px; }
+  .qa-head { margin: 0 0 4px; color: var(--text-muted); font-size: 13px; }
+  .qa-body > p { margin: 0; }
+  .qa-body > p + .qa-head, .qa-body > ol + .qa-head { margin-top: 14px; }
+  .qa-body ol { margin: 0; padding-left: 22px; list-style-type: upper-alpha; }
+  .qa-body ol li { margin: 4px 0; }
+
+  .qa-pick {
+    margin-top: 14px;
+    padding: 10px 12px;
+    background: var(--accent-soft);
+    border-radius: 6px;
+  }
+
+  .qa-pick .qa-head { color: var(--accent); }
+  .qa-pick p:last-child { margin: 0; }
+
+  .lede { color: var(--text-muted); font-size: 14px; margin: 6px 0 0; }
+
+  /* Writing preferences (rows that differ from the recommendation) */
+  tr.pref-differs td { background: var(--warn-soft); }
+  .pref-mark { color: var(--warn); font-size: 12px; white-space: nowrap; }
+
+  /* Answer fields */
+  .qa-answer { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border); }
+  .qa-answer .qa-head { display: flex; align-items: baseline; gap: 8px; }
+  .qa-answer-list { margin: 0; padding: 0; list-style: none; }
+  .qa-answer-list li { margin: 2px 0; }
+
+  .qa-answer-list label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .qa-answer-list label:hover { background: var(--surface-2); }
+  .qa-answer-list input[type="radio"] { flex: none; margin: 0.35em 0 0; accent-color: var(--accent); }
+  .qa-answer-list .option-letter { flex: none; font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+  .qa-answer textarea {
+    display: block;
+    width: 100%;
+    min-height: 3.5em;
+    margin: 8px 0 0;
+    padding: 8px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: vertical;
+  }
+
+  .qa-answer textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .answered-badge:empty { display: none; }
+  .answered-badge { border-color: var(--ok); color: var(--ok); }
+  .qa.is-answered > summary .qa-num { background: var(--ok); color: var(--bg); }
+  .qa-imported { color: var(--ok); font-size: 12px; font-family: var(--font-mono); }
+
+  .action-button {
+    padding: 4px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.6;
+    cursor: pointer;
+  }
+
+  .action-button:hover { background: var(--surface-2); border-color: var(--accent); }
+  .action-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .action-button.is-primary { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+  .qa-answer .action-button { margin-top: 8px; }
+
+  .answer-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 0; }
+  .answer-actions:empty { display: none; }
+  .answer-status { flex-basis: 100%; margin: 0; font-size: 13px; color: var(--text-muted); }
+  .answer-status.is-error { color: var(--warn); }
+  .answer-status:empty { display: none; }
+
+  .answer-manual {
+    display: block;
+    width: 100%;
+    min-height: 6em;
+    margin: 8px 0 0;
+    padding: 8px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface-2);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  /* display: block beats the UA's [hidden] { display: none }, so override it */
+  .answer-manual[hidden] { display: none; }
+
+  @media print {
+    .answer-actions, .qa-answer .action-button { display: none; }
+    .qa-answer textarea { border: 1px solid #000; }
+  }
+</style>
+</head>
+<body>
+
+<noscript>
+  <div class="wrap noscript-note">
+    <div class="error-box">
+      <p>This page needs JavaScript to render.</p>
+      <p>This page reads the JSON embedded in it to render. The data itself lives in this file's
+      script type="application/json" id="checklist" block.</p>
+    </div>
+  </div>
+</noscript>
+
+<script type="application/json" id="checklist">
+{
+  "meta": {
+    "workdir": null,
+    "moduleDir": null,
+    "version": null,
+    "projectRoot": null,
+    "ranAt": null,
+    "kotlin": null,
+    "jvmToolchain": null,
+    "git": null
+  },
+  "reportHref": "./project-code-base-report.html",
+  "steps": [
+    {
+      "id": "0",
+      "title": "Preparation",
+      "warning": null,
+      "items": [
+        {
+          "id": "0-1",
+          "label": "Ran one harmless command of each kind for real, to get the approvals the rest of the work needs up front",
+          "done": false
+        },
+        {
+          "id": "0-2",
+          "label": "Set up the working directory from the katachi skill and filled in meta (Gradle root, Git, versions)",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "1",
+      "title": "Analyze the current codebase's structure and infer each component's constraints",
+      "warning": null,
+      "items": [
+        {
+          "id": "1-1",
+          "label": "Read the codebase and the project's own documentation",
+          "done": false
+        },
+        {
+          "id": "1-2",
+          "label": "Filled in the JSON in `project-code-base-report.html`",
+          "done": false
+        },
+        {
+          "id": "1-3",
+          "label": "Asked about writing preferences and recorded them in preferences",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "title": "Create the test module (default architecture-test/) and wire it into the build",
+      "warning": null,
+      "items": [
+        {
+          "id": "2-1",
+          "label": "Ran `katachi scaffold --package <package name>`",
+          "done": false
+        },
+        {
+          "id": "2-2",
+          "label": "Confirmed that with an empty definition, the test module's test fails only with Unexpected",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "title": "Write the `architecture { }` definition",
+      "warning": null,
+      "items": [
+        {
+          "id": "3-1",
+          "label": "Fetched and read the topics in step 3-1 of the guide (layout, role, basic-api, and kt-file-content if used) from the documentation pages",
+          "done": false
+        },
+        {
+          "id": "3-2",
+          "label": "Wrote the architecture { } definition and saved the test module's test output as the pre-refactoring baseline",
+          "done": false
+        },
+        {
+          "id": "3-3",
+          "label": "Refactored the definition (splitting files and packages, descriptions, shared parts) and confirmed with `compare-violations` that the check result did not change",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "title": "Verify",
+      "warning": null,
+      "items": [
+        {
+          "id": "4-1",
+          "label": "Ran the test module's test",
+          "done": false
+        },
+        {
+          "id": "4-2",
+          "label": "Resolved errors not caused by katachi (Gradle, Java, etc.)",
+          "done": false
+        },
+        {
+          "id": "4-3",
+          "label": "Generated docs with the test module's katachiDocs and checked the output",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "5",
+      "title": "Review the checklist",
+      "warning": null,
+      "items": [
+        {
+          "id": "5-1",
+          "label": "Reviewed this checklist in full",
+          "done": false
+        },
+        {
+          "id": "5-2",
+          "label": "Confirmed nothing was left unfilled",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "6",
+      "title": "(Optional) Confirm it works, and extend it to CI, docs and templates",
+      "warning": null,
+      "optional": true,
+      "items": [
+        {
+          "id": "6-1",
+          "label": "Ran a real implementation task and judged whether architecture { } needed changes",
+          "done": false
+        },
+        {
+          "id": "6-2",
+          "label": "Added the test module's test to CI",
+          "done": false
+        },
+        {
+          "id": "6-3",
+          "label": "Set up documentation generation (title / description, whether to commit it)",
+          "done": false
+        },
+        {
+          "id": "6-4",
+          "label": "Wrote a template and confirmed the test module's test passes right after generating one file",
+          "done": false
+        }
+      ]
+    }
+  ],
+  "preferences": {},
+  "violations": [],
+  "questions": [],
+  "answers": {},
+  "changedFiles": []
+}
+</script>
+
+<!-- Example: the JSON above, fully filled in. Enter values in this shape.
+{
+  "meta": {
+    "workdir": ".local/install-katachi",
+    "moduleDir": "architecture-test",
+    "version": "0.5.0",
+    "projectRoot": "/Users/me/dev/example-app",
+    "ranAt": "2026-09-24 10:00 JST",
+    "kotlin": "2.4.10",
+    "jvmToolchain": "17 (from ../app/build.gradle.kts)",
+    "git": "yes"
+  },
+  "reportHref": "./project-code-base-report.html",
+  "steps": [
+    {
+      "id": "0",
+      "title": "Preparation",
+      "warning": null,
+      "items": [
+        {
+          "id": "0-1",
+          "label": "Ran one harmless command of each kind for real, to get the approvals the rest of the work needs up front",
+          "done": true
+        },
+        {
+          "id": "0-2",
+          "label": "Set up the working directory from the katachi skill and filled in meta (Gradle root, Git, versions)",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "1",
+      "title": "Analyze the current codebase's structure and infer each component's constraints",
+      "warning": null,
+      "items": [
+        {
+          "id": "1-1",
+          "label": "Read the codebase and the project's own documentation",
+          "done": true
+        },
+        {
+          "id": "1-2",
+          "label": "Filled in the JSON in `project-code-base-report.html`",
+          "done": true
+        },
+        {
+          "id": "1-3",
+          "label": "Asked about writing preferences and recorded them in preferences",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "title": "Create the test module (default architecture-test/) and wire it into the build",
+      "warning": null,
+      "items": [
+        {
+          "id": "2-1",
+          "label": "Ran `katachi scaffold \u002d\u002dpackage <package name>`",
+          "done": true
+        },
+        {
+          "id": "2-2",
+          "label": "Confirmed that with an empty definition, the test module's test fails only with Unexpected",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "title": "Write the `architecture { }` definition",
+      "warning": null,
+      "items": [
+        {
+          "id": "3-1",
+          "label": "Fetched and read the topics in step 3-1 of the guide (layout, role, basic-api, and kt-file-content if used) from the documentation pages",
+          "done": true
+        },
+        {
+          "id": "3-2",
+          "label": "Wrote the architecture { } definition and saved the test module's test output as the pre-refactoring baseline",
+          "done": true
+        },
+        {
+          "id": "3-3",
+          "label": "Refactored the definition (splitting files and packages, descriptions, shared parts) and confirmed with `compare-violations` that the check result did not change",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "title": "Verify",
+      "warning": "Left 1 architecture violation unfixed",
+      "items": [
+        {
+          "id": "4-1",
+          "label": "Ran the test module's test",
+          "done": true
+        },
+        {
+          "id": "4-2",
+          "label": "Resolved errors not caused by katachi (Gradle, Java, etc.)",
+          "done": true
+        },
+        {
+          "id": "4-3",
+          "label": "Generated docs with the test module's katachiDocs and checked the output",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "5",
+      "title": "Review the checklist",
+      "warning": null,
+      "items": [
+        {
+          "id": "5-1",
+          "label": "Reviewed this checklist in full",
+          "done": false
+        },
+        {
+          "id": "5-2",
+          "label": "Confirmed nothing was left unfilled",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "6",
+      "title": "(Optional) Confirm it works, and extend it to CI, docs and templates",
+      "warning": null,
+      "optional": true,
+      "items": [
+        {
+          "id": "6-1",
+          "label": "Ran a real implementation task and judged whether architecture { } needed changes",
+          "done": false
+        },
+        {
+          "id": "6-2",
+          "label": "Added the test module's test to CI",
+          "done": false
+        },
+        {
+          "id": "6-3",
+          "label": "Set up documentation generation (title / description, whether to commit it)",
+          "done": false
+        },
+        {
+          "id": "6-4",
+          "label": "Wrote a template and confirmed the test module's test passes right after generating one file",
+          "done": false
+        }
+      ]
+    }
+  ],
+  "preferences": {
+    "nestedGroups": "yes",
+    "testFramework": "kotest",
+    "dependencyStyle": "catalog",
+    "constraintNames": "numbered",
+    "oneRolePerFile": "yes"
+  },
+  "violations": [
+    {
+      "violation": "The ui layer references the data layer's DataSource directly",
+      "location": "app/src/main/kotlin/com/example/app/ui/home/HomeViewModel.kt:42",
+      "whyNotFixed": "Because the callers are too widespread to fix in a single change",
+      "suggestion": "Add a GetHomeFeedUseCase and have the ViewModel call only that"
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "question": "Should the legacy package be included in katachi's scope?",
+      "observed": "Only the files under app/src/main/kotlin/com/example/app/ui/legacy/ still use the old Fragment + Presenter pattern",
+      "options": [
+        "Include it and fix it",
+        "Ignore it for now"
+      ],
+      "recommendation": "B. Only one screen is affected, and there's no migration plan decided yet"
+    }
+  ],
+  "answers": {},
+  "changedFiles": [
+    {
+      "path": "architecture-test/build.gradle.kts",
+      "change": "Added",
+      "summary": "katachi's test module"
+    },
+    {
+      "path": "settings.gradle.kts",
+      "change": "Changed",
+      "summary": "Included architecture-test"
+    }
+  ]
+}
+-->
+
+<a class="skip-link" href="#main-content">Skip to content</a>
+
+<header class="page-header">
+  <div class="wrap">
+    <h1>katachi Install Checklist</h1>
+    <p class="notice">
+      An AI agent filled this in. <strong>You need to review it.</strong>
+    </p>
+    <div data-render="error"></div>
+
+    <a class="cross-link" id="cross-link" href="./project-code-base-report.html" hidden>
+      <span class="cross-link-label">Codebase report</span>
+      <span class="cross-link-hint">Analysis of this project</span>
+    </a>
+
+    <div data-render="meta"></div>
+  </div>
+</header>
+
+<div class="progress">
+  <div class="wrap">
+    <div class="progress-row">
+      <span id="progress-text"></span>
+      <span class="progress-actions">
+        <a id="report-link" href="./project-code-base-report.html">View report</a>
+        <button type="button" class="link-button" id="toggle-all">Expand all</button>
+      </span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+  </div>
+</div>
+
+<main class="wrap" id="main-content">
+
+  <div class="steps" data-render="steps"></div>
+
+  <section class="block" id="preferences">
+    <h2>Writing preferences</h2>
+    <p class="lede">How the definition is written, as asked in step 1-3. Values that differ from the recommendation are highlighted. The test module location is in the meta information.</p>
+    <div data-render="preferences"></div>
+  </section>
+
+  <section class="block" id="violations">
+    <h2>Architecture violations left unfixed<span class="count-badge" data-render="violationCount"></span></h2>
+    <div data-render="violations"></div>
+  </section>
+
+  <section class="block" id="questions">
+    <h2>Questions for you<span class="count-badge" data-render="questionCount"></span><span class="count-badge answered-badge" data-render="answeredCount"></span></h2>
+    <p class="lede">For each question, pick an option or write freely. If you do both, the free text becomes a note. When done, save the JSON with "Export answers" and hand it to the AI agent.</p>
+    <div class="answer-actions" data-render="answerActions"></div>
+    <div data-render="questions"></div>
+  </section>
+
+  <section class="block" id="changed-files">
+    <h2>Files created or changed<span class="count-badge" data-render="changedCount"></span></h2>
+    <div data-render="changedFiles"></div>
+  </section>
+
+</main>
+
+<footer class="wrap">
+  <p><a href="https://tbsten.github.io/katachi/">katachi documentation</a></p>
+  <p>
+    This checklist follows the setup steps of the katachi skill
+    (<a href="https://github.com/TBSten/katachi/tree/main/skills/katachi">skills/katachi</a>)
+    and mirrors its steps.
+  </p>
+</footer>
+
+<script>
+(function () {
+  // Both step headings and items are built from JSON. The HTML holds no copy
+  var stepNodes = [];
+  var boxes = [];
+  // Whether the JSON could be read. When it couldn't, don't assert counts are 0
+  var dataOk = true;
+
+  // ---- DOM helpers (always set values via textContent) ----
+  function el(tag, cls) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    return node;
+  }
+  function blank(value) {
+    return value == null || value === '' || (Array.isArray(value) && value.length === 0);
+  }
+  function unfilled(key) {
+    var span = el('span', 'todo');
+    span.textContent = 'Unfilled: ' + key;
+    return span;
+  }
+  function value(raw, key) {
+    if (blank(raw)) return unfilled(key);
+    return document.createTextNode(String(raw));
+  }
+  // Among whitespace-separated ASCII tokens, wrap ones that look like paths in <code>
+  function richText(raw, key) {
+    if (blank(raw)) return unfilled(key);
+    var box = document.createDocumentFragment();
+    String(raw).split(/(\s+)/).forEach(function (token) {
+      if (token.indexOf('/') >= 0 && /^[!-~]+$/.test(token)) {
+        var code = el('code');
+        code.textContent = token;
+        box.appendChild(code);
+      } else {
+        box.appendChild(document.createTextNode(token));
+      }
+    });
+    return box;
+  }
+  // Where an empty value is valid, show "None"
+  function none(label) {
+    var p = el('p', 'empty');
+    p.textContent = dataOk ? (label || 'None') : 'Unknown';
+    return p;
+  }
+  function defs(cls, pairs) {
+    var dl = el('dl', cls);
+    pairs.forEach(function (pair) {
+      if (!pair[1]) return;
+      var dt = el('dt');
+      dt.textContent = pair[0];
+      var dd = el('dd');
+      dd.appendChild(pair[1]);
+      dl.appendChild(dt);
+      dl.appendChild(dd);
+    });
+    return dl;
+  }
+  function tableOf(headers, rows, cls) {
+    var wrap = el('div', 'table-wrap');
+    var table = el('table', cls);
+    var head = el('thead');
+    var headRow = el('tr');
+    headers.forEach(function (label) {
+      var th = el('th');
+      th.textContent = label;
+      headRow.appendChild(th);
+    });
+    head.appendChild(headRow);
+    var body = el('tbody');
+    rows.forEach(function (cells) {
+      var row = el('tr');
+      cells.forEach(function (cell) {
+        var td = el('td');
+        td.appendChild(cell);
+        row.appendChild(td);
+      });
+      body.appendChild(row);
+    });
+    table.appendChild(head);
+    table.appendChild(body);
+    wrap.appendChild(table);
+    return wrap;
+  }
+  function subHeading(label) {
+    var node = el('p', 'qa-head');
+    node.textContent = label;
+    return node;
+  }
+  function paragraph(node) {
+    var p = el('p');
+    p.appendChild(node);
+    return p;
+  }
+  function record(raw) { return raw && typeof raw === 'object' ? raw : {}; }
+  function list(raw) { return Array.isArray(raw) ? raw.map(record) : []; }
+  // If the array is empty, return one empty object so a single "Unfilled" entry is shown
+  function entries(raw) {
+    var items = list(raw);
+    return items.length ? items : [{}];
+  }
+  function countOf(raw) { return Array.isArray(raw) ? raw.length : 0; }
+  function countLabel(raw) { var n = countOf(raw); return dataOk ? n + (n === 1 ? ' item' : ' items') : 'Unknown'; }
+  function mount(name, nodes) {
+    var host = document.querySelector('[data-render="' + name + '"]');
+    if (!host) return;
+    host.textContent = '';
+    nodes.forEach(function (node) { host.appendChild(node); });
+  }
+
+  // ---- Steps ----
+  function stepItems(step) {
+    return list(step.items);
+  }
+  function itemRow(item, index) {
+    var id = 'item-' + (blank(item.id) ? 'x' + index : String(item.id));
+    var li = el('li');
+    var label = el('label');
+    label.setAttribute('for', id);
+    var box = el('input');
+    box.type = 'checkbox';
+    box.id = id;
+    box.setAttribute('data-item', blank(item.id) ? '' : String(item.id));
+    box.checked = item.done === true;
+    var text = el('span', 'item');
+    text.appendChild(value(item.label, 'steps[].items[].label'));
+    label.appendChild(box);
+    label.appendChild(text);
+    li.appendChild(label);
+    boxes.push(box);
+    return li;
+  }
+  function stepBlock(step, index) {
+    var box = el('details', 'step');
+    var id = blank(step.id) ? String(index) : String(step.id);
+    box.setAttribute('data-step', id);
+    if (step.optional === true) box.classList.add('is-optional');
+
+    var summary = el('summary');
+    var num = el('span', 'step-num');
+    num.setAttribute('aria-hidden', 'true');
+    num.textContent = id;
+    var title = el('span', 'step-title');
+    title.appendChild(value(step.title, 'steps[].title'));
+    var state = el('span', 'step-state');
+    summary.appendChild(num);
+    summary.appendChild(title);
+    summary.appendChild(state);
+
+    var body = el('div', 'step-body');
+    if (!blank(step.warning)) {
+      var warning = el('p', 'step-warning');
+      warning.textContent = String(step.warning);
+      body.appendChild(warning);
+    }
+    var items = el('ul', 'checklist');
+    stepItems(step).forEach(function (item, i) { items.appendChild(itemRow(item, i)); });
+    body.appendChild(items);
+
+    box.appendChild(summary);
+    box.appendChild(body);
+    stepNodes.push(box);
+    return box;
+  }
+  function renderSteps(steps) {
+    stepNodes = [];
+    boxes = [];
+    var items = list(steps);
+    if (!items.length) {
+      mount('steps', [paragraph(unfilled('steps'))]);
+      return;
+    }
+    mount('steps', items.map(stepBlock));
+  }
+
+  // ---- Progress and the three states ----
+  function checkedIn(nodes) {
+    return nodes.filter(function (box) { return box.checked; }).length;
+  }
+  function boxesIn(step) {
+    return Array.prototype.slice.call(step.querySelectorAll('input[type="checkbox"]'));
+  }
+  function warned(step) { return step.querySelector('.step-warning') !== null; }
+  function optional(step) { return step.classList.contains('is-optional'); }
+  function paint() {
+    var warnings = 0;
+    var optDone = 0;
+    var optTotal = 0;
+    stepNodes.forEach(function (step) {
+      var nodes = boxesIn(step);
+      var done = checkedIn(nodes);
+      var complete = nodes.length > 0 && done === nodes.length;
+      var hasWarning = warned(step);
+      if (hasWarning) warnings += 1;
+      if (optional(step)) { optDone += done; optTotal += nodes.length; }
+      step.classList.toggle('is-done', complete);
+      step.classList.toggle('has-warning', hasWarning);
+      var chip = step.querySelector('.step-state');
+      if (!chip) return;
+      if (complete && hasWarning) chip.textContent = 'Done (warning)';
+      else if (complete) chip.textContent = 'Done';
+      else if (optional(step) && done === 0) chip.textContent = 'Optional';
+      else chip.textContent = done + ' / ' + nodes.length;
+    });
+
+    var total = boxes.length - optTotal;
+    var done = checkedIn(boxes) - optDone;
+    var pct = total === 0 ? 0 : Math.round((done / total) * 100);
+    var text = document.getElementById('progress-text');
+    text.textContent = done + ' / ' + total + ' items done (' + pct + '%)';
+    if (optTotal > 0) {
+      var opt = el('span');
+      opt.textContent = ' · optional ' + optDone + ' / ' + optTotal;
+      text.appendChild(opt);
+    }
+    if (warnings > 0) {
+      var note = el('span', 'progress-warn');
+      note.textContent = ' · ' + warnings + ' warning' + (warnings === 1 ? '' : 's');
+      text.appendChild(note);
+    }
+    document.getElementById('progress-fill').style.width = pct + '%';
+  }
+  // Only decided at load time. Collapse only steps that are done with no warning
+  function foldFinishedSteps() {
+    stepNodes.forEach(function (step) {
+      var nodes = boxesIn(step);
+      var done = checkedIn(nodes);
+      var complete = nodes.length > 0 && done === nodes.length;
+      // Optional steps stay collapsed until you start them
+      if (optional(step) && done === 0) { step.open = false; return; }
+      step.open = !complete || warned(step);
+    });
+  }
+
+  // ---- The three sections after the steps ----
+  function renderMeta(meta) {
+    mount('meta', [defs('kv', [
+      ['Working directory', value(meta.workdir, 'meta.workdir')],
+      ['Test module location', value(meta.moduleDir, 'meta.moduleDir')],
+      ['katachi version', value(meta.version, 'meta.version')],
+      ['Kotlin', value(meta.kotlin, 'meta.kotlin')],
+      ['JVM toolchain', value(meta.jvmToolchain, 'meta.jvmToolchain')],
+      ['Under Git', value(meta.git, 'meta.git')],
+      ['Target project root', value(meta.projectRoot, 'meta.projectRoot')],
+      ['Ran at', value(meta.ranAt, 'meta.ranAt')]
+    ])]);
+  }
+
+  // Writing preferences: key / question / recommendation (null means "detected", so no comparison)
+  var PREFERENCE_KEYS = [
+    ['nestedGroups', 'Nest groups?', 'yes'],
+    ['testFramework', 'Test framework', null],
+    ['dependencyStyle', 'How dependencies are written', null],
+    ['constraintNames', 'Put question numbers in constraint names?', 'plain'],
+    ['oneRolePerFile', 'One Role per file?', 'yes']
+  ];
+  function renderPreferences(preferences) {
+    var known = PREFERENCE_KEYS.map(function (spec) { return spec[0]; });
+    var extra = Object.keys(preferences).filter(function (key) { return known.indexOf(key) < 0; });
+    var specs = PREFERENCE_KEYS.concat(extra.map(function (key) { return [key, '', null]; }));
+    var differs = [];
+    var rows = specs.map(function (spec, index) {
+      var key = spec[0];
+      var raw = preferences[key];
+      var recorded = !blank(raw);
+      var valueCell = el('span');
+      if (recorded) {
+        valueCell.textContent = String(raw);
+      } else {
+        var muted = el('span', 'empty');
+        muted.textContent = spec[2] === null ? 'Not recorded (detected value is used)' : 'Not recorded (recommendation is used)';
+        valueCell.appendChild(muted);
+      }
+      var recommended = document.createTextNode(spec[2] === null ? 'detected' : spec[2]);
+      if (recorded && spec[2] !== null && String(raw) !== spec[2]) {
+        differs.push(index);
+        var mark = el('span', 'pref-mark');
+        mark.textContent = ' differs from the recommendation';
+        valueCell.appendChild(mark);
+      }
+      return [document.createTextNode(key), document.createTextNode(spec[1]), valueCell, recommended];
+    });
+    var table = tableOf(['key', 'Question', 'Value', 'Recommended'], rows);
+    var trs = table.querySelectorAll('tbody tr');
+    differs.forEach(function (index) { trs[index].classList.add('pref-differs'); });
+    mount('preferences', [table]);
+  }
+
+  function renderViolations(violations) {
+    mount('violationCount', [document.createTextNode(countLabel(violations))]);
+    if (!countOf(violations)) { mount('violations', [none('None (all green)')]); return; }
+    var rows = entries(violations).map(function (item) {
+      return [
+        value(item.violation, 'violations[].violation'),
+        value(item.location, 'violations[].location'),
+        value(item.whyNotFixed, 'violations[].whyNotFixed'),
+        value(item.suggestion, 'violations[].suggestion')
+      ];
+    });
+    mount('violations', [tableOf(['Violation', 'Location', 'Why not fixed', 'Suggested next step'], rows, 'text-first')]);
+  }
+
+  function renderChangedFiles(changed) {
+    mount('changedCount', [document.createTextNode(countLabel(changed))]);
+    if (!countOf(changed)) { mount('changedFiles', [none()]); return; }
+    var rows = entries(changed).map(function (item) {
+      return [
+        value(item.path, 'changedFiles[].path'),
+        value(item.change, 'changedFiles[].change'),
+        value(item.summary, 'changedFiles[].summary')
+      ];
+    });
+    mount('changedFiles', [tableOf(['Path', 'Added / Changed', 'Summary'], rows)]);
+  }
+
+  // ---- Answer fields (the report has the same functions; JS cannot be shared) ----
+  var ANSWER_TARGET = 'check-list';
+  var ANSWER_FILE = 'katachi-answers-check-list.json';
+  // { id, recommendation, radios, free, card }
+  var answerCards = [];
+
+  // Questions in the check list are q<n> (cq<n> in the report)
+  function questionId(item, index) {
+    return blank(item.id) ? 'q' + (index + 1) : String(item.id);
+  }
+  // Drafts while typing. Rendering must not break when localStorage is unavailable
+  function draftKey(id) { return location.href.split('#')[0] + '#answer:' + id; }
+  function readDraft(id) {
+    try {
+      var raw = localStorage.getItem(draftKey(id));
+      return raw ? record(JSON.parse(raw)) : null;
+    } catch (error) {
+      return null;
+    }
+  }
+  function writeDraft(id, draft) {
+    try {
+      if (draft) localStorage.setItem(draftKey(id), JSON.stringify(draft));
+      else localStorage.removeItem(draftKey(id));
+    } catch (error) { /* keep going even if it cannot be saved */ }
+  }
+  // State of the answer fields. With an option picked the free text is the note; otherwise it is the answer
+  function readCard(entry) {
+    var picked = entry.radios.filter(function (radio) { return radio.checked; })[0];
+    var free = entry.free.value.replace(/^\s+|\s+$/g, '');
+    if (picked) return { answer: picked.value, note: free || null };
+    if (free) return { answer: free, note: null };
+    return null;
+  }
+  function fillCard(entry, answer) {
+    var found = false;
+    entry.radios.forEach(function (radio) {
+      radio.checked = !found && radio.value === answer.answer;
+      if (radio.checked) found = true;
+    });
+    var note = blank(answer.note) ? '' : String(answer.note);
+    entry.free.value = found ? note : [answer.answer || '', note].filter(Boolean).join('\n');
+  }
+  function paintAnswers() {
+    var answered = 0;
+    answerCards.forEach(function (entry) {
+      var current = readCard(entry);
+      entry.card.classList.toggle('is-answered', current !== null);
+      if (current) answered += 1;
+    });
+    mount('answeredCount', [document.createTextNode(answered ? answered + ' answered' : '')]);
+  }
+  function onCardInput(entry) {
+    writeDraft(entry.id, readCard(entry));
+    paintAnswers();
+  }
+  // If the recommendation starts with an option letter ("B. ..."), pick that option; otherwise put the text in the free field
+  function adoptRecommendation(entry) {
+    var text = blank(entry.recommendation) ? '' : String(entry.recommendation).replace(/^\s+/, '');
+    var match = /^([A-Z])(?![A-Za-z])/.exec(text);
+    var index = match ? match[1].charCodeAt(0) - 65 : -1;
+    if (index >= 0 && index < entry.radios.length) {
+      entry.radios[index].checked = true;
+    } else if (text) {
+      entry.radios.forEach(function (radio) { radio.checked = false; });
+      entry.free.value = text;
+    }
+    onCardInput(entry);
+  }
+  function collectAnswers() {
+    var out = {};
+    var now = new Date().toISOString();
+    answerCards.forEach(function (entry) {
+      var current = readCard(entry);
+      if (!current) return;
+      out[entry.id] = { answer: current.answer, note: current.note, answeredAt: now };
+    });
+    return out;
+  }
+  function answersJson() {
+    return JSON.stringify({ target: ANSWER_TARGET, answers: collectAnswers() }, null, 2) + '\n';
+  }
+  function setAnswerStatus(text, isError) {
+    var status = document.getElementById('answer-status');
+    var manual = document.getElementById('answer-manual');
+    if (!status || !manual) return;
+    status.textContent = text;
+    status.classList.toggle('is-error', isError === true);
+    manual.hidden = true;
+  }
+  // When it cannot be handed over automatically, show the JSON as is to be selected by hand
+  function showManualAnswers(text, message) {
+    setAnswerStatus(message, true);
+    var manual = document.getElementById('answer-manual');
+    if (!manual) return;
+    manual.value = text;
+    manual.hidden = false;
+    manual.focus();
+    manual.select();
+  }
+  function downloadAnswers() {
+    var text = answersJson();
+    try {
+      var url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+      var a = el('a');
+      a.setAttribute('href', url);
+      a.setAttribute('download', ANSWER_FILE);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      setAnswerStatus('Saved ' + ANSWER_FILE + '. Hand the saved file to the AI agent.');
+    } catch (error) {
+      showManualAnswers(text, 'Could not download. Select and copy the JSON below by hand and hand it to the AI agent.');
+    }
+  }
+  function copyAnswers() {
+    var text = answersJson();
+    function done() { setAnswerStatus('Copied the answers JSON. Paste it to the AI agent.'); }
+    function fallback() {
+      var box = el('textarea');
+      box.value = text;
+      box.setAttribute('readonly', '');
+      box.style.position = 'fixed';
+      box.style.left = '-9999px';
+      document.body.appendChild(box);
+      box.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (error) { ok = false; }
+      document.body.removeChild(box);
+      if (ok) done();
+      else showManualAnswers(text, 'Could not copy. Select and copy the JSON below by hand.');
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else {
+      fallback();
+    }
+  }
+  function clearAnswers() {
+    answerCards.forEach(function (entry) {
+      entry.radios.forEach(function (radio) { radio.checked = false; });
+      entry.free.value = '';
+      writeDraft(entry.id, null);
+    });
+    paintAnswers();
+    setAnswerStatus('Cleared the answers (answers already imported into this JSON come back on reload).');
+  }
+  function actionButton(label, handler, primary) {
+    var button = el('button', primary ? 'action-button is-primary' : 'action-button');
+    button.type = 'button';
+    button.textContent = label;
+    button.addEventListener('click', handler);
+    return button;
+  }
+  function renderAnswerActions() {
+    var status = el('p', 'answer-status');
+    status.id = 'answer-status';
+    var manual = el('textarea', 'answer-manual');
+    manual.id = 'answer-manual';
+    manual.setAttribute('readonly', '');
+    manual.setAttribute('aria-label', 'Answers JSON');
+    manual.hidden = true;
+    mount('answerActions', [
+      actionButton('Adopt all recommendations', function () { answerCards.forEach(adoptRecommendation); }),
+      actionButton('Export answers (download)', downloadAnswers, true),
+      actionButton('Copy answers', copyAnswers),
+      actionButton('Clear answers', clearAnswers),
+      status,
+      manual
+    ]);
+  }
+
+  function questionCard(item, index, answers) {
+    var id = questionId(item, index);
+    var card = el('details', 'qa');
+    var summary = el('summary');
+    var badge = el('span', 'qa-num');
+    badge.textContent = id;
+    var title = el('span', 'qa-title');
+    title.appendChild(value(item.question, 'questions[].question'));
+    summary.appendChild(badge);
+    summary.appendChild(title);
+
+    var body = el('div', 'qa-body');
+    body.appendChild(subHeading('What was observed'));
+    body.appendChild(paragraph(richText(item.observed, 'questions[].observed')));
+    var pick = el('div', 'qa-pick');
+    pick.appendChild(subHeading('Recommendation'));
+    pick.appendChild(paragraph(value(item.recommendation, 'questions[].recommendation')));
+    body.appendChild(pick);
+
+    // Answer fields
+    var imported = answers[id] ? record(answers[id]) : null;
+    var answer = el('div', 'qa-answer');
+    var head = subHeading('Answer');
+    if (imported) {
+      var mark = el('span', 'qa-imported');
+      mark.textContent = 'imported';
+      head.appendChild(mark);
+    }
+    answer.appendChild(head);
+    var entry = { id: id, recommendation: item.recommendation, radios: [], free: null, card: card };
+    if (blank(item.options)) {
+      answer.appendChild(paragraph(unfilled('questions[].options')));
+    } else {
+      var ul = el('ul', 'qa-answer-list');
+      item.options.forEach(function (option, i) {
+        var li = el('li');
+        var label = el('label');
+        var radio = el('input');
+        radio.type = 'radio';
+        radio.name = 'answer-' + id;
+        radio.value = String(option);
+        radio.addEventListener('change', function () { onCardInput(entry); });
+        var letter = el('span', 'option-letter');
+        letter.textContent = String.fromCharCode(65 + i);
+        var text = el('span');
+        text.textContent = String(option);
+        label.appendChild(radio);
+        label.appendChild(letter);
+        label.appendChild(text);
+        li.appendChild(label);
+        ul.appendChild(li);
+        entry.radios.push(radio);
+      });
+      answer.appendChild(ul);
+    }
+    var free = el('textarea');
+    free.setAttribute('aria-label', 'Free text for ' + id);
+    free.setAttribute('placeholder', 'Free text (becomes a note when an option is picked)');
+    free.addEventListener('input', function () { onCardInput(entry); });
+    entry.free = free;
+    answer.appendChild(free);
+    answer.appendChild(actionButton('Adopt recommendation', function () { adoptRecommendation(entry); }));
+    body.appendChild(answer);
+
+    // Show the answer imported into the JSON if any, otherwise the draft. Unanswered cards stay open
+    var initial = imported || readDraft(id);
+    if (initial) fillCard(entry, initial);
+    card.open = !initial;
+    answerCards.push(entry);
+
+    card.appendChild(summary);
+    card.appendChild(body);
+    return card;
+  }
+
+  function renderQuestions(questions, answers) {
+    answerCards = [];
+    mount('questionCount', [document.createTextNode(countLabel(questions))]);
+    if (!countOf(questions)) { mount('questions', [none()]); return; }
+    mount('questions', entries(questions).map(function (item, index) {
+      return questionCard(item, index, answers);
+    }));
+    renderAnswerActions();
+    paintAnswers();
+  }
+
+  function renderError(message) {
+    var box = el('div', 'error-box');
+    var title = el('p');
+    title.textContent = 'Could not read the checklist data (the JSON in this file).';
+    var detail = el('p');
+    detail.textContent = message;
+    box.appendChild(title);
+    box.appendChild(detail);
+    mount('error', [box]);
+  }
+
+  function openWhilePrinting() {
+    var saved = null;
+    addEventListener('beforeprint', function () {
+      var folds = Array.prototype.slice.call(document.querySelectorAll('details'));
+      saved = folds.map(function (box) { return [box, box.open]; });
+      folds.forEach(function (box) { box.open = true; });
+    });
+    addEventListener('afterprint', function () {
+      if (!saved) return;
+      saved.forEach(function (pair) { pair[0].open = pair[1]; });
+      saved = null;
+    });
+  }
+
+  function boot() {
+    var data = {};
+    try {
+      data = record(JSON.parse(document.getElementById('checklist').textContent));
+    } catch (error) {
+      dataOk = false;
+      renderError(error && error.message ? error.message : String(error));
+    }
+    renderMeta(record(data.meta));
+    renderSteps(data.steps);
+    renderPreferences(record(data.preferences));
+    if (!blank(data.reportHref)) {
+      var href = String(data.reportHref);
+      document.getElementById('report-link').setAttribute('href', href);
+      var card = document.getElementById('cross-link');
+      card.setAttribute('href', href);
+      card.hidden = false;
+    }
+    renderViolations(data.violations);
+    renderQuestions(data.questions, record(data.answers));
+    renderChangedFiles(data.changedFiles);
+    foldFinishedSteps();
+    paint();
+
+    boxes.forEach(function (box) { box.addEventListener('change', paint); });
+    document.getElementById('toggle-all').addEventListener('click', function () {
+      var opening = stepNodes.some(function (step) { return !step.open; });
+      stepNodes.forEach(function (step) { step.open = opening; });
+      this.textContent = opening ? 'Collapse all' : 'Expand all';
+    });
+    openWhilePrinting();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
+</script>
+</body>
+</html>

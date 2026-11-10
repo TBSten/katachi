@@ -76,7 +76,7 @@ title: ...
     - FAQ                              （思想・考え方の FAQ。ハウツーは書かない）
     - 他ツールとの比較                  （Konsist / detekt / ArchUnit などとの守備範囲）
 - ガイド                                （もとはコンセプトとガイドの2節。1つにまとめた）
-    - 基本的な API                      （覚える7つ。この節の入口）
+    - 基本的な API                      （覚える6つ。この節の入口）
     - Role                             （group と「Role 定義を分割する」を含む）
     - Layout                           ［ページタイトルは「Layout システムでディレクトリ構成を厳守させる」］
     - ktFileContent                    （グループ。見出しは押せないので、ページは中の「概要」に置く）
@@ -214,34 +214,33 @@ docs.yml は 2 つを別々にビルドして 1 つの Pages に合成する。�
 
 写しを切るのは、その版の内容を書き終えてから、次の版の変更を入れる前にする。写しはビルドした時点の docs をそのまま写すので、次の版の変更が混ざると戻せない。
 
-## `public/install/` — AI エージェント向けの配布物
+## `public/install/` — AI エージェント向けの入口
 
-ドキュメントサイトのページではなく、**AI エージェントが読む手順書と、`katachi` コマンドが同梱する素材**を置く場所。
+ドキュメントサイトのページではなく、**AI エージェント向けの入口**を置く場所。
 Astro は `public/` を加工せずそのままコピーするので、`<base-url>/install/...` で生のまま配信される。
-手順は brew で入る `katachi` コマンド（`brew install tbsten/tap/katachi`、実装は `katachi-script`）で進める。
-`katachi-script` のビルド（`bundleInstallKit`）が `<lang>/` の 3 ファイルをそのまま jar に入れるので、`init` と `guide` はネットワークを使わない。
+**手順書そのものはリポジトリ直下の katachi skill（`skills/katachi/`、英語だけ）にある**（KATACHI-318）。利用者は
+`gh skill install TBSten/katachi katachi` で入れる。手順は brew で入る `katachi` コマンド（`brew install tbsten/tap/katachi`、実装は `katachi-script`）で進める。
+チェックリストとレポートのテンプレートは skill の `assets/<lang>/` にあり、AI エージェントが作業用ディレクトリに写して中の JSON を直接書き換える（KATACHI-329。
+`katachi` コマンドは写したチェックリストの `meta`・`preferences`・`<html lang>` を読むだけ）。
 
 | ファイル | 役割 |
 |---|---|
-| `<lang>/index.md` | インストール手順そのもの。エージェントは `katachi agent guide <セクション ID>` でセクションずつ読んで動く。`katachi` が入る前に読むのは 0 章だけ |
-| `<lang>/install-check-list.html` | 進捗と結果のチェックリスト。`init` が配置し、中の `<script type="application/json" id="checklist">` を `katachi` の `data` 系のサブコマンドが書き換える |
-| `<lang>/project-code-base-report-template.html` | コードベース解析レポートのテンプレート。`init` が配置する |
-| `katachi-install.sh` | 以前の導入キット（POSIX sh）。手順書はもう参照しない。v0.5 で配信ごと消す（KATACHI-255） |
+| `index.md`・`<lang>/index.md` | katachi skill への入口だけの短いページ（skill の入れ方と、skill を使えないエージェント向けの raw URL）。手順は書かない |
+| `katachi-install.sh` | 以前の導入キット（POSIX sh）。手順書はもう参照せず、テンプレートは skill の `assets/` から取る。v0.5 で配信ごと消す（KATACHI-255） |
 
 守ること:
 
-- **手順を `index.md` に足す前に、`katachi` のサブコマンドでできないかを考える。** 「エージェントがよしなに」は
-  環境ごとにブレる。判断が要らない工程は `katachi-script` に入れ、`index.md` は
+- **手順を skill に足す前に、`katachi` のサブコマンドでできないかを考える。** 「エージェントがよしなに」は
+  環境ごとにブレる。判断が要らない工程（Gradle への組み込み、テストの実行と要約、ログの比較）は `katachi-script` に入れ、skill は
   コマンドを1行示すだけにする
+- **skill の `references/setup/` は 1 セクション 1 ファイル。** ファイルを足したり並びを変えたりしたら、`references/setup/README.md` の表も直す
+  （`:katachi-script:test` が表とファイルの一致を確かめる）。各ファイルの 1 行目は `## N.` / `### N-M.` の見出し
+- **チェックリストの項目 id を変えたら、skill の手順と `assets/{en,ja}/check-list.html` の両方を直す。**
 - **生成する内容を2箇所に書かない。** モジュールの雛形は `katachi-script` の中だけにある
-- **`katachi` の出力は ja / en の2通りを並べて書く**（`say("日本語", "English")` の形）。片方だけ足さない
+- **`katachi` の出力は ja / en の2通りを並べて書く**。片方だけ足さない
 - `katachi-script` を直したら、`:katachi-script:test` に加えて**実際の Gradle プロジェクトで動かす。**
   最低限「AGP + version catalog」「ルート build ファイル無し」「Kotlin JVM が既にルートに居る」の3つ。
   リリース前には prerelease の手順 9 が、手順書どおりに実在のプロジェクトへ導入する統合テストも回す
-  （prerelease の 9-1 `check-install-kit.sh` はまだ `katachi-install.sh` を回す。`katachi` に向け直すまでは、CLI の確かめは `:katachi-script:test` と手での導入）
-- 配信元は `KATACHI_DOCS` 環境変数で差し替えられる。dev server に向けて試せる。init に渡すと作業用ディレクトリの `tmp/cache/docs` に記録され、
-  以降のコマンドもそこから取る。`docs` サブコマンドが取る `llms-full.txt` はビルドで作られるので、`docs/public` ではなく
-  ビルド済みのサイト（`docs/dist` か配信 URL）を指す
 
 ## レシピ
 
@@ -293,14 +292,14 @@ nova ではどれも起きない（本文は 792px、splash も素直に出る�
 ## 言い換え（避ける語 → 使う語）
 
 言い換えは `docs/prh.yml` が**唯一の置き場**。新しく見つけたらそこに足す（`expected`・`pattern`・`specs` と、理由のコメント）。
-文章を書いたら `pnpm run lint:text` を回す（日本語のページと `README.ja.md`・`public/install/ja/index.md` が対象。CI でも回る）。
+文章を書いたら `pnpm run lint:text` を回す（日本語のページと `README.ja.md`・`public/install/ja/index.md`（入口）が対象。CI でも回る）。
 
 辞書に入れないもの: 文脈で正しくも誤りにもなる言い換え。katachi の概念としての「役割」は「Role」と書く
 （一般語としての「役割」は可）。そうした判断の要るものは、次の「文章の方針」に書く。
 
 ## 文章の方針
 
-**日本語の文章を書いたら・直したら、`yomiyasu` skill で推敲する。** ページの本文、手順書（`public/install/ja/`）、README、
+**日本語の文章を書いたら・直したら、`yomiyasu` skill で推敲する。** ページの本文、`public/install/ja/` の入口、README、
 スクリプトの日本語の出力、どれも同じ。AI が書いた文に出やすい癖（非生物主語、比喩的な動詞、過剰な太字・箇条書き・否定の対比など）を、
 人が読みやすい文に直すため。`yomiyasu` で直したあとに、下の方針と `pnpm run lint:text` で確かめる。英語の訳は、推敲した日本語から訳す。
 

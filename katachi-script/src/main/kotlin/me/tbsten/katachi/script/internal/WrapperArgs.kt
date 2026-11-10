@@ -5,7 +5,7 @@ package me.tbsten.katachi.script.internal
  *
  * `kotlin` takes every `-D…` and `-J…`, wherever it sits on the command line, and reads every `@…` as an argfile, so
  * `katachi agent test -- -Dkatachi.baseline.update=true` would lose its `-D…` and
- * `katachi agent add … --allowed "@Serializable なルート"` would fail. `bin/katachi` writes
+ * an argument such as `@com.example` would fail. `bin/katachi` writes
  * this same string (keep the two in sync) in front of those and of any argument already starting with it.
  */
 internal const val WRAPPER_ARG_ESCAPE: String = "katachi-escaped:"

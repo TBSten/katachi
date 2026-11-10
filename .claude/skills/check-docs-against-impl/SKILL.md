@@ -15,7 +15,7 @@ description: >-
 |----------------------|--------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
 | ドキュメントサイト   | `docs/src/content/docs/ja/**/*.mdx`                                      | **日本語が原本なので、日本語だけを確かめる。**英語は translate-ja-en で追随させる |
 | README               | `README.ja.md`、`sample/**/README.md`                                    | 同上。`README.md` は訳                                                            |
-| インストールキット   | `docs/public/install/ja/index.md`、`katachi-install.sh` が出すメッセージ | 手順書どおりにスクリプトが動くか                                                  |
+| インストールキット   | katachi skill（`skills/katachi/`、英語だけ）、`katachi agent` が出すメッセージ | 手順書どおりにコマンドが動くか                                                    |
 | API リファレンスの元 | `katachi/src/main`・`katachi-konsist/src/main`・`katachi-konture/src/main` の公開 API の KDoc | KDoc の例は自己検査でコンパイルされるので、確かめるのは文章の主張だけ |
 | サンプル             | `sample/**` の定義・ビルド設定・コメント                                 | 利用者が写す見本。CI で緑でも、古い書き方や嘘のコメントは残る                     |
 

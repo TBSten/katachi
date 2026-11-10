@@ -1,0 +1,1786 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>katachi インストール チェックリスト</title>
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiByb2xlPSJpbWciIGFyaWEtbGFiZWw9ImthdGFjaGkiPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTAyIiBmaWxsPSIjYTJjY2Y3Ii8+PGcgZmlsbD0iI2ZmZiI+PHBhdGggZD0iTTk2IDE2MGg2MHYyOGgtMzJ2MTM2aDMydjI4SDk2eiIvPjxyZWN0IHg9IjIxOCIgeT0iMjE4IiB3aWR0aD0iNzYiIGhlaWdodD0iNzYiLz48cGF0aCBkPSJNNDE2IDM1MmgtNjB2LTI4aDMyVjE4OGgtMzJ2LTI4aDYweiIvPjwvZz48L3N2Zz4=">
+<style>
+  :root {
+    color-scheme: light dark;
+
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN",
+      "Hiragino Sans", "Yu Gothic UI", "Meiryo", Roboto, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #f4f5f7;
+    --border: #e4e5e9;
+    --border-strong: #c2c5cc;
+    --text: #1a1c1f;
+    --text-muted: #5f6570;
+    --accent: #c2410c;
+    --accent-soft: rgba(194, 65, 12, 0.08);
+    --warn: #b45309;
+    --warn-soft: #fbf3e4;
+    --ok: #15803d;
+
+    --num-size: 28px;
+    --summary-pad-y: 12px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17181b;
+      --surface: #1c1e22;
+      --surface-2: #212429;
+      --border: #2f3238;
+      --border-strong: #474b54;
+      --text: #e6e7ea;
+      --text-muted: #9aa0ab;
+      --accent: #fb923c;
+      --accent-soft: rgba(251, 146, 60, 0.14);
+      --warn: #facc15;
+      --warn-soft: #2b2411;
+      --ok: #4ade80;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.75;
+    overflow-wrap: break-word;
+  }
+
+  .wrap {
+    width: min(100%, 68rem);
+    margin: 0 auto;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  @media (max-width: 480px) {
+    .wrap { padding-left: 16px; padding-right: 16px; }
+  }
+
+  h1, h2 { line-height: 1.4; font-weight: 700; }
+  h1 { font-size: 28px; letter-spacing: -0.01em; margin: 0; }
+  h2 { font-size: 20px; margin: 0; }
+  p { margin: 12px 0; }
+  a { color: var(--accent); text-underline-offset: 2px; }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.08em 0.36em;
+    overflow-wrap: anywhere;
+  }
+
+  .skip-link { position: absolute; left: -999px; top: 0; }
+  .skip-link:focus { left: 8px; top: 8px; z-index: 20; }
+
+  /* ヘッダ */
+  .page-header { padding: 40px 0 24px; border-bottom: 1px solid var(--border); }
+
+  .notice {
+    position: relative;
+    margin: 16px 0 0;
+    padding: 12px 16px 12px 44px;
+    background: var(--surface-2);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    font-size: 14px;
+  }
+
+  .notice::before {
+    content: "!";
+    position: absolute;
+    left: 15px;
+    top: 15px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--bg);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+  }
+
+
+  /* 対になるもう1枚へのリンク */
+  .cross-link {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "label arrow" "hint arrow";
+    align-items: center;
+    column-gap: 16px;
+    margin: 16px 0 0;
+    padding: 10px 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .cross-link:hover {
+    border-top-color: var(--border-strong);
+    border-right-color: var(--border-strong);
+    border-bottom-color: var(--border-strong);
+  }
+
+  .cross-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  /* display: grid が UA の [hidden] { display: none } に勝ってしまうので上書きする */
+  .cross-link[hidden] { display: none; }
+  .cross-link-label { grid-area: label; font-size: 14px; font-weight: 700; }
+  .cross-link-hint { grid-area: hint; color: var(--text-muted); font-size: 13px; }
+
+  .cross-link::after {
+    content: "\2192";
+    grid-area: arrow;
+    color: var(--accent);
+    transition: transform 0.15s ease;
+  }
+
+  .cross-link:hover::after { transform: translateX(3px); }
+
+  /* 見出しと値の対（2カラム） */
+  .kv {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    column-gap: 24px;
+    row-gap: 10px;
+    margin: 16px 0 0;
+  }
+
+  .kv dt {
+    color: var(--text-muted);
+    font-size: 13px;
+    white-space: nowrap;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .kv dd {
+    margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .kv dt:last-of-type, .kv dd:last-of-type { padding-bottom: 0; border-bottom: none; }
+
+  @media (max-width: 560px) {
+    .kv { grid-template-columns: 1fr; row-gap: 0; }
+    .kv dt { padding: 10px 0 0; border-bottom: none; }
+  }
+
+  .empty { color: var(--text-muted); margin: 16px 0 0; }
+
+  /* 未記入マーカー */
+  .todo {
+    color: var(--text-muted);
+    background: var(--surface-2);
+    border-bottom: 1px dashed var(--border-strong);
+    border-radius: 2px;
+    padding: 0 2px 1px;
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    overflow-wrap: anywhere;
+  }
+
+
+  /* 進捗（上部に固定） */
+  .progress {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .progress .wrap { padding-top: 10px; padding-bottom: 12px; }
+
+  .progress-row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+  .progress-actions { display: flex; align-items: baseline; gap: 16px; flex: none; }
+  .progress-actions a { font-size: 13px; }
+
+  #progress-text { font-family: var(--font-mono); font-size: 13px; color: var(--text-muted); }
+
+  .link-button {
+    flex: none;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--accent);
+    font-family: inherit;
+    font-size: 13px;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+
+  .link-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .progress-track {
+    height: 6px;
+    margin-top: 8px;
+    border-radius: 999px;
+    background: var(--border);
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    background: var(--accent);
+    transition: width 0.15s ease;
+  }
+
+  main { padding-top: 8px; }
+
+  /* ステップ（縦のタイムライン + ステッパー） */
+  .steps { margin-top: 40px; }
+
+  /* ステップ同士は隙間を空けない。開いているときの余白は .step-body が持つ */
+  .step { position: relative; padding-bottom: 0; }
+
+  .step::before {
+    content: "";
+    position: absolute;
+    left: 13px;
+    /* 丸の下端から、次のステップの丸の上端まで */
+    top: calc(var(--summary-pad-y) + var(--num-size));
+    bottom: calc(-1 * var(--summary-pad-y));
+    width: 2px;
+    background: var(--border);
+  }
+
+  .steps > .step:last-child::before { display: none; }
+  .step.is-done::before { background: var(--ok); }
+
+  .step > summary {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: var(--summary-pad-y) 10px var(--summary-pad-y) 0;
+    border-radius: 6px;
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .step > summary::-webkit-details-marker { display: none; }
+  .step > summary:hover { background: var(--surface-2); }
+  .step > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .step > summary::after {
+    content: "\25BE";
+    flex: none;
+    margin-top: 5px;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  .step:not([open]) > summary::after { content: "\25B8"; }
+
+  .step-num {
+    position: relative;
+    z-index: 1;
+    flex: none;
+    width: var(--num-size);
+    height: var(--num-size);
+    border-radius: 50%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 26px;
+    text-align: center;
+  }
+
+  .step-title { flex: 1; min-width: 0; font-size: 20px; font-weight: 700; line-height: 1.4; }
+
+  .step-state {
+    flex: none;
+    margin-top: 3px;
+    padding: 1px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.6;
+    white-space: nowrap;
+  }
+
+  .step-state:empty { display: none; }
+
+  .step.is-done .step-num { background: var(--ok); border-color: var(--ok); color: var(--bg); }
+  .step.is-done .step-state { background: none; border-color: var(--ok); color: var(--ok); }
+
+  /* 完了したが警告あり */
+  .step.is-done.has-warning::before { background: var(--warn); }
+  .step.is-done.has-warning .step-num { background: var(--warn); border-color: var(--warn); color: var(--bg); }
+  .step.is-done.has-warning .step-state { background: none; border-color: var(--warn); color: var(--warn); }
+
+  .step-warning {
+    margin: 0 0 12px;
+    padding: 10px 14px;
+    background: var(--warn-soft);
+    border-left: 3px solid var(--warn);
+    border-radius: 0 6px 6px 0;
+    font-size: 14px;
+  }
+
+  .progress-warn { color: var(--warn); }
+
+
+  /* 任意のステップ — 必須と同じ見た目にすると、やらなかっただけで未完了に見える */
+  .step.is-optional .step-num { border-style: dashed; color: var(--text-muted); }
+  .step.is-optional .step-title { color: var(--text-muted); }
+  .step.is-optional::before { border-left: 2px dashed var(--border); background: none; width: 0; }
+
+  .step-body { padding: 0 0 40px 40px; }
+
+  /* ステップ以外のセクション */
+  .block { margin-top: 40px; }
+  .block > h2 { position: relative; padding-left: 12px; }
+
+  .block > h2::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.22em;
+    width: 3px;
+    height: 1em;
+    border-radius: 1px;
+    background: var(--accent);
+  }
+
+  /* チェック項目 */
+  .checklist { list-style: none; margin: 8px 0 0; padding: 0; }
+  .checklist li { border-bottom: 1px solid var(--border); }
+  .checklist li:last-child { border-bottom: none; }
+
+  .checklist label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0 -8px;
+    padding: 10px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .checklist label:hover { background: var(--surface-2); }
+
+  .checklist input[type="checkbox"] {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    margin: 0.32em 0 0;
+    accent-color: var(--accent);
+  }
+
+  .checklist .item { flex: 1; min-width: 0; }
+  .checklist input:checked + .item { color: var(--text-muted); }
+
+  .remark { margin: 12px 0 0; font-size: 13px; color: var(--text-muted); }
+
+  /* 表 */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 16px 0 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  table { border-collapse: collapse; width: 100%; min-width: 34rem; font-size: 14px; }
+
+  th, td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    overflow-wrap: anywhere;
+  }
+
+  thead th {
+    background: var(--surface-2);
+    border-bottom: 2px solid var(--border-strong);
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  tbody tr:hover { background: var(--accent-soft); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody td:first-child { font-family: var(--font-mono); font-size: 13px; }
+  table.text-first tbody td:first-child { font-family: inherit; font-size: 14px; }
+
+  footer {
+    margin-top: 48px;
+    padding-top: 20px;
+    padding-bottom: 40px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  footer p { margin: 4px 0; }
+
+  @media print {
+    /* OS がダークのままでも紙は白い。トークンをライト側で宣言し直す */
+    :root {
+      color-scheme: light;
+
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --surface-2: #f4f5f7;
+      --border: #e4e5e9;
+      --border-strong: #c2c5cc;
+      --text: #1a1c1f;
+      --text-muted: #5f6570;
+      --accent: #c2410c;
+      --accent-soft: rgba(194, 65, 12, 0.08);
+      --warn: #b45309;
+      --warn-soft: #fbf3e4;
+      --ok: #15803d;
+    }
+
+    body { background: #ffffff; color: #000000; }
+    .progress { position: static; border-bottom: 1px solid #000; }
+    .progress-track, .notice, .step-state { background: none; }
+    .link-button, .step > summary::after, .cross-link, .skip-link { display: none; }
+    .todo { background: none; color: #000; border-bottom: 1px dashed #000; }
+
+    /* 背景グラフィックを出さない既定の印刷でも読めるよう、塗りではなく枠線で示す */
+    .step .step-num,
+    .step.is-done .step-num,
+    .step.is-done.has-warning .step-num {
+      background: none;
+      border: 1px solid var(--border-strong);
+      color: var(--text);
+    }
+
+    .step.is-done .step-num { border-color: var(--ok); color: var(--ok); }
+    .step.is-done.has-warning .step-num { border-color: var(--warn); color: var(--warn); }
+
+    .checklist label:hover, .step > summary:hover, tbody tr:hover { background: none; }
+    a { color: #000; text-decoration: underline; }
+
+    /* 横スクロールに隠れていた列を紙に出す */
+    .table-wrap { overflow: visible; }
+    table { table-layout: fixed; width: 100%; min-width: 0; }
+
+    .step, .block { break-inside: avoid; }
+  }
+
+  /* データを読めなかったときの表示（真っ白にしない） */
+  .error-box {
+    margin: 16px 0 0;
+    padding: 12px 16px;
+    background: var(--warn-soft);
+    border-left: 3px solid var(--warn);
+    border-radius: 0 6px 6px 0;
+    color: var(--warn);
+    font-size: 14px;
+  }
+
+  .error-box p { margin: 4px 0 0; }
+  .error-box p:first-child { margin: 0; font-weight: 700; }
+
+  .noscript-note { padding-top: 16px; }
+
+  /* 見出しの右に付く件数 */
+  .count-badge {
+    margin-left: 10px;
+    padding: 1px 8px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 400;
+    vertical-align: 2px;
+    white-space: nowrap;
+  }
+
+  /* ユーザに確認したいこと */
+  .qa {
+    margin-top: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+  }
+
+  .qa > summary {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .qa > summary::-webkit-details-marker { display: none; }
+  .qa > summary:hover { background: var(--surface-2); }
+  .qa > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .qa[open] > summary { border-bottom: 1px solid var(--border); }
+
+  .qa > summary::after {
+    content: "\25B8";
+    flex: none;
+    margin-top: 4px;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  .qa[open] > summary::after { content: "\25BE"; }
+
+  .qa-num {
+    flex: none;
+    margin-top: 2px;
+    padding: 0 8px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 22px;
+  }
+
+  .qa-title { flex: 1; min-width: 0; font-weight: 700; }
+  .qa-body { padding: 12px 14px 14px; }
+  .qa-head { margin: 0 0 4px; color: var(--text-muted); font-size: 13px; }
+  .qa-body > p { margin: 0; }
+  .qa-body > p + .qa-head, .qa-body > ol + .qa-head { margin-top: 14px; }
+  .qa-body ol { margin: 0; padding-left: 22px; list-style-type: upper-alpha; }
+  .qa-body ol li { margin: 4px 0; }
+
+  .qa-pick {
+    margin-top: 14px;
+    padding: 10px 12px;
+    background: var(--accent-soft);
+    border-radius: 6px;
+  }
+
+  .qa-pick .qa-head { color: var(--accent); }
+  .qa-pick p:last-child { margin: 0; }
+
+  .lede { color: var(--text-muted); font-size: 14px; margin: 6px 0 0; }
+
+  /* 書き方の方針（推奨と違う行） */
+  tr.pref-differs td { background: var(--warn-soft); }
+  .pref-mark { color: var(--warn); font-size: 12px; white-space: nowrap; }
+
+  /* 回答欄 */
+  .qa-answer { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border); }
+  .qa-answer .qa-head { display: flex; align-items: baseline; gap: 8px; }
+  .qa-answer-list { margin: 0; padding: 0; list-style: none; }
+  .qa-answer-list li { margin: 2px 0; }
+
+  .qa-answer-list label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .qa-answer-list label:hover { background: var(--surface-2); }
+  .qa-answer-list input[type="radio"] { flex: none; margin: 0.35em 0 0; accent-color: var(--accent); }
+  .qa-answer-list .option-letter { flex: none; font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+  .qa-answer textarea {
+    display: block;
+    width: 100%;
+    min-height: 3.5em;
+    margin: 8px 0 0;
+    padding: 8px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: vertical;
+  }
+
+  .qa-answer textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .answered-badge:empty { display: none; }
+  .answered-badge { border-color: var(--ok); color: var(--ok); }
+  .qa.is-answered > summary .qa-num { background: var(--ok); color: var(--bg); }
+  .qa-imported { color: var(--ok); font-size: 12px; font-family: var(--font-mono); }
+
+  .action-button {
+    padding: 4px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.6;
+    cursor: pointer;
+  }
+
+  .action-button:hover { background: var(--surface-2); border-color: var(--accent); }
+  .action-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .action-button.is-primary { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+  .qa-answer .action-button { margin-top: 8px; }
+
+  .answer-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 0; }
+  .answer-actions:empty { display: none; }
+  .answer-status { flex-basis: 100%; margin: 0; font-size: 13px; color: var(--text-muted); }
+  .answer-status.is-error { color: var(--warn); }
+  .answer-status:empty { display: none; }
+
+  .answer-manual {
+    display: block;
+    width: 100%;
+    min-height: 6em;
+    margin: 8px 0 0;
+    padding: 8px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface-2);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  /* display: block が UA の [hidden] { display: none } に勝ってしまうので上書きする */
+  .answer-manual[hidden] { display: none; }
+
+  @media print {
+    .answer-actions, .qa-answer .action-button { display: none; }
+    .qa-answer textarea { border: 1px solid #000; }
+  }
+</style>
+</head>
+<body>
+
+<noscript>
+  <div class="wrap noscript-note">
+    <div class="error-box">
+      <p>表示には JavaScript が必要です。</p>
+      <p>このページはページ内の JSON を読んで描画します。データそのものは、このファイルの
+      script type="application/json" id="checklist" のブロックにあります。</p>
+    </div>
+  </div>
+</noscript>
+
+<script type="application/json" id="checklist">
+{
+  "meta": {
+    "workdir": null,
+    "moduleDir": null,
+    "version": null,
+    "projectRoot": null,
+    "ranAt": null,
+    "kotlin": null,
+    "jvmToolchain": null,
+    "git": null
+  },
+  "reportHref": "./project-code-base-report.html",
+  "steps": [
+    {
+      "id": "0",
+      "title": "事前準備",
+      "warning": null,
+      "items": [
+        {
+          "id": "0-1",
+          "label": "無害なコマンドを1種類ずつ実際に実行し、このあとの作業に要る許可を先に取った",
+          "done": false
+        },
+        {
+          "id": "0-2",
+          "label": "katachi skill から作業用ディレクトリを作り、meta（Gradle ルート / Git / バージョン）を埋めた",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "1",
+      "title": "現在のプロジェクトコードベースの構造・各コンポーネントの制約を解析・推論",
+      "warning": null,
+      "items": [
+        {
+          "id": "1-1",
+          "label": "コードベースとプロジェクト自身のドキュメントを読んだ",
+          "done": false
+        },
+        {
+          "id": "1-2",
+          "label": "project-code-base-report.html の JSON を埋めた",
+          "done": false
+        },
+        {
+          "id": "1-3",
+          "label": "書き方の方針を聞いて preferences に記録した",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "title": "検査用モジュール（既定 architecture-test/）を作成し 標準的な katachi のテスト用モジュールとして設定",
+      "warning": null,
+      "items": [
+        {
+          "id": "2-1",
+          "label": "katachi scaffold --package <パッケージ名> を実行した",
+          "done": false
+        },
+        {
+          "id": "2-2",
+          "label": "定義が空の状態で 検査用モジュールの test が Unexpected だけで失敗することを確認した",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "title": "architecture { } 定義を作成",
+      "warning": null,
+      "items": [
+        {
+          "id": "3-1",
+          "label": "手順書 3-1 の話題（layout・role・basic-api、使うなら kt-file-content）をドキュメントのページで読んだ",
+          "done": false
+        },
+        {
+          "id": "3-2",
+          "label": "architecture { } 定義を書き、検査用モジュールの test の出力をリファクタリング前の基準として保存した",
+          "done": false
+        },
+        {
+          "id": "3-3",
+          "label": "定義をリファクタリングし（ファイル・パッケージの分割、説明、共通化）、compare-violations で検査結果が前後で変わらないことを確かめた",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "title": "検証する",
+      "warning": null,
+      "items": [
+        {
+          "id": "4-1",
+          "label": "検査用モジュールの test を実行した",
+          "done": false
+        },
+        {
+          "id": "4-2",
+          "label": "katachi 由来でないエラー（Gradle / Java など）を解消した",
+          "done": false
+        },
+        {
+          "id": "4-3",
+          "label": "検査用モジュールの katachiDocs で docs を生成し、出力を確かめた",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "5",
+      "title": "チェックリストを確認する",
+      "warning": null,
+      "items": [
+        {
+          "id": "5-1",
+          "label": "このチェックリスト全体を見直した",
+          "done": false
+        },
+        {
+          "id": "5-2",
+          "label": "未記入が残っていないことを確かめた",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "6",
+      "title": "（任意）導入できたことを確かめ、CI・ドキュメント生成・テンプレートに広げる",
+      "warning": null,
+      "optional": true,
+      "items": [
+        {
+          "id": "6-1",
+          "label": "題材となる実装タスクを回して architecture { } の修正要否を判断した",
+          "done": false
+        },
+        {
+          "id": "6-2",
+          "label": "CI に検査用モジュールの test を組み込んだ",
+          "done": false
+        },
+        {
+          "id": "6-3",
+          "label": "ドキュメント生成をセットアップした（title / description、コミットするかの決定）",
+          "done": false
+        },
+        {
+          "id": "6-4",
+          "label": "テンプレートを書き、1本生成した直後に検査用モジュールの test が通ることを確かめた",
+          "done": false
+        }
+      ]
+    }
+  ],
+  "preferences": {},
+  "violations": [],
+  "questions": [],
+  "answers": {},
+  "changedFiles": []
+}
+</script>
+
+<!-- 記入例: 上の JSON が完全に埋まった状態。この形で値を入れる。
+{
+  "meta": {
+    "workdir": ".local/install-katachi",
+    "moduleDir": "architecture-test",
+    "version": "0.5.0",
+    "projectRoot": "/Users/me/dev/example-app",
+    "ranAt": "2026-09-24 10:00 JST",
+    "kotlin": "2.4.10",
+    "jvmToolchain": "17（../app/build.gradle.kts の設定から）",
+    "git": "yes"
+  },
+  "reportHref": "./project-code-base-report.html",
+  "steps": [
+    {
+      "id": "0",
+      "title": "事前準備",
+      "warning": null,
+      "items": [
+        {
+          "id": "0-1",
+          "label": "無害なコマンドを1種類ずつ実際に実行し、このあとの作業に要る許可を先に取った",
+          "done": true
+        },
+        {
+          "id": "0-2",
+          "label": "katachi skill から作業用ディレクトリを作り、meta（Gradle ルート / Git / バージョン）を埋めた",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "1",
+      "title": "現在のプロジェクトコードベースの構造・各コンポーネントの制約を解析・推論",
+      "warning": null,
+      "items": [
+        {
+          "id": "1-1",
+          "label": "コードベースとプロジェクト自身のドキュメントを読んだ",
+          "done": true
+        },
+        {
+          "id": "1-2",
+          "label": "project-code-base-report.html の JSON を埋めた",
+          "done": true
+        },
+        {
+          "id": "1-3",
+          "label": "書き方の方針を聞いて preferences に記録した",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "title": "検査用モジュール（既定 architecture-test/）を作成し 標準的な katachi のテスト用モジュールとして設定",
+      "warning": null,
+      "items": [
+        {
+          "id": "2-1",
+          "label": "katachi scaffold \u002d\u002dpackage <パッケージ名> を実行した",
+          "done": true
+        },
+        {
+          "id": "2-2",
+          "label": "定義が空の状態で 検査用モジュールの test が Unexpected だけで失敗することを確認した",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "title": "architecture { } 定義を作成",
+      "warning": null,
+      "items": [
+        {
+          "id": "3-1",
+          "label": "手順書 3-1 の話題（layout・role・basic-api、使うなら kt-file-content）をドキュメントのページで読んだ",
+          "done": true
+        },
+        {
+          "id": "3-2",
+          "label": "architecture { } 定義を書き、検査用モジュールの test の出力をリファクタリング前の基準として保存した",
+          "done": true
+        },
+        {
+          "id": "3-3",
+          "label": "定義をリファクタリングし（ファイル・パッケージの分割、説明、共通化）、compare-violations で検査結果が前後で変わらないことを確かめた",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "title": "検証する",
+      "warning": "アーキテクチャ違反を 1 件残しました",
+      "items": [
+        {
+          "id": "4-1",
+          "label": "検査用モジュールの test を実行した",
+          "done": true
+        },
+        {
+          "id": "4-2",
+          "label": "katachi 由来でないエラー（Gradle / Java など）を解消した",
+          "done": true
+        },
+        {
+          "id": "4-3",
+          "label": "検査用モジュールの katachiDocs で docs を生成し、出力を確かめた",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "5",
+      "title": "チェックリストを確認する",
+      "warning": null,
+      "items": [
+        {
+          "id": "5-1",
+          "label": "このチェックリスト全体を見直した",
+          "done": false
+        },
+        {
+          "id": "5-2",
+          "label": "未記入が残っていないことを確かめた",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "6",
+      "title": "（任意）導入できたことを確かめ、CI・ドキュメント生成・テンプレートに広げる",
+      "warning": null,
+      "optional": true,
+      "items": [
+        {
+          "id": "6-1",
+          "label": "題材となる実装タスクを回して architecture { } の修正要否を判断した",
+          "done": false
+        },
+        {
+          "id": "6-2",
+          "label": "CI に検査用モジュールの test を組み込んだ",
+          "done": false
+        },
+        {
+          "id": "6-3",
+          "label": "ドキュメント生成をセットアップした（title / description、コミットするかの決定）",
+          "done": false
+        },
+        {
+          "id": "6-4",
+          "label": "テンプレートを書き、1本生成した直後に検査用モジュールの test が通ることを確かめた",
+          "done": false
+        }
+      ]
+    }
+  ],
+  "preferences": {
+    "nestedGroups": "yes",
+    "testFramework": "kotest",
+    "dependencyStyle": "catalog",
+    "constraintNames": "numbered",
+    "oneRolePerFile": "yes"
+  },
+  "violations": [
+    {
+      "violation": "ui 層から data 層の DataSource を直接参照している",
+      "location": "app/src/main/kotlin/com/example/app/ui/home/HomeViewModel.kt:42",
+      "whyNotFixed": "呼び出し元が広く、1回の変更に収まらないため",
+      "suggestion": "GetHomeFeedUseCase を足し、ViewModel からはそれだけを呼ぶ"
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "question": "legacy パッケージは katachi の対象に含めますか？",
+      "observed": "app/src/main/kotlin/com/example/app/ui/legacy/ の配下だけ Fragment + Presenter のまま残っている",
+      "options": [
+        "対象に含めて直す",
+        "当面 ignore する"
+      ],
+      "recommendation": "B。対象が1画面だけで、移行の予定が決まっていないため"
+    }
+  ],
+  "answers": {},
+  "changedFiles": [
+    {
+      "path": "architecture-test/build.gradle.kts",
+      "change": "新規",
+      "summary": "katachi のテスト用モジュール"
+    },
+    {
+      "path": "settings.gradle.kts",
+      "change": "変更",
+      "summary": "architecture-test を include した"
+    }
+  ]
+}
+-->
+
+<a class="skip-link" href="#main-content">本文へスキップ</a>
+
+<header class="page-header">
+  <div class="wrap">
+    <h1>katachi インストール チェックリスト</h1>
+    <p class="notice">
+      このファイルは AI エージェントが記入しました。内容をあなたが確認してください。
+    </p>
+    <div data-render="error"></div>
+
+    <a class="cross-link" id="cross-link" href="./project-code-base-report.html" hidden>
+      <span class="cross-link-label">コードベース レポート</span>
+      <span class="cross-link-hint">このプロジェクトの解析結果</span>
+    </a>
+
+    <div data-render="meta"></div>
+  </div>
+</header>
+
+<div class="progress">
+  <div class="wrap">
+    <div class="progress-row">
+      <span id="progress-text"></span>
+      <span class="progress-actions">
+        <a id="report-link" href="./project-code-base-report.html">レポートを見る</a>
+        <button type="button" class="link-button" id="toggle-all">すべて開く</button>
+      </span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+  </div>
+</div>
+
+<main class="wrap" id="main-content">
+
+  <div class="steps" data-render="steps"></div>
+
+  <section class="block" id="preferences">
+    <h2>書き方の方針</h2>
+    <p class="lede">ステップ 1-3 で聞いた、定義の書き方の方針です。推奨と違うものは強調しています。検査用モジュールの置き場所はメタ情報にあります。</p>
+    <div data-render="preferences"></div>
+  </section>
+
+  <section class="block" id="violations">
+    <h2>残しているアーキテクチャ違反<span class="count-badge" data-render="violationCount"></span></h2>
+    <div data-render="violations"></div>
+  </section>
+
+  <section class="block" id="questions">
+    <h2>ユーザに確認したいこと<span class="count-badge" data-render="questionCount"></span><span class="count-badge answered-badge" data-render="answeredCount"></span></h2>
+    <p class="lede">各項目で選択肢を選ぶか、自由に書いてください。両方あれば自由記入は補足になります。書き終えたら「回答を書き出す」で JSON を保存し、AI エージェントに渡してください。</p>
+    <div class="answer-actions" data-render="answerActions"></div>
+    <div data-render="questions"></div>
+  </section>
+
+  <section class="block" id="changed-files">
+    <h2>作成・変更したファイル<span class="count-badge" data-render="changedCount"></span></h2>
+    <div data-render="changedFiles"></div>
+  </section>
+
+</main>
+
+<footer class="wrap">
+  <p><a href="https://tbsten.github.io/katachi/">katachi のドキュメント</a></p>
+  <p>
+    このチェックリストは katachi skill のセットアップ手順
+    （<a href="https://github.com/TBSten/katachi/tree/main/skills/katachi">skills/katachi</a>）
+    に対応しています。
+  </p>
+</footer>
+
+<script>
+(function () {
+  // ステップの見出しも項目も JSON から作る。HTML には文言を持たない
+  var stepNodes = [];
+  var boxes = [];
+  // JSON を読めたか。読めていないときは件数を 0 と断言しない
+  var dataOk = true;
+
+  // ---- DOM ヘルパ（値は必ず textContent 経由で入れる） ----
+  function el(tag, cls) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    return node;
+  }
+  function blank(value) {
+    return value == null || value === '' || (Array.isArray(value) && value.length === 0);
+  }
+  function unfilled(key) {
+    var span = el('span', 'todo');
+    span.textContent = '未記入: ' + key;
+    return span;
+  }
+  function value(raw, key) {
+    if (blank(raw)) return unfilled(key);
+    return document.createTextNode(String(raw));
+  }
+  // 空白で区切られた ASCII のトークンのうち、パスに見えるものを <code> にする
+  function richText(raw, key) {
+    if (blank(raw)) return unfilled(key);
+    var box = document.createDocumentFragment();
+    String(raw).split(/(\s+)/).forEach(function (token) {
+      if (token.indexOf('/') >= 0 && /^[!-~]+$/.test(token)) {
+        var code = el('code');
+        code.textContent = token;
+        box.appendChild(code);
+      } else {
+        box.appendChild(document.createTextNode(token));
+      }
+    });
+    return box;
+  }
+  // 空でも成立する場所は「なし」と出す
+  function none(label) {
+    var p = el('p', 'empty');
+    p.textContent = dataOk ? (label || 'なし') : '不明';
+    return p;
+  }
+  function defs(cls, pairs) {
+    var dl = el('dl', cls);
+    pairs.forEach(function (pair) {
+      if (!pair[1]) return;
+      var dt = el('dt');
+      dt.textContent = pair[0];
+      var dd = el('dd');
+      dd.appendChild(pair[1]);
+      dl.appendChild(dt);
+      dl.appendChild(dd);
+    });
+    return dl;
+  }
+  function tableOf(headers, rows, cls) {
+    var wrap = el('div', 'table-wrap');
+    var table = el('table', cls);
+    var head = el('thead');
+    var headRow = el('tr');
+    headers.forEach(function (label) {
+      var th = el('th');
+      th.textContent = label;
+      headRow.appendChild(th);
+    });
+    head.appendChild(headRow);
+    var body = el('tbody');
+    rows.forEach(function (cells) {
+      var row = el('tr');
+      cells.forEach(function (cell) {
+        var td = el('td');
+        td.appendChild(cell);
+        row.appendChild(td);
+      });
+      body.appendChild(row);
+    });
+    table.appendChild(head);
+    table.appendChild(body);
+    wrap.appendChild(table);
+    return wrap;
+  }
+  function subHeading(label) {
+    var node = el('p', 'qa-head');
+    node.textContent = label;
+    return node;
+  }
+  function paragraph(node) {
+    var p = el('p');
+    p.appendChild(node);
+    return p;
+  }
+  function record(raw) { return raw && typeof raw === 'object' ? raw : {}; }
+  function list(raw) { return Array.isArray(raw) ? raw.map(record) : []; }
+  // 配列が空なら「未記入の1件」を出すために、空オブジェクトを1つ返す
+  function entries(raw) {
+    var items = list(raw);
+    return items.length ? items : [{}];
+  }
+  function countOf(raw) { return Array.isArray(raw) ? raw.length : 0; }
+  function countLabel(raw) { return dataOk ? countOf(raw) + ' 件' : '不明'; }
+  function mount(name, nodes) {
+    var host = document.querySelector('[data-render="' + name + '"]');
+    if (!host) return;
+    host.textContent = '';
+    nodes.forEach(function (node) { host.appendChild(node); });
+  }
+
+  // ---- ステップ ----
+  function stepItems(step) {
+    return list(step.items);
+  }
+  function itemRow(item, index) {
+    var id = 'item-' + (blank(item.id) ? 'x' + index : String(item.id));
+    var li = el('li');
+    var label = el('label');
+    label.setAttribute('for', id);
+    var box = el('input');
+    box.type = 'checkbox';
+    box.id = id;
+    box.setAttribute('data-item', blank(item.id) ? '' : String(item.id));
+    box.checked = item.done === true;
+    var text = el('span', 'item');
+    text.appendChild(value(item.label, 'steps[].items[].label'));
+    label.appendChild(box);
+    label.appendChild(text);
+    li.appendChild(label);
+    boxes.push(box);
+    return li;
+  }
+  function stepBlock(step, index) {
+    var box = el('details', 'step');
+    var id = blank(step.id) ? String(index) : String(step.id);
+    box.setAttribute('data-step', id);
+    if (step.optional === true) box.classList.add('is-optional');
+
+    var summary = el('summary');
+    var num = el('span', 'step-num');
+    num.setAttribute('aria-hidden', 'true');
+    num.textContent = id;
+    var title = el('span', 'step-title');
+    title.appendChild(value(step.title, 'steps[].title'));
+    var state = el('span', 'step-state');
+    summary.appendChild(num);
+    summary.appendChild(title);
+    summary.appendChild(state);
+
+    var body = el('div', 'step-body');
+    if (!blank(step.warning)) {
+      var warning = el('p', 'step-warning');
+      warning.textContent = String(step.warning);
+      body.appendChild(warning);
+    }
+    var items = el('ul', 'checklist');
+    stepItems(step).forEach(function (item, i) { items.appendChild(itemRow(item, i)); });
+    body.appendChild(items);
+
+    box.appendChild(summary);
+    box.appendChild(body);
+    stepNodes.push(box);
+    return box;
+  }
+  function renderSteps(steps) {
+    stepNodes = [];
+    boxes = [];
+    var items = list(steps);
+    if (!items.length) {
+      mount('steps', [paragraph(unfilled('steps'))]);
+      return;
+    }
+    mount('steps', items.map(stepBlock));
+  }
+
+  // ---- 進捗と3つの状態 ----
+  function checkedIn(nodes) {
+    return nodes.filter(function (box) { return box.checked; }).length;
+  }
+  function boxesIn(step) {
+    return Array.prototype.slice.call(step.querySelectorAll('input[type="checkbox"]'));
+  }
+  function warned(step) { return step.querySelector('.step-warning') !== null; }
+  function optional(step) { return step.classList.contains('is-optional'); }
+  function paint() {
+    var warnings = 0;
+    var optDone = 0;
+    var optTotal = 0;
+    stepNodes.forEach(function (step) {
+      var nodes = boxesIn(step);
+      var done = checkedIn(nodes);
+      var complete = nodes.length > 0 && done === nodes.length;
+      var hasWarning = warned(step);
+      if (hasWarning) warnings += 1;
+      if (optional(step)) { optDone += done; optTotal += nodes.length; }
+      step.classList.toggle('is-done', complete);
+      step.classList.toggle('has-warning', hasWarning);
+      var chip = step.querySelector('.step-state');
+      if (!chip) return;
+      if (complete && hasWarning) chip.textContent = '完了（警告）';
+      else if (complete) chip.textContent = '完了';
+      else if (optional(step) && done === 0) chip.textContent = '任意';
+      else chip.textContent = done + ' / ' + nodes.length;
+    });
+
+    var total = boxes.length - optTotal;
+    var done = checkedIn(boxes) - optDone;
+    var pct = total === 0 ? 0 : Math.round((done / total) * 100);
+    var text = document.getElementById('progress-text');
+    text.textContent = done + ' / ' + total + ' 項目 完了（' + pct + '%）';
+    if (optTotal > 0) {
+      var opt = el('span');
+      opt.textContent = '・任意 ' + optDone + ' / ' + optTotal;
+      text.appendChild(opt);
+    }
+    if (warnings > 0) {
+      var note = el('span', 'progress-warn');
+      note.textContent = '・警告 ' + warnings + ' 件';
+      text.appendChild(note);
+    }
+    document.getElementById('progress-fill').style.width = pct + '%';
+  }
+  // 読み込み時にだけ判定する。完了かつ警告なしのステップだけ閉じる
+  function foldFinishedSteps() {
+    stepNodes.forEach(function (step) {
+      var nodes = boxesIn(step);
+      var done = checkedIn(nodes);
+      var complete = nodes.length > 0 && done === nodes.length;
+      // 任意のステップは、手を付けていなければ畳んでおく
+      if (optional(step) && done === 0) { step.open = false; return; }
+      step.open = !complete || warned(step);
+    });
+  }
+
+  // ---- ステップ以降の3セクション ----
+  function renderMeta(meta) {
+    mount('meta', [defs('kv', [
+      ['作業用ディレクトリ', value(meta.workdir, 'meta.workdir')],
+      ['検査用モジュールの置き場所', value(meta.moduleDir, 'meta.moduleDir')],
+      ['katachi のバージョン', value(meta.version, 'meta.version')],
+      ['Kotlin', value(meta.kotlin, 'meta.kotlin')],
+      ['JVM toolchain', value(meta.jvmToolchain, 'meta.jvmToolchain')],
+      ['Git 管理下', value(meta.git, 'meta.git')],
+      ['対象プロジェクトのルート', value(meta.projectRoot, 'meta.projectRoot')],
+      ['実行日時', value(meta.ranAt, 'meta.ranAt')]
+    ])]);
+  }
+
+  // 書き方の方針。key / 問い / 推奨（null は「検出」で、推奨との比較をしない）
+  var PREFERENCE_KEYS = [
+    ['nestedGroups', 'group を入れ子にするか', 'yes'],
+    ['testFramework', 'テストのフレームワーク', null],
+    ['dependencyStyle', '依存の書き方', null],
+    ['constraintNames', '制約名に確認事項の番号を入れるか', 'plain'],
+    ['oneRolePerFile', '1 Role 1 ファイルで書くか', 'yes']
+  ];
+  function renderPreferences(preferences) {
+    var known = PREFERENCE_KEYS.map(function (spec) { return spec[0]; });
+    var extra = Object.keys(preferences).filter(function (key) { return known.indexOf(key) < 0; });
+    var specs = PREFERENCE_KEYS.concat(extra.map(function (key) { return [key, '', null]; }));
+    var differs = [];
+    var rows = specs.map(function (spec, index) {
+      var key = spec[0];
+      var raw = preferences[key];
+      var recorded = !blank(raw);
+      var valueCell = el('span');
+      if (recorded) {
+        valueCell.textContent = String(raw);
+      } else {
+        var muted = el('span', 'empty');
+        muted.textContent = spec[2] === null ? '未記録（検出した値を使う）' : '未記録（推奨のまま）';
+        valueCell.appendChild(muted);
+      }
+      var recommended = document.createTextNode(spec[2] === null ? '検出' : spec[2]);
+      if (recorded && spec[2] !== null && String(raw) !== spec[2]) {
+        differs.push(index);
+        var mark = el('span', 'pref-mark');
+        mark.textContent = ' 推奨と違う';
+        valueCell.appendChild(mark);
+      }
+      return [document.createTextNode(key), document.createTextNode(spec[1]), valueCell, recommended];
+    });
+    var table = tableOf(['key', '問い', '値', '推奨'], rows);
+    var trs = table.querySelectorAll('tbody tr');
+    differs.forEach(function (index) { trs[index].classList.add('pref-differs'); });
+    mount('preferences', [table]);
+  }
+
+  function renderViolations(violations) {
+    mount('violationCount', [document.createTextNode(countLabel(violations))]);
+    if (!countOf(violations)) { mount('violations', [none('なし（All green）')]); return; }
+    var rows = entries(violations).map(function (item) {
+      return [
+        value(item.violation, 'violations[].violation'),
+        value(item.location, 'violations[].location'),
+        value(item.whyNotFixed, 'violations[].whyNotFixed'),
+        value(item.suggestion, 'violations[].suggestion')
+      ];
+    });
+    mount('violations', [tableOf(['違反', '場所', '直さなかった理由', 'どうするのがよさそうか'], rows, 'text-first')]);
+  }
+
+  function renderChangedFiles(changed) {
+    mount('changedCount', [document.createTextNode(countLabel(changed))]);
+    if (!countOf(changed)) { mount('changedFiles', [none()]); return; }
+    var rows = entries(changed).map(function (item) {
+      return [
+        value(item.path, 'changedFiles[].path'),
+        value(item.change, 'changedFiles[].change'),
+        value(item.summary, 'changedFiles[].summary')
+      ];
+    });
+    mount('changedFiles', [tableOf(['パス', '新規 / 変更', '内容'], rows)]);
+  }
+
+  // ---- 確認事項の回答欄（レポートにも同じ関数がある。JS は共有できない） ----
+  var ANSWER_TARGET = 'check-list';
+  var ANSWER_FILE = 'katachi-answers-check-list.json';
+  // { id, recommendation, radios, free, card }
+  var answerCards = [];
+
+  // チェックリストの確認事項の id は q<n>（レポートは cq<n>）
+  function questionId(item, index) {
+    return blank(item.id) ? 'q' + (index + 1) : String(item.id);
+  }
+  // 入力途中の下書き。localStorage が使えなくても描画は壊さない
+  function draftKey(id) { return location.href.split('#')[0] + '#answer:' + id; }
+  function readDraft(id) {
+    try {
+      var raw = localStorage.getItem(draftKey(id));
+      return raw ? record(JSON.parse(raw)) : null;
+    } catch (error) {
+      return null;
+    }
+  }
+  function writeDraft(id, draft) {
+    try {
+      if (draft) localStorage.setItem(draftKey(id), JSON.stringify(draft));
+      else localStorage.removeItem(draftKey(id));
+    } catch (error) { /* 保存できなくても続ける */ }
+  }
+  // 回答欄の状態。選択肢を選んでいれば自由記入は note、選んでいなければ自由記入が answer
+  function readCard(entry) {
+    var picked = entry.radios.filter(function (radio) { return radio.checked; })[0];
+    var free = entry.free.value.replace(/^\s+|\s+$/g, '');
+    if (picked) return { answer: picked.value, note: free || null };
+    if (free) return { answer: free, note: null };
+    return null;
+  }
+  function fillCard(entry, answer) {
+    var found = false;
+    entry.radios.forEach(function (radio) {
+      radio.checked = !found && radio.value === answer.answer;
+      if (radio.checked) found = true;
+    });
+    var note = blank(answer.note) ? '' : String(answer.note);
+    entry.free.value = found ? note : [answer.answer || '', note].filter(Boolean).join('\n');
+  }
+  function paintAnswers() {
+    var answered = 0;
+    answerCards.forEach(function (entry) {
+      var current = readCard(entry);
+      entry.card.classList.toggle('is-answered', current !== null);
+      if (current) answered += 1;
+    });
+    mount('answeredCount', [document.createTextNode(answered ? '回答済み ' + answered + ' 件' : '')]);
+  }
+  function onCardInput(entry) {
+    writeDraft(entry.id, readCard(entry));
+    paintAnswers();
+  }
+  // 推奨の先頭の文字（"B。..."）が選択肢の記号なら、その選択肢を選ぶ。そうでなければ文を自由記入に入れる
+  function adoptRecommendation(entry) {
+    var text = blank(entry.recommendation) ? '' : String(entry.recommendation).replace(/^\s+/, '');
+    var match = /^([A-Z])(?![A-Za-z])/.exec(text);
+    var index = match ? match[1].charCodeAt(0) - 65 : -1;
+    if (index >= 0 && index < entry.radios.length) {
+      entry.radios[index].checked = true;
+    } else if (text) {
+      entry.radios.forEach(function (radio) { radio.checked = false; });
+      entry.free.value = text;
+    }
+    onCardInput(entry);
+  }
+  function collectAnswers() {
+    var out = {};
+    var now = new Date().toISOString();
+    answerCards.forEach(function (entry) {
+      var current = readCard(entry);
+      if (!current) return;
+      out[entry.id] = { answer: current.answer, note: current.note, answeredAt: now };
+    });
+    return out;
+  }
+  function answersJson() {
+    return JSON.stringify({ target: ANSWER_TARGET, answers: collectAnswers() }, null, 2) + '\n';
+  }
+  function setAnswerStatus(text, isError) {
+    var status = document.getElementById('answer-status');
+    var manual = document.getElementById('answer-manual');
+    if (!status || !manual) return;
+    status.textContent = text;
+    status.classList.toggle('is-error', isError === true);
+    manual.hidden = true;
+  }
+  // 自動で渡せなかったときは JSON をそのまま出して、手で選んでもらう
+  function showManualAnswers(text, message) {
+    setAnswerStatus(message, true);
+    var manual = document.getElementById('answer-manual');
+    if (!manual) return;
+    manual.value = text;
+    manual.hidden = false;
+    manual.focus();
+    manual.select();
+  }
+  function downloadAnswers() {
+    var text = answersJson();
+    try {
+      var url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+      var a = el('a');
+      a.setAttribute('href', url);
+      a.setAttribute('download', ANSWER_FILE);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      setAnswerStatus(ANSWER_FILE + ' を保存しました。AI エージェントに渡してください。');
+    } catch (error) {
+      showManualAnswers(text, 'ダウンロードできませんでした。下の JSON を手で選んでコピーし、AI エージェントに渡してください。');
+    }
+  }
+  function copyAnswers() {
+    var text = answersJson();
+    function done() { setAnswerStatus('回答の JSON をコピーしました。AI エージェントに貼り付けて渡してください。'); }
+    function fallback() {
+      var box = el('textarea');
+      box.value = text;
+      box.setAttribute('readonly', '');
+      box.style.position = 'fixed';
+      box.style.left = '-9999px';
+      document.body.appendChild(box);
+      box.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (error) { ok = false; }
+      document.body.removeChild(box);
+      if (ok) done();
+      else showManualAnswers(text, 'コピーできませんでした。下の JSON を手で選んでコピーしてください。');
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else {
+      fallback();
+    }
+  }
+  function clearAnswers() {
+    answerCards.forEach(function (entry) {
+      entry.radios.forEach(function (radio) { radio.checked = false; });
+      entry.free.value = '';
+      writeDraft(entry.id, null);
+    });
+    paintAnswers();
+    setAnswerStatus('回答を消しました（この JSON に取り込み済みの回答は、再読み込みで戻ります）。');
+  }
+  function actionButton(label, handler, primary) {
+    var button = el('button', primary ? 'action-button is-primary' : 'action-button');
+    button.type = 'button';
+    button.textContent = label;
+    button.addEventListener('click', handler);
+    return button;
+  }
+  function renderAnswerActions() {
+    var status = el('p', 'answer-status');
+    status.id = 'answer-status';
+    var manual = el('textarea', 'answer-manual');
+    manual.id = 'answer-manual';
+    manual.setAttribute('readonly', '');
+    manual.setAttribute('aria-label', '回答の JSON');
+    manual.hidden = true;
+    mount('answerActions', [
+      actionButton('すべて推奨を採用', function () { answerCards.forEach(adoptRecommendation); }),
+      actionButton('回答を書き出す（ダウンロード）', downloadAnswers, true),
+      actionButton('回答をコピー', copyAnswers),
+      actionButton('回答を消す', clearAnswers),
+      status,
+      manual
+    ]);
+  }
+
+  function questionCard(item, index, answers) {
+    var id = questionId(item, index);
+    var card = el('details', 'qa');
+    var summary = el('summary');
+    var badge = el('span', 'qa-num');
+    badge.textContent = id;
+    var title = el('span', 'qa-title');
+    title.appendChild(value(item.question, 'questions[].question'));
+    summary.appendChild(badge);
+    summary.appendChild(title);
+
+    var body = el('div', 'qa-body');
+    body.appendChild(subHeading('観測したこと'));
+    body.appendChild(paragraph(richText(item.observed, 'questions[].observed')));
+    var pick = el('div', 'qa-pick');
+    pick.appendChild(subHeading('推奨'));
+    pick.appendChild(paragraph(value(item.recommendation, 'questions[].recommendation')));
+    body.appendChild(pick);
+
+    // 回答欄
+    var imported = answers[id] ? record(answers[id]) : null;
+    var answer = el('div', 'qa-answer');
+    var head = subHeading('回答');
+    if (imported) {
+      var mark = el('span', 'qa-imported');
+      mark.textContent = '取り込み済み';
+      head.appendChild(mark);
+    }
+    answer.appendChild(head);
+    var entry = { id: id, recommendation: item.recommendation, radios: [], free: null, card: card };
+    if (blank(item.options)) {
+      answer.appendChild(paragraph(unfilled('questions[].options')));
+    } else {
+      var ul = el('ul', 'qa-answer-list');
+      item.options.forEach(function (option, i) {
+        var li = el('li');
+        var label = el('label');
+        var radio = el('input');
+        radio.type = 'radio';
+        radio.name = 'answer-' + id;
+        radio.value = String(option);
+        radio.addEventListener('change', function () { onCardInput(entry); });
+        var letter = el('span', 'option-letter');
+        letter.textContent = String.fromCharCode(65 + i);
+        var text = el('span');
+        text.textContent = String(option);
+        label.appendChild(radio);
+        label.appendChild(letter);
+        label.appendChild(text);
+        li.appendChild(label);
+        ul.appendChild(li);
+        entry.radios.push(radio);
+      });
+      answer.appendChild(ul);
+    }
+    var free = el('textarea');
+    free.setAttribute('aria-label', id + ' の自由記入');
+    free.setAttribute('placeholder', '自由記入（選択肢を選んだときは補足になります）');
+    free.addEventListener('input', function () { onCardInput(entry); });
+    entry.free = free;
+    answer.appendChild(free);
+    answer.appendChild(actionButton('推奨を採用', function () { adoptRecommendation(entry); }));
+    body.appendChild(answer);
+
+    // JSON に取り込み済みの回答があればそれを、無ければ下書きを出す。未回答のカードは開いておく
+    var initial = imported || readDraft(id);
+    if (initial) fillCard(entry, initial);
+    card.open = !initial;
+    answerCards.push(entry);
+
+    card.appendChild(summary);
+    card.appendChild(body);
+    return card;
+  }
+
+  function renderQuestions(questions, answers) {
+    answerCards = [];
+    mount('questionCount', [document.createTextNode(countLabel(questions))]);
+    if (!countOf(questions)) { mount('questions', [none()]); return; }
+    mount('questions', entries(questions).map(function (item, index) {
+      return questionCard(item, index, answers);
+    }));
+    renderAnswerActions();
+    paintAnswers();
+  }
+
+  function renderError(message) {
+    var box = el('div', 'error-box');
+    var title = el('p');
+    title.textContent = 'チェックリストのデータ（このファイル内の JSON）を読めませんでした。';
+    var detail = el('p');
+    detail.textContent = message;
+    box.appendChild(title);
+    box.appendChild(detail);
+    mount('error', [box]);
+  }
+
+  function openWhilePrinting() {
+    var saved = null;
+    addEventListener('beforeprint', function () {
+      var folds = Array.prototype.slice.call(document.querySelectorAll('details'));
+      saved = folds.map(function (box) { return [box, box.open]; });
+      folds.forEach(function (box) { box.open = true; });
+    });
+    addEventListener('afterprint', function () {
+      if (!saved) return;
+      saved.forEach(function (pair) { pair[0].open = pair[1]; });
+      saved = null;
+    });
+  }
+
+  function boot() {
+    var data = {};
+    try {
+      data = record(JSON.parse(document.getElementById('checklist').textContent));
+    } catch (error) {
+      dataOk = false;
+      renderError(error && error.message ? error.message : String(error));
+    }
+    renderMeta(record(data.meta));
+    renderSteps(data.steps);
+    renderPreferences(record(data.preferences));
+    if (!blank(data.reportHref)) {
+      var href = String(data.reportHref);
+      document.getElementById('report-link').setAttribute('href', href);
+      var card = document.getElementById('cross-link');
+      card.setAttribute('href', href);
+      card.hidden = false;
+    }
+    renderViolations(data.violations);
+    renderQuestions(data.questions, record(data.answers));
+    renderChangedFiles(data.changedFiles);
+    foldFinishedSteps();
+    paint();
+
+    boxes.forEach(function (box) { box.addEventListener('change', paint); });
+    document.getElementById('toggle-all').addEventListener('click', function () {
+      var opening = stepNodes.some(function (step) { return !step.open; });
+      stepNodes.forEach(function (step) { step.open = opening; });
+      this.textContent = opening ? 'すべて閉じる' : 'すべて開く';
+    });
+    openWhilePrinting();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
+</script>
+</body>
+</html>

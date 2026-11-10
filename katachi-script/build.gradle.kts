@@ -38,6 +38,8 @@ tasks.test {
     // MessagesSpec reads the dictionary and the sources themselves, not only the compiled classes.
     inputs.file(rootProject.layout.projectDirectory.file("docs/prh.yml")).withPropertyName("prhDictionary")
     inputs.dir(layout.projectDirectory.dir("src/main/kotlin")).withPropertyName("mainSources")
+    // KatachiSkillSpec and the setup table check read the katachi skill (its steps and templates).
+    inputs.dir(rootProject.layout.projectDirectory.dir("skills/katachi")).withPropertyName("katachiSkill")
 }
 
 // `katachi --version` reads this; MANIFEST's Implementation-Version is null from a class directory.
@@ -47,23 +49,6 @@ tasks.processResources {
     filesMatching("META-INF/katachi-script/version.properties") {
         expand("katachiVersion" to katachiVersion)
     }
-}
-
-// The guide and the two templates `init` places and `guide` reads, bundled so that neither needs
-// the network (KATACHI-228). They are written for the `katachi` command (KATACHI-287), so they are
-// copied as they are.
-val bundleInstallKit = tasks.register<Sync>("bundleInstallKit") {
-    description = "Copies the install guide and templates from docs/public/install into the resources."
-    from(rootProject.layout.projectDirectory.dir("docs/public/install")) {
-        include("ja/index.md", "en/index.md")
-        include("ja/install-check-list.html", "en/install-check-list.html")
-        include("ja/project-code-base-report-template.html", "en/project-code-base-report-template.html")
-    }
-    into(layout.buildDirectory.dir("generated/installKit/META-INF/katachi-script/install"))
-}
-
-sourceSets.main {
-    resources.srcDir(bundleInstallKit.map { layout.buildDirectory.dir("generated/installKit").get() })
 }
 
 // What `brew install tbsten/tap/katachi` unpacks: the `.main.kts` entry point pinned to this

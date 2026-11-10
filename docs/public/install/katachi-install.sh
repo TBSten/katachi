@@ -41,6 +41,8 @@ set -eu
 # init に渡した値は作業用ディレクトリ（tmp/cache/docs）に記録され、以降のコマンドは環境変数が
 # 無ければそれを使う（resolve_docs）。init にだけ渡して docs が黙って本番を取る、を防ぐため。
 KATACHI_DOCS_DEFAULT="https://tbsten.github.io/katachi"
+# チェックリストとレポートのテンプレートは 0.4.0 から katachi skill の assets/ にある（配信サイトには置かない）。
+KATACHI_TEMPLATES="${KATACHI_TEMPLATES:-https://raw.githubusercontent.com/TBSten/katachi/main/skills/katachi/assets}"
 KATACHI_DOCS_ENV="${KATACHI_DOCS:-}"
 KATACHI_DOCS="${KATACHI_DOCS:-$KATACHI_DOCS_DEFAULT}"
 
@@ -1678,7 +1680,7 @@ cmd_init() {
 			# Kotlin を上げてから init し直したときに、記録が古い版のまま残らないように。
 			[ -z "${kotlin_version:-}" ] || update_checklist_meta "$_cl" kotlin "$kotlin_version"
 		else
-			fetch_once "$KATACHI_DOCS/install/$KATACHI_LANG/install-check-list.html" "$_cl" yes
+			fetch_once "$KATACHI_TEMPLATES/$KATACHI_LANG/check-list.html" "$_cl" yes
 			write_checklist_data "$_cl" \
 				"$init_workdir" "$init_version" "$project_root" \
 				"${kotlin_version:-}" "$git_state" "$MODULE_DIR"
@@ -1690,7 +1692,7 @@ cmd_init() {
 			note "すでにあるので残しました: $(file_uri "$_rp")" \
 				"Kept (already there): $(file_uri "$_rp")"
 		else
-			fetch_once "$KATACHI_DOCS/install/$KATACHI_LANG/project-code-base-report-template.html" "$_rp" yes
+			fetch_once "$KATACHI_TEMPLATES/$KATACHI_LANG/project-code-base-report.html" "$_rp" yes
 			write_report_data "$_rp" "$project_root"
 			note "配置しました:        $(file_uri "$_rp")" \
 				"Placed:             $(file_uri "$_rp")"

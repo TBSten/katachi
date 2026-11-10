@@ -24,7 +24,7 @@ import me.tbsten.katachi.script.option.Lang
  * defaultPackage = "com.example.app"
  *
  * executeCommands(
- *     katachi.agent.init.lang(ja),
+ *     katachi.doctor.lang(ja),
  *     katachi.scaffold.`test-framework`(kotest),
  * )
  * ```
@@ -42,17 +42,14 @@ public abstract class KatachiScript(public val args: Array<String>) {
     /** [Katachi.defaultPackage]: the `--package` every `scaffold` starts with. */
     public var defaultPackage: String? = null
 
-    /** [Katachi.katachiVersion]: the `--katachi` every `init` and `scaffold` starts with. */
+    /** [Katachi.katachiVersion]: the `--katachi` every `scaffold` starts with. */
     public var katachiVersion: String? = null
 
-    /** [Katachi.moduleDir]: the `--module-dir` every `init` and `scaffold` starts with. */
+    /** [Katachi.moduleDir]: the `--module-dir` every `scaffold` starts with. */
     public var moduleDir: String? = null
 
-    /** [Katachi.lang]: the `--lang` every `init` starts with. */
+    /** [Katachi.lang]: the `--lang` every `doctor` starts with. */
     public var lang: Lang? = null
-
-    /** [Katachi.workdir]: the `--workdir` every `init` starts with. */
-    public var workdir: String? = null
 
     /**
      * [Katachi.cwd]: where the commands run.
@@ -75,7 +72,6 @@ public abstract class KatachiScript(public val args: Array<String>) {
             katachiVersion = katachiVersion,
             moduleDir = moduleDir,
             lang = lang,
-            workdir = workdir,
             cwd = cwd,
             runner = runner,
             echo = echo,

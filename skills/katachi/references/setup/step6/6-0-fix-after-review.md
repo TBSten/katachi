@@ -1,0 +1,9 @@
+### 6-0. Fix the definition after review
+
+This section is for when the user has looked at your report from step 6 and the definition and sent back comments. It has no checklist item.
+
+There is one thing to do. Check the user's comments against the questions (`questions` and `answers` of both files) and the violations left in place (the checklist's `violations`), fix the definition, and confirm the counts with `katachi agent test`. Look at the summary's diff to see that the fixed definition has not added any `[UnexpectedFile]`.
+
+If the user's reply answers a question, write it into `answers` before fixing (the id decides the file: `cq…` the report, `q…` the checklist; 0-3). If a comment raises a new question, add it to the checklist's `questions`.
+
+> **The session may end here.** The next session finds the working directory (the directory with `check-list.html` below the project root), reads the checklist's JSON, and goes on from there: from the first item that is not done, or, once step 5 is done, from what the user asks for (6-0, or one of 6-A to 6-D). The sections are in the table in `references/setup/README.md`. The previous session's results are in the checklist and the report; if `tmp/katachi-command.txt` is there, run katachi the way it says (0-1). Do not rely on the conversation's memory.

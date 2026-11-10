@@ -51,7 +51,7 @@ public class ScaffoldCommand internal constructor(
     public fun `package`(name: String): ScaffoldCommand = next(line.with("--package", name))
 
     /**
-     * Same as `katachi scaffold --katachi <version>` on the command line: the katachi version to depend on. Without it, the version `init` recorded.
+     * Same as `katachi scaffold --katachi <version>` on the command line: the katachi version to depend on. Without it, the version of this katachi command.
      *
      * @param version Such as `0.4.0`.
      */

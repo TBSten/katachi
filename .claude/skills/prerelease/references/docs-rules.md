@@ -17,7 +17,7 @@
 ## 対象
 
 - 検査される側: `docs/src/content/docs/ja/` の全ページ（get-started / guides / recipes / roadmap）、`README.ja.md`、
-  `docs/public/install/ja/` の手順書（`index.md` とテンプレート HTML）。ルールの出どころ自身も、他のガイドとの食い違い
+  katachi skill（`skills/katachi/`、英語）と `docs/public/install/ja/` のテンプレート HTML。ルールの出どころ自身も、他のガイドとの食い違い
   （例: role.mdx の例が basic-api.mdx の「1 Role 1種類」に反する）は検査する。
 - ルールの出どころ（既定）: `docs/src/content/docs/ja/guides/` の `basic-api.mdx`・`role.mdx`・`layout.mdx`。
 
@@ -63,7 +63,7 @@ PascalCase、`"build".ignore()` を推奨形にする、`anyFile()`/`ignore()` �
    - `get-started/` ＋ `roadmap.mdx`
    - `guides/`（出どころのガイド自身を含む。1体が大きすぎれば前半・後半に）
    - `recipes/`
-   - `README.ja.md` ＋ `docs/public/install/ja/`
+   - `README.ja.md` ＋ `skills/katachi/` ＋ `docs/public/install/ja/`
 3. 各 subagent に渡すもの: `tmp/docs-rules/rules.md`、担当ファイルの一覧、下の「指示に入れること」、priority の基準表。
    コードブロックごと（ハイライト行・`.template` の改行・書き方）と本文ごと（用語・説明）に、全項目を当てさせる。
    「該当なし」で済ませず、コード例の数と見たコード例の数を報告させる。

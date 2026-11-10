@@ -29,10 +29,9 @@ internal const val CHECK_LIST_FILE: String = "check-list.html"
 internal const val REPORT_FILE: String = "project-code-base-report.html"
 
 /**
- * The working directory `init` made. The kit script finds it by its own location, because `init`
- * copies the script there; the `katachi` command lives in Homebrew's cellar instead, so it looks
- * at `KATACHI_WORKDIR` first and then below the current directory for the `check-list.html` that
- * `init` wrote.
+ * The working directory of the katachi skill's setup: a directory with `check-list.html` and `tmp/`,
+ * which the agent copies from the skill. It is looked up at `KATACHI_WORKDIR` first and then below
+ * the current directory. Commands that use it work without it too.
  */
 internal fun ScriptContext.lookupWorkdir(): WorkdirLookup {
     env["KATACHI_WORKDIR"]?.takeIf { it.isNotBlank() }?.let { configured ->
@@ -58,17 +57,13 @@ internal fun ScriptContext.lookupWorkdir(): WorkdirLookup {
 
 internal fun ScriptContext.findWorkdir(): Path? = (lookupWorkdir() as? WorkdirLookup.Found)?.path
 
-internal fun ScriptContext.requireWorkdir(): Path = when (val lookup = lookupWorkdir()) {
-    is WorkdirLookup.Found -> lookup.path
-    WorkdirLookup.NotFound -> die(Messages.Workdir.cannotFindWorkingDirectory)
-    is WorkdirLookup.Ambiguous -> die(Messages.Workdir.workdirAmbiguous(lookup.candidates.joinToString(" ") { fileUri(it) }))
-}
+private val HTML_LANG = Regex("<html[^>]*\\slang=\"([a-z]+)\"")
 
-/** The language `init --lang` recorded, which the kit lets win over `KATACHI_LANG`. */
+/** The language of the check list the katachi skill copied into [workdir]: its `<html lang="...">`. */
 internal fun recordedLang(workdir: Path): Lang? {
-    val file = workdir.resolve("tmp/cache/lang")
+    val file = workdir.resolve(CHECK_LIST_FILE)
     if (!file.isRegularFile()) return null
-    return Lang.of(file.readText().trim())
+    return Lang.of(HTML_LANG.find(file.readText().take(2000))?.groupValues?.get(1))
 }
 
 /** A non-empty file's text, or null. The kit's `[ -s file ] && cat file`. */
@@ -86,7 +81,7 @@ internal fun readJsonBlockOrNull(html: Path, id: String): JsonObject? {
 /** `meta.<key>` of the check list as a string; empty when it is missing or not a string. The kit's `read_checklist_meta`. */
 internal fun checklistMeta(checkList: Path, key: String): String = stringField(readJsonBlockOrNull(checkList, "checklist")?.get("meta"), key)
 
-/** `preferences.<key>` of the check list; empty when there is none. The kit's `read_preference`. */
+/** `preferences.<key>` of the check list; empty when there is none. */
 internal fun ScriptContext.preference(key: String): String {
     val workdir = findWorkdir() ?: return ""
     return stringField(readJsonBlockOrNull(workdir.resolve(CHECK_LIST_FILE), "checklist")?.get("preferences"), key)
@@ -103,7 +98,7 @@ internal const val MODULE_DIR_DEFAULT: String = "architecture-test"
 
 private val MODULE_DIR_PATTERN = Regex("^[A-Za-z0-9_][A-Za-z0-9_.-]*(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$")
 
-/** Stops unless [value] is a path relative to the Gradle root. init / scaffold `--module-dir` and `preferences set moduleDir` share it. */
+/** Stops unless [value] is a path relative to the Gradle root (scaffold `--module-dir`). */
 internal fun validateModuleDir(value: String) {
     if (!MODULE_DIR_PATTERN.matches(value)) {
         die(Messages.Workdir.moduleDirMustPath(value))
@@ -137,7 +132,7 @@ internal fun ScriptContext.resolveModuleDir(arg: String? = null): ModuleDir {
     return module
 }
 
-/** The project root `init` recorded, or the current directory. */
+/** `meta.projectRoot` of the check list, or the current directory. */
 internal fun ScriptContext.projectRoot(): Path {
     val recorded = findWorkdir()?.let { checklistMeta(it.resolve(CHECK_LIST_FILE), "projectRoot") } ?: ""
     return if (recorded.isNotEmpty()) resolve(recorded) else cwd

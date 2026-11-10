@@ -166,8 +166,8 @@ priority 10 の警告。結果は `ci-checks.md`、ログは `tmp/ci-checks/`。
 ## 9. インストールキットのチェック
 
 - 9-1: `build-katachi-cli.sh` で katachi コマンド（brew で配るのと同じ形の `bin/katachi`）を組み、先に `check-install-kit-smoke.sh`
-  （fixture の Gradle は起動しない。5〜10 分）でサブコマンドの振る舞いを確かめ、次に `check-install-kit.sh` で
-  合成の Gradle プロジェクト（fixture。16 種）に `katachi agent init` → `katachi scaffold` → `katachi agent test` を通し、
+  （fixture の Gradle は起動しない。2〜5 分）でサブコマンドの振る舞いを確かめ、次に `check-install-kit.sh` で
+  合成の Gradle プロジェクト（fixture。16 種）に作業用ディレクトリ（skill のテンプレート）→ `katachi scaffold` → `katachi agent test` を通し、
   「Unexpected だけで落ちる」（配線は正しい）かを確かめる。
   オーケストレータが自分で走らせてよい。1つでも NG なら priority 10 の警告。結果は `install-kit.md`、fixture とログは `tmp/install-kit/`。
 - 9-2: 統合テスト。subagent（opus）が AI エージェントとして手順書（ja / en）どおりに実在のプロジェクトの写しへ最後まで導入し、
@@ -178,7 +178,7 @@ priority 10 の警告。結果は `ci-checks.md`、ログは `tmp/ci-checks/`。
 
 ## 11. ドキュメントがガイドのルールに沿っているか
 
-日本語の全ページ・README.ja.md・`docs/public/install/ja/` のコード例と本文が、ガイドに書かれたルール・ベストプラクティスに
+日本語の全ページ・README.ja.md・katachi skill（`skills/katachi/`）のコード例と本文が、ガイドに書かれたルール・ベストプラクティスに
 沿っているかを確かめる（直さず報告する）。ルールの出どころは既定で `docs/src/content/docs/ja/guides/` の basic-api・role・
 layout。**チェックの前に**、ほかのガイド（generate-code-from-template・processor・baseline など）と
 `docs/AGENTS.md` にもルールがあるかを確かめ、あれば対象に足して、何をどこから拾ったかを結果に書く。

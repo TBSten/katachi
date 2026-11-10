@@ -33,6 +33,17 @@ class TestCommandSpec : FreeSpec({
             fixture.workdir.resolve("tmp/test-before.log").readText() shouldBe latest.readText()
         }
 
+        "作業用ディレクトリが無ければ、プロジェクトの build/katachi/ にログを残す（KATACHI-329）" {
+            val fixture = TestFixture(withWorkdir = false)
+            fixture.gradleOutput(FAILED_LOG, status = 1)
+
+            val run = fixture.run("agent", "test", "--save", "before")
+
+            run.status shouldBe 1
+            fixture.project.resolve("build/katachi/test/latest.log").readText() shouldContain "[UnexpectedFile] app/src/Foo.kt"
+            fixture.project.resolve("build/katachi/test-before.log").exists() shouldBe true
+        }
+
         "検査用モジュールの test を、全件を出す -D つきで呼ぶ（-- の後ろはそのまま渡す）" {
             val fixture = TestFixture()
             fixture.gradleOutput(PASSED_LOG, status = 0)
@@ -193,7 +204,7 @@ class TestCommandSpec : FreeSpec({
         "ログが無ければ保存先を案内して止まる" {
             val run = TestFixture().run("agent", "compare-violations")
             run.status shouldBe 1
-            run.err shouldContain "test-before-refactor.log がありません。./gradlew :architecture-test:test の出力をこのパスに保存してください"
+            run.err shouldContain "test-before-refactor.log がありません。katachi agent test --save <名前> で取るか、./gradlew :architecture-test:test の出力をこのパスに保存してください"
         }
 
         "比べるログを引数で指定できる" {
@@ -217,8 +228,8 @@ private val FAILED_LOG = """
 
 private val PASSED_LOG = "> Task :architecture-test:test\nBUILD SUCCESSFUL in 3s"
 
-/** A project with a working directory, a definition directory and a `gradlew` that prints [gradleOutput]. */
-private class TestFixture(withDefinition: Boolean = true) {
+/** A project with a working directory (unless not [withWorkdir]), a definition directory and a `gradlew` that prints [gradleOutput]. */
+private class TestFixture(withDefinition: Boolean = true, private val withWorkdir: Boolean = true) {
     val project: Path = createTempDirectory("katachi-project-")
     val workdir: Path = workdirWith("""{"meta": {"projectRoot": "$project"}, "steps": []}""")
 
@@ -242,5 +253,9 @@ private class TestFixture(withDefinition: Boolean = true) {
 
     // test hands Gradle only this environment, so the script needs PATH for cat.
     fun run(vararg args: String): RecordedRun =
-        runCapturing(project, args.toList(), env = mapOf("KATACHI_WORKDIR" to workdir.toString(), "PATH" to System.getenv("PATH")))
+        runCapturing(
+            project,
+            args.toList(),
+            env = mapOf("PATH" to System.getenv("PATH")) + if (withWorkdir) mapOf("KATACHI_WORKDIR" to workdir.toString()) else emptyMap(),
+        )
 }

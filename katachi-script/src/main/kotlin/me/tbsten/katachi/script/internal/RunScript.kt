@@ -1,13 +1,18 @@
 package me.tbsten.katachi.script.internal
 
 /** The subcommands that do not read --help themselves: a --help anywhere prints the usage, never "needs a value". */
-private val HELP_ANYWHERE = setOf(
-    "data", "check", "uncheck", "warn", "lint", "compare-violations", "verify", "summary", "guide", "test", "preferences", "answers",
-    "init", "doctor", "scaffold", "docs",
-)
+private val HELP_ANYWHERE = setOf("lint", "compare-violations", "test", "doctor", "scaffold")
 
-/** `katachi agent <name>`: the steps of the install guide (KATACHI-290). */
+/** `katachi agent <name>`: the commands the katachi skill's steps run (KATACHI-290 / 329). */
 private val AGENT_COMMANDS: Set<String> = COMMAND_SPECS.filter { it.agent }.map { it.name }.toSet()
+
+/**
+ * The agent subcommands the katachi skill replaced (KATACHI-329). Older notes and docs still name them, with or
+ * without `agent`, so they get a pointer to the skill instead of "unknown subcommand".
+ */
+private val REMOVED_FOR_THE_SKILL = setOf(
+    "init", "guide", "docs", "data", "check", "uncheck", "warn", "verify", "add", "preferences", "answers", "summary",
+)
 
 private fun isHelp(arg: String?): Boolean = arg == "-h" || arg == "--help"
 
@@ -35,6 +40,8 @@ internal fun runScript(args: List<String>, context: ScriptContext): Int {
 
             command in AGENT_COMMANDS -> die(Messages.RunScript.commandsAiAgentRuns(command))
 
+            command in REMOVED_FOR_THE_SKILL -> die(Messages.RunScript.removedForTheSkill("$CLI_COMMAND $command"))
+
             command in HELP_ANYWHERE && rest.any(::isHelp) -> {
                 context.out(context.usage())
                 0
@@ -59,9 +66,10 @@ private fun ScriptContext.runAgent(args: List<String>): Int {
             0
         }
 
+        command in REMOVED_FOR_THE_SKILL -> die(Messages.RunScript.removedForTheSkill("$AGENT_COMMAND $command"))
+
         command !in AGENT_COMMANDS -> die(Messages.RunScript.notSubcommandSeeHelp(command))
 
-        // add reads --help itself: `agent add role --help` lists the fields of a role.
         command in HELP_ANYWHERE && rest.any(::isHelp) -> {
             out(agentUsage())
             0
@@ -73,38 +81,22 @@ private fun ScriptContext.runAgent(args: List<String>): Int {
 
 private fun ScriptContext.dispatch(command: String, args: List<String>): Int = when (command) {
     "doctor" -> runDoctor(args)
-    "init" -> runInit(args)
     "scaffold" -> runScaffold(args)
-    "data" -> runData(args)
-    "docs" -> runDocs(args)
-    "guide" -> runGuide(args)
     "test" -> runTest(args)
-    "check" -> runCheck(args)
-    "uncheck" -> runUncheck(args)
-    "warn" -> runWarn(args)
-    "add" -> runAdd(args)
-    "preferences" -> runPreferences(args)
-    "answers" -> runAnswers(args)
     "lint" -> runLint()
     "compare-violations" -> runCompareViolations(args)
-    "verify" -> runVerify()
-    "summary" -> runSummary()
     "internal" -> runInternal(args)
     else -> die(Messages.RunScript.unknownSubcommandSeeHelp(command))
 }
 
 /**
- * The kit's `resolve_lang`: init defaults to en; the others read what init recorded, then
- * `KATACHI_LANG`, then ja. `--lang` on init / doctor / guide wins (they set it while parsing, which
- * is too late for --help, so it is read here first).
+ * The language of the messages: `--lang` on doctor, then the language of the check list the katachi skill
+ * placed in the working directory (its `<html lang>`), then `KATACHI_LANG`, then ja. `--lang` is read here
+ * first because parsing sets it too late for --help.
  */
 private fun ScriptContext.resolveLang(command: String, args: List<String>) {
-    lang = if (command == "init") {
-        Lang.of(env["KATACHI_LANG"]) ?: Lang.EN
-    } else {
-        findWorkdir()?.let(::recordedLang) ?: Lang.of(env["KATACHI_LANG"]) ?: Lang.JA
-    }
-    if (command in setOf("init", "doctor", "guide")) {
+    lang = findWorkdir()?.let(::recordedLang) ?: Lang.of(env["KATACHI_LANG"]) ?: Lang.JA
+    if (command == "doctor") {
         val index = args.indexOf("--lang")
         Lang.of(args.getOrNull(index + 1).takeIf { index >= 0 })?.let { lang = it }
     }

@@ -2,7 +2,7 @@
 # リリース前チェックの 9-1（インストールキットのチェック）。
 #
 # katachi コマンド（katachi-script の CLI。brew で入るものと同じ形）を、合成の Gradle プロジェクト（fixture。定義は
-# install-kit-fixtures.sh）で手順書どおりに動かし、katachi agent init → katachi scaffold → katachi agent test が
+# install-kit-fixtures.sh）で手順書どおりに動かし、作業用ディレクトリ → katachi scaffold → katachi agent test が
 # 「配線は正しい」状態になるかを確かめる。
 #
 #   1. katachi コマンドを組む（build-katachi-cli.sh: publishToMavenLocal と :katachi-script:cliDist）。
@@ -10,12 +10,12 @@
 #      --skip-publish を付けない限り回す）
 #   2. katachi --version がリポジトリの版か（古い build や brew の別の版を回していないか）を確かめる
 #   3. fixture ごとに（順番に。Gradle を重ねない）:
-#      - KATACHI_DOCS=file://<repo>/docs/public・KATACHI_MAVEN_LOCAL=1 で
-#        katachi agent init --lang <ja|en> --katachi <今回の版> → katachi scaffold
+#      - KATACHI_MAVEN_LOCAL=1 で、katachi skill の手順 0-1 / 0-2 どおり katachi doctor → 作業用ディレクトリ
+#        （skills/katachi/assets/<ja|en>/ を .local/install-katachi に写して meta を埋める）→ katachi scaffold
 #        （--lang は既定 ja。en を渡すと、出力に日本語が残っていないかも確かめる）
-#        （手順書どおり、init が Kotlin の版を検出できなかったときだけ scaffold に --kotlin を渡す）
-#        （fx_module_dir_<名前> がある fixture は init --module-dir <path>。init が出す KATACHI_MODULE_DIR /
-#          KATACHI_MODULE_PATH を以降の include の確かめ・test のタスク名・toolchain の突き合わせに使う）
+#        （手順書どおり、doctor が Kotlin の版を出さなかったときだけ scaffold に --kotlin を渡す）
+#        （fx_module_dir_<名前> がある fixture は meta.moduleDir にその置き場所を書き、以降の include の確かめ・
+#          test のタスク名・toolchain の突き合わせに使う）
 #        （fx_scaffold_args_<名前> があれば scaffold にその引数を足す。fx_expect_<名前> があれば生成物を grep で検査する）
 #      - settings に検査用モジュールの include が1回だけ、正しい位置（最後の include 文の直後）に入ったか
 #      - settings に dependencyResolutionManagement が無ければ、scaffold の警告どおり mavenLocal() と
@@ -48,7 +48,7 @@ usage() {
   --release-dir   作業場所（結果は <dir>/install-kit.md、fixture とログは <dir>/tmp/install-kit/。--lang en / --only の実行は名前に付けて別に残す）
   --only          指定した fixture だけ走らせる（カンマ区切り）
   --skip-publish  katachi コマンドを組まない（publishToMavenLocal と cliDist。直前に build-katachi-cli.sh を回したとき）
-  --lang          init に渡す言語（既定 ja）。en のときは init / scaffold の出力に日本語が残っていないかも見る
+  --lang          写すチェックリストとレポートの言語（既定 ja）。en のときは doctor / scaffold の出力に日本語が残っていないかも見る
   --cli           katachi コマンド（既定 katachi-script/build/cli/katachi-cli-<版>/bin/katachi。build-katachi-cli.sh が組む）
 EOF
 }
@@ -238,41 +238,53 @@ run_fixture() { # $1 = fixture
 	settings="$d/settings.gradle.kts"
 	[ -f "${settings}" ] || settings="$d/settings.gradle"
 
-	# fx_module_dir_<名前> を持つ fixture は、検査用モジュールの置き場所を init --module-dir で渡す。
-	module_dir_arg=""
+	# fx_module_dir_<名前> を持つ fixture は、検査用モジュールの置き場所をチェックリストの meta.moduleDir に書く。
+	MODULE_DIR="architecture-test"
 	if command -v "fx_module_dir_${fx}" >/dev/null 2>&1; then
-		module_dir_arg="--module-dir `fx_module_dir_${fx}`"
+		MODULE_DIR=`fx_module_dir_${fx}`
 	fi
+	MODULE_PATH=":`printf '%s' "${MODULE_DIR}" | tr '/' ':'`"
+	NOTE="module dir ${MODULE_DIR}"
 
-	export KATACHI_DOCS="file://${REPO}/docs/public"
 	export KATACHI_MAVEN_LOCAL=1
+	# katachi skill の手順 0-1 / 0-2 どおり: doctor を回し、skill のテンプレートを作業用ディレクトリに写して meta を埋める。
+	workdir="$d/.local/install-katachi"
 	{
-		echo "### katachi agent init --lang ${LANG_ARG} --katachi ${VERSION} ${module_dir_arg}"
-		(cd "$d" && "${KATACHI}" agent init --lang "${LANG_ARG}" --katachi "${VERSION}" ${module_dir_arg})
-		echo "init exit=$?"
+		echo "### katachi doctor --lang ${LANG_ARG}"
+		(cd "$d" && "${KATACHI}" doctor --lang "${LANG_ARG}")
+		echo "doctor exit=$?"
 	} >"${setup_log}" 2>&1
-	workdir=`sed -n 's/^KATACHI_WORKDIR=//p' "${setup_log}" | tail -1`
-	case "${workdir}" in /* | "") ;; *) workdir="$d/${workdir}" ;; esac
-	if grep -q "^init exit=0" "${setup_log}" && [ -n "${workdir}" ] && [ -d "${workdir}" ]; then
+	kotlin=`sed -n 's/^.*Kotlin: \([0-9][^ ]*\).*$/\1/p' "${setup_log}" | head -1`
+	{
+		echo "### 作業用ディレクトリ（skills/katachi/assets/${LANG_ARG}/ を写す）"
+		mkdir -p "${workdir}/tmp" &&
+			cp "${REPO}/skills/katachi/assets/${LANG_ARG}/check-list.html" "${workdir}/check-list.html" &&
+			cp "${REPO}/skills/katachi/assets/${LANG_ARG}/project-code-base-report.html" "${workdir}/project-code-base-report.html" &&
+			python3 - "${workdir}/check-list.html" "$d" "${MODULE_DIR}" "${VERSION}" "${kotlin}" <<'PY'
+import json, sys
+path, root, module_dir, version, kotlin = sys.argv[1:]
+lines = open(path, encoding="utf-8").read().split("\n")
+start = lines.index('<script type="application/json" id="checklist">')
+end = lines.index("</script>", start)
+d = json.loads("\n".join(lines[start + 1:end]))
+d["meta"].update(workdir=".local/install-katachi", projectRoot=root, moduleDir=module_dir, version=version, kotlin=kotlin or None, git="yes")
+lines[start + 1:end] = json.dumps(d, ensure_ascii=False, indent=2).split("\n")
+open(path, "w", encoding="utf-8").write("\n".join(lines))
+PY
+		echo "workdir exit=$?"
+	} >>"${setup_log}" 2>&1
+	if grep -q "^doctor exit=0" "${setup_log}" && grep -q "^workdir exit=0" "${setup_log}"; then
 		INIT="OK"
 	else
 		INIT="NG"
 		return
 	fi
-	# init が出す KEY=VALUE から、検査用モジュールの置き場所と Gradle パスを読む（以降の確かめは全部これを使う）。
-	MODULE_DIR=`sed -n 's/^KATACHI_MODULE_DIR=//p' "${setup_log}" | tail -1`
-	MODULE_PATH=`sed -n 's/^KATACHI_MODULE_PATH=//p' "${setup_log}" | tail -1`
-	if [ -z "${MODULE_DIR}" ] || [ -z "${MODULE_PATH}" ]; then
-		INIT="NG: init の出力に KATACHI_MODULE_DIR / KATACHI_MODULE_PATH が無い"
-		return
-	fi
-	NOTE="module dir ${MODULE_DIR}"
 
-	# 手順書どおり、init が Kotlin の版を検出できなかったときだけ --kotlin を渡す。
+	# 手順書どおり、doctor が Kotlin の版を出さなかったときだけ --kotlin を渡す。
 	kotlin_arg=""
-	if grep -q "^KATACHI_KOTLIN=$" "${setup_log}"; then
+	if [ -z "${kotlin}" ]; then
 		kotlin_arg="--kotlin ${K}"
-		NOTE="${NOTE}、init が Kotlin を検出できず --kotlin を渡した"
+		NOTE="${NOTE}、doctor が Kotlin を検出できず --kotlin を渡した"
 	fi
 	# fx_scaffold_args_<名前> を持つ fixture は、scaffold にその引数（--test-framework kotest など）を足す。
 	scaffold_args=""
@@ -301,7 +313,7 @@ run_fixture() { # $1 = fixture
 		NOTE="${NOTE}、生成物の検査 OK"
 	fi
 
-	# en のときは、init / scaffold の出力（### の見出しと git diff より前の行）に日本語が残っていないか。
+	# en のときは、doctor / scaffold の出力（### の見出しと git diff より前の行）に日本語が残っていないか。
 	# 見るのはひらがな・カタカナ・漢字・全角の記号。fixture のパスには日本語が無い前提。
 	if [ "${LANG_ARG}" = "en" ]; then
 		ja_lines=`sed '/^### git diff/,$d' "${setup_log}" | grep -v '^###' | python3 -c 'import re,sys
@@ -454,7 +466,7 @@ done
 	echo
 	echo "- 通った: ${OK_COUNT} / ${TOTAL}"
 	echo "- 版: katachi ${VERSION} / Kotlin ${K} / AGP ${AGP}"
-	echo "- init の --lang: ${LANG_ARG}"
+	echo "- チェックリストの言語: ${LANG_ARG}"
 	echo "- katachi コマンド: ${CLI_CHECK}（\`${KATACHI}\`。[--version](file://${LOGS}/cli-version.log)）"
 	echo "- katachi コマンドの build（publishToMavenLocal・cliDist）: ${PUBLISH}（[ログ](file://${LOGS}/publish.log)）"
 	echo "- スクリプト: \`.claude/skills/prerelease/scripts/check-install-kit.sh\`（fixture の定義は \`install-kit-fixtures.sh\`）"
@@ -463,7 +475,7 @@ done
 	echo "\`--rerun\` なしで走らせ、test タスクが実行されて足したファイルが出れば OK。形の欄の（）に検査用モジュールの置き場所と"
 	echo "テストのフレームワーク（scaffold の出力）を写している。"
 	echo
-	echo "| fixture | 形 | init | scaffold | settings の include | test（配線） | 2回目が走ったか | 結果 | ログ |"
+	echo "| fixture | 形 | 準備（doctor・作業用ディレクトリ） | scaffold | settings の include | test（配線） | 2回目が走ったか | 結果 | ログ |"
 	echo "|---|---|---|---|---|---|---|---|---|"
 	cat "${ROWS}"
 } >"${RESULT}"

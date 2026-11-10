@@ -5,254 +5,6 @@ internal class Msg(val ja: String, val en: String)
 
 /** Every text the katachi command prints, in both languages. MessagesSpec holds the Japanese against docs/prh.yml. */
 internal object Messages {
-    object Add {
-        val usageAddKindField: Msg = Msg(
-            ja = "使い方: add <種類> --<項目> <値> ...（項目は add <種類> --help）",
-            en = "Usage: add <kind> --<field> <value> ... (for the fields: add <kind> --help)",
-        )
-
-        val specifyKindViolationQuestion: Msg = Msg(
-            ja = "add: 種類を指定してください（violation / question / codebase-question / changed / module / role / tool / excluded / template）",
-            en = "add: specify the kind (violation / question / codebase-question / changed / module / role / tool / excluded / template)",
-        )
-
-        fun unknownKind(kindName: Any?): Msg = Msg(
-            ja = "add: 知らない種類です: $kindName",
-            en = "add: unknown kind: $kindName",
-        )
-
-        fun fileNotFound(htmlUri: Any?): Msg = Msg(
-            ja = "ファイルがありません: $htmlUri",
-            en = "File not found: $htmlUri",
-        )
-
-        fun pathExcludedGitignoreKatachi(path: Any?): Msg = Msg(
-            ja = "そのパスは .gitignore で除外されています。katachi はもともと見ないので、対象外には書きません: $path",
-            en = "That path is excluded by .gitignore. katachi never looks at it, so it is not recorded as excluded: $path",
-        )
-
-        fun couldNotExtractJson(htmlUri: Any?): Msg = Msg(
-            ja = "$htmlUri から JSON を取り出せません。",
-            en = "Could not extract the JSON from $htmlUri.",
-        )
-
-        fun pathAlreadyRecordedNo(entryIdentity: Any?): Msg = Msg(
-            ja = "その path は記録済みです: $entryIdentity（記録し直さなくて構いません。何も変えていません）",
-            en = "That path is already recorded: $entryIdentity (no need to record it again; nothing was changed)",
-        )
-
-        fun alreadyRecordedNotAppended(identity: Any?, entryIdentity: Any?): Msg = Msg(
-            ja = "その $identity はすでに登録されています: $entryIdentity\n二重に記録しないため追記しませんでした。\n書き換えたい場合は data get で取り出し、直してから data set してください。",
-            en = "That $identity is already recorded: $entryIdentity\nNot appended, to avoid recording it twice.\nTo change it, take it out with data get, edit it, and write it back with data set.",
-        )
-
-        fun appendedEntryTotal(kindArray: Any?, rowsSize: Any?): Msg = Msg(
-            ja = "$kindArray に1件追記しました（計 $rowsSize 件）",
-            en = "Appended 1 entry to $kindArray ($rowsSize in total)",
-        )
-
-        fun countNotAddUp(kindArray: Any?, before: Any?, after: Any?, expected: Any?): Msg = Msg(
-            ja = "件数が合いません: $kindArray は書き込み前 $before 件、追記後 $after 件（期待 $expected）。ほかのプロセスが同時に書いていませんか",
-            en = "The count does not add up: $kindArray had $before entries before, $after after appending (expected $expected). Is another process writing at the same time?",
-        )
-
-        fun usageAddFieldValue(kindName: Any?, kindArray: Any?): Msg = Msg(
-            ja = "使い方: add $kindName --<項目> <値> ...（$kindArray に追記）",
-            en = "Usage: add $kindName --<field> <value> ... (appends to $kindArray)",
-        )
-
-        fun validFields(kindScalars: Any?): Msg = Msg(
-            ja = "使える項目: $kindScalars",
-            en = "Valid fields: $kindScalars",
-        )
-
-        fun fieldsYouCanPass(kindLists: Any?): Msg = Msg(
-            ja = "複数回渡せる項目: $kindLists",
-            en = "Fields you can pass more than once: $kindLists",
-        )
-
-        fun flagsNoValue(kindFlags: Any?): Msg = Msg(
-            ja = "値を取らない印: $kindFlags",
-            en = "Flags (no value): $kindFlags",
-        )
-
-        val groupWhereRoleGoes: Msg = Msg(
-            ja = "--group は定義での束ね先（入れ子は . 区切り: feature.ui）。Gradle のビルドファイルは gradle() が受け持つので --layout に書けません（buildSrc / includeBuild したビルドは除く）。制約を付けるための Role なら --constraint-only --note <理由> で記録します。",
-            en = "--group is where the Role goes in the definition (nested with dots: feature.ui). Gradle build files cannot be a --layout since gradle() takes care of them (except buildSrc and included builds). A Role that exists only to attach a constraint is recorded with --constraint-only --note <reason>.",
-        )
-
-        val deviationHowModuleDiffers: Msg = Msg(
-            ja = "--deviation は同じ kind の他のモジュールと構成が違う点（無ければ省略）。",
-            en = "--deviation is how this module differs from the other modules of the same kind (omit if none).",
-        )
-
-        fun idNumberedAutomaticallyAnswers(p: Any?): Msg = Msg(
-            ja = "id は ${p}1, ${p}2, ... と自動で採番されます（ブラウザの一括回答と answers がこの id で答えを結びつけます）。",
-            en = "The id is numbered automatically as ${p}1, ${p}2, ... (the answers in the browser and answers use it).",
-        )
-
-        fun noFieldsGivenAdd(kindName: Any?, kindScalars: Any?): Msg = Msg(
-            ja = "項目を1つも指定していません: add $kindName\nこのまま追記すると中身が空の行ができます。\n使えるもの: $kindScalars",
-            en = "No fields given: add $kindName\nAppending as is would add an empty row.\nValid fields: $kindScalars",
-        )
-
-        fun needsValue(name: Any?): Msg = Msg(
-            ja = "--$name に値がありません",
-            en = "--$name needs a value",
-        )
-
-        fun mustNumber(name: Any?, value: Any?): Msg = Msg(
-            ja = "--$name は数値で指定してください: $value",
-            en = "--$name must be a number: $value",
-        )
-
-        val whatModuleResponsibleGoes: Msg = Msg(
-            ja = "モジュールの受け持ちは --responsibility です。katachi の Role（1種類のファイル）とは別物で、モジュールは定義では group になります。",
-            en = "What a module is responsible for goes in --responsibility. It is not a katachi Role (one kind of file); a module becomes a group in the definition.",
-        )
-
-        fun cannotUsedValidFields(name: Any?, kindName: Any?, hint: Any?, valid: Any?): Msg = Msg(
-            ja = "--$name は $kindName で使えません$hint\n使えるもの: $valid",
-            en = "--$name cannot be used with $kindName$hint\nValid fields: $valid",
-        )
-
-        val constraintOnlyNeedsNote: Msg = Msg(
-            ja = "--constraint-only には --note で理由（何を検査するか）を書いてください",
-            en = "--constraint-only needs --note with the reason (what the constraint checks)",
-        )
-
-        fun gradleTakesCareGradle(layout: Any?): Msg = Msg(
-            ja = "Gradle のビルドファイルは gradle() が受け持ちます。Role 候補には書きません: $layout（buildSrc / includeBuild したビルドは除く。制約を付けるための Role なら --constraint-only --note <理由>）",
-            en = "gradle() takes care of Gradle build files. They are not Role candidates: $layout (except buildSrc and included builds; for a Role that exists only to attach a constraint, use --constraint-only --note <reason>)",
-        )
-    }
-
-    object Answers {
-        fun tooManyArgumentsQuote(arg: Any?): Msg = Msg(
-            ja = "answers: 引数が多すぎます: $arg（回答に空白があれば引用符で囲んでください）",
-            en = "answers: too many arguments: $arg (quote the answer if it contains spaces)",
-        )
-
-        val givePathJsonExported: Msg = Msg(
-            ja = "answers import: ブラウザで書き出した JSON のパスを指定してください。",
-            en = "answers import: give the path of the JSON exported from the browser.",
-        )
-
-        fun fileNotFound(firstUri: Any?): Msg = Msg(
-            ja = "ファイルがありません: $firstUri",
-            en = "File not found: $firstUri",
-        )
-
-        val giveIdAnswerExample: Msg = Msg(
-            ja = "answers set: <id> <回答> を指定してください（例: answers set q1 \"はい\" --note \"理由\"）",
-            en = "answers set: give <id> <answer> (for example: answers set q1 \"yes\" --note \"reason\")",
-        )
-
-        fun htmlNotFound(htmlUri: Any?): Msg = Msg(
-            ja = "ファイルがありません: $htmlUri",
-            en = "File not found: $htmlUri",
-        )
-
-        fun couldNotExtractJson(htmlUri: Any?): Msg = Msg(
-            ja = "$htmlUri から JSON を取り出せません。",
-            en = "Could not extract the JSON from $htmlUri.",
-        )
-
-        fun notValidJson(first: Any?, eMessage: Any?): Msg = Msg(
-            ja = "JSON として読めません: $first（$eMessage）",
-            en = "Not valid JSON: $first ($eMessage)",
-        )
-
-        val answersNotDictPass: Msg = Msg(
-            ja = "answers が dict ではありません（ブラウザで書き出した JSON をそのまま渡してください）",
-            en = "answers is not a dict (pass the JSON exported from the browser as is)",
-        )
-
-        fun skippedQuestionNotHere(id: Any?, other: Msg): Msg = Msg(
-            ja = "[!] $id は${other.ja}の確認事項なので、ここには入れずに飛ばしました",
-            en = "[!] Skipped $id: it is a question in ${other.en}, not here",
-        )
-
-        fun skippedUnknownId(id: Any?): Msg = Msg(
-            ja = "[!] 知らない id を飛ばしました: $id",
-            en = "[!] Skipped an unknown id: $id",
-        )
-
-        fun unknownIdValidIds(first: Any?, ids: Any?): Msg = Msg(
-            ja = "知らない id です: $first（使える id: $ids）",
-            en = "Unknown id: $first (valid ids: $ids)",
-        )
-
-        fun importedAnswersUnanswered(incomingSize: Any?, unanswered: Any?): Msg = Msg(
-            ja = "取り込みました: 回答 $incomingSize 件（未回答 $unanswered 件）",
-            en = "Imported: $incomingSize answers ($unanswered unanswered)",
-        )
-
-        fun answeredUnanswered(answered: Any?, idsSize: Any?): Msg = Msg(
-            ja = "回答済み $answered 件 / 未回答 $idsSize 件",
-            en = "Answered $answered / unanswered $idsSize",
-        )
-
-        fun notQuestionIdQuestions(arg: Any?): Msg = Msg(
-            ja = "answers set: 確認事項の id ではありません: $arg（チェックリストの確認事項は q<n>、レポートの確認事項は cq<n>）",
-            en = "answers set: not a question id: $arg (questions in the check list are q<n>, in the report cq<n>)",
-        )
-
-        fun questionWhichContradictsTarget(arg: Any?, foundLabel: Msg, foundCliName: Any?, givenCliName: Any?): Msg = Msg(
-            ja = "answers set: $arg は${foundLabel.ja}（$foundCliName）の確認事項で、--target $givenCliName と食い違うので書きませんでした。--target を外してください。",
-            en = "answers set: $arg is a question in ${foundLabel.en} ($foundCliName), which contradicts --target $givenCliName. Nothing was written; drop --target.",
-        )
-
-        fun targetJsonContradictsTarget(fromJson: Any?, givenCliName: Any?): Msg = Msg(
-            ja = "answers import: JSON の target（$fromJson）と --target $givenCliName が食い違います。どちらに取り込むかを確かめてください。",
-            en = "answers import: the target in the JSON ($fromJson) contradicts --target $givenCliName. Check which file the answers belong to.",
-        )
-
-        fun targetReportCheckList(fromJson: Any?): Msg = Msg(
-            ja = "answers: 対象は report か check-list です: $fromJson",
-            en = "answers: the target is report or check-list: $fromJson",
-        )
-
-        val jsonHasNoTarget: Msg = Msg(
-            ja = "answers import: JSON に target が無く、id からも取り込み先を決められません。--target report か --target check-list を付けてください。",
-            en = "answers import: the JSON has no target, and the ids do not tell where it belongs. Pass --target report or --target check-list.",
-        )
-
-        fun target(cliName: Any?): Msg = Msg(
-            ja = "対象: $cliName",
-            en = "Target: $cliName",
-        )
-    }
-
-    object Bundle {
-        fun whichShipsKatachiMissing(path: Any?): Msg = Msg(
-            ja = "katachi に同梱されているはずの $path がありません。katachi を入れ直してください（brew reinstall tbsten/tap/katachi）。",
-            en = "$path, which ships with katachi, is missing. Reinstall katachi (brew reinstall tbsten/tap/katachi).",
-        )
-    }
-
-    object Checklist {
-        val checkList: Msg = Msg(
-            ja = "チェックリスト",
-            en = "the check list",
-        )
-
-        val report: Msg = Msg(
-            ja = "レポート",
-            en = "the report",
-        )
-
-        fun notFoundRunInit(checkListUri: Any?): Msg = Msg(
-            ja = "$checkListUri がありません。先に init を実行してください。",
-            en = "$checkListUri not found. Run init first.",
-        )
-
-        fun couldNotExtractJson(checkListUri: Any?): Msg = Msg(
-            ja = "$checkListUri から JSON を取り出せませんでした。",
-            en = "Could not extract the JSON from $checkListUri.",
-        )
-    }
-
     object CommandSpecs {
         fun subcommandsGot(specName: Any?, names: Any?, value: Any?): Msg = Msg(
             ja = "$specName のサブコマンドは $names です（指定されたのは '$value'）",
@@ -281,131 +33,6 @@ internal object Messages {
         }
     }
 
-    object Data {
-        fun specifyTargetCheckList(action: Any?): Msg = Msg(
-            ja = "data $action: 対象を指定してください（check-list / report / ファイルパス）。",
-            en = "data $action: specify the target (check-list / report / a file path).",
-        )
-
-        fun fileNotFound(htmlUri: Any?): Msg = Msg(
-            ja = "ファイルがありません: $htmlUri",
-            en = "File not found: $htmlUri",
-        )
-
-        fun specifyJsonFile(action: Any?): Msg = Msg(
-            ja = "data $action: JSON ファイルを指定してください。",
-            en = "data $action: specify the JSON file.",
-        )
-
-        fun jsonNotFound(jsonUri: Any?): Msg = Msg(
-            ja = "ファイルがありません: $jsonUri",
-            en = "File not found: $jsonUri",
-        )
-
-        fun unexpectedArgument(action: Any?, it: Any?): Msg = Msg(
-            ja = "data $action: 余分な引数です: $it",
-            en = "data $action: unexpected argument: $it",
-        )
-
-        fun noSuchKey(key: Any?): Msg = Msg(
-            ja = "キーがありません: $key",
-            en = "No such key: $key",
-        )
-
-        fun notValidJsonFix(jsonFileUri: Any?): Msg = Msg(
-            ja = "$jsonFileUri が JSON として読めません。直してからやり直してください。",
-            en = "$jsonFileUri is not valid JSON. Fix it and try again.",
-        )
-
-        fun updatedIdOriginalBak(htmlUri: Any?, id: Any?): Msg = Msg(
-            ja = "$htmlUri の id=\"$id\" を更新しました（元は $htmlUri.bak）。",
-            en = "Updated id=\"$id\" in $htmlUri (the original is $htmlUri.bak).",
-        )
-
-        fun openingClosingTagsMust(noBlock: Msg): Msg = Msg(
-            ja = "${noBlock.ja}開始タグと閉じタグは、それぞれ行頭に単独で置かれている必要があります。",
-            en = "${noBlock.en} The opening and closing tags must each be alone at the start of a line.",
-        )
-
-        val couldNotMergeJson: Msg = Msg(
-            ja = "JSON をマージできませんでした。",
-            en = "Could not merge the JSON.",
-        )
-
-        fun failedEditRestored(htmlUri: Any?): Msg = Msg(
-            ja = "$htmlUri の書き換えに失敗しました。元に戻しました。",
-            en = "Failed to edit $htmlUri. It was restored.",
-        )
-
-        val resultCouldNotRead: Msg = Msg(
-            ja = "差し込んだ結果が読み直せなかったため、元に戻しました。JSON の値に </script> のような、HTML を打ち切る文字列が含まれていないか確認してください。",
-            en = "The result could not be read back, so it was restored. Check that no JSON value contains a string that cuts the HTML short, such as </script>.",
-        )
-
-        fun noJsonBlockId(htmlUri: Any?, id: Any?): Msg = Msg(
-            ja = "$htmlUri に id=\"$id\" の JSON ブロックが見つかりません。",
-            en = "No JSON block with id=\"$id\" in $htmlUri.",
-        )
-
-        fun noJsonBlock(htmlUri: Any?, id: Any?): Msg = Msg(
-            ja = "$htmlUri に id=\"$id\" の JSON ブロックが見つかりません。",
-            en = "No JSON block with id=\"$id\" in $htmlUri.",
-        )
-    }
-
-    object Docs {
-        fun unknownOption(it: Any?): Msg = Msg(
-            ja = "docs: 知らないオプションです: $it",
-            en = "docs: unknown option: $it",
-        )
-
-        fun sourceUsedCopyAlready(url: Any?): Msg = Msg(
-            ja = "取得元: $url（取得済みのものを使いました。取り直すなら --refresh）",
-            en = "Source: $url (used the copy already fetched; add --refresh to fetch it again)",
-        )
-
-        fun source(url: Any?): Msg = Msg(
-            ja = "取得元: $url",
-            en = "Source: $url",
-        )
-
-        fun unknownTopicAvailableTopics(topic: Any?, docsTopicList: Any?): Msg = Msg(
-            ja = "docs --topic: 知らない名前です: $topic 。使える名前:\n$docsTopicList",
-            en = "docs --topic: unknown topic: $topic . Available topics:\n$docsTopicList",
-        )
-
-        fun noHeadingCopyFetched(fullUri: Any?, title: Any?, topic: Any?): Msg = Msg(
-            ja = "$fullUri に見出し「$title」がありません。取得済みの全文が古い可能性があります。--refresh を付けて取り直してください（$AGENT_COMMAND docs --topic $topic --refresh）。",
-            en = "No heading \"$title\" in $fullUri . The copy fetched earlier may be old. Fetch it again with --refresh ($AGENT_COMMAND docs --topic $topic --refresh).",
-        )
-
-        fun fullGuideHasNo(topic: Any?, title: Any?, fullUri: Any?): Msg = Msg(
-            ja = "docs --topic $topic: ガイドの全文に見出し「$title」がありません。katachi コマンドの不具合です（このコマンドが知っている見出しが、ガイドとずれています）。\n" +
-                "    ユーザにこの出力を伝えたうえで、全文 $fullUri から、この話題にあたるページ（行頭の \"# \" の見出しから次の \"# \" の見出しの手前まで）だけを読んで進めてください。",
-            en = "docs --topic $topic: the full guide has no heading \"$title\". This is a bug in the katachi command (the headings it knows no longer match the guide).\n" +
-                "    Tell the user about this output, then read only the page for this topic (from its line-leading \"# \" heading up to the next one) in the full text $fullUri and go on.",
-        )
-
-        fun pageCutHeadingCopy(topic: Any?, title: Any?, fullUri: Any?): Msg = Msg(
-            ja = "docs --topic $topic: 見出し「$title」で切り出したページが、古いバージョン（/0.2/ など）の写しでした。katachi コマンドの不具合です（このコマンドが知っている見出しが、ガイドの現行ページとずれています）。\n" +
-                "    ユーザにこの出力を伝えたうえで、全文 $fullUri の前半（現行のバージョン）から、この話題にあたるページだけを読んで進めてください。",
-            en = "docs --topic $topic: the page cut by heading \"$title\" is a copy of an older version (such as /0.2/). This is a bug in the katachi command (the headings it knows no longer match the guide's current pages).\n" +
-                "    Tell the user about this output, then read only the page for this topic in the first part (the current version) of the full text $fullUri and go on.",
-        )
-
-        fun linesLlmsFullTxt(linesSize: Any?, title: Any?): Msg = Msg(
-            ja = "$linesSize 行（llms-full.txt の「$title」）",
-            en = "$linesSize lines (\"$title\" in llms-full.txt)",
-        )
-    }
-
-    object Fetch {
-        fun downloadFailedCheckYour(url: Any?, destUri: Any?): Msg = Msg(
-            ja = "ダウンロードに失敗しました: $url\n  ネットワークかプロキシの設定を確認してください。\n  手動で取得する場合は、このファイルを $destUri に置いてから同じコマンドをやり直してください。",
-            en = "Download failed: $url\n  Check your network or proxy settings.\n  To fetch it by hand, put the file at $destUri and run the same command again.",
-        )
-    }
-
     object GradleFiles {
         fun failedEditRestored(fileUri: Any?, eMessage: Any?): Msg = Msg(
             ja = "$fileUri の書き換えに失敗しました。元に戻しました。（$eMessage）",
@@ -423,39 +50,7 @@ internal object Messages {
         )
     }
 
-    object Guide {
-        val dCheckListGuide: Msg = Msg(
-            ja = "6-A〜6-D はチェックリストでは 6-1〜6-4（guide 6-1 でも取り出せる）",
-            en = "6-A to 6-D are 6-1 to 6-4 in the check list (guide 6-1 works too)",
-        )
-
-        fun giveOnlyOneSection(first: Any?, second: Any?): Msg = Msg(
-            ja = "guide: セクション ID は 1 つだけです（$first と $second）",
-            en = "guide: give only one section id ($first and $second)",
-        )
-
-        fun unknownSectionIdIds(wanted: Any?): Msg = Msg(
-            ja = "知らないセクション ID です: $wanted 。使える ID は目次のとおりです。",
-            en = "Unknown section id: $wanted . The ids you can use are in the table of contents.",
-        )
-
-        fun next(nextCommand: Any?): Msg = Msg(
-            ja = "次: $nextCommand",
-            en = "Next: $nextCommand",
-        )
-
-        fun langMustEnJa(value: Any?): Msg = Msg(
-            ja = "--lang は en か ja です（指定されたのは '$value'）。",
-            en = "--lang must be en or ja (got '$value').",
-        )
-
-        fun sections(children: Any?): Msg = Msg(
-            ja = "含むセクション: $children",
-            en = "Sections: $children",
-        )
-    }
-
-    object Init {
+    object Doctor {
         val theseCommandsNotFound: Msg = Msg(
             ja = "次のコマンドが見つかりません。無くても進めますが、あったほうが確実です:",
             en = "These commands were not found. You can go on without them, but it is safer to have them:",
@@ -471,160 +66,19 @@ internal object Messages {
             en = "Without git, the command cannot tell whether the project is under Git, and skips the check for untracked files.",
         )
 
-        fun unknownOption(it: Any?): Msg = Msg(
-            ja = "init: 知らないオプションです: $it",
-            en = "init: unknown option: $it",
-        )
-
-        val startingKatachiInstallation: Msg = Msg(
-            ja = "katachi のインストールを開始します",
-            en = "Starting the katachi installation",
-        )
-
-        fun projectRoot(rootUri: Any?): Msg = Msg(
-            ja = "プロジェクトルート: $rootUri",
-            en = "Project root:       $rootUri",
-        )
-
-        val couldNotTellKatachi: Msg = Msg(
-            ja = "katachi のバージョンが分かりませんでした。$KATACHI_RELEASES_PAGE を見て --katachi で指定してください。",
-            en = "Could not tell the katachi version. Look it up at $KATACHI_RELEASES_PAGE and pass it with --katachi.",
-        )
-
-        val developersScaffoldAddsMavenlocal: Msg = Msg(
-            ja = "mavenLocal:         有効（開発者向け。scaffold が mavenLocal() を足す）",
-            en = "mavenLocal:         on (for developers; scaffold adds mavenLocal())",
-        )
-
-        val gitUnderVersionControl: Msg = Msg(
-            ja = "Git:               管理下にあります",
-            en = "Git:                under version control",
-        )
-
-        val projectNotUnderGit: Msg = Msg(
-            ja = "Git で管理されていません。失敗したときに変更を戻せないので、先にコミットするかバックアップを取ってください。",
-            en = "The project is not under Git. You cannot undo the changes if something goes wrong, so commit or back up first.",
-        )
-
-        fun workingDirectory(workdirUri: Any?): Msg = Msg(
-            ja = "作業用ディレクトリ:  $workdirUri",
-            en = "Working directory:  $workdirUri",
-        )
-
-        fun thereExistingFilesThey(existing: Any?): Msg = Msg(
-            ja = "既存のファイルがあります（$existing 件）。上書きはしません。",
-            en = "There are existing files ($existing). They are not overwritten.",
-        )
-
-        fun testModuleGradlePath(moduleDir: Any?, modulePath: Any?): Msg = Msg(
-            ja = "検査用モジュール:    $moduleDir/（Gradle のパス $modulePath）",
-            en = "Test module:        $moduleDir/ (Gradle path $modulePath)",
-        )
-
-        fun visibleGitStepWill(workdirUri: Any?): Msg = Msg(
-            ja = "$workdirUri は git から見えています。このままだとステップ4で必ず失敗します。\n" +
-                "    katachi は未追跡でも ignore されていないファイルを検査するため、この作業用ディレクトリ\n" +
-                "    自体が [UnexpectedFile] になります。ユーザに .gitignore への追加を提案してください\n" +
-                "    （勝手に書き換えないこと）。",
-            en = "$workdirUri is visible to git. As it is, step 4 will fail for sure.\n" +
-                "    katachi checks untracked files that are not ignored, so this working directory itself\n" +
-                "    becomes an [UnexpectedFile]. Suggest to the user that it be added to .gitignore\n" +
-                "    (do not edit .gitignore yourself).",
-        )
-
-        val thereUntrackedFilesNot: Msg = Msg(
-            ja = "未追跡で ignore もされていないものがあります。これらもステップ4で [UnexpectedFile] になります。\n    宣言するか、.gitignore に足すかをユーザに確認してください。",
-            en = "There are untracked files that are not ignored. These also become [UnexpectedFile] in step 4.\n    Ask the user whether to declare them or add them to .gitignore.",
-        )
-
-        fun kotlinDetectedProject(kotlin: Any?): Msg = Msg(
-            ja = "Kotlin:             $kotlin（プロジェクトから検出）",
-            en = "Kotlin:             $kotlin (detected from the project)",
-        )
-
-        val couldNotDetectKotlin: Msg = Msg(
-            ja = "Kotlin のバージョンを検出できませんでした。scaffold に --kotlin で渡してください。",
-            en = "Could not detect the Kotlin version. Pass it to scaffold with --kotlin.",
-        )
-
-        fun docsSourceKatachiDocs(docs: Any?): Msg = Msg(
-            ja = "配信元:             $docs（KATACHI_DOCS。以降のコマンドもこれを使う）",
-            en = "Docs source:        $docs (KATACHI_DOCS; later commands use it too)",
-        )
-
-        fun keepingRecordedPreviousInit(recordedVersion: Any?, version: Any?): Msg = Msg(
-            ja = "                    → 前回の init が記録した $recordedVersion を使い続けます（今回のデフォルトは $version。変えるなら --katachi を付けて実行し直す）",
-            en = "                    → keeping $recordedVersion, recorded by the previous init (this time's default is $version; to change it, run again with --katachi)",
-        )
-
-        fun keptAlreadyThere(checkListUri: Any?): Msg = Msg(
-            ja = "すでにあるので残しました: $checkListUri",
-            en = "Kept (already there): $checkListUri",
-        )
-
-        fun placed(checkListUri: Any?): Msg = Msg(
-            ja = "配置しました:        $checkListUri",
-            en = "Placed:             $checkListUri",
-        )
-
-        fun keptReport(reportUri: Any?): Msg = Msg(
-            ja = "すでにあるので残しました: $reportUri",
-            en = "Kept (already there): $reportUri",
-        )
-
-        fun placedReport(reportUri: Any?): Msg = Msg(
-            ja = "配置しました:        $reportUri",
-            en = "Placed:             $reportUri",
-        )
-
-        fun guideGuideTableContents(uri: Any?): Msg = Msg(
-            ja = "手順書:             $uri （$AGENT_COMMAND guide で目次）",
-            en = "Guide:              $uri ($AGENT_COMMAND guide for the table of contents)",
-        )
-
-        val initResult: Msg = Msg(
-            ja = "== init の結果 ==========================================",
-            en = "== init result =========================================",
-        )
-
-        fun nowRunCommandsSubcommand(workdir: Any?): Msg = Msg(
-            ja = "以降のコマンド（'$AGENT_COMMAND <サブコマンド>'、'$CLI_COMMAND scaffold' など）は、このプロジェクトのルートで実行してください（作業用ディレクトリは自動で見つけます。別の場所からは KATACHI_WORKDIR=$workdir を付ける）。",
-            en = "From now on, run the commands ('$AGENT_COMMAND <subcommand>', '$CLI_COMMAND scaffold' and so on) in the root of this project (they find the working directory themselves; from elsewhere, set KATACHI_WORKDIR=$workdir).",
-        )
-
-        fun nextAskUserWhether(kotlin: Any?): Msg = Msg(
-            ja = "次: Kotlin $kotlin を上げてよいかをユーザに確認してください（上の [!]。手順書 0-2 の「Kotlin が古いとき」）。上げるまでステップ 1 に進まないこと。",
-            en = "Next: ask the user whether Kotlin $kotlin may be upgraded (the [!] above; \"When Kotlin is too old\" in step 0-2 of the guide). Do not go on to step 1 until it is upgraded.",
-        )
-
-        val nextCheckReadSection: Msg = Msg(
-            ja = "次: $AGENT_COMMAND check 0-1 0-2（続けて、出力の「次:」のセクションを読む）",
-            en = "Next: $AGENT_COMMAND check 0-1 0-2 (then read the section its \"Next:\" line names)",
-        )
-
-        fun couldNotInitializeMeta(fileUri: Any?, error: Any?): Msg = Msg(
-            ja = "チェックリストのメタ欄を初期化できませんでした。$fileUri を直接確認してください。\n$error",
-            en = "Could not initialize the meta fields of the check list. Check $fileUri directly.\n$error",
-        )
-
-        fun couldNotInitializeReportMeta(fileUri: Any?, error: Any?): Msg = Msg(
-            ja = "レポートのメタ欄を初期化できませんでした。$fileUri を直接確認してください。\n$error",
-            en = "Could not initialize the meta fields of the report. Check $fileUri directly.\n$error",
-        )
-
         fun doctorUnknownOption(it: Any?): Msg = Msg(
             ja = "doctor: 知らないオプションです: $it",
             en = "doctor: unknown option: $it",
         )
 
         fun everythingNeedsAvailableKatachi(scriptVersionCurrent: Any?): Msg = Msg(
-            ja = "必要なものはそろっています（katachi $scriptVersionCurrent。ガイドとテンプレートは同梱）。",
-            en = "Everything this needs is available (katachi $scriptVersionCurrent; the guide and the templates ship with it).",
+            ja = "必要なものはそろっています（katachi $scriptVersionCurrent）。",
+            en = "Everything this needs is available (katachi $scriptVersionCurrent).",
         )
 
-        fun settings(settingsUri: Any?): Msg = Msg(
-            ja = "settings:          $settingsUri",
-            en = "settings:           $settingsUri",
+        fun langMustEnJa(value: Any?): Msg = Msg(
+            ja = "--lang は en か ja です（指定されたのは '$value'）。",
+            en = "--lang must be en or ja (got '$value').",
         )
     }
 
@@ -693,11 +147,11 @@ internal object Messages {
 
         val roleNameRoleStands: Msg = Msg(
             ja = "Role（\"Name\".role { }）は1種類のファイルを表し、種類の違うものを束ねるのは group です。\n" +
-                "手順書 3-2 の「1 つの Role = 1 種類のファイル」の3つの問いで見直し、分けるべきものは\n" +
+                "katachi skill の setup 3-2 の「1 つの Role = 1 種類のファイル」の3つの問いで見直し、分けるべきものは\n" +
                 "種類ごとの Role に分けて group で束ねてください。テキストの素朴な走査なので誤検知はあり得ます。\n" +
                 "見直して1種類だと判断したものは、そのままでかまいません。",
             en = "A Role (\"Name\".role { }) stands for one kind of file; group is what bundles different kinds.\n" +
-                "Review them with the three questions of \"one Role = one kind of file\" in step 3-2 of the guide,\n" +
+                "Review them with the three questions of \"one Role = one kind of file\" in step 3-2 of the katachi skill's setup,\n" +
                 "and split what should be split into one Role per kind, bundled with group. This is a plain text\n" +
                 "scan, so false positives are possible. If you review a Role and decide it is one kind, leave it.",
         )
@@ -762,8 +216,8 @@ internal object Messages {
         )
 
         val writeOneRolePer: Msg = Msg(
-            ja = "1 Role 1 ファイルで書き、group はディレクトリで表してください（手順書 3-3）。",
-            en = "Write one Role per file and express groups as directories (step 3-3 of the guide).",
+            ja = "1 Role 1 ファイルで書き、group はディレクトリで表してください（katachi skill の setup 3-3）。",
+            en = "Write one Role per file and express groups as directories (step 3-3 of the katachi skill's setup).",
         )
 
         fun candidatesDocumentedFalseReview(documentedCandidatesSize: Any?): Msg = Msg(
@@ -794,217 +248,6 @@ internal object Messages {
         )
     }
 
-    object Lock {
-        fun waitedSecondsLockBut(wait: Any?, directory: Any?): Msg = Msg(
-            ja = "作業用ディレクトリのロックを $wait 秒待ちましたが取れませんでした: $directory 。ほかの katachi が書き込み中か、残骸です。残骸なら rm -r で消してやり直してください",
-            en = "Waited $wait seconds for the lock but could not get it: $directory . Another katachi is writing, or this is left over. If it is left over, remove it with rm -r and try again",
-        )
-    }
-
-    object Preferences {
-        val nestGroups: Msg = Msg(
-            ja = "group を入れ子にするか",
-            en = "Nest groups?",
-        )
-
-        val whereTestModuleGoes: Msg = Msg(
-            ja = "検査用モジュールの置き場所",
-            en = "Where the test module goes",
-        )
-
-        val testFramework: Msg = Msg(
-            ja = "テストのフレームワーク",
-            en = "Test framework",
-        )
-
-        val howDependenciesWritten: Msg = Msg(
-            ja = "依存の書き方",
-            en = "How dependencies are written",
-        )
-
-        val putQuestionNumberConstraint: Msg = Msg(
-            ja = "制約名に確認事項の番号を入れるか",
-            en = "Put the question number in constraint names?",
-        )
-
-        val oneRolePerFile: Msg = Msg(
-            ja = "1 Role 1 ファイルで書くか",
-            en = "One Role per file?",
-        )
-
-        fun couldNotSetMeta(key: Any?, value: Any?, error: Any?): Msg = Msg(
-            ja = "チェックリストの meta.$key を $value にできませんでした。data merge で直してください。\n$error",
-            en = "Could not set meta.$key of the check list to $value. Fix it with data merge.\n$error",
-        )
-
-        fun preferencesSubcommandsShowSet(first: Any?): Msg = Msg(
-            ja = "preferences のサブコマンドは show / set です（指定されたのは '$first'）",
-            en = "The preferences subcommands are show / set (got '$first')",
-        )
-
-        fun notFoundRunInit(checkListUri: Any?): Msg = Msg(
-            ja = "$checkListUri がありません。先に init を実行してください。",
-            en = "$checkListUri not found. Run init first.",
-        )
-
-        val giveOneMoreKey: Msg = Msg(
-            ja = "preferences set: key=value を 1 つ以上指定してください（例: preferences set nestedGroups=no）",
-            en = "preferences set: give one or more key=value (for example: preferences set nestedGroups=no)",
-        )
-
-        fun preferencesSetTakesKey(kv: Any?): Msg = Msg(
-            ja = "preferences set は key=value の形です: $kv",
-            en = "preferences set takes key=value: $kv",
-        )
-
-        fun unknownKeyValidKeys(key: Any?, pREFERENCE_KEYS: Any?): Msg = Msg(
-            ja = "知らないキーです: $key（使えるキー: $pREFERENCE_KEYS）",
-            en = "Unknown key: $key (valid keys: $pREFERENCE_KEYS)",
-        )
-
-        fun invalidValueValidValues(key: Any?, value: Any?, validValues: Any?): Msg = Msg(
-            ja = "$key の値が違います: $value（使える値: $validValues）",
-            en = "Invalid value for $key: $value (valid values: $validValues)",
-        )
-
-        fun recorded(rest: Any?): Msg = Msg(
-            ja = "記録しました: $rest",
-            en = "Recorded: $rest",
-        )
-
-        val preferencesRecordOnlyWhat: Msg = Msg(
-            ja = "書き方の方針（推奨から変えたいものだけ '$AGENT_COMMAND preferences set key=value' で記録してください）:",
-            en = "Preferences (record only what you want to change from the recommendation with '$AGENT_COMMAND preferences set key=value'):",
-        )
-
-        val recordedLower: Msg = Msg(
-            ja = "記録済み",
-            en = "recorded",
-        )
-
-        val recommended: Msg = Msg(
-            ja = "推奨",
-            en = "recommended",
-        )
-
-        fun detectedFrom(from: Any?): Msg = Msg(
-            ja = "検出: $from",
-            en = "detected: $from",
-        )
-
-        val detectedCatalog: Msg = Msg(
-            ja = "検出: $CATALOG_FILE",
-            en = "detected: $CATALOG_FILE",
-        )
-
-        fun preferenceLine(key: Any?, value: Any?, state: Any?, question: Any?, values: Any?): Msg = Msg(
-            ja = "$key = $value（$state）   # $question ($values)",
-            en = "$key = $value ($state)   # $question ($values)",
-        )
-    }
-
-    object Progress {
-        val specifyOneMoreItem: Msg = Msg(
-            ja = "check: 項目 id を1つ以上指定してください（例: check 1-1 1-2）",
-            en = "check: specify one or more item ids (for example: check 1-1 1-2)",
-        )
-
-        val uncheckSpecifyItems: Msg = Msg(
-            ja = "uncheck: 項目 id を1つ以上指定してください。",
-            en = "uncheck: specify one or more item ids.",
-        )
-
-        fun unknownItemIdValid(unknown: Any?, known: Any?): Msg = Msg(
-            ja = "知らない項目 id です: $unknown\n使える id: $known",
-            en = "Unknown item id: $unknown\nValid ids: $known",
-        )
-
-        fun markedDone(ids: Any?): Msg = Msg(
-            ja = "完了にしました: $ids",
-            en = "Marked as done: $ids",
-        )
-
-        fun nextGuide(section: Any?): Msg = Msg(
-            ja = "次: $AGENT_COMMAND guide $section",
-            en = "Next: $AGENT_COMMAND guide $section",
-        )
-
-        fun markedNotDone(ids: Any?): Msg = Msg(
-            ja = "未完了に戻しました: $ids",
-            en = "Marked as not done: $ids",
-        )
-
-        val specifyStepIdExample: Msg = Msg(
-            ja = "warn: ステップ id を指定してください（例: warn 4 \"違反を2件残しました\"）",
-            en = "warn: specify the step id (for example: warn 4 \"Left 2 violations\")",
-        )
-
-        val specifyWarningTextClear: Msg = Msg(
-            ja = "warn: 警告の文言を指定してください（消すなら --clear）",
-            en = "warn: specify the warning text (or --clear to remove it)",
-        )
-
-        fun unknownStepIdValid(step: Any?, steps: Any?): Msg = Msg(
-            ja = "知らないステップ id です: $step\n使える id: $steps",
-            en = "Unknown step id: $step\nValid ids: $steps",
-        )
-
-        fun clearedWarningStep(step: Any?): Msg = Msg(
-            ja = "ステップ $step の警告を消しました",
-            en = "Cleared the warning on step $step",
-        )
-
-        fun setWarningStep(step: Any?): Msg = Msg(
-            ja = "ステップ $step の警告を設定しました",
-            en = "Set a warning on step $step",
-        )
-
-        fun notFoundRunInit(checkListPathUri: Any?): Msg = Msg(
-            ja = "$checkListPathUri がありません。先に init を実行してください。",
-            en = "$checkListPathUri not found. Run init first.",
-        )
-
-        val cannotReadJsonCheck: Msg = Msg(
-            ja = "チェックリストの JSON を読めません。",
-            en = "Cannot read the JSON of the check list.",
-        )
-
-        val cannotReadJsonReport: Msg = Msg(
-            ja = "レポートの JSON を読めません。開始タグと閉じタグは、それぞれ行頭に単独で置かれている必要があります。",
-            en = "Cannot read the JSON of the report. The opening and closing tags must each be alone at the start of a line.",
-        )
-
-        val noStepsTemplateBroken: Msg = Msg(
-            ja = "check-list: steps がありません（テンプレートが壊れています）",
-            en = "check-list: no steps (the template is broken)",
-        )
-
-        fun notDone(pyStrItem: Any?, label: Any?): Msg = Msg(
-            ja = "check-list: 未チェック $pyStrItem $label",
-            en = "check-list: not done $pyStrItem $label",
-        )
-
-        fun unfinishedBlank(missingSize: Any?): Msg = Msg(
-            ja = "未完了・未記入が $missingSize 件あります。",
-            en = "Unfinished or blank: $missingSize",
-        )
-
-        fun nothingUnfinishedBlankMarked(pyStrFinal: Any?): Msg = Msg(
-            ja = "未完了・未記入はありません。ステップ $pyStrFinal を完了にしました。",
-            en = "Nothing is unfinished or blank. Marked step $pyStrFinal as done.",
-        )
-
-        val stepsWarnings: Msg = Msg(
-            ja = "警告つきのステップ:",
-            en = "Steps with warnings:",
-        )
-
-        fun step(id: Any?, text: Any?): Msg = Msg(
-            ja = "  - ステップ $id: $text",
-            en = "  - step $id: $text",
-        )
-    }
-
     object Probe {
         fun settingsGradleKtsSettings(rootUri: Any?): Msg = Msg(
             ja = "settings.gradle.kts / settings.gradle が見つかりません。Gradle のルートディレクトリで実行してください（いまいるのは $rootUri）。",
@@ -1027,13 +270,13 @@ internal object Messages {
         )
 
         val askUserWhenKotlin: Msg = Msg(
-            ja = "ユーザに確認してください（手順書 0-2 の「Kotlin が古いとき」）。",
-            en = "Ask the user (\"When Kotlin is too old\" in step 0-2 of the guide).",
+            ja = "ユーザに確認してください（katachi skill の setup 0-2 の「Kotlin が古いとき」）。",
+            en = "Ask the user (\"When Kotlin is too old\" in step 0-2 of the katachi skill's setup).",
         )
 
         val scaffoldStepWillStop: Msg = Msg(
-            ja = "このままでは 2-1 の scaffold で止まります。ステップ 1 の解析に入る前に、ユーザに確認してください（手順書 0-2 の「Kotlin が古いとき」）。",
-            en = "As it is, scaffold in step 2-1 will stop. Ask the user before starting the analysis in step 1 (\"When Kotlin is too old\" in step 0-2 of the guide).",
+            ja = "このままでは 2-1 の scaffold で止まります。ステップ 1 の解析に入る前に、ユーザに確認してください（katachi skill の setup 0-2 の「Kotlin が古いとき」）。",
+            en = "As it is, scaffold in step 2-1 will stop. Ask the user before starting the analysis in step 1 (\"When Kotlin is too old\" in step 0-2 of the katachi skill's setup).",
         )
 
         fun projectUsesKotlinKatachi(version: Any?, min: Any?, whenLine: Any?, gradleLine: Any?): Msg = Msg(
@@ -1102,9 +345,9 @@ internal object Messages {
         )
 
         fun katachiTooOldGuide(version: Any?, min: Any?): Msg = Msg(
-            ja = "katachi $version はこの手順には古すぎます。手順書とこのコマンドが作る構成は katachi $min の機能（\"Name\".role { } など）で書いてあるため、$min 以降が必要です。\n" +
+            ja = "katachi $version はこの手順には古すぎます。katachi skill の手順とこのコマンドが作る構成は katachi $min の機能（\"Name\".role { } など）で書いてあるため、$min 以降が必要です。\n" +
                 "    $KATACHI_RELEASES_PAGE で $min 以降が出ているかを確かめ、--katachi <version> で指定してやり直してください。",
-            en = "katachi $version is too old for this guide. The guide and the setup this command creates are written with katachi $min features (such as \"Name\".role { }), so they need $min or later.\n" +
+            en = "katachi $version is too old for these steps. The katachi skill's steps and the setup this command creates are written with katachi $min features (such as \"Name\".role { }), so they need $min or later.\n" +
                 "    Check $KATACHI_RELEASES_PAGE for $min or later, and run again with --katachi <version>.",
         )
 
@@ -1121,13 +364,20 @@ internal object Messages {
 
     object RunScript {
         fun commandsAiAgentRuns(command: Any?): Msg = Msg(
-            ja = "$command は '$AGENT_COMMAND $command' です（AI エージェントが手順書に従って使うコマンドは agent の下にあります）",
-            en = "$command is '$AGENT_COMMAND $command' (the commands an AI agent runs for the install guide sit under agent)",
+            ja = "$command は '$AGENT_COMMAND $command' です（AI エージェントが katachi skill の手順で使うコマンドは agent の下にあります）",
+            en = "$command is '$AGENT_COMMAND $command' (the commands an AI agent runs for the katachi skill's steps sit under agent)",
         )
 
         fun notSubcommandSeeHelp(command: Any?): Msg = Msg(
             ja = "$AGENT_COMMAND のサブコマンドではありません: $command（$AGENT_COMMAND --help を見てください）",
             en = "Not a subcommand of $AGENT_COMMAND: $command (see $AGENT_COMMAND --help)",
+        )
+
+        fun removedForTheSkill(command: Any?): Msg = Msg(
+            ja = "$command は無くなりました。導入と定義の更新は katachi skill の手順で進めます" +
+                "（gh skill install TBSten/katachi katachi か npx skills add TBSten/katachi --skill katachi で入れる）",
+            en = "$command was removed. Installing katachi and updating the definition follow the katachi skill's steps now " +
+                "(get it with gh skill install TBSten/katachi katachi or npx skills add TBSten/katachi --skill katachi)",
         )
 
         fun unknownSubcommandSeeHelp(command: Any?): Msg = Msg(
@@ -1153,8 +403,8 @@ internal object Messages {
         )
 
         fun moduleDirDiffersWhat(moduleDir: Any?, moduleRecorded: Any?): Msg = Msg(
-            ja = "--module-dir $moduleDir は init の記録（meta.moduleDir = $moduleRecorded）と違います。記録を $moduleDir に書き換えます。",
-            en = "--module-dir $moduleDir differs from what init recorded (meta.moduleDir = $moduleRecorded). The record is updated to $moduleDir.",
+            ja = "--module-dir $moduleDir はチェックリストの記録（meta.moduleDir = $moduleRecorded）と違います。チェックリストのほうも $moduleDir に直してください。",
+            en = "--module-dir $moduleDir differs from the check list (meta.moduleDir = $moduleRecorded). Change the check list to $moduleDir too.",
         )
 
         val cannotTellKatachiVersion: Msg = Msg(
@@ -1232,11 +482,6 @@ internal object Messages {
             en = "Package:      $pkg",
         )
 
-        fun recordedInit(version: Any?): Msg = Msg(
-            ja = "katachi:      $version（init が記録したバージョン）",
-            en = "katachi:      $version (recorded by init)",
-        )
-
         fun versionKatachiCommand(version: Any?): Msg = Msg(
             ja = "katachi:      $version（この katachi コマンドのバージョン）",
             en = "katachi:      $version (the version of this katachi command)",
@@ -1278,8 +523,8 @@ internal object Messages {
         )
 
         fun moduleMetaModuledirRecorded(moduleDirUri: Any?, moduleGradlePath: Any?): Msg = Msg(
-            ja = "モジュール:   $moduleDirUri/（$moduleGradlePath。init が記録した meta.moduleDir）",
-            en = "Module:       $moduleDirUri/ ($moduleGradlePath; meta.moduleDir recorded by init)",
+            ja = "モジュール:   $moduleDirUri/（$moduleGradlePath。チェックリストの meta.moduleDir）",
+            en = "Module:       $moduleDirUri/ ($moduleGradlePath; meta.moduleDir in the check list)",
         )
 
         fun moduleDefault(moduleDirUri: Any?, moduleGradlePath: Any?): Msg = Msg(
@@ -1447,218 +692,6 @@ internal object Messages {
         )
     }
 
-    object Summary {
-        fun notFoundRunInit(checkListPathUri: Any?): Msg = Msg(
-            ja = "$checkListPathUri がありません。先に init を実行してください。",
-            en = "$checkListPathUri not found. Run init first.",
-        )
-
-        val cannotReadJsonCheck: Msg = Msg(
-            ja = "チェックリストの JSON を読めません。",
-            en = "Cannot read the JSON of the check list.",
-        )
-
-        val workingDirectory: Msg = Msg(
-            ja = "<作業用ディレクトリ>/",
-            en = "<working directory>/",
-        )
-
-        val workingDirectoryS: Msg = Msg(
-            ja = "  作業用ディレクトリ: %s",
-            en = "  Working directory: %s",
-        )
-
-        val workdirPlaceholder: Msg = Msg(
-            ja = "<作業用ディレクトリ>",
-            en = "<working directory>",
-        )
-
-        val couldNotSetUp: Msg = Msg(
-            ja = "❌ katachi のセットアップができませんでした",
-            en = "❌ Could not set up katachi",
-        )
-
-        val unfinishedItems: Msg = Msg(
-            ja = "終わっていない項目:",
-            en = "Unfinished items:",
-        )
-
-        val resume: Msg = Msg(
-            ja = "再開:",
-            en = "Resume:",
-        )
-
-        val doneS: Msg = Msg(
-            ja = "  終わった項目: %s",
-            en = "  Done: %s",
-        )
-
-        fun nextSectionGuide(section: Any?): Msg = Msg(
-            ja = "  次のセクション: $AGENT_COMMAND guide $section",
-            en = "  Next section: $AGENT_COMMAND guide $section",
-        )
-
-        fun definition(fileUriOfDefinition: Any?): Msg = Msg(
-            ja = "  定義: $fileUriOfDefinition",
-            en = "  Definition: $fileUriOfDefinition",
-        )
-
-        fun definitionNotYetScaffold(moduleDir: Any?): Msg = Msg(
-            ja = "  定義: まだ無い（scaffold 未実行。meta.moduleDir = $moduleDir）",
-            en = "  Definition: not yet (scaffold has not run; meta.moduleDir = $moduleDir)",
-        )
-
-        fun questionsReportAnsweredUnanswered(reportAnswered: Any?, reportUnansweredSize: Any?, clAnswered: Any?, clUnansweredSize: Any?): Msg = Msg(
-            ja = "  確認事項: レポート 回答済み $reportAnswered / 未回答 $reportUnansweredSize、チェックリスト 回答済み $clAnswered / 未回答 $clUnansweredSize",
-            en = "  Questions: report answered $reportAnswered / unanswered $reportUnansweredSize, check list answered $clAnswered / unanswered $clUnansweredSize",
-        )
-
-        val checkList: Msg = Msg(
-            ja = "チェックリスト:",
-            en = "Check list:",
-        )
-
-        val setUpKatachi: Msg = Msg(
-            ja = "⚠️ katachi のセットアップを行いました",
-            en = "⚠️ Set up katachi",
-        )
-
-        val setUpKatachiDone: Msg = Msg(
-            ja = "✅ katachi のセットアップを行いました",
-            en = "✅ Set up katachi",
-        )
-
-        val generatedCodeNeedsYour: Msg = Msg(
-            ja = "**生成されたコードはあなたのレビューが必要不可欠** です。内容を確認してください。",
-            en = "**The generated code needs your review.** Please check what it contains.",
-        )
-
-        fun checkListLine(checkListPath: Any?): Msg = Msg(
-            ja = "- チェックリスト: $checkListPath",
-            en = "- Check list: $checkListPath",
-        )
-
-        fun codebaseReport(inWorkdirREPORT_FILE: Any?): Msg = Msg(
-            ja = "- コードベース レポート: $inWorkdirREPORT_FILE",
-            en = "- Codebase report: $inWorkdirREPORT_FILE",
-        )
-
-        fun testResultArchitectureViolations(modulePath: Any?, violationsSize: Any?): Msg = Msg(
-            ja = "- `$modulePath:test` の実行結果: ⚠️ $violationsSize 件のアーキテクチャ違反を残しています",
-            en = "- `$modulePath:test` result: ⚠️ architecture violations left: $violationsSize",
-        )
-
-        fun testResultAllGreen(modulePath: Any?): Msg = Msg(
-            ja = "- `$modulePath:test` の実行結果: ✅ All green",
-            en = "- `$modulePath:test` result: ✅ All green",
-        )
-
-        val questionsYouCheckList: Msg = Msg(
-            ja = "確認したいこと（チェックリスト）",
-            en = "Questions for you (check list)",
-        )
-
-        val questionsUserCheckList: Msg = Msg(
-            ja = "チェックリストの「ユーザに確認したいこと」",
-            en = "\"Questions for the user\" in the check list",
-        )
-
-        val inconsistenciesCodebaseReport: Msg = Msg(
-            ja = "コードベースの揺れ（レポート）",
-            en = "Inconsistencies in the codebase (report)",
-        )
-
-        val questionsReport: Msg = Msg(
-            ja = "レポートの questions",
-            en = "questions in the report",
-        )
-
-        fun changedFiles(changedSize: Any?): Msg = Msg(
-            ja = "- 変更したファイル: $changedSize 件",
-            en = "- Changed files: $changedSize",
-        )
-
-        fun reviewProjectarchitectureKtUnder(uriModule: Any?): Msg = Msg(
-            ja = "    - $uriModule/ 以下の ProjectArchitecture.kt を**レビュー**してください",
-            en = "    - **Review** ProjectArchitecture.kt under $uriModule/",
-        )
-
-        val runOneRealImplementation: Msg = Msg(
-            ja = "実際の実装タスクを1つ回して、定義が機能することを確かめてください",
-            en = "Run one real implementation task and confirm that the definition works",
-        )
-
-        fun addTestCi(modulePath: Any?): Msg = Msg(
-            ja = "CI に `$modulePath:test` を組み込んでください",
-            en = "Add `$modulePath:test` to CI",
-        )
-
-        fun youCanSetUp(modulePath: Any?): Msg = Msg(
-            ja = "ドキュメント生成をセットアップできます（`architecture { title / description }` を書き、`./gradlew $modulePath:katachiDocs` で生成。生成物をコミットするかを決めてください）",
-            en = "You can set up documentation generation (write `architecture { title / description }` and generate with `./gradlew $modulePath:katachiDocs`; decide whether to commit the output)",
-        )
-
-        fun youCanSetUpTemplates(templatesSize: Any?): Msg = Msg(
-            ja = "    - テンプレートからのコード生成をセットアップできます。提案は次の $templatesSize 件です（レポートの「テンプレートの提案」）",
-            en = "    - You can set up code generation from templates. Suggestions: $templatesSize (\"Template suggestions\" in the report)",
-        )
-
-        val blank: Msg = Msg(
-            ja = "(未記入)",
-            en = "(blank)",
-        )
-
-        val noParams: Msg = Msg(
-            ja = "なし",
-            en = "none",
-        )
-
-        fun parameters(role: Any?, files: Any?, params: Any?): Msg = Msg(
-            ja = "        - $role: $files（パラメータ: $params）",
-            en = "        - $role: $files (parameters: $params)",
-        )
-
-        val confirmInstallationWorks: Msg = Msg(
-            ja = "導入できたことを確かめる",
-            en = "confirm that the installation works",
-        )
-
-        val addCi: Msg = Msg(
-            ja = "CI に組み込む",
-            en = "add it to CI",
-        )
-
-        val setUpDocumentationGeneration: Msg = Msg(
-            ja = "ドキュメント生成をセットアップする",
-            en = "set up documentation generation",
-        )
-
-        val setUpCodeGeneration: Msg = Msg(
-            ja = "テンプレートからのコード生成をセットアップする",
-            en = "set up code generation from templates",
-        )
-
-        val nextSectionPickOne: Msg = Msg(
-            ja = "  次のセクション（ユーザの依頼に合わせて選ぶ）:",
-            en = "  Next section (pick the one the user asked for):",
-        )
-
-        val fixWhatReviewPointed: Msg = Msg(
-            ja = "    - レビューの指摘を直す: $AGENT_COMMAND guide 6-0",
-            en = "    - Fix what the review pointed out: $AGENT_COMMAND guide 6-0",
-        )
-
-        fun answeredUnanswered(label: Any?, answered: Any?, unansweredSize: Any?, where: Any?): Msg = Msg(
-            ja = "- $label: 回答済み $answered 件 / 未回答 $unansweredSize 件（$where）",
-            en = "- $label: answered $answered / unanswered $unansweredSize ($where)",
-        )
-
-        fun recommended(recommendation: Any?): Msg = Msg(
-            ja = " → 推奨: $recommendation",
-            en = " → recommended: $recommendation",
-        )
-    }
-
     object Test {
         fun addedRemoved(added: Any?, removed: Any?): Msg = Msg(
             ja = "増えた $added 件 / 減った $removed 件",
@@ -1671,8 +704,8 @@ internal object Messages {
         )
 
         fun notFoundSaveOutput(logUri: Any?, moduleGradlePath: Any?): Msg = Msg(
-            ja = "$logUri がありません。./gradlew $moduleGradlePath:test の出力をこのパスに保存してください（手順書 3-2 / 3-3）。",
-            en = "$logUri not found. Save the output of ./gradlew $moduleGradlePath:test to this path (steps 3-2 / 3-3 of the guide).",
+            ja = "$logUri がありません。$AGENT_COMMAND test --save <名前> で取るか、./gradlew $moduleGradlePath:test の出力をこのパスに保存してください（手順 3-2 / 3-3）。",
+            en = "$logUri not found. Capture it with $AGENT_COMMAND test --save <name>, or save the output of ./gradlew $moduleGradlePath:test to this path (steps 3-2 / 3-3).",
         )
 
         fun hasNoCheckResult(logUri: Any?): Msg = Msg(
@@ -1735,14 +768,14 @@ internal object Messages {
             en = "test: unknown option: $it (put arguments for Gradle after --)",
         )
 
-        fun cannotFindProjectRoot(recordedRoot: Any?): Msg = Msg(
-            ja = "プロジェクトルートが分かりません（チェックリストの meta.projectRoot: '$recordedRoot'）。init をやり直してください。",
-            en = "Cannot find the project root (meta.projectRoot in the check list: '$recordedRoot'). Run init again.",
+        fun projectRootMissing(rootUri: Any?): Msg = Msg(
+            ja = "プロジェクトルートがありません: $rootUri（チェックリストの meta.projectRoot）。直すか、空にしてプロジェクトのルートで実行してください。",
+            en = "The project root does not exist: $rootUri (meta.projectRoot in the check list). Fix it, or empty it and run this in the root of the project.",
         )
 
-        fun withoutGradleWrapperRun(gradlewUri: Any?, moduleGradlePath: Any?): Msg = Msg(
-            ja = "gradlew がありません: $gradlewUri 。Gradle wrapper の無いプロジェクトでは、./gradlew $moduleGradlePath:test を自分で実行してログを tmp/test-<名前>.log に保存してください。",
-            en = "gradlew not found: $gradlewUri . Without the Gradle wrapper, run ./gradlew $moduleGradlePath:test yourself and save the log as tmp/test-<name>.log.",
+        fun withoutGradleWrapperRun(gradlewUri: Any?, moduleGradlePath: Any?, logDirUri: Any?): Msg = Msg(
+            ja = "gradlew がありません: $gradlewUri 。Gradle wrapper の無いプロジェクトでは、./gradlew $moduleGradlePath:test を自分で実行してログを $logDirUri/test-<名前>.log に保存してください。",
+            en = "gradlew not found: $gradlewUri . Without the Gradle wrapper, run ./gradlew $moduleGradlePath:test yourself and save the log as $logDirUri/test-<name>.log.",
         )
 
         fun jdkUnknownCouldNot(source: Msg): Msg = Msg(
@@ -1822,24 +855,14 @@ internal object Messages {
     }
 
     object Workdir {
-        val cannotFindWorkingDirectory: Msg = Msg(
-            ja = "作業用ディレクトリが分かりません。先に '$AGENT_COMMAND init' を実行してください。別の場所から実行するときは環境変数 KATACHI_WORKDIR で指定してください。",
-            en = "Cannot find the working directory. Run '$AGENT_COMMAND init' first. When running from somewhere else, point KATACHI_WORKDIR at it.",
-        )
-
         fun moduleDirMustPath(value: Any?): Msg = Msg(
             ja = "--module-dir は Gradle ルートからの相対パスです（例: static-analysis/katachi）: $value",
             en = "--module-dir must be a path relative to the Gradle root (for example static-analysis/katachi): $value",
         )
 
         fun definitionDirMissing(dirUri: Any?, moduleDir: Any?): Msg = Msg(
-            ja = "定義のディレクトリがありません: $dirUri 。scaffold をまだ実行していないか、置き場所が違います（記録: meta.moduleDir = $moduleDir。変えるなら 'preferences set moduleDir=<path>' か 'scaffold --module-dir <path>'）",
-            en = "The definition directory does not exist: $dirUri . Either scaffold has not run yet, or the location differs (recorded: meta.moduleDir = $moduleDir; change it with 'preferences set moduleDir=<path>' or 'scaffold --module-dir <path>')",
-        )
-
-        fun workdirAmbiguous(candidates: Any?): Msg = Msg(
-            ja = "作業用ディレクトリの候補が複数あります。環境変数 KATACHI_WORKDIR でどれかを指定してください: $candidates",
-            en = "More than one working directory was found. Point KATACHI_WORKDIR at one of them: $candidates",
+            ja = "定義のディレクトリがありません: $dirUri 。scaffold をまだ実行していないか、置き場所が違います（$moduleDir。違うなら、チェックリストの meta.moduleDir を直す）",
+            en = "The definition directory does not exist: $dirUri . Either scaffold has not run yet, or the location differs ($moduleDir; if it is wrong, fix meta.moduleDir in the check list)",
         )
     }
 
@@ -1918,15 +941,14 @@ katachi — katachi の導入と検査を手伝うコマンド
       ビルドに組み込む。
 
       --package <pkg>     アプリのパッケージ名（必須）
-      --katachi <version> katachi のバージョン（デフォルト: init が記録したバージョン。
-                          無ければこの katachi コマンドのバージョン）
+      --katachi <version> katachi のバージョン（デフォルト: この katachi コマンドのバージョン）
       --kotlin <version>  Kotlin のバージョン（デフォルト: プロジェクトから検出）
       --no-konsist        katachi-konsist を使わない構成で生成する（ktFileContent { } が書けない）。
                           assert() に FileConstraintCheck() を渡さないので、gradle { } の hook に
                           書いた fileConstraint も評価されず、test は [UncheckedFileConstraint] で
                           失敗する（How to fix: Pass FileConstraintCheck() to assert()）
-      --module-dir <path> 検査用モジュールの置き場所（デフォルト: init が記録した meta.moduleDir。
-                          無ければ architecture-test）。指定すると meta.moduleDir を書き換える
+      --module-dir <path> 検査用モジュールの置き場所（デフォルト: 作業用ディレクトリのチェックリストの
+                          meta.moduleDir。無ければ architecture-test）
       --test-framework <junit5|kotest|kotest-<style>>
                           テストの雛形と依存（デフォルト: preferences.testFramework。無ければ
                           kotest の依存がプロジェクトにあれば kotest、なければ junit5）。
@@ -1946,7 +968,7 @@ katachi — katachi の導入と検査を手伝うコマンド
       定義（検査用モジュールの src/test/kotlin）を読み、種類の違うファイルを1つの
       Role に抱えていそうなもの、Gradle のファイルを手書きで宣言した Role（制約を持つものは
       gradle { } の hook への移し方も出す）、平たい group、分けていないファイル、
-      documented = false の候補を列挙する。agent check 3-2 / agent check 3-3 でも自動で走る。
+      documented = false の候補を列挙する。
       素朴なテキスト走査なので誤検知があり得る。点検の結果では失敗にしない（0 を返す）。
       定義のディレクトリが無ければ（scaffold 前、置き場所の食い違い）1 を返す。
 
@@ -1956,9 +978,8 @@ katachi — katachi の導入と検査を手伝うコマンド
       引数はスクリプトの args に入る。
 
   katachi agent <サブコマンド> ...
-      AI エージェントが導入の手順書（katachi agent guide）に従って使うコマンド:
-      init / guide / docs / data / add / preferences / answers / check / uncheck /
-      warn / test / compare-violations / verify / summary。一覧は katachi agent --help。
+      AI エージェントが katachi skill の手順で使うコマンド: test / compare-violations。
+      一覧は katachi agent --help。
 
   katachi --version
   katachi --help
@@ -1978,15 +999,14 @@ Usage:
       and wires it into the build.
 
       --package <pkg>     The app's package name (required)
-      --katachi <version> katachi version (default: the one init recorded,
-                          otherwise the version of this katachi command)
+      --katachi <version> katachi version (default: the version of this katachi command)
       --kotlin <version>  Kotlin version (default: detected from the project)
       --no-konsist        Generate a setup that does not use katachi-konsist (no ktFileContent { }).
                           assert() gets no FileConstraintCheck(), so a fileConstraint written in a
                           gradle { } hook is not evaluated either, and the test fails with
                           [UncheckedFileConstraint] (How to fix: Pass FileConstraintCheck() to assert())
-      --module-dir <path> Where the test module goes (default: meta.moduleDir recorded by init,
-                          otherwise architecture-test). When given, meta.moduleDir is updated
+      --module-dir <path> Where the test module goes (default: meta.moduleDir in the check list of
+                          the working directory, otherwise architecture-test)
       --test-framework <junit5|kotest|kotest-<style>>
                           Test template and dependencies (default: preferences.testFramework;
                           otherwise kotest when the project depends on kotest, else junit5).
@@ -2008,7 +1028,6 @@ Usage:
       seem to hold files of different kinds, hand-written Roles for Gradle files (ones with
       constraints also get the way to move them into a gradle { } hook), flat groups, files
       not split, and candidates for documented = false.
-      Also runs on agent check 3-2 / agent check 3-3.
       It is a plain text scan, so false positives are possible. Findings never fail it (returns 0).
       Returns 1 if the definition directory does not exist (before scaffold, or a different location).
 
@@ -2018,9 +1037,8 @@ Usage:
       command). The arguments are the script's args.
 
   katachi agent <subcommand> ...
-      The commands an AI agent runs as it follows the install guide (katachi agent guide):
-      init / guide / docs / data / add / preferences / answers / check / uncheck /
-      warn / test / compare-violations / verify / summary. See katachi agent --help.
+      The commands an AI agent runs for the katachi skill's steps: test / compare-violations.
+      See katachi agent --help.
 
   katachi --version
   katachi --help
@@ -2031,130 +1049,28 @@ Run scaffold in the Gradle root directory.
 
         val agent: Msg = Msg(
             ja = """
-katachi agent — AI エージェントが導入の手順書に従って使うコマンド
+katachi agent — AI エージェントが katachi skill の手順で使うコマンド
 
-手順書（katachi agent guide）の各ステップがこれらを呼びます。人が導入するときは
+katachi skill（gh skill install TBSten/katachi katachi）の手順がこれらを呼びます。人が導入するときは
 katachi doctor / katachi scaffold / katachi lint（katachi --help）を使ってください。
 
 使い方:
-  katachi agent init [オプション]
-      Gradle のルートであることを確かめ、作業用ディレクトリを作り、
-      チェックリストとレポートのテンプレートを配置する。
-      最後に KEY=VALUE 形式で結果を出力する（後続のステップがこれを読む）。
-
-      --workdir <path>    作業用ディレクトリを明示する（デフォルト: 自動判定）
-      --katachi <version> katachi のバージョンを明示する（デフォルト: この katachi コマンドのバージョン。やり直しでは
-                          前回の init が記録したバージョンを使い続ける）
-      --offline           ネットワークに出ない（テンプレートと手順書は同梱なので、無くても揃う）
-      --force             記入済みのチェックリスト・レポートも取り直す
-      --lang <en|ja>      チェックリスト・レポート・このコマンドの出力の言語（デフォルト: en）。
-                          作業用ディレクトリに記録され、以降のコマンドが従う
-      --module-dir <path> 検査用モジュールの置き場所。Gradle ルートからの相対パス
-                          （デフォルト: architecture-test。例: static-analysis/katachi）。
-                          チェックリストの meta.moduleDir に記録され、scaffold 以降が従う
-
-      2回目以降の実行では、記入済みのファイルは上書きしません。
-      以降のコマンドはプロジェクトのルートで katachi agent <サブコマンド> として実行します
-      （作業用ディレクトリは自動で見つける。別の場所からは KATACHI_WORKDIR で指定する）。
-
-  katachi agent guide [<セクション ID>] [--refresh]
-      手順書（index.md）をセクションごとに出す。引数なしは目次（<ID>、見出し、行数をタブ区切りで 1 行ずつ）。
-      <セクション ID> は見出しの番号（0-1、3-2、5、6-A など。6-1〜6-4 は 6-A〜6-D に読み替える）。
-      章（1 など）に番号つきのセクションがあれば、前書きと「含むセクション:」だけを出す。
-      各セクションの最後に次のセクションのコマンドを付ける。手順書は katachi コマンドに同梱されている
-      （init の前でも読める）。--lang で言語を選ぶ。--refresh で作業用ディレクトリの tmp/cache/index.md を書き直す。
-
-  katachi agent data get <対象> [<キー>] [--id <id>]
-      埋め込まれた JSON を標準出力に出す。HTML 本体は読まなくてよい。
-      <対象> は check-list / report / ファイルパスのどれか。
-      <キー> はドット区切り（meta.moduleDir、questions）。その部分だけを出し、
-      無ければ 1 を返す。文字列はそのまま、ほかは JSON で出す。
-
-  katachi agent data set <対象> <json> [--id <id>]
-      埋め込まれた JSON を <json> で丸ごと差し替える。
-
-  katachi agent data merge <対象> <json> [--id <id>]
-      <json> を既存の内容に深くマージする。部分的な更新はこちらが楽。
-      配列は丸ごと置き換わる（追記ではない）。
-
-      set / merge はどちらも、書き込む前に JSON として妥当かを検査し、
-      元のファイルを .bak に退避し、結果が壊れていれば自動で巻き戻す。
-
-  katachi agent add <種類> [--<項目> <値> ...]
-      配列に1件追記する。merge と違い、既存の要素を消さない。
-      check-list: violation / question / changed
-      report:     module / role / tool / excluded / codebase-question / template
-      id を自動で採番する。question（チェックリスト）は q1, q2, ...、codebase-question（レポート）は cq1, cq2, ...。
-      追記の前後で件数を確かめ、合わなければ止まる（並行して書き込んだときの検知）。
-
-      add role --group <group> [--constraint-only --note <理由>]
-          --group は定義での束ね先（入れ子は . 区切り: feature.ui）。Gradle のビルドファイルは
-          gradle() が受け持つので --layout に書けない（buildSrc / includeBuild したビルドは除く）。
-          制約を付けるための Role だけ --constraint-only --note <理由> で記録する。
-      add module --deviation <文>
-          同じ kind の他のモジュールと構成が違う点（無ければ省略）。
-      add excluded は .gitignore で除外済みのパスを拒む（katachi はもともと見ない）。
-
-  katachi agent preferences [show]
-  katachi agent preferences set <key>=<value> ...
-      書き方の方針を表示 / 記録する（手順書 1-3）。show は 1 行 1 キーで、値と
-      「推奨 / 記録済み / 検出: <根拠>」を出す。知らないキー・値は止まる。
-      key: nestedGroups (yes/no) / moduleDir (パス) / testFramework (junit5/kotest/kotest-<style>) /
-           dependencyStyle (catalog/literal) / constraintNames (plain/numbered) /
-           oneRolePerFile (yes/no)
-      moduleDir はチェックリストの meta.moduleDir に、ほかは preferences に記録される。
-      lint が nestedGroups / oneRolePerFile を、scaffold が testFramework / dependencyStyle を読む。
-
-  katachi agent answers [show] [--target report|check-list]
-  katachi agent answers import <json> [--target report|check-list]
-  katachi agent answers set <id> <回答> [--note <文>] [--target report|check-list]
-      確認事項（questions）への回答を表示 / 取り込む。show は --target が無ければ両方を出す。
-      set は id で書き込み先が決まる（q<n> はチェックリスト、cq<n> はレポート。--target と食い違えば止まる）。
-      import はブラウザで書き出した JSON（{"target": "report", "answers": {"cq1": {"answer": "...", "note": null}}}）を読み、
-      知らない id は飛ばして件数を出す。書き込み先は JSON の target、無ければ --target、それも無ければ id から決める。
-      回答は answers（id ごと）に残り、summary が回答済みの件数と未回答だけを出す。
-
-  katachi agent docs [--small] [--refresh]
-      ガイド全文（llms-full.txt）を作業用ディレクトリの tmp/cache/ に取得し、
-      そのパスを出力する。すでにあれば取りに行かない。
-
-  katachi agent docs --topic <名前> [--refresh]
-  katachi agent docs --topics
-      ガイドを話題（ページ）ごとに切り出して tmp/cache/topics/<名前>.md に置き、
-      そのパスを出力する（layout / role / basic-api / kt-file-content など。--topics で一覧）。
-      全文を読まずに済ませるためのもの。古いバージョンの写しは含めない。
-
-  katachi agent docs --api [--refresh]
-      API リファレンス（Dokka）のルート索引（api-docs/llms.txt）を取得する。
-      主要 API の一覧と、モジュールごとの索引・全文へのリンクを含む。
-
-  katachi agent docs --api <katachi|katachi-konsist> [--refresh]
-      指定モジュールの API 全文（シグネチャと KDoc）を取得する。
-      API のシグネチャや引数を確かめたいときに使う。
-
-  katachi agent check <項目 id>...
-  katachi agent uncheck <項目 id>...
-      チェックリストの項目を完了 / 未完了にする。
-      知らない id を渡すと、使える id を並べて止まる。
-
-  katachi agent warn <ステップ id> <文言>
-  katachi agent warn <ステップ id> --clear
-      ステップに警告を付ける / 消す。付けたステップは黄色になり、
-      完了していても閉じずに表示される。
-
   katachi agent compare-violations [<前のログ> <後のログ>]
       ./gradlew <module>:test の出力を2つ比べ、検査結果（違反の件数と中身）が
-      変わっていないかを確かめる。定義のリファクタリング（手順書 3-3）の前後に使う。
-      デフォルトは <作業用ディレクトリ>/tmp/test-before-refactor.log と test-after-refactor.log。
+      変わっていないかを確かめる。定義のリファクタリング（katachi skill の setup 3-3）の前後に使う。
+      デフォルトは test --save before-refactor / after-refactor で残したログ
+      （<作業用ディレクトリ>/tmp/ か、作業用ディレクトリが無ければ build/katachi/ の
+      test-before-refactor.log と test-after-refactor.log）。
       [MissingDescription] の警告は、説明を書き足せば減るのが正しいので件数だけ出す。
       変わっていなければ 0、変わっていれば差分を出して 1 を返す。
       どちらかが違反を先頭の数件だけ出したログ（Showing first ...）なら、比べずに 2 を返す。
 
   katachi agent test [--save <名前>] [-- <gradle の引数>...]
       検査用モジュールのテスト（./gradlew <module>:test）を実行し、要約だけを出す。
-      ログの全文は <作業用ディレクトリ>/tmp/test/<UTC 時刻>.log（latest.log にも写し、
-      前の latest.log は previous.log に回す）。--save <名前> で tmp/test-<名前>.log にも写す
-      （手順書 3-2 は before-refactor、3-3 は after-refactor。compare-violations のデフォルトと同じ）。
+      ログの全文は <ログの置き場>/test/<UTC 時刻>.log（latest.log にも写し、前の latest.log は
+      previous.log に回す）。ログの置き場は作業用ディレクトリの tmp/、無ければ build/katachi/。
+      --save <名前> で <ログの置き場>/test-<名前>.log にも写す
+      （setup 3-2 は before-refactor、3-3 は after-refactor。compare-violations のデフォルトと同じ）。
       -- より後ろは ./gradlew にそのまま渡す（-Dkatachi.baseline.update=true など）。
       違反がいつも全件ログに出るよう、-Dkatachi.maxViolations=all も渡す（-- の後ろで
       -Dkatachi.maxViolations を渡せば、そちらを使う）。
@@ -2163,138 +1079,24 @@ katachi doctor / katachi scaffold / katachi lint（katachi --help）を使って
       0 = 通った、1 = 検査が失敗した、2 = 検査まで届かない（コンパイルエラー、gradlew 無し、定義ディレクトリ無し）。
       katachi コマンドが Gradle を起動するのはこのコマンドだけ。
 
-  katachi agent verify
-      未記入のフィールドと未完了の項目を列挙する。何も残っていなければ
-      最後のステップを完了にして 0 を返す。残っていれば 1 を返す。
-
-  katachi agent summary
-      ユーザに返す文面を組み立てて出力する。
-
-agent init と scaffold は Gradle のルートディレクトリで実行してください。
-ほかの agent コマンドも同じ場所で実行すれば、作業用ディレクトリを自動で見つけます。
+作業用ディレクトリ（katachi skill の手順が作る、check-list.html と tmp/ を持つディレクトリ）は
+このコマンドを実行した場所の下から自動で見つけます。別の場所からは KATACHI_WORKDIR で指定します。
+無くても動きます。
 """.trimIndent(),
             en = """
-katachi agent - the commands an AI agent runs as it follows the install guide
+katachi agent - the commands an AI agent runs for the katachi skill's steps
 
-Each step of the guide (katachi agent guide) calls them. To set katachi up by hand,
-use katachi doctor / katachi scaffold / katachi lint (katachi --help).
+The steps of the katachi skill (gh skill install TBSten/katachi katachi) call these. When people set
+katachi up themselves, they use katachi doctor / katachi scaffold / katachi lint (katachi --help).
 
 Usage:
-  katachi agent init [options]
-      Checks that this is the Gradle root, creates the working directory, and
-      places the check list and the report template.
-      Prints the result as KEY=VALUE lines at the end (the later steps read them).
-
-      --workdir <path>    Use this working directory (default: chosen automatically)
-      --katachi <version> Use this katachi version (default: the version of this katachi command; on a rerun,
-                          the version the previous init recorded)
-      --offline           Never go to the network (the templates and the guide ship with the command)
-      --force             Fetch the check list and the report again, even if filled in
-      --lang <en|ja>      Language of the check list, the report and this command's
-                          output (default: en). Recorded in the working directory;
-                          later commands follow it
-      --module-dir <path> Where the test module goes, relative to the Gradle root
-                          (default: architecture-test; for example static-analysis/katachi).
-                          Recorded as meta.moduleDir in the check list; scaffold and later follow it
-
-      On later runs, files that are already filled in are not overwritten.
-      Later commands run as katachi agent <subcommand> in the project root (they find the
-      working directory themselves; from elsewhere, point KATACHI_WORKDIR at it).
-
-  katachi agent guide [<section id>] [--refresh]
-      Prints the guide (index.md) one section at a time. Without an argument, prints the table of
-      contents (one line per section: <id>, heading, number of lines, tab-separated).
-      <section id> is the number in the heading (0-1, 3-2, 5, 6-A, ...; 6-1 to 6-4 are read as 6-A to 6-D).
-      For a chapter with numbered sections (such as 1), prints only its preamble and "Sections:".
-      Each section ends with the command for the next one. The guide ships with the katachi command
-      (readable before init). --lang picks the language; --refresh rewrites tmp/cache/index.md in the working directory.
-
-  katachi agent data get <target> [<key>] [--id <id>]
-      Prints the embedded JSON. You do not need to read the HTML itself.
-      <target> is check-list, report, or a file path.
-      <key> is dot-separated (meta.moduleDir, questions). Prints only that part, and
-      returns 1 if it does not exist. A string is printed as is; anything else as JSON.
-
-  katachi agent data set <target> <json> [--id <id>]
-      Replaces the embedded JSON with <json> as a whole.
-
-  katachi agent data merge <target> <json> [--id <id>]
-      Deep-merges <json> into the existing content. Easier for partial updates.
-      Arrays are replaced as a whole (not appended to).
-
-      Both set and merge validate the JSON before writing, keep the original
-      file as .bak, and roll back automatically if the result is broken.
-
-  katachi agent add <kind> [--<field> <value> ...]
-      Appends one entry to an array. Unlike merge, existing entries are kept.
-      check-list: violation / question / changed
-      report:     module / role / tool / excluded / codebase-question / template
-      An id is numbered automatically: q1, q2, ... for question (check list), cq1, cq2, ... for codebase-question (report).
-      The count is checked before and after appending; a mismatch stops the command
-      (detects concurrent writes).
-
-      add role --group <group> [--constraint-only --note <reason>]
-          --group is where the Role goes in the definition (nested with dots: feature.ui).
-          Gradle build files cannot be a --layout since gradle() takes care of them
-          (except buildSrc and included builds). Only a Role that exists to attach a
-          constraint is recorded, with --constraint-only --note <reason>.
-      add module --deviation <text>
-          How this module differs from the other modules of the same kind (omit if none).
-      add excluded rejects a path already excluded by .gitignore (katachi never looks at it).
-
-  katachi agent preferences [show]
-  katachi agent preferences set <key>=<value> ...
-      Shows / records how the definition should be written (step 1-3 of the guide). show prints
-      one key per line with the value and "recommended / recorded / detected: <evidence>".
-      An unknown key or value stops the command.
-      key: nestedGroups (yes/no) / moduleDir (path) / testFramework (junit5/kotest/kotest-<style>) /
-           dependencyStyle (catalog/literal) / constraintNames (plain/numbered) /
-           oneRolePerFile (yes/no)
-      moduleDir is recorded as meta.moduleDir of the check list, the others under preferences.
-      lint reads nestedGroups / oneRolePerFile; scaffold reads testFramework / dependencyStyle.
-
-  katachi agent answers [show] [--target report|check-list]
-  katachi agent answers import <json> [--target report|check-list]
-  katachi agent answers set <id> <answer> [--note <text>] [--target report|check-list]
-      Shows / imports the answers to the questions. Without --target, show prints both files.
-      set writes where the id belongs (q<n> is the check list, cq<n> the report; a contradicting --target stops it).
-      import reads the JSON exported from the browser ({"target": "report", "answers": {"cq1": {"answer": "...", "note": null}}}),
-      skips unknown ids and prints the counts. It writes to the target in the JSON, otherwise --target, otherwise where the ids belong.
-      Answers are kept under answers (per id); summary prints the number answered and lists only the unanswered ones.
-
-  katachi agent docs [--small] [--refresh]
-      Fetches the full guide (llms-full.txt) into tmp/cache/ in the working directory
-      and prints its path. Does not fetch again if it is already there.
-
-  katachi agent docs --topic <name> [--refresh]
-  katachi agent docs --topics
-      Cuts one topic (page) out of the guide into tmp/cache/topics/<name>.md and prints
-      its path (layout / role / basic-api / kt-file-content and so on; --topics lists them).
-      Saves reading the full text. Copies of older versions are left out.
-
-  katachi agent docs --api [--refresh]
-      Fetches the root index of the API reference (Dokka), api-docs/llms.txt.
-      It lists the main APIs and links to each module's index and full text.
-
-  katachi agent docs --api <katachi|katachi-konsist> [--refresh]
-      Fetches the full API text (signatures and KDoc) of the given module.
-      Use it to check an API's signature or parameters.
-
-  katachi agent check <item id>...
-  katachi agent uncheck <item id>...
-      Marks check list items as done / not done.
-      An unknown id stops the command and lists the ids you can use.
-
-  katachi agent warn <step id> <text>
-  katachi agent warn <step id> --clear
-      Attaches a warning to a step / removes it. A step with a warning turns
-      yellow and stays open even when it is done.
-
   katachi agent compare-violations [<log before> <log after>]
       Compares two outputs of ./gradlew <module>:test and checks that the
       check result (the number and content of violations) has not changed. Use it
-      before and after refactoring the definition (step 3-3 of the guide).
-      Defaults: <working directory>/tmp/test-before-refactor.log and test-after-refactor.log.
+      before and after refactoring the definition (step 3-3 of the katachi skill's setup).
+      Defaults: the logs test --save before-refactor / after-refactor kept
+      (test-before-refactor.log and test-after-refactor.log in <working directory>/tmp/,
+      or in build/katachi/ without a working directory).
       [MissingDescription] warnings should go down as descriptions are added, so only
       their counts are shown.
       Returns 0 if nothing changed; otherwise prints the difference and returns 1.
@@ -2302,9 +1104,10 @@ Usage:
 
   katachi agent test [--save <name>] [-- <gradle arguments>...]
       Runs the test module's tests (./gradlew <module>:test) and prints only a summary.
-      The full log goes to <working directory>/tmp/test/<UTC time>.log (also copied to latest.log;
-      the previous latest.log becomes previous.log). --save <name> also copies it to tmp/test-<name>.log
-      (before-refactor in step 3-2, after-refactor in step 3-3; the defaults of compare-violations).
+      The full log goes to <log place>/test/<UTC time>.log (also copied to latest.log; the previous
+      latest.log becomes previous.log). The log place is tmp/ of the working directory, otherwise
+      build/katachi/. --save <name> also copies it to <log place>/test-<name>.log
+      (before-refactor in setup 3-2, after-refactor in 3-3; the defaults of compare-violations).
       Everything after -- is passed to ./gradlew as is (such as -Dkatachi.baseline.update=true).
       It also passes -Dkatachi.maxViolations=all so that the log always holds every violation
       (give -Dkatachi.maxViolations after -- to use your own value instead).
@@ -2313,15 +1116,9 @@ Usage:
       0 = passed, 1 = the check failed, 2 = the check was not reached (compile error, no gradlew,
       no definition directory). This is the only command of katachi that starts Gradle.
 
-  katachi agent verify
-      Lists blank fields and unfinished items. If nothing is left, marks the last
-      step as done and returns 0. Otherwise returns 1.
-
-  katachi agent summary
-      Builds and prints the message to give back to the user.
-
-Run agent init and scaffold in the Gradle root directory.
-Run the other agent commands in the same place and they find the working directory themselves.
+The working directory (the one with check-list.html and tmp/ that the katachi skill's steps make)
+is found below the directory this runs in. From elsewhere, point KATACHI_WORKDIR at it.
+Both commands work without it.
 """.trimIndent(),
         )
     }

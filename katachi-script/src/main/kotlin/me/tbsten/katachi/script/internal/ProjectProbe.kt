@@ -128,7 +128,7 @@ internal fun detectGradleWrapperVersion(root: Path): String? {
     return file.readLines().firstNotNullOfOrNull { pattern.find(it)?.groupValues?.get(1) }
 }
 
-/** Why an old Kotlin stops katachi and what to ask the user. init and doctor warn with it; scaffold stops with it. */
+/** Why an old Kotlin stops katachi and what to ask the user. doctor warns with it; scaffold stops with it. */
 internal fun ScriptContext.kotlinTooOldMessage(root: Path, version: String, forScaffold: Boolean): String {
     val gradle = detectGradleWrapperVersion(root)
     val min = "$KOTLIN_MIN_MAJOR.$KOTLIN_MIN_MINOR"
@@ -402,13 +402,10 @@ internal fun detectJvmToolchain(root: Path, moduleDir: String): Toolchain {
 // ---------------------------------------------------------------- the katachi version
 
 /** Where the katachi version came from. Only [LATEST] is not someone's choice, so KATACHI_MAVEN_LOCAL never skips its check. */
-internal enum class VersionSource { EXPLICIT, INIT, CLI, LATEST }
+internal enum class VersionSource { EXPLICIT, CLI, LATEST }
 
-/** The developer hook KATACHI_MAVEN_LOCAL: the environment variable, or what init recorded. The kit's `maven_local_enabled`. */
-internal fun ScriptContext.mavenLocalEnabled(): Boolean {
-    if (env["KATACHI_MAVEN_LOCAL"] in setOf("1", "yes", "true")) return true
-    return findWorkdir()?.resolve("tmp/cache/maven-local")?.isRegularFile() == true
-}
+/** The developer hook KATACHI_MAVEN_LOCAL. The kit's `maven_local_enabled`. */
+internal fun ScriptContext.mavenLocalEnabled(): Boolean = env["KATACHI_MAVEN_LOCAL"] in setOf("1", "yes", "true")
 
 /** Stops when [version] is older than katachi 0.3. The kit's `require_katachi_version`. */
 internal fun ScriptContext.requireKatachiVersion(version: String, source: VersionSource) {

@@ -42,14 +42,8 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
     checkGradleJdk(root)
     val toolchain = detectJvmToolchain(root, module.dir)
 
-    // The version: --katachi > what init recorded > the one this command was released with > GitHub's latest.
+    // The version: --katachi > the one this command was released with > GitHub's latest.
     var versionSource = VersionSource.EXPLICIT
-    if (version.isEmpty()) {
-        findWorkdir()?.resolve("tmp/cache/version")?.textIfNotEmpty()?.let {
-            version = it
-            versionSource = VersionSource.INIT
-        }
-    }
     if (version.isEmpty()) {
         cliKatachiVersion()?.let {
             version = it
@@ -169,7 +163,6 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
     say(Messages.Scaffold.whatWillCreated)
     note(Messages.Scaffold.packageName(pkg))
     when (versionSource) {
-        VersionSource.INIT -> note(Messages.Scaffold.recordedInit(version))
         VersionSource.CLI -> note(Messages.Scaffold.versionKatachiCommand(version))
         VersionSource.LATEST -> note(Messages.Scaffold.latestReleaseGithub(version))
         VersionSource.EXPLICIT -> note("katachi:      $version")
@@ -299,12 +292,6 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
         say(fails)
     }
 
-    // The Kotlin actually used, the toolchain and the module's place, so that verify and the later commands agree.
-    findWorkdir()?.resolve(CHECK_LIST_FILE)?.let { checkList ->
-        updateChecklistMeta(checkList, "kotlin", kotlin)
-        updateChecklistMeta(checkList, "jvmToolchain", pick(toolchain.source))
-        if (module.dir != module.recorded) updateChecklistMeta(checkList, "moduleDir", module.dir)
-    }
 
     say("")
     say(Messages.Scaffold.nextTestArchitectureEmpty)

@@ -105,13 +105,18 @@ private fun ScriptContext.printCheckDiff(before: List<String>, after: List<Strin
     return false
 }
 
+/**
+ * Where `test` keeps its logs: `tmp/` of the working directory when there is one, otherwise `build/katachi/`
+ * of the project root (ignored by git in a Gradle project, so the logs never become an `[UnexpectedFile]`).
+ */
+internal fun ScriptContext.testLogDir(): Path = findWorkdir()?.resolve("tmp") ?: projectRoot().resolve("build/katachi")
+
 /** `compare-violations [<before> [<after>]]`: 0 unchanged, 1 changed, 2 not comparable. */
 internal fun ScriptContext.runCompareViolations(args: List<String>): Int {
-    val workdir = requireWorkdir()
     val module = resolveModuleDir()
     requireDefinitionDir(module)
-    val before = args.getOrNull(0)?.let(::resolve) ?: workdir.resolve("tmp/test-before-refactor.log")
-    val after = args.getOrNull(1)?.let(::resolve) ?: workdir.resolve("tmp/test-after-refactor.log")
+    val before = args.getOrNull(0)?.let(::resolve) ?: testLogDir().resolve("test-before-refactor.log")
+    val after = args.getOrNull(1)?.let(::resolve) ?: testLogDir().resolve("test-after-refactor.log")
     for (log in listOf(before, after)) {
         if (!log.isRegularFile()) {
             die(Messages.Test.notFoundSaveOutput(fileUri(log), module.gradlePath))
@@ -159,17 +164,15 @@ internal fun ScriptContext.runTest(args: List<String>): Int {
     val gradleArgs = parsed.passthrough.toMutableList()
     if (gradleArgs.none { it.startsWith("-Dkatachi.maxViolations=") }) gradleArgs += TEST_MAX_VIOLATIONS_ARG
 
-    val workdir = requireWorkdir()
     val module = resolveModuleDir()
-    val recordedRoot = checklistMeta(workdir.resolve(CHECK_LIST_FILE), "projectRoot")
-    if (recordedRoot.isEmpty() || !resolve(recordedRoot).isDirectory()) {
-        warn(Messages.Test.cannotFindProjectRoot(recordedRoot))
+    val root = projectRoot()
+    if (!root.isDirectory()) {
+        warn(Messages.Test.projectRootMissing(fileUri(root)))
         return 2
     }
-    val root = resolve(recordedRoot)
     val gradlew = root.resolve("gradlew")
     if (!gradlew.isRegularFile()) {
-        warn(Messages.Test.withoutGradleWrapperRun(fileUri(gradlew), module.gradlePath))
+        warn(Messages.Test.withoutGradleWrapperRun(fileUri(gradlew), module.gradlePath, fileUri(testLogDir())))
         return 2
     }
     val definition = definitionDir(module)
@@ -178,7 +181,7 @@ internal fun ScriptContext.runTest(args: List<String>): Int {
         return 2
     }
 
-    val dir = workdir.resolve("tmp/test")
+    val dir = testLogDir().resolve("test")
     dir.createDirectories()
     val stamp = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH-mm-ss'Z'").format(clock.instant().atOffset(ZoneOffset.UTC))
     var log = dir.resolve("$stamp.log")
@@ -199,7 +202,7 @@ internal fun ScriptContext.runTest(args: List<String>): Int {
     val status = runToLog(command, root, log)
     Files.copy(log, latest, StandardCopyOption.REPLACE_EXISTING)
     if (save != null) {
-        val copy = workdir.resolve("tmp/test-$save.log")
+        val copy = testLogDir().resolve("test-$save.log")
         Files.copy(log, copy, StandardCopyOption.REPLACE_EXISTING)
         say(Messages.Test.copy(fileUri(copy)))
     }

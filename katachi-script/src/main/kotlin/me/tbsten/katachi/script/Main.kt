@@ -9,8 +9,7 @@ import me.tbsten.katachi.script.internal.unescapeWrapperArgs
  * Runs the `katachi` command with [args] and exits the JVM with its status.
  *
  * `katachi.main.kts` (the file `brew install tbsten/tap/katachi` puts behind the `katachi`
- * command) is this one call. Every subcommand runs here, in this JVM; the guide and the templates
- * `init` places ship inside this artifact, so nothing is downloaded but what `docs` fetches.
+ * command) is this one call. Every subcommand runs here, in this JVM.
  *
  * ## Example 1: the entry point script
  *
@@ -20,7 +19,7 @@ import me.tbsten.katachi.script.internal.unescapeWrapperArgs
  * me.tbsten.katachi.script.main(args)
  * ```
  *
- * @param args The command line after the command name, as `bin/katachi` passes it: `data get check-list meta.moduleDir`.
+ * @param args The command line after the command name, as `bin/katachi` passes it: `scaffold --package com.example.app`.
  *   An argument `bin/katachi` escaped so `kotlin` would not take it (`-D…`, `-J…`) is turned back here.
  * @featured
  */

@@ -66,9 +66,9 @@ import me.tbsten.katachi.script.*
 
 val katachi = Katachi(defaultPackage = "com.example.app", lang = ja)
 
-println(commands(katachi.agent.init, katachi.scaffold.`test-framework`(kotest))) // only prints the commands it built
+println(commands(katachi.doctor, katachi.scaffold.`test-framework`(kotest)))      // only prints the commands it built
 val status = katachi.command("--version").execute()                              // runs one (in this same JVM)
-// main(arrayOf("agent", "guide"))                                                // the same entry point as the command line
+// main(arrayOf("agent", "--help"))                                               // the same entry point as the command line
 ```
 
 ```shell
@@ -78,7 +78,7 @@ kotlin try.local.main.kts
 - Without `-Pkatachi.skipSigning`, the signing task fails on a machine with no GPG key.
 - `@file:DependsOn` looks in `~/.m2/repository` first, so no `@file:Repository` is needed.
 - Publish again after each change. If compilation still sees the old API, delete the script cache of `kotlin` (`~/Library/Caches/main.kts.compiled.cache` on macOS).
-- `execute()` on `agent init` or `scaffold` writes files into the current directory.
+- `execute()` on `scaffold` writes files into the current directory.
 - `main(...)` exits the JVM when the command ends with a non-zero status.
 
 ## Writing code
@@ -158,6 +158,7 @@ Pick names from this list. "Scope" is the word used as the scope in a ticket nam
 | CLI | The `katachi` command, brew | `katachi-script/cli/` | `cli` |
 | script | The DSL for `*.main.kts` / `*.katachi.kts` | `katachi-script/src/` | `script` |
 | IDE plugin | Gutter, tool window, MCP | `katachi-intellij-plugin/` | `ide` |
+| skill | The Agent Skill users install with `gh skill install TBSten/katachi katachi` (installing, adding to and updating the definition, fixing violations) | `skills/katachi/` | `skill` |
 | docs | The documentation site, README | `docs/`, `README*.md` | `docs` |
 | CI / development (no user impact) | Workflows, pull request template, CONTRIBUTING, architecture-test, benchmark, `tool/` (not the actions given to users: those are Actions) | `.github/`, `architecture-test/`, `benchmark/`, `tool/` and so on | `ci` |
 | sample | The samples | `sample/` | `sample` |
