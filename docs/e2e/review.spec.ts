@@ -233,6 +233,7 @@ test('選択肢が 8 個あると欄を出さず、消し方と直し方だけ�
 	ok('8 個がボタンで並ぶ', (await u('.pop .act .btn.custom').count()) === 8)
 	await fb.act(u('.pop .btn.plus'))
 	ok('上限なら欄を出さない', (await u('.pop .action-form').count()) === 0 && /8 個までです。足すなら × で/.test((await u('.pop .action-hint').textContent()) ?? ''))
+	await fb.shot('review-actions-5-full')
 	ok('一覧は高さを止めて中だけスクロールする', await u('.pop .action-list').evaluate((e) => getComputedStyle(e).overflowY === 'auto'))
 	await fb.act(u('.pop .action-chip .action-pick').filter({ hasText: '重複' }))
 	ok('名前を押すと欄が出て直せる', (await u('.pop .action-form input').first().inputValue()) === '重複' && (await u('.pop .action-form .btn').textContent()) === '直す')
