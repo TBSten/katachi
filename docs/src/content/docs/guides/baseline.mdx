@@ -5,11 +5,11 @@ tags:
   - intermediate
 ---
 
-import { CardGrid, LinkCard } from '@astrojs/starlight/components';
-
 {/*
   The purpose of this page: to gain a deep, comprehensive understanding of the baseline feature, which is useful when introducing katachi into an existing project.
 */}
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 Adding katachi to an existing project means that on the first run, **undeclared files and directories come out as violations.** The basic approach is to work through the reported paths one by one — adding them to the definition, moving them, or deleting them — but when there are a lot of them, you can't clear them all right away.
 
@@ -90,7 +90,7 @@ Violations tolerated by the baseline not only do not fail the test; they are als
 
 ## After you fix a tolerated violation
 
-When you fix a violation that had been tolerated, the baseline file is left with a record of a violation that no longer exists. If left alone, a different file placed at the same path later would pass silently. For that reason katachi reports these leftovers as `[StaleBaselineEntry]` and **fails the test.**
+When you fix a violation that had been tolerated, the baseline file is left with a record of a violation that no longer exists. If left alone, a different file placed at the same path later would be tolerated without anyone noticing. For that reason katachi reports these leftover records as `[StaleBaselineEntry]` and **fails the test.**
 
 To remove fixed violations from the baseline file, run the architecture test again with `-Dkatachi.baseline.prune=true`.
 
