@@ -128,6 +128,35 @@ describe('applyStatus', () => {
 	})
 })
 
+describe('同じ見出しの指摘の id', () => {
+	const DUP = '## 同じ\n- file: x\n\na\n\n## 同じ\n- file: x\n\nb\n'
+	it('印を付けると id を書いて固定する。前の指摘を消しても、送った指摘の id は詰まらない', () => {
+		const [a, b] = parseReview('s', DUP).items
+		expect([a!.id.endsWith('-2'), b!.id.endsWith('-2')]).toEqual([false, true])
+		const sent = applyStatus('s', DUP, b!.id, { status: 'resolved', note: 'Feedback に送った: 261110-001', at: 'T' })
+		expect(sent).toContain(`- id: ${b!.id.slice(2)}\n- status: resolved`)
+		const left = removeItem('s', sent, a!.id)
+		expect(parseReview('s', left).items.map((i) => i.id)).toEqual([b!.id])
+		// 戻しても id は書いたまま（記録が指している）
+		expect(applyStatus('s', sent, b!.id, { status: 'open' })).toContain(`- id: ${b!.id.slice(2)}`)
+	})
+	it('書いてある id とは重ねない（あとから同じ見出しを足しても、書いてある id を取らない）', () => {
+		const t = '## 同じ\n- file: x\n- id: zzz-2\n\n## 同じ\n- file: x\n\n## 同じ\n- file: x\n'
+		expect(parseReview('s', t).items.map((i) => i.id)).toEqual(['s/zzz-2', expect.stringMatching(/^s\/[0-9a-z]+$/), expect.stringMatching(/^s\/[0-9a-z]+-2$/)])
+		const h = parseReview('s', '## 同じ\n- file: x\n').items[0]!.id
+		expect(parseReview('s', `## 同じ\n- file: x\n\n## 同じ\n- file: x\n- id: ${h.slice(2)}\n`).items.map((i) => i.id)).toEqual([`${h}-2`, h])
+	})
+	it('見出しが 1 つだけなら id は書かない。読めない id・重なった id は見出しから作り直して知らせる', () => {
+		const t = '## a\n- file: x\n'
+		expect(applyStatus('s', t, parseReview('s', t).items[0]!.id, { status: 'resolved', at: 'T' })).not.toContain('- id:')
+		const bad = parseReview('s', '## a\n- file: x\n- id: ../x\n\n## b\n- file: x\n- id: q\n\n## c\n- file: x\n- id: q\n')
+		expect(bad.items.map((i) => i.id)[1]).toBe('s/q')
+		expect(bad.items.map((i) => i.id)[2]).not.toBe('s/q')
+		expect(bad.errors.join('\n')).toMatch(/L1: id の形が読めません/)
+		expect(bad.errors.join('\n')).toMatch(/L9: 同じ id がもうあります/)
+	})
+})
+
 describe('removeItem', () => {
 	it('見出しから次の見出しの手前まで消す', () => {
 		const set = parseReview('s1', FILE)

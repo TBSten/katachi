@@ -93,6 +93,8 @@ Review の指摘（`docs/src/integrations/feedback/review/README.md`）と同じ
 - 利用者が TODO.html やチャットで「直さない」「このまま」「後で」「こういう方針で」と答えたら、**その回のうちに**ここへ書く。
   修正 PR があればそこに入れ、無ければ記録だけの PR を出す。チケットの「決定済み」の 1 行と同じ内容にする。
 - Review の popup で「直さない」になった指摘は、`review remove` の前に写す。
+  人が popup に足した選択肢のうち `- decision:` の付いたもの（`<置き場>/review/_actions.md`。Review の README の「選択肢を足す」）で解決済みにした指摘も、
+  同じコマンドがその decision で写す（「後で」はひとことを `revisit` にする。ひとことが無ければ「次の prerelease で人に聞く」）。
 
   ```shell
   python3 .claude/skills/prerelease/scripts/decisions.py record-review <置き場>/review/<名前>.md \

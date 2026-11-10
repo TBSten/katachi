@@ -62,6 +62,27 @@ button, input { font: inherit; }
 .toast.warn { background: #92400e; }
 .err { font-size: 12px; color: var(--danger); }
 .err[hidden] { display: none; }
+/* 人が足した選択肢（review/_actions.md）。初めからのボタンと見分けられるよう、点線の枠で 1 行にまとめる。 */
+.custom-row { flex: 1 1 100%; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+.btn.custom { border-style: dashed; }
+.btn.plus { padding: 4px 8px; color: var(--muted); border-style: dashed; border-color: var(--border); }
+.btn.plus.is-on { color: var(--fg); background: var(--soft); border-style: solid; }
+.actions-edit { flex: 1 1 100%; min-width: 0; display: flex; flex-direction: column; gap: 6px; padding: 8px; background: var(--soft); border-radius: 8px; }
+.actions-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 12px; }
+.action-list { display: flex; flex-wrap: wrap; gap: 4px; }
+.action-chip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 2px 1px 8px; font-size: 12px; background: var(--bg); border: 1px dashed var(--border-strong); border-radius: 12px; }
+.action-chip.is-on { border-style: solid; border-color: var(--p-done); }
+.action-pick { padding: 0; font: inherit; color: var(--fg); background: none; border: 0; cursor: pointer; }
+.action-pick:hover { text-decoration: underline dotted; }
+.action-decision { padding: 0 5px; font-size: 10px; color: var(--muted); border: 1px solid var(--border); border-radius: 8px; }
+.action-x { width: 20px; height: 20px; padding: 0; font-size: 13px; line-height: 1; color: var(--fg-2); background: none; border: 0; border-radius: 10px; cursor: pointer; }
+.action-x:hover:not(:disabled) { background: var(--hover); }
+.action-form { display: flex; flex-direction: column; gap: 6px; }
+.action-row { display: flex; gap: 6px; }
+.action-form input { flex: 1 1 auto; min-width: 0; padding: 4px 8px; color: var(--fg); background: var(--bg); border: 1px solid var(--border-strong); border-radius: 6px; font: inherit; }
+.action-form select { flex: 0 1 auto; max-width: 45%; padding: 4px; color: var(--fg); background: var(--bg); border: 1px solid var(--border-strong); border-radius: 6px; font: inherit; }
+.action-hint { margin: 0; font-size: 11px; color: var(--muted); }
+.action-hint.warn { color: var(--danger); }
 
 /* 一覧のパネル（右上。畳める）。 */
 .panel { position: fixed; top: 12px; right: 12px; z-index: 1; display: flex; flex-direction: column; width: 300px; max-width: calc(100vw - 24px); max-height: 60vh; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 8px 28px rgba(0,0,0,.3); pointer-events: auto; }
@@ -85,6 +106,7 @@ button, input { font: inherit; }
 .row.is-resolved .chip { background: var(--p-done); }
 .row-title { flex: 1; min-width: 0; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .row-meta { flex: none; font-size: 11px; color: var(--muted); }
+.row-tag { flex: none; max-width: 7em; padding: 0 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; color: var(--fg-2); border: 1px dashed var(--border-strong); border-radius: 8px; }
 .row-meta.warn { color: var(--danger); }
 .empty { font-size: 12px; color: var(--muted); }
 .sets { margin: 10px 0 0; padding-top: 6px; border-top: 1px solid var(--border); font-size: 11px; color: var(--muted); }
@@ -104,12 +126,13 @@ button, input { font: inherit; }
 	.panel.is-folded .sum { display: none; }
 	/* popup（シート）を開いているあいだは札を隠す（popup に閉じると前・次がある）。 */
 	.panel.has-pop { display: none; }
-	.act input { font-size: 16px; }
+	.act input, .action-form input, .action-form select { font-size: 16px; }
 	/* トーストは下からのシートに隠れないよう、上に出す。 */
 	.toast { top: calc(12px + env(safe-area-inset-top)); bottom: auto; left: 12px; right: 12px; max-width: none; }
 }
 @media (pointer: coarse) {
-	.btn, .act input, .row { min-height: 44px; }
+	.btn, .act input, .row, .action-form input, .action-form select { min-height: 44px; }
+	.action-x { width: 32px; height: 32px; }
 	.x, .fold { width: 44px; height: 44px; }
 	.pin { min-width: 28px; height: 28px; border-radius: 14px; font-size: 13px; }
 }

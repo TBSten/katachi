@@ -108,6 +108,71 @@ class DecisionsTest(unittest.TestCase):
         self.assertIn("写した 0 件 / 写してあった 2 件", out)
         self.assertEqual((self.dir / "docs.md").read_text(encoding="utf-8"), text)
 
+    def test_record_review_also_copies_added_choices_with_a_decision(self):
+        # popup に人が足した選択肢（指摘のファイルの隣の _actions.md）。decision の付いたものだけを写す
+        (self.root / "_actions.md").write_text(
+            "# Review の選択肢\n\n## 後で\n- agent: v0.5 に積む\n- decision: 後で\n\n## 誤検知\n- decision: 直さない\n\n## 聞きたい\n- agent: ai-note で答えて reopen\n",
+            encoding="utf-8",
+        )
+        extra = textwrap.dedent("""\
+
+            ## [p2] 後で直す指摘
+            - file: ja/get-started/faq.mdx
+            - quote: 後で
+            - status: resolved
+            - note: 後で: v0.5 の docs 整理で
+
+            ## [p2] 誤検知の指摘
+            - file: ja/get-started/faq.mdx
+            - quote: 誤検知
+            - status: resolved
+            - note: 誤検知
+
+            ## [p2] 聞きたい指摘
+            - file: ja/get-started/faq.mdx
+            - status: resolved
+            - note: 聞きたい: なぜ？
+            """)
+        self.review.write_text(REVIEW + extra, encoding="utf-8")
+        code, out = run("--dir", str(self.dir), "record-review", str(self.review), "--decided", "2026-11-10 t KATACHI-341")
+        self.assertEqual(code, 0)
+        self.assertIn("写した 4 件", out)
+        text = (self.dir / "docs.md").read_text(encoding="utf-8")
+        self.assertIn("## 後で: 後で直す指摘\n- decision: 後で", text)
+        self.assertIn("- revisit: v0.5 の docs 整理で", text)
+        self.assertIn("## 直さない: 誤検知の指摘\n- decision: 直さない", text)
+        self.assertIn("（選択肢「誤検知」）", text)
+        self.assertNotIn("聞きたい指摘", text)  # decision の無い選択肢は判断ではない
+        # 写した判断は形の検査を通る（「後で」の revisit も入っている）
+        self.assertEqual([e.errors for e in D.load_decisions(self.dir) if e.errors], [])
+
+    def test_note_with_reason_in_parentheses_or_after_a_space(self):
+        # 手で付けた note（「直さない（理由）」「直さない 理由」）も理由付きの「直さない」として受ける。333 で 10 件漏れた形
+        self.assertEqual(D.note_choice("直さない（前の文で通じる）", ["直さない"]), ("直さない", "前の文で通じる"))
+        self.assertEqual(D.note_choice("直さない (ok)", ["直さない"]), ("直さない", "ok"))
+        self.assertEqual(D.note_choice("直さない 誤検知", ["直さない"]), ("直さない", "誤検知"))
+        self.assertEqual(D.note_choice("直さない：誤検知", ["直さない"]), ("直さない", "誤検知"))
+        self.assertEqual(D.note_choice("直さない", ["直さない"]), ("直さない", ""))
+        self.assertEqual(D.note_choice("直さないでほしい", ["直さない"]), (None, ""))
+        self.assertEqual(D.note_choice("PR #65 待ち 消えたら remove", ["PR", "PR #65 待ち"]), ("PR #65 待ち", "消えたら remove"))
+        self.review.write_text(REVIEW.replace("- note: 直さない: 前の文で並べているので通じる", "- note: 直さない（前の文で並べているので通じる）"), encoding="utf-8")
+        code, out = run("--dir", str(self.dir), "record-review", str(self.review), "--decided", "2026-11-10 t KATACHI-341")
+        self.assertIn("写した 2 件", out)
+        self.assertIn("利用者の一言: 前の文で並べているので通じる", (self.dir / "docs.md").read_text(encoding="utf-8"))
+
+    def test_review_ids_honor_pinned_id(self):
+        # popup が印を付けた指摘は `- id:` で固定され、前の同じ見出しを消しても id がずれない（review/model.ts と同じ）
+        entries, _ = D.parse(REVIEW, "s", D.REVIEW_KEYS)
+        base = D.review_ids(entries, "s")[1]
+        text = "## 同じ\n- file: x\n- id: zzz-2\n\n## 同じ\n- file: x\n\n## 同じ\n- file: x\n"
+        ids = D.review_ids(D.parse(text, "s", D.REVIEW_KEYS)[0], "s")
+        self.assertEqual(ids[0], "s/zzz-2")
+        self.assertEqual(ids[2], ids[1] + "-2")
+        h = D.review_ids(D.parse("## 同じ\n- file: x\n", "s", D.REVIEW_KEYS)[0], "s")[0]
+        pinned = f"## 同じ\n- file: x\n\n## 同じ\n- file: x\n- id: {h[2:]}\n"
+        self.assertEqual(D.review_ids(D.parse(pinned, "s", D.REVIEW_KEYS)[0], "s"), [h + "-2", h])
+        self.assertTrue(base.startswith("s/"))
+
     def test_match_same_near_and_drop(self):
         run("--dir", str(self.dir), "record-review", str(self.review), "--decided", "2026-11-10 t KATACHI-1")
         out_path = self.root / "kept.md"

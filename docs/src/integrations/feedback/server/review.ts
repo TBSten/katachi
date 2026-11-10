@@ -3,10 +3,11 @@
 import { randomBytes } from 'node:crypto'
 import { mkdir, open, readdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
 import { isAbsolute, join, relative, resolve, sep } from 'node:path'
-import { EVENT_REVIEW_REQUEST, EVENT_REVIEW_RESULT, REVIEW_LINK_LABEL, REVIEW_SENT_NOTE, type ReviewRequest, type ReviewResult, type ReviewSetView, type ReviewView, type SavePayload, type Section } from '../core/protocol'
+import { EVENT_REVIEW_REQUEST, EVENT_REVIEW_RESULT, REVIEW_LINK_LABEL, REVIEW_SENT_NOTE, type ReviewAction, type ReviewDecision, type ReviewRequest, type ReviewResult, type ReviewSetView, type ReviewView, type SavePayload, type Section } from '../core/protocol'
+import { ACTIONS_FILE, addAction, parseActions, removeAction, updateAction } from '../review/actions'
 import { applyStatus, CONTENT_DIR, NOTE_CHARS, parseReview, relocate, removeItem, SET_NAME, splitLines, textHints, type ReviewItem, type StatusPatch } from '../review/model'
 
-export type ReviewData = { sets: ReviewSetView[]; items: ReviewView[]; root: string }
+export type ReviewData = { sets: ReviewSetView[]; items: ReviewView[]; root: string; actions: ReviewAction[]; actionErrors: string[] }
 
 /** 置き場の中で、指摘のファイルを置くフォルダ。 */
 export const REVIEW_SUBDIR = 'review'
@@ -136,7 +137,9 @@ export function createReviewStore(dir: string, repoRoot: string) {
 			}
 			sets.push({ name, title: set.title, ...(set.base ? { base: set.base } : {}), file, errors })
 		}
-		return { sets, items, root: repoRoot }
+		const at = await exists(actionsPath)
+		const { actions, errors: actionErrors } = at === null ? { actions: [], errors: [] } : parseActions(at)
+		return { sets, items, root: repoRoot, actions, actionErrors: actionErrors.map((e) => `${ACTIONS_FILE}: ${e}`) }
 	}
 
 	const setOf = (id: string) => {
@@ -165,6 +168,21 @@ export function createReviewStore(dir: string, repoRoot: string) {
 		})
 	}
 
+	const actionsPath = join(dir, ACTIONS_FILE)
+
+	/** 選択肢のファイルを書き換える（指摘のファイルと同じく lock を取ってから）。 */
+	function rewriteActions(edit: (text: string | null) => string): Promise<void> {
+		return serial(async () => {
+			await mkdir(dir, { recursive: true })
+			const release = await lock(`${actionsPath}.lock`)
+			try {
+				await writeAtomic(actionsPath, edit(await exists(actionsPath)))
+			} finally {
+				await release()
+			}
+		})
+	}
+
 	/** id の指摘の印を書き換える。 */
 	const patch = (id: string, p: StatusPatch) => rewrite(id, (name, text) => applyStatus(name, text, id, p))
 
@@ -177,6 +195,20 @@ export function createReviewStore(dir: string, repoRoot: string) {
 		sendBack: (id: string, aiNote: string) => patch(id, { status: 'open', aiNote }),
 		/** agent が確かめて消す。 */
 		remove: (id: string) => rewrite(id, (name, text) => removeItem(name, text, id)),
+		/** 人が選択肢を足す（`_actions.md` が無ければ作る）。 */
+		addAction: (a: ReviewAction) => rewriteActions((text) => addAction(text, a)),
+		/** 人が選択肢を直す（その場で書き換える）。 */
+		updateAction: (from: string, a: ReviewAction) =>
+			rewriteActions((text) => {
+				if (text === null) throw new Error(`選択肢がありません: ${from}`)
+				return updateAction(text, from, a)
+			}),
+		/** 人が選択肢を消す。 */
+		removeAction: (label: string) =>
+			rewriteActions((text) => {
+				if (text === null) throw new Error(`選択肢がありません: ${label}`)
+				return removeAction(text, label)
+			}),
 	}
 }
 
@@ -189,6 +221,16 @@ export function checkReviewRequest(v: unknown): { ok: true; req: ReviewRequest }
 	const fail = (reason: string) => ({ ok: false as const, requestId, reason })
 	if (!requestId) return fail('requestId が不正です')
 	if (o.op === 'load') return { ok: true, req: { requestId, op: 'load' } }
+	if (o.op === 'add-action' || o.op === 'update-action' || o.op === 'remove-action') {
+		if (typeof o.label !== 'string' || o.label.length === 0 || o.label.length > 200) return fail('label が不正です')
+		if (o.op === 'remove-action') return { ok: true, req: { requestId, op: 'remove-action', label: o.label } }
+		if (typeof o.agent !== 'string' || o.agent.length > 2000) return fail('agent が不正です')
+		if (o.decision !== undefined && typeof o.decision !== 'string') return fail('decision が不正です')
+		const a = { label: o.label, agent: o.agent, ...(o.decision ? { decision: o.decision as ReviewDecision } : {}) }
+		if (o.op === 'add-action') return { ok: true, req: { requestId, op: 'add-action', ...a } }
+		if (typeof o.from !== 'string' || o.from.length === 0 || o.from.length > 200) return fail('from が不正です')
+		return { ok: true, req: { requestId, op: 'update-action', from: o.from, ...a } }
+	}
 	if (o.op !== 'resolve' && o.op !== 'reopen' && o.op !== 'send' && o.op !== 'unsend') return fail('op が不正です')
 	if (typeof o.id !== 'string' || o.id.length === 0 || o.id.length > 200) return fail('id が不正です')
 	if (o.op === 'reopen') return { ok: true, req: { requestId, op: 'reopen', id: o.id } }
@@ -237,7 +279,10 @@ export function createReviewHandler(store: ReviewStore, feedback?: ReviewFeedbac
 		const { req } = check
 		try {
 			let sent: string | undefined
-			if (req.op === 'resolve') await store.resolve(req.id, req.note)
+			if (req.op === 'add-action') await store.addAction({ label: req.label, agent: req.agent, ...(req.decision ? { decision: req.decision } : {}) })
+			else if (req.op === 'update-action') await store.updateAction(req.from, { label: req.label, agent: req.agent, ...(req.decision ? { decision: req.decision } : {}) })
+			else if (req.op === 'remove-action') await store.removeAction(req.label)
+			else if (req.op === 'resolve') await store.resolve(req.id, req.note)
 			else if (req.op === 'reopen') await store.reopen(req.id)
 			else if (req.op === 'send' || req.op === 'unsend') {
 				if (!feedback) throw new Error('Feedback の置き場がありません')

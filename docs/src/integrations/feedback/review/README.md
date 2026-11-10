@@ -15,6 +15,7 @@ flowchart LR
   E --> B
   B2["人: 「直さない」<br/>（note の頭が「直さない」）"] --> R["agent: 判断として記録<br/>decisions.py record-review"] --> D
   B3["人: 「直してもらう」<br/>（Feedback の記録を作る）"] --> F["agent: いつもの Feedback の消化で直す<br/>cli archive で指摘も消える"]
+  B4["人: 足した選択肢（「後で」など）<br/>（note の頭がその名前）"] --> G["agent: _actions.md の<br/>「- agent:」どおりに扱う"]
 ```
 
 ## 置き場
@@ -55,6 +56,7 @@ base: 1a7a072
 | `status` | `open`（既定）/ `resolved`。popup の「解決済みにする」が書く |
 | `resolved-at` / `note` | 解決済みにした時刻と、人の一言。popup が書く |
 | `ai-note` | agent の一言（差し戻しの理由）。`review reopen` が書く。popup に「agent から」として出る |
+| `id` | 指摘の id を固定する（まとまりの名前を除いた形。`k3x9a2b-2`）。同じ file・見出しの指摘がほかにもあるとき、popup で印を付け外しすると書く。手では書かない |
 
 行は今のソースに合わせて出す。quote が見つからない指摘は書かれた行のまま出し、popup に「もう直っているかもしれません」と出す。
 
@@ -67,9 +69,13 @@ node $C review show <id>                                    # 1 件の全部（�
 node $C review check                                        # 読めない指摘・無いファイル・quote が見つからない行。問題があれば 1 で終わる
 node $C review remove <id>                                  # 確かめた指摘を消す（解決済みのものだけ。未解決も消すなら --force）
 node $C review reopen <id> --note "<理由>"                  # 解決済みを差し戻す
+node $C review list --status=resolved --action=後で          # 一言の頭（直さない・足した選択肢）で絞る
+node $C review actions [--json]                             # 人が足した選択肢と、選ばれた指摘を agent がどう扱うか
 ```
 
 id は `<まとまりの名前>/<file と見出しから作る 7 文字>`。ほかの指摘を消しても変わらない（見出しか file を書き換えると変わる）。
+同じ file・見出しの指摘が並ぶと、2 件目から `-2`・`-3` が付く。この番号は並び順なので、popup で解決済みにした時点で `- id:` をメタに書いて固定する
+（Feedback の記録や判断の記録が id で指している指摘が、前の指摘を消したときに `x-2` から `x` へずれないように）。
 
 ## 画面
 
@@ -84,3 +90,33 @@ id は `<まとまりの名前>/<file と見出しから作る 7 文字>`。ほ�
   ただし remove の前に、判断として `.claude/skills/prerelease/decisions/` に写す（`python3 .claude/skills/prerelease/scripts/decisions.py record-review <置き場>/review/<名前>.md --decided "<日付 回 チケット>"`。写した指摘の id が `REMOVE <id>` で出る）。写さずに消すと、次のリリース前チェックで同じ指摘をまた聞くことになる。
 - 「直してもらう」は、指摘を Feedback の記録（`<置き場>/yymmdd-NNN.md`）にして agent に直してもらう。記録の本文は「直してほしい: <見出し>」・ひとこと・指摘の本文で、ソースの行と `- Review の指摘: <id>` が入る。指摘は解決済みになり、`note` の頭に `Feedback に送った: <記録の id>` と書く。トーストの「戻す」で記録を archive し、指摘を未解決に戻す。
   - agent は `note` の頭が `Feedback に送った` の指摘を Review の流れ（`review list --status=resolved` で確かめる）で扱わない。記録をいつもの Feedback の消化で直し、`cli.mjs archive <記録の id>` で archive すると、`- Review の指摘:` の指摘も消える
+
+## 選択肢を足す
+
+popup の「直さない」「直してもらう」「解決済みにする」のほかに、人が選択肢を足せる（「後で」「このまま」「PR #65 待ち」など）。
+足した選択肢は点線の枠のボタンで並び、押すと指摘を解決済みにして、`note` の頭にその名前を書く（`後で` / `後で: <ひとこと>`）。「直さない」と同じ形。
+
+- popup の「＋」で足す・消す（名前・agent にしてほしいこと・判断の記録の種類）。消してもトーストの「戻す」で足し直せる。
+- 置き場は `<置き場>/review/_actions.md`（git に入らない。`_` で始まるので指摘のまとまりとしては読まない）。手で書いてもよい。
+
+```md
+# Review の選択肢
+
+## 後で
+- agent: v0.5 のチケットに積んでから review remove する
+- decision: 後で
+
+## PR #65 待ち
+- agent: PR #65 のマージ後に見直し、指摘の箇所が消えていれば review remove、残っていれば review reopen
+```
+
+| キー | 中身 |
+|---|---|
+| 見出し | ボタンの名前で、`note` の頭に書く文字。20 文字まで。`:` は使えない（`名前: ひとこと` の区切り）。初めからのボタンの名前（直さない・直してもらう・解決済みにする）と `Feedback に送った` も使えない |
+| `agent` | 選ばれた指摘を agent がどう扱うか。ボタンの説明と `review actions` に出る |
+| `decision` | prerelease の判断の記録（`.claude/skills/prerelease/decisions/`）に写すときの種類。`直さない` / `このまま` / `後で` / `方針` |
+
+- 手で付けた note の `名前（理由）`・`名前 理由` も、その名前で解決済みにしたものとして読む（`review list --action`・一覧の札・`decisions.py record-review`）。
+- 8 個まで。見出しの直後に続く `- agent:` / `- decision:` だけを読み、ほかの行はメモとして読み飛ばす。読めない行は一覧の「読めない指摘・ファイル」と `review check` に出る。
+- agent は `review list --status=resolved` の一言の頭を見て、`review actions` の `agent` どおりに扱う。`agent` が書かれていない選択肢は人に聞く。
+- `decision` の付いた選択肢で解決済みにした指摘は、「直さない」と同じく `decisions.py record-review` が判断として写す（`review remove` の前に）。
