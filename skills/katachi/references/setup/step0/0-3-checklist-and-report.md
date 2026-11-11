@@ -1,23 +1,31 @@
 ### 0-3. Reading and writing the checklist and report
 
-`check-list.html` and `project-code-base-report.html` are **single HTML files that carry their data as JSON inside them.** The HTML is only a rendering shell: **the only thing you read or write is the JSON**, in this block:
+`check-list.html` is **a single HTML file that carries its data as JSON inside it.** One page shows the checklist and, below it, the codebase report. The HTML is only a rendering shell: **the only thing you read or write is the JSON**, in two blocks:
 
 ```html
-<script type="application/json" id="checklist">     (id="report" in the report)
+<script type="application/json" id="checklist">     the checklist (progress, preferences, violations, questions q…)
+{
+  ...
+}
+</script>
+...
+<script type="application/json" id="report">        the codebase report (step 1; questions cq…)
 {
   ...
 }
 </script>
 ```
 
+"The checklist" and "the report" in these steps mean these two blocks, not two files.
+
 #### How to edit the JSON
 
-- **Read** the lines between the opening tag and `</script>`. There is no need to read the rest of the HTML.
+- **Read** the lines between the opening tag of the block and the next `</script>`. There is no need to read the rest of the HTML.
 - **Write** by editing those lines in place with your file editing tool. Change only what you mean to change; leave every other key as it is.
 - **Keep it valid JSON**: double quotes, no trailing commas, `null` (not `None`), numbers without quotes where the template has a number.
 - **Keep both tags alone on their own lines**, as the template has them. The `katachi` command finds the block by those lines.
-- **Never touch the HTML outside the block**, and never replace the file with a fresh copy once it has data in it.
-- **Check after every write.** Read the block back. If `jq`, `python3` or `node` is available, parse it to be sure, for example `sed -n '/<script type="application\/json" id="report">/,/<\/script>/p' <workdir>/project-code-base-report.html | sed '1d;$d' | jq . > /dev/null`. Opening the HTML in a browser also shows a parse error at the top of the page.
+- **Never touch the HTML outside the two blocks**, and never replace the file with a fresh copy once it has data in it.
+- **Check after every write.** Read the block back. If `jq`, `python3` or `node` is available, parse it to be sure, for example `sed -n '/<script type="application\/json" id="report">/,/<\/script>/p' <workdir>/check-list.html | sed '1d;$d' | jq . > /dev/null` (`id="checklist"` for the other block). Opening the HTML in a browser also shows a parse error at the top of the page.
 - Before a large rewrite, copy the file into `<workdir>/tmp/` first, so a broken edit can be undone.
 
 `null` and an empty array mean "not filled in yet".
@@ -38,7 +46,7 @@ Add an entry by appending an object to the array; keep the entries already there
 | `excluded` | report | `path`, `reason` |
 | `templates` | report | `role`, `files` / `params` (arrays), `basedOn`, `reason` |
 
-Number question ids on from the last one in the same file: the report's are `cq…` and the checklist's `q…`, so they never collide.
+Number question ids on from the last one in the same block: the report's are `cq…` and the checklist's `q…`, so they never collide.
 
 Two rules the arrays keep:
 
@@ -49,7 +57,7 @@ Two rules the arrays keep:
 
 #### Answers
 
-Answers to `questions` go into `answers` of the same file, keyed by the question's id:
+Answers to `questions` go into `answers` of the same block, keyed by the question's id (`q…` is the checklist, `cq…` the report):
 
 ```json
 "answers": {
@@ -57,27 +65,27 @@ Answers to `questions` go into `answers` of the same file, keyed by the question
 }
 ```
 
-The user can answer in the browser too, in "Questions for you" on each page. Once there is an answer or a feedback comment, a small menu appears at the bottom right of the page, and the user hands things back in one of two ways. Either way, copy the entries into `answers` of that file:
+The user can answer in the browser too, in "Questions for you" of the checklist and "7. Questions for you" of the report. Once there is an answer or a feedback comment, a small menu appears at the bottom right of the page, and the user hands things back in one of two ways. Either way, copy the entries into `answers` of the block they belong to:
 
-- **"Copy all"** copies text to paste into the chat: one line saying which file the answers are for, a line listing the ids still open (if any), and a ```` ```json ```` block with `{"target": "report", "answers": {"cq1": {"answer": "…", "note": "…"}}}`. If there is feedback (below), it follows in the same paste. Only what was not copied before goes in; when everything was, all of it is copied again.
-- **"Save as JSON"** saves the same JSON as a file (`katachi-answers-report.json` / `katachi-answers-check-list.json`).
+- **"Copy all"** copies text to paste into the chat: one line saying what the answers are for, a line listing the ids still open (if any), and a ```` ```json ```` block with `{"checklist": {"answers": {"q1": {…}}}, "report": {"answers": {"cq1": {"answer": "…", "note": "…"}}}}`. If there is feedback (below), it follows in the same paste. Only what was not copied before goes in; when everything was, all of it is copied again.
+- **"Save as JSON"** saves the same JSON as a file (`katachi-answers.json`).
 
-`target` is `report` or `check-list`. An entry whose `note` is `null` was a plain pick.
+The outermost keys are the ids of the blocks (`checklist` / `report`); a block with no answers is left out. An entry whose `note` is `null` was a plain pick.
 
 #### Feedback
 
-Both pages also have a **Feedback mode** (the button at the bottom right). The user clicks any item on the page (Shift-click adds more items to the same comment), writes a comment, and copies all comments at once with "Copy all" in the same menu (together with any answers). What you receive looks like this:
+The page also has a **Feedback mode** (the button at the bottom right). The user clicks any item on the page (Shift-click adds more items to the same comment), writes a comment, and copies all comments at once with "Copy all" in the same menu (together with any answers). What you receive looks like this:
 
 ```text
-Feedback on the katachi codebase report (project-code-base-report.html), 2 item(s). "Target" is the place in that file's JSON. …
+Feedback on the katachi installation checklist (check-list.html), 2 item(s). "Target" is the place in that file's JSON; its head, checklist. or report., names the JSON block (id). …
 
-1. 4. Elements (candidate roles) › app › ui › ViewModel
-   Target: roles[name=ViewModel]
+1. Codebase report › 4. Elements (candidate roles) › app › ui › ViewModel
+   Target: report.roles[name=ViewModel]
    > feature modules have ViewModels too (feature/*/src/...)
 
-2. 1. Overview › Main frameworks and 1 more
-   Target: overview.frameworks (1. Overview › Main frameworks)
-   Target: overview.targets (1. Overview › Targets)
+2. Codebase report › 1. Overview › Main frameworks and 1 more
+   Target: report.overview.frameworks (Codebase report › 1. Overview › Main frameworks)
+   Target: report.overview.targets (Codebase report › 1. Overview › Targets)
    > add the versions
 ```
 
@@ -85,7 +93,7 @@ An entry with several `Target` lines is one comment the user put on several plac
 
 Under each `Target` there may be one more line. `Quote: "…"` is the part of the text the user selected before writing, so the comment is about those words. `Shows: "…"` is what that place said when the comment was saved (cut to about 120 characters); if your JSON no longer says that, you may have changed it since.
 
-`Target` points into the JSON of the file named on the first line: `roles[name=ViewModel]` is the `roles` entry whose `name` is `ViewModel`, `roles[name=ViewModel].forbidden[0]` the first entry of its `forbidden`, `tools[name=ktlint].configPath` one field of a row, `roles[group=app.ui]` the roles in that group, `steps[id=3].items[id=3-2]` an item of the checklist, `overview.language` a key, `directoryTree: app/src/` a line of the directory tree, and `page` the whole page. For each comment, fix that entry (check the code again if the comment says the facts are wrong), or tell the user why you did not. Then tell the user which ones you changed. The comments stay in their browser until they delete them.
+`Target` starts with the block (`checklist.` or `report.`) and points into its JSON: `report.roles[name=ViewModel]` is the `roles` entry of the report whose `name` is `ViewModel`, `report.roles[name=ViewModel].forbidden[0]` the first entry of its `forbidden`, `report.tools[name=ktlint].configPath` one field of a row, `report.roles[group=App.Ui]` the roles in that group, `checklist.steps[id=3].items[id=3-2]` an item of the checklist, `report.overview.language` a key, `report.directoryTree: app/src/` a line of the directory tree, `report` the whole report, and `page` the whole page. For each comment, fix that entry (check the code again if the comment says the facts are wrong), or tell the user why you did not. Then tell the user which ones you changed. The comments stay in their browser until they delete them.
 
 #### Write down what you learn as you go
 

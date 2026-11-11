@@ -42,7 +42,8 @@ set -eu
 # 無ければそれを使う（resolve_docs）。init にだけ渡して docs が黙って本番を取る、を防ぐため。
 KATACHI_DOCS_DEFAULT="https://tbsten.github.io/katachi"
 # チェックリストとレポートのテンプレートは 0.4.0 から katachi skill の assets/ にある（配信サイトには置かない）。
-KATACHI_TEMPLATES="${KATACHI_TEMPLATES:-https://raw.githubusercontent.com/TBSten/katachi/main/skills/katachi/assets}"
+# skill ではレポートをチェックリストの中に移した（KATACHI-361）ので、2 ファイルだった最後のコミットを指す。
+KATACHI_TEMPLATES="${KATACHI_TEMPLATES:-https://raw.githubusercontent.com/TBSten/katachi/9ce9c9397b0e7752e104b210ecceef4d4478a116/skills/katachi/assets}"
 KATACHI_DOCS_ENV="${KATACHI_DOCS:-}"
 KATACHI_DOCS="${KATACHI_DOCS:-$KATACHI_DOCS_DEFAULT}"
 

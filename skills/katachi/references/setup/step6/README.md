@@ -28,7 +28,7 @@ For each Role, decide the following and add it to the report's `templates`.
 ]
 ```
 
-If you judge that no Role suits a template, record nothing. What you record goes into the "Next action" of your report below, and the report page shows it under "Template proposals". **Do not write `.template { }` here.** That happens in 6-D, after the user agrees.
+If you judge that no Role suits a template, record nothing. What you record goes into the "Next action" of your report below, and the page shows it under "8. Proposed templates" of the report. **Do not write `.template { }` here.** That happens in 6-D, after the user agrees.
 
 #### The report
 
@@ -59,7 +59,7 @@ file://<workdir>/check-list.html
 **The generated code needs your review.** Please check what it contains.
 
 - Check list: file://<workdir>/check-list.html
-- Codebase report: file://<workdir>/project-code-base-report.html
+- Codebase report: file://<workdir>/check-list.html#codebase-report
 - `:architecture-test:test` result: ✅ All green  (or: ⚠️ architecture violations left: <number of violations>)
 - Questions for you (check list): answered <n> / unanswered <n>
     - <id> <question> → recommended: <recommendation>        (each unanswered one)
@@ -84,6 +84,6 @@ Resume:
 
 Leave out a "Questions" line when that file has no questions. Mention the steps that carry a `warning` under the result line.
 
-**For the unanswered questions, ask the user to answer them**: show the URL of the report for ids starting with `cq` and of the checklist for ids starting with `q`, and have them answered in the browser ("Copy all" or "Save as JSON" in the menu at the bottom right), or in chat. Write what comes back into `answers` (0-3, "Answers").
+**For the unanswered questions, ask the user to answer them**: show the URL of the page (`file://<workdir>/check-list.html`; the report's questions, ids starting with `cq`, are at `#report-questions`, the checklist's, ids starting with `q`, at `#questions`), and have them answered in the browser ("Copy all" or "Save as JSON" in the menu at the bottom right), or in chat. Write what comes back into `answers` (0-3, "Answers").
 
 > **The session may end here.** The next session finds the working directory (the directory with `check-list.html` below the project root), reads the checklist's JSON, and goes on from there: from the first item that is not done, or, once step 5 is done, from what the user asks for (6-0, or one of 6-A to 6-D). The sections are in the table in `references/setup/README.md`. The previous session's results are in the checklist and the report; if `tmp/katachi-command.txt` is there, run katachi the way it says (0-1). Do not rely on the conversation's memory.

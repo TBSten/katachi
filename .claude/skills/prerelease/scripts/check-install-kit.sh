@@ -259,7 +259,6 @@ run_fixture() { # $1 = fixture
 		echo "### 作業用ディレクトリ（skills/katachi/assets/${LANG_ARG}/ を写す）"
 		mkdir -p "${workdir}/tmp" &&
 			cp "${REPO}/skills/katachi/assets/${LANG_ARG}/check-list.html" "${workdir}/check-list.html" &&
-			cp "${REPO}/skills/katachi/assets/${LANG_ARG}/project-code-base-report.html" "${workdir}/project-code-base-report.html" &&
 			python3 - "${workdir}/check-list.html" "$d" "${MODULE_DIR}" "${VERSION}" "${kotlin}" <<'PY'
 import json, sys
 path, root, module_dir, version, kotlin = sys.argv[1:]

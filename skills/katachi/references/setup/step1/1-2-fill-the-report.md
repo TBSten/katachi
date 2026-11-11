@@ -43,9 +43,9 @@ Once everything is filled in, mark `1-2` done.
 
 Ask like this. Do not re-list the questions in chat.
 
-1. Once `questions` is written, show the report's URL (the path to `project-code-base-report.html`, starting with `file://`) and have the user answer in "7. Questions for you" in the browser and hand the answers back with "Copy all" (paste into the chat) or "Save as JSON"
+1. Once `questions` is written, show the page's URL (the path to `check-list.html`, starting with `file://`, with `#report-questions` at the end) and have the user answer in "7. Questions for you" of the codebase report in the browser and hand the answers back with "Copy all" (paste into the chat) or "Save as JSON"
 2. Copy the entries of the JSON you receive into the report's `answers` (0-3, "Answers")
-3. If an answer arrives in chat, write it into `answers` the same way. The id decides the file (`cq…` is the report, `q…` the checklist)
+3. If an answer arrives in chat, write it into `answers` the same way. The id decides the block (`cq…` is the report, `q…` the checklist)
 
 Before going on, count the questions without an entry in `answers`, and tell the user which are still open.
 

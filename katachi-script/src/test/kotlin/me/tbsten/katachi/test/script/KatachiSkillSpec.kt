@@ -31,10 +31,10 @@ class KatachiSkillSpec : FreeSpec({
     }
 
     "テンプレートの JSON は ja / en とも読め、同じキーを持つ" {
-        for (file in listOf("check-list.html", "project-code-base-report.html")) {
-            val id = if (file == "check-list.html") "checklist" else "report"
-            val ja = jsonBlock(skill.resolve("assets/ja/$file"), id)
-            val en = jsonBlock(skill.resolve("assets/en/$file"), id)
+        // The checklist page carries the codebase report too, as a second block (KATACHI-361).
+        for (id in listOf("checklist", "report")) {
+            val ja = jsonBlock(skill.resolve("assets/ja/check-list.html"), id)
+            val en = jsonBlock(skill.resolve("assets/en/check-list.html"), id)
             ja.keys.toList() shouldBe en.keys.toList()
         }
     }

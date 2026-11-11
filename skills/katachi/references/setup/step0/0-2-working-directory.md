@@ -1,8 +1,8 @@
 ### 0-2. Set up the working directory
 
-The working directory holds the checklist and the report that people open, plus `tmp/` for your notes and logs. You make it yourself by copying two files from this skill. Run everything **from the Gradle root directory**.
+The working directory holds the checklist and the report that people open, plus `tmp/` for your notes and logs. You make it yourself by copying one file from this skill. Run everything **from the Gradle root directory**.
 
-**Pick the language of the two files.** They are for the user to read: use `ja` when the user works in Japanese, `en` otherwise. These steps stay in English either way. The `katachi` command answers in the language of the checklist you copy (it reads its `<html lang>`).
+**Pick the language of the file.** It is for the user to read: use `ja` when the user works in Japanese, `en` otherwise. These steps stay in English either way. The `katachi` command answers in the language of the checklist you copy (it reads its `<html lang>`).
 
 **Pick the place.** Prefer a place `.gitignore` already ignores, so that the working directory never becomes an `[UnexpectedFile]` in step 4:
 
@@ -10,21 +10,20 @@ The working directory holds the checklist and the report that people open, plus 
 git check-ignore -q .local/ && echo .local    # try .local/, .tmp/, tmp/, .scratch/ in this order. Keep the slash: `.local` misses a `.local/` line until the directory exists
 ```
 
-Use `<the first ignored one>/install-katachi`. If none is ignored, use `tmp/install-katachi` and **tell the user it is visible to git**: katachi checks files that are untracked but not ignored, so as it is, the working directory itself fails step 4 (and the checklist and the report can end up in their commits). Suggest the line for `.gitignore`. Do not edit `.gitignore` yourself. If the user named a place, use it. If 0-1 already made `<workdir>/tmp/` for `katachi.main.kts` (no Homebrew), keep that place.
+Use `<the first ignored one>/install-katachi`. If none is ignored, use `tmp/install-katachi` and **tell the user it is visible to git**: katachi checks files that are untracked but not ignored, so as it is, the working directory itself fails step 4 (and the checklist can end up in their commits). Suggest the line for `.gitignore`. Do not edit `.gitignore` yourself. If the user named a place, use it. If 0-1 already made `<workdir>/tmp/` for `katachi.main.kts` (no Homebrew), keep that place.
 
-**Copy the two files.** `<skill>` is the directory of this skill (the one with `SKILL.md`), `<lang>` is `en` or `ja`:
+**Copy the file.** It holds both the checklist and the codebase report (0-3). `<skill>` is the directory of this skill (the one with `SKILL.md`), `<lang>` is `en` or `ja`:
 
 ```sh
 mkdir -p <workdir>/tmp
 cp <skill>/assets/<lang>/check-list.html <workdir>/check-list.html
-cp <skill>/assets/<lang>/project-code-base-report.html <workdir>/project-code-base-report.html
 ```
 
-**If the files are already there, do not copy over them.** They hold what an earlier session filled in. Read them and go on from where they stop (0-3 says how to read them).
+**If the file is already there, do not copy over it.** It holds what an earlier session filled in. Read it and go on from where it stops (0-3 says how to read it). A working directory from an older version may also have `project-code-base-report.html`: then the report is in that file, not in the `report` block of `check-list.html`; keep using it there.
 
-The top level of the working directory holds only these two files and `tmp/`. Notes, logs and anything you fetch go inside `<workdir>/tmp/`.
+The top level of the working directory holds only `check-list.html` and `tmp/`. Notes, logs and anything you fetch go inside `<workdir>/tmp/`.
 
-**Fill in `meta` of both files** (0-3 says how to write the JSON). Find the values with these commands:
+**Fill in `meta` of both blocks**, the checklist and the report (0-3 says how to write the JSON). Find the values with these commands:
 
 | Field | How to find it |
 |---|---|
