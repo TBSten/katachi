@@ -6,8 +6,8 @@ package me.tbsten.katachi
  * Unlike [InternalKatachiApi], which says "do not touch this", an experimental API is open to
  * every project and says "use it, and expect to adjust when you upgrade". The processor API,
  * the template DSL (`.template { }` and `capture()`), documentation generation, and the
- * extension points (your own [me.tbsten.katachi.dsl.FileSelection] or
- * [me.tbsten.katachi.dsl.FileConstraint]) are marked this way.
+ * extension points (your own [FileSelection][me.tbsten.katachi.dsl.FileSelection] or
+ * [FileConstraint][me.tbsten.katachi.dsl.FileConstraint]) are marked this way.
  *
  * The level is [RequiresOptIn.Level.ERROR], so code outside `:katachi` has to opt in
  * explicitly with `@OptIn(ExperimentalKatachiApi::class)`.

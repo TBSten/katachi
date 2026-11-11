@@ -34,7 +34,7 @@ public class KatachiUnresolvableModulePatternException internal constructor(
  * by looking for a `build.gradle.kts` or `build.gradle` in the tree, never by reading Gradle.
  *
  * Since `.module { }` was removed, `architecture { }` no longer takes a resolver of the
- * project's own: [me.tbsten.katachi.dsl.Architecture.moduleResolver] is always [Conventional].
+ * project's own: [Architecture.moduleResolver] is always [Conventional].
  *
  * ## Example 1: resolve a module path by convention
  * ```kt

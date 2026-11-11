@@ -8,7 +8,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  * It is where the walk starts and what every reported path is relative to. Whether git
  * applies is not decided here: `files = gitTracked()` asks git itself, because a project
  * often sits below the repository root, where no `.git` is found at [path][ProjectRoot.path] (see
- * [me.tbsten.katachi.dsl.FileSelection.GitTracked]).
+ * [FileSelection.GitTracked][me.tbsten.katachi.dsl.FileSelection.GitTracked]).
  *
  * ## Example 1: hide one directory below the project root from the check
  * ```kt

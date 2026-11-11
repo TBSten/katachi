@@ -12,7 +12,7 @@ import me.tbsten.katachi.dsl.Role
  *
  * katachi knows which file a rejection was about, and optionally which declaration inside it.
  * The reasons, what the rule would have allowed, and how to fix it come from the constraint
- * ([me.tbsten.katachi.dsl.FileConstraintFailure]) and are printed only when it said them;
+ * ([FileConstraintFailure][me.tbsten.katachi.dsl.FileConstraintFailure]) and are printed only when it said them;
  * katachi never adds a "How to fix" of its own.
  *
  * One of these per rejected file per constraint. A constraint rejecting four classes in one file

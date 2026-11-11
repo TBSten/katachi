@@ -48,7 +48,7 @@ public class Architecture internal constructor(
      * How a module path katachi finds becomes a directory: always [ModuleResolver.Conventional].
      *
      * `architecture { }` stopped taking a resolver when `.module { }` was removed; the value
-     * stays here for [me.tbsten.katachi.check.internal.moduleIndex] callers.
+     * stays here for the code that looks up each module's directory.
      */
     public val moduleResolver: ModuleResolver,
     internal val metadata: MetadataValues,

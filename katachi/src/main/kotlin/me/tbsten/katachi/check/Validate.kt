@@ -47,7 +47,7 @@ public fun Architecture.validate(fileSystem: KatachiFileSystem): List<Violation>
  * it twice.
  *
  * A check that throws, or answers with a `Result.failure` other than a
- * [KatachiArchitectureAssertionError], becomes one [me.tbsten.katachi.check.UncheckedCheck] and
+ * [KatachiArchitectureAssertionError], becomes one [UncheckedCheck] and
  * every other check still reports what it found. `VirtualMachineError`, `LinkageError`,
  * `InterruptedException` and `AssertionError` pass straight through. A layout check that cannot
  * run at all (no project root, no git) throws, as for `validate()`.

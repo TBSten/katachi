@@ -9,7 +9,7 @@ import me.tbsten.katachi.dsl.Role
  * A role that belongs to a different definition was handed to
  * [ArchitectureProcessContext.filesOf].
  *
- * A run answers for the one [me.tbsten.katachi.dsl.Architecture] it was started from, and a
+ * A run answers for the one [Architecture][me.tbsten.katachi.dsl.Architecture] it was started from, and a
  * [Role] carries no identity beyond the object itself, so a role taken from elsewhere cannot be
  * matched against anything the run walked. Without this it would simply come back with no
  * files, which reads exactly like "this role owns nothing" — a wrong answer that no test can
@@ -51,9 +51,10 @@ public class KatachiUnknownRoleException internal constructor(
 /**
  * A check was handed an [ArchitectureProcessContext] katachi did not build.
  *
- * [me.tbsten.katachi.check.LayoutCheck] and [me.tbsten.katachi.check.FileConstraintCheck] do not read
- * violations off the context -- they read the walk behind it, which only katachi's own context
- * carries. A context written elsewhere has declarations and nothing to check them against, and
+ * [LayoutCheck][me.tbsten.katachi.check.LayoutCheck] and
+ * [FileConstraintCheck][me.tbsten.katachi.check.FileConstraintCheck] do not read violations off
+ * the context -- they read the walk behind it, which only katachi's own context carries.
+ * A context written elsewhere has declarations and nothing to check them against, and
  * answering with an empty list would say "this project is clean", which is the one wrong answer
  * a green test cannot be told from a right one.
  *
