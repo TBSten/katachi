@@ -109,7 +109,7 @@ fun DeclarationContainerScope.controller() = "Controller".role {
         `import`("com.example.model.**")
 
         required(`class`, fileName) {
-            allow(private, `val`, "*", "*Service")      // the Services it calls, swappable from a test
+            allow(private, `val`, "*").type("*Service")      // the Services it calls, swappable from a test
             required(`fun`, "register")("route: Route") // the one function plugin/Routing.kt calls
         }
     }

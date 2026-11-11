@@ -24,7 +24,7 @@
 
 #### Arrays: add entries, never drop them
 
-Add an entry by appending an object to the array; keep the entries already there. One entry per thing (one file, one Role, one question). Do not add a second entry for something already recorded (the same `path` or `name`). The fields each array takes:
+Add an entry by appending an object to the array; keep the entries already there. The one exception is `violations`: when 6-0 fixes a violation recorded there (the summary of `katachi agent test` no longer shows it), remove its entry, and once the array is empty, clear the warning on step 4. Otherwise the fixed violation stays on the page and in the report from step 6. One entry per thing (one file, one Role, one question). Do not add a second entry for something already recorded (the same `path` or `name`). The fields each array takes:
 
 | Array | Where | Fields |
 |---|---|---|

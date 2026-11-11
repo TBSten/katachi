@@ -22,7 +22,7 @@ import me.tbsten.katachi.konsist.declarations.internal.allowWriter
  *     `import`("**")
  *
  *     allow(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
- *         allow(public, `val`, "uiState", "StateFlow<*>")
+ *         allow(public, `val`, "uiState").type("StateFlow<*>")
  *         allow(private, anythingElse)
  *     }
  *     allow(sealed, type, "*Action") { allow(data, `object`, "*") }

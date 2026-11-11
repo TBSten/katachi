@@ -52,6 +52,13 @@ internal class ScriptContext(
 
     fun warn(text: String) = err("\n[!] $text")
 
+    private val warnedOnce = mutableSetOf<String>()
+
+    /** [warn], but once per command: for a notice that several lookups of the same thing reach. */
+    fun warnOnce(message: Msg) {
+        if (warnedOnce.add(message.en)) warn(message)
+    }
+
     fun resolve(path: String): Path = cwd.resolve(path).normalize()
 
     companion object {

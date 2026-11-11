@@ -312,22 +312,15 @@ private class ModuleBuild(
 )
 
 /**
- * `<module>/build.gradle.kts`. Its comments follow the language, since they stay in the user's
- * repository. No repositories { }: a project with FAIL_ON_PROJECT_REPOS (Android) fails on them.
+ * `<module>/build.gradle.kts`. The only comment is the kotlinPluginNote, which follows the language
+ * since it stays in the user's repository (KATACHI-357). No repositories { }: a project with
+ * FAIL_ON_PROJECT_REPOS (Android) fails on them.
  * The kit's `write_module_build`.
  */
 private fun ScriptContext.writeModuleBuild(file: Path, b: ModuleBuild) {
-    val cacheNote = pick(Messages.ScaffoldBuildFile.cacheNote)
-    val logNote = pick(Messages.ScaffoldBuildFile.logNote)
-    val stdNote = pick(Messages.ScaffoldBuildFile.stdNote)
-    val pluginNote = pick(Messages.ScaffoldBuildFile.pluginNote)
-    val archNote = pick(Messages.ScaffoldBuildFile.archNote)
     val toolchainBlock = b.toolchain?.let { "    jvmToolchain($it)\n\n" } ?: ""
     val kotlinBlock = when {
-        b.contextFlag -> {
-            val contextNote = pick(Messages.ScaffoldBuildFile.contextNote)
-            "kotlin {\n$toolchainBlock$contextNote\n    compilerOptions.freeCompilerArgs.add(\"-Xcontext-parameters\")\n}\n\n"
-        }
+        b.contextFlag -> "kotlin {\n$toolchainBlock    compilerOptions.freeCompilerArgs.add(\"-Xcontext-parameters\")\n}\n\n"
         b.toolchain != null -> "kotlin {\n    jvmToolchain(${b.toolchain})\n}\n\n"
         // Nothing to write: without jvmToolchain it compiles with the JDK running Gradle.
         else -> ""
@@ -366,26 +359,21 @@ private fun ScriptContext.writeModuleBuild(file: Path, b: ModuleBuild) {
         """
         |plugins {
         |$kotlinPluginNote    ${b.kotlinPlugin}
-        |$pluginNote
         |$pluginLine
         |}
         |
         |${kotlinBlock}katachi {
-        |$archNote
         |    architecture = "${b.pkg}.test.architecture.projectArchitecture"
         |}
         |
         |tasks.test {
-        |$cacheNote
         |    outputs.upToDateWhen { false }
         |    outputs.cacheIf { false }
         |
         |    useJUnitPlatform()
         |    testLogging {
         |        events("passed", "failed", "skipped")
-        |$logNote
         |        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-        |$stdNote
         |        showStandardStreams = true
         |    }
         |}

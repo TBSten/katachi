@@ -80,7 +80,7 @@ fun DeclarationContainerScope.route() = "Route".role {
 
         val feature = fileName.removeSuffix("Route").replaceFirstChar { it.lowercaseChar() }
         required(`object`, fileName) {
-            required(const, `val`, "PATH", "String")
+            required(const, `val`, "PATH").type("String")
         }
         required(`fun`, "${feature}Screen") // NavGraphBuilder.homeScreen(...)
     }

@@ -28,7 +28,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  *     `import`("**")
  *
  *     allow(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
- *         allow(public, `val`, "uiState", "StateFlow<*>")
+ *         allow(public, `val`, "uiState").type("StateFlow<*>")
  *         allow(public, `fun`, "on*")().returns("Unit")
  *         allow(private, anythingElse)
  *     }

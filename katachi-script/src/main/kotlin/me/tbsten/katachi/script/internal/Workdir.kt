@@ -55,7 +55,18 @@ internal fun ScriptContext.lookupWorkdir(): WorkdirLookup {
     }
 }
 
-internal fun ScriptContext.findWorkdir(): Path? = (lookupWorkdir() as? WorkdirLookup.Found)?.path
+/**
+ * The working directory, or null when there is none. Stops when there are two or more: going on with
+ * neither would quietly fall back to the default module directory, language and log place.
+ */
+internal fun ScriptContext.findWorkdir(): Path? = when (val lookup = lookupWorkdir()) {
+    is WorkdirLookup.Found -> lookup.path
+    WorkdirLookup.NotFound -> null
+    is WorkdirLookup.Ambiguous -> die(ambiguousWorkdirMessage(lookup))
+}
+
+internal fun ScriptContext.ambiguousWorkdirMessage(lookup: WorkdirLookup.Ambiguous): Msg =
+    Messages.Workdir.ambiguous(lookup.candidates.joinToString("") { "    ${fileUri(it)}\n" })
 
 private val HTML_LANG = Regex("<html[^>]*\\slang=\"([a-z]+)\"")
 
@@ -132,10 +143,24 @@ internal fun ScriptContext.resolveModuleDir(arg: String? = null): ModuleDir {
     return module
 }
 
-/** `meta.projectRoot` of the check list, or the current directory. */
+/**
+ * `meta.projectRoot` of the check list, or the current directory. When the current directory is in another
+ * work tree of the same repository, the same place in that work tree: the recorded one would check files
+ * the change never touched and pass (KATACHI-354).
+ */
 internal fun ScriptContext.projectRoot(): Path {
     val recorded = findWorkdir()?.let { checklistMeta(it.resolve(CHECK_LIST_FILE), "projectRoot") } ?: ""
-    return if (recorded.isNotEmpty()) resolve(recorded) else cwd
+    if (recorded.isEmpty()) return cwd
+    val root = resolve(recorded)
+    val counterpart = sameRepositoryCounterpart(root, cwd) ?: return root
+    warnOnce(Messages.Workdir.projectRootInOtherWorkTree(fileUri(root), fileUri(counterpart)))
+    return counterpart
+}
+
+/** Whether [projectRoot] is not the recorded `meta.projectRoot` but its counterpart in the current work tree. */
+internal fun ScriptContext.checksOtherWorkTree(): Boolean {
+    val recorded = findWorkdir()?.let { checklistMeta(it.resolve(CHECK_LIST_FILE), "projectRoot") } ?: ""
+    return recorded.isNotEmpty() && sameRepositoryCounterpart(resolve(recorded), cwd) != null
 }
 
 /** `<project root>/<module dir>/src/test/kotlin`. The kit's `definition_dir`. */

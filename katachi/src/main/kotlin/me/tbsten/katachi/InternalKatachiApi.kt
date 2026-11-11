@@ -17,15 +17,14 @@ package me.tbsten.katachi
  * ```kt
  * import me.tbsten.katachi.ExperimentalKatachiApi
  * import me.tbsten.katachi.InternalKatachiApi
- * import me.tbsten.katachi.check.internal.reportForTest
  * import me.tbsten.katachi.check.validate
  * import me.tbsten.katachi.dsl.files.internal.RealFileSystem
  *
- * // katachi-konsist's own spec, reading the report of a fixture project.
+ * // katachi-konsist's own spec, checking a fixture project on disk.
  * @OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
- * class KonsistReportSpec : FreeSpec({
- *     "names the broken constraint" {
- *         projectArchitecture.validate(RealFileSystem(fixtureRoot)).reportForTest() shouldContain "must"
+ * class KonsistFixtureSpec : FreeSpec({
+ *     "finds the broken constraint" {
+ *         projectArchitecture.validate(RealFileSystem(fixtureRoot)).shouldNotBeEmpty()
  *     }
  * })
  * ```

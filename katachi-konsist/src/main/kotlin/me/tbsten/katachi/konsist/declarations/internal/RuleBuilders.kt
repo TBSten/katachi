@@ -200,6 +200,13 @@ internal class DeclarationLineBuilder(
         propertyType = session.patterns.typeRule(type)
     }
 
+    // `.type(...)` chained after a property line: written once, like a detail.
+    fun writeChainedPropertyType(type: String) {
+        ensureOpen()
+        if (propertyType != null) throw detailProblem(KtFileContentLineProblem.DetailWrittenTwice, "type")
+        propertyType = session.patterns.typeRule(type)
+    }
+
     // null is `anyArgs()`: written, but asking nothing.
     fun writeParameters(written: List<String>?) {
         ensureOpen()

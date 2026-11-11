@@ -15,7 +15,7 @@ import me.tbsten.katachi.konsist.declarations.internal.DeclarationLineBuilder
  *     `import`("**")
  *
  *     required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
- *         required(public, `val`, "uiState", "StateFlow<*>")
+ *         required(public, `val`, "uiState").type("StateFlow<*>")
  *         allow(private, anythingElse)
  *     }
  *     allow(`object`, "*Preview")
@@ -363,7 +363,7 @@ public class FunctionLine internal constructor(
  * ktFileContent {
  *     `package`("com.example.**")
  *     allow(`class`, fileName) {
- *         allow(`val`, "isLoading", "Boolean")
+ *         allow(`val`, "isLoading").type("Boolean")
  *         not.allow(public, `var`, "*")
  *     }
  * }
@@ -373,6 +373,25 @@ public class FunctionLine internal constructor(
 public class PropertyLine internal constructor(
     internal val line: DeclarationLineBuilder,
 ) {
+    /**
+     * Requires the type [type]. It is matched against the type written in the source, ignoring
+     * package names and spaces; an inferred type (`val count = 0`) matches no type. A line without
+     * `.type(...)` asks nothing about the type, as `.returns(...)` on a function line.
+     *
+     * ## Example 1: flags, and an extension property by its receiver
+     * ```kt
+     * allow(`val`, "is*").type("Boolean")
+     * allow(public, `val`, "User", "displayName").type("String")   // public val User.displayName: String
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when the type was already written.
+     * @throws KatachiKtFileContentPatternException when [type] is not a pattern katachi reads.
+     */
+    public fun type(type: String): PropertyLine {
+        line.writeChainedPropertyType(type)
+        return this
+    }
+
     /**
      * Lets the names matching [names] through this prohibited line.
      *
@@ -397,7 +416,7 @@ public class PropertyLine internal constructor(
      *
      * ## Example 1: properties that need a logger in their context
      * ```kt
-     * allow(`val`, "*", "String").context("*: Logger")
+     * allow(`val`, "*").type("String").context("*: Logger")
      * ```
      *
      * @throws KatachiKtFileContentLineException when written twice, or when a parameter is not `"name: Type"`.
@@ -416,7 +435,7 @@ public class PropertyLine internal constructor(
      *
      * ## Example 1: a generic extension property
      * ```kt
-     * allow(`val`, "List<T>", "second", "T").typeParameters("T")
+     * allow(`val`, "List<T>", "second").type("T").typeParameters("T")
      * ```
      *
      * @throws KatachiKtFileContentLineException when written twice, or when a type parameter has no name, or nothing after its `:`.
@@ -432,7 +451,7 @@ public class PropertyLine internal constructor(
      *
      * ## Example 1: computed properties
      * ```kt
-     * allow(`val`, "is*", "Boolean").getter()
+     * allow(`val`, "is*").type("Boolean").getter()
      * ```
      *
      * @throws KatachiKtFileContentLineException when written twice.
@@ -448,7 +467,7 @@ public class PropertyLine internal constructor(
      *
      * ## Example 1: a var with a custom setter
      * ```kt
-     * allow(`var`, "text", "String").setter()
+     * allow(`var`, "text").type("String").setter()
      * ```
      *
      * @throws KatachiKtFileContentLineException when written twice, or on a line of `val` only.
@@ -464,7 +483,7 @@ public class PropertyLine internal constructor(
      *
      * ## Example 1: state only the class itself changes
      * ```kt
-     * allow(`var`, "*", "*").setter(private)
+     * allow(`var`, "*").setter(private)
      * ```
      *
      * @throws KatachiKtFileContentLineException when written twice, on a line of `val` only, or when [modifiers] is not
@@ -500,7 +519,7 @@ public class PropertyLine internal constructor(
      *
      * ## Example 1: a read-only view of mutable state
      * ```kt
-     * allow(`val`, "uiState", "StateFlow<*>").backingField("MutableStateFlow<*>")
+     * allow(`val`, "uiState").type("StateFlow<*>").backingField("MutableStateFlow<*>")
      * ```
      *
      * @throws KatachiKtFileContentLineException when written twice.

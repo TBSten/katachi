@@ -95,7 +95,14 @@ private fun ScriptContext.dispatch(command: String, args: List<String>): Int = w
  * first because parsing sets it too late for --help.
  */
 private fun ScriptContext.resolveLang(command: String, args: List<String>) {
-    lang = findWorkdir()?.let(::recordedLang) ?: Lang.of(env["KATACHI_LANG"]) ?: Lang.JA
+    // Not findWorkdir(): --help and doctor work even with two working directories, which the commands that use one stop at.
+    // Two that agree on the language still decide it, so that the message saying which to pick is in that language.
+    val recorded = when (val lookup = lookupWorkdir()) {
+        is WorkdirLookup.Found -> recordedLang(lookup.path)
+        is WorkdirLookup.Ambiguous -> lookup.candidates.map(::recordedLang).distinct().singleOrNull()
+        WorkdirLookup.NotFound -> null
+    }
+    lang = recorded ?: Lang.of(env["KATACHI_LANG"]) ?: Lang.JA
     if (command == "doctor") {
         val index = args.indexOf("--lang")
         Lang.of(args.getOrNull(index + 1).takeIf { index >= 0 })?.let { lang = it }

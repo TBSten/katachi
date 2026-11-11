@@ -38,7 +38,7 @@ private val CASES: List<Case> = listOf(
     Case("アノテーション", kt("@A @B class X\n@A class Y")) { allow(annotated("A", "B"), `class`, "*") },
     Case("種類", kt("class Sample")) { required(`interface`, fileName) },
     Case("メンバ", kt("abstract class Sample : Base() {\n    private val a = 1\n    protected fun b() {}\n}")) { required(`class`, fileName) { } },
-    Case("型", kt("val name: String? = null")) { required(`val`, "name", "String") },
+    Case("型", kt("val name: String? = null")) { required(`val`, "name").type("String") },
     Case("引数", kt("fun load(a: String, b: Int) {}\nfun save(x: Int) {}\nfun drop(x: Int) {}")) {
         required(`fun`, "load")("a: String", "b: Int")
         required(`fun`, "save")()

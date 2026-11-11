@@ -34,7 +34,7 @@ Each violation is a paragraph like this:
 | `[UncheckedFileConstraint]` / `[UncheckedFile]` / `[UncheckedDirectory]` / `[UncheckedCheck]` | The check could not run for that path; it is neither allowed nor rejected | Read the cause printed under it. `[UncheckedFileConstraint]` with `Pass FileConstraintCheck() to assert()` means the test does not run the constraint check |
 | `[StaleBaselineEntry]` | The baseline holds back a violation that no longer exists | Something was fixed: prune the entry (below) |
 | `[AmbiguousLayout]` (warning) | Two declarations claim the same file | Narrow one of them; the file must belong to one Role |
-| `[MissingDescription]` (warning) | A Role or group has no `summary` / description | Write it |
+| `[MissingDescription]` (warning) | A Role that may live in two or more places has a place without a `description` | Write `description = "..."` on that place, saying when it is the right one. A missing `summary` is never reported |
 
 Warnings never fail the check, but do not ignore them: fix them or tell the user why they stay.
 

@@ -14,7 +14,7 @@ class KtFileContentDslDetailSpec : FreeSpec({
         val block: KtFileContentScope.() -> Unit = {
             `package`("com.example.feature.${captureValue("feature")}")
             required(`class`, fileName) {
-                required(`val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+                required(`val`, "uiState").type("StateFlow<${fileName.replace("ViewModel", "UiState")}>")
             }
         }
 
@@ -58,7 +58,7 @@ class KtFileContentDslDetailSpec : FreeSpec({
                 allow(`fun`, "on*")(anyArgs())
                 required(`fun`, "free")
                 allow(public, `fun`, "on*")().returns("Unit")
-                required(`val`, "state", "StateFlow<*>")
+                required(`val`, "state").type("StateFlow<*>")
                 required(`var`, "count")
             }
 

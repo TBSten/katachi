@@ -65,7 +65,7 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
                 `import`("javax.inject.**")
 
                 required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
-                        required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+                        required(public, `val`, "uiState").type("StateFlow<${fileName.replace("ViewModel", "UiState")}>")
                         allow(public, `fun`, "on*")().returns("Unit")
                         allow(private, anythingElse)
                     }
@@ -265,7 +265,7 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
             ktFileContent {
                 `package`("**")
                 required(`class`, fileName) {
-                    required(`val`, "state", "StateFlow<*>")
+                    required(`val`, "state").type("StateFlow<*>")
                     required(`fun`, "load")("id: String", "page: Int")
                     required(`fun`, "reset")().returns("Unit")
                     allow(`fun`, "on*")(anyArgs())

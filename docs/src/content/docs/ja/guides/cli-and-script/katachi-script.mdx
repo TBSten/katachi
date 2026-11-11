@@ -22,12 +22,12 @@ katachi の操作・コマンド呼び出しを行う自動化スクリプトを
 
 ```kt nocollapse title="test.katachi.kts"
 executeCommands(
-    katachi.agent.init.lang(ja),
+    katachi.doctor.lang(ja),
     katachi.scaffold.`package`("com.example.app"),
 )
 
 // 以下のコマンド実行と同等です:
-//   katachi agent init --lang ja
+//   katachi doctor --lang ja
 //   katachi scaffold --package com.example.app
 ```
 
@@ -37,7 +37,7 @@ executeCommands(
 katachi test.katachi.kts
 
 # 以下のコマンド実行と同等です:
-#   katachi agent init --lang ja
+#   katachi doctor --lang ja
 #   katachi scaffold --package com.example.app
 ```
 
@@ -55,7 +55,7 @@ import me.tbsten.katachi.script.*
 val katachi = Katachi(defaultPackage = "com.example.app", lang = ja)
 
 executeCommands(
-    katachi.agent.init,
+    katachi.doctor,
     katachi.scaffold,
 )
 ```
@@ -66,7 +66,7 @@ executeCommands(
 kotlin test.main.kts
 
 # 以下のコマンド実行と同等です:
-#   katachi agent init --lang ja
+#   katachi doctor --lang ja
 #   katachi scaffold --package com.example.app
 ```
 
@@ -130,7 +130,7 @@ katachi がサポートするファイル形式には `*.katachi.kts` と `*.mai
     lang = ja
 
     executeCommands(
-        katachi.agent.init, // katachi agent init --lang ja
+        katachi.doctor,     // katachi doctor --lang ja
         katachi.scaffold,   // katachi scaffold --package com.example.app
     )
     ```
@@ -162,7 +162,7 @@ katachi がサポートするファイル形式には `*.katachi.kts` と `*.mai
     )
 
     executeCommands(
-        katachi.agent.init, // katachi agent init --lang ja
+        katachi.doctor,     // katachi doctor --lang ja
         katachi.scaffold,   // katachi scaffold --package com.example.app
     )
     ```

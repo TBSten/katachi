@@ -31,7 +31,7 @@ class KtFileContentDslSpec : FreeSpec({
                 `import`("com.example.domain.**")
 
                 required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
-                        required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+                        required(public, `val`, "uiState").type("StateFlow<${fileName.replace("ViewModel", "UiState")}>")
                         allow(public, `fun`, "on*")().returns("Unit")
                         allow(private, anythingElse)
                     }

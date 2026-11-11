@@ -819,8 +819,8 @@ internal object Messages {
         )
 
         fun missingdescriptionGoesDownDescriptions(missing: Any?): Msg = Msg(
-            ja = "[MissingDescription]: $missing 件（説明を書けば減る）",
-            en = "[MissingDescription]: $missing (goes down as descriptions are written)",
+            ja = "[MissingDescription]: $missing 件（置き場所に description を書けば減る）",
+            en = "[MissingDescription]: $missing (goes down as each place gets a description)",
         )
 
         fun warningsTheyNeverFail(warnings: Any?): Msg = Msg(
@@ -864,57 +864,23 @@ internal object Messages {
             ja = "定義のディレクトリがありません: $dirUri 。scaffold をまだ実行していないか、置き場所が違います（$moduleDir。違うなら、チェックリストの meta.moduleDir を直す）",
             en = "The definition directory does not exist: $dirUri . Either scaffold has not run yet, or the location differs ($moduleDir; if it is wrong, fix meta.moduleDir in the check list)",
         )
+
+        fun ambiguous(candidates: Any?): Msg = Msg(
+            ja = "作業用ディレクトリ（check-list.html と tmp/ のあるディレクトリ）が 2 つ以上あり、どれを使うか決められません:\n$candidates" +
+                "使うほうを KATACHI_WORKDIR=<パス> で指定するか、使わないほうを検索範囲（いまの場所から 4 階層）の外に移してください。",
+            en = "There are two or more working directories (directories with check-list.html and tmp/), and katachi cannot tell which one to use:\n$candidates" +
+                "Pick one with KATACHI_WORKDIR=<path>, or move the others out of the search (4 levels below the current directory).",
+        )
+
+        fun projectRootInOtherWorkTree(recordedUri: Any?, hereUri: Any?): Msg = Msg(
+            ja = "チェックリストの meta.projectRoot（$recordedUri）は、いまいる場所とは別の作業ツリー（git worktree）です。" +
+                "いまいる作業ツリーの $hereUri を検査し、ログもそこの build/katachi/ に置きます。記録した側を検査するときは、そちらで実行してください。",
+            en = "meta.projectRoot in the check list ($recordedUri) is in another work tree (git worktree) than the current directory. " +
+                "Checking $hereUri in this work tree instead, with the logs in its build/katachi/. To check the recorded one, run this from there.",
+        )
     }
 
     object ScaffoldBuildFile {
-        val cacheNote: Msg = Msg(
-            ja = "    // このタスクはキャッシュさせない。katachi は実行時にリポジトリ全体を歩くが、\n" +
-                "    // Gradle から見える入力はこのモジュールのテストソースと classpath だけ。他の場所で\n" +
-                "    // ファイルが増減してもキーが変わらないので、UP-TO-DATE / FROM-CACHE になって\n" +
-                "    // 検査が一度も走らない。黙って通るガードは、ガードが無いより悪い。",
-            en = "    // Never let this task be cached. katachi walks the whole repository when the test\n" +
-                "    // runs, but the only inputs Gradle can see are the test sources and the classpath of\n" +
-                "    // this module. A file added or moved anywhere else leaves the key unchanged, so Gradle\n" +
-                "    // answers UP-TO-DATE or FROM-CACHE and the check never runs. A guard that silently\n" +
-                "    // passes is worse than no guard at all.",
-        )
-
-        val logNote: Msg = Msg(
-            ja = "        // 違反の一覧は AssertionError のメッセージに入っている。FULL にしないと\n" +
-                "        // \"KatachiArchitectureAssertionError at ProjectArchitectureTest.kt:12\" の1行しか出ず、\n" +
-                "        // 中身を見るのに build/test-results/**/*.xml を読む羽目になる（CI のログでも同じ）。",
-            en = "        // The violation list lives in the AssertionError message. Without FULL you only get\n" +
-                "        // \"KatachiArchitectureAssertionError at ProjectArchitectureTest.kt:12\", and reading the\n" +
-                "        // detail means opening build/test-results/**/*.xml (the same goes for CI logs).",
-        )
-
-        val stdNote: Msg = Msg(
-            ja = "        // MissingDescription などの警告は stdout に出る。",
-            en = "        // Warnings such as MissingDescription are printed to stdout.",
-        )
-
-        val pluginNote: Msg = Msg(
-            ja = "    // processor ごとのタスク（katachiDocs・katachiTemplate など）を足す。\n    // katachi の依存は足さないので、下の dependencies { } は別に要る。",
-            en = "    // Adds a task per processor (katachiDocs, katachiTemplate, and so on). It does not add\n    // katachi as a dependency, so the dependencies { } block below is still needed.",
-        )
-
-        val archNote: Msg = Msg(
-            ja = "    // architecture { } を持つトップレベル val の完全修飾名。名前やパッケージを\n    // 変えたらここも直す。",
-            en = "    // The fully qualified name of the top-level val holding architecture { }. Update it\n    // if you rename the val or move it to another package.",
-        )
-
-        val contextNote: Msg = Msg(
-            ja = "    // Kotlin 2.4 未満では、context parameters を呼ぶ側にこのオプションが要る。\n" +
-                "    // katachi の DSL（mainSourceSet / ktFile など）はすべて context parameters\n" +
-                "    // なので、無いと1つも書けない。Kotlin を 2.4 以降に上げたらこの2行は消すこと\n" +
-                "    // （2.4 以降で付けたままだと redundant の警告が出る）。",
-            en = "    // Kotlin before 2.4 needs this on the calling side to use context parameters.\n" +
-                "    // Every katachi DSL entry point (mainSourceSet / ktFile ...) is a contextual\n" +
-                "    // declaration, so without it you cannot write a single one. Drop these two lines once\n" +
-                "    // the project moves to Kotlin 2.4 or later - from 2.4 on the flag warns that it is\n" +
-                "    // redundant.",
-        )
-
         val kotlinPluginNote: Msg = Msg(
             ja = "    // alias(libs.plugins.kotlin.jvm) と書かない。build-logic（includeBuild）経由で Kotlin plugin が\n" +
                 "    // classpath にあると \"already on the classpath with an unknown version\" で失敗する。バージョンなしの\n" +

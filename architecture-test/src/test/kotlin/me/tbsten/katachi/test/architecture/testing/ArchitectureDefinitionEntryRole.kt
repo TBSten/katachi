@@ -27,5 +27,5 @@ private fun RoleScope.entryHoldsOnlyTheArchitecture() =
         `import`("me.tbsten.katachi.dsl.**")                  // architecture { } itself
         `import`("me.tbsten.katachi.test.architecture.*.*")   // the group functions it calls
 
-        required(`val`, "projectArchitecture", "Architecture")
+        required(`val`, "projectArchitecture").type("Architecture")
     }

@@ -10,7 +10,7 @@ import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.check.internal.reportForTest
+import me.tbsten.katachi.test.report.reportForTest
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.declarations.KtFileContentScope
@@ -55,7 +55,7 @@ class KtFileContentRequiredSpec : FreeSpec({
                 required(`class`, "Fixed")
                 required(sealed, type, "*Action")
                 required(`fun`, "on*")
-                required(`val`, "uiState", "StateFlow<*>")
+                required(`val`, "uiState").type("StateFlow<*>")
                 required(`typealias`, "Key")
                 required(`fun`, `interface`, "*Listener")
             } shouldBe """

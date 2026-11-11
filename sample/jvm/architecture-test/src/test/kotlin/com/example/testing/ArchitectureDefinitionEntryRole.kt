@@ -54,6 +54,6 @@ fun DeclarationContainerScope.architectureDefinitionEntry() = "ArchitectureDefin
         `import`("com.example.**")       // the group functions it calls
         `import`("me.tbsten.katachi.**") // architecture { } itself
 
-        required(`val`, "projectArchitecture", "Architecture")
+        required(`val`, "projectArchitecture").type("Architecture")
     }
 }

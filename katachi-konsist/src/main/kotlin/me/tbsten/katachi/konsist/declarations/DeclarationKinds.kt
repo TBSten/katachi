@@ -73,7 +73,7 @@ public class FunctionKind internal constructor(
  *     `package`("com.example.**")
  *     `import`("kotlinx.coroutines.flow.**")
  *
- *     allow(`class`, fileName) { allow(public, `val`, "uiState", "StateFlow<*>") }
+ *     allow(`class`, fileName) { allow(public, `val`, "uiState").type("StateFlow<*>") }
  *     allow(const, `val` or `var`, "*")
  * }
  * ```

@@ -617,6 +617,54 @@ processor の summary・layout の無い Role、diff-report の Role、README.ja
 
 - 「完成形」と書くが package/import から始まらない断片なので D2-1 の対象外。ただしファイル全体と読まれる恐れがある（role.mdx は title にファイル名を付けている）
 
+## このまま: E1 role.mdx の例が feature ごとに layout を書く（「変更を必要としない Role」と食い違う）
+- decision: このまま
+- file: ja/guides/role.mdx
+- quote: "feature-home/src/main/kotlin/useCase" / "*UseCase".ktFile()
+- rule: ガイド同士の食い違い E1（B5「良い Role 定義は変更を必要としない」）
+- decided: 2026-11-11 261110-01 KATACHI-354
+- by: 利用者（チャット「4, 7, 9 以外はよしなに直しといて」。おすすめは E4 だけ直してほかはこのまま）
+
+置き場所を宣言する例として、モジュールを 1 つずつ書く形のまま残す。理由の一言なし。
+
+## このまま: E3 テンプレートのガイドに id を書くか
+- decision: このまま
+- file: ja/guides/generate-code-from-template.mdx
+- quote: .template(id = "preview") { }
+- rule: ガイド同士の食い違い E3（AGENTS D3-5「テンプレートのガイドから id を削った」）
+- decided: 2026-11-11 261110-01 KATACHI-354
+- by: 利用者（チャット。E4 だけ直してほかはこのまま）
+
+1 つの Role に 2 つ以上のテンプレートを付けるときの `id` の説明は残す。理由の一言なし。
+
+## このまま: E18 kotlin-mapping が not. を見本にしている（C5 と食い違う）
+- decision: このまま
+- file: ja/guides/kt-file-content/kotlin-mapping.mdx
+- quote: not.fileAnnotation("JvmName")
+- rule: ガイド同士の食い違い E18（C5「禁止したいものを 1 つずつ書く形を見本にしない」）
+- decided: 2026-11-11 261110-01 KATACHI-354
+- by: 利用者（チャット。E4 だけ直してほかはこのまま）
+
+対応表の `not.` の行は残す。理由の一言なし。
+
+## このまま: E13 AGENTS の決まりが skill（英語）に及ぶか
+- decision: このまま
+- file: skills/katachi/**
+- rule: ガイド同士の食い違い E13（AGENTS の 2 スペース・group 名の大文字・@file:OptIn・B20 の命名）
+- decided: 2026-11-11 261110-01 KATACHI-354
+- by: 利用者（チャット。E4 だけ直してほかはこのまま）
+
+AGENTS（docs サイトの決まり）を skill に広げない。skill の小文字 group・4 スペースの例・`feature.ui` などを、AGENTS の決まりを根拠に指摘しない。
+
+## このまま: ガイド同士の食い違い（E5・E7・E9・E10・E15・E17）
+- decision: このまま
+- file: ja/**
+- rule: ガイド同士の食い違い E5（Role 名の大文字始まり）・E7（名前付きの ktFileContent）・E9（テンプレートの無い Role の capture）・E10（「Baseline ファイル」と「baseline のファイル」）・E15（Role のガイドの Aside と ### の節）・E17（D2-1 と D2-2 の断片の注記）
+- decided: 2026-11-11 261110-01 KATACHI-354
+- by: 利用者（チャット。E4 だけ直してほかはこのまま）
+
+priority 1〜3 のルールの側の食い違い。どれもルールも例も今のまま。同じ E の番号・同じ趣旨の食い違いは次回も出さない。
+
 ## 方針: コード表記でない
 - decision: 方針
 - file: **

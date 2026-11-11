@@ -25,7 +25,7 @@ Before you start, **write down which Role you expect each new file to belong to.
 
 When using a past PR as the task, check how it was merged with `gh pr view <number> --json mergeCommit,commits`; "before" is **the parent of the PR's first commit** (`git rev-parse <first commit>^`) and "after" is the merge commit. With a rebase merge, `mergeCommit^1` is "just before the last commit", which does not compare the whole PR.
 
-When verifying in parallel, give each subagent its own output and temporary files under `<workdir>/tmp/verify/<name>/`, and let only the parent write the checklist and the report. A worktree cannot reach the working directory, so pass absolute paths (and `KATACHI_WORKDIR=<workdir>` to `katachi agent test`).
+When verifying in parallel, give each subagent its own output and temporary files under `<workdir>/tmp/verify/<name>/`, and let only the parent write the checklist and the report. A worktree cannot reach the working directory, so pass absolute paths, and run `KATACHI_WORKDIR=<workdir> katachi agent test` **from inside the worktree**. It then checks the worktree it runs in instead of `meta.projectRoot` (the main work tree), says so on stderr, and keeps its logs in that worktree's `build/katachi/`, so parallel runs do not overwrite each other's `latest.log`. If that notice is missing, the run checked the main work tree, and a result of 0 violations says nothing about the new files.
 
 When done, mark `6-1` done.
 
