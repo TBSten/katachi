@@ -23,7 +23,7 @@ For each Role, decide the following and add it to the report's `templates`.
 ```json
 "templates": [
   { "role": "UseCase", "files": ["${name}UseCase.kt"], "params": ["name"], "basedOn": "domain/src/main/kotlin/com/example/app/domain/useCase/GetUserUseCase.kt", "reason": "All 18 are interfaces and share one shape" },
-  { "role": "UseCaseImplementation", "files": ["${name}UseCaseImpl.kt"], "params": ["name"], "basedOn": "data/src/main/kotlin/com/example/app/data/useCase/GetUserUseCaseImpl.kt", "reason": "All 18 implement a UseCase and share one shape" },
+  { "role": "UseCaseImplementation", "files": ["${name}UseCaseImplementation.kt"], "params": ["name"], "basedOn": "data/src/main/kotlin/com/example/app/data/useCase/GetUserUseCaseImplementation.kt", "reason": "All 18 implement a UseCase and share one shape" },
   { "role": "ViewModel", "files": ["${name}ViewModel.kt"], "params": ["feature", "name"], "basedOn": "feature/home/src/main/kotlin/com/example/app/feature/home/HomeViewModel.kt", "reason": "12 are one each in every feature/* module, and share one shape. The * in feature/* and the * of the package directory take the same name, so one name, feature, picks the destination" }
 ]
 ```

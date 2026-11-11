@@ -75,8 +75,8 @@ A template is specified by the qualified name of the Role that has it (`group.Ro
 | What you write | What it means |
 | --- | --- |
 | `Controller` | The template of Role `Controller`, which is in no group |
-| `feature.Screen` | The template of Role `Screen`, in group `feature` |
-| `feature.Screen.preview` | The template whose `id` is `preview`, of Role `Screen` in group `feature` |
+| `Feature.Screen` | The template of Role `Screen`, in group `Feature` |
+| `Feature.Screen.preview` | The template whose `id` is `preview`, of Role `Screen` in group `Feature` |
 | `RepositoryInterface` | A specifier with no group. Usable when, among the Roles that have a template, only one is named `RepositoryInterface` |
 
 When you attach two or more templates to one Role, give each of them an `id`, as in `.template(id = "preview") { }`. If you also pass a `title`, the `katachiTemplates` list shows that name instead of the `id`.
@@ -109,7 +109,7 @@ There are four parameter types. All of them are passed as `--arg name=value`.
 
 | How to write it | How to pass it | What it accepts |
 | --- | --- | --- |
-| `val name by stringParameter()` | `--arg name=User` | Anything |
+| `val summary by stringParameter()` | `--arg summary=Hello` | Anything |
 | `val withImpl by booleanParameter(default = true)` | `--arg withImpl=false` | `true` / `false` (lower case only) |
 | `val pageSize by intParameter(default = 20)` | `--arg pageSize=50` | An integer |
 | `val visibility by enumParameter(default = Visibility.Public)` | `--arg visibility=Internal` | An enum entry name |
@@ -162,7 +162,7 @@ The name is used when passing a value with `--arg`. Left as `*`, a template can'
     --arg "template=FeatureComponent" --arg "feature=home" --arg "name=HomeUserCard"
 ```
 
-The module's directory and the package's directory both have a capture with the same name, `feature`. Captures with the same name take the same value, so the single `--arg feature=home` decides both `*` as `home`, and `HomeUserCard.kt` lands in `component/` under `feature/home/`.
+Captures with the same name take the same value, so the single `--arg feature=home` decides both `*`.
 
 A capture's name becomes the `--arg` argument name, as is. Inside the template, read the same value with `captureValue("feature")`, for example.
 
@@ -236,7 +236,7 @@ The **`katachiTemplates` task** shows which templates exist, and what to pass to
 ./gradlew katachiTemplates
 
 # the detail of one template
-./gradlew katachiTemplates --arg "template=data.RepositoryInterface"
+./gradlew katachiTemplates --arg "template=Data.RepositoryInterface"
 ```
 
 The detail shows the list of parameters, the destination path and the file's contents, and a `katachiTemplate` command.

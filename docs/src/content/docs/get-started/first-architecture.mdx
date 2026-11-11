@@ -91,20 +91,18 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
         pluginManagement {
           repositories {
             gradlePluginPortal()
-            mavenCentral()
+            mavenCentral() // katachi's Gradle plugin is published to Maven Central
           }
         }
 
         dependencyResolutionManagement {
           repositories {
-            mavenCentral()
+            mavenCentral() // katachi's dependencies also come from Maven Central
           }
         }
 
         include(":architecture-test")
         ```
-
-        katachi's Gradle plugin is published to Maven Central, not to the Gradle Plugin Portal. Without `mavenCentral()` in `pluginManagement { }`, the plugin cannot be resolved. katachi, Kotlin, and JUnit dependencies also come from Maven Central, so `dependencyResolutionManagement { }` needs `mavenCentral()` too (if your project already has it, you don't need to add it).
 
     2. **Declare the dependencies**
 

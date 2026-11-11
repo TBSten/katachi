@@ -1814,7 +1814,7 @@
       "forbidden": [],
       "examples": ["app/build.gradle.kts"],
       "count": 1,
-      "note": "A Role that exists only to check that the namespace matches the app package name"
+      "note": "Checks with a hook on gradle() that the namespace matches the app package name (no Role is created)"
     }
   ],
   "excluded": [
@@ -1850,9 +1850,9 @@
     },
     {
       "role": "UseCaseImplementation",
-      "files": ["${name}UseCaseImpl.kt"],
+      "files": ["${name}UseCaseImplementation.kt"],
       "params": ["name"],
-      "basedOn": "data/src/main/kotlin/com/example/app/data/useCase/GetUserUseCaseImpl.kt",
+      "basedOn": "data/src/main/kotlin/com/example/app/data/useCase/GetUserUseCaseImplementation.kt",
       "reason": "All 18 implement a UseCase, and their bodies share one shape"
     }
   ]
@@ -2148,7 +2148,7 @@
       ['testFramework', 'Test framework', null],
       ['dependencyStyle', 'How dependencies are written', null],
       ['constraintNames', 'Put question numbers in constraint names?', 'plain'],
-      ['oneRolePerFile', 'One Role per file?', 'yes']
+      ['oneRolePerFile', 'Split the definition files per Role?', 'yes']
     ],
     prefNotRecordedDetected: 'Not recorded (detected value is used)',
     prefNotRecordedDefault: 'Not recorded (recommendation is used)',

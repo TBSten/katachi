@@ -61,20 +61,20 @@ In the field tests of the install kit, these shapes turned up in 13 projects.
 | Production code and its tests in the same Role | Put the tests in a Role of their own |
 
 ```kt
-// ✗ Different kinds of files packed into one role
+// ✗ Different kinds of files packed into one Role
 "ProjectMeta".role {
-    layout {
-        "README.md".file()
-        "LICENSE".file()
-        ".gitignore".file()
-    }
+  layout {
+    "README.md".file()
+    "LICENSE".file()
+    ".gitignore".file()
+  }
 }
 
-// ○ One role per kind, bundled in a group
+// ○ One Role per kind, bundled in a group
 "Meta".group {
-    "ProjectReadme".role { layout { "README.md".file() } }
-    "License".role { layout { "LICENSE".file() } }
-    "GitIgnore".role { layout { ".gitignore".file() } }
+  "ProjectReadme".role { layout { "README.md".file() } }
+  "License".role { layout { "LICENSE".file() } }
+  "GitIgnore".role { layout { ".gitignore".file() } }
 }
 ```
 

@@ -279,13 +279,13 @@ A group takes the same four properties a Role does. Only `example()` is missing.
     A group with `documented = false` takes its Roles and nested groups out of the documentation along with it, whatever those Roles write for themselves.
 
     ```kt
-    "Build".group {
+    "Generated".group {
       documented = false
-      "VersionCatalog".role { }   // leaves the documentation together with the group
+      "ApiClient".role { }   // leaves the documentation together with the group
     }
     ```
 
-    The value itself is not copied onto the Roles and groups inside (each keeps what it wrote). A processor of your own that reads this value should walk up `Role.groupPath` and look at the parent groups' values too.
+    The value itself is not copied onto the Roles and groups inside (each keeps what it wrote).
 
 </details>
 

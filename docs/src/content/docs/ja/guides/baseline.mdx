@@ -68,6 +68,7 @@ fun DeclarationContainerScope.baselineFile() = "BaselineFile".role {
   title = "katachi Baseline ファイル"
   summary = "既存の違反を一時的に抑制するためのファイル"
   description = "参照: https://tbsten.github.io/katachi/ja/guides/baseline/"
+  documented = false // ツールが書くファイルなので、生成ドキュメントには載せない
   layout {
     "katachi-baseline.json".file()
   }
@@ -110,11 +111,20 @@ prune は、記録の件数を**減らすだけ**です。新しい違反を Bas
 val projectArchitecture = architecture {
   baseline()
 
-  "BaselineFile".role {
-    summary = "既存の違反を一時的に抑制するためのファイル"
-    layout {
-      "katachi-baseline.json".file()
+  "Tool".group {
+    "Katachi".group {
+      baselineFile()
     }
+  }
+}
+
+fun DeclarationContainerScope.baselineFile() = "BaselineFile".role {
+  title = "katachi Baseline ファイル"
+  summary = "既存の違反を一時的に抑制するためのファイル"
+  description = "参照: https://tbsten.github.io/katachi/ja/guides/baseline/"
+  documented = false // ツールが書くファイルなので、生成ドキュメントには載せない
+  layout {
+    "katachi-baseline.json".file()
   }
 }
 ```

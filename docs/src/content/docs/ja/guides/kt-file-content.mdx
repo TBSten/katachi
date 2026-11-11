@@ -135,7 +135,7 @@ fun `アーキテクチャに沿ったファイル配置になっている`() {
 
 ## class, interface, object 宣言を許可する
 
-そのファイル内に class, interface, object の配置を許可する場合、`required(...)` または `allow(...)` に 宣言して良い宣言の種類と名前を渡して定義します。
+そのファイル内に class, interface, object の配置を許可する場合、`required(...)` または `allow(...)` に、許可したい宣言の種類と名前を渡します。
 
 - `required(...)` で指定した宣言は必ず存在する必要があります。
 - `allow(...)` で指定した宣言は存在を許されます。存在しない場合も違反にはなりません。
@@ -391,7 +391,7 @@ allow(`typealias`, "*Handler")
 
 ## 宣言にアノテーションを指定させる
 
-アノテーションを使いたいときは、`annotated()` を modifier と同じように指定します。
+アノテーションを使いたいときは、`annotated()` を修飾子と同じように指定します。
 
 <Tabs>
   <TabItem label="Android での例">

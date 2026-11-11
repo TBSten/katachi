@@ -33,10 +33,12 @@ They are **not necessarily exclusive with katachi**.
 katachi is the only one that asks whether a file may exist.
 The other five all check the contents of, or the relationships between, **things that already exist**.
 
-That is why they do not overlap. What does overlap is **the other tools with each other**:
+On whether a file may exist and where it goes, they do not overlap. What does overlap is **the other tools with each other**:
 Konsist, ArchUnit, and Konture cover similar ground, and there is little point in adopting all three.
 
 ## katachi and Konsist
+
+katachi checks placement; Konsist checks the contents of a narrowed scope.
 
 Konsist narrows its target with `Konsist.scopeFromProject()` and checks the classes and functions
 inside that range. Anything outside the narrowed range is never checked (see the [FAQ](/katachi/get-started/faq/) for details).
@@ -143,7 +145,7 @@ This is useful in a layer built around swappable implementations.
 <details>
 <summary>A `ViewModel` does not reference Android view types</summary>
 
-This stops layer leaks from the contents side. Only the `import` lines you write are allowed, so as long as `android.view` is not among them, importing it is a violation.
+Referencing an Android View type from a ViewModel is a violation, so you can detect dependencies that cross layers. Only the `import` lines you write are allowed, so as long as `android.view` is not among them, importing it is a violation.
 
 ```kt nocollapse
 "ViewModel".role {
@@ -193,6 +195,8 @@ This keeps serializable types from being missed.
 </details>
 
 ## katachi and detekt
+
+katachi checks placement; detekt checks how the contents of a file are written.
 
 detekt statically analyses Kotlin source and points out code smells and style deviations.
 Write your own rules and it can check project-specific conventions too.

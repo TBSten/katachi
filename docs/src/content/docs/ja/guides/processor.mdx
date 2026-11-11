@@ -83,7 +83,7 @@ katachi は 6 つの ArchitectureProcessor を提供しています。
         </tr>
         <tr>
             <td><code>FileConstraintCheck</code></td>
-            <td><code>{"ktFileContent { }"}</code> など、Role に書いたファイルの制約を評価します。<code>projectArchitecture.assert(FileConstraintCheck())</code> のように渡します。</td>
+            <td><code>{"ktFileContent { }"}</code> など、Role に書いたファイルの制約を評価します。<code>projectArchitecture.<wbr />assert(<wbr />FileConstraintCheck())</code> のように渡します。</td>
             <td></td>
         </tr>
         <tr>
@@ -191,7 +191,7 @@ GitHub リポジトリの sample/custom-processor モジュールに、カスタ
 
 ### 1. ArchitectureProcessor を実装する
 
-ArchitectureProcessorNoArg か ArchitectureProcessor を実装したクラスを用意し、process メソッドを実装してください。
+ArchitectureProcessorNoArg か ArchitectureProcessor を実装したクラスを用意し、`process` メソッドを実装してください。
 
 process メソッドに渡される `context` には、アーキテクチャ定義や引数などが入っています。これらを必要に応じて参照しながら、ArchitectureProcessor のロジックを書きます。
 

@@ -77,7 +77,7 @@ Write the definition and a test.
 // architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt
 val projectArchitecture = architecture {
     gradle() // Gradle files: wrapper, settings, build scripts, etc.
-    "domain".group {
+    "Domain".group {
         "UseCase".role {
             layout { "domain/src/main/kotlin/com/example/useCase" / "*UseCase".ktFile() }
         }
@@ -96,7 +96,7 @@ class ProjectArchitectureTest {
 ./gradlew :architecture-test:katachiDocs    # writes docs to architecture-test/build/katachi/docs
 ```
 
-At first, the files and directories you haven't declared come back as violations. For each path that shows up, decide whether to add it to the definition or delete the file. If there are too many to clear up right away, you can tolerate the existing violations for now with [baseline](https://tbsten.github.io/katachi/guides/baseline/) and fail only on new ones.
+At first, the files and directories you haven't declared come back as violations. For each path that shows up, decide whether to add it to the definition or delete the file.
 
 The full walkthrough — importing, and handing it off to an AI agent — is in [Your first architecture definition](https://tbsten.github.io/katachi/get-started/first-architecture/).
 

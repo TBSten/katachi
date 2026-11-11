@@ -1130,7 +1130,7 @@
   footer.page-footer .wrap { padding-top: 20px; padding-bottom: 80px; color: var(--muted); font-size: 13px; }
   footer.page-footer p { margin: 4px 0; }
 
-  /* メタ情報（既定で閉じる） */
+  /* メタ情報（デフォルトで閉じる） */
   .meta-details { margin: 16px 0 0; }
 
   .meta-details > summary {
@@ -1334,7 +1334,7 @@
   @media print {
     .progress { position: static; }
     .step > summary::after { display: none; }
-    /* 背景グラフィックを出さない既定の印刷でも読めるよう、塗りではなく枠線で示す */
+    /* 背景グラフィックを出さないデフォルトの印刷でも読めるよう、塗りではなく枠線で示す */
     .step .step-num, .step.is-done .step-num, .step.is-done.has-warning .step-num { background: none; color: var(--ink); }
     .step.is-done .step-num { border-color: var(--success-high); color: var(--success-high); }
     .step.is-done.has-warning .step-num { border-color: var(--caution-high); color: var(--caution-high); }
@@ -1814,7 +1814,7 @@
       "forbidden": [],
       "examples": ["app/build.gradle.kts"],
       "count": 1,
-      "note": "namespace とアプリのパッケージ名が一致することを検査するためだけの Role"
+      "note": "namespace とアプリのパッケージ名が一致することを、gradle() のフックで検査する（Role は作らない）"
     }
   ],
   "excluded": [
@@ -1850,9 +1850,9 @@
     },
     {
       "role": "UseCaseImplementation",
-      "files": ["${name}UseCaseImpl.kt"],
+      "files": ["${name}UseCaseImplementation.kt"],
       "params": ["name"],
-      "basedOn": "data/src/main/kotlin/com/example/app/data/useCase/GetUserUseCaseImpl.kt",
+      "basedOn": "data/src/main/kotlin/com/example/app/data/useCase/GetUserUseCaseImplementation.kt",
       "reason": "18 件がすべて UseCase の実装で、中身の形も揃っているため"
     }
   ]
@@ -2148,7 +2148,7 @@
       ['testFramework', 'テストのフレームワーク', null],
       ['dependencyStyle', '依存の書き方', null],
       ['constraintNames', '制約名に確認事項の番号を入れるか', 'plain'],
-      ['oneRolePerFile', '1 Role 1 ファイルで書くか', 'yes']
+      ['oneRolePerFile', '定義のファイルを Role ごとに分けるか', 'yes']
     ],
     prefNotRecordedDetected: '未記録（検出した値を使う）',
     prefNotRecordedDefault: '未記録（推奨のまま）',

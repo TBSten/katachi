@@ -676,3 +676,1333 @@ priority 1〜3 のルールの側の食い違い。どれもルールも例も�
 利用者の一言: 「ドキュメント、コード表記にするのはあくまで文章中の強調したい部分だけという運用にしたい」
 
 インラインコードは、文章中で太字と同じくらい目立たせたいコードにだけ使う（`docs/AGENTS.md` の「文章の方針」）。名前を出すだけの箇所がコード表記になっていないことは指摘しない。上の「直さない: 見出しの ktFileContent がコード表記でない」（2026-11-10）と同じ考え。
+
+## 直さない: ai-agent: skills・hooks の Role が `**/*`（ディレクトリの中の何でも）になっている
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: ".claude/skills/**/*".file()
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: agent skill は references とかも入るしまあこれでいいかなと
+
+元の指摘:
+
+**ルールに反する点**: B13（「ここにあれば何でも」の layout を書かない。名前のパターンか中身の制約を付ける）／B3（skill のディレクトリには `SKILL.md`・スクリプト・参照 md など複数の種類が入る）／B11（ツールが構成を決める場所は例外にできるが、何のためかを例の中に書く）。根拠: layout「任意のファイルの配置を許す」の Aside、skill 3-2「Do not stop at placement」
+**直し方の案**: ツールが中身を決める場所だと分かるコメントを 1 行（例 `// スキルのディレクトリの中身はツールが決める`）、または skill は `.claude/skills/*/SKILL.md` のように名前を持つファイルだけにする。hooks は拡張子（`*.sh`。Cursor の `.cursor/hooks/*.sh` と同じ形）で絞る
+同じ指摘: ja/recipes/ai-agent.mdx L91, ja/recipes/ai-agent.mdx L153, ja/recipes/ai-agent.mdx L256, ja/recipes/ai-agent.mdx L297, ja/recipes/ai-agent.mdx L352, ja/recipes/ai-agent.mdx L440, ja/recipes/ai-agent.mdx L456, ja/recipes/ai-agent.mdx L512, ja/recipes/ai-agent.mdx L589, ja/recipes/ai-agent.mdx L660
+
+## 直さない: ai-agent: skills・hooks の Role が `**/*`（ディレクトリの中の何でも）になっている
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: ".claude/hooks/**/*".file()
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B13（「ここにあれば何でも」の layout を書かない。名前のパターンか中身の制約を付ける）／B3（skill のディレクトリには `SKILL.md`・スクリプト・参照 md など複数の種類が入る）／B11（ツールが構成を決める場所は例外にできるが、何のためかを例の中に書く）。根拠: layout「任意のファイルの配置を許す」の Aside、skill 3-2「Do not stop at placement」
+**直し方の案**: ツールが中身を決める場所だと分かるコメントを 1 行（例 `// スキルのディレクトリの中身はツールが決める`）、または skill は `.claude/skills/*/SKILL.md` のように名前を持つファイルだけにする。hooks は拡張子（`*.sh`。Cursor の `.cursor/hooks/*.sh` と同じ形）で絞る
+同じ指摘: ja/recipes/ai-agent.mdx L59, ja/recipes/ai-agent.mdx L153, ja/recipes/ai-agent.mdx L256, ja/recipes/ai-agent.mdx L297, ja/recipes/ai-agent.mdx L352, ja/recipes/ai-agent.mdx L440, ja/recipes/ai-agent.mdx L456, ja/recipes/ai-agent.mdx L512, ja/recipes/ai-agent.mdx L589, ja/recipes/ai-agent.mdx L660
+
+## 直さない: ai-agent: skills・hooks の Role が `**/*`（ディレクトリの中の何でも）になっている
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: ".cursor/skills/**/*".file()
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B13（「ここにあれば何でも」の layout を書かない。名前のパターンか中身の制約を付ける）／B3（skill のディレクトリには `SKILL.md`・スクリプト・参照 md など複数の種類が入る）／B11（ツールが構成を決める場所は例外にできるが、何のためかを例の中に書く）。根拠: layout「任意のファイルの配置を許す」の Aside、skill 3-2「Do not stop at placement」
+**直し方の案**: ツールが中身を決める場所だと分かるコメントを 1 行（例 `// スキルのディレクトリの中身はツールが決める`）、または skill は `.claude/skills/*/SKILL.md` のように名前を持つファイルだけにする。hooks は拡張子（`*.sh`。Cursor の `.cursor/hooks/*.sh` と同じ形）で絞る
+同じ指摘: ja/recipes/ai-agent.mdx L59, ja/recipes/ai-agent.mdx L91, ja/recipes/ai-agent.mdx L256, ja/recipes/ai-agent.mdx L297, ja/recipes/ai-agent.mdx L352, ja/recipes/ai-agent.mdx L440, ja/recipes/ai-agent.mdx L456, ja/recipes/ai-agent.mdx L512, ja/recipes/ai-agent.mdx L589, ja/recipes/ai-agent.mdx L660
+
+## 直さない: ai-agent: skills・hooks の Role が `**/*`（ディレクトリの中の何でも）になっている
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: ".devin/skills/**/*".file()
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B13（「ここにあれば何でも」の layout を書かない。名前のパターンか中身の制約を付ける）／B3（skill のディレクトリには `SKILL.md`・スクリプト・参照 md など複数の種類が入る）／B11（ツールが構成を決める場所は例外にできるが、何のためかを例の中に書く）。根拠: layout「任意のファイルの配置を許す」の Aside、skill 3-2「Do not stop at placement」
+**直し方の案**: ツールが中身を決める場所だと分かるコメントを 1 行（例 `// スキルのディレクトリの中身はツールが決める`）、または skill は `.claude/skills/*/SKILL.md` のように名前を持つファイルだけにする。hooks は拡張子（`*.sh`。Cursor の `.cursor/hooks/*.sh` と同じ形）で絞る
+同じ指摘: ja/recipes/ai-agent.mdx L59, ja/recipes/ai-agent.mdx L91, ja/recipes/ai-agent.mdx L153, ja/recipes/ai-agent.mdx L297, ja/recipes/ai-agent.mdx L352, ja/recipes/ai-agent.mdx L440, ja/recipes/ai-agent.mdx L456, ja/recipes/ai-agent.mdx L512, ja/recipes/ai-agent.mdx L589, ja/recipes/ai-agent.mdx L660
+
+## 直さない: ai-agent: skills・hooks の Role が `**/*`（ディレクトリの中の何でも）になっている
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: ".windsurf/skills/**/*".file()
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B13（「ここにあれば何でも」の layout を書かない。名前のパターンか中身の制約を付ける）／B3（skill のディレクトリには `SKILL.md`・スクリプト・参照 md など複数の種類が入る）／B11（ツールが構成を決める場所は例外にできるが、何のためかを例の中に書く）。根拠: layout「任意のファイルの配置を許す」の Aside、skill 3-2「Do not stop at placement」
+**直し方の案**: ツールが中身を決める場所だと分かるコメントを 1 行（例 `// スキルのディレクトリの中身はツールが決める`）、または skill は `.claude/skills/*/SKILL.md` のように名前を持つファイルだけにする。hooks は拡張子（`*.sh`。Cursor の `.cursor/hooks/*.sh` と同じ形）で絞る
+同じ指摘: ja/recipes/ai-agent.mdx L59, ja/recipes/ai-agent.mdx L91, ja/recipes/ai-agent.mdx L153, ja/recipes/ai-agent.mdx L256, ja/recipes/ai-agent.mdx L352, ja/recipes/ai-agent.mdx L440, ja/recipes/ai-agent.mdx L456, ja/recipes/ai-agent.mdx L512, ja/recipes/ai-agent.mdx L589, ja/recipes/ai-agent.mdx L660
+
+## 直さない: ai-agent: skills・hooks の Role が `**/*`（ディレクトリの中の何でも）になっている
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: ".github/skills/**/*".file()
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B13（「ここにあれば何でも」の layout を書かない。名前のパターンか中身の制約を付ける）／B3（skill のディレクトリには `SKILL.md`・スクリプト・参照 md など複数の種類が入る）／B11（ツールが構成を決める場所は例外にできるが、何のためかを例の中に書く）。根拠: layout「任意のファイルの配置を許す」の Aside、skill 3-2「Do not stop at placement」
+**直し方の案**: ツールが中身を決める場所だと分かるコメントを 1 行（例 `// スキルのディレクトリの中身はツールが決める`）、または skill は `.claude/skills/*/SKILL.md` のように名前を持つファイルだけにする。hooks は拡張子（`*.sh`。Cursor の `.cursor/hooks/*.sh` と同じ形）で絞る
+同じ指摘: ja/recipes/ai-agent.mdx L59, ja/recipes/ai-agent.mdx L91, ja/recipes/ai-agent.mdx L153, ja/recipes/ai-agent.mdx L256, ja/recipes/ai-agent.mdx L297, ja/recipes/ai-agent.mdx L440, ja/recipes/ai-agent.mdx L456, ja/recipes/ai-agent.mdx L512, ja/recipes/ai-agent.mdx L589, ja/recipes/ai-agent.mdx L660
+
+## 直さない: ai-agent: skills・hooks の Role が `**/*`（ディレクトリの中の何でも）になっている
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: ".cline/skills/**/*".file()
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B13（「ここにあれば何でも」の layout を書かない。名前のパターンか中身の制約を付ける）／B3（skill のディレクトリには `SKILL.md`・スクリプト・参照 md など複数の種類が入る）／B11（ツールが構成を決める場所は例外にできるが、何のためかを例の中に書く）。根拠: layout「任意のファイルの配置を許す」の Aside、skill 3-2「Do not stop at placement」
+**直し方の案**: ツールが中身を決める場所だと分かるコメントを 1 行（例 `// スキルのディレクトリの中身はツールが決める`）、または skill は `.claude/skills/*/SKILL.md` のように名前を持つファイルだけにする。hooks は拡張子（`*.sh`。Cursor の `.cursor/hooks/*.sh` と同じ形）で絞る
+同じ指摘: ja/recipes/ai-agent.mdx L59, ja/recipes/ai-agent.mdx L91, ja/recipes/ai-agent.mdx L153, ja/recipes/ai-agent.mdx L256, ja/recipes/ai-agent.mdx L297, ja/recipes/ai-agent.mdx L352, ja/recipes/ai-agent.mdx L456, ja/recipes/ai-agent.mdx L512, ja/recipes/ai-agent.mdx L589, ja/recipes/ai-agent.mdx L660
+
+## 直さない: ai-agent: skills・hooks の Role が `**/*`（ディレクトリの中の何でも）になっている
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: ".cline/hooks/**/*".file()
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B13（「ここにあれば何でも」の layout を書かない。名前のパターンか中身の制約を付ける）／B3（skill のディレクトリには `SKILL.md`・スクリプト・参照 md など複数の種類が入る）／B11（ツールが構成を決める場所は例外にできるが、何のためかを例の中に書く）。根拠: layout「任意のファイルの配置を許す」の Aside、skill 3-2「Do not stop at placement」
+**直し方の案**: ツールが中身を決める場所だと分かるコメントを 1 行（例 `// スキルのディレクトリの中身はツールが決める`）、または skill は `.claude/skills/*/SKILL.md` のように名前を持つファイルだけにする。hooks は拡張子（`*.sh`。Cursor の `.cursor/hooks/*.sh` と同じ形）で絞る
+同じ指摘: ja/recipes/ai-agent.mdx L59, ja/recipes/ai-agent.mdx L91, ja/recipes/ai-agent.mdx L153, ja/recipes/ai-agent.mdx L256, ja/recipes/ai-agent.mdx L297, ja/recipes/ai-agent.mdx L352, ja/recipes/ai-agent.mdx L440, ja/recipes/ai-agent.mdx L512, ja/recipes/ai-agent.mdx L589, ja/recipes/ai-agent.mdx L660
+
+## 直さない: ai-agent: skills・hooks の Role が `**/*`（ディレクトリの中の何でも）になっている
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: ".junie/skills/**/*".file()
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B13（「ここにあれば何でも」の layout を書かない。名前のパターンか中身の制約を付ける）／B3（skill のディレクトリには `SKILL.md`・スクリプト・参照 md など複数の種類が入る）／B11（ツールが構成を決める場所は例外にできるが、何のためかを例の中に書く）。根拠: layout「任意のファイルの配置を許す」の Aside、skill 3-2「Do not stop at placement」
+**直し方の案**: ツールが中身を決める場所だと分かるコメントを 1 行（例 `// スキルのディレクトリの中身はツールが決める`）、または skill は `.claude/skills/*/SKILL.md` のように名前を持つファイルだけにする。hooks は拡張子（`*.sh`。Cursor の `.cursor/hooks/*.sh` と同じ形）で絞る
+同じ指摘: ja/recipes/ai-agent.mdx L59, ja/recipes/ai-agent.mdx L91, ja/recipes/ai-agent.mdx L153, ja/recipes/ai-agent.mdx L256, ja/recipes/ai-agent.mdx L297, ja/recipes/ai-agent.mdx L352, ja/recipes/ai-agent.mdx L440, ja/recipes/ai-agent.mdx L456, ja/recipes/ai-agent.mdx L589, ja/recipes/ai-agent.mdx L660
+
+## 直さない: ai-agent: skills・hooks の Role が `**/*`（ディレクトリの中の何でも）になっている
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: ".agents/skills/**/*".file()
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B13（「ここにあれば何でも」の layout を書かない。名前のパターンか中身の制約を付ける）／B3（skill のディレクトリには `SKILL.md`・スクリプト・参照 md など複数の種類が入る）／B11（ツールが構成を決める場所は例外にできるが、何のためかを例の中に書く）。根拠: layout「任意のファイルの配置を許す」の Aside、skill 3-2「Do not stop at placement」
+**直し方の案**: ツールが中身を決める場所だと分かるコメントを 1 行（例 `// スキルのディレクトリの中身はツールが決める`）、または skill は `.claude/skills/*/SKILL.md` のように名前を持つファイルだけにする。hooks は拡張子（`*.sh`。Cursor の `.cursor/hooks/*.sh` と同じ形）で絞る
+同じ指摘: ja/recipes/ai-agent.mdx L59, ja/recipes/ai-agent.mdx L91, ja/recipes/ai-agent.mdx L153, ja/recipes/ai-agent.mdx L256, ja/recipes/ai-agent.mdx L297, ja/recipes/ai-agent.mdx L352, ja/recipes/ai-agent.mdx L440, ja/recipes/ai-agent.mdx L456, ja/recipes/ai-agent.mdx L512, ja/recipes/ai-agent.mdx L660
+
+## 直さない: ai-agent: skills・hooks の Role が `**/*`（ディレクトリの中の何でも）になっている
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: ".agents/skills/**/*".file()
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B13（「ここにあれば何でも」の layout を書かない。名前のパターンか中身の制約を付ける）／B3（skill のディレクトリには `SKILL.md`・スクリプト・参照 md など複数の種類が入る）／B11（ツールが構成を決める場所は例外にできるが、何のためかを例の中に書く）。根拠: layout「任意のファイルの配置を許す」の Aside、skill 3-2「Do not stop at placement」
+**直し方の案**: ツールが中身を決める場所だと分かるコメントを 1 行（例 `// スキルのディレクトリの中身はツールが決める`）、または skill は `.claude/skills/*/SKILL.md` のように名前を持つファイルだけにする。hooks は拡張子（`*.sh`。Cursor の `.cursor/hooks/*.sh` と同じ形）で絞る
+同じ指摘: ja/recipes/ai-agent.mdx L59, ja/recipes/ai-agent.mdx L91, ja/recipes/ai-agent.mdx L153, ja/recipes/ai-agent.mdx L256, ja/recipes/ai-agent.mdx L297, ja/recipes/ai-agent.mdx L352, ja/recipes/ai-agent.mdx L440, ja/recipes/ai-agent.mdx L456, ja/recipes/ai-agent.mdx L512, ja/recipes/ai-agent.mdx L589
+
+## 直さない: Tabs の 8 つのラベルが 1 行に収まらず、1280px でも末尾が切れる
+- decision: 直さない
+- file: ja/recipes/android-three-layer.mdx
+- quote: <Tabs>
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: いやこのままでええかな
+
+元の指摘:
+
+**ルールに反する点**: 手順 6 の巡回から。Role ごとの 8 つの `<TabItem label="…">`（UiState・ViewModel・Screen・UseCase・DomainModel・RepositoryInterface・RepositoryImplementation・DataSource）が 1 行に収まらず、幅 1280px でも末尾のラベルが切れる。
+**直し方の案**: ラベルを短くする（`Repository`・`RepositoryImpl` など）、タブを Role の group（ui・domain・data）ごとの 3 つにまとめる、またはタブをやめて見出しで並べる。
+
+## 直さない: 「いずれも Gradle script で設定が可能」と表が食い違う
+- decision: 直さない
+- file: ja/guides/diff-report.mdx
+- quote: いずれも コマンド 実行時, Gradle script で設定が可能です。
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: まあ一旦いいや
+
+元の指摘:
+
+**ルールに反する点**: D3-2（言い切れないことを言い切っている）。根拠: L210 の `fullImportanceLines` は「コマンドの --arg でのみ指定できます」で、「いずれも」に当てはまらない。写した利用者が Gradle script に `fullImportanceLines` を書こうとして迷う
+**直し方の案**: 「ほとんどのオプションは、コマンド実行時と Gradle script のどちらでも設定できます（`fullImportanceLines` はコマンドだけ）。」。ついでに全角の語間のスペースと半角の「,」も直す（「コマンド 実行時, Gradle script で」→「コマンド実行時と Gradle script で」）
+
+## 直さない: processor ページが processor を「重要な構成要素」と前面に出している
+- decision: 直さない
+- file: ja/guides/processor.mdx
+- quote: katachi の重要な構成要素の 1 つである ArchitectureProcessor を解説し、katachi の理解を深めます。
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: katachi の内部のアーキテクチャ上は重要な要素ではあるのでこのままかな
+
+元の指摘:
+
+**ルールに反する点**: D1-7（`processor` を前面に出さない。ほとんどの利用者は `assert()` の 1 行しか触らない。ページが自分で短い前提を 2〜3 行持つ）。L42 の「katachi は大きく分けて…2 つの要素でできています」も同じ方向
+**直し方の案**: 冒頭に「ほとんどの利用者は `projectArchitecture.assert()` の 1 行しか書かないので、このページは読まなくても katachi を使えます」の趣旨を 2〜3 行で足し、「重要な構成要素」「理解を深めます」を外す
+
+## 直さない: android-three-layer: `DomainModel` が `"*".ktFile()` だけ（受け皿の Role）
+- decision: 直さない
+- file: ja/recipes/android-three-layer.mdx
+- quote: "app" / mainSourceSet / kotlin / appPackageDir / "domain/model" / "*".ktFile()
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B13（ファイル名のパターンも `ktFileContent { }` も無い、ここにあれば何でもの Role）。同じページの UiState・ViewModel・UseCase などは名前のパターンと `ktFileContent` でファイルの中身まで決めているので、DomainModel だけ形が違う。D2-5（ルールを守った見本）にも数える
+**直し方の案**: `ktFileContent { `package`(matchingDirectory); `import`("**"); required(`class`, fileName) { allow(anythingElse) } }` のように、1 ファイルに 1 つの class だけを置く決まりを足す。足さない意図なら summary かコメントに「名前も中身も決めない」と書く
+
+## 直さない: gradle: `ConventionPluginSource` が `"**" / "*".ktFile()`（受け皿の Role）
+- decision: 直さない
+- file: ja/recipes/gradle.mdx
+- quote: "**" / "*".ktFile() // パッケージを切ったクラスも許す
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B13（`"**/*.kt"` のように「ここにあれば何でも」の layout。ファイル名のパターンか `ktFileContent { }` を付ける）。根拠: skill 3-2「Do not stop at placement」。convention plugin のヘルパーのクラスは名前で絞れないので、ktFileContent を付けない理由が分からない
+**直し方の案**: `ktFileContent { }` で最低限（`package`・`import`・`allow(anythingElse)` など）を書くか、コメントで「中身は問わない」と明記する
+
+## 直さない: skill が出力の写しを英語だけで書いている: `kotlin is not on PATH`（D1-14）
+- decision: 直さない
+- file: skills/katachi/references/setup/step0/0-1-permissions.md
+- quote: kotlin is not on PATH
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: D1-14（skill に `katachi` の出力を書くときは ja / en の 2 通りを並べる）。出力は `katachi-script/.../internal/Messages.kt:96-97` に ja（「kotlin が PATH にありません。brew install kotlin で入れてください。」）と en がある。0-2 は「checklist の言語で答える」と言うが、この時点では checklist が無く、`--lang` を付けないと環境の言語になる。日本語の出力が出ると、この行と合わせて読めない
+**直し方の案**: 「`kotlin is not on PATH`（ja: `kotlin が PATH にありません`）」と並べる
+
+## 直さない: skill が出力の写しを英語だけで書いている: Kotlin が古いときの doctor の警告（D1-14）
+- decision: 直さない
+- file: skills/katachi/references/setup/step0/0-2-working-directory.md
+- quote: This project uses Kotlin 1.9.10
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: D1-14。同じ行の `"Gradle needs upgrading too"` も英語だけ。`Messages.kt:262-265`・`:283-290` に ja（「このプロジェクトの Kotlin は … です。katachi は Kotlin … 以降が要ります」「Gradle も上げる必要があります」）がある。0-2 の L5 は「checklist の言語（ja）で `katachi` が答える」と書くので、日本語のユーザではここが日本語の出力になる
+**直し方の案**: 両方に ja の文言を並べる（「このプロジェクトの Kotlin は 1.9.10 です。katachi は Kotlin 2.2 以降が要ります」「Gradle も上げる必要があります」）
+
+## 直さない: 「うまく動かないとき」が出力を 1 行ずつ解説している（D1-8・要確認）
+- decision: 直さない
+- file: README.ja.md
+- quote: Failed to load JUnit Platform
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: D1-8（エラーメッセージの読み方をドキュメント化しない）。L112〜118 の 4 項目は「出力 → 原因」の対応表で、`Failed to load JUnit Platform`・`Cannot create Launcher without at least one TestEngine`・`did not discover any tests to execute` は JUnit の出力、`[UncheckedFileConstraint]` だけが katachi の出力。`<details>` に畳んであり（D3-6 の形）、first-architecture.mdx L212 にも `[UncheckedFileConstraint]` は書いてある。katachi のエラーの読み方ではなく、導入で詰まる 4 点の案内とも読める
+**直し方の案**: 直さないでよい。外すなら `<details>` ごと first-architecture に任せる
+
+## 直さない: 「全部使うと」の完成形に import が無く、省いたとも書いていない
+- decision: 直さない
+- file: ja/guides/generate-code-from-template.mdx
+- quote: このページで扱った書き方を全部使うと、テンプレートは次のようになります。
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: D2-2（ファイル全体に読める例は import をそろえる。断片で省くなら省いたと書く）／C15（`.template`・`capture()` を使う例）。根拠: 「全部使うと」で締める例で、`"FeatureReadme".role {` から始まる。`import me.tbsten.katachi.dsl.template` などが無い
+**直し方の案**: コードの先頭に `// package / import の行は省略` を足す
+
+## 直さない: 同じことを言い換えた箇条書き
+- decision: 直さない
+- file: ja/guides/processor.mdx
+- quote: アーキテクチャを定義しただけでは何も起こりません。その定義を使って何かを行うのが ArchitectureProcessor です。
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: D3-5（同じことの言い換え）。L61「アーキテクチャ定義そのものは何も実行しません。…受け取って何かをするのが ArchitectureProcessor」と同じ内容
+**直し方の案**: 2 つの箇条書きを削るか、L61 の 1 文にまとめる。L112「いずれもプロジェクトのアーキテクチャ定義を受け取り、検証や生成に使っています。」も表の説明の繰り返しなので一緒に削れる
+
+## 直さない: 読み飛ばしても先に進める注意が caution
+- decision: 直さない
+- file: ja/guides/processor.mdx
+- quote: 用意した実行方法は、processor の KDoc などにドキュメントとして書き、実行方法まで利用者に伝えてください。
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: 全体的に caution は読み飛ばさないだろうので、D3-6の例外になる気がしてる
+
+元の指摘:
+
+**ルールに反する点**: D3-6（読み飛ばされては困る注意だけを Aside に）。読まなくても手順は完了できる推奨事項で、C11 の「実行方法を KDoc に書く」を caution にしている
+**直し方の案**: 「2. 実行方法を用意する」の本文に一文として移す。caution のままにするなら、書かないとどうなるか（利用者が `process` を直接呼ぶことになる）を添える
+
+## 直さない: 「完成です」と書く例が断片（package・import・opt-in が無い）
+- decision: 直さない
+- file: ja/guides/processor.mdx
+- quote: 独自の processor は、`ArchitectureProcessor` を実装し、`Architecture` の拡張関数として実行方法を用意すると完成です。
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: ノイズなのでいらん
+
+元の指摘:
+
+**ルールに反する点**: D2-2（ファイル全体に読める例は import をそろえる。断片なら省いたと書く）、D2-1（ファイル全体なら `@file:OptIn`）。`ArchitectureProcessor` は `@ExperimentalKatachiApi` なので、写すと opt-in の指摘が出る
+**直し方の案**: ブロック先頭に `// package / import の行は省略` を足す。ファイル全体の例にするなら `@file:OptIn(ExperimentalKatachiApi::class)` と import を書く
+
+## 直さない: ai-agent: 同じ概念の Role 名がグループごとに違う（`Hooks` が設定とスクリプトの両方）（B7・要確認）
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: "Hooks".role {
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B7（同じ種類のファイル・同じ概念を、同じページで別の Role 名・別の語で呼ばない）。`Hooks` が、ツールによってスクリプトの Role にも設定ファイルの Role にもなり、Cursor だけ 2 つに分ける。ほかにも指示ファイルが `Rules`（Claude Code・Cursor・Windsurf・Cline・Junie・Codex・Antigravity）・`Instructions`（Copilot）・`Conventions`（Aider）、設定が `Settings`（Claude Code・Aider）・`Config`（Codex・Junie）と揺れる
+**直し方の案**: フックの設定ファイルは `HookConfig`、スクリプトは `HookScripts`（Cursor に合わせる）にそろえる。指示・設定の名前は、ツール自身の呼び方なら今のままでよい
+同じ指摘: ja/recipes/ai-agent.mdx L268, ja/recipes/ai-agent.mdx L372, ja/recipes/ai-agent.mdx L452, ja/recipes/ai-agent.mdx L601, ja/recipes/ai-agent.mdx L680
+
+## 直さない: ai-agent: 同じ概念の Role 名がグループごとに違う（`Hooks` が設定とスクリプトの両方）（B7・要確認）
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: "Hooks".role {
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B7（同じ種類のファイル・同じ概念を、同じページで別の Role 名・別の語で呼ばない）。`Hooks` が、ツールによってスクリプトの Role にも設定ファイルの Role にもなり、Cursor だけ 2 つに分ける。ほかにも指示ファイルが `Rules`（Claude Code・Cursor・Windsurf・Cline・Junie・Codex・Antigravity）・`Instructions`（Copilot）・`Conventions`（Aider）、設定が `Settings`（Claude Code・Aider）・`Config`（Codex・Junie）と揺れる
+**直し方の案**: フックの設定ファイルは `HookConfig`、スクリプトは `HookScripts`（Cursor に合わせる）にそろえる。指示・設定の名前は、ツール自身の呼び方なら今のままでよい
+同じ指摘: ja/recipes/ai-agent.mdx L87, ja/recipes/ai-agent.mdx L372, ja/recipes/ai-agent.mdx L452, ja/recipes/ai-agent.mdx L601, ja/recipes/ai-agent.mdx L680
+
+## 直さない: ai-agent: 同じ概念の Role 名がグループごとに違う（`Hooks` が設定とスクリプトの両方）（B7・要確認）
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: "Hooks".role {
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B7（同じ種類のファイル・同じ概念を、同じページで別の Role 名・別の語で呼ばない）。`Hooks` が、ツールによってスクリプトの Role にも設定ファイルの Role にもなり、Cursor だけ 2 つに分ける。ほかにも指示ファイルが `Rules`（Claude Code・Cursor・Windsurf・Cline・Junie・Codex・Antigravity）・`Instructions`（Copilot）・`Conventions`（Aider）、設定が `Settings`（Claude Code・Aider）・`Config`（Codex・Junie）と揺れる
+**直し方の案**: フックの設定ファイルは `HookConfig`、スクリプトは `HookScripts`（Cursor に合わせる）にそろえる。指示・設定の名前は、ツール自身の呼び方なら今のままでよい
+同じ指摘: ja/recipes/ai-agent.mdx L87, ja/recipes/ai-agent.mdx L268, ja/recipes/ai-agent.mdx L452, ja/recipes/ai-agent.mdx L601, ja/recipes/ai-agent.mdx L680
+
+## 直さない: ai-agent: 同じ概念の Role 名がグループごとに違う（`Hooks` が設定とスクリプトの両方）（B7・要確認）
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: "Hooks".role {
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B7（同じ種類のファイル・同じ概念を、同じページで別の Role 名・別の語で呼ばない）。`Hooks` が、ツールによってスクリプトの Role にも設定ファイルの Role にもなり、Cursor だけ 2 つに分ける。ほかにも指示ファイルが `Rules`（Claude Code・Cursor・Windsurf・Cline・Junie・Codex・Antigravity）・`Instructions`（Copilot）・`Conventions`（Aider）、設定が `Settings`（Claude Code・Aider）・`Config`（Codex・Junie）と揺れる
+**直し方の案**: フックの設定ファイルは `HookConfig`、スクリプトは `HookScripts`（Cursor に合わせる）にそろえる。指示・設定の名前は、ツール自身の呼び方なら今のままでよい
+同じ指摘: ja/recipes/ai-agent.mdx L87, ja/recipes/ai-agent.mdx L268, ja/recipes/ai-agent.mdx L372, ja/recipes/ai-agent.mdx L601, ja/recipes/ai-agent.mdx L680
+
+## 直さない: ai-agent: 同じ概念の Role 名がグループごとに違う（`Hooks` が設定とスクリプトの両方）（B7・要確認）
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: "Hooks".role {
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B7（同じ種類のファイル・同じ概念を、同じページで別の Role 名・別の語で呼ばない）。`Hooks` が、ツールによってスクリプトの Role にも設定ファイルの Role にもなり、Cursor だけ 2 つに分ける。ほかにも指示ファイルが `Rules`（Claude Code・Cursor・Windsurf・Cline・Junie・Codex・Antigravity）・`Instructions`（Copilot）・`Conventions`（Aider）、設定が `Settings`（Claude Code・Aider）・`Config`（Codex・Junie）と揺れる
+**直し方の案**: フックの設定ファイルは `HookConfig`、スクリプトは `HookScripts`（Cursor に合わせる）にそろえる。指示・設定の名前は、ツール自身の呼び方なら今のままでよい
+同じ指摘: ja/recipes/ai-agent.mdx L87, ja/recipes/ai-agent.mdx L268, ja/recipes/ai-agent.mdx L372, ja/recipes/ai-agent.mdx L452, ja/recipes/ai-agent.mdx L680
+
+## 直さない: ai-agent: 同じ概念の Role 名がグループごとに違う（`Hooks` が設定とスクリプトの両方）（B7・要確認）
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: "Hooks".role {
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B7（同じ種類のファイル・同じ概念を、同じページで別の Role 名・別の語で呼ばない）。`Hooks` が、ツールによってスクリプトの Role にも設定ファイルの Role にもなり、Cursor だけ 2 つに分ける。ほかにも指示ファイルが `Rules`（Claude Code・Cursor・Windsurf・Cline・Junie・Codex・Antigravity）・`Instructions`（Copilot）・`Conventions`（Aider）、設定が `Settings`（Claude Code・Aider）・`Config`（Codex・Junie）と揺れる
+**直し方の案**: フックの設定ファイルは `HookConfig`、スクリプトは `HookScripts`（Cursor に合わせる）にそろえる。指示・設定の名前は、ツール自身の呼び方なら今のままでよい
+同じ指摘: ja/recipes/ai-agent.mdx L87, ja/recipes/ai-agent.mdx L268, ja/recipes/ai-agent.mdx L372, ja/recipes/ai-agent.mdx L452, ja/recipes/ai-agent.mdx L601
+
+## 直さない: android-three-layer: 同じパスの前半を 8 つの Role に書き写している（B14）
+- decision: 直さない
+- file: ja/recipes/android-three-layer.mdx
+- quote: "app" / mainSourceSet / kotlin / appPackageDir
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B14（何度も出るパスは `val` に切り出す。おすすめ）。`appPackageDir` は切り出してあるが、`"app" / mainSourceSet / kotlin / appPackageDir` の並びが 8 回出る。根拠: layout「パスを定数に切り出す」、skill 3-3「Duplication is shared」
+**直し方の案**: `Constants.kt` にモジュールの `val appMainDir = "app" / mainSourceSet / kotlin / appPackageDir` のようなものを置く（`/` の型が layout の外で使えるかは Gradle で確かめたい、下の節）。難しければ今のままでよい
+同じ指摘: ja/recipes/android-three-layer.mdx L161, ja/recipes/android-three-layer.mdx L194, ja/recipes/android-three-layer.mdx L224, ja/recipes/android-three-layer.mdx L255, ja/recipes/android-three-layer.mdx L276, ja/recipes/android-three-layer.mdx L307, ja/recipes/android-three-layer.mdx L338
+
+## 直さない: android-three-layer: 同じパスの前半を 8 つの Role に書き写している（B14）
+- decision: 直さない
+- file: ja/recipes/android-three-layer.mdx
+- quote: "app" / mainSourceSet / kotlin / appPackageDir
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B14（何度も出るパスは `val` に切り出す。おすすめ）。`appPackageDir` は切り出してあるが、`"app" / mainSourceSet / kotlin / appPackageDir` の並びが 8 回出る。根拠: layout「パスを定数に切り出す」、skill 3-3「Duplication is shared」
+**直し方の案**: `Constants.kt` にモジュールの `val appMainDir = "app" / mainSourceSet / kotlin / appPackageDir` のようなものを置く（`/` の型が layout の外で使えるかは Gradle で確かめたい、下の節）。難しければ今のままでよい
+同じ指摘: ja/recipes/android-three-layer.mdx L130, ja/recipes/android-three-layer.mdx L194, ja/recipes/android-three-layer.mdx L224, ja/recipes/android-three-layer.mdx L255, ja/recipes/android-three-layer.mdx L276, ja/recipes/android-three-layer.mdx L307, ja/recipes/android-three-layer.mdx L338
+
+## 直さない: android-three-layer: 同じパスの前半を 8 つの Role に書き写している（B14）
+- decision: 直さない
+- file: ja/recipes/android-three-layer.mdx
+- quote: "app" / mainSourceSet / kotlin / appPackageDir
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B14（何度も出るパスは `val` に切り出す。おすすめ）。`appPackageDir` は切り出してあるが、`"app" / mainSourceSet / kotlin / appPackageDir` の並びが 8 回出る。根拠: layout「パスを定数に切り出す」、skill 3-3「Duplication is shared」
+**直し方の案**: `Constants.kt` にモジュールの `val appMainDir = "app" / mainSourceSet / kotlin / appPackageDir` のようなものを置く（`/` の型が layout の外で使えるかは Gradle で確かめたい、下の節）。難しければ今のままでよい
+同じ指摘: ja/recipes/android-three-layer.mdx L130, ja/recipes/android-three-layer.mdx L161, ja/recipes/android-three-layer.mdx L224, ja/recipes/android-three-layer.mdx L255, ja/recipes/android-three-layer.mdx L276, ja/recipes/android-three-layer.mdx L307, ja/recipes/android-three-layer.mdx L338
+
+## 直さない: android-three-layer: 同じパスの前半を 8 つの Role に書き写している（B14）
+- decision: 直さない
+- file: ja/recipes/android-three-layer.mdx
+- quote: "app" / mainSourceSet / kotlin / appPackageDir
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B14（何度も出るパスは `val` に切り出す。おすすめ）。`appPackageDir` は切り出してあるが、`"app" / mainSourceSet / kotlin / appPackageDir` の並びが 8 回出る。根拠: layout「パスを定数に切り出す」、skill 3-3「Duplication is shared」
+**直し方の案**: `Constants.kt` にモジュールの `val appMainDir = "app" / mainSourceSet / kotlin / appPackageDir` のようなものを置く（`/` の型が layout の外で使えるかは Gradle で確かめたい、下の節）。難しければ今のままでよい
+同じ指摘: ja/recipes/android-three-layer.mdx L130, ja/recipes/android-three-layer.mdx L161, ja/recipes/android-three-layer.mdx L194, ja/recipes/android-three-layer.mdx L255, ja/recipes/android-three-layer.mdx L276, ja/recipes/android-three-layer.mdx L307, ja/recipes/android-three-layer.mdx L338
+
+## 直さない: android-three-layer: 同じパスの前半を 8 つの Role に書き写している（B14）
+- decision: 直さない
+- file: ja/recipes/android-three-layer.mdx
+- quote: "app" / mainSourceSet / kotlin / appPackageDir
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B14（何度も出るパスは `val` に切り出す。おすすめ）。`appPackageDir` は切り出してあるが、`"app" / mainSourceSet / kotlin / appPackageDir` の並びが 8 回出る。根拠: layout「パスを定数に切り出す」、skill 3-3「Duplication is shared」
+**直し方の案**: `Constants.kt` にモジュールの `val appMainDir = "app" / mainSourceSet / kotlin / appPackageDir` のようなものを置く（`/` の型が layout の外で使えるかは Gradle で確かめたい、下の節）。難しければ今のままでよい
+同じ指摘: ja/recipes/android-three-layer.mdx L130, ja/recipes/android-three-layer.mdx L161, ja/recipes/android-three-layer.mdx L194, ja/recipes/android-three-layer.mdx L224, ja/recipes/android-three-layer.mdx L276, ja/recipes/android-three-layer.mdx L307, ja/recipes/android-three-layer.mdx L338
+
+## 直さない: android-three-layer: 同じパスの前半を 8 つの Role に書き写している（B14）
+- decision: 直さない
+- file: ja/recipes/android-three-layer.mdx
+- quote: "app" / mainSourceSet / kotlin / appPackageDir
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B14（何度も出るパスは `val` に切り出す。おすすめ）。`appPackageDir` は切り出してあるが、`"app" / mainSourceSet / kotlin / appPackageDir` の並びが 8 回出る。根拠: layout「パスを定数に切り出す」、skill 3-3「Duplication is shared」
+**直し方の案**: `Constants.kt` にモジュールの `val appMainDir = "app" / mainSourceSet / kotlin / appPackageDir` のようなものを置く（`/` の型が layout の外で使えるかは Gradle で確かめたい、下の節）。難しければ今のままでよい
+同じ指摘: ja/recipes/android-three-layer.mdx L130, ja/recipes/android-three-layer.mdx L161, ja/recipes/android-three-layer.mdx L194, ja/recipes/android-three-layer.mdx L224, ja/recipes/android-three-layer.mdx L255, ja/recipes/android-three-layer.mdx L307, ja/recipes/android-three-layer.mdx L338
+
+## 直さない: android-three-layer: 同じパスの前半を 8 つの Role に書き写している（B14）
+- decision: 直さない
+- file: ja/recipes/android-three-layer.mdx
+- quote: "app" / mainSourceSet / kotlin / appPackageDir
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B14（何度も出るパスは `val` に切り出す。おすすめ）。`appPackageDir` は切り出してあるが、`"app" / mainSourceSet / kotlin / appPackageDir` の並びが 8 回出る。根拠: layout「パスを定数に切り出す」、skill 3-3「Duplication is shared」
+**直し方の案**: `Constants.kt` にモジュールの `val appMainDir = "app" / mainSourceSet / kotlin / appPackageDir` のようなものを置く（`/` の型が layout の外で使えるかは Gradle で確かめたい、下の節）。難しければ今のままでよい
+同じ指摘: ja/recipes/android-three-layer.mdx L130, ja/recipes/android-three-layer.mdx L161, ja/recipes/android-three-layer.mdx L194, ja/recipes/android-three-layer.mdx L224, ja/recipes/android-three-layer.mdx L255, ja/recipes/android-three-layer.mdx L276, ja/recipes/android-three-layer.mdx L338
+
+## 直さない: android-three-layer: 同じパスの前半を 8 つの Role に書き写している（B14）
+- decision: 直さない
+- file: ja/recipes/android-three-layer.mdx
+- quote: "app" / mainSourceSet / kotlin / appPackageDir
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B14（何度も出るパスは `val` に切り出す。おすすめ）。`appPackageDir` は切り出してあるが、`"app" / mainSourceSet / kotlin / appPackageDir` の並びが 8 回出る。根拠: layout「パスを定数に切り出す」、skill 3-3「Duplication is shared」
+**直し方の案**: `Constants.kt` にモジュールの `val appMainDir = "app" / mainSourceSet / kotlin / appPackageDir` のようなものを置く（`/` の型が layout の外で使えるかは Gradle で確かめたい、下の節）。難しければ今のままでよい
+同じ指摘: ja/recipes/android-three-layer.mdx L130, ja/recipes/android-three-layer.mdx L161, ja/recipes/android-three-layer.mdx L194, ja/recipes/android-three-layer.mdx L224, ja/recipes/android-three-layer.mdx L255, ja/recipes/android-three-layer.mdx L276, ja/recipes/android-three-layer.mdx L307
+
+## 直さない: 6-A〜6-D のファイルの 1 行目が `##`（D1-15）
+- decision: 直さない
+- file: skills/katachi/references/setup/README.md
+- quote: | 6-A |
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: D1-15（各ファイルの 1 行目は `## N.` / `### N-M.`）。README の表の題は 27 ファイルすべてと一致したが、`step6/6-A`〜`6-D`（表の L35〜38）の 1 行目だけが `## 6-A.`〜`## 6-D.` で、同じ N-M の形の 6-0 は `### 6-0.`。6-A〜6-D は「報告のあとの選択」なので別格として `##` にしたとも読める
+**直し方の案**: `### 6-A.` などにそろえるか、README に「6-A〜6-D は `##`」と書く（`step6/` は skill-2 の担当なので、そちらでも出うる）
+
+## 直さない: skill が出力の写しを英語だけで書いている: scaffold の `already exists`（D1-14）
+- decision: 直さない
+- file: skills/katachi/references/setup/step0/0-1-permissions.md
+- quote: already exists
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: D1-14。`Messages.kt:430-433` は ja「がすでに存在します」・en「already exists」。ただしここは「probe でディレクトリを作るな」の理由の説明で、出力と照合する指示ではないので p2
+**直し方の案**: 「`already exists`（ja: `がすでに存在します`）」と並べるか、「すでにあると言って止まる」と出力の文言を引用しない形にする
+
+## 直さない: 削除済みの `katachi agent init` が旧作業ディレクトリの説明に残っている（B27）
+- decision: 直さない
+- file: skills/katachi/references/setup/step0/README.md
+- quote: katachi agent init
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B27（削除したコマンドを書かない。`katachi agent init` は PR #65 で削除済み）。ただしここは「旧版が作った作業ディレクトリがあったら」の説明で、手順としては案内していない。手順 5 の katachi-script.mdx・cli.mdx とは別の箇所（手順 5 の 3 件には入っていない）
+**直し方の案**: 「older katachi が作った作業ディレクトリ（`check-list.html` に今の手順の項目が無いもの）」と、削除済みのコマンド名を出さずに書く
+
+## 直さない: 4-2 の baseline の例だけ `@OptIn` を `val` に付ける形で、3-2 の `@file:OptIn` と違う
+- decision: 直さない
+- file: skills/katachi/references/setup/step4/4-2-handle-errors.md
+- quote: put `@OptIn(ExperimentalKatachiApi::class)` on `val projectArchitecture
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: D2-1 / C15 の趣旨（ファイル全体は `@file:OptIn(ExperimentalKatachiApi::class)` と `import me.tbsten.katachi.ExperimentalKatachiApi` をそろえる。3-2 L20〜24 はその形）。`baseline()` は `@ExperimentalKatachiApi`（`ArchitectureScope.kt` L73）なので両方動くが、skill の中で形が 2 つになる。`import` を足すことも書いていない
+**直し方の案**: 「`ProjectArchitecture.kt` は 3-2 の `@file:OptIn` で始まっているはずなので、そのまま `baseline()` を書く」と書く。無ければ「3-2 の experimental APIs の 2 行を足す」と案内する
+
+## 直さない: 「これは」が前の文を指している
+- decision: 直さない
+- file: ja/get-started/faq.mdx
+- quote: これは **fail-safe defaults**（デフォルトの振る舞いを安全なほう、つまり許可しないほうにしておく）と呼ばれる設計原則の1つです。
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: D3-3。「想定外のものをまず疑う考え方」を指す（理由の説明ではなく名前の紹介なので、decisions の「これは」の許容とは別）
+**直し方の案**: 「想定外のものをまず疑う考え方は **fail-safe defaults** …と呼ばれる設計原則の1つです。」と 1 文にする
+
+## 直さない: 「これは」が前の段落を指している
+- decision: 直さない
+- file: ja/get-started/faq.mdx
+- quote: これはそのまま、**チームがアーキテクチャについて合意し直す作業**でもあります。
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: D3-3
+**直し方の案**: 「違反を1つずつ片付けることは、そのまま…」
+
+## 直さない: ProjectArchitecture.kt に group と Role の定義を直接書いている
+- decision: 直さない
+- file: ja/get-started/first-architecture.mdx
+- quote: "Domain".group {
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: まあここは話したいことと違うことが膨らんじゃって嫌なので直さんでええかなと
+
+元の指摘:
+
+**ルールに反する点**: B20（`ProjectArchitecture.kt` は group の関数を呼ぶだけ）。ただし B20 は skill の決まりで、ガイドは書いていない（E13 と同じく、skill の決まりが docs に及ぶか不明）。最初の 1 本の例としては、1 ファイルのほうが写しやすい
+**直し方の案**: 直さない。ガイドに決まりを書くなら、この例は `"Domain".group` の中身を別ファイルにする必要がある
+
+## 直さない: 「これが」が前の文を指している
+- decision: 直さない
+- file: ja/get-started/first-architecture.mdx
+- quote: katachi は許可リスト方式なので、これが正常な出発点です。
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: D3-3。「宣言していないファイルやディレクトリが違反として出る」ことを指す
+**直し方の案**: 「katachi は許可リスト方式なので、宣言していないものが違反として出るのが正常な出発点です。」
+
+## 直さない: 「ガードレールとして機能する」は比喩
+- decision: 直さない
+- file: ja/get-started/first-architecture.mdx
+- quote: katachi がガードレールとして機能するか検証させましょう。
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: この比喩は許容かな。許容していい比喩と許容しちゃいけない比喩があって、それを考慮した指摘をして欲しい気はする（何を許容していいのか・しちゃいかんのかの区別はまだついてない）
+
+元の指摘:
+
+**ルールに反する点**: D3-7（挙動を比喩で言わず、何が起きるかを書く）。motivation L34 の「通さないガードレール」は decisions で「直さない」だが、これは別のファイルで、「通さない」を含まない。同じ趣旨なので判断に寄せる
+**直し方の案**: 「katachi が違反を検出するか検証させましょう。」
+
+## 直さない: 「これを」が指すものを書いていない
+- decision: 直さない
+- file: ja/get-started/motivation.mdx
+- quote: これを宣言的な DSL で書くと、プロジェクト全体のディレクトリ構造をテストできるようになります。
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: D3-3（指示語ではなく指すものを書く）。直前の箇条書きの 2 項目（Role と配置）を指す
+**直し方の案**: 「Role と配置を宣言的な DSL で書くと、…」
+
+## 直さない: 「このルール」が指すものが曖昧
+- decision: 直さない
+- file: ja/get-started/motivation.mdx
+- quote: このルールによって検知される例
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: D3-3。「ルール」は直前では `projectArchitecture` の宣言だが、その節では「ルール」と呼んでいない
+**直し方の案**: 「この定義で検知される例」
+
+## 直さない: group を architecture の中に直接書いている（baseline の設定）
+- decision: 直さない
+- file: ja/guides/baseline.mdx
+- quote: "Tool".group {
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: ここは baseline のはなしをしたくて、関数分けると逆にノイズになりそうなのでこのままかな
+
+元の指摘:
+
+**ルールに反する点**: B20（同上）。この例は `// ...` で省いた断片で、`baselineFile()` の関数は同じブロックの下に書いてある
+**直し方の案**: 直さない（断片の例）
+
+## 直さない: 非生物主語で「明確になります」（group の説明）
+- decision: 直さない
+- file: ja/guides/basic-api.mdx
+- quote: Role のグループをドメインレイヤーとして DSL で表すと
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: これは今のままが自然に思う
+
+元の指摘:
+
+**ルールに反する点**: D3-15（「〜すると、〜が明確になります」と非生物主語で書き、同じ文で「分かりやすい」を 2 回重ねる）
+**直し方の案**: 「group でドメインレイヤーを表すと、どの Role が同じ層かが読み取れます。粒度は、読んで分かる大きさにそろえてください。」
+
+## 直さない: 別モジュールと書くが、依存の足し方に触れていない（basic-api）
+- decision: 直さない
+- file: ja/guides/basic-api.mdx
+- quote: は別モジュール `katachi-konsist` に入っています
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: 一旦そのまま
+
+元の指摘:
+
+**ルールに反する点**: C1（`katachi-konsist` の依存と `assert(FileConstraintCheck())` をそろえて案内する）。依存の行 `testImplementation("me.tbsten.katachi:katachi-konsist:<version>")` は kt-file-content.mdx L96〜100 にだけあり、このページは直後（L244）の kt-file-content へのリンクに任せている
+**直し方の案**: 「依存の足し方は kt-file-content のガイドにあります」と一言添える
+
+## 直さない: 抽象的な効果の文
+- decision: 直さない
+- file: ja/guides/diff-report.mdx
+- quote: レビュー体験を向上させることができます
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: まあここはまとめ的な一文だし多少抽象的でええのかなと
+
+元の指摘:
+
+**ルールに反する点**: D3-15（何が起きるかを書く。D3-7 と同じ方向）。根拠: 何が良くなるのか書いていない
+**直し方の案**: 「CI やレビュー補助の Agent Skill で `katachiDiff` を実行すると、レビューする人が最初に変更された Role の一覧を読めます。」
+
+## 直さない: 「このように」が指すものが次の画像
+- decision: 直さない
+- file: ja/guides/diff-report.mdx
+- quote: 重みの有無で Importance 列の見え方がこのように変わります。
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: 提案してもらった方が逆に違和感に見える
+
+元の指摘:
+
+**ルールに反する点**: D3-3（指示語ではなく指すものを書く）。根拠: 画像を見ないと何が変わるか分からない。decisions の指示語 6 件とは別の箇所
+**直し方の案**: 「重みの有無で Importance 列の色の濃さが変わります（下の画像は同じ差分を重みなしと `diffWeight = 10.0` で比べた例です）。」
+
+## 直さない: 指示語「こちら」
+- decision: 直さない
+- file: ja/guides/document-generation.mdx
+- quote: こちらも参考にしてください。
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: D3-3（指すものを書く）。節の頭が LinkCard の直前なので、指すのは `sample/` の生成物
+**直し方の案**: 「`sample/` の生成物も参考にしてください。」
+
+## 直さない: README を作る Role に `documented = false` が無い
+- decision: 直さない
+- file: ja/guides/generate-code-from-template.mdx
+- quote: "FeatureReadme".role {
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: このページで話したいこととは関係ない話になっちゃうので直さないでいいかな
+
+元の指摘:
+
+**ルールに反する点**: B30（生成ドキュメントで読まれないファイル、単独の README などの Role には `documented = false` を付ける。推奨）
+**直し方の案**: `documented = false` を 1 行足す。載せたいなら直さない
+
+## 直さない: README を作る Role に `documented = false` が無い（まとめの例・要確認）
+- decision: 直さない
+- file: ja/guides/generate-code-from-template.mdx
+- quote: "FeatureReadme".role {
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B30
+**直し方の案**: L174 と同じ
+
+## 直さない: 2 行だけの表「type 宣言の詳細を指定する」
+- decision: 直さない
+- file: ja/guides/kt-file-content.mdx
+- quote: <td>やりたいこと</td>
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: D3-11（表にするのは複数のものを複数の観点で比べるときだけ）。「やりたいこと」→「例」の 2 行 × 1 観点
+**直し方の案**: 見出し付きの 2 つのコード例にする
+
+## 直さない: 「戻り値を指定」の行の「補足」が空
+- decision: 直さない
+- file: ja/guides/kt-file-content.mdx
+- quote: <td>
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: D3-11（表は複数の観点で比べるときだけ。ここは補足の列が 1 行分空で、もう 1 行だけの表）。L337 の「関数の引数・戻り値の定義」の表の、2 行目の補足セル（L375〜L377）
+**直し方の案**: 補足が要らないなら列を外す、または「戻り値の型を `.returns("…")` で指定します」と 1 行足す
+
+## 直さない: 太字が多い
+- decision: 直さない
+- file: ja/guides/kt-file-content/kotlin-mapping.mdx
+- quote: **違反** … 書いていない宣言は違反になります
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: ここは太字じゃないと要点が分かりにくくなって、むしろ読みにくくなりそう
+
+元の指摘:
+
+**ルールに反する点**: D3-15（過剰な太字）。**違反**・**問わない**・**問いません** が各節の導入文に繰り返し出る（L22・L23・L27・L214・L294・L395・L465・L543）
+**直し方の案**: 太字は L22・L23 の用語の定義だけにし、各節の導入文は地の文にする
+
+## 直さない: IDE 設定の Role が生成ドキュメントに出る形のまま
+- decision: 直さない
+- file: ja/guides/layout.mdx
+- quote: "IdeCodeStyle".role {
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B30（ツールの設定ファイルの Role）
+**直し方の案**: `documented = false` を足すか、直さない
+
+## 直さない: ファイルの種類が生成ドキュメントに出る形のまま（GeneratedFile）
+- decision: 直さない
+- file: ja/guides/layout.mdx
+- quote: "GeneratedFile".role {
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B30（生成物の Role には `documented = false` を付ける。推奨）
+**直し方の案**: `documented = false` を 1 行足す。または「生成ドキュメントに出さないときは `documented = false`」とコメントを添える
+
+## 直さない: ファイルの種類が生成ドキュメントに出る形のまま（BuildOutput）
+- decision: 直さない
+- file: ja/guides/layout.mdx
+- quote: "BuildOutput".role {
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B30
+**直し方の案**: 上と同じ
+
+## 直さない: 指示語「いずれも」
+- decision: 直さない
+- file: ja/guides/processor.mdx
+- quote: いずれもプロジェクトのアーキテクチャ定義を受け取り、検証や生成に使っています。
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: まあ伝わるからいいかな
+
+元の指摘:
+
+**ルールに反する点**: D3-3（指すものを書く）。直前の表を指す。削る案は L63〜64 の件と同じ
+**直し方の案**: 「6 つの processor はいずれも」と書くか、削る
+
+## 直さない: processor の例が断片（import・opt-in 無し、省略の断りも無い）
+- decision: 直さない
+- file: ja/guides/processor.mdx
+- quote: object CountFilesPerRole : ArchitectureProcessorNoArg<Map<String, Int>> {
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: D2-2。同じ指摘が L234（quote: `object CountFilesPerRole : ArchitectureProcessor<CountFilesPerRole.Args, Map<String, Int>> {`）と L263（quote: `// metadata のキー`）にもある（場所ごとに別件）
+**直し方の案**: `// package / import の行は省略` を各ブロックの先頭に足す。断片は書かない決まり（D2-1）なので、直さない判断もありえる
+
+## 直さない: 同上（引数ありの例）
+- decision: 直さない
+- file: ja/guides/processor.mdx
+- quote: object CountFilesPerRole : ArchitectureProcessor<CountFilesPerRole.Args, Map<String, Int>> {
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: D2-2（L204 と同じ）
+**直し方の案**: L204 と同じ
+
+## 直さない: 同上（Role の metadata の例）
+- decision: 直さない
+- file: ja/guides/processor.mdx
+- quote: // metadata のキー
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: D2-2（L204 と同じ）。この例は `MetadataKey`・`metadata()` の import も要る
+**直し方の案**: L204 と同じ
+
+## 直さない: 「それぞれを」が何を指すか書いていない
+- decision: 直さない
+- file: ja/guides/role.mdx
+- quote: それぞれを、もう少し詳しく説明します。
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: D3-3（指示語ではなく指すものを書く）。「それぞれ」は直前の 1 つの例の title / summary / layout / ktFileContent を指す
+**直し方の案**: 「title・summary・layout・ktFileContent を、1 つずつ詳しく説明します。」
+
+## 直さない: 別モジュールと書くが、依存の足し方に触れていない（role）
+- decision: 直さない
+- file: ja/guides/role.mdx
+- quote: は別モジュール `katachi-konsist` に入っています
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: C1（上と同じ）。L209 に kt-file-content へのリンクはあるが、この段落とは離れている
+**直し方の案**: 上と同じ
+
+## 直さない: 非生物主語「〜が分かれてしまいます」（Role を分ける理由）
+- decision: 直さない
+- file: ja/guides/role.mdx
+- quote: 説明・制約・テンプレートが「どちらのファイルの話か」で分かれてしまいます
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: D3-15（非生物主語）
+**直し方の案**: 「1つの Role にまとめると、説明・制約・テンプレートのそれぞれで『どちらのファイルの話か』を書き分けることになります。」
+
+## 直さない: Role の関数を group なしで ProjectArchitecture.kt から呼んでいる
+- decision: 直さない
+- file: ja/guides/role.mdx
+- quote: useCase()
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: まあドキュメントだしギリ許容かな
+
+元の指摘:
+
+**ルールに反する点**: B20（`ProjectArchitecture.kt` は group の関数を呼ぶだけ。Role のファイルは `<group>/<Role>Role.kt`、group の外は直下）。分割後の例は `domain/` の下に Role のファイルを置くのに、`Domain` group が無い
+**直し方の案**: 分割後の例も `"Domain".group { useCase() ... }` にする。または直さない
+
+## 直さない: group を ProjectArchitecture.kt の中に直接書いている（role のまとめ）
+- decision: 直さない
+- file: ja/guides/role.mdx
+- quote: "Domain".group {
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B20（group は `<group>/<Group>Group.kt` の関数にして、`ProjectArchitecture.kt` はその関数を呼ぶだけ）
+**直し方の案**: `domain/DomainGroup.kt` を足す。または直さない
+
+## 直さない: ai-agent: group 関数と Role の定義ファイルの名前が B20 の形でない
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: title=roles/ClaudeCode.kt
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B20（group は `<group>/<Group>Group.kt`、1 ファイルに group か Role を 1 つ）。group の関数と Role 8 個ほどを `roles/ClaudeCode.kt` の 1 ファイルに入れている。B20 はガイドが決まりとして書いておらず skill の決まり（E13 と同じ「skill の決まりが docs に及ぶか」）
+**直し方の案**: 直さない（ガイドに決まりが無い）。そろえるなら `claudeCode/ClaudeCodeGroup.kt` と Role ごとのファイルに分けるが、レシピが長くなる
+同じ指摘: ja/recipes/ai-agent.mdx L130, ja/recipes/ai-agent.mdx L233, ja/recipes/ai-agent.mdx L328, ja/recipes/ai-agent.mdx L416, ja/recipes/ai-agent.mdx L487, ja/recipes/ai-agent.mdx L567, ja/recipes/ai-agent.mdx L636, ja/recipes/ai-agent.mdx L707
+
+## 直さない: ai-agent: group 関数と Role の定義ファイルの名前が B20 の形でない
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: title=roles/Cursor.kt
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B20（group は `<group>/<Group>Group.kt`、1 ファイルに group か Role を 1 つ）。group の関数と Role 8 個ほどを `roles/ClaudeCode.kt` の 1 ファイルに入れている。B20 はガイドが決まりとして書いておらず skill の決まり（E13 と同じ「skill の決まりが docs に及ぶか」）
+**直し方の案**: 直さない（ガイドに決まりが無い）。そろえるなら `claudeCode/ClaudeCodeGroup.kt` と Role ごとのファイルに分けるが、レシピが長くなる
+同じ指摘: ja/recipes/ai-agent.mdx L35, ja/recipes/ai-agent.mdx L233, ja/recipes/ai-agent.mdx L328, ja/recipes/ai-agent.mdx L416, ja/recipes/ai-agent.mdx L487, ja/recipes/ai-agent.mdx L567, ja/recipes/ai-agent.mdx L636, ja/recipes/ai-agent.mdx L707
+
+## 直さない: ai-agent: group 関数と Role の定義ファイルの名前が B20 の形でない
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: title=roles/Windsurf.kt
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B20（group は `<group>/<Group>Group.kt`、1 ファイルに group か Role を 1 つ）。group の関数と Role 8 個ほどを `roles/ClaudeCode.kt` の 1 ファイルに入れている。B20 はガイドが決まりとして書いておらず skill の決まり（E13 と同じ「skill の決まりが docs に及ぶか」）
+**直し方の案**: 直さない（ガイドに決まりが無い）。そろえるなら `claudeCode/ClaudeCodeGroup.kt` と Role ごとのファイルに分けるが、レシピが長くなる
+同じ指摘: ja/recipes/ai-agent.mdx L35, ja/recipes/ai-agent.mdx L130, ja/recipes/ai-agent.mdx L328, ja/recipes/ai-agent.mdx L416, ja/recipes/ai-agent.mdx L487, ja/recipes/ai-agent.mdx L567, ja/recipes/ai-agent.mdx L636, ja/recipes/ai-agent.mdx L707
+
+## 直さない: ai-agent: group 関数と Role の定義ファイルの名前が B20 の形でない
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: title=roles/GitHubCopilot.kt
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B20（group は `<group>/<Group>Group.kt`、1 ファイルに group か Role を 1 つ）。group の関数と Role 8 個ほどを `roles/ClaudeCode.kt` の 1 ファイルに入れている。B20 はガイドが決まりとして書いておらず skill の決まり（E13 と同じ「skill の決まりが docs に及ぶか」）
+**直し方の案**: 直さない（ガイドに決まりが無い）。そろえるなら `claudeCode/ClaudeCodeGroup.kt` と Role ごとのファイルに分けるが、レシピが長くなる
+同じ指摘: ja/recipes/ai-agent.mdx L35, ja/recipes/ai-agent.mdx L130, ja/recipes/ai-agent.mdx L233, ja/recipes/ai-agent.mdx L416, ja/recipes/ai-agent.mdx L487, ja/recipes/ai-agent.mdx L567, ja/recipes/ai-agent.mdx L636, ja/recipes/ai-agent.mdx L707
+
+## 直さない: ai-agent: group 関数と Role の定義ファイルの名前が B20 の形でない
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: title=roles/Cline.kt
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B20（group は `<group>/<Group>Group.kt`、1 ファイルに group か Role を 1 つ）。group の関数と Role 8 個ほどを `roles/ClaudeCode.kt` の 1 ファイルに入れている。B20 はガイドが決まりとして書いておらず skill の決まり（E13 と同じ「skill の決まりが docs に及ぶか」）
+**直し方の案**: 直さない（ガイドに決まりが無い）。そろえるなら `claudeCode/ClaudeCodeGroup.kt` と Role ごとのファイルに分けるが、レシピが長くなる
+同じ指摘: ja/recipes/ai-agent.mdx L35, ja/recipes/ai-agent.mdx L130, ja/recipes/ai-agent.mdx L233, ja/recipes/ai-agent.mdx L328, ja/recipes/ai-agent.mdx L487, ja/recipes/ai-agent.mdx L567, ja/recipes/ai-agent.mdx L636, ja/recipes/ai-agent.mdx L707
+
+## 直さない: ai-agent: group 関数と Role の定義ファイルの名前が B20 の形でない
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: title=roles/Junie.kt
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B20（group は `<group>/<Group>Group.kt`、1 ファイルに group か Role を 1 つ）。group の関数と Role 8 個ほどを `roles/ClaudeCode.kt` の 1 ファイルに入れている。B20 はガイドが決まりとして書いておらず skill の決まり（E13 と同じ「skill の決まりが docs に及ぶか」）
+**直し方の案**: 直さない（ガイドに決まりが無い）。そろえるなら `claudeCode/ClaudeCodeGroup.kt` と Role ごとのファイルに分けるが、レシピが長くなる
+同じ指摘: ja/recipes/ai-agent.mdx L35, ja/recipes/ai-agent.mdx L130, ja/recipes/ai-agent.mdx L233, ja/recipes/ai-agent.mdx L328, ja/recipes/ai-agent.mdx L416, ja/recipes/ai-agent.mdx L567, ja/recipes/ai-agent.mdx L636, ja/recipes/ai-agent.mdx L707
+
+## 直さない: ai-agent: group 関数と Role の定義ファイルの名前が B20 の形でない
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: title=roles/Codex.kt
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B20（group は `<group>/<Group>Group.kt`、1 ファイルに group か Role を 1 つ）。group の関数と Role 8 個ほどを `roles/ClaudeCode.kt` の 1 ファイルに入れている。B20 はガイドが決まりとして書いておらず skill の決まり（E13 と同じ「skill の決まりが docs に及ぶか」）
+**直し方の案**: 直さない（ガイドに決まりが無い）。そろえるなら `claudeCode/ClaudeCodeGroup.kt` と Role ごとのファイルに分けるが、レシピが長くなる
+同じ指摘: ja/recipes/ai-agent.mdx L35, ja/recipes/ai-agent.mdx L130, ja/recipes/ai-agent.mdx L233, ja/recipes/ai-agent.mdx L328, ja/recipes/ai-agent.mdx L416, ja/recipes/ai-agent.mdx L487, ja/recipes/ai-agent.mdx L636, ja/recipes/ai-agent.mdx L707
+
+## 直さない: ai-agent: group 関数と Role の定義ファイルの名前が B20 の形でない
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: title=roles/Antigravity.kt
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B20（group は `<group>/<Group>Group.kt`、1 ファイルに group か Role を 1 つ）。group の関数と Role 8 個ほどを `roles/ClaudeCode.kt` の 1 ファイルに入れている。B20 はガイドが決まりとして書いておらず skill の決まり（E13 と同じ「skill の決まりが docs に及ぶか」）
+**直し方の案**: 直さない（ガイドに決まりが無い）。そろえるなら `claudeCode/ClaudeCodeGroup.kt` と Role ごとのファイルに分けるが、レシピが長くなる
+同じ指摘: ja/recipes/ai-agent.mdx L35, ja/recipes/ai-agent.mdx L130, ja/recipes/ai-agent.mdx L233, ja/recipes/ai-agent.mdx L328, ja/recipes/ai-agent.mdx L416, ja/recipes/ai-agent.mdx L487, ja/recipes/ai-agent.mdx L567, ja/recipes/ai-agent.mdx L707
+
+## 直さない: ai-agent: group 関数と Role の定義ファイルの名前が B20 の形でない
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: title=roles/Aider.kt
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B20（group は `<group>/<Group>Group.kt`、1 ファイルに group か Role を 1 つ）。group の関数と Role 8 個ほどを `roles/ClaudeCode.kt` の 1 ファイルに入れている。B20 はガイドが決まりとして書いておらず skill の決まり（E13 と同じ「skill の決まりが docs に及ぶか」）
+**直し方の案**: 直さない（ガイドに決まりが無い）。そろえるなら `claudeCode/ClaudeCodeGroup.kt` と Role ごとのファイルに分けるが、レシピが長くなる
+同じ指摘: ja/recipes/ai-agent.mdx L35, ja/recipes/ai-agent.mdx L130, ja/recipes/ai-agent.mdx L233, ja/recipes/ai-agent.mdx L328, ja/recipes/ai-agent.mdx L416, ja/recipes/ai-agent.mdx L487, ja/recipes/ai-agent.mdx L567, ja/recipes/ai-agent.mdx L636
+
+## 直さない: android-three-layer: Role の定義ファイル名が B20 の形でない
+- decision: 直さない
+- file: ja/recipes/android-three-layer.mdx
+- quote: title=roles/UiState.kt
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B20（Role は `<group>/<Role>Role.kt`。ここは `roles/UiState.kt` で、group のディレクトリも `Role` の語も無い）。3 層の group（`ui/`・`domain/`・`data/`）と対応しない置き方
+**直し方の案**: 直さない（ガイドに決まりが無い）。そろえるなら `ui/UiStateRole.kt` のように group ごとのディレクトリにする
+同じ指摘: ja/recipes/android-three-layer.mdx L148, ja/recipes/android-three-layer.mdx L181, ja/recipes/android-three-layer.mdx L211, ja/recipes/android-three-layer.mdx L243, ja/recipes/android-three-layer.mdx L263, ja/recipes/android-three-layer.mdx L294, ja/recipes/android-three-layer.mdx L325
+
+## 直さない: android-three-layer: Role の定義ファイル名が B20 の形でない
+- decision: 直さない
+- file: ja/recipes/android-three-layer.mdx
+- quote: title=roles/ViewModel.kt
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B20（Role は `<group>/<Role>Role.kt`。ここは `roles/UiState.kt` で、group のディレクトリも `Role` の語も無い）。3 層の group（`ui/`・`domain/`・`data/`）と対応しない置き方
+**直し方の案**: 直さない（ガイドに決まりが無い）。そろえるなら `ui/UiStateRole.kt` のように group ごとのディレクトリにする
+同じ指摘: ja/recipes/android-three-layer.mdx L117, ja/recipes/android-three-layer.mdx L181, ja/recipes/android-three-layer.mdx L211, ja/recipes/android-three-layer.mdx L243, ja/recipes/android-three-layer.mdx L263, ja/recipes/android-three-layer.mdx L294, ja/recipes/android-three-layer.mdx L325
+
+## 直さない: android-three-layer: Role の定義ファイル名が B20 の形でない
+- decision: 直さない
+- file: ja/recipes/android-three-layer.mdx
+- quote: title=roles/Screen.kt
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B20（Role は `<group>/<Role>Role.kt`。ここは `roles/UiState.kt` で、group のディレクトリも `Role` の語も無い）。3 層の group（`ui/`・`domain/`・`data/`）と対応しない置き方
+**直し方の案**: 直さない（ガイドに決まりが無い）。そろえるなら `ui/UiStateRole.kt` のように group ごとのディレクトリにする
+同じ指摘: ja/recipes/android-three-layer.mdx L117, ja/recipes/android-three-layer.mdx L148, ja/recipes/android-three-layer.mdx L211, ja/recipes/android-three-layer.mdx L243, ja/recipes/android-three-layer.mdx L263, ja/recipes/android-three-layer.mdx L294, ja/recipes/android-three-layer.mdx L325
+
+## 直さない: android-three-layer: Role の定義ファイル名が B20 の形でない
+- decision: 直さない
+- file: ja/recipes/android-three-layer.mdx
+- quote: title=roles/UseCase.kt
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B20（Role は `<group>/<Role>Role.kt`。ここは `roles/UiState.kt` で、group のディレクトリも `Role` の語も無い）。3 層の group（`ui/`・`domain/`・`data/`）と対応しない置き方
+**直し方の案**: 直さない（ガイドに決まりが無い）。そろえるなら `ui/UiStateRole.kt` のように group ごとのディレクトリにする
+同じ指摘: ja/recipes/android-three-layer.mdx L117, ja/recipes/android-three-layer.mdx L148, ja/recipes/android-three-layer.mdx L181, ja/recipes/android-three-layer.mdx L243, ja/recipes/android-three-layer.mdx L263, ja/recipes/android-three-layer.mdx L294, ja/recipes/android-three-layer.mdx L325
+
+## 直さない: android-three-layer: Role の定義ファイル名が B20 の形でない
+- decision: 直さない
+- file: ja/recipes/android-three-layer.mdx
+- quote: title=roles/DomainModel.kt
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B20（Role は `<group>/<Role>Role.kt`。ここは `roles/UiState.kt` で、group のディレクトリも `Role` の語も無い）。3 層の group（`ui/`・`domain/`・`data/`）と対応しない置き方
+**直し方の案**: 直さない（ガイドに決まりが無い）。そろえるなら `ui/UiStateRole.kt` のように group ごとのディレクトリにする
+同じ指摘: ja/recipes/android-three-layer.mdx L117, ja/recipes/android-three-layer.mdx L148, ja/recipes/android-three-layer.mdx L181, ja/recipes/android-three-layer.mdx L211, ja/recipes/android-three-layer.mdx L263, ja/recipes/android-three-layer.mdx L294, ja/recipes/android-three-layer.mdx L325
+
+## 直さない: android-three-layer: Role の定義ファイル名が B20 の形でない
+- decision: 直さない
+- file: ja/recipes/android-three-layer.mdx
+- quote: title=roles/RepositoryInterface.kt
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B20（Role は `<group>/<Role>Role.kt`。ここは `roles/UiState.kt` で、group のディレクトリも `Role` の語も無い）。3 層の group（`ui/`・`domain/`・`data/`）と対応しない置き方
+**直し方の案**: 直さない（ガイドに決まりが無い）。そろえるなら `ui/UiStateRole.kt` のように group ごとのディレクトリにする
+同じ指摘: ja/recipes/android-three-layer.mdx L117, ja/recipes/android-three-layer.mdx L148, ja/recipes/android-three-layer.mdx L181, ja/recipes/android-three-layer.mdx L211, ja/recipes/android-three-layer.mdx L243, ja/recipes/android-three-layer.mdx L294, ja/recipes/android-three-layer.mdx L325
+
+## 直さない: android-three-layer: Role の定義ファイル名が B20 の形でない
+- decision: 直さない
+- file: ja/recipes/android-three-layer.mdx
+- quote: title=roles/RepositoryImplementation.kt
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B20（Role は `<group>/<Role>Role.kt`。ここは `roles/UiState.kt` で、group のディレクトリも `Role` の語も無い）。3 層の group（`ui/`・`domain/`・`data/`）と対応しない置き方
+**直し方の案**: 直さない（ガイドに決まりが無い）。そろえるなら `ui/UiStateRole.kt` のように group ごとのディレクトリにする
+同じ指摘: ja/recipes/android-three-layer.mdx L117, ja/recipes/android-three-layer.mdx L148, ja/recipes/android-three-layer.mdx L181, ja/recipes/android-three-layer.mdx L211, ja/recipes/android-three-layer.mdx L243, ja/recipes/android-three-layer.mdx L263, ja/recipes/android-three-layer.mdx L325
+
+## 直さない: android-three-layer: Role の定義ファイル名が B20 の形でない
+- decision: 直さない
+- file: ja/recipes/android-three-layer.mdx
+- quote: title=roles/DataSource.kt
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B20（Role は `<group>/<Role>Role.kt`。ここは `roles/UiState.kt` で、group のディレクトリも `Role` の語も無い）。3 層の group（`ui/`・`domain/`・`data/`）と対応しない置き方
+**直し方の案**: 直さない（ガイドに決まりが無い）。そろえるなら `ui/UiStateRole.kt` のように group ごとのディレクトリにする
+同じ指摘: ja/recipes/android-three-layer.mdx L117, ja/recipes/android-three-layer.mdx L148, ja/recipes/android-three-layer.mdx L181, ja/recipes/android-three-layer.mdx L211, ja/recipes/android-three-layer.mdx L243, ja/recipes/android-three-layer.mdx L263, ja/recipes/android-three-layer.mdx L294
+
+## 直さない: detekt: group と 2 つの Role を 1 つの `roles/Detekt.kt` に入れている（B20・要確認）
+- decision: 直さない
+- file: ja/recipes/detekt.mdx
+- quote: // roles/Detekt.kt
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B20（group は `<group>/<Group>Group.kt`、1 ファイルに group か Role を 1 つ）
+**直し方の案**: 直さない（ガイドに決まりが無い）。そろえるなら `detekt/DetektGroup.kt`
+
+## 直さない: add-a-role の Worker の例に省略の断りが無い
+- decision: 直さない
+- file: skills/katachi/references/add-and-update/add-a-role.md
+- quote: "Worker".role {
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: D2-2（断片の例で package / import を省くなら、省いたと書く）
+**直し方の案**: 例の前に「(imports omitted)」と一言添える。add-and-update は既存の定義へ足す作業なので、ファイルの先頭の import は利用者のファイルにすでにある、で足りるとも読める（要確認）
+
+## 直さない: 6-B の CI の yaml の Role の例に documented = false が無い
+- decision: 直さない
+- file: skills/katachi/references/setup/step6/6-B-ci.md
+- quote: ".github/workflows" / "*.yml".file()
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B30（CI の yaml など、ツールの設定の Role には `documented = false` を付ける。推奨）
+**直し方の案**: 「(for example …; with `documented = false`)」と添えるか、add-a-role への参照を 1 つ足す。そのままでもよい
+
+## 直さない: 6-C の ArchitectureDocs の例に documented = false が無い
+- decision: 直さない
+- file: skills/katachi/references/setup/step6/6-C-documentation-generation.md
+- quote: "ArchitectureDocs".role {
+- decided: 2026-11-11 261110-01 KATACHI-365
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+**ルールに反する点**: B30（生成物の Role には `documented = false` を付ける。推奨）。同じ例に D2-2（断片の例で package / import を省いたと書く）も
+**直し方の案**: `description = …` の次に `documented = false` を足す。例の前に「package / import の行は省略」と一言添える
