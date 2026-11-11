@@ -656,6 +656,8 @@ processor の summary・layout の無い Role、diff-report の Role、README.ja
 
 AGENTS（docs サイトの決まり）を skill に広げない。skill の小文字 group・4 スペースの例・`feature.ui` などを、AGENTS の決まりを根拠に指摘しない。
 
+2026-11-12 261112-01 KATACHI-368 で見直した（#81 で skill 自身が「Role と group は UpperCamelCase」を決まりにし、skill の中の小文字 group は無くなった）。利用者「あくまで katachi 本体とサンプル、他プロジェクトでは推奨という立ち位置のルールなので skill とかでは強制はしなくていい」。判断はこのまま。skill（とそれを使う利用者のプロジェクト）では推奨の扱いで、指摘しない。katachi 本体とサンプルは守る側。
+
 ## このまま: ガイド同士の食い違い（E5・E7・E9・E10・E15・E17）
 - decision: このまま
 - file: ja/**
