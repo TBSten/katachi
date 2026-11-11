@@ -40,7 +40,7 @@ In the log, a paragraph of the following shape follows for each violation (an ex
         "Gemini".role {
           summary = "TODO"
           layout {
-            ".gemini" { ignore() }
+            ".gemini".ignore()
           }
         }
 ```

@@ -5,6 +5,10 @@
    直前の版は git のタグ `vX.Y.Z` と Maven Central の maven-metadata.xml の両方から取る。
    Maven Central に届かなければタグだけで判定し、その旨を出す
 2. 両者が同じ（または今回のほうが古い）なら `STOP` を出して終了コード 1 で止まる。作業場所は作らない
+   - clone が浅い（履歴が途中まで）か、Maven Central に版があるのにタグが 1 つも無いときも `STOP` で止まる。
+     直前のタグからのコミットが欠け、リリースノートの材料や API の差分が黙って少なくなるため（261110-01 で
+     374 コミットのうち 277 しか拾えず、.module の削除が材料から落ちた）。これは利用者に聞かず、
+     `git fetch --unshallow --tags origin` で取り直して回し直す
 3. そうでなければ `.local/release-v<版>/` を作り、`prerelease-check-list.md` を写して
    1 の版の欄と、一覧のパスの欄を埋める。**既にあれば上書きしない**（書きかけを消さないため）
 
@@ -94,6 +98,13 @@ def main():
     elif not maven_latest:
         note = "（タグだけで判定）"
     stops = []
+    shallow = subprocess.run(["git", "rev-parse", "--is-shallow-repository"], cwd=root,
+                             capture_output=True, text=True).stdout.strip() == "true"
+    if shallow or (maven_latest and not tag):
+        why = "clone が浅い（履歴が途中まで）" if shallow else "Maven Central に版があるのに v* のタグが無い"
+        print(f"STOP: {why}。直前のタグからのコミットが欠ける。利用者に聞かず "
+              "`git fetch --unshallow --tags origin`（浅くなければ `git fetch --tags origin`）で取り直して回し直す")
+        return 1
     if maven and version in maven:
         stops.append(f"{version} は Maven Central に公開済み。同じ版は二度と公開できない")
     if previous is not None and public_api.parse_version(version) <= public_api.parse_version(previous):
