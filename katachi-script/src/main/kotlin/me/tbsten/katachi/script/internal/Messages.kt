@@ -819,8 +819,8 @@ internal object Messages {
         )
 
         fun missingdescriptionGoesDownDescriptions(missing: Any?): Msg = Msg(
-            ja = "[MissingDescription]: $missing 件（説明を書けば減る）",
-            en = "[MissingDescription]: $missing (goes down as descriptions are written)",
+            ja = "[MissingDescription]: $missing 件（置き場所に description を書けば減る）",
+            en = "[MissingDescription]: $missing (goes down as each place gets a description)",
         )
 
         fun warningsTheyNeverFail(warnings: Any?): Msg = Msg(
