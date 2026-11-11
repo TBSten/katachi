@@ -41,6 +41,7 @@ internal interface KatachiStrings : CandidateStrings {
     val notSyncedBody: String
     val notInstalledTitle: String
     val notInstalledBody: String
+    val taskListMissingHint: String
     val installGuide: String
     fun outdatedTitle(version: String?): String
     val outdatedBody: String

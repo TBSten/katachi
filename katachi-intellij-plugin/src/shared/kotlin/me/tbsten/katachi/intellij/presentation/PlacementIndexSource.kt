@@ -31,7 +31,7 @@ internal fun placementIndexStateOf(source: PlacementIndexSource, build: (List<De
             EmptyReason.NotSynced -> PlacementIndexState.Unavailable(PlacementUnavailableReason.NotSynced)
             // Found, loaded, and no template in it: nothing fits any file.
             EmptyReason.NoTemplates -> PlacementIndexState.Ready(build(emptyList()))
-            EmptyReason.NotGradle, EmptyReason.NotInstalled, is EmptyReason.Outdated -> PlacementIndexState.Unavailable(PlacementUnavailableReason.NoDefinition)
+            EmptyReason.NotGradle, is EmptyReason.NotInstalled, is EmptyReason.Outdated -> PlacementIndexState.Unavailable(PlacementUnavailableReason.NoDefinition)
         }
         is ScreenPhase.LoadError -> PlacementIndexState.Unavailable(PlacementUnavailableReason.LoadFailed)
         ScreenPhase.Ready, ScreenPhase.Initializing -> when {

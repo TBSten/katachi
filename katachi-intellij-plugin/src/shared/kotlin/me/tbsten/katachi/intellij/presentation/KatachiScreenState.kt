@@ -19,7 +19,8 @@ internal sealed interface EmptyReason {
 
     data object NotSynced : EmptyReason
 
-    data object NotInstalled : EmptyReason
+    /** [taskListMissing]: as in [me.tbsten.katachi.intellij.model.DetectionResult.NotInstalled]. */
+    data class NotInstalled(val taskListMissing: Boolean = false) : EmptyReason
 
     data class Outdated(val katachiVersion: String?) : EmptyReason
 }

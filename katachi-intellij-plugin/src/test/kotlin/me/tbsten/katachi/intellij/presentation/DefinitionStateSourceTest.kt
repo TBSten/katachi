@@ -110,7 +110,7 @@ class DefinitionStateSourceTest {
     fun `同期データの空の理由を Unavailable に写す`() {
         fun of(reason: EmptyReason) = nextDefinitionState(DefinitionState.NotLoaded, null, source(phase = ScreenPhase.Empty(reason), modules = emptyList()), Instant.EPOCH)
         assertEquals(DefinitionState.Unavailable(DefinitionUnavailableReason.NotSynced, null), of(EmptyReason.NotSynced))
-        assertEquals(DefinitionState.Unavailable(DefinitionUnavailableReason.NoDefinition, null), of(EmptyReason.NotInstalled))
+        assertEquals(DefinitionState.Unavailable(DefinitionUnavailableReason.NoDefinition, null), of(EmptyReason.NotInstalled()))
         assertEquals(DefinitionState.Unavailable(DefinitionUnavailableReason.NoDefinition, null), of(EmptyReason.Outdated("0.1.0")))
     }
 

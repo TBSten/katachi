@@ -10,8 +10,11 @@ internal sealed interface DetectionResult {
     /** `katachiTemplates` exists but `katachiInternalTemplatesJson` does not: katachi before 0.2 (E-02). */
     data class Outdated(val katachiVersion: String?) : DetectionResult
 
-    /** No module has either task (E-01). */
-    data object NotInstalled : DetectionResult
+    /**
+     * No module has either task (E-01). [taskListMissing]: some module came without a task list
+     * (Android Studio's "do not build the task list during sync"), so the tasks may be there after all.
+     */
+    data class NotInstalled(val taskListMissing: Boolean = false) : DetectionResult
 
     /** Gradle is linked but has not synced yet (E-03). */
     data object NotSynced : DetectionResult
@@ -20,9 +23,9 @@ internal sealed interface DetectionResult {
     data object NotGradle : DetectionResult
 
     /**
-     * The sync carries no task list at all (Android Studio's "do not build the task list during
-     * sync", E-30). [candidates] are the modules that depend on katachi; loading tries each and drops
-     * the ones answering "task not found". Provisional until spike S-5.
+     * The sync carries no task list for some modules (Android Studio's "do not build the task list
+     * during sync", E-30). [candidates] are those of them that depend on katachi; loading tries each and
+     * drops the ones answering "task not found". Provisional until spike S-5.
      */
     data class TaskListMissing(val candidates: List<KatachiModule>) : DetectionResult
 }

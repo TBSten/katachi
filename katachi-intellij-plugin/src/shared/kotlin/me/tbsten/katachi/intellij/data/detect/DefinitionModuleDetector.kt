@@ -18,9 +18,10 @@ internal fun detectDefinitionModules(project: SyncedProject): DetectionResult {
     val versions = LinkedHashMap<ModuleId, String>()
     var outdatedVersion: String? = null
     var hasOutdated = false
+    var taskListMissing = false
     for (root in roots) {
-        val taskListMissing = root.modules.isNotEmpty() && root.modules.all { it.taskNames.isEmpty() }
         for (module in root.modules.sortedBy { it.gradlePath }) {
+            if (module.taskNames.isEmpty()) taskListMissing = true
             val capabilities = capabilitiesOf(module.taskNames)
             val katachiModule = KatachiModule(module.gradlePath, module.directory, root.rootPath, root.rootName, capabilities)
             module.katachiVersion?.let { versions[katachiModule.id] = it }
@@ -31,7 +32,9 @@ internal fun detectDefinitionModules(project: SyncedProject): DetectionResult {
                     outdatedVersion = outdatedVersion ?: module.katachiVersion
                 }
                 // Which task it has is not known: loading tries the definition task first (design 4.1).
-                taskListMissing && module.katachiVersion != null -> candidates += katachiModule
+                // Judged per module, not per root: Android Studio leaves the task lists out, but another
+                // module of the same root may still come with one (KATACHI-363).
+                module.taskNames.isEmpty() && module.katachiVersion != null -> candidates += katachiModule
             }
         }
     }
@@ -39,7 +42,7 @@ internal fun detectDefinitionModules(project: SyncedProject): DetectionResult {
         found.isNotEmpty() -> DetectionResult.Found(found, versions.filterKeys { id -> found.any { it.id == id } })
         candidates.isNotEmpty() -> DetectionResult.TaskListMissing(candidates)
         hasOutdated -> DetectionResult.Outdated(outdatedVersion)
-        else -> DetectionResult.NotInstalled
+        else -> DetectionResult.NotInstalled(taskListMissing)
     }
 }
 

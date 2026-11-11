@@ -89,7 +89,7 @@ internal val statusScenarios: List<Scenario> = listOf(
     Scenario("empty-no-templates", KatachiScreenState(phase = ScreenPhase.Empty(EmptyReason.NoTemplates)), narrowHeight = 320, wideHeight = 240),
     Scenario("empty-not-gradle", KatachiScreenState(phase = ScreenPhase.Empty(EmptyReason.NotGradle)), narrowHeight = 320, wideHeight = 240),
     Scenario("empty-not-synced", KatachiScreenState(phase = ScreenPhase.Empty(EmptyReason.NotSynced)), narrowHeight = 320, wideHeight = 240),
-    Scenario("empty-not-installed", KatachiScreenState(phase = ScreenPhase.Empty(EmptyReason.NotInstalled)), narrowHeight = 320, wideHeight = 240),
+    Scenario("empty-not-installed", KatachiScreenState(phase = ScreenPhase.Empty(EmptyReason.NotInstalled())), narrowHeight = 320, wideHeight = 240),
     Scenario("empty-outdated", KatachiScreenState(phase = ScreenPhase.Empty(EmptyReason.Outdated("0.1.0"))), narrowHeight = 320, wideHeight = 240),
     Scenario("empty-search", ready(snapshot(arch, dataSource, repository, useCase, service)).then(KatachiIntent.Search("repo-xyz")), narrowHeight = 400, wideHeight = 300),
     Scenario(

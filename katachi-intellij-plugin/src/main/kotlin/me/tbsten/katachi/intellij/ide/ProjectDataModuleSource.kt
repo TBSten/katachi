@@ -7,10 +7,12 @@ import com.intellij.openapi.externalSystem.model.project.ProjectData
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil
 import com.intellij.openapi.project.Project
+import me.tbsten.katachi.intellij.data.detect.SyncedLibrary
 import me.tbsten.katachi.intellij.data.detect.SyncedModule
 import me.tbsten.katachi.intellij.data.detect.SyncedProject
 import me.tbsten.katachi.intellij.data.detect.SyncedProjectSource
 import me.tbsten.katachi.intellij.data.detect.SyncedRoot
+import me.tbsten.katachi.intellij.data.detect.katachiVersionOf
 import org.jetbrains.plugins.gradle.settings.GradleSettings
 import org.jetbrains.plugins.gradle.util.GradleConstants
 import org.jetbrains.plugins.gradle.util.gradleIdentityPathOrNull
@@ -57,19 +59,18 @@ private fun syncedModuleOf(moduleNode: DataNode<ModuleData>): SyncedModule {
         .map { it.data.name.substringAfterLast(':') }
     // Source sets (main, test) sit below the module node and carry the dependencies: katachi is
     // usually a test dependency of the definition module.
-    val katachi = ExternalSystemApiUtil.findAllRecursively(moduleNode, ProjectKeys.LIBRARY_DEPENDENCY)
+    val katachiVersion = ExternalSystemApiUtil.findAllRecursively(moduleNode, ProjectKeys.LIBRARY_DEPENDENCY)
         .map { it.data.target }
-        .firstOrNull { it.groupId == KATACHI_GROUP && it.artifactId == KATACHI_ARTIFACT }
+        .firstNotNullOfOrNull { library ->
+            katachiVersionOf(SyncedLibrary(library.groupId, library.artifactId, library.version, listOf(library.externalName, library.internalName)))
+        }
     return SyncedModule(
         gradlePath = gradlePathOf(module),
         directory = Path.of(module.linkedExternalProjectPath),
         taskNames = tasks.toSet(),
-        katachiVersion = katachi?.version,
+        katachiVersion = katachiVersion,
     )
 }
 
 private fun gradlePathOf(module: ModuleData): String =
     module.gradleIdentityPathOrNull ?: module.gradlePathOrNull ?: module.id
-
-private const val KATACHI_GROUP = "me.tbsten.katachi"
-private const val KATACHI_ARTIFACT = "katachi"

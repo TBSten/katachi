@@ -353,7 +353,7 @@ class KatachiToolWindowViewModelTest {
         val cases = listOf(
             SyncedProject.NotGradle to EmptyReason.NotGradle,
             SyncedProject.NotSynced to EmptyReason.NotSynced,
-            SyncedProject.Synced(listOf(SyncedRoot(ROOT, "p", listOf(SyncedModule(":app", ROOT, setOf("build"), null))))) to EmptyReason.NotInstalled,
+            SyncedProject.Synced(listOf(SyncedRoot(ROOT, "p", listOf(SyncedModule(":app", ROOT, setOf("build"), null))))) to EmptyReason.NotInstalled(),
             SyncedProject.Synced(listOf(SyncedRoot(ROOT, "p", listOf(SyncedModule(":arch", ROOT, setOf("katachiTemplates"), "0.2.0"))))) to EmptyReason.Outdated("0.2.0"),
         )
         for ((project, reason) in cases) {

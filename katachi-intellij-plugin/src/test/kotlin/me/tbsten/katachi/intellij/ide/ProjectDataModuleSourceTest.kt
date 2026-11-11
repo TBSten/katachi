@@ -100,6 +100,20 @@ internal class ProjectDataModuleSourceTest : AnalysisTestBase() {
         assertEquals(listOf(":arch-a"), missing.candidates.map { it.gradlePath })
     }
 
+    fun `test Android Studio のように座標の無いライブラリでも名前から katachi の版を読んで候補にする`() {
+        // KATACHI-363: Android Studio's sync fills neither the task list nor the library coordinates, only the name.
+        val node = module(":static-analysis:katachi")
+        val sourceSet = GradleSourceSetData("${node.data.id}:test", "katachi:test", "project.static-analysis.katachi.test", node.data.moduleFileDirectoryPath, node.data.linkedExternalProjectPath)
+        val owner = node.createChild(GradleSourceSetData.KEY, sourceSet)
+        owner.createChild(ProjectKeys.LIBRARY_DEPENDENCY, LibraryDependencyData(owner.data, LibraryData(system, "me.tbsten.katachi:katachi:0.4.0"), LibraryLevel.PROJECT))
+        module(":app")
+
+        val result = detectDefinitionModules(syncedProjectOf(listOf(projectNode)))
+
+        val missing = result as? DetectionResult.TaskListMissing ?: throw AssertionError("not TaskListMissing: $result")
+        assertEquals(listOf(":static-analysis:katachi"), missing.candidates.map { it.gradlePath })
+    }
+
     fun `test 同期データが1つも無ければ同期前とする`() {
         assertEquals(SyncedProject.NotSynced, syncedProjectOf(emptyList()))
     }
