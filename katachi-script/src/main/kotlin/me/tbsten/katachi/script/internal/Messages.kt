@@ -867,54 +867,6 @@ internal object Messages {
     }
 
     object ScaffoldBuildFile {
-        val cacheNote: Msg = Msg(
-            ja = "    // このタスクはキャッシュさせない。katachi は実行時にリポジトリ全体を歩くが、\n" +
-                "    // Gradle から見える入力はこのモジュールのテストソースと classpath だけ。他の場所で\n" +
-                "    // ファイルが増減してもキーが変わらないので、UP-TO-DATE / FROM-CACHE になって\n" +
-                "    // 検査が一度も走らない。黙って通るガードは、ガードが無いより悪い。",
-            en = "    // Never let this task be cached. katachi walks the whole repository when the test\n" +
-                "    // runs, but the only inputs Gradle can see are the test sources and the classpath of\n" +
-                "    // this module. A file added or moved anywhere else leaves the key unchanged, so Gradle\n" +
-                "    // answers UP-TO-DATE or FROM-CACHE and the check never runs. A guard that silently\n" +
-                "    // passes is worse than no guard at all.",
-        )
-
-        val logNote: Msg = Msg(
-            ja = "        // 違反の一覧は AssertionError のメッセージに入っている。FULL にしないと\n" +
-                "        // \"KatachiArchitectureAssertionError at ProjectArchitectureTest.kt:12\" の1行しか出ず、\n" +
-                "        // 中身を見るのに build/test-results/**/*.xml を読む羽目になる（CI のログでも同じ）。",
-            en = "        // The violation list lives in the AssertionError message. Without FULL you only get\n" +
-                "        // \"KatachiArchitectureAssertionError at ProjectArchitectureTest.kt:12\", and reading the\n" +
-                "        // detail means opening build/test-results/**/*.xml (the same goes for CI logs).",
-        )
-
-        val stdNote: Msg = Msg(
-            ja = "        // MissingDescription などの警告は stdout に出る。",
-            en = "        // Warnings such as MissingDescription are printed to stdout.",
-        )
-
-        val pluginNote: Msg = Msg(
-            ja = "    // processor ごとのタスク（katachiDocs・katachiTemplate など）を足す。\n    // katachi の依存は足さないので、下の dependencies { } は別に要る。",
-            en = "    // Adds a task per processor (katachiDocs, katachiTemplate, and so on). It does not add\n    // katachi as a dependency, so the dependencies { } block below is still needed.",
-        )
-
-        val archNote: Msg = Msg(
-            ja = "    // architecture { } を持つトップレベル val の完全修飾名。名前やパッケージを\n    // 変えたらここも直す。",
-            en = "    // The fully qualified name of the top-level val holding architecture { }. Update it\n    // if you rename the val or move it to another package.",
-        )
-
-        val contextNote: Msg = Msg(
-            ja = "    // Kotlin 2.4 未満では、context parameters を呼ぶ側にこのオプションが要る。\n" +
-                "    // katachi の DSL（mainSourceSet / ktFile など）はすべて context parameters\n" +
-                "    // なので、無いと1つも書けない。Kotlin を 2.4 以降に上げたらこの2行は消すこと\n" +
-                "    // （2.4 以降で付けたままだと redundant の警告が出る）。",
-            en = "    // Kotlin before 2.4 needs this on the calling side to use context parameters.\n" +
-                "    // Every katachi DSL entry point (mainSourceSet / ktFile ...) is a contextual\n" +
-                "    // declaration, so without it you cannot write a single one. Drop these two lines once\n" +
-                "    // the project moves to Kotlin 2.4 or later - from 2.4 on the flag warns that it is\n" +
-                "    // redundant.",
-        )
-
         val kotlinPluginNote: Msg = Msg(
             ja = "    // alias(libs.plugins.kotlin.jvm) と書かない。build-logic（includeBuild）経由で Kotlin plugin が\n" +
                 "    // classpath にあると \"already on the classpath with an unknown version\" で失敗する。バージョンなしの\n" +
