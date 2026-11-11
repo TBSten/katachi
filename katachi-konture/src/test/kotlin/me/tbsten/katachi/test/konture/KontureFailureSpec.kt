@@ -20,7 +20,7 @@ import me.tbsten.katachi.check.FileConstraintCheck
 import me.tbsten.katachi.check.UncheckedFileConstraint
 import me.tbsten.katachi.check.UncheckedFileConstraintReason
 import me.tbsten.katachi.check.UnsatisfiedFileConstraint
-import me.tbsten.katachi.check.internal.reportForTest
+import me.tbsten.katachi.test.report.reportForTest
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.FileConstraint
 import me.tbsten.katachi.dsl.architecture

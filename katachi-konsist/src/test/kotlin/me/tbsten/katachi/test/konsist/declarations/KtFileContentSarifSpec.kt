@@ -9,7 +9,7 @@ import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 import me.tbsten.katachi.report.SarifContext
-import me.tbsten.katachi.report.internal.withIsFile
+import me.tbsten.katachi.test.report.withIsFile
 import me.tbsten.katachi.report.toSarif
 
 /**

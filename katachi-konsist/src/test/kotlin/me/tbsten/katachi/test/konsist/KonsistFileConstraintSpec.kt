@@ -10,7 +10,7 @@ import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.UncheckedFileConstraint
 import me.tbsten.katachi.check.UncheckedFileConstraintReason
 import me.tbsten.katachi.check.UnsatisfiedFileConstraint
-import me.tbsten.katachi.check.internal.reportForTest
+import me.tbsten.katachi.test.report.reportForTest
 import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.konsist.KatachiKonsistNoExpectationException
 import me.tbsten.katachi.konsist.KatachiKonsistNoKotlinFilesException

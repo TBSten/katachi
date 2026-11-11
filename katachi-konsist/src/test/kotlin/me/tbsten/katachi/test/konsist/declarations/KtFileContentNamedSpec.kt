@@ -7,7 +7,7 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.string.shouldContain
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.check.internal.reportForTest
+import me.tbsten.katachi.test.report.reportForTest
 import me.tbsten.katachi.dsl.KatachiFileConstraintNameException
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentDuplicateException

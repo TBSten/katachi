@@ -27,6 +27,7 @@ dependencies {
     api(project(":katachi"))
     api(libs.konture)
 
+    testImplementation(testFixtures(project(":katachi")))
     testImplementation(libs.kotestRunnerJunit5)
     testImplementation(libs.kotestAssertionsCore)
 }
