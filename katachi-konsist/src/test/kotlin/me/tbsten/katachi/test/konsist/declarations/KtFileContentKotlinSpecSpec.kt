@@ -1,8 +1,11 @@
 package me.tbsten.katachi.test.konsist.declarations
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
+import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentLineException
+import me.tbsten.katachi.konsist.declarations.KtFileContentLineProblem
 
 /** `final`, type aliases in a class body and their aliased type, parameter modifiers and default values, annotation arguments and use-site targets. */
 
@@ -42,12 +45,20 @@ class KtFileContentKotlinSpecSpec : FreeSpec({
         "右辺を書くと右辺の型も見る" {
             judged(kt("typealias Handler = (String) -> Unit\ntypealias Other = Int")) {
                 `package`("**")
-                allow(`typealias`, "Handler", "(*) -> Unit")
-                allow(`typealias`, "Other", "(*) -> Unit")
+                allow(`typealias`, "Handler").type("(*) -> Unit")
+                allow(`typealias`, "Other").type("(*) -> Unit")
             } shouldBe listOf(
                 "Other (line 4) | Not allowed: typealias Other = Int | Expected: typealias Other = (*) -> Unit | " +
                     "Differs in: aliased type (is Int, expected (*) -> Unit)",
             )
+        }
+
+        "右辺は .type(...) で書き、2 回書くとエラー" {
+            val e = shouldThrow<KatachiKtFileContentLineException> {
+                dumpOf { allow(`typealias`, "Handler").type("(*) -> Unit").type("Int") }
+            }
+            e.problem shouldBe KtFileContentLineProblem.DetailWrittenTwice
+            e.parameter shouldBe "type"
         }
     }
 

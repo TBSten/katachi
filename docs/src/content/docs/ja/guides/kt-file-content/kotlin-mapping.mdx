@@ -139,7 +139,7 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
       ```kt
       allow(`typealias`, "*Handler")
       // 右辺の型も指定
-      allow(`typealias`, "*Handler", "(*) -> Unit")
+      allow(`typealias`, "*Handler").type("(*) -> Unit")
       // Kotlin 2.2 以降の入れ子の typealias
       allow(`class`, "Screen") { allow(`typealias`, "State") }
       ```

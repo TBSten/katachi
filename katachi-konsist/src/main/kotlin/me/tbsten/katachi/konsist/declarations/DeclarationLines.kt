@@ -581,6 +581,23 @@ public class TypeAliasLine internal constructor(
     }
 
     /**
+     * Requires the type alias to stand for [type]. It is matched against the type written in the source, ignoring
+     * package names and spaces. A line without `.type(...)` asks nothing about it, as on a property line.
+     *
+     * ## Example 1: handlers that take one argument
+     * ```kt
+     * allow(`typealias`, "*Handler").type("(*) -> Unit")
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when the type was already written.
+     * @throws KatachiKtFileContentPatternException when [type] is not a pattern katachi reads.
+     */
+    public fun type(type: String): TypeAliasLine {
+        line.writeChainedPropertyType(type)
+        return this
+    }
+
+    /**
      * Requires exactly these type parameters, in order: a name pattern, after the `reified`, `in` or `out` it has to carry,
      * and a bound after `:` that one of its bounds (after `:` or in a `where` clause) has to match. `"T"` matches `reified T`
      * and `T : Any` too, as what is not written is not asked about; `.typeParameters()` asks for none. A line without
@@ -588,7 +605,7 @@ public class TypeAliasLine internal constructor(
      *
      * ## Example 1: a generic alias
      * ```kt
-     * allow(`typealias`, "Handler", "(T) -> Unit").typeParameters("T")
+     * allow(`typealias`, "Handler").type("(T) -> Unit").typeParameters("T")
      * ```
      *
      * @throws KatachiKtFileContentLineException when written twice, or when a type parameter has no name, or nothing after its `:`.
