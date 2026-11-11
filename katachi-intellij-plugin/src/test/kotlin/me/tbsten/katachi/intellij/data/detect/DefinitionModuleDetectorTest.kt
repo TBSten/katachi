@@ -67,7 +67,7 @@ class DefinitionModuleDetectorTest {
     @Test
     fun `どちらのタスクも無ければ未導入にする`() {
         val result = detectDefinitionModules(SyncedProject.Synced(listOf(synced(mod(":app", "build"), mod(":lib", "jar")))))
-        assertEquals(DetectionResult.NotInstalled, result)
+        assertEquals(DetectionResult.NotInstalled(taskListMissing = false), result)
     }
 
     @Test
@@ -90,7 +90,26 @@ class DefinitionModuleDetectorTest {
     }
 
     @Test
-    fun `タスク一覧が無くkatachiにも依存していなければ未導入にする`() {
-        assertEquals(DetectionResult.NotInstalled, detectDefinitionModules(SyncedProject.Synced(listOf(synced(mod(":app"))))))
+    fun `タスク一覧が無くkatachiにも依存していなければタスク一覧が無いことを添えて未導入にする`() {
+        assertEquals(
+            DetectionResult.NotInstalled(taskListMissing = true),
+            detectDefinitionModules(SyncedProject.Synced(listOf(synced(mod(":app"))))),
+        )
+    }
+
+    @Test
+    fun `ほかのモジュールがタスク一覧を持っていてもタスクの無いkatachiに依存するモジュールは候補にする`() {
+        // KATACHI-363: Android Studio's sync without a task list, where some other module still came with tasks.
+        val result = detectDefinitionModules(
+            SyncedProject.Synced(listOf(synced(mod(":", "help"), mod(":app"), mod(":static-analysis:katachi", version = "0.4.0")))),
+        )
+        assertEquals(listOf(":static-analysis:katachi"), (result as? DetectionResult.TaskListMissing)?.candidates?.map { it.gradlePath })
+    }
+
+    @Test
+    fun `タスク一覧を持つkatachiに依存するだけのモジュールは候補にしない`() {
+        // A module that uses katachi without the Gradle plugin: its task list says it has no katachi task.
+        val result = detectDefinitionModules(SyncedProject.Synced(listOf(synced(mod(":lib", "build", version = "0.4.0")))))
+        assertEquals(DetectionResult.NotInstalled(taskListMissing = false), result)
     }
 }

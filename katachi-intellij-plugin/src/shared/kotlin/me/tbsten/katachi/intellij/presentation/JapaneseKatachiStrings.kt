@@ -26,6 +26,8 @@ internal object JapaneseKatachiStrings : KatachiStrings {
     override val notInstalledTitle = "katachi が見つかりません"
     override val notInstalledBody =
         "定義モジュールに katachi の Gradle プラグインを適用してください。適用した直後なら、Gradle を同期してください。"
+    override val taskListMissingHint =
+        "Gradle の同期結果にタスクの一覧がありません。Android Studio なら Settings › Experimental の「Configure all Gradle tasks during Gradle Sync」を ON にして、同期し直してください。"
     override val installGuide = "導入手順を見る"
     override fun outdatedTitle(version: String?) =
         if (version == null) "katachi を更新してください（0.2 以降）" else "katachi を更新してください（いま $version、0.2 以降が必要）"

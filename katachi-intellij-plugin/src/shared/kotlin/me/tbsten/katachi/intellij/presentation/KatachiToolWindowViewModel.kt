@@ -443,7 +443,7 @@ internal class KatachiToolWindowViewModel(
     private fun emptyReasonOf(result: DetectionResult): EmptyReason = when (result) {
         DetectionResult.NotGradle -> EmptyReason.NotGradle
         DetectionResult.NotSynced -> EmptyReason.NotSynced
-        DetectionResult.NotInstalled -> EmptyReason.NotInstalled
+        is DetectionResult.NotInstalled -> EmptyReason.NotInstalled(result.taskListMissing)
         is DetectionResult.Outdated -> EmptyReason.Outdated(result.katachiVersion)
         is DetectionResult.Found, is DetectionResult.TaskListMissing -> EmptyReason.NoTemplates
     }

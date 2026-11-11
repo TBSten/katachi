@@ -65,6 +65,16 @@ class UiStateMapperTest {
     private fun FormUi.field(name: String): FieldUi = fields.first { it.id.parameterName == name }
 
     @Test
+    fun `katachiが見つからずタスク一覧も無ければAndroid Studioの設定の場所を添える`() {
+        fun body(reason: EmptyReason) = ((ui(KatachiScreenState(phase = ScreenPhase.Empty(reason))).body as? BodyUi.Empty)?.message ?: error("not empty")).body
+        assertEquals(listOf(JapaneseKatachiStrings.notInstalledBody), body(EmptyReason.NotInstalled(taskListMissing = false)))
+        assertEquals(
+            listOf(JapaneseKatachiStrings.notInstalledBody, JapaneseKatachiStrings.taskListMissingHint),
+            body(EmptyReason.NotInstalled(taskListMissing = true)),
+        )
+    }
+
+    @Test
     fun `初回の読み込み中は最新のタスク名を出し、タイトルの操作は停止になる`() {
         val state = ui(KatachiScreenState(loading = LoadingState(isInitial = true, currentTask = ":arch:compileTestKotlin")))
         val body = state.body as? BodyUi.InitialLoading ?: error("${state.body}")

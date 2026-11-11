@@ -70,7 +70,7 @@ class PlacementIndexSourceTest {
     @Test
     fun `katachi の定義モジュールが無い同期データでは Unavailable で読み込み中にならない`() {
         val noDefinition = PlacementIndexState.Unavailable(PlacementUnavailableReason.NoDefinition)
-        assertEquals(noDefinition, stateOf(ScreenPhase.Empty(EmptyReason.NotInstalled), loadStarted = true))
+        assertEquals(noDefinition, stateOf(ScreenPhase.Empty(EmptyReason.NotInstalled()), loadStarted = true))
         assertEquals(noDefinition, stateOf(ScreenPhase.Empty(EmptyReason.NotGradle), loadStarted = true))
         assertEquals(noDefinition, stateOf(ScreenPhase.Empty(EmptyReason.Outdated("0.1.0")), loadStarted = true))
         assertEquals(PlacementIndexState.Unavailable(PlacementUnavailableReason.NotSynced), stateOf(ScreenPhase.Empty(EmptyReason.NotSynced)))

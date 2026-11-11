@@ -63,7 +63,7 @@ private fun unavailableReasonOf(source: DefinitionStateSource): DefinitionUnavai
     when (val phase = source.phase) {
         is ScreenPhase.Empty -> when (phase.reason) {
             EmptyReason.NotSynced -> return DefinitionUnavailableReason.NotSynced
-            EmptyReason.NotGradle, EmptyReason.NotInstalled, is EmptyReason.Outdated -> return DefinitionUnavailableReason.NoDefinition
+            EmptyReason.NotGradle, is EmptyReason.NotInstalled, is EmptyReason.Outdated -> return DefinitionUnavailableReason.NoDefinition
             EmptyReason.NoTemplates -> Unit
         }
         else -> Unit

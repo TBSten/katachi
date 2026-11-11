@@ -30,6 +30,8 @@ internal object EnglishKatachiStrings : KatachiStrings {
     override val notInstalledTitle = "katachi is not found"
     override val notInstalledBody =
         "Apply the katachi Gradle plugin to the definition module. If you have just applied it, sync the Gradle project."
+    override val taskListMissingHint =
+        "The Gradle sync carries no task list. In Android Studio, turn on \"Configure all Gradle tasks during Gradle Sync\" in Settings › Experimental, then sync again."
     override val installGuide = "How to install"
     override fun outdatedTitle(version: String?) =
         if (version == null) "Update katachi (0.2 or later)" else "Update katachi (now $version, 0.2 or later is needed)"

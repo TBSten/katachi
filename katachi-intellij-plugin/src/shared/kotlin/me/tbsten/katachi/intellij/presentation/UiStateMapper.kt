@@ -109,10 +109,10 @@ private fun emptyMessageOf(reason: EmptyReason, strings: KatachiStrings): Messag
         )
         EmptyReason.NotGradle -> MessageUi(strings.notGradleTitle, isError = false, body = listOf(strings.notGradleBody), actions = emptyList())
         EmptyReason.NotSynced -> MessageUi(strings.notSyncedTitle, isError = false, body = listOf(strings.notSyncedBody), actions = listOf(sync))
-        EmptyReason.NotInstalled -> MessageUi(
+        is EmptyReason.NotInstalled -> MessageUi(
             strings.notInstalledTitle,
             isError = false,
-            body = listOf(strings.notInstalledBody),
+            body = listOfNotNull(strings.notInstalledBody, strings.taskListMissingHint.takeIf { reason.taskListMissing }),
             actions = listOf(ActionUi(strings.installGuide, KatachiIntent.OpenDocs(DocsPage.Install)), sync),
         )
         is EmptyReason.Outdated -> MessageUi(
