@@ -22,6 +22,7 @@ internal fun ScriptContext.runDoctor(args: List<String>): Int {
     if (kotlin != null) {
         if (kotlinTooOld(kotlin)) warn(kotlinTooOldMessage(cwd, kotlin, forScaffold = false)) else note("Kotlin: $kotlin")
     }
+    (lookupWorkdir() as? WorkdirLookup.Ambiguous)?.let { warn(ambiguousWorkdirMessage(it)) }
     return 0
 }
 

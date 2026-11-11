@@ -146,6 +146,24 @@ class WorkdirSpec : FreeSpec({
             project.resolve(".local/install-katachi/tmp/test/latest.log").exists() shouldBe true
         }
 
+        "どちらも同じ言語なら、止まるときのメッセージもその言語で出す" {
+            val project = projectWithTwoWorkdirs(lang = "en")
+
+            val run = runCapturing(project, listOf("agent", "test"), mapOf("PATH" to System.getenv("PATH")))
+
+            run.status shouldBe 1
+            run.err shouldContain "There are two or more working directories"
+        }
+
+        "doctor は止まらず、2 つあることを警告する" {
+            val project = projectWithTwoWorkdirs()
+
+            val run = runCapturing(project, listOf("doctor"))
+
+            run.status shouldBe 0
+            run.err shouldContain "2 つ以上あり"
+        }
+
         "--help は止まらない" {
             val project = projectWithTwoWorkdirs()
 
@@ -197,11 +215,11 @@ private fun git(dir: Path, vararg args: String) {
 }
 
 /** A project holding a new working directory and an old one left from an earlier setup. */
-private fun projectWithTwoWorkdirs(): Path {
-    val project = projectWithWorkdir("""{"meta": {"moduleDir": "static-analysis/katachi"}, "steps": []}""")
+private fun projectWithTwoWorkdirs(lang: String? = null): Path {
+    val project = projectWithWorkdir("""{"meta": {"moduleDir": "static-analysis/katachi"}, "steps": []}""", lang ?: "ja")
     val old = project.resolve(".local/install-katachi-old")
     old.resolve("tmp").createDirectories()
-    old.resolve("check-list.html").writeText(checkListHtml("""{"meta": {}, "steps": []}""", "en"))
+    old.resolve("check-list.html").writeText(checkListHtml("""{"meta": {}, "steps": []}""", lang ?: "en"))
     gradleProject(project, "project", withDefinition = false)
     project.resolve("static-analysis/katachi/src/test/kotlin").createDirectories()
     return project

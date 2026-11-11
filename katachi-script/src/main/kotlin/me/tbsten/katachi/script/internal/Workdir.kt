@@ -62,8 +62,11 @@ internal fun ScriptContext.lookupWorkdir(): WorkdirLookup {
 internal fun ScriptContext.findWorkdir(): Path? = when (val lookup = lookupWorkdir()) {
     is WorkdirLookup.Found -> lookup.path
     WorkdirLookup.NotFound -> null
-    is WorkdirLookup.Ambiguous -> die(Messages.Workdir.ambiguous(lookup.candidates.joinToString("") { "    ${fileUri(it)}\n" }))
+    is WorkdirLookup.Ambiguous -> die(ambiguousWorkdirMessage(lookup))
 }
+
+internal fun ScriptContext.ambiguousWorkdirMessage(lookup: WorkdirLookup.Ambiguous): Msg =
+    Messages.Workdir.ambiguous(lookup.candidates.joinToString("") { "    ${fileUri(it)}\n" })
 
 private val HTML_LANG = Regex("<html[^>]*\\slang=\"([a-z]+)\"")
 
