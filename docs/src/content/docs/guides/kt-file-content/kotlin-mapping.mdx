@@ -119,7 +119,7 @@ You write the same lines at the top level of a file and inside the `{ }` of a cl
       ```kt
       allow(private, `val`, "*")
       // Specify the type too
-      allow(`var`, "count", "Int")
+      allow(`var`, "count").type("Int")
       allow(const, `val` or `var`, "*")
       ```
     </td>
@@ -338,8 +338,8 @@ Signatures (arguments, return type, receiver, and so on) are checked only when y
       ```kt
       // The receiver comes before the name
       allow(`fun`, "User", "to*")()
-      // An extension property requires a type
-      allow(`val`, "User", "is*", "Boolean")
+      // The type of an extension property is chained with .type()
+      allow(`val`, "User", "is*").type("Boolean")
       ```
     </td>
   </tr>
@@ -409,7 +409,7 @@ Property accessors and delegation are checked only when you chain them after a l
     </td>
     <td>
       ```kt
-      allow(`val`, "is*", "Boolean").getter()
+      allow(`val`, "is*").type("Boolean").getter()
       ```
     </td>
   </tr>
@@ -425,8 +425,8 @@ Property accessors and delegation are checked only when you chain them after a l
     </td>
     <td>
       ```kt
-      allow(`var`, "text", "String").setter()
-      allow(`var`, "*", "*").setter(private)
+      allow(`var`, "text").type("String").setter()
+      allow(`var`, "*").setter(private)
       ```
     </td>
   </tr>
@@ -453,7 +453,7 @@ Property accessors and delegation are checked only when you chain them after a l
     </td>
     <td>
       ```kt
-      allow(`val`, "uiState", "StateFlow<*>").backingField("MutableStateFlow<*>")
+      allow(`val`, "uiState").type("StateFlow<*>").backingField("MutableStateFlow<*>")
       ```
     </td>
   </tr>

@@ -119,7 +119,7 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
       ```kt
       allow(private, `val`, "*")
       // 型も指定
-      allow(`var`, "count", "Int")
+      allow(`var`, "count").type("Int")
       allow(const, `val` or `var`, "*")
       ```
     </td>
@@ -338,8 +338,8 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
       ```kt
       // 名前の前にレシーバー
       allow(`fun`, "User", "to*")()
-      // 拡張プロパティは型が必須
-      allow(`val`, "User", "is*", "Boolean")
+      // 拡張プロパティの型は .type() で続けて書く
+      allow(`val`, "User", "is*").type("Boolean")
       ```
     </td>
   </tr>
@@ -409,7 +409,7 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
     </td>
     <td>
       ```kt
-      allow(`val`, "is*", "Boolean").getter()
+      allow(`val`, "is*").type("Boolean").getter()
       ```
     </td>
   </tr>
@@ -425,8 +425,8 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
     </td>
     <td>
       ```kt
-      allow(`var`, "text", "String").setter()
-      allow(`var`, "*", "*").setter(private)
+      allow(`var`, "text").type("String").setter()
+      allow(`var`, "*").setter(private)
       ```
     </td>
   </tr>
@@ -453,7 +453,7 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
     </td>
     <td>
       ```kt
-      allow(`val`, "uiState", "StateFlow<*>").backingField("MutableStateFlow<*>")
+      allow(`val`, "uiState").type("StateFlow<*>").backingField("MutableStateFlow<*>")
       ```
     </td>
   </tr>

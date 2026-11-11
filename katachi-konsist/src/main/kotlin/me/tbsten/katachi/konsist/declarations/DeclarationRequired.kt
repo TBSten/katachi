@@ -23,7 +23,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  *     `import`("**")
  *
  *     required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
- *         required(public, `val`, "uiState", "StateFlow<*>")
+ *         required(public, `val`, "uiState").type("StateFlow<*>")
  *         allow(public, `fun`, "on*")().returns("Unit")
  *         allow(private, anythingElse)
  *     }

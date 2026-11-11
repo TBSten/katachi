@@ -64,10 +64,9 @@ internal class AllowWriter(
         return FunctionLine(line)
     }
 
-    fun property(modifiers: List<Modifiers>, kind: PropertyKind, name: String, type: String?, receiver: String? = null): PropertyLine {
+    fun property(modifiers: List<Modifiers>, kind: PropertyKind, name: String, receiver: String? = null): PropertyLine {
         val line = declare(modifiers, listOf(kind.word), kind.kinds.map { Shape(ModifierSet.EMPTY, it) }, name)
         if (receiver != null) line.writeReceiver(receiver)
-        if (type != null) line.writePropertyType(type)
         return PropertyLine(line)
     }
 

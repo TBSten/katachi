@@ -4,7 +4,9 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
+import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentLineException
 import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentPatternException
+import me.tbsten.katachi.konsist.declarations.KtFileContentLineProblem
 import me.tbsten.katachi.konsist.declarations.KtFileContentPatternKind
 import me.tbsten.katachi.konsist.declarations.internal.renderRule
 
@@ -92,25 +94,25 @@ class KtFileContentReceiverSpec : FreeSpec({
     }
 
     "val / var の行" - {
-        "required(`val`, \"Hoge\", \"*\", \"*\") は Hoge の拡張プロパティが 1 つあれば通る" {
+        "required(`val`, \"Hoge\", \"*\").type(\"*\") は Hoge の拡張プロパティが 1 つあれば通る" {
             judged(kt("class Hoge\nval Hoge.size: Int get() = 0")) {
                 `package`("**")
                 allow(`class`, "Hoge")
-                required(`val`, "Hoge", "*", "*")
+                required(`val`, "Hoge", "*").type("*")
             }.shouldBeEmpty()
         }
 
         "レシーバー・名前・型の 3 つで当てる。型は拡張プロパティでも書いた型を見る" {
             judged(kt("val String.isBlankish: Boolean get() = true\nval String.length2: Int get() = 0")) {
                 `package`("**")
-                allow(`val`, "String", "is*", "Boolean")
+                allow(`val`, "String", "is*").type("Boolean")
             } shouldBe listOf("length2 (line 4) | Not allowed: val String.length2: Int")
         }
 
         "名前が当たってレシーバーが違えば、違いにレシーバーを出す" {
             judged(kt("val Int.size: Int get() = 0")) {
                 `package`("**")
-                required(`val`, "String", "size", "Int")
+                required(`val`, "String", "size").type("Int")
             } shouldBe listOf(
                 "size (line 3) | Not allowed: val Int.size: Int | Expected: val String.size: Int | " +
                     "Differs in: receiver (is Int, expected String)",
@@ -120,7 +122,7 @@ class KtFileContentReceiverSpec : FreeSpec({
         "拡張でないプロパティは、レシーバーを書いた行に当たらない" {
             judged(kt("val size: Int = 0")) {
                 `package`("**")
-                required(`val`, "String", "size", "*")
+                required(`val`, "String", "size").type("*")
             } shouldBe listOf(
                 "size (line 3) | Not allowed: val size: Int | Expected: val String.size: * | " +
                     "Differs in: receiver (none, expected String)",
@@ -130,38 +132,55 @@ class KtFileContentReceiverSpec : FreeSpec({
         "var と `val` or `var` にも書ける" {
             judged(kt("var String.a: Int\n    get() = 0\n    set(value) {}\nval String.b: Int get() = 0")) {
                 `package`("**")
-                required(`var`, "String", "a", "Int")
-                required(`val` or `var`, "String", "b", "Int")
+                required(`var`, "String", "a").type("Int")
+                required(`val` or `var`, "String", "b").type("Int")
             }.shouldBeEmpty()
         }
 
         "型の * は、型を書いていない拡張プロパティには当たらない（拡張でないプロパティと同じ）" {
             judged(kt("val String.a get() = 0")) {
                 `package`("**")
-                allow(`val`, "String", "*", "*")
+                allow(`val`, "String", "*").type("*")
             } shouldBe listOf("a (line 3) | Not allowed: val String.a")
         }
 
         "レシーバーを書かない行は今まで通りレシーバーを見ない" {
             judged(kt("val String.a: Int get() = 0\nval a: Int = 0")) {
                 `package`("**")
-                allow(`val`, "a", "Int")
+                allow(`val`, "a").type("Int")
             }.shouldBeEmpty()
         }
 
-        "not.allow(`val`, \"Context\", \"*\", \"*\") は Context の拡張プロパティを禁止する" {
+        "not.allow(`val`, \"Context\", \"*\") は Context の拡張プロパティを禁止する" {
             judged(kt("class Context\nval Context.a: Int get() = 0\nval b: Int = 0")) {
                 `package`("**")
                 allow(`class`, "Context")
-                not.allow(`val`, "Context", "*", "*")
+                not.allow(`val`, "Context", "*")
                 allow(`val`, "*")
             } shouldBe listOf(
-                "a (line 4) | Not allowed: val Context.a: Int | Prohibited by: not val Context.*: *",
+                "a (line 4) | Not allowed: val Context.a: Int | Prohibited by: not val Context.*",
             )
         }
 
+        "文字列 2 つは関数と同じくレシーバーと名前: allow(`val`, \"String\", \"size\") は String の拡張プロパティ size だけを許す" {
+            judged(kt("val String.size: Int get() = length\nval size: Int = 0")) {
+                `package`("**")
+                allow(`val`, "String", "size")
+            } shouldBe listOf(
+                "size (line 4) | Not allowed: val size: Int | Expected: val String.size | Differs in: receiver (none, expected String)",
+            )
+        }
+
+        "型は .type(...) で書き、2 回書くとエラー" {
+            val e = shouldThrow<KatachiKtFileContentLineException> {
+                dumpOf { allow(`val`, "a").type("Int").type("Long") }
+            }
+            e.problem shouldBe KtFileContentLineProblem.DetailWrittenTwice
+            e.parameter shouldBe "type"
+        }
+
         "モデルにレシーバーと型が入る" {
-            dumpOf { required(public, `val`, "Hoge", "*", "Int") } shouldBe "required val{public} * receiver=Hoge type=Int"
+            dumpOf { required(public, `val`, "Hoge", "*").type("Int") } shouldBe "required val{public} * receiver=Hoge type=Int"
         }
     }
 
@@ -212,22 +231,22 @@ class KtFileContentReceiverSpec : FreeSpec({
     }
 
     "直し方" - {
-        "拡張の宣言を許す行は、レシーバーを付けて出し、貼ればその宣言が通る。型を書いていない拡張プロパティはレシーバー無しで出す" {
+        "拡張の宣言を許す行は、レシーバーを付けて出し、貼ればその宣言が通る。型を書いていない拡張プロパティは .type(...) を付けない" {
             val source = kt("class Sample\nfun List<Int>.a() {}\nval String.b: Int get() = 0\nval String.c get() = 0")
             fixLinesOf(source) {
                 `package`("**")
                 required(`class`, fileName)
             }.filter { "allow(`" in it }.map { it.substringAfterLast(" / ") } shouldBe listOf(
                 "allow(`fun`, \"List<Int>\", \"a\")",
-                "allow(`val`, \"String\", \"b\", \"Int\")",
-                "allow(`val`, \"c\")",
+                "allow(`val`, \"String\", \"b\").type(\"Int\")",
+                "allow(`val`, \"String\", \"c\")",
             )
             judged(source) {
                 `package`("**")
                 required(`class`, fileName)
                 allow(`fun`, "List<Int>", "a")
-                allow(`val`, "String", "b", "Int")
-                allow(`val`, "c")
+                allow(`val`, "String", "b").type("Int")
+                allow(`val`, "String", "c")
             }.shouldBeEmpty()
         }
     }

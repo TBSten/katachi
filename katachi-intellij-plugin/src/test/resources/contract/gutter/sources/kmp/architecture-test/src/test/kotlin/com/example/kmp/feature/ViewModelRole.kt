@@ -68,7 +68,7 @@ fun DeclarationContainerScope.viewModel() = "ViewModel".role {
             allow(`val`, "*")                    // read-only values only: the screen does not write back
         }
         required(internal, `class`, fileName).superclass("ViewModel") {
-            required(public, `val`, "state", "StateFlow<UiState<*>>")
+            required(public, `val`, "state").type("StateFlow<UiState<*>>")
             allow(public, `fun`, "*")    // the events: reload()
             allow(private, anythingElse) // the repository and the mutable state
         }

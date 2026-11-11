@@ -58,7 +58,7 @@ public enum class KtFileContentPatternKind(internal val label: String) {
     /** An import line: `` `import`("kotlinx.coroutines.**") ``. */
     Import("import"),
 
-    /** A property type, a parameter type or a return type: `` allow(`val`, "state", "StateFlow<*>") ``. */
+    /** A property type, a parameter type or a return type: `` allow(`val`, "state").type("StateFlow<*>") ``. */
     Type("type"),
 
     /** The name of a parameter of a `fun` line, before its `:`: `` allow(`fun`, "find")("*Id: String") ``. */

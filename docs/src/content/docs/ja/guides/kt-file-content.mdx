@@ -27,7 +27,7 @@ import { CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components
     `import`("com.example.domain.**")
 
     required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
-      required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+      required(public, `val`, "uiState").type("StateFlow<${fileName.replace("ViewModel", "UiState")}>")
       allow(public, `fun`, "on*")().returns("Unit")
       allow(private, anythingElse)
     }
@@ -289,7 +289,7 @@ allow(public, type, "*Repository") { allow(anythingElse) }
 
     ```kt
     required(`class`, "*ViewModel") {
-      required(`val`, "uiState", "StateFlow<*>") // uiState: StateFlow<*> が必要
+      required(`val`, "uiState").type("StateFlow<*>") // uiState: StateFlow<*> が必要
     }
 
     required(`class`, "*UseCase") {
@@ -309,7 +309,7 @@ allow(public, type, "*Repository") { allow(anythingElse) }
       ktFileContent {
         // package / import の行は省略
         required(`class`, fileName) {
-          allow(private, `val`, "*", "*Service") // 呼び出す Service を private val で持つ
+          allow(private, `val`, "*").type("*Service") // 呼び出す Service を private val で持つ
           allow(`fun`, "*")(anyArgs())            // ハンドラの関数。名前も引数も問わない
         }
       }
@@ -321,7 +321,7 @@ allow(public, type, "*Repository") { allow(anythingElse) }
       ktFileContent {
         // package / import の行は省略
         required(`class`, fileName) {
-          allow(private, `val`, "*", "*Repository") // 呼び出す Repository を private val で持つ
+          allow(private, `val`, "*").type("*Repository") // 呼び出す Repository を private val で持つ
           allow(`fun`, "*")(anyArgs())
         }
       }

@@ -61,12 +61,11 @@ class KtFileContentAllowSpec : FreeSpec({
         "val・var: 修飾子 0 個・数個・10 個と型" {
             dumpOf {
                 required(`val`, "a")
-                required(annotated("Keep"), private, const, `val`, "B", "String")
+                required(annotated("Keep"), private, const, `val`, "B").type("String")
                 required(
                     annotated("A1"), annotated("A2"), annotated("A3"), annotated("A4"), annotated("A5"),
                     annotated("A6"), annotated("A7"), annotated("A8"), annotated("A9"), lateinit,
-                    `var`, "c", "Int",
-                )
+                    `var`, "c").type("Int")
             } shouldBe """
                 required val{} a
                 required val{@Keep private const} B type=String
@@ -139,7 +138,7 @@ class KtFileContentAllowSpec : FreeSpec({
                 required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
                     allow(public, `fun`, "on*")().returns("Unit")
                     required(`fun`, "load")("id: String", "count: Int")
-                    allow(`val`, "isLoading", "Boolean")
+                    allow(`val`, "isLoading").type("Boolean")
                 }
                 allow(`typealias`, "Callback")
             } shouldBe """

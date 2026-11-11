@@ -167,7 +167,7 @@ fun DeclarationContainerScope.viewModel() = "ViewModel".role {
     `import`("**")
 
     required(`class`, fileName).superclass("ViewModel") {
-      required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+      required(public, `val`, "uiState").type("StateFlow<${fileName.replace("ViewModel", "UiState")}>")
       allow(public, `fun`, "*")  // events from the screen
       allow(private, anythingElse)  // UseCases, and the writable side of the state
     }

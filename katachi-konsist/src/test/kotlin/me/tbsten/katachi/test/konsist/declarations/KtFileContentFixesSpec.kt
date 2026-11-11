@@ -82,12 +82,12 @@ class KtFileContentFixesSpec : FreeSpec({
     }
 
     "型のパターンに package と * を書くと、何にでも当たる代わりに例外" {
-        val error = shouldThrow<KatachiKtFileContentPatternException> { rulesOf { required(`val`, "x", "com.example.*") } }
+        val error = shouldThrow<KatachiKtFileContentPatternException> { rulesOf { required(`val`, "x").type("com.example.*") } }
         error.what shouldBe KtFileContentPatternKind.Type
         error.message shouldContain "Types are compared without their package"
         shouldThrow<KatachiKtFileContentPatternException> { rulesOf { required(`class`, fileName).superclass("com.example.*") } }
             .what shouldBe KtFileContentPatternKind.Superclass
         // A type argument's wildcard is not a package's.
-        rulesOf { required(`val`, "x", "kotlinx.coroutines.flow.StateFlow<*>") }
+        rulesOf { required(`val`, "x").type("kotlinx.coroutines.flow.StateFlow<*>") }
     }
 })

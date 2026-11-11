@@ -203,14 +203,11 @@ private fun allowLineOf(fact: DeclarationFact): String {
     val kinds = listOfNotNull("`fun`".takeIf { ModifierName.Fun in fact.modifiers }, "`${fact.kind.keyword}`")
     val plain = "allow(${(modifiers + kinds + namePatternLiteral(fact.name)).joinToString(", ")})"
     val receiver = fact.receiver ?: return plain
-    // A property line that names its receiver takes a type too, and no type pattern matches an inferred one.
+    val arguments = modifiers + kinds + kotlinString(receiver.written) + namePatternLiteral(fact.name)
+    // The type of an extension property is chained after it; no type pattern matches an inferred one, so that is left out.
     val isProperty = fact.kind == DeclarationKindName.Val || fact.kind == DeclarationKindName.Var
-    val type = when {
-        !isProperty -> emptyList()
-        else -> listOf(kotlinString(fact.propertyType?.written ?: return plain))
-    }
-    val arguments = modifiers + kinds + kotlinString(receiver.written) + namePatternLiteral(fact.name) + type
-    return "allow(${arguments.joinToString(", ")})"
+    val type = fact.propertyType?.written?.takeIf { isProperty }?.let { ".type(${kotlinString(it)})" }.orEmpty()
+    return "allow(${arguments.joinToString(", ")})$type"
 }
 
 private fun removeImportFixes(site: DeclarationSite, code: String, allowing: Boolean): List<FileConstraintFix> = listOf(

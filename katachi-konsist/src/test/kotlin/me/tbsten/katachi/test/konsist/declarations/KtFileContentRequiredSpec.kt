@@ -55,7 +55,7 @@ class KtFileContentRequiredSpec : FreeSpec({
                 required(`class`, "Fixed")
                 required(sealed, type, "*Action")
                 required(`fun`, "on*")
-                required(`val`, "uiState", "StateFlow<*>")
+                required(`val`, "uiState").type("StateFlow<*>")
                 required(`typealias`, "Key")
                 required(`fun`, `interface`, "*Listener")
             } shouldBe """

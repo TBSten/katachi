@@ -74,7 +74,7 @@ roles: testing.IntegrationSpec
 roles: testing.ArchitectureDefinitionEntry
     testing.ArchitectureDefinitionEntry declared at ArchitectureDefinitionEntryRole.kt:13 | fun DeclarationContainerScope.architectureDefinitionEntry() = "ArchitectureDefinitionEntry".role {
 47 | ◆ | katachi: testing.ArchitectureDefinitionEntry — allowed by val projectArchitecture: Architecture (ArchitectureDefinitionEntryRole.kt:54)
-    allowed at ArchitectureDefinitionEntryRole.kt:54 | required(`val`, "projectArchitecture", "Architecture")
+    allowed at ArchitectureDefinitionEntryRole.kt:54 | required(`val`, "projectArchitecture").type("Architecture")
     menu | ◆ Allowed by val projectArchitecture: Architecture | ArchitectureDefinitionEntryRole.kt:54
     menu | ◇ Role testing.ArchitectureDefinitionEntry — Architecture definition entry | ArchitectureDefinitionEntryRole.kt:13
     menu | == Other files of testing.ArchitectureDefinitionEntry

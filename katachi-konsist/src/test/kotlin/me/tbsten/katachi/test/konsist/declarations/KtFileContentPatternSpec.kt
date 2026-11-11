@@ -36,7 +36,7 @@ class KtFileContentPatternSpec : FreeSpec({
         }
 
         "型・親の型・アノテーション・except" {
-            patternErrorOf { required(`val`, "x", "Map<{K, V>") }.what shouldBe KtFileContentPatternKind.Type
+            patternErrorOf { required(`val`, "x").type("Map<{K, V>") }.what shouldBe KtFileContentPatternKind.Type
             patternErrorOf { required(`fun`, "x")("*: [z-a]") }.what shouldBe KtFileContentPatternKind.Type
             patternErrorOf { required(`fun`, "x")("[z-a]: String") }.what shouldBe KtFileContentPatternKind.ParameterName
             patternErrorOf { required(`fun`, "x").returns("") }.what shouldBe KtFileContentPatternKind.Type
@@ -83,7 +83,7 @@ class KtFileContentPatternSpec : FreeSpec({
     "型" - {
         "型の ? は nullable の印で、エラーにならず文字として当たる" {
             val rules = rulesOf {
-                required(`val`, "name", "String?")
+                required(`val`, "name").type("String?")
                 required(`fun`, "find")("ids: List<String?>").returns("Int?")
                 required(`class`, "A").superclass("Repository<User?>")
             }
@@ -102,7 +102,7 @@ class KtFileContentPatternSpec : FreeSpec({
             canonicalType("(String) -> Unit") shouldBe "(String)->Unit"
             canonicalType("kotlin.collections.List<*>") shouldBe "List<*>"
 
-            val type = rulesOf { required(`val`, "uiState", "kotlinx.coroutines.flow.StateFlow< * >") }.firstDeclaration.propertyType
+            val type = rulesOf { required(`val`, "uiState").type("kotlinx.coroutines.flow.StateFlow< * >") }.firstDeclaration.propertyType
             type?.written shouldBe "kotlinx.coroutines.flow.StateFlow< * >"
             type?.canonical?.pattern shouldBe "StateFlow<*>"
             type?.canonical?.matches("StateFlow<HomeUiState>") shouldBe true

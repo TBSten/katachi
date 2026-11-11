@@ -164,7 +164,7 @@ class KtFileContentReportSpec : FreeSpec({
             ktFileContent {
                 `package`("**")
                 classLine = DeclarationSite.capture(); required(public, `class`, fileName).superclass("ViewModel") {
-                    required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+                    required(public, `val`, "uiState").type("StateFlow<${fileName.replace("ViewModel", "UiState")}>")
                     allow(public, `fun`, "on*")().returns("Unit")
                     allow(private, anythingElse)
                 }
@@ -208,7 +208,7 @@ class KtFileContentReportSpec : FreeSpec({
                 `package`("**")
                 `import`("com.example.App")
                 required(`class`, fileName) {
-                    uiState = DeclarationSite.capture(); required(public, `val`, "uiState", "StateFlow<*>")
+                    uiState = DeclarationSite.capture(); required(public, `val`, "uiState").type("StateFlow<*>")
                     allow(private, anythingElse)
                 }
             }
