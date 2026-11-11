@@ -205,6 +205,23 @@ class DoctorScaffoldSpec : FreeSpec({
             unknown.err shouldContain "--test-framework は junit5 / kotest / kotest-fun /"
         }
 
+        "チェックリストの preferences に知らない値があれば、何も作らずに使い方の誤り（2）で止まる" {
+            val cases = mapOf(
+                """{"testFramework": "spock"}""" to "preferences.testFramework",
+                """{"dependencyStyle": "toml"}""" to "preferences.dependencyStyle",
+            )
+            for ((preferences, key) in cases) {
+                val project = projectWithWorkdir("""{"meta": {}, "preferences": $preferences, "steps": []}""")
+                project.resolve("build.gradle.kts").writeText("plugins {\n    kotlin(\"jvm\") version \"2.4.10\" apply false\n}\n")
+
+                val run = runCapturing(project, listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0"), env = javaHome())
+
+                run.status shouldBe 2
+                run.err shouldContain key
+                project.resolve("architecture-test").exists() shouldBe false
+            }
+        }
+
         "--module-dir の置き場所に作る" {
             val project = projectWithWorkdir("""{"meta": {}, "steps": []}""")
             project.resolve("build.gradle.kts").writeText("plugins {\n    kotlin(\"jvm\") version \"2.4.10\" apply false\n}\n")

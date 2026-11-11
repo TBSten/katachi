@@ -79,7 +79,7 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
     val rootNeedsPlugin = placement == KotlinPlacement.ADD
     var kotlinPlugin = if (placement == KotlinPlacement.MODULE) "kotlin(\"jvm\") version \"$kotlin\"" else "kotlin(\"jvm\")"
 
-    // The test framework: --test-framework > preferences.testFramework > detected > junit5.
+    // The test framework: --test-framework > preferences.testFramework > detected > junit5. An unknown preference is a usage error, like an unknown --test-framework.
     val (detectedTf, detectedTfFrom) = detectTestFramework(root, module.dir)
     val testFramework = when {
         tfArg != null -> Sourced(tfArg, Msg("--test-framework", "--test-framework"))
@@ -89,7 +89,7 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
                 pref in TEST_FRAMEWORKS -> Sourced(pref, Msg("preferences.testFramework", "preferences.testFramework"))
                 else -> {
                     if (pref.isNotEmpty()) {
-                        warn(Messages.Scaffold.unknownValuePreferencesTestframework(pref))
+                        dieUsage(Messages.Scaffold.unknownValuePreferencesTestframework(pref))
                     }
                     if (detectedTfFrom != null) {
                         Sourced(detectedTf, Messages.Scaffold.detected(detectedTfFrom))
@@ -113,7 +113,7 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
                 pref == "catalog" || pref == "literal" -> Sourced(pref, Msg("preferences.dependencyStyle", "preferences.dependencyStyle"))
                 else -> {
                     if (pref.isNotEmpty()) {
-                        warn(Messages.Scaffold.unknownValuePreferencesDependencystyle(pref))
+                        dieUsage(Messages.Scaffold.unknownValuePreferencesDependencystyle(pref))
                     }
                     if (root.resolve(CATALOG_FILE).isRegularFile()) {
                         Sourced("catalog", Messages.Scaffold.detectedCatalog)

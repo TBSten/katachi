@@ -467,8 +467,8 @@ internal object Messages {
         )
 
         fun unknownValuePreferencesTestframework(pref: Any?): Msg = Msg(
-            ja = "preferences.testFramework の値を知りません（$pref。junit5 / kotest / kotest-free など）。検出した値を使います。",
-            en = "Unknown value in preferences.testFramework ($pref; expected junit5, kotest, kotest-free and so on). Using the detected value instead.",
+            ja = "preferences.testFramework の値を知りません（$pref。junit5 / kotest / kotest-free など）。チェックリストの値を直すか、消して検出した値に任せてから、もう一度実行してください。",
+            en = "Unknown value in preferences.testFramework ($pref; expected junit5, kotest, kotest-free and so on). Fix the value in the checklist, or remove it to use the detected one, then run again.",
         )
 
         fun detected(detectedTfFrom: Any?): Msg = Msg(
@@ -482,8 +482,8 @@ internal object Messages {
         )
 
         fun unknownValuePreferencesDependencystyle(pref: Any?): Msg = Msg(
-            ja = "preferences.dependencyStyle の値を知りません（$pref。catalog か literal）。検出した値を使います。",
-            en = "Unknown value in preferences.dependencyStyle ($pref; expected catalog or literal). Using the detected value instead.",
+            ja = "preferences.dependencyStyle の値を知りません（$pref。catalog か literal）。チェックリストの値を直すか、消して検出した値に任せてから、もう一度実行してください。",
+            en = "Unknown value in preferences.dependencyStyle ($pref; expected catalog or literal). Fix the value in the checklist, or remove it to use the detected one, then run again.",
         )
 
         val detectedCatalog: Msg = Msg(
