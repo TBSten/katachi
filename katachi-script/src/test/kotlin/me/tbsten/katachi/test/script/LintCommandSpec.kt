@@ -129,6 +129,34 @@ class LintCommandSpec : FreeSpec({
         quiet.out shouldNotContain "平たい group"
     }
 
+    "小文字で始まる Role・group の名前を UpperCamelCase の案と一緒に指摘する（KATACHI-362）" {
+        val project = projectWithDefinition(
+            "MetaGroup.kt" to """
+                val meta = "meta".group {
+                    "License".role { layout { "LICENSE".file() } }
+                    "gitIgnore".role { layout { ".gitignore".file() } }
+                }
+            """.trimIndent(),
+        )
+        val run = runCapturing(project, listOf("lint"), env = preferences(project, "\"oneRolePerFile\": \"no\""))
+        run.status shouldBe 0
+        run.out shouldContain "小文字で始まる Role・group の名前が 2 件あります。"
+        run.out shouldContain "MetaGroup.kt:1 group \"meta\"（→ \"Meta\"）"
+        run.out shouldContain "MetaGroup.kt:3 Role \"gitIgnore\"（→ \"GitIgnore\"）"
+        run.out shouldNotContain "Role \"License\"（→"
+
+        project.definitionFile("MetaGroup.kt").writeText(
+            """
+                val meta = "Meta".group {
+                    "License".role { layout { "LICENSE".file() } }
+                    "GitIgnore".role { layout { ".gitignore".file() } }
+                }
+            """.trimIndent(),
+        )
+        val fixed = runCapturing(project, listOf("lint"), env = preferences(project, "\"oneRolePerFile\": \"no\""))
+        fixed.out shouldNotContain "小文字で始まる"
+    }
+
     "1 ファイルに Role が 2 つあれば分けていないと指摘し、oneRolePerFile = no なら黙る" {
         val project = projectWithDefinition("Both.kt" to "val a = \"A\".role { }\nval b = \"B\".role { }")
         val run = runCapturing(project, listOf("lint"))

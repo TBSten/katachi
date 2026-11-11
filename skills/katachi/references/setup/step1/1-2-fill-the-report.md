@@ -19,7 +19,7 @@ In `modules`, write `path` / `kind` / `responsibility` / `buildFile` for each mo
 |---|---|
 | `importance` | **An integer from 1 to 5. 5 is the most important.** The priority for inclusion in `architecture { }`. The report is sorted in this order |
 | `name` | The element's name (e.g. `ViewModel`) |
-| `group` | The group it belongs to. Nest with `.` (e.g. `feature.ui`) |
+| `group` | The group it belongs to. Nest with `.` (e.g. `Feature.Ui`). Each group name is UpperCamelCase, like a Role name |
 | `layout` | The placement pattern |
 | `naming` | The naming convention |
 | `allowed` / `forbidden` | What may be written / what must not be written |

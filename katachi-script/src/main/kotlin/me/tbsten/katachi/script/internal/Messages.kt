@@ -210,6 +210,25 @@ internal object Messages {
             en = "Nest groups in the order module -> layer -> kind, and do not put 8 or more Roles in one group (split it when they pile up).",
         )
 
+        fun lowercaseNames(size: Any?): Msg = Msg(
+            ja = "小文字で始まる Role・group の名前が $size 件あります。",
+            en = "Role and group names starting with a lowercase letter: $size.",
+        )
+
+        fun lowercaseName(path: Any?, line: Any?, kind: Any?, name: Any?, suggestion: Any?): Msg = Msg(
+            ja = "  $path:$line $kind \"$name\"（→ \"$suggestion\"）",
+            en = "  $path:$line $kind \"$name\" (-> \"$suggestion\")",
+        )
+
+        val nameInUpperCamelCase: Msg = Msg(
+            ja = "Role と group の名前は katachi の Gradle・Git と同じく UpperCamelCase にしてください（\"Feature\".group { }）。\n" +
+                "名前は生成ドキュメントや katachiTemplate の template=Group.Role にそのまま出ます。定義を分けているなら、\n" +
+                "ファイル名（<Group>Group.kt）と関数名もそろえます。ディレクトリ名は先頭だけ小文字のままです（katachi skill の setup 3-3）。",
+            en = "Name Roles and groups in UpperCamelCase, like katachi's own Gradle and Git (\"Feature\".group { }).\n" +
+                "The name shows up as it is in the generated docs and in katachiTemplate's template=Group.Role. If the definition\n" +
+                "is split, keep the file names (<Group>Group.kt) and functions in line; directory names keep a lowercase first letter (step 3-3 of the katachi skill's setup).",
+        )
+
         fun filesNotSplitMore(unsplitFilesSize: Any?): Msg = Msg(
             ja = "分けていないファイル（1 ファイルに Role か group が 2 つ以上）が $unsplitFilesSize 件あります（preferences.oneRolePerFile = yes）。",
             en = "Files not split (2 or more Roles or groups in one file): $unsplitFilesSize (preferences.oneRolePerFile = yes).",
