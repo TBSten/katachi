@@ -2,12 +2,12 @@
   - The names come from the file's name, as the samples name their files: ServiceRole.kt gives "Service" and service(),
     DomainGroup.kt gives "Domain" and domainGroup().
   - Names are written fully qualified so that toShortenFQNames adds the imports.
-  - kcontent and ktemplate carry @OptIn(ExperimentalKatachiApi::class) so that they compile in a file without @file:OptIn.
+  - katachifilecontent and katachitemplate carry @OptIn(ExperimentalKatachiApi::class) so that they compile in a file without @file:OptIn.
 -->
 <templateSet group="katachi">
-    <template name="krole"
+    <template name="katachirole"
               value="fun me.tbsten.katachi.dsl.DeclarationContainerScope.$FUNCTION$() = &quot;$NAME$&quot;.role {&#10;    title = &quot;$TITLE$&quot;&#10;    summary = &quot;$SUMMARY$&quot;&#10;&#10;    layout {&#10;        $END$&#10;    }&#10;}"
-              resource-bundle="messages.KatachiBundle" key="liveTemplate.krole"
+              resource-bundle="messages.KatachiBundle" key="liveTemplate.katachirole"
               toReformat="true" toShortenFQNames="true">
         <variable name="NAME" expression="capitalize(regularExpression(fileNameWithoutExtension(), &quot;Role$&quot;, &quot;&quot;))" defaultValue="&quot;Name&quot;" alwaysStopAt="true"/>
         <variable name="FUNCTION" expression="decapitalize(NAME)" defaultValue="" alwaysStopAt="false"/>
@@ -17,9 +17,9 @@
             <option name="KOTLIN_TOPLEVEL" value="true"/>
         </context>
     </template>
-    <template name="kgroup"
+    <template name="katachigroup"
               value="fun me.tbsten.katachi.dsl.DeclarationContainerScope.$FUNCTION$Group() = &quot;$NAME$&quot;.group {&#10;    title = &quot;$TITLE$&quot;&#10;    summary = &quot;$SUMMARY$&quot;&#10;&#10;    $END$&#10;}"
-              resource-bundle="messages.KatachiBundle" key="liveTemplate.kgroup"
+              resource-bundle="messages.KatachiBundle" key="liveTemplate.katachigroup"
               toReformat="true" toShortenFQNames="true">
         <variable name="NAME" expression="capitalize(regularExpression(fileNameWithoutExtension(), &quot;Group$&quot;, &quot;&quot;))" defaultValue="&quot;Name&quot;" alwaysStopAt="true"/>
         <variable name="FUNCTION" expression="decapitalize(NAME)" defaultValue="" alwaysStopAt="false"/>
@@ -29,18 +29,18 @@
             <option name="KOTLIN_TOPLEVEL" value="true"/>
         </context>
     </template>
-    <template name="karch"
+    <template name="katachiarchitecture"
               value="val $NAME$ = me.tbsten.katachi.dsl.architecture {&#10;    $END$&#10;}"
-              resource-bundle="messages.KatachiBundle" key="liveTemplate.karch"
+              resource-bundle="messages.KatachiBundle" key="liveTemplate.katachiarchitecture"
               toReformat="true" toShortenFQNames="true">
         <variable name="NAME" expression="" defaultValue="&quot;projectArchitecture&quot;" alwaysStopAt="true"/>
         <context>
             <option name="KOTLIN_TOPLEVEL" value="true"/>
         </context>
     </template>
-    <template name="kcontent"
+    <template name="katachifilecontent"
               value="@OptIn(me.tbsten.katachi.ExperimentalKatachiApi::class)&#10;private fun me.tbsten.katachi.dsl.RoleScope.$NAME$FileContent() = me.tbsten.katachi.konsist.declarations.ktFileContent {&#10;    `package`(&quot;$PACKAGE$&quot;)&#10;&#10;    required(`class`, fileName) {&#10;        $END$&#10;    }&#10;}"
-              resource-bundle="messages.KatachiBundle" key="liveTemplate.kcontent"
+              resource-bundle="messages.KatachiBundle" key="liveTemplate.katachifilecontent"
               toReformat="true" toShortenFQNames="true">
         <variable name="NAME" expression="decapitalize(regularExpression(fileNameWithoutExtension(), &quot;Role$&quot;, &quot;&quot;))" defaultValue="&quot;name&quot;" alwaysStopAt="true"/>
         <variable name="PACKAGE" expression="" defaultValue="&quot;**&quot;" alwaysStopAt="true"/>
@@ -48,9 +48,9 @@
             <option name="KOTLIN_TOPLEVEL" value="true"/>
         </context>
     </template>
-    <template name="ktemplate"
+    <template name="katachitemplate"
               value="@OptIn(me.tbsten.katachi.ExperimentalKatachiApi::class)&#10;private fun me.tbsten.katachi.dsl.TemplateScope.$NAME$Template(): String {&#10;    val $CAPTURE$ = captureValue(&quot;$CAPTURE$&quot;)&#10;    return &quot;&quot;&quot;&#10;        $END$&#10;    &quot;&quot;&quot;.trimIndent() + &quot;\n&quot;&#10;}"
-              resource-bundle="messages.KatachiBundle" key="liveTemplate.ktemplate"
+              resource-bundle="messages.KatachiBundle" key="liveTemplate.katachitemplate"
               toReformat="true" toShortenFQNames="true">
         <variable name="NAME" expression="decapitalize(regularExpression(fileNameWithoutExtension(), &quot;Role$&quot;, &quot;&quot;))" defaultValue="&quot;name&quot;" alwaysStopAt="true"/>
         <variable name="CAPTURE" expression="" defaultValue="&quot;name&quot;" alwaysStopAt="true"/>

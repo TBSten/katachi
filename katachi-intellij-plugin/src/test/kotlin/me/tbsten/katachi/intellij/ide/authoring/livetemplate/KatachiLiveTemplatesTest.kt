@@ -31,8 +31,8 @@ internal class KatachiLiveTemplatesTest : AnalysisTestBase() {
         assertTrue("errors in the expansion: $errors\n${myFixture.editor.document.text}", errors.isEmpty())
     }
 
-    fun `test krole は ファイル名から Role 名と関数名を採り DeclarationContainerScope を import する`() {
-        val expansion = expand("ServiceRole.kt", "krole")
+    fun `test katachirole は ファイル名から Role 名と関数名を採り DeclarationContainerScope を import する`() {
+        val expansion = expand("ServiceRole.kt", "katachirole")
 
         assertEquals(setOf("me.tbsten.katachi.dsl.DeclarationContainerScope"), expansion.imports)
         assertEquals(
@@ -49,8 +49,8 @@ internal class KatachiLiveTemplatesTest : AnalysisTestBase() {
         assertNoErrors()
     }
 
-    fun `test kgroup は ファイル名から group 名と xxxGroup の関数名を採る`() {
-        val expansion = expand("DomainGroup.kt", "kgroup")
+    fun `test katachigroup は ファイル名から group 名と xxxGroup の関数名を採る`() {
+        val expansion = expand("DomainGroup.kt", "katachigroup")
 
         assertEquals(setOf("me.tbsten.katachi.dsl.DeclarationContainerScope"), expansion.imports)
         assertEquals(
@@ -66,13 +66,13 @@ internal class KatachiLiveTemplatesTest : AnalysisTestBase() {
     }
 
     fun `test 接尾辞の無いファイル名は 名前全体を大文字で始めて使う`() {
-        val expansion = expand("useCase.kt", "krole")
+        val expansion = expand("useCase.kt", "katachirole")
 
         assertTrue(expansion.body, expansion.body.startsWith("fun DeclarationContainerScope.useCase() = \"UseCase\".role {"))
     }
 
-    fun `test karch は projectArchitecture に architecture を入れる`() {
-        val expansion = expand("ProjectArchitecture.kt", "karch")
+    fun `test katachiarchitecture は projectArchitecture に architecture を入れる`() {
+        val expansion = expand("ProjectArchitecture.kt", "katachiarchitecture")
 
         assertEquals(setOf("me.tbsten.katachi.dsl.architecture"), expansion.imports)
         assertEquals(
@@ -85,8 +85,8 @@ internal class KatachiLiveTemplatesTest : AnalysisTestBase() {
         assertNoErrors()
     }
 
-    fun `test kcontent は Role の名前の xxxFileContent に ktFileContent を切り出す`() {
-        val expansion = expand("ServiceRole.kt", "kcontent")
+    fun `test katachifilecontent は Role の名前の xxxFileContent に ktFileContent を切り出す`() {
+        val expansion = expand("ServiceRole.kt", "katachifilecontent")
 
         assertEquals(
             setOf(
@@ -110,8 +110,8 @@ internal class KatachiLiveTemplatesTest : AnalysisTestBase() {
         assertNoErrors()
     }
 
-    fun `test ktemplate は Role の名前の xxxTemplate にテンプレートの中身を切り出す`() {
-        val expansion = expand("ServiceRole.kt", "ktemplate")
+    fun `test katachitemplate は Role の名前の xxxTemplate にテンプレートの中身を切り出す`() {
+        val expansion = expand("ServiceRole.kt", "katachitemplate")
 
         assertEquals(setOf("me.tbsten.katachi.ExperimentalKatachiApi", "me.tbsten.katachi.dsl.TemplateScope"), expansion.imports)
         assertEquals(
@@ -129,9 +129,9 @@ internal class KatachiLiveTemplatesTest : AnalysisTestBase() {
     fun `test 打ち直した Role 名が 関数名に入る`() {
         TemplateManagerImpl.setTemplateTesting(testRootDisposable)
         myFixture.configureByText("ServiceRole.kt", "package com.example\n\n<caret>\n")
-        myFixture.type("krole")
+        myFixture.type("katachirole")
         myFixture.performEditorAction(IdeActions.ACTION_EXPAND_LIVE_TEMPLATE_BY_TAB)
-        val state = checkNotNull(TemplateManagerImpl.getTemplateState(myFixture.editor)) { "krole did not start" }
+        val state = checkNotNull(TemplateManagerImpl.getTemplateState(myFixture.editor)) { "katachirole did not start" }
 
         myFixture.type("UseCase")
         state.gotoEnd(false)
@@ -141,7 +141,7 @@ internal class KatachiLiveTemplatesTest : AnalysisTestBase() {
 
     fun `test 関数の中では展開しない`() {
         myFixture.configureByText("ServiceRole.kt", "package com.example\n\nfun f() {\n    <caret>\n}\n")
-        myFixture.type("krole")
+        myFixture.type("katachirole")
         myFixture.performEditorAction(IdeActions.ACTION_EXPAND_LIVE_TEMPLATE_BY_TAB)
 
         assertFalse(myFixture.editor.document.text, myFixture.editor.document.text.contains(".role {"))
@@ -150,7 +150,7 @@ internal class KatachiLiveTemplatesTest : AnalysisTestBase() {
     fun `test どのテンプレートにも katachi グループの日本語と英語の説明がある`() {
         val templates = TemplateSettings.getInstance().templates.filter { it.groupName == "katachi" }
 
-        assertEquals(setOf("krole", "kgroup", "karch", "kcontent", "ktemplate"), templates.map { it.key }.toSet())
+        assertEquals(setOf("katachirole", "katachigroup", "katachiarchitecture", "katachifilecontent", "katachitemplate"), templates.map { it.key }.toSet())
         templates.forEach { assertTrue("${it.key}: ${it.description}", it.description.orEmpty().startsWith("katachi: ")) }
     }
 
