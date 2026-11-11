@@ -11,10 +11,17 @@ the three roots of katachi's exception hierarchy.
 
 # Package me.tbsten.katachi.check
 
-The entry points that turn an [me.tbsten.katachi.dsl.Architecture] and a project into a pass or
-a failure — `assert`, `validate`, the `layout { }` check and the check that evaluates
+The entry points that turn an [Architecture][me.tbsten.katachi.dsl.Architecture] and a project
+into a pass or a failure — `assert`, `validate`, the `layout { }` check and the check that evaluates
 `fileConstraint { }` blocks — and what they find while they walk a project: a violation, its kind
 and severity, and the warnings a definition can carry on its own.
+
+# Package me.tbsten.katachi.diff
+
+`katachiDiff`: writes which groups and roles a git diff touched, as HTML and Markdown, so a
+reviewer sees which part of the architecture a change lands in. It holds the processor behind the
+task, `diffWeight` — how much a change in a group or a role counts — and the exceptions raised
+when the refs, the pull request or a weight cannot be used.
 
 # Package me.tbsten.katachi.docs
 
@@ -46,8 +53,8 @@ kind of utility layer a project writes for itself.
 # Package me.tbsten.katachi.processor
 
 The extension point a definition is read through: something that takes an
-[me.tbsten.katachi.processor.ArchitectureProcessContext] and answers with a `Result`, the way
-both the check and documentation generation do.
+[ArchitectureProcessContext][me.tbsten.katachi.processor.ArchitectureProcessContext] and answers
+with a `Result`, the way both the check and documentation generation do.
 
 # Package me.tbsten.katachi.report
 
