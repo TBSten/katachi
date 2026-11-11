@@ -5,7 +5,8 @@ Tidy up the 3-2 definition **without changing the check result.** When unsure ab
 **Refactoring checklist** — go from the top; skip anything that does not apply.
 
 - [ ] **Files and packages are split.** If `oneRolePerFile` from 1-3 is `yes`: one Role per file (`<group>/<Role>Role.kt`), one group per file (`<group>/<Group>Group.kt`), and `ProjectArchitecture.kt` only calls the groups. The naming is in "Where the definition files go" below. If it is `no`, skip this item
-- [ ] **No group or directory name matches `.gitignore`.** Do not use a name such as `build` or `out` for a group (use e.g. `buildLogic`). After splitting, run `git ls-files --others --ignored --exclude-standard <verification module>/src` and confirm it prints nothing (no definition file is ignored). An ignored file never shows up in `gitTracked()`, so a gap in the definition goes unnoticed
+- [ ] **No group or directory name matches `.gitignore`.** Do not name a group `Build` or `Out`: its directory becomes `build/` or `out/` (use e.g. `BuildLogic`). After splitting, run `git ls-files --others --ignored --exclude-standard <verification module>/src` and confirm it prints nothing (no definition file is ignored). An ignored file never shows up in `gitTracked()`, so a gap in the definition goes unnoticed
+- [ ] **Role and group names are UpperCamelCase.** `"Feature".group { }`, not `"feature".group { }` ("One Role = one kind of file" in 3-2). `katachi lint` lists the names that start lowercase
 - [ ] **The functions used for splitting are not `inline`.** katachi reads a violation's declaration site off the stack trace, and `inline` shifts the line numbers
 - [ ] **The split definition files cause no violations.** The definition files are checked too. The `layout { }` of the Role that covers the verification module accepts files as deep as the deepest definition file (e.g. `<group>/<sub>/<Role>Role.kt`: the depth of the nested groups + 1)
 - [ ] **One Role = one kind of file.** Every Role has been gone over with the three questions of "One Role = one kind of file" in 3-2. `katachi lint` reports 0 warnings, or the reason for each one kept is in the warning on step 3 (0-3, "Progress")
@@ -29,7 +30,7 @@ Tidy up the 3-2 definition **without changing the check result.** When unsure ab
 └── <group>/<sub>/<Sub>Group.kt       a nested group's definition  e.g. domain/model/ModelGroup.kt
 ```
 
-- Directory names are the group name with a lowercase first letter (`domain`). Roles get no directory of their own. File names are `<Group>Group.kt` for a group (`AppGroup.kt`) and `<Role>Role.kt` for a Role (`EntrypointRole.kt`). Function names start lowercase (`fun DeclarationContainerScope.appGroup()`, `entrypoint()`). The package declaration follows the directory
+- Directory names are the group name with a lowercase first letter (group `Domain` → `domain/`; the group name itself stays UpperCamelCase). Roles get no directory of their own. File names are `<Group>Group.kt` for a group (`AppGroup.kt`) and `<Role>Role.kt` for a Role (`EntrypointRole.kt`). Function names start lowercase (`fun DeclarationContainerScope.appGroup()`, `entrypoint()`). The package declaration follows the directory
 - A group inside a group goes one level deeper the same way (`domain/model/ModelGroup.kt`, and a Role inside it is `domain/model/EntityRole.kt`). If `nestedGroups` from 1-3 is `no`, keep groups to one level and tell them apart by name instead of nesting
 - A Role outside any group is `<Role>Role.kt` directly under the definition root (e.g. `ProjectReadmeRole.kt`). Any other Role goes in the directory of the group that calls it
 - Each file holds **exactly one** group or Role. A group's file only calls the functions of the Roles under it

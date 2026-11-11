@@ -29,7 +29,9 @@ You can write `title = "..."` and `description = "..."` at the top of `architect
 
 #### One Role = one kind of file
 
-**A Role (`"Name".role { }`) stands for one kind of file. What bundles different kinds of files is a group (`"name".group { }`).** Pack different kinds of files into one Role and neither its `summary` nor its `ktFileContent { }` fits all of them any more, and the generated documentation shows a box that anything goes into.
+**A Role (`"Name".role { }`) stands for one kind of file. What bundles different kinds of files is a group (`"Name".group { }`).** Pack different kinds of files into one Role and neither its `summary` nor its `ktFileContent { }` fits all of them any more, and the generated documentation shows a box that anything goes into.
+
+**Name Roles and groups alike in UpperCamelCase** (`"ViewModel".role { }`, `"Feature".group { }`, `"BuildLogic".group { }`), as katachi's own `Gradle` and `Git` groups are. Do not start a group name with a lowercase letter (`"feature".group { }`): the name shows up as it is in the generated documentation and in `katachiTemplate`'s `template=Group.Role`, next to Role names that are UpperCamelCase. Only the directories of a split definition start lowercase (3-3). `katachi lint` lists names that start lowercase.
 
 Decide whether files belong in the same Role with these three questions. If any file gets a "no", split the Role.
 
@@ -69,7 +71,7 @@ In the field tests of the install kit, these shapes turned up in 13 projects.
 }
 
 // ○ One role per kind, bundled in a group
-"meta".group {
+"Meta".group {
     "ProjectReadme".role { layout { "README.md".file() } }
     "License".role { layout { "LICENSE".file() } }
     "GitIgnore".role { layout { ".gitignore".file() } }

@@ -56,7 +56,7 @@ The working directory is only for the setup and is ignored by git, so it may be 
 | Compare two runs (before and after a change to the definition) | `katachi agent test --save before-refactor`, change, `katachi agent test --save after-refactor`, then `katachi agent compare-violations` |
 | Find Roles that hold different kinds of files, hand-written Gradle Roles, flat groups | `katachi lint` |
 | Generate a page per Role | `./gradlew :architecture-test:katachiDocs` |
-| Generate a file from a Role's `.template { }` | `./gradlew :architecture-test:katachiTemplate --arg template=<group.Role> --arg <name>=<value>` |
+| Generate a file from a Role's `.template { }` | `./gradlew :architecture-test:katachiTemplate --arg template=<Group.Role> --arg <name>=<value>` |
 
 Read `:architecture-test` as the verification module's Gradle path when it is somewhere else.
 

@@ -14,7 +14,7 @@ The `How to fix:` of an `[UnexpectedFile]` suggests a Role named after the file 
 
 ## Where the Role goes
 
-- **In the group the file belongs to.** Groups are nested "module → layer → kind" (for example `feature` → `ui` → `ViewModel`). A new kind of module is usually a new group holding one Role per kind of file in it.
+- **In the group the file belongs to.** Groups are nested "module → layer → kind" (for example `Feature` → `Ui` → `ViewModel`; group names are UpperCamelCase like Role names). A new kind of module is usually a new group holding one Role per kind of file in it.
 - **In a file of its own, if the definition is split that way.** The naming setup uses (unless the project does something else, which you follow):
 
   ```
@@ -27,7 +27,7 @@ The `How to fix:` of an `[UnexpectedFile]` suggests a Role named after the file 
   ```
 
   Split functions are extension functions on `DeclarationContainerScope` (`fun DeclarationContainerScope.viewModel() { "ViewModel".role { … } }`), not `inline`, and the group's file calls them. Import a function where it is called; an extension function cannot be called by its fully qualified name.
-- **Not under a name that `.gitignore` matches** (a group or directory called `build` or `out`). An ignored definition file is never checked, and nothing tells you.
+- **Not under a name that `.gitignore` matches** (a group called `Build` or `Out`, whose directory becomes `build/` or `out/`). An ignored definition file is never checked, and nothing tells you.
 - **The verification module's own Role must still accept the new file.** The definition files are checked too: the Role that covers `src/test/kotlin/**` has to reach as deep as the deepest definition file.
 
 ## What the Role says
