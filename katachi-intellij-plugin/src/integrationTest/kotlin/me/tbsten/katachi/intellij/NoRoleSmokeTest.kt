@@ -74,7 +74,7 @@ class NoRoleSmokeTest {
         waitFor("the nearby roles popup", timeout = 15.seconds, interval = 1.seconds, errorMessage = { probe.describe() }) { ui.x { byVisibleText(POPUP_TITLE) }.present() }
         val rows = probe.popup()
         assertEquals("popup=open", rows.first(), rows.toString())
-        assertTrue(rows.any { "domain.Service" in it && it.endsWith("|enabled") }, "a nearby role row; $rows")
+        assertTrue(rows.any { "Domain.Service" in it && it.endsWith("|enabled") }, "a nearby role row; $rows")
         assertTrue(rows.any { it.startsWith("row=Reload Definition") }, "the refresh row; $rows")
         assertTrue(rows.any { it.startsWith("row=Copy a role declaration draft") }, "the draft row; $rows")
         probe.screenshot(shots.resolve("2-popup-frame.png"))

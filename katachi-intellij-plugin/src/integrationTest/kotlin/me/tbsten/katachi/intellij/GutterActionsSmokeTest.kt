@@ -46,7 +46,7 @@ class GutterActionsSmokeTest {
         ide.run(project) { ideProject, bridge ->
             // 1. Run the check from the ◆ of the planted file; the underline comes when the check has run.
             openFile(PROBE, waitForCodeAnalysis = false)
-            waitForSmoke("the ◆ on ProbeService", bridge, probe, timeout = 15.minutes) { "katachi: domain.Service" in bridge.describeGutter(probe) }
+            waitForSmoke("the ◆ on ProbeService", bridge, probe, timeout = 15.minutes) { "katachi: Domain.Service" in bridge.describeGutter(probe) }
             val chosen = bridge.chooseFromGutter(probe, 3, "▶ Run the check")
             assertTrue(chosen.startsWith("chosen=▶ Run the check (:") && chosen.endsWith(":test)"), chosen)
             waitForSmoke("the underline under ProbeService", bridge, probe, timeout = 20.minutes, interval = 5.seconds) {
@@ -77,12 +77,12 @@ class GutterActionsSmokeTest {
 
             // 4. The generate dialog, from the menu of a ◆ on a file the user is looking at.
             openFile(SERVICE, waitForCodeAnalysis = false)
-            waitForSmoke("the ◆ on HealthService", bridge, health, timeout = 5.minutes) { "katachi: domain.Service" in bridge.describeGutter(health) }
+            waitForSmoke("the ◆ on HealthService", bridge, health, timeout = 5.minutes) { "katachi: Domain.Service" in bridge.describeGutter(health) }
             val serviceLine = markLine(bridge.describeGutter(health))
-            assertTrue(bridge.chooseFromGutterLater(health, serviceLine, "+ New domain.Service").startsWith("chosen=+ New domain.Service"))
+            assertTrue(bridge.chooseFromGutterLater(health, serviceLine, "+ New Domain.Service").startsWith("chosen=+ New Domain.Service"))
             waitForSmoke("the generate dialog", bridge, health, timeout = 1.minutes, interval = 1.seconds) { bridge.describeDialog().valueOf("dialog") == "open" }
             // TODO(smoke-helper): the specifier of a template with no id is whatever the definition says; fixed at the first V4 run.
-            assertTrue(bridge.describeDialog().valueOf("template").orEmpty().startsWith("domain.Service"), bridge.describeDialog())
+            assertTrue(bridge.describeDialog().valueOf("template").orEmpty().startsWith("Domain.Service"), bridge.describeDialog())
             assertEquals("filled=name", bridge.fillDialog("name", "Smoke"))
             waitForSmoke("the target path for Smoke", bridge, health, timeout = 30.seconds, interval = 1.seconds) {
                 bridge.describeDialog().let { it.valueOf("okEnabled") == "true" && it.valueOf("target").orEmpty().endsWith("SmokeService.kt") }
@@ -98,14 +98,14 @@ class GutterActionsSmokeTest {
             assertTrue("class SmokeService" in generated.readText(), generated.readText())
             waitForSmoke("SmokeService.kt open with its ◆", bridge, generated.toString(), timeout = 5.minutes) {
                 // Written after the definition was read, so it may say (stale); both are the role's name first.
-                bridge.describeGutter(generated.toString()).lines().any { it.startsWith("mark=") && "katachi: domain.Service" in it }
+                bridge.describeGutter(generated.toString()).lines().any { it.startsWith("mark=") && "katachi: Domain.Service" in it }
             }
             bridge.shot(ide.screenshots, "5-generated")
 
             // 5. Cancel: the same steps again, then nothing is added.
             openFile(SERVICE, waitForCodeAnalysis = false)
             val before = ide.sourcesOf(project)
-            assertTrue(bridge.chooseFromGutterLater(health, serviceLine, "+ New domain.Service").startsWith("chosen="))
+            assertTrue(bridge.chooseFromGutterLater(health, serviceLine, "+ New Domain.Service").startsWith("chosen="))
             waitForSmoke("the generate dialog again", bridge, health, timeout = 1.minutes, interval = 1.seconds) { bridge.describeDialog().valueOf("dialog") == "open" }
             assertEquals("pressed=cancel", bridge.pressDialog("cancel"))
             waitForSmoke("the dialog closed", bridge, health, timeout = 30.seconds, interval = 1.seconds) { bridge.describeDialog().valueOf("dialog") == "none" }

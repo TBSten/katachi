@@ -36,7 +36,7 @@ interface KatachiDebugBridgeRef {
 /**
  * The Driver smoke (channel D): a real IntelliJ IDEA with the built plugin opens a copy of
  * sample/jvm, imports it with Gradle, opens the `katachi` tool window, sees the template list, checks
- * `domain.Service`, fills `name`, generates, and finds the written file open in the editor.
+ * `Domain.Service`, fills `name`, generates, and finds the written file open in the editor.
  *
  * The rows and fields live in one `ComposePanel` that Driver's Swing tree cannot see, so everything
  * after opening the tool window goes through the plugin's debug bridge, which sends the intents a
@@ -77,10 +77,10 @@ class ToolWindowSmokeTest {
                 timeout = 10.minutes,
                 interval = 2.seconds,
                 errorMessage = { bridge.describeState() }) {
-                "template=domain.Service" in bridge.describeState()
+                "template=Domain.Service" in bridge.describeState()
             }
 
-            assertTrue(bridge.checkAndFill("domain.Service", "name=SmokeProbe"), bridge.describeState())
+            assertTrue(bridge.checkAndFill("Domain.Service", "name=SmokeProbe"), bridge.describeState())
             bridge.generate()
             waitFor(
                 "the generation to finish",
@@ -90,7 +90,7 @@ class ToolWindowSmokeTest {
                 "generation=finished" in bridge.describeState()
             }
             val state = bridge.describeState()
-            assertTrue("result=domain.Service:Generated" in state, state)
+            assertTrue("result=Domain.Service:Generated" in state, state)
 
             val written = project.resolve("sample/jvm/src/main/kotlin/com/example/service/SmokeProbeService.kt")
             assertTrue(Files.isRegularFile(written), "$written was not written")
@@ -105,7 +105,7 @@ class ToolWindowSmokeTest {
     }
 
     /**
-     * The template set stage (template-set plan 1.9): a copy of sample/android, whose `data.NewRepository` is a set of three
+     * The template set stage (template-set plan 1.9): a copy of sample/android, whose `Data.NewRepository` is a set of three
      * members. The tool window lists it as one row; checking it, filling its one parameter and generating writes the three files and opens the first.
      */
     @Test
@@ -117,16 +117,16 @@ class ToolWindowSmokeTest {
             openToolWindow("katachi")
             val bridge = service(KatachiDebugBridgeRef::class, ideProject)
             waitFor("the template set row", timeout = 15.minutes, interval = 2.seconds, errorMessage = { bridge.describeState() }) {
-                "template=data.NewRepository" in bridge.describeState()
+                "template=Data.NewRepository" in bridge.describeState()
             }
-            assertTrue(bridge.checkAndFill("data.NewRepository", "name=Profile"), bridge.describeState())
+            assertTrue(bridge.checkAndFill("Data.NewRepository", "name=Profile"), bridge.describeState())
             smoke.shot(set.screenshots, "1-set-checked")
             bridge.generate()
             waitFor("the generation to finish", timeout = 15.minutes, interval = 2.seconds, errorMessage = { bridge.describeState() }) {
                 "generation=finished" in bridge.describeState()
             }
             val state = bridge.describeState()
-            assertTrue("result=data.NewRepository:Generated" in state, state)
+            assertTrue("result=Data.NewRepository:Generated" in state, state)
 
             val added = set.sourcesOf(project) - before
             assertEquals(3, added.size, added.toString())

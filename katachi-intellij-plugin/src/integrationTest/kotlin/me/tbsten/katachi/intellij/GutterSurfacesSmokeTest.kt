@@ -44,7 +44,7 @@ class GutterSurfacesSmokeTest {
 
             // 3. README.md: one ◆, not two (the Kotlin provider and the other languages' one are not both drawn).
             openFile(README, waitForCodeAnalysis = false)
-            waitForSmoke("the ◆ on README.md", bridge, readme, timeout = 2.minutes) { "katachi: tool.Documentation" in bridge.describeGutter(readme) }
+            waitForSmoke("the ◆ on README.md", bridge, readme, timeout = 2.minutes) { "katachi: Tool.Documentation" in bridge.describeGutter(readme) }
             assertEquals(1, marksOf(bridge, readme), bridge.describeGutter(readme))
             bridge.shot(ide.screenshots, "3-readme")
 

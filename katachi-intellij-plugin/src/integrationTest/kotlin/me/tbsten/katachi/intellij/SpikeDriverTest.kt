@@ -91,7 +91,7 @@ class SpikeDriverTest {
                 openToolWindow("katachi")
                 val bridge = service(SpikeDebugBridgeRef::class, ideProject)
                 waitFor("the template list", timeout = 10.minutes, interval = 2.seconds, errorMessage = { bridge.describeState() }) {
-                    "template=domain.Service" in bridge.describeState()
+                    "template=Domain.Service" in bridge.describeState()
                 }
                 val visibleAfterOpen = step("(e) katachi tool window visible after it is opened") { getToolWindow("katachi").isVisible() }
 

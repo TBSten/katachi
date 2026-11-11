@@ -120,7 +120,7 @@ class EditorEntrySmokeTest {
         val serviceDirectory = fixture.project.resolve(EditorEntryFixture.SERVICE_DIR).toString()
         waitFor("both templates expose the remaining path", timeout = 30.seconds, errorMessage = { bridge.describeNewMenu(serviceDirectory) }) {
             val items = bridge.describeNewMenu(serviceDirectory).lines()
-            "item=$SERVICE_ITEM|enabled" in items && "item=katachi/domain/Service/Helper source — <name>Helper.kt|enabled" in items
+            "item=$SERVICE_ITEM|enabled" in items && "item=katachi/Domain/Service/Helper source — <name>Helper.kt|enabled" in items
         }
         assertEquals("chosen=Service source — <name>Service.kt", bridge.chooseNewMenuItemLater(serviceDirectory, SERVICE_ITEM))
         awaitEntryDialog(bridge, "dialog=open", "template=${EditorEntryFixture.TEMPLATE}", "field=name=", "canGenerate=false", "okEnabled=false")
@@ -151,7 +151,7 @@ class EditorEntrySmokeTest {
     }
 
     private companion object {
-        const val SERVICE_ITEM = "katachi/domain/Service/Service source — <name>Service.kt"
+        const val SERVICE_ITEM = "katachi/Domain/Service/Service source — <name>Service.kt"
         const val SETTINGS_TOOLTIP = "Open the notification settings"
     }
 }
