@@ -14,6 +14,7 @@ import org.jetbrains.dokka.pages.ContentNode
 import org.jetbrains.dokka.pages.ContentText
 import org.jetbrains.dokka.pages.DCI
 import org.jetbrains.dokka.pages.Kind
+import org.jetbrains.dokka.pages.TextStyle
 
 class SignatureTextSpec : FreeSpec({
     "最初の Symbol の文字をつなぎ、改行は改行のまま、連続する空白は1つにする" {
@@ -28,6 +29,19 @@ class SignatureTextSpec : FreeSpec({
         val other = group(ContentKind.Symbol, text("fun other()"))
 
         SignatureText.of(listOf(group(ContentKind.Main, signature, other))) shouldBe "@Deprecated\nfun add(item: Item)"
+    }
+
+    "注釈のブロックは、改行が無くても宣言と別の行にする" {
+        val signature = group(
+            ContentKind.Symbol,
+            block(text("@Serializable")),
+            block(text("@Target("), text("allowedTargets = [AnnotationTarget.CLASS]"), text(")")),
+            text("annotation class "),
+            text("Marker"),
+        )
+
+        SignatureText.of(listOf(signature)) shouldBe
+            "@Serializable\n@Target(allowedTargets = [AnnotationTarget.CLASS])\nannotation class Marker"
     }
 
     "1行にすると改行も空白になる" {
@@ -45,3 +59,6 @@ private fun text(value: String) = ContentText(value, dci(ContentKind.Main), empt
 
 private fun group(kind: Kind, vararg children: ContentNode) =
     ContentGroup(children.toList(), dci(kind), emptySet(), emptySet(), PropertyContainer.empty())
+
+private fun block(vararg children: ContentNode) =
+    ContentGroup(children.toList(), dci(ContentKind.Main), emptySet(), setOf(TextStyle.Block), PropertyContainer.empty())

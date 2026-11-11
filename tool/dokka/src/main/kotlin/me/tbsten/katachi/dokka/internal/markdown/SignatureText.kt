@@ -4,6 +4,7 @@ import org.jetbrains.dokka.pages.ContentBreakLine
 import org.jetbrains.dokka.pages.ContentKind
 import org.jetbrains.dokka.pages.ContentNode
 import org.jetbrains.dokka.pages.ContentText
+import org.jetbrains.dokka.pages.TextStyle
 import org.jetbrains.dokka.model.withDescendants
 
 /**
@@ -11,7 +12,8 @@ import org.jetbrains.dokka.model.withDescendants
  *
  * Only the first `ContentKind.Symbol` group is read: a declaration shown in several source sets
  * gets one per source set, and they read the same for the purpose of the llms files. Text leaves
- * are joined as they are, and line breaks become newlines, so annotations stay on their own line.
+ * are joined as they are, and a line break or the end of a block becomes a newline, so annotations
+ * stay on their own line.
  */
 internal object SignatureText {
     fun of(nodes: List<ContentNode>): String? {
@@ -34,7 +36,11 @@ internal object SignatureText {
         when (node) {
             is ContentText -> append(node.text)
             is ContentBreakLine -> append('\n')
-            else -> node.children.forEach { appendText(it) }
+            else -> {
+                node.children.forEach { appendText(it) }
+                // An annotation is a block of its own, with no line break after it.
+                if (TextStyle.Block in node.style) append('\n')
+            }
         }
     }
 
