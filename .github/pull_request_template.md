@@ -1,6 +1,8 @@
 <!--
 書き方は CONTRIBUTING.ja.md の「影響範囲を書く」（English: "Writing the impact" in CONTRIBUTING.md）。
 どのファイル・どの Role が変わったかは katachiDiff のコメントが自動で付くので、ここでは繰り返さない。
+ラベル: 「メインの変更」のコンポーネントごとに 影響:<コンポーネント> を付ける（core は 影響:core/DSL のように 2 段目まで）。
+規模:小/中/大 は workflow が付ける。詳しくは CONTRIBUTING.ja.md の「PR のラベル」。
 -->
 
 ## チケット

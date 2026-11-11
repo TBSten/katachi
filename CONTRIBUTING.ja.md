@@ -187,3 +187,35 @@ katachiDocs・katachiTemplate・katachiDiff は core の中の processor なの�
 | チャットの報告 | 1 行に縮める（例: `影響: CLI new / IDE plugin new×2 / konsist update!`） |
 
 リリースノートは、PR の影響範囲を集めて `!` → 破壊的変更、`new` → 新機能、`update` → 変更点、`fix` → 修正、とコンポーネントごとに並べれば作れる。
+
+## PR のラベル
+
+PR には `影響:〜` と `規模:〜` のラベルを付ける。PR の一覧で中身と大きさをつかみ、コンポーネントで絞り込むため。ラベルの名前・色・説明の正は [`.github/labels.json`](.github/labels.json)（main で変えると [PR labels](.github/workflows/pr-labels.yml) の workflow が GitHub に反映する）。
+
+| ラベル | 付ける人 | 付け方 |
+|---|---|---|
+| `影響:<コンポーネント>` | PR を出す人（エージェントも） | 影響範囲の「メインの変更」に書いたコンポーネントごとに 1 つ。複数付けてよい |
+| `規模:小`・`規模:中`・`規模:大` | workflow | push のたびに、数えた変更行数から 1 つだけ付け直す。手で付けなくてよい |
+
+### 影響ラベル
+
+コンポーネント名は「影響範囲を書く」の一覧から選び、core だけは 2 段目まで書く（`影響:core/DSL`・`影響:core/検査`・`影響:core/processor API`・`影響:core/IDE 連携`・`影響:core/katachiDocs`・`影響:core/katachiTemplate`・`影響:core/katachiDiff`）。Notion のチケットの「影響コンポーネント」列と同じ名前。
+
+- core の中のさらに内側の部品は 2 段目に丸める（layout・role・group・fileConstraint・template → `影響:core/DSL`、baseline・SARIF → `影響:core/検査`）
+- CLI と script は 1 つのラベル（`影響:CLI・script`）
+- 「軽微な変更」「テスト・動作確認」にだけ出るコンポーネントには付けない（利用者がほぼ気づかない変更なので）
+- 影響範囲を書き直したら、ラベルも合わせる
+
+例: メインの変更が `konsist` と `CLI` なら `影響:konsist`・`影響:CLI・script`。
+
+### 規模ラベル
+
+| ラベル | 数えた変更行数（追加 + 削除） |
+|---|---|
+| `規模:小` | 100 行未満 |
+| `規模:中` | 100〜499 行 |
+| `規模:大` | 500 行以上 |
+
+レビューで 1 行ずつ読まないファイルは数えない: テスト（`src/test/`・`src/jvmTest/`・`src/testFixtures/`・`test/`・`e2e/`・`*.test.ts`・`test_*.py` など）、スナップショット・golden、画像・動画・フォント、lock・Gradle wrapper、英訳（docs の英語ページ・`README.md`・`CONTRIBUTING.md`・`skills/katachi/assets/en/`）、版ごとに凍結した docs の写し（`docs/src/content/docs/0.3/` など）。正は [`.github/scripts/pr-labels.py`](.github/scripts/pr-labels.py)。
+
+fork からの PR には workflow がラベルを付けられないので、メンテナーが付ける。
