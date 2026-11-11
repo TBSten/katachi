@@ -12,7 +12,7 @@ import com.example.sample.testing.projectArchitectureTest
 import com.example.sample.testing.roleDefinition
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-fun DeclarationContainerScope.testingGroup() = "testing".group {
+fun DeclarationContainerScope.testingGroup() = "Testing".group {
     title = "Testing"
     summary = "What exists to verify the app: shared fakes, tests, the architecture definition, generated docs, the layout snapshot and the baseline"
     description = """
@@ -47,7 +47,7 @@ fun DeclarationContainerScope.testingGroup() = "testing".group {
         readers differ: `docs/` is the page for someone who came to read the definition, and
         `snapshots/` is the text for someone reviewing the diff of a definition change. The
         hand-written `README.md` at the root is separate from both, and belongs to the
-        `Documentation` role of the `tool` group.
+        `Documentation` role of the `Tool` group.
 
         The baseline is the ledger of violations that already existed when katachi was adopted;
         violations recorded there do not fail the test. It is also a file the test writes, so it

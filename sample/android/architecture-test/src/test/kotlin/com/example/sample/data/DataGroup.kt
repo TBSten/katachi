@@ -7,7 +7,7 @@ import com.example.sample.data.repositoryInterface
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-fun DeclarationContainerScope.dataGroup() = "data".group {
+fun DeclarationContainerScope.dataGroup() = "Data".group {
     title = "Data layer"
     summary = "What :data holds: fetching and storing data"
     description = """
@@ -31,22 +31,22 @@ fun DeclarationContainerScope.dataGroup() = "data".group {
     repositoryImplementation()
 
     // A repository's interface, its implementation and its fake, as one set: the members come
-    // from two groups (`data` and `testing`). Each member gets its own value by an expression;
+    // from two groups (`Data` and `Testing`). Each member gets its own value by an expression;
     // the fake is told the interface it stands in for, `User<name>Repository`.
     //   ./gradlew :architecture-test:katachiTemplate \
-    //       --arg template=data.NewRepository --arg name=Profile
+    //       --arg template=Data.NewRepository --arg name=Profile
     "NewRepository".templateSet {
         title = "New repository"
         summary = "A user repository's interface, its implementation and its fake"
         val name by stringParameter()
 
-        template("data.RepositoryInterface.user") {
+        template("Data.RepositoryInterface.user") {
             arg("name", name)
         }
-        template("data.RepositoryImplementation.user") {
+        template("Data.RepositoryImplementation.user") {
             arg("name", name)
         }
-        template("testing.Fake") {
+        template("Testing.Fake") {
             arg("repository", "User${name}Repository")
         }
     }

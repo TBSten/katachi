@@ -29,7 +29,7 @@ fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation
 
         It is set to `documented = true`. Even for generated output, if it were missing from the
         list, nothing anywhere would say what this `docs/` is. This role's own page
-        (`docs/testing/GeneratedDocumentation.md`) is generated as well.
+        (`docs/Testing/GeneratedDocumentation.md`) is generated as well.
 
         `**` in `layout { }` matches zero or more levels, so a single line covers the index
         `docs/README.md`, `docs/<group>/README.md` and `docs/<group>/<role>.md`. The line does not
@@ -40,13 +40,13 @@ fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation
     forbiddenContents = """
         - Hand-written documentation. Every `*.md` under `docs/` is recreated at each generation,
           and pages this definition does not produce are deleted. Prose written by people belongs
-          on the `tool` group side, next to `.gitignore`
+          on the `Tool` group side, next to `.gitignore`
         - Resources other than `.md`. The current `layout { }` accepts only `*.md`, so adding an
           image starts with rewriting the role
     """.trimIndent()
     example("docs/README.md", "The index of all pages, and the list for each group")
-    example("docs/api/Controller.md", "The page of a single role")
-    example("docs/api/README.md", "The page of a single group")
+    example("docs/Api/Controller.md", "The page of a single role")
+    example("docs/Api/README.md", "The page of a single group")
     layout {
         "docs" {
             // The index, written on every run, so it is the one entry without a wildcard --

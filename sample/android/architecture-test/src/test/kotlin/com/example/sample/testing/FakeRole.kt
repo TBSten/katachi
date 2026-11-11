@@ -31,7 +31,7 @@ fun DeclarationContainerScope.fake() = "Fake".role {
         are a different role (test code) and live in `src/test`.
 
         Can be generated from a template. What you pass as `repository` is the name of the
-        interface to implement as is (`UserRepository`), and `--arg template=testing.Fake --arg
+        interface to implement as is (`UserRepository`), and `--arg template=Testing.Fake --arg
         repository=UserRepository` produces `FakeUserRepository.kt`. Which domain package it
         goes into is decided by which `DataDomain` the start of the name matches.
     """.trimIndent()
@@ -45,7 +45,7 @@ fun DeclarationContainerScope.fake() = "Fake".role {
     // `repository` here), so run that one first: the fake of an interface that is not there
     // does not compile.
     //   ./gradlew :architecture-test:katachiTemplate \
-    //       --arg template=testing.Fake --arg repository=UserProfileRepository
+    //       --arg template=Testing.Fake --arg repository=UserProfileRepository
     layout {
         "testing" {
             mainSourceSet / kotlin / "com/example/sample/testing" / "Fake${capture("repository")}".ktFile()

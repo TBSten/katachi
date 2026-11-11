@@ -16,7 +16,7 @@ fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation
         the next generation. The place to fix is always the definition: the `title`, `summary`,
         `description` and `example` of a role or group become the page as they are.
 
-        The opposite side of the `Documentation` role of the `tool` group (the root
+        The opposite side of the `Documentation` role of the `Tool` group (the root
         `README.md`). That one is prose people write, and takes on what does not come out of the
         definition (preparing the environment, why AGP cannot be raised, how to run the check).
         This one is never typed by a person. Both are "documentation", but where you may and may
@@ -35,7 +35,7 @@ fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation
 
         `documented = true`. If a generated file were missing from the list, nowhere would say
         what this `docs/` is. The page of this role itself
-        (`docs/testing/GeneratedDocumentation.md`) is generated too. This pairs with
+        (`docs/Testing/GeneratedDocumentation.md`) is generated too. This pairs with
         `Documentation` being `documented = false`, and is also why the two are not in the same
         group.
 
@@ -52,8 +52,8 @@ fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation
           images starts with rewriting the role
     """.trimIndent()
     example("docs/README.md", "The index of all pages, and the list per group")
-    example("docs/feature/Screen.md", "The page of one role")
-    example("docs/feature/README.md", "The page of one group")
+    example("docs/Feature/Screen.md", "The page of one role")
+    example("docs/Feature/README.md", "The page of one group")
     layout {
         "docs" {
             // The index, written on every run, so it is the one entry without a wildcard --

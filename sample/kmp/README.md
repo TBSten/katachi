@@ -18,7 +18,7 @@ with `testImplementation(libs.katachi)`.
 | [`ProjectArchitecture.kt`](architecture-test/src/test/kotlin/com/example/kmp/ProjectArchitecture.kt) | The body of `architecture { }`. It only calls the groups; each group has its own directory holding its `*Group.kt` and the `*Role.kt` of the roles it calls, one declaration per file |
 | [`data/ExpectDeclarationRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/data/ExpectDeclarationRole.kt) / [`data/ActualImplementationRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/data/ActualImplementationRole.kt) | The `expect` in `commonMain` and the `actual` in `androidMain` / `iosMain`, as two roles because they are two kinds of file |
 | [`data/RepositoryInterfaceRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/data/RepositoryInterfaceRole.kt) / [`data/RepositoryImplementationRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/data/RepositoryImplementationRole.kt) | The interface and the implementation as two roles, each with its own `.template`, so they can be generated separately (or together as the `NewRepository` template set) |
-| [`data/DataGroup.kt`](architecture-test/src/test/kotlin/com/example/kmp/data/DataGroup.kt) | `NewRepository`, a template set inside the `data` group: the interface and the implementation under one name, in place of the comma-separated list |
+| [`data/DataGroup.kt`](architecture-test/src/test/kotlin/com/example/kmp/data/DataGroup.kt) | `NewRepository`, a template set inside the `Data` group: the interface and the implementation under one name, in place of the comma-separated list |
 | [`feature/FeatureComponentRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/feature/FeatureComponentRole.kt) | An example of a template placed by one directory capture written on two levels, `capture("feature")` for the module and for its package. The same capture decides the location, holds the two directories to one name, and, with `captureValue(...)`, fills the template content. In the IDE plugin, the `feature` field offers the directories that exist now (`home`, `settings`) as candidates |
 | [`ProjectArchitectureTest.kt`](architecture-test/src/test/kotlin/com/example/kmp/ProjectArchitectureTest.kt) | The only test a user writes. It just calls `projectArchitecture.assert()` |
 | [`katachi-baseline.json`](katachi-baseline.json) | The baseline ledger. It deliberately leaves one entry, `user/` in the `androidMain` of `:data`, shelved ([`../README.md`](../README.md#baseline)) |
@@ -43,15 +43,15 @@ cd sample/kmp
 
 # Generate ProfileRepository.kt and ProfileRepositoryImpl.kt into the user package of :data
 # from the NewRepository template set, which names the two roles once
-./gradlew :architecture-test:katachiTemplate --arg template=data.NewRepository --arg name=Profile
+./gradlew :architecture-test:katachiTemplate --arg template=Data.NewRepository --arg name=Profile
 
 # Only the interface, from its own template
-./gradlew :architecture-test:katachiTemplate --arg template=data.RepositoryInterface --arg name=Profile
+./gradlew :architecture-test:katachiTemplate --arg template=Data.RepositoryInterface --arg name=Profile
 
 # Generate SettingsToggleRow.kt into the component package of :feature:settings from the FeatureComponent template
 # (feature is the name the layout gave both the module directory and its package directory, so one value picks both.
 # The whole file name is capture("name"), so pass the module's name with it)
-./gradlew :architecture-test:katachiTemplate --arg template=feature.FeatureComponent --arg feature=settings --arg name=SettingsToggleRow
+./gradlew :architecture-test:katachiTemplate --arg template=Feature.FeatureComponent --arg feature=settings --arg name=SettingsToggleRow
 ```
 
 **Write the task with the module path**, as in `:architecture-test:test`. Writing just `test`

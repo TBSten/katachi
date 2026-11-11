@@ -2,7 +2,7 @@ package me.tbsten.katachi.test.architecture.library
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-fun DeclarationContainerScope.libraryGroup() = "library".group {
+fun DeclarationContainerScope.libraryGroup() = "Library".group {
     title = "ライブラリ"
     description = """
         このリポジトリでは「ファイルの種類」と「パッケージの層」がたまたま一致するので、role を層にしています。

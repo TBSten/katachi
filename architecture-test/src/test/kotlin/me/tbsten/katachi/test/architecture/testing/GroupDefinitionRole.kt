@@ -12,7 +12,7 @@ import me.tbsten.katachi.test.architecture.ARCHITECTURE_TEST_PACKAGE
 fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
     title = "group の定義"
     summary = "group 1つを宣言する拡張関数だけを持つ <Name>Group.kt。group の名前のディレクトリに置く"
-    example("library/LibraryGroup.kt", "library の group と、その役割の並び")
+    example("library/LibraryGroup.kt", "Library の group と、その役割の並び")
     layout {
         "architecture-test" / testSourceSet / kotlin / ARCHITECTURE_TEST_PACKAGE / "**" / "*Group".ktFile()
     }

@@ -7,7 +7,7 @@ import com.example.sample.app.applicationEntrypoint
 import com.example.sample.app.proguardRules
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-fun DeclarationContainerScope.appGroup() = "app".group {
+fun DeclarationContainerScope.appGroup() = "App".group {
     title = "Entrypoint layer"
     summary = "What :app holds: the launch entrypoints and the Android resources"
     description = """

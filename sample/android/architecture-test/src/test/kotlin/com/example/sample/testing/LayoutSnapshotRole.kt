@@ -34,7 +34,7 @@ fun DeclarationContainerScope.layoutSnapshot() = "LayoutSnapshot".role {
         `documented` is not written (the default `true`). Nowhere else explains what this
         `snapshots/` is, and leaving it out of the list would leave a `.txt` of unknown origin
         for someone who opens the repository. It is treated like `GeneratedDocumentation`, the
-        opposite of `Documentation` in the `tool` group being `documented = false`.
+        opposite of `Documentation` in the `Tool` group being `documented = false`.
     """.trimIndent()
     forbiddenContents = """
         - Handwritten notes. The next `-Dkatachi.snapshot.update=true` overwrites the whole file

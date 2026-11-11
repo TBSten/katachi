@@ -29,7 +29,7 @@ fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role
         Only the `User*Repository.kt` part can be generated from a template
         (`UserRepository.kt` itself is handwritten in each domain from the start and is not a
         generation target). The id is split per domain. A new user repository is usually
-        generated as the template set `data.NewRepository` (`--arg template=data.NewRepository
+        generated as the template set `Data.NewRepository` (`--arg template=Data.NewRepository
         --arg name=Cache`), which writes the interface, its implementation and its fake at once.
     """.trimIndent()
     forbiddenContents = """
@@ -50,7 +50,7 @@ fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role
     // an id made from the loop variable (`user` / `settings`): one source line run once per
     // domain is still one template per domain, as long as each run passes its own id.
     //   ./gradlew :architecture-test:katachiTemplate \
-    //       --arg template=data.RepositoryInterface.user --arg name=Profile
+    //       --arg template=Data.RepositoryInterface.user --arg name=Profile
     layout {
         "data" {
             mainSourceSet / kotlin / "com/example/sample/data" {

@@ -31,8 +31,8 @@ class DocumentationGenerationSpec : FreeSpec({
                 pages.size shouldBeGreaterThan 20
                 pages shouldContainAll listOf(
                     "README.md",
-                    "library/README.md",
-                    "library/Docs.md",
+                    "Library/README.md",
+                    "Library/Docs.md",
                 )
             }
         }
@@ -45,9 +45,9 @@ class DocumentationGenerationSpec : FreeSpec({
                 GenerateDocumentation.Args(outputDir = output.path),
             )
 
-            withClue("tool group は documented = false なので、ページも一覧の行も無い") {
-                File(output, "tool").exists() shouldBe false
-                File(output, "README.md").readText() shouldContain "[ライブラリ](./library/README.md)"
+            withClue("Tool group は documented = false なので、ページも一覧の行も無い") {
+                File(output, "Tool").exists() shouldBe false
+                File(output, "README.md").readText() shouldContain "[ライブラリ](./Library/README.md)"
             }
         }
     }

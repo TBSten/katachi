@@ -41,8 +41,8 @@ fun DeclarationContainerScope.viewModel() = "ViewModel".role {
     example("SettingsViewModel", "The state of the settings screen")
     // A new feature's ViewModel and its `<Name>Content`, standing on the existing UserRepository
     // so that it compiles in any feature. Usually generated with its Screen as the set
-    // `feature.NewFeature`.
-    //   ./gradlew :architecture-test:katachiTemplate --arg template=feature.ViewModel --arg feature=profile
+    // `Feature.NewFeature`.
+    //   ./gradlew :architecture-test:katachiTemplate --arg template=Feature.ViewModel --arg feature=profile
     layout {
         // `feature` is the module directory and the package directory alike, and the file name
         // follows it: feature/home/.../home/HomeViewModel.kt, and nothing else named *ViewModel.kt there.

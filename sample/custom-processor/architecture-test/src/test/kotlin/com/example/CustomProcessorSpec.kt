@@ -24,7 +24,7 @@ class CustomProcessorSpec : FreeSpec({
                 projectArchitecture.allRoles.map { it.qualifiedName }
             // `tool/Documentation` covers `README.md` and nothing else, so the number does
             // not move when a source file is added elsewhere.
-            lines shouldContain "tool.Documentation: 1 file(s)"
+            lines shouldContain "Tool.Documentation: 1 file(s)"
         }
     }
 
@@ -33,7 +33,7 @@ class CustomProcessorSpec : FreeSpec({
             RoleTable,
             RoleTable.Args(
                 title = "Role",
-                groups = listOf("core"),
+                groups = listOf("Core"),
                 sortBy = RoleTable.SortBy.Name,
             ),
         ).getOrThrow()
@@ -41,7 +41,7 @@ class CustomProcessorSpec : FreeSpec({
         withClue(table.joinToString("\n")) {
             table.take(2) shouldBe listOf("| Role | Summary |", "|---|---|")
             table.drop(2).map { it.substringAfter("| ").substringBefore(" |") } shouldBe
-                listOf("core.Entrypoint", "core.Model", "core.Store")
+                listOf("Core.Entrypoint", "Core.Model", "Core.Store")
         }
     }
 
@@ -53,7 +53,7 @@ class CustomProcessorSpec : FreeSpec({
             RoleTable.Args.serializer(),
             mapOf(
                 "title" to "Role,List",
-                "groups" to "core,testing",
+                "groups" to "Core,Testing",
                 "minExamples" to "2",
                 "sortBy" to "Name",
             ),
@@ -61,7 +61,7 @@ class CustomProcessorSpec : FreeSpec({
 
         args shouldBe RoleTable.Args(
             title = "Role,List",
-            groups = listOf("core", "testing"),
+            groups = listOf("Core", "Testing"),
             minExamples = 2,
             sortBy = RoleTable.SortBy.Name,
         )
@@ -72,7 +72,7 @@ class CustomProcessorSpec : FreeSpec({
         val report = projectArchitecture.process(RoleDocCoverage).getOrThrow()
 
         withClue(report.toString()) {
-            // Only the 12 roles of `core` and `testing` are checked. `Gradle` and `tool` are documented = false.
+            // Only the 12 roles of `Core` and `Testing` are checked. `Gradle` and `Tool` are documented = false.
             report.checked shouldBe 12
         }
     }
@@ -81,7 +81,7 @@ class CustomProcessorSpec : FreeSpec({
         // Deliberately broken, and deliberately built here rather than in `ProjectArchitecture.kt`:
         // a reader looking for the definition to copy should never meet it.
         val broken = architecture {
-            "core".group {
+            "Core".group {
                 title = "Application"
                 summary = "A broken definition"
                 "Written".role {
@@ -98,8 +98,8 @@ class CustomProcessorSpec : FreeSpec({
             .shouldBeInstanceOf<KatachiMultipleFailuresException>()
 
         failure.suppressed.map { it.message } shouldBe listOf(
-            "core.Blank: no summary",
-            "core.Blank: no example",
+            "Core.Blank: no summary",
+            "Core.Blank: no example",
         )
     }
 
@@ -116,7 +116,7 @@ class CustomProcessorSpec : FreeSpec({
         // Metadata is not inherited, so walking up `groupPath` is the processor's own doing.
         // The role below writes neither `summary` nor `example` and is still not reported.
         val silent = architecture {
-            "hidden".group {
+            "Hidden".group {
                 documented = false
                 "Silent".role { }
             }

@@ -44,8 +44,8 @@ fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation
           starts with rewriting the role
     """.trimIndent()
     example("docs/README.md", "The index of every page")
-    example("docs/testing/Processor.md", "The page of a single role")
-    example("docs/core/README.md", "The page of a single group")
+    example("docs/Testing/Processor.md", "The page of a single role")
+    example("docs/Core/README.md", "The page of a single group")
     layout {
         "docs" {
             // The index, written on every run, so it is the one entry without a wildcard --

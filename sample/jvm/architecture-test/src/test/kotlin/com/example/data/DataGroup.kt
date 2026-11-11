@@ -4,7 +4,7 @@ import com.example.data.repository
 import com.example.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-fun DeclarationContainerScope.dataGroup() = "data".group {
+fun DeclarationContainerScope.dataGroup() = "Data".group {
     title = "Data"
     summary = "The layer that takes responsibility for where values come from"
 

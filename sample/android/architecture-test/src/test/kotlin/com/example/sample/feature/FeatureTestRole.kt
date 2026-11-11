@@ -27,8 +27,8 @@ fun DeclarationContainerScope.featureTest() = "FeatureTest".role {
         feature module's `build.gradle.kts` has `testImplementation(project(":testing"))`.
 
         A template can generate a test that builds that feature's ViewModel with fakes. The id
-        is split per screen (`feature.FeatureTest.home` / `.settings`), and `--arg
-        template=feature.FeatureTest.home --arg name=ViewModel` produces `HomeViewModelTest.kt`.
+        is split per screen (`Feature.FeatureTest.home` / `.settings`), and `--arg
+        template=Feature.FeatureTest.home --arg name=ViewModel` produces `HomeViewModelTest.kt`.
         The content differs per screen (the fake and its arguments, the expected `Content`), so
         it is chosen by id rather than by passing values.
 
@@ -47,7 +47,7 @@ fun DeclarationContainerScope.featureTest() = "FeatureTest".role {
     // taught here. One `.template` per module, attached inside [eachFeatureModule] with an id
     // made from the module (`home` / `settings`).
     //   ./gradlew :architecture-test:katachiTemplate \
-    //       --arg template=feature.FeatureTest.home --arg name=ViewModel
+    //       --arg template=Feature.FeatureTest.home --arg name=ViewModel
     layout {
         eachFeatureModule { feature ->
             testSourceSet / kotlin / feature.packageDirectory / "${feature.name}${capture("name")}Test".ktFile()

@@ -5,7 +5,7 @@ import com.example.tool.git
 import com.example.tool.ideCodeStyle
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-fun DeclarationContainerScope.toolGroup() = "tool".group {
+fun DeclarationContainerScope.toolGroup() = "Tool".group {
     documented = false
     title = "Tool configuration"
     summary = "Configuration of tools around the project that are not the build itself"

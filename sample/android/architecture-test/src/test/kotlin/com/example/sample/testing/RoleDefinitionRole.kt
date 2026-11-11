@@ -31,7 +31,7 @@ fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
     example("feature/ScreenRole.kt", "The declaration of the Screen role")
     // A new role, as a skeleton to fill in.
     //   ./gradlew :architecture-test:katachiTemplate \
-    //       --arg template=testing.RoleDefinition --arg name=UseCase --arg group=feature
+    //       --arg template=Testing.RoleDefinition --arg name=UseCase --arg group=feature
     // A change to the definition changes what every check and page says, so katachiDiff
     // puts it at the top of the heat.
     diffWeight = 10.0

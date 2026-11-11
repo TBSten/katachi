@@ -15,8 +15,8 @@ fun DeclarationContainerScope.git() = "Git".role {
         `.gitignore` lists (`build/`, `.gradle/`, `.kotlin/`, `local.properties` and so on) passes by
         without belonging to any role. Conversely, a tracked file that has no role fails.
 
-        When more files appear, do not mix them into the `.gitignore` role; add one role to the `tool`
-        group. The `tool` group this role belongs to has `documented = false`, so it does not appear in
+        When more files appear, do not mix them into the `.gitignore` role; add one role to the `Tool`
+        group. The `Tool` group this role belongs to has `documented = false`, so it does not appear in
         the generated documentation.
     """.trimIndent()
     forbiddenContents = "Configuration of tools other than Git must not be placed here."

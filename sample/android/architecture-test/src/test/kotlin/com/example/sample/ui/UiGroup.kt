@@ -9,7 +9,7 @@ import com.example.sample.ui.theme
 import com.example.sample.ui.uiCore
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-fun DeclarationContainerScope.uiGroup() = "ui".group {
+fun DeclarationContainerScope.uiGroup() = "Ui".group {
     title = "UI (shared layer)"
     summary = "UI shared across features: the four packages of :ui, and :navigation"
     description = """

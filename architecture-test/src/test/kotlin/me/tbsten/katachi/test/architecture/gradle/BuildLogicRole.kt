@@ -8,7 +8,7 @@ fun DeclarationContainerScope.buildLogic() = "BuildLogic".role {
     title = "ビルドロジック"
     summary = "buildSrc の convention plugin と、それらが共有する型。モジュール探索には出てこない別ビルド"
     description = """
-        ビルドの関心事なので、`tool` ではなく `gradleGroup()` の `gradle { }` の中でこの role を足しています。
+        ビルドの関心事なので、`Tool` ではなく `gradleGroup()` の `gradle { }` の中でこの role を足しています。
     """.trimIndent()
     example("kotlin-jvm.gradle.kts", "jvmToolchain(17) と useJUnitPlatform() を配る")
     layout {

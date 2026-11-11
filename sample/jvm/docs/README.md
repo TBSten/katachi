@@ -4,90 +4,90 @@ A small Ktor HTTP server, described by its shape with katachi. Every page below 
 
 ## Document map
 
-### [API](./api/README.md)
+### [API](./Api/README.md)
 
 The layer that faces HTTP. It owns everything from receiving a request to returning a response
 
-- [Controller](./api/Controller.md)
-- [Ktor plugin configuration](./api/KtorPlugin.md)
+- [Controller](./Api/Controller.md)
+- [Ktor plugin configuration](./Api/KtorPlugin.md)
 
-### [Domain](./domain/README.md)
+### [Domain](./Domain/README.md)
 
 The application-specific behaviour, and the values it acts on
 
-- [Service](./domain/Service.md)
-- [Model](./domain/Model.md)
+- [Service](./Domain/Service.md)
+- [Model](./Domain/Model.md)
 
-### [Data](./data/README.md)
+### [Data](./Data/README.md)
 
 The layer that takes responsibility for where values come from
 
-- [Repository](./data/Repository.md)
+- [Repository](./Data/Repository.md)
 
-### [Application](./app/README.md)
+### [Application](./App/README.md)
 
 Starting the process, and the configuration loaded at runtime
 
-- [Entry point](./app/Entrypoint.md)
-- [Application configuration](./app/ApplicationConfig.md)
-- [Logging configuration](./app/LoggingConfig.md)
+- [Entry point](./App/Entrypoint.md)
+- [Application configuration](./App/ApplicationConfig.md)
+- [Logging configuration](./App/LoggingConfig.md)
 
-### [Testing](./testing/README.md)
+### [Testing](./Testing/README.md)
 
 Tests that check behaviour, this definition itself, and the documentation and snapshot written out from it
 
-- [Test code](./testing/Test.md)
-- [Architecture definition entry](./testing/ArchitectureDefinitionEntry.md)
-- [Document section definition](./testing/DocumentSectionDefinition.md)
-- [Group definition](./testing/GroupDefinition.md)
-- [Role definition](./testing/RoleDefinition.md)
-- [Processor definition](./testing/ProcessorDefinition.md)
-- [Architecture test](./testing/ArchitectureTest.md)
-- [Integration spec](./testing/IntegrationSpec.md)
-- [Generated documentation](./testing/GeneratedDocumentation.md)
-- [Layout snapshot](./testing/LayoutSnapshot.md)
-- [Baseline (ledger of held-back violations)](./testing/BaselineFile.md)
+- [Test code](./Testing/Test.md)
+- [Architecture definition entry](./Testing/ArchitectureDefinitionEntry.md)
+- [Document section definition](./Testing/DocumentSectionDefinition.md)
+- [Group definition](./Testing/GroupDefinition.md)
+- [Role definition](./Testing/RoleDefinition.md)
+- [Processor definition](./Testing/ProcessorDefinition.md)
+- [Architecture test](./Testing/ArchitectureTest.md)
+- [Integration spec](./Testing/IntegrationSpec.md)
+- [Generated documentation](./Testing/GeneratedDocumentation.md)
+- [Layout snapshot](./Testing/LayoutSnapshot.md)
+- [Baseline (ledger of held-back violations)](./Testing/BaselineFile.md)
 
 ## API
 
 The layer that faces HTTP. It owns everything from receiving a request to returning a response
 
-- [Controller](./api/Controller.md) ... Receives one HTTP request, calls the matching Service and returns the result
-- [Ktor plugin configuration](./api/KtorPlugin.md) ... Applies one cross-cutting setting to the Ktor Application
+- [Controller](./Api/Controller.md) ... Receives one HTTP request, calls the matching Service and returns the result
+- [Ktor plugin configuration](./Api/KtorPlugin.md) ... Applies one cross-cutting setting to the Ktor Application
 
 ## Domain
 
 The application-specific behaviour, and the values it acts on
 
-- [Service](./domain/Service.md) ... Owns one application-specific behaviour, realized by combining Repositories
-- [Model](./domain/Model.md) ... The values the domain handles, used as-is for API input and output too
+- [Service](./Domain/Service.md) ... Owns one application-specific behaviour, realized by combining Repositories
+- [Model](./Domain/Model.md) ... The values the domain handles, used as-is for API input and output too
 
 ## Data
 
 The layer that takes responsibility for where values come from
 
-- [Repository](./data/Repository.md) ... Handles fetching and saving data, hiding data source details from the domain
+- [Repository](./Data/Repository.md) ... Handles fetching and saving data, hiding data source details from the domain
 
 ## Application
 
 Starting the process, and the configuration loaded at runtime
 
-- [Entry point](./app/Entrypoint.md) ... Starting the process and assembling the Ktor Application module
-- [Application configuration](./app/ApplicationConfig.md) ... The configuration file loaded at startup: the port and the module to apply
-- [Logging configuration](./app/LoggingConfig.md) ... The Logback configuration: where logs go and their format
+- [Entry point](./App/Entrypoint.md) ... Starting the process and assembling the Ktor Application module
+- [Application configuration](./App/ApplicationConfig.md) ... The configuration file loaded at startup: the port and the module to apply
+- [Logging configuration](./App/LoggingConfig.md) ... The Logback configuration: where logs go and their format
 
 ## Testing
 
 Tests that check behaviour, this definition itself, and the documentation and snapshot written out from it
 
-- [Test code](./testing/Test.md) ... Tests placed in src/test/kotlin, keeping the same package structure as the main code
-- [Architecture definition entry](./testing/ArchitectureDefinitionEntry.md) ... The one file whose `architecture { }` gathers every group, so the definition can be read from here
-- [Document section definition](./testing/DocumentSectionDefinition.md) ... The headings this project declares for itself, so roles and groups can write under them
-- [Group definition](./testing/GroupDefinition.md) ... One `<Name>Group.kt` per group, in the directory named after the group, saying what the group is made of by calling role functions
-- [Role definition](./testing/RoleDefinition.md) ... One `<Name>Role.kt` per role, in the directory of the group that calls it, holding its description, its layout and its constraints
-- [Processor definition](./testing/ProcessorDefinition.md) ... A custom processor that reads the definition, registered in `architecture-test/build.gradle.kts`
-- [Architecture test](./testing/ArchitectureTest.md) ... The one test that checks the whole project against the definition
-- [Integration spec](./testing/IntegrationSpec.md) ... katachi's own integration tests, run against this real project
-- [Generated documentation](./testing/GeneratedDocumentation.md) ... Markdown written out of this definition and committed to the repository
-- [Layout snapshot](./testing/LayoutSnapshot.md) ... A record of every line of this definition, flattened. It exists so people can review changes to the definition as a diff
-- [Baseline (ledger of held-back violations)](./testing/BaselineFile.md) ... A ledger that records violations already present when katachi was introduced and holds them back without failing the test
+- [Test code](./Testing/Test.md) ... Tests placed in src/test/kotlin, keeping the same package structure as the main code
+- [Architecture definition entry](./Testing/ArchitectureDefinitionEntry.md) ... The one file whose `architecture { }` gathers every group, so the definition can be read from here
+- [Document section definition](./Testing/DocumentSectionDefinition.md) ... The headings this project declares for itself, so roles and groups can write under them
+- [Group definition](./Testing/GroupDefinition.md) ... One `<Name>Group.kt` per group, in the directory named after the group, saying what the group is made of by calling role functions
+- [Role definition](./Testing/RoleDefinition.md) ... One `<Name>Role.kt` per role, in the directory of the group that calls it, holding its description, its layout and its constraints
+- [Processor definition](./Testing/ProcessorDefinition.md) ... A custom processor that reads the definition, registered in `architecture-test/build.gradle.kts`
+- [Architecture test](./Testing/ArchitectureTest.md) ... The one test that checks the whole project against the definition
+- [Integration spec](./Testing/IntegrationSpec.md) ... katachi's own integration tests, run against this real project
+- [Generated documentation](./Testing/GeneratedDocumentation.md) ... Markdown written out of this definition and committed to the repository
+- [Layout snapshot](./Testing/LayoutSnapshot.md) ... A record of every line of this definition, flattened. It exists so people can review changes to the definition as a diff
+- [Baseline (ledger of held-back violations)](./Testing/BaselineFile.md) ... A ledger that records violations already present when katachi was introduced and holds them back without failing the test

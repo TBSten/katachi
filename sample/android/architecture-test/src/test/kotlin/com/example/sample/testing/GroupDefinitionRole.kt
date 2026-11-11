@@ -15,11 +15,11 @@ fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
     description = """
         One group of the definition per file, in `<group>/<Name>Group.kt`, and the file name
         says which group it is. The directory is the group's name as written in
-        `"ui".group { }`, lower case and joined (`ui/UiGroup.kt`), and a group inside a group
-        sits in a directory inside it. A group says what it is made of by calling the role
-        functions in order, and the roles it calls sit beside it in that directory. A file that
-        is not a `*Group.kt` or `*Role.kt` in there, such as a shared helper, becomes an
-        `[UnexpectedFile]`.
+        `"Ui".group { }` with its first letter in lower case (`ui/UiGroup.kt`), and a group
+        inside a group sits in a directory inside it. A group says what it is made of by
+        calling the role functions in order, and the roles it calls sit beside it in that
+        directory. A file that is not a `*Group.kt` or `*Role.kt` in there, such as a shared
+        helper, becomes an `[UnexpectedFile]`.
 
         `:architecture-test` is a plain `kotlin("jvm")` module that belongs to no layer of the
         app. It is not an Android module because katachi is a JVM library and the definition can
@@ -30,10 +30,10 @@ fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
         Not called from anywhere on its own: add the call to `ProjectArchitecture.kt` once the
         group says something.
     """.trimIndent()
-    example("ui/UiGroup.kt", "The declaration of the ui group")
+    example("ui/UiGroup.kt", "The declaration of the Ui group")
     // A new group, as a skeleton to fill in.
     //   ./gradlew :architecture-test:katachiTemplate \
-    //       --arg template=testing.GroupDefinition --arg name=Domain --arg dir=domain
+    //       --arg template=Testing.GroupDefinition --arg name=Domain --arg dir=domain
     // A change to the definition changes what every check and page says, so katachiDiff
     // puts it at the top of the heat.
     diffWeight = 10.0
@@ -42,8 +42,10 @@ fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
             testSourceSet / kotlin / "com/example/sample" {
                 // Any depth: `ui/UiGroup.kt`, and `app/api/ApiGroup.kt` for a group inside a group.
                 "**" / "*Group".ktFile()
-                // The skeleton goes to the top level. `dir` is the group's name in lower case
-                // (`--arg dir=domain`): a directory is a package, and a package has no capitals.
+                // The skeleton goes to the top level. `dir` is the group's name with its first
+                // letter in lower case (`--arg name=Domain --arg dir=domain`): the group's name
+                // is UpperCamelCase like a role's, and only its directory -- a package -- starts
+                // in lower case.
                 capture("dir") {
                     "${capture("name")}Group".ktFile()
                         .template {
@@ -57,7 +59,7 @@ fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
 
                                 // TODO: call ${function}Group() from ProjectArchitecture.kt.
                                 /** TODO: say what the roles of the $name group have in common. */
-                                fun DeclarationContainerScope.${function}Group() = "$function".group {
+                                fun DeclarationContainerScope.${function}Group() = "$name".group {
                                     title = "$name"
                                     summary = "TODO: what the roles of this group have in common"
                                 }

@@ -9,7 +9,7 @@ import com.example.kmp.forbiddenContents
 import com.example.kmp.ui.uiGroup
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-fun DeclarationContainerScope.featureGroup() = "feature".group {
+fun DeclarationContainerScope.featureGroup() = "Feature".group {
     title = "Feature"
     summary = "One module per screen. :feature:<name> always holds a Screen / ViewModel / Route"
     description = """
@@ -21,7 +21,7 @@ fun DeclarationContainerScope.featureGroup() = "feature".group {
         `HomeViewModel.kt` / `HomeRoute.kt`, and the check holds them to it, so a
         `ProfileScreen.kt` in `:feature:home` is reported.
 
-        It is separate from the ui group because the two grow differently. A feature is a place
+        It is separate from the Ui group because the two grow differently. A feature is a place
         where modules are expected to multiply, and one declaration of the directory `feature/*`
         covers any number of them. Adding something to `:ui` or `:navigation`, on the
         other hand, is a design decision. Merging them into one group would erase that difference
@@ -35,7 +35,7 @@ fun DeclarationContainerScope.featureGroup() = "feature".group {
         both named `feature`, so `--arg feature=home` picks the module to generate into.
 
         Every role in this group is `commonMain`. There is no `androidMain` / `iosMain` around the
-        screens. Platform differences stay inside ExpectDeclaration and ActualImplementation of the data group.
+        screens. Platform differences stay inside ExpectDeclaration and ActualImplementation of the Data group.
     """.trimIndent()
     forbiddenContents = """
         - Parts used by several screens. Those are Component in `:ui`

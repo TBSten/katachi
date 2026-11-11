@@ -10,7 +10,7 @@ import com.example.kmp.ui.theme
 import com.example.kmp.ui.uiCore
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-fun DeclarationContainerScope.uiGroup() = "ui".group {
+fun DeclarationContainerScope.uiGroup() = "Ui".group {
     title = "UI"
     summary = ":ui and :navigation. Shared UI that belongs to no screen, and the definition of destinations"
     description = """
@@ -20,7 +20,7 @@ fun DeclarationContainerScope.uiGroup() = "ui".group {
         `:ui` is one module split into packages: `component` (parts), `theme` (appearance),
         `core` (the types for screen state) and `preview` (the base for previews), each one role.
         The previews of components are here too, in `component/preview` right below the
-        components; the previews of screens are in the feature group.
+        components; the previews of screens are in the Feature group.
         They used to be separate modules such as `:ui:component`, but were merged into packages.
         katachi needs to be able to say "this role is this package of this module", and it is
         also the shape more often seen in real projects.
@@ -34,7 +34,7 @@ fun DeclarationContainerScope.uiGroup() = "ui".group {
         The policy of the whole sample is to write exactly what the build says.
     """.trimIndent()
     forbiddenContents = """
-        - Per-screen Screen / ViewModel / Route. Those belong to the feature group
+        - Per-screen Screen / ViewModel / Route. Those belong to the Feature group
         - Dependencies on feature modules. Dependencies always point from a feature to `:ui` /
           `:navigation`; a single reference the other way makes the shared modules grow with every
           screen added

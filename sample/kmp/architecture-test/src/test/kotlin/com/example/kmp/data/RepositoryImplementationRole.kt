@@ -26,7 +26,7 @@ fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementa
 
         The file declaration carries one `.template` whose `name` capture and `item` parameter
         match the interface's template. The two are usually generated together as the template
-        set `data.NewRepository` (`--arg template=data.NewRepository --arg name=Cache`), which
+        set `Data.NewRepository` (`--arg template=Data.NewRepository --arg name=Cache`), which
         passes the one `name` to both.
     """.trimIndent()
     forbiddenContents = """

@@ -17,8 +17,8 @@ fun DeclarationContainerScope.git() = "Git".role {
         no role fails. A file tracked inside an ignored directory (`.idea/codeStyles/`) is still
         checked: git reports it, so it needs a role too (`IdeCodeStyle`).
 
-        When more files appear, add one role to the `tool` group rather than mixing them into this
-        one. The `tool` group this role belongs to is `documented = false`, so it does not appear
+        When more files appear, add one role to the `Tool` group rather than mixing them into this
+        one. The `Tool` group this role belongs to is `documented = false`, so it does not appear
         in the generated documentation.
     """.trimIndent()
     forbiddenContents = "What must not be placed here is configuration for tools other than Git."

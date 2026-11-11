@@ -12,7 +12,7 @@ import com.example.testing.processor
 import com.example.testing.roleDefinition
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-fun DeclarationContainerScope.testingGroup() = "testing".group {
+fun DeclarationContainerScope.testingGroup() = "Testing".group {
     title = "Definition and processors"
     summary = "The katachi definition, the three processors of your own that read it, and the generated documentation"
 

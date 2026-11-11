@@ -38,38 +38,38 @@ import me.tbsten.katachi.dsl.wholeTree
 class ProjectArchitectureSpec : FreeSpec({
     "every declared group is in the model" {
         projectArchitecture.allGroups.map { it.qualifiedName }.toSet() shouldBe setOf(
-            "api",
-            "domain",
-            "data",
-            "app",
-            "testing",
+            "Api",
+            "Domain",
+            "Data",
+            "App",
+            "Testing",
             "Gradle",
             "Gradle.GradleWrapper",
-            "tool",
+            "Tool",
         )
     }
 
     "every declared role is in the model, with its group path" {
         projectArchitecture.allRoles.map { it.qualifiedName }.toSet() shouldBe setOf(
-            "api.Controller",
-            "api.KtorPlugin",
-            "domain.Service",
-            "domain.Model",
-            "data.Repository",
-            "app.Entrypoint",
-            "app.ApplicationConfig",
-            "app.LoggingConfig",
-            "testing.Test",
-            "testing.ArchitectureDefinitionEntry",
-            "testing.DocumentSectionDefinition",
-            "testing.GroupDefinition",
-            "testing.RoleDefinition",
-            "testing.ProcessorDefinition",
-            "testing.ArchitectureTest",
-            "testing.IntegrationSpec",
-            "testing.GeneratedDocumentation",
-            "testing.LayoutSnapshot",
-            "testing.BaselineFile",
+            "Api.Controller",
+            "Api.KtorPlugin",
+            "Domain.Service",
+            "Domain.Model",
+            "Data.Repository",
+            "App.Entrypoint",
+            "App.ApplicationConfig",
+            "App.LoggingConfig",
+            "Testing.Test",
+            "Testing.ArchitectureDefinitionEntry",
+            "Testing.DocumentSectionDefinition",
+            "Testing.GroupDefinition",
+            "Testing.RoleDefinition",
+            "Testing.ProcessorDefinition",
+            "Testing.ArchitectureTest",
+            "Testing.IntegrationSpec",
+            "Testing.GeneratedDocumentation",
+            "Testing.LayoutSnapshot",
+            "Testing.BaselineFile",
             "Gradle.GradleWrapper.LauncherScript",
             "Gradle.GradleWrapper.WrapperJar",
             "Gradle.GradleWrapper.WrapperProperties",
@@ -78,22 +78,22 @@ class ProjectArchitectureSpec : FreeSpec({
             "Gradle.GradleProperties",
             "Gradle.VersionCatalog",
             "Gradle.DaemonJvmProperties",
-            "tool.Documentation",
-            "tool.Git",
-            "tool.IdeCodeStyle",
+            "Tool.Documentation",
+            "Tool.Git",
+            "Tool.IdeCodeStyle",
         )
     }
 
     "a role's declaration site is the line in the file of the extension function that wrote it" {
         // Guards the stack-trace based capture in a real user build: if the frame filter
         // ever starts skipping user code, this reports the test runner's file instead.
-        val controller = projectArchitecture.allRoles.single { it.qualifiedName == "api.Controller" }
+        val controller = projectArchitecture.allRoles.single { it.qualifiedName == "Api.Controller" }
         controller.declaredAt.fileName shouldBe "ControllerRole.kt"
         (controller.declaredAt.lineNumber > 0) shouldBe true
     }
 
     "a group's declaration site is also the file of the extension function that wrote it" {
-        val api = projectArchitecture.allGroups.single { it.qualifiedName == "api" }
+        val api = projectArchitecture.allGroups.single { it.qualifiedName == "Api" }
         api.declaredAt.fileName shouldBe "ApiGroup.kt"
     }
 
@@ -171,7 +171,7 @@ class ProjectArchitectureSpec : FreeSpec({
         // A declaration that did not write it has no Documented entry. Reading an omission as true happens here (the reading side).
         projectArchitecture.allGroups
             .filterNot { it[Documented] ?: true }
-            .map { it.qualifiedName } shouldBe listOf("Gradle", "Gradle.GradleWrapper", "tool")
+            .map { it.qualifiedName } shouldBe listOf("Gradle", "Gradle.GradleWrapper", "Tool")
     }
 
     "only roles marked documented = false are documented = false" {
@@ -186,12 +186,12 @@ class ProjectArchitectureSpec : FreeSpec({
             "Gradle.GradleWrapper.LauncherScript",
             "Gradle.GradleWrapper.WrapperJar",
             "Gradle.GradleWrapper.WrapperProperties",
-            "tool.Documentation",
+            "Tool.Documentation",
         )
     }
 
     "a role that did not omit title has the display name it specified" {
-        val model = projectArchitecture.allRoles.single { it.qualifiedName == "domain.Model" }
+        val model = projectArchitecture.allRoles.single { it.qualifiedName == "Domain.Model" }
         model[Title] shouldBe "Model"
         model[Examples].orEmpty().map { it.name } shouldBe listOf("Health")
     }
@@ -220,16 +220,16 @@ class ProjectArchitectureSpec : FreeSpec({
         // extension, so it is never offered. What is offered is computed from the real
         // declarations: no role declares a file directly in `src/main/kotlin/com/example`, so
         // the roles one directory below come first, the `*.kt` ones ahead of the suffixed
-        // ones because `Application.kt` fits their pattern, and `testing.Test` -- one level
+        // ones because `Application.kt` fits their pattern, and `Testing.Test` -- one level
         // away through `test` against `main` -- closes the list.
         val unexpected = architectureWithoutEntrypointRole.validate(FileConstraintCheck())
             .filterIsInstance<UnexpectedFile>()
             .single { it.path == "src/main/kotlin/com/example/Application.kt" }
 
         unexpected.nearby.map { Triple(it.role.qualifiedName, it.directory, it.filePattern) } shouldBe listOf(
-            Triple("domain.Model", "src/main/kotlin/com/example/model", "[A-Z]*.kt"),
-            Triple("api.KtorPlugin", "src/main/kotlin/com/example/plugin", "*.kt"),
-            Triple("testing.Test", "src/test/kotlin/com/example", "*Test.kt"),
+            Triple("Domain.Model", "src/main/kotlin/com/example/model", "[A-Z]*.kt"),
+            Triple("Api.KtorPlugin", "src/main/kotlin/com/example/plugin", "*.kt"),
+            Triple("Testing.Test", "src/test/kotlin/com/example", "*Test.kt"),
         )
     }
 
@@ -290,7 +290,7 @@ private val architectureWithoutEntrypointRole: Architecture = architecture {
     apiGroup()
     domainGroup()
     dataGroup()
-    "app".group {
+    "App".group {
         applicationConfig()
         loggingConfig()
     }

@@ -4,7 +4,7 @@ import com.example.tool.documentation
 import com.example.tool.git
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-fun DeclarationContainerScope.toolGroup() = "tool".group {
+fun DeclarationContainerScope.toolGroup() = "Tool".group {
     documented = false
     title = "Tool configuration"
     summary = "Things around the repository that are neither the build nor the app"

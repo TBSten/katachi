@@ -35,7 +35,7 @@ class PlatformOwnedFilesSpec : FreeSpec({
             testingGroup()
             appGroup()
             gradleGroup()
-            "tool".group {
+            "Tool".group {
                 documented = false
                 title = "Tool"
 

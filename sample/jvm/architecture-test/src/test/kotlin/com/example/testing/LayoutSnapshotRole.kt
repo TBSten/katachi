@@ -35,7 +35,7 @@ fun DeclarationContainerScope.layoutSnapshot() = "LayoutSnapshot".role {
         `documented` is not written (the default `true`). There is nowhere else that explains what
         this `snapshots/` is, and taking it off the list would leave a `.txt` of unknown origin
         for anyone who opens the repository. This role's own page
-        (`docs/testing/LayoutSnapshot.md`) is generated as well.
+        (`docs/Testing/LayoutSnapshot.md`) is generated as well.
     """.trimIndent()
     forbiddenContents = """
         - Hand-written notes. They are overwritten wholesale by the next
