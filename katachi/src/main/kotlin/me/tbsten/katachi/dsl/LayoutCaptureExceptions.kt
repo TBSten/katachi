@@ -22,7 +22,7 @@ import me.tbsten.katachi.KatachiDeclarationException
  *                 }
  *             }
  *         }
- *     }.flattenLayout()
+ *     }.validate(fakeFileSystem)
  * }.name shouldBe "m"
  * ```
  *
@@ -68,7 +68,7 @@ public class KatachiDerivedCaptureWithoutSourceException internal constructor(
  *                 layout { capture("m") / "${capture("m").kebabCase.pascalCase}.kt".file() }
  *             }
  *         }
- *     }.flattenLayout()
+ *     }.validate(fakeFileSystem)
  * }.second shouldBe "pascalCase"
  * ```
  *
@@ -110,7 +110,7 @@ public class KatachiChainedCaptureTransformException internal constructor(
  *                 layout { capture("x") / "${capture("x")}Screen".pascalCase.ktFile() }
  *             }
  *         }
- *     }.flattenLayout()
+ *     }.validate(fakeFileSystem)
  * }.names shouldBe listOf("x")
  * ```
  *
@@ -153,7 +153,7 @@ public class KatachiCaptureTransformOnMixedTextException internal constructor(
  *                 layout { "${capture("a")}${capture("b")}Screen".ktFile() }
  *             }
  *         }
- *     }.flattenLayout()
+ *     }.validate(fakeFileSystem)
  * }.names shouldBe listOf("a", "b")
  * ```
  *
@@ -194,7 +194,7 @@ public class KatachiAdjacentCaptureException internal constructor(
  *                 layout { "{${capture("name")},Home}Screen".ktFile() }
  *             }
  *         }
- *     }.flattenLayout()
+ *     }.validate(fakeFileSystem)
  * }.opening shouldBe '{'
  * ```
  *
@@ -238,7 +238,7 @@ public class KatachiCaptureInsideBracketsException internal constructor(
  *                 }
  *             }
  *         }
- *     }.flattenLayout()
+ *     }.validate(fakeFileSystem)
  * }.name shouldBe "feature"
  * ```
  *

@@ -56,7 +56,8 @@ public fun interface ModuleResolver {
      *
      * ## Example 1: name the default resolver explicitly
      * ```kt
-     * val index = moduleIndex(fileSystem, projectRoot, ModuleResolver.Conventional)
+     * val resolver: ModuleResolver = ModuleResolver.Conventional
+     * resolver.directoryOf(ModulePath.of(":feature:home")) shouldBe "feature/home"
      * ```
      */
     public companion object {

@@ -3,6 +3,7 @@ package me.tbsten.katachi.test.dsl
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
+import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.KatachiDuplicateTemplateException
 import me.tbsten.katachi.dsl.KatachiDuplicateTemplateIdException
@@ -20,6 +21,7 @@ import me.tbsten.katachi.dsl.internal.evaluateTemplate
 import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
+import me.tbsten.katachi.test.check.repositoryOf
 
 private fun Architecture.only() = flattenLayout().mapNotNull { it[Template] }.single()
 
@@ -362,7 +364,7 @@ class TemplateKdocExamplesSpec : FreeSpec({
                             }
                         }
                     }
-                }.flattenLayout()
+                }.validate(repositoryOf {})
             }
             thrown.role shouldBe "domain.UseCase"
         }
@@ -380,7 +382,7 @@ class TemplateKdocExamplesSpec : FreeSpec({
                             }
                         }
                     }
-                }.flattenLayout()
+                }.validate(repositoryOf {})
             }
             thrown.id shouldBe "repository"
         }
@@ -398,7 +400,7 @@ class TemplateKdocExamplesSpec : FreeSpec({
                             }
                         }
                     }
-                }.flattenLayout()
+                }.validate(repositoryOf {})
             }
             thrown.role shouldBe "data.Repository"
         }
@@ -414,7 +416,7 @@ class TemplateKdocExamplesSpec : FreeSpec({
                             }
                         }
                     }
-                }.flattenLayout()
+                }.validate(repositoryOf {})
             }
             thrown.role shouldBe "data.Repository"
         }
