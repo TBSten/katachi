@@ -1,4 +1,4 @@
-// toolbar のメッセージ（送る → 結果が返る）を、requestId で対応づける小さな道具。Feedback の保存も Memo の保存・読み込みも使う。
+// toolbar のメッセージ（送る → 結果が返る）を、requestId で対応づける小さなツール。Feedback の保存も Memo の保存・読み込みも使う。
 // toolbar の購読は外せないので、結果のイベントは作ったときに 1 回だけ登録する。
 
 export type ServerLike = {
