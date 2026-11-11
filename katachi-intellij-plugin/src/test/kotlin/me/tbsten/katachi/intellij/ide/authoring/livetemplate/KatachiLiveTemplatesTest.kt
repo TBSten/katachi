@@ -4,7 +4,15 @@ import com.intellij.codeInsight.template.impl.TemplateManagerImpl
 import com.intellij.codeInsight.template.impl.TemplateSettings
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.actionSystem.IdeActions
+import com.intellij.openapi.command.CommandProcessor
+import com.intellij.openapi.module.Module
+import com.intellij.openapi.roots.ContentEntry
+import com.intellij.openapi.roots.ModifiableRootModel
+import com.intellij.testFramework.LightProjectDescriptor
+import com.intellij.testFramework.PsiTestUtil
+import com.intellij.testFramework.fixtures.DefaultLightProjectDescriptor
 import me.tbsten.katachi.intellij.AnalysisTestBase
+import java.io.File
 
 /**
  * The live templates of liveTemplates/katachi.xml, expanded in a real Kotlin editor: the name each one takes from the file,
@@ -12,6 +20,8 @@ import me.tbsten.katachi.intellij.AnalysisTestBase
  * (the light project has no katachi jar), so these prove the shape and the imports; the samples compile the real thing.
  */
 internal class KatachiLiveTemplatesTest : AnalysisTestBase() {
+
+    override fun getProjectDescriptor(): LightProjectDescriptor = WITH_KOTLIN_STDLIB
 
     override fun setUp() {
         super.setUp()
@@ -210,7 +220,8 @@ internal class KatachiLiveTemplatesTest : AnalysisTestBase() {
         val state = checkNotNull(TemplateManagerImpl.getTemplateState(myFixture.editor)) { "katachirole did not start" }
 
         myFixture.type("UseCase")
-        state.gotoEnd(false)
+        // Finishing the template shortens the qualified names, a PSI change that needs a command (the Tab of a real editor runs in one).
+        CommandProcessor.getInstance().executeCommand(project, { state.gotoEnd(false) }, null, null)
 
         assertTrue(myFixture.editor.document.text, myFixture.editor.document.text.contains("fun DeclarationContainerScope.useCase() = \"UseCase\".role {"))
     }
@@ -252,6 +263,15 @@ internal class KatachiLiveTemplatesTest : AnalysisTestBase() {
     }
 
     private companion object {
+        /** The default light project plus the Kotlin stdlib that the test task names in `katachi.test.kotlinStdlib`. */
+        val WITH_KOTLIN_STDLIB: LightProjectDescriptor = object : DefaultLightProjectDescriptor() {
+            override fun configureModule(module: Module, model: ModifiableRootModel, contentEntry: ContentEntry) {
+                super.configureModule(module, model, contentEntry)
+                val jar = File(checkNotNull(System.getProperty("katachi.test.kotlinStdlib")) { "katachi.test.kotlinStdlib is not set: run the test from Gradle" })
+                PsiTestUtil.addLibrary(model, "kotlin-stdlib", jar.parent, jar.name)
+            }
+        }
+
         val KATACHI_STUBS: Map<String, String> = mapOf(
             "katachi/ExperimentalKatachiApi.kt" to """
                 package me.tbsten.katachi
@@ -332,8 +352,9 @@ internal class KatachiLiveTemplatesTest : AnalysisTestBase() {
                     fun required(vararg line: Any, block: () -> Unit = {})
                 }
 
+                // The real one takes a context(FileConstraintScope), which the light project cannot declare without -Xcontext-parameters.
                 @me.tbsten.katachi.ExperimentalKatachiApi
-                fun me.tbsten.katachi.dsl.RoleScope.ktFileContent(block: KtFileContentScope.() -> Unit) {}
+                fun ktFileContent(block: KtFileContentScope.() -> Unit) {}
             """.trimIndent(),
         )
     }

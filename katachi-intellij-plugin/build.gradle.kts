@@ -332,6 +332,29 @@ tasks.test { dependsOn(uiTest) }
 // No useJUnitPlatform(): BasePlatformTestCase is JUnit 4 based.
 tasks.test { systemProperty("idea.kotlin.plugin.use.k2", "true") }
 
+// The light test project has no Kotlin stdlib: String, OptIn and trimIndent do not resolve in a test that highlights the code it
+// writes (KatachiLiveTemplatesTest). The jar is handed to the test, which adds it to its project as a library.
+val testProjectKotlinStdlib: Configuration by configurations.creating {
+    isCanBeConsumed = false
+    isTransitive = false
+}
+dependencies { testProjectKotlinStdlib("org.jetbrains.kotlin:kotlin-stdlib:${libs.versions.kotlin.get()}") }
+
+class TestProjectKotlinStdlibArgument(
+    @get:InputFiles @get:PathSensitive(PathSensitivity.NONE) val jars: FileCollection,
+) : CommandLineArgumentProvider {
+    override fun asArguments(): List<String> = listOf("-Dkatachi.test.kotlinStdlib=${jars.singleFile.absolutePath}")
+}
+tasks.test { jvmArgumentProviders.add(TestProjectKotlinStdlibArgument(testProjectKotlinStdlib)) }
+
+// CI keeps the reports only as an artifact: the log has to say why a test failed.
+tasks.withType<Test>().configureEach {
+    testLogging {
+        events("failed")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
+}
+
 // L-A (ide-authoring)
 // `./gradlew testK1`: the tests of what has to hold under the K1 Kotlin plugin as under K2 (the PSI-only features: completion, the
 // errors of a definition). The same sandbox and arguments as `test`, with the plugin mode flipped.
