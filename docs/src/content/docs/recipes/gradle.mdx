@@ -31,7 +31,7 @@ The custom-processor sample declares it with the same single line ([GradleGroup.
 
 `gradle()` does not declare included builds such as `build-logic`, nor `buildSrc`. Declare their build scripts and convention plugins yourself.
 
-The following `ProjectArchitecture.kt` shows the overall shape. Line up three Roles inside the `"Build"` group.
+The following `ProjectArchitecture.kt` shows the overall shape. Line up four Roles inside the `"Build"` group.
 
 ```kt title="ProjectArchitecture.kt"
 @file:OptIn(ExperimentalKatachiApi::class)
@@ -52,19 +52,29 @@ val projectArchitecture = architecture {
   "Build".group {
     documented = false
 
-    // Write the three Roles BuildScript, ConventionPluginScript, and ConventionPluginSource inside here
+    // Write the four Roles BuildScript, SettingsScript, ConventionPluginScript, and ConventionPluginSource inside here
   }
 }
 ```
 
 ### Declare the build scripts of the included build / buildSrc itself
 
+`build.gradle.kts` and `settings.gradle.kts` play different parts, so give each its own Role.
+
 ```kt
 "BuildScript".role {
-  summary = "The build scripts of the included build / buildSrc itself"
+  summary = "The build script of the included build / buildSrc itself"
   layout {
     buildConventionDir {
       "build.gradle".ktsFile()
+    }
+  }
+}
+
+"SettingsScript".role {
+  summary = "The settings script of the included build / buildSrc itself"
+  layout {
+    buildConventionDir {
       "settings.gradle".ktsFile().optional() // buildSrc may go without one
     }
   }

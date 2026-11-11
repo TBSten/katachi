@@ -31,7 +31,7 @@ custom-processor のサンプルは、同じ1行で宣言しています（[samp
 
 `gradle()` は `build-logic` などの included build と `buildSrc` を宣言しません。その中のビルドスクリプトと convention plugin は、自分で宣言します。
 
-次の `ProjectArchitecture.kt` が全体の形です。`"Build"` group の中に、3つの Role を並べます。
+次の `ProjectArchitecture.kt` が全体の形です。`"Build"` group の中に、4つの Role を並べます。
 
 ```kt title="ProjectArchitecture.kt"
 @file:OptIn(ExperimentalKatachiApi::class)
@@ -52,12 +52,14 @@ val projectArchitecture = architecture {
   "Build".group {
     documented = false
 
-    // BuildScript、ConventionPluginScript、ConventionPluginSource の3つの Role を、この中に書きます
+    // BuildScript、SettingsScript、ConventionPluginScript、ConventionPluginSource の4つの Role を、この中に書きます
   }
 }
 ```
 
 ### included build / buildSrc 自身のビルドスクリプトを宣言する
+
+`build.gradle.kts` と `settings.gradle.kts` は役割の違うファイルなので、Role を分けます。
 
 ```kt
 "BuildScript".role {
@@ -65,6 +67,14 @@ val projectArchitecture = architecture {
   layout {
     buildConventionDir {
       "build.gradle".ktsFile()
+    }
+  }
+}
+
+"SettingsScript".role {
+  summary = "included build / buildSrc 自身の settings スクリプト"
+  layout {
+    buildConventionDir {
       "settings.gradle".ktsFile().optional() // buildSrc では無くてもよい
     }
   }
