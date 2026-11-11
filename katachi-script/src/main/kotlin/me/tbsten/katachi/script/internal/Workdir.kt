@@ -26,8 +26,6 @@ private val SKIPPED_DIRECTORIES = setOf(".git", ".gradle", "build", "node_module
 
 internal const val CHECK_LIST_FILE: String = "check-list.html"
 
-internal const val REPORT_FILE: String = "project-code-base-report.html"
-
 /**
  * The working directory of the katachi skill's setup: a directory with `check-list.html` and `tmp/`,
  * which the agent copies from the skill. It is looked up at `KATACHI_WORKDIR` first and then below

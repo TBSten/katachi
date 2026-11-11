@@ -92,7 +92,6 @@ inited() {
 	_w="${_d}/.local/install-katachi"
 	mkdir -p "${_w}/tmp"
 	cp "${ASSETS}/${3:-ja}/check-list.html" "${_w}/check-list.html"
-	cp "${ASSETS}/${3:-ja}/project-code-base-report.html" "${_w}/project-code-base-report.html"
 	jset "${_w}/check-list.html" checklist "d['meta'].update(workdir='.local/install-katachi', projectRoot='${_d}', moduleDir='${2:-architecture-test}', version='0.3.0', git='yes')"
 	printf '%s\n' "${_d}"
 }
@@ -410,7 +409,7 @@ def block(path, bid):
     start = lines.index('<script type="application/json" id="%s">' % bid)
     return json.loads("\n".join(lines[start + 1:lines.index("</script>", start)]))
 c = block(sys.argv[1] + "/check-list.html", "checklist")
-block(sys.argv[1] + "/project-code-base-report.html", "report")
+block(sys.argv[1] + "/check-list.html", "report")
 print(" ".join(i["id"] for st in c["steps"] for i in st["items"]))
 PY
 )

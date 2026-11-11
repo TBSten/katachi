@@ -1,6 +1,6 @@
 ## 5. Review the checklist
 
-Go through both files' JSON and list what is left. **Check every point below; do not stop at the first one.**
+Go through the JSON of both blocks (checklist and report) and list what is left. **Check every point below; do not stop at the first one.**
 
 - Checklist: every item of steps 0 to 4 is `done: true` (step 6 is optional and does not count)
 - Checklist: no key of `meta` is `null` or empty

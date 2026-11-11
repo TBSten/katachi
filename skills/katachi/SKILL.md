@@ -42,8 +42,8 @@ Read only the reference that fits, and inside it only the files it points you to
 │       ├── ProjectArchitectureTest.kt  calls projectArchitecture.assert()
 │       └── <group>/<Role>Role.kt …     the split definition, one Role or group per file (naming: setup 3-3)
 └── tmp/install-katachi/                the working directory of the setup (or inside an already-ignored directory)
-    ├── check-list.html                 the setup's checklist (a JSON block inside; setup 0-3 says how to edit it)
-    ├── project-code-base-report.html   the codebase report from setup step 1
+    ├── check-list.html                 the setup's checklist, with the codebase report from setup step 1 below it
+    │                                   (two JSON blocks inside, checklist and report; setup 0-3 says how to edit them)
     └── tmp/                            logs, fetched documentation, notes; without Homebrew also katachi.main.kts and
                                         katachi-command.txt (how to run katachi: setup 0-1)
 ```
