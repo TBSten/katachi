@@ -1290,6 +1290,9 @@
   .report-main h4 { color: var(--ink); font-size: 20px; font-weight: 600; line-height: 1.2; margin: 40px 0 12px; }
   h3 .badge { margin-left: 10px; font-size: 13px; vertical-align: 4px; }
   .report .meta-details { margin-top: 16px; }
+  .step-link { margin-top: 8px; text-decoration: none; }
+  .cross-link-label:has(.badge:not([hidden])) { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; }
+  .cross-link-label .badge { font-size: 13px; font-weight: 400; }
 
   @media (max-width: 860px) {
     .layout { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-top: 24px; }
@@ -1851,7 +1854,7 @@
     <div data-render="error"></div>
 
     <a class="cross-link" id="cross-link" href="#codebase-report">
-      <span class="cross-link-label">Codebase report</span>
+      <span class="cross-link-label">Codebase report<span class="badge badge-caution" id="report-open" hidden></span></span>
       <span class="cross-link-hint">Analysis of this project (further down this page)</span>
     </a>
 
@@ -2145,6 +2148,8 @@
     answersIntro: 'These are my answers to "Questions for you" in the katachi installation checklist (check-list.html). The outermost keys of the JSON (checklist / report) are the ids of the JSON blocks in that file. Copy each into answers of its block.',
     reportLink: 'View the report',
     backToChecklist: 'Back to the checklist',
+    reportLinkStep: 'See the codebase report ↓',
+    reportOpen: function (n) { return n + ' unanswered question' + (n === 1 ? '' : 's'); },
     fbIntro: function (n) { return 'Feedback on the katachi installation checklist (check-list.html), ' + n + ' item(s). "Target" is the place in that file\'s JSON; its head, checklist. or report., names the JSON block (id). Fix them, and reply with the reason for any you can\'t.'; },
     // The codebase report
     reportDataError: 'Could not read the report data (the JSON in this file).',
@@ -2648,6 +2653,12 @@
       var count = answerCards.filter(function (entry) { return entry.doc === doc && readCard(entry); }).length;
       inDoc(doc, function () { mount('answeredCount', [text(count ? T.answeredCount(count) : '')]); });
     });
+    var open = document.getElementById('report-open');
+    if (open) {
+      var left = answerCards.filter(function (entry) { return entry.doc === DOCS.report && !readCard(entry); }).length;
+      open.textContent = left ? T.reportOpen(left) : '';
+      open.hidden = !left;
+    }
     paintSend();
   }
   function sameAnswer(a, b) {
@@ -3926,6 +3937,13 @@
     var items = el('ul', 'checklist');
     list(step.items).forEach(function (item, i) { items.appendChild(itemRow(item, i, key)); });
     body.appendChild(items);
+    // What step 1 fills in is the codebase report further down this page
+    if (id === '1') {
+      var jump = el('a', 'btn btn-sm step-link');
+      jump.setAttribute('href', '#codebase-report');
+      jump.textContent = T.reportLinkStep;
+      body.appendChild(jump);
+    }
 
     box.appendChild(summary);
     box.appendChild(body);

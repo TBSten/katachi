@@ -1290,6 +1290,9 @@
   .report-main h4 { color: var(--ink); font-size: 20px; font-weight: 600; line-height: 1.2; margin: 40px 0 12px; }
   h3 .badge { margin-left: 10px; font-size: 13px; vertical-align: 4px; }
   .report .meta-details { margin-top: 16px; }
+  .step-link { margin-top: 8px; text-decoration: none; }
+  .cross-link-label:has(.badge:not([hidden])) { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; }
+  .cross-link-label .badge { font-size: 13px; font-weight: 400; }
   /* Keep the heading a link or the table of contents jumps to from hiding under the sticky progress bar */
   .block, .report-main > section { scroll-margin-top: calc(var(--progress-h, 0px) + 16px); }
   /* 目次・リンクで飛んだ先の見出しが、上に貼り付く進捗の下に隠れないように */
@@ -1855,7 +1858,7 @@
     <div data-render="error"></div>
 
     <a class="cross-link" id="cross-link" href="#codebase-report">
-      <span class="cross-link-label">コードベース レポート</span>
+      <span class="cross-link-label">コードベース レポート<span class="badge badge-caution" id="report-open" hidden></span></span>
       <span class="cross-link-hint">このプロジェクトの解析結果（このページの下にあります）</span>
     </a>
 
@@ -2149,6 +2152,8 @@
     answersIntro: 'katachi のインストール チェックリスト（check-list.html）の「ユーザに確認したいこと」への回答です。JSON のいちばん外のキー（checklist / report）は、このファイルの JSON ブロックの id です。それぞれのブロックの answers に取り込んでください。',
     reportLink: 'レポートを見る',
     backToChecklist: 'チェックリストに戻る',
+    reportLinkStep: 'コードベース レポートを見る ↓',
+    reportOpen: function (n) { return '未回答の質問 ' + n + ' 件'; },
     fbIntro: function (n) { return 'katachi のインストール チェックリスト（check-list.html）へのフィードバックです（' + n + ' 件）。「対象」はこのファイルの JSON の場所で、頭の checklist. / report. がどの JSON ブロック（id）かを表します。直して、直せないものは理由を返してください。'; },
     // コードベース レポート
     reportDataError: 'レポートのデータ（このファイル内の JSON）を読めませんでした。',
@@ -2652,6 +2657,12 @@
       var count = answerCards.filter(function (entry) { return entry.doc === doc && readCard(entry); }).length;
       inDoc(doc, function () { mount('answeredCount', [text(count ? T.answeredCount(count) : '')]); });
     });
+    var open = document.getElementById('report-open');
+    if (open) {
+      var left = answerCards.filter(function (entry) { return entry.doc === DOCS.report && !readCard(entry); }).length;
+      open.textContent = left ? T.reportOpen(left) : '';
+      open.hidden = !left;
+    }
     paintSend();
   }
   function sameAnswer(a, b) {
@@ -3930,6 +3941,13 @@
     var items = el('ul', 'checklist');
     list(step.items).forEach(function (item, i) { items.appendChild(itemRow(item, i, key)); });
     body.appendChild(items);
+    // 手順 1 で埋めるのは、このページの下のコードベース レポート
+    if (id === '1') {
+      var jump = el('a', 'btn btn-sm step-link');
+      jump.setAttribute('href', '#codebase-report');
+      jump.textContent = T.reportLinkStep;
+      body.appendChild(jump);
+    }
 
     box.appendChild(summary);
     box.appendChild(body);
