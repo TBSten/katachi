@@ -81,7 +81,7 @@ katachi { architecture = "com.example.projectArchitecture" }
 // architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt
 val projectArchitecture = architecture {
     gradle() // wrapper・settings・build スクリプトなど Gradle のファイル
-    "domain".group {
+    "Domain".group {
         "UseCase".role {
             layout { "domain/src/main/kotlin/com/example/useCase" / "*UseCase".ktFile() }
         }
@@ -100,8 +100,7 @@ class ProjectArchitectureTest {
 ./gradlew :architecture-test:katachiDocs    # ドキュメントを architecture-test/build/katachi/docs に書き出す
 ```
 
-最初は、定義していないファイルやディレクトリが違反として出ます。出てきたパスごとに、定義に足すかファイルを消すかを決めていきます。数が多くてすぐには片付かない場合は、今ある違反を [baseline](https://tbsten.github.io/katachi/ja/guides/baseline/)
-でとりあえず許容し、新しい違反だけをエラーにすることもできます。
+最初は、定義していないファイルやディレクトリが違反として出ます。出てきたパスごとに、定義に足すかファイルを消すかを決めていきます。
 
 手順の全体（import・AI エージェント
 に任せる方法）は [初めてのアーキテクチャ定義](https://tbsten.github.io/katachi/ja/get-started/first-architecture/) にあります。

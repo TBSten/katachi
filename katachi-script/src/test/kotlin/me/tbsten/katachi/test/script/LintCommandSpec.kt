@@ -194,6 +194,32 @@ class LintCommandSpec : FreeSpec({
         runCapturing(project, listOf("lint")).out shouldContain "見つかりませんでした（1 件を走査）"
     }
 
+    "1 Role 1 ファイルに分けた定義でも、group の documented = false と group 直下の Role 数を見る" {
+        val roleFiles = (1..8).map { i ->
+            "meta/Doc${i}Role.kt" to """
+                fun DeclarationContainerScope.doc$i() = "Doc$i".role {
+                  layout {
+                    "README$i.md".file()
+                  }
+                }
+            """.trimIndent()
+        }
+        val project = projectWithDefinition(
+            "meta/MetaGroup.kt" to """
+                fun DeclarationContainerScope.meta() =
+                  "Meta".group {
+                    documented = false
+                    ${(1..8).joinToString("\n                    ") { "doc$it()" }}
+                  }
+            """.trimIndent(),
+            *roleFiles.toTypedArray(),
+        )
+        val run = runCapturing(project, listOf("lint"))
+        run.status shouldBe 0
+        run.out shouldNotContain "documented = false の候補"
+        run.out shouldContain "MetaGroup.kt:2 group \"Meta\"（Role 8 個）"
+    }
+
     "init が記録した moduleDir と言語で走査する" {
         val project = createTempDirectory("katachi-project-")
         project.resolve("static-analysis/katachi/src/test/kotlin").createDirectories()
@@ -213,7 +239,7 @@ class LintCommandSpec : FreeSpec({
 private fun projectWithDefinition(vararg files: Pair<String, String>): Path {
     val project = createTempDirectory("katachi-project-")
     val dir = project.resolve("architecture-test/src/test/kotlin").createDirectories()
-    for ((name, source) in files) dir.resolve(name).writeText(source + "\n")
+    for ((name, source) in files) dir.resolve(name).also { it.parent.createDirectories() }.writeText(source + "\n")
     return project
 }
 

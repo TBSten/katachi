@@ -91,20 +91,18 @@ katachi が必要かどうか迷う場合は、先に [モチベーション](/k
         pluginManagement {
           repositories {
             gradlePluginPortal()
-            mavenCentral()
+            mavenCentral() // katachi の Gradle plugin は Maven Central に公開している
           }
         }
 
         dependencyResolutionManagement {
           repositories {
-            mavenCentral()
+            mavenCentral() // katachi の依存も Maven Central から取る
           }
         }
 
         include(":architecture-test")
         ```
-
-        katachi の Gradle plugin は Gradle Plugin Portal ではなく Maven Central に公開しています。`pluginManagement { }` に `mavenCentral()` が無いと、plugin を解決できません。katachi・Kotlin・JUnit の依存も Maven Central から取るので、`dependencyResolutionManagement { }` にも `mavenCentral()` が要ります（プロジェクトですでに書いていれば足さなくて構いません）。
 
     2. **依存を書く**
 

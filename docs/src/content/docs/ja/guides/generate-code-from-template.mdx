@@ -75,8 +75,8 @@ layout の宣言に `.template { }` を追加すると、そのファイルを�
 | 書いたもの | 意味 |
 | --- | --- |
 | `Controller` | group に入っていない Role `Controller` のテンプレート |
-| `feature.Screen` | group `feature` の Role `Screen` のテンプレート |
-| `feature.Screen.preview` | group `feature` の Role `Screen` の、`id` が `preview` のテンプレート |
+| `Feature.Screen` | group `Feature` の Role `Screen` のテンプレート |
+| `Feature.Screen.preview` | group `Feature` の Role `Screen` の、`id` が `preview` のテンプレート |
 | `RepositoryInterface` | group を省いた指定。テンプレートを持つ Role の中で、Role 名 `RepositoryInterface` が1つだけなら使えます |
 
 1つの Role に2つ以上のテンプレートを付けるときは、`.template(id = "preview") { }` のように、それぞれに `id` を付けます。`title` も渡すと、`katachiTemplates` の一覧に `id` の代わりにその名前が出ます。
@@ -109,7 +109,7 @@ layout の宣言に `.template { }` を追加すると、そのファイルを�
 
 | 書き方 | 渡し方 | 受け付ける値 |
 | --- | --- | --- |
-| `val name by stringParameter()` | `--arg name=User` | 何でも |
+| `val summary by stringParameter()` | `--arg summary=Hello` | 何でも |
 | `val withImpl by booleanParameter(default = true)` | `--arg withImpl=false` | `true` / `false`（小文字のみ） |
 | `val pageSize by intParameter(default = 20)` | `--arg pageSize=50` | 整数 |
 | `val visibility by enumParameter(default = Visibility.Public)` | `--arg visibility=Internal` | enum のエントリ名 |
@@ -162,7 +162,7 @@ layout {
     --arg "template=FeatureComponent" --arg "feature=home" --arg "name=HomeUserCard"
 ```
 
-モジュールのディレクトリとパッケージのディレクトリには、同じ名前 `feature` の capture を書いています。同じ名前の capture は同じ値になるので、`--arg feature=home` の1つで両方の `*` が `home` に決まり、`HomeUserCard.kt` は `feature/home/` の `component/` に入ります。
+同じ名前の capture は同じ値になるので、`--arg feature=home` の1つで両方の `*` が決まります。
 
 capture の名前は、そのまま `--arg` の引数名になります。テンプレートの中では、同じ値を `captureValue("feature")` のように読めます。
 
@@ -236,7 +236,7 @@ katachi {
 ./gradlew katachiTemplates
 
 # 1つのテンプレートの詳細
-./gradlew katachiTemplates --arg "template=data.RepositoryInterface"
+./gradlew katachiTemplates --arg "template=Data.RepositoryInterface"
 ```
 
 詳細には、パラメータの一覧、生成先のパスとファイルの中身、`katachiTemplate` のコマンドが表示されます。

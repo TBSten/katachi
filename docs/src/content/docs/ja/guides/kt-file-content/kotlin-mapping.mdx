@@ -195,7 +195,7 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
     </td>
     <td>
       ```kt
-      // val を書かない引数はプロパティでない引数
+      // val を書いた引数はプロパティになるので、allow(`val`, ...) も要る
       allow(value, `class`, "*Id") { allow(`val`, "value") }.primaryConstructor("val value: String")
       // 可視性だけを指定
       allow(`class`, "*Session").primaryConstructor(private, anyArgs())
@@ -275,6 +275,7 @@ Kotlin のソースに書けるものを、`ktFileContent { }` のどの行で�
       引数の `vararg` / `noinline` / `crossinline` / デフォルト値（書かなければ問わない）
       ```kt
       fun log(vararg args: Any) {}
+      inline fun run(noinline block: () -> Unit) {}
       fun save(force: Boolean = false) {}
       ```
     </td>

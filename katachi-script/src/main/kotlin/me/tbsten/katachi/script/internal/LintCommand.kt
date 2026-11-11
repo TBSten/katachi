@@ -22,7 +22,12 @@ private class Token(val type: String, val value: String?, val line: Int)
 
 private val NO_TOKEN = Token("", null, 0)
 
-private class LintRole(val name: String, val path: Path, val line: Int, val group: LintGroup?) {
+private class LintRole(val name: String, val path: Path, val line: Int, group: LintGroup?) {
+    /** The groups around it: the one it is written in, or the ones that call the function that declares it. */
+    val groups = listOfNotNull(group).toMutableList()
+
+    /** The function that declares it (`fun DeclarationContainerScope.x() = "X".role { }`), to link a definition split into files. */
+    var definedIn: String? = null
     val files = mutableListOf<Triple<String, Int, String>>()
     val catchall = mutableListOf<Triple<String, String, Int>>()
     val places = mutableListOf<String>()
@@ -31,16 +36,22 @@ private class LintRole(val name: String, val path: Path, val line: Int, val grou
 
     /** Itself or any group around it writes documented (a group's false reaches the Roles inside). */
     fun documentedSomewhere(): Boolean {
-        var g = group
-        while (g != null) {
+        if (documented) return true
+        val seen = HashSet<LintGroup>()
+        val queue = ArrayDeque(groups)
+        while (queue.isNotEmpty()) {
+            val g = queue.removeFirst()
+            if (!seen.add(g)) continue
             if (g.documented) return true
-            g = g.parent
+            queue += g.parents
         }
-        return documented
+        return false
     }
 }
 
-private class LintGroup(val name: String, val path: Path, val line: Int, val parent: LintGroup?) {
+private class LintGroup(val name: String, val path: Path, val line: Int, parent: LintGroup?) {
+    val parents = listOfNotNull(parent).toMutableList()
+    var definedIn: String? = null
     var directRoles = 0
     var hasGroup = false
     var documented = false
@@ -173,12 +184,29 @@ private val CONSTRAINT_CALLS = setOf("fileConstraint", "konsist", "ktFileContent
 
 private class StackEntry(val kind: String, val name: String? = null, val group: LintGroup? = null)
 
-private fun scan(path: Path, roles: MutableList<LintRole>, groups: MutableList<LintGroup>, decls: MutableMap<Path, MutableList<Decl>>) {
+/**
+ * Reads one definition file. [calls] collects, per function name, the groups whose body calls it
+ * (`"Meta".group { projectReadme() }`), so that a Role or group declared in another file by that
+ * function can be put back inside them.
+ */
+private fun scan(
+    path: Path,
+    roles: MutableList<LintRole>,
+    groups: MutableList<LintGroup>,
+    decls: MutableMap<Path, MutableList<Decl>>,
+    calls: MutableMap<String, MutableList<LintGroup>>,
+) {
     val src = String(Files.readAllBytes(path), Charsets.UTF_8)
     val tokens = tokenize(src)
     val stack = mutableListOf<StackEntry>()
     var role: LintRole? = null
+    // The top-level function being read: `fun DeclarationContainerScope.name(...)`.
+    var function: String? = null
     for ((k, tok) in tokens.withIndex()) {
+        if (stack.isEmpty() && tok.type == "id" && tok.value == "fun") {
+            function = tokens.drop(k + 1).takeWhile { it.value != "(" && it.value != "{" && it.value != "=" }.lastOrNull { it.type == "id" }?.value
+            continue
+        }
         val prev = tokens.getOrNull(k - 1) ?: NO_TOKEN
         val prev2 = tokens.getOrNull(k - 2) ?: NO_TOKEN
         val prev3 = tokens.getOrNull(k - 3) ?: NO_TOKEN
@@ -197,6 +225,7 @@ private fun scan(path: Path, roles: MutableList<LintRole>, groups: MutableList<L
                     "role" in kinds || "other" in kinds || Regex("\\s").containsMatchIn(name) -> stack += StackEntry("other")
                     else -> {
                         val r = LintRole(name, path, nameTok.line, group)
+                        if (group == null) r.definedIn = function
                         role = r
                         roles += r
                         decls.getOrPut(path) { mutableListOf() } += Decl("Role", name)
@@ -206,6 +235,7 @@ private fun scan(path: Path, roles: MutableList<LintRole>, groups: MutableList<L
                 }
             } else if (prev.type == "id" && prev.value == "group" && prev2.value == ".") {
                 val g = LintGroup(if (prev3.type == "str") prev3.value ?: "None" else "?", path, prev3.line, group)
+                if (group == null) g.definedIn = function
                 groups += g
                 decls.getOrPut(path) { mutableListOf() } += Decl("group", g.name)
                 if (group != null) group.hasGroup = true
@@ -223,9 +253,15 @@ private fun scan(path: Path, roles: MutableList<LintRole>, groups: MutableList<L
         }
         if (tok.type == "op" && tok.value == "}") {
             if (stack.isNotEmpty() && stack.removeAt(stack.size - 1).kind == "role") role = null
+            if (stack.isEmpty()) function = null
             continue
         }
         if (!inLayout && tok.type == "id") {
+            // A call with no receiver in a group's body, such as projectReadme(): it may declare a Role in another file.
+            if (role == null && group != null && prev.value != "." && next.value == "(" && tokens.getOrNull(k + 2)?.value == ")") {
+                calls.getOrPut(tok.value!!) { mutableListOf() } += group
+                continue
+            }
             // Outside layout: note constraint calls and documented = ... on the Role / group.
             if (role != null && tok.value in CONSTRAINT_CALLS && (next.value == "(" || next.value == "{")) {
                 role.hasConstraint = true
@@ -309,9 +345,21 @@ internal fun ScriptContext.lintRoles() {
     val roles = mutableListOf<LintRole>()
     val groups = mutableListOf<LintGroup>()
     val decls = LinkedHashMap<Path, MutableList<Decl>>()
+    val calls = HashMap<String, MutableList<LintGroup>>()
     if (root.isDirectory()) {
         val files = Files.walk(root).use { stream -> stream.asSequence().filter { it.isRegularFile() && it.name.endsWith(".kt") }.toList() }
-        for (file in files.sortedWith(compareBy({ it.parent.toString() }, { it.name }))) scan(file, roles, groups, decls)
+        for (file in files.sortedWith(compareBy({ it.parent.toString() }, { it.name }))) scan(file, roles, groups, decls, calls)
+    }
+    // A definition split into files (one Role or group per file): put each back into the groups that call it.
+    for (r in roles) {
+        val callers = r.definedIn?.let { calls[it] }.orEmpty()
+        r.groups += callers
+        callers.forEach { it.directRoles++ }
+    }
+    for (g in groups) {
+        val callers = g.definedIn?.let { calls[it] }.orEmpty().filter { it !== g }
+        g.parents += callers
+        callers.forEach { it.hasGroup = true }
     }
 
     val warnings = mutableListOf<Pair<LintRole, List<String>>>()

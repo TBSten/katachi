@@ -13,7 +13,7 @@ import me.tbsten.katachi.script.option.DependencyStyle
 import me.tbsten.katachi.script.option.TestFramework
 
 /**
- * The `katachi scaffold` command: creates the test module and adds it to the build.
+ * The `katachi scaffold` command: creates the verification module and adds it to the build.
  *
  * Building one is writing `katachi scaffold ...` in a shell: the methods are named after the
  * options of `katachi scaffold --help` and add the same flag. Each returns a new
@@ -72,7 +72,7 @@ public class ScaffoldCommand internal constructor(
     public fun `no-konsist`(enabled: Boolean = true): ScaffoldCommand = next(line.withFlag("--no-konsist", enabled))
 
     /**
-     * Same as `katachi scaffold --module-dir <path>` on the command line: where the test module goes, relative to the Gradle root.
+     * Same as `katachi scaffold --module-dir <path>` on the command line: where the verification module goes, relative to the Gradle root.
      *
      * @param path Such as `static-analysis/katachi`.
      */
@@ -94,7 +94,7 @@ public class ScaffoldCommand internal constructor(
     public fun deps(style: DependencyStyle): ScaffoldCommand = next(line.with("--deps", style.value))
 
     /**
-     * Same as `katachi scaffold --force` on the command line: overwrites an existing test module.
+     * Same as `katachi scaffold --force` on the command line: overwrites an existing verification module.
      *
      * @param enabled False takes the option off again.
      */

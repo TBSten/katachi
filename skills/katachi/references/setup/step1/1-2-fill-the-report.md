@@ -31,6 +31,9 @@ In `modules`, write `path` / `kind` / `responsibility` / `buildFile` for each mo
 
 - **Write Role candidates as a tree of groups.** Nest groups in the order "module → layer → kind", and do not line up 8 or more Roles in one group (if they do, split the group)
 - **`build.gradle.kts` / `settings.gradle.kts` / `gradle.properties` / the version catalog are covered by `gradle()`.** Do not make a Role per kind of module, and do not write them into `roles` (except `buildSrc` and builds added with `includeBuild`). The exception is a constraint you want to put on a build file (that the namespace matches the package, say); record it as a `roles` entry with `constraintOnly: true` and the reason in `note`. In the definition it does not become a Role: write the constraint in a hook such as `gradle { buildScript { } }`. A hook's constraint receives the build files of every module, so to look at one module only, narrow them inside the constraint (the Gradle paragraph under "One Role = one kind of file" in 3-2)
+- **Two Roles must not claim the same file** (`[AmbiguousLayout]`). A layout pattern cannot say "every `*.kt` except `*Token.kt`", so split two kinds only when a name pattern or a directory tells them apart (`*Token.kt` and `*Annotation.kt`, or `token/` and `annotation/`). If nothing does, keep them in one Role
+- **Do not name the README's Role `Readme`.** Its documentation page would differ from the index `README.md` only in case, and `katachiDocs` fails. Use `ProjectReadme`
+- **Write down conventions even when detekt, Konsist, Android Lint or the like already checks them.** Whether katachi checks them too is decided in 3-2 ("Dividing the work with the static analysis already there": a convention that belongs to a Role goes into katachi). Read that paragraph before you put a question about it in `questions`
 - **What gets `documented = false`:** (1) generated output (build output, committed generated code), (2) build and tool configuration (`.editorconfig`, CI yaml, lint configuration), (3) single-file helpers (README, LICENSE, `.gitignore`). Only Roles that are useful to a reader go into the generated documentation
 - **For the Android staples (`AndroidManifest.xml`, `res/`), copy the recipe and adapt it.** Base them on the definition in the Android recipe page (https://tbsten.github.io/katachi/recipes/android-three-layer/)
 
@@ -42,7 +45,7 @@ Once everything is filled in, mark `1-2` done.
 
 Ask like this. Do not re-list the questions in chat.
 
-1. Once `questions` is written, show the page's URL (the path to `check-list.html`, starting with `file://`, with `#report-questions` at the end) and have the user answer in "4. Questions for you" of the codebase report in the browser and hand the answers back with "Copy all" (paste into the chat) or "Save as JSON"
+1. Once `questions` is written, show the page's URL (the path to `check-list.html`, starting with `file://`, with `#report-questions` at the end) and have the user answer in "4. Questions for you" of the codebase report in the browser and hand the answers back with "Copy all" (paste into the chat) or "Save as JSON". On a Japanese page, call them by the names the page shows: 「4. ユーザに確認したいこと」, 「まとめてコピー」, 「JSON を保存」 (0-3)
 2. Copy the entries of the JSON you receive into the report's `answers` (0-3, "Answers")
 3. If an answer arrives in chat, write it into `answers` the same way. The id decides the block (`cq…` is the report, `q…` the checklist)
 

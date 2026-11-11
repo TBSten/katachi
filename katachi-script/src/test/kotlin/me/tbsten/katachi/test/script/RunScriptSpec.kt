@@ -79,7 +79,7 @@ class RunScriptSpec : FreeSpec({
 
     "人が打つコマンドは agent の下には無い" {
         val run = runCapturing(createTempDirectory("katachi-script-"), listOf("agent", "scaffold"))
-        run.status shouldBe 1
+        run.status shouldBe 2
         run.err shouldContain "katachi agent のサブコマンドではありません: scaffold"
     }
 
@@ -91,7 +91,7 @@ class RunScriptSpec : FreeSpec({
 
     "知らないサブコマンドは止まる" {
         val run = runCapturing(createTempDirectory("katachi-script-"), listOf("nothing"))
-        run.status shouldBe 1
+        run.status shouldBe 2
         run.err shouldContain "[x] 知らないサブコマンドです: nothing"
     }
 

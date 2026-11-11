@@ -1394,7 +1394,7 @@
       "items": [
         {
           "id": "1-1",
-          "label": "Read the codebase and the project's own documentation",
+          "label": "Read the project's own documentation before the code",
           "done": false
         },
         {
@@ -1411,7 +1411,7 @@
     },
     {
       "id": "2",
-      "title": "Create the test module (default architecture-test/) and wire it into the build",
+      "title": "Create the verification module (default architecture-test/) and wire it into the build",
       "warning": null,
       "items": [
         {
@@ -1421,7 +1421,7 @@
         },
         {
           "id": "2-2",
-          "label": "Confirmed that with an empty definition, the test module's test fails only with Unexpected",
+          "label": "Confirmed that with an empty definition, the verification module's test fails only with Unexpected",
           "done": false
         }
       ]
@@ -1433,12 +1433,12 @@
       "items": [
         {
           "id": "3-1",
-          "label": "Fetched and read the topics in step 3-1 of the guide (layout, role, basic-api, and kt-file-content if used) from the documentation pages",
+          "label": "Read the documentation pages in step 3-1 (layout, role, basic-api; kt-file-content, gradle and source sets when the project needs them)",
           "done": false
         },
         {
           "id": "3-2",
-          "label": "Wrote the architecture { } definition and saved the test module's test output as the pre-refactoring baseline",
+          "label": "Wrote the architecture { } definition and saved the verification module's test output as the pre-refactoring baseline",
           "done": false
         },
         {
@@ -1455,17 +1455,17 @@
       "items": [
         {
           "id": "4-1",
-          "label": "Ran the test module's test",
+          "label": "Ran the verification module's test",
           "done": false
         },
         {
           "id": "4-2",
-          "label": "Resolved errors not caused by katachi (Gradle, Java, etc.)",
+          "label": "Handled the errors: fixed those not caused by katachi (Gradle, Java, etc.) and recorded the violations left",
           "done": false
         },
         {
           "id": "4-3",
-          "label": "Generated docs with the test module's katachiDocs and checked the output",
+          "label": "Generated docs with the verification module's katachiDocs and checked the output",
           "done": false
         }
       ]
@@ -1500,7 +1500,7 @@
         },
         {
           "id": "6-2",
-          "label": "Added the test module's test to CI",
+          "label": "Added the verification module's test to CI",
           "done": false
         },
         {
@@ -1510,7 +1510,7 @@
         },
         {
           "id": "6-4",
-          "label": "Wrote a template and confirmed the test module's test succeeds right after generating one file",
+          "label": "Wrote a template and confirmed the verification module's test succeeds right after generating one file",
           "done": false
         }
       ]
@@ -1561,7 +1561,7 @@
       "items": [
         {
           "id": "1-1",
-          "label": "Read the codebase and the project's own documentation",
+          "label": "Read the project's own documentation before the code",
           "done": true
         },
         {
@@ -1578,7 +1578,7 @@
     },
     {
       "id": "2",
-      "title": "Create the test module (default architecture-test/) and wire it into the build",
+      "title": "Create the verification module (default architecture-test/) and wire it into the build",
       "warning": null,
       "items": [
         {
@@ -1588,7 +1588,7 @@
         },
         {
           "id": "2-2",
-          "label": "Confirmed that with an empty definition, the test module's test fails only with Unexpected",
+          "label": "Confirmed that with an empty definition, the verification module's test fails only with Unexpected",
           "done": true
         }
       ]
@@ -1600,12 +1600,12 @@
       "items": [
         {
           "id": "3-1",
-          "label": "Fetched and read the topics in step 3-1 of the guide (layout, role, basic-api, and kt-file-content if used) from the documentation pages",
+          "label": "Read the documentation pages in step 3-1 (layout, role, basic-api; kt-file-content, gradle and source sets when the project needs them)",
           "done": true
         },
         {
           "id": "3-2",
-          "label": "Wrote the architecture { } definition and saved the test module's test output as the pre-refactoring baseline",
+          "label": "Wrote the architecture { } definition and saved the verification module's test output as the pre-refactoring baseline",
           "done": true
         },
         {
@@ -1622,17 +1622,17 @@
       "items": [
         {
           "id": "4-1",
-          "label": "Ran the test module's test",
+          "label": "Ran the verification module's test",
           "done": true
         },
         {
           "id": "4-2",
-          "label": "Resolved errors not caused by katachi (Gradle, Java, etc.)",
+          "label": "Handled the errors: fixed those not caused by katachi (Gradle, Java, etc.) and recorded the violations left",
           "done": true
         },
         {
           "id": "4-3",
-          "label": "Generated docs with the test module's katachiDocs and checked the output",
+          "label": "Generated docs with the verification module's katachiDocs and checked the output",
           "done": true
         }
       ]
@@ -1667,7 +1667,7 @@
         },
         {
           "id": "6-2",
-          "label": "Added the test module's test to CI",
+          "label": "Added the verification module's test to CI",
           "done": false
         },
         {
@@ -1677,7 +1677,7 @@
         },
         {
           "id": "6-4",
-          "label": "Wrote a template and confirmed the test module's test succeeds right after generating one file",
+          "label": "Wrote a template and confirmed the verification module's test succeeds right after generating one file",
           "done": false
         }
       ]
@@ -1714,12 +1714,12 @@
   "changedFiles": [
     {
       "path": "architecture-test/build.gradle.kts",
-      "change": "Added",
-      "summary": "katachi's test module"
+      "change": "New",
+      "summary": "katachi's verification module"
     },
     {
       "path": "settings.gradle.kts",
-      "change": "Changed",
+      "change": "Modified",
       "summary": "Included architecture-test"
     }
   ]
@@ -1814,7 +1814,7 @@
       "forbidden": [],
       "examples": ["app/build.gradle.kts"],
       "count": 1,
-      "note": "A Role that exists only to check that the namespace matches the app package name"
+      "note": "Checks with a hook on gradle() that the namespace matches the app package name (no Role is created)"
     }
   ],
   "excluded": [
@@ -1850,9 +1850,9 @@
     },
     {
       "role": "UseCaseImplementation",
-      "files": ["${name}UseCaseImpl.kt"],
+      "files": ["${name}UseCaseImplementation.kt"],
       "params": ["name"],
-      "basedOn": "data/src/main/kotlin/com/example/app/data/useCase/GetUserUseCaseImpl.kt",
+      "basedOn": "data/src/main/kotlin/com/example/app/data/useCase/GetUserUseCaseImplementation.kt",
       "reason": "All 18 implement a UseCase, and their bodies share one shape"
     }
   ]
@@ -1907,7 +1907,7 @@
 
   <section class="block" id="preferences" data-fb="checklist.preferences" data-fb-label="Writing preferences">
     <h2>Writing preferences</h2>
-    <p class="lede">How the definition is written, as asked in step 1-3. Values that differ from the recommendation are highlighted. The test module location is in the meta information.</p>
+    <p class="lede">How the definition is written, as asked in step 1-3. Values that differ from the recommendation are highlighted. The verification module location is in the meta information.</p>
     <div data-render="preferences"></div>
   </section>
 
@@ -2148,7 +2148,7 @@
       ['testFramework', 'Test framework', null],
       ['dependencyStyle', 'How dependencies are written', null],
       ['constraintNames', 'Put question numbers in constraint names?', 'plain'],
-      ['oneRolePerFile', 'One Role per file?', 'yes']
+      ['oneRolePerFile', 'Split the definition files per Role?', 'yes']
     ],
     prefNotRecordedDetected: 'Not recorded (detected value is used)',
     prefNotRecordedDefault: 'Not recorded (recommendation is used)',
@@ -2157,7 +2157,7 @@
     prefHeaders: ['key', 'Question', 'Value', 'Recommended'],
     allGreen: 'None (all green)',
     violationHeaders: ['Violation', 'Location', 'Why not fixed', 'Suggested next step'],
-    changedHeaders: ['Path', 'Added / Changed', 'Summary'],
+    changedHeaders: ['Path', 'New / Modified', 'Summary'],
     answersIntro: 'These are my answers to "Questions for you" in the katachi installation checklist (check-list.html). The outermost keys of the JSON (checklist / report) are the ids of the JSON blocks in that file. Copy each into answers of its block.',
     reportLink: 'View the report',
     backToChecklist: 'Back to the checklist',

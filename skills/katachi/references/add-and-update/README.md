@@ -17,15 +17,15 @@ If the check is failing and you do not yet know why, read [../fix-violations/REA
 ## The loop every change follows
 
 1. **Find the definition and how the check runs.** The verification module is the Gradle module that applies the `me.tbsten.katachi` plugin; its `katachi { architecture = "…" }` names `projectArchitecture`, and the definition lives under `src/test/kotlin/<package>/test/architecture/` of that module. Read the files you are about to change, and how the existing ones are split and named, before writing anything: follow the conventions already there.
-2. **Take the result before the change.** Run the check once and keep the output.
+2. **Take the result before the change.** Run the check once and keep the log.
 
    ```sh
-   ./gradlew :architecture-test:test -Dkatachi.maxViolations=all
+   katachi agent test --save before-refactor
    ```
 
-   `-Dkatachi.maxViolations=all` prints every violation instead of the first 10. `katachi agent test --save before-refactor` does the same, prints a summary and keeps the log.
+   It runs `./gradlew :architecture-test:test` with every violation in the log (not only the first 10), prints a summary, and keeps the log as `test-before-refactor.log` (in `tmp/` of the setup's working directory, or in `build/katachi/` once that directory is gone).
 3. **Make the smallest change that says what is true now.** Declare the new thing where it belongs; do not widen an existing pattern to swallow it.
-4. **Run the check again and compare.** Every violation that went away should be one you meant to remove, and nothing should have appeared. `katachi agent test --save after-refactor` then `katachi agent compare-violations` does the comparison.
+4. **Run the check again and compare.** Every violation that went away should be one you meant to remove, and nothing should have appeared. `katachi agent test --save after-refactor` then `katachi agent compare-violations` (no arguments: it reads the two logs above) does the comparison.
 5. **Make sure it still fails when it should.** If the check was green before and after, a loosened definition looks the same as a correct one. Put a file no Role covers in the area you changed, run the check, see `[UnexpectedFile]`, and delete the file.
 6. **Run `katachi lint`.** It lists Roles that look like they hold different kinds of files, hand-written Roles for Gradle files, and flat groups. Fix what it prints, or tell the user why you kept it.
 7. **Write the descriptions.** A new Role gets `summary` (one sentence that describes every file it holds), `description` if there is more to say, and `example()` with a real file. The check does not ask for them: `[MissingDescription]` only reports a Role that may live in two or more places (one per module, say) where a place has no `description = "..."` saying when it is the right one. Write them without waiting for a warning.

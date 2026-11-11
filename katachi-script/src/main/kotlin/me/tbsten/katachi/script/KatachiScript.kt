@@ -17,7 +17,7 @@ import me.tbsten.katachi.script.option.Lang
  *
  * Run one with `katachi setup.katachi.kts`. Arguments after the file name are in [args][KatachiScript.args].
  *
- * ## Example 1: lay out the test module
+ * ## Example 1: lay out the verification module
  *
  * ```kt
  * // setup.katachi.kts

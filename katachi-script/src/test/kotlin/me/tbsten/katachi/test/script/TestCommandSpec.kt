@@ -147,7 +147,7 @@ class TestCommandSpec : FreeSpec({
 
         "Gradle 向けの引数を -- の前に書くと止まる" {
             val run = TestFixture().run("agent", "test", "--info")
-            run.status shouldBe 1
+            run.status shouldBe 2
             run.err shouldContain "test: 知らないオプションです: --info（Gradle に渡す引数は -- の後ろに）"
         }
     }
@@ -160,7 +160,7 @@ class TestCommandSpec : FreeSpec({
             val run = fixture.run("agent", "compare-violations")
 
             run.status shouldBe 0
-            run.out shouldContain "違反の見出し: 前 2 件 / 後 2 件"
+            run.out shouldContain "見出し（違反と警告）: 前 2 件 / 後 2 件"
             run.out shouldContain "[MissingDescription]（比べない）: 前 1 件 / 後 1 件"
             run.out shouldContain "検査結果は変わっていません。"
         }
@@ -197,13 +197,13 @@ class TestCommandSpec : FreeSpec({
 
             val run = fixture.run("agent", "compare-violations")
 
-            run.status shouldBe 1
+            run.status shouldBe 2
             run.err shouldContain "に検査の結果がありません。"
         }
 
         "ログが無ければ保存先を案内して止まる" {
             val run = TestFixture().run("agent", "compare-violations")
-            run.status shouldBe 1
+            run.status shouldBe 2
             run.err shouldContain "test-before-refactor.log がありません。katachi agent test --save <名前> で取るか、./gradlew :architecture-test:test の出力をこのパスに保存してください"
         }
 

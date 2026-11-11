@@ -21,7 +21,7 @@ touch .katachi-probe && rm .katachi-probe
 ./gradlew --version
 ```
 
-> `# In a project that needs a JDK other than the java on PATH, prefix every ./gradlew and katachi call from here on with the same JAVA_HOME=<path>. Shell variables don't persist across calls. doctor and test print "JDK: N (source)"; if the source is JAVA_HOME, add it every time.`
+**When the project needs a JDK other than the `java` on PATH**, prefix every `./gradlew` and `katachi` call from here on with the same `JAVA_HOME=<path>`. Shell variables do not persist across calls. `doctor` prints `Gradle's JDK: N (source)` and `katachi agent test` prints `JDK: N (source)`; if the source is `JAVA_HOME`, add it every time.
 
 ```sh
 # 4. Running katachi (and checking Gradle's JDK and the project's Kotlin)
@@ -63,7 +63,7 @@ Once `kotlin -version` works, pick the working directory as in 0-2 (only its pla
 me.tbsten.katachi.script.main(args)
 ```
 
-From here on, **read every `katachi …` in these steps as `kotlin <workdir>/tmp/katachi.main.kts …`**, with the same arguments (`kotlin <workdir>/tmp/katachi.main.kts --version` is 1). Write that line into `<workdir>/tmp/katachi-command.txt`, so that a later session runs katachi the same way. Two differences from the `katachi` command:
+From here on, **read every `katachi …` in these steps as `kotlin <workdir>/tmp/katachi.main.kts …`**, with the same arguments (`kotlin <workdir>/tmp/katachi.main.kts --version` is 1). Write that line into `<workdir>/tmp/katachi-command.txt`, so that a later session runs katachi the same way. Three differences from the `katachi` command:
 
 - `kotlin` takes every argument that starts with `-D`, `-J` or `@` for itself, even after the script. Put `katachi-escaped:` in front of such an argument (`… agent test -- katachi-escaped:-Dkatachi.baseline.update=true`); katachi removes it.
 - The first run downloads katachi-script and compiles the script, so it takes a while. Later runs use the cache.

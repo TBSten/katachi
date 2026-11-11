@@ -14,7 +14,7 @@ import me.tbsten.katachi.script.option.Lang
  * returns a new value, so one [Katachi] can hand out any number of commands. A command prints as
  * the line you would type, and [KatachiCommand.execute] runs it.
  *
- * ## Example 1: lay out the test module from a script
+ * ## Example 1: lay out the verification module from a script
  *
  * ```kt
  * @file:DependsOn("me.tbsten.katachi:katachi-script:0.4.0")

@@ -195,7 +195,7 @@ You write the same lines at the top level of a file and inside the `{ }` of a cl
     </td>
     <td>
       ```kt
-      // A parameter without val is not a property
+      // A parameter with val becomes a property, so allow(`val`, ...) is needed too
       allow(value, `class`, "*Id") { allow(`val`, "value") }.primaryConstructor("val value: String")
       // Specify only the visibility
       allow(`class`, "*Session").primaryConstructor(private, anyArgs())
@@ -275,6 +275,7 @@ Write modifiers before the kind, in the same order as in Kotlin source. A modifi
       Parameter `vararg` / `noinline` / `crossinline` / default values (not checked if you do not write them)
       ```kt
       fun log(vararg args: Any) {}
+      inline fun run(noinline block: () -> Unit) {}
       fun save(force: Boolean = false) {}
       ```
     </td>

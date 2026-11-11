@@ -14,13 +14,13 @@ private val PACKAGE_NAME = Regex("^[a-z][a-zA-Z0-9_]*(\\.[a-z][a-zA-Z0-9_]*)*$")
 private class Sourced(val value: String, val source: Msg)
 
 /**
- * `scaffold --package <pkg> ...`: creates the test module (build.gradle.kts, ProjectArchitecture.kt,
+ * `scaffold --package <pkg> ...`: creates the verification module (build.gradle.kts, ProjectArchitecture.kt,
  * the test) and wires it into settings, the root build file and the catalog. Runs in the Gradle
  * root. The kit's `cmd_scaffold`.
  */
 internal fun ScriptContext.runScaffold(args: List<String>): Int {
     val parsed = parseArgs(commandSpec("scaffold"), args)
-    parsed.positionals.firstOrNull()?.let { die(Messages.Scaffold.unknownOption(it)) }
+    parsed.positionals.firstOrNull()?.let { dieUsage(Messages.Scaffold.unknownOption(it)) }
     val pkg = parsed.value("--package") ?: die(Messages.Scaffold.packageRequiredExamplePackage)
     if (!PACKAGE_NAME.matches(pkg)) die(Messages.Scaffold.packageNotValidPackage(pkg))
     var version = parsed.value("--katachi")?.removePrefix("v") ?: ""
@@ -195,7 +195,12 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
     // Without it, a project that ignores only the root's /build sees the module's build/ as Unexpected files on the first test.
     val buildDirIgnored = pathIsIgnored(root, "${module.dir}/build")
     note(Messages.Scaffold.ignoreBuild(buildDirIgnored, "${fileUri(module.dir)}/.gitignore"))
-    note(Messages.Scaffold.addRoot(yesNo(rootNeedsPlugin), fileUri(rootBuild.name)))
+    // A link to a root build file that is not there and will not be written points nowhere.
+    if (rootNeedsPlugin || root.resolve(rootBuild.name).isRegularFile()) {
+        note(Messages.Scaffold.addRoot(yesNo(rootNeedsPlugin), fileUri(rootBuild.name)))
+    } else {
+        note(Messages.Scaffold.addRootNoRootBuildFile)
+    }
     if (placement == KotlinPlacement.MODULE) {
         note(Messages.Scaffold.subprojectDeclaresKotlinPlugin(module.gradlePath, kotlinPlugin))
     }

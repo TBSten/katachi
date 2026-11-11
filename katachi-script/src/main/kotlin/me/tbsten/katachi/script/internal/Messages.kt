@@ -76,6 +76,16 @@ internal object Messages {
             en = "Everything this needs is available (katachi $scriptVersionCurrent).",
         )
 
+        fun somethingNeedsAttention(scriptVersionCurrent: Any?): Msg = Msg(
+            ja = "対応が必要なものがあります（katachi $scriptVersionCurrent）。下の [!] を見てください。",
+            en = "Something needs attention (katachi $scriptVersionCurrent). See the [!] below.",
+        )
+
+        val kotlinTooOldSuffix: Msg = Msg(
+            ja = "（古すぎます）",
+            en = " (too old)",
+        )
+
         fun langMustEnJa(value: Any?): Msg = Msg(
             ja = "--lang は en か ja です（指定されたのは '$value'）。",
             en = "--lang must be en or ja (got '$value').",
@@ -566,11 +576,16 @@ internal object Messages {
             en = "Add to root:  $yesNoRootNeedsPlugin ($rootBuildNameUri)",
         )
 
+        val addRootNoRootBuildFile: Msg = Msg(
+            ja = "ルートに追加: no（ルートの build ファイルはありません）",
+            en = "Add to root:  no (there is no root build file)",
+        )
+
         fun subprojectDeclaresKotlinPlugin(moduleGradlePath: Any?, kotlinPlugin: Any?): Msg = Msg(
             ja = "              サブプロジェクトが Kotlin プラグインをバージョン付きで宣言しているため、ルートには足さず $moduleGradlePath にバージョンを書きます（$kotlinPlugin）\n" +
-                "              Gradle が「The Kotlin Gradle plugin was loaded multiple times ...」と警告しますが、この構成では想定どおりです",
+                "                 Gradle が「The Kotlin Gradle plugin was loaded multiple times ...」と警告しますが、この構成では想定どおりです",
             en = "              A subproject declares the Kotlin plugin with a version, so it is not added to the root; the version goes into $moduleGradlePath ($kotlinPlugin)\n" +
-                "              Gradle warns \"The Kotlin Gradle plugin was loaded multiple times ...\"; that is expected with this setup",
+                "                 Gradle warns \"The Kotlin Gradle plugin was loaded multiple times ...\"; that is expected with this setup",
         )
 
         fun addInclude(yesNoSettingsNeedsInclude: Any?, settingsNameUri: Any?): Msg = Msg(
@@ -754,8 +769,8 @@ internal object Messages {
         )
 
         fun violationHeadingsBeforeAfter(a: Any?, b: Any?): Msg = Msg(
-            ja = "違反の見出し: 前 $a 件 / 後 $b 件",
-            en = "Violation headings: before $a / after $b",
+            ja = "見出し（違反と警告）: 前 $a 件 / 後 $b 件",
+            en = "Headings (violations and warnings): before $a / after $b",
         )
 
         fun missingdescriptionNotComparedBefore(countMissingDescriptionBefore: Any?, countMissingDescriptionAfter: Any?): Msg = Msg(
@@ -970,6 +985,9 @@ katachi — katachi の導入と検査を手伝うコマンド
   katachi --help
 
 scaffold は Gradle のルートディレクトリで実行してください。
+
+出力の言語: doctor の --lang、作業用ディレクトリのチェックリストの言語、KATACHI_LANG（ja / en）、
+ロケール（LC_ALL / LC_MESSAGES / LANG）の順に決める。どれも無ければ日本語。
 """.trimIndent(),
             en = """
 katachi - helps you set up and check katachi
@@ -980,7 +998,7 @@ Usage:
       If the JDK is too old, says how to fix it and returns 1.
 
   katachi scaffold --package <com.example.app> [options]
-      Creates the test module (default architecture-test/; change it with --module-dir)
+      Creates the verification module (default architecture-test/; change it with --module-dir)
       and wires it into the build.
 
       --package <pkg>     The app's package name (required)
@@ -990,7 +1008,7 @@ Usage:
                           assert() gets no FileConstraintCheck(), so a fileConstraint written in a
                           gradle { } hook is not evaluated either, and the test fails with
                           [UncheckedFileConstraint] (How to fix: Pass FileConstraintCheck() to assert())
-      --module-dir <path> Where the test module goes (default: meta.moduleDir in the check list of
+      --module-dir <path> Where the verification module goes (default: meta.moduleDir in the check list of
                           the working directory, otherwise architecture-test)
       --test-framework <junit5|kotest|kotest-<style>>
                           Test template and dependencies (default: preferences.testFramework;
@@ -1005,11 +1023,11 @@ Usage:
                           them as libs.katachi and so on. When an alias is already used for
                           something else, an explicit --deps catalog stops; the default falls
                           back to literal
-      --force             Overwrite an existing test module
+      --force             Overwrite an existing verification module
       --dry-run           Write nothing; only print what would be done
 
   katachi lint
-      Reads the definition (src/test/kotlin of the test module) and lists Roles that
+      Reads the definition (src/test/kotlin of the verification module) and lists Roles that
       seem to hold files of different kinds, hand-written Roles for Gradle files (ones with
       constraints also get the way to move them into a gradle { } hook), flat groups, files
       not split, and candidates for documented = false.
@@ -1029,6 +1047,9 @@ Usage:
   katachi --help
 
 Run scaffold in the Gradle root directory.
+
+Output language: --lang of doctor, then the language of the working directory's check list, then
+KATACHI_LANG (ja / en), then the locale (LC_ALL / LC_MESSAGES / LANG). Japanese if none says.
 """.trimIndent(),
         )
 
@@ -1048,7 +1069,8 @@ katachi doctor / katachi scaffold / katachi lint（katachi --help）を使って
       test-before-refactor.log と test-after-refactor.log）。
       [MissingDescription] の警告は、説明を書き足せば減るのが正しいので件数だけ出す。
       変わっていなければ 0、変わっていれば差分を出して 1 を返す。
-      どちらかが違反を先頭の数件だけ出したログ（Showing first ...）なら、比べずに 2 を返す。
+      どちらかが違反を先頭の数件だけ出したログ（Showing first ...）か、ログが無い・検査結果が無いときは、
+      比べずに 2 を返す。
 
   katachi agent test [--save <名前>] [-- <gradle の引数>...]
       検査用モジュールのテスト（./gradlew <module>:test）を実行し、要約だけを出す。
@@ -1063,6 +1085,8 @@ katachi doctor / katachi scaffold / katachi lint（katachi --help）を使って
       前回（previous.log）との差分。
       0 = 通った、1 = 検査が失敗した、2 = 検査まで届かない（コンパイルエラー、gradlew 無し、定義ディレクトリ無し）。
       katachi コマンドが Gradle を起動するのはこのコマンドだけ。
+
+使い方の誤り（知らないオプションやサブコマンド）は、どのコマンドも 2 で終わります。
 
 作業用ディレクトリ（katachi skill の手順が作る、check-list.html と tmp/ を持つディレクトリ）は
 このコマンドを実行した場所の下から自動で見つけます。別の場所からは KATACHI_WORKDIR で指定します。
@@ -1085,10 +1109,11 @@ Usage:
       [MissingDescription] warnings should go down as descriptions are added, so only
       their counts are shown.
       Returns 0 if nothing changed; otherwise prints the difference and returns 1.
-      If either log shows only the first few violations (Showing first ...), returns 2 without comparing.
+      If either log shows only the first few violations (Showing first ...), is missing or has no
+      check result, returns 2 without comparing.
 
   katachi agent test [--save <name>] [-- <gradle arguments>...]
-      Runs the test module's tests (./gradlew <module>:test) and prints only a summary.
+      Runs the verification module's tests (./gradlew <module>:test) and prints only a summary.
       The full log goes to <log place>/test/<UTC time>.log (also copied to latest.log; the previous
       latest.log becomes previous.log). The log place is tmp/ of the working directory, otherwise
       build/katachi/. --save <name> also copies it to <log place>/test-<name>.log
@@ -1100,6 +1125,8 @@ Usage:
       and headings of warnings when the check passes, and the difference from the previous run (previous.log).
       0 = passed, 1 = the check failed, 2 = the check was not reached (compile error, no gradlew,
       no definition directory). This is the only command of katachi that starts Gradle.
+
+A usage error (an unknown option or subcommand) exits with 2 in every command.
 
 The working directory (the one with check-list.html and tmp/ that the katachi skill's steps make)
 is found below the directory this runs in. From elsewhere, point KATACHI_WORKDIR at it.

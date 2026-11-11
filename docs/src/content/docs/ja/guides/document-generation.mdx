@@ -12,7 +12,7 @@ tags:
 import { Aside, Tabs, TabItem, LinkCard, FileTree, CardGrid } from '@astrojs/starlight/components';
 import CodeComparison from '../../../../components/CodeComparison';
 
-katachi は `architecture { }` 定義から markdown ドキュメントを生成できます。
+katachi は `architecture { }` 定義から Markdown ドキュメントを生成できます。
 
 ## ドキュメント生成を実行する
 
@@ -238,7 +238,7 @@ group は入れ子にでき、入れ子の group はその親の group のディ
         }
         ```
     </CodeComparison.Panel>
-    <CodeComparison.Panel label="生成されるマークダウン">
+    <CodeComparison.Panel label="生成される Markdown">
         ```md title="UseCase.md"
         [Architecture](README.md)                    ← パンくず
 
@@ -279,17 +279,17 @@ group に設定できるのは Role と同じ4つです。`example()` だけが�
     `documented = false` にした group は、中の Role とネストした group もまとめてドキュメントに出なくなります。中の Role が自分で何と書いていても同じです。
 
     ```kt
-    "Build".group {
+    "Generated".group {
       documented = false
-      "VersionCatalog".role { }   // group と一緒にドキュメントから外れる
+      "ApiClient".role { }   // group と一緒にドキュメントから外れる
     }
     ```
 
-    値そのものは中の Role や group に写されません（それぞれ自分が書いた値を持ちます）。自作の processor でこの値を見るときは、`Role.groupPath` をたどって親の group の値も見てください。
+    値そのものは中の Role や group に写されません（それぞれ自分が書いた値を持ちます）。
 
 </details>
 
-次の group 定義と、そこから生成されるマークダウンを並べて示します。
+次の group 定義と、そこから生成される Markdownを並べて示します。
 
 <CodeComparison>
     <CodeComparison.Panel label="group 定義">
@@ -315,7 +315,7 @@ group に設定できるのは Role と同じ4つです。`example()` だけが�
         }
         ```
     </CodeComparison.Panel>
-    <CodeComparison.Panel label="生成されるマークダウン">
+    <CodeComparison.Panel label="生成される Markdown">
         ````md title="Domain/README.md"
         [Architecture](../README.md)                  ← パンくず
 
@@ -369,7 +369,7 @@ group に設定できるのは Role と同じ4つです。`example()` だけが�
         }
         ```
     </CodeComparison.Panel>
-    <CodeComparison.Panel label="生成されるマークダウン">
+    <CodeComparison.Panel label="生成される Markdown">
         ```md title="README.md"
         # myapp documentation
 
@@ -426,7 +426,7 @@ var MetadataScope.testPolicy by TestPolicy
             }
             ```
         </CodeComparison.Panel>
-        <CodeComparison.Panel label="生成されるマークダウン">
+        <CodeComparison.Panel label="生成される Markdown">
             ```md title="UseCase.md"
             [Architecture](README.md)
 
@@ -487,7 +487,7 @@ var MetadataScope.testPolicy by TestPolicy
         }
         ```
     </CodeComparison.Panel>
-    <CodeComparison.Panel label="生成されるマークダウン">
+    <CodeComparison.Panel label="生成される Markdown">
         ```md title="ViewModel.md（抜粋）" nocollapse
         ## Kotlin file content
 
@@ -526,7 +526,7 @@ var MetadataScope.testPolicy by TestPolicy
 
 ## まとめ
 
-title / summary / description / example / layout を全部使った Role の定義と、生成されるマークダウンは次のとおりです。
+title / summary / description / example / layout を全部使った Role の定義と、生成される Markdownは次のとおりです。
 
 ```kt nocollapse
 "UseCase".role {

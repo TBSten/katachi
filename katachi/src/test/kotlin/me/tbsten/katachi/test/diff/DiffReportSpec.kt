@@ -8,6 +8,9 @@ import java.io.File
 import java.nio.file.Files
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.diff.DiffReport
+import me.tbsten.katachi.diff.KatachiDiffGitException
+import me.tbsten.katachi.diff.KatachiDiffPullRequestException
+import me.tbsten.katachi.diff.KatachiDiffReportIoException
 import me.tbsten.katachi.diff.KatachiDiffReportNothingToWriteException
 import me.tbsten.katachi.diff.KatachiInvalidDefinitionDiffWeightException
 import me.tbsten.katachi.diff.KatachiInvalidDiffWeightException
@@ -606,6 +609,58 @@ class DiffReportSpec : FreeSpec({
                 RealFileSystem(repo.dir),
             ).exceptionOrNull()
             (failure is KatachiInvalidDiffWeightException) shouldBe true
+        }
+    }
+
+    "存在しない ref は失敗した git のコマンドと、ref の取り方を言って失敗する" {
+        withRepository { repo ->
+            repo.commit("initial")
+            val failure = arch.process(
+                DiffReport,
+                DiffReport.Args(before = "no-such-ref", markdownOutputFile = repo.dir.resolve("out/diff-report.md").path),
+                RealFileSystem(repo.dir),
+            ).exceptionOrNull()
+            (failure is KatachiDiffGitException) shouldBe true
+            failure as KatachiDiffGitException
+            failure.command shouldContain "no-such-ref"
+            failure.message.orEmpty() shouldContain "failed, so the diff report could not be built."
+            failure.message.orEmpty() shouldContain "git fetch --unshallow"
+        }
+    }
+
+    "PR を gh で引けなければ、gh の入れ方と ref を直接渡す方法を言って失敗する" {
+        withRepository { repo ->
+            // No remote: whether gh is installed or not, `gh pr view` cannot resolve the pull request.
+            repo.commit("initial")
+            val failure = arch.process(
+                DiffReport,
+                DiffReport.Args(pr = "1", markdownOutputFile = repo.dir.resolve("out/diff-report.md").path),
+                RealFileSystem(repo.dir),
+            ).exceptionOrNull()
+            (failure is KatachiDiffPullRequestException) shouldBe true
+            failure as KatachiDiffPullRequestException
+            failure.pr shouldBe "1"
+            failure.message.orEmpty() shouldContain "Pull request \"1\" could not be resolved with `gh pr view`."
+            failure.message.orEmpty() shouldContain "--arg before=<base> --arg after=<head>"
+        }
+    }
+
+    "書き出し先に書けなければ、その場所と別の出力先の渡し方を言って失敗する" {
+        withRepository { repo ->
+            repo.commit("initial")
+            // A regular file where the output directory should be: the directory cannot be made.
+            repo.write("blocker", "not a directory\n")
+            val output = repo.dir.resolve("blocker/diff-report.html").path
+            val failure = arch.process(
+                DiffReport,
+                DiffReport.Args(markdown = false, htmlOutputFile = output),
+                RealFileSystem(repo.dir),
+            ).exceptionOrNull()
+            (failure is KatachiDiffReportIoException) shouldBe true
+            failure as KatachiDiffReportIoException
+            failure.outputFile shouldBe output
+            failure.message.orEmpty() shouldContain "The diff report could not be written to "
+            failure.message.orEmpty() shouldContain "--arg htmlOutputFile="
         }
     }
 })

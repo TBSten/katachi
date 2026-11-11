@@ -101,7 +101,7 @@ private fun stringField(node: kotlinx.serialization.json.JsonElement?, key: Stri
     return if (value.isString) value.content else ""
 }
 
-// ---------------------------------------------------------------- where the test module goes
+// ---------------------------------------------------------------- where the verification module goes
 
 internal const val MODULE_DIR_DEFAULT: String = "architecture-test"
 

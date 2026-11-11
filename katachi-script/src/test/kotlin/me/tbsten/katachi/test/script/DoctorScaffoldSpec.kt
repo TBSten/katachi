@@ -27,6 +27,18 @@ class DoctorScaffoldSpec : FreeSpec({
             run.err shouldNotContain "git:"
         }
 
+        "Kotlin が古ければ 1 行目で対応が要ると言い、Kotlin の行も出す" {
+            val project = gradleProject(toolchain = 21, kotlin = "1.9.10")
+
+            val run = runCapturing(project, listOf("doctor"), env = mapOf("PATH" to pathWithGit().toString()))
+
+            run.status shouldBe 0
+            run.out.lineSequence().first() shouldContain "対応が必要なものがあります（katachi "
+            run.out shouldNotContain "必要なものはそろっています"
+            run.out shouldContain "Kotlin: 1.9.10（古すぎます）"
+            run.err shouldContain "Kotlin は 1.9.10 です"
+        }
+
         "git が無ければ入れ方を添えて警告し、止めはしない" {
             val run = runCapturing(gradleProject(toolchain = 21), listOf("doctor"), env = mapOf("PATH" to ""))
             run.status shouldBe 0
@@ -189,7 +201,7 @@ class DoctorScaffoldSpec : FreeSpec({
             project.architectureTest().readText() shouldContain "Given(\"ProjectArchitecture\") {"
 
             val unknown = runCapturing(project, listOf("scaffold", "--package", "com.example", "--test-framework", "kotest-freee"), env = javaHome())
-            unknown.status shouldBe 1
+            unknown.status shouldBe 2
             unknown.err shouldContain "--test-framework は junit5 / kotest / kotest-fun /"
         }
 
@@ -218,10 +230,10 @@ class DoctorScaffoldSpec : FreeSpec({
 })
 
 /** A Gradle root with the Kotlin JVM plugin and the JDK [toolchain] pinned in gradle-daemon-jvm.properties. */
-private fun gradleProject(toolchain: Int): Path {
+private fun gradleProject(toolchain: Int, kotlin: String = "2.4.10"): Path {
     val project = createTempDirectory("katachi-project-")
     project.resolve("settings.gradle.kts").writeText("rootProject.name = \"p\"\n")
-    project.resolve("build.gradle.kts").writeText("plugins {\n    kotlin(\"jvm\") version \"2.4.10\" apply false\n}\n")
+    project.resolve("build.gradle.kts").writeText("plugins {\n    kotlin(\"jvm\") version \"$kotlin\" apply false\n}\n")
     project.resolve("gradle").createDirectories().resolve("gradle-daemon-jvm.properties").writeText("toolchainVersion=$toolchain\n")
     return project
 }

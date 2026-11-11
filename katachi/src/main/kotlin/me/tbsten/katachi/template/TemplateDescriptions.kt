@@ -251,6 +251,8 @@ public class TemplateCapturePreview internal constructor(
 /**
  * Which kind of named wildcard a [TemplateCapturePreview] is.
  *
+ * `capture("...")` is the only kind for now. The enum stays so that the JSON keeps its `kind` field and a later kind can be added.
+ *
  * ## Example 1: the captures that name a directory level
  * ```kt
  * detail.captures.filter { it.kind == TemplateCaptureKind.PathCapture }

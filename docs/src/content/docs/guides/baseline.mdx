@@ -68,6 +68,7 @@ fun DeclarationContainerScope.baselineFile() = "BaselineFile".role {
   title = "katachi Baseline file"
   summary = "A file for temporarily suppressing existing violations"
   description = "See: https://tbsten.github.io/katachi/guides/baseline/"
+  documented = false // a file the tool writes, so keep it out of the generated documentation
   layout {
     "katachi-baseline.json".file()
   }
@@ -110,11 +111,20 @@ This is a complete example that puts the setup above together.
 val projectArchitecture = architecture {
   baseline()
 
-  "BaselineFile".role {
-    summary = "A file that temporarily suppresses existing violations"
-    layout {
-      "katachi-baseline.json".file()
+  "Tool".group {
+    "Katachi".group {
+      baselineFile()
     }
+  }
+}
+
+fun DeclarationContainerScope.baselineFile() = "BaselineFile".role {
+  title = "katachi Baseline file"
+  summary = "A file for temporarily suppressing existing violations"
+  description = "See: https://tbsten.github.io/katachi/guides/baseline/"
+  documented = false // a file the tool writes, so keep it out of the generated documentation
+  layout {
+    "katachi-baseline.json".file()
   }
 }
 ```
