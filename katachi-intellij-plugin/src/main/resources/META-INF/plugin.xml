@@ -14,7 +14,12 @@
         Pick a template, or a templateSet (several templates generated together), fill in its arguments and press Generate;
         katachi's Gradle task writes the files. The fields for a directory name suggest the directories that already exist at that place.</p>
         <p>While you write a definition, the IDE completes names (for example <code>arg("...")</code>) and underlines mistakes,
-        and the definition file shows a &#9670; on the declarations of roles and templates with a Code Vision of how many files they hold.</p>
+        and the definition file shows a &#9670; on the declarations of roles and templates with a Code Vision of how many files they hold.
+        Live templates write the skeleton of a definition at the top level of a Kotlin file: <code>katachirole</code> (a role),
+        <code>katachigroup</code> (a group), <code>katachiarchitecture</code> (the architecture), <code>katachifilecontent</code> (a role's ktFileContent as a function),
+        <code>katachitemplate</code> (a template's content as a function), <code>katachitemplateset</code> (a templateSet as a function)
+        and <code>katachitest</code> (the architecture test), named after the file (ServiceRole.kt gives the role Service);
+        inside a role, <code>katachikonsist</code> writes a named konsist constraint.</p>
         <p>Also shown in the editor: a &#9670; in the gutter of every file a role holds (with a menu to jump to the role,
         its templates and the other files of the role), and the violations of the last check under the declaration they reject.
         A file that no role holds gets a notification with a draft of the role to copy, and
@@ -36,6 +41,9 @@
             run the check, and generate from a template (generation is off until you turn it on in Settings &gt; Tools &gt; katachi).
             Not in Android Studio, which has no MCP Server.</li>
             <li>A <code>*.katachi.kts</code> is completed with the definition the installed katachi CLI provides; without a CLI, a notification says how to get one.</li>
+            <li>Live templates for the skeleton of a definition: <code>katachirole</code>, <code>katachigroup</code>, <code>katachiarchitecture</code>, <code>katachifilecontent</code>, <code>katachitemplate</code>,
+            <code>katachitemplateset</code>, <code>katachitest</code> and <code>katachikonsist</code>
+            (Settings &gt; Editor &gt; Live Templates &gt; katachi).</li>
             <li>The gutter, the violations under a declaration, the &#9670; and Code Vision follow the IDE's language (Japanese / English).</li>
             <li>In English, the members of a templateSet row in the tool window are separated by ", ".</li>
             <li>Fixed: an IDE started from the Dock (macOS) finds the kotlin command the katachi CLI runs on.</li>
@@ -128,6 +136,10 @@
         <codeInsight.daemonBoundCodeVisionProvider implementation="me.tbsten.katachi.intellij.ide.authoring.codevision.EntryFilesCodeVisionProvider"/>
         <config.codeVisionGroupSettingProvider implementation="me.tbsten.katachi.intellij.ide.authoring.codevision.KatachiCodeVisionGroup"/>
         <!-- end of L-A -->
+        <!-- The skeletons of a definition (KATACHI-356): katachirole, katachigroup, katachiarchitecture, katachifilecontent, katachitemplate, katachitest, katachitemplateset, katachikonsist.
+             Settings | Editor | Live Templates | katachi edits or turns them off. -->
+        <defaultLiveTemplates file="/liveTemplates/katachi.xml"/>
+        <liveTemplateOptionalProcessor implementation="me.tbsten.katachi.intellij.ide.authoring.livetemplate.KatachiLiveTemplateImports"/>
     </extensions>
 
     <actions>
