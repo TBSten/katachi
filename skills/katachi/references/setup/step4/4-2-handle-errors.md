@@ -4,6 +4,7 @@
 - Errors from architecture violations originating in katachi: do not force a fix.
   - For minor ones, fix them yourself as the agent
     - Do not silence an `[UnexpectedFile]` by adding a line to the `layout { }` of whichever existing Role is nearest. If that Role's `summary` does not describe the file, make a new Role ("One Role = one kind of file" in 3-2)
+    - If the fix moves or renames existing sources or tests, also run the project's own tests (the task the project already uses, such as `./gradlew check`). katachi passing says nothing about code the move broke, such as a test that reads a resource by a relative path
   - For ones where the fix is unclear, leave them as is and have the user confirm in a later step
   - Record errors you leave in place in the checklist's `violations` (`violation` / `location` / `whyNotFixed` / `suggestion`).
   - Put anything you want the user to decide into **the checklist's** `questions` (ids `q1`, `q2`, …; fields in 0-3). The report also has an array with the same name, but that one is for "inconsistencies in the codebase" noticed during step 1 — its purpose is different.
