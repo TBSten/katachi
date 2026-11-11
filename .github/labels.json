@@ -1,0 +1,22 @@
+[
+  { "name": "影響:core/DSL", "color": "1d76db", "description": "アーキテクチャ定義を書く API（architecture・role/group・layout・fileConstraint・template）" },
+  { "name": "影響:core/検査", "color": "1d76db", "description": "assert・validate・違反の形・Severity・baseline・SARIF" },
+  { "name": "影響:core/processor API", "color": "1d76db", "description": "ArchitectureProcessor・processor の引数・組み合わせ・実行" },
+  { "name": "影響:core/IDE 連携", "color": "1d76db", "description": "IDE plugin が読む定義 JSON" },
+  { "name": "影響:core/katachiDocs", "color": "1d76db", "description": "ドキュメント生成の processor" },
+  { "name": "影響:core/katachiTemplate", "color": "1d76db", "description": "テンプレートからのコード生成の processor" },
+  { "name": "影響:core/katachiDiff", "color": "1d76db", "description": "差分レポート・PR コメントの processor" },
+  { "name": "影響:konsist", "color": "1d76db", "description": "ktFileContent・konsist { }" },
+  { "name": "影響:konture", "color": "1d76db", "description": "konture { }" },
+  { "name": "影響:Gradle plugin", "color": "0e8a16", "description": "Gradle のタスク・katachi { }" },
+  { "name": "影響:Actions", "color": "0e8a16", "description": "利用者が uses: で呼ぶ GitHub Action（diff-report・diff-report-comment）" },
+  { "name": "影響:CLI・script", "color": "0e8a16", "description": "katachi コマンド・brew・*.main.kts / *.katachi.kts の DSL" },
+  { "name": "影響:IDE plugin", "color": "5319e7", "description": "ガター・ツールウィンドウ・MCP" },
+  { "name": "影響:skill", "color": "d876e3", "description": "利用者が gh skill install で入れる skills/katachi/" },
+  { "name": "影響:docs", "color": "e4762b", "description": "ドキュメントサイト・README" },
+  { "name": "影響:CI・開発 (ユーザ影響無し)", "color": "bfbfbf", "description": "workflow・PR テンプレート・CONTRIBUTING・architecture-test・benchmark・tool/" },
+  { "name": "影響:sample", "color": "8b5a2b", "description": "サンプル（sample/）" },
+  { "name": "規模:小", "color": "c2e0c6", "description": "数えた変更行数が 100 行未満（PR では workflow が付ける）", "maxLines": 99 },
+  { "name": "規模:中", "color": "fef2c0", "description": "数えた変更行数が 100〜499 行（PR では workflow が付ける）", "maxLines": 499 },
+  { "name": "規模:大", "color": "f9d0c4", "description": "数えた変更行数が 500 行以上（PR では workflow が付ける）" }
+]

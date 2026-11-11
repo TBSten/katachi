@@ -7,6 +7,7 @@ PR 本文・Notion チケット・調査レポート・チャットの報告で�
 - コンポーネント名は CONTRIBUTING の一覧から選ぶ。core の中の部品（layout・role・検査・processor API・katachiDiff など）は、一覧のいちばん内側の名前を `layout › …`・`katachiDiff › …` のように箇所の頭に書く
 - ファイル・Role の一覧は katachiDiff のコメントに任せて書かない
 - PR は `.github/pull_request_template.md` の枠を埋める
+- PR を出したら、「メインの変更」のコンポーネントごとに `影響:<コンポーネント>` ラベルを付ける（core は `影響:core/DSL` のように 2 段目まで、CLI と script は `影響:CLI・script`）。`規模:〜` は workflow が付けるので付けない。詳しくは CONTRIBUTING の「PR のラベル」、ラベルの一覧は `.github/labels.json`
 
 ## PR に書くときの例
 
