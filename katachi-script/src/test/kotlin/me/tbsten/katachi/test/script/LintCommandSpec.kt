@@ -18,6 +18,28 @@ class LintCommandSpec : FreeSpec({
         run.err shouldContain "architecture-test/src/test/kotlin"
     }
 
+    "知らないオプションと余分な引数は、定義を読む前に使い方の誤り（2）で止まる" {
+        val project = projectWithDefinition("CleanRole.kt" to "val clean = \"Clean\".role { }")
+        for (argument in listOf("--bogus", "extra")) {
+            val run = runCapturing(project, listOf("lint", argument))
+            run.status shouldBe 2
+            run.err shouldContain "[x] lint: 知らないオプションです: $argument"
+            run.out shouldNotContain "Role の点検"
+        }
+        val en = runCapturing(project, listOf("lint", "--bogus"), env = mapOf("KATACHI_LANG" to "en"))
+        en.status shouldBe 2
+        en.err shouldContain "[x] lint: unknown option: --bogus"
+        // A usage error wins over a missing definition (1).
+        runCapturing(createTempDirectory("katachi-project-"), listOf("lint", "--bogus")).status shouldBe 2
+    }
+
+    "--help は引数として読まずに使い方を出す" {
+        val run = runCapturing(createTempDirectory("katachi-project-"), listOf("lint", "--help"))
+        run.status shouldBe 0
+        run.out shouldContain "katachi lint"
+        run.out shouldContain "小文字で始まる Role・group の名前"
+    }
+
     "気になる Role が無ければ走査した件数だけを出す（コメントと文字列の中は数えない）" {
         val project = projectWithDefinition(
             "CleanRole.kt" to """

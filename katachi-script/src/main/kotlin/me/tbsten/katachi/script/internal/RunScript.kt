@@ -83,7 +83,7 @@ private fun ScriptContext.dispatch(command: String, args: List<String>): Int = w
     "doctor" -> runDoctor(args)
     "scaffold" -> runScaffold(args)
     "test" -> runTest(args)
-    "lint" -> runLint()
+    "lint" -> runLint(args)
     "compare-violations" -> runCompareViolations(args)
     "internal" -> runInternal(args)
     else -> dieUsage(Messages.RunScript.unknownSubcommandSeeHelp(command))

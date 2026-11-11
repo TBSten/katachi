@@ -110,7 +110,7 @@ class KatachiScriptSpec : FreeSpec({
 
         "知らない internal サブコマンドは止まる" {
             val run = runCapturing(createTempDirectory("katachi-script-"), listOf("internal", "nothing"))
-            run.status shouldBe 1
+            run.status shouldBe 2
             run.err shouldContain "nothing"
         }
 

@@ -151,6 +151,7 @@ case_lint_without_definition() {
 # lint は制約の無い手書き Gradle Role を gradle() の 1 行に置き換えるよう指摘する
 # lint は制約を持つ手書き Gradle Role に、置いたファイルに合う hook への移し方を出す
 # lint は平たい group と分けていないファイルと documented の候補を出す
+# lint は知らないオプションを使い方の誤り（exit 2）にし、点検を走らせない
 case_lint_checks() {
 	d=$(inited lint)
 	(cd "${d}" && "${KATACHI}" scaffold --package com.example.app) >"${WORK}/lint.scaffold.log" 2>&1 || {
@@ -234,6 +235,10 @@ EOF
 	else
 		ng "lint は平たい group と分けていないファイルと documented の候補を出す" "$(cat "${WORK}/lint.log")"
 	fi
+	out=$(cd "${d}" && "${KATACHI}" lint --bogus 2>&1)
+	st=$?
+	[ "${st}" -eq 2 ] && printf '%s\n' "${out}" | grep -q 'lint: 知らないオプションです: --bogus' && ! printf '%s\n' "${out}" | grep -q 'Role の点検' &&
+		ok "lint は知らないオプションを使い方の誤り（exit 2）にする" || ng "lint は知らないオプションを使い方の誤り（exit 2）にする" "st=${st} ${out}"
 }
 
 # scaffold --deps catalog は別名の衝突で止まり、未指定なら literal に落ちる

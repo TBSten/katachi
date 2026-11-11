@@ -29,7 +29,7 @@ sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/r
 - スモーク（`check-install-kit-smoke.sh`。fixture の Gradle は起動しない）: 合成のプロジェクトに `katachi agent test` / `katachi agent compare-violations` /
   `katachi scaffold` / `katachi lint` / `katachi doctor` を当て、終了コードと出力の grep で確かめる。作業用ディレクトリは skill の手順 0-2 どおり
   `skills/katachi/assets/<言語>/` を写して作る。skill のテンプレートの JSON と項目 id、skill が置き換えたサブコマンドが無いこと、
-  チェックリストの言語に従う出力、作業用ディレクトリ無しの test のログの置き場、lint の exit 1 と制約 Role の緩和、scaffold --deps の衝突、
+  チェックリストの言語に従う出力、作業用ディレクトリ無しの test のログの置き場、lint の exit 1・使い方の誤りの exit 2 と制約 Role の緩和、scaffold --deps の衝突、
   test の exit 2 と要約、違反の打ち切り（maxViolations=all・compare-violations の停止）、緑のときの警告、古い Kotlin の警告、の 12 ケース。
   fixture の本番の前に回し、全部緑にしてから Gradle を使う方へ進む
 - やること（スクリプトの冒頭のコメントに詳細）:

@@ -55,7 +55,7 @@ The working directory is only for the setup and is ignored by git, so it may be 
 |---|---|
 | Run the check | `./gradlew :architecture-test:test`, or `katachi agent test`, which prints a summary, keeps the full log and diffs against the previous run |
 | Compare two runs (before and after a change to the definition) | `katachi agent test --save before-refactor`, change, `katachi agent test --save after-refactor`, then `katachi agent compare-violations` |
-| Find Roles that hold different kinds of files, hand-written Gradle Roles, flat groups | `katachi lint` |
+| Find Roles that hold different kinds of files, hand-written Gradle Roles, flat groups, Role and group names that start lowercase | `katachi lint` |
 | Generate a page per Role | `./gradlew :architecture-test:katachiDocs` |
 | Generate a file from a Role's `.template { }` | `./gradlew :architecture-test:katachiTemplate --arg template=<Group.Role> --arg <name>=<value>` |
 

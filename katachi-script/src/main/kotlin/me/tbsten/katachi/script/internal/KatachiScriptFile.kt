@@ -69,7 +69,7 @@ internal fun ScriptContext.runInternal(args: List<String>): Int = when (args.fir
         0
     }
 
-    else -> die(Messages.ScriptFile.unknownInternalSubcommand(args.firstOrNull().orEmpty()))
+    else -> dieUsage(Messages.ScriptFile.unknownInternalSubcommand(args.firstOrNull().orEmpty()))
 }
 
 /** `katachi <file>.katachi.kts [args...]`: compiles and runs the script with `kotlin`, on the jars of this katachi. */

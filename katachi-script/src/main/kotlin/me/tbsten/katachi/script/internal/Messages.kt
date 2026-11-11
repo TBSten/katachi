@@ -110,6 +110,11 @@ internal object Messages {
     }
 
     object Lint {
+        fun unknownOption(it: Any?): Msg = Msg(
+            ja = "lint: 知らないオプションです: $it",
+            en = "lint: unknown option: $it",
+        )
+
         val aiAgentInstructions: Msg = Msg(
             ja = "AI エージェント向けの指示",
             en = "AI agent instructions",
@@ -967,8 +972,8 @@ katachi — katachi の導入と検査を手伝うコマンド
   katachi lint
       定義（検査用モジュールの src/test/kotlin）を読み、種類の違うファイルを1つの
       Role に抱えていそうなもの、Gradle のファイルを手書きで宣言した Role（制約を持つものは
-      gradle { } の hook への移し方も出す）、平たい group、分けていないファイル、
-      documented = false の候補を列挙する。
+      gradle { } の hook への移し方も出す）、平たい group、小文字で始まる Role・group の名前、
+      分けていないファイル、documented = false の候補を列挙する。
       素朴なテキスト走査なので誤検知があり得る。点検の結果では失敗にしない（0 を返す）。
       定義のディレクトリが無ければ（scaffold 前、置き場所の食い違い）1 を返す。
 
@@ -1029,8 +1034,9 @@ Usage:
   katachi lint
       Reads the definition (src/test/kotlin of the verification module) and lists Roles that
       seem to hold files of different kinds, hand-written Roles for Gradle files (ones with
-      constraints also get the way to move them into a gradle { } hook), flat groups, files
-      not split, and candidates for documented = false.
+      constraints also get the way to move them into a gradle { } hook), flat groups, Role and
+      group names starting with a lowercase letter, files not split, and candidates for
+      documented = false.
       It is a plain text scan, so false positives are possible. Findings never fail it (returns 0).
       Returns 1 if the definition directory does not exist (before scaffold, or a different location).
 

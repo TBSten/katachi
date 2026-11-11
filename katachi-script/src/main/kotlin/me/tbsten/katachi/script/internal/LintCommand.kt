@@ -13,7 +13,9 @@ import kotlin.streams.asSequence
 // positives are possible. The kit's `lint_roles` (its embedded python, PYROLES), rule by rule.
 
 /** `lint`. */
-internal fun ScriptContext.runLint(): Int {
+internal fun ScriptContext.runLint(args: List<String>): Int {
+    val parsed = parseArgs(commandSpec("lint"), args)
+    parsed.positionals.firstOrNull()?.let { dieUsage(Messages.Lint.unknownOption(it)) }
     lintRoles()
     return 0
 }
