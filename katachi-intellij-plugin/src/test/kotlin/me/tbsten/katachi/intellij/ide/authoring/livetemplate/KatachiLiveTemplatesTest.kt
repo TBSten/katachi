@@ -6,6 +6,8 @@ import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.actionSystem.IdeActions
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.module.Module
+import com.intellij.openapi.projectRoots.JavaSdk
+import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.roots.ContentEntry
 import com.intellij.openapi.roots.ModifiableRootModel
 import com.intellij.testFramework.LightProjectDescriptor
@@ -262,8 +264,16 @@ internal class KatachiLiveTemplatesTest : AnalysisTestBase() {
     }
 
     private companion object {
-        /** The empty light project of BasePlatformTestCase plus the Kotlin stdlib that the test task names in `katachi.test.kotlinStdlib`. */
+        /**
+         * The empty light project of BasePlatformTestCase plus what the expanded code needs to resolve: the JDK the test runs on
+         * (String has java.io.Serializable as a supertype) and the Kotlin stdlib that the test task names in `katachi.test.kotlinStdlib`.
+         */
         val WITH_KOTLIN_STDLIB: LightProjectDescriptor = object : LightProjectDescriptor() {
+            // One instance: the platform registers the SDK it gets here for each test and sets the same one on the module.
+            private val jdk: Sdk by lazy { JavaSdk.getInstance().createJdk("katachi test JDK", System.getProperty("java.home"), false) }
+
+            override fun getSdk(): Sdk = jdk
+
             override fun configureModule(module: Module, model: ModifiableRootModel, contentEntry: ContentEntry) {
                 super.configureModule(module, model, contentEntry)
                 val jar = File(checkNotNull(System.getProperty("katachi.test.kotlinStdlib")) { "katachi.test.kotlinStdlib is not set: run the test from Gradle" })

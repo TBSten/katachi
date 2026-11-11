@@ -90,6 +90,8 @@ dependencies {
         bundledModule("intellij.libraries.compose.foundation.desktop")
         bundledModule("intellij.libraries.skiko")
         testFramework(TestFrameworkType.Platform)
+        // JavaSdk, for the JDK of the light project of KatachiLiveTemplatesTest. Tests only: the plugin itself does not depend on Java.
+        testBundledPlugin("com.intellij.java")
     }
     testImplementation(libs.junit4)
     // The pure-JVM preview gates (PreviewChecks) are tested from `test`. Standalone Compose is
