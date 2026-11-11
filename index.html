@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>v0.4.0 リリース前チェック（3 回目）</title>
+<style>
+:root{--bg:#fbfaf7;--fg:#1d1d1f;--muted:#6b6b70;--line:#e3e1dc;--card:#fff;--red:#c0392b;--amber:#b7791f;--blue:#2b6cb0;--green:#2f855a;--code:#f1efea}
+@media (prefers-color-scheme:dark){:root{--bg:#17171a;--fg:#ececef;--muted:#9a9aa2;--line:#2e2e34;--card:#1f1f23;--red:#f07167;--amber:#f6c35b;--blue:#7fb3ff;--green:#6fd39a;--code:#2a2a30}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.7 -apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+main{max-width:880px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 20px}
+h2{font-size:17px;margin:28px 0 8px;padding-left:10px;border-left:4px solid var(--c,var(--line))}
+h2 small{color:var(--muted);font-weight:normal;font-size:13px;margin-left:6px}
+details{font-size:13.5px;color:var(--muted)}
+details summary{cursor:pointer}
+details ul{margin:6px 0;padding-left:20px}
+code{background:var(--code);border-radius:4px;padding:0 4px;font-size:.9em;word-break:break-all}
+a{color:var(--blue);word-break:break-all}
+.badge{display:inline-block;font-weight:700;border-radius:8px;padding:2px 10px;margin-right:8px}
+.run{background:color-mix(in srgb,var(--amber) 18%,transparent);color:var(--amber)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin:8px 0}
+.card{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--c,var(--line));border-radius:10px;padding:10px 14px}
+.card .n{font-size:12px;color:var(--muted)}
+.card .r{font-weight:700;margin:2px 0}
+.card .l{font-size:13px}
+.card.ok-c{--c:var(--green)}.card.warn-c{--c:var(--red)}.card.note-c{--c:var(--amber)}.card.wait-c{--c:var(--muted)}
+.lead{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:12px 0}
+.lead p{margin:0 0 6px}
+</style>
+</head>
+<body>
+<main>
+<h1><span class="badge run">⏳</span>v0.4.0 リリース前チェック（3 回目 261112-01）</h1>
+<p class="sub">2026-11-12 08:20 時点 / 対象 main <code>146d6d40</code>（クラウド）・<code>7cf7d32a</code>（Mac）/ 基準 v0.3.0 / Mac の分は実行中</p>
+
+<div class="lead">
+  <p>Git の差分を Role / group ごとに振り分ける katachiDiff と、brew で入る katachi CLI・katachi-script が加わった。</p>
+  <p>AI エージェント向けの導入手順は katachi skill になり、ktFileContent は Kotlin の書き方のほとんどを縛れるようになった。</p>
+  <p>破壊的変更は 10 件で、.module の削除、ktFileContent の deny by default の拡大と .type(...) への書き換えが中心。</p>
+  <p class="sub" style="margin:8px 0 0">TODO: 判断してほしい 9 件・目を通してほしい 4 件・操作してほしい 4 件 ・ 修正は <a href="https://github.com/TBSten/katachi/pull/87">PR #87</a>（CI 緑）</p>
+</div>
+
+<h2 style="--c:var(--red)">重要な警告<small>priority 7 以上</small></h2>
+<p style="margin:4px 0 0 14px;font-size:14px">クラウドで済んだ範囲では 0 件です。Mac の分が終わったら更新します。</p>
+
+<h2>手順ごとの結果</h2>
+<div class="cards">
+  <div class="card ok-c"><div class="n">1. 前提チェック</div><div class="r">0.4.0 / 直前 0.3.0</div><div class="l">過去の判断 156 件・問題 0 件</div></div>
+  <div class="card ok-c"><div class="n">2. 翻訳の同期</div><div class="r">訳し直し 1 件・残り 0 件</div><div class="l">英語の roadmap の 1 文</div></div>
+  <div class="card note-c"><div class="n">3. 公開範囲</div><div class="r">要検討 53 件・警告 5 件</div><div class="l">p5 1・p3 2・p2 1・p1 1</div></div>
+  <div class="card ok-c"><div class="n">4. リリースノート</div><div class="r">BREAKING 10 件</div><div class="l">新機能 6・そのほか 9</div></div>
+  <div class="card note-c"><div class="n">5. 実装とドキュメント</div><div class="r">13 件（p7 以上 0）</div><div class="l">p6 1・p5 2・p4 4・p3 3・p2 2・p1 1</div></div>
+  <div class="card note-c"><div class="n">6. サイトの巡回</div><div class="r">問題 32 件（p7 以上 0）</div><div class="l">en 28 ページ 7 / ja 29 ページ 12 / api-docs 24 ページ 13</div></div>
+  <div class="card note-c"><div class="n">11. ドキュメントのルール適合</div><div class="r">58 件（p7 以上 0）</div><div class="l">p6 1・p5 1・p4 1・p3 13・p2 16・p1 26</div></div>
+  <div class="card note-c"><div class="n">8. CI と同等</div><div class="r">クラウド 11 / 16</div><div class="l">落ちた 5 つは環境要因。Mac で 16 個を実行中</div></div>
+  <div class="card wait-c"><div class="n">10-1. IDE プラグイン nightly 相当</div><div class="r">Mac で実行中</div></div>
+  <div class="card wait-c"><div class="n">10-2. IDE プラグイン E2E</div><div class="r">Mac で実行中</div></div>
+  <div class="card wait-c"><div class="n">10-3. 配る zip</div><div class="r">Mac で実行中</div></div>
+  <div class="card ok-c"><div class="n">10-4. IDE の文言の日英</div><div class="r">直し忘れ 0 件</div><div class="l">日本語の IDE での目視が要る</div></div>
+  <div class="card note-c"><div class="n">9-1. インストールキット</div><div class="r">スモーク 41 / 41・fixture 15 / 16</div><div class="l">agp だけ環境要因。Mac で実行中</div></div>
+  <div class="card wait-c"><div class="n">9-2. 実プロジェクトへの導入</div><div class="r">Mac で実行中</div></div>
+  <div class="card ok-c"><div class="n">過去の判断（decisions/）</div><div class="r">同じで出さなかった 227 件</div><div class="l">見直し候補 1 件・この回で書き足した 0 件（判断待ち）</div></div>
+</div>
+
+<h2 style="--c:var(--amber)">軽微な警告<small>p6 以下</small></h2>
+<details><summary>手順ごとの内訳</summary><ul>
+  <li>3. 公開範囲: 5 件</li>
+  <li>4. リリースノート: 2 件</li>
+  <li>5. 実装とドキュメント: 13 件（うち 3 件は PR #87 で直した）</li>
+  <li>6. サイトの巡回: 32 件（API リファレンスの 7 件は PR #87 で直した。docs の本文の分は Review に 37 件）</li>
+  <li>11. ドキュメントのルール適合: 58 件（Review に 58 件）</li>
+</ul></details>
+</main>
+</body>
+</html>
