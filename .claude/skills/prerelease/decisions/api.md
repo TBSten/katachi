@@ -39,3 +39,14 @@
 
 手順 3 の p3。`@ExperimentalKatachiApi` の機能だけが投げる・報告する違反と例外のクラスが、注釈なしの public になっている。261109-01 では `CaptureMismatch` など 24 件（一覧は Mac の `.local/release-v0.4.0/tmp/visibility-*-judged.md`）。
 次のチェックでは、この 24 件に該当する宣言は要検討にしない。同じ種類の新しいクラスが出たら、この判断に該当しそうと添えて要検討に載せる（まとめて方針にするかは利用者に聞く）。
+
+## このまま: v0.3.0 のプロパティの行（名前, 型）が、エラーにならずに「レシーバー, 名前」に読み替わる
+- decision: このまま
+- file: katachi-konsist/src/main/kotlin/me/tbsten/katachi/konsist/declarations/PropertyAllow.kt
+- quote: receiver: String,
+- decided: 2026-11-12 261112-01 KATACHI-368
+- by: 利用者（スレッド、08:27 JST「ならやらないでいいや」）
+
+手順 3 の p5。v0.3.0 の ``allow(`val`, "uiState", "StateFlow<*>")`` は v0.4.0 でもコンパイルが通り、拡張プロパティの行として読まれる。`not.allow` の行は何も禁止しなくなり、黙って通る。
+型を書く方法は `.type(...)` だけで、困るのは古い行を残して上げた人だけ。型にしか見えない名前を止める手当ては入れない。リリースノートの移行表の注意書き（古い `not.allow` の行は黙って通る）だけにする。
+次のチェックでは、この読み替えを要検討にしない。
