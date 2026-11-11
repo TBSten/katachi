@@ -126,6 +126,82 @@ internal class KatachiLiveTemplatesTest : AnalysisTestBase() {
         assertNoErrors()
     }
 
+    fun `test katachitest は FileConstraintCheck で検査するテストを出し assert を import する`() {
+        val expansion = expand("ProjectArchitectureTest.kt", "katachitest")
+
+        assertEquals(
+            setOf(
+                "me.tbsten.katachi.ExperimentalKatachiApi",
+                "me.tbsten.katachi.check.FileConstraintCheck",
+                "me.tbsten.katachi.check.assert",
+                "org.junit.jupiter.api.Test",
+            ),
+            expansion.imports,
+        )
+        assertEquals(
+            """
+            @OptIn(ExperimentalKatachiApi::class)
+            class ProjectArchitectureTest {
+                @Test
+                fun `the project matches the definition`() {
+                    projectArchitecture.assert(FileConstraintCheck())
+                }
+            }
+            """.trimIndent(),
+            expansion.body,
+        )
+    }
+
+    fun `test katachitemplateset は templateSet を xxxTemplateSet に切り出す`() {
+        val expansion = expand("ApiGroup.kt", "katachitemplateset")
+
+        assertEquals(setOf("me.tbsten.katachi.ExperimentalKatachiApi", "me.tbsten.katachi.dsl.DeclarationContainerScope"), expansion.imports)
+        assertEquals(
+            """
+            @OptIn(ExperimentalKatachiApi::class)
+            fun DeclarationContainerScope.nameTemplateSet() = "Name".templateSet {
+                title = "Name"
+                summary = ""
+                val name by stringParameter()
+                template("group.Role") {
+                    arg("name", name)
+                }
+            }
+            """.trimIndent(),
+            expansion.body,
+        )
+        assertNoErrors()
+    }
+
+    fun `test katachikonsist は Role の中で 名前付きの konsist を出し konsist を import する`() {
+        myFixture.configureByText("ServiceRole.kt", "package com.example\n\nfun f() {\n    <caret>\n}\n")
+        myFixture.type("katachikonsist")
+        myFixture.performEditorAction(IdeActions.ACTION_EXPAND_LIVE_TEMPLATE_BY_TAB)
+        val expansion = Expansion.of(myFixture.editor.document.text)
+
+        assertEquals(setOf("me.tbsten.katachi.konsist.konsist"), expansion.imports)
+        assertEquals(
+            squeezed(
+                """
+                fun f() {
+                    "what the files must be".konsist {
+                        classes().must { }
+                    }
+                }
+                """.trimIndent(),
+            ),
+            squeezed(expansion.body),
+        )
+    }
+
+    fun `test 既に import してあれば 同じ import を足さない`() {
+        myFixture.configureByText("ProjectArchitectureTest.kt", "package com.example\n\nimport me.tbsten.katachi.check.assert\n\n<caret>\n")
+        myFixture.type("katachitest")
+        myFixture.performEditorAction(IdeActions.ACTION_EXPAND_LIVE_TEMPLATE_BY_TAB)
+
+        assertEquals(1, Regex("import me\\.tbsten\\.katachi\\.check\\.assert\\b").findAll(myFixture.editor.document.text).count())
+    }
+
     fun `test 打ち直した Role 名が 関数名に入る`() {
         TemplateManagerImpl.setTemplateTesting(testRootDisposable)
         myFixture.configureByText("ServiceRole.kt", "package com.example\n\n<caret>\n")
@@ -150,9 +226,18 @@ internal class KatachiLiveTemplatesTest : AnalysisTestBase() {
     fun `test どのテンプレートにも katachi グループの日本語と英語の説明がある`() {
         val templates = TemplateSettings.getInstance().templates.filter { it.groupName == "katachi" }
 
-        assertEquals(setOf("katachirole", "katachigroup", "katachiarchitecture", "katachifilecontent", "katachitemplate"), templates.map { it.key }.toSet())
+        assertEquals(
+            setOf(
+                "katachirole", "katachigroup", "katachiarchitecture", "katachifilecontent", "katachitemplate",
+                "katachitest", "katachitemplateset", "katachikonsist",
+            ),
+            templates.map { it.key }.toSet(),
+        )
         templates.forEach { assertTrue("${it.key}: ${it.description}", it.description.orEmpty().startsWith("katachi: ")) }
     }
+
+    /** [text] with every run of spaces made one, for an empty lambda the formatter may write as `{ }` or `{  }`. */
+    private fun squeezed(text: String): String = text.replace(Regex(" +"), " ")
 
     /** A document split into its imports and the rest, without blank lines: how many the formatter keeps is the IDE's code style, not the template's. */
     private data class Expansion(val imports: Set<String>, val body: String) {
@@ -180,6 +265,23 @@ internal class KatachiLiveTemplatesTest : AnalysisTestBase() {
                 interface DeclarationContainerScope {
                     fun String.role(block: RoleScope.() -> Unit)
                     fun String.group(block: GroupScope.() -> Unit)
+                    @me.tbsten.katachi.ExperimentalKatachiApi
+                    fun String.templateSet(block: TemplateSetScope.() -> Unit)
+                }
+
+                class TemplateParameter<T>(private val value: T) {
+                    operator fun getValue(thisRef: Any?, property: kotlin.reflect.KProperty<*>): T = value
+                }
+
+                interface TemplateSetScope {
+                    var title: String?
+                    var summary: String?
+                    fun stringParameter(default: String? = null): TemplateParameter<String>
+                    fun template(specifier: String, block: TemplateSetMemberScope.() -> Unit = {})
+                }
+
+                interface TemplateSetMemberScope {
+                    fun arg(name: String, value: String)
                 }
 
                 interface RoleScope {
@@ -201,6 +303,24 @@ internal class KatachiLiveTemplatesTest : AnalysisTestBase() {
                 interface TemplateScope {
                     fun captureValue(name: String): String
                 }
+            """.trimIndent(),
+            "katachi/Check.kt" to """
+                package me.tbsten.katachi.check
+
+                class FileConstraintCheck
+
+                @me.tbsten.katachi.ExperimentalKatachiApi
+                fun me.tbsten.katachi.dsl.Architecture.assert(check: FileConstraintCheck) {}
+            """.trimIndent(),
+            "katachi/Konsist.kt" to """
+                package me.tbsten.katachi.konsist
+
+                fun String.konsist(block: Any.() -> Unit) {}
+            """.trimIndent(),
+            "katachi/Test.kt" to """
+                package org.junit.jupiter.api
+
+                annotation class Test
             """.trimIndent(),
             "katachi/KtFileContent.kt" to """
                 package me.tbsten.katachi.konsist.declarations
