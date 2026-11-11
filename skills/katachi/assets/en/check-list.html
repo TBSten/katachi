@@ -34,6 +34,7 @@
     --note-low: #dbeafe;
     --note: #51a2ff;
     --note-high: #193cb8;
+    --glow: #51a2ff;
     --caution-low: #fef3c6;
     --caution: #ffb900;
     --caution-high: #973c00;
@@ -703,6 +704,24 @@
   .fb-banner .btn:hover { background: var(--wash); }
   body.fb-mode { padding-top: var(--fb-banner-h, 48px); }
   body.fb-mode [data-fb] { cursor: crosshair; }
+  /* While feedback mode is on, the whole edge of the screen glows softly so it is clear the mode is on */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 29;
+    pointer-events: none;
+    box-shadow: inset 0 0 48px 8px color-mix(in srgb, var(--glow) 50%, transparent);
+    opacity: 0;
+    transition: opacity 400ms ease-out;
+  }
+  body.fb-mode::after { opacity: 1; animation: fb-glow 1.8s ease-in-out infinite alternate; }
+  @keyframes fb-glow {
+    from { box-shadow: inset 0 0 16px 0 color-mix(in srgb, var(--glow) 25%, transparent); }
+    to { box-shadow: inset 0 0 88px 18px color-mix(in srgb, var(--glow) 65%, transparent); }
+  }
+  @media (prefers-reduced-motion: reduce) { body.fb-mode::after { animation: none; } }
+  @media print { body::after { display: none; } }
 
   .fb-hl {
     position: absolute;
