@@ -38,14 +38,14 @@ a{color:var(--blue);word-break:break-all}
 <body>
 <main>
 <h1>v0.4.0 リリース前に確認してほしいこと（3 回目 261112-01）</h1>
-<p class="sub">2026-11-12 08:20 更新 / 対象 main <code>146d6d40</code>（クラウド）・<code>7cf7d32a</code>（Mac の分）/ 基準 v0.3.0 / チェックはこのブラウザに保存されます</p>
+<p class="sub">2026-11-12 10:20 更新 / 対象 main <code>146d6d40</code>（クラウド）・<code>7cf7d32a</code>（Mac の分）/ 基準 v0.3.0 / チェックはこのブラウザに保存されます</p>
 
 <div class="summary">
   <span class="pill"><b style="color:var(--red)">0</b>リリース前に直すか決める</span>
-  <span class="pill"><b style="color:var(--amber)">9</b>判断してほしい</span>
+  <span class="pill"><b style="color:var(--amber)">1</b>判断してほしい</span>
   <span class="pill"><b style="color:var(--blue)">4</b>目を通してほしい</span>
-  <span class="pill"><b style="color:var(--green)">4</b>操作してほしい</span>
-  <span class="pill"><b style="color:var(--muted)">7</b>決定済み・対応中</span>
+  <span class="pill"><b style="color:var(--green)">3</b>操作してほしい</span>
+  <span class="pill"><b style="color:var(--muted)">16</b>決定済み・対応中</span>
 </div>
 
 <h2 style="--c:var(--red)">1. リリース前に直すか決める<small>priority 7 以上。放置すると利用者が詰まる</small></h2>
@@ -63,61 +63,6 @@ a{color:var(--blue);word-break:break-all}
 <li>実際に動かして確かめました（手順 5 の「動かして確かめた結果」5 番）</li>
 </ul></details></div>
 
-<div class="item" data-id="j-slides"><input type="checkbox"><div class="t"><span class="p p6">p6</span>「5分でわかる katachi」のスライドが v0.2 の頃のまま</div>
-<div class="body">今はコンパイルできない書き方と「baseline は未実装」が残っています。ja の motivation のページの先頭から誘導しています（en も同じで p5）。</div>
-<div class="ask"><b>決めてほしい:</b> <span class="rec">(a) 私が v0.4.0 の書き方に直して PR にする</span> / (b) リリースまではリンクを外す / (c) このまま（人が後で直す）</div>
-<details><summary>詳細</summary><ul>
-<li><code>docs/public/ja/slides/katachi-in-5-minutes/index.html</code>、<code>docs/public/slides/katachi-in-5-minutes/index.html</code></li>
-<li>手順 6 の ja-01・en-02。docs は人の担当なので、聞かずには触っていません</li>
-</ul></details></div>
-
-<div class="item" data-id="j-prop-positional"><input type="checkbox"><div class="t"><span class="p p5">p5</span>v0.3.0 のプロパティの行が、エラーにならないまま別の意味に読み替わる</div>
-<div class="body">v0.3.0 の <code>allow(`val`, "uiState", "StateFlow&lt;*&gt;")</code> は v0.4.0 でもコンパイルが通り、「uiState の拡張プロパティ StateFlow&lt;*&gt;」と読まれます。<code>allow</code> / <code>required</code> は違反として表に出ますが、<code>not.allow(`val`, "名前", "型")</code> は何も禁止しなくなり、黙って通ります。<code>.type(...)</code> の形そのものは 2 回目で決めたとおりです。</div>
-<div class="ask"><b>決めてほしい:</b> <span class="rec">(a) リリースノートの移行表に一言足す（下書きに反映済み）＋ 型にしか見えない名前（<code>&lt;</code>・<code>(</code>・<code>?</code> を含む）を <code>.type(...)</code> の案内つきで止める</span> / (b) リリースノートだけ / (c) このまま</div>
-<details><summary>詳細</summary><ul>
-<li>手順 3（公開範囲）の experimental の要検討グループ 1</li>
-<li>止める案は、名前に <code>&lt;</code> などが入ることは Kotlin の識別子としてありえない、という前提です</li>
-</ul></details></div>
-
-<div class="item" data-id="j-scaffold-unknown"><input type="checkbox"><div class="t"><span class="p p5">p5</span>skill は「知らない値で scaffold が止まる」と言うが、実際は警告して進む</div>
-<div class="body">チェックリストの <code>preferences.testFramework</code> などに知らない値を書くと、警告を出して検出した値で最後まで進みます（終了コード 0）。エージェントが書き損じると、利用者が選んだ書き方が黙って既定に置き換わります。</div>
-<div class="ask"><b>決めてほしい:</b> <span class="rec">(a) skill の文を実装に合わせ、「出力の <code>テスト:</code>・<code>依存:</code> の行を確かめる」と足す</span> / (b) 実装を止める側に寄せる（終了コード 2）</div>
-<details><summary>詳細</summary><ul>
-<li><code>skills/katachi/references/setup/step1/1-3-writing-preferences.md:30</code></li>
-<li>実装: <code>katachi-script/.../ScaffoldCommand.kt:82-123</code>。止まるのは <code>--test-framework</code>・<code>--deps</code> に直接知らない値を渡したときだけ</li>
-</ul></details></div>
-
-<div class="item" data-id="j-gradle-wrapper"><input type="checkbox"><div class="t"><span class="p p4">p4</span><code>gradle()</code> は wrapper の 4 ファイルが必須だが、外し方がどこにも書いていない</div>
-<div class="body"><code>gradlew</code> などが 1 つでも無いと <code>[MissingFile]</code> で落ちます。外すのは <code>gradle(requireWrapper = false)</code> ですが、KDoc にしか出てきません。エラーの How to fix は「宣言を消す」で、これは <code>gradle()</code> の行そのものです。</div>
-<div class="ask"><b>決めてほしい:</b> <span class="rec">(a) skill に 1 文足し、この <code>[MissingFile]</code> の How to fix に <code>requireWrapper = false</code> を出す（私が直す）。docs のレシピは Review に登録</span> / (b) skill と docs だけ / (c) このまま</div>
-<details><summary>詳細</summary><ul>
-<li><code>ja/recipes/gradle.mdx:14</code>、<code>skills/katachi/references/setup/step3/3-2-write-the-definition.md:46</code>、<code>fix-violations/README.md:31</code></li>
-<li>実装: <code>katachi/dsl/gradle/GradleGroup.kt:25-28,91,107-114</code></li>
-</ul></details></div>
-
-<div class="item" data-id="j-kdoc-internal"><input type="checkbox"><div class="t"><span class="p p3">p3</span>利用者向けの KDoc の例が、内部用の <code>flattenLayout()</code>・<code>moduleIndex()</code> を呼んでいる（12 か所）</div>
-<div class="body">例を写すと <code>@InternalKatachiApi</code> の opt-in を求められます。<code>flattenLayout()</code> の 11 か所は v0.3.0 から、<code>moduleIndex()</code> の 1 か所は v0.4.0 で増えました。</div>
-<div class="ask"><b>決めてほしい:</b> <span class="rec">(a) 例を利用者が書ける形（定義と <code>check()</code>）に書き換える</span> / (b) <code>flattenLayout()</code> を Experimental にして開く / (c) このまま</div>
-<details><summary>詳細</summary><ul><li>手順 3 の internal-api の要検討。<code>dsl/ModuleResolver.kt:59</code> ほか</li></ul></details></div>
-
-<div class="item" data-id="j-missing-description"><input type="checkbox"><div class="t"><span class="p p3">p3</span><code>[MissingDescription]</code> の警告は 0.4.0 の公開 DSL では出ない</div>
-<div class="body"><code>.module { }</code> を消したので、説明が要る条件（Role の置き場所が 2 つ以上）が生まれません。skill の 3 か所と KDoc は、出る前提で説明しています。</div>
-<div class="ask"><b>決めてほしい:</b> <span class="rec">(a) skill の 3 か所から外し、KDoc に「今の DSL では出ない」と書く</span> / (b) ふつうのディレクトリのブロックも置き場所に数えて、警告が出るようにする / (c) このまま</div>
-<details><summary>詳細</summary><ul>
-<li><code>skills/katachi/references/setup/step4/4-1-run-the-test.md:7</code>、<code>fix-violations/README.md:37</code>、<code>add-and-update/upgrade-katachi.md:25</code>、<code>katachi/check/LayoutWarnings.kt:77-88</code></li>
-<li>2 通りの定義の写しで動かし、警告が出ないことを確かめました</li>
-</ul></details></div>
-
-<div class="item" data-id="j-typealias"><input type="checkbox"><div class="t"><span class="p p3">p3</span>typealias の行だけ、型が位置引数のまま</div>
-<div class="body">プロパティは <code>.type(...)</code> になりましたが、<code>allow(`typealias`, "*Handler", "(*) -&gt; Unit")</code> は「名前, 型」のままです。typealias にはレシーバーが無いので、読み違いは起きません。</div>
-<div class="ask"><b>決めてほしい:</b> <span class="rec">(a) このまま</span> / (b) v0.4.0 を出す前に <code>.type(...)</code> にそろえる</div>
-<details><summary>詳細</summary><ul><li>手順 3 の experimental の要検討グループ 2。Experimental なので後から変えることもできます</li></ul></details></div>
-
-<div class="item" data-id="j-revisit-e13"><input type="checkbox"><div class="t">見直し候補: 「このまま: E13 AGENTS の決まりが skill（英語）に及ぶか」</div>
-<div class="body">前回は「skill の小文字 group・<code>feature.ui</code> などを指摘しない」としました。#81 で skill 自身が UpperCamelCase を決まりにし、skill の中に小文字の group の例は残っていません。</div>
-<div class="ask"><b>決めてほしい:</b> <span class="rec">(a) 判断の本文を、残っている対象（4 スペースの例・<code>@file:OptIn</code>・命名）だけに狭める</span> / (b) 前の判断のまま残す</div>
-<details><summary>前の判断</summary><ul><li><code>decisions/docs.md:650</code>・2 回目（261110-01）・skill は英語で、AGENTS の決まりは docs 向け</li></ul></details></div>
-
 <h2 style="--c:var(--blue)">3. 目を通してほしい</h2>
 
 <div class="item" data-id="r-release-note"><input type="checkbox"><div class="t">リリースノートの下書き</div>
@@ -125,7 +70,7 @@ a{color:var(--blue);word-break:break-all}
 <details><summary>詳細</summary><ul><li>Notion の子ページ「4. リリースノート」に全文を載せます</li><li>新機能 2 件のリンク先に機能名が出てきません（CLI のページに <code>lint</code>、first-architecture に「skill」）。docs に足すかは Review に登録します</li></ul></details></div>
 
 <div class="item" data-id="r-review"><input type="checkbox"><div class="t">docs の指摘（Review の popup で選ぶ分）</div>
-<div class="body">手順 11（ルール適合）が 58 件（影響あり 30 / なし 28）、手順 4・5・6 の docs の本文の指摘が 37 件（影響あり 27 / なし 10）で、合わせて 95 件です。priority 5 以上は、手順 11 が 3 件、手順 4・5・6 が 7 件（上の 2 の出力先とスライドの分を含む）です。</div>
+<div class="body">手順 11（ルール適合）が 58 件（影響あり 30 / なし 28）、手順 4・5・6 の docs の本文の指摘が 31 件（影響あり 21 / なし 10）で、合わせて 89 件です。スライドの 6 件は PR #87 で直したので外しました。priority 5 以上は、手順 11 が 3 件、手順 4・5・6 が 1 件（上の 2 の出力先の分を含む）です。</div>
 <details><summary>手順 11 の priority 5 以上の 3 件</summary><ul>
 <li>p6 <code>ja/guides/kt-file-content/kotlin-mapping.mdx:285</code> 対応表の <code>inline fun run(noinline …)</code> を、右の列の行が許可していない</li>
 <li>p5 <code>skills/katachi/references/setup/step3/3-2-write-the-definition.md:136</code> Role の例が catch-all で、同じファイルの決まりに反する</li>
@@ -147,9 +92,6 @@ a{color:var(--blue);word-break:break-all}
 <h2 style="--c:var(--green)">4. 操作してほしい</h2>
 
 
-<div class="item" data-id="o-review-place"><input type="checkbox"><div class="t">Review のファイルを手元の置き場に置いてよいか返事する</div>
-<div class="body"><code>~/dev/katachi/.local/feedback/review/</code> に 2 ファイル足すだけで、ほかのファイルには触りません。</div></div>
-
 <div class="item" data-id="o-ide-ja"><input type="checkbox"><div class="t">日本語の IDE で文言を目で見る</div>
 <div class="body">今回足した Live Template の説明 8 件と、タスク一覧が無いときの案内（<code>taskListMissingHint</code>）です。機械の検査（直し忘れ・訳し忘れ）は 0 件でした。</div></div>
 
@@ -161,6 +103,15 @@ a{color:var(--blue);word-break:break-all}
 
 <h2 style="--c:var(--line)">5. 決定済み・対応中<small>🔧 対応中 / ✏️ 編集済み・検証中 / ✓ 済</small></h2>
 
+<div class="item" data-id="d-slides"><input type="checkbox" disabled><div class="t">✏️ スライド「5分でわかる katachi」→ (a) v0.4.0 の書き方に直した（<code>.role</code>・<code>"Domain".group</code>・baseline と v0.2 の注記・ja のページ番号。PR #87、レビュー待ち。Review の該当 6 件は外した）</div></div>
+<div class="item" data-id="d-scaffold-unknown"><input type="checkbox" disabled><div class="t">✏️ scaffold の知らない preferences の値 → (b) 何も作らずに終了コード 2 で止まるように（PR #87、レビュー待ち）</div></div>
+<div class="item" data-id="d-gradle-wrapper"><input type="checkbox" disabled><div class="t">✏️ <code>gradle()</code> の wrapper → (a) skill に 1 文、wrapper の <code>[MissingFile]</code> の How to fix に <code>gradle(requireWrapper = false)</code> を出す（PR #87、レビュー待ち）。docs のレシピは Review に登録済み</div></div>
+<div class="item" data-id="d-kdoc-internal"><input type="checkbox" disabled><div class="t">✏️ KDoc の例の <code>flattenLayout()</code>・<code>moduleIndex()</code> → (a) <code>validate(fakeFileSystem)</code> などに書き換えた（PR #87、レビュー待ち）</div></div>
+<div class="item" data-id="d-missing-description"><input type="checkbox" disabled><div class="t">✏️ <code>[MissingDescription]</code> → (a) skill から外し、クラスを internal にして KDoc・API リファレンスにも出ないように（PR #87、レビュー待ち）</div></div>
+<div class="item" data-id="d-typealias"><input type="checkbox" disabled><div class="t">✏️ typealias の型 → <code>.type(...)</code> にそろえた（PR #87、レビュー待ち）。docs の kotlin-mapping の例 1 行（ja・en）も合わせた</div></div>
+<div class="item" data-id="d-revisit-e13"><input type="checkbox" disabled><div class="t">✓ 見直し候補 E13 → このまま。katachi 本体とサンプルの決まりで、ほかのプロジェクトには推奨なので skill では強制しない → decisions/docs.md に記録</div></div>
+<div class="item" data-id="o-review-place"><input type="checkbox" disabled><div class="t">✓ Review のファイルを手元の置き場に置く（「ok」をもらって置いた）</div></div>
+<div class="item" data-id="j-prop-positional"><input type="checkbox" disabled><div class="t">✓ v0.3.0 のプロパティの行が別の意味に読み替わる → 手当てしない（08:27「ならやらないでいいや」）。リリースノートの注意書きだけ → decisions/api.md に記録（59599aa1）</div></div>
 <div class="item" data-id="o-mac"><input type="checkbox" disabled><div class="t">✓ Mac を使ってよいタイミングを返事する（02:46 に OK をもらった）</div></div>
 <div class="item" data-id="d-lint-exit"><input type="checkbox" disabled><div class="t">✏️ <code>katachi lint --bogus</code> が終了コード 0 で終わる → 2 に（PR #87、レビュー待ち）</div>
 <div class="body">「使い方の誤りは、どのコマンドも 2」という <code>--help</code> の説明に合わせます。<code>katachi --help</code> の <code>lint</code> の説明にも、小文字で始まる名前の指摘を足します。</div></div>
