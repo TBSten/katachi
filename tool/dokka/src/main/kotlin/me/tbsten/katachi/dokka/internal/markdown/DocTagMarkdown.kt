@@ -120,7 +120,7 @@ internal class DocTagMarkdown(
     private fun inline(tag: DocTag): String = when (tag) {
         is Text -> tag.body
         is Br -> "\n"
-        is CodeInline -> code(codeOf(tag.children))
+        is CodeInline -> CodeSpanText.span(CodeSpanText.of(codeOf(tag.children)))
         is B, is Strong -> wrap("**", tag)
         is I, is Em -> wrap("*", tag)
         is Strikethrough -> wrap("~~", tag)
@@ -139,12 +139,6 @@ internal class DocTagMarkdown(
         target.isNullOrBlank() -> text
         text.isBlank() -> "<$target>"
         else -> "[$text]($target)"
-    }
-
-    private fun code(text: String): String {
-        val fence = if (text.contains('`')) "``" else "`"
-        val padding = if (text.startsWith('`') || text.endsWith('`')) " " else ""
-        return "$fence$padding$text$padding$fence"
     }
 
     /** The text of code, where line breaks are the only markup that matters. */

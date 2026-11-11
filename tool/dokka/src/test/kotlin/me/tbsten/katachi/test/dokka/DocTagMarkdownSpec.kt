@@ -73,6 +73,18 @@ class DocTagMarkdownSpec : FreeSpec({
             markdown.oneLine(P(listOf(CodeInline(listOf(Text("a`b")))))) shouldBe "``a`b``"
         }
 
+        "二重のバッククォートで書いたコードは、Dokka が残した区切りを外して書いたとおりに戻す" {
+            // What Dokka's parser makes of `` `val` `` and of `` allow(`fun`, "*") ``.
+            val tag = P(
+                listOf(
+                    CodeInline(listOf(Text("` `val` `"))),
+                    Text(" in "),
+                    CodeInline(listOf(Text("` allow(`fun`, \"*\") `"))),
+                ),
+            )
+            markdown.oneLine(tag) shouldBe "`` `val` `` in ``allow(`fun`, \"*\")``"
+        }
+
         "brief は最初の段落だけを1行にする" {
             val root = CustomDocTag(
                 listOf(P(listOf(Text("First line"), Br, Text("continues."))), P(listOf(Text("Second.")))),

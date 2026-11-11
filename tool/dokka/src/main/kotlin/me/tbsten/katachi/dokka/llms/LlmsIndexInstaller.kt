@@ -7,6 +7,7 @@ import me.tbsten.katachi.dokka.internal.link.LinkBase
 import me.tbsten.katachi.dokka.internal.link.directoryOf
 import me.tbsten.katachi.dokka.internal.link.listItem
 import me.tbsten.katachi.dokka.internal.link.markdownPathOf
+import me.tbsten.katachi.dokka.internal.markdown.CodeSpanText
 import me.tbsten.katachi.dokka.katachiConfiguration
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.model.withDescendants
@@ -112,7 +113,7 @@ internal class LlmsIndexWriter(
         if (fragment.pageMarkdown) markdownPathOf(path) else path
 
     private fun summaryOf(entry: FragmentEntry): String =
-        entry.summary.joinToString("") { if (it.code) "`${it.text}`" else it.text }.trim()
+        entry.summary.joinToString("") { if (it.code) CodeSpanText.span(it.text) else it.text }.trim()
 
     private fun StringBuilder.section(title: String, items: List<String>) {
         if (items.isEmpty()) return
