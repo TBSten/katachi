@@ -17,7 +17,7 @@ import me.tbsten.katachi.script.kotestString
 import me.tbsten.katachi.script.kotestWord
 
 /**
- * The test framework `katachi scaffold --test-framework` lays the test module out for.
+ * The test framework `katachi scaffold --test-framework` lays the verification module out for.
  *
  * The top-level [junit5], [kotest], [kotestFun], [kotestString], [kotestShould], [kotestDescribe], [kotestBehavior], [kotestWord], [kotestFree], [kotestFeature], [kotestExpect] and [kotestAnnotation] are the same values, so a script can write them bare.
  *

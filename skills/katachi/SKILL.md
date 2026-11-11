@@ -9,10 +9,11 @@ description: Install katachi (architecture checks for Kotlin/Gradle projects, wr
 
 ## Which reference to read
 
-First find out whether katachi is already set up: look for a Gradle module whose `build.gradle.kts` applies the `me.tbsten.katachi` plugin and has `katachi { architecture = "..." }` (usually `architecture-test/`).
+First find out whether katachi is already set up: look for a Gradle module whose `build.gradle.kts` applies the `me.tbsten.katachi` plugin and has `katachi { architecture = "..." }` (usually `architecture-test/`). Then look for a setup that stopped half way: a working directory with a `check-list.html` (usually `.local/install-katachi/`, `.tmp/install-katachi/`, `tmp/install-katachi/` or `.scratch/install-katachi/`). The verification module exists from step 2 on, so it alone does not tell you that the setup is finished.
 
 | Situation | Read |
 |---|---|
+| A working directory with a `check-list.html` is there and its steps up to 6 are not all done, or the user asks for one of 6-A to 6-D after the setup | [references/setup/README.md](references/setup/README.md) (go on from where the checklist stops) |
 | katachi is not in the project yet | [references/setup/README.md](references/setup/README.md) |
 | katachi is set up, and the definition has to follow the project: a new kind of file, a moved or renamed module or package, a new rule, a katachi upgrade | [references/add-and-update/README.md](references/add-and-update/README.md) |
 | The check fails (on CI or locally) and you have to decide what to fix | [references/fix-violations/README.md](references/fix-violations/README.md) |
@@ -25,7 +26,7 @@ Read only the reference that fits, and inside it only the files it points you to
 - **Ask, do not decide, when the answer depends on the team.** Whether a file is in the wrong place or the definition is out of date, whether to add something to `.gitignore`, whether to fix existing code: put it in front of the user.
 - **Do not edit `.gitignore` yourself.** Suggest the line.
 - **Do not rewrite existing source code to satisfy the definition** without the user's consent. The definition describes the project; changing the project is a separate decision.
-- **Do not rewrite what `katachi scaffold` generated**: the verification module's `build.gradle.kts`, the `include(...)` in the settings file, the aliases in `gradle/libs.versions.toml`, the Kotlin plugin line in the root build file. The exceptions are a katachi version bump ([references/add-and-update/upgrade-katachi.md](references/add-and-update/upgrade-katachi.md)) and `processors { }` in `katachi { }` once the user agrees (setup 6-C / 6-D).
+- **Do not rewrite what `katachi scaffold` generated**: the verification module's `build.gradle.kts`, the `include(...)` in the settings file, the aliases in `gradle/libs.versions.toml`, the Kotlin plugin line in the root build file. The exceptions are a katachi version bump ([references/add-and-update/upgrade-katachi.md](references/add-and-update/upgrade-katachi.md)) and `processors { }` in `katachi { }` once the user agrees (setup 6-C; the templates in 6-D need no change there).
 - **Do not guess an API.** Read the documentation (below) or the API reference. An API that is not in the documentation does not exist because a similar name does.
 - **Do not silence a violation by loosening the definition.** No catch-all Role (`anyFile()`, `"**" / "*.kt".file()` with nothing else), no line added to whichever Role is nearest. A file belongs to the Role whose `summary` describes it, or to a new Role.
 - **Keep one Role = one kind of file.** If a Role's `summary` cannot describe every file it holds in one sentence, split it (setup 3-2, "One Role = one kind of file").
@@ -71,6 +72,7 @@ Read `:architecture-test` as the verification module's Gradle path when it is so
 | Baseline (tolerate existing violations) | https://tbsten.github.io/katachi/guides/baseline/ |
 | Document generation | https://tbsten.github.io/katachi/guides/document-generation/ |
 | Code generation from templates | https://tbsten.github.io/katachi/guides/generate-code-from-template/ |
+| Gradle files, `buildSrc` and `includeBuild` | https://tbsten.github.io/katachi/recipes/gradle/ |
 
 https://tbsten.github.io/katachi/llms.txt is the site's index for agents. The whole site in one file is https://tbsten.github.io/katachi/llms-full.txt; do not read it whole, cut out the page you need. For signatures, read the API reference: https://tbsten.github.io/katachi/api-docs/llms.txt, and the Markdown version of one API's page (its HTML URL with `.md` appended).
 

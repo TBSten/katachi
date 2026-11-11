@@ -36,7 +36,7 @@ Add an entry by appending an object to the array; keep the entries already there
 
 | Array | Where | Fields |
 |---|---|---|
-| `changedFiles` | checklist | `path` (relative to the project root), `change` (`New` / `Modified`), `summary` |
+| `changedFiles` | checklist | `path` (relative to the project root), `change` (`New` / `Modified`; on a Japanese page, `新規` / `変更`), `summary` |
 | `violations` | checklist | `violation`, `location`, `whyNotFixed`, `suggestion` |
 | `questions` | checklist | `id` (`q1`, `q2`, …), `question`, `observed`, `options` (array), `recommendation` |
 | `questions` | report | `id` (`cq1`, `cq2`, …), `question`, `observed`, `options` (array), `recommendation` |
@@ -68,6 +68,8 @@ The user can answer in the browser too, in "Questions for you" of the checklist 
 
 - **"Copy all"** copies text to paste into the chat: one line saying what the answers are for, a line listing the ids still open (if any), and a ```` ```json ```` block with `{"checklist": {"answers": {"q1": {…}}}, "report": {"answers": {"cq1": {"answer": "…", "note": "…"}}}}`. If there is feedback (below), it follows in the same paste. Only what was not copied before goes in; when everything was, all of it is copied again.
 - **"Save as JSON"** saves the same JSON as a file (`katachi-answers.json`).
+
+The page is in the user's language, so tell the user the names they see. On a Japanese page: "Questions for you" is 「ユーザに確認したいこと」, "Copy all" is 「まとめてコピー」, and "Save as JSON" is 「JSON を保存」.
 
 The outermost keys are the ids of the blocks (`checklist` / `report`); a block with no answers is left out. An entry whose `note` is `null` was a plain pick.
 

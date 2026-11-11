@@ -14,6 +14,21 @@ internal enum class Lang(val code: String) {
 
     companion object {
         fun of(code: String?): Lang? = entries.firstOrNull { it.code == code }
+
+        /**
+         * The language the environment asks for: `KATACHI_LANG`, then the locale (`LC_ALL`, `LC_MESSAGES`, `LANG`,
+         * the first one set). A Japanese locale is ja, any other named locale is en. `C` / `POSIX` say nothing.
+         */
+        fun fromEnv(env: Map<String, String>): Lang? {
+            of(env["KATACHI_LANG"])?.let { return it }
+            val locale = listOf("LC_ALL", "LC_MESSAGES", "LANG").firstNotNullOfOrNull { env[it]?.takeIf(String::isNotBlank) } ?: return null
+            val language = locale.substringBefore('.').substringBefore('@').substringBefore('_').lowercase()
+            return when (language) {
+                "", "c", "posix" -> null
+                "ja" -> JA
+                else -> EN
+            }
+        }
     }
 }
 
@@ -32,7 +47,7 @@ internal class ScriptContext(
     val http: HttpFetcher = JdkHttpFetcher,
     val launch: ProcessLauncher = InheritingIoLauncher,
 ) {
-    var lang: Lang = Lang.of(env["KATACHI_LANG"]) ?: Lang.JA
+    var lang: Lang = Lang.fromEnv(env) ?: Lang.JA
 
     /** `--lang` given on the command line (doctor); it wins over everything else. */
 
@@ -89,6 +104,12 @@ internal class KatachiScriptExitException(
 
 internal fun die(message: Msg): Nothing = throw KatachiScriptExitException(message)
 
+/** The exit code of a usage error (an unknown option or subcommand, a missing log to compare): not a failed check. */
+internal const val USAGE_ERROR_STATUS: Int = 2
+
+/** [die] for a usage error: exits [USAGE_ERROR_STATUS] so that callers can tell it from a failed check (1). */
+internal fun dieUsage(message: Msg): Nothing = throw KatachiScriptExitException(message, status = USAGE_ERROR_STATUS)
+
 /** Ends the command with [status] and nothing more on stderr (what was to be said is already printed). */
 internal fun exitWith(status: Int): Nothing = throw KatachiScriptExitException(Msg("", ""), status = status, plain = true)
 
@@ -97,7 +118,7 @@ internal fun fail(message: Msg, status: Int = 1): Nothing = throw KatachiScriptE
 
 /** `--opt` without a value: the kit's `need_value`. */
 internal fun needValue(option: String, value: String?): String =
-    value?.takeIf { it.isNotEmpty() } ?: die(Messages.Context.needsValue(option))
+    value?.takeIf { it.isNotEmpty() } ?: dieUsage(Messages.Context.needsValue(option))
 
 /**
  * A path for people, as the kit's `file_uri` prints it: absolute, `file://`, with only the four

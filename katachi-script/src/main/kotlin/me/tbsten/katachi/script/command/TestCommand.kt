@@ -9,7 +9,7 @@ import me.tbsten.katachi.script.internal.commandText
 import me.tbsten.katachi.script.internal.run
 
 /**
- * The `katachi agent test` command: runs the tests of the test module and prints only a summary.
+ * The `katachi agent test` command: runs the tests of the verification module and prints only a summary.
  *
  * Building one is writing `katachi agent test ...` in a shell: the methods are named after the
  * options of `katachi agent test --help` and add the same flag. Each returns a new

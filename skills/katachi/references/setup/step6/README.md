@@ -1,6 +1,6 @@
 ## 6. Report the result to the user
 
-Write the report to the user from the checklist and the report, in the user's language, in the shape below. Take every number from the JSON; do not count from memory.
+Write the report to the user from the checklist and the report, in the user's language, in the shape below. Take every number from the JSON; do not count from memory. A number is the count of entries in that array: one entry in `violations` that covers two files is 1 (its `location` says which files).
 
 #### First — record template proposals
 
@@ -60,12 +60,12 @@ file://<workdir>/check-list.html
 
 - Check list: file://<workdir>/check-list.html
 - Codebase report: file://<workdir>/check-list.html#codebase-report
-- `:architecture-test:test` result: ✅ All green  (or: ⚠️ architecture violations left: <number of violations>)
+- `:architecture-test:test` result: ✅ All green  (or: ⚠️ architecture violations left: <number of entries in violations>)
 - Questions for you (check list): answered <n> / unanswered <n>
     - <id> <question> → recommended: <recommendation>        (each unanswered one)
 - Inconsistencies in the codebase (report): answered <n> / unanswered <n>
     - <id> <question> → recommended: <recommendation>
-- Changed files: <number of changedFiles>
+- Changed files: <number of entries in changedFiles>
 - Next action:
     - **Review** ProjectArchitecture.kt under file://<project root>/<meta.moduleDir>/
     - Run one real implementation task and confirm that the definition works            (6-A, unless 6-1 is done)
@@ -84,6 +84,6 @@ Resume:
 
 Leave out a "Questions" line when that file has no questions. Mention the steps that carry a `warning` under the result line.
 
-**For the unanswered questions, ask the user to answer them**: show the URL of the page (`file://<workdir>/check-list.html`; the report's questions, ids starting with `cq`, are at `#report-questions`, the checklist's, ids starting with `q`, at `#questions`), and have them answered in the browser ("Copy all" or "Save as JSON" in the menu at the bottom right), or in chat. Write what comes back into `answers` (0-3, "Answers").
+**For the unanswered questions, ask the user to answer them**: show the URL of the page (`file://<workdir>/check-list.html`; the report's questions, ids starting with `cq`, are at `#report-questions`, the checklist's, ids starting with `q`, at `#questions`), and have them answered in the browser ("Copy all" or "Save as JSON" in the menu at the bottom right; on a Japanese page 「まとめてコピー」 or 「JSON を保存」), or in chat. Write what comes back into `answers` (0-3, "Answers").
 
 > **The session may end here.** The next session finds the working directory (the directory with `check-list.html` below the project root), reads the checklist's JSON, and goes on from there: from the first item that is not done, or, once step 5 is done, from what the user asks for (6-0, or one of 6-A to 6-D). The sections are in the table in `references/setup/README.md`. The previous session's results are in the checklist and the report; if `tmp/katachi-command.txt` is there, run katachi the way it says (0-1). Do not rely on the conversation's memory.

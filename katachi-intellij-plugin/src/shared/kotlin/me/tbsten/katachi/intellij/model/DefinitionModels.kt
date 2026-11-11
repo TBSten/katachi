@@ -111,7 +111,10 @@ internal data class LayoutEntryModel(
  */
 internal data class CaptureRef(val name: String, val segmentIndex: Int, val wildcardIndex: Int = 0, val transform: String? = null)
 
-/** The names given to the `*` of a module key; [pattern] is such as `":feature:*"`. */
+/**
+ * The names given to the `*` of a module key; [pattern] is such as `":feature:*"`. Only katachi 0.3 and earlier write it
+ * (0.4 removed `.module { }`); it is still read, since the plugin may open a project on an older katachi.
+ */
 internal data class ModuleCaptureRef(val pattern: String, val names: List<String>)
 
 /** A `.template { }` attached to an entry. [specifier] is the complete one, `domain.UseCase.useCase`. */

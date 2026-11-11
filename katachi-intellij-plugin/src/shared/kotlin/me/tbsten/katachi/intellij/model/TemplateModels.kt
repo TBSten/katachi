@@ -152,7 +152,10 @@ internal sealed interface ParameterModel {
  * (`capture("x").pascalCase`), `null` for the plain capture a run takes as `--arg`.
  */
 internal data class CapturePlace(
-    /** The JSON `kind`: `PathCapture`, `ModuleCapture`, or one a newer katachi added. */
+    /**
+     * The JSON `kind`: `PathCapture`, or one a newer katachi added. `ModuleCapture` comes only from katachi 0.3 and
+     * earlier (0.4 removed `.module { }`); it is still read, since the plugin may open a project on an older katachi.
+     */
     val kindName: String,
     val pattern: String,
     val position: Int,

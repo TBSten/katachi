@@ -1,6 +1,6 @@
 ## 6-B. (After reporting in 6) If asked to set up CI
 
-Handle this as follows, based on the CI system in use. If you changed `--module-dir`, read `:architecture-test` below as that path (`KATACHI_MODULE_PATH`).
+Handle this as follows, based on the CI system in use. If you changed `--module-dir`, read `:architecture-test` below as the Gradle path of `meta.moduleDir` (`static-analysis/katachi` is `:static-analysis:katachi`).
 
 ### If using GitHub Actions
 
@@ -26,7 +26,7 @@ jobs:
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: '17' # match the JVM toolchain N decided in 2-1 (17 or later)
+          java-version: '17' # the JVM toolchain N from 2-1 (meta.jvmToolchain). Without a toolchain, the major version of "Gradle's JDK" that katachi doctor prints (17 or later)
 
       - uses: gradle/actions/setup-gradle@v6
 

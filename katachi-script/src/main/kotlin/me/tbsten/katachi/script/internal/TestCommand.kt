@@ -11,7 +11,7 @@ import kotlin.io.path.isDirectory
 import kotlin.io.path.isExecutable
 import kotlin.io.path.isRegularFile
 
-// `test` and `compare-violations`: run the test module and summarize its log, and compare the check
+// `test` and `compare-violations`: run the verification module and summarize its log, and compare the check
 // results before and after a refactoring. The kit's `cmd_test` / `cmd_compare_violations`.
 
 /**
@@ -123,10 +123,10 @@ internal fun ScriptContext.runCompareViolations(args: List<String>): Int {
     val after = args.getOrNull(1)?.let(::resolve) ?: testLogDir().resolve("test-after-refactor.log")
     for (log in listOf(before, after)) {
         if (!log.isRegularFile()) {
-            die(Messages.Test.notFoundSaveOutput(fileUri(log), module.gradlePath))
+            dieUsage(Messages.Test.notFoundSaveOutput(fileUri(log), module.gradlePath))
         }
         if (!hasCheckResult(log)) {
-            die(Messages.Test.hasNoCheckResult(fileUri(log)))
+            dieUsage(Messages.Test.hasNoCheckResult(fileUri(log)))
         }
     }
     // A log cut to the first N violations cannot be compared: swaps past N go unseen, and a full log shows a false difference.
@@ -155,14 +155,14 @@ internal fun ScriptContext.runCompareViolations(args: List<String>): Int {
 }
 
 /**
- * `test [--save <name>] [-- <gradle args>]`: runs the test module, keeps the whole log and prints a
+ * `test [--save <name>] [-- <gradle args>]`: runs the verification module, keeps the whole log and prints a
  * summary. 0 passed, 1 the check failed, 2 the check was not reached (the reason goes to stderr). The
  * environment, JAVA_HOME included, is passed on as it is.
  */
 internal fun ScriptContext.runTest(args: List<String>): Int {
     val parsed = parseArgs(commandSpec("test"), args)
     parsed.positionals.firstOrNull()?.let {
-        die(Messages.Test.unknownOptionPutArguments(it))
+        dieUsage(Messages.Test.unknownOptionPutArguments(it))
     }
     val save = parsed.value("--save")
     val gradleArgs = parsed.passthrough.toMutableList()

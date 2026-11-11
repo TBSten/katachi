@@ -7,7 +7,7 @@ import me.tbsten.katachi.script.catalog
 import me.tbsten.katachi.script.literal
 
 /**
- * How `katachi scaffold --deps` writes the dependencies of the test module.
+ * How `katachi scaffold --deps` writes the dependencies of the verification module.
  *
  * The top-level [catalog] and [literal] are the same values, so a script can write them bare.
  *

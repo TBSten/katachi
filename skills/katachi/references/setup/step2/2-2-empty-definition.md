@@ -4,7 +4,7 @@
 katachi agent test
 ```
 
-`test` runs the verification module's `test` task (`./gradlew :architecture-test:test`) and summarizes the result. The full log stays in `<workdir>/tmp/test/`, and the summary's `Log:` line shows the path. Do not start Gradle directly; throughout these steps, always use `katachi agent test` (only the CI in 6-B is written in the `./gradlew` form).
+`test` runs the verification module's `test` task (`./gradlew :architecture-test:test`) and summarizes the result. The full log stays in `<workdir>/tmp/test/`, and the summary's `Log:` line shows the path. To run the check, do not start Gradle directly; throughout these steps, always use `katachi agent test`. The exceptions are the tasks that have no `katachi` command: `katachiDocs` (4-3, 6-C) and `katachiTemplate` (6-D) run as `./gradlew`, and so does the CI in 6-B.
 
 **Failing here is the expected outcome.** `architecture { }` is empty, so by the deny-by-default principle every file is reported as `Unexpected`. The summary looks like this.
 

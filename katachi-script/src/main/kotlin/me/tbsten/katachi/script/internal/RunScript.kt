@@ -68,7 +68,7 @@ private fun ScriptContext.runAgent(args: List<String>): Int {
 
         command in REMOVED_FOR_THE_SKILL -> die(Messages.RunScript.removedForTheSkill("$AGENT_COMMAND $command"))
 
-        command !in AGENT_COMMANDS -> die(Messages.RunScript.notSubcommandSeeHelp(command))
+        command !in AGENT_COMMANDS -> dieUsage(Messages.RunScript.notSubcommandSeeHelp(command))
 
         command in HELP_ANYWHERE && rest.any(::isHelp) -> {
             out(agentUsage())
@@ -86,12 +86,13 @@ private fun ScriptContext.dispatch(command: String, args: List<String>): Int = w
     "lint" -> runLint()
     "compare-violations" -> runCompareViolations(args)
     "internal" -> runInternal(args)
-    else -> die(Messages.RunScript.unknownSubcommandSeeHelp(command))
+    else -> dieUsage(Messages.RunScript.unknownSubcommandSeeHelp(command))
 }
 
 /**
  * The language of the messages: `--lang` on doctor, then the language of the check list the katachi skill
- * placed in the working directory (its `<html lang>`), then `KATACHI_LANG`, then ja. `--lang` is read here
+ * placed in the working directory (its `<html lang>`), then `KATACHI_LANG`, then the locale (`LC_ALL` / `LC_MESSAGES` /
+ * `LANG`), then ja. `--lang` is read here
  * first because parsing sets it too late for --help.
  */
 private fun ScriptContext.resolveLang(command: String, args: List<String>) {
@@ -102,7 +103,7 @@ private fun ScriptContext.resolveLang(command: String, args: List<String>) {
         is WorkdirLookup.Ambiguous -> lookup.candidates.map(::recordedLang).distinct().singleOrNull()
         WorkdirLookup.NotFound -> null
     }
-    lang = recorded ?: Lang.of(env["KATACHI_LANG"]) ?: Lang.JA
+    lang = recorded ?: Lang.fromEnv(env) ?: Lang.JA
     if (command == "doctor") {
         val index = args.indexOf("--lang")
         Lang.of(args.getOrNull(index + 1).takeIf { index >= 0 })?.let { lang = it }

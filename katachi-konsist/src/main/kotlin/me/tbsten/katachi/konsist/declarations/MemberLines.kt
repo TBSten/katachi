@@ -88,7 +88,7 @@ public sealed interface MemberVocabulary {
 /**
  * The `allow` lines of enum entries, secondary constructors and `init` blocks, in a class body.
  *
- * ## Example 1: entries named in upper case
+ * ## Example 1: the entries listed by name
  * ```kt
  * allow(enum, `class`, "Color") { allow(entry, "{RED,GREEN,BLUE}") }
  * ```

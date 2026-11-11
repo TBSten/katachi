@@ -94,7 +94,7 @@ internal class CommandSpec(
     val passthrough: PassthroughSpec? = null,
     /** Every argument is positional, even one that starts with `-`. */
     val rawPositionals: Boolean = false,
-    /** What the command does, for the builder's KDoc: `runs the test module's tests and ...`. */
+    /** What the command does, for the builder's KDoc: `runs the verification module's tests and ...`. */
     val doc: String = "",
     /**
      * A command the katachi skill's steps run, typed `katachi agent <name>` (`katachi.agent.<name>` in a
@@ -118,7 +118,7 @@ private val LANG_TYPE = ChoiceType(
 )
 private val TEST_FRAMEWORK_TYPE = ChoiceType(
     "TestFramework",
-    "The test framework `katachi scaffold --test-framework` lays the test module out for",
+    "The test framework `katachi scaffold --test-framework` lays the verification module out for",
     listOf(
         ChoiceValue("junit5", "JUnit 5"),
         ChoiceValue("kotest", "Kotest, with the test written as a `FunSpec` like `kotest-fun`"),
@@ -140,7 +140,7 @@ private val TEST_FRAMEWORK_TYPE = ChoiceType(
 internal val TEST_FRAMEWORKS: List<String> = TEST_FRAMEWORK_TYPE.values.map { it.value }
 private val DEPENDENCY_STYLE_TYPE = ChoiceType(
     "DependencyStyle",
-    "How `katachi scaffold --deps` writes the dependencies of the test module",
+    "How `katachi scaffold --deps` writes the dependencies of the verification module",
     listOf(
         ChoiceValue("catalog", "Adds the libraries to `gradle/libs.versions.toml` and refers to them as `libs.katachi`"),
         ChoiceValue("literal", "Writes the coordinates into `build.gradle.kts`"),
@@ -157,7 +157,7 @@ private val LANG = OptionSpec(
 private val MODULE_DIR = OptionSpec(
     "--module-dir",
     OptionKind.Path,
-    doc = "where the test module goes, relative to the Gradle root",
+    doc = "where the verification module goes, relative to the Gradle root",
     param = "path",
     paramDoc = "Such as `static-analysis/katachi`.",
     katachiDefault = KatachiDefault.ModuleDir,
@@ -207,10 +207,10 @@ internal val COMMAND_SPECS: List<CommandSpec> = listOf(
                 sample = "kotest",
             ),
             OptionSpec("--deps", OptionKind.Choice(DEPENDENCY_STYLE_TYPE), doc = "how the dependencies are written", param = "style"),
-            OptionSpec("--force", OptionKind.Flag, doc = "overwrites an existing test module"),
+            OptionSpec("--force", OptionKind.Flag, doc = "overwrites an existing verification module"),
             OptionSpec("--dry-run", OptionKind.Flag, doc = "prints what would be written, and writes nothing"),
         ),
-        doc = "creates the test module and adds it to the build",
+        doc = "creates the verification module and adds it to the build",
     ),
     CommandSpec(
         "test",
@@ -226,7 +226,7 @@ internal val COMMAND_SPECS: List<CommandSpec> = listOf(
             ),
         ),
         passthrough = PassthroughSpec("gradle", "the arguments after `--`, handed to `./gradlew` as they are"),
-        doc = "runs the tests of the test module and prints only a summary",
+        doc = "runs the tests of the verification module and prints only a summary",
     ),
     CommandSpec("lint", doc = "lists what in the definition looks off: a Role with files of several kinds, flat groups and the like"),
     CommandSpec(
@@ -272,7 +272,7 @@ internal fun parseArgs(spec: CommandSpec, args: List<String>): ParsedArgs {
             ?: spec.defaultSubcommand?.takeIf { first == null || first.startsWith("-") }?.let { name -> spec.subcommands.first { it.name == name } }
             ?: run {
                 val names = spec.subcommands.joinToString(" / ") { it.name }
-                die(Messages.CommandSpecs.subcommandsGot(spec.name, names, first.orEmpty()))
+                dieUsage(Messages.CommandSpecs.subcommandsGot(spec.name, names, first.orEmpty()))
             }
         val inner = parseArgs(CommandSpec(spec.name, sub.options, sub.positionals, passthrough = sub.passthrough, rawPositionals = sub.rawPositionals), if (picked != null) args.drop(1) else args)
         return inner.withSubcommand(sub.name)
@@ -295,9 +295,9 @@ internal fun parseArgs(spec: CommandSpec, args: List<String>): ParsedArgs {
             continue
         }
         val option = spec.option(arg) ?: if (spec.passthrough != null) {
-            die(Messages.CommandSpecs.unknownOptionPutArguments(spec.name, arg))
+            dieUsage(Messages.CommandSpecs.unknownOptionPutArguments(spec.name, arg))
         } else {
-            die(Messages.CommandSpecs.unknownOption(spec.name, arg))
+            dieUsage(Messages.CommandSpecs.unknownOption(spec.name, arg))
         }
         when (val kind = option.kind) {
             OptionKind.Flag -> {
@@ -314,7 +314,7 @@ internal fun parseArgs(spec: CommandSpec, args: List<String>): ParsedArgs {
                 }
                 val value = needValue(arg, next)
                 if (value !in kind.values) {
-                    die(Messages.CommandSpecs.valueMustBe(arg, Messages.CommandSpecs.oneOf(kind.values), value))
+                    dieUsage(Messages.CommandSpecs.valueMustBe(arg, Messages.CommandSpecs.oneOf(kind.values), value))
                 }
                 values[arg] = value
                 index += 2

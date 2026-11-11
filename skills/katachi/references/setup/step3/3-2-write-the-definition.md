@@ -41,7 +41,7 @@ Decide whether files belong in the same Role with these three questions. If any 
 
 The other way round, **it is not one Role per file either.** Eighteen `*UseCase.kt` files are one Role, `UseCase`. The snippet a violation's `How to fix:` offers names the Role after the file (`"GetUserUseCase"` and so on), so do not paste it as is — rename it to the kind.
 
-Files directly under the root can be written directly under `layout { }` (`"README.md".file()`). You do not need to gather them in one Role.
+Files directly under the root also get one Role per kind (README, LICENSE, `.gitignore`, …), never one Role for all of them. Write the file directly under its Role's `layout { }` (`"README.md".file()`): no directory is needed.
 
 **For the Gradle files (the wrapper, settings, each module's build script, `gradle.properties`, the version catalog), do not write Roles yourself: write the one line `gradle()`.** katachi declares a `Gradle` group split into one Role per kind of file (it comes with the star import of `me.tbsten.katachi.dsl.gradle.*`). Only `buildSrc` and builds added with `includeBuild`, which it does not cover, need Roles of your own.
 
@@ -122,6 +122,24 @@ Decide like this.
 - **A convention that belongs to a Role goes into katachi.** "A ViewModel never calls a repository directly" *is* the definition of that Role. Another tool checking something similar does not change that — having it here keeps "what this Role is" in one place
 - **The only safe thing to drop is a rule an existing tool already fails the build on, with no per-file suppression.** If it can be suppressed file by file, katachi's copy still earns its place
 - When unsure, write it. A constraint is easy to delete later
+
+#### The verification module needs Roles too
+
+The verification module is checked like any other module. Its `build.gradle.kts` is covered by `gradle()`, but the definition files and the test under `<verification module>/src/test/kotlin/` need a Role, or they come back as `[UnexpectedFile]` (3-3 assumes they have one). Give them a group of their own, with `documented = false` (they are tool configuration, as in 1-2):
+
+```kotlin
+"ArchitectureTest".group {
+    documented = false
+    "ArchitectureDefinition".role {
+        summary = "The katachi definition: architecture { }, the functions it is split into, and the test that runs it"
+        layout {
+            "architecture-test" / testSourceSet / kotlin / "**" / "*".ktFile()
+        }
+    }
+}
+```
+
+Read `"architecture-test"` as `meta.moduleDir`. When 3-3 splits the definition into one file per Role, this one Role still covers them all (the `"**"`).
 
 Fill in the `architecture { }` in `<verification module>/src/test/kotlin/<package>/test/architecture/ProjectArchitecture.kt`.
 
