@@ -4,12 +4,12 @@ A Role can carry a `.template { }` on a file declaration in its `layout { }`. `k
 
 ## Generate a file from an existing template
 
-1. Find the template: search the definition for `.template {`. The Role it is in, and its group, give the `template=` value (`group.Role`, or just `Role` outside any group).
+1. Find the template: search the definition for `.template {`. The Role it is in, and its group, give the `template=` value (`Group.Role`, or just `Role` outside any group).
 2. Read the parameters it takes: the `stringParameter("…")` / `booleanParameter` / `intParameter` / `enumParameter` it declares, and the names given to wildcards with `capture("…")` in the path (read inside the template with `captureValue("…")`).
 3. Generate, then run the check.
 
    ```sh
-   ./gradlew :architecture-test:katachiTemplate --arg template=feature.ViewModel --arg feature=home --arg name=Profile
+   ./gradlew :architecture-test:katachiTemplate --arg template=Feature.ViewModel --arg feature=home --arg name=Profile
    ./gradlew :architecture-test:test
    ```
 

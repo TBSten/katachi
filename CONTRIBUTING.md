@@ -186,3 +186,35 @@ When users must rewrite their code or definitions to compile or to keep the chec
 | Chat reports | Shrink it to one line (for example `Impact: CLI new / IDE plugin new×2 / konsist update!`) |
 
 Release notes can be built by collecting the pull requests' impacts and listing them per component: `!` → breaking changes, `new` → new features, `update` → changes, `fix` → fixes.
+
+## Pull request labels
+
+Every pull request gets `影響:〜` (impact) and `規模:〜` (size) labels, so the list of pull requests shows what each one touches and how big it is, and can be filtered by component. The names, colors and descriptions of the labels live in [`.github/labels.json`](.github/labels.json) (a change to it on main is applied to GitHub by the [PR labels](.github/workflows/pr-labels.yml) workflow).
+
+| Label | Who adds it | How |
+|---|---|---|
+| `影響:<component>` | Whoever opens the pull request (agents too) | One per component written under "Main changes" in the impact. Several are fine |
+| `規模:小`・`規模:中`・`規模:大` | The workflow | Re-set to exactly one on every push, from the counted changed lines. No need to add it by hand |
+
+### Impact labels
+
+Pick the component names from the list in "Writing the impact", and for core only, go down to the second level (`影響:core/DSL`, `影響:core/検査`, `影響:core/processor API`, `影響:core/IDE 連携`, `影響:core/katachiDocs`, `影響:core/katachiTemplate`, `影響:core/katachiDiff`). They are the same names as the "影響コンポーネント" column of the Notion tickets.
+
+- Parts deeper inside core are rounded up to the second level (layout, role, group, fileConstraint, template → `影響:core/DSL`; baseline, SARIF → `影響:core/検査`)
+- CLI and script share one label (`影響:CLI・script`)
+- Components that only appear under "Minor changes" or "Tests and verification" get no label (users barely notice those changes)
+- When the impact is rewritten, bring the labels in line
+
+Example: if the main changes are `konsist` and `CLI`, the labels are `影響:konsist` and `影響:CLI・script`.
+
+### Size labels
+
+| Label | Counted changed lines (additions + deletions) |
+|---|---|
+| `規模:小` | Fewer than 100 |
+| `規模:中` | 100 to 499 |
+| `規模:大` | 500 or more |
+
+Files that are not read line by line in a review are not counted: tests (`src/test/`, `src/jvmTest/`, `src/testFixtures/`, `test/`, `e2e/`, `*.test.ts`, `test_*.py` and so on), snapshots and goldens, images, videos and fonts, lock files and the Gradle wrapper, English translations (the English docs pages, `README.md`, `CONTRIBUTING.md`, `skills/katachi/assets/en/`), and the docs frozen per version (`docs/src/content/docs/0.3/` and so on). The list itself is in [`.github/scripts/pr-labels.py`](.github/scripts/pr-labels.py).
+
+The workflow cannot label a pull request from a fork, so a maintainer adds the labels.

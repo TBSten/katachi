@@ -56,7 +56,7 @@ Do this only for the Roles, among the proposals recorded in step 6, that the use
 
    All there is to use is `stringParameter()` / `booleanParameter()` / `intParameter()` (optionally with `default = ...`), `enumParameter()` (given `entries` or a default value), plus `capture("name")` — embeddable anywhere in a layout's directory or file name — to name a wildcard in the destination, and, to read its value, `captureValue("name")` (inside the template). Do not add other words by guessing.
 3. A template's own parameters (`--arg name=...`) can be passed as-is, with no setting needed on the module side. What is accepted is exactly the set of names the named Role's `.template { }` declares, plus the names given to wildcards in its `layout { }`; a typo still fails, as before, with `Unknown processor argument(s): ...`
-4. Generate one file, and confirm **the test succeeds with 0 violations right after**. `--arg template=` takes `group.Role` if there is a group, or just the Role name if there is none.
+4. Generate one file, and confirm **the test succeeds with 0 violations right after**. `--arg template=` takes `Group.Role` if there is a group, or just the Role name if there is none.
 
    ```sh
    ./gradlew :architecture-test:katachiTemplate --arg template=UseCase --arg name=Sample

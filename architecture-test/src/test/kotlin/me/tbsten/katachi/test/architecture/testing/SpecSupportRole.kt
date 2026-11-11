@@ -13,7 +13,7 @@ private const val KONSIST_TEST_PACKAGE: String = "me/tbsten/katachi/test/konsist
 private const val KONTURE_TEST_PACKAGE: String = "me/tbsten/katachi/test/konture"
 
 fun DeclarationContainerScope.specSupport() = "SpecSupport".role {
-    title = "テストの道具"
+    title = "テストのツール"
     summary = "スペックではないテストコード。フィクスチャ、偽物のファイルシステム、共通の組み立て"
     example("FakeFileSystem.kt", "ディスクを触らずに走査を動かすための木")
     example("LayoutSpecSupport.kt", "layout の宣言を読み戻す共通の組み立て")
@@ -21,7 +21,7 @@ fun DeclarationContainerScope.specSupport() = "SpecSupport".role {
     example("SyntheticProject.kt", "性能を測るための大きな合成プロジェクトを種から決定的に作る")
     layout {
         "katachi" {
-            description = "スペックが使う道具のうち、:katachi だけで組み立てられるもの。偽のファイルシステムや DSL の下ごしらえ"
+            description = "スペックが使うツールのうち、:katachi だけで組み立てられるもの。偽のファイルシステムや DSL の下ごしらえ"
             testSourceSet / kotlin / "**" / "*SpecSupport".ktFile()
             testSourceSet / kotlin / KATACHI_TEST_PACKAGE / "dsl" / "ArchitectureExtensions".ktFile()
             // The entry points and the written-at lines the specs of `definition-errors.json` share.
@@ -46,7 +46,7 @@ fun DeclarationContainerScope.specSupport() = "SpecSupport".role {
             testSourceSet / "resources" / "definition" / "golden" / "*.json".file()
         }
         "katachi-konsist" {
-            description = "スペックが使う道具のうち、Konsist に読ませる実ファイルを一時ディレクトリに用意するもの"
+            description = "スペックが使うツールのうち、Konsist に読ませる実ファイルを一時ディレクトリに用意するもの"
             testSourceSet / kotlin / "**" / "*SpecSupport".ktFile()
             testSourceSet / kotlin / KONSIST_TEST_PACKAGE / "FixtureProject".ktFile()
             // The SARIF a failing `ktFileContent { }` writes, as `KtFileContentSarifSpec` compares it. The IDE plugin keeps a
@@ -54,16 +54,16 @@ fun DeclarationContainerScope.specSupport() = "SpecSupport".role {
             testSourceSet / "resources" / "sarif" / "*.sarif".file()
         }
         "katachi-konture" {
-            description = "スペックが使う道具のうち、Konture に読ませる実ファイルを一時ディレクトリに用意するもの"
+            description = "スペックが使うツールのうち、Konture に読ませる実ファイルを一時ディレクトリに用意するもの"
             testSourceSet / kotlin / "**" / "*SpecSupport".ktFile()
             testSourceSet / kotlin / KONTURE_TEST_PACKAGE / "FixtureProject".ktFile()
         }
         "katachi-script" {
-            description = "スペックが使う道具のうち、作業用ディレクトリの形を一時ディレクトリに作るもの"
+            description = "スペックが使うツールのうち、作業用ディレクトリの形を一時ディレクトリに作るもの"
             testSourceSet / kotlin / "**" / "*SpecSupport".ktFile()
         }
         "tool/dokka" {
-            description = "Dokka プラグインのスペックが使う道具。Dokka の実行の組み立てと、@featured を付けたインラインのソース"
+            description = "Dokka プラグインのスペックが使うツール。Dokka の実行の組み立てと、@featured を付けたインラインのソース"
             testSourceSet / kotlin / "**" / "*SpecSupport".ktFile()
         }
     }

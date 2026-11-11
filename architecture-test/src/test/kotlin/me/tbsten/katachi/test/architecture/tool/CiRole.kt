@@ -4,14 +4,16 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.ci() = "Ci".role {
     title = "CI"
-    summary = "GitHub Actions のワークフローと、そこから呼ばれるスクリプト"
+    summary = "GitHub Actions のワークフローと、そこから呼ばれるスクリプト・設定"
     example("ci.yml", "check・サンプルのビルド・IDE プラグイン・ベンチマークを push と pull request のたびに回す")
     example("check-kotlin-versions.sh", "サンプルとルートの Kotlin バージョンの一致を見る")
     example("benchmark-pr.yml", "perf ラベルの付いた pull request を base と同じランナーで比べる")
     example("diff-report.yml", "pull request ごとに katachiDiff の Markdown をコメントとして貼る（中身は actions/ の action）")
+    example("pr-labels.yml", "pull request に規模のラベルを付け、labels.json のラベルを GitHub にそろえる")
     layout {
         ".github" {
             "workflows" / "*.yml".file()
+            "labels.json".file()
             "scripts" / "*.sh".file()
             "scripts" / "*.py".file()
         }

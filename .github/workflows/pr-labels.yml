@@ -1,0 +1,66 @@
+name: PR labels
+
+# Keeps the pull request labels of `.github/labels.json` in place (KATACHI-360).
+#
+# - `size`: on every push to a pull request, counts the changed lines (tests, snapshots, images,
+#   lock files and English translations are not counted; the list is in `.github/scripts/pr-labels.py`)
+#   and sets exactly one `規模:小` / `規模:中` / `規模:大`. The `影響:〜` labels are not touched here:
+#   whoever opens the pull request picks them from the impact section of the body.
+# - `sync`: when `.github/labels.json` changes on main (or by hand), creates the labels and brings the
+#   colors and descriptions of existing ones in line with the file.
+#
+# `pull_request` rather than `pull_request_target`, as in diff-report.yml: a fork's token is read-only,
+# so `size` is skipped for a pull request from a fork. Labels added with GITHUB_TOKEN do not start
+# other workflows (benchmark-pr.yml only reacts to `perf` anyway).
+
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+  push:
+    branches: [ main ]
+    paths: [ .github/labels.json ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  size:
+    name: Size label
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github
+      - name: Set 規模 label
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: python3 .github/scripts/pr-labels.py size "$PR_NUMBER"
+
+  sync:
+    name: Sync labels
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github
+      - name: Sync .github/labels.json
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: python3 .github/scripts/pr-labels.py sync

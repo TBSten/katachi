@@ -350,6 +350,10 @@ internal fun ScriptContext.lintRoles() {
     val oneRolePerFile = prefs["oneRolePerFile"] != "no"
     val flatGroups = if (nestedGroups) groups.filter { it.directRoles >= 8 && !it.hasGroup } else emptyList()
     val unsplitFiles = if (oneRolePerFile) decls.entries.sortedBy { it.key.toString() }.filter { it.value.size >= 2 } else emptyList()
+    // Role and group names are UpperCamelCase, like katachi's own Gradle / Git groups (KATACHI-362).
+    val lowercaseNames = (roles.map { Triple("Role", it.name, it.path to it.line) } + groups.map { Triple("group", it.name, it.path to it.line) })
+        .filter { it.second.firstOrNull()?.isLowerCase() == true }
+        .sortedWith(compareBy({ it.third.first.toString() }, { it.third.second }))
     val documentedCandidates = mutableListOf<Pair<LintRole, String>>()
     for (r in roles) {
         if (r.documentedSomewhere()) continue
@@ -370,7 +374,7 @@ internal fun ScriptContext.lintRoles() {
         "version catalog" to "versionCatalog { }",
     )
 
-    if (warnings.isEmpty() && gradleHand.isEmpty() && gradleConstrained.isEmpty() && flatGroups.isEmpty() && unsplitFiles.isEmpty() && documentedCandidates.isEmpty()) {
+    if (warnings.isEmpty() && gradleHand.isEmpty() && gradleConstrained.isEmpty() && flatGroups.isEmpty() && lowercaseNames.isEmpty() && unsplitFiles.isEmpty() && documentedCandidates.isEmpty()) {
         say(Messages.Lint.roleCheckNoRole(roles.size))
         return
     }
@@ -408,6 +412,14 @@ internal fun ScriptContext.lintRoles() {
         say(Messages.Lint.flatGroupsMoreRoles(flatGroups.size))
         for (g in flatGroups) say(Messages.Lint.groupRoles(uri(g.path), g.line, g.name, g.directRoles))
         say(Messages.Lint.nestGroupsOrderModule)
+    }
+    if (lowercaseNames.isNotEmpty()) {
+        say("")
+        say(Messages.Lint.lowercaseNames(lowercaseNames.size))
+        for ((kind, name, at) in lowercaseNames) {
+            say(Messages.Lint.lowercaseName(uri(at.first), at.second, kind, name, name.replaceFirstChar { it.uppercaseChar() }))
+        }
+        say(Messages.Lint.nameInUpperCamelCase)
     }
     if (unsplitFiles.isNotEmpty()) {
         say("")
