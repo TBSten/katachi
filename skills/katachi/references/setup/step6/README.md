@@ -28,7 +28,7 @@ For each Role, decide the following and add it to the report's `templates`.
 ]
 ```
 
-If you judge that no Role suits a template, record nothing. What you record goes into the "Next action" of your report below, and the page shows it under "8. Proposed templates" of the report. **Do not write `.template { }` here.** That happens in 6-D, after the user agrees.
+If you judge that no Role suits a template, record nothing. What you record goes into the "Next action" of your report below, and the page shows it under "5. Proposed templates" of the report. **Do not write `.template { }` here.** That happens in 6-D, after the user agrees.
 
 #### The report
 

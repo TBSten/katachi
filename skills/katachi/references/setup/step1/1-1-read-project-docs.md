@@ -17,7 +17,7 @@ Take the following from them.
 | **The vocabulary the team actually uses** (`UseCase` or `Interactor`, `Screen` or `Page`) | `roles[].name`. **Do not invent names of your own** |
 | Deliberate rules ("the UI never calls a repository directly") | `roles[].allowed` / `forbidden` |
 | The name of the architecture and why it was chosen | `architecture.name` / `rationale` / `characteristics` |
-| Checks of their own (a Kotlin compiler plugin, custom detekt rules, ktlint) | `tools` |
+| Checks of their own (a Kotlin compiler plugin, custom detekt rules) | `architecture.characteristics` |
 
 Write inconsistencies into **the report's** `questions` (ids `cq1`, `cq2`, …; the checklist's `questions` are for something else, 4-2). The fields are in 0-3.
 

@@ -42,7 +42,6 @@ Add an entry by appending an object to the array; keep the entries already there
 | `questions` | report | `id` (`cq1`, `cq2`, …), `question`, `observed`, `options` (array), `recommendation` |
 | `modules` | report | `path`, `kind`, `responsibility`, `buildFile`, `deviation` (only when it differs from the other modules of its kind) |
 | `roles` | report | `importance`, `name`, `group`, `layout`, `naming`, `allowed` / `forbidden` / `examples` (arrays), `count`, `note`; `constraintOnly: true` for a constraint on a Gradle build file (1-2) |
-| `tools` | report | `name`, `configPath`, `declareInKatachi`, `note` |
 | `excluded` | report | `path`, `reason` |
 | `templates` | report | `role`, `files` / `params` (arrays), `basedOn`, `reason` |
 
@@ -65,7 +64,7 @@ Answers to `questions` go into `answers` of the same block, keyed by the questio
 }
 ```
 
-The user can answer in the browser too, in "Questions for you" of the checklist and "7. Questions for you" of the report. Once there is an answer or a feedback comment, a small menu appears at the bottom right of the page, and the user hands things back in one of two ways. Either way, copy the entries into `answers` of the block they belong to:
+The user can answer in the browser too, in "Questions for you" of the checklist and "4. Questions for you" of the report. Once there is an answer or a feedback comment, a small menu appears at the bottom right of the page, and the user hands things back in one of two ways. Either way, copy the entries into `answers` of the block they belong to:
 
 - **"Copy all"** copies text to paste into the chat: one line saying what the answers are for, a line listing the ids still open (if any), and a ```` ```json ```` block with `{"checklist": {"answers": {"q1": {…}}}, "report": {"answers": {"cq1": {"answer": "…", "note": "…"}}}}`. If there is feedback (below), it follows in the same paste. Only what was not copied before goes in; when everything was, all of it is copied again.
 - **"Save as JSON"** saves the same JSON as a file (`katachi-answers.json`).
@@ -79,7 +78,7 @@ The page also has a **Feedback mode** (the button at the bottom right). The user
 ```text
 Feedback on the katachi installation checklist (check-list.html), 2 item(s). "Target" is the place in that file's JSON; its head, checklist. or report., names the JSON block (id). …
 
-1. Codebase report › 4. Elements (candidate roles) › app › ui › ViewModel
+1. Codebase report › 2. Elements (candidate roles) › app › ui › ViewModel
    Target: report.roles[name=ViewModel]
    > feature modules have ViewModels too (feature/*/src/...)
 
@@ -93,11 +92,11 @@ An entry with several `Target` lines is one comment the user put on several plac
 
 Under each `Target` there may be one more line. `Quote: "…"` is the part of the text the user selected before writing, so the comment is about those words. `Shows: "…"` is what that place said when the comment was saved (cut to about 120 characters); if your JSON no longer says that, you may have changed it since.
 
-`Target` starts with the block (`checklist.` or `report.`) and points into its JSON: `report.roles[name=ViewModel]` is the `roles` entry of the report whose `name` is `ViewModel`, `report.roles[name=ViewModel].forbidden[0]` the first entry of its `forbidden`, `report.tools[name=ktlint].configPath` one field of a row, `report.roles[group=App.Ui]` the roles in that group, `checklist.steps[id=3].items[id=3-2]` an item of the checklist, `report.overview.language` a key, `report.directoryTree: app/src/` a line of the directory tree, `report` the whole report, and `page` the whole page. For each comment, fix that entry (check the code again if the comment says the facts are wrong), or tell the user why you did not. Then tell the user which ones you changed. The comments stay in their browser until they delete them.
+`Target` starts with the block (`checklist.` or `report.`) and points into its JSON: `report.roles[name=ViewModel]` is the `roles` entry of the report whose `name` is `ViewModel`, `report.roles[name=ViewModel].forbidden[0]` the first entry of its `forbidden`, `report.excluded[path=third-party/].reason` one field of a row, `report.roles[group=App.Ui]` the roles in that group, `checklist.steps[id=3].items[id=3-2]` an item of the checklist, `report.overview.language` a key, `report.directoryTree: app/src/` a line of the directory tree, `report` the whole report, and `page` the whole page. For each comment, fix that entry (check the code again if the comment says the facts are wrong), or tell the user why you did not. Then tell the user which ones you changed. The comments stay in their browser until they delete them.
 
 #### Write down what you learn as you go
 
-**Do not save everything up for the end.** If you get interrupted partway through, the entire investigation is lost. Write each section of the report as soon as it is filled in: for step 1 that means `overview` → `architecture` → `modules` → `directoryTree` → `roles` → `tools` → `excluded`, so 7 or more writes. **Only the main agent writes**; subagents return their results, and the main agent writes them in order.
+**Do not save everything up for the end.** If you get interrupted partway through, the entire investigation is lost. Write each section of the report as soon as it is filled in: for step 1 that means `overview` → `architecture` → `modules` → `directoryTree` → `roles` → `excluded`, so 6 or more writes. **Only the main agent writes**; subagents return their results, and the main agent writes them in order.
 
 #### Progress
 

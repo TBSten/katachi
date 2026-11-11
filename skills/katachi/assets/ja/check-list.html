@@ -1206,7 +1206,7 @@
   .ask[open] > summary { border-bottom: 1px solid var(--hairline); border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
   .ask-body { padding: 10px 14px 12px; }
   .ask-body ul { margin: 0; padding-left: 18px; }
-  .arch-name { margin: 0 0 12px; color: var(--ink); font-size: 18px; font-weight: 600; line-height: 1.5; }
+  .arch-name { margin: 0 0 12px; color: var(--ink); font-size: 16px; line-height: 1.6; }
 
   /* モジュールのツリー */
   /* 長いモジュール名でも狭い画面に収まるよう折り返す */
@@ -1308,12 +1308,22 @@
   .report-main > section > h3 { font-size: 24px; margin: 0 0 16px; }
   .report-main h4 { color: var(--ink); font-size: 20px; font-weight: 600; line-height: 1.2; margin: 40px 0 12px; }
   h3 .badge { margin-left: 10px; font-size: 13px; vertical-align: 4px; }
+  /* 見出しで開閉する一覧（モジュール一覧・ディレクトリ構造） */
+  .fold { margin-top: 40px; }
+  .fold > summary { display: flex; align-items: center; gap: 8px; width: fit-content; padding: 2px 8px 2px 2px; border-radius: var(--radius-md); list-style: none; cursor: pointer; transition: background-color 150ms; }
+  .fold > summary::-webkit-details-marker { display: none; }
+  .fold > summary:hover { background: var(--bg-muted); }
+  .fold > summary::before { content: ""; flex: none; width: 16px; height: 16px; background: var(--muted); -webkit-mask: var(--icon-chevron) center / 14px no-repeat; mask: var(--icon-chevron) center / 14px no-repeat; transition: transform 200ms; }
+  .fold[open] > summary::before { transform: rotate(90deg); }
+  .report-main .fold > summary > h4 { margin: 0; }
+  .fold > summary .badge { margin-left: 10px; font-size: 13px; font-weight: 400; vertical-align: 2px; }
+  .fold[open] > summary { margin-bottom: 12px; }
   .report .meta-details { margin-top: 16px; }
   .step-link { display: flex; width: fit-content; margin-top: 6px; font-size: 13px; text-decoration: none; }
   .cross-link-label:has(.badge:not([hidden])) { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; }
   .cross-link-label .badge { font-size: 13px; font-weight: 400; }
   /* 目次・リンクで飛んだ先の見出しが、上に貼り付く進捗の下に隠れないように */
-  .block, .report-main > section { scroll-margin-top: calc(var(--progress-h, 0px) + 16px); }
+  .block, .report-main > section, .report-sub { scroll-margin-top: calc(var(--progress-h, 0px) + 16px); }
 
   @media (max-width: 860px) {
     .layout { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-top: 24px; }
@@ -1740,7 +1750,6 @@
   "modules": [],
   "directoryTree": null,
   "roles": [],
-  "tools": [],
   "excluded": [],
   "questions": [],
   "answers": {},
@@ -1806,14 +1815,6 @@
       "examples": ["app/build.gradle.kts"],
       "count": 1,
       "note": "namespace とアプリのパッケージ名が一致することを検査するためだけの Role"
-    }
-  ],
-  "tools": [
-    {
-      "name": "ktlint",
-      "configPath": ".editorconfig",
-      "declareInKatachi": "対象外（フォーマッタであり配置・命名の制約ではないため）",
-      "note": "pre-commit hook で自動整形している"
     }
   ],
   "excluded": [
@@ -1938,7 +1939,7 @@
 
     <div class="aside">
       <p class="aside-title">AI エージェントが自動生成したレポートです</p>
-      <p>次の工程に進む前に、認識が合っているかをあなたの目で確かめてください。特に「4. 要素（Role 候補）」は今後のルールの根拠になります。</p>
+      <p>次の工程に進む前に、認識が合っているかをあなたの目で確かめてください。特に「2. 要素（Role 候補）」は今後のルールの根拠になります。</p>
     </div>
 
     <div data-render="error"></div>
@@ -1952,52 +1953,43 @@
     <nav id="toc" aria-label="目次">
       <p class="toc-title">目次</p>
       <ol>
-        <li><a href="#report-overview">1. 概要</a></li>
-        <li><a href="#report-architecture">2. 採用しているアーキテクチャ</a></li>
-        <li><a href="#report-modules">3. モジュール構成とディレクトリ</a></li>
-        <li><a href="#report-roles">4. 要素（Role 候補）</a></li>
-        <li><a href="#report-tools">5. 利用しているツール</a></li>
-        <li><a href="#report-ignore">6. katachi の対象外にするもの</a></li>
-        <li><a href="#report-questions">7. ユーザに確認したいこと</a></li>
-        <li><a href="#report-templates">8. テンプレートの提案</a></li>
+        <li><a href="#report-overview">1. アーキテクチャ調査結果</a></li>
+        <li><a href="#report-roles">2. 要素（Role 候補）</a></li>
+        <li><a href="#report-ignore">3. katachi の対象外にするもの</a></li>
+        <li><a href="#report-questions">4. ユーザに確認したいこと</a></li>
+        <li><a href="#report-templates">5. テンプレートの提案</a></li>
       </ol>
     </nav>
 
       <div class="report-main">
-      <section id="report-overview" data-fb="report.overview" data-fb-label="1. 概要">
-        <h3>1. 概要</h3>
+      <section id="report-overview" data-fb="report.overview" data-fb-label="1. アーキテクチャ調査結果">
+        <h3>1. アーキテクチャ調査結果</h3>
         <div data-render="overview"></div>
+
+        <div id="report-architecture" class="report-sub" data-fb="report.architecture" data-fb-label="採用しているアーキテクチャ">
+          <h4>採用しているアーキテクチャ</h4>
+          <div data-render="architecture"></div>
+        </div>
+
+        <div id="report-modules" class="report-sub" data-fb="report.modules" data-fb-label="モジュール構成とディレクトリ">
+          <div data-render="modules"></div>
+        </div>
       </section>
 
-      <section id="report-architecture" data-fb="report.architecture" data-fb-label="2. 採用しているアーキテクチャ">
-        <h3>2. 採用しているアーキテクチャ</h3>
-        <div data-render="architecture"></div>
-      </section>
-
-      <section id="report-modules" data-fb="report.modules" data-fb-label="3. モジュール構成とディレクトリ">
-        <h3>3. モジュール構成とディレクトリ</h3>
-        <div data-render="modules"></div>
-      </section>
-
-      <section id="report-roles" data-fb="report.roles" data-fb-label="4. 要素（Role 候補）">
-        <h3>4. 要素（Role 候補）<span class="badge" data-render="roleCount"></span></h3>
+      <section id="report-roles" data-fb="report.roles" data-fb-label="2. 要素（Role 候補）">
+        <h3>2. 要素（Role 候補）<span class="badge" data-render="roleCount"></span></h3>
         <p class="lede">group の中に Role が入れ子で並びます。1 つの Role は 1 種類のファイルで、モジュールや層のように種類の違うファイルのまとまりは group です。同じ group の中は重要度の高い順（5 = 必ず定義に入れる / 1 = 入れなくてもよい）。行をクリックすると詳細が開きます。</p>
         <div data-render="roles"></div>
       </section>
 
-      <section id="report-tools" data-fb="report.tools" data-fb-label="5. 利用しているツール">
-        <h3>5. 利用しているツール</h3>
-        <div data-render="tools"></div>
-      </section>
-
-      <section id="report-ignore" data-fb="report.excluded" data-fb-label="6. katachi の対象外にするもの">
-        <h3>6. katachi の対象外にするもの</h3>
+      <section id="report-ignore" data-fb="report.excluded" data-fb-label="3. katachi の対象外にするもの">
+        <h3>3. katachi の対象外にするもの</h3>
         <p class="lede">katachi は <code>.gitignore</code> で除外されたファイルを見ません。ここに並ぶのは、git が追跡している（または未追跡で ignore されていない）のに検査から外すものです。</p>
         <div data-render="excluded"></div>
       </section>
 
-      <section id="report-questions" data-fb="report.questions" data-fb-label="7. ユーザに確認したいこと">
-        <h3>7. ユーザに確認したいこと<span class="badge" data-render="questionCount"></span><span class="badge badge-success" data-render="answeredCount"></span></h3>
+      <section id="report-questions" data-fb="report.questions" data-fb-label="4. ユーザに確認したいこと">
+        <h3>4. ユーザに確認したいこと<span class="badge" data-render="questionCount"></span><span class="badge badge-success" data-render="answeredCount"></span></h3>
         <p class="lede">選択肢を選ぶか、自由に書いてください（両方あれば自由記入は補足）。答えると画面の右下にメニューが出ます。「まとめてコピー」で、AI エージェントとのチャットにそのまま貼れる文がコピーされます（フィードバックがあれば一緒に入ります）。ファイルで渡すときは「JSON を保存」。入力はこのブラウザに下書きとして残ります。</p>
         <div class="toolbar" data-render="answerActions"></div>
         <div class="qa-flow">
@@ -2005,8 +1997,8 @@
         </div>
       </section>
 
-      <section id="report-templates" data-fb="report.templates" data-fb-label="8. テンプレートの提案">
-        <h3>8. テンプレートの提案</h3>
+      <section id="report-templates" data-fb="report.templates" data-fb-label="5. テンプレートの提案">
+        <h3>5. テンプレートの提案</h3>
         <p class="lede">同じ形のファイルが何本もある Role に、<code>.template { }</code> を足す提案です。導入の最後に AI エージェントが記録します。任意です。</p>
         <div data-render="templates"></div>
       </section>
@@ -2213,7 +2205,6 @@
     countLabel: '件数',
     note: '備考',
     noGroup: 'group 未記入',
-    tools: ['ツール', '設定ファイルの場所', 'katachi で宣言すべきか', '備考'],
     excluded: ['パス', '理由'],
     templates: ['Role', '作るファイル', 'パラメータ', '元にした実例', '理由']
   };
@@ -4307,34 +4298,49 @@
     return tools;
   }
 
+  // 長くなりがちな一覧は見出しで開閉する。最初は閉じておく（印刷のときは openWhilePrinting が開く）
+  function fold(title, count, children) {
+    var box = el('details', 'fold');
+    var head = el('summary');
+    var h = el('h4');
+    h.textContent = title;
+    if (count !== null) {
+      var badge = el('span', 'badge');
+      badge.textContent = String(count);
+      h.appendChild(badge);
+    }
+    head.appendChild(h);
+    box.appendChild(head);
+    children.forEach(function (child) { box.appendChild(child); });
+    return box;
+  }
   function renderModules(data) {
     var tree = buildModuleTree(data.modules);
-    var nodes = [el('h4')];
-    nodes[0].textContent = T.moduleList;
+    var nodes = [];
+    var mods = [];
     if (!tree.length) {
-      nodes.push(paragraph(unfilled('modules')));
+      mods.push(paragraph(unfilled('modules')));
     } else {
       var lede = el('p', 'lede');
       lede.textContent = T.deviationLede;
-      nodes.push(lede);
+      mods.push(lede);
       var moduleTree = el('div', 'tree');
       tree.forEach(function (node) { moduleTree.appendChild(moduleNode(node, 0)); });
-      nodes.push(moduleTree);
+      mods.push(moduleTree);
     }
+    nodes.push(fold(T.moduleList, list(data.modules).length || null, mods));
 
-    var dirHeading = el('h4');
-    dirHeading.textContent = T.directoryTree;
-    nodes.push(dirHeading);
+    var dirs = [];
     if (blank(data.directoryTree)) {
-      nodes.push(paragraph(unfilled('directoryTree')));
+      dirs.push(paragraph(unfilled('directoryTree')));
     } else {
       var lede2 = el('p', 'lede');
       lede2.textContent = T.directoryLede;
-      nodes.push(lede2);
+      dirs.push(lede2);
       var fileTree = target(el('div', 'tree file-tree'), 'directoryTree', null);
       parseDirectoryTree(data.directoryTree).forEach(function (node) { fileTree.appendChild(dirNode(node, '', 0)); });
-      nodes.push(treeTools(fileTree));
-      nodes.push(fileTree);
+      dirs.push(treeTools(fileTree));
+      dirs.push(fileTree);
       var raw = el('details', 'raw-tree');
       var rawHead = el('summary');
       rawHead.textContent = T.rawTree;
@@ -4344,8 +4350,9 @@
       pre.appendChild(code);
       raw.appendChild(rawHead);
       raw.appendChild(pre);
-      nodes.push(raw);
+      dirs.push(raw);
     }
+    nodes.push(fold(T.directoryTree, null, dirs));
     mount('modules', nodes);
   }
 
@@ -4552,24 +4559,6 @@
     mount('roles', [legend(), treeTools(container), container]);
   }
 
-  function renderTools(tools) {
-    if (!countOf(tools)) { mount('tools', [none()]); return; }
-    var rows = entries(tools).map(function (tool, i) {
-      return {
-        key: blank(tool.name) ? 'tools[' + i + ']' : 'tools[name=' + tool.name + ']',
-        label: blank(tool.name) ? String(i + 1) : String(tool.name),
-        cells: [
-          value(tool.name, 'tools[].name'),
-          value(tool.configPath, 'tools[].configPath'),
-          value(tool.declareInKatachi, 'tools[].declareInKatachi'),
-          blank(tool.note) ? text('') : text(tool.note)
-        ],
-        fields: ['name', 'configPath', 'declareInKatachi', 'note']
-      };
-    });
-    mount('tools', [tableOf(T.tools, rows, ['18%', '22%', '30%', '30%'])]);
-  }
-
   function renderExcluded(excluded) {
     if (!countOf(excluded)) { mount('excluded', [none()]); return; }
     var rows = entries(excluded).map(function (entry, i) {
@@ -4680,7 +4669,6 @@
     renderArchitecture(record(data.architecture));
     renderModules(data);
     renderRoles(data.roles, record(data.meta));
-    renderTools(data.tools);
     renderExcluded(data.excluded);
     renderQuestions(data.questions, record(data.answers));
     renderTemplates(data.templates);

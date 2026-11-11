@@ -1206,7 +1206,7 @@
   .ask[open] > summary { border-bottom: 1px solid var(--hairline); border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
   .ask-body { padding: 10px 14px 12px; }
   .ask-body ul { margin: 0; padding-left: 18px; }
-  .arch-name { margin: 0 0 12px; color: var(--ink); font-size: 18px; font-weight: 600; line-height: 1.5; }
+  .arch-name { margin: 0 0 12px; color: var(--ink); font-size: 16px; line-height: 1.6; }
 
   /* Module tree */
   /* Wrap so long module names fit on narrow screens */
@@ -1308,12 +1308,22 @@
   .report-main > section > h3 { font-size: 24px; margin: 0 0 16px; }
   .report-main h4 { color: var(--ink); font-size: 20px; font-weight: 600; line-height: 1.2; margin: 40px 0 12px; }
   h3 .badge { margin-left: 10px; font-size: 13px; vertical-align: 4px; }
+  /* Lists that open and close from their heading (module list, directory tree) */
+  .fold { margin-top: 40px; }
+  .fold > summary { display: flex; align-items: center; gap: 8px; width: fit-content; padding: 2px 8px 2px 2px; border-radius: var(--radius-md); list-style: none; cursor: pointer; transition: background-color 150ms; }
+  .fold > summary::-webkit-details-marker { display: none; }
+  .fold > summary:hover { background: var(--bg-muted); }
+  .fold > summary::before { content: ""; flex: none; width: 16px; height: 16px; background: var(--muted); -webkit-mask: var(--icon-chevron) center / 14px no-repeat; mask: var(--icon-chevron) center / 14px no-repeat; transition: transform 200ms; }
+  .fold[open] > summary::before { transform: rotate(90deg); }
+  .report-main .fold > summary > h4 { margin: 0; }
+  .fold > summary .badge { margin-left: 10px; font-size: 13px; font-weight: 400; vertical-align: 2px; }
+  .fold[open] > summary { margin-bottom: 12px; }
   .report .meta-details { margin-top: 16px; }
   .step-link { display: flex; width: fit-content; margin-top: 6px; font-size: 13px; text-decoration: none; }
   .cross-link-label:has(.badge:not([hidden])) { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; }
   .cross-link-label .badge { font-size: 13px; font-weight: 400; }
   /* Keep the heading a link or the table of contents jumps to from hiding under the sticky progress bar */
-  .block, .report-main > section { scroll-margin-top: calc(var(--progress-h, 0px) + 16px); }
+  .block, .report-main > section, .report-sub { scroll-margin-top: calc(var(--progress-h, 0px) + 16px); }
 
   @media (max-width: 860px) {
     .layout { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-top: 24px; }
@@ -1740,7 +1750,6 @@
   "modules": [],
   "directoryTree": null,
   "roles": [],
-  "tools": [],
   "excluded": [],
   "questions": [],
   "answers": {},
@@ -1806,14 +1815,6 @@
       "examples": ["app/build.gradle.kts"],
       "count": 1,
       "note": "A Role that exists only to check that the namespace matches the app package name"
-    }
-  ],
-  "tools": [
-    {
-      "name": "ktlint",
-      "configPath": ".editorconfig",
-      "declareInKatachi": "Out of scope (it's a formatter, not a placement/naming constraint)",
-      "note": "Auto-formatted via a pre-commit hook"
     }
   ],
   "excluded": [
@@ -1938,7 +1939,7 @@
 
     <div class="aside">
       <p class="aside-title">An AI agent generated this report</p>
-      <p>Before moving on, check with your own eyes that it matches your understanding. "4. Elements (candidate roles)" in particular becomes the basis for the rules.</p>
+      <p>Before moving on, check with your own eyes that it matches your understanding. "2. Elements (candidate roles)" in particular becomes the basis for the rules.</p>
     </div>
 
     <div data-render="error"></div>
@@ -1952,52 +1953,43 @@
     <nav id="toc" aria-label="Table of contents">
       <p class="toc-title">Contents</p>
       <ol>
-        <li><a href="#report-overview">1. Overview</a></li>
-        <li><a href="#report-architecture">2. Architecture in use</a></li>
-        <li><a href="#report-modules">3. Modules and directories</a></li>
-        <li><a href="#report-roles">4. Elements (candidate roles)</a></li>
-        <li><a href="#report-tools">5. Tools in use</a></li>
-        <li><a href="#report-ignore">6. What katachi should not check</a></li>
-        <li><a href="#report-questions">7. Questions for you</a></li>
-        <li><a href="#report-templates">8. Proposed templates</a></li>
+        <li><a href="#report-overview">1. Architecture findings</a></li>
+        <li><a href="#report-roles">2. Elements (candidate roles)</a></li>
+        <li><a href="#report-ignore">3. What katachi should not check</a></li>
+        <li><a href="#report-questions">4. Questions for you</a></li>
+        <li><a href="#report-templates">5. Proposed templates</a></li>
       </ol>
     </nav>
 
       <div class="report-main">
-      <section id="report-overview" data-fb="report.overview" data-fb-label="1. Overview">
-        <h3>1. Overview</h3>
+      <section id="report-overview" data-fb="report.overview" data-fb-label="1. Architecture findings">
+        <h3>1. Architecture findings</h3>
         <div data-render="overview"></div>
+
+        <div id="report-architecture" class="report-sub" data-fb="report.architecture" data-fb-label="Architecture in use">
+          <h4>Architecture in use</h4>
+          <div data-render="architecture"></div>
+        </div>
+
+        <div id="report-modules" class="report-sub" data-fb="report.modules" data-fb-label="Modules and directories">
+          <div data-render="modules"></div>
+        </div>
       </section>
 
-      <section id="report-architecture" data-fb="report.architecture" data-fb-label="2. Architecture in use">
-        <h3>2. Architecture in use</h3>
-        <div data-render="architecture"></div>
-      </section>
-
-      <section id="report-modules" data-fb="report.modules" data-fb-label="3. Modules and directories">
-        <h3>3. Modules and directories</h3>
-        <div data-render="modules"></div>
-      </section>
-
-      <section id="report-roles" data-fb="report.roles" data-fb-label="4. Elements (candidate roles)">
-        <h3>4. Elements (candidate roles)<span class="badge" data-render="roleCount"></span></h3>
+      <section id="report-roles" data-fb="report.roles" data-fb-label="2. Elements (candidate roles)">
+        <h3>2. Elements (candidate roles)<span class="badge" data-render="roleCount"></span></h3>
         <p class="lede">Roles are nested inside groups. One role is one kind of file; a bundle of different kinds of files, like a module or a layer, is a group. Within a group they are sorted by importance (5 = must be in the definition / 1 = may be left out). Click a row to open its details.</p>
         <div data-render="roles"></div>
       </section>
 
-      <section id="report-tools" data-fb="report.tools" data-fb-label="5. Tools in use">
-        <h3>5. Tools in use</h3>
-        <div data-render="tools"></div>
-      </section>
-
-      <section id="report-ignore" data-fb="report.excluded" data-fb-label="6. What katachi should not check">
-        <h3>6. What katachi should not check</h3>
+      <section id="report-ignore" data-fb="report.excluded" data-fb-label="3. What katachi should not check">
+        <h3>3. What katachi should not check</h3>
         <p class="lede">katachi never looks at files excluded by <code>.gitignore</code>. What is listed here is tracked by git (or untracked but not ignored) and still left out of the checks.</p>
         <div data-render="excluded"></div>
       </section>
 
-      <section id="report-questions" data-fb="report.questions" data-fb-label="7. Questions for you">
-        <h3>7. Questions for you<span class="badge" data-render="questionCount"></span><span class="badge badge-success" data-render="answeredCount"></span></h3>
+      <section id="report-questions" data-fb="report.questions" data-fb-label="4. Questions for you">
+        <h3>4. Questions for you<span class="badge" data-render="questionCount"></span><span class="badge badge-success" data-render="answeredCount"></span></h3>
         <p class="lede">Pick an option or write freely (if you do both, the free text is a note). Once you answer, a menu appears at the bottom right: "Copy all" copies text you can paste straight into the chat with the AI agent (any feedback goes in with it). To hand over a file instead, use "Save as JSON". What you type stays in this browser as a draft.</p>
         <div class="toolbar" data-render="answerActions"></div>
         <div class="qa-flow">
@@ -2005,8 +1997,8 @@
         </div>
       </section>
 
-      <section id="report-templates" data-fb="report.templates" data-fb-label="8. Proposed templates">
-        <h3>8. Proposed templates</h3>
+      <section id="report-templates" data-fb="report.templates" data-fb-label="5. Proposed templates">
+        <h3>5. Proposed templates</h3>
         <p class="lede">Proposals to put <code>.template { }</code> on roles that have many files of the same shape. The AI agent records them at the end of the installation. Optional.</p>
         <div data-render="templates"></div>
       </section>
@@ -2213,7 +2205,6 @@
     countLabel: 'Count',
     note: 'Note',
     noGroup: 'No group',
-    tools: ['Tool', 'Config file', 'Declare in katachi?', 'Note'],
     excluded: ['Path', 'Reason'],
     templates: ['Role', 'Files created', 'Parameters', 'Based on', 'Reason']
   };
@@ -4307,34 +4298,49 @@
     return tools;
   }
 
+  // Lists that tend to run long open and close from their heading. Closed at first (openWhilePrinting opens them for printing)
+  function fold(title, count, children) {
+    var box = el('details', 'fold');
+    var head = el('summary');
+    var h = el('h4');
+    h.textContent = title;
+    if (count !== null) {
+      var badge = el('span', 'badge');
+      badge.textContent = String(count);
+      h.appendChild(badge);
+    }
+    head.appendChild(h);
+    box.appendChild(head);
+    children.forEach(function (child) { box.appendChild(child); });
+    return box;
+  }
   function renderModules(data) {
     var tree = buildModuleTree(data.modules);
-    var nodes = [el('h4')];
-    nodes[0].textContent = T.moduleList;
+    var nodes = [];
+    var mods = [];
     if (!tree.length) {
-      nodes.push(paragraph(unfilled('modules')));
+      mods.push(paragraph(unfilled('modules')));
     } else {
       var lede = el('p', 'lede');
       lede.textContent = T.deviationLede;
-      nodes.push(lede);
+      mods.push(lede);
       var moduleTree = el('div', 'tree');
       tree.forEach(function (node) { moduleTree.appendChild(moduleNode(node, 0)); });
-      nodes.push(moduleTree);
+      mods.push(moduleTree);
     }
+    nodes.push(fold(T.moduleList, list(data.modules).length || null, mods));
 
-    var dirHeading = el('h4');
-    dirHeading.textContent = T.directoryTree;
-    nodes.push(dirHeading);
+    var dirs = [];
     if (blank(data.directoryTree)) {
-      nodes.push(paragraph(unfilled('directoryTree')));
+      dirs.push(paragraph(unfilled('directoryTree')));
     } else {
       var lede2 = el('p', 'lede');
       lede2.textContent = T.directoryLede;
-      nodes.push(lede2);
+      dirs.push(lede2);
       var fileTree = target(el('div', 'tree file-tree'), 'directoryTree', null);
       parseDirectoryTree(data.directoryTree).forEach(function (node) { fileTree.appendChild(dirNode(node, '', 0)); });
-      nodes.push(treeTools(fileTree));
-      nodes.push(fileTree);
+      dirs.push(treeTools(fileTree));
+      dirs.push(fileTree);
       var raw = el('details', 'raw-tree');
       var rawHead = el('summary');
       rawHead.textContent = T.rawTree;
@@ -4344,8 +4350,9 @@
       pre.appendChild(code);
       raw.appendChild(rawHead);
       raw.appendChild(pre);
-      nodes.push(raw);
+      dirs.push(raw);
     }
+    nodes.push(fold(T.directoryTree, null, dirs));
     mount('modules', nodes);
   }
 
@@ -4552,24 +4559,6 @@
     mount('roles', [legend(), treeTools(container), container]);
   }
 
-  function renderTools(tools) {
-    if (!countOf(tools)) { mount('tools', [none()]); return; }
-    var rows = entries(tools).map(function (tool, i) {
-      return {
-        key: blank(tool.name) ? 'tools[' + i + ']' : 'tools[name=' + tool.name + ']',
-        label: blank(tool.name) ? String(i + 1) : String(tool.name),
-        cells: [
-          value(tool.name, 'tools[].name'),
-          value(tool.configPath, 'tools[].configPath'),
-          value(tool.declareInKatachi, 'tools[].declareInKatachi'),
-          blank(tool.note) ? text('') : text(tool.note)
-        ],
-        fields: ['name', 'configPath', 'declareInKatachi', 'note']
-      };
-    });
-    mount('tools', [tableOf(T.tools, rows, ['18%', '22%', '30%', '30%'])]);
-  }
-
   function renderExcluded(excluded) {
     if (!countOf(excluded)) { mount('excluded', [none()]); return; }
     var rows = entries(excluded).map(function (entry, i) {
@@ -4680,7 +4669,6 @@
     renderArchitecture(record(data.architecture));
     renderModules(data);
     renderRoles(data.roles, record(data.meta));
-    renderTools(data.tools);
     renderExcluded(data.excluded);
     renderQuestions(data.questions, record(data.answers));
     renderTemplates(data.templates);

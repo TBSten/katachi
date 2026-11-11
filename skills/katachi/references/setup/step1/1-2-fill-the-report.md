@@ -1,10 +1,9 @@
 ### 1-2. Scan the codebase and fill in the report
 
-Answer the following four questions.
+Answer the following three questions.
 
 - What architecture does it use? What characteristics does the project's structure have?
 - What elements exist? What kind of code can be written inside each element?
-- What tools are in use?
 - What does the app use for its package name?
 
 Write the report's JSON as in 0-3, **section by section, as you figure each one out.** Its `meta` was filled in 0-2.
@@ -43,7 +42,7 @@ Once everything is filled in, mark `1-2` done.
 
 Ask like this. Do not re-list the questions in chat.
 
-1. Once `questions` is written, show the page's URL (the path to `check-list.html`, starting with `file://`, with `#report-questions` at the end) and have the user answer in "7. Questions for you" of the codebase report in the browser and hand the answers back with "Copy all" (paste into the chat) or "Save as JSON"
+1. Once `questions` is written, show the page's URL (the path to `check-list.html`, starting with `file://`, with `#report-questions` at the end) and have the user answer in "4. Questions for you" of the codebase report in the browser and hand the answers back with "Copy all" (paste into the chat) or "Save as JSON"
 2. Copy the entries of the JSON you receive into the report's `answers` (0-3, "Answers")
 3. If an answer arrives in chat, write it into `answers` the same way. The id decides the block (`cq…` is the report, `q…` the checklist)
 
