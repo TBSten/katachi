@@ -10,7 +10,6 @@ import com.intellij.openapi.roots.ContentEntry
 import com.intellij.openapi.roots.ModifiableRootModel
 import com.intellij.testFramework.LightProjectDescriptor
 import com.intellij.testFramework.PsiTestUtil
-import com.intellij.testFramework.fixtures.DefaultLightProjectDescriptor
 import me.tbsten.katachi.intellij.AnalysisTestBase
 import java.io.File
 
@@ -263,8 +262,8 @@ internal class KatachiLiveTemplatesTest : AnalysisTestBase() {
     }
 
     private companion object {
-        /** The default light project plus the Kotlin stdlib that the test task names in `katachi.test.kotlinStdlib`. */
-        val WITH_KOTLIN_STDLIB: LightProjectDescriptor = object : DefaultLightProjectDescriptor() {
+        /** The empty light project of BasePlatformTestCase plus the Kotlin stdlib that the test task names in `katachi.test.kotlinStdlib`. */
+        val WITH_KOTLIN_STDLIB: LightProjectDescriptor = object : LightProjectDescriptor() {
             override fun configureModule(module: Module, model: ModifiableRootModel, contentEntry: ContentEntry) {
                 super.configureModule(module, model, contentEntry)
                 val jar = File(checkNotNull(System.getProperty("katachi.test.kotlinStdlib")) { "katachi.test.kotlinStdlib is not set: run the test from Gradle" })
