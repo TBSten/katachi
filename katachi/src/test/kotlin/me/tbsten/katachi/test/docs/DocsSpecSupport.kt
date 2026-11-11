@@ -42,6 +42,17 @@ internal fun <R> withTempDirectory(block: (File) -> R): R {
     }
 }
 
+/** Whether the file system of [this] directory keeps `Domain/` and `domain/` apart: Linux does, macOS and Windows usually do not. */
+internal fun File.distinguishesCase(): Boolean {
+    val probe = File(this, "CaseProbe.tmp")
+    probe.writeText("")
+    return try {
+        !File(this, "caseprobe.tmp").exists()
+    } finally {
+        probe.delete()
+    }
+}
+
 /** Every file below [this], as a relative path with `/` separators, sorted. */
 internal fun File.relativeFilePaths(): List<String> = walkTopDown()
     .filter { it.isFile }

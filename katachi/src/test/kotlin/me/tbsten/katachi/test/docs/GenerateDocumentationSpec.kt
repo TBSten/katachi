@@ -5,10 +5,12 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
 import java.io.File
+import java.nio.file.Files
 import me.tbsten.katachi.docs.DocumentationMode
 import me.tbsten.katachi.docs.GenerateDocumentation
 import me.tbsten.katachi.docs.KatachiDocumentIoException
@@ -94,6 +96,38 @@ class GenerateDocumentationSpec : FreeSpec({
                         "domain/README.md",
                         "domain/UseCase.md",
                     )
+                }
+            }
+        }
+
+        "group の名前の大文字小文字だけを変えたら、前の名前のページは残らない" {
+            withTempDirectory { output ->
+                architecture { "domain".group { "UseCase".role { } } }.generateDocumentation(output)
+                val renamed = architecture { "Domain".group { "UseCase".role { } } }
+                val context = writeContextFor(renamed, output)
+
+                GenerateDocumentation.process(context).getOrThrow()
+
+                withClue("大文字小文字を区別するファイルシステムでは domain/ と Domain/ は別のディレクトリ") {
+                    output.relativeFilePaths().map { it.lowercase() } shouldContainExactlyInAnyOrder listOf(
+                        "readme.md",
+                        "domain/readme.md",
+                        "domain/usecase.md",
+                    )
+                }
+                for ((path, content) in renamed.documents()) {
+                    withClue(path) { File(output, path).readText() shouldBe content }
+                }
+                withClue("区別しないファイルシステムでは同じファイルなので、消したとは言わない") {
+                    context.logs.filter { it.startsWith("Removed ") } shouldContainExactly
+                        if (output.distinguishesCase()) {
+                            listOf(
+                                "Removed file://${output.invariantSeparatorsPath}/domain/README.md, which this definition no longer produces.",
+                                "Removed file://${output.invariantSeparatorsPath}/domain/UseCase.md, which this definition no longer produces.",
+                            )
+                        } else {
+                            emptyList()
+                        }
                 }
             }
         }
@@ -323,6 +357,37 @@ class GenerateDocumentationSpec : FreeSpec({
 
                 failure.extra shouldContainExactly listOf("domain/Interactor.md")
                 failure.message.orEmpty() shouldContain "[extra]     file://${output.invariantSeparatorsPath}/domain/Interactor.md"
+            }
+        }
+
+        "大文字小文字だけが違う前の名前のページは、別のファイルなら余分として報告される" {
+            withTempDirectory { output ->
+                architecture { "domain".group { "UseCase".role { } } }.generateDocumentation(output)
+
+                val failure = architecture { "Domain".group { "UseCase".role { } } }.staleDocumentation(output)
+
+                withClue("区別しないファイルシステムでは domain/UseCase.md が Domain/UseCase.md そのもの") {
+                    failure.extra shouldContainExactly
+                        if (output.distinguishesCase()) listOf("domain/README.md", "domain/UseCase.md") else emptyList()
+                }
+            }
+        }
+
+        "大文字小文字だけが違うパスでも、生成するページと同じファイルなら余分に数えない" {
+            val arch = architecture { "Domain".group { "UseCase".role { } } }
+
+            withTempDirectory { output ->
+                arch.generateDocumentation(output)
+                // A case insensitive file system already answers `domain/UseCase.md` with this page.
+                // A hard link stands in for it where the two spellings are different paths.
+                if (output.distinguishesCase()) {
+                    File(output, "domain").mkdirs()
+                    for (page in listOf("README.md", "UseCase.md")) {
+                        Files.createLink(File(output, "domain/$page").toPath(), File(output, "Domain/$page").toPath())
+                    }
+                }
+
+                shouldNotThrowAny { arch.checkDocumentation(output).getOrThrow() }
             }
         }
 
