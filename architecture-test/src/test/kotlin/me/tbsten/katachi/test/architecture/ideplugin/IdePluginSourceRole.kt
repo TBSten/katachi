@@ -28,6 +28,8 @@ fun DeclarationContainerScope.idePluginSource() = "IdePluginSource".role {
             "main" / "resources" / "META-INF" / "plugin.xml".file()
             // The MCP tools, read only where the JetBrains MCP Server is present (`<depends optional="true">`).
             "main" / "resources" / "META-INF" / "katachi-mcp.xml".file()
+            // The live templates registered with <defaultLiveTemplates> in plugin.xml.
+            "main" / "resources" / "liveTemplates" / "katachi.xml".file()
             "main" / "resources" / "META-INF" / "pluginIcon.svg".file()
             "main" / "resources" / "META-INF" / "pluginIcon_dark.svg".file()
             "main" / "resources" / "icons" / "*.svg".file()
