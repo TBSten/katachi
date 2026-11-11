@@ -2,7 +2,6 @@ package me.tbsten.katachi.report.internal
 
 import me.tbsten.katachi.check.AmbiguousLayout
 import me.tbsten.katachi.check.CaptureMismatch
-import me.tbsten.katachi.check.MissingDescription
 import me.tbsten.katachi.check.MissingFile
 import me.tbsten.katachi.check.StaleBaselineEntry
 import me.tbsten.katachi.check.UncheckedDirectory
@@ -11,6 +10,7 @@ import me.tbsten.katachi.check.UnexpectedDirectory
 import me.tbsten.katachi.check.UnsatisfiedFileConstraint
 import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.check.internal.BaselineKey
+import me.tbsten.katachi.check.internal.MissingDescription
 import me.tbsten.katachi.check.internal.baselineEntryLine
 import me.tbsten.katachi.check.internal.reportedDeclaredAt
 import me.tbsten.katachi.dsl.DeclarationSite

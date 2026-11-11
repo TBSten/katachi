@@ -47,7 +47,7 @@ katachi agent test --save after-refactor
 katachi agent compare-violations
 ```
 
-`compare-violations` pulls the check result out of the two logs (the summary line, and `[Kind] path` for each violation) and compares them. It does not compare the line numbers of declaration sites. `[MissingDescription]` should go down as you write `description` on a Role's places, so it only prints the counts. It says nothing about `summary`: a Role without one is not reported, so check the descriptions item above by reading the definition, not by this count. **If there is a difference, fix the definition rather than taking the earlier log again.** The refactoring has changed the behavior.
+`compare-violations` pulls the check result out of the two logs (the summary line, and `[Kind] path` for each violation) and compares them. It does not compare the line numbers of declaration sites. It says nothing about `summary` or `description`: a Role without them is not reported, so check the descriptions item above by reading the definition. **If there is a difference, fix the definition rather than taking the earlier log again.** The refactoring has changed the behavior.
 
 If either log shows only the first few violations (it has a `Showing first ...` line), `compare-violations` stops without comparing (exit code 2), because violations missing from the log cannot be compared. `test` always prints them all, so this does not normally happen. If it stops, capture the cut-off log again as the output says.
 

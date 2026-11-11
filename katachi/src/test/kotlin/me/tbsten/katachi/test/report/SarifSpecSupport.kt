@@ -5,7 +5,6 @@ import me.tbsten.katachi.check.AmbiguousLayout
 import me.tbsten.katachi.check.CaptureMismatch
 import me.tbsten.katachi.check.CaptureOccurrence
 import me.tbsten.katachi.check.LayoutClaim
-import me.tbsten.katachi.check.MissingDescription
 import me.tbsten.katachi.check.MissingFile
 import me.tbsten.katachi.check.NearbyLocation
 import me.tbsten.katachi.check.Severity
@@ -22,6 +21,7 @@ import me.tbsten.katachi.check.UnsatisfiedFileConstraint
 import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.check.ViolationDetail
 import me.tbsten.katachi.check.ViolationKind
+import me.tbsten.katachi.check.internal.MissingDescription
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.files.FsPath

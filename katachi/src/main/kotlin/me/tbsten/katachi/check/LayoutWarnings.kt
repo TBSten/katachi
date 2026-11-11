@@ -72,37 +72,3 @@ public class AmbiguousLayout internal constructor(
     /** `[<label>] <path>`, for a log line or a test failure message. */
     override fun toString(): String = "[$label] $path"
 }
-
-/**
- * A role that may live in more than one place, with one of those places saying nothing about
- * when it is the right one.
- *
- * A place is a directory the role's layout opens, for example one per module. From two places
- * on, someone adding a file has a choice to make, and `description = "..."` tells them which place
- * is right. katachi never raises this to [Severity.Error].
- *
- * ## Example 1: list the places that still owe an explanation
- * ```kt
- * projectArchitecture.assertNoErrors().filterIsInstance<MissingDescription>()
- *     .map { "${it.role.qualifiedName} at ${it.path} (also ${it.otherPlaces}), ${it.declaredAt}" }
- * ```
- */
-public class MissingDescription internal constructor(
-    override val path: String,
-    /** The role that may live at [path][MissingDescription.path]. */
-    public val role: Role,
-    /**
-     * The role's other places, in declaration order. Never empty — a role with one place is
-     * never reported.
-     */
-    public val otherPlaces: List<String>,
-    /** Where the block that should carry the description was opened. */
-    public val declaredAt: DeclarationSite,
-) : Violation {
-    override val kind: ViolationKind get() = ViolationKind.Unexplained
-    override val severity: Severity get() = Severity.Warning
-    override val label: String get() = "MissingDescription"
-    /** `[<label>] <path>`, for a log line or a test failure message. */
-    override fun toString(): String = "[$label] $path"
-}
-

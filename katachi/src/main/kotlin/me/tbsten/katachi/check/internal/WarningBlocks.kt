@@ -1,7 +1,6 @@
 package me.tbsten.katachi.check.internal
 
 import me.tbsten.katachi.check.AmbiguousLayout
-import me.tbsten.katachi.check.MissingDescription
 import me.tbsten.katachi.internal.displayExistingPath
 import me.tbsten.katachi.internal.displayPath
 
