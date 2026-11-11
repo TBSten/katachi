@@ -12,8 +12,8 @@ import me.tbsten.katachi.test.architecture.*
 import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
 
 fun DeclarationContainerScope.util() = "Util".role {
-    title = "汎用の道具"
-    summary = "アーキテクチャ定義を知らない、標準ライブラリだけで書かれた道具"
+    title = "汎用のツール"
+    summary = "アーキテクチャ定義を知らない、標準ライブラリだけで書かれたツール"
     example("RunCatchingScoped.kt", "失敗を記録しながら最後まで進める runCatchingScoped")
     layout {
         "katachi" {

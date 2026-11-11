@@ -1,4 +1,4 @@
-// shadow root の中の DOM を組み立てるための小さな道具。
+// shadow root の中の DOM を組み立てるための小さなツール。
 
 /** 画面の主な入力がタッチかどうか（案内文と載せる情報の切り替えに使う）。 */
 export const isCoarse = () => matchMedia('(pointer: coarse)').matches
