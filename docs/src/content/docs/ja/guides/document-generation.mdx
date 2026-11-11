@@ -276,7 +276,7 @@ group に設定できるのは Role と同じ4つです。`example()` だけが�
 <details>
     <summary>注意: documented = false は group の中身ごと外します</summary>
 
-    `documented = false` にした group は、中の Role とネストした group もまとめてドキュメントに出なくなります。 中の Role が自分で何と書いていても同じです。
+    `documented = false` にした group は、中の Role とネストした group もまとめてドキュメントに出なくなります。中の Role が自分で何と書いていても同じです。
 
     ```kt
     "Build".group {
@@ -402,7 +402,7 @@ var MetadataScope.testPolicy by TestPolicy
     <summary>セクションを入れ子にする</summary>
 
     セクションは入れ子にできます。`TestPolicy.documentSection("Unit test")` のように、親のセクションに対して宣言します。
-    見出しのレベルは深さで決まります。 最上位が `##` で、1段深くなるごとに `#` が1つ増えます。
+    見出しのレベルは深さで決まります。最上位が `##` で、1段深くなるごとに `#` が1つ増えます。
     親に本文を書いていなくても、子に本文があれば親の見出しは出ます。
 
     <CodeComparison>

@@ -128,7 +128,7 @@ layout {
 }
 ```
 
-検査の上では `*` とまったく同じです。 `capture("feature")` を `"*"` に書き換えても、許されるファイルは1つも変わりません。
+検査の上では `*` とまったく同じです。`capture("feature")` を `"*"` に書き換えても、許されるファイルは1つも変わりません。
 
 名前は `--arg` で値を渡すときに使います。`*` のままだと、テンプレートは `feature/home` と `feature/settings` のどちらに作ればよいかを決められません。名前を付けておけば、`--arg feature=home` で選べます。テンプレートを持たない Role なら、`*` のままで構いません。
 
@@ -164,7 +164,7 @@ layout {
 
 モジュールのディレクトリとパッケージのディレクトリには、同じ名前 `feature` の capture を書いています。同じ名前の capture は同じ値になるので、`--arg feature=home` の1つで両方の `*` が `home` に決まり、`HomeUserCard.kt` は `feature/home/` の `component/` に入ります。
 
-capture の名前は、そのまま `--arg` の引数名になります。 テンプレートの中では、同じ値を `captureValue("feature")` のように読めます。
+capture の名前は、そのまま `--arg` の引数名になります。テンプレートの中では、同じ値を `captureValue("feature")` のように読めます。
 
 ## Kotlin 以外のファイルにも付けられる
 
