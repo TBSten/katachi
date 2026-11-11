@@ -864,6 +864,20 @@ internal object Messages {
             ja = "定義のディレクトリがありません: $dirUri 。scaffold をまだ実行していないか、置き場所が違います（$moduleDir。違うなら、チェックリストの meta.moduleDir を直す）",
             en = "The definition directory does not exist: $dirUri . Either scaffold has not run yet, or the location differs ($moduleDir; if it is wrong, fix meta.moduleDir in the check list)",
         )
+
+        fun ambiguous(candidates: Any?): Msg = Msg(
+            ja = "作業用ディレクトリ（check-list.html と tmp/ のあるディレクトリ）が 2 つ以上あり、どれを使うか決められません:\n$candidates" +
+                "使うほうを KATACHI_WORKDIR=<パス> で指定するか、使わないほうを検索範囲（いまの場所から 4 階層）の外に移してください。",
+            en = "There are two or more working directories (directories with check-list.html and tmp/), and katachi cannot tell which one to use:\n$candidates" +
+                "Pick one with KATACHI_WORKDIR=<path>, or move the others out of the search (4 levels below the current directory).",
+        )
+
+        fun projectRootInOtherWorkTree(recordedUri: Any?, hereUri: Any?): Msg = Msg(
+            ja = "チェックリストの meta.projectRoot（$recordedUri）は、いまいる場所とは別の作業ツリー（git worktree）です。" +
+                "いまいる作業ツリーの $hereUri を検査し、ログもそこの build/katachi/ に置きます。記録した側を検査するときは、そちらで実行してください。",
+            en = "meta.projectRoot in the check list ($recordedUri) is in another work tree (git worktree) than the current directory. " +
+                "Checking $hereUri in this work tree instead, with the logs in its build/katachi/. To check the recorded one, run this from there.",
+        )
     }
 
     object ScaffoldBuildFile {

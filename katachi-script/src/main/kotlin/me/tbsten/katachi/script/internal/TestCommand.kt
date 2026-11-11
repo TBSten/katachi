@@ -108,8 +108,12 @@ private fun ScriptContext.printCheckDiff(before: List<String>, after: List<Strin
 /**
  * Where `test` keeps its logs: `tmp/` of the working directory when there is one, otherwise `build/katachi/`
  * of the project root (ignored by git in a Gradle project, so the logs never become an `[UnexpectedFile]`).
+ * A check of another work tree keeps them there too, so that parallel worktrees do not share `latest.log`.
  */
-internal fun ScriptContext.testLogDir(): Path = findWorkdir()?.resolve("tmp") ?: projectRoot().resolve("build/katachi")
+internal fun ScriptContext.testLogDir(): Path {
+    val workdir = findWorkdir()
+    return if (workdir != null && !checksOtherWorkTree()) workdir.resolve("tmp") else projectRoot().resolve("build/katachi")
+}
 
 /** `compare-violations [<before> [<after>]]`: 0 unchanged, 1 changed, 2 not comparable. */
 internal fun ScriptContext.runCompareViolations(args: List<String>): Int {

@@ -30,4 +30,4 @@ If they want to pin the working directory, they can add "use <path> as the worki
 
 There are three points in these steps where the session may end (the end of step 6, the end of 6-0, and the end of each of 6-A to 6-D). Each of them says how to resume.
 
-If there is a working directory made by an older katachi (by `katachi agent init` or `katachi-install.sh`), its checklist may lack items these steps use. Make a new working directory from this skill's templates (0-2), and carry over only what you need from the old one.
+If there is a working directory made by an older katachi (by `katachi agent init` or `katachi-install.sh`), its checklist may lack items these steps use. Make a new working directory from this skill's templates (0-2), and carry over only what you need from the old one. While both are below the project root, the `katachi` commands stop and ask which one to use: once you have carried things over, ask the user to move the old one out of the project, or prefix the commands with `KATACHI_WORKDIR=<the new one>`.
