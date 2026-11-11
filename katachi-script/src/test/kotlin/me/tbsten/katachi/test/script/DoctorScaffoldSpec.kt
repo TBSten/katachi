@@ -83,6 +83,17 @@ class DoctorScaffoldSpec : FreeSpec({
             project.resolve("settings.gradle.kts").readText() shouldContain "include(\":architecture-test\")"
         }
 
+        "build.gradle.kts にコメントを書かない（KATACHI-357）" {
+            val project = gradleProject(toolchain = 21)
+            project.resolve("build.gradle.kts").writeText("plugins {\n    kotlin(\"jvm\") version \"2.3.20\" apply false\n}\n")
+
+            runCapturing(project, listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0"), env = javaHome()).status shouldBe 0
+
+            val build = project.resolve("architecture-test/build.gradle.kts").readText()
+            build shouldContain "-Xcontext-parameters"
+            build shouldNotContain "//"
+        }
+
         "もう一度実行するには --force が要り、そのときも書きかけの ProjectArchitecture.kt は残して include も重ねない" {
             val project = gradleProject(toolchain = 21)
             val args = listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0")
