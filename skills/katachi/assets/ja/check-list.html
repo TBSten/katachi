@@ -1290,11 +1290,9 @@
   .report-main h4 { color: var(--ink); font-size: 20px; font-weight: 600; line-height: 1.2; margin: 40px 0 12px; }
   h3 .badge { margin-left: 10px; font-size: 13px; vertical-align: 4px; }
   .report .meta-details { margin-top: 16px; }
-  .step-link { margin-top: 8px; text-decoration: none; }
+  .step-link { display: flex; width: fit-content; margin-top: 6px; font-size: 13px; text-decoration: none; }
   .cross-link-label:has(.badge:not([hidden])) { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; }
   .cross-link-label .badge { font-size: 13px; font-weight: 400; }
-  /* Keep the heading a link or the table of contents jumps to from hiding under the sticky progress bar */
-  .block, .report-main > section { scroll-margin-top: calc(var(--progress-h, 0px) + 16px); }
   /* 目次・リンクで飛んだ先の見出しが、上に貼り付く進捗の下に隠れないように */
   .block, .report-main > section { scroll-margin-top: calc(var(--progress-h, 0px) + 16px); }
 
@@ -3926,6 +3924,14 @@
     var title = el('span', 'step-title');
     title.appendChild(value(step.title, 'steps[].title'));
     var state = el('span', 'badge step-state');
+    // 手順 1 で埋めるのは、このページの下のコードベース レポート
+    // 畳んでいても見えるように見出しの行に置く。summary の中のリンクは押しても開閉しない
+    if (id === '1') {
+      var jump = el('a', 'btn btn-sm step-link');
+      jump.setAttribute('href', '#codebase-report');
+      jump.textContent = T.reportLinkStep;
+      title.appendChild(jump);
+    }
     summary.appendChild(num);
     summary.appendChild(title);
     summary.appendChild(state);
@@ -3941,13 +3947,6 @@
     var items = el('ul', 'checklist');
     list(step.items).forEach(function (item, i) { items.appendChild(itemRow(item, i, key)); });
     body.appendChild(items);
-    // 手順 1 で埋めるのは、このページの下のコードベース レポート
-    if (id === '1') {
-      var jump = el('a', 'btn btn-sm step-link');
-      jump.setAttribute('href', '#codebase-report');
-      jump.textContent = T.reportLinkStep;
-      body.appendChild(jump);
-    }
 
     box.appendChild(summary);
     box.appendChild(body);
