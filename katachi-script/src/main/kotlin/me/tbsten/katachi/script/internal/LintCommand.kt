@@ -288,7 +288,7 @@ internal fun ScriptContext.lintRoles() {
     requireDefinitionDir(module)
     val checkList = findWorkdir()?.resolve(CHECK_LIST_FILE)
     val data = checkList?.let { readJsonBlockOrNull(it, "checklist") }?.toTree().asMap() ?: JMap()
-    val projectRoot = data.mapOrEmpty("meta").str("projectRoot")?.takeIf { it.isNotEmpty() }?.let(::resolve) ?: cwd
+    val projectRoot = projectRoot()
     val prefs = data.mapOrEmpty("preferences")
     val root = projectRoot.resolve(module.dir).resolve("src/test/kotlin")
     val included = lintIncludedBuilds(projectRoot)

@@ -9,7 +9,7 @@ import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 import me.tbsten.katachi.report.SarifContext
-import me.tbsten.katachi.report.internal.withIsFile
+import me.tbsten.katachi.test.report.withIsFile
 import me.tbsten.katachi.report.toSarif
 
 /**
@@ -46,7 +46,7 @@ class KtFileContentSarifSpec : FreeSpec({
             ktFileContent { `package`("**") // on this line, so that the lines below stay where the golden names them
                 `import`("com.example.App")
                 required(`class`, fileName) {
-                    required(public, `val`, "count", "Int")
+                    required(public, `val`, "count").type("Int")
                     allow(private, anythingElse)
                 }
             }

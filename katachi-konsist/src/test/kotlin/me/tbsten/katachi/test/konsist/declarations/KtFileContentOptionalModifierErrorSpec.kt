@@ -117,8 +117,8 @@ class KtFileContentOptionalModifierErrorSpec : FreeSpec({
         "inline val を許す直し方の行は、例外を投げずに書ける" {
             val code = fixCodesOf("package com.example\n\ninline val Int.twice get() = this * 2\n") { required(`fun`, "x") }
                 .single { it.startsWith("allow(") }
-            code shouldBe "allow(inline, `val`, \"twice\")"
-            shouldNotThrowAny { rulesOf { allow(inline, `val`, "twice") } }
+            code shouldBe "allow(inline, `val`, \"Int\", \"twice\")"
+            shouldNotThrowAny { rulesOf { allow(inline, `val`, "Int", "twice") } }
         }
 
         "メンバだけの .optional() の修飾子をファイル直下に書くと OnlyInClassBody" {

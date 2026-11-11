@@ -136,7 +136,7 @@ private fun KtFileContentScope.perFileRules(rules: PerFileRules) {
     when {
         fileName.endsWith("Screen") -> required(`fun`, fileName)
         rules.body -> required(`class`, fileName) {
-            required(`val`, "state", "StateFlow<${fileName}State>")
+            required(`val`, "state").type("StateFlow<${fileName}State>")
             allow(private, anythingElse)
         }
         else -> required(`class`, fileName)

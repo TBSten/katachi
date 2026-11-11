@@ -27,7 +27,7 @@ class TestCommandSpec : FreeSpec({
 
             run.status shouldBe 1
             run.out shouldContain "結果: Katachi check failed: 2 violations"
-            run.out shouldContain "[MissingDescription]: 1 件（説明を書けば減る）"
+            run.out shouldContain "[MissingDescription]: 1 件（置き場所に description を書けば減る）"
             val latest = fixture.workdir.resolve("tmp/test/latest.log")
             latest.readText() shouldContain "[UnexpectedFile] app/src/Foo.kt"
             fixture.workdir.resolve("tmp/test-before.log").readText() shouldBe latest.readText()

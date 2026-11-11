@@ -142,19 +142,19 @@ internal fun allowTypeAlias(on: DeclarationAllow, m: List<Modifiers>, kind: Type
 }
 
 internal fun allowProperty(on: DeclarationAllow, m: List<Modifiers>, kind: PropertyKind, name: String, type: String? = null): PropertyLine = when (m.size) {
-    0 -> on.allow(kind, name, type)
-    1 -> on.allow(m[0], kind, name, type)
-    2 -> on.allow(m[0], m[1], kind, name, type)
-    3 -> on.allow(m[0], m[1], m[2], kind, name, type)
-    4 -> on.allow(m[0], m[1], m[2], m[3], kind, name, type)
-    5 -> on.allow(m[0], m[1], m[2], m[3], m[4], kind, name, type)
-    6 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], kind, name, type)
-    7 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], m[6], kind, name, type)
-    8 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], kind, name, type)
-    9 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], kind, name, type)
-    10 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], kind, name, type)
+    0 -> on.allow(kind, name)
+    1 -> on.allow(m[0], kind, name)
+    2 -> on.allow(m[0], m[1], kind, name)
+    3 -> on.allow(m[0], m[1], m[2], kind, name)
+    4 -> on.allow(m[0], m[1], m[2], m[3], kind, name)
+    5 -> on.allow(m[0], m[1], m[2], m[3], m[4], kind, name)
+    6 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], kind, name)
+    7 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], m[6], kind, name)
+    8 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], kind, name)
+    9 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], kind, name)
+    10 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], kind, name)
     else -> error("allow(...) takes at most 10 modifiers: $m")
-}
+}.withType(type)
 
 internal fun allowAnythingElse(on: DeclarationAllow, m: List<Modifiers>, anything: AnythingElse) {
     when (m.size) {
@@ -189,16 +189,19 @@ internal fun allowExtensionFunction(on: DeclarationAllow, m: List<Modifiers>, ki
 }
 
 internal fun allowExtensionProperty(on: DeclarationAllow, m: List<Modifiers>, kind: PropertyKind, receiver: String, name: String, type: String): PropertyLine = when (m.size) {
-    0 -> on.allow(kind, receiver, name, type)
-    1 -> on.allow(m[0], kind, receiver, name, type)
-    2 -> on.allow(m[0], m[1], kind, receiver, name, type)
-    3 -> on.allow(m[0], m[1], m[2], kind, receiver, name, type)
-    4 -> on.allow(m[0], m[1], m[2], m[3], kind, receiver, name, type)
-    5 -> on.allow(m[0], m[1], m[2], m[3], m[4], kind, receiver, name, type)
-    6 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], kind, receiver, name, type)
-    7 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], m[6], kind, receiver, name, type)
-    8 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], kind, receiver, name, type)
-    9 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], kind, receiver, name, type)
-    10 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], kind, receiver, name, type)
+    0 -> on.allow(kind, receiver, name)
+    1 -> on.allow(m[0], kind, receiver, name)
+    2 -> on.allow(m[0], m[1], kind, receiver, name)
+    3 -> on.allow(m[0], m[1], m[2], kind, receiver, name)
+    4 -> on.allow(m[0], m[1], m[2], m[3], kind, receiver, name)
+    5 -> on.allow(m[0], m[1], m[2], m[3], m[4], kind, receiver, name)
+    6 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], kind, receiver, name)
+    7 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], m[6], kind, receiver, name)
+    8 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], kind, receiver, name)
+    9 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], kind, receiver, name)
+    10 -> on.allow(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], kind, receiver, name)
     else -> error("allow(...) takes at most 10 modifiers: $m")
-}
+}.withType(type)
+
+/** The line with `.type(...)` chained after it when [type] is given. */
+internal fun PropertyLine.withType(type: String?): PropertyLine = if (type == null) this else type(type)

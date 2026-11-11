@@ -2,7 +2,7 @@
 
 This section is for when the user has looked at your report from step 6 and the definition and sent back comments. It has no checklist item.
 
-There is one thing to do. Check the user's comments against the questions (`questions` and `answers` of both files) and the violations left in place (the checklist's `violations`), fix the definition, and confirm the counts with `katachi agent test`. Look at the summary's diff to see that the fixed definition has not added any `[UnexpectedFile]`.
+There is one thing to do. Check the user's comments against the questions (`questions` and `answers` of both files) and the violations left in place (the checklist's `violations`), fix the definition, and confirm the counts with `katachi agent test`. Look at the summary's diff to see that the fixed definition has not added any `[UnexpectedFile]`. Remove the entries of `violations` that the summary no longer shows, and clear the warning on step 4 once none is left (0-3). If the user asks for the report again, write it from the checklist as it is now. If a fix moved existing sources or tests, run the project's own tests too (4-2).
 
 If the user's reply answers a question, write it into `answers` before fixing (the id decides the file: `cq…` the report, `q…` the checklist; 0-3). If a comment raises a new question, add it to the checklist's `questions`.
 

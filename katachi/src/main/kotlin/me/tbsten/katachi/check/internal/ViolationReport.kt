@@ -1,6 +1,5 @@
 package me.tbsten.katachi.check.internal
 
-import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.*
 import me.tbsten.katachi.check.DEFAULT_MAX_VIOLATIONS
 import me.tbsten.katachi.dsl.files.FsPath
@@ -376,18 +375,3 @@ internal fun causeLines(cause: Throwable): List<String> {
 }
 
 private fun fragment(lines: List<String>): List<String> = lines.map { "$STEP$STEP$STEP$STEP$it" }
-
-/**
- * [report], for the tests of katachi's other modules, which cannot reach it: they check the text a failing `assert()`
- * prints for the violations they produce.
- *
- * ## Example 1: in a test of katachi-konsist
- * ```kt
- * projectArchitecture.validate(RealFileSystem(fixtureRoot)).reportForTest() shouldContain "must"
- * ```
- */
-@InternalKatachiApi
-public fun List<Violation>.reportForTest(
-    maxViolations: Int = DEFAULT_MAX_VIOLATIONS,
-    projectRoot: FsPath? = null,
-): String = report(maxViolations, projectRoot)

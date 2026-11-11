@@ -168,14 +168,14 @@ class DeclarationJudgeSpec : FreeSpec({
         "プロパティの型はパッケージと空白を外して比べ、* が使える" {
             judged(kt("class Sample {\n    val a: kotlinx.coroutines.flow.StateFlow< Int >\n}")) {
                 `package`("**")
-                required(`class`, fileName) { required(`val`, "a", "StateFlow<*>") }
+                required(`class`, fileName) { required(`val`, "a").type("StateFlow<*>") }
             }.shouldBeEmpty()
         }
 
         "推論させた型は、型を書いた行に当たらない" {
             judged(kt("class Sample {\n    val a = 1\n}")) {
                 `package`("**")
-                required(`class`, fileName) { required(`val`, "a", "Int") }
+                required(`class`, fileName) { required(`val`, "a").type("Int") }
             } shouldBe listOf(
                 "Sample.a (line 4) | Not allowed: val a in class Sample | Expected: val a: Int | Differs in: type (not written, expected Int)",
             )
@@ -184,7 +184,7 @@ class DeclarationJudgeSpec : FreeSpec({
         "nullable は区別する" {
             judged(kt("val name: String? = null")) {
                 `package`("**")
-                required(`val`, "name", "String")
+                required(`val`, "name").type("String")
             } shouldBe listOf(
                 "name (line 3) | Not allowed: val name: String? | Expected: val name: String | Differs in: type (is String?, expected String)",
             )

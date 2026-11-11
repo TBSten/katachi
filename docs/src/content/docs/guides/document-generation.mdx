@@ -480,7 +480,7 @@ This section is a table made by applying the declarations you wrote in `ktFileCo
             `import`("kotlinx.coroutines.**")
 
             required(`class`, fileName).superclass("ViewModel") {
-              required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+              required(public, `val`, "uiState").type("StateFlow<${fileName.replace("ViewModel", "UiState")}>")
               allow(private, anythingElse)
             }
           }

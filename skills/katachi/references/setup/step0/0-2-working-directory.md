@@ -42,7 +42,7 @@ The top level of the working directory holds only these two files and `tmp/`. No
 
 `meta.jvmToolchain` is filled in 2-1 from `scaffold`'s output.
 
-`katachi scaffold`, `katachi lint` and `katachi agent test` read `meta.moduleDir`, `meta.projectRoot` and `preferences` from this checklist, so keep them correct. Run those commands in the project root: they find the working directory below the current directory by themselves (from somewhere else, prefix them with `KATACHI_WORKDIR=<workdir>`). Read `:architecture-test:` in these steps as the Gradle path of `meta.moduleDir` (`static-analysis/katachi` is `:static-analysis:katachi`), and `architecture-test/` as `meta.moduleDir`.
+`katachi scaffold`, `katachi lint` and `katachi agent test` read `meta.moduleDir`, `meta.projectRoot` and `preferences` from this checklist, so keep them correct. Run those commands in the project root: they find the working directory below the current directory by themselves (from somewhere else, prefix them with `KATACHI_WORKDIR=<workdir>`; from a `git worktree` of the project, they check that worktree instead of `meta.projectRoot`). If they find two working directories, they stop and list both: pick one with `KATACHI_WORKDIR`, or ask the user to move the other one out of the project. Read `:architecture-test:` in these steps as the Gradle path of `meta.moduleDir` (`static-analysis/katachi` is `:static-analysis:katachi`), and `architecture-test/` as `meta.moduleDir`.
 
 **If git is not there (`meta.git` is `no`), tell the user** that the changes cannot be undone if something goes wrong, and suggest committing or backing up first.
 

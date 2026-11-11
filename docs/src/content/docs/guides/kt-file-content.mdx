@@ -27,7 +27,7 @@ For example, you can specify a rule such as "this file may contain only a class 
     `import`("com.example.domain.**")
 
     required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
-      required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+      required(public, `val`, "uiState").type("StateFlow<${fileName.replace("ViewModel", "UiState")}>")
       allow(public, `fun`, "on*")().returns("Unit")
       allow(private, anythingElse)
     }
@@ -289,7 +289,7 @@ To allow property and function declarations, pass `val`/`var` and `fun` as the k
 
     ```kt
     required(`class`, "*ViewModel") {
-      required(`val`, "uiState", "StateFlow<*>") // uiState: StateFlow<*> must exist
+      required(`val`, "uiState").type("StateFlow<*>") // uiState: StateFlow<*> must exist
     }
 
     required(`class`, "*UseCase") {
@@ -309,7 +309,7 @@ To allow property and function declarations, pass `val`/`var` and `fun` as the k
       ktFileContent {
         // package / import lines omitted
         required(`class`, fileName) {
-          allow(private, `val`, "*", "*Service") // hold the Service it calls as a private val
+          allow(private, `val`, "*").type("*Service") // hold the Service it calls as a private val
           allow(`fun`, "*")(anyArgs())            // handler functions. Any name and any parameters
         }
       }
@@ -321,7 +321,7 @@ To allow property and function declarations, pass `val`/`var` and `fun` as the k
       ktFileContent {
         // package / import lines omitted
         required(`class`, fileName) {
-          allow(private, `val`, "*", "*Repository") // hold the Repository it calls as a private val
+          allow(private, `val`, "*").type("*Repository") // hold the Repository it calls as a private val
           allow(`fun`, "*")(anyArgs())
         }
       }

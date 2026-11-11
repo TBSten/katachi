@@ -31,7 +31,7 @@ import me.tbsten.katachi.dsl.KatachiDsl
  * ktFileContent {
  *     `package`("com.example.feature.${captureValue("feature")}")
  *     allow(`class`, fileName) {
- *         allow(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+ *         allow(public, `val`, "uiState").type("StateFlow<${fileName.replace("ViewModel", "UiState")}>")
  *         allow(`fun`, "on*")(anyArgs())
  *     }
  *     not.allow(`class`, "*Impl").except("DefaultImpl")
@@ -91,7 +91,7 @@ public sealed interface DeclarationListScope : DeclarationVocabulary, Declaratio
  *     not.`import`("android.**")
  *
  *     required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel") {
- *         required(public, `val`, "uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+ *         required(public, `val`, "uiState").type("StateFlow<${fileName.replace("ViewModel", "UiState")}>")
  *         allow(public, `fun`, "on*")().returns("Unit")
  *         allow(private, anythingElse)
  *     }

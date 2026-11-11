@@ -20,7 +20,7 @@ class RuleRenderingSpec : FreeSpec({
             renderedLines(fileName = "HomeViewModel") {
                 required(annotated("HiltViewModel"), public, `class`, fileName).superclass("ViewModel")
                 allow(public, `fun`, "on*")().returns("Unit")
-                required(public, `val`, "uiState", "StateFlow<HomeUiState>")
+                required(public, `val`, "uiState").type("StateFlow<HomeUiState>")
                 required(`fun`, "load")
                 not.allow(`class`, "*Impl").except("DefaultImpl")
             } shouldBe listOf(
@@ -70,7 +70,7 @@ class RuleRenderingSpec : FreeSpec({
                 required(`fun`, "f")()
                 required(`fun`, "g")(anyArgs())
                 required(`fun`, "h").returns("Unit")
-                required(`var`, "i", "Int?")
+                required(`var`, "i").type("Int?")
                 required(`typealias`, "J")
             } shouldBe listOf(
                 "class A : B, C<D>",
