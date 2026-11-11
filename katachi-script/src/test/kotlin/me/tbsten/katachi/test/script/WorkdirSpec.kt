@@ -40,6 +40,28 @@ class WorkdirSpec : FreeSpec({
             repo.workdir.resolve("tmp/test/latest.log").exists() shouldBe false
         }
 
+        "git worktree add で作った本物の作業ツリーでも同じ" {
+            val main = createTempDirectory("katachi-real-main-")
+            git(main, "init", "-q")
+            gradleProject(main, "main", withDefinition = true)
+            git(main, "add", ".")
+            git(main, "commit", "-q", "-m", "init")
+            val worktree = main.resolveSibling(main.fileName.toString() + "-wt")
+            git(main, "worktree", "add", "-q", worktree.toString())
+            // git keeps no empty directory, so the definition directory has to be made again in the new work tree.
+            worktree.resolve("architecture-test/src/test/kotlin").createDirectories()
+            worktree.resolve("gradlew").writeText("#!/bin/sh\necho \"args: from worktree\"\necho \"BUILD SUCCESSFUL in 1s\"\nexit 0\n")
+            val workdir = main.resolve(".local/install-katachi")
+            workdir.resolve("tmp").createDirectories()
+            workdir.resolve("check-list.html").writeText(checkListHtml("""{"meta": {"projectRoot": "$main"}, "steps": []}""", "ja"))
+
+            val run = runCapturing(worktree, listOf("agent", "test"), mapOf("PATH" to System.getenv("PATH"), "KATACHI_WORKDIR" to workdir.toString()))
+
+            run.status shouldBe 0
+            worktree.resolve("build/katachi/test/latest.log").readText() shouldContain "args: from worktree"
+            run.err shouldContain "別の作業ツリー（git worktree）です"
+        }
+
         "警告は 1 回だけ出す" {
             val repo = WorktreeFixture()
 
@@ -165,6 +187,13 @@ private fun gradleProject(dir: Path, name: String, withDefinition: Boolean) {
     if (withDefinition) dir.resolve("architecture-test/src/test/kotlin").createDirectories()
     dir.resolve("gradlew").writeText("#!/bin/sh\necho \"args: from $name\"\necho \"BUILD SUCCESSFUL in 1s\"\nexit 0\n")
     dir.resolve("gradlew").setPosixFilePermissions(PosixFilePermissions.fromString("rwxr-xr-x"))
+}
+
+private fun git(dir: Path, vararg args: String) {
+    val command = listOf("git", "-c", "user.name=katachi", "-c", "user.email=katachi@example.com", "-c", "commit.gpgsign=false") + args
+    val process = ProcessBuilder(command).directory(dir.toFile()).redirectErrorStream(true).start()
+    val output = process.inputStream.bufferedReader().readText()
+    check(process.waitFor() == 0) { "git ${args.joinToString(" ")} failed: $output" }
 }
 
 /** A project holding a new working directory and an old one left from an earlier setup. */
