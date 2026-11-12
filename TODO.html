@@ -42,26 +42,16 @@ a{color:var(--blue);word-break:break-all}
 
 <div class="summary">
   <span class="pill"><b style="color:var(--red)">0</b>リリース前に直すか決める</span>
-  <span class="pill"><b style="color:var(--amber)">2</b>判断してほしい</span>
+  <span class="pill"><b style="color:var(--amber)">1</b>判断してほしい</span>
   <span class="pill"><b style="color:var(--blue)">5</b>目を通してほしい</span>
   <span class="pill"><b style="color:var(--green)">4</b>操作してほしい</span>
-  <span class="pill"><b style="color:var(--muted)">20</b>決定済み・対応中</span>
+  <span class="pill"><b style="color:var(--muted)">21</b>決定済み・対応中</span>
 </div>
 
 <h2 style="--c:var(--red)">1. リリース前に直すか決める<small>priority 7 以上。放置すると利用者が詰まる</small></h2>
 <p class="none">0 件です（クラウドと Mac の全手順）。</p>
 
 <h2 style="--c:var(--amber)">2. 判断してほしい<small>リリースは止めないが、方針が要る</small></h2>
-
-<div class="item" data-id="j-doc-outputdir"><input type="checkbox"><div class="t"><span class="p p6">p6</span>ドキュメント生成の出力先に手書きの .md があると消える</div>
-<div class="body">手書きの Markdown がある場所を出力先にすると、katachi が生成しなかった <code>*.md</code> は警告なしに消えます。この決まりは skill の 6-C にしか書いてありません。（検査が <code>[UnexpectedFile]</code> で落ちる件は「前々から許容」と決まったので外しました）</div>
-<div class="ask"><b>決めてほしい:</b> <span class="rec">(a) ガイドに「出力先は katachi のものになる（中の .md は消える）」を足す（Review に登録済み。書くのは人）</span> / (b) 加えて実装で、katachi が作っていない <code>*.md</code> を消す前に止める / (c) このまま</div>
-<details><summary>詳細</summary><ul>
-<li><code>ja/guides/document-generation.mdx:159-175</code>「出力先ディレクトリ」</li>
-<li>実装: <code>katachi/docs/internal/DocumentFiles.kt:9-16</code>（v0.2.0 からの挙動）、<code>GenerateDocumentation.kt:75</code>（<code>--arg mode=check</code>）</li>
-<li>足す 3 点: 出力先は katachi のものになる / コミットするなら生成ページの Role を宣言する / CI では <code>--arg mode=check</code></li>
-<li>実際に動かして確かめました（手順 5 の「動かして確かめた結果」5 番）</li>
-</ul></details></div>
 
 <div class="item" data-id="j-llms-full"><input type="checkbox"><div class="t"><span class="p p6">p6</span>llms-full.txt に 0.4・0.3・0.2 のページが版の印なしでつながっている</div>
 <div class="body">skill は「llms-full.txt から <code># 見出し</code> で切り出せ」と言います。手順どおりに切ると 0.3 のページも一緒に拾い、0.3 のプロパティの書き方（<code>"uiState", "StateFlow&lt;…&gt;"</code>）が混ざります。この書き方は 0.4 でもコンパイルが通り、別の意味（拡張プロパティ）になります。9-2 で 2 体が別々に当たりました。</div>
@@ -143,6 +133,7 @@ a{color:var(--blue);word-break:break-all}
 <div class="item" data-id="d-kdoc-internal"><input type="checkbox" disabled><div class="t">✏️ KDoc の例の <code>flattenLayout()</code>・<code>moduleIndex()</code> → (a) <code>validate(fakeFileSystem)</code> などに書き換えた（PR #87、レビュー待ち）</div></div>
 <div class="item" data-id="d-missing-description"><input type="checkbox" disabled><div class="t">✏️ <code>[MissingDescription]</code> → (a) skill から外し、クラスを internal にして KDoc・API リファレンスにも出ないように（PR #87、レビュー待ち）</div></div>
 <div class="item" data-id="d-typealias"><input type="checkbox" disabled><div class="t">✏️ typealias の型 → <code>.type(...)</code> にそろえた（PR #87、レビュー待ち）。docs の kotlin-mapping の例 1 行（ja・en）も合わせた</div></div>
+<div class="item" data-id="d-doc-outputdir-md"><input type="checkbox" disabled><div class="t">✓ 出力先にある katachi が作っていない .md を消す → 後で（v0.4 では対応しない）。KATACHI-370 を時期未定で起票、decisions/docs.md に記録</div></div>
 <div class="item" data-id="d-doc-outputdir-check"><input type="checkbox" disabled><div class="t">✓ 生成ページを build/ の外にコミットすると <code>[UnexpectedFile]</code> で落ちる → このまま（前々から許容）。decisions/docs.md に記録</div></div>
 <div class="item" data-id="d-revisit-e13"><input type="checkbox" disabled><div class="t">✓ 見直し候補 E13 → このまま。katachi 本体とサンプルの決まりで、ほかのプロジェクトには推奨なので skill では強制しない → decisions/docs.md に記録</div></div>
 <div class="item" data-id="o-review-place"><input type="checkbox" disabled><div class="t">✓ Review のファイルを手元の置き場に置く（「ok」をもらって置いた）</div></div>
@@ -159,7 +150,7 @@ a{color:var(--blue);word-break:break-all}
 <div class="body">二重バッククォートの表示（33 ページ 74 か所）、katachi-script の説明に残る削除済みのコマンド、「while katachi is at v0.3」、diff パッケージの説明、解決しない KDoc のリンク、.md で注釈と宣言がつながる、など。</div></div>
 <div class="item" data-id="d-translate"><input type="checkbox" disabled><div class="t">✓ 英語の roadmap の 1 文を日本語の原本に合わせて訳し直した（<code>5c1b0e37</code>）</div></div>
 
-<p class="sub" style="margin-top:28px">いま走っているもの: Mac の分（CI 相当 16 個・IDE プラグイン・インストールキット・実プロジェクトへの導入）。終わったら 1 と 2 を更新します。待っているもの: PR #87 のレビュー、2 の判断。</p>
+<p class="sub" style="margin-top:28px">全手順済み。待っているもの: PR #87 のレビュー、2 の判断（llms-full.txt）、4 の操作。</p>
 </main>
 <script>
 const KEY='katachi-v0.4.0-todo-261112-01';
