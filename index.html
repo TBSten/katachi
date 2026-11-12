@@ -33,18 +33,18 @@ a{color:var(--blue);word-break:break-all}
 </head>
 <body>
 <main>
-<h1><span class="badge run">⏳</span>v0.4.0 リリース前チェック（3 回目 261112-01）</h1>
-<p class="sub">2026-11-12 08:30 時点 / 対象 main <code>146d6d40</code>（クラウド）・<code>7cf7d32a</code>（Mac）/ 基準 v0.3.0 / Mac の分は実行中</p>
+<h1><span class="badge" style="background:color-mix(in srgb,var(--green) 18%,transparent);color:var(--green)">✓</span>v0.4.0 リリース前チェック（3 回目 261112-01）</h1>
+<p class="sub">2026-11-12 10:40 時点 / 対象 main <code>146d6d40</code>（クラウド）・<code>7cf7d32a</code>（Mac）/ 基準 v0.3.0</p>
 
 <div class="lead">
   <p>Git の差分を Role / group ごとに振り分ける katachiDiff と、brew で入る katachi CLI・katachi-script が加わった。</p>
   <p>AI エージェント向けの導入手順は katachi skill になり、ktFileContent は Kotlin の書き方のほとんどを縛れるようになった。</p>
   <p>破壊的変更は 11 件で、.module の削除、ktFileContent の deny by default の拡大と .type(...) への書き換えが中心。</p>
-  <p class="sub" style="margin:8px 0 0">TODO: 判断してほしい 1 件・目を通してほしい 4 件・操作してほしい 3 件 ・ 修正は <a href="https://github.com/TBSten/katachi/pull/87">PR #87</a>（CI 緑）</p>
+  <p class="sub" style="margin:8px 0 0">TODO: 判断してほしい 2 件・目を通してほしい 5 件・操作してほしい 4 件 ・ 修正は <a href="https://github.com/TBSten/katachi/pull/87">PR #87</a>（CI 緑）</p>
 </div>
 
 <h2 style="--c:var(--red)">重要な警告<small>priority 7 以上</small></h2>
-<p style="margin:4px 0 0 14px;font-size:14px">クラウドで済んだ範囲では 0 件です。Mac の分が終わったら更新します。</p>
+<p style="margin:4px 0 0 14px;font-size:14px">0 件です（クラウド・Mac とも）。</p>
 
 <h2>手順ごとの結果</h2>
 <div class="cards">
@@ -57,11 +57,11 @@ a{color:var(--blue);word-break:break-all}
   <div class="card note-c"><div class="n">11. ドキュメントのルール適合</div><div class="r">58 件（p7 以上 0）</div><div class="l">p6 1・p5 1・p4 1・p3 13・p2 16・p1 26</div></div>
   <div class="card ok-c"><div class="n">8. CI と同等</div><div class="r">Mac 16 / 16</div><div class="l">クラウドで環境要因で落ちた 5 つも Mac で通った</div></div>
   <div class="card ok-c"><div class="n">10-1. IDE プラグイン nightly 相当</div><div class="r">OK・seed 1794420394</div><div class="l">scale 20・2250 秒</div></div>
-  <div class="card wait-c"><div class="n">10-2. IDE プラグイン E2E</div><div class="r">Mac で実行中</div></div>
-  <div class="card wait-c"><div class="n">10-3. 配る zip</div><div class="r">Mac で実行中</div></div>
+  <div class="card note-c"><div class="n">10-2. IDE プラグイン E2E</div><div class="r">13 本中 11 本通過</div><div class="l">落ちた 2 本は環境要因（候補）。製品の不具合 0。手元で 2 本試してほしい</div></div>
+  <div class="card ok-c"><div class="n">10-3. 配る zip</div><div class="r">OK・0.4.0</div><div class="l">change-notes の書き漏れ 1 件（p4）は PR #87 で直した</div></div>
   <div class="card ok-c"><div class="n">10-4. IDE の文言の日英</div><div class="r">直し忘れ 0 件</div><div class="l">日本語の IDE での目視が要る</div></div>
-  <div class="card note-c"><div class="n">9-1. インストールキット</div><div class="r">スモーク 41 / 41・fixture 15 / 16</div><div class="l">agp だけ環境要因。Mac で実行中</div></div>
-  <div class="card wait-c"><div class="n">9-2. 実プロジェクトへの導入</div><div class="r">Mac で実行中</div></div>
+  <div class="card ok-c"><div class="n">9-1. インストールキット</div><div class="r">スモーク 41 / 41・fixture 16 / 16</div><div class="l">クラウドで落ちた agp も Mac で通った</div></div>
+  <div class="card note-c"><div class="n">9-2. 実プロジェクトへの導入</div><div class="r">ja ✓・en ✓・所見 44 件（p7 以上 0）</div><div class="l">p6 3・p5 1・p4 9・p3 17・p2 11・p1 3。前回の p7 以上 3 件は直っていた</div></div>
   <div class="card ok-c"><div class="n">過去の判断（decisions/）</div><div class="r">同じで出さなかった 227 件</div><div class="l">見直し候補 1 件・この回で書き足した 0 件（判断待ち）</div></div>
 </div>
 
@@ -72,6 +72,8 @@ a{color:var(--blue);word-break:break-all}
   <li>5. 実装とドキュメント: 13 件（うち 3 件は PR #87 で直した）</li>
   <li>6. サイトの巡回: 32 件（API リファレンスの 7 件は PR #87 で直した。docs の本文の分は Review に 31 件。スライドの 6 件は PR #87 で直した）</li>
   <li>11. ドキュメントのルール適合: 58 件（Review に 58 件）</li>
+  <li>10-3. 配る zip: 1 件（PR #87 で直した）</li>
+  <li>9-2. 実プロジェクトへの導入: 44 件（p6 の 2 件・p5 1 件は PR #87 で直した。llms-full.txt の 1 件は判断待ち）</li>
 </ul></details>
 </main>
 </body>

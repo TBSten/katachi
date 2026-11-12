@@ -38,18 +38,18 @@ a{color:var(--blue);word-break:break-all}
 <body>
 <main>
 <h1>v0.4.0 リリース前に確認してほしいこと（3 回目 261112-01）</h1>
-<p class="sub">2026-11-12 10:20 更新 / 対象 main <code>146d6d40</code>（クラウド）・<code>7cf7d32a</code>（Mac の分）/ 基準 v0.3.0 / チェックはこのブラウザに保存されます</p>
+<p class="sub">2026-11-12 10:40 更新 / 対象 main <code>146d6d40</code>（クラウド）・<code>7cf7d32a</code>（Mac の分）/ 基準 v0.3.0 / チェックはこのブラウザに保存されます</p>
 
 <div class="summary">
   <span class="pill"><b style="color:var(--red)">0</b>リリース前に直すか決める</span>
-  <span class="pill"><b style="color:var(--amber)">1</b>判断してほしい</span>
-  <span class="pill"><b style="color:var(--blue)">4</b>目を通してほしい</span>
-  <span class="pill"><b style="color:var(--green)">3</b>操作してほしい</span>
-  <span class="pill"><b style="color:var(--muted)">16</b>決定済み・対応中</span>
+  <span class="pill"><b style="color:var(--amber)">2</b>判断してほしい</span>
+  <span class="pill"><b style="color:var(--blue)">5</b>目を通してほしい</span>
+  <span class="pill"><b style="color:var(--green)">4</b>操作してほしい</span>
+  <span class="pill"><b style="color:var(--muted)">19</b>決定済み・対応中</span>
 </div>
 
 <h2 style="--c:var(--red)">1. リリース前に直すか決める<small>priority 7 以上。放置すると利用者が詰まる</small></h2>
-<p class="none">いまのところ 0 件です（クラウドで済んだ手順 2〜6・8・9-1・10-4・11 の範囲）。Mac の分が終わったら更新します。</p>
+<p class="none">0 件です（クラウドと Mac の全手順）。</p>
 
 <h2 style="--c:var(--amber)">2. 判断してほしい<small>リリースは止めないが、方針が要る</small></h2>
 
@@ -61,6 +61,15 @@ a{color:var(--blue);word-break:break-all}
 <li>実装: <code>katachi/docs/internal/DocumentFiles.kt:9-16</code>（v0.2.0 からの挙動）、<code>GenerateDocumentation.kt:75</code>（<code>--arg mode=check</code>）</li>
 <li>足す 3 点: 出力先は katachi のものになる / コミットするなら生成ページの Role を宣言する / CI では <code>--arg mode=check</code></li>
 <li>実際に動かして確かめました（手順 5 の「動かして確かめた結果」5 番）</li>
+</ul></details></div>
+
+<div class="item" data-id="j-llms-full"><input type="checkbox"><div class="t"><span class="p p6">p6</span>llms-full.txt に 0.4・0.3・0.2 のページが版の印なしでつながっている</div>
+<div class="body">skill は「llms-full.txt から <code># 見出し</code> で切り出せ」と言います。手順どおりに切ると 0.3 のページも一緒に拾い、0.3 のプロパティの書き方（<code>"uiState", "StateFlow&lt;…&gt;"</code>）が混ざります。この書き方は 0.4 でもコンパイルが通り、別の意味（拡張プロパティ）になります。9-2 で 2 体が別々に当たりました。</div>
+<div class="ask"><b>決めてほしい:</b> <span class="rec">(a) llms-full.txt を今の版だけにする（旧版は /0.3/llms-full.txt などへ。私が直す）</span> / (b) skill に「最初の 1 組だけ使う」と書くだけ / (c) このまま</div>
+<details><summary>詳細</summary><ul>
+<li>llms-full.txt は 18167 行。7104 行目から 0.3、13132 行目あたりから 0.2 の写しが続き、<code># ktFileContent</code> などが 2〜3 回出る</li>
+<li>コードブロックの中の行頭 <code># </code> でもページが切れる（前回 p4 の残り）</li>
+<li>llms.txt もページの一覧になっていない（リンク 2 本だけ。p4）。(a) なら合わせて直す</li>
 </ul></details></div>
 
 <h2 style="--c:var(--blue)">3. 目を通してほしい</h2>
@@ -89,8 +98,30 @@ a{color:var(--blue);word-break:break-all}
 <div class="item" data-id="r-skill-only"><input type="checkbox"><div class="t">skill にしか無い決まりが 2 つある</div>
 <div class="body">「catch-all の Role を書かない」「定義のファイル名」は skill の 3-2・3-3 にだけあり、docs のガイドには出てきません。今回は docs の照合には使わず、報告だけにしました。</div></div>
 
+<div class="item" data-id="r-install-e2e"><input type="checkbox"><div class="t">9-2（実プロジェクトへの導入）の所見 44 件</div>
+<div class="body">ja（KMP 171 ファイル）・en（Android 452 ファイル）とも最後まで導入でき、p7 以上は 0 件でした。p6〜p5 の 4 件のうち 3 件は PR #87 で直し、1 件は上の判断です。残りは p4 9・p3 17・p2 11・p1 3 で、全文は手元の <code>.local/release-v0.4.0/install-e2e.md</code> にあります。</div>
+<details><summary>p4 の 9 件</summary><ul>
+<li>テストが 1 件も走らずに BUILD SUCCESSFUL だと、<code>katachi agent test</code> が「通った」と言う</li>
+<li>1-3「知らない値で scaffold が止まる」が実装と違う → PR #87 で実装を止める側にした</li>
+<li>llms.txt がページの一覧になっていない</li>
+<li>「katachi 自身の Gradle と Git の group」と書くが、Git は recipe の写し（lint の出力も同じ）</li>
+<li>use-templates の「<code>stringParameter("…")</code> を探せ」が括弧の中を名前だと読ませる</li>
+<li>廃止予定の katachi-install.sh が実行しても廃止を告げない</li>
+<li><code>@file:OptIn</code> を許す <code>fileAnnotation()</code> が 3-1 で読むページに無い</li>
+<li>6-C の CI の <code>mode=check</code> が 6-B の末尾にあり、6-C だけ選ぶと行き場がない</li>
+<li>API リファレンスの .md で <code>gradle()</code> の表が 1 行に潰れる</li>
+</ul></details></div>
+
 <h2 style="--c:var(--green)">4. 操作してほしい</h2>
 
+
+<div class="item" data-id="o-ide-hand"><input type="checkbox"><div class="t">IDE プラグインの E2E を 2 本、手元のターミナルで回す</div>
+<div class="body">10-2 は 13 本中 11 本が通りました。落ちた 2 本はどちらも Mac の前面に IDE が無かったのが原因らしく、製品の不具合ではないと見ています。Claude のウィンドウを前面にせず、1 本ずつ回してください（各 3〜4 分、出力は 1 本約 9.5 GB）。</div>
+<details><summary>コマンド</summary><ul>
+<li><code>cd ~/dev/katachi-prerelease-040/katachi-intellij-plugin &amp;&amp; ./gradlew integrationTest --tests 'me.tbsten.katachi.intellij.SpikeDriverTest' --console=plain --no-daemon</code></li>
+<li><code>cd ~/dev/katachi-prerelease-040/katachi-intellij-plugin &amp;&amp; ./gradlew integrationTest --tests 'me.tbsten.katachi.intellij.CaptureCandidatesE2ETest' --console=plain --no-daemon</code></li>
+<li>終わったら <code>rm -rf ~/dev/katachi-prerelease-040/katachi-intellij-plugin/build/integrationTest</code></li>
+</ul></details></div>
 
 <div class="item" data-id="o-ide-ja"><input type="checkbox"><div class="t">日本語の IDE で文言を目で見る</div>
 <div class="body">今回足した Live Template の説明 8 件と、タスク一覧が無いときの案内（<code>taskListMissingHint</code>）です。機械の検査（直し忘れ・訳し忘れ）は 0 件でした。</div></div>
@@ -103,6 +134,9 @@ a{color:var(--blue);word-break:break-all}
 
 <h2 style="--c:var(--line)">5. 決定済み・対応中<small>🔧 対応中 / ✏️ 編集済み・検証中 / ✓ 済</small></h2>
 
+<div class="item" data-id="d-workdir"><input type="checkbox" disabled><div class="t">✏️ <code>KATACHI_WORKDIR</code> が無いパスを指すと黙って作業用ディレクトリ無しで動く（9-2 p6）→ 止めるように（PR #87、レビュー待ち）</div></div>
+<div class="item" data-id="d-skill-42-6d"><input type="checkbox" disabled><div class="t">✏️ skill の 4-2「軽微な違反は自分で直す」と 6-D の生成ページの作り直し（9-2 p5・p6）→ 直した（PR #87、レビュー待ち）</div></div>
+<div class="item" data-id="d-change-notes"><input type="checkbox" disabled><div class="t">✏️ IDE プラグインの change-notes に Android Studio の修正が無い（10-3 p4）→ 足した（PR #87、レビュー待ち）</div></div>
 <div class="item" data-id="d-slides"><input type="checkbox" disabled><div class="t">✏️ スライド「5分でわかる katachi」→ (a) v0.4.0 の書き方に直した（<code>.role</code>・<code>"Domain".group</code>・baseline と v0.2 の注記・ja のページ番号。PR #87、レビュー待ち。Review の該当 6 件は外した）</div></div>
 <div class="item" data-id="d-scaffold-unknown"><input type="checkbox" disabled><div class="t">✏️ scaffold の知らない preferences の値 → (b) 何も作らずに終了コード 2 で止まるように（PR #87、レビュー待ち）</div></div>
 <div class="item" data-id="d-gradle-wrapper"><input type="checkbox" disabled><div class="t">✏️ <code>gradle()</code> の wrapper → (a) skill に 1 文、wrapper の <code>[MissingFile]</code> の How to fix に <code>gradle(requireWrapper = false)</code> を出す（PR #87、レビュー待ち）。docs のレシピは Review に登録済み</div></div>
