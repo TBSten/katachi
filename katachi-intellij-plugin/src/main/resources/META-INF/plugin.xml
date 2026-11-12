@@ -47,6 +47,7 @@
             <li>The gutter, the violations under a declaration, the &#9670; and Code Vision follow the IDE's language (Japanese / English).</li>
             <li>In English, the members of a templateSet row in the tool window are separated by ", ".</li>
             <li>Fixed: an IDE started from the Dock (macOS) finds the kotlin command the katachi CLI runs on.</li>
+            <li>Fixed: Android Studio with its default Gradle sync settings (no task list built during sync) finds the module that holds the katachi definition, instead of showing "katachi is not found".</li>
             <li>Needs IntelliJ IDEA 2026.1 (261) or later.</li>
         </ul>
         <p>0.2.0 (with katachi 0.3.0):</p>
