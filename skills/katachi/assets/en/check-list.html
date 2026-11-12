@@ -1438,7 +1438,7 @@
         },
         {
           "id": "3-2",
-          "label": "Wrote the architecture { } definition and saved the verification module's test output as the pre-refactoring baseline",
+          "label": "Wrote the architecture { } definition and saved the verification module's test output as the pre-refactoring reference log",
           "done": false
         },
         {
@@ -1605,7 +1605,7 @@
         },
         {
           "id": "3-2",
-          "label": "Wrote the architecture { } definition and saved the verification module's test output as the pre-refactoring baseline",
+          "label": "Wrote the architecture { } definition and saved the verification module's test output as the pre-refactoring reference log",
           "done": true
         },
         {
@@ -1705,9 +1705,10 @@
       "observed": "Only the files under app/src/main/kotlin/com/example/app/ui/legacy/ still use the old Fragment + Presenter pattern",
       "options": [
         "Include it and fix it",
-        "Ignore it for now"
+        "Declare it as it is, in a Role of its own (Fragment and Presenter)",
+        "Accept its current violations in the baseline, so only new ones fail"
       ],
-      "recommendation": "B. Only one screen is affected, and there's no migration plan decided yet"
+      "recommendation": "C. Only one screen is affected and no migration plan is decided yet, so accept what is there now and catch only new violations"
     }
   ],
   "answers": {},
@@ -1833,8 +1834,8 @@
       "id": "cq2",
       "question": "Should the legacy package be included in katachi's scope?",
       "observed": "Only the files under app/src/main/kotlin/com/example/app/ui/legacy/ still use the old Fragment + Presenter pattern",
-      "options": ["Include it and fix it", "Ignore it for now"],
-      "recommendation": "B. Only one screen is affected, and there's no migration plan decided yet"
+      "options": ["Include it and fix it", "Declare it as it is, in a Role of its own (Fragment and Presenter)", "Accept its current violations in the baseline, so only new ones fail"],
+      "recommendation": "C. Only one screen is affected and no migration plan is decided yet, so accept what is there now and catch only new violations"
     }
   ],
   "answers": {
@@ -2128,7 +2129,7 @@
     dataError: 'Could not read the checklist data (the JSON in this file).',
     meta: [
       ['workdir', 'Working directory'],
-      ['moduleDir', 'Test module location'],
+      ['moduleDir', 'Verification module location'],
       ['version', 'katachi version'],
       ['kotlin', 'Kotlin'],
       ['jvmToolchain', 'JVM toolchain'],

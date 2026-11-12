@@ -4,8 +4,8 @@ A Role can carry a `.template { }` on a file declaration in its `layout { }`. `k
 
 ## Generate a file from an existing template
 
-1. Find the template: search the definition for `.template {`. The Role it is in, and its group, give the `template=` value (`Group.Role`, or just `Role` outside any group).
-2. Read the parameters it takes: the `stringParameter("…")` / `booleanParameter` / `intParameter` / `enumParameter` it declares, and the names given to wildcards with `capture("…")` in the path (read inside the template with `captureValue("…")`).
+1. Find the template: search the definition for `.template {`. The Role it is in, and its groups, give the `template=` value: the Role's full name (`Group.Role`, `Outer.Inner.Role` with nested groups, or just `Role` outside any group). The Role name alone also works while no other Role has the same name.
+2. Read the parameters it takes. A parameter's name is the name of the property it is declared through: in `val name by stringParameter(default = "Sample")` the name is `name`, and the string in the parentheses is only its default value. The same goes for `booleanParameter()` / `intParameter()` / `enumParameter()`. The names given to wildcards with `capture("…")` in the path are parameters too (read inside the template with `captureValue("…")`).
 3. Generate, then run the check.
 
    ```sh

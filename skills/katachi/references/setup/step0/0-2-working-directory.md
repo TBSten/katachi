@@ -19,7 +19,9 @@ mkdir -p <workdir>/tmp
 cp <skill>/assets/<lang>/check-list.html <workdir>/check-list.html
 ```
 
-**If the file is already there, do not copy over it.** It holds what an earlier session filled in. Read it and go on from where it stops (0-3 says how to read it). A working directory from an older version may also have `project-code-base-report.html`: then the report is in that file, not in the `report` block of `check-list.html`; keep using it there.
+If you read these steps without the skill installed (from GitHub, say), there is no `<skill>` directory. Download the file instead: `curl -fsSL -o <workdir>/check-list.html https://raw.githubusercontent.com/TBSten/katachi/main/skills/katachi/assets/<lang>/check-list.html`.
+
+**If the file is already there, do not copy over it.** It holds what an earlier session filled in. Read it and go on from where it stops (0-3 says how to read it). A working directory from an older version (one with `project-code-base-report.html` next to the checklist) is the exception: make a new working directory as the step 0 README says, and move the report's JSON from `project-code-base-report.html` into the `report` block of the new `check-list.html`.
 
 The top level of the working directory holds only `check-list.html` and `tmp/`. Notes, logs and anything you fetch go inside `<workdir>/tmp/`.
 

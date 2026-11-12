@@ -30,5 +30,5 @@ If the project commits the generated documentation, regenerate it (`./gradlew :a
 
 The `katachi` command and this skill follow the same version numbers. Tell the user how to update them, rather than doing it yourself:
 
-- `brew upgrade katachi` (without Homebrew: change the version in `@file:DependsOn` of the `katachi.main.kts` setup 0-1 wrote)
+- `brew upgrade katachi` (without Homebrew: change the version in `@file:DependsOn` of the `katachi.main.kts` setup 0-1 wrote. If the working directory has been deleted since, write that file again as 0-1 says, with the new version)
 - `gh skill update katachi` (or `npx skills update`, for a skill installed with `npx skills`)

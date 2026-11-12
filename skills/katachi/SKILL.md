@@ -13,7 +13,7 @@ First find out whether katachi is already set up: look for a Gradle module whose
 
 | Situation | Read |
 |---|---|
-| A working directory with a `check-list.html` is there and its steps up to 6 are not all done, or the user asks for one of 6-A to 6-D after the setup | [references/setup/README.md](references/setup/README.md) (go on from where the checklist stops) |
+| A working directory with a `check-list.html` is there and its items of steps 0 to 5 are not all done (step 6 is optional and does not count), or the user asks for one of 6-A to 6-D after the setup | [references/setup/README.md](references/setup/README.md) (go on from where the checklist stops) |
 | katachi is not in the project yet | [references/setup/README.md](references/setup/README.md) |
 | katachi is set up, and the definition has to follow the project: a new kind of file, a moved or renamed module or package, a new rule, a katachi upgrade | [references/add-and-update/README.md](references/add-and-update/README.md) |
 | The check fails (on CI or locally) and you have to decide what to fix | [references/fix-violations/README.md](references/fix-violations/README.md) |
@@ -74,6 +74,6 @@ Read `:architecture-test` as the verification module's Gradle path when it is so
 | Code generation from templates | https://tbsten.github.io/katachi/guides/generate-code-from-template/ |
 | Gradle files, `buildSrc` and `includeBuild` | https://tbsten.github.io/katachi/recipes/gradle/ |
 
-https://tbsten.github.io/katachi/llms.txt is the site's index for agents. The whole site in one file is https://tbsten.github.io/katachi/llms-full.txt; do not read it whole, cut out the page you need. For signatures, read the API reference: https://tbsten.github.io/katachi/api-docs/llms.txt, and the Markdown version of one API's page (its HTML URL with `.md` appended).
+The pages to read are listed in 3-1 (references/setup/step3/3-1-fetch-docs.md), with the recipes for other tools. https://tbsten.github.io/katachi/llms.txt only links the site's text versions (it does not list the pages). The whole site in one file is https://tbsten.github.io/katachi/llms-full.txt; do not read it whole, cut out the page you need. For signatures, read the API reference: https://tbsten.github.io/katachi/api-docs/llms.txt, and the Markdown version of one API's page (its HTML URL with `.md` appended).
 
 `capture()`, `fileConstraint`, `ktFileContent { }`, `.template { }` and `baseline()` are experimental: a file that uses one starts with `@file:OptIn(ExperimentalKatachiApi::class)` and `import me.tbsten.katachi.ExperimentalKatachiApi`.

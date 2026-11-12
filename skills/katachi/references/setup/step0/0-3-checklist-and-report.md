@@ -45,6 +45,8 @@ Add an entry by appending an object to the array; keep the entries already there
 | `excluded` | report | `path`, `reason` |
 | `templates` | report | `role`, `files` / `params` (arrays), `basedOn`, `reason` |
 
+In `questions`, `options` are shown lettered A, B, C, … in their order. **Start `recommendation` with the letter of the option you recommend**, then the reason (`"B. The modules already follow it"`). The page marks that option as recommended and offers "Use the recommendation" only when the text starts with the letter. Without it the user sees only the text.
+
 Number question ids on from the last one in the same block: the report's are `cq…` and the checklist's `q…`, so they never collide.
 
 Two rules the arrays keep:
@@ -80,13 +82,13 @@ The page also has a **Feedback mode** (the button at the bottom right). The user
 ```text
 Feedback on the katachi installation checklist (check-list.html), 2 item(s). "Target" is the place in that file's JSON; its head, checklist. or report., names the JSON block (id). …
 
-1. Codebase report › 2. Elements (candidate roles) › app › ui › ViewModel
+1. Codebase report › 2. Elements (candidate roles) › App › Ui › ViewModel
    Target: report.roles[name=ViewModel]
    > feature modules have ViewModels too (feature/*/src/...)
 
-2. Codebase report › 1. Overview › Main frameworks and 1 more
-   Target: report.overview.frameworks (Codebase report › 1. Overview › Main frameworks)
-   Target: report.overview.targets (Codebase report › 1. Overview › Targets)
+2. Codebase report › 1. Architecture findings › Main frameworks and 1 more
+   Target: report.overview.frameworks (Codebase report › 1. Architecture findings › Main frameworks)
+   Target: report.overview.targets (Codebase report › 1. Architecture findings › Targets)
    > add the versions
 ```
 
