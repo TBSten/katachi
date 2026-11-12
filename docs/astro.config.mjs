@@ -175,12 +175,16 @@ export default defineConfig({
 			// デザインシステムは starlight-theme-nova に任せる。
 			plugins: [
 				starlightThemeNova(),
-				// /llms.txt・/llms-full.txt・/llms-small.txt を生成する。
-				// 古い版の写しは llms-small.txt から外し、llms-full.txt では末尾へ回す
-				// （llms-full.txt には除外の設定が無い）。
+				// /llms.txt・/llms-full.txt・/llms-small.txt を生成する。どれも今の版だけ。
+				// 凍結した版の写しは `exclude` で外す（llms-full.txt にも適用するのは pnpm の patch。pnpm-workspace.yaml を参照）。
+				// 凍結した版の全文は /<slug>/llms-full.txt（src/pages/[version]/llms-full.txt.ts）にあり、llms.txt から張る。
 				starlightLlmsTxt({
 					exclude: archivedVersionSlugs.map((slug) => `${slug}/**`),
-					demote: archivedVersionSlugs.map((slug) => `${slug}/**`),
+					optionalLinks: archivedVersions.map(({ slug, label }) => ({
+						label: `katachi ${label} (archived) full documentation`,
+						url: `https://tbsten.github.io${base}/${slug}/llms-full.txt`,
+						description: `The docs of ${label}. The files above cover only the current version.`,
+					})),
 				}),
 				// 内部リンクが切れていたらビルドを落とす。腐ったリンクを公開しないための歯止め。
 				// 相対リンクも許す（public/ のスライドへは ../../slides/... で張っている）。
