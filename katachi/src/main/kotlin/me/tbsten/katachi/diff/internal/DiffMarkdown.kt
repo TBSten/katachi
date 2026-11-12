@@ -100,8 +100,15 @@ private fun summary(model: DiffReportModel, touched: Int, listings: Set<String>,
         "[Files by role](${names.filesByRole})".takeIf { names.filesByRole in listings },
         "[Files in no role](${names.filesInNoRole})".takeIf { names.filesInNoRole in listings },
     )
-    if (links.isNotEmpty()) appendLine("GitHub links and `git diff` commands per file: ${links.joinToString(" · ")}")
+    if (links.isNotEmpty()) appendLine("${howToSeeLabel(model.range)} per file: ${links.joinToString(" · ")}")
 }
+
+// A pull request's files are all on GitHub, so its rows carry the link alone. Any other range keeps
+// the command: its commits may be unpushed, and the link then leads nowhere.
+private fun showsGitDiffCommand(range: DiffRange): Boolean = range.pullRequest == null || range.github == null
+
+private fun howToSeeLabel(range: DiffRange): String =
+    if (showsGitDiffCommand(range)) "GitHub links and `git diff` commands" else "GitHub links"
 
 private fun filesByRole(model: DiffReportModel, roles: List<DiffNode.RoleNode>, names: MarkdownFileNames): String = buildString {
     appendLine("# Files by role: ${model.range.label}")
@@ -169,8 +176,10 @@ private fun StringBuilder.listingPreamble(model: DiffReportModel, names: Markdow
         )
         appendLine()
     }
-    appendLine("_Run the `git diff` commands from the repository root._")
-    appendLine()
+    if (showsGitDiffCommand(model.range)) {
+        appendLine("_Run the `git diff` commands from the repository root._")
+        appendLine()
+    }
 }
 
 
@@ -232,7 +241,7 @@ private fun fileRow(display: String, change: FileChange, range: DiffRange): Stri
     val lines = if (change.binary) "binary" else diffLines(change.added, change.deleted)
     val links = listOfNotNull(
         range.githubUrl(change.path)?.let { "[GitHub]($it)" },
-        "`${range.gitDiffCommand(change)}`",
+        "`${range.gitDiffCommand(change)}`".takeIf { showsGitDiffCommand(range) },
     ).joinToString(" ")
     val status = if (change.status == ChangeStatus.Modified) "" else " _(${change.status.label})_"
     return "| `${display}`$status | $lines | $links |"
