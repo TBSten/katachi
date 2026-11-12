@@ -74,7 +74,7 @@ Role の中に `ktFileContent { }` を書き、テストで `assert(FileConstrai
 Role の性質を、そのファイルに置いてよい宣言の許可リストとして書けます。許可リストに無い宣言は違反になります。
 
 <details>
-<summary>`UseCase` は `invoke` 関数を1つだけ持つ</summary>
+<summary>`UseCase` の public な関数は `invoke` だけ</summary>
 
 ```kt nocollapse
 "UseCase".role {
@@ -97,12 +97,12 @@ Role の性質を、そのファイルに置いてよい宣言の許可リスト
 </details>
 
 <details>
-<summary>`Repository` は interface として宣言される</summary>
+<summary>`RepositoryInterface` のファイルは interface を宣言する</summary>
 
 実装の差し替えを前提にした層で役に立ちます。
 
 ```kt nocollapse
-"Repository".role {
+"RepositoryInterface".role {
   layout {
     "src/main/kotlin/com/example/repository" / "*Repository".ktFile()
   }
@@ -143,9 +143,9 @@ Role の性質を、そのファイルに置いてよい宣言の許可リスト
 </details>
 
 <details>
-<summary>`ViewModel` は Android の View 型を参照しない</summary>
+<summary>`ViewModel` は Android の View 型を import しない</summary>
 
-ViewModel から Android の View 型を参照すると違反になるので、層をまたぐ依存を検出できます。書いた `import` だけが許可されるので、`android.view` を並べなければ、import した時点で違反になります。
+ViewModel のファイルが Android の View 型を import すると違反になるので、層をまたぐ依存を検出できます。`import` の行に書いたものだけが許可されるので、`android.view` を並べなければ違反になります。
 
 ```kt nocollapse
 "ViewModel".role {

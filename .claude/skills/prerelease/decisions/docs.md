@@ -2031,3 +2031,34 @@ priority 1〜3 のルールの側の食い違い。どれもルールも例も�
 利用者の一言: 「v0.4 では対応しないけど後々改善したいので、時期みていチケット切っといて」
 
 元の指摘: 出力先を「katachi 専用」として扱い、書き出すたびに今回作らなかった *.md を消す（v0.2.0 からの挙動）。手書きの docs/ を出力先にすると docs/guide.md なども消える。ログに Removed … は出るが止まらない。
+
+## 直さない: 出力先を変える例のとおりにすると、次のテストが生成ページの数だけ違反になる（出力先の決まりが書かれていない）
+- decision: 直さない
+- file: ja/guides/document-generation.mdx
+- quote: 出力先は、build.gradle.kts で `katachi.processors.docs.outputDir` を設定すると変更できます。
+- decided: 2026-11-12 261112-01 KATACHI-372
+- by: 利用者（Review の popup）
+
+利用者の一言: KATACHI-370で別途検討なので一旦は個別では直さない（他も同様）
+
+元の指摘:
+
+「出力先ディレクトリ」の節は、outputDir で出力先を変えられる、までしか書いていない。実装には決まりが 3 つある。(1) 出力先の中の、今回生成しなかった `*.md` は削除される（katachi/src/main/kotlin/me/tbsten/katachi/docs/internal/DocumentFiles.kt:9-16）。(2) build/ の外に出すと生成ページが gitTracked() の対象になり、Role を宣言しないと `[UnexpectedFile]` になる。(3) `--arg mode=check` は書かずに比べ、古いページや余分な `*.md` があると失敗する。動かして確かめた: ページの例のとおり docs/architecture に出すと、次の `:architecture-test:test` が生成ページの数だけ `[UnexpectedFile]` で失敗し、出力先に置いた手書きの `*.md` は `Removed …` のログとともに消えた。この 3 つは skill の 6-C と 6-B にだけ書いてある。英語のページも同じ。
+- 直し方の案: 節に 3 点を足す。(1) 出力先のディレクトリは katachi のものになり、生成しなかった `*.md` は消える。(2) コミットするなら生成ページの Role を宣言する。(3) CI では `--arg mode=check` で古さを検出できる
+- 出どころ: 手順 5 の 4（動かして確定。priority 4 → 6）。結果は /home/claude/katachi/.local/release-v0.4.0/tmp/docs-vs-impl/run-results.md の 5
+
+## 直さない: 比較表は Konture を「統合あり」と書くが、使い方のページが docs に無い（E-a・要確認）
+- decision: 直さない
+- file: ja/get-started/comparison-with-other-tools.mdx
+- quote: 統合あり（`katachi-konture`）
+- rule: E-a（docs/AGENTS.md の木 L85「Konture との統合」のページが 2d43371f で消えていて、サイドバーにも無い）
+- decided: 2026-11-12 261112-01 KATACHI-372
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+比較表は Konture を「🆗 統合あり（katachi-konture）」と書く。使い方のページ（guides/konture-integration）は 2d43371f で外され、今の ja のページで Konture に触れるのはこのページだけ。モジュール katachi-konture は settings.gradle.kts にある。AGENTS の木（L85）にはページが残ったまま。担当の get-started 4 ページと roadmap は、木とサイドバー（docs/astro.config.mjs）で一致している。showcase.mdx（draft: true）は木にもサイドバーにも無い。要確認。
+- 直し方の案: AGENTS の木から L85 を消す。表は「統合あり」のまま API リファレンスへのリンクを付けるか、案内先ができるまで「🆗 可能」にするかを利用者が決める。
+- 種類: ガイド・ルールの側の食い違い（E）

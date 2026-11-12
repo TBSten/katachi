@@ -74,7 +74,7 @@ Write `ktFileContent { }` inside a role and call `assert(FileConstraintCheck())`
 You can write the nature of a role as an allow list of the declarations its files may hold. A declaration not on the allow list is a violation.
 
 <details>
-<summary>A `UseCase` has exactly one `invoke` function</summary>
+<summary>The only public function of a `UseCase` is `invoke`</summary>
 
 ```kt nocollapse
 "UseCase".role {
@@ -97,12 +97,12 @@ You can write the nature of a role as an allow list of the declarations its file
 </details>
 
 <details>
-<summary>A `Repository` is declared as an interface</summary>
+<summary>A `RepositoryInterface` file declares an interface</summary>
 
 This is useful in a layer built around swappable implementations.
 
 ```kt nocollapse
-"Repository".role {
+"RepositoryInterface".role {
   layout {
     "src/main/kotlin/com/example/repository" / "*Repository".ktFile()
   }
@@ -143,9 +143,9 @@ This is useful in a layer built around swappable implementations.
 </details>
 
 <details>
-<summary>A `ViewModel` does not reference Android view types</summary>
+<summary>A `ViewModel` does not import Android view types</summary>
 
-Referencing an Android View type from a ViewModel is a violation, so you can detect dependencies that cross layers. Only the `import` lines you write are allowed, so as long as `android.view` is not among them, importing it is a violation.
+If a ViewModel file imports an Android View type, that is a violation, so you can detect dependencies that cross layers. Only what you write on the `import` lines is allowed, so as long as `android.view` is not among them, it is a violation.
 
 ```kt nocollapse
 "ViewModel".role {

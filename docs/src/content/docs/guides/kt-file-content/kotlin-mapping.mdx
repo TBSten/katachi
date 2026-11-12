@@ -282,7 +282,7 @@ Write modifiers before the kind, in the same order as in Kotlin source. A modifi
     <td>
       ```kt
       allow(`fun`, "log")("vararg args: Any")
-      allow(`fun`, "run")("noinline block: () -> Unit")
+      allow(inline, `fun`, "run")("noinline block: () -> Unit")
       allow(`fun`, "save")("force: Boolean = *")
       ```
     </td>
