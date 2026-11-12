@@ -2,7 +2,7 @@ package me.tbsten.katachi.test.architecture.testing
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-fun DeclarationContainerScope.testingGroup() = "testing".group {
+fun DeclarationContainerScope.testingGroup() = "Testing".group {
     title = "テスト"
     description = """
         テストは層で分けていません。テストは何を import してもよいので、層で分けても強制する向きが無く、置き間違えるファイルも出ないためです。

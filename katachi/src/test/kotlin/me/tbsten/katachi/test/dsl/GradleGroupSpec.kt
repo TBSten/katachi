@@ -6,9 +6,11 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.maps.shouldNotContainKey
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import me.tbsten.katachi.check.AmbiguousLayout
 import me.tbsten.katachi.check.MissingFile
+import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.Documented
@@ -167,6 +169,14 @@ class GradleGroupSpec : FreeSpec({
             }
             architectureOf { gradle(requireWrapper = false) }.validate(withoutWrapper).labels().shouldBeEmpty()
             architectureOf { gradle(requireWrapper = false) }.validate(withPart).labels().shouldBeEmpty()
+        }
+
+        "wrapper の Missing の直し方は、宣言を消すではなく gradle wrapper と requireWrapper = false を案内する" {
+            val report = architectureOf { gradle() }.validate(repositoryOf { "settings.gradle.kts"() }).report()
+
+            report shouldContain "Run `gradle wrapper` to write the wrapper files"
+            report shouldContain "write gradle(requireWrapper = false) at GradleGroupSpec.kt:"
+            report shouldNotContain "remove the declaration"
         }
 
         "settings・gradle.properties・カタログは無くても違反にならない" {

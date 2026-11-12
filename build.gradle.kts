@@ -306,7 +306,7 @@ val sampleBuilds = listOf(
             "katachiLayout",
             "katachiRoleNames",
             "--arg",
-            "prefix=domain",
+            "prefix=Domain",
             "katachiDocs",
             "--arg",
             "mode=check",
@@ -316,7 +316,7 @@ val sampleBuilds = listOf(
         template = SampleTemplate(
             runs = listOf(
                 SampleTemplateRun(
-                    args = listOf("template=domain.Service", "name=KatachiSmoke"),
+                    args = listOf("template=Domain.Service", "name=KatachiSmoke"),
                     generatedFiles = listOf("src/main/kotlin/com/example/service/KatachiSmokeService.kt"),
                 ),
                 // `resource` is the layout's `capture("resource")`: it picks the directory, and the
@@ -327,11 +327,11 @@ val sampleBuilds = listOf(
                         "src/main/kotlin/com/example/controller/smoke/SmokeController.kt",
                     ),
                 ),
-                // A template set (`api.Endpoint`, declared inside the api group): a Controller
+                // A template set (`Api.Endpoint`, declared inside the Api group): a Controller
                 // and a Service in one run. `resource` fills the Controller's capture as it is and
                 // the Service's `name` capitalised, so the two files are named after one value.
                 SampleTemplateRun(
-                    args = listOf("template=api.Endpoint", "resource=setsmoke"),
+                    args = listOf("template=Api.Endpoint", "resource=setsmoke"),
                     generatedFiles = listOf(
                         "src/main/kotlin/com/example/controller/setsmoke/SetsmokeController.kt",
                         "src/main/kotlin/com/example/service/SetsmokeService.kt",
@@ -375,7 +375,7 @@ val sampleBuilds = listOf(
                 // directory: one value picks the module and its package. `name` is the whole file name.
                 SampleTemplateRun(
                     args = listOf(
-                        "template=feature.FeatureComponent",
+                        "template=Feature.FeatureComponent",
                         "feature=home",
                         "name=HomeKatachiSmoke",
                     ),
@@ -385,7 +385,7 @@ val sampleBuilds = listOf(
                 ),
                 SampleTemplateRun(
                     args = listOf(
-                        "template=feature.FeatureComponent",
+                        "template=Feature.FeatureComponent",
                         "feature=settings",
                         "name=SettingsKatachiSmoke",
                         "withPreview=false",
@@ -397,23 +397,23 @@ val sampleBuilds = listOf(
                 ),
                 // FeatureTest has one id per module (`home` / `settings`), not a `screen` parameter.
                 SampleTemplateRun(
-                    args = listOf("template=feature.FeatureTest.home", "name=KatachiSmoke"),
+                    args = listOf("template=Feature.FeatureTest.home", "name=KatachiSmoke"),
                     generatedFiles = listOf(
                         "feature/home/src/test/kotlin/com/example/sample/feature/home/HomeKatachiSmokeTest.kt",
                     ),
                 ),
                 SampleTemplateRun(
-                    args = listOf("template=feature.FeatureTest.settings", "name=KatachiSmoke"),
+                    args = listOf("template=Feature.FeatureTest.settings", "name=KatachiSmoke"),
                     generatedFiles = listOf(
                         "feature/settings/src/test/kotlin/com/example/sample/feature/settings/" +
                                 "SettingsKatachiSmokeTest.kt",
                     ),
                 ),
-                // A template set (`feature.NewFeature`): a feature's Route, Screen, ViewModel and one screen part
+                // A template set (`Feature.NewFeature`): a feature's Route, Screen, ViewModel and one screen part
                 // from one `--arg feature=`. The module's build.gradle.kts and its `include` are not generated,
                 // so the files are checked by the architecture test but not compiled here.
                 SampleTemplateRun(
-                    args = listOf("template=feature.NewFeature", "feature=setsmoke"),
+                    args = listOf("template=Feature.NewFeature", "feature=setsmoke"),
                     generatedFiles = listOf(
                         "feature/setsmoke/src/main/kotlin/com/example/sample/feature/setsmoke/SetsmokeRoute.kt",
                         "feature/setsmoke/src/main/kotlin/com/example/sample/feature/setsmoke/SetsmokeScreen.kt",
@@ -422,11 +422,11 @@ val sampleBuilds = listOf(
                                 "SetsmokeHeader.kt",
                     ),
                 ),
-                // The interface and the implementation are two roles (`data.RepositoryInterface.user` /
-                // `data.RepositoryImplementation.user`), generated together in one `--arg template=a,b`.
+                // The interface and the implementation are two roles (`Data.RepositoryInterface.user` /
+                // `Data.RepositoryImplementation.user`), generated together in one `--arg template=a,b`.
                 SampleTemplateRun(
                     args = listOf(
-                        "template=data.RepositoryInterface.user,data.RepositoryImplementation.user",
+                        "template=Data.RepositoryInterface.user,Data.RepositoryImplementation.user",
                         "name=KatachiSmoke",
                     ),
                     generatedFiles = listOf(
@@ -437,16 +437,16 @@ val sampleBuilds = listOf(
                 // After Repository: the fake implements the interface that run generated.
                 // `repository` is that interface's own name (folded from the old `domain` + `name`).
                 SampleTemplateRun(
-                    args = listOf("template=testing.Fake", "repository=UserKatachiSmokeRepository"),
+                    args = listOf("template=Testing.Fake", "repository=UserKatachiSmokeRepository"),
                     generatedFiles = listOf(
                         "testing/src/main/kotlin/com/example/sample/testing/FakeUserKatachiSmokeRepository.kt",
                     ),
                 ),
-                // A template set (`data.NewRepository`): the interface, the implementation and the fake
+                // A template set (`Data.NewRepository`): the interface, the implementation and the fake
                 // from the run above, in one `--arg template=`. The fake's `repository` is built from
                 // `name` by the set itself, so one `name` is all the run is given.
                 SampleTemplateRun(
-                    args = listOf("template=data.NewRepository", "name=SetSmoke"),
+                    args = listOf("template=Data.NewRepository", "name=SetSmoke"),
                     generatedFiles = listOf(
                         "data/src/main/kotlin/com/example/sample/data/user/UserSetSmokeRepository.kt",
                         "data/src/main/kotlin/com/example/sample/data/user/UserSetSmokeRepositoryImpl.kt",
@@ -499,11 +499,11 @@ val sampleBuilds = listOf(
         template = SampleTemplate(
             runs = listOf(
                 // The interface and the implementation are two roles
-                // (`data.RepositoryInterface` / `data.RepositoryImplementation`), generated in one
+                // (`Data.RepositoryInterface` / `Data.RepositoryImplementation`), generated in one
                 // `--arg template=a,b`.
                 SampleTemplateRun(
                     args = listOf(
-                        "template=data.RepositoryInterface,data.RepositoryImplementation",
+                        "template=Data.RepositoryInterface,Data.RepositoryImplementation",
                         "name=KatachiSmoke",
                     ),
                     generatedFiles = listOf(
@@ -515,7 +515,7 @@ val sampleBuilds = listOf(
                 // directory: one value picks the module and its package. `name` is the whole file name.
                 SampleTemplateRun(
                     args = listOf(
-                        "template=feature.FeatureComponent",
+                        "template=Feature.FeatureComponent",
                         "feature=home",
                         "name=HomeKatachiSmoke",
                     ),
@@ -523,10 +523,10 @@ val sampleBuilds = listOf(
                         "feature/home/src/commonMain/kotlin/com/example/kmp/feature/home/component/HomeKatachiSmoke.kt",
                     ),
                 ),
-                // A template set (`data.NewRepository`): the same two roles as the first run, as one
+                // A template set (`Data.NewRepository`): the same two roles as the first run, as one
                 // name instead of a comma-separated list.
                 SampleTemplateRun(
-                    args = listOf("template=data.NewRepository", "name=SetSmoke"),
+                    args = listOf("template=Data.NewRepository", "name=SetSmoke"),
                     generatedFiles = listOf(
                         "data/src/commonMain/kotlin/com/example/kmp/data/user/SetSmokeRepository.kt",
                         "data/src/commonMain/kotlin/com/example/kmp/data/user/SetSmokeRepositoryImpl.kt",
@@ -552,7 +552,7 @@ val sampleBuilds = listOf(
             "katachiRoleFileCount",
             "katachiRoleTable",
             "--arg",
-            "groups=core,testing",
+            "groups=Core,Testing",
             "--arg",
             "sortBy=Declaration",
             "katachiRoleDocCoverage",

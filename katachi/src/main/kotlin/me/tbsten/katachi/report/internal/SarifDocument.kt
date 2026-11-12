@@ -1,7 +1,6 @@
 package me.tbsten.katachi.report.internal
 
 import me.tbsten.katachi.check.AmbiguousLayout
-import me.tbsten.katachi.check.MissingDescription
 import me.tbsten.katachi.check.MissingFile
 import me.tbsten.katachi.check.Severity
 import me.tbsten.katachi.check.StaleBaselineEntry
@@ -9,6 +8,7 @@ import me.tbsten.katachi.check.UncheckedCheck
 import me.tbsten.katachi.check.UncheckedFileConstraint
 import me.tbsten.katachi.check.UnsatisfiedFileConstraint
 import me.tbsten.katachi.check.Violation
+import me.tbsten.katachi.check.internal.MissingDescription
 import me.tbsten.katachi.check.internal.STEP
 import me.tbsten.katachi.check.internal.blockOf
 import me.tbsten.katachi.check.internal.reportedDeclaredAt

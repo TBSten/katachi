@@ -98,7 +98,7 @@ class GutterSmokeTest {
                 "allowed by ${facts.allowedDeclaration}" in bridge.describeGutter(service)
             }
             val gutter = bridge.describeGutter(service).lines()
-            assertTrue("mark=6|menu|HealthService|katachi: domain.Service — allowed by ${facts.allowedDeclaration} (ServiceRole.kt:${facts.allowedLine})" in gutter, gutter.toString())
+            assertTrue("mark=6|menu|HealthService|katachi: Domain.Service — allowed by ${facts.allowedDeclaration} (ServiceRole.kt:${facts.allowedLine})" in gutter, gutter.toString())
             assertEquals(1, gutter.count { it.startsWith("mark=") }, gutter.toString())
 
             // 2. The menu: the other files of the role, the template for the next file, and the way to the rule.
@@ -108,10 +108,10 @@ class GutterSmokeTest {
             Thread.sleep(10_000)
             println("screenshot " + bridge.screenshotFrame(shots.resolve("1b-service-gutter-10s-later.png").toString()))
             val menu = bridge.clickGutter(service, 6).lines()
-            assertEquals("menu=HealthService — domain.Service", menu.first())
+            assertEquals("menu=HealthService — Domain.Service", menu.first())
             assertTrue("item=◆ Allowed by ${facts.allowedDeclaration}|ServiceRole.kt:${facts.allowedLine}|enabled" in menu, menu.toString())
             assertTrue(menu.any { it.startsWith("item=LegacyStatusService.kt|") }, menu.toString())
-            assertTrue(menu.any { it.startsWith("item=+ New domain.Service from template") || it.startsWith("submenu=+ New domain.Service from template") }, menu.toString())
+            assertTrue(menu.any { it.startsWith("item=+ New Domain.Service from template") || it.startsWith("submenu=+ New Domain.Service from template") }, menu.toString())
             assertTrue("item=⟳ Reload Definition||enabled" in menu, menu.toString())
 
             // 3. Choosing the allowed-by row opens the line of ServiceRole.kt that allowed the declaration.
@@ -123,7 +123,7 @@ class GutterSmokeTest {
             // 4. A file the gutter drew for stays drawn in another file of the role, and the check's violation underlines the planted class.
             openFile("$SERVICE_DIR/ProbeService.kt", waitForCodeAnalysis = false)
             waitFor("the ◆ on ProbeService", timeout = 2.minutes, interval = 2.seconds, errorMessage = { bridge.describeGutter(probePath) }) {
-                "katachi: domain.Service" in bridge.describeGutter(probePath)
+                "katachi: Domain.Service" in bridge.describeGutter(probePath)
             }
             // Run from the ◆ of the file on screen: the platform ignores an action whose editor is not showing (HealthService.kt's tab is behind).
             val chosen = bridge.chooseFromGutter(probePath, 3, "▶ Run the check")

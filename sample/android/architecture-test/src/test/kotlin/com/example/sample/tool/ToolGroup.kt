@@ -4,7 +4,7 @@ import com.example.sample.tool.documentation
 import com.example.sample.tool.git
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-fun DeclarationContainerScope.toolGroup() = "tool".group {
+fun DeclarationContainerScope.toolGroup() = "Tool".group {
     documented = false
     title = "Tools"
     summary = "Tools the repository carries that are neither the app nor the build"

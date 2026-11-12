@@ -22,7 +22,7 @@ Check the new version's requirements in its release notes (the Kotlin version ka
 
 - **A compile error in the definition**: an API changed. Find the replacement in the release notes or the API reference (https://tbsten.github.io/katachi/api-docs/llms.txt); do not guess from a similar name.
 - **New violations with no change to the project**: a newer katachi checks something it did not before, or reads a layout differently. Read what the release notes say about it. Fix the definition when the project is right; when the project is wrong, list it for the user ([../fix-violations/README.md](../fix-violations/README.md)).
-- **Warnings that are new** (`[AmbiguousLayout]`, `[MissingDescription]`) do not fail the check, but say what they found; fix them or tell the user.
+- **Warnings that are new** (`[AmbiguousLayout]` and the like) do not fail the check, but say what they found; fix them or tell the user.
 
 If the project commits the generated documentation, regenerate it (`./gradlew :architecture-test:katachiDocs`): the output can change between versions.
 

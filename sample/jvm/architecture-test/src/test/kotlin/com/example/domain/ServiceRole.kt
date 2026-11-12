@@ -44,7 +44,7 @@ fun DeclarationContainerScope.service() = "Service".role {
         - The definition of a value itself. A data class is the model's role
     """.trimIndent()
     example("HealthService", "Getting the server running status")
-    // ./gradlew :architecture-test:katachiTemplate --arg template=domain.Service --arg name=User
+    // ./gradlew :architecture-test:katachiTemplate --arg template=Domain.Service --arg name=User
     layout {
         mainSourceSet / kotlin / "com/example/service" /
             "${capture("name")}Service".ktFile()

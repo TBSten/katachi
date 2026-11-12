@@ -28,7 +28,7 @@ fun DeclarationContainerScope.featureComponent() = "FeatureComponent".role {
         another feature.
 
         Can be generated from a template. The module directory and its package directory are
-        both named `feature`, so `--arg template=feature.FeatureComponent --arg feature=home
+        both named `feature`, so `--arg template=Feature.FeatureComponent --arg feature=home
         --arg name=HomeUserCard` puts `HomeUserCard.kt` into `:feature:home`, and the check
         holds the two directories to the same name. `name` is the whole file name, including
         the module's name; the check does not tie the file name to the module.
@@ -46,7 +46,7 @@ fun DeclarationContainerScope.featureComponent() = "FeatureComponent".role {
     // both directories. A `feature` that is not a module is not refused; the directory is
     // created as given.
     //   ./gradlew :architecture-test:katachiTemplate \
-    //       --arg template=feature.FeatureComponent --arg feature=home --arg name=HomeUserCard
+    //       --arg template=Feature.FeatureComponent --arg feature=home --arg name=HomeUserCard
     layout {
         featureSources(capture("feature")) / "component" / capture("name").ktFile()
                 .template {

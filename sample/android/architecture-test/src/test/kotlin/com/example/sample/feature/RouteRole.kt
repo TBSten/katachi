@@ -40,8 +40,8 @@ fun DeclarationContainerScope.route() = "Route".role {
     example("HomeRoute", "The destination of the home screen")
     example("SettingsRoute", "The destination of the settings screen")
     // A new feature's Route, from the feature's name alone. Usually generated with its Screen and
-    // ViewModel as the set `feature.NewFeature`; the callback it registers is `onNavigateUp`.
-    //   ./gradlew :architecture-test:katachiTemplate --arg template=feature.Route --arg feature=profile
+    // ViewModel as the set `Feature.NewFeature`; the callback it registers is `onNavigateUp`.
+    //   ./gradlew :architecture-test:katachiTemplate --arg template=Feature.Route --arg feature=profile
     layout {
         // `feature` is the module directory and the package directory alike, and the file name
         // follows it: feature/home/.../home/HomeRoute.kt, and nothing else named *Route.kt there.

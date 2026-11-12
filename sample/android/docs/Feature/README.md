@@ -1,0 +1,63 @@
+[katachi-sample-android](../README.md)
+
+# Structure of each screen
+
+A module per screen. Each :feature:<name> holds one Screen / ViewModel / Route, and grows with screen parts and tests
+
+The contents of a module that holds one screen, such as `:feature:home` or
+`:feature:settings`. Every module has one `<Name>Screen.kt`, `<Name>ViewModel.kt` and
+`<Name>Route.kt`, named after the module. A new screen
+means a new module, so a feature never holds a second screen.
+
+It is split into three because they change for different reasons. The Screen is the
+look, the ViewModel is the state, and the Route is the seam to the outside; of these,
+only the Route is referenced from outside the feature. `:app` knows only the Route, and
+the Screen and ViewModel stay inside the module.
+
+The shared layers (`:ui` and `:navigation`) are not in this group because they grow
+differently. A feature is a place where adding is the norm, so it is written as
+the directory `"feature" / "*"`: a new feature module comes under the check without touching
+this definition. Adding to a shared layer is a design
+decision every time, and that lives in the UI (shared layer) group.
+
+Features do not depend on each other. Even when navigating to another screen, the
+destination is decided on the `:app` side, and the feature only receives one callback.
+The connection exists in a single place in `:app`, so removing a feature does not
+require re-reading the others.
+
+Screen parts and tests multiply inside one feature. Both start their file names with
+the module name (`HomeUserCard.kt`, `HomeViewModelTest.kt`) and can be generated from
+templates. A screen part is placed by one directory capture, `feature`, written on both
+the module directory and its package directory, so `--arg feature=home` picks the module
+to generate into, the check holds the two directories to the same name, and adding a
+feature does not touch this definition. Only tests name each module one by one, because
+the template content differs per screen; when adding a feature, add one line to
+`FeatureModule` too.
+
+A new feature's Route, Screen and ViewModel, with one screen part, can be generated as one
+set, `Feature.NewFeature`, from one `--arg feature=`. The module's `build.gradle.kts` and
+its `include(":feature:<name>")` in `settings.gradle.kts` are not generated: add them by
+hand, after the other features' includes. To show the screen, `:app` also needs
+`implementation(project(":feature:<name>"))` and the one line `<name>Screen(...)` in its
+NavHost, the one line the Route role says `:app` grows by.
+
+| Role | Summary |
+|---|---|
+| [Screen](./Screen.md) | A @Composable that implements the UI of one screen. One <Name>Screen.kt per :feature:<name> |
+| [ViewModel](./ViewModel.md) | An androidx.lifecycle.ViewModel that exposes screen state as a StateFlow and receives events |
+| [Route](./Route.md) | The destination of a screen. The only entrance a feature exposes to the outside |
+| [Screen part](./FeatureComponent.md) | A @Composable used by only one screen. Placed as <Name>*.kt in the component package of :feature:<name> |
+| [Screen test](./FeatureTest.md) | A test in src/test of :feature:<name> that runs the ViewModel with fakes from :testing |
+
+## Placement in this group
+
+```
+feature/
+  */src/main/kotlin/com/example/sample/feature/*/
+    *Screen.kt                                                                   Screen
+    *ViewModel.kt                                                                ViewModel
+    *Route.kt                                                                    Route
+    component/*.kt                                                               Screen part
+  home/src/test/kotlin/com/example/sample/feature/home/Home*Test.kt              Screen test
+  settings/src/test/kotlin/com/example/sample/feature/settings/Settings*Test.kt  Screen test
+```

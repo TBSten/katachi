@@ -29,7 +29,7 @@ fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation
 
         It is `documented = true`. If a generated role did not show in the list, nothing would
         say what this `docs/` is. The page of this role itself
-        (`docs/testing/GeneratedDocumentation.md`) is generated too.
+        (`docs/Testing/GeneratedDocumentation.md`) is generated too.
 
         `**` in `layout { }` matches zero or more levels, so the index `docs/README.md`,
         `docs/<group>/README.md` and `docs/<group>/<role>.md` are all covered by one line. That
@@ -44,8 +44,8 @@ fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation
           image starts with rewriting the role
     """.trimIndent()
     example("docs/README.md", "The index of all pages and the list per group")
-    example("docs/ui/Component.md", "The page of one role")
-    example("docs/ui/README.md", "The page of one group")
+    example("docs/Ui/Component.md", "The page of one role")
+    example("docs/Ui/README.md", "The page of one group")
     layout {
         "docs" {
             // The index, written on every run, so it is the one entry without a wildcard --

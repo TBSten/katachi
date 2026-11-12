@@ -2,14 +2,14 @@ package me.tbsten.katachi.docs.internal
 
 import java.io.File
 import java.io.IOException
+import java.nio.file.Files
 import me.tbsten.katachi.docs.KatachiDocumentIoException
 import me.tbsten.katachi.internal.absolutePathOf
 import me.tbsten.katachi.internal.displayExistingPath
 
 // Removes pages in outputRoot that this run did not produce: the directory must belong to katachi alone.
 internal fun writeDocuments(outputRoot: File, pages: Map<String, String>, log: (String) -> Unit) {
-    val generated = pages.keys.mapTo(mutableSetOf()) { it.lowercase() }
-    for (stale in existingPagesOf(outputRoot).filterNot { it.lowercase() in generated }) {
+    for (stale in stalePagesOf(outputRoot, pages.keys)) {
         val file = File(outputRoot, stale)
         catchingIo(stale, outputRoot) { if (!file.delete()) throw IOException("delete returned false") }
         log("Removed ${displayExistingPath(absolutePathOf(outputRoot.path), stale)}, which this definition no longer produces.")
@@ -39,11 +39,10 @@ internal fun compareDocuments(outputRoot: File, pages: Map<String, String>): Doc
             catchingIo(path, outputRoot) { file.readText() } != content -> different += path
         }
     }
-    val generated = pages.keys.mapTo(mutableSetOf()) { it.lowercase() }
     return DocumentDifference(
         missing = missing,
         different = different,
-        extra = existingPagesOf(outputRoot).filterNot { it.lowercase() in generated },
+        extra = stalePagesOf(outputRoot, pages.keys),
     )
 }
 
@@ -53,6 +52,26 @@ internal class DocumentDifference(
     val extra: List<String>,
 ) {
     val isUpToDate: Boolean get() = missing.isEmpty() && different.isEmpty() && extra.isEmpty()
+}
+
+// A page on disk whose path differs from a generated one only in case is that same page on a case
+// insensitive file system, and what a renamed group or role left behind on a case sensitive one.
+// Only the file system can tell the two apart.
+private fun stalePagesOf(outputRoot: File, generated: Set<String>): List<String> {
+    val generatedByLowercase = generated.associateBy { it.lowercase() }
+    return existingPagesOf(outputRoot).filterNot { existing ->
+        val counterpart = generatedByLowercase[existing.lowercase()] ?: return@filterNot false
+        counterpart == existing || isSameFile(outputRoot, existing, counterpart)
+    }
+}
+
+private fun isSameFile(outputRoot: File, existing: String, generated: String): Boolean {
+    val generatedFile = File(outputRoot, generated)
+    // Files.isSameFile throws for a path that names nothing.
+    if (!generatedFile.exists()) return false
+    return catchingIo(existing, outputRoot) {
+        Files.isSameFile(File(outputRoot, existing).toPath(), generatedFile.toPath())
+    }
 }
 
 private fun existingPagesOf(outputRoot: File): List<String> {

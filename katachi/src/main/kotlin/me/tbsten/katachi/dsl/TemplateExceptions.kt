@@ -24,7 +24,7 @@ import me.tbsten.katachi.KatachiDeclarationException
  *                 }
  *             }
  *         }
- *     }.flattenLayout()
+ *     }.validate(fakeFileSystem)
  * }
  * thrown.role shouldBe "domain.UseCase"
  * ```
@@ -77,7 +77,7 @@ public class KatachiDuplicateTemplateException internal constructor(
  *                 }
  *             }
  *         }
- *     }.flattenLayout()
+ *     }.validate(fakeFileSystem)
  * }
  * thrown.id shouldBe "repository"
  * ```
@@ -129,7 +129,7 @@ public class KatachiDuplicateTemplateIdException internal constructor(
  *                 }
  *             }
  *         }
- *     }.flattenLayout()
+ *     }.validate(fakeFileSystem)
  * }
  * thrown.role shouldBe "data.Repository"
  * ```
@@ -179,7 +179,7 @@ public class KatachiMissingTemplateIdException internal constructor(
  *                 }
  *             }
  *         }
- *     }.flattenLayout()
+ *     }.validate(fakeFileSystem)
  * }
  * thrown.role shouldBe "data.Repository"
  * ```

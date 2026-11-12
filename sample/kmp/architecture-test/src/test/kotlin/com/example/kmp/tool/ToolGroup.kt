@@ -4,7 +4,7 @@ import com.example.kmp.tool.documentation
 import com.example.kmp.tool.git
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-fun DeclarationContainerScope.toolGroup() = "tool".group {
+fun DeclarationContainerScope.toolGroup() = "Tool".group {
     documented = false
     title = "Tool"
     summary = "Files that belong to the tooling around the project, not to the build"

@@ -2,7 +2,6 @@ package me.tbsten.katachi.report.internal
 
 import me.tbsten.katachi.check.AmbiguousLayout
 import me.tbsten.katachi.check.CaptureMismatch
-import me.tbsten.katachi.check.MissingDescription
 import me.tbsten.katachi.check.MissingFile
 import me.tbsten.katachi.check.Severity
 import me.tbsten.katachi.check.StaleBaselineEntry
@@ -14,6 +13,7 @@ import me.tbsten.katachi.check.UnexpectedDirectory
 import me.tbsten.katachi.check.UnexpectedFile
 import me.tbsten.katachi.check.UnsatisfiedFileConstraint
 import me.tbsten.katachi.check.Violation
+import me.tbsten.katachi.check.internal.MissingDescription
 
 internal class SarifRule(
     val id: String,

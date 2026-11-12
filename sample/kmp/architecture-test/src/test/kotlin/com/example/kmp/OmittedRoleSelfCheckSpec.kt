@@ -25,7 +25,7 @@ import me.tbsten.katachi.dsl.architecture
 @OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
 class OmittedRoleSelfCheckSpec : FreeSpec({
     "dropping a role makes the files only that role covered Unexpected" {
-        // `tool` owns exactly two files, both at the root -- `.gitignore` and `README.md` --
+        // `Tool` owns exactly two files, both at the root -- `.gitignore` and `README.md` --
         // and no other role claims either, so leaving `toolGroup()` out removes exactly those
         // two homes and the expectation can be written out in full.
         val withoutTool = architecture {
@@ -47,7 +47,7 @@ class OmittedRoleSelfCheckSpec : FreeSpec({
     }
 
     "an unknown directory is reported once and its contents are not descended into" {
-        // The `data` group is what claims everything under `data/src`. Without it that
+        // The `Data` group is what claims everything under `data/src`. Without it that
         // directory has no role, and the six files below it are *not* reported one by one:
         // the one directory that has to be explained is, and the walk stops there.
         //
@@ -73,7 +73,7 @@ class OmittedRoleSelfCheckSpec : FreeSpec({
         // is offered the three roles declared in the directory it sits in, in declaration
         // order; FeatureComponent, one level below, is fourth and therefore not shown.
         val withoutScreen = architecture {
-            "feature".group {
+            "Feature".group {
                 // screen() -- omitted on purpose. `HomeScreen.kt` and `SettingsScreen.kt` lose their role.
                 viewModel()
                 route()
@@ -93,9 +93,9 @@ class OmittedRoleSelfCheckSpec : FreeSpec({
             .single { it.path == "$HOME_SOURCES/HomeScreen.kt" }
 
         unexpected.nearby.map { Triple(it.role.qualifiedName, it.directory, it.filePattern) } shouldBe listOf(
-            Triple("feature.ViewModel", HOME_SOURCES, "*ViewModel.kt"),
-            Triple("feature.Route", HOME_SOURCES, "*Route.kt"),
-            Triple("feature.ScreenPreview", HOME_SOURCES, "*Preview.kt"),
+            Triple("Feature.ViewModel", HOME_SOURCES, "*ViewModel.kt"),
+            Triple("Feature.Route", HOME_SOURCES, "*Route.kt"),
+            Triple("Feature.ScreenPreview", HOME_SOURCES, "*Preview.kt"),
         )
     }
 })

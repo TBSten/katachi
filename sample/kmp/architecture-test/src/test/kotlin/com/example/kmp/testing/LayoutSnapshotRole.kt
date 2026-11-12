@@ -35,7 +35,7 @@ fun DeclarationContainerScope.layoutSnapshot() = "LayoutSnapshot".role {
         `documented` is not written (the default `true`). Nothing else explains what this
         `snapshots/` is, and leaving it out of the list would leave one `.txt` whose origin a
         reader of the repository cannot tell. The page of this role itself
-        (`docs/testing/LayoutSnapshot.md`) is generated too.
+        (`docs/Testing/LayoutSnapshot.md`) is generated too.
     """.trimIndent()
     forbiddenContents = """
         - Handwritten notes. The next `-Dkatachi.snapshot.update=true` overwrites everything

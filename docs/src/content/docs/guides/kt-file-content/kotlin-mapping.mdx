@@ -139,7 +139,7 @@ You write the same lines at the top level of a file and inside the `{ }` of a cl
       ```kt
       allow(`typealias`, "*Handler")
       // Specify the right-hand type too
-      allow(`typealias`, "*Handler", "(*) -> Unit")
+      allow(`typealias`, "*Handler").type("(*) -> Unit")
       // Nested typealias, Kotlin 2.2 and later
       allow(`class`, "Screen") { allow(`typealias`, "State") }
       ```

@@ -2,7 +2,7 @@ package me.tbsten.katachi.test.architecture.ideplugin
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-fun DeclarationContainerScope.idePluginGroup() = "ide-plugin".group {
+fun DeclarationContainerScope.idePluginGroup() = "IdePlugin".group {
     title = "IDE プラグイン"
     description = """
         `sample/` のように `ignore()` せず、中身を宣言しています。

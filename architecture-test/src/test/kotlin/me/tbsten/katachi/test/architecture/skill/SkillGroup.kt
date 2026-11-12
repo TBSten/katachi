@@ -2,7 +2,7 @@ package me.tbsten.katachi.test.architecture.skill
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-fun DeclarationContainerScope.skillGroup() = "skill".group {
+fun DeclarationContainerScope.skillGroup() = "Skill".group {
     title = "katachi skill"
     description = """
         利用者が `gh skill install TBSten/katachi katachi` で入れる Agent Skill。導入の手順書・定義の追加と更新・違反の直し方を持ちます。

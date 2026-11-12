@@ -5,7 +5,7 @@ import com.example.domain.service
 import com.example.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-fun DeclarationContainerScope.domainGroup() = "domain".group {
+fun DeclarationContainerScope.domainGroup() = "Domain".group {
     title = "Domain"
     summary = "The application-specific behaviour, and the values it acts on"
 

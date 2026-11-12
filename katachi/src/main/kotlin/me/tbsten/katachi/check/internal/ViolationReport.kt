@@ -297,17 +297,26 @@ private fun occurrenceText(occurrence: CaptureOccurrence, from: String = ""): St
     return "\"${occurrence.value}\" at level ${occurrence.level + 1}$held"
 }
 
-private fun missingFileBlock(violation: MissingFile, root: String?): List<String> = listOf(
-    "[${violation.label}] ${displayPath(root, violation.path)}",
+private fun missingFileBlock(violation: MissingFile, root: String?): List<String> = buildList {
+    add("[${violation.label}] ${displayPath(root, violation.path)}")
     // Neutral on purpose: a new module fails this way once, whichever of the declaration and
     // the file is written first, and being told the definition is wrong would be misleading.
-    "${STEP}No file has been created yet for role ${violation.role.qualifiedName}.",
-    "${STEP}Declared at: ${violation.declaredAt}",
-    "",
-    "${STEP}How to fix:",
-    "$STEP$STEP- If it is not implemented yet, this error is expected",
-    "$STEP$STEP- If it is no longer needed, remove the declaration at ${violation.declaredAt}",
-)
+    add("${STEP}No file has been created yet for role ${violation.role.qualifiedName}.")
+    add("${STEP}Declared at: ${violation.declaredAt}")
+    add("")
+    add("${STEP}How to fix:")
+    if (GRADLE_WRAPPER_ROLE.containsMatchIn(violation.role.qualifiedName)) {
+        // The declaration is the gradle() line itself, so "remove it" would drop every Gradle role.
+        add("$STEP$STEP- Run `gradle wrapper` to write the wrapper files, and commit all of them")
+        add("$STEP$STEP- If the build has no wrapper, or only part of one, write gradle(requireWrapper = false) at ${violation.declaredAt}")
+    } else {
+        add("$STEP$STEP- If it is not implemented yet, this error is expected")
+        add("$STEP$STEP- If it is no longer needed, remove the declaration at ${violation.declaredAt}")
+    }
+}
+
+/** The roles `gradle()` declares for the four wrapper files, wherever `gradle()` is written. */
+private val GRADLE_WRAPPER_ROLE = Regex("""(^|\.)Gradle\.GradleWrapper\.""")
 
 private fun uncheckedFileBlock(violation: UncheckedFile, root: String?): List<String> = listOf(
     "[${violation.label}] ${displayExistingPath(root, violation.path)}",

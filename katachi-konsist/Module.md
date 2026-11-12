@@ -14,5 +14,5 @@ a role's `layout { }` covers.
 `ktFileContent { }`: what a role's Kotlin files may hold -- their package, their imports, the
 declarations directly in them and the members of their classes -- written in the order and shape
 of a Kotlin file, as an allow list. Only the kinds a line is written for are checked. Checked by
-`FileConstraintCheck()`, like `konsist { }`, and experimental (`@ExperimentalKatachiApi`) while
-katachi is at v0.3.
+`FileConstraintCheck()`, like `konsist { }`. Experimental (`@ExperimentalKatachiApi`): its shape
+can still change between releases.

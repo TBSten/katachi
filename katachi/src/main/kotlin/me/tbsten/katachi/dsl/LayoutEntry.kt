@@ -47,11 +47,11 @@ public enum class LayoutEntryKind {
  * One line of the flattened layout: a path pattern, and the role that claims it.
  *
  * Every role's `layout { }` is flattened into these entries, and a processor reads them through
- * [me.tbsten.katachi.processor.ArchitectureProcessContext.declaredEntries].
+ * [ArchitectureProcessContext.declaredEntries][me.tbsten.katachi.processor.ArchitectureProcessContext.declaredEntries].
  *
  * It says what was *declared*, not what exists: an entry is here whether or not a file sits
  * at its path. What exists is
- * [me.tbsten.katachi.processor.ArchitectureProcessContext.filesOf]'s answer instead.
+ * [ArchitectureProcessContext.filesOf][me.tbsten.katachi.processor.ArchitectureProcessContext.filesOf]'s answer instead.
  *
  * ## Example 1: render the declared layout as text
  * ```kt

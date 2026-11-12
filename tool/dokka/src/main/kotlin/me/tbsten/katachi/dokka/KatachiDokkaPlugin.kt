@@ -4,6 +4,7 @@ import me.tbsten.katachi.dokka.featured.AllModulesPageFeaturedInstaller
 import me.tbsten.katachi.dokka.featured.FeaturedTagTransformer
 import me.tbsten.katachi.dokka.featured.ModulePageFeaturedTransformer
 import me.tbsten.katachi.dokka.internal.fragment.ModuleFragmentInstaller
+import me.tbsten.katachi.dokka.internal.page.CodeSpanPageTransformer
 import me.tbsten.katachi.dokka.internal.fragment.ModuleFragmentRegistry
 import me.tbsten.katachi.dokka.internal.fragment.ModuleFragmentStrategy
 import me.tbsten.katachi.dokka.llms.LlmsIndexInstaller
@@ -31,6 +32,8 @@ import org.jetbrains.dokka.templates.TemplatingPlugin
  *   which is what the llms files link to.
  * - **Package tree**: the sidebar nests the packages of a module by the `.`-separated segments of
  *   their names (`com.example > data > local`) instead of listing their full names.
+ * - **Code spans**: inline code written with a doubled delimiter, as it has to be to hold a
+ *   backtick, is shown as it was written instead of with the rest of its delimiter.
  *
  * Every link comes with a short summary: the text after an `@llm` tag, else the first sentence or
  * two of the KDoc. Neither `@featured` nor `@llm` is shown on the HTML pages.
@@ -88,6 +91,12 @@ public class KatachiDokkaPlugin : DokkaPlugin() {
 
     internal val modulePageFeaturedTransformer by extending {
         CoreExtensions.pageTransformer providing ::ModulePageFeaturedTransformer
+    }
+
+    internal val codeSpanPageTransformer by extending {
+        CoreExtensions.pageTransformer providing { CodeSpanPageTransformer() } order {
+            after(modulePageFeaturedTransformer)
+        }
     }
 
     internal val allModulesPageFeaturedInstaller by extending {

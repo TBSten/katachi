@@ -9,7 +9,7 @@ import com.example.kmp.app.xcodeProject
 import com.example.kmp.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-fun DeclarationContainerScope.appGroup() = "app".group {
+fun DeclarationContainerScope.appGroup() = "App".group {
     title = "App"
     summary = "The Android app that Gradle builds and the iOS app that Xcode builds"
     description = """

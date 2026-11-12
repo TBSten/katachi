@@ -656,6 +656,8 @@ processor の summary・layout の無い Role、diff-report の Role、README.ja
 
 AGENTS（docs サイトの決まり）を skill に広げない。skill の小文字 group・4 スペースの例・`feature.ui` などを、AGENTS の決まりを根拠に指摘しない。
 
+2026-11-12 261112-01 KATACHI-368 で見直した（#81 で skill 自身が「Role と group は UpperCamelCase」を決まりにし、skill の中の小文字 group は無くなった）。利用者「あくまで katachi 本体とサンプル、他プロジェクトでは推奨という立ち位置のルールなので skill とかでは強制はしなくていい」。判断はこのまま。skill（とそれを使う利用者のプロジェクト）では推奨の扱いで、指摘しない。katachi 本体とサンプルは守る側。
+
 ## このまま: ガイド同士の食い違い（E5・E7・E9・E10・E15・E17）
 - decision: このまま
 - file: ja/**
@@ -2006,3 +2008,26 @@ priority 1〜3 のルールの側の食い違い。どれもルールも例も�
 
 **ルールに反する点**: B30（生成物の Role には `documented = false` を付ける。推奨）。同じ例に D2-2（断片の例で package / import を省いたと書く）も
 **直し方の案**: `description = …` の次に `documented = false` を足す。例の前に「package / import の行は省略」と一言添える
+
+## このまま: ドキュメント生成の出力先を build/ の外にしてコミットすると [UnexpectedFile] になる
+- decision: このまま
+- file: docs/src/content/docs/ja/guides/document-generation.mdx
+- quote: outputDir
+- decided: 2026-11-12 261112-01 KATACHI-368
+- by: 利用者（スレッド）
+
+利用者の一言: 「これは前々から許容してた」
+
+元の指摘: 生成したページを build/ の外に出してコミットすると、それを宣言する Role が無いので検査が [UnexpectedFile] で落ちる。Role を宣言するまでは落ちるのが既定の挙動として受け入れ済み。
+
+## 後で: ドキュメント生成の出力先にある、katachi が作っていない *.md を消す
+- decision: 後で
+- file: katachi/src/main/kotlin/me/tbsten/katachi/docs/internal/DocumentFiles.kt
+- quote: the directory must belong to katachi alone
+- decided: 2026-11-12 261112-01 KATACHI-368
+- by: 利用者（スレッド）
+- revisit: KATACHI-370（katachi が作っていない .md を黙って消さない）に手を付けたとき。v0.4 では対応しない
+
+利用者の一言: 「v0.4 では対応しないけど後々改善したいので、時期みていチケット切っといて」
+
+元の指摘: 出力先を「katachi 専用」として扱い、書き出すたびに今回作らなかった *.md を消す（v0.2.0 からの挙動）。手書きの docs/ を出力先にすると docs/guide.md なども消える。ログに Removed … は出るが止まらない。

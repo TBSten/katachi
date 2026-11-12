@@ -2,7 +2,7 @@ package me.tbsten.katachi.test.architecture.tool
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-fun DeclarationContainerScope.toolGroup() = "tool".group {
+fun DeclarationContainerScope.toolGroup() = "Tool".group {
     documented = false
     title = "ツール設定"
 

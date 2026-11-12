@@ -17,7 +17,7 @@ import com.example.kmp.testing.roleDefinition
 import com.example.kmp.testing.test
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-fun DeclarationContainerScope.testingGroup() = "testing".group {
+fun DeclarationContainerScope.testingGroup() = "Testing".group {
     title = "Testing support"
     summary = "Test doubles, the test code itself, the katachi architecture definition, the documents and snapshot written from it, and the ledger of shelved violations"
     description = """

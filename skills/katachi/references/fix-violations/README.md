@@ -28,13 +28,12 @@ Each violation is a paragraph like this:
 | Label | What it says | Usually |
 |---|---|---|
 | `[UnexpectedFile]` / `[UnexpectedDirectory]` | A file or directory no Role declares (for a directory, nothing below it was checked) | A new kind of file (add a Role), a file in the wrong place (move it), or a structure that changed (follow it) |
-| `[MissingFile]` | A Role declares a single file that does not exist | The file was removed or renamed; drop or fix the declaration, or create the file if it should exist |
+| `[MissingFile]` | A Role declares a single file that does not exist | The file was removed or renamed; drop or fix the declaration, or create the file if it should exist. For a Gradle wrapper file, run `gradle wrapper`, or write `gradle(requireWrapper = false)` when the project has no wrapper |
 | `[UnsatisfiedFileConstraint]` | A constraint on contents (`ktFileContent { }`, `fileConstraint`) does not hold | The code breaks the rule (fix the code, with the user's consent), or the rule is out of date |
 | `[CaptureMismatch]` | Two places named with the same `capture("…")` have different values | A package that does not match its module directory, or a layout that should give the two places separate names |
 | `[UncheckedFileConstraint]` / `[UncheckedFile]` / `[UncheckedDirectory]` / `[UncheckedCheck]` | The check could not run for that path; it is neither allowed nor rejected | Read the cause printed under it. `[UncheckedFileConstraint]` with `Pass FileConstraintCheck() to assert()` means the test does not run the constraint check |
 | `[StaleBaselineEntry]` | The baseline holds back a violation that no longer exists | Something was fixed: prune the entry (below) |
 | `[AmbiguousLayout]` (warning) | Two declarations claim the same file | Narrow one of them; the file must belong to one Role |
-| `[MissingDescription]` (warning) | A Role that may live in two or more places has a place without a `description` | Write `description = "..."` on that place, saying when it is the right one. A missing `summary` is never reported |
 
 Warnings never fail the check, but do not ignore them: fix them or tell the user why they stay.
 

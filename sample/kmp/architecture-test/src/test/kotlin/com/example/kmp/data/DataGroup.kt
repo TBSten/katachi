@@ -10,7 +10,7 @@ import com.example.kmp.forbiddenContents
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-fun DeclarationContainerScope.dataGroup() = "data".group {
+fun DeclarationContainerScope.dataGroup() = "Data".group {
     title = "Data"
     summary = "The :data module. The way into data, and the parts whose implementation differs per platform"
     description = """
@@ -39,18 +39,18 @@ fun DeclarationContainerScope.dataGroup() = "data".group {
     actualImplementation()
 
     // The interface and its implementation as one set, in place of
-    // `--arg template=data.RepositoryInterface,data.RepositoryImplementation`.
+    // `--arg template=Data.RepositoryInterface,Data.RepositoryImplementation`.
     //   ./gradlew :architecture-test:katachiTemplate \
-    //       --arg template=data.NewRepository --arg name=Profile
+    //       --arg template=Data.NewRepository --arg name=Profile
     "NewRepository".templateSet {
         title = "New repository"
         summary = "A repository's interface and its implementation"
         val name by stringParameter()
 
-        template("data.RepositoryInterface") {
+        template("Data.RepositoryInterface") {
             arg("name", name)
         }
-        template("data.RepositoryImplementation") {
+        template("Data.RepositoryImplementation") {
             arg("name", name)
         }
     }

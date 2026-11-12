@@ -21,7 +21,7 @@ import me.tbsten.katachi.processor.internal.projectWalk
  *
  * It shares the one walk of the project with everything else reading the same
  * [ArchitectureProcessContext], so its answer and [ArchitectureProcessContext.filesOf] always
- * agree. Its warnings are [AmbiguousLayout] and [MissingDescription]. It takes no settings:
+ * agree. Its warning is [AmbiguousLayout]. It takes no settings:
  * `maxViolations` belongs to the report, and the check always looks at everything. It is not
  * registered with the Gradle plugin by default; register it only to run it alone from the command
  * line.

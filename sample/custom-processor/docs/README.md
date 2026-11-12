@@ -4,46 +4,46 @@ A sample that shows only how to write your own processor that reads a katachi de
 
 ## Document map
 
-### [Application](./core/README.md)
+### [Application](./Core/README.md)
 
 A small app that only reads notes and lists them. What the processors read
 
-- [Entrypoint](./core/Entrypoint.md)
-- [Model](./core/Model.md)
-- [Store](./core/Store.md)
+- [Entrypoint](./Core/Entrypoint.md)
+- [Model](./Core/Model.md)
+- [Store](./Core/Store.md)
 
-### [Definition and processors](./testing/README.md)
+### [Definition and processors](./Testing/README.md)
 
 The katachi definition, the three processors of your own that read it, and the generated documentation
 
-- [Architecture definition entry](./testing/ArchitectureDefinitionEntry.md)
-- [Document section definition](./testing/DocumentSectionDefinition.md)
-- [Group definition](./testing/GroupDefinition.md)
-- [Role definition](./testing/RoleDefinition.md)
-- [Architecture test](./testing/ArchitectureTest.md)
-- [Integration spec](./testing/IntegrationSpec.md)
-- [Processor](./testing/Processor.md)
-- [Generated documentation](./testing/GeneratedDocumentation.md)
-- [Layout snapshot](./testing/LayoutSnapshot.md)
+- [Architecture definition entry](./Testing/ArchitectureDefinitionEntry.md)
+- [Document section definition](./Testing/DocumentSectionDefinition.md)
+- [Group definition](./Testing/GroupDefinition.md)
+- [Role definition](./Testing/RoleDefinition.md)
+- [Architecture test](./Testing/ArchitectureTest.md)
+- [Integration spec](./Testing/IntegrationSpec.md)
+- [Processor](./Testing/Processor.md)
+- [Generated documentation](./Testing/GeneratedDocumentation.md)
+- [Layout snapshot](./Testing/LayoutSnapshot.md)
 
 ## Application
 
 A small app that only reads notes and lists them. What the processors read
 
-- [Entrypoint](./core/Entrypoint.md) ... Starting the process. The only file that has `main()`
-- [Model](./core/Model.md) ... The values the application handles. Holds data classes, enums and value objects
-- [Store](./core/Store.md) ... Takes responsibility for where values come from. For now, fixed values in memory
+- [Entrypoint](./Core/Entrypoint.md) ... Starting the process. The only file that has `main()`
+- [Model](./Core/Model.md) ... The values the application handles. Holds data classes, enums and value objects
+- [Store](./Core/Store.md) ... Takes responsibility for where values come from. For now, fixed values in memory
 
 ## Definition and processors
 
 The katachi definition, the three processors of your own that read it, and the generated documentation
 
-- [Architecture definition entry](./testing/ArchitectureDefinitionEntry.md) ... The one file whose `architecture { }` gathers every group, so the definition can be read from here
-- [Document section definition](./testing/DocumentSectionDefinition.md) ... The headings this project declares for itself, so roles and groups can write under them
-- [Group definition](./testing/GroupDefinition.md) ... One group of the katachi definition, declared in `<Name>Group.kt`, in the directory named after the group
-- [Role definition](./testing/RoleDefinition.md) ... One role of the katachi definition, declared in `<Name>Role.kt`, in the directory of the group that calls it
-- [Architecture test](./testing/ArchitectureTest.md) ... The one test that checks the whole project against the definition
-- [Integration spec](./testing/IntegrationSpec.md) ... The tests that call the processors through the API, and katachi's own sentinel run against this real project
-- [Processor](./testing/Processor.md) ... The ArchitectureProcessor implementations this project wrote itself. They read the definition and produce something
-- [Generated documentation](./testing/GeneratedDocumentation.md) ... Markdown written out of this definition and committed to the repository
-- [Layout snapshot](./testing/LayoutSnapshot.md) ... Text recording the flattened result of `layout { }`, for katachi's own self-verification
+- [Architecture definition entry](./Testing/ArchitectureDefinitionEntry.md) ... The one file whose `architecture { }` gathers every group, so the definition can be read from here
+- [Document section definition](./Testing/DocumentSectionDefinition.md) ... The headings this project declares for itself, so roles and groups can write under them
+- [Group definition](./Testing/GroupDefinition.md) ... One group of the katachi definition, declared in `<Name>Group.kt`, in the directory named after the group
+- [Role definition](./Testing/RoleDefinition.md) ... One role of the katachi definition, declared in `<Name>Role.kt`, in the directory of the group that calls it
+- [Architecture test](./Testing/ArchitectureTest.md) ... The one test that checks the whole project against the definition
+- [Integration spec](./Testing/IntegrationSpec.md) ... The tests that call the processors through the API, and katachi's own sentinel run against this real project
+- [Processor](./Testing/Processor.md) ... The ArchitectureProcessor implementations this project wrote itself. They read the definition and produce something
+- [Generated documentation](./Testing/GeneratedDocumentation.md) ... Markdown written out of this definition and committed to the repository
+- [Layout snapshot](./Testing/LayoutSnapshot.md) ... Text recording the flattened result of `layout { }`, for katachi's own self-verification

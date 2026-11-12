@@ -2,7 +2,6 @@ package me.tbsten.katachi.check.internal
 
 import me.tbsten.katachi.check.AmbiguousLayout
 import me.tbsten.katachi.check.LayoutClaim
-import me.tbsten.katachi.check.MissingDescription
 import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutEntryKind

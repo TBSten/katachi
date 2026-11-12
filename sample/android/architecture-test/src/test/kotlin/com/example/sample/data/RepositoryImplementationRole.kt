@@ -23,7 +23,7 @@ fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementa
         Only the `User*RepositoryImpl.kt` part can be generated from a template
         (`UserRepositoryImpl.kt` itself is handwritten in each domain from the start). A user
         repository's implementation is usually generated with its interface and fake as the
-        template set `data.NewRepository` (`--arg template=data.NewRepository --arg name=Cache`),
+        template set `Data.NewRepository` (`--arg template=Data.NewRepository --arg name=Cache`),
         which passes the one `name` to each of them.
     """.trimIndent()
     forbiddenContents = """
@@ -32,7 +32,7 @@ fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementa
     """.trimIndent()
     example("UserRepositoryImpl", "The implementation of UserRepository")
     //   ./gradlew :architecture-test:katachiTemplate \
-    //       --arg template=data.RepositoryImplementation.user --arg name=Profile
+    //       --arg template=Data.RepositoryImplementation.user --arg name=Profile
     layout {
         "data" {
             mainSourceSet / kotlin / "com/example/sample/data" {

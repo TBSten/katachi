@@ -73,6 +73,8 @@ Do this only for the Roles, among the proposals recorded in step 6, that the use
    If `test` fails, check that the path of the file declaration `.template { }` is attached to is right.
 5. **Delete the generated file, since it was only for checking** (unless the user says to keep it). After deleting it, confirm `katachi agent test` reports 0 violations once more.
 
+   If 6-C committed the generated pages, the definition changes above change them too: run `./gradlew :architecture-test:katachiDocs` again and commit the pages with the definition, or `--arg mode=check` fails in CI.
+
 Record the files you created or changed in `changedFiles`, then mark `6-4` done.
 
 **Steps 6-A to 6-D are optional.** The checklist treats them as optional too, and they do not count toward progress or step 5.

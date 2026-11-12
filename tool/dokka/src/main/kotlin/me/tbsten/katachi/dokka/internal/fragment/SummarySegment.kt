@@ -1,5 +1,6 @@
 package me.tbsten.katachi.dokka.internal.fragment
 
+import me.tbsten.katachi.dokka.internal.markdown.CodeSpanText
 import org.jetbrains.dokka.base.translators.documentables.firstParagraphBrief
 import org.jetbrains.dokka.model.doc.Br
 import org.jetbrains.dokka.model.doc.CodeInline
@@ -36,18 +37,27 @@ internal fun DocTag.toSummarySegments(): List<SummarySegment> {
         }
     }
 
-    fun visit(tag: DocTag, inCode: Boolean) {
+    fun visit(tag: DocTag) {
         when (tag) {
-            is Text -> append(tag.body, inCode)
-            is Br -> append(" ", inCode)
-            is CodeInline -> tag.children.forEach { visit(it, inCode = true) }
-            else -> tag.children.forEach { visit(it, inCode) }
+            is Text -> append(tag.body, code = false)
+            is Br -> append(" ", code = false)
+            is CodeInline -> append(CodeSpanText.of(codeOf(tag)), code = true)
+            else -> tag.children.forEach(::visit)
         }
     }
-    visit(brief, inCode = false)
+    visit(brief)
     return segments
         .map { if (it.code) it else it.copy(text = it.text.replace(WHITESPACE, " ")) }
         .filter { it.text.isNotBlank() || it.code }
+}
+
+/** The text of an inline code span, where a line break is a space. */
+private fun codeOf(tag: DocTag): String = tag.children.joinToString("") { child ->
+    when (child) {
+        is Text -> child.body
+        is Br -> " "
+        else -> codeOf(child)
+    }
 }
 
 private val WHITESPACE = Regex("\\s+")

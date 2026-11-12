@@ -28,9 +28,9 @@ fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role
         not cross the string that follows it, so one pattern could not cover both anyway.
 
         The file declaration carries one `.template`. Running
-        `--arg template=data.RepositoryInterface --arg name=Cache` creates only the interface.
-        The interface and its implementation together are the template set `data.NewRepository`
-        (`--arg template=data.NewRepository --arg name=Cache`).
+        `--arg template=Data.RepositoryInterface --arg name=Cache` creates only the interface.
+        The interface and its implementation together are the template set `Data.NewRepository`
+        (`--arg template=Data.NewRepository --arg name=Cache`).
 
         Only `commonMain` is declared. What changes its implementation per platform is taken on
         by the neighboring ExpectDeclaration and ActualImplementation roles, not by this role.
@@ -46,7 +46,7 @@ fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role
         - Implementations. They belong to the RepositoryImplementation role
     """.trimIndent()
     example("UserRepository", "The interface that fetches users")
-    //   ./gradlew :architecture-test:katachiTemplate --arg template=data.RepositoryInterface \
+    //   ./gradlew :architecture-test:katachiTemplate --arg template=Data.RepositoryInterface \
     //       --arg name=Cache
     layout {
         "data" {

@@ -48,10 +48,10 @@ class DefinitionAuthoringSmokeTest {
             // 1. A definition that reads: no mistake, and the layout line of ServiceRole.kt has its count.
             openFile(SERVICE, waitForCodeAnalysis = false)
             waitForSmoke("the ◆ and the Code Vision of ServiceRole.kt", bridge, servicePath, timeout = 15.minutes) {
-                bridge.describeDefinitionGutter(servicePath).let { "katachi: domain.Service" in it && it.lines().any { line -> line.startsWith("lens=") } }
+                bridge.describeDefinitionGutter(servicePath).let { "katachi: Domain.Service" in it && it.lines().any { line -> line.startsWith("lens=") } }
             }
             val gutter = bridge.describeDefinitionGutter(servicePath)
-            assertTrue(gutter.lines().any { it.startsWith("mark=") && "katachi: domain.Service — " in it }, gutter)
+            assertTrue(gutter.lines().any { it.startsWith("mark=") && "katachi: Domain.Service — " in it }, gutter)
             assertTrue(gutter.lines().any { it.startsWith("lens=") && (it.endsWith(" file") || it.endsWith(" files")) }, gutter)
             assertEquals("0", bridge.describeDefinitionErrors(servicePath).valueOf("errors"), bridge.describeDefinitionErrors(servicePath))
             bridge.shot(ide.screenshots, "1-service-gutter")

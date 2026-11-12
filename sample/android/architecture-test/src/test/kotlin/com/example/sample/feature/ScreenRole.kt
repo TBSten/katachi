@@ -55,8 +55,8 @@ fun DeclarationContainerScope.screen() = "Screen".role {
     example("SettingsScreen", "The settings screen")
     // A new feature's Screen in the two overloads above, with its two previews. It draws the
     // `<Name>Content` of the ViewModel template, so the two are generated together, usually as the
-    // set `feature.NewFeature`.
-    //   ./gradlew :architecture-test:katachiTemplate --arg template=feature.Screen --arg feature=profile
+    // set `Feature.NewFeature`.
+    //   ./gradlew :architecture-test:katachiTemplate --arg template=Feature.Screen --arg feature=profile
     layout {
         // `feature` is the module directory and the package directory alike, and the file name
         // follows it: feature/home/.../home/HomeScreen.kt, and nothing else named *Screen.kt there.

@@ -147,9 +147,9 @@ class GenerationIdeErrorsTest {
         const val TEMPLATE_IMPORT = "import me.tbsten.katachi.dsl.template\n"
         const val OPT_IN = "@file:OptIn(ExperimentalKatachiApi::class)"
         const val EXPERIMENTAL_IMPORT = "import me.tbsten.katachi.ExperimentalKatachiApi\n"
-        const val SERVICE_TEMPLATE = "domain.Service"
-        const val REPOSITORY_TEMPLATE = "data.Repository"
-        const val CONTROLLER_TEMPLATE = "api.Controller"
+        const val SERVICE_TEMPLATE = "Domain.Service"
+        const val REPOSITORY_TEMPLATE = "Data.Repository"
+        const val CONTROLLER_TEMPLATE = "Api.Controller"
         val TEMPLATES = listOf(SERVICE_TEMPLATE, REPOSITORY_TEMPLATE, CONTROLLER_TEMPLATE)
 
         /** The error depends on how the EDT orders things, so the builds run back to back many times. */

@@ -19,7 +19,7 @@ fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
         unchanged.
 
         The file name is `*Group.kt`, and the file sits in the directory named after the group
-        (`domain/DomainGroup.kt` for `"domain".group { }`), so the roles the group calls are its
+        (`domain/DomainGroup.kt` for `"Domain".group { }`), so the roles the group calls are its
         neighbours. A `*Group.kt` placed anywhere else is reported.
         Nothing here may be `inline`: katachi captures the declaration site from the stack, and
         an inlined frame would point at a line nobody wrote. `ProjectArchitectureSpec` checks

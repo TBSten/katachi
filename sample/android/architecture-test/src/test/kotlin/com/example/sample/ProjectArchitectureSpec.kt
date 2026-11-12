@@ -34,38 +34,38 @@ import me.tbsten.katachi.dsl.pascalCase
 class ProjectArchitectureSpec : FreeSpec({
     "every declared group is in the model, in declaration order" {
         projectArchitecture.allGroups.map { it.qualifiedName } shouldContainExactly
-            listOf("feature", "ui", "data", "app", "testing", "Gradle", "Gradle.GradleWrapper", "tool")
+            listOf("Feature", "Ui", "Data", "App", "Testing", "Gradle", "Gradle.GradleWrapper", "Tool")
     }
 
     "every declared role is in the model under the right group" {
         projectArchitecture.allRoles.map { it.qualifiedName }.toSet() shouldBe setOf(
-            "feature.Screen",
-            "feature.ViewModel",
-            "feature.Route",
-            "feature.FeatureComponent",
-            "feature.FeatureTest",
-            "ui.Component",
-            "ui.Theme",
-            "ui.UiCore",
-            "ui.PreviewRoot",
-            "ui.Navigation",
-            "data.RepositoryInterface",
-            "data.RepositoryImplementation",
-            "app.ActivityEntrypoint",
-            "app.ApplicationEntrypoint",
-            "app.AndroidManifest",
-            "app.ProguardRules",
-            "app.AndroidResource",
-            "testing.Fake",
-            "testing.ProjectArchitectureTest",
-            "testing.ProjectArchitectureSpec",
-            "testing.DefinitionEntry",
-            "testing.DefinitionSections",
-            "testing.GroupDefinition",
-            "testing.RoleDefinition",
-            "testing.GeneratedDocumentation",
-            "testing.LayoutSnapshot",
-            "testing.BaselineFile",
+            "Feature.Screen",
+            "Feature.ViewModel",
+            "Feature.Route",
+            "Feature.FeatureComponent",
+            "Feature.FeatureTest",
+            "Ui.Component",
+            "Ui.Theme",
+            "Ui.UiCore",
+            "Ui.PreviewRoot",
+            "Ui.Navigation",
+            "Data.RepositoryInterface",
+            "Data.RepositoryImplementation",
+            "App.ActivityEntrypoint",
+            "App.ApplicationEntrypoint",
+            "App.AndroidManifest",
+            "App.ProguardRules",
+            "App.AndroidResource",
+            "Testing.Fake",
+            "Testing.ProjectArchitectureTest",
+            "Testing.ProjectArchitectureSpec",
+            "Testing.DefinitionEntry",
+            "Testing.DefinitionSections",
+            "Testing.GroupDefinition",
+            "Testing.RoleDefinition",
+            "Testing.GeneratedDocumentation",
+            "Testing.LayoutSnapshot",
+            "Testing.BaselineFile",
             "Gradle.SettingsScript",
             "Gradle.BuildScript",
             "Gradle.GradleProperties",
@@ -74,13 +74,13 @@ class ProjectArchitectureSpec : FreeSpec({
             "Gradle.GradleWrapper.LauncherScript",
             "Gradle.GradleWrapper.WrapperJar",
             "Gradle.GradleWrapper.WrapperProperties",
-            "tool.Git",
-            "tool.Documentation",
+            "Tool.Git",
+            "Tool.Documentation",
         )
     }
 
     "a role's declaration site is a line number in the file that declares it" {
-        val screen = projectArchitecture.allRoles.single { it.qualifiedName == "feature.Screen" }
+        val screen = projectArchitecture.allRoles.single { it.qualifiedName == "Feature.Screen" }
         screen.declaredAt.fileName shouldBe "ScreenRole.kt"
         // The exact line churns on every edit; that it is a real line is the point.
         (screen.declaredAt.lineNumber > 0) shouldBe true
@@ -137,7 +137,7 @@ class ProjectArchitectureSpec : FreeSpec({
     }
 
     "a layout's declaration site is also the file that declares the role" {
-        val screen = projectArchitecture.allRoles.single { it.qualifiedName == "feature.Screen" }
+        val screen = projectArchitecture.allRoles.single { it.qualifiedName == "Feature.Screen" }
         screen.layouts.single().declaredAt.fileName shouldBe "ScreenRole.kt"
     }
 
@@ -160,24 +160,24 @@ class ProjectArchitectureSpec : FreeSpec({
         }
     }
 
-    "only the Gradle and tool groups are documented = false" {
+    "only the Gradle and Tool groups are documented = false" {
         // A declaration left unwritten has no Documented. Reading an omission as true happens here, on the reading side.
         val documentedByGroup =
             projectArchitecture.allGroups.associate { it.qualifiedName to (it[Documented] ?: true) }
         documentedByGroup shouldBe mapOf(
-            "feature" to true,
-            "ui" to true,
-            "data" to true,
-            "app" to true,
-            "testing" to true,
+            "Feature" to true,
+            "Ui" to true,
+            "Data" to true,
+            "App" to true,
+            "Testing" to true,
             "Gradle" to false,
             "Gradle.GradleWrapper" to false,
-            "tool" to false,
+            "Tool" to false,
         )
     }
 
-    "only the roles of the Gradle and tool groups are documented = false" {
-        val undocumentedGroupPaths = listOf(listOf("Gradle"), listOf("Gradle", "GradleWrapper"), listOf("tool"))
+    "only the roles of the Gradle and Tool groups are documented = false" {
+        val undocumentedGroupPaths = listOf(listOf("Gradle"), listOf("Gradle", "GradleWrapper"), listOf("Tool"))
         val (undocumentedRoles, otherRoles) =
             projectArchitecture.allRoles.partition { it.groupPath in undocumentedGroupPaths }
         undocumentedRoles.map { it[Documented] ?: true }.toSet() shouldBe setOf(false)
@@ -185,7 +185,7 @@ class ProjectArchitectureSpec : FreeSpec({
     }
 
     "a role with a title uses it as its display name" {
-        val screen = projectArchitecture.allRoles.single { it.qualifiedName == "feature.Screen" }
+        val screen = projectArchitecture.allRoles.single { it.qualifiedName == "Feature.Screen" }
         screen[Title] shouldBe "Screen"
     }
 
@@ -196,7 +196,7 @@ class ProjectArchitectureSpec : FreeSpec({
     }
 
     "examples are kept in the order they were called" {
-        val screen = projectArchitecture.allRoles.single { it.qualifiedName == "feature.Screen" }
+        val screen = projectArchitecture.allRoles.single { it.qualifiedName == "Feature.Screen" }
         screen[Examples].orEmpty().map { it.name } shouldContainExactly listOf("HomeScreen", "SettingsScreen")
     }
 
@@ -205,7 +205,7 @@ class ProjectArchitectureSpec : FreeSpec({
         // accepts the repository, this one proves the traversal actually reached it. An
         // empty result here would mean the check walked nothing and passed for free.
         //
-        // `tool` is the group to drop because it owns exactly two files, both at the root,
+        // `Tool` is the group to drop because it owns exactly two files, both at the root,
         // so the expectation can be written out in full rather than as a count.
         // `FileConstraintCheck()` is what `ProjectArchitectureTest` passes too: without it, every
         // `ktFileContent { }` of the roles would come back as `[UncheckedFileConstraint]`.
@@ -229,9 +229,9 @@ class ProjectArchitectureSpec : FreeSpec({
             .single { it.path == "$HOME_SOURCES/HomeScreen.kt" }
 
         unexpected.nearby.map { Triple(it.role.qualifiedName, it.directory, it.filePattern) } shouldBe listOf(
-            Triple("feature.ViewModel", HOME_SOURCES, "*ViewModel.kt"),
-            Triple("feature.Route", HOME_SOURCES, "*Route.kt"),
-            Triple("feature.FeatureComponent", "$HOME_SOURCES/component", "*.kt"),
+            Triple("Feature.ViewModel", HOME_SOURCES, "*ViewModel.kt"),
+            Triple("Feature.Route", HOME_SOURCES, "*Route.kt"),
+            Triple("Feature.FeatureComponent", "$HOME_SOURCES/component", "*.kt"),
         )
     }
 })
@@ -239,7 +239,7 @@ class ProjectArchitectureSpec : FreeSpec({
 private const val HOME_SOURCES = "feature/home/src/main/kotlin/com/example/sample/feature/home"
 
 private val architectureWithoutScreenRole: Architecture = architecture {
-    "feature".group {
+    "Feature".group {
         // screen() — omitted on purpose. `HomeScreen.kt` and `SettingsScreen.kt` lose their role.
         viewModel()
         route()

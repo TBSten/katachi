@@ -2,7 +2,7 @@
 
 - Attempt to fix errors unrelated to katachi, such as those from Gradle or Java.
 - Errors from architecture violations originating in katachi: do not force a fix.
-  - For minor ones, fix them yourself as the agent
+  - For minor ones, fix them yourself as the agent when the fix is on the definition side (a missing `layout { }` line, a Role to split). A fix that changes existing sources or tests needs the user's consent first, even when it is minor (0-1): ask in the checklist's `questions`
     - Do not silence an `[UnexpectedFile]` by adding a line to the `layout { }` of whichever existing Role is nearest. If that Role's `summary` does not describe the file, make a new Role ("One Role = one kind of file" in 3-2)
     - If the fix moves or renames existing sources or tests, also run the project's own tests (the task the project already uses, such as `./gradlew check`). katachi passing says nothing about code the move broke, such as a test that reads a resource by a relative path
   - For ones where the fix is unclear, leave them as is and have the user confirm in a later step

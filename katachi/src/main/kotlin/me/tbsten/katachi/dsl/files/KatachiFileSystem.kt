@@ -7,7 +7,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  *
  * There is **no operation that reads a file's contents**: katachi only looks at which names sit
  * in which directory. Because the surface is this small, a filtered view such as
- * `files = gitTracked()` or a [me.tbsten.katachi.dsl.FileSelection] of your own can wrap a real
+ * `files = gitTracked()` or a [FileSelection][me.tbsten.katachi.dsl.FileSelection] of your own can wrap a real
  * tree.
  *
  * ## Example 1: a minimal implementation of the four operations

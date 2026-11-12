@@ -25,7 +25,7 @@ import me.tbsten.katachi.KatachiDeclarationException
  *                 }
  *             }
  *         }
- *     }.flattenLayout()
+ *     }.validate(fakeFileSystem)
  * }.key shouldBe "MetadataKey<String>"
  * ```
  *

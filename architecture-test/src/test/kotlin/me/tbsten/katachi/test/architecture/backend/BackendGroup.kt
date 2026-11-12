@@ -2,7 +2,7 @@ package me.tbsten.katachi.test.architecture.backend
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-fun DeclarationContainerScope.backendGroup() = "backend".group {
+fun DeclarationContainerScope.backendGroup() = "Backend".group {
     title = "バックエンド"
     description = """
         Konsist・Konture は重いパーサなので、`:katachi` だけを使う利用者に背負わせないよう、`api` 依存に持つバックエンドを別モジュールにしています。

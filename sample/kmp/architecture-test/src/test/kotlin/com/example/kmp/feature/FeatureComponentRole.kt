@@ -44,7 +44,7 @@ fun DeclarationContainerScope.featureComponent() = "FeatureComponent".role {
     // both directories. A `feature` that is not a module is not refused; the directory is
     // created as given.
     //   ./gradlew :architecture-test:katachiTemplate \
-    //       --arg template=feature.FeatureComponent --arg feature=home --arg name=HomeUserCard
+    //       --arg template=Feature.FeatureComponent --arg feature=home --arg name=HomeUserCard
     layout {
         "feature" / capture("feature") / "commonMain".sourceSet / kotlin / "com/example/kmp/feature" /
             capture("feature") / "component" /

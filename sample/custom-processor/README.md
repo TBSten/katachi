@@ -29,7 +29,7 @@ cd sample/custom-processor
 
 # Run the processors of your own one at a time
 ./gradlew :architecture-test:katachiRoleFileCount
-./gradlew :architecture-test:katachiRoleTable --arg groups=core,testing --arg sortBy=Declaration
+./gradlew :architecture-test:katachiRoleTable --arg groups=Core,Testing --arg sortBy=Declaration
 ./gradlew :architecture-test:katachiRoleDocCoverage
 ```
 

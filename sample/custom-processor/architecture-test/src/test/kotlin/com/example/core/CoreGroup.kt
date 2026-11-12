@@ -6,7 +6,7 @@ import com.example.core.store
 import com.example.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-fun DeclarationContainerScope.coreGroup() = "core".group {
+fun DeclarationContainerScope.coreGroup() = "Core".group {
     title = "Application"
     summary = "A small app that only reads notes and lists them. What the processors read"
 
@@ -14,8 +14,8 @@ fun DeclarationContainerScope.coreGroup() = "core".group {
         The application itself. All it does is read notes from a store and list them on standard
         output.
 
-        It is small on purpose. This sample is about the three processors in the `testing` group, and
-        the application is there to provide what they read. For layers, see `api` / `domain` / `data`
+        It is small on purpose. This sample is about the three processors in the `Testing` group, and
+        the application is there to provide what they read. For layers, see `Api` / `Domain` / `Data`
         in `sample/jvm`.
 
         The roles are still split into three because both the output of `RoleFileCount` and the table
@@ -25,7 +25,7 @@ fun DeclarationContainerScope.coreGroup() = "core".group {
 
     forbiddenContents = """
         Definitions and processor code must not be placed here. Both live in `:architecture-test` and
-        are covered by the roles of the `testing` group.
+        are covered by the roles of the `Testing` group.
     """.trimIndent()
 
     entrypoint()

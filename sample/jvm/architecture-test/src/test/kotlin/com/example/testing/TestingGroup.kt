@@ -14,7 +14,7 @@ import com.example.testing.roleDefinition
 import com.example.testing.test
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-fun DeclarationContainerScope.testingGroup() = "testing".group {
+fun DeclarationContainerScope.testingGroup() = "Testing".group {
     title = "Testing"
     summary = "Tests that check behaviour, this definition itself, and the documentation and snapshot written out from it"
 

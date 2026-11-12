@@ -5,7 +5,7 @@ import com.example.app.entrypoint
 import com.example.app.loggingConfig
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
-fun DeclarationContainerScope.appGroup() = "app".group {
+fun DeclarationContainerScope.appGroup() = "App".group {
     title = "Application"
     summary = "Starting the process, and the configuration loaded at runtime"
 

@@ -112,6 +112,30 @@ class WorkdirSpec : FreeSpec({
         }
     }
 
+    "KATACHI_WORKDIR が作業用ディレクトリを指していないと" - {
+        "test は黙って作業用ディレクトリ無しで進まず、値を出して止まる" {
+            val project = projectWithTwoWorkdirs()
+            val missing = project.resolve("no-such-workdir")
+            val env = mapOf("PATH" to System.getenv("PATH"), "KATACHI_WORKDIR" to missing.toString())
+
+            val run = runCapturing(project, listOf("agent", "test"), env)
+
+            run.status shouldBe 1
+            run.err shouldContain "KATACHI_WORKDIR（${missing}）は作業用ディレクトリではありません"
+            project.resolve("build/katachi").exists() shouldBe false
+        }
+
+        "doctor は止まらず、警告する" {
+            val project = projectWithTwoWorkdirs()
+            val env = mapOf("PATH" to System.getenv("PATH"), "KATACHI_WORKDIR" to project.resolve("no-such-workdir").toString())
+
+            val run = runCapturing(project, listOf("doctor"), env)
+
+            run.status shouldBe 0
+            run.err shouldContain "は作業用ディレクトリではありません"
+        }
+    }
+
     "作業用ディレクトリが 2 つあると" - {
         "test は黙って既定値に戻らず、候補を並べて止まる" {
             val project = projectWithTwoWorkdirs()

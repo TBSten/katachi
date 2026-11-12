@@ -19,37 +19,35 @@ import me.tbsten.katachi.konsist.declarations.internal.requiredWriter
 @ExperimentalKatachiApi
 public sealed interface TypeAliasRequired {
     /**
-     * Writes the required line for a type alias named [name], aliasing [type] when given, carrying no modifier (`public` and `final` aside).
+     * Writes the required line for a type alias named [name], carrying no modifier (`public` and `final` aside).
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
-     * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
      * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun required(
         kind: TypeAliasKind,
         name: String,
-        type: String? = null,
-    ): TypeAliasLine = requiredWriter.typeAlias(emptyList(), kind, name, type)
+    ): TypeAliasLine = requiredWriter.typeAlias(emptyList(), kind, name)
 
     /**
-     * Writes the required line for a type alias named [name], aliasing [type] when given, with [modifier1] in front.
+     * Writes the required line for a type alias named [name], with [modifier1] in front.
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
-     * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
      * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun required(
         modifier1: Modifiers,
         kind: TypeAliasKind,
         name: String,
-        type: String? = null,
-    ): TypeAliasLine = requiredWriter.typeAlias(listOf(modifier1), kind, name, type)
+    ): TypeAliasLine = requiredWriter.typeAlias(listOf(modifier1), kind, name)
 
     /**
-     * Writes the required line for a type alias named [name], aliasing [type] when given, with [modifier1] and [modifier2] in front.
+     * Writes the required line for a type alias named [name], with [modifier1] and [modifier2] in front.
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
-     * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
      * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun required(
@@ -57,14 +55,13 @@ public sealed interface TypeAliasRequired {
         modifier2: Modifiers,
         kind: TypeAliasKind,
         name: String,
-        type: String? = null,
-    ): TypeAliasLine = requiredWriter.typeAlias(listOf(modifier1, modifier2), kind, name, type)
+    ): TypeAliasLine = requiredWriter.typeAlias(listOf(modifier1, modifier2), kind, name)
 
     /**
-     * Writes the required line for a type alias named [name], aliasing [type] when given, with [modifier1] to [modifier3] in front.
+     * Writes the required line for a type alias named [name], with [modifier1] to [modifier3] in front.
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
-     * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
      * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun required(
@@ -73,14 +70,13 @@ public sealed interface TypeAliasRequired {
         modifier3: Modifiers,
         kind: TypeAliasKind,
         name: String,
-        type: String? = null,
-    ): TypeAliasLine = requiredWriter.typeAlias(listOf(modifier1, modifier2, modifier3), kind, name, type)
+    ): TypeAliasLine = requiredWriter.typeAlias(listOf(modifier1, modifier2, modifier3), kind, name)
 
     /**
-     * Writes the required line for a type alias named [name], aliasing [type] when given, with [modifier1] to [modifier4] in front.
+     * Writes the required line for a type alias named [name], with [modifier1] to [modifier4] in front.
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
-     * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
      * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun required(
@@ -90,14 +86,13 @@ public sealed interface TypeAliasRequired {
         modifier4: Modifiers,
         kind: TypeAliasKind,
         name: String,
-        type: String? = null,
-    ): TypeAliasLine = requiredWriter.typeAlias(listOf(modifier1, modifier2, modifier3, modifier4), kind, name, type)
+    ): TypeAliasLine = requiredWriter.typeAlias(listOf(modifier1, modifier2, modifier3, modifier4), kind, name)
 
     /**
-     * Writes the required line for a type alias named [name], aliasing [type] when given, with [modifier1] to [modifier5] in front.
+     * Writes the required line for a type alias named [name], with [modifier1] to [modifier5] in front.
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
-     * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
      * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun required(
@@ -108,14 +103,13 @@ public sealed interface TypeAliasRequired {
         modifier5: Modifiers,
         kind: TypeAliasKind,
         name: String,
-        type: String? = null,
-    ): TypeAliasLine = requiredWriter.typeAlias(listOf(modifier1, modifier2, modifier3, modifier4, modifier5), kind, name, type)
+    ): TypeAliasLine = requiredWriter.typeAlias(listOf(modifier1, modifier2, modifier3, modifier4, modifier5), kind, name)
 
     /**
-     * Writes the required line for a type alias named [name], aliasing [type] when given, with [modifier1] to [modifier6] in front.
+     * Writes the required line for a type alias named [name], with [modifier1] to [modifier6] in front.
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
-     * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
      * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun required(
@@ -127,17 +121,16 @@ public sealed interface TypeAliasRequired {
         modifier6: Modifiers,
         kind: TypeAliasKind,
         name: String,
-        type: String? = null,
     ): TypeAliasLine = requiredWriter.typeAlias(
         listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6),
-        kind, name, type,
+        kind, name,
     )
 
     /**
-     * Writes the required line for a type alias named [name], aliasing [type] when given, with [modifier1] to [modifier7] in front.
+     * Writes the required line for a type alias named [name], with [modifier1] to [modifier7] in front.
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
-     * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
      * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun required(
@@ -150,17 +143,16 @@ public sealed interface TypeAliasRequired {
         modifier7: Modifiers,
         kind: TypeAliasKind,
         name: String,
-        type: String? = null,
     ): TypeAliasLine = requiredWriter.typeAlias(
         listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6, modifier7),
-        kind, name, type,
+        kind, name,
     )
 
     /**
-     * Writes the required line for a type alias named [name], aliasing [type] when given, with [modifier1] to [modifier8] in front.
+     * Writes the required line for a type alias named [name], with [modifier1] to [modifier8] in front.
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
-     * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
      * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun required(
@@ -174,17 +166,16 @@ public sealed interface TypeAliasRequired {
         modifier8: Modifiers,
         kind: TypeAliasKind,
         name: String,
-        type: String? = null,
     ): TypeAliasLine = requiredWriter.typeAlias(
         listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6, modifier7, modifier8),
-        kind, name, type,
+        kind, name,
     )
 
     /**
-     * Writes the required line for a type alias named [name], aliasing [type] when given, with [modifier1] to [modifier9] in front.
+     * Writes the required line for a type alias named [name], with [modifier1] to [modifier9] in front.
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
-     * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
      * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun required(
@@ -199,17 +190,16 @@ public sealed interface TypeAliasRequired {
         modifier9: Modifiers,
         kind: TypeAliasKind,
         name: String,
-        type: String? = null,
     ): TypeAliasLine = requiredWriter.typeAlias(
         listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6, modifier7, modifier8, modifier9),
-        kind, name, type,
+        kind, name,
     )
 
     /**
-     * Writes the required line for a type alias named [name], aliasing [type] when given, with [modifier1] to [modifier10] in front.
+     * Writes the required line for a type alias named [name], with [modifier1] to [modifier10] in front.
      *
      * @throws KatachiKtFileContentModifierException when no declaration can have the modifiers here.
-     * @throws KatachiKtFileContentPatternException when [name] or [type] is not a pattern katachi reads.
+     * @throws KatachiKtFileContentPatternException when [name] is not a pattern katachi reads.
      * @throws KatachiKtFileContentLineException when a value comes from another block.
      */
     public fun required(
@@ -225,9 +215,8 @@ public sealed interface TypeAliasRequired {
         modifier10: Modifiers,
         kind: TypeAliasKind,
         name: String,
-        type: String? = null,
     ): TypeAliasLine = requiredWriter.typeAlias(
         listOf(modifier1, modifier2, modifier3, modifier4, modifier5, modifier6, modifier7, modifier8, modifier9, modifier10),
-        kind, name, type,
+        kind, name,
     )
 }

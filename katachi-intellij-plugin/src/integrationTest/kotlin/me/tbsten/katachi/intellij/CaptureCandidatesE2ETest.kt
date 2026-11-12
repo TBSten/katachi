@@ -46,14 +46,14 @@ class CaptureCandidatesE2ETest {
             openFile(ANCHOR, waitForCodeAnalysis = false)
             val featureDirectory = kmp.resolve("feature").toString()
             // TODO(smoke-helper): the item's label is fixed at the first run when the menu is on screen; the wait takes the one that
-            // fits the template's file name (`component/` ... `.kt`) under katachi > `feature`.
+            // fits the template's file name (`component/` ... `.kt`) under katachi > `Feature`.
             var item = ""
             waitFor("the New > katachi item of the component template", timeout = 3.minutes, interval = 3.seconds, errorMessage = { bridge.describeNewMenu(featureDirectory) }) {
                 item = bridge.describeNewMenu(featureDirectory).lines().filter { it.endsWith("|enabled") }.map { it.removePrefix("item=").removeSuffix("|enabled") }
-                    .firstOrNull { it.startsWith("katachi/feature/") && "component/" in it && it.endsWith(".kt") }.orEmpty()
+                    .firstOrNull { it.startsWith("katachi/Feature/") && "component/" in it && it.endsWith(".kt") }.orEmpty()
                 item.isNotEmpty()
             }
-            assertEquals("chosen=${item.removePrefix("katachi/feature/")}", bridge.chooseNewMenuItemLater(featureDirectory, item))
+            assertEquals("chosen=${item.removePrefix("katachi/Feature/")}", bridge.chooseNewMenuItemLater(featureDirectory, item))
 
             // 2. The dialog is open on the template, with `feature` filled from the directory it was opened on or empty.
             waitFor("the generate dialog", timeout = 1.minutes, errorMessage = { bridge.diagnostics(null) }) { bridge.describeDialog().valueOf("dialog") == "open" }

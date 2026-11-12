@@ -1,6 +1,7 @@
 package me.tbsten.katachi.dokka.internal.fragment
 
 import me.tbsten.katachi.dokka.internal.featured.FeaturedCollector
+import me.tbsten.katachi.dokka.internal.markdown.CodeSpanText
 import me.tbsten.katachi.dokka.internal.summary.Summaries
 import me.tbsten.katachi.dokka.internal.summary.documentationOf
 import me.tbsten.katachi.dokka.katachiConfiguration
@@ -72,7 +73,7 @@ internal class ModuleFragmentInstaller(private val context: DokkaContext) : Page
 
     private fun DModule.summaryText(): String? = Summaries.of(documentationOf(this))
         ?.toSummarySegments()
-        ?.joinToString("") { if (it.code) "`${it.text}`" else it.text }
+        ?.joinToString("") { if (it.code) CodeSpanText.span(it.text) else it.text }
         ?.trim()
         ?.takeIf { it.isNotEmpty() }
 }

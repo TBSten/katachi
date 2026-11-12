@@ -16,7 +16,7 @@ import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.pascalCase
 
-fun DeclarationContainerScope.featureGroup() = "feature".group {
+fun DeclarationContainerScope.featureGroup() = "Feature".group {
     title = "Structure of each screen"
     summary = "A module per screen. Each :feature:<name> holds one Screen / ViewModel / Route, and grows with screen parts and tests"
     description = """
@@ -51,7 +51,7 @@ fun DeclarationContainerScope.featureGroup() = "feature".group {
         `FeatureModule` too.
 
         A new feature's Route, Screen and ViewModel, with one screen part, can be generated as one
-        set, `feature.NewFeature`, from one `--arg feature=`. The module's `build.gradle.kts` and
+        set, `Feature.NewFeature`, from one `--arg feature=`. The module's `build.gradle.kts` and
         its `include(":feature:<name>")` in `settings.gradle.kts` are not generated: add them by
         hand, after the other features' includes. To show the screen, `:app` also needs
         `implementation(project(":feature:<name>"))` and the one line `<name>Screen(...)` in its
@@ -68,16 +68,16 @@ fun DeclarationContainerScope.featureGroup() = "feature".group {
     // one screen part. The module's build.gradle.kts and its `include` are not files any role
     // here holds, so they are written by hand; FeatureTest stays out, as its template is
     // written per module.
-    //   ./gradlew :architecture-test:katachiTemplate --arg template=feature.NewFeature --arg feature=profile
+    //   ./gradlew :architecture-test:katachiTemplate --arg template=Feature.NewFeature --arg feature=profile
     "NewFeature".templateSet {
         title = "New feature"
         summary = "A feature module's Route, Screen, ViewModel and one screen part, named after the feature"
         val feature by stringParameter()
 
-        template("feature.Route") { arg("feature", feature) }
-        template("feature.Screen") { arg("feature", feature) }
-        template("feature.ViewModel") { arg("feature", feature) }
-        template("feature.FeatureComponent") {
+        template("Feature.Route") { arg("feature", feature) }
+        template("Feature.Screen") { arg("feature", feature) }
+        template("Feature.ViewModel") { arg("feature", feature) }
+        template("Feature.FeatureComponent") {
             arg("feature", feature)
             arg("name", "${feature.pascalCase}Header")
         }
