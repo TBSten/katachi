@@ -2008,3 +2008,14 @@ priority 1〜3 のルールの側の食い違い。どれもルールも例も�
 
 **ルールに反する点**: B30（生成物の Role には `documented = false` を付ける。推奨）。同じ例に D2-2（断片の例で package / import を省いたと書く）も
 **直し方の案**: `description = …` の次に `documented = false` を足す。例の前に「package / import の行は省略」と一言添える
+
+## このまま: ドキュメント生成の出力先を build/ の外にしてコミットすると [UnexpectedFile] になる
+- decision: このまま
+- file: docs/src/content/docs/ja/guides/document-generation.mdx
+- quote: outputDir
+- decided: 2026-11-12 261112-01 KATACHI-368
+- by: 利用者（スレッド）
+
+利用者の一言: 「これは前々から許容してた」
+
+元の指摘: 生成したページを build/ の外に出してコミットすると、それを宣言する Role が無いので検査が [UnexpectedFile] で落ちる。Role を宣言するまでは落ちるのが既定の挙動として受け入れ済み。
