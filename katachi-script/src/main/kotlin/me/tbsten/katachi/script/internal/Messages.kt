@@ -236,10 +236,10 @@ internal object Messages {
         )
 
         val nameInUpperCamelCase: Msg = Msg(
-            ja = "Role と group の名前は katachi の Gradle・Git と同じく UpperCamelCase にしてください（\"Feature\".group { }）。\n" +
+            ja = "Role と group の名前は katachi の Gradle group と同じく UpperCamelCase にしてください（\"Feature\".group { }）。\n" +
                 "名前は生成ドキュメントや katachiTemplate の template=Group.Role にそのまま出ます。定義を分けているなら、\n" +
                 "ファイル名（<Group>Group.kt）と関数名もそろえます。ディレクトリ名は先頭だけ小文字のままです（katachi skill の setup 3-3）。",
-            en = "Name Roles and groups in UpperCamelCase, like katachi's own Gradle and Git (\"Feature\".group { }).\n" +
+            en = "Name Roles and groups in UpperCamelCase, like katachi's own Gradle group (\"Feature\".group { }).\n" +
                 "The name shows up as it is in the generated docs and in katachiTemplate's template=Group.Role. If the definition\n" +
                 "is split, keep the file names (<Group>Group.kt) and functions in line; directory names keep a lowercase first letter (step 3-3 of the katachi skill's setup).",
         )

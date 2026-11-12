@@ -1,6 +1,6 @@
 ## 6. Report the result to the user
 
-Write the report to the user from the checklist and the report, in the user's language, in the shape below. Take every number from the JSON; do not count from memory. A number is the count of entries in that array: one entry in `violations` that covers two files is 1 (its `location` says which files).
+Write your message to the user from the two blocks of `check-list.html` (the checklist and the codebase report), in the user's language, in the shape below. Take every number from the JSON; do not count from memory. A number is the count of entries in that array: one entry in `violations` that covers two files is 1 (its `location` says which files).
 
 #### First — record template proposals
 
@@ -82,7 +82,7 @@ Resume:
     - <each of 6-A to 6-D not done yet, with its title>
 ```
 
-Leave out a "Questions" line when that file has no questions. Mention the steps that carry a `warning` under the result line.
+Leave out a "Questions" line when that block has no questions. Mention the steps that carry a `warning` under the result line.
 
 **For the unanswered questions, ask the user to answer them**: show the URL of the page (`file://<workdir>/check-list.html`; the report's questions, ids starting with `cq`, are at `#report-questions`, the checklist's, ids starting with `q`, at `#questions`), and have them answered in the browser ("Copy all" or "Save as JSON" in the menu at the bottom right; on a Japanese page 「まとめてコピー」 or 「JSON を保存」), or in chat. Write what comes back into `answers` (0-3, "Answers").
 

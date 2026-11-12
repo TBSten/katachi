@@ -2,7 +2,7 @@
 
 These steps repeat network access, file creation, and running Gradle many times over. Checking in every time would leave the user doing nothing but approving requests endlessly.
 
-**Do not ask for permission in prose — actually run a harmless dummy of each.** The tool running you asks for permission per kind of command. Run each one once up front, and the real commands that follow are never asked about.
+**Do not ask for permission in prose — actually run a harmless dummy of each.** The tool running you asks for permission per kind of command. Run each one once up front, and most of the real commands that follow are not asked about.
 
 Run the following **from the Gradle root directory**, **one at a time, separately.** Do not join them into a single line — a single line only earns you one kind of permission.
 
@@ -69,7 +69,7 @@ From here on, **read every `katachi …` in these steps as `kotlin <workdir>/tmp
 - The first run downloads katachi-script and compiles the script, so it takes a while. Later runs use the cache.
 - On Windows, `katachi agent test` starts `./gradlew` through `sh`, so run these steps in WSL or Git Bash. Without either, run `gradlew.bat <module>:test --console=plain -Dkatachi.maxViolations=all` yourself and save its output as `<workdir>/tmp/test-<name>.log` (`katachi agent compare-violations` reads those).
 
-If all four pass, no permission will be asked for in any later step.
+If all four pass, the bulk of the later commands (katachi, Gradle, files under the project) will not be asked about. Fetching the documentation (curl / WebFetch), `git`, `gh` and `python3` / `jq` are other kinds of command and may still be asked about once each: tell the user so, rather than promising that nothing more will be asked.
 
 **Existing source code is never rewritten.** The only times you touch it are when fixing a build error unrelated to katachi in step 4, and during the implementation task in step 6-A. If you are going to fix an architecture violation itself in step 4, check with the user again at that point.
 

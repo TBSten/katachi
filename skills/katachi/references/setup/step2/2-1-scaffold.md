@@ -4,9 +4,9 @@
 katachi scaffold --package com.example.app
 ```
 
-Pass the app package name identified in step 1 to `--package`. It uses the version of the `katachi` command and the Kotlin version detected from the project, so normally no other arguments are needed. Where the verification module goes (`meta.moduleDir`), the test framework and how dependencies are written come from what you recorded in the checklist in 1-3. Add `--module-dir <path>` / `--test-framework junit5|kotest` / `--deps catalog|literal` only to hard-code them without recording preferences.
+Pass the app package name identified in step 1 to `--package`. It uses the version of the `katachi` command and the Kotlin version detected from the project, so normally no other arguments are needed. Where the verification module goes (`meta.moduleDir`), the test framework and how dependencies are written come from what you recorded in the checklist in 1-3. Add `--module-dir <path>` / `--test-framework junit5|kotest|kotest-<style>` (the styles are in 1-3) / `--deps catalog|literal` only to hard-code them without recording preferences.
 
-**Only if `doctor` printed no `Kotlin:` line in 0-1** (the version could not be detected), add `--kotlin <version>`. Omitting it will cause `scaffold` to stop. Put the version you pass into the checklist's `meta.kotlin` too.
+**Only if `doctor` printed no `Kotlin:` line in 0-1** (the version could not be detected), add `--kotlin <version>`. Omitting it will cause `scaffold` to stop. `doctor` does not warn about this: a missing `Kotlin:` line is the only sign. If the project has a Kotlin version elsewhere (the version catalog, `buildSrc`), pass that. If it does not use Kotlin yet (Java only), ask the user which version to use; katachi needs Kotlin 2.2 or later. Put the version you pass into the checklist's `meta.kotlin` too.
 
 `scaffold` creates the whole verification module: its `build.gradle.kts`, `ProjectArchitecture.kt` and `ProjectArchitectureTest.kt`, the `include(...)` in the settings file, and, where the project needs them, the Kotlin JVM plugin in the root build file, aliases in `gradle/libs.versions.toml` and `mavenCentral()` in `pluginManagement { }`. Its output lists every file it created or changed. **Do not edit what it generated**, even the parts below that look like mistakes:
 

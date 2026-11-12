@@ -1705,9 +1705,10 @@
       "observed": "app/src/main/kotlin/com/example/app/ui/legacy/ の配下だけ Fragment + Presenter のまま残っている",
       "options": [
         "対象に含めて直す",
-        "当面 ignore する"
+        "Role を分けて今の形（Fragment と Presenter）を宣言する",
+        "今ある違反を baseline に入れ、新しい違反だけを落とす"
       ],
-      "recommendation": "B。対象が1画面だけで、移行の予定が決まっていないため"
+      "recommendation": "C。対象が1画面だけで移行の予定も決まっていないため、今ある違反は受け入れ、新しい違反だけを検出する"
     }
   ],
   "answers": {},
@@ -1833,8 +1834,8 @@
       "id": "cq2",
       "question": "legacy パッケージは katachi の対象に含めますか？",
       "observed": "app/src/main/kotlin/com/example/app/ui/legacy/ の配下だけ Fragment + Presenter のまま残っている",
-      "options": ["対象に含めて直す", "当面 ignore する"],
-      "recommendation": "B。対象が1画面だけで、移行の予定が決まっていないため"
+      "options": ["対象に含めて直す", "Role を分けて今の形（Fragment と Presenter）を宣言する", "今ある違反を baseline に入れ、新しい違反だけを落とす"],
+      "recommendation": "C。対象が1画面だけで移行の予定も決まっていないため、今ある違反は受け入れ、新しい違反だけを検出する"
     }
   ],
   "answers": {

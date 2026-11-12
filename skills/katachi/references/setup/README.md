@@ -41,7 +41,7 @@ In the checklist, 6-A to 6-D are 6-1 to 6-4.
 
 ## Dividing the work between the main agent and subagents
 
-Where subagents are available, split the work as in the table below. Only the main agent writes to the working directory; subagents never do.
+Where subagents are available, split the work as in the table below. Only the main agent writes the checklist and the report; subagents never do. The one place a subagent writes in the working directory is its own `<workdir>/tmp/verify/<name>/` in 6-A.
 
 | Section | Main agent | Delegated to subagents | What the main agent receives |
 |---|---|---|---|

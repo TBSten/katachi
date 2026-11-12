@@ -31,7 +31,7 @@ You can write `title = "..."` and `description = "..."` at the top of `architect
 
 **A Role (`"Name".role { }`) stands for one kind of file. What bundles different kinds of files is a group (`"Name".group { }`).** Pack different kinds of files into one Role and neither its `summary` nor its `ktFileContent { }` fits all of them any more, and the generated documentation shows a box that anything goes into.
 
-**Name Roles and groups alike in UpperCamelCase** (`"ViewModel".role { }`, `"Feature".group { }`, `"BuildLogic".group { }`), as katachi's own `Gradle` and `Git` groups are. Do not start a group name with a lowercase letter (`"feature".group { }`): the name shows up as it is in the generated documentation and in `katachiTemplate`'s `template=Group.Role`, next to Role names that are UpperCamelCase. Only the directories of a split definition start lowercase (3-3). `katachi lint` lists names that start lowercase.
+**Name Roles and groups alike in UpperCamelCase** (`"ViewModel".role { }`, `"Feature".group { }`, `"BuildLogic".group { }`), as katachi's own `Gradle` group (from `gradle()`) is. Do not start a group name with a lowercase letter (`"feature".group { }`): the name shows up as it is in the generated documentation and in `katachiTemplate`'s `template=Group.Role`, next to Role names that are UpperCamelCase. Only the directories of a split definition start lowercase (3-3). `katachi lint` lists names that start lowercase.
 
 Decide whether files belong in the same Role with these three questions. If any file gets a "no", split the Role.
 
@@ -133,19 +133,23 @@ The verification module is checked like any other module. Its `build.gradle.kts`
     "ArchitectureDefinition".role {
         summary = "The katachi definition: architecture { }, the functions it is split into, and the test that runs it"
         layout {
-            "architecture-test" / testSourceSet / kotlin / "**" / "*".ktFile()
+            "architecture-test" / testSourceSet / kotlin / "**" / "ProjectArchitecture*".ktFile()
+            "architecture-test" / testSourceSet / kotlin / "**" / "*Role".ktFile()
+            "architecture-test" / testSourceSet / kotlin / "**" / "*Group".ktFile()
         }
     }
 }
 ```
 
-Read `"architecture-test"` as `meta.moduleDir`. When 3-3 splits the definition into one file per Role, this one Role still covers them all (the `"**"`).
+Read `"architecture-test"` as `meta.moduleDir`. The name patterns keep this Role from being a catch-all ("Do not stop at placement"): they cover `ProjectArchitecture.kt`, the `ProjectArchitectureTest.kt` that scaffold writes, and the `<Role>Role.kt` / `<Group>Group.kt` files that 3-3 splits the definition into (the `"**"` takes the group directories). A file of another shape there (a helper with shared `val`s, say) gets a pattern of its own rather than a `"*"`.
+
+If scaffold created `<verification module>/.gitignore` (it does when the project's `.gitignore` does not already ignore `build/`), that file needs a Role too, or step 4 reports it as `[UnexpectedFile]`. Declare it next to the root `.gitignore`, for example `"**/.gitignore".file()` in the `GitIgnore` Role.
 
 Fill in the `architecture { }` in `<verification module>/src/test/kotlin/<package>/test/architecture/ProjectArchitecture.kt`.
 
 #### Run it and save the result
 
-Once written, run it once and **save the output as the baseline before refactoring.** 3-3 compares against it.
+Once written, run it once and **save the output as the reference log before refactoring** (not to be confused with katachi's `baseline()` in 4-2). 3-3 compares against it.
 
 ```sh
 katachi agent test --save before-refactor
