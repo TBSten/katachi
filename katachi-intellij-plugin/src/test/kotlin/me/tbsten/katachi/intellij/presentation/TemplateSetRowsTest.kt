@@ -50,7 +50,7 @@ class TemplateSetRowsTest {
         val ui = uiRowOf(stateOf(setRow, repoRow), setRow)
 
         val set = ui.set ?: throw AssertionError("set row")
-        assertEquals("組", set.badge)
+        assertEquals("set", set.badge)
         assertEquals("Screen・ViewModel", set.memberLine)
         assertEquals("メンバ 2 件: Screen・ViewModel", set.memberTooltip)
     }
@@ -198,7 +198,7 @@ class TemplateSetRowsTest {
 
         val set = uiRowOf(stateOf(broken), broken).set ?: throw AssertionError("set row")
 
-        assertEquals("組", set.badge)
+        assertEquals("set", set.badge)
         assertNull(set.memberLine)
         assertNull(set.memberTooltip)
     }

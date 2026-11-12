@@ -261,7 +261,7 @@ class ToolWindowInteractionSetsTest {
         onNodeWithTag(KatachiTestTags.check(starter)).performKeyInput { pressKey(Key.DirectionRight) }
         settle()
         assertTrue("右で開く", fieldShown(starter, "name"))
-        onNode(hasTestTag(KatachiTestTags.setBadge(starter)), useUnmergedTree = true).assert(hasText("組"))
+        onNode(hasTestTag(KatachiTestTags.setBadge(starter)), useUnmergedTree = true).assert(hasText("set"))
     }
 }
 
