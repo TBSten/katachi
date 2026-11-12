@@ -2073,3 +2073,98 @@ priority 1〜3 のルールの側の食い違い。どれもルールも例も�
 比較表は Konture を「🆗 統合あり（katachi-konture）」と書く。使い方のページ（guides/konture-integration）は 2d43371f で外され、今の ja のページで Konture に触れるのはこのページだけ。モジュール katachi-konture は settings.gradle.kts にある。AGENTS の木（L85）にはページが残ったまま。担当の get-started 4 ページと roadmap は、木とサイドバー（docs/astro.config.mjs）で一致している。showcase.mdx（draft: true）は木にもサイドバーにも無い。要確認。
 - 直し方の案: AGENTS の木から L85 を消す。表は「統合あり」のまま API リファレンスへのリンクを付けるか、案内先ができるまで「🆗 可能」にするかを利用者が決める。
 - 種類: ガイド・ルールの側の食い違い（E）
+
+## 直さない: 「capture() を * に書き換えても変わらない」は、同じ名前を 2 か所に書くと成り立たない
+- decision: 直さない
+- file: ja/guides/generate-code-from-template.mdx
+- quote: capture("feature")` を `"*"` に書き換えても、許されるファイルは1つも変わりません。
+- decided: 2026-11-13 261112-01 KATACHI-374
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+同じ名前の capture を 1 つのパスの 2 か所に書くと、検査は 2 か所の値が同じであることも求め、食い違うファイルは `[CaptureMismatch]` になる（katachi/src/main/kotlin/me/tbsten/katachi/check/CaptureViolations.kt）。直後の FeatureComponent の例（L140-141）は `capture("feature")` を 2 か所に書いているので、この文はすぐ下の例に当てはまらない。写しで動かして確かめた（2 か所の値が違うファイルは `[CaptureMismatch]`、2 つとも `"*"` にすると違反なし）。`[CaptureMismatch]` は日本語の docs に 1 度も出てこない。英語のページも同じ。
+- 関連: 同じ行の言い回し（主語が無い）、L165 の「両方の `*`」、skill 6-D の同じ文への指摘は、手順 11 のファイルにある（どれも別の指摘）。layout.mdx L210 のカードの「Layout API の検査だけなら名前は要らず」は誤りではないので登録していない
+- 直し方の案: 「1 か所に書くだけなら `*` と同じです」に狭め、「同じ名前を 2 か所に書くと、2 か所の値がそろっていることも検査されます。違ってよいなら別の名前にします」を 1〜2 文足す
+- 出どころ: 手順 5 の 3（動かして確定）
+
+## 直さない: ツールを 2 つ以上使うと [AmbiguousLayout] の警告が出ることを、レシピが言わない
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: 複数のツールの group を使うと、`AGENTS.md` は複数の Role に一致します。
+- decided: 2026-11-13 261112-01 KATACHI-374
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+同じパターンを 2 つの Role が宣言すると、`[AmbiguousLayout]` の警告が出る（検査は失敗しない。katachi/src/main/kotlin/me/tbsten/katachi/check/LayoutWarnings.kt）。レシピは `"**/AGENTS.md".file()` を 7 つのツールの group に書いていて（L50・145・248・344・504・581・650）、2 つ以上写すと警告が出るが、本文は「一致します」としか言わない。写しで動かして確かめた（`Katachi check found 1 warning. Warnings never fail the check.` と `[AmbiguousLayout] **/AGENTS.md`）。`[AmbiguousLayout]` は日本語の docs に 1 度も出てこない。英語のページも同じ。
+- 関連: 同じ行の「使うツールの分だけ呼びます。」への指摘は手順 11 のファイルにある（別の指摘）
+- 直し方の案: 「このとき `[AmbiguousLayout]` の警告が出ます（検査は失敗しません）。気になるなら `AGENTS.md` を 1 つの Role にまとめます」のように 1 文足す
+- 出どころ: 手順 5 の 6（動かして確定）
+
+## 直さない: gradle() が wrapper の 4 ファイルを必須にすることと、外し方（requireWrapper = false）が書かれていない（要確認）
+- decision: 直さない
+- file: ja/recipes/gradle.mdx
+- quote: gradle()` を1行書くと、Gradle の wrapper・ビルドスクリプト・version catalog が宣言されます。
+- decided: 2026-11-13 261112-01 KATACHI-374
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+`gradle()` は gradlew・gradlew.bat・gradle-wrapper.jar・gradle-wrapper.properties の 4 つを必須にし、1 つでも無いと `[MissingFile]` で検査が失敗する。必須を外すのは `gradle(requireWrapper = false)`（katachi/src/main/kotlin/me/tbsten/katachi/dsl/gradle/GradleGroup.kt:25-28・91・107-114）で、requireWrapper は KDoc にしか出てこない。動かして見つけた: gradlew.bat の無いプロジェクトで `[MissingFile]` になり、How to fix は宣言を消すよう言うが、消せる宣言は `gradle()` の行そのもの。英語のページも同じ。
+- 直し方の案: 「wrapper の 4 ファイルは必須です。無い、または一部だけのプロジェクトでは `gradle(requireWrapper = false)` と書きます」を 1 文足す。skill（3-2・fix-violations）と How to fix の文面は別の経路で直す
+- 出どころ: 手順 5 の 12（動かして見つけた）
+
+## 直さない: ダークで、畳んだコードの「Show more」ボタンの字が背景に沈む（コントラスト比 約 1.9）
+- decision: 直さない
+- file: docs/ec.config.mjs
+- quote: pluginCollapsible({
+- decided: 2026-11-13 261112-01 KATACHI-374
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+畳んだコードのボタン（expressive-code-collapsible の .ec-collapse__toggle）の字の色は `var(--ec-collapse-accent-color, var(--sl-color-accent, …))` で、テーマ（nova）のダークの --sl-color-accent が暗い灰色（rgb(74,85,101)）なので、画素から測ったコントラスト比は約 1.8〜2.1（WCAG AA は 4.5。ライトは約 12）。pluginCollapsible に色の指定が無く、docs/src/styles にも上書きが無い。日本語・英語とも、畳んだコードのある全ページで同じ（guides/baseline・get-started/motivation・recipes/gradle で確かめた）。
+- 直し方の案: docs/src/styles/custom-global.css で、ダークのときの --ec-collapse-accent-color を明るい色にする。または .ec-collapse__toggle の color を上書きする
+- 出どころ: 手順 6 の en-05・ja-04
+- 証拠: /home/claude/katachi/.local/release-v0.4.0/screenshots/ja/problem-collapse-button-light-vs-dark.png
+
+## 直さない: リンクの文字が、リンク先のページの題（ktFileContent）と違う（E-b・要確認）
+- decision: 直さない
+- file: ja/recipes/android-three-layer.mdx
+- quote: [ファイルの中で定義できる宣言の許可リストを定義する](/katachi/ja/guides/kt-file-content/#インストール)
+- rule: E-b（docs/AGENTS.md のサイドバーの木 L83 が、今のページの title と違う）。A4（ktFileContent の入れ方はページの間で同じ言い方にする）
+- decided: 2026-11-13 261112-01 KATACHI-374
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+リンク先 guides/kt-file-content.mdx の title は「ktFileContent」、サイドバーの表示は「概要」。リンクの文字は AGENTS の木に残っている以前の題のままで、着いた先の見出しと合わない。同じ文字のリンクが guides/basic-api.mdx:244 と guides/role.mdx:209 にもある（2-guides-core の担当）。README.ja.md:127 は [ktFileContent] で今の題と合っている。ルールの側（AGENTS の木）が古いのが原因なので E。要確認
+- 直し方の案: リンクの文字を今の題に合わせる（例: 「`ktFileContent { }` を使うときは、[ktFileContent のインストール](/katachi/ja/guides/kt-file-content/#インストール)の設定が要ります。」）。あわせて docs/AGENTS.md の木の L83 を今の題に直す
+- 種類: ガイド・ルールの側の食い違い（E）
+
+## 直さない: Gradle のレシピの "Build".group が、skill の「group に Build と付けない」と食い違う（要確認）
+- decision: 直さない
+- file: skills/katachi/references/setup/step3/3-3-refactor.md
+- quote: Do not name a group `Build` or `Out`: its directory becomes `build/` or `out/` (use e.g. `BuildLogic`)
+- rule: E（ガイドと skill の食い違い）。S3（skill の決まり: .gitignore に一致する group 名を付けない。add-and-update/add-a-role.md:30 も同じ）と recipes/gradle.mdx:34・:52（"Build".group）
+- decided: 2026-11-13 261112-01 KATACHI-374
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+3-1-fetch-docs.md:11（前回のあとに足した行）は buildSrc・includeBuild のあるプロジェクトで Gradle のレシピを読ませる。レシピは "Build".group に 4 つの Role を入れる形で、skill はこの group 名を名指しで禁じている（定義を分けると build/BuildGroup.kt になり、.gitignore の build/ に一致して検査から外れる）。エージェントは写したあと 3-3 で名前を変えることになり、レシピだけを読んだ人は気づけない。要確認
+- 直し方の案: レシピの group 名を "BuildLogic" に変える（template=BuildLogic.ConventionPluginScript）。レシピをそのままにするなら、3-1 の L11 に「レシピの Build group は BuildLogic に読み替える」と添える
+- 種類: ガイド・ルールの側の食い違い（E）

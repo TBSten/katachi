@@ -19,12 +19,19 @@ baseline は、既存の違反を一時的に抑制して、新しい違反を�
 
 ```mermaid
 flowchart LR
-    Def["定義に baseline() を書く"] --> Update["update=true で実行<br/>今ある違反を記録"]
-    Update --> Check["通常のテスト"]
-    Check -->|新しい違反がある| Fail1["テストが失敗する"]
-    Check -->|記録した違反を直した| Fail2["StaleBaselineEntry で<br/>テストが失敗する"]
-    Fail2 --> Prune["prune=true で実行<br/>記録から削除"]
-    Prune --> Check
+    subgraph setup["記録する"]
+        direction TB
+        Def["定義に baseline() を書く"] --> Update["update=true で実行<br/>今ある違反を記録"]
+    end
+    subgraph loop["検査して片付ける"]
+        direction TB
+        Check["通常のテスト"]
+        Check -->|新しい違反がある| Fail1["テストが失敗する"]
+        Check -->|記録した違反を直した| Fail2["StaleBaselineEntry で<br/>テストが失敗する"]
+        Fail2 --> Prune["prune=true で実行<br/>記録から削除"]
+        Prune --> Check
+    end
+    setup --> loop
 ```
 
 図 1. baseline の流れ。記録した違反はテストを失敗させず、新しい違反と、直したのに残っている記録だけがテストを失敗させる
@@ -52,7 +59,7 @@ Baseline ファイルもプロジェクトのファイルの1つなので、Role
 
 慣例に従って `BaselineFile` という名前の Role を用意して architecture 定義内に追加してください。
 
-```kt
+```kt nocollapse
 val projectArchitecture = architecture {
   // ...
   "Tool".group {
