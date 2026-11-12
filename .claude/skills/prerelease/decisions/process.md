@@ -31,3 +31,12 @@
 prerelease check などで Review に指摘を登録するときは、1 件ごとに `- impact: あり|なし`（理由を添える）と `- recommend: <ボタンの名前> 0〜10, …` を必ず書く。
 推奨度は popup のボタン（`解決済みにする`・`直さない`・`直してもらう`・人が足した選択肢）のうち、意味のあるものだけに付ける。基準は [references/docs-rules.md](../references/docs-rules.md) の「Review に登録する」。
 登録したら `cli.mjs review check` を回し、問題 0 件・「注意」0 件にする。
+
+## 方針: skills/katachi/ への指摘は聞かずに直す
+- decision: 方針
+- decided: 2026-11-13 261112-01 KATACHI-368
+- by: 利用者（368 のスレッド、00:49 JST）
+
+利用者の一言: 「skills/katachi に対する指摘は一律直して」
+
+`skills/katachi/`（SKILL.md・references・assets のチェックリスト）宛ての指摘は、TODO.html や Review で利用者に選ばせず、その回の修正 PR で直す。Review には登録しない（登録済みのものは直したら remove）。docs の本文は人が書く決まりのままで、この方針は skill だけに当てはまる。ガイドと skill のどちらに決まりを置くかという指摘（ルールの置き場）は、skill を直す話ではないのでこの方針に入れない。
