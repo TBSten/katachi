@@ -19,12 +19,19 @@ The diagram below shows the whole flow of using baseline. You write `baseline()`
 
 ```mermaid
 flowchart LR
-    Def["Write baseline()<br/>in the definition"] --> Update["Run with update=true<br/>record existing violations"]
-    Update --> Check["Normal test run"]
-    Check -->|new violation| Fail1["Test fails"]
-    Check -->|recorded violation fixed| Fail2["Test fails with<br/>StaleBaselineEntry"]
-    Fail2 --> Prune["Run with prune=true<br/>remove from the record"]
-    Prune --> Check
+    subgraph setup["Record"]
+        direction TB
+        Def["Write baseline()<br/>in the definition"] --> Update["Run with update=true<br/>record existing violations"]
+    end
+    subgraph loop["Check and clean up"]
+        direction TB
+        Check["Normal test run"]
+        Check -->|new violation| Fail1["Test fails"]
+        Check -->|recorded violation fixed| Fail2["Test fails with<br/>StaleBaselineEntry"]
+        Fail2 --> Prune["Run with prune=true<br/>remove from the record"]
+        Prune --> Check
+    end
+    setup --> loop
 ```
 
 Figure 1. The baseline flow. Recorded violations don't fail the test; only new violations and records left behind after a fix do
@@ -52,7 +59,7 @@ The baseline file is also one of the project's files, so unless it's declared as
 
 Following convention, prepare a role named `"BaselineFile"` and add it to your architecture definition.
 
-```kt
+```kt nocollapse
 val projectArchitecture = architecture {
   // ...
   "Tool".group {
