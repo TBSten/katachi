@@ -2019,3 +2019,15 @@ priority 1〜3 のルールの側の食い違い。どれもルールも例も�
 利用者の一言: 「これは前々から許容してた」
 
 元の指摘: 生成したページを build/ の外に出してコミットすると、それを宣言する Role が無いので検査が [UnexpectedFile] で落ちる。Role を宣言するまでは落ちるのが既定の挙動として受け入れ済み。
+
+## 後で: ドキュメント生成の出力先にある、katachi が作っていない *.md を消す
+- decision: 後で
+- file: katachi/src/main/kotlin/me/tbsten/katachi/docs/internal/DocumentFiles.kt
+- quote: the directory must belong to katachi alone
+- decided: 2026-11-12 261112-01 KATACHI-368
+- by: 利用者（スレッド）
+- revisit: KATACHI-370（katachi が作っていない .md を黙って消さない）に手を付けたとき。v0.4 では対応しない
+
+利用者の一言: 「v0.4 では対応しないけど後々改善したいので、時期みていチケット切っといて」
+
+元の指摘: 出力先を「katachi 専用」として扱い、書き出すたびに今回作らなかった *.md を消す（v0.2.0 からの挙動）。手書きの docs/ を出力先にすると docs/guide.md なども消える。ログに Removed … は出るが止まらない。
