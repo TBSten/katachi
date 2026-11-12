@@ -159,6 +159,17 @@ AGENTS の木では [AI生成] なのにページに印が無い、という指�
 
 元の指摘（261109-01 の手順 11、4 件）: guides/diff-report・cli-and-script・cli-and-script/cli・cli-and-script/katachi-script に印が無い。
 
+## 方針: CLI のページのコマンド一覧に `katachi lint` が無い
+- decision: 方針
+- file: docs/src/content/docs/**
+- match: katachi lint.{0,40}(無い|出てこない|載っていない)|CLI.{0,20}(ページ|一覧).{0,40}lint
+- decided: 2026-11-12 261112-01 KATACHI-368
+- by: 利用者（スレッド）
+
+利用者の一言: 「katachi lint が CLI のページに出てこない の feedback 一律対応しないとする。」
+
+範囲: docs の CLI のページ（guides/cli-and-script/cli など）に `katachi lint` が載っていない・コマンド一覧に無い、という指摘は出さない。Review・Feedback で同じ指摘が来たら「直さない」として扱う。
+
 ## 方針: 「このページの目的」のコメント（D1-1）
 - decision: 方針
 - file: docs/src/content/docs/**
