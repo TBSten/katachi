@@ -28,18 +28,16 @@ Below is an example architecture definition for a setup that adopts a domain lay
 ```mermaid
 flowchart LR
     subgraph ui["Ui (group)"]
-        UiState
-        ViewModel
-        Screen
+        direction TB
+        UiState ~~~ ViewModel ~~~ Screen
     end
     subgraph domain["Domain (group)"]
-        UseCase
-        DomainModel
+        direction TB
+        UseCase ~~~ DomainModel
     end
     subgraph data["Data (group)"]
-        RepositoryInterface
-        RepositoryImplementation
-        DataSource
+        direction TB
+        RepositoryInterface ~~~ RepositoryImplementation ~~~ DataSource
     end
     ui --> domain
     domain --> data

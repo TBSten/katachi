@@ -28,18 +28,16 @@ Android developers で公開されているアプリアーキテクチャガイ�
 ```mermaid
 flowchart LR
     subgraph ui["Ui（group）"]
-        UiState
-        ViewModel
-        Screen
+        direction TB
+        UiState ~~~ ViewModel ~~~ Screen
     end
     subgraph domain["Domain（group）"]
-        UseCase
-        DomainModel
+        direction TB
+        UseCase ~~~ DomainModel
     end
     subgraph data["Data（group）"]
-        RepositoryInterface
-        RepositoryImplementation
-        DataSource
+        direction TB
+        RepositoryInterface ~~~ RepositoryImplementation ~~~ DataSource
     end
     ui --> domain
     domain --> data
@@ -355,7 +353,7 @@ fun DeclarationContainerScope.dataSource() = "DataSource".role {
 
 層を group に、ファイルの種類を Role に分けた実際の定義は、[sample/android の ProjectArchitecture.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/ProjectArchitecture.kt) にあります。サンプルはドメイン層を持たず、画面ごとにモジュールを分けた構成なので、このページの定義とは形が違います。
 
-`ktFileContent { }` を使うときは、[ファイルの中で定義できる宣言の許可リストを定義する](/katachi/ja/guides/kt-file-content/#インストール)の設定が要ります。
+`ktFileContent { }` を使うときは、[ファイルの中で定義できる宣言の許可リストを定義する](/katachi/ja/guides/kt-file-content/#インストール)の設定が必要です。
 
 ## AndroidManifest.xml と res/ の Role
 
