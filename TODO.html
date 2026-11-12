@@ -45,7 +45,7 @@ a{color:var(--blue);word-break:break-all}
   <span class="pill"><b style="color:var(--amber)">2</b>判断してほしい</span>
   <span class="pill"><b style="color:var(--blue)">5</b>目を通してほしい</span>
   <span class="pill"><b style="color:var(--green)">4</b>操作してほしい</span>
-  <span class="pill"><b style="color:var(--muted)">19</b>決定済み・対応中</span>
+  <span class="pill"><b style="color:var(--muted)">20</b>決定済み・対応中</span>
 </div>
 
 <h2 style="--c:var(--red)">1. リリース前に直すか決める<small>priority 7 以上。放置すると利用者が詰まる</small></h2>
@@ -53,9 +53,9 @@ a{color:var(--blue);word-break:break-all}
 
 <h2 style="--c:var(--amber)">2. 判断してほしい<small>リリースは止めないが、方針が要る</small></h2>
 
-<div class="item" data-id="j-doc-outputdir"><input type="checkbox"><div class="t"><span class="p p6">p6</span>ドキュメント生成の出力先を変えると、検査が落ち、手書きの .md が消える</div>
-<div class="body">ガイドの例どおり <code>docs/architecture</code> に出すと、次の検査が生成ページの数だけ <code>[UnexpectedFile]</code> で落ちます。手書きの Markdown がある場所を出力先にすると、生成しなかった <code>*.md</code> は消えます。この決まりは skill の 6-C にしか書いてありません。</div>
-<div class="ask"><b>決めてほしい:</b> <span class="rec">(a) ガイドに 3 点を足す（Review に登録済み。書くのは人）</span> / (b) 加えて実装で、katachi が作っていない <code>*.md</code> を消す前に止める / (c) このまま</div>
+<div class="item" data-id="j-doc-outputdir"><input type="checkbox"><div class="t"><span class="p p6">p6</span>ドキュメント生成の出力先に手書きの .md があると消える</div>
+<div class="body">手書きの Markdown がある場所を出力先にすると、katachi が生成しなかった <code>*.md</code> は警告なしに消えます。この決まりは skill の 6-C にしか書いてありません。（検査が <code>[UnexpectedFile]</code> で落ちる件は「前々から許容」と決まったので外しました）</div>
+<div class="ask"><b>決めてほしい:</b> <span class="rec">(a) ガイドに「出力先は katachi のものになる（中の .md は消える）」を足す（Review に登録済み。書くのは人）</span> / (b) 加えて実装で、katachi が作っていない <code>*.md</code> を消す前に止める / (c) このまま</div>
 <details><summary>詳細</summary><ul>
 <li><code>ja/guides/document-generation.mdx:159-175</code>「出力先ディレクトリ」</li>
 <li>実装: <code>katachi/docs/internal/DocumentFiles.kt:9-16</code>（v0.2.0 からの挙動）、<code>GenerateDocumentation.kt:75</code>（<code>--arg mode=check</code>）</li>
@@ -143,6 +143,7 @@ a{color:var(--blue);word-break:break-all}
 <div class="item" data-id="d-kdoc-internal"><input type="checkbox" disabled><div class="t">✏️ KDoc の例の <code>flattenLayout()</code>・<code>moduleIndex()</code> → (a) <code>validate(fakeFileSystem)</code> などに書き換えた（PR #87、レビュー待ち）</div></div>
 <div class="item" data-id="d-missing-description"><input type="checkbox" disabled><div class="t">✏️ <code>[MissingDescription]</code> → (a) skill から外し、クラスを internal にして KDoc・API リファレンスにも出ないように（PR #87、レビュー待ち）</div></div>
 <div class="item" data-id="d-typealias"><input type="checkbox" disabled><div class="t">✏️ typealias の型 → <code>.type(...)</code> にそろえた（PR #87、レビュー待ち）。docs の kotlin-mapping の例 1 行（ja・en）も合わせた</div></div>
+<div class="item" data-id="d-doc-outputdir-check"><input type="checkbox" disabled><div class="t">✓ 生成ページを build/ の外にコミットすると <code>[UnexpectedFile]</code> で落ちる → このまま（前々から許容）。decisions/docs.md に記録</div></div>
 <div class="item" data-id="d-revisit-e13"><input type="checkbox" disabled><div class="t">✓ 見直し候補 E13 → このまま。katachi 本体とサンプルの決まりで、ほかのプロジェクトには推奨なので skill では強制しない → decisions/docs.md に記録</div></div>
 <div class="item" data-id="o-review-place"><input type="checkbox" disabled><div class="t">✓ Review のファイルを手元の置き場に置く（「ok」をもらって置いた）</div></div>
 <div class="item" data-id="j-prop-positional"><input type="checkbox" disabled><div class="t">✓ v0.3.0 のプロパティの行が別の意味に読み替わる → 手当てしない（08:27「ならやらないでいいや」）。リリースノートの注意書きだけ → decisions/api.md に記録（59599aa1）</div></div>
