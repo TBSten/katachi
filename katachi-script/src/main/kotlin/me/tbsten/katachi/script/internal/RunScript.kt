@@ -102,6 +102,7 @@ private fun ScriptContext.resolveLang(command: String, args: List<String>) {
         is WorkdirLookup.Found -> recordedLang(lookup.path)
         is WorkdirLookup.Ambiguous -> lookup.candidates.map(::recordedLang).distinct().singleOrNull()
         WorkdirLookup.NotFound -> null
+        is WorkdirLookup.Misconfigured -> null
     }
     lang = recorded ?: Lang.fromEnv(env) ?: Lang.JA
     if (command == "doctor") {

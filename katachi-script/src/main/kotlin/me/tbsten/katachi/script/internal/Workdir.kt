@@ -18,6 +18,10 @@ internal sealed interface WorkdirLookup {
     data object NotFound : WorkdirLookup
 
     data class Ambiguous(val candidates: List<Path>) : WorkdirLookup
+
+    // `KATACHI_WORKDIR` names a place that is not a working directory: going on without one would quietly fall
+    // back to the default module directory, language and log place, as with two of them.
+    data class Misconfigured(val configured: String, val path: Path) : WorkdirLookup
 }
 
 private const val SEARCH_DEPTH = 4
@@ -34,7 +38,7 @@ internal const val CHECK_LIST_FILE: String = "check-list.html"
 internal fun ScriptContext.lookupWorkdir(): WorkdirLookup {
     env["KATACHI_WORKDIR"]?.takeIf { it.isNotBlank() }?.let { configured ->
         val path = resolve(configured)
-        return if (path.isDirectory()) WorkdirLookup.Found(path) else WorkdirLookup.NotFound
+        return if (path.resolve(CHECK_LIST_FILE).isRegularFile()) WorkdirLookup.Found(path) else WorkdirLookup.Misconfigured(configured, path)
     }
     if (!cwd.isDirectory()) return WorkdirLookup.NotFound
     val candidates = Files.walk(cwd, SEARCH_DEPTH).use { stream ->
@@ -54,14 +58,19 @@ internal fun ScriptContext.lookupWorkdir(): WorkdirLookup {
 }
 
 /**
- * The working directory, or null when there is none. Stops when there are two or more: going on with
+ * The working directory, or null when there is none. Stops when there are two or more, or when KATACHI_WORKDIR
+ * names no working directory: going on with
  * neither would quietly fall back to the default module directory, language and log place.
  */
 internal fun ScriptContext.findWorkdir(): Path? = when (val lookup = lookupWorkdir()) {
     is WorkdirLookup.Found -> lookup.path
     WorkdirLookup.NotFound -> null
     is WorkdirLookup.Ambiguous -> die(ambiguousWorkdirMessage(lookup))
+    is WorkdirLookup.Misconfigured -> die(misconfiguredWorkdirMessage(lookup))
 }
+
+internal fun ScriptContext.misconfiguredWorkdirMessage(lookup: WorkdirLookup.Misconfigured): Msg =
+    Messages.Workdir.misconfigured(lookup.configured, fileUri(lookup.path))
 
 internal fun ScriptContext.ambiguousWorkdirMessage(lookup: WorkdirLookup.Ambiguous): Msg =
     Messages.Workdir.ambiguous(lookup.candidates.joinToString("") { "    ${fileUri(it)}\n" })

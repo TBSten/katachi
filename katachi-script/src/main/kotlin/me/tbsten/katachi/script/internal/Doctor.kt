@@ -29,7 +29,11 @@ internal fun ScriptContext.runDoctor(args: List<String>): Int {
         note("Kotlin: $kotlin" + if (kotlinIsTooOld) pick(Messages.Doctor.kotlinTooOldSuffix) else "")
         if (kotlinIsTooOld) warn(kotlinTooOldMessage(cwd, kotlin, forScaffold = false))
     }
-    (lookupWorkdir() as? WorkdirLookup.Ambiguous)?.let { warn(ambiguousWorkdirMessage(it)) }
+    when (val lookup = lookupWorkdir()) {
+        is WorkdirLookup.Ambiguous -> warn(ambiguousWorkdirMessage(lookup))
+        is WorkdirLookup.Misconfigured -> warn(misconfiguredWorkdirMessage(lookup))
+        else -> Unit
+    }
     return 0
 }
 

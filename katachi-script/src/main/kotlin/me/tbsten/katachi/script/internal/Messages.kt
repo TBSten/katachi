@@ -911,6 +911,13 @@ internal object Messages {
                 "Pick one with KATACHI_WORKDIR=<path>, or move the others out of the search (4 levels below the current directory).",
         )
 
+        fun misconfigured(configured: Any?, pathUri: Any?): Msg = Msg(
+            ja = "KATACHI_WORKDIR（$configured）は作業用ディレクトリではありません（$pathUri に check-list.html がない）。" +
+                "check-list.html のあるディレクトリを指すように直すか、KATACHI_WORKDIR を外してください。",
+            en = "KATACHI_WORKDIR ($configured) is not a working directory (there is no check-list.html in $pathUri). " +
+                "Point it at the directory with check-list.html, or unset it.",
+        )
+
         fun projectRootInOtherWorkTree(recordedUri: Any?, hereUri: Any?): Msg = Msg(
             ja = "チェックリストの meta.projectRoot（$recordedUri）は、いまいる場所とは別の作業ツリー（git worktree）です。" +
                 "いまいる作業ツリーの $hereUri を検査し、ログもそこの build/katachi/ に置きます。記録した側を検査するときは、そちらで実行してください。",
