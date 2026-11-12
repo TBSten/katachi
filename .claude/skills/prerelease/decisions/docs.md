@@ -2062,3 +2062,35 @@ priority 1〜3 のルールの側の食い違い。どれもルールも例も�
 比較表は Konture を「🆗 統合あり（katachi-konture）」と書く。使い方のページ（guides/konture-integration）は 2d43371f で外され、今の ja のページで Konture に触れるのはこのページだけ。モジュール katachi-konture は settings.gradle.kts にある。AGENTS の木（L85）にはページが残ったまま。担当の get-started 4 ページと roadmap は、木とサイドバー（docs/astro.config.mjs）で一致している。showcase.mdx（draft: true）は木にもサイドバーにも無い。要確認。
 - 直し方の案: AGENTS の木から L85 を消す。表は「統合あり」のまま API リファレンスへのリンクを付けるか、案内先ができるまで「🆗 可能」にするかを利用者が決める。
 - 種類: ガイド・ルールの側の食い違い（E）
+
+## 直さない: 「capture() を * に書き換えても変わらない」は、同じ名前を 2 か所に書くと成り立たない
+- decision: 直さない
+- file: ja/guides/generate-code-from-template.mdx
+- quote: capture("feature")` を `"*"` に書き換えても、許されるファイルは1つも変わりません。
+- decided: 2026-11-13 261112-01 KATACHI-374
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+同じ名前の capture を 1 つのパスの 2 か所に書くと、検査は 2 か所の値が同じであることも求め、食い違うファイルは `[CaptureMismatch]` になる（katachi/src/main/kotlin/me/tbsten/katachi/check/CaptureViolations.kt）。直後の FeatureComponent の例（L140-141）は `capture("feature")` を 2 か所に書いているので、この文はすぐ下の例に当てはまらない。写しで動かして確かめた（2 か所の値が違うファイルは `[CaptureMismatch]`、2 つとも `"*"` にすると違反なし）。`[CaptureMismatch]` は日本語の docs に 1 度も出てこない。英語のページも同じ。
+- 関連: 同じ行の言い回し（主語が無い）、L165 の「両方の `*`」、skill 6-D の同じ文への指摘は、手順 11 のファイルにある（どれも別の指摘）。layout.mdx L210 のカードの「Layout API の検査だけなら名前は要らず」は誤りではないので登録していない
+- 直し方の案: 「1 か所に書くだけなら `*` と同じです」に狭め、「同じ名前を 2 か所に書くと、2 か所の値がそろっていることも検査されます。違ってよいなら別の名前にします」を 1〜2 文足す
+- 出どころ: 手順 5 の 3（動かして確定）
+
+## 直さない: ツールを 2 つ以上使うと [AmbiguousLayout] の警告が出ることを、レシピが言わない
+- decision: 直さない
+- file: ja/recipes/ai-agent.mdx
+- quote: 複数のツールの group を使うと、`AGENTS.md` は複数の Role に一致します。
+- decided: 2026-11-13 261112-01 KATACHI-374
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+同じパターンを 2 つの Role が宣言すると、`[AmbiguousLayout]` の警告が出る（検査は失敗しない。katachi/src/main/kotlin/me/tbsten/katachi/check/LayoutWarnings.kt）。レシピは `"**/AGENTS.md".file()` を 7 つのツールの group に書いていて（L50・145・248・344・504・581・650）、2 つ以上写すと警告が出るが、本文は「一致します」としか言わない。写しで動かして確かめた（`Katachi check found 1 warning. Warnings never fail the check.` と `[AmbiguousLayout] **/AGENTS.md`）。`[AmbiguousLayout]` は日本語の docs に 1 度も出てこない。英語のページも同じ。
+- 関連: 同じ行の「使うツールの分だけ呼びます。」への指摘は手順 11 のファイルにある（別の指摘）
+- 直し方の案: 「このとき `[AmbiguousLayout]` の警告が出ます（検査は失敗しません）。気になるなら `AGENTS.md` を 1 つの Role にまとめます」のように 1 文足す
+- 出どころ: 手順 5 の 6（動かして確定）
