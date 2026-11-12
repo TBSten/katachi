@@ -14,6 +14,8 @@ fun DeclarationContainerScope.docsSite() = "DocsSite".role {
             // Astro owns what is inside these, down to the file names of the routes.
             "src".ignore()
             "public".ignore()
+            // `pnpm patch` writes the patched dependencies here, named by pnpm (`<name>@<version>.patch`).
+            "patches" { "*.patch".file() }
             // Listed in `docs/.gitignore`, so the default `files = gitTracked()` never
             // offers them at all. Written out anyway, the way every sample writes
             // `"build".ignore()`: a reader who switches to `files = wholeTree()` has to
