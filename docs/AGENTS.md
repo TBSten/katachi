@@ -172,6 +172,8 @@ title: ...
 - `src/content/docs/0.2/` と `src/content/docs/ja/0.2/`、`src/content/versions/0.2.json` は、v0.2 公開時点の写し（URL は `/katachi/0.2/...` と `/katachi/ja/0.2/...`）。**写しは凍結していて直さない。**
   直すのは、ビルドが落ちる・リンクが切れるといった明らかな壊れだけ。文章の方針や言い換えの辞書が変わっても、写しは合わせない
 - 写しは textlint（`.textlintignore`）、translate-ja-en の訳の同期、check-docs-against-impl と prerelease の照合から外してある
+- `llms.txt`・`llms-full.txt`・`llms-small.txt` は今の版だけを持つ。凍結した版の全文は `/katachi/<slug>/llms-full.txt`（`src/pages/[version]/llms-full.txt.ts`）にあり、`llms.txt` の Optional から張る。
+  starlight-llms-txt は llms-full.txt から除外できないので、pnpm の patch（`patches/`、`pnpm-workspace.yaml`）で `exclude` を llms-full.txt にも適用している
 - public/ の下（API リファレンス・インストールキット・スライド）は版を持たない。古い版のページからのリンクは、`src/middleware.ts` が最新のものへ向け直す
 - いま書いている版のラベルは手で持たない。凍結した版の先頭から「次の minor + `-dev`」を算出する（写しの先頭が `0.3` なら `v0.4-dev`）。
   リリースのビルドだけが `KATACHI_DOCS_VERSION_LABEL`（タグから `v0.4`）で上書きする
