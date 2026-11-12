@@ -39,12 +39,20 @@ def read_optional(path):
     return read(path) if os.path.exists(path) else None
 
 
-def strip_listing_links(summary):
-    """Drops the trailing 'GitHub links and `git diff` commands per file: [Files by role](...)' line."""
+def split_listing_links(summary):
+    """Splits off the trailing 'GitHub links per file: [Files by role](...)' line.
+
+    Returns the summary without it, and what the line says the listings hold per file, as HTML.
+    A report for a pull request holds the links alone; one made by an older katachi, or for
+    another range, holds `git diff` commands as well.
+    """
     lines = summary.rstrip("\n").split("\n")
-    if lines and lines[-1].startswith("GitHub links and `git diff` commands per file:"):
+    holds = "GitHub links"
+    if lines and lines[-1].startswith("GitHub links") and " per file: " in lines[-1]:
+        if "`git diff` commands" in lines[-1]:
+            holds = "GitHub links and <code>git diff</code> commands"
         lines = lines[:-1]
-    return "\n".join(lines).rstrip("\n") + "\n"
+    return "\n".join(lines).rstrip("\n") + "\n", holds
 
 
 def demote_headings(markdown):
@@ -85,7 +93,7 @@ def main():
     summary_path = os.path.join(args.directory, SUMMARY)
     if not os.path.exists(summary_path):
         sys.exit(f"{summary_path} not found: did katachiDiff run?")
-    summary = strip_listing_links(read(summary_path))
+    summary, listing_holds = split_listing_links(read(summary_path))
     summary = summary.replace("# Architecture diff report:", "## 🧩 Architecture diff report:", 1)
 
     head = [
@@ -108,7 +116,7 @@ def main():
     by_role = read_optional(os.path.join(args.directory, FILES_BY_ROLE))
     if by_role is not None:
         listings.append(
-            "<details><summary><b>Files by role</b> (GitHub links and <code>git diff</code> commands per file)</summary>\n\n"
+            f"<details><summary><b>Files by role</b> ({listing_holds} per file)</summary>\n\n"
             + drop_preamble(by_role).rstrip("\n")
             + "\n\n</details>"
         )
