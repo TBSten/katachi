@@ -2152,19 +2152,3 @@ priority 1〜3 のルールの側の食い違い。どれもルールも例も�
 リンク先 guides/kt-file-content.mdx の title は「ktFileContent」、サイドバーの表示は「概要」。リンクの文字は AGENTS の木に残っている以前の題のままで、着いた先の見出しと合わない。同じ文字のリンクが guides/basic-api.mdx:244 と guides/role.mdx:209 にもある（2-guides-core の担当）。README.ja.md:127 は [ktFileContent] で今の題と合っている。ルールの側（AGENTS の木）が古いのが原因なので E。要確認
 - 直し方の案: リンクの文字を今の題に合わせる（例: 「`ktFileContent { }` を使うときは、[ktFileContent のインストール](/katachi/ja/guides/kt-file-content/#インストール)の設定が要ります。」）。あわせて docs/AGENTS.md の木の L83 を今の題に直す
 - 種類: ガイド・ルールの側の食い違い（E）
-
-## 直さない: Gradle のレシピの "Build".group が、skill の「group に Build と付けない」と食い違う（要確認）
-- decision: 直さない
-- file: skills/katachi/references/setup/step3/3-3-refactor.md
-- quote: Do not name a group `Build` or `Out`: its directory becomes `build/` or `out/` (use e.g. `BuildLogic`)
-- rule: E（ガイドと skill の食い違い）。S3（skill の決まり: .gitignore に一致する group 名を付けない。add-and-update/add-a-role.md:30 も同じ）と recipes/gradle.mdx:34・:52（"Build".group）
-- decided: 2026-11-13 261112-01 KATACHI-374
-- by: 利用者（Review の popup）
-
-利用者の一言: なし
-
-元の指摘:
-
-3-1-fetch-docs.md:11（前回のあとに足した行）は buildSrc・includeBuild のあるプロジェクトで Gradle のレシピを読ませる。レシピは "Build".group に 4 つの Role を入れる形で、skill はこの group 名を名指しで禁じている（定義を分けると build/BuildGroup.kt になり、.gitignore の build/ に一致して検査から外れる）。エージェントは写したあと 3-3 で名前を変えることになり、レシピだけを読んだ人は気づけない。要確認
-- 直し方の案: レシピの group 名を "BuildLogic" に変える（template=BuildLogic.ConventionPluginScript）。レシピをそのままにするなら、3-1 の L11 に「レシピの Build group は BuildLogic に読み替える」と添える
-- 種類: ガイド・ルールの側の食い違い（E）
