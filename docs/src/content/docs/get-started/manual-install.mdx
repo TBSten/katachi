@@ -1,8 +1,167 @@
 ---
 title: Manual install
-description: TODO
+description: The steps to install katachi manually
 tags:
   - intermediate
 ---
 
-TODO
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+## 1. Create the :architecture-test module
+
+Create a module that belongs to no layer of the app and holds nothing but the architecture definition and the test that checks it.
+
+```kotlin title="settings.gradle.kts"
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+    }
+}
+
+include(":architecture-test")
+```
+
+## 2. Add the dependencies
+
+Whether your project is Android or KMP, **make this a plain `kotlin("jvm")` module**.
+That is because katachi itself is a JVM library, and the architecture test of a codebase runs on the host machine.
+
+The following is one example.
+Anything works as long as it is a jvm module and `me.tbsten.katachi:katachi` and the other dependencies are available in the test source set.
+
+```kotlin nocollapse title="architecture-test/build.gradle.kts"
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
+plugins {
+    kotlin("jvm") version "<Kotlin version>"
+    id("me.tbsten.katachi") version "<katachi version>"
+}
+
+kotlin {
+    jvmToolchain(17)
+}
+
+tasks.test {
+    useJUnitPlatform()
+    outputs.upToDateWhen { false }
+    outputs.cacheIf { false }
+    testLogging { exceptionFormat = TestExceptionFormat.FULL }
+}
+
+dependencies {
+    testImplementation("me.tbsten.katachi:katachi:<katachi version>")
+    // If you need ktFileContent { } or konsist { }:
+    testImplementation("me.tbsten.katachi:katachi-konsist:<katachi version>")
+    testImplementation(platform("org.junit:junit-bom:5.14.4"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+katachi {
+    // Change the package name to match your own project
+    architecture = "com.example.projectArchitecture"
+}
+```
+
+## 3. Define the architecture
+
+`architecture-test/src/test/kotlin/<package>/ProjectArchitecture.kt` is the entry point.
+Write `architecture { }` here.
+
+```kotlin
+@file:OptIn(ExperimentalKatachiApi::class)
+
+package com.example
+
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.gradle.*
+import me.tbsten.katachi.dsl.kotlin.ktFile
+
+val projectArchitecture = architecture {
+    gradle()
+
+    "Domain".group {
+        "UseCase".role {
+            summary = "A single app-specific behavior that occurs on a screen"
+            layout {
+                "domain/src/main/kotlin/usecase" / "*UseCase".ktFile()
+            }
+        }
+    }
+}
+```
+
+## 4. Add the test that checks it
+
+Write the following test in `ProjectArchitectureTest.kt`.
+
+```kotlin title="architecture-test/src/test/kotlin/<package>/ProjectArchitectureTest.kt"
+@file:OptIn(ExperimentalKatachiApi::class)
+
+package com.example
+
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.check.assert
+import org.junit.jupiter.api.Test
+
+class ProjectArchitectureTest {
+    @Test
+    fun `the project structure matches the definition`() {
+        projectArchitecture.assert()
+    }
+}
+```
+
+This is the only test you write for katachi.
+There is one architecture definition, and it is enough to test that the project is structured according to it.
+
+## 5. Run it
+
+```kt
+./gradlew :architecture-test:test
+```
+
+At first the files and directories you have not declared come out as violations.
+
+katachi is an allow-list, so this is the normal starting point.
+Go through the reported paths and decide whether to add them to the definition or delete them.
+
+## Summary
+
+- Create the :architecture-test module and put nothing in it but the architecture definition and the test that checks it.
+- Whether your project is Android or KMP, make :architecture-test a plain `kotlin("jvm")` module.
+- Define the architecture in `architecture { }` in ProjectArchitecture.kt, and write a single test that calls `projectArchitecture.assert()`.
+- Resolve the violations from the first run by either adding the paths to the definition or deleting the files.
+
+## Next steps
+
+<CardGrid>
+  <LinkCard
+    title="Basic API"
+    href="/katachi/guides/basic-api/"
+    description="Learn the APIs you pick up first when writing a katachi definition."
+  />
+  <LinkCard
+    title="Role"
+    href="/katachi/guides/role/"
+    description="Learn how to write a Role, the basic unit of a definition, and how to think about splitting them."
+  />
+  <LinkCard
+    title="Layout"
+    href="/katachi/guides/layout/"
+    description="Learn how to write a Layout that enforces your directory structure."
+  />
+  <LinkCard
+    title="sample/jvm"
+    href="https://github.com/TBSten/katachi/tree/main/sample/jvm"
+    description="A working example: a minimal Ktor server with a definition added."
+  />
+</CardGrid>

@@ -10,7 +10,6 @@ tags:
 */}
 
 import { Aside, Tabs, TabItem, Steps, Badge, CardGrid, LinkCard } from '@astrojs/starlight/components';
-import { OnlyDebug } from '../../../../integrations/only-debug.ts';
 
 このページでは AI Agent を用いて katachi を Gradle プロジェクトに入れ、最初の `architecture { }` 定義を書いて、テストが成功するところまでを説明します。
 
@@ -23,7 +22,7 @@ katachi を導入するプロジェクトが大きければ大きいほど、こ
 
 そこで AI Agent にこの作業を任せてみましょう。katachi には AI Agent driven で katahi のセットアップを支援する CLI, Agent Skill が用意されています。
 
-手動でインストールが必要な場合は [手動]
+手動でインストールが必要な場合は [手動インストール](/katachi/ja/get-started/manual-install/) を参照してください。
 
 ### 1. katachi CLI, Agent Skill をインストールする
 
@@ -82,7 +81,7 @@ Agent Skill は gh skills か npx skills でインストールできます。
 
 Agent が収集した情報は インストールチェックリストと呼ばれる HTML ファイル に出力されるため、その内容がプロジェクトで想定されているアーキテクチャと一致しているかレビューしてください。
 
-TODO: HTML例の画像
+![AI Agent が出力したインストールチェックリストの例](../../../../assets/install-check-list-example.png)
 
 - インストールチェックリスト内には AI Agent が判断に迷った箇所を **質問形式で掲載** する場合があります。フォームに従って回答を入力してください。
 - 右下のフロートボタンから **フィードバックモード** を開始して、気になる箇所・アーキテクチャの指摘をピンポイントで記入できます。
@@ -91,7 +90,14 @@ TODO: HTML例の画像
 <details>
   <summary>インストールチェックリストの例</summary>
 
-  TODO: public/ 内にサンプルのインストールチェックリストを置いて iframe で表示
+  <iframe
+    src="/katachi/install/ja/check-list-sample.html"
+    title="インストールチェックリストの例"
+    loading="lazy"
+    style="width: 100%; height: 40rem; border: 1px solid var(--sl-color-gray-5); border-radius: 0.5rem;"
+  ></iframe>
+
+  [インストールチェックリストの例を新しいタブで開く](/katachi/install/ja/check-list-sample.html)
 
 </details>
 

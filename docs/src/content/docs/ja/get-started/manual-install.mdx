@@ -5,6 +5,8 @@ tags:
   - intermediate
 ---
 
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
 ## 1. :architecture-test モジュールを作る
 
 アプリのどの層にも属さない、アーキテクチャ定義とそれを検査するテストだけを置くモジュールを作成してください。
@@ -86,7 +88,14 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 val projectArchitecture = architecture {
     gradle()
 
-    // TODO
+    "Domain".group {
+        "UseCase".role {
+            summary = "各画面で発生するアプリ固有の1つの振る舞い"
+            layout {
+                "domain/src/main/kotlin/usecase" / "*UseCase".ktFile()
+            }
+        }
+    }
 }
 ```
 
@@ -127,9 +136,33 @@ katachi は許可リスト方式なので、これが正常な出発点です。
 
 ## まとめ
 
-TODO
+- :architecture-test モジュールを作り、アーキテクチャ定義とそれを検査するテストだけを置きます。
+- :architecture-test は、プロジェクトが Android でも KMP でもプレーンな `kotlin("jvm")` モジュールにします。
+- ProjectArchitecture.kt の `architecture { }` にアーキテクチャを定義し、`projectArchitecture.assert()` を呼ぶテストを1本だけ書きます。
+- 最初の実行で出た違反は、パスを定義に足すか、ファイルを消すかして解消していきます。
 
 ## 次のステップ
 
-TODO
+<CardGrid>
+  <LinkCard
+    title="基本的な API"
+    href="/katachi/ja/guides/basic-api/"
+    description="katachi の定義を書くときに最初に覚える API を学びましょう。"
+  />
+  <LinkCard
+    title="Role"
+    href="/katachi/ja/guides/role/"
+    description="定義の基本単位である Role の書き方と、分け方の考え方を学びましょう。"
+  />
+  <LinkCard
+    title="Layout"
+    href="/katachi/ja/guides/layout/"
+    description="ディレクトリ構成を厳守させる Layout の書き方を学びましょう。"
+  />
+  <LinkCard
+    title="sample/jvm"
+    href="https://github.com/TBSten/katachi/tree/main/sample/jvm"
+    description="Ktor の最小サーバに定義を入れた、動く実物です。"
+  />
+</CardGrid>
 
