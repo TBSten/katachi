@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>KATACHI-380 benchmark の見直し</title>
+<style>
+:root{--bg:#fff;--s1:#f7f7f5;--s2:#fff;--b:#d9d9d6;--t:#37352f;--m:#787774;--ok-bg:#dbeddb;--ok:#2b6b45;--ng-bg:#ffe2dd;--ng:#b3261e;--part-bg:#fdecc8;--part:#8a5a00;--ac-bg:#d3e5ef;--ac:#0b6e99;
+--f:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Noto Sans JP","Noto Sans CJK JP",sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#191919;--s1:#202020;--s2:#2a2a2a;--b:#3a3a3a;--t:#e6e6e4;--m:#9b9b97;--ok-bg:#243d30;--ok:#8fd0a6;--ng-bg:#4a2622;--ng:#ff9d92;--part-bg:#4a3a17;--part:#f0c36a;--ac-bg:#1e3a4a;--ac:#7cc4e4}}
+:root[data-theme="dark"]{--bg:#191919;--s1:#202020;--s2:#2a2a2a;--b:#3a3a3a;--t:#e6e6e4;--m:#9b9b97;--ok-bg:#243d30;--ok:#8fd0a6;--ng-bg:#4a2622;--ng:#ff9d92;--part-bg:#4a3a17;--part:#f0c36a;--ac-bg:#1e3a4a;--ac:#7cc4e4}
+body{margin:0;background:var(--bg);color:var(--t);font-family:var(--f);padding:12px}
+.card{width:420px;max-width:100%;box-sizing:border-box;border:.5px solid var(--b);background:var(--s1);border-radius:12px;padding:16px;margin-bottom:12px}
+.tag{display:inline-block;font-size:12px;font-weight:700;background:var(--ac-bg);color:var(--ac);border-radius:6px;padding:2px 8px}
+h1{font-size:18px;margin:8px 0 4px;line-height:1.35}
+.lead{font-size:12.5px;color:var(--m);margin:0 0 12px;line-height:1.55}
+.it{background:var(--s2);border:.5px solid var(--b);border-radius:8px;padding:8px 10px;margin:6px 0;display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:start}
+.it b{font-size:13px}
+.it p{grid-column:1 / -1;margin:0;font-size:12px;color:var(--m);line-height:1.5}
+.st{font-size:10.5px;font-weight:700;border-radius:5px;padding:2px 7px;white-space:nowrap}
+.ok{background:var(--ok-bg);color:var(--ok)}.new{background:var(--ac-bg);color:var(--ac)}.no{background:var(--part-bg);color:var(--part)}.fix{background:var(--ng-bg);color:var(--ng)}
+.lg{display:flex;flex-wrap:wrap;gap:6px 10px;font-size:11.5px;color:var(--m);margin:10px 0 2px}
+.row{display:grid;grid-template-columns:128px 1fr 58px;align-items:center;gap:8px;margin:5px 0;font-size:12px}
+.row code{font-family:var(--mono);font-size:11.5px}
+.bar{height:14px;border-radius:4px;background:var(--b)}
+.bar i{display:block;height:100%;border-radius:4px;background:#5aa3c4}
+.bar.o i{background:#9bbf9f}
+.v{font-family:var(--mono);font-size:11.5px;text-align:right}
+.sec{font-size:11.5px;color:var(--m);font-weight:600;margin:12px 0 6px}
+.why{counter-reset:n}
+.why .it{grid-template-columns:22px 1fr}
+.why .it::before{counter-increment:n;content:counter(n);font-weight:700;font-size:12px;background:var(--ac-bg);color:var(--ac);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;grid-row:1 / span 2}
+.why .it b,.why .it p{grid-column:2}
+.note{font-size:12px;color:var(--m);background:var(--s2);border:.5px dashed var(--b);border-radius:8px;padding:8px 10px;margin-top:10px;line-height:1.55}
+.note b{color:var(--t)}
+</style></head><body>
+
+<div class="card" id="c1">
+<span class="tag">KATACHI-380 ・ 1 / 3</span>
+<h1>測れていなかったのは 4 つ。2 つを足した</h1>
+<p class="lead">v0.3.0 から main までの変更と、benchmark が測っているものを突き合わせた結果。</p>
+<div class="it"><b>layout の検査（walk・role 照合・layout 評価）</b><span class="st ok">追従済み</span><p>WalkBench ほか 2 本。.module { } の削除にも追従済み</p></div>
+<div class="it"><b>konsist { }</b><span class="st ok">追従済み</span><p>KonsistScopeBench・AssertColdBench</p></div>
+<div class="it"><b>ktFileContent { }</b><span class="st new">今回足した</span><p>v0.4 で大きく広げた（+3,600 行）のに 0 本だった。「benchmark で分かったら直す」という TODO もコードに残っていた</p></div>
+<div class="it"><b>konture { }</b><span class="st new">今回足した</span><p>v0.3 からある 2 つ目の制約エンジン。0 本だった</p></div>
+<div class="it"><b>katachiDiff（v0.4 で新規）</b><span class="st no">足していない</span><p>時間の大半は git の呼び出し。role の照合は walk と同じ索引で、そちらは測っている</p></div>
+<div class="it"><b>CLI・*.katachi.kts（v0.4 で新規）</b><span class="st no">足していない</span><p>kotlin コマンドの起動ごと測る別の仕組みが要る。JMH には載らない</p></div>
+<div class="it"><b>コメントの「nightly」5 か所</b><span class="st fix">直した</span><p>9/27 に push・PR ごとの実行へ変えたあとも、毎晩と書いたままだった</p></div>
+<div class="lg"><span><span class="st ok">追従済み</span> 変更なし</span><span><span class="st new">今回足した</span> PR #96</span><span><span class="st no">足していない</span> 判断待ち</span></div>
+</div>
+
+<div class="card" id="c2">
+<span class="tag">KATACHI-380 ・ 2 / 3</span>
+<h1>足したら ktFileContent の重さが見えた</h1>
+<p class="lead">同じ 2000 ファイル・5 role の木で、制約の書き方だけ変えた結果。</p>
+<div class="sec">2 回目以降の検査（warm）</div>
+<div class="row"><code>konsist { }</code><div class="bar o"><i style="width:12.8%"></i></div><div class="v">35 ms</div></div>
+<div class="row"><code>konture { }</code><div class="bar"><i style="width:28.7%"></i></div><div class="v">80 ms</div></div>
+<div class="row"><code>ktFileContent { }</code><div class="bar"><i style="width:100%"></i></div><div class="v">278 ms</div></div>
+<div class="sec">新しい JVM の 1 回目（cold）</div>
+<div class="row"><code>konsist { }</code><div class="bar o"><i style="width:47.2%"></i></div><div class="v">1.09 s</div></div>
+<div class="row"><code>konture { }</code><div class="bar"><i style="width:93.8%"></i></div><div class="v">2.16 s</div></div>
+<div class="row"><code>ktFileContent { }</code><div class="bar"><i style="width:100%"></i></div><div class="v">2.31 s</div></div>
+<div class="note"><b>読み方:</b> ktFileContent は konsist { } の約 8 倍（warm）。プロファイラで一番多かったのは、行を書くたびに宣言場所を取るためのスタックの走査。直すのは別チケット（KATACHI-209 の改善案に追加）。<br><b>測り方:</b> クラウドの 4 コア、CI と同じ JMH の設定。数字は環境で変わるので比で読む。</div>
+</div>
+
+<div class="card why" id="c3">
+<span class="tag">KATACHI-380 ・ 3 / 3</span>
+<h1>更新が漏れた理由は 3 つ</h1>
+<p class="lead">v0.3.0 以降、benchmark/ の変更は 4 コミット（+22 行・−26 行）で、すべてコンパイルを通すための追従だった。</p>
+<div class="it"><b>壊れたときしか気づけない</b><p>benchmark は check に入らず、CI の bench ジョブは遅くなっても落ちない。合図になるのは「API が消えてコンパイルできない」だけで、機能を足しても何も起きない</p></div>
+<div class="it"><b>「何を測っているか」の一覧が無い</b><p>機能とベンチの対応がどこにも書かれていない。PR テンプレートにも prerelease の手順にも、ベンチを足すかを考える項目が無い</p></div>
+<div class="it"><b>警告が誤報だらけで読まれない</b><p>v0.3.0 以降の main への push 82 回のうち、時間の警告の条件を満たしたのは 23 回。runner の速さが 0.60〜1.35 倍でぶれるのが原因で、同じ期間の確保量の警告は 1 回だけ</p></div>
+<div class="note"><b>性能そのものは悪化していない:</b> runner の速さをそろえて v0.4 の初めと今を比べると、遅くなった系列は無い（layout 評価は 1/10 以下、walk は横ばい〜1/20）。</div>
+</div>
+</body></html>
