@@ -27,6 +27,7 @@ flowchart LR
     P --> CI["8. CI と同等のチェック<br/>run-ci-checks.py"]
     P --> DR["11. ドキュメントのルール適合<br/>チェックリスト → ページ群ごとに照合"]
     P --> TX["10-4. IDE プラグインの文言の日英<br/>list-ide-plugin-texts.py"]
+    P --> BM["12. benchmark の棚卸し<br/>check-benchmark.py"]
     V --> V1["public"] & V2["@InternalKatachiApi"] & V3["@ExperimentalKatachiApi"]
     T --> B["6-1. ビルドと配信<br/>generateApiDocs → pnpm build → pnpm preview"]
     B --> C1["6. 巡回 en"] & C2["6. 巡回 ja"] & C3["6. 巡回 api-docs"]
@@ -35,16 +36,18 @@ flowchart LR
     E2 -- " Gradle を空ける " --> D & B
     B -- " Gradle を空ける " --> IK["9-1. インストールキット<br/>build-katachi-cli.sh → check-install-kit.sh"]
     IK --> IE["9-2. 統合テスト<br/>手順書どおりに導入 ja / en<br/>＋手順書のレビュー"]
-    V1 & V2 & V3 & R & D & DR & TX & C1 & C2 & C3 & CI & N & E2 & IE --> Rep["7. 報告"]
+    V1 & V2 & V3 & R & D & DR & TX & BM & C1 & C2 & C3 & CI & N & E2 & IE --> Rep["7. 報告"]
 ```
 
-- 1 が通ったら、2・3・4・8・10-4・11 を並列に始める。3 と 6 の中は、区分ごとの subagent をさらに並列にする。
+- 1 が通ったら、2・3・4・8・10-4・11・12 を並列に始める。3 と 6 の中は、区分ごとの subagent をさらに並列にする。
 - 8 は Gradle を長く使う（10〜20 分）。8 が終わったら続けて 10-1（IDE プラグインの nightly 相当。既定 scale 20 で
   約30〜35分）、そのあと 10-2（IDE プラグインの E2E。実 IDE を起動するテスト2本、1本あたり起動込みで2分半〜3分が目安）を
   走らせる。5 のサンプルを動かす作業と 6-1 は、10-2 が終わってから始める。
 - 9 も Gradle を長く使う（15〜20 分）。6-1 の `generateApiDocs` が終わってから始める（巡回を先に始めたいので 6-1 を先にする）。
   5 のサンプルを動かす作業とは、どちらかが終わるのを待って重ねない。
 - 10-4 は Gradle を使わず数秒で材料が出て、判定の subagent もファイルを書き換えないので、どの手順とも重ねてよい。
+- 12 は Gradle を使わず数秒で材料が出る（main の履歴を読むだけで、JMH は走らせない）ので、どの手順とも重ねてよい。
+  オーケストレータが自分で走らせ、対応表の行の見直しも自分でする。
 - 11 は Gradle を使わず、日本語の原本だけを読んでファイルを書き換えないので、2 を待たず、Gradle を使う作業とも重ねてよい
   （subagent が主で、オーケストレータの手はほぼ要らない）。
 - 6 は 2 を待つ。英語のページを訳し直してからビルドしないと、古い英語を巡回することになる。
@@ -64,7 +67,7 @@ flowchart LR
 - 1 の `prepare.py` が判断の件数と問題（`quote` が見つからない＝箇所が書き換わった、など）を出す。問題はチェックリストの 1 の memo に書く。
 - 手順を始めるとき（subagent に任せるならその subagent に）、[decisions/README.md](decisions/README.md) の表の「読む手順」のファイルと、
   README の「照らし方」を渡す。手順 3 は `api.md`、5・6・11 は `docs.md`、9 は `install.md`、10 は `ide-plugin.md`、
-  8・9・10 の失敗は `environment.md`、オーケストレータは `process.md`。
+  8・9・10 の失敗は `environment.md`、12 は `benchmark.md`、オーケストレータは `process.md`。
 - 同じものは警告にせず、結果の末尾の「過去の判断どおり（n 件）」に見出しだけ並べる（`<details>`）。チェックリストにも件数を書く。
 - 前提が変わったもの（`revisit` の条件を満たした・中身が重くなった・箇所が書き換わった）は「見直し候補」にして、TODO.html の
   「2. 判断してほしい」に前の判断と一緒に載せる。
@@ -94,6 +97,7 @@ flowchart LR
 | `ide-plugin-texts.md`            | 10-4     |
 | `install-kit.md`                 | 9-1      |
 | `install-e2e.md`                 | 9-2      |
+| `benchmark.md`                   | 12       |
 | `TODO.html`                      | 途中から・オーケストレータ（利用者がやること・決めることだけ） |
 | `index.html`                     | 7（結果をひとまとめにしたもの） |
 
@@ -186,6 +190,18 @@ layout。**チェックの前に**、ほかのガイド（generate-code-from-tem
 `docs/AGENTS.md` にもルールがあるかを確かめ、あれば対象に足して、何をどこから拾ったかを結果に書く。
 1体目がチェックリストを作り、ページのまとまりごとの subagent が並列に照合する。結果は `docs-rules.md`、中間物は `tmp/docs-rules/`。
 詳細: [references/docs-rules.md](references/docs-rules.md)
+
+## 12. benchmark の棚卸し
+
+`check-benchmark.py` で材料（`tmp/benchmark-material.md`）を出し、3 つを見る。オーケストレータが自分で走らせてよい。結果は `benchmark.md`。
+
+- 範囲: `benchmark/README.md` の対応表の行ごとに、基準から変わったコンポーネントのベンチが今も足りているか。未確認の行と、
+  足すか測らないかを決めきれない行は priority 5 で聞く。決まったら対応表の「確認した版」を今回の版に上げる
+- 数値: gh-pages の履歴から、基準の版 → 今 の倍率。time 1.5 倍・alloc 1.2 倍以上は priority 8 の警告
+- 鮮度: 履歴が main の先頭まで続いているか（止まっていれば priority 8）、固定しているコミット・版、週 1 の gradle-profiler
+
+benchmark は `check` に入らず、8 も bench ジョブを飛ばすので、ここで見ないとリリースまで誰も見ない。
+詳細: [references/benchmark.md](references/benchmark.md)
 
 ## 7. 報告
 

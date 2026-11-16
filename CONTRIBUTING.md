@@ -18,7 +18,7 @@ For people changing katachi itself. For how to use it, see the [README](README.m
 | `katachi/`, `katachi-konsist/`, `katachi-gradle-plugin/` | The three published modules |
 | `architecture-test/` | katachi's own architecture definition. Not published |
 | `tool/dokka/` | The Dokka plugin behind the API reference. Not published |
-| `benchmark/` | The JMH benchmarks. Not published. Not part of `check`; run them with `./gradlew :benchmark:jmh` |
+| `benchmark/` | The JMH benchmarks. Not published. Not part of `check`; run them with `./gradlew :benchmark:jmh`. Which benchmarks watch which component is the table in `benchmark/README.md` |
 | `katachi-intellij-plugin/` | The plugin for IntelliJ IDEA and Android Studio, a standalone Gradle build |
 | `sample/` | The samples, each a standalone Gradle build |
 | `docs/` | The documentation site |
