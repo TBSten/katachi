@@ -300,7 +300,8 @@ For a pull request from a fork, the token cannot write comments, so `diff-report
 
 ## Read it from a script
 
-The JSON and YAML reports hold the same groups, Roles and files as the HTML and Markdown reports, as data. A script can read them, for example when you want CI to do different things depending on which Roles changed.
+The JSON and YAML reports hold the same groups, Roles and files as the HTML and Markdown reports, as data.
+You can pass them to a script or similar, for example when you want CI to do different things depending on which Roles changed.
 
 ```shell
 # The Roles that changed
@@ -312,32 +313,19 @@ jq -r '.summary.changedRoles[]' architecture-test/build/katachi/diff/diff-report
 jq -e '.summary.noRoleFileCount == 0' architecture-test/build/katachi/diff/diff-report.json
 ```
 
-| Key | Content |
-|---|---|
-| `schemaVersion` | The version of the shape of the data. It goes up when a key is renamed or removed |
-| `range` | The range that was compared. The refs and SHAs of before / after, and the pull request |
-| `summary` | The totals. The number of changed files, the added and deleted lines, the list of Roles that changed (`changedRoles`), and so on |
-| `nodes` | The tree of groups and Roles. A Role holds the list of its changed files |
-| `noRole` | The changed files that match no Role |
-| `ignored` | The changed files excluded from the check with `ignore()` |
+<details>
+  <summary>Structure of the JSON and YAML reports</summary>
 
-## Agent skill
+  | Key | Content |
+  |---|---|
+  | `schemaVersion` | The version of the shape of the data. It goes up when a key is renamed or removed |
+  | `range` | The range that was compared. The refs and SHAs of before / after, and the pull request |
+  | `summary` | The totals. The number of changed files, the added and deleted lines, the list of Roles that changed (`changedRoles`), and so on |
+  | `nodes` | The tree of groups and Roles. A Role holds the list of its changed files |
+  | `noRole` | The changed files that match no Role |
+  | `ignored` | The changed files excluded from the check with `ignore()` |
 
-If your project has a review Agent skill, make it run `katachiDiff` and include the result in the review output.
-
-An Agent can see which parts of the architecture a change touches more quickly and more accurately by reading a report grouped by Role than by reading `git diff` itself.
-
-```md title=".agents/skills/review/SKILL.md"
----
-name: review
-description: Review a pull request from the architecture point of view
----
-
-1. Run `./gradlew :architecture-test:katachiDiff --arg before=origin/main`
-2. Read `architecture-test/build/katachi/diff/diff-report.md` and check the diff in order, starting from the Roles with high Importance
-3. If `diff-report.files-in-no-role.md` has files, suggest either adding them to the definition or fixing where they are placed
-4. At the top of the review result, quote from the report the list of Roles the change touches
-```
+</details>
 
 ## Summary
 
