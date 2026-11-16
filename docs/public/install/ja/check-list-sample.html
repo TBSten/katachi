@@ -3303,7 +3303,7 @@
   }
 
   // ---- フィードバックモード（項目を選んでコメントを書き、まとめてコピーして AI エージェントに渡す） ----
-  var FEEDBACK_KEY = 'katachi-feedback:' + location.href.split('#')[0];
+  var FEEDBACK_KEY = 'install-sample-feedback:' + location.href.split('#')[0];
   // drafts は保存していない書きかけ（宛先の key ごと）。閉じても次に開いたときに戻す
   var fb = { on: false, items: [], hover: null, editing: null, drafts: {}, ui: {} };
 
@@ -3359,7 +3359,7 @@
     return fbShorten(node.innerText || node.textContent, FB_TEXT_MAX);
   }
   // ---- 書きかけ（保存していないコメント）。タブを閉じるまで sessionStorage に残し、再読み込みしても戻す ----
-  var DRAFTS_KEY = 'katachi-feedback-drafts:' + location.href.split('#')[0];
+  var DRAFTS_KEY = 'install-sample-feedback-drafts:' + location.href.split('#')[0];
   function fbLoadDrafts() {
     try {
       var raw = JSON.parse(sessionStorage.getItem(DRAFTS_KEY) || '{}');
@@ -3406,7 +3406,7 @@
   }
 
   // ---- 入力欄の位置。ドラッグで動かしたら覚えて、次からはそこに出す ----
-  var POP_POS_KEY = 'katachi-feedback-pop-pos';
+  var POP_POS_KEY = 'install-sample-feedback-pop-pos';
   function fbSavedPos() {
     try {
       var pos = JSON.parse(storageGet(POP_POS_KEY) || 'null');

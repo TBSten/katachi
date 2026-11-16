@@ -3302,7 +3302,7 @@
   }
 
   // ---- Feedback mode (pick an item, write a comment, copy them all and hand them to the AI agent) ----
-  var FEEDBACK_KEY = 'katachi-feedback:' + location.href.split('#')[0];
+  var FEEDBACK_KEY = 'install-sample-feedback:' + location.href.split('#')[0];
   // drafts are unsaved comments (per target key). They come back the next time that target is opened
   var fb = { on: false, items: [], hover: null, editing: null, drafts: {}, ui: {} };
 
@@ -3358,7 +3358,7 @@
     return fbShorten(node.innerText || node.textContent, FB_TEXT_MAX);
   }
   // ---- Unsaved comments. Kept in sessionStorage until the tab closes, so they survive a reload ----
-  var DRAFTS_KEY = 'katachi-feedback-drafts:' + location.href.split('#')[0];
+  var DRAFTS_KEY = 'install-sample-feedback-drafts:' + location.href.split('#')[0];
   function fbLoadDrafts() {
     try {
       var raw = JSON.parse(sessionStorage.getItem(DRAFTS_KEY) || '{}');
@@ -3405,7 +3405,7 @@
   }
 
   // ---- The comment box position. Once dragged, remember it and open there next time ----
-  var POP_POS_KEY = 'katachi-feedback-pop-pos';
+  var POP_POS_KEY = 'install-sample-feedback-pop-pos';
   function fbSavedPos() {
     try {
       var pos = JSON.parse(storageGet(POP_POS_KEY) || 'null');

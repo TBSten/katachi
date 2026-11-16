@@ -232,7 +232,7 @@ Astro は `public/` を加工せずそのままコピーするので、`<base-ur
 | ファイル | 役割 |
 |---|---|
 | `index.md`・`<lang>/index.md` | katachi skill への入口だけの短いページ（skill の入れ方と、skill を使えないエージェント向けの raw URL）。手順は書かない |
-| `<lang>/check-list-sample.html` | 「初めてのアーキテクチャ定義」が iframe で見せるインストールチェックリストの例（ダミーのプロジェクト example-app を調べ終えて、人の回答を待っている状態）。skill の `assets/<lang>/check-list.html` に `checklist`・`report` の JSON を差し込んだもの。テンプレートの見た目や JSON の形が変わったら作り直し、ページの画像（`src/assets/install-check-list-example.png`・`.en.png`）も撮り直す |
+| `<lang>/check-list-sample.html` | 「初めてのアーキテクチャ定義」が iframe で見せるインストールチェックリストの例（ダミーのプロジェクト example-app を調べ終えて、人の回答を待っている状態）。skill の `assets/<lang>/check-list.html` に `checklist`・`report` の JSON を差し込んだもの。チェックリストのフィードバックモードが localStorage に使うキーの接頭辞 `katachi-feedback` は `install-sample-feedback` に置き換えてある（`scripts/check-no-dev-tools-in-dist.sh` が dist の中の `katachi-feedback` を dev 専用の痕跡として止めるため）。テンプレートの見た目や JSON の形が変わったら作り直し、ページの画像（`src/assets/install-check-list-example.png`・`.en.png`）も撮り直す |
 | `katachi-install.sh` | 以前の導入キット（POSIX sh）。手順書はもう参照せず、テンプレートは skill の `assets/` から取る。v0.5 で配信ごと消す（KATACHI-255） |
 
 守ること:
