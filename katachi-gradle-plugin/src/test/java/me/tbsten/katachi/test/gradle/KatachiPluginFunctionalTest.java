@@ -265,6 +265,12 @@ class KatachiPluginFunctionalTest {
                         + "            html {\n"
                         + "                enable = false\n"
                         + "            }\n"
+                        + "            json {\n"
+                        + "                outputFile = \"reports/diff-report.json\"\n"
+                        + "            }\n"
+                        + "            yaml {\n"
+                        + "                enable = false\n"
+                        + "            }\n"
                         + "        }\n"
                         + "    }\n"
                         + "}\n");
@@ -281,6 +287,13 @@ class KatachiPluginFunctionalTest {
                         && arg.endsWith(projectDir.getFileName() + "/diff-report.md")),
                 "markdown { outputFile } did not arrive as an absolute path:\n" + args);
         assertTrue(args.contains("--arg=html=false"), "html { enable } did not arrive:\n" + args);
+        assertTrue(
+                args.contains("--arg=jsonOutputFile=reports/diff-report.json"),
+                "json { outputFile } did not arrive:\n" + args);
+        assertFalse(
+                args.stream().anyMatch(arg -> arg.startsWith("--arg=json=")),
+                "an unset json { enable } was sent:\n" + args);
+        assertTrue(args.contains("--arg=yaml=false"), "yaml { enable } did not arrive:\n" + args);
         assertTrue(args.contains("--arg=maxFiles=0"), "--arg did not reach the entry point:\n" + args);
         assertFalse(args.contains("--arg=maxFiles=50"), "the build script beat --arg:\n" + args);
     }

@@ -104,7 +104,7 @@ public class KatachiInvalidDiffWeightException internal constructor(
     message = buildString {
         appendLine("Invalid diff weight \"$entry\" passed as `--arg weights=`.")
         appendLine(
-            "Each entry must be `<qualified group or role name>=<non-negative number>`, " +
+            "Each entry must be `<qualified group or role name>=<non-negative finite number>`, " +
                 "for example `Presentation.ViewModel=0.5`.",
         )
         append("Known names: ${knownNames.joinToString(", ")}")
@@ -112,7 +112,7 @@ public class KatachiInvalidDiffWeightException internal constructor(
 )
 
 /**
- * A `diffWeight` written on a group or a role of the definition is negative or not a number.
+ * A `diffWeight` written on a group or a role of the definition is negative or not a finite number.
  *
  * ## Example 1: a weight written in the definition
  * ```kt
@@ -138,7 +138,7 @@ public class KatachiInvalidDefinitionDiffWeightException internal constructor(
 ) : KatachiDeclarationException(
     message = buildString {
         appendLine("Invalid diffWeight $weight on \"$qualifiedName\" declared at $declaredAt.")
-        appendLine("A diff weight scales the changed lines, so it must be a number of 0 or more.")
+        appendLine("A diff weight scales the changed lines, so it must be a finite number of 0 or more.")
         append("Write a non-negative number, such as `diffWeight = 2.0`, or remove it to weigh 1.")
     },
 )
@@ -189,30 +189,30 @@ public class KatachiDiffReportIoException internal constructor(
     cause: IOException,
 ) : KatachiCheckException(
     message = "The diff report could not be written to ${fileUri(absolutePathOf(outputFile))} : ${cause.message}\n" +
-        "Check that the directory is writable, or pass another file with `--arg markdownOutputFile=` " +
-        "or `--arg htmlOutputFile=`.",
+        "Check that the directory is writable, or pass another file with `--arg markdownOutputFile=`, " +
+        "`--arg htmlOutputFile=`, `--arg jsonOutputFile=` or `--arg yamlOutputFile=`.",
     cause = cause,
 )
 
 /**
- * Both formats of [DiffReport] were turned off, so a run would write nothing.
+ * Every format of [DiffReport] was turned off, so a run would write nothing.
  *
- * ## Example 1: turn off one format, not both
+ * ## Example 1: turn off the formats nobody reads, not all four
  * ```kt
  * import me.tbsten.katachi.diff.DiffReport
  *
- * // ./gradlew katachiDiff --arg html=false
- * DiffReport.Args(html = false)
+ * // ./gradlew katachiDiff --arg markdown=false --arg html=false --arg yaml=false
+ * DiffReport.Args(markdown = false, html = false, yaml = false)
  * ```
  */
 @ExperimentalKatachiApi
 public class KatachiDiffReportNothingToWriteException internal constructor() : KatachiDeclarationException(
     message = buildString {
-        appendLine("The diff report was given markdown=false and html=false, so it has nothing to write.")
+        appendLine("The diff report was given markdown=false, html=false, json=false and yaml=false, so it has nothing to write.")
         appendLine("A run that writes no file looks like a success while producing nothing to read.")
         append(
-            "Leave at least one of them on: remove `--arg markdown=false` or `--arg html=false`, or " +
-                "`enable = false` in `katachi { processors { diff { markdown { } html { } } } }`.",
+            "Leave at least one of them on: remove one of the `--arg <format>=false`, or one of the " +
+                "`enable = false` in `katachi { processors { diff { markdown { } html { } json { } yaml { } } } }`.",
         )
     },
 )

@@ -50,6 +50,8 @@ public class KatachiDiffOptions {
     private List<String> weights;
     private final KatachiDiffOutputOptions markdown = new KatachiDiffOutputOptions("markdown");
     private final KatachiDiffOutputOptions html = new KatachiDiffOutputOptions("html");
+    private final KatachiDiffOutputOptions json = new KatachiDiffOutputOptions("json");
+    private final KatachiDiffOutputOptions yaml = new KatachiDiffOutputOptions("yaml");
     private Integer maxFiles;
 
     /** The ref the change starts from. */
@@ -153,6 +155,30 @@ public class KatachiDiffOptions {
         action.execute(html);
     }
 
+    /** The JSON report: whether it is written, and where. See {@link #json(Action)}. */
+    public KatachiDiffOutputOptions getJson() {
+        return json;
+    }
+
+    /**
+     * Configures the JSON report: the same groups, roles and files as data, for a script to read.
+     *
+     * <p>It holds every changed file whatever {@code maxFiles} is.
+     */
+    public void json(Action<? super KatachiDiffOutputOptions> action) {
+        action.execute(json);
+    }
+
+    /** The YAML report: whether it is written, and where. See {@link #yaml(Action)}. */
+    public KatachiDiffOutputOptions getYaml() {
+        return yaml;
+    }
+
+    /** Configures the YAML report: the same data as the JSON one. */
+    public void yaml(Action<? super KatachiDiffOutputOptions> action) {
+        action.execute(yaml);
+    }
+
     /** How many changed files the per-file listings show at most. */
     public Integer getMaxFiles() {
         return maxFiles;
@@ -196,6 +222,8 @@ public class KatachiDiffOptions {
         }
         markdown.putArgs(args);
         html.putArgs(args);
+        json.putArgs(args);
+        yaml.putArgs(args);
         if (maxFiles != null) {
             args.put("maxFiles", maxFiles.toString());
         }

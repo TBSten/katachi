@@ -176,7 +176,7 @@ private fun definitionWeights(architecture: Architecture): Map<String, Double> {
         role[DiffWeight]?.let { Triple(role.qualifiedName, it, role.declaredAt) }
     }
     return declared.associate { (name, weight, declaredAt) ->
-        if (weight.isNaN() || weight < 0.0) throw KatachiInvalidDefinitionDiffWeightException(name, weight, declaredAt)
+        if (!weight.isFinite() || weight < 0.0) throw KatachiInvalidDefinitionDiffWeightException(name, weight, declaredAt)
         name to weight
     }
 }
@@ -186,7 +186,7 @@ private fun parseWeights(architecture: Architecture, entries: List<String>): Map
     return entries.filter { it.isNotBlank() }.associate { entry ->
         val name = entry.substringBefore('=', missingDelimiterValue = "").trim()
         val value = entry.substringAfter('=', missingDelimiterValue = "").trim().toDoubleOrNull()
-        if (name !in known || value == null || value < 0.0) throw KatachiInvalidDiffWeightException(entry, known)
+        if (name !in known || value == null || !value.isFinite() || value < 0.0) throw KatachiInvalidDiffWeightException(entry, known)
         name to value
     }
 }

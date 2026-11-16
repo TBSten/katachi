@@ -19,7 +19,8 @@ and severity, and the warnings a definition can carry on its own.
 # Package me.tbsten.katachi.diff
 
 `katachiDiff`: writes which groups and roles a git diff touched, as HTML and Markdown, so a
-reviewer sees which part of the architecture a change lands in. It holds the processor behind the
+reviewer sees which part of the architecture a change lands in, and as JSON and YAML, for a script
+to read. It holds the processor behind the
 task, `diffWeight` — how much a change in a group or a role counts — and the exceptions raised
 when the refs, the pull request or a weight cannot be used.
 

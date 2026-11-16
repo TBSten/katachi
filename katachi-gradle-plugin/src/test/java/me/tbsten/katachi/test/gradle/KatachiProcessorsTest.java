@@ -322,6 +322,32 @@ class KatachiProcessorsTest {
     }
 
     @Test
+    @DisplayName("diff { json { } yaml { } } に書いた値は json / jsonOutputFile / yaml / yamlOutputFile の --arg になる")
+    void diffJsonAndYamlTravelAsTheirArgs() {
+        KatachiProcessors processors = new KatachiProcessors();
+        processors.diff(diff -> {
+            diff.json(json -> json.setOutputFile("reports/diff-report.json"));
+            diff.yaml(yaml -> yaml.setEnable(false));
+        });
+
+        java.util.Map<String, String> expected = new java.util.LinkedHashMap<>();
+        expected.put("jsonOutputFile", "reports/diff-report.json");
+        expected.put("yaml", "false");
+        assertEquals(expected, configuredArgs(processors).get("diff"));
+    }
+
+    @Test
+    @DisplayName("diff { yaml { outputFile = ... } } が .. でモジュールの外に出ると、.yaml の書き方を言って落ちる")
+    void aYamlOutputFileClimbingOutNamesItsExtension() {
+        KatachiProcessors processors = new KatachiProcessors();
+
+        InvalidUserDataException failure = assertThrows(
+                InvalidUserDataException.class,
+                () -> processors.diff(diff -> diff.yaml(yaml -> yaml.setOutputFile("../diff-report.yaml"))));
+        assertTrue(failure.getMessage().contains("file(\"diff-report.yaml\")"), failure.getMessage());
+    }
+
+    @Test
     @DisplayName("diff { html { outputFile = File } } は絶対パスで送る")
     void aDiffOutputFileGivenAsAFileTravelsAbsolute() {
         KatachiProcessors processors = new KatachiProcessors();

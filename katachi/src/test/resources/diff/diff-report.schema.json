@@ -1,0 +1,161 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "katachiDiff report (schemaVersion 1)",
+  "description": "What `katachiDiff --arg json=true` and `--arg yaml=true` write. A key may be added without schemaVersion going up, so nothing here forbids additional properties.",
+  "type": "object",
+  "required": ["schemaVersion", "range", "summary", "nodes", "noRole", "ignored"],
+  "properties": {
+    "schemaVersion": {
+      "description": "Goes up when a key is renamed or removed, or a value changes its meaning.",
+      "const": 1
+    },
+    "range": { "$ref": "#/definitions/range" },
+    "summary": { "$ref": "#/definitions/summary" },
+    "nodes": {
+      "description": "The top of the definition: its groups and roles, changed or not, in the order the definition declares them.",
+      "type": "array",
+      "items": { "$ref": "#/definitions/node" }
+    },
+    "noRole": {
+      "description": "Changed files no role allows, outside every ignored directory. The architecture test fails on them.",
+      "$ref": "#/definitions/looseFiles"
+    },
+    "ignored": {
+      "description": "Changed files under a directory the layout ignore()s. The architecture test does not look at them.",
+      "$ref": "#/definitions/looseFiles"
+    }
+  },
+  "definitions": {
+    "count": { "type": "integer", "minimum": 0 },
+    "score": {
+      "description": "Diff lines (added + deleted) times the weight that applies.",
+      "type": "number",
+      "minimum": 0
+    },
+    "importance": {
+      "description": "score against summary.fullImportanceLines: 0 for no change, then 1 to summary.maxImportance.",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 5
+    },
+    "range": {
+      "description": "The two trees that were compared.",
+      "type": "object",
+      "required": ["label", "before", "after", "beforeSha", "afterSha", "pullRequest", "repositoryUrl", "projectPath"],
+      "properties": {
+        "label": { "description": "The range as the other formats title it.", "type": "string" },
+        "before": { "description": "The ref the change starts from, as given.", "type": "string" },
+        "after": { "description": "The ref the change ends at, as given; null for the working tree.", "type": ["string", "null"] },
+        "beforeSha": { "type": "string" },
+        "afterSha": { "description": "Null for the working tree.", "type": ["string", "null"] },
+        "pullRequest": {
+          "description": "The pull request given as pr=; null otherwise.",
+          "type": ["object", "null"],
+          "required": ["number", "url"],
+          "properties": {
+            "number": { "type": "integer" },
+            "url": { "type": "string" }
+          }
+        },
+        "repositoryUrl": { "description": "The GitHub repository of the origin remote; null when there is none.", "type": ["string", "null"] },
+        "projectPath": {
+          "description": "Where the project sits inside the repository, without a trailing slash; empty at the repository root. Put it before a file's path for a repository relative one.",
+          "type": "string"
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "fileCount", "added", "deleted", "roleCount", "changedRoleCount", "changedRoles",
+        "noRoleFileCount", "ignoredFileCount", "fullImportanceLines", "maxImportance"
+      ],
+      "properties": {
+        "fileCount": { "description": "Changed files, each counted once.", "$ref": "#/definitions/count" },
+        "added": { "$ref": "#/definitions/count" },
+        "deleted": { "$ref": "#/definitions/count" },
+        "roleCount": { "description": "Every role of the definition.", "$ref": "#/definitions/count" },
+        "changedRoleCount": { "$ref": "#/definitions/count" },
+        "changedRoles": {
+          "description": "The qualified names of the roles the change has a file under, in the definition's order.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "noRoleFileCount": { "$ref": "#/definitions/count" },
+        "ignoredFileCount": { "$ref": "#/definitions/count" },
+        "fullImportanceLines": { "description": "The score at which importance is full.", "type": "integer", "minimum": 1 },
+        "maxImportance": { "const": 5 }
+      }
+    },
+    "node": {
+      "type": "object",
+      "required": ["type", "name", "qualifiedName", "title", "changed", "fileCount", "added", "deleted", "score", "importance"],
+      "properties": {
+        "type": { "enum": ["group", "role"] },
+        "name": { "type": "string" },
+        "qualifiedName": { "description": "The name with its groups, dot separated: what weights= takes.", "type": "string" },
+        "title": { "description": "The title written in the definition; null when there is none.", "type": ["string", "null"] },
+        "changed": { "description": "Whether the change has a file under this group or role.", "type": "boolean" },
+        "fileCount": { "$ref": "#/definitions/count" },
+        "added": { "$ref": "#/definitions/count" },
+        "deleted": { "$ref": "#/definitions/count" },
+        "score": { "$ref": "#/definitions/score" },
+        "importance": { "$ref": "#/definitions/importance" }
+      },
+      "oneOf": [
+        {
+          "required": ["children"],
+          "properties": {
+            "type": { "const": "group" },
+            "children": {
+              "description": "The roles of the group, then its groups.",
+              "type": "array",
+              "items": { "$ref": "#/definitions/node" }
+            }
+          }
+        },
+        {
+          "required": ["weight", "files"],
+          "properties": {
+            "type": { "const": "role" },
+            "weight": { "description": "What the diff lines of this role are multiplied by.", "type": "number", "minimum": 0 },
+            "files": {
+              "description": "The changed files the role's layout allows, most diff lines first. A file several roles allow is under each.",
+              "type": "array",
+              "items": { "$ref": "#/definitions/file" }
+            }
+          }
+        }
+      ]
+    },
+    "looseFiles": {
+      "type": "object",
+      "required": ["fileCount", "added", "deleted", "files"],
+      "properties": {
+        "fileCount": { "$ref": "#/definitions/count" },
+        "added": { "$ref": "#/definitions/count" },
+        "deleted": { "$ref": "#/definitions/count" },
+        "files": { "type": "array", "items": { "$ref": "#/definitions/file" } }
+      }
+    },
+    "file": {
+      "type": "object",
+      "required": [
+        "path", "previousPath", "status", "binary", "added", "deleted",
+        "score", "importance", "githubUrl", "gitDiffCommand"
+      ],
+      "properties": {
+        "path": { "description": "Project relative, / separated. The new path of a rename.", "type": "string" },
+        "previousPath": { "description": "The old path of a rename; null otherwise.", "type": ["string", "null"] },
+        "status": { "enum": ["added", "modified", "deleted", "renamed", "untracked"] },
+        "binary": { "description": "A binary file has no line counts: added and deleted are 0.", "type": "boolean" },
+        "added": { "$ref": "#/definitions/count" },
+        "deleted": { "$ref": "#/definitions/count" },
+        "score": { "$ref": "#/definitions/score" },
+        "importance": { "$ref": "#/definitions/importance" },
+        "githubUrl": { "description": "The file's diff on GitHub; null when the diff has no counterpart there.", "type": ["string", "null"] },
+        "gitDiffCommand": { "description": "Shows the file's diff again, run from the repository root.", "type": "string" }
+      }
+    }
+  }
+}

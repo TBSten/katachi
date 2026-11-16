@@ -20,10 +20,11 @@ import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
 
 fun DeclarationContainerScope.diff() = "Diff".role {
     title = "差分レポート"
-    summary = "git の差分を role / group ごとに振り分け、レビュー用の HTML と Markdown にする層"
+    summary = "git の差分を role / group ごとに振り分け、レビュー用の HTML と Markdown、スクリプト用の JSON と YAML にする層"
     example("DiffReport.kt", "katachiDiff の入口。差分を取り、振り分け、書き出す")
     example("GitDiff.kt", "git diff --numstat と gh pr view から変更ファイルの一覧を作る")
     example("DiffModel.kt", "変更ファイルを layout に照らして role / group の木にする")
+    example("DiffReportData.kt", "同じ木を JSON と YAML のためのデータにする")
     layout {
         "katachi" {
             packageAndLayerImports()

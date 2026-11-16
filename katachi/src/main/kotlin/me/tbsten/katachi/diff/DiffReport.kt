@@ -10,8 +10,11 @@ import me.tbsten.katachi.diff.internal.MarkdownFileNames
 import me.tbsten.katachi.diff.internal.buildDiffReportModel
 import me.tbsten.katachi.diff.internal.changedFiles
 import me.tbsten.katachi.diff.internal.commitHistory
+import me.tbsten.katachi.diff.internal.diffReportData
 import me.tbsten.katachi.diff.internal.renderDiffHtml
 import me.tbsten.katachi.diff.internal.renderDiffMarkdown
+import me.tbsten.katachi.diff.internal.renderJson
+import me.tbsten.katachi.diff.internal.renderYaml
 import me.tbsten.katachi.diff.internal.resolveDiffRange
 import me.tbsten.katachi.internal.absolutePathOf
 import me.tbsten.katachi.internal.fileUri
@@ -21,7 +24,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.internal.projectWalk
 
 /**
- * Writes a report of which roles and groups a git diff touched, as HTML and Markdown.
+ * Writes a report of which roles and groups a git diff touched, as HTML, Markdown, JSON and YAML.
  *
  * Every changed file is put under each role whose `layout { }` allows it, and every group and
  * role of the definition is listed, changed or not, so a reviewer sees at a glance which part of
@@ -40,6 +43,15 @@ import me.tbsten.katachi.processor.internal.projectWalk
  * - otherwise `before` against `after` (`git diff before..after`). An empty `after` means the
  *   working tree, untracked files included.
  *
+ * ## The report as data
+ *
+ * The JSON and the YAML hold the same tree for a script to read: `nodes` holds the groups
+ * (`type: group`, with `children`) and the roles (`type: role`, with `weight` and `files`) of the
+ * definition, changed or not, and `noRole` and `ignored` hold the files no role allows. Every node and
+ * file carries `added`, `deleted`, `score` (diff lines times weight) and `importance` (0 to
+ * `summary.maxImportance`). `summary` holds the totals and `changedRoles`, the qualified names of the
+ * roles the change touched. `schemaVersion` goes up when a key is renamed or removed, not when one is added.
+ *
  * ## Example 1: report the current branch against main from code
  * ```kt
  * import me.tbsten.katachi.diff.DiffReport
@@ -52,6 +64,12 @@ import me.tbsten.katachi.processor.internal.projectWalk
  * ```sh
  * ./gradlew :architecture-test:katachiDiff --arg before=origin/main
  * ./gradlew :architecture-test:katachiDiff --arg pr=1234 --arg weights=Domain=2,Presentation.ViewModel=0.5
+ * ```
+ *
+ * ## Example 3: list the roles a change touched from a script
+ * ```sh
+ * ./gradlew :architecture-test:katachiDiff --arg before=origin/main
+ * jq -r '.summary.changedRoles[]' architecture-test/build/katachi/diff/diff-report.json
  * ```
  *
  * @see Args
@@ -77,7 +95,7 @@ public object DiffReport : ArchitectureProcessor<DiffReport.Args, Unit> {
             maxFiles = args.maxFiles,
             fullImportanceLines = args.fullImportanceLines,
         )
-        if (!args.markdown && !args.html) throw KatachiDiffReportNothingToWriteException()
+        if (!args.markdown && !args.html && !args.json && !args.yaml) throw KatachiDiffReportNothingToWriteException()
         val outputs = buildList {
             if (args.html) add(File(args.htmlOutputFile) to renderDiffHtml(model, commitHistory(root, range)))
             if (args.markdown) {
@@ -87,6 +105,11 @@ public object DiffReport : ArchitectureProcessor<DiffReport.Args, Unit> {
                 // A listing an earlier run wrote and this one has nothing for would otherwise be read as current.
                 for (name in names.all - written.keys) File(summary.absoluteFile.parentFile, name).delete()
                 for ((name, content) in written) add(File(summary.absoluteFile.parentFile, name) to content)
+            }
+            if (args.json || args.yaml) {
+                val data = diffReportData(model)
+                if (args.json) add(File(args.jsonOutputFile) to data.renderJson())
+                if (args.yaml) add(File(args.yamlOutputFile) to data.renderYaml())
             }
         }
         for ((file, content) in outputs) {
@@ -138,6 +161,14 @@ public object DiffReport : ArchitectureProcessor<DiffReport.Args, Unit> {
      * DiffReport.Args(before = "origin/main", fullImportanceLines = 200)
      * ```
      *
+     * ## Example 5: the JSON alone, for a script that reads which roles a change touched
+     * ```kt
+     * import me.tbsten.katachi.diff.DiffReport
+     *
+     * // ./gradlew katachiDiff --arg before=origin/main --arg markdown=false --arg html=false --arg yaml=false
+     * DiffReport.Args(before = "origin/main", markdown = false, html = false, yaml = false)
+     * ```
+     *
      * @constructor Takes the refs, the weights, the file limit, the importance scale and what to write where.
      */
     @Serializable
@@ -177,7 +208,7 @@ public object DiffReport : ArchitectureProcessor<DiffReport.Args, Unit> {
          * Only the listings are cut: every group and role row, its heat, its line count and its
          * file count are still computed from all the changed files. The files kept are the ones
          * with the most diff lines after weighing, then by path, and the report says how many it
-         * left out.
+         * left out. The JSON and the YAML are not cut: a script reads them, so they hold every file.
          */
         val maxFiles: Int = DEFAULT_MAX_FILES,
         /**
@@ -188,11 +219,23 @@ public object DiffReport : ArchitectureProcessor<DiffReport.Args, Unit> {
          * of the change is. A row past it is shown as full. Must be 1 or more.
          */
         val fullImportanceLines: Int = DEFAULT_FULL_IMPORTANCE_LINES,
+        /** Whether to write the report as JSON, for a script to read. */
+        val json: Boolean = true,
+        /** Where the JSON report goes, relative to the directory the processor was started in. */
+        val jsonOutputFile: String = DEFAULT_JSON_OUTPUT_FILE,
+        /** Whether to write the report as YAML: the same data as the JSON. */
+        val yaml: Boolean = true,
+        /** Where the YAML report goes, relative to the directory the processor was started in. */
+        val yamlOutputFile: String = DEFAULT_YAML_OUTPUT_FILE,
     )
 }
 
 private const val DEFAULT_MARKDOWN_OUTPUT_FILE: String = "build/katachi/diff/diff-report.md"
 
 private const val DEFAULT_HTML_OUTPUT_FILE: String = "build/katachi/diff/diff-report.html"
+
+private const val DEFAULT_JSON_OUTPUT_FILE: String = "build/katachi/diff/diff-report.json"
+
+private const val DEFAULT_YAML_OUTPUT_FILE: String = "build/katachi/diff/diff-report.yaml"
 
 private const val DEFAULT_MAX_FILES: Int = 100

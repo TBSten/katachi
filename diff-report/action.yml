@@ -107,7 +107,9 @@ inputs:
     required: false
     default: katachi-diff-report-comment
   report-artifact-name:
-    description: The artifact the HTML report and the full Markdown are uploaded as. Empty uploads none.
+    description: >
+      The artifact the HTML report, the full Markdown and the report as data (JSON and YAML) are
+      uploaded as. Empty uploads none.
     required: false
     default: katachi-diff-report
   report-retention-days:
@@ -223,7 +225,8 @@ runs:
         path: ${{ steps.assemble.outputs.comment-file }}
         retention-days: 1
 
-    # The HTML report and the full Markdown, for a reviewer who wants more than the comment.
+    # The HTML report and the full Markdown, for a reviewer who wants more than the comment, and the
+    # JSON and the YAML, for a later job that reads which roles the pull request touched.
     - name: Upload the report
       if: ${{ inputs.report-artifact-name != '' }}
       uses: actions/upload-artifact@v7
