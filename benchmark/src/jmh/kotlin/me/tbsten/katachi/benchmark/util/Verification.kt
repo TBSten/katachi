@@ -3,12 +3,7 @@ package me.tbsten.katachi.benchmark.util
 import me.tbsten.katachi.check.Severity
 import me.tbsten.katachi.check.Violation
 
-/**
- * Fails the benchmark's setup unless [violations] are exactly [expected] (as `[label] path`).
- *
- * Run once before measuring, so a benchmark that stopped measuring what it claims — a layout
- * that no longer matches the generated tree, say — fails instead of timing an error path.
- */
+/** Run once in `@Setup`, so a benchmark that stopped matching its project fails instead of timing an error path. */
 internal fun requireViolations(violations: List<Violation>, expected: List<String>) {
     val actual = violations.map { "[${it.label}] ${it.path}" }.sorted()
     check(actual == expected.sorted()) {

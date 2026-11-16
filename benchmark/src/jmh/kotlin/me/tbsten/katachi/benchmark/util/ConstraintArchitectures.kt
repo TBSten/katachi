@@ -14,27 +14,15 @@ import me.tbsten.katachi.konture.konture
 import me.tbsten.katachi.test.synthetic.SyntheticPlacement
 import me.tbsten.katachi.test.synthetic.SyntheticProject
 
-/**
- * [SyntheticProject]'s own `architecture()`, plus one `konsist { }` per role.
- *
- * The constraint makes `FileConstraintCheck` parse every `.kt` file a role owns. It asks
- * something every generated class satisfies, so the run reports no constraint violation and the
- * time is the parse and the slice, not a report.
- */
+// Every constraint here holds for every generated class: the benchmarks time the check, not a report.
+
 internal fun SyntheticProject.konsistArchitecture(): Architecture = constrainedArchitecture {
     "classes are public".konsist {
         classes().must { it.hasPublicOrDefaultModifier }
     }
 }
 
-/**
- * [SyntheticProject]'s own `architecture()`, plus one `ktFileContent { }` per role.
- *
- * The block is the shape `generateProject()` writes every class in, line for line: its package,
- * one class named after the file, and that class's two members. Every line of the block is
- * matched against every file, and nothing is left for `allow(anythingElse)`, so the run reports
- * no constraint violation and the time is the parse plus the matching, not a report.
- */
+// Mirrors the class `generateProject()` writes, line for line, so nothing falls to `allow(anythingElse)`.
 internal fun SyntheticProject.ktFileContentArchitecture(): Architecture = constrainedArchitecture {
     ktFileContent {
         `package`("synthetic.*")
@@ -46,25 +34,13 @@ internal fun SyntheticProject.ktFileContentArchitecture(): Architecture = constr
     }
 }
 
-/**
- * [SyntheticProject]'s own `architecture()`, plus one `konture { }` per role.
- *
- * The second engine a file constraint can be written with. Like [konsistArchitecture], it asks
- * something every generated class satisfies, so what is measured is Konture's parse of the
- * role's files and the rule, not a report.
- */
 internal fun SyntheticProject.kontureArchitecture(): Architecture = constrainedArchitecture {
     "classes are public".konture {
         classes { should().bePublic() }
     }
 }
 
-/**
- * [SyntheticProject]'s own layout, with [constraint] written on every role.
- *
- * The same layout as `architecture()`, so the walk and its violations are the same whichever
- * constraint is added.
- */
+// The layout of `SyntheticProject.architecture()`, so the walk is the same whichever constraint is added.
 private fun SyntheticProject.constrainedArchitecture(constraint: RoleScope.() -> Unit): Architecture {
     val roles = roles
     return architecture {
