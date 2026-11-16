@@ -1,14 +1,17 @@
 package me.tbsten.katachi.benchmark
 
-import java.io.File
 import java.util.concurrent.TimeUnit
+import me.tbsten.katachi.benchmark.util.BENCHMARK_SEED
+import me.tbsten.katachi.benchmark.util.ProjectOnDisk
+import me.tbsten.katachi.benchmark.util.assertNoErrors
+import me.tbsten.katachi.benchmark.util.konsistArchitecture
+import me.tbsten.katachi.benchmark.util.kontureArchitecture
+import me.tbsten.katachi.benchmark.util.ktFileContentArchitecture
 import me.tbsten.katachi.check.FileConstraintCheck
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.Architecture
-import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.test.synthetic.architecture
 import me.tbsten.katachi.test.synthetic.generateProject
-import me.tbsten.katachi.test.synthetic.writeTo
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.BenchmarkMode
 import org.openjdk.jmh.annotations.Fork
@@ -55,8 +58,7 @@ open class AssertColdBench {
     @JvmField
     var files: Int = 0
 
-    private lateinit var directory: File
-    private lateinit var fileSystem: KatachiFileSystem
+    private lateinit var disk: ProjectOnDisk
     private lateinit var layoutArchitecture: Architecture
     private lateinit var konsistArchitecture: Architecture
     private lateinit var ktFileContentArchitecture: Architecture
@@ -72,8 +74,7 @@ open class AssertColdBench {
             seed = BENCHMARK_SEED,
             unknownDirectoryRatio = 0.0,
         )
-        directory = createProjectDirectory()
-        fileSystem = project.writeTo(directory)
+        disk = ProjectOnDisk(project)
         // Building the definitions runs no layout block and reads no file, so it stays out of
         // the shot without warming what the shot measures.
         layoutArchitecture = project.architecture()
@@ -84,26 +85,26 @@ open class AssertColdBench {
 
     @TearDown
     fun tearDown() {
-        deleteProjectDirectory(directory)
+        disk.delete()
     }
 
     @Benchmark
     fun layoutOnly() {
-        assertNoErrors(layoutArchitecture.validate(fileSystem))
+        assertNoErrors(layoutArchitecture.validate(disk.fileSystem))
     }
 
     @Benchmark
     fun withKonsist() {
-        assertNoErrors(konsistArchitecture.validate(fileSystem, FileConstraintCheck()))
+        assertNoErrors(konsistArchitecture.validate(disk.fileSystem, FileConstraintCheck()))
     }
 
     @Benchmark
     fun withKtFileContent() {
-        assertNoErrors(ktFileContentArchitecture.validate(fileSystem, FileConstraintCheck()))
+        assertNoErrors(ktFileContentArchitecture.validate(disk.fileSystem, FileConstraintCheck()))
     }
 
     @Benchmark
     fun withKonture() {
-        assertNoErrors(kontureArchitecture.validate(fileSystem, FileConstraintCheck()))
+        assertNoErrors(kontureArchitecture.validate(disk.fileSystem, FileConstraintCheck()))
     }
 }

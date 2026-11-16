@@ -1,15 +1,10 @@
 package me.tbsten.katachi.benchmark
 
 import com.lemonappdev.konsist.api.Konsist
-import java.io.File
 import java.util.concurrent.TimeUnit
-import me.tbsten.katachi.check.FileConstraintCheck
+import me.tbsten.katachi.benchmark.util.FileConstraintFixture
+import me.tbsten.katachi.benchmark.util.konsistArchitecture
 import me.tbsten.katachi.check.Violation
-import me.tbsten.katachi.check.validate
-import me.tbsten.katachi.dsl.Architecture
-import me.tbsten.katachi.dsl.files.KatachiFileSystem
-import me.tbsten.katachi.test.synthetic.generateProject
-import me.tbsten.katachi.test.synthetic.writeTo
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.BenchmarkMode
 import org.openjdk.jmh.annotations.Fork
@@ -49,27 +44,21 @@ open class KonsistScopeBench {
     @JvmField
     var files: Int = 0
 
-    private lateinit var directory: File
-    private lateinit var architecture: Architecture
-    private lateinit var fileSystem: KatachiFileSystem
+    private lateinit var fixture: FileConstraintFixture
 
     @Setup
     fun setUp() {
-        val project = generateProject(files = files, roles = 5, modules = 10, seed = BENCHMARK_SEED)
-        directory = createProjectDirectory()
-        fileSystem = project.writeTo(directory)
-        architecture = project.konsistArchitecture()
-        requireViolations(architecture.validate(fileSystem, FileConstraintCheck()), project.expectedViolationLabels)
+        fixture = FileConstraintFixture(files) { konsistArchitecture() }
     }
 
     @TearDown
     fun tearDown() {
-        deleteProjectDirectory(directory)
+        fixture.delete()
     }
 
     @Benchmark
-    fun parse(): Int = Konsist.scopeFromExternalDirectories(listOf(directory.absolutePath)).files.size
+    fun parse(): Int = Konsist.scopeFromExternalDirectories(listOf(fixture.absolutePath)).files.size
 
     @Benchmark
-    fun validateWithKonsist(): List<Violation> = architecture.validate(fileSystem, FileConstraintCheck())
+    fun validateWithKonsist(): List<Violation> = fixture.validate()
 }

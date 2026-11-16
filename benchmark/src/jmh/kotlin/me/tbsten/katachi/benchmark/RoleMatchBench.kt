@@ -1,6 +1,7 @@
 package me.tbsten.katachi.benchmark
 
 import java.util.concurrent.TimeUnit
+import me.tbsten.katachi.benchmark.util.BENCHMARK_SEED
 import me.tbsten.katachi.check.internal.moduleIndex
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutEntryKind

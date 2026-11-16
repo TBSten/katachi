@@ -1,9 +1,5 @@
-package me.tbsten.katachi.benchmark
+package me.tbsten.katachi.benchmark.util
 
-import java.io.File
-import java.nio.file.Files
-import me.tbsten.katachi.check.Severity
-import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.FileSelection
 import me.tbsten.katachi.dsl.RoleScope
@@ -17,9 +13,6 @@ import me.tbsten.katachi.konsist.konsist
 import me.tbsten.katachi.konture.konture
 import me.tbsten.katachi.test.synthetic.SyntheticPlacement
 import me.tbsten.katachi.test.synthetic.SyntheticProject
-
-/** The seed every benchmark generates its project from, so two runs measure the same tree. */
-internal const val BENCHMARK_SEED: Long = 42L
 
 /**
  * [SyntheticProject]'s own `architecture()`, plus one `konsist { }` per role.
@@ -104,36 +97,5 @@ private fun SyntheticProject.constrainedArchitecture(constraint: RoleScope.() ->
                 }
             }
         }
-    }
-}
-
-/** A fresh, empty directory for [SyntheticProject.writeTo]. Delete it with [deleteProjectDirectory]. */
-internal fun createProjectDirectory(): File =
-    Files.createTempDirectory("katachi-benchmark-").toFile()
-
-internal fun deleteProjectDirectory(directory: File) {
-    directory.deleteRecursively()
-}
-
-/**
- * Fails the benchmark's setup unless [violations] are exactly [expected] (as `[label] path`).
- *
- * Run once before measuring, so a benchmark that stopped measuring what it claims — a layout
- * that no longer matches the generated tree, say — fails instead of timing an error path.
- */
-internal fun requireViolations(violations: List<Violation>, expected: List<String>) {
-    val actual = violations.map { "[${it.label}] ${it.path}" }.sorted()
-    check(actual == expected.sorted()) {
-        "The benchmark's project no longer checks as expected.\n" +
-            "expected: ${expected.take(5)} (${expected.size})\n" +
-            "actual:   ${actual.take(5)} (${actual.size})"
-    }
-}
-
-/** What `assert()` does with the violations `validate()` returned: fail on any `Error`. */
-internal fun assertNoErrors(violations: List<Violation>) {
-    val errors = violations.filter { it.severity == Severity.Error }
-    check(errors.isEmpty()) {
-        "assert() would fail: ${errors.take(5).map { "[${it.label}] ${it.path}" }} (${errors.size})"
     }
 }
