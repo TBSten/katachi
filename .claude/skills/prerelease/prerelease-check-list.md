@@ -148,6 +148,21 @@
 
 </details>
 
+## 12. benchmark の棚卸し
+
+- [ ] 範囲: 対応表の見直した行 {TODO} 行（確認した版を上げただけ {TODO} / 聞いた {TODO}）。対応表と実物の食い違い {TODO} 件
+- [ ] 数値: 警告 {TODO} 件 / 注意 {TODO} 件（{TODO 基準} → HEAD、{TODO} 系列）
+- [ ] 鮮度: 履歴の最後 {TODO sha と日付} / 固定しているコミット・版の見直し {TODO} 件 / 週 1 の gradle-profiler {TODO 日付と結果}
+- [ ] 結果: {TODO file://.local/release-v0.0.0/benchmark.md の絶対パス}
+- [ ] 過去の判断どおりで出さなかった: {TODO} 件 / 見直し候補 {TODO} 件（decisions/benchmark.md）
+
+<details>
+    <summary>memo</summary>
+
+    {TODO}
+
+</details>
+
 ## この回で書き足した判断
 
 - [ ] 利用者が答えた判断を decisions/ に書き足した: {TODO} 件（`decisions.py check` が通る）
