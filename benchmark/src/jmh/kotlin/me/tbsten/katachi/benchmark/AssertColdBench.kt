@@ -33,6 +33,9 @@ import org.openjdk.jmh.annotations.Warmup
  *
  * - [layoutOnly] is `assert()`: the layout check, no Konsist.
  * - [withKonsist] is `assert(FileConstraintCheck())` with one `konsist { }` per role.
+ * - [withKtFileContent] is the same with one `ktFileContent { }` per role instead.
+ * - [withKonture] is the same with one `konture { }` per role instead: Konture's
+ *   initialisation rather than Konsist's.
  *
  * A quick run (`-Pjmh.quick=true`) runs a warmup shot first, so its numbers are not cold.
  *
@@ -56,6 +59,8 @@ open class AssertColdBench {
     private lateinit var fileSystem: KatachiFileSystem
     private lateinit var layoutArchitecture: Architecture
     private lateinit var konsistArchitecture: Architecture
+    private lateinit var ktFileContentArchitecture: Architecture
+    private lateinit var kontureArchitecture: Architecture
 
     @Setup
     fun setUp() {
@@ -73,6 +78,8 @@ open class AssertColdBench {
         // the shot without warming what the shot measures.
         layoutArchitecture = project.architecture()
         konsistArchitecture = project.konsistArchitecture()
+        ktFileContentArchitecture = project.ktFileContentArchitecture()
+        kontureArchitecture = project.kontureArchitecture()
     }
 
     @TearDown
@@ -88,5 +95,15 @@ open class AssertColdBench {
     @Benchmark
     fun withKonsist() {
         assertNoErrors(konsistArchitecture.validate(fileSystem, FileConstraintCheck()))
+    }
+
+    @Benchmark
+    fun withKtFileContent() {
+        assertNoErrors(ktFileContentArchitecture.validate(fileSystem, FileConstraintCheck()))
+    }
+
+    @Benchmark
+    fun withKonture() {
+        assertNoErrors(kontureArchitecture.validate(fileSystem, FileConstraintCheck()))
     }
 }
