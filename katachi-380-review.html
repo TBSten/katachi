@@ -67,6 +67,6 @@ h1{font-size:18px;margin:8px 0 4px;line-height:1.35}
 <div class="it"><b>壊れたときしか気づけない</b><p>benchmark は check に入らず、CI の bench ジョブは遅くなっても落ちない。合図になるのは「API が消えてコンパイルできない」だけで、機能を足しても何も起きない</p></div>
 <div class="it"><b>「何を測っているか」の一覧が無い</b><p>機能とベンチの対応がどこにも書かれていない。PR テンプレートにも prerelease の手順にも、ベンチを足すかを考える項目が無い</p></div>
 <div class="it"><b>警告が誤報だらけで読まれない</b><p>v0.3.0 以降の main への push 82 回のうち、時間の警告の条件を満たしたのは 23 回。runner の速さが 0.60〜1.35 倍でぶれるのが原因で、同じ期間の確保量の警告は 1 回だけ</p></div>
-<div class="note"><b>性能そのものは悪化していない:</b> runner の速さをそろえて v0.4 の初めと今を比べると、遅くなった系列は無い（layout 評価は 1/10 以下、walk は横ばい〜1/20）。</div>
+<div class="note"><b>性能そのものは悪化していない:</b> runner の速さをそろえて v0.4 の初めと今を比べると、遅くなった系列は無い（layout 評価は 1/6 以下、walk は横ばい〜1/16）。</div>
 </div>
 </body></html>
