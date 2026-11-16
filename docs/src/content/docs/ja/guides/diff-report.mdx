@@ -300,7 +300,8 @@ fork からの Pull request は token がコメントを書けないため、`di
 
 ## スクリプトから読む
 
-JSON と YAML のレポートには、HTML・Markdown のレポートと同じ group / Role / ファイルの内容がデータとして入っています。変更があった Role に応じて CI の処理を分けたいときなどに、スクリプトから読めます。
+JSON と YAML のレポートには、HTML・Markdown のレポートと同じ group / Role / ファイルの内容がデータとして入っています。
+変更があった Role に応じて CI の処理を分けたいときなどに、スクリプトなどに渡すことができます。
 
 ```shell
 # 変更があった Role の一覧
@@ -312,32 +313,19 @@ jq -r '.summary.changedRoles[]' architecture-test/build/katachi/diff/diff-report
 jq -e '.summary.noRoleFileCount == 0' architecture-test/build/katachi/diff/diff-report.json
 ```
 
-| キー | 内容 |
-|---|---|
-| `schemaVersion` | データの形のバージョン。キーの名前を変えたり消したりしたときに上がります |
-| `range` | 比べた範囲。before / after の ref と SHA、Pull request |
-| `summary` | 全体の集計。変更ファイル数、追加・削除の行数、変更があった Role の一覧（`changedRoles`）など |
-| `nodes` | group と Role の木。Role には変更ファイルの一覧が入ります |
-| `noRole` | どの Role にも該当しない変更ファイル |
-| `ignored` | `ignore()` で検査から外した変更ファイル |
+<details>
+  <summary>JSON, YAML レポートの構造</summary>
 
-## Agent skill
+  | キー | 内容 |
+  |---|---|
+  | `schemaVersion` | データの形のバージョン。キーの名前を変えたり消したりしたときに上がります |
+  | `range` | 比べた範囲。before / after の ref と SHA、Pull request |
+  | `summary` | 全体の集計。変更ファイル数、追加・削除の行数、変更があった Role の一覧（`changedRoles`）など |
+  | `nodes` | group と Role の木。Role には変更ファイルの一覧が入ります |
+  | `noRole` | どの Role にも該当しない変更ファイル |
+  | `ignored` | `ignore()` で検査から外した変更ファイル |
 
-あなたのプロジェクトに レビューの Agent skill がある場合、ぜひ `katachiDiff` を実行させて レビュー成果物の中に組み込みましょう。
-
-Agent は `git diff` を自分で読むよりも、Role ごとにまとまったレポートを読む方が、変更がアーキテクチャのどこに関わるかを短く正確に把握できます。
-
-```md title=".agents/skills/review/SKILL.md"
----
-name: review
-description: Pull request をアーキテクチャの観点でレビューする
----
-
-1. `./gradlew :architecture-test:katachiDiff --arg before=origin/main` を実行する
-2. `architecture-test/build/katachi/diff/diff-report.md` を読み、Importance の高い Role から順に差分を確認する
-3. `diff-report.files-in-no-role.md` にファイルがあれば、定義に足すか置き場所を直すかを提案する
-4. レビュー結果の冒頭に、変更が関わる Role の一覧をレポートから引用する
-```
+</details>
 
 ## まとめ
 
