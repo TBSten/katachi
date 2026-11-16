@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>KATACHI-383</title>
+<style>
+:root{--bg:#fff;--s1:#f7f7f5;--s2:#fff;--b:#d9d9d6;--t:#37352f;--m:#787774;--ok-bg:#dbeddb;--ok:#2b6b45;--ng-bg:#ffe2dd;--ng:#b3261e;--ac-bg:#d3e5ef;--ac:#0b6e99;
+--f:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Noto Sans JP","Noto Sans CJK JP",sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,monospace}
+body{margin:0;background:var(--bg);color:var(--t);font-family:var(--f);padding:12px}
+.card{width:520px;box-sizing:border-box;border:.5px solid var(--b);background:var(--s1);border-radius:12px;padding:18px}
+.tag{display:inline-block;font-size:12px;font-weight:700;background:var(--ac-bg);color:var(--ac);border-radius:6px;padding:2px 8px}
+h1{font-size:19px;margin:8px 0 4px;line-height:1.35}
+.lead{font-size:12.5px;color:var(--m);margin:0 0 12px;line-height:1.5}
+.sec{font-size:11.5px;color:var(--m);font-weight:600;margin:14px 0 6px}
+.flow{display:flex;align-items:stretch;gap:6px}
+.st{flex:1;background:var(--s2);border:.5px solid var(--b);border-radius:8px;padding:8px 9px;font-size:12px;line-height:1.45}
+.st b{display:block;font-size:12.5px}
+.st span{color:var(--m);font-size:11.5px}
+.st code{font-family:var(--mono);font-size:11px}
+.ar{align-self:center;color:var(--m);font-size:14px}
+.ng{background:var(--ng-bg);border-color:var(--ng)}.ng b,.ng span{color:var(--ng)}
+.ok{background:var(--ok-bg);border-color:var(--ok)}.ok b,.ok span{color:var(--ok)}
+.new{background:var(--ac-bg);border-color:var(--ac)}.new b,.new span{color:var(--ac)}
+.note{font-size:12px;color:var(--m);background:var(--s2);border:.5px dashed var(--b);border-radius:8px;padding:8px 10px;margin-top:12px;line-height:1.55}
+.note b{color:var(--t)}.note code{font-family:var(--mono);font-size:11.5px}
+</style></head><body>
+<div class="card" id="card">
+<span class="tag">KATACHI-383</span>
+<h1>PR で alloc/op の比較表が出るようにした</h1>
+<p class="lead">bench-jmh の 2 つ目の比較が毎回エラーで、確保量の比較がサマリに出ていなかった。</p>
+
+<div class="sec">Before</div>
+<div class="flow">
+ <div class="st"><b>時間を比較</b><span>手元の <code>gh-pages</code> に<br>コミットが 1 つ残る</span></div>
+ <div class="ar">→</div>
+ <div class="st ng"><b>alloc/op を比較 ✗</b><span><code>fetch gh-pages:gh-pages</code><br>non-fast-forward で拒否</span></div>
+</div>
+
+<div class="sec">After</div>
+<div class="flow">
+ <div class="st"><b>時間を比較</b><span>手元の <code>gh-pages</code> に<br>コミットが 1 つ残る</span></div>
+ <div class="ar">→</div>
+ <div class="st new"><b>手元の gh-pages を消す</b><span>追加した 1 ステップ</span></div>
+ <div class="ar">→</div>
+ <div class="st ok"><b>alloc/op を比較 ✓</b><span>取り直して<br>比較表が出る</span></div>
+</div>
+
+<div class="note"><b>なぜ残るか:</b> github-action-benchmark は <code>auto-push: false</code> でも手元にはコミットする（push しないだけ）。<code>save-data-file: false</code> は gh-pages の経路では見られない。</div>
+</div></body></html>
