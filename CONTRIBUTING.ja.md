@@ -18,7 +18,7 @@ katachi 自体を直す人向けの情報。使い方は [README](README.ja.md) 
 | `katachi/` / `katachi-konsist/` / `katachi-gradle-plugin/` | 公開する3つのモジュール |
 | `architecture-test/` | katachi 自身のアーキテクチャ定義。公開しない |
 | `tool/dokka/` | API リファレンスを作る Dokka plugin。公開しない |
-| `benchmark/` | JMH のベンチマーク。公開しない。`check` には入らず、`./gradlew :benchmark:jmh` で回す |
+| `benchmark/` | JMH のベンチマーク。公開しない。`check` には入らず、`./gradlew :benchmark:jmh` で回す。どのコンポーネントをどのベンチで見ているかは `benchmark/README.md` の対応表 |
 | `katachi-intellij-plugin/` | IntelliJ IDEA / Android Studio のプラグイン。独立した Gradle ビルド |
 | `sample/` | 独立した Gradle ビルドとして動くサンプル |
 | `docs/` | ドキュメントサイト |

@@ -55,6 +55,13 @@ jobs:
       - name: Kotlin versions agree across the samples
         run: .github/scripts/check-kotlin-versions.sh
 
+      # A feature that gets no benchmark leaves no trace: the bench jobs below measure what
+      # exists and never fail. benchmark/README.md says, per component, which benchmarks watch
+      # it or why none does; this keeps that table in step with labels.json and benchmark/, so
+      # a new component or a new benchmark cannot land without a line there. Seconds, no Gradle.
+      - name: Benchmark coverage table matches the repository
+        run: python3 .github/scripts/check-benchmark-coverage.py
+
       # Its own step, ahead of the root `check` that also covers it. The GradleTestKit
       # functional tests download every Gradle distribution of the compatibility matrix
       # (8.0 and 9.6.0), which makes them the slowest and the only network-bound part of

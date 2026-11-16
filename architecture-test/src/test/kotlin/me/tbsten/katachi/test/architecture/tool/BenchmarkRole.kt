@@ -13,6 +13,9 @@ fun DeclarationContainerScope.benchmark() = "Benchmark".role {
     layout {
         "benchmark" {
             description = "JMH のベンチマークと、実プロジェクトでの計測。どちらも check には入らない"
+            // Which component each benchmark watches, and why the others have none. Kept in step
+            // with labels.json and the benchmarks by .github/scripts/check-benchmark-coverage.py.
+            "README.md".file()
             "jmh".sourceSet / kotlin / "me/tbsten/katachi/benchmark" / "*Bench".ktFile()
             "jmh".sourceSet / kotlin / "me/tbsten/katachi/benchmark" / "BenchmarkSupport".ktFile()
             // Measures validate() on a real project cloned by the bench-real-project job: the runner,
