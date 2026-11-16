@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794838243188,
+  "lastUpdate": 1794838245584,
   "repoUrl": "https://github.com/TBSten/katachi",
   "entries": {
     "JMH time": [
@@ -45094,6 +45094,54 @@ window.BENCHMARK_DATA = {
           {
             "name": "nowinandroid validate(FileConstraintCheck()) warm median",
             "value": 59.093494,
+            "unit": "ms",
+            "extra": "violations: 134 (layout) / 130 (with Konsist)\nUnexpectedFile: 130, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "81161390+TBSten@users.noreply.github.com",
+            "name": "TBSten",
+            "username": "TBSten"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b179e60b9a498e216c70e824d98ce2681e579910",
+          "message": "Merge pull request #100 from TBSten/claude/project-thread-cf10gt\n\ndocs(slides): 「5分でわかる katachi」の 6・7 枚目の間に Konsist のコード例を足す（KATACHI-385）",
+          "timestamp": "2026-11-16T22:42:17+09:00",
+          "tree_id": "8de2fcfa2467fb0e68c1d13cc2f8899027ebd2b9",
+          "url": "https://github.com/TBSten/katachi/commit/b179e60b9a498e216c70e824d98ce2681e579910"
+        },
+        "date": 1794838244986,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "nowinandroid validate() cold",
+            "value": 272.532805,
+            "unit": "ms",
+            "extra": "violations: 134 (layout) / 130 (with Konsist)\nUnexpectedFile: 130, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          },
+          {
+            "name": "nowinandroid validate() warm median",
+            "value": 43.597591,
+            "unit": "ms",
+            "extra": "violations: 134 (layout) / 130 (with Konsist)\nUnexpectedFile: 130, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          },
+          {
+            "name": "nowinandroid validate(FileConstraintCheck()) cold",
+            "value": 1152.842183,
+            "unit": "ms",
+            "extra": "violations: 134 (layout) / 130 (with Konsist)\nUnexpectedFile: 130, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          },
+          {
+            "name": "nowinandroid validate(FileConstraintCheck()) warm median",
+            "value": 61.868378,
             "unit": "ms",
             "extra": "violations: 134 (layout) / 130 (with Konsist)\nUnexpectedFile: 130, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
           }
