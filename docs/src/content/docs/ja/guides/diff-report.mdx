@@ -1,6 +1,6 @@
 ---
 title: "Diff report で変更の影響範囲を確認する"
-description: katachiDiff で Git の差分のファイルを定義の Role / group に振り分け、変更がどこに影響するかを HTML と Markdown のレポートで一覧にする方法。
+description: katachiDiff で Git の差分のファイルを定義の Role / group に振り分け、変更がどこに影響するかを HTML・Markdown・JSON・YAML のレポートで一覧にする方法。
 tags:
   - intermediate
 ---
@@ -21,7 +21,7 @@ katachi では `katachiDiff` を使って 差分を分析するレポートを�
 
 ## katachiDiff で差分を解析する
 
-組み込みの `katachiDiff` に Git の差分情報を渡して呼び出すことで、html, markdown 形式のレポートを生成することができます。
+組み込みの `katachiDiff` に Git の差分情報を渡して呼び出すことで、html, markdown, json, yaml 形式のレポートを生成することができます。
 
 ```shell
 # main と作業ツリーの差分（コミットしていない変更も含む）
@@ -39,6 +39,8 @@ katachi では `katachiDiff` を使って 差分を分析するレポートを�
 | `diff-report.md` | Markdown の要約表。Pull request のコメントに貼る用です |
 | `diff-report.files-by-role.md` | Role ごとの変更ファイルの一覧 |
 | `diff-report.files-in-no-role.md` | どの Role にも当てはまらない変更ファイルの一覧。アーキテクチャテストでも違反になるファイルです |
+| `diff-report.json` | レポートと同じ内容のデータ。スクリプトから読む用です |
+| `diff-report.yaml` | `diff-report.json` と同じ内容の YAML |
 
 `katachiDiff` を CI, レビュー補助 Agent Skill などに組み込むことで、レビュー体験を向上させることができます。
 
@@ -103,6 +105,7 @@ katachiDiff には以下のようなオプションがあります。いずれ�
       --arg weights=Domain=2,Testing.RoleDefinition=10 \
       --arg maxFiles=0 \
       --arg html=false \
+      --arg yaml=false \
       --arg markdownOutputFile=diff-report.md
     ```
   </TabItem>
@@ -119,6 +122,9 @@ katachiDiff には以下のようなオプションがあります。いずれ�
             outputFile = layout.projectDirectory.file("diff-report.md")
           }
           html {
+            enable = false
+          }
+          yaml {
             enable = false
           }
         }
@@ -172,7 +178,7 @@ Gradle script に書いた値はプロジェクトのデフォルト値になり
         <tr>
             <td><code>maxFiles</code></td>
             <td><code>Int</code></td>
-            <td>ファイルの一覧に載せる最大数。0 以下で全部載せます。group / Role の行は切らずに全ファイルから数えます</td>
+            <td>ファイルの一覧に載せる最大数。0 以下で全部載せます。group / Role の行は切らずに全ファイルから数えます。JSON・YAML には、この値に関係なく全ファイルが入ります</td>
             <td><code>100</code></td>
             <td><code>0</code>（全部載せる）<br /><code>30</code><br /><code>500</code></td>
         </tr>
@@ -181,7 +187,7 @@ Gradle script に書いた値はプロジェクトのデフォルト値になり
             <td><code>Boolean</code></td>
             <td>Markdown レポートを書くか</td>
             <td><code>true</code></td>
-            <td><code>false</code>（HTML だけ書く）<br /><code>true</code></td>
+            <td><code>false</code>（Markdown を書かない）<br /><code>true</code></td>
         </tr>
         <tr>
             <td><code>markdownOutputFile</code></td>
@@ -195,7 +201,7 @@ Gradle script に書いた値はプロジェクトのデフォルト値になり
             <td><code>Boolean</code></td>
             <td>HTML レポートを書くか</td>
             <td><code>true</code></td>
-            <td><code>false</code>（Markdown だけ書く）<br /><code>true</code></td>
+            <td><code>false</code>（HTML を書かない）<br /><code>true</code></td>
         </tr>
         <tr>
             <td><code>htmlOutputFile</code></td>
@@ -203,6 +209,34 @@ Gradle script に書いた値はプロジェクトのデフォルト値になり
             <td>HTML レポートの出力先</td>
             <td><code>build/katachi/diff/diff-report.html</code></td>
             <td><code>diff-report.html</code><br /><code>build/reports/katachi/diff.html</code><br /><code>.local/tmp/diff.html</code></td>
+        </tr>
+        <tr>
+            <td><code>json</code></td>
+            <td><code>Boolean</code></td>
+            <td>JSON レポートを書くか</td>
+            <td><code>true</code></td>
+            <td><code>false</code>（JSON を書かない）<br /><code>true</code></td>
+        </tr>
+        <tr>
+            <td><code>jsonOutputFile</code></td>
+            <td><code>String</code></td>
+            <td>JSON レポートの出力先</td>
+            <td><code>build/katachi/diff/diff-report.json</code></td>
+            <td><code>diff-report.json</code><br /><code>build/reports/katachi/diff.json</code><br /><code>.local/tmp/diff.json</code></td>
+        </tr>
+        <tr>
+            <td><code>yaml</code></td>
+            <td><code>Boolean</code></td>
+            <td>YAML レポートを書くか</td>
+            <td><code>true</code></td>
+            <td><code>false</code>（YAML を書かない）<br /><code>true</code></td>
+        </tr>
+        <tr>
+            <td><code>yamlOutputFile</code></td>
+            <td><code>String</code></td>
+            <td>YAML レポートの出力先</td>
+            <td><code>build/katachi/diff/diff-report.yaml</code></td>
+            <td><code>diff-report.yaml</code><br /><code>build/reports/katachi/diff.yaml</code><br /><code>.local/tmp/diff.yaml</code></td>
         </tr>
         <tr>
             <td><code>fullImportanceLines</code></td>
@@ -260,9 +294,32 @@ jobs:
 | `arguments` | Gradle に渡す追加の引数。1 行に 1 つ（例: `--arg weights=Domain=2`）。`--arg pr=` は action が足します | 空 |
 | `working-directory` | Gradle のビルドがあるディレクトリ | `.` |
 | `comment` | `true` でこの job からコメントも貼る | `false` |
-| `report-artifact-name` | HTML レポートと Markdown 全体を上げる artifact の名前。空で上げない | `katachi-diff-report` |
+| `report-artifact-name` | HTML レポート、Markdown 全体、JSON・YAML を上げる artifact の名前。空で上げない | `katachi-diff-report` |
 
 fork からの Pull request は token がコメントを書けないため、`diff-report-comment` は何もせずに終わります。レポートは `report` job の summary と artifact で読めます。
+
+## スクリプトから読む
+
+JSON と YAML のレポートには、HTML・Markdown のレポートと同じ group / Role / ファイルの内容がデータとして入っています。変更があった Role に応じて CI の処理を分けたいときなどに、スクリプトから読めます。
+
+```shell
+# 変更があった Role の一覧
+jq -r '.summary.changedRoles[]' architecture-test/build/katachi/diff/diff-report.json
+# Presentation.ViewModel
+# Domain.UseCase
+
+# どの Role にも該当しないファイルがあれば失敗させる
+jq -e '.summary.noRoleFileCount == 0' architecture-test/build/katachi/diff/diff-report.json
+```
+
+| キー | 内容 |
+|---|---|
+| `schemaVersion` | データの形のバージョン。キーの名前を変えたり消したりしたときに上がります |
+| `range` | 比べた範囲。before / after の ref と SHA、Pull request |
+| `summary` | 全体の集計。変更ファイル数、追加・削除の行数、変更があった Role の一覧（`changedRoles`）など |
+| `nodes` | group と Role の木。Role には変更ファイルの一覧が入ります |
+| `noRole` | どの Role にも該当しない変更ファイル |
+| `ignored` | `ignore()` で検査から外した変更ファイル |
 
 ## Agent skill
 
@@ -284,7 +341,7 @@ description: Pull request をアーキテクチャの観点でレビューする
 
 ## まとめ
 
-- `katachiDiff` は Git の差分をアーキテクチャ定義の group / Role に振り分け、HTML と Markdown のレポートにします
+- `katachiDiff` は Git の差分をアーキテクチャ定義の group / Role に振り分け、HTML と Markdown のレポートにします。同じ内容を JSON と YAML にも書き出すので、スクリプトからも読めます
 - `before` / `after` でローカルの差分を、`pr` で Pull request の差分を比べます
 - 定義の `diffWeight` で、注意して見るべき Role の変更を目立たせます。1 回の実行では `weights` で上書きできます
 - CI で Pull request にコメントさせると、レビューの入口になります

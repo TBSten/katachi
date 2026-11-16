@@ -1,6 +1,6 @@
 ---
 title: "Check the impact of a change with the diff report"
-description: How to use katachiDiff to sort the files in a Git diff into the Roles / groups of the definition and list where a change has an effect, as HTML and Markdown reports.
+description: How to use katachiDiff to sort the files in a Git diff into the Roles / groups of the definition and list where a change has an effect, as HTML, Markdown, JSON and YAML reports.
 tags:
   - intermediate
 ---
@@ -21,7 +21,7 @@ In katachi, you can use `katachiDiff` to output a report that analyzes the diff.
 
 ## Analyze a diff with katachiDiff
 
-You pass the Git diff information to the built-in `katachiDiff` and call it. It generates reports in HTML and Markdown.
+You pass the Git diff information to the built-in `katachiDiff` and call it. It generates reports in HTML, Markdown, JSON and YAML.
 
 ```shell
 # The diff between main and the working tree (includes uncommitted changes)
@@ -39,6 +39,8 @@ The reports are written to `architecture-test/build/katachi/diff/`.
 | `diff-report.md` | A summary table in Markdown. It is for pasting into a pull request comment |
 | `diff-report.files-by-role.md` | The list of changed files for each Role |
 | `diff-report.files-in-no-role.md` | The list of changed files that match no Role. These files also fail the architecture test |
+| `diff-report.json` | The same content as the report, as data. It is for a script to read |
+| `diff-report.yaml` | The same content as `diff-report.json`, in YAML |
 
 You can improve the review experience by adding `katachiDiff` to CI, a review-assist Agent Skill, and so on.
 
@@ -103,6 +105,7 @@ katachiDiff has the following options. You can set all of them when you run the 
       --arg weights=Domain=2,Testing.RoleDefinition=10 \
       --arg maxFiles=0 \
       --arg html=false \
+      --arg yaml=false \
       --arg markdownOutputFile=diff-report.md
     ```
   </TabItem>
@@ -119,6 +122,9 @@ katachiDiff has the following options. You can set all of them when you run the 
             outputFile = layout.projectDirectory.file("diff-report.md")
           }
           html {
+            enable = false
+          }
+          yaml {
             enable = false
           }
         }
@@ -172,7 +178,7 @@ A value written in the Gradle script becomes the default for the project, and `-
         <tr>
             <td><code>maxFiles</code></td>
             <td><code>Int</code></td>
-            <td>The maximum number of files in the file list. With 0 or less, it lists all of them. The group / Role rows are not cut. They are counted from all files</td>
+            <td>The maximum number of files in the file list. With 0 or less, it lists all of them. The group / Role rows are not cut. They are counted from all files. The JSON and YAML hold all files, whatever this value is</td>
             <td><code>100</code></td>
             <td><code>0</code> (list all)<br /><code>30</code><br /><code>500</code></td>
         </tr>
@@ -181,7 +187,7 @@ A value written in the Gradle script becomes the default for the project, and `-
             <td><code>Boolean</code></td>
             <td>Whether to write the Markdown report</td>
             <td><code>true</code></td>
-            <td><code>false</code> (write only HTML)<br /><code>true</code></td>
+            <td><code>false</code> (do not write Markdown)<br /><code>true</code></td>
         </tr>
         <tr>
             <td><code>markdownOutputFile</code></td>
@@ -195,7 +201,7 @@ A value written in the Gradle script becomes the default for the project, and `-
             <td><code>Boolean</code></td>
             <td>Whether to write the HTML report</td>
             <td><code>true</code></td>
-            <td><code>false</code> (write only Markdown)<br /><code>true</code></td>
+            <td><code>false</code> (do not write HTML)<br /><code>true</code></td>
         </tr>
         <tr>
             <td><code>htmlOutputFile</code></td>
@@ -203,6 +209,34 @@ A value written in the Gradle script becomes the default for the project, and `-
             <td>Where to write the HTML report</td>
             <td><code>build/katachi/diff/diff-report.html</code></td>
             <td><code>diff-report.html</code><br /><code>build/reports/katachi/diff.html</code><br /><code>.local/tmp/diff.html</code></td>
+        </tr>
+        <tr>
+            <td><code>json</code></td>
+            <td><code>Boolean</code></td>
+            <td>Whether to write the JSON report</td>
+            <td><code>true</code></td>
+            <td><code>false</code> (do not write JSON)<br /><code>true</code></td>
+        </tr>
+        <tr>
+            <td><code>jsonOutputFile</code></td>
+            <td><code>String</code></td>
+            <td>Where to write the JSON report</td>
+            <td><code>build/katachi/diff/diff-report.json</code></td>
+            <td><code>diff-report.json</code><br /><code>build/reports/katachi/diff.json</code><br /><code>.local/tmp/diff.json</code></td>
+        </tr>
+        <tr>
+            <td><code>yaml</code></td>
+            <td><code>Boolean</code></td>
+            <td>Whether to write the YAML report</td>
+            <td><code>true</code></td>
+            <td><code>false</code> (do not write YAML)<br /><code>true</code></td>
+        </tr>
+        <tr>
+            <td><code>yamlOutputFile</code></td>
+            <td><code>String</code></td>
+            <td>Where to write the YAML report</td>
+            <td><code>build/katachi/diff/diff-report.yaml</code></td>
+            <td><code>diff-report.yaml</code><br /><code>build/reports/katachi/diff.yaml</code><br /><code>.local/tmp/diff.yaml</code></td>
         </tr>
         <tr>
             <td><code>fullImportanceLines</code></td>
@@ -260,9 +294,32 @@ jobs:
 | `arguments` | Extra arguments to pass to Gradle. One per line (example: `--arg weights=Domain=2`). The action adds `--arg pr=` | Empty |
 | `working-directory` | The directory that has the Gradle build | `.` |
 | `comment` | With `true`, this job also posts the comment | `false` |
-| `report-artifact-name` | The name of the artifact that uploads the HTML report and the whole Markdown. Empty to skip the upload | `katachi-diff-report` |
+| `report-artifact-name` | The name of the artifact that uploads the HTML report, the whole Markdown, and the JSON and YAML. Empty to skip the upload | `katachi-diff-report` |
 
 For a pull request from a fork, the token cannot write comments, so `diff-report-comment` ends without doing anything. You can read the report in the summary and the artifact of the `report` job.
+
+## Read it from a script
+
+The JSON and YAML reports hold the same groups, Roles and files as the HTML and Markdown reports, as data. A script can read them, for example when you want CI to do different things depending on which Roles changed.
+
+```shell
+# The Roles that changed
+jq -r '.summary.changedRoles[]' architecture-test/build/katachi/diff/diff-report.json
+# Presentation.ViewModel
+# Domain.UseCase
+
+# Fail if any file matches no Role
+jq -e '.summary.noRoleFileCount == 0' architecture-test/build/katachi/diff/diff-report.json
+```
+
+| Key | Content |
+|---|---|
+| `schemaVersion` | The version of the shape of the data. It goes up when a key is renamed or removed |
+| `range` | The range that was compared. The refs and SHAs of before / after, and the pull request |
+| `summary` | The totals. The number of changed files, the added and deleted lines, the list of Roles that changed (`changedRoles`), and so on |
+| `nodes` | The tree of groups and Roles. A Role holds the list of its changed files |
+| `noRole` | The changed files that match no Role |
+| `ignored` | The changed files excluded from the check with `ignore()` |
 
 ## Agent skill
 
@@ -284,7 +341,7 @@ description: Review a pull request from the architecture point of view
 
 ## Summary
 
-- `katachiDiff` sorts a Git diff into the groups / Roles of the architecture definition and makes HTML and Markdown reports
+- `katachiDiff` sorts a Git diff into the groups / Roles of the architecture definition and makes HTML and Markdown reports. It also writes the same content as JSON and YAML, so a script can read it
 - Use `before` / `after` to compare a local diff, and `pr` to compare the diff of a pull request
 - Use `diffWeight` in the definition to make changes to Roles that need attention stand out. For a single run, you can override it with `weights`
 - If CI posts the report as a comment on the pull request, it becomes the entry point of the review
