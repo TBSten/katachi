@@ -35,13 +35,13 @@ ROWS = textwrap.dedent("""\
 def repository(tmp, rows=ROWS, labels=("core/検査", "Gradle plugin", "docs"), benches=("WalkBench",)):
     root = Path(tmp)
     for d in ("katachi", "plugin", "docs", ".github", "benchmark/gradle-profiler",
-              "benchmark/src/jmh/kotlin", "benchmark/src/realProject/kotlin"):
+              "benchmark/src/jmh/kotlin/util", "benchmark/src/realProject/kotlin"):
         (root / d).mkdir(parents=True)
     (root / ".github/labels.json").write_text(json.dumps(
         [{"name": f"影響:{l}"} for l in labels] + [{"name": "規模:小"}], ensure_ascii=False), encoding="utf-8")
     for b in benches:
         (root / f"benchmark/src/jmh/kotlin/{b}.kt").write_text("", encoding="utf-8")
-    (root / "benchmark/src/jmh/kotlin/BenchmarkSupport.kt").write_text("", encoding="utf-8")
+    (root / "benchmark/src/jmh/kotlin/util/ProjectFixtures.kt").write_text("", encoding="utf-8")
     (root / "benchmark/src/realProject/kotlin/NowInAndroidArchitecture.kt").write_text("", encoding="utf-8")
     (root / "benchmark/gradle-profiler/sample.scenarios").write_text(
         'default-scenarios = ["katachiDocs"]\n\nkatachiDocs {\n    tasks = [":x"]\n}\n', encoding="utf-8")

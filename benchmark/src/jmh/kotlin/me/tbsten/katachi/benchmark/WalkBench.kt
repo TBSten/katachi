@@ -1,6 +1,8 @@
 package me.tbsten.katachi.benchmark
 
 import java.util.concurrent.TimeUnit
+import me.tbsten.katachi.benchmark.util.BENCHMARK_SEED
+import me.tbsten.katachi.benchmark.util.requireViolations
 import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.Architecture

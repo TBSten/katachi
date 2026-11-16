@@ -1,14 +1,9 @@
 package me.tbsten.katachi.benchmark
 
-import java.io.File
 import java.util.concurrent.TimeUnit
-import me.tbsten.katachi.check.FileConstraintCheck
+import me.tbsten.katachi.benchmark.util.FileConstraintFixture
+import me.tbsten.katachi.benchmark.util.ktFileContentArchitecture
 import me.tbsten.katachi.check.Violation
-import me.tbsten.katachi.check.validate
-import me.tbsten.katachi.dsl.Architecture
-import me.tbsten.katachi.dsl.files.KatachiFileSystem
-import me.tbsten.katachi.test.synthetic.generateProject
-import me.tbsten.katachi.test.synthetic.writeTo
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.BenchmarkMode
 import org.openjdk.jmh.annotations.Fork
@@ -48,24 +43,18 @@ open class KtFileContentBench {
     @JvmField
     var files: Int = 0
 
-    private lateinit var directory: File
-    private lateinit var architecture: Architecture
-    private lateinit var fileSystem: KatachiFileSystem
+    private lateinit var fixture: FileConstraintFixture
 
     @Setup
     fun setUp() {
-        val project = generateProject(files = files, roles = 5, modules = 10, seed = BENCHMARK_SEED)
-        directory = createProjectDirectory()
-        fileSystem = project.writeTo(directory)
-        architecture = project.ktFileContentArchitecture()
-        requireViolations(architecture.validate(fileSystem, FileConstraintCheck()), project.expectedViolationLabels)
+        fixture = FileConstraintFixture(files) { ktFileContentArchitecture() }
     }
 
     @TearDown
     fun tearDown() {
-        deleteProjectDirectory(directory)
+        fixture.delete()
     }
 
     @Benchmark
-    fun validateWithKtFileContent(): List<Violation> = architecture.validate(fileSystem, FileConstraintCheck())
+    fun validateWithKtFileContent(): List<Violation> = fixture.validate()
 }
