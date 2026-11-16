@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794831447795,
+  "lastUpdate": 1794831450930,
   "repoUrl": "https://github.com/TBSten/katachi",
   "entries": {
     "JMH time": [
@@ -42838,6 +42838,54 @@ window.BENCHMARK_DATA = {
           {
             "name": "nowinandroid validate(FileConstraintCheck()) warm median",
             "value": 61.385215,
+            "unit": "ms",
+            "extra": "violations: 134 (layout) / 130 (with Konsist)\nUnexpectedFile: 130, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "81161390+TBSten@users.noreply.github.com",
+            "name": "TBSten",
+            "username": "TBSten"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "de1e955bacf7935290ed01af4ffc5a72d1ff95a5",
+          "message": "Merge pull request #96 from TBSten/claude/KATACHI-380-ci-benchmark-catch-up\n\nci(benchmark): ktFileContent と Konture のベンチマークを足し、nightly のままの記述を直す（KATACHI-380）",
+          "timestamp": "2026-11-16T20:57:40+09:00",
+          "tree_id": "d0a1b81f71f99ecd0e3525365946c9fdc19eefec",
+          "url": "https://github.com/TBSten/katachi/commit/de1e955bacf7935290ed01af4ffc5a72d1ff95a5"
+        },
+        "date": 1794831450622,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "nowinandroid validate() cold",
+            "value": 305.184012,
+            "unit": "ms",
+            "extra": "violations: 134 (layout) / 130 (with Konsist)\nUnexpectedFile: 130, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          },
+          {
+            "name": "nowinandroid validate() warm median",
+            "value": 46.408797,
+            "unit": "ms",
+            "extra": "violations: 134 (layout) / 130 (with Konsist)\nUnexpectedFile: 130, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          },
+          {
+            "name": "nowinandroid validate(FileConstraintCheck()) cold",
+            "value": 1184.647262,
+            "unit": "ms",
+            "extra": "violations: 134 (layout) / 130 (with Konsist)\nUnexpectedFile: 130, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          },
+          {
+            "name": "nowinandroid validate(FileConstraintCheck()) warm median",
+            "value": 64.681961,
             "unit": "ms",
             "extra": "violations: 134 (layout) / 130 (with Konsist)\nUnexpectedFile: 130, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
           }
