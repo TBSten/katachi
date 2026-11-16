@@ -35,6 +35,7 @@ const sidebar = (() => {
 			{ en: 'Get started', ja: 'はじめる' },
 			item('get-started/motivation', { en: 'Motivation', ja: 'モチベーション' }),
 			item('get-started/first-architecture', { en: 'Your first definition', ja: '初めての定義' }),
+			item('get-started/manual-install', { en: 'Manual install', ja: '手動インストール' }),
 			item('get-started/faq', { en: 'FAQ', ja: 'FAQ' }),
 			item('get-started/comparison-with-other-tools', { en: 'Compared with other tools', ja: '他ツールとの比較' }),
 		),

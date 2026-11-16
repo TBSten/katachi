@@ -1,0 +1,135 @@
+---
+title: 手動インストール
+description: katachi を手動でインストールするステップ
+tags:
+  - intermediate
+---
+
+## 1. :architecture-test モジュールを作る
+
+アプリのどの層にも属さない、アーキテクチャ定義とそれを検査するテストだけを置くモジュールを作成してください。
+
+```kotlin title="settings.gradle.kts"
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+    }
+}
+
+include(":architecture-test")
+```
+
+## 2. 依存を追加する
+
+プロジェクトが Android でも KMP でも、**ここはプレーンな `kotlin("jvm")` モジュール** にします。
+katachi 自身が JVM のライブラリだからであり、コードベースのアーキテクチャテストはホストマシン上で実行されるためです。
+
+以下は一例です。
+jvm モジュールになっており、テストソースセットで `me.tbsten.katachi:katachi` 等が利用できれば問題ありません。
+
+```kotlin nocollapse title="architecture-test/build.gradle.kts"
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
+plugins {
+    kotlin("jvm") version "<Kotlin のバージョン>"
+    id("me.tbsten.katachi") version "<katachi のバージョン>"
+}
+
+kotlin {
+    jvmToolchain(17)
+}
+
+tasks.test {
+    useJUnitPlatform()
+    outputs.upToDateWhen { false }
+    outputs.cacheIf { false }
+    testLogging { exceptionFormat = TestExceptionFormat.FULL }
+}
+
+dependencies {
+    testImplementation("me.tbsten.katachi:katachi:<katachi のバージョン>")
+    // ktFileContent { } や konsist { } を利用する必要がある場合:
+    testImplementation("me.tbsten.katachi:katachi-konsist:<katachi のバージョン>")
+    testImplementation(platform("org.junit:junit-bom:5.14.4"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+katachi {
+    // 自分のプロジェクトの設定に合わせて パッケージ名を変更してください
+    architecture = "com.example.projectArchitecture"
+}
+```
+
+## 3. アーキテクチャを定義する
+
+`architecture-test/src/test/kotlin/<パッケージ>/ProjectArchitecture.kt` がエントリーポイントです。
+ここに `architecture { }` を書きます。
+
+```kotlin
+@file:OptIn(ExperimentalKatachiApi::class)
+
+package com.example
+
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.gradle.*
+import me.tbsten.katachi.dsl.kotlin.ktFile
+
+val projectArchitecture = architecture {
+    gradle()
+
+    // TODO
+}
+```
+
+## 4. 検査するテストを追加する
+
+次のテストを `ProjectArchitectureTest.kt` に書きます。
+
+```kotlin title="architecture-test/src/test/kotlin/<パッケージ>/ProjectArchitectureTest.kt"
+@file:OptIn(ExperimentalKatachiApi::class)
+
+package com.example
+
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.check.assert
+import org.junit.jupiter.api.Test
+
+class ProjectArchitectureTest {
+    @Test
+    fun `プロジェクトの構成が定義どおりになっている`() {
+        projectArchitecture.assert()
+    }
+}
+```
+
+katachi 向けに書くテストはこの1本だけです。
+アーキテクチャ定義は1つであり、それ通りにプロジェクトが構成されているかをテストすれば良いためです。
+
+## 5. 実行する
+
+```kt
+./gradlew :architecture-test:test
+```
+
+最初は宣言していないファイルやディレクトリが違反として出ます。
+
+katachi は許可リスト方式なので、これが正常な出発点です。
+出てきたパスを定義に足すか、消すかを決めていってください。
+
+## まとめ
+
+TODO
+
+## 次のステップ
+
+TODO
+
