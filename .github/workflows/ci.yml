@@ -372,6 +372,16 @@ jobs:
           fail-on-alert: false
           summary-always: true
 
+      # github-action-benchmark commits its result on the runner's local `gh-pages` branch even
+      # with `auto-push: false` (`save-data-file` only counts with `external-data-json-path`),
+      # and its next run starts with `git fetch <remote> gh-pages:gh-pages`, which git refuses
+      # as a non-fast-forward once the local branch is one commit ahead. Dropping the local
+      # branch lets the next comparison fetch it afresh. Nothing is lost: the commit was never
+      # going to be pushed. Succeeds when the branch is not there (the step above failed early).
+      - name: Drop the local gh-pages branch
+        if: ${{ github.event_name == 'pull_request' }}
+        run: git update-ref -d refs/heads/gh-pages
+
       # A comparison, never a gate: it must not turn the pull request red, also when gh-pages
       # has no history yet.
       - name: Compare allocation per operation with main
