@@ -549,15 +549,16 @@ class DiffReportSpec : FreeSpec({
         }
     }
 
-    "markdown も html も false なら、何も書かずに失敗する" {
+    "4 つの形式をすべて false にすると、何も書かずに失敗する" {
         withRepository { repo ->
             repo.commit("initial")
             val failure = arch.process(
                 DiffReport,
-                DiffReport.Args(markdown = false, html = false),
+                DiffReport.Args(markdown = false, html = false, json = false, yaml = false),
                 RealFileSystem(repo.dir),
             ).exceptionOrNull()
             (failure is KatachiDiffReportNothingToWriteException) shouldBe true
+            failure?.message.orEmpty() shouldContain "markdown=false, html=false, json=false and yaml=false"
         }
     }
 

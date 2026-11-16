@@ -8,8 +8,9 @@ import org.gradle.api.file.RegularFile;
 /**
  * One format of the report {@code katachiDiff} writes: whether it is written, and where.
  *
- * <p>Both formats are written by default. Turning both off fails the run, since it would write
- * nothing.
+ * <p>All four formats are written by default: the Markdown and the HTML for a reviewer, the JSON
+ * and the YAML, the same report as data, for a script. Turning all of them off fails the run, since
+ * it would write nothing.
  *
  * <pre>{@code
  * katachi {
@@ -21,6 +22,9 @@ import org.gradle.api.file.RegularFile;
  *             html {
  *                 enable = false
  *             }
+ *             yaml {
+ *                 enable = false
+ *             }
  *         }
  *     }
  * }
@@ -30,7 +34,7 @@ import org.gradle.api.file.RegularFile;
  */
 public class KatachiDiffOutputOptions {
 
-    /** {@code markdown} or {@code html}: the block name, and the prefix of its {@code --arg}s. */
+    /** {@code markdown}, {@code html}, {@code json} or {@code yaml}: the block name, and the prefix of its {@code --arg}s. */
     private final String format;
 
     private Boolean enable;
@@ -70,7 +74,7 @@ public class KatachiDiffOutputOptions {
      * <p>Takes a {@link RegularFile} such as {@code layout.projectDirectory.file("diff-report.md")} or
      * a {@link File}, carried as its absolute path, or a {@code String} relative to this module's
      * directory. Left unset, the processor's own default applies, which is
-     * {@code build/katachi/diff/diff-report.md} or {@code .html}.
+     * {@code build/katachi/diff/diff-report.md}, {@code .html}, {@code .json} or {@code .yaml}.
      *
      * @throws InvalidUserDataException when the value is not a file, or when a relative one climbs
      *     out of the module with {@code ".."}.

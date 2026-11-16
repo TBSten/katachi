@@ -44,7 +44,7 @@ public val DiffWeight: MetadataKey<Double> = metadata()
  * Only a group and a role take a weight, so it cannot be written at the top of `architecture { }`
  * or on a layout entry, where [DiffReport] would not read it.
  *
- * A negative value or one that is not a number fails the report with
+ * A negative value or one that is not a finite number fails the report with
  * [KatachiInvalidDefinitionDiffWeightException], naming where it was written.
  *
  * ## Example 1: weigh every role of a group twice
@@ -62,7 +62,7 @@ public var GroupScope.diffWeight: Double? by DiffWeight
  * Sets [DiffWeight] on a role: a non-negative number. Left out, the role takes the nearest group's,
  * else 1.
  *
- * A negative value or one that is not a number fails the report with
+ * A negative value or one that is not a finite number fails the report with
  * [KatachiInvalidDefinitionDiffWeightException], naming where it was written.
  *
  * ## Example 1: put a change to the definition itself at the top of the heat
