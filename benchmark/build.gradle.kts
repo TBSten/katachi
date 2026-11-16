@@ -31,11 +31,13 @@ kotlin {
 dependencies {
     jmhImplementation(project(":katachi"))
     jmhImplementation(project(":katachi-konsist"))
+    jmhImplementation(project(":katachi-konture"))
     jmhImplementation(testFixtures(project(":katachi")))
 }
 
 // The runner that measures katachi on a real project checked out elsewhere (a pinned commit of
-// nowinandroid in the nightly workflow). A source set of its own rather than more of `jmh`:
+// nowinandroid in the `bench-real-project` job of ci.yml). A source set of its own rather than
+// more of `jmh`:
 // it is one plain JVM run of `validate()` against a directory on disk, with no JMH harness,
 // and it must not end up in the JMH jar. Like `jmh`, nothing in `check` compiles it.
 val realProject: SourceSet = sourceSets.create("realProject")

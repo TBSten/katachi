@@ -312,8 +312,9 @@ jobs:
   bench-jmh:
     name: bench-jmh
     runs-on: ubuntu-latest
-    # The full suite: about 24 parameter sets x 2 forks x (3 + 5) x 2 s, plus AssertColdBench's
-    # 5 cold forks each. Roughly 15-20 minutes; the limit leaves room for a slow runner.
+    # The full suite: 28 parameter sets x 2 forks x (3 + 5) x 2 s, plus AssertColdBench's 8
+    # parameter sets x 5 cold forks. Roughly 20-25 minutes; the limit leaves room for a slow
+    # runner.
     timeout-minutes: 60
     steps:
       - name: Checkout

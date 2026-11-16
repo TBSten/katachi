@@ -31,10 +31,12 @@ permissions:
   contents: read
 
 env:
-  # A subset, to keep one comparison around half an hour (two full runs would take 40 minutes
-  # or more). The walk and the Konsist path are where the time goes; the other benchmarks are
-  # covered nightly. Widen it here when a PR touches something else.
-  PR_BENCHMARK_INCLUDES: 'WalkBench|KonsistScopeBench'
+  # A subset, to keep one comparison around half an hour (two full runs would take 50 minutes
+  # or more). The walk, the Konsist path and `ktFileContent { }` are where the time goes; the
+  # other benchmarks (layout evaluation, role matching, Konture, the cold `assert()`) are
+  # covered on every push to main by bench-jmh in ci.yml. Widen it here when a PR touches
+  # something else. A benchmark the base does not have yet is left out of the table.
+  PR_BENCHMARK_INCLUDES: 'WalkBench|KonsistScopeBench|KtFileContentBench'
 
 jobs:
   compare:

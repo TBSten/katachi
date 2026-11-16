@@ -7,8 +7,8 @@ has the time and the allocation per operation (`gc.alloc.rate.norm`) of every be
 found in both files, with head / base as a ratio.
 
 A ratio above the threshold is marked, but nothing fails: one pair of runs on a shared
-runner is not enough to fail a pull request on. The thresholds follow the nightly job
-(time 150%, allocation 120%).
+runner is not enough to fail a pull request on. The thresholds follow the bench-jmh job of
+ci.yml (time 150%, allocation 120%).
 
 Usage:
     .github/scripts/jmh-compare.py <base results.json> <head results.json> [--time-threshold 1.5] [--alloc-threshold 1.2]
