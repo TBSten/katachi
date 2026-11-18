@@ -55,6 +55,12 @@ interface SmokeBridge {
 
     fun setGutterIcons(enabled: Boolean): String
 
+    /**
+     * What focusing the IDE does after a file was written from outside: the virtual file system looks at the disk again. The IDE under test is
+     * not in front on a CI machine, so `invokeAction("Synchronize")` (an action of the focused window) is not relied on; ask again on every poll.
+     */
+    fun refreshFromDisk(): String
+
     fun screenshotFrame(out: String): String
 
     fun screenshotGutterMenu(path: String, line: Int, out: String): String
