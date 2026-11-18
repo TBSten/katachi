@@ -1,6 +1,5 @@
 package me.tbsten.katachi.intellij
 
-import com.intellij.driver.sdk.invokeAction
 import com.intellij.driver.sdk.openFile
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -15,7 +14,7 @@ import kotlin.time.Duration.Companion.seconds
  * goes when it is mended, the names `captureValue("…")` offers are the capture names of the template, and the ◆ and the Code Vision
  * of `ServiceRole.kt` say how many files the role and its layout line hold.
  *
- * The file is edited on the disk and the IDE is told to look again (`Synchronize`), as a person saving from another program does; the
+ * The file is edited on the disk and the IDE is told to look again (`refreshFromDisk`, on every poll), as a person saving from another program does; the
  * completion is asked of the bridge for the place after the quote, so no key is typed. Written, compiled and not run by the build
  * (`./gradlew integrationTest --tests '*DefinitionAuthoringSmokeTest*'` opens an IDE; run by the verification lane, V4, on 2026.1
  * and, in the nightly job, 2026.3). Judged by eye: the screenshots of the underline, the banner and the Code Vision.
@@ -64,9 +63,11 @@ class DefinitionAuthoringSmokeTest {
             // 3. A name-less `*` with a `.template { "" }`: katachi cannot read the definition. Underlined where it was written, announced in a banner.
             openFile(REPOSITORY, waitForCodeAnalysis = false)
             repository.writeText(brokenText)
-            invokeAction("Synchronize")
+            bridge.refreshFromDisk()
             val underlined = "highlight=ERROR|$brokenLine:"
-            waitForSmoke("the mistake of RepositoryRole.kt underlined on line $brokenLine and announced", bridge, repositoryPath, timeout = 2.minutes, interval = 3.seconds) {
+            waitForSmoke("the mistake of RepositoryRole.kt underlined on line $brokenLine and announced", bridge, repositoryPath, timeout = 5.minutes, interval = 3.seconds) {
+                // Asked again on every poll: one refresh that never reached the IDE would otherwise leave it on the old text for the whole wait.
+                bridge.refreshFromDisk()
                 bridge.describeDefinitionErrors(repositoryPath).lines().let { lines ->
                     lines.any { it.startsWith(underlined) } && lines.any { it.startsWith(BANNER) }
                 }
@@ -80,8 +81,9 @@ class DefinitionAuthoringSmokeTest {
 
             // 4. Mended: the underline and the banner go.
             repository.writeText(original)
-            invokeAction("Synchronize")
-            waitForSmoke("the mistake gone (no error, no underline, no banner)", bridge, repositoryPath, timeout = 2.minutes, interval = 3.seconds) {
+            bridge.refreshFromDisk()
+            waitForSmoke("the mistake gone (no error, no underline, no banner)", bridge, repositoryPath, timeout = 5.minutes, interval = 3.seconds) {
+                bridge.refreshFromDisk()
                 bridge.describeDefinitionErrors(repositoryPath).let { it.valueOf("errors") == "0" && it.valueOf("highlights") == "0" && it.valueOf("banners") == "0" }
             }
             assertEquals("0", bridge.describeDefinitionErrors(repositoryPath).valueOf("highlights"))
