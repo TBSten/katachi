@@ -161,7 +161,6 @@ katachi {
 ```
 
 A Gradle task is provided for each registered processor.
-
 The task name is `katachi` plus the registered key with its first letter capitalized (for example, `register("someProcessor", ...)` becomes `katachiSomeProcessor`).
 
 Example run:
@@ -308,7 +307,9 @@ If you want it runnable from a program as an API, providing an API is recommende
     </TabItem>
     <TabItem label="Run it from a Gradle task">
 
-        Once you register it in `katachi.processors.register`, you can call it as a Gradle task whose name is derived from the key (`countFilesPerRole` becomes `katachiCountFilesPerRole`).
+        Once you register it in `katachi.processors.register`, you can call it as a Gradle task whose name is derived from the registered key.
+
+        (For example: `countFilesPerRole` becomes `katachiCountFilesPerRole`)
 
         ```kts title="architecture-test/build.gradle.kts"
         katachi {
