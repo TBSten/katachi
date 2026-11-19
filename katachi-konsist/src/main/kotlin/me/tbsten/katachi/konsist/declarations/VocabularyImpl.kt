@@ -69,7 +69,6 @@ internal class VocabularyImpl(private val list: DeclarationListBuilder) : Declar
 
     private fun propertyKind(kind: DeclarationKindName): PropertyKind = PropertyKind(listOf(kind), word(kind.keyword))
 
-    // TODO: DeclarationSite.capture() walks the stack once per value; keep only the line's own site if a benchmark shows it.
     private fun word(text: String): VocabularyWord = VocabularyWord.of(list) { text }
 
     override fun toString(): String = "VocabularyImpl($list)"
