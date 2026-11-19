@@ -166,6 +166,9 @@ python3 .claude/skills/prerelease/scripts/run-ide-plugin-e2e.py --release-dir .l
   `version`（`jb.gg/android-studio-releases-list.json` の `version`、4 桁）。**stable か Patch の版**にする。Canary・RC は
   期限が切れると起動直後に止まる（integrationTest263 の EAP で経験済み）。新しい stable が出ていれば上げてから走らせる
 - 前提: 10-2 と同じ（JDK 21・macOS・ディスプレイのあるセッション）。初回は Android Studio のダウンロード（約 1.5 GB）が乗る
+- 前提: Android SDK。smoke は `ANDROID_HOME` → `ANDROID_SDK_ROOT` → `~/Library/Android/sdk` → `~/Android/Sdk` の最初にある
+  ものを Android Studio の `ANDROID_HOME` として渡す（`SmokeProduct`）。無いと Android Studio が最初の Gradle sync で SDK の場所を
+  聞くダイアログを出して止まるので、どれも無ければ smoke はその旨の文面ですぐ落ちる。CI の macOS ランナーには `ANDROID_HOME` がある
 - Android Studio のダウンロード: Gradle には落とさせず、スクリプトが先に curl で `~/.cache/katachi-prerelease/ide/` に落とす。
   回線が途切れても続きから再開し（`-C -`・`--retry 10 --retry-all-errors`）、10 KB/s を 2 分下回ったら切って続きから
   つなぎ直す（3 回まで）。releases list の sha256 が合わなければ消して落とし直す。合えば

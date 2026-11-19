@@ -4,6 +4,7 @@ import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.ide.installer.ExistingIdeInstaller
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.VMOptions
+import java.nio.file.Files
 import java.nio.file.Path
 
 /**
@@ -46,5 +47,28 @@ internal object SmokeProduct {
         // So would Google's "Help improve Android Studio" consent dialog, which a fresh config shows before any project opens
         // (Driver then times out on "Project is opened"). Read by com.android.tools.idea.stats.ConsentDialog.
         options.addSystemProperty("disable.android.analytics.consent.dialog", true)
+        // And so would the "Android SDK location" dialog of the first Gradle sync (SdkSyncImpl), which a fresh config with no saved
+        // SDK and a copy with no local.properties both lead to. The IDE takes ANDROID_HOME as its SDK when it is a valid one.
+        options.withEnv("ANDROID_HOME", androidSdk().toString())
+    }
+
+    /**
+     * The Android SDK the smokes hand to Android Studio: ANDROID_HOME, ANDROID_SDK_ROOT, then the default install locations of
+     * Android Studio on macOS and Linux, the first that is a directory.
+     */
+    private fun androidSdk(): Path {
+        val home = Path.of(System.getProperty("user.home"))
+        val candidates = listOfNotNull(
+            System.getenv("ANDROID_HOME")?.takeIf { it.isNotBlank() }?.let { Path.of(it) },
+            System.getenv("ANDROID_SDK_ROOT")?.takeIf { it.isNotBlank() }?.let { Path.of(it) },
+            home.resolve("Library/Android/sdk"),
+            home.resolve("Android/Sdk"),
+        )
+        return candidates.firstOrNull { Files.isDirectory(it) }
+            ?: error(
+                "No Android SDK found for the Android Studio smokes (looked at ${candidates.joinToString()}). " +
+                    "Android Studio would stop on its SDK location dialog before the project opens. " +
+                    "Install an Android SDK, or set ANDROID_HOME to one.",
+            )
     }
 }
