@@ -18,7 +18,6 @@ internal fun suggestedRoleNameFor(relativePath: String): String {
 
 private fun roleSuggestionLinesFor(path: String): List<String> = listOf(
     "\"${suggestedRoleNameFor(path)}\".role {",
-    "  summary = \"TODO\"",
     "  layout {",
     "    ${layoutLineFor(path)}",
     "  }",

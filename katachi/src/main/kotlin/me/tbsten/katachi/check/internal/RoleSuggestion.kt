@@ -6,7 +6,6 @@ internal fun roleSuggestionFor(
     roleName: String = suggestedRoleName(path.substringAfterLast('/')),
 ): List<String> = listOf(
     "\"$roleName\".role {",
-    "  summary = \"TODO\"",
     "  layout {",
     "    ${layoutLineFor(path, isDirectory)}",
     "  }",

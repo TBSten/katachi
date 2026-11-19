@@ -24,7 +24,6 @@ In the log, a paragraph of the following shape follows for each violation (an ex
     - Delete it if it is not needed
     - Add a new role for it:
         "Gitignore".role {
-          summary = "TODO"
           layout {
             ".gitignore".file()
           }
@@ -38,7 +37,6 @@ In the log, a paragraph of the following shape follows for each violation (an ex
     - Declare what belongs in it in the layout of an existing role
     - Add a new role for it:
         "Gemini".role {
-          summary = "TODO"
           layout {
             ".gemini".ignore()
           }
