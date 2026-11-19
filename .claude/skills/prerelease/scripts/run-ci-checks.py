@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""リリース前チェックの 8（CI と同等のチェック）。`.github/workflows/ci.yml` の `run:` を手元で順に走らせる。
+"""リリース前チェックの 8（CI と同等のチェック）。`.github/workflows/ci.yml` と `ide-plugin-check.yml` の `run:` を手元で順に走らせる。
 
-コマンドはここに書き写さず、毎回 ci.yml から読む（ci.yml が唯一の置き場。手順を足しても直すのは ci.yml だけ）。
+コマンドはここに書き写さず、毎回 workflow から読む（workflow が唯一の置き場。手順を足しても直すのは workflow だけ）。
 
-- 走らせるのは、ジョブ `check` と `docs` と `ide-plugin` の `run:` 全部。ci.yml に書いた順（ステップの `working-directory` も読む）
+- 走らせるのは、ci.yml のジョブ `check` と `docs`、ide-plugin-check.yml のジョブ `ide-plugin` の `run:` 全部。workflow に書いた順（ステップの `working-directory` も読む）
 - ベンチマークのジョブ（名前が `bench-` で始まるもの）は既定で飛ばす。失敗で落ちない計測で、JMH だけで 15〜20 分かかる。
   `--with-bench` で JMH（`bench-jmh` の `./gradlew` の行）だけ足す。nowinandroid の計測は CI の環境変数に頼るので走らせない
 - `./gradlew` の行には `--no-daemon --console=plain --project-cache-dir .local/tmp/gradle-cache/prerelease-ci` を足す
@@ -21,7 +21,9 @@ from pathlib import Path
 
 sys.dont_write_bytecode = True
 
-JOBS = ("check", "docs", "ide-plugin")
+# (job, the workflow file under .github/workflows/ that holds it). ide-plugin left ci.yml (it runs nightly and on
+# workflow_dispatch only), but step 8 still runs it by hand.
+JOBS = (("check", "ci.yml"), ("docs", "ci.yml"), ("ide-plugin", "ide-plugin-check.yml"))
 # Absolute, so that a step run inside a subdirectory (katachi-intellij-plugin) still puts the cache
 # under the repository's .local/tmp/ rather than <subdirectory>/.local/.
 GRADLE_FLAGS = ["--no-daemon", "--console=plain", "--project-cache-dir", str(Path(__file__).resolve().parents[4] / ".local/tmp/gradle-cache/prerelease-ci")]
@@ -78,14 +80,16 @@ def in_dir(workdir, cmd):
 
 
 def commands(root, with_bench):
-    jobs = jobs_of((root / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8"))
-    missing = [j for j in JOBS if j not in jobs]
+    workflows = Path(root) / ".github" / "workflows"
+    by_file = {f: jobs_of((workflows / f).read_text(encoding="utf-8")) for f in sorted({f for _, f in JOBS})}
+    missing = [f"{f} の {j}" for j, f in JOBS if j not in by_file[f]]
     if missing:
-        sys.exit(f"ci.yml にジョブ {', '.join(missing)} が見つかりません。このスクリプトの JOBS を直す")
-    picked = [(job, name, cmd) for job in JOBS for name, cmd in jobs[job]]
+        sys.exit(f"ジョブ {', '.join(missing)} が見つかりません。このスクリプトの JOBS を直す")
+    jobs = by_file["ci.yml"]
+    picked = [(job, name, cmd) for job, f in JOBS for name, cmd in by_file[f][job]]
     if with_bench and "bench-jmh" in jobs:
         picked += [("bench-jmh", n, c) for n, c in jobs["bench-jmh"] if c.startswith("./gradlew")]
-    skipped = sorted(j for j in jobs if j not in JOBS and not (with_bench and j == "bench-jmh"))
+    skipped = sorted(j for j in jobs if j not in {n for n, _ in JOBS} and not (with_bench and j == "bench-jmh"))
     return picked, skipped
 
 

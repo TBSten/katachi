@@ -2,7 +2,7 @@
 
 [SKILL.md](../SKILL.md) の手順 8 の詳細。
 
-リリースするコミットで、CI（`.github/workflows/ci.yml`）と同じチェックを手元で通す。CI が緑でも、未 push のコミットや
+リリースするコミットで、CI（`.github/workflows/ci.yml`、IDE プラグインは `ide-plugin-check.yml`。後者は PR では走らず nightly と手動だけ）と同じチェックを手元で通す。CI が緑でも、未 push のコミットや
 CI に上がっていない差分があれば、それは誰も確かめていない。
 
 ```shell
@@ -10,7 +10,7 @@ python3 .claude/skills/prerelease/scripts/run-ci-checks.py --list               
 python3 .claude/skills/prerelease/scripts/run-ci-checks.py --release-dir .local/release-v<版>      # 走らせる
 ```
 
-- コマンドはスクリプトに書き写さず、毎回 ci.yml の `run:` から読む。走らせるのはジョブ `check` と `ide-plugin`
+- コマンドはスクリプトに書き写さず、毎回 workflow の `run:` から読む。走らせるのは ci.yml のジョブ `check`・`docs` と、ide-plugin-check.yml のジョブ `ide-plugin`
   （IDE プラグインの画面の golden は macOS で作ったものなので、macOS で走らせる）。ベンチマークのジョブは既定で飛ばす
   （失敗で落ちない計測。JMH も見たいときは `--with-bench`）。ベンチマークの数値・範囲・履歴は、手順 12 が main の履歴から見る
   （[benchmark.md](benchmark.md)）
