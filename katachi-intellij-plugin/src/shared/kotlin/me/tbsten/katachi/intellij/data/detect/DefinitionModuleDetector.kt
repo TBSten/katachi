@@ -21,7 +21,8 @@ internal fun detectDefinitionModules(project: SyncedProject): DetectionResult {
     var taskListMissing = false
     for (root in roots) {
         for (module in root.modules.sortedBy { it.gradlePath }) {
-            if (module.taskNames.isEmpty()) taskListMissing = true
+            val listsTasks = module.listsAllTasks()
+            if (!listsTasks) taskListMissing = true
             val capabilities = capabilitiesOf(module.taskNames)
             val katachiModule = KatachiModule(module.gradlePath, module.directory, root.rootPath, root.rootName, capabilities)
             module.katachiVersion?.let { versions[katachiModule.id] = it }
@@ -34,7 +35,7 @@ internal fun detectDefinitionModules(project: SyncedProject): DetectionResult {
                 // Which task it has is not known: loading tries the definition task first (design 4.1).
                 // Judged per module, not per root: Android Studio leaves the task lists out, but another
                 // module of the same root may still come with one (KATACHI-363).
-                module.taskNames.isEmpty() && module.katachiVersion != null -> candidates += katachiModule
+                !listsTasks && module.katachiVersion != null -> candidates += katachiModule
             }
         }
     }
@@ -45,6 +46,12 @@ internal fun detectDefinitionModules(project: SyncedProject): DetectionResult {
         else -> DetectionResult.NotInstalled(taskListMissing)
     }
 }
+
+// Every Gradle project has the help tasks, so a sync that lists the tasks lists them too. Android Studio's default sync
+// lists none of them but still lists `test`, and a list without them says nothing about katachi's tasks (KATACHI-398).
+private fun SyncedModule.listsAllTasks(): Boolean = taskNames.any { it in HELP_TASKS }
+
+private val HELP_TASKS = setOf("help", "tasks", "projects", "properties", "dependencies")
 
 internal fun capabilitiesOf(taskNames: Set<String>): Set<KatachiCapability> = buildSet {
     if (KatachiModule.DEFINITION_JSON_TASK in taskNames) add(KatachiCapability.Definition)
