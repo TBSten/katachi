@@ -1,5 +1,6 @@
 package me.tbsten.katachi.intellij
 
+import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.ide.installer.ExistingIdeInstaller
 import com.intellij.ide.starter.models.IdeInfo
@@ -9,13 +10,18 @@ import java.nio.file.Path
 
 /**
  * The IDE every real-IDE smoke starts: IntelliJ IDEA, or Android Studio under `-Dkatachi.smoke.ideProduct=AndroidStudio` (the task
- * `integrationTestAndroidStudio`). katachi ships to Android Studio too, whose Gradle sync differs from IDEA's (by default it does not
- * build the task list, which hid the definition module in KATACHI-363), so the smokes run there unchanged.
+ * `integrationTestAndroidStudio`). katachi ships to Android Studio too, so the smokes run there unchanged.
+ *
+ * Android Studio builds Gradle's task list during sync only with "Configure all Gradle tasks during Gradle Sync" on (off by default,
+ * KATACHI-363). Without it the plugin finds the definition module only through a katachi library dependency, and the samples take
+ * katachi from the repository's included build, not as a library, so [prepare] turns it on.
  *
  * ```kotlin
  * val bundle = workDir.resolve("ide/${SmokeProduct.appName}")
  * val ide = SmokeProduct.ideInfo { bundle }
- * Starter.newContext(name, TestCase(ide, project), false).applyVMOptionsPatch { SmokeProduct.patch(this) }
+ * Starter.newContext(name, TestCase(ide, project), false)
+ *     .also(SmokeProduct::prepare)
+ *     .applyVMOptionsPatch { SmokeProduct.patch(this) }
  * ```
  */
 internal object SmokeProduct {
@@ -37,6 +43,23 @@ internal object SmokeProduct {
         )
     } else {
         IdeProductProvider.IU.copy(getInstaller = { ExistingIdeInstaller(bundle()) })
+    }
+
+    /** What every smoke writes into the IDE's fresh config before it starts, for this product. */
+    fun prepare(context: IDETestContext) {
+        if (!androidStudio) return
+        val options = context.paths.configDir.resolve("options")
+        Files.createDirectories(options)
+        // Settings > Experimental > Gradle > "Configure all Gradle tasks during Gradle Sync" (GradleExperimentalSettings).
+        Files.writeString(
+            options.resolve("gradle.experimental.xml"),
+            """<application>
+            |  <component name="GradleExperimentalSettings">
+            |    <option name="SKIP_GRADLE_TASKS_LIST" value="false" />
+            |  </component>
+            |</application>
+            |""".trimMargin(),
+        )
     }
 
     /** What every smoke adds to the IDE's VM options for this product. */

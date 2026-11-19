@@ -67,6 +67,7 @@ class SpikeDriverTest {
             TestCase(ide, LocalProjectInfo(project.resolve("sample/jvm"))),
             false,
         ).apply { pluginConfigurator.installPluginFromPath(Paths.get(System.getProperty("path.to.build.plugin"))) }
+            .also(SmokeProduct::prepare)
             // The debug bridge (used here only to wait for the template list to load) refuses to
             // act unless the IDE runs with this flag.
             .applyVMOptionsPatch {

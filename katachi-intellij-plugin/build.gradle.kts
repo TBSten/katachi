@@ -289,7 +289,7 @@ intellijPlatformTesting.testIdeUi.register("integrationTest263") {
 
 // The same smokes against Android Studio, which katachi ships to as well. verifyPlugin only checks the binary compatibility;
 // this is what shows the plugin working in a real Android Studio, whose Gradle sync differs from IDEA's (by default it does not
-// build the task list, which hid the definition module in KATACHI-363). Each smoke starts it through SmokeProduct. Nightly
+// build the task list, KATACHI-363). Each smoke starts it through SmokeProduct. Nightly
 // (ide-plugin-nightly.yml, job smoke-android-studio), the prerelease (step 10-5, on a Mac with a display) and on demand:
 // `./gradlew integrationTestAndroidStudio --tests '*ArchModuleNameSmokeTest*'` (it opens IDE windows).
 // The version is the exact "version" field of jb.gg/android-studio-releases-list.json (four components): a stable or patch

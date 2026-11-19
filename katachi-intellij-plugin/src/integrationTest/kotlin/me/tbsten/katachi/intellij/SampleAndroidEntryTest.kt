@@ -57,6 +57,7 @@ class SampleAndroidEntryTest {
         val ide = SmokeProduct.ideInfo { bundle }
         val context = Starter.newContext("katachiSampleAndroid", TestCase(ide, LocalProjectInfo(project)), false)
             .apply { pluginConfigurator.installPluginFromPath(Path.of(System.getProperty("path.to.build.plugin"))) }
+            .also(SmokeProduct::prepare)
             .applyVMOptionsPatch {
                 addSystemProperty("katachi.debugBridge", true)
                 addSystemProperty("user.language", "en")

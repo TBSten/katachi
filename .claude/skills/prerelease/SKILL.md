@@ -170,8 +170,8 @@ priority 10 の警告。結果は `ci-checks.md`、ログは `tmp/ci-checks/`。
   （ja にしか無い鍵は 9）。基準から文言の置き場が変わっていれば、日本語の IDE での目視を `TODO.html` に載せる。
   結果は `ide-plugin-texts.md`。
 - 10-5: `run-ide-plugin-e2e.py --android-studio` で 10-2 と同じ smoke を `integrationTestAndroidStudio`（本物の Android Studio
-  で起動する）で走らせる。katachi は Android Studio の利用者にも配る。Android Studio は Gradle sync の既定が IDEA と違い
-  （タスク一覧を作らない）、定義モジュールが見つからなくなったことがある（KATACHI-363）。nightly にも同じ smoke の job が
+  で起動する）で走らせる。katachi は Android Studio の利用者にも配る。Android Studio は Gradle sync などが IDEA と違い、
+  IDEA で通っても Android Studio で動くとは限らない（KATACHI-363）。nightly にも同じ smoke の job が
   あるが、落ちても気づきにくいので、ここで必ず一度は通す。10-2 と同じくディスプレイのあるセッションが要り、
   オーケストレータが自分で走らせてよい。落ちたら priority 10 の警告。結果は
   `ide-plugin-android-studio.md`、ログは `tmp/ide-plugin-android-studio/`。

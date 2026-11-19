@@ -159,9 +159,11 @@ python3 .claude/skills/prerelease/scripts/run-ide-plugin-e2e.py --release-dir .l
 
 - `integrationTestAndroidStudio` は `integrationTest` と同じ smoke を Android Studio で起動する（どの smoke も `SmokeProduct`
   を通して IDE を選ぶ。`-Dkatachi.smoke.ideProduct=AndroidStudio`）。走らせるのは 10-2 と同じ全部。特に
-  `ArchModuleNameSmokeTest` が定義モジュールの検出（363 で壊れたところ）・◆・検査の行・no role の通知を一度に見る
-- Android Studio の設定は既定のまま（タスク一覧を作らない）。プラグインの逃げ道（katachi に依存するモジュールを候補にする）
-  が効いているかを見るため、設定を ON にして通してはいけない
+  `ArchModuleNameSmokeTest` が定義モジュールの検出・◆・検査の行・no role の通知を一度に見る
+- Android Studio の「Configure all Gradle tasks during Gradle Sync」は smoke が ON にして起動する（`SmokeProduct.prepare` が
+  設定ディレクトリの `options/gradle.experimental.xml` に書く）。sample は katachi をリポジトリの included build から使い、
+  ライブラリとしては依存しないので、既定（OFF）だとプラグインの逃げ道（katachi ライブラリに依存するモジュールを候補にする）が
+  効かず、定義モジュールが見つからない。既定設定での検出（363）は、この smoke では見ていない
 - Android Studio の版は `katachi-intellij-plugin/build.gradle.kts` の `register("integrationTestAndroidStudio")` の
   `version`（`jb.gg/android-studio-releases-list.json` の `version`、4 桁）。**stable か Patch の版**にする。Canary・RC は
   期限が切れると起動直後に止まる（integrationTest263 の EAP で経験済み）。新しい stable が出ていれば上げてから走らせる
@@ -177,8 +179,7 @@ python3 .claude/skills/prerelease/scripts/run-ide-plugin-e2e.py --release-dir .l
   途中で止まったら同じコマンドを打ち直せば続きから。壊れていそうなら `--no-ide-cache` で落とし直す。ログは
   `tmp/ide-plugin-android-studio/download.log`
 - 所要: 10-2 と同じくらい（smoke ごとに Android Studio を起動し、Gradle import と索引を待つ）
-- 落ちたら priority 10 の警告（Android Studio の利用者がプラグインを使えない）。「katachi is not found」の画面で止まって
-  いれば 363 の再発。スクリーンショットは `katachi-intellij-plugin/build/integrationTestAndroidStudio/<smoke>/screenshots/`
+- 落ちたら priority 10 の警告（Android Studio の利用者がプラグインを使えない）。スクリーンショットは `katachi-intellij-plugin/build/integrationTestAndroidStudio/<smoke>/screenshots/`
 - 結果は `ide-plugin-android-studio.md`、ログは `tmp/ide-plugin-android-studio/`
 
 ## 共通

@@ -67,6 +67,7 @@ class GenerationIdeErrorsTest {
         val ide = SmokeProduct.ideInfo { appBundleOf(ideHome, workDir) }
         val context = Starter.newContext("katachiGenerationIdeErrors", TestCase(ide, LocalProjectInfo(repository.resolve("sample/jvm"))), false)
             .apply { pluginConfigurator.installPluginFromPath(Paths.get(System.getProperty("path.to.build.plugin"))) }
+            .also(SmokeProduct::prepare)
             .applyVMOptionsPatch {
                 addSystemProperty("katachi.debugBridge", true)
                 SmokeProduct.patch(this)

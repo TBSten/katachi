@@ -82,6 +82,7 @@ internal class SmokeIde(name: String) {
         val ide = SmokeProduct.ideInfo { appBundle() }
         val context = Starter.newContext("katachi-${workDir.fileName}", TestCase(ide, LocalProjectInfo(project)), false)
             .apply { pluginConfigurator.installPluginFromPath(Paths.get(System.getProperty("path.to.build.plugin"))) }
+            .also(SmokeProduct::prepare)
             .applyVMOptionsPatch {
                 addSystemProperty("katachi.debugBridge", true)
                 // The texts the smokes assert are English.
