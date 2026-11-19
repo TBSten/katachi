@@ -106,10 +106,21 @@ class SpikeDriverTest {
                     // unsuccessful" and the popup never appeared. Waiting for the tree's nodes to
                     // finish loading, then focusing the row with a left click before the real
                     // right click, is the fix research-ide-testing.md 2.3 did not need to spell out.
-                    tree.waitForNodesLoaded()
-                    tree.clickRow(0)
-                    tree.rightClickRow(0)
+                    // On Android Studio the menu did not open at all (prerelease 10-5, Mac: the root row collapsed, no popup):
+                    // probably the tree being rebuilt once more after the Gradle sync, which swallows a click (not confirmed).
+                    // Up to 3 tries, each closing whatever the last one left open; a third miss fails with what was tried.
                     val menu = frame.popupMenu()
+                    var tries = 0
+                    while (true) {
+                        tries++
+                        tree.waitForNodesLoaded()
+                        tree.clickRow(0)
+                        tree.rightClickRow(0)
+                        val opened = runCatching { waitFor("the project tree's context menu", timeout = 10.seconds) { menu.present() } }.isSuccess
+                        if (opened) break
+                        check(tries < 3) { "the project tree's context menu did not open after $tries right clicks on row 0" }
+                        ui.keyboard { escape() }
+                    }
                     val topLevel = menu.itemsList()
                     check("New" in topLevel) { "no 'New' item in the context menu: $topLevel" }
                     menu.findMenuItemByText("New").click()
