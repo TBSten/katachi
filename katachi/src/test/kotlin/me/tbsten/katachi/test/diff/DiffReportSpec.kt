@@ -65,14 +65,17 @@ class DiffReportSpec : FreeSpec({
             ).getOrThrow()
 
             val markdown = allMarkdown(out)
-            markdown shouldContain "Presentation.ViewModel"
+            markdown shouldContain "| **Presentation** |"
+            markdown shouldContain "└ ViewModel |"
             markdown shouldContain "`…/home/HomeViewModel.kt`"
             markdown shouldContain "`…/mypage/MyPageViewModel.kt` _(added)_"
             // Every unchanged role once, under its groups, unchanged roles of a changed group included.
             markdown shouldContain "<details><summary>Unchanged (3 roles)</summary>\n\n" +
                 "- Root\n- **Presentation**\n  - Screen\n- **Domain**\n  - UseCase\n\n</details>"
             markdown shouldContain "<b>No role</b> 1 file"
-            markdown shouldNotContain "Presentation.Screen</b>"
+            // The files of a role are in the summary's table alone, with no listing of them.
+            markdown shouldNotContain "Files by role"
+            markdown shouldNotContain "<b>Presentation.ViewModel</b>"
             // An unchanged role inside a changed group is left out of the table.
             markdown shouldNotContain "└ Screen"
             val html = out.resolve("diff-report.html").readText()
@@ -125,7 +128,8 @@ class DiffReportSpec : FreeSpec({
             ).getOrThrow()
 
             val markdown = allMarkdown(out)
-            markdown shouldContain "`git diff $before..$after -- domain/GetUserUseCase.kt`"
+            // The Markdown lists no role's files, so the commands for them are in the HTML.
+            markdown shouldNotContain "git diff"
             markdown shouldNotContain "[!WARNING]"
             out.resolve("diff-report.html").readText() shouldNotContain "data-key=\"no-role\""
             markdown shouldNotContain "git diff HEAD"
@@ -147,7 +151,7 @@ class DiffReportSpec : FreeSpec({
                 RealFileSystem(repo.dir),
             ).getOrThrow()
 
-            allMarkdown(out) shouldContain "`git diff $before -- domain/GetUserUseCase.kt`"
+            out.resolve("diff-report.html").readText() shouldContain "git diff $before -- domain/GetUserUseCase.kt"
         }
     }
 
@@ -164,10 +168,10 @@ class DiffReportSpec : FreeSpec({
                 RealFileSystem(repo.dir),
             ).getOrThrow()
 
-            allMarkdown(out) shouldContain "`…/SaveUserUseCase.kt` _(untracked)_ | +2&nbsp;-0"
+            allMarkdown(out) shouldContain "`…/SaveUserUseCase.kt` _(untracked)_ | ${squares("🟨", 1)} | +2&nbsp;-0"
             // git diff never shows an untracked file, so the command compares it with an empty file.
-            allMarkdown(out) shouldContain
-                "`git diff --no-index -- /dev/null domain/SaveUserUseCase.kt`"
+            out.resolve("diff-report.html").readText() shouldContain
+                "git diff --no-index -- /dev/null domain/SaveUserUseCase.kt"
         }
     }
 
@@ -227,8 +231,8 @@ class DiffReportSpec : FreeSpec({
             markdown shouldContain "_(ignored): Files under a directory `ignore()` leaves out of the layout. " +
                 "The architecture test does not look at them._"
             out.resolve("diff-report.files-in-no-role.md").readText() shouldNotContain "sample/jvm"
-            out.resolve("diff-report.files-by-role.md").readText() shouldContain
-                "<details><summary><b>Ignored</b> 1 file</summary>"
+            // The ignored files are listed in the summary's table; there is no listing of them apart.
+            out.resolve("diff-report.files-by-role.md").exists() shouldBe false
 
             val html = out.resolve("diff-report.html").readText()
             html shouldContain "1 file no layout { } allows. The architecture test will fail on it."
@@ -285,7 +289,7 @@ class DiffReportSpec : FreeSpec({
             ).getOrThrow()
 
             val markdown = allMarkdown(out)
-            markdown shouldContain "`git diff $before..$after -- proj/domain/GetUserUseCase.kt`"
+            out.resolve("diff-report.html").readText() shouldContain "git diff $before..$after -- proj/domain/GetUserUseCase.kt"
             markdown shouldContain "# Architecture diff report: HEAD~1 (${before.take(7)})..HEAD (${after.take(7)})"
         }
     }
@@ -376,13 +380,12 @@ class DiffReportSpec : FreeSpec({
             markdown shouldContain "4 files changed, +8 -0. 1 of 4 roles touched, 1 file in no role."
             markdown shouldContain "Showing 2 of 4 files (maxFiles=2). Raise maxFiles to see all."
             markdown shouldContain "└ ViewModel | ${squares("🟨", 1)} | +7&nbsp;-0 | 3 |"
-            markdown shouldContain "<b>Presentation.ViewModel</b> ${squares("🟨", 1)} 3 files, +7 -0"
             markdown shouldContain "`…/home/HomeViewModel.kt`"
             markdown shouldContain "`…/mypage/MyPageViewModel.kt`"
             markdown shouldNotContain "OtherViewModel.kt"
             markdown shouldNotContain "`notes.txt`"
-            // Once under the role and once under (no role), in the summary table and in each listing.
-            markdown.split("…and 1 more file").size shouldBe 5
+            // Once under the role and once under (no role) in the summary table, and once in the no-role listing.
+            markdown.split("…and 1 more file").size shouldBe 4
             val html = out.resolve("diff-report.html").readText()
             html shouldContain "Showing <span data-stat=\"shown\">2</span> of <span data-stat=\"limit-total\">4</span> files (maxFiles=2)"
             // Every file has a row so a commit selection can re-rank them; the ones cut start hidden.
@@ -483,7 +486,7 @@ class DiffReportSpec : FreeSpec({
         }
     }
 
-    "Markdown は要約・role ごとのファイル・role の無いファイルの 3 つに分け、要約から相対リンクで辿れる" {
+    "Markdown は要約と role の無いファイルの 2 つに分け、要約から相対リンクで辿れる。role ごとのファイルの一覧は書かない" {
         withRepository { repo ->
             repo.commit("initial")
             repo.write("app/home/HomeViewModel.kt", "a\n")
@@ -499,19 +502,14 @@ class DiffReportSpec : FreeSpec({
 
             val summary = out.resolve("diff-report.md").readText()
             summary shouldContain "| Role | Importance | Diff&nbsp;lines | Files |"
-            summary shouldContain "GitHub links and `git diff` commands per file: [Files by role](diff-report.files-by-role.md) · " +
-                "[Files in no role](diff-report.files-in-no-role.md)"
+            summary shouldContain "GitHub links and `git diff` commands per file: [Files in no role](diff-report.files-in-no-role.md)"
+            summary shouldNotContain "Files by role"
             // The table goes down to the files, like the HTML; the commands stay in the listings.
             summary shouldContain "| &nbsp;&nbsp;└ ViewModel | ${squares("🟨", 1)} | +1&nbsp;-0 | 1 |\n" +
                 "| &nbsp;&nbsp;&nbsp;&nbsp;└ `…/home/HomeViewModel.kt` _(added)_ | ${squares("🟨", 1)} | +1&nbsp;-0 | |"
             summary shouldContain "| **(no role)** | | +1&nbsp;-0 | 1 |\n| &nbsp;&nbsp;└ `notes.txt` _(added)_ | ${squares("🟨", 1)} | +1&nbsp;-0 | |"
             summary shouldNotContain "git diff "
-            val byRole = out.resolve("diff-report.files-by-role.md").readText()
-            byRole shouldContain "# Files by role: HEAD~1"
-            byRole shouldContain "Back to the [summary](diff-report.md)."
-            byRole shouldContain "_Run the `git diff` commands from the repository root._"
-            byRole shouldContain "`…/home/HomeViewModel.kt`"
-            byRole shouldNotContain "notes.txt"
+            out.resolve("diff-report.files-by-role.md").exists() shouldBe false
             val noRole = out.resolve("diff-report.files-in-no-role.md").readText()
             noRole shouldContain "_Run the `git diff` commands from the repository root._"
             noRole shouldContain "`notes.txt`"
@@ -543,9 +541,9 @@ class DiffReportSpec : FreeSpec({
                 RealFileSystem(repo.dir),
             ).getOrThrow()
 
-            out.list().orEmpty().sorted() shouldBe listOf("review.files-by-role.md", "review.files-in-no-role.md", "review.md")
-            out.resolve("review.md").readText() shouldContain "[Files by role](review.files-by-role.md)"
-            out.resolve("review.files-by-role.md").readText() shouldContain "Back to the [summary](review.md)."
+            out.list().orEmpty().sorted() shouldBe listOf("review.files-in-no-role.md", "review.md")
+            out.resolve("review.md").readText() shouldContain "[Files in no role](review.files-in-no-role.md)"
+            out.resolve("review.files-in-no-role.md").readText() shouldContain "Back to the [summary](review.md)."
         }
     }
 
@@ -668,7 +666,7 @@ class DiffReportSpec : FreeSpec({
 
 // The summary and the file listings together, for assertions that do not care which file a line is in.
 private fun allMarkdown(out: File): String =
-    listOf("diff-report.md", "diff-report.files-by-role.md", "diff-report.files-in-no-role.md")
+    listOf("diff-report.md", "diff-report.files-in-no-role.md")
         .map(out::resolve)
         .filter(File::exists)
         .joinToString("\n") { it.readText() }

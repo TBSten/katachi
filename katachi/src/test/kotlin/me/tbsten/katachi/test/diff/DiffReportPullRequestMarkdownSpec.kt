@@ -1,6 +1,7 @@
 package me.tbsten.katachi.test.diff
 
 import io.kotest.core.spec.style.FreeSpec
+import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import me.tbsten.katachi.diff.internal.ChangeStatus
@@ -46,11 +47,10 @@ class DiffReportPullRequestMarkdownSpec : FreeSpec({
         val files = markdown(pullRequest, repository)
 
         files.getValue("diff-report.md") shouldContain
-            "GitHub links per file: [Files by role](diff-report.files-by-role.md) · [Files in no role](diff-report.files-in-no-role.md)"
-        for (listing in listOf("diff-report.files-by-role.md", "diff-report.files-in-no-role.md")) {
-            files.getValue(listing) shouldContain "| [GitHub](https://github.com/example/app/pull/7/files#diff-"
-            files.getValue(listing) shouldNotContain "git diff"
-        }
+            "GitHub links per file: [Files in no role](diff-report.files-in-no-role.md)"
+        files.keys shouldBe setOf("diff-report.md", "diff-report.files-in-no-role.md")
+        files.getValue("diff-report.files-in-no-role.md") shouldContain "| [GitHub](https://github.com/example/app/pull/7/files#diff-"
+        files.getValue("diff-report.files-in-no-role.md") shouldNotContain "git diff"
     }
 
     "before / after のレポートは、GitHub のリンクに git diff のコマンドを添える" {

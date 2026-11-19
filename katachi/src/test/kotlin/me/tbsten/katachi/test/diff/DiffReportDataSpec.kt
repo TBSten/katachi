@@ -182,7 +182,7 @@ class DiffReportDataSpec : FreeSpec({
             ).getOrThrow()
 
             out.list().orEmpty().sorted() shouldBe
-                listOf("diff-report.files-by-role.md", "diff-report.html", "diff-report.json", "diff-report.md", "diff-report.yaml")
+                listOf("diff-report.html", "diff-report.json", "diff-report.md", "diff-report.yaml")
 
             val markdownOnly = repo.dir.resolve("markdown-only")
             arch.process(
@@ -200,7 +200,7 @@ class DiffReportDataSpec : FreeSpec({
                 RealFileSystem(repo.dir),
             ).getOrThrow()
 
-            markdownOnly.list().orEmpty().sorted() shouldBe listOf("diff-report.files-by-role.md", "diff-report.md")
+            markdownOnly.list().orEmpty().sorted() shouldBe listOf("diff-report.md")
         }
     }
 

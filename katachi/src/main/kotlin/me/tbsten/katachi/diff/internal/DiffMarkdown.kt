@@ -1,30 +1,29 @@
 package me.tbsten.katachi.diff.internal
 
 /**
- * The names of the Markdown files, all in one directory: the summary, and the two file listings
- * named after it (`diff-report.md` -> `diff-report.files-by-role.md`, `diff-report.files-in-no-role.md`).
+ * The names of the Markdown files, all in one directory: the summary, and the file listing named
+ * after it (`diff-report.md` -> `diff-report.files-in-no-role.md`).
  */
 internal class MarkdownFileNames(val summary: String) {
     private val base: String = summary.removeSuffix(".md")
-    val filesByRole: String = "$base.files-by-role.md"
     val filesInNoRole: String = "$base.files-in-no-role.md"
 
     /** Every name a run can produce, so it can remove what an earlier run left behind. */
-    val all: List<String> get() = listOf(summary, filesByRole, filesInNoRole)
+    val all: List<String> get() = listOf(summary, filesInNoRole)
 }
 
 /**
- * The Markdown report as file name to content: the summary, and each file listing that has
- * something in it.
+ * The Markdown report as file name to content: the summary, and the listing of the files in no role
+ * when there are any.
  *
- * The listings are kept out of the summary so that the summary stays short enough to paste into a
- * pull request comment however large the change is.
+ * The listing is kept out of the summary so that the summary stays short enough to paste into a
+ * pull request comment however large the change is. The files of each role are not listed twice:
+ * the summary's table already goes down to them.
  */
 // GitHub renders `<details>` in Markdown, which is what lets an unchanged group stay folded.
 internal fun renderDiffMarkdown(model: DiffReportModel, names: MarkdownFileNames): Map<String, String> {
     val roles = model.nodes.flatMap { it.roles() }.filter { it.changed }
     val listings = buildMap {
-        if (roles.isNotEmpty() || model.ignored.isNotEmpty()) put(names.filesByRole, filesByRole(model, roles, names))
         if (model.unassigned.isNotEmpty()) put(names.filesInNoRole, filesInNoRole(model, names))
     }
     return mapOf(names.summary to summary(model, touched = roles.size, listings = listings.keys, names)) + listings
@@ -84,7 +83,7 @@ private fun summary(model: DiffReportModel, touched: Int, listings: Set<String>,
             appendLine()
         }
     }
-    // Every role appears once: a changed one in the table above (its files in the listing), an
+    // Every role appears once: a changed one in the table above (its files under it), an
     // unchanged one in this tree, under its groups, so the tree's leaves are always roles.
     val unchanged = model.nodes.sumOf { node -> node.roles().count { !it.changed } }
     if (unchanged > 0) {
@@ -96,11 +95,9 @@ private fun summary(model: DiffReportModel, touched: Int, listings: Set<String>,
         appendLine()
     }
     // Relative links: they resolve next to this file both on GitHub and on disk.
-    val links = listOfNotNull(
-        "[Files by role](${names.filesByRole})".takeIf { names.filesByRole in listings },
-        "[Files in no role](${names.filesInNoRole})".takeIf { names.filesInNoRole in listings },
-    )
-    if (links.isNotEmpty()) appendLine("${howToSeeLabel(model.range)} per file: ${links.joinToString(" · ")}")
+    if (names.filesInNoRole in listings) {
+        appendLine("${howToSeeLabel(model.range)} per file: [Files in no role](${names.filesInNoRole})")
+    }
 }
 
 // A pull request's files are all on GitHub, so its rows carry the link alone. Any other range keeps
@@ -109,34 +106,6 @@ private fun showsGitDiffCommand(range: DiffRange): Boolean = range.pullRequest =
 
 private fun howToSeeLabel(range: DiffRange): String =
     if (showsGitDiffCommand(range)) "GitHub links and `git diff` commands" else "GitHub links"
-
-private fun filesByRole(model: DiffReportModel, roles: List<DiffNode.RoleNode>, names: MarkdownFileNames): String = buildString {
-    appendLine("# Files by role: ${model.range.label}")
-    appendLine()
-    listingPreamble(model, names)
-    for (role in roles) {
-        appendLine(
-            "<details open><summary><b>${role.qualifiedName}</b> ${heatSquares(heatLevel(role.score, model.fullImportanceLines))} " +
-                "${files(role.fileCount)}, +${role.added} -${role.deleted}</summary>",
-        )
-        appendLine()
-        val shown = role.files.filter { it.change in model.shown }
-        fileTable(shown.map { fileRow(it.shortPath, it.change, model.range) }, hidden = role.files.size - shown.size)
-        appendLine("</details>")
-        appendLine()
-    }
-    // Folded: these are changes the definition chose not to look at, kept only so that no changed file goes missing.
-    if (model.ignored.isNotEmpty()) {
-        appendLine("<details><summary><b>Ignored</b> ${files(model.ignored.size)}</summary>")
-        appendLine()
-        appendLine("_${IGNORED_NOTE}_")
-        appendLine()
-        val shown = model.ignored.filter { it in model.shown }
-        fileTable(shown.map { fileRow(it.path, it, model.range) }, hidden = model.ignored.size - shown.size)
-        appendLine("</details>")
-        appendLine()
-    }
-}
 
 // A directory `ignore()` leaves out is skipped by the architecture test too, so no warning: it will not fail on these.
 private const val IGNORED_NOTE: String =
