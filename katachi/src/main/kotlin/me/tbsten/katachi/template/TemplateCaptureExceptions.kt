@@ -54,7 +54,7 @@ public class KatachiMissingTemplateCaptureException internal constructor(
      * it.
      */
     public val captureDeclaredAt: Map<String, DeclarationSite>,
-    /** For each missing capture, the values that pick an existing directory or module, sorted; empty when none could be listed. */
+    /** For each missing capture, the values that pick an existing directory, sorted; empty when none could be listed. */
     public val existingValues: Map<String, List<String>>,
     internal val declaredWith: Map<String, String>,
     /**
