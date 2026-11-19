@@ -75,7 +75,7 @@ architecture {
 
 ### 説明を書く
 
-最低限必要なのは `summary` だけです。ドキュメント生成時に Role の一覧表に表示されるテキストです。
+`summary` は書かなくても構いません。書くと、ドキュメント生成時に Role の一覧表に 1 行で表示されます。
 
 ```kt
 "UseCase".role {
@@ -153,7 +153,6 @@ Katachi check failed: 1 violation (Unexpected: 1)
     - Delete it if it is not needed
     - Add a new role for it:
         "GetUserUseCase".role {
-          summary = "TODO"
           layout {
             "src/main/kotlin/com/example" / "GetUserUseCase".ktFile()
           }

@@ -43,7 +43,6 @@ class ViolationReportSpec : FreeSpec({
                     - Delete it if it is not needed
                     - Add a new role for it:
                         "TokenRefresher".role {
-                          summary = "TODO"
                           layout {
                             "core/domain" / "TokenRefresher".ktFile()
                           }
@@ -68,7 +67,6 @@ class ViolationReportSpec : FreeSpec({
                     - Delete it if it is not needed
                     - Add a new role for it:
                         "TokenRefresher".role {
-                          summary = "TODO"
                           layout {
                             "core/domain" / "TokenRefresher".ktFile()
                           }
@@ -126,7 +124,6 @@ class ViolationReportSpec : FreeSpec({
                     - Declare what belongs in it in the layout of an existing role
                     - Add a new role for it:
                         "TmpExperiment".role {
-                          summary = "TODO"
                           layout {
                             "tmp-experiment".ignore()
                           }
@@ -150,7 +147,6 @@ class ViolationReportSpec : FreeSpec({
                     - Delete it if it is not needed
                     - Add a new role for it:
                         "BuildGradle".role {
-                          summary = "TODO"
                           layout {
                             "build.gradle".ktsFile()
                           }
@@ -163,7 +159,6 @@ class ViolationReportSpec : FreeSpec({
                     - Delete it if it is not needed
                     - Add a new role for it:
                         "LibsVersionsToml".role {
-                          summary = "TODO"
                           layout {
                             "libs.versions.toml".file()
                           }
