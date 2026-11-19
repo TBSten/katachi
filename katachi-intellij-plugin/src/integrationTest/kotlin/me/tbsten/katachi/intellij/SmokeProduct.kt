@@ -79,6 +79,10 @@ internal object SmokeProduct {
         // And so would the "Sign in to Android Studio" dialog of a signed-out IDE (StartupSignInDialogActivity). Its StudioFlags flag
         // takes a system property of the flag's id as an override (com.android.flags.overrides.PropertyOverrides).
         options.addSystemProperty("google.login.enable.startup.sign.in.dialog", false)
+        // Android Studio opens the project's README.md when the project opens, preview only (findAndOpenReadmeIfNeeded sets the file's
+        // TextEditorWithPreview.DEFAULT_LAYOUT_FOR_FILE). A smoke's openFile of it then lands on that tab, which has no gutter. The
+        // registry key is read as a system property of the same name.
+        options.addSystemProperty("ide.open.readme.md.on.startup", false)
     }
 
     /**
