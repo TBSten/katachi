@@ -136,10 +136,9 @@ katachi は許可リスト方式なので、これが正常な出発点です。
 
 ## まとめ
 
-- :architecture-test モジュールを作り、アーキテクチャ定義とそれを検査するテストだけを置きます。
-- :architecture-test は、プロジェクトが Android でも KMP でもプレーンな `kotlin("jvm")` モジュールにします。
-- ProjectArchitecture.kt の `architecture { }` にアーキテクチャを定義し、`projectArchitecture.assert()` を呼ぶテストを1本だけ書きます。
-- 最初の実行で出た違反は、パスを定義に足すか、ファイルを消すかして解消していきます。
+- katachi 用のモジュールを作り、アーキテクチャ定義とそれを検査するテストだけを置きます。
+- katachi 用のモジュールは、プロジェクトが Android でも KMP でもプレーンな `kotlin("jvm")` モジュールにします。
+- ProjectArchitecture.kt の `architecture { }` にアーキテクチャを定義し、`projectArchitecture.assert()` を呼ぶテストを1つだけ書きます。
 
 ## 次のステップ
 
@@ -162,7 +161,7 @@ katachi は許可リスト方式なので、これが正常な出発点です。
   <LinkCard
     title="sample/jvm"
     href="https://github.com/TBSten/katachi/tree/main/sample/jvm"
-    description="Ktor の最小サーバに定義を入れた、動く実物です。"
+    description="最小構成の Ktor API を題材にしたサンプルです。"
   />
 </CardGrid>
 

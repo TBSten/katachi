@@ -136,10 +136,9 @@ Go through the reported paths and decide whether to add them to the definition o
 
 ## Summary
 
-- Create the :architecture-test module and put nothing in it but the architecture definition and the test that checks it.
-- Whether your project is Android or KMP, make :architecture-test a plain `kotlin("jvm")` module.
+- Create a module for katachi and put nothing in it but the architecture definition and the test that checks it.
+- Whether your project is Android or KMP, make the katachi module a plain `kotlin("jvm")` module.
 - Define the architecture in `architecture { }` in ProjectArchitecture.kt, and write a single test that calls `projectArchitecture.assert()`.
-- Resolve the violations from the first run by either adding the paths to the definition or deleting the files.
 
 ## Next steps
 
@@ -162,6 +161,6 @@ Go through the reported paths and decide whether to add them to the definition o
   <LinkCard
     title="sample/jvm"
     href="https://github.com/TBSten/katachi/tree/main/sample/jvm"
-    description="A working example: a minimal Ktor server with a definition added."
+    description="A sample built around a minimal Ktor API."
   />
 </CardGrid>
