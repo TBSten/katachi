@@ -1,5 +1,6 @@
 package me.tbsten.katachi.intellij.ide.debug
 
+import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInsight.daemon.LineMarkerInfo
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerEx
 import com.intellij.codeInsight.daemon.LineMarkerSettings
@@ -24,6 +25,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.HyperlinkLabel
@@ -192,8 +194,8 @@ internal class GutterDebugReader(private val project: Project, private val onScr
 
     /**
      * Puts the text editor of [path] on screen where the file is open in an editor with a preview (Markdown): platform 262 and later
-     * open README.md preview only, and the daemon draws the gutter of an editor on screen only. One `editor=<layout>` line per such editor,
-     * after the switch.
+     * open README.md preview only, and the daemon draws the gutter of an editor on screen only, so the file is analyzed again after the switch.
+     * One `editor=<layout>` line per such editor, after the switch.
      */
     fun showTextEditor(path: String): String {
         val file = LocalFileSystem.getInstance().findFileByNioFile(Paths.get(path)) ?: return "layout=$path\nopen=false"
@@ -202,6 +204,15 @@ internal class GutterDebugReader(private val project: Project, private val onScr
                 // getLayout and setLayout are functions of the Kotlin class, not a property.
                 if (editor.getLayout() == TextEditorWithPreview.Layout.SHOW_PREVIEW) {
                     sdkCall("show the text editor of ${file.path}") { editor.setLayout(TextEditorWithPreview.Layout.SHOW_EDITOR) }
+                    // The daemon skipped the text editor while it was hidden, and in prerelease 10-5 did not come back to it once shown.
+                    sdkCall("analyze ${file.path} again") {
+                        val psiFile = ApplicationManager.getApplication().runReadAction<PsiFile?> { PsiManager.getInstance(project).findFile(file) }
+                        if (psiFile != null) {
+                            ApplicationManager.getApplication().runReadAction<Unit> {
+                                DaemonCodeAnalyzer.getInstance(project).restart(psiFile, "katachi: the debug bridge showed the text editor")
+                            }
+                        }
+                    }
                 }
                 "editor=${editor.getLayout()?.name}"
             }
