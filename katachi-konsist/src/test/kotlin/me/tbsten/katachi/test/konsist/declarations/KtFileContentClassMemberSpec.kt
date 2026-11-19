@@ -4,6 +4,7 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldEndWith
 
 /** Enum entries, secondary constructors and `init` blocks: members like any other, denied unless a line allows them. */
 
@@ -30,6 +31,31 @@ class KtFileContentClassMemberSpec : FreeSpec({
                 `package`("**")
                 allow(enum, `class`, "Color") { allow(anythingElse) }
             }.shouldBeEmpty()
+        }
+
+        "enum を許す直し方の行は項目もまとめて許す（行だけだと項目ごとの違反に増える）" {
+            val source = kt("enum class Color { RED, GREEN }")
+            val fix = fixLinesOf(source) {
+                `package`("**")
+                allow(`fun`, "x")
+            }.single { "allow(enum" in it }
+            fix shouldEndWith " / allow(enum, `class`, \"Color\") { allow(entry, \"*\") }"
+            judged(source) {
+                `package`("**")
+                allow(`fun`, "x")
+                allow(enum, `class`, "Color") { allow(entry, "*") }
+            }.shouldBeEmpty()
+        }
+
+        "クラスの中の enum を許す直し方の行も項目をまとめて許し、項目の無い enum は行だけ" {
+            fixLinesOf(kt("class A {\n    enum class Kind { X }\n}")) {
+                `package`("**")
+                allow(`class`, "A") { allow(`fun`, "f") }
+            }.single { "allow(enum" in it } shouldEndWith " / allow(enum, `class`, \"Kind\") { allow(entry, \"*\") }"
+            fixLinesOf(kt("enum class Empty")) {
+                `package`("**")
+                allow(`fun`, "x")
+            }.single { "allow(enum" in it } shouldEndWith " / allow(enum, `class`, \"Empty\")"
         }
 
         "required(entry, ...) が無ければ足りないと出す" {
