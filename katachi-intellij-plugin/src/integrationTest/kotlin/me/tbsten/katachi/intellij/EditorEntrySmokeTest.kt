@@ -29,7 +29,7 @@ class EditorEntrySmokeTest {
         val ide = SmokeProduct.ideInfo { fixture.appBundle(ideHome) }
         val context = Starter.newContext("katachiEditorEntry", TestCase(ide, LocalProjectInfo(project)), false)
             .apply { pluginConfigurator.installPluginFromPath(Path.of(System.getProperty("path.to.build.plugin"))) }
-            .also(SmokeProduct::prepare)
+            .also { SmokeProduct.prepare(it) }
             .applyVMOptionsPatch {
                 addSystemProperty("katachi.debugBridge", true)
                 addSystemProperty("user.language", "en")

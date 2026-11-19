@@ -57,7 +57,7 @@ class ToolWindowSmokeTest {
             false
         )
             .apply { pluginConfigurator.installPluginFromPath(Paths.get(System.getProperty("path.to.build.plugin"))) }
-            .also(SmokeProduct::prepare)
+            .also { SmokeProduct.prepare(it) }
             // The plugin's debug bridge acts only when asked to.
             .applyVMOptionsPatch {
                 addSystemProperty("katachi.debugBridge", true)

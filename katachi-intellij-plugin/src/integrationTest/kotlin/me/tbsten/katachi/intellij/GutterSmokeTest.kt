@@ -73,7 +73,7 @@ class GutterSmokeTest {
         val ide = SmokeProduct.ideInfo { appBundleOf(ideHome) }
         val context = Starter.newContext("katachiGutterSmoke", TestCase(ide, LocalProjectInfo(project)), false)
             .apply { pluginConfigurator.installPluginFromPath(Paths.get(System.getProperty("path.to.build.plugin"))) }
-            .also(SmokeProduct::prepare)
+            .also { SmokeProduct.prepare(it) }
             .applyVMOptionsPatch {
                 addSystemProperty("katachi.debugBridge", true)
                 // The texts the smoke asserts are English.

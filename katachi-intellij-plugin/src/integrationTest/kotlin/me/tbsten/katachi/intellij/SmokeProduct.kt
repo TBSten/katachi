@@ -20,7 +20,7 @@ import java.nio.file.Path
  * val bundle = workDir.resolve("ide/${SmokeProduct.appName}")
  * val ide = SmokeProduct.ideInfo { bundle }
  * Starter.newContext(name, TestCase(ide, project), false)
- *     .also(SmokeProduct::prepare)
+ *     .also { SmokeProduct.prepare(it) }
  *     .applyVMOptionsPatch { SmokeProduct.patch(this) }
  * ```
  */
@@ -45,9 +45,12 @@ internal object SmokeProduct {
         IdeProductProvider.IU.copy(getInstaller = { ExistingIdeInstaller(bundle()) })
     }
 
-    /** What every smoke writes into the IDE's fresh config before it starts, for this product. */
-    fun prepare(context: IDETestContext) {
-        if (!androidStudio) return
+    /**
+     * What every smoke writes into the IDE's fresh config before it starts, for this product. [buildTaskList] `false` keeps Android
+     * Studio's default (no task list on sync), for the smoke that watches the plugin's way around it (KATACHI-363).
+     */
+    fun prepare(context: IDETestContext, buildTaskList: Boolean = true) {
+        if (!androidStudio || !buildTaskList) return
         val options = context.paths.configDir.resolve("options")
         Files.createDirectories(options)
         // Settings > Experimental > Gradle > "Configure all Gradle tasks during Gradle Sync" (GradleExperimentalSettings).

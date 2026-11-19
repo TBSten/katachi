@@ -299,13 +299,15 @@ jobs:
   # to as well: verifyPlugin above only checks the binary compatibility. Android Studio's Gradle sync differs from IDEA's (by
   # default it does not build the task list, KATACHI-363). The sample takes katachi from the repository's included build, not as
   # a library, so the plugin's way around a missing task list does not apply to it: SmokeProduct.prepare turns "Configure all
-  # Gradle tasks during Gradle Sync" on. Each smoke starts Android Studio through SmokeProduct; one job per smoke, for the same
+  # Gradle tasks during Gradle Sync" on, except PublishedKatachiDefaultSyncSmokeTest, which keeps the default and takes katachi
+  # by its coordinates (KATACHI-363). Each smoke starts Android Studio through SmokeProduct; one job per smoke, for the same
   # reason as smoke-261.
   smoke-android-studio:
     name: integrationTestAndroidStudio ${{ matrix.smoke }} (Android Studio)
     runs-on: macos-26
-    # The IDE's index of the copy (up to 40 minutes), the smoke, the Android Studio download (about 1.5 GB) and the build.
-    timeout-minutes: 90
+    # The IDE's index of the copy (up to 40 minutes), the smoke, the Android Studio download (about 1.5 GB) and the build, plus
+    # the katachi build that PublishedKatachiDefaultSyncSmokeTest publishes first.
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
@@ -315,6 +317,8 @@ jobs:
           - ArchModuleNameSmokeTest
           - DefinitionAuthoringSmokeTest
           - NoRoleSmokeTest
+          # KATACHI-363 at Android Studio's defaults: katachi published from this tree and taken by its coordinates.
+          - PublishedKatachiDefaultSyncSmokeTest
     steps:
       - name: Checkout
         uses: actions/checkout@v7

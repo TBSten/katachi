@@ -163,7 +163,12 @@ python3 .claude/skills/prerelease/scripts/run-ide-plugin-e2e.py --release-dir .l
 - Android Studio の「Configure all Gradle tasks during Gradle Sync」は smoke が ON にして起動する（`SmokeProduct.prepare` が
   設定ディレクトリの `options/gradle.experimental.xml` に書く）。sample は katachi をリポジトリの included build から使い、
   ライブラリとしては依存しないので、既定（OFF）だとプラグインの逃げ道（katachi ライブラリに依存するモジュールを候補にする）が
-  効かず、定義モジュールが見つからない。既定設定での検出（363）は、この smoke では見ていない
+  効かず、定義モジュールが見つからない
+- 既定設定での検出（363）は `PublishedKatachiDefaultSyncSmokeTest` だけが見る。この working tree の katachi を
+  `publishToMavenLocal -Pkatachi.skipSigning -Dmaven.repo.local=<work>/maven-repository` で公開し、sample/jvm の写しを
+  included build ではなく公開座標で使う形に書き換えて、タスク一覧 OFF のまま開き、`HealthService` に ◆ が出るかを見る。
+  落ちて「katachi is not found」の案内しか出ていなければ 363 の再発（または未解決）。IDEA では skip（タスク一覧を必ず作るため）。
+  katachi のビルドが先に走るので数分延びる
 - Android Studio の版は `katachi-intellij-plugin/build.gradle.kts` の `register("integrationTestAndroidStudio")` の
   `version`（`jb.gg/android-studio-releases-list.json` の `version`、4 桁）。**stable か Patch の版**にする。Canary・RC は
   期限が切れると起動直後に止まる（integrationTest263 の EAP で経験済み）。新しい stable が出ていれば上げてから走らせる

@@ -73,16 +73,18 @@ internal class SmokeIde(name: String) {
     /**
      * Starts the IDE on [project], waits for it to open and index, and runs [block] with Driver, the project and the bridge.
      * The IDE is closed after [block], thrown or not. The first Gradle import and the definition task take minutes.
+     * [buildTaskList] goes to [SmokeProduct.prepare].
      */
     fun run(
         project: Path,
         runTimeout: Duration = SMOKE_RUN_TIMEOUT,
+        buildTaskList: Boolean = true,
         block: Driver.(ideProject: Project, bridge: SmokeBridge) -> Unit,
     ) {
         val ide = SmokeProduct.ideInfo { appBundle() }
         val context = Starter.newContext("katachi-${workDir.fileName}", TestCase(ide, LocalProjectInfo(project)), false)
             .apply { pluginConfigurator.installPluginFromPath(Paths.get(System.getProperty("path.to.build.plugin"))) }
-            .also(SmokeProduct::prepare)
+            .also { SmokeProduct.prepare(it, buildTaskList) }
             .applyVMOptionsPatch {
                 addSystemProperty("katachi.debugBridge", true)
                 // The texts the smokes assert are English.
