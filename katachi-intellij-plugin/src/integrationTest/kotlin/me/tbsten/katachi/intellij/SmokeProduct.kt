@@ -50,9 +50,16 @@ internal object SmokeProduct {
      * Studio's default (no task list on sync), for the smoke that watches the plugin's way around it (KATACHI-363).
      */
     fun prepare(context: IDETestContext, buildTaskList: Boolean = true) {
-        if (!androidStudio || !buildTaskList) return
         val options = context.paths.configDir.resolve("options")
         Files.createDirectories(options)
+        // Platform 262 and later (seen on Android Studio 2026.2 and IDEA 2026.3, not on IDEA 2026.1) opens the project's README.md
+        // preview only (findAndOpenReadmeIfNeeded sets the file's TextEditorWithPreview.DEFAULT_LAYOUT_FOR_FILE), and a smoke's
+        // openFile of it keeps that layout: the text editor with the gutter is never on screen, so the daemon does not draw it again
+        // and a ◆ switched off stays in its markup. It is switched by the advanced setting `ide.open.readme.md.on.startup`
+        // (AdvancedSettings.getBoolean, stored in advancedSettings.xml), which no system property overrides. A platform without the
+        // setting keeps the entry as an unknown one.
+        writeAdvancedSetting(options.resolve("advancedSettings.xml"), "ide.open.readme.md.on.startup", "false")
+        if (!androidStudio || !buildTaskList) return
         // Settings > Experimental > Gradle > "Configure all Gradle tasks during Gradle Sync" (GradleExperimentalSettings).
         Files.writeString(
             options.resolve("gradle.experimental.xml"),
@@ -63,6 +70,27 @@ internal object SmokeProduct {
             |</application>
             |""".trimMargin(),
         )
+    }
+
+    /** Adds [id] = [value] to the `AdvancedSettings` map of [file], next to whatever the config already has there. */
+    private fun writeAdvancedSetting(file: Path, id: String, value: String) {
+        val entry = """<entry key="$id" value="$value" />"""
+        val current = if (Files.exists(file)) Files.readString(file) else null
+        val text = when {
+            current == null -> """<application>
+                |  <component name="AdvancedSettings">
+                |    <option name="settings">
+                |      <map>
+                |        $entry
+                |      </map>
+                |    </option>
+                |  </component>
+                |</application>
+                |""".trimMargin()
+            "<map>" in current -> current.replaceFirst("<map>", "<map>\n        $entry")
+            else -> error("$file has no <map> to add $id to; update SmokeProduct.writeAdvancedSetting")
+        }
+        Files.writeString(file, text)
     }
 
     /** What every smoke adds to the IDE's VM options for this product. */
@@ -79,10 +107,6 @@ internal object SmokeProduct {
         // And so would the "Sign in to Android Studio" dialog of a signed-out IDE (StartupSignInDialogActivity). Its StudioFlags flag
         // takes a system property of the flag's id as an override (com.android.flags.overrides.PropertyOverrides).
         options.addSystemProperty("google.login.enable.startup.sign.in.dialog", false)
-        // Android Studio opens the project's README.md when the project opens, preview only (findAndOpenReadmeIfNeeded sets the file's
-        // TextEditorWithPreview.DEFAULT_LAYOUT_FOR_FILE). A smoke's openFile of it then lands on that tab, which has no gutter. The
-        // registry key is read as a system property of the same name.
-        options.addSystemProperty("ide.open.readme.md.on.startup", false)
     }
 
     /**
