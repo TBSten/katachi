@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1795089823267,
+  "lastUpdate": 1795089825680,
   "repoUrl": "https://github.com/TBSten/katachi",
   "entries": {
     "JMH time": [
@@ -47350,6 +47350,54 @@ window.BENCHMARK_DATA = {
           {
             "name": "nowinandroid validate(FileConstraintCheck()) warm median",
             "value": 70.770705,
+            "unit": "ms",
+            "extra": "violations: 134 (layout) / 130 (with Konsist)\nUnexpectedFile: 130, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "81161390+TBSten@users.noreply.github.com",
+            "name": "TBSten",
+            "username": "TBSten"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "20423db43ac30f76e9659b2f5b0417ea327043eb",
+          "message": "Merge pull request #104 from TBSten/claude/KATACHI-390-diff-remove-files-by-role\n\nfeat(diff): Markdown 差分レポートから Files by role を削除（KATACHI-390）",
+          "timestamp": "2026-11-19T20:25:54+09:00",
+          "tree_id": "a3af73e9c0fefc147d3acb636806f78aa8c5acb6",
+          "url": "https://github.com/TBSten/katachi/commit/20423db43ac30f76e9659b2f5b0417ea327043eb"
+        },
+        "date": 1795089825192,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "nowinandroid validate() cold",
+            "value": 512.413699,
+            "unit": "ms",
+            "extra": "violations: 134 (layout) / 130 (with Konsist)\nUnexpectedFile: 130, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          },
+          {
+            "name": "nowinandroid validate() warm median",
+            "value": 45.090493,
+            "unit": "ms",
+            "extra": "violations: 134 (layout) / 130 (with Konsist)\nUnexpectedFile: 130, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          },
+          {
+            "name": "nowinandroid validate(FileConstraintCheck()) cold",
+            "value": 1261.457357,
+            "unit": "ms",
+            "extra": "violations: 134 (layout) / 130 (with Konsist)\nUnexpectedFile: 130, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          },
+          {
+            "name": "nowinandroid validate(FileConstraintCheck()) warm median",
+            "value": 60.408775,
             "unit": "ms",
             "extra": "violations: 134 (layout) / 130 (with Konsist)\nUnexpectedFile: 130, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
           }
