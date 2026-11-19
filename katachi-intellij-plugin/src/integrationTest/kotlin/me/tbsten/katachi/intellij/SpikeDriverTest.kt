@@ -146,7 +146,8 @@ class SpikeDriverTest {
                 // (c) A Swing dialog (Settings), found by title and closed.
                 step("(c) find the Settings dialog by title and close it") {
                     ideFrame().openSettingsDialog()
-                    val settings = ui.dialog(title = "Settings")
+                    // Android Studio titles it "Settings - <project>", IDEA just "Settings".
+                    val settings = ui.dialog(xpath = "//div[starts-with(@title, 'Settings')]")
                     println("[spike-driver] Settings dialog accessible name: ${settings.accessibleName}")
                     settings.closeDialog()
                 }

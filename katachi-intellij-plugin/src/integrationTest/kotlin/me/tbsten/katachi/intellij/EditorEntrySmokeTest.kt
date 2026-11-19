@@ -66,7 +66,8 @@ class EditorEntrySmokeTest {
         openFile("${EditorEntryFixture.SERVICE_DIR}/EntrySettingsService.kt", waitForCodeAnalysis = false)
         awaitEntryNotification("View Template")
         assertEquals("pressed=$SETTINGS_TOOLTIP", bridge.pressEntryLink(SETTINGS_TOOLTIP))
-        val settings = ui.dialog(title = "Settings")
+        // Android Studio titles it "Settings - <project>", IDEA just "Settings".
+        val settings = ui.dialog(xpath = "//div[starts-with(@title, 'Settings')]")
         // Page-specific controls prove that the gear selected katachi, rather than just opening Settings.
         waitFor("katachi Settings page", timeout = 30.seconds) {
             settings.x { byVisibleText("Show notifications in the editor") }.present() &&
