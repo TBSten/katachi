@@ -10,7 +10,6 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.performKeyInput
-import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
 import androidx.compose.ui.test.runComposeUiTest
@@ -73,14 +72,8 @@ class DialogCandidateKeysTest {
         return host
     }
 
-    /** Types [text] into the field tagged [tag] and waits until the dialog has it as the value of [name]. */
-    private fun ComposeUiTest.type(host: DialogHost, tag: String, name: String, text: String) {
-        inputOf(tag).performTextInput(text)
-        // The field reports from an effect that can run on the UI thread in the middle of a frame, and waitForIdle does not wait for
-        // it: ask the host on the UI thread (so the report and the host's redraw are over), then wait for the frame that draws it (KATACHI-312).
-        waitUntil(conditionDescription = "the dialog got $name=$text", timeoutMillis = 5_000) { runOnUiThread { "input:$name=$text" in host.calls } }
-        waitForIdle()
-    }
+    private fun ComposeUiTest.type(host: DialogHost, tag: String, name: String, text: String) =
+        typeAndAwait(host, tag, name, text)
 
     private fun ComposeUiTest.press(tag: String, key: Key) {
         inputOf(tag).performKeyInput { pressKey(key) }
