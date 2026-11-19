@@ -43,7 +43,7 @@ flowchart LR
 - 1 が通ったら、2・3・4・8・10-4・11・12 を並列に始める。3 と 6 の中は、区分ごとの subagent をさらに並列にする。
 - 8 は Gradle を長く使う（10〜20 分）。8 が終わったら続けて 10-1（IDE プラグインの nightly 相当。既定 scale 20 で
   約30〜35分）、そのあと 10-2（IDE プラグインの E2E。実 IDE を起動するテスト2本、1本あたり起動込みで2分半〜3分が目安）を
-  走らせ、続けて 10-5（Android Studio での E2E。smoke 1本で、手元の Mac なら起動込み10分前後の見込み。初回は
+  走らせ、続けて 10-5（Android Studio での E2E。10-2 と同じ smoke を Android Studio で。所要は 10-2 と同じくらいで、初回は
   Android Studio のダウンロード約 1.5 GB が乗る）を走らせる。5 のサンプルを動かす作業と 6-1 は、10-5 が終わってから始める。
 - 9 も Gradle を長く使う（15〜20 分）。6-1 の `generateApiDocs` が終わってから始める（巡回を先に始めたいので 6-1 を先にする）。
   5 のサンプルを動かす作業とは、どちらかが終わるのを待って重ねない。
@@ -169,11 +169,11 @@ priority 10 の警告。結果は `ci-checks.md`、ログは `tmp/ci-checks/`。
   判定させる（直させない）。鍵の突き合わせは 8 のテストが見るが、直書きはテストで拾えない。直し忘れは priority 5 か 3
   （ja にしか無い鍵は 9）。基準から文言の置き場が変わっていれば、日本語の IDE での目視を `TODO.html` に載せる。
   結果は `ide-plugin-texts.md`。
-- 10-5: `run-ide-plugin-e2e.py --android-studio` で `integrationTestAndroidStudio`（SmokeIde の smoke を本物の Android Studio
-  で起動する）の `ArchModuleNameSmokeTest` を走らせる。katachi は Android Studio の利用者にも配るが、CI が Android Studio で
-  見ているのは nightly の verifyPlugin（バイナリ互換）だけで、動かしてはいない。Android Studio は Gradle sync の既定が IDEA と
-  違い（タスク一覧を作らない）、定義モジュールが見つからなくなったことがある（KATACHI-363）。10-2 と同じくディスプレイの
-  あるセッションが要り、オーケストレータが自分で走らせてよい。落ちたら priority 10 の警告。結果は
+- 10-5: `run-ide-plugin-e2e.py --android-studio` で 10-2 と同じ smoke を `integrationTestAndroidStudio`（本物の Android Studio
+  で起動する）で走らせる。katachi は Android Studio の利用者にも配る。Android Studio は Gradle sync の既定が IDEA と違い
+  （タスク一覧を作らない）、定義モジュールが見つからなくなったことがある（KATACHI-363）。nightly にも同じ smoke の job が
+  あるが、落ちても気づきにくいので、ここで必ず一度は通す。10-2 と同じくディスプレイのあるセッションが要り、
+  オーケストレータが自分で走らせてよい。落ちたら priority 10 の警告。結果は
   `ide-plugin-android-studio.md`、ログは `tmp/ide-plugin-android-studio/`。
 
 詳細: [references/ide-plugin-nightly.md](references/ide-plugin-nightly.md)

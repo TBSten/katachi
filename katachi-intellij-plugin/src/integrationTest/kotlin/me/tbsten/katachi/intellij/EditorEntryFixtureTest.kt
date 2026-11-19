@@ -47,7 +47,7 @@ internal class EditorEntryFixture(private val sample: Path, val workDir: Path) {
     }
 
     fun appBundle(contents: Path): Path {
-        val bundle = Files.createTempDirectory(workDir, "ide-").resolve("IntelliJ IDEA.app")
+        val bundle = Files.createTempDirectory(workDir, "ide-").resolve(SmokeProduct.appName)
         Files.createDirectories(bundle)
         run("ditto", contents.toString(), bundle.resolve("Contents").toString())
         // The Gradle plugin adds this marker to the IDE it extracts, which breaks the bundle's code seal ("file added"). macOS

@@ -6,8 +6,6 @@ import com.intellij.driver.sdk.singleProject
 import com.intellij.driver.sdk.waitForProjectOpen
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
-import com.intellij.ide.starter.ide.IdeProductProvider
-import com.intellij.ide.starter.ide.installer.ExistingIdeInstaller
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.project.LocalProjectInfo
@@ -36,16 +34,13 @@ import kotlin.time.Duration.Companion.minutes
  * The older smokes (`GutterSmokeTest`, `NoRoleSmokeTest`, `EditorEntry*`) keep their own copies of this: they run in the nightly 263
  * job and stay green, so they are not moved here.
  *
- * `-Dkatachi.smoke.ideProduct=AndroidStudio` (the task `integrationTestAndroidStudio`) starts the copy as Android Studio: the
- * smokes on this class then run there unchanged, with Android Studio's own defaults (such as not building the Gradle task list
- * on sync).
+ * The IDE is IDEA or Android Studio, as [SmokeProduct] says.
  */
 @Suppress("NewApi")
 internal class SmokeIde(name: String) {
     private val sample: Path = Paths.get(System.getProperty("katachi.smoke.sampleProject"))
     private val ideHome: Path = Paths.get(System.getProperty("katachi.smoke.ideHome"))
     private val rootDir: Path = Paths.get(System.getProperty("katachi.smoke.workDir"))
-    private val androidStudio: Boolean = System.getProperty("katachi.smoke.ideProduct") == "AndroidStudio"
 
     /** This smoke's directory under the integration test's work directory. */
     val workDir: Path = rootDir.resolve(name)
@@ -84,18 +79,7 @@ internal class SmokeIde(name: String) {
         runTimeout: Duration = SMOKE_RUN_TIMEOUT,
         block: Driver.(ideProject: Project, bridge: SmokeBridge) -> Unit,
     ) {
-        val ide = if (androidStudio) {
-            // Starter knows Android Studio (product code AI, launcher `studio`) but has no ready-made IdeInfo for an existing copy.
-            IdeProductProvider.IU.copy(
-                productCode = "AI",
-                platformPrefix = "AndroidStudio",
-                executableFileName = "studio",
-                fullName = "Android Studio",
-                getInstaller = { ExistingIdeInstaller(appBundle()) },
-            )
-        } else {
-            IdeProductProvider.IU.copy(getInstaller = { ExistingIdeInstaller(appBundle()) })
-        }
+        val ide = SmokeProduct.ideInfo { appBundle() }
         val context = Starter.newContext("katachi-${workDir.fileName}", TestCase(ide, LocalProjectInfo(project)), false)
             .apply { pluginConfigurator.installPluginFromPath(Paths.get(System.getProperty("path.to.build.plugin"))) }
             .applyVMOptionsPatch {
@@ -103,8 +87,7 @@ internal class SmokeIde(name: String) {
                 // The texts the smokes assert are English.
                 addSystemProperty("user.language", "en")
                 addSystemProperty("user.country", "US")
-                // Android Studio's first-run wizard (SDK setup) would wait on its window for good; sample/jvm needs no Android SDK.
-                if (androidStudio) addSystemProperty("disable.android.first.run", true)
+                SmokeProduct.patch(this)
             }
             .skipLibrarySources()
         context.runIdeWithDriver(runTimeout = runTimeout).useDriverAndCloseIde {
@@ -152,7 +135,7 @@ internal class SmokeIde(name: String) {
 
     /** The IDE the build resolved is the `Contents` of a macOS bundle and Starter only takes a `.app`: rebuilt around a copy of it. */
     private fun appBundle(): Path {
-        val bundle = Files.createTempDirectory(workDir, "ide-").resolve(if (androidStudio) "Android Studio.app" else "IntelliJ IDEA.app")
+        val bundle = Files.createTempDirectory(workDir, "ide-").resolve(SmokeProduct.appName)
         Files.createDirectories(bundle)
         exec(workDir, "ditto", ideHome.toString(), bundle.resolve("Contents").toString())
         // The Gradle plugin adds this marker, which breaks the bundle's code seal; macOS then kills the 263 JBR with SIGKILL.

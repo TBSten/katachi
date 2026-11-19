@@ -144,9 +144,9 @@ Gradle を使わず数秒で終わり、ファイルを書き換えないので�
 
 ## 10-5. Android Studio での E2E（`integrationTestAndroidStudio`）
 
-katachi の IDE プラグインは Android Studio の利用者にも配る（`sinceBuild = 261`、上限なし）。CI が Android Studio で見て
-いるのは nightly の `verifyPlugin`（バイナリ互換、`ides { create(AndroidStudio, …) }`）だけで、本物の Android Studio で
-プラグインを動かしてはいない。Android Studio は Gradle sync の既定が IDEA と違い（「Configure all Gradle tasks during
+katachi の IDE プラグインは Android Studio の利用者にも配る（`sinceBuild = 261`、上限なし）。nightly は `verifyPlugin`
+（バイナリ互換）と、smoke を Android Studio で起動する job（`smoke-android-studio`）で見ているが、nightly は落ちても
+気づきにくい。Android Studio は Gradle sync の既定が IDEA と違い（「Configure all Gradle tasks during
 Gradle Sync」が OFF でタスク一覧を作らない）、定義モジュールが見つからず「katachi is not found」になったことがある
 （KATACHI-363）。リリース前に一度は本物の Android Studio で通す。
 
@@ -155,19 +155,18 @@ python3 .claude/skills/prerelease/scripts/run-ide-plugin-e2e.py --list --android
 python3 .claude/skills/prerelease/scripts/run-ide-plugin-e2e.py --release-dir .local/release-v<版> --android-studio   # 走らせる
 ```
 
-- `integrationTestAndroidStudio` は `integrationTest` の smoke のうち SmokeIde に乗っているもの（ArchModuleName・Gutter 2 本・
-  DefinitionAuthoring）を Android Studio で起動する（`-Dkatachi.smoke.ideProduct=AndroidStudio`）。ここで走らせるのは
-  `ArchModuleNameSmokeTest` の1本だけ: 定義モジュールの検出（363 で壊れたところ）・◆・検査の行・no role の通知を一度に見る
+- `integrationTestAndroidStudio` は `integrationTest` と同じ smoke を Android Studio で起動する（どの smoke も `SmokeProduct`
+  を通して IDE を選ぶ。`-Dkatachi.smoke.ideProduct=AndroidStudio`）。走らせるのは 10-2 と同じ全部。特に
+  `ArchModuleNameSmokeTest` が定義モジュールの検出（363 で壊れたところ）・◆・検査の行・no role の通知を一度に見る
 - Android Studio の設定は既定のまま（タスク一覧を作らない）。プラグインの逃げ道（katachi に依存するモジュールを候補にする）
   が効いているかを見るため、設定を ON にして通してはいけない
 - Android Studio の版は `katachi-intellij-plugin/build.gradle.kts` の `register("integrationTestAndroidStudio")` の
   `version`（`jb.gg/android-studio-releases-list.json` の `version`、4 桁）。**stable か Patch の版**にする。Canary・RC は
   期限が切れると起動直後に止まる（integrationTest263 の EAP で経験済み）。新しい stable が出ていれば上げてから走らせる
 - 前提: 10-2 と同じ（JDK 21・macOS・ディスプレイのあるセッション）。初回は Android Studio のダウンロード（約 1.5 GB）が乗る
-- 所要: smoke 1本。手元の Mac なら起動・Gradle import・索引込みで10分前後の見込み（GitHub の macOS runner では索引だけで
-  15分ほどかかる）
+- 所要: 10-2 と同じくらい（smoke ごとに Android Studio を起動し、Gradle import と索引を待つ）
 - 落ちたら priority 10 の警告（Android Studio の利用者がプラグインを使えない）。「katachi is not found」の画面で止まって
-  いれば 363 の再発。スクリーンショットは `katachi-intellij-plugin/build/integrationTestAndroidStudio/arch-module-name/screenshots/`
+  いれば 363 の再発。スクリーンショットは `katachi-intellij-plugin/build/integrationTestAndroidStudio/<smoke>/screenshots/`
 - 結果は `ide-plugin-android-studio.md`、ログは `tmp/ide-plugin-android-studio/`
 
 ## 共通

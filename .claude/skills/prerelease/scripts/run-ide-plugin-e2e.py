@@ -25,10 +25,10 @@
 - 落ちても最後まで書く。<release-dir>/ide-plugin-e2e.md に結果を書く。ログは <release-dir>/tmp/ide-plugin-e2e/ に置く
 - 終了コード: 通れば 0、落ちれば 1
 
-`--android-studio` は手順 10-5（Android Studio での E2E）。`integrationTestAndroidStudio`（SmokeIde の smoke を本物の
-Android Studio で起動する。版は build.gradle.kts の `register("integrationTestAndroidStudio")`）で
-`ArchModuleNameSmokeTest` を走らせる。定義モジュールの検出を Android Studio の既定設定（sync でタスク一覧を作らない）の
-まま見る（KATACHI-363 で壊れたところ）。初回は Android Studio のダウンロード（約 1.5 GB）が乗る。結果は
+`--android-studio` は手順 10-5（Android Studio での E2E）。10-2 と同じ smoke を `integrationTestAndroidStudio`（本物の
+Android Studio で起動する。版は build.gradle.kts の `register("integrationTestAndroidStudio")`）で走らせる。Android Studio の
+既定設定（sync でタスク一覧を作らない）のまま見る（KATACHI-363 で定義モジュールの検出が壊れたところ）。初回は
+Android Studio のダウンロード（約 1.5 GB）が乗る。結果は
 <release-dir>/ide-plugin-android-studio.md、ログは <release-dir>/tmp/ide-plugin-android-studio/。
 
 使い方（リポジトリの直下で）:
@@ -43,9 +43,8 @@ sys.dont_write_bytecode = True
 
 WORKDIR = "katachi-intellij-plugin"
 CMD = "./gradlew integrationTest --console=plain --stacktrace"
-# 10-5: the smokes on SmokeIde, started as Android Studio. ArchModuleNameSmokeTest sees the definition module found with
-# Android Studio's defaults (no task list on sync), where KATACHI-363 broke.
-CMD_ANDROID_STUDIO = "./gradlew integrationTestAndroidStudio --tests '*ArchModuleNameSmokeTest*' --console=plain --stacktrace"
+# 10-5: the same smokes, started as Android Studio with its defaults (no task list on sync, where KATACHI-363 broke).
+CMD_ANDROID_STUDIO = "./gradlew integrationTestAndroidStudio --console=plain --stacktrace"
 # Absolute, so that a step run inside a subdirectory (katachi-intellij-plugin) still puts the cache
 # under the repository's .local/tmp/ rather than <subdirectory>/.local/.
 GRADLE_FLAGS = ["--no-daemon", "--project-cache-dir", str(Path(__file__).resolve().parents[4] / ".local/tmp/gradle-cache/prerelease-ide-plugin-e2e")]

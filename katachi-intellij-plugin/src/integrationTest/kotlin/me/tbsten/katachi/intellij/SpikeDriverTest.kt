@@ -17,8 +17,6 @@ import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.driver.sdk.waitForProjectOpen
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
-import com.intellij.ide.starter.ide.IdeProductProvider
-import com.intellij.ide.starter.ide.installer.ExistingIdeInstaller
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.project.LocalProjectInfo
@@ -63,7 +61,7 @@ class SpikeDriverTest {
     fun `右クリックのNewサブメニュー・ツールウィンドウの検索欄への入力・Settingsダイアログの開閉を1回のIDE起動で試す`() {
         keepStarterFilesUnder(workDir.resolve("starter"))
         val project = copyOfSample()
-        val ide = IdeProductProvider.IU.copy(getInstaller = { ExistingIdeInstaller(appBundleOf(ideHome)) })
+        val ide = SmokeProduct.ideInfo { appBundleOf(ideHome) }
         val context = Starter.newContext(
             "katachiSpikeDriver",
             TestCase(ide, LocalProjectInfo(project.resolve("sample/jvm"))),
@@ -71,7 +69,10 @@ class SpikeDriverTest {
         ).apply { pluginConfigurator.installPluginFromPath(Paths.get(System.getProperty("path.to.build.plugin"))) }
             // The debug bridge (used here only to wait for the template list to load) refuses to
             // act unless the IDE runs with this flag.
-            .applyVMOptionsPatch { addSystemProperty("katachi.debugBridge", true) }
+            .applyVMOptionsPatch {
+                addSystemProperty("katachi.debugBridge", true)
+                SmokeProduct.patch(this)
+            }
 
         // `useDriverAndCloseIde` always returns `IDEStartResult`, not the lambda's own result
         // (unlike `measureTimedValue`'s block), so the scenarios' findings are collected into this
@@ -178,7 +179,7 @@ class SpikeDriverTest {
      * link: macOS kills (exit 137) a signed launcher whose bundle is a link to elsewhere.
      */
     private fun appBundleOf(contents: Path): Path {
-        val bundle = workDir.resolve("ide/IntelliJ IDEA.app")
+        val bundle = workDir.resolve("ide/${SmokeProduct.appName}")
         if (!Files.exists(bundle.resolve("Contents/Info.plist"))) {
             run(workDir, "rm", "-rf", bundle.toString())
             Files.createDirectories(bundle)

@@ -134,7 +134,8 @@ intellijPlatform {
     // The version must be the exact "version" field from jb.gg/android-studio-releases-list.json
     // (four components; the marketing name "2026.1.4" or the platform build "261.26222.65" do not
     // resolve). "2026.1.4.8" is Android Studio Quail 4 Patch 1, whose platform build matches
-    // libs.versions.toml's jewelForIde (261.26222.65); bump both together.
+    // libs.versions.toml's jewelForIde (261.26222.65); bump both together. The second is the newest stable (Rabbit 2 Patch 1,
+    // 262), the one integrationTestAndroidStudio starts: keep it equal to that task's version, a stable or patch release only.
     // The plugin ID includes "intellij" (me.tbsten.katachi.intellij), which the Plugin Verifier
     // flags as a Marketplace naming convention warning unrelated to compatibility; muted here
     // rather than renaming the ID, which is unrelated to and out of scope for this task.
@@ -165,6 +166,7 @@ intellijPlatform {
         ides {
             recommended()
             create(IntelliJPlatformType.AndroidStudio, "2026.1.4.8")
+            create(IntelliJPlatformType.AndroidStudio, "2026.2.2.9")
         }
     }
 }
@@ -285,10 +287,11 @@ intellijPlatformTesting.testIdeUi.register("integrationTest263") {
     }
 }
 
-// The smokes built on SmokeIde against Android Studio, which katachi ships to as well. verifyPlugin only checks the binary
-// compatibility; this is what shows the plugin working in a real Android Studio, whose Gradle sync differs from IDEA's (by
-// default it does not build the task list, which hid the definition module in KATACHI-363). Run by the prerelease (step 10-5,
-// on a Mac with a display) and on demand: `./gradlew integrationTestAndroidStudio --tests '*ArchModuleNameSmokeTest*'`.
+// The same smokes against Android Studio, which katachi ships to as well. verifyPlugin only checks the binary compatibility;
+// this is what shows the plugin working in a real Android Studio, whose Gradle sync differs from IDEA's (by default it does not
+// build the task list, which hid the definition module in KATACHI-363). Each smoke starts it through SmokeProduct. Nightly
+// (ide-plugin-nightly.yml, job smoke-android-studio), the prerelease (step 10-5, on a Mac with a display) and on demand:
+// `./gradlew integrationTestAndroidStudio --tests '*ArchModuleNameSmokeTest*'` (it opens IDE windows).
 // The version is the exact "version" field of jb.gg/android-studio-releases-list.json (four components): a stable or patch
 // release, never a Canary or RC, which stop themselves when they expire. Move it to each new stable.
 intellijPlatformTesting.testIdeUi.register("integrationTestAndroidStudio") {
@@ -301,7 +304,7 @@ intellijPlatformTesting.testIdeUi.register("integrationTestAndroidStudio") {
         useJUnitPlatform()
         systemProperty("katachi.smoke.sampleProject", rootDir.resolve("../sample/jvm").canonicalPath)
         systemProperty("katachi.smoke.workDir", layout.buildDirectory.dir("integrationTestAndroidStudio").get().asFile.path)
-        // SmokeIde starts the copy as Android Studio instead of IDEA.
+        // SmokeProduct starts the copy as Android Studio instead of IDEA.
         systemProperty("katachi.smoke.ideProduct", "AndroidStudio")
         systemProperty(
             "allure.results.directory",

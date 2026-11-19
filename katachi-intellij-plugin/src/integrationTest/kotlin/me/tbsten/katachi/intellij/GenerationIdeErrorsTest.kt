@@ -7,8 +7,6 @@ import com.intellij.driver.sdk.waitFor
 import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.driver.sdk.waitForProjectOpen
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
-import com.intellij.ide.starter.ide.IdeProductProvider
-import com.intellij.ide.starter.ide.installer.ExistingIdeInstaller
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.runner.Starter
@@ -66,10 +64,13 @@ class GenerationIdeErrorsTest {
         keepStarterFilesUnder(workDir.resolve("starter"))
         val repository = copyOfRepository(sample, workDir)
         addTemplates(repository.resolve("sample/jvm"))
-        val ide = IdeProductProvider.IU.copy(getInstaller = { ExistingIdeInstaller(appBundleOf(ideHome, workDir)) })
+        val ide = SmokeProduct.ideInfo { appBundleOf(ideHome, workDir) }
         val context = Starter.newContext("katachiGenerationIdeErrors", TestCase(ide, LocalProjectInfo(repository.resolve("sample/jvm"))), false)
             .apply { pluginConfigurator.installPluginFromPath(Paths.get(System.getProperty("path.to.build.plugin"))) }
-            .applyVMOptionsPatch { addSystemProperty("katachi.debugBridge", true) }
+            .applyVMOptionsPatch {
+                addSystemProperty("katachi.debugBridge", true)
+                SmokeProduct.patch(this)
+            }
         val testHome = context.paths.testHome
 
         context.runIdeWithDriver(runTimeout = 40.minutes).useDriverAndCloseIde {
@@ -163,7 +164,7 @@ class GenerationIdeErrorsTest {
 
         /** The lines the IDE logs after an error, describing the IDE rather than an error. */
         val ERROR_CONTEXT = listOf("SEVERE - #c.i.o.a.i.ExceptionsKt - ", "SEVERE - #c.i.i.p.PluginManager - ")
-            .flatMap { logger -> listOf("IntelliJ IDEA", "JDK:", "OS:", "Last Action:", "Plugin to blame:").map { logger + it } }
+            .flatMap { logger -> listOf("IntelliJ IDEA", "Android Studio", "JDK:", "OS:", "Last Action:", "Plugin to blame:").map { logger + it } }
     }
 }
 
@@ -188,7 +189,7 @@ private fun keepStarterFilesUnder(directory: Path) {
  * symbolic link: macOS kills (exit 137) a signed launcher whose bundle is a link to elsewhere.
  */
 private fun appBundleOf(contents: Path, workDir: Path): Path {
-    val bundle = workDir.resolve("ide/IntelliJ IDEA.app")
+    val bundle = workDir.resolve("ide/${SmokeProduct.appName}")
     if (!Files.exists(bundle.resolve("Contents/Info.plist"))) {
         runCommand(workDir, "rm", "-rf", bundle.toString())
         Files.createDirectories(bundle)
