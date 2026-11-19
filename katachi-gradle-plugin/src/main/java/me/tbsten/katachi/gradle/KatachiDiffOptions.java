@@ -138,8 +138,8 @@ public class KatachiDiffOptions {
     /**
      * Configures the Markdown report.
      *
-     * <p>The file listings go next to {@code outputFile}, named after it: {@code diff-report.md}
-     * puts them in {@code diff-report.files-by-role.md} and {@code diff-report.files-in-no-role.md}.
+     * <p>The listing of the files in no role goes next to {@code outputFile}, named after it:
+     * {@code diff-report.md} puts it in {@code diff-report.files-in-no-role.md}.
      */
     public void markdown(Action<? super KatachiDiffOutputOptions> action) {
         action.execute(markdown);

@@ -194,8 +194,8 @@ public object DiffReport : ArchitectureProcessor<DiffReport.Args, Unit> {
         /**
          * Where the Markdown summary goes, relative to the directory the processor was started in.
          *
-         * The file listings go next to it, named after it: `diff-report.md` puts them in
-         * `diff-report.files-by-role.md` and `diff-report.files-in-no-role.md`.
+         * The listing of the files in no role goes next to it, named after it: `diff-report.md` puts it
+         * in `diff-report.files-in-no-role.md`.
          */
         val markdownOutputFile: String = DEFAULT_MARKDOWN_OUTPUT_FILE,
         /** Whether to write the HTML report. */

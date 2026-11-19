@@ -43,11 +43,9 @@ class DiffReportShortPathSpec : FreeSpec({
             ).getOrThrow()
 
             val summary = out.resolve("diff-report.md").readText()
-            val byRole = out.resolve("diff-report.files-by-role.md").readText()
             val html = out.resolve("diff-report.html").readText()
             // Two `*` in the middle of the pattern, with literal levels before, between and after them.
             summary shouldContain "`…/fuga/…/fuga/FugaHoge.kt`"
-            byRole shouldContain "`…/fuga/…/fuga/FugaHoge.kt`"
             // A `**` keeps every level it matched, and the literal level after it folds on its own.
             summary shouldContain "`…/feature/home/…/HomeScreen.kt`"
             // A `**` that matched no level leaves nothing to keep but the file name.
