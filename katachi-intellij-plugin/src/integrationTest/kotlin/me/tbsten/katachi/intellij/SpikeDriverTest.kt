@@ -109,19 +109,22 @@ class SpikeDriverTest {
                     // On Android Studio the menu did not open at all (prerelease 10-5, Mac: the root row collapsed, no popup):
                     // probably the tree being rebuilt once more after the Gradle sync, which swallows a click (not confirmed).
                     // Up to 3 tries, each closing whatever the last one left open; a third miss fails with what was tried.
+                    // A try is seen through itemsList(), the call that waits for the menu (15 s) in the run that passed.
                     val menu = frame.popupMenu()
+                    var found: List<String>? = null
                     var tries = 0
-                    while (true) {
+                    while (found == null) {
                         tries++
                         tree.waitForNodesLoaded()
                         tree.clickRow(0)
                         tree.rightClickRow(0)
-                        val opened = runCatching { waitFor("the project tree's context menu", timeout = 10.seconds) { menu.present() } }.isSuccess
-                        if (opened) break
-                        check(tries < 3) { "the project tree's context menu did not open after $tries right clicks on row 0" }
-                        ui.keyboard { escape() }
+                        found = runCatching { menu.itemsList() }.getOrNull()
+                        if (found == null) {
+                            check(tries < 3) { "the project tree's context menu did not open after $tries right clicks on row 0" }
+                            ui.keyboard { escape() }
+                        }
                     }
-                    val topLevel = menu.itemsList()
+                    val topLevel = checkNotNull(found)
                     check("New" in topLevel) { "no 'New' item in the context menu: $topLevel" }
                     menu.findMenuItemByText("New").click()
                     // The submenu opens as a second popup; everything ActionMenuItem-shaped that
