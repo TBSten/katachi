@@ -1,6 +1,5 @@
 package me.tbsten.katachi.intellij.ide
 
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.externalSystem.model.DataNode
 import com.intellij.openapi.externalSystem.model.ExternalProjectInfo
@@ -9,11 +8,7 @@ import com.intellij.openapi.externalSystem.model.project.ModuleData
 import com.intellij.openapi.externalSystem.model.project.ProjectData
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil
-import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.LibraryOrderEntry
-import com.intellij.openapi.roots.ModuleRootManager
-import com.intellij.openapi.util.Computable
 import me.tbsten.katachi.intellij.data.detect.SyncedLibrary
 import me.tbsten.katachi.intellij.data.detect.SyncedModule
 import me.tbsten.katachi.intellij.data.detect.SyncedProject
@@ -37,34 +32,10 @@ internal class ProjectDataModuleSource(private val project: Project) : SyncedPro
         val structures = linked.mapNotNull { path ->
             data.firstOrNull { it.externalProjectPath == path }?.externalProjectStructure
         }
-        val fromIdeModules by lazy { katachiVersionsOfIdeModules() }
-        val synced = if (linked.isEmpty()) SyncedProject.NotGradle else syncedProjectOf(structures) { directory -> fromIdeModules[directory] }
-        logWhenChanged { describe(synced, linked, data) }
+        val synced = if (linked.isEmpty()) SyncedProject.NotGradle else syncedProjectOf(structures)
+        logWhenChanged(describe(synced, linked, data))
         synced
     }.getOrElse { throw KatachiSyncedDataUnreadableException(it) }
-
-    // Android Studio's sync sets up the dependencies of JVM modules on the IDE's modules and leaves them out of the sync data,
-    // so a sync without task lists would find no module that depends on katachi (KATACHI-398).
-    private fun katachiVersionsOfIdeModules(): Map<Path, String> =
-        katachiLibrariesOfIdeModules().mapNotNull { (directory, names) ->
-            val version = katachiVersionOf(SyncedLibrary(null, null, null, names)) ?: return@mapNotNull null
-            Path.of(directory ?: return@mapNotNull null) to version
-        }.toMap()
-
-    /** The IDE's modules that have a library named after katachi: their Gradle project's directory, and those names. */
-    private fun katachiLibrariesOfIdeModules(): List<Pair<String?, List<String>>> =
-        ApplicationManager.getApplication().runReadAction(
-            Computable {
-                ModuleManager.getInstance(project).modules.map { module ->
-                    val names = ModuleRootManager.getInstance(module).orderEntries
-                        .filterIsInstance<LibraryOrderEntry>()
-                        .flatMap { listOfNotNull(it.libraryName, it.presentableName) }
-                        .filter { "katachi" in it }
-                        .distinct()
-                    ExternalSystemApiUtil.getExternalProjectPath(module) to names
-                }.filter { (_, names) -> names.isNotEmpty() }
-            },
-        )
 
     // What the IDE handed over decides whether the gutter and the tool window find a module; idea.log is the only place a user can see it.
     private fun describe(synced: SyncedProject, linked: List<String>, data: Collection<ExternalProjectInfo>): String {
@@ -77,14 +48,11 @@ internal class ProjectDataModuleSource(private val project: Project) : SyncedPro
             val tasks = module.taskNames.sorted().let { names -> if (names.size <= 10) names else names.filter { it.startsWith("katachi") } }
             "${module.gradlePath} (tasks=${module.taskNames.size} $tasks, katachi=${module.katachiVersion})"
         }
-        val libraries = katachiLibrariesOfIdeModules().joinToString { (directory, names) -> "$directory $names" }
-        return "Gradle sync data of ${project.name}: ${synced::class.simpleName} -> $detected; linked=$linked; held=$held; " +
-            "modules=[$modules]; the IDE's modules with a katachi library: [$libraries]"
+        return "Gradle sync data of ${project.name}: ${synced::class.simpleName} -> $detected; linked=$linked; held=$held; modules=[$modules]"
     }
 
-    private fun logWhenChanged(message: () -> String) {
-        val text = message()
-        if (lastLogged.getAndSet(text) != text) LOG.info(text)
+    private fun logWhenChanged(message: String) {
+        if (lastLogged.getAndSet(message) != message) LOG.info(message)
     }
 
     private companion object {
@@ -105,22 +73,16 @@ internal class KatachiSyncedDataUnreadableException(
     cause,
 )
 
-internal fun syncedProjectOf(
-    structures: List<DataNode<ProjectData>>,
-    katachiVersionOfIdeModule: (directory: Path) -> String? = { null },
-): SyncedProject =
-    if (structures.isEmpty()) SyncedProject.NotSynced else SyncedProject.Synced(structures.map { syncedRootOf(it, katachiVersionOfIdeModule) })
+internal fun syncedProjectOf(structures: List<DataNode<ProjectData>>): SyncedProject =
+    if (structures.isEmpty()) SyncedProject.NotSynced else SyncedProject.Synced(structures.map(::syncedRootOf))
 
-internal fun syncedRootOf(
-    projectNode: DataNode<ProjectData>,
-    katachiVersionOfIdeModule: (directory: Path) -> String? = { null },
-): SyncedRoot {
+internal fun syncedRootOf(projectNode: DataNode<ProjectData>): SyncedRoot {
     val project = projectNode.data
-    val modules = ExternalSystemApiUtil.findAll(projectNode, ProjectKeys.MODULE).map { syncedModuleOf(it, katachiVersionOfIdeModule) }
+    val modules = ExternalSystemApiUtil.findAll(projectNode, ProjectKeys.MODULE).map(::syncedModuleOf)
     return SyncedRoot(Path.of(project.linkedExternalProjectPath), project.externalName, modules)
 }
 
-private fun syncedModuleOf(moduleNode: DataNode<ModuleData>, katachiVersionOfIdeModule: (directory: Path) -> String?): SyncedModule {
+private fun syncedModuleOf(moduleNode: DataNode<ModuleData>): SyncedModule {
     val module = moduleNode.data
     // The root module also lists its subprojects' tasks as inherited ones (running
     // `katachiInternalTemplatesJson` from the root runs it in every subproject); those are not its own.
@@ -129,16 +91,14 @@ private fun syncedModuleOf(moduleNode: DataNode<ModuleData>, katachiVersionOfIde
         .map { it.data.name.substringAfterLast(':') }
     // Source sets (main, test) sit below the module node and carry the dependencies: katachi is
     // usually a test dependency of the definition module.
-    val directory = Path.of(module.linkedExternalProjectPath)
     val katachiVersion = ExternalSystemApiUtil.findAllRecursively(moduleNode, ProjectKeys.LIBRARY_DEPENDENCY)
         .map { it.data.target }
         .firstNotNullOfOrNull { library ->
             katachiVersionOf(SyncedLibrary(library.groupId, library.artifactId, library.version, listOf(library.externalName, library.internalName)))
         }
-        ?: katachiVersionOfIdeModule(directory)
     return SyncedModule(
         gradlePath = gradlePathOf(module),
-        directory = directory,
+        directory = Path.of(module.linkedExternalProjectPath),
         taskNames = tasks.toSet(),
         katachiVersion = katachiVersion,
     )
