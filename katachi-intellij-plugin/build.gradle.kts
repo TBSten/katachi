@@ -295,8 +295,15 @@ intellijPlatformTesting.testIdeUi.register("integrationTest263") {
 // The version is the exact "version" field of jb.gg/android-studio-releases-list.json (four components): a stable or patch
 // release, never a Canary or RC, which stop themselves when they expire. Move it to each new stable.
 intellijPlatformTesting.testIdeUi.register("integrationTestAndroidStudio") {
-    type = IntelliJPlatformType.AndroidStudio
-    version = "2026.2.2.9"
+    val localAndroidStudio = providers.gradleProperty("katachi.androidStudio.localPath").orNull
+    if (localAndroidStudio != null) {
+        // An Android Studio of this version unpacked beforehand (the prerelease's run-ide-plugin-e2e.py downloads it resumably
+        // and checks its sha256), so that Gradle does not download 1.5 GB in one go.
+        localPath.set(file(localAndroidStudio))
+    } else {
+        type = IntelliJPlatformType.AndroidStudio
+        version = "2026.2.2.9"
+    }
     task {
         val integrationTestSourceSet = sourceSets.getByName("integrationTest")
         testClassesDirs = integrationTestSourceSet.output.classesDirs
@@ -310,9 +317,13 @@ intellijPlatformTesting.testIdeUi.register("integrationTestAndroidStudio") {
             "allure.results.directory",
             layout.buildDirectory.dir("integrationTestAndroidStudio/allure-results").get().asFile.path
         )
-        // The Android Studio distribution this task resolved, not the build SDK's.
+        // The Android Studio distribution this task resolved, not the build SDK's. The smokes take a bundle's `Contents`; a
+        // localPath may name the `.app` itself.
         val ideHome = this
-        doFirst { systemProperty("katachi.smoke.ideHome", ideHome.platformPath.toString()) }
+        doFirst {
+            val home = ideHome.platformPath
+            systemProperty("katachi.smoke.ideHome", (if (home.fileName.toString().endsWith(".app")) home.resolve("Contents") else home).toString())
+        }
     }
 }
 

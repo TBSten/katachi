@@ -51,6 +51,8 @@ python3 .claude/skills/prerelease/scripts/run-ide-plugin-e2e.py --release-dir .l
   subagent にも IDE や画面を触らせない
 - Starter は `<git root>/out/ide-tests` に IDE の複製・ログを置く。スクリプトは消さないので、容量が気になれば
   手で消す
+- IDE のダウンロード: スクリプトは Gradle に HTTP の待ちと再試行を伸ばすフラグ（接続 2 分・読み込み 5 分・再試行 8 回）を
+  付けて起動する。それでも止まったら、もう一度同じコマンドを打つ（Gradle は落とし終えた分を `~/.gradle` に持っている）
 - 結果は `ide-plugin-e2e.md`、ログは `tmp/ide-plugin-e2e/`
 
 ## 10-3. 配る zip（Release に添付するもの）
@@ -164,6 +166,13 @@ python3 .claude/skills/prerelease/scripts/run-ide-plugin-e2e.py --release-dir .l
   `version`（`jb.gg/android-studio-releases-list.json` の `version`、4 桁）。**stable か Patch の版**にする。Canary・RC は
   期限が切れると起動直後に止まる（integrationTest263 の EAP で経験済み）。新しい stable が出ていれば上げてから走らせる
 - 前提: 10-2 と同じ（JDK 21・macOS・ディスプレイのあるセッション）。初回は Android Studio のダウンロード（約 1.5 GB）が乗る
+- Android Studio のダウンロード: Gradle には落とさせず、スクリプトが先に curl で `~/.cache/katachi-prerelease/ide/` に落とす。
+  回線が途切れても続きから再開し（`-C -`・`--retry 10 --retry-all-errors`）、10 KB/s を 2 分下回ったら切って続きから
+  つなぎ直す（3 回まで）。releases list の sha256 が合わなければ消して落とし直す。合えば
+  `~/.cache/katachi-prerelease/ide/android-studio-<版>/` に展開し（macOS は dmg から `Android Studio.app` を写す）、
+  `-Pkatachi.androidStudio.localPath` で Gradle に渡す。2 回目からはこの展開済みを使う（`.complete` があるとき）。
+  途中で止まったら同じコマンドを打ち直せば続きから。壊れていそうなら `--no-ide-cache` で落とし直す。ログは
+  `tmp/ide-plugin-android-studio/download.log`
 - 所要: 10-2 と同じくらい（smoke ごとに Android Studio を起動し、Gradle import と索引を待つ）
 - 落ちたら priority 10 の警告（Android Studio の利用者がプラグインを使えない）。「katachi is not found」の画面で止まって
   いれば 363 の再発。スクリーンショットは `katachi-intellij-plugin/build/integrationTestAndroidStudio/<smoke>/screenshots/`
