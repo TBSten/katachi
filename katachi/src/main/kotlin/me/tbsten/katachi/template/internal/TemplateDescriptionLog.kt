@@ -75,7 +75,7 @@ internal fun templateSetDetailLines(detail: TemplateSetDetail): List<String> = b
     }
 
     add("")
-    add("Run it with, putting the directory or module each <slot> stands for in its place:")
+    add("Run it with, putting the value each <slot> stands for in its place:")
     add("  ${detail.exampleCommand}")
 }
 
@@ -131,7 +131,7 @@ internal fun templateDetailLines(detail: TemplateDetail): List<String> = buildLi
     }
 
     add("")
-    add("Generate it with, putting the directory or module each <capture> stands for in its place:")
+    add("Generate it with, putting the value each <capture> stands for in its place:")
     add("  ${detail.exampleCommand}")
 }
 

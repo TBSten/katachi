@@ -315,9 +315,10 @@ public enum class PreviewValueSource {
 /**
  * The one file of a [TemplateDetail]: where it would land, and what it would hold.
  *
- * ## Example 1: whether the layout decides this template's path
+ * ## Example 1: where the template's file would land
  * ```kt
- * detail.files.single().path != null
+ * val file = detail.files.single()
+ * println("${file.path} (${file.content.lines().size} lines)")
  * ```
  *
  * @see TemplateDetail
