@@ -202,6 +202,8 @@ private fun allowLineOf(fact: DeclarationFact): String {
     val modifiers = fact.modifiers.filter { it != ModifierName.Fun }.sortedBy { it.ordinal }.map { it.keyword }
     val kinds = listOfNotNull("`fun`".takeIf { ModifierName.Fun in fact.modifiers }, "`${fact.kind.keyword}`")
     val plain = "allow(${(modifiers + kinds + namePatternLiteral(fact.name)).joinToString(", ")})"
+    // A line without { } allows no member, so an enum line alone would turn this one failure into one per entry.
+    if (fact.hasEnumEntries()) return "$plain { allow(entry, \"*\") }"
     val receiver = fact.receiver ?: return plain
     val arguments = modifiers + kinds + kotlinString(receiver.written) + namePatternLiteral(fact.name)
     // The type of an extension property is chained after it; no type pattern matches an inferred one, so that is left out.
@@ -209,6 +211,9 @@ private fun allowLineOf(fact: DeclarationFact): String {
     val type = fact.propertyType?.written?.takeIf { isProperty }?.let { ".type(${kotlinString(it)})" }.orEmpty()
     return "allow(${arguments.joinToString(", ")})$type"
 }
+
+private fun DeclarationFact.hasEnumEntries(): Boolean =
+    kind == DeclarationKindName.Class && ModifierName.Enum in modifiers && members.orEmpty().any { it.kind == DeclarationKindName.EnumEntry }
 
 private fun removeImportFixes(site: DeclarationSite, code: String, allowing: Boolean): List<FileConstraintFix> = listOf(
     FileConstraintFix("Remove the import and receive what it needs from outside"),
