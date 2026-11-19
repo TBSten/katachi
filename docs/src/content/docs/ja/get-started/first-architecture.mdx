@@ -11,270 +11,121 @@ tags:
 
 import { Aside, Tabs, TabItem, Steps, Badge, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-katachi を Gradle プロジェクトに入れ、最初の `architecture { }` 定義を書いて、テストが成功するところまでを説明します。
+このページでは AI Agent を用いて katachi を Gradle プロジェクトに入れ、最初の `architecture { }` 定義を書いて、テストが成功するところまでを説明します。
 
 katachi が必要かどうか迷う場合は、先に [モチベーション](/katachi/ja/get-started/motivation/) を読むことをおすすめします。
 
-## katachi をプロジェクトに導入する
+## AI Agent と katachi をプロジェクトに導入する
+
+katachi を導入してテストを成功させるには、プロジェクト内に存在するすべてのファイルの種類を洗い出す必要があります。
+katachi を導入するプロジェクトが大きければ大きいほど、この洗い出し作業は大変でしょう。
+
+そこで AI Agent にこの作業を任せてみましょう。katachi には AI Agent driven で katahi のセットアップを支援する CLI, Agent Skill が用意されています。
+
+手動でインストールが必要な場合は [手動インストール](/katachi/ja/get-started/manual-install/) を参照してください。
+
+### 1. katachi CLI, Agent Skill をインストールする
+
+CLI は Homebrew で以下のようにインストールできます。
+
+```shell
+brew install tbsten/tap/katachi
+```
+
+Agent Skill は gh skills か npx skills でインストールできます。
 
 <Tabs>
-  <TabItem label="AI Agent に任せる">
-    <Steps>
-
-    1. 前提条件を確認する
-
-        - **katachi CLI**
-
-          katachi には AI Agent driven でのセットアップを支援する CLI ツールが用意されています。
-          Homebrew で以下のようにインストールできます。
-
-          ```shell
-          brew install tbsten/tap/katachi
-          ```
-
-        - Git 管理
-
-          事前にプロジェクトを git で管理しておくことをおすすめします。
-
-        - 追加オプション
-
-          <details>
-            <summary>追加のドキュメンテーション</summary>
-            アーキテクチャに関するドキュメントがコードベースの外にある場合（例: Notion で管理しているなど）、そのリンクを用意して AI Agent がアクセスできるようにしておいてください。
-          </details>
-
-          <details>
-            <summary>モジュールなどの構成情報</summary>
-            AI Agent は、デフォルトでは `architecture-test` モジュールを作り、そこにアーキテクチャ定義を書こうとします。別のモジュールに作成したい場合は `テストは <module> に作成してください` のようなプロンプトを追加してください。
-          </details>
-
-          <details>
-            <summary>セッション</summary>
-            context 管理の一環として、katachi 導入専用のセッションを新規に開始することをおすすめします。Claude Code, Codex CLI の場合は `/clear` コマンドでセッションをクリアしてからプロンプトを入力します。
-          </details>
-
-    2. お使いの AI Agent を起動し、次のように **プロンプトを入力** してください。
-
-        ```md
-        このプロジェクトに katachi を導入してください。
-
-        - https://tbsten.github.io/katachi/install/ja/index.md に従って導入してください。
-        ```
-
-        AI Agent が参照するページには、プロジェクトへの katachi の導入を **あなたと一緒に** 進めるよう指示が書いてあります。
-
-    3. AI Agent がプロジェクトにセットアップした差分を **レビュー** し、必要に応じて内容を修正してください。
-
-        注目すべき点:
-        - [ ] `architecture-test/src/test/kotlin/<パッケージ>/ProjectArchitecture.kt` がエントリーポイントです。
-        - [ ] AI Agent は architecture の定義を group・Role ごとのファイルに分け、`ProjectArchitecture.kt` の下のパッケージに置きます。そのファイルもレビュー対象です。
-        - [ ] チームで開発している場合は、チームメンバー（特にチームのリード）にも重点的にレビューしてもらいましょう。
-
-    4. **アーキテクチャテストを実行** し、All green になることを確認してください。
-
-        ```shell
-        ./gradlew :architecture-test:test
-        ```
-
-        これでセットアップは完了です。
-
-    </Steps>
+  <TabItem label="gh skills">
+    ```shell
+    gh skill install TBSten/katachi katachi
+    ```
   </TabItem>
-  <TabItem label="手動でインストールする">
-    <Steps>
 
-    1. **`:architecture-test` モジュールを作る**
-
-        アプリのどの層にも属さない、アーキテクチャ定義とそれを検査するテストだけを置くモジュールです。
-
-        ```kotlin title="settings.gradle.kts"
-        pluginManagement {
-          repositories {
-            gradlePluginPortal()
-            mavenCentral() // katachi の Gradle plugin は Maven Central に公開している
-          }
-        }
-
-        dependencyResolutionManagement {
-          repositories {
-            mavenCentral() // katachi の依存も Maven Central から取る
-          }
-        }
-
-        include(":architecture-test")
-        ```
-
-    2. **依存を書く**
-
-        プロジェクトが Android でも KMP でも、**ここはプレーンな `kotlin("jvm")` モジュール**にします。katachi 自身が JVM のライブラリだからです。
-
-        ```kotlin title="architecture-test/build.gradle.kts"
-        import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-
-        plugins {
-          kotlin("jvm") version "<Kotlin のバージョン>"
-          id("me.tbsten.katachi") version "<katachi のバージョン>"
-        }
-
-        kotlin {
-          jvmToolchain(17)
-        }
-
-        tasks.test {
-          useJUnitPlatform()
-          // 検査するファイルは Test タスクの入力ではないので、毎回走らせる（ビルドキャッシュにも結果を書かせない）
-          outputs.upToDateWhen { false }
-          outputs.cacheIf { false }
-          // 違反の一覧をコンソールに出す
-          testLogging { exceptionFormat = TestExceptionFormat.FULL }
-        }
-
-        dependencies {
-          testImplementation("me.tbsten.katachi:katachi:<katachi のバージョン>")
-          testImplementation("me.tbsten.katachi:katachi-konsist:<katachi のバージョン>")
-          testImplementation(platform("org.junit:junit-bom:5.14.4"))
-          testImplementation("org.junit.jupiter:junit-jupiter")
-          testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-        }
-
-        katachi {
-          architecture = "com.example.projectArchitecture"
-        }
-        ```
-
-        <details>
-        <summary>Kotlin 2.2.0 以上 2.4.0 未満の場合</summary>
-
-        Kotlin は **2.2 以上** を使ってください。それより前の Kotlin は katachi のライブラリの metadata を読めません。
-
-        `ktFile()` や `ktFileContent { }` などは context parameters で宣言しています。**Kotlin 2.4 未満** では、次のオプションが無いと呼べません。
-
-        ```kotlin title="architecture-test/build.gradle.kts"
-        kotlin {
-          compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")
-        }
-        ```
-
-        </details>
-
-    3. **アーキテクチャを定義する。**
-
-        `architecture-test/src/test/kotlin/<パッケージ>/ProjectArchitecture.kt` がエントリーポイントです。
-
-        ```kotlin
-        @file:OptIn(ExperimentalKatachiApi::class)
-
-        package com.example
-
-        import me.tbsten.katachi.ExperimentalKatachiApi
-        import me.tbsten.katachi.dsl.architecture
-        import me.tbsten.katachi.dsl.gradle.*
-        import me.tbsten.katachi.dsl.kotlin.ktFile
-
-        val projectArchitecture = architecture {
-          gradle() // wrapper・settings・build スクリプトなど Gradle のファイル
-          "Domain".group {
-            "UseCase".role {
-              summary = "各画面で発生するアプリ固有の1つの振る舞い"
-              layout {
-                "domain/src/main/kotlin/usecase" / "*UseCase".ktFile()
-              }
-            }
-          }
-        }
-        ```
-
-    4. **検査する1本のテストを書く**
-
-        次のテストを `ProjectArchitectureTest.kt` に書きます。
-
-        ```kotlin title="architecture-test/src/test/kotlin/<パッケージ>/ProjectArchitectureTest.kt"
-        @file:OptIn(ExperimentalKatachiApi::class)
-
-        package com.example
-
-        import me.tbsten.katachi.ExperimentalKatachiApi
-        import me.tbsten.katachi.check.assert
-        import org.junit.jupiter.api.Test
-
-        class ProjectArchitectureTest {
-          @Test
-          fun `プロジェクトの構成が定義どおりになっている`() {
-            projectArchitecture.assert()
-          }
-        }
-        ```
-
-        プロジェクトが書くテストはこれ1本だけです。リポジトリ全体の違反が1つの失敗メッセージに集まるので、ルールごとにテストを分ける意味がありません。
-
-        `ktFileContent { }` を書いたら、`projectArchitecture.assert(FileConstraintCheck())` に変えます。`assert()` のままでは制約が検査されず、`[UncheckedFileConstraint]` でテストが失敗します。
-
-    5. **実行する**
-
-        次のコマンドでアーキテクチャテストを実行します。
-
-        ```shell
-        ./gradlew :architecture-test:test
-        ```
-
-        最初は宣言していないファイルやディレクトリが違反として出ます。katachi は許可リスト方式なので、これが正常な出発点です。出てきたパスを定義に足すか、消すかを決めていってください。
-
-    </Steps>
+  <TabItem label="npx skills">
+    ```shell
+    npx skills add TBSten/katachi --skill katachi
+    ```
   </TabItem>
 </Tabs>
 
-## 導入できたことを確かめる
+---
 
-<Tabs>
-    <TabItem label="AI Agent に検証させる">
-        AI Agent に実際にタスクを渡し、アーキテクチャルールに違反するファイルを生成しないことを確かめてみましょう。
+<details>
+<summary>追加オプション</summary>
 
-        - 今後実際に発生するタスクがあるなら、それを試しに実行させて、katachi が機能するかを確かめるのが効果的です。
-          - タスクの内容を AI Agent に渡して実行させてください。
-          - JIRA や Notion などで管理しているタスクチケットがあれば、それをそのまま渡すのも手です。
-        - 架空のタスクを AI Agent に考えさせて、katachi がガードレールとして機能するか検証させましょう。
+- **Git**
 
-          ```md
-          このプロジェクトで将来発生しそうな架空のタスクをいくつか考えてください。
-          ```
+  あらかじめプロジェクトを Git で管理しておくことをお勧めします。
 
-    </TabItem>
+- **追加のドキュメンテーション**
 
-    <TabItem label="手動で検証する">
-        1. アーキテクチャルールに違反するコード例を考え、実際にそのソースファイルを作成してください。
-        2. `./gradlew :architecture-test:test` を実行して、アーキテクチャテストが失敗することを確認してください。
+  アーキテクチャに関するドキュメントがコードベースの外にある場合（例: Notion で管理しているなど）、そのリンクを用意して AI Agent がアクセスできるようにしておいてください。
 
-            <details>
-            <summary>失敗したときの出力例</summary>
+- **モジュールなどの構成情報**
 
-            手順 5 で出た違反を片付けたあとの例です。手順 3 の定義では `domain/src/main/kotlin/usecase/` に `*UseCase.kt` を置くことにしていました。その 1 つ上の `domain/src/main/kotlin/GetUserUseCase.kt` に置くと、次のように違反が報告されます。
+  AI Agent は、デフォルトでは `architecture-test` モジュールを作り、そこにアーキテクチャ定義を書こうとします。別のモジュールに作成したい場合は `テストは <module> に作成してください` のようなプロンプトを追加してください。
 
-            ```text nocollapse
-            Katachi check failed: 1 violation (Unexpected: 1)
+- **セッション**
 
-            [UnexpectedFile] file:///path/to/project/domain/src/main/kotlin/GetUserUseCase.kt
-              No role is defined for this file.
+  context 管理の一環として、katachi 導入専用のセッションを新規に開始することをおすすめします。Claude Code, Codex CLI の場合は `/clear` コマンドでセッションをクリアしてからプロンプトを入力します。
 
-              Nearby locations:
-                Domain.UseCase file:///path/to/project/domain/src/main/kotlin/usecase/ (*UseCase.kt)
+</details>
 
-              How to fix:
-                - Move it to one of the locations above, with a name matching the pattern in parentheses
-                - Delete it if it is not needed
-                - Add a new role for it:
-                    "GetUserUseCase".role {
-                      summary = "TODO"
-                      layout {
-                        "domain/src/main/kotlin" / "GetUserUseCase".ktFile()
-                      }
-                    }
-            ```
+### 2. AI Agent にプロジェクトアーキテクチャの収集を指示する
 
-            </details>
-    </TabItem>
-</Tabs>
+```md
+このプロジェクトに katachi を導入してください。
+```
 
-## <Badge text="オプション" size="small" /> <br/> CI に組み込む
+プロンプトを受け取ると Agent は katachi Agent Skill に従ってプロジェクトの情報を収集します。
+
+Agent が収集した情報は インストールチェックリストと呼ばれる HTML ファイル に出力されるため、その内容がプロジェクトで想定されているアーキテクチャと一致しているかレビューしてください。
+
+![AI Agent が出力したインストールチェックリストの例](../../../../assets/install-check-list-example.png)
+
+- インストールチェックリスト内には AI Agent が判断に迷った箇所を **質問形式で掲載** する場合があります。フォームに従って回答を入力してください。
+- 右下のフロートボタンから **フィードバックモード** を開始して、気になる箇所・アーキテクチャの指摘をピンポイントで記入できます。
+- 1つ以上回答を入力するとフローティングメニューが表示されます。フローティングメニュー内のコピーボタンを押下して AI Agent 二回等を返却しましょう。
+
+<details>
+  <summary>インストールチェックリストの例</summary>
+
+  <iframe
+    src="/katachi/install/ja/check-list-sample.html"
+    title="インストールチェックリストの例"
+    loading="lazy"
+    style="width: 100%; height: 40rem; border: 1px solid var(--sl-color-gray-5); border-radius: 0.5rem;"
+  ></iframe>
+
+  [インストールチェックリストの例を新しいタブで開く](/katachi/install/ja/check-list-sample.html)
+
+</details>
+
+<details>
+  <summary>フィードバックモードの操作例</summary>
+
+  項目を選ぶ → コメントを書く（2 件）→ まとめてコピーして AI Agent に渡す、までの流れです。
+
+  <img
+    src="/katachi/install/ja/check-list-feedback-demo.gif"
+    alt="インストールチェックリストのフィードバックモードの操作。右下の「フィードバック」を押し、項目を選んでコメントを 2 件書き、「まとめてコピー」で AI Agent に渡す内容をコピーする"
+    loading="lazy"
+    style="width: 100%; border: 1px solid var(--sl-color-gray-5); border-radius: 0.5rem;"
+  />
+
+</details>
+
+### 3. アーキテクチャ定義をレビューする
+
+AI Agent が生成したらアーキテクチャ定義をレビューして、最終的にプロジェクトに取り込んで良いものかよく吟味してください。
+
+注目すべき点:
+
+- [ ] **`architecture-test/src/test/kotlin/<パッケージ>/ProjectArchitecture.kt`** がエントリーポイントです。ここを起点に、そこから呼び出されている各 Role がプロジェクトで正とされる宣言になっているかを確認してください。
+- [ ] チームで開発している場合は、**チームメンバー（特にチームのリード）にも重点的にレビュー** してもらいましょう。
+
+
+## CI に組み込む (オプション)
 
 品質を維持するには、katachi のアーキテクチャテストを CI に組み込み、定期的に実行させることが大切です。
 
