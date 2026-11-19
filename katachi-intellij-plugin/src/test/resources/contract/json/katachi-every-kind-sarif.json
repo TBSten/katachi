@@ -168,7 +168,7 @@
           "ruleIndex": 12,
           "level": "error",
           "message": {
-            "text": "No role is defined for this file.\n\nNearby locations:\n  domain.UseCase core/domain/src/main/kotlin/com/example/domain/ (*UseCase.kt)\n\nHow to fix:\n  - Move it to one of the locations above, with a name matching the pattern in parentheses\n  - Delete it if it is not needed\n  - Add a new role for it:\n      \"Helper\".role {\n        summary = \"TODO\"\n        layout {\n          \"app/src/main/kotlin/com/example\" / \"Helper\".ktFile()\n        }\n      }"
+            "text": "No role is defined for this file.\n\nNearby locations:\n  domain.UseCase core/domain/src/main/kotlin/com/example/domain/ (*UseCase.kt)\n\nHow to fix:\n  - Move it to one of the locations above, with a name matching the pattern in parentheses\n  - Delete it if it is not needed\n  - Add a new role for it:\n      \"Helper\".role {\n        layout {\n          \"app/src/main/kotlin/com/example\" / \"Helper\".ktFile()\n        }\n      }"
           },
           "locations": [
             {
@@ -191,7 +191,7 @@
           "ruleIndex": 11,
           "level": "error",
           "message": {
-            "text": "No role is defined for this directory. Nothing below it was checked.\n\nHow to fix:\n  - Delete it if it is not needed\n  - Declare what belongs in it in the layout of an existing role\n  - Add a new role for it:\n      \"Legacy\".role {\n        summary = \"TODO\"\n        layout {\n          \"legacy\".ignore()\n        }\n      }"
+            "text": "No role is defined for this directory. Nothing below it was checked.\n\nHow to fix:\n  - Delete it if it is not needed\n  - Declare what belongs in it in the layout of an existing role\n  - Add a new role for it:\n      \"Legacy\".role {\n        layout {\n          \"legacy\".ignore()\n        }\n      }"
           },
           "locations": [
             {

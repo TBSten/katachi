@@ -37,7 +37,6 @@ katachi では `katachiDiff` を使って 差分を分析するレポートを�
 |---|---|
 | `diff-report.html` | 1 ファイルで完結する HTML。group / Role ごとの Importance、ファイルの一覧、コミットでの絞り込みができます |
 | `diff-report.md` | Markdown の要約表。Pull request のコメントに貼る用です |
-| `diff-report.files-by-role.md` | Role ごとの変更ファイルの一覧 |
 | `diff-report.files-in-no-role.md` | どの Role にも当てはまらない変更ファイルの一覧。アーキテクチャテストでも違反になるファイルです |
 | `diff-report.json` | レポートと同じ内容のデータ。スクリプトから読む用です |
 | `diff-report.yaml` | `diff-report.json` と同じ内容の YAML |
@@ -192,7 +191,7 @@ Gradle script に書いた値はプロジェクトのデフォルト値になり
         <tr>
             <td><code>markdownOutputFile</code></td>
             <td><code>String</code></td>
-            <td>Markdown レポートの出力先。一覧の 2 ファイルは同じディレクトリに並びます</td>
+            <td>Markdown レポートの出力先。どの Role にも当てはまらないファイルがあるときは、<code>diff-report.files-in-no-role.md</code> も同じディレクトリに書きます</td>
             <td><code>build/katachi/diff/diff-report.md</code></td>
             <td><code>diff-report.md</code><br /><code>build/reports/katachi/diff.md</code><br /><code>.local/tmp/diff.md</code></td>
         </tr>

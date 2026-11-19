@@ -114,6 +114,26 @@ internal class ProjectDataModuleSourceTest : AnalysisTestBase() {
         assertEquals(listOf(":static-analysis:katachi"), missing.candidates.map { it.gradlePath })
     }
 
+    fun `test 同期データに依存が無くても IDE のモジュールのライブラリから katachi の版を読んで候補にする`() {
+        // KATACHI-398: Android Studio leaves the JVM modules' dependencies out of the sync data and sets them on the IDE's modules.
+        module(":arch-a")
+        module(":app")
+        val fromIdeModules = mapOf(Path.of("$rootPath/arch-a") to "0.4.0")
+
+        val result = detectDefinitionModules(syncedProjectOf(listOf(projectNode)) { directory -> fromIdeModules[directory] })
+
+        val missing = result as? DetectionResult.TaskListMissing ?: throw AssertionError("not TaskListMissing: $result")
+        assertEquals(listOf(":arch-a"), missing.candidates.map { it.gradlePath })
+    }
+
+    fun `test 同期データにある katachi の版を IDE のモジュールのものより先に使う`() {
+        module(":arch-a").dependsOnKatachi("0.3.0", underSourceSet = true)
+
+        val root = syncedRootOf(projectNode) { "0.4.0" }
+
+        assertEquals(listOf("0.3.0"), root.modules.map { it.katachiVersion })
+    }
+
     fun `test 同期データが1つも無ければ同期前とする`() {
         assertEquals(SyncedProject.NotSynced, syncedProjectOf(emptyList()))
     }

@@ -104,7 +104,7 @@ class SarifDocumentSpec : FreeSpec({
             sarif shouldContain "\"text\": \"$expected\""
             sarif shouldContain "\"text\": \"No file has been created yet for role domain.UseCase.\\nDeclared at: UseCaseRole.kt:16\\n\\nHow to fix:"
             // The copyable fragment keeps the indent it has below `How to fix:`, one step shallower.
-            sarif shouldContain "\\n  - Add a new role for it:\\n      \\\"Helper\\\".role {\\n        summary = \\\"TODO\\\"\\n"
+            sarif shouldContain "\\n  - Add a new role for it:\\n      \\\"Helper\\\".role {\\n        layout {\\n"
         }
 
         "details の無い外部の違反は先頭行がそのまま message になる" {

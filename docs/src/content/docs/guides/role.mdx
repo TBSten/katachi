@@ -31,7 +31,6 @@ architecture {
 ```
 
 A Role is declared with `"Name".role { }`. This matches the shape of `"Name".group { }` and sets it apart from a directory declaration such as `"src" { }`, which you write inside `layout { }`.
-
 Because Role names are used for things like documentation generation, they must be ASCII only (starting with a letter, followed by letters, digits, `_`, or `-`).
 
 You write a Role's description, placement, and constraints inside that Role's block.
@@ -76,7 +75,7 @@ Let's look at each of these in a bit more detail.
 
 ### Writing a description
 
-At minimum, all you need is `summary`. It is the text shown in the Role table when documentation is generated.
+`summary` is optional. If you write one, it is the text shown in the Role table when documentation is generated.
 
 ```kt
 "UseCase".role {
@@ -154,7 +153,6 @@ Katachi check failed: 1 violation (Unexpected: 1)
     - Delete it if it is not needed
     - Add a new role for it:
         "GetUserUseCase".role {
-          summary = "TODO"
           layout {
             "src/main/kotlin/com/example" / "GetUserUseCase".ktFile()
           }

@@ -23,7 +23,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "check-docs-against
 import public_api as api  # noqa: E402
 
 ORDER = ["feat", "fix", "perf", "refactor", "revert", "build", "docs", "test", "ci", "chore", "style"]
-SUBJECT = re.compile(r"^(?P<type>[a-z]+)(?:\((?P<scope>[^)]*)\))?(?P<bang>!)?: (?P<desc>.+)$")
+# `feat(scope)!:` と、このリポジトリで使う `update!(scope):` の両方の `!` を破壊的変更として拾う
+SUBJECT = re.compile(r"^(?P<type>[a-z]+)(?P<bang_type>!)?(?:\((?P<scope>[^)]*)\))?(?P<bang>!)?: (?P<desc>.+)$")
 TRAILER = re.compile(r"^(Co-Authored-By|Claude-Session|Signed-off-by):", re.I)
 BREAKING_BODY = re.compile(r"^BREAKING[ -]CHANGE:\s*(.*)", re.M | re.S)
 
@@ -56,7 +57,7 @@ def main():
             "type": m.group("type") if m else None,
             "scope": (m.group("scope") or "") if m else "",
             "desc": m.group("desc") if m else subject,
-            "breaking": bool(m and m.group("bang")) or bool(breaking),
+            "breaking": bool(m and (m.group("bang") or m.group("bang_type"))) or bool(breaking),
             "breaking_note": breaking.group(1).strip() if breaking else "",
         })
 

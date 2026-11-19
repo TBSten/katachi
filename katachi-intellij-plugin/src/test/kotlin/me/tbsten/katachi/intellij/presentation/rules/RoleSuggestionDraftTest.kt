@@ -14,7 +14,6 @@ class RoleSuggestionDraftTest {
         assertEquals(
             """
             "TokenRefresher".role {
-              summary = "TODO"
               layout {
                 "core/domain" / "TokenRefresher".ktFile()
               }
@@ -29,7 +28,6 @@ class RoleSuggestionDraftTest {
         assertEquals(
             """
             "BuildGradle".role {
-              summary = "TODO"
               layout {
                 "build.gradle".ktsFile()
               }
@@ -40,7 +38,6 @@ class RoleSuggestionDraftTest {
         assertEquals(
             """
             "LibsVersionsToml".role {
-              summary = "TODO"
               layout {
                 "libs.versions.toml".file()
               }
@@ -60,6 +57,6 @@ class RoleSuggestionDraftTest {
 
     @Test
     fun `ルート直下のファイルはディレクトリ無しで書く`() {
-        assertEquals("\"Foo\".role {\n  summary = \"TODO\"\n  layout {\n    \"Foo\".ktFile()\n  }\n}", roleSuggestionDraftFor("Foo.kt"))
+        assertEquals("\"Foo\".role {\n  layout {\n    \"Foo\".ktFile()\n  }\n}", roleSuggestionDraftFor("Foo.kt"))
     }
 }
