@@ -112,7 +112,7 @@
 
 </details>
 
-## 10. IDE プラグインの nightly 相当のチェック・E2E・配る zip・文言の日英
+## 10. IDE プラグインの nightly 相当のチェック・E2E・配る zip・文言の日英・Android Studio
 
 - [ ] 10-1 通った: {TODO}（`run-ide-plugin-nightly.py`）
 - [ ] 10-1 seed / scale: {TODO}
@@ -124,6 +124,8 @@
 - [ ] 10-4 直し忘れ: 直書き {TODO} 件 / 訳し忘れの鍵 {TODO} 件 / ツールウィンドウ {TODO} 件 / ja だけの鍵 {TODO} 件 / plugin.xml {TODO} 件
 - [ ] 10-4 日本語の IDE での目視: {TODO 要る（TODO.html に載せた） / 要らない（基準から文言の置き場が変わっていない）}
 - [ ] 10-4 結果: {TODO file://.local/release-v0.0.0/ide-plugin-texts.md の絶対パス}
+- [ ] 10-5 通った: {TODO}（`run-ide-plugin-e2e.py --android-studio`、Android Studio の版: {TODO}）
+- [ ] 10-5 結果: {TODO file://.local/release-v0.0.0/ide-plugin-android-studio.md の絶対パス}
 - [ ] 過去の判断どおりで出さなかった: {TODO} 件 / 見直し候補 {TODO} 件（decisions/ide-plugin.md・environment.md）
 
 <details>

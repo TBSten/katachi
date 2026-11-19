@@ -1,4 +1,4 @@
-# 10. IDE プラグインの nightly 相当のチェック・E2E・配る zip・文言の日英
+# 10. IDE プラグインの nightly 相当のチェック・E2E・配る zip・文言の日英・Android Studio
 
 [SKILL.md](../SKILL.md) の手順 10 の詳細。10-1（nightly 相当の PBT）と 10-2（E2E）は、どちらも IDE プラグインが自動では
 めったに回らないチェックを、リリース前に一度は必ず通す手順。
@@ -142,9 +142,37 @@ Gradle を使わず数秒で終わり、ファイルを書き換えないので�
   実際の IDE の幅で切れていないか・言語パックで切り替わるかは見ていない
 - 結果は `ide-plugin-texts.md`（区分ごとの件数・直し忘れの一覧・意図した英語にした理由のまとめ）。材料は `tmp/ide-plugin-texts.md`
 
+## 10-5. Android Studio での E2E（`integrationTestAndroidStudio`）
+
+katachi の IDE プラグインは Android Studio の利用者にも配る（`sinceBuild = 261`、上限なし）。CI が Android Studio で見て
+いるのは nightly の `verifyPlugin`（バイナリ互換、`ides { create(AndroidStudio, …) }`）だけで、本物の Android Studio で
+プラグインを動かしてはいない。Android Studio は Gradle sync の既定が IDEA と違い（「Configure all Gradle tasks during
+Gradle Sync」が OFF でタスク一覧を作らない）、定義モジュールが見つからず「katachi is not found」になったことがある
+（KATACHI-363）。リリース前に一度は本物の Android Studio で通す。
+
+```shell
+python3 .claude/skills/prerelease/scripts/run-ide-plugin-e2e.py --list --android-studio                               # 走らせるコマンドを見る
+python3 .claude/skills/prerelease/scripts/run-ide-plugin-e2e.py --release-dir .local/release-v<版> --android-studio   # 走らせる
+```
+
+- `integrationTestAndroidStudio` は `integrationTest` の smoke のうち SmokeIde に乗っているもの（ArchModuleName・Gutter 2 本・
+  DefinitionAuthoring）を Android Studio で起動する（`-Dkatachi.smoke.ideProduct=AndroidStudio`）。ここで走らせるのは
+  `ArchModuleNameSmokeTest` の1本だけ: 定義モジュールの検出（363 で壊れたところ）・◆・検査の行・no role の通知を一度に見る
+- Android Studio の設定は既定のまま（タスク一覧を作らない）。プラグインの逃げ道（katachi に依存するモジュールを候補にする）
+  が効いているかを見るため、設定を ON にして通してはいけない
+- Android Studio の版は `katachi-intellij-plugin/build.gradle.kts` の `register("integrationTestAndroidStudio")` の
+  `version`（`jb.gg/android-studio-releases-list.json` の `version`、4 桁）。**stable か Patch の版**にする。Canary・RC は
+  期限が切れると起動直後に止まる（integrationTest263 の EAP で経験済み）。新しい stable が出ていれば上げてから走らせる
+- 前提: 10-2 と同じ（JDK 21・macOS・ディスプレイのあるセッション）。初回は Android Studio のダウンロード（約 1.5 GB）が乗る
+- 所要: smoke 1本。手元の Mac なら起動・Gradle import・索引込みで10分前後の見込み（GitHub の macOS runner では索引だけで
+  15分ほどかかる）
+- 落ちたら priority 10 の警告（Android Studio の利用者がプラグインを使えない）。「katachi is not found」の画面で止まって
+  いれば 363 の再発。スクリーンショットは `katachi-intellij-plugin/build/integrationTestAndroidStudio/arch-module-name/screenshots/`
+- 結果は `ide-plugin-android-studio.md`、ログは `tmp/ide-plugin-android-studio/`
+
 ## 共通
 
-- 10-1・10-2 は1つでも落ちたら priority 10 の警告にする（8・9-1 と同じ扱い。リリースしてはいけない状態）。10-3・10-4 は各節の priority。
+- 10-1・10-2・10-5 は1つでも落ちたら priority 10 の警告にする（8・9-1 と同じ扱い。リリースしてはいけない状態）。10-3・10-4 は各節の priority。
   ただし [decisions/environment.md](../decisions/environment.md) の環境要因に該当し、別の起動のしかた（手元のターミナル・CI）で
   通ることを確かめたものは、警告にせず「環境要因」と書く
 - 10-3・10-4 の subagent には [decisions/ide-plugin.md](../decisions/ide-plugin.md) を渡し、過去の判断と同じものは「過去の判断どおり」に並べさせる

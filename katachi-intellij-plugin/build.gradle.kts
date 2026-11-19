@@ -285,6 +285,34 @@ intellijPlatformTesting.testIdeUi.register("integrationTest263") {
     }
 }
 
+// The smokes built on SmokeIde against Android Studio, which katachi ships to as well. verifyPlugin only checks the binary
+// compatibility; this is what shows the plugin working in a real Android Studio, whose Gradle sync differs from IDEA's (by
+// default it does not build the task list, which hid the definition module in KATACHI-363). Run by the prerelease (step 10-5,
+// on a Mac with a display) and on demand: `./gradlew integrationTestAndroidStudio --tests '*ArchModuleNameSmokeTest*'`.
+// The version is the exact "version" field of jb.gg/android-studio-releases-list.json (four components): a stable or patch
+// release, never a Canary or RC, which stop themselves when they expire. Move it to each new stable.
+intellijPlatformTesting.testIdeUi.register("integrationTestAndroidStudio") {
+    type = IntelliJPlatformType.AndroidStudio
+    version = "2026.2.2.9"
+    task {
+        val integrationTestSourceSet = sourceSets.getByName("integrationTest")
+        testClassesDirs = integrationTestSourceSet.output.classesDirs
+        classpath = integrationTestSourceSet.runtimeClasspath
+        useJUnitPlatform()
+        systemProperty("katachi.smoke.sampleProject", rootDir.resolve("../sample/jvm").canonicalPath)
+        systemProperty("katachi.smoke.workDir", layout.buildDirectory.dir("integrationTestAndroidStudio").get().asFile.path)
+        // SmokeIde starts the copy as Android Studio instead of IDEA.
+        systemProperty("katachi.smoke.ideProduct", "AndroidStudio")
+        systemProperty(
+            "allure.results.directory",
+            layout.buildDirectory.dir("integrationTestAndroidStudio/allure-results").get().asFile.path
+        )
+        // The Android Studio distribution this task resolved, not the build SDK's.
+        val ideHome = this
+        doFirst { systemProperty("katachi.smoke.ideHome", ideHome.platformPath.toString()) }
+    }
+}
+
 // uiTest: the property-based tests that drive the ViewModel through sequences of operations and
 // render every state they reach, and the tests that operate the real Composables (compose ui-test).
 // Both need standalone Compose, which cannot share a classpath with the IDE's bundled one, so the
