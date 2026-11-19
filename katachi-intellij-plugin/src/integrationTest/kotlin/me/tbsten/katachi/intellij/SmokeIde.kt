@@ -123,6 +123,7 @@ internal class SmokeIde(name: String) {
     fun sourcesOf(project: Path): Set<String> = Files.walk(project).use { paths ->
         paths.filter { Files.isRegularFile(it) && project.relativize(it).none { part -> part.toString() in STATE_DIRECTORIES } }
             .map { project.relativize(it).toString() }
+            .filter { it !in STATE_FILES }
             .toList()
             .toSet()
     }
@@ -158,5 +159,8 @@ internal class SmokeIde(name: String) {
 
     private companion object {
         val STATE_DIRECTORIES = setOf(".idea", ".gradle", ".kotlin", "build", ".git")
+
+        /** What Android Studio's Gradle sync writes into the project it opens (the SDK path, the daemon's JVM), which IDEA does not. */
+        val STATE_FILES = setOf("local.properties", "gradle/gradle-daemon-jvm.properties")
     }
 }
