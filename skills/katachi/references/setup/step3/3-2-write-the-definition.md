@@ -130,18 +130,34 @@ The verification module is checked like any other module. Its `build.gradle.kts`
 ```kotlin
 "ArchitectureTest".group {
     documented = false
-    "ArchitectureDefinition".role {
-        summary = "The katachi definition: architecture { }, the functions it is split into, and the test that runs it"
+    "ArchitectureDefinitionEntry".role {
+        summary = "The entry of the katachi definition: the architecture { } that gathers every group"
         layout {
-            "architecture-test" / testSourceSet / kotlin / "**" / "ProjectArchitecture*".ktFile()
+            "architecture-test" / testSourceSet / kotlin / "**" / "ProjectArchitecture".ktFile()
+        }
+    }
+    "ArchitectureDefinitionTest".role {
+        summary = "The test that runs the katachi definition"
+        layout {
+            "architecture-test" / testSourceSet / kotlin / "**" / "ProjectArchitectureTest".ktFile()
+        }
+    }
+    "RoleDefinition".role {
+        summary = "One <Name>Role.kt per Role, split out of architecture { }"
+        layout {
             "architecture-test" / testSourceSet / kotlin / "**" / "*Role".ktFile()
+        }
+    }
+    "GroupDefinition".role {
+        summary = "One <Name>Group.kt per group, split out of architecture { }"
+        layout {
             "architecture-test" / testSourceSet / kotlin / "**" / "*Group".ktFile()
         }
     }
 }
 ```
 
-Read `"architecture-test"` as `meta.moduleDir`. The name patterns keep this Role from being a catch-all ("Do not stop at placement"): they cover `ProjectArchitecture.kt`, the `ProjectArchitectureTest.kt` that scaffold writes, and the `<Role>Role.kt` / `<Group>Group.kt` files that 3-3 splits the definition into (the `"**"` takes the group directories). A file of another shape there (a helper with shared `val`s, say) gets a pattern of its own rather than a `"*"`.
+Read `"architecture-test"` as `meta.moduleDir`. One Role per kind of file, as everywhere else: the entry `ProjectArchitecture.kt`, the `ProjectArchitectureTest.kt` that scaffold writes, and the `<Role>Role.kt` / `<Group>Group.kt` files that 3-3 splits the definition into (the `"**"` takes the group directories). The name patterns keep these Roles from being catch-alls ("Do not stop at placement"). A file of another shape there (a helper with shared `val`s, say) gets a Role of its own rather than a `"*"`.
 
 If scaffold created `<verification module>/.gitignore` (it does when the project's `.gitignore` does not already ignore `build/`), that file needs a Role too, or step 4 reports it as `[UnexpectedFile]`. Declare it next to the root `.gitignore`, for example `"**/.gitignore".file()` in the `GitIgnore` Role.
 
