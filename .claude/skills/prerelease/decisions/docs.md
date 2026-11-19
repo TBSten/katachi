@@ -1319,10 +1319,12 @@ priority 1〜3 のルールの側の食い違い。どれもルールも例も�
 
 ## 直さない: ProjectArchitecture.kt に group と Role の定義を直接書いている
 - decision: 直さない
-- file: ja/get-started/first-architecture.mdx
+- file: ja/get-started/manual-install.mdx
 - quote: "Domain".group {
 - decided: 2026-11-11 261110-01 KATACHI-365
 - by: 利用者（Review の popup）
+
+2026-11-19 261119-01 KATACHI-391: 文が「初めてのアーキテクチャ定義」から「手動インストール」に移った（KATACHI-373）ので、file だけを書き換えた。
 
 利用者の一言: まあここは話したいことと違うことが膨らんじゃって嫌なので直さんでええかなと
 
@@ -1333,10 +1335,12 @@ priority 1〜3 のルールの側の食い違い。どれもルールも例も�
 
 ## 直さない: 「これが」が前の文を指している
 - decision: 直さない
-- file: ja/get-started/first-architecture.mdx
+- file: ja/get-started/manual-install.mdx
 - quote: katachi は許可リスト方式なので、これが正常な出発点です。
 - decided: 2026-11-11 261110-01 KATACHI-365
 - by: 利用者（Review の popup）
+
+2026-11-19 261119-01 KATACHI-391: 文が「初めてのアーキテクチャ定義」から「手動インストール」に移った（KATACHI-373）ので、file だけを書き換えた。
 
 利用者の一言: なし
 
@@ -1344,20 +1348,6 @@ priority 1〜3 のルールの側の食い違い。どれもルールも例も�
 
 **ルールに反する点**: D3-3。「宣言していないファイルやディレクトリが違反として出る」ことを指す
 **直し方の案**: 「katachi は許可リスト方式なので、宣言していないものが違反として出るのが正常な出発点です。」
-
-## 直さない: 「ガードレールとして機能する」は比喩
-- decision: 直さない
-- file: ja/get-started/first-architecture.mdx
-- quote: katachi がガードレールとして機能するか検証させましょう。
-- decided: 2026-11-11 261110-01 KATACHI-365
-- by: 利用者（Review の popup）
-
-利用者の一言: この比喩は許容かな。許容していい比喩と許容しちゃいけない比喩があって、それを考慮した指摘をして欲しい気はする（何を許容していいのか・しちゃいかんのかの区別はまだついてない）
-
-元の指摘:
-
-**ルールに反する点**: D3-7（挙動を比喩で言わず、何が起きるかを書く）。motivation L34 の「通さないガードレール」は decisions で「直さない」だが、これは別のファイルで、「通さない」を含まない。同じ趣旨なので判断に寄せる
-**直し方の案**: 「katachi が違反を検出するか検証させましょう。」
 
 ## 直さない: 「これを」が指すものを書いていない
 - decision: 直さない

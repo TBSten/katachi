@@ -88,7 +88,7 @@ title: ...
     - Konture との統合                                     （`konture { }`。`ktFileContent { }` と同じ位置に書く Konture の規則。katachi-konsist（`ktFileContent { }`）と同じテストモジュールには置けない）
     - ドキュメント生成
     - テンプレートからコード生成
-    - [AI生成] 差分レポート                （`katachiDiff`。PR にコメントする使い方は GitHub のレシピ、processor の表は ArchitectureProcessor）
+    - Diff report                       （`katachiDiff`。PR にコメントする使い方もこのページの「CI に組み込む」、processor の表は ArchitectureProcessor）
     - [AI生成] CLI と script   （グループ。見出しは押せないので、ページは中の「概要」に置く）
         - CLI と script   ［サイドバーの表示は「概要」］（ユースケース・インストール・全体の流れ）
         - [AI生成] katachi CLI                 （サブコマンドとオプションの一覧）
