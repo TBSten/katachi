@@ -119,6 +119,8 @@ internal class KatachiDebugBridge(private val project: Project) {
 
     fun setGutterIcons(enabled: Boolean): String = gutterReader().setGutterIcons(enabled)
 
+    fun showTextEditor(path: String): String = gutterReader().showTextEditor(path)
+
     fun describeRedraw(): String {
         checked(Unit)
         val refresher = HighlightingRefresher.getInstance(project)

@@ -19,6 +19,7 @@ import com.intellij.openapi.editor.impl.DocumentMarkupModel
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.TextEditor
+import com.intellij.openapi.fileEditor.TextEditorWithPreview
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -187,6 +188,25 @@ internal class GutterDebugReader(private val project: Project, private val onScr
             }
         }
         return chosen
+    }
+
+    /**
+     * Puts the text editor of [path] on screen where the file is open in an editor with a preview (Markdown): platform 262 and later
+     * open README.md preview only, and the daemon draws the gutter of an editor on screen only. One `editor=<layout>` line per such editor,
+     * after the switch.
+     */
+    fun showTextEditor(path: String): String {
+        val file = LocalFileSystem.getInstance().findFileByNioFile(Paths.get(path)) ?: return "layout=$path\nopen=false"
+        val layouts = onEdtResult {
+            FileEditorManager.getInstance(project).getEditors(file).filterIsInstance<TextEditorWithPreview>().map { editor ->
+                // getLayout and setLayout are functions of the Kotlin class, not a property.
+                if (editor.getLayout() == TextEditorWithPreview.Layout.SHOW_PREVIEW) {
+                    sdkCall("show the text editor of ${file.path}") { editor.setLayout(TextEditorWithPreview.Layout.SHOW_EDITOR) }
+                }
+                "editor=${editor.getLayout()?.name}"
+            }
+        }
+        return (listOf("layout=$path", "open=true") + layouts).joinToString("\n")
     }
 
     fun setGutterIcons(enabled: Boolean): String {
