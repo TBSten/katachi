@@ -50,6 +50,9 @@ internal object SmokeProduct {
         // And so would the "Android SDK location" dialog of the first Gradle sync (SdkSyncImpl), which a fresh config with no saved
         // SDK and a copy with no local.properties both lead to. The IDE takes ANDROID_HOME as its SDK when it is a valid one.
         options.withEnv("ANDROID_HOME", androidSdk().toString())
+        // And so would the "Sign in to Android Studio" dialog of a signed-out IDE (StartupSignInDialogActivity). Its StudioFlags flag
+        // takes a system property of the flag's id as an override (com.android.flags.overrides.PropertyOverrides).
+        options.addSystemProperty("google.login.enable.startup.sign.in.dialog", false)
     }
 
     /**
