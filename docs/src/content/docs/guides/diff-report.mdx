@@ -37,7 +37,6 @@ The reports are written to `architecture-test/build/katachi/diff/`.
 |---|---|
 | `diff-report.html` | A self-contained HTML file. It shows the Importance of each group / Role and the list of files. You can also filter by commit |
 | `diff-report.md` | A summary table in Markdown. It is for pasting into a pull request comment |
-| `diff-report.files-by-role.md` | The list of changed files for each Role |
 | `diff-report.files-in-no-role.md` | The list of changed files that match no Role. These files also fail the architecture test |
 | `diff-report.json` | The same content as the report, as data. It is for a script to read |
 | `diff-report.yaml` | The same content as `diff-report.json`, in YAML |
@@ -192,7 +191,7 @@ A value written in the Gradle script becomes the default for the project, and `-
         <tr>
             <td><code>markdownOutputFile</code></td>
             <td><code>String</code></td>
-            <td>Where to write the Markdown report. The two list files are placed in the same directory</td>
+            <td>Where to write the Markdown report. When some files are in no Role, <code>diff-report.files-in-no-role.md</code> is written to the same directory as well</td>
             <td><code>build/katachi/diff/diff-report.md</code></td>
             <td><code>diff-report.md</code><br /><code>build/reports/katachi/diff.md</code><br /><code>.local/tmp/diff.md</code></td>
         </tr>
