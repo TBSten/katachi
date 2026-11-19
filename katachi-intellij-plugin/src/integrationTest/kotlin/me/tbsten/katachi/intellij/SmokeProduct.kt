@@ -40,7 +40,11 @@ internal object SmokeProduct {
 
     /** What every smoke adds to the IDE's VM options for this product. */
     fun patch(options: VMOptions) {
+        if (!androidStudio) return
         // Android Studio's first-run wizard (SDK setup) would wait on its window for good.
-        if (androidStudio) options.addSystemProperty("disable.android.first.run", true)
+        options.addSystemProperty("disable.android.first.run", true)
+        // So would Google's "Help improve Android Studio" consent dialog, which a fresh config shows before any project opens
+        // (Driver then times out on "Project is opened"). Read by com.android.tools.idea.stats.ConsentDialog.
+        options.addSystemProperty("disable.android.analytics.consent.dialog", true)
     }
 }
