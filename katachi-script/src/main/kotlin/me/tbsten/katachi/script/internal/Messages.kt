@@ -77,8 +77,8 @@ internal object Messages {
         )
 
         fun somethingNeedsAttention(scriptVersionCurrent: Any?): Msg = Msg(
-            ja = "対応が必要なものがあります（katachi $scriptVersionCurrent）。下の [!] を見てください。",
-            en = "Something needs attention (katachi $scriptVersionCurrent). See the [!] below.",
+            ja = "対応が必要なものがあります（katachi $scriptVersionCurrent）。下の [!]・[x] を見てください。",
+            en = "Something needs attention (katachi $scriptVersionCurrent). See the [!] and [x] below.",
         )
 
         fun kotlin(version: Any?, fileUri: Any?, tooOld: Boolean): Msg = if (tooOld) {
@@ -373,6 +373,13 @@ internal object Messages {
                 "katachi は JDK $JDK_MIN_MAJOR 以上が要ります。",
             en = "Could not find the JDK that runs Gradle (the shell has no JAVA_HOME, and $javaHomeTool finds no JDK for java on PATH ($onPath) to run). " +
                 "katachi needs JDK $JDK_MIN_MAJOR or later.",
+        )
+
+        fun invalidJavaHome(javaHome: Any?): Msg = Msg(
+            ja = "JAVA_HOME（$javaHome）に bin/java がありません。./gradlew も「JAVA_HOME is set to an invalid directory」で止まります。\n" +
+                "    JAVA_HOME を JDK $JDK_MIN_MAJOR 以上のディレクトリに向けるか、unset JAVA_HOME してから、もう一度実行してください。",
+            en = "JAVA_HOME ($javaHome) has no bin/java, so ./gradlew stops too (\"JAVA_HOME is set to an invalid directory\").\n" +
+                "    Point JAVA_HOME at a JDK $JDK_MIN_MAJOR or later directory, or run unset JAVA_HOME, then run this again.",
         )
 
         fun couldNotReadVersion(from: Any?): Msg = Msg(

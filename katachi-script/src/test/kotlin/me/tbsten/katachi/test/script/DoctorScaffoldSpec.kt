@@ -128,6 +128,32 @@ class DoctorScaffoldSpec : FreeSpec({
             run.out shouldContain "Gradle の JDK: 21（JAVA_HOME（$shell））"
         }
 
+        "シェルの JAVA_HOME に bin/java が無ければ、PATH の java に切り替えず、gradlew と同じく無効と出して止まる（KATACHI-440）" {
+            val empty = createTempDirectory("katachi-empty-java-home")
+
+            val run = runCapturing(
+                gradleProject(toolchain = null),
+                listOf("doctor", "--lang", "en"),
+                env = underHomebrewKotlin(shellJavaHome = empty.toString(), fakeJdk(21)),
+            )
+
+            run.status shouldBe 1
+            run.out shouldContain "Something needs attention"
+            run.err shouldContain "JAVA_HOME ($empty) has no bin/java, so ./gradlew stops too"
+        }
+
+        "Gradle の JDK が 17 未満・見つからないときは、見出しで「そろっています」と言わない（KATACHI-440）" {
+            val run = runCapturing(
+                gradleProject(toolchain = null),
+                listOf("doctor", "--lang", "en"),
+                env = underHomebrewKotlin(shellJavaHome = "", fakeJdk(11)),
+            )
+
+            run.status shouldBe 1
+            run.out shouldContain "Something needs attention"
+            run.out shouldNotContain "Everything this needs is available"
+        }
+
         "bin/katachi を通さずに起動したとき（変数が無いとき）は、今までどおり JAVA_HOME を見る" {
             val env = underHomebrewKotlin(shellJavaHome = null, fakeJdk(11))
 

@@ -31,4 +31,20 @@ done
 KATACHI_SHELL_JAVA_HOME=${JAVA_HOME:-}
 export KATACHI_SHELL_JAVA_HOME
 
+# `kotlin` runs katachi on this shell's JAVA_HOME. katachi-script is compiled for JDK 17, so on an older JDK it dies with an
+# UnsupportedClassVersionError stack trace before `katachi doctor` can say what to do. Keep 17 in sync with JDK_MIN_MAJOR.
+if [ -n "${JAVA_HOME:-}" ] && [ -x "$JAVA_HOME/bin/java" ]; then
+	java_major=$("$JAVA_HOME/bin/java" -version 2>&1 | awk -F'"' '/version "/ { split($2, v, "."); print (v[1] == "1") ? v[2] : v[1]; exit }')
+	case $java_major in
+	'' | *[!0-9]*) ;;
+	*)
+		if [ "$java_major" -lt 17 ]; then
+			printf '\n[x] %s\n    %s\n' "JAVA_HOME ($JAVA_HOME) is JDK $java_major, but katachi needs JDK 17 or later." \
+				"Point JAVA_HOME at JDK 17 or later (or run unset JAVA_HOME), then run this again." >&2
+			exit 1
+		fi
+		;;
+	esac
+fi
+
 exec kotlin "$KATACHI_HOME/katachi.main.kts" "$@"
