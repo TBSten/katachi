@@ -334,6 +334,11 @@ internal object Messages {
             en = "java on PATH ($onPath)",
         )
 
+        fun javaPathMacOs(onPath: Any?, javaHomeTool: Any?, home: Any?): Msg = Msg(
+            ja = "PATH の java（$onPath。$javaHomeTool が選ぶ JDK は $home）",
+            en = "java on PATH ($onPath, which runs the JDK $javaHomeTool picks: $home)",
+        )
+
         val couldNotFindJdk: Msg = Msg(
             ja = "Gradle を動かす JDK を見つけられませんでした（JAVA_HOME も PATH の java もありません）。katachi は JDK $JDK_MIN_MAJOR 以上が要ります。",
             en = "Could not find the JDK that runs Gradle (there is no JAVA_HOME and no java on PATH). katachi needs JDK $JDK_MIN_MAJOR or later.",

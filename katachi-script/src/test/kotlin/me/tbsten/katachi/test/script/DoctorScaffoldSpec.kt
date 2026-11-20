@@ -4,6 +4,7 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
+import java.io.File
 import java.nio.file.Path
 import java.nio.file.attribute.PosixFilePermissions
 import kotlin.io.path.createDirectories
@@ -12,6 +13,8 @@ import kotlin.io.path.exists
 import kotlin.io.path.readText
 import kotlin.io.path.setPosixFilePermissions
 import kotlin.io.path.writeText
+import me.tbsten.katachi.script.internal.MacOsJavaStub
+import me.tbsten.katachi.script.internal.SHELL_JAVA_HOME_ENV
 
 /** `doctor` and a `scaffold` that writes (the dry run is in RunScriptSpec) (KATACHI-266). */
 class DoctorScaffoldSpec : FreeSpec({
@@ -56,6 +59,91 @@ class DoctorScaffoldSpec : FreeSpec({
             runCapturing(project, listOf("doctor", "--lang", "en"), env = mapOf("PATH" to pathWithGit().toString())).out shouldContain
                 "Everything this needs is available (katachi "
             runCapturing(project, listOf("doctor", "--fast")).err shouldContain "doctor: 知らないオプションです: --fast"
+        }
+    }
+
+    "Gradle の JDK は、Homebrew の kotlin が入れた JAVA_HOME ではなく、bin/katachi を起動したシェルの JAVA_HOME で調べる（KATACHI-434）" - {
+        "シェルに JAVA_HOME が無ければ（空で渡る）、doctor は PATH の java の JDK を見て、17 未満なら止まる" {
+            val pathJava = fakeJdk(11)
+
+            val run = runCapturing(gradleProject(toolchain = null), listOf("doctor"), env = underHomebrewKotlin(shellJavaHome = "", pathJava))
+
+            run.status shouldBe 1
+            run.err shouldContain "Gradle を動かす JDK が 11 です（PATH の java（${pathJava.resolve("bin/java")}））。"
+        }
+
+        "doctor は PATH の java が 17 以上なら通す" {
+            val pathJava = fakeJdk(21)
+
+            val run = runCapturing(gradleProject(toolchain = null), listOf("doctor", "--lang", "en"), env = underHomebrewKotlin(shellJavaHome = "", pathJava))
+
+            run.status shouldBe 0
+            run.out shouldContain "Gradle's JDK: 21 (java on PATH (${pathJava.resolve("bin/java")}))"
+        }
+
+        "シェルの JAVA_HOME に値があれば、doctor はそれを見る" {
+            val shell = fakeJdk(21)
+
+            val run = runCapturing(gradleProject(toolchain = null), listOf("doctor"), env = underHomebrewKotlin(shellJavaHome = shell.toString(), fakeJdk(11)))
+
+            run.status shouldBe 0
+            run.out shouldContain "Gradle の JDK: 21（JAVA_HOME（$shell））"
+        }
+
+        "bin/katachi を通さずに起動したとき（変数が無いとき）は、今までどおり JAVA_HOME を見る" {
+            val env = underHomebrewKotlin(shellJavaHome = null, fakeJdk(11))
+
+            val run = runCapturing(gradleProject(toolchain = null), listOf("doctor"), env = env)
+
+            run.status shouldBe 0
+            run.out shouldContain "Gradle の JDK: 27（JAVA_HOME（${env.getValue("JAVA_HOME")}））"
+        }
+
+        "scaffold も同じ JDK を見て、何も作らずに止まる" {
+            val project = gradleProject(toolchain = null)
+            val pathJava = fakeJdk(11)
+            val args = listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0")
+
+            val run = runCapturing(project, args, env = underHomebrewKotlin(shellJavaHome = "", pathJava))
+
+            run.status shouldBe 1
+            run.err shouldContain "Gradle を動かす JDK が 11 です（PATH の java（${pathJava.resolve("bin/java")}））。"
+            project.resolve("architecture-test").exists() shouldBe false
+        }
+    }
+
+    "macOS で PATH の java が /usr/bin/java のスタブなら、実行せずに java_home が選ぶ JDK を答える（KATACHI-434）" - {
+        "java_home --failfast が答えた JDK の bin/java のバージョンを読む" {
+            val mac = FakeMacOsJava(defaultJdk = fakeJdk(21))
+
+            val run = runCapturing(gradleProject(toolchain = null), listOf("doctor"), env = mac.env(), macOsJavaStub = mac.stub)
+
+            run.status shouldBe 0
+            run.out shouldContain "Gradle の JDK: 21（PATH の java（${mac.java}。${mac.javaHome} が選ぶ JDK は ${mac.defaultJdk}））"
+            mac.javaHomeArgs() shouldBe "--failfast"
+            mac.stubRan() shouldBe false
+        }
+
+        "java_home が JDK を見つけられなければ、JDK が見つからないと警告して進む" {
+            val mac = FakeMacOsJava(defaultJdk = null)
+
+            val run = runCapturing(gradleProject(toolchain = null), listOf("doctor"), env = mac.env(), macOsJavaStub = mac.stub)
+
+            run.status shouldBe 0
+            run.err shouldContain "Gradle を動かす JDK を見つけられませんでした"
+            mac.stubRan() shouldBe false
+        }
+
+        "PATH の java がスタブでなければ、そのまま実行してバージョンを読む" {
+            val mac = FakeMacOsJava(defaultJdk = fakeJdk(11))
+            val pathJava = fakeJdk(21)
+            val env = mac.env() + ("PATH" to "${pathJava.resolve("bin")}${File.pathSeparator}${mac.env().getValue("PATH")}")
+
+            val run = runCapturing(gradleProject(toolchain = null), listOf("doctor"), env = env, macOsJavaStub = mac.stub)
+
+            run.status shouldBe 0
+            run.out shouldContain "Gradle の JDK: 21（PATH の java（${pathJava.resolve("bin/java")}））"
+            mac.javaHomeArgs() shouldBe null
         }
     }
 
@@ -292,13 +380,83 @@ private fun Path.withBuildSrcDependency(dependency: String) {
     resolve("buildSrc").createDirectories().resolve("build.gradle.kts").writeText(build)
 }
 
-/** A Gradle root with the Kotlin JVM plugin and the JDK [toolchain] pinned in gradle-daemon-jvm.properties. */
-private fun gradleProject(toolchain: Int, kotlin: String = "2.4.10"): Path {
+/** A Gradle root with the Kotlin JVM plugin and the JDK [toolchain] pinned in gradle-daemon-jvm.properties (none when null). */
+private fun gradleProject(toolchain: Int?, kotlin: String = "2.4.10"): Path {
     val project = createTempDirectory("katachi-project-")
     project.resolve("settings.gradle.kts").writeText("rootProject.name = \"p\"\n")
     project.resolve("build.gradle.kts").writeText("plugins {\n    kotlin(\"jvm\") version \"$kotlin\" apply false\n}\n")
-    project.resolve("gradle").createDirectories().resolve("gradle-daemon-jvm.properties").writeText("toolchainVersion=$toolchain\n")
+    if (toolchain != null) {
+        project.resolve("gradle").createDirectories().resolve("gradle-daemon-jvm.properties").writeText("toolchainVersion=$toolchain\n")
+    }
     return project
+}
+
+/** A JDK home whose `bin/java -version` says [major], the way Homebrew's openjdk says `openjdk version "27"`. */
+private fun fakeJdk(major: Int): Path {
+    val home = createTempDirectory("katachi-jdk-$major-")
+    home.resolve("bin").createDirectories().resolve("java").writeScript(
+        """
+        #!/bin/sh
+        echo 'openjdk version "$major" 2026-09-15' >&2
+        """.trimIndent(),
+    )
+    return home
+}
+
+/**
+ * What katachi-script gets from `bin/katachi` under Homebrew's `kotlin`: JAVA_HOME is a JDK 27 `kotlin` filled in,
+ * [shellJavaHome] is what `bin/katachi` passed on (null: started without it), and java on PATH is [pathJava]'s.
+ */
+private fun underHomebrewKotlin(shellJavaHome: String?, pathJava: Path): Map<String, String> = buildMap {
+    put("JAVA_HOME", fakeJdk(27).toString())
+    if (shellJavaHome != null) put(SHELL_JAVA_HOME_ENV, shellJavaHome)
+    put("PATH", "${pathWithGit()}${File.pathSeparator}${pathJava.resolve("bin")}")
+    // org.gradle.java.home of the machine's own gradle.properties would come before JAVA_HOME.
+    put("GRADLE_USER_HOME", createTempDirectory("katachi-gradle-user-home-").toString())
+}
+
+/**
+ * macOS's `/usr/bin/java` stub, alone on PATH with git, and the java_home it asks. The stub records that it ran and says
+ * JDK 8, so a lookup that runs it reads the wrong JDK. java_home answers [defaultJdk], or fails as it does without a JDK.
+ */
+private class FakeMacOsJava(val defaultJdk: Path?) {
+    private val dir = createTempDirectory("katachi-macos-")
+    private val ranMarker = dir.resolve("stub-ran")
+    private val javaHomeArgsFile = dir.resolve("java_home-args")
+    val java: Path = dir.resolve("bin").createDirectories().resolve("java")
+    val javaHome: Path = dir.resolve("java_home")
+    val stub = MacOsJavaStub(java, javaHome)
+    private val path = "${pathWithGit()}${File.pathSeparator}${java.parent}"
+
+    init {
+        java.writeScript(
+            """
+            #!/bin/sh
+            : > '$ranMarker'
+            echo 'java version "1.8.0_402"' >&2
+            """.trimIndent(),
+        )
+        val answer = if (defaultJdk != null) "echo '$defaultJdk'" else "echo 'Unable to locate a Java Runtime.' >&2; exit 1"
+        javaHome.writeScript(
+            """
+            #!/bin/sh
+            echo "$*" > '$javaHomeArgsFile'
+            $answer
+            """.trimIndent(),
+        )
+    }
+
+    fun env(): Map<String, String> = mapOf("PATH" to path, "GRADLE_USER_HOME" to dir.resolve("gradle-user-home").toString())
+
+    fun stubRan(): Boolean = ranMarker.exists()
+
+    /** The arguments java_home got, or null when it was not run. */
+    fun javaHomeArgs(): String? = javaHomeArgsFile.takeIf { it.exists() }?.readText()?.trim()
+}
+
+private fun Path.writeScript(text: String) {
+    writeText(text + "\n")
+    setPosixFilePermissions(PosixFilePermissions.fromString("rwxr-xr-x"))
 }
 
 /** A PATH holding only a `git`, so that doctor's check for it does not depend on the machine. */

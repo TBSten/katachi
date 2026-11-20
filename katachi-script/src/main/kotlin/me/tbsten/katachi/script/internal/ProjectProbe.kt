@@ -227,8 +227,39 @@ internal fun javaMajorOf(java: Path): Int? {
 internal class GradleJdk(val major: Int?, val source: Msg?)
 
 /**
- * The JDK Gradle runs on, in Gradle's own order: the daemon toolchain, org.gradle.java.home,
- * JAVA_HOME, then java on PATH. The kit's `detect_gradle_jdk`.
+ * Set by `bin/katachi` to the JAVA_HOME it was started with, empty when that was unset or empty: Homebrew's `kotlin`
+ * fills such a JAVA_HOME with its own openjdk before this JVM starts. `bin/katachi` writes this same name (keep the two in sync).
+ */
+internal const val SHELL_JAVA_HOME_ENV: String = "KATACHI_SHELL_JAVA_HOME"
+
+/**
+ * macOS's `/usr/bin/java`: a stub that runs the JDK [javaHome] picks, and opens a dialog to install one when there is none.
+ * [ScriptContext.macOsJavaStub] is null elsewhere, where `/usr/bin/java` belongs to a JDK.
+ */
+internal class MacOsJavaStub(private val stub: Path, val javaHome: Path) {
+    fun isStub(java: Path): Boolean = try {
+        Files.isSameFile(java, stub)
+    } catch (_: IOException) {
+        false
+    }
+
+    /** The home of the JDK the stub runs; null when there is none. */
+    fun defaultJdkHome(dir: Path): String? = runProcess(listOf(javaHome.toString(), "--failfast"), dir)
+        ?.takeIf { it.status == 0 }
+        ?.stdout?.lineSequence()?.map(String::trim)?.firstOrNull(String::isNotEmpty)
+
+    companion object {
+        fun onThisHost(): MacOsJavaStub? = if (System.getProperty("os.name").orEmpty().startsWith("Mac")) {
+            MacOsJavaStub(Path("/usr/bin/java"), Path("/usr/libexec/java_home"))
+        } else {
+            null
+        }
+    }
+}
+
+/**
+ * The JDK ./gradlew in the user's shell runs on, in Gradle's own order: the daemon toolchain, org.gradle.java.home,
+ * the shell's JAVA_HOME, then java on PATH. The kit's `detect_gradle_jdk`.
  */
 internal fun ScriptContext.detectGradleJdk(root: Path): GradleJdk {
     val daemon = root.resolve("gradle/gradle-daemon-jvm.properties")
@@ -242,13 +273,18 @@ internal fun ScriptContext.detectGradleJdk(root: Path): GradleJdk {
     if (gradleHome != null && Path(gradleHome, "bin", "java").isExecutable()) {
         return GradleJdk(javaMajorOf(Path(gradleHome, "bin", "java")), Messages.Probe.gradleJavaHome(gradleHome))
     }
-    val javaHome = env["JAVA_HOME"]?.takeIf { it.isNotEmpty() }
+    // An empty SHELL_JAVA_HOME_ENV is a shell without JAVA_HOME, not a reason to read the JAVA_HOME `kotlin` filled in.
+    val javaHome = (env[SHELL_JAVA_HOME_ENV] ?: env["JAVA_HOME"])?.takeIf { it.isNotEmpty() }
     if (javaHome != null && Path(javaHome, "bin", "java").isExecutable()) {
         return GradleJdk(javaMajorOf(Path(javaHome, "bin", "java")), Messages.Probe.javaHome(javaHome))
     }
-    val onPath = findOnPath("java")
-    if (onPath != null) return GradleJdk(javaMajorOf(onPath), Messages.Probe.javaPath(onPath))
-    return GradleJdk(null, null)
+    val onPath = findOnPath("java") ?: return GradleJdk(null, null)
+    val macOs = macOsJavaStub
+    if (macOs != null && macOs.isStub(onPath)) {
+        val home = macOs.defaultJdkHome(root) ?: return GradleJdk(null, null)
+        return GradleJdk(javaMajorOf(Path(home, "bin", "java")), Messages.Probe.javaPathMacOs(onPath, macOs.javaHome, home))
+    }
+    return GradleJdk(javaMajorOf(onPath), Messages.Probe.javaPath(onPath))
 }
 
 /** The kit's `command -v`. */
