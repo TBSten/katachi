@@ -81,10 +81,17 @@ internal object Messages {
             en = "Something needs attention (katachi $scriptVersionCurrent). See the [!] below.",
         )
 
-        val kotlinTooOldSuffix: Msg = Msg(
-            ja = "（古すぎます）",
-            en = " (too old)",
-        )
+        fun kotlin(version: Any?, fileUri: Any?, tooOld: Boolean): Msg = if (tooOld) {
+            Msg(
+                ja = "Kotlin: $version（古すぎます。$fileUri から）",
+                en = "Kotlin: $version (too old; from $fileUri )",
+            )
+        } else {
+            Msg(
+                ja = "Kotlin: $version（$fileUri から）",
+                en = "Kotlin: $version (from $fileUri )",
+            )
+        }
 
         fun langMustEnJa(value: Any?): Msg = Msg(
             ja = "--lang は en か ja です（指定されたのは '$value'）。",
@@ -322,6 +329,23 @@ internal object Messages {
                 "    $whenLine\n" +
                 "    Upgrading Kotlin changes the existing build, so do not do it without the user's consent. Once they agree, upgrade Kotlin to $min or later.\n" +
                 "    $gradleLine",
+        )
+
+        fun projectUsesKotlinReadFrom(version: Any?, fileUri: Any?, min: Any?, whenLine: Any?, gradleLine: Any?): Msg = Msg(
+            ja = """
+                このプロジェクトの Kotlin は $version です（$fileUri から読みました）。katachi は Kotlin $min 以降が要ります（古いコンパイラは katachi の metadata を読めず、architecture などがすべて Unresolved reference になる）。
+                    このファイルがプロジェクトの Kotlin のバージョンを決めていないなら（includeBuild したビルドや buildSrc など）、Kotlin は上げずに、scaffold に --kotlin <バージョン> を付けて実際のバージョンを渡してください。
+                    $whenLine
+                    Kotlin を上げるのは既存のビルドの変更なので、同意なしに上げないこと。同意を得たら Kotlin を $min 以降に上げます。
+                    $gradleLine
+            """.trimIndent(),
+            en = """
+                This project uses Kotlin $version (read from $fileUri ). katachi needs Kotlin $min or later (older compilers cannot read katachi's metadata, and every symbol such as architecture becomes an Unresolved reference).
+                    If that file does not set the project's Kotlin version (an included build or buildSrc, for example), pass the actual version to scaffold with --kotlin <version> instead of upgrading Kotlin.
+                    $whenLine
+                    Upgrading Kotlin changes the existing build, so do not do it without the user's consent. Once they agree, upgrade Kotlin to $min or later.
+                    $gradleLine
+            """.trimIndent(),
         )
 
         val toolchainversionGradleGradleDaemon: Msg = Msg(

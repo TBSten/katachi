@@ -254,7 +254,7 @@ run_fixture() { # $1 = fixture
 		(cd "$d" && "${KATACHI}" doctor --lang "${LANG_ARG}")
 		echo "doctor exit=$?"
 	} >"${setup_log}" 2>&1
-	kotlin=`sed -n 's/^.*Kotlin: \([0-9][^ ]*\).*$/\1/p' "${setup_log}" | head -1`
+	kotlin=`sed -n 's/^.*Kotlin: \([0-9][0-9A-Za-z.-]*\).*$/\1/p' "${setup_log}" | head -1`
 	{
 		echo "### 作業用ディレクトリ（skills/katachi/assets/${LANG_ARG}/ を写す）"
 		mkdir -p "${workdir}/tmp" &&

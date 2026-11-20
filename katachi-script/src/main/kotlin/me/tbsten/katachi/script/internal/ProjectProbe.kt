@@ -130,8 +130,11 @@ internal fun detectGradleWrapperVersion(root: Path): String? {
     return file.readLines().firstNotNullOfOrNull { pattern.find(it)?.groupValues?.get(1) }
 }
 
-/** Why an old Kotlin stops katachi and what to ask the user. doctor warns with it; scaffold stops with it. */
-internal fun ScriptContext.kotlinTooOldMessage(root: Path, version: String, forScaffold: Boolean): String {
+/**
+ * Why an old Kotlin stops katachi and what to ask the user. doctor warns with it; scaffold stops with it. [file] is where
+ * [version] was read, relative to [root]; null when it came from `--kotlin`.
+ */
+internal fun ScriptContext.kotlinTooOldMessage(root: Path, version: String, file: String?, forScaffold: Boolean): String {
     val gradle = detectGradleWrapperVersion(root)
     val min = "$KOTLIN_MIN_MAJOR.$KOTLIN_MIN_MINOR"
     val gradleLine = when {
@@ -146,7 +149,8 @@ internal fun ScriptContext.kotlinTooOldMessage(root: Path, version: String, forS
     } else {
         pick(Messages.Probe.scaffoldStepWillStop)
     }
-    return pick(Messages.Probe.projectUsesKotlinKatachi(version, min, whenLine, gradleLine))
+    if (file == null) return pick(Messages.Probe.projectUsesKotlinKatachi(version, min, whenLine, gradleLine))
+    return pick(Messages.Probe.projectUsesKotlinReadFrom(version, fileUri(root.resolve(file)), min, whenLine, gradleLine))
 }
 
 private val VERSION_TOKEN = "[0-9][0-9.]*[0-9A-Za-z.-]*"
@@ -159,12 +163,15 @@ internal fun stripLineComment(line: String): String = LINE_COMMENT.replaceFirst(
 
 private val LINE_COMMENT = Regex("(^|[^:])//.*")
 
+/** The Kotlin version a project uses, and the [file] it was read from (relative to the root). */
+internal class DetectedKotlin(val version: String, val file: String)
+
 /**
  * The Kotlin version the project uses: `kotlin = "..."` under `[versions]` of the catalog, then
  * the plugin declarations of the build files, then `kotlin.version` style keys of gradle.properties.
  * Null when none is readable. The kit's `detect_kotlin_version`.
  */
-internal fun detectKotlinVersion(root: Path): String? {
+internal fun detectKotlinVersion(root: Path): DetectedKotlin? {
     val catalog = root.resolve(CATALOG_FILE)
     if (catalog.isRegularFile()) {
         var section = ""
@@ -175,30 +182,30 @@ internal fun detectKotlinVersion(root: Path): String? {
             }
             if (Regex("^\\s*\\[versions]").containsMatchIn(section) && Regex("^\\s*kotlin\\s*=").containsMatchIn(line)) {
                 val value = Regex("^[^=]*=\\s*\"").replaceFirst(line, "").let { if (it == line) it else it.substringBefore('"') }
-                if (Regex("^[0-9]").containsMatchIn(value)) return value
+                if (Regex("^[0-9]").containsMatchIn(value)) return DetectedKotlin(value, CATALOG_FILE)
                 break
             }
         }
     }
 
     // findBuildFiles skips a directory it cannot read; a bare walk would stop doctor and scaffold on it.
-    val buildFiles = findBuildFiles(root, skipModule = null, maxDepth = 3).sorted().map { root.resolve(it) }
+    val buildFiles = findBuildFiles(root, skipModule = null, maxDepth = 3, otherBuilds = OtherBuilds(root)).sorted()
     val pluginLine = Regex("org\\.jetbrains\\.kotlin|kotlin\\(\"(jvm|android|multiplatform)\"\\)")
     val versionCall = Regex(".*version\\s*[(\"']{1,2}($VERSION_TOKEN).*")
     val classpath = Regex(".*kotlin-gradle-plugin:($VERSION_TOKEN).*")
     for (file in buildFiles) {
-        for (raw in readLinesLenient(file)) {
+        for (raw in readLinesLenient(root.resolve(file))) {
             val line = stripLineCommentNaive(raw)
             if (!pluginLine.containsMatchIn(line)) continue
-            versionCall.matchEntire(line)?.let { return it.groupValues[1] }
-            classpath.matchEntire(line)?.let { return it.groupValues[1] }
+            versionCall.matchEntire(line)?.let { return DetectedKotlin(it.groupValues[1], file) }
+            classpath.matchEntire(line)?.let { return DetectedKotlin(it.groupValues[1], file) }
         }
     }
 
     val properties = root.resolve("gradle.properties")
     if (properties.isRegularFile()) {
         val key = Regex("^\\s*(kotlin\\.version|kotlinVersion|kotlin_version)\\s*=\\s*($VERSION_TOKEN).*")
-        properties.readLines().firstNotNullOfOrNull { key.matchEntire(it)?.groupValues?.get(2) }?.let { return it }
+        properties.readLines().firstNotNullOfOrNull { key.matchEntire(it)?.groupValues?.get(2) }?.let { return DetectedKotlin(it, "gradle.properties") }
     }
     return null
 }
@@ -311,16 +318,17 @@ private val TOOLCHAIN_PRUNED = setOf("build", ".gradle", ".git", ".kotlin", ".id
 /**
  * Every JDK toolchain setting in the build: `jvmToolchain(N)` and `JavaLanguageVersion.of(N)`,
  * N written as a number, a catalog accessor or a `val` in the same file. Each as (N or null, file).
- * The kit's `jvm_toolchain_candidates`.
+ * [OtherBuilds] are not read. The kit's `jvm_toolchain_candidates`.
  */
 internal fun jvmToolchainCandidates(root: Path, moduleDir: String): List<Pair<Int?, String>> {
     val skip = root.resolve(moduleDir).normalize()
+    val otherBuilds = OtherBuilds(root)
     val files = mutableListOf<Path>()
     Files.walkFileTree(
         root,
         object : java.nio.file.SimpleFileVisitor<Path>() {
             override fun preVisitDirectory(dir: Path, attrs: java.nio.file.attribute.BasicFileAttributes): java.nio.file.FileVisitResult {
-                if (dir != root && (dir.normalize() == skip || dir.name in TOOLCHAIN_PRUNED)) return java.nio.file.FileVisitResult.SKIP_SUBTREE
+                if (dir != root && (dir.normalize() == skip || dir.name in TOOLCHAIN_PRUNED || dir in otherBuilds)) return java.nio.file.FileVisitResult.SKIP_SUBTREE
                 return java.nio.file.FileVisitResult.CONTINUE
             }
 
