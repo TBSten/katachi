@@ -50,3 +50,36 @@
 手順 3 の p5。v0.3.0 の ``allow(`val`, "uiState", "StateFlow<*>")`` は v0.4.0 でもコンパイルが通り、拡張プロパティの行として読まれる。`not.allow` の行は何も禁止しなくなり、黙って通る。
 型を書く方法は `.type(...)` だけで、困るのは古い行を残して上げた人だけ。型にしか見えない名前を止める手当ては入れない。リリースノートの移行表の注意書き（古い `not.allow` の行は黙って通る）だけにする。
 次のチェックでは、この読み替えを要検討にしない。
+
+## このまま: konsist・konture の DSL の receiver が sealed でなく、利用者が実装できる安定 API になっている
+- decision: このまま
+- file: katachi-konsist/src/main/kotlin/me/tbsten/katachi/konsist/KonsistScope.kt
+- quote: public interface KonsistScope : KoScope
+- decided: 2026-11-20 261119-01 KATACHI-391
+- by: 利用者（チャット、TODO.html の問いへの答え）
+
+手順 3 の p3。`KonsistScope`（`konsist { }` の receiver）が注釈なしの public interface で、sealed でない。core の DSL の receiver 11 個はすべて sealed。
+実装は .internal の 1 つだけ。後から sealed にすると破壊的変更になる、と添えて聞いた。同じ判断を 3 つの型（`KonsistScope`・`KontureConstraintScope`・`KontureDefaultGraphShadows`）に 1 件ずつ書いている。
+利用者の一言:「sealed にしないで確定」。
+
+## このまま: konsist・konture の DSL の receiver が sealed でなく、利用者が実装できる安定 API になっている
+- decision: このまま
+- file: katachi-konture/src/main/kotlin/me/tbsten/katachi/konture/KontureConstraintScope.kt
+- quote: public interface KontureConstraintScope : KontureDefaultGraphShadows
+- decided: 2026-11-20 261119-01 KATACHI-391
+- by: 利用者（チャット、TODO.html の問いへの答え）
+
+手順 3 の p3。`KontureConstraintScope`（`konture { }` の receiver）が注釈なしの public interface で、sealed でない。core の DSL の receiver 11 個はすべて sealed。
+実装は .internal の 1 つだけ。後から sealed にすると破壊的変更になる、と添えて聞いた。同じ判断を 3 つの型（`KonsistScope`・`KontureConstraintScope`・`KontureDefaultGraphShadows`）に 1 件ずつ書いている。
+利用者の一言:「sealed にしないで確定」。
+
+## このまま: konsist・konture の DSL の receiver が sealed でなく、利用者が実装できる安定 API になっている
+- decision: このまま
+- file: katachi-konture/src/main/kotlin/me/tbsten/katachi/konture/KontureDefaultGraphShadows.kt
+- quote: public interface KontureDefaultGraphShadows
+- decided: 2026-11-20 261119-01 KATACHI-391
+- by: 利用者（チャット、TODO.html の問いへの答え）
+
+手順 3 の p3。`KontureDefaultGraphShadows`（`KontureConstraintScope` の親として影をまとめる型）が注釈なしの public interface で、sealed でない。core の DSL の receiver 11 個はすべて sealed。
+実装は .internal の 1 つだけ。後から sealed にすると破壊的変更になる、と添えて聞いた。同じ判断を 3 つの型（`KonsistScope`・`KontureConstraintScope`・`KontureDefaultGraphShadows`）に 1 件ずつ書いている。
+利用者の一言:「sealed にしないで確定」。
