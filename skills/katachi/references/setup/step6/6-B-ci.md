@@ -1,4 +1,4 @@
-## 6-B. (After reporting in 6) If asked to set up CI
+### 6-B. (After reporting in 6) If asked to set up CI
 
 Handle this as follows, based on the CI system in use. If you changed `--module-dir`, read `:architecture-test` below as the Gradle path of `meta.moduleDir` (`static-analysis/katachi` is `:static-analysis:katachi`).
 
@@ -33,7 +33,7 @@ jobs:
       - run: ./gradlew :architecture-test:test
 ```
 
-If the workflow file you just created (`.github/workflows/*.yml`) is not in the `architecture { }` definition, add a Role for it (for example `".github/workflows" / "*.yml".file()`) and run `katachi agent test` to confirm it passes.
+If the workflow file you just created (`.github/workflows/*.yml`) is not in the `architecture { }` definition, add a Role for it (for example `".github/workflows" / "*.yml".file()`, with `documented = false` as for other tool configuration) and run `katachi agent test` to confirm it passes.
 
 If the existing CI is a single matrix job that runs emulators or several OSes, **add the job separately, outside the matrix**, so `:architecture-test:test` does not run for every matrix entry. Do not create a new yaml file; add the `architecture` job above to `jobs:` in the same workflow file.
 

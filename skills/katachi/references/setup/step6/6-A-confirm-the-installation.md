@@ -1,4 +1,4 @@
-## 6-A. (After reporting in 6) Confirm the installation worked
+### 6-A. (After reporting in 6) Confirm the installation worked
 
 Confirm a sample implementation task and carry it out.
 

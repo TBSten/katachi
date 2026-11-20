@@ -13,7 +13,7 @@ Even if more than 10 violations are left, the log of `katachi agent test` holds 
 
 **If many violations remain and the user wants to "tolerate what is there now and fail only on new ones", you can propose the baseline.** It is an experimental feature (`@ExperimentalKatachiApi`), so ask the user in `questions` before putting it in. To use it:
 
-- Write `baseline()` in `architecture { }` in `ProjectArchitecture.kt`, and put `@OptIn(ExperimentalKatachiApi::class)` on `val projectArchitecture`. The baseline file defaults to `katachi-baseline.json` (at the project root)
+- Write `baseline()` in `architecture { }` in `ProjectArchitecture.kt`. It is an experimental API, so the file needs the `@file:OptIn(ExperimentalKatachiApi::class)` and `import` lines of 3-2 at the top (add them if they are not there yet). The baseline file defaults to `katachi-baseline.json` (at the project root)
 - The baseline file is checked too, so add a Role that declares it in `layout { }` (e.g. `"BaselineFile".role { layout { "katachi-baseline.json".file() } }`). Without it the baseline file itself becomes an `[UnexpectedFile]`, and that one cannot go into the baseline
 - `katachi agent test -- -Dkatachi.baseline.update=true` writes the violations there now into the baseline file. From then on only violations missing from the baseline file fail the test. Once a violation is fixed, its entry fails as `[StaleBaselineEntry]`, so remove it with `katachi agent test -- -Dkatachi.baseline.prune=true` (on CI (`CI=true`) both update and prune are refused)
 

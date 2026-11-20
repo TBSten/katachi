@@ -925,34 +925,6 @@ priority 1〜3 のルールの側の食い違い。どれもルールも例も�
 **ルールに反する点**: B13（`"**/*.kt"` のように「ここにあれば何でも」の layout。ファイル名のパターンか `ktFileContent { }` を付ける）。根拠: skill 3-2「Do not stop at placement」。convention plugin のヘルパーのクラスは名前で絞れないので、ktFileContent を付けない理由が分からない
 **直し方の案**: `ktFileContent { }` で最低限（`package`・`import`・`allow(anythingElse)` など）を書くか、コメントで「中身は問わない」と明記する
 
-## 直さない: skill が出力の写しを英語だけで書いている: `kotlin is not on PATH`（D1-14）
-- decision: 直さない
-- file: skills/katachi/references/setup/step0/0-1-permissions.md
-- quote: kotlin is not on PATH
-- decided: 2026-11-11 261110-01 KATACHI-365
-- by: 利用者（Review の popup）
-
-利用者の一言: なし
-
-元の指摘:
-
-**ルールに反する点**: D1-14（skill に `katachi` の出力を書くときは ja / en の 2 通りを並べる）。出力は `katachi-script/.../internal/Messages.kt:96-97` に ja（「kotlin が PATH にありません。brew install kotlin で入れてください。」）と en がある。0-2 は「checklist の言語で答える」と言うが、この時点では checklist が無く、`--lang` を付けないと環境の言語になる。日本語の出力が出ると、この行と合わせて読めない
-**直し方の案**: 「`kotlin is not on PATH`（ja: `kotlin が PATH にありません`）」と並べる
-
-## 直さない: skill が出力の写しを英語だけで書いている: Kotlin が古いときの doctor の警告（D1-14）
-- decision: 直さない
-- file: skills/katachi/references/setup/step0/0-2-working-directory.md
-- quote: This project uses Kotlin 1.9.10
-- decided: 2026-11-11 261110-01 KATACHI-365
-- by: 利用者（Review の popup）
-
-利用者の一言: なし
-
-元の指摘:
-
-**ルールに反する点**: D1-14。同じ行の `"Gradle needs upgrading too"` も英語だけ。`Messages.kt:262-265`・`:283-290` に ja（「このプロジェクトの Kotlin は … です。katachi は Kotlin … 以降が要ります」「Gradle も上げる必要があります」）がある。0-2 の L5 は「checklist の言語（ja）で `katachi` が答える」と書くので、日本語のユーザではここが日本語の出力になる
-**直し方の案**: 両方に ja の文言を並べる（「このプロジェクトの Kotlin は 1.9.10 です。katachi は Kotlin 2.2 以降が要ります」「Gradle も上げる必要があります」）
-
 ## 直さない: 「うまく動かないとき」が出力を 1 行ずつ解説している（D1-8・要確認）
 - decision: 直さない
 - file: README.ja.md
@@ -1232,62 +1204,6 @@ priority 1〜3 のルールの側の食い違い。どれもルールも例も�
 **ルールに反する点**: B14（何度も出るパスは `val` に切り出す。おすすめ）。`appPackageDir` は切り出してあるが、`"app" / mainSourceSet / kotlin / appPackageDir` の並びが 8 回出る。根拠: layout「パスを定数に切り出す」、skill 3-3「Duplication is shared」
 **直し方の案**: `Constants.kt` にモジュールの `val appMainDir = "app" / mainSourceSet / kotlin / appPackageDir` のようなものを置く（`/` の型が layout の外で使えるかは Gradle で確かめたい、下の節）。難しければ今のままでよい
 同じ指摘: ja/recipes/android-three-layer.mdx L130, ja/recipes/android-three-layer.mdx L161, ja/recipes/android-three-layer.mdx L194, ja/recipes/android-three-layer.mdx L224, ja/recipes/android-three-layer.mdx L255, ja/recipes/android-three-layer.mdx L276, ja/recipes/android-three-layer.mdx L307
-
-## 直さない: 6-A〜6-D のファイルの 1 行目が `##`（D1-15）
-- decision: 直さない
-- file: skills/katachi/references/setup/README.md
-- quote: | 6-A |
-- decided: 2026-11-11 261110-01 KATACHI-365
-- by: 利用者（Review の popup）
-
-利用者の一言: なし
-
-元の指摘:
-
-**ルールに反する点**: D1-15（各ファイルの 1 行目は `## N.` / `### N-M.`）。README の表の題は 27 ファイルすべてと一致したが、`step6/6-A`〜`6-D`（表の L35〜38）の 1 行目だけが `## 6-A.`〜`## 6-D.` で、同じ N-M の形の 6-0 は `### 6-0.`。6-A〜6-D は「報告のあとの選択」なので別格として `##` にしたとも読める
-**直し方の案**: `### 6-A.` などにそろえるか、README に「6-A〜6-D は `##`」と書く（`step6/` は skill-2 の担当なので、そちらでも出うる）
-
-## 直さない: skill が出力の写しを英語だけで書いている: scaffold の `already exists`（D1-14）
-- decision: 直さない
-- file: skills/katachi/references/setup/step0/0-1-permissions.md
-- quote: already exists
-- decided: 2026-11-11 261110-01 KATACHI-365
-- by: 利用者（Review の popup）
-
-利用者の一言: なし
-
-元の指摘:
-
-**ルールに反する点**: D1-14。`Messages.kt:430-433` は ja「がすでに存在します」・en「already exists」。ただしここは「probe でディレクトリを作るな」の理由の説明で、出力と照合する指示ではないので p2
-**直し方の案**: 「`already exists`（ja: `がすでに存在します`）」と並べるか、「すでにあると言って止まる」と出力の文言を引用しない形にする
-
-## 直さない: 削除済みの `katachi agent init` が旧作業ディレクトリの説明に残っている（B27）
-- decision: 直さない
-- file: skills/katachi/references/setup/step0/README.md
-- quote: katachi agent init
-- decided: 2026-11-11 261110-01 KATACHI-365
-- by: 利用者（Review の popup）
-
-利用者の一言: なし
-
-元の指摘:
-
-**ルールに反する点**: B27（削除したコマンドを書かない。`katachi agent init` は PR #65 で削除済み）。ただしここは「旧版が作った作業ディレクトリがあったら」の説明で、手順としては案内していない。手順 5 の katachi-script.mdx・cli.mdx とは別の箇所（手順 5 の 3 件には入っていない）
-**直し方の案**: 「older katachi が作った作業ディレクトリ（`check-list.html` に今の手順の項目が無いもの）」と、削除済みのコマンド名を出さずに書く
-
-## 直さない: 4-2 の baseline の例だけ `@OptIn` を `val` に付ける形で、3-2 の `@file:OptIn` と違う
-- decision: 直さない
-- file: skills/katachi/references/setup/step4/4-2-handle-errors.md
-- quote: put `@OptIn(ExperimentalKatachiApi::class)` on `val projectArchitecture
-- decided: 2026-11-11 261110-01 KATACHI-365
-- by: 利用者（Review の popup）
-
-利用者の一言: なし
-
-元の指摘:
-
-**ルールに反する点**: D2-1 / C15 の趣旨（ファイル全体は `@file:OptIn(ExperimentalKatachiApi::class)` と `import me.tbsten.katachi.ExperimentalKatachiApi` をそろえる。3-2 L20〜24 はその形）。`baseline()` は `@ExperimentalKatachiApi`（`ArchitectureScope.kt` L73）なので両方動くが、skill の中で形が 2 つになる。`import` を足すことも書いていない
-**直し方の案**: 「`ProjectArchitecture.kt` は 3-2 の `@file:OptIn` で始まっているはずなので、そのまま `baseline()` を書く」と書く。無ければ「3-2 の experimental APIs の 2 行を足す」と案内する
 
 ## 直さない: 「これは」が前の文を指している
 - decision: 直さない
@@ -1967,48 +1883,6 @@ priority 1〜3 のルールの側の食い違い。どれもルールも例も�
 
 **ルールに反する点**: B20（group は `<group>/<Group>Group.kt`、1 ファイルに group か Role を 1 つ）
 **直し方の案**: 直さない（ガイドに決まりが無い）。そろえるなら `detekt/DetektGroup.kt`
-
-## 直さない: add-a-role の Worker の例に省略の断りが無い
-- decision: 直さない
-- file: skills/katachi/references/add-and-update/add-a-role.md
-- quote: "Worker".role {
-- decided: 2026-11-11 261110-01 KATACHI-365
-- by: 利用者（Review の popup）
-
-利用者の一言: なし
-
-元の指摘:
-
-**ルールに反する点**: D2-2（断片の例で package / import を省くなら、省いたと書く）
-**直し方の案**: 例の前に「(imports omitted)」と一言添える。add-and-update は既存の定義へ足す作業なので、ファイルの先頭の import は利用者のファイルにすでにある、で足りるとも読める（要確認）
-
-## 直さない: 6-B の CI の yaml の Role の例に documented = false が無い
-- decision: 直さない
-- file: skills/katachi/references/setup/step6/6-B-ci.md
-- quote: ".github/workflows" / "*.yml".file()
-- decided: 2026-11-11 261110-01 KATACHI-365
-- by: 利用者（Review の popup）
-
-利用者の一言: なし
-
-元の指摘:
-
-**ルールに反する点**: B30（CI の yaml など、ツールの設定の Role には `documented = false` を付ける。推奨）
-**直し方の案**: 「(for example …; with `documented = false`)」と添えるか、add-a-role への参照を 1 つ足す。そのままでもよい
-
-## 直さない: 6-C の ArchitectureDocs の例に documented = false が無い
-- decision: 直さない
-- file: skills/katachi/references/setup/step6/6-C-documentation-generation.md
-- quote: "ArchitectureDocs".role {
-- decided: 2026-11-11 261110-01 KATACHI-365
-- by: 利用者（Review の popup）
-
-利用者の一言: なし
-
-元の指摘:
-
-**ルールに反する点**: B30（生成物の Role には `documented = false` を付ける。推奨）。同じ例に D2-2（断片の例で package / import を省いたと書く）も
-**直し方の案**: `description = …` の次に `documented = false` を足す。例の前に「package / import の行は省略」と一言添える
 
 ## このまま: ドキュメント生成の出力先を build/ の外にしてコミットすると [UnexpectedFile] になる
 - decision: このまま
