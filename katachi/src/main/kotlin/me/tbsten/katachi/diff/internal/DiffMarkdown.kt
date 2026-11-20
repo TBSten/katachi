@@ -31,12 +31,14 @@ internal fun renderDiffMarkdown(model: DiffReportModel, names: MarkdownFileNames
 
 private fun summary(model: DiffReportModel, touched: Int, listings: Set<String>, names: MarkdownFileNames): String = buildString {
     val unassigned = if (model.unassigned.isEmpty()) "" else ", ${files(model.unassigned.size)} in no role"
+    val baselined = if (model.baselined.isEmpty()) "" else ", ${files(model.baselined.size)} held back by the baseline"
+    val removed = if (model.removed.isEmpty()) "" else ", ${files(model.removed.size)} in no role deleted"
     val ignored = if (model.ignored.isEmpty()) "" else ", ${files(model.ignored.size)} ignored"
     appendLine("# Architecture diff report: ${model.range.label}")
     appendLine()
     appendLine(
         "${files(model.changes.size)} changed, +${model.added} -${model.deleted}. " +
-            "$touched of ${model.nodes.sumOf { it.roles().size }} roles touched$unassigned$ignored.",
+            "$touched of ${model.nodes.sumOf { it.roles().size }} roles touched$unassigned$baselined$removed$ignored.",
     )
     appendLine()
     if (model.hiddenCount > 0) {
@@ -57,27 +59,21 @@ private fun summary(model: DiffReportModel, touched: Int, listings: Set<String>,
         appendLine("| Role | Importance | Diff&nbsp;lines | Files |")
         appendLine("|---|---|---:|---:|")
         for (node in model.nodes.filter { it.changed }) summaryRows(node, model, depth = 0)
-        if (model.unassigned.isNotEmpty()) {
-            appendLine(
-                "| **(no role)** | | ${diffLines(model.unassigned.sumOf { it.added }, model.unassigned.sumOf { it.deleted })} | " +
-                    "${model.unassigned.size} |",
-            )
-            val shown = model.unassigned.filter { it in model.shown }
-            for (change in shown) appendLine(fileSummaryRow(change.path, change, change.total.toDouble(), full, depth = 1))
-            moreSummaryRow(model.unassigned.size - shown.size, depth = 1)
-        }
-        if (model.ignored.isNotEmpty()) {
-            appendLine(
-                "| **(ignored)** | | ${diffLines(model.ignored.sumOf { it.added }, model.ignored.sumOf { it.deleted })} | " +
-                    "${model.ignored.size} |",
-            )
-            val shown = model.ignored.filter { it in model.shown }
-            for (change in shown) appendLine(fileSummaryRow(change.path, change, change.total.toDouble(), full, depth = 1))
-            moreSummaryRow(model.ignored.size - shown.size, depth = 1)
-        }
+        looseRows("no role", model.unassigned, model)
+        looseRows(BASELINED_LABEL, model.baselined, model)
+        looseRows(REMOVED_LABEL, model.removed, model)
+        looseRows("ignored", model.ignored, model)
         appendLine()
         appendLine("_Importance: diff lines × weight, out of $full (${heatSquares(HEAT_LEVELS)} at $full or more)._")
         appendLine()
+        if (model.baselined.isNotEmpty()) {
+            appendLine("_($BASELINED_LABEL): ${BASELINED_NOTE}_")
+            appendLine()
+        }
+        if (model.removed.isNotEmpty()) {
+            appendLine("_($REMOVED_LABEL): ${REMOVED_NOTE}_")
+            appendLine()
+        }
         if (model.ignored.isNotEmpty()) {
             appendLine("_(ignored): ${IGNORED_NOTE}_")
             appendLine()
@@ -110,6 +106,27 @@ private fun howToSeeLabel(range: DiffRange): String =
 // A directory `ignore()` leaves out is skipped by the architecture test too, so no warning: it will not fail on these.
 private const val IGNORED_NOTE: String =
     "Files under a directory `ignore()` leaves out of the layout. The architecture test does not look at them."
+
+private const val BASELINED_LABEL: String = "no role, held back by the baseline"
+
+// No warning: what the baseline holds back does not fail the architecture test.
+private const val BASELINED_NOTE: String =
+    "Files no layout { } allows that the baseline holds back. The architecture test does not fail on them."
+
+private const val REMOVED_LABEL: String = "no role, deleted"
+
+// No warning either: a deleted file is not there for the architecture test to fail on.
+private const val REMOVED_NOTE: String =
+    "Files no layout { } allows that this change deletes. The architecture test does not look at them any more."
+
+// Files no role owns, below the roles: their importance is their raw diff lines, as no role's weight applies to them.
+private fun StringBuilder.looseRows(label: String, changes: List<FileChange>, model: DiffReportModel) {
+    if (changes.isEmpty()) return
+    appendLine("| **($label)** | | ${diffLines(changes.sumOf { it.added }, changes.sumOf { it.deleted })} | ${changes.size} |")
+    val shown = changes.filter { it in model.shown }
+    for (change in shown) appendLine(fileSummaryRow(change.path, change, change.total.toDouble(), model.fullImportanceLines, depth = 1))
+    moreSummaryRow(changes.size - shown.size, depth = 1)
+}
 
 // Files no layout { } allows are changes no role owns: keep them in view rather than folded away.
 private fun filesInNoRole(model: DiffReportModel, names: MarkdownFileNames): String = buildString {
