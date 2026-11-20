@@ -190,8 +190,8 @@ public class KatachiEntryPointNotFoundException internal constructor(
  * ```
  *
  * @property className the class the JVM refused to load: the entry point, or a class loading it needed.
- * @property classFileJavaVersion the Java version [className] was compiled for, such as `21`, or `null` when it could
- *   not be read.
+ * @property classFileJavaVersion the Java version [className][KatachiProcessorJvmTooOldException.className] was
+ *   compiled for, such as `21`, or `null` when it could not be read.
  * @property runtimeJavaVersion the Java version the processor JVM runs, such as `17`.
  */
 @ExperimentalKatachiApi
