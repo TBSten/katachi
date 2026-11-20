@@ -36,6 +36,9 @@ fun DeclarationContainerScope.specSupport() = "SpecSupport".role {
             // The report text and the SARIF context the specs of katachi-konsist / katachi-konture build, kept out of the
             // published jar (`java-test-fixtures` is not published) although they need `:katachi`'s internals.
             "testFixtures".sourceSet / kotlin / KATACHI_TEST_PACKAGE / "report" / "ReportFixtures".ktFile()
+            // How the property specs of :katachi and katachi-konsist run their trials: the seed, the scale and the shrinking
+            // (`-Pkatachi.pbt.seed` / `-Pkatachi.pbt.scale`).
+            "testFixtures".sourceSet / kotlin / KATACHI_TEST_PACKAGE / "pbt" / "PropertyTrials".ktFile()
             // What the SARIF specs read: the SARIF 2.1.0 JSON Schema the output is validated
             // against, the goldens `toSarif` is compared with, and the note saying where the
             // schema came from.
