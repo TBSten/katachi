@@ -13,7 +13,7 @@ A Role can carry a `.template { }` on a file declaration in its `layout { }`. `k
    katachi agent test
    ```
 
-   `katachi agent test` runs `:architecture-test:test` with every violation in its log and shows what changed since the previous run, so a violation the new file caused stands out.
+   `katachi agent test` runs `:architecture-test:test` with every violation in its log and shows what changed since the previous run, so a violation the new file caused stands out. Read `:architecture-test` as the verification module's path, and without a check list from the setup, pass that path to `katachi agent test --module-dir` too.
 
    **A captured directory's value becomes part of the path as it is, even if no such directory exists.** A typo creates the file in a directory that is not there. Pass the name of one that exists. An argument the template does not declare fails with `Unknown processor argument(s): …`, which is how a typo in a name shows up.
 
