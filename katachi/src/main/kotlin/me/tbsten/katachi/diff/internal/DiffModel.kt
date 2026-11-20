@@ -15,7 +15,7 @@ import me.tbsten.katachi.dsl.Title
 internal class DiffReportModel(
     val range: DiffRange,
     val nodes: List<DiffNode>,
-    /** Changed files no role allows, outside every ignored directory: the architecture test fails on them. */
+    /** Changed files no role allows, outside every ignored directory and still there after the change: the architecture test fails on them. */
     val unassigned: List<FileChange>,
     val changes: List<FileChange>,
     /** The changed files the per-file listings show; the summary always counts every file. */
@@ -26,6 +26,8 @@ internal class DiffReportModel(
     val fullImportanceLines: Int = DEFAULT_FULL_IMPORTANCE_LINES,
     /** Changed files under a directory the layout `ignore()`s: no role owns them, and the architecture test does not look at them. */
     val ignored: List<FileChange> = emptyList(),
+    /** Files no role allows that the change deletes: gone after it, so the architecture test does not look at them any more. */
+    val removed: List<FileChange> = emptyList(),
 ) {
     /** How many changed files the per-file listings leave out. */
     val hiddenCount: Int get() = changes.size - shown.size
@@ -98,18 +100,19 @@ internal fun buildDiffReportModel(
     val filesByRole = LinkedHashMap<Role, MutableList<FileDiff>>()
     val unassigned = mutableListOf<FileChange>()
     val ignored = mutableListOf<FileChange>()
+    val removed = mutableListOf<FileChange>()
     for (change in changes) {
-        val candidates = listOfNotNull(change.path, change.previousPath)
-        val (path, roles) = candidates.firstNotNullOfOrNull { path ->
-            rolesOf(index, path).takeIf { it.isNotEmpty() }?.let { path to it }
-        } ?: run {
-            // Where the file is now decides: one moved out of an ignored directory is one the test now looks at.
-            if (isUnderIgnored(index, change.path)) ignored += change else unassigned += change
-            continue
-        }
-        for (role in roles) {
-            filesByRole.getOrPut(role) { mutableListOf() } +=
-                FileDiff(change, shortPathOf(path, entriesByRole[role].orEmpty()))
+        // Where the file is now decides, as it does for the architecture test: a rename out of every role is
+        // in no role, and one out of an ignored directory is one the test now looks at.
+        val roles = rolesOf(index, change.path)
+        when {
+            roles.isNotEmpty() -> for (role in roles) {
+                filesByRole.getOrPut(role) { mutableListOf() } +=
+                    FileDiff(change, shortPathOf(change.path, entriesByRole[role].orEmpty()))
+            }
+            isUnderIgnored(index, change.path) -> ignored += change
+            change.status == ChangeStatus.Deleted -> removed += change
+            else -> unassigned += change
         }
     }
 
@@ -132,6 +135,7 @@ internal fun buildDiffReportModel(
         maxFiles = maxFiles,
         fullImportanceLines = fullImportanceLines,
         ignored = ignored,
+        removed = removed,
     )
 }
 

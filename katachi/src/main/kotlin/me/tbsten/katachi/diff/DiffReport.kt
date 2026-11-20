@@ -28,10 +28,13 @@ import me.tbsten.katachi.processor.internal.projectWalk
  *
  * Every changed file is put under each role whose `layout { }` allows it, and every group and
  * role of the definition is listed, changed or not, so a reviewer sees at a glance which part of
- * the architecture a change lands in. Unchanged groups start folded. A file no role allows is
+ * the architecture a change lands in. Unchanged groups start folded. Where a file is after the
+ * change decides, so a file renamed out of every role is in no role. A file no role allows is
  * listed under "(no role)" with a warning, as the architecture test fails on it. A file under a
  * directory the layout `ignore()`s is listed under "(ignored)" instead, folded and without the
- * warning: the architecture test does not look at it.
+ * warning: the architecture test does not look at it. Neither does it look at a file the change
+ * deletes, so a deleted file no role allows is listed under "(no role, deleted)", folded and
+ * without the warning.
  *
  * Registered under the key `diff`, so a module that applies the Gradle plugin can run
  * `./gradlew katachiDiff` without registering anything.
@@ -47,10 +50,12 @@ import me.tbsten.katachi.processor.internal.projectWalk
  *
  * The JSON and the YAML hold the same tree for a script to read: `nodes` holds the groups
  * (`type: group`, with `children`) and the roles (`type: role`, with `weight` and `files`) of the
- * definition, changed or not, and `noRole` and `ignored` hold the files no role allows. Every node and
- * file carries `added`, `deleted`, `score` (diff lines times weight) and `importance` (0 to
- * `summary.maxImportance`). `summary` holds the totals and `changedRoles`, the qualified names of the
- * roles the change touched. `schemaVersion` goes up when a key is renamed or removed, not when one is added.
+ * definition, changed or not, and `noRole`, `noRoleDeleted` and `ignored` hold the files no role
+ * allows, as the three sections above do. Every node and file carries `added`, `deleted`, `score`
+ * (diff lines times weight) and `importance` (0 to `summary.maxImportance`). `summary` holds the
+ * totals, `changedRoles`, the qualified names of the roles the change touched, and
+ * `noRoleFileCount`, the files the architecture test fails on for being in no role.
+ * `schemaVersion` goes up when a key is renamed or removed, not when one is added.
  *
  * ## Example 1: report the current branch against main from code
  * ```kt

@@ -16,10 +16,12 @@ import me.tbsten.katachi.diff.KatachiInvalidDefinitionDiffWeightException
 import me.tbsten.katachi.diff.KatachiInvalidDiffWeightException
 import me.tbsten.katachi.diff.KatachiInvalidFullImportanceLinesException
 import me.tbsten.katachi.diff.diffWeight
+import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.files.internal.RealFileSystem
 import me.tbsten.katachi.dsl.wholeTree
 import me.tbsten.katachi.processor.internal.process
+import tools.jackson.databind.json.JsonMapper
 
 @OptIn(ExperimentalKatachiApi::class)
 class DiffReportSpec : FreeSpec({
@@ -268,6 +270,172 @@ class DiffReportSpec : FreeSpec({
             html shouldContain "<div class=\"ignored-stat\"><span class=\"num\" data-stat=\"ignored\">1</span>"
             html shouldNotContain "data-key=\"no-role\""
             html shouldContain "data-collapsed-default=\"true\" data-files=\"1\" data-key=\"ignored\""
+        }
+    }
+
+    "どこに出るかは変更後のパスで決まり、消したファイルは no role に数えない" - {
+        val placing = architecture {
+            files = wholeTree()
+            "Domain".group {
+                "UseCase".role { layout { "domain" / "*UseCase.kt".file() } }
+                "Repository".role { layout { "data" / "*Repository.kt".file() } }
+            }
+            "Root".role { layout { "gradlew".file(); ".gitignore".file(); "generated".ignore() } }
+        }
+
+        // The file starts at `from`, the change moves it to `to` (null deletes it), and the report lists `to`
+        // (or `from` when deleted) in `section`: a role's qualified name, or a key of the files no role owns.
+        class Case(val name: String, val from: String, val to: String?, val section: String) {
+            val noRoleFileCount: Int get() = if (section == "noRole") 1 else 0
+        }
+        val cases = listOf(
+            Case("Role の外へ移すと no role", "domain/GetUserUseCase.kt", "misc/GetUserUseCase.kt", "noRole"),
+            Case("ignore() の下へ移すと ignored", "domain/GetUserUseCase.kt", "generated/GetUserUseCase.kt", "ignored"),
+            Case("ignore() の下から Role の外へ移すと no role", "generated/GetUserUseCase.kt", "misc/GetUserUseCase.kt", "noRole"),
+            Case("同じ Role の中の名前の変更はその Role", "domain/GetUserUseCase.kt", "domain/FetchUserUseCase.kt", "Domain.UseCase"),
+            Case("別の Role へ移すと移した先の Role", "domain/UserUseCase.kt", "data/UserRepository.kt", "Domain.Repository"),
+            Case("Role の外から Role へ移すとその Role", "misc/GetUserUseCase.kt", "domain/GetUserUseCase.kt", "Domain.UseCase"),
+            Case("Role の外のファイルを消すと、no role ではなく noRoleDeleted", "misc/stray.txt", null, "noRoleDeleted"),
+            Case("Role のファイルを消すと、その Role", "domain/GetUserUseCase.kt", null, "Domain.UseCase"),
+            Case("ignore() の下のファイルを消すと ignored", "generated/GetUserUseCase.kt", null, "ignored"),
+        )
+        for (case in cases) {
+            case.name {
+                withRepository { repo ->
+                    repo.write(case.from, USE_CASE_SOURCE)
+                    repo.commit("initial")
+                    if (case.to == null) repo.git("rm", "-q", case.from) else repo.move(case.from, case.to)
+                    repo.commit("change")
+
+                    val report = placing.reportOn(repo)
+
+                    val path = case.to ?: case.from
+                    sectionsOf(report.json, path) shouldBe listOf(case.section)
+                    report.json.at("summary", "noRoleFileCount") shouldBe case.noRoleFileCount
+                    // The warning and the header figure say what the architecture test will fail on, nothing more.
+                    report.markdown.contains("[!WARNING]") shouldBe (case.noRoleFileCount > 0)
+                    report.html shouldContain "data-stat=\"no-role\">${case.noRoleFileCount}</span>"
+                }
+            }
+        }
+    }
+
+    "Role のファイルをどの Role にも無い場所へ移すと、古い Role ではなく no role に数えて警告する" {
+        withRepository { repo ->
+            repo.write("domain/GetUserUseCase.kt", USE_CASE_SOURCE)
+            repo.commit("initial")
+            repo.move("domain/GetUserUseCase.kt", "misc/GetUserUseCase.kt")
+            repo.commit("move GetUserUseCase out of every role")
+
+            val report = arch.reportOn(repo)
+
+            report.summary shouldContain "1 file changed, +0 -0. 0 of 4 roles touched, 1 file in no role."
+            report.summary shouldContain "> [!WARNING]\n> 1 file is in no role: no layout { } allows it, " +
+                "so the architecture test will fail on it."
+            report.summary shouldContain "| **(no role)** | | +0&nbsp;-0 | 1 |\n| &nbsp;&nbsp;└ `misc/GetUserUseCase.kt` _(renamed)_ |"
+            report.summary shouldNotContain "└ UseCase"
+            report.json.at("summary", "noRoleFileCount") shouldBe 1
+            report.json.at("summary", "changedRoles") shouldBe emptyList<Any?>()
+            report.json.at("noRole", "files", 0, "previousPath") shouldBe "domain/GetUserUseCase.kt"
+            report.html shouldContain "<div class=\"warn-stat\"><span class=\"num\" data-stat=\"no-role\">1</span>"
+            report.html shouldContain "1 file no layout { } allows. The architecture test will fail on it."
+            report.html shouldContain "class=\"file unassigned-file\""
+        }
+    }
+
+    "どの Role にも無いファイルを消すだけなら、no role に数えず警告もせず、消えたファイルとして畳んで出す" {
+        withRepository { repo ->
+            repo.commit("initial")
+            repo.write("misc/stray.txt", "x\n")
+            repo.commit("add a stray file")
+            repo.git("rm", "-q", "misc/stray.txt")
+            repo.commit("remove the stray file")
+
+            val report = arch.reportOn(repo)
+
+            report.summary shouldContain "1 file changed, +0 -1. 0 of 4 roles touched, 1 file in no role deleted."
+            report.markdown shouldNotContain "[!WARNING]"
+            report.markdown shouldNotContain "will fail"
+            report.summary shouldContain "| **(no role, deleted)** | | +0&nbsp;-1 | 1 |\n| &nbsp;&nbsp;└ `misc/stray.txt` _(deleted)_ | ${squares("🟨", 1)} | +0&nbsp;-1 | |"
+            report.summary shouldContain "_(no role, deleted): Files no layout { } allows that this change deletes. " +
+                "The architecture test does not look at them any more._"
+            // The listing is for the files the architecture test fails on, so there is none.
+            report.out.resolve("diff-report.files-in-no-role.md").exists() shouldBe false
+
+            // Before the scripts: the page's script holds the same wording, to rewrite a row when the view changes.
+            report.html.substringBefore("<script") shouldNotContain "will fail"
+            report.html shouldContain "<div class=\"warn-stat\" hidden>"
+            report.html shouldContain "<div class=\"removed-stat\"><span class=\"num\" data-stat=\"no-role-deleted\">1</span>"
+            report.html shouldContain "1 file no layout { } allows, deleted by this change. The architecture test does not look at it any more."
+            report.html shouldContain "data-collapsed-default=\"true\" data-files=\"1\" data-key=\"no-role-deleted\""
+            report.html shouldContain "class=\"file removed-file\""
+
+            report.json.at("summary", "noRoleFileCount") shouldBe 0
+            report.json.at("summary", "noRoleDeletedFileCount") shouldBe 1
+            report.json.at("noRole", "files") shouldBe emptyList<Any?>()
+            report.json.at("noRoleDeleted", "files", 0, "path") shouldBe "misc/stray.txt"
+            report.json.at("noRoleDeleted", "files", 0, "status") shouldBe "deleted"
+            report.yaml shouldContain "  noRoleFileCount: 0\n  noRoleDeletedFileCount: 1\n"
+        }
+    }
+
+    "消したファイルと残るファイルが両方 no role なら、残る方だけを数えて警告する" {
+        withRepository { repo ->
+            repo.write("misc/stray.txt", "x\n")
+            repo.commit("initial")
+            repo.git("rm", "-q", "misc/stray.txt")
+            repo.write("notes.txt", "no role\n")
+            repo.commit("change")
+
+            val report = arch.reportOn(repo)
+
+            report.summary shouldContain "2 files changed, +1 -1. 0 of 4 roles touched, 1 file in no role, 1 file in no role deleted."
+            report.summary shouldContain "> 1 file is in no role: no layout { } allows it, so the architecture test will fail on it."
+            report.out.resolve("diff-report.files-in-no-role.md").readText() shouldNotContain "stray.txt"
+            report.html shouldContain "data-stat=\"no-role\">1</span>"
+            report.json.at("summary", "noRoleFileCount") shouldBe 1
+            report.json.at("noRole", "files", 0, "path") shouldBe "notes.txt"
+            report.json.at("noRoleDeleted", "files", 0, "path") shouldBe "misc/stray.txt"
+        }
+    }
+
+    "ファイル名・ref・コミットの件名にプレースホルダと同じ綴りがあっても、HTML には文字のまま出る" {
+        withRepository { repo ->
+            repo.commit("initial")
+            repo.git("checkout", "-q", "-b", "topic-{{DATA}}")
+            val names = listOf("misc/{{DATA}}.txt", "misc/{{COMMITS}}.txt", "misc/{{ROWS}}.txt")
+            for (name in names) repo.write(name, "a\n")
+            // The subject would close a double-quoted attribute and add attributes of its own.
+            val subject = "\" tabindex=0 autofocus onfocus=alert(document.title) x=\""
+            repo.commit(subject)
+            val before = repo.git("rev-parse", "HEAD~1").trim()
+            val after = repo.git("rev-parse", "HEAD").trim()
+
+            val html = arch.reportOn(repo, after = "topic-{{DATA}}").html
+
+            for (name in names) {
+                html shouldContain "data-key=\"file:$name\""
+                html shouldContain "data-full=\"$name\" data-short=\"$name\">$name</code>"
+            }
+            html shouldContain "<title>Architecture diff: HEAD~1 (${before.take(7)})..topic-{{DATA}} (${after.take(7)})</title>"
+            // Nothing but the rows is in the table: no commit list, no commit data, no attribute the report does not write.
+            val rows = html.substringAfter("<tbody>").substringBefore("</tbody>")
+            rows shouldNotContain "<details"
+            rows shouldNotContain "\"omitted\""
+            for (row in Regex("<tr [^>]*>").findAll(rows)) {
+                row.value shouldNotContain "onfocus"
+                row.value shouldNotContain "autofocus"
+            }
+            html.split("<details class=\"commits\">").size shouldBe 2
+            html shouldContain "<span class=\"subject\">&quot; tabindex=0 autofocus onfocus=alert(document.title) x=&quot;</span>"
+            // The commit data is in its own script element, once, and reads back as written.
+            html.split("\"omitted\":").size shouldBe 2
+            val data = JsonMapper().readValue(
+                html.substringAfter("<script type=\"application/json\" id=\"diff-data\">").substringBefore("</script>"),
+                Any::class.java,
+            )
+            data.at("commits", 0, "subject") shouldBe subject
+            (data.at("files") as? Map<*, *>).orEmpty().keys shouldBe names.toSet()
         }
     }
 
@@ -763,9 +931,61 @@ private fun allMarkdown(out: File): String =
         .filter(File::exists)
         .joinToString("\n") { it.readText() }
 
+// Long enough for git to pair a moved copy of it up as a rename.
+private const val USE_CASE_SOURCE: String = "class UseCase {\n    fun a() = 1\n    fun b() = 2\n    fun c() = 3\n}\n"
+
+private class Outputs(val out: File, val summary: String, val markdown: String, val html: String, val json: Any?, val yaml: String)
+
+// Every format of one report, written to out/ and read back.
+private fun Architecture.reportOn(repo: Repository, before: String = "HEAD~1", after: String = "HEAD"): Outputs {
+    val out = repo.dir.resolve("out")
+    process(
+        DiffReport,
+        DiffReport.Args(
+            before = before,
+            after = after,
+            markdownOutputFile = out.resolve("diff-report.md").path,
+            htmlOutputFile = out.resolve("diff-report.html").path,
+            jsonOutputFile = out.resolve("diff-report.json").path,
+            yamlOutputFile = out.resolve("diff-report.yaml").path,
+        ),
+        RealFileSystem(repo.dir),
+    ).getOrThrow()
+    return Outputs(
+        out = out,
+        summary = out.resolve("diff-report.md").readText(),
+        markdown = allMarkdown(out),
+        html = out.resolve("diff-report.html").readText(),
+        json = JsonMapper().readValue(out.resolve("diff-report.json").readText(), Any::class.java),
+        yaml = out.resolve("diff-report.yaml").readText(),
+    )
+}
+
+private fun Any?.at(vararg path: Any): Any? = path.fold(this) { node, key ->
+    when (key) {
+        is String -> (node as? Map<*, *>)?.get(key)
+        is Int -> (node as? List<*>)?.getOrNull(key)
+        else -> null
+    }
+}
+
+// The sections of the JSON report that list [path]: the qualified names of the roles, then the keys of the files no role owns.
+private fun sectionsOf(json: Any?, path: String): List<String> {
+    fun lists(files: Any?) = (files as? List<*>).orEmpty().any { it.at("path") == path }
+    fun roles(nodes: Any?): List<String> = (nodes as? List<*>).orEmpty().flatMap { node ->
+        if (node.at("type") == "group") roles(node.at("children")) else listOfNotNull(node.at("qualifiedName")?.toString()?.takeIf { lists(node.at("files")) })
+    }
+    return roles(json.at("nodes")) + listOf("noRole", "noRoleDeleted", "ignored").filter { lists(json.at(it, "files")) }
+}
+
 private class Repository(val dir: File) {
     fun write(path: String, content: String) {
         dir.resolve(path).apply { parentFile.mkdirs() }.writeText(content)
+    }
+
+    fun move(from: String, to: String) {
+        dir.resolve(to).parentFile.mkdirs()
+        git("mv", from, to)
     }
 
     fun commit(message: String) {

@@ -21,6 +21,7 @@ internal fun diffReportData(model: DiffReportModel): DiffData.Record {
                 // The commonest question of a script, answered without walking `nodes`.
                 put("changedRoles", roles.filter { it.changed }.map { DiffData.Text(it.qualifiedName) })
                 put("noRoleFileCount", model.unassigned.size)
+                put("noRoleDeletedFileCount", model.removed.size)
                 put("ignoredFileCount", model.ignored.size)
                 put("fullImportanceLines", full)
                 put("maxImportance", HEAT_LEVELS)
@@ -28,6 +29,7 @@ internal fun diffReportData(model: DiffReportModel): DiffData.Record {
         )
         put("nodes", model.nodes.map { nodeData(it, model.range, full) })
         put("noRole", looseFilesData(model.unassigned, model.range, full))
+        put("noRoleDeleted", looseFilesData(model.removed, model.range, full))
         put("ignored", looseFilesData(model.ignored, model.range, full))
     }
 }

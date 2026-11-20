@@ -126,7 +126,8 @@ tr.unassigned .label, tr.unassigned .sub, tr.unassigned .toggle { color: var(--c
 tr.unassigned .sub { font-weight: 500; }
 tr.unassigned:hover > td { background: var(--caution-low); }
 tr.unassigned-file > td { background: color-mix(in srgb, var(--caution-low) 45%, transparent); }
-tr.ignored .label, tr.ignored .sub, tr.ignored .not-weighted, tr.ignored-file code.path { color: var(--muted); }
+tr.ignored .label, tr.ignored .sub, tr.ignored .not-weighted, tr.ignored-file code.path,
+tr.removed .label, tr.removed .sub, tr.removed .not-weighted, tr.removed-file code.path { color: var(--muted); }
 svg.warn { width: 16px; height: 16px; vertical-align: -3px; margin-right: 6px; }
 tr.more .label { color: var(--muted); font-style: italic; }
 tr.hidden { display: none; }

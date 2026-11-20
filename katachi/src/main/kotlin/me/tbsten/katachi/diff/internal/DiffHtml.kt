@@ -112,96 +112,86 @@ internal fun renderDiffHtml(model: DiffReportModel, history: CommitHistory): Str
             }
         }
 
+        // A group of the files no role owns, below the roles; `kind` is its class, and its file rows' with "-file".
+        // Folded unless the architecture test fails on its files: the others are listed only so no changed file goes missing.
+        fun looseGroup(kind: String, changes: List<FileChange>, order: Int, label: String, note: String, key: String, anchorName: String, folded: Boolean) {
+            if (changes.isEmpty()) return
+            val foldedByDefault = if (folded) """ data-collapsed-default="true"""" else ""
+            val id = row(
+                kind = "group $kind",
+                parent = null,
+                depth = 0,
+                order = order,
+                added = changes.sumOf { it.added },
+                deleted = changes.sumOf { it.deleted },
+                weighted = 0.0,
+                cells = nameCell(0, toggle = true, label = label, sub = note, anchor = key, anchorName = anchorName) +
+                    """<td class="heat"><span class="not-weighted">not weighted</span><span class="bar"></span></td>""" +
+                    """<td class="lines"></td><td class="links"></td>""",
+                extra = """ data-changed="true"$foldedByDefault data-files="${changes.size}" data-key="$key"""",
+            )
+            changes.forEachIndexed { index, change -> fileRow(id, 1, index, change, change.path, 0.0, kind = "file $kind-file") }
+            moreRow(id, 1, hidden = changes.count { it !in model.shown })
+        }
+
         model.nodes.filter { it.changed }.forEachIndexed { index, node -> node(node, null, 0, index) }
-        if (model.unassigned.isNotEmpty()) {
-            val id = row(
-                kind = "group unassigned",
-                parent = null,
-                depth = 0,
-                order = model.nodes.size,
-                added = model.unassigned.sumOf { it.added },
-                deleted = model.unassigned.sumOf { it.deleted },
-                weighted = 0.0,
-                cells = nameCell(
-                    0,
-                    toggle = true,
-                    label = WARNING_ICON + "No role",
-                    sub = noRoleWarning(model.unassigned.size),
-                    anchor = "no-role",
-                    anchorName = "the files in no role",
-                ) +
-                    """<td class="heat"><span class="not-weighted">not weighted</span><span class="bar"></span></td>""" +
-                    """<td class="lines"></td><td class="links"></td>""",
-                extra = """ data-changed="true" data-files="${model.unassigned.size}" data-key="no-role"""",
-            )
-            model.unassigned.forEachIndexed { index, change -> fileRow(id, 1, index, change, change.path, 0.0, kind = "file unassigned-file") }
-            moreRow(id, 1, hidden = model.unassigned.count { it !in model.shown })
-        }
-        // No warning and folded: the architecture test skips these too, they are listed only so no changed file goes missing.
-        if (model.ignored.isNotEmpty()) {
-            val id = row(
-                kind = "group ignored",
-                parent = null,
-                depth = 0,
-                order = model.nodes.size + 1,
-                added = model.ignored.sumOf { it.added },
-                deleted = model.ignored.sumOf { it.deleted },
-                weighted = 0.0,
-                cells = nameCell(
-                    0,
-                    toggle = true,
-                    label = "Ignored",
-                    sub = ignoredNote(model.ignored.size),
-                    anchor = "ignored",
-                    anchorName = "the ignored files",
-                ) +
-                    """<td class="heat"><span class="not-weighted">not weighted</span><span class="bar"></span></td>""" +
-                    """<td class="lines"></td><td class="links"></td>""",
-                extra = """ data-changed="true" data-collapsed-default="true" data-files="${model.ignored.size}" data-key="ignored"""",
-            )
-            model.ignored.forEachIndexed { index, change -> fileRow(id, 1, index, change, change.path, 0.0, kind = "file ignored-file") }
-            moreRow(id, 1, hidden = model.ignored.count { it !in model.shown })
-        }
+        val order = model.nodes.size
+        looseGroup(
+            kind = "unassigned", changes = model.unassigned, order = order, label = WARNING_ICON + "No role",
+            note = noRoleWarning(model.unassigned.size), key = "no-role", anchorName = "the files in no role", folded = false,
+        )
+        looseGroup(
+            kind = "removed", changes = model.removed, order = order + 1, label = "No role, deleted",
+            note = removedNote(model.removed.size), key = "no-role-deleted", anchorName = "the deleted files in no role", folded = true,
+        )
+        looseGroup(
+            kind = "ignored", changes = model.ignored, order = order + 2, label = "Ignored",
+            note = ignoredNote(model.ignored.size), key = "ignored", anchorName = "the ignored files", folded = true,
+        )
     }
     val touched = model.nodes.sumOf { node -> node.roles().count { it.changed } }
     val roleCount = model.nodes.sumOf { it.roles().size }
-    return HTML_TEMPLATE
-        .replace("{{STYLE}}", DIFF_HTML_STYLE)
-        .replace("{{SCRIPT}}", DIFF_HTML_SCRIPT)
-        .replace("{{TITLE}}", "Architecture diff: ${model.range.label}".escapeHtml())
-        .replace("{{HEADING}}", heading(model.range))
-        .replace("{{SUMMARY_ANCHOR}}", anchorButton("summary", "the summary"))
-        .replace("{{GENERATED}}", generatedAt())
-        .replace("{{FILES}}", model.changes.size.toString())
-        .replace("{{MAX_FILES}}", model.maxFiles.toString())
-        .replace("{{FULL_IMPORTANCE}}", model.fullImportanceLines.toString())
-        .replace("{{ADDED}}", model.added.toString())
-        .replace("{{DELETED}}", model.deleted.toString())
-        .replace("{{TOUCHED}}", """<span data-stat="touched">$touched</span> <span class="of">of $roleCount</span>""")
-        .replace(
-            "{{UNASSIGNED}}",
-            """<div class="warn-stat"${if (model.unassigned.isEmpty()) " hidden" else ""}><span class="num" data-stat="no-role">""" +
-                """${model.unassigned.size}</span><span class="cap"><span data-stat="no-role-noun">""" +
-                """${if (model.unassigned.size == 1) "file" else "files"}</span> in no role</span></div>""",
-        )
-        .replace(
-            "{{IGNORED}}",
-            """<div class="ignored-stat"${if (model.ignored.isEmpty()) " hidden" else ""}><span class="num" data-stat="ignored">""" +
-                """${model.ignored.size}</span><span class="cap"><span data-stat="ignored-noun">""" +
-                """${if (model.ignored.size == 1) "file" else "files"}</span> ignored</span></div>""",
-        )
-        .replace(
-            "{{LIMIT}}",
-            """<p class="limit" data-stat="limit"${if (model.hiddenCount == 0) " hidden" else ""}>""" +
+    return fillPlaceholders(
+        HTML_TEMPLATE,
+        mapOf(
+            "STYLE" to DIFF_HTML_STYLE,
+            "SCRIPT" to DIFF_HTML_SCRIPT,
+            "TITLE" to "Architecture diff: ${model.range.label}".escapeHtml(),
+            "HEADING" to heading(model.range),
+            "SUMMARY_ANCHOR" to anchorButton("summary", "the summary"),
+            "GENERATED" to generatedAt(),
+            "FILES" to model.changes.size.toString(),
+            "MAX_FILES" to model.maxFiles.toString(),
+            "FULL_IMPORTANCE" to model.fullImportanceLines.toString(),
+            "ADDED" to model.added.toString(),
+            "DELETED" to model.deleted.toString(),
+            "TOUCHED" to """<span data-stat="touched">$touched</span> <span class="of">of $roleCount</span>""",
+            "UNASSIGNED" to looseStat("warn-stat", "no-role", model.unassigned.size, "in no role"),
+            "REMOVED" to looseStat("removed-stat", "no-role-deleted", model.removed.size, "in no role deleted"),
+            "IGNORED" to looseStat("ignored-stat", "ignored", model.ignored.size, "ignored"),
+            "LIMIT" to """<p class="limit" data-stat="limit"${if (model.hiddenCount == 0) " hidden" else ""}>""" +
                 """Showing <span data-stat="shown">${model.shown.size}</span> of <span data-stat="limit-total">""" +
                 """${model.changes.size}</span> files (maxFiles=${model.maxFiles}). Raise maxFiles to see all.</p>""",
-        )
-        .replace("{{UNCHANGED}}", unchangedSection(model))
-        .replace("{{ROWS}}", rows)
-        // Last: commit subjects are free text and must not be read as another placeholder.
-        .replace("{{COMMITS}}", commitsSection(history))
-        .replace("{{DATA}}", commitHistoryJson(history))
+            "UNCHANGED" to unchangedSection(model),
+            "ROWS" to rows,
+            "COMMITS" to commitsSection(history),
+            "DATA" to commitHistoryJson(history),
+        ),
+    )
 }
+
+// One pass over the template, so what goes in for one placeholder is never read for another: file names,
+// refs and commit subjects are the change author's text, and one spelling a placeholder must stay text.
+private fun fillPlaceholders(template: String, values: Map<String, String>): String =
+    PLACEHOLDER.replace(template) { match -> values[match.groupValues[1]] ?: match.value }
+
+private val PLACEHOLDER: Regex = Regex("""\{\{([A-Z_]+)\}\}""")
+
+// A header figure for a group of files no role owns; hidden while it counts none, as the script keeps it.
+private fun looseStat(cssClass: String, stat: String, count: Int, caption: String): String =
+    """<div class="$cssClass"${if (count == 0) " hidden" else ""}><span class="num" data-stat="$stat">""" +
+        """$count</span><span class="cap"><span data-stat="$stat-noun">""" +
+        """${if (count == 1) "file" else "files"}</span> $caption</span></div>"""
 
 // Every role appears once: a changed one in the table, down to its files; an unchanged one here,
 // under its groups, so this tree's leaves are always roles. Folded: it is what the change did not touch.
@@ -302,6 +292,10 @@ private fun noRoleWarning(count: Int): String =
 
 private fun ignoredNote(count: Int): String =
     "${files(count)} under ignore(). The architecture test does not look at ${if (count == 1) "it" else "them"}."
+
+private fun removedNote(count: Int): String =
+    "${files(count)} no layout { } allows, deleted by this change. " +
+        "The architecture test does not look at ${if (count == 1) "it" else "them"} any more."
 
 private fun String.escapeHtml(): String =
     replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;")
