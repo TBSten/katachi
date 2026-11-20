@@ -22,6 +22,7 @@
 
 - **Read** the lines between the opening tag of the block and the next `</script>`. There is no need to read the rest of the HTML.
 - **Write** by editing those lines in place with your file editing tool. Change only what you mean to change; leave every other key as it is.
+- **Make the text you replace match one place only.** Start it at the `"id"` line of the item or step you change (`"id": "5-1",` down to `"done": false` for an item, `"id": "3",` down to `"warning": null,` for a step). Each block is followed by an example in an HTML comment (`<!-- Example: …`; ja: `<!-- 記入例: …`) with the same ids: never edit it. If your tool still finds more than one match, add the lines around it until there is one; never replace every match.
 - **Keep it valid JSON**: double quotes, no trailing commas, `null` (not `None`), numbers without quotes where the template has a number.
 - **Keep both tags alone on their own lines**, as the template has them. The `katachi` command finds the block by those lines.
 - **Never touch the HTML outside the two blocks**, and never replace the file with a fresh copy once it has data in it.
