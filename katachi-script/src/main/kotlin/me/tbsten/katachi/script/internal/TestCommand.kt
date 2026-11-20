@@ -324,6 +324,7 @@ internal fun ScriptContext.runTest(args: List<String>): Int {
         jdk.source != null -> say(Messages.Test.jdkUnknownCouldNot(jdk.source))
         else -> say(Messages.Test.jdkUnknownNoJava)
     }
+    say(Messages.Test.project(fileUri(root)))
     say(Messages.Test.log(fileUri(log)))
 
     val testTask = "${module.gradlePath}:test"

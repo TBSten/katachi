@@ -896,6 +896,11 @@ internal object Messages {
             en = "Log: $logUri",
         )
 
+        fun project(rootUri: Any?): Msg = Msg(
+            ja = "プロジェクト: $rootUri",
+            en = "Project: $rootUri",
+        )
+
         fun copy(copyUri: Any?): Msg = Msg(
             ja = "写し: $copyUri",
             en = "Copy: $copyUri",
@@ -992,6 +997,15 @@ internal object Messages {
                 "いまいる作業ツリーの $hereUri を検査し、ログもそこの build/katachi/ に置きます。記録した側を検査するときは、そちらで実行してください。",
             en = "meta.projectRoot in the check list ($recordedUri) is in another work tree (git worktree) than the current directory. " +
                 "Checking $hereUri in this work tree instead, with the logs in its build/katachi/. To check the recorded one, run this from there.",
+        )
+
+        fun projectRootNotHoldingWorkdir(recordedUri: Any?, workdirUri: Any?, hereUri: Any?): Msg = Msg(
+            ja = "チェックリストの meta.projectRoot は $recordedUri で、この作業用ディレクトリ $workdirUri のあるプロジェクトではありません。" +
+                "プロジェクトを作業用ディレクトリごと写したか、移したようです。作業用ディレクトリのある $hereUri を検査します。" +
+                "記録した側を検査するときは、そちらで実行してください。",
+            en = "meta.projectRoot in the check list is $recordedUri , not the project that holds this working directory $workdirUri : " +
+                "the project seems to have been copied or moved along with it. Checking $hereUri , which holds the working directory, instead. " +
+                "To check the recorded one, run this from there.",
         )
     }
 
@@ -1163,8 +1177,8 @@ katachi doctor / katachi scaffold / katachi lint（katachi --help）を使って
       -- より後ろは ./gradlew にそのまま渡す（-Dkatachi.baseline.update=true など）。
       違反がいつも全件ログに出るよう、-Dkatachi.maxViolations=all も渡す（-- の後ろで
       -Dkatachi.maxViolations を渡せば、そちらを使う）。
-      要約: JDK、ログのパス、結果の行、[MissingDescription] の件数、通ったときの警告の件数と見出し、
-      前回（previous.log）との差分。
+      要約: JDK、検査したプロジェクト、ログのパス、結果の行、[MissingDescription] の件数、
+      通ったときの警告の件数と見出し、前回（previous.log）との差分。
       0 = 通った、1 = 検査が失敗した、2 = 検査まで届かない（コンパイルエラー、gradlew 無し、定義ディレクトリ無し、
       SKIPPED などでテストが実行されていない）。
       katachi コマンドが Gradle を起動するのはこのコマンドだけ。
@@ -1204,8 +1218,9 @@ Usage:
       Everything after -- is passed to ./gradlew as is (such as -Dkatachi.baseline.update=true).
       It also passes -Dkatachi.maxViolations=all so that the log always holds every violation
       (give -Dkatachi.maxViolations after -- to use your own value instead).
-      Summary: the JDK, the log path, the result line, the number of [MissingDescription], the number
-      and headings of warnings when the check passes, and the difference from the previous run (previous.log).
+      Summary: the JDK, the project it checked, the log path, the result line, the number of
+      [MissingDescription], the number and headings of warnings when the check passes, and the
+      difference from the previous run (previous.log).
       0 = passed, 1 = the check failed, 2 = the check was not reached (compile error, no gradlew,
       no definition directory, tests that did not run such as SKIPPED). This is the only command of katachi
       that starts Gradle.
