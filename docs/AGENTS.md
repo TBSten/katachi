@@ -165,7 +165,9 @@ title: ...
   2026-10-06 にページから外した（利用者の判断。コード例で十分）。エラーメッセージから直せる
 - version catalog を使わない場合の書き方
 - `files = gitTracked()` が効く条件（`git rev-parse --is-inside-work-tree`。
-  プロジェクトルートに `.git` が無くてもよい）
+  プロジェクトルートに `.git` が無くてもよい。ルートかその上に `.git` があるのに git が答えられない
+  （dubious ownership・PATH に git が無い・gitdir の切れた worktree）ときは、全走査に切り替えずに
+  `KatachiGitUnavailableException` で止まる。その環境で全ファイルを見たいなら `files = wholeTree()`）
 - Gradle のルートがリポジトリのルートと違う場合（モノレポ、サブモジュール）
 
 ## ドキュメントの版

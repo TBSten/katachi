@@ -7,9 +7,14 @@ import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.Role
 
-internal fun layoutWarningsOf(entries: List<LayoutEntry>, fileOverlaps: List<FileOverlap>): List<Violation> {
+internal fun layoutWarningsOf(
+    entries: List<LayoutEntry>,
+    fileOverlaps: List<FileOverlap>,
+    resolvedEntries: List<LayoutEntry>,
+): List<Violation> {
     val declared = ambiguousLayoutsOf(entries)
-    return declared + ambiguousFilesOf(fileOverlaps, declared) + missingDescriptionsOf(entries)
+    return declared + ambiguousFilesOf(fileOverlaps, declared) + ignoredLayoutsOf(resolvedEntries) +
+        missingDescriptionsOf(entries)
 }
 
 internal fun missingDescriptionsOf(entries: List<LayoutEntry>): List<Violation> {

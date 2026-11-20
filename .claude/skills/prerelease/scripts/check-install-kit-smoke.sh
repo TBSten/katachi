@@ -384,11 +384,12 @@ case_test_warnings() {
 	mkdir -p "${d}/architecture-test/src/test/kotlin/fx"
 	printf 'package fx\n' >"${d}/architecture-test/src/test/kotlin/fx/ProjectArchitecture.kt"
 	printf '0\n' >"${d}/fake-exit"
-	printf '> Task :architecture-test:test\n\nKatachi check found 2 warnings. Warnings never fail the check.\n\n[AmbiguousLayout] file:///x/Diagnostic.kt\n  text\n\n[MissingDescription] file:///x/Role.kt\n  text\n\nBUILD SUCCESSFUL in 3s\n' >"${d}/fake-out.txt"
+	printf '> Task :architecture-test:test\n\nKatachi check found 3 warnings. Warnings never fail the check.\n\n[AmbiguousLayout] file:///x/Diagnostic.kt\n  text\n\n[IgnoredLayout] src/legacy/*Service.kt\n  text\n\n[MissingDescription] file:///x/Role.kt\n  text\n\nBUILD SUCCESSFUL in 3s\n' >"${d}/fake-out.txt"
 	out=$(cd "${d}" && "${KATACHI}" agent test 2>&1)
 	st=$?
-	[ "${st}" -eq 0 ] && printf '%s\n' "${out}" | grep -q '^結果: 検査は通りました（違反 0 件）' && printf '%s\n' "${out}" | grep -q '^警告: 2 件' &&
-		printf '%s\n' "${out}" | grep -q '^  \[AmbiguousLayout\] file:///x/Diagnostic.kt' && ! printf '%s\n' "${out}" | grep -q '^  \[MissingDescription\]' &&
+	[ "${st}" -eq 0 ] && printf '%s\n' "${out}" | grep -q '^結果: 検査は通りました（違反 0 件）' && printf '%s\n' "${out}" | grep -q '^警告: 3 件' &&
+		printf '%s\n' "${out}" | grep -q '^  \[AmbiguousLayout\] file:///x/Diagnostic.kt' && printf '%s\n' "${out}" | grep -q '^  \[IgnoredLayout\] src/legacy/\*Service.kt' &&
+		! printf '%s\n' "${out}" | grep -q '^  \[MissingDescription\]' &&
 		ok "test は通ったときも警告の件数と見出しを出す" || ng "test は通ったときも警告の件数と見出しを出す" "st=${st} ${out}"
 }
 

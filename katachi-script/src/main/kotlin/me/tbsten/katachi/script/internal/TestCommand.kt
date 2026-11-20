@@ -31,7 +31,7 @@ private val CHECK_FAILED_LINE = Regex("^\\s*([A-Za-z0-9_.$]*(Error|Exception): )
  * such as `[Incubating] Problems report ...` too, so only these count as headings.
  */
 private const val KATACHI_VIOLATION_LABELS =
-    "UnexpectedFile|UnexpectedDirectory|CaptureMismatch|MissingFile|UncheckedFile|UncheckedDirectory|UncheckedCheck|UnsatisfiedFileConstraint|UncheckedFileConstraint|AmbiguousLayout|MissingDescription|StaleBaselineEntry"
+    "UnexpectedFile|UnexpectedDirectory|CaptureMismatch|MissingFile|UncheckedFile|UncheckedDirectory|UncheckedCheck|UnsatisfiedFileConstraint|UncheckedFileConstraint|AmbiguousLayout|IgnoredLayout|MissingDescription|StaleBaselineEntry"
 
 private val VIOLATION_HEADING_LINE = Regex("^\\s*\\[($KATACHI_VIOLATION_LABELS)] ")
 

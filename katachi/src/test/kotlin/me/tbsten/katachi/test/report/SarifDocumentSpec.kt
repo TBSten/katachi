@@ -75,6 +75,7 @@ class SarifDocumentSpec : FreeSpec({
                 "TodoRule",
                 "katachi.AmbiguousLayout",
                 "katachi.CaptureMismatch",
+                "katachi.IgnoredLayout",
                 "katachi.MissingDescription",
                 "katachi.MissingFile",
                 "katachi.StaleBaselineEntry",
@@ -90,8 +91,8 @@ class SarifDocumentSpec : FreeSpec({
 
         "Warning の違反は level が warning、Error は error" {
             val levels = Regex("\"level\": \"(\\w+)\"").findAll(sarif).map { it.groupValues[1] }.toList()
-            // 14 rules + 14 results; the three warnings (BareRule, AmbiguousLayout, MissingDescription) twice each.
-            levels.count { it == "warning" } shouldBe 6
+            // 15 rules + 15 results; the four warnings (BareRule, AmbiguousLayout, IgnoredLayout, MissingDescription) twice each.
+            levels.count { it == "warning" } shouldBe 8
             levels.count { it == "error" } shouldBe 22
         }
     }

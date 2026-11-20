@@ -8,6 +8,11 @@ import me.tbsten.katachi.internal.fileUri
 /**
  * git could not answer which files belong to the project.
  *
+ * Thrown under `files = gitTracked()` when the project is in a git repository (a `.git` at the
+ * project root or above it) but git cannot be run there, refuses the repository, or fails to
+ * list its files. The message carries what git said. The check stops rather than walking every
+ * file on disk, which would give other results than a run where git works.
+ *
  * ## Example 1: fall back to the whole tree when git is unavailable
  * ```kt
  * try {
