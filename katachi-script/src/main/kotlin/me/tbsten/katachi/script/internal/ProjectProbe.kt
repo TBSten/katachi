@@ -235,7 +235,17 @@ internal fun javaMajorOf(java: Path): Int? {
  * [source] is null when no JDK was found, and [notFound] says why. [fromPath]: the answer came from looking for java on
  * PATH (found or not), so a JAVA_HOME set in the shell would change it.
  */
-internal class GradleJdk(val major: Int?, val source: Msg?, val notFound: Msg = Messages.Probe.couldNotFindJdk, val fromPath: Boolean = false)
+internal class GradleJdk(
+    val major: Int?,
+    val source: Msg?,
+    val notFound: Msg = Messages.Probe.couldNotFindJdk,
+    val fromPath: Boolean = false,
+    /** The shell's JAVA_HOME points where there is no `bin/java`: `./gradlew` stops there, so the check stops too. */
+    val invalidJavaHome: Boolean = false,
+) {
+    /** What `doctor` must not call "everything is available": Gradle cannot run, or runs on a JDK older than katachi needs. */
+    val needsAttention: Boolean get() = invalidJavaHome || source == null || major == null || major < JDK_MIN_MAJOR
+}
 
 /**
  * Set by `bin/katachi` to the JAVA_HOME it was started with, empty when that was unset or empty: Homebrew's `kotlin`
@@ -289,6 +299,8 @@ internal fun ScriptContext.detectGradleJdk(root: Path): GradleJdk {
     if (javaHome != null && Path(javaHome, "bin", "java").isExecutable()) {
         return GradleJdk(javaMajorOf(Path(javaHome, "bin", "java")), Messages.Probe.javaHome(javaHome))
     }
+    // ./gradlew stops with "JAVA_HOME is set to an invalid directory" here; falling through to java on PATH would hide it.
+    if (javaHome != null) return GradleJdk(null, null, Messages.Probe.invalidJavaHome(javaHome), invalidJavaHome = true)
     val onPath = findOnPath("java") ?: return GradleJdk(null, null, fromPath = true)
     val macOs = macOsJavaStub
     if (macOs != null && macOs.isStub(onPath)) {
@@ -316,8 +328,8 @@ private fun ScriptContext.gradlePropertiesJavaHome(root: Path): String? {
 }
 
 /** Stops when Gradle's JDK is older than 17; only warns when it cannot be found or read. The kit's `check_gradle_jdk`. */
-internal fun ScriptContext.checkGradleJdk(root: Path) {
-    val jdk = detectGradleJdk(root)
+internal fun ScriptContext.checkGradleJdk(root: Path, jdk: GradleJdk = detectGradleJdk(root)) {
+    if (jdk.invalidJavaHome) die(jdk.notFound)
     if (jdk.source == null) {
         warn(withKatachiJdkHint(jdk.notFound, jdk))
         return
