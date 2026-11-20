@@ -21,14 +21,14 @@ touch .katachi-probe && rm .katachi-probe
 ./gradlew --version
 ```
 
-**When the project needs a JDK other than the `java` on PATH**, prefix every `./gradlew` and `katachi` call from here on with the same `JAVA_HOME=<path>`. Shell variables do not persist across calls. `doctor` prints `Gradle's JDK: N (source)` and `katachi agent test` prints `JDK: N (source)`; if the source is `JAVA_HOME`, add it every time.
+**When the project needs a JDK other than the one Gradle finds by itself**, decide by what you did, not by what `doctor` prints. If you had to put `JAVA_HOME=<path>` in front of `katachi doctor` (4 below) yourself to get a JDK that works, put the same prefix in front of every `./gradlew` and `katachi` call from here on: shell variables do not persist across calls. If the JDK comes from `org.gradle.java.home` in `gradle.properties`, or from a `JAVA_HOME` that was already set in the environment your commands run in, add nothing. (`doctor`'s `Gradle's JDK: N (source)` and `katachi agent test`'s `JDK: N (source)` say `JAVA_HOME` both for your prefix and for one already set, so the source alone does not tell you.)
 
 ```sh
 # 4. Running katachi (and checking Gradle's JDK and the project's Kotlin)
 katachi doctor --lang en    # --lang ja for a user who works in Japanese
 ```
 
-`doctor` in 4 checks the version of the JDK that runs Gradle, the project's Kotlin version, and whether `git` is available (recommended). **If anything falls short, it says so, with hints on how to fix it.** Pass that output on to the user, have them fix it, and run 4 again. Keep the `Kotlin:` line: 0-2 records it.
+`doctor` in 4 checks the version of the JDK that runs Gradle, the project's Kotlin version, and whether `git` is available (recommended). **If anything falls short, it says so, with hints on how to fix it.** Pass that output on to the user, have them fix it, and run 4 again. Keep the `Kotlin:` line: 0-2 records it. **A Kotlin that is too old is the exception**: upgrading it changes the existing build, so set up the working directory first and then follow "When Kotlin is too old" in 0-2, right after `meta` is filled in.
 
 Both the working directory and the verification module (`architecture-test/` by default) are created under the project root, so 2 earns permission for both. **The probes leave no trace.** Do not write a probe that creates a directory (an empty verification module directory left behind makes step 2's `scaffold` stop with "already exists" (ja: "がすでに存在します")).
 
