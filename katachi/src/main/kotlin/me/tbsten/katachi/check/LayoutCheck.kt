@@ -21,7 +21,8 @@ import me.tbsten.katachi.processor.internal.projectWalk
  *
  * It shares the one walk of the project with everything else reading the same
  * [ArchitectureProcessContext], so its answer and [ArchitectureProcessContext.filesOf] always
- * agree. Its warning is [AmbiguousLayout]. It takes no settings:
+ * agree. Its warnings are [AmbiguousLayout], and `[IgnoredLayout]` for a line of a role's layout
+ * that an `ignore()` hides entirely. It takes no settings:
  * `maxViolations` belongs to the report, and the check always looks at everything. It is not
  * registered with the Gradle plugin by default; register it only to run it alone from the command
  * line.
@@ -72,7 +73,7 @@ public class LayoutCheck : ArchitectureProcessorNoArg<List<Violation>> {
             val walk = context.projectWalk
             (
                 walk.layoutViolations +
-                    layoutWarningsOf(context.declaredEntries, walk.layoutFileOverlaps)
+                    layoutWarningsOf(context.declaredEntries, walk.layoutFileOverlaps, walk.resolvedEntries)
                 ).assertNoErrors(walk.projectRoot)
         }
 }

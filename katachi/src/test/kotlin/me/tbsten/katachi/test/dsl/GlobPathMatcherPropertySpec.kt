@@ -6,6 +6,8 @@ import io.kotest.matchers.shouldBe
 import java.nio.file.FileSystems
 import kotlin.random.Random
 import me.tbsten.katachi.dsl.internal.Glob
+import me.tbsten.katachi.test.pbt.pbtSeed
+import me.tbsten.katachi.test.pbt.pbtTrials
 
 /*
  * The claim "katachi's glob follows the standard one" checked against the JDK itself: for the
@@ -35,10 +37,10 @@ private fun String.hasDotOnlyLevel(): Boolean = split('/').any { level -> level.
 
 class GlobPathMatcherPropertySpec : FreeSpec({
     "PathMatcher と意味が重なるパターンでは Glob の答えが PathMatcher と同じ" {
-        val random = Random(20261006)
+        val random = Random(pbtSeed(20261006L))
         var matched = 0
         var rejected = 0
-        repeat(4000) {
+        repeat(pbtTrials(4000)) {
             val pattern = random.pattern()
             // `**` is katachi's own whole-level wildcard; in the JDK it also crosses levels.
             if ("**" in pattern) return@repeat

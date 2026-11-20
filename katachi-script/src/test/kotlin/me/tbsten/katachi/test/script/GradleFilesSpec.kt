@@ -2,6 +2,7 @@ package me.tbsten.katachi.test.script
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
+import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.readText
@@ -13,6 +14,7 @@ import me.tbsten.katachi.script.internal.addSettingsInclude
 import me.tbsten.katachi.script.internal.includedBuildDirs
 import me.tbsten.katachi.script.internal.kotlinPluginPlacement
 import me.tbsten.katachi.script.internal.planCatalogEntries
+import me.tbsten.katachi.script.internal.runtimeDependencyDeclarations
 import me.tbsten.katachi.script.internal.settingsIncludeEnd
 
 /** Reading and editing the user's Gradle files, as the install kit's sh did. */
@@ -67,6 +69,80 @@ class GradleFilesSpec : FreeSpec({
             root.resolve("shared").createDirectories().resolve("build.gradle.kts").writeText("plugins {\n    kotlin(\"multiplatform\") version \"2.4.10\"\n}\n")
             kotlinPluginPlacement(root, root.resolve("build.gradle.kts"), "architecture-test") shouldBe KotlinPlacement.MODULE
         }
+
+        "buildSrc が embeddedKotlin(\"gradle-plugin\") に依存していれば root（KATACHI-420）" {
+            val root = projectWithBuildSrc(
+                """
+                plugins {
+                    `kotlin-dsl`
+                }
+
+                dependencies {
+                    implementation(embeddedKotlin("gradle-plugin"))
+                }
+                """.trimIndent(),
+            )
+            kotlinPluginPlacement(root, root.resolve("build.gradle.kts"), "architecture-test") shouldBe KotlinPlacement.ROOT
+        }
+
+        "buildSrc の implementation( が座標を次の行に書いていても root（KATACHI-420）" {
+            val root = projectWithBuildSrc(
+                """
+                dependencies {
+                    implementation(
+                        "org.jetbrains.kotlin:kotlin-gradle-plugin:2.3.21",
+                    )
+                }
+                """.trimIndent(),
+            )
+            kotlinPluginPlacement(root, root.resolve("build.gradle.kts"), "architecture-test") shouldBe KotlinPlacement.ROOT
+        }
+
+        "buildSrc の compileOnly は、複数行でも、同じブロックに別の implementation があっても数えない" {
+            val root = projectWithBuildSrc(
+                """
+                dependencies {
+                    implementation(libs.foo)
+                    compileOnly(
+                        kotlin("gradle-plugin"),
+                    )
+                }
+                """.trimIndent(),
+            )
+            kotlinPluginPlacement(root, root.resolve("build.gradle.kts"), "architecture-test") shouldBe KotlinPlacement.ADD
+        }
+
+        "buildSrc のコメントの中の implementation は数えない" {
+            val root = projectWithBuildSrc(
+                """
+                dependencies {
+                    /* implementation(
+                        "org.jetbrains.kotlin:kotlin-gradle-plugin:2.3.21",
+                    ) */
+                    // implementation(embeddedKotlin("gradle-plugin"))
+                }
+                """.trimIndent(),
+            )
+            kotlinPluginPlacement(root, root.resolve("build.gradle.kts"), "architecture-test") shouldBe KotlinPlacement.ADD
+        }
+    }
+
+    "runtimeDependencyDeclarations" - {
+        "括弧の中を行をまたいで読み、Groovy の括弧なしは行の残りを読む" {
+            runtimeDependencyDeclarations(
+                listOf(
+                    "dependencies {",
+                    "    api(\"a:b:1\") // implementation(\"c:d:1\")",
+                    "    implementation(",
+                    "        platform(\"e:f:1\"),",
+                    "    )",
+                    "    runtimeOnly 'g:h:1'",
+                    "    testImplementation(\"i:j:1\")",
+                    "    println(\"implementation(k:l:1)\")",
+                    "}",
+                ),
+            ) shouldBe listOf("\"a:b:1\"", "\n        platform(\"e:f:1\"),\n    ", "'g:h:1'")
+        }
     }
 
     "planCatalogEntries" - {
@@ -90,3 +166,11 @@ class GradleFilesSpec : FreeSpec({
         }
     }
 })
+
+/** A project with an empty root build file and [buildSrcBuild] as `buildSrc/build.gradle.kts`. */
+private fun projectWithBuildSrc(buildSrcBuild: String): Path {
+    val root = createTempDirectory("katachi-gradle-")
+    root.resolve("build.gradle.kts").writeText("")
+    root.resolve("buildSrc").createDirectories().resolve("build.gradle.kts").writeText(buildSrcBuild + "\n")
+    return root
+}

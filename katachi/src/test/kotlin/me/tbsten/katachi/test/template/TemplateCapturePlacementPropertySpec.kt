@@ -6,17 +6,19 @@ import io.kotest.matchers.shouldBe
 import kotlin.random.Random
 import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.test.check.architectureOf
+import me.tbsten.katachi.test.pbt.pbtSeed
+import me.tbsten.katachi.test.pbt.pbtTrials
 
 /**
  * `capture(...)` values fill in a template's path the same way for any random combination of
  * directory depth and value -- pinned against a hand-built expected path, the way
  * [me.tbsten.katachi.test.dsl.LayoutCapturePropertySpec] pins `capture()` against `*`. Uses a
- * seeded [kotlin.random.Random] loop rather than `io.kotest.property`, which is not a dependency
- * of `:katachi` (see [me.tbsten.katachi.test.dsl.RandomLayoutSpecSupport]).
+ * seeded [kotlin.random.Random] loop, as every property of katachi does (see
+ * `me.tbsten.katachi.test.pbt.PropertyTrials`).
  */
 class TemplateCapturePlacementPropertySpec : FreeSpec({
-    val iterations = System.getenv("KATACHI_PBT_ITERATIONS")?.toIntOrNull() ?: 200
-    val seed = System.getenv("KATACHI_PBT_SEED")?.toLongOrNull() ?: 20260928L
+    val iterations = pbtTrials(200)
+    val seed = pbtSeed(20260928L)
 
     val names = listOf("a", "b", "c", "d", "e")
     val values = listOf("home", "settings", "x", "profile-edit", "v2")

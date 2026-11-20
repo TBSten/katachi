@@ -23,6 +23,8 @@ import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.check.ViolationDetail
 import me.tbsten.katachi.check.ViolationKind
 import me.tbsten.katachi.check.internal.BaselineEnvironment
+import me.tbsten.katachi.check.internal.HidingIgnore
+import me.tbsten.katachi.check.internal.IgnoredLayout
 import me.tbsten.katachi.check.internal.MissingDescription
 import me.tbsten.katachi.check.internal.assertWith
 import me.tbsten.katachi.dsl.DeclarationSite
@@ -265,6 +267,15 @@ internal fun everyKindOfViolation(roles: SarifRoles = SarifRoles()): List<Violat
             path = "core/domain/src/main/kotlin/com/example/domain/Shared.kt",
             claims = listOf(LayoutClaim(roles.useCase, useCaseSite), LayoutClaim(roles.repository, repositorySite)),
             overlappingFiles = listOf("core/domain/src/main/kotlin/com/example/domain/Shared.kt"),
+        ),
+        IgnoredLayout(
+            path = "core/data/build/generated/*Repository.kt",
+            role = roles.repository,
+            declaredAt = repositorySite,
+            hiddenBy = listOf(
+                HidingIgnore(path = "**/build", role = roles.useCase, declaredAt = useCaseSite, gradleModule = null),
+                HidingIgnore(path = "core/data/build", role = roles.repository, declaredAt = ARCHITECTURE_SITE, gradleModule = ":core:data"),
+            ),
         ),
         MissingDescription(
             path = "core/data",

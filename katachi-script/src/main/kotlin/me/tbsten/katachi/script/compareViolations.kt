@@ -8,13 +8,13 @@ import me.tbsten.katachi.script.command.CompareViolationsCommand
 import me.tbsten.katachi.script.internal.CommandLine
 
 /**
- * Same as `katachi agent compare-violations` on the command line: compares the violations of two test logs, as before and after a refactoring of the definition.
+ * Same as `katachi agent compare-violations` on the command line, starting from this [Katachi]'s defaults: compares the violations of two test logs, as before and after a refactoring of the definition.
  */
 public val AgentCommandGroup.`compare-violations`: CompareViolationsCommand
-    get() = CompareViolationsCommand(this.katachi, CommandLine(listOf("agent", "compare-violations")))
+    get() = CompareViolationsCommand(this.katachi, CommandLine(listOf("agent", "compare-violations")).withNonEmpty("--module-dir", this.katachi.moduleDir))
 
 /**
- * Same as `katachi agent compare-violations <before> [<after>]` on the command line: compares the violations of two test logs, as before and after a refactoring of the definition.
+ * Same as `katachi agent compare-violations <before> [<after>]` on the command line, starting from this [Katachi]'s defaults: compares the violations of two test logs, as before and after a refactoring of the definition.
  *
  * ## Example 1: pass the arguments
  *
@@ -27,4 +27,4 @@ public val AgentCommandGroup.`compare-violations`: CompareViolationsCommand
  * @param after The log after. Without it, `tmp/test-after-refactor.log` of the working directory.
  */
 public fun AgentCommandGroup.`compare-violations`(before: String, after: String? = null): CompareViolationsCommand =
-    CompareViolationsCommand(this.katachi, CommandLine(listOf("agent", "compare-violations")).withPositionals(listOfNotNull(before, after)))
+    CompareViolationsCommand(this.katachi, CommandLine(listOf("agent", "compare-violations")).withNonEmpty("--module-dir", this.katachi.moduleDir).withPositionals(listOfNotNull(before, after)))

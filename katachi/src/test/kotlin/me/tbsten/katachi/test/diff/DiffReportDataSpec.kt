@@ -112,6 +112,8 @@ class DiffReportDataSpec : FreeSpec({
                 "changedRoleCount" to 2,
                 "changedRoles" to listOf("Presentation.ViewModel", "Presentation.Screen"),
                 "noRoleFileCount" to 1,
+                "baselinedFileCount" to 0,
+                "noRoleDeletedFileCount" to 0,
                 "ignoredFileCount" to 1,
                 "fullImportanceLines" to 400,
                 "maxImportance" to 5,
@@ -148,6 +150,8 @@ class DiffReportDataSpec : FreeSpec({
             json.at("noRole").without("files") shouldBe mapOf("fileCount" to 1, "added" to 1, "deleted" to 0)
             json.at("noRole", "files", 0, "path") shouldBe "notes.txt"
             json.at("noRole", "files", 0, "status") shouldBe "added"
+            json.at("baselined") shouldBe mapOf("fileCount" to 0, "added" to 0, "deleted" to 0, "files" to emptyList<Any?>())
+            json.at("noRoleDeleted") shouldBe mapOf("fileCount" to 0, "added" to 0, "deleted" to 0, "files" to emptyList<Any?>())
             json.at("ignored").without("files") shouldBe mapOf("fileCount" to 1, "added" to 2, "deleted" to 0)
             json.at("ignored", "files", 0, "path") shouldBe "generated/Api.kt"
 

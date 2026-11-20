@@ -3,7 +3,7 @@
   "title": "katachiDiff report (schemaVersion 1)",
   "description": "What `katachiDiff --arg json=true` and `--arg yaml=true` write. A key may be added without schemaVersion going up, so nothing here forbids additional properties.",
   "type": "object",
-  "required": ["schemaVersion", "range", "summary", "nodes", "noRole", "ignored"],
+  "required": ["schemaVersion", "range", "summary", "nodes", "noRole", "baselined", "noRoleDeleted", "ignored"],
   "properties": {
     "schemaVersion": {
       "description": "Goes up when a key is renamed or removed, or a value changes its meaning.",
@@ -17,7 +17,15 @@
       "items": { "$ref": "#/definitions/node" }
     },
     "noRole": {
-      "description": "Changed files no role allows, outside every ignored directory. The architecture test fails on them.",
+      "description": "Changed files no role allows, outside every ignored directory, still there after the change and not held back by the baseline. The architecture test fails on them.",
+      "$ref": "#/definitions/looseFiles"
+    },
+    "baselined": {
+      "description": "Changed files no role allows, still there after the change, that the baseline the definition declares holds back. The architecture test does not fail on them.",
+      "$ref": "#/definitions/looseFiles"
+    },
+    "noRoleDeleted": {
+      "description": "Files no role allows, outside every ignored directory, that the change deletes. Gone after it, so the architecture test does not look at them any more.",
       "$ref": "#/definitions/looseFiles"
     },
     "ignored": {
@@ -68,7 +76,7 @@
       "type": "object",
       "required": [
         "fileCount", "added", "deleted", "roleCount", "changedRoleCount", "changedRoles",
-        "noRoleFileCount", "ignoredFileCount", "fullImportanceLines", "maxImportance"
+        "noRoleFileCount", "baselinedFileCount", "noRoleDeletedFileCount", "ignoredFileCount", "fullImportanceLines", "maxImportance"
       ],
       "properties": {
         "fileCount": { "description": "Changed files, each counted once.", "$ref": "#/definitions/count" },
@@ -82,6 +90,8 @@
           "items": { "type": "string" }
         },
         "noRoleFileCount": { "$ref": "#/definitions/count" },
+        "baselinedFileCount": { "$ref": "#/definitions/count" },
+        "noRoleDeletedFileCount": { "$ref": "#/definitions/count" },
         "ignoredFileCount": { "$ref": "#/definitions/count" },
         "fullImportanceLines": { "description": "The score at which importance is full.", "type": "integer", "minimum": 1 },
         "maxImportance": { "const": 5 }

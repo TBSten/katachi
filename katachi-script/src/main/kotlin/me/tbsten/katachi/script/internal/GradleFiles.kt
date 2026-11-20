@@ -439,19 +439,90 @@ internal fun rootAppliesConventionPlugin(file: Path): Boolean {
         .any { !Regex("[\"'](org\\.jetbrains\\.kotlin|com\\.android)\\.").containsMatchIn(it) }
 }
 
-/** Whether buildSrc or an applied included build depends on the Kotlin Gradle plugin. The kit's `kotlin_plugin_in_buildsrc`. */
+/**
+ * Whether buildSrc or an applied included build depends on the Kotlin Gradle plugin, `embeddedKotlin("gradle-plugin")`
+ * (Gradle's kotlin-dsl) included. The kit's `kotlin_plugin_in_buildsrc`.
+ */
 internal fun kotlinPluginInBuildSrc(root: Path, rootBuild: Path): Boolean {
-    var pattern = "kotlin-gradle-plugin|kotlin\\(\"gradle-plugin\""
+    var pattern = "kotlin-gradle-plugin|kotlin\\(\"gradle-plugin\"|embeddedKotlin\\(\"gradle-plugin\""
     val accessors = catalogKotlinAccessorsJoined(root, "libraries")
     if (accessors.isNotEmpty()) pattern += "|$accessors"
     val regex = Regex(pattern)
-    val dependency = Regex("(implementation|api|runtimeOnly)[\\s(]")
     fun hasIt(dir: String) = listOf("build.gradle.kts", "build.gradle").map { root.resolve(dir).resolve(it) }.any { f ->
-        f.linesOrEmpty().naiveStripped().any { dependency.containsMatchIn(it) && regex.containsMatchIn(it) }
+        runtimeDependencyDeclarations(f.linesOrEmpty()).any { regex.containsMatchIn(it) }
     }
     if (hasIt("buildSrc")) return true
     if (!rootAppliesConventionPlugin(rootBuild)) return false
     return includedBuildDirs(root).any(::hasIt)
+}
+
+/** Whether buildSrc or an included build uses the Kotlin that comes with Gradle, whose version no file of the project names. */
+internal fun buildSrcUsesEmbeddedKotlin(root: Path): Boolean {
+    val embedded = Regex("\\bembeddedKotlin(Version)?\\b")
+    return (listOf("buildSrc") + includedBuildDirs(root)).any { dir ->
+        listOf("build.gradle.kts", "build.gradle").any { name -> root.resolve(dir).resolve(name).linesOrEmpty().map(::stripLineComment).any { embedded.containsMatchIn(it) } }
+    }
+}
+
+private val RUNTIME_CONFIGURATIONS = setOf("implementation", "api", "runtimeOnly")
+
+/**
+ * What each `implementation` / `api` / `runtimeOnly` in [lines] declares: the text inside its parentheses, read across
+ * lines (`implementation(` with the coordinates on the next line), or the rest of the line for Groovy's
+ * `implementation "..."`. Comments and strings are skipped when looking for the configuration names.
+ */
+internal fun runtimeDependencyDeclarations(lines: List<String>): List<String> {
+    val text = lines.map(::stripLineComment).joinToString("\n")
+    val found = mutableListOf<String>()
+    var i = 0
+    while (i < text.length) {
+        val c = text[i]
+        when {
+            c == '"' || c == '\'' -> i = skipString(text, i)
+            text.startsWith("/*", i) -> i = text.indexOf("*/", i + 2).let { if (it < 0) text.length else it + 2 }
+            c.isLetter() || c == '_' -> {
+                val start = i
+                while (i < text.length && (text[i].isLetterOrDigit() || text[i] == '_')) i++
+                if ((start == 0 || text[start - 1] != '.') && text.substring(start, i) in RUNTIME_CONFIGURATIONS) {
+                    var at = i
+                    while (at < text.length && (text[at] == ' ' || text[at] == '\t')) at++
+                    found += if (at < text.length && text[at] == '(') {
+                        text.substring(at + 1, closingParenthesis(text, at))
+                    } else {
+                        text.substring(at, text.indexOf('\n', at).let { if (it < 0) text.length else it })
+                    }
+                }
+            }
+            else -> i++
+        }
+    }
+    return found
+}
+
+/** The index after the string literal that opens at [start]. A line end closes it too, so a quote cut by a comment never swallows the rest. */
+private fun skipString(text: String, start: Int): Int {
+    val quote = text[start]
+    var i = start + 1
+    while (i < text.length && text[i] != quote && text[i] != '\n') i += if (text[i] == '\\') 2 else 1
+    return (i + 1).coerceAtMost(text.length)
+}
+
+/** The index of the `)` that closes the `(` at [open], strings skipped; the end of [text] when it is not closed. */
+private fun closingParenthesis(text: String, open: Int): Int {
+    var depth = 0
+    var i = open
+    while (i < text.length) {
+        when (text[i]) {
+            '"', '\'' -> {
+                i = skipString(text, i)
+                continue
+            }
+            '(' -> depth++
+            ')' -> if (--depth == 0) return i
+        }
+        i++
+    }
+    return text.length
 }
 
 /** Whether a subproject (not in another build) requests a Kotlin plugin with a version. The kit's `kotlin_plugin_requested_by_subprojects`. */

@@ -4,6 +4,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
+import kotlin.random.Random
 import me.tbsten.katachi.check.KatachiArchitectureAssertionError
 import me.tbsten.katachi.check.KatachiBaselineCheckConflictException
 import me.tbsten.katachi.check.KatachiBaselineNotFoundException
@@ -23,7 +24,8 @@ import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.test.check.architectureOf
 import me.tbsten.katachi.test.check.repositoryOf
-import kotlin.random.Random
+import me.tbsten.katachi.test.pbt.pbtSeed
+import me.tbsten.katachi.test.pbt.pbtTrials
 
 /*
  * The model of BaselineOperationSequenceSpec, widened to what a real project mixes: two check
@@ -164,7 +166,10 @@ private val definition: Architecture = architectureOf {
 
 class BaselineMultiCheckSequenceSpec : FreeSpec({
     "複数の check・キーの型・Warning・投げる check・設定違いの分割を混ぜても、モデルと結果が一致する" {
-        repeat(300) { seed ->
+        // `-Pkatachi.pbt.scale=N` runs N times as many sequences, `-Pkatachi.pbt.seed=N` starts from another seed.
+        val firstSeed = pbtSeed(0L)
+        repeat(pbtTrials(300)) { trial ->
+            val seed = firstSeed + trial
             val random = Random(seed)
             val steps = List(14) { randomStep(random) }
             val store = MemoryBaselineStore()

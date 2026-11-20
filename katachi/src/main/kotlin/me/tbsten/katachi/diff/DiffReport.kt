@@ -5,6 +5,7 @@ import java.io.IOException
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.check.internal.ledgerIn
 import me.tbsten.katachi.diff.internal.DEFAULT_FULL_IMPORTANCE_LINES
 import me.tbsten.katachi.diff.internal.MarkdownFileNames
 import me.tbsten.katachi.diff.internal.buildDiffReportModel
@@ -28,10 +29,15 @@ import me.tbsten.katachi.processor.internal.projectWalk
  *
  * Every changed file is put under each role whose `layout { }` allows it, and every group and
  * role of the definition is listed, changed or not, so a reviewer sees at a glance which part of
- * the architecture a change lands in. Unchanged groups start folded. A file no role allows is
- * listed under "(no role)" with a warning, as the architecture test fails on it. A file under a
- * directory the layout `ignore()`s is listed under "(ignored)" instead, folded and without the
- * warning: the architecture test does not look at it.
+ * the architecture a change lands in. Unchanged groups start folded. Where a file is after the
+ * change decides, so a file renamed out of every role is in no role. A file no role allows is
+ * listed under "(no role)" with a warning, as the architecture test fails on it. When the
+ * definition declares `baseline()` and the baseline holds such a file back, it is listed under
+ * "(no role, held back by the baseline)" instead, folded and without the warning: the
+ * architecture test does not fail on it. A file under a directory the layout `ignore()`s is
+ * listed under "(ignored)", folded and without the warning: the architecture test does not look
+ * at it. Neither does it look at a file the change deletes, so a deleted file no role allows is
+ * listed under "(no role, deleted)", folded and without the warning.
  *
  * Registered under the key `diff`, so a module that applies the Gradle plugin can run
  * `./gradlew katachiDiff` without registering anything.
@@ -47,10 +53,12 @@ import me.tbsten.katachi.processor.internal.projectWalk
  *
  * The JSON and the YAML hold the same tree for a script to read: `nodes` holds the groups
  * (`type: group`, with `children`) and the roles (`type: role`, with `weight` and `files`) of the
- * definition, changed or not, and `noRole` and `ignored` hold the files no role allows. Every node and
- * file carries `added`, `deleted`, `score` (diff lines times weight) and `importance` (0 to
- * `summary.maxImportance`). `summary` holds the totals and `changedRoles`, the qualified names of the
- * roles the change touched. `schemaVersion` goes up when a key is renamed or removed, not when one is added.
+ * definition, changed or not, and `noRole`, `baselined`, `noRoleDeleted` and `ignored` hold the
+ * files no role allows, as the four sections above do. Every node and file carries `added`,
+ * `deleted`, `score` (diff lines times weight) and `importance` (0 to `summary.maxImportance`).
+ * `summary` holds the totals, `changedRoles`, the qualified names of the roles the change
+ * touched, and `noRoleFileCount`, the files the architecture test fails on for being in no role.
+ * `schemaVersion` goes up when a key is renamed or removed, not when one is added.
  *
  * ## Example 1: report the current branch against main from code
  * ```kt
@@ -94,6 +102,7 @@ public object DiffReport : ArchitectureProcessor<DiffReport.Args, Unit> {
             weights = args.weights,
             maxFiles = args.maxFiles,
             fullImportanceLines = args.fullImportanceLines,
+            baseline = context.architecture.baseline?.ledgerIn(root)?.entries?.keys.orEmpty(),
         )
         if (!args.markdown && !args.html && !args.json && !args.yaml) throw KatachiDiffReportNothingToWriteException()
         val outputs = buildList {

@@ -35,6 +35,10 @@ import org.gradle.work.DisableCachingByDefault;
  * engine, so {@code build/test-results/} stays absent after a run -- which is the mechanical
  * way to tell the two apart.
  *
+ * <p>The JVM it starts is the module's Java toolchain, the one the tests are compiled for
+ * ({@code java { toolchain { } }}, which {@code kotlin { jvmToolchain(N) }} also sets), on
+ * Gradle 8 as on Gradle 9. A {@code javaLauncher} set from the build script wins over it.
+ *
  * <p>It runs every time unless its processor declared, through
  * {@link KatachiProcessors#outputs}, that it reads no file of the project and where it writes.
  * Only then is {@link #getCacheableOutputDirectory()} present, and only then may Gradle call the
