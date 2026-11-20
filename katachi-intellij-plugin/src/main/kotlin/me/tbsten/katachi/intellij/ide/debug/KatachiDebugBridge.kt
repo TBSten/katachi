@@ -149,6 +149,8 @@ internal class KatachiDebugBridge(private val project: Project) {
 
     fun closePopups(): String = checked(DebugPanels(project)).closePopups()
 
+    fun performAction(id: String): String = checked(DebugPanels(project)).performAction(id)
+
     fun describeDefinitionErrors(path: String): String = authoringReader().describeDefinitionErrors(path)
 
     fun describeCompletion(path: String, offset: Int): String = authoringReader().describeCompletion(path, offset)

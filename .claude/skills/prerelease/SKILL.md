@@ -42,7 +42,7 @@ flowchart LR
 
 - 1 が通ったら、2・3・4・8・10-4・11・12 を並列に始める。3 と 6 の中は、区分ごとの subagent をさらに並列にする。
 - 8 は Gradle を長く使う（10〜20 分）。8 が終わったら続けて 10-1（IDE プラグインの nightly 相当。既定 scale 20 で
-  約30〜35分）、そのあと 10-2（IDE プラグインの E2E。実 IDE を起動するテスト2本、1本あたり起動込みで2分半〜3分が目安）を
+  約30〜35分）、そのあと 10-2（IDE プラグインの E2E。実 IDE を起動する smoke を 1 クラスずつ、1 クラスあたり index 込みで数分〜15 分）を
   走らせ、続けて 10-5（Android Studio での E2E。10-2 と同じ smoke を Android Studio で。所要は 10-2 と同じくらいで、初回は
   Android Studio のダウンロード約 1.5 GB が乗る）を走らせる。5 のサンプルを動かす作業と 6-1 は、10-5 が終わってから始める。
 - 9 も Gradle を長く使う（15〜20 分）。6-1 の `generateApiDocs` が終わってから始める（巡回を先に始めたいので 6-1 を先にする）。
@@ -158,7 +158,8 @@ priority 10 の警告。結果は `ci-checks.md`、ログは `tmp/ci-checks/`。
 - 10-2: `run-ide-plugin-e2e.py` で `integrationTest`（channel D の Driver smoke。実 IDE を起動して sample/jvm の写しへ
   ツールウィンドウから生成する）を手元で走らせる。ci.yml にも ide-plugin-nightly.yml にも無く「手で回す」とされた
   まま忘れられがちなので、ここで必ず一度は通す。実 IDE のウィンドウを開くので、ディスプレイのあるセッションが要る。
-  オーケストレータが自分で走らせてよい。落ちたら priority 10 の警告。結果は `ide-plugin-e2e.md`、ログは
+  オーケストレータが自分で走らせてよい。落ちたら priority 10 の警告。smoke は 1 本ごとに IDE の写しを約 8GB 残すので、
+  スクリプトは 1 クラスずつ流して写しを消す（まとめて流すとディスクが尽きる）。結果は `ide-plugin-e2e.md`、ログは
   `tmp/ide-plugin-e2e/`。
 - 10-3: 配る zip を確かめる。IDE プラグインは Marketplace に出さず、Release に添付する `katachi-intellij-plugin-<IDE の版>.zip` で配る
   （実験的。プラグインの版は katachi と別で、catalog の `katachiIntellij`）。`buildPlugin` で作った zip の `plugin.xml` の版・説明文・

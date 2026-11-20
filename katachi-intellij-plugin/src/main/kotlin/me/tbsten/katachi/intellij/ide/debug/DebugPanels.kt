@@ -1,5 +1,11 @@
 package me.tbsten.katachi.intellij.ide.debug
 
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.ActionUiKind
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.ex.ActionUtil
+import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -80,6 +86,18 @@ internal class DebugPanels(private val project: Project) {
     fun refreshFromDisk(): String = onEdt {
         sdkCall("refresh the virtual file system from the disk") { VirtualFileManager.getInstance().syncRefresh() }
         "refreshed=true"
+    }
+
+    /**
+     * Performs the action [id] as Find Action would, with a data context that holds only the project: `performed=<id>`, or
+     * `performed=none` when there is no such action or it was not performed. Driver's `invokeAction` takes the context from the focused
+     * window, and the IDE under test is not always in front (the action then has no project and is rejected as disabled).
+     */
+    fun performAction(id: String): String = onEdt {
+        val action = ActionManager.getInstance().getAction(id) ?: return@onEdt "performed=none"
+        val event = AnActionEvent.createEvent(action, SimpleDataContext.getProjectContext(project), null, ActionPlaces.ACTION_SEARCH, ActionUiKind.NONE, null)
+        val result = sdkCall("perform $id") { ActionUtil.performAction(action, event) }.getOrNull()
+        if (result == null || result.isIgnored) "performed=none" else "performed=$id"
     }
 
     fun closePopups(): String = onEdt {

@@ -26,34 +26,41 @@ python3 .claude/skills/prerelease/scripts/run-ide-plugin-nightly.py --release-di
 
 ## 10-2. E2E（channel D の Driver smoke。`integrationTest`）
 
-`integrationTest`（Starter + Driver で実 IDE を起動し、sample/jvm の写しを Gradle import してからツールウィンドウで
-生成する `GenerationIdeErrorsTest`・`ToolWindowSmokeTest`）は ci.yml にも ide-plugin-nightly.yml にも無く、どちらの
-ワークフローでも自動では回っていない。katachi-intellij-plugin/build.gradle.kts のコメント（`Run on demand with
-./gradlew integrationTest`）と ci.yml のコメント（`it stays a check to run by hand before a release`）の両方が、
-「リリース前に手で回す」前提を明言している。手で回すとされたまま忘れられないよう、ここで必ず一度は通す。
+`integrationTest`（Starter + Driver で実 IDE を起動し、sample/jvm の写しを Gradle import してから、ガター・ツール
+ウィンドウ・定義の編集などを確かめる smoke。`src/integrationTest` の `@Test` を持つクラス）は、nightly
+（ide-plugin-nightly.yml の smoke ジョブ）が一部のクラスを 1 job に 1 本ずつ回すだけで、全部を通す場所はほかに無い。
+katachi-intellij-plugin/build.gradle.kts のコメント（`Run on demand with ./gradlew integrationTest`）のとおり手で回す
+前提なので、忘れられないよう、ここで必ず一度は通す。
 
 ```shell
-python3 .claude/skills/prerelease/scripts/run-ide-plugin-e2e.py --list                              # 走らせるコマンドを見る
+python3 .claude/skills/prerelease/scripts/run-ide-plugin-e2e.py --list                              # 走らせるコマンドとクラスを見る
 python3 .claude/skills/prerelease/scripts/run-ide-plugin-e2e.py --release-dir .local/release-v<版>  # 走らせる
+python3 .claude/skills/prerelease/scripts/run-ide-plugin-e2e.py --release-dir .local/release-v<版> --class NoRoleSmokeTest  # 1 クラスだけ流し直す
 ```
 
-- コマンドは `./gradlew integrationTest` の1つだけで、ci.yml の `run:` のような置き場が無い（どのワークフローにも
-  出てこないため）。書き写す先は `katachi-intellij-plugin/build.gradle.kts` の
-  `intellijPlatformTesting.testIdeUi.register("integrationTest")`（タスク名が変わったらスクリプトも直す）
+- クラスを 1 つずつ `./gradlew integrationTest --tests '*.<クラス>'` で流す（nightly の 1 job 1 smoke と同じ形）。
+  コマンドの元は `katachi-intellij-plugin/build.gradle.kts` の `intellijPlatformTesting.testIdeUi.register("integrationTest")`
+  （タスク名が変わったらスクリプトも直す）。クラスは `src/integrationTest` の `@Test` を持つファイルから拾う
+- **ディスク**: smoke は 1 本ごとに IDE の .app を 2 回写し（`build/integrationTest/<smoke>/ide-*` と Starter の
+  `starter/out/ide-tests/cache`、IDEA で約 4GB ずつ）、後始末しない。まとめて `./gradlew integrationTest` を流すと
+  13 クラスで 100GB を超える（2026-11-20、v0.4.0 の 4 回目でディスクが尽き、途中から全部 `No space left on device` で
+  落ちた）。スクリプトは 1 クラスごとにこの 2 つを消し、ログ・スクリーンショット・system・リポジトリの写し（1 本 1GB ほど）は
+  残す。流す前に空きが 15GB を切っていたら、残りのクラスを流さずに止めて「未実行（空き不足）」と書く（環境要因。空けてから
+  `--class` で残りだけ流す）
 - 前提: 8 / 10-1 と同じ JDK 21・macOS に加えて、**ディスプレイのあるセッション**が要る（実 IDE のウィンドウを Starter が
   開く。SSH だけのヘッドレス環境では動かない）。IDE 本体は 8 / 10-1 と同じ `katachi-intellij-plugin/.intellijPlatform`
   のキャッシュを使う（テストへ `intellijPlatform.platformPath` をそのまま渡すので追加ダウンロードは無い。8 / 10-1 を
   一度も走らせていない初回はその場でダウンロードが乗る）
-- 所要: テスト2本（`GenerationIdeErrorsTest`・`ToolWindowSmokeTest`）、1本あたり IDE 起動込みで2分半〜3分が目安。
-  sample/jvm の写しを IDE がさらに Gradle import する分、初回はもっとかかる。テスト側のタイムアウトは安全側に
-  40分まで見ている（典型的な所要時間ではない）
+- 所要: 1 クラスあたり、IDE が写しを index する時間と Gradle import を含めて数分〜15 分。テスト側のタイムアウトは
+  安全側に 40 分まで見ている（典型的な所要時間ではない）
 - 実 IDE のウィンドウを開くぶん、8・10-1 以上に他の Gradle 作業や画面操作と重ねない。動かしている間は他の
   subagent にも IDE や画面を触らせない
-- Starter は `<git root>/out/ide-tests` に IDE の複製・ログを置く。スクリプトは消さないので、容量が気になれば
-  手で消す
+- Starter のログは `build/integrationTest/<smoke>/starter/out/ide-tests/tests/…/log`、スクリーンショットは
+  `build/integrationTest/<smoke>/screenshots`（nightly が artifact に上げるのも同じ 2 つ）
 - IDE のダウンロード: スクリプトは Gradle に HTTP の待ちと再試行を伸ばすフラグ（接続 2 分・読み込み 5 分・再試行 8 回）を
   付けて起動する。それでも止まったら、もう一度同じコマンドを打つ（Gradle は落とし終えた分を `~/.gradle` に持っている）
-- 結果は `ide-plugin-e2e.md`、ログは `tmp/ide-plugin-e2e/`
+- 結果は `ide-plugin-e2e.md`（クラスごとの結果・テスト数・秒の表）、ログと JUnit の XML は `tmp/ide-plugin-e2e/`。
+  10-5（`--android-studio`）も同じ形で、`build/integrationTestAndroidStudio/` の写しを消す
 
 ## 10-3. 配る zip（Release に添付するもの）
 
