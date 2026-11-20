@@ -11,7 +11,9 @@ import me.tbsten.katachi.script.internal.run
 /**
  * The `katachi lint` command: lists what in the definition looks off: a Role with files of several kinds, flat groups and the like.
  *
- * It takes no options, so building one is writing `katachi lint` in a shell.
+ * Building one is writing `katachi lint ...` in a shell: the methods are named after the
+ * options of `katachi lint --help` and add the same flag. Each returns a new
+ * command; calling one twice keeps the last value.
  *
  * ## Example 1: build the command, print it and run it
  *
@@ -34,6 +36,13 @@ public class LintCommand internal constructor(
     private val line: CommandLine,
 ) : KatachiCommand {
     private fun next(line: CommandLine) = LintCommand(katachi, line)
+
+    /**
+     * Same as `katachi lint --module-dir <path>` on the command line: where the verification module is, relative to the Gradle root. Without it, `meta.moduleDir` of the check list, then `architecture-test`.
+     *
+     * @param path Such as `static-analysis/katachi`.
+     */
+    public fun `module-dir`(path: String): LintCommand = next(line.with("--module-dir", path))
 
     /**
      * Appends [arguments] as they are, for an option this builder has no method for yet:

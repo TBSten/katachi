@@ -238,7 +238,10 @@ private fun fileRow(display: String, change: FileChange, range: DiffRange): Stri
 private fun cellCode(text: String): String {
     val escaped = text.replace("|", "\\|").replace('\r', ' ').replace('\n', ' ')
     val fence = "`".repeat((Regex("`+").findAll(escaped).maxOfOrNull { it.value.length } ?: 0) + 1)
-    val pad = if (escaped.startsWith("`") || escaped.endsWith("`")) " " else ""
+    // A code span drops one space at each end when the text both starts and ends with one, so such a name
+    // gets a space of padding too, or it would show without its own spaces.
+    val spacedBothEnds = escaped.startsWith(" ") && escaped.endsWith(" ") && escaped.isNotBlank()
+    val pad = if (escaped.startsWith("`") || escaped.endsWith("`") || spacedBothEnds) " " else ""
     return "$fence$pad$escaped$pad$fence"
 }
 

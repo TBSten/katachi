@@ -3,6 +3,7 @@ package me.tbsten.katachi.test.check.baseline
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
+import kotlin.random.Random
 import me.tbsten.katachi.check.KatachiArchitectureAssertionError
 import me.tbsten.katachi.check.KatachiBaselineNotFoundException
 import me.tbsten.katachi.check.StaleBaselineEntry
@@ -14,7 +15,8 @@ import me.tbsten.katachi.check.internal.renderBaseline
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.test.check.architectureOf
 import me.tbsten.katachi.test.check.repositoryOf
-import kotlin.random.Random
+import me.tbsten.katachi.test.pbt.pbtSeed
+import me.tbsten.katachi.test.pbt.pbtTrials
 
 /**
  * Random sequences of what happens to a project over time -- violations added, fixed and moved,
@@ -80,7 +82,10 @@ private fun describe(violations: List<Violation>): List<String> = violations.map
 class BaselineOperationSequenceSpec : FreeSpec({
     "操作の列をランダムに並べても、キー → 件数のモデルと結果が一致する" {
         val tree = repositoryOf { }
-        repeat(300) { seed ->
+        // `-Pkatachi.pbt.scale=N` runs N times as many sequences, `-Pkatachi.pbt.seed=N` starts from another seed.
+        val firstSeed = pbtSeed(0L)
+        repeat(pbtTrials(300)) { trial ->
+            val seed = firstSeed + trial
             val random = Random(seed)
             val operations = randomOperations(random, 12)
             val store = MemoryBaselineStore()

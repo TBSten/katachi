@@ -10,6 +10,7 @@ import me.tbsten.katachi.check.UnexpectedDirectory
 import me.tbsten.katachi.check.UnsatisfiedFileConstraint
 import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.check.internal.BaselineKey
+import me.tbsten.katachi.check.internal.IgnoredLayout
 import me.tbsten.katachi.check.internal.MissingDescription
 import me.tbsten.katachi.check.internal.baselineEntryLine
 import me.tbsten.katachi.check.internal.reportedDeclaredAt
@@ -131,6 +132,15 @@ internal class SarifLocationResolver(
             }
         }
 
+        is IgnoredLayout -> violation.hiddenBy.mapNotNull { ignore ->
+            resolvedLocationOf(ignore.declaredAt)?.let {
+                val message = ignore.gradleModuleName
+                    ?.let { module -> "Hidden by gradle(), which ignores the build directory of $module" }
+                    ?: "Hidden by the ignore() of ${ignore.role.qualifiedName}"
+                SarifRelatedLocation(it, message)
+            }
+        }
+
         else -> emptyList()
     }
 
@@ -144,6 +154,7 @@ internal class SarifLocationResolver(
         is UncheckedFileConstraint -> violation.declaredAt
         is MissingDescription -> violation.declaredAt
         is AmbiguousLayout -> violation.claims.firstOrNull()?.declaredAt
+        is IgnoredLayout -> violation.declaredAt
         else -> null
     }
 

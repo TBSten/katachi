@@ -176,14 +176,14 @@ internal class ViolationAnnotatorTest : AnnotatorTestBase() {
         val definition = (1..8).joinToString("\n") { "// line $it" }
         open("UseCaseRole.kt", definition)
         val role = pathOf("UseCaseRole.kt")
-        val labels = listOf("MissingFile", "MissingDescription", "AmbiguousLayout", "UncheckedFileConstraint")
+        val labels = listOf("MissingFile", "MissingDescription", "AmbiguousLayout", "IgnoredLayout", "UncheckedFileConstraint")
         checkRan(labels.mapIndexed { index, label -> AnnotationFixtures.missingFile(role, line = 2 + index).copy(label = label, ruleId = "katachi.$label") })
 
         val drawn = annotated()
 
-        assertEquals(listOf(2, 3, 4, 5), drawn.map { it.line })
-        assertEquals(listOf("// line 2", "// line 3", "// line 4", "// line 5"), drawn.map { it.text })
-        assertEquals(List(4) { HighlightSeverity.ERROR }, drawn.map { it.severity })
+        assertEquals(listOf(2, 3, 4, 5, 6), drawn.map { it.line })
+        assertEquals(listOf("// line 2", "// line 3", "// line 4", "// line 5", "// line 6"), drawn.map { it.text })
+        assertEquals(List(5) { HighlightSeverity.ERROR }, drawn.map { it.severity })
         assertEquals(labels.map { "katachi: [$it] The file is missing." }, drawn.map { it.description })
     }
 

@@ -36,7 +36,8 @@ import org.gradle.work.DisableCachingByDefault;
  * another writes, run their own {@code katachi<Key>} tasks one after the other instead.
  *
  * <p>It runs every time: it declares no output, so Gradle never calls it up to date or takes it
- * from the build cache.
+ * from the build cache. Its JVM is the module's Java toolchain, as for a {@code katachi<Key>}
+ * task.
  *
  * <h2>Example 1: run three processors in one JVM</h2>
  *

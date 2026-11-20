@@ -68,6 +68,15 @@ class CommandDslSpec : FreeSpec({
             katachi.doctor.toString() shouldBe "katachi doctor --lang ja"
         }
 
+        "Katachi の moduleDir は lint・agent test・agent compare-violations にも入り、test では -- の前に置く（KATACHI-420）" {
+            val katachi = Katachi(moduleDir = "static/katachi")
+            katachi.lint.toString() shouldBe "katachi lint --module-dir static/katachi"
+            katachi.agent.test.gradle("--info").toString() shouldBe "katachi agent test --module-dir static/katachi -- --info"
+            katachi.agent.`compare-violations`("before.log", "after.log").toString() shouldBe
+                "katachi agent compare-violations before.log after.log --module-dir static/katachi"
+            Katachi().agent.test.`module-dir`("other").toString() shouldBe "katachi agent test --module-dir other"
+        }
+
         "cwd はコマンドラインに出ない" {
             Katachi(cwd = Path.of("/somewhere")).scaffold.toString() shouldBe "katachi scaffold"
         }

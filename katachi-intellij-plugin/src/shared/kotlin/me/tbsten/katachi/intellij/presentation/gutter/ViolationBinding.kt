@@ -40,8 +40,9 @@ internal sealed interface RuleSite {
  * it the violations whose first location is the file and puts the targets on the PSI.
  *
  * `UnsatisfiedFileConstraint` and `UncheckedFile` are drawn in the source file. The violations of the definition side
- * (`MissingFile`, `MissingDescription`, `AmbiguousLayout`, `UncheckedFileConstraint`) point at the definition file and
- * are drawn on the line the check reported ([DEFINITION_SIDE]); one without a line, and `UnexpectedFile`, are not.
+ * (`MissingFile`, `MissingDescription`, `AmbiguousLayout`, `IgnoredLayout`, `UncheckedFileConstraint`) point at the
+ * definition file and are drawn on the line the check reported ([DEFINITION_SIDE]); one without a line, and
+ * `UnexpectedFile`, are not.
  *
  * ```kotlin
  * val drawn = ViolationBinding.bindSourceSide(violations.forFile(file)).filter { it.target != AnnotationTarget.Skipped }
@@ -52,7 +53,8 @@ internal object ViolationBinding {
     const val UNCHECKED_FILE: String = "UncheckedFile"
 
     /** The violations whose `locations[0]` is a line of the definition file (they are listed by `KatachiViolationsService.forFile` for it). */
-    val DEFINITION_SIDE: Set<String> = setOf("MissingFile", "MissingDescription", "AmbiguousLayout", "UncheckedFileConstraint")
+    val DEFINITION_SIDE: Set<String> =
+        setOf("MissingFile", "MissingDescription", "AmbiguousLayout", "IgnoredLayout", "UncheckedFileConstraint")
     private const val MISSING_PREFIX: String = "Missing:"
 
     fun bindSourceSide(violations: List<ViolationModel>): List<BoundViolation> =

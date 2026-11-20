@@ -90,6 +90,22 @@ tasks.test {
             .orElse(testKitGradleVersionCeiling.map { ceiling -> "8.0,$ceiling" })
             .get(),
     )
+
+    // A JDK newer than the toolchain this task and its TestKit builds run on, for the fixtures whose toolchain is newer
+    // than the JVM running Gradle. Looked up through this build's toolchains (found on the machine or downloaded by
+    // foojay) only when the task runs, so configuring the build does not need it.
+    val newerJava = 21
+    val newerJavaHome = javaToolchains
+        .launcherFor { languageVersion.set(JavaLanguageVersion.of(newerJava)) }
+        .map { launcher -> launcher.metadata.installationPath.asFile.absolutePath }
+    jvmArgumentProviders.add(
+        CommandLineArgumentProvider {
+            listOf(
+                "-Dkatachi.testkit.newerJava=$newerJava",
+                "-Dkatachi.testkit.newerJavaHome=${newerJavaHome.get()}",
+            )
+        },
+    )
 }
 
 dependencies {

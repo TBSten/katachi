@@ -3,6 +3,9 @@ package me.tbsten.katachi.test.konsist.declarations
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
+import me.tbsten.katachi.test.pbt.PBT_SEED
+import me.tbsten.katachi.test.pbt.checkTrials
+import me.tbsten.katachi.test.pbt.pbtTrials
 
 /**
  * What the matching reads off a file through Konsist (plan P2), over files that write the same

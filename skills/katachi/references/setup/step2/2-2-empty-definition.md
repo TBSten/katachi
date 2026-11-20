@@ -4,7 +4,7 @@
 katachi agent test
 ```
 
-`test` runs the verification module's `test` task (`./gradlew :architecture-test:test`) and summarizes the result. The full log stays in `<workdir>/tmp/test/`, and the summary's `Log:` line shows the path. To run the check, do not start Gradle directly; throughout these steps, always use `katachi agent test`. The exceptions are the tasks that have no `katachi` command: `katachiDocs` (4-3, 6-C) and `katachiTemplate` (6-D) run as `./gradlew`, and so does the CI in 6-B.
+`test` runs the verification module's `test` task (`./gradlew :architecture-test:test`) and summarizes the result. The full log stays in `<workdir>/tmp/test/`, and the summary's `Log:` line (ja: `ログ:`) shows the path. To run the check, do not start Gradle directly; throughout these steps, always use `katachi agent test`. The exceptions are the tasks that have no `katachi` command: `katachiDocs` (4-3, 6-C) and `katachiTemplate` (6-D) run as `./gradlew`, and so does the CI in 6-B.
 
 **Failing here is the expected outcome.** `architecture { }` is empty, so by the deny-by-default principle every file is reported as `Unexpected`. The summary looks like this.
 
@@ -13,6 +13,8 @@ JDK: 21 (JAVA_HOME)
 Log: file:///path/to/project/tmp/install-katachi/tmp/test/2026-10-06T01-02-03Z.log
 Result: Katachi check failed: 4 violations (Unexpected: 4)
 ```
+
+With a Japanese checklist, `Log:` is `ログ:` and `Result:` is `結果:`; what follows `Result:` from the check itself (`Katachi check failed: …`) stays in English.
 
 In the log, a paragraph of the following shape follows for each violation (an example of a file and of a directory).
 
@@ -47,7 +49,7 @@ katachi shows only 10 violations by default, but `katachi agent test` always wri
 
 **Failing in this shape means the wiring is correct.**
 
-The first Gradle run makes `.kotlin/` (Kotlin 2.x). If the project's `.gitignore` does not have it, `[UnexpectedDirectory] .kotlin` shows up. So does the `.gradle/` that Gradle creates. Treat them the same as the untracked files you looked for in 0-2: ask the user whether to add them to `.gitignore`. If git tracks files inside `.idea/` (such as `.idea/codeStyles/`), they are checked too, so declare them by writing a Role in step 3 (if you do not check their contents, `ignore()` is enough). Do not edit `.gitignore` yourself. Only an error that is not `Unexpected` is a problem — a compile error, a dependency resolution failure, something like `Could not start Gradle Test Executor` (the summary then says `Result: the check was not reached`, with the tail of the log attached).
+The first Gradle run makes `.kotlin/` (Kotlin 2.x). If the project's `.gitignore` does not have it, `[UnexpectedDirectory] .kotlin` shows up. So does the `.gradle/` that Gradle creates. Treat them the same as the untracked files you looked for in 0-2: ask the user whether to add them to `.gitignore`. If git tracks files inside `.idea/` (such as `.idea/codeStyles/`), they are checked too, so declare them by writing a Role in step 3 (if you do not check their contents, `ignore()` is enough). Do not edit `.gitignore` yourself. Only an error that is not `Unexpected` is a problem — a compile error, a dependency resolution failure, something like `Could not start Gradle Test Executor` (the summary then says `Result: the check was not reached` (ja: `結果: 検査まで届いていません`), with the tail of the log attached).
 
 In that case, following the same policy as step 4, **attempt to fix errors unrelated to katachi (Gradle, Java, dependency resolution).** Only if it still can't be resolved, pass the output to the user exactly as it is and ask for their judgment.
 

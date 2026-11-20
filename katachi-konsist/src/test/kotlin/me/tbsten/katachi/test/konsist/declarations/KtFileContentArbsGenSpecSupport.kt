@@ -1,6 +1,9 @@
 package me.tbsten.katachi.test.konsist.declarations
 
 import kotlin.random.Random
+import me.tbsten.katachi.test.pbt.chance
+import me.tbsten.katachi.test.pbt.pick
+import me.tbsten.katachi.test.pbt.pickOrNull
 
 /*
  * Random cases for the judging properties: an allow list and a source that follows it, made line

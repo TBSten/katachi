@@ -1510,7 +1510,7 @@
         },
         {
           "id": "6-4",
-          "label": "Wrote a template and confirmed the verification module's test succeeds right after generating one file",
+          "label": "Wrote a template and confirmed the verification module's test reports no new violations right after generating one file",
           "done": false
         }
       ]
@@ -1524,7 +1524,7 @@
 }
 </script>
 
-<!-- Example: the JSON above, fully filled in. Enter values in this shape.
+<!-- Example: the JSON above, fully filled in. Enter values in this shape. "title" and "label" are cut to "…" here: keep the ones above as they are. Never edit this comment.
 {
   "meta": {
     "workdir": ".local/install-katachi",
@@ -1539,146 +1539,146 @@
   "steps": [
     {
       "id": "0",
-      "title": "Preparation",
+      "title": "…",
       "warning": null,
       "items": [
         {
           "id": "0-1",
-          "label": "Ran one harmless command of each kind for real, to get the approvals the rest of the work needs up front",
+          "label": "…",
           "done": true
         },
         {
           "id": "0-2",
-          "label": "Set up the working directory from the katachi skill and filled in meta (Gradle root, Git, versions)",
+          "label": "…",
           "done": true
         }
       ]
     },
     {
       "id": "1",
-      "title": "Analyze the current codebase's structure and infer each component's constraints",
+      "title": "…",
       "warning": null,
       "items": [
         {
           "id": "1-1",
-          "label": "Read the project's own documentation before the code",
+          "label": "…",
           "done": true
         },
         {
           "id": "1-2",
-          "label": "Filled in the codebase report on this page (the report JSON)",
+          "label": "…",
           "done": true
         },
         {
           "id": "1-3",
-          "label": "Asked about writing preferences and recorded them in preferences",
+          "label": "…",
           "done": true
         }
       ]
     },
     {
       "id": "2",
-      "title": "Create the verification module (default architecture-test/) and wire it into the build",
+      "title": "…",
       "warning": null,
       "items": [
         {
           "id": "2-1",
-          "label": "Ran `katachi scaffold \u002d\u002dpackage <package name>`",
+          "label": "…",
           "done": true
         },
         {
           "id": "2-2",
-          "label": "Confirmed that with an empty definition, the verification module's test fails only with Unexpected",
+          "label": "…",
           "done": true
         }
       ]
     },
     {
       "id": "3",
-      "title": "Write the `architecture { }` definition",
+      "title": "…",
       "warning": null,
       "items": [
         {
           "id": "3-1",
-          "label": "Read the documentation pages in step 3-1 (layout, role, basic-api; kt-file-content, gradle and source sets when the project needs them)",
+          "label": "…",
           "done": true
         },
         {
           "id": "3-2",
-          "label": "Wrote the architecture { } definition and saved the verification module's test output as the pre-refactoring reference log",
+          "label": "…",
           "done": true
         },
         {
           "id": "3-3",
-          "label": "Refactored the definition (splitting files and packages, descriptions, shared parts) and confirmed with `compare-violations` that the check result did not change",
+          "label": "…",
           "done": true
         }
       ]
     },
     {
       "id": "4",
-      "title": "Verify",
+      "title": "…",
       "warning": "Left 1 architecture violation unfixed",
       "items": [
         {
           "id": "4-1",
-          "label": "Ran the verification module's test",
+          "label": "…",
           "done": true
         },
         {
           "id": "4-2",
-          "label": "Handled the errors: fixed those not caused by katachi (Gradle, Java, etc.) and recorded the violations left",
+          "label": "…",
           "done": true
         },
         {
           "id": "4-3",
-          "label": "Generated docs with the verification module's katachiDocs and checked the output",
+          "label": "…",
           "done": true
         }
       ]
     },
     {
       "id": "5",
-      "title": "Review the checklist",
+      "title": "…",
       "warning": null,
       "items": [
         {
           "id": "5-1",
-          "label": "Reviewed this checklist in full",
-          "done": false
+          "label": "…",
+          "done": true
         },
         {
           "id": "5-2",
-          "label": "Confirmed nothing was left unfilled",
-          "done": false
+          "label": "…",
+          "done": true
         }
       ]
     },
     {
       "id": "6",
-      "title": "(Optional) Confirm it works, and extend it to CI, docs and templates",
+      "title": "…",
       "warning": null,
       "optional": true,
       "items": [
         {
           "id": "6-1",
-          "label": "Ran a real implementation task and judged whether architecture { } needed changes",
-          "done": false
+          "label": "…",
+          "done": true
         },
         {
           "id": "6-2",
-          "label": "Added the verification module's test to CI",
-          "done": false
+          "label": "…",
+          "done": true
         },
         {
           "id": "6-3",
-          "label": "Set up documentation generation (title / description, whether to commit it)",
-          "done": false
+          "label": "…",
+          "done": true
         },
         {
           "id": "6-4",
-          "label": "Wrote a template and confirmed the verification module's test succeeds right after generating one file",
-          "done": false
+          "label": "…",
+          "done": true
         }
       ]
     }

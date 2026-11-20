@@ -61,6 +61,7 @@ internal fun Architecture.scanProject(
         root = projectRoot.path,
         evaluation = evaluation,
         moduleFailures = modules.unchecked,
+        roleNames = RoleNameSuggestions(rootNames()),
     ).run()
 }
 
@@ -69,6 +70,7 @@ private class Scan(
     private val root: FsPath,
     private val evaluation: LayoutEvaluation,
     private val moduleFailures: List<UncheckedDirectory>,
+    private val roleNames: RoleNameSuggestions,
 ) {
     private val layout = LayoutIndex(evaluation.entries)
 
@@ -159,7 +161,7 @@ private class Scan(
     private fun visitDirectory(directory: FsPath, path: String) {
         if (layout.isIgnored(path)) return
         if (!layout.isKnown(path)) {
-            violations += UnexpectedDirectory(path)
+            violations += UnexpectedDirectory(path, suggestedRole = roleNames.nameFor(path))
             return
         }
         walk(directory, path)
@@ -180,7 +182,7 @@ private class Scan(
         // A pattern did match, and only a bound capture held the file back: that is a more
         // useful thing to say than "no role", and it names where the file should be.
         val (entry, mismatch) = layout.captureMismatchesOn(path).firstOrNull() ?: run {
-            violations += UnexpectedFile(path = path, nearby = layout.nearbyOf(path))
+            violations += UnexpectedFile(path = path, nearby = layout.nearbyOf(path), suggestedRole = roleNames.nameFor(path))
             return
         }
         violations += CaptureMismatch(
