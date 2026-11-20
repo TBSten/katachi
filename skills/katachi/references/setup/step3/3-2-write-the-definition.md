@@ -7,11 +7,14 @@
 ```kt
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.DeclarationContainerScope   // when splitting the definition into functions
+import me.tbsten.katachi.dsl.FileConstraintFailure       // when writing fileConstraint (an experimental API)
 import me.tbsten.katachi.dsl.gradle.*                    // mainSourceSet / testSourceSet / kotlin / gradle()
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 import me.tbsten.katachi.konsist.declarations.ktFileContent   // when writing ktFileContent { } (an experimental API)
 ```
+
+`fileConstraint` itself needs no import (it is a member of the scopes you call it in); the `FileConstraintFailure` its check returns does, and so do `FileConstraintReason` and `FileConstraintFix` from the same package if you use them.
 
 **Star-import `me.tbsten.katachi.dsl.gradle`:** one line brings `mainSourceSet`, `testSourceSet`, `kotlin` and `gradle()`. Importing them one by one also works (`/` needs no import).
 
@@ -45,7 +48,7 @@ Files directly under the root also get one Role per kind (README, LICENSE, `.git
 
 **For the Gradle files (the wrapper, settings, each module's build script, `gradle.properties`, the version catalog), do not write Roles yourself: write the one line `gradle()`.** katachi declares a `Gradle` group split into one Role per kind of file (it comes with the star import of `me.tbsten.katachi.dsl.gradle.*`). Only `buildSrc` and builds added with `includeBuild`, which it does not cover, need Roles of your own. The four wrapper files (`gradlew`, `gradlew.bat`, `gradle/wrapper/gradle-wrapper.jar`, `gradle/wrapper/gradle-wrapper.properties`) are required, and a missing one is `[MissingFile]`. When the project has no wrapper, or keeps only part of it, write `gradle(requireWrapper = false)` instead.
 
-When you want to check the contents of a build file (the ones marked `constraintOnly` in the report), you do not write a Role either. Write the constraint in a hook of the `gradle()` block, as in `gradle { buildScript { fileConstraint("...") { subject -> ... } } }` (`settingsScript { }` for settings, `versionCatalog { }` for the version catalog). `fileConstraint` and `FileConstraintFailure` are experimental APIs, so the file starts with the two lines in the "experimental APIs" paragraph above. A `buildScript { }` constraint receives the `build.gradle(.kts)` of every module, the root included, in `subject.files`. To look at one module only, narrow `subject.files` by path inside the constraint (for example `subject.files.filter { it == "app/build.gradle.kts" }`). Writing a Role inside `gradle { }` with the same name as one of katachi's (`"BuildScript".role { }` and so on) raises a duplicate exception. A Role outside `gradle { }` that declares a build file claims the same file as katachi's `BuildScript` and becomes `[AmbiguousLayout]`.
+When you want to check the contents of a build file (the ones marked `constraintOnly` in the report), you do not write a Role either. Write the constraint in a hook of the `gradle()` block, as in `gradle { buildScript { fileConstraint("...") { subject -> ... } } }` (`settingsScript { }` for settings, `versionCatalog { }` for the version catalog). `fileConstraint` and `FileConstraintFailure` are experimental APIs, so the file starts with the two lines in the "experimental APIs" paragraph above, and it imports `me.tbsten.katachi.dsl.FileConstraintFailure` (the import list at the top). A `buildScript { }` constraint receives the `build.gradle(.kts)` of every module, the root included, in `subject.files`. To look at one module only, narrow `subject.files` by path inside the constraint (for example `subject.files.filter { it == "app/build.gradle.kts" }`). Writing a Role inside `gradle { }` with the same name as one of katachi's (`"BuildScript".role { }` and so on) raises a duplicate exception. A Role outside `gradle { }` that declares a build file claims the same file as katachi's `BuildScript` and becomes `[AmbiguousLayout]`.
 
 <details>
 <summary>Common mistakes and how to fix them</summary>

@@ -1,6 +1,6 @@
 ### 6-B. (After reporting in 6) If asked to set up CI
 
-Handle this as follows, based on the CI system in use. If you changed `--module-dir`, read `:architecture-test` below as the Gradle path of `meta.moduleDir` (`static-analysis/katachi` is `:static-analysis:katachi`).
+Handle this as follows, based on the CI system in use. If `meta.moduleDir` is not `architecture-test`, read `:architecture-test` below as the Gradle path of `meta.moduleDir` (`static-analysis/katachi` is `:static-analysis:katachi`).
 
 ### If using GitHub Actions
 
