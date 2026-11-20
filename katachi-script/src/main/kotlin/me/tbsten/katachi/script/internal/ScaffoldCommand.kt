@@ -60,11 +60,17 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
     requireKatachiVersion(version, versionSource)
     val mavenLocal = mavenLocalEnabled()
 
-    if (kotlin.isEmpty()) kotlin = detectKotlinVersion(root) ?: ""
+    var kotlinFile: String? = null
+    if (kotlin.isEmpty()) {
+        detectKotlinVersion(root)?.let {
+            kotlin = it.version
+            kotlinFile = it.file
+        }
+    }
     if (kotlin.isEmpty()) die(if (buildSrcUsesEmbeddedKotlin(root)) Messages.Scaffold.couldNotDetectEmbeddedKotlin else Messages.Scaffold.couldNotDetectKotlin)
     val (kotlinMajor, kotlinMinor) = majorMinor(kotlin) ?: die(Messages.Scaffold.couldNotReadKotlin(kotlin))
     if (kotlinMajor < KOTLIN_MIN_MAJOR || (kotlinMajor == KOTLIN_MIN_MAJOR && kotlinMinor < KOTLIN_MIN_MINOR)) {
-        val message = kotlinTooOldMessage(root, kotlin, forScaffold = true)
+        val message = kotlinTooOldMessage(root, kotlin, kotlinFile, forScaffold = true)
         die(Messages.Scaffold.afterUpgradingRunScaffold(message))
     }
     // Context parameters entered the language in 2.4; 2.2 / 2.3 need -Xcontext-parameters, and 2.4+ warns that it is redundant.

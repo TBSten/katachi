@@ -10,8 +10,11 @@ import kotlin.io.path.writeText
 import me.tbsten.katachi.script.internal.Dsl
 import me.tbsten.katachi.script.internal.GradleFile
 import me.tbsten.katachi.script.internal.KotlinPlacement
+import me.tbsten.katachi.script.internal.OtherBuilds
 import me.tbsten.katachi.script.internal.addSettingsInclude
+import me.tbsten.katachi.script.internal.detectTestFramework
 import me.tbsten.katachi.script.internal.includedBuildDirs
+import me.tbsten.katachi.script.internal.includedProjectDirs
 import me.tbsten.katachi.script.internal.kotlinPluginPlacement
 import me.tbsten.katachi.script.internal.planCatalogEntries
 import me.tbsten.katachi.script.internal.runtimeDependencyDeclarations
@@ -48,6 +51,79 @@ class GradleFilesSpec : FreeSpec({
         val root = createTempDirectory("katachi-gradle-")
         root.resolve("settings.gradle.kts").writeText("includeBuild(\"build-logic\")\nincludeBuild(\"../outside\")\nincludeBuild(\"./tools/\") // includeBuild(\"commented\")\n")
         includedBuildDirs(root) shouldBe listOf("build-logic", "tools")
+    }
+
+    "includedProjectDirs（KATACHI-431）" - {
+        "include の文字列をディレクトリにし、複数行の括弧の中も読む。コメントと includeBuild は数えない" {
+            val root = createTempDirectory("katachi-gradle-")
+            root.resolve("settings.gradle.kts").writeText(
+                """
+                rootProject.name = "p"
+                includeBuild("build-logic")
+                include(":app")
+                include(":feature:home", "lib")
+                include(
+                    ":core:data",
+                    ":core:ui", // include(":commented")
+                )
+                // include(":old")
+                """.trimIndent(),
+            )
+            includedProjectDirs(root) shouldBe listOf("app", "feature/home", "lib", "core/data", "core/ui")
+        }
+
+        "Groovy の括弧なしは , で終わる行の次の行まで読む" {
+            val root = createTempDirectory("katachi-gradle-")
+            root.resolve("settings.gradle").writeText(
+                """
+                include ':app', ':feature:home',
+                        ':lib'
+                include 'tools'
+                includeBuild 'build-logic'
+                """.trimIndent(),
+            )
+            includedProjectDirs(root) shouldBe listOf("app", "feature/home", "lib", "tools")
+        }
+    }
+
+    "OtherBuilds は settings を持つディレクトリのうち、buildSrc でも include も includeBuild もされていないものだけ（KATACHI-431）" {
+        val root = createTempDirectory("katachi-gradle-")
+        root.resolve("settings.gradle.kts").writeText(
+            """
+            includeBuild("build-logic")
+            include(":tools:codegen")
+            """.trimIndent(),
+        )
+        for (dir in listOf("build-logic", "buildSrc", "tools/codegen")) {
+            root.resolve(dir).createDirectories().resolve("settings.gradle.kts").writeText("")
+        }
+        root.resolve("samples/demo").createDirectories().resolve("settings.gradle").writeText("")
+        root.resolve("app").createDirectories()
+
+        val otherBuilds = OtherBuilds(root)
+
+        listOf("build-logic", "buildSrc", "tools/codegen", "samples/demo", "app").filter { root.resolve(it) in otherBuilds } shouldBe listOf("samples/demo")
+        (root in otherBuilds) shouldBe false
+    }
+
+    "detectTestFramework は自分の settings を持つ別のビルドの io.kotest を数えず、include したプロジェクトの io.kotest は数える（KATACHI-431）" {
+        val root = createTempDirectory("katachi-gradle-")
+        root.resolve("settings.gradle.kts").writeText(
+            """
+            rootProject.name = "p"
+            include(":app")
+            """.trimIndent(),
+        )
+        val app = root.resolve("app").createDirectories().resolve("build.gradle.kts")
+        app.writeText("dependencies { testImplementation(\"org.junit.jupiter:junit-jupiter:5.14.4\") }")
+        root.resolve("samples/demo").createDirectories().resolve("settings.gradle.kts").writeText("rootProject.name = \"demo\"")
+        root.resolve("samples/demo/build.gradle.kts").writeText("dependencies { testImplementation(\"io.kotest:kotest-runner-junit5:6.0.0\") }")
+
+        detectTestFramework(root, "architecture-test") shouldBe ("junit5" to null)
+
+        app.writeText("dependencies { testImplementation(\"io.kotest:kotest-runner-junit5:6.0.0\") }")
+
+        detectTestFramework(root, "architecture-test") shouldBe ("kotest" to "app/build.gradle.kts")
     }
 
     "kotlinPluginPlacement" - {

@@ -8,6 +8,7 @@ import java.io.File
 import java.nio.file.Path
 import java.nio.file.attribute.PosixFilePermissions
 import kotlin.io.path.createDirectories
+import kotlin.io.path.createParentDirectories
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.exists
 import kotlin.io.path.readText
@@ -15,6 +16,7 @@ import kotlin.io.path.setPosixFilePermissions
 import kotlin.io.path.writeText
 import me.tbsten.katachi.script.internal.MacOsJavaStub
 import me.tbsten.katachi.script.internal.SHELL_JAVA_HOME_ENV
+import me.tbsten.katachi.script.internal.fileUriOf
 
 /** `doctor` and a `scaffold` that writes (the dry run is in RunScriptSpec) (KATACHI-266). */
 class DoctorScaffoldSpec : FreeSpec({
@@ -26,7 +28,7 @@ class DoctorScaffoldSpec : FreeSpec({
 
             run.status shouldBe 0
             run.out shouldContain "必要なものはそろっています（katachi "
-            run.out shouldContain "Kotlin: 2.4.10"
+            run.out shouldContain "Kotlin: 2.4.10（${fileUriOf(project.resolve("build.gradle.kts"))} から）"
             run.err shouldNotContain "git:"
         }
 
@@ -38,8 +40,44 @@ class DoctorScaffoldSpec : FreeSpec({
             run.status shouldBe 0
             run.out.lineSequence().first() shouldContain "対応が必要なものがあります（katachi "
             run.out shouldNotContain "必要なものはそろっています"
-            run.out shouldContain "Kotlin: 1.9.10（古すぎます）"
+            run.out shouldContain "Kotlin: 1.9.10（古すぎます。${fileUriOf(project.resolve("build.gradle.kts"))} から）"
             run.err shouldContain "Kotlin は 1.9.10 です"
+        }
+
+        "Kotlin が古いときの案内は、読んだファイルを出し、--kotlin で実際のバージョンを渡せると添える（KATACHI-431）" {
+            val project = gradleProject(toolchain = 21, kotlin = "1.9.10")
+            val build = fileUriOf(project.resolve("build.gradle.kts"))
+
+            val ja = runCapturing(project, listOf("doctor"), env = mapOf("PATH" to pathWithGit().toString()))
+            val en = runCapturing(project, listOf("doctor", "--lang", "en"), env = mapOf("PATH" to pathWithGit().toString()))
+
+            ja.err shouldContain "このプロジェクトの Kotlin は 1.9.10 です（$build から読みました）。"
+            ja.err shouldContain "Kotlin は上げずに、scaffold に --kotlin <バージョン> を付けて実際のバージョンを渡してください。"
+            en.out shouldContain "Kotlin: 1.9.10 (too old; from $build )"
+            en.err shouldContain "This project uses Kotlin 1.9.10 (read from $build )."
+            en.err shouldContain "pass the actual version to scaffold with --kotlin <version> instead of upgrading Kotlin."
+        }
+
+        "Kotlin のバージョンは、自分の settings を持つ別のビルド（examples/demo など）からは読まない（KATACHI-431）" {
+            val project = gradleProject(toolchain = 21)
+            project.writeFile(
+                "settings.gradle.kts",
+                """
+                rootProject.name = "p"
+                include(":server")
+                """.trimIndent(),
+            )
+            project.writeFile("build.gradle.kts", "// root")
+            project.writeFile("server/build.gradle.kts", "plugins { kotlin(\"jvm\") version \"2.3.20\" }")
+            project.writeFile("examples/demo/settings.gradle.kts", "rootProject.name = \"demo\"")
+            project.writeFile("examples/demo/build.gradle.kts", "plugins { kotlin(\"jvm\") version \"2.1.21\" }")
+
+            val run = runCapturing(project, listOf("doctor"), env = mapOf("PATH" to pathWithGit().toString()))
+
+            run.status shouldBe 0
+            run.out.lineSequence().first() shouldContain "必要なものはそろっています（katachi "
+            run.out shouldContain "Kotlin: 2.3.20（${fileUriOf(project.resolve("server/build.gradle.kts"))} から）"
+            run.err shouldNotContain "2.1.21"
         }
 
         "git が無ければ入れ方を添えて警告し、止めはしない" {
@@ -269,6 +307,45 @@ class DoctorScaffoldSpec : FreeSpec({
             src.resolve("ProjectArchitectureTest.kt").readText() shouldContain "package com.example.test.architecture"
             project.resolve("architecture-test/build.gradle.kts").readText() shouldContain "0.4.0"
             project.resolve("settings.gradle.kts").readText() shouldContain "include(\":architecture-test\")"
+        }
+
+        "toolchain は本体と includeBuild したビルドから読み、自分の settings を持つ別のビルド（samples/demo など）は読まない（KATACHI-431）" {
+            val project = gradleProject(toolchain = 21)
+            project.writeFile(
+                "settings.gradle.kts",
+                """
+                rootProject.name = "p"
+                includeBuild("build-logic")
+                include(":app")
+                """.trimIndent(),
+            )
+            project.writeFile("app/build.gradle.kts", "kotlin { jvmToolchain(17) }")
+            project.writeFile("build-logic/settings.gradle.kts", "rootProject.name = \"build-logic\"")
+            project.writeFile("build-logic/src/main/kotlin/JvmConventions.kt", "fun Project.configureJvm() = kotlinExtension.jvmToolchain(21)")
+            project.writeFile("samples/demo/settings.gradle.kts", "rootProject.name = \"demo\"")
+            project.writeFile("samples/demo/build.gradle.kts", "kotlin { jvmToolchain(25) }")
+
+            val run = runCapturing(project, listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0"), env = javaHome())
+
+            run.status shouldBe 0
+            run.out shouldContain "JVM toolchain: 21（build-logic/src/main/kotlin/JvmConventions.kt の設定から）"
+            project.resolve("architecture-test/build.gradle.kts").readText() shouldContain "jvmToolchain(21)"
+        }
+
+        "検出した Kotlin が古ければ読んだファイルと --kotlin を添えて止まり、--kotlin で渡したバージョンにはファイルを添えない（KATACHI-431）" {
+            val project = gradleProject(toolchain = 21, kotlin = "1.9.10")
+            val args = listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0")
+
+            val detected = runCapturing(project, args, env = javaHome())
+            val given = runCapturing(project, args + listOf("--kotlin", "2.1.0"), env = javaHome())
+
+            detected.status shouldBe 1
+            detected.err shouldContain "このプロジェクトの Kotlin は 1.9.10 です（${fileUriOf(project.resolve("build.gradle.kts"))} から読みました）。"
+            detected.err shouldContain "scaffold に --kotlin <バージョン> を付けて"
+            given.status shouldBe 1
+            given.err shouldContain "このプロジェクトの Kotlin は 2.1.0 です。katachi は Kotlin 2.2 以降が要ります"
+            given.err shouldNotContain "から読みました"
+            project.resolve("architecture-test").exists() shouldBe false
         }
 
         "build.gradle.kts にコメントを書かない（KATACHI-357）" {
@@ -546,5 +623,9 @@ private fun pathWithGit(): Path {
 
 /** The ProjectArchitectureTest.kt `scaffold` writes for `--package com.example`. */
 private fun Path.architectureTest(): Path = resolve("architecture-test/src/test/kotlin/com/example/test/architecture/ProjectArchitectureTest.kt")
+
+private fun Path.writeFile(relative: String, text: String) {
+    resolve(relative).createParentDirectories().writeText(text)
+}
 
 private fun javaHome(): Map<String, String> = mapOf("JAVA_HOME" to System.getProperty("java.home"))
