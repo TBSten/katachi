@@ -147,7 +147,9 @@ class SpikeDriverTest {
                 // way from this test to read the Compose state back (no bridge method exposes the
                 // search query), so this only confirms the keys can be sent without the IDE erroring.
                 step("(b) type into the tool window's Compose search field") {
-                    val panel = ui.x { byClass("JewelComposePanelWrapper") }
+                    // The panel inside katachi's tool window: Android Studio has Compose panels of its own (two matched there in the
+                    // prerelease of v0.4.0), and the decorator of a tool window is named "<title> Tool Window" (as Driver's projectView).
+                    val panel = ui.x("//div[@class='InternalDecoratorImpl' and contains(@accessiblename, 'katachi')]//div[@class='JewelComposePanelWrapper']")
                     val bounds = panel.boundsOnScreen
                     println("[spike-driver] JewelComposePanelWrapper bounds: $bounds")
                     // The search field is the Column's first item (no refresh bar/banner once the
