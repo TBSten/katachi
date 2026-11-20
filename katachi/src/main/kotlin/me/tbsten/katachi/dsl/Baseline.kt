@@ -8,10 +8,10 @@ import me.tbsten.katachi.KatachiDeclarationException
  * was adopted, held back so that only new ones fail.
  *
  * A violation is recorded by the check that found it, its label and its path — plus, for a
- * failed constraint, the role, the constraint and the declaration — and never by its line, so
- * editing the file around it does not turn it into a new violation. Moving or renaming the file
- * does: where a file sits is exactly what katachi checks. The same key may be recorded more than
- * once, with a count.
+ * failed constraint, the role, the constraint's name and the declaration's name (`User.id`) — and
+ * never by its line, so editing the file around it does not turn it into a new violation. Moving
+ * or renaming the file does: where a file sits is exactly what katachi checks. The same key may
+ * be recorded more than once, with a count.
  *
  * Every way of running a check (the test, or a check registered as a processor) reads the same
  * ledger. It is for temporary debt only: something meant to stay is declared in `layout { }`.

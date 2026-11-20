@@ -66,6 +66,8 @@ import me.tbsten.katachi.konsist.internal.KonsistFileConstraint
  * @param block what to ask of the covered files. See [KonsistScope].
  * @throws me.tbsten.katachi.dsl.KatachiFileConstraintNameException when the name is blank or holds
  *   a line break — it is printed on one line of a report block.
+ * @throws me.tbsten.katachi.dsl.KatachiDuplicateFileConstraintNameException when the role holds
+ *   another constraint of the same name.
  * @throws me.tbsten.katachi.dsl.KatachiFileConstraintWithoutLayoutException when the role it is
  *   written on declares no `layout { }`, so nothing could ever be covered.
  * @throws me.tbsten.katachi.dsl.KatachiFileConstraintDirectOnlyWithoutDirectoryException when
@@ -86,9 +88,10 @@ public fun String.konsist(
  * Declares an unnamed constraint over the files the block around it matched, written with
  * Konsist.
  *
- * Identical to the named form except that the report identifies it by its declaration site
- * alone. Worth it when the block is short enough to read as its own name, and when there is
- * only one constraint in that place; a report that has to say which of three rules failed
+ * Identical to the named form, named `konsist`: the report prints `FileConstraint: "konsist"` and a
+ * baseline records its violations under that name. A role therefore holds one unnamed
+ * `konsist { }`. Worth it when the block is short enough to read as its own name, and when it is
+ * the only `konsist { }` of the role; a report that has to say which of three rules failed
  * reads better with a name.
  *
  * ## Example 1: the only rule of one directory
@@ -107,6 +110,8 @@ public fun String.konsist(
  * @param block what to ask of the covered files. See [KonsistScope].
  * @throws me.tbsten.katachi.dsl.KatachiFileConstraintWithoutLayoutException when the role it is
  *   written on declares no `layout { }`, so nothing could ever be covered.
+ * @throws me.tbsten.katachi.dsl.KatachiDuplicateFileConstraintNameException when the role holds
+ *   another constraint named `konsist`: a second unnamed `konsist { }`, or one given that name.
  * @throws me.tbsten.katachi.dsl.KatachiFileConstraintDirectOnlyWithoutDirectoryException when
  *   `scope = FileConstraintRange.DirectOnly` is written outside a directory block.
  * @throws me.tbsten.katachi.dsl.KatachiFileConstraintDirectOnlyCoversNothingException when
@@ -117,5 +122,7 @@ public fun konsist(
     scope: FileConstraintRange = FileConstraintRange.Subtree,
     block: KonsistScope.() -> Unit,
 ) {
-    fileConstraintScope.fileConstraint(name = null, scope = scope, check = KonsistFileConstraint(block))
+    fileConstraintScope.fileConstraint(name = UNNAMED_NAME, scope = scope, check = KonsistFileConstraint(block))
 }
+
+private const val UNNAMED_NAME: String = "konsist"

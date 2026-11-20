@@ -11,4 +11,5 @@ incompatible version of Kotlin" naming the Konture jar.
 # Package me.tbsten.katachi.konture
 
 The `konture { }` backend: declares a named constraint that runs Konture's rules over the files
-a role's `layout { }` covers, without Konture's Gradle plugin or `layout_v2.json`.
+a role's `layout { }` covers, without Konture's Gradle plugin or `layout_v2.json`. A block written
+without a name is named `konture`, and a role holds one constraint of each name.

@@ -13,6 +13,9 @@ import me.tbsten.katachi.check.FileConstraintCheck
 import me.tbsten.katachi.check.KatachiArchitectureAssertionError
 import me.tbsten.katachi.check.UnsatisfiedFileConstraint
 import me.tbsten.katachi.dsl.Architecture
+import me.tbsten.katachi.dsl.FileConstraintFailure
+import me.tbsten.katachi.dsl.FileConstraintSubject
+import me.tbsten.katachi.dsl.LayoutDirectoryScope
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.files.internal.RealFileSystem
 import me.tbsten.katachi.dsl.wholeTree
@@ -51,6 +54,22 @@ class KonsistBaselineSpec : FreeSpec({
             failure.rejectedDeclarations() shouldContainExactly listOf("DetailScreen.State")
         }
     }
+
+    "名前の無いブロックは種類の名前で baseline の記録が分かれる" - {
+        "名前の無い konsist { } の User.id を記録したあと、名前の無い fileConstraint { } が User.id を断ると失敗する" {
+            val failure = recordThenBreakUnder(
+                before = USER_WITH_VAR_ID,
+                after = USER_WITH_DEPRECATED_ID,
+                recorded = "User.id",
+            ) {
+                konsist { properties().mustNot { it.isVar } }
+                fileConstraint { subject -> deprecatedUserIds(subject) }
+            }
+
+            failure.violations.filterIsInstance<UnsatisfiedFileConstraint>()
+                .map { it.constraintName to it.declaration } shouldContainExactly listOf(null to "User.id")
+        }
+    }
 })
 
 /**
@@ -65,11 +84,19 @@ private fun recordThenBreak(
     after: String,
     recorded: String,
     block: KonsistScope.() -> Unit,
+): KatachiArchitectureAssertionError = recordThenBreakUnder(before, after, recorded) { "規約".konsist { block() } }
+
+/** [recordThenBreak] with the constraints of `src/` written out, for a spec about how they are named. */
+private fun recordThenBreakUnder(
+    before: String,
+    after: String,
+    recorded: String,
+    constraints: LayoutDirectoryScope.() -> Unit,
 ): KatachiArchitectureAssertionError = fixtureProject(
     "src/Models.kt" to before,
     "katachi-baseline.json" to EMPTY_BASELINE,
 ) { root ->
-    val projectArchitecture = baselineArchitecture(block)
+    val projectArchitecture = baselineArchitecture(constraints)
     projectArchitecture.assertWithBaselineForTest(RealFileSystem(root), FileConstraintCheck(), update = true)
     val recordedBaseline = File(root, "katachi-baseline.json").readText()
 
@@ -83,7 +110,7 @@ private fun recordThenBreak(
     failure
 }
 
-private fun baselineArchitecture(block: KonsistScope.() -> Unit): Architecture = architecture {
+private fun baselineArchitecture(constraints: LayoutDirectoryScope.() -> Unit): Architecture = architecture {
     files = wholeTree()
     baseline()
     "domain".group {
@@ -93,7 +120,7 @@ private fun baselineArchitecture(block: KonsistScope.() -> Unit): Architecture =
                 "katachi-baseline.json".file()
                 "src" {
                     "*.kt".file()
-                    "規約".konsist { block() }
+                    constraints()
                 }
             }
         }
@@ -102,6 +129,11 @@ private fun baselineArchitecture(block: KonsistScope.() -> Unit): Architecture =
 
 private fun KatachiArchitectureAssertionError.rejectedDeclarations(): List<String?> =
     violations.filterIsInstance<UnsatisfiedFileConstraint>().map { it.declaration }
+
+/** A rule of a backend of one's own that rejects `User.id` once it is deprecated. */
+private fun deprecatedUserIds(subject: FileConstraintSubject): List<FileConstraintFailure> =
+    subject.files.filter { File("${subject.projectRoot}/$it").readText().contains("@Deprecated") }
+        .map { FileConstraintFailure(it, declaration = "User.id") }
 
 private val EMPTY_BASELINE: String = """
     {
@@ -155,5 +187,22 @@ private val SCREENS_WITH_INTERNAL_DETAIL_STATE: String = """
 
     class DetailScreen {
         internal class State
+    }
+""".trimIndent() + "\n"
+
+private val USER_WITH_VAR_ID: String = """
+    package com.example
+
+    class User {
+        var id: String = ""
+    }
+""".trimIndent() + "\n"
+
+private val USER_WITH_DEPRECATED_ID: String = """
+    package com.example
+
+    class User {
+        @Deprecated("use key")
+        val id: String = ""
     }
 """.trimIndent() + "\n"

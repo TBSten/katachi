@@ -13,6 +13,7 @@ import me.tbsten.katachi.dsl.Title
 import me.tbsten.katachi.dsl.internal.DeclaredFileConstraint
 import me.tbsten.katachi.dsl.internal.ModuleIndex
 import me.tbsten.katachi.dsl.internal.Template
+import me.tbsten.katachi.dsl.internal.backendOf
 import me.tbsten.katachi.dsl.internal.evaluateLayout
 import me.tbsten.katachi.internal.catching
 import me.tbsten.katachi.processor.internal.ProjectWalk

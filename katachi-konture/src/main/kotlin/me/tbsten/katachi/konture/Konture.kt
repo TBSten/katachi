@@ -72,6 +72,8 @@ import me.tbsten.katachi.konture.internal.KontureFileConstraint
  * @param block what to ask of the covered files. See [KontureConstraintScope].
  * @throws me.tbsten.katachi.dsl.KatachiFileConstraintNameException when the name is blank or holds
  *   a line break — it is printed on one line of a report block.
+ * @throws me.tbsten.katachi.dsl.KatachiDuplicateFileConstraintNameException when the role holds
+ *   another constraint of the same name.
  * @throws me.tbsten.katachi.dsl.KatachiFileConstraintWithoutLayoutException when the role it is
  *   written on declares no `layout { }`, so nothing could ever be covered.
  * @throws me.tbsten.katachi.dsl.KatachiFileConstraintDirectOnlyWithoutDirectoryException when
@@ -92,9 +94,10 @@ public fun String.konture(
  * Declares an unnamed constraint over the files the block around it matched, written with
  * Konture's rules.
  *
- * Identical to the named form except that the report identifies it by its declaration site
- * alone. Worth it when the block is short enough to read as its own name, and when there is
- * only one constraint in that place; a report that has to say which of three rules failed
+ * Identical to the named form, named `konture`: the report prints `FileConstraint: "konture"` and a
+ * baseline records its violations under that name. A role therefore holds one unnamed
+ * `konture { }`. Worth it when the block is short enough to read as its own name, and when it is
+ * the only `konture { }` of the role; a report that has to say which of three rules failed
  * reads better with a name.
  *
  * ## Example 1: the only rule of one directory
@@ -113,6 +116,8 @@ public fun String.konture(
  * @param block what to ask of the covered files. See [KontureConstraintScope].
  * @throws me.tbsten.katachi.dsl.KatachiFileConstraintWithoutLayoutException when the role it is
  *   written on declares no `layout { }`, so nothing could ever be covered.
+ * @throws me.tbsten.katachi.dsl.KatachiDuplicateFileConstraintNameException when the role holds
+ *   another constraint named `konture`: a second unnamed `konture { }`, or one given that name.
  * @throws me.tbsten.katachi.dsl.KatachiFileConstraintDirectOnlyWithoutDirectoryException when
  *   `scope = FileConstraintRange.DirectOnly` is written outside a directory block.
  * @throws me.tbsten.katachi.dsl.KatachiFileConstraintDirectOnlyCoversNothingException when
@@ -123,5 +128,7 @@ public fun konture(
     scope: FileConstraintRange = FileConstraintRange.Subtree,
     block: KontureConstraintScope.() -> Unit,
 ) {
-    fileConstraintScope.fileConstraint(name = null, scope = scope, check = KontureFileConstraint(block))
+    fileConstraintScope.fileConstraint(name = UNNAMED_NAME, scope = scope, check = KontureFileConstraint(block))
 }
+
+private const val UNNAMED_NAME: String = "konture"

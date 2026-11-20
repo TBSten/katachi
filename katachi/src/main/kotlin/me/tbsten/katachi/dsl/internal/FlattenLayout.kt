@@ -140,6 +140,7 @@ internal fun Role.evaluateLayout(moduleIndex: ModuleIndex): LayoutEvaluation {
     }
 
     requireTemplatesAreWellFormed(this, byNode.keys)
+    requireDistinctFileConstraintNames(qualifiedName, fileConstraints + sites.flatMap { it.declarations })
 
     return LayoutEvaluation(
         entries = entries.values.toList(),

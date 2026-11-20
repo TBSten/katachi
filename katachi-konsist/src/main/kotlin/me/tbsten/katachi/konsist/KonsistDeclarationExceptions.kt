@@ -25,13 +25,13 @@ private fun namedFileConstraint(constraintName: String?, declaredAt: Declaration
  * ```
  *
  * @property role the qualified name of the role whose layout the constraint was written in.
- * @property constraintName what the constraint was called, or `null`.
+ * @property constraintName what the constraint was called: `konsist` for a block written without a name.
  * @property declaredAt where the constraint was written.
  */
 public class KatachiKonsistNoExpectationException internal constructor(
     /** The qualified name of the role whose layout the constraint was written in. */
     public val role: String,
-    /** What the constraint was called, or `null` when it was declared without a name. */
+    /** What the constraint was called: the name it was given, or `konsist` for a block written without one. */
     public val constraintName: String?,
     /** Where the constraint was written. */
     public val declaredAt: DeclarationSite,
@@ -70,14 +70,14 @@ public class KatachiKonsistNoExpectationException internal constructor(
  * ```
  *
  * @property role the qualified name of the role whose layout the constraint was written in.
- * @property constraintName what the constraint was called, or `null`.
+ * @property constraintName what the constraint was called: `konsist` for a block written without a name.
  * @property declaredAt where the constraint was written.
  * @property given how many files the constraint covered.
  */
 public class KatachiKonsistNoKotlinFilesException internal constructor(
     /** The qualified name of the role whose layout the constraint was written in. */
     public val role: String,
-    /** What the constraint was called, or `null` when it was declared without a name. */
+    /** What the constraint was called: the name it was given, or `konsist` for a block written without one. */
     public val constraintName: String?,
     /** Where the constraint was written. */
     public val declaredAt: DeclarationSite,
