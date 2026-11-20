@@ -24,12 +24,14 @@ internal fun writeSarifIfRequested(
     val target = if (parsed.isAbsolute) parsed else workingDirectory / requested
     catching {
         val context = sarifContextOf(projectRoot, architecture, workingDirectory, environment)
-        val written = writeSarifText(target, violations.toSarif(context), environment.runs, environment.writeText)
+        val written = writeSarifText(target, violations.toSarif(context), environment.writeNewText)
         if (written != target) {
             environment.standardError(
-                "Warning: an earlier assert() in this JVM already wrote ${fileUri(target.value)} , so this run was " +
-                    "written to ${fileUri(written.value)} instead. Give each architecture test its own " +
-                    "-D$SARIF_PATH_PROPERTY path to keep them apart.",
+                "Warning: ${fileUri(target.value)} already exists, so this run was written to " +
+                    "${fileUri(written.value)} instead. Either another assert() of this run wrote it, in this JVM " +
+                    "or in another test JVM, or an earlier run left it and nothing deleted it before this one. " +
+                    "Upload every numbered file next to it too, or give each architecture test its own " +
+                    "-D$SARIF_PATH_PROPERTY path.",
             )
         }
     }.onFailure { cause ->
@@ -40,16 +42,10 @@ internal fun writeSarifIfRequested(
     }
 }
 
-internal fun writeSarifText(
-    file: FsPath,
-    text: String,
-    runs: SarifRuns,
-    write: (FsPath, String) -> Unit,
-): FsPath {
-    val target = numberedSarifPath(file, runs.next(file))
-    write(target, text)
-    return target
-}
+// Taken on the disk rather than counted in memory: the test JVMs of one Test task (forkEvery, maxParallelForks) cannot
+// see each other's counts, and each would take the unnumbered name for its first write.
+internal fun writeSarifText(file: FsPath, text: String, writeNewText: (FsPath, String) -> Boolean): FsPath =
+    generateSequence(1) { it + 1 }.map { numberedSarifPath(file, it) }.first { writeNewText(it, text) }
 
 internal fun numberedSarifPath(file: FsPath, n: Int): FsPath {
     if (n <= 1) return file

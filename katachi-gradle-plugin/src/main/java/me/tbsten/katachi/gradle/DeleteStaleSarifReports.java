@@ -15,8 +15,10 @@ import org.gradle.api.provider.Provider;
  * a {@code --tests} filter that leaves the architecture test out, a failure before it, a test
  * that throws before {@code assert()} -- the previous file would otherwise stay where a CI step
  * such as {@code upload-sarif} finds it and uploads an older run's violations as this one's.
- * The numbered siblings ({@code katachi-2.sarif}) a second {@code assert()} of the same JVM
- * writes go with it. With the report off nothing is touched.
+ * The numbered siblings ({@code katachi-2.sarif}) go with it: a second {@code assert()}, in the
+ * same JVM or in another test JVM of the task ({@code maxParallelForks}, {@code forkEvery}),
+ * writes the first name nobody has taken, so the numbering starts again from
+ * {@code katachi.sarif} only once these are gone. With the report off nothing is touched.
  *
  * <p>Holds two providers and nothing else, so the configuration cache can store it.
  *

@@ -2,6 +2,7 @@ package me.tbsten.katachi.docs
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiCheckException
+import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.internal.absolutePathOf
 import me.tbsten.katachi.internal.displayExistingPath
 import me.tbsten.katachi.internal.fileUri
@@ -106,4 +107,37 @@ public class KatachiDocumentIoException internal constructor(
         )
     },
     cause = cause,
+)
+
+/**
+ * [GenerateDocumentation] was given an empty `outputDir`.
+ *
+ * An empty path names no directory, and Java resolves a page below it against the file system
+ * root: the pages would land in `/` instead of the module. The usual cause is a variable that was
+ * not set, as in `--arg outputDir=$DOCS_DIR`. The value is refused however it arrives -- `--arg`,
+ * `args("docs") { }` in the Gradle plugin, or [GenerateDocumentation.Args] built in code -- before
+ * anything is read or written. The plugin's typed `docs { outputDir = "" }` already fails while the
+ * build script is evaluated, with the same advice.
+ *
+ * ## Example 1: what raises it
+ * ```kt
+ * import me.tbsten.katachi.docs.GenerateDocumentation
+ * import me.tbsten.katachi.docs.KatachiEmptyDocumentationOutputDirException
+ * import me.tbsten.katachi.processor.process
+ *
+ * val failure = projectArchitecture.process(
+ *     GenerateDocumentation,
+ *     GenerateDocumentation.Args(outputDir = ""),
+ * ).exceptionOrNull() as? KatachiEmptyDocumentationOutputDirException
+ * ```
+ *
+ * @see GenerateDocumentation
+ */
+@ExperimentalKatachiApi
+public class KatachiEmptyDocumentationOutputDirException internal constructor() : KatachiDeclarationException(
+    message = """
+        The documentation processor was given outputDir = "", which is empty.
+        An empty path names no directory: every page would be resolved against the file system root rather than the directory the processor runs in.
+        Leave it out entirely to keep the default, build/katachi/docs.
+    """.trimIndent(),
 )

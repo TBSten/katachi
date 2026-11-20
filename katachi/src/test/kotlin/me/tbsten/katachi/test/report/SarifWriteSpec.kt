@@ -1,6 +1,7 @@
 package me.tbsten.katachi.test.report
 
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
@@ -9,6 +10,7 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldStartWith
 import java.io.File
 import java.nio.file.Files
+import java.util.concurrent.TimeUnit
 import me.tbsten.katachi.check.KatachiArchitectureAssertionError
 import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.check.internal.BaselineEnvironment
@@ -16,7 +18,6 @@ import me.tbsten.katachi.check.internal.assertWith
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.report.internal.SarifEnvironment
-import me.tbsten.katachi.report.internal.SarifRuns
 import me.tbsten.katachi.report.internal.numberedSarifPath
 import me.tbsten.katachi.report.writeSarif
 import me.tbsten.katachi.test.check.architectureOf
@@ -38,8 +39,9 @@ private fun Architecture.run(tree: FakeFileSystem, sarif: SarifEnvironment): Lis
     assertWith(tree, emptyList(), 10, BaselineEnvironment(standardError = { }), sarif)
 
 /**
- * The write half: numbering within one JVM, the real disk, and the way `assertWith` writes --
- * only when asked, before it throws, and never failing the check over it.
+ * The write half: numbering, within one JVM and across the test JVMs of one Test task, the real
+ * disk, and the way `assertWith` writes -- only when asked, before it throws, and never failing
+ * the check over it.
  */
 class SarifWriteSpec : FreeSpec({
     "連番" - {
@@ -52,17 +54,15 @@ class SarifWriteSpec : FreeSpec({
             numberedSarifPath(FsPath.of("katachi.sarif"), 2).value shouldBe "katachi-2.sarif"
         }
 
-        "同じ JVM で同じパスに 2 回書くと 2 回目は連番で、標準エラーに注意が出る" {
+        "同じパスに 2 回書くと 2 回目は連番で、標準エラーに注意が出る" {
             val tree = FakeSarifTree()
-            val runs = SarifRuns()
             val err = mutableListOf<String>()
             val sarif = "/repo/build/reports/katachi/katachi.sarif"
 
-            shouldThrow<KatachiArchitectureAssertionError> {
-                definition().run(repository("notes.md"), tree.environment(sarif = sarif, runs = runs, standardError = err, prefix = null))
-            }
-            shouldThrow<KatachiArchitectureAssertionError> {
-                definition().run(repository("notes.md"), tree.environment(sarif = sarif, runs = runs, standardError = err, prefix = null))
+            repeat(2) {
+                shouldThrow<KatachiArchitectureAssertionError> {
+                    definition().run(repository("notes.md"), tree.environment(sarif = sarif, standardError = err, prefix = null))
+                }
             }
 
             tree.writes.map { it.first.value } shouldContainExactly listOf(
@@ -70,9 +70,60 @@ class SarifWriteSpec : FreeSpec({
                 "/repo/build/reports/katachi/katachi-2.sarif",
             )
             err.single() shouldBe
-                "Warning: an earlier assert() in this JVM already wrote file:///repo/build/reports/katachi/katachi.sarif , " +
-                "so this run was written to file:///repo/build/reports/katachi/katachi-2.sarif instead. " +
-                "Give each architecture test its own -Dkatachi.report.sarif path to keep them apart."
+                "Warning: file:///repo/build/reports/katachi/katachi.sarif already exists, so this run was written to " +
+                "file:///repo/build/reports/katachi/katachi-2.sarif instead. Either another assert() of this run wrote " +
+                "it, in this JVM or in another test JVM, or an earlier run left it and nothing deleted it before this " +
+                "one. Upload every numbered file next to it too, or give each architecture test its own " +
+                "-Dkatachi.report.sarif path."
+        }
+
+        "ほかの JVM が先に取った番号は上書きせず、空いている最初の番号に書く" {
+            val tree = FakeSarifTree(
+                "/repo/build/reports/katachi/katachi.sarif" to "another JVM",
+                "/repo/build/reports/katachi/katachi-2.sarif" to "yet another JVM",
+            )
+
+            shouldThrow<KatachiArchitectureAssertionError> {
+                definition().run(
+                    repository("notes.md"),
+                    tree.environment(sarif = "/repo/build/reports/katachi/katachi.sarif", prefix = null),
+                )
+            }
+
+            tree.writes.single().first.value shouldBe "/repo/build/reports/katachi/katachi-3.sarif"
+            tree.readText(FsPath.of("/repo/build/reports/katachi/katachi.sarif")) shouldBe "another JVM"
+        }
+    }
+
+    "別々の test JVM" - {
+        // What `forkEvery = 1` and `maxParallelForks = 2` make of one Test task: JVMs of their own, every one handed
+        // the same -Dkatachi.report.sarif, and none of them knowing what the others wrote.
+        "forkEvery = 1 のように順に走った 2 つの JVM の結果が、katachi.sarif と katachi-2.sarif に両方残る" {
+            withTempSarifDirectory { directory ->
+                val target = File(directory, "katachi.sarif")
+
+                testJvm(extraFile = "first.md", target).finish()
+                val second = testJvm(extraFile = "second.md", target).finish()
+
+                directory.list().orEmpty().sorted() shouldContainExactly listOf("katachi-2.sarif", "katachi.sarif")
+                File(directory, "katachi.sarif").readText() shouldContain "first.md"
+                File(directory, "katachi-2.sarif").readText() shouldContain "second.md"
+                second shouldContain "katachi.sarif already exists, so this run was written to"
+            }
+        }
+
+        "maxParallelForks = 2 のように同時に走っても、どちらの結果も上書きされない" {
+            withTempSarifDirectory { directory ->
+                val target = File(directory, "katachi.sarif")
+
+                listOf(testJvm(extraFile = "first.md", target), testJvm(extraFile = "second.md", target))
+                    .forEach { it.finish() }
+
+                directory.list().orEmpty().sorted() shouldContainExactly listOf("katachi-2.sarif", "katachi.sarif")
+                val reports = directory.listFiles().orEmpty().map { it.readText() }
+                reports.count { "first.md" in it && "second.md" !in it } shouldBe 1
+                reports.count { "second.md" in it && "first.md" !in it } shouldBe 1
+            }
         }
     }
 
@@ -187,5 +238,48 @@ class SarifWriteSpec : FreeSpec({
                 directory.deleteRecursively()
             }
         }
+
+        "writeSarif は既にあるファイルを上書きせず、次の連番に書いてそのパスを返す" {
+            withTempSarifDirectory { directory ->
+                val taken = File(directory, "katachi.sarif").apply { writeText("another JVM") }
+
+                val written = everyKindOfViolation().writeSarif(FsPath.of(taken.path), sarifRepository().context())
+
+                written.value shouldBe File(directory, "katachi-2.sarif").path
+                taken.readText() shouldBe "another JVM"
+                File(written.value).readText() shouldContain "外から使えること"
+            }
+        }
     }
 })
+
+/** A directory of the spec's own on the real disk, gone again however [block] ends. */
+private fun withTempSarifDirectory(block: (File) -> Unit) {
+    val directory = Files.createTempDirectory("katachi-sarif").toFile()
+    try {
+        block(directory)
+    } finally {
+        directory.deleteRecursively()
+    }
+}
+
+/** A JVM of its own running [SarifTestJvm] over a repository holding [extraFile], as a Test task forks one. */
+private fun testJvm(extraFile: String, target: File): Process =
+    ProcessBuilder(
+        File(System.getProperty("java.home"), "bin/java").path,
+        "-Dkatachi.report.sarif=${target.path}",
+        "-cp",
+        System.getProperty("java.class.path"),
+        SarifTestJvm::class.java.name,
+        extraFile,
+    ).redirectErrorStream(true).start()
+
+/** Waits for this JVM, which must end by itself with status 0, and answers with what it printed. */
+private fun Process.finish(): String {
+    val printed = inputStream.bufferedReader().readText()
+    withClue(printed) {
+        waitFor(1, TimeUnit.MINUTES) shouldBe true
+        exitValue() shouldBe 0
+    }
+    return printed
+}

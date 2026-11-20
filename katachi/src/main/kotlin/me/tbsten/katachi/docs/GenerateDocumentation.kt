@@ -29,7 +29,8 @@ import me.tbsten.katachi.processor.ArchitectureProcessor
  * The one exception is a constraint that describes itself on its role's page
  * (`FileConstraint.documentSection`) with an example file, for a role that names no
  * `example(...)`: finding that file lists the project's files once. A project that cannot be
- * listed gives a stand-in example instead of a failure.
+ * listed gives a stand-in example instead of a failure. Because of it, the Gradle plugin runs
+ * `katachiDocs` every time instead of calling it up to date.
  *
  * ## What it answers
  *
@@ -78,6 +79,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessor
  * @see Args
  * @see DocumentationMode
  * @see KatachiStaleDocumentationException
+ * @see KatachiEmptyDocumentationOutputDirException
  */
 @ExperimentalKatachiApi
 public object GenerateDocumentation : ArchitectureProcessor<GenerateDocumentation.Args, Unit> {
@@ -86,6 +88,7 @@ public object GenerateDocumentation : ArchitectureProcessor<GenerateDocumentatio
     override fun process(context: ArchitectureProcessContext<Args>): Result<Unit> =
         runProcessorCatching {
             val outputDir = context.args.outputDir
+            if (outputDir.isEmpty()) throw KatachiEmptyDocumentationOutputDirException()
             val pages = roleReferenceDocuments(context)
             val outputRoot = outputRootOf(outputDir)
             val outputUri = fileUri(absolutePathOf(outputDir))
@@ -157,7 +160,8 @@ public object GenerateDocumentation : ArchitectureProcessor<GenerateDocumentatio
          *
          * The default is below `build/`, which keeps the output out of `gitTracked()` and so out
          * of the check: a generated page does not have to be declared in a `layout { }` to stop
-         * being an unexpected file.
+         * being an unexpected file. An empty value fails the run with
+         * [KatachiEmptyDocumentationOutputDirException] before anything is written.
          */
         val outputDir: String = DEFAULT_OUTPUT_DIR,
         /** Whether to write the pages or to compare them against what is already there. */
