@@ -45,8 +45,10 @@ import org.gradle.api.tasks.testing.Test;
  * {@code -Dkatachi.report.sarif} and {@code -Dkatachi.report.sourceRoots}
  * ({@link KatachiReportArguments}), and declares the SARIF file as an output.
  *
- * <p>Applying this plugin to a module without the {@code java} plugin registers the tasks but
- * leaves their classpath empty, so a run fails at startup rather than at configuration time.
+ * <p>Applying this plugin to a module without the {@code java} plugin (a Kotlin Multiplatform or
+ * Android module) registers the tasks but leaves their classpath empty. Running one then fails,
+ * before any JVM starts, with a message saying to apply the plugin to a {@code kotlin("jvm")}
+ * module; configuring the build does not fail, so the module's other tasks still run.
  *
  * <h2>Example 1: apply it to the module that holds the definition</h2>
  *
