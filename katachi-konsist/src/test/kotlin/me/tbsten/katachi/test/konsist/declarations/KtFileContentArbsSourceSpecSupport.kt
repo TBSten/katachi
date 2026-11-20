@@ -1,6 +1,7 @@
 package me.tbsten.katachi.test.konsist.declarations
 
 import kotlin.random.Random
+import me.tbsten.katachi.test.pbt.pick
 
 /*
  * A generated case written out: the Kotlin source the judging reads, and the allow list as the
