@@ -87,8 +87,10 @@ public interface FileSelection {
      * Everything `git ls-files --cached --others --exclude-standard` reports: what git
      * tracks, plus what is not tracked yet but not ignored either.
      *
-     * A file git does not manage cannot be given a role. `.DS_Store` turns up in every
-     * directory, `local.properties` is per machine, `build/` is generated output.
+     * A file git ignores is left out: it could not be given a role. An ignored `.DS_Store`
+     * turns up in every directory, `local.properties` is per machine, `build/` is generated
+     * output. Without an ignore rule for it, in `.gitignore` or in git's global excludes, a
+     * `.DS_Store` is an untracked file like any other, and the check reports it.
      *
      * A file tracked below an ignored directory (one added with `git add -f`, say) is checked
      * like any other. A project below the repository root (a monorepo, a submodule) works too.

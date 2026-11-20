@@ -55,6 +55,6 @@ The top level of the working directory holds only `check-list.html` and `tmp/`. 
 git ls-files --others --exclude-standard --directory --no-empty-directory
 ```
 
-Leave out the working directory itself. Ask the user, for each of the rest, whether to declare it in the definition or add it to `.gitignore`.
+Leave out the working directory itself. Ask the user, for each of the rest, whether to declare it in the definition or add it to `.gitignore`. For a file the OS writes on its own (`.DS_Store`, `Thumbs.db`, `desktop.ini`), recommend `.gitignore` and do not offer to declare it: a Role for it fails on a checkout without it, such as CI.
 
 Once this is done, mark `0-1` and `0-2` done in the checklist (0-3 says how).
