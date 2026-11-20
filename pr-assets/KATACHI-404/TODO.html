@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>v0.4.0 確認 TODO</title>
+<style>
+:root{--bg:#fbfaf7;--fg:#1d1d1f;--muted:#6b6b70;--line:#e3e1dc;--card:#fff;--soft:#f4f2ed;--red:#c0392b;--amber:#b7791f;--blue:#2b6cb0;--green:#2f855a;--code:#f1efea;--on:#fff}
+@media (prefers-color-scheme:dark){:root{--bg:#17171a;--fg:#ececef;--muted:#9a9aa2;--line:#2e2e34;--card:#1f1f23;--soft:#28282e;--red:#f07167;--amber:#f6c35b;--blue:#7fb3ff;--green:#6fd39a;--code:#2a2a30;--on:#17171a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.7 -apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+main{max-width:880px;margin:0 auto;padding:24px 16px 104px}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 20px}
+.summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.pill{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px;font-size:13px}
+.pill b{margin-right:4px}
+h2{font-size:17px;margin:32px 0 8px;padding-left:10px;border-left:4px solid var(--c,var(--line))}
+h2 small{color:var(--muted);font-weight:normal;font-size:13px;margin-left:6px}
+.empty{color:var(--muted);font-size:14px;margin:4px 0 0 14px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:10px 0}
+.item.picked{border-color:var(--blue)}
+.head{display:flex;gap:10px;align-items:flex-start}
+.t{flex:1;min-width:0;font-weight:600}
+.badge{display:inline-block;font-size:11px;font-weight:700;border-radius:4px;padding:1px 6px;margin-right:6px;vertical-align:1px;white-space:nowrap}
+.p{color:var(--on);background:var(--muted)}
+.p10,.p9,.p8,.p7{background:var(--red)}.p6,.p5{background:var(--amber)}
+.c{border:1px solid var(--line);color:var(--muted)}
+.copy1{flex:none;font:inherit;font-size:12px;line-height:1.6;border:1px solid var(--line);background:var(--soft);color:var(--fg);border-radius:6px;padding:2px 10px;cursor:pointer}
+.desc{font-size:14px;margin:6px 0 0}
+.ask{font-size:13px;font-weight:700;color:var(--blue);margin:12px 0 2px}
+.opts{list-style:none;margin:0;padding:0}
+.opts label{display:flex;gap:8px;align-items:flex-start;font-size:14px;cursor:pointer;padding:3px 6px;margin:0 -6px;border-radius:6px}
+.opts label:hover{background:var(--soft)}
+.opts input{flex:none;width:16px;height:16px;margin:4px 0 0}
+.opts input:checked+span{font-weight:600}
+.rec{display:inline-block;font-size:11px;font-weight:700;color:var(--green);border:1px solid currentColor;border-radius:4px;padding:0 5px;margin-left:6px;vertical-align:1px}
+.note{display:block;width:100%;margin:8px 0 0;font:inherit;font-size:13px;line-height:1.6;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);padding:5px 8px;min-height:2.3em;resize:vertical}
+details{font-size:13.5px;color:var(--muted);margin-top:8px}
+details summary{cursor:pointer}
+details ul{margin:6px 0;padding-left:20px}
+.done{list-style:none;margin:0;padding:0}
+.done li{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 14px;margin:6px 0;font-size:14px}
+.done .to{color:var(--muted)}
+code{background:var(--code);border-radius:4px;padding:0 4px;font-size:.9em;overflow-wrap:anywhere}
+a{color:var(--blue);overflow-wrap:anywhere}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:10px 16px;display:flex;justify-content:center}
+.bar button{font:inherit;font-size:14px;font-weight:700;border-radius:8px;padding:7px 16px;cursor:pointer;border:1px solid var(--blue);background:var(--blue);color:var(--on)}
+.bar button:disabled{opacity:.45;cursor:default}
+.toast{position:fixed;left:50%;bottom:66px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:6px 14px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;max-width:92vw}
+.toast.show{opacity:1}
+dialog{border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--fg);width:min(680px,92vw)}
+dialog textarea{width:100%;height:50vh;font:13px/1.5 ui-monospace,Menlo,monospace;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:8px}
+dialog button{font:inherit;margin-top:8px}
+</style>
+</head>
+<body>
+<main>
+<h1>v0.4.0 リリース前に確認してほしいこと</h1>
+<p class="sub">2026-11-20 23:10 更新 / リリース前チェック 5 回目（261120-01・<a href="https://app.notion.com/p/41e187beecfc8132a7dbdbe6221e03c8">KATACHI-404</a>）/ 対象は main f520b26c（#119・#120・#121 マージ後）/ 選んだものはこのブラウザに残ります。下の「まとめてコピー」をチャットに貼って返してください</p>
+
+<div class="summary">
+  <span class="pill"><b style="color:var(--red)">0</b>リリース前に直すか決める</span>
+  <span class="pill"><b style="color:var(--amber)">0</b>判断してほしい</span>
+  <span class="pill"><b style="color:var(--blue)">2</b>目を通してほしい</span>
+  <span class="pill"><b style="color:var(--green)">2</b>操作してほしい</span>
+  <span class="pill"><b style="color:var(--muted)">17</b>決定済み・対応中</span>
+</div>
+
+<h2 style="--c:var(--red)">1. リリース前に直すか決める<small>priority 7 以上。放置すると利用者が詰まる</small></h2>
+<p class="empty">いまは無し。探索的検証 2 周目の後半（konsist・konture／docs／実在の OSS／v0.3 からの移行）で出たら、ここに載せます。</p>
+
+<h2 style="--c:var(--amber)">2. 判断してほしい<small>リリースは止めないが、方針が要る</small></h2>
+<p class="empty">いまは無し。</p>
+
+<h2 style="--c:var(--blue)">3. 目を通してほしい</h2>
+
+<div class="item" data-id="release-note">
+<div class="head"><div class="t">リリースノートの下書き</div><button class="copy1" type="button">コピー</button></div>
+<p class="desc">手順 4 でまとめた下書きです（PR #119 の KMP・Android の件を Also に 1 行足しました）。2 周目の直しがマージされたら、利用者に見える変化があるものを足します。</p>
+<ul class="opts">
+<li><label><input type="checkbox" data-opt="ok"><span>このままでよい</span></label></li>
+<li><label><input type="checkbox" data-opt="fix"><span>直してほしい（一言に書く）</span></label></li>
+</ul>
+<textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
+<details><summary>詳細</summary><ul><li><code>release-note.md</code>（このフォルダ）</li></ul></details>
+</div>
+
+<div class="item" data-id="docs-review">
+<div class="head"><div class="t">docs の指摘 33 件を Review で見る</div><button class="copy1" type="button">コピー</button></div>
+<p class="desc">探索的検証・9-2・手順 2・5・11 で見つかった docs の指摘です（p7 が 1 件、p6 が 2 件、ほかは p5 以下）。Mac で <a href="http://localhost:4395/katachi/ja/guides/cli-and-script/katachi-script/#review=prerelease-5-docs/1oxc4j2">http://localhost:4395/katachi/</a> を開くと Review の印が出るので、「直してもらう / 直さない」を選んでください（作業用の写しの dev サーバー。普段の 4321 番には AI から書き込めないため、別に立てました）。</p>
+<ul class="opts"><li><label><input type="checkbox" data-opt="done"><span>Review で選び終えた</span></label></li></ul>
+<textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
+<details><summary>詳細</summary><ul>
+<li><code>prerelease-5-docs.md</code> 16 件（p7: katachi-script のページに終了コードを返す書き方が無い ＝ 22:35 に選んでもらった (b)、role.mdx の切り出し例の import、kt-file-content のインストール、v0.3 からの移行の手がかり ほか）</li>
+<li><code>prerelease-5-step11.md</code> 7 件（手順 11: 字下げ・コードブロックの言語・ハイライトの範囲 ほか）</li>
+<li><code>prerelease-5-agy.md</code> 10 件（手順 2 の追いつき: Gemini が first-architecture の日本語を読んだ指摘。表記の揺れ・余計な空白・「生成したら」の打ち間違い ほか）</li>
+<li>過去に「直さない」と決めたもの 2 件は外しました</li>
+</ul></details>
+</div>
+
+<h2 style="--c:var(--green)">4. 操作してほしい</h2>
+
+<div class="item" data-id="explore-ide">
+<div class="head"><div class="t">IDE plugin を 15 分触る（探索的検証 13）</div><button class="copy1" type="button">コピー</button></div>
+<p class="desc">0.4.0 のプラグインを入れた IDEA・Android Studio（Mac に用意済み、普段の設定とは分けてある）で、観点カードの 5 つを触って、気づいたことを下の欄に書いてください。触り終えたら 10-2・10-5 を始めます。</p>
+<ul class="opts"><li><label><input type="checkbox" data-opt="done"><span>触った</span></label></li></ul>
+<textarea class="note" rows="2" placeholder="気づいたこと"></textarea>
+<details><summary>観点カード</summary><ul>
+<li>既定の設定のままでガターが出るか</li>
+<li>日本語の文言</li>
+<li>テンプレートセットから生成する</li>
+<li>編集への追従</li>
+<li>壊したときの案内と Reload</li>
+</ul></details>
+</div>
+
+<div class="item" data-id="publish">
+<div class="head"><div class="t">v0.4.0 を publish する</div><button class="copy1" type="button">コピー</button></div>
+<p class="desc">署名と Maven Central への publish は利用者が行います。チェックが全部終わってから。</p>
+<ul class="opts"><li><label><input type="checkbox" data-opt="done"><span>済んだ</span></label></li></ul>
+</div>
+
+<h2 style="--c:var(--line)">5. 決定済み・対応中<small>🔧 対応中 / ✏️ 編集済み・検証中 / ✓ 済</small></h2>
+
+<ul class="done">
+<li data-id="fixing-r2-diff">🔧 <span class="badge p p9">p9</span><span class="badge c">core/katachiDiff</span>差分レポート: Role の外へ移したファイルを no role に数えない（p9）・ファイル名の <code>{{DATA}}</code> で HTML にスクリプトが入る（p8）・no role のファイルを消すだけで「will fail」（p7）・baseline で許したファイルで「will fail」（p7） <span class="to">→ 3 件は直し方が 1 つ、baseline は (a) katachiDiff が baseline を読む（23:02）。直し中（<a href="https://app.notion.com/p/41e187beecfc81f28fafdf8f0a4f400c">KATACHI-419</a>）</span></li>
+<li data-id="fixing-r2-cli">🔧 <span class="badge p p8">p8</span><span class="badge c">CLI・script</span><code>agent test</code> がテストを飛ばしても「通りました」（p8）・作業用ディレクトリごと写すと元のプロジェクトを検査する（p8）・読めない <code>check-list.html</code> で全コマンドが落ちる（p7）・buildSrc の Kotlin plugin を見落としてビルドを壊す（p7）・<code>scaffold --module-dir</code> のあと次の手順が進まない（p7） <span class="to">→ 4 件は直し方が 1 つ、最後は (a) <code>lint</code>・<code>agent test</code>・<code>agent compare-violations</code> にも <code>--module-dir</code>（23:02）。直し中（<a href="https://app.notion.com/p/41e187beecfc81b1a201dcd8a7e8ad7b">KATACHI-420</a>）</span></li>
+<li data-id="fixing-r2-gradle">🔧 <span class="badge p p9">p9</span><span class="badge c">Gradle plugin</span>ktFileContent の Role の docs が古いまま残る（p9）・Groovy の build.gradle で <code>docs { }</code> などの中身が効かない（p7）・test の JVM が 2 つ以上だと SARIF が上書き合う（p7）・<code>--arg outputDir=</code> が空だとページを <code>/</code> に書く（p7） <span class="to">→ docs は (a) 「プロジェクトを読む」にする（23:02）、残りは直し方が 1 つ（<code>..</code> の扱いは KATACHI-370 のまま）。直し中（<a href="https://app.notion.com/p/41e187beecfc815f80fbd11079a817ac">KATACHI-421</a>）</span></li>
+<li data-id="fixing-r2-core">🔧 <span class="badge p p9">p9</span><span class="badge c">core/検査</span><code>ignore()</code> の下に書いた Role が黙って効かない（p9）・git が動かないと黙って全ファイルを見る（p7）・報告の断片が既にある名前の Role を作る（p7） <span class="to">→ (a) 警告を出す・(a) git のエラー文を添えて止める（23:02）、断片は直し方が 1 つ。直し中（<a href="https://app.notion.com/p/41e187beecfc8113ab6cd01a4693dee3">KATACHI-422</a>）</span></li>
+<li data-id="visibility-namewords">✓ <span class="badge c">core/DSL</span>② <code>nameWords</code> と 6 つの大文字小文字変換に注釈が無い <span class="to">→ このまま（23:02）→ decisions/api.md に記録</span></li>
+<li data-id="pr-122">✏️ <span class="badge c">skill</span>この回の判断の記録・小さな直し・この TODO.html の新しい形 <span class="to">→ <a href="https://github.com/TBSten/katachi/pull/122">PR #122</a>（CI 待ち）</span></li>
+<li data-id="visibility-annotations">✓ <span class="badge c">core/DSL</span>公開 API の注釈 ①③④ <span class="to">→ ①③ はこのまま（③ は KDoc に backend 向けと 1 段落）、④ は kotlin.md に benchmark を足した（22:35）→ PR #122</span></li>
+<li data-id="decided-9-2-ticket">🔧 <span class="badge c">skill</span>9-2 で止まった書き込み（その回のチケットを掴んで通す） <span class="to">→ 掴む操作を人が打たずに通す形を別スレッドで作っている。片付いたら 9-2 を最初から</span></li>
+<li data-id="decided-script-exit">✓ <span class="badge c">CLI・script</span><code>katachi &lt;file&gt;.katachi.kts</code> の終了コード <span class="to">→ (b) 挙動は変えず、docs の書き方の案を Review に載せた（22:35）→ decisions/process.md に記録</span></li>
+<li data-id="decided-manual-install">✓ <span class="badge c">docs</span>手動インストールのとおりだと Kotlin 2.2・2.3 でコンパイルできない <span class="to">→ このまま（22:35）→ decisions/docs.md に記録</span></li>
+<li data-id="decided-konture-22">✓ <span class="badge c">konture</span>Kotlin 2.2 のプロジェクトに katachi-konture を入れるとコンパイルが通らない <span class="to">→ このまま（22:35）→ decisions/process.md に記録</span></li>
+<li data-id="catchup-main">✓ <span class="badge c">skill</span>main で変わった手順に追いついた <span class="to">→ Gemini（agy）の日本語チェックで 10 件を Review へ・en の訳は今の原本と一致・Mac のサンプルは f520b26c でやり直して OK・手順 8 は f520b26c の main の CI。Codex は利用枠切れで 11/21 02:40 から</span></li>
+<li data-id="fix-120-skill">✓ <span class="badge c">skill</span>9-2 で見つかった skill の指摘 11 件 <span class="to">→ <a href="https://github.com/TBSten/katachi/pull/120">PR #120</a> マージ</span></li>
+<li data-id="fix-119-kmp">✓ <span class="badge p p7">p7</span><span class="badge c">Gradle plugin</span>KMP・Android のモジュールに適用すると <code>MainKt</code> が見つからないとだけ出る <span class="to">→ <a href="https://github.com/TBSten/katachi/pull/119">PR #119</a> マージ</span></li>
+<li data-id="done-117-cli">✓ <span class="badge c">CLI・script</span>開けないディレクトリで <code>--version</code> も落ちる・<code>scaffold --katachi</code> の値の書き忘れで <code>--dry-run</code> が効かない <span class="to">→ <a href="https://github.com/TBSten/katachi/pull/117">PR #117</a> マージ</span></li>
+<li data-id="done-117-actions">✓ <span class="badge c">Actions</span>大きな PR で差分レポートのコメントが消えたままになる <span class="to">→ <a href="https://github.com/TBSten/katachi/pull/117">PR #117</a> マージ</span></li>
+<li data-id="done-117-diff">✓ <span class="badge c">core/katachiDiff</span>コピー用の <code>git diff</code> コマンドが引用符で囲まれず、パスによっては別のコマンドが動く <span class="to">→ <a href="https://github.com/TBSten/katachi/pull/117">PR #117</a> マージ</span></li>
+</ul>
+
+<p class="sub" style="margin-top:28px">いま走っているもの: 2 周目の直し 4 本（KATACHI-419〜422、クラウド）と PR #122 の CI。次は 4 本の PR、クラウドの配布物の組み直し（f520b26c）と 9-1、2 周目の後半 4 本（konsist・konture／docs／実在の OSS／v0.3 からの移行）。Codex の広域の遊撃は 11/21 02:40 から。待っているもの: Mac の hook の件（別スレッド。片付いたら 9-2）、IDE を触った感想（そのあと 10-2・10-5）。</p>
+</main>
+
+<div class="bar"><button id="copy-all" type="button">選んだものをまとめてコピー（<span id="count">0</span> 件）</button></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<dialog id="fallback"><p>コピーできませんでした。下の欄を選んでコピーしてください。</p><textarea readonly></textarea><form method="dialog"><button>閉じる</button></form></dialog>
+
+<script>
+(() => {
+  // 選んだもの（選択肢・一言）をこのブラウザに残し、チャットに貼れる Markdown にしてコピーする。エージェントはこの状態を読まない。
+  const KEY = 'katachi-v0.4.0-todo-2'
+  let state = {}
+  try { state = JSON.parse(localStorage.getItem(KEY) || '{}') } catch (e) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)) } catch (e) {} }
+  const items = [...document.querySelectorAll('.item[data-id]')]
+
+  // バッジは [..]、code は `..`、おすすめは（おすすめ）にして 1 行の文字にする
+  const plain = (node) => {
+    const c = node.cloneNode(true)
+    c.querySelectorAll('.rec').forEach((e) => e.replaceWith('（おすすめ）'))
+    c.querySelectorAll('.badge').forEach((e) => e.replaceWith(`[${e.textContent.trim()}] `))
+    c.querySelectorAll('code').forEach((e) => e.replaceWith(`\`${e.textContent}\``))
+    return c.textContent.replace(/\s+/g, ' ').trim()
+  }
+  const entry = (el) => {
+    const s = state[el.dataset.id] || (state[el.dataset.id] = {})
+    s.opts = s.opts || {}
+    s.note = s.note || ''
+    return s
+  }
+  const picked = (el) => { const s = entry(el); return Object.values(s.opts).some(Boolean) || !!s.note.trim() }
+
+  // all: 選んでいない選択肢も [ ] で出す（1 項目のコピー）。まとめてコピーは選んだものだけ
+  const markdown = (el, all) => {
+    const s = entry(el)
+    const lines = [`### ${plain(el.querySelector('.t'))}`, `- id: ${el.dataset.id}`]
+    el.querySelectorAll('.opts input').forEach((cb) => {
+      if (all || cb.checked) lines.push(`- [${cb.checked ? 'x' : ' '}] ${plain(cb.nextElementSibling)}`)
+    })
+    if (s.note.trim()) lines.push(`- 一言: ${s.note.trim().replace(/\n/g, '\n  ')}`)
+    return lines.join('\n')
+  }
+
+  const toast = (message) => {
+    const t = document.getElementById('toast')
+    t.textContent = message
+    t.classList.add('show')
+    clearTimeout(toast.timer)
+    toast.timer = setTimeout(() => t.classList.remove('show'), 1800)
+  }
+  // file:// や埋め込みでクリップボードが使えないときは、欄に出して手でコピーしてもらう
+  const copy = async (text, message) => {
+    let ok = false
+    try {
+      await navigator.clipboard.writeText(text)
+      ok = true
+    } catch (e) {
+      const area = document.createElement('textarea')
+      area.value = text
+      area.style.cssText = 'position:fixed;left:-9999px;top:0'
+      document.body.append(area)
+      area.select()
+      try { ok = document.execCommand('copy') } catch (e2) {}
+      area.remove()
+    }
+    if (ok) return toast(message)
+    const dialog = document.getElementById('fallback')
+    dialog.querySelector('textarea').value = text
+    if (dialog.showModal) dialog.showModal(); else dialog.setAttribute('open', '')
+  }
+
+  const refresh = () => {
+    const n = items.filter(picked).length
+    document.getElementById('count').textContent = n
+    document.getElementById('copy-all').disabled = n === 0
+    items.forEach((el) => el.classList.toggle('picked', picked(el)))
+  }
+
+  items.forEach((el) => {
+    const s = entry(el)
+    el.querySelectorAll('.opts input').forEach((cb) => {
+      cb.checked = !!s.opts[cb.dataset.opt]
+      cb.addEventListener('change', () => { s.opts[cb.dataset.opt] = cb.checked; save(); refresh() })
+    })
+    const note = el.querySelector('.note')
+    if (note) {
+      note.value = s.note
+      note.addEventListener('input', () => { s.note = note.value; save(); refresh() })
+    }
+    el.querySelector('.copy1')?.addEventListener('click', () => copy(markdown(el, true), 'この項目をコピーしました'))
+  })
+  document.getElementById('copy-all').addEventListener('click', () => {
+    const chosen = items.filter(picked)
+    copy(`${document.title} の回答\n\n${chosen.map((el) => markdown(el, false)).join('\n\n')}`, `まとめてコピーしました（${chosen.length} 件）`)
+  })
+  refresh()
+})()
+</script>
+</body>
+</html>
