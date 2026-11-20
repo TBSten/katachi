@@ -233,10 +233,7 @@ private fun unexpectedFileBlock(violation: UnexpectedFile, root: String?): List<
     }
     add("$STEP$STEP- Delete it if it is not needed")
     add("$STEP$STEP- Add a new role for it:")
-    val suggestion = violation.suggestedRole
-        ?.let { roleSuggestionFor(violation.path, isDirectory = false, roleName = it) }
-        ?: roleSuggestionFor(violation.path, isDirectory = false)
-    addAll(fragment(suggestion))
+    addAll(fragment(roleSuggestionFor(violation.path, isDirectory = false, roleName = violation.suggestedRole)))
 }
 
 private fun unexpectedDirectoryBlock(violation: UnexpectedDirectory, root: String?): List<String> = buildList {
@@ -247,7 +244,7 @@ private fun unexpectedDirectoryBlock(violation: UnexpectedDirectory, root: Strin
     add("$STEP$STEP- Delete it if it is not needed")
     add("$STEP$STEP- Declare what belongs in it in the layout of an existing role")
     add("$STEP$STEP- Add a new role for it:")
-    addAll(fragment(roleSuggestionFor(violation.path, isDirectory = true)))
+    addAll(fragment(roleSuggestionFor(violation.path, isDirectory = true, roleName = violation.suggestedRole)))
 }
 
 private fun captureMismatchBlock(violation: CaptureMismatch, root: String?): List<String> = buildList {

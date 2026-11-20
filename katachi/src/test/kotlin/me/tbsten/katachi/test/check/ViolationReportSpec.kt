@@ -4,9 +4,12 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
 import me.tbsten.katachi.check.MissingFile
+import me.tbsten.katachi.check.UnexpectedDirectory
+import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.files.FsPath
+import me.tbsten.katachi.dsl.gradle.gradle
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 
@@ -167,6 +170,58 @@ class ViolationReportSpec : FreeSpec({
         }
     }
 
+    "DSL 断片の Role 名" - {
+        "gradle() の group と同じ名前は避け、先頭の点を Dot にして区別する" {
+            architectureOf { gradle(requireWrapper = false) }
+                .validate(repositoryOf { ".gradle" { "file-system.probe"() } })
+                .suggestedRoleLines() shouldBe listOf("\"DotGradle\".role {")
+        }
+
+        "ルートの Role と同じ名前は避け、親のディレクトリ名を前に足す" {
+            architectureOf {
+                "Model".role { layout { "model" / "*".ktFile() } }
+                "Docs".role { layout { "xdocs" / "index.md".file() } }
+            }.validate(repositoryOf { "xdocs" { "index.md"(); "model" { "User.md"() } } })
+                .suggestedRoleLines() shouldBe listOf("\"XdocsModel\".role {")
+        }
+
+        "親のディレクトリ名を足した名前も埋まっていれば番号を付ける" {
+            architectureOf {
+                "Model".role { layout { "model" / "*".ktFile() } }
+                "XdocsModel".role { layout { "xdocs" / "index.md".file() } }
+            }.validate(repositoryOf { "xdocs" { "index.md"(); "model" { "User.md"() } } })
+                .suggestedRoleLines() shouldBe listOf("\"XdocsModel2\".role {")
+        }
+
+        "1 つの報告の中で先に勧めた名前も避ける" {
+            architectureOf {
+                "App".role { layout { "app" / "Main".ktFile() } }
+                "Lib".role { layout { "lib" / "Lib".ktFile() } }
+            }.validate(repositoryOf { "app" { "Main.kt"(); "Util.kt"() }; "lib" { "Lib.kt"(); "Util.kt"() } })
+                .suggestedRoleLines() shouldBe listOf("\"Util\".role {", "\"LibUtil\".role {")
+        }
+
+        "group の中の Role とは名前が重ならないので避けない" {
+            layoutArchitecture(group = "App", role = "Util") { "app" / "Main".ktFile() }
+                .validate(repositoryOf { "app" { "Main.kt"(); "Util.kt"() } })
+                .suggestedRoleLines() shouldBe listOf("\"Util\".role {")
+        }
+
+        "勧めた断片をそのまま貼った定義は読み込めて違反が無くなる" {
+            val repository = repositoryOf { ".gradle" { "file-system.probe"() } }
+            val suggested = architectureOf { gradle(requireWrapper = false) }
+                .validate(repository)
+                .filterIsInstance<UnexpectedDirectory>()
+                .map { it.suggestedRole }
+
+            suggested shouldBe listOf("DotGradle")
+            architectureOf {
+                gradle(requireWrapper = false)
+                for (name in suggested.filterNotNull()) name.role { layout { ".gradle".ignore() } }
+            }.validate(repository) shouldBe emptyList()
+        }
+    }
+
     "Missing なファイル" - {
         "まだ作られていないという中立なトーンで宣言位置つきに出る" {
             val violations = layoutArchitecture(group = "tool", role = "VersionCatalog") {
@@ -236,3 +291,6 @@ class ViolationReportSpec : FreeSpec({
         }
     }
 })
+
+private fun List<Violation>.suggestedRoleLines(): List<String> =
+    report().lines().map { it.trim() }.filter { it.endsWith(".role {") }
