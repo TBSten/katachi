@@ -209,6 +209,11 @@ internal fun blockOf(violation: Violation, root: String?): List<String> = when (
 private fun unexpectedFileBlock(violation: UnexpectedFile, root: String?): List<String> = buildList {
     add("[${violation.label}] ${displayExistingPath(root, violation.path)}")
     add("${STEP}No role is defined for this file.")
+    // Before the nearby locations: they only back the move, and moving does not help a file the OS writes.
+    osWrittenFileLines(violation.path)?.let { lines ->
+        addAll(lines)
+        return@buildList
+    }
     if (violation.nearby.isNotEmpty()) {
         // Inside the branch, not before it: with no nearby locations this and the blank line
         // before `How to fix:` would land back to back and open a two-line gap.
