@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>v0.4.0 確認 TODO</title>
+<style>
+:root{--bg:#fbfaf7;--fg:#1d1d1f;--muted:#6b6b70;--line:#e3e1dc;--card:#fff;--red:#c0392b;--amber:#b7791f;--blue:#2b6cb0;--green:#2f855a;--code:#f1efea}
+@media (prefers-color-scheme:dark){:root{--bg:#17171a;--fg:#ececef;--muted:#9a9aa2;--line:#2e2e34;--card:#1f1f23;--red:#f07167;--amber:#f6c35b;--blue:#7fb3ff;--green:#6fd39a;--code:#2a2a30}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.7 -apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+main{max-width:880px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 20px}
+.summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.pill{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px;font-size:13px}
+.pill b{margin-right:4px}
+h2{font-size:17px;margin:28px 0 8px;padding-left:10px;border-left:4px solid var(--c,var(--line))}
+h2 small{color:var(--muted);font-weight:normal;font-size:13px;margin-left:6px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0;display:grid;grid-template-columns:22px 1fr;gap:4px 10px}
+.item input{margin-top:5px;width:16px;height:16px}
+.item.done .t{text-decoration:line-through;color:var(--muted)}
+.t{font-weight:600}
+.p{font-size:11px;font-weight:700;border-radius:4px;padding:1px 6px;margin-right:6px;color:#fff;background:var(--muted);vertical-align:1px}
+.p8{background:var(--red)}.p7{background:var(--red)}.p5{background:var(--amber)}.p4,.p3,.p2{background:var(--muted)}
+.body{grid-column:2;font-size:14px;color:var(--fg)}
+.ask{grid-column:2;font-size:14px;margin-top:2px}
+.ask b{color:var(--blue)}
+details{grid-column:2;font-size:13.5px;color:var(--muted)}
+details summary{cursor:pointer}
+details ul{margin:6px 0;padding-left:20px}
+code{background:var(--code);border-radius:4px;padding:0 4px;font-size:.9em;word-break:break-all}
+a{color:var(--blue);word-break:break-all}
+.empty{color:var(--muted);font-size:14px;margin:4px 0 0 14px}
+</style>
+</head>
+<body>
+<main>
+<h1>v0.4.0 リリース前に確認してほしいこと</h1>
+<p class="sub">2026-11-20 22:15 更新 / リリース前チェック 5 回目（261120-01・KATACHI-404）/ 対象は main 79ab282a（PR #117 マージ後）/ チェックはこのブラウザに保存されます</p>
+
+<div class="summary">
+  <span class="pill"><b style="color:var(--red)">3</b>リリース前に直すか決める</span>
+  <span class="pill"><b style="color:var(--amber)">0</b>判断してほしい</span>
+  <span class="pill"><b style="color:var(--blue)">1</b>目を通してほしい</span>
+  <span class="pill"><b style="color:var(--green)">5</b>操作してほしい</span>
+  <span class="pill"><b style="color:var(--muted)">6</b>決定済み・対応中</span>
+</div>
+
+<h2 style="--c:var(--red)">1. リリース前に直すか決める<small>priority 7 以上。放置すると利用者が詰まる</small></h2>
+
+<div class="item" data-id="script-exit-code"><input type="checkbox"><div class="t"><span class="p p7">p7</span><code>katachi &lt;file&gt;.katachi.kts</code> が、中のコマンドの失敗を終了コードで伝えない</div>
+<div class="body">スクリプトの中の <code>katachi.agent.test.execute()</code> が失敗しても、<code>katachi ci.katachi.kts</code> は終了コード 0 で終わります。CI に書くと、検査が落ちても緑になります（docs には終了コードの話がありません）。</div>
+<div class="ask"><b>決めてほしい:</b> (a) おすすめ: スクリプトの最後の式が数値なら、それを katachi の終了コードにする（今はその値を表示しているだけ）/ (b) docs の katachi-script のページに <code>exitProcess(executeCommands(…))</code> の書き方を足す（docs は人が書く）/ (c) このまま（v0.5 で考える）</div>
+<details><summary>詳細</summary><ul>
+<li>再現: Gradle プロジェクトでない場所で <code>echo 'katachi.lint.execute()' &gt; ci.katachi.kts; katachi ci.katachi.kts; echo $?</code> → 「定義のディレクトリがありません」のあと <code>1</code> と出て、終了コードは 0</li>
+<li><code>execute()</code> と <code>executeCommands()</code> は終了コードを返すだけで、<code>exitProcess</code> を書かないと 0 になる。この書き方は KDoc（<code>commands.kt</code> の Example 1）にしか無い</li>
+<li>出どころ: 探索的検証 1 周目 CLI/script（<code>exploratory-cli-script.md</code>）</li>
+</ul></details></div>
+
+<div class="item" data-id="manual-install-context-parameters"><input type="checkbox"><div class="t"><span class="p p7">p7</span>手動インストールのとおりに書くと、Kotlin 2.2・2.3 でコンパイルできない</div>
+<div class="body">手動インストールのページの <code>build.gradle.kts</code> の例と「Kotlin 2.4 未満は」の注記に、<code>-Xcontext-parameters</code> がありません。README と scaffold は足すので、手で書いた人だけが <code>To call contextual declarations, specify the '-Xcontext-parameters' compiler option</code> で止まります。</div>
+<div class="ask"><b>決めてほしい:</b> (a) おすすめ: 手順 2 に「Kotlin 2.4 未満では <code>compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")</code> が要る」を README と同じ文面で 1 文足す（ja・en。こちらで行単位で足してよいか）/ (b) 自分で直す / (c) このまま</div>
+<details><summary>詳細</summary><ul>
+<li>場所: <code>docs/src/content/docs/get-started/manual-install.mdx</code>（ja も同じ）。ビルド済みの docs にも <code>context-parameters</code> は 0 件</li>
+<li>再現: Kotlin 2.3.21 のプロジェクトで <code>-Xcontext-parameters</code> の行を消して <code>:architecture-test:compileTestKotlin</code> → 上のエラー。メッセージから直せるので p7</li>
+<li>出どころ: 探索的検証 1 周目 Gradle plugin（<code>exploratory-gradle-plugin.md</code>）</li>
+</ul></details></div>
+
+<div class="item" data-id="konture-kotlin-23"><input type="checkbox"><div class="t"><span class="p p7">p7</span>Kotlin 2.2 のプロジェクトに katachi-konture を入れるとコンパイルが通らない</div>
+<div class="body">katachi-konture が持ち込む Konture 1.0.1 は Kotlin 2.4 のメタデータで作られていて、Kotlin 2.2 では読めません（2.3 では通る）。README とリリースノートは「Kotlin 2.2+」で、konture の下限はどこにも書いてありません。</div>
+<div class="ask"><b>決めてほしい:</b> (a) おすすめ: README・katachi-konture の Module.md・<code>konture { }</code> の KDoc・リリースノートに「katachi-konture は Kotlin 2.3 以上」と書く / (b) Konture の版を下げて Kotlin 2.2 でも使えるようにする（下げられるか調べるところから）/ (c) このまま</div>
+<details><summary>詳細</summary><ul>
+<li>エラー: <code>Module was compiled with an incompatible version of Kotlin. The binary version of its metadata is 2.4.0, expected version is 2.2.0.</code>（konture-1.0.1.jar）</li>
+<li>katachi 本体と katachi-konsist は Kotlin 2.2.20 でコンパイル・実行できる。konture を足したときだけ落ちる</li>
+<li>出どころ: 探索的検証 1 周目 konsist/konture（<code>exploratory-konsist-konture.md</code>）</li>
+</ul></details></div>
+
+<h2 style="--c:var(--amber)">2. 判断してほしい<small>リリースは止めないが、方針が要る</small></h2>
+<p class="empty">いまは無し（探索的検証 2 周目の結果が出たら足します）</p>
+
+<h2 style="--c:var(--blue)">3. 目を通してほしい</h2>
+
+<div class="item" data-id="release-note"><input type="checkbox"><div class="t">リリースノートの下書き</div>
+<div class="body">手順 4 でまとめた下書きです。上の konture の件を (a) にするなら、冒頭の「Kotlin 2.2+」の近くに一言足します。</div>
+<details><summary>詳細</summary><ul><li><code>release-note.md</code>（このフォルダ）</li></ul></details></div>
+
+<h2 style="--c:var(--green)">4. 操作してほしい</h2>
+
+<div class="item" data-id="ticket-py"><input type="checkbox"><div class="t">Mac のターミナルで ticket.py を 1 回実行する（9-2 の再開に要る）</div>
+<div class="body">Mac の 9-2（手順書どおりの導入）が、Notion チケットの hook に書き込みを止められて 3-2 の手前で待っています。KATACHI-404 を掴むコマンドはスレッドに貼ってあります。</div></div>
+
+<div class="item" data-id="explore-ide"><input type="checkbox"><div class="t">IDE plugin を 15 分触る（探索的検証 13）</div>
+<div class="body">0.4.0 のプラグインを入れた IDEA・Android Studio（Mac に用意済み、普段の設定とは分けてある）で、観点カードの 5 つを触って、気づいたことを一言で返してください。観点: 既定設定でガターが出るか / 日本語の文言 / テンプレートセットから生成 / 編集への追従 / 壊したときの案内と Reload。触り終えたら 10-2・10-5 を始めます。</div></div>
+
+<div class="item" data-id="review-119"><input type="checkbox"><div class="t">PR #119 をレビューしてマージする</div>
+<div class="body">KMP・Android のモジュールに plugin を適用したとき、JVM を起動する前に「<code>kotlin("jvm")</code> のモジュールに適用して」と言って止まるようにした。<a href="https://github.com/TBSten/katachi/pull/119">#119</a></div></div>
+
+<div class="item" data-id="review-120"><input type="checkbox"><div class="t">PR #120 をレビューしてマージする</div>
+<div class="body">9-2 で見つかった skill の指摘 11 件（3-2 の import 一覧に <code>FileConstraintFailure</code> が無い、ほか）。<a href="https://github.com/TBSten/katachi/pull/120">#120</a></div></div>
+
+<div class="item" data-id="publish"><input type="checkbox"><div class="t">v0.4.0 を publish する</div><div class="body">署名と Maven Central への publish は利用者が行う。チェックが全部終わってから。</div></div>
+
+<h2 style="--c:var(--line)">5. 決定済み・対応中<small>🔧 対応中 / ✏️ 編集済み・検証中 / ✓ 済</small></h2>
+
+<div class="item" data-id="done-117-diff"><input type="checkbox" disabled><div class="t">✓ katachiDiff のコピー用 <code>git diff</code> コマンドが引用符で囲まれず、パスによっては別のコマンドが動く件（PR #117 マージ）</div></div>
+<div class="item" data-id="done-117-actions"><input type="checkbox" disabled><div class="t">✓ 大きな PR で差分レポートのコメントが消えたままになる件（PR #117 マージ）</div></div>
+<div class="item" data-id="done-117-cli"><input type="checkbox" disabled><div class="t">✓ CLI が開けないディレクトリで <code>--version</code> も落ちる件・<code>scaffold --katachi</code> の値の書き忘れで <code>--dry-run</code> が効かない件（PR #117 マージ）</div></div>
+<div class="item" data-id="fix-119-kmp"><input type="checkbox" disabled><div class="t">🔧 KMP・Android のモジュールに plugin を適用すると <code>MainKt</code> が見つからないとだけ出る件（PR #119、CI 待ち）</div></div>
+<div class="item" data-id="fix-120-skill"><input type="checkbox" disabled><div class="t">🔧 9-2 で見つかった skill の指摘 11 件（PR #120、CI 待ち）</div></div>
+<div class="item" data-id="decided-9-2-ticket"><input type="checkbox" disabled><div class="t">✓ 9-2 で止まった書き込みは、Mac 側でその回のチケットを掴んで通す（判断カード、21:41）→ decisions/process.md に記録</div></div>
+
+<p class="sub" style="margin-top:28px">いま走っているもの: 探索的検証 2 周目の前半 4 本（core・katachiDiff・CLI/script・Gradle plugin、24 時ごろまで）、PR #119・#120 の CI。待っているもの: ticket.py の実行（Mac の 9-2）、IDE を触った感想（そのあと Mac で 10-2・10-5）。後半 4 本（konsist/konture・docs・実在の OSS・v0.3 からの移行）は前半が終わりしだい。</p>
+</main>
+<script>
+const KEY='katachi-v0.4.0-todo';
+let s={};try{s=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
+document.querySelectorAll('.item').forEach(el=>{
+  const cb=el.querySelector('input'),id=el.dataset.id;
+  cb.checked=!!s[id];el.classList.toggle('done',cb.checked);
+  cb.addEventListener('change',()=>{s[id]=cb.checked;el.classList.toggle('done',cb.checked);try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}});
+});
+</script>
+</body>
+</html>
