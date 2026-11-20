@@ -78,6 +78,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessor
  * @see Args
  * @see DocumentationMode
  * @see KatachiStaleDocumentationException
+ * @see KatachiEmptyDocumentationOutputDirException
  */
 @ExperimentalKatachiApi
 public object GenerateDocumentation : ArchitectureProcessor<GenerateDocumentation.Args, Unit> {
@@ -86,9 +87,10 @@ public object GenerateDocumentation : ArchitectureProcessor<GenerateDocumentatio
     override fun process(context: ArchitectureProcessContext<Args>): Result<Unit> =
         runProcessorCatching {
             val outputDir = context.args.outputDir
+            if (outputDir.isEmpty()) throw KatachiEmptyDocumentationOutputDirException()
             val pages = roleReferenceDocuments(context)
             val outputRoot = File(outputDir)
-            val outputUri = fileUri(absolutePathOf(outputDir))
+            val outputUri = fileUri(absolutePathOf(outputRoot.path))
             when (context.args.mode) {
                 DocumentationMode.Write -> {
                     context.log("Writing ${pages.size} pages to $outputUri")
@@ -157,7 +159,8 @@ public object GenerateDocumentation : ArchitectureProcessor<GenerateDocumentatio
          *
          * The default is below `build/`, which keeps the output out of `gitTracked()` and so out
          * of the check: a generated page does not have to be declared in a `layout { }` to stop
-         * being an unexpected file.
+         * being an unexpected file. An empty value fails the run with
+         * [KatachiEmptyDocumentationOutputDirException] before anything is written.
          */
         val outputDir: String = DEFAULT_OUTPUT_DIR,
         /** Whether to write the pages or to compare them against what is already there. */

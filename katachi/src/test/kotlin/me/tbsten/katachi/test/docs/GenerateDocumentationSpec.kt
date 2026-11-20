@@ -6,6 +6,7 @@ import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.collections.shouldContainInOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -14,6 +15,7 @@ import java.nio.file.Files
 import me.tbsten.katachi.docs.DocumentationMode
 import me.tbsten.katachi.docs.GenerateDocumentation
 import me.tbsten.katachi.docs.KatachiDocumentIoException
+import me.tbsten.katachi.docs.KatachiEmptyDocumentationOutputDirException
 import me.tbsten.katachi.docs.KatachiStaleDocumentationException
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
@@ -22,7 +24,9 @@ import me.tbsten.katachi.processor.internal.FakeArchitectureProcessContext
 import me.tbsten.katachi.processor.KatachiInvalidProcessorArgException
 import me.tbsten.katachi.processor.KatachiUnknownProcessorArgException
 import me.tbsten.katachi.processor.decodeFromStringMap
+import me.tbsten.katachi.processor.internal.KatachiEntryPoint
 import me.tbsten.katachi.processor.internal.checkNoUnknownArgs
+import me.tbsten.katachi.processor.internal.runMain
 import me.tbsten.katachi.test.dsl.files.ForbiddenFileSystem
 
 /**
@@ -289,6 +293,63 @@ class GenerateDocumentationSpec : FreeSpec({
         }
     }
 
+    "空の outputDir" - {
+        // Java resolves a page below an empty path against the file system root, so these specs
+        // must never reach the writing. UnrenderableDocsEntryPoint's definition cannot be rendered
+        // (a root role named README collides with the root page): were the empty check gone, the
+        // run would still stop before writing, on the collision. Failing on the empty value
+        // instead is what says the check comes first.
+        val failsOnTheEmptyValue = listOf(
+            "The documentation processor was given outputDir = \"\", which is empty.",
+            "Leave it out entirely to keep the default, build/katachi/docs.",
+        )
+
+        "Args を組んで渡すと、何も読み書きせずに型つきの docs { } と同じ助言の failure が返る" {
+            val context = FakeArchitectureProcessContext(
+                architecture = UnrenderableDocsEntryPoint.architecture,
+                args = GenerateDocumentation.Args(outputDir = ""),
+                fileSystem = ForbiddenFileSystem,
+            )
+
+            val result = shouldNotThrowAny { GenerateDocumentation.process(context) }
+
+            val failure = result.exceptionOrNull().shouldBeInstanceOf<KatachiEmptyDocumentationOutputDirException>()
+            failure.message.orEmpty().lines().first() shouldBe failsOnTheEmptyValue.first()
+            failure.message.orEmpty() shouldContain failsOnTheEmptyValue.last()
+            withClue("書き始めていれば Writing の行が出ている") { context.logs shouldBe emptyList() }
+        }
+
+        "コマンドラインから届いても同じ文面で落ちる" - {
+            // `--arg outputDir=` and `args("docs") { arg("outputDir", "") }` both reach the JVM of
+            // katachiDocs as --arg=; katachiProcessors hands a build-script value on as --arg-for=.
+            val routes = mapOf(
+                "katachiDocs の --arg=outputDir=" to "--arg=outputDir=",
+                "katachiProcessors の --arg-for=docs:outputDir=" to "--arg-for=docs:outputDir=",
+            )
+            for ((route, option) in routes) {
+                route {
+                    val printed = mutableListOf<String>()
+
+                    val status = runMain(
+                        arrayOf(
+                            "--entry-point=${UnrenderableDocsEntryPoint::class.java.name}",
+                            "--processor=docs",
+                            option,
+                        ),
+                        fileSystem = ForbiddenFileSystem,
+                        out = { printed += it },
+                        classLoader = UnrenderableDocsEntryPoint::class.java.classLoader,
+                    )
+
+                    status shouldBe 1
+                    withClue(printed.joinToString("\n")) {
+                        printed shouldContainInOrder listOf("[FAILED] docs") + failsOnTheEmptyValue.map { "  $it" }
+                    }
+                }
+            }
+        }
+    }
+
     "mode=check" - {
         "生成物が最新なら何も起きない" {
             val arch = architecture { "domain".group { "UseCase".role { } } }
@@ -514,6 +575,15 @@ class GenerateDocumentationSpec : FreeSpec({
         }
     }
 })
+
+/**
+ * The documentation processor over a definition whose pages cannot be built: the root role named
+ * README claims the path of the root page.
+ */
+internal object UnrenderableDocsEntryPoint : KatachiEntryPoint {
+    override val architecture: Architecture = architecture { "README".role { } }
+    override val processors: Map<String, Class<*>> = mapOf("docs" to GenerateDocumentation::class.java)
+}
 
 /** Writes this definition's documentation into [output], reading nothing of the project. */
 private fun Architecture.generateDocumentation(output: File): Unit =
