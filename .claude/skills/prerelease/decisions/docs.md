@@ -2035,3 +2035,22 @@ priority 1〜3 のルールの側の食い違い。どれもルールも例も�
 - by: 利用者（スレッド、22:35 JST「これはまあこのままでいいや」）
 
 上の ja の判断の訳のページ。en は ja から訳すだけなので、同じ判断にする。
+
+## 直さない: docs: 手動インストールの手順 2 をそのまま写すと、ルートで Kotlin の plugin を `apply false` している Android・KMP のプロジェクトでは `kotlin("jvm") version "…"` が「already on the classpath with an unknown version」で落ちる（CLI の scaffold は version を書かずに通る）
+- decision: 直さない
+- file: ja/get-started/manual-install.mdx
+- quote: kotlin("jvm") version "<Kotlin のバージョン>"
+- decided: 2026-10-06（docs/AGENTS.md の記録）。2026-11-21 261120-01 KATACHI-404 でここへ写した
+- by: 利用者（docs/AGENTS.md「2026-10-06 にページから外した（利用者の判断。コード例で十分）」）
+
+手順 13（探索的検証 2 周目 docs）の p7。手動インストールの手順 2 の `kotlin("jvm") version "…"` は、ルートで Kotlin の plugin を `apply false` している Android・KMP のプロジェクトでは Gradle が「already on the classpath with an unknown version」で断る（CLI の scaffold は version を書かずに通る）。
+この注意書きは 2026-10-06 に利用者の判断でページから外してあり（docs/AGENTS.md「ページに書かないこと」）、エラーメッセージから直せる。docs/AGENTS.md にだけ記録があって照合で外せなかったので、次の回から `decisions.py match` で外せるようにここへ写す。
+
+## 直さない: docs: 手動インストールの手順 2 をそのまま写すと、ルートで Kotlin の plugin を `apply false` している Android・KMP のプロジェクトでは `kotlin("jvm") version "…"` が「already on the classpath with an unknown version」で落ちる（CLI の scaffold は version を書かずに通る）
+- decision: 直さない
+- file: docs/src/content/docs/get-started/manual-install.mdx
+- quote: kotlin("jvm") version "<Kotlin version>"
+- decided: 2026-10-06（docs/AGENTS.md の記録）。2026-11-21 261120-01 KATACHI-404 でここへ写した
+- by: 利用者（docs/AGENTS.md「2026-10-06 にページから外した（利用者の判断。コード例で十分）」）
+
+上の ja の判断の訳のページ。en は ja から訳すだけなので、同じ判断にする。
