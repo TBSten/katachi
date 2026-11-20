@@ -225,6 +225,7 @@ benchmark は `check` に入らず、8 も bench ジョブを飛ばすので、�
 subagent に渡し、9-1 で組んだ配布物だけを入口に 45〜60 分ずつ並列に触らせる。結果は `exploratory-<コンポーネント>.md`（発見は再現手順が書けるものだけ。
 `decisions.py match --drop` で過去の判断と同じものを外す）。p7 以上は TODO.html に載せ、直す PR で再現を検査（fixture・spec）に昇格させる。
 IDE plugin は Mac で人が 15 分触る（AI が環境と観点カードを用意）。`exploratory.py list` でチャーターの書式を検査する。
+Mac で Codex が動くときは、領域を限定しない広域の遊撃を 1 セッション足す（Claude の「触れなかったところ」を渡して被りを避け、発見は別の Claude が再現して確認済みだけ採用。動かなければ飛ばして Claude だけで進める。KATACHI-407）。
 週替わりの nightly 版は [references/exploratory-nightly.md](references/exploratory-nightly.md)。
 詳細: [references/exploratory.md](references/exploratory.md)
 

@@ -172,6 +172,7 @@
 - [ ] 検査に昇格できた（直す PR で fixture・spec に足した）: {TODO} 件
 - [ ] かかった時間: {TODO チャーターごと}
 - [ ] IDE plugin（人が触る回）: {TODO 観点カードを TODO.html に載せた / 回さない（理由）}
+- [ ] Codex の広域の遊撃（Mac）: {TODO 回した（Codex だけが見つけた確認済み n 件・再現できなかった n 件・利用枠の上限に達したか）/ 飛ばした（理由: 動かなかった・利用枠）}
 - [ ] 結果: {TODO file://.local/release-v0.0.0/exploratory-<コンポーネント>.md の絶対パス（チャーターごと）}
 - [ ] 過去の判断どおりで出さなかった: {TODO} 件 / 見直し候補 {TODO} 件（decisions/ の `file: exploratory:…`）
 
