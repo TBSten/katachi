@@ -155,10 +155,13 @@ internal const val MODULE_DIR_DEFAULT: String = "architecture-test"
 
 private val MODULE_DIR_PATTERN = Regex("^[A-Za-z0-9_][A-Za-z0-9_.-]*(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$")
 
-/** Stops unless [value] is a path relative to the Gradle root (scaffold `--module-dir`). */
+/**
+ * Stops unless [value] is a path relative to the Gradle root (`--module-dir`), as a usage error: `test` exits 1 only
+ * for a failed check.
+ */
 internal fun validateModuleDir(value: String) {
     if (!MODULE_DIR_PATTERN.matches(value)) {
-        die(Messages.Workdir.moduleDirMustPath(value))
+        dieUsage(Messages.Workdir.moduleDirMustPath(value))
     }
 }
 
@@ -175,6 +178,9 @@ internal class ModuleDir(
 ) {
     /** `:architecture-test`, `:static-analysis:katachi`. */
     val gradlePath: String get() = moduleGradlePathOf(dir)
+
+    /** ` --module-dir <dir>` when it came from that option, for a command a message suggests: without it, that command would use another module. */
+    val optionText: String get() = if (source == ModuleDirSource.ARG) " --module-dir $dir" else ""
 }
 
 /** [arg] > `meta.moduleDir` > the default. The kit's `resolve_module_dir`. */

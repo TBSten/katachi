@@ -116,12 +116,12 @@ private fun notRunReason(notRun: NotRun, testTask: String): Msg = when (notRun) 
 }
 
 /** Prints why the tests did not run and what to do; test then exits 2. */
-private fun ScriptContext.reportNotRun(notRun: NotRun, testTask: String, gradleArgs: List<String>) {
-    say(Messages.Test.resultTestsDidNotRun(notRunReason(notRun, testTask)))
+private fun ScriptContext.reportNotRun(notRun: NotRun, module: ModuleDir, gradleArgs: List<String>) {
+    say(Messages.Test.resultTestsDidNotRun(notRunReason(notRun, "${module.gradlePath}:test")))
     val hint = when {
         notRun is NotRun.NoTestCase -> if (notRun.skipped > 0) Messages.Test.removeWhatSkipsTheTests else Messages.Test.noTestClass
         notRun !is NotRun.Task -> null
-        notRun.outcome == "UP-TO-DATE" || notRun.outcome == "FROM-CACHE" -> Messages.Test.gradleReusedEarlierResult
+        notRun.outcome == "UP-TO-DATE" || notRun.outcome == "FROM-CACHE" -> Messages.Test.gradleReusedEarlierResult(module.optionText)
         notRun.outcome == "NO-SOURCE" -> Messages.Test.noTestClass
         gradleArgs.any { it == "--dry-run" || it == "-m" } -> Messages.Test.dryRunRunsNoTask
         else -> Messages.Test.buildTurnsTestTaskOff
@@ -235,16 +235,17 @@ internal fun ScriptContext.testLogDir(): Path {
     return if (workdir != null && !checksOtherWorkTree()) workdir.resolve("tmp") else projectRoot().resolve("build/katachi")
 }
 
-/** `compare-violations [<before> [<after>]]`: 0 unchanged, 1 changed, 2 not comparable. */
+/** `compare-violations [--module-dir <path>] [<before> [<after>]]`: 0 unchanged, 1 changed, 2 not comparable. */
 internal fun ScriptContext.runCompareViolations(args: List<String>): Int {
-    val module = resolveModuleDir()
+    val parsed = parseArgs(commandSpec("compare-violations"), args)
+    val module = resolveModuleDir(parsed.value("--module-dir"))
     requireDefinitionDir(module)
-    val before = args.getOrNull(0)?.let(::resolve) ?: testLogDir().resolve("test-before-refactor.log")
-    val after = args.getOrNull(1)?.let(::resolve) ?: testLogDir().resolve("test-after-refactor.log")
+    val before = parsed.positionals.getOrNull(0)?.let(::resolve) ?: testLogDir().resolve("test-before-refactor.log")
+    val after = parsed.positionals.getOrNull(1)?.let(::resolve) ?: testLogDir().resolve("test-after-refactor.log")
     val testTask = "${module.gradlePath}:test"
     for (log in listOf(before, after)) {
         if (!log.isRegularFile()) {
-            dieUsage(Messages.Test.notFoundSaveOutput(fileUri(log), module.gradlePath))
+            dieUsage(Messages.Test.notFoundSaveOutput(fileUri(log), module.gradlePath, module.optionText))
         }
         notRunOf(log.readLinesLenientLog(), testTask)?.let {
             dieUsage(Messages.Test.hasNoCheckResultTestsDidNotRun(fileUri(log), notRunReason(it, testTask)))
@@ -256,7 +257,7 @@ internal fun ScriptContext.runCompareViolations(args: List<String>): Int {
     // A log cut to the first N violations cannot be compared: swaps past N go unseen, and a full log shows a false difference.
     val truncated = listOf(before, after).mapNotNull { log -> truncatedLineOf(log)?.let { "    ${fileUri(log)} : $it\n" } }.joinToString("")
     if (truncated.isNotEmpty()) {
-        warn(Messages.Test.notComparingLogShows(truncated))
+        warn(Messages.Test.notComparingLogShows(truncated, module.optionText))
         exitWith(2)
     }
     val a = extractCheckResult(before)
@@ -279,7 +280,7 @@ internal fun ScriptContext.runCompareViolations(args: List<String>): Int {
 }
 
 /**
- * `test [--save <name>] [-- <gradle args>]`: runs the verification module, keeps the whole log and prints a
+ * `test [--save <name>] [--module-dir <path>] [-- <gradle args>]`: runs the verification module, keeps the whole log and prints a
  * summary. 0 passed, 1 the check failed, 2 the check was not reached (the reason goes to stderr). The
  * environment, JAVA_HOME included, is passed on as it is.
  */
@@ -292,7 +293,7 @@ internal fun ScriptContext.runTest(args: List<String>): Int {
     val gradleArgs = parsed.passthrough.toMutableList()
     if (gradleArgs.none { it.startsWith("-Dkatachi.maxViolations=") }) gradleArgs += TEST_MAX_VIOLATIONS_ARG
 
-    val module = resolveModuleDir()
+    val module = resolveModuleDir(parsed.value("--module-dir"))
     val root = projectRoot()
     if (!root.isDirectory()) {
         warn(Messages.Test.projectRootMissing(fileUri(root)))
@@ -342,7 +343,7 @@ internal fun ScriptContext.runTest(args: List<String>): Int {
 
     val lines = log.readLinesLenientLog()
     notRunOf(lines, testTask)?.let {
-        reportNotRun(it, testTask, gradleArgs)
+        reportNotRun(it, module, gradleArgs)
         return 2
     }
     if (!hasCheckResult(log, testTask)) {

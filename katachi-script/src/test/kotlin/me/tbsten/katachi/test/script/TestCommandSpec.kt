@@ -155,6 +155,62 @@ class TestCommandSpec : FreeSpec({
             run.err shouldContain "test: 知らないオプションです: --info（Gradle に渡す引数は -- の後ろに）"
         }
 
+        "--module-dir（KATACHI-420）" - {
+            "チェックリストが無くても、--module-dir の検査用モジュールの test を呼ぶ" {
+                val fixture = TestFixture(withDefinition = false, withWorkdir = false)
+                fixture.project.resolve("static-analysis/katachi/src/test/kotlin").createDirectories()
+
+                val run = fixture.run("agent", "test", "--module-dir", "static-analysis/katachi")
+
+                run.status shouldBe 0
+                fixture.project.resolve("build/katachi/test/latest.log").readText() shouldContain "args: :static-analysis:katachi:test --console=plain"
+            }
+
+            "チェックリストの meta.moduleDir より --module-dir を使う" {
+                val fixture = TestFixture(withDefinition = false)
+                fixture.workdir.resolve("check-list.html")
+                    .writeText(checkListHtml("""{"meta": {"projectRoot": "${fixture.project}", "moduleDir": "static-analysis/old"}, "steps": []}""", "ja"))
+                fixture.project.resolve("static-analysis/katachi/src/test/kotlin").createDirectories()
+
+                fixture.run("agent", "test", "--module-dir", "static-analysis/katachi").status shouldBe 0
+
+                fixture.workdir.resolve("tmp/test/latest.log").readText() shouldContain "args: :static-analysis:katachi:test --console=plain"
+            }
+
+            "-- の後ろの --module-dir は Gradle に渡す" {
+                val fixture = TestFixture()
+
+                fixture.run("agent", "test", "--", "--module-dir", "x").status shouldBe 0
+
+                fixture.workdir.resolve("tmp/test/latest.log").readText() shouldContain "args: :architecture-test:test --console=plain --module-dir x"
+            }
+
+            "定義のディレクトリが無ければ、--module-dir でも指定できると言う" {
+                val run = TestFixture(withDefinition = false, withWorkdir = false).run("agent", "test")
+
+                run.status shouldBe 2
+                run.err shouldContain "違うなら --module-dir <パス> で指定するか、チェックリストの meta.moduleDir を直す"
+            }
+
+            "--module-dir で選んだモジュールなら、案内するコマンドにも --module-dir を付ける" {
+                val fixture = TestFixture(withDefinition = false, withWorkdir = false)
+                fixture.project.resolve("static-analysis/katachi/src/test/kotlin").createDirectories()
+                fixture.gradleOutput("> Task :static-analysis:katachi:test UP-TO-DATE\nBUILD SUCCESSFUL in 1s", status = 0)
+
+                val run = fixture.run("agent", "test", "--module-dir", "static-analysis/katachi")
+
+                run.status shouldBe 2
+                run.out shouldContain "katachi agent test --module-dir static-analysis/katachi -- --rerun"
+            }
+
+            "--module-dir が Gradle ルートからの相対パスでなければ、検査の失敗（1）ではなく使い方の誤り（2）で止まる" {
+                val run = TestFixture().run("agent", "test", "--module-dir", "../outside")
+
+                run.status shouldBe 2
+                run.err shouldContain "--module-dir は Gradle ルートからの相対パスです"
+            }
+        }
+
         "テストが実行されていなければ（KATACHI-420）" - {
             "-- の後ろの Gradle の --dry-run でどのタスクも SKIPPED なら、通ったとは言わず 2" {
                 val fixture = TestFixture()
@@ -318,6 +374,26 @@ class TestCommandSpec : FreeSpec({
             run.status shouldBe 2
             run.err shouldContain "に検査の結果がありません。テストが実行されていません（:architecture-test:test が SKIPPED）。"
             run.out shouldNotContain "検査結果は変わっていません"
+        }
+
+        "--module-dir の定義の場所で比べ、ログが無ければ --module-dir 付きの取り方を案内する（KATACHI-420）" {
+            val fixture = TestFixture(withDefinition = false, withWorkdir = false)
+            fixture.project.resolve("static-analysis/katachi/src/test/kotlin").createDirectories()
+
+            val missing = fixture.run("agent", "compare-violations", "--module-dir", "static-analysis/katachi")
+
+            missing.status shouldBe 2
+            missing.err shouldContain
+                "katachi agent test --save <名前> --module-dir static-analysis/katachi で取るか、./gradlew :static-analysis:katachi:test の出力を"
+
+            val logs = fixture.project.resolve("logs").createDirectories()
+            logs.resolve("before.log").writeText("> Task :static-analysis:katachi:test\nBUILD SUCCESSFUL in 3s\n")
+            logs.resolve("after.log").writeText("> Task :static-analysis:katachi:test\nBUILD SUCCESSFUL in 3s\n")
+
+            val run = fixture.run("agent", "compare-violations", "logs/before.log", "--module-dir", "static-analysis/katachi", "logs/after.log")
+
+            run.status shouldBe 0
+            run.out shouldContain "検査結果は変わっていません"
         }
 
         "agent test が JUnit XML から実行 0 件と書き残したログとは比べない（KATACHI-420）" {

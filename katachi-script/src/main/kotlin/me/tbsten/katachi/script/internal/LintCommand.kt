@@ -16,7 +16,7 @@ import kotlin.streams.asSequence
 internal fun ScriptContext.runLint(args: List<String>): Int {
     val parsed = parseArgs(commandSpec("lint"), args)
     parsed.positionals.firstOrNull()?.let { dieUsage(Messages.Lint.unknownOption(it)) }
-    lintRoles()
+    lintRoles(parsed.value("--module-dir"))
     return 0
 }
 
@@ -321,8 +321,8 @@ private fun lintIncludedBuilds(projectRoot: Path): Set<String> {
 }
 
 /** The Role check, after `check 3-2` / `check 3-3` and as `lint`. Stops only when there is no definition to read. */
-internal fun ScriptContext.lintRoles() {
-    val module = resolveModuleDir()
+internal fun ScriptContext.lintRoles(moduleDirArg: String?) {
+    val module = resolveModuleDir(moduleDirArg)
     requireDefinitionDir(module)
     val checkList = findWorkdir()?.resolve(CHECK_LIST_FILE)
     val data = checkList?.let { readJsonBlockOrNull(it, "checklist") }?.toTree().asMap() ?: JMap()

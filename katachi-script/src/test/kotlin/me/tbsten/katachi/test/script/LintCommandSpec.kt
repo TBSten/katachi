@@ -255,6 +255,28 @@ class LintCommandSpec : FreeSpec({
         run.out shouldContain "Roles that seem to hold files of different kinds: 1 (1 scanned)."
         run.out shouldContain "static-analysis/katachi/src/test/kotlin"
     }
+
+    "--module-dir の定義を読む。チェックリストが無くても、meta.moduleDir と違っても（KATACHI-420）" {
+        val project = createTempDirectory("katachi-project-")
+        project.resolve("static-analysis/katachi/src/test/kotlin").createDirectories()
+            .resolve("MixedRole.kt").writeText("val m = \"Mixed\".role { layout { \"README.md\".file(); \"LICENSE\".file() } }")
+        val recordingOther = workdirWith("""{"meta": {"projectRoot": "$project", "moduleDir": "static-analysis/old"}, "steps": []}""")
+
+        for (env in listOf(emptyMap(), mapOf("KATACHI_WORKDIR" to recordingOther.toString()))) {
+            val run = runCapturing(project, listOf("lint", "--module-dir", "static-analysis/katachi"), env = env)
+
+            run.status shouldBe 0
+            run.out shouldContain "種類の違うファイルを1つの Role に抱えていそうなものが 1 件あります（1 件を走査）。"
+            run.out shouldContain "定義: file://${project.resolve("static-analysis/katachi/src/test/kotlin")}"
+        }
+    }
+
+    "定義のディレクトリが無ければ、--module-dir でも指定できると言って 1 で止まる" {
+        val run = runCapturing(createTempDirectory("katachi-project-"), listOf("lint"))
+
+        run.status shouldBe 1
+        run.err shouldContain "違うなら --module-dir <パス> で指定するか、チェックリストの meta.moduleDir を直す"
+    }
 })
 
 /** A project whose `architecture-test/src/test/kotlin` holds [files] (name to source). */

@@ -710,9 +710,9 @@ internal object Messages {
             en = "Add the following line inside the plugins { } block that comes **after** buildscript { }\nin $rootBuildUri (create plugins { } if there is none).",
         )
 
-        val nextTestArchitectureEmpty: Msg = Msg(
-            ja = "次: $AGENT_COMMAND test\n    architecture { } が空なので、すべてのファイルが Unexpected として報告されて\n    失敗するのが正常です。Unexpected 以外のエラーが出た場合だけが問題です。",
-            en = "Next: $AGENT_COMMAND test\n    architecture { } is empty, so every file is reported as Unexpected and the test\n    fails. That is expected. Only errors other than Unexpected are a problem.",
+        fun nextTestArchitectureEmpty(moduleOption: Any?): Msg = Msg(
+            ja = "次: $AGENT_COMMAND test$moduleOption\n    architecture { } が空なので、すべてのファイルが Unexpected として報告されて\n    失敗するのが正常です。Unexpected 以外のエラーが出た場合だけが問題です。",
+            en = "Next: $AGENT_COMMAND test$moduleOption\n    architecture { } is empty, so every file is reported as Unexpected and the test\n    fails. That is expected. Only errors other than Unexpected are a problem.",
         )
 
         val projectMatchesDeclaration: Msg = Msg(
@@ -749,9 +749,9 @@ internal object Messages {
             en = "  and $diffSize more (see the log)",
         )
 
-        fun notFoundSaveOutput(logUri: Any?, moduleGradlePath: Any?): Msg = Msg(
-            ja = "$logUri がありません。$AGENT_COMMAND test --save <名前> で取るか、./gradlew $moduleGradlePath:test の出力をこのパスに保存してください（手順 3-2 / 3-3）。",
-            en = "$logUri not found. Capture it with $AGENT_COMMAND test --save <name>, or save the output of ./gradlew $moduleGradlePath:test to this path (steps 3-2 / 3-3).",
+        fun notFoundSaveOutput(logUri: Any?, moduleGradlePath: Any?, moduleOption: Any?): Msg = Msg(
+            ja = "$logUri がありません。$AGENT_COMMAND test --save <名前>$moduleOption で取るか、./gradlew $moduleGradlePath:test の出力をこのパスに保存してください（手順 3-2 / 3-3）。",
+            en = "$logUri not found. Capture it with $AGENT_COMMAND test --save <name>$moduleOption, or save the output of ./gradlew $moduleGradlePath:test to this path (steps 3-2 / 3-3).",
         )
 
         fun hasNoCheckResult(logUri: Any?): Msg = Msg(
@@ -799,10 +799,10 @@ internal object Messages {
             en = "The verification module has no test. Put a test that calls projectArchitecture.assert() in src/test/kotlin (the ProjectArchitectureTest.kt scaffold writes).",
         )
 
-        val gradleReusedEarlierResult: Msg = Msg(
-            ja = "Gradle が前の実行の結果を使ったので、いまのファイルは検査していません。$AGENT_COMMAND test -- --rerun で実行し直すか、" +
+        fun gradleReusedEarlierResult(moduleOption: Any?): Msg = Msg(
+            ja = "Gradle が前の実行の結果を使ったので、いまのファイルは検査していません。$AGENT_COMMAND test$moduleOption -- --rerun で実行し直すか、" +
                 "検査用モジュールの tasks.test に outputs.upToDateWhen { false } と outputs.cacheIf { false } を戻してください。",
-            en = "Gradle used the result of an earlier run, so the current files were not checked. Run $AGENT_COMMAND test -- --rerun, " +
+            en = "Gradle used the result of an earlier run, so the current files were not checked. Run $AGENT_COMMAND test$moduleOption -- --rerun, " +
                 "or put outputs.upToDateWhen { false } and outputs.cacheIf { false } back into tasks.test of the verification module.",
         )
 
@@ -816,13 +816,13 @@ internal object Messages {
             en = "Skipped tests: $skipped (a check inside a test turned off with @Disabled or the like did not run)",
         )
 
-        fun notComparingLogShows(truncated: Any?): Msg = Msg(
+        fun notComparingLogShows(truncated: Any?, moduleOption: Any?): Msg = Msg(
             ja = "違反を先頭の数件だけ出したログがあるので、比べません。ログに出ていない違反が入れ替わっても気づけず、全件のログと比べると偽の差分が出るためです。\n" +
-                "$truncated    打ち切られたほうを、全件で取り直してください。$AGENT_COMMAND test --save <名前> はいつも全件を出します（-Dkatachi.maxViolations=all を Gradle に渡す）。\n" +
+                "$truncated    打ち切られたほうを、全件で取り直してください。$AGENT_COMMAND test --save <名前>$moduleOption はいつも全件を出します（-Dkatachi.maxViolations=all を Gradle に渡す）。\n" +
                 "    前のログ（before-refactor）を取り直すときは、定義をリファクタリング前に戻してから取ります。\n" +
                 "    取り直しても打ち切られるなら、テストのコードの assert() に maxViolations が書いてあります（-D より優先される）。外してから取り直してください。",
             en = "Not comparing: a log shows only the first few violations. Violations missing from the log could swap without being noticed, and comparing with a full log shows a false difference.\n" +
-                "$truncated    Capture the cut-off one again with every violation. $AGENT_COMMAND test --save <name> always prints them all (it passes -Dkatachi.maxViolations=all to Gradle).\n" +
+                "$truncated    Capture the cut-off one again with every violation. $AGENT_COMMAND test --save <name>$moduleOption always prints them all (it passes -Dkatachi.maxViolations=all to Gradle).\n" +
                 "    To capture the before log (before-refactor) again, put the definition back to how it was before the refactoring first.\n" +
                 "    If it is still cut off, the test code passes maxViolations to assert() (that wins over -D). Remove it and capture again.",
         )
@@ -969,8 +969,10 @@ internal object Messages {
         )
 
         fun definitionDirMissing(dirUri: Any?, moduleDir: Any?): Msg = Msg(
-            ja = "定義のディレクトリがありません: $dirUri 。scaffold をまだ実行していないか、置き場所が違います（$moduleDir。違うなら、チェックリストの meta.moduleDir を直す）",
-            en = "The definition directory does not exist: $dirUri . Either scaffold has not run yet, or the location differs ($moduleDir; if it is wrong, fix meta.moduleDir in the check list)",
+            ja = "定義のディレクトリがありません: $dirUri 。scaffold をまだ実行していないか、置き場所が違います" +
+                "（$moduleDir。違うなら --module-dir <パス> で指定するか、チェックリストの meta.moduleDir を直す）",
+            en = "The definition directory does not exist: $dirUri . Either scaffold has not run yet, or the location differs " +
+                "($moduleDir; if it is wrong, pass --module-dir <path>, or fix meta.moduleDir in the check list)",
         )
 
         fun ambiguous(candidates: Any?): Msg = Msg(
@@ -1059,13 +1061,15 @@ katachi — katachi の導入と検査を手伝うコマンド
       --force             既存の検査用モジュールを上書きする
       --dry-run           何も書かずに、何をするかだけ出力する
 
-  katachi lint
+  katachi lint [--module-dir <path>]
       定義（検査用モジュールの src/test/kotlin）を読み、種類の違うファイルを1つの
       Role に抱えていそうなもの、Gradle のファイルを手書きで宣言した Role（制約を持つものは
       gradle { } の hook への移し方も出す）、平たい group、小文字で始まる Role・group の名前、
       分けていないファイル、documented = false の候補を列挙する。
       素朴なテキスト走査なので誤検知があり得る。点検の結果では失敗にしない（0 を返す）。
       定義のディレクトリが無ければ（scaffold 前、置き場所の食い違い）1 を返す。
+      --module-dir は検査用モジュールの置き場所で、scaffold の --module-dir と同じ（デフォルト:
+      作業用ディレクトリのチェックリストの meta.moduleDir。無ければ architecture-test）。
 
   katachi <ファイル>.katachi.kts [<引数>...]
       katachi のコマンドを Kotlin で並べたスクリプトを実行する。katachi と
@@ -1121,7 +1125,7 @@ Usage:
       --force             Overwrite an existing verification module
       --dry-run           Write nothing; only print what would be done
 
-  katachi lint
+  katachi lint [--module-dir <path>]
       Reads the definition (src/test/kotlin of the verification module) and lists Roles that
       seem to hold files of different kinds, hand-written Roles for Gradle files (ones with
       constraints also get the way to move them into a gradle { } hook), flat groups, Role and
@@ -1129,6 +1133,8 @@ Usage:
       documented = false.
       It is a plain text scan, so false positives are possible. Findings never fail it (returns 0).
       Returns 1 if the definition directory does not exist (before scaffold, or a different location).
+      --module-dir is where the verification module is, the same as scaffold's --module-dir (default:
+      meta.moduleDir in the check list of the working directory, otherwise architecture-test).
 
   katachi <file>.katachi.kts [<argument>...]
       Runs a script that lines up katachi commands in Kotlin. katachi and the
@@ -1157,7 +1163,7 @@ katachi skill（gh skill install TBSten/katachi katachi）の手順がこれら�
 katachi doctor / katachi scaffold / katachi lint（katachi --help）を使ってください。
 
 使い方:
-  katachi agent compare-violations [<前のログ> <後のログ>]
+  katachi agent compare-violations [--module-dir <path>] [<前のログ> <後のログ>]
       ./gradlew <module>:test の出力を2つ比べ、検査結果（違反の件数と中身）が
       変わっていないかを確かめる。定義のリファクタリング（katachi skill の setup 3-3）の前後に使う。
       デフォルトは test --save before-refactor / after-refactor で残したログ
@@ -1168,7 +1174,7 @@ katachi doctor / katachi scaffold / katachi lint（katachi --help）を使って
       どちらかが違反を先頭の数件だけ出したログ（Showing first ...）か、ログが無い・検査結果が無いときは、
       比べずに 2 を返す。
 
-  katachi agent test [--save <名前>] [-- <gradle の引数>...]
+  katachi agent test [--save <名前>] [--module-dir <path>] [-- <gradle の引数>...]
       検査用モジュールのテスト（./gradlew <module>:test）を実行し、要約だけを出す。
       ログの全文は <ログの置き場>/test/<UTC 時刻>.log（latest.log にも写し、前の latest.log は
       previous.log に回す）。ログの置き場は作業用ディレクトリの tmp/、無ければ build/katachi/。
@@ -1183,6 +1189,9 @@ katachi doctor / katachi scaffold / katachi lint（katachi --help）を使って
       SKIPPED などでテストが実行されていない）。
       katachi コマンドが Gradle を起動するのはこのコマンドだけ。
 
+--module-dir は検査用モジュールの置き場所で、scaffold の --module-dir と同じ（デフォルト: 作業用ディレクトリの
+チェックリストの meta.moduleDir。無ければ architecture-test）。test では -- より前に書きます。
+
 使い方の誤り（知らないオプションやサブコマンド）は、どのコマンドも 2 で終わります。
 
 作業用ディレクトリ（katachi skill の手順が作る、check-list.html と tmp/ を持つディレクトリ）は
@@ -1196,7 +1205,7 @@ The steps of the katachi skill (gh skill install TBSten/katachi katachi) call th
 katachi up themselves, they use katachi doctor / katachi scaffold / katachi lint (katachi --help).
 
 Usage:
-  katachi agent compare-violations [<log before> <log after>]
+  katachi agent compare-violations [--module-dir <path>] [<log before> <log after>]
       Compares two outputs of ./gradlew <module>:test and checks that the
       check result (the number and content of violations) has not changed. Use it
       before and after refactoring the definition (step 3-3 of the katachi skill's setup).
@@ -1209,7 +1218,7 @@ Usage:
       If either log shows only the first few violations (Showing first ...), is missing or has no
       check result, returns 2 without comparing.
 
-  katachi agent test [--save <name>] [-- <gradle arguments>...]
+  katachi agent test [--save <name>] [--module-dir <path>] [-- <gradle arguments>...]
       Runs the verification module's tests (./gradlew <module>:test) and prints only a summary.
       The full log goes to <log place>/test/<UTC time>.log (also copied to latest.log; the previous
       latest.log becomes previous.log). The log place is tmp/ of the working directory, otherwise
@@ -1224,6 +1233,10 @@ Usage:
       0 = passed, 1 = the check failed, 2 = the check was not reached (compile error, no gradlew,
       no definition directory, tests that did not run such as SKIPPED). This is the only command of katachi
       that starts Gradle.
+
+--module-dir is where the verification module is, the same as scaffold's --module-dir (default:
+meta.moduleDir in the check list of the working directory, otherwise architecture-test). For test,
+write it before --.
 
 A usage error (an unknown option or subcommand) exits with 2 in every command.
 
