@@ -9,6 +9,7 @@ import io.github.baole.konture.core.model.Subject
 import io.github.baole.konture.core.model.Violation
 import io.github.baole.konture.scope
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -29,12 +30,14 @@ import me.tbsten.katachi.dsl.files.internal.RealFileSystem
 import me.tbsten.katachi.dsl.wholeTree
 import me.tbsten.katachi.konture.KatachiKontureDefaultGraphException
 import me.tbsten.katachi.konture.KatachiKontureDirectAssertionException
+import me.tbsten.katachi.konture.KatachiKontureEmptySelectionException
 import me.tbsten.katachi.konture.KatachiKontureGraphIncompleteException
 import me.tbsten.katachi.konture.KatachiKontureNoExpectationException
 import me.tbsten.katachi.konture.KatachiKontureNoKotlinFilesException
 import me.tbsten.katachi.konture.KatachiKontureParseException
 import me.tbsten.katachi.konture.KatachiKontureRuleRefusedException
 import me.tbsten.katachi.konture.KatachiKontureUnlocatableViolationException
+import me.tbsten.katachi.konture.KontureConstraintScope
 import me.tbsten.katachi.konture.internal.KontureCoveredFiles
 import me.tbsten.katachi.konture.internal.KontureDeclarationNames
 import me.tbsten.katachi.konture.internal.SuiteKind
@@ -48,20 +51,21 @@ private val NO_GRAPH_NAMES: KontureDeclarationNames = KontureDeclarationNames(Pr
  * What every way a `konture { }` constraint can fail to answer at all comes out as, seen through
  * the real report — the counterpart of `:katachi`'s `FileConstraintFailureSpec`, one module over.
  *
- * Eight exceptions end at `[UncheckedFileConstraint] reason=Failed`, each pinned once here or in
+ * Nine exceptions end at `[UncheckedFileConstraint] reason=Failed`, each pinned once here or in
  * [KontureShadowSpec]:
  * 1. graph construction lost a file ([KatachiKontureGraphIncompleteException])
  * 2. the block declared no rule ([KatachiKontureNoExpectationException])
  * 3. the covered files hold no `.kt` Konture can parse ([KatachiKontureNoKotlinFilesException])
  * 4. a rule has no `should()` ([KatachiKontureRuleRefusedException]) — and only that; an
- *    `AssertionError` a predicate threw while the rule ran is (5), not this
- * 5. an `AssertionError` came out of the block itself, or out of a predicate while a rule was
+ *    `AssertionError` a predicate threw while the rule ran is (6), not this
+ * 5. a rule selected nothing and does not say `allowEmpty()` ([KatachiKontureEmptySelectionException])
+ * 6. an `AssertionError` came out of the block itself, or out of a predicate while a rule was
  *    being evaluated ([KatachiKontureDirectAssertionException], told apart by `suite`)
- * 6. the block reached Konture's default graph ([KatachiKontureDefaultGraphException]) — the
+ * 7. the block reached Konture's default graph ([KatachiKontureDefaultGraphException]) — the
  *    shadowed spelling is pinned by [KontureShadowSpec], the unshadowed one here; a `require`
  *    of the reader's own is not dressed up as this
- * 7. a violation pointed outside the covered files ([KatachiKontureUnlocatableViolationException])
- * 8. Konture's parser threw on a file that exists ([KatachiKontureParseException])
+ * 8. a violation pointed outside the covered files ([KatachiKontureUnlocatableViolationException])
+ * 9. Konture's parser threw on a file that exists ([KatachiKontureParseException])
  *
  * **Why (1) is triggered by deleting a file rather than by a filesystem quirk.** This backend
  * asks Konture to parse the same absolute paths katachi's own walk already found. If the files
@@ -190,6 +194,99 @@ class KontureFailureSpec : FreeSpec({
             violations.filterIsInstance<UnsatisfiedFileConstraint>().size shouldBe 0
             violations.filterIsInstance<UncheckedFileConstraint>().single()
                 .cause.shouldBeInstanceOf<KatachiKontureRuleRefusedException>().suite shouldBe "classes"
+        }
+    }
+
+    "何も選ばない規則" - {
+        "reason=Failed になり、KatachiKontureEmptySelectionException が役割・制約・suite を名指しして allowEmpty() を勧める" {
+            // that() の綴り違い。Konture だけで書けば "No classes matched the filter criteria in that()" で落ちる。
+            val violations = kontureRun("src/HomeViewModel.kt" to COMPOSABLE_VIEW_MODEL_KT) {
+                classes {
+                    that() nameEndsWith "ViewModl"
+                    should() notDependOnPackages "androidx.compose.."
+                }
+            }
+
+            val unchecked = violations.filterIsInstance<UncheckedFileConstraint>().single()
+            unchecked.reason shouldBe UncheckedFileConstraintReason.Failed
+            val cause = unchecked.cause.shouldBeInstanceOf<KatachiKontureEmptySelectionException>()
+            cause.role shouldBe "domain.UseCase"
+            cause.constraintName shouldBe "規約"
+            cause.suite shouldBe "classes"
+            cause.cause.shouldBeInstanceOf<AssertionError>()
+            cause.message.orEmpty() shouldContain
+                "The classes rule of Konture constraint \"規約\" of role \"domain.UseCase\" declared at ${cause.declaredAt} " +
+                "selected nothing to check."
+            cause.message.orEmpty() shouldContain "write allowEmpty() in the classes { } rule if it may select nothing"
+            violations.reportForTest() shouldContain "Cause: me.tbsten.katachi.konture.KatachiKontureEmptySelectionException"
+        }
+
+        "綴りの合った that() なら、同じ規則が違反を報告する" {
+            val violations = kontureRun("src/HomeViewModel.kt" to COMPOSABLE_VIEW_MODEL_KT) {
+                classes {
+                    that() nameEndsWith "ViewModel"
+                    should() notDependOnPackages "androidx.compose.."
+                }
+            }
+
+            violations.filterIsInstance<UnsatisfiedFileConstraint>().single().declaration shouldBe "HomeViewModel"
+        }
+
+        "4 種類の規則のどれでも断られ、suite の名前を持つ" {
+            val rules: List<Pair<String, KontureConstraintScope.() -> Unit>> = listOf(
+                "files" to { files { that().inPackage("com.nowhere.."); should() nameEndsWith ".kt" } },
+                "classes" to { classes { that().inPackage("com.example.iu.."); should().beInternal() } },
+                "functions" to { functions { that().haveName("nothing"); should().bePublic() } },
+                "properties" to { properties { that().haveName("nothing"); should().beVal() } },
+            )
+            for ((suite, rule) in rules) {
+                val violations = kontureRun("src/PublicThing.kt" to PUBLIC_THING_KT, block = rule)
+
+                withClue(suite) {
+                    violations.filterIsInstance<UncheckedFileConstraint>().single()
+                        .cause.shouldBeInstanceOf<KatachiKontureEmptySelectionException>().suite shouldBe suite
+                }
+            }
+        }
+
+        "クラスを宣言しないファイルへの classes { } も、that() 無しで同じく断られる" {
+            val violations = kontureRun("src/TopLevel.kt" to TOP_LEVEL_ONLY_KT) {
+                classes { should().beInternal() }
+            }
+
+            violations.filterIsInstance<UncheckedFileConstraint>().single()
+                .cause.shouldBeInstanceOf<KatachiKontureEmptySelectionException>().suite shouldBe "classes"
+        }
+
+        "何も選ばず should() も無い規則は、should() の無い規則として断られる" {
+            val violations = kontureRun("src/PublicThing.kt" to PUBLIC_THING_KT) {
+                classes { that() inPackage "com.nowhere.." }
+            }
+
+            violations.filterIsInstance<UncheckedFileConstraint>().single()
+                .cause.shouldBeInstanceOf<KatachiKontureRuleRefusedException>().suite shouldBe "classes"
+        }
+
+        "利用者が書いた allowEmpty() は 4 種類の規則のどれでも効く" {
+            val violations = kontureRun("src/PublicThing.kt" to PUBLIC_THING_KT) {
+                files { allowEmpty(); that().inPackage("com.nowhere.."); should() nameEndsWith ".kt" }
+                classes { allowEmpty(); that().inPackage("com.nowhere.."); should().beInternal() }
+                functions { allowEmpty(); that().haveName("nothing"); should().bePublic() }
+                properties { allowEmpty(); that().haveName("nothing"); should().beVal() }
+            }
+
+            violations shouldBe emptyList()
+        }
+
+        "覆うファイルがまだ 1 つも無い制約は、allowEmpty() が無くても評価されず緑" {
+            val violations = kontureRun {
+                classes {
+                    that() inPackage "com.nowhere.."
+                    should().beInternal()
+                }
+            }
+
+            violations shouldBe emptyList()
         }
     }
 
@@ -423,3 +520,10 @@ class KontureFailureSpec : FreeSpec({
 
 /** Matches `check/internal/ViolationReport.kt`'s own indent, so the shouldContain lines above read literally. */
 private const val STEP: String = "  "
+
+/** A file of top-level declarations only: nothing a `classes { }` rule can select. */
+private val TOP_LEVEL_ONLY_KT: String = """
+    package com.example
+
+    fun topLevel() = Unit
+""".trimIndent() + "\n"

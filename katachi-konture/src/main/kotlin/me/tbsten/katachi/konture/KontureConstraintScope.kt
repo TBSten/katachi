@@ -21,9 +21,11 @@ import me.tbsten.katachi.dsl.KatachiDsl
  * are bound to a graph made of the covered `.kt` files alone — no Gradle plugin, no
  * `layout_v2.json` — and every rule is evaluated in Konture's audit mode, so that a violation
  * is collected rather than thrown and each one becomes a report block pointing at one file.
- * A `that()` that selects nothing is green (katachi calls `allowEmpty()` for you); a rule with
- * no `should()` is refused ([KatachiKontureRuleRefusedException]); a block with no rule at all is
- * refused ([KatachiKontureNoExpectationException]).
+ * A rule that selects nothing is refused, as Konture refuses it
+ * ([KatachiKontureEmptySelectionException]): write Konture's `allowEmpty()` in a rule that may
+ * select nothing. A rule with no `should()` is refused ([KatachiKontureRuleRefusedException]); a
+ * block with no rule at all is refused ([KatachiKontureNoExpectationException]). A constraint
+ * whose covered files are none yet is not evaluated, so it needs no `allowEmpty()`.
  *
  * Konture's own entry points to its default graph — `Konture.files()`, `Konture.classes { }`,
  * `architecture { }`, `rule(id) { }`, `architectureRules { }` and the rest — are compile errors
@@ -37,9 +39,10 @@ import me.tbsten.katachi.dsl.KatachiDsl
  *   own.
  * - **Module filters and assertions match nothing useful.** The graph katachi builds has one
  *   module, named `:`, so `that() inModule ":feature:home"` (and `notInModule`,
- *   `resideInModule`, their plural forms, on files and classes alike) selects nothing and the
- *   rule is green, while `should() inModule ":feature:home"` rejects every declaration. Say
- *   where a file lives in `layout { }`, and which package it is in with `inPackage`.
+ *   `resideInModule`, their plural forms, on files and classes alike) selects nothing, which is
+ *   refused like any empty selection, while `should() inModule ":feature:home"` rejects every
+ *   declaration. Say where a file lives in `layout { }`, and which package it is in with
+ *   `inPackage`.
  * - **Type resolution stops at the covered files.** Supertypes and bare names are resolved
  *   against the covered set only: `areAssignableTo` / `beAssignableTo` cannot follow an
  *   inheritance chain through a class the constraint does not cover, and a bare name under two

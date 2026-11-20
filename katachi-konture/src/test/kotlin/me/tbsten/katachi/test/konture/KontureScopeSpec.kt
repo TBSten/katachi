@@ -6,9 +6,12 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import me.tbsten.katachi.InternalKatachiApi
+import me.tbsten.katachi.check.UncheckedFileConstraint
 import me.tbsten.katachi.check.UnsatisfiedFileConstraint
 import me.tbsten.katachi.check.Violation
+import me.tbsten.katachi.konture.KatachiKontureEmptySelectionException
 
 /** The rejected paths of a run, in the order the report will print them. */
 private fun List<Violation>.rejectedPaths(): List<String> =
@@ -91,11 +94,24 @@ class KontureScopeSpec : FreeSpec({
     }
 
     "that() の絞り込み" - {
-        "that() が 0 件を選んでも緑" {
-            // Konture's own default is an AssertionError here; katachi calls `allowEmpty()` on
-            // every builder, because "there is none of these" is the layout check's job.
+        "that() が 0 件を選ぶと、Konture と同じく断られる" {
+            // A `that()` that matches nothing is more often a typo than a rule meant to hold over
+            // none; Konture refuses it, and so does katachi.
             val violations = kontureRun("src/PublicThing.kt" to PUBLIC_THING_KT) {
                 classes {
+                    that() inPackage "com.nowhere.."
+                    should().beInternal()
+                }
+            }
+
+            violations.filterIsInstance<UncheckedFileConstraint>().single()
+                .cause.shouldBeInstanceOf<KatachiKontureEmptySelectionException>().suite shouldBe "classes"
+        }
+
+        "allowEmpty() を書けば、that() が 0 件でも緑" {
+            val violations = kontureRun("src/PublicThing.kt" to PUBLIC_THING_KT) {
+                classes {
+                    allowEmpty()
                     that() inPackage "com.nowhere.."
                     should().beInternal()
                 }
