@@ -1,9 +1,9 @@
 name: IDE plugin nightly
 
 # The property-based tests of katachi-intellij-plugin (`uiTest`), run with 20 times the sequences
-# of the pull request run (ci.yml, job ide-plugin) and a seed of their own each night.
+# of the plain run (ide-plugin-check.yml, job ide-plugin) and a seed of their own each night.
 #
-# The pull request run keeps a fixed seed and few sequences so that it stays short and repeatable.
+# The plain run keeps a fixed seed and few sequences so that it stays short and repeatable.
 # Some states take a few hundred sequences to reach (before the generator mixed in the runs of
 # Scenarios.kt, a regression that kept a result over a list that had lost every template first
 # showed on the 380th), so this run explores further, and somewhere else each night. A red run
