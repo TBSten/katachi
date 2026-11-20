@@ -27,6 +27,9 @@ private val MAIN_SOURCE_SET: SourceSet =
 // Backend specific, as `FileConstraintSubject.memo` asks: nothing but this module can collide on the key.
 internal data class KontureGraphKey(val files: List<String>)
 
+// Not keyed on the files: the project's files are the same for every constraint of one run, and so is the memo.
+internal data object KontureSymbolsKey
+
 // Konture has no public parser, so the parse comes from `KontureSymbols`; the graph's `filePath`s are compared with what was asked for before anything is trusted.
 internal fun kontureGraphOf(subject: FileConstraintSubject): ProjectGraph {
     val wanted = subject.files
@@ -44,7 +47,7 @@ internal fun kontureGraphOf(subject: FileConstraintSubject): ProjectGraph {
         )
     }
     return subject.memo(KontureGraphKey(wanted), ProjectGraph::class) {
-        val parsed = parsedFilesOf(wanted)
+        val parsed = parsedFilesOf(wanted, kontureSymbolsOf(subject))
         if (parsed.size != wanted.size) {
             throw KatachiKontureGraphIncompleteException(given = wanted.size, visible = parsed.size)
         }
@@ -66,11 +69,21 @@ internal fun kontureGraphOf(subject: FileConstraintSubject): ProjectGraph {
     }
 }
 
+// Every walked file, not just the covered ones: a bare name under two wildcard imports resolves only to a class the
+// table holds. The graph, and so every rule, still holds the covered files alone.
+private fun kontureSymbolsOf(subject: FileConstraintSubject): KontureSymbols =
+    subject.memo(KontureSymbolsKey, KontureSymbols::class) {
+        KontureSymbols.of(
+            subject.projectFiles
+                .filter { it.endsWith(PARSED_EXTENSION) }
+                .map { File("${subject.projectRoot}/$it") },
+        )
+    }
+
 // A gone file or a parse for another file is left out, so the caller's count check throws rather than building a graph that silently lacks it.
-private fun parsedFilesOf(wanted: List<String>): List<FileDeclaration> {
+private fun parsedFilesOf(wanted: List<String>, symbols: KontureSymbols): List<FileDeclaration> {
     // Deleted since the walk: left out, so that it becomes the count mismatch that names the problem.
     val files = wanted.map(::File).filter { it.isFile }
-    val symbols = KontureSymbols.of(files)
     return files.mapNotNull { file ->
         val declaration = try {
             symbols.parse(file)

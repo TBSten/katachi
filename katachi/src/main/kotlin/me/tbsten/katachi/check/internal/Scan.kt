@@ -22,6 +22,7 @@ import me.tbsten.katachi.dsl.internal.evaluateLayout
 import me.tbsten.katachi.dsl.internal.fillCaptures
 import me.tbsten.katachi.dsl.internal.placeholder
 import me.tbsten.katachi.internal.catching
+import java.util.Collections
 
 // The only name skipped at any depth regardless of `files` (a file in worktrees and submodules).
 private const val GIT_DIRECTORY_NAME: String = ".git"
@@ -32,6 +33,8 @@ internal const val ROOT_PATH: String = "."
 internal class ScanResult(
     val violations: List<Violation>,
     val filesByRole: Map<Role, List<String>>,
+    // Every file the walk visited, in walk order, whether a role allows it or not.
+    val files: List<String>,
     val fileOverlaps: List<FileOverlap>,
     val fileConstraints: List<DeclaredFileConstraint>,
     val layout: LayoutEvaluation,
@@ -94,6 +97,7 @@ private class Scan(
             // parents before children, names in order.
             violations = violations.sortedBy { it.kind.ordinal },
             filesByRole = filesByRole,
+            files = Collections.unmodifiableList(visitedFiles.toList()),
             fileOverlaps = fileOverlaps.toList(),
             fileConstraints = evaluation.fileConstraints,
             layout = evaluation,

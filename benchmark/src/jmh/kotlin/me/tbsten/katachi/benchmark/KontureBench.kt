@@ -3,6 +3,7 @@ package me.tbsten.katachi.benchmark
 import java.util.concurrent.TimeUnit
 import me.tbsten.katachi.benchmark.util.FileConstraintFixture
 import me.tbsten.katachi.benchmark.util.kontureArchitecture
+import me.tbsten.katachi.benchmark.util.kontureOnFirstRoleArchitecture
 import me.tbsten.katachi.check.Violation
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.BenchmarkMode
@@ -18,12 +19,16 @@ import org.openjdk.jmh.annotations.TearDown
 import org.openjdk.jmh.annotations.Warmup
 
 /**
- * The whole check of a generated project written to disk with one `konture { }` per role, warm:
- * the cost a Konture rule adds to every run once the JVM and Konture are initialised.
+ * The whole check of a generated project written to disk with `konture { }`, warm: the cost a
+ * Konture rule adds to every run once the JVM and Konture are initialised.
  *
  * Through `validate(fileSystem, FileConstraintCheck())`, like
- * [KonsistScopeBench.validateWithKonsist] with the other engine: the walk, Konture's parse of the
- * files each role owns, and the rule.
+ * [KonsistScopeBench.validateWithKonsist] with the other engine: the walk, Konture's symbol
+ * table of every walked `.kt` file, its parse of the covered files, and the rule.
+ *
+ * - [validateWithKonture] writes one `konture { }` per role, so the rules cover every file.
+ * - [validateWithKontureOnOneRole] writes it on the first role alone: the symbol table still
+ *   reads every walked `.kt` file, while the parse and the rule take that role's files only.
  *
  * ## Example 1: run only this benchmark, briefly
  * ```sh
@@ -41,18 +46,24 @@ open class KontureBench {
     @JvmField
     var files: Int = 0
 
-    private lateinit var fixture: FileConstraintFixture
+    private lateinit var everyRole: FileConstraintFixture
+    private lateinit var firstRole: FileConstraintFixture
 
     @Setup
     fun setUp() {
-        fixture = FileConstraintFixture(files) { kontureArchitecture() }
+        everyRole = FileConstraintFixture(files) { kontureArchitecture() }
+        firstRole = FileConstraintFixture(files) { kontureOnFirstRoleArchitecture() }
     }
 
     @TearDown
     fun tearDown() {
-        fixture.delete()
+        everyRole.delete()
+        firstRole.delete()
     }
 
     @Benchmark
-    fun validateWithKonture(): List<Violation> = fixture.validate()
+    fun validateWithKonture(): List<Violation> = everyRole.validate()
+
+    @Benchmark
+    fun validateWithKontureOnOneRole(): List<Violation> = firstRole.validate()
 }

@@ -16,9 +16,10 @@ import me.tbsten.katachi.konture.internal.KontureFileConstraint
  * the files that block declares directly with `scope = FileConstraintRange.DirectOnly`.
  *
  * The block is stored, not run. It runs when a check that evaluates constraints runs, which
- * means `architecture { }` still reads no files and parses no Kotlin. Only the covered `.kt`
- * files are parsed, without Konture's Gradle plugin, and each violation becomes one report block
- * pointing at one file.
+ * means `architecture { }` still reads no files and parses no Kotlin. The rules run over the
+ * covered `.kt` files alone, parsed without Konture's Gradle plugin, with the names in them
+ * looked up among the classes of every `.kt` file the check walked, and each violation becomes
+ * one report block pointing at one file.
  *
  * It can be written on a role or inside its `layout { }`, but not directly in `architecture { }`
  * or `group { }`: those hold roles, not files, so the call does not compile there.

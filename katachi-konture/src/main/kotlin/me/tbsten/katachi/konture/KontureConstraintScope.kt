@@ -43,11 +43,26 @@ import me.tbsten.katachi.dsl.KatachiDsl
  *   refused like any empty selection, while `should() inModule ":feature:home"` rejects every
  *   declaration. Say where a file lives in `layout { }`, and which package it is in with
  *   `inPackage`.
- * - **Type resolution stops at the covered files.** Supertypes and bare names are resolved
- *   against the covered set only: `areAssignableTo` / `beAssignableTo` cannot follow an
- *   inheritance chain through a class the constraint does not cover, and a bare name under two
- *   or more wildcard imports stays unresolved when its class is not covered. Cover the whole
- *   hierarchy, or write the type's fully qualified name.
+ * - **Supertypes come from the covered files, names from the walked ones.** `areAssignableTo` /
+ *   `beAssignableTo` cannot follow an inheritance chain through a class the constraint does not
+ *   cover: cover the whole hierarchy. A bare name is looked up among the classes of every `.kt`
+ *   file the check walked, so one under two wildcard imports resolves even when another role
+ *   declares its class. A directory the walk did not enter (one the layout ignores, or one no
+ *   role declares), libraries and the JDK are not looked in: a bare name under two or more
+ *   wildcard imports that means one of their classes stays unresolved. Import such a class by
+ *   name.
+ * - **Inbound rules see only the covered files.** `onlyBeAccessedByAnyPackage` and
+ *   `notBeAccessedByAnyPackage` count accesses from inside the graph, which here is the covered
+ *   set.
+ * - **Outbound rules on `functions { }` and `properties { }` read no imports.** There,
+ *   `notDependOnPackages` and `onlyDependOnPackages` see only the types the declaration itself
+ *   uses, once resolved, which is all `notReferenceClass` sees anywhere: a bare name left
+ *   unresolved, as above, escapes them. On `files { }` and `classes { }` they read the imports
+ *   too.
+ * - **`classes { }` does not count `java`, `javax` or `kotlin`.** Konture's `classes { }` forms
+ *   drop every dependency on those packages (and their subpackages) before matching, so
+ *   `classes { should() notDependOnPackages "java.io.." }` is green on a class that imports
+ *   `java.io.File`. Write such a rule in `files { }`, which counts every import.
  * - **It cannot share a test module with `katachi-konsist`.** Konsist and Konture need different
  *   versions of kotlin-compiler-embeddable; whichever Gradle resolves to, one of the two fails to
  *   parse. Put `konture { }` and `konsist { }` in different test
@@ -66,14 +81,6 @@ import me.tbsten.katachi.dsl.KatachiDsl
  * - **`@Suppress("konture:<ruleId>")` and `suppress { }` do work.** A violation Konture marks as
  *   suppressed is dropped; the rule ids are `files.rule`, `classes.rule`, `functions.rule` and
  *   `properties.rule`.
- * - **Inbound rules see only the covered files.** `onlyBeAccessedByAnyPackage` and
- *   `notBeAccessedByAnyPackage` count accesses from inside the graph, which here is the covered
- *   set. Outbound rules (`notDependOnPackages`, `onlyDependOnPackages`) read imports and
- *   usages, so they see dependencies on anything — with one exception of Konture's own: the
- *   `classes { }` forms drop every dependency on `java`, `javax` and `kotlin` (and their
- *   subpackages) before matching, so `classes { should() notDependOnPackages "java.io.." }` is
- *   green on a class that imports `java.io.File`. Write the same rule in `files { }` or
- *   `functions { }`, where nothing is dropped, or use `notReferenceClass("java.io.File")`.
  * - **`.kts` files are never in the graph.** Konture parses `.kt` only, and so does katachi here.
  *   A constraint that covers only scripts is refused ([KatachiKontureNoKotlinFilesException]).
  * - **Konture's violation message does not reach the report.** A report block carries the path,

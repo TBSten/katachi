@@ -56,8 +56,9 @@ import me.tbsten.katachi.konture.internal.audited
  * What katachi is allowed to assume about Konture 1.0.1, measured rather than remembered.
  *
  * The backend parses each covered file with `PsiParser.parseFile` behind a `MapSymbolLookup`
- * of the covered set, assembles a `ProjectGraph` with public constructors, evaluates each rule
- * builder's `check()` with `failOnSeverity = null`, and reads the violations back by subject.
+ * of every `.kt` file the walk found, assembles a `ProjectGraph` with public constructors,
+ * evaluates each rule builder's `check()` with `failOnSeverity = null`, and reads the violations
+ * back by subject.
  * Every one of those steps rests on a fact about 1.0.1 pinned below; when Konture moves and one
  * of these goes red, the backend is what has to change, not the test.
  *
