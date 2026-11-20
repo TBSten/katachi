@@ -12,7 +12,6 @@ import kotlin.io.path.isRegularFile
 import kotlin.io.path.name
 import kotlin.io.path.readLines
 import kotlin.io.path.readText
-import kotlin.streams.asSequence
 
 // What a project has to have for katachi, and how the command finds out. Ported from the install
 // kit's sh; each function names the shell function it replaces so the two can be read side by side.
@@ -182,12 +181,8 @@ internal fun detectKotlinVersion(root: Path): String? {
         }
     }
 
-    val buildFiles = Files.walk(root, 3).use { stream ->
-        stream.asSequence()
-            .filter { it.isRegularFile() && (it.name == "build.gradle.kts" || it.name == "build.gradle") }
-            .sorted()
-            .toList()
-    }
+    // findBuildFiles skips a directory it cannot read; a bare walk would stop doctor and scaffold on it.
+    val buildFiles = findBuildFiles(root, skipModule = null, maxDepth = 3).sorted().map { root.resolve(it) }
     val pluginLine = Regex("org\\.jetbrains\\.kotlin|kotlin\\(\"(jvm|android|multiplatform)\"\\)")
     val versionCall = Regex(".*version\\s*[(\"']{1,2}($VERSION_TOKEN).*")
     val classpath = Regex(".*kotlin-gradle-plugin:($VERSION_TOKEN).*")

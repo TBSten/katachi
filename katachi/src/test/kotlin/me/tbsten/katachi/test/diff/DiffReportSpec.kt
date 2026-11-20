@@ -294,6 +294,98 @@ class DiffReportSpec : FreeSpec({
         }
     }
 
+    "コマンドのパスはシェルが読み替えないよう引用し、貼り付けてもそのファイルの差分を出すだけ" {
+        withRepository { repo ->
+            repo.commit("initial")
+            // The author of the change picks the names, and the reader pastes the command into a shell.
+            repo.write("notes/x;touch PWNED;#it's here.txt", "hello\n")
+            repo.commit("change")
+            val before = repo.git("rev-parse", "HEAD~1").trim()
+            val after = repo.git("rev-parse", "HEAD").trim()
+
+            val out = repo.dir.resolve("out")
+            arch.process(
+                DiffReport,
+                DiffReport.Args(before = "HEAD~1", after = "HEAD", markdownOutputFile = out.resolve("diff-report.md").path, htmlOutputFile = out.resolve("diff-report.html").path),
+                RealFileSystem(repo.dir),
+            ).getOrThrow()
+
+            val command = "git diff $before..$after -- 'notes/x;touch PWNED;#it'\\''s here.txt'"
+            out.resolve("diff-report.files-in-no-role.md").readText() shouldContain "`$command`"
+            out.resolve("diff-report.html").readText() shouldContain "data-command=\"$command\""
+            sh(repo.dir, command) shouldContain "+hello"
+            repo.dir.resolve("PWNED").exists() shouldBe false
+        }
+    }
+
+    "名前を変えたファイルのコマンドは古いパスも渡し、名前の変更として見せる" {
+        withRepository { repo ->
+            repo.write("domain/GetUserUseCase.kt", "class GetUserUseCase {\n    fun a() = 1\n    fun b() = 2\n}\n")
+            repo.commit("initial")
+            repo.git("mv", "domain/GetUserUseCase.kt", "domain/FetchUserUseCase.kt")
+            repo.commit("rename")
+            val before = repo.git("rev-parse", "HEAD~1").trim()
+            val after = repo.git("rev-parse", "HEAD").trim()
+
+            val out = repo.dir.resolve("out")
+            arch.process(
+                DiffReport,
+                DiffReport.Args(before = "HEAD~1", after = "HEAD", markdownOutputFile = out.resolve("diff-report.md").path, htmlOutputFile = out.resolve("diff-report.html").path),
+                RealFileSystem(repo.dir),
+            ).getOrThrow()
+
+            val command = "git diff -M $before..$after -- domain/GetUserUseCase.kt domain/FetchUserUseCase.kt"
+            out.resolve("diff-report.html").readText() shouldContain "data-command=\"$command\""
+            // Given the new path alone, git shows the whole file as added rather than as this rename.
+            sh(repo.dir, command) shouldContain "rename from domain/GetUserUseCase.kt"
+        }
+    }
+
+    "未追跡のバイナリは、コミット済みのものと同じく行数ではなく binary と出す" {
+        withRepository { repo ->
+            repo.commit("initial")
+            // The start of a PNG: its newline bytes would otherwise be counted as lines.
+            repo.dir.resolve("notes").mkdirs()
+            repo.dir.resolve("notes/logo.png").writeBytes(byteArrayOf(-0x77, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x0A, 0x0A))
+
+            val out = repo.dir.resolve("out")
+            arch.process(
+                DiffReport,
+                DiffReport.Args(markdownOutputFile = out.resolve("diff-report.md").path, htmlOutputFile = out.resolve("diff-report.html").path),
+                RealFileSystem(repo.dir),
+            ).getOrThrow()
+
+            out.resolve("diff-report.md").readText() shouldContain "| &nbsp;&nbsp;└ `notes/logo.png` _(untracked)_ | ⬜ | binary | |"
+            out.resolve("diff-report.html").readText() shouldContain "data-binary=\"true\" data-key=\"file:notes/logo.png\""
+        }
+    }
+
+    "パスに | や ` があっても、Markdown の表のセルもコードの囲みも崩れない" {
+        withRepository { repo ->
+            repo.commit("initial")
+            repo.write("notes/a|b.txt", "a\n")
+            repo.write("notes/`x`.txt", "x\n")
+            repo.commit("change")
+            val before = repo.git("rev-parse", "HEAD~1").trim()
+            val after = repo.git("rev-parse", "HEAD").trim()
+
+            val out = repo.dir.resolve("out")
+            arch.process(
+                DiffReport,
+                DiffReport.Args(before = "HEAD~1", after = "HEAD", markdownOutputFile = out.resolve("diff-report.md").path, htmlOutputFile = out.resolve("diff-report.html").path),
+                RealFileSystem(repo.dir),
+            ).getOrThrow()
+
+            // GitHub ends a table cell at a bare `|` even inside a code span; `\|` shows as `|`.
+            val summary = out.resolve("diff-report.md").readText()
+            summary shouldContain "| &nbsp;&nbsp;└ `notes/a\\|b.txt` _(added)_ |"
+            summary shouldContain "| &nbsp;&nbsp;└ ``notes/`x`.txt`` _(added)_ |"
+            val listing = out.resolve("diff-report.files-in-no-role.md").readText()
+            listing shouldContain "| `notes/a\\|b.txt` _(added)_ | +1&nbsp;-0 | `git diff $before..$after -- 'notes/a\\|b.txt'` |"
+            listing shouldContain "| ``notes/`x`.txt`` _(added)_ | +1&nbsp;-0 | ``git diff $before..$after -- 'notes/`x`.txt'`` |"
+        }
+    }
+
     "Importance は基準値に対する比を 5 段階に分け、段階の数だけ色マスを並べる" {
         withRepository { repo ->
             repo.commit("initial")
@@ -687,6 +779,14 @@ private class Repository(val dir: File) {
         if (process.waitFor() != 0) throw IllegalStateException("git ${args.joinToString(" ")} failed: $output")
         return output
     }
+}
+
+// The way a reader runs a command copied from the report: pasted into a shell.
+private fun sh(dir: File, command: String): String {
+    val process = ProcessBuilder("sh", "-c", command).directory(dir).redirectErrorStream(true).start()
+    val output = process.inputStream.readBytes().toString(Charsets.UTF_8)
+    if (process.waitFor() != 0) throw IllegalStateException("$command failed: $output")
+    return output
 }
 
 // The Importance squares of the Markdown report, joined by U+2060 WORD JOINER so GitHub does not wrap them.

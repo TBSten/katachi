@@ -9,7 +9,8 @@ role are in the summary's table. The HTML report is not inlined; the comment poi
 artifact for it.
 
 A comment body is capped at 65,536 characters by GitHub. When the listing does not fit, it is
-left out and the comment says so; the summary table is what a reviewer needs first.
+left out and the comment says so; the summary table is what a reviewer needs first. When the
+summary alone does not fit either, it is cut at a line and the comment points at the artifact.
 
 Usage:
     assemble-comment.py <dir with diff-report*.md> --head <sha> --run-url <url> [--marker <text>] [--reproduce <command>]
@@ -69,12 +70,40 @@ def demote_headings(markdown):
 
 
 def drop_preamble(listing):
-    """Removes the listing's own heading and the lines up to its first `<details`, which repeat the summary."""
+    """Removes the listing's own heading and the lines up to its first `<details`, which repeat the summary.
+
+    The summary already carries the no role warning, so the listing's copy of it goes too.
+    """
     lines = listing.split("\n")
     for index, line in enumerate(lines):
-        if line.startswith("<details") or line.startswith("> [!"):
+        if line.startswith("<details"):
             return "\n".join(lines[index:])
     return listing
+
+
+def fit_summary(summary_lines, budget, run_url):
+    """Cuts the summary at a line boundary so that it fits in `budget` characters, with a note on what was cut.
+
+    A large change makes the table itself longer than a comment allows. Posting it whole fails, and the
+    earlier report comment would be gone with nothing in its place.
+    """
+    total = len("\n".join(summary_lines))
+    note = (
+        f"_The report is longer than a comment allows ({total:,} characters, GitHub allows "
+        f"{GITHUB_COMMENT_LIMIT:,}); the rest is in `diff-report.md` in the [run's artifact]({run_url})._"
+    )
+    kept = []
+    size = len(note) + len("</details>") + 4
+    for line in summary_lines:
+        if size + len(line) + 1 > budget:
+            break
+        kept.append(line)
+        size += len(line) + 1
+    # A cut inside the folded tree of unchanged roles would fold the note away with it.
+    opened = sum(line.startswith("<details") for line in kept) - sum(line.startswith("</details>") for line in kept)
+    if opened > 0:
+        kept += ["", "</details>"]
+    return kept + ["", note]
 
 
 def main():
@@ -122,6 +151,9 @@ def main():
             f"see `diff-report.files-in-no-role.md` in the [run's artifact]({args.run_url})._",
         ]
         body = "\n".join(head + note + tail)
+    if len(body) > BODY_BUDGET:
+        budget = BODY_BUDGET - len("\n".join([args.marker] + tail)) - 1
+        body = "\n".join([args.marker] + fit_summary(summary.rstrip("\n").split("\n"), budget, args.run_url) + tail)
     sys.stdout.write(body)
 
 

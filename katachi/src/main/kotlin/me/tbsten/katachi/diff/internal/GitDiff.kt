@@ -61,13 +61,16 @@ internal class DiffRange(
     /**
      * A command that shows [change] again, run from the repository root (the paths GitHub shows).
      * `git diff` never shows an untracked file, so that one is compared with an empty file instead.
+     * Every path is shell quoted: the reader pastes this into a shell, and the author of the change picks the names.
      */
     fun gitDiffCommand(change: FileChange): String {
-        val path = repositoryPrefix + change.path
-        return if (change.status == ChangeStatus.Untracked) {
-            "git diff --no-index -- /dev/null $path"
-        } else {
-            "git diff $pinnedRefs -- $path"
+        val path = shellQuote(repositoryPrefix + change.path)
+        val previous = change.previousPath
+        return when {
+            change.status == ChangeStatus.Untracked -> "git diff --no-index -- /dev/null $path"
+            // git only pairs a rename up when both paths are in the pathspec; the new path alone shows a whole new file.
+            previous != null -> "git diff -M $pinnedRefs -- ${shellQuote(repositoryPrefix + previous)} $path"
+            else -> "git diff $pinnedRefs -- $path"
         }
     }
 
@@ -84,6 +87,12 @@ internal class DiffRange(
 // The ref the reader typed stays readable; the short SHA says which commit it meant when the report was made.
 private fun pinned(ref: String, sha: String?): String =
     if (sha == null || sha.startsWith(ref)) ref else "$ref (${sha.take(7)})"
+
+// A plain path stays as it is so that the usual command reads as typed; anything else goes in POSIX single quotes.
+internal fun shellQuote(word: String): String =
+    if (word.isNotEmpty() && word.all { it in SHELL_SAFE }) word else "'" + word.replace("'", "'\\''") + "'"
+
+private val SHELL_SAFE: Set<Char> = (('a'..'z') + ('A'..'Z') + ('0'..'9') + "@%+=:,./_-".toList()).toSet()
 
 internal class PullRequest(val number: Int, val url: String)
 
@@ -140,11 +149,27 @@ internal fun changedFiles(root: FsPath, range: DiffRange): List<FileChange> {
     val untracked = git(root, "ls-files", "--others", "--exclude-standard", "-z")
         .split('\u0000').filter { it.isNotEmpty() }
         .map { path ->
-            val lines = runCatching { File(root.value, path).readLines().size }.getOrDefault(0)
-            FileChange(path, null, added = lines, deleted = 0, binary = false, status = ChangeStatus.Untracked)
+            val file = File(root.value, path)
+            val binary = runCatching { isBinary(file) }.getOrDefault(false)
+            val lines = if (binary) 0 else runCatching { file.useLines { it.count() } }.getOrDefault(0)
+            FileChange(path, null, added = lines, deleted = 0, binary = binary, status = ChangeStatus.Untracked)
         }
     return changes + untracked
 }
+
+// git's own test (a NUL in the first 8000 bytes), so an untracked file reads "binary" the way a committed one does.
+private fun isBinary(file: File): Boolean = file.inputStream().use { input ->
+    val head = ByteArray(BINARY_SNIFF_BYTES)
+    var read = 0
+    while (read < head.size) {
+        val count = input.read(head, read, head.size - read)
+        if (count < 0) break
+        read += count
+    }
+    (0 until read).any { head[it] == 0.toByte() }
+}
+
+private const val BINARY_SNIFF_BYTES: Int = 8000
 
 // `-z` numstat: "<added>\t<deleted>\t<path>\0", or for a rename "<added>\t<deleted>\t\0<old>\0<new>\0".
 internal fun parseNumstat(output: String, statuses: Map<String, ChangeStatus>): List<FileChange> {

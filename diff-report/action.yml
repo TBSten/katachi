@@ -67,7 +67,8 @@ inputs:
       Where the task writes `diff-report.md`, relative to `working-directory`. Empty looks where
       the plugin's task writes by default: `:architecture-test:katachiDiff` reads
       `architecture-test/build/katachi/diff`, and the plain `katachiDiff` reads the one
-      `build/katachi/diff/diff-report.md` it finds. Set it when `arguments` moves the report.
+      `build/katachi/diff/diff-report.md` it finds. Set it when `arguments` or the Gradle
+      `markdown { outputFile }` moves the report; the file must keep the name `diff-report.md`.
     required: false
     default: ''
   arguments:
@@ -182,7 +183,7 @@ runs:
           found="$(find . -path '*/build/katachi/diff/diff-report.md' -not -path '*/node_modules/*' | sort)"
           count="$(printf '%s' "${found}" | grep -c . || true)"
           if [ "${count}" -ne 1 ]; then
-            echo "::error title=katachi diff report::Found ${count} diff-report.md under build/katachi/diff ($(printf '%s' "${found:-none}" | tr '\n' ' ')). Give the action \`task\` as a task path such as :architecture-test:katachiDiff, or \`report-directory\`."
+            echo "::error title=katachi diff report::Found ${count} diff-report.md under build/katachi/diff ($(printf '%s' "${found:-none}" | tr '\n' ' ')). Give the action \`task\` as a task path such as :architecture-test:katachiDiff, or \`report-directory\`. If \`markdown { outputFile }\` moves the report, set \`report-directory\` to its directory and keep the file name diff-report.md."
             exit 1
           fi
           REPORT_DIRECTORY="$(dirname "${found}")"

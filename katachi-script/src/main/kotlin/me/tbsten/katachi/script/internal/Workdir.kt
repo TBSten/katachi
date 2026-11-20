@@ -1,7 +1,11 @@
 package me.tbsten.katachi.script.internal
 
+import java.io.IOException
+import java.nio.file.FileVisitResult
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.SimpleFileVisitor
+import java.nio.file.attribute.BasicFileAttributes
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlin.io.path.exists
@@ -10,7 +14,6 @@ import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.name
 import kotlin.io.path.readText
-import kotlin.streams.asSequence
 
 internal sealed interface WorkdirLookup {
     data class Found(val path: Path) : WorkdirLookup
@@ -41,20 +44,41 @@ internal fun ScriptContext.lookupWorkdir(): WorkdirLookup {
         return if (path.resolve(CHECK_LIST_FILE).isRegularFile()) WorkdirLookup.Found(path) else WorkdirLookup.Misconfigured(configured, path)
     }
     if (!cwd.isDirectory()) return WorkdirLookup.NotFound
-    val candidates = Files.walk(cwd, SEARCH_DEPTH).use { stream ->
-        stream.asSequence()
-            .filter { it.isRegularFile() && it.name == CHECK_LIST_FILE }
-            .filter { path -> cwd.relativize(path).none { it.name in SKIPPED_DIRECTORIES } }
-            .map { it.parent }
-            .filter { it.resolve("tmp").isDirectory() }
-            .sorted()
-            .toList()
-    }
+    val candidates = checkListsBelow(cwd)
+        .map { it.parent }
+        .filter { it.resolve("tmp").isDirectory() }
+        .sorted()
     return when (candidates.size) {
         0 -> WorkdirLookup.NotFound
         1 -> WorkdirLookup.Found(candidates.single())
         else -> WorkdirLookup.Ambiguous(candidates)
     }
+}
+
+// Every command looks the working directory up first, `--version` too: a directory it cannot read is skipped,
+// not a reason to stop.
+private fun checkListsBelow(root: Path): List<Path> {
+    val found = mutableListOf<Path>()
+    Files.walkFileTree(
+        root,
+        emptySet(),
+        SEARCH_DEPTH,
+        object : SimpleFileVisitor<Path>() {
+            override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult =
+                if (dir != root && dir.name in SKIPPED_DIRECTORIES) FileVisitResult.SKIP_SUBTREE else FileVisitResult.CONTINUE
+
+            override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
+                // add(), not +=: a Path is an Iterable<Path> too, and += would read it as its name parts.
+                if (attrs.isRegularFile && file.name == CHECK_LIST_FILE) found.add(file)
+                return FileVisitResult.CONTINUE
+            }
+
+            override fun visitFileFailed(file: Path, exc: IOException): FileVisitResult = FileVisitResult.CONTINUE
+
+            override fun postVisitDirectory(dir: Path, exc: IOException?): FileVisitResult = FileVisitResult.CONTINUE
+        },
+    )
+    return found
 }
 
 /**
