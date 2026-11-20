@@ -12,6 +12,8 @@ import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.template.KatachiInvalidTemplateSetArgException
 import me.tbsten.katachi.template.KatachiMissingTemplateCaptureException
 import me.tbsten.katachi.test.check.architectureOf
+import me.tbsten.katachi.test.pbt.pbtSeed
+import me.tbsten.katachi.test.pbt.pbtTrials
 
 /** Where one `arg(...)` of a generated member gets its value. */
 private sealed interface ArgSource {
@@ -43,8 +45,8 @@ private class GeneratedMember(val role: GeneratedRole, val args: Map<String, Arg
 /**
  * Template sets against single-template runs, for random sets.
  *
- * Seeded [Random] loops rather than `io.kotest.property`, which `:katachi` does not depend on
- * (see [TemplateCapturePlacementPropertySpec]).
+ * Seeded [Random] loops, as every property of katachi is written (see
+ * `me.tbsten.katachi.test.pbt.PropertyTrials`).
  *
  * The set's own parameters are named `p0` and `c0`, the same as a parameter and a capture of
  * every member role, so that "a name that was not passed with `arg` does not reach the member" is
@@ -56,8 +58,8 @@ private class GeneratedMember(val role: GeneratedRole, val args: Map<String, Arg
  * pinned by example in [TemplateSetGenerationSpec], not by this property.
  */
 class TemplateSetArgsPropertySpec : FreeSpec({
-    val iterations = System.getenv("KATACHI_PBT_ITERATIONS")?.toIntOrNull() ?: 200
-    val seed = System.getenv("KATACHI_PBT_SEED")?.toLongOrNull() ?: 20261017L
+    val iterations = pbtTrials(200)
+    val seed = pbtSeed(20261017L)
     val setValues = mapOf("p0" to "SET-P0", "c0" to "SET-C0")
 
     fun generateRole(random: Random, index: Int) = GeneratedRole(
