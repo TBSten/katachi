@@ -270,15 +270,18 @@ private fun captureMismatchBlock(violation: CaptureMismatch, root: String?): Lis
     add("${STEP}Declared at: ${violation.declaredAt}")
     add("")
     add("${STEP}How to fix:")
+    for (fix in violation.transformFixes()) {
+        add("$STEP$STEP- In the layout at ${violation.declaredAt}, write capture(\"${fix.name}\").${fix.transform} at level ${fix.level + 1}")
+    }
     val expectedPath = violation.expectedPath
     val held = failedNames.singleOrNull()?.let { name ->
         violation.occurrences.firstOrNull { it.name == name && it.transform == null && it.expected == null }?.value
     }
     val reads = if (held != null) "every level named ${failedNames.single()} reads \"$held\"" else "the levels named ${failedNames.joinToString(", ")} agree"
-    if (expectedPath != null) {
+    if (expectedPath != null && !violation.movesIntoNonPackageDirectory()) {
         add("$STEP$STEP- Move it so that $reads:")
         add("$STEP$STEP$STEP$STEP${displayPath(root, expectedPath)}")
-    } else {
+    } else if (expectedPath == null) {
         add("$STEP$STEP- Move it so that ${if (held != null) reads else "every level named ${failedNames.joinToString(", ")} reads the same value"}")
     }
     add("$STEP$STEP- Delete it if it is not needed")
