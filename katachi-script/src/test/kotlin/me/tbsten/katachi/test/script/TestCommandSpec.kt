@@ -95,6 +95,23 @@ class TestCommandSpec : FreeSpec({
             run.out shouldContain "  [AmbiguousLayout] app/src/Both.kt"
         }
 
+        "ignore() に隠された行の警告（IgnoredLayout）も見出しとして出す" {
+            val fixture = TestFixture()
+            fixture.gradleOutput(
+                """
+                Katachi check found 1 warning.
+                  [IgnoredLayout] src/legacy/*Service.kt
+                BUILD SUCCESSFUL in 3s
+                """.trimIndent(),
+                status = 0,
+            )
+
+            val run = fixture.run("agent", "test")
+
+            run.status shouldBe 0
+            run.out shouldContain "  [IgnoredLayout] src/legacy/*Service.kt"
+        }
+
         "検査まで届かなければ 2 で、ログの末尾を出す" {
             val fixture = TestFixture()
             fixture.gradleOutput("e: file:///p/Arch.kt:3:5 Unresolved reference 'roel'.\nBUILD FAILED in 2s", status = 1)

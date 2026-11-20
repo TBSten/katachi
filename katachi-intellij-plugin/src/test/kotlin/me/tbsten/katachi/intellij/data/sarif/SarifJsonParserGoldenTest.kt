@@ -22,7 +22,7 @@ class SarifJsonParserGoldenTest {
     private fun at(path: String, line: Int? = null) = SarifLocation(Paths.get("/w/repo/$path"), line)
 
     @Test
-    fun `14 件すべての ruleId と label と level が rules から復元できる`() {
+    fun `15 件すべての ruleId と label と level が rules から復元できる`() {
         assertEquals(
             listOf(
                 Triple("katachi.UnexpectedFile", "UnexpectedFile", SarifLevel.Error),
@@ -34,6 +34,7 @@ class SarifJsonParserGoldenTest {
                 Triple("BareRule", "BareRule", SarifLevel.Warning),
                 Triple("katachi.StaleBaselineEntry", "StaleBaselineEntry", SarifLevel.Error),
                 Triple("katachi.AmbiguousLayout", "AmbiguousLayout", SarifLevel.Warning),
+                Triple("katachi.IgnoredLayout", "IgnoredLayout", SarifLevel.Warning),
                 Triple("katachi.MissingDescription", "MissingDescription", SarifLevel.Warning),
                 Triple("katachi.UncheckedFile", "UncheckedFile", SarifLevel.Error),
                 Triple("katachi.UncheckedDirectory", "UncheckedDirectory", SarifLevel.Error),
@@ -59,6 +60,7 @@ class SarifJsonParserGoldenTest {
                 at("android/katachi-baseline.json", 5),
                 at("android/core/domain/src/main/kotlin/com/example/domain/Shared.kt"),
                 at("$roles/roles/RepositoryRole.kt", 9),
+                at("$roles/roles/RepositoryRole.kt", 9),
                 at("android/app/src/main/kotlin/com/example/Broken.kt"),
                 at("$roles/ProjectArchitecture.kt", 12),
                 at("$roles/ProjectArchitecture.kt", 12),
@@ -74,6 +76,13 @@ class SarifJsonParserGoldenTest {
         assertEquals(listOf(at("android/architecture-test/src/test/kotlin/com/example/roles/UseCaseRole.kt", 16)), results[2].related)
         assertEquals(listOf(at("android/core/domain/src/main/kotlin/com/example/domain/GetOrderUseCase.kt")), results[3].related)
         assertEquals(listOf(at("android/architecture-test/src/test/kotlin/com/example/roles/RepositoryRole.kt", 9)), results[8].related)
+        assertEquals(
+            listOf(
+                at("android/architecture-test/src/test/kotlin/com/example/roles/UseCaseRole.kt", 16),
+                at("android/architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt", 12),
+            ),
+            results[9].related,
+        )
     }
 
     @Test

@@ -196,6 +196,7 @@ internal fun blockOf(violation: Violation, root: String?): List<String> = when (
     is UnsatisfiedFileConstraint -> unsatisfiedFileConstraintBlock(violation, root)
     is UncheckedFileConstraint -> uncheckedFileConstraintBlock(violation, root)
     is AmbiguousLayout -> ambiguousLayoutBlock(violation, root)
+    is IgnoredLayout -> ignoredLayoutBlock(violation, root)
     is MissingDescription -> missingDescriptionBlock(violation, root)
     is StaleBaselineEntry -> staleBaselineEntryBlock(violation, root)
     // A violation from outside katachi. The block is the first line plus the values it states

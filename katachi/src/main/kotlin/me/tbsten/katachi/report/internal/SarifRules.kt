@@ -13,6 +13,7 @@ import me.tbsten.katachi.check.UnexpectedDirectory
 import me.tbsten.katachi.check.UnexpectedFile
 import me.tbsten.katachi.check.UnsatisfiedFileConstraint
 import me.tbsten.katachi.check.Violation
+import me.tbsten.katachi.check.internal.IgnoredLayout
 import me.tbsten.katachi.check.internal.MissingDescription
 
 internal class SarifRule(
@@ -38,6 +39,7 @@ internal fun isKatachiViolation(violation: Violation): Boolean = when (violation
     is UnsatisfiedFileConstraint,
     is UncheckedFileConstraint,
     is AmbiguousLayout,
+    is IgnoredLayout,
     is MissingDescription,
     is StaleBaselineEntry,
     -> true
@@ -60,6 +62,7 @@ private val KATACHI_RULE_DESCRIPTIONS: Map<String, String> = mapOf(
     "UncheckedCheck" to "A check handed to assert(...) threw, so nothing it would have reported is known.",
     "StaleBaselineEntry" to "A baseline entry holds back more violations than the project still has.",
     "AmbiguousLayout" to "Two or more roles claim the same path.",
+    "IgnoredLayout" to "A line of a role's layout lies entirely in directories an ignore() hides, so none of its files is checked.",
     "MissingDescription" to "A role that may live in more than one place has a place without a description.",
 )
 

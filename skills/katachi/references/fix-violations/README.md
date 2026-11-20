@@ -38,6 +38,7 @@ Each violation is a paragraph like this:
 | `[UncheckedFileConstraint]` / `[UncheckedFile]` / `[UncheckedDirectory]` / `[UncheckedCheck]` | The check could not run for that path; it is neither allowed nor rejected | Read the cause printed under it. `[UncheckedFileConstraint]` with `Pass FileConstraintCheck() to assert()` means the test does not run the constraint check |
 | `[StaleBaselineEntry]` | The baseline holds back a violation that no longer exists | Something was fixed: prune the entry (below) |
 | `[AmbiguousLayout]` (warning) | Two declarations claim the same file | Narrow one of them; the file must belong to one Role |
+| `[IgnoredLayout]` (warning) | A line of a Role's `layout { }` lies in a directory an `ignore()` hides (or a module's `build`, which `gradle()` ignores), so none of its files is checked | Remove or narrow the `ignore()` if the files matter; otherwise drop the line from the Role |
 
 Warnings never fail the check, but do not ignore them: fix them or tell the user why they stay.
 

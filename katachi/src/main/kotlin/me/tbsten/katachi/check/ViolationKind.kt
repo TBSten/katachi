@@ -44,8 +44,8 @@ public enum class ViolationKind {
     Stale,
 
     /**
-     * Two or more declarations claim the same thing, so which one it belongs to is not decided.
-     * Decide, and drop or narrow the rest.
+     * Two or more declarations claim the same thing — two roles, or a role and an `ignore()` that
+     * hides it — so which one it belongs to is not decided. Decide, and drop or narrow the rest.
      *
      * katachi only reports this kind with [Severity.Warning].
      */
