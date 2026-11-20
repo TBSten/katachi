@@ -8,20 +8,25 @@ import kotlin.io.path.writeText
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
+import me.tbsten.katachi.script.internal.MacOsJavaStub
 import me.tbsten.katachi.script.internal.ScriptContext
 import me.tbsten.katachi.script.internal.runScript
 
 internal class RecordedRun(val status: Int, val out: String, val err: String)
 
-/** Runs the command as `main` would, with stdout and stderr captured. */
+/**
+ * Runs the command as `main` would, with stdout and stderr captured.
+ * [macOsJavaStub] is not the host's by default: a spec must not ask a Mac's real java_home.
+ */
 internal fun runCapturing(
     cwd: Path,
     args: List<String>,
     env: Map<String, String> = emptyMap(),
+    macOsJavaStub: MacOsJavaStub? = null,
 ): RecordedRun {
     val out = StringBuilder()
     val err = StringBuilder()
-    val context = ScriptContext(cwd, env, { out.appendLine(it) }, { err.appendLine(it) })
+    val context = ScriptContext(cwd, env, { out.appendLine(it) }, { err.appendLine(it) }, macOsJavaStub = macOsJavaStub)
     val status = runScript(args, context)
     return RecordedRun(status, out.toString(), err.toString())
 }
