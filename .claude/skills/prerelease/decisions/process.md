@@ -40,3 +40,13 @@ prerelease check などで Review に指摘を登録するときは、1 件ご�
 利用者の一言: 「skills/katachi に対する指摘は一律直して」
 
 `skills/katachi/`（SKILL.md・references・assets のチェックリスト）宛ての指摘は、TODO.html や Review で利用者に選ばせず、その回の修正 PR で直す。Review には登録しない（登録済みのものは直したら remove）。docs の本文は人が書く決まりのままで、この方針は skill だけに当てはまる。ガイドと skill のどちらに決まりを置くかという指摘（ルールの置き場）は、skill を直す話ではないのでこの方針に入れない。
+
+## 方針: 探索的検証（手順 13）を prerelease と週替わりの nightly の両方で回す
+- decision: 方針
+- decided: 2026-11-20 KATACHI-402
+- by: 利用者（決定カード「探索的検証をどこから入れる？」で「A と B を同時に始める」）
+
+prerelease の手順 13 として、コンポーネント別のチャーターで利用者目線の探索的検証を回す（クラウド先、IDE plugin は Mac で人が 15 分）。
+あわせて、クラウドの定期実行で週に 1 コンポーネントずつ回す（[exploratory-nightly.md](../references/exploratory-nightly.md)。修正 PR は作らず、p7 以上は `fix:` チケットにする）。
+提案は A（prerelease だけ・推奨度 9/10）だったが、利用者が費用とノイズの様子見も同時に進めることを選んだ。
+一巡（6 週）の集計で続けるか・頻度を変えるかを利用者に聞く。

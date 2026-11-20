@@ -25,6 +25,9 @@ fun DeclarationContainerScope.agentRule() = "AgentRule".role {
             "skills" / "*" / "scripts" / "*".file()
             // The details of each step, split out so that SKILL.md stays a short outline.
             "skills" / "*" / "references" / "*.md".file()
+            // A step whose details differ per component keeps one file for each beside them, such as
+            // prerelease's references/exploratory/<component>.md (the charter each exploratory session follows).
+            "skills" / "*" / "references" / "*" / "*.md".file()
             // The HTML a skill fills in for its report, such as prerelease's index.html and TODO.html.
             "skills" / "*" / "templates" / "*.html".file()
             // What a person decided on earlier runs of a skill, such as prerelease's decisions/, so that the
