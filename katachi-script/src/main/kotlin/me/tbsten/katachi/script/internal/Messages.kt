@@ -451,6 +451,13 @@ internal object Messages {
             en = "Could not detect the Kotlin version. Pass it with --kotlin.",
         )
 
+        val couldNotDetectEmbeddedKotlin: Msg = Msg(
+            ja = "Kotlin のバージョンを検出できませんでした。buildSrc は Gradle に同梱の Kotlin（embeddedKotlin）を使っていて、" +
+                "そのバージョンは ./gradlew --version の Kotlin: の行に出ます。--kotlin で指定してください。",
+            en = "Could not detect the Kotlin version. buildSrc uses the Kotlin that comes with Gradle (embeddedKotlin), " +
+                "whose version ./gradlew --version prints on its Kotlin: line. Pass it with --kotlin.",
+        )
+
         fun couldNotReadKotlin(kotlin: Any?): Msg = Msg(
             ja = "Kotlin のバージョンを読み取れませんでした: $kotlin",
             en = "Could not read the Kotlin version: $kotlin",
