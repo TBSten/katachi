@@ -23,6 +23,7 @@ internal class KontureFileConstraint(
         val graph = kontureGraphOf(subject)
         val scope = KontureConstraintScopeImpl(graph)
         val covered = KontureCoveredFiles(subject.projectRoot, subject.files)
+        val names = KontureDeclarationNames(graph)
         // The block runs under audit too: a `check()` written by hand inside `files { }` then
         // returns a report that is simply dropped, instead of throwing Konture's prose.
         audited { declare(scope, subject) }
@@ -41,7 +42,7 @@ internal class KontureFileConstraint(
                     // A `@Suppress("konture:...")` the reader wrote in the code. Konture kept the
                     // violation and marked it; katachi honours the mark.
                     if (violation.isSuppressed) continue
-                    sites += siteOf(suite.kind, violation, covered)
+                    sites += siteOf(suite.kind, violation, covered, names)
                 }
             }
             sites.map { it.toFileConstraintFailure() }

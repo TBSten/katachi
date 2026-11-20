@@ -67,7 +67,7 @@ class KontureJdkPackageSpec : FreeSpec({
 
             violations.filterIsInstance<UncheckedFileConstraint>().shouldBeEmpty()
             violations.filterIsInstance<UnsatisfiedFileConstraint>().map { "${it.path}:${it.declaration}" } shouldContainExactly
-                listOf("src/UsesFile.kt:open")
+                listOf("src/UsesFile.kt:UsesFile.open")
         }
     }
 

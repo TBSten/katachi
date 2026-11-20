@@ -36,7 +36,7 @@ class KontureScopeSpec : FreeSpec({
             violations.rejectedSites() shouldContainExactly listOf("src/Helper.kt:null:null")
         }
 
-        "classes の違反はクラスの単純名と宣言行を持つ" {
+        "classes の違反はパッケージを除いたクラス名と宣言行を持つ" {
             val violations = kontureRun(
                 "src/PublicThing.kt" to PUBLIC_THING_KT,
                 "src/InternalThing.kt" to INTERNAL_THING_KT,
@@ -47,7 +47,7 @@ class KontureScopeSpec : FreeSpec({
             violations.rejectedSites() shouldContainExactly listOf("src/PublicThing.kt:PublicThing:3")
         }
 
-        "functions の違反は関数名と宣言行を持つ" {
+        "functions の違反はクラスで修飾した関数名と宣言行を持つ" {
             val violations = kontureRun(
                 "src/PublicThing.kt" to PUBLIC_THING_KT,
                 "src/InternalThing.kt" to INTERNAL_THING_KT,
@@ -55,11 +55,11 @@ class KontureScopeSpec : FreeSpec({
                 functions { should().beInternal() }
             }
 
-            // Konture names the subject `com.example.PublicThing.run`; the report keeps the last segment.
-            violations.rejectedSites() shouldContainExactly listOf("src/PublicThing.kt:run:4")
+            // Konture names the subject `com.example.PublicThing.run`; the report drops the package.
+            violations.rejectedSites() shouldContainExactly listOf("src/PublicThing.kt:PublicThing.run:4")
         }
 
-        "properties の違反はプロパティ名と宣言行を持つ" {
+        "properties の違反はクラスで修飾したプロパティ名と宣言行を持つ" {
             val violations = kontureRun(
                 "src/PublicThing.kt" to PUBLIC_THING_KT,
                 "src/InternalThing.kt" to INTERNAL_THING_KT,
@@ -67,7 +67,7 @@ class KontureScopeSpec : FreeSpec({
                 properties { should().beVal() }
             }
 
-            violations.rejectedSites() shouldContainExactly listOf("src/PublicThing.kt:count:5")
+            violations.rejectedSites() shouldContainExactly listOf("src/PublicThing.kt:PublicThing.count:5")
         }
 
         "依存の規則は import から読まれ、覆っていないパッケージへの依存も見える" {
@@ -140,7 +140,7 @@ class KontureScopeSpec : FreeSpec({
             // Both in one file, so the walk order does not separate them: what is left is the
             // order the block declared the rules in, functions first.
             violations.rejectedSites() shouldContainExactly listOf(
-                "src/PublicThing.kt:run:4",
+                "src/PublicThing.kt:PublicThing.run:4",
                 "src/PublicThing.kt:PublicThing:3",
             )
         }
@@ -154,6 +154,66 @@ class KontureScopeSpec : FreeSpec({
             }
 
             violations.rejectedPaths() shouldContainExactly listOf("src/InternalThing.kt", "src/PublicThing.kt")
+        }
+    }
+
+    "宣言の名前は ktFileContent と同じ形" - {
+        "入れ子のクラスは外側のクラスで修飾され、パッケージは付かない" {
+            val violations = kontureRun("src/Screens.kt" to SCREENS_KT) {
+                classes { should().bePrivate() }
+            }
+
+            violations.rejectedSites() shouldContainExactly listOf(
+                "src/Screens.kt:HomeScreen:3",
+                "src/Screens.kt:HomeScreen.State:4",
+                "src/Screens.kt:DetailScreen:9",
+                "src/Screens.kt:DetailScreen.State:10",
+            )
+        }
+
+        "同じ単純名の入れ子のクラスのメンバーは、宣言行でどちらのクラスか分かれる" {
+            val violations = kontureRun("src/Screens.kt" to SCREENS_KT) {
+                functions { should().beInternal() }
+            }
+
+            // Konture names both `com.example.State.render`; only the line tells them apart.
+            violations.rejectedSites() shouldContainExactly listOf(
+                "src/Screens.kt:HomeScreen.State.render:5",
+                "src/Screens.kt:DetailScreen.State.render:11",
+            )
+        }
+
+        "companion object のメンバーは Companion で修飾される" {
+            val violations = kontureRun("src/User.kt" to USER_WITH_COMPANION_KT) {
+                functions { should().beInternal() }
+            }
+
+            violations.rejectedSites() shouldContainExactly listOf("src/User.kt:User.Companion.create:5")
+        }
+
+        "トップレベルの関数・プロパティは名前だけ" {
+            val violations = kontureRun("src/Helpers.kt" to TOP_LEVEL_KT) {
+                functions { should().beInternal() }
+                properties { should().beVal() }
+            }
+
+            violations.rejectedSites() shouldContainExactly listOf(
+                "src/Helpers.kt:helper:3",
+                "src/Helpers.kt:counter:5",
+            )
+        }
+
+        "package の無いファイルでもクラスで修飾され、先頭に . が付かない" {
+            val violations = kontureRun("src/Models.kt" to DEFAULT_PACKAGE_KT) {
+                functions { should().beInternal() }
+                properties { should().beVal() }
+            }
+
+            // Konture names them `.User.save` and `.User.id`, from an empty package and a dot.
+            violations.rejectedSites() shouldContainExactly listOf(
+                "src/Models.kt:User.save:3",
+                "src/Models.kt:User.id:2",
+            )
         }
     }
 
@@ -224,4 +284,49 @@ private val SUPPRESSED_KT: String = """
 
     @Suppress("konture:classes.rule")
     class Suppressed
+""".trimIndent() + "\n"
+
+/** Two screens on lines 3 and 9, each with a nested `State` (lines 4 and 10) whose `render` is on lines 5 and 11. */
+private val SCREENS_KT: String = """
+    package com.example
+
+    class HomeScreen {
+        class State {
+            fun render() = Unit
+        }
+    }
+
+    class DetailScreen {
+        class State {
+            fun render() = Unit
+        }
+    }
+""".trimIndent() + "\n"
+
+/** A class whose unnamed companion object declares `create` on line 5. */
+private val USER_WITH_COMPANION_KT: String = """
+    package com.example
+
+    class User {
+        companion object {
+            fun create(): User = User()
+        }
+    }
+""".trimIndent() + "\n"
+
+/** A top-level function on line 3 and a top-level `var` on line 5. */
+private val TOP_LEVEL_KT: String = """
+    package com.example
+
+    fun helper() = Unit
+
+    var counter: Int = 0
+""".trimIndent() + "\n"
+
+/** A file with no `package` line: a class on line 1, its `var id` on line 2 and `save` on line 3. */
+private val DEFAULT_PACKAGE_KT: String = """
+    class User {
+        var id: String = ""
+        fun save() = Unit
+    }
 """.trimIndent() + "\n"

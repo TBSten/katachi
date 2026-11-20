@@ -77,9 +77,9 @@ class KonsistScopeSpec : FreeSpec({
             violations.filterIsInstance<UnsatisfiedFileConstraint>().map {
                 "${it.path}:${it.declaration}"
             } shouldContainExactly listOf(
-                "src/InternalThing.kt:run",
+                "src/InternalThing.kt:InternalThing.run",
                 "src/PublicThing.kt:PublicThing",
-                "src/PublicThing.kt:run",
+                "src/PublicThing.kt:PublicThing.run",
             )
         }
     }
@@ -103,7 +103,47 @@ class KonsistScopeSpec : FreeSpec({
             }
 
             violations.filterIsInstance<UnsatisfiedFileConstraint>().map { it.declaration } shouldBe
-                listOf("PublicThing", "run")
+                listOf("PublicThing", "PublicThing.run")
+        }
+    }
+
+    "宣言の名前は ktFileContent と同じ形" - {
+        "クラスの中の宣言はクラスで修飾され、パッケージは付かない" {
+            val violations = konsistRun("src/Models.kt" to MODELS_KT) {
+                properties().must { false }
+            }
+
+            violations.filterIsInstance<UnsatisfiedFileConstraint>().map { "${it.declaration}:${it.line}" } shouldContainExactly
+                listOf("User.id:4", "Order.id:8")
+        }
+
+        "入れ子のクラスは外側のクラスで修飾される" {
+            val violations = konsistRun("src/Screens.kt" to SCREENS_KT) {
+                classes().must { false }
+            }
+
+            violations.filterIsInstance<UnsatisfiedFileConstraint>().map { it.declaration } shouldContainExactly
+                listOf("HomeScreen", "HomeScreen.State", "DetailScreen", "DetailScreen.State")
+        }
+
+        "companion object のメンバーは Companion で修飾される" {
+            val violations = konsistRun("src/User.kt" to USER_WITH_COMPANION_KT) {
+                functions().must { false }
+            }
+
+            violations.filterIsInstance<UnsatisfiedFileConstraint>().map { it.declaration } shouldContainExactly
+                listOf("User.Companion.create")
+        }
+
+        "トップレベルの宣言と import は名前だけ" {
+            val violations = konsistRun("src/Helpers.kt" to TOP_LEVEL_KT) {
+                functions().must { false }
+                properties().must { false }
+                files.flatMap { it.imports }.must { false }
+            }
+
+            violations.filterIsInstance<UnsatisfiedFileConstraint>().map { it.declaration } shouldContainExactly
+                listOf("helper", "counter", "com.example.other.Helper")
         }
     }
 
@@ -176,8 +216,56 @@ class KonsistScopeSpec : FreeSpec({
                 "PublicThing:null",
                 "com.example:1",
                 "PublicThing:3",
-                "run:4",
+                "PublicThing.run:4",
             )
         }
     }
 })
+
+/** `User.id` on line 4 and `Order.id` on line 8. */
+private val MODELS_KT: String = """
+    package com.example
+
+    class User {
+        val id: String = ""
+    }
+
+    class Order {
+        val id: String = ""
+    }
+""".trimIndent() + "\n"
+
+/** Two screens, each with a nested `State`. */
+private val SCREENS_KT: String = """
+    package com.example
+
+    class HomeScreen {
+        class State
+    }
+
+    class DetailScreen {
+        class State
+    }
+""".trimIndent() + "\n"
+
+/** A class whose unnamed companion object declares `create`. */
+private val USER_WITH_COMPANION_KT: String = """
+    package com.example
+
+    class User {
+        companion object {
+            fun create(): User = User()
+        }
+    }
+""".trimIndent() + "\n"
+
+/** An import, a top-level function and a top-level property. */
+private val TOP_LEVEL_KT: String = """
+    package com.example
+
+    import com.example.other.Helper
+
+    fun helper(): Helper? = null
+
+    val counter: Int = 0
+""".trimIndent() + "\n"

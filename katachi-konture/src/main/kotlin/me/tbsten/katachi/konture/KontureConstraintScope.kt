@@ -74,7 +74,9 @@ import me.tbsten.katachi.dsl.KatachiDsl
  * - **`.kts` files are never in the graph.** Konture parses `.kt` only, and so does katachi here.
  *   A constraint that covers only scripts is refused ([KatachiKontureNoKotlinFilesException]).
  * - **Konture's violation message does not reach the report.** A report block carries the path,
- *   the declaration and the line; the prose Konture would have printed is not kept.
+ *   the declaration and the line; the prose Konture would have printed is not kept. The
+ *   declaration is named without its package, as `ktFileContent` names it (`HomeScreen.State`,
+ *   `User.id`), which is what tells two violations in one file apart in a baseline.
  * - **A predicate has to answer, not assert.** `satisfy { }` and its kin are run by Konture on
  *   each declaration with nothing catching what they throw; one that asserts ends the rule at
  *   the first declaration it dislikes and the constraint is reported as unanswered

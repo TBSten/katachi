@@ -3,6 +3,7 @@
 package me.tbsten.katachi.test.konture
 
 import io.github.baole.konture.Konture
+import io.github.baole.konture.ProjectGraph
 import io.github.baole.konture.core.model.SourceLocation
 import io.github.baole.konture.core.model.Subject
 import io.github.baole.konture.core.model.Violation
@@ -35,9 +36,13 @@ import me.tbsten.katachi.konture.KatachiKontureParseException
 import me.tbsten.katachi.konture.KatachiKontureRuleRefusedException
 import me.tbsten.katachi.konture.KatachiKontureUnlocatableViolationException
 import me.tbsten.katachi.konture.internal.KontureCoveredFiles
+import me.tbsten.katachi.konture.internal.KontureDeclarationNames
 import me.tbsten.katachi.konture.internal.SuiteKind
 import me.tbsten.katachi.konture.internal.siteOf
 import me.tbsten.katachi.konture.konture
+
+/** Names read from a graph that holds no file, so a class is named after its simple name. */
+private val NO_GRAPH_NAMES: KontureDeclarationNames = KontureDeclarationNames(ProjectGraph(builds = emptyMap()))
 
 /**
  * What every way a `konture { }` constraint can fail to answer at all comes out as, seen through
@@ -273,7 +278,7 @@ class KontureFailureSpec : FreeSpec({
             )
 
             val outside = shouldThrow<KatachiKontureUnlocatableViolationException> {
-                siteOf(SuiteKind.Classes, violation, KontureCoveredFiles("/repo", setOf("src/Covered.kt")))
+                siteOf(SuiteKind.Classes, violation, KontureCoveredFiles("/repo", setOf("src/Covered.kt")), NO_GRAPH_NAMES)
             }
             outside.ruleId shouldBe "classes.rule"
             outside.subject shouldBe "com.example.Stray"
@@ -283,7 +288,7 @@ class KontureFailureSpec : FreeSpec({
 
             // A different project root is the same mistake from the other side.
             shouldThrow<KatachiKontureUnlocatableViolationException> {
-                siteOf(SuiteKind.Classes, violation, KontureCoveredFiles("/elsewhere", setOf("src/Stray.kt")))
+                siteOf(SuiteKind.Classes, violation, KontureCoveredFiles("/elsewhere", setOf("src/Stray.kt")), NO_GRAPH_NAMES)
             }
 
             // No location at all.
@@ -292,6 +297,7 @@ class KontureFailureSpec : FreeSpec({
                     SuiteKind.Classes,
                     violation.copy(subject = Subject.CustomSubject("nowhere", location = null), sourceLocation = null),
                     KontureCoveredFiles("/repo", setOf("src/Stray.kt")),
+                    NO_GRAPH_NAMES,
                 )
             }
             unplaced.filePath shouldBe null
@@ -310,7 +316,7 @@ class KontureFailureSpec : FreeSpec({
                 message = "spelled differently",
             )
 
-            val site = siteOf(SuiteKind.Classes, violation, KontureCoveredFiles("/repo", setOf("src/Covered.kt")))
+            val site = siteOf(SuiteKind.Classes, violation, KontureCoveredFiles("/repo", setOf("src/Covered.kt")), NO_GRAPH_NAMES)
 
             site.file shouldBe "src/Covered.kt"
             site.declaration shouldBe "Covered"
