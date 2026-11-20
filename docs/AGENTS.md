@@ -83,7 +83,7 @@ title: ...
     - Role                             （group と「Role 定義を分割する」を含む）
     - Layout                           ［ページタイトルは「Layout システムでディレクトリ構成を厳守させる」］
     - ktFileContent                    （グループ。見出しは押せないので、ページは中の「概要」に置く）
-        - ファイルの中で定義できる宣言の許可リストを定義する   ［サイドバーの表示は「概要」］（`ktFileContent { }`。katachi-konsist のインストールの節もここに置く）
+        - ktFileContent   ［サイドバーの表示は「概要」］（`ktFileContent { }`。katachi-konsist のインストールの節もここに置く）
         - [AI生成] Kotlin 言語機能とのマッピング   （Kotlin の言語機能ごとの書き方の対応表。書き方の説明は概要が持つ）
     - Konture との統合                                     （`konture { }`。`ktFileContent { }` と同じ位置に書く Konture の規則。katachi-konsist（`ktFileContent { }`）と同じテストモジュールには置けない）
     - ドキュメント生成

@@ -112,7 +112,7 @@ prune only **reduces** the number of records. It never adds new violations to th
 
 This is a complete example that puts the setup above together.
 
-```kt
+```kt nocollapse
 // Record:  ./gradlew :architecture-test:test -Dkatachi.baseline.update=true
 // Remove:  ./gradlew :architecture-test:test -Dkatachi.baseline.prune=true
 val projectArchitecture = architecture {
