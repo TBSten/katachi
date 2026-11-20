@@ -1,7 +1,6 @@
 package me.tbsten.katachi.intellij
 
 import com.intellij.driver.sdk.FileEditorManager
-import com.intellij.driver.sdk.invokeAction
 import com.intellij.driver.sdk.openFile
 import com.intellij.driver.sdk.waitFor
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -81,7 +80,9 @@ class CaptureCandidatesE2ETest {
             }
 
             // 4. Find Action: the tool window comes up and has loaded. The search field is not typed into (see the class's KDoc).
-            invokeAction("katachi.GenerateFromTemplate", now = false)
+            // Through the bridge: Driver's invokeAction acts on the focused window, and with the IDE not in front the action had no
+            // project and was rejected as disabled (prerelease of v0.4.0, one run in two).
+            assertEquals("performed=katachi.GenerateFromTemplate", bridge.performAction("katachi.GenerateFromTemplate"))
             waitFor("the katachi tool window is ready", timeout = 1.minutes, errorMessage = { bridge.describeState() }) { bridge.describeState().valueOf("phase") == "Ready" }
             bridge.shot(ide.screenshots, "3-tool-window-ready")
         }

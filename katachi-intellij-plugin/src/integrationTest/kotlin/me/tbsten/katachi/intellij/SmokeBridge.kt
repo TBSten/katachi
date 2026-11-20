@@ -68,6 +68,12 @@ interface SmokeBridge {
      */
     fun refreshFromDisk(): String
 
+    /**
+     * Performs the action [id] with the project as its context, as `performed=<id>` (or `performed=none`). Called rather than Driver's
+     * `invokeAction`: that takes the context from the focused window, and the IDE under test is not always in front.
+     */
+    fun performAction(id: String): String
+
     fun screenshotFrame(out: String): String
 
     fun screenshotGutterMenu(path: String, line: Int, out: String): String
