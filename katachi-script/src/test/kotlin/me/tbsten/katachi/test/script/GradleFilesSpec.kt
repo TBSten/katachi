@@ -86,6 +86,28 @@ class GradleFilesSpec : FreeSpec({
         }
     }
 
+    "projectDir を別のディレクトリに向けて取り込んだモジュールも、取り込んだものとして数える（KATACHI-441）" - {
+        "Kotlin の file(\"dir\") と Groovy の new File(rootDir, 'dir') / file('dir')" {
+            val root = createTempDirectory("katachi-gradle-")
+            root.resolve("settings.gradle.kts").writeText(
+                """
+                include(":app")
+                project(":app").projectDir = file("sample")
+                """.trimIndent(),
+            )
+            includedProjectDirs(root) shouldBe listOf("app", "sample")
+            root.resolve("settings.gradle").writeText(
+                """
+                include ':lib'
+                project(':lib').projectDir = new File(rootDir, 'libs/core')
+                project(':x').projectDir = file('tools/x')
+                """.trimIndent(),
+            )
+            root.resolve("settings.gradle.kts").toFile().delete()
+            includedProjectDirs(root) shouldBe listOf("lib", "libs/core", "tools/x")
+        }
+    }
+
     "OtherBuilds は settings を持つディレクトリのうち、buildSrc でも include も includeBuild もされていないものだけ（KATACHI-431）" {
         val root = createTempDirectory("katachi-gradle-")
         root.resolve("settings.gradle.kts").writeText(

@@ -283,6 +283,12 @@ internal class MacOsJavaStub(private val stub: Path, val javaHome: Path) {
  * the shell's JAVA_HOME, then java on PATH. The kit's `detect_gradle_jdk`.
  */
 internal fun ScriptContext.detectGradleJdk(root: Path): GradleJdk {
+    // ./gradlew checks the shell's JAVA_HOME before it reads any Gradle setting, and stops on one with no bin/java.
+    // An empty SHELL_JAVA_HOME_ENV is a shell without JAVA_HOME, not a reason to read the JAVA_HOME `kotlin` filled in.
+    val shellJavaHome = (env[SHELL_JAVA_HOME_ENV] ?: env["JAVA_HOME"])?.takeIf { it.isNotEmpty() }
+    if (shellJavaHome != null && !Path(shellJavaHome, "bin", "java").isExecutable()) {
+        return GradleJdk(null, null, Messages.Probe.invalidJavaHome(shellJavaHome), invalidJavaHome = true)
+    }
     val daemon = root.resolve("gradle/gradle-daemon-jvm.properties")
     if (daemon.isRegularFile()) {
         val pattern = Regex("^\\s*toolchainVersion\\s*=\\s*([0-9]+).*")
@@ -294,13 +300,10 @@ internal fun ScriptContext.detectGradleJdk(root: Path): GradleJdk {
     if (gradleHome != null && Path(gradleHome, "bin", "java").isExecutable()) {
         return GradleJdk(javaMajorOf(Path(gradleHome, "bin", "java")), Messages.Probe.gradleJavaHome(gradleHome))
     }
-    // An empty SHELL_JAVA_HOME_ENV is a shell without JAVA_HOME, not a reason to read the JAVA_HOME `kotlin` filled in.
-    val javaHome = (env[SHELL_JAVA_HOME_ENV] ?: env["JAVA_HOME"])?.takeIf { it.isNotEmpty() }
+    val javaHome = shellJavaHome
     if (javaHome != null && Path(javaHome, "bin", "java").isExecutable()) {
         return GradleJdk(javaMajorOf(Path(javaHome, "bin", "java")), Messages.Probe.javaHome(javaHome))
     }
-    // ./gradlew stops with "JAVA_HOME is set to an invalid directory" here; falling through to java on PATH would hide it.
-    if (javaHome != null) return GradleJdk(null, null, Messages.Probe.invalidJavaHome(javaHome), invalidJavaHome = true)
     val onPath = findOnPath("java") ?: return GradleJdk(null, null, fromPath = true)
     val macOs = macOsJavaStub
     if (macOs != null && macOs.isStub(onPath)) {
