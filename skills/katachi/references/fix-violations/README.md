@@ -7,7 +7,7 @@ The katachi check failed: on CI, in a pull request, or locally. A violation mean
 Locally, run:
 
 ```sh
-katachi agent test
+katachi agent test --save before-refactor
 ```
 
 It runs `./gradlew :architecture-test:test` with every violation in the log (not only the first 10), prints a summary, keeps the full log and shows what changed since the previous run. Section 4 compares against it. If the verification module (the module that applies the `me.tbsten.katachi` plugin) is not `architecture-test` and there is no check list from the setup, run `katachi agent test --module-dir <its path>`, here and in section 4.
@@ -56,7 +56,14 @@ Look at the pull request or the recent commits for intent: a refactor PR that mo
 
 ## 4. Confirm
 
-Run `katachi agent test` again (on CI, look at the job). Its summary shows what changed since the previous run: every violation you meant to fix should be gone, and nothing new should appear. If you changed the definition, also put a stray file where you changed it and confirm it still fails, then delete the file.
+Run the check again and compare it with the log section 1 kept (on CI, look at the job):
+
+```sh
+katachi agent test --save after-refactor
+katachi agent compare-violations
+```
+
+Each `- [Kind] path` line (only in before) should be a violation you meant to fix, and no `+ [Kind] path` line (only in after) should appear. The result changed on purpose, so `compare-violations` exits 1 and ends with a line written for a refactoring ("The refactoring changed the behavior…"; ja: 「リファクタリングで振る舞いが変わっています。…」): read the lines above it. Do not go by the summary of `katachi agent test` alone: it compares only with the run just before it, so it misses what changed before that. If you changed the definition, also put a stray file where you changed it and confirm it still fails, then delete the file.
 
 ## Tolerating what is there now
 

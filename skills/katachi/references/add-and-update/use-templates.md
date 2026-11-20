@@ -6,9 +6,10 @@ A Role can carry a `.template { }` on a file declaration in its `layout { }`. `k
 
 1. Find the template: search the definition for `.template {`. The Role it is in, and its groups, give the `template=` value: the Role's full name (`Group.Role`, `Outer.Inner.Role` with nested groups, or just `Role` outside any group). The Role name alone also works while no other Role has the same name.
 2. Read the parameters it takes. A parameter's name is the name of the property it is declared through: in `val name by stringParameter(default = "Sample")` the name is `name`, and the string in the parentheses is only its default value. The same goes for `booleanParameter()` / `intParameter()` / `enumParameter()`. The names given to wildcards with `capture("…")` in the path are parameters too (read inside the template with `captureValue("…")`).
-3. Generate, then run the check.
+3. Run the check once, generate, then run the check again. The second run's diff from the previous run is then only what the new file did: against an older run it would mix in other changes, and with no earlier run it is not shown at all.
 
    ```sh
+   katachi agent test
    ./gradlew :architecture-test:katachiTemplate --arg template=Feature.ViewModel --arg feature=home --arg name=Profile
    katachi agent test
    ```
@@ -29,4 +30,4 @@ The full procedure, with the rules for naming wildcards, is setup section 6-D: [
 - `.template` is an extension function (`import me.tbsten.katachi.dsl.template`), and `.template { }`, `capture()` and `captureValue()` are experimental (opt in to `ExperimentalKatachiApi`).
 - Base its content on a real file of the Role. Do not write the destination path in the template; it comes from the declaration.
 - Name every `*` left in the destination with `capture("…")`; a template on a path with an unnamed `*` or `**` fails when layout is expanded.
-- Generate one file, run the check, then delete the generated file unless the user wants to keep it, and run the check once more.
+- Run the check, generate one file and run the check again (as in step 3 above), then delete the generated file unless the user wants to keep it, and run the check once more.
