@@ -103,3 +103,13 @@
 
 手順 3 の p3（Experimental の要検討）。main で使うのは `:katachi-konsist` の `.internal` だけで、利用者が書く場面が見つからない。
 「このまま（ファイルの中身を検査する backend 向けの拡張点として Experimental のまま。KDoc に backend 向けと書く）」と「`@InternalKatachiApi` にして `.internal` へ移す」を並べて聞き、前者になった。KDoc に backend 向けの 1 段落を足した（KATACHI-404 の PR）。次のチェックでは要検討にしない。
+
+## このまま: `nameWords` と 6 つの大文字小文字変換（`pascalCase` ほか）が、Experimental の `capture()` のための語なのに注釈なしの安定 API になっている
+- decision: このまま
+- file: katachi/src/main/kotlin/me/tbsten/katachi/dsl/Naming.kt
+- quote: public val String.nameWords: List<String>
+- decided: 2026-11-20 261120-01 KATACHI-404
+- by: 利用者（判断カード、23:02 JST「全部おすすめで進める」）
+
+手順 3 の p4（Experimental の要検討）。`nameWords`・`pascalCase`・`camelCase`・`kebabCase`・`snakeCase`・`screamingSnakeCase`・`flatCase` は v0.3.0 から同じ形の注釈なしの public で、KDoc は「`capture("x")` に付けると導出された capture になる」と書く（その `capture()` は Experimental）。
+リリース後に `@ExperimentalKatachiApi` を足すと利用者に opt-in の書き換えが要るので 0.4.0 の前に聞いた。「このまま」と「注釈を付ける（sample の `pascalCase` に opt-in が要る）」を並べ、おすすめの前者になった。次のチェックでは要検討にしない。

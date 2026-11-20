@@ -5,38 +5,59 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>v{版} 確認 TODO</title>
 <style>
-:root{--bg:#fbfaf7;--fg:#1d1d1f;--muted:#6b6b70;--line:#e3e1dc;--card:#fff;--red:#c0392b;--amber:#b7791f;--blue:#2b6cb0;--green:#2f855a;--code:#f1efea}
-@media (prefers-color-scheme:dark){:root{--bg:#17171a;--fg:#ececef;--muted:#9a9aa2;--line:#2e2e34;--card:#1f1f23;--red:#f07167;--amber:#f6c35b;--blue:#7fb3ff;--green:#6fd39a;--code:#2a2a30}}
+:root{--bg:#fbfaf7;--fg:#1d1d1f;--muted:#6b6b70;--line:#e3e1dc;--card:#fff;--soft:#f4f2ed;--red:#c0392b;--amber:#b7791f;--blue:#2b6cb0;--green:#2f855a;--code:#f1efea;--on:#fff}
+@media (prefers-color-scheme:dark){:root{--bg:#17171a;--fg:#ececef;--muted:#9a9aa2;--line:#2e2e34;--card:#1f1f23;--soft:#28282e;--red:#f07167;--amber:#f6c35b;--blue:#7fb3ff;--green:#6fd39a;--code:#2a2a30;--on:#17171a}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.7 -apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
-main{max-width:880px;margin:0 auto;padding:24px 16px 64px}
+main{max-width:880px;margin:0 auto;padding:24px 16px 104px}
 h1{font-size:22px;margin:0 0 4px}
 .sub{color:var(--muted);font-size:13px;margin:0 0 20px}
 .summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
 .pill{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px;font-size:13px}
 .pill b{margin-right:4px}
-h2{font-size:17px;margin:28px 0 8px;padding-left:10px;border-left:4px solid var(--c,var(--line))}
+h2{font-size:17px;margin:32px 0 8px;padding-left:10px;border-left:4px solid var(--c,var(--line))}
 h2 small{color:var(--muted);font-weight:normal;font-size:13px;margin-left:6px}
-.item{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0;display:grid;grid-template-columns:22px 1fr;gap:4px 10px}
-.item input{margin-top:5px;width:16px;height:16px}
-.item.done .t{text-decoration:line-through;color:var(--muted)}
-.t{font-weight:600}
-.p{font-size:11px;font-weight:700;border-radius:4px;padding:1px 6px;margin-right:6px;color:#fff;background:var(--muted);vertical-align:1px}
-.p8{background:var(--red)}.p7{background:var(--red)}.p5{background:var(--amber)}.p4,.p3,.p2{background:var(--muted)}
-.body{grid-column:2;font-size:14px;color:var(--fg)}
-.ask{grid-column:2;font-size:14px;margin-top:2px}
-.ask b{color:var(--blue)}
-details{grid-column:2;font-size:13.5px;color:var(--muted)}
+.empty{color:var(--muted);font-size:14px;margin:4px 0 0 14px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:10px 0}
+.item.picked{border-color:var(--blue)}
+.head{display:flex;gap:10px;align-items:flex-start}
+.t{flex:1;min-width:0;font-weight:600}
+.badge{display:inline-block;font-size:11px;font-weight:700;border-radius:4px;padding:1px 6px;margin-right:6px;vertical-align:1px;white-space:nowrap}
+.p{color:var(--on);background:var(--muted)}
+.p10,.p9,.p8,.p7{background:var(--red)}.p6,.p5{background:var(--amber)}
+.c{border:1px solid var(--line);color:var(--muted)}
+.copy1{flex:none;font:inherit;font-size:12px;line-height:1.6;border:1px solid var(--line);background:var(--soft);color:var(--fg);border-radius:6px;padding:2px 10px;cursor:pointer}
+.desc{font-size:14px;margin:6px 0 0}
+.ask{font-size:13px;font-weight:700;color:var(--blue);margin:12px 0 2px}
+.opts{list-style:none;margin:0;padding:0}
+.opts label{display:flex;gap:8px;align-items:flex-start;font-size:14px;cursor:pointer;padding:3px 6px;margin:0 -6px;border-radius:6px}
+.opts label:hover{background:var(--soft)}
+.opts input{flex:none;width:16px;height:16px;margin:4px 0 0}
+.opts input:checked+span{font-weight:600}
+.rec{display:inline-block;font-size:11px;font-weight:700;color:var(--green);border:1px solid currentColor;border-radius:4px;padding:0 5px;margin-left:6px;vertical-align:1px}
+.note{display:block;width:100%;margin:8px 0 0;font:inherit;font-size:13px;line-height:1.6;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);padding:5px 8px;min-height:2.3em;resize:vertical}
+details{font-size:13.5px;color:var(--muted);margin-top:8px}
 details summary{cursor:pointer}
 details ul{margin:6px 0;padding-left:20px}
-code{background:var(--code);border-radius:4px;padding:0 4px;font-size:.9em;word-break:break-all}
-a{color:var(--blue);word-break:break-all}
+.done{list-style:none;margin:0;padding:0}
+.done li{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 14px;margin:6px 0;font-size:14px}
+.done .to{color:var(--muted)}
+code{background:var(--code);border-radius:4px;padding:0 4px;font-size:.9em;overflow-wrap:anywhere}
+a{color:var(--blue);overflow-wrap:anywhere}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:10px 16px;display:flex;justify-content:center}
+.bar button{font:inherit;font-size:14px;font-weight:700;border-radius:8px;padding:7px 16px;cursor:pointer;border:1px solid var(--blue);background:var(--blue);color:var(--on)}
+.bar button:disabled{opacity:.45;cursor:default}
+.toast{position:fixed;left:50%;bottom:66px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:6px 14px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;max-width:92vw}
+.toast.show{opacity:1}
+dialog{border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--fg);width:min(680px,92vw)}
+dialog textarea{width:100%;height:50vh;font:13px/1.5 ui-monospace,Menlo,monospace;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:8px}
+dialog button{font:inherit;margin-top:8px}
 </style>
 </head>
 <body>
 <main>
 <h1>v{版} リリース前に確認してほしいこと</h1>
-<p class="sub">{YYYY-MM-DD HH:MM} 更新 / main は origin より {n} コミット先（未 push）/ チェックはこのブラウザに保存されます</p>
+<p class="sub">{YYYY-MM-DD HH:MM} 更新 / {回・チケット・対象のコミット} / 選んだものはこのブラウザに残ります。下の「まとめてコピー」をチャットに貼って返してください</p>
 
 <div class="summary">
   <span class="pill"><b style="color:var(--red)">{n}</b>リリース前に直すか決める</span>
@@ -46,49 +67,175 @@ a{color:var(--blue);word-break:break-all}
   <span class="pill"><b style="color:var(--muted)">{n}</b>決定済み・対応中</span>
 </div>
 
-<!-- 項目の書き方: data-id は項目ごとに一意で、次の生成でも変えない（チェックの状態が引き継がれる）。
-     決まった項目は消さずに「決定済み・対応中」へ移し、🔧 対応中 / ✏️ 編集済み・検証中 / ✓ 済 を付ける。
-     補足の情報は <details> に入れ、最初に見える情報を絞る。 -->
+<!-- 項目の書き方（references/report-html.md）:
+     見出しは「[p9] [コンポーネント] 内容」の 1 行。本文 1〜2 文。「決めてほしい」の下に選択肢を 1 つずつチェックボックスで並べ、
+     おすすめを先頭にして <span class="rec">おすすめ</span> を付ける。根拠・リンクは <details>。
+     data-id は項目ごとに一意で、更新しても変えない（選んだ状態がブラウザに残っていて、それと結び付く）。data-opt は a・b・c…。
+     決まった項目は消さずに「5. 決定済み・対応中」へ 1 行で移し、🔧 対応中 / ✏️ 編集済み・検証中 / ✓ 済 を付ける。 -->
 
 <h2 style="--c:var(--red)">1. リリース前に直すか決める<small>priority 7 以上。放置すると利用者が詰まる</small></h2>
 
-<div class="item" data-id="example-p8"><input type="checkbox"><div class="t"><span class="p p8">p8</span>{警告のタイトル}</div>
-<div class="body">{何が起きるか・原因を1〜2文}</div>
-<div class="ask"><b>決めてほしい:</b> {選択肢 (a) / (b) / (c)。おすすめがあれば先頭に}</div>
-<details><summary>詳細</summary><ul><li>{根拠・リンク（file:// の絶対パス）}</li></ul></details></div>
+<div class="item" data-id="example-p8">
+<div class="head"><div class="t"><span class="badge p p8">p8</span><span class="badge c">{コンポーネント}</span>{内容（何が起きるかを 1 行で）}</div><button class="copy1" type="button">コピー</button></div>
+<p class="desc">{何が起きるか・原因を 1〜2 文}</p>
+<div class="ask">決めてほしい</div>
+<ul class="opts">
+<li><label><input type="checkbox" data-opt="a"><span>(a) {おすすめの選択肢}<span class="rec">おすすめ</span></span></label></li>
+<li><label><input type="checkbox" data-opt="b"><span>(b) {選択肢}</span></label></li>
+<li><label><input type="checkbox" data-opt="c"><span>(c) このまま</span></label></li>
+</ul>
+<textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
+<details><summary>詳細</summary><ul><li>{根拠・再現・リンク（file:// の絶対パス）}</li></ul></details>
+</div>
 
 <h2 style="--c:var(--amber)">2. 判断してほしい<small>リリースは止めないが、方針が要る</small></h2>
 
 <!-- 過去の判断（decisions/）と同じものは載せない。前提が変わった「見直し候補」だけ、前の判断を添えて載せる。 -->
-<div class="item" data-id="example-revisit"><input type="checkbox"><div class="t">見直し候補: {前の判断の見出し}</div>
-<div class="body">{前回は「直さない」とした。今回 {何が変わったか}}</div>
-<div class="ask"><b>決めてほしい:</b> {(a) 前の判断のまま / (b) 今回は直す}</div>
-<details><summary>前の判断</summary><ul><li>{decisions/docs.md の見出し}・{decided}・{理由}</li></ul></details></div>
+<div class="item" data-id="example-revisit">
+<div class="head"><div class="t"><span class="badge p p5">p5</span><span class="badge c">{コンポーネント}</span>見直し候補: {前の判断の見出し}</div><button class="copy1" type="button">コピー</button></div>
+<p class="desc">{前回は「直さない」とした。今回 {何が変わったか}}</p>
+<div class="ask">決めてほしい</div>
+<ul class="opts">
+<li><label><input type="checkbox" data-opt="a"><span>(a) 前の判断のまま<span class="rec">おすすめ</span></span></label></li>
+<li><label><input type="checkbox" data-opt="b"><span>(b) 今回は直す</span></label></li>
+</ul>
+<textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
+<details><summary>前の判断</summary><ul><li>{decisions/docs.md の見出し}・{decided}・{理由}</li></ul></details>
+</div>
 
 <h2 style="--c:var(--blue)">3. 目を通してほしい</h2>
 
+<div class="item" data-id="release-note">
+<div class="head"><div class="t">リリースノートの下書き</div><button class="copy1" type="button">コピー</button></div>
+<p class="desc">{手順 4 でまとめた下書き。前の回からの変化}</p>
+<ul class="opts">
+<li><label><input type="checkbox" data-opt="ok"><span>このままでよい</span></label></li>
+<li><label><input type="checkbox" data-opt="fix"><span>直してほしい（一言に書く）</span></label></li>
+</ul>
+<textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
+<details><summary>詳細</summary><ul><li><code>release-note.md</code>（このフォルダ）</li></ul></details>
+</div>
+
 <h2 style="--c:var(--green)">4. 操作してほしい</h2>
 
-<div class="item" data-id="push"><input type="checkbox"><div class="t">main を push する</div><div class="body">{前提}</div></div>
-<div class="item" data-id="explore-ide"><input type="checkbox"><div class="t">IDE plugin を 15 分触る（探索的検証 13）</div><div class="body">今回の版のプラグインを入れた IDEA・Android Studio（環境は用意済み）で、観点カードの 5 つを触って、気づいたことを一言で返す。観点: {その版で変わった箇所に関係するもの}</div></div>
-<div class="item" data-id="publish"><input type="checkbox"><div class="t">v{版} を publish する</div><div class="body">署名と Maven Central への publish は利用者が行う。</div></div>
+<div class="item" data-id="explore-ide">
+<div class="head"><div class="t">IDE plugin を 15 分触る（探索的検証 13）</div><button class="copy1" type="button">コピー</button></div>
+<p class="desc">今回の版のプラグインを入れた IDEA・Android Studio（環境は用意済み）で、観点カードの 5 つを触って、気づいたことを一言に書く。観点: {その版で変わった箇所に関係するもの}</p>
+<ul class="opts"><li><label><input type="checkbox" data-opt="done"><span>触った</span></label></li></ul>
+<textarea class="note" rows="2" placeholder="気づいたこと"></textarea>
+</div>
+
+<div class="item" data-id="publish">
+<div class="head"><div class="t">v{版} を publish する</div><button class="copy1" type="button">コピー</button></div>
+<p class="desc">署名と Maven Central への publish は利用者が行う。チェックが全部終わってから。</p>
+<ul class="opts"><li><label><input type="checkbox" data-opt="done"><span>済んだ</span></label></li></ul>
+</div>
 
 <h2 style="--c:var(--line)">5. 決定済み・対応中<small>🔧 対応中 / ✏️ 編集済み・検証中 / ✓ 済</small></h2>
 
-<div class="item" data-id="example-done"><input type="checkbox" disabled><div class="t">✓ {決まったこと}（{コミット}）</div></div>
-<!-- 「直さない」「このまま」「後で」「方針」の答えは decisions/ に書き足し、末尾に「→ decisions/<ファイル> に記録」と書く -->
-<div class="item" data-id="example-decided"><input type="checkbox" disabled><div class="t">✓ {指摘} → 直さない（{利用者の一言}）→ decisions/docs.md に記録</div></div>
+<!-- 1 行で。選んだもの・PR・チケットを添える。「直さない」「このまま」「後で」「方針」の答えは decisions/ に書き足し、末尾に「→ decisions/<ファイル> に記録」と書く -->
+<ul class="done">
+<li data-id="example-fixing">🔧 <span class="badge p p8">p8</span><span class="badge c">{コンポーネント}</span>{指摘} <span class="to">→ (a) {選んだもの}（{チケット・PR}）</span></li>
+<li data-id="example-decided">✓ <span class="badge c">{コンポーネント}</span>{指摘} <span class="to">→ 直さない（{利用者の一言}）→ decisions/docs.md に記録</span></li>
+</ul>
 
 <p class="sub" style="margin-top:28px">{いま走っているもの・待っているもの}</p>
 </main>
+
+<div class="bar"><button id="copy-all" type="button">選んだものをまとめてコピー（<span id="count">0</span> 件）</button></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<dialog id="fallback"><p>コピーできませんでした。下の欄を選んでコピーしてください。</p><textarea readonly></textarea><form method="dialog"><button>閉じる</button></form></dialog>
+
 <script>
-const KEY='katachi-v{版}-todo';
-let s={};try{s=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
-document.querySelectorAll('.item').forEach(el=>{
-  const cb=el.querySelector('input'),id=el.dataset.id;
-  cb.checked=!!s[id];el.classList.toggle('done',cb.checked);
-  cb.addEventListener('change',()=>{s[id]=cb.checked;el.classList.toggle('done',cb.checked);try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}});
-});
+(() => {
+  // 選んだもの（選択肢・一言）をこのブラウザに残し、チャットに貼れる Markdown にしてコピーする。エージェントはこの状態を読まない。
+  const KEY = 'katachi-v{版}-todo-2'
+  let state = {}
+  try { state = JSON.parse(localStorage.getItem(KEY) || '{}') } catch (e) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)) } catch (e) {} }
+  const items = [...document.querySelectorAll('.item[data-id]')]
+
+  // バッジは [..]、code は `..`、おすすめは（おすすめ）にして 1 行の文字にする
+  const plain = (node) => {
+    const c = node.cloneNode(true)
+    c.querySelectorAll('.rec').forEach((e) => e.replaceWith('（おすすめ）'))
+    c.querySelectorAll('.badge').forEach((e) => e.replaceWith(`[${e.textContent.trim()}] `))
+    c.querySelectorAll('code').forEach((e) => e.replaceWith(`\`${e.textContent}\``))
+    return c.textContent.replace(/\s+/g, ' ').trim()
+  }
+  const entry = (el) => {
+    const s = state[el.dataset.id] || (state[el.dataset.id] = {})
+    s.opts = s.opts || {}
+    s.note = s.note || ''
+    return s
+  }
+  const picked = (el) => { const s = entry(el); return Object.values(s.opts).some(Boolean) || !!s.note.trim() }
+
+  // all: 選んでいない選択肢も [ ] で出す（1 項目のコピー）。まとめてコピーは選んだものだけ
+  const markdown = (el, all) => {
+    const s = entry(el)
+    const lines = [`### ${plain(el.querySelector('.t'))}`, `- id: ${el.dataset.id}`]
+    el.querySelectorAll('.opts input').forEach((cb) => {
+      if (all || cb.checked) lines.push(`- [${cb.checked ? 'x' : ' '}] ${plain(cb.nextElementSibling)}`)
+    })
+    if (s.note.trim()) lines.push(`- 一言: ${s.note.trim().replace(/\n/g, '\n  ')}`)
+    return lines.join('\n')
+  }
+
+  const toast = (message) => {
+    const t = document.getElementById('toast')
+    t.textContent = message
+    t.classList.add('show')
+    clearTimeout(toast.timer)
+    toast.timer = setTimeout(() => t.classList.remove('show'), 1800)
+  }
+  // file:// や埋め込みでクリップボードが使えないときは、欄に出して手でコピーしてもらう
+  const copy = async (text, message) => {
+    let ok = false
+    try {
+      await navigator.clipboard.writeText(text)
+      ok = true
+    } catch (e) {
+      const area = document.createElement('textarea')
+      area.value = text
+      area.style.cssText = 'position:fixed;left:-9999px;top:0'
+      document.body.append(area)
+      area.select()
+      try { ok = document.execCommand('copy') } catch (e2) {}
+      area.remove()
+    }
+    if (ok) return toast(message)
+    const dialog = document.getElementById('fallback')
+    dialog.querySelector('textarea').value = text
+    if (dialog.showModal) dialog.showModal(); else dialog.setAttribute('open', '')
+  }
+
+  const refresh = () => {
+    const n = items.filter(picked).length
+    document.getElementById('count').textContent = n
+    document.getElementById('copy-all').disabled = n === 0
+    items.forEach((el) => el.classList.toggle('picked', picked(el)))
+  }
+
+  items.forEach((el) => {
+    const s = entry(el)
+    el.querySelectorAll('.opts input').forEach((cb) => {
+      cb.checked = !!s.opts[cb.dataset.opt]
+      cb.addEventListener('change', () => { s.opts[cb.dataset.opt] = cb.checked; save(); refresh() })
+    })
+    const note = el.querySelector('.note')
+    if (note) {
+      note.value = s.note
+      note.addEventListener('input', () => { s.note = note.value; save(); refresh() })
+    }
+    el.querySelector('.copy1')?.addEventListener('click', () => copy(markdown(el, true), 'この項目をコピーしました'))
+  })
+  document.getElementById('copy-all').addEventListener('click', () => {
+    const chosen = items.filter(picked)
+    copy(`${document.title} の回答\n\n${chosen.map((el) => markdown(el, false)).join('\n\n')}`, `まとめてコピーしました（${chosen.length} 件）`)
+  })
+  refresh()
+})()
 </script>
 </body>
 </html>
