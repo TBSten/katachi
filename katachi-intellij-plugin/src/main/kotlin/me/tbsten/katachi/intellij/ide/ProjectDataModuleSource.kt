@@ -1,6 +1,8 @@
 package me.tbsten.katachi.intellij.ide
 
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.externalSystem.model.DataNode
+import com.intellij.openapi.externalSystem.model.ExternalProjectInfo
 import com.intellij.openapi.externalSystem.model.ProjectKeys
 import com.intellij.openapi.externalSystem.model.project.ModuleData
 import com.intellij.openapi.externalSystem.model.project.ProjectData
@@ -12,23 +14,53 @@ import me.tbsten.katachi.intellij.data.detect.SyncedModule
 import me.tbsten.katachi.intellij.data.detect.SyncedProject
 import me.tbsten.katachi.intellij.data.detect.SyncedProjectSource
 import me.tbsten.katachi.intellij.data.detect.SyncedRoot
+import me.tbsten.katachi.intellij.data.detect.detectDefinitionModules
 import me.tbsten.katachi.intellij.data.detect.katachiVersionOf
+import me.tbsten.katachi.intellij.model.DetectionResult
 import org.jetbrains.plugins.gradle.settings.GradleSettings
 import org.jetbrains.plugins.gradle.util.GradleConstants
 import org.jetbrains.plugins.gradle.util.gradleIdentityPathOrNull
 import org.jetbrains.plugins.gradle.util.gradlePathOrNull
 import java.nio.file.Path
+import java.util.concurrent.atomic.AtomicReference
 
 internal class ProjectDataModuleSource(private val project: Project) : SyncedProjectSource {
     override fun read(): SyncedProject = sdkCall("read the Gradle sync data") {
         val linked = GradleSettings.getInstance(project).linkedProjectsSettings.map { it.externalProjectPath }
-        if (linked.isEmpty()) return SyncedProject.NotGradle
-        val data = ProjectDataManager.getInstance().getExternalProjectsData(project, GradleConstants.SYSTEM_ID)
+        val data: Collection<ExternalProjectInfo> =
+            if (linked.isEmpty()) emptyList() else ProjectDataManager.getInstance().getExternalProjectsData(project, GradleConstants.SYSTEM_ID)
         val structures = linked.mapNotNull { path ->
             data.firstOrNull { it.externalProjectPath == path }?.externalProjectStructure
         }
-        syncedProjectOf(structures)
+        val synced = if (linked.isEmpty()) SyncedProject.NotGradle else syncedProjectOf(structures)
+        logWhenChanged(describe(synced, linked, data))
+        synced
     }.getOrElse { throw KatachiSyncedDataUnreadableException(it) }
+
+    // What the IDE handed over decides whether the gutter and the tool window find a module; idea.log is the only place a user can see it.
+    private fun describe(synced: SyncedProject, linked: List<String>, data: Collection<ExternalProjectInfo>): String {
+        val detected = when (val result = detectDefinitionModules(synced)) {
+            is DetectionResult.NotInstalled -> result.toString()
+            else -> result::class.simpleName
+        }
+        val held = data.map { "${it.externalProjectPath}${if (it.externalProjectStructure == null) " (no structure)" else ""}" }
+        val modules = (synced as? SyncedProject.Synced)?.roots?.flatMap { it.modules }.orEmpty().joinToString { module ->
+            val tasks = module.taskNames.sorted().let { names -> if (names.size <= 10) names else names.filter { it.startsWith("katachi") } }
+            "${module.gradlePath} (tasks=${module.taskNames.size} $tasks, katachi=${module.katachiVersion})"
+        }
+        return "Gradle sync data of ${project.name}: ${synced::class.simpleName} -> $detected; linked=$linked; held=$held; modules=[$modules]"
+    }
+
+    private fun logWhenChanged(message: String) {
+        if (lastLogged.getAndSet(message) != message) LOG.info(message)
+    }
+
+    private companion object {
+        val LOG = logger<ProjectDataModuleSource>()
+
+        // The gutter reads again on every pass while nothing is found; one line per change keeps idea.log readable.
+        val lastLogged = AtomicReference<String?>(null)
+    }
 }
 
 internal class KatachiSyncedDataUnreadableException(
