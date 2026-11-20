@@ -2016,3 +2016,22 @@ priority 1〜3 のルールの側の食い違い。どれもルールも例も�
 リンク先 guides/kt-file-content.mdx の title は「ktFileContent」、サイドバーの表示は「概要」。リンクの文字は AGENTS の木に残っている以前の題のままで、着いた先の見出しと合わない。同じ文字のリンクが guides/basic-api.mdx:244 と guides/role.mdx:209 にもある（2-guides-core の担当）。README.ja.md:127 は [ktFileContent] で今の題と合っている。ルールの側（AGENTS の木）が古いのが原因なので E。要確認
 - 直し方の案: リンクの文字を今の題に合わせる（例: 「`ktFileContent { }` を使うときは、[ktFileContent のインストール](/katachi/ja/guides/kt-file-content/#インストール)の設定が要ります。」）。あわせて docs/AGENTS.md の木の L83 を今の題に直す
 - 種類: ガイド・ルールの側の食い違い（E）
+
+## 直さない: 手動インストールのとおりに書くと、Kotlin 2.2・2.3 でコンパイルできない
+- decision: 直さない
+- file: ja/get-started/manual-install.mdx
+- quote: jvmToolchain(17)
+- decided: 2026-11-20 261120-01 KATACHI-404
+- by: 利用者（スレッド、22:35 JST「これはまあこのままでいいや」）
+
+手順 13（探索的検証 1 周目 Gradle plugin）の p7。手動インストールのページの `build.gradle.kts` の例に `-Xcontext-parameters` が無く、Kotlin 2.2・2.3 で例を手で写した人だけが `To call contextual declarations, specify the '-Xcontext-parameters' compiler option` で止まる（README と scaffold は足す）。エラーメッセージから直せる。
+理由の一言なし。en のページも同じ判断（下の 1 件）。
+
+## 直さない: 手動インストールのとおりに書くと、Kotlin 2.2・2.3 でコンパイルできない
+- decision: 直さない
+- file: docs/src/content/docs/get-started/manual-install.mdx
+- quote: jvmToolchain(17)
+- decided: 2026-11-20 261120-01 KATACHI-404
+- by: 利用者（スレッド、22:35 JST「これはまあこのままでいいや」）
+
+上の ja の判断の訳のページ。en は ja から訳すだけなので、同じ判断にする。

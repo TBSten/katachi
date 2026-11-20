@@ -83,3 +83,23 @@
 手順 3 の p3。`KontureDefaultGraphShadows`（`KontureConstraintScope` の親として影をまとめる型）が注釈なしの public interface で、sealed でない。core の DSL の receiver 11 個はすべて sealed。
 実装は .internal の 1 つだけ。後から sealed にすると破壊的変更になる、と添えて聞いた。同じ判断を 3 つの型（`KonsistScope`・`KontureConstraintScope`・`KontureDefaultGraphShadows`）に 1 件ずつ書いている。
 利用者の一言:「sealed にしないで確定」。
+
+## このまま: `KatachiDsl` が、他モジュールだけが使う DslMarker のまま注釈なしの public
+- decision: このまま
+- file: katachi/src/main/kotlin/me/tbsten/katachi/dsl/KatachiDsl.kt
+- quote: public annotation class KatachiDsl
+- decided: 2026-11-20 261120-01 KATACHI-404
+- by: 利用者（スレッド、22:35 JST、TODO.html の問いへの答え）
+
+手順 3 の p3（注釈なしの public の要検討）。`@KatachiDsl` を付けているのは `:katachi-konsist`・`:katachi-konture` の receiver だけで、kotlin.md の表の基準だと「他モジュール専用 → `@InternalKatachiApi`」になる。
+利用者の一言:「今のままで良い。ユーザが DSL をラップする時にユーザのラッパー側で使う可能性があるため」。利用者に開いた安定 API として扱う。次のチェックでは要検討にしない。
+
+## このまま: `NamePattern` が実質 `:katachi-konsist` だけの使われ方で、利用者向けの案内が無い
+- decision: このまま
+- file: katachi/src/main/kotlin/me/tbsten/katachi/dsl/NamePattern.kt
+- quote: public class NamePattern private constructor(
+- decided: 2026-11-20 261120-01 KATACHI-404
+- by: 利用者（スレッド、22:35 JST「まあこのままかな」）
+
+手順 3 の p3（Experimental の要検討）。main で使うのは `:katachi-konsist` の `.internal` だけで、利用者が書く場面が見つからない。
+「このまま（ファイルの中身を検査する backend 向けの拡張点として Experimental のまま。KDoc に backend 向けと書く）」と「`@InternalKatachiApi` にして `.internal` へ移す」を並べて聞き、前者になった。KDoc に backend 向けの 1 段落を足した（KATACHI-404 の PR）。次のチェックでは要検討にしない。
