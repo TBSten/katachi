@@ -117,11 +117,11 @@ Gemini は日本語が自然なので、`stale` の差分翻訳と、日本語�
 A=.claude/skills/translate-ja-en/scripts/agy.py
 python3 ${A} probe                                   # 実際に動くか。設定ファイルが残っているだけでは「使える」と言わない
 python3 ${A} translate <原本> <訳> --base <base>     # 差分翻訳（訳が無ければ全文）。出力は .local/tmp/agy/ に書く
-python3 ${A} check-ja <原本の .md/.mdx>...           # 不自然な日本語・表記ゆれ・prh 違反の指摘。直さない
+python3 ${A} check-ja <原本の .md/.mdx>...           # 不自然な日本語・表記ゆれの指摘。直さない（prh 違反は `pnpm run lint:text`）
 ```
 
 - 終了コード 75（標準エラーに `FALLBACK: …`）は「agy が使えない」。クラウドのコンテナには `agy` が無いので、いつもこうなる。
-  Mac で動かすか、従来のやり方にする
+  Mac で動かすか、従来のやり方にする（試験は `AGY_BIN=/none python3 ${A} probe`）
 - `translate` は出力を検査する（見出しの数・`/katachi/ja/` の残り・原本にも今の訳にも無い属性の追加・変更の量・コードブロック）。
   終了コード 1 は検査に落ちたということで、**訳のファイルには何も書かれていない**。落ちた理由を読んで、直すか従来のやり方で訳す。
   agy は頼んでいない所を「そろえる」ことがある（2 つ目の iframe に `height` を足した、など）

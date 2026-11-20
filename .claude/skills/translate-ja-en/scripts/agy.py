@@ -11,7 +11,7 @@
   S=.claude/skills/translate-ja-en/scripts/agy.py
   python3 $S probe                                      # 実際に動くか確かめる（短い質問を 1 回投げる）
   python3 $S translate <原本> <訳> --base <base>        # 差分翻訳。訳が無ければ全文を訳す
-  python3 $S check-ja <ja の .md/.mdx>...               # 不自然な日本語・表記ゆれ・prh 違反の指摘（直さない）
+  python3 $S check-ja <ja の .md/.mdx>...               # 不自然な日本語・表記ゆれの指摘（直さない。prh 違反は pnpm run lint:text）
   python3 $S selftest                                   # 検査の自己テスト（agy は呼ばない）
 
 終了コード: 0 = 成功 / 1 = 出力はできたが検査で落ちた（採用しない） / 75 = agy が使えない（フォールバック）/ 2 = 使い方の誤り
@@ -23,7 +23,9 @@
 """
 import argparse
 import difflib
+import os
 import re
+from concurrent.futures import ThreadPoolExecutor
 import shutil
 import subprocess
 import sys
@@ -37,7 +39,11 @@ JAPANESE = re.compile(r"[ぁ-んァ-ヶ一-龠々ー、。「」（）]")
 PLAN_FILE_HINT = re.compile(r"implementation_plan|/brain/|計画ファイル")
 # 翻訳してよい属性。これ以外の属性（style・src・class など）は原本にあるものだけを使う。
 TRANSLATABLE_ATTRS = {"title", "alt", "aria-label", "label", "description", "placeholder"}
-ATTR = re.compile(r'\b([A-Za-z][\w:-]*)="([^"\n]*)"')
+
+
+def repo_root():
+    r = subprocess.run(["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True)
+    return Path(r.stdout.strip()) if r.returncode == 0 and r.stdout.strip() else Path.cwd()
 
 
 class Fallback(Exception):
@@ -49,6 +55,11 @@ class Fallback(Exception):
 # ---------------------------------------------------------------------------
 
 def find_agy():
+    override = os.environ.get("AGY_BIN")  # 差し替え用（フォールバックの試験: AGY_BIN=/nonexistent）
+    if override is not None:
+        if override and Path(override).exists():
+            return override
+        raise Fallback(f"AGY_BIN={override!r} が見つからない")
     found = shutil.which(AGY_NAME)
     if found:
         return found
@@ -136,9 +147,25 @@ def code_blocks(text):
     return blocks
 
 
-def attrs(text):
-    """HTML/JSX の `name="value"`。翻訳してよい属性は除く。"""
-    return {(n, v) for n, v in ATTR.findall(text) if n not in TRANSLATABLE_ATTRS}
+def norm_line(line):
+    """行の比較用。前後の空白と、翻訳してよい属性（title・alt など）を除く。"""
+    return TRANS_ATTR.sub("", line).strip()
+
+
+def attr_line_counts(text):
+    """翻訳してはいけない属性を含む行（コードブロックの外）の、正規化した行ごとの出現回数。"""
+    counts, fence = {}, False
+    for line in text.split("\n"):
+        if line.lstrip().startswith(("```", "~~~")):
+            fence = not fence
+        elif not fence and ATTR_NONTRANS.search(line):
+            k = norm_line(line)
+            counts[k] = counts.get(k, 0) + 1
+    return counts
+
+
+ATTR_NONTRANS = re.compile(r'\b(?!(?:%s)=)[A-Za-z][\w:-]*="[^"\n]*"' % "|".join(sorted(TRANSLATABLE_ATTRS)))
+TRANS_ATTR = re.compile(r'\b(?:%s)="[^"\n]*"' % "|".join(sorted(TRANSLATABLE_ATTRS)))
 
 
 def changed_lines(old, new):
@@ -163,10 +190,12 @@ def verify_translation(ja, en_old, en_new, diff_text):
     if "/katachi/ja/" in en_new:
         errors.append("英語の訳に `/katachi/ja/` のリンクが残っている")
     ja_norm = ja.replace("/katachi/ja/", "/katachi/")
-    allowed = attrs(ja_norm) | (attrs(en_old) if en_old is not None else set())
-    extra = sorted(attrs(en_new) - allowed)
-    for n, v in extra:
-        errors.append(f'原本にも今の訳にも無い属性が足されている: {n}="{v}"')
+    # 翻訳してはいけない属性（style・src など）を含む行は、同じ行の出現回数が「原本」も「今の訳」も超えてはいけない。
+    # 値の集合や「同じ行がどこかにある」で比べると、1 つ目の iframe の style を 2 つ目に写す「そろえ直し」を見逃す（実際にあった）。
+    c_ja, c_old, c_new = attr_line_counts(ja_norm), attr_line_counts(en_old or ""), attr_line_counts(en_new)
+    for line, n in c_new.items():
+        if n > c_ja.get(line, 0) and n > c_old.get(line, 0):
+            errors.append(f"原本にも今の訳にも無い属性の行が足された（{n} 回。原本 {c_ja.get(line, 0)} / 今の訳 {c_old.get(line, 0)}）: {line[:100]}")
     old_lines = set((en_old or "").split("\n"))
     jp = [l.strip() for l in en_new.split("\n") if JAPANESE.search(l) and l not in old_lines]
     if jp:
@@ -248,7 +277,7 @@ def cmd_translate(a):
     en_new = strip_wrapper(raw)
     if not en_new.endswith("\n") and (en_old is None or en_old.endswith("\n")):
         en_new += "\n"
-    out = Path(a.out) if a.out else Path(".local/tmp/agy") / (dst.name + ".agy")
+    out = Path(a.out) if a.out else repo_root() / ".local/tmp/agy" / (dst.name + ".agy")
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(en_new, encoding="utf-8")
     errors, warns = verify_translation(ja, en_old, en_new, diff_text)
@@ -258,7 +287,9 @@ def cmd_translate(a):
     for e in errors:
         print(f"ERROR: {e}")
     if en_old is not None:
-        print(f"確認: diff -u {dst} {out}")
+        d = subprocess.run(["diff", "-u", str(dst), str(out)], capture_output=True, text=True).stdout
+        print(f"今の訳との差分: {sum(1 for l in d.split(chr(10)) if l[:1] in '+-' and not l.startswith(('+++', '---')))} 行"
+              f"（原本の差分は {diff_size(diff_text)} 行）。確認: diff -u {dst} {out}")
     if errors:
         print("検査に落ちたので採用しない（訳のファイルには書いていない）。直すか、従来のやり方で訳す。")
         return 1
@@ -275,7 +306,7 @@ def cmd_translate(a):
 # check-ja
 # ---------------------------------------------------------------------------
 
-CHECK_FORMAT = "- L<行番号> | <a/b/c> | 「今の文（原文のまま抜き出す）」 | 「直し案」 | 理由（短く）"
+CHECK_FORMAT = "- L<行番号> | <a/b> | 「今の文（原文のまま抜き出す）」 | 「直し案」 | 理由（短く）"
 
 
 def build_check_prompt(path, text, prh):
@@ -284,7 +315,7 @@ def build_check_prompt(path, text, prh):
             "## 指摘する種類\n"
             "- a: 不自然・硬い・読みにくい日本語、誤字、変換ミス、余計な半角スペース、「することができます」の冗長さ、1 文に同じ語が重複\n"
             "- b: 表記ゆれ（同じものを別の書き方で書いている）\n"
-            "- c: 下の prh.yml の言い換え辞書に反する語\n\n"
+            "- 言い換え辞書（prh.yml）に反する語は指摘しなくてよい（`pnpm run lint:text` が機械的に拾う）。ただし辞書は読んで、辞書の方針に沿った言い回しを選ぶこと\n\n"
             "## 決まり\n"
             "- **ファイルは直さない。指摘だけを出す。**\n"
             "- コードブロック・インラインコードの中は指摘しない\n"
@@ -295,7 +326,20 @@ def build_check_prompt(path, text, prh):
             f"## 対象: {path}\n<<<FILE\n{numbered}\nFILE>>>\n")
 
 
-FINDING = re.compile(r"^\s*-\s*L(\d+)\s*\|\s*([abc])\s*\|\s*「(.*?)」\s*\|\s*「(.*?)」\s*\|\s*(.*)$")
+FINDING_HEAD = re.compile(r"^\s*-\s*L(\d+)\s*\|\s*([ab])\s*\|\s*(.*)$")
+
+
+def parse_finding(raw):
+    """`- L<行> | a/b | 「今の文」 | 「直し案」 | 理由` を読む。引用に `|` や `」` が入っていても、` | ` の区切りで割る。"""
+    m = FINDING_HEAD.match(raw)
+    if not m:
+        return None
+    parts = m.group(3).split(" | ", 2)
+    if len(parts) < 3:
+        return None
+    quote, fix, why = (x.strip() for x in parts)
+    strip = lambda x: x[1:-1] if x.startswith("「") and x.endswith("」") else x
+    return int(m.group(1)), m.group(2), strip(quote), strip(fix), why
 
 
 def verify_findings(text, output):
@@ -305,41 +349,51 @@ def verify_findings(text, output):
     for raw in output.split("\n"):
         if not raw.strip() or raw.strip() == "なし":
             continue
-        m = FINDING.match(raw)
-        if not m:
+        f = parse_finding(raw)
+        if not f:
             other.append(raw)
             continue
-        n, kind, quote, fix, why = int(m.group(1)), m.group(2), m.group(3), m.group(4), m.group(5)
+        n, kind, quote, fix, why = f
         window = "\n".join(lines[max(0, n - 3):n + 2])
         (ok if quote and quote in window else bad).append((n, kind, quote, fix, why))
     return ok, bad, other
 
 
 def cmd_check_ja(a):
-    prh_path = Path(a.prh)
+    prh_path = Path(a.prh) if Path(a.prh).exists() else repo_root() / a.prh
     prh = prh_path.read_text(encoding="utf-8") if prh_path.exists() else "（prh.yml が見つからない）"
-    outdir = Path(a.out) if a.out else Path(".local/tmp/agy/check-ja")
+    outdir = Path(a.out) if a.out else repo_root() / ".local/tmp/agy/check-ja"
     outdir.mkdir(parents=True, exist_ok=True)
-    rc = 0
     for f in a.files:
-        path = Path(f)
-        if not path.exists():
-            print(f"ファイルが無い: {path}", file=sys.stderr)
+        if not Path(f).exists():
+            print(f"ファイルが無い: {f}", file=sys.stderr)
             return 2
-        text = path.read_text(encoding="utf-8")
-        prompt = build_check_prompt(str(path), text, prh)
-        if a.dry_run:
-            print(prompt)
-            continue
+    prompts = {f: build_check_prompt(f, Path(f).read_text(encoding="utf-8"), prh) for f in a.files}
+    if a.dry_run:
+        for f in a.files:
+            print(prompts[f])
+        return 0
+
+    def one(f):
         try:
-            output = run_agy(prompt, a.effort, a.model, a.timeout)
+            return f, run_agy(prompts[f], a.effort, a.model, a.timeout), None
         except Fallback as e:
-            return fallback_exit(e)
+            return f, None, e
+
+    with ThreadPoolExecutor(max_workers=min(len(a.files), a.jobs)) as pool:
+        results = list(pool.map(one, a.files))
+    for f, output, err in results:
+        if err:
+            return fallback_exit(err)  # 1 つでも使えなければ、全部従来のやり方に切り替える（途中まで使うと揃わない）
+    for f, output, _ in results:
+        path = Path(f)
+        text = path.read_text(encoding="utf-8")
         ok, bad, other = verify_findings(text, output)
         report = outdir / (path.stem + ".md")
         body = [f"# 日本語チェック（agy）: {path}", "",
                 f"- 確認済み（行番号・引用が原本と一致）: {len(ok)} 件 / 未確認（引用が原本に無い）: {len(bad)} 件 / 読めない行: {len(other)} 行",
-                "- **直していない。** docs の本文は人が書く。採用するかは人が決める", ""]
+                "- **直していない。** docs の本文は人が書く。採用するかは人が決める",
+                "- prh.yml の言い換え辞書は見ていない（`cd docs && pnpm run lint:text` が機械的に拾う）。同じ入力でも件数は実行ごとに少しぶれる", ""]
         for title, items in (("確認済み", ok), ("未確認（引用が原本に見つからない。採用前に確かめる）", bad)):
             body += [f"## {title}", ""]
             body += [f"- L{n}（{k}）: 「{q}」 → 「{fx}」 — {w}" for n, k, q, fx, w in items] or ["なし"]
@@ -348,7 +402,7 @@ def cmd_check_ja(a):
             body += ["## 形式が読めなかった行", ""] + [f"- {l}" for l in other] + [""]
         report.write_text("\n".join(body), encoding="utf-8")
         print(f"{path}: 確認済み {len(ok)} / 未確認 {len(bad)} / 読めない {len(other)} → {report}")
-    return rc
+    return 0
 
 
 # ---------------------------------------------------------------------------
@@ -376,6 +430,16 @@ def cmd_selftest(_):
             failures.append(f"{name}: errors={e} warns={w}")
 
     expect("変更なし", old, False)
+    # 実際にあった事故: 1 つ目の iframe にだけある height を 2 つ目に写した
+    ja_h = ja.replace('src="a.html"\n  style="width: 100%;"', 'src="a.html"\n  style="width: 100%; height: 40rem;"')
+    old_h = old.replace('src="a.html"\n  style="width: 100%;"', 'src="a.html"\n  style="width: 100%; height: 40rem;"')
+    new_h = old_h.replace('src="b.html"\n  style="width: 100%;"', 'src="b.html"\n  style="width: 100%; height: 40rem;"')
+    e, _ = verify_translation(ja_h, old_h, new_h, diff)
+    if not e:
+        failures.append("height をそろえ直した変更を落とさなかった")
+    e, _ = verify_translation(ja_h, old_h, old_h, diff)
+    if e:
+        failures.append(f"変更なしなのに落ちた: {e}")
     expect("属性を勝手に足した（height の件）", old.replace('src="b.html"\n  style="width: 100%;"', 'src="b.html"\n  style="width: 100%; height: 40rem;"'), True)
     expect("ja リンクが残った", old.replace("/katachi/guides/x/", "/katachi/ja/guides/x/"), True)
     expect("見出しが増えた", old + "\n## Extra\n", True)
@@ -383,8 +447,14 @@ def cmd_selftest(_):
     expect("title の翻訳は許す", old.replace("title: Example", "title: Sample"), False)
     big = old + "\n".join(f"line {i}" for i in range(40))
     expect("変更が多すぎる", big, True)
-    ok, bad, other = verify_findings("一行目\n二行目の誤字です\n", "- L2 | a | 「誤字」 | 「正しい」 | 理由\n- L1 | b | 「存在しない」 | 「x」 | y\n前置き\n")
-    if (len(ok), len(bad), len(other)) != (1, 1, 1):
+    expect("コードブロックの中の x=\"a\" は属性ではない", old.replace("// comment", '// x="a" comment'), False, 1)
+    # 原本の差分で足された属性の行は、原本にそのままあれば通る
+    ja2 = ja + '\n<iframe\n  src="c.html"\n  style="width: 100%; height: 9rem;"\n/>\n'
+    e, w = verify_translation(ja2, old, old + '\n<iframe\n  src="c.html"\n  style="width: 100%; height: 9rem;"\n/>\n', diff)
+    if e:
+        failures.append(f"原本にある属性の行が落とされた: {e}")
+    ok, bad, other = verify_findings("一行目\n二行目の誤字です\n「括弧」も使う\n", "- L2 | a | 「誤字」 | 「正しい」 | 理由\n- L1 | b | 「存在しない」 | 「x」 | y\n- L3 | a | 「「括弧」も使う」 | 「直し」 | 引用に」が入る\n前置き\n")
+    if (len(ok), len(bad), len(other)) != (2, 1, 1):
         failures.append(f"指摘の検査: ok={ok} bad={bad} other={other}")
     if failures:
         print("selftest 失敗:\n" + "\n".join(failures))
@@ -415,7 +485,8 @@ def main():
     c = sub.add_parser("check-ja", help="日本語の指摘（直さない）")
     c.add_argument("files", nargs="+")
     c.add_argument("--prh", default="docs/prh.yml")
-    c.add_argument("--out", help="指摘の置き場（既定 .local/tmp/agy/check-ja）")
+    c.add_argument("--out", help="指摘の置き場（既定 <リポジトリ>/.local/tmp/agy/check-ja）")
+    c.add_argument("--jobs", type=int, default=3, help="同時に走らせる数（既定 3）")
     common(c, 600)
     c.set_defaults(fn=cmd_check_ja)
 
