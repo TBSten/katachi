@@ -5,8 +5,6 @@ import com.intellij.driver.sdk.*
 import com.intellij.driver.sdk.ui.components.elements.dialog
 import com.intellij.driver.sdk.ui.ui
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
-import com.intellij.ide.starter.ide.IdeProductProvider
-import com.intellij.ide.starter.ide.installer.ExistingIdeInstaller
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.runner.Starter
@@ -28,13 +26,15 @@ class EditorEntrySmokeTest {
         )
         val project = fixture.prepare()
         val ideHome = Path.of(System.getProperty("katachi.smoke.ideHome"))
-        val ide = IdeProductProvider.IU.copy(getInstaller = { ExistingIdeInstaller(fixture.appBundle(ideHome)) })
+        val ide = SmokeProduct.ideInfo { fixture.appBundle(ideHome) }
         val context = Starter.newContext("katachiEditorEntry", TestCase(ide, LocalProjectInfo(project)), false)
             .apply { pluginConfigurator.installPluginFromPath(Path.of(System.getProperty("path.to.build.plugin"))) }
+            .also { SmokeProduct.prepare(it) }
             .applyVMOptionsPatch {
                 addSystemProperty("katachi.debugBridge", true)
                 addSystemProperty("user.language", "en")
                 addSystemProperty("user.country", "US")
+                SmokeProduct.patch(this)
             }
         context.runIdeWithDriver(runTimeout = 40.minutes).useDriverAndCloseIde {
             waitForProjectOpen(5.minutes)
@@ -66,7 +66,8 @@ class EditorEntrySmokeTest {
         openFile("${EditorEntryFixture.SERVICE_DIR}/EntrySettingsService.kt", waitForCodeAnalysis = false)
         awaitEntryNotification("View Template")
         assertEquals("pressed=$SETTINGS_TOOLTIP", bridge.pressEntryLink(SETTINGS_TOOLTIP))
-        val settings = ui.dialog(title = "Settings")
+        // Android Studio titles it "Settings - <project>", IDEA just "Settings".
+        val settings = ui.dialog(xpath = "//div[starts-with(@title, 'Settings')]")
         // Page-specific controls prove that the gear selected katachi, rather than just opening Settings.
         waitFor("katachi Settings page", timeout = 30.seconds) {
             settings.x { byVisibleText("Show notifications in the editor") }.present() &&

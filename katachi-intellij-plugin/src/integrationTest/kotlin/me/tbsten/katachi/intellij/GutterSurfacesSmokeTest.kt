@@ -1,5 +1,6 @@
 package me.tbsten.katachi.intellij
 
+import com.intellij.driver.client.Driver
 import com.intellij.driver.sdk.openFile
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -43,7 +44,7 @@ class GutterSurfacesSmokeTest {
             bridge.shot(ide.screenshots, "2-arch-build")
 
             // 3. README.md: one ◆, not two (the Kotlin provider and the other languages' one are not both drawn).
-            openFile(README, waitForCodeAnalysis = false)
+            showFile(README, readme, bridge)
             waitForSmoke("the ◆ on README.md", bridge, readme, timeout = 2.minutes) { "katachi: Tool.Documentation" in bridge.describeGutter(readme) }
             assertEquals(1, marksOf(bridge, readme), bridge.describeGutter(readme))
             bridge.shot(ide.screenshots, "3-readme")
@@ -59,16 +60,30 @@ class GutterSurfacesSmokeTest {
             assertEquals("gutterIcons=false", bridge.setGutterIcons(false))
             val openings = listOf(ROOT_BUILD, ARCH_BUILD, README, REPOSITORY)
             files.forEachIndexed { index, file ->
-                openFile(openings[index], waitForCodeAnalysis = false)
+                showFile(openings[index], file, bridge)
                 waitForSmoke("no ◆ on ${openings[index]} with Gutter Icons off", bridge, file, timeout = 1.minutes, interval = 2.seconds) { marksOf(bridge, file) == 0 }
                 bridge.shot(ide.screenshots, "5-off-${index + 1}")
             }
             assertEquals("gutterIcons=true", bridge.setGutterIcons(true))
             files.forEachIndexed { index, file ->
-                openFile(openings[index], waitForCodeAnalysis = false)
+                showFile(openings[index], file, bridge)
                 waitForSmoke("the ◆ back on ${openings[index]} with Gutter Icons on", bridge, file, timeout = 2.minutes, interval = 2.seconds) { marksOf(bridge, file) == 1 }
                 bridge.shot(ide.screenshots, "6-on-again-${index + 1}")
             }
+        }
+    }
+
+    /**
+     * Opens [path] in front, and README.md ([absolute]) in its text editor. Platform 262 and later (Android Studio 2026.2 and IDEA 2026.3
+     * in prerelease 10-5, not IDEA 2026.1) open a Markdown file preview only: its text editor, the one with the gutter, is never on
+     * screen, so the daemon does not draw the ◆ there. A user looking for the ◆ switches to the editor; so does the smoke, through
+     * the bridge (the layout action works on the focused window, and the IDE is not always in front).
+     */
+    private fun Driver.showFile(path: String, absolute: String, bridge: SmokeBridge) {
+        openFile(path, waitForCodeAnalysis = false)
+        if (path.endsWith(".md")) {
+            val layout = bridge.showTextEditor(absolute)
+            assertTrue("editor=SHOW_EDITOR" in layout, layout)
         }
     }
 

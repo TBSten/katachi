@@ -1,0 +1,131 @@
+package me.tbsten.katachi.intellij
+
+import com.intellij.ide.starter.ide.IDETestContext
+import com.intellij.ide.starter.ide.IdeProductProvider
+import com.intellij.ide.starter.ide.installer.ExistingIdeInstaller
+import com.intellij.ide.starter.models.IdeInfo
+import com.intellij.ide.starter.models.VMOptions
+import java.nio.file.Files
+import java.nio.file.Path
+
+/**
+ * The IDE every real-IDE smoke starts: IntelliJ IDEA, or Android Studio under `-Dkatachi.smoke.ideProduct=AndroidStudio` (the task
+ * `integrationTestAndroidStudio`). katachi ships to Android Studio too, so the smokes run there unchanged.
+ *
+ * Android Studio builds Gradle's task list during sync only with "Configure all Gradle tasks during Gradle Sync" on (off by default,
+ * KATACHI-363). Without it the plugin finds the definition module only through a katachi library dependency, and the samples take
+ * katachi from the repository's included build, not as a library, so [prepare] turns it on.
+ *
+ * ```kotlin
+ * val bundle = workDir.resolve("ide/${SmokeProduct.appName}")
+ * val ide = SmokeProduct.ideInfo { bundle }
+ * Starter.newContext(name, TestCase(ide, project), false)
+ *     .also { SmokeProduct.prepare(it) }
+ *     .applyVMOptionsPatch { SmokeProduct.patch(this) }
+ * ```
+ */
+internal object SmokeProduct {
+    /** Whether the smokes start Android Studio rather than IDEA. */
+    val androidStudio: Boolean = System.getProperty("katachi.smoke.ideProduct") == "AndroidStudio"
+
+    /** The name of the macOS bundle the smokes rebuild around the IDE the build resolved. */
+    val appName: String = if (androidStudio) "Android Studio.app" else "IntelliJ IDEA.app"
+
+    /** Starter's description of the IDE whose bundle [bundle] gives, read when Starter installs it. */
+    fun ideInfo(bundle: () -> Path): IdeInfo = if (androidStudio) {
+        // Starter knows Android Studio (product code AI, launcher `studio`) but has no ready-made IdeInfo for an existing copy.
+        IdeProductProvider.IU.copy(
+            productCode = "AI",
+            platformPrefix = "AndroidStudio",
+            executableFileName = "studio",
+            fullName = "Android Studio",
+            getInstaller = { ExistingIdeInstaller(bundle()) },
+        )
+    } else {
+        IdeProductProvider.IU.copy(getInstaller = { ExistingIdeInstaller(bundle()) })
+    }
+
+    /**
+     * What every smoke writes into the IDE's fresh config before it starts, for this product. [buildTaskList] `false` keeps Android
+     * Studio's default (no task list on sync), for the smoke that watches the plugin's way around it (KATACHI-363).
+     */
+    fun prepare(context: IDETestContext, buildTaskList: Boolean = true) {
+        val options = context.paths.configDir.resolve("options")
+        Files.createDirectories(options)
+        // Platform 262 and later (seen on Android Studio 2026.2 and IDEA 2026.3, not on IDEA 2026.1) opens the project's README.md
+        // preview only (findAndOpenReadmeIfNeeded sets the file's TextEditorWithPreview.DEFAULT_LAYOUT_FOR_FILE), and a smoke's
+        // openFile of it keeps that layout: the text editor with the gutter is never on screen, so the daemon does not draw it again
+        // and a ◆ switched off stays in its markup. It is switched by the advanced setting `ide.open.readme.md.on.startup`
+        // (AdvancedSettings.getBoolean, stored in advancedSettings.xml), which no system property overrides. A platform without the
+        // setting keeps the entry as an unknown one.
+        writeAdvancedSetting(options.resolve("advancedSettings.xml"), "ide.open.readme.md.on.startup", "false")
+        if (!androidStudio || !buildTaskList) return
+        // Settings > Experimental > Gradle > "Configure all Gradle tasks during Gradle Sync" (GradleExperimentalSettings).
+        Files.writeString(
+            options.resolve("gradle.experimental.xml"),
+            """<application>
+            |  <component name="GradleExperimentalSettings">
+            |    <option name="SKIP_GRADLE_TASKS_LIST" value="false" />
+            |  </component>
+            |</application>
+            |""".trimMargin(),
+        )
+    }
+
+    /** Adds [id] = [value] to the `AdvancedSettings` map of [file], next to whatever the config already has there. */
+    private fun writeAdvancedSetting(file: Path, id: String, value: String) {
+        val entry = """<entry key="$id" value="$value" />"""
+        val current = if (Files.exists(file)) Files.readString(file) else null
+        val text = when {
+            current == null -> """<application>
+                |  <component name="AdvancedSettings">
+                |    <option name="settings">
+                |      <map>
+                |        $entry
+                |      </map>
+                |    </option>
+                |  </component>
+                |</application>
+                |""".trimMargin()
+            "<map>" in current -> current.replaceFirst("<map>", "<map>\n        $entry")
+            else -> error("$file has no <map> to add $id to; update SmokeProduct.writeAdvancedSetting")
+        }
+        Files.writeString(file, text)
+    }
+
+    /** What every smoke adds to the IDE's VM options for this product. */
+    fun patch(options: VMOptions) {
+        if (!androidStudio) return
+        // Android Studio's first-run wizard (SDK setup) would wait on its window for good.
+        options.addSystemProperty("disable.android.first.run", true)
+        // So would Google's "Help improve Android Studio" consent dialog, which a fresh config shows before any project opens
+        // (Driver then times out on "Project is opened"). Read by com.android.tools.idea.stats.ConsentDialog.
+        options.addSystemProperty("disable.android.analytics.consent.dialog", true)
+        // And so would the "Android SDK location" dialog of the first Gradle sync (SdkSyncImpl), which a fresh config with no saved
+        // SDK and a copy with no local.properties both lead to. The IDE takes ANDROID_HOME as its SDK when it is a valid one.
+        options.withEnv("ANDROID_HOME", androidSdk().toString())
+        // And so would the "Sign in to Android Studio" dialog of a signed-out IDE (StartupSignInDialogActivity). Its StudioFlags flag
+        // takes a system property of the flag's id as an override (com.android.flags.overrides.PropertyOverrides).
+        options.addSystemProperty("google.login.enable.startup.sign.in.dialog", false)
+    }
+
+    /**
+     * The Android SDK the smokes hand to Android Studio: ANDROID_HOME, ANDROID_SDK_ROOT, then the default install locations of
+     * Android Studio on macOS and Linux, the first that is a directory.
+     */
+    private fun androidSdk(): Path {
+        val home = Path.of(System.getProperty("user.home"))
+        val candidates = listOfNotNull(
+            System.getenv("ANDROID_HOME")?.takeIf { it.isNotBlank() }?.let { Path.of(it) },
+            System.getenv("ANDROID_SDK_ROOT")?.takeIf { it.isNotBlank() }?.let { Path.of(it) },
+            home.resolve("Library/Android/sdk"),
+            home.resolve("Android/Sdk"),
+        )
+        return candidates.firstOrNull { Files.isDirectory(it) }
+            ?: error(
+                "No Android SDK found for the Android Studio smokes (looked at ${candidates.joinToString()}). " +
+                    "Android Studio would stop on its SDK location dialog before the project opens. " +
+                    "Install an Android SDK, or set ANDROID_HOME to one.",
+            )
+    }
+}

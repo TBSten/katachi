@@ -33,16 +33,18 @@ flowchart LR
     B --> C1["6. 巡回 en"] & C2["6. 巡回 ja"] & C3["6. 巡回 api-docs"]
     CI --> N["10-1. IDE プラグインの nightly 相当<br/>run-ide-plugin-nightly.py"]
     N --> E2["10-2. IDE プラグインの E2E<br/>run-ide-plugin-e2e.py"]
-    E2 -- " Gradle を空ける " --> D & B
+    E2 --> AS["10-5. Android Studio での E2E<br/>run-ide-plugin-e2e.py --android-studio"]
+    AS -- " Gradle を空ける " --> D & B
     B -- " Gradle を空ける " --> IK["9-1. インストールキット<br/>build-katachi-cli.sh → check-install-kit.sh"]
     IK --> IE["9-2. 統合テスト<br/>手順書どおりに導入 ja / en<br/>＋手順書のレビュー"]
-    V1 & V2 & V3 & R & D & DR & TX & BM & C1 & C2 & C3 & CI & N & E2 & IE --> Rep["7. 報告"]
+    V1 & V2 & V3 & R & D & DR & TX & BM & C1 & C2 & C3 & CI & N & E2 & AS & IE --> Rep["7. 報告"]
 ```
 
 - 1 が通ったら、2・3・4・8・10-4・11・12 を並列に始める。3 と 6 の中は、区分ごとの subagent をさらに並列にする。
 - 8 は Gradle を長く使う（10〜20 分）。8 が終わったら続けて 10-1（IDE プラグインの nightly 相当。既定 scale 20 で
   約30〜35分）、そのあと 10-2（IDE プラグインの E2E。実 IDE を起動するテスト2本、1本あたり起動込みで2分半〜3分が目安）を
-  走らせる。5 のサンプルを動かす作業と 6-1 は、10-2 が終わってから始める。
+  走らせ、続けて 10-5（Android Studio での E2E。10-2 と同じ smoke を Android Studio で。所要は 10-2 と同じくらいで、初回は
+  Android Studio のダウンロード約 1.5 GB が乗る）を走らせる。5 のサンプルを動かす作業と 6-1 は、10-5 が終わってから始める。
 - 9 も Gradle を長く使う（15〜20 分）。6-1 の `generateApiDocs` が終わってから始める（巡回を先に始めたいので 6-1 を先にする）。
   5 のサンプルを動かす作業とは、どちらかが終わるのを待って重ねない。
 - 10-4 は Gradle を使わず数秒で材料が出て、判定の subagent もファイルを書き換えないので、どの手順とも重ねてよい。
@@ -52,11 +54,11 @@ flowchart LR
   （subagent が主で、オーケストレータの手はほぼ要らない）。
 - 6 は 2 を待つ。英語のページを訳し直してからビルドしないと、古い英語を巡回することになる。
 - 5 は日本語の原本だけを見るので、2 を待たない。3・4・5 はどれもファイルを書き換えないので、互いに待たない。
-- **Gradle を使う作業は同時に1つだけ。**8、10-1、10-2、9、5 がサンプルを動かす作業、6-1 の `generateApiDocs` は互いに
+- **Gradle を使う作業は同時に1つだけ。**8、10-1、10-2、10-5、9、5 がサンプルを動かす作業、6-1 の `generateApiDocs` は互いに
   重ねない（同じ `katachi/build/` を取り合う。9 の `publishToMavenLocal` もリポジトリのビルド）。走らせる前に
-  `pgrep -fl GradleWrapperMain` で確かめる。10-2 は実 IDE のウィンドウを開くぶん、なおのこと他の作業（Gradle に限らず
+  `pgrep -fl GradleWrapperMain` で確かめる。10-2・10-5 は実 IDE のウィンドウを開くぶん、なおのこと他の作業（Gradle に限らず
   画面を使う作業）と重ねない。
-- 7 は、ほかの全部が返ってから。チェックリストは各 subagent が返るたびにオーケストレータが書く。8・10-1・10-2・9-1 は
+- 7 は、ほかの全部が返ってから。チェックリストは各 subagent が返るたびにオーケストレータが書く。8・10-1・10-2・10-5・9-1 は
   subagent を起こさずオーケストレータが自分で走らせてよい。
 
 ## 過去の判断（decisions/）— 同じことを二度聞かない
@@ -95,6 +97,7 @@ flowchart LR
 | `ide-plugin-e2e.md`              | 10-2     |
 | `ide-plugin-zip.md`              | 10-3     |
 | `ide-plugin-texts.md`            | 10-4     |
+| `ide-plugin-android-studio.md`   | 10-5     |
 | `install-kit.md`                 | 9-1      |
 | `install-e2e.md`                 | 9-2      |
 | `benchmark.md`                   | 12       |
@@ -103,7 +106,7 @@ flowchart LR
 
 ログ・材料・中間ファイルはすべて `.local/release-v<版>/tmp/` の下に置く。例: `tmp/release-note-material.txt`、
 `tmp/ci-checks/`（コマンドごとのログ）、`tmp/ide-plugin-nightly/`（uiTest のログ）、`tmp/ide-plugin-e2e/`
-（integrationTest のログ）、`tmp/install-kit/`（fixture とログ）、`tmp/docs-rules/`（ルールのチェックリストと `part-*.md`）、`tmp/ide-plugin-texts.md`（10-4 の材料）、`tmp/pages-<区分>.txt`、`tmp/crawl/`
+（integrationTest のログ）、`tmp/ide-plugin-android-studio/`（integrationTestAndroidStudio のログ）、`tmp/install-kit/`（fixture とログ）、`tmp/docs-rules/`（ルールのチェックリストと `part-*.md`）、`tmp/ide-plugin-texts.md`（10-4 の材料）、`tmp/pages-<区分>.txt`、`tmp/crawl/`
 （巡回の生データ）、`tmp/logs/`（pnpm や gradle のログ）、`tmp/visibility-<区分>.md`（区分ごとの一覧）、subagent の
 `part-*.md` などの下書き。subagent に任せるときも、この置き場所を渡す。
 
@@ -147,7 +150,7 @@ Playwright で全ページを巡回させる（直させない）。結果は `s
 priority 10 の警告。結果は `ci-checks.md`、ログは `tmp/ci-checks/`。
 詳細: [references/ci-checks.md](references/ci-checks.md)
 
-## 10. IDE プラグインの nightly 相当のチェック・E2E・配る zip・文言の日英
+## 10. IDE プラグインの nightly 相当のチェック・E2E・配る zip・文言の日英・Android Studio
 
 - 10-1: `run-ide-plugin-nightly.py` で `ide-plugin-nightly.yml` の `pbt` ジョブ（uiTest の property-based tests を
   20倍の系列数で）を手元で走らせる。オーケストレータが自分で走らせてよい。1つでも落ちたら priority 10 の警告。
@@ -166,6 +169,12 @@ priority 10 の警告。結果は `ci-checks.md`、ログは `tmp/ci-checks/`。
   判定させる（直させない）。鍵の突き合わせは 8 のテストが見るが、直書きはテストで拾えない。直し忘れは priority 5 か 3
   （ja にしか無い鍵は 9）。基準から文言の置き場が変わっていれば、日本語の IDE での目視を `TODO.html` に載せる。
   結果は `ide-plugin-texts.md`。
+- 10-5: `run-ide-plugin-e2e.py --android-studio` で 10-2 と同じ smoke を `integrationTestAndroidStudio`（本物の Android Studio
+  で起動する）で走らせる。katachi は Android Studio の利用者にも配る。Android Studio は Gradle sync などが IDEA と違い、
+  IDEA で通っても Android Studio で動くとは限らない（KATACHI-363）。nightly にも同じ smoke の job が
+  あるが、落ちても気づきにくいので、ここで必ず一度は通す。10-2 と同じくディスプレイのあるセッションが要り、
+  オーケストレータが自分で走らせてよい。落ちたら priority 10 の警告。結果は
+  `ide-plugin-android-studio.md`、ログは `tmp/ide-plugin-android-studio/`。
 
 詳細: [references/ide-plugin-nightly.md](references/ide-plugin-nightly.md)
 
@@ -208,7 +217,7 @@ benchmark は `check` に入らず、8 も bench ジョブを飛ばすので、�
 - **`TODO.html` は 7 を待たずに作り、状況が変わるたびに更新する**（subagent が返るたび・利用者が答えるたび）。
   利用者の手が要るもの（直すか決める / 判断 / 目を通す / 操作）だけを並べる。7 の直前に、結果をひとまとめにした
   `index.html` を作る。どちらも `.local/release-v<版>/` の直下。詳細: [references/report-html.md](references/report-html.md)
-- 8・10-1・10-2・9-1（CI と同等のチェック・IDE プラグインの nightly 相当・IDE プラグインの E2E・インストールキット）
+- 8・10-1・10-2・10-5・9-1（CI と同等のチェック・IDE プラグインの nightly 相当・IDE プラグインの E2E・Android Studio での E2E・インストールキット）
   が1つでも落ちていれば、それは priority 10 の警告として「⚠️ 重要な警告」に必ず載せる。
 - 上記のステップを実行してきた中で見つけた警告をサマライズし重要なものがあればユーザに警告する。
   過去の判断と同じもの（decisions/）は警告に数えない。

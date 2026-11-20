@@ -4,8 +4,6 @@ import com.intellij.driver.client.Driver
 import com.intellij.driver.sdk.*
 import com.intellij.driver.sdk.ui.ui
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
-import com.intellij.ide.starter.ide.IdeProductProvider
-import com.intellij.ide.starter.ide.installer.ExistingIdeInstaller
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.runner.Starter
@@ -33,13 +31,15 @@ class NoRoleSmokeTest {
         )
         val project = fixture.prepare()
         val ideHome = Path.of(System.getProperty("katachi.smoke.ideHome"))
-        val ide = IdeProductProvider.IU.copy(getInstaller = { ExistingIdeInstaller(fixture.appBundle(ideHome)) })
+        val ide = SmokeProduct.ideInfo { fixture.appBundle(ideHome) }
         val context = Starter.newContext("katachiNoRole", TestCase(ide, LocalProjectInfo(project)), false)
             .apply { pluginConfigurator.installPluginFromPath(Path.of(System.getProperty("path.to.build.plugin"))) }
+            .also { SmokeProduct.prepare(it) }
             .applyVMOptionsPatch {
                 addSystemProperty("katachi.debugBridge", true)
                 addSystemProperty("user.language", "en")
                 addSystemProperty("user.country", "US")
+                SmokeProduct.patch(this)
             }
             .skipLibrarySources()
         context.runIdeWithDriver(runTimeout = SMOKE_RUN_TIMEOUT).useDriverAndCloseIde {

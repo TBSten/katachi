@@ -6,8 +6,6 @@ import com.intellij.driver.sdk.singleProject
 import com.intellij.driver.sdk.waitForProjectOpen
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
-import com.intellij.ide.starter.ide.IdeProductProvider
-import com.intellij.ide.starter.ide.installer.ExistingIdeInstaller
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.project.LocalProjectInfo
@@ -35,6 +33,8 @@ import kotlin.time.Duration.Companion.minutes
  *
  * The older smokes (`GutterSmokeTest`, `NoRoleSmokeTest`, `EditorEntry*`) keep their own copies of this: they run in the nightly 263
  * job and stay green, so they are not moved here.
+ *
+ * The IDE is IDEA or Android Studio, as [SmokeProduct] says.
  */
 @Suppress("NewApi")
 internal class SmokeIde(name: String) {
@@ -73,20 +73,24 @@ internal class SmokeIde(name: String) {
     /**
      * Starts the IDE on [project], waits for it to open and index, and runs [block] with Driver, the project and the bridge.
      * The IDE is closed after [block], thrown or not. The first Gradle import and the definition task take minutes.
+     * [buildTaskList] goes to [SmokeProduct.prepare].
      */
     fun run(
         project: Path,
         runTimeout: Duration = SMOKE_RUN_TIMEOUT,
+        buildTaskList: Boolean = true,
         block: Driver.(ideProject: Project, bridge: SmokeBridge) -> Unit,
     ) {
-        val ide = IdeProductProvider.IU.copy(getInstaller = { ExistingIdeInstaller(appBundle()) })
+        val ide = SmokeProduct.ideInfo { appBundle() }
         val context = Starter.newContext("katachi-${workDir.fileName}", TestCase(ide, LocalProjectInfo(project)), false)
             .apply { pluginConfigurator.installPluginFromPath(Paths.get(System.getProperty("path.to.build.plugin"))) }
+            .also { SmokeProduct.prepare(it, buildTaskList) }
             .applyVMOptionsPatch {
                 addSystemProperty("katachi.debugBridge", true)
                 // The texts the smokes assert are English.
                 addSystemProperty("user.language", "en")
                 addSystemProperty("user.country", "US")
+                SmokeProduct.patch(this)
             }
             .skipLibrarySources()
         context.runIdeWithDriver(runTimeout = runTimeout).useDriverAndCloseIde {
@@ -119,6 +123,7 @@ internal class SmokeIde(name: String) {
     fun sourcesOf(project: Path): Set<String> = Files.walk(project).use { paths ->
         paths.filter { Files.isRegularFile(it) && project.relativize(it).none { part -> part.toString() in STATE_DIRECTORIES } }
             .map { project.relativize(it).toString() }
+            .filter { it !in STATE_FILES }
             .toList()
             .toSet()
     }
@@ -134,7 +139,7 @@ internal class SmokeIde(name: String) {
 
     /** The IDE the build resolved is the `Contents` of a macOS bundle and Starter only takes a `.app`: rebuilt around a copy of it. */
     private fun appBundle(): Path {
-        val bundle = Files.createTempDirectory(workDir, "ide-").resolve("IntelliJ IDEA.app")
+        val bundle = Files.createTempDirectory(workDir, "ide-").resolve(SmokeProduct.appName)
         Files.createDirectories(bundle)
         exec(workDir, "ditto", ideHome.toString(), bundle.resolve("Contents").toString())
         // The Gradle plugin adds this marker, which breaks the bundle's code seal; macOS then kills the 263 JBR with SIGKILL.
@@ -154,5 +159,8 @@ internal class SmokeIde(name: String) {
 
     private companion object {
         val STATE_DIRECTORIES = setOf(".idea", ".gradle", ".kotlin", "build", ".git")
+
+        /** What Android Studio's Gradle sync writes into the project it opens (the SDK path, the daemon's JVM), which IDEA does not. */
+        val STATE_FILES = setOf("local.properties", "gradle/gradle-daemon-jvm.properties")
     }
 }

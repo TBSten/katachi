@@ -5,8 +5,6 @@ import com.intellij.driver.client.Remote
 import com.intellij.driver.sdk.*
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
-import com.intellij.ide.starter.ide.IdeProductProvider
-import com.intellij.ide.starter.ide.installer.ExistingIdeInstaller
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.project.LocalProjectInfo
@@ -52,15 +50,19 @@ class ToolWindowSmokeTest {
     fun `sample-jvmでツールウィンドウから1件生成するとそのファイルがエディタで開く`() {
         keepStarterFilesUnder(workDir.resolve("starter"))
         val project = copyOfSample()
-        val ide = IdeProductProvider.IU.copy(getInstaller = { ExistingIdeInstaller(appBundleOf(ideHome)) })
+        val ide = SmokeProduct.ideInfo { appBundleOf(ideHome) }
         val context = Starter.newContext(
             "katachiToolWindowSmoke",
             TestCase(ide, LocalProjectInfo(project.resolve("sample/jvm"))),
             false
         )
             .apply { pluginConfigurator.installPluginFromPath(Paths.get(System.getProperty("path.to.build.plugin"))) }
+            .also { SmokeProduct.prepare(it) }
             // The plugin's debug bridge acts only when asked to.
-            .applyVMOptionsPatch { addSystemProperty("katachi.debugBridge", true) }
+            .applyVMOptionsPatch {
+                addSystemProperty("katachi.debugBridge", true)
+                SmokeProduct.patch(this)
+            }
 
         // The first Gradle import and load of the whole repository take minutes; the default is 10.
         context.runIdeWithDriver(runTimeout = 40.minutes).useDriverAndCloseIde {
@@ -162,7 +164,7 @@ class ToolWindowSmokeTest {
      * link: macOS kills (exit 137) a signed launcher whose bundle is a link to elsewhere.
      */
     private fun appBundleOf(contents: Path): Path {
-        val bundle = workDir.resolve("ide/IntelliJ IDEA.app")
+        val bundle = workDir.resolve("ide/${SmokeProduct.appName}")
         if (!Files.exists(bundle.resolve("Contents/Info.plist"))) {
             run(workDir, "rm", "-rf", bundle.toString())
             Files.createDirectories(bundle)

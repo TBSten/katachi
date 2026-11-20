@@ -1,4 +1,4 @@
-# 10. IDE プラグインの nightly 相当のチェック・E2E・配る zip・文言の日英
+# 10. IDE プラグインの nightly 相当のチェック・E2E・配る zip・文言の日英・Android Studio
 
 [SKILL.md](../SKILL.md) の手順 10 の詳細。10-1（nightly 相当の PBT）と 10-2（E2E）は、どちらも IDE プラグインが自動では
 めったに回らないチェックを、リリース前に一度は必ず通す手順。
@@ -51,6 +51,8 @@ python3 .claude/skills/prerelease/scripts/run-ide-plugin-e2e.py --release-dir .l
   subagent にも IDE や画面を触らせない
 - Starter は `<git root>/out/ide-tests` に IDE の複製・ログを置く。スクリプトは消さないので、容量が気になれば
   手で消す
+- IDE のダウンロード: スクリプトは Gradle に HTTP の待ちと再試行を伸ばすフラグ（接続 2 分・読み込み 5 分・再試行 8 回）を
+  付けて起動する。それでも止まったら、もう一度同じコマンドを打つ（Gradle は落とし終えた分を `~/.gradle` に持っている）
 - 結果は `ide-plugin-e2e.md`、ログは `tmp/ide-plugin-e2e/`
 
 ## 10-3. 配る zip（Release に添付するもの）
@@ -142,9 +144,52 @@ Gradle を使わず数秒で終わり、ファイルを書き換えないので�
   実際の IDE の幅で切れていないか・言語パックで切り替わるかは見ていない
 - 結果は `ide-plugin-texts.md`（区分ごとの件数・直し忘れの一覧・意図した英語にした理由のまとめ）。材料は `tmp/ide-plugin-texts.md`
 
+## 10-5. Android Studio での E2E（`integrationTestAndroidStudio`）
+
+katachi の IDE プラグインは Android Studio の利用者にも配る（`sinceBuild = 261`、上限なし）。nightly は `verifyPlugin`
+（バイナリ互換）と、smoke を Android Studio で起動する job（`smoke-android-studio`）で見ているが、nightly は落ちても
+気づきにくい。Android Studio は Gradle sync の既定が IDEA と違い（「Configure all Gradle tasks during
+Gradle Sync」が OFF でタスク一覧を作らない）、定義モジュールが見つからず「katachi is not found」になったことがある
+（KATACHI-363）。リリース前に一度は本物の Android Studio で通す。
+
+```shell
+python3 .claude/skills/prerelease/scripts/run-ide-plugin-e2e.py --list --android-studio                               # 走らせるコマンドを見る
+python3 .claude/skills/prerelease/scripts/run-ide-plugin-e2e.py --release-dir .local/release-v<版> --android-studio   # 走らせる
+```
+
+- `integrationTestAndroidStudio` は `integrationTest` と同じ smoke を Android Studio で起動する（どの smoke も `SmokeProduct`
+  を通して IDE を選ぶ。`-Dkatachi.smoke.ideProduct=AndroidStudio`）。走らせるのは 10-2 と同じ全部。特に
+  `ArchModuleNameSmokeTest` が定義モジュールの検出・◆・検査の行・no role の通知を一度に見る
+- Android Studio の「Configure all Gradle tasks during Gradle Sync」は smoke が ON にして起動する（`SmokeProduct.prepare` が
+  設定ディレクトリの `options/gradle.experimental.xml` に書く）。sample は katachi をリポジトリの included build から使い、
+  ライブラリとしては依存しないので、既定（OFF）だとプラグインの逃げ道（katachi ライブラリに依存するモジュールを候補にする）が
+  効かず、定義モジュールが見つからない
+- 既定設定での検出（363）は `PublishedKatachiDefaultSyncSmokeTest` だけが見る。この working tree の katachi を
+  `publishToMavenLocal -Pkatachi.skipSigning -Dmaven.repo.local=<work>/maven-repository` で公開し、sample/jvm の写しを
+  included build ではなく公開座標で使う形に書き換えて、タスク一覧 OFF のまま開き、`HealthService` に ◆ が出るかを見る。
+  落ちて「katachi is not found」の案内しか出ていなければ 363 の再発（または未解決）。IDEA では skip（タスク一覧を必ず作るため）。
+  katachi のビルドが先に走るので数分延びる
+- Android Studio の版は `katachi-intellij-plugin/build.gradle.kts` の `register("integrationTestAndroidStudio")` の
+  `version`（`jb.gg/android-studio-releases-list.json` の `version`、4 桁）。**stable か Patch の版**にする。Canary・RC は
+  期限が切れると起動直後に止まる（integrationTest263 の EAP で経験済み）。新しい stable が出ていれば上げてから走らせる
+- 前提: 10-2 と同じ（JDK 21・macOS・ディスプレイのあるセッション）。初回は Android Studio のダウンロード（約 1.5 GB）が乗る
+- 前提: Android SDK。smoke は `ANDROID_HOME` → `ANDROID_SDK_ROOT` → `~/Library/Android/sdk` → `~/Android/Sdk` の最初にある
+  ものを Android Studio の `ANDROID_HOME` として渡す（`SmokeProduct`）。無いと Android Studio が最初の Gradle sync で SDK の場所を
+  聞くダイアログを出して止まるので、どれも無ければ smoke はその旨の文面ですぐ落ちる。CI の macOS ランナーには `ANDROID_HOME` がある
+- Android Studio のダウンロード: Gradle には落とさせず、スクリプトが先に curl で `~/.cache/katachi-prerelease/ide/` に落とす。
+  回線が途切れても続きから再開し（`-C -`・`--retry 10 --retry-all-errors`）、10 KB/s を 2 分下回ったら切って続きから
+  つなぎ直す（3 回まで）。releases list の sha256 が合わなければ消して落とし直す。合えば
+  `~/.cache/katachi-prerelease/ide/android-studio-<版>/` に展開し（macOS は dmg から `Android Studio.app` を写す）、
+  `-Pkatachi.androidStudio.localPath` で Gradle に渡す。2 回目からはこの展開済みを使う（`.complete` があるとき）。
+  途中で止まったら同じコマンドを打ち直せば続きから。壊れていそうなら `--no-ide-cache` で落とし直す。ログは
+  `tmp/ide-plugin-android-studio/download.log`
+- 所要: 10-2 と同じくらい（smoke ごとに Android Studio を起動し、Gradle import と索引を待つ）
+- 落ちたら priority 10 の警告（Android Studio の利用者がプラグインを使えない）。スクリーンショットは `katachi-intellij-plugin/build/integrationTestAndroidStudio/<smoke>/screenshots/`
+- 結果は `ide-plugin-android-studio.md`、ログは `tmp/ide-plugin-android-studio/`
+
 ## 共通
 
-- 10-1・10-2 は1つでも落ちたら priority 10 の警告にする（8・9-1 と同じ扱い。リリースしてはいけない状態）。10-3・10-4 は各節の priority。
+- 10-1・10-2・10-5 は1つでも落ちたら priority 10 の警告にする（8・9-1 と同じ扱い。リリースしてはいけない状態）。10-3・10-4 は各節の priority。
   ただし [decisions/environment.md](../decisions/environment.md) の環境要因に該当し、別の起動のしかた（手元のターミナル・CI）で
   通ることを確かめたものは、警告にせず「環境要因」と書く
 - 10-3・10-4 の subagent には [decisions/ide-plugin.md](../decisions/ide-plugin.md) を渡し、過去の判断と同じものは「過去の判断どおり」に並べさせる

@@ -4,8 +4,6 @@ import com.intellij.driver.client.Driver
 import com.intellij.driver.sdk.*
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
-import com.intellij.ide.starter.ide.IdeProductProvider
-import com.intellij.ide.starter.ide.installer.ExistingIdeInstaller
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.project.LocalProjectInfo
@@ -53,16 +51,18 @@ class SampleAndroidEntryTest {
         run(project, "git", "add", "-A")
 
         val ideHome = Path.of(System.getProperty("katachi.smoke.ideHome"))
-        val bundle = Files.createTempDirectory(workDir, "ide-").resolve("IntelliJ IDEA.app")
+        val bundle = Files.createTempDirectory(workDir, "ide-").resolve(SmokeProduct.appName)
         Files.createDirectories(bundle)
         run(workDir, "ditto", ideHome.toString(), bundle.resolve("Contents").toString())
-        val ide = IdeProductProvider.IU.copy(getInstaller = { ExistingIdeInstaller(bundle) })
+        val ide = SmokeProduct.ideInfo { bundle }
         val context = Starter.newContext("katachiSampleAndroid", TestCase(ide, LocalProjectInfo(project)), false)
             .apply { pluginConfigurator.installPluginFromPath(Path.of(System.getProperty("path.to.build.plugin"))) }
+            .also { SmokeProduct.prepare(it) }
             .applyVMOptionsPatch {
                 addSystemProperty("katachi.debugBridge", true)
                 addSystemProperty("user.language", "en")
                 addSystemProperty("user.country", "US")
+                SmokeProduct.patch(this)
             }
         context.runIdeWithDriver(runTimeout = 60.minutes).useDriverAndCloseIde {
             waitForProjectOpen(5.minutes)

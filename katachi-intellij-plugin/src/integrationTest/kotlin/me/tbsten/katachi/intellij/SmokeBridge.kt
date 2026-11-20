@@ -56,6 +56,13 @@ interface SmokeBridge {
     fun setGutterIcons(enabled: Boolean): String
 
     /**
+     * Puts the text editor of [path] on screen where it is open with a preview (Markdown), as `layout=…`, `open=…` and one `editor=<layout>`
+     * line per such editor. Called rather than the layout action: an action works on the focused window, and the IDE under test is not
+     * always in front.
+     */
+    fun showTextEditor(path: String): String
+
+    /**
      * What focusing the IDE does after a file was written from outside: the virtual file system looks at the disk again. The IDE under test is
      * not in front on a CI machine, so `invokeAction("Synchronize")` (an action of the focused window) is not relied on; ask again on every poll.
      */

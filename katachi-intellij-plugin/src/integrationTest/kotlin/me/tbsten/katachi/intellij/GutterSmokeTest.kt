@@ -11,8 +11,6 @@ import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.driver.sdk.waitForProjectOpen
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
-import com.intellij.ide.starter.ide.IdeProductProvider
-import com.intellij.ide.starter.ide.installer.ExistingIdeInstaller
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.project.LocalProjectInfo
@@ -72,14 +70,16 @@ class GutterSmokeTest {
         val probe = project.resolve("$SERVICE_DIR/ProbeService.kt")
         Files.writeString(probe, "package com.example.service\n\ninternal class ProbeService\n")
 
-        val ide = IdeProductProvider.IU.copy(getInstaller = { ExistingIdeInstaller(appBundleOf(ideHome)) })
+        val ide = SmokeProduct.ideInfo { appBundleOf(ideHome) }
         val context = Starter.newContext("katachiGutterSmoke", TestCase(ide, LocalProjectInfo(project)), false)
             .apply { pluginConfigurator.installPluginFromPath(Paths.get(System.getProperty("path.to.build.plugin"))) }
+            .also { SmokeProduct.prepare(it) }
             .applyVMOptionsPatch {
                 addSystemProperty("katachi.debugBridge", true)
                 // The texts the smoke asserts are English.
                 addSystemProperty("user.language", "en")
                 addSystemProperty("user.country", "US")
+                SmokeProduct.patch(this)
             }
 
         // The first Gradle import and the definition task take minutes.
@@ -158,7 +158,7 @@ class GutterSmokeTest {
 
     /** The IDE the build resolved is the `Contents` of a macOS bundle, and Starter only accepts a `.app`: the bundle is rebuilt around a copy of it. */
     private fun appBundleOf(contents: Path): Path {
-        val bundle = workDir.resolve("ide/IntelliJ IDEA.app")
+        val bundle = workDir.resolve("ide/${SmokeProduct.appName}")
         if (!Files.exists(bundle.resolve("Contents/Info.plist"))) {
             run(workDir, "rm", "-rf", bundle.toString())
             Files.createDirectories(bundle)

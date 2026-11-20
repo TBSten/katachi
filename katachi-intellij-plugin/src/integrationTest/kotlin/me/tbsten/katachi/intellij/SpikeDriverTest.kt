@@ -17,8 +17,6 @@ import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.driver.sdk.waitForProjectOpen
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
-import com.intellij.ide.starter.ide.IdeProductProvider
-import com.intellij.ide.starter.ide.installer.ExistingIdeInstaller
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.project.LocalProjectInfo
@@ -63,15 +61,19 @@ class SpikeDriverTest {
     fun `右クリックのNewサブメニュー・ツールウィンドウの検索欄への入力・Settingsダイアログの開閉を1回のIDE起動で試す`() {
         keepStarterFilesUnder(workDir.resolve("starter"))
         val project = copyOfSample()
-        val ide = IdeProductProvider.IU.copy(getInstaller = { ExistingIdeInstaller(appBundleOf(ideHome)) })
+        val ide = SmokeProduct.ideInfo { appBundleOf(ideHome) }
         val context = Starter.newContext(
             "katachiSpikeDriver",
             TestCase(ide, LocalProjectInfo(project.resolve("sample/jvm"))),
             false,
         ).apply { pluginConfigurator.installPluginFromPath(Paths.get(System.getProperty("path.to.build.plugin"))) }
+            .also { SmokeProduct.prepare(it) }
             // The debug bridge (used here only to wait for the template list to load) refuses to
             // act unless the IDE runs with this flag.
-            .applyVMOptionsPatch { addSystemProperty("katachi.debugBridge", true) }
+            .applyVMOptionsPatch {
+                addSystemProperty("katachi.debugBridge", true)
+                SmokeProduct.patch(this)
+            }
 
         // `useDriverAndCloseIde` always returns `IDEStartResult`, not the lambda's own result
         // (unlike `measureTimedValue`'s block), so the scenarios' findings are collected into this
@@ -104,11 +106,25 @@ class SpikeDriverTest {
                     // unsuccessful" and the popup never appeared. Waiting for the tree's nodes to
                     // finish loading, then focusing the row with a left click before the real
                     // right click, is the fix research-ide-testing.md 2.3 did not need to spell out.
-                    tree.waitForNodesLoaded()
-                    tree.clickRow(0)
-                    tree.rightClickRow(0)
+                    // On Android Studio the menu did not open at all (prerelease 10-5, Mac: the root row collapsed, no popup):
+                    // probably the tree being rebuilt once more after the Gradle sync, which swallows a click (not confirmed).
+                    // Up to 3 tries, each closing whatever the last one left open; a third miss fails with what was tried.
+                    // A try is seen through itemsList(), the call that waits for the menu (15 s) in the run that passed.
                     val menu = frame.popupMenu()
-                    val topLevel = menu.itemsList()
+                    var found: List<String>? = null
+                    var tries = 0
+                    while (found == null) {
+                        tries++
+                        tree.waitForNodesLoaded()
+                        tree.clickRow(0)
+                        tree.rightClickRow(0)
+                        found = runCatching { menu.itemsList() }.getOrNull()
+                        if (found == null) {
+                            check(tries < 3) { "the project tree's context menu did not open after $tries right clicks on row 0" }
+                            ui.keyboard { escape() }
+                        }
+                    }
+                    val topLevel = checkNotNull(found)
                     check("New" in topLevel) { "no 'New' item in the context menu: $topLevel" }
                     menu.findMenuItemByText("New").click()
                     // The submenu opens as a second popup; everything ActionMenuItem-shaped that
@@ -144,7 +160,8 @@ class SpikeDriverTest {
                 // (c) A Swing dialog (Settings), found by title and closed.
                 step("(c) find the Settings dialog by title and close it") {
                     ideFrame().openSettingsDialog()
-                    val settings = ui.dialog(title = "Settings")
+                    // Android Studio titles it "Settings - <project>", IDEA just "Settings".
+                    val settings = ui.dialog(xpath = "//div[starts-with(@title, 'Settings')]")
                     println("[spike-driver] Settings dialog accessible name: ${settings.accessibleName}")
                     settings.closeDialog()
                 }
@@ -178,7 +195,7 @@ class SpikeDriverTest {
      * link: macOS kills (exit 137) a signed launcher whose bundle is a link to elsewhere.
      */
     private fun appBundleOf(contents: Path): Path {
-        val bundle = workDir.resolve("ide/IntelliJ IDEA.app")
+        val bundle = workDir.resolve("ide/${SmokeProduct.appName}")
         if (!Files.exists(bundle.resolve("Contents/Info.plist"))) {
             run(workDir, "rm", "-rf", bundle.toString())
             Files.createDirectories(bundle)
