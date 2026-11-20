@@ -9,6 +9,10 @@ import me.tbsten.katachi.check.UnsatisfiedFileConstraint
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.declarations.KtFileContentScope
 import me.tbsten.katachi.konsist.declarations.ktFileContent
+import me.tbsten.katachi.test.pbt.PBT_SEED
+import me.tbsten.katachi.test.pbt.chance
+import me.tbsten.katachi.test.pbt.checkTrials
+import me.tbsten.katachi.test.pbt.pbtTrials
 
 /**
  * `fileName` and `captureValue(...)` per file (plan P1, property 7), through `FileConstraintCheck()`:

@@ -37,6 +37,9 @@ dependencies {
     // SARIF 2.1.0 の JSON Schema で `toSarif` の出力を検証するためだけ。test 専用で、利用者の
     // classpath には出ない。
     testImplementation(libs.jsonSchemaValidator)
+    // 大文字小文字を区別しないファイルシステム（macOS・Windows の既定）での katachiDocs の書き出しを、
+    // Linux の CI で確かめるためだけ（Configuration.osX()）。test 専用で、利用者の classpath には出ない。
+    testImplementation(libs.jimfs)
 }
 
 // `tool.driver.semanticVersion` のために、実行中の katachi が自分の版を読めるようにする。
@@ -59,6 +62,11 @@ tasks.test {
     // SARIF の golden（src/test/resources/sarif/golden/）を今の出力で書き直す:
     // `./gradlew :katachi:test -Dkatachi.golden.update=true`
     providers.systemProperty("katachi.golden.update").orNull?.let { systemProperty("katachi.golden.update", it) }
+    // property-based のスペック（src/testFixtures の PropertyTrials.kt）は既定では少ない試行で回る。
+    // `-Pkatachi.pbt.scale=20` で 20 倍、`-Pkatachi.pbt.seed=N` で別の seed を試す（katachi-konsist と同じ）。
+    listOf("katachi.pbt.seed", "katachi.pbt.scale").forEach { key ->
+        providers.gradleProperty(key).orNull?.let { systemProperty(key, it) }
+    }
 }
 
 // java-test-fixtures は既定で `java` component に testFixtures の variant を足し、Maven Central に

@@ -1,6 +1,7 @@
 package me.tbsten.katachi.check.internal
 
 import me.tbsten.katachi.check.AmbiguousLayout
+import me.tbsten.katachi.dsl.internal.DeclaredByGradle
 import me.tbsten.katachi.internal.displayExistingPath
 import me.tbsten.katachi.internal.displayPath
 
@@ -47,6 +48,46 @@ private fun ambiguousLayoutFixLines(onFiles: Boolean, plural: Boolean): List<Str
     else -> listOf(
         "$STEP$STEP- Keep the path in the role its files belong to, and remove it from the other",
         "$STEP$STEP- Narrow one of them if they are about different files",
+    )
+}
+
+internal fun ignoredLayoutBlock(violation: IgnoredLayout, root: String?): List<String> = buildList {
+    add("[${violation.label}] ${displayPath(root, violation.path)}")
+    add(
+        "${STEP}Role ${violation.role.qualifiedName} declares this path, but every file it allows is in a " +
+            "directory that is ignored, so none of them is checked.",
+    )
+    add("${STEP}Declared at: ${violation.declaredAt}")
+    add("")
+    add("${STEP}Hidden by:")
+    for (ignore in violation.hiddenBy) add("$STEP$STEP${hiddenByLine(ignore, root)}")
+    add("")
+    add("${STEP}How to fix:")
+    addAll(ignoredLayoutFixLines(violation))
+}
+
+private fun hiddenByLine(ignore: HidingIgnore, root: String?): String {
+    val path = displayPath(root, ignore.path)
+    val module = ignore.gradleModuleName ?: return "$path (ignore() of ${ignore.role.qualifiedName} at ${ignore.declaredAt})"
+    return "$path (the build directory of $module, which gradle() at ${ignore.declaredAt} ignores)"
+}
+
+private fun ignoredLayoutFixLines(violation: IgnoredLayout): List<String> {
+    val written = when (violation.hiddenBy.count { it.gradleModule == null }) {
+        0 -> null
+        1 -> "remove the ignore(), or narrow it so that it leaves this path out"
+        else -> "remove those ignore() calls, or narrow them so that they leave this path out"
+    }
+    val byGradle = "declare the Gradle files without gradle(), which always ignores the build directory of every module"
+        .takeIf { violation.hiddenBy.any { it.gradleModule != null } }
+    val unhide = listOfNotNull(written, byGradle).joinToString(", and ")
+    // A line gradle() wrote is not the definition's to remove, only to stop hiding.
+    if (violation.role[DeclaredByGradle] == true) {
+        return listOf("$STEP$STEP- ${unhide.replaceFirstChar { it.uppercaseChar() }}: gradle() declares this path itself")
+    }
+    return listOf(
+        "$STEP$STEP- If these files are to be checked, $unhide",
+        "$STEP$STEP- Otherwise remove this path from ${violation.role.qualifiedName}: no file it allows is ever checked",
     )
 }
 

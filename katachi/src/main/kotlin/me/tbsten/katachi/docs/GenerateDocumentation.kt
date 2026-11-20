@@ -1,11 +1,11 @@
 package me.tbsten.katachi.docs
 
-import java.io.File
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.docs.internal.compareDocuments
+import me.tbsten.katachi.docs.internal.outputRootOf
 import me.tbsten.katachi.docs.internal.roleReferenceDocuments
 import me.tbsten.katachi.docs.internal.writeDocuments
 import me.tbsten.katachi.internal.absolutePathOf
@@ -87,7 +87,7 @@ public object GenerateDocumentation : ArchitectureProcessor<GenerateDocumentatio
         runProcessorCatching {
             val outputDir = context.args.outputDir
             val pages = roleReferenceDocuments(context)
-            val outputRoot = File(outputDir)
+            val outputRoot = outputRootOf(outputDir)
             val outputUri = fileUri(absolutePathOf(outputDir))
             when (context.args.mode) {
                 DocumentationMode.Write -> {

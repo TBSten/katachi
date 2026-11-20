@@ -21,7 +21,8 @@ import me.tbsten.katachi.processor.ArchitectureProcessor
  * @throws me.tbsten.katachi.dsl.KatachiProjectRootNotFoundException when no directory above the
  *   working directory carries a Gradle, Maven or git marker.
  * @throws me.tbsten.katachi.dsl.KatachiGitUnavailableException when `files = gitTracked()` and
- *   the project root is a git repository, but git cannot be run.
+ *   the project is in a git repository (a `.git` at the project root or above it), but git
+ *   cannot be run or does not answer for it.
  */
 @ExperimentalKatachiApi
 public fun Architecture.validate(): List<Violation> = validate(RealFileSystem())
