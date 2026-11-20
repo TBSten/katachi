@@ -136,7 +136,7 @@ private val PATH_LEVELS = listOf(
 )
 
 /**
- * A valid pattern of 1 to 4 levels. Not two `**` in a row: `a/**/**` does not match `a` (the second
+ * A valid pattern of 1 to 4 levels. Not two `**` in a row: `a` / `**` / `**` does not match `a` (the second
  * `**` keeps a separator in front of it), which glob-cases.json pins and this reference does not read.
  */
 private fun Random.pattern(wildcards: List<String> = STAR_LEVELS + OTHER_WILDCARD_LEVELS): String {

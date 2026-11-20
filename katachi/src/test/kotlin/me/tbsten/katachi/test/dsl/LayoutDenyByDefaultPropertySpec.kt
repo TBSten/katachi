@@ -241,8 +241,14 @@ private fun DenyTrial.describe(): String = buildString {
 
 // endregion
 
-/** Whether the DSL accepts [layout] at all: some random layouts are refused, as a user's would be. */
-private fun accepted(layout: List<RNode>): Boolean = runCatching { layoutOf { declare(layout, named = false) } }.isSuccess
+/**
+ * Whether the trial says something: the DSL accepts [layout] (some random layouts are refused, as a user's
+ * would be), and no line spells two `**` in a row. `a` / `**` / `**` does not match `a` although `a` / `**` does, a
+ * known TODO that GlobConformanceFixtureSpec pins and this model does not follow.
+ */
+private fun accepted(layout: List<RNode>): Boolean =
+    linesOf(layout).none { line -> line.dirs.zipWithNext().any { (a, b) -> a == RSeg.DoubleStar && b == RSeg.DoubleStar } } &&
+        runCatching { layoutOf { declare(layout, named = false) } }.isSuccess
 
 private fun DenyTrial.check() {
     if (!accepted(layout)) return
