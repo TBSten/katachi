@@ -16,7 +16,8 @@ import kotlin.io.path.name
 import kotlin.io.path.readText
 
 internal sealed interface WorkdirLookup {
-    data class Found(val path: Path) : WorkdirLookup
+    /** [configured]: named by `KATACHI_WORKDIR`, not found below the current directory. */
+    data class Found(val path: Path, val configured: Boolean = false) : WorkdirLookup
 
     data object NotFound : WorkdirLookup
 
@@ -41,13 +42,18 @@ internal const val CHECK_LIST_FILE: String = "check-list.html"
 internal fun ScriptContext.lookupWorkdir(): WorkdirLookup {
     env["KATACHI_WORKDIR"]?.takeIf { it.isNotBlank() }?.let { configured ->
         val path = resolve(configured)
-        return if (path.resolve(CHECK_LIST_FILE).isRegularFile()) WorkdirLookup.Found(path) else WorkdirLookup.Misconfigured(configured, path)
+        return if (path.resolve(CHECK_LIST_FILE).isReadableFile()) WorkdirLookup.Found(path, configured = true) else WorkdirLookup.Misconfigured(configured, path)
     }
     if (!cwd.isDirectory()) return WorkdirLookup.NotFound
-    val candidates = checkListsBelow(cwd)
-        .map { it.parent }
-        .filter { it.resolve("tmp").isDirectory() }
-        .sorted()
+    // A check list someone else made (a shared parent, /tmp, a CI runner) may be unreadable: it is no working directory of
+    // this user, and reading it would stop every command.
+    val (readable, unreadable) = checkListsBelow(cwd)
+        .filter { it.parent.resolve("tmp").isDirectory() }
+        .partition { it.isReadableFile() }
+    if (unreadable.isNotEmpty()) {
+        warnOnce(Messages.Workdir.unreadableCheckListsSkipped(unreadable.sorted().joinToString(" ") { fileUri(it) }))
+    }
+    val candidates = readable.map { it.parent }.sorted()
     return when (candidates.size) {
         0 -> WorkdirLookup.NotFound
         1 -> WorkdirLookup.Found(candidates.single())
@@ -86,8 +92,10 @@ private fun checkListsBelow(root: Path): List<Path> {
  * names no working directory: going on with
  * neither would quietly fall back to the default module directory, language and log place.
  */
-internal fun ScriptContext.findWorkdir(): Path? = when (val lookup = lookupWorkdir()) {
-    is WorkdirLookup.Found -> lookup.path
+internal fun ScriptContext.findWorkdir(): Path? = foundWorkdir()?.path
+
+private fun ScriptContext.foundWorkdir(): WorkdirLookup.Found? = when (val lookup = lookupWorkdir()) {
+    is WorkdirLookup.Found -> lookup
     WorkdirLookup.NotFound -> null
     is WorkdirLookup.Ambiguous -> die(ambiguousWorkdirMessage(lookup))
     is WorkdirLookup.Misconfigured -> die(misconfiguredWorkdirMessage(lookup))
@@ -103,9 +111,17 @@ private val HTML_LANG = Regex("<html[^>]*\\slang=\"([a-z]+)\"")
 
 /** The language of the check list the katachi skill copied into [workdir]: its `<html lang="...">`. */
 internal fun recordedLang(workdir: Path): Lang? {
-    val file = workdir.resolve(CHECK_LIST_FILE)
-    if (!file.isRegularFile()) return null
-    return Lang.of(HTML_LANG.find(file.readText().take(2000))?.groupValues?.get(1))
+    val text = workdir.resolve(CHECK_LIST_FILE).readTextOrNull() ?: return null
+    return Lang.of(HTML_LANG.find(text.take(2000))?.groupValues?.get(1))
+}
+
+private fun Path.isReadableFile(): Boolean = isRegularFile() && Files.isReadable(this)
+
+/** The text of a regular file, or null when there is none or it cannot be read: an unreadable check list counts as absent. */
+private fun Path.readTextOrNull(): String? = try {
+    if (isRegularFile()) readText() else null
+} catch (_: IOException) {
+    null
 }
 
 /** A non-empty file's text, or null. The kit's `[ -s file ] && cat file`. */
@@ -115,8 +131,7 @@ internal fun Path.textIfNotEmpty(): String? = if (isRegularFile() && fileSize() 
 
 /** The JSON object in the block [id] of [html], or null when the file, the block or the JSON is not there. */
 internal fun readJsonBlockOrNull(html: Path, id: String): JsonObject? {
-    if (!html.isRegularFile()) return null
-    val block = extractJsonBlock(html.readText(), id) as? JsonBlock.Found ?: return null
+    val block = extractJsonBlock(html.readTextOrNull() ?: return null, id) as? JsonBlock.Found ?: return null
     return parseJsonOrNull(block.text) as? JsonObject
 }
 
@@ -140,10 +155,13 @@ internal const val MODULE_DIR_DEFAULT: String = "architecture-test"
 
 private val MODULE_DIR_PATTERN = Regex("^[A-Za-z0-9_][A-Za-z0-9_.-]*(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$")
 
-/** Stops unless [value] is a path relative to the Gradle root (scaffold `--module-dir`). */
+/**
+ * Stops unless [value] is a path relative to the Gradle root (`--module-dir`), as a usage error: `test` exits 1 only
+ * for a failed check.
+ */
 internal fun validateModuleDir(value: String) {
     if (!MODULE_DIR_PATTERN.matches(value)) {
-        die(Messages.Workdir.moduleDirMustPath(value))
+        dieUsage(Messages.Workdir.moduleDirMustPath(value))
     }
 }
 
@@ -160,6 +178,9 @@ internal class ModuleDir(
 ) {
     /** `:architecture-test`, `:static-analysis:katachi`. */
     val gradlePath: String get() = moduleGradlePathOf(dir)
+
+    /** ` --module-dir <dir>` when it came from that option, for a command a message suggests: without it, that command would use another module. */
+    val optionText: String get() = if (source == ModuleDirSource.ARG) " --module-dir $dir" else ""
 }
 
 /** [arg] > `meta.moduleDir` > the default. The kit's `resolve_module_dir`. */
@@ -177,15 +198,44 @@ internal fun ScriptContext.resolveModuleDir(arg: String? = null): ModuleDir {
 /**
  * `meta.projectRoot` of the check list, or the current directory. When the current directory is in another
  * work tree of the same repository, the same place in that work tree: the recorded one would check files
- * the change never touched and pass (KATACHI-354).
+ * the change never touched and pass (KATACHI-354). When the working directory found below the current directory
+ * is not in the recorded project, the project was copied or moved along with it: the project that holds it, for the
+ * same reason (KATACHI-420).
  */
 internal fun ScriptContext.projectRoot(): Path {
-    val recorded = findWorkdir()?.let { checklistMeta(it.resolve(CHECK_LIST_FILE), "projectRoot") } ?: ""
+    val workdir = foundWorkdir() ?: return cwd
+    val checkList = workdir.path.resolve(CHECK_LIST_FILE)
+    val recorded = checklistMeta(checkList, "projectRoot")
     if (recorded.isEmpty()) return cwd
     val root = resolve(recorded)
-    val counterpart = sameRepositoryCounterpart(root, cwd) ?: return root
-    warnOnce(Messages.Workdir.projectRootInOtherWorkTree(fileUri(root), fileUri(counterpart)))
-    return counterpart
+    sameRepositoryCounterpart(root, cwd)?.let { counterpart ->
+        warnOnce(Messages.Workdir.projectRootInOtherWorkTree(fileUri(root), fileUri(counterpart)))
+        return counterpart
+    }
+    // KATACHI_WORKDIR may name a working directory kept outside the project.
+    if (workdir.configured) return root
+    val holder = projectHoldingMovedWorkdir(workdir.path, root, checklistMeta(checkList, "workdir")) ?: return root
+    warnOnce(Messages.Workdir.projectRootNotHoldingWorkdir(fileUri(root), fileUri(workdir.path), fileUri(holder)))
+    return holder
+}
+
+/**
+ * The project that holds [workdir] when that is not [root], the recorded project root; null when [workdir] is in place.
+ * [recordedWorkdir] is `meta.workdir`, the working directory relative to the project root, which a copy keeps: the
+ * project is [workdir] without it. Without it, the current directory, above [workdir] as the lookup found it.
+ */
+private fun ScriptContext.projectHoldingMovedWorkdir(workdir: Path, root: Path, recordedWorkdir: String): Path? {
+    val here = workdir.realOrSelf()
+    val there = root.realOrSelf()
+    val relative = recordedWorkdir.takeIf { it.isNotEmpty() }?.let { runCatching { Path.of(it) }.getOrNull() }?.takeIf { !it.isAbsolute }
+    if (relative != null && there.resolve(relative).normalize() == here) return null
+    val inside = relative?.normalize()?.takeIf { it.nameCount > 0 && !it.startsWith("..") && here.endsWith(it) }
+    val holder = when {
+        inside != null -> generateSequence(here) { it.parent }.elementAtOrNull(inside.nameCount) ?: return null
+        here.startsWith(there) -> return null
+        else -> cwd
+    }
+    return holder.takeIf { it.realOrSelf() != there }
 }
 
 /** `<project root>/<module dir>/src/test/kotlin`. The kit's `definition_dir`. */

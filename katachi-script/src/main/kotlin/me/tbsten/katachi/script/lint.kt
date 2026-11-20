@@ -7,7 +7,7 @@ import me.tbsten.katachi.script.command.LintCommand
 import me.tbsten.katachi.script.internal.CommandLine
 
 /**
- * Same as `katachi lint` on the command line: lists what in the definition looks off: a Role with files of several kinds, flat groups and the like.
+ * Same as `katachi lint` on the command line, starting from this [Katachi]'s defaults: lists what in the definition looks off: a Role with files of several kinds, flat groups and the like.
  */
 public val Katachi.lint: LintCommand
-    get() = LintCommand(this, CommandLine(listOf("lint")))
+    get() = LintCommand(this, CommandLine(listOf("lint")).withNonEmpty("--module-dir", this.moduleDir))

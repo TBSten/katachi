@@ -64,6 +64,12 @@ class CommandDslSpec : FreeSpec({
             katachi.doctor.toString() shouldBe "katachi doctor --lang ja"
         }
 
+        "Katachi の moduleDir は lint にも入る（KATACHI-420）" {
+            val katachi = Katachi(moduleDir = "static/katachi")
+            katachi.lint.toString() shouldBe "katachi lint --module-dir static/katachi"
+            Katachi().lint.`module-dir`("other").toString() shouldBe "katachi lint --module-dir other"
+        }
+
         "cwd はコマンドラインに出ない" {
             Katachi(cwd = Path.of("/somewhere")).scaffold.toString() shouldBe "katachi scaffold"
         }

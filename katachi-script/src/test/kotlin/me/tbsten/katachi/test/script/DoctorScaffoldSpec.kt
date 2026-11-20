@@ -222,13 +222,14 @@ class DoctorScaffoldSpec : FreeSpec({
             }
         }
 
-        "--module-dir の置き場所に作る" {
+        "--module-dir の置き場所に作り、次の test をその Gradle パスで案内する（KATACHI-420）" {
             val project = projectWithWorkdir("""{"meta": {}, "steps": []}""")
             project.resolve("build.gradle.kts").writeText("plugins {\n    kotlin(\"jvm\") version \"2.4.10\" apply false\n}\n")
 
             val run = runCapturing(project, listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0", "--module-dir", "static-analysis/katachi"), env = javaHome())
 
             run.status shouldBe 0
+            run.out shouldContain "次: ./gradlew :static-analysis:katachi:test\n"
             project.resolve("static-analysis/katachi/build.gradle.kts").readText() shouldContain "0.4.0"
             project.resolve("settings.gradle.kts").readText() shouldContain "include(\":static-analysis:katachi\")"
         }
@@ -241,10 +242,55 @@ class DoctorScaffoldSpec : FreeSpec({
 
             run.status shouldBe 0
             run.out shouldContain "チェックリストの meta.moduleDir"
+            run.out shouldContain "次: ./gradlew :static-analysis:katachi:test\n"
             project.resolve("settings.gradle.kts").readText() shouldContain "include(\":static-analysis:katachi\")"
+        }
+
+        "buildSrc が embeddedKotlin や複数行の implementation で Kotlin プラグインを持っていれば、ルートに apply false を足さない（KATACHI-420）" {
+            val dependencies = listOf(
+                """implementation(embeddedKotlin("gradle-plugin"))""",
+                """
+                implementation(
+                        "org.jetbrains.kotlin:kotlin-gradle-plugin:2.3.21",
+                    )
+                """.trimIndent(),
+            )
+            for (dependency in dependencies) {
+                val project = gradleProject(toolchain = 21)
+                project.resolve("build.gradle.kts").writeText("// root\n")
+                project.withBuildSrcDependency(dependency)
+
+                val args = listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0", "--kotlin", "2.3.21")
+                val run = runCapturing(project, args, env = javaHome())
+
+                run.status shouldBe 0
+                project.resolve("build.gradle.kts").readText() shouldBe "// root\n"
+                project.resolve("architecture-test/build.gradle.kts").readText() shouldNotContain "version \"2.3.21\""
+            }
+        }
+
+        "buildSrc が embeddedKotlin を使っていて Kotlin のバージョンを検出できなければ、どこで見られるかを添えて止まる（KATACHI-420）" {
+            val project = gradleProject(toolchain = 21)
+            project.resolve("build.gradle.kts").writeText("// root\n")
+            project.withBuildSrcDependency("""implementation(embeddedKotlin("gradle-plugin"))""")
+
+            val run = runCapturing(project, listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0"), env = javaHome())
+
+            run.status shouldBe 1
+            run.err shouldContain "Gradle に同梱の Kotlin（embeddedKotlin）"
+            run.err shouldContain "./gradlew --version"
+            project.resolve("architecture-test").exists() shouldBe false
         }
     }
 })
+
+/** Gives the project a `buildSrc` on Gradle's kotlin-dsl whose dependencies block holds [dependency]. */
+private fun Path.withBuildSrcDependency(dependency: String) {
+    // Built line by line: a multi-line [dependency] inside a trimIndent template would change the indent it trims.
+    val build = listOf("plugins {", "    `kotlin-dsl`", "}", "", "dependencies {", dependency.prependIndent("    "), "}")
+        .joinToString("\n", postfix = "\n")
+    resolve("buildSrc").createDirectories().resolve("build.gradle.kts").writeText(build)
+}
 
 /** A Gradle root with the Kotlin JVM plugin and the JDK [toolchain] pinned in gradle-daemon-jvm.properties. */
 private fun gradleProject(toolchain: Int, kotlin: String = "2.4.10"): Path {

@@ -92,8 +92,6 @@ internal class CommandSpec(
     /** The subcommand used when the first argument is missing or an option (`answers --target report` is `answers show`). */
     val defaultSubcommand: String? = null,
     val passthrough: PassthroughSpec? = null,
-    /** Every argument is positional, even one that starts with `-`. */
-    val rawPositionals: Boolean = false,
     /** What the command does, for the builder's KDoc: `runs the verification module's tests and ...`. */
     val doc: String = "",
 ) {
@@ -154,6 +152,15 @@ private val MODULE_DIR = OptionSpec(
     paramDoc = "Such as `static-analysis/katachi`.",
     katachiDefault = KatachiDefault.ModuleDir,
 )
+/** [MODULE_DIR] of the commands that use the module scaffold made: the same place, read rather than written. */
+private val EXISTING_MODULE_DIR = OptionSpec(
+    "--module-dir",
+    OptionKind.Path,
+    doc = "where the verification module is, relative to the Gradle root. Without it, `meta.moduleDir` of the check list, then `architecture-test`",
+    param = "path",
+    paramDoc = "Such as `static-analysis/katachi`.",
+    katachiDefault = KatachiDefault.ModuleDir,
+)
 private val KATACHI = OptionSpec("--katachi", OptionKind.Text, param = "version", paramDoc = "Such as `0.4.0`.", katachiDefault = KatachiDefault.Version)
 internal val COMMAND_SPECS: List<CommandSpec> = listOf(
     CommandSpec(
@@ -204,7 +211,11 @@ internal val COMMAND_SPECS: List<CommandSpec> = listOf(
         ),
         doc = "creates the verification module and adds it to the build",
     ),
-    CommandSpec("lint", doc = "lists what in the definition looks off: a Role with files of several kinds, flat groups and the like"),
+    CommandSpec(
+        "lint",
+        listOf(EXISTING_MODULE_DIR),
+        doc = "lists what in the definition looks off: a Role with files of several kinds, flat groups and the like",
+    ),
 )
 
 internal fun commandSpec(name: String): CommandSpec = COMMAND_SPECS.first { it.name == name }
@@ -240,10 +251,9 @@ internal fun parseArgs(spec: CommandSpec, args: List<String>): ParsedArgs {
                 val names = spec.subcommands.joinToString(" / ") { it.name }
                 dieUsage(Messages.CommandSpecs.subcommandsGot(spec.name, names, first.orEmpty()))
             }
-        val inner = parseArgs(CommandSpec(spec.name, sub.options, sub.positionals, passthrough = sub.passthrough, rawPositionals = sub.rawPositionals), if (picked != null) args.drop(1) else args)
+        val inner = parseArgs(CommandSpec(spec.name, sub.options, sub.positionals, passthrough = sub.passthrough), if (picked != null) args.drop(1) else args)
         return inner.withSubcommand(sub.name)
     }
-    if (spec.rawPositionals) return ParsedArgs(null, emptyMap(), emptySet(), args, emptyList())
     val values = LinkedHashMap<String, String>()
     val flags = LinkedHashSet<String>()
     val positionals = mutableListOf<String>()

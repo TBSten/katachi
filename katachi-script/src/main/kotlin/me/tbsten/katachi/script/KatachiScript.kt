@@ -45,7 +45,7 @@ public abstract class KatachiScript(public val args: Array<String>) {
     /** [Katachi.katachiVersion]: the `--katachi` every `scaffold` starts with. */
     public var katachiVersion: String? = null
 
-    /** [Katachi.moduleDir]: the `--module-dir` every `scaffold` starts with. */
+    /** [Katachi.moduleDir]: the `--module-dir` every `scaffold` and `lint` starts with. */
     public var moduleDir: String? = null
 
     /** [Katachi.lang]: the `--lang` every `doctor` starts with. */

@@ -449,6 +449,13 @@ internal object Messages {
             en = "Could not detect the Kotlin version. Pass it with --kotlin.",
         )
 
+        val couldNotDetectEmbeddedKotlin: Msg = Msg(
+            ja = "Kotlin のバージョンを検出できませんでした。buildSrc は Gradle に同梱の Kotlin（embeddedKotlin）を使っていて、" +
+                "そのバージョンは ./gradlew --version の Kotlin: の行に出ます。--kotlin で指定してください。",
+            en = "Could not detect the Kotlin version. buildSrc uses the Kotlin that comes with Gradle (embeddedKotlin), " +
+                "whose version ./gradlew --version prints on its Kotlin: line. Pass it with --kotlin.",
+        )
+
         fun couldNotReadKotlin(kotlin: Any?): Msg = Msg(
             ja = "Kotlin のバージョンを読み取れませんでした: $kotlin",
             en = "Could not read the Kotlin version: $kotlin",
@@ -736,8 +743,10 @@ internal object Messages {
         )
 
         fun definitionDirMissing(dirUri: Any?, moduleDir: Any?): Msg = Msg(
-            ja = "定義のディレクトリがありません: $dirUri 。scaffold をまだ実行していないか、置き場所が違います（$moduleDir。違うなら、チェックリストの meta.moduleDir を直す）",
-            en = "The definition directory does not exist: $dirUri . Either scaffold has not run yet, or the location differs ($moduleDir; if it is wrong, fix meta.moduleDir in the check list)",
+            ja = "定義のディレクトリがありません: $dirUri 。scaffold をまだ実行していないか、置き場所が違います" +
+                "（$moduleDir。違うなら --module-dir <パス> で指定するか、チェックリストの meta.moduleDir を直す）",
+            en = "The definition directory does not exist: $dirUri . Either scaffold has not run yet, or the location differs " +
+                "($moduleDir; if it is wrong, pass --module-dir <path>, or fix meta.moduleDir in the check list)",
         )
 
         fun ambiguous(candidates: Any?): Msg = Msg(
@@ -748,10 +757,15 @@ internal object Messages {
         )
 
         fun misconfigured(configured: Any?, pathUri: Any?): Msg = Msg(
-            ja = "KATACHI_WORKDIR（$configured）は作業用ディレクトリではありません（$pathUri に check-list.html がない）。" +
+            ja = "KATACHI_WORKDIR（$configured）は作業用ディレクトリではありません（$pathUri に読める check-list.html がない）。" +
                 "check-list.html のあるディレクトリを指すように直すか、KATACHI_WORKDIR を外してください。",
-            en = "KATACHI_WORKDIR ($configured) is not a working directory (there is no check-list.html in $pathUri). " +
+            en = "KATACHI_WORKDIR ($configured) is not a working directory (there is no readable check-list.html in $pathUri). " +
                 "Point it at the directory with check-list.html, or unset it.",
+        )
+
+        fun unreadableCheckListsSkipped(fileUris: Any?): Msg = Msg(
+            ja = "読めない check-list.html は、作業用ディレクトリとして使いません: $fileUris ",
+            en = "Not using a check-list.html that cannot be read as a working directory: $fileUris ",
         )
 
         fun projectRootInOtherWorkTree(recordedUri: Any?, hereUri: Any?): Msg = Msg(
@@ -759,6 +773,15 @@ internal object Messages {
                 "いまいる作業ツリーの $hereUri を検査し、ログもそこの build/katachi/ に置きます。記録した側を検査するときは、そちらで実行してください。",
             en = "meta.projectRoot in the check list ($recordedUri) is in another work tree (git worktree) than the current directory. " +
                 "Checking $hereUri in this work tree instead, with the logs in its build/katachi/. To check the recorded one, run this from there.",
+        )
+
+        fun projectRootNotHoldingWorkdir(recordedUri: Any?, workdirUri: Any?, hereUri: Any?): Msg = Msg(
+            ja = "チェックリストの meta.projectRoot は $recordedUri で、この作業用ディレクトリ $workdirUri のあるプロジェクトではありません。" +
+                "プロジェクトを作業用ディレクトリごと写したか、移したようです。作業用ディレクトリのある $hereUri を検査します。" +
+                "記録した側を検査するときは、そちらで実行してください。",
+            en = "meta.projectRoot in the check list is $recordedUri , not the project that holds this working directory $workdirUri : " +
+                "the project seems to have been copied or moved along with it. Checking $hereUri , which holds the working directory, instead. " +
+                "To check the recorded one, run this from there.",
         )
     }
 
@@ -812,13 +835,15 @@ katachi — katachi の導入と検査を手伝うコマンド
       --force             既存の検査用モジュールを上書きする
       --dry-run           何も書かずに、何をするかだけ出力する
 
-  katachi lint
+  katachi lint [--module-dir <path>]
       定義（検査用モジュールの src/test/kotlin）を読み、種類の違うファイルを1つの
       Role に抱えていそうなもの、Gradle のファイルを手書きで宣言した Role（制約を持つものは
       gradle { } の hook への移し方も出す）、平たい group、小文字で始まる Role・group の名前、
       分けていないファイル、documented = false の候補を列挙する。
       素朴なテキスト走査なので誤検知があり得る。点検の結果では失敗にしない（0 を返す）。
       定義のディレクトリが無ければ（scaffold 前、置き場所の食い違い）1 を返す。
+      --module-dir は検査用モジュールの置き場所で、scaffold の --module-dir と同じ（デフォルト:
+      作業用ディレクトリのチェックリストの meta.moduleDir。無ければ architecture-test）。
 
   katachi <ファイル>.katachi.kts [<引数>...]
       katachi のコマンドを Kotlin で並べたスクリプトを実行する。katachi と
@@ -870,7 +895,7 @@ Usage:
       --force             Overwrite an existing verification module
       --dry-run           Write nothing; only print what would be done
 
-  katachi lint
+  katachi lint [--module-dir <path>]
       Reads the definition (src/test/kotlin of the verification module) and lists Roles that
       seem to hold files of different kinds, hand-written Roles for Gradle files (ones with
       constraints also get the way to move them into a gradle { } hook), flat groups, Role and
@@ -878,6 +903,8 @@ Usage:
       documented = false.
       It is a plain text scan, so false positives are possible. Findings never fail it (returns 0).
       Returns 1 if the definition directory does not exist (before scaffold, or a different location).
+      --module-dir is where the verification module is, the same as scaffold's --module-dir (default:
+      meta.moduleDir in the check list of the working directory, otherwise architecture-test).
 
   katachi <file>.katachi.kts [<argument>...]
       Runs a script that lines up katachi commands in Kotlin. katachi and the
