@@ -135,6 +135,96 @@ class GitTrackedFileSystemSpec : FreeSpec({
         }
     }
 
+    "git とファイルシステムで名前の Unicode 正規化形が違っても、同じ名前は同じファイルとして見える（KATACHI-433）" - {
+        val root = FsPath.of("/repo")
+        // ビュー and ゴミ箱 in NFC, as macOS's JDK lists them, and in NFD (a voiced kana as its plain kana and U+3099),
+        // as git there prints a name Finder or a Mac zip wrote unless core.precomposeunicode is true.
+        val nfc = NameSpelling(view = "\u30D3\u30E5\u30FC", trash = "\u30B4\u30DF\u7BB1")
+        val nfd = NameSpelling(view = "\u30D2\u3099\u30E5\u30FC", trash = "\u30B3\u3099\u30DF\u7BB1")
+
+        "前提: NFD の綴りは NFC の綴りと別の文字列で、NFC にそろえると同じ名前になる" {
+            for ((decomposed, composed) in listOf(nfd.view to nfc.view, nfd.trash to nfc.trash)) {
+                (decomposed == composed) shouldBe false
+                java.text.Normalizer.normalize(decomposed, java.text.Normalizer.Form.NFC) shouldBe composed
+            }
+        }
+
+        for ((shape, listed, printed) in listOf(
+            Triple("ファイルシステムは NFC、git は NFD（core.precomposeunicode が true でない macOS の形）", nfc, nfd),
+            Triple("ファイルシステムは NFD、git は NFC", nfd, nfc),
+        )) {
+            shape - {
+                val delegate = fakeFileSystem(workingDirectory = "/repo") {
+                    "/repo" {
+                        "gradlew"()
+                        listed.view {
+                            ".DS_Store"()
+                            "Main.kt"()
+                            "${listed.trash}.kt"()
+                        }
+                        "app" {
+                            "${listed.trash}.kt"()
+                            "build" { "classes" { "Main.class"() } }
+                        }
+                    }
+                }
+                val fileSystem = GitTrackedFileSystem(
+                    delegate = delegate,
+                    root = root,
+                    trackedPaths = listOf(
+                        "gradlew",
+                        "${printed.view}/Main.kt",
+                        "${printed.view}/${printed.trash}.kt",
+                        "app/${printed.trash}.kt",
+                    ),
+                )
+
+                "list は git が返したものを、ファイルシステムが返した綴りのまま返す" {
+                    fileSystem.list(root).map { it.name } shouldContainExactly listOf("app", "gradlew", listed.view)
+                    fileSystem.list(root / listed.view).map { it.name } shouldContainExactly
+                        listOf("Main.kt", "${listed.trash}.kt")
+                    fileSystem.list(root / "app").map { it.name } shouldContainExactly listOf("${listed.trash}.kt")
+                }
+
+                "日本語のディレクトリと、その下の ASCII 名・日本語名のファイルが見える" {
+                    fileSystem.isDirectory(root / listed.view) shouldBe true
+                    fileSystem.exists(root / listed.view / "Main.kt") shouldBe true
+                    fileSystem.exists(root / listed.view / "${listed.trash}.kt") shouldBe true
+                    fileSystem.holdsNothingOfTheProject(root / listed.view) shouldBe false
+                }
+
+                "ASCII のディレクトリの下の日本語名のファイルが見える" {
+                    fileSystem.isDirectory(root / "app") shouldBe true
+                    fileSystem.exists(root / "app" / "${listed.trash}.kt") shouldBe true
+                }
+
+                "git が返さなかったものは、綴りをそろえても見えないまま" {
+                    fileSystem.exists(root / listed.view / ".DS_Store") shouldBe false
+                    fileSystem.exists(root / "app/build") shouldBe false
+                    fileSystem.isDirectory(root / "app/build") shouldBe false
+                    fileSystem.holdsNothingOfTheProject(root / "app/build") shouldBe true
+                }
+            }
+        }
+
+        "ルートのパスに NFD の名前があり、その下が NFC で並んでも、git が返したものは見える" {
+            // The root is spelled as the working directory is, not as a listing is, so it need not be NFC like
+            // the names below it.
+            val nfdRoot = FsPath.of("/${nfd.view}")
+            val delegate = fakeFileSystem(workingDirectory = nfdRoot.value) {
+                nfdRoot.value {
+                    ".DS_Store"()
+                    "app" { "${nfc.trash}.kt"() }
+                }
+            }
+            val fileSystem = GitTrackedFileSystem(delegate, nfdRoot, listOf("app/${nfd.trash}.kt"))
+
+            fileSystem.list(nfdRoot).map { it.name } shouldContainExactly listOf("app")
+            fileSystem.isDirectory(nfdRoot / "app") shouldBe true
+            fileSystem.list(nfdRoot / "app").map { it.name } shouldContainExactly listOf("${nfc.trash}.kt")
+        }
+    }
+
     "このリポジトリ自身に対して git フィルタが効く" - {
         val delegate = RealFileSystem()
         val projectRoot = findProjectRoot(delegate)
@@ -446,3 +536,6 @@ private fun <T> permutations(items: List<T>): List<List<T>> =
             permutations(items.filterIndexed { other, _ -> other != index }).map { listOf(items[index]) + it }
         }
     }
+
+/** The two Japanese names of the KATACHI-433 tree, both in one Unicode normalization form. */
+private class NameSpelling(val view: String, val trash: String)

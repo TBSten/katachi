@@ -73,20 +73,23 @@ internal class GitTrackedFileSystem(
     private val root: FsPath,
     trackedPaths: Collection<String>,
 ) : KatachiFileSystem, OutsideProjectDirectories {
+    // Kept in NFC and looked up in NFC: unless core.precomposeunicode is true, git on macOS prints a name as the
+    // disk spells it (NFD when Finder or a Mac zip wrote it), while the JDK lists it in NFC.
     private val visibleFiles: Set<FsPath>
     private val visibleDirectories: Set<FsPath>
 
     init {
+        val nfcRoot = root.toNfc()
         val files = mutableSetOf<FsPath>()
-        val directories = mutableSetOf(root)
+        val directories = mutableSetOf(nfcRoot)
         for (relative in trackedPaths) {
-            val path = root / relative
-            if (path == root) continue
+            val path = (root / relative).toNfc()
+            if (path == nfcRoot) continue
             files += path
             // Every directory in the set already has all of its ancestors up to [root] in it
             // ([root] is there from the start), so the walk up stops at the first one seen.
             var parent = path.parent
-            while (parent != null && parent.startsWith(root)) {
+            while (parent != null && parent.startsWith(nfcRoot)) {
                 if (!directories.add(parent)) break
                 parent = parent.parent
             }
@@ -101,7 +104,7 @@ internal class GitTrackedFileSystem(
         (!isFiltered(path) || isVisible(path)) && delegate.exists(path)
 
     override fun isDirectory(path: FsPath): Boolean =
-        (!isFiltered(path) || path in visibleDirectories) && delegate.isDirectory(path)
+        (!isFiltered(path) || path.toNfc() in visibleDirectories) && delegate.isDirectory(path)
 
     override fun list(directory: FsPath): List<FsPath> =
         delegate.list(directory).filter { !isFiltered(it) || isVisible(it) }
@@ -116,8 +119,18 @@ internal class GitTrackedFileSystem(
 
     private fun isFiltered(path: FsPath): Boolean = path != root && path.startsWith(root)
 
-    private fun isVisible(path: FsPath): Boolean =
-        path in visibleFiles || path in visibleDirectories
+    private fun isVisible(path: FsPath): Boolean {
+        val key = path.toNfc()
+        return key in visibleFiles || key in visibleDirectories
+    }
+
+    // An NFC path (any ASCII one) is returned as is, so the usual lookup builds no new string.
+    private fun FsPath.toNfc(): FsPath =
+        if (java.text.Normalizer.isNormalized(value, java.text.Normalizer.Form.NFC)) {
+            this
+        } else {
+            FsPath.of(java.text.Normalizer.normalize(value, java.text.Normalizer.Form.NFC))
+        }
 }
 
 // The module search runs on the unfiltered tree; it asks this to skip directories the view drops wholesale
