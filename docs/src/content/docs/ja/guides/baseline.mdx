@@ -112,7 +112,7 @@ prune は、記録の件数を**減らすだけ**です。新しい違反を Bas
 
 ここまでの設定を1つにした完成形です。
 
-```kt
+```kt nocollapse
 // 記録する: ./gradlew :architecture-test:test -Dkatachi.baseline.update=true
 // 削除する: ./gradlew :architecture-test:test -Dkatachi.baseline.prune=true
 val projectArchitecture = architecture {
