@@ -12,6 +12,7 @@ import me.tbsten.katachi.script.internal.GradleFile
 import me.tbsten.katachi.script.internal.KotlinPlacement
 import me.tbsten.katachi.script.internal.OtherBuilds
 import me.tbsten.katachi.script.internal.addSettingsInclude
+import me.tbsten.katachi.script.internal.detectTestFramework
 import me.tbsten.katachi.script.internal.includedBuildDirs
 import me.tbsten.katachi.script.internal.includedProjectDirs
 import me.tbsten.katachi.script.internal.kotlinPluginPlacement
@@ -103,6 +104,26 @@ class GradleFilesSpec : FreeSpec({
 
         listOf("build-logic", "buildSrc", "tools/codegen", "samples/demo", "app").filter { root.resolve(it) in otherBuilds } shouldBe listOf("samples/demo")
         (root in otherBuilds) shouldBe false
+    }
+
+    "detectTestFramework は自分の settings を持つ別のビルドの io.kotest を数えず、include したプロジェクトの io.kotest は数える（KATACHI-431）" {
+        val root = createTempDirectory("katachi-gradle-")
+        root.resolve("settings.gradle.kts").writeText(
+            """
+            rootProject.name = "p"
+            include(":app")
+            """.trimIndent(),
+        )
+        val app = root.resolve("app").createDirectories().resolve("build.gradle.kts")
+        app.writeText("dependencies { testImplementation(\"org.junit.jupiter:junit-jupiter:5.14.4\") }")
+        root.resolve("samples/demo").createDirectories().resolve("settings.gradle.kts").writeText("rootProject.name = \"demo\"")
+        root.resolve("samples/demo/build.gradle.kts").writeText("dependencies { testImplementation(\"io.kotest:kotest-runner-junit5:6.0.0\") }")
+
+        detectTestFramework(root, "architecture-test") shouldBe ("junit5" to null)
+
+        app.writeText("dependencies { testImplementation(\"io.kotest:kotest-runner-junit5:6.0.0\") }")
+
+        detectTestFramework(root, "architecture-test") shouldBe ("kotest" to "app/build.gradle.kts")
     }
 
     "kotlinPluginPlacement" - {

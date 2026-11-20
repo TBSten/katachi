@@ -467,10 +467,10 @@ internal fun ScriptContext.writeCatalogEntries(root: Path, plan: CatalogPlan) {
 
 // ---------------------------------------------------------------- test framework
 
-/** junit5 or kotest, with the file that said kotest. The kit's `detect_test_framework`. */
+/** junit5 or kotest, with the file that said kotest. [OtherBuilds] are not read. The kit's `detect_test_framework`. */
 internal fun detectTestFramework(root: Path, moduleDir: String): Pair<String, String?> {
     if (catalogEntries(root, "libraries").any { it.content.startsWith("io.kotest:") }) return "kotest" to CATALOG_FILE
-    val hit = findBuildFiles(root, moduleDir).sortedBy { "./$it" }
+    val hit = findBuildFiles(root, moduleDir, otherBuilds = OtherBuilds(root)).sortedBy { "./$it" }
         .filter { it.contains('/') }
         .firstOrNull { file -> root.resolve(file).linesOrEmpty().naiveStripped().any { it.contains("io.kotest") } }
     return if (hit != null) "kotest" to hit else "junit5" to null
