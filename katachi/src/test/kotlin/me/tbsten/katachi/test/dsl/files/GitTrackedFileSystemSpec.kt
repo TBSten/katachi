@@ -24,6 +24,7 @@ import me.tbsten.katachi.dsl.files.internal.GitTrackedFileSystem
 import me.tbsten.katachi.dsl.files.internal.RealFileSystem
 import me.tbsten.katachi.dsl.files.internal.findProjectRoot
 import me.tbsten.katachi.dsl.files.internal.gitTrackedFileSystem
+import me.tbsten.katachi.dsl.files.internal.dotGitAtOrAbove
 import me.tbsten.katachi.dsl.files.internal.isInsideGitWorkTree
 import me.tbsten.katachi.internal.fileUri
 
@@ -309,6 +310,21 @@ class GitTrackedFileSystemSpec : FreeSpec({
             val fileSystem = gitTrackedFileSystem(delegate, sampleRoot)
             fileSystem.exists(sampleRoot / "settings.gradle.kts") shouldBe true
             fileSystem.exists(sampleRoot / "build") shouldBe false
+        }
+    }
+
+    "GIT_CEILING_DIRECTORIES で git が上へ探さない場所では、その上の .git を「リポジトリがある」とみなさない（KATACHI-440）" - {
+        "天井に指した場所とその上の .git は数えず、根そのものの .git は数える" {
+            withTemporaryDirectory { directory ->
+                val outer = File(directory, "outer").also { File(it, ".git").mkdirs() }
+                val project = File(outer, "project").also { it.mkdirs() }
+
+                dotGitAtOrAbove(FsPath.of(project.path), "") shouldBe FsPath.of("${outer.path}/.git")
+                dotGitAtOrAbove(FsPath.of(project.path), outer.path) shouldBe null
+                dotGitAtOrAbove(FsPath.of(project.path), "/nonexistent:${outer.path}") shouldBe null
+                File(project, ".git").mkdirs()
+                dotGitAtOrAbove(FsPath.of(project.path), outer.path) shouldBe FsPath.of("${project.path}/.git")
+            }
         }
     }
 

@@ -172,8 +172,28 @@ internal fun isInsideGitWorkTree(root: FsPath, git: String = GIT): Boolean {
 
 // Looked for on the disk, where git looks, rather than in the checked file system. `exists` answers for the
 // directory of a repository and for the `gitdir:` file of a worktree or a submodule alike.
-private fun dotGitAtOrAbove(root: FsPath): FsPath? =
-    generateSequence(root) { it.parent }.map { it / ".git" }.firstOrNull { File(it.value).exists() }
+//
+// Walks up only as far as git does: git does not climb to a directory in GIT_CEILING_DIRECTORIES, and (unless
+// GIT_DISCOVERY_ACROSS_FILESYSTEM is set) not onto another file system. A `.git` beyond that is not a repository git
+// would use, so a project it hides (a dotfiles repository over the home directory) is in no repository.
+internal fun dotGitAtOrAbove(root: FsPath, ceilingDirectories: String = System.getenv("GIT_CEILING_DIRECTORIES").orEmpty()): FsPath? {
+    val ceilings = ceilingDirectories.split(File.pathSeparatorChar)
+        .filter { it.isNotEmpty() }.map { runCatching { File(it).canonicalFile }.getOrElse { _ -> File(it) } }.toSet()
+    val acrossFileSystems = System.getenv("GIT_DISCOVERY_ACROSS_FILESYSTEM").orEmpty().let { it.isNotEmpty() && it != "0" }
+    val start = runCatching { File(root.value).canonicalFile }.getOrElse { File(root.value) }
+    return generateSequence(root) { it.parent }
+        .takeWhile { directory ->
+            val file = File(directory.value)
+            val canonical = runCatching { file.canonicalFile }.getOrElse { file }
+            (directory == root || canonical !in ceilings) &&
+                (acrossFileSystems || directory == root || sameFileSystem(start, file))
+        }
+        .map { it / ".git" }.firstOrNull { File(it.value).exists() }
+}
+
+private fun sameFileSystem(a: File, b: File): Boolean = runCatching {
+    java.nio.file.Files.getFileStore(a.toPath()) == java.nio.file.Files.getFileStore(b.toPath())
+}.getOrDefault(true)
 
 // git runs once at the root and the answer is kept as a set.
 internal fun gitTrackedFileSystem(delegate: KatachiFileSystem, root: FsPath): KatachiFileSystem =
