@@ -108,6 +108,7 @@ class DoctorScaffoldSpec : FreeSpec({
 
             run.status shouldBe 1
             run.err shouldContain "Gradle を動かす JDK が 11 です（PATH の java（${pathJava.resolve("bin/java")}））。"
+            run.err shouldContain "シェルで export JAVA_HOME="
             project.resolve("architecture-test").exists() shouldBe false
         }
     }
@@ -124,13 +125,15 @@ class DoctorScaffoldSpec : FreeSpec({
             mac.stubRan() shouldBe false
         }
 
-        "java_home が JDK を見つけられなければ、JDK が見つからないと警告して進む" {
+        "java_home が JDK を見つけられなければ、PATH の java があることと矛盾しない文面で警告して進む" {
             val mac = FakeMacOsJava(defaultJdk = null)
 
             val run = runCapturing(gradleProject(toolchain = null), listOf("doctor"), env = mac.env(), macOsJavaStub = mac.stub)
 
             run.status shouldBe 0
-            run.err shouldContain "Gradle を動かす JDK を見つけられませんでした"
+            run.err shouldContain "[!] Gradle を動かす JDK を見つけられませんでした" +
+                "（シェルに JAVA_HOME が無く、PATH の ${mac.java} が動かす JDK も ${mac.javaHome} で見つかりません）。katachi は JDK 17 以上が要ります。"
+            run.err shouldNotContain "PATH の java もありません"
             mac.stubRan() shouldBe false
         }
 
@@ -144,6 +147,64 @@ class DoctorScaffoldSpec : FreeSpec({
             run.status shouldBe 0
             run.out shouldContain "Gradle の JDK: 21（PATH の java（${pathJava.resolve("bin/java")}））"
             mac.javaHomeArgs() shouldBe null
+        }
+    }
+
+    "PATH の java が Gradle の JDK を決め、シェルに JAVA_HOME が無いときは、katachi が動いている JDK を Gradle にも使う方法を添える（KATACHI-434）" - {
+        "17 未満で止まるとき、Homebrew の kotlin が JAVA_HOME に入れた JDK が 17 以上なら、export JAVA_HOME= の 1 行を添える" {
+            val env = underHomebrewKotlin(shellJavaHome = "", fakeJdk(11))
+            val kotlinJdk = env.getValue("JAVA_HOME")
+
+            val run = runCapturing(gradleProject(toolchain = null), listOf("doctor"), env = env)
+
+            run.status shouldBe 1
+            run.err shouldContain "指定してから、もう一度実行してください。\n" +
+                "    katachi は JDK 27（$kotlinJdk）で動いています。Gradle にもこの JDK を使うなら、シェルで export JAVA_HOME=$kotlinJdk としてから実行し直してください。"
+        }
+
+        "macOS で java_home が JDK を見つけられないときの警告にも添える" {
+            val mac = FakeMacOsJava(defaultJdk = null)
+            val kotlinJdk = fakeJdk(27)
+            val env = mac.env() + mapOf("JAVA_HOME" to kotlinJdk.toString(), SHELL_JAVA_HOME_ENV to "")
+
+            val run = runCapturing(gradleProject(toolchain = null), listOf("doctor", "--lang", "en"), env = env, macOsJavaStub = mac.stub)
+
+            run.status shouldBe 0
+            run.err shouldContain "[!] Could not find the JDK that runs Gradle " +
+                "(the shell has no JAVA_HOME, and ${mac.javaHome} finds no JDK for java on PATH (${mac.java}) to run). katachi needs JDK 17 or later.\n" +
+                "    katachi runs on JDK 27 ($kotlinJdk). To use this JDK for Gradle too, run export JAVA_HOME=$kotlinJdk in the shell, then run this again."
+        }
+
+        "Gradle の JDK を toolchainVersion が決めているなら、JAVA_HOME では変わらないので添えない" {
+            val run = runCapturing(gradleProject(toolchain = 11), listOf("doctor"), env = underHomebrewKotlin(shellJavaHome = "", fakeJdk(21)))
+
+            run.status shouldBe 1
+            run.err shouldContain "Gradle を動かす JDK が 11 です（gradle/gradle-daemon-jvm.properties の toolchainVersion）。"
+            run.err shouldNotContain "export JAVA_HOME"
+        }
+
+        "シェルに JAVA_HOME があれば添えない" {
+            val shell = fakeJdk(11).toString()
+            // kotlin keeps a JAVA_HOME the shell has.
+            val env = underHomebrewKotlin(shellJavaHome = shell, fakeJdk(21)) + ("JAVA_HOME" to shell)
+
+            val run = runCapturing(gradleProject(toolchain = null), listOf("doctor"), env = env)
+
+            run.status shouldBe 1
+            run.err shouldContain "Gradle を動かす JDK が 11 です（JAVA_HOME（$shell））。"
+            run.err shouldNotContain "export JAVA_HOME"
+        }
+
+        "kotlin が JAVA_HOME に入れた JDK が 17 未満か、バージョンを読めなければ添えない" {
+            for (kotlinJdk in listOf(fakeJdk(16), createTempDirectory("katachi-jdk-without-java-"))) {
+                val env = underHomebrewKotlin(shellJavaHome = "", fakeJdk(11)) + ("JAVA_HOME" to kotlinJdk.toString())
+
+                val run = runCapturing(gradleProject(toolchain = null), listOf("doctor"), env = env)
+
+                run.status shouldBe 1
+                run.err shouldContain "Gradle を動かす JDK が 11 です"
+                run.err shouldNotContain "export JAVA_HOME"
+            }
         }
     }
 

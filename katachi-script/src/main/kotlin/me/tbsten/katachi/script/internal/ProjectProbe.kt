@@ -224,7 +224,11 @@ internal fun javaMajorOf(java: Path): Int? {
     return if (a == "1" && b.isNotEmpty()) b.toIntOrNull() else a.toIntOrNull()
 }
 
-internal class GradleJdk(val major: Int?, val source: Msg?)
+/**
+ * [source] is null when no JDK was found, and [notFound] says why. [fromPath]: java on PATH gave the answer, so a JAVA_HOME
+ * set in the shell would change it.
+ */
+internal class GradleJdk(val major: Int?, val source: Msg?, val notFound: Msg = Messages.Probe.couldNotFindJdk, val fromPath: Boolean = false)
 
 /**
  * Set by `bin/katachi` to the JAVA_HOME it was started with, empty when that was unset or empty: Homebrew's `kotlin`
@@ -281,10 +285,11 @@ internal fun ScriptContext.detectGradleJdk(root: Path): GradleJdk {
     val onPath = findOnPath("java") ?: return GradleJdk(null, null)
     val macOs = macOsJavaStub
     if (macOs != null && macOs.isStub(onPath)) {
-        val home = macOs.defaultJdkHome(root) ?: return GradleJdk(null, null)
-        return GradleJdk(javaMajorOf(Path(home, "bin", "java")), Messages.Probe.javaPathMacOs(onPath, macOs.javaHome, home))
+        val home = macOs.defaultJdkHome(root)
+            ?: return GradleJdk(null, null, Messages.Probe.couldNotFindJdkMacOs(onPath, macOs.javaHome), fromPath = true)
+        return GradleJdk(javaMajorOf(Path(home, "bin", "java")), Messages.Probe.javaPathMacOs(onPath, macOs.javaHome, home), fromPath = true)
     }
-    return GradleJdk(javaMajorOf(onPath), Messages.Probe.javaPath(onPath))
+    return GradleJdk(javaMajorOf(onPath), Messages.Probe.javaPath(onPath), fromPath = true)
 }
 
 /** The kit's `command -v`. */
@@ -307,7 +312,7 @@ private fun ScriptContext.gradlePropertiesJavaHome(root: Path): String? {
 internal fun ScriptContext.checkGradleJdk(root: Path) {
     val jdk = detectGradleJdk(root)
     if (jdk.source == null) {
-        warn(Messages.Probe.couldNotFindJdk)
+        warn(withKatachiJdkHint(jdk.notFound, jdk))
         return
     }
     val from = pick(jdk.source)
@@ -316,9 +321,21 @@ internal fun ScriptContext.checkGradleJdk(root: Path) {
         return
     }
     if (jdk.major < JDK_MIN_MAJOR) {
-        die(Messages.Probe.jdkRunsGradleKatachi(jdk.major, jdk.source))
+        die(withKatachiJdkHint(Messages.Probe.jdkRunsGradleKatachi(jdk.major, jdk.source), jdk))
     }
     note(Messages.Probe.gradleSJdk(jdk.major, jdk.source))
+}
+
+/**
+ * [message] and, when exporting JAVA_HOME would fix it, the JDK katachi runs on: java on PATH gave [jdk] (the daemon toolchain
+ * and org.gradle.java.home come before JAVA_HOME), the shell has no JAVA_HOME (so JAVA_HOME is the one Homebrew's `kotlin`
+ * filled in to run katachi), and that JDK is 17 or later.
+ */
+private fun ScriptContext.withKatachiJdkHint(message: Msg, jdk: GradleJdk): Msg {
+    if (!jdk.fromPath || env[SHELL_JAVA_HOME_ENV] != "") return message
+    val home = env["JAVA_HOME"]?.takeIf { it.isNotEmpty() } ?: return message
+    val major = javaMajorOf(Path(home, "bin", "java"))?.takeIf { it >= JDK_MIN_MAJOR } ?: return message
+    return Messages.Probe.katachiRunsOnJdk(message, major, home, shellQuote(home))
 }
 
 /** The leading number of `libs.versions.<accessor>` under `[versions]`; null when unreadable. The kit's `catalog_version_number`. */

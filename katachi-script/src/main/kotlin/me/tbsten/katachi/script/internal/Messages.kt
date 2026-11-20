@@ -344,6 +344,13 @@ internal object Messages {
             en = "Could not find the JDK that runs Gradle (there is no JAVA_HOME and no java on PATH). katachi needs JDK $JDK_MIN_MAJOR or later.",
         )
 
+        fun couldNotFindJdkMacOs(onPath: Any?, javaHomeTool: Any?): Msg = Msg(
+            ja = "Gradle を動かす JDK を見つけられませんでした（シェルに JAVA_HOME が無く、PATH の $onPath が動かす JDK も $javaHomeTool で見つかりません）。" +
+                "katachi は JDK $JDK_MIN_MAJOR 以上が要ります。",
+            en = "Could not find the JDK that runs Gradle (the shell has no JAVA_HOME, and $javaHomeTool finds no JDK for java on PATH ($onPath) to run). " +
+                "katachi needs JDK $JDK_MIN_MAJOR or later.",
+        )
+
         fun couldNotReadVersion(from: Any?): Msg = Msg(
             ja = "Gradle を動かす JDK のバージョンを読めませんでした（$from）。katachi は JDK $JDK_MIN_MAJOR 以上が要ります。",
             en = "Could not read the version of the JDK that runs Gradle ($from). katachi needs JDK $JDK_MIN_MAJOR or later.",
@@ -356,6 +363,13 @@ internal object Messages {
             en = "The JDK that runs Gradle is $jdkMajor (${source.en}). katachi needs JDK $JDK_MIN_MAJOR or later.\n" +
                 "    Point JAVA_HOME at JDK $JDK_MIN_MAJOR or later, or set org.gradle.java.home in gradle.properties to one,\n" +
                 "    then run this again.",
+        )
+
+        fun katachiRunsOnJdk(message: Msg, major: Any?, home: Any?, quotedHome: Any?): Msg = Msg(
+            ja = "${message.ja}\n" +
+                "    katachi は JDK $major（$home）で動いています。Gradle にもこの JDK を使うなら、シェルで export JAVA_HOME=$quotedHome としてから実行し直してください。",
+            en = "${message.en}\n" +
+                "    katachi runs on JDK $major ($home). To use this JDK for Gradle too, run export JAVA_HOME=$quotedHome in the shell, then run this again.",
         )
 
         fun gradleSJdk(jdkMajor: Any?, source: Msg): Msg = Msg(
