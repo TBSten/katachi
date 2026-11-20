@@ -35,7 +35,11 @@ import org.junit.jupiter.params.provider.MethodSource;
  *
  * <p>The fixture's entry point imitates the documentation processor: it writes one page to the
  * directory {@code --arg=outputDir=} names, {@code build/katachi/docs} otherwise, and writes
- * nothing under {@code --arg=mode=check}.
+ * nothing under {@code --arg=mode=check}. Like the real one, the page names the first file of
+ * {@code app/usecase} as its example when that directory exists. katachi's own {@code docs} is
+ * declared as reading the project for that reason, so the tests of skipping and caching it
+ * declare it back with {@link #DOCS_DECLARED_NOT_TO_READ}, as a definition that names its
+ * examples may.
  */
 class KatachiProcessorCachingFunctionalTest {
 
@@ -44,16 +48,42 @@ class KatachiProcessorCachingFunctionalTest {
     /** Where the fixture's entry point writes when no {@code outputDir} is given. */
     private static final String DEFAULT_PAGE = "build/katachi/docs/index.md";
 
+    /** The one line that lets {@code katachiDocs} be skipped and cached again. */
+    private static final String DOCS_DECLARED_NOT_TO_READ =
+            "outputs(\"docs\") {\n"
+                    + "    readsProjectFiles = false\n"
+                    + "}\n";
+
     static Stream<String> gradleVersions() {
         return KatachiPluginFunctionalTest.gradleVersions();
     }
 
     @ParameterizedTest(name = "Gradle {0}")
     @MethodSource("gradleVersions")
-    @DisplayName("docs は2回目が UP-TO-DATE になり、出力を消すと build cache から戻る")
-    void docsIsUpToDateAndRestoredFromTheCache(String gradleVersion, @TempDir Path projectDir)
+    @DisplayName("katachi の docs は、例に取ったプロジェクトのファイルの名前が変われば走り直して新しい名前を書く")
+    void docsRunsAgainWhenTheFileItTookAsAnExampleChanges(String gradleVersion, @TempDir Path projectDir)
             throws IOException {
         writeFixture(projectDir, "");
+        write(projectDir.resolve("app/usecase/GetUserUseCase.kt"), "class GetUserUseCase\n");
+        run(projectDir, gradleVersion, ":katachiDocs");
+        assertEquals("page of v1\nExample: GetUserUseCase.kt", read(projectDir.resolve(DEFAULT_PAGE)));
+
+        Files.move(
+                projectDir.resolve("app/usecase/GetUserUseCase.kt"),
+                projectDir.resolve("app/usecase/FetchUserUseCase.kt"));
+
+        // Nothing Gradle is told about changed: the classpath and the arguments are the same.
+        // UP-TO-DATE here would leave a page naming a file that is gone.
+        assertEquals(TaskOutcome.SUCCESS, outcome(run(projectDir, gradleVersion, ":katachiDocs"), ":katachiDocs"));
+        assertEquals("page of v1\nExample: FetchUserUseCase.kt", read(projectDir.resolve(DEFAULT_PAGE)));
+    }
+
+    @ParameterizedTest(name = "Gradle {0}")
+    @MethodSource("gradleVersions")
+    @DisplayName("読まないと宣言し直した docs は2回目が UP-TO-DATE になり、出力を消すと build cache から戻る")
+    void docsIsUpToDateAndRestoredFromTheCache(String gradleVersion, @TempDir Path projectDir)
+            throws IOException {
+        writeFixture(projectDir, DOCS_DECLARED_NOT_TO_READ);
 
         assertEquals(TaskOutcome.SUCCESS, outcome(run(projectDir, gradleVersion, ":katachiDocs"), ":katachiDocs"));
         assertEquals(
@@ -69,10 +99,10 @@ class KatachiProcessorCachingFunctionalTest {
 
     @ParameterizedTest(name = "Gradle {0}")
     @MethodSource("gradleVersions")
-    @DisplayName("定義（test のクラス）か --arg が変われば docs は再実行される")
+    @DisplayName("読まないと宣言し直した docs も、定義（test のクラス）か --arg が変われば再実行される")
     void docsRunsAgainWhenAnInputChanges(String gradleVersion, @TempDir Path projectDir)
             throws IOException {
-        writeFixture(projectDir, "");
+        writeFixture(projectDir, DOCS_DECLARED_NOT_TO_READ);
         run(projectDir, gradleVersion, ":katachiDocs");
 
         writeEntryPoint(projectDir, "v2");
@@ -86,10 +116,10 @@ class KatachiProcessorCachingFunctionalTest {
 
     @ParameterizedTest(name = "Gradle {0}")
     @MethodSource("gradleVersions")
-    @DisplayName("--arg outputDir= で出力先を変えると、Gradle が見る出力もそこに移る")
+    @DisplayName("読まないと宣言し直した docs は、--arg outputDir= で出力先を変えると Gradle が見る出力もそこに移る")
     void theOutputFollowsTheOutputDirArg(String gradleVersion, @TempDir Path projectDir)
             throws IOException {
-        writeFixture(projectDir, "");
+        writeFixture(projectDir, DOCS_DECLARED_NOT_TO_READ);
         String[] toElsewhere = {":katachiDocs", "--arg", "outputDir=build/elsewhere"};
 
         run(projectDir, gradleVersion, toElsewhere);
@@ -110,9 +140,9 @@ class KatachiProcessorCachingFunctionalTest {
 
     @ParameterizedTest(name = "Gradle {0}")
     @MethodSource("gradleVersions")
-    @DisplayName("mode=check の docs は何も書かないので毎回実行され、出力先も作られない")
+    @DisplayName("読まないと宣言し直しても、mode=check の docs は何も書かないので毎回実行され、出力先も作られない")
     void docsInCheckModeRunsEveryTime(String gradleVersion, @TempDir Path projectDir) throws IOException {
-        writeFixture(projectDir, "");
+        writeFixture(projectDir, DOCS_DECLARED_NOT_TO_READ);
         appendBuildScript(
                 projectDir,
                 "katachi { processors { docs { mode = me.tbsten.katachi.gradle.KatachiDocsMode.CHECK } } }\n");
@@ -126,9 +156,9 @@ class KatachiProcessorCachingFunctionalTest {
 
     @ParameterizedTest(name = "Gradle {0}")
     @MethodSource("gradleVersions")
-    @DisplayName("--arg mode=check も同じく毎回実行される")
+    @DisplayName("読まないと宣言し直しても、--arg mode=check も同じく毎回実行される")
     void docsWithTheCheckArgRunsEveryTime(String gradleVersion, @TempDir Path projectDir) throws IOException {
-        writeFixture(projectDir, "");
+        writeFixture(projectDir, DOCS_DECLARED_NOT_TO_READ);
 
         run(projectDir, gradleVersion, ":katachiDocs", "--arg", "mode=check");
         assertEquals(
@@ -179,15 +209,12 @@ class KatachiProcessorCachingFunctionalTest {
                         + "outputs(\"layout\") {\n"
                         + "    readsProjectFiles = true\n"
                         + "    outputDir = \"build/katachi/docs\"\n"
-                        + "}\n"
-                        + "outputs(\"docs\") {\n"
-                        + "    readsProjectFiles = true\n"
                         + "}\n");
 
-        run(projectDir, gradleVersion, ":katachiLayout", ":katachiDocs");
-        BuildResult second = run(projectDir, gradleVersion, ":katachiLayout", ":katachiDocs");
-        assertEquals(TaskOutcome.SUCCESS, outcome(second, ":katachiLayout"));
-        assertEquals(TaskOutcome.SUCCESS, outcome(second, ":katachiDocs"));
+        run(projectDir, gradleVersion, ":katachiLayout");
+        assertEquals(
+                TaskOutcome.SUCCESS,
+                outcome(run(projectDir, gradleVersion, ":katachiLayout"), ":katachiLayout"));
     }
 
     @ParameterizedTest(name = "Gradle {0}")
@@ -257,10 +284,15 @@ class KatachiProcessorCachingFunctionalTest {
                         + "                outputDir = arg.substring(\"--arg=outputDir=\".length());\n"
                         + "            }\n"
                         + "        }\n"
+                        + "        String content = \"page of " + version + "\";\n"
+                        + "        String[] examples = new java.io.File(\"app/usecase\").list();\n"
+                        + "        if (examples != null && examples.length > 0) {\n"
+                        + "            java.util.Arrays.sort(examples);\n"
+                        + "            content += \"\\nExample: \" + examples[0];\n"
+                        + "        }\n"
                         + "        java.io.File page = new java.io.File(outputDir, \"index.md\");\n"
                         + "        page.getParentFile().mkdirs();\n"
-                        + "        java.nio.file.Files.write(\n"
-                        + "                page.toPath(), \"page of " + version + "\".getBytes(\"UTF-8\"));\n"
+                        + "        java.nio.file.Files.write(page.toPath(), content.getBytes(\"UTF-8\"));\n"
                         + "    }\n"
                         + "}\n");
     }

@@ -338,8 +338,10 @@ public class KatachiProcessors {
      *
      * <p>Without this, a processor task runs every time. See {@link KatachiProcessorOutputs} for
      * what the declaration promises. The key does not have to be registered yet, and may be one
-     * of the defaults: {@code outputs("docs") { readsProjectFiles = true }} makes
-     * {@code katachiDocs} run every time again.
+     * of the defaults: {@code outputs("docs") { readsProjectFiles = false }} lets
+     * {@code katachiDocs} be up to date, which is only right for a definition whose every role
+     * with a {@code ktFileContent { }} (or another constraint that describes itself with an
+     * example file) names an {@code example(...)}.
      *
      * <pre>{@code
      * katachi {
@@ -391,9 +393,12 @@ public class KatachiProcessors {
         }
         if (KatachiDocsOptions.KEY.equals(key)
                 && DEFAULT_REGISTRATIONS.get(key).equals(getRegistrations().get(key))) {
-            // GenerateDocumentation reads the declarations only (ModuleIndex.unresolved, no
-            // filesOf), writes nothing but its outputDir, and writes nothing at all in check mode.
-            base.setReadsProjectFiles(false);
+            // GenerateDocumentation stays declared as reading the project: a role whose
+            // constraint describes itself with an example file (ktFileContent { }) and that names
+            // no example(...) gets the first matching file of the project on its page, and no
+            // input of the task changes with those files. The rest is what
+            // outputs("docs") { readsProjectFiles = false } needs to make the task cacheable: it
+            // writes nothing but its outputDir, and nothing at all in check mode.
             base.setOutputDir(KatachiDocsOptions.DEFAULT_OUTPUT_DIR);
             base.setOutputDirArg("outputDir");
             base.writesNothingWhen("mode", KatachiDocsMode.CHECK.wireName());

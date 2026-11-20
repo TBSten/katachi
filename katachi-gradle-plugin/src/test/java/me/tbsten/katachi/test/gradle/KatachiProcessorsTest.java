@@ -7,10 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import me.tbsten.katachi.gradle.KatachiOnExisting;
+import me.tbsten.katachi.gradle.KatachiProcessorOutputs;
 import me.tbsten.katachi.gradle.KatachiProcessors;
 import org.gradle.api.InvalidUserDataException;
 import org.junit.jupiter.api.DisplayName;
@@ -407,6 +411,56 @@ class KatachiProcessorsTest {
     }
 
     @Test
+    @DisplayName("katachi の docs はプロジェクトを読むと宣言され、katachiDocs は毎回走る")
+    void docsIsDeclaredAsReadingTheProject() {
+        KatachiProcessors processors = new KatachiProcessors();
+
+        assertEquals(
+                Boolean.TRUE,
+                resolvedOutputs(processors, "docs").getReadsProjectFiles(),
+                "GenerateDocumentation lists the project's files to find an example file for a role "
+                        + "with a ktFileContent { } and no example(...); declared as reading nothing, "
+                        + "katachiDocs keeps a page naming a file that is gone (KATACHI-421).");
+    }
+
+    @Test
+    @DisplayName("outputs(\"docs\") { readsProjectFiles = false } だけで、docs の出力先と mode=check の宣言がそろう")
+    void docsDeclaredNotToReadKeepsItsOutputDeclaration() {
+        KatachiProcessors processors = new KatachiProcessors();
+        processors.outputs("docs", outputs -> outputs.setReadsProjectFiles(false));
+
+        KatachiProcessorOutputs docs = resolvedOutputs(processors, "docs");
+
+        assertEquals(Boolean.FALSE, docs.getReadsProjectFiles());
+        assertEquals("build/katachi/docs", docs.getOutputDir());
+        assertEquals("outputDir", docs.getOutputDirArg());
+        assertEquals(Collections.singletonMap("mode", "check"), writesNothingWhen(docs));
+    }
+
+    @Test
+    @DisplayName("katachi 自身の processor のうち、プロジェクトを読まないと宣言するのは internalTemplatesJson だけ")
+    void internalTemplatesJsonIsTheOnlyDefaultDeclaredNotToRead() {
+        KatachiProcessors processors = new KatachiProcessors();
+
+        List<String> declaredNotToRead = new ArrayList<>();
+        for (String key : registrations(processors).keySet()) {
+            if (Boolean.FALSE.equals(resolvedOutputs(processors, key).getReadsProjectFiles())) {
+                declaredNotToRead.add(key);
+            }
+        }
+
+        assertEquals(
+                Collections.singletonList("internalTemplatesJson"),
+                declaredNotToRead,
+                "Gradle skips the task of a processor declared as reading no project file, so the "
+                        + "declaration has to be true. Before changing which of katachi's own "
+                        + "processors make it, add each one, with the arguments its task runs it with, "
+                        + "to katachi/src/test/kotlin/me/tbsten/katachi/test/processor/"
+                        + "ReadsNoProjectFilesSpec.kt, which runs it over a file system that records "
+                        + "every touch.");
+    }
+
+    @Test
     @DisplayName("誤りの JSON を書く場所は、既定の internalDefinitionJson にだけ答える")
     void definitionErrorsPathIsOnlyForTheDefaultDefinitionTask() {
         KatachiProcessors processors = new KatachiProcessors();
@@ -426,6 +480,29 @@ class KatachiProcessorsTest {
         processors.register("internalDefinitionJson", "com.example.processors.OurOwnJson");
 
         assertEquals(null, definitionErrorsPathOf(processors, "internalDefinitionJson"));
+    }
+
+    /** Calls the package-private {@code KatachiProcessors.resolvedOutputs(String)}. */
+    private static KatachiProcessorOutputs resolvedOutputs(KatachiProcessors processors, String key) {
+        try {
+            Method method = KatachiProcessors.class.getDeclaredMethod("resolvedOutputs", String.class);
+            method.setAccessible(true);
+            return (KatachiProcessorOutputs) method.invoke(processors, key);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /** Calls the package-private {@code KatachiProcessorOutputs.getWritesNothingWhen()}. */
+    @SuppressWarnings("unchecked")
+    private static Map<String, String> writesNothingWhen(KatachiProcessorOutputs outputs) {
+        try {
+            Method method = KatachiProcessorOutputs.class.getDeclaredMethod("getWritesNothingWhen");
+            method.setAccessible(true);
+            return (Map<String, String>) method.invoke(outputs);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     /** Calls the package-private {@code KatachiProcessors.definitionErrorsPathOf(String)}. */

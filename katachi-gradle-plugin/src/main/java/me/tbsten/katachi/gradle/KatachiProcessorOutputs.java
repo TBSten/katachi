@@ -28,10 +28,14 @@ import org.gradle.api.file.Directory;
  *       restored.
  * </ul>
  *
- * <p>{@code docs} is declared this way already when it is katachi's own documentation processor:
- * it writes to its {@code outputDir} argument, and under {@code mode=check} it writes nothing and
- * runs every time. Registering a processor of one's own under {@code docs} drops that
- * declaration, since katachi cannot know what the replacement reads.
+ * <p>katachi's own documentation processor is declared as reading the project, so
+ * {@code katachiDocs} runs every time: a role with a {@code ktFileContent { }} and no
+ * {@code example(...)} shows the first file of the project the constraint covers. Its
+ * {@code outputDir} argument is already declared as where it writes, and {@code mode=check} as
+ * writing nothing, so {@code outputs("docs") { readsProjectFiles = false }} is the whole
+ * declaration for a definition that names an {@code example(...)} on every such role.
+ * Registering a processor of one's own under {@code docs} drops all of it, since katachi cannot
+ * know what the replacement reads.
  *
  * <p>The output directory becomes Gradle's to restore, which means Gradle may replace its whole
  * contents from the build cache. Keep it a directory only this processor writes to; one shared

@@ -29,7 +29,8 @@ import me.tbsten.katachi.processor.ArchitectureProcessor
  * The one exception is a constraint that describes itself on its role's page
  * (`FileConstraint.documentSection`) with an example file, for a role that names no
  * `example(...)`: finding that file lists the project's files once. A project that cannot be
- * listed gives a stand-in example instead of a failure.
+ * listed gives a stand-in example instead of a failure. Because of it, the Gradle plugin runs
+ * `katachiDocs` every time instead of calling it up to date.
  *
  * ## What it answers
  *
