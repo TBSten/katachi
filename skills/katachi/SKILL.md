@@ -40,7 +40,8 @@ Read only the reference that fits, and inside it only the files it points you to
 │   └── src/test/kotlin/<package>/test/architecture/
 │       ├── ProjectArchitecture.kt      val projectArchitecture = architecture { … } (keep its name and package:
 │       │                               katachi { architecture = "<package>.test.architecture.projectArchitecture" } points at it)
-│       ├── ProjectArchitectureTest.kt  calls projectArchitecture.assert()
+│       ├── ProjectArchitectureTest.kt  calls projectArchitecture.assert(FileConstraintCheck())
+│       │                               (a plain assert() when scaffold ran with --no-konsist)
 │       └── <group>/<Role>Role.kt …     the split definition, one Role or group per file (naming: setup 3-3)
 └── tmp/install-katachi/                the working directory of the setup (or inside an already-ignored directory)
     ├── check-list.html                 the setup's checklist, with the codebase report from setup step 1 below it
