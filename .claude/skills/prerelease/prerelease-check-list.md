@@ -165,6 +165,23 @@
 
 </details>
 
+## 13. 探索的検証
+
+- [ ] 回したチャーター: {TODO core / konsist-konture / gradle-plugin / cli-script / diff / docs / ide-plugin（人）}（`exploratory.py list` の書式の検査 {TODO} 件）
+- [ ] 発見: p7 以上 {TODO} 件 / p6 以下 {TODO} 件 / 再現手順が書けず捨てた {TODO} 件
+- [ ] 検査に昇格できた（直す PR で fixture・spec に足した）: {TODO} 件
+- [ ] かかった時間: {TODO チャーターごと}
+- [ ] IDE plugin（人が触る回）: {TODO 観点カードを TODO.html に載せた / 回さない（理由）}
+- [ ] 結果: {TODO file://.local/release-v0.0.0/exploratory-<コンポーネント>.md の絶対パス（チャーターごと）}
+- [ ] 過去の判断どおりで出さなかった: {TODO} 件 / 見直し候補 {TODO} 件（decisions/ の `file: exploratory:…`）
+
+<details>
+    <summary>memo</summary>
+
+    {TODO}
+
+</details>
+
 ## この回で書き足した判断
 
 - [ ] 利用者が答えた判断を decisions/ に書き足した: {TODO} 件（`decisions.py check` が通る）

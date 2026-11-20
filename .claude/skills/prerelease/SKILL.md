@@ -37,7 +37,8 @@ flowchart LR
     AS -- " Gradle を空ける " --> D & B
     B -- " Gradle を空ける " --> IK["9-1. インストールキット<br/>build-katachi-cli.sh → check-install-kit.sh"]
     IK --> IE["9-2. 統合テスト<br/>手順書どおりに導入 ja / en<br/>＋手順書のレビュー"]
-    V1 & V2 & V3 & R & D & DR & TX & BM & C1 & C2 & C3 & CI & N & E2 & AS & IE --> Rep["7. 報告"]
+    IK --> EX["13. 探索的検証<br/>コンポーネント別チャーター（並列）"]
+    V1 & V2 & V3 & R & D & DR & TX & BM & C1 & C2 & C3 & CI & N & E2 & AS & IE & EX --> Rep["7. 報告"]
 ```
 
 - 1 が通ったら、2・3・4・8・10-4・11・12 を並列に始める。3 と 6 の中は、区分ごとの subagent をさらに並列にする。
@@ -47,6 +48,9 @@ flowchart LR
   Android Studio のダウンロード約 1.5 GB が乗る）を走らせる。5 のサンプルを動かす作業と 6-1 は、10-5 が終わってから始める。
 - 9 も Gradle を長く使う（15〜20 分）。6-1 の `generateApiDocs` が終わってから始める（巡回を先に始めたいので 6-1 を先にする）。
   5 のサンプルを動かす作業とは、どちらかが終わるのを待って重ねない。
+- 13 は 9-1 が終わってから始める（9-1 の配布物が入口）。入口が利用者と同じ配布物（`bin/katachi`・mavenLocal・ビルド済み docs）だけでリポジトリの
+  `build/` を使わないので、9-2 と重ねてよい。チャーターごとの subagent を並列に起こす（クラウドの 6 つ）。IDE plugin は Mac で人が触る回
+  （観点カードを TODO.html に載せる）。詳細は [references/exploratory.md](references/exploratory.md)。
 - 10-4 は Gradle を使わず数秒で材料が出て、判定の subagent もファイルを書き換えないので、どの手順とも重ねてよい。
 - 12 は Gradle を使わず数秒で材料が出る（main の履歴を読むだけで、JMH は走らせない）ので、どの手順とも重ねてよい。
   オーケストレータが自分で走らせ、対応表の行の見直しも自分でする。
@@ -69,7 +73,7 @@ flowchart LR
 - 1 の `prepare.py` が判断の件数と問題（`quote` が見つからない＝箇所が書き換わった、など）を出す。問題はチェックリストの 1 の memo に書く。
 - 手順を始めるとき（subagent に任せるならその subagent に）、[decisions/README.md](decisions/README.md) の表の「読む手順」のファイルと、
   README の「照らし方」を渡す。手順 3 は `api.md`、5・6・11 は `docs.md`、9 は `install.md`、10 は `ide-plugin.md`、
-  8・9・10 の失敗は `environment.md`、12 は `benchmark.md`、オーケストレータは `process.md`。
+  8・9・10 の失敗は `environment.md`、12 は `benchmark.md`、13 は `process.md`（探索の発見の判断は `file: exploratory:<チャーター>` で書く）、オーケストレータは `process.md`。
 - 同じものは警告にせず、結果の末尾の「過去の判断どおり（n 件）」に見出しだけ並べる（`<details>`）。チェックリストにも件数を書く。
 - 前提が変わったもの（`revisit` の条件を満たした・中身が重くなった・箇所が書き換わった）は「見直し候補」にして、TODO.html の
   「2. 判断してほしい」に前の判断と一緒に載せる。
@@ -101,12 +105,13 @@ flowchart LR
 | `install-kit.md`                 | 9-1      |
 | `install-e2e.md`                 | 9-2      |
 | `benchmark.md`                   | 12       |
+| `exploratory-<コンポーネント>.md` | 13       |
 | `TODO.html`                      | 途中から・オーケストレータ（利用者がやること・決めることだけ） |
 | `index.html`                     | 7（結果をひとまとめにしたもの） |
 
 ログ・材料・中間ファイルはすべて `.local/release-v<版>/tmp/` の下に置く。例: `tmp/release-note-material.txt`、
 `tmp/ci-checks/`（コマンドごとのログ）、`tmp/ide-plugin-nightly/`（uiTest のログ）、`tmp/ide-plugin-e2e/`
-（integrationTest のログ）、`tmp/ide-plugin-android-studio/`（integrationTestAndroidStudio のログ）、`tmp/install-kit/`（fixture とログ）、`tmp/docs-rules/`（ルールのチェックリストと `part-*.md`）、`tmp/ide-plugin-texts.md`（10-4 の材料）、`tmp/pages-<区分>.txt`、`tmp/crawl/`
+（integrationTest のログ）、`tmp/ide-plugin-android-studio/`（integrationTestAndroidStudio のログ）、`tmp/install-kit/`（fixture とログ）、`tmp/docs-rules/`（ルールのチェックリストと `part-*.md`）、`tmp/ide-plugin-texts.md`（10-4 の材料）、`tmp/exploratory/<コンポーネント>/`（13 の作業用ディレクトリ・ログ）、`tmp/pages-<区分>.txt`、`tmp/crawl/`
 （巡回の生データ）、`tmp/logs/`（pnpm や gradle のログ）、`tmp/visibility-<区分>.md`（区分ごとの一覧）、subagent の
 `part-*.md` などの下書き。subagent に任せるときも、この置き場所を渡す。
 
@@ -213,6 +218,16 @@ layout。**チェックの前に**、ほかのガイド（generate-code-from-tem
 benchmark は `check` に入らず、8 も bench ジョブを飛ばすので、ここで見ないとリリースまで誰も見ない。
 詳細: [references/benchmark.md](references/benchmark.md)
 
+## 13. 探索的検証
+
+1〜12 は決めた物差しを全件に当てる検査型。13 は**利用者の目線で、手順書にない触り方をして問題を探す**（KATACHI-402）。
+コンポーネントごとのチャーター（[references/exploratory/](references/exploratory/)。誰として・何を・どれくらいだけで、手順は書かない）を
+subagent に渡し、9-1 で組んだ配布物だけを入口に 45〜60 分ずつ並列に触らせる。結果は `exploratory-<コンポーネント>.md`（発見は再現手順が書けるものだけ。
+`decisions.py match --drop` で過去の判断と同じものを外す）。p7 以上は TODO.html に載せ、直す PR で再現を検査（fixture・spec）に昇格させる。
+IDE plugin は Mac で人が 15 分触る（AI が環境と観点カードを用意）。`exploratory.py list` でチャーターの書式を検査する。
+週替わりの nightly 版は [references/exploratory-nightly.md](references/exploratory-nightly.md)。
+詳細: [references/exploratory.md](references/exploratory.md)
+
 ## 7. 報告
 
 - **`TODO.html` は 7 を待たずに作り、状況が変わるたびに更新する**（subagent が返るたび・利用者が答えるたび）。
@@ -220,6 +235,7 @@ benchmark は `check` に入らず、8 も bench ジョブを飛ばすので、�
   `index.html` を作る。どちらも `.local/release-v<版>/` の直下。詳細: [references/report-html.md](references/report-html.md)
 - 8・10-1・10-2・10-5・9-1（CI と同等のチェック・IDE プラグインの nightly 相当・IDE プラグインの E2E・Android Studio での E2E・インストールキット）
   が1つでも落ちていれば、それは priority 10 の警告として「⚠️ 重要な警告」に必ず載せる。
+- 13（探索的検証）の発見のうち priority 7 以上は、「⚠️ 重要な警告」に載せる（TODO.html の「1. リリース前に直すか決める」と同じ内容）。
 - 上記のステップを実行してきた中で見つけた警告をサマライズし重要なものがあればユーザに警告する。
   過去の判断と同じもの（decisions/）は警告に数えない。
 - 報告の前に、この回で利用者が答えた判断が decisions/ に書き足されているかを確かめる（`decisions.py check` が通ること）。

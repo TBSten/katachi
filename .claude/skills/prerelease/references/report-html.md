@@ -14,7 +14,7 @@
   1. リリース前に直すか決める（priority 7 以上。放置すると利用者が詰まる）
   2. 判断してほしい（方針が要るもの。選択肢とおすすめを添える）
   3. 目を通してほしい（リリースノート、軽微な警告の一覧、ドキュメントの変更の提案）
-  4. 操作してほしい（push・publish・利用者の開発サーバーの再起動など、エージェントがやらない／やれないもの）
+  4. 操作してほしい（push・publish・利用者の開発サーバーの再起動など、エージェントがやらない／やれないもの。13 の IDE plugin の観点カード = 利用者が 15 分触る 5 つの観点もここ）
   5. 決定済み・対応中（利用者が答えたもの。消さずにここへ移し、🔧 対応中 / ✏️ 編集済み・検証中 / ✓ 済 を付ける）
      - 「直さない」「このまま」「後で」「方針」の答えは、ここへ移すのと同じタイミングで [decisions/](../decisions/README.md) に書き足し、
        項目の末尾に「→ decisions/<ファイル> に記録」と書く。書き足さないと、次の回で同じことを聞く
@@ -31,9 +31,9 @@
 
 - 雛形: [templates/index.html](../templates/index.html)。TODO.html と同じ見た目
 - 冒頭: 版・対象のコミット・日時、結果のバッジ（✅ / ⚠️）、リリースノートの概要（7 の報告と同じ 3 文）、TODO.html へのリンクと件数
-- 手順ごとのカード（1〜6・8・9-1・9-2・10-1・10-2・10-5・11）: 結果の1行（例: 「13 / 13」「要検討 0 件」「priority 7 以上 0 件」）、
+- 手順ごとのカード（1〜6・8・9-1・9-2・10-1・10-2・10-5・11・13）: 結果の1行（例: 「13 / 13」「要検討 0 件」「priority 7 以上 0 件」）、
   状態の色、成果物へのリンク（`visibility-check.md`・`docs-vs-impl.md`・`site-crawl.md`・`docs-rules.md`・`ci-checks.md`・
-  `ide-plugin-nightly.md`・`ide-plugin-e2e.md`・`ide-plugin-android-studio.md`・`install-kit.md`・`install-e2e.md`・`screenshots/`）。詳細は `<details>`
+  `ide-plugin-nightly.md`・`ide-plugin-e2e.md`・`ide-plugin-android-studio.md`・`install-kit.md`・`install-e2e.md`・`exploratory-<コンポーネント>.md`・`screenshots/`）。詳細は `<details>`
 - 重要な警告（priority 7 以上）: タイトルと1〜2文。TODO.html の該当項目と同じ内容
 - 軽微な警告: 件数と、手順ごとの内訳だけ（本文は各成果物へ）
 - 過去の判断どおりで出さなかったもの: 手順ごとの件数と、この回で decisions/ に書き足した件数
