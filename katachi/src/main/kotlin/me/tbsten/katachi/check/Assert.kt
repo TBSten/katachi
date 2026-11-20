@@ -94,8 +94,9 @@ public class KatachiArchitectureAssertionError internal constructor(
  * @throws KatachiArchitectureAssertionError when the check found anything that fails it.
  * @throws me.tbsten.katachi.dsl.KatachiProjectRootNotFoundException when no project root is found
  *   above the working directory.
- * @throws me.tbsten.katachi.dsl.KatachiGitUnavailableException when the project is in a git work
- *   tree but git cannot be run.
+ * @throws me.tbsten.katachi.dsl.KatachiGitUnavailableException when `files = gitTracked()` and
+ *   the project is in a git repository (a `.git` at the project root or above it), but git
+ *   cannot be run or does not answer for it.
  * @featured
  */
 public fun Architecture.assert(maxViolations: Int? = null): Unit {
@@ -139,8 +140,9 @@ public fun Architecture.assert(maxViolations: Int? = null): Unit {
  *   it, a check that threw included.
  * @throws me.tbsten.katachi.dsl.KatachiProjectRootNotFoundException when no project root is found
  *   above the working directory.
- * @throws me.tbsten.katachi.dsl.KatachiGitUnavailableException when the project is in a git work
- *   tree but git cannot be run.
+ * @throws me.tbsten.katachi.dsl.KatachiGitUnavailableException when `files = gitTracked()` and
+ *   the project is in a git repository (a `.git` at the project root or above it), but git
+ *   cannot be run or does not answer for it.
  */
 @ExperimentalKatachiApi
 public fun Architecture.assert(
@@ -179,8 +181,9 @@ public fun Architecture.assert(
  * @throws KatachiArchitectureAssertionError when the check found anything that fails it.
  * @throws me.tbsten.katachi.dsl.KatachiProjectRootNotFoundException when no project root is found
  *   above the working directory.
- * @throws me.tbsten.katachi.dsl.KatachiGitUnavailableException when the project is in a git work
- *   tree but git cannot be run.
+ * @throws me.tbsten.katachi.dsl.KatachiGitUnavailableException when `files = gitTracked()` and
+ *   the project is in a git repository (a `.git` at the project root or above it), but git
+ *   cannot be run or does not answer for it.
  * @return every violation of the run, sorted as the report sorts them: only warnings, or
  *   nothing, since any error throws instead.
  * @see assert
@@ -209,8 +212,9 @@ public fun Architecture.assertNoErrors(maxViolations: Int? = null): List<Violati
  *   it, a check that threw included.
  * @throws me.tbsten.katachi.dsl.KatachiProjectRootNotFoundException when no project root is found
  *   above the working directory.
- * @throws me.tbsten.katachi.dsl.KatachiGitUnavailableException when the project is in a git work
- *   tree but git cannot be run.
+ * @throws me.tbsten.katachi.dsl.KatachiGitUnavailableException when `files = gitTracked()` and
+ *   the project is in a git repository (a `.git` at the project root or above it), but git
+ *   cannot be run or does not answer for it.
  * @return every violation of the run: only warnings, or nothing, since any error throws instead.
  */
 @ExperimentalKatachiApi
