@@ -178,7 +178,7 @@ def changed_lines(old, new):
 
 def diff_size(diff_text):
     """git diff の追加・削除の行数。"""
-    return sum(1 for l in diff_text.split("\n") if l[:1] in "+-" and not l.startswith(("+++", "---")))
+    return sum(1 for l in diff_text.split("\n") if l[:1] in ("+", "-") and not l.startswith(("+++", "---")))
 
 
 def verify_translation(ja, en_old, en_new, diff_text):
@@ -288,7 +288,7 @@ def cmd_translate(a):
         print(f"ERROR: {e}")
     if en_old is not None:
         d = subprocess.run(["diff", "-u", str(dst), str(out)], capture_output=True, text=True).stdout
-        print(f"今の訳との差分: {sum(1 for l in d.split(chr(10)) if l[:1] in '+-' and not l.startswith(('+++', '---')))} 行"
+        print(f"今の訳との差分: {sum(1 for l in d.split(chr(10)) if l[:1] in ('+', '-') and not l.startswith(('+++', '---')))} 行"
               f"（原本の差分は {diff_size(diff_text)} 行）。確認: diff -u {dst} {out}")
     if errors:
         print("検査に落ちたので採用しない（訳のファイルには書いていない）。直すか、従来のやり方で訳す。")
