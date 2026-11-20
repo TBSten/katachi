@@ -10,7 +10,7 @@ Locally, run:
 katachi agent test
 ```
 
-It runs `./gradlew :architecture-test:test` with every violation in the log (not only the first 10), prints a summary, keeps the full log and shows what changed since the previous run. Section 4 compares against it.
+It runs `./gradlew :architecture-test:test` with every violation in the log (not only the first 10), prints a summary, keeps the full log and shows what changed since the previous run. Section 4 compares against it. If the verification module (the module that applies the `me.tbsten.katachi` plugin) is not `architecture-test` and there is no check list from the setup, run `katachi agent test --module-dir <its path>`, here and in section 4.
 
 Without the `katachi` command, run `./gradlew :architecture-test:test -Dkatachi.maxViolations=all` (without `-Dkatachi.maxViolations=all` only the first 10 are printed). The violations are in the test's failure message: in the console, or in full under `architecture-test/build/test-results/test/` (read `:architecture-test` as the verification module's path).
 

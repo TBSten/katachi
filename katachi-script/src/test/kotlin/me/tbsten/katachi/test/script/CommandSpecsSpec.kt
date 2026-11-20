@@ -85,7 +85,9 @@ class CommandSpecsSpec : FreeSpec({
         parsed.passthrough shouldBe listOf("--info", "-Dkatachi.maxViolations=3")
     }
 
-    "rawPositionals のサブコマンドは - で始まる値も位置引数にする" {
-        parseArgs(commandSpec("compare-violations"), listOf("before.log", "--after")).positionals shouldBe listOf("before.log", "--after")
+    "compare-violations は位置引数の前後の --module-dir を読む（KATACHI-420）" {
+        val parsed = parseArgs(commandSpec("compare-violations"), listOf("before.log", "--module-dir", "static-analysis/katachi", "after.log"))
+        parsed.value("--module-dir") shouldBe "static-analysis/katachi"
+        parsed.positionals shouldBe listOf("before.log", "after.log")
     }
 })

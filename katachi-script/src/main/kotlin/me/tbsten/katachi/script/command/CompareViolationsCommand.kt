@@ -11,7 +11,9 @@ import me.tbsten.katachi.script.internal.run
 /**
  * The `katachi agent compare-violations` command: compares the violations of two test logs, as before and after a refactoring of the definition.
  *
- * It takes no options, so building one is writing `katachi agent compare-violations` in a shell.
+ * Building one is writing `katachi agent compare-violations ...` in a shell: the methods are named after the
+ * options of `katachi agent compare-violations --help` and add the same flag. Each returns a new
+ * command; calling one twice keeps the last value.
  *
  * ## Example 1: build the command, print it and run it
  *
@@ -34,6 +36,13 @@ public class CompareViolationsCommand internal constructor(
     private val line: CommandLine,
 ) : KatachiCommand {
     private fun next(line: CommandLine) = CompareViolationsCommand(katachi, line)
+
+    /**
+     * Same as `katachi agent compare-violations --module-dir <path>` on the command line: where the verification module is, relative to the Gradle root. Without it, `meta.moduleDir` of the check list, then `architecture-test`.
+     *
+     * @param path Such as `static-analysis/katachi`.
+     */
+    public fun `module-dir`(path: String): CompareViolationsCommand = next(line.with("--module-dir", path))
 
     /**
      * Appends [arguments] as they are, for an option this builder has no method for yet:

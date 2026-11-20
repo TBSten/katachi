@@ -45,6 +45,13 @@ public class TestCommand internal constructor(
     public fun save(name: String): TestCommand = next(line.with("--save", name))
 
     /**
+     * Same as `katachi agent test --module-dir <path>` on the command line: where the verification module is, relative to the Gradle root. Without it, `meta.moduleDir` of the check list, then `architecture-test`.
+     *
+     * @param path Such as `static-analysis/katachi`.
+     */
+    public fun `module-dir`(path: String): TestCommand = next(line.with("--module-dir", path))
+
+    /**
      * Same as `katachi agent test -- <arguments>...` on the command line: the arguments after `--`, handed to `./gradlew` as they are. Calling it again adds more.
      *
      * @param arguments Such as `--info`.

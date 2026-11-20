@@ -16,7 +16,7 @@ If the check is failing and you do not yet know why, read [../fix-violations/REA
 
 ## The loop every change follows
 
-1. **Find the definition and how the check runs.** The verification module is the Gradle module that applies the `me.tbsten.katachi` plugin; its `katachi { architecture = "…" }` names `projectArchitecture`, and the definition lives under `src/test/kotlin/<package>/test/architecture/` of that module. Read the files you are about to change, and how the existing ones are split and named, before writing anything: follow the conventions already there.
+1. **Find the definition and how the check runs.** The verification module is the Gradle module that applies the `me.tbsten.katachi` plugin; its `katachi { architecture = "…" }` names `projectArchitecture`, and the definition lives under `src/test/kotlin/<package>/test/architecture/` of that module. Read the files you are about to change, and how the existing ones are split and named, before writing anything: follow the conventions already there. If that module is not `architecture-test` and the setup's working directory (with its check list) is gone, add `--module-dir <its path>` to every `katachi agent test`, `katachi agent compare-violations` and `katachi lint` in these steps (on `agent test`, before `--`), and read `:architecture-test` as its Gradle path.
 2. **Take the result before the change.** Run the check once and keep the log.
 
    ```sh
