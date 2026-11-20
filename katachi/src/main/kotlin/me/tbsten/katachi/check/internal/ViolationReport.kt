@@ -196,6 +196,7 @@ internal fun blockOf(violation: Violation, root: String?): List<String> = when (
     is UnsatisfiedFileConstraint -> unsatisfiedFileConstraintBlock(violation, root)
     is UncheckedFileConstraint -> uncheckedFileConstraintBlock(violation, root)
     is AmbiguousLayout -> ambiguousLayoutBlock(violation, root)
+    is IgnoredLayout -> ignoredLayoutBlock(violation, root)
     is MissingDescription -> missingDescriptionBlock(violation, root)
     is StaleBaselineEntry -> staleBaselineEntryBlock(violation, root)
     // A violation from outside katachi. The block is the first line plus the values it states
@@ -209,6 +210,11 @@ internal fun blockOf(violation: Violation, root: String?): List<String> = when (
 private fun unexpectedFileBlock(violation: UnexpectedFile, root: String?): List<String> = buildList {
     add("[${violation.label}] ${displayExistingPath(root, violation.path)}")
     add("${STEP}No role is defined for this file.")
+    // Before the nearby locations: they only back the move, and moving does not help a file the OS writes.
+    osWrittenFileLines(violation.path)?.let { lines ->
+        addAll(lines)
+        return@buildList
+    }
     if (violation.nearby.isNotEmpty()) {
         // Inside the branch, not before it: with no nearby locations this and the blank line
         // before `How to fix:` would land back to back and open a two-line gap.
@@ -233,10 +239,7 @@ private fun unexpectedFileBlock(violation: UnexpectedFile, root: String?): List<
     }
     add("$STEP$STEP- Delete it if it is not needed")
     add("$STEP$STEP- Add a new role for it:")
-    val suggestion = violation.suggestedRole
-        ?.let { roleSuggestionFor(violation.path, isDirectory = false, roleName = it) }
-        ?: roleSuggestionFor(violation.path, isDirectory = false)
-    addAll(fragment(suggestion))
+    addAll(fragment(roleSuggestionFor(violation.path, isDirectory = false, roleName = violation.suggestedRole)))
 }
 
 private fun unexpectedDirectoryBlock(violation: UnexpectedDirectory, root: String?): List<String> = buildList {
@@ -247,7 +250,7 @@ private fun unexpectedDirectoryBlock(violation: UnexpectedDirectory, root: Strin
     add("$STEP$STEP- Delete it if it is not needed")
     add("$STEP$STEP- Declare what belongs in it in the layout of an existing role")
     add("$STEP$STEP- Add a new role for it:")
-    addAll(fragment(roleSuggestionFor(violation.path, isDirectory = true)))
+    addAll(fragment(roleSuggestionFor(violation.path, isDirectory = true, roleName = violation.suggestedRole)))
 }
 
 private fun captureMismatchBlock(violation: CaptureMismatch, root: String?): List<String> = buildList {
@@ -270,15 +273,18 @@ private fun captureMismatchBlock(violation: CaptureMismatch, root: String?): Lis
     add("${STEP}Declared at: ${violation.declaredAt}")
     add("")
     add("${STEP}How to fix:")
+    for (fix in violation.transformFixes()) {
+        add("$STEP$STEP- In the layout at ${violation.declaredAt}, write capture(\"${fix.name}\").${fix.transform} at level ${fix.level + 1}")
+    }
     val expectedPath = violation.expectedPath
     val held = failedNames.singleOrNull()?.let { name ->
         violation.occurrences.firstOrNull { it.name == name && it.transform == null && it.expected == null }?.value
     }
     val reads = if (held != null) "every level named ${failedNames.single()} reads \"$held\"" else "the levels named ${failedNames.joinToString(", ")} agree"
-    if (expectedPath != null) {
+    if (expectedPath != null && !violation.movesIntoNonPackageDirectory()) {
         add("$STEP$STEP- Move it so that $reads:")
         add("$STEP$STEP$STEP$STEP${displayPath(root, expectedPath)}")
-    } else {
+    } else if (expectedPath == null) {
         add("$STEP$STEP- Move it so that ${if (held != null) reads else "every level named ${failedNames.joinToString(", ")} reads the same value"}")
     }
     add("$STEP$STEP- Delete it if it is not needed")

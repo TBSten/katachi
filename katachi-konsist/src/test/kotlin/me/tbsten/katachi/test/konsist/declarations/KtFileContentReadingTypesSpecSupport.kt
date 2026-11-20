@@ -1,6 +1,9 @@
 package me.tbsten.katachi.test.konsist.declarations
 
 import kotlin.random.Random
+import me.tbsten.katachi.test.pbt.chance
+import me.tbsten.katachi.test.pbt.pick
+import me.tbsten.katachi.test.pbt.pickOrNull
 
 /*
  * Writing a class, an interface or an object for the reading property: type parameters with

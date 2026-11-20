@@ -4577,7 +4577,7 @@ cmd_lint() {
 CHECK_FAILED_LINE='^[[:space:]]*([A-Za-z0-9_.$]*(Error|Exception): )?Katachi check failed:'
 # katachi の違反の種類（katachi/src/main/kotlin/me/tbsten/katachi/check の Violation の label）。
 # katachi が種類を足したら、ここにも足す（check-install-kit-smoke.sh の check_result_headings が突き合わせる）。
-KATACHI_VIOLATION_LABELS='UnexpectedFile|UnexpectedDirectory|CaptureMismatch|MissingFile|UncheckedFile|UncheckedDirectory|UncheckedCheck|UnsatisfiedFileConstraint|UncheckedFileConstraint|AmbiguousLayout|MissingDescription|StaleBaselineEntry'
+KATACHI_VIOLATION_LABELS='UnexpectedFile|UnexpectedDirectory|CaptureMismatch|MissingFile|UncheckedFile|UncheckedDirectory|UncheckedCheck|UnsatisfiedFileConstraint|UncheckedFileConstraint|AmbiguousLayout|IgnoredLayout|MissingDescription|StaleBaselineEntry'
 VIOLATION_HEADING_LINE="^[[:space:]]*\\[(${KATACHI_VIOLATION_LABELS})\\] "
 extract_check_result() {
 	grep -E "${CHECK_FAILED_LINE}|${VIOLATION_HEADING_LINE}" "$1" |

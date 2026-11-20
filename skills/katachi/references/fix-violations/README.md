@@ -30,13 +30,14 @@ Each violation is a paragraph like this:
 
 | Label | What it says | Usually |
 |---|---|---|
-| `[UnexpectedFile]` / `[UnexpectedDirectory]` | A file or directory no Role declares (for a directory, nothing below it was checked) | A new kind of file (add a Role), a file in the wrong place (move it), or a structure that changed (follow it) |
+| `[UnexpectedFile]` / `[UnexpectedDirectory]` | A file or directory no Role declares (for a directory, nothing below it was checked) | A new kind of file (add a Role), a file in the wrong place (move it), or a structure that changed (follow it). A file the OS writes on its own (`.DS_Store`, `Thumbs.db`, `desktop.ini`) never gets a Role: add it to `.gitignore` as its `How to fix:` says (a Role fails with `[MissingFile]` on a checkout without it, such as CI) |
 | `[MissingFile]` | A Role declares a single file that does not exist | The file was removed or renamed; drop or fix the declaration, or create the file if it should exist. For a Gradle wrapper file, run `gradle wrapper`, or write `gradle(requireWrapper = false)` when the project has no wrapper |
 | `[UnsatisfiedFileConstraint]` | A constraint on contents (`ktFileContent { }`, `fileConstraint`) does not hold | The code breaks the rule (fix the code, with the user's consent), or the rule is out of date |
-| `[CaptureMismatch]` | Two places named with the same `capture("…")` have different values | A package that does not match its module directory, or a layout that should give the two places separate names |
+| `[CaptureMismatch]` | Two places named with the same `capture("…")` have different values | A package that spells its module directory's name in another case (write the conversion the block suggests, such as `capture("feature").flatCase`), a package that does not match its module directory, or a layout that should give the two places separate names |
 | `[UncheckedFileConstraint]` / `[UncheckedFile]` / `[UncheckedDirectory]` / `[UncheckedCheck]` | The check could not run for that path; it is neither allowed nor rejected | Read the cause printed under it. `[UncheckedFileConstraint]` with `Pass FileConstraintCheck() to assert()` means the test does not run the constraint check |
 | `[StaleBaselineEntry]` | The baseline holds back a violation that no longer exists | Something was fixed: prune the entry (below) |
 | `[AmbiguousLayout]` (warning) | Two declarations claim the same file | Narrow one of them; the file must belong to one Role |
+| `[IgnoredLayout]` (warning) | A line of a Role's `layout { }` lies in a directory an `ignore()` hides (or a module's `build`, which `gradle()` ignores), so none of its files is checked | Remove or narrow the `ignore()` if the files matter; otherwise drop the line from the Role |
 
 Warnings never fail the check, but do not ignore them: fix them or tell the user why they stay.
 

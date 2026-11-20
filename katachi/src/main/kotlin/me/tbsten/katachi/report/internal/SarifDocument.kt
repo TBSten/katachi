@@ -8,6 +8,7 @@ import me.tbsten.katachi.check.UncheckedCheck
 import me.tbsten.katachi.check.UncheckedFileConstraint
 import me.tbsten.katachi.check.UnsatisfiedFileConstraint
 import me.tbsten.katachi.check.Violation
+import me.tbsten.katachi.check.internal.IgnoredLayout
 import me.tbsten.katachi.check.internal.MissingDescription
 import me.tbsten.katachi.check.internal.STEP
 import me.tbsten.katachi.check.internal.blockOf
@@ -167,6 +168,11 @@ private fun propertiesOf(violation: Violation): SarifJson = sarifObject {
         is AmbiguousLayout -> {
             put("role", violation.claims.joinToString(",") { it.role.qualifiedName })
             put("declaredAt", violation.claims.firstOrNull()?.declaredAt?.toString())
+        }
+
+        is IgnoredLayout -> {
+            put("role", violation.role.qualifiedName)
+            put("declaredAt", violation.declaredAt.toString())
         }
 
         is UncheckedCheck -> put("check", violation.check)

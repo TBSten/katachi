@@ -26,4 +26,9 @@ for arg do
 	esac
 done
 
+# Homebrew's `kotlin` fills an unset or empty JAVA_HOME with its own openjdk before the JVM starts, which ./gradlew in
+# this shell never sees. Pass on this shell's JAVA_HOME, empty when it has none (SHELL_JAVA_HOME_ENV in katachi-script).
+KATACHI_SHELL_JAVA_HOME=${JAVA_HOME:-}
+export KATACHI_SHELL_JAVA_HOME
+
 exec kotlin "$KATACHI_HOME/katachi.main.kts" "$@"

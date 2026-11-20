@@ -47,8 +47,9 @@ Read only the reference that fits, and inside it only the files it points you to
 └── tmp/install-katachi/                the working directory of the setup (or inside an already-ignored directory)
     ├── check-list.html                 the setup's checklist, with the codebase report from setup step 1 below it
     │                                   (two JSON blocks inside, checklist and report; setup 0-3 says how to edit them)
-    └── tmp/                            logs, fetched documentation, notes; without Homebrew also katachi.main.kts and
-                                        katachi-command.txt (how to run katachi: setup 0-1)
+    └── tmp/                            logs, fetched documentation, notes; without Homebrew also katachi.main.kts;
+                                        katachi-command.txt when katachi runs as a script or needs a JAVA_HOME= prefix
+                                        (how to run katachi: setup 0-1)
 ```
 
 The working directory is only for the setup and is ignored by git, so it may be gone later. Nothing below needs it: the logs of the check are kept in `build/katachi/` of the project root.

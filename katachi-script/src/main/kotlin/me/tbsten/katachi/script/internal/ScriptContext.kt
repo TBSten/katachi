@@ -43,6 +43,7 @@ internal class ScriptContext(
     val clock: Clock = Clock.systemDefaultZone(),
     val http: HttpFetcher = JdkHttpFetcher,
     val launch: ProcessLauncher = InheritingIoLauncher,
+    val macOsJavaStub: MacOsJavaStub? = MacOsJavaStub.onThisHost(),
 ) {
     var lang: Lang = Lang.fromEnv(env) ?: Lang.JA
 

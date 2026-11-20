@@ -1,5 +1,9 @@
 package me.tbsten.katachi.test.konsist.declarations
 
+import me.tbsten.katachi.test.pbt.chance
+import me.tbsten.katachi.test.pbt.pick
+import me.tbsten.katachi.test.pbt.pickOrNull
+
 /*
  * The source half of a random case: for each line the declarations that follow it, for each
  * `allow(..., anythingElse)` some it allows, and the imports the import lines allow.

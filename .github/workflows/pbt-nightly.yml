@@ -1,0 +1,93 @@
+name: Property-based tests nightly
+
+# The property-based specs of :katachi and :katachi-konsist (the ones built on
+# katachi/src/testFixtures/.../pbt/PropertyTrials.kt, and the older seeded loops that read the same
+# seed and scale), run with 20 times the trials of the pull request run and a seed of their own each
+# night. ide-plugin-nightly.yml does the same for the IDE plugin's uiTest.
+#
+# `./gradlew check` keeps each property's own seed and few trials, so that it stays short and
+# repeatable. A layout, a glob or a baseline that only a rare combination breaks shows up here
+# instead, somewhere else each night. A red run prints the seed and the shrunk case; the job
+# summary has the command that plays the same seed again.
+
+on:
+  schedule:
+    # 19:30 UTC = 04:30 JST, after ide-plugin-nightly.yml has started.
+    - cron: '30 19 * * *'
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: 'Seed of the property-based tests (empty: the run id)'
+        required: false
+        default: ''
+      scale:
+        description: 'How many times the default number of trials to run'
+        required: false
+        default: '20'
+
+concurrency:
+  group: pbt-nightly
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  pbt:
+    name: pbt (scale ${{ inputs.scale || '20' }})
+    runs-on: ubuntu-latest
+    # Scale 30 of the new specs took seconds in a cloud container; the whole test tasks of both
+    # modules dominate, and the limit leaves room for a cold Gradle cache.
+    timeout-minutes: 60
+    env:
+      PBT_SEED: ${{ inputs.seed || github.run_id }}
+      PBT_SCALE: ${{ inputs.scale || '20' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      # Written first, so that a red run has it too.
+      - name: Record the seed
+        run: |
+          {
+            echo "### Property-based tests (:katachi, :katachi-konsist)"
+            echo ""
+            echo "seed \`${PBT_SEED}\`, scale \`${PBT_SCALE}\`. To play the same trials again:"
+            echo ""
+            echo "\`\`\`"
+            echo "./gradlew :katachi:test :katachi-konsist:test -Pkatachi.pbt.seed=${PBT_SEED} -Pkatachi.pbt.scale=${PBT_SCALE}"
+            echo "\`\`\`"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      # The whole test tasks rather than a name filter: a property spec is not always named *PropertySpec
+      # (DeclarationExplanationSpec, the baseline *SequenceSpec), and the other specs take little time.
+      - name: Run the tests
+        run: >
+          ./gradlew :katachi:test :katachi-konsist:test
+          "-Pkatachi.pbt.seed=${PBT_SEED}"
+          "-Pkatachi.pbt.scale=${PBT_SCALE}"
+          --continue
+          --console=plain
+          --stacktrace
+
+      - name: Upload reports
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: pbt-reports
+          path: |
+            katachi/build/reports/tests/
+            katachi/build/test-results/
+            katachi-konsist/build/reports/tests/
+            katachi-konsist/build/test-results/
+          retention-days: 14
+          if-no-files-found: ignore

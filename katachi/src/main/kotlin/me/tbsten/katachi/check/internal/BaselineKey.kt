@@ -58,6 +58,7 @@ internal fun baselineRuleOf(violation: Violation): BaselineRule = when (violatio
     is UncheckedFileConstraint -> BaselineRule.NotHeldBack
     // Warnings never fail a run, so there is nothing to hold back.
     is AmbiguousLayout -> BaselineRule.NotHeldBack
+    is IgnoredLayout -> BaselineRule.NotHeldBack
     is MissingDescription -> BaselineRule.NotHeldBack
     // The ledger would be holding back its own complaint about itself.
     is StaleBaselineEntry -> BaselineRule.NotHeldBack

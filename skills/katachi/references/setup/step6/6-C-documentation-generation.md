@@ -43,8 +43,8 @@ Do this only if the user wants it.
    **Do not use a name that matches `.gitignore`, such as `build` or `out`, for the output directory** (same as 3-3; pages you thought you committed would be ignored).
 
    **The output directory becomes katachi's.** Any `*.md` in it that this run did not generate is deleted. Do not point it at a directory holding handwritten Markdown.
-4. Generate again, and confirm the check ([run-the-check](../../run-the-check/README.md)) reports 0 violations.
+4. Generate again, and confirm the check ([run-the-check](../../run-the-check/README.md)) reports 0 violations, or only the ones recorded in the checklist's `violations`.
 
 Record the files you created or changed in `changedFiles`, then mark `6-3` done.
 
-> **The session may end here.** The next session finds the working directory (the directory with `check-list.html` below the project root), reads the checklist's JSON, and goes on from there: from the first item that is not done, or, once step 5 is done, from what the user asks for (6-0, or one of 6-A to 6-D). The sections are in the table in `references/setup/README.md`. The previous session's results are in the checklist and the report; if `tmp/katachi-command.txt` is there, run katachi the way it says (0-1). Do not rely on the conversation's memory.
+> **The session may end here.** The next session finds the working directory (the directory with `check-list.html` below the project root), reads the checklist's JSON, and goes on from there: from the first item that is not done, or, once step 5 is done, from what the user asks for (6-0, or one of 6-A to 6-D). The sections are in the table in `references/setup/README.md`. The previous session's results are in the checklist and the report; if `tmp/katachi-command.txt` is there, run katachi the way it says, and put a `JAVA_HOME=<path>` it starts with in front of `./gradlew` too (0-1). Do not rely on the conversation's memory.

@@ -2,14 +2,15 @@ package me.tbsten.katachi.test.dsl
 
 import kotlin.random.Random
 import me.tbsten.katachi.dsl.LayoutDirectory
+import me.tbsten.katachi.dsl.LayoutDirectoryScope
 import me.tbsten.katachi.dsl.LayoutFile
 import me.tbsten.katachi.dsl.LayoutScope
 
 /*
  * Random `layout { }` blocks for the property specs of capture().
  *
- * kotest's property testing (io.kotest.property) is not a dependency of :katachi, so these specs
- * draw from a seeded [Random] of their own and shrink a counterexample greedily ([shrink]). Every
+ * These specs draw from a seeded [Random] of their own and shrink a counterexample greedily
+ * ([shrink]), as every property of katachi does (`me.tbsten.katachi.test.pbt.PropertyTrials`). Every
  * trial is reproducible from its seed, which a failure prints together with the shrunk layout.
  */
 
@@ -41,6 +42,12 @@ internal sealed interface RNode {
 
     /** `a / b / "name".file()`. */
     data class File(val dirs: List<RSeg>, val name: String) : RNode
+
+    /** `anyFile()`, only ever a child of a [Dir]. */
+    data object AnyFile : RNode
+
+    /** `ignore()`, only ever a child of a [Dir]. */
+    data object Ignore : RNode
 }
 
 /** The name the one `*` a property spec replaces is given. */
@@ -72,6 +79,9 @@ private fun LayoutScope.declare(node: RNode, named: Boolean) {
             val file = node.name.file()
             if (node.dirs.isNotEmpty()) attach(chain(node.dirs, named), file)
         }
+
+        RNode.AnyFile -> (this as LayoutDirectoryScope).anyFile()
+        RNode.Ignore -> (this as LayoutDirectoryScope).ignore()
     }
 }
 
@@ -95,7 +105,7 @@ private fun LayoutScope.div(parent: Any, child: Any): Any = when {
     else -> error("unexpected $parent / $child")
 }
 
-private fun LayoutScope.open(directory: Any, block: me.tbsten.katachi.dsl.LayoutDirectoryScope.() -> Unit) {
+private fun LayoutScope.open(directory: Any, block: LayoutDirectoryScope.() -> Unit) {
     when (directory) {
         is String -> directory(block)
         is LayoutDirectory -> directory(block)
@@ -134,6 +144,9 @@ internal fun renderDsl(nodes: List<RNode>, named: Boolean): String = buildString
                 val file = "\"${n.name}\".file()"
                 line(indent, (n.dirs.map(::seg) + file).joinToString(" / "))
             }
+
+            RNode.AnyFile -> line(indent, "anyFile()")
+            RNode.Ignore -> line(indent, "ignore()")
         }
     }
     nodes.forEach { node(it, 0) }
@@ -143,14 +156,29 @@ internal fun renderDsl(nodes: List<RNode>, named: Boolean): String = buildString
 
 // region generation
 
-/** A random layout whose `*`s carry no mark; see [markOneStar]. */
-internal fun Random.randomLayout(): List<RNode> = List(nextInt(1, 4)) { node(depth = 0) }
+/**
+ * A random layout whose `*`s carry no mark; see [markOneStar]. [openAndIgnored] also puts `anyFile()`
+ * and `ignore()` in some directory blocks.
+ */
+internal fun Random.randomLayout(openAndIgnored: Boolean = false): List<RNode> = List(nextInt(1, 4)) { node(depth = 0, openAndIgnored) }
 
-private fun Random.node(depth: Int): RNode =
+private fun Random.node(depth: Int, openAndIgnored: Boolean): RNode =
     if (depth >= 2 || nextInt(2) == 0) {
         RNode.File(List(nextInt(0, 3)) { seg() }, FILE_PATTERNS.random(this))
     } else {
-        RNode.Dir(List(nextInt(1, 3)) { seg() }, List(nextInt(0, 3)) { node(depth + 1) })
+        // Levels first, then children: the order the default generator has always drawn in, so its seeds keep their layouts.
+        val segs = List(nextInt(1, 3)) { seg() }
+        val children = List(nextInt(0, 3)) { node(depth + 1, openAndIgnored) }
+        val extra = if (openAndIgnored) {
+            when (nextInt(6)) {
+                0 -> listOf(RNode.AnyFile)
+                1 -> listOf(RNode.Ignore)
+                else -> emptyList()
+            }
+        } else {
+            emptyList()
+        }
+        RNode.Dir(segs, children + extra)
     }
 
 private fun Random.seg(): RSeg = when (nextInt(10)) {
@@ -165,6 +193,7 @@ internal fun starCount(nodes: List<RNode>): Int = nodes.sumOf { node ->
     when (node) {
         is RNode.Dir -> node.segs.count { it is RSeg.Star } + starCount(node.children)
         is RNode.File -> node.dirs.count { it is RSeg.Star }
+        RNode.AnyFile, RNode.Ignore -> 0
     }
 }
 
@@ -173,6 +202,7 @@ internal fun hasChosenStar(nodes: List<RNode>): Boolean = nodes.any { node ->
     when (node) {
         is RNode.Dir -> node.segs.any { it is RSeg.Star && it.chosen } || hasChosenStar(node.children)
         is RNode.File -> node.dirs.any { it is RSeg.Star && it.chosen }
+        RNode.AnyFile, RNode.Ignore -> false
     }
 }
 
@@ -191,6 +221,7 @@ internal fun markOneStar(nodes: List<RNode>, index: Int): List<RNode> {
         when (node) {
             is RNode.Dir -> RNode.Dir(segs(node.segs), walk(node.children))
             is RNode.File -> RNode.File(segs(node.dirs), node.name)
+            RNode.AnyFile, RNode.Ignore -> node
         }
     }
     return walk(nodes)
@@ -220,6 +251,8 @@ private fun smallerNodes(node: RNode): Sequence<RNode> = sequence {
         is RNode.File -> for (i in node.dirs.indices) {
             yield(node.copy(dirs = node.dirs.filterIndexed { j, _ -> j != i }))
         }
+
+        RNode.AnyFile, RNode.Ignore -> Unit
     }
 }
 
