@@ -2,12 +2,8 @@ package me.tbsten.katachi.script.internal
 
 // The --help text: the install kit's usage, rewritten for the katachi command. Hand-written prose,
 // not generated from COMMAND_SPECS (a test checks that it names every option there).
-// `katachi --help` lists what people type; `katachi agent --help` lists what the katachi skill's steps run (KATACHI-290 / 329).
 
 internal fun ScriptContext.usage(): String = pick(Messages.Usage.top)
-
-/** `katachi agent --help`: the [CommandSpec.agent] commands. */
-internal fun ScriptContext.agentUsage(): String = pick(Messages.Usage.agent)
 
 /*
  * Environment variables for developers, kept out of --help (CLAUDE.md: what is for development is not shown in

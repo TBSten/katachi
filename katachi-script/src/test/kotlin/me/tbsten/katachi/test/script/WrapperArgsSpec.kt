@@ -15,11 +15,11 @@ import me.tbsten.katachi.script.internal.unescapeWrapperArgs
 class WrapperArgsSpec : FreeSpec({
     "bin/katachi を通しても、引数は打ったとおりに main() に届く" - {
         listOf(
-            "test の -- の後ろの -D" to listOf("agent", "test", "--", "-Dkatachi.baseline.update=true"),
-            "-J と、値に空白や = を含む -D" to listOf("agent", "test", "--", "-Jx", "-Dkatachi.msg=a b=c", "--no-daemon"),
-            "@ で始まる値（kotlin が argfile として読む）" to listOf("agent", "add", "--allowed", "@Serializable なルート", "@"),
+            "-- の後ろの -D" to listOf("scaffold", "--", "-Dkatachi.baseline.update=true"),
+            "-J と、値に空白や = を含む -D" to listOf("scaffold", "--", "-Jx", "-Dkatachi.msg=a b=c", "--no-daemon"),
+            "@ で始まる値（kotlin が argfile として読む）" to listOf("scaffold", "--package", "@Serializable なルート", "@"),
             "目印そのものから始まる引数" to listOf("katachi-escaped:-Dx", "katachi-escaped:"),
-            "-D でも -J でもない引数" to listOf("data", "get", "check-list", "meta.moduleDir", "-d", "--", "-"),
+            "-D でも -J でもない引数" to listOf("scaffold", "--package", "com.example", "-d", "--", "-"),
             "引数なし" to emptyList(),
         ).forEach { (name, typed) ->
             name {

@@ -263,7 +263,7 @@ class DoctorScaffoldSpec : FreeSpec({
 
             run.status shouldBe 0
             run.out shouldContain "== 作成しました"
-            run.out shouldContain "次: katachi agent test\n"
+            run.out shouldContain "次: ./gradlew :architecture-test:test"
             val src = project.resolve("architecture-test/src/test/kotlin/com/example/test/architecture")
             src.resolve("ProjectArchitecture.kt").readText() shouldContain "package com.example.test.architecture"
             src.resolve("ProjectArchitectureTest.kt").readText() shouldContain "package com.example.test.architecture"
@@ -387,14 +387,14 @@ class DoctorScaffoldSpec : FreeSpec({
             }
         }
 
-        "--module-dir の置き場所に作り、次の test にも --module-dir を付けて案内する（KATACHI-420）" {
+        "--module-dir の置き場所に作り、次の test をその Gradle パスで案内する（KATACHI-420）" {
             val project = projectWithWorkdir("""{"meta": {}, "steps": []}""")
             project.resolve("build.gradle.kts").writeText("plugins {\n    kotlin(\"jvm\") version \"2.4.10\" apply false\n}\n")
 
             val run = runCapturing(project, listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0", "--module-dir", "static-analysis/katachi"), env = javaHome())
 
             run.status shouldBe 0
-            run.out shouldContain "次: katachi agent test --module-dir static-analysis/katachi\n"
+            run.out shouldContain "次: ./gradlew :static-analysis:katachi:test\n"
             project.resolve("static-analysis/katachi/build.gradle.kts").readText() shouldContain "0.4.0"
             project.resolve("settings.gradle.kts").readText() shouldContain "include(\":static-analysis:katachi\")"
         }
@@ -407,7 +407,7 @@ class DoctorScaffoldSpec : FreeSpec({
 
             run.status shouldBe 0
             run.out shouldContain "チェックリストの meta.moduleDir"
-            run.out shouldContain "次: katachi agent test --module-dir static-analysis/katachi\n"
+            run.out shouldContain "次: ./gradlew :static-analysis:katachi:test\n"
             project.resolve("settings.gradle.kts").readText() shouldContain "include(\":static-analysis:katachi\")"
         }
 

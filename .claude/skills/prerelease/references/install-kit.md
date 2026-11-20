@@ -26,11 +26,10 @@ sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/r
   スモークも fixture のチェックも既定でこれを使い、最初に `katachi --version` がリポジトリの版かを確かめる。
   brew で入れた katachi など別のものを試すときは `--cli <path>` で渡す。コードを直したのに古い動きのままなら、組み直す
   （それでも古ければ `kotlin` のスクリプトのキャッシュ。macOS では `~/Library/Caches/main.kts.compiled.cache` を消す）
-- スモーク（`check-install-kit-smoke.sh`。fixture の Gradle は起動しない）: 合成のプロジェクトに `katachi agent test` / `katachi agent compare-violations` /
+- スモーク（`check-install-kit-smoke.sh`。fixture の Gradle は起動しない）: 合成のプロジェクトに
   `katachi scaffold` / `katachi lint` / `katachi doctor` を当て、終了コードと出力の grep で確かめる。作業用ディレクトリは skill の手順 0-2 どおり
-  `skills/katachi/assets/<言語>/` を写して作る。skill のテンプレートの JSON と項目 id、skill が置き換えたサブコマンドが無いこと、
-  チェックリストの言語に従う出力、作業用ディレクトリ無しの test のログの置き場、lint の exit 1・使い方の誤りの exit 2 と制約 Role の緩和、scaffold --deps の衝突、
-  test の exit 2 と要約、違反の打ち切り（maxViolations=all・compare-violations の停止）、緑のときの警告、古い Kotlin の警告、の 12 ケース。
+  `skills/katachi/assets/<言語>/` を写して作る。skill のテンプレートの JSON と項目 id、skill が置き換えたサブコマンドと、消した `katachi agent`（test・compare-violations）が無いこと（`./gradlew` を直接打つ案内を出す）、
+  チェックリストの言語に従う出力、lint の exit 1・使い方の誤りの exit 2 と制約 Role の緩和、scaffold --deps の衝突、scaffold の「次:」、古い Kotlin の警告、の 8 ケース。
   fixture の本番の前に回し、全部緑にしてから Gradle を使う方へ進む
 - やること（スクリプトの冒頭のコメントに詳細）:
     1. katachi コマンドを組む（`build-katachi-cli.sh`。`--skip-publish` で飛ばす）
@@ -38,14 +37,14 @@ sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/r
     3. 合成の Gradle プロジェクト（fixture。定義は `scripts/install-kit-fixtures.sh`）ごとに、順番に
        `KATACHI_MAVEN_LOCAL=1` で `katachi doctor` → skill の手順 0-2 どおり作業用ディレクトリ（`skills/katachi/assets/ja/` を写して meta を埋める。
        `fx_module_dir_<名前>` がある fixture は `meta.moduleDir` にその置き場所）→ `katachi scaffold`（`fx_scaffold_args_<名前>` があればその引数も）→
-       `katachi agent test`（中で `./gradlew <検査用モジュールの Gradle パス>:test`）。そのあとルートにファイルを1つ足して、`--rerun` なしでもう一度
-       `katachi agent test`
+       `./gradlew <検査用モジュールの Gradle パス>:test --console=plain -Dkatachi.maxViolations=all`（skill の run-the-check の手順）。そのあとルートにファイルを1つ足して、`--rerun` なしでもう一度
+       同じコマンド
 - 判定（fixture ごと。1つでも NG の欄があれば NG）:
     - 準備・scaffold: 終了コードが 0。doctor が Kotlin の版を出さなかったときだけ、手順書どおり `--kotlin` を渡す。
       `fx_expect_<名前>` がある fixture は生成物の grep 検査（toml の別名、`alias(libs.plugins.katachi)`、`FunSpec` など）も scaffold の欄
     - settings の include: 検査用モジュール（`meta.moduleDir` から。既定 `:architecture-test`）の include が1回だけ、
       最後の include 文の直後（include が無ければ末尾）に入った
-    - test（配線）: **`katachi agent test` が「定義していないファイルが Unexpected として出て落ちる」（終了コード 1）なら OK**（`architecture { }` が空なので、
+    - test（配線）: **`./gradlew <module>:test` が「定義していないファイルが Unexpected として出て落ちる」（終了コード 1）なら OK**（`architecture { }` が空なので、
       これが正常）。構文エラー・プラグインの衝突・解決できない・Unexpected 以外の違反で落ちたら NG。通ってしまっても NG
     - 2回目が走ったか: test タスクが UP-TO-DATE にならずに実行され、足したファイルが Unexpected として出た
     - settings に `dependencyResolutionManagement` が無い fixture は、scaffold の警告どおり mavenLocal() と mavenCentral() を
@@ -76,11 +75,11 @@ sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/r
 
 - 出力: `.local/release-v<版>/install-kit.md` に結果の表（fixture / 形 / 準備 / scaffold / settings の include /
   test（配線）/ 2回目が走ったか / 結果 / ログ）。形の欄の（）に検査用モジュールの置き場所とテストのフレームワークが出る。
-  fixture とログは `.local/release-v<版>/tmp/install-kit/`（test のログは `katachi agent test` の要約と、Gradle の出力の全文 `-gradle.log` の2本）。
+  fixture とログは `.local/release-v<版>/tmp/install-kit/`（test のログは Gradle の出力の全文 `-test1-gradle.log` と `-test2-gradle.log` の2本）。
   1つでも NG なら終了コード 1
 - **オーケストレータが自分で走らせてよい**（判断の要らない作業。background で起動し、終わったら結果の表だけ読む）
 - Gradle を使う。8・6-1・5 のサンプルを動かす作業とは重ねない。fixture の project cache は
-  `.local/tmp/gradle-cache/prerelease-install/<fixture>`（`katachi agent test -- --project-cache-dir …` で渡す）
+  `.local/tmp/gradle-cache/prerelease-install/<fixture>`（`./gradlew … --project-cache-dir …` で渡す）
 - `docs/public/install/` と `katachi-script/` の中身は直さない。NG の原因がキットの不具合なら警告として報告する
 - 1つでも NG なら priority 10 の警告にする（利用者がインストールで詰まる状態）。NG の欄とログの末尾から原因を1〜2行で書く。
   ただし [decisions/environment.md](../decisions/environment.md) の環境要因に該当し、別の場所（Mac・CI）で通ることを

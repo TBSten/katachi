@@ -171,8 +171,11 @@ Fill in the `architecture { }` in `<verification module>/src/test/kotlin/<packag
 Once written, run it once and **save the output as the reference log before refactoring** (not to be confused with katachi's `baseline()` in 4-2). 3-3 compares against it.
 
 ```sh
-katachi agent test --save before-refactor
+mkdir -p build/katachi
+./gradlew :architecture-test:test --console=plain -Dkatachi.maxViolations=all > build/katachi/test-before-refactor.log 2>&1; echo "gradle exit status: $?"
 ```
+
+([run-the-check](../../run-the-check/README.md) says how to read the log.)
 
 What you need here is **for it to compile and for the check to run to the end.** Failing with `Katachi check failed: ...` is fine (violations are dealt with in step 4). If a compile error or a Gradle error keeps the check from running, fix it and run it again.
 

@@ -25,7 +25,7 @@ Do this only for the Roles, among the proposals recorded in step 6, that the use
    }
    ```
 
-   **For a Role whose destination directory has a wildcard (`*`), name that `*` with `capture()`.** A `capture()` used once accepts the same files as the `*` it replaces, so the check's result doesn't change. Using the same name in two places is different: it adds the condition that both places have the same value (see "Name every `*`" below). Attaching `.template { }` to a path that still has an unnamed `*` or `**` fails when layout is expanded (`assert()` in `katachi agent test`). Read the value inside the template with `captureValue("name")` (don't redeclare it with `stringParameter()` — the names collide and it fails)
+   **For a Role whose destination directory has a wildcard (`*`), name that `*` with `capture()`.** A `capture()` used once accepts the same files as the `*` it replaces, so the check's result doesn't change. Using the same name in two places is different: it adds the condition that both places have the same value (see "Name every `*`" below). Attaching `.template { }` to a path that still has an unnamed `*` or `**` fails when layout is expanded (`assert()` when the check runs). Read the value inside the template with `captureValue("name")` (don't redeclare it with `stringParameter()` — the names collide and it fails)
 
    ```kt
    "ViewModel".role {
@@ -60,18 +60,18 @@ Do this only for the Roles, among the proposals recorded in step 6, that the use
 
    ```sh
    ./gradlew :architecture-test:katachiTemplate --arg template=UseCase --arg name=Sample
-   katachi agent test
+   ./gradlew :architecture-test:test --console=plain -Dkatachi.maxViolations=all
    ```
 
    For a Role whose wildcard was named, pass that value too. **A directory's value becomes the destination path as it is, even if no such directory exists** (a typo creates the file in a directory that isn't there). Pass the name of a directory that exists.
 
    ```sh
    ./gradlew :architecture-test:katachiTemplate --arg template=ViewModel --arg feature=home --arg name=Sample
-   katachi agent test
+   ./gradlew :architecture-test:test --console=plain -Dkatachi.maxViolations=all
    ```
 
    If the generated file shows up as a violation, check that the path of the file declaration `.template { }` is attached to is right.
-5. **Delete the generated file, since it was only for checking** (unless the user says to keep it). After deleting it, run `katachi agent test` once more and confirm the same: 0 violations, or only the ones in `violations`.
+5. **Delete the generated file, since it was only for checking** (unless the user says to keep it). After deleting it, run the check once more ([run-the-check](../../run-the-check/README.md)) and confirm the same: 0 violations, or only the ones in `violations`.
 
    If 6-C committed the generated pages, the definition changes above change them too: run `./gradlew :architecture-test:katachiDocs` again and commit the pages with the definition, or `--arg mode=check` fails in CI.
 

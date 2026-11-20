@@ -11,7 +11,8 @@ The current version is in the verification module's dependencies: `me.tbsten.kat
 ## 2. Take the result before the upgrade
 
 ```sh
-katachi agent test --save before-refactor
+mkdir -p build/katachi
+./gradlew :architecture-test:test --console=plain -Dkatachi.maxViolations=all > build/katachi/test-before-refactor.log 2>&1; echo "gradle exit status: $?"
 ```
 
 This is step 2 of "The loop every change follows" in [README.md](README.md): every violation goes into the log, so step 4 can tell what the upgrade changed.
@@ -25,11 +26,10 @@ Check the new version's requirements in its release notes (the Kotlin version ka
 ## 4. Run the check, compare, and fix what the upgrade broke
 
 ```sh
-katachi agent test --save after-refactor
-katachi agent compare-violations
+./gradlew :architecture-test:test --console=plain -Dkatachi.maxViolations=all > build/katachi/test-after-refactor.log 2>&1; echo "gradle exit status: $?"
 ```
 
-Read the comparison as step 4 of the loop in [README.md](README.md) says: when the result changed, `compare-violations` exits 1 with a line meant for a refactoring; the `-` lines (only before) and `+` lines (only after) above it are what the upgrade changed.
+Then compare the two logs as "Compare two runs" in [../run-the-check/README.md](../run-the-check/README.md) says, and read the difference as step 4 of the loop in [README.md](README.md) says: the `<` lines (only before) and `>` lines (only after) are what the upgrade changed.
 
 - **A compile error in the definition**: an API changed. Find the replacement in the release notes or the API reference (https://tbsten.github.io/katachi/api-docs/llms.txt); do not guess from a similar name. The comparison cannot run until the definition compiles.
 - **`+` lines with no change to the project**: a newer katachi checks something it did not before, or reads a layout differently. Read what the release notes say about it. Fix the definition when the project is right; when the project is wrong, list it for the user ([../fix-violations/README.md](../fix-violations/README.md)).

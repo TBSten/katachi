@@ -299,8 +299,7 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
 
 
     say("")
-    // Named whenever it is not the default: where no check list records it, test would look in architecture-test/.
-    say(Messages.Scaffold.nextTestArchitectureEmpty(if (module.dir == MODULE_DIR_DEFAULT) "" else " --module-dir ${module.dir}"))
+    say(Messages.Scaffold.nextTestArchitectureEmpty(module.gradlePath))
     return 0
 }
 

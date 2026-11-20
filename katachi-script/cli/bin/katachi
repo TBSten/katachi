@@ -13,10 +13,10 @@ if ! command -v kotlin >/dev/null 2>&1; then
 	exit 1
 fi
 
-# `kotlin` takes every -D… / -J… on its command line for its own JVM, even after the script, so
-# `katachi agent test -- -Dkatachi.baseline.update=true` would never see its -D…. It also reads every @… as an
-# argfile, so `katachi scaffold --package @com.example` would fail. Mark them (and anything
-# already starting with the mark); katachi-script's main() strips the mark (WRAPPER_ARG_ESCAPE).
+# `kotlin` takes every -D… / -J… on its command line for its own JVM, even after the script, so a -D… given to
+# katachi would never reach it. It also reads every @… as an argfile, so `katachi scaffold --package @com.example`
+# would fail. Mark them (and anything already starting with the mark); katachi-script's main() strips the mark
+# (WRAPPER_ARG_ESCAPE).
 escape='katachi-escaped:'
 for arg do
 	shift

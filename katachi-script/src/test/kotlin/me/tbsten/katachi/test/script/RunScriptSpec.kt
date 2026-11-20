@@ -14,7 +14,6 @@ import kotlin.io.path.writeText
 import me.tbsten.katachi.script.internal.COMMAND_SPECS
 import me.tbsten.katachi.script.internal.Lang
 import me.tbsten.katachi.script.internal.ScriptContext
-import me.tbsten.katachi.script.internal.agentUsage
 import me.tbsten.katachi.script.internal.usage
 
 /** Every subcommand runs in Kotlin; nothing is handed to katachi-install.sh any more (KATACHI-228 / 229). */
@@ -33,29 +32,35 @@ class RunScriptSpec : FreeSpec({
         run.out shouldNotContain "sh <CLI>"
     }
 
-    "--help は人が打つコマンドだけを並べ、agent のコマンドは agent の 1 行にまとめる" {
+    "--help は人が打つコマンドだけを並べる" {
         val run = runCapturing(createTempDirectory("katachi-script-"), listOf("--help"))
         run.out shouldContain "katachi doctor"
         run.out shouldContain "katachi lint"
-        run.out shouldContain "katachi agent <サブコマンド>"
-        run.out shouldNotContain "katachi agent init"
+        run.out shouldNotContain "katachi agent"
         run.out shouldNotContain "katachi init"
     }
 
-    "agent の --help は katachi skill の手順が使うコマンドを並べる" {
-        for (args in listOf(listOf("agent"), listOf("agent", "--help"))) {
+    "消した検査のコマンドを打つと、gradlew を直接打つよう案内して止まる（KATACHI-429）" {
+        for (args in listOf(
+            listOf("agent"),
+            listOf("agent", "--help"),
+            listOf("agent", "test"),
+            listOf("agent", "test", "--save", "x", "--", "-Dx=1"),
+            listOf("agent", "compare-violations"),
+            listOf("test"),
+            listOf("compare-violations"),
+        )) {
             val run = runCapturing(createTempDirectory("katachi-script-"), args)
-            run.status shouldBe 0
-            run.out shouldContain "katachi agent test"
-            run.out shouldContain "katachi agent compare-violations"
-            run.out shouldNotContain "katachi scaffold --package"
+            run.status shouldBe 1
+            run.err shouldContain "は無くなりました。検査は ./gradlew <検査用モジュール>:test を直接実行します"
+            run.err shouldContain "gh skill install TBSten/katachi katachi"
         }
     }
 
-    "agent のコマンドをトップで打つと agent の下にあると言って止まる" {
-        val run = runCapturing(createTempDirectory("katachi-script-"), listOf("test"))
-        run.status shouldBe 1
-        run.err shouldContain "test は 'katachi agent test' です"
+    "消したコマンドの名前は、打った形のまま案内に出す" {
+        runCapturing(createTempDirectory("katachi-script-"), listOf("agent", "test")).err shouldContain "katachi agent test は無くなりました"
+        runCapturing(createTempDirectory("katachi-script-"), listOf("agent")).err shouldContain "katachi agent は無くなりました"
+        runCapturing(createTempDirectory("katachi-script-"), listOf("test")).err shouldContain "katachi test は無くなりました"
     }
 
     "katachi skill に置き換えたコマンドは agent の下にもない（KATACHI-329）" {
@@ -72,21 +77,17 @@ class RunScriptSpec : FreeSpec({
 
     "作業用ディレクトリのチェックリストの言語で答える" {
         val workdir = workdirWith("""{"meta": {}, "steps": []}""", lang = "en")
-        val run = runCapturing(workdir, listOf("agent", "compare-violations"))
+        val run = runCapturing(workdir, listOf("agent", "test"))
         run.status shouldBe 1
-        run.err shouldContain "The definition directory does not exist"
-    }
-
-    "人が打つコマンドは agent の下には無い" {
-        val run = runCapturing(createTempDirectory("katachi-script-"), listOf("agent", "scaffold"))
-        run.status shouldBe 2
-        run.err shouldContain "katachi agent のサブコマンドではありません: scaffold"
+        run.err shouldContain "was removed. Run the check with ./gradlew <verification module>:test directly"
     }
 
     "サブコマンドの --help は値として読まずに使い方を出す" {
-        val run = runCapturing(createTempDirectory("katachi-script-"), listOf("agent", "test", "--help"))
-        run.status shouldBe 0
-        run.out shouldContain "katachi agent test [--save"
+        for (command in listOf("lint", "doctor", "scaffold")) {
+            val run = runCapturing(createTempDirectory("katachi-script-"), listOf(command, "--help"))
+            run.status shouldBe 0
+            run.out shouldContain "katachi $command"
+        }
     }
 
     "知らないサブコマンドは止まる" {
@@ -98,7 +99,7 @@ class RunScriptSpec : FreeSpec({
     "使い方には spec にあるオプションがすべて載っている（ja / en）" {
         for (lang in Lang.entries) {
             val context = ScriptContext(createTempDirectory("katachi-script-"), emptyMap(), {}, {}).also { it.lang = lang }
-            val text = context.usage() + "\n" + context.agentUsage()
+            val text = context.usage()
             // add lists the fields of each kind in `add <kind> --help`, which reads the same ADD_KINDS.
             val missing = COMMAND_SPECS.filter { it.name != "add" }
                 .flatMap { spec -> (spec.options + spec.subcommands.flatMap { it.options }).map { spec.path.joinToString(" ") to it } }
