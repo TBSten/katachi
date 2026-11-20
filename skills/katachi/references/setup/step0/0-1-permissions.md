@@ -30,7 +30,7 @@ katachi doctor --lang en    # --lang ja for a user who works in Japanese
 
 `doctor` in 4 checks the version of the JDK that runs Gradle, the project's Kotlin version, and whether `git` is available (recommended). **If anything falls short, it says so, with hints on how to fix it.** Pass that output on to the user, have them fix it, and run 4 again. Keep the `Kotlin:` line: 0-2 records it.
 
-Both the working directory and the verification module (`architecture-test/` by default) are created under the project root, so 2 earns permission for both. **The probes leave no trace.** Do not write a probe that creates a directory (an empty verification module directory left behind makes step 2's `scaffold` stop with "already exists").
+Both the working directory and the verification module (`architecture-test/` by default) are created under the project root, so 2 earns permission for both. **The probes leave no trace.** Do not write a probe that creates a directory (an empty verification module directory left behind makes step 2's `scaffold` stop with "already exists" (ja: "がすでに存在します")).
 
 **If any of them is blocked, tell the user what was refused.** Without 1 you cannot start, without 2 you cannot create files, without 3 you cannot verify, and without 4 you cannot run any of the steps below.
 
@@ -47,7 +47,7 @@ brew install tbsten/tap/katachi    # Kotlin comes with it
 - Homebrew itself: https://brew.sh/
 - The katachi command: https://tbsten.github.io/katachi/guides/cli-and-script/cli/
 
-If `katachi` then prints `kotlin is not on PATH`, ask for `brew install kotlin`.
+If `katachi` then prints `kotlin is not on PATH` (ja: `kotlin が PATH にありません`), ask for `brew install kotlin`.
 
 **Elsewhere (Linux or Windows without Homebrew): ask for the Kotlin command line compiler, and run katachi as a Kotlin script.** The `katachi` command is only a launcher for a Kotlin script that pulls `katachi-script` from Maven Central, so the same script run with `kotlin` does everything it does.
 

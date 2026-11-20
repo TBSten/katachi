@@ -71,12 +71,9 @@ class KatachiSkillSpec : FreeSpec({
             .flatMap { file -> commandsIn(file.readText()).map { "${file.relativeTo(skill)}: katachi $it" to it } }
             .toList()
         used.map { it.second }.toSet().shouldContainAll("agent test", "doctor", "scaffold", "lint")
-        used.filterNot { (_, command) -> command in known || command in NAMED_AS_HISTORY }.map { it.first }.shouldBeEmpty()
+        used.filterNot { (_, command) -> command in known }.map { it.first }.shouldBeEmpty()
     }
 })
-
-/** Old commands the skill names on purpose, to tell an older working directory apart. */
-private val NAMED_AS_HISTORY = setOf("agent init")
 
 private val COMMAND = Regex("""^(?:\S+=\S+ )?katachi ((?:agent )?[a-z-]+)""")
 

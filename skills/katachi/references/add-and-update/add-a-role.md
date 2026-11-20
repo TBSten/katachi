@@ -32,6 +32,8 @@ The `How to fix:` of an `[UnexpectedFile]` suggests a Role named after the file 
 
 ## What the Role says
 
+The example leaves out the file's `package` and `import` lines, which the definition file already has.
+
 ```kt
 "Worker".role {
   summary = "A WorkManager worker that runs one background job"

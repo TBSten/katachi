@@ -1,4 +1,4 @@
-## 6-D. (After reporting in 6) Set up code generation from templates
+### 6-D. (After reporting in 6) Set up code generation from templates
 
 Do this only for the Roles, among the proposals recorded in step 6, that the user agreed to.
 
