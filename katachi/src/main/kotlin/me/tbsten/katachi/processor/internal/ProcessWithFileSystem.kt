@@ -14,10 +14,13 @@ internal fun <R> Architecture.process(
 /**
  * [me.tbsten.katachi.processor.process] with arguments, reading the project through [fileSystem] instead of the real one.
  *
- * ## Example 1: run a processor against a project given by your own file system
+ * For katachi's own modules only: `:katachi-konsist`'s specs run `DescribeDefinition` over a throwaway project this way.
+ * A processor written elsewhere runs through [me.tbsten.katachi.processor.process] against a real checkout.
+ *
+ * ## Example 1: run a processor over a project directory that is not the working directory
  * ```kt
- * val count = projectArchitecture
- *     .process(CountRoles, CountRoles.Args(prefix = "Get"), myFileSystem)
+ * val summary = architecture
+ *     .process(DescribeDefinition, DescribeDefinition.Args(output = "out.json"), RealFileSystem(root))
  *     .getOrThrow()
  * ```
  */
