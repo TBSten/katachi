@@ -2,8 +2,11 @@ package me.tbsten.katachi.gradle;
 
 import java.util.regex.Pattern;
 
+import javax.inject.Inject;
+
 import org.gradle.api.Action;
 import org.gradle.api.InvalidUserDataException;
+import org.gradle.api.model.ObjectFactory;
 
 /**
  * The {@code katachi { } } block a user writes in their {@code build.gradle.kts}.
@@ -35,6 +38,18 @@ import org.gradle.api.InvalidUserDataException;
  * {@link GenerateKatachiEntryPointTask}, so the value is still read at execution time, after the
  * whole {@code build.gradle.kts} -- {@code katachi { } } included -- has been evaluated.
  *
+ * <h2>Why the blocks inside it are made by Gradle, not with {@code new}</h2>
+ *
+ * <p>The {@link KatachiProcessors} that {@code processors { }} configures comes from Gradle's
+ * {@link ObjectFactory}, and so do the typed blocks inside it. An object Gradle makes is given,
+ * for every method that takes an {@link Action}, a twin that takes a Groovy {@code Closure} and
+ * runs it with the action's argument as the closure's delegate. A plain object has no such twin:
+ * Groovy turns the closure of a {@code build.gradle} into the {@code Action} by itself and leaves
+ * the delegate where it was, so {@code docs { outputDir = 'build/our-docs' }} looks for
+ * {@code outputDir} on the enclosing {@code KatachiProcessors} and fails as an unknown property.
+ * The Kotlin DSL works the same either way: a Kotlin block takes the action's argument as its
+ * receiver.
+ *
  * <h2>Example 1: the shape a user writes</h2>
  *
  * <pre>{@code
@@ -60,8 +75,20 @@ public class KatachiExtension {
             Pattern.compile("[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)+");
 
     private String architecture;
-    private final KatachiProcessors processors = new KatachiProcessors();
+    private final KatachiProcessors processors;
     private final KatachiReportOptions report = new KatachiReportOptions();
+
+    /**
+     * Made by Gradle when the plugin adds the {@code katachi} extension; a build script does not
+     * call it.
+     *
+     * @param objects what makes {@link KatachiProcessors}, so that a Groovy closure given to one
+     *     of its methods runs against the block it configures.
+     */
+    @Inject
+    public KatachiExtension(ObjectFactory objects) {
+        this.processors = objects.newInstance(KatachiProcessors.class);
+    }
 
     /**
      * The fully qualified name of the top level {@code val} the generated entry point imports as

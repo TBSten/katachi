@@ -17,6 +17,8 @@ import me.tbsten.katachi.gradle.KatachiOnExisting;
 import me.tbsten.katachi.gradle.KatachiProcessorOutputs;
 import me.tbsten.katachi.gradle.KatachiProcessors;
 import org.gradle.api.InvalidUserDataException;
+import org.gradle.api.model.ObjectFactory;
+import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -24,12 +26,17 @@ import org.junit.jupiter.api.Test;
  * What {@code katachi { processors { } } } answers with, including what it answers without
  * being asked.
  *
- * <p>No Gradle build is started: {@link KatachiProcessors} is a plain object, and the registry
+ * <p>No Gradle build is started: {@link KatachiProcessors} is made the way the extension makes
+ * it, by the {@link ObjectFactory} of a project {@link ProjectBuilder} builds, and the registry
  * it produces is what the code generator reads. Whether the generated file then compiles is
- * {@code KatachiPluginFunctionalTest}'s question, and whether the registered class actually
- * exists is a sample run's.
+ * {@code KatachiPluginFunctionalTest}'s question, whether a {@code build.gradle} reaches the
+ * same blocks is {@code KatachiGroovyDslFunctionalTest}'s, and whether the registered class
+ * actually exists is a sample run's.
  */
 class KatachiProcessorsTest {
+
+    /** One project for the whole class: nothing here writes to it, and building one is slow. */
+    private static final ObjectFactory OBJECTS = ProjectBuilder.builder().build().getObjects();
 
     /** Where the default documentation processor lives, as the generated source has to spell it. */
     private static final String GENERATE_DOCUMENTATION = "me.tbsten.katachi.docs.GenerateDocumentation";
@@ -48,7 +55,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("何も register しなくても docs が引ける")
     void docsIsRegisteredByDefault() {
-        Map<String, String> registrations = registrations(new KatachiProcessors());
+        Map<String, String> registrations = registrations(newProcessors());
 
         assertEquals(GENERATE_DOCUMENTATION, registrations.get("docs"));
     }
@@ -56,7 +63,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("何も register しなくても template が引ける")
     void templateIsRegisteredByDefault() {
-        Map<String, String> registrations = registrations(new KatachiProcessors());
+        Map<String, String> registrations = registrations(newProcessors());
 
         assertEquals(GENERATE_CODE_FROM_TEMPLATE, registrations.get("template"));
     }
@@ -64,7 +71,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("何も register しなくても templates が引ける")
     void templatesIsRegisteredByDefault() {
-        Map<String, String> registrations = registrations(new KatachiProcessors());
+        Map<String, String> registrations = registrations(newProcessors());
 
         assertEquals(DESCRIBE_TEMPLATES, registrations.get("templates"));
     }
@@ -72,7 +79,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("何も register しなくても internalTemplatesJson が DescribeTemplates で引ける")
     void internalTemplatesJsonIsRegisteredByDefault() {
-        Map<String, String> registrations = registrations(new KatachiProcessors());
+        Map<String, String> registrations = registrations(newProcessors());
 
         assertEquals(DESCRIBE_TEMPLATES, registrations.get("internalTemplatesJson"));
     }
@@ -80,7 +87,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("internalTemplatesJson には既定で format=json と output が渡る")
     void internalTemplatesJsonHasDefaultArgs() {
-        Map<String, String> args = configuredArgs(new KatachiProcessors()).get("internalTemplatesJson");
+        Map<String, String> args = configuredArgs(newProcessors()).get("internalTemplatesJson");
 
         Map<String, String> expected = new HashMap<>();
         expected.put("format", "json");
@@ -91,7 +98,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("何も register しなくても internalDefinitionJson が DescribeDefinition で引ける")
     void internalDefinitionJsonIsRegisteredByDefault() {
-        Map<String, String> registrations = registrations(new KatachiProcessors());
+        Map<String, String> registrations = registrations(newProcessors());
 
         assertEquals(DESCRIBE_DEFINITION, registrations.get("internalDefinitionJson"));
     }
@@ -99,7 +106,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("internalDefinitionJson には既定で output だけが渡る")
     void internalDefinitionJsonHasDefaultArgs() {
-        Map<String, String> args = configuredArgs(new KatachiProcessors()).get("internalDefinitionJson");
+        Map<String, String> args = configuredArgs(newProcessors()).get("internalDefinitionJson");
 
         Map<String, String> expected = new HashMap<>();
         expected.put("output", "build/katachi/internalDefinitionJson/definition.json");
@@ -109,7 +116,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("args(\"internalTemplatesJson\") { } は既定の引数に名前ごとに重なり、利用者が勝つ")
     void userArgsWinOverTheDefaultArgsByName() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
         processors.args("internalTemplatesJson", args -> args.arg("output", "build/elsewhere.json"));
 
         Map<String, String> args = configuredArgs(processors).get("internalTemplatesJson");
@@ -121,7 +128,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("internalTemplatesJson を別のクラスで register し直すと、既定の引数は付かない")
     void aReplacedInternalKeyGetsNoDefaultArgs() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
         processors.register("internalTemplatesJson", "com.example.processors.OurOwnJson");
 
         assertFalse(
@@ -132,7 +139,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("既定で登録されるのは docs と diff と template と templates と internalTemplatesJson と internalDefinitionJson だけ -- layout も konsist も入らない")
     void docsAndTemplateAreTheOnlyDefaults() {
-        Map<String, String> registrations = registrations(new KatachiProcessors());
+        Map<String, String> registrations = registrations(newProcessors());
 
         // `konsist` would point into :katachi-konsist, which a module that does not depend on
         // it cannot compile a `::class.java` literal against. `layout` is left out with it so
@@ -153,7 +160,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("同じキーを register すると利用者の登録が勝つ")
     void aUserRegistrationOverridesADefault() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
         processors.register("docs", "com.example.processors.OurOwnDocs");
 
         assertEquals("com.example.processors.OurOwnDocs", registrations(processors).get("docs"));
@@ -162,7 +169,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("既定のキーを register しても「登録済み」で落ちない")
     void registeringADefaultKeyIsNotADuplicate() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
 
         // Without this, swapping in a documentation processor of one's own would be impossible
         // without giving it a second name.
@@ -175,7 +182,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("同じキーを2回 register すると、これまでどおり落ちる")
     void registeringTheSameKeyTwiceStillFails() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
         processors.register("docs", "com.example.processors.OurOwnDocs");
 
         InvalidUserDataException failure = assertThrows(
@@ -190,7 +197,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("利用者の登録は既定に足される")
     void userRegistrationsAreAddedToTheDefaults() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
         processors.register("layout", "me.tbsten.katachi.check.LayoutCheck");
 
         Map<String, String> registrations = registrations(processors);
@@ -202,7 +209,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("template { } と args(\"template\") { } の併用は二重設定として落ちる")
     void aTypedBlockStillCollidesWithTheStringForm() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
         processors.template(template -> template.setTemplate(java.util.List.of("UseCase")));
         processors.args("template", args -> args.arg("template", "UseCase"));
 
@@ -217,7 +224,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("template { onExisting = SKIP } は --arg onExisting=skip になる")
     void onExistingTravelsAsItsWireName() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
         processors.template(template -> template.setOnExisting(KatachiOnExisting.SKIP));
 
         assertEquals("skip", configuredArgs(processors).get("template").get("onExisting"));
@@ -226,7 +233,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("template { template = listOf(a, b) } は --arg template=a,b になる")
     void templateListTravelsAsACommaJoinedArg() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
         processors.template(template -> template.setTemplate(
                 java.util.List.of("data.Repository.repository", "data.Repository.repositoryImpl")));
 
@@ -238,7 +245,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("template { template = ... } に不正な指定を渡すと落ちる")
     void anInvalidTemplateSpecifierFails() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
 
         InvalidUserDataException failure = assertThrows(
                 InvalidUserDataException.class,
@@ -252,7 +259,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("template { template = emptyList() } は落ちる")
     void anEmptyTemplateListFails() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
 
         assertThrows(
                 InvalidUserDataException.class,
@@ -262,7 +269,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("diff { } に書いた値はそれぞれの --arg になり、書かなかった値は送らない")
     void diffOptionsTravelAsTheirArgs() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
         processors.diff(diff -> {
             diff.setBefore("origin/main");
             diff.setWeights(java.util.List.of("Domain=2", "Presentation.ViewModel=0.5"));
@@ -283,13 +290,13 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("diff { } を書かなければ diff の引数は何も送らない")
     void anUntouchedDiffBlockSendsNothing() {
-        assertEquals(null, configuredArgs(new KatachiProcessors()).get("diff"));
+        assertEquals(null, configuredArgs(newProcessors()).get("diff"));
     }
 
     @Test
     @DisplayName("diff { } と args(\"diff\") { } の併用は二重設定として落ちる")
     void theDiffBlockCollidesWithTheStringForm() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
         processors.diff(diff -> diff.setMaxFiles(10));
         processors.args("diff", args -> args.arg("maxFiles", "20"));
 
@@ -304,7 +311,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("diff { weights = ... } に = の無い項目やカンマ入りの項目を渡すと落ちる")
     void anInvalidWeightEntryFails() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
 
         InvalidUserDataException failure = assertThrows(
                 InvalidUserDataException.class,
@@ -318,7 +325,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("diff { markdown { outputFile = ... } } が .. でモジュールの外に出ると落ちる")
     void aDiffOutputFileClimbingOutFails() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
 
         assertThrows(
                 InvalidUserDataException.class,
@@ -328,7 +335,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("diff { json { } yaml { } } に書いた値は json / jsonOutputFile / yaml / yamlOutputFile の --arg になる")
     void diffJsonAndYamlTravelAsTheirArgs() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
         processors.diff(diff -> {
             diff.json(json -> json.setOutputFile("reports/diff-report.json"));
             diff.yaml(yaml -> yaml.setEnable(false));
@@ -343,7 +350,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("diff { yaml { outputFile = ... } } が .. でモジュールの外に出ると、.yaml の書き方を言って落ちる")
     void aYamlOutputFileClimbingOutNamesItsExtension() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
 
         InvalidUserDataException failure = assertThrows(
                 InvalidUserDataException.class,
@@ -354,7 +361,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("diff { html { outputFile = File } } は絶対パスで送る")
     void aDiffOutputFileGivenAsAFileTravelsAbsolute() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
         java.io.File file = new java.io.File("reports/diff.html");
         processors.diff(diff -> diff.html(html -> html.setOutputFile(file)));
 
@@ -364,7 +371,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("outputs(...) を同じキーに2回書くと落ちる")
     void declaringOutputsTwiceFails() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
         processors.outputs("docs", outputs -> outputs.setReadsProjectFiles(true));
 
         InvalidUserDataException failure = assertThrows(
@@ -379,7 +386,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("outputs(...) の outputDir が .. でモジュールの外に出ると落ちる")
     void anOutputDirClimbingOutFails() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
 
         InvalidUserDataException failure = assertThrows(
                 InvalidUserDataException.class,
@@ -393,7 +400,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("outputs(...) の readsProjectFiles に null を渡すと落ちる")
     void aNullReadsProjectFilesFails() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
 
         assertThrows(
                 InvalidUserDataException.class,
@@ -403,7 +410,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("outputs(...) のキーが不正なら落ちる")
     void anInvalidOutputsKeyFails() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
 
         assertThrows(
                 InvalidUserDataException.class,
@@ -413,7 +420,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("katachi の docs はプロジェクトを読むと宣言され、katachiDocs は毎回走る")
     void docsIsDeclaredAsReadingTheProject() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
 
         assertEquals(
                 Boolean.TRUE,
@@ -426,7 +433,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("outputs(\"docs\") { readsProjectFiles = false } だけで、docs の出力先と mode=check の宣言がそろう")
     void docsDeclaredNotToReadKeepsItsOutputDeclaration() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
         processors.outputs("docs", outputs -> outputs.setReadsProjectFiles(false));
 
         KatachiProcessorOutputs docs = resolvedOutputs(processors, "docs");
@@ -440,7 +447,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("katachi 自身の processor のうち、プロジェクトを読まないと宣言するのは internalTemplatesJson だけ")
     void internalTemplatesJsonIsTheOnlyDefaultDeclaredNotToRead() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
 
         List<String> declaredNotToRead = new ArrayList<>();
         for (String key : registrations(processors).keySet()) {
@@ -463,7 +470,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("誤りの JSON を書く場所は、既定の internalDefinitionJson にだけ答える")
     void definitionErrorsPathIsOnlyForTheDefaultDefinitionTask() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
 
         assertEquals(
                 "build/katachi/internalDefinitionJson/definition-errors.json",
@@ -476,10 +483,15 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("internalDefinitionJson を利用者のクラスで register し直すと、誤りの JSON の場所は答えない")
     void aReplacedDefinitionTaskGetsNoDefinitionErrorsPath() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
         processors.register("internalDefinitionJson", "com.example.processors.OurOwnJson");
 
         assertEquals(null, definitionErrorsPathOf(processors, "internalDefinitionJson"));
+    }
+
+    /** A fresh {@code processors { }}, as {@code KatachiExtension} gets it from Gradle. */
+    private static KatachiProcessors newProcessors() {
+        return OBJECTS.newInstance(KatachiProcessors.class);
     }
 
     /** Calls the package-private {@code KatachiProcessors.resolvedOutputs(String)}. */
@@ -556,7 +568,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("返る Map を書き換えても、次に引いたときに残らない")
     void theReturnedMapIsACopy() {
-        KatachiProcessors processors = new KatachiProcessors();
+        KatachiProcessors processors = newProcessors();
 
         registrations(processors).put("docs", "com.example.Sneaky");
 

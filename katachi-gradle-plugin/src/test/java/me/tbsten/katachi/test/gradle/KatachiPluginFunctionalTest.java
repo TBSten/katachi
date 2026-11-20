@@ -37,7 +37,8 @@ import org.junit.jupiter.params.provider.MethodSource;
  * {@code build.gradle.kts} is compiled by the <em>embedded</em> Kotlin compiler of their own
  * Gradle -- 1.8.10 on Gradle 8.0 -- and that compiler has to be able to read every plugin type
  * the script names. That is the whole reason this module is written in Java, and this is the
- * test that holds the line.
+ * test that holds the line. Whether a {@code build.gradle} (Groovy) reaches the same blocks is a
+ * question of its own, asked by {@link KatachiGroovyDslFunctionalTest}.
  */
 class KatachiPluginFunctionalTest {
 
