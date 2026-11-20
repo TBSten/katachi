@@ -5,11 +5,15 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import java.nio.file.Path
+import java.nio.file.attribute.FileTime
 import java.nio.file.attribute.PosixFilePermissions
+import java.time.Duration
+import java.time.Instant
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.exists
 import kotlin.io.path.readText
+import kotlin.io.path.setLastModifiedTime
 import kotlin.io.path.setPosixFilePermissions
 import kotlin.io.path.writeText
 
@@ -150,6 +154,110 @@ class TestCommandSpec : FreeSpec({
             run.status shouldBe 2
             run.err shouldContain "test: 知らないオプションです: --info（Gradle に渡す引数は -- の後ろに）"
         }
+
+        "テストが実行されていなければ（KATACHI-420）" - {
+            "-- の後ろの Gradle の --dry-run でどのタスクも SKIPPED なら、通ったとは言わず 2" {
+                val fixture = TestFixture()
+                fixture.gradleOutput(DRY_RUN_LOG, status = 0)
+
+                val run = fixture.run("agent", "test", "--", "--dry-run")
+
+                run.status shouldBe 2
+                run.out shouldContain "結果: テストが実行されていません（:architecture-test:test が SKIPPED）。何も検査していません。"
+                run.out shouldContain "Gradle の --dry-run（-m）はタスクを実行しません。"
+                run.out shouldNotContain "検査は通りました"
+            }
+
+            "@Disabled でテストがすべて SKIPPED なら 2（testLogging の SKIPPED の行から）" {
+                val fixture = TestFixture()
+                fixture.gradleOutput(
+                    """
+                    > Task :architecture-test:test
+
+                    ProjectArchitectureTest > プロジェクトの構成が定義どおりになっている() SKIPPED
+
+                    BUILD SUCCESSFUL in 3s
+                    """.trimIndent(),
+                    status = 0,
+                )
+
+                val run = fixture.run("agent", "test")
+
+                run.status shouldBe 2
+                run.out shouldContain "結果: テストが実行されていません（テスト 1 件がすべて SKIPPED）。"
+                run.out shouldContain "@Disabled"
+            }
+
+            "testLogging がテストの行を出さない形（手動インストール）でも、JUnit XML ですべて SKIPPED なら 2 で、ログにも数を残す" {
+                val fixture = TestFixture()
+                fixture.gradleOutput(PASSED_LOG, status = 0)
+                fixture.junitXmlWritten(tests = 1, skipped = 1)
+
+                val run = fixture.run("agent", "test", "--save", "before-refactor")
+
+                run.status shouldBe 2
+                run.out shouldContain "結果: テストが実行されていません（テスト 1 件がすべて SKIPPED）。"
+                fixture.workdir.resolve("tmp/test-before-refactor.log").readText() shouldContain
+                    "katachi agent test: test cases in the JUnit XML of this run: 0 ran, 1 skipped"
+            }
+
+            "手動インストールの形で PASSED の行が無くても、JUnit XML でテストが実行されていれば 0" {
+                val fixture = TestFixture()
+                fixture.gradleOutput(PASSED_LOG, status = 0)
+                fixture.junitXmlWritten(tests = 1, skipped = 0)
+
+                val run = fixture.run("agent", "test")
+
+                run.status shouldBe 0
+                run.out shouldContain "結果: 検査は通りました（違反 0 件）"
+                run.out shouldNotContain "SKIPPED のテスト"
+            }
+
+            "前の実行の JUnit XML は、今回書き直されていなければ数えない" {
+                val fixture = TestFixture()
+                fixture.gradleOutput(PASSED_LOG, status = 0)
+                fixture.junitXmlLeftFromEarlierRun(tests = 1, skipped = 1)
+
+                val run = fixture.run("agent", "test")
+
+                run.status shouldBe 0
+                run.out shouldContain "結果: 検査は通りました（違反 0 件）"
+            }
+
+            "テストのタスクが UP-TO-DATE なら前の結果なので 2 で、--rerun を案内する" {
+                val fixture = TestFixture()
+                fixture.gradleOutput("> Task :architecture-test:test UP-TO-DATE\nBUILD SUCCESSFUL in 1s", status = 0)
+
+                val run = fixture.run("agent", "test")
+
+                run.status shouldBe 2
+                run.out shouldContain "（:architecture-test:test が UP-TO-DATE）"
+                run.out shouldContain "katachi agent test -- --rerun"
+            }
+
+            "一部だけ SKIPPED なら通ったと言い、SKIPPED の数も出す" {
+                val fixture = TestFixture()
+                fixture.gradleOutput(PASSED_LOG, status = 0)
+                fixture.junitXmlWritten(tests = 2, skipped = 1)
+
+                val run = fixture.run("agent", "test")
+
+                run.status shouldBe 0
+                run.out shouldContain "SKIPPED のテスト: 1 件"
+            }
+
+            "前回が --dry-run のログなら、前回との差分を出さない" {
+                val fixture = TestFixture()
+                fixture.gradleOutput(DRY_RUN_LOG, status = 0)
+                fixture.run("agent", "test", "--", "--dry-run").status shouldBe 2
+                fixture.gradleOutput(FAILED_LOG, status = 1)
+
+                val run = fixture.run("agent", "test")
+
+                run.status shouldBe 1
+                run.out shouldNotContain "前回との差分"
+            }
+        }
     }
 
     "compare-violations" - {
@@ -201,6 +309,30 @@ class TestCommandSpec : FreeSpec({
             run.err shouldContain "に検査の結果がありません。"
         }
 
+        "テストが実行されていないログ（Gradle の --dry-run）は、前後とも同じでも比べずに 2（KATACHI-420）" {
+            val fixture = TestFixture()
+            fixture.refactorLogs(before = DRY_RUN_LOG, after = DRY_RUN_LOG)
+
+            val run = fixture.run("agent", "compare-violations")
+
+            run.status shouldBe 2
+            run.err shouldContain "に検査の結果がありません。テストが実行されていません（:architecture-test:test が SKIPPED）。"
+            run.out shouldNotContain "検査結果は変わっていません"
+        }
+
+        "agent test が JUnit XML から実行 0 件と書き残したログとは比べない（KATACHI-420）" {
+            val fixture = TestFixture()
+            fixture.refactorLogs(
+                before = FAILED_LOG,
+                after = "$PASSED_LOG\nkatachi agent test: test cases in the JUnit XML of this run: 0 ran, 1 skipped",
+            )
+
+            val run = fixture.run("agent", "compare-violations")
+
+            run.status shouldBe 2
+            run.err shouldContain "テストが実行されていません（テスト 1 件がすべて SKIPPED）"
+        }
+
         "ログが無ければ保存先を案内して止まる" {
             val run = TestFixture().run("agent", "compare-violations")
             run.status shouldBe 2
@@ -228,15 +360,49 @@ private val FAILED_LOG = """
 
 private val PASSED_LOG = "> Task :architecture-test:test\nBUILD SUCCESSFUL in 3s"
 
-/** A project with a working directory (unless not [withWorkdir]), a definition directory and a `gradlew` that prints [gradleOutput]. */
+/** What `./gradlew :architecture-test:test --dry-run` prints: every task SKIPPED, and the build passes. */
+private val DRY_RUN_LOG = """
+    :architecture-test:compileTestKotlin SKIPPED
+    :architecture-test:testClasses SKIPPED
+    :architecture-test:test SKIPPED
+
+    BUILD SUCCESSFUL in 8s
+""".trimIndent()
+
+private const val RESULTS_DIR = "architecture-test/build/test-results/test"
+
+/** A JUnit XML result of one test class as Gradle writes it, with [tests] test cases of which [skipped] were skipped. */
+private fun junitXml(tests: Int, skipped: Int): String = """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <testsuite name="p.ProjectArchitectureTest" tests="$tests" skipped="$skipped" failures="0" errors="0" timestamp="2026-11-20T13:07:45.585Z" hostname="vm" time="0.37">
+      <properties/>
+      <testcase name="passes()" classname="p.ProjectArchitectureTest" time="0.21"/>
+    </testsuite>
+""".trimIndent()
+
+/**
+ * A project with a working directory (unless not [withWorkdir]), a definition directory and a `gradlew` that prints
+ * [gradleOutput] and writes the JUnit XML of [junitXmlWritten], as the test task does.
+ */
 private class TestFixture(withDefinition: Boolean = true, private val withWorkdir: Boolean = true) {
     val project: Path = createTempDirectory("katachi-project-")
     val workdir: Path = workdirWith("""{"meta": {"projectRoot": "$project"}, "steps": []}""")
 
     init {
         if (withDefinition) project.resolve("architecture-test/src/test/kotlin").createDirectories()
-        // Prints the arguments, then the prepared log, and exits with the prepared status.
-        project.resolve("gradlew").writeText("#!/bin/sh\necho \"args: $*\"\ncat gradle-output.txt\nexit \"$(cat gradle-status.txt)\"\n")
+        // Prints the arguments, then the prepared log, writes the prepared result, and exits with the prepared status.
+        project.resolve("gradlew").writeText(
+            """
+            #!/bin/sh
+            echo "args: $*"
+            cat gradle-output.txt
+            if [ -f gradle-junit.xml ]; then
+              mkdir -p $RESULTS_DIR
+              cp gradle-junit.xml $RESULTS_DIR/TEST-p.ProjectArchitectureTest.xml
+            fi
+            exit "$(cat gradle-status.txt)"
+            """.trimIndent() + "\n",
+        )
         project.resolve("gradlew").setPosixFilePermissions(PosixFilePermissions.fromString("rwxr-xr-x"))
         gradleOutput(PASSED_LOG, status = 0)
     }
@@ -244,6 +410,18 @@ private class TestFixture(withDefinition: Boolean = true, private val withWorkdi
     fun gradleOutput(log: String, status: Int) {
         project.resolve("gradle-output.txt").writeText(log + "\n")
         project.resolve("gradle-status.txt").writeText("$status\n")
+    }
+
+    /** The next run of `gradlew` writes a JUnit XML result. */
+    fun junitXmlWritten(tests: Int, skipped: Int) {
+        project.resolve("gradle-junit.xml").writeText(junitXml(tests, skipped) + "\n")
+    }
+
+    /** A JUnit XML result an earlier run left, an hour old, which the next run of `gradlew` does not touch. */
+    fun junitXmlLeftFromEarlierRun(tests: Int, skipped: Int) {
+        val file = project.resolve(RESULTS_DIR).createDirectories().resolve("TEST-p.ProjectArchitectureTest.xml")
+        file.writeText(junitXml(tests, skipped) + "\n")
+        file.setLastModifiedTime(FileTime.from(Instant.now().minus(Duration.ofHours(1))))
     }
 
     fun refactorLogs(before: String, after: String) {

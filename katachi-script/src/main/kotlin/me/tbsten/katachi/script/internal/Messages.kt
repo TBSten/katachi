@@ -752,6 +752,63 @@ internal object Messages {
             en = "$logUri has no check result. The build did not get as far as the check (a compile error, for example). Fix it and capture the log again.",
         )
 
+        fun hasNoCheckResultTestsDidNotRun(logUri: Any?, reason: Msg): Msg = Msg(
+            ja = "$logUri に検査の結果がありません。テストが実行されていません（${reason.ja}）。テストを実行してから取り直してください。",
+            en = "$logUri has no check result: the tests did not run (${reason.en}). Run them and capture the log again.",
+        )
+
+        fun taskOutcome(task: Any?, outcome: Any?): Msg = Msg(
+            ja = "$task が $outcome",
+            en = "$task $outcome",
+        )
+
+        fun allTestCasesSkipped(skipped: Any?): Msg = Msg(
+            ja = "テスト $skipped 件がすべて SKIPPED",
+            en = "all $skipped test cases SKIPPED",
+        )
+
+        val noTestCaseRan: Msg = Msg(
+            ja = "実行したテストが 0 件",
+            en = "no test case ran",
+        )
+
+        fun resultTestsDidNotRun(reason: Msg): Msg = Msg(
+            ja = "結果: テストが実行されていません（${reason.ja}）。何も検査していません。",
+            en = "Result: the tests did not run (${reason.en}). Nothing was checked.",
+        )
+
+        val dryRunRunsNoTask: Msg = Msg(
+            ja = "Gradle の --dry-run（-m）はタスクを実行しません。外してから、もう一度実行してください。",
+            en = "Gradle's --dry-run (-m) runs no task. Run this again without it.",
+        )
+
+        val buildTurnsTestTaskOff: Msg = Msg(
+            ja = "ビルドの設定がテストのタスクを止めていないか（enabled = false、onlyIf { } など）を確かめてください。",
+            en = "Check whether the build turns the test task off (enabled = false, onlyIf { } and the like).",
+        )
+
+        val noTestClass: Msg = Msg(
+            ja = "検査用モジュールにテストがありません。src/test/kotlin に projectArchitecture.assert() を呼ぶテスト（scaffold が作る ProjectArchitectureTest.kt）を置いてください。",
+            en = "The verification module has no test. Put a test that calls projectArchitecture.assert() in src/test/kotlin (the ProjectArchitectureTest.kt scaffold writes).",
+        )
+
+        val gradleReusedEarlierResult: Msg = Msg(
+            ja = "Gradle が前の実行の結果を使ったので、いまのファイルは検査していません。$AGENT_COMMAND test -- --rerun で実行し直すか、" +
+                "検査用モジュールの tasks.test に outputs.upToDateWhen { false } と outputs.cacheIf { false } を戻してください。",
+            en = "Gradle used the result of an earlier run, so the current files were not checked. Run $AGENT_COMMAND test -- --rerun, " +
+                "or put outputs.upToDateWhen { false } and outputs.cacheIf { false } back into tasks.test of the verification module.",
+        )
+
+        val removeWhatSkipsTheTests: Msg = Msg(
+            ja = "テストを止めている @Disabled（Kotest なら xtest などの x で始まる関数や enabled = false）を外してから、もう一度実行してください。",
+            en = "Remove the @Disabled that turns the tests off (in Kotest, a function starting with x such as xtest, or enabled = false) and run this again.",
+        )
+
+        fun skippedTests(skipped: Any?): Msg = Msg(
+            ja = "SKIPPED のテスト: $skipped 件（@Disabled などで止めたテストの中の検査は実行されていません）",
+            en = "Skipped tests: $skipped (a check inside a test turned off with @Disabled or the like did not run)",
+        )
+
         fun notComparingLogShows(truncated: Any?): Msg = Msg(
             ja = "違反を先頭の数件だけ出したログがあるので、比べません。ログに出ていない違反が入れ替わっても気づけず、全件のログと比べると偽の差分が出るためです。\n" +
                 "$truncated    打ち切られたほうを、全件で取り直してください。$AGENT_COMMAND test --save <名前> はいつも全件を出します（-Dkatachi.maxViolations=all を Gradle に渡す）。\n" +
@@ -1096,7 +1153,8 @@ katachi doctor / katachi scaffold / katachi lint（katachi --help）を使って
       -Dkatachi.maxViolations を渡せば、そちらを使う）。
       要約: JDK、ログのパス、結果の行、[MissingDescription] の件数、通ったときの警告の件数と見出し、
       前回（previous.log）との差分。
-      0 = 通った、1 = 検査が失敗した、2 = 検査まで届かない（コンパイルエラー、gradlew 無し、定義ディレクトリ無し）。
+      0 = 通った、1 = 検査が失敗した、2 = 検査まで届かない（コンパイルエラー、gradlew 無し、定義ディレクトリ無し、
+      SKIPPED などでテストが実行されていない）。
       katachi コマンドが Gradle を起動するのはこのコマンドだけ。
 
 使い方の誤り（知らないオプションやサブコマンド）は、どのコマンドも 2 で終わります。
@@ -1137,7 +1195,8 @@ Usage:
       Summary: the JDK, the log path, the result line, the number of [MissingDescription], the number
       and headings of warnings when the check passes, and the difference from the previous run (previous.log).
       0 = passed, 1 = the check failed, 2 = the check was not reached (compile error, no gradlew,
-      no definition directory). This is the only command of katachi that starts Gradle.
+      no definition directory, tests that did not run such as SKIPPED). This is the only command of katachi
+      that starts Gradle.
 
 A usage error (an unknown option or subcommand) exits with 2 in every command.
 

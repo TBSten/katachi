@@ -1,15 +1,20 @@
 package me.tbsten.katachi.script.internal
 
+import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
+import java.nio.file.StandardOpenOption
+import java.nio.file.attribute.FileTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
+import kotlin.io.path.getLastModifiedTime
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isExecutable
 import kotlin.io.path.isRegularFile
+import kotlin.io.path.listDirectoryEntries
 
 // `test` and `compare-violations`: run the verification module and summarize its log, and compare the check
 // results before and after a refactoring. The kit's `cmd_test` / `cmd_compare_violations`.
@@ -52,8 +57,123 @@ private fun extractCheckResult(log: Path): List<String> = log.readLinesLenientLo
 
 private fun Path.readLinesLenientLog(): List<String> = if (isRegularFile()) String(Files.readAllBytes(this), Charsets.UTF_8).lines().let { if (it.lastOrNull() == "") it.dropLast(1) else it } else emptyList()
 
-/** Whether the log got as far as the check (a compile error must not read as "0 violations"). */
-private fun hasCheckResult(log: Path): Boolean = log.readLinesLenientLog().any { it.contains("Katachi check failed:") || it.contains("BUILD SUCCESSFUL") }
+/** The outcomes Gradle prints after a task whose actions it did not run; `:x:test SKIPPED` alone is the --dry-run form. */
+private const val NOT_RUN_OUTCOMES = "SKIPPED|NO-SOURCE|UP-TO-DATE|FROM-CACHE"
+
+/** A test event of Gradle's testLogging (`ProjectArchitectureTest > passes() PASSED`), not a `> Task` line. */
+private val TEST_EVENT_LINE = Regex("^[^\\s>].* > .* (PASSED|FAILED|SKIPPED)\\s*$")
+
+/**
+ * What test appends to its log from the JUnit XML that run wrote: the manual setup's testLogging prints no test event,
+ * so without it a saved log of tests that were all skipped would read as "0 violations" to compare-violations.
+ */
+private const val TEST_CASES_LINE_PREFIX = "katachi agent test: test cases in the JUnit XML of this run: "
+
+private val TEST_CASES_LINE = Regex("^${Regex.escape(TEST_CASES_LINE_PREFIX)}([0-9]+) ran, ([0-9]+) skipped")
+
+/** Why a build that passed holds no check result: the tests of the verification module did not run. */
+private sealed interface NotRun {
+    /** Gradle did not run the test task's actions; [outcome] is one of [NOT_RUN_OUTCOMES]. */
+    class Task(val line: String, val outcome: String) : NotRun
+
+    /** The task ran, but no test case did; [skipped] of them were skipped (`@Disabled`). */
+    class NoTestCase(val skipped: Int, val evidence: List<String>) : NotRun
+}
+
+/**
+ * Why the tests of [testTask] did not run in a log that reached BUILD SUCCESSFUL without a failed check; null when they ran,
+ * or when the log cannot tell (the manual setup prints no test event, and an older log has no [TEST_CASES_LINE]).
+ */
+private fun notRunOf(lines: List<String>, testTask: String): NotRun? {
+    if (lines.any { it.contains("Katachi check failed:") } || lines.none { it.contains("BUILD SUCCESSFUL") }) return null
+    val taskLine = Regex("^(> Task )?${Regex.escape(testTask)} ($NOT_RUN_OUTCOMES)\\s*$")
+    lines.firstNotNullOfOrNull { line -> taskLine.matchEntire(line)?.let { NotRun.Task(line.trim(), it.groupValues[2]) } }?.let { return it }
+    val counted = lines.firstNotNullOfOrNull { line -> TEST_CASES_LINE.find(line)?.let { line to it.destructured } }
+    if (counted != null) {
+        val (line, values) = counted
+        val (ran, skipped) = values
+        return if (ran.toInt() == 0) NotRun.NoTestCase(skipped.toInt(), listOf(line)) else null
+    }
+    val events = lines.filter { TEST_EVENT_LINE.matches(it) }
+    return if (events.isNotEmpty() && events.all { it.trimEnd().endsWith(" SKIPPED") }) NotRun.NoTestCase(events.size, events) else null
+}
+
+/** The number of skipped tests in a log whose tests ran: from [TEST_CASES_LINE], otherwise the SKIPPED test events. */
+private fun skippedTestsIn(lines: List<String>): Int {
+    lines.firstNotNullOfOrNull { TEST_CASES_LINE.find(it) }?.let { return it.groupValues[2].toInt() }
+    return lines.count { TEST_EVENT_LINE.matches(it) && it.trimEnd().endsWith(" SKIPPED") }
+}
+
+/** Whether the log got as far as the check (a compile error or tests that never ran must not read as "0 violations"). */
+private fun hasCheckResult(log: Path, testTask: String): Boolean {
+    val lines = log.readLinesLenientLog()
+    return lines.any { it.contains("Katachi check failed:") || it.contains("BUILD SUCCESSFUL") } && notRunOf(lines, testTask) == null
+}
+
+private fun notRunReason(notRun: NotRun, testTask: String): Msg = when (notRun) {
+    is NotRun.Task -> Messages.Test.taskOutcome(testTask, notRun.outcome)
+    is NotRun.NoTestCase -> if (notRun.skipped > 0) Messages.Test.allTestCasesSkipped(notRun.skipped) else Messages.Test.noTestCaseRan
+}
+
+/** Prints why the tests did not run and what to do; test then exits 2. */
+private fun ScriptContext.reportNotRun(notRun: NotRun, testTask: String, gradleArgs: List<String>) {
+    say(Messages.Test.resultTestsDidNotRun(notRunReason(notRun, testTask)))
+    val hint = when {
+        notRun is NotRun.NoTestCase -> if (notRun.skipped > 0) Messages.Test.removeWhatSkipsTheTests else Messages.Test.noTestClass
+        notRun !is NotRun.Task -> null
+        notRun.outcome == "UP-TO-DATE" || notRun.outcome == "FROM-CACHE" -> Messages.Test.gradleReusedEarlierResult
+        notRun.outcome == "NO-SOURCE" -> Messages.Test.noTestClass
+        gradleArgs.any { it == "--dry-run" || it == "-m" } -> Messages.Test.dryRunRunsNoTask
+        else -> Messages.Test.buildTurnsTestTaskOff
+    }
+    hint?.let(::say)
+    val evidence = when (notRun) {
+        is NotRun.Task -> listOf(notRun.line)
+        is NotRun.NoTestCase -> notRun.evidence
+    }
+    evidence.take(PRINT_CHECK_DIFF_MAX).forEach { out("  " + it.trim()) }
+}
+
+/** Gradle's JUnit XML results in [dir] (`TEST-<class>.xml`), with when each was last written. */
+private fun junitXmlTimes(dir: Path): Map<Path, FileTime> = try {
+    if (dir.isDirectory()) dir.listDirectoryEntries("TEST-*.xml").associateWith { it.getLastModifiedTime() } else emptyMap()
+} catch (_: IOException) {
+    emptyMap()
+}
+
+private class TestCases(val ran: Int, val skipped: Int)
+
+private val TESTSUITE_TAG = Regex("<testsuite\\s[^>]*>")
+
+private fun xmlCount(tag: String, attribute: String): Int? = Regex("\\s$attribute=\"([0-9]+)\"").find(tag)?.groupValues?.get(1)?.toIntOrNull()
+
+/**
+ * The test cases in the JUnit XML of [dir] written after [before] was taken; null when the run wrote none. A task that did
+ * not run leaves the files of an earlier run as they were, so only new or rewritten ones count.
+ */
+private fun testCasesWritten(dir: Path, before: Map<Path, FileTime>): TestCases? {
+    var total = 0
+    var skipped = 0
+    var read = false
+    for (file in junitXmlTimes(dir).filter { (file, time) -> before[file] != time }.keys) {
+        // The counts are on the root element; the rest can be megabytes of captured output.
+        val head = try {
+            Files.newInputStream(file).use { String(it.readNBytes(16 * 1024), Charsets.UTF_8) }
+        } catch (_: IOException) {
+            continue
+        }
+        val tag = TESTSUITE_TAG.find(head)?.value ?: continue
+        total += xmlCount(tag, "tests") ?: continue
+        skipped += xmlCount(tag, "skipped") ?: 0
+        read = true
+    }
+    return if (read) TestCases(total - skipped, skipped) else null
+}
+
+private fun appendLine(log: Path, line: String) {
+    val text = String(Files.readAllBytes(log), Charsets.UTF_8)
+    Files.writeString(log, (if (text.isEmpty() || text.endsWith("\n")) "" else "\n") + line + "\n", StandardOpenOption.APPEND)
+}
 
 private fun countMissingDescription(log: Path): Int = log.readLinesLenientLog().count { MISSING_DESCRIPTION.containsMatchIn(it) }
 
@@ -121,11 +241,15 @@ internal fun ScriptContext.runCompareViolations(args: List<String>): Int {
     requireDefinitionDir(module)
     val before = args.getOrNull(0)?.let(::resolve) ?: testLogDir().resolve("test-before-refactor.log")
     val after = args.getOrNull(1)?.let(::resolve) ?: testLogDir().resolve("test-after-refactor.log")
+    val testTask = "${module.gradlePath}:test"
     for (log in listOf(before, after)) {
         if (!log.isRegularFile()) {
             dieUsage(Messages.Test.notFoundSaveOutput(fileUri(log), module.gradlePath))
         }
-        if (!hasCheckResult(log)) {
+        notRunOf(log.readLinesLenientLog(), testTask)?.let {
+            dieUsage(Messages.Test.hasNoCheckResultTestsDidNotRun(fileUri(log), notRunReason(it, testTask)))
+        }
+        if (!hasCheckResult(log, testTask)) {
             dieUsage(Messages.Test.hasNoCheckResult(fileUri(log)))
         }
     }
@@ -202,8 +326,12 @@ internal fun ScriptContext.runTest(args: List<String>): Int {
     }
     say(Messages.Test.log(fileUri(log)))
 
-    val command = (if (gradlew.isExecutable()) listOf("./gradlew") else listOf("sh", "./gradlew")) + listOf("${module.gradlePath}:test", "--console=plain") + gradleArgs
+    val testTask = "${module.gradlePath}:test"
+    val resultsDir = root.resolve(module.dir).resolve("build/test-results/test")
+    val resultsBefore = junitXmlTimes(resultsDir)
+    val command = (if (gradlew.isExecutable()) listOf("./gradlew") else listOf("sh", "./gradlew")) + listOf(testTask, "--console=plain") + gradleArgs
     val status = runToLog(command, root, log)
+    testCasesWritten(resultsDir, resultsBefore)?.let { appendLine(log, "$TEST_CASES_LINE_PREFIX${it.ran} ran, ${it.skipped} skipped") }
     Files.copy(log, latest, StandardCopyOption.REPLACE_EXISTING)
     if (save != null) {
         val copy = testLogDir().resolve("test-$save.log")
@@ -212,7 +340,11 @@ internal fun ScriptContext.runTest(args: List<String>): Int {
     }
 
     val lines = log.readLinesLenientLog()
-    if (!hasCheckResult(log)) {
+    notRunOf(lines, testTask)?.let {
+        reportNotRun(it, testTask, gradleArgs)
+        return 2
+    }
+    if (!hasCheckResult(log, testTask)) {
         // No violation, but other tests of the module (a spec the user added) failed: 1, worded apart from a compile error.
         if (lines.any { it.contains("There were failing tests") }) {
             say(Messages.Test.resultNoViolationsBut(status))
@@ -230,6 +362,8 @@ internal fun ScriptContext.runTest(args: List<String>): Int {
         1
     } else {
         say(Messages.Test.resultCheckPassedViolations)
+        // Some ran and some were skipped: a check inside a skipped test did not run, which the pass above cannot say.
+        skippedTestsIn(lines).takeIf { it > 0 }?.let { say(Messages.Test.skippedTests(it)) }
         0
     }
     val missing = countMissingDescription(log)
@@ -246,7 +380,7 @@ internal fun ScriptContext.runTest(args: List<String>): Int {
 
     val omitted = truncatedLineOf(log)
     val previousOmitted = if (previous.isRegularFile()) truncatedLineOf(previous) else null
-    if (previous.isRegularFile() && hasCheckResult(previous)) {
+    if (previous.isRegularFile() && hasCheckResult(previous, testTask)) {
         if (omitted != null || previousOmitted != null) {
             say(Messages.Test.differencePreviousRunVs)
         } else {
