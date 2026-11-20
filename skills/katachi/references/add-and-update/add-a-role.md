@@ -10,7 +10,7 @@ A file goes into an existing Role only if all three hold. If one answer is "no",
 
 Not one Role per file either: when a project gains its 19th `*UseCase.kt`, it is the existing `UseCase` Role, and its `layout { }` already matches it. If the new file is not matched, check why before adding anything: a file in an unexpected place may be the thing to fix (ask the user), not the layout.
 
-The `How to fix:` of an `[UnexpectedFile]` suggests a Role named after the file (`"GetUserUseCase".role { … }`). Do not paste it as it is; name the Role after the kind of file.
+The `How to fix:` of an `[UnexpectedFile]` suggests a Role named after the file (`"GetUserUseCase".role { … }`). Do not paste it as it is; name the Role after the kind of file. For a file the OS writes on its own (`.DS_Store`, `Thumbs.db`, `desktop.ini`) it suggests `.gitignore` instead of a Role: follow that, and add no Role.
 
 ## Where the Role goes
 
