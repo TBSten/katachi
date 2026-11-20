@@ -8,6 +8,10 @@ import me.tbsten.katachi.dsl.internal.GlobProblem
 /**
  * A glob pattern for a name or a dotted path, such as a declaration name, an import or a package.
  *
+ * For a backend that checks what is inside a file, the way `ktFileContent { }` matches the names
+ * written in it: an architecture definition writes plain strings, and the backend compiles them
+ * with [NamePattern.compile].
+ *
  * Every wildcard reads as it does in a layout key: `*` is zero characters or more within one
  * level, `**` is any number of levels, `?`, `[abc]` and `{a,b}` are one character, one of a list
  * and one of a few alternatives, and `\` makes the next character literal. In a type, a `?`
