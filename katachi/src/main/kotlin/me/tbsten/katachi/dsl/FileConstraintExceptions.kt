@@ -117,7 +117,10 @@ public class KatachiDuplicateFileConstraintNameException internal constructor(
      * `ktFileContent { }`, or `fileConstraint { }` for any other.
      */
     public val firstKind: String,
-    /** The kind of the second constraint, spelled as [firstKind] is. */
+    /**
+     * The kind of the second constraint, spelled as
+     * [firstKind][KatachiDuplicateFileConstraintNameException.firstKind] is.
+     */
     public val kind: String,
     /** Where the first constraint was written. */
     public val firstDeclaredAt: DeclarationSite,

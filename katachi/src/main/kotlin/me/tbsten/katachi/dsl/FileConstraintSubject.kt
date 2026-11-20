@@ -57,13 +57,14 @@ public class FileConstraintSubject internal constructor(
      */
     public val files: List<String>,
     /**
-     * Every file of the project the check walked, project relative, in walk order: [files], the
-     * files of the other roles, and those no role allows.
+     * Every file of the project the check walked, project relative, in walk order:
+     * [files][FileConstraintSubject.files], the files of the other roles, and those no role allows.
      *
      * For a backend that has to read past the covered files to understand them, as a symbol table
      * does when it resolves a name to a class another role declares; build what it reads from them
-     * once per run with [memo]. A failure is still about one of [files]. A directory the walk did
-     * not enter, because the layout ignores it or no role declares it, adds nothing.
+     * once per run with [memo]. A failure is still about one of [files][FileConstraintSubject.files].
+     * A directory the walk did not enter, because the layout ignores it or no role declares it, adds
+     * nothing.
      */
     public val projectFiles: List<String>,
     private val shared: ConcurrentMap<Any, MemoSlot>,
