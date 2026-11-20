@@ -2,28 +2,27 @@
 """リリース前チェックの 10-2（IDE プラグインの E2E）。
 
 `integrationTest`（channel D の Driver smoke。実 IDE を Starter で起動し、sample/jvm の写しを Gradle import してから
-ツールウィンドウで生成する GenerationIdeErrorsTest・ToolWindowSmokeTest）は ci.yml にも ide-plugin-nightly.yml にも
-無く、どちらのワークフローでも自動では回っていない（katachi-intellij-plugin/build.gradle.kts のコメントと ci.yml の
-コメントに、どちらも「run it by hand（before a release）」とある）。手で回すとされたまま忘れられないよう、ここで
-リリース前に必ず一度は通す。
+ガター・ツールウィンドウ・定義の編集などを確かめる）を、リリース前に必ず一度は通す。CI では ide-plugin-nightly.yml が
+一部の smoke を 1 job に 1 本ずつ回すだけで、全部を通すのはここだけ。
 
-コマンドは `./gradlew integrationTest` の1つだけで、ci.yml の `run:` のような一箇所の置き場が無い（どのワークフロー
-にも出てこないため）。書き写す先は katachi-intellij-plugin/build.gradle.kts の
+コマンドの元は katachi-intellij-plugin/build.gradle.kts の
 `intellijPlatformTesting.testIdeUi.register("integrationTest")`（タスク名が変わったらこのスクリプトも直す）。
 
-- `./gradlew integrationTest` に `--console=plain --stacktrace --no-daemon
-  --project-cache-dir .local/tmp/gradle-cache/prerelease-ide-plugin-e2e` を足して、`katachi-intellij-plugin` で走らせる
-- IDE 本体は 8 / 10-1 と同じ `katachi-intellij-plugin/.intellijPlatform` のキャッシュを使う（テストへ
-  `intellijPlatform.platformPath` をそのまま渡すので、Starter が別に IDE をダウンロードし直すことはない。ただし
-  8 / 10-1 を一度も走らせていない初回は、その場でダウンロードが乗る）
+- テストのクラス（src/integrationTest の `@Test` を持つファイル）を 1 つずつ `./gradlew integrationTest --tests '*.<クラス>'`
+  で流す。`--console=plain --stacktrace --no-daemon --project-cache-dir .local/tmp/gradle-cache/prerelease-ide-plugin-e2e`
+  を足して、`katachi-intellij-plugin` で走らせる。`--class <クラス>` で一部だけ流せる
+- **1 クラス流すごとに、IDE の写しを消す。**smoke は 1 本ごとに IDE の .app を 2 回写し（`ide-*` と Starter の
+  `starter/out/ide-tests/cache`、IDEA で約 4GB ずつ）、後始末しない。まとめて流すと 13 クラスで 100GB を超え、
+  2026-11-20 の prerelease ではディスクが尽きて途中から全部落ちた。ログ・スクリーンショット・system・リポジトリの写し
+  （合わせて 1 本 1GB ほど）は残す
+- 流す前に build のあるボリュームの空きを見て、15GB を切っていたら残りのクラスを流さずに止める（未実行として書く）
+- IDE 本体は 8 / 10-1 と同じ `katachi-intellij-plugin/.intellijPlatform` のキャッシュを使う（初回はその場でダウンロードが乗る）
 - ディスプレイのあるセッションが要る（実 IDE のウィンドウを開く。SSH だけのヘッドレス環境では動かない。macOS の
   ローカルセッションか、GUI を持つ CI ランナーで）
-- テストは2本（GenerationIdeErrorsTest・ToolWindowSmokeTest）。1本あたり IDE 起動込みで2分半〜3分が目安。
-  sample/jvm の写しを IDE がさらに Gradle import する分、初回はもっとかかる（テスト側のタイムアウトは
-  安全側に40分まで見ている）
-- Starter は `<git root>/out/ide-tests` に IDE の複製・ログを置く。このスクリプトは消さない
-- 落ちても最後まで書く。<release-dir>/ide-plugin-e2e.md に結果を書く。ログは <release-dir>/tmp/ide-plugin-e2e/ に置く
-- 終了コード: 通れば 0、落ちれば 1
+- 1 クラスあたり、IDE が写しを index する時間を含めて数分〜15 分。テスト側のタイムアウトは 40 分まで見ている
+- 落ちても最後まで書く。<release-dir>/ide-plugin-e2e.md にクラスごとの結果の表を書く。ログ・JUnit の XML は
+  <release-dir>/tmp/ide-plugin-e2e/ に置く
+- 終了コード: 全部通れば 0、1 つでも落ちる・未実行があれば 1
 
 `--android-studio` は手順 10-5（Android Studio での E2E）。10-2 と同じ smoke を `integrationTestAndroidStudio`（本物の
 Android Studio で起動する。版は build.gradle.kts の `register("integrationTestAndroidStudio")`）で走らせる。初回は
@@ -41,8 +40,10 @@ IDE のダウンロードが途中で止まらないように:
   python3 .claude/skills/prerelease/scripts/run-ide-plugin-e2e.py --list
   python3 .claude/skills/prerelease/scripts/run-ide-plugin-e2e.py --release-dir .local/release-v<版>
   python3 .claude/skills/prerelease/scripts/run-ide-plugin-e2e.py --release-dir .local/release-v<版> --android-studio
+  python3 .claude/skills/prerelease/scripts/run-ide-plugin-e2e.py --release-dir .local/release-v<版> --class NoRoleSmokeTest
 """
 import argparse, hashlib, json, os, platform, re, shutil, subprocess, sys, tempfile, time, urllib.request
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 sys.dont_write_bytecode = True
@@ -61,6 +62,9 @@ GRADLE_HTTP_FLAGS = [
     "-Dorg.gradle.internal.repository.max.retries=8",
     "-Dorg.gradle.internal.repository.initial.backoff=2000",
 ]
+# Each smoke copies the IDE twice and leaves both: stop before the disk runs out instead of failing every later class.
+MIN_FREE_BYTES = 15 * 1024 ** 3
+TEST_SOURCES = Path(WORKDIR) / "src" / "integrationTest" / "kotlin"
 # 10-5 downloads Android Studio itself, resumable, and hands Gradle the unpacked copy.
 IDE_CACHE = Path.home() / ".cache" / "katachi-prerelease" / "ide"
 RELEASES_LIST = "https://jb.gg/android-studio-releases-list.json"
@@ -73,9 +77,39 @@ def repo_root():
     return Path(out.stdout.strip())
 
 
-def full_cmd(android_studio=False, local_path=None):
+def full_cmd(android_studio=False, local_path=None, test_class=None):
     extra = [f"'-Pkatachi.androidStudio.localPath={local_path}'"] if local_path else []
+    if test_class:
+        extra.append(f"--tests '*.{test_class}'")
     return f"cd {WORKDIR} && {CMD_ANDROID_STUDIO if android_studio else CMD} " + " ".join(GRADLE_FLAGS + GRADLE_HTTP_FLAGS + extra)
+
+
+def test_classes(root):
+    """The integration test classes: the files under src/integrationTest that hold a @Test, by name."""
+    return sorted(p.stem for p in (root / TEST_SOURCES).rglob("*.kt") if "@Test" in p.read_text(encoding="utf-8"))
+
+
+def prune_ide_copies(work_dir):
+    """Removes the IDE copies the smokes leave under work_dir (build/<task>/<smoke>/): the rebuilt .app (`ide-*`, `ide`)
+    and Starter's copy of it (`starter/out/ide-tests/cache`). Logs, screenshots, system and the repository copy stay."""
+    if not work_dir.is_dir():
+        return
+    for smoke in work_dir.iterdir():
+        if not smoke.is_dir():
+            continue
+        targets = [d for d in smoke.iterdir() if d.is_dir() and (d.name == "ide" or d.name.startswith("ide-"))]
+        targets.append(smoke / "starter" / "out" / "ide-tests" / "cache")
+        for d in targets:
+            shutil.rmtree(d, ignore_errors=True)
+
+
+def junit_counts(xml):
+    """(tests, failures + errors, skipped) of a Gradle JUnit XML report, or None when there is none."""
+    if not xml.is_file():
+        return None
+    suite = ET.parse(xml).getroot()
+    count = lambda key: int(suite.get(key, "0"))
+    return count("tests"), count("failures") + count("errors"), count("skipped")
 
 
 def android_studio_version(root):
@@ -163,50 +197,79 @@ def main():
     ap.add_argument("--list", action="store_true", help="走らせるコマンドを出すだけ")
     ap.add_argument("--android-studio", action="store_true", help="10-5: Android Studio で integrationTestAndroidStudio を走らせる")
     ap.add_argument("--no-ide-cache", action="store_true", help="10-5: キャッシュの Android Studio を使わず落とし直す")
+    ap.add_argument("--class", dest="test_class", action="append", help="このクラスだけ流す（何度でも。既定は全部）")
     a = ap.parse_args()
 
     root = repo_root()
-    cmd = full_cmd(a.android_studio)
     task = "integrationTestAndroidStudio" if a.android_studio else "integrationTest"
     name = "ide-plugin-android-studio" if a.android_studio else "ide-plugin-e2e"
     title = "Android Studio での E2E（integrationTestAndroidStudio）" if a.android_studio else "IDE プラグインの E2E（integrationTest）"
 
     if a.list or not a.release_dir:
-        print(f"[{task}] Run {task}: {cmd}")
+        print(f"[{task}] Run {task}, 1 クラスずつ: {full_cmd(a.android_studio, None, '<クラス>')}")
+        print(f"クラス: {', '.join(a.test_class or test_classes(root))}")
         print("前提: ディスプレイのあるセッション（実 IDE のウィンドウを開く）。詳細は references/ide-plugin-nightly.md")
         return 0
 
     release_dir = (root / a.release_dir).resolve()
     log_dir = release_dir / "tmp" / name
     log_dir.mkdir(parents=True, exist_ok=True)
-    log = log_dir / f"{task}.log"
 
+    local = None
     if a.android_studio:
         version = android_studio_version(root)
         if a.no_ide_cache:
             shutil.rmtree(IDE_CACHE / f"android-studio-{version}", ignore_errors=True)
         local = fetch_android_studio(version, log_dir / "download.log")
-        cmd = full_cmd(True, local)
 
-    print(f"[{task}] Run {task}", flush=True)
-    start = time.monotonic()
-    with log.open("w", encoding="utf-8") as out:
-        code = subprocess.run(["bash", "-c", cmd], cwd=root, stdout=out, stderr=subprocess.STDOUT).returncode
-    sec = time.monotonic() - start
-    print(f"      {'OK' if code == 0 else 'FAILED'}（{sec:.0f} 秒）{log.as_uri()}", flush=True)
+    classes = a.test_class or test_classes(root)
+    plugin_build = root / WORKDIR / "build"
+    work_dir = plugin_build / task
+    results = plugin_build / "test-results" / task
+    rows, failed = [], False
+    for i, cls in enumerate(classes, 1):
+        free = shutil.disk_usage(plugin_build if plugin_build.exists() else root).free
+        if free < MIN_FREE_BYTES:
+            print(f"[{task}] 空きが {free / 1024 ** 3:.1f}GB しか無いので、残り {len(classes) - i + 1} クラスは流さない", flush=True)
+            rows += [(c, "未実行（空き不足）", None, 0, None) for c in classes[i - 1:]]
+            failed = True
+            break
+        cmd = full_cmd(a.android_studio, local, cls)
+        log = log_dir / f"{cls}.log"
+        for stale in (results.glob(f"TEST-*.{cls}.xml") if results.is_dir() else []):
+            stale.unlink()
+        print(f"[{task}] ({i}/{len(classes)}) {cls}", flush=True)
+        start = time.monotonic()
+        with log.open("w", encoding="utf-8") as out:
+            code = subprocess.run(["bash", "-c", cmd], cwd=root, stdout=out, stderr=subprocess.STDOUT).returncode
+        sec = time.monotonic() - start
+        report = next(results.glob(f"TEST-*.{cls}.xml"), None) if results.is_dir() else None
+        if report:
+            shutil.copy2(report, log_dir / report.name)
+        counts = junit_counts(log_dir / report.name) if report else None
+        prune_ide_copies(work_dir)
+        result = "OK" if code == 0 else "**FAILED**"
+        failed |= code != 0
+        rows.append((cls, result, counts, sec, log))
+        print(f"      {'OK' if code == 0 else 'FAILED'}（{sec:.0f} 秒）{log.as_uri()}", flush=True)
 
+    total = sum(r[3] for r in rows)
+    table = ["| クラス | 結果 | テスト / 失敗 / skip | 秒 | ログ |", "|---|---|---|---:|---|"]
+    for cls, result, counts, sec, log in rows:
+        c = f"{counts[0]} / {counts[1]} / {counts[2]}" if counts else "-"
+        table.append(f"| {cls} | {result} | {c} | {sec:.0f} | {f'[log]({log.as_uri()})' if log else '-'} |")
     summary = release_dir / f"{name}.md"
     summary.write_text(
         f"# {title}\n\n"
-        f"- 結果: {'OK' if code == 0 else '**FAILED**'}\n"
-        f"- 所要: {sec:.0f} 秒\n"
-        f"- ログ: [log]({log.as_uri()})\n\n"
-        "再現する:\n\n"
-        f"```shell\n{cmd}\n```\n",
+        f"- 結果: {'**FAILED**' if failed else 'OK'}（{len(rows)} クラス、1 クラスずつ流して IDE の写しを消した）\n"
+        f"- 所要: {total:.0f} 秒\n\n"
+        + "\n".join(table) + "\n\n"
+        "1 クラスを再現する:\n\n"
+        f"```shell\n{full_cmd(a.android_studio, local, '<クラス>')}\n```\n",
         encoding="utf-8",
     )
-    print(f"結果: {'OK' if code == 0 else 'FAILED'}。{summary.as_uri()}")
-    return 0 if code == 0 else 1
+    print(f"結果: {'FAILED' if failed else 'OK'}。{summary.as_uri()}")
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":
