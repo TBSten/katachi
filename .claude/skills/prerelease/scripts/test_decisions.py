@@ -288,6 +288,25 @@ class DecisionsTest(unittest.TestCase):
         self.assertIn("問題 4 件", out)
         self.assertIn("判断 5 件（直さない 4・後で 1）", out)
 
+    def test_virtual_exploratory_file_is_matched_but_not_checked_on_disk(self):
+        (self.dir / "process.md").write_text(textwrap.dedent("""\
+            # process
+
+            ## このまま: 存在しないファイルを渡すと exit 2
+            - decision: このまま
+            - file: exploratory:cli-script
+            - quote: No such file: x.katachi.kts
+            - decided: 2026-11-20 KATACHI-402
+
+            """), encoding="utf-8")
+        code, out = run("--dir", str(self.dir), "check", "--root", str(self.root))
+        self.assertEqual(code, 0, out)  # GONE・LOST にならない
+        d = [e for e in D.load_decisions(self.dir)][0]
+        same, _ = D.parse("## [p6] cli-script: 存在しないファイルを渡すと exit 2\n- file: exploratory:cli-script\n- quote: No such file: x.katachi.kts\n", "f", D.REVIEW_KEYS)
+        self.assertEqual(D.compare(same[0], d), "same")
+        other, _ = D.parse("## [p6] core: 別の指摘\n- file: exploratory:core\n- quote: No such file: x.katachi.kts\n", "f", D.REVIEW_KEYS)
+        self.assertIsNone(D.compare(other[0], d))  # 別のチャーターの発見は同じにしない
+
     def test_dir_can_follow_the_subcommand(self):
         run("--dir", str(self.dir), "record-review", str(self.review), "--decided", "2026-11-10 t KATACHI-1")
         _, before = run("--dir", str(self.dir), "list")

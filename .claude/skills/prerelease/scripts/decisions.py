@@ -28,6 +28,9 @@ sys.dont_write_bytecode = True
 DECISIONS_DIR = Path(__file__).resolve().parent.parent / "decisions"
 CONTENT_DIR = "docs/src/content/docs/"
 DECISIONS = ("直さない", "このまま", "後で", "方針")
+# 場所を持たない発見（コマンドの挙動・実行結果など）の `file:`。例: `exploratory:cli-script`（手順 13 の発見）。
+# 判断との照合（file の一致・quote の重なり）には使うが、リポジトリにあるファイルとしては確かめない。
+VIRTUAL_FILE_PREFIX = "exploratory:"
 DECISION_KEYS = ("decision", "file", "quote", "match", "rule", "decided", "by", "revisit")
 REVIEW_KEYS = ("file", "line", "priority", "quote", "impact", "recommend", "status", "note", "resolved-at", "ai-note", "id")
 # Review の `- id:`（popup が印を付け外ししたときに書く、まとまりの名前を除いた id）。review/model.ts の PINNED_ID と同じ形
@@ -338,7 +341,8 @@ def inspect(root, directory=DECISIONS_DIR):
         where = f"{d.source}:{d.line}"
         problems += [f"ERROR {where}: {err}（{d.title}）" for err in d.errors]
         f = d.file
-        if f and not any(c in f for c in "*?["):
+        # `exploratory:<チャーター>` は探索的検証の発見の置き場（実在しない目印）。ファイルとしては確かめない
+        if f and not f.startswith(VIRTUAL_FILE_PREFIX) and not any(c in f for c in "*?["):
             path = root / f
             if not path.is_file():
                 problems.append(f"GONE  {where}: ファイルがありません: {f}（{d.title}）— 消えたなら判断も消す")
