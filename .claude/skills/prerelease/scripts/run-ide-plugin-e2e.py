@@ -90,11 +90,12 @@ def test_classes(root):
 
 
 def prune_ide_copies(work_dir):
-    """Removes the IDE copies the smokes leave under work_dir (build/<task>/<smoke>/): the rebuilt .app (`ide-*`, `ide`)
-    and Starter's copy of it (`starter/out/ide-tests/cache`). Logs, screenshots, system and the repository copy stay."""
+    """Removes the IDE copies the smokes leave under work_dir (build/<task>/<smoke>/, and build/<task>/ itself, which
+    ToolWindowSmokeTest uses): the rebuilt .app (`ide-*`, `ide`) and Starter's copy of it (`starter/out/ide-tests/cache`).
+    Logs, screenshots, system and the repository copy stay."""
     if not work_dir.is_dir():
         return
-    for smoke in work_dir.iterdir():
+    for smoke in [work_dir, *work_dir.iterdir()]:
         if not smoke.is_dir():
             continue
         targets = [d for d in smoke.iterdir() if d.is_dir() and (d.name == "ide" or d.name.startswith("ide-"))]
