@@ -80,3 +80,25 @@ Mac の auto mode は `ticket.py set` の書き込みも止めるので、その
 
 手順 13（探索的検証 1 周目 konsist/konture）の p7。katachi-konture が持ち込む Konture 1.0.1 は Kotlin 2.4 のメタデータで作られていて、Kotlin 2.2 では読めない（2.3 では通る）。README とリリースノートは「Kotlin 2.2+」のままで、konture の下限は Module.md にだけある。
 (a) README・`konture { }` の KDoc・リリースノートにも「Kotlin 2.3 以上」と書く / (b) Konture の版を下げる / (c) このまま、と並べて聞き、(c) になった。理由の一言なし。次のチェックでは出さない。
+
+## このまま: gradle-plugin: ルートの `subprojects { }` が `test` を空にして別の Test タスクへ回すプロジェクト（Exposed の `testDb`）や、タグで絞るプロジェクトでは、katachi の検査が 1 度も走らないのに BUILD SUCCESSFUL になり、`agent test` は「検査は通りました（違反 0 件）」で 0 を返す
+- decision: このまま
+- file: exploratory:realworld
+- quote: 結果: 検査は通りました（違反 0 件）
+- decided: 2026-11-21 261120-01 KATACHI-404
+- by: 利用者（TODO.html、02:07 JST）
+
+手順 13（探索的検証 2 周目 実在の OSS）の p9。Exposed のように `test` を filter で空にして DB ごとの Test タスクへ回すビルドや、ルートで `useJUnitPlatform { includeTags("unit") }` を掛けるビルドに scaffold で入れると、katachi のテストが 0 件のまま BUILD SUCCESSFUL になる（CI の `./gradlew build` も緑）。
+(a) katachi のテストのある Test タスクで検査が 1 度も走らなかったら、そのタスクを失敗にする / (b) 警告だけ出す / (c) plugin は変えない、と並べて聞き、(c) になった。理由の一言なし。`agent test` の側は、別のスレッドの PR #129 で `agent test` 自体が無くなる。
+次のチェックでは、この挙動を発見として出さない。
+
+## このまま: core: `.module { }` を移行表どおり `"core/data" { }`・`"feature" / capture("feature") / "api" { }` と `gradle()` に直すと、「そこが Gradle のモジュールであること」の検査が黙って消える（固定キーのモジュールを消しても、build script の無いディレクトリを置いても緑）
+- decision: このまま
+- file: exploratory:migration
+- quote: `.module { }` also declared each module's `build.gradle(.kts)` and `build/`: declare them with `gradle()`
+- decided: 2026-11-21 261120-01 KATACHI-404
+- by: 利用者（TODO.html、02:09 JST）
+
+手順 13（探索的検証 2 周目 v0.3 からの移行）の p9。v0.3 の `":core:data".module { }` はモジュールの build script を必須にしていたが、0.4 の `gradle()` は見つかったモジュールの build script を「置いてよい」と宣言するだけなので、固定の名前のモジュールを消しても緑になる。
+(a) リリースノートの `.module` の段落に「`gradle()` はモジュールの build script を必須にしない」と書く（`gradle()` の「モジュールの一覧を 2 度書かない」設計のまま）/ (b) Role の layout に「このディレクトリは Gradle のモジュール」と書ける口を足す / (c) 固定の名前で書いたモジュールの build script と `gradle()` が重なっても `[AmbiguousLayout]` にしない、と並べて聞き、(a) になった。リリースノートの下書きには書き足し済み。
+次のチェックでは、この挙動を発見として出さない。リリースノートの段落が消えていたら、リリースノートの指摘としてだけ出す。
