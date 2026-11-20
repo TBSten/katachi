@@ -14,8 +14,10 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.PathWalkOption
 import kotlin.io.path.createDirectories
+import kotlin.io.path.createSymbolicLinkPointingTo
 import kotlin.io.path.exists
 import kotlin.io.path.invariantSeparatorsPathString
+import kotlin.io.path.isSymbolicLink
 import kotlin.io.path.readText
 import kotlin.io.path.relativeTo
 import kotlin.io.path.walk
@@ -27,12 +29,15 @@ import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
 
 /**
- * The output directory on a file system that ignores case but keeps it, as macOS and Windows do by
- * default.
+ * The output directory on an in-memory file system (Jimfs).
  *
- * Linux keeps `Api.md` and `API.md` apart, so a temporary directory on the CI machine cannot say
- * anything about this; Jimfs's `Configuration.osX()` answers lookups the way APFS does. What
- * [GenerateDocumentationSpec] checks on the real disk is not repeated here.
+ * - A file system that ignores case but keeps it, as macOS and Windows do by default. Linux keeps
+ *   `Api.md` and `API.md` apart, so a temporary directory on the CI machine cannot say anything
+ *   about this; Jimfs's `Configuration.osX()` answers lookups the way APFS does.
+ * - Symbolic links in the output directory that lead out of it. What they lead to is on the same
+ *   file system, which goes away with the test, so a removal that goes too far reaches nothing real.
+ *
+ * What [GenerateDocumentationSpec] checks on the real disk is not repeated here.
  */
 class DocumentFilesSpec : FreeSpec({
     "前提: このファイルシステムは大文字小文字を区別せず、作ったときの綴りを保つ" {
@@ -191,6 +196,82 @@ class DocumentFilesSpec : FreeSpec({
             }
         }
     }
+
+    "出力先の中のシンボリックリンク" - {
+        "出力先の外のディレクトリへのリンクがあっても、リンク先の .md を古いページとして消さず、リンクも外さない" {
+            withCaseSensitiveOutput { output ->
+                val shared = output.resolveSibling("shared").withHandWrittenFiles()
+                output.createDirectories()
+                output.resolve("shared").createSymbolicLinkPointingTo(shared)
+
+                val logs = architecture { "Api".role { } }.writeTo(output)
+
+                withClue("リンク先は出力先の外にあり、katachi が書いたものではない。空のディレクトリも残す") {
+                    shared.entries() shouldContainExactly listOf("KEEP.md", "NOTE.txt", "emptydir", "sub", "sub/KEEP2.md")
+                }
+                output.resolve("shared").isSymbolicLink() shouldBe true
+                logs.filter { it.startsWith("Removed ") }.shouldBeEmpty()
+            }
+        }
+
+        "mode=check は、リンク先の .md を余分なページと数えない" {
+            withCaseSensitiveOutput { output ->
+                val shared = output.resolveSibling("shared").withHandWrittenFiles()
+                val definition = architecture { "Api".role { } }
+                definition.writeTo(output)
+                output.resolve("shared").createSymbolicLinkPointingTo(shared)
+
+                withClue("書き出しが消さないものを、mode=check が余分と言わないように") {
+                    compareDocuments(output, definition.documents()).extra.shouldBeEmpty()
+                }
+            }
+        }
+
+        "生成する group と同じ名前のディレクトリへのリンクなら、生成するページだけをリンク先に書き、ほかの .md は消さない" {
+            withCaseSensitiveOutput { output ->
+                val shared = output.resolveSibling("shared").withHandWrittenFiles()
+                output.createDirectories()
+                output.resolve("Api").createSymbolicLinkPointingTo(shared)
+                val definition = architecture { "Api".group { "Endpoint".role { } } }
+
+                definition.writeTo(output)
+
+                shared.entries() shouldContainExactly listOf(
+                    "Endpoint.md", "KEEP.md", "NOTE.txt", "README.md", "emptydir", "sub", "sub/KEEP2.md",
+                )
+                withClue("書き出しはリンクを通るので、mode=check もリンクの先で生成するページを探す") {
+                    compareDocuments(output, definition.documents()).isUpToDate shouldBe true
+                }
+            }
+        }
+
+        "ファイルへのリンクは、これまでどおり古いページならリンクだけを消し、リンク先のファイルは残す" {
+            withCaseSensitiveOutput { output ->
+                val notes = output.resolveSibling("notes.md")
+                notes.parent.createDirectories()
+                notes.writeText("hand written")
+                output.createDirectories()
+                output.resolve("Old.md").createSymbolicLinkPointingTo(notes)
+
+                architecture { "Api".role { } }.writeTo(output)
+
+                output.entries() shouldContainExactly listOf("Api.md", "README.md")
+                notes.readText() shouldBe "hand written"
+            }
+        }
+
+        "出力先そのものがリンクなら、これまでどおりリンク先を出力先として書き、前のページを消す" {
+            withCaseSensitiveOutput { output ->
+                val target = output.resolveSibling("generated").createDirectories()
+                target.resolve("Old.md").writeText("old")
+                output.createSymbolicLinkPointingTo(target)
+
+                architecture { "Api".role { } }.writeTo(output)
+
+                target.entries() shouldContainExactly listOf("Api.md", "README.md")
+            }
+        }
+    }
 })
 
 /** Runs [block] on a directory of a fresh in-memory file system that ignores case but keeps it, like APFS. */
@@ -200,6 +281,15 @@ private fun <R> withCaseInsensitiveOutput(block: (Path) -> R): R =
 /** Runs [block] on a directory of a fresh in-memory file system that keeps `Api.md` and `API.md` apart, like Linux. */
 private fun <R> withCaseSensitiveOutput(block: (Path) -> R): R =
     Jimfs.newFileSystem(Configuration.unix()).use { block(it.getPath("/work/docs")) }
+
+/** Puts in [this] what katachi never writes, as in a directory a link in the output leads to, and answers [this]. */
+private fun Path.withHandWrittenFiles(): Path = apply {
+    resolve("sub").createDirectories()
+    resolve("emptydir").createDirectories()
+    resolve("KEEP.md").writeText("hand written")
+    resolve("sub/KEEP2.md").writeText("hand written")
+    resolve("NOTE.txt").writeText("hand written")
+}
 
 /** Writes this definition's documentation into [output] and answers what it logged. */
 private fun Architecture.writeTo(output: Path): List<String> =

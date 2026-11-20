@@ -3,16 +3,17 @@ package me.tbsten.katachi.docs.internal
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.InvalidPathException
+import java.nio.file.LinkOption
 import java.nio.file.Path
 import kotlin.io.path.PathWalkOption
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteExisting
-import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
+import kotlin.io.path.isSymbolicLink
+import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
 import kotlin.io.path.readText
-import kotlin.io.path.relativeTo
 import kotlin.io.path.walk
 import kotlin.io.path.writeText
 import me.tbsten.katachi.docs.KatachiDocumentIoException
@@ -23,7 +24,7 @@ internal fun outputRootOf(outputDir: String): Path = catchingIo(".", outputDir) 
 
 // Removes pages in outputRoot that this run did not produce: the directory must belong to katachi alone.
 internal fun writeDocuments(outputRoot: Path, pages: Map<String, String>, log: (String) -> Unit) {
-    for (stale in stalePagesOf(outputRoot, existingPagesOf(outputRoot), pages.keys)) {
+    for (stale in stalePagesOf(outputRoot, existingPagesOf(outputRoot, pages.keys), pages.keys)) {
         catchingIo(stale, outputRoot) { outputRoot.pageAt(stale).deleteExisting() }
         log("Removed ${displayExistingPath(absolutePathOf(outputRoot.toString()), stale)}, which this definition no longer produces.")
     }
@@ -45,7 +46,7 @@ internal fun writeDocuments(outputRoot: Path, pages: Map<String, String>, log: (
 }
 
 internal fun compareDocuments(outputRoot: Path, pages: Map<String, String>): DocumentDifference {
-    val existing = existingPagesOf(outputRoot)
+    val existing = existingPagesOf(outputRoot, pages.keys)
     // By the names the directory lists: a case insensitive file system also opens `API.md` when
     // only `Api.md` is there.
     val listed = existing.toSet()
@@ -91,24 +92,43 @@ private fun isSameFile(outputRoot: Path, existing: String, generated: String): B
         Files.isSameFile(outputRoot.pageAt(existing), outputRoot.pageAt(generated))
     }
 
-private fun existingPagesOf(outputRoot: Path): List<String> {
+// Not past a symbolic link below outputRoot: a linked directory can lead out of it, to pages that
+// are not katachi's to count or remove. Past one, only a page generated there is looked for: writing
+// it goes through the link, and it must not be missing right after the writing. A link to a page is
+// listed like the page, since removing the link leaves the file it leads to.
+private fun existingPagesOf(outputRoot: Path, generated: Set<String>): List<String> {
     val directory = outputRoot.listedDirectory() ?: return emptyList()
-    return catchingIo(".", outputRoot) {
-        directory.walk(PathWalkOption.FOLLOW_LINKS)
-            .filter { it.isRegularFile() && it.name.endsWith(PAGE_EXTENSION) }
-            .map { it.relativeTo(directory).invariantSeparatorsPathString }
-            .sorted()
-            .toList()
+    val generatedDirectories = generated.flatMapTo(mutableSetOf()) { page ->
+        page.split('/').dropLast(1).runningReduce { parent, name -> "$parent/$name" }
     }
+    val pages = mutableListOf<String>()
+    fun collect(parent: Path, prefix: String, pastLink: Boolean) {
+        for (entry in parent.listDirectoryEntries()) {
+            val path = prefix + entry.name
+            when {
+                entry.isDirectory() -> when {
+                    !pastLink && !entry.isSymbolicLink() -> collect(entry, "$path/", pastLink = false)
+                    path in generatedDirectories -> collect(entry, "$path/", pastLink = true)
+                }
+
+                entry.isRegularFile() && entry.name.endsWith(PAGE_EXTENSION) ->
+                    if (!pastLink || path in generated) pages += path
+            }
+        }
+    }
+    catchingIo(".", outputRoot) { collect(directory, prefix = "", pastLink = false) }
+    return pages.sorted()
 }
 
-// outputRoot itself stays: the user pointed outputDir at it.
+// outputRoot itself stays: the user pointed outputDir at it. A symbolic link stays as well, and
+// nothing past it is removed: what it leads to is not katachi's. The walk starts from the entries
+// of outputRoot because a walk does not enter a link it starts from, and outputRoot may be one.
 private fun removeEmptyDirectories(outputRoot: Path) {
     val directory = outputRoot.listedDirectory() ?: return
     val subdirectories = catchingIo(".", outputRoot) {
-        directory.walk(PathWalkOption.INCLUDE_DIRECTORIES, PathWalkOption.FOLLOW_LINKS)
-            .filter { it != directory && it.isDirectory() }
-            .toList()
+        directory.listDirectoryEntries()
+            .flatMap { it.walk(PathWalkOption.INCLUDE_DIRECTORIES) }
+            .filter { it.isDirectory(LinkOption.NOFOLLOW_LINKS) }
     }
     // Deepest first, so that a directory emptied by removing its children goes as well.
     for (subdirectory in subdirectories.asReversed()) {
