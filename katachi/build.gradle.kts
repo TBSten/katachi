@@ -37,6 +37,9 @@ dependencies {
     // SARIF 2.1.0 の JSON Schema で `toSarif` の出力を検証するためだけ。test 専用で、利用者の
     // classpath には出ない。
     testImplementation(libs.jsonSchemaValidator)
+    // 大文字小文字を区別しないファイルシステム（macOS・Windows の既定）での katachiDocs の書き出しを、
+    // Linux の CI で確かめるためだけ（Configuration.osX()）。test 専用で、利用者の classpath には出ない。
+    testImplementation(libs.jimfs)
 }
 
 // `tool.driver.semanticVersion` のために、実行中の katachi が自分の版を読めるようにする。

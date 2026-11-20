@@ -108,27 +108,20 @@ class GenerateDocumentationSpec : FreeSpec({
 
                 GenerateDocumentation.process(context).getOrThrow()
 
-                withClue("大文字小文字を区別するファイルシステムでは domain/ と Domain/ は別のディレクトリ") {
-                    output.relativeFilePaths().map { it.lowercase() } shouldContainExactlyInAnyOrder listOf(
-                        "readme.md",
-                        "domain/readme.md",
-                        "domain/usecase.md",
+                withClue("大文字小文字を区別しないファイルシステムでも、domain/ の綴りのまま残さない（DocumentFilesSpec）") {
+                    output.relativeFilePaths() shouldContainExactly listOf(
+                        "Domain/README.md",
+                        "Domain/UseCase.md",
+                        "README.md",
                     )
                 }
                 for ((path, content) in renamed.documents()) {
                     withClue(path) { File(output, path).readText() shouldBe content }
                 }
-                withClue("区別しないファイルシステムでは同じファイルなので、消したとは言わない") {
-                    context.logs.filter { it.startsWith("Removed ") } shouldContainExactly
-                        if (output.distinguishesCase()) {
-                            listOf(
-                                "Removed file://${output.invariantSeparatorsPath}/domain/README.md, which this definition no longer produces.",
-                                "Removed file://${output.invariantSeparatorsPath}/domain/UseCase.md, which this definition no longer produces.",
-                            )
-                        } else {
-                            emptyList()
-                        }
-                }
+                context.logs.filter { it.startsWith("Removed ") } shouldContainExactly listOf(
+                    "Removed file://${output.invariantSeparatorsPath}/domain/README.md, which this definition no longer produces.",
+                    "Removed file://${output.invariantSeparatorsPath}/domain/UseCase.md, which this definition no longer produces.",
+                )
             }
         }
 
@@ -360,15 +353,15 @@ class GenerateDocumentationSpec : FreeSpec({
             }
         }
 
-        "大文字小文字だけが違う前の名前のページは、別のファイルなら余分として報告される" {
+        "大文字小文字だけが違う前の名前のページは、欠けているページと余分なページとして報告される" {
             withTempDirectory { output ->
                 architecture { "domain".group { "UseCase".role { } } }.generateDocumentation(output)
 
                 val failure = architecture { "Domain".group { "UseCase".role { } } }.staleDocumentation(output)
 
-                withClue("区別しないファイルシステムでは domain/UseCase.md が Domain/UseCase.md そのもの") {
-                    failure.extra shouldContainExactly
-                        if (output.distinguishesCase()) listOf("domain/README.md", "domain/UseCase.md") else emptyList()
+                withClue("区別しないファイルシステムで Domain/UseCase.md を開けても、ディレクトリにある名前は domain/UseCase.md") {
+                    failure.missing shouldContainExactlyInAnyOrder listOf("Domain/README.md", "Domain/UseCase.md")
+                    failure.extra shouldContainExactly listOf("domain/README.md", "domain/UseCase.md")
                 }
             }
         }
@@ -378,8 +371,9 @@ class GenerateDocumentationSpec : FreeSpec({
 
             withTempDirectory { output ->
                 arch.generateDocumentation(output)
-                // A case insensitive file system already answers `domain/UseCase.md` with this page.
-                // A hard link stands in for it where the two spellings are different paths.
+                // Hard links list each page under both spellings as one file, so the `domain/` ones
+                // are the generated pages themselves, not what a rename left behind. Only a file
+                // system that keeps the two spellings apart can list both.
                 if (output.distinguishesCase()) {
                     File(output, "domain").mkdirs()
                     for (page in listOf("README.md", "UseCase.md")) {
