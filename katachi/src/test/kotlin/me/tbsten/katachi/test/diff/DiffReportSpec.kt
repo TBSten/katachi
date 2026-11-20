@@ -7,6 +7,12 @@ import io.kotest.matchers.string.shouldNotContain
 import java.io.File
 import java.nio.file.Files
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.check.KatachiArchitectureAssertionError
+import me.tbsten.katachi.check.KatachiInvalidBaselineFileException
+import me.tbsten.katachi.check.Severity
+import me.tbsten.katachi.check.internal.BaselineEnvironment
+import me.tbsten.katachi.check.internal.BaselineRuns
+import me.tbsten.katachi.check.internal.assertWith
 import me.tbsten.katachi.diff.DiffReport
 import me.tbsten.katachi.diff.KatachiDiffGitException
 import me.tbsten.katachi.diff.KatachiDiffPullRequestException
@@ -375,7 +381,7 @@ class DiffReportSpec : FreeSpec({
             report.json.at("noRole", "files") shouldBe emptyList<Any?>()
             report.json.at("noRoleDeleted", "files", 0, "path") shouldBe "misc/stray.txt"
             report.json.at("noRoleDeleted", "files", 0, "status") shouldBe "deleted"
-            report.yaml shouldContain "  noRoleFileCount: 0\n  noRoleDeletedFileCount: 1\n"
+            report.yaml shouldContain "  noRoleFileCount: 0\n  baselinedFileCount: 0\n  noRoleDeletedFileCount: 1\n"
         }
     }
 
@@ -396,6 +402,123 @@ class DiffReportSpec : FreeSpec({
             report.json.at("summary", "noRoleFileCount") shouldBe 1
             report.json.at("noRole", "files", 0, "path") shouldBe "notes.txt"
             report.json.at("noRoleDeleted", "files", 0, "path") shouldBe "misc/stray.txt"
+        }
+    }
+
+    // A project that adopted katachi with a baseline, declared the way the guide declares it.
+    val baselining = architecture {
+        files = wholeTree()
+        baseline()
+        "UseCase".role { layout { "domain" / "*UseCase.kt".file() } }
+        "Screen".role { layout { "feature" / capture("feature") / "${capture("feature")}Screen.kt".file() } }
+        "BaselineFile".role { layout { "katachi-baseline.json".file() } }
+        "Root".role {
+            layout {
+                "gradlew".file()
+                ".gitignore".file()
+                "out".ignore()
+            }
+        }
+    }
+
+    "baseline が抑えている no role のファイルを触っても、no role に数えず警告もせず、baseline の段に畳んで出す" {
+        withRepository { repo ->
+            repo.write("domain/LegacyHelper.kt", "object LegacyHelper\n")
+            baselining.recordBaseline(repo)
+            repo.commit("initial")
+            repo.write("domain/LegacyHelper.kt", "object LegacyHelper\n// touched\n")
+            repo.commit("touch a file the baseline holds back")
+
+            // The report has to agree with the architecture test, which fails on nothing here.
+            baselining.failuresOfArchitectureTest(repo) shouldBe emptyList()
+            val report = baselining.reportOn(repo)
+
+            report.summary shouldContain "1 file changed, +1 -0. 0 of 4 roles touched, 1 file held back by the baseline."
+            report.markdown shouldNotContain "[!WARNING]"
+            report.markdown shouldNotContain "will fail"
+            report.summary shouldContain "| **(no role, held back by the baseline)** | | +1&nbsp;-0 | 1 |\n" +
+                "| &nbsp;&nbsp;└ `domain/LegacyHelper.kt` | ${squares("🟨", 1)} | +1&nbsp;-0 | |"
+            report.summary shouldContain "_(no role, held back by the baseline): Files no layout { } allows that the baseline holds back. " +
+                "The architecture test does not fail on them._"
+            report.out.resolve("diff-report.files-in-no-role.md").exists() shouldBe false
+
+            report.html.substringBefore("<script") shouldNotContain "will fail"
+            report.html shouldContain "<div class=\"warn-stat\" hidden>"
+            report.html shouldContain "<div class=\"baselined-stat\"><span class=\"num\" data-stat=\"baselined\">1</span>"
+            report.html shouldContain "1 file no layout { } allows, held back by the baseline. The architecture test does not fail on it."
+            report.html shouldContain "data-collapsed-default=\"true\" data-files=\"1\" data-key=\"baselined\""
+            report.html shouldContain "class=\"file baselined-file\""
+
+            report.json.at("summary", "noRoleFileCount") shouldBe 0
+            report.json.at("summary", "baselinedFileCount") shouldBe 1
+            report.json.at("noRole", "files") shouldBe emptyList<Any?>()
+            report.json.at("baselined", "files", 0, "path") shouldBe "domain/LegacyHelper.kt"
+            report.yaml shouldContain "  noRoleFileCount: 0\n  baselinedFileCount: 1\n"
+        }
+    }
+
+    "baseline が記録したファイル・ディレクトリ・capture の食い違いは baseline の段に数え、記録の無い no role のファイルだけを警告する" {
+        withRepository { repo ->
+            repo.write("domain/LegacyHelper.kt", "object LegacyHelper\n")
+            repo.write("legacy/Old.kt", "object Old\n")
+            repo.write("feature/home/settingsScreen.kt", "object Settings\n")
+            baselining.recordBaseline(repo)
+            repo.commit("initial")
+            // One entry of each kind the layout check records for a file no role allows.
+            val entries = repo.dir.resolve("katachi-baseline.json").readText()
+            entries shouldContain "{\"rule\": \"UnexpectedFile\", \"path\": \"domain/LegacyHelper.kt\"}"
+            entries shouldContain "{\"rule\": \"UnexpectedDirectory\", \"path\": \"legacy\"}"
+            entries shouldContain "{\"rule\": \"CaptureMismatch\", \"path\": \"feature/home/settingsScreen.kt\"}"
+            repo.write("domain/LegacyHelper.kt", "object LegacyHelper\n// touched\n")
+            // The directory's entry holds back what is added under it too: the check does not look below it.
+            repo.write("legacy/sub/New.kt", "object New\n")
+            repo.write("feature/home/settingsScreen.kt", "object Settings\n// touched\n")
+            repo.write("domain/Stray.kt", "object Stray\n")
+            repo.commit("change")
+
+            baselining.failuresOfArchitectureTest(repo) shouldBe listOf("[UnexpectedFile] domain/Stray.kt")
+            val report = baselining.reportOn(repo)
+
+            report.summary shouldContain "4 files changed, +4 -0. 0 of 4 roles touched, 1 file in no role, 3 files held back by the baseline."
+            report.summary shouldContain "> 1 file is in no role: no layout { } allows it, so the architecture test will fail on it."
+            report.out.resolve("diff-report.files-in-no-role.md").readText() shouldNotContain "LegacyHelper"
+            report.html shouldContain "data-stat=\"no-role\">1</span>"
+            report.html shouldContain "data-stat=\"baselined\">3</span>"
+            report.json.at("summary", "noRoleFileCount") shouldBe 1
+            report.json.at("summary", "baselinedFileCount") shouldBe 3
+            sectionsOf(report.json, "domain/Stray.kt") shouldBe listOf("noRole")
+            for (path in listOf("domain/LegacyHelper.kt", "legacy/sub/New.kt", "feature/home/settingsScreen.kt")) {
+                sectionsOf(report.json, path) shouldBe listOf("baselined")
+            }
+        }
+    }
+
+    "baseline を宣言していても、ファイルがまだ無ければ今までどおり no role に数えて警告する" {
+        withRepository { repo ->
+            repo.write("domain/LegacyHelper.kt", "object LegacyHelper\n")
+            repo.commit("initial")
+            repo.write("domain/LegacyHelper.kt", "object LegacyHelper\n// touched\n")
+            repo.commit("touch")
+
+            val report = baselining.reportOn(repo)
+
+            report.summary shouldContain "1 file changed, +1 -0. 0 of 4 roles touched, 1 file in no role."
+            report.summary shouldContain "> [!WARNING]"
+            report.json.at("summary", "noRoleFileCount") shouldBe 1
+            report.json.at("summary", "baselinedFileCount") shouldBe 0
+        }
+    }
+
+    "baseline のファイルが読めなければ、アーキテクチャテストと同じ例外で失敗する" {
+        withRepository { repo ->
+            repo.write("katachi-baseline.json", "{ \"version\": 1,\n")
+            repo.commit("initial")
+            val failure = baselining.process(
+                DiffReport,
+                DiffReport.Args(markdownOutputFile = repo.dir.resolve("out/diff-report.md").path, html = false, json = false, yaml = false),
+                RealFileSystem(repo.dir),
+            ).exceptionOrNull()
+            (failure is KatachiInvalidBaselineFileException) shouldBe true
         }
     }
 
@@ -975,8 +1098,29 @@ private fun sectionsOf(json: Any?, path: String): List<String> {
     fun roles(nodes: Any?): List<String> = (nodes as? List<*>).orEmpty().flatMap { node ->
         if (node.at("type") == "group") roles(node.at("children")) else listOfNotNull(node.at("qualifiedName")?.toString()?.takeIf { lists(node.at("files")) })
     }
-    return roles(json.at("nodes")) + listOf("noRole", "noRoleDeleted", "ignored").filter { lists(json.at(it, "files")) }
+    return roles(json.at("nodes")) + listOf("noRole", "baselined", "noRoleDeleted", "ignored").filter { lists(json.at(it, "files")) }
 }
+
+// The architecture test with -Dkatachi.baseline.update=true: the baseline records every violation of the tree as it is now.
+private fun Architecture.recordBaseline(repo: Repository) {
+    assertWith(RealFileSystem(repo.dir), emptyList(), maxViolations = null, environment = baselineEnvironment(update = true))
+}
+
+// What the architecture test fails on for the tree as it is now, after the baseline held back what it records.
+private fun Architecture.failuresOfArchitectureTest(repo: Repository): List<String> = try {
+    assertWith(RealFileSystem(repo.dir), emptyList(), maxViolations = null, environment = baselineEnvironment(update = false))
+    emptyList()
+} catch (failure: KatachiArchitectureAssertionError) {
+    failure.violations.filter { it.severity == Severity.Error }.map { "[${it.label}] ${it.path}" }
+}
+
+// A run of its own each time: the runs of one JVM would otherwise refuse a second run that finds something else.
+private fun baselineEnvironment(update: Boolean): BaselineEnvironment = BaselineEnvironment(
+    systemProperty = { if (update && it == "katachi.baseline.update") "true" else null },
+    environmentVariable = { null },
+    standardError = {},
+    runs = BaselineRuns(),
+)
 
 private class Repository(val dir: File) {
     fun write(path: String, content: String) {

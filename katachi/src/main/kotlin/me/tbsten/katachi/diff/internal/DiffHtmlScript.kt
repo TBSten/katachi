@@ -20,7 +20,7 @@ internal val DIFF_HTML_SCRIPT: String = """
     if (!hasKids) { const t = r.querySelector(".toggle"); if (t) t.style.visibility = "hidden"; }
   }
   // The groups below the roles hold files no role owns, so no weight applies to them or their files.
-  const LOOSE = ["unassigned", "removed", "ignored"];
+  const LOOSE = ["unassigned", "baselined", "removed", "ignored"];
   const isRoleless = r => LOOSE.some(kind => r.classList.contains(kind));
   const value = r => state.score === "weighted" && !isRoleless(r) && !isRolelessFile(r)
     ? Number(r.dataset.weighted) : Number(r.dataset.added) + Number(r.dataset.deleted);
@@ -112,6 +112,8 @@ internal val DIFF_HTML_SCRIPT: String = """
       const them = n === 1 ? "it" : "them";
       if (sub) sub.textContent = r.classList.contains("unassigned")
         ? files(n) + " no layout { } allows. The architecture test will fail on " + them + "."
+        : r.classList.contains("baselined")
+        ? files(n) + " no layout { } allows, held back by the baseline. The architecture test does not fail on " + them + "."
         : r.classList.contains("removed")
         ? files(n) + " no layout { } allows, deleted by this change. The architecture test does not look at " + them + " any more."
         : r.classList.contains("ignored")
@@ -133,7 +135,7 @@ internal val DIFF_HTML_SCRIPT: String = """
       stat(name).textContent = n; stat(name + "-noun").textContent = n === 1 ? "file" : "files";
       stat(name).closest(".stats > div").hidden = n === 0;
     };
-    looseStat("unassigned", "no-role"); looseStat("removed", "no-role-deleted"); looseStat("ignored", "ignored");
+    looseStat("unassigned", "no-role"); looseStat("baselined", "baselined"); looseStat("removed", "no-role-deleted"); looseStat("ignored", "ignored");
     stat("limit").hidden = kept.size >= seen.size;
     stat("shown").textContent = kept.size; stat("limit-total").textContent = seen.size;
     const scope = stat("scope");

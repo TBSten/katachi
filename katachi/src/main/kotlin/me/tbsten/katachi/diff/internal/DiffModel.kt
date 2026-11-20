@@ -1,6 +1,8 @@
 package me.tbsten.katachi.diff.internal
 
 import kotlin.math.ceil
+import me.tbsten.katachi.check.internal.BaselineKey
+import me.tbsten.katachi.check.internal.LAYOUT_CHECK_NAME
 import me.tbsten.katachi.check.internal.LayoutIndex
 import me.tbsten.katachi.diff.DiffWeight
 import me.tbsten.katachi.diff.KatachiInvalidDefinitionDiffWeightException
@@ -15,7 +17,10 @@ import me.tbsten.katachi.dsl.Title
 internal class DiffReportModel(
     val range: DiffRange,
     val nodes: List<DiffNode>,
-    /** Changed files no role allows, outside every ignored directory and still there after the change: the architecture test fails on them. */
+    /**
+     * Changed files no role allows, outside every ignored directory, still there after the change and not held
+     * back by the baseline: the architecture test fails on them.
+     */
     val unassigned: List<FileChange>,
     val changes: List<FileChange>,
     /** The changed files the per-file listings show; the summary always counts every file. */
@@ -28,6 +33,8 @@ internal class DiffReportModel(
     val ignored: List<FileChange> = emptyList(),
     /** Files no role allows that the change deletes: gone after it, so the architecture test does not look at them any more. */
     val removed: List<FileChange> = emptyList(),
+    /** Changed files no role allows whose layout violation the baseline holds back: the architecture test does not fail on them. */
+    val baselined: List<FileChange> = emptyList(),
 ) {
     /** How many changed files the per-file listings leave out. */
     val hiddenCount: Int get() = changes.size - shown.size
@@ -92,6 +99,7 @@ internal fun buildDiffReportModel(
     weights: List<String>,
     maxFiles: Int = 0,
     fullImportanceLines: Int = DEFAULT_FULL_IMPORTANCE_LINES,
+    baseline: Set<BaselineKey> = emptySet(),
 ): DiffReportModel {
     val weightByName = parseWeights(architecture, weights)
     val definitionWeights = definitionWeights(architecture)
@@ -101,6 +109,7 @@ internal fun buildDiffReportModel(
     val unassigned = mutableListOf<FileChange>()
     val ignored = mutableListOf<FileChange>()
     val removed = mutableListOf<FileChange>()
+    val baselined = mutableListOf<FileChange>()
     for (change in changes) {
         // Where the file is now decides, as it does for the architecture test: a rename out of every role is
         // in no role, and one out of an ignored directory is one the test now looks at.
@@ -112,6 +121,7 @@ internal fun buildDiffReportModel(
             }
             isUnderIgnored(index, change.path) -> ignored += change
             change.status == ChangeStatus.Deleted -> removed += change
+            layoutViolationKeyOf(index, change.path) in baseline -> baselined += change
             else -> unassigned += change
         }
     }
@@ -136,6 +146,7 @@ internal fun buildDiffReportModel(
         fullImportanceLines = fullImportanceLines,
         ignored = ignored,
         removed = removed,
+        baselined = baselined,
     )
 }
 
@@ -160,6 +171,18 @@ private fun rolesOf(index: LayoutIndex, path: String): List<Role> =
 private fun isUnderIgnored(index: LayoutIndex, path: String): Boolean {
     val segments = path.split('/')
     return (1 until segments.size).any { index.isIgnored(segments.take(it).joinToString("/")) }
+}
+
+// The key the layout check files a file no role allows under, decided as its walk decides it: the walk reports the
+// first directory on the way down that no layout knows and goes no further, so that directory's entry holds the file.
+private fun layoutViolationKeyOf(index: LayoutIndex, path: String): BaselineKey {
+    val segments = path.split('/')
+    val unknownDirectory = (1 until segments.size).map { segments.take(it).joinToString("/") }.firstOrNull { !index.isKnown(it) }
+    return when {
+        unknownDirectory != null -> BaselineKey(LAYOUT_CHECK_NAME, rule = "UnexpectedDirectory", path = unknownDirectory)
+        index.captureMismatchesOn(path).isNotEmpty() -> BaselineKey(LAYOUT_CHECK_NAME, rule = "CaptureMismatch", path = path)
+        else -> BaselineKey(LAYOUT_CHECK_NAME, rule = "UnexpectedFile", path = path)
+    }
 }
 
 // The most specific name wins: a role's own weight over its group's, a nested group's over its parent's.

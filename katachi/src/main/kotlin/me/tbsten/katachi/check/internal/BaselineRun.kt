@@ -21,6 +21,20 @@ internal class BaselineOutcome(
     val notices: List<String>,
 )
 
+internal class BaselineLocation(val file: String, val uri: String)
+
+internal fun Baseline.locationIn(projectRoot: FsPath): BaselineLocation {
+    val root = projectRoot.value
+    return BaselineLocation(file = root.trimEnd('/') + "/" + path, uri = fileUri(root, path))
+}
+
+// For a run that only reads what is held back: before the file is first written it holds back nothing.
+internal fun Baseline.ledgerIn(projectRoot: FsPath, store: BaselineStore = FileBaselineStore): BaselineLedger {
+    val location = locationIn(projectRoot)
+    val text = store.read(location.file) ?: return BaselineLedger(emptyMap())
+    return parseBaseline(text, location.uri)
+}
+
 // UnexpectedFile / MissingFile about the baseline file itself are taken out of `ran` first:
 // recording them would hide the "not declared" report or go stale once the file is written.
 internal fun applyBaseline(
@@ -32,9 +46,9 @@ internal fun applyBaseline(
     mode: BaselineMode,
     environment: BaselineEnvironment,
 ): BaselineOutcome {
-    val root = projectRoot.value
-    val file = root.trimEnd('/') + "/" + baseline.path
-    val uri = fileUri(root, baseline.path)
+    val location = baseline.locationIn(projectRoot)
+    val file = location.file
+    val uri = location.uri
     val isAboutItself = { violation: Violation ->
         (violation is UnexpectedFile || violation is MissingFile) && violation.path == baseline.path
     }

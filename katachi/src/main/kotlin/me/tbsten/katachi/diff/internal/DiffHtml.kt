@@ -141,11 +141,15 @@ internal fun renderDiffHtml(model: DiffReportModel, history: CommitHistory): Str
             note = noRoleWarning(model.unassigned.size), key = "no-role", anchorName = "the files in no role", folded = false,
         )
         looseGroup(
-            kind = "removed", changes = model.removed, order = order + 1, label = "No role, deleted",
+            kind = "baselined", changes = model.baselined, order = order + 1, label = "No role, held back by the baseline",
+            note = baselinedNote(model.baselined.size), key = "baselined", anchorName = "the files the baseline holds back", folded = true,
+        )
+        looseGroup(
+            kind = "removed", changes = model.removed, order = order + 2, label = "No role, deleted",
             note = removedNote(model.removed.size), key = "no-role-deleted", anchorName = "the deleted files in no role", folded = true,
         )
         looseGroup(
-            kind = "ignored", changes = model.ignored, order = order + 2, label = "Ignored",
+            kind = "ignored", changes = model.ignored, order = order + 3, label = "Ignored",
             note = ignoredNote(model.ignored.size), key = "ignored", anchorName = "the ignored files", folded = true,
         )
     }
@@ -167,6 +171,7 @@ internal fun renderDiffHtml(model: DiffReportModel, history: CommitHistory): Str
             "DELETED" to model.deleted.toString(),
             "TOUCHED" to """<span data-stat="touched">$touched</span> <span class="of">of $roleCount</span>""",
             "UNASSIGNED" to looseStat("warn-stat", "no-role", model.unassigned.size, "in no role"),
+            "BASELINED" to looseStat("baselined-stat", "baselined", model.baselined.size, "held back by the baseline"),
             "REMOVED" to looseStat("removed-stat", "no-role-deleted", model.removed.size, "in no role deleted"),
             "IGNORED" to looseStat("ignored-stat", "ignored", model.ignored.size, "ignored"),
             "LIMIT" to """<p class="limit" data-stat="limit"${if (model.hiddenCount == 0) " hidden" else ""}>""" +
@@ -292,6 +297,10 @@ private fun noRoleWarning(count: Int): String =
 
 private fun ignoredNote(count: Int): String =
     "${files(count)} under ignore(). The architecture test does not look at ${if (count == 1) "it" else "them"}."
+
+private fun baselinedNote(count: Int): String =
+    "${files(count)} no layout { } allows, held back by the baseline. " +
+        "The architecture test does not fail on ${if (count == 1) "it" else "them"}."
 
 private fun removedNote(count: Int): String =
     "${files(count)} no layout { } allows, deleted by this change. " +
