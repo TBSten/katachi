@@ -175,6 +175,22 @@ class DoctorScaffoldSpec : FreeSpec({
                 "    katachi runs on JDK 27 ($kotlinJdk). To use this JDK for Gradle too, run export JAVA_HOME=$kotlinJdk in the shell, then run this again."
         }
 
+        "PATH に java が無いときの警告にも添える" {
+            val kotlinJdk = fakeJdk(27)
+            val env = mapOf(
+                "JAVA_HOME" to kotlinJdk.toString(),
+                SHELL_JAVA_HOME_ENV to "",
+                "PATH" to pathWithGit().toString(),
+                "GRADLE_USER_HOME" to createTempDirectory("katachi-gradle-user-home-").toString(),
+            )
+
+            val run = runCapturing(gradleProject(toolchain = null), listOf("doctor", "--lang", "en"), env = env)
+
+            run.status shouldBe 0
+            run.err shouldContain "[!] Could not find the JDK that runs Gradle (there is no JAVA_HOME and no java on PATH). katachi needs JDK 17 or later.\n" +
+                "    katachi runs on JDK 27 ($kotlinJdk). To use this JDK for Gradle too, run export JAVA_HOME=$kotlinJdk in the shell, then run this again."
+        }
+
         "Gradle の JDK を toolchainVersion が決めているなら、JAVA_HOME では変わらないので添えない" {
             val run = runCapturing(gradleProject(toolchain = 11), listOf("doctor"), env = underHomebrewKotlin(shellJavaHome = "", fakeJdk(21)))
 
