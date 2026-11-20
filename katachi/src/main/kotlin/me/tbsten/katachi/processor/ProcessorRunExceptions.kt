@@ -1,6 +1,7 @@
 package me.tbsten.katachi.processor
 
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.KatachiCheckException
 import me.tbsten.katachi.KatachiDeclarationException
 
 /**
@@ -167,6 +168,51 @@ public class KatachiEntryPointNotFoundException internal constructor(
                 "check that " +
                 "`katachi { architecture = \"com.example.projectArchitecture\" }` is set in " +
                 "this module's build.gradle.kts.",
+        )
+    },
+    cause = cause,
+)
+
+/**
+ * The processor JVM runs an older Java than the one the test classes were compiled for, so it could not load them.
+ *
+ * The entry point the Gradle plugin generates is compiled with the module's tests, for the module's Java toolchain,
+ * and a JVM refuses a class compiled for a newer Java than its own: the definition is never read. The plugin's
+ * `katachi<Key>` tasks start on that toolchain, so this is raised when a processor JVM was started on another Java
+ * anyway -- by hand, by a build script that gives the task a `javaLauncher` of its own, or by a plugin older than
+ * this library, which on Gradle 8 started the task on the JVM running Gradle.
+ *
+ * ## Example 1: a processor started by hand on an older Java
+ * ```sh
+ * # The tests were compiled with kotlin { jvmToolchain(21) }; this java is 17.
+ * /usr/lib/jvm/java-17-openjdk/bin/java -cp "$TEST_RUNTIME_CLASSPATH" me.tbsten.katachi.processor.internal.MainKt \
+ *     --entry-point=me.tbsten.katachi.generated.GeneratedKatachiEntryPoint --processor=docs
+ * ```
+ *
+ * @property className the class the JVM refused to load: the entry point, or a class loading it needed.
+ * @property classFileJavaVersion the Java version [className][KatachiProcessorJvmTooOldException.className] was
+ *   compiled for, such as `21`, or `null` when it could not be read.
+ * @property runtimeJavaVersion the Java version the processor JVM runs, such as `17`.
+ */
+@ExperimentalKatachiApi
+public class KatachiProcessorJvmTooOldException internal constructor(
+    public val className: String,
+    public val classFileJavaVersion: Int?,
+    public val runtimeJavaVersion: Int,
+    cause: Throwable,
+) : KatachiCheckException(
+    message = buildString {
+        val compiledFor = classFileJavaVersion?.let { "Java $it" } ?: "a newer Java"
+        appendLine(
+            "Could not load $className: it was compiled for $compiledFor, but the processor runs on " +
+                "Java $runtimeJavaVersion.",
+        )
+        appendLine("A JVM cannot load a class compiled for a newer Java than its own, so the definition could not be read.")
+        append(
+            "Run the processor on ${classFileJavaVersion?.let { "Java $it or newer" } ?: "the Java the tests were compiled for"}. " +
+                "katachi's Gradle plugin starts the katachi<Key> tasks on the module's Java toolchain, the one the " +
+                "tests are compiled with: use the plugin of the same version as this library, and do not point the " +
+                "task's javaLauncher or executable at an older Java.",
         )
     },
     cause = cause,
