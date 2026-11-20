@@ -7,7 +7,6 @@ import java.nio.file.Path
 import kotlin.io.path.PathWalkOption
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteExisting
-import kotlin.io.path.exists
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
@@ -24,10 +23,13 @@ internal fun outputRootOf(outputDir: String): Path = catchingIo(".", outputDir) 
 
 // Removes pages in outputRoot that this run did not produce: the directory must belong to katachi alone.
 internal fun writeDocuments(outputRoot: Path, pages: Map<String, String>, log: (String) -> Unit) {
-    for (stale in stalePagesOf(outputRoot, pages.keys)) {
+    for (stale in stalePagesOf(outputRoot, existingPagesOf(outputRoot), pages.keys)) {
         catchingIo(stale, outputRoot) { outputRoot.pageAt(stale).deleteExisting() }
         log("Removed ${displayExistingPath(absolutePathOf(outputRoot.toString()), stale)}, which this definition no longer produces.")
     }
+    // Before the writing: on a case insensitive file system an emptied `Api/` still standing would
+    // take the pages written to `API/` and keep its old spelling.
+    removeEmptyDirectories(outputRoot)
     for ((path, content) in pages) {
         catchingIo(path, outputRoot) {
             val file = outputRoot.pageAt(path)
@@ -40,23 +42,25 @@ internal fun writeDocuments(outputRoot: Path, pages: Map<String, String>, log: (
     // they form -- see `outputTreeLines`. Removals stay on their own lines above, because a
     // deletion is the one thing here a reader has to notice.
     outputTreeLines(pages.keys).forEach(log)
-    removeEmptyDirectories(outputRoot)
 }
 
 internal fun compareDocuments(outputRoot: Path, pages: Map<String, String>): DocumentDifference {
+    val existing = existingPagesOf(outputRoot)
+    // By the names the directory lists: a case insensitive file system also opens `API.md` when
+    // only `Api.md` is there.
+    val listed = existing.toSet()
     val missing = mutableListOf<String>()
     val different = mutableListOf<String>()
     for ((path, content) in pages) {
-        val file = outputRoot.pageAt(path)
         when {
-            !file.isRegularFile() -> missing += path
-            catchingIo(path, outputRoot) { file.readText() } != content -> different += path
+            path !in listed -> missing += path
+            catchingIo(path, outputRoot) { outputRoot.pageAt(path).readText() } != content -> different += path
         }
     }
     return DocumentDifference(
         missing = missing,
         different = different,
-        extra = stalePagesOf(outputRoot, pages.keys),
+        extra = stalePagesOf(outputRoot, existing, pages.keys),
     )
 }
 
@@ -68,25 +72,24 @@ internal class DocumentDifference(
     val isUpToDate: Boolean get() = missing.isEmpty() && different.isEmpty() && extra.isEmpty()
 }
 
-// A page on disk whose path differs from a generated one only in case is that same page on a case
-// insensitive file system, and what a renamed group or role left behind on a case sensitive one.
-// Only the file system can tell the two apart.
-private fun stalePagesOf(outputRoot: Path, generated: Set<String>): List<String> {
+// Compared by the spelling the directory lists. A case insensitive file system opens a page left
+// under the old spelling through the new one too, and that page still has to go. The only one kept
+// is a page whose generated spelling is listed as well and is the same file (a hard link, or a
+// directory linked under the other spelling): that is the generated page itself.
+private fun stalePagesOf(outputRoot: Path, existing: List<String>, generated: Set<String>): List<String> {
+    val listed = existing.toSet()
     val generatedByLowercase = generated.associateBy { it.lowercase() }
-    return existingPagesOf(outputRoot).filterNot { existing ->
-        val counterpart = generatedByLowercase[existing.lowercase()] ?: return@filterNot false
-        counterpart == existing || isSameFile(outputRoot, existing, counterpart)
+    return existing.filterNot { page ->
+        if (page in generated) return@filterNot true
+        val counterpart = generatedByLowercase[page.lowercase()] ?: return@filterNot false
+        counterpart in listed && isSameFile(outputRoot, page, counterpart)
     }
 }
 
-private fun isSameFile(outputRoot: Path, existing: String, generated: String): Boolean {
-    val generatedFile = outputRoot.pageAt(generated)
-    // Files.isSameFile throws for a path that names nothing.
-    if (!generatedFile.exists()) return false
-    return catchingIo(existing, outputRoot) {
-        Files.isSameFile(outputRoot.pageAt(existing), generatedFile)
+private fun isSameFile(outputRoot: Path, existing: String, generated: String): Boolean =
+    catchingIo(existing, outputRoot) {
+        Files.isSameFile(outputRoot.pageAt(existing), outputRoot.pageAt(generated))
     }
-}
 
 private fun existingPagesOf(outputRoot: Path): List<String> {
     val directory = outputRoot.listedDirectory() ?: return emptyList()
