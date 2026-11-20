@@ -20,17 +20,17 @@ internal fun runScript(args: List<String>, context: ScriptContext): Int {
     val command = args.firstOrNull() ?: ""
     val rest = args.drop(1)
     return try {
+        // Printed the same in both languages, so the working directory is not looked up: nothing below can stop it.
+        if (command == "--version" || command == "version") {
+            context.out("katachi ${ScriptVersion.current()}")
+            return 0
+        }
         if (command == AGENT_GROUP) {
             context.resolveLang(rest.firstOrNull() ?: "", rest.drop(1))
             return context.runAgent(rest)
         }
         context.resolveLang(command, rest)
         when {
-            command == "--version" || command == "version" -> {
-                context.out("katachi ${ScriptVersion.current()}")
-                0
-            }
-
             command == "" || isHelp(command) -> {
                 context.out(context.usage())
                 0

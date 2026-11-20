@@ -31,7 +31,8 @@ import me.tbsten.katachi.script.option.Lang
  *
  * @property defaultPackage Puts `--package <defaultPackage>` on every [scaffold]. Null or empty leaves it unset.
  * @property katachiVersion Puts `--katachi <katachiVersion>` on every [scaffold]. Null leaves the choice to the command.
- * @property moduleDir Puts `--module-dir <moduleDir>` on every [scaffold].
+ * @property moduleDir Puts `--module-dir <moduleDir>` on every command that takes it: [scaffold], [lint], and `test` and
+ *   `compare-violations` of [agent].
  * @property lang Puts `--lang <lang>` on every command that takes it: [doctor].
  * @property cwd Where the commands run. Null is the directory the script was started in.
  * @property runner How [KatachiCommand.execute] runs a command: [CommandRunner.InProcess] by default.

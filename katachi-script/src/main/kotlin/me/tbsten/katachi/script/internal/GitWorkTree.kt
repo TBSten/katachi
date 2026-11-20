@@ -43,4 +43,4 @@ internal fun sameRepositoryCounterpart(recorded: Path, here: Path): Path? {
     return current.resolve(there.relativize(recordedPath)).normalize()
 }
 
-private fun Path.realOrSelf(): Path = runCatching { toRealPath() }.getOrDefault(this)
+internal fun Path.realOrSelf(): Path = runCatching { toRealPath() }.getOrDefault(this)
