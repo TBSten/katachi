@@ -177,12 +177,12 @@ dialog button{font:inherit;margin-top:8px}
 </div>
 
 <div class="item" data-id="docs-review">
-<div class="head"><div class="t">docs の指摘 42 件を Review で見る</div><button class="copy1" type="button">コピー</button></div>
-<p class="desc">探索的検証・9-2・手順 2・5・11 で見つかった docs の指摘です（p7 が 1 件、p6 が 3 件、ほかは p5 以下。23:30 に探索的検証 2 周目の 5 件、00:10 に直しの PR #123・#124 のマージ後に合わなくなる 4 か所を足しました）。Mac で <a href="http://localhost:4395/katachi/ja/guides/cli-and-script/katachi-script/#review=prerelease-5-docs/1oxc4j2">http://localhost:4395/katachi/</a> を開くと Review の印が出るので、「直してもらう / 直さない」を選んでください（作業用の写しの dev サーバー。普段の 4321 番には AI から書き込めないため、別に立てました）。</p>
+<div class="head"><div class="t">docs の指摘 44 件を Review で見る</div><button class="copy1" type="button">コピー</button></div>
+<p class="desc">探索的検証・9-2・手順 2・5・11 で見つかった docs の指摘です（p7 が 1 件、p6 が 3 件、ほかは p5 以下。23:30 に探索的検証 2 周目の 5 件、00:10 と 00:58 に直しの PR #123〜#125 のマージ後に合わなくなる 6 か所を足しました）。Mac で <a href="http://localhost:4395/katachi/ja/guides/cli-and-script/katachi-script/#review=prerelease-5-docs/1oxc4j2">http://localhost:4395/katachi/</a> を開くと Review の印が出るので、「直してもらう / 直さない」を選んでください（作業用の写しの dev サーバー。普段の 4321 番には AI から書き込めないため、別に立てました）。</p>
 <ul class="opts"><li><label><input type="checkbox" data-opt="done"><span>Review で選び終えた</span></label></li></ul>
 <textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
 <details><summary>詳細</summary><ul>
-<li><code>prerelease-5-docs.md</code> 25 件（直しの PR で合わなくなる 4 件: diff-report.mdx の JSON のキーの表・files-in-no-role.md の説明・jq のコメント、cli.mdx の <code>--module-dir</code> の説明。マージ前は今の説明で合っているので、直すのはマージのあとで。2 周目の 5 件: katachi-script のページにコマンドがスクリプトのあるディレクトリで動くことが無い・<code>*.katachi.kts</code> で <code>@file:DependsOn</code> を使えないことが表から分からない・diff-report の CI の例に <code>concurrency</code> が無い・SARIF を Code scanning に上げる手順が無い・出力先の例が isolated projects で違反になる。1 周目までの 16 件: p7: katachi-script のページに終了コードを返す書き方が無い ＝ 22:35 に選んでもらった (b)、role.mdx の切り出し例の import、kt-file-content のインストール、v0.3 からの移行の手がかり ほか）</li>
+<li><code>prerelease-5-docs.md</code> 27 件（直しの PR で合わなくなる 6 件: diff-report.mdx の JSON のキーの表・files-in-no-role.md の説明・jq のコメント（#123 はマージ済みなので、もう直してよい）、cli.mdx の <code>--module-dir</code> の説明（#124）、layout.mdx の git が答えられないときに止まること・<code>ignore()</code> の下の Role の警告（#125）。#124・#125 はマージ前は今の説明で合っているので、直すのはマージのあとで。2 周目の 5 件: katachi-script のページにコマンドがスクリプトのあるディレクトリで動くことが無い・<code>*.katachi.kts</code> で <code>@file:DependsOn</code> を使えないことが表から分からない・diff-report の CI の例に <code>concurrency</code> が無い・SARIF を Code scanning に上げる手順が無い・出力先の例が isolated projects で違反になる。1 周目までの 16 件: p7: katachi-script のページに終了コードを返す書き方が無い ＝ 22:35 に選んでもらった (b)、role.mdx の切り出し例の import、kt-file-content のインストール、v0.3 からの移行の手がかり ほか）</li>
 <li><code>prerelease-5-step11.md</code> 7 件（手順 11: 字下げ・コードブロックの言語・ハイライトの範囲 ほか）</li>
 <li><code>prerelease-5-agy.md</code> 10 件（手順 2 の追いつき: Gemini が first-architecture の日本語を読んだ指摘。表記の揺れ・余計な空白・「生成したら」の打ち間違い ほか）</li>
 <li>過去に「直さない」と決めたもの 2 件は外しました</li>
