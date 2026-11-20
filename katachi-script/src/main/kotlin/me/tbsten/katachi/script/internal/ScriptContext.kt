@@ -35,9 +35,6 @@ internal enum class Lang(val code: String) {
 /** The name people type. */
 internal const val CLI_COMMAND: String = "katachi"
 
-/** What the katachi skill's steps type for the [CommandSpec.agent] commands: `katachi agent test`. */
-internal const val AGENT_COMMAND: String = "$CLI_COMMAND $AGENT_GROUP"
-
 internal class ScriptContext(
     val cwd: Path,
     val env: Map<String, String>,

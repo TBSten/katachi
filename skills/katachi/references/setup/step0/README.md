@@ -1,6 +1,6 @@
 ## 0. Preparation
 
-**What the `katachi` command does (`doctor`, `scaffold`, `lint`, `katachi agent test`), leave to it.** Do not redo it by hand, and do not supplement the steps with workarounds of your own.
+**What the `katachi` command does (`doctor`, `scaffold`, `lint`), leave to it.** Do not redo it by hand, and do not supplement the steps with workarounds of your own.
 
 You are only responsible for judgment in the following:
 

@@ -2,7 +2,7 @@
 # リリース前チェックの 9-1（インストールキットのチェック）。
 #
 # katachi コマンド（katachi-script の CLI。brew で入るものと同じ形）を、合成の Gradle プロジェクト（fixture。定義は
-# install-kit-fixtures.sh）で手順書どおりに動かし、作業用ディレクトリ → katachi scaffold → katachi agent test が
+# install-kit-fixtures.sh）で手順書どおりに動かし、作業用ディレクトリ → katachi scaffold → ./gradlew <module>:test が
 # 「配線は正しい」状態になるかを確かめる。
 #
 #   1. katachi コマンドを組む（build-katachi-cli.sh: publishToMavenLocal と :katachi-script:cliDist）。
@@ -20,10 +20,10 @@
 #      - settings に検査用モジュールの include が1回だけ、正しい位置（最後の include 文の直後）に入ったか
 #      - settings に dependencyResolutionManagement が無ければ、scaffold の警告どおり mavenLocal() と
 #        mavenCentral() を足す（fixture に repositories が無いと依存を解決できないため）
-#      - katachi agent test（中で ./gradlew <KATACHI_MODULE_PATH>:test）が「Unexpected だけで落ちる」なら配線は OK
+#      - ./gradlew <KATACHI_MODULE_PATH>:test --console=plain -Dkatachi.maxViolations=all が「Unexpected だけで落ちる」なら配線は OK
 #        （architecture { } が空なので、定義していないファイルが Unexpected になって落ちるのが正常）。
 #        構文エラー・プラグインの衝突・解決できない・Unexpected 以外の違反で落ちたら NG。通ってしまっても NG
-#      - ルートにファイルを1つ足し、--rerun なしでもう一度 katachi agent test を走らせる。test タスクが UP-TO-DATE に
+#      - ルートにファイルを1つ足し、--rerun なしでもう一度 ./gradlew <module>:test を走らせる。test タスクが UP-TO-DATE に
 #        ならずに実行され、足したファイルが Unexpected として出れば OK（入力にファイルの並びが効いている）
 #   4. <release-dir>/install-kit.md に結果の表を書く。fixture は <release-dir>/tmp/install-kit/fixtures/、
 #      ログは <release-dir>/tmp/install-kit/logs/（作業場所の直下には人が読む成果物だけを置く）
@@ -224,8 +224,6 @@ run_fixture() { # $1 = fixture
 	fx="$1"
 	d="${WORK}/fixtures/${fx}"
 	setup_log="${LOGS}/${fx}-setup.log"
-	t1_log="${LOGS}/${fx}-test1.log"
-	t2_log="${LOGS}/${fx}-test2.log"
 	t1_gradle="${LOGS}/${fx}-test1-gradle.log"
 	t2_gradle="${LOGS}/${fx}-test2-gradle.log"
 	INIT="-"; SCAFFOLD="-"; INC="-"; TEST="-"; RERUN="-"; NOTE=""
@@ -364,23 +362,23 @@ EOF
 		jh_name=`echo "${JAVA_HOME}" | sed 's#/Contents/Home$##; s#/libexec/openjdk.jdk$##; s#.*/##'`
 		NOTE="${NOTE:+${NOTE}、}JAVA_HOME ${jh_name}"
 	fi
-	# 手順書どおり katachi agent test で回す（中で ./gradlew <module>:test --console=plain -Dkatachi.maxViolations=all）。
-	# katachi agent test の要約は t1_log、Gradle の出力の全文（作業用ディレクトリの tmp/test/latest.log）は t1_gradle に写す。
-	run_agent_test "${t1_log}" "${t1_gradle}"
-	if [ "${AT_EXIT}" = "1" ] && grep -q "> Task ${MODULE_PATH}:test FAILED" "${t1_gradle}" &&
+	# 手順書（skills/katachi/references/run-the-check）どおり ./gradlew <module>:test --console=plain -Dkatachi.maxViolations=all で回し、
+	# Gradle の出力の全文を t1_gradle に写す。
+	run_check "${t1_gradle}"
+	if [ "${CHECK_EXIT}" = "1" ] && grep -q "> Task ${MODULE_PATH}:test FAILED" "${t1_gradle}" &&
 		grep -qE "Katachi check failed: [0-9]+ violations? \(Unexpected: [0-9]+\)" "${t1_gradle}"; then
 		TEST="OK（Unexpected だけで落ちた）"
-	elif [ "${AT_EXIT}" = "0" ]; then
+	elif [ "${CHECK_EXIT}" = "0" ]; then
 		TEST="NG: 通ってしまった（Unexpected が出ていない）"
 		return
 	else
 		reason=`failure_reason "${t1_gradle}"`
-		TEST="NG: ${reason}（katachi agent test の終了コード ${AT_EXIT}）"
+		TEST="NG: ${reason}（./gradlew の終了コード ${CHECK_EXIT}）"
 		return
 	fi
 
 	: >"$d/katachi-rerun-probe.txt"
-	run_agent_test "${t2_log}" "${t2_gradle}"
+	run_check "${t2_gradle}"
 	task_line=`grep -E "^> Task ${MODULE_PATH}:test( |$)" "${t2_gradle}" | tail -1`
 	case "${task_line}" in
 	*UP-TO-DATE* | *FROM-CACHE* | *SKIPPED* | "")
@@ -396,16 +394,10 @@ EOF
 	esac
 }
 
-# katachi agent test を fixture の中で回す。$1 = 要約の写し先、$2 = Gradle の出力の写し先。終了コードは AT_EXIT に入れる。
-run_agent_test() {
-	rm -f "${workdir}/tmp/test/latest.log"
-	(cd "$d" && "${KATACHI}" agent test -- --no-daemon --project-cache-dir "${GRADLE_CACHE}/${fx}") >"$1" 2>&1
-	AT_EXIT=$?
-	if [ -f "${workdir}/tmp/test/latest.log" ]; then
-		cp "${workdir}/tmp/test/latest.log" "$2"
-	else
-		: >"$2"
-	fi
+# 検査（./gradlew <module>:test）を fixture の中で回す。$1 = Gradle の出力の写し先。終了コードは CHECK_EXIT に入れる。
+run_check() {
+	(cd "$d" && sh ./gradlew "${MODULE_PATH}:test" --console=plain -Dkatachi.maxViolations=all --no-daemon --project-cache-dir "${GRADLE_CACHE}/${fx}") >"$1" 2>&1
+	CHECK_EXIT=$?
 }
 
 for fx in ${FIXTURES}; do
@@ -453,8 +445,8 @@ for fx in ${FIXTURES}; do
 	desc=`fx_desc_${fx}`
 	[ -n "${NOTE}" ] && desc="${desc}<br>（${NOTE}）"
 	logs="[setup](file://${LOGS}/${fx}-setup.log)"
-	[ -f "${LOGS}/${fx}-test1.log" ] && logs="${logs} / [test1](file://${LOGS}/${fx}-test1.log)（[Gradle](file://${LOGS}/${fx}-test1-gradle.log)）"
-	[ -f "${LOGS}/${fx}-test2.log" ] && logs="${logs} / [test2](file://${LOGS}/${fx}-test2.log)（[Gradle](file://${LOGS}/${fx}-test2-gradle.log)）"
+	[ -f "${LOGS}/${fx}-test1-gradle.log" ] && logs="${logs} / [test1](file://${LOGS}/${fx}-test1-gradle.log)"
+	[ -f "${LOGS}/${fx}-test2-gradle.log" ] && logs="${logs} / [test2](file://${LOGS}/${fx}-test2-gradle.log)"
 	printf '| %s | %s | %s | %s | %s | %s | %s | %s | %s |\n' \
 		"${fx}" "${desc}" "${INIT}" "${SCAFFOLD}" "${INC}" "${TEST}" "${RERUN}" "${VERDICT}" "${logs}" >>"${ROWS}"
 done
@@ -470,7 +462,7 @@ done
 	echo "- katachi コマンドの build（publishToMavenLocal・cliDist）: ${PUBLISH}（[ログ](file://${LOGS}/publish.log)）"
 	echo "- スクリプト: \`.claude/skills/prerelease/scripts/check-install-kit.sh\`（fixture の定義は \`install-kit-fixtures.sh\`）"
 	echo
-	echo "test（配線）は \`katachi agent test\` が「定義していないファイルが Unexpected として出て落ちる」なら OK。2回目は、ルートにファイルを1つ足して"
+	echo "test（配線）は \`./gradlew <module>:test\` が「定義していないファイルが Unexpected として出て落ちる」なら OK。2回目は、ルートにファイルを1つ足して"
 	echo "\`--rerun\` なしで走らせ、test タスクが実行されて足したファイルが出れば OK。形の欄の（）に検査用モジュールの置き場所と"
 	echo "テストのフレームワーク（scaffold の出力）を写している。"
 	echo

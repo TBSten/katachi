@@ -299,7 +299,7 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
 
 
     say("")
-    say(Messages.Scaffold.nextTestArchitectureEmpty)
+    say(Messages.Scaffold.nextTestArchitectureEmpty(module.gradlePath))
     return 0
 }
 

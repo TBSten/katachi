@@ -8,12 +8,10 @@ import io.kotest.matchers.string.shouldContain
 import java.nio.file.Path
 import kotlin.io.path.createTempDirectory
 import me.tbsten.katachi.script.Katachi
-import me.tbsten.katachi.script.agent
 import me.tbsten.katachi.script.catalog
 import me.tbsten.katachi.script.command.CommandRunner
 import me.tbsten.katachi.script.command.KatachiCommand
 import me.tbsten.katachi.script.commands
-import me.tbsten.katachi.script.`compare-violations`
 import me.tbsten.katachi.script.doctor
 import me.tbsten.katachi.script.error.KatachiMissingCommandOptionException
 import me.tbsten.katachi.script.executeCommands
@@ -22,8 +20,6 @@ import me.tbsten.katachi.script.junit5
 import me.tbsten.katachi.script.kotest
 import me.tbsten.katachi.script.lint
 import me.tbsten.katachi.script.scaffold
-import me.tbsten.katachi.script.test
-import me.tbsten.katachi.script.internal.AGENT_GROUP
 import me.tbsten.katachi.script.internal.commandSpec
 import me.tbsten.katachi.script.internal.parseArgs
 
@@ -78,7 +74,7 @@ class CommandDslSpec : FreeSpec({
 
         "arg と command は渡したものをそのまま足す" {
             Katachi().scaffold.arg("--new-option", "v").arguments shouldBe listOf("scaffold", "--new-option", "v")
-            Katachi().command("agent", "new-command", "x").toString() shouldBe "katachi agent new-command x"
+            Katachi().command("new-command", "x").toString() shouldBe "katachi new-command x"
         }
 
         "commands の toString は 1 行 1 コマンド" {
@@ -96,27 +92,18 @@ class CommandDslSpec : FreeSpec({
             katachi.doctor.toString() shouldBe "katachi doctor"
         }
 
-        "test の gradle は -- の後ろに足していく" {
-            katachi.agent.test.save("before-refactor").gradle("--info").gradle("-Dkatachi.baseline.update=true").toString() shouldBe
-                "katachi agent test --save before-refactor -- --info -Dkatachi.baseline.update=true"
-        }
-
-        "引数を取らないコマンドと、省ける位置引数だけのコマンド" {
+        "引数を取らないコマンド" {
             katachi.lint.toString() shouldBe "katachi lint"
-            katachi.agent.`compare-violations`.toString() shouldBe "katachi agent compare-violations"
-            katachi.agent.`compare-violations`("a.log", "b.log").toString() shouldBe "katachi agent compare-violations a.log b.log"
         }
 
         "組み立てた行は CLI の解析をそのまま通る" {
             val built: List<KatachiCommand> = listOf(
                 Katachi(defaultPackage = "com.example").scaffold.`test-framework`(kotest).deps(catalog).`dry-run`(),
                 Katachi(lang = ja).doctor,
-                katachi.agent.test.save("x").gradle("--info"),
-                katachi.agent.`compare-violations`("a.log", "b.log"),
                 katachi.lint,
             )
             for (command in built) {
-                val arguments = command.arguments.dropWhile { it == AGENT_GROUP }
+                val arguments = command.arguments
                 shouldNotThrowAny { parseArgs(commandSpec(arguments.first()), arguments.drop(1)) }
             }
         }

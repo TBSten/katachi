@@ -65,17 +65,17 @@ class KatachiSkillSpec : FreeSpec({
         broken.shouldBeEmpty()
     }
 
-    "skill が打たせる katachi のコマンドは、どれも CLI に在る（KATACHI-329 で消したものを使わない）" {
-        val known = COMMAND_SPECS.map { if (it.agent) "agent ${it.name}" else it.name }.toSet() + "--version"
+    "skill が打たせる katachi のコマンドは、どれも CLI に在る（KATACHI-329 / 429 で消したものを使わない）" {
+        val known = COMMAND_SPECS.map { it.name }.toSet() + "--version"
         val used = skill.walkTopDown().filter { it.isFile && it.extension == "md" }
             .flatMap { file -> commandsIn(file.readText()).map { "${file.relativeTo(skill)}: katachi $it" to it } }
             .toList()
-        used.map { it.second }.toSet().shouldContainAll("agent test", "doctor", "scaffold", "lint")
+        used.map { it.second }.toSet().shouldContainAll("doctor", "scaffold", "lint")
         used.filterNot { (_, command) -> command in known }.map { it.first }.shouldBeEmpty()
     }
 })
 
-private val COMMAND = Regex("""^(?:\S+=\S+ )?katachi ((?:agent )?[a-z-]+)""")
+private val COMMAND = Regex("""^(?:\S+=\S+ )?katachi ([a-z-]+)""")
 
 /** `katachi <command>` in code spans and in the lines of fenced code blocks; prose says "katachi is …" too. */
 private fun commandsIn(markdown: String): List<String> {

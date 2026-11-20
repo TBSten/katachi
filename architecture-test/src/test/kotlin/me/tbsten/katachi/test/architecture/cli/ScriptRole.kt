@@ -25,7 +25,7 @@ fun DeclarationContainerScope.script() = "Script".role {
         `katachi.main.kts` が `@file:DependsOn` で引く artifact です。サブコマンドはすべてここに Kotlin で書いてあります。
     """.trimIndent()
     example("Main.kt", "katachi.main.kts が呼ぶ main(args)")
-    example("TestCommand.kt", "agent test。検査用モジュールのテストを流して要約だけを出す")
+    example("lint.kt", "スクリプトの入口 katachi.lint。定義を読んで、怪しい Role や group を挙げる")
     example("scaffold.kt", "スクリプトの入口 katachi.scaffold。ビルダーの型は command パッケージ")
     example("command/ScaffoldCommand.kt", "スクリプトから katachi scaffold を組み立てる DSL。メソッド名が CLI のフラグ名")
     layout {

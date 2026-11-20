@@ -43,7 +43,7 @@ Do this only if the user wants it.
    **Do not use a name that matches `.gitignore`, such as `build` or `out`, for the output directory** (same as 3-3; pages you thought you committed would be ignored).
 
    **The output directory becomes katachi's.** Any `*.md` in it that this run did not generate is deleted. Do not point it at a directory holding handwritten Markdown.
-4. Generate again, and confirm `katachi agent test` reports 0 violations.
+4. Generate again, and confirm the check ([run-the-check](../../run-the-check/README.md)) reports 0 violations.
 
 Record the files you created or changed in `changedFiles`, then mark `6-3` done.
 

@@ -9,6 +9,7 @@ import me.tbsten.katachi.script.internal.CommandSpec
 import me.tbsten.katachi.script.internal.KatachiScriptExitException
 import me.tbsten.katachi.script.internal.OptionKind
 import me.tbsten.katachi.script.internal.OptionSpec
+import me.tbsten.katachi.script.internal.PassthroughSpec
 import me.tbsten.katachi.script.internal.PositionalSpec
 import me.tbsten.katachi.script.internal.commandSpec
 import me.tbsten.katachi.script.internal.parseArgs
@@ -80,12 +81,18 @@ class CommandSpecsSpec : FreeSpec({
     }
 
     "-- の後ろはそのまま渡す" {
-        val parsed = parseArgs(commandSpec("test"), listOf("--save", "x", "--", "--info", "-Dkatachi.maxViolations=3"))
+        val spec = CommandSpec(
+            "run",
+            listOf(OptionSpec("--save", OptionKind.Text)),
+            passthrough = PassthroughSpec("gradle", "the arguments after `--`"),
+        )
+        val parsed = parseArgs(spec, listOf("--save", "x", "--", "--info", "-Dkatachi.maxViolations=3"))
         parsed.value("--save") shouldBe "x"
         parsed.passthrough shouldBe listOf("--info", "-Dkatachi.maxViolations=3")
     }
 
     "rawPositionals のサブコマンドは - で始まる値も位置引数にする" {
-        parseArgs(commandSpec("compare-violations"), listOf("before.log", "--after")).positionals shouldBe listOf("before.log", "--after")
+        val spec = CommandSpec("compare", positionals = listOf(PositionalSpec("before", "The log before.", sample = "before.log")), rawPositionals = true)
+        parseArgs(spec, listOf("before.log", "--after")).positionals shouldBe listOf("before.log", "--after")
     }
 })

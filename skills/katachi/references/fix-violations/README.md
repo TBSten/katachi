@@ -7,12 +7,11 @@ The katachi check failed: on CI, in a pull request, or locally. A violation mean
 Locally, run:
 
 ```sh
-katachi agent test
+mkdir -p build/katachi
+./gradlew :architecture-test:test --console=plain -Dkatachi.maxViolations=all > build/katachi/test-before-fix.log 2>&1; echo "gradle exit status: $?"
 ```
 
-It runs `./gradlew :architecture-test:test` with every violation in the log (not only the first 10), prints a summary, keeps the full log and shows what changed since the previous run. Section 4 compares against it.
-
-Without the `katachi` command, run `./gradlew :architecture-test:test -Dkatachi.maxViolations=all` (without `-Dkatachi.maxViolations=all` only the first 10 are printed). The violations are in the test's failure message: in the console, or in full under `architecture-test/build/test-results/test/` (read `:architecture-test` as the verification module's path).
+This runs the check with every violation in the log (not only the first 10; without `-Dkatachi.maxViolations=all` only the first 10 are printed) and keeps the full log, which section 4 compares against. [../run-the-check/README.md](../run-the-check/README.md) says how to read it (read `:architecture-test` as the verification module's path). The violations are also in the test's failure message, in full under `architecture-test/build/test-results/test/`.
 
 On CI, the job log has the same output. If the failure is not a violation at all (a compile error, dependency resolution, `Could not start Gradle Test Executor`), it is a build problem: fix that first, the check has not run.
 
@@ -55,7 +54,7 @@ Look at the pull request or the recent commits for intent: a refactor PR that mo
 
 ## 4. Confirm
 
-Run `katachi agent test` again (on CI, look at the job). Its summary shows what changed since the previous run: every violation you meant to fix should be gone, and nothing new should appear. If you changed the definition, also put a stray file where you changed it and confirm it still fails, then delete the file.
+Run the check again into `build/katachi/test-after-fix.log` (on CI, look at the job) and compare it with `test-before-fix.log` as "Compare two runs" in [../run-the-check/README.md](../run-the-check/README.md) says: every violation you meant to fix should be gone, and nothing new should appear. If you changed the definition, also put a stray file where you changed it and confirm it still fails, then delete the file.
 
 ## Tolerating what is there now
 

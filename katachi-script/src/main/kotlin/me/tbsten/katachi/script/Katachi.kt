@@ -9,8 +9,8 @@ import me.tbsten.katachi.script.option.Lang
 /**
  * The `katachi` command, for a `.main.kts` that builds its subcommands instead of typing them.
  *
- * Every subcommand of `katachi` has a builder: `katachi.doctor`, `katachi.scaffold`, `katachi.lint`,
- * `katachi.agent.test` and so on, named as the command line spells them. Each starts from the defaults given here, and every option method
+ * Every subcommand of `katachi` has a builder: `katachi.doctor`, `katachi.scaffold` and `katachi.lint`,
+ * named as the command line spells them. Each starts from the defaults given here, and every option method
  * returns a new value, so one [Katachi] can hand out any number of commands. A command prints as
  * the line you would type, and [KatachiCommand.execute] runs it.
  *
@@ -51,15 +51,15 @@ public class Katachi(
     public val echo: Boolean = true,
 ) {
     /**
-     * Any subcommand, written out as it is typed: `command("agent", "test", "--save", "x")` is
-     * `katachi agent test --save x` on the command line.
+     * Any subcommand, written out as it is typed: `command("doctor", "--lang", "en")` is
+     * `katachi doctor --lang en` on the command line.
      *
      * For a subcommand or an option newer than this `katachi-script`; every subcommand it knows has a builder.
      *
-     * ## Example 1: run the check and keep its log under a name
+     * ## Example 1: write a subcommand out as it is typed
      *
      * ```kt
-     * katachi.command("agent", "test", "--save", "before-refactor").execute()
+     * katachi.command("doctor", "--lang", "en").execute()
      * ```
      *
      * @param arguments Everything after `katachi`.

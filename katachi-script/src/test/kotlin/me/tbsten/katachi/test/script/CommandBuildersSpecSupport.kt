@@ -1,6 +1,5 @@
 package me.tbsten.katachi.test.script
 
-import me.tbsten.katachi.script.internal.AGENT_GROUP
 import me.tbsten.katachi.script.internal.COMMAND_SPECS
 import me.tbsten.katachi.script.internal.ChoiceType
 import me.tbsten.katachi.script.internal.CommandSpec
@@ -40,10 +39,6 @@ internal fun generateCommandBuilders(specs: List<CommandSpec> = COMMAND_SPECS): 
         val file = CommandFile(spec)
         files["${camel(spec.name)}.kt"] = file.renderEntry()
         files["command/${pascal(spec.name)}Command.kt"] = file.renderBuilders()
-    }
-    specs.firstOrNull { it.agent }?.let { first ->
-        files["${camel(AGENT_GROUP)}.kt"] = renderAgentEntry()
-        files["command/$AGENT_CLASS.kt"] = renderAgentGroup(first)
     }
     files += renderValues(specs)
     return files
@@ -115,47 +110,8 @@ private fun sentence(text: String): String = if (text.isEmpty() || text.endsWith
 
 // endregion
 
-// region agent
-
-/** What `katachi.agent` returns: the [CommandSpec.agent] commands hang off it as extensions, as the others hang off `Katachi`. */
-private val AGENT_CLASS = "${pascal(AGENT_GROUP)}CommandGroup"
-
-/** The builder class of a command: `TestCommand` for `katachi agent test`, without the agent. */
-private fun className(path: List<String>): String =
-    "${pascal((if (path.firstOrNull() == AGENT_GROUP) path.drop(1) else path).joinToString("-"))}Command"
-
-private fun renderAgentEntry(): String = source(
-    PACKAGE,
-    sortedSetOf("$COMMAND_PACKAGE.$AGENT_CLASS"),
-    doc(
-        "The subcommands of `katachi $AGENT_GROUP`: what an AI agent runs for the katachi skill's steps.",
-        "",
-        "`katachi $AGENT_GROUP` is not a command of its own here: pick one of its subcommands.",
-    ) + "public val Katachi.${identifier(AGENT_GROUP)}: $AGENT_CLASS\n    get() = $AGENT_CLASS(this)\n",
-)
-
-private fun renderAgentGroup(first: CommandSpec): String = source(
-    COMMAND_PACKAGE,
-    sortedSetOf("me.tbsten.katachi.script.Katachi"),
-    doc(
-        "The subcommands of `katachi $AGENT_GROUP`: what an AI agent runs for the katachi skill's steps",
-        "(`katachi $AGENT_GROUP test` and `katachi $AGENT_GROUP compare-violations`).",
-        "",
-        "Each one is an extension of this class, named after the subcommand, and returns its builder.",
-        "",
-        "## Example 1: pick a subcommand",
-        "",
-        "```kt",
-        "val command = Katachi().${entryChain(first, first.path)}${optionChain(first)}",
-        "println(command) // ${exampleLine(first, first.path)}",
-        "command.execute()",
-        "```",
-        "",
-        "@see Katachi",
-    ) + "public class $AGENT_CLASS internal constructor(internal val katachi: Katachi)\n",
-)
-
-// endregion
+/** The builder class of a command: `ScaffoldCommand` for `katachi scaffold`. */
+private fun className(path: List<String>): String = "${pascal(path.joinToString("-"))}Command"
 
 /** One subcommand of `katachi` and everything under it: an entry point, and a builder or a group of builders. */
 private class CommandFile(private val spec: CommandSpec) {
@@ -164,9 +120,8 @@ private class CommandFile(private val spec: CommandSpec) {
     /** `katachi.add` / `katachi.guide("3-2")`, in [PACKAGE]: what a script types first. */
     fun renderEntry(): String {
         val imports = sortedSetOf<String>()
-        val receiver = if (spec.agent) AGENT_CLASS else "Katachi"
-        val katachi = if (spec.agent) "this.katachi" else "this"
-        if (spec.agent) imports += "$COMMAND_PACKAGE.$AGENT_CLASS"
+        val receiver = "Katachi"
+        val katachi = "this"
         val body = if (spec.subcommands.isEmpty()) {
             imports += "$COMMAND_PACKAGE.${pascal(spec.name)}Command"
             imports += "me.tbsten.katachi.script.internal.CommandLine"

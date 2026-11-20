@@ -80,7 +80,7 @@ internal class PositionalSpec(
     val variadic: Boolean = false,
 )
 
-/** Everything after `--` is handed on untouched (`test -- --info`); [method] is the builder method that adds to it. */
+/** Everything after `--` is handed on untouched (`run -- --info`); [method] is the builder method that adds to it. */
 internal class PassthroughSpec(val method: String, val doc: String)
 
 internal class CommandSpec(
@@ -96,20 +96,12 @@ internal class CommandSpec(
     val rawPositionals: Boolean = false,
     /** What the command does, for the builder's KDoc: `runs the verification module's tests and ...`. */
     val doc: String = "",
-    /**
-     * A command the katachi skill's steps run, typed `katachi agent <name>` (`katachi.agent.<name>` in a
-     * script). The others are for people too and stay at the top: `katachi doctor`, `katachi scaffold`.
-     */
-    val agent: Boolean = false,
 ) {
     fun option(name: String): OptionSpec? = options.firstOrNull { it.name == name }
 
-    /** As typed after `katachi`: `["agent", "test"]`, `["doctor"]`. */
-    val path: List<String> get() = if (agent) listOf(AGENT_GROUP, name) else listOf(name)
+    /** As typed after `katachi`: `["doctor"]`. */
+    val path: List<String> get() = listOf(name)
 }
-
-/** The subcommand the [CommandSpec.agent] commands sit under: `katachi agent test`. */
-internal const val AGENT_GROUP: String = "agent"
 
 private val LANG_TYPE = ChoiceType(
     "Lang",
@@ -212,33 +204,7 @@ internal val COMMAND_SPECS: List<CommandSpec> = listOf(
         ),
         doc = "creates the verification module and adds it to the build",
     ),
-    CommandSpec(
-        "test",
-        agent = true,
-        options = listOf(
-            OptionSpec(
-                "--save",
-                OptionKind.Text,
-                doc = "also copies the log to `tmp/test-<name>.log` of the working directory",
-                param = "name",
-                paramDoc = "Such as `before-refactor`.",
-                sample = "before-refactor",
-            ),
-        ),
-        passthrough = PassthroughSpec("gradle", "the arguments after `--`, handed to `./gradlew` as they are"),
-        doc = "runs the tests of the verification module and prints only a summary",
-    ),
     CommandSpec("lint", doc = "lists what in the definition looks off: a Role with files of several kinds, flat groups and the like"),
-    CommandSpec(
-        "compare-violations",
-        agent = true,
-        positionals = listOf(
-            PositionalSpec("before", doc = "The log before. Without it, `tmp/test-before-refactor.log` of the working directory.", sample = "before.log", required = false),
-            PositionalSpec("after", doc = "The log after. Without it, `tmp/test-after-refactor.log` of the working directory.", sample = "after.log", required = false),
-        ),
-        rawPositionals = true,
-        doc = "compares the violations of two test logs, as before and after a refactoring of the definition",
-    ),
 )
 
 internal fun commandSpec(name: String): CommandSpec = COMMAND_SPECS.first { it.name == name }
