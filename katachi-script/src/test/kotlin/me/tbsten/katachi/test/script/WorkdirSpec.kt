@@ -194,6 +194,26 @@ class WorkdirSpec : FreeSpec({
             runCapturing(project, listOf("--help")).status shouldBe 0
         }
     }
+
+    // root opens every directory, so there the locked one would not be locked and the case would prove nothing.
+    "下に開けないディレクトリがあっても、--version も doctor も止まらず、作業用ディレクトリも見つける"
+        .config(enabledIf = { System.getProperty("user.name") != "root" }) {
+            val project = projectWithWorkdir("""{"meta": {}, "steps": []}""")
+            gradleProject(project, "project", withDefinition = true)
+            val locked = project.resolve("someone-else").createDirectories()
+            locked.setPosixFilePermissions(PosixFilePermissions.fromString("---------"))
+            try {
+                runCapturing(project, listOf("--version")).status shouldBe 0
+                runCapturing(project, listOf("doctor")).err shouldNotContain "Exception"
+
+                val test = runCapturing(project, listOf("agent", "test"), mapOf("PATH" to System.getenv("PATH")))
+
+                test.status shouldBe 0
+                project.resolve(".local/install-katachi/tmp/test/latest.log").exists() shouldBe true
+            } finally {
+                locked.setPosixFilePermissions(PosixFilePermissions.fromString("rwx------"))
+            }
+        }
 })
 
 /**

@@ -321,7 +321,8 @@ internal fun parseArgs(spec: CommandSpec, args: List<String>): ParsedArgs {
             }
 
             OptionKind.Text, OptionKind.Path, OptionKind.YesNo -> {
-                values[arg] = needValue(arg, args.getOrNull(index + 1))
+                // `--katachi --dry-run` forgot the value: taking the next option as it would quietly drop that option.
+                values[arg] = needValue(arg, args.getOrNull(index + 1)?.takeIf { spec.option(it) == null })
                 index += 2
             }
         }

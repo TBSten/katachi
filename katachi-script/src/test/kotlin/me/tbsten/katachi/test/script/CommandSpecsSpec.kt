@@ -38,6 +38,12 @@ class CommandSpecsSpec : FreeSpec({
         exit.text.ja shouldBe "--module-dir に値がありません。"
     }
 
+    "値を書き忘れたとき、次のオプションを値として食わずに止まる（--katachi --dry-run が書き込まない）" {
+        val exit = shouldThrow<KatachiScriptExitException> { parseArgs(commandSpec("scaffold"), listOf("--katachi", "--dry-run")) }
+        exit.text.ja shouldBe "--katachi に値がありません。"
+        exit.status shouldBe 2
+    }
+
     // No command has subcommands or an optional value since KATACHI-329; the parser still reads them.
     "入れ子のサブコマンドを選び、省略時は既定のものにする" {
         val target = OptionSpec("--target", OptionKind.Text)
