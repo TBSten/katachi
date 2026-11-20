@@ -3,6 +3,7 @@ package me.tbsten.katachi.test.dsl.files
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -280,11 +281,16 @@ class GitTrackedFileSystemSpec : FreeSpec({
                 val missing = File(directory, "moved-away/.git/worktrees/feature")
                 File(project, ".git").writeText("gitdir: ${missing.path}\n")
 
+                // git の文面は版で違いうる（手元の git 2.43 の文面で書いた期待が、CI の git 2.56 では一致しなかった）ので、
+                // 同じ git に同じ場所で聞いた答えが、そのまま字下げして報告に入っていることを見る
+                val gitSaid = gitStderr(project, "rev-parse", "--is-inside-work-tree")
+
                 val failure = shouldThrow<KatachiGitUnavailableException> {
                     architecture { }.validate(RealFileSystem(project))
                 }
 
-                failure.message shouldContain "fatal: not a git repository: ${missing.path}"
+                gitSaid.shouldNotBeEmpty()
+                gitSaid.forEach { line -> failure.message shouldContain "  $line" }
             }
         }
 
@@ -378,6 +384,17 @@ private fun fakeGit(directory: File, exitCode: Int, stderr: List<String>): Strin
 }
 
 /** A fresh directory outside any git repository, removed afterwards. */
+/** The non-blank lines that the real `git <args>` writes to stderr when run in [directory]. */
+private fun gitStderr(directory: File, vararg args: String): List<String> {
+    val process = ProcessBuilder(listOf("git", *args))
+        .directory(directory)
+        .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+        .start()
+    val stderr = process.errorStream.bufferedReader().readText()
+    process.waitFor()
+    return stderr.lines().filter { it.isNotBlank() }
+}
+
 private inline fun withTemporaryDirectory(block: (File) -> Unit) {
     val directory = Files.createTempDirectory("katachi-git").toFile()
     try {
