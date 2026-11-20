@@ -8,7 +8,7 @@ Answer the following three questions.
 
 Write the report's JSON as in 0-3, **section by section, as you figure each one out.** Its `meta` was filled in 0-2.
 
-**`null` and an empty array represent "unfilled."** If `null` or `[]` remains after you've filled things in, that's a spot you haven't investigated yet. The template's JSON shows the shape of each section, and the HTML holds one example JSON as a comment; check it if you're unsure of the shape.
+**`null` and an empty array represent "unfilled."** If `null` or `[]` remains after you've filled things in, that's a spot you haven't investigated yet. The exceptions are `excluded` and `questions`: when you looked and there is nothing to leave out or to ask, `[]` is the answer (0-3). The template's JSON shows the shape of each section, and the HTML holds one example JSON as a comment; check it if you're unsure of the shape.
 
 In `modules`, write `path` / `kind` / `responsibility` / `buildFile` for each module. If a module's setup differs from the other modules of the same `kind`, write that in `deviation` (omit it otherwise). The report draws the modules as a tree by `path`, so there is no need to write parents and children separately.
 
@@ -45,7 +45,7 @@ Once everything is filled in, mark `1-2` done.
 
 Ask like this. Do not re-list the questions in chat.
 
-1. Once `questions` is written, show the page's URL (the path to `check-list.html`, starting with `file://`, with `#report-questions` at the end) and have the user answer in "4. Questions for you" of the codebase report in the browser and hand the answers back with "Copy all" (paste into the chat) or "Save as JSON". On a Japanese page, call them by the names the page shows: 「4. ユーザに確認したいこと」, 「まとめてコピー」, 「JSON を保存」 (0-3)
+1. Once `questions` is written, show the page's URL (`file://<meta.projectRoot>/<meta.workdir>/check-list.html#report-questions`: the absolute path, so it starts with `file:///`; `meta.workdir` alone is relative and makes a broken link) and have the user answer in "4. Questions for you" of the codebase report in the browser and hand the answers back with "Copy all" (paste into the chat) or "Save as JSON". On a Japanese page, call them by the names the page shows: 「4. ユーザに確認したいこと」, 「まとめてコピー」, 「JSON を保存」 (0-3)
 2. Copy the entries of the JSON you receive into the report's `answers` (0-3, "Answers")
 3. If an answer arrives in chat, write it into `answers` the same way. The id decides the block (`cq…` is the report, `q…` the checklist)
 

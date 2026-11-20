@@ -28,7 +28,7 @@
 - **Check after every write.** Read the block back. If `jq`, `python3` or `node` is available, parse it to be sure, for example `sed -n '/<script type="application\/json" id="report">/,/<\/script>/p' <workdir>/check-list.html | sed '1d;$d' | jq . > /dev/null` (`id="checklist"` for the other block). Opening the HTML in a browser also shows a parse error at the top of the page.
 - Before a large rewrite, copy the file into `<workdir>/tmp/` first, so a broken edit can be undone.
 
-`null` and an empty array mean "not filled in yet".
+`null` and an empty array mean "not filled in yet". The exceptions are the arrays that can rightly stay empty once you have looked: the report's `excluded` (nothing tracked needs leaving out), `questions` (nothing to ask) and `templates` (no Role suits a template, 6), and the checklist's `violations` and `questions`. When you looked and found nothing, leave them `[]`; the page shows them as "None" (ja: 「なし」).
 
 #### Arrays: add entries, never drop them
 

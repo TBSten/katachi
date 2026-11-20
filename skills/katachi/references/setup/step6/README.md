@@ -2,6 +2,8 @@
 
 Write your message to the user from the two blocks of `check-list.html` (the checklist and the codebase report), in the user's language, in the shape below. Take every number from the JSON; do not count from memory. A number is the count of entries in that array: one entry in `violations` that covers two files is 1 (its `location` says which files).
 
+In the links, `<project root>` is the checklist's `meta.projectRoot`, an absolute path, so a link starts with three slashes (`file:///Users/me/dev/example-app/.local/install-katachi/check-list.html`). `meta.workdir` alone is relative to it: `file://.local/install-katachi/…` is a broken link (`.local` is read as a host name).
+
 #### First — record template proposals
 
 **This is a judgment call for you.** In katachi a `.template { }` can be attached to any file declaration in `layout { }`, and `:architecture-test:katachiTemplate` generates it **exactly where that declaration says it goes**. As "what you can do next" after installation, propose which Roles to give a template, and what it would contain.
@@ -41,14 +43,14 @@ Unfinished items:
 - <id> <label>            (every item that is not done)
 
 Resume:
-  Working directory: file://<workdir>
+  Working directory: file://<project root>/<meta.workdir>
   Done: <the ids that are done>
   Next section: <the section of the first item not done, from the table in references/setup/README.md>
   Definition: file://<project root>/<meta.moduleDir>/src/test/kotlin (or "not yet" before scaffold)
   Questions: report answered <n> / unanswered <n>, checklist answered <n> / unanswered <n>
 
 Check list:
-file://<workdir>/check-list.html
+file://<project root>/<meta.workdir>/check-list.html
 ```
 
 **Otherwise**, report what was done. Start with ⚠️ when the checklist's `violations` is not empty, ✅ when it is:
@@ -58,8 +60,8 @@ file://<workdir>/check-list.html
 
 **The generated code needs your review.** Please check what it contains.
 
-- Check list: file://<workdir>/check-list.html
-- Codebase report: file://<workdir>/check-list.html#codebase-report
+- Check list: file://<project root>/<meta.workdir>/check-list.html
+- Codebase report: file://<project root>/<meta.workdir>/check-list.html#codebase-report
 - `:architecture-test:test` result: ✅ All green  (or: ⚠️ architecture violations left: <number of entries in violations>)
 - Questions for you (check list): answered <n> / unanswered <n>
     - <id> <question> → recommended: <recommendation>        (each unanswered one)
@@ -75,7 +77,7 @@ file://<workdir>/check-list.html
         - <role>: <files> (parameters: <params>)                                         (6-D, only when templates is not empty)
 
 Resume:
-  Working directory: file://<workdir>
+  Working directory: file://<project root>/<meta.workdir>
   Done: <the ids that are done>
   Next section (pick the one the user asked for):
     - Fix what the review pointed out: 6-0
@@ -84,6 +86,6 @@ Resume:
 
 Leave out a "Questions" line when that block has no questions. Mention the steps that carry a `warning` under the result line.
 
-**For the unanswered questions, ask the user to answer them**: show the URL of the page (`file://<workdir>/check-list.html`; the report's questions, ids starting with `cq`, are at `#report-questions`, the checklist's, ids starting with `q`, at `#questions`), and have them answered in the browser ("Copy all" or "Save as JSON" in the menu at the bottom right; on a Japanese page 「まとめてコピー」 or 「JSON を保存」), or in chat. Write what comes back into `answers` (0-3, "Answers").
+**For the unanswered questions, ask the user to answer them**: show the URL of the page (`file://<project root>/<meta.workdir>/check-list.html`; the report's questions, ids starting with `cq`, are at `#report-questions`, the checklist's, ids starting with `q`, at `#questions`), and have them answered in the browser ("Copy all" or "Save as JSON" in the menu at the bottom right; on a Japanese page 「まとめてコピー」 or 「JSON を保存」), or in chat. Write what comes back into `answers` (0-3, "Answers").
 
 > **The session may end here.** The next session finds the working directory (the directory with `check-list.html` below the project root), reads the checklist's JSON, and goes on from there: from the first item that is not done, or, once step 5 is done, from what the user asks for (6-0, or one of 6-A to 6-D). The sections are in the table in `references/setup/README.md`. The previous session's results are in the checklist and the report; if `tmp/katachi-command.txt` is there, run katachi the way it says (0-1). Do not rely on the conversation's memory.

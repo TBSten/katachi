@@ -1529,7 +1529,7 @@
   "meta": {
     "workdir": ".local/install-katachi",
     "moduleDir": "architecture-test",
-    "version": "0.5.0",
+    "version": "0.4.0",
     "projectRoot": "/Users/me/dev/example-app",
     "ranAt": "2026-09-24 10:00 JST",
     "kotlin": "2.4.10",
@@ -1782,8 +1782,8 @@
     "characteristics": ["一部の画面だけ MVI を試験導入している"]
   },
   "modules": [
-    { "path": "app", "kind": "app", "responsibility": "UI 層（Activity / Compose / ViewModel）", "buildFile": "app/build.gradle.kts", "deviation": null },
-    { "path": "core/domain", "kind": "library", "responsibility": "ドメインロジック", "buildFile": "core/domain/build.gradle.kts", "deviation": null },
+    { "path": "app", "kind": "app", "responsibility": "UI 層（Activity / Compose / ViewModel）", "buildFile": "app/build.gradle.kts" },
+    { "path": "core/domain", "kind": "library", "responsibility": "ドメインロジック", "buildFile": "core/domain/build.gradle.kts" },
     { "path": "core/data", "kind": "library", "responsibility": "Repository の実装と DataSource", "buildFile": "core/data/build.gradle.kts", "deviation": "他の library と違い Android ライブラリ（com.android.library）になっている" }
   ],
   "directoryTree": "app/\n  build.gradle.kts\n  src/main/kotlin/com/example/app/\n    MainActivity.kt\n    ui/\n      home/\n        HomeScreen.kt\n        HomeViewModel.kt\n",

@@ -4,11 +4,15 @@ The katachi check failed: on CI, in a pull request, or locally. A violation mean
 
 ## 1. Get every violation
 
+Locally, run:
+
 ```sh
-./gradlew :architecture-test:test -Dkatachi.maxViolations=all
+katachi agent test
 ```
 
-Without `-Dkatachi.maxViolations=all` only the first 10 are printed. The violations are in the test's failure message: in the console, or in full under `architecture-test/build/test-results/test/` (read `:architecture-test` as the verification module's path). `katachi agent test` runs the same thing, prints a summary, keeps the full log and shows what changed since the previous run.
+It runs `./gradlew :architecture-test:test` with every violation in the log (not only the first 10), prints a summary, keeps the full log and shows what changed since the previous run. Section 4 compares against it.
+
+Without the `katachi` command, run `./gradlew :architecture-test:test -Dkatachi.maxViolations=all` (without `-Dkatachi.maxViolations=all` only the first 10 are printed). The violations are in the test's failure message: in the console, or in full under `architecture-test/build/test-results/test/` (read `:architecture-test` as the verification module's path).
 
 On CI, the job log has the same output. If the failure is not a violation at all (a compile error, dependency resolution, `Could not start Gradle Test Executor`), it is a build problem: fix that first, the check has not run.
 
@@ -51,13 +55,13 @@ Look at the pull request or the recent commits for intent: a refactor PR that mo
 
 ## 4. Confirm
 
-Run the check again. Every violation you meant to fix is gone, and nothing new appeared. If you changed the definition, also put a stray file where you changed it and confirm it still fails, then delete the file.
+Run `katachi agent test` again (on CI, look at the job). Its summary shows what changed since the previous run: every violation you meant to fix should be gone, and nothing new should appear. If you changed the definition, also put a stray file where you changed it and confirm it still fails, then delete the file.
 
 ## Tolerating what is there now
 
 If many violations are real but the team will fix them later, and the user wants the check to fail only on new ones, propose the baseline. It is experimental, so ask first. Read https://tbsten.github.io/katachi/guides/baseline/ . In short:
 
-- `baseline()` in `architecture { }` (with `@OptIn(ExperimentalKatachiApi::class)` on `val projectArchitecture`); the file is `katachi-baseline.json` at the project root by default
+- `baseline()` in `architecture { }`; like every experimental API, the file that calls it starts with `@file:OptIn(ExperimentalKatachiApi::class)` and `import me.tbsten.katachi.ExperimentalKatachiApi`. The baseline file is `katachi-baseline.json` at the project root by default
 - The baseline file is checked too, so declare it in a Role (`"BaselineFile".role { layout { "katachi-baseline.json".file() } }`)
 - `./gradlew :architecture-test:test -Dkatachi.baseline.update=true` writes the current violations into it; `-Dkatachi.baseline.prune=true` removes entries that were fixed (`[StaleBaselineEntry]`). Both are refused on CI (`CI=true`)
 

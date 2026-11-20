@@ -1529,7 +1529,7 @@
   "meta": {
     "workdir": ".local/install-katachi",
     "moduleDir": "architecture-test",
-    "version": "0.5.0",
+    "version": "0.4.0",
     "projectRoot": "/Users/me/dev/example-app",
     "ranAt": "2026-09-24 10:00 JST",
     "kotlin": "2.4.10",
@@ -1782,8 +1782,8 @@
     "characteristics": ["A few screens are trialing MVI"]
   },
   "modules": [
-    { "path": "app", "kind": "app", "responsibility": "UI layer (Activity / Compose / ViewModel)", "buildFile": "app/build.gradle.kts", "deviation": null },
-    { "path": "core/domain", "kind": "library", "responsibility": "Domain logic", "buildFile": "core/domain/build.gradle.kts", "deviation": null },
+    { "path": "app", "kind": "app", "responsibility": "UI layer (Activity / Compose / ViewModel)", "buildFile": "app/build.gradle.kts" },
+    { "path": "core/domain", "kind": "library", "responsibility": "Domain logic", "buildFile": "core/domain/build.gradle.kts" },
     { "path": "core/data", "kind": "library", "responsibility": "Repository implementations and DataSources", "buildFile": "core/data/build.gradle.kts", "deviation": "Unlike the other libraries, this is an Android library (com.android.library)" }
   ],
   "directoryTree": "app/\n  build.gradle.kts\n  src/main/kotlin/com/example/app/\n    MainActivity.kt\n    ui/\n      home/\n        HomeScreen.kt\n        HomeViewModel.kt\n",
