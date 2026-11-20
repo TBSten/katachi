@@ -6,11 +6,10 @@ import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.internal.KatachiVersion
-import me.tbsten.katachi.report.internal.SarifRuns
 import me.tbsten.katachi.report.internal.realFilesUnder
 import me.tbsten.katachi.report.internal.realIsFile
 import me.tbsten.katachi.report.internal.realReadText
-import me.tbsten.katachi.report.internal.realWriteText
+import me.tbsten.katachi.report.internal.realWriteNewText
 import me.tbsten.katachi.report.internal.render
 import me.tbsten.katachi.report.internal.sarifDocumentOf
 import me.tbsten.katachi.report.internal.writeSarifText
@@ -108,10 +107,13 @@ public fun List<Violation>.toSarif(context: SarifContext): String = sarifDocumen
 /**
  * [toSarif], written to [file] as UTF-8 with the directories above it created as needed.
  *
- * One file holds one run. From the second call in the same JVM that names the same [file] on,
- * the document goes to a numbered sibling instead -- `katachi-2.sarif`, `katachi-3.sarif` -- so
- * that two architecture tests of one module do not overwrite each other, and the path actually
- * written is what comes back. A relative [file] is resolved against the JVM's working directory.
+ * One file holds one run, and a file that is already there is never overwritten: the document
+ * goes to the first numbered sibling nobody has taken -- `katachi-2.sarif`, `katachi-3.sarif` --
+ * and the path actually written is what comes back. That keeps two architecture tests of one
+ * module apart, and the test JVMs of one `Test` task too (`maxParallelForks`, `forkEvery`), since
+ * the name is taken on the disk. It also means a file an earlier run left is not reused: delete
+ * the reports before a run to start from [file] again, as the Gradle plugin does at the start of
+ * every `Test` task. A relative [file] is resolved against the JVM's working directory.
  *
  * ## Example 1: write the SARIF file a CI step uploads
  * ```kt
@@ -129,5 +131,5 @@ public fun List<Violation>.toSarif(context: SarifContext): String = sarifDocumen
 @ExperimentalKatachiApi
 public fun List<Violation>.writeSarif(file: FsPath, context: SarifContext): FsPath {
     val absolute = if (file.isAbsolute) file else FsPath.of(File(file.value).absolutePath)
-    return writeSarifText(absolute, toSarif(context), SarifRuns.OF_THIS_PROCESS, ::realWriteText)
+    return writeSarifText(absolute, toSarif(context), ::realWriteNewText)
 }

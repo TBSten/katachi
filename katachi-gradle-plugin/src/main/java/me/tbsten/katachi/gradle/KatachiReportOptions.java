@@ -38,6 +38,11 @@ public class KatachiReportOptions {
      * for the {@code test} task and {@code build/reports/katachi/<task>/katachi.sarif} for any
      * other {@code Test} task.
      *
+     * <p>Each {@code assert()} writes a file of its own. With a second one -- another architecture
+     * test class, or another test JVM under {@code maxParallelForks} or {@code forkEvery} -- the
+     * later ones go to {@code katachi-2.sarif}, {@code katachi-3.sarif} next to it, so upload the
+     * directory rather than the one file.
+     *
      * @param sarif {@code true} to write it.
      */
     public void setSarif(boolean sarif) {

@@ -4,6 +4,7 @@ import java.io.File
 import me.tbsten.katachi.check.AmbiguousLayout
 import me.tbsten.katachi.check.CaptureMismatch
 import me.tbsten.katachi.check.CaptureOccurrence
+import me.tbsten.katachi.check.KatachiArchitectureAssertionError
 import me.tbsten.katachi.check.LayoutClaim
 import me.tbsten.katachi.check.MissingFile
 import me.tbsten.katachi.check.NearbyLocation
@@ -21,15 +22,17 @@ import me.tbsten.katachi.check.UnsatisfiedFileConstraint
 import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.check.ViolationDetail
 import me.tbsten.katachi.check.ViolationKind
+import me.tbsten.katachi.check.internal.BaselineEnvironment
 import me.tbsten.katachi.check.internal.MissingDescription
+import me.tbsten.katachi.check.internal.assertWith
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.report.SarifContext
 import me.tbsten.katachi.report.internal.SarifEnvironment
-import me.tbsten.katachi.report.internal.SarifRuns
 import me.tbsten.katachi.test.check.architectureOf
+import me.tbsten.katachi.test.check.repositoryOf
 
 /** The project root every SARIF spec places its fake repository at: one level below the repository root. */
 internal val SARIF_PROJECT_ROOT: FsPath = FsPath.of("/w/repo/android")
@@ -74,10 +77,13 @@ internal class FakeSarifTree(vararg files: Pair<String, String>) {
             .sortedBy { it.value }
             .toList()
 
-    fun writeText(path: FsPath, text: String) {
+    /** Writes [path] unless it is already there, the way two test JVMs share one directory. */
+    fun writeNewText(path: FsPath, text: String): Boolean {
         if (path in unwritable) throw java.io.IOException("Permission denied: ${path.value}")
+        if (path in files) return false
         writes += path to text
         files[path] = text
+        return true
     }
 
     /** A context over this tree, with the version pinned so the golden does not move with every release. */
@@ -106,7 +112,6 @@ internal class FakeSarifTree(vararg files: Pair<String, String>) {
         sourceRoots: List<String>? = null,
         prefix: String? = SARIF_PREFIX,
         standardError: MutableList<String> = mutableListOf(),
-        runs: SarifRuns = SarifRuns(),
         prefixCalls: MutableList<FsPath> = mutableListOf(),
     ): SarifEnvironment = SarifEnvironment(
         systemProperty = { key ->
@@ -122,13 +127,34 @@ internal class FakeSarifTree(vararg files: Pair<String, String>) {
         directoriesUnder = ::directoriesUnder,
         filesUnder = ::filesUnder,
         readText = ::readText,
-        writeText = ::writeText,
+        writeNewText = ::writeNewText,
         repositoryPrefix = { root ->
             prefixCalls += root
             prefix
         },
-        runs = runs,
     )
+}
+
+/**
+ * One test JVM of a Test task that forks several (`forkEvery`, `maxParallelForks`), as `SarifWriteSpec` starts it:
+ * `assert()`s a definition allowing `README.md` alone over a repository that also holds the file its one argument
+ * names, with `-Dkatachi.report.sarif` on its own command line and nothing shared with the other JVMs.
+ */
+internal object SarifTestJvm {
+    @JvmStatic
+    fun main(args: Array<String>) {
+        val extraFile = args.single()
+        val definition = architectureOf { "Readme".role { layout { "README.md".file() } } }
+        val repository = repositoryOf {
+            "README.md"()
+            extraFile()
+        }
+        try {
+            definition.assertWith(repository, emptyList(), 10, BaselineEnvironment(standardError = { }))
+        } catch (expected: KatachiArchitectureAssertionError) {
+            // The unexpected file is the point: it is what the report holds.
+        }
+    }
 }
 
 /** The files of the fake repository the golden is built over, relative to [SARIF_PROJECT_ROOT]. */

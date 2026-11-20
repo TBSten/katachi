@@ -1,7 +1,9 @@
 package me.tbsten.katachi.report.internal
 
 import java.io.File
+import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Files
+import java.nio.file.StandardOpenOption
 import me.tbsten.katachi.dsl.files.FsPath
 
 internal fun realIsFile(path: FsPath): Boolean = File(path.value).isFile
@@ -28,8 +30,14 @@ internal fun realDirectoriesUnder(directory: FsPath): List<FsPath> {
         .sortedBy { it.value }
 }
 
-internal fun realWriteText(file: FsPath, text: String) {
+// CREATE_NEW: of the test JVMs writing one report at the same time, exactly one gets each name.
+internal fun realWriteNewText(file: FsPath, text: String): Boolean {
     val target = File(file.value).absoluteFile.toPath()
     target.parent?.let { Files.createDirectories(it) }
-    Files.write(target, text.toByteArray(Charsets.UTF_8))
+    return try {
+        Files.write(target, text.toByteArray(Charsets.UTF_8), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)
+        true
+    } catch (taken: FileAlreadyExistsException) {
+        false
+    }
 }

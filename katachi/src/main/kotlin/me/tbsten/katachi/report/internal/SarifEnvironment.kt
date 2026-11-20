@@ -15,7 +15,7 @@ internal class SarifEnvironment(
     val directoriesUnder: (FsPath) -> List<FsPath> = ::realDirectoriesUnder,
     val filesUnder: (FsPath) -> List<FsPath> = ::realFilesUnder,
     val readText: (FsPath) -> String? = ::realReadText,
-    val writeText: (FsPath, String) -> Unit = ::realWriteText,
+    // Writes a file that is not there yet and answers true, or answers false and leaves an existing one alone.
+    val writeNewText: (FsPath, String) -> Boolean = ::realWriteNewText,
     val repositoryPrefix: (FsPath) -> String? = ::gitShowPrefix,
-    val runs: SarifRuns = SarifRuns.OF_THIS_PROCESS,
 )
