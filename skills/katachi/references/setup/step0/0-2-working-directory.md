@@ -38,7 +38,7 @@ The top level of the working directory holds only `check-list.html` and `tmp/`. 
 | checklist `meta.ranAt` | Now, as `YYYY-MM-DD HH:MM <zone>` |
 | report `meta.projectName` | `rootProject.name` in `settings.gradle(.kts)` |
 | report `meta.analyzedAt` | Now, as ISO 8601 |
-| report `meta.fileCount` | `git ls-files \| wc -l` (a number) |
+| report `meta.fileCount` | `git ls-files \| wc -l \| tr -d ' '` (a number; macOS's `wc` pads it with spaces) |
 | report `meta.gradleRoot` / `meta.gitRoot` | The Gradle root / `git rev-parse --show-toplevel` |
 
 `meta.jvmToolchain` is filled in 2-1 from `scaffold`'s output.
