@@ -154,12 +154,16 @@ public abstract class KatachiProcessorsTask extends JavaExec {
      * entry point hands to that one processor, rather than as {@code --arg}, which it hands to
      * all of them.
      *
-     * @throws InvalidUserDataException when {@code katachi { architecture = ... } } was never
+     * @throws InvalidUserDataException when the module does not apply the {@code java} plugin
+     *     (nothing set the classpath), when {@code katachi { architecture = ... } } was never
      *     set, when no processor was selected, when a selected key is not registered, or when
      *     some {@code --arg} is not {@code key=value} or repeats a key.
      */
     @Override
     public void exec() {
+        if (getClasspath().isEmpty()) {
+            throw KatachiCommandLineArgs.noTestClasspath(getName());
+        }
         if (!getArchitectureClassName().isPresent()) {
             throw KatachiCommandLineArgs.architectureNotSet(getName());
         }

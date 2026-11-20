@@ -250,12 +250,16 @@ public abstract class KatachiProcessorTask extends JavaExec {
      * trace, no JVM startup cost, and the message is the first thing on the screen rather than
      * buried under {@code JavaExec}'s "process finished with non-zero exit value" noise.
      *
-     * @throws InvalidUserDataException when {@code katachi { architecture = ... } } was never
+     * @throws InvalidUserDataException when the module does not apply the {@code java} plugin
+     *     (nothing set the classpath), when {@code katachi { architecture = ... } } was never
      *     set, or when some {@code --arg} does not contain {@code =}, has an empty key before the
      *     first {@code =}, or repeats a key already given.
      */
     @Override
     public void exec() {
+        if (getClasspath().isEmpty()) {
+            throw KatachiCommandLineArgs.noTestClasspath(getName());
+        }
         if (!getArchitectureClassName().isPresent()) {
             throw KatachiCommandLineArgs.architectureNotSet(getName());
         }

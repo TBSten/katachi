@@ -52,4 +52,21 @@ final class KatachiCommandLineArgs {
                         + "`katachi { architecture = \"com.example.projectArchitecture\" }`, "
                         + "then run " + taskName + " again.");
     }
+
+    /**
+     * The error for a module without the {@code java} plugin, whose {@code test} runtime
+     * classpath is the one every katachi task runs on. A Kotlin Multiplatform or Android module
+     * does not apply it, so the task would otherwise start a JVM with nothing on its classpath
+     * and fail with "Could not find or load main class".
+     *
+     * @param taskName the task that needed it.
+     */
+    static InvalidUserDataException noTestClasspath(String taskName) {
+        return new InvalidUserDataException(
+                taskName + " has no classpath to run on: me.tbsten.katachi runs on the test "
+                        + "runtime classpath of the java plugin, and this module does not apply it "
+                        + "(a Kotlin Multiplatform or Android module does not). Apply "
+                        + "me.tbsten.katachi to a kotlin(\"jvm\") module that holds the definition "
+                        + "and its test, then run " + taskName + " there.");
+    }
 }

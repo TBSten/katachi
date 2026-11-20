@@ -186,6 +186,36 @@ class KatachiPluginFunctionalTest {
 
     @ParameterizedTest(name = "Gradle {0}")
     @MethodSource("gradleVersions")
+    @DisplayName("java plugin の無いモジュール（KMP・Android）では、JVM を起動する前に kotlin(\"jvm\") のモジュールに適用するよう言って止まる")
+    void failsWithTheFixWhenTheModuleHasNoJavaPlugin(String gradleVersion, @TempDir Path projectDir)
+            throws IOException {
+        write(projectDir.resolve("settings.gradle.kts"), "rootProject.name = \"katachi-fixture\"\n");
+        // No `java`: a Kotlin Multiplatform or Android module applies neither it nor its `test`
+        // source set, which is where every katachi task takes its classpath from.
+        write(
+                projectDir.resolve("build.gradle.kts"),
+                "plugins {\n"
+                        + "    id(\"" + PLUGIN_ID + "\")\n"
+                        + "}\n"
+                        + "\n"
+                        + "katachi {\n"
+                        + "    architecture = \"fixture.ProjectArchitectureKt\"\n"
+                        + "}\n");
+
+        BuildResult result = runner(projectDir, gradleVersion, "katachiDocs").buildAndFail();
+
+        assertEquals(TaskOutcome.FAILED, outcomeOf(result));
+        assertTrue(
+                result.getOutput().contains("katachiDocs has no classpath to run on")
+                        && result.getOutput().contains("Apply me.tbsten.katachi to a kotlin(\"jvm\") module"),
+                "the failure does not say where to apply the plugin:\n" + result.getOutput());
+        assertFalse(
+                result.getOutput().contains("Could not find or load main class"),
+                "a JVM was started with an empty classpath after all:\n" + result.getOutput());
+    }
+
+    @ParameterizedTest(name = "Gradle {0}")
+    @MethodSource("gradleVersions")
     @DisplayName("docs はルートページの名前に関する --arg を一切送らない")
     void docsSendsNothingAboutTheRootPageName(String gradleVersion, @TempDir Path projectDir)
             throws IOException {
