@@ -128,7 +128,7 @@ class DoctorScaffoldSpec : FreeSpec({
             run.out shouldContain "Gradle の JDK: 21（JAVA_HOME（$shell））"
         }
 
-        "シェルの JAVA_HOME に bin/java が無ければ、PATH の java に切り替えず、gradlew と同じく無効と出して止まる（KATACHI-440）" {
+        "シェルの JAVA_HOME に bin/java が無ければ、PATH の java に切り替えず、gradlew と同じく無効と出して止まる（KATACHI-439）" {
             val empty = createTempDirectory("katachi-empty-java-home")
 
             val run = runCapturing(
@@ -142,7 +142,7 @@ class DoctorScaffoldSpec : FreeSpec({
             run.err shouldContain "JAVA_HOME ($empty) has no bin/java, so ./gradlew stops too"
         }
 
-        "Gradle の JDK が 17 未満・見つからないときは、見出しで「そろっています」と言わない（KATACHI-440）" {
+        "Gradle の JDK が 17 未満・見つからないときは、見出しで「そろっています」と言わない（KATACHI-439）" {
             val run = runCapturing(
                 gradleProject(toolchain = null),
                 listOf("doctor", "--lang", "en"),
