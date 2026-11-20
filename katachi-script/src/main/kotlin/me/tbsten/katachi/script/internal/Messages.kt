@@ -969,10 +969,15 @@ internal object Messages {
         )
 
         fun misconfigured(configured: Any?, pathUri: Any?): Msg = Msg(
-            ja = "KATACHI_WORKDIR（$configured）は作業用ディレクトリではありません（$pathUri に check-list.html がない）。" +
+            ja = "KATACHI_WORKDIR（$configured）は作業用ディレクトリではありません（$pathUri に読める check-list.html がない）。" +
                 "check-list.html のあるディレクトリを指すように直すか、KATACHI_WORKDIR を外してください。",
-            en = "KATACHI_WORKDIR ($configured) is not a working directory (there is no check-list.html in $pathUri). " +
+            en = "KATACHI_WORKDIR ($configured) is not a working directory (there is no readable check-list.html in $pathUri). " +
                 "Point it at the directory with check-list.html, or unset it.",
+        )
+
+        fun unreadableCheckListsSkipped(fileUris: Any?): Msg = Msg(
+            ja = "読めない check-list.html は、作業用ディレクトリとして使いません: $fileUris ",
+            en = "Not using a check-list.html that cannot be read as a working directory: $fileUris ",
         )
 
         fun projectRootInOtherWorkTree(recordedUri: Any?, hereUri: Any?): Msg = Msg(

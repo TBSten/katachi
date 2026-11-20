@@ -214,6 +214,55 @@ class WorkdirSpec : FreeSpec({
                 locked.setPosixFilePermissions(PosixFilePermissions.fromString("rwx------"))
             }
         }
+
+    // root reads every file, so there the locked check list would not be locked and the case would prove nothing.
+    "下に読めない check-list.html（tmp/ 付き）があっても、--version も --help も test も止まらず、読める作業用ディレクトリを使う（KATACHI-420）"
+        .config(enabledIf = { System.getProperty("user.name") != "root" }) {
+            val project = projectWithWorkdir("""{"meta": {}, "steps": []}""")
+            gradleProject(project, "project", withDefinition = true)
+            val other = project.resolve("someone-else/.local/install-katachi")
+            other.resolve("tmp").createDirectories()
+            val locked = other.resolve("check-list.html")
+            locked.writeText(checkListHtml("""{"meta": {}, "steps": []}""", "en"))
+            locked.setPosixFilePermissions(PosixFilePermissions.fromString("---------"))
+            try {
+                runCapturing(project, listOf("--version")).status shouldBe 0
+                val help = runCapturing(project, listOf("--help"))
+                help.status shouldBe 0
+                help.err shouldNotContain "Exception"
+                help.err shouldContain "読めない check-list.html は、作業用ディレクトリとして使いません"
+                help.err shouldContain locked.toString()
+
+                val test = runCapturing(project, listOf("agent", "test"), mapOf("PATH" to System.getenv("PATH")))
+
+                test.status shouldBe 0
+                test.err shouldNotContain "2 つ以上"
+                test.err.split("読めない check-list.html").size shouldBe 2
+                project.resolve(".local/install-katachi/tmp/test/latest.log").exists() shouldBe true
+            } finally {
+                locked.setPosixFilePermissions(PosixFilePermissions.fromString("rw-------"))
+            }
+        }
+
+    "KATACHI_WORKDIR の check-list.html が読めないと、作業用ディレクトリではないと言って止まる（KATACHI-420）"
+        .config(enabledIf = { System.getProperty("user.name") != "root" }) {
+            val project = projectWithWorkdir("""{"meta": {}, "steps": []}""")
+            gradleProject(project, "project", withDefinition = true)
+            val workdir = project.resolve(".local/install-katachi")
+            val locked = workdir.resolve("check-list.html")
+            locked.setPosixFilePermissions(PosixFilePermissions.fromString("---------"))
+            try {
+                val env = mapOf("PATH" to System.getenv("PATH"), "KATACHI_WORKDIR" to workdir.toString())
+
+                val run = runCapturing(project, listOf("agent", "test"), env)
+
+                run.status shouldBe 1
+                run.err shouldNotContain "Exception"
+                run.err shouldContain "は作業用ディレクトリではありません"
+            } finally {
+                locked.setPosixFilePermissions(PosixFilePermissions.fromString("rw-------"))
+            }
+        }
 })
 
 /**

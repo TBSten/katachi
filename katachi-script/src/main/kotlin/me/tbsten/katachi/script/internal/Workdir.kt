@@ -41,13 +41,18 @@ internal const val CHECK_LIST_FILE: String = "check-list.html"
 internal fun ScriptContext.lookupWorkdir(): WorkdirLookup {
     env["KATACHI_WORKDIR"]?.takeIf { it.isNotBlank() }?.let { configured ->
         val path = resolve(configured)
-        return if (path.resolve(CHECK_LIST_FILE).isRegularFile()) WorkdirLookup.Found(path) else WorkdirLookup.Misconfigured(configured, path)
+        return if (path.resolve(CHECK_LIST_FILE).isReadableFile()) WorkdirLookup.Found(path) else WorkdirLookup.Misconfigured(configured, path)
     }
     if (!cwd.isDirectory()) return WorkdirLookup.NotFound
-    val candidates = checkListsBelow(cwd)
-        .map { it.parent }
-        .filter { it.resolve("tmp").isDirectory() }
-        .sorted()
+    // A check list someone else made (a shared parent, /tmp, a CI runner) may be unreadable: it is no working directory of
+    // this user, and reading it would stop every command.
+    val (readable, unreadable) = checkListsBelow(cwd)
+        .filter { it.parent.resolve("tmp").isDirectory() }
+        .partition { it.isReadableFile() }
+    if (unreadable.isNotEmpty()) {
+        warnOnce(Messages.Workdir.unreadableCheckListsSkipped(unreadable.sorted().joinToString(" ") { fileUri(it) }))
+    }
+    val candidates = readable.map { it.parent }.sorted()
     return when (candidates.size) {
         0 -> WorkdirLookup.NotFound
         1 -> WorkdirLookup.Found(candidates.single())
@@ -103,9 +108,17 @@ private val HTML_LANG = Regex("<html[^>]*\\slang=\"([a-z]+)\"")
 
 /** The language of the check list the katachi skill copied into [workdir]: its `<html lang="...">`. */
 internal fun recordedLang(workdir: Path): Lang? {
-    val file = workdir.resolve(CHECK_LIST_FILE)
-    if (!file.isRegularFile()) return null
-    return Lang.of(HTML_LANG.find(file.readText().take(2000))?.groupValues?.get(1))
+    val text = workdir.resolve(CHECK_LIST_FILE).readTextOrNull() ?: return null
+    return Lang.of(HTML_LANG.find(text.take(2000))?.groupValues?.get(1))
+}
+
+private fun Path.isReadableFile(): Boolean = isRegularFile() && Files.isReadable(this)
+
+/** The text of a regular file, or null when there is none or it cannot be read: an unreadable check list counts as absent. */
+private fun Path.readTextOrNull(): String? = try {
+    if (isRegularFile()) readText() else null
+} catch (_: IOException) {
+    null
 }
 
 /** A non-empty file's text, or null. The kit's `[ -s file ] && cat file`. */
@@ -115,8 +128,7 @@ internal fun Path.textIfNotEmpty(): String? = if (isRegularFile() && fileSize() 
 
 /** The JSON object in the block [id] of [html], or null when the file, the block or the JSON is not there. */
 internal fun readJsonBlockOrNull(html: Path, id: String): JsonObject? {
-    if (!html.isRegularFile()) return null
-    val block = extractJsonBlock(html.readText(), id) as? JsonBlock.Found ?: return null
+    val block = extractJsonBlock(html.readTextOrNull() ?: return null, id) as? JsonBlock.Found ?: return null
     return parseJsonOrNull(block.text) as? JsonObject
 }
 
