@@ -2,6 +2,7 @@ package me.tbsten.katachi.dsl
 
 import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.KatachiInternalException
+import me.tbsten.katachi.dsl.internal.CUSTOM_KIND_SPELLING
 import kotlin.reflect.KClass
 
 private fun oneLine(value: String): String = value.replace("\r", "\\r").replace("\n", "\\n")
@@ -77,6 +78,75 @@ public class KatachiFileConstraintWithoutLayoutException internal constructor(
         )
     },
 )
+
+/**
+ * A role declared two constraints of the same name.
+ *
+ * The report and the baseline tell the constraints of a role apart by name alone, so two of one
+ * name share their baseline entries: a violation recorded against one holds back a new violation
+ * of the other. A `konsist { }` or `konture { }` written without a name is named after its kind
+ * (`"konsist"`, `"konture"`), so two unnamed blocks of one kind on one role are refused too. Two
+ * `ktFileContent { }` are not refused here: a role holds one, whatever its name, and
+ * `ktFileContent` refuses a second one itself.
+ *
+ * The same declaration reached twice, as a loop in a `layout { }` does, is one constraint and is
+ * not refused, and so is one [FileConstraint] object handed to two places under one name. Written
+ * on a role, this is thrown while `architecture { }` is evaluated. Written inside a `layout { }`,
+ * it is thrown when the layout is evaluated, because `layout { }` is deferred.
+ *
+ * ## Example 1: catch two constraints of one role sharing a name
+ * ```kt
+ * shouldThrow<KatachiDuplicateFileConstraintNameException> {
+ *     architecture {
+ *         "UseCase".role {
+ *             fileConstraint("is public") { emptyList() }
+ *             fileConstraint("is public") { emptyList() }
+ *             layout { "useCase" { "*.kt".file() } }
+ *         }
+ *     }
+ * }.name shouldBe "is public"
+ * ```
+ */
+public class KatachiDuplicateFileConstraintNameException internal constructor(
+    /** The qualified name of the role, as the report prints it (`domain.UseCase`). */
+    public val role: String,
+    /** The name both constraints have. */
+    public val name: String,
+    /**
+     * The kind of the first constraint, as it is written: `konsist { }`, `konture { }`,
+     * `ktFileContent { }`, or `fileConstraint { }` for any other.
+     */
+    public val firstKind: String,
+    /**
+     * The kind of the second constraint, spelled as
+     * [firstKind][KatachiDuplicateFileConstraintNameException.firstKind] is.
+     */
+    public val kind: String,
+    /** Where the first constraint was written. */
+    public val firstDeclaredAt: DeclarationSite,
+    /** Where the second constraint was written. */
+    public val declaredAt: DeclarationSite,
+) : KatachiDeclarationException(
+    message = buildString {
+        appendLine(
+            "Role \"$role\" declares two constraints named \"${oneLine(name)}\": $firstKind at " +
+                "$firstDeclaredAt and $kind at $declaredAt.",
+        )
+        appendLine(
+            "The report and the baseline tell the constraints of a role apart by name, so a " +
+                "violation recorded against one would hold back a new violation of the other.",
+        )
+        append("Give each a distinct name, as in ${namedSpellingOf(kind)}.")
+        // A plain `fileConstraint { }` written without a name has none, so it never gets the note.
+        val unnamedKind = "$name { }"
+        if (unnamedKind != CUSTOM_KIND_SPELLING && (kind == unnamedKind || firstKind == unnamedKind)) {
+            append(" A $unnamedKind written without a name is named \"$name\".")
+        }
+    },
+)
+
+private fun namedSpellingOf(kind: String): String =
+    if (kind == CUSTOM_KIND_SPELLING) "fileConstraint(\"<what it checks>\") { ... }" else "\"<what it checks>\".$kind"
 
 /**
  * A constraint asked for `scope = FileConstraintRange.DirectOnly` somewhere that has no directory

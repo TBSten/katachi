@@ -5,6 +5,7 @@ import me.tbsten.katachi.dsl.FileConstraintFailure
 import me.tbsten.katachi.dsl.FileConstraintSubject
 import me.tbsten.katachi.konture.KatachiKontureDefaultGraphException
 import me.tbsten.katachi.konture.KatachiKontureDirectAssertionException
+import me.tbsten.katachi.konture.KatachiKontureEmptySelectionException
 import me.tbsten.katachi.konture.KatachiKontureNoExpectationException
 import me.tbsten.katachi.konture.KatachiKontureRuleRefusedException
 import me.tbsten.katachi.konture.KontureConstraintScope
@@ -23,6 +24,7 @@ internal class KontureFileConstraint(
         val graph = kontureGraphOf(subject)
         val scope = KontureConstraintScopeImpl(graph)
         val covered = KontureCoveredFiles(subject.projectRoot, subject.files)
+        val names = KontureDeclarationNames(graph)
         // The block runs under audit too: a `check()` written by hand inside `files { }` then
         // returns a report that is simply dropped, instead of throwing Konture's prose.
         audited { declare(scope, subject) }
@@ -41,7 +43,7 @@ internal class KontureFileConstraint(
                     // A `@Suppress("konture:...")` the reader wrote in the code. Konture kept the
                     // violation and marked it; katachi honours the mark.
                     if (violation.isSuppressed) continue
-                    sites += siteOf(suite.kind, violation, covered)
+                    sites += siteOf(suite.kind, violation, covered, names)
                 }
             }
             sites.map { it.toFileConstraintFailure() }
@@ -68,21 +70,40 @@ internal class KontureFileConstraint(
         }
     }
 
-    // With `allowEmpty()` called, the only assertion Konture makes before looking at a file is "no `should()`", from the builder's own `check`; any other came from a predicate.
+    // The builder's own `check` asserts for two reasons, an empty selection and no `should()`, in that order and in
+    // translated words; asked again with `allowEmpty()`, only the second asserts. Any other assertion came from a predicate.
     private fun classifyEvaluationAssertion(
         cause: AssertionError,
         suite: Suite,
         subject: FileConstraintSubject,
-    ): Throwable = if (cause.thrownByRuleBuilderCheck()) {
-        KatachiKontureRuleRefusedException(
-            role = subject.role.qualifiedName,
-            constraintName = subject.name,
-            declaredAt = subject.declaredAt,
-            suite = suite.kind.label,
-            cause = cause,
-        )
-    } else {
-        KatachiKontureDirectAssertionException(spelling = cause.spelling(), suite = suite.kind.label, cause = cause)
+    ): Throwable {
+        if (!cause.thrownByRuleBuilderCheck()) {
+            return KatachiKontureDirectAssertionException(spelling = cause.spelling(), suite = suite.kind.label, cause = cause)
+        }
+        val selectedNothing = try {
+            suite.allowEmpty()
+            suite.check()
+            true
+        } catch (refusedAgain: AssertionError) {
+            false
+        }
+        return if (selectedNothing) {
+            KatachiKontureEmptySelectionException(
+                role = subject.role.qualifiedName,
+                constraintName = subject.name,
+                declaredAt = subject.declaredAt,
+                suite = suite.kind.label,
+                cause = cause,
+            )
+        } else {
+            KatachiKontureRuleRefusedException(
+                role = subject.role.qualifiedName,
+                constraintName = subject.name,
+                declaredAt = subject.declaredAt,
+                suite = suite.kind.label,
+                cause = cause,
+            )
+        }
     }
 
     override fun toString(): String = "KontureFileConstraint"

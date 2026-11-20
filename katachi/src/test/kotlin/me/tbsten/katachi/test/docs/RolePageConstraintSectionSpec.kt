@@ -14,6 +14,7 @@ import me.tbsten.katachi.dsl.FileConstraintExampleFile
 import me.tbsten.katachi.dsl.FileConstraintExampleSource
 import me.tbsten.katachi.dsl.FileConstraintFailure
 import me.tbsten.katachi.dsl.FileConstraintSubject
+import me.tbsten.katachi.dsl.KatachiDuplicateFileConstraintNameException
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.wholeTree
@@ -94,32 +95,20 @@ class RolePageConstraintSectionSpec : FreeSpec({
             page shouldContain "- [has a section](#real-heading)\n"
         }
 
-        "同じ名前で節ありと節なしの制約が並んでも、リンクは節を書いた方にだけ付く" {
-            val arch = architecture {
-                "domain".group {
-                    "UseCase".role {
-                        example("GetUserUseCase")
-                        fileConstraint("naming", check = DescribedConstraint { "## A" })
-                        fileConstraint("naming", check = DescribedConstraint { null })
-                        layout { "useCase" / "*UseCase".ktFile() }
+        "同じ名前の別の制約が 2 つある役割は、ページを作る前に定義の時点で断られる" {
+            // 項目は名前で並ぶ。名前が同じ別の制約は baseline でも見分けられないので、そもそも書けない。
+            shouldThrow<KatachiDuplicateFileConstraintNameException> {
+                architecture {
+                    "domain".group {
+                        "UseCase".role {
+                            example("GetUserUseCase")
+                            fileConstraint("naming", check = DescribedConstraint { "## A" })
+                            fileConstraint("naming", check = DescribedConstraint { null })
+                            layout { "useCase" / "*UseCase".ktFile() }
+                        }
                     }
                 }
-            }
-            arch.page("domain/UseCase.md") shouldContain "- [naming](#a)\n- naming\n"
-        }
-
-        "同じ名前で、後の節に見出しが無くても先の節のリンクは消えない" {
-            val arch = architecture {
-                "domain".group {
-                    "UseCase".role {
-                        example("GetUserUseCase")
-                        fileConstraint("naming", check = DescribedConstraint { "## A" })
-                        fileConstraint("naming", check = DescribedConstraint { "no heading" })
-                        layout { "useCase" / "*UseCase".ktFile() }
-                    }
-                }
-            }
-            arch.page("domain/UseCase.md") shouldContain "- [naming](#a)\n- naming\n"
+            }.name shouldBe "naming"
         }
 
         "コードフェンスの中の見出しは飛ばし、開いた記号と同じ記号で閉じる" {

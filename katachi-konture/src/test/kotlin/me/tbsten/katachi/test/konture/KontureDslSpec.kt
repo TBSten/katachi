@@ -6,11 +6,13 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldEndWith
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.FileConstraintCheck
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.FileConstraintRange
+import me.tbsten.katachi.dsl.KatachiDuplicateFileConstraintNameException
 import me.tbsten.katachi.dsl.KatachiFileConstraintDirectOnlyWithoutDirectoryException
 import me.tbsten.katachi.dsl.KatachiFileConstraintNameException
 import me.tbsten.katachi.dsl.KatachiFileConstraintWithoutLayoutException
@@ -235,6 +237,103 @@ class KontureDslSpec : FreeSpec({
                         }
                     }
                 }
+            }
+        }
+    }
+
+    "1 つの役割に同じ名前の制約は 1 つ" - {
+        // 報告と baseline は役割の制約を名前だけで見分ける。名前の無い konture { } は konture という名前になる。
+        "名前の無い konture { } を 2 つ書くと宣言時に落ちる" {
+            val thrown = shouldThrow<KatachiDuplicateFileConstraintNameException> {
+                architecture {
+                    "domain".group {
+                        "UseCase".role {
+                            konture { classes { should().beInternal() } }
+                            konture { functions { should().bePublic() } }
+                            layout { "core/domain" { "*.kt".file() } }
+                        }
+                    }
+                }
+            }
+
+            thrown.role shouldBe "domain.UseCase"
+            thrown.name shouldBe "konture"
+            thrown.firstKind shouldBe "konture { }"
+            thrown.kind shouldBe "konture { }"
+            thrown.message.orEmpty().lines().last() shouldBe
+                "Give each a distinct name, as in \"<what it checks>\".konture { }. " +
+                "A konture { } written without a name is named \"konture\"."
+        }
+
+        "konture と名付けた konture { } と名前の無い konture { } も落ちる" {
+            shouldThrow<KatachiDuplicateFileConstraintNameException> {
+                architecture {
+                    "UseCase".role {
+                        "konture".konture { classes { should().beInternal() } }
+                        konture { functions { should().bePublic() } }
+                        layout { "core/domain" { "*.kt".file() } }
+                    }
+                }
+            }.name shouldBe "konture"
+        }
+
+        "同じ名前の fileConstraint { } とも並べられず、文面は 2 つの種類を名指しする" {
+            val thrown = shouldThrow<KatachiDuplicateFileConstraintNameException> {
+                architecture {
+                    "UseCase".role {
+                        "規約".konture { classes { should().beInternal() } }
+                        fileConstraint("規約") { emptyList() }
+                        layout { "core/domain" { "*.kt".file() } }
+                    }
+                }
+            }
+
+            thrown.firstKind shouldBe "konture { }"
+            thrown.kind shouldBe "fileConstraint { }"
+            thrown.message.orEmpty().lines().first() shouldEndWith
+                "\"規約\": konture { } at ${thrown.firstDeclaredAt} and fileConstraint { } at ${thrown.declaredAt}."
+        }
+
+        "役割直下と layout の中の名前の無い konture { } は、layout の評価時に落ちる" {
+            fixtureProject("core/domain/GetUser.kt" to GET_USER_KT) { root ->
+                val projectArchitecture = architecture {
+                    files = wholeTree()
+                    "UseCase".role {
+                        konture { classes { should().beInternal() } }
+                        layout {
+                            "gradlew".file()
+                            "core/domain" {
+                                "*.kt".file()
+                                konture { functions { should().bePublic() } }
+                            }
+                        }
+                    }
+                }
+
+                shouldThrow<KatachiDuplicateFileConstraintNameException> {
+                    projectArchitecture.validate(RealFileSystem(root), FileConstraintCheck())
+                }.name shouldBe "konture"
+            }
+        }
+
+        "別の役割なら名前の無い konture { } を 1 つずつ書ける" {
+            fixtureProject("core/domain/GetUser.kt" to GET_USER_KT, "util/Strings.kt" to UTIL_STRINGS_KT) { root ->
+                val projectArchitecture = architecture {
+                    files = wholeTree()
+                    "UseCase".role {
+                        konture { classes { should().beInternal() } }
+                        layout {
+                            "gradlew".file()
+                            "core/domain" { "*.kt".file() }
+                        }
+                    }
+                    "Util".role {
+                        konture { classes { should().beInternal() } }
+                        layout { "util" { "*.kt".file() } }
+                    }
+                }
+
+                projectArchitecture.validate(RealFileSystem(root), FileConstraintCheck()).shouldBeEmpty()
             }
         }
     }

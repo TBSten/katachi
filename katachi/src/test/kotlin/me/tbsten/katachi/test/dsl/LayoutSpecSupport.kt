@@ -3,6 +3,8 @@ package me.tbsten.katachi.test.dsl
 import me.tbsten.katachi.check.internal.moduleIndex
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.FileConstraint
+import me.tbsten.katachi.dsl.FileConstraintFailure
+import me.tbsten.katachi.dsl.FileConstraintSubject
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.ModuleResolver
@@ -60,9 +62,12 @@ internal fun moduleIndexOf(
  * A constraint that answers nothing, for a spec that only cares where the declaration landed.
  *
  * Written as a function rather than a value so that each call is its own instance: a spec
- * comparing two declarations must not have them share one.
+ * comparing two declarations must not have them share one. An object rather than a lambda,
+ * because a lambda that captures nothing is one instance however many times it is evaluated.
  */
-internal fun silent(): FileConstraint = FileConstraint { emptyList() }
+internal fun silent(): FileConstraint = object : FileConstraint {
+    override fun evaluate(subject: FileConstraintSubject): List<FileConstraintFailure> = emptyList()
+}
 
 /** The constraints a definition declares, with its `layout { }` blocks evaluated. */
 internal fun Architecture.declaredFileConstraints(

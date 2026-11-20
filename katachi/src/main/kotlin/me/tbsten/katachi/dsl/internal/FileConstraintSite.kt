@@ -3,6 +3,7 @@ package me.tbsten.katachi.dsl.internal
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.FileConstraint
 import me.tbsten.katachi.dsl.FileConstraintRange
+import me.tbsten.katachi.dsl.KatachiDuplicateFileConstraintNameException
 import me.tbsten.katachi.dsl.KatachiFileConstraintNameException
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutEntryKind
@@ -28,6 +29,27 @@ internal fun fileConstraintDeclarationOf(
         throw KatachiFileConstraintNameException(name = name, declaredAt = declaredAt)
     }
     return FileConstraintDeclaration(name = name, declaredAt = declaredAt, scope = scope, check = check)
+}
+
+// One site reached twice (a loop in a layout, or a wildcard module key, runs one block more than once) and one check
+// handed to several places are each one constraint, as the role page counts them.
+// Two ktFileContent are left to ktFileContent, which refuses a second one whatever the names, with its own advice.
+internal fun requireDistinctFileConstraintNames(role: String, declarations: List<FileConstraintDeclaration>) {
+    val firstByName = HashMap<String, FileConstraintDeclaration>()
+    for (declaration in declarations) {
+        val name = declaration.name ?: continue
+        val first = firstByName.putIfAbsent(name, declaration) ?: continue
+        if (first.declaredAt == declaration.declaredAt || first.check === declaration.check) continue
+        if (backendOf(first.check) == KT_FILE_CONTENT_BACKEND && backendOf(declaration.check) == KT_FILE_CONTENT_BACKEND) continue
+        throw KatachiDuplicateFileConstraintNameException(
+            role = role,
+            name = name,
+            firstKind = kindSpellingOf(first.check),
+            kind = kindSpellingOf(declaration.check),
+            firstDeclaredAt = first.declaredAt,
+            declaredAt = declaration.declaredAt,
+        )
+    }
 }
 
 // Holds nodes, not paths: paths exist only after flattening, and a wildcard module key makes one site per module.

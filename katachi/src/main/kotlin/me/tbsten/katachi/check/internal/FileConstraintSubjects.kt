@@ -15,6 +15,7 @@ internal fun fileConstraintSubjectOf(
     paths = declared.paths,
     projectRoot = walk.projectRootPath,
     files = files,
+    projectFiles = walk.walkedFiles,
     shared = walk.scratch(),
     captureNames = declared.coverage.captureNames,
     captureValues = declared.coverage::captureValuesOf,

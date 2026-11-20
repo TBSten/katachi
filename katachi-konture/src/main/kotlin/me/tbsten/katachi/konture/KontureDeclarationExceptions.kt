@@ -28,13 +28,13 @@ private fun Throwable.firstLine(): String = toString().lineSequence().first()
  * ```
  *
  * @property role the qualified name of the role whose layout the constraint was written in.
- * @property constraintName what the constraint was called, or `null`.
+ * @property constraintName what the constraint was called: `konture` for a block written without a name.
  * @property declaredAt where the constraint was written.
  */
 public class KatachiKontureNoExpectationException internal constructor(
     /** The qualified name of the role whose layout the constraint was written in. */
     public val role: String,
-    /** What the constraint was called, or `null` when it was declared without a name. */
+    /** What the constraint was called: the name it was given, or `konture` for a block written without one. */
     public val constraintName: String?,
     /** Where the constraint was written. */
     public val declaredAt: DeclarationSite,
@@ -76,14 +76,14 @@ public class KatachiKontureNoExpectationException internal constructor(
  * ```
  *
  * @property role the qualified name of the role whose layout the constraint was written in.
- * @property constraintName what the constraint was called, or `null`.
+ * @property constraintName what the constraint was called: `konture` for a block written without a name.
  * @property declaredAt where the constraint was written.
  * @property given how many files the constraint covered.
  */
 public class KatachiKontureNoKotlinFilesException internal constructor(
     /** The qualified name of the role whose layout the constraint was written in. */
     public val role: String,
-    /** What the constraint was called, or `null` when it was declared without a name. */
+    /** What the constraint was called: the name it was given, or `konture` for a block written without one. */
     public val constraintName: String?,
     /** Where the constraint was written. */
     public val declaredAt: DeclarationSite,
@@ -126,14 +126,14 @@ public class KatachiKontureNoKotlinFilesException internal constructor(
  * ```
  *
  * @property role the qualified name of the role whose layout the constraint was written in.
- * @property constraintName what the constraint was called, or `null`.
+ * @property constraintName what the constraint was called: `konture` for a block written without a name.
  * @property declaredAt where the constraint was written.
  * @property suite which kind of rule was refused: `files`, `classes`, `functions` or `properties`.
  */
 public class KatachiKontureRuleRefusedException internal constructor(
     /** The qualified name of the role whose layout the constraint was written in. */
     public val role: String,
-    /** What the constraint was called, or `null` when it was declared without a name. */
+    /** What the constraint was called: the name it was given, or `konture` for a block written without one. */
     public val constraintName: String?,
     /** Where the constraint was written. */
     public val declaredAt: DeclarationSite,
@@ -154,6 +154,73 @@ public class KatachiKontureRuleRefusedException internal constructor(
 )
 
 /**
+ * One of the rules in a `konture { }` block selected nothing to check.
+ *
+ * Konture refuses a rule whose selection is empty unless the rule says `allowEmpty()`: a `that()`
+ * that matches no declaration of the covered files is more often a typo than a rule meant to
+ * hold over none, and such a rule would pass without looking at anything. katachi keeps that
+ * refusal and turns Konture's `AssertionError` into this exception, so that the report names the
+ * role, the constraint and the rule. A `classes { }` over files that declare no class is refused
+ * the same way, `that()` or not.
+ *
+ * A constraint that covers no file at all is not evaluated, so a place with no files yet never
+ * ends here.
+ *
+ * ## Example 1: let a rule select nothing
+ * ```kt
+ * "Use cases are public".konture {
+ *     classes {
+ *         allowEmpty() // the covered files may hold no use case yet
+ *         that() nameEndsWith "UseCase"
+ *         should().bePublic()
+ *     }
+ * }
+ * ```
+ *
+ * ## Example 2: catch a that() that matches nothing
+ * ```kt
+ * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+ *     projectArchitecture.assert(FileConstraintCheck())
+ * }
+ * failure.violations.filterIsInstance<UncheckedFileConstraint>()
+ *     .single().cause.shouldBeInstanceOf<KatachiKontureEmptySelectionException>().suite shouldBe "classes"
+ * ```
+ *
+ * @property role the qualified name of the role whose layout the constraint was written in.
+ * @property constraintName what the constraint was called: `konture` for a block written without a name.
+ * @property declaredAt where the constraint was written.
+ * @property suite which kind of rule selected nothing: `files`, `classes`, `functions` or `properties`.
+ */
+public class KatachiKontureEmptySelectionException internal constructor(
+    /** The qualified name of the role whose layout the constraint was written in. */
+    public val role: String,
+    /** What the constraint was called: the name it was given, or `konture` for a block written without one. */
+    public val constraintName: String?,
+    /** Where the constraint was written. */
+    public val declaredAt: DeclarationSite,
+    /** Which kind of rule selected nothing: `files`, `classes`, `functions` or `properties`. */
+    public val suite: String,
+    cause: AssertionError,
+) : KatachiDeclarationException(
+    message = buildString {
+        appendLine(
+            "The $suite rule of Konture constraint ${namedFileConstraint(constraintName, declaredAt)} " +
+                "of role \"$role\" declared at $declaredAt selected nothing to check.",
+        )
+        appendLine(
+            "Konture refuses a rule over nothing: a that() that matches no declaration of the " +
+                "covered files is more often a typo than a rule meant to hold over none, and the " +
+                "rule would pass without looking at anything.",
+        )
+        append(
+            "Fix the that() so that it selects what the covered files declare, or write " +
+                "allowEmpty() in the $suite { } rule if it may select nothing.",
+        )
+    },
+    cause = cause,
+)
+
+/**
  * An `AssertionError` came out of a `konture { }` block, at one of two moments.
  *
  * While the block was declaring its rules ([suite][KatachiKontureDirectAssertionException.suite] is `null`): [KontureDefaultGraphShadows]
@@ -164,8 +231,9 @@ public class KatachiKontureRuleRefusedException internal constructor(
  * While Konture was evaluating one of the rules ([suite][KatachiKontureDirectAssertionException.suite] names which): a predicate such as
  * `satisfy { }` asserted instead of answering `true` or `false`. Konture runs the predicate on
  * each declaration and nothing catches what it throws, so the first declaration it dislikes
- * ends the rule. The one `AssertionError` Konture itself throws at that moment, for a rule with
- * no `should()`, is told apart and reported as [KatachiKontureRuleRefusedException] instead.
+ * ends the rule. The two `AssertionError`s Konture itself throws at that moment, for a rule that
+ * selected nothing and for a rule with no `should()`, are told apart and reported as
+ * [KatachiKontureEmptySelectionException] and [KatachiKontureRuleRefusedException] instead.
  *
  * Either way the run has no idea which declarations were rejected, and a report block here
  * opens with a real path, so the constraint is reported as unanswered rather than as a failure

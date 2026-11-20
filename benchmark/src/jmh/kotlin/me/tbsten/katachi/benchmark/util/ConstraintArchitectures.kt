@@ -35,20 +35,32 @@ internal fun SyntheticProject.ktFileContentArchitecture(): Architecture = constr
 }
 
 internal fun SyntheticProject.kontureArchitecture(): Architecture = constrainedArchitecture {
+    classesArePublicKonture()
+}
+
+// Konture's symbol table still reads every walked `.kt` file, while the rule covers the first role's files alone.
+internal fun SyntheticProject.kontureOnFirstRoleArchitecture(): Architecture = constrainedArchitecture(firstRoleOnly = true) {
+    classesArePublicKonture()
+}
+
+private fun RoleScope.classesArePublicKonture() {
     "classes are public".konture {
         classes { should().bePublic() }
     }
 }
 
 // The layout of `SyntheticProject.architecture()`, so the walk is the same whichever constraint is added.
-private fun SyntheticProject.constrainedArchitecture(constraint: RoleScope.() -> Unit): Architecture {
+private fun SyntheticProject.constrainedArchitecture(
+    firstRoleOnly: Boolean = false,
+    constraint: RoleScope.() -> Unit,
+): Architecture {
     val roles = roles
     return architecture {
         files = FileSelection.WholeTree
         "synthetic".group {
             for ((index, role) in roles.withIndex()) {
                 role.name.role {
-                    constraint()
+                    if (index == 0 || !firstRoleOnly) constraint()
                     layout {
                         if (index == 0) {
                             "settings.gradle".ktsFile()
