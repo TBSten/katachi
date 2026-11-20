@@ -12,7 +12,6 @@ import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
-import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
 import androidx.compose.ui.test.runComposeUiTest
@@ -74,11 +73,8 @@ class DialogScenarioInteractionTest {
         return DialogHost(listOf(screen), lister = DirectoryLister { disk.toList() }) to disk
     }
 
-    private fun ComposeUiTest.type(host: DialogHost, tag: String, text: String) {
-        inputOf(tag).performTextInput(text)
-        host.settle()
-        waitForIdle()
-    }
+    private fun ComposeUiTest.type(host: DialogHost, tag: String, name: String, text: String) =
+        typeAndAwait(host, tag, name, text)
 
     private fun ComposeUiTest.press(tag: String, key: Key) {
         inputOf(tag).performKeyInput { pressKey(key) }
@@ -106,7 +102,7 @@ class DialogScenarioInteractionTest {
     fun `欄にフォーカスして下を二回押しEnterを押すと二番目の候補が入り作るファイルがその候補の下になる`() = runComposeUiTest {
         val (host, _) = hostOf("home", "settings", "profile")
         show(host)
-        type(host, nameTag, "User")
+        type(host, nameTag, "name", "User")
         inputOf(featureTag).requestFocus()
 
         repeat(2) { press(featureTag, Key.DirectionDown) }
@@ -123,7 +119,7 @@ class DialogScenarioInteractionTest {
     fun `ポップアップを開いてEscで閉じ閉じた後のEscでダイアログが閉じて結果は無いまま`() = runComposeUiTest {
         val (host, _) = hostOf("home", "settings")
         show(host)
-        type(host, nameTag, "User")
+        type(host, nameTag, "name", "User")
         inputOf(featureTag).requestFocus()
         press(featureTag, Key.DirectionDown)
         assertTrue(candidateShown("home"))
@@ -141,7 +137,7 @@ class DialogScenarioInteractionTest {
     fun `ダイアログを開いたまま偽のディスクに profile を足して読み直されポップアップを開き直すと profile がある`() = runComposeUiTest {
         val (host, disk) = hostOf("home", "settings")
         show(host)
-        type(host, nameTag, "User")
+        type(host, nameTag, "name", "User")
         inputOf(featureTag).requestFocus()
         press(featureTag, Key.DirectionDown)
         assertTrue(candidateShown("home"))
@@ -161,15 +157,15 @@ class DialogScenarioInteractionTest {
     fun `複数行の三角を押して改行を含めて打つとEnterは改行で生成せずコマンドEnterで生成する`() = runComposeUiTest {
         val (host, _) = hostOf("home")
         show(host)
-        type(host, nameTag, "User")
-        type(host, featureTag, "home")
+        type(host, nameTag, "name", "User")
+        type(host, featureTag, "feature", "home")
         onNodeWithTag(KatachiTestTags.multiline(FieldId(screen.id, "entity"))).performClick()
         waitForIdle()
 
-        type(host, entityTag, "line1")
+        type(host, entityTag, "entity", "line1")
         press(entityTag, Key.Enter)
         assertTrue("Enter は改行で、生成しない", host.generated.isEmpty())
-        type(host, entityTag, "line2")
+        type(host, entityTag, "entity", "line2")
         assertEquals("line1\nline2", host.valueOf("entity"))
 
         pressWithCommand(entityTag, Key.Enter)
@@ -181,10 +177,10 @@ class DialogScenarioInteractionTest {
     fun `名前が空のとき作るファイルは山かっこの name を見せ打つと置き換わる`() = runComposeUiTest {
         val (host, _) = hostOf("home")
         show(host)
-        type(host, featureTag, "home")
+        type(host, featureTag, "feature", "home")
         assertEquals("feature/home/<name>.kt", pathText())
 
-        type(host, nameTag, "Profile")
+        type(host, nameTag, "name", "Profile")
         assertEquals("feature/home/Profile.kt", pathText())
     }
 }
