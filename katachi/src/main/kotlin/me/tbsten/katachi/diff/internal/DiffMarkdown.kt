@@ -197,7 +197,7 @@ private fun StringBuilder.summaryRows(node: DiffNode, model: DiffReportModel, de
 private fun fileSummaryRow(display: String, change: FileChange, score: Double, full: Int, depth: Int): String {
     val lines = if (change.binary) "binary" else diffLines(change.added, change.deleted)
     val status = if (change.status == ChangeStatus.Modified) "" else " _(${change.status.label})_"
-    return "| ${indent(depth)}`$display`$status | ${heatSquares(heatLevel(score, full))} | $lines | |"
+    return "| ${indent(depth)}${cellCode(display)}$status | ${heatSquares(heatLevel(score, full))} | $lines | |"
 }
 
 private fun StringBuilder.moreSummaryRow(hidden: Int, depth: Int) {
@@ -210,10 +210,19 @@ private fun fileRow(display: String, change: FileChange, range: DiffRange): Stri
     val lines = if (change.binary) "binary" else diffLines(change.added, change.deleted)
     val links = listOfNotNull(
         range.githubUrl(change.path)?.let { "[GitHub]($it)" },
-        "`${range.gitDiffCommand(change)}`".takeIf { showsGitDiffCommand(range) },
+        cellCode(range.gitDiffCommand(change)).takeIf { showsGitDiffCommand(range) },
     ).joinToString(" ")
     val status = if (change.status == ChangeStatus.Modified) "" else " _(${change.status.label})_"
-    return "| `${display}`$status | $lines | $links |"
+    return "| ${cellCode(display)}$status | $lines | $links |"
+}
+
+// A table cell ends at the first `|` even inside a code span, and a backtick in a file name would end a
+// single backtick span early, so both are escaped the way GitHub's tables expect.
+private fun cellCode(text: String): String {
+    val escaped = text.replace("|", "\\|").replace('\r', ' ').replace('\n', ' ')
+    val fence = "`".repeat((Regex("`+").findAll(escaped).maxOfOrNull { it.value.length } ?: 0) + 1)
+    val pad = if (escaped.startsWith("`") || escaped.endsWith("`")) " " else ""
+    return "$fence$pad$escaped$pad$fence"
 }
 
 // A no-break space keeps "+25 -26" on one line: GitHub narrows the table's columns to their
