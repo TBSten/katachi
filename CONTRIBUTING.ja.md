@@ -69,7 +69,7 @@ val katachi = Katachi(defaultPackage = "com.example.app", lang = ja)
 
 println(commands(katachi.doctor, katachi.scaffold.`test-framework`(kotest)))      // 組み立てたコマンドを表示するだけ
 val status = katachi.command("--version").execute()                              // 実際に動かす（同じ JVM の中で走る）
-// main(arrayOf("agent", "--help"))                                               // コマンドラインと同じ入口
+// main(arrayOf("lint", "--help"))                                                // コマンドラインと同じ入口
 ```
 
 ```shell

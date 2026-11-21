@@ -65,10 +65,16 @@ private fun List<String>.naiveStripped(): List<String> = map(::stripLineCommentN
 
 /**
  * Build files under [root] up to [maxDepth] levels, as `find -maxdepth` sees them (relative,
- * without `./`). Directories named build / node_modules, hidden ones, [skipModule] and [extraPruned]
- * are not entered.
+ * without `./`). Directories named build / node_modules, hidden ones, [skipModule], [extraPruned]
+ * and [otherBuilds] are not entered.
  */
-internal fun findBuildFiles(root: Path, skipModule: String?, extraPruned: Set<String> = emptySet(), maxDepth: Int = 6): List<String> {
+internal fun findBuildFiles(
+    root: Path,
+    skipModule: String?,
+    extraPruned: Set<String> = emptySet(),
+    maxDepth: Int = 6,
+    otherBuilds: OtherBuilds? = null,
+): List<String> {
     val skip = skipModule?.let { root.resolve(it).normalize() }
     val found = mutableListOf<String>()
     Files.walkFileTree(
@@ -80,6 +86,7 @@ internal fun findBuildFiles(root: Path, skipModule: String?, extraPruned: Set<St
                 if (dir == root) return FileVisitResult.CONTINUE
                 val name = dir.name
                 if (name == "build" || name == "node_modules" || name.startsWith(".") || name in extraPruned || dir.normalize() == skip) return FileVisitResult.SKIP_SUBTREE
+                if (otherBuilds != null && dir in otherBuilds) return FileVisitResult.SKIP_SUBTREE
                 return FileVisitResult.CONTINUE
             }
 
@@ -105,7 +112,7 @@ private val INCLUDE_BUILD_HEAD = Regex("^includeBuild\\s*\\(?\\s*[\"']")
  * has the same extraction.
  */
 internal fun includedBuildDirs(root: Path): List<String> {
-    val settings = listOf("settings.gradle.kts", "settings.gradle").map(root::resolve).firstOrNull { it.isRegularFile() } ?: return emptyList()
+    val settings = rootSettingsFile(root) ?: return emptyList()
     return settings.linesOrEmpty().naiveStripped()
         .flatMap { line -> INCLUDE_BUILD.findAll(line).map { it.value }.toList() }
         .map {
@@ -113,6 +120,71 @@ internal fun includedBuildDirs(root: Path): List<String> {
                 .replace('\\', '/').removePrefix("./").removeSuffix("/")
         }
         .filter { it.isNotEmpty() && it != "." && !it.startsWith("..") }
+}
+
+private fun rootSettingsFile(root: Path): Path? = listOf("settings.gradle.kts", "settings.gradle").map(root::resolve).firstOrNull { it.isRegularFile() }
+
+private val INCLUDE_CALL = Regex("(?<![A-Za-z0-9_.$])include(?![A-Za-z0-9_])")
+
+private val QUOTED = Regex("\"([^\"\\\\]*)\"|'([^'\\\\]*)'")
+
+/** `project(":app").projectDir = file("sample")` (Kotlin) and `project(':app').projectDir = new File(rootDir, 'sample')` / `file('sample')` (Groovy). */
+private val PROJECT_DIR_ASSIGNMENT = Regex(
+    "project\\(\\s*[\"'][^\"']+[\"']\\s*\\)\\s*\\.\\s*projectDir\\s*=\\s*(?:new\\s+)?(?:file|File)\\(\\s*(?:rootDir\\s*,\\s*)?[\"']([^\"'\\\\]+)[\"']\\s*\\)",
+)
+
+private val PROJECT_PATH = Regex("^:?[A-Za-z0-9_.-]+(:[A-Za-z0-9_.-]+)*$")
+
+/**
+ * The directories of the projects settings includes, relative (`include(":a:b")` and Groovy's `include ':a:b'` are `a/b`), read
+ * from the string literals of each include, and the directory a `project(":a").projectDir = file("dir")` points a project at.
+ * A directory set some other way is not followed.
+ */
+internal fun includedProjectDirs(root: Path): List<String> {
+    val settings = rootSettingsFile(root) ?: return emptyList()
+    val text = settings.linesOrEmpty().map(::stripLineComment).joinToString("\n")
+    val dirs = mutableListOf<String>()
+    for (call in INCLUDE_CALL.findAll(text)) {
+        var at = call.range.last + 1
+        while (at < text.length && (text[at] == ' ' || text[at] == '\t')) at++
+        val arguments = if (at < text.length && text[at] == '(') text.substring(at + 1, closingParenthesis(text, at)) else restOfStatement(text, at)
+        QUOTED.findAll(arguments)
+            .map { it.groupValues[1].ifEmpty { it.groupValues[2] } }
+            .filter { PROJECT_PATH.matches(it) }
+            .forEach { dirs += it.removePrefix(":").replace(':', '/') }
+    }
+    PROJECT_DIR_ASSIGNMENT.findAll(text).forEach { dirs += it.groupValues[1].trim('/') }
+    return dirs
+}
+
+/** From [start] to the end of its line, and on over the next lines while one ends in a comma (Groovy's `include ':a',`). */
+private fun restOfStatement(text: String, start: Int): String {
+    var end = start
+    do {
+        val lineEnd = text.indexOf('\n', end).let { if (it < 0) text.length else it }
+        val continued = lineEnd < text.length && text.substring(end, lineEnd).trimEnd().endsWith(",")
+        end = if (continued) lineEnd + 1 else lineEnd
+    } while (continued)
+    return text.substring(start, end)
+}
+
+/**
+ * The directories of other builds under [root]: a settings file of their own, and the root's settings neither includes them
+ * as a project nor pulls them in with includeBuild (a docs snippet or a sample that builds alone). buildSrc belongs to the
+ * build even with a settings file.
+ */
+internal class OtherBuilds(root: Path) {
+    private val root: Path = root.normalize()
+
+    private val members: Set<Path> = (listOf("buildSrc") + includedBuildDirs(root) + includedProjectDirs(root))
+        .map { this.root.resolve(it).normalize() }
+        .toSet()
+
+    operator fun contains(dir: Path): Boolean {
+        val normalized = dir.normalize()
+        if (normalized == root || normalized in members) return false
+        return normalized.resolve("settings.gradle.kts").isRegularFile() || normalized.resolve("settings.gradle").isRegularFile()
+    }
 }
 
 // ---------------------------------------------------------------- plugins { } and buildscript { }
@@ -402,10 +474,10 @@ internal fun ScriptContext.writeCatalogEntries(root: Path, plan: CatalogPlan) {
 
 // ---------------------------------------------------------------- test framework
 
-/** junit5 or kotest, with the file that said kotest. The kit's `detect_test_framework`. */
+/** junit5 or kotest, with the file that said kotest. [OtherBuilds] are not read. The kit's `detect_test_framework`. */
 internal fun detectTestFramework(root: Path, moduleDir: String): Pair<String, String?> {
     if (catalogEntries(root, "libraries").any { it.content.startsWith("io.kotest:") }) return "kotest" to CATALOG_FILE
-    val hit = findBuildFiles(root, moduleDir).sortedBy { "./$it" }
+    val hit = findBuildFiles(root, moduleDir, otherBuilds = OtherBuilds(root)).sortedBy { "./$it" }
         .filter { it.contains('/') }
         .firstOrNull { file -> root.resolve(file).linesOrEmpty().naiveStripped().any { it.contains("io.kotest") } }
     return if (hit != null) "kotest" to hit else "junit5" to null

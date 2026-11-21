@@ -1,7 +1,9 @@
 package me.tbsten.katachi.konsist.internal
 
 import com.lemonappdev.konsist.api.container.KoScope
+import com.lemonappdev.konsist.api.declaration.KoFileDeclaration
 import com.lemonappdev.konsist.api.provider.KoBaseProvider
+import com.lemonappdev.konsist.api.provider.KoContainingDeclarationProvider
 import com.lemonappdev.konsist.api.provider.KoLocationProvider
 import com.lemonappdev.konsist.api.provider.KoNameProvider
 import com.lemonappdev.konsist.api.provider.KoPathProvider
@@ -83,9 +85,23 @@ private fun rejectedElementOf(element: KoBaseProvider): RejectedElement {
     val path = located.path
     return RejectedElement(
         absolutePath = File(path).invariantSeparatorsPath,
-        name = (element as? KoNameProvider)?.name,
+        name = qualifiedNameOf(element),
         line = lineOf(element, path),
     )
+}
+
+// Named after the declarations around it, as `ktFileContent` names it (`User.id`), so that two members of one name
+// in one file stay two baseline entries. The walk stops at the file, whose own name is not part of it.
+private fun qualifiedNameOf(element: KoBaseProvider): String? {
+    val name = (element as? KoNameProvider)?.name ?: return null
+    if (name.isEmpty()) return name
+    val containers = generateSequence((element as? KoContainingDeclarationProvider)?.containingDeclaration) {
+        (it as? KoContainingDeclarationProvider)?.containingDeclaration
+    }
+        .takeWhile { it !is KoFileDeclaration }
+        .mapNotNull { container -> (container as? KoNameProvider)?.name?.takeIf { it.isNotEmpty() } }
+        .toList()
+    return (containers.asReversed() + name).joinToString(".")
 }
 
 // Konsist's `location` can throw when there is none, so the read itself is wrapped rather than the value merely checked.

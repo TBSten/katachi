@@ -68,8 +68,10 @@ public interface KonsistScope : KoScope {
      * Rejects the elements of this list that [predicate] answers `false` for.
      *
      * Every rejected element becomes one entry in the report, named and located when Konsist
-     * can say where it is. An empty list rejects nothing and is not an error: a place that
-     * fills up over time holds no declarations until it does.
+     * can say where it is. A member is named after the declarations around it, without the
+     * package, as `ktFileContent` names it (`User.id`, `HomeScreen.State`); that name is what
+     * tells two rejections in one file apart in a baseline. An empty list rejects nothing and is
+     * not an error: a place that fills up over time holds no declarations until it does.
      *
      * There is no `Sequence` overload. Konsist's sequence queries end with `.toList()`, and a
      * constraint has to hold every rejection at once anyway to report them in walk order.

@@ -49,6 +49,15 @@ class KonsistFileConstraintSpec : FreeSpec({
         report.contains("How to fix:") shouldBe false
     }
 
+    "名前の無い konsist { } は konsist という名前で報告される" {
+        val violations = konsistRun("src/PublicThing.kt" to PUBLIC_THING_KT, name = null) {
+            classes().must { it.hasInternalModifier }
+        }
+
+        violations.filterIsInstance<UnsatisfiedFileConstraint>().single().constraintName shouldBe "konsist"
+        violations.reportForTest() shouldContain "Role: domain.UseCase / FileConstraint: \"konsist\""
+    }
+
     "何も期待しないブロックは緑にならない" {
         // A block that queries and never ends the query rejects nothing, which in a report is
         // indistinguishable from a rule everything satisfies. This backend can count its own

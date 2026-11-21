@@ -6,6 +6,7 @@ import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.collections.shouldContainInOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -14,6 +15,7 @@ import java.nio.file.Files
 import me.tbsten.katachi.docs.DocumentationMode
 import me.tbsten.katachi.docs.GenerateDocumentation
 import me.tbsten.katachi.docs.KatachiDocumentIoException
+import me.tbsten.katachi.docs.KatachiEmptyDocumentationOutputDirException
 import me.tbsten.katachi.docs.KatachiStaleDocumentationException
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
@@ -22,7 +24,9 @@ import me.tbsten.katachi.processor.internal.FakeArchitectureProcessContext
 import me.tbsten.katachi.processor.KatachiInvalidProcessorArgException
 import me.tbsten.katachi.processor.KatachiUnknownProcessorArgException
 import me.tbsten.katachi.processor.decodeFromStringMap
+import me.tbsten.katachi.processor.internal.KatachiEntryPoint
 import me.tbsten.katachi.processor.internal.checkNoUnknownArgs
+import me.tbsten.katachi.processor.internal.runMain
 import me.tbsten.katachi.test.dsl.files.ForbiddenFileSystem
 
 /**
@@ -108,27 +112,20 @@ class GenerateDocumentationSpec : FreeSpec({
 
                 GenerateDocumentation.process(context).getOrThrow()
 
-                withClue("大文字小文字を区別するファイルシステムでは domain/ と Domain/ は別のディレクトリ") {
-                    output.relativeFilePaths().map { it.lowercase() } shouldContainExactlyInAnyOrder listOf(
-                        "readme.md",
-                        "domain/readme.md",
-                        "domain/usecase.md",
+                withClue("大文字小文字を区別しないファイルシステムでも、domain/ の綴りのまま残さない（DocumentFilesSpec）") {
+                    output.relativeFilePaths() shouldContainExactly listOf(
+                        "Domain/README.md",
+                        "Domain/UseCase.md",
+                        "README.md",
                     )
                 }
                 for ((path, content) in renamed.documents()) {
                     withClue(path) { File(output, path).readText() shouldBe content }
                 }
-                withClue("区別しないファイルシステムでは同じファイルなので、消したとは言わない") {
-                    context.logs.filter { it.startsWith("Removed ") } shouldContainExactly
-                        if (output.distinguishesCase()) {
-                            listOf(
-                                "Removed file://${output.invariantSeparatorsPath}/domain/README.md, which this definition no longer produces.",
-                                "Removed file://${output.invariantSeparatorsPath}/domain/UseCase.md, which this definition no longer produces.",
-                            )
-                        } else {
-                            emptyList()
-                        }
-                }
+                context.logs.filter { it.startsWith("Removed ") } shouldContainExactly listOf(
+                    "Removed file://${output.invariantSeparatorsPath}/domain/README.md, which this definition no longer produces.",
+                    "Removed file://${output.invariantSeparatorsPath}/domain/UseCase.md, which this definition no longer produces.",
+                )
             }
         }
 
@@ -289,6 +286,63 @@ class GenerateDocumentationSpec : FreeSpec({
         }
     }
 
+    "空の outputDir" - {
+        // Java resolves a page below an empty path against the file system root, so these specs
+        // must never reach the writing. UnrenderableDocsEntryPoint's definition cannot be rendered
+        // (a root role named README collides with the root page): were the empty check gone, the
+        // run would still stop before writing, on the collision. Failing on the empty value
+        // instead is what says the check comes first.
+        val failsOnTheEmptyValue = listOf(
+            "The documentation processor was given outputDir = \"\", which is empty.",
+            "Leave it out entirely to keep the default, build/katachi/docs.",
+        )
+
+        "Args を組んで渡すと、何も読み書きせずに型つきの docs { } と同じ助言の failure が返る" {
+            val context = FakeArchitectureProcessContext(
+                architecture = UnrenderableDocsEntryPoint.architecture,
+                args = GenerateDocumentation.Args(outputDir = ""),
+                fileSystem = ForbiddenFileSystem,
+            )
+
+            val result = shouldNotThrowAny { GenerateDocumentation.process(context) }
+
+            val failure = result.exceptionOrNull().shouldBeInstanceOf<KatachiEmptyDocumentationOutputDirException>()
+            failure.message.orEmpty().lines().first() shouldBe failsOnTheEmptyValue.first()
+            failure.message.orEmpty() shouldContain failsOnTheEmptyValue.last()
+            withClue("書き始めていれば Writing の行が出ている") { context.logs shouldBe emptyList() }
+        }
+
+        "コマンドラインから届いても同じ文面で落ちる" - {
+            // `--arg outputDir=` and `args("docs") { arg("outputDir", "") }` both reach the JVM of
+            // katachiDocs as --arg=; katachiProcessors hands a build-script value on as --arg-for=.
+            val routes = mapOf(
+                "katachiDocs の --arg=outputDir=" to "--arg=outputDir=",
+                "katachiProcessors の --arg-for=docs:outputDir=" to "--arg-for=docs:outputDir=",
+            )
+            for ((route, option) in routes) {
+                route {
+                    val printed = mutableListOf<String>()
+
+                    val status = runMain(
+                        arrayOf(
+                            "--entry-point=${UnrenderableDocsEntryPoint::class.java.name}",
+                            "--processor=docs",
+                            option,
+                        ),
+                        fileSystem = ForbiddenFileSystem,
+                        out = { printed += it },
+                        classLoader = UnrenderableDocsEntryPoint::class.java.classLoader,
+                    )
+
+                    status shouldBe 1
+                    withClue(printed.joinToString("\n")) {
+                        printed shouldContainInOrder listOf("[FAILED] docs") + failsOnTheEmptyValue.map { "  $it" }
+                    }
+                }
+            }
+        }
+    }
+
     "mode=check" - {
         "生成物が最新なら何も起きない" {
             val arch = architecture { "domain".group { "UseCase".role { } } }
@@ -360,15 +414,15 @@ class GenerateDocumentationSpec : FreeSpec({
             }
         }
 
-        "大文字小文字だけが違う前の名前のページは、別のファイルなら余分として報告される" {
+        "大文字小文字だけが違う前の名前のページは、欠けているページと余分なページとして報告される" {
             withTempDirectory { output ->
                 architecture { "domain".group { "UseCase".role { } } }.generateDocumentation(output)
 
                 val failure = architecture { "Domain".group { "UseCase".role { } } }.staleDocumentation(output)
 
-                withClue("区別しないファイルシステムでは domain/UseCase.md が Domain/UseCase.md そのもの") {
-                    failure.extra shouldContainExactly
-                        if (output.distinguishesCase()) listOf("domain/README.md", "domain/UseCase.md") else emptyList()
+                withClue("区別しないファイルシステムで Domain/UseCase.md を開けても、ディレクトリにある名前は domain/UseCase.md") {
+                    failure.missing shouldContainExactlyInAnyOrder listOf("Domain/README.md", "Domain/UseCase.md")
+                    failure.extra shouldContainExactly listOf("domain/README.md", "domain/UseCase.md")
                 }
             }
         }
@@ -378,8 +432,9 @@ class GenerateDocumentationSpec : FreeSpec({
 
             withTempDirectory { output ->
                 arch.generateDocumentation(output)
-                // A case insensitive file system already answers `domain/UseCase.md` with this page.
-                // A hard link stands in for it where the two spellings are different paths.
+                // Hard links list each page under both spellings as one file, so the `domain/` ones
+                // are the generated pages themselves, not what a rename left behind. Only a file
+                // system that keeps the two spellings apart can list both.
                 if (output.distinguishesCase()) {
                     File(output, "domain").mkdirs()
                     for (page in listOf("README.md", "UseCase.md")) {
@@ -514,6 +569,15 @@ class GenerateDocumentationSpec : FreeSpec({
         }
     }
 })
+
+/**
+ * The documentation processor over a definition whose pages cannot be built: the root role named
+ * README claims the path of the root page.
+ */
+internal object UnrenderableDocsEntryPoint : KatachiEntryPoint {
+    override val architecture: Architecture = architecture { "README".role { } }
+    override val processors: Map<String, Class<*>> = mapOf("docs" to GenerateDocumentation::class.java)
+}
 
 /** Writes this definition's documentation into [output], reading nothing of the project. */
 private fun Architecture.generateDocumentation(output: File): Unit =

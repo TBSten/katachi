@@ -9,12 +9,14 @@ import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.test.check.layoutArchitecture
 import me.tbsten.katachi.test.check.repositoryOf
 import me.tbsten.katachi.test.dsl.files.FakeFileSystem
+import me.tbsten.katachi.test.pbt.pbtSeed
+import me.tbsten.katachi.test.pbt.pbtTrials
 
-/** How many random layouts the spec tries. `KATACHI_PBT_ITERATIONS` raises it for a longer run. */
-private val ITERATIONS: Int = System.getenv("KATACHI_PBT_ITERATIONS")?.toIntOrNull() ?: 500
+/** How many random layouts the spec tries. `-Pkatachi.pbt.scale=N` (or `KATACHI_PBT_ITERATIONS`) raises it for a longer run. */
+private val ITERATIONS: Int = pbtTrials(500)
 
-/** The first seed. `KATACHI_PBT_SEED` replays another run. */
-private val FIRST_SEED: Long = System.getenv("KATACHI_PBT_SEED")?.toLongOrNull() ?: 20260928L
+/** The first seed. `-Pkatachi.pbt.seed=N` (or `KATACHI_PBT_SEED`) replays another run. */
+private val FIRST_SEED: Long = pbtSeed(20260928L)
 
 /** Values a whole-level `*` takes in a random tree. None holds a `.`, so no directory is ever a file's name. */
 private val DIRECTORY_VALUES = listOf("home", "settings", "x")
@@ -48,6 +50,9 @@ private fun Random.filesFor(nodes: List<RNode>): Set<String> {
                 is RNode.File -> repeat(nextInt(0, 3)) {
                     files += (prefix + node.dirs.flatMap(::concretize) + fileName(node.name)).joinToString("/")
                 }
+
+                // The default generator writes neither.
+                RNode.AnyFile, RNode.Ignore -> Unit
             }
         }
     }

@@ -13,6 +13,9 @@ import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.dsl.internal.DeclarationVerdict
 import me.tbsten.katachi.dsl.internal.FileDeclarationsExplanation
 import me.tbsten.katachi.konsist.declarations.KtFileContentScope
+import me.tbsten.katachi.test.pbt.PBT_SEED
+import me.tbsten.katachi.test.pbt.checkTrials
+import me.tbsten.katachi.test.pbt.pbtTrials
 
 /** [body] as a file of package `com.example`: its first line is line 3. */
 private fun kt(body: String): String = "package com.example\n\n" + body.trimIndent() + "\n"

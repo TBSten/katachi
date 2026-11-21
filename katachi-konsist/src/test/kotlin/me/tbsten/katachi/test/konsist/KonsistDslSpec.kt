@@ -6,17 +6,20 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldEndWith
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.FileConstraintCheck
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.FileConstraintRange
+import me.tbsten.katachi.dsl.KatachiDuplicateFileConstraintNameException
 import me.tbsten.katachi.dsl.KatachiFileConstraintDirectOnlyWithoutDirectoryException
 import me.tbsten.katachi.dsl.KatachiFileConstraintNameException
 import me.tbsten.katachi.dsl.KatachiFileConstraintWithoutLayoutException
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.files.internal.RealFileSystem
 import me.tbsten.katachi.dsl.wholeTree
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 import me.tbsten.katachi.konsist.konsist
 
 /**
@@ -236,6 +239,120 @@ class KonsistDslSpec : FreeSpec({
                         }
                     }
                 }
+            }
+        }
+    }
+
+    "1 つの役割に同じ名前の制約は 1 つ" - {
+        // 報告と baseline は役割の制約を名前だけで見分ける。名前の無い konsist { } は konsist という名前になる。
+        "名前の無い konsist { } を 2 つ書くと宣言時に落ちる" {
+            val thrown = shouldThrow<KatachiDuplicateFileConstraintNameException> {
+                architecture {
+                    "domain".group {
+                        "UseCase".role {
+                            konsist { classes().must { it.hasInternalModifier } }
+                            konsist { functions().mustNot { it.hasPrivateModifier } }
+                            layout { "core/domain" { "*.kt".file() } }
+                        }
+                    }
+                }
+            }
+
+            thrown.role shouldBe "domain.UseCase"
+            thrown.name shouldBe "konsist"
+            thrown.firstKind shouldBe "konsist { }"
+            thrown.kind shouldBe "konsist { }"
+            thrown.message.orEmpty().lines().last() shouldBe
+                "Give each a distinct name, as in \"<what it checks>\".konsist { }. " +
+                "A konsist { } written without a name is named \"konsist\"."
+        }
+
+        "konsist と名付けた konsist { } と名前の無い konsist { } も落ちる" {
+            shouldThrow<KatachiDuplicateFileConstraintNameException> {
+                architecture {
+                    "UseCase".role {
+                        "konsist".konsist { classes().must { it.hasInternalModifier } }
+                        konsist { functions().mustNot { it.hasPrivateModifier } }
+                        layout { "core/domain" { "*.kt".file() } }
+                    }
+                }
+            }.name shouldBe "konsist"
+        }
+
+        "同じ名前の fileConstraint { } とも並べられず、文面は 2 つの種類を名指しする" {
+            val thrown = shouldThrow<KatachiDuplicateFileConstraintNameException> {
+                architecture {
+                    "UseCase".role {
+                        "規約".konsist { classes().must { it.hasInternalModifier } }
+                        fileConstraint("規約") { emptyList() }
+                        layout { "core/domain" { "*.kt".file() } }
+                    }
+                }
+            }
+
+            thrown.firstKind shouldBe "konsist { }"
+            thrown.kind shouldBe "fileConstraint { }"
+            thrown.message.orEmpty().lines().first() shouldEndWith
+                "\"規約\": konsist { } at ${thrown.firstDeclaredAt} and fileConstraint { } at ${thrown.declaredAt}."
+        }
+
+        "ktFileContent と名付けた konsist { } は、名前の無い ktFileContent { } と並べられない" {
+            // 名前の無い ktFileContent { } の名前は ktFileContent。2 つとも ktFileContent のときだけは
+            // ktFileContent 自身が断るので、ここでは種類の違う 2 つが落ちることだけを見る。
+            val thrown = shouldThrow<KatachiDuplicateFileConstraintNameException> {
+                architecture {
+                    "UseCase".role {
+                        ktFileContent { `package`("**") }
+                        "ktFileContent".konsist { classes().must { it.hasInternalModifier } }
+                        layout { "core/domain" { "*.kt".file() } }
+                    }
+                }
+            }
+
+            thrown.firstKind shouldBe "ktFileContent { }"
+            thrown.kind shouldBe "konsist { }"
+        }
+
+        "役割直下と layout の中の名前の無い konsist { } は、layout の評価時に落ちる" {
+            fixtureProject("core/domain/GetUser.kt" to GET_USER_KT) { root ->
+                val projectArchitecture = architecture {
+                    files = wholeTree()
+                    "UseCase".role {
+                        konsist { classes().must { it.hasInternalModifier } }
+                        layout {
+                            "gradlew".file()
+                            "core/domain" {
+                                "*.kt".file()
+                                konsist { functions().mustNot { it.hasPrivateModifier } }
+                            }
+                        }
+                    }
+                }
+
+                shouldThrow<KatachiDuplicateFileConstraintNameException> {
+                    projectArchitecture.validate(RealFileSystem(root), FileConstraintCheck())
+                }.name shouldBe "konsist"
+            }
+        }
+
+        "別の役割なら名前の無い konsist { } を 1 つずつ書ける" {
+            fixtureProject("core/domain/GetUser.kt" to GET_USER_KT, "util/Strings.kt" to UTIL_STRINGS_KT) { root ->
+                val projectArchitecture = architecture {
+                    files = wholeTree()
+                    "UseCase".role {
+                        konsist { classes().must { it.hasInternalModifier } }
+                        layout {
+                            "gradlew".file()
+                            "core/domain" { "*.kt".file() }
+                        }
+                    }
+                    "Util".role {
+                        konsist { classes().must { it.hasInternalModifier } }
+                        layout { "util" { "*.kt".file() } }
+                    }
+                }
+
+                projectArchitecture.validate(RealFileSystem(root), FileConstraintCheck()).shouldBeEmpty()
             }
         }
     }

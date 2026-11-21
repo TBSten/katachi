@@ -48,9 +48,11 @@ public sealed interface FileConstraintScope {
      * The block is stored, not evaluated: it runs when a check that evaluates constraints runs
      * (see `FileConstraintCheck`), against the files that exist.
      *
-     * @param name what to call it, shown in the report next to the role. `null` means it is
-     *   named by its declaration site alone. It must hold at least one non-whitespace
-     *   character and no line break, because it is printed on one line of a report block.
+     * @param name what to call it, shown in the report next to the role and recorded in a
+     *   baseline, which tells the constraints of a role apart by this name: a role holds one
+     *   constraint of each name. `null` means it is named by its declaration site alone. It must
+     *   hold at least one non-whitespace character and no line break, because it is printed on
+     *   one line of a report block.
      * @param declaredAt where to point the report at. The default is the first stack frame
      *   outside `me.tbsten.katachi.*`, which is the line that called this. **A wrapper of your
      *   own has to pass its own caller's site**, or every report points at the wrapper.
@@ -59,6 +61,8 @@ public sealed interface FileConstraintScope {
      *   [FileConstraintRange.DirectOnly] covers only the files the block declares directly.
      * @param check what to ask of the covered files.
      * @throws KatachiFileConstraintNameException when [name] is blank or holds a line break.
+     * @throws KatachiDuplicateFileConstraintNameException when the role holds another constraint
+     *   named [name].
      * @throws KatachiFileConstraintDirectOnlyWithoutDirectoryException when [scope] is
      *   [FileConstraintRange.DirectOnly] somewhere with no directory of its own: directly on a
      *   role or directly under `layout { }`.

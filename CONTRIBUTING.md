@@ -68,7 +68,7 @@ val katachi = Katachi(defaultPackage = "com.example.app", lang = ja)
 
 println(commands(katachi.doctor, katachi.scaffold.`test-framework`(kotest)))      // only prints the commands it built
 val status = katachi.command("--version").execute()                              // runs one (in this same JVM)
-// main(arrayOf("agent", "--help"))                                               // the same entry point as the command line
+// main(arrayOf("lint", "--help"))                                                // the same entry point as the command line
 ```
 
 ```shell

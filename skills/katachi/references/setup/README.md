@@ -4,7 +4,7 @@ These are the steps to install [katachi](https://tbsten.github.io/katachi) in a 
 
 **Read one section at a time, in the order of the table below.** Open a section's file only when you reach it. Most sections end by telling you to mark their items done in the checklist (0-3 says how); then open the next row of the table.
 
-The steps use the `katachi` command (`brew install tbsten/tap/katachi`) for `doctor`, `scaffold`, `lint` and `katachi agent test`. Section 0-1 checks that it is there, and says how to run the same thing through the Kotlin command line compiler where there is no Homebrew. The checklist and the report you fill in are copied from this skill's `assets/` (0-2).
+The steps use the `katachi` command (`brew install tbsten/tap/katachi`) for `doctor`, `scaffold` and `lint`. The check itself is run with `./gradlew` ([run-the-check](../run-the-check/README.md)). Section 0-1 checks that it is there, and says how to run the same thing through the Kotlin command line compiler where there is no Homebrew. The checklist and the report you fill in are copied from this skill's `assets/` (0-2).
 
 ## Sections
 
@@ -48,6 +48,6 @@ Where subagents are available, split the work as in the table below. Only the ma
 | 1-1, 1-2 | Writing the report's JSON (one writer) | Reading, scanning, drafting Role candidates | JSON per section (subagents do not write) |
 | 1-3, 2 | Everything | — | — |
 | 3-1 | Reading the topic pages | Finding the relevant API in the API reference | Signatures and examples only |
-| 3-2, 3-3, 4 | Editing the definition and `katachi agent test` | — | — |
-| 6-A | Choosing the task and judging the result | Implementation and verification (one output directory per subagent) | Violation counts and the diff (the `test` summary) |
+| 3-2, 3-3, 4 | Editing the definition and running the check | — | — |
+| 6-A | Choosing the task and judging the result | Implementation and verification (one output directory per subagent) | Violation counts and the difference between the logs of the runs |
 | 6-B to 6-D | Everything | — | — |

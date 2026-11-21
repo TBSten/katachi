@@ -26,7 +26,7 @@ const ja = {
 		github: 'GitHub ↗',
 		codeTitle: 'ProjectArchitecture.kt',
 		code: `val projectArchitecture = architecture {
-  "domain".group {
+  "Domain".group {
     "UseCase".role {
       layout {
         "core/domain" / mainSourceSet / kotlin /

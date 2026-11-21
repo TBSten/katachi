@@ -13,10 +13,10 @@ if ! command -v kotlin >/dev/null 2>&1; then
 	exit 1
 fi
 
-# `kotlin` takes every -D… / -J… on its command line for its own JVM, even after the script, so
-# `katachi agent test -- -Dkatachi.baseline.update=true` would never see its -D…. It also reads every @… as an
-# argfile, so `katachi scaffold --package @com.example` would fail. Mark them (and anything
-# already starting with the mark); katachi-script's main() strips the mark (WRAPPER_ARG_ESCAPE).
+# `kotlin` takes every -D… / -J… on its command line for its own JVM, even after the script, so a -D… given to
+# katachi would never reach it. It also reads every @… as an argfile, so `katachi scaffold --package @com.example`
+# would fail. Mark them (and anything already starting with the mark); katachi-script's main() strips the mark
+# (WRAPPER_ARG_ESCAPE).
 escape='katachi-escaped:'
 for arg do
 	shift
@@ -25,5 +25,26 @@ for arg do
 	*) set -- "$@" "$arg" ;;
 	esac
 done
+
+# Homebrew's `kotlin` fills an unset or empty JAVA_HOME with its own openjdk before the JVM starts, which ./gradlew in
+# this shell never sees. Pass on this shell's JAVA_HOME, empty when it has none (SHELL_JAVA_HOME_ENV in katachi-script).
+KATACHI_SHELL_JAVA_HOME=${JAVA_HOME:-}
+export KATACHI_SHELL_JAVA_HOME
+
+# `kotlin` runs katachi on this shell's JAVA_HOME. katachi-script is compiled for JDK 17, so on an older JDK it dies with an
+# UnsupportedClassVersionError stack trace before `katachi doctor` can say what to do. Keep 17 in sync with JDK_MIN_MAJOR.
+if [ -n "${JAVA_HOME:-}" ] && [ -x "$JAVA_HOME/bin/java" ]; then
+	java_major=$("$JAVA_HOME/bin/java" -version 2>&1 | awk -F'"' '/version "/ { split($2, v, "."); print (v[1] == "1") ? v[2] : v[1]; exit }')
+	case $java_major in
+	'' | *[!0-9]*) ;;
+	*)
+		if [ "$java_major" -lt 17 ]; then
+			printf '\n[x] %s\n    %s\n' "JAVA_HOME ($JAVA_HOME) is JDK $java_major, but katachi needs JDK 17 or later." \
+				"Point JAVA_HOME at JDK 17 or later (or run unset JAVA_HOME), then run this again." >&2
+			exit 1
+		fi
+		;;
+	esac
+fi
 
 exec kotlin "$KATACHI_HOME/katachi.main.kts" "$@"

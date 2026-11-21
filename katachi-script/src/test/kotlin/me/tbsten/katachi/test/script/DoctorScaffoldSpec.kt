@@ -4,14 +4,19 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
+import java.io.File
 import java.nio.file.Path
 import java.nio.file.attribute.PosixFilePermissions
 import kotlin.io.path.createDirectories
+import kotlin.io.path.createParentDirectories
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.exists
 import kotlin.io.path.readText
 import kotlin.io.path.setPosixFilePermissions
 import kotlin.io.path.writeText
+import me.tbsten.katachi.script.internal.MacOsJavaStub
+import me.tbsten.katachi.script.internal.SHELL_JAVA_HOME_ENV
+import me.tbsten.katachi.script.internal.fileUriOf
 
 /** `doctor` and a `scaffold` that writes (the dry run is in RunScriptSpec) (KATACHI-266). */
 class DoctorScaffoldSpec : FreeSpec({
@@ -23,7 +28,7 @@ class DoctorScaffoldSpec : FreeSpec({
 
             run.status shouldBe 0
             run.out shouldContain "必要なものはそろっています（katachi "
-            run.out shouldContain "Kotlin: 2.4.10"
+            run.out shouldContain "Kotlin: 2.4.10（${fileUriOf(project.resolve("build.gradle.kts"))} から）"
             run.err shouldNotContain "git:"
         }
 
@@ -35,8 +40,44 @@ class DoctorScaffoldSpec : FreeSpec({
             run.status shouldBe 0
             run.out.lineSequence().first() shouldContain "対応が必要なものがあります（katachi "
             run.out shouldNotContain "必要なものはそろっています"
-            run.out shouldContain "Kotlin: 1.9.10（古すぎます）"
+            run.out shouldContain "Kotlin: 1.9.10（古すぎます。${fileUriOf(project.resolve("build.gradle.kts"))} から）"
             run.err shouldContain "Kotlin は 1.9.10 です"
+        }
+
+        "Kotlin が古いときの案内は、読んだファイルを出し、--kotlin で実際のバージョンを渡せると添える（KATACHI-431）" {
+            val project = gradleProject(toolchain = 21, kotlin = "1.9.10")
+            val build = fileUriOf(project.resolve("build.gradle.kts"))
+
+            val ja = runCapturing(project, listOf("doctor"), env = mapOf("PATH" to pathWithGit().toString()))
+            val en = runCapturing(project, listOf("doctor", "--lang", "en"), env = mapOf("PATH" to pathWithGit().toString()))
+
+            ja.err shouldContain "このプロジェクトの Kotlin は 1.9.10 です（$build から読みました）。"
+            ja.err shouldContain "Kotlin は上げずに、scaffold に --kotlin <バージョン> を付けて実際のバージョンを渡してください。"
+            en.out shouldContain "Kotlin: 1.9.10 (too old; from $build )"
+            en.err shouldContain "This project uses Kotlin 1.9.10 (read from $build )."
+            en.err shouldContain "pass the actual version to scaffold with --kotlin <version> instead of upgrading Kotlin."
+        }
+
+        "Kotlin のバージョンは、自分の settings を持つ別のビルド（examples/demo など）からは読まない（KATACHI-431）" {
+            val project = gradleProject(toolchain = 21)
+            project.writeFile(
+                "settings.gradle.kts",
+                """
+                rootProject.name = "p"
+                include(":server")
+                """.trimIndent(),
+            )
+            project.writeFile("build.gradle.kts", "// root")
+            project.writeFile("server/build.gradle.kts", "plugins { kotlin(\"jvm\") version \"2.3.20\" }")
+            project.writeFile("examples/demo/settings.gradle.kts", "rootProject.name = \"demo\"")
+            project.writeFile("examples/demo/build.gradle.kts", "plugins { kotlin(\"jvm\") version \"2.1.21\" }")
+
+            val run = runCapturing(project, listOf("doctor"), env = mapOf("PATH" to pathWithGit().toString()))
+
+            run.status shouldBe 0
+            run.out.lineSequence().first() shouldContain "必要なものはそろっています（katachi "
+            run.out shouldContain "Kotlin: 2.3.20（${fileUriOf(project.resolve("server/build.gradle.kts"))} から）"
+            run.err shouldNotContain "2.1.21"
         }
 
         "git が無ければ入れ方を添えて警告し、止めはしない" {
@@ -56,6 +97,210 @@ class DoctorScaffoldSpec : FreeSpec({
             runCapturing(project, listOf("doctor", "--lang", "en"), env = mapOf("PATH" to pathWithGit().toString())).out shouldContain
                 "Everything this needs is available (katachi "
             runCapturing(project, listOf("doctor", "--fast")).err shouldContain "doctor: 知らないオプションです: --fast"
+        }
+    }
+
+    "Gradle の JDK は、Homebrew の kotlin が入れた JAVA_HOME ではなく、bin/katachi を起動したシェルの JAVA_HOME で調べる（KATACHI-434）" - {
+        "シェルに JAVA_HOME が無ければ（空で渡る）、doctor は PATH の java の JDK を見て、17 未満なら止まる" {
+            val pathJava = fakeJdk(11)
+
+            val run = runCapturing(gradleProject(toolchain = null), listOf("doctor"), env = underHomebrewKotlin(shellJavaHome = "", pathJava))
+
+            run.status shouldBe 1
+            run.err shouldContain "Gradle を動かす JDK が 11 です（PATH の java（${pathJava.resolve("bin/java")}））。"
+        }
+
+        "doctor は PATH の java が 17 以上なら通す" {
+            val pathJava = fakeJdk(21)
+
+            val run = runCapturing(gradleProject(toolchain = null), listOf("doctor", "--lang", "en"), env = underHomebrewKotlin(shellJavaHome = "", pathJava))
+
+            run.status shouldBe 0
+            run.out shouldContain "Gradle's JDK: 21 (java on PATH (${pathJava.resolve("bin/java")}))"
+        }
+
+        "シェルの JAVA_HOME に値があれば、doctor はそれを見る" {
+            val shell = fakeJdk(21)
+
+            val run = runCapturing(gradleProject(toolchain = null), listOf("doctor"), env = underHomebrewKotlin(shellJavaHome = shell.toString(), fakeJdk(11)))
+
+            run.status shouldBe 0
+            run.out shouldContain "Gradle の JDK: 21（JAVA_HOME（$shell））"
+        }
+
+        "シェルの JAVA_HOME に bin/java が無ければ、PATH の java に切り替えず、gradlew と同じく無効と出して止まる（KATACHI-439）" {
+            val empty = createTempDirectory("katachi-empty-java-home")
+
+            val run = runCapturing(
+                gradleProject(toolchain = null),
+                listOf("doctor", "--lang", "en"),
+                env = underHomebrewKotlin(shellJavaHome = empty.toString(), fakeJdk(21)),
+            )
+
+            run.status shouldBe 1
+            run.out shouldContain "Something needs attention"
+            run.err shouldContain "JAVA_HOME ($empty) has no bin/java, so ./gradlew stops too"
+        }
+
+        "org.gradle.java.home が有効でも、シェルの JAVA_HOME が無効なら gradlew と同じく無効と出して止まる（KATACHI-441）" {
+            val empty = createTempDirectory("katachi-empty-java-home")
+            val gradleJdk = fakeJdk(21)
+            val project = gradleProject(toolchain = null)
+            project.resolve("gradle.properties").writeText("org.gradle.java.home=$gradleJdk\n")
+
+            val run = runCapturing(
+                project,
+                listOf("doctor", "--lang", "en"),
+                env = underHomebrewKotlin(shellJavaHome = empty.toString(), fakeJdk(21)),
+            )
+
+            run.status shouldBe 1
+            run.err shouldContain "JAVA_HOME ($empty) has no bin/java, so ./gradlew stops too"
+        }
+
+        "Gradle の JDK が 17 未満・見つからないときは、見出しで「そろっています」と言わない（KATACHI-439）" {
+            val run = runCapturing(
+                gradleProject(toolchain = null),
+                listOf("doctor", "--lang", "en"),
+                env = underHomebrewKotlin(shellJavaHome = "", fakeJdk(11)),
+            )
+
+            run.status shouldBe 1
+            run.out shouldContain "Something needs attention"
+            run.out shouldNotContain "Everything this needs is available"
+        }
+
+        "bin/katachi を通さずに起動したとき（変数が無いとき）は、今までどおり JAVA_HOME を見る" {
+            val env = underHomebrewKotlin(shellJavaHome = null, fakeJdk(11))
+
+            val run = runCapturing(gradleProject(toolchain = null), listOf("doctor"), env = env)
+
+            run.status shouldBe 0
+            run.out shouldContain "Gradle の JDK: 27（JAVA_HOME（${env.getValue("JAVA_HOME")}））"
+        }
+
+        "scaffold も同じ JDK を見て、何も作らずに止まる" {
+            val project = gradleProject(toolchain = null)
+            val pathJava = fakeJdk(11)
+            val args = listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0")
+
+            val run = runCapturing(project, args, env = underHomebrewKotlin(shellJavaHome = "", pathJava))
+
+            run.status shouldBe 1
+            run.err shouldContain "Gradle を動かす JDK が 11 です（PATH の java（${pathJava.resolve("bin/java")}））。"
+            run.err shouldContain "シェルで export JAVA_HOME="
+            project.resolve("architecture-test").exists() shouldBe false
+        }
+    }
+
+    "macOS で PATH の java が /usr/bin/java のスタブなら、実行せずに java_home が選ぶ JDK を答える（KATACHI-434）" - {
+        "java_home --failfast が答えた JDK の bin/java のバージョンを読む" {
+            val mac = FakeMacOsJava(defaultJdk = fakeJdk(21))
+
+            val run = runCapturing(gradleProject(toolchain = null), listOf("doctor"), env = mac.env(), macOsJavaStub = mac.stub)
+
+            run.status shouldBe 0
+            run.out shouldContain "Gradle の JDK: 21（PATH の java（${mac.java}。${mac.javaHome} が選ぶ JDK は ${mac.defaultJdk}））"
+            mac.javaHomeArgs() shouldBe "--failfast"
+            mac.stubRan() shouldBe false
+        }
+
+        "java_home が JDK を見つけられなければ、PATH の java があることと矛盾しない文面で警告して進む" {
+            val mac = FakeMacOsJava(defaultJdk = null)
+
+            val run = runCapturing(gradleProject(toolchain = null), listOf("doctor"), env = mac.env(), macOsJavaStub = mac.stub)
+
+            run.status shouldBe 0
+            run.err shouldContain "[!] Gradle を動かす JDK を見つけられませんでした" +
+                "（シェルに JAVA_HOME が無く、PATH の ${mac.java} が動かす JDK も ${mac.javaHome} で見つかりません）。katachi は JDK 17 以上が要ります。"
+            run.err shouldNotContain "PATH の java もありません"
+            mac.stubRan() shouldBe false
+        }
+
+        "PATH の java がスタブでなければ、そのまま実行してバージョンを読む" {
+            val mac = FakeMacOsJava(defaultJdk = fakeJdk(11))
+            val pathJava = fakeJdk(21)
+            val env = mac.env() + ("PATH" to "${pathJava.resolve("bin")}${File.pathSeparator}${mac.env().getValue("PATH")}")
+
+            val run = runCapturing(gradleProject(toolchain = null), listOf("doctor"), env = env, macOsJavaStub = mac.stub)
+
+            run.status shouldBe 0
+            run.out shouldContain "Gradle の JDK: 21（PATH の java（${pathJava.resolve("bin/java")}））"
+            mac.javaHomeArgs() shouldBe null
+        }
+    }
+
+    "PATH の java が Gradle の JDK を決め、シェルに JAVA_HOME が無いときは、katachi が動いている JDK を Gradle にも使う方法を添える（KATACHI-434）" - {
+        "17 未満で止まるとき、Homebrew の kotlin が JAVA_HOME に入れた JDK が 17 以上なら、export JAVA_HOME= の 1 行を添える" {
+            val env = underHomebrewKotlin(shellJavaHome = "", fakeJdk(11))
+            val kotlinJdk = env.getValue("JAVA_HOME")
+
+            val run = runCapturing(gradleProject(toolchain = null), listOf("doctor"), env = env)
+
+            run.status shouldBe 1
+            run.err shouldContain "指定してから、もう一度実行してください。\n" +
+                "    katachi は JDK 27（$kotlinJdk）で動いています。Gradle にもこの JDK を使うなら、シェルで export JAVA_HOME=$kotlinJdk としてから実行し直してください。"
+        }
+
+        "macOS で java_home が JDK を見つけられないときの警告にも添える" {
+            val mac = FakeMacOsJava(defaultJdk = null)
+            val kotlinJdk = fakeJdk(27)
+            val env = mac.env() + mapOf("JAVA_HOME" to kotlinJdk.toString(), SHELL_JAVA_HOME_ENV to "")
+
+            val run = runCapturing(gradleProject(toolchain = null), listOf("doctor", "--lang", "en"), env = env, macOsJavaStub = mac.stub)
+
+            run.status shouldBe 0
+            run.err shouldContain "[!] Could not find the JDK that runs Gradle " +
+                "(the shell has no JAVA_HOME, and ${mac.javaHome} finds no JDK for java on PATH (${mac.java}) to run). katachi needs JDK 17 or later.\n" +
+                "    katachi runs on JDK 27 ($kotlinJdk). To use this JDK for Gradle too, run export JAVA_HOME=$kotlinJdk in the shell, then run this again."
+        }
+
+        "PATH に java が無いときの警告にも添える" {
+            val kotlinJdk = fakeJdk(27)
+            val env = mapOf(
+                "JAVA_HOME" to kotlinJdk.toString(),
+                SHELL_JAVA_HOME_ENV to "",
+                "PATH" to pathWithGit().toString(),
+                "GRADLE_USER_HOME" to createTempDirectory("katachi-gradle-user-home-").toString(),
+            )
+
+            val run = runCapturing(gradleProject(toolchain = null), listOf("doctor", "--lang", "en"), env = env)
+
+            run.status shouldBe 0
+            run.err shouldContain "[!] Could not find the JDK that runs Gradle (there is no JAVA_HOME and no java on PATH). katachi needs JDK 17 or later.\n" +
+                "    katachi runs on JDK 27 ($kotlinJdk). To use this JDK for Gradle too, run export JAVA_HOME=$kotlinJdk in the shell, then run this again."
+        }
+
+        "Gradle の JDK を toolchainVersion が決めているなら、JAVA_HOME では変わらないので添えない" {
+            val run = runCapturing(gradleProject(toolchain = 11), listOf("doctor"), env = underHomebrewKotlin(shellJavaHome = "", fakeJdk(21)))
+
+            run.status shouldBe 1
+            run.err shouldContain "Gradle を動かす JDK が 11 です（gradle/gradle-daemon-jvm.properties の toolchainVersion）。"
+            run.err shouldNotContain "export JAVA_HOME"
+        }
+
+        "シェルに JAVA_HOME があれば添えない" {
+            val shell = fakeJdk(11).toString()
+            // kotlin keeps a JAVA_HOME the shell has.
+            val env = underHomebrewKotlin(shellJavaHome = shell, fakeJdk(21)) + ("JAVA_HOME" to shell)
+
+            val run = runCapturing(gradleProject(toolchain = null), listOf("doctor"), env = env)
+
+            run.status shouldBe 1
+            run.err shouldContain "Gradle を動かす JDK が 11 です（JAVA_HOME（$shell））。"
+            run.err shouldNotContain "export JAVA_HOME"
+        }
+
+        "kotlin が JAVA_HOME に入れた JDK が 17 未満か、バージョンを読めなければ添えない" {
+            for (kotlinJdk in listOf(fakeJdk(16), createTempDirectory("katachi-jdk-without-java-"))) {
+                val env = underHomebrewKotlin(shellJavaHome = "", fakeJdk(11)) + ("JAVA_HOME" to kotlinJdk.toString())
+
+                val run = runCapturing(gradleProject(toolchain = null), listOf("doctor"), env = env)
+
+                run.status shouldBe 1
+                run.err shouldContain "Gradle を動かす JDK が 11 です"
+                run.err shouldNotContain "export JAVA_HOME"
+            }
         }
     }
 
@@ -98,12 +343,51 @@ class DoctorScaffoldSpec : FreeSpec({
 
             run.status shouldBe 0
             run.out shouldContain "== 作成しました"
-            run.out shouldContain "次: katachi agent test\n"
+            run.out shouldContain "次: ./gradlew :architecture-test:test"
             val src = project.resolve("architecture-test/src/test/kotlin/com/example/test/architecture")
             src.resolve("ProjectArchitecture.kt").readText() shouldContain "package com.example.test.architecture"
             src.resolve("ProjectArchitectureTest.kt").readText() shouldContain "package com.example.test.architecture"
             project.resolve("architecture-test/build.gradle.kts").readText() shouldContain "0.4.0"
             project.resolve("settings.gradle.kts").readText() shouldContain "include(\":architecture-test\")"
+        }
+
+        "toolchain は本体と includeBuild したビルドから読み、自分の settings を持つ別のビルド（samples/demo など）は読まない（KATACHI-431）" {
+            val project = gradleProject(toolchain = 21)
+            project.writeFile(
+                "settings.gradle.kts",
+                """
+                rootProject.name = "p"
+                includeBuild("build-logic")
+                include(":app")
+                """.trimIndent(),
+            )
+            project.writeFile("app/build.gradle.kts", "kotlin { jvmToolchain(17) }")
+            project.writeFile("build-logic/settings.gradle.kts", "rootProject.name = \"build-logic\"")
+            project.writeFile("build-logic/src/main/kotlin/JvmConventions.kt", "fun Project.configureJvm() = kotlinExtension.jvmToolchain(21)")
+            project.writeFile("samples/demo/settings.gradle.kts", "rootProject.name = \"demo\"")
+            project.writeFile("samples/demo/build.gradle.kts", "kotlin { jvmToolchain(25) }")
+
+            val run = runCapturing(project, listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0"), env = javaHome())
+
+            run.status shouldBe 0
+            run.out shouldContain "JVM toolchain: 21（build-logic/src/main/kotlin/JvmConventions.kt の設定から）"
+            project.resolve("architecture-test/build.gradle.kts").readText() shouldContain "jvmToolchain(21)"
+        }
+
+        "検出した Kotlin が古ければ読んだファイルと --kotlin を添えて止まり、--kotlin で渡したバージョンにはファイルを添えない（KATACHI-431）" {
+            val project = gradleProject(toolchain = 21, kotlin = "1.9.10")
+            val args = listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0")
+
+            val detected = runCapturing(project, args, env = javaHome())
+            val given = runCapturing(project, args + listOf("--kotlin", "2.1.0"), env = javaHome())
+
+            detected.status shouldBe 1
+            detected.err shouldContain "このプロジェクトの Kotlin は 1.9.10 です（${fileUriOf(project.resolve("build.gradle.kts"))} から読みました）。"
+            detected.err shouldContain "scaffold に --kotlin <バージョン> を付けて"
+            given.status shouldBe 1
+            given.err shouldContain "このプロジェクトの Kotlin は 2.1.0 です。katachi は Kotlin 2.2 以降が要ります"
+            given.err shouldNotContain "から読みました"
+            project.resolve("architecture-test").exists() shouldBe false
         }
 
         "build.gradle.kts にコメントを書かない（KATACHI-357）" {
@@ -222,14 +506,14 @@ class DoctorScaffoldSpec : FreeSpec({
             }
         }
 
-        "--module-dir の置き場所に作り、次の test にも --module-dir を付けて案内する（KATACHI-420）" {
+        "--module-dir の置き場所に作り、次の test をその Gradle パスで案内する（KATACHI-420）" {
             val project = projectWithWorkdir("""{"meta": {}, "steps": []}""")
             project.resolve("build.gradle.kts").writeText("plugins {\n    kotlin(\"jvm\") version \"2.4.10\" apply false\n}\n")
 
             val run = runCapturing(project, listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0", "--module-dir", "static-analysis/katachi"), env = javaHome())
 
             run.status shouldBe 0
-            run.out shouldContain "次: katachi agent test --module-dir static-analysis/katachi\n"
+            run.out shouldContain "次: ./gradlew :static-analysis:katachi:test\n"
             project.resolve("static-analysis/katachi/build.gradle.kts").readText() shouldContain "0.4.0"
             project.resolve("settings.gradle.kts").readText() shouldContain "include(\":static-analysis:katachi\")"
         }
@@ -242,7 +526,7 @@ class DoctorScaffoldSpec : FreeSpec({
 
             run.status shouldBe 0
             run.out shouldContain "チェックリストの meta.moduleDir"
-            run.out shouldContain "次: katachi agent test --module-dir static-analysis/katachi\n"
+            run.out shouldContain "次: ./gradlew :static-analysis:katachi:test\n"
             project.resolve("settings.gradle.kts").readText() shouldContain "include(\":static-analysis:katachi\")"
         }
 
@@ -292,13 +576,83 @@ private fun Path.withBuildSrcDependency(dependency: String) {
     resolve("buildSrc").createDirectories().resolve("build.gradle.kts").writeText(build)
 }
 
-/** A Gradle root with the Kotlin JVM plugin and the JDK [toolchain] pinned in gradle-daemon-jvm.properties. */
-private fun gradleProject(toolchain: Int, kotlin: String = "2.4.10"): Path {
+/** A Gradle root with the Kotlin JVM plugin and the JDK [toolchain] pinned in gradle-daemon-jvm.properties (none when null). */
+private fun gradleProject(toolchain: Int?, kotlin: String = "2.4.10"): Path {
     val project = createTempDirectory("katachi-project-")
     project.resolve("settings.gradle.kts").writeText("rootProject.name = \"p\"\n")
     project.resolve("build.gradle.kts").writeText("plugins {\n    kotlin(\"jvm\") version \"$kotlin\" apply false\n}\n")
-    project.resolve("gradle").createDirectories().resolve("gradle-daemon-jvm.properties").writeText("toolchainVersion=$toolchain\n")
+    if (toolchain != null) {
+        project.resolve("gradle").createDirectories().resolve("gradle-daemon-jvm.properties").writeText("toolchainVersion=$toolchain\n")
+    }
     return project
+}
+
+/** A JDK home whose `bin/java -version` says [major], the way Homebrew's openjdk says `openjdk version "27"`. */
+private fun fakeJdk(major: Int): Path {
+    val home = createTempDirectory("katachi-jdk-$major-")
+    home.resolve("bin").createDirectories().resolve("java").writeScript(
+        """
+        #!/bin/sh
+        echo 'openjdk version "$major" 2026-09-15' >&2
+        """.trimIndent(),
+    )
+    return home
+}
+
+/**
+ * What katachi-script gets from `bin/katachi` under Homebrew's `kotlin`: JAVA_HOME is a JDK 27 `kotlin` filled in,
+ * [shellJavaHome] is what `bin/katachi` passed on (null: started without it), and java on PATH is [pathJava]'s.
+ */
+private fun underHomebrewKotlin(shellJavaHome: String?, pathJava: Path): Map<String, String> = buildMap {
+    put("JAVA_HOME", fakeJdk(27).toString())
+    if (shellJavaHome != null) put(SHELL_JAVA_HOME_ENV, shellJavaHome)
+    put("PATH", "${pathWithGit()}${File.pathSeparator}${pathJava.resolve("bin")}")
+    // org.gradle.java.home of the machine's own gradle.properties would come before JAVA_HOME.
+    put("GRADLE_USER_HOME", createTempDirectory("katachi-gradle-user-home-").toString())
+}
+
+/**
+ * macOS's `/usr/bin/java` stub, alone on PATH with git, and the java_home it asks. The stub records that it ran and says
+ * JDK 8, so a lookup that runs it reads the wrong JDK. java_home answers [defaultJdk], or fails as it does without a JDK.
+ */
+private class FakeMacOsJava(val defaultJdk: Path?) {
+    private val dir = createTempDirectory("katachi-macos-")
+    private val ranMarker = dir.resolve("stub-ran")
+    private val javaHomeArgsFile = dir.resolve("java_home-args")
+    val java: Path = dir.resolve("bin").createDirectories().resolve("java")
+    val javaHome: Path = dir.resolve("java_home")
+    val stub = MacOsJavaStub(java, javaHome)
+    private val path = "${pathWithGit()}${File.pathSeparator}${java.parent}"
+
+    init {
+        java.writeScript(
+            """
+            #!/bin/sh
+            : > '$ranMarker'
+            echo 'java version "1.8.0_402"' >&2
+            """.trimIndent(),
+        )
+        val answer = if (defaultJdk != null) "echo '$defaultJdk'" else "echo 'Unable to locate a Java Runtime.' >&2; exit 1"
+        javaHome.writeScript(
+            """
+            #!/bin/sh
+            echo "$*" > '$javaHomeArgsFile'
+            $answer
+            """.trimIndent(),
+        )
+    }
+
+    fun env(): Map<String, String> = mapOf("PATH" to path, "GRADLE_USER_HOME" to dir.resolve("gradle-user-home").toString())
+
+    fun stubRan(): Boolean = ranMarker.exists()
+
+    /** The arguments java_home got, or null when it was not run. */
+    fun javaHomeArgs(): String? = javaHomeArgsFile.takeIf { it.exists() }?.readText()?.trim()
+}
+
+private fun Path.writeScript(text: String) {
+    writeText(text + "\n")
+    setPosixFilePermissions(PosixFilePermissions.fromString("rwxr-xr-x"))
 }
 
 /** A PATH holding only a `git`, so that doctor's check for it does not depend on the machine. */
@@ -311,5 +665,9 @@ private fun pathWithGit(): Path {
 
 /** The ProjectArchitectureTest.kt `scaffold` writes for `--package com.example`. */
 private fun Path.architectureTest(): Path = resolve("architecture-test/src/test/kotlin/com/example/test/architecture/ProjectArchitectureTest.kt")
+
+private fun Path.writeFile(relative: String, text: String) {
+    resolve(relative).createParentDirectories().writeText(text)
+}
 
 private fun javaHome(): Map<String, String> = mapOf("JAVA_HOME" to System.getProperty("java.home"))

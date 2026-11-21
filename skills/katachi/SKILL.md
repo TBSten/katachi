@@ -17,6 +17,7 @@ First find out whether katachi is already set up: look for a Gradle module whose
 | katachi is not in the project yet | [references/setup/README.md](references/setup/README.md) |
 | katachi is set up, and the definition has to follow the project: a new kind of file, a moved or renamed module or package, a new rule, a katachi upgrade | [references/add-and-update/README.md](references/add-and-update/README.md) |
 | The check fails (on CI or locally) and you have to decide what to fix | [references/fix-violations/README.md](references/fix-violations/README.md) |
+| You only have to run the check, read its result or compare two runs | [references/run-the-check/README.md](references/run-the-check/README.md) |
 
 Read only the reference that fits, and inside it only the files it points you to. Do not load everything at once.
 
@@ -46,16 +47,16 @@ Read only the reference that fits, and inside it only the files it points you to
 └── tmp/install-katachi/                the working directory of the setup (or inside an already-ignored directory)
     ├── check-list.html                 the setup's checklist, with the codebase report from setup step 1 below it
     │                                   (two JSON blocks inside, checklist and report; setup 0-3 says how to edit them)
-    └── tmp/                            logs, fetched documentation, notes; without Homebrew also katachi.main.kts and
-                                        katachi-command.txt (how to run katachi: setup 0-1)
+    └── tmp/                            logs, fetched documentation, notes; without Homebrew also katachi.main.kts;
+                                        katachi-command.txt when katachi runs as a script or needs a JAVA_HOME= prefix
+                                        (how to run katachi: setup 0-1)
 ```
 
-The working directory is only for the setup and is ignored by git, so it may be gone later. Nothing below needs it: `katachi agent test` keeps its logs in `<working directory>/tmp/`, or in `build/katachi/` of the project root when there is none.
+The working directory is only for the setup and is ignored by git, so it may be gone later. Nothing below needs it: the logs of the check are kept in `build/katachi/` of the project root.
 
 | What | Command |
 |---|---|
-| Run the check | `./gradlew :architecture-test:test`, or `katachi agent test`, which prints a summary, keeps the full log and diffs against the previous run |
-| Compare two runs (before and after a change to the definition) | `katachi agent test --save before-refactor`, change, `katachi agent test --save after-refactor`, then `katachi agent compare-violations` |
+| Run the check, and compare two runs (before and after a change to the definition) | `./gradlew :architecture-test:test --console=plain -Dkatachi.maxViolations=all > build/katachi/test-<name>.log 2>&1`, then read and compare the logs as [references/run-the-check/README.md](references/run-the-check/README.md) says |
 | Find Roles that hold different kinds of files, hand-written Gradle Roles, flat groups, Role and group names that start lowercase | `katachi lint` |
 | Generate a page per Role | `./gradlew :architecture-test:katachiDocs` |
 | Generate a file from a Role's `.template { }` | `./gradlew :architecture-test:katachiTemplate --arg template=<Group.Role> --arg <name>=<value>` |

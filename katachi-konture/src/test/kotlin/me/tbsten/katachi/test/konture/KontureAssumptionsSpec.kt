@@ -56,8 +56,9 @@ import me.tbsten.katachi.konture.internal.audited
  * What katachi is allowed to assume about Konture 1.0.1, measured rather than remembered.
  *
  * The backend parses each covered file with `PsiParser.parseFile` behind a `MapSymbolLookup`
- * of the covered set, assembles a `ProjectGraph` with public constructors, evaluates each rule
- * builder's `check()` with `failOnSeverity = null`, and reads the violations back by subject.
+ * of every `.kt` file the walk found, assembles a `ProjectGraph` with public constructors,
+ * evaluates each rule builder's `check()` with `failOnSeverity = null`, and reads the violations
+ * back by subject.
  * Every one of those steps rests on a fact about 1.0.1 pinned below; when Konture moves and one
  * of these goes red, the backend is what has to change, not the test.
  *
@@ -501,6 +502,57 @@ class KontureAssumptionsSpec : FreeSpec({
             ReportAccumulator.getAllEvaluations().size shouldBe evaluationsBefore + 3
             KontureRuntimeStateProvider.currentState.baselineManager.evaluatedViolations.size shouldBe evaluatedBefore + 1
             IncrementalAstCache.size shouldBe parsedBefore
+        }
+    }
+
+    "(22) 4 つの *RuleBuilder.check は空の選択でも自分で AssertionError を投げ、allowEmpty() を足して聞き直すと should() があれば空の report、無ければまた投げる" {
+        // What `KontureFileConstraint` relies on to tell an empty selection from a rule with no
+        // `should()` without reading Konture's message, which is translated by the default locale.
+        fixtureProject("src/PublicThing.kt" to PUBLIC_THING_KT) { root ->
+            val graph = graphOf(root, "src/PublicThing.kt")
+            val emptyRules: List<Pair<String, (Boolean, Boolean) -> ViolationReport>> = listOf(
+                "io.github.baole.konture.FilesRuleBuilder" to { allow, withShould ->
+                    FilesRuleBuilder(graph).apply {
+                        if (allow) allowEmpty()
+                        that().inPackage("com.nowhere..")
+                        if (withShould) should() nameEndsWith ".kt"
+                    }.check(graph)
+                },
+                "io.github.baole.konture.ClassesRuleBuilder" to { allow, withShould ->
+                    ClassesRuleBuilder(graph).apply {
+                        if (allow) allowEmpty()
+                        that().inPackage("com.nowhere..")
+                        if (withShould) should().bePublic()
+                    }.check(graph)
+                },
+                "io.github.baole.konture.FunctionsRuleBuilder" to { allow, withShould ->
+                    FunctionsRuleBuilder(graph).apply {
+                        if (allow) allowEmpty()
+                        that().haveName("nothing")
+                        if (withShould) should().bePublic()
+                    }.check(graph)
+                },
+                "io.github.baole.konture.PropertiesRuleBuilder" to { allow, withShould ->
+                    PropertiesRuleBuilder(graph).apply {
+                        if (allow) allowEmpty()
+                        that().haveName("nothing")
+                        if (withShould) should().beVal()
+                    }.check(graph)
+                },
+            )
+            for ((builder, rule) in emptyRules) {
+                withClue(builder) {
+                    val empty = audit { shouldThrow<AssertionError> { rule(false, true) } }
+                    empty.stackTrace.first().className shouldBe builder
+                    empty.stackTrace.first().methodName shouldBe "check"
+                    // The empty selection is asserted before the missing `should()`.
+                    audit { shouldThrow<AssertionError> { rule(false, false) } }.message shouldBe empty.message
+                    audit { rule(true, true) }.violations.shouldBeEmpty()
+                    val noShould = audit { shouldThrow<AssertionError> { rule(true, false) } }
+                    noShould.message shouldNotBe empty.message
+                    noShould.stackTrace.first().className shouldBe builder
+                }
+            }
         }
     }
 })

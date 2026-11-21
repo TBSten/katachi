@@ -178,6 +178,41 @@ class FileConstraintCheckSpec : FreeSpec({
             subject.paths shouldBe listOf("alpha")
             subject.projectRoot shouldBe "/repo"
         }
+
+        "subject.projectFiles は walk が見たファイルを、ほかの役割のものも役割の無いものも walk 順で持つ" {
+            val recording = RecordingFileConstraint()
+            val arch = architectureOf {
+                "domain".group {
+                    "UseCase".role {
+                        layout {
+                            "alpha" {
+                                fileConstraint("alpha only", check = recording)
+                                "*.kt".file()
+                            }
+                            "build".ignore()
+                        }
+                    }
+                    "Repository".role {
+                        layout { "beta" / "*.kt".file() }
+                    }
+                }
+            }
+
+            arch.validate(
+                repositoryOf {
+                    "alpha" { "B.kt"(); "A.kt"(); "notes.txt"() }
+                    "beta" { "C.kt"() }
+                    "build" { "Generated.kt"() }
+                    "stray" { "D.kt"() }
+                },
+                FileConstraintCheck(),
+            ).labels() shouldBe listOf("[UnexpectedFile] alpha/notes.txt", "[UnexpectedDirectory] stray")
+
+            val subject = recording.subjects.single()
+            subject.files shouldBe listOf("alpha/A.kt", "alpha/B.kt")
+            // An ignored directory and one no role declares are never entered, so nothing below them is listed.
+            subject.projectFiles shouldBe listOf("alpha/A.kt", "alpha/B.kt", "alpha/notes.txt", "beta/C.kt")
+        }
     }
 
     "違反の組み立て" - {

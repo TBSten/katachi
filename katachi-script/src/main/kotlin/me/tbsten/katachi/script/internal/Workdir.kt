@@ -238,19 +238,13 @@ private fun ScriptContext.projectHoldingMovedWorkdir(workdir: Path, root: Path, 
     return holder.takeIf { it.realOrSelf() != there }
 }
 
-/** Whether [projectRoot] is not the recorded `meta.projectRoot` but its counterpart in the current work tree. */
-internal fun ScriptContext.checksOtherWorkTree(): Boolean {
-    val recorded = findWorkdir()?.let { checklistMeta(it.resolve(CHECK_LIST_FILE), "projectRoot") } ?: ""
-    return recorded.isNotEmpty() && sameRepositoryCounterpart(resolve(recorded), cwd) != null
-}
-
 /** `<project root>/<module dir>/src/test/kotlin`. The kit's `definition_dir`. */
 internal fun ScriptContext.definitionDir(module: ModuleDir): Path = projectRoot().resolve(module.dir).resolve("src/test/kotlin").normalize()
 
 internal fun ScriptContext.definitionMissingMessage(module: ModuleDir, dir: Path): Msg =
     Messages.Workdir.definitionDirMissing(fileUri(dir), module.dir)
 
-/** Stops when the definition directory is not there (lint / compare-violations). */
+/** Stops when the definition directory is not there (lint). */
 internal fun ScriptContext.requireDefinitionDir(module: ModuleDir): Path {
     val dir = definitionDir(module)
     if (dir.isDirectory()) return dir

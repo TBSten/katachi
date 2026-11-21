@@ -63,6 +63,8 @@ internal class ProjectWalk(
         return scan.filesByRole[role].orEmpty()
     }
 
+    val walkedFiles: List<String> get() = scan.files
+
     val layoutViolations: List<Violation> get() = scan.violations
 
     val layoutFileOverlaps: List<FileOverlap> get() = scan.fileOverlaps

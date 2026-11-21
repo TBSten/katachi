@@ -43,19 +43,18 @@ Tidy up the 3-2 definition **without changing the check result.** When unsure ab
 Once tidied up, run it again the same way as in 3-2 and compare.
 
 ```sh
-katachi agent test --save after-refactor
-katachi agent compare-violations
+./gradlew :architecture-test:test --console=plain -Dkatachi.maxViolations=all > build/katachi/test-after-refactor.log 2>&1; echo "gradle exit status: $?"
 ```
 
-`compare-violations` pulls the check result out of the two logs (the summary line, and `[Kind] path` for each violation) and compares them. It does not compare the line numbers of declaration sites. It says nothing about `summary` or `description`: a Role without them is not reported, so check the descriptions item above by reading the definition. **If there is a difference, fix the definition rather than taking the earlier log again.** The refactoring has changed the behavior.
+Then compare the two logs as "Compare two runs" in [run-the-check](../../run-the-check/README.md) says. It compares the check result: `[Kind] path` for each violation. It does not compare the line numbers of declaration sites. It says nothing about `summary` or `description`: a Role without them is not reported, so check the descriptions item above by reading the definition. **If there is a difference, fix the definition rather than taking the earlier log again.** The refactoring has changed the behavior.
 
-If either log shows only the first few violations (it has a `Showing first ...` line), `compare-violations` stops without comparing (exit code 2), because violations missing from the log cannot be compared. `test` always prints them all, so this does not normally happen. If it stops, capture the cut-off log again as the output says.
+If either log shows only the first few violations (it has a `Showing first ...` line), the comparison is not valid, because violations missing from the log cannot be compared. `-Dkatachi.maxViolations=all` makes the log hold them all, so this does not normally happen. If it does, capture the cut-off log again.
 
-**If the earlier log was green (0 violations), this is 0 against 0, and it cannot tell you that the split loosened the definition (a catch-all crept in, say).** In that case, also make one known violation after the split and confirm it fails: put a file that no Role covers somewhere temporarily, run `katachi agent test`, and once it fails with `[UnexpectedFile]`, delete that file.
+**If the earlier log was green (0 violations), this is 0 against 0, and it cannot tell you that the split loosened the definition (a catch-all crept in, say).** In that case, also make one known violation after the split and confirm it fails: put a file that no Role covers somewhere temporarily, run the check, and once it fails with `[UnexpectedFile]`, delete that file.
 
-Record the files you created or changed in `changedFiles` (the split files can be one entry by directory; files already recorded need not be recorded again), and run `katachi lint` again. `lint` never fails (it always exits 0) and prints a count per inspection, so read its lines rather than its exit code:
+Record the files you created or changed in `changedFiles` (the split files can be one entry by directory; files already recorded need not be recorded again), and run `katachi lint` again. `lint` does not fail on what it finds (it exits 0; 1 only when the definition directory is missing) and prints a count per inspection, so read its lines rather than its exit code:
 
-- **Fix these, or write the reason for each one you keep in the warning on step 3**: `Roles that seem to hold files of different kinds`, `Gradle files are declared in hand-written Roles`, `Role and group names starting with a lowercase letter`, and, against the 1-3 preferences, `Flat groups` and `Files not split` (ja: 「種類の違うファイルを1つの Role に抱えていそうなもの」, 「Gradle のファイルを手書きの Role で宣言しています」, 「小文字で始まる Role・group の名前」, 「平たい group」, 「分けていないファイル」). An inspection with nothing to report prints no line; when none has anything, `lint` prints only `Role check: no role seems to hold files of different kinds` (ja: 「種類の違うファイルを抱えていそうな Role は見つかりませんでした」)
+- **Fix these, or write the reason for each one you keep in the warning on step 3**: `Roles that seem to hold files of different kinds`, `Gradle files are declared in hand-written Roles`, `Role and group names starting with a lowercase letter`, and, against the 1-3 preferences, `Flat groups` and `Files not split` (ja: 「種類の違うファイルを1つの Role に抱えていそうなもの」, 「Gradle のファイルを手書きの Role で宣言しています」 / 「Gradle のファイルを手書きの Role で宣言し、その Role に制約を付けています」, 「小文字で始まる Role・group の名前」, 「平たい group」, 「分けていないファイル」). An inspection with nothing to report prints no line; when none has anything, `lint` prints only `Role check: no role seems to hold files of different kinds` (ja: 「種類の違うファイルを抱えていそうな Role は見つかりませんでした」)
 - **Review, not a count to bring to 0**: `Candidates for documented = false` (ja: 「documented = false の候補」). Set `documented = false` on the ones the 1-2 guidelines name, and leave the rest
 
 Once each line is dealt with, mark `3-3` done.

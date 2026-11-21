@@ -87,15 +87,21 @@ public interface FileSelection {
      * Everything `git ls-files --cached --others --exclude-standard` reports: what git
      * tracks, plus what is not tracked yet but not ignored either.
      *
-     * A file git does not manage cannot be given a role. `.DS_Store` turns up in every
-     * directory, `local.properties` is per machine, `build/` is generated output.
+     * A file git ignores is left out: it could not be given a role. An ignored `.DS_Store`
+     * turns up in every directory, `local.properties` is per machine, `build/` is generated
+     * output. Without an ignore rule for it, in `.gitignore` or in git's global excludes, a
+     * `.DS_Store` is an untracked file like any other, and the check reports it.
      *
      * A file tracked below an ignored directory (one added with `git add -f`, say) is checked
      * like any other. A project below the repository root (a monorepo, a submodule) works too.
      *
-     * When the root is not inside a git work tree, or git is not installed, this behaves like
-     * [WholeTree]. When git claims the root but then fails, the check fails with
-     * [KatachiGitUnavailableException] rather than giving different results on CI.
+     * When there is no `.git` at the project root or in any directory above it, the project is in
+     * no git repository, and this behaves like [WholeTree]. When there is one, git has to answer
+     * for it. If git is not installed, refuses the repository (`detected dubious ownership`, when
+     * the checkout belongs to another user), or cannot find the repository that a worktree's
+     * `.git` file points to, the check fails with [KatachiGitUnavailableException], which carries
+     * what git said. So does git failing after it has accepted the root. Walking the whole tree
+     * instead would give other results than a run where git works, on CI say.
      *
      * ## Example 1: select it explicitly
      * ```kt
@@ -112,7 +118,8 @@ public interface FileSelection {
         ): KatachiFileSystem =
             // Asked of git, not read off a `.git` at the root: a project below the repository
             // root would otherwise silently fall back to walking the whole tree — and then
-            // `build/` and `.DS_Store` start showing up as violations.
+            // `build/` and `.DS_Store` start showing up as violations. A `.git` only decides
+            // whether git failing to answer falls back or throws.
             if (isInsideGitWorkTree(projectRoot.path)) gitTrackedFileSystem(delegate, projectRoot.path) else delegate
     }
 

@@ -28,6 +28,7 @@ import me.tbsten.katachi.konture.konture
 internal fun kontureRun(
     vararg sources: Pair<String, String>,
     declarations: List<String> = listOf("*.kt"),
+    name: String? = "規約",
     block: KontureConstraintScope.() -> Unit,
 ): List<Violation> = fixtureProject(*sources) { root ->
     val projectArchitecture = architecture {
@@ -40,7 +41,7 @@ internal fun kontureRun(
                     "gradlew".file()
                     "src" {
                         for (declaration in declarations) declaration.file()
-                        "規約".konture { block() }
+                        if (name == null) konture { block() } else name.konture { block() }
                     }
                 }
             }

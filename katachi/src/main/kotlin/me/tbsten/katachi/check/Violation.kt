@@ -131,6 +131,7 @@ public class UnexpectedFile internal constructor(
  */
 public class UnexpectedDirectory internal constructor(
     override val path: String,
+    internal val suggestedRole: String? = null,
 ) : Violation {
     override val kind: ViolationKind get() = ViolationKind.Unexpected
     override val severity: Severity get() = Severity.Error

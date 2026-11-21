@@ -22,6 +22,7 @@ import me.tbsten.katachi.dsl.internal.evaluateLayout
 import me.tbsten.katachi.dsl.internal.fillCaptures
 import me.tbsten.katachi.dsl.internal.placeholder
 import me.tbsten.katachi.internal.catching
+import java.util.Collections
 
 // The only name skipped at any depth regardless of `files` (a file in worktrees and submodules).
 private const val GIT_DIRECTORY_NAME: String = ".git"
@@ -32,6 +33,8 @@ internal const val ROOT_PATH: String = "."
 internal class ScanResult(
     val violations: List<Violation>,
     val filesByRole: Map<Role, List<String>>,
+    // Every file the walk visited, in walk order, whether a role allows it or not.
+    val files: List<String>,
     val fileOverlaps: List<FileOverlap>,
     val fileConstraints: List<DeclaredFileConstraint>,
     val layout: LayoutEvaluation,
@@ -58,6 +61,7 @@ internal fun Architecture.scanProject(
         root = projectRoot.path,
         evaluation = evaluation,
         moduleFailures = modules.unchecked,
+        roleNames = RoleNameSuggestions(rootNames()),
     ).run()
 }
 
@@ -66,6 +70,7 @@ private class Scan(
     private val root: FsPath,
     private val evaluation: LayoutEvaluation,
     private val moduleFailures: List<UncheckedDirectory>,
+    private val roleNames: RoleNameSuggestions,
 ) {
     private val layout = LayoutIndex(evaluation.entries)
 
@@ -94,6 +99,7 @@ private class Scan(
             // parents before children, names in order.
             violations = violations.sortedBy { it.kind.ordinal },
             filesByRole = filesByRole,
+            files = Collections.unmodifiableList(visitedFiles.toList()),
             fileOverlaps = fileOverlaps.toList(),
             fileConstraints = evaluation.fileConstraints,
             layout = evaluation,
@@ -155,7 +161,7 @@ private class Scan(
     private fun visitDirectory(directory: FsPath, path: String) {
         if (layout.isIgnored(path)) return
         if (!layout.isKnown(path)) {
-            violations += UnexpectedDirectory(path)
+            violations += UnexpectedDirectory(path, suggestedRole = roleNames.nameFor(path))
             return
         }
         walk(directory, path)
@@ -176,7 +182,7 @@ private class Scan(
         // A pattern did match, and only a bound capture held the file back: that is a more
         // useful thing to say than "no role", and it names where the file should be.
         val (entry, mismatch) = layout.captureMismatchesOn(path).firstOrNull() ?: run {
-            violations += UnexpectedFile(path = path, nearby = layout.nearbyOf(path))
+            violations += UnexpectedFile(path = path, nearby = layout.nearbyOf(path), suggestedRole = roleNames.nameFor(path))
             return
         }
         violations += CaptureMismatch(

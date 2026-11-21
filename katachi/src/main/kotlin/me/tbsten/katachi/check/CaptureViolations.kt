@@ -13,7 +13,10 @@ import me.tbsten.katachi.dsl.Role
  *
  * Reported in place of [UnexpectedFile] when no other role allows the file either: the file
  * does have a pattern that nearly fits, and the block says which levels disagree and where the
- * file would have to be for them to agree.
+ * file would have to be for them to agree. A level that reads a conversion of the value it is
+ * held to (`userprofile` for `user-profile`) gets the conversion to write in the layout first
+ * (`capture("feature").flatCase`), and a place that would put a name a Kotlin package cannot
+ * take (`user-profile`) into a package directory is not suggested.
  *
  * ## Example 1: list the files whose captured levels disagree
  * ```kt

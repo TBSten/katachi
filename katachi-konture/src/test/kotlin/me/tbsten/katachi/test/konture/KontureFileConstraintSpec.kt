@@ -51,6 +51,15 @@ class KontureFileConstraintSpec : FreeSpec({
         report.contains("androidx.compose") shouldBe false
     }
 
+    "名前の無い konture { } は konture という名前で報告される" {
+        val violations = kontureRun("src/PublicThing.kt" to PUBLIC_THING_KT, name = null) {
+            classes { should().beInternal() }
+        }
+
+        violations.filterIsInstance<UnsatisfiedFileConstraint>().single().constraintName shouldBe "konture"
+        violations.reportForTest() shouldContain "Role: domain.UseCase / FileConstraint: \"konture\""
+    }
+
     "files の違反には Declaration 行が無い" {
         val violations = kontureRun(
             "src/PublicThing.kt" to PUBLIC_THING_KT,

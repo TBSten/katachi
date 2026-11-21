@@ -9,7 +9,6 @@ import java.nio.file.attribute.PosixFilePermissions
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.exists
-import kotlin.io.path.readText
 import kotlin.io.path.setPosixFilePermissions
 import kotlin.io.path.writeText
 
@@ -19,53 +18,42 @@ import kotlin.io.path.writeText
  */
 class WorkdirSpec : FreeSpec({
     "別の作業ツリー（git worktree）から" - {
-        "test は記録したメインではなく、いまいる作業ツリーを検査し、そう警告する" {
-            val repo = WorktreeFixture()
+        "lint は記録したメインではなく、いまいる作業ツリーの定義を読み、そう警告する" {
+            val repo = WorktreeFixture(definitionInMain = false)
 
-            val run = repo.runFromWorktree("agent", "test")
+            val run = repo.runFromWorktree("lint")
 
             run.status shouldBe 0
-            repo.worktree.resolve("build/katachi/test/latest.log").readText() shouldContain "args: from worktree"
             run.err shouldContain "別の作業ツリー（git worktree）です"
             run.err shouldContain repo.worktree.toString()
-        }
-
-        "ログは作業用ディレクトリではなく、その作業ツリーの build/katachi/ に置く（並べて走らせても latest.log を取り合わない）" {
-            val repo = WorktreeFixture()
-
-            repo.runFromWorktree("agent", "test", "--save", "before").status shouldBe 0
-
-            repo.worktree.resolve("build/katachi/test/latest.log").readText() shouldContain "args: from worktree"
-            repo.worktree.resolve("build/katachi/test-before.log").exists() shouldBe true
-            repo.workdir.resolve("tmp/test/latest.log").exists() shouldBe false
         }
 
         "git worktree add で作った本物の作業ツリーでも同じ" {
             val main = createTempDirectory("katachi-real-main-")
             git(main, "init", "-q")
-            gradleProject(main, "main", withDefinition = true)
+            definitionProject(main, withDefinition = true)
+            // git keeps no empty directory, so commit something for the work tree to be made from.
+            main.resolve("settings.gradle.kts").writeText("")
             git(main, "add", ".")
             git(main, "commit", "-q", "-m", "init")
             val worktree = main.resolveSibling(main.fileName.toString() + "-wt")
             git(main, "worktree", "add", "-q", worktree.toString())
             // git keeps no empty directory, so the definition directory has to be made again in the new work tree.
             worktree.resolve("architecture-test/src/test/kotlin").createDirectories()
-            worktree.resolve("gradlew").writeText("#!/bin/sh\necho \"args: from worktree\"\necho \"BUILD SUCCESSFUL in 1s\"\nexit 0\n")
             val workdir = main.resolve(".local/install-katachi")
             workdir.resolve("tmp").createDirectories()
             workdir.resolve("check-list.html").writeText(checkListHtml("""{"meta": {"projectRoot": "$main"}, "steps": []}""", "ja"))
 
-            val run = runCapturing(worktree, listOf("agent", "test"), mapOf("PATH" to System.getenv("PATH"), "KATACHI_WORKDIR" to workdir.toString()))
+            val run = runCapturing(worktree, listOf("lint"), mapOf("PATH" to System.getenv("PATH"), "KATACHI_WORKDIR" to workdir.toString()))
 
             run.status shouldBe 0
-            worktree.resolve("build/katachi/test/latest.log").readText() shouldContain "args: from worktree"
             run.err shouldContain "別の作業ツリー（git worktree）です"
         }
 
         "警告は 1 回だけ出す" {
             val repo = WorktreeFixture()
 
-            val run = repo.runFromWorktree("agent", "test")
+            val run = repo.runFromWorktree("lint")
 
             run.err.split("別の作業ツリー").size shouldBe 2
         }
@@ -73,10 +61,9 @@ class WorkdirSpec : FreeSpec({
         "プロジェクトがリポジトリの下の階層なら、作業ツリーの同じ階層を検査する" {
             val repo = WorktreeFixture(projectDir = "apps/android")
 
-            val run = repo.runFromWorktree("agent", "test")
+            val run = repo.runFromWorktree("lint")
 
             run.status shouldBe 0
-            repo.worktree.resolve("apps/android/build/katachi/test/latest.log").readText() shouldContain "args: from worktree"
             run.err shouldContain repo.worktree.resolve("apps/android").toString()
         }
 
@@ -92,10 +79,9 @@ class WorkdirSpec : FreeSpec({
         "メインの作業ツリーの中から走らせれば、これまでどおり記録した場所を検査する" {
             val repo = WorktreeFixture()
 
-            val run = runCapturing(repo.main, listOf("agent", "test"), repo.env())
+            val run = runCapturing(repo.main, listOf("lint"), repo.env())
 
             run.status shouldBe 0
-            repo.workdir.resolve("tmp/test/latest.log").readText() shouldContain "args: from main"
             run.err shouldNotContain "別の作業ツリー"
         }
 
@@ -104,75 +90,69 @@ class WorkdirSpec : FreeSpec({
             val other = createTempDirectory("katachi-other-repo-")
             other.resolve(".git").createDirectories()
 
-            val run = runCapturing(other, listOf("agent", "test"), repo.env())
+            val run = runCapturing(other, listOf("lint"), repo.env())
 
             run.status shouldBe 0
-            repo.workdir.resolve("tmp/test/latest.log").readText() shouldContain "args: from main"
             run.err shouldNotContain "別の作業ツリー"
         }
     }
 
     "作業用ディレクトリごと写したプロジェクトから（KATACHI-420）" - {
-        "test は記録した元のプロジェクトではなく写しを検査し、そう警告して、検査したプロジェクトを出す" {
+        "lint は記録した元のプロジェクトではなく写しの定義を読み、そう警告する" {
             val original = createTempDirectory("katachi-original-")
-            projectRecording(original, "original", recordedRoot = original)
+            projectRecording(original, recordedRoot = original)
             val copy = createTempDirectory("katachi-copy-")
-            val copyWorkdir = projectRecording(copy, "copy", recordedRoot = original)
+            projectRecording(copy, recordedRoot = original)
 
-            val run = runCapturing(copy, listOf("agent", "test"), mapOf("PATH" to System.getenv("PATH")))
+            val run = runCapturing(copy, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
 
             run.status shouldBe 0
-            copyWorkdir.resolve("tmp/test/latest.log").readText() shouldContain "args: from copy"
             run.err shouldContain "プロジェクトを作業用ディレクトリごと写したか、移したようです。作業用ディレクトリのある file://$copy を検査します。"
             run.err.split("写したか、移したようです").size shouldBe 2
-            run.out shouldContain "プロジェクト: file://$copy\n"
-            original.resolve(".local/install-katachi/tmp/test").exists() shouldBe false
+            run.out shouldContain "定義: file://${copy.resolve("architecture-test/src/test/kotlin")}"
         }
 
-        "meta.workdir があれば、写しの外（上）から実行しても写しのプロジェクトを検査する" {
+        "meta.workdir があれば、写しの外（上）から実行しても写しのプロジェクトを読む" {
             val original = createTempDirectory("katachi-original-")
-            projectRecording(original, "original", recordedRoot = original, recordedWorkdir = ".local/install-katachi")
+            projectRecording(original, recordedRoot = original, recordedWorkdir = ".local/install-katachi")
             val parent = createTempDirectory("katachi-copies-")
             val copy = parent.resolve("copy")
-            val copyWorkdir = projectRecording(copy, "copy", recordedRoot = original, recordedWorkdir = ".local/install-katachi")
+            projectRecording(copy, recordedRoot = original, recordedWorkdir = ".local/install-katachi")
 
-            val run = runCapturing(parent, listOf("agent", "test"), mapOf("PATH" to System.getenv("PATH")))
+            val run = runCapturing(parent, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
 
             run.status shouldBe 0
-            copyWorkdir.resolve("tmp/test/latest.log").readText() shouldContain "args: from copy"
-            run.out shouldContain "プロジェクト: file://$copy\n"
+            run.out shouldContain "定義: file://${copy.resolve("architecture-test/src/test/kotlin")}"
         }
 
-        "meta.workdir があれば、元のプロジェクトの中に写しても写しを検査する" {
+        "meta.workdir があれば、元のプロジェクトの中に写しても写しを読む" {
             val original = createTempDirectory("katachi-original-")
-            projectRecording(original, "original", recordedRoot = original, recordedWorkdir = ".local/install-katachi")
+            projectRecording(original, recordedRoot = original, recordedWorkdir = ".local/install-katachi")
             val copy = original.resolve("copies/copy")
-            val copyWorkdir = projectRecording(copy, "copy", recordedRoot = original, recordedWorkdir = ".local/install-katachi")
+            projectRecording(copy, recordedRoot = original, recordedWorkdir = ".local/install-katachi")
 
-            val run = runCapturing(copy, listOf("agent", "test"), mapOf("PATH" to System.getenv("PATH")))
+            val run = runCapturing(copy, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
 
             run.status shouldBe 0
-            copyWorkdir.resolve("tmp/test/latest.log").readText() shouldContain "args: from copy"
+            run.out shouldContain "定義: file://${copy.resolve("architecture-test/src/test/kotlin")}"
         }
 
-        "記録した元のプロジェクトがもう無くても（移した）、作業用ディレクトリのあるプロジェクトを検査する" {
+        "記録した元のプロジェクトがもう無くても（移した）、作業用ディレクトリのあるプロジェクトを読む" {
             val moved = createTempDirectory("katachi-moved-")
-            val workdir = projectRecording(moved, "moved", recordedRoot = moved.resolveSibling(moved.fileName.toString() + "-before-move"))
+            projectRecording(moved, recordedRoot = moved.resolveSibling(moved.fileName.toString() + "-before-move"))
 
-            val run = runCapturing(moved, listOf("agent", "test"), mapOf("PATH" to System.getenv("PATH")))
+            val run = runCapturing(moved, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
 
             run.status shouldBe 0
-            workdir.resolve("tmp/test/latest.log").readText() shouldContain "args: from moved"
+            run.out shouldContain "定義: file://${moved.resolve("architecture-test/src/test/kotlin")}"
             run.err shouldContain "写したか、移したようです"
         }
 
         "lint も写しの定義を読む" {
             val original = createTempDirectory("katachi-original-")
-            projectRecording(original, "original", recordedRoot = original, withDefinition = false)
+            projectRecording(original, recordedRoot = original, withDefinition = false)
             val copy = createTempDirectory("katachi-copy-")
-            projectRecording(copy, "copy", recordedRoot = original)
-            copy.resolve("architecture-test/src/test/kotlin/MixedRole.kt")
-                .writeText("val m = \"Mixed\".role { layout { \"README.md\".file(); \"LICENSE\".file() } }\n")
+            projectRecording(copy, recordedRoot = original)
 
             val run = runCapturing(copy, listOf("lint"))
 
@@ -183,59 +163,42 @@ class WorkdirSpec : FreeSpec({
             run.err shouldContain "写したか、移したようです"
         }
 
-        "compare-violations も写しの定義の場所で比べる" {
-            val original = createTempDirectory("katachi-original-")
-            projectRecording(original, "original", recordedRoot = original, withDefinition = false)
-            val copy = createTempDirectory("katachi-copy-")
-            val copyWorkdir = projectRecording(copy, "copy", recordedRoot = original)
-            copyWorkdir.resolve("tmp/test-before-refactor.log").writeText("> Task :architecture-test:test\nBUILD SUCCESSFUL in 3s\n")
-            copyWorkdir.resolve("tmp/test-after-refactor.log").writeText("> Task :architecture-test:test\nBUILD SUCCESSFUL in 3s\n")
-
-            val run = runCapturing(copy, listOf("agent", "compare-violations"))
-
-            run.status shouldBe 0
-            run.out shouldContain "検査結果は変わっていません"
-            run.err shouldContain "写したか、移したようです"
-        }
-
-        "元のプロジェクトの上から実行しても、作業用ディレクトリがそのプロジェクトの中なら記録したほうを検査し、警告しない" {
+        "元のプロジェクトの上から実行しても、作業用ディレクトリがそのプロジェクトの中なら記録したほうを読み、警告しない" {
             val parent = createTempDirectory("katachi-parent-")
             val project = parent.resolve("app")
-            val workdir = projectRecording(project, "app", recordedRoot = project)
+            projectRecording(project, recordedRoot = project)
 
-            val run = runCapturing(parent, listOf("agent", "test"), mapOf("PATH" to System.getenv("PATH")))
+            val run = runCapturing(parent, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
 
             run.status shouldBe 0
-            workdir.resolve("tmp/test/latest.log").readText() shouldContain "args: from app"
             run.err shouldNotContain "写したか"
-            run.out shouldContain "プロジェクト: file://$project\n"
+            run.out shouldContain "定義: file://${project.resolve("architecture-test/src/test/kotlin")}"
         }
 
-        "KATACHI_WORKDIR で指した作業用ディレクトリは、プロジェクトの外にあっても記録したほうを検査する" {
+        "KATACHI_WORKDIR で指した作業用ディレクトリは、プロジェクトの外にあっても記録したほうを読む" {
             val project = createTempDirectory("katachi-project-")
-            gradleProject(project, "project", withDefinition = true)
+            definitionProject(project, withDefinition = true)
             val workdir = workdirWith("""{"meta": {"projectRoot": "$project"}, "steps": []}""")
             val env = mapOf("PATH" to System.getenv("PATH"), "KATACHI_WORKDIR" to workdir.toString())
 
-            val run = runCapturing(createTempDirectory("katachi-elsewhere-"), listOf("agent", "test"), env)
+            val run = runCapturing(createTempDirectory("katachi-elsewhere-"), listOf("lint"), env)
 
             run.status shouldBe 0
-            workdir.resolve("tmp/test/latest.log").readText() shouldContain "args: from project"
+            run.out shouldContain "定義: file://${project.resolve("architecture-test/src/test/kotlin")}"
             run.err shouldNotContain "写したか"
         }
     }
 
     "KATACHI_WORKDIR が作業用ディレクトリを指していないと" - {
-        "test は黙って作業用ディレクトリ無しで進まず、値を出して止まる" {
+        "lint は黙って作業用ディレクトリ無しで進まず、値を出して止まる" {
             val project = projectWithTwoWorkdirs()
             val missing = project.resolve("no-such-workdir")
             val env = mapOf("PATH" to System.getenv("PATH"), "KATACHI_WORKDIR" to missing.toString())
 
-            val run = runCapturing(project, listOf("agent", "test"), env)
+            val run = runCapturing(project, listOf("lint"), env)
 
             run.status shouldBe 1
             run.err shouldContain "KATACHI_WORKDIR（${missing}）は作業用ディレクトリではありません"
-            project.resolve("build/katachi").exists() shouldBe false
         }
 
         "doctor は止まらず、警告する" {
@@ -250,10 +213,10 @@ class WorkdirSpec : FreeSpec({
     }
 
     "作業用ディレクトリが 2 つあると" - {
-        "test は黙って既定値に戻らず、候補を並べて止まる" {
+        "lint は黙って既定値に戻らず、候補を並べて止まる" {
             val project = projectWithTwoWorkdirs()
 
-            val run = runCapturing(project, listOf("agent", "test"), mapOf("PATH" to System.getenv("PATH")))
+            val run = runCapturing(project, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
 
             run.status shouldBe 1
             run.err shouldContain "作業用ディレクトリ（check-list.html と tmp/ のあるディレクトリ）が 2 つ以上あり"
@@ -276,17 +239,16 @@ class WorkdirSpec : FreeSpec({
             val project = projectWithTwoWorkdirs()
             val env = mapOf("PATH" to System.getenv("PATH"), "KATACHI_WORKDIR" to project.resolve(".local/install-katachi").toString())
 
-            val run = runCapturing(project, listOf("agent", "test"), env)
+            val run = runCapturing(project, listOf("lint"), env)
 
             run.status shouldBe 0
             run.err shouldNotContain "2 つ以上"
-            project.resolve(".local/install-katachi/tmp/test/latest.log").exists() shouldBe true
         }
 
         "どちらも同じ言語なら、止まるときのメッセージもその言語で出す" {
             val project = projectWithTwoWorkdirs(lang = "en")
 
-            val run = runCapturing(project, listOf("agent", "test"), mapOf("PATH" to System.getenv("PATH")))
+            val run = runCapturing(project, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
 
             run.status shouldBe 1
             run.err shouldContain "There are two or more working directories"
@@ -312,27 +274,27 @@ class WorkdirSpec : FreeSpec({
     "下に開けないディレクトリがあっても、--version も doctor も止まらず、作業用ディレクトリも見つける"
         .config(enabledIf = { System.getProperty("user.name") != "root" }) {
             val project = projectWithWorkdir("""{"meta": {}, "steps": []}""")
-            gradleProject(project, "project", withDefinition = true)
+            definitionProject(project, withDefinition = true)
             val locked = project.resolve("someone-else").createDirectories()
             locked.setPosixFilePermissions(PosixFilePermissions.fromString("---------"))
             try {
                 runCapturing(project, listOf("--version")).status shouldBe 0
                 runCapturing(project, listOf("doctor")).err shouldNotContain "Exception"
 
-                val test = runCapturing(project, listOf("agent", "test"), mapOf("PATH" to System.getenv("PATH")))
+                val lint = runCapturing(project, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
 
-                test.status shouldBe 0
-                project.resolve(".local/install-katachi/tmp/test/latest.log").exists() shouldBe true
+                lint.status shouldBe 0
+                lint.err shouldNotContain "定義のディレクトリがありません"
             } finally {
                 locked.setPosixFilePermissions(PosixFilePermissions.fromString("rwx------"))
             }
         }
 
     // root reads every file, so there the locked check list would not be locked and the case would prove nothing.
-    "下に読めない check-list.html（tmp/ 付き）があっても、--version も --help も test も止まらず、読める作業用ディレクトリを使う（KATACHI-420）"
+    "下に読めない check-list.html（tmp/ 付き）があっても、--version も --help も lint も止まらず、読める作業用ディレクトリを使う（KATACHI-420）"
         .config(enabledIf = { System.getProperty("user.name") != "root" }) {
             val project = projectWithWorkdir("""{"meta": {}, "steps": []}""")
-            gradleProject(project, "project", withDefinition = true)
+            definitionProject(project, withDefinition = true)
             val other = project.resolve("someone-else/.local/install-katachi")
             other.resolve("tmp").createDirectories()
             val locked = other.resolve("check-list.html")
@@ -346,12 +308,12 @@ class WorkdirSpec : FreeSpec({
                 help.err shouldContain "読めない check-list.html は、作業用ディレクトリとして使いません"
                 help.err shouldContain locked.toString()
 
-                val test = runCapturing(project, listOf("agent", "test"), mapOf("PATH" to System.getenv("PATH")))
+                val lint = runCapturing(project, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
 
-                test.status shouldBe 0
-                test.err shouldNotContain "2 つ以上"
-                test.err.split("読めない check-list.html").size shouldBe 2
-                project.resolve(".local/install-katachi/tmp/test/latest.log").exists() shouldBe true
+                lint.status shouldBe 0
+                lint.err shouldNotContain "2 つ以上"
+                lint.err.split("読めない check-list.html").size shouldBe 2
+                lint.out shouldContain "定義: file://${project.resolve("architecture-test/src/test/kotlin")}"
             } finally {
                 locked.setPosixFilePermissions(PosixFilePermissions.fromString("rw-------"))
             }
@@ -360,14 +322,14 @@ class WorkdirSpec : FreeSpec({
     "KATACHI_WORKDIR の check-list.html が読めないと、作業用ディレクトリではないと言って止まる（KATACHI-420）"
         .config(enabledIf = { System.getProperty("user.name") != "root" }) {
             val project = projectWithWorkdir("""{"meta": {}, "steps": []}""")
-            gradleProject(project, "project", withDefinition = true)
+            definitionProject(project, withDefinition = true)
             val workdir = project.resolve(".local/install-katachi")
             val locked = workdir.resolve("check-list.html")
             locked.setPosixFilePermissions(PosixFilePermissions.fromString("---------"))
             try {
                 val env = mapOf("PATH" to System.getenv("PATH"), "KATACHI_WORKDIR" to workdir.toString())
 
-                val run = runCapturing(project, listOf("agent", "test"), env)
+                val run = runCapturing(project, listOf("lint"), env)
 
                 run.status shouldBe 1
                 run.err shouldNotContain "Exception"
@@ -380,8 +342,7 @@ class WorkdirSpec : FreeSpec({
 
 /**
  * A repository whose main work tree holds the working directory (recording [projectDir] of it as the
- * project root), and a linked worktree of it laid out as `git worktree add` leaves it. The `gradlew` of
- * each prints which one ran.
+ * project root), and a linked worktree of it laid out as `git worktree add` leaves it.
  */
 private class WorktreeFixture(projectDir: String = "", definitionInMain: Boolean = true) {
     val main: Path = createTempDirectory("katachi-main-")
@@ -397,8 +358,8 @@ private class WorktreeFixture(projectDir: String = "", definitionInMain: Boolean
         workdir.resolve("tmp").createDirectories()
         workdir.resolve("check-list.html").writeText(checkListHtml("""{"meta": {"projectRoot": "$mainProject"}, "steps": []}""", "ja"))
 
-        gradleProject(mainProject, "main", withDefinition = definitionInMain)
-        gradleProject(worktree.resolve(projectDir).normalize(), "worktree", withDefinition = true)
+        definitionProject(mainProject, withDefinition = definitionInMain)
+        definitionProject(worktree.resolve(projectDir).normalize(), withDefinition = true)
     }
 
     fun env(): Map<String, String> = mapOf("PATH" to System.getenv("PATH"), "KATACHI_WORKDIR" to workdir.toString())
@@ -406,20 +367,22 @@ private class WorktreeFixture(projectDir: String = "", definitionInMain: Boolean
     fun runFromWorktree(vararg args: String): RecordedRun = runCapturing(worktree, args.toList(), env())
 }
 
-private fun gradleProject(dir: Path, name: String, withDefinition: Boolean) {
+private fun definitionProject(dir: Path, withDefinition: Boolean) {
     dir.createDirectories()
-    if (withDefinition) dir.resolve("architecture-test/src/test/kotlin").createDirectories()
-    dir.resolve("gradlew").writeText("#!/bin/sh\necho \"args: from $name\"\necho \"BUILD SUCCESSFUL in 1s\"\nexit 0\n")
-    dir.resolve("gradlew").setPosixFilePermissions(PosixFilePermissions.fromString("rwxr-xr-x"))
+    if (withDefinition) {
+        val definition = dir.resolve("architecture-test/src/test/kotlin").createDirectories()
+        // lint names the definition directory it read only when it reports something, so give it one finding.
+        definition.resolve("MixedRole.kt").writeText("val m = \"Mixed\".role { layout { \"README.md\".file(); \"LICENSE\".file() } }\n")
+    }
 }
 
 /**
- * [dir] as a project whose `gradlew` prints [name], with the working directory in `.local/install-katachi` recording
+ * [dir] as a project with a definition, with the working directory in `.local/install-katachi` recording
  * [recordedRoot] as `meta.projectRoot` (and [recordedWorkdir] as `meta.workdir`), as `cp -r` leaves a copy. Returns the
  * working directory.
  */
-private fun projectRecording(dir: Path, name: String, recordedRoot: Path, recordedWorkdir: String? = null, withDefinition: Boolean = true): Path {
-    gradleProject(dir, name, withDefinition)
+private fun projectRecording(dir: Path, recordedRoot: Path, recordedWorkdir: String? = null, withDefinition: Boolean = true): Path {
+    definitionProject(dir, withDefinition)
     val workdir = dir.resolve(".local/install-katachi")
     workdir.resolve("tmp").createDirectories()
     val meta = listOfNotNull("\"projectRoot\": \"$recordedRoot\"", recordedWorkdir?.let { "\"workdir\": \"$it\"" }).joinToString(", ")
@@ -440,7 +403,7 @@ private fun projectWithTwoWorkdirs(lang: String? = null): Path {
     val old = project.resolve(".local/install-katachi-old")
     old.resolve("tmp").createDirectories()
     old.resolve("check-list.html").writeText(checkListHtml("""{"meta": {}, "steps": []}""", lang ?: "en"))
-    gradleProject(project, "project", withDefinition = false)
+    definitionProject(project, withDefinition = false)
     project.resolve("static-analysis/katachi/src/test/kotlin").createDirectories()
     return project
 }

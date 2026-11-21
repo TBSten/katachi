@@ -17,17 +17,18 @@ internal fun ScriptContext.runDoctor(args: List<String>): Int {
     parsed.value("--lang")?.let(::setLangOption)
     warnMissingGit()
     val kotlin = detectKotlinVersion(cwd)
-    val kotlinIsTooOld = kotlin != null && kotlinTooOld(kotlin)
+    val kotlinIsTooOld = kotlin != null && kotlinTooOld(kotlin.version)
     // The first line is the verdict: it must not say "everything is available" above a warning.
-    if (kotlinIsTooOld) {
+    val jdk = detectGradleJdk(cwd)
+    if (kotlinIsTooOld || jdk.needsAttention) {
         say(Messages.Doctor.somethingNeedsAttention(ScriptVersion.current()))
     } else {
         say(Messages.Doctor.everythingNeedsAvailableKatachi(ScriptVersion.current()))
     }
-    checkGradleJdk(cwd)
+    checkGradleJdk(cwd, jdk)
     if (kotlin != null) {
-        note("Kotlin: $kotlin" + if (kotlinIsTooOld) pick(Messages.Doctor.kotlinTooOldSuffix) else "")
-        if (kotlinIsTooOld) warn(kotlinTooOldMessage(cwd, kotlin, forScaffold = false))
+        note(Messages.Doctor.kotlin(kotlin.version, fileUri(kotlin.file), kotlinIsTooOld))
+        if (kotlinIsTooOld) warn(kotlinTooOldMessage(cwd, kotlin.version, kotlin.file, forScaffold = false))
     }
     when (val lookup = lookupWorkdir()) {
         is WorkdirLookup.Ambiguous -> warn(ambiguousWorkdirMessage(lookup))

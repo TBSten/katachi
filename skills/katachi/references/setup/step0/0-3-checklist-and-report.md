@@ -22,6 +22,7 @@
 
 - **Read** the lines between the opening tag of the block and the next `</script>`. There is no need to read the rest of the HTML.
 - **Write** by editing those lines in place with your file editing tool. Change only what you mean to change; leave every other key as it is.
+- **Make the text you replace match one place only.** Start it at the `"id"` line of the item or step you change (`"id": "5-1",` down to `"done": false` for an item, `"id": "3",` down to `"warning": null,` for a step). Each block is followed by an example in an HTML comment (`<!-- Example: …`; ja: `<!-- 記入例: …`) with the same ids: never edit it. If your tool still finds more than one match, add the lines around it until there is one; never replace every match.
 - **Keep it valid JSON**: double quotes, no trailing commas, `null` (not `None`), numbers without quotes where the template has a number.
 - **Keep both tags alone on their own lines**, as the template has them. The `katachi` command finds the block by those lines.
 - **Never touch the HTML outside the two blocks**, and never replace the file with a fresh copy once it has data in it.
@@ -32,7 +33,7 @@
 
 #### Arrays: add entries, never drop them
 
-Add an entry by appending an object to the array; keep the entries already there. The one exception is `violations`: when 6-0 fixes a violation recorded there (the summary of `katachi agent test` no longer shows it), remove its entry, and once the array is empty, clear the warning on step 4. Otherwise the fixed violation stays on the page and in the report from step 6. One entry per thing (one file, one Role, one question). Do not add a second entry for something already recorded (the same `path` or `name`). The fields each array takes:
+Add an entry by appending an object to the array; keep the entries already there. The one exception is `violations`: when 6-0 fixes a violation recorded there (the log of the check no longer shows it), remove its entry, and once the array is empty, clear the warning on step 4. Otherwise the fixed violation stays on the page and in the report from step 6. One entry per thing (one file, one Role, one question). Do not add a second entry for something already recorded (the same `path` or `name`). The fields each array takes:
 
 | Array | Where | Fields |
 |---|---|---|

@@ -17,6 +17,8 @@ import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.testing.Test;
+import org.gradle.jvm.toolchain.JavaLauncher;
+import org.gradle.jvm.toolchain.JavaToolchainService;
 
 /**
  * Registers one task per katachi processor on the module that holds the katachi architecture
@@ -229,12 +231,19 @@ public class KatachiPlugin implements Plugin<Project> {
             testSourceSet.getJava().srcDir(
                     generateKatachiEntryPoint.flatMap(GenerateKatachiEntryPointTask::getOutputDirectory));
 
+            // Gradle 8 starts a JavaExec on the JVM running Gradle, which cannot load test classes
+            // compiled for a newer toolchain; Gradle 9 already defaults to the toolchain. Set as a
+            // convention below, so that a javaLauncher from the build script still wins.
+            final Provider<JavaLauncher> toolchainLauncher = project.getExtensions()
+                    .getByType(JavaToolchainService.class).launcherFor(java.getToolchain());
+
             // `configureEach` rather than a loop over what exists now: a processor registered
             // after this point still gets its classpath. `runtimeClasspath` carries the tasks
             // that produce it, and JavaExec declares `classpath` as @Classpath, so compiling the
             // tests is ordered before a run without a `dependsOn` of its own.
             project.getTasks().withType(KatachiProcessorTask.class).configureEach(task -> {
                 task.setClasspath(testSourceSet.getRuntimeClasspath());
+                task.getJavaLauncher().convention(toolchainLauncher);
                 // A `katachi<Key>` task prints the same report `assert()` prints, so the same
                 // `-Dkatachi.maxViolations` reaches its JVM. No `upToDateWhen`: the value only
                 // changes what the report looks like, and as an @Input it reruns the task when
@@ -242,8 +251,10 @@ public class KatachiPlugin implements Plugin<Project> {
                 task.getJvmArgumentProviders().add(new KatachiMaxViolationsArguments(
                         project.getProviders().systemProperty(KatachiMaxViolationsArguments.MAX_VIOLATIONS_PROPERTY)));
             });
-            project.getTasks().withType(KatachiProcessorsTask.class).configureEach(task ->
-                    task.setClasspath(testSourceSet.getRuntimeClasspath()));
+            project.getTasks().withType(KatachiProcessorsTask.class).configureEach(task -> {
+                task.setClasspath(testSourceSet.getRuntimeClasspath());
+                task.getJavaLauncher().convention(toolchainLauncher);
+            });
         });
 
         // The architecture test is an ordinary Test task, and it is where the baseline is

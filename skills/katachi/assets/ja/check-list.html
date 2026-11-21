@@ -1443,7 +1443,7 @@
         },
         {
           "id": "3-3",
-          "label": "定義をリファクタリングし（ファイル・パッケージの分割、説明、共通化）、compare-violations で検査結果が前後で変わらないことを確かめた",
+          "label": "定義をリファクタリングし（ファイル・パッケージの分割、説明、共通化）、検査のログを前後で比べて、検査結果が変わらないことを確かめた",
           "done": false
         }
       ]
@@ -1510,7 +1510,7 @@
         },
         {
           "id": "6-4",
-          "label": "テンプレートを書き、1本生成した直後に検査用モジュールの test が成功することを確かめた",
+          "label": "テンプレートを書き、1本生成した直後の検査用モジュールの test で違反が増えないことを確かめた",
           "done": false
         }
       ]
@@ -1524,7 +1524,7 @@
 }
 </script>
 
-<!-- 記入例: 上の JSON が完全に埋まった状態。この形で値を入れる。
+<!-- 記入例: 上の JSON が完全に埋まった状態。この形で値を入れる。title と label はここでは「…」に縮めてある（上のものはそのまま残す）。このコメントは書き換えない。
 {
   "meta": {
     "workdir": ".local/install-katachi",
@@ -1539,146 +1539,146 @@
   "steps": [
     {
       "id": "0",
-      "title": "事前準備",
+      "title": "…",
       "warning": null,
       "items": [
         {
           "id": "0-1",
-          "label": "無害なコマンドを1種類ずつ実際に実行し、このあとの作業に要る許可を先に取った",
+          "label": "…",
           "done": true
         },
         {
           "id": "0-2",
-          "label": "katachi skill から作業用ディレクトリを作り、meta（Gradle ルート / Git / バージョン）を埋めた",
+          "label": "…",
           "done": true
         }
       ]
     },
     {
       "id": "1",
-      "title": "現在のプロジェクトコードベースの構造・各コンポーネントの制約を解析・推論",
+      "title": "…",
       "warning": null,
       "items": [
         {
           "id": "1-1",
-          "label": "コードより先にプロジェクト自身のドキュメントを読んだ",
+          "label": "…",
           "done": true
         },
         {
           "id": "1-2",
-          "label": "このページのコードベース レポート（report の JSON）を埋めた",
+          "label": "…",
           "done": true
         },
         {
           "id": "1-3",
-          "label": "書き方の方針を聞いて preferences に記録した",
+          "label": "…",
           "done": true
         }
       ]
     },
     {
       "id": "2",
-      "title": "検査用モジュール（デフォルト architecture-test/）を作成し ビルドに組み込む",
+      "title": "…",
       "warning": null,
       "items": [
         {
           "id": "2-1",
-          "label": "katachi scaffold \u002d\u002dpackage <パッケージ名> を実行した",
+          "label": "…",
           "done": true
         },
         {
           "id": "2-2",
-          "label": "定義が空の状態で 検査用モジュールの test が Unexpected だけで失敗することを確認した",
+          "label": "…",
           "done": true
         }
       ]
     },
     {
       "id": "3",
-      "title": "architecture { } 定義を作成",
+      "title": "…",
       "warning": null,
       "items": [
         {
           "id": "3-1",
-          "label": "手順書 3-1 のドキュメントのページ（layout・role・basic-api。要るなら kt-file-content・gradle・ソースセット）を読んだ",
+          "label": "…",
           "done": true
         },
         {
           "id": "3-2",
-          "label": "architecture { } 定義を書き、検査用モジュールの test の出力をリファクタリング前の基準として保存した",
+          "label": "…",
           "done": true
         },
         {
           "id": "3-3",
-          "label": "定義をリファクタリングし（ファイル・パッケージの分割、説明、共通化）、compare-violations で検査結果が前後で変わらないことを確かめた",
+          "label": "…",
           "done": true
         }
       ]
     },
     {
       "id": "4",
-      "title": "検証する",
+      "title": "…",
       "warning": "アーキテクチャ違反を 1 件残しました",
       "items": [
         {
           "id": "4-1",
-          "label": "検査用モジュールの test を実行した",
+          "label": "…",
           "done": true
         },
         {
           "id": "4-2",
-          "label": "エラーに対処した（katachi 由来でないもの（Gradle / Java など）は直し、残した違反は記録した）",
+          "label": "…",
           "done": true
         },
         {
           "id": "4-3",
-          "label": "検査用モジュールの katachiDocs で docs を生成し、出力を確かめた",
+          "label": "…",
           "done": true
         }
       ]
     },
     {
       "id": "5",
-      "title": "チェックリストを確認する",
+      "title": "…",
       "warning": null,
       "items": [
         {
           "id": "5-1",
-          "label": "このチェックリスト全体を見直した",
-          "done": false
+          "label": "…",
+          "done": true
         },
         {
           "id": "5-2",
-          "label": "未記入が残っていないことを確かめた",
-          "done": false
+          "label": "…",
+          "done": true
         }
       ]
     },
     {
       "id": "6",
-      "title": "（任意）導入できたことを確かめ、CI・ドキュメント生成・テンプレートに広げる",
+      "title": "…",
       "warning": null,
       "optional": true,
       "items": [
         {
           "id": "6-1",
-          "label": "題材となる実装タスクを回して architecture { } の修正要否を判断した",
-          "done": false
+          "label": "…",
+          "done": true
         },
         {
           "id": "6-2",
-          "label": "CI に検査用モジュールの test を組み込んだ",
-          "done": false
+          "label": "…",
+          "done": true
         },
         {
           "id": "6-3",
-          "label": "ドキュメント生成をセットアップした（title / description、コミットするかの決定）",
-          "done": false
+          "label": "…",
+          "done": true
         },
         {
           "id": "6-4",
-          "label": "テンプレートを書き、1本生成した直後に検査用モジュールの test が成功することを確かめた",
-          "done": false
+          "label": "…",
+          "done": true
         }
       ]
     }

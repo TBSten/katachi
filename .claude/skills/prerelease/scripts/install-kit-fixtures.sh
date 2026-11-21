@@ -1,5 +1,5 @@
 # check-install-kit.sh が読み込む（単独では実行しない）。
-# インストールキット（katachi コマンドの doctor / scaffold / agent test と、skill のテンプレート）を試す、合成の Gradle プロジェクト（fixture）の定義。
+# インストールキット（katachi コマンドの doctor / scaffold と、skill のテンプレート）を試す、合成の Gradle プロジェクト（fixture）の定義。
 #
 # docs/AGENTS.md の「public/install/」の節の3種（agp / noroot / rootjvm）と、
 # これまでに不具合が出た形を1つずつ。足すときは FIXTURES・fx_<名前>・fx_desc_<名前>・fx_anchor_<名前> を揃える。

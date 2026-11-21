@@ -7,12 +7,11 @@ The katachi check failed: on CI, in a pull request, or locally. A violation mean
 Locally, run:
 
 ```sh
-katachi agent test
+mkdir -p build/katachi
+./gradlew :architecture-test:test --console=plain -Dkatachi.maxViolations=all > build/katachi/test-before-fix.log 2>&1; echo "gradle exit status: $?"
 ```
 
-It runs `./gradlew :architecture-test:test` with every violation in the log (not only the first 10), prints a summary, keeps the full log and shows what changed since the previous run. Section 4 compares against it. If the verification module (the module that applies the `me.tbsten.katachi` plugin) is not `architecture-test` and there is no check list from the setup, run `katachi agent test --module-dir <its path>`, here and in section 4.
-
-Without the `katachi` command, run `./gradlew :architecture-test:test -Dkatachi.maxViolations=all` (without `-Dkatachi.maxViolations=all` only the first 10 are printed). The violations are in the test's failure message: in the console, or in full under `architecture-test/build/test-results/test/` (read `:architecture-test` as the verification module's path).
+This runs the check with every violation in the log (not only the first 10; without `-Dkatachi.maxViolations=all` only the first 10 are printed) and keeps the full log, which section 4 compares against. [../run-the-check/README.md](../run-the-check/README.md) says how to read it (read `:architecture-test` as the verification module's path). The violations are also in the test's failure message, in full under `architecture-test/build/test-results/test/`.
 
 On CI, the job log has the same output. If the failure is not a violation at all (a compile error, dependency resolution, `Could not start Gradle Test Executor`), it is a build problem: fix that first, the check has not run.
 
@@ -31,13 +30,14 @@ Each violation is a paragraph like this:
 
 | Label | What it says | Usually |
 |---|---|---|
-| `[UnexpectedFile]` / `[UnexpectedDirectory]` | A file or directory no Role declares (for a directory, nothing below it was checked) | A new kind of file (add a Role), a file in the wrong place (move it), or a structure that changed (follow it) |
+| `[UnexpectedFile]` / `[UnexpectedDirectory]` | A file or directory no Role declares (for a directory, nothing below it was checked) | A new kind of file (add a Role), a file in the wrong place (move it), or a structure that changed (follow it). A file the OS writes on its own (`.DS_Store`, `Thumbs.db`, `desktop.ini`) never gets a Role: add it to `.gitignore` as its `How to fix:` says (a Role fails with `[MissingFile]` on a checkout without it, such as CI) |
 | `[MissingFile]` | A Role declares a single file that does not exist | The file was removed or renamed; drop or fix the declaration, or create the file if it should exist. For a Gradle wrapper file, run `gradle wrapper`, or write `gradle(requireWrapper = false)` when the project has no wrapper |
 | `[UnsatisfiedFileConstraint]` | A constraint on contents (`ktFileContent { }`, `fileConstraint`) does not hold | The code breaks the rule (fix the code, with the user's consent), or the rule is out of date |
-| `[CaptureMismatch]` | Two places named with the same `capture("…")` have different values | A package that does not match its module directory, or a layout that should give the two places separate names |
+| `[CaptureMismatch]` | Two places named with the same `capture("…")` have different values | A package that spells its module directory's name in another case (write the conversion the block suggests, such as `capture("feature").flatCase`), a package that does not match its module directory, or a layout that should give the two places separate names |
 | `[UncheckedFileConstraint]` / `[UncheckedFile]` / `[UncheckedDirectory]` / `[UncheckedCheck]` | The check could not run for that path; it is neither allowed nor rejected | Read the cause printed under it. `[UncheckedFileConstraint]` with `Pass FileConstraintCheck() to assert()` means the test does not run the constraint check |
 | `[StaleBaselineEntry]` | The baseline holds back a violation that no longer exists | Something was fixed: prune the entry (below) |
 | `[AmbiguousLayout]` (warning) | Two declarations claim the same file | Narrow one of them; the file must belong to one Role |
+| `[IgnoredLayout]` (warning) | A line of a Role's `layout { }` lies in a directory an `ignore()` hides (or a module's `build`, which `gradle()` ignores), so none of its files is checked | Remove or narrow the `ignore()` if the files matter; otherwise drop the line from the Role |
 
 Warnings never fail the check, but do not ignore them: fix them or tell the user why they stay.
 
@@ -55,7 +55,7 @@ Look at the pull request or the recent commits for intent: a refactor PR that mo
 
 ## 4. Confirm
 
-Run `katachi agent test` again (on CI, look at the job). Its summary shows what changed since the previous run: every violation you meant to fix should be gone, and nothing new should appear. If you changed the definition, also put a stray file where you changed it and confirm it still fails, then delete the file.
+Run the check again into `build/katachi/test-after-fix.log` (on CI, look at the job) and compare it with `test-before-fix.log` as "Compare two runs" in [../run-the-check/README.md](../run-the-check/README.md) says: every violation you meant to fix should be gone, and nothing new should appear. If you changed the definition, also put a stray file where you changed it and confirm it still fails, then delete the file.
 
 ## Tolerating what is there now
 

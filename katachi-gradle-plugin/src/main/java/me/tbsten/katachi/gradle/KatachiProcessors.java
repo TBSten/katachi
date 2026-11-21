@@ -8,8 +8,11 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
+import javax.inject.Inject;
+
 import org.gradle.api.Action;
 import org.gradle.api.InvalidUserDataException;
+import org.gradle.api.model.ObjectFactory;
 
 /**
  * The receiver of {@code katachi { processors { ... } } }: every processor this module
@@ -26,6 +29,12 @@ import org.gradle.api.InvalidUserDataException;
  * only points at the generated file's own compile error, with the user's own build script
  * nowhere in the stack trace. This module does not depend on {@code :katachi}, so every error
  * here is a plain Gradle exception rather than a Katachi one.
+ *
+ * <p>Gradle makes this object for {@link KatachiExtension}, and this object has Gradle make the
+ * typed blocks it hands out, so that in a {@code build.gradle} (Groovy) the closure given to
+ * {@link #docs(Action)}, {@link #register(String, String, Action)} and every other method taking
+ * an {@link Action} -- {@code diff { markdown { } }} included -- runs against the block it
+ * configures. {@link KatachiExtension} says why that takes Gradle.
  *
  * <h2>Which processors are there without being registered</h2>
  *
@@ -188,10 +197,24 @@ public class KatachiProcessors {
     private final Map<String, String> registrations = new LinkedHashMap<>();
     private final Map<String, KatachiProcessorArgs> configuredArgs = new LinkedHashMap<>();
     private final Map<String, KatachiProcessorOutputs> declaredOutputs = new LinkedHashMap<>();
-    private final KatachiDocsOptions docs = new KatachiDocsOptions();
-    private final KatachiTemplateOptions template = new KatachiTemplateOptions();
-    private final KatachiDiffOptions diff = new KatachiDiffOptions();
+    private final KatachiDocsOptions docs;
+    private final KatachiTemplateOptions template;
+    private final KatachiDiffOptions diff;
     private final List<Consumer<String>> keyAddedListeners = new ArrayList<>();
+
+    /**
+     * Made by Gradle for {@link KatachiExtension}; a build script does not call it.
+     *
+     * @param objects what makes the blocks {@link #docs(Action)}, {@link #template(Action)} and
+     *     {@link #diff(Action)} configure, so that a Groovy closure given to one of their own
+     *     methods, such as {@link KatachiDiffOptions#markdown(Action)}, runs against its block too.
+     */
+    @Inject
+    public KatachiProcessors(ObjectFactory objects) {
+        this.docs = objects.newInstance(KatachiDocsOptions.class);
+        this.template = objects.newInstance(KatachiTemplateOptions.class);
+        this.diff = objects.newInstance(KatachiDiffOptions.class);
+    }
 
     /**
      * Registers a processor, and the Gradle task that runs it.
@@ -338,8 +361,10 @@ public class KatachiProcessors {
      *
      * <p>Without this, a processor task runs every time. See {@link KatachiProcessorOutputs} for
      * what the declaration promises. The key does not have to be registered yet, and may be one
-     * of the defaults: {@code outputs("docs") { readsProjectFiles = true }} makes
-     * {@code katachiDocs} run every time again.
+     * of the defaults: {@code outputs("docs") { readsProjectFiles = false }} lets
+     * {@code katachiDocs} be up to date, which is only right for a definition whose every role
+     * with a {@code ktFileContent { }} (or another constraint that describes itself with an
+     * example file) names an {@code example(...)}.
      *
      * <pre>{@code
      * katachi {
@@ -391,9 +416,12 @@ public class KatachiProcessors {
         }
         if (KatachiDocsOptions.KEY.equals(key)
                 && DEFAULT_REGISTRATIONS.get(key).equals(getRegistrations().get(key))) {
-            // GenerateDocumentation reads the declarations only (ModuleIndex.unresolved, no
-            // filesOf), writes nothing but its outputDir, and writes nothing at all in check mode.
-            base.setReadsProjectFiles(false);
+            // GenerateDocumentation stays declared as reading the project: a role whose
+            // constraint describes itself with an example file (ktFileContent { }) and that names
+            // no example(...) gets the first matching file of the project on its page, and no
+            // input of the task changes with those files. The rest is what
+            // outputs("docs") { readsProjectFiles = false } needs to make the task cacheable: it
+            // writes nothing but its outputDir, and nothing at all in check mode.
             base.setOutputDir(KatachiDocsOptions.DEFAULT_OUTPUT_DIR);
             base.setOutputDirArg("outputDir");
             base.writesNothingWhen("mode", KatachiDocsMode.CHECK.wireName());

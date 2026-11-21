@@ -77,14 +77,21 @@ internal object Messages {
         )
 
         fun somethingNeedsAttention(scriptVersionCurrent: Any?): Msg = Msg(
-            ja = "対応が必要なものがあります（katachi $scriptVersionCurrent）。下の [!] を見てください。",
-            en = "Something needs attention (katachi $scriptVersionCurrent). See the [!] below.",
+            ja = "対応が必要なものがあります（katachi $scriptVersionCurrent）。下の [!]・[x] を見てください。",
+            en = "Something needs attention (katachi $scriptVersionCurrent). See the [!] and [x] below.",
         )
 
-        val kotlinTooOldSuffix: Msg = Msg(
-            ja = "（古すぎます）",
-            en = " (too old)",
-        )
+        fun kotlin(version: Any?, fileUri: Any?, tooOld: Boolean): Msg = if (tooOld) {
+            Msg(
+                ja = "Kotlin: $version（古すぎます。$fileUri から）",
+                en = "Kotlin: $version (too old; from $fileUri )",
+            )
+        } else {
+            Msg(
+                ja = "Kotlin: $version（$fileUri から）",
+                en = "Kotlin: $version (from $fileUri )",
+            )
+        }
 
         fun langMustEnJa(value: Any?): Msg = Msg(
             ja = "--lang は en か ja です（指定されたのは '$value'）。",
@@ -324,6 +331,23 @@ internal object Messages {
                 "    $gradleLine",
         )
 
+        fun projectUsesKotlinReadFrom(version: Any?, fileUri: Any?, min: Any?, whenLine: Any?, gradleLine: Any?): Msg = Msg(
+            ja = """
+                このプロジェクトの Kotlin は $version です（$fileUri から読みました）。katachi は Kotlin $min 以降が要ります（古いコンパイラは katachi の metadata を読めず、architecture などがすべて Unresolved reference になる）。
+                    このファイルがプロジェクトの Kotlin のバージョンを決めていないなら（includeBuild したビルドや buildSrc など）、Kotlin は上げずに、scaffold に --kotlin <バージョン> を付けて実際のバージョンを渡してください。
+                    $whenLine
+                    Kotlin を上げるのは既存のビルドの変更なので、同意なしに上げないこと。同意を得たら Kotlin を $min 以降に上げます。
+                    $gradleLine
+            """.trimIndent(),
+            en = """
+                This project uses Kotlin $version (read from $fileUri ). katachi needs Kotlin $min or later (older compilers cannot read katachi's metadata, and every symbol such as architecture becomes an Unresolved reference).
+                    If that file does not set the project's Kotlin version (an included build or buildSrc, for example), pass the actual version to scaffold with --kotlin <version> instead of upgrading Kotlin.
+                    $whenLine
+                    Upgrading Kotlin changes the existing build, so do not do it without the user's consent. Once they agree, upgrade Kotlin to $min or later.
+                    $gradleLine
+            """.trimIndent(),
+        )
+
         val toolchainversionGradleGradleDaemon: Msg = Msg(
             ja = "gradle/gradle-daemon-jvm.properties の toolchainVersion",
             en = "toolchainVersion in gradle/gradle-daemon-jvm.properties",
@@ -334,9 +358,28 @@ internal object Messages {
             en = "java on PATH ($onPath)",
         )
 
+        fun javaPathMacOs(onPath: Any?, javaHomeTool: Any?, home: Any?): Msg = Msg(
+            ja = "PATH の java（$onPath。$javaHomeTool が選ぶ JDK は $home）",
+            en = "java on PATH ($onPath, which runs the JDK $javaHomeTool picks: $home)",
+        )
+
         val couldNotFindJdk: Msg = Msg(
             ja = "Gradle を動かす JDK を見つけられませんでした（JAVA_HOME も PATH の java もありません）。katachi は JDK $JDK_MIN_MAJOR 以上が要ります。",
             en = "Could not find the JDK that runs Gradle (there is no JAVA_HOME and no java on PATH). katachi needs JDK $JDK_MIN_MAJOR or later.",
+        )
+
+        fun couldNotFindJdkMacOs(onPath: Any?, javaHomeTool: Any?): Msg = Msg(
+            ja = "Gradle を動かす JDK を見つけられませんでした（シェルに JAVA_HOME が無く、PATH の $onPath が動かす JDK も $javaHomeTool で見つかりません）。" +
+                "katachi は JDK $JDK_MIN_MAJOR 以上が要ります。",
+            en = "Could not find the JDK that runs Gradle (the shell has no JAVA_HOME, and $javaHomeTool finds no JDK for java on PATH ($onPath) to run). " +
+                "katachi needs JDK $JDK_MIN_MAJOR or later.",
+        )
+
+        fun invalidJavaHome(javaHome: Any?): Msg = Msg(
+            ja = "JAVA_HOME（$javaHome）に bin/java がありません。./gradlew も「JAVA_HOME is set to an invalid directory」で止まります。\n" +
+                "    JAVA_HOME を JDK $JDK_MIN_MAJOR 以上のディレクトリに向けるか、unset JAVA_HOME してから、もう一度実行してください。",
+            en = "JAVA_HOME ($javaHome) has no bin/java, so ./gradlew stops too (\"JAVA_HOME is set to an invalid directory\").\n" +
+                "    Point JAVA_HOME at a JDK $JDK_MIN_MAJOR or later directory, or run unset JAVA_HOME, then run this again.",
         )
 
         fun couldNotReadVersion(from: Any?): Msg = Msg(
@@ -351,6 +394,13 @@ internal object Messages {
             en = "The JDK that runs Gradle is $jdkMajor (${source.en}). katachi needs JDK $JDK_MIN_MAJOR or later.\n" +
                 "    Point JAVA_HOME at JDK $JDK_MIN_MAJOR or later, or set org.gradle.java.home in gradle.properties to one,\n" +
                 "    then run this again.",
+        )
+
+        fun katachiRunsOnJdk(message: Msg, major: Any?, home: Any?, quotedHome: Any?): Msg = Msg(
+            ja = "${message.ja}\n" +
+                "    katachi は JDK $major（$home）で動いています。Gradle にもこの JDK を使うなら、シェルで export JAVA_HOME=$quotedHome としてから実行し直してください。",
+            en = "${message.en}\n" +
+                "    katachi runs on JDK $major ($home). To use this JDK for Gradle too, run export JAVA_HOME=$quotedHome in the shell, then run this again.",
         )
 
         fun gradleSJdk(jdkMajor: Any?, source: Msg): Msg = Msg(
@@ -397,14 +447,12 @@ internal object Messages {
     }
 
     object RunScript {
-        fun commandsAiAgentRuns(command: Any?): Msg = Msg(
-            ja = "$command は '$AGENT_COMMAND $command' です（AI エージェントが katachi skill の手順で使うコマンドは agent の下にあります）",
-            en = "$command is '$AGENT_COMMAND $command' (the commands an AI agent runs for the katachi skill's steps sit under agent)",
-        )
-
-        fun notSubcommandSeeHelp(command: Any?): Msg = Msg(
-            ja = "$AGENT_COMMAND のサブコマンドではありません: $command（$AGENT_COMMAND --help を見てください）",
-            en = "Not a subcommand of $AGENT_COMMAND: $command (see $AGENT_COMMAND --help)",
+        /** `katachi agent`, `katachi agent test`, `katachi test`, `katachi compare-violations` (KATACHI-429). */
+        fun removedCheckCommand(command: Any?): Msg = Msg(
+            ja = "$command は無くなりました。検査は ./gradlew <検査用モジュール>:test を直接実行します" +
+                "（手順は katachi skill: gh skill install TBSten/katachi katachi か npx skills add TBSten/katachi --skill katachi で入れる）",
+            en = "$command was removed. Run the check with ./gradlew <verification module>:test directly " +
+                "(the steps are in the katachi skill: get it with gh skill install TBSten/katachi katachi or npx skills add TBSten/katachi --skill katachi)",
         )
 
         fun removedForTheSkill(command: Any?): Msg = Msg(
@@ -710,9 +758,9 @@ internal object Messages {
             en = "Add the following line inside the plugins { } block that comes **after** buildscript { }\nin $rootBuildUri (create plugins { } if there is none).",
         )
 
-        fun nextTestArchitectureEmpty(moduleOption: Any?): Msg = Msg(
-            ja = "次: $AGENT_COMMAND test$moduleOption\n    architecture { } が空なので、すべてのファイルが Unexpected として報告されて\n    失敗するのが正常です。Unexpected 以外のエラーが出た場合だけが問題です。",
-            en = "Next: $AGENT_COMMAND test$moduleOption\n    architecture { } is empty, so every file is reported as Unexpected and the test\n    fails. That is expected. Only errors other than Unexpected are a problem.",
+        fun nextTestArchitectureEmpty(modulePath: Any?): Msg = Msg(
+            ja = "次: ./gradlew $modulePath:test\n    architecture { } が空なので、すべてのファイルが Unexpected として報告されて\n    失敗するのが正常です。Unexpected 以外のエラーが出た場合だけが問題です。",
+            en = "Next: ./gradlew $modulePath:test\n    architecture { } is empty, so every file is reported as Unexpected and the test\n    fails. That is expected. Only errors other than Unexpected are a problem.",
         )
 
         val projectMatchesDeclaration: Msg = Msg(
@@ -735,230 +783,6 @@ internal object Messages {
         fun needsValue(option: Any?): Msg = Msg(
             ja = "$option に値がありません。",
             en = "$option needs a value.",
-        )
-    }
-
-    object Test {
-        fun addedRemoved(added: Any?, removed: Any?): Msg = Msg(
-            ja = "増えた $added 件 / 減った $removed 件",
-            en = "Added $added / removed $removed",
-        )
-
-        fun moreSeeLog(diffSize: Any?): Msg = Msg(
-            ja = "  ほか $diffSize 件（ログを見る）",
-            en = "  and $diffSize more (see the log)",
-        )
-
-        fun notFoundSaveOutput(logUri: Any?, moduleGradlePath: Any?, moduleOption: Any?): Msg = Msg(
-            ja = "$logUri がありません。$AGENT_COMMAND test --save <名前>$moduleOption で取るか、./gradlew $moduleGradlePath:test の出力をこのパスに保存してください（手順 3-2 / 3-3）。",
-            en = "$logUri not found. Capture it with $AGENT_COMMAND test --save <name>$moduleOption, or save the output of ./gradlew $moduleGradlePath:test to this path (steps 3-2 / 3-3).",
-        )
-
-        fun hasNoCheckResult(logUri: Any?): Msg = Msg(
-            ja = "$logUri に検査の結果がありません。コンパイルエラーなどで検査まで届いていません。直してから取り直してください。",
-            en = "$logUri has no check result. The build did not get as far as the check (a compile error, for example). Fix it and capture the log again.",
-        )
-
-        fun hasNoCheckResultTestsDidNotRun(logUri: Any?, reason: Msg): Msg = Msg(
-            ja = "$logUri に検査の結果がありません。テストが実行されていません（${reason.ja}）。テストを実行してから取り直してください。",
-            en = "$logUri has no check result: the tests did not run (${reason.en}). Run them and capture the log again.",
-        )
-
-        fun taskOutcome(task: Any?, outcome: Any?): Msg = Msg(
-            ja = "$task が $outcome",
-            en = "$task $outcome",
-        )
-
-        fun allTestCasesSkipped(skipped: Any?): Msg = Msg(
-            ja = "テスト $skipped 件がすべて SKIPPED",
-            en = "all $skipped test cases SKIPPED",
-        )
-
-        val noTestCaseRan: Msg = Msg(
-            ja = "実行したテストが 0 件",
-            en = "no test case ran",
-        )
-
-        fun resultTestsDidNotRun(reason: Msg): Msg = Msg(
-            ja = "結果: テストが実行されていません（${reason.ja}）。何も検査していません。",
-            en = "Result: the tests did not run (${reason.en}). Nothing was checked.",
-        )
-
-        val dryRunRunsNoTask: Msg = Msg(
-            ja = "Gradle の --dry-run（-m）はタスクを実行しません。外してから、もう一度実行してください。",
-            en = "Gradle's --dry-run (-m) runs no task. Run this again without it.",
-        )
-
-        val buildTurnsTestTaskOff: Msg = Msg(
-            ja = "ビルドの設定がテストのタスクを止めていないか（enabled = false、onlyIf { } など）を確かめてください。",
-            en = "Check whether the build turns the test task off (enabled = false, onlyIf { } and the like).",
-        )
-
-        val noTestClass: Msg = Msg(
-            ja = "検査用モジュールにテストがありません。src/test/kotlin に projectArchitecture.assert() を呼ぶテスト（scaffold が作る ProjectArchitectureTest.kt）を置いてください。",
-            en = "The verification module has no test. Put a test that calls projectArchitecture.assert() in src/test/kotlin (the ProjectArchitectureTest.kt scaffold writes).",
-        )
-
-        fun gradleReusedEarlierResult(moduleOption: Any?): Msg = Msg(
-            ja = "Gradle が前の実行の結果を使ったので、いまのファイルは検査していません。$AGENT_COMMAND test$moduleOption -- --rerun で実行し直すか、" +
-                "検査用モジュールの tasks.test に outputs.upToDateWhen { false } と outputs.cacheIf { false } を戻してください。",
-            en = "Gradle used the result of an earlier run, so the current files were not checked. Run $AGENT_COMMAND test$moduleOption -- --rerun, " +
-                "or put outputs.upToDateWhen { false } and outputs.cacheIf { false } back into tasks.test of the verification module.",
-        )
-
-        val removeWhatSkipsTheTests: Msg = Msg(
-            ja = "テストを止めている @Disabled（Kotest なら xtest などの x で始まる関数や enabled = false）を外してから、もう一度実行してください。",
-            en = "Remove the @Disabled that turns the tests off (in Kotest, a function starting with x such as xtest, or enabled = false) and run this again.",
-        )
-
-        fun skippedTests(skipped: Any?): Msg = Msg(
-            ja = "SKIPPED のテスト: $skipped 件（@Disabled などで止めたテストの中の検査は実行されていません）",
-            en = "Skipped tests: $skipped (a check inside a test turned off with @Disabled or the like did not run)",
-        )
-
-        fun notComparingLogShows(truncated: Any?, moduleOption: Any?): Msg = Msg(
-            ja = "違反を先頭の数件だけ出したログがあるので、比べません。ログに出ていない違反が入れ替わっても気づけず、全件のログと比べると偽の差分が出るためです。\n" +
-                "$truncated    打ち切られたほうを、全件で取り直してください。$AGENT_COMMAND test --save <名前>$moduleOption はいつも全件を出します（-Dkatachi.maxViolations=all を Gradle に渡す）。\n" +
-                "    前のログ（before-refactor）を取り直すときは、定義をリファクタリング前に戻してから取ります。\n" +
-                "    取り直しても打ち切られるなら、テストのコードの assert() に maxViolations が書いてあります（-D より優先される）。外してから取り直してください。",
-            en = "Not comparing: a log shows only the first few violations. Violations missing from the log could swap without being noticed, and comparing with a full log shows a false difference.\n" +
-                "$truncated    Capture the cut-off one again with every violation. $AGENT_COMMAND test --save <name>$moduleOption always prints them all (it passes -Dkatachi.maxViolations=all to Gradle).\n" +
-                "    To capture the before log (before-refactor) again, put the definition back to how it was before the refactoring first.\n" +
-                "    If it is still cut off, the test code passes maxViolations to assert() (that wins over -D). Remove it and capture again.",
-        )
-
-        fun before(beforeUri: Any?): Msg = Msg(
-            ja = "前: $beforeUri",
-            en = "Before: $beforeUri",
-        )
-
-        fun after(afterUri: Any?): Msg = Msg(
-            ja = "後: $afterUri",
-            en = "After:  $afterUri",
-        )
-
-        fun violationHeadingsBeforeAfter(a: Any?, b: Any?): Msg = Msg(
-            ja = "見出し（違反と警告）: 前 $a 件 / 後 $b 件",
-            en = "Headings (violations and warnings): before $a / after $b",
-        )
-
-        fun missingdescriptionNotComparedBefore(countMissingDescriptionBefore: Any?, countMissingDescriptionAfter: Any?): Msg = Msg(
-            ja = "[MissingDescription]（比べない）: 前 $countMissingDescriptionBefore 件 / 後 $countMissingDescriptionAfter 件",
-            en = "[MissingDescription] (not compared): before $countMissingDescriptionBefore / after $countMissingDescriptionAfter",
-        )
-
-        val checkResultHasNot: Msg = Msg(
-            ja = "検査結果は変わっていません。",
-            en = "The check result has not changed.",
-        )
-
-        val checkResultHasChanged: Msg = Msg(
-            ja = "検査結果が変わっています（- が前だけ、+ が後だけにある行）。",
-            en = "The check result has changed (- lines only in before, + lines only in after).",
-        )
-
-        fun refactoringChangedBehaviorFix(moduleDir: Any?): Msg = Msg(
-            ja = "リファクタリングで振る舞いが変わっています。前のログを取り直すのではなく、定義のほうを直してください。\n" +
-                "分けた定義ファイルが [UnexpectedFile] になっているなら、$moduleDir/ を受け持つ Role の layout { } が\n" +
-                "定義のファイルの最大の深さ（<group>/<sub>/<Role>Role.kt など）まで受け入れていません。",
-            en = "The refactoring changed the behavior. Fix the definition instead of capturing the before log again.\n" +
-                "If the split definition files show up as [UnexpectedFile], the layout { } of the Role that owns\n" +
-                "$moduleDir/ does not accept files as deep as the deepest definition file (e.g. <group>/<sub>/<Role>Role.kt).",
-        )
-
-        fun unknownOptionPutArguments(it: Any?): Msg = Msg(
-            ja = "test: 知らないオプションです: $it（Gradle に渡す引数は -- の後ろに）",
-            en = "test: unknown option: $it (put arguments for Gradle after --)",
-        )
-
-        fun projectRootMissing(rootUri: Any?): Msg = Msg(
-            ja = "プロジェクトルートがありません: $rootUri（チェックリストの meta.projectRoot）。直すか、空にしてプロジェクトのルートで実行してください。",
-            en = "The project root does not exist: $rootUri (meta.projectRoot in the check list). Fix it, or empty it and run this in the root of the project.",
-        )
-
-        fun withoutGradleWrapperRun(gradlewUri: Any?, moduleGradlePath: Any?, logDirUri: Any?): Msg = Msg(
-            ja = "gradlew がありません: $gradlewUri 。Gradle wrapper の無いプロジェクトでは、./gradlew $moduleGradlePath:test を自分で実行してログを $logDirUri/test-<名前>.log に保存してください。",
-            en = "gradlew not found: $gradlewUri . Without the Gradle wrapper, run ./gradlew $moduleGradlePath:test yourself and save the log as $logDirUri/test-<name>.log.",
-        )
-
-        fun jdkUnknownCouldNot(source: Msg): Msg = Msg(
-            ja = "JDK: 不明（${source.ja}。バージョンを読めませんでした）",
-            en = "JDK: unknown (${source.en}; could not read the version)",
-        )
-
-        val jdkUnknownNoJava: Msg = Msg(
-            ja = "JDK: 不明（JAVA_HOME も PATH の java もありません。Gradle 自身の設定に任せます）",
-            en = "JDK: unknown (no JAVA_HOME and no java on PATH; leaving it to Gradle)",
-        )
-
-        fun log(logUri: Any?): Msg = Msg(
-            ja = "ログ: $logUri",
-            en = "Log: $logUri",
-        )
-
-        fun project(rootUri: Any?): Msg = Msg(
-            ja = "プロジェクト: $rootUri",
-            en = "Project: $rootUri",
-        )
-
-        fun copy(copyUri: Any?): Msg = Msg(
-            ja = "写し: $copyUri",
-            en = "Copy: $copyUri",
-        )
-
-        fun resultNoViolationsBut(status: Any?): Msg = Msg(
-            ja = "結果: 検査の違反は出ていませんが、検査用モジュールのほかのテストが失敗しています（Gradle の終了コード $status）。ログの FAILED の行:",
-            en = "Result: no violations, but other tests in the verification module failed (Gradle exit code $status). FAILED lines in the log:",
-        )
-
-        fun resultCheckNotReached(status: Any?): Msg = Msg(
-            ja = "結果: 検査まで届いていません（コンパイルエラーなど。Gradle の終了コード $status）。ログの末尾:",
-            en = "Result: the check was not reached (a compile error, for example; Gradle exit code $status). Tail of the log:",
-        )
-
-        fun result(result: Any?): Msg = Msg(
-            ja = "結果: $result",
-            en = "Result: $result",
-        )
-
-        val resultCheckPassedViolations: Msg = Msg(
-            ja = "結果: 検査は通りました（違反 0 件）",
-            en = "Result: the check passed (0 violations)",
-        )
-
-        fun missingdescriptionGoesDownDescriptions(missing: Any?): Msg = Msg(
-            ja = "[MissingDescription]: $missing 件（置き場所に description を書けば減る）",
-            en = "[MissingDescription]: $missing (goes down as each place gets a description)",
-        )
-
-        fun warningsTheyNeverFail(warnings: Any?): Msg = Msg(
-            ja = "警告: $warnings 件（検査は失敗させない。内容を見て、直すか残すかを決める）",
-            en = "Warnings: $warnings (they never fail the check; read them and decide whether to fix or keep each)",
-        )
-
-        val differencePreviousRunVs: Msg = Msg(
-            ja = "前回との差分（previous.log 比）: 比べません（違反を先頭の数件だけ出したログがあるため）",
-            en = "Difference from the previous run (vs previous.log): not compared (a log shows only the first few violations)",
-        )
-
-        val diffFromPreviousNone: Msg = Msg(
-            ja = "前回との差分（previous.log 比）: 無し",
-            en = "Difference from the previous run (vs previous.log): none",
-        )
-
-        val diffFromPreviousPrefix: Msg = Msg(
-            ja = "前回との差分（previous.log 比）: ",
-            en = "Difference from the previous run (vs previous.log): ",
-        )
-
-        fun omittedEitherDkatachiMaxviolations(omitted: Any?): Msg = Msg(
-            ja = "省略: $omitted。-Dkatachi.maxViolations に数を渡したか、テストの assert() に maxViolations が書いてあります（全件を出すには、どちらも外す）",
-            en = "Omitted: $omitted. Either -Dkatachi.maxViolations was given a number, or the test passes maxViolations to assert() (remove both to see everything)",
-        )
-
-        fun jdk(major: Any?, source: Msg): Msg = Msg(
-            ja = "JDK: $major（${source.ja}）",
-            en = "JDK: $major (${source.en})",
         )
     }
 
@@ -1076,10 +900,6 @@ katachi — katachi の導入と検査を手伝うコマンド
       defaultPackage などのデフォルト値は最初から使える（kotlin コマンドが要る）。
       引数はスクリプトの args に入る。
 
-  katachi agent <サブコマンド> ...
-      AI エージェントが katachi skill の手順で使うコマンド: test / compare-violations。
-      一覧は katachi agent --help。
-
   katachi --version
   katachi --help
 
@@ -1141,10 +961,6 @@ Usage:
       defaults such as defaultPackage are there from the start (needs the kotlin
       command). The arguments are the script's args.
 
-  katachi agent <subcommand> ...
-      The commands an AI agent runs for the katachi skill's steps: test / compare-violations.
-      See katachi agent --help.
-
   katachi --version
   katachi --help
 
@@ -1152,97 +968,6 @@ Run scaffold in the Gradle root directory.
 
 Output language: --lang of doctor, then the language of the working directory's check list, then
 KATACHI_LANG (ja / en), then the locale (LC_ALL / LC_MESSAGES / LANG). Japanese if none says.
-""".trimIndent(),
-        )
-
-        val agent: Msg = Msg(
-            ja = """
-katachi agent — AI エージェントが katachi skill の手順で使うコマンド
-
-katachi skill（gh skill install TBSten/katachi katachi）の手順がこれらを呼びます。人が導入するときは
-katachi doctor / katachi scaffold / katachi lint（katachi --help）を使ってください。
-
-使い方:
-  katachi agent compare-violations [--module-dir <path>] [<前のログ> <後のログ>]
-      ./gradlew <module>:test の出力を2つ比べ、検査結果（違反の件数と中身）が
-      変わっていないかを確かめる。定義のリファクタリング（katachi skill の setup 3-3）の前後に使う。
-      デフォルトは test --save before-refactor / after-refactor で残したログ
-      （<作業用ディレクトリ>/tmp/ か、作業用ディレクトリが無ければ build/katachi/ の
-      test-before-refactor.log と test-after-refactor.log）。
-      [MissingDescription] の警告は、説明を書き足せば減るのが正しいので件数だけ出す。
-      変わっていなければ 0、変わっていれば差分を出して 1 を返す。
-      どちらかが違反を先頭の数件だけ出したログ（Showing first ...）か、ログが無い・検査結果が無いときは、
-      比べずに 2 を返す。
-
-  katachi agent test [--save <名前>] [--module-dir <path>] [-- <gradle の引数>...]
-      検査用モジュールのテスト（./gradlew <module>:test）を実行し、要約だけを出す。
-      ログの全文は <ログの置き場>/test/<UTC 時刻>.log（latest.log にも写し、前の latest.log は
-      previous.log に回す）。ログの置き場は作業用ディレクトリの tmp/、無ければ build/katachi/。
-      --save <名前> で <ログの置き場>/test-<名前>.log にも写す
-      （setup 3-2 は before-refactor、3-3 は after-refactor。compare-violations のデフォルトと同じ）。
-      -- より後ろは ./gradlew にそのまま渡す（-Dkatachi.baseline.update=true など）。
-      違反がいつも全件ログに出るよう、-Dkatachi.maxViolations=all も渡す（-- の後ろで
-      -Dkatachi.maxViolations を渡せば、そちらを使う）。
-      要約: JDK、検査したプロジェクト、ログのパス、結果の行、[MissingDescription] の件数、
-      通ったときの警告の件数と見出し、前回（previous.log）との差分。
-      0 = 通った、1 = 検査が失敗した、2 = 検査まで届かない（コンパイルエラー、gradlew 無し、定義ディレクトリ無し、
-      SKIPPED などでテストが実行されていない）。
-      katachi コマンドが Gradle を起動するのはこのコマンドだけ。
-
---module-dir は検査用モジュールの置き場所で、scaffold の --module-dir と同じ（デフォルト: 作業用ディレクトリの
-チェックリストの meta.moduleDir。無ければ architecture-test）。test では -- より前に書きます。
-
-使い方の誤り（知らないオプションやサブコマンド）は、どのコマンドも 2 で終わります。
-
-作業用ディレクトリ（katachi skill の手順が作る、check-list.html と tmp/ を持つディレクトリ）は
-このコマンドを実行した場所の下から自動で見つけます。別の場所からは KATACHI_WORKDIR で指定します。
-無くても動きます。
-""".trimIndent(),
-            en = """
-katachi agent - the commands an AI agent runs for the katachi skill's steps
-
-The steps of the katachi skill (gh skill install TBSten/katachi katachi) call these. When people set
-katachi up themselves, they use katachi doctor / katachi scaffold / katachi lint (katachi --help).
-
-Usage:
-  katachi agent compare-violations [--module-dir <path>] [<log before> <log after>]
-      Compares two outputs of ./gradlew <module>:test and checks that the
-      check result (the number and content of violations) has not changed. Use it
-      before and after refactoring the definition (step 3-3 of the katachi skill's setup).
-      Defaults: the logs test --save before-refactor / after-refactor kept
-      (test-before-refactor.log and test-after-refactor.log in <working directory>/tmp/,
-      or in build/katachi/ without a working directory).
-      [MissingDescription] warnings should go down as descriptions are added, so only
-      their counts are shown.
-      Returns 0 if nothing changed; otherwise prints the difference and returns 1.
-      If either log shows only the first few violations (Showing first ...), is missing or has no
-      check result, returns 2 without comparing.
-
-  katachi agent test [--save <name>] [--module-dir <path>] [-- <gradle arguments>...]
-      Runs the verification module's tests (./gradlew <module>:test) and prints only a summary.
-      The full log goes to <log place>/test/<UTC time>.log (also copied to latest.log; the previous
-      latest.log becomes previous.log). The log place is tmp/ of the working directory, otherwise
-      build/katachi/. --save <name> also copies it to <log place>/test-<name>.log
-      (before-refactor in setup 3-2, after-refactor in 3-3; the defaults of compare-violations).
-      Everything after -- is passed to ./gradlew as is (such as -Dkatachi.baseline.update=true).
-      It also passes -Dkatachi.maxViolations=all so that the log always holds every violation
-      (give -Dkatachi.maxViolations after -- to use your own value instead).
-      Summary: the JDK, the project it checked, the log path, the result line, the number of
-      [MissingDescription], the number and headings of warnings when the check passes, and the
-      difference from the previous run (previous.log).
-      0 = passed, 1 = the check failed, 2 = the check was not reached (compile error, no gradlew,
-      no definition directory, tests that did not run such as SKIPPED). This is the only command of katachi
-      that starts Gradle.
-
---module-dir is where the verification module is, the same as scaffold's --module-dir (default:
-meta.moduleDir in the check list of the working directory, otherwise architecture-test). For test,
-write it before --.
-
-A usage error (an unknown option or subcommand) exits with 2 in every command.
-
-The working directory (the one with check-list.html and tmp/ that the katachi skill's steps make)
-is found below the directory this runs in. From elsewhere, point KATACHI_WORKDIR at it.
-Both commands work without it.
 """.trimIndent(),
         )
     }

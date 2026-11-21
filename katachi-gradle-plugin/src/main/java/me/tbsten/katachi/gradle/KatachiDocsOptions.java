@@ -35,8 +35,9 @@ public class KatachiDocsOptions {
 
     /**
      * Where the documentation processor writes when {@code outputDir} is not given. A copy of
-     * {@code DEFAULT_OUTPUT_DIR} in {@code GenerateDocumentation.kt}; the plugin tells Gradle
-     * to watch it, so the two have to agree.
+     * {@code DEFAULT_OUTPUT_DIR} in {@code GenerateDocumentation.kt}; the plugin declares it as
+     * the task's output, which Gradle watches once {@code outputs("docs") { readsProjectFiles =
+     * false }} makes the task cacheable, so the two have to agree.
      */
     static final String DEFAULT_OUTPUT_DIR = "build/katachi/docs";
 

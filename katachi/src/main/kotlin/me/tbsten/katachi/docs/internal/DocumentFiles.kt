@@ -1,23 +1,40 @@
 package me.tbsten.katachi.docs.internal
 
-import java.io.File
 import java.io.IOException
 import java.nio.file.Files
+import java.nio.file.InvalidPathException
+import java.nio.file.LinkOption
+import java.nio.file.Path
+import kotlin.io.path.PathWalkOption
+import kotlin.io.path.createDirectories
+import kotlin.io.path.deleteExisting
+import kotlin.io.path.isDirectory
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.isSymbolicLink
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.name
+import kotlin.io.path.readText
+import kotlin.io.path.walk
+import kotlin.io.path.writeText
 import me.tbsten.katachi.docs.KatachiDocumentIoException
 import me.tbsten.katachi.internal.absolutePathOf
 import me.tbsten.katachi.internal.displayExistingPath
 
+internal fun outputRootOf(outputDir: String): Path = catchingIo(".", outputDir) { Path.of(outputDir) }
+
 // Removes pages in outputRoot that this run did not produce: the directory must belong to katachi alone.
-internal fun writeDocuments(outputRoot: File, pages: Map<String, String>, log: (String) -> Unit) {
-    for (stale in stalePagesOf(outputRoot, pages.keys)) {
-        val file = File(outputRoot, stale)
-        catchingIo(stale, outputRoot) { if (!file.delete()) throw IOException("delete returned false") }
-        log("Removed ${displayExistingPath(absolutePathOf(outputRoot.path), stale)}, which this definition no longer produces.")
+internal fun writeDocuments(outputRoot: Path, pages: Map<String, String>, log: (String) -> Unit) {
+    for (stale in stalePagesOf(outputRoot, existingPagesOf(outputRoot, pages.keys), pages.keys)) {
+        catchingIo(stale, outputRoot) { outputRoot.pageAt(stale).deleteExisting() }
+        log("Removed ${displayExistingPath(absolutePathOf(outputRoot.toString()), stale)}, which this definition no longer produces.")
     }
+    // Before the writing: on a case insensitive file system an emptied `Api/` still standing would
+    // take the pages written to `API/` and keep its old spelling.
+    removeEmptyDirectories(outputRoot)
     for ((path, content) in pages) {
-        val file = File(outputRoot, path)
         catchingIo(path, outputRoot) {
-            file.parentFile?.mkdirs()
+            val file = outputRoot.pageAt(path)
+            file.parent?.createDirectories()
             file.writeText(content)
         }
     }
@@ -26,23 +43,25 @@ internal fun writeDocuments(outputRoot: File, pages: Map<String, String>, log: (
     // they form -- see `outputTreeLines`. Removals stay on their own lines above, because a
     // deletion is the one thing here a reader has to notice.
     outputTreeLines(pages.keys).forEach(log)
-    removeEmptyDirectories(outputRoot)
 }
 
-internal fun compareDocuments(outputRoot: File, pages: Map<String, String>): DocumentDifference {
+internal fun compareDocuments(outputRoot: Path, pages: Map<String, String>): DocumentDifference {
+    val existing = existingPagesOf(outputRoot, pages.keys)
+    // By the names the directory lists: a case insensitive file system also opens `API.md` when
+    // only `Api.md` is there.
+    val listed = existing.toSet()
     val missing = mutableListOf<String>()
     val different = mutableListOf<String>()
     for ((path, content) in pages) {
-        val file = File(outputRoot, path)
         when {
-            !file.isFile -> missing += path
-            catchingIo(path, outputRoot) { file.readText() } != content -> different += path
+            path !in listed -> missing += path
+            catchingIo(path, outputRoot) { outputRoot.pageAt(path).readText() } != content -> different += path
         }
     }
     return DocumentDifference(
         missing = missing,
         different = different,
-        extra = stalePagesOf(outputRoot, pages.keys),
+        extra = stalePagesOf(outputRoot, existing, pages.keys),
     )
 }
 
@@ -54,47 +73,92 @@ internal class DocumentDifference(
     val isUpToDate: Boolean get() = missing.isEmpty() && different.isEmpty() && extra.isEmpty()
 }
 
-// A page on disk whose path differs from a generated one only in case is that same page on a case
-// insensitive file system, and what a renamed group or role left behind on a case sensitive one.
-// Only the file system can tell the two apart.
-private fun stalePagesOf(outputRoot: File, generated: Set<String>): List<String> {
+// Compared by the spelling the directory lists. A case insensitive file system opens a page left
+// under the old spelling through the new one too, and that page still has to go. The only one kept
+// is a page whose generated spelling is listed as well and is the same file (a hard link, or a
+// directory linked under the other spelling): that is the generated page itself.
+private fun stalePagesOf(outputRoot: Path, existing: List<String>, generated: Set<String>): List<String> {
+    val listed = existing.toSet()
     val generatedByLowercase = generated.associateBy { it.lowercase() }
-    return existingPagesOf(outputRoot).filterNot { existing ->
-        val counterpart = generatedByLowercase[existing.lowercase()] ?: return@filterNot false
-        counterpart == existing || isSameFile(outputRoot, existing, counterpart)
+    return existing.filterNot { page ->
+        if (page in generated) return@filterNot true
+        val counterpart = generatedByLowercase[page.lowercase()] ?: return@filterNot false
+        counterpart in listed && isSameFile(outputRoot, page, counterpart)
     }
 }
 
-private fun isSameFile(outputRoot: File, existing: String, generated: String): Boolean {
-    val generatedFile = File(outputRoot, generated)
-    // Files.isSameFile throws for a path that names nothing.
-    if (!generatedFile.exists()) return false
-    return catchingIo(existing, outputRoot) {
-        Files.isSameFile(File(outputRoot, existing).toPath(), generatedFile.toPath())
+private fun isSameFile(outputRoot: Path, existing: String, generated: String): Boolean =
+    catchingIo(existing, outputRoot) {
+        Files.isSameFile(outputRoot.pageAt(existing), outputRoot.pageAt(generated))
+    }
+
+// Not past a symbolic link below outputRoot: a linked directory can lead out of it, to pages that
+// are not katachi's to count or remove. Past one, only a page generated there is looked for: writing
+// it goes through the link, and it must not be missing right after the writing. A link to a page is
+// listed like the page, since removing the link leaves the file it leads to.
+private fun existingPagesOf(outputRoot: Path, generated: Set<String>): List<String> {
+    val directory = outputRoot.listedDirectory() ?: return emptyList()
+    val generatedDirectories = generated.flatMapTo(mutableSetOf()) { page ->
+        page.split('/').dropLast(1).runningReduce { parent, name -> "$parent/$name" }
+    }
+    val pages = mutableListOf<String>()
+    fun collect(parent: Path, prefix: String, pastLink: Boolean) {
+        for (entry in parent.listDirectoryEntries()) {
+            val path = prefix + entry.name
+            when {
+                entry.isDirectory() -> when {
+                    !pastLink && !entry.isSymbolicLink() -> collect(entry, "$path/", pastLink = false)
+                    path in generatedDirectories -> collect(entry, "$path/", pastLink = true)
+                }
+
+                entry.isRegularFile() && entry.name.endsWith(PAGE_EXTENSION) ->
+                    if (!pastLink || path in generated) pages += path
+            }
+        }
+    }
+    catchingIo(".", outputRoot) { collect(directory, prefix = "", pastLink = false) }
+    return pages.sorted()
+}
+
+// outputRoot itself stays: the user pointed outputDir at it. A symbolic link stays as well, and
+// nothing past it is removed: what it leads to is not katachi's. The walk starts from the entries
+// of outputRoot because a walk does not enter a link it starts from, and outputRoot may be one.
+private fun removeEmptyDirectories(outputRoot: Path) {
+    val directory = outputRoot.listedDirectory() ?: return
+    val subdirectories = catchingIo(".", outputRoot) {
+        directory.listDirectoryEntries()
+            .flatMap { it.walk(PathWalkOption.INCLUDE_DIRECTORIES) }
+            .filter { it.isDirectory(LinkOption.NOFOLLOW_LINKS) }
+    }
+    // Deepest first, so that a directory emptied by removing its children goes as well.
+    for (subdirectory in subdirectories.asReversed()) {
+        try {
+            subdirectory.deleteExisting()
+        } catch (_: IOException) {
+            // Still holds something, so it stays.
+        }
     }
 }
 
-private fun existingPagesOf(outputRoot: File): List<String> {
-    if (!outputRoot.isDirectory) return emptyList()
-    return outputRoot.walkTopDown()
-        .filter { it.isFile && it.name.endsWith(PAGE_EXTENSION) }
-        .map { it.toRelativeString(outputRoot).replace(File.separatorChar, '/') }
-        .sorted()
-        .toList()
-}
+// An empty outputDir is resolved the way java.io.File resolves it: as no directory, so nothing is
+// listed or removed, and with the pages under the file system root. Path.of("") would be the
+// working directory instead, whose .md files are not katachi's to remove.
+private fun Path.pageAt(page: String): Path =
+    if (isEmptyPath()) fileSystem.getPath(fileSystem.separator, page) else resolve(page)
 
-// outputRoot itself stays: the user pointed outputDir at it.
-private fun removeEmptyDirectories(outputRoot: File) {
-    if (!outputRoot.isDirectory) return
-    outputRoot.walkBottomUp()
-        .filter { it != outputRoot && it.isDirectory }
-        .forEach { it.delete() }
-}
+private fun Path.listedDirectory(): Path? = takeIf { !it.isEmptyPath() && it.isDirectory() }
 
-private fun <T> catchingIo(path: String, outputRoot: File, block: () -> T): T = try {
+private fun Path.isEmptyPath(): Boolean = toString().isEmpty()
+
+private fun <T> catchingIo(path: String, outputRoot: Path, block: () -> T): T =
+    catchingIo(path, outputRoot.toString(), block)
+
+private fun <T> catchingIo(path: String, outputDir: String, block: () -> T): T = try {
     block()
 } catch (cause: IOException) {
-    throw KatachiDocumentIoException(path = path, outputDir = outputRoot.path, cause = cause)
+    throw KatachiDocumentIoException(path = path, outputDir = outputDir, cause = cause)
+} catch (cause: InvalidPathException) {
+    throw KatachiDocumentIoException(path = path, outputDir = outputDir, cause = cause)
 } catch (cause: SecurityException) {
-    throw KatachiDocumentIoException(path = path, outputDir = outputRoot.path, cause = cause)
+    throw KatachiDocumentIoException(path = path, outputDir = outputDir, cause = cause)
 }

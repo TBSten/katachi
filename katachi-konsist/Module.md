@@ -7,7 +7,8 @@ role's Kotlin files may hold.
 # Package me.tbsten.katachi.konsist
 
 The `konsist { }` backend: declares a named constraint that runs a Konsist scope over the files
-a role's `layout { }` covers.
+a role's `layout { }` covers. A block written without a name is named `konsist`, and a role holds
+one constraint of each name.
 
 # Package me.tbsten.katachi.konsist.declarations
 

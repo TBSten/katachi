@@ -130,8 +130,11 @@ internal fun detectGradleWrapperVersion(root: Path): String? {
     return file.readLines().firstNotNullOfOrNull { pattern.find(it)?.groupValues?.get(1) }
 }
 
-/** Why an old Kotlin stops katachi and what to ask the user. doctor warns with it; scaffold stops with it. */
-internal fun ScriptContext.kotlinTooOldMessage(root: Path, version: String, forScaffold: Boolean): String {
+/**
+ * Why an old Kotlin stops katachi and what to ask the user. doctor warns with it; scaffold stops with it. [file] is where
+ * [version] was read, relative to [root]; null when it came from `--kotlin`.
+ */
+internal fun ScriptContext.kotlinTooOldMessage(root: Path, version: String, file: String?, forScaffold: Boolean): String {
     val gradle = detectGradleWrapperVersion(root)
     val min = "$KOTLIN_MIN_MAJOR.$KOTLIN_MIN_MINOR"
     val gradleLine = when {
@@ -146,7 +149,8 @@ internal fun ScriptContext.kotlinTooOldMessage(root: Path, version: String, forS
     } else {
         pick(Messages.Probe.scaffoldStepWillStop)
     }
-    return pick(Messages.Probe.projectUsesKotlinKatachi(version, min, whenLine, gradleLine))
+    if (file == null) return pick(Messages.Probe.projectUsesKotlinKatachi(version, min, whenLine, gradleLine))
+    return pick(Messages.Probe.projectUsesKotlinReadFrom(version, fileUri(root.resolve(file)), min, whenLine, gradleLine))
 }
 
 private val VERSION_TOKEN = "[0-9][0-9.]*[0-9A-Za-z.-]*"
@@ -159,12 +163,15 @@ internal fun stripLineComment(line: String): String = LINE_COMMENT.replaceFirst(
 
 private val LINE_COMMENT = Regex("(^|[^:])//.*")
 
+/** The Kotlin version a project uses, and the [file] it was read from (relative to the root). */
+internal class DetectedKotlin(val version: String, val file: String)
+
 /**
  * The Kotlin version the project uses: `kotlin = "..."` under `[versions]` of the catalog, then
  * the plugin declarations of the build files, then `kotlin.version` style keys of gradle.properties.
  * Null when none is readable. The kit's `detect_kotlin_version`.
  */
-internal fun detectKotlinVersion(root: Path): String? {
+internal fun detectKotlinVersion(root: Path): DetectedKotlin? {
     val catalog = root.resolve(CATALOG_FILE)
     if (catalog.isRegularFile()) {
         var section = ""
@@ -175,30 +182,30 @@ internal fun detectKotlinVersion(root: Path): String? {
             }
             if (Regex("^\\s*\\[versions]").containsMatchIn(section) && Regex("^\\s*kotlin\\s*=").containsMatchIn(line)) {
                 val value = Regex("^[^=]*=\\s*\"").replaceFirst(line, "").let { if (it == line) it else it.substringBefore('"') }
-                if (Regex("^[0-9]").containsMatchIn(value)) return value
+                if (Regex("^[0-9]").containsMatchIn(value)) return DetectedKotlin(value, CATALOG_FILE)
                 break
             }
         }
     }
 
     // findBuildFiles skips a directory it cannot read; a bare walk would stop doctor and scaffold on it.
-    val buildFiles = findBuildFiles(root, skipModule = null, maxDepth = 3).sorted().map { root.resolve(it) }
+    val buildFiles = findBuildFiles(root, skipModule = null, maxDepth = 3, otherBuilds = OtherBuilds(root)).sorted()
     val pluginLine = Regex("org\\.jetbrains\\.kotlin|kotlin\\(\"(jvm|android|multiplatform)\"\\)")
     val versionCall = Regex(".*version\\s*[(\"']{1,2}($VERSION_TOKEN).*")
     val classpath = Regex(".*kotlin-gradle-plugin:($VERSION_TOKEN).*")
     for (file in buildFiles) {
-        for (raw in readLinesLenient(file)) {
+        for (raw in readLinesLenient(root.resolve(file))) {
             val line = stripLineCommentNaive(raw)
             if (!pluginLine.containsMatchIn(line)) continue
-            versionCall.matchEntire(line)?.let { return it.groupValues[1] }
-            classpath.matchEntire(line)?.let { return it.groupValues[1] }
+            versionCall.matchEntire(line)?.let { return DetectedKotlin(it.groupValues[1], file) }
+            classpath.matchEntire(line)?.let { return DetectedKotlin(it.groupValues[1], file) }
         }
     }
 
     val properties = root.resolve("gradle.properties")
     if (properties.isRegularFile()) {
         val key = Regex("^\\s*(kotlin\\.version|kotlinVersion|kotlin_version)\\s*=\\s*($VERSION_TOKEN).*")
-        properties.readLines().firstNotNullOfOrNull { key.matchEntire(it)?.groupValues?.get(2) }?.let { return it }
+        properties.readLines().firstNotNullOfOrNull { key.matchEntire(it)?.groupValues?.get(2) }?.let { return DetectedKotlin(it, "gradle.properties") }
     }
     return null
 }
@@ -224,13 +231,64 @@ internal fun javaMajorOf(java: Path): Int? {
     return if (a == "1" && b.isNotEmpty()) b.toIntOrNull() else a.toIntOrNull()
 }
 
-internal class GradleJdk(val major: Int?, val source: Msg?)
+/**
+ * [source] is null when no JDK was found, and [notFound] says why. [fromPath]: the answer came from looking for java on
+ * PATH (found or not), so a JAVA_HOME set in the shell would change it.
+ */
+internal class GradleJdk(
+    val major: Int?,
+    val source: Msg?,
+    val notFound: Msg = Messages.Probe.couldNotFindJdk,
+    val fromPath: Boolean = false,
+    /** The shell's JAVA_HOME points where there is no `bin/java`: `./gradlew` stops there, so the check stops too. */
+    val invalidJavaHome: Boolean = false,
+) {
+    /** What `doctor` must not call "everything is available": Gradle cannot run, or runs on a JDK older than katachi needs. */
+    val needsAttention: Boolean get() = invalidJavaHome || source == null || major == null || major < JDK_MIN_MAJOR
+}
 
 /**
- * The JDK Gradle runs on, in Gradle's own order: the daemon toolchain, org.gradle.java.home,
- * JAVA_HOME, then java on PATH. The kit's `detect_gradle_jdk`.
+ * Set by `bin/katachi` to the JAVA_HOME it was started with, empty when that was unset or empty: Homebrew's `kotlin`
+ * fills such a JAVA_HOME with its own openjdk before this JVM starts. `bin/katachi` writes this same name (keep the two in sync).
+ */
+internal const val SHELL_JAVA_HOME_ENV: String = "KATACHI_SHELL_JAVA_HOME"
+
+/**
+ * macOS's `/usr/bin/java`: a stub that runs the JDK [javaHome] picks, and opens a dialog to install one when there is none.
+ * [ScriptContext.macOsJavaStub] is null elsewhere, where `/usr/bin/java` belongs to a JDK.
+ */
+internal class MacOsJavaStub(private val stub: Path, val javaHome: Path) {
+    fun isStub(java: Path): Boolean = try {
+        Files.isSameFile(java, stub)
+    } catch (_: IOException) {
+        false
+    }
+
+    /** The home of the JDK the stub runs; null when there is none. */
+    fun defaultJdkHome(dir: Path): String? = runProcess(listOf(javaHome.toString(), "--failfast"), dir)
+        ?.takeIf { it.status == 0 }
+        ?.stdout?.lineSequence()?.map(String::trim)?.firstOrNull(String::isNotEmpty)
+
+    companion object {
+        fun onThisHost(): MacOsJavaStub? = if (System.getProperty("os.name").orEmpty().startsWith("Mac")) {
+            MacOsJavaStub(Path("/usr/bin/java"), Path("/usr/libexec/java_home"))
+        } else {
+            null
+        }
+    }
+}
+
+/**
+ * The JDK ./gradlew in the user's shell runs on, in Gradle's own order: the daemon toolchain, org.gradle.java.home,
+ * the shell's JAVA_HOME, then java on PATH. The kit's `detect_gradle_jdk`.
  */
 internal fun ScriptContext.detectGradleJdk(root: Path): GradleJdk {
+    // ./gradlew checks the shell's JAVA_HOME before it reads any Gradle setting, and stops on one with no bin/java.
+    // An empty SHELL_JAVA_HOME_ENV is a shell without JAVA_HOME, not a reason to read the JAVA_HOME `kotlin` filled in.
+    val shellJavaHome = (env[SHELL_JAVA_HOME_ENV] ?: env["JAVA_HOME"])?.takeIf { it.isNotEmpty() }
+    if (shellJavaHome != null && !Path(shellJavaHome, "bin", "java").isExecutable()) {
+        return GradleJdk(null, null, Messages.Probe.invalidJavaHome(shellJavaHome), invalidJavaHome = true)
+    }
     val daemon = root.resolve("gradle/gradle-daemon-jvm.properties")
     if (daemon.isRegularFile()) {
         val pattern = Regex("^\\s*toolchainVersion\\s*=\\s*([0-9]+).*")
@@ -242,13 +300,18 @@ internal fun ScriptContext.detectGradleJdk(root: Path): GradleJdk {
     if (gradleHome != null && Path(gradleHome, "bin", "java").isExecutable()) {
         return GradleJdk(javaMajorOf(Path(gradleHome, "bin", "java")), Messages.Probe.gradleJavaHome(gradleHome))
     }
-    val javaHome = env["JAVA_HOME"]?.takeIf { it.isNotEmpty() }
+    val javaHome = shellJavaHome
     if (javaHome != null && Path(javaHome, "bin", "java").isExecutable()) {
         return GradleJdk(javaMajorOf(Path(javaHome, "bin", "java")), Messages.Probe.javaHome(javaHome))
     }
-    val onPath = findOnPath("java")
-    if (onPath != null) return GradleJdk(javaMajorOf(onPath), Messages.Probe.javaPath(onPath))
-    return GradleJdk(null, null)
+    val onPath = findOnPath("java") ?: return GradleJdk(null, null, fromPath = true)
+    val macOs = macOsJavaStub
+    if (macOs != null && macOs.isStub(onPath)) {
+        val home = macOs.defaultJdkHome(root)
+            ?: return GradleJdk(null, null, Messages.Probe.couldNotFindJdkMacOs(onPath, macOs.javaHome), fromPath = true)
+        return GradleJdk(javaMajorOf(Path(home, "bin", "java")), Messages.Probe.javaPathMacOs(onPath, macOs.javaHome, home), fromPath = true)
+    }
+    return GradleJdk(javaMajorOf(onPath), Messages.Probe.javaPath(onPath), fromPath = true)
 }
 
 /** The kit's `command -v`. */
@@ -268,10 +331,10 @@ private fun ScriptContext.gradlePropertiesJavaHome(root: Path): String? {
 }
 
 /** Stops when Gradle's JDK is older than 17; only warns when it cannot be found or read. The kit's `check_gradle_jdk`. */
-internal fun ScriptContext.checkGradleJdk(root: Path) {
-    val jdk = detectGradleJdk(root)
+internal fun ScriptContext.checkGradleJdk(root: Path, jdk: GradleJdk = detectGradleJdk(root)) {
+    if (jdk.invalidJavaHome) die(jdk.notFound)
     if (jdk.source == null) {
-        warn(Messages.Probe.couldNotFindJdk)
+        warn(withKatachiJdkHint(jdk.notFound, jdk))
         return
     }
     val from = pick(jdk.source)
@@ -280,9 +343,21 @@ internal fun ScriptContext.checkGradleJdk(root: Path) {
         return
     }
     if (jdk.major < JDK_MIN_MAJOR) {
-        die(Messages.Probe.jdkRunsGradleKatachi(jdk.major, jdk.source))
+        die(withKatachiJdkHint(Messages.Probe.jdkRunsGradleKatachi(jdk.major, jdk.source), jdk))
     }
     note(Messages.Probe.gradleSJdk(jdk.major, jdk.source))
+}
+
+/**
+ * [message] and, when exporting JAVA_HOME would fix it, the JDK katachi runs on: [jdk] came from looking for java on PATH,
+ * found or not (the daemon toolchain and org.gradle.java.home come before JAVA_HOME), the shell has no JAVA_HOME (so JAVA_HOME is the one Homebrew's `kotlin`
+ * filled in to run katachi), and that JDK is 17 or later.
+ */
+private fun ScriptContext.withKatachiJdkHint(message: Msg, jdk: GradleJdk): Msg {
+    if (!jdk.fromPath || env[SHELL_JAVA_HOME_ENV] != "") return message
+    val home = env["JAVA_HOME"]?.takeIf { it.isNotEmpty() } ?: return message
+    val major = javaMajorOf(Path(home, "bin", "java"))?.takeIf { it >= JDK_MIN_MAJOR } ?: return message
+    return Messages.Probe.katachiRunsOnJdk(message, major, home, shellQuote(home))
 }
 
 /** The leading number of `libs.versions.<accessor>` under `[versions]`; null when unreadable. The kit's `catalog_version_number`. */
@@ -311,16 +386,17 @@ private val TOOLCHAIN_PRUNED = setOf("build", ".gradle", ".git", ".kotlin", ".id
 /**
  * Every JDK toolchain setting in the build: `jvmToolchain(N)` and `JavaLanguageVersion.of(N)`,
  * N written as a number, a catalog accessor or a `val` in the same file. Each as (N or null, file).
- * The kit's `jvm_toolchain_candidates`.
+ * [OtherBuilds] are not read. The kit's `jvm_toolchain_candidates`.
  */
 internal fun jvmToolchainCandidates(root: Path, moduleDir: String): List<Pair<Int?, String>> {
     val skip = root.resolve(moduleDir).normalize()
+    val otherBuilds = OtherBuilds(root)
     val files = mutableListOf<Path>()
     Files.walkFileTree(
         root,
         object : java.nio.file.SimpleFileVisitor<Path>() {
             override fun preVisitDirectory(dir: Path, attrs: java.nio.file.attribute.BasicFileAttributes): java.nio.file.FileVisitResult {
-                if (dir != root && (dir.normalize() == skip || dir.name in TOOLCHAIN_PRUNED)) return java.nio.file.FileVisitResult.SKIP_SUBTREE
+                if (dir != root && (dir.normalize() == skip || dir.name in TOOLCHAIN_PRUNED || dir in otherBuilds)) return java.nio.file.FileVisitResult.SKIP_SUBTREE
                 return java.nio.file.FileVisitResult.CONTINUE
             }
 

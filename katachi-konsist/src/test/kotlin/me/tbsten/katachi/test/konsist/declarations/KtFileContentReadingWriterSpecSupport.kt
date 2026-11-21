@@ -1,6 +1,9 @@
 package me.tbsten.katachi.test.konsist.declarations
 
 import kotlin.random.Random
+import me.tbsten.katachi.test.pbt.chance
+import me.tbsten.katachi.test.pbt.pick
+import me.tbsten.katachi.test.pbt.pickOrNull
 
 /*
  * Writing a file for the reading property, line by line, so that each declaration knows the line it
