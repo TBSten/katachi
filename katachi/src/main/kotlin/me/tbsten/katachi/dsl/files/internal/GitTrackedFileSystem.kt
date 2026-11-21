@@ -37,6 +37,24 @@ internal sealed interface GitProblem {
             "`$command` in ${fileUri(root.value)} did not finish within $seconds seconds."
     }
 
+    // The JDK lists a name its file-name encoding cannot hold as `?????`, so the name git printed would never match
+    // a file on the disk and the file would drop out of every check without a word.
+    class UnreadableNames(
+        val encoding: String,
+        val names: List<String>,
+    ) : GitProblem {
+        override fun explain(command: String, root: FsPath): String = buildString {
+            appendLine(
+                "The JVM's file-name encoding is $encoding, which cannot hold ${names.size} file name(s) that " +
+                    "`$command` reported in ${fileUri(root.value)}:",
+            )
+            for (name in names.take(UNREADABLE_NAMES_SHOWN)) appendLine("  $name")
+            if (names.size > UNREADABLE_NAMES_SHOWN) appendLine("  ... and ${names.size - UNREADABLE_NAMES_SHOWN} more")
+            appendLine("katachi cannot find these files on the disk, so they would be left out of the check without a word.")
+            append("Run with a UTF-8 locale, for example `LC_ALL=C.UTF-8` (a Docker or CI image often has none).")
+        }
+    }
+
     class Failed(
         val exitCode: Int,
         val stderr: String,
@@ -59,6 +77,8 @@ internal sealed interface GitProblem {
         }
     }
 }
+
+private const val UNREADABLE_NAMES_SHOWN: Int = 5
 
 private const val GIT_REQUIRED: String =
     "With a .git at the project root or above it, katachi takes the project's files from git, and does not " +
@@ -196,8 +216,30 @@ private fun sameFileSystem(a: File, b: File): Boolean = runCatching {
 }.getOrDefault(true)
 
 // git runs once at the root and the answer is kept as a set.
-internal fun gitTrackedFileSystem(delegate: KatachiFileSystem, root: FsPath): KatachiFileSystem =
-    GitTrackedFileSystem(delegate, root, gitLsFiles(root))
+internal fun gitTrackedFileSystem(
+    delegate: KatachiFileSystem,
+    root: FsPath,
+    fileNameEncoding: String? = System.getProperty("sun.jnu.encoding"),
+): KatachiFileSystem {
+    val tracked = gitLsFiles(root)
+    val unreadable = namesBeyond(fileNameEncoding, tracked)
+    if (unreadable.isNotEmpty()) {
+        throw KatachiGitUnavailableException(
+            GIT_LS_FILES.joinToString(" "),
+            root,
+            GitProblem.UnreadableNames(fileNameEncoding.orEmpty(), unreadable),
+        )
+    }
+    return GitTrackedFileSystem(delegate, root, tracked)
+}
+
+// The non-ASCII names the JDK cannot spell with [encoding] (the POSIX locale makes it US-ASCII). An encoding the JDK
+// does not know says nothing, so nothing is reported.
+internal fun namesBeyond(encoding: String?, names: List<String>): List<String> {
+    val charset = runCatching { java.nio.charset.Charset.forName(encoding.orEmpty()) }.getOrNull() ?: return emptyList()
+    val encoder = charset.newEncoder()
+    return names.filter { name -> name.any { it.code > 0x7f } && !encoder.canEncode(name) }
+}
 
 // `--others --exclude-standard` includes untracked, non-ignored files; `-z` keeps unusual file names unquoted.
 private fun gitLsFiles(root: FsPath): List<String> {

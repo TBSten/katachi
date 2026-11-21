@@ -26,6 +26,7 @@ import me.tbsten.katachi.dsl.files.internal.findProjectRoot
 import me.tbsten.katachi.dsl.files.internal.gitTrackedFileSystem
 import me.tbsten.katachi.dsl.files.internal.dotGitAtOrAbove
 import me.tbsten.katachi.dsl.files.internal.isInsideGitWorkTree
+import me.tbsten.katachi.dsl.files.internal.namesBeyond
 import me.tbsten.katachi.internal.fileUri
 
 class GitTrackedFileSystemSpec : FreeSpec({
@@ -223,6 +224,30 @@ class GitTrackedFileSystemSpec : FreeSpec({
             fileSystem.list(nfdRoot).map { it.name } shouldContainExactly listOf("app")
             fileSystem.isDirectory(nfdRoot / "app") shouldBe true
             fileSystem.list(nfdRoot / "app").map { it.name } shouldContainExactly listOf("${nfc.trash}.kt")
+        }
+    }
+
+    "ファイル名の文字コードが日本語を持てないとき (KATACHI-442)" - {
+        "US-ASCII なら ASCII でない名前だけを挙げる" {
+            namesBeyond("ANSI_X3.4-1968", listOf("a/Lib.kt", "a/日本語.kt", "b/ok.txt")) shouldContainExactly
+                listOf("a/日本語.kt")
+        }
+
+        "UTF-8 なら何も挙げない" {
+            namesBeyond("UTF-8", listOf("a/日本語.kt")) shouldBe emptyList()
+        }
+
+        "JDK が知らない文字コードは判断せず何も挙げない" {
+            namesBeyond("no-such-encoding", listOf("a/日本語.kt")) shouldBe emptyList()
+            namesBeyond(null, listOf("a/日本語.kt")) shouldBe emptyList()
+        }
+
+        "黙って落とさず、LC_ALL=C.UTF-8 を案内して止まる" {
+            val problem = GitProblem.UnreadableNames("ANSI_X3.4-1968", listOf("a/日本語.kt"))
+            val message = problem.explain("git ls-files", FsPath.of("/work/app"))
+            message shouldContain "ANSI_X3.4-1968"
+            message shouldContain "a/日本語.kt"
+            message shouldContain "LC_ALL=C.UTF-8"
         }
     }
 
