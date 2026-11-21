@@ -59,14 +59,14 @@ dialog button{font:inherit;margin-top:8px}
 <body>
 <main>
 <h1>v0.4.0 リリース前に確認してほしいこと</h1>
-<p class="sub">2026-11-21 13:30 更新 /リリース前チェック 5 回目（261120-01・<a href="https://app.notion.com/p/41e187beecfc8132a7dbdbe6221e03c8">KATACHI-404</a>）/ 対象は main b5a6b6e3（#119〜#122 マージ後。そのあと #123〜#127・#130〜#140 のうち #128・#129 以外もマージ済み。#141〜#143 は CI 緑でレビュー待ち）/ 選んだものはこのブラウザに残ります。下の「まとめてコピー」をチャットに貼って返してください</p>
+<p class="sub">2026-11-22 05:00 更新 /リリース前チェック 5 回目（261120-01・<a href="https://app.notion.com/p/41e187beecfc8132a7dbdbe6221e03c8">KATACHI-404</a>）/ 対象は main b5a6b6e3（#119〜#122 マージ後。そのあと #123〜#127・#130〜#140 のうち #128・#129 以外もマージ済み。#141〜#143 もマージ済み）/ 選んだものはこのブラウザに残ります。下の「まとめてコピー」をチャットに貼って返してください</p>
 
 <div class="summary">
   <span class="pill"><b style="color:var(--red)">8</b>リリース前に直すか決める</span>
   <span class="pill"><b style="color:var(--amber)">0</b>判断してほしい</span>
-  <span class="pill"><b style="color:var(--blue)">2</b>目を通してほしい</span>
+  <span class="pill"><b style="color:var(--blue)">1</b>目を通してほしい</span>
   <span class="pill"><b style="color:var(--green)">3</b>操作してほしい</span>
-  <span class="pill"><b style="color:var(--muted)">36</b>決定済み・対応中</span>
+  <span class="pill"><b style="color:var(--muted)">39</b>決定済み・対応中</span>
 </div>
 
 <h2 style="--c:var(--red)">1. リリース前に直すか決める<small>priority 7 以上。放置すると利用者が詰まる</small></h2>
@@ -176,23 +176,6 @@ dialog button{font:inherit;margin-top:8px}
 
 <h2 style="--c:var(--blue)">3. 目を通してほしい</h2>
 
-<div class="item" data-id="fix-prs-r3">
-<div class="head"><div class="t">開いている直しの PR 3 本をレビューする</div><button class="copy1" type="button">コピー</button></div>
-<p class="desc">#126・#132・#134・#139・#140 はマージ済みです。いま開いているのは、探索 3 周目の直し 3 本で、どれも CI は緑です。直す前の実装に戻すと失敗するテストを足してあります。</p>
-<ul class="opts">
-<li><label><input type="checkbox" data-opt="pr141"><span><a href="https://github.com/TBSten/katachi/pull/141">#141</a> katachi コマンド（<code>projectDir</code> で取り込んだモジュールの扱い・不正な <code>JAVA_HOME</code>・JDK 17 未満の <code>JAVA_HOME</code>）はマージしてよい</span></label></li>
-<li><label><input type="checkbox" data-opt="pr142"><span><a href="https://github.com/TBSten/katachi/pull/142">#142</a> core（POSIX ロケールで日本語名のファイルが検査から黙って消える件を、<code>LC_ALL=C.UTF-8</code> を案内して止める）はマージしてよい</span></label></li>
-<li><label><input type="checkbox" data-opt="pr143"><span><a href="https://github.com/TBSten/katachi/pull/143">#143</a> core（Add a new role が大文字小文字だけ違う名前や README と重なる名前を勧める件）はマージしてよい</span></label></li>
-<li><label><input type="checkbox" data-opt="fix"><span>直してほしいところがある（一言に書く）</span></label></li>
-</ul>
-<textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
-<details><summary>詳細</summary><ul>
-<li>#141（<a href="https://app.notion.com/p/41e187beecfc81558762ef8532e5f5ef">KATACHI-441</a>）: #132 が持ち込んだ <code>project(":app").projectDir = file("sample")</code> の取りこぼし（別ビルド扱いで scaffold が終了コード 1）と、#139 の取りこぼし。<code>bin/katachi</code> は JDK 17 未満の <code>JAVA_HOME</code> を起動の前に断る</li>
-<li>#142（<a href="https://app.notion.com/p/41e187beecfc817c8be3e40c2e853dd5">KATACHI-442</a>）: realworld の p8。JDK の文字コードが日本語を持てないときに止める。このコンテナ自体が POSIX だったので、テストは <code>LC_ALL=C.UTF-8</code> で回した</li>
-<li>#143（<a href="https://app.notion.com/p/41e187beecfc8166bbf8df0771670a6d">KATACHI-443</a>）: core の p7。<code>UseCase</code> と <code>Usecase</code>、<code>README</code> と <code>readme/</code> の 2 件のテストを足した</li>
-</ul></details>
-</div>
-
 <div class="item" data-id="docs-review">
 <div class="head"><div class="t">docs の指摘 50 件を Review で見る</div><button class="copy1" type="button">コピー</button></div>
 <p class="desc">探索的検証・9-2・手順 2・5・11 で見つかった docs の指摘です（p7 が 1 件、p6 が 3 件、ほかは p5 以下。23:30 に探索的検証 2 周目の 5 件、00:10 と 00:58 に直しの PR #123〜#125 のマージ後に合わなくなる 6 か所、02:35 に PR #130 の docs の案 1 件、03:00 に Mac の探索のシンボリックリンクの 1 件と PR #132 の 1 か所、03:15 に PR #134・#136・#137 の 3 か所を足しました）。Mac で <a href="http://localhost:4395/katachi/ja/guides/cli-and-script/katachi-script/#review=prerelease-5-docs/1oxc4j2">http://localhost:4395/katachi/</a> を開くと Review の印が出るので、「直してもらう / 直さない」を選んでください（作業用の写しの dev サーバー。普段の 4321 番には AI から書き込めないため、別に立てました）。</p>
@@ -209,9 +192,9 @@ dialog button{font:inherit;margin-top:8px}
 <h2 style="--c:var(--green)">4. 操作してほしい</h2>
 
 <div class="item" data-id="explore-ide">
-<div class="head"><div class="t">IDE plugin を 15 分触る（探索的検証 13）</div><button class="copy1" type="button">コピー</button></div>
-<p class="desc">0.4.0 のプラグインを入れた IDEA・Android Studio（Mac に用意済み、普段の設定とは分けてある）で、観点カードの 5 つを触って、気づいたことを下の欄に書いてください。触り終えたら 10-2・10-5 を始めます。</p>
-<ul class="opts"><li><label><input type="checkbox" data-opt="done"><span>触った</span></label></li></ul>
+<div class="head"><div class="t">IDE plugin を触る（任意・探索的検証 13 の観点カード）</div><button class="copy1" type="button">コピー</button></div>
+<p class="desc">10-2・10-5 の実 IDE E2E は終わりました（どちらも 12 / 13、落ちた 1 件は過去の判断どおり）。Mac に画面を見る許可が下りず、AI は観点カードの画面確認ができませんでした。時間があれば、下の 5 つを触って気づいたことを書いてください。</p>
+<ul class="opts"><li><label><input type="checkbox" data-opt="done"><span>触った</span></label></li><li><label><input type="checkbox" data-opt="skip"><span>触らない（E2E の結果で十分）</span></label></li></ul>
 <textarea class="note" rows="2" placeholder="気づいたこと"></textarea>
 <details><summary>観点カード</summary><ul>
 <li>既定の設定のままでガターが出るか</li>
@@ -283,6 +266,7 @@ EOF</pre>
 <li data-id="rw-check-not-run">✓<span class="badge p p9">p9</span><span class="badge c">Gradle plugin</span>ルートの <code>subprojects { }</code> が test を空にするプロジェクトや、タグで絞るプロジェクトでは、katachi の検査が 1 度も走らないのに BUILD SUCCESSFUL になる <span class="to">→ (c) plugin は変えない（02:07）→ decisions/process.md に記録。<a href="https://app.notion.com/p/41e187beecfc81e19436fac03f5983b2">KATACHI-430</a> からこの変更を外した</span></li>
 <li data-id="mg-module-checks">✓ <span class="badge p p9">p9</span><span class="badge c">core/DSL</span>v0.3 の <code>.module { }</code> を移行表どおり <code>gradle()</code> に直すと、「そこが Gradle のモジュールであること」の検査が黙って消える <span class="to">→ (a) リリースノートの <code>.module</code> の段落に書いた（02:09）→ decisions/process.md に記録</span></li>
 <li data-id="r3-doctor-java-home">✓ <span class="badge p p7">p7</span><span class="badge c">CLI・script</span><code>JAVA_HOME</code> が無効なとき doctor が見逃す件・<code>GIT_CEILING_DIRECTORIES</code> で隠した場所のプロジェクトで #125 が止まる件（p9） <span class="to">→ 直し方は 1 つ。PR <a href="https://github.com/TBSten/katachi/pull/139">#139</a>（<a href="https://app.notion.com/p/41e187beecfc8115b7b3fff858271d83">KATACHI-439</a>）・<a href="https://github.com/TBSten/katachi/pull/140">#140</a>（<a href="https://app.notion.com/p/41e187beecfc81038f70fbbcffc165d1">KATACHI-440</a>）。どちらもマージ済み</span></li>
+<li data-id="r3-merged-141-143">✓ <span class="badge p p7">p7</span><span class="badge c">core・CLI・script</span>探索 3 周目の直し 3 本 <span class="to">→ #141（<a href="https://app.notion.com/p/41e187beecfc81558762ef8532e5f5ef">KATACHI-441</a>、projectDir と JAVA_HOME の取りこぼし）・#142（<a href="https://app.notion.com/p/41e187beecfc817c8be3e40c2e853dd5">KATACHI-442</a>、POSIX ロケールで日本語名のファイルが消える）・#143（<a href="https://app.notion.com/p/41e187beecfc8166bbf8df0771670a6d">KATACHI-443</a>、Add a new role の大文字小文字）。11/21 14:58〜15:00 にマージ済み</span></li>
 <li data-id="r3-open-fixes">🔧 <span class="badge c">core・CLI・script</span>探索 3 周目の直し <span class="to">→ #141・#142・#143 は上の「3.」。残りの直し方が 1 つのもの（diff の古い baseline・大文字小文字だけの改名と <code>.DS_Store</code>・生成ファイルの Suppress・<code>--package</code> のキーワード）はこのあと PR にする</span></li>
 <li data-id="release-note">✓ <span class="badge c">リリースノート</span>リリースノートの下書き <span class="to">→ このままでよい（02:09）。04:32〜04:44 にマージされた PR の分を足した（Migration 12 件・Also 12 件）。残りの PR もマージされたら足す</span></li>
 <li data-id="kk-that-empty">✓ <span class="badge p p7">p7</span><span class="badge c">konture</span><code>that()</code> の打ち間違いで何も選ばれないと、katachi でだけ緑になる <span class="to">→ (a) Role のファイルが 0 件のときだけ空を許す（03:24）。<a href="https://github.com/TBSten/katachi/pull/134">PR #134</a>（<a href="https://app.notion.com/p/41e187beecfc819a9be8d875baea26f8">KATACHI-427</a>）の 0b601d52 にもう入っている。ファイルがあるのに何も選ばれなかったときは <code>[UncheckedFileConstraint]</code> で検査が失敗し、どの Role のどの制約かを添えて <code>allowEmpty()</code> を書くよう案内する</span></li>
