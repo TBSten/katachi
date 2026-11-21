@@ -22,6 +22,11 @@ internal class IgnoredLayout internal constructor(
     val declaredAt: DeclarationSite,
     /** Every `ignore()` that hides all of the line on its own, in declaration order. Never empty. */
     val hiddenBy: List<HidingIgnore>,
+    /**
+     * True when [hiddenBy] hides only some of the line's files: a wildcard `ignore()` that can land
+     * under the fixed part of the path, for example a `build` wildcard ignore under a fixed `src` directory.
+     */
+    val partly: Boolean = false,
 ) : Violation {
     override val kind: ViolationKind get() = ViolationKind.Ambiguous
     override val severity: Severity get() = Severity.Warning

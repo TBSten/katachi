@@ -20,7 +20,7 @@ internal fun ignoredLayoutsOf(entries: List<LayoutEntry>): List<IgnoredLayout> {
                 // gradle()'s own lines under the build directories gradle() ignores are not the definition's to fix.
                 !(byGradle && ignore.synthetic) && levels.hidesEvery(files)
             }
-            if (hiding.isEmpty()) return@mapNotNull null
+            if (hiding.isEmpty()) return@mapNotNull partlyIgnoredLayout(line, files, ignores, byGradle)
             IgnoredLayout(
                 path = line.path,
                 role = line.role,
@@ -35,6 +35,64 @@ internal fun ignoredLayoutsOf(entries: List<LayoutEntry>): List<IgnoredLayout> {
                 },
             )
         }
+}
+
+// A wildcard ignore() that can land on a directory under the fixed part of the line (`**/build` under
+// `src/**/*.kt`) hides some of its files, and nothing says so. A literal ignore() is the user's own choice
+// of place, and gradle()'s are per module, so neither is reported here.
+private fun partlyIgnoredLayout(
+    line: LayoutEntry,
+    files: List<Level>,
+    ignores: List<Pair<LayoutEntry, List<Level>>>,
+    byGradle: Boolean,
+): IgnoredLayout? {
+    if (byGradle) return null
+    val partly = ignores.filter { (ignore, levels) ->
+        !ignore.synthetic && levels.any { it == Level.AnyLevels || (it as Level.One).glob.hasWildcard } &&
+            levels.mayLandUnder(files)
+    }
+    if (partly.isEmpty()) return null
+    return IgnoredLayout(
+        path = line.path,
+        role = line.role,
+        declaredAt = line.declaredAt,
+        hiddenBy = partly.map { (ignore, _) ->
+            HidingIgnore(path = ignore.path, role = ignore.role, declaredAt = ignore.declaredAt, gradleModule = null)
+        },
+        partly = true,
+    )
+}
+
+// Whether this ignore can match a directory under a fixed level of the line, above the file's name, where the file's own wildcards
+// (`**`, a bare `*`) can stand for whatever name the ignore needs. Two partial wildcards on the
+// same level are not compared: that would be a guess.
+private fun List<Level>.mayLandUnder(files: List<Level>): Boolean {
+    val ignore = this
+    val seen = HashSet<Pair<Int, Int>>()
+    // Only a directory under a fixed level of the line counts: `**/build` against `**/Foo.kt` is the
+    // user leaving every build directory out, which is what they wrote.
+    fun fixedAbove(j: Int): Boolean = (0 until j).any { (files[it] as? Level.One)?.literal != null }
+    fun walk(i: Int, j: Int): Boolean {
+        if (!seen.add(i to j)) return false
+        if (i == ignore.size) return j < files.size && fixedAbove(j)
+        if (j >= files.size) return false
+        val level = ignore[i]
+        val file = files[j]
+        return when {
+            level == Level.AnyLevels && (walk(i + 1, j) || walk(i, j + 1)) -> true
+            file == Level.AnyLevels -> walk(i, j + 1) || (level is Level.One && walk(i + 1, j))
+            level is Level.One && file is Level.One -> level.couldMatch(file) && walk(i + 1, j + 1)
+            else -> false
+        }
+    }
+    return walk(0, 0)
+}
+
+private fun Level.One.couldMatch(file: Level.One): Boolean = when {
+    text == file.text || file.text == "*" || text == "*" -> true
+    file.literal != null -> glob.matches(file.literal)
+    literal != null -> file.glob.matches(literal)
+    else -> false
 }
 
 private const val ROOT_MODULE: String = ":"

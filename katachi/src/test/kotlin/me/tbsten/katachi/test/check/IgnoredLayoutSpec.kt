@@ -168,4 +168,26 @@ class IgnoredLayoutSpec : FreeSpec({
                 .filterIsInstance<IgnoredLayout>().shouldBeEmpty()
         }
     }
+    "\"**/build\".ignore() が src/**/*.kt の下の build を隠しうるときは、一部だけ隠すと警告する" {
+        val warnings = architectureOf {
+            "BuildOutput".role { layout { "**/build".ignore() } }
+            "Source".role { layout { "src" / "**" / "*".ktFile() } }
+        }.validate(repositoryOf { "src/main" { "App.kt"() } }).filterIsInstance<IgnoredLayout>()
+
+        warnings.map { "${it.path} <- ${it.hiddenBy.single().path} ${it.partly}" } shouldBe
+            listOf("src/**/*.kt <- **/build true")
+    }
+
+    "固定の部分が無い行と、名前で書いた ignore() は、一部だけ隠していても警告しない" {
+        architectureOf {
+            "BuildOutput".role { layout { "**/build".ignore() } }
+            "Any".role { layout { "**" / "*".ktFile() } }
+        }.validate(repositoryOf { "App.kt"() }).filterIsInstance<IgnoredLayout>().shouldBeEmpty()
+
+        architectureOf {
+            "Legacy".role { layout { "src/legacy".ignore() } }
+            "Source".role { layout { "src" / "**" / "*".ktFile() } }
+        }.validate(repositoryOf { "src/main" { "App.kt"() } }).filterIsInstance<IgnoredLayout>().shouldBeEmpty()
+    }
+
 })

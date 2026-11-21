@@ -10,10 +10,25 @@ internal const val GIT_TIMEOUT_SECONDS: Long = 60L
 
 internal const val GIT: String = "git"
 
+// A git hook (pre-commit, pre-push, `git bisect run`) runs with GIT_DIR set. In a linked worktree
+// that is `<main>/.git/worktrees/<name>`, and with no GIT_WORK_TREE git takes the current directory
+// as the top of the work tree: a Gradle root below the top then loses every .gitignore above it.
+// Name the work tree from the gitdir's own `gitdir` file, the way git does for the worktree itself.
+internal fun ProcessBuilder.withGitWorkTree(): ProcessBuilder {
+    val env = environment()
+    if (env["GIT_WORK_TREE"] != null) return this
+    val gitDir = env["GIT_DIR"]?.let(::File) ?: return this
+    val pointer = File(gitDir, "gitdir").takeIf { it.isFile } ?: return this
+    val dotGit = runCatching { File(pointer.readText().trim()) }.getOrNull() ?: return this
+    dotGit.parentFile?.takeIf { dotGit.name == ".git" }?.let { env["GIT_WORK_TREE"] = it.path }
+    return this
+}
+
 // stderr is discarded: an undrained pipe would block git. Callers needing stderr use runGitCapturing.
 internal fun runGit(root: FsPath, vararg args: String): String? {
     val process = try {
         ProcessBuilder(listOf(GIT, *args))
+            .withGitWorkTree()
             .directory(File(root.value))
             .redirectError(ProcessBuilder.Redirect.DISCARD)
             .start()
@@ -44,7 +59,7 @@ internal sealed interface GitRun {
 
 internal fun runGitCapturing(root: FsPath, command: List<String>): GitRun {
     val process = try {
-        ProcessBuilder(command).directory(File(root.value)).start()
+        ProcessBuilder(command).withGitWorkTree().directory(File(root.value)).start()
     } catch (e: IOException) {
         return GitRun.CannotStart(e)
     }
