@@ -59,10 +59,10 @@ dialog button{font:inherit;margin-top:8px}
 <body>
 <main>
 <h1>v0.4.0 リリース前に確認してほしいこと</h1>
-<p class="sub">2026-11-21 04:55 更新 /リリース前チェック 5 回目（261120-01・<a href="https://app.notion.com/p/41e187beecfc8132a7dbdbe6221e03c8">KATACHI-404</a>）/ 対象は main b5a6b6e3（#119〜#122 マージ後。そのあと #123〜#125・#127・#130・#131・#133・#135〜#138 もマージ済み）/ 選んだものはこのブラウザに残ります。下の「まとめてコピー」をチャットに貼って返してください</p>
+<p class="sub">2026-11-21 13:30 更新 /リリース前チェック 5 回目（261120-01・<a href="https://app.notion.com/p/41e187beecfc8132a7dbdbe6221e03c8">KATACHI-404</a>）/ 対象は main b5a6b6e3（#119〜#122 マージ後。そのあと #123〜#127・#130〜#140 のうち #128・#129 以外もマージ済み。#141〜#143 は CI 緑でレビュー待ち）/ 選んだものはこのブラウザに残ります。下の「まとめてコピー」をチャットに貼って返してください</p>
 
 <div class="summary">
-  <span class="pill"><b style="color:var(--red)">0</b>リリース前に直すか決める</span>
+  <span class="pill"><b style="color:var(--red)">8</b>リリース前に直すか決める</span>
   <span class="pill"><b style="color:var(--amber)">0</b>判断してほしい</span>
   <span class="pill"><b style="color:var(--blue)">2</b>目を通してほしい</span>
   <span class="pill"><b style="color:var(--green)">3</b>操作してほしい</span>
@@ -70,28 +70,126 @@ dialog button{font:inherit;margin-top:8px}
 </div>
 
 <h2 style="--c:var(--red)">1. リリース前に直すか決める<small>priority 7 以上。放置すると利用者が詰まる</small></h2>
-<p class="empty">いまは無し。探索的検証 2 周目の後半で出た 6 件は、03:24 までに全部答えをもらったので「5.」へ移しました。</p>
+<div class="item" data-id="r3-core-wholetree-build">
+<div class="head"><div class="t"><span class="badge p p9">p9</span><span class="badge c">core/検査</span><code>ignore()</code> の下に書いた Role が、黙って検査されない（重なりが利用者に見えない形）</div><button class="copy1" type="button">コピー</button></div>
+<p class="desc">報告が勧める <code>"**/build".ignore()</code> や <code>gradle()</code> が足す <code>build</code> の ignore が、ソースの <code>build</code> パッケージや、その下の Role の行まで隠し、警告も出ません。</p>
+<ul class="opts">
+<li><label><input type="checkbox" data-opt="a"><span>ワイルドカードの ignore が Role の行の固定部分の下に入りうるときは警告する<span class="rec">おすすめ</span></span></label></li>
+<li><label><input type="checkbox" data-opt="b"><span><code>ignore()</code> の説明に「<code>**/build</code> はソースの <code>build</code> パッケージも隠す」と書くだけにする</span></label></li>
+<li><label><input type="checkbox" data-opt="c"><span>歩きで ignore したディレクトリの中も見て、ほかの Role の行に合うファイルがあるか調べる（歩きが増える）</span></label></li>
+</ul>
+<textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
+<details><summary>詳細</summary><ul>
+<li>出どころ: exploratory-core-r3.md の p9。1 周目 p6 と同じ原因で、#125 の警告が届かない形。main でも起きる</li>
+</ul></details>
+</div>
+<div class="item" data-id="r3-core-git-hook">
+<div class="head"><div class="t"><span class="badge p p7">p7</span><span class="badge c">core/検査</span>git のフック（pre-commit・pre-push・<code>git bisect run</code>）から test を回すと、<code>GIT_DIR</code> のせいで上の <code>.gitignore</code> が効かず、<code>.gradle</code>・<code>build</code> が Unexpected になる</div><button class="copy1" type="button">コピー</button></div>
+<p class="desc">linked worktree で作業し、Gradle のルートが worktree の直下より下にあるときだけ起きます。手で回すと通るので、原因にたどり着きにくい形です。</p>
+<ul class="opts">
+<li><label><input type="checkbox" data-opt="a"><span>katachi が git を呼ぶとき、<code>GIT_DIR</code> が linked worktree の gitdir を指していれば作業ツリーを求めて <code>GIT_WORK_TREE</code> を足す<span class="rec">おすすめ</span></span></label></li>
+<li><label><input type="checkbox" data-opt="b"><span>docs・skill のフックの例に <code>unset GIT_DIR GIT_INDEX_FILE</code> を書くだけにする</span></label></li>
+</ul>
+<textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
+<details><summary>詳細</summary><ul>
+<li>(a) は <code>GIT_DIR</code> を意図して使う人（2 周目の <code>git-env.sh</code> など）とぶつからない形にする案。skill の setup 6-B は test を pre-push hook で回す形を勧めている</li><li>出どころ: exploratory-core-r3.md の p7</li>
+</ul></details>
+</div>
+<div class="item" data-id="r3-core-ignored-layout-silent">
+<div class="head"><div class="t"><span class="badge p p7">p7</span><span class="badge c">core/検査</span><code>[IgnoredLayout]</code> の警告が、README どおりの <code>testLogging</code> では test が緑のときコンソールに出ない</div><button class="copy1" type="button">コピー</button></div>
+<p class="desc">#125 が足した警告は test の stderr に出るだけです。README・manual-install どおりに作った人は、<code>ignore()</code> に隠れた Role が黙って検査されない状態が残ります。</p>
+<ul class="opts">
+<li><label><input type="checkbox" data-opt="a"><span>README・manual-install に scaffold と同じ <code>showStandardStreams = true</code> を足す（ほかのテストの出力も出る）<span class="rec">おすすめ</span></span></label></li>
+<li><label><input type="checkbox" data-opt="b"><span>Gradle plugin が test のあとで、警告があれば Gradle のログに出す</span></label></li>
+</ul>
+<textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
+<details><summary>詳細</summary><ul>
+<li>scaffold と <code>katachi agent test</code>・IDE plugin で回す人には届いている。docs は人の領域なので (a) は Review に載せる</li><li>出どころ: exploratory-core-r3.md の p7</li>
+</ul></details>
+</div>
+<div class="item" data-id="r3-kk-baseline-key">
+<div class="head"><div class="t"><span class="badge p p9">p9</span><span class="badge c">konsist・konture</span>同じ Role で baseline の鍵が重なる制約を、helper 関数・ループ・同じ行・名前の無い汎用の <code>fileConstraint { }</code> から書くと断られず、片方の記録がもう片方の新しい違反を黙って許す</div><button class="copy1" type="button">コピー</button></div>
+<p class="desc">#134 が断るのは名前の無いブロックを直に 2 つ置いた形だけで、書き方を変えると同じ穴が残ります。</p>
+<ul class="opts">
+<li><label><input type="checkbox" data-opt="a"><span>Role 直下では同じ場所でも別の制約として断る。同じブロックの繰り返し（ループ・ワイルドカードのモジュール）だけ同じ宣言とみなす。汎用の <code>fileConstraint</code> にも既定の名前を付ける<span class="rec">おすすめ</span></span></label></li>
+<li><label><input type="checkbox" data-opt="b"><span>今の断り方のまま、KDoc と docs に「名前を付けて重ならないようにする」と書く</span></label></li>
+</ul>
+<textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
+<details><summary>詳細</summary><ul>
+<li>出どころ: exploratory-konsist-konture-r3.md の p9</li>
+</ul></details>
+</div>
+<div class="item" data-id="r3-kk-extension-receiver">
+<div class="head"><div class="t"><span class="badge p p8">p8</span><span class="badge c">konsist・konture</span>同じファイルの同じ名前の拡張関数（<code>fun String.toDto()</code> と <code>fun Int.toDto()</code>）が baseline の 1 つの鍵になり、片方を直して片方を壊すと黙って許される</div><button class="copy1" type="button">コピー</button></div>
+<p class="desc">konture・<code>konsist { }</code>・ktFileContent のどれでも起きます。受け手で修飾（<code>String.toDto</code>）すれば区別できます。</p>
+<ul class="opts">
+<li><label><input type="checkbox" data-opt="a"><span>3 つとも 0.4.0 で直す（konsist・konture は baseline を取り直すので移行は 1 回。ktFileContent の baseline も取り直し）<span class="rec">おすすめ</span></span></label></li>
+<li><label><input type="checkbox" data-opt="b"><span>konsist・konture だけ 0.4.0 で直し、ktFileContent は 0.5</span></label></li>
+</ul>
+<textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
+<details><summary>詳細</summary><ul>
+<li>出どころ: exploratory-konsist-konture-r3.md の p8。リリースノートの「baseline を 1 回取り直す」の段落に足す</li>
+</ul></details>
+</div>
+<div class="item" data-id="r3-konture-wildcard-test">
+<div class="head"><div class="t"><span class="badge p p7">p7</span><span class="badge c">konture</span><code>*</code> の import の下の名前が、test のソースに同じ名前のクラスがあるとまた決まらず、依存の規則が黙って緑になる</div><button class="copy1" type="button">コピー</button></div>
+<p class="desc">Kotlin では test のクラスは main から見えないので、本当は一意に決まります。#134 の直しの届かない形です。</p>
+<ul class="opts">
+<li><label><input type="checkbox" data-opt="a"><span>記号表を「覆ったファイルから見えるもの」（main のファイルには main だけ）に絞る<span class="rec">おすすめ</span></span></label></li>
+<li><label><input type="checkbox" data-opt="b"><span>決まらなかった名前を、規則の結果とは別に報告に注意として出す</span></label></li>
+<li><label><input type="checkbox" data-opt="c"><span>KDoc に「見えない場所の同じ名前でも決まらなくなる。名前で import する」と書くだけにする</span></label></li>
+</ul>
+<textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
+<details><summary>詳細</summary><ul>
+<li>出どころ: exploratory-konsist-konture-r3.md の p7</li>
+</ul></details>
+</div>
+<div class="item" data-id="r3-konture-inbound">
+<div class="head"><div class="t"><span class="badge p p7">p7</span><span class="badge c">konture</span>Konture 単体の inbound の規則（<code>onlyBeAccessedByAnyPackage</code>・<code>notBeAccessedByAnyPackage</code>）を Role の <code>konture { }</code> へ移すと、Role の外からの参照が見えず黙って緑になる</div><button class="copy1" type="button">コピー</button></div>
+<p class="desc">単体では見える Role の外からの参照が、katachi の Role の中では見えません。移行した人の検査が静かに弱まります。</p>
+<ul class="opts">
+<li><label><input type="checkbox" data-opt="a"><span><code>rule(id)</code> などと同じく shadow してコンパイルエラーにする（効かないことが書いた時点で分かる）<span class="rec">おすすめ</span></span></label></li>
+<li><label><input type="checkbox" data-opt="b"><span>inbound の規則だけ、見た全ファイルのグラフで数え、違反は覆うファイルにだけ出す</span></label></li>
+<li><label><input type="checkbox" data-opt="c"><span>Module.md と Konture からの移行の案内に書くだけにする</span></label></li>
+</ul>
+<textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
+<details><summary>詳細</summary><ul>
+<li>出どころ: exploratory-konsist-konture-r3.md の p7</li>
+</ul></details>
+</div>
+<div class="item" data-id="r3-rw-scaffold-release8">
+<div class="head"><div class="t"><span class="badge p p7">p7</span><span class="badge c">CLI・script</span>ルートの <code>subprojects { }</code> が <code>release = 8</code>・<code>jvmTarget = 1.8</code> を全モジュールに掛けるプロジェクトで、scaffold した検査用モジュールが最初の実行で「katachi は JVM 17 以上」と言って解決できない</div><button class="copy1" type="button">コピー</button></div>
+<p class="desc">moshi・clikt・kotlinpoet の 3 つで起きました。手で直すしかありません。</p>
+<ul class="opts">
+<li><label><input type="checkbox" data-opt="a"><span>scaffold が生成する <code>build.gradle.kts</code> に、<code>release</code>・<code>jvmTarget</code> を 17 に戻す設定を最初から書く（害は無い）<span class="rec">おすすめ</span></span></label></li>
+<li><label><input type="checkbox" data-opt="b"><span>ルートの設定を見つけたときだけ書く</span></label></li>
+<li><label><input type="checkbox" data-opt="c"><span>書かずに、止まる文面で直し方を案内する</span></label></li>
+</ul>
+<textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
+<details><summary>詳細</summary><ul>
+<li>出どころ: exploratory-realworld-r3.md の p7。「5.」の rw-check-not-run（<code>subprojects { }</code> の件）とは別の件</li>
+</ul></details>
+</div>
 
 <h2 style="--c:var(--amber)">2. 判断してほしい<small>リリースは止めないが、方針が要る</small></h2>
 <p class="empty">いまは無し。</p>
 
 <h2 style="--c:var(--blue)">3. 目を通してほしい</h2>
 
-<div class="item" data-id="fix-prs-r2">
-<div class="head"><div class="t">まだ開いている直しの PR 3 本をレビューする</div><button class="copy1" type="button">コピー</button></div>
-<p class="desc">04:32〜04:44 に 9 本（#125・#127・#130・#131・#133・#135〜#138）をマージしてもらいました。リリースノートの下書きとチケットに反映済みです。残りの 3 本は main とぶつかっていたので、main を取り込んで push し直しました（どれも今の main とはぶつからず、CI 待ち）。どれも直す前の実装に戻すと失敗するテストを足し、画面や出力の Before / After を PR に貼っています。</p>
+<div class="item" data-id="fix-prs-r3">
+<div class="head"><div class="t">開いている直しの PR 3 本をレビューする</div><button class="copy1" type="button">コピー</button></div>
+<p class="desc">#126・#132・#134・#139・#140 はマージ済みです。いま開いているのは、探索 3 周目の直し 3 本で、どれも CI は緑です。直す前の実装に戻すと失敗するテストを足してあります。</p>
 <ul class="opts">
-<li><label><input type="checkbox" data-opt="pr126"><span><a href="https://github.com/TBSten/katachi/pull/126">#126</a> Gradle plugin（ktFileContent の Role の docs・Groovy の build.gradle・SARIF の上書き・空の outputDir）はマージしてよい</span></label></li>
-<li><label><input type="checkbox" data-opt="pr132"><span><a href="https://github.com/TBSten/katachi/pull/132">#132</a> katachi コマンド（scaffold・doctor が別のビルドの toolchain・Kotlin の版・テストのフレームワークを読まない）はマージしてよい</span></label></li>
-<li><label><input type="checkbox" data-opt="pr134"><span><a href="https://github.com/TBSten/katachi/pull/134">#134</a> konsist・konture（baseline の名前の重なり・クラスで修飾した宣言名・<code>*</code> の import・何も選ばない <code>that()</code>）はマージしてよい</span></label></li>
+<li><label><input type="checkbox" data-opt="pr141"><span><a href="https://github.com/TBSten/katachi/pull/141">#141</a> katachi コマンド（<code>projectDir</code> で取り込んだモジュールの扱い・不正な <code>JAVA_HOME</code>・JDK 17 未満の <code>JAVA_HOME</code>）はマージしてよい</span></label></li>
+<li><label><input type="checkbox" data-opt="pr142"><span><a href="https://github.com/TBSten/katachi/pull/142">#142</a> core（POSIX ロケールで日本語名のファイルが検査から黙って消える件を、<code>LC_ALL=C.UTF-8</code> を案内して止める）はマージしてよい</span></label></li>
+<li><label><input type="checkbox" data-opt="pr143"><span><a href="https://github.com/TBSten/katachi/pull/143">#143</a> core（Add a new role が大文字小文字だけ違う名前や README と重なる名前を勧める件）はマージしてよい</span></label></li>
 <li><label><input type="checkbox" data-opt="fix"><span>直してほしいところがある（一言に書く）</span></label></li>
 </ul>
 <textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
 <details><summary>詳細</summary><ul>
-<li>マージ済み（11/21）: #123（00:32）・#124（01:31）・#125・#127（04:32）・#130（04:33）・#131（04:35）・#133・#135・#136（04:36）・#137（04:43）・#138（04:44）。中身は各チケットの「成果」に書いた</li>
-<li>#126（<a href="https://app.notion.com/p/41e187beecfc815f80fbd11079a817ac">KATACHI-421</a>）: ktFileContent の Role の docs が古いまま残らない・Groovy の build.gradle でも <code>docs { }</code> などの中身が効く・test の JVM が 2 つ以上でも SARIF が上書き合わない・空の <code>--arg outputDir=</code> で止める。04:40 に main を取り込んだ（#130 の docs の出力先の書き方と #125 のテストの import に合わせた。docs と SARIF のテスト 278 件が手元で通過）</li>
-<li>#132（<a href="https://app.notion.com/p/41e187beecfc81a99830dcead466b3ce">KATACHI-431</a>）: 自分の settings を持ち、ルートの settings が include も includeBuild もしていないディレクトリ（docs のスニペット・samples など）から、JVM toolchain・Kotlin の版・テストのフレームワークを読まない。doctor の Kotlin の行に読んだファイルを出し、古すぎるときは <code>--kotlin</code> で渡す道を示す。#127・#137 のマージのあと main を取り込んだ（skill の段落は両方の文を残し、doctor のテストは import を合わせた。doctor・scaffold などのテスト 93 件が手元で通過）</li>
-<li>#134（<a href="https://app.notion.com/p/41e187beecfc819a9be8d875baea26f8">KATACHI-427</a>）: 03:24 に選んでもらった <code>that()</code> の (a) と、02:02〜02:04 に選んでもらった 3 件。同じ Role で制約の名前が重なったら定義の時点で断り、名前の無い <code>konsist { }</code>・<code>konture { }</code> は種類ごとの既定の名前にする・違反の宣言名を <code>User.id</code> の形で覚える・型の一覧はプロジェクトの全 .kt から作る。上げたら baseline を 1 回取り直す、とリリースノートの Migration に書く案を PR 本文に入れた。合わなくなる baseline.mdx の 1 か所は Review に入れた。04:45 に main を取り込んだ（#128 のテスト用ファイルの一覧と合わせた。konsist・konture・architecture-test と core の baseline まわりのテストが手元で通過。root では試せない 5 件を除く）</li>
+<li>#141（<a href="https://app.notion.com/p/41e187beecfc81558762ef8532e5f5ef">KATACHI-441</a>）: #132 が持ち込んだ <code>project(":app").projectDir = file("sample")</code> の取りこぼし（別ビルド扱いで scaffold が終了コード 1）と、#139 の取りこぼし。<code>bin/katachi</code> は JDK 17 未満の <code>JAVA_HOME</code> を起動の前に断る</li>
+<li>#142（<a href="https://app.notion.com/p/41e187beecfc817c8be3e40c2e853dd5">KATACHI-442</a>）: realworld の p8。JDK の文字コードが日本語を持てないときに止める。このコンテナ自体が POSIX だったので、テストは <code>LC_ALL=C.UTF-8</code> で回した</li>
+<li>#143（<a href="https://app.notion.com/p/41e187beecfc8166bbf8df0771670a6d">KATACHI-443</a>）: core の p7。<code>UseCase</code> と <code>Usecase</code>、<code>README</code> と <code>readme/</code> の 2 件のテストを足した</li>
 </ul></details>
 </div>
 
@@ -184,18 +282,20 @@ EOF</pre>
 <li data-id="fixing-mac-dsstore">✓ <span class="badge p p7">p7</span><span class="badge c">core/検査</span>.gitignore に <code>.DS_Store</code> の無い Mac では、Finder が作る <code>.DS_Store</code> が <code>[UnexpectedFile]</code> になり、案どおり Role を足すと Mac では通るのに CI で <code>[MissingFile]</code> になる <span class="to">→ 直し方は 1 つ（OS が作るファイルには Role ではなく .gitignore を勧める）。PR <a href="https://github.com/TBSten/katachi/pull/136">#136</a>（04:36 マージ、<a href="https://app.notion.com/p/41e187beecfc819983e3f5ba398d4b86">KATACHI-436</a>）。skill の 3 ファイルにも同じことを書いた。IDE plugin の文面は <a href="https://app.notion.com/p/41e187beecfc81459b1dce88db42c937">KATACHI-435</a>（p5、あとで）。Mac の実機で確かめた。Mac の探索で見つかった</span></li>
 <li data-id="rw-check-not-run">✓<span class="badge p p9">p9</span><span class="badge c">Gradle plugin</span>ルートの <code>subprojects { }</code> が test を空にするプロジェクトや、タグで絞るプロジェクトでは、katachi の検査が 1 度も走らないのに BUILD SUCCESSFUL になる <span class="to">→ (c) plugin は変えない（02:07）→ decisions/process.md に記録。<a href="https://app.notion.com/p/41e187beecfc81e19436fac03f5983b2">KATACHI-430</a> からこの変更を外した</span></li>
 <li data-id="mg-module-checks">✓ <span class="badge p p9">p9</span><span class="badge c">core/DSL</span>v0.3 の <code>.module { }</code> を移行表どおり <code>gradle()</code> に直すと、「そこが Gradle のモジュールであること」の検査が黙って消える <span class="to">→ (a) リリースノートの <code>.module</code> の段落に書いた（02:09）→ decisions/process.md に記録</span></li>
+<li data-id="r3-doctor-java-home">✓ <span class="badge p p7">p7</span><span class="badge c">CLI・script</span><code>JAVA_HOME</code> が無効なとき doctor が見逃す件・<code>GIT_CEILING_DIRECTORIES</code> で隠した場所のプロジェクトで #125 が止まる件（p9） <span class="to">→ 直し方は 1 つ。PR <a href="https://github.com/TBSten/katachi/pull/139">#139</a>（<a href="https://app.notion.com/p/41e187beecfc8115b7b3fff858271d83">KATACHI-439</a>）・<a href="https://github.com/TBSten/katachi/pull/140">#140</a>（<a href="https://app.notion.com/p/41e187beecfc81038f70fbbcffc165d1">KATACHI-440</a>）。どちらもマージ済み</span></li>
+<li data-id="r3-open-fixes">🔧 <span class="badge c">core・CLI・script</span>探索 3 周目の直し <span class="to">→ #141・#142・#143 は上の「3.」。残りの直し方が 1 つのもの（diff の古い baseline・大文字小文字だけの改名と <code>.DS_Store</code>・生成ファイルの Suppress・<code>--package</code> のキーワード）はこのあと PR にする</span></li>
 <li data-id="release-note">✓ <span class="badge c">リリースノート</span>リリースノートの下書き <span class="to">→ このままでよい（02:09）。04:32〜04:44 にマージされた PR の分を足した（Migration 12 件・Also 12 件）。残りの PR もマージされたら足す</span></li>
-<li data-id="kk-that-empty">✏️ <span class="badge p p7">p7</span><span class="badge c">konture</span><code>that()</code> の打ち間違いで何も選ばれないと、katachi でだけ緑になる <span class="to">→ (a) Role のファイルが 0 件のときだけ空を許す（03:24）。<a href="https://github.com/TBSten/katachi/pull/134">PR #134</a>（<a href="https://app.notion.com/p/41e187beecfc819a9be8d875baea26f8">KATACHI-427</a>）の 0b601d52 にもう入っている。ファイルがあるのに何も選ばれなかったときは <code>[UncheckedFileConstraint]</code> で検査が失敗し、どの Role のどの制約かを添えて <code>allowEmpty()</code> を書くよう案内する</span></li>
-<li data-id="kk-baseline-names">✏️ <span class="badge p p9">p9</span><span class="badge c">konsist・konture</span>名前の無い <code>konsist { }</code>・<code>konture { }</code> を同じ Role に 2 つ置くと、baseline が新しい違反を黙って許す <span class="to">→ (a) 同じ Role で制約の名前が重なったら定義の時点で断る・名前の無いものは種類ごとの既定の名前（02:02）。<a href="https://github.com/TBSten/katachi/pull/134">PR #134</a>（<a href="https://app.notion.com/p/41e187beecfc819a9be8d875baea26f8">KATACHI-427</a>）</span></li>
-<li data-id="kk-qualified-names">✏️ <span class="badge p p9">p9</span><span class="badge c">konsist・konture</span>違反の宣言名がクラスで修飾されず、同じファイルの <code>User.id</code> と <code>Order.id</code> が baseline で同じものとして数えられる <span class="to">→ (a) <code>User.id</code>・<code>HomeScreen.State</code> の形で覚える（02:04）。<a href="https://github.com/TBSten/katachi/pull/134">PR #134</a>（<a href="https://app.notion.com/p/41e187beecfc819a9be8d875baea26f8">KATACHI-427</a>）。リリースノートの Migration に「上げたら baseline を 1 回取り直す」を足した（名前の無いブロックの既定の名前の件と 1 つにまとめた）</span></li>
-<li data-id="kk-wildcard-imports">✏️ <span class="badge p p9">p9</span><span class="badge c">konture</span><code>*</code> の import が 2 つあるファイルで、依存の規則が Role の外のクラスへの依存を見落とす <span class="to">→ (a) 型の一覧はプロジェクトの全 .kt から作り、規則は Role のファイルだけにかける（02:02）。<a href="https://github.com/TBSten/katachi/pull/134">PR #134</a>（<a href="https://app.notion.com/p/41e187beecfc819a9be8d875baea26f8">KATACHI-427</a>）</span></li>
+<li data-id="kk-that-empty">✓ <span class="badge p p7">p7</span><span class="badge c">konture</span><code>that()</code> の打ち間違いで何も選ばれないと、katachi でだけ緑になる <span class="to">→ (a) Role のファイルが 0 件のときだけ空を許す（03:24）。<a href="https://github.com/TBSten/katachi/pull/134">PR #134</a>（<a href="https://app.notion.com/p/41e187beecfc819a9be8d875baea26f8">KATACHI-427</a>）の 0b601d52 にもう入っている。ファイルがあるのに何も選ばれなかったときは <code>[UncheckedFileConstraint]</code> で検査が失敗し、どの Role のどの制約かを添えて <code>allowEmpty()</code> を書くよう案内する</span></li>
+<li data-id="kk-baseline-names">✓ <span class="badge p p9">p9</span><span class="badge c">konsist・konture</span>名前の無い <code>konsist { }</code>・<code>konture { }</code> を同じ Role に 2 つ置くと、baseline が新しい違反を黙って許す <span class="to">→ (a) 同じ Role で制約の名前が重なったら定義の時点で断る・名前の無いものは種類ごとの既定の名前（02:02）。<a href="https://github.com/TBSten/katachi/pull/134">PR #134</a>（<a href="https://app.notion.com/p/41e187beecfc819a9be8d875baea26f8">KATACHI-427</a>）</span></li>
+<li data-id="kk-qualified-names">✓ <span class="badge p p9">p9</span><span class="badge c">konsist・konture</span>違反の宣言名がクラスで修飾されず、同じファイルの <code>User.id</code> と <code>Order.id</code> が baseline で同じものとして数えられる <span class="to">→ (a) <code>User.id</code>・<code>HomeScreen.State</code> の形で覚える（02:04）。<a href="https://github.com/TBSten/katachi/pull/134">PR #134</a>（<a href="https://app.notion.com/p/41e187beecfc819a9be8d875baea26f8">KATACHI-427</a>）。リリースノートの Migration に「上げたら baseline を 1 回取り直す」を足した（名前の無いブロックの既定の名前の件と 1 つにまとめた）</span></li>
+<li data-id="kk-wildcard-imports">✓ <span class="badge p p9">p9</span><span class="badge c">konture</span><code>*</code> の import が 2 つあるファイルで、依存の規則が Role の外のクラスへの依存を見落とす <span class="to">→ (a) 型の一覧はプロジェクトの全 .kt から作り、規則は Role のファイルだけにかける（02:02）。<a href="https://github.com/TBSten/katachi/pull/134">PR #134</a>（<a href="https://app.notion.com/p/41e187beecfc819a9be8d875baea26f8">KATACHI-427</a>）</span></li>
 <li data-id="fixing-rw-toolchain">✓ <span class="badge p p8">p8</span><span class="badge c">Gradle plugin</span>Gradle 8 では processor のタスクがモジュールの JVM toolchain を使わず、toolchain のほうが新しいと「entry point が生成されていない」という実際とは違う原因のメッセージで失敗する <span class="to">→ 直し方は 1 つ（toolchain の JDK で動かす・クラスが読めないときはその旨を出す）。<a href="https://github.com/TBSten/katachi/pull/135">PR #135</a>（04:36 マージ、<a href="https://app.notion.com/p/41e187beecfc81e19436fac03f5983b2">KATACHI-430</a>）。processor の JVM が古いときは、両方の Java の版を書いた <code>KatachiProcessorJvmTooOldException</code> で止める</span></li>
-<li data-id="fixing-rw-scaffold-scope">✏️ <span class="badge p p7">p7</span><span class="badge c">CLI・script</span>scaffold の JVM toolchain・Kotlin の版の検出が、docs のスニペットや samples の別のビルドまで読んで最大の値を取る（Exposed は本体が 17 なのに <code>jvmToolchain(21)</code> を書く） <span class="to">→ 直し方は 1 つ（読むのは本体のビルドと buildSrc・build-logic だけ。doctor の行に読んだファイルを出す）。PR <a href="https://github.com/TBSten/katachi/pull/132">#132</a>（<a href="https://app.notion.com/p/41e187beecfc81a99830dcead466b3ce">KATACHI-431</a>）。テストのフレームワークの検出にも同じ穴があったので一緒に直した。<code>agent test</code> が結果の XML の無いときに「通った」とする穴は、PR #129 で <code>agent test</code> 自体が無くなるので直さない</span></li>
+<li data-id="fixing-rw-scaffold-scope">✓ <span class="badge p p7">p7</span><span class="badge c">CLI・script</span>scaffold の JVM toolchain・Kotlin の版の検出が、docs のスニペットや samples の別のビルドまで読んで最大の値を取る（Exposed は本体が 17 なのに <code>jvmToolchain(21)</code> を書く） <span class="to">→ 直し方は 1 つ（読むのは本体のビルドと buildSrc・build-logic だけ。doctor の行に読んだファイルを出す）。PR <a href="https://github.com/TBSten/katachi/pull/132">#132</a>（<a href="https://app.notion.com/p/41e187beecfc81a99830dcead466b3ce">KATACHI-431</a>）。テストのフレームワークの検出にも同じ穴があったので一緒に直した。<code>agent test</code> が結果の XML の無いときに「通った」とする穴は、PR #129 で <code>agent test</code> 自体が無くなるので直さない</span></li>
 <li data-id="fixing-mg-capture">✓ <span class="badge p p7">p7</span><span class="badge c">core/検査</span>ハイフンのあるモジュール（<code>feature/user-profile</code>、package は <code>userprofile</code>）を移行表どおり <code>capture("feature")</code> に直すと <code>[CaptureMismatch]</code> になり、最初の案が Kotlin の package にならないディレクトリへの移動 <span class="to">→ 直し方は 1 つ（<code>.flatCase</code>・<code>.camelCase</code> を書く案を出し、package にならない移動は勧めない）。<a href="https://github.com/TBSten/katachi/pull/131">PR #131</a>（04:35 マージ、<a href="https://app.notion.com/p/41e187beecfc8105aa49db33eeb24248">KATACHI-432</a>）。リリースノートにも書き換え方を足した。IDE plugin の通知の文面は同じ直しが入らないので <a href="https://app.notion.com/p/41e187beecfc81459b1dce88db42c937">KATACHI-435</a>（p5、あとで）</span></li>
 <li data-id="fixed-mg-release-note">✓ <span class="badge p p7">p7</span><span class="badge c">リリースノート</span><code>modulePackage</code> だけを使うワイルドカードのモジュールを、リリースノートどおり <code>"feature/*/api"</code> と package のディレクトリに直すと、<code>*</code> の package がモジュールと結びつかず、別のモジュールの package が黙って通る <span class="to">→ <code>.module</code> の段落に「モジュールのパスと package のディレクトリに同じ <code>capture("x")</code> を書く」と、<code>HyphenFolding</code> の書き換え方を足した（02:09 に「このままでよい」）</span></li>
 <li data-id="fixing-r2-diff">✓ <span class="badge p p9">p9</span><span class="badge c">core/katachiDiff</span>差分レポート: Role の外へ移したファイルを no role に数えない（p9）・ファイル名の <code>{{DATA}}</code> で HTML にスクリプトが入る（p8）・no role のファイルを消すだけで「will fail」（p7）・baseline で許したファイルで「will fail」（p7） <span class="to">→ 3 件は直し方が 1 つ、baseline は (a) katachiDiff が baseline を読む（23:02）。<a href="https://github.com/TBSten/katachi/pull/123">PR #123</a>（00:32 マージ、<a href="https://app.notion.com/p/41e187beecfc81f28fafdf8f0a4f400c">KATACHI-419</a>）</span></li>
 <li data-id="fixing-r2-cli">✓ <span class="badge p p8">p8</span><span class="badge c">CLI・script</span><code>agent test</code> がテストを飛ばしても「通りました」（p8）・作業用ディレクトリごと写すと元のプロジェクトを検査する（p8）・読めない <code>check-list.html</code> で全コマンドが失敗する（p7）・buildSrc の Kotlin plugin を見落としてビルドを壊す（p7）・<code>scaffold --module-dir</code> のあと次の手順が進まない（p7） <span class="to">→ 4 件は直し方が 1 つ、最後は (a) <code>lint</code>・<code>agent test</code>・<code>agent compare-violations</code> にも <code>--module-dir</code>（23:02）。<a href="https://github.com/TBSten/katachi/pull/124">PR #124</a>（01:31 マージ、<a href="https://app.notion.com/p/41e187beecfc81b1a201dcd8a7e8ad7b">KATACHI-420</a>）</span></li>
-<li data-id="fixing-r2-gradle">✏️ <span class="badge p p9">p9</span><span class="badge c">Gradle plugin</span>ktFileContent の Role の docs が古いまま残る（p9）・Groovy の build.gradle で <code>docs { }</code> などの中身が効かない（p7）・test の JVM が 2 つ以上だと SARIF が上書き合う（p7）・<code>--arg outputDir=</code> が空だとページを <code>/</code> に書く（p7） <span class="to">→ docs は (a) 「プロジェクトを読む」にする（23:02）、残りは直し方が 1 つ（<code>..</code> の扱いは KATACHI-370 のまま）。<a href="https://github.com/TBSten/katachi/pull/126">PR #126</a>（main を取り込んで CI 待ち、<a href="https://app.notion.com/p/41e187beecfc815f80fbd11079a817ac">KATACHI-421</a>）</span></li>
+<li data-id="fixing-r2-gradle">✓ <span class="badge p p9">p9</span><span class="badge c">Gradle plugin</span>ktFileContent の Role の docs が古いまま残る（p9）・Groovy の build.gradle で <code>docs { }</code> などの中身が効かない（p7）・test の JVM が 2 つ以上だと SARIF が上書き合う（p7）・<code>--arg outputDir=</code> が空だとページを <code>/</code> に書く（p7） <span class="to">→ docs は (a) 「プロジェクトを読む」にする（23:02）、残りは直し方が 1 つ（<code>..</code> の扱いは KATACHI-370 のまま）。<a href="https://github.com/TBSten/katachi/pull/126">PR #126</a>（マージ済み、<a href="https://app.notion.com/p/41e187beecfc815f80fbd11079a817ac">KATACHI-421</a>）</span></li>
 <li data-id="fixing-r2-core">✓ <span class="badge p p9">p9</span><span class="badge c">core/検査</span><code>ignore()</code> の下に書いた Role が黙って効かない（p9）・git が動かないと黙って全ファイルを見る（p7）・報告の断片が既にある名前の Role を作る（p7） <span class="to">→ (a) 警告を出す・(a) git のエラー文を添えて止める（23:02）、断片は直し方が 1 つ。<a href="https://github.com/TBSten/katachi/pull/125">PR #125</a>（04:32 マージ、<a href="https://app.notion.com/p/41e187beecfc8113ab6cd01a4693dee3">KATACHI-422</a>）</span></li>
 <li data-id="visibility-namewords">✓ <span class="badge c">core/DSL</span>② <code>nameWords</code> と 6 つの大文字小文字変換に注釈が無い <span class="to">→ このまま（23:02）→ decisions/api.md に記録</span></li>
 <li data-id="pr-122">✓ <span class="badge c">skill</span>この回の判断の記録・小さな直し・この TODO.html の新しい形 <span class="to">→ <a href="https://github.com/TBSten/katachi/pull/122">PR #122</a>（11/20 23:15 マージ）</span></li>
