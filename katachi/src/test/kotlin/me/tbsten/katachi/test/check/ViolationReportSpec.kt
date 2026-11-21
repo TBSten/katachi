@@ -201,6 +201,18 @@ class ViolationReportSpec : FreeSpec({
                 .suggestedRoleLines() shouldBe listOf("\"Util\".role {", "\"LibUtil\".role {")
         }
 
+        "大文字小文字だけ違う名前は同じ名前として避ける (KATACHI-443)" {
+            architectureOf { "UseCase".role { layout { "usecase" / "*".ktFile() } } }
+                .validate(repositoryOf { "usecase" { "A.kt"() }; "other" { "Usecase.kt"() } })
+                .suggestedRoleLines() shouldBe listOf("\"Other\".role {")
+        }
+
+        "docs の根のページ README と重なる名前は避ける (KATACHI-443)" {
+            architectureOf { "App".role { layout { "app" / "Main".ktFile() } } }
+                .validate(repositoryOf { "app" { "Main.kt"() }; "readme" { "a.txt"() } })
+                .suggestedRoleLines() shouldBe listOf("\"Readme2\".role {")
+        }
+
         "group の中の Role とは名前が重ならないので避けない" {
             layoutArchitecture(group = "App", role = "Util") { "app" / "Main".ktFile() }
                 .validate(repositoryOf { "app" { "Main.kt"(); "Util.kt"() } })

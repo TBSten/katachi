@@ -29,10 +29,15 @@ internal fun layoutLineFor(path: String, isDirectory: Boolean): String {
  * report was given, would make the pasted fragment a duplicate declaration.
  */
 internal class RoleNameSuggestions(taken: Collection<String>) {
-    private val taken: MutableSet<String> = taken.toHashSet()
+    // Compared without case: `katachiDocs` writes one page per name, and two pages that differ only in case are one
+    // file on a case-insensitive file system. `README` is the page at the root of the docs.
+    private val taken: MutableSet<String> = (taken + DOCS_ROOT_PAGE).mapTo(HashSet()) { it.lowercase() }
 
-    fun nameFor(path: String): String = candidatesFor(path).first { it !in taken }.also { taken += it }
+    fun nameFor(path: String): String =
+        candidatesFor(path).first { it.lowercase() !in taken }.also { taken += it.lowercase() }
 }
+
+private const val DOCS_ROOT_PAGE: String = "README"
 
 // A group, a role and a template set share one namespace at the root, so every one of them takes a name there.
 internal fun Architecture.rootNames(): List<String> =
