@@ -2035,3 +2035,151 @@ priority 1〜3 のルールの側の食い違い。どれもルールも例も�
 - by: 利用者（スレッド、22:35 JST「これはまあこのままでいいや」）
 
 上の ja の判断の訳のページ。en は ja から訳すだけなので、同じ判断にする。
+
+## 直さない: docs: 手動インストールの手順 2 をそのまま写すと、ルートで Kotlin の plugin を `apply false` している Android・KMP のプロジェクトでは `kotlin("jvm") version "…"` が「already on the classpath with an unknown version」で落ちる（CLI の scaffold は version を書かずに通る）
+- decision: 直さない
+- file: ja/get-started/manual-install.mdx
+- quote: kotlin("jvm") version "<Kotlin のバージョン>"
+- decided: 2026-10-06（docs/AGENTS.md の記録）。2026-11-21 261120-01 KATACHI-404 でここへ写した
+- by: 利用者（docs/AGENTS.md「2026-10-06 にページから外した（利用者の判断。コード例で十分）」）
+
+手順 13（探索的検証 2 周目 docs）の p7。手動インストールの手順 2 の `kotlin("jvm") version "…"` は、ルートで Kotlin の plugin を `apply false` している Android・KMP のプロジェクトでは Gradle が「already on the classpath with an unknown version」で断る（CLI の scaffold は version を書かずに通る）。
+この注意書きは 2026-10-06 に利用者の判断でページから外してあり（docs/AGENTS.md「ページに書かないこと」）、エラーメッセージから直せる。docs/AGENTS.md にだけ記録があって照合で外せなかったので、次の回から `decisions.py match` で外せるようにここへ写す。
+
+## 直さない: docs: 手動インストールの手順 2 をそのまま写すと、ルートで Kotlin の plugin を `apply false` している Android・KMP のプロジェクトでは `kotlin("jvm") version "…"` が「already on the classpath with an unknown version」で落ちる（CLI の scaffold は version を書かずに通る）
+- decision: 直さない
+- file: docs/src/content/docs/get-started/manual-install.mdx
+- quote: kotlin("jvm") version "<Kotlin version>"
+- decided: 2026-10-06（docs/AGENTS.md の記録）。2026-11-21 261120-01 KATACHI-404 でここへ写した
+- by: 利用者（docs/AGENTS.md「2026-10-06 にページから外した（利用者の判断。コード例で十分）」）
+
+上の ja の判断の訳のページ。en は ja から訳すだけなので、同じ判断にする。
+
+## 直さない: 幅 390 のトップページで、木の注記（← 置き場所が違う）が箱の右で切れる
+- decision: 直さない
+- file: docs/src/components/home/strings.ts
+- quote: ← 置き場所が違う
+- decided: 2026-11-21 261112-01 KATACHI-368
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+幅 390 で、「崩れるのはいつも1ファイルから。」の木の箱（幅 298 に対して中身 357）が「← 置き場所」「← 役割がな」で切れる。overflow-x: auto なので箱の中を横に動かせば読め、ページ全体の横はみ出しは無い。下に「この2つを、誰も検査していない」があるが、どの 2 つかを示す注記が切れる。同じページのほかのコードも幅 390 では横スクロールになるので、コードとしては通常の挙動。英語の木（L148-153）も注記を右に置く同じ作り。
+- 同じ指摘: 同じファイルの L62（「宣言した場所だけが存在を許される」の木）
+- 直し方の案: 桁そろえの空白を詰めるか注記を短くする。または幅が狭いときだけ木の字を小さくする（docs/src/styles/home.css）
+- 出どころ: 手順 6 の ja-10
+- 証拠: /home/claude/katachi/.local/release-v0.4.0/screenshots/ja/verify/home-pre1-390.png
+
+## 直さない: 幅 390 のトップページで、木の注記（✓ declared・✕ reported）が箱の右で切れる
+- decision: 直さない
+- file: docs/src/components/home/strings.ts
+- quote: ✓ declared
+- decided: 2026-11-21 261112-01 KATACHI-368
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+幅 390 で、「宣言した場所だけが存在を許される」の木の箱（幅 298 に対して中身 359）が「✓ dec」「✕ rep」で切れる。✓ と ✕ の印は見えていて、下に「宣言済み / 違反として報告される」の凡例があるので意味は伝わる。箱の中を横に動かせば読める。英語のトップページも同じ文字列を使う（L163 の `tree: ja.solution.tree`）。
+- 同じ指摘: 同じファイルの L49（「崩れるのはいつも1ファイルから。」の木）
+- 直し方の案: L49 と同じ（空白を詰める、または幅が狭いときだけ字を小さくする）
+- 出どころ: 手順 6 の ja-10
+- 証拠: /home/claude/katachi/.local/release-v0.4.0/screenshots/ja/verify/home-pre2-390.png
+
+## 直さない: README の「モジュール」の表に katachi-konture が無い（要確認）
+- decision: 直さない
+- file: README.ja.md
+- quote: | モジュール
+- decided: 2026-11-21 261112-01 KATACHI-368
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+「モジュール」の表（L134-138）は katachi・katachi-konsist・Gradle plugin の 3 行で、katachi-konture が無い。モジュールは公開の設定になっていて（katachi-konture/build.gradle.kts）、比較のページは「統合あり（katachi-konture）」と書くが、README にも日本語のガイドにも使い方が無い（ja/guides/ に Konture のページは無い）。0.3 から同じ。比較のページの側の指摘は手順 11 のファイルにある（別の場所）。
+- 直し方の案: 表に katachi-konture の行（`konture { }` を使うときだけ）を足す。使い方のページができるまで案内しないなら、このまま
+- 出どころ: 手順 5 の 10（priority 2・要確認）
+
+## 直さない: Tabs の 5 つのラベルが幅 1280 でも 1 行に収まらず、4 つ目の途中で切れる
+- decision: 直さない
+- file: ja/guides/document-generation.mdx
+- quote: <Tabs>
+- decided: 2026-11-21 261112-01 KATACHI-368
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+「ドキュメント生成を実行する」の Tabs（ディレクトリ構造 / README.md / Domain/README.md / Domain/UseCase.md / Domain/RepositoryInterface.md）は、タブの列 984px に対して枠が 640px で、幅 1280 でも 4 つ目が「Domain/UseCas」で切れ、5 つ目は横にスクロールしないと見えない。横スクロールバーは出て、キーボードの → でも 5 つ目まで移れる。同じ種類の指摘は android-three-layer で「直さない」になっている（過去の判断「Tabs の 8 つのラベルが 1 行に収まらず、1280px でも末尾が切れる」）。こちらは別のファイルなので、同じ扱いでよいかだけの確認。
+- 直し方の案: 直さない（android-three-layer と同じ扱い）。直すならラベルを短くする
+- 出どころ: 手順 6 の ja-08
+- 証拠: /home/claude/katachi/.local/release-v0.4.0/screenshots/ja/problem-docgen-tabs-1280.png
+
+## 直さない: capture() の最初の見本に、名前の無い `*ViewModel` が残っている（要確認）
+- decision: 直さない
+- file: ja/guides/generate-code-from-template.mdx
+- quote: "feature" / capture("feature") / "src" / "main" / "kotlin" / "*ViewModel".ktFile()
+- rule: F2（テンプレートを持たない Role は `*` のままでよい。同じページの L133）・F1（.template { } の生成先に名前の無い `*` を残さない。同じページの L135）
+- decided: 2026-11-21 261112-01 KATACHI-368
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+節「生成先にワイルドカードがあるときは、名前を付けて値を渡す」の最初の見本が、ディレクトリには capture("feature") を付け、ファイル名は "*ViewModel" のままにしている。この宣言に .template { } を付けると L135 のとおりエラーになり、付けないなら L133 のとおり capture() は要らない。要確認（capture() の書き方だけを見せる断片とも読める。このまま: E9 は kt-file-content.mdx の例の話で、生成先の `*` が残る点はこの箇所だけ）。
+- 直し方の案: `"feature" / capture("feature") / "src" / "main" / "kotlin" / "${capture("name")}ViewModel".ktFile()` にする。または断片の見本として直さない。
+- 種類: ルールに反する箇所
+
+## 直さない: 「両方の `*`」が指す 2 か所を、文が言わなくなった
+- decision: 直さない
+- file: ja/guides/generate-code-from-template.mdx
+- quote: 両方の `*` が決まります
+- rule: D3-4（指示語ではなく、指すものを書く）・D3-5（何と何の話かを、最初の一文で言う）。docs/AGENTS.md L331-335
+- decided: 2026-11-21 261112-01 KATACHI-368
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+前回は直前に「モジュールのディレクトリとパッケージのディレクトリには、同じ名前 feature の capture を書いています」があったが、今回その文を削ったので「両方の `*`」が何と何かを言う文が無い。コード例（L140-142）に `*` は 1 つも書かれておらず、capture() は 3 つある（feature が 2 つと name）。
+- 直し方の案: 「`capture("feature")` を 2 か所に書いています。同じ名前の capture は同じ値になるので、`--arg feature=home` の 1 つで 2 か所とも `home` に決まります。」のように、指す 2 か所を書く。
+- 種類: ルールに反する箇所
+
+## 直さない: 依存を足すコード例の title が build.gradle.kts だけで、どのモジュールか分からない（要確認）
+- decision: 直さない
+- file: ja/guides/kt-file-content.mdx
+- quote: title="build.gradle.kts"
+- rule: F9（導入の形をそろえる。モジュールは :architecture-test）。get-started/first-architecture.mdx L111・L152 と、ほかのガイドの 7 か所は title="architecture-test/build.gradle.kts"
+- decided: 2026-11-21 261112-01 KATACHI-368
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+katachi-konsist の依存を足す例だけ title が `build.gradle.kts` で、直前の本文（L96）もモジュールを言わない。ルートやアプリのモジュールに足すと `ktFileContent { }` が解決できない。要確認（「初めてのアーキテクチャ定義」の手順 2 が同じ依存を既に入れているので、迷う人は少ないかもしれない。バージョンの書き方も `<version>` と `<katachi のバージョン>` で違う）。
+- 直し方の案: title を `architecture-test/build.gradle.kts` にし、L96 を「`architecture-test/build.gradle.kts` の依存に追加してください。」にする
+- 種類: ルールに反する箇所
+
+## 直さない: ハイライト {7-12} が閉じかっこ（11・12 行目）を含む（要確認）
+- decision: 直さない
+- file: ja/guides/basic-api.mdx
+- quote: kt {7-12} nocollapse
+- rule: D2-5（ハイライトは読んでほしい行を指す。空行・閉じかっこは指さない）。docs/AGENTS.md L345-346
+- decided: 2026-11-21 261112-01 KATACHI-368
+- by: 利用者（Review の popup）
+
+利用者の一言: なし
+
+元の指摘:
+
+ブロックの 11 行目は required(...) { を閉じる }、12 行目は ktFileContent { を閉じる }。ktFileContent { } のブロック全体を指す意図ならこのままでよい（kt-file-content.mdx の同じ形は過去に「直さない」）。今回 layout.mdx:24 は {4-6} → {4-5} に直っているので、そろえるかの確認。要確認。
+- 直し方の案: {7-10} にする。またはブロック全体を指す意図として直さない。
+- 種類: ルールに反する箇所
