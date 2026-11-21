@@ -142,6 +142,22 @@ class DoctorScaffoldSpec : FreeSpec({
             run.err shouldContain "JAVA_HOME ($empty) has no bin/java, so ./gradlew stops too"
         }
 
+        "org.gradle.java.home が有効でも、シェルの JAVA_HOME が無効なら gradlew と同じく無効と出して止まる（KATACHI-441）" {
+            val empty = createTempDirectory("katachi-empty-java-home")
+            val gradleJdk = fakeJdk(21)
+            val project = gradleProject(toolchain = null)
+            project.resolve("gradle.properties").writeText("org.gradle.java.home=$gradleJdk\n")
+
+            val run = runCapturing(
+                project,
+                listOf("doctor", "--lang", "en"),
+                env = underHomebrewKotlin(shellJavaHome = empty.toString(), fakeJdk(21)),
+            )
+
+            run.status shouldBe 1
+            run.err shouldContain "JAVA_HOME ($empty) has no bin/java, so ./gradlew stops too"
+        }
+
         "Gradle の JDK が 17 未満・見つからないときは、見出しで「そろっています」と言わない（KATACHI-439）" {
             val run = runCapturing(
                 gradleProject(toolchain = null),

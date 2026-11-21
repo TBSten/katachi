@@ -128,11 +128,17 @@ private val INCLUDE_CALL = Regex("(?<![A-Za-z0-9_.$])include(?![A-Za-z0-9_])")
 
 private val QUOTED = Regex("\"([^\"\\\\]*)\"|'([^'\\\\]*)'")
 
+/** `project(":app").projectDir = file("sample")` (Kotlin) and `project(':app').projectDir = new File(rootDir, 'sample')` / `file('sample')` (Groovy). */
+private val PROJECT_DIR_ASSIGNMENT = Regex(
+    "project\\(\\s*[\"'][^\"']+[\"']\\s*\\)\\s*\\.\\s*projectDir\\s*=\\s*(?:new\\s+)?(?:file|File)\\(\\s*(?:rootDir\\s*,\\s*)?[\"']([^\"'\\\\]+)[\"']\\s*\\)",
+)
+
 private val PROJECT_PATH = Regex("^:?[A-Za-z0-9_.-]+(:[A-Za-z0-9_.-]+)*$")
 
 /**
  * The directories of the projects settings includes, relative (`include(":a:b")` and Groovy's `include ':a:b'` are `a/b`), read
- * from the string literals of each include. A directory set elsewhere (`project(":a").projectDir = ...`) is not followed.
+ * from the string literals of each include, and the directory a `project(":a").projectDir = file("dir")` points a project at.
+ * A directory set some other way is not followed.
  */
 internal fun includedProjectDirs(root: Path): List<String> {
     val settings = rootSettingsFile(root) ?: return emptyList()
@@ -147,6 +153,7 @@ internal fun includedProjectDirs(root: Path): List<String> {
             .filter { PROJECT_PATH.matches(it) }
             .forEach { dirs += it.removePrefix(":").replace(':', '/') }
     }
+    PROJECT_DIR_ASSIGNMENT.findAll(text).forEach { dirs += it.groupValues[1].trim('/') }
     return dirs
 }
 
