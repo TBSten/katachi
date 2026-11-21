@@ -54,6 +54,7 @@ a{color:var(--blue);overflow-wrap:anywhere}
 dialog{border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--fg);width:min(680px,92vw)}
 dialog textarea{width:100%;height:50vh;font:13px/1.5 ui-monospace,Menlo,monospace;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:8px}
 dialog button{font:inherit;margin-top:8px}
+.exp{font-size:13.5px;line-height:1.75}.exp p{margin:6px 0}.exp .src{color:var(--muted);font-size:12.5px}
 </style>
 </head>
 <body>
@@ -79,9 +80,12 @@ dialog button{font:inherit;margin-top:8px}
 <li><label><input type="checkbox" data-opt="c"><span>歩きで ignore したディレクトリの中も見て、ほかの Role の行に合うファイルがあるか調べる（歩きが増える）</span></label></li>
 </ul>
 <textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
-<details><summary>詳細</summary><ul>
-<li>出どころ: exploratory-core-r3.md の p9。1 周目 p6 と同じ原因で、#125 の警告が届かない形。main でも起きる</li>
-</ul></details>
+<details><summary>詳細</summary><div class="exp"><p><b>何が起きるか</b> <code>"**/build".ignore()</code>（<code>gradle()</code> が足すモジュールの build の ignore も同じ）は、名前が <code>build</code> のソースのパッケージまで外します。そこに置いたクラスは、アプリ全体を覆う Role の検査を受けず、警告も出ません。#125 の警告は「1 つの ignore が Role の行の全部を隠すとき」だけ出るので、一部だけ隠す形には届きません。</p><pre class="cmd">src/main/kotlin/com/example/
+├── App.kt              ← 検査される
+├── build/BuildInfo.kt  ← ⭐ ignore に巻き込まれ、違反があっても無言
+└── model/Health.kt     ← 検査される</pre><p><b>重さ</b> p9。「アプリ全体の .kt を 1 つの Role で広く覆う」書き方（Konsist から移した <code>ktFileContent</code>）は普通で、<code>**/build</code> は利用者が自分で書くものです。main でも起きます。</p>
+<p><b>選択肢</b> (a) はワイルドカードの ignore が Role の行の一部に重なるときに警告します（名前で書いた <code>"src/legacy".ignore()</code> は意図した重なりなので出しません）。(b) は説明だけで、気づかない人が残ります。(c) は ignore した場所の中も歩くので正確ですが、歩く量が増えます。</p>
+<p><b>見立て</b> 警告なら利用者に見えて軽いので (a)。</p><p class="src">出どころ: exploratory-core-r3.md の p9（再現: repro125 の c01e・c01f）</p></div></details>
 </div>
 <div class="item" data-id="r3-core-git-hook">
 <div class="head"><div class="t"><span class="badge p p7">p7</span><span class="badge c">core/検査</span>git のフック（pre-commit・pre-push・<code>git bisect run</code>）から test を回すと、<code>GIT_DIR</code> のせいで上の <code>.gitignore</code> が効かず、<code>.gradle</code>・<code>build</code> が Unexpected になる</div><button class="copy1" type="button">コピー</button></div>
@@ -91,9 +95,10 @@ dialog button{font:inherit;margin-top:8px}
 <li><label><input type="checkbox" data-opt="b"><span>docs・skill のフックの例に <code>unset GIT_DIR GIT_INDEX_FILE</code> を書くだけにする</span></label></li>
 </ul>
 <textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
-<details><summary>詳細</summary><ul>
-<li>(a) は <code>GIT_DIR</code> を意図して使う人（2 周目の <code>git-env.sh</code> など）とぶつからない形にする案。skill の setup 6-B は test を pre-push hook で回す形を勧めている</li><li>出どころ: exploratory-core-r3.md の p7</li>
-</ul></details>
+<details><summary>詳細</summary><div class="exp"><p><b>何が起きるか</b> pre-commit・pre-push・<code>git bisect run</code> の中では、git が <code>GIT_DIR</code> を環境変数で渡します。linked worktree で作業し、Gradle のルートが worktree の直下より下（モノレポの <code>proj/</code>）にあると、katachi が git を呼んだときに作業ツリーの場所が分からず、上の <code>.gitignore</code> が効きません。<code>.gradle</code>・<code>build</code> が Unexpected になります。</p><pre class="cmd">手で回す         → .gitignore が効く → 通る
+pre-push から    → GIT_DIR が渡る    → ⭐ .gitignore が効かず、.gradle・build が Unexpected</pre><p><b>重さ</b> p7。手で回すと通るので、原因にたどり着きにくい形です。条件は「linked worktree」「ルートが下にある」「フック」の 3 つ。skill の setup 6-B は test を pre-push で回す形を勧めています。</p>
+<p><b>選択肢</b> (a) は katachi が <code>GIT_DIR</code> から作業ツリーを求めて <code>GIT_WORK_TREE</code> を足します。<code>GIT_DIR</code> を意図して使う人とぶつからない形にします。(b) は docs・skill のフックの例に <code>unset GIT_DIR GIT_INDEX_FILE</code> を書くだけで、書いた人にしか効きません。</p>
+<p><b>見立て</b> 根本の直しは (a)。急ぐなら (b) を先に入れて (a) を後から、でも構いません。</p><p class="src">出どころ: exploratory-core-r3.md の p7</p></div></details>
 </div>
 <div class="item" data-id="r3-core-ignored-layout-silent">
 <div class="head"><div class="t"><span class="badge p p7">p7</span><span class="badge c">core/検査</span><code>[IgnoredLayout]</code> の警告が、README どおりの <code>testLogging</code> では test が緑のときコンソールに出ない</div><button class="copy1" type="button">コピー</button></div>
@@ -103,9 +108,10 @@ dialog button{font:inherit;margin-top:8px}
 <li><label><input type="checkbox" data-opt="b"><span>Gradle plugin が test のあとで、警告があれば Gradle のログに出す</span></label></li>
 </ul>
 <textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
-<details><summary>詳細</summary><ul>
-<li>scaffold と <code>katachi agent test</code>・IDE plugin で回す人には届いている。docs は人の領域なので (a) は Review に載せる</li><li>出どころ: exploratory-core-r3.md の p7</li>
-</ul></details>
+<details><summary>詳細</summary><div class="exp"><p><b>何が起きるか</b> #125 が足した警告（「<code>ignore()</code> に隠れた Role がある」）は、テストの標準エラー出力に出ます。Gradle は通ったテストの出力をコンソールに出さないので、README・manual-install どおりの <code>testLogging { exceptionFormat = FULL }</code> だけだと、緑のときは 1 行も見えません。</p><pre class="cmd">scaffold が作った設定・katachi agent test・IDE  → 警告が見える
+README どおりに作った設定                      → ⭐ BUILD SUCCESSFUL だけ（警告は XML の中）</pre><p><b>重さ</b> p7。項目 1 のような「黙って検査されない」状態が、警告を足しても残ります（警告が届かないため）。見えないのは緑のときだけで、まさに知らせたい回です。</p>
+<p><b>選択肢</b> (a) は README・manual-install に scaffold と同じ <code>showStandardStreams = true</code> を足します。速いですが、ほかのテストの出力も出ます。docs は人の領域なので Review に載せます。(b) は Gradle plugin がテストのあとに警告を Gradle のログへ出します。設定に依存せず確実ですが、実装が大きいです。</p>
+<p><b>見立て</b> 項目 1 の (a) とセットで (a)。時間があれば (b)。</p><p class="src">出どころ: exploratory-core-r3.md の p7（再現: repro125 の c01a）</p></div></details>
 </div>
 <div class="item" data-id="r3-kk-baseline-key">
 <div class="head"><div class="t"><span class="badge p p9">p9</span><span class="badge c">konsist・konture</span>同じ Role で baseline の鍵が重なる制約を、helper 関数・ループ・同じ行・名前の無い汎用の <code>fileConstraint { }</code> から書くと断られず、片方の記録がもう片方の新しい違反を黙って許す</div><button class="copy1" type="button">コピー</button></div>
@@ -115,9 +121,11 @@ dialog button{font:inherit;margin-top:8px}
 <li><label><input type="checkbox" data-opt="b"><span>今の断り方のまま、KDoc と docs に「名前を付けて重ならないようにする」と書く</span></label></li>
 </ul>
 <textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
-<details><summary>詳細</summary><ul>
-<li>出どころ: exploratory-konsist-konture-r3.md の p9</li>
-</ul></details>
+<details><summary>詳細</summary><div class="exp"><p><b>何が起きるか</b> baseline は「今ある違反を記録して許し、新しい違反だけ落とす」仕組みで、記録は (ルール, パス, Role, 制約名, 宣言名) の鍵で数えます。同じ Role に鍵が同じ制約が 2 つあると、片方の記録がもう片方の新しい違反まで許します。#134 は「名前の無いブロックを直に 2 つ書く」形だけ断るようになりましたが、同じ場所から 2 回通る書き方（helper・ループ・同じ行・同名の別ファイル・名前の無い汎用の <code>fileConstraint</code>）は断りません。</p><pre class="cmd">fun RoleScope.forbid(pkg: String) { konture { … } }   // ⭐ 禁じるパッケージごとの helper
+forbid(&quot;a&quot;); forbid(&quot;b&quot;)                              // 同じ場所から 2 回 → 「同じ宣言」扱い
+for (p in listOf(&quot;a&quot;, &quot;b&quot;)) { konsist { … } }        // for も同じ</pre><p><b>重さ</b> p9。baseline は既存プロジェクトに段階的に入れるための機能なので、大きいプロジェクトほど新しい違反を見逃します。<code>[StaleBaselineEntry]</code> も出ません。main でも起きます。</p>
+<p><b>選択肢</b> (a) は Role 直下では同じ場所でも別の制約として断ります（<code>layout { }</code> のループやワイルドカードのモジュールだけは同じ宣言とみなす）。名前の無い汎用の <code>fileConstraint</code> にも既定の名前を付けます。(b) は今の断り方のまま、KDoc に「名前を付けて重ならないようにする」と書くだけで、穴が残ります。</p>
+<p><b>見立て</b> 鍵が変わると baseline の取り直しが要りますが、0.4.0 でどうせ 1 回取り直す案内（#134）があるので、いま直せば利用者の手間は増えません。項目 5 と同時に直すのがおすすめです。</p><p class="src">出どころ: exploratory-konsist-konture-r3.md の p9</p></div></details>
 </div>
 <div class="item" data-id="r3-kk-extension-receiver">
 <div class="head"><div class="t"><span class="badge p p8">p8</span><span class="badge c">konsist・konture</span>同じファイルの同じ名前の拡張関数（<code>fun String.toDto()</code> と <code>fun Int.toDto()</code>）が baseline の 1 つの鍵になり、片方を直して片方を壊すと黙って許される</div><button class="copy1" type="button">コピー</button></div>
@@ -127,9 +135,10 @@ dialog button{font:inherit;margin-top:8px}
 <li><label><input type="checkbox" data-opt="b"><span>konsist・konture だけ 0.4.0 で直し、ktFileContent は 0.5</span></label></li>
 </ul>
 <textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
-<details><summary>詳細</summary><ul>
-<li>出どころ: exploratory-konsist-konture-r3.md の p8。リリースノートの「baseline を 1 回取り直す」の段落に足す</li>
-</ul></details>
+<details><summary>詳細</summary><div class="exp"><p><b>何が起きるか</b> 宣言名に「受け手の型」が入らないので、<code>fun String.toDto()</code> と <code>fun Int.toDto()</code> はどちらも <code>toDto</code> で、baseline の鍵が 1 つになります。片方を直して片方を壊しても、記録済みの鍵なので黙って許されます。konture・<code>konsist { }</code>・ktFileContent の 3 つで起きます。Codex 広域 4 回目の <code>fun User.check()</code> と <code>Order.check()</code> も同じ問題です（Mac でも再現済み）。</p><pre class="cmd">{ &quot;role&quot;: &quot;Ext&quot;, &quot;constraint&quot;: &quot;fun public&quot;, &quot;declaration&quot;: &quot;toDto&quot; }
+// ⭐ String.toDto と Int.toDto が両方ここに入って区別できない</pre><p><b>重さ</b> p8。<code>toDto()</code>・<code>toDomain()</code> を受け手ごとに 1 ファイルに並べる mapper は普通で、項目 4 より起きやすいです。多重定義（<code>create(a: Int)</code> と <code>create(a: String)</code>）も同じ鍵になります。</p>
+<p><b>選択肢</b> 直し方は「受け手で修飾する」（<code>String.toDto</code>）の 1 つで、選ぶのはいつ直すかです。(a) は 3 つとも 0.4.0 で直します。baseline は 0.4.0 でどうせ取り直すので、移行は 1 回で済みます。(b) は konsist・konture だけ 0.4.0、ktFileContent は 0.5 で、ktFileContent の利用者は取り直しがもう 1 回になります。</p>
+<p><b>見立て</b> (a)。リリースノートの「baseline を 1 回取り直す」の段落に、ktFileContent の分を足します。</p><p class="src">出どころ: exploratory-konsist-konture-r3.md の p8、Mac の exploratory-広域-r4.md の p8</p></div></details>
 </div>
 <div class="item" data-id="r3-konture-wildcard-test">
 <div class="head"><div class="t"><span class="badge p p7">p7</span><span class="badge c">konture</span><code>*</code> の import の下の名前が、test のソースに同じ名前のクラスがあるとまた決まらず、依存の規則が黙って緑になる</div><button class="copy1" type="button">コピー</button></div>
@@ -140,9 +149,10 @@ dialog button{font:inherit;margin-top:8px}
 <li><label><input type="checkbox" data-opt="c"><span>KDoc に「見えない場所の同じ名前でも決まらなくなる。名前で import する」と書くだけにする</span></label></li>
 </ul>
 <textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
-<details><summary>詳細</summary><ul>
-<li>出どころ: exploratory-konsist-konture-r3.md の p7</li>
-</ul></details>
+<details><summary>詳細</summary><div class="exp"><p><b>何が起きるか</b> 依存の規則は、<code>import a.*</code> の下の名前がどのクラスかを、プロジェクトのクラスの一覧から決めます。#134 で一覧をプロジェクト全体から作るようにしましたが、test のソースに同じ名前のクラスが別の <code>*</code> のパッケージにあると、またどちらとも決まらず、依存の規則が黙って緑になります。Kotlin では main のファイルから test のクラスは見えないので、本当は 1 つに決まります（誤判定）。</p><pre class="cmd">main : model/User.kt        ← import model.* の User
+test : fake/User.kt         ← ⭐ 同じ名前。見えないはずなのに「決まらない」になる</pre><p><b>重さ</b> p7。「A から B を使わない」が黙って緑になると konture を使う意味が消えますが、条件は「test に同名のクラス」で、起きる人は限られます。</p>
+<p><b>選択肢</b> (a) は一覧を「覆ったファイルから見えるもの」に絞ります（main のファイルには main だけ）。直し方が 1 つで安全です。(b) は決まらなかった名前を、規則の結果とは別に報告へ注意として出します。(c) は KDoc に「名前で import する」と書くだけです。</p>
+<p><b>見立て</b> (a)。時間が無ければ (c) を 0.4.0、(a) を 0.5 に回しても、危険は稀な条件に限られます。</p><p class="src">出どころ: exploratory-konsist-konture-r3.md の p7</p></div></details>
 </div>
 <div class="item" data-id="r3-konture-inbound">
 <div class="head"><div class="t"><span class="badge p p7">p7</span><span class="badge c">konture</span>Konture 単体の inbound の規則（<code>onlyBeAccessedByAnyPackage</code>・<code>notBeAccessedByAnyPackage</code>）を Role の <code>konture { }</code> へ移すと、Role の外からの参照が見えず黙って緑になる</div><button class="copy1" type="button">コピー</button></div>
@@ -153,9 +163,10 @@ dialog button{font:inherit;margin-top:8px}
 <li><label><input type="checkbox" data-opt="c"><span>Module.md と Konture からの移行の案内に書くだけにする</span></label></li>
 </ul>
 <textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
-<details><summary>詳細</summary><ul>
-<li>出どころ: exploratory-konsist-konture-r3.md の p7</li>
-</ul></details>
+<details><summary>詳細</summary><div class="exp"><p><b>何が起きるか</b> inbound の規則（<code>onlyBeAccessedByAnyPackage</code>・<code>notBeAccessedByAnyPackage</code>）は「このコードをどこから使ってよいか」を決めます。Konture 単体では全ファイルの参照が見えますが、katachi の Role の中の <code>konture { }</code> は、その Role が覆うファイルしか見えません。Role の外からの参照が見えないので、規則が常に満たされ、緑になります。</p><pre class="cmd">Konture 単体   : domain は app 層からだけ呼べる → 外からの参照を見て違反を出す
+Role の konture { } に移す → ⭐ 覆うファイルしか見えず、違反があっても緑</pre><p><b>重さ</b> p7。移行の案内どおりにやった人の検査が、静かに弱まります。Konture を既に使っている人ほど該当します。</p>
+<p><b>選択肢</b> (a) は <code>rule(id)</code> などと同じく shadow してコンパイルエラーにします。効かないことが書いた時点で分かり、直しも小さいです。(b) は inbound の規則だけ、見た全ファイルのグラフで数えます。正しいですが影響が大きいです。(c) は Module.md と移行の案内に書くだけで、読まれないと効きません。</p>
+<p><b>見立て</b> (a)。</p><p class="src">出どころ: exploratory-konsist-konture-r3.md の p7（Konture 単体は 2 件）</p></div></details>
 </div>
 <div class="item" data-id="r3-rw-scaffold-release8">
 <div class="head"><div class="t"><span class="badge p p7">p7</span><span class="badge c">CLI・script</span>ルートの <code>subprojects { }</code> が <code>release = 8</code>・<code>jvmTarget = 1.8</code> を全モジュールに掛けるプロジェクトで、scaffold した検査用モジュールが最初の実行で「katachi は JVM 17 以上」と言って解決できない</div><button class="copy1" type="button">コピー</button></div>
@@ -166,9 +177,11 @@ dialog button{font:inherit;margin-top:8px}
 <li><label><input type="checkbox" data-opt="c"><span>書かずに、止まる文面で直し方を案内する</span></label></li>
 </ul>
 <textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
-<details><summary>詳細</summary><ul>
-<li>出どころ: exploratory-realworld-r3.md の p7。「5.」の rw-check-not-run（<code>subprojects { }</code> の件）とは別の件</li>
-</ul></details>
+<details><summary>詳細</summary><div class="exp"><p><b>何が起きるか</b> ルートの <code>subprojects { }</code> が <code>release = 8</code>・<code>jvmTarget = 1.8</code> を全モジュールに掛けるプロジェクトでは、scaffold が作った検査用モジュールにも 8 が掛かります。最初の実行で「katachi は JVM 17 以上」と言って依存を解決できず、手で直すしかありません（moshi・clikt・kotlinpoet の 3 つで確認）。</p><pre class="cmd">// ⭐ scaffold が生成する build.gradle.kts に、最初から足す案（ルートが 8 でなくても害は無い）
+tasks.withType&lt;JavaCompile&gt;().configureEach { options.release.set(17) }
+tasks.withType&lt;KotlinCompile&gt;().configureEach { compilerOptions.jvmTarget.set(JvmTarget.JVM_17) }</pre><p><b>重さ</b> p7。導入の最初の手順で止まるので、最初の印象が悪くなります。メッセージから原因をたどれば直せます。「5.」の <code>rw-check-not-run</code>（<code>subprojects { }</code> がテストを空にする件）とは別件です。</p>
+<p><b>選択肢</b> (a) は生成する設定に最初から書きます。katachi は JVM 17 が前提なので害がありません。(b) はルートの設定を見つけたときだけ書きますが、見つける道が増えます。(c) は書かずに、止まる文面で直し方を案内します。</p>
+<p><b>見立て</b> 条件分岐の複雑さが要らない (a)。</p><p class="src">出どころ: exploratory-realworld-r3.md の p7</p></div></details>
 </div>
 
 <h2 style="--c:var(--amber)">2. 判断してほしい<small>リリースは止めないが、方針が要る</small></h2>
