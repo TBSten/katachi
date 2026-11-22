@@ -102,3 +102,26 @@ Mac の auto mode は `ticket.py set` の書き込みも止めるので、その
 手順 13（探索的検証 2 周目 v0.3 からの移行）の p9。v0.3 の `":core:data".module { }` はモジュールの build script を必須にしていたが、0.4 の `gradle()` は見つかったモジュールの build script を「置いてよい」と宣言するだけなので、固定の名前のモジュールを消しても緑になる。
 (a) リリースノートの `.module` の段落に「`gradle()` はモジュールの build script を必須にしない」と書く（`gradle()` の「モジュールの一覧を 2 度書かない」設計のまま）/ (b) Role の layout に「このディレクトリは Gradle のモジュール」と書ける口を足す / (c) 固定の名前で書いたモジュールの build script と `gradle()` が重なっても `[AmbiguousLayout]` にしない、と並べて聞き、(a) になった。リリースノートの下書きには書き足し済み。
 次のチェックでは、この挙動を発見として出さない。リリースノートの段落が消えていたら、リリースノートの指摘としてだけ出す。
+
+## 直さない: CLI・script: ルートの `subprojects { }` が `release = 8`・`jvmTarget = 1.8` を全モジュールに掛けるプロジェクトでは、scaffold した検査用モジュールが最初の実行で「katachi は JVM 17 以上」と言って解決できない
+- decision: 直さない
+- file: exploratory:realworld
+- quote: Dependency resolution is looking for a library compatible with JVM runtime version 8, but 'me.tbsten.katachi:katachi' is only compatible with JVM runtime version 17 or newer.
+- decided: 2026-11-22 261120-01 KATACHI-404
+- by: 利用者（チャット、00:32 JST「これはこれで許容として直さないし今後も直す予定はない」。直前に出した p7 の詳細の件）
+
+手順 13（探索的検証 3 周目 実在の OSS）の p7。moshi・clikt・kotlinpoet のように Java 8 互換を保つライブラリは、ルートの `subprojects { }` で全モジュールに 8 向けの設定を掛ける。scaffold が作る `architecture-test` にも掛かり、katachi が JVM 17 以上向けなので、最初の `./gradlew :architecture-test:test` が依存の解決で止まる。
+(a) scaffold が生成する build.gradle.kts に release・jvmTarget を 17 に戻す設定を最初から書く / (b) ルートの設定を見つけたときだけ書く / (c) 書かずに止まる文面で案内する、を並べて聞いたが、どれも選ばず「許容して直さない」になった。理由の一言は「これはこれで許容」。
+回避策は、検査用モジュールの build.gradle.kts に `release`・`jvmTarget` を 17 に戻す設定を足すこと（Mac で試して、解決・コンパイル・検査の実行まで通った）。再現は Mac の tmp/exploratory/wide-codex-r4/projects/jvm8-repro、結果は logs/repro8.out。
+次のチェックでは、この挙動を発見として出さない。
+
+## 直さない: konture: Konture 単体の inbound の規則（`onlyBeAccessedByAnyPackage`・`notBeAccessedByAnyPackage`）を Role の `konture { }` へ移すと、Role の外からの参照が見えず黙って緑になる
+- decision: 直さない
+- file: exploratory:konsist-konture
+- quote: onlyBeAccessedByAnyPackage
+- decided: 2026-11-23 261120-01 KATACHI-404
+- by: 利用者（チャット、00:58 JST「まあこれは治さずでok」。直前の判断カードで選んだ (a) は、`ClassesShould`・`ClassesRuleBuilder` が final で shadow できず実装できないと伝えたあとの答え）
+
+手順 13（探索的検証 3 周目 konsist/konture）の p7。Role の `konture { }` は覆ったファイルしか見ないので、inbound の規則は Role の外からの参照を数えられず、Konture 単体なら落ちる違反が緑になる。
+(a) `rule(id)` などと同じく shadow してコンパイルエラーにする（実装できない）/ (b) inbound だけ全ファイルのグラフで数える / (c) Module.md と移行の案内に書くだけ、を並べ、直さないことになった。理由の一言は「まあこれは治さずで」。
+次のチェックでは、この挙動を発見として出さない。
