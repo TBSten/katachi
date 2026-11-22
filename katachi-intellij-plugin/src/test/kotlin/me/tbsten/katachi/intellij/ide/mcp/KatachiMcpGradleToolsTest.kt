@@ -119,10 +119,13 @@ internal class KatachiMcpGradleToolsTest : DefinitionServiceTestBase() {
         installAll()
         loaded()
         val gate = CompletableDeferred<Unit>()
-        gradle.checks += PlannedCheck(sarif = sarif("src/other/Stray.kt"), gate = gate)
+        val plan = PlannedCheck(sarif = sarif("src/other/Stray.kt"), gate = gate)
+        gradle.checks += plan
         val result = call(tools(checkTimeout = 300.milliseconds)) { it.runCheck(":arch") }.getOrThrow()
         gate.complete(Unit)
         assertEquals("timedOut", result.outcome)
+        // The check goes on in the background after the timeout: let the fake Gradle finish writing before tearDown deletes the folder.
+        PlatformTestUtil.waitWithEventsDispatching({ "the fake check did not finish" }, { plan.finished.isCompleted }, 20)
     }
 
     fun `test 定義モジュールが複数あると module を省いた run_check は一覧を添えて断る`() {
