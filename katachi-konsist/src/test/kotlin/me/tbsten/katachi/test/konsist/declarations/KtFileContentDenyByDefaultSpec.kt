@@ -308,6 +308,15 @@ class KtFileContentDenyByDefaultSpec : FreeSpec({
                 required(data, `class`, fileName)
             }.filter { "Move it out of" in it } shouldBe listOf("Sample.b: Move it out of data class Sample")
         }
+
+        "override したメンバにも「クラスの外へ動かす」を出さない（外へ動かせない）。override でないメンバには出す" {
+            fixLinesOf(
+                "package com.example\n\ninterface Base {\n    fun a()\n}\n\nclass Sample : Base {\n    override fun a() {}\n    fun b() {}\n}\n",
+            ) {
+                `package`("**")
+                required(`class`, fileName)
+            }.filter { "Move it out of" in it } shouldBe listOf("Sample.b: Move it out of class Sample")
+        }
     }
 
     "条件で行を 1 つも書かれなかったファイルは、最初の違反にそう添える" {
