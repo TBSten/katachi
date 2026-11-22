@@ -484,6 +484,21 @@ internal object Messages {
             en = "--package is not a valid package name: $pkg",
         )
 
+        fun packageHasKotlinKeyword(pkg: Any?, keyword: Any?): Msg = Msg(
+            ja = "--package に Kotlin の予約語（$keyword）が含まれています: $pkg。パッケージ名の途中には使えないので、別の名前にしてください。",
+            en = "--package has the Kotlin keyword $keyword in it: $pkg. A keyword cannot be a package name segment, so use another name.",
+        )
+
+        fun moduleDirBlockedByFile(blockedUri: Any?, moduleDirUri: Any?): Msg = Msg(
+            ja = "検査用モジュールを $moduleDirUri/ に作れません。$blockedUri がディレクトリではないためです（--force を付けても上書きしません）。そのファイルを動かすか、--module-dir で別の置き場所を指定してください。",
+            en = "Cannot create the verification module in $moduleDirUri/: $blockedUri is not a directory (--force does not overwrite it). Move that file, or pass another place with --module-dir.",
+        )
+
+        fun fileBlockedByDirectory(blockedUri: Any?, moduleDirUri: Any?): Msg = Msg(
+            ja = "$blockedUri はディレクトリなので、$moduleDirUri/ の検査用モジュールのファイルとして書けません（--force を付けても上書きしません）。そのディレクトリを動かすか、--module-dir で別の置き場所を指定してください。",
+            en = "$blockedUri is a directory, so it cannot be written as a file of the verification module in $moduleDirUri/ (--force does not overwrite it). Move that directory, or pass another place with --module-dir.",
+        )
+
         fun moduleDirDiffersWhat(moduleDir: Any?, moduleRecorded: Any?): Msg = Msg(
             ja = "--module-dir $moduleDir はチェックリストの記録（meta.moduleDir = $moduleRecorded）と違います。チェックリストのほうも $moduleDir に直してください。",
             en = "--module-dir $moduleDir differs from the check list (meta.moduleDir = $moduleRecorded). Change the check list to $moduleDir too.",

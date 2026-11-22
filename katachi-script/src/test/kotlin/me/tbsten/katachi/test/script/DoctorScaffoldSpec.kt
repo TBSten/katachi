@@ -506,6 +506,78 @@ class DoctorScaffoldSpec : FreeSpec({
             }
         }
 
+        "--package の要素に Kotlin の予約語があれば、何も作らずに止まる（KATACHI-414）" {
+            for (pkg in listOf("com.example.when", "com.example.class", "com.example.fun.x", "in.example", "com.example.typeof")) {
+                val project = gradleProject(toolchain = 21)
+
+                val run = runCapturing(project, listOf("scaffold", "--package", pkg, "--katachi", "0.4.0", "--force"), env = javaHome())
+
+                run.status shouldBe 1
+                run.err shouldContain "--package に Kotlin の予約語（${pkg.split('.').first { it in setOf("when", "class", "fun", "in", "typeof") }}）が含まれています: $pkg。"
+                project.resolve("architecture-test").exists() shouldBe false
+            }
+        }
+
+        "予約語でなければ、予約語を含む別の語（whenever・classes）は通る（KATACHI-414）" {
+            val project = gradleProject(toolchain = 21)
+
+            val run = runCapturing(project, listOf("scaffold", "--package", "com.example.whenever.classes", "--katachi", "0.4.0"), env = javaHome())
+
+            run.status shouldBe 0
+        }
+
+        "--package の予約語の案内は英語でも出る（KATACHI-414）" {
+            val run = runCapturing(gradleProject(toolchain = 21), listOf("scaffold", "--package", "com.example.when"), env = javaHome() + ("KATACHI_LANG" to "en"))
+
+            run.status shouldBe 1
+            run.err shouldContain "--package has the Kotlin keyword when in it: com.example.when."
+        }
+
+        "検査用モジュールの置き場所が通常ファイルなら、--force があっても何も書かずに、ファイルを動かすよう案内する（KATACHI-417）" {
+            for (moduleDir in listOf("blocked", "blocked/architecture", "blocked/src")) {
+                for (extra in listOf(emptyList(), listOf("--force"), listOf("--dry-run"), listOf("--force", "--dry-run"))) {
+                    val project = gradleProject(toolchain = 21)
+                    project.resolve("blocked").writeText("KEEP THIS FILE")
+                    val settingsBefore = project.resolve("settings.gradle.kts").readText()
+
+                    val run = runCapturing(
+                        project,
+                        listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0", "--module-dir", moduleDir) + extra,
+                        env = javaHome(),
+                    )
+
+                    run.status shouldBe 1
+                    run.err shouldContain "検査用モジュールを ${fileUriOf(project.resolve(moduleDir))}/ に作れません。${fileUriOf(project.resolve("blocked"))} がディレクトリではないためです"
+                    run.err shouldNotContain "上書きするなら --force"
+                    project.resolve("blocked").readText() shouldBe "KEEP THIS FILE"
+                    project.resolve("settings.gradle.kts").readText() shouldBe settingsBefore
+                }
+            }
+        }
+
+        "モジュールの中のディレクトリの位置にファイルがあるときも、同じ案内で止まる（KATACHI-417）" {
+            val project = gradleProject(toolchain = 21)
+            project.resolve("architecture-test/src/test").createDirectories().resolve("kotlin").writeText("not a directory")
+
+            val run = runCapturing(project, listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0", "--force"), env = javaHome())
+
+            run.status shouldBe 1
+            run.err shouldContain "${fileUriOf(project.resolve("architecture-test/src/test/kotlin"))} がディレクトリではないためです"
+        }
+
+        "書き出すファイルの位置にディレクトリがあるときも、--force があっても何も書かずに止まる（KATACHI-417）" {
+            for (blocked in listOf("architecture-test/build.gradle.kts", "architecture-test/src/test/kotlin/com/example/test/architecture/ProjectArchitecture.kt")) {
+                val project = gradleProject(toolchain = 21)
+                project.resolve(blocked).createDirectories()
+
+                val run = runCapturing(project, listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0", "--force"), env = javaHome())
+
+                run.status shouldBe 1
+                run.err shouldContain "${fileUriOf(project.resolve(blocked))} はディレクトリなので"
+                project.resolve("settings.gradle.kts").readText() shouldNotContain "include"
+            }
+        }
+
         "--module-dir の置き場所に作り、次の test をその Gradle パスで案内する（KATACHI-420）" {
             val project = projectWithWorkdir("""{"meta": {}, "steps": []}""")
             project.resolve("build.gradle.kts").writeText("plugins {\n    kotlin(\"jvm\") version \"2.4.10\" apply false\n}\n")
