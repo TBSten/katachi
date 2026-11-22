@@ -73,10 +73,12 @@ private fun unexpectedDeclarationFailure(finding: UnexpectedDeclaration, path: S
             val visibility = rule.alternatives.first().modifiers.single().keyword
             add(FileConstraintFix("Make it $visibility: ${renderAnythingElse(rule)} is allowed here"))
         }
-        // A property of the primary constructor cannot be moved out of its class.
+        // A property of the primary constructor cannot be moved out of its class, and neither can an override: it is
+        // the class's answer to a member of its supertype.
         when {
             container == null -> add(FileConstraintFix("Move it to a file of another role"))
-            !fact.inConstructor -> add(FileConstraintFix("Move it out of ${renderContainer(container)}"))
+            !fact.inConstructor && ModifierName.Override !in fact.modifiers ->
+                add(FileConstraintFix("Move it out of ${renderContainer(container)}"))
         }
         add(
             when {
