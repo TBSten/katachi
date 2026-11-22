@@ -21,6 +21,7 @@ import me.tbsten.katachi.dsl.files.internal.RealFileSystem
 import me.tbsten.katachi.dsl.wholeTree
 import me.tbsten.katachi.konture.KontureConstraintScope
 import me.tbsten.katachi.konture.internal.KontureSymbols
+import me.tbsten.katachi.konture.internal.KontureProductionSymbolsKey
 import me.tbsten.katachi.konture.internal.KontureSymbolsKey
 import me.tbsten.katachi.konture.konture
 
@@ -195,11 +196,47 @@ class KontureParseTargetSpec : FreeSpec({
             }
         }
 
+        for ((spelling, declaration, rule) in rules) {
+            "src/test に同じ名前のクラスがあっても、main のファイルには見えないので、$spelling は拾う" {
+                wildcardProject("src/test/UserRepository.kt" to TEST_USER_REPOSITORY_KT) { root ->
+                    val violations = wildcardRun(root, testRole = true, rule = rule)
+
+                    violations.filterIsInstance<UncheckedFileConstraint>().shouldBeEmpty()
+                    violations.filterIsInstance<UnsatisfiedFileConstraint>().map { "${it.path}:${it.declaration}" }.distinct() shouldContainExactly
+                        listOf("src/wild/WildViewModel.kt:$declaration")
+                }
+            }
+        }
+
+        "test のソースのファイルからは main も test も見えるので、同じ名前は決まらないままになる" {
+            // The covered file is under `src/test`: both `data.UserRepository` and the test one are visible there.
+            val rule: KontureConstraintScope.() -> Unit =
+                { functions { should() notDependOnPackages listOf("com.example.data..") } }
+            fixtureProject(
+                "src/test/WildTest.kt" to WILD_VIEW_MODEL_KT.replace("com.example.wild", "com.example.wildtest"),
+                "src/data/UserRepository.kt" to USER_REPOSITORY_KT,
+                "src/domain/GetUser.kt" to DOMAIN_GET_USER_KT,
+                "src/domain/UserRepository.kt" to TEST_USER_REPOSITORY_KT,
+            ) { root ->
+                val violations = architecture {
+                    files = wholeTree()
+                    "app".group {
+                        "Root".role { layout { "gradlew".file() } }
+                        "Wild".role { layout { "src/test" { "*.kt".file(); "規約".konture { rule() } } } }
+                        "Data".role { layout { "src/data" / "*.kt".file(); "src/domain" / "*.kt".file() } }
+                    }
+                }.validate(RealFileSystem(root), FileConstraintCheck())
+
+                violations.filterIsInstance<UnsatisfiedFileConstraint>().shouldBeEmpty()
+            }
+        }
+
         "1 回の検査で記号表は 1 つで、どの konture { } もそれを読む" {
             // A constraint evaluated first leaves an empty table in the run's memo. Had either
             // `konture { }` built a table of its own, it would know `UserRepository` and be red.
             val seed = FileConstraint { subject ->
                 subject.memo(KontureSymbolsKey, KontureSymbols::class) { KontureSymbols.of(emptyList()) }
+                subject.memo(KontureProductionSymbolsKey, KontureSymbols::class) { KontureSymbols.of(emptyList()) }
                 emptyList()
             }
             val rule: KontureConstraintScope.() -> Unit =
@@ -239,6 +276,7 @@ private fun wildcardRun(
     root: File,
     dataRole: Boolean = true,
     secondRole: Boolean = false,
+    testRole: Boolean = false,
     firstRole: RoleScope.() -> Unit = {},
     rule: KontureConstraintScope.() -> Unit,
 ): List<Violation> {
@@ -275,6 +313,9 @@ private fun wildcardRun(
                     }
                 }
             }
+            if (testRole) {
+                "TestFakes".role { layout { "src/test" / "*.kt".file() } }
+            }
         }
     }
     return projectArchitecture.validate(RealFileSystem(root), FileConstraintCheck())
@@ -309,6 +350,13 @@ private val USER_REPOSITORY_KT: String = """
     package com.example.data
 
     interface UserRepository { fun find(id: String): String }
+""".trimIndent() + "\n"
+
+/** A class of the same simple name under `src/test`, which no production file sees. */
+private val TEST_USER_REPOSITORY_KT: String = """
+    package com.example.domain
+
+    class UserRepository
 """.trimIndent() + "\n"
 
 /** A class in the second package, so that both wildcard imports name a package the project has. */
