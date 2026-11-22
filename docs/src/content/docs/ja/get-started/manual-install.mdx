@@ -52,7 +52,11 @@ tasks.test {
     useJUnitPlatform()
     outputs.upToDateWhen { false }
     outputs.cacheIf { false }
-    testLogging { exceptionFormat = TestExceptionFormat.FULL }
+    testLogging {
+        exceptionFormat = TestExceptionFormat.FULL
+        // [IgnoredLayout] などの警告は標準エラーに出る。これが無いと、テストが成功したときに表示されない
+        showStandardStreams = true
+    }
 }
 
 dependencies {

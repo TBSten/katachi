@@ -27,6 +27,7 @@ import me.tbsten.katachi.dsl.files.internal.gitTrackedFileSystem
 import me.tbsten.katachi.dsl.files.internal.dotGitAtOrAbove
 import me.tbsten.katachi.dsl.files.internal.isInsideGitWorkTree
 import me.tbsten.katachi.dsl.files.internal.namesBeyond
+import me.tbsten.katachi.dsl.files.internal.withGitWorkTree
 import me.tbsten.katachi.internal.fileUri
 
 class GitTrackedFileSystemSpec : FreeSpec({
@@ -479,6 +480,30 @@ class GitTrackedFileSystemSpec : FreeSpec({
             )
         }
     }
+    "git のフックの GIT_DIR（linked worktree の gitdir）から、作業ツリーを GIT_WORK_TREE に足す" {
+        val base = Files.createTempDirectory("katachi-hook").toFile()
+        try {
+            val gitDir = File(base, "main/.git/worktrees/wt").apply { mkdirs() }
+            File(gitDir, "gitdir").writeText("${base.path}/wt/.git\n")
+            val builder = ProcessBuilder("true")
+            builder.environment()["GIT_DIR"] = gitDir.path
+            builder.environment().remove("GIT_WORK_TREE")
+
+            builder.withGitWorkTree().environment()["GIT_WORK_TREE"] shouldBe "${base.path}/wt"
+
+            builder.environment()["GIT_WORK_TREE"] = "/elsewhere"
+            builder.withGitWorkTree().environment()["GIT_WORK_TREE"] shouldBe "/elsewhere"
+
+            // The main work tree's .git has no `gitdir` file: nothing to add.
+            val plain = ProcessBuilder("true")
+            plain.environment()["GIT_DIR"] = File(base, "main/.git").path
+            plain.environment().remove("GIT_WORK_TREE")
+            plain.withGitWorkTree().environment()["GIT_WORK_TREE"] shouldBe null
+        } finally {
+            base.deleteRecursively()
+        }
+    }
+
 })
 
 private const val GIT_REQUIRED: String =

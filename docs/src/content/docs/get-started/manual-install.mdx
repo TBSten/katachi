@@ -52,7 +52,11 @@ tasks.test {
     useJUnitPlatform()
     outputs.upToDateWhen { false }
     outputs.cacheIf { false }
-    testLogging { exceptionFormat = TestExceptionFormat.FULL }
+    testLogging {
+        exceptionFormat = TestExceptionFormat.FULL
+        // warnings such as [IgnoredLayout] are printed to stderr; without this a green test hides them
+        showStandardStreams = true
+    }
 }
 
 dependencies {

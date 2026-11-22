@@ -53,10 +53,17 @@ private fun ambiguousLayoutFixLines(onFiles: Boolean, plural: Boolean): List<Str
 
 internal fun ignoredLayoutBlock(violation: IgnoredLayout, root: String?): List<String> = buildList {
     add("[${violation.label}] ${displayPath(root, violation.path)}")
-    add(
-        "${STEP}Role ${violation.role.qualifiedName} declares this path, but every file it allows is in a " +
-            "directory that is ignored, so none of them is checked.",
-    )
+    if (violation.partly) {
+        add(
+            "${STEP}Role ${violation.role.qualifiedName} declares this path, but a wildcard ignore() can match a " +
+                "directory under it, so files in a directory of that name are not checked.",
+        )
+    } else {
+        add(
+            "${STEP}Role ${violation.role.qualifiedName} declares this path, but every file it allows is in a " +
+                "directory that is ignored, so none of them is checked.",
+        )
+    }
     add("${STEP}Declared at: ${violation.declaredAt}")
     add("")
     add("${STEP}Hidden by:")
@@ -73,6 +80,13 @@ private fun hiddenByLine(ignore: HidingIgnore, root: String?): String {
 }
 
 private fun ignoredLayoutFixLines(violation: IgnoredLayout): List<String> {
+    if (violation.partly) {
+        return listOf(
+            "$STEP$STEP- If files in such a directory are to be checked, narrow the ignore() so that it leaves this path out, " +
+                "for example by naming the directory instead of using a wildcard",
+            "$STEP$STEP- Otherwise this is intended: a directory with that name under this path is never checked",
+        )
+    }
     val written = when (violation.hiddenBy.count { it.gradleModule == null }) {
         0 -> null
         1 -> "remove the ignore(), or narrow it so that it leaves this path out"

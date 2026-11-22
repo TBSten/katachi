@@ -57,7 +57,11 @@ tasks.test {
     outputs.upToDateWhen { false }
     outputs.cacheIf { false }
     // Print the list of violations to the console
-    testLogging { exceptionFormat = TestExceptionFormat.FULL }
+    testLogging {
+        exceptionFormat = TestExceptionFormat.FULL
+        // warnings such as [IgnoredLayout] are printed to stderr; without this a green test hides them
+        showStandardStreams = true
+    }
 }
 
 dependencies {

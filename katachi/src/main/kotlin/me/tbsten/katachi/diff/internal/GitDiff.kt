@@ -1,5 +1,6 @@
 package me.tbsten.katachi.diff.internal
 
+import me.tbsten.katachi.dsl.files.internal.withGitWorkTree
 import java.io.File
 import java.io.IOException
 import java.security.MessageDigest
@@ -247,6 +248,7 @@ private fun run(root: FsPath, command: List<String>): CommandResult {
     try {
         val process = try {
             ProcessBuilder(command)
+                .withGitWorkTree()
                 .directory(File(root.value))
                 .redirectError(stderrFile)
                 .start()

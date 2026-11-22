@@ -61,7 +61,11 @@ tasks.test {
     outputs.upToDateWhen { false }
     outputs.cacheIf { false }
     // 違反の一覧をコンソールに出す
-    testLogging { exceptionFormat = TestExceptionFormat.FULL }
+    testLogging {
+        exceptionFormat = TestExceptionFormat.FULL
+        // [IgnoredLayout] などの警告は標準エラーに出る。これが無いと、テストが成功したときに表示されない
+        showStandardStreams = true
+    }
 }
 
 dependencies {
