@@ -47,7 +47,9 @@ import me.tbsten.katachi.dsl.KatachiDsl
  *   `beAssignableTo` cannot follow an inheritance chain through a class the constraint does not
  *   cover: cover the whole hierarchy. A bare name is looked up among the classes of every `.kt`
  *   file the check walked, so one under two wildcard imports resolves even when another role
- *   declares its class. A directory the walk did not enter (one the layout ignores, or one no
+ *   declares its class. A file of a production source set (`src/main`) looks among the
+ *   production classes alone, because it cannot see a class under `src/test`; a file under
+ *   `src/test` looks among all of them. A directory the walk did not enter (one the layout ignores, or one no
  *   role declares), libraries and the JDK are not looked in: a bare name under two or more
  *   wildcard imports that means one of their classes stays unresolved. Import such a class by
  *   name.
