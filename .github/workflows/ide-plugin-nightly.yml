@@ -348,13 +348,33 @@ jobs:
           git config --global user.email "ci@example.invalid"
           git config --global user.name "katachi CI"
 
+      # Once, when the IDE never came up (KATACHI-446): on 2026-11-22 Android Studio hung inside the JVM's own AWT start
+      # (`MTLGraphicsConfig.getMTLConfigInfo` on the runner's Metal display, before any plugin was loaded; idea.log has no line after
+      # "IDE STARTED"), the driver never connected and the test died after 3 minutes. That is the runner, not katachi, and the same
+      # smoke passed the day before and the day after. So the smoke is run a second time only if the first one failed with the
+      # driver's "Driver is connected" timeout; a failure of the smoke itself (any other message) is not retried. The reports of the
+      # first attempt are kept next to the second one's.
       - name: Run integrationTestAndroidStudio
         working-directory: katachi-intellij-plugin
-        run: >
-          ./gradlew integrationTestAndroidStudio
-          --tests '*${{ matrix.smoke }}*'
-          --console=plain
-          --stacktrace
+        shell: bash
+        run: |
+          run_smoke() {
+            ./gradlew integrationTestAndroidStudio --tests '*${{ matrix.smoke }}*' --console=plain --stacktrace
+          }
+          status=0
+          run_smoke || status=$?
+          if [ "$status" -ne 0 ] && grep -rqs "Failed: Driver is connected" build/test-results/integrationTestAndroidStudio; then
+            echo "::warning title=Android Studio did not start::the driver never connected to Android Studio (KATACHI-446); running ${{ matrix.smoke }} once more. The first attempt's reports are in build/first-attempt."
+            mkdir -p build/first-attempt
+            cp -R build/test-results build/first-attempt/test-results
+            find build/integrationTestAndroidStudio -type d -name log -path '*ide-tests/tests*' | while read -r dir; do
+              mkdir -p "build/first-attempt/${dir#build/}"
+              cp -R "$dir/." "build/first-attempt/${dir#build/}/"
+            done
+            status=0
+            run_smoke || status=$?
+          fi
+          exit "$status"
 
       - name: Upload reports
         if: ${{ failure() }}
@@ -366,5 +386,6 @@ jobs:
             katachi-intellij-plugin/build/test-results/
             katachi-intellij-plugin/build/integrationTestAndroidStudio/**/log/
             katachi-intellij-plugin/build/integrationTestAndroidStudio/**/screenshots/
+            katachi-intellij-plugin/build/first-attempt/
           retention-days: 14
           if-no-files-found: ignore
