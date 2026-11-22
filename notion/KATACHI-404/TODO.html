@@ -60,31 +60,19 @@ dialog button{font:inherit;margin-top:8px}
 <body>
 <main>
 <h1>v0.4.0 リリース前に確認してほしいこと</h1>
-<p class="sub">2026-11-23 00:35 更新 /リリース前チェック 5 回目（261120-01・<a href="https://app.notion.com/p/41e187beecfc8132a7dbdbe6221e03c8">KATACHI-404</a>）/ 対象は main b5a6b6e3（#119〜#122 マージ後。そのあと #123〜#127・#130〜#140 のうち #128・#129 以外もマージ済み。#141〜#143 もマージ済み）/ 選んだものはこのブラウザに残ります。下の「まとめてコピー」をチャットに貼って返してください</p>
+<p class="sub">2026-11-23 01:00 更新 /リリース前チェック 5 回目（261120-01・<a href="https://app.notion.com/p/41e187beecfc8132a7dbdbe6221e03c8">KATACHI-404</a>）/ 対象は main b5a6b6e3（#119〜#122 マージ後。そのあと #123〜#127・#130〜#140 のうち #128・#129 以外もマージ済み。#141〜#143 もマージ済み）/ 選んだものはこのブラウザに残ります。下の「まとめてコピー」をチャットに貼って返してください</p>
 
 <div class="summary">
-  <span class="pill"><b style="color:var(--red)">1</b>リリース前に直すか決める</span>
+  <span class="pill"><b style="color:var(--red)">0</b>リリース前に直すか決める</span>
   <span class="pill"><b style="color:var(--amber)">0</b>判断してほしい</span>
   <span class="pill"><b style="color:var(--blue)">1</b>目を通してほしい</span>
   <span class="pill"><b style="color:var(--green)">2</b>操作してほしい</span>
-  <span class="pill"><b style="color:var(--muted)">46</b>決定済み・対応中</span>
+  <span class="pill"><b style="color:var(--muted)">47</b>決定済み・対応中</span>
 </div>
 
 <h2 style="--c:var(--red)">1. リリース前に直すか決める<small>priority 7 以上。放置すると利用者が詰まる</small></h2>
-<div class="item" data-id="r3-konture-inbound">
-<div class="head"><div class="t"><span class="badge p p7">p7</span><span class="badge c">konture</span>Konture 単体の inbound の規則（<code>onlyBeAccessedByAnyPackage</code>・<code>notBeAccessedByAnyPackage</code>）を Role の <code>konture { }</code> へ移すと、Role の外からの参照が見えず黙って緑になる</div><button class="copy1" type="button">コピー</button></div>
-<p class="desc">単体では見える Role の外からの参照が、katachi の Role の中では見えません。移行した人の検査が静かに弱まります。</p>
-<ul class="opts">
-<li><label><input type="checkbox" data-opt="a"><span><code>rule(id)</code> などと同じく shadow してコンパイルエラーにする（効かないことが書いた時点で分かる）<span class="rec">おすすめ</span></span></label></li>
-<li><label><input type="checkbox" data-opt="b"><span>inbound の規則だけ、見た全ファイルのグラフで数え、違反は覆うファイルにだけ出す</span></label></li>
-<li><label><input type="checkbox" data-opt="c"><span>Module.md と Konture からの移行の案内に書くだけにする</span></label></li>
-</ul>
-<textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
-<details><summary>詳細</summary><div class="exp"><p><b>何が起きるか</b> inbound の規則（<code>onlyBeAccessedByAnyPackage</code>・<code>notBeAccessedByAnyPackage</code>）は「このコードをどこから使ってよいか」を決めます。Konture 単体では全ファイルの参照が見えますが、katachi の Role の中の <code>konture { }</code> は、その Role が覆うファイルしか見えません。Role の外からの参照が見えないので、規則が常に満たされ、緑になります。</p><pre class="cmd">Konture 単体   : domain は app 層からだけ呼べる → 外からの参照を見て違反を出す
-Role の konture { } に移す → ⭐ 覆うファイルしか見えず、違反があっても緑</pre><p><b>重さ</b> p7。移行の案内どおりにやった人の検査が、静かに弱まります。Konture を既に使っている人ほど該当します。</p>
-<p><b>選択肢</b> (a) は <code>rule(id)</code> などと同じく shadow してコンパイルエラーにします。効かないことが書いた時点で分かり、直しも小さいです。(b) は inbound の規則だけ、見た全ファイルのグラフで数えます。正しいですが影響が大きいです。(c) は Module.md と移行の案内に書くだけで、読まれないと効きません。</p>
-<p><b>見立て</b> (a)。</p><p class="src">出どころ: exploratory-konsist-konture-r3.md の p7（Konture 単体は 2 件）</p></div></details>
-</div>
+<p class="empty">いまは無し。</p>
+
 <h2 style="--c:var(--amber)">2. 判断してほしい<small>リリースは止めないが、方針が要る</small></h2>
 <p class="empty">いまは無し。</p>
 
@@ -158,6 +146,7 @@ EOF</pre>
 <h2 style="--c:var(--line)">5. 決定済み・対応中<small>🔧 対応中 / ✏️ 編集済み・検証中 / ✓ 済</small></h2>
 
 <ul class="done">
+<li data-id="r3-decided-inbound">✓ <span class="badge p p7">p7</span><span class="badge c">konture</span>Konture 単体の inbound の規則を Role の <code>konture { }</code> へ移すと、Role の外からの参照が見えず黙って緑になる <span class="to">→ 直さない（「まあこれは治さずでok」、11/23 00:58）→ decisions/process.md に記録（<a href="https://github.com/TBSten/katachi/pull/150">PR #150</a>）</span></li>
 <li data-id="r3-decided-147">🔧 <span class="badge p p9">p9</span><span class="badge c">core/検査</span><code>ignore()</code> の下の Role が黙って検査されない・git hook 経由で全体を見てしまう・全体ビルドの扱い <span class="to">→ (a) で決定（11/22 15:33）。<a href="https://github.com/TBSten/katachi/pull/147">PR #147</a>（CI 待ち）</span></li>
 <li data-id="r3-decided-148">🔧 <span class="badge p p9">p9</span><span class="badge c">konsist・konture</span>baseline のキー・拡張関数の receiver を含む宣言名 <span class="to">→ (a) で決定（3 つとも 0.4.0）。<a href="https://github.com/TBSten/katachi/pull/148">PR #148</a>（CI 待ち）。上げたら baseline を 1 回取り直す旨をリリースノートの Migration に足す</span></li>
 <li data-id="r3-decided-149">🔧 <span class="badge p p7">p7</span><span class="badge c">konture</span><code>*</code> の import の下の名前が test の同名クラスで決まらず、規則が黙って緑になる <span class="to">→ (a) で決定。<a href="https://github.com/TBSten/katachi/pull/149">PR #149</a>（CI 待ち）</span></li>
