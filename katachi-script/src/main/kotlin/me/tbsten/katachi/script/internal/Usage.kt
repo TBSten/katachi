@@ -5,6 +5,23 @@ package me.tbsten.katachi.script.internal
 
 internal fun ScriptContext.usage(): String = pick(Messages.Usage.top)
 
+private val USAGE_ENTRY = Regex("^ {2}katachi \\S")
+
+/**
+ * `katachi <command> --help`: only that command's block of [usage], so that scaffold's options are not buried
+ * under the other commands. A command with no block of its own (a name that is not in the text) gets the whole [usage].
+ */
+internal fun ScriptContext.usageOf(command: String): String {
+    val lines = usage().lines()
+    val start = lines.indexOfFirst { it == "  katachi $command" || it.startsWith("  katachi $command ") }
+    if (start < 0) return usage()
+    val end = (start + 1 until lines.size).firstOrNull { index ->
+        val line = lines[index]
+        USAGE_ENTRY.containsMatchIn(line) || (line.isNotEmpty() && !line.first().isWhitespace())
+    } ?: lines.size
+    return lines.subList(start, end).dropLastWhile { it.isBlank() }.joinToString("\n") { it.removePrefix("  ") }
+}
+
 /*
  * Environment variables for developers, kept out of --help (CLAUDE.md: what is for development is not shown in
  * the product). The prerelease skill's scripts set them; people installing katachi never do.

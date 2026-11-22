@@ -462,6 +462,16 @@ internal object Messages {
                 "(get it with gh skill install TBSten/katachi katachi or npx skills add TBSten/katachi --skill katachi)",
         )
 
+        fun scriptNeedsExtension(file: Any?): Msg = Msg(
+            ja = "$file はスクリプトとして実行できません。katachi のスクリプトのファイル名は .katachi.kts で終わる必要があります（例: ${CLI_COMMAND}-setup.katachi.kts）",
+            en = "$file cannot run as a script. The file name of a katachi script has to end with .katachi.kts (for example: $CLI_COMMAND-setup.katachi.kts)",
+        )
+
+        fun langEnvNotReadable(value: Any?, used: Any?): Msg = Msg(
+            ja = "KATACHI_LANG=$value は読めません（ja か en を指定してください）。$used で出力します。",
+            en = "KATACHI_LANG=$value is not readable (use ja or en). Printing in $used.",
+        )
+
         fun unknownSubcommandSeeHelp(command: Any?): Msg = Msg(
             ja = "知らないサブコマンドです: $command（--help を見てください）",
             en = "Unknown subcommand: $command (see --help)",
