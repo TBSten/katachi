@@ -1,5 +1,6 @@
 package me.tbsten.katachi.script.internal
 
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
@@ -8,6 +9,9 @@ import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.readLines
 import kotlin.io.path.writeText
+
+private val KATACHI_VERSION_FORMAT = Regex("^[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.]+)?$")
+private val KOTLIN_VERSION_FORMAT = Regex("^[0-9]+\\.[0-9]+(\\.[0-9]+)?(-[0-9A-Za-z.]+)?$")
 
 private val PACKAGE_NAME = Regex("^[a-z][a-zA-Z0-9_]*(\\.[a-z][a-zA-Z0-9_]*)*$")
 
@@ -70,6 +74,7 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
     if (version.isEmpty()) {
         die(Messages.Scaffold.cannotTellKatachiVersion)
     }
+    if (!KATACHI_VERSION_FORMAT.matches(version)) die(Messages.Scaffold.couldNotReadKatachi(version))
     requireKatachiVersion(version, versionSource)
     val mavenLocal = mavenLocalEnabled()
 
@@ -81,6 +86,7 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
         }
     }
     if (kotlin.isEmpty()) die(if (buildSrcUsesEmbeddedKotlin(root)) Messages.Scaffold.couldNotDetectEmbeddedKotlin else Messages.Scaffold.couldNotDetectKotlin)
+    if (parsed.value("--kotlin") != null && !KOTLIN_VERSION_FORMAT.matches(kotlin)) die(Messages.Scaffold.couldNotReadKotlin(kotlin))
     val (kotlinMajor, kotlinMinor) = majorMinor(kotlin) ?: die(Messages.Scaffold.couldNotReadKotlin(kotlin))
     if (kotlinMajor < KOTLIN_MIN_MAJOR || (kotlinMajor == KOTLIN_MIN_MAJOR && kotlinMinor < KOTLIN_MIN_MINOR)) {
         val message = kotlinTooOldMessage(root, kotlin, kotlinFile, forScaffold = true)
@@ -227,6 +233,10 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
     note(Messages.Scaffold.addPluginmanagement(yesNo(settingsNeedsPluginRepos), missingText.takeIf { settingsNeedsPluginRepos }))
     if (mavenLocal) note(Messages.Scaffold.developers)
 
+    plan.keptVersion?.let { warn(Messages.Scaffold.catalogKeepsKatachiVersion(fileUri(CATALOG_FILE), it.alias, it.existing, version)) }
+    val oldTests = otherGeneratedTests(root, module.dir, srcDir)
+    if (oldTests.isNotEmpty()) warn(Messages.Scaffold.otherPackageTestsRemain(oldTests.joinToString("\n    ") { fileUri(it) }))
+
     if (dryRun) {
         say("")
         say(Messages.Scaffold.nothingWrittenDryRun)
@@ -243,7 +253,8 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
     )
     // **Never overwritten, not even with --force**: it holds the architecture { } people and agents wrote.
     val architectureKt = src.resolve("ProjectArchitecture.kt")
-    if (architectureKt.isRegularFile() && architectureKt.fileSize() > 0) {
+    val architectureKept = architectureKt.isRegularFile() && architectureKt.fileSize() > 0
+    if (architectureKept) {
         note(Messages.Scaffold.keptAlreadyThere(fileUri(architectureKt)))
     } else {
         architectureKt.writeText("package $pkg.test.architecture\n\nimport me.tbsten.katachi.dsl.architecture\n\nval projectArchitecture = architecture {\n}\n")
@@ -262,7 +273,7 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
     val rootBuildUri = fileUri(rootBuild.name)
     val settingsUri = fileUri(settings.name)
     say(fileUri("${module.dir}/build.gradle.kts"))
-    say(fileUri(architectureKt))
+    if (!architectureKept) say(fileUri(architectureKt))
     say(fileUri(src.resolve("ProjectArchitectureTest.kt")))
     if (gitignoreWritten) say(Messages.Scaffold.addedBuild(fileUri("${module.dir}/.gitignore")))
     if (deps.value == "catalog") {
@@ -332,6 +343,20 @@ private fun firstNonDirectory(root: Path, relative: String): String? {
         if (!current.isDirectory()) return walked
     }
     return null
+}
+
+/** The `ProjectArchitectureTest.kt` files of the module that are not the one for [srcDir]: what an earlier `--package` left. */
+private fun otherGeneratedTests(root: Path, moduleDir: String, srcDir: String): List<String> {
+    val testRoot = root.resolve(moduleDir).resolve("src/test/kotlin")
+    if (!testRoot.isDirectory()) return emptyList()
+    val current = "$srcDir/ProjectArchitectureTest.kt"
+    return Files.walk(testRoot).use { paths ->
+        paths.filter { it.isRegularFile() && it.fileName.toString() == "ProjectArchitectureTest.kt" }
+            .map { root.relativize(it).toString().replace('\\', '/') }
+            .filter { it != current }
+            .sorted()
+            .toList()
+    }
 }
 
 private class ModuleBuild(

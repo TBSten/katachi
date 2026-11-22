@@ -521,6 +521,21 @@ internal object Messages {
                 "whose version ./gradlew --version prints on its Kotlin: line. Pass it with --kotlin.",
         )
 
+        fun couldNotReadKatachi(katachi: Any?): Msg = Msg(
+            ja = "katachi のバージョンを読み取れませんでした: $katachi（0.4.0 のような形で指定してください）",
+            en = "Could not read the katachi version: $katachi (give it in the form 0.4.0)",
+        )
+
+        fun catalogKeepsKatachiVersion(catalogUri: Any?, alias: Any?, existing: Any?, version: Any?): Msg = Msg(
+            ja = "$catalogUri の katachi（$alias）は $existing のままです。カタログに無い項目だけ足すので、$version には変わらず、生成したモジュールは $existing を使います。$version を使うなら、カタログの $alias を直してください。",
+            en = "The katachi entry ($alias) in $catalogUri stays at $existing. Only entries the catalog lacks are added, so it does not change to $version and the generated module uses $existing. To use $version, change $alias in the catalog.",
+        )
+
+        fun otherPackageTestsRemain(files: Any?): Msg = Msg(
+            ja = "別のパッケージで作った検査用テストが残っています:\n    $files\n    このまま検査すると、古い定義も一緒に動きます。要らなければ、そのパッケージのディレクトリを消してください。",
+            en = "Tests generated for another package are still there:\n    $files\n    They run together with the new definition. Delete that package's directory if you no longer need it.",
+        )
+
         fun couldNotReadKotlin(kotlin: Any?): Msg = Msg(
             ja = "Kotlin のバージョンを読み取れませんでした: $kotlin",
             en = "Could not read the Kotlin version: $kotlin",
@@ -913,7 +928,9 @@ katachi — katachi の導入と検査を手伝うコマンド
   katachi <ファイル>.katachi.kts [<引数>...]
       katachi のコマンドを Kotlin で並べたスクリプトを実行する。katachi と
       defaultPackage などのデフォルト値は最初から使える（kotlin コマンドが要る）。
-      引数はスクリプトの args に入る。
+      引数はスクリプトの args に入る。コマンドはスクリプトのあるディレクトリで実行される
+      （シェルのカレントではない）。execute() の戻り値は、捨てるとスクリプトの終了コードに
+      反映されない。失敗を伝えるなら exitProcess(executeCommands(...)) と書く。
 
   katachi --version
   katachi --help
@@ -974,7 +991,10 @@ Usage:
   katachi <file>.katachi.kts [<argument>...]
       Runs a script that lines up katachi commands in Kotlin. katachi and the
       defaults such as defaultPackage are there from the start (needs the kotlin
-      command). The arguments are the script's args.
+      command). The arguments are the script's args. The commands run in the
+      script's own directory (not the shell's current one). A return value of execute()
+      that the script drops is not the script's exit status. To report a failure,
+      write exitProcess(executeCommands(...)).
 
   katachi --version
   katachi --help

@@ -336,6 +336,8 @@ internal fun catalogIsRemapped(root: Path, settings: GradleFile): Boolean {
 }
 
 /** What scaffold adds to the catalog and the accessors build.gradle.kts uses. The kit's `SC_CAT_*` / `SC_ACC_*`. */
+internal class KeptVersion(val alias: String, val existing: String)
+
 internal class CatalogPlan {
     val versions = mutableListOf<String>()
     val libraries = mutableListOf<String>()
@@ -343,6 +345,9 @@ internal class CatalogPlan {
 
     /** Why the catalog cannot be used (ja to en); null when it can. */
     var fallback: Msg? = null
+
+    /** The version entry the catalog already has for katachi when it is not the one asked for; null otherwise. */
+    var keptVersion: KeptVersion? = null
     var plugin = ""
     var katachi = ""
     var konsist = ""
@@ -398,7 +403,11 @@ internal fun planCatalogEntries(root: Path, version: String, konsist: Boolean, t
 
     try {
         var ref = catalogVersionRefForGroup(root, "me.tbsten.katachi").ifEmpty { catalogVersionRefFor(root, "plugins", KATACHI_PLUGIN_ID) }
-        if (ref.isEmpty()) ref = planVersion("katachi", version)
+        if (ref.isEmpty()) {
+            ref = planVersion("katachi", version)
+        } else {
+            catalogAliasEntry(root, "versions", ref)?.content?.takeIf { it != version }?.let { plan.keptVersion = KeptVersion(ref, it) }
+        }
         plan.plugin = planItem("plugins", "katachi", KATACHI_PLUGIN_ID, "id = \"$KATACHI_PLUGIN_ID\", version.ref = \"$ref\"")
         plan.katachi = planItem("libraries", "katachi", "me.tbsten.katachi:katachi", "module = \"me.tbsten.katachi:katachi\", version.ref = \"$ref\"")
         if (konsist) {
