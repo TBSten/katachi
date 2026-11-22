@@ -47,6 +47,9 @@ internal class PlannedCheck(
     val gate: CompletableDeferred<Unit>? = null,
 ) {
     val reachedGate: CompletableDeferred<Unit> = CompletableDeferred()
+
+    /** Completes when the check has stopped, whatever the way: written, cancelled or failed. A test that opens the [gate] awaits it before it ends, so the fake does not write under a folder `tearDown` is deleting. */
+    val finished: CompletableDeferred<Unit> = CompletableDeferred()
 }
 
 /** The `katachiTemplate` invocation a [PlannedGeneration] answers: which module, and the `--arg`s it was given. */
@@ -185,20 +188,24 @@ internal class DiskGradleRunner(private val root: Path) : GradleTaskRunner {
 
     private suspend fun check(request: GradleRunRequest, listener: GradleRunListener): GradleRunOutcome {
         val plan = synchronized(checks) { if (checks.isEmpty()) PlannedCheck(sarif = null) else checks.removeAt(0) }
-        val reports = root.resolve(moduleOf(request.tasks.first())).resolve("build/reports/katachi")
-        if (Files.exists(reports)) NioFiles.deleteRecursively(reports)
-        listener.onLine("> Task ${request.tasks.first().taskPath}")
-        plan.gate?.let { gate ->
-            plan.reachedGate.complete(Unit)
-            awaitCancellable(gate)
+        try {
+            val reports = root.resolve(moduleOf(request.tasks.first())).resolve("build/reports/katachi")
+            if (Files.exists(reports)) NioFiles.deleteRecursively(reports)
+            listener.onLine("> Task ${request.tasks.first().taskPath}")
+            plan.gate?.let { gate ->
+                plan.reachedGate.complete(Unit)
+                awaitCancellable(gate)
+            }
+            val sarif = reports.resolve("katachi.sarif")
+            plan.partialFirst?.let { partial ->
+                write(sarif, partial)
+                delay(plan.partialMillis)
+            }
+            plan.sarif?.let { write(sarif, it) }
+            return if (plan.fails) GradleRunOutcome.Failed else GradleRunOutcome.Succeeded
+        } finally {
+            plan.finished.complete(Unit)
         }
-        val sarif = reports.resolve("katachi.sarif")
-        plan.partialFirst?.let { partial ->
-            write(sarif, partial)
-            delay(plan.partialMillis)
-        }
-        plan.sarif?.let { write(sarif, it) }
-        return if (plan.fails) GradleRunOutcome.Failed else GradleRunOutcome.Succeeded
     }
 
     private suspend fun generate(request: GradleRunRequest, listener: GradleRunListener): GradleRunOutcome {

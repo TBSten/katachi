@@ -17,6 +17,7 @@ import com.intellij.testFramework.PsiTestUtil
 import com.intellij.testFramework.replaceService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import me.tbsten.katachi.intellij.AnalysisTestBase
@@ -30,8 +31,12 @@ import me.tbsten.katachi.intellij.presentation.KatachiScreenState
 import me.tbsten.katachi.intellij.presentation.KatachiToolWindowViewModel
 import org.jetbrains.jps.model.java.JavaSourceRootType
 import org.jetbrains.jps.model.java.JpsJavaExtensionService
+import java.nio.file.DirectoryNotEmptyException
 import java.nio.file.Files
 import java.nio.file.Path
+
+private const val SCOPE_STOP_TIMEOUT_MILLIS = 10_000L
+private const val DELETE_RETRIES = 5
 
 /**
  * Platform tests of the IDE wiring with the real [IdeEffectsImpl] (VFS, editors, Local History,
@@ -58,14 +63,46 @@ internal abstract class KatachiIdeTestBase : AnalysisTestBase() {
 
     override fun tearDown() {
         try {
-            scope.cancel()
+            cancelScopeAndWait()
             FileEditorManagerEx.getInstanceEx(project).closeAllFiles()
             releaseSourceRoots()
             dropUnsavedDocuments()
-            NioFiles.deleteRecursively(root)
+            deleteRootAfterBackgroundWritesStop()
         } finally {
             super.tearDown()
         }
+    }
+
+    /**
+     * Cancels [scope] and waits (up to [SCOPE_STOP_TIMEOUT_MILLIS]) until its coroutines have stopped, dispatching the
+     * EDT meanwhile: `cancel()` alone does not wait, and a fake Gradle still writing under [root] then makes the delete
+     * below fail with `DirectoryNotEmptyException`.
+     */
+    private fun cancelScopeAndWait() {
+        val job = scope.coroutineContext[Job]
+        scope.cancel()
+        if (job == null) return
+        val deadline = System.nanoTime() + SCOPE_STOP_TIMEOUT_MILLIS * 1_000_000
+        while (!job.isCompleted && System.nanoTime() < deadline) {
+            PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
+            Thread.sleep(10)
+        }
+    }
+
+    /**
+     * Deletes [root]. A write that cannot be cancelled (a fake Gradle that was already inside `Files.write`) may still
+     * land while the folder is being removed, so a `DirectoryNotEmptyException` is retried a few times.
+     */
+    private fun deleteRootAfterBackgroundWritesStop() {
+        repeat(DELETE_RETRIES) {
+            try {
+                NioFiles.deleteRecursively(root)
+                return
+            } catch (_: DirectoryNotEmptyException) {
+                Thread.sleep(50)
+            }
+        }
+        NioFiles.deleteRecursively(root)
     }
 
     /** Installs a new [KatachiProjectService] over the fakes and returns its ViewModel. */
