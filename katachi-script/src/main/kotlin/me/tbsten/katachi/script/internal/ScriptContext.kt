@@ -15,12 +15,20 @@ internal enum class Lang(val code: String) {
     companion object {
         fun of(code: String?): Lang? = entries.firstOrNull { it.code == code }
 
+        /** `EN`, `en_US`, `ja-JP`, `ja_JP.UTF-8`: the language part of a value, lowercased, as [of] reads it. */
+        private fun readLoosely(value: String?): Lang? =
+            of(value?.trim()?.substringBefore('.')?.substringBefore('@')?.substringBefore('_')?.substringBefore('-')?.lowercase())
+
+        /** `KATACHI_LANG` set to something that is neither ja nor en (such as `fr`), or null. */
+        fun unreadableEnvLang(env: Map<String, String>): String? =
+            env["KATACHI_LANG"]?.takeIf { it.isNotBlank() && readLoosely(it) == null }
+
         /**
-         * The language the environment asks for: `KATACHI_LANG`, then the locale (`LC_ALL`, `LC_MESSAGES`, `LANG`,
+         * The language the environment asks for: `KATACHI_LANG` (`EN` and `en_US.UTF-8` count as en), then the locale (`LC_ALL`, `LC_MESSAGES`, `LANG`,
          * the first one set). A Japanese locale is ja, any other named locale is en. `C` / `POSIX` say nothing.
          */
         fun fromEnv(env: Map<String, String>): Lang? {
-            of(env["KATACHI_LANG"])?.let { return it }
+            readLoosely(env["KATACHI_LANG"])?.let { return it }
             val locale = listOf("LC_ALL", "LC_MESSAGES", "LANG").firstNotNullOfOrNull { env[it]?.takeIf(String::isNotBlank) } ?: return null
             val language = locale.substringBefore('.').substringBefore('@').substringBefore('_').lowercase()
             return when (language) {

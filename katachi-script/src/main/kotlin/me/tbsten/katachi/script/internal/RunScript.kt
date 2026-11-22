@@ -1,6 +1,6 @@
 package me.tbsten.katachi.script.internal
 
-/** The subcommands that do not read --help themselves: a --help anywhere prints the usage, never "needs a value". */
+/** The subcommands that do not read --help themselves: a --help anywhere prints that command's usage, never "needs a value". */
 private val HELP_ANYWHERE = setOf("lint", "doctor", "scaffold")
 
 /**
@@ -51,7 +51,7 @@ internal fun runScript(args: List<String>, context: ScriptContext): Int {
             command in REMOVED_FOR_THE_SKILL -> die(Messages.RunScript.removedForTheSkill("$CLI_COMMAND $command"))
 
             command in HELP_ANYWHERE && rest.any(::isHelp) -> {
-                context.out(context.usage())
+                context.out(context.usageOf(command))
                 0
             }
 
@@ -78,7 +78,9 @@ private fun ScriptContext.dispatch(command: String, args: List<String>): Int = w
     "scaffold" -> runScaffold(args)
     "lint" -> runLint(args)
     "internal" -> runInternal(args)
-    else -> dieUsage(Messages.RunScript.unknownSubcommandSeeHelp(command))
+    else -> dieUsage(
+        if (command.endsWith(".kts")) Messages.RunScript.scriptNeedsExtension(command) else Messages.RunScript.unknownSubcommandSeeHelp(command),
+    )
 }
 
 /**
@@ -97,6 +99,7 @@ private fun ScriptContext.resolveLang(command: String, args: List<String>) {
         is WorkdirLookup.Misconfigured -> null
     }
     lang = recorded ?: Lang.fromEnv(env) ?: Lang.JA
+    Lang.unreadableEnvLang(env)?.let { if (recorded == null) warn(Messages.RunScript.langEnvNotReadable(it, lang.code)) }
     if (command == "doctor") {
         val index = args.indexOf("--lang")
         val typed = args.getOrNull(index + 1).takeIf { index >= 0 } ?: args.firstOrNull { it.startsWith("--lang=") }?.removePrefix("--lang=")

@@ -96,6 +96,54 @@ class RunScriptSpec : FreeSpec({
         run.err shouldContain "[x] 知らないサブコマンドです: nothing"
     }
 
+    "サブコマンドの --help は、そのコマンドの分だけを出す（KATACHI-418）" {
+        val scaffold = runCapturing(createTempDirectory("katachi-script-"), listOf("scaffold", "--help"))
+        scaffold.status shouldBe 0
+        scaffold.out shouldStartWith "katachi scaffold --package"
+        scaffold.out shouldContain "--test-framework"
+        scaffold.out shouldNotContain "katachi doctor"
+        scaffold.out shouldNotContain "katachi lint"
+        scaffold.out shouldNotContain "katachi --version"
+
+        val doctor = runCapturing(createTempDirectory("katachi-script-"), listOf("doctor", "--help"), env = mapOf("KATACHI_LANG" to "en"))
+        doctor.out shouldStartWith "katachi doctor"
+        doctor.out shouldContain "Checks the JDK"
+        doctor.out shouldNotContain "--package"
+
+        // the top-level --help still lists everything
+        runCapturing(createTempDirectory("katachi-script-"), listOf("--help")).out.let {
+            it shouldContain "katachi doctor"
+            it shouldContain "katachi lint"
+        }
+    }
+
+    "KATACHI_LANG は EN や en_US.UTF-8 でも読む。読めない値は警告して続ける（KATACHI-418）" {
+        for (value in listOf("EN", "en_US.UTF-8", " en ")) {
+            val run = runCapturing(createTempDirectory("katachi-script-"), listOf("nothing"), env = mapOf("KATACHI_LANG" to value))
+            run.err shouldContain "Unknown subcommand: nothing"
+            run.err shouldNotContain "KATACHI_LANG"
+        }
+        val ja = runCapturing(createTempDirectory("katachi-script-"), listOf("nothing"), env = mapOf("KATACHI_LANG" to "JA_JP"))
+        ja.err shouldContain "知らないサブコマンドです: nothing"
+
+        val bad = runCapturing(createTempDirectory("katachi-script-"), listOf("nothing"), env = mapOf("KATACHI_LANG" to "fr"))
+        bad.status shouldBe 2
+        bad.err shouldContain "KATACHI_LANG=fr は読めません"
+        bad.err shouldContain "知らないサブコマンドです: nothing"
+
+        val badEn = runCapturing(createTempDirectory("katachi-script-"), listOf("nothing"), env = mapOf("KATACHI_LANG" to "fr", "LANG" to "en_US.UTF-8"))
+        badEn.err shouldContain "KATACHI_LANG=fr is not readable (use ja or en). Printing in en."
+        badEn.err shouldContain "Unknown subcommand: nothing"
+    }
+
+    "名前が .katachi.kts で終わらない .kts は、名前の決まりを教える（KATACHI-418）" {
+        val run = runCapturing(createTempDirectory("katachi-script-"), listOf("setup.kts"), env = mapOf("KATACHI_LANG" to "en"))
+        run.status shouldBe 2
+        run.err shouldContain "setup.kts cannot run as a script"
+        run.err shouldContain ".katachi.kts"
+        runCapturing(createTempDirectory("katachi-script-"), listOf("setup.kts")).err shouldContain "ファイル名は .katachi.kts で終わる"
+    }
+
     "使い方には spec にあるオプションがすべて載っている（ja / en）" {
         for (lang in Lang.entries) {
             val context = ScriptContext(createTempDirectory("katachi-script-"), emptyMap(), {}, {}).also { it.lang = lang }
