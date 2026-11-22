@@ -18,6 +18,8 @@ internal class FileConstraintDeclaration(
     override fun toString(): String = "FileConstraintDeclaration(${name ?: declaredAt})"
 }
 
+internal const val DEFAULT_CUSTOM_NAME: String = "fileConstraint"
+
 // Validated here, not at report time: a definition that cannot be printed is a bad value in the definition.
 internal fun fileConstraintDeclarationOf(
     name: String?,
@@ -28,18 +30,27 @@ internal fun fileConstraintDeclarationOf(
     if (name != null && (name.isBlank() || name.any { it == '\n' || it == '\r' })) {
         throw KatachiFileConstraintNameException(name = name, declaredAt = declaredAt)
     }
-    return FileConstraintDeclaration(name = name, declaredAt = declaredAt, scope = scope, check = check)
+    // A `fileConstraint { }` written without a name is named after its kind, as `konsist { }` and `konture { }` are, so two
+    // of them on one role are refused instead of sharing one baseline entry.
+    val named = name ?: DEFAULT_CUSTOM_NAME.takeIf { backendOf(check) == CUSTOM_BACKEND }
+    return FileConstraintDeclaration(name = named, declaredAt = declaredAt, scope = scope, check = check)
 }
 
 // One site reached twice (a loop in a layout, or a wildcard module key, runs one block more than once) and one check
 // handed to several places are each one constraint, as the role page counts them.
 // Two ktFileContent are left to ktFileContent, which refuses a second one whatever the names, with its own advice.
-internal fun requireDistinctFileConstraintNames(role: String, declarations: List<FileConstraintDeclaration>) {
+// Written directly on a role, a site reached twice (a helper called twice, a loop) is two constraints: the two share a name
+// and so a baseline entry (`sameSiteIsOne = false`). Only inside `layout { }`, which is evaluated more than once by design, is it one.
+internal fun requireDistinctFileConstraintNames(
+    role: String,
+    declarations: List<FileConstraintDeclaration>,
+    sameSiteIsOne: Boolean = true,
+) {
     val firstByName = HashMap<String, FileConstraintDeclaration>()
     for (declaration in declarations) {
         val name = declaration.name ?: continue
         val first = firstByName.putIfAbsent(name, declaration) ?: continue
-        if (first.declaredAt == declaration.declaredAt || first.check === declaration.check) continue
+        if (first.check === declaration.check || (sameSiteIsOne && first.declaredAt == declaration.declaredAt)) continue
         if (backendOf(first.check) == KT_FILE_CONTENT_BACKEND && backendOf(declaration.check) == KT_FILE_CONTENT_BACKEND) continue
         throw KatachiDuplicateFileConstraintNameException(
             role = role,

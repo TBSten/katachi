@@ -92,7 +92,7 @@ private fun unexpectedDeclarationFailure(finding: UnexpectedDeclaration, path: S
     }
     return FileConstraintFailure(
         file = path,
-        declaration = list.qualified(fact.name),
+        declaration = list.qualified(fact),
         line = fact.line,
         reasons = listOf(FileConstraintReason(NOT_ALLOWED, renderFact(fact) + inContainer(list))),
         allowed = FileConstraintAllowedList(headingOf(list), allowedEntriesOf(list)),
@@ -105,7 +105,7 @@ private fun prohibitedDeclarationFailure(finding: ProhibitedDeclaration, path: S
     val (fact, rule) = finding.fact to finding.rule
     return FileConstraintFailure(
         file = path,
-        declaration = finding.list.qualified(fact.name),
+        declaration = finding.list.qualified(fact),
         line = fact.line,
         reasons = listOf(
             FileConstraintReason(NOT_ALLOWED, renderFact(fact) + inContainer(finding.list)),
@@ -127,7 +127,7 @@ private fun mismatchedDeclarationFailure(finding: MismatchedDeclaration, path: S
     val expected = renderRule(rule)
     return FileConstraintFailure(
         file = path,
-        declaration = finding.list.qualified(fact.name),
+        declaration = finding.list.qualified(fact),
         line = fact.line,
         reasons = listOf(
             FileConstraintReason(NOT_ALLOWED, renderFact(fact) + inContainer(finding.list)),

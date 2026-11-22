@@ -5,6 +5,7 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.dsl.KatachiDuplicateFileConstraintNameException
+import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.architecture
 
 /**
@@ -69,17 +70,55 @@ class FileConstraintDuplicateNameSpec : FreeSpec({
                 listOf("is public", "has an invoke function")
         }
 
-        "名前の無い fileConstraint { } は何個書いても落ちない" {
-            // 名前の無い汎用の制約には既定の名前が無い。名前で見分けることがそもそもできない。
+        "名前の無い fileConstraint { } は fileConstraint と名乗り、2 つ書くと断られる" {
+            val failure = shouldThrow<KatachiDuplicateFileConstraintNameException> {
+                architecture {
+                    "UseCase".role {
+                        fileConstraint(check = silent())
+                        fileConstraint(check = silent())
+                        layout { "useCase" / "*.kt".file() }
+                    }
+                }
+            }
+
+            failure.name shouldBe "fileConstraint"
+        }
+
+        "役割に直接書いた制約は、同じ場所を通る helper やループからでも別の制約として断られる" {
+            fun RoleScope.noPackage(name: String) = fileConstraint(name, check = silent())
+
+            shouldThrow<KatachiDuplicateFileConstraintNameException> {
+                architecture {
+                    "UseCase".role {
+                        noPackage("no a")
+                        noPackage("no a")
+                        layout { "useCase" / "*.kt".file() }
+                    }
+                }
+            }.name shouldBe "no a"
+
+            shouldThrow<KatachiDuplicateFileConstraintNameException> {
+                architecture {
+                    "UseCase".role {
+                        for (i in 1..2) fileConstraint("is public", check = silent())
+                        layout { "useCase" / "*.kt".file() }
+                    }
+                }
+            }.name shouldBe "is public"
+        }
+
+        "名前を変えた helper なら通る" {
+            fun RoleScope.noPackage(name: String) = fileConstraint("no $name", check = silent())
+
             val arch = architecture {
                 "UseCase".role {
-                    fileConstraint(check = silent())
-                    fileConstraint(check = silent())
+                    noPackage("a")
+                    noPackage("b")
                     layout { "useCase" / "*.kt".file() }
                 }
             }
 
-            arch.declaredFileConstraints().map { it.name } shouldContainExactly listOf(null, null)
+            arch.declaredFileConstraints().map { it.name } shouldContainExactly listOf("no a", "no b")
         }
 
         "別の役割なら同じ名前でも落ちない" {

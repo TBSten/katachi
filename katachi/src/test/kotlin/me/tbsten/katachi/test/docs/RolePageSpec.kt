@@ -177,7 +177,7 @@ class RolePageSpec : FreeSpec({
                 """.trimIndent()
         }
 
-        "名前付きの制約が1つも無ければ節ごと出ない" {
+        "名前の無い制約は既定の名前 fileConstraint で節に出る" {
             val arch = architecture {
                 "domain".group {
                     "UseCase".role {
@@ -187,7 +187,7 @@ class RolePageSpec : FreeSpec({
                 }
             }
 
-            arch.page("domain/UseCase.md") shouldNotContain "## Constraints"
+            arch.page("domain/UseCase.md") shouldContain "- fileConstraint"
         }
 
         "他の役割の制約は混ざらない" {
