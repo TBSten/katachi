@@ -1,6 +1,8 @@
 package me.tbsten.katachi.test.script
 
 import io.kotest.core.spec.style.FreeSpec
+import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
@@ -576,6 +578,99 @@ class DoctorScaffoldSpec : FreeSpec({
                 run.err shouldContain "${fileUriOf(project.resolve(blocked))} はディレクトリなので"
                 project.resolve("settings.gradle.kts").readText() shouldNotContain "include"
             }
+        }
+
+        "--katachi が x.y.z の形でなければ、何も書かずに止まる（KATACHI-418）" {
+            for (version in listOf("banana", "0.4", "0.4.0\"); println(\"INJECTED")) {
+                val project = gradleProject(toolchain = 21)
+
+                val run = runCapturing(project, listOf("scaffold", "--package", "com.example", "--katachi", version, "--dry-run"), env = javaHome())
+
+                run.status shouldBe 1
+                run.err shouldContain "katachi のバージョンを読み取れませんでした: $version（0.4.0 のような形で指定してください）"
+            }
+            val project = gradleProject(toolchain = 21)
+            for (version in listOf("0.4.0", "v0.4.0", "0.4.0-rc.1")) {
+                runCapturing(project, listOf("scaffold", "--package", "com.example", "--katachi", version, "--dry-run"), env = javaHome()).status shouldBe 0
+            }
+            val kotlin = runCapturing(project, listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0", "--kotlin", "2.4.0\"); x", "--dry-run"), env = javaHome())
+            kotlin.status shouldBe 1
+        }
+
+        "--force で作り直すとき、残したファイルを「作成しました」に並べない（KATACHI-418）" {
+            val project = gradleProject(toolchain = 21)
+            val args = listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0")
+            runCapturing(project, args, env = javaHome()).status shouldBe 0
+            val architecture = project.resolve("architecture-test/src/test/kotlin/com/example/test/architecture/ProjectArchitecture.kt")
+            architecture.writeText("// written by hand\n")
+
+            val again = runCapturing(project, args + "--force", env = javaHome())
+
+            again.status shouldBe 0
+            again.out shouldContain "すでにあるので残しました: ${fileUriOf(architecture)}"
+            val created = again.out.substringAfter("== 作成しました").lines()
+            created shouldNotContain fileUriOf(architecture)
+            created shouldContain fileUriOf(architecture.resolveSibling("ProjectArchitectureTest.kt"))
+        }
+
+        "別のパッケージで --force すると、前のパッケージの生成テストが残っていることを知らせる（KATACHI-418）" {
+            val project = gradleProject(toolchain = 21)
+            val first = runCapturing(project, listOf("scaffold", "--package", "com.first", "--katachi", "0.4.0"), env = javaHome())
+            first.status shouldBe 0
+            first.err shouldNotContain "別のパッケージで作った検査用テスト"
+            val oldTest = project.resolve("architecture-test/src/test/kotlin/com/first/test/architecture/ProjectArchitectureTest.kt")
+
+            val second = runCapturing(project, listOf("scaffold", "--package", "com.second", "--katachi", "0.4.0", "--force"), env = javaHome())
+
+            second.status shouldBe 0
+            second.err shouldContain "別のパッケージで作った検査用テストが残っています:\n    ${fileUriOf(oldTest)}\n"
+            second.err shouldNotContain fileUriOf(project.resolve("architecture-test/src/test/kotlin/com/second/test/architecture/ProjectArchitectureTest.kt"))
+            val same = runCapturing(project, listOf("scaffold", "--package", "com.second", "--katachi", "0.4.0", "--force", "--dry-run"), env = javaHome())
+            same.err shouldContain fileUriOf(oldTest)
+        }
+
+        "カタログの katachi の版が --katachi と違えば、そのままだと知らせる（KATACHI-418）" {
+            val project = gradleProject(toolchain = 21)
+            val catalog = project.resolve("gradle/libs.versions.toml")
+            catalog.createParentDirectories().writeText(
+                """
+                [versions]
+                katachi = "0.3.0"
+
+                [libraries]
+                katachi = { module = "me.tbsten.katachi:katachi", version.ref = "katachi" }
+
+                [plugins]
+                katachi = { id = "me.tbsten.katachi", version.ref = "katachi" }
+                """.trimIndent() + "\n",
+            )
+
+            val differs = runCapturing(project, listOf("scaffold", "--package", "com.example", "--katachi", "0.4.0", "--deps", "catalog", "--dry-run"), env = javaHome())
+            val same = runCapturing(project, listOf("scaffold", "--package", "com.example", "--katachi", "0.3.0", "--deps", "catalog", "--dry-run"), env = javaHome())
+
+            differs.status shouldBe 0
+            differs.err shouldContain "${fileUriOf(catalog)} の katachi（katachi）は 0.3.0 のままです。"
+            differs.err shouldContain "0.4.0 には変わらず"
+            same.err shouldNotContain "のままです"
+        }
+
+        "--オプション=値 の形でも値を渡せる（KATACHI-418）" {
+            val project = gradleProject(toolchain = 21)
+
+            val ok = runCapturing(project, listOf("scaffold", "--package=com.example", "--katachi=0.4.0", "--dry-run"), env = javaHome())
+            val keyword = runCapturing(project, listOf("scaffold", "--package=com.example.when", "--katachi=0.4.0"), env = javaHome())
+            val flag = runCapturing(project, listOf("scaffold", "--package", "com.example", "--dry-run=yes"), env = javaHome())
+            val empty = runCapturing(project, listOf("scaffold", "--package="), env = javaHome())
+            val lang = runCapturing(project, listOf("doctor", "--lang=en"), env = mapOf("PATH" to pathWithGit().toString()))
+
+            ok.status shouldBe 0
+            ok.out shouldContain "パッケージ:   com.example"
+            keyword.status shouldBe 1
+            keyword.err shouldContain "Kotlin の予約語（when）"
+            flag.status shouldBe 2
+            flag.err shouldContain "scaffold: 知らないオプションです: --dry-run=yes"
+            empty.status shouldBe 2
+            lang.out shouldContain "Everything this needs is available"
         }
 
         "--module-dir の置き場所に作り、次の test をその Gradle パスで案内する（KATACHI-420）" {

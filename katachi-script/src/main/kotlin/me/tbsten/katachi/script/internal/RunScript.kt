@@ -99,6 +99,7 @@ private fun ScriptContext.resolveLang(command: String, args: List<String>) {
     lang = recorded ?: Lang.fromEnv(env) ?: Lang.JA
     if (command == "doctor") {
         val index = args.indexOf("--lang")
-        Lang.of(args.getOrNull(index + 1).takeIf { index >= 0 })?.let { lang = it }
+        val typed = args.getOrNull(index + 1).takeIf { index >= 0 } ?: args.firstOrNull { it.startsWith("--lang=") }?.removePrefix("--lang=")
+        Lang.of(typed)?.let { lang = it }
     }
 }

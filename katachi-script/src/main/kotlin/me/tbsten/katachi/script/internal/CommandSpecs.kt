@@ -260,21 +260,28 @@ internal fun parseArgs(spec: CommandSpec, args: List<String>): ParsedArgs {
     var passthrough = emptyList<String>()
     var index = 0
     while (index < args.size) {
-        val arg = args[index]
-        if (arg == "--" && spec.passthrough != null) {
+        val typed = args[index]
+        if (typed == "--" && spec.passthrough != null) {
             passthrough = args.drop(index + 1)
             break
         }
-        if (!arg.startsWith("-") || arg == "-") {
-            positionals += arg
+        if (!typed.startsWith("-") || typed == "-") {
+            positionals += typed
             index++
             continue
         }
+        // `--option=value` is `--option value`; only for an option that takes a value, so `--force=x` stays an unknown option.
+        val equals = typed.indexOf('=')
+        val inlineName = if (typed.startsWith("--") && equals > 2) typed.substring(0, equals) else null
+        val inline = inlineName?.takeIf { spec.option(it)?.kind != null && spec.option(it)?.kind != OptionKind.Flag }
+        val arg = inline ?: typed
+        val inlineValue = inline?.let { typed.substring(equals + 1) }
         val option = spec.option(arg) ?: if (spec.passthrough != null) {
-            dieUsage(Messages.CommandSpecs.unknownOptionPutArguments(spec.name, arg))
+            dieUsage(Messages.CommandSpecs.unknownOptionPutArguments(spec.name, typed))
         } else {
-            dieUsage(Messages.CommandSpecs.unknownOption(spec.name, arg))
+            dieUsage(Messages.CommandSpecs.unknownOption(spec.name, typed))
         }
+        val step = if (inlineValue != null) 1 else 2
         when (val kind = option.kind) {
             OptionKind.Flag -> {
                 flags += arg
@@ -282,8 +289,8 @@ internal fun parseArgs(spec: CommandSpec, args: List<String>): ParsedArgs {
             }
 
             is OptionKind.Choice -> {
-                val next = args.getOrNull(index + 1)
-                if (option.valueOptional && (next == null || next !in kind.values)) {
+                val next = inlineValue ?: args.getOrNull(index + 1)
+                if (inlineValue == null && option.valueOptional && (next == null || next !in kind.values)) {
                     flags += arg
                     index++
                     continue
@@ -293,13 +300,13 @@ internal fun parseArgs(spec: CommandSpec, args: List<String>): ParsedArgs {
                     dieUsage(Messages.CommandSpecs.valueMustBe(arg, Messages.CommandSpecs.oneOf(kind.values), value))
                 }
                 values[arg] = value
-                index += 2
+                index += step
             }
 
             OptionKind.Text, OptionKind.Path, OptionKind.YesNo -> {
                 // `--katachi --dry-run` forgot the value: taking the next option as it would quietly drop that option.
-                values[arg] = needValue(arg, args.getOrNull(index + 1)?.takeIf { spec.option(it) == null })
-                index += 2
+                values[arg] = needValue(arg, inlineValue ?: args.getOrNull(index + 1)?.takeIf { spec.option(it) == null })
+                index += step
             }
         }
     }

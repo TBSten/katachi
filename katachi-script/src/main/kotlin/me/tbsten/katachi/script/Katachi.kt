@@ -33,7 +33,7 @@ import me.tbsten.katachi.script.option.Lang
  * @property katachiVersion Puts `--katachi <katachiVersion>` on every [scaffold]. Null leaves the choice to the command.
  * @property moduleDir Puts `--module-dir <moduleDir>` on every command that takes it: [scaffold] and [lint].
  * @property lang Puts `--lang <lang>` on every command that takes it: [doctor].
- * @property cwd Where the commands run. Null is the directory the script was started in.
+ * @property cwd Where the commands run. Null is the current directory of the JVM; in a `*.katachi.kts` it starts as the directory of the script.
  * @property runner How [KatachiCommand.execute] runs a command: [CommandRunner.InProcess] by default.
  * @property echo Whether [KatachiCommand.execute] prints `$ katachi ...` before it runs, as `make` does.
  * @constructor Takes the defaults. Every one of them can be left out.
