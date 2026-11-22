@@ -43,12 +43,27 @@ failed=0
 for sample in "${samples[@]}"; do
   log="$log_dir/$sample-buildEnvironment.log"
   echo "--- sample/$sample: resolving the buildscript classpath"
-  if ! (cd "sample/$sample" && ./gradlew buildEnvironment --console=plain) > "$log" 2>&1; then
+  # The Gradle Plugin Portal sometimes answers "Could not find kotlin-stdlib:<version>" for an artifact that is on Maven
+  # Central (KATACHI-401: all four samples failed in one run, the same commit passed in the next). Gradle remembers such a
+  # miss for 24 hours (and the CI restores that cache), so a plain second run would fail the same way: a failure that looks
+  # like a resolution problem is run again, up to two more times, with --refresh-dependencies. Any other failure is not
+  # retried.
+  attempt=1
+  refresh=()
+  while ! (cd "sample/$sample" && ./gradlew buildEnvironment --console=plain ${refresh[@]+"${refresh[@]}"}) > "$log" 2>&1; do
+    if [ "$attempt" -lt 3 ] && grep -Eq 'Could not (find|resolve|GET|HEAD|parse POM)|Read timed out|Connection (reset|timed out)|Premature end of Content-Length' "$log"; then
+      echo "  sample/$sample: resolving the buildscript classpath failed (attempt $attempt of 3), trying again with --refresh-dependencies" >&2
+      grep -E 'Could not (find|resolve|GET|HEAD|parse POM)|Read timed out|Connection (reset|timed out)' "$log" | head -n 3 >&2
+      attempt=$((attempt + 1))
+      refresh=(--refresh-dependencies)
+      sleep 5
+      continue
+    fi
     echo "FAIL: sample/$sample: 'gradlew buildEnvironment' failed" >&2
     cat "$log" >&2
     failed=1
-    continue
-  fi
+    continue 2
+  done
 
   # Lines look like either
   #   \--- org.jetbrains.kotlin:kotlin-gradle-plugin:2.4.10
