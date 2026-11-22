@@ -40,6 +40,9 @@ internal interface GutterStrings {
     /** [rule] is the first line that decided, with where it was written and how many more did ([GutterTooltips.rules]). */
     fun allowedBy(rule: String): String
 
+    /** Appended to [allowedBy] when [count] members of the declaration are rejected by the check (a class line without `{ }`). */
+    fun membersRejected(count: Int): String
+
     fun prohibitedBy(rule: String): String
 
     fun mismatched(rule: String): String

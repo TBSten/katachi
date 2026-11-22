@@ -131,6 +131,8 @@ internal class DeclarationJson(
     val verdict: String,
     val rules: List<RuleJson>,
     val difference: String?,
+    // Of an allowed class: how its members were judged; empty for any other declaration. Added after the first keys, so an older JSON has none.
+    val members: List<DeclarationJson> = emptyList(),
 )
 
 @Serializable

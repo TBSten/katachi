@@ -138,13 +138,14 @@ private fun DefinitionJsonReader.fileDeclarations() = FileDeclarationsModel(
     unexplainedReason = nullableString("unexplainedReason"),
 )
 
-private fun DefinitionJsonReader.declaration() = DeclarationModel(
+private fun DefinitionJsonReader.declaration(): DeclarationModel = DeclarationModel(
     kind = SourceDeclarationKind.of(string("kind")),
     name = string("name"),
     line = int("line"),
     verdict = DeclarationVerdict.of(string("verdict")),
     rules = array("rules").map { it.rule() },
     difference = nullableString("difference"),
+    members = optionalNullableArray("members")?.map { it.declaration() }.orEmpty(),
 )
 
 private fun DefinitionJsonReader.rule() = RuleRef(string("text"), site("declaredAt"))

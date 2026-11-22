@@ -79,6 +79,8 @@ private fun declarationJsonOf(declaration: DeclarationExplanation): DeclarationJ
         verdict = declaration.verdict.name,
         rules = declaration.rules.map(::ruleJsonOf),
         difference = declaration.difference,
+        // A member the backend cannot place at a line is left out, as a top-level one is.
+        members = declaration.members.mapNotNull(::declarationJsonOf),
     )
 }
 

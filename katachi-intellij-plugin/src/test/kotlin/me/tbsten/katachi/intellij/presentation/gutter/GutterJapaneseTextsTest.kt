@@ -61,6 +61,18 @@ class GutterJapaneseTextsTest {
     }
 
     @Test
+    fun `メンバが check で違反になる許可済みの宣言は ツールチップにその件数を足す`() {
+        fun member(name: String, verdict: DeclarationVerdict) = allowed.copy(kind = SourceDeclarationKind.Val, name = name, line = 8, verdict = verdict, rules = emptyList())
+        val withMembers = allowed.copy(members = listOf(member("id", DeclarationVerdict.Unexpected), member("name", DeclarationVerdict.Allowed), member("age", DeclarationVerdict.Unexpected)))
+        assertEquals("katachi: domain.Service — class HealthService (ServiceRole.kt:80) で許可, メンバ 2 件が check で違反", tooltip(withMembers, strings = japaneseGutter))
+        assertEquals("katachi: domain.Service — allowed by class HealthService (ServiceRole.kt:80), 2 members are rejected by the check", tooltip(withMembers, strings = englishGutter))
+        val one = allowed.copy(members = listOf(member("id", DeclarationVerdict.Unexpected)))
+        assertEquals("katachi: domain.Service — allowed by class HealthService (ServiceRole.kt:80), 1 member is rejected by the check", tooltip(one, strings = englishGutter))
+        val clean = allowed.copy(members = listOf(member("id", DeclarationVerdict.Allowed)))
+        assertEquals("katachi: domain.Service — allowed by class HealthService (ServiceRole.kt:80)", tooltip(clean, strings = englishGutter))
+    }
+
+    @Test
     fun `日本語の ◆ のツールチップは 許可した行を引いたまま 許可と古さを日本語で言う`() {
         assertEquals("katachi: domain.Service — class HealthService (ServiceRole.kt:80) で許可", tooltip(strings = japaneseGutter))
         assertEquals("katachi: domain.Service — class HealthService (ServiceRole.kt:80) で許可（変更の前の結果）", tooltip(stale = true, strings = japaneseGutter))
@@ -205,7 +217,7 @@ class GutterJapaneseTextsTest {
         "failureProcessorRejected" to s.failureProcessorRejected, "failureDefinitionRejected" to s.failureDefinitionRejected,
         "failureGradle" to s.failureGradle, "failureJsonMissing" to s.failureJsonMissing, "failureJsonMalformed" to s.failureJsonMalformed,
         "failureJsonIncompatible" to s.failureJsonIncompatible, "failureCancelled" to s.failureCancelled, "notComputed" to s.notComputed,
-        "allowedBy" to s.allowedBy("r"), "prohibitedBy" to s.prohibitedBy("r"), "mismatched" to s.mismatched("r"), "unexpected" to s.unexpected,
+        "allowedBy" to s.allowedBy("r"), "membersRejected" to s.membersRejected(2), "prohibitedBy" to s.prohibitedBy("r"), "mismatched" to s.mismatched("r"), "unexpected" to s.unexpected,
         "judgedByNewer" to s.judgedByNewer("v"), "unrecordedRule" to s.unrecordedRule, "menuReloadToSee" to s.menuReloadToSee,
         "menuAllowedBy" to s.menuAllowedBy("r"), "menuProhibitedBy" to s.menuProhibitedBy("r"), "menuMismatched" to s.menuMismatched("r"),
         "menuUnexpected" to s.menuUnexpected, "menuJudgedByNewer" to s.menuJudgedByNewer("v"), "missingSection" to s.missingSection(2),

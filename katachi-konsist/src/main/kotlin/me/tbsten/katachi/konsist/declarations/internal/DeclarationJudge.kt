@@ -13,7 +13,12 @@ internal class DeclarationFindings(
     val fileLevelMissing: List<DeclarationRule>,
 )
 
-internal class JudgedDeclaration(val fact: DeclarationFact, val outcome: DeclarationOutcome)
+// members: how the members of an allowed class were judged, in the order they are written; empty for a declaration that has none to judge.
+internal class JudgedDeclaration(
+    val fact: DeclarationFact,
+    val outcome: DeclarationOutcome,
+    val members: List<JudgedDeclaration> = emptyList(),
+)
 
 internal sealed interface DeclarationOutcome {
     class Prohibited(val rule: DeclarationRule) : DeclarationOutcome
@@ -74,6 +79,7 @@ private fun judgeList(
     val unclaimed = allowedLines.filter { list.isMissing(it) && it !in claimed }
 
     val judged = facts.mapIndexed { index, fact ->
+        var judgedMembers: List<JudgedDeclaration> = emptyList()
         val outcome = when (val decision = decisions[index]) {
             is Decision.Prohibited -> {
                 located += ProhibitedDeclaration(fact, decision.rule, list)
@@ -85,7 +91,7 @@ private fun judgeList(
                 if (members != null) {
                     val memberRules = decision.rules.firstNotNullOfOrNull { it.members }
                         ?: DeclarationListRules.membersOfBodilessLine(decision.rules.first())
-                    judgeList(memberRules, members, containers + fact, located, missing)
+                    judgedMembers = judgeList(memberRules, members, containers + fact, located, missing).judged
                 }
                 DeclarationOutcome.Allowed(decision.rules)
             }
@@ -102,7 +108,7 @@ private fun judgeList(
                 }
             }
         }
-        JudgedDeclaration(fact, outcome)
+        JudgedDeclaration(fact, outcome, judgedMembers)
     }
 
     for (rule in unclaimed) {

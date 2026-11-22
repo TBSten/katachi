@@ -49,6 +49,7 @@ private fun explanationOf(judged: JudgedDeclaration): DeclarationExplanation {
         verdict = verdict,
         rules = rules,
         difference = difference,
+        members = judged.members.map(::explanationOf),
     )
 }
 

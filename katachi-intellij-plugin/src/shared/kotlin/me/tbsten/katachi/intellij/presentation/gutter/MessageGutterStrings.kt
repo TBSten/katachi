@@ -28,6 +28,7 @@ internal abstract class MessageGutterStrings : GutterStrings {
     override val failureCancelled get() = message("gutter.tooltip.failure.cancelled")
     override val notComputed get() = message("gutter.tooltip.notComputed")
     override fun allowedBy(rule: String) = message("gutter.tooltip.allowedBy", rule)
+    override fun membersRejected(count: Int) = message("gutter.tooltip.membersRejected", count)
     override fun prohibitedBy(rule: String) = message("gutter.tooltip.prohibitedBy", rule)
     override fun mismatched(rule: String) = message("gutter.tooltip.mismatched", rule)
     override val unexpected get() = message("gutter.tooltip.unexpected")
