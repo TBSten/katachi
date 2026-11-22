@@ -2,7 +2,9 @@ package me.tbsten.katachi.intellij.presentation.rules
 
 // Must give the same text as the report of katachi's check under an UnexpectedFile (`RoleSuggestion.kt`), so the notification and the report agree.
 // TODO: for a file under a directory no role knows, the report says UnexpectedDirectory and suggests `ignore()`ing the directory; this draft stays about the file.
-internal fun roleSuggestionDraftFor(relativePath: String): String = roleSuggestionLinesFor(relativePath).joinToString("\n")
+// A file the OS writes on its own gets the line for .gitignore: a role for it would fail with MissingFile on CI.
+internal fun roleSuggestionDraftFor(relativePath: String): String =
+    if (isOsWrittenFile(relativePath)) relativePath.substringAfterLast('/') else roleSuggestionLinesFor(relativePath).joinToString("\n")
 
 internal fun suggestedRoleNameFor(relativePath: String): String {
     val name = relativePath.substringAfterLast('/')

@@ -53,7 +53,7 @@ internal fun captureMismatchOf(entry: LayoutEntryModel, glob: KatachiGlob, path:
     }
     if (!mismatched) return null
 
-    val expectedPath = if (expectedUnknown) null else expectedPathOf(entry, glob, path, expectedOf)
+    val expectedPath = if (expectedUnknown) null else expectedPathOf(entry, glob, path, expectedOf).takeUnless { movesIntoNonPackageDirectory(path, it) }
     return CaptureMismatchDetail(details, expectedPath)
 }
 
@@ -98,3 +98,19 @@ private fun expectedPathOf(entry: LayoutEntryModel, glob: KatachiGlob, path: Str
     val expected = replacements.sortedByDescending { it.first.first }.fold(target) { text, (range, value) -> text.replaceRange(range, value) }
     return if (entry.kind == LayoutEntryKind.AnyFile) "$expected/${path.substringAfterLast('/')}" else expected
 }
+
+// Mirrors katachi's `movesIntoNonPackageDirectory`: a move that renames a package directory to something a `package` line
+// cannot hold (`user-profile`) is no fix, so no place is named. A captured value never holds a `/`, so the two paths have the
+// same levels and differ only where the move renames one.
+internal fun movesIntoNonPackageDirectory(from: String, expected: String): Boolean {
+    val fromLevels = from.split('/')
+    val to = expected.split('/')
+    if (fromLevels.size != to.size) return false
+    val sourceRoot = (2 until to.size).firstOrNull { to[it] in SOURCE_ROOTS && to[it - 2] == "src" } ?: return false
+    return (sourceRoot + 1 until to.lastIndex).any { to[it] != fromLevels[it] && !isPackageName(to[it]) }
+}
+
+private val SOURCE_ROOTS: Set<String> = setOf("kotlin", "java")
+
+private fun isPackageName(name: String): Boolean =
+    name.isNotEmpty() && (name.first().isLetter() || name.first() == '_') && name.all { it.isLetterOrDigit() || it == '_' }

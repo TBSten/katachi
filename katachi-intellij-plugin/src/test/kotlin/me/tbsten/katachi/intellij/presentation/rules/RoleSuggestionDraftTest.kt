@@ -59,4 +59,14 @@ class RoleSuggestionDraftTest {
     fun `ルート直下のファイルはディレクトリ無しで書く`() {
         assertEquals("\"Foo\".role {\n  layout {\n    \"Foo\".ktFile()\n  }\n}", roleSuggestionDraftFor("Foo.kt"))
     }
+
+    @Test
+    fun `OS が自動で作るファイルには Role の案ではなく gitignore に足す名前を出す`() {
+        // A role for it passes where Finder writes it and fails with MissingFile on CI, as katachi's report says.
+        assertEquals(".DS_Store", roleSuggestionDraftFor("feature/home/.DS_Store"))
+        assertEquals("Thumbs.db", roleSuggestionDraftFor("Thumbs.db"))
+        assertEquals("Desktop.ini", roleSuggestionDraftFor("docs/Desktop.ini"))
+        assertEquals(true, isOsWrittenFile("a/b/.DS_Store"))
+        assertEquals(false, isOsWrittenFile("a/b/DS_Store.kt"))
+    }
 }
