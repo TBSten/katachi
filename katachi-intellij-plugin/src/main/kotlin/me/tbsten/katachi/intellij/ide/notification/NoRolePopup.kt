@@ -31,7 +31,8 @@ internal fun noRolePopupGroup(found: NoRoleFound, effects: RuleEffects): Default
     }
     group.addSeparator()
     val draftName = suggestedRoleNameFor(decision.relativePath)
-    group.add(RuleRow(KatachiBundle.message("popup.rules.copySuggestion", draftName)) { effects.copy(roleSuggestionDraftFor(decision.relativePath)) })
+    val copyText = if (decision.osWritten) KatachiBundle.message("popup.rules.copyGitignore", decision.relativePath.substringAfterLast('/')) else KatachiBundle.message("popup.rules.copySuggestion", draftName)
+    group.add(RuleRow(copyText) { effects.copy(roleSuggestionDraftFor(decision.relativePath)) })
     group.add(RuleRow(KatachiBundle.message("popup.rules.action.refresh")) { effects.refreshDefinition() })
     return group
 }

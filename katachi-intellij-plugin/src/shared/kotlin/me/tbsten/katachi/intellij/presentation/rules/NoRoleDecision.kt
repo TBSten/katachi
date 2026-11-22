@@ -2,6 +2,7 @@ package me.tbsten.katachi.intellij.presentation.rules
 
 import me.tbsten.katachi.intellij.data.baseline.BaselineLedger
 import me.tbsten.katachi.intellij.data.baseline.BaselineReading
+import me.tbsten.katachi.intellij.data.placement.conversionOf
 import me.tbsten.katachi.intellij.model.CaptureOccurrenceModel
 import me.tbsten.katachi.intellij.model.DefinitionState
 import me.tbsten.katachi.intellij.model.DefinitionUnavailableReason
@@ -42,7 +43,10 @@ internal sealed interface NoRoleDecision {
         val canOpenDefinition: Boolean,
         val captureMismatch: CaptureMismatchNote? = null,
         val baseline: BaselineVerdict = BaselineVerdict.Unknown,
-    ) : NoRoleDecision
+    ) : NoRoleDecision {
+        /** A file the OS writes on its own: the fix is .gitignore, not a role. */
+        val osWritten: Boolean get() = isOsWrittenFile(relativePath)
+    }
 }
 
 internal fun decideNoRoleNotification(input: NoRoleInput): NoRoleDecision {
@@ -98,6 +102,10 @@ internal fun captureMismatchNoteOf(outcome: MatchOutcome.CaptureMismatch): Captu
             val from = source?.let { ", from ${it.name} = \"${it.value}\"" }.orEmpty()
             add("${derived.name}.${derived.transform}: " + occurrenceText(derived, from))
         }
+        // Mirrors katachi's `transformFixes()`: a level that is the conversion of what the first one holds is a layout to write, not a file to move.
+        for (fix in transformFixesOf(outcome.occurrences)) {
+            add("write capture(\"${fix.first}\").${fix.second} at level ${fix.third + 1} of the layout")
+        }
     }
     return CaptureMismatchNote(
         roleName = outcome.role.qualifiedName,
@@ -126,3 +134,11 @@ internal fun shortDirectory(directory: String): String {
 
 private const val SEGMENTS = 2
 private const val NOT_RESOLVED = "the declaration site was not resolved"
+
+private val OFFERED_TRANSFORMS: List<String> = listOf("flatCase", "camelCase", "pascalCase", "kebabCase", "snakeCase", "screamingSnakeCase")
+
+private fun transformFixesOf(occurrences: List<CaptureOccurrenceModel>): List<Triple<String, String, Int>> = occurrences.mapNotNull { occurrence ->
+    val held = occurrence.expected
+    if (occurrence.transform != null || held == null || held == occurrence.value) return@mapNotNull null
+    OFFERED_TRANSFORMS.firstOrNull { conversionOf(it)?.invoke(held) == occurrence.value }?.let { Triple(occurrence.name, it, occurrence.level) }
+}

@@ -37,6 +37,8 @@ internal fun noRoleLines(decision: NoRoleDecision.NoRole): NoRoleLines {
     val main = when {
         // The same first sentence as katachi's `[CaptureMismatch]` block, so the IDE and the test say one thing.
         mismatch != null -> KatachiBundle.message(if (sure) "notification.rules.captureMismatch.sure" else "notification.rules.captureMismatch", mismatch.roleName, mismatch.disagreeingNames.joinToString(", "))
+        // A file the OS writes on its own: a role for it passes here and fails on CI, so the notification points to .gitignore.
+        decision.osWritten -> KatachiBundle.message("notification.rules.noRole.osWritten")
         decision.untracked -> KatachiBundle.message(if (sure) "notification.rules.noRole.untracked.sure" else "notification.rules.noRole.untracked")
         else -> KatachiBundle.message(if (sure) "notification.rules.noRole.sure" else "notification.rules.noRole")
     }
