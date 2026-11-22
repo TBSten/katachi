@@ -37,7 +37,7 @@ class KtFileContentReceiverSpec : FreeSpec({
                 `package`("**")
                 required(`fun`, "Hoge", "bar")
             } shouldBe listOf(
-                "bar (line 3) | Not allowed: fun Other.bar() | Expected: fun Hoge.bar(...) | " +
+                "Other.bar (line 3) | Not allowed: fun Other.bar() | Expected: fun Hoge.bar(...) | " +
                     "Differs in: receiver (is Other, expected Hoge)",
             )
         }
@@ -81,7 +81,7 @@ class KtFileContentReceiverSpec : FreeSpec({
                 not.allow(`fun`, "Context", "*")
                 allow(`fun`, "*")
             } shouldBe listOf(
-                "a (line 4) | Not allowed: fun Context.a() | Prohibited by: not fun Context.*(...)",
+                "Context.a (line 4) | Not allowed: fun Context.a() | Prohibited by: not fun Context.*(...)",
             )
         }
 
@@ -106,7 +106,7 @@ class KtFileContentReceiverSpec : FreeSpec({
             judged(kt("val String.isBlankish: Boolean get() = true\nval String.length2: Int get() = 0")) {
                 `package`("**")
                 allow(`val`, "String", "is*").type("Boolean")
-            } shouldBe listOf("length2 (line 4) | Not allowed: val String.length2: Int")
+            } shouldBe listOf("String.length2 (line 4) | Not allowed: val String.length2: Int")
         }
 
         "名前が当たってレシーバーが違えば、違いにレシーバーを出す" {
@@ -114,7 +114,7 @@ class KtFileContentReceiverSpec : FreeSpec({
                 `package`("**")
                 required(`val`, "String", "size").type("Int")
             } shouldBe listOf(
-                "size (line 3) | Not allowed: val Int.size: Int | Expected: val String.size: Int | " +
+                "Int.size (line 3) | Not allowed: val Int.size: Int | Expected: val String.size: Int | " +
                     "Differs in: receiver (is Int, expected String)",
             )
         }
@@ -141,7 +141,7 @@ class KtFileContentReceiverSpec : FreeSpec({
             judged(kt("val String.a get() = 0")) {
                 `package`("**")
                 allow(`val`, "String", "*").type("*")
-            } shouldBe listOf("a (line 3) | Not allowed: val String.a")
+            } shouldBe listOf("String.a (line 3) | Not allowed: val String.a")
         }
 
         "レシーバーを書かない行は今まで通りレシーバーを見ない" {
@@ -158,7 +158,7 @@ class KtFileContentReceiverSpec : FreeSpec({
                 not.allow(`val`, "Context", "*")
                 allow(`val`, "*")
             } shouldBe listOf(
-                "a (line 4) | Not allowed: val Context.a: Int | Prohibited by: not val Context.*",
+                "Context.a (line 4) | Not allowed: val Context.a: Int | Prohibited by: not val Context.*",
             )
         }
 
@@ -197,7 +197,7 @@ class KtFileContentReceiverSpec : FreeSpec({
                 `package`("**")
                 allow(`fun`, "String?", "a")
                 allow(`fun`, "String", "*")
-            } shouldBe listOf("c (line 5) | Not allowed: fun String?.c()")
+            } shouldBe listOf("String?.c (line 5) | Not allowed: fun String?.c()")
         }
 
         "パッケージ付きで書かれたレシーバーもパッケージを見ずに当てる" {

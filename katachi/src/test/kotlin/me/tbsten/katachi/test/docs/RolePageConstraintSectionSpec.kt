@@ -153,10 +153,10 @@ class RolePageConstraintSectionSpec : FreeSpec({
             val arch = architecture {
                 "domain".group {
                     "UseCase".role {
-                        fileConstraint(check = DescribedConstraint { "## First" })
+                        fileConstraint("first", check = DescribedConstraint { "## First" })
                         layout {
                             "useCase" {
-                                fileConstraint(check = DescribedConstraint { "## Second" })
+                                fileConstraint("second", check = DescribedConstraint { "## Second" })
                                 "*UseCase".ktFile()
                             }
                         }
@@ -171,14 +171,14 @@ class RolePageConstraintSectionSpec : FreeSpec({
             val arch = architecture {
                 "domain".group {
                     "UseCase".role {
-                        fileConstraint(check = DescribedConstraint { "\n\n## Trimmed\n\nBody.\n\n\n" })
-                        fileConstraint(check = DescribedConstraint { "  \n  " })
+                        fileConstraint("trimmed", check = DescribedConstraint { "\n\n## Trimmed\n\nBody.\n\n\n" })
+                        fileConstraint("blank", check = DescribedConstraint { "  \n  " })
                         layout { "useCase" / "*UseCase".ktFile() }
                     }
                 }
             }
 
-            arch.page("domain/UseCase.md") shouldContain "|\n\n## Trimmed\n\nBody.\n"
+            arch.page("domain/UseCase.md") shouldContain "- blank\n\n## Trimmed\n\nBody.\n"
             arch.page("domain/UseCase.md").endsWith("## Trimmed\n\nBody.\n") shouldBe true
         }
 
@@ -187,7 +187,7 @@ class RolePageConstraintSectionSpec : FreeSpec({
                 "domain".group {
                     "UseCase".role {
                         fileConstraint("has a name") { emptyList() }
-                        fileConstraint(check = DescribedConstraint { null })
+                        fileConstraint("no section", check = DescribedConstraint { null })
                         layout { "useCase" / "*UseCase".ktFile() }
                     }
                 }
@@ -196,6 +196,7 @@ class RolePageConstraintSectionSpec : FreeSpec({
                 "domain".group {
                     "UseCase".role {
                         fileConstraint("has a name") { emptyList() }
+                        fileConstraint("no section") { emptyList() }
                         layout { "useCase" / "*UseCase".ktFile() }
                     }
                 }

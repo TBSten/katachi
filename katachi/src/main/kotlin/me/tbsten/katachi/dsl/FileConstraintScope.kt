@@ -50,7 +50,7 @@ public sealed interface FileConstraintScope {
      *
      * @param name what to call it, shown in the report next to the role and recorded in a
      *   baseline, which tells the constraints of a role apart by this name: a role holds one
-     *   constraint of each name. `null` means it is named by its declaration site alone. It must
+     *   constraint of each name. `null` means it is named after its kind: `"fileConstraint"` for a plain `fileConstraint { }`. It must
      *   hold at least one non-whitespace character and no line break, because it is printed on
      *   one line of a report block.
      * @param declaredAt where to point the report at. The default is the first stack frame

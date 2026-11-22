@@ -61,7 +61,11 @@ internal fun declareRole(
         )
     }
     // Only the role's own constraints are known here; those inside `layout { }` are checked when it is evaluated.
-    requireDistinctFileConstraintNames(role = (groupPath + name).joinToString("."), declarations = scope.fileConstraints)
+    requireDistinctFileConstraintNames(
+        role = (groupPath + name).joinToString("."),
+        declarations = scope.fileConstraints,
+        sameSiteIsOne = false,
+    )
     return Role(
         name = name,
         metadata = scope.metadata.build(),

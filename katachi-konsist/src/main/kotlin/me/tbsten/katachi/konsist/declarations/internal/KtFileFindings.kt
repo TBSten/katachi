@@ -11,6 +11,10 @@ internal class DeclarationListContext(
 
     fun qualified(name: String): String = (containers.map { it.name } + name).joinToString(".")
 
+    // An extension is named after its receiver (`String.toDto`), so that two of one name in one file stay two baseline entries.
+    fun qualified(fact: DeclarationFact): String =
+        qualified(fact.receiver?.written?.takeIf { it.isNotEmpty() }?.let { "$it.${fact.name}" } ?: fact.name)
+
     fun isMissing(rule: DeclarationRule): Boolean = rule.required && rule !in satisfied
 
     override fun toString(): String = "DeclarationListContext(${containers.map { it.name }})"

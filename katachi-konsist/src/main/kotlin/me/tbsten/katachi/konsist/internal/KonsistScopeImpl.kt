@@ -2,6 +2,8 @@ package me.tbsten.katachi.konsist.internal
 
 import com.lemonappdev.konsist.api.container.KoScope
 import com.lemonappdev.konsist.api.declaration.KoFileDeclaration
+import com.lemonappdev.konsist.api.declaration.KoFunctionDeclaration
+import com.lemonappdev.konsist.api.declaration.KoPropertyDeclaration
 import com.lemonappdev.konsist.api.provider.KoBaseProvider
 import com.lemonappdev.konsist.api.provider.KoContainingDeclarationProvider
 import com.lemonappdev.konsist.api.provider.KoLocationProvider
@@ -93,8 +95,15 @@ private fun rejectedElementOf(element: KoBaseProvider): RejectedElement {
 // Named after the declarations around it, as `ktFileContent` names it (`User.id`), so that two members of one name
 // in one file stay two baseline entries. The walk stops at the file, whose own name is not part of it.
 private fun qualifiedNameOf(element: KoBaseProvider): String? {
-    val name = (element as? KoNameProvider)?.name ?: return null
-    if (name.isEmpty()) return name
+    val bare = (element as? KoNameProvider)?.name ?: return null
+    if (bare.isEmpty()) return bare
+    // An extension is named after its receiver (`String.toDto`): `String.toDto` and `Int.toDto` of one file are two entries.
+    val receiver = when (element) {
+        is KoFunctionDeclaration -> element.receiverType?.text
+        is KoPropertyDeclaration -> element.receiverType?.text
+        else -> null
+    }
+    val name = if (receiver.isNullOrEmpty()) bare else "$receiver.$bare"
     val containers = generateSequence((element as? KoContainingDeclarationProvider)?.containingDeclaration) {
         (it as? KoContainingDeclarationProvider)?.containingDeclaration
     }

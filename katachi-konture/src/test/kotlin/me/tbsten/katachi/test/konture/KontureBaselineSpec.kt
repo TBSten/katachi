@@ -65,6 +65,18 @@ class KontureBaselineSpec : FreeSpec({
 
             failure.rejectedDeclarations() shouldContainExactly listOf("GetOrder.invoke")
         }
+
+        "String.toDto を記録したあと String.toDto を直して Int.toDto を internal にすると失敗する" {
+            val failure = recordThenBreak(
+                before = "package com.example\n\ninternal fun String.toDto(): Int = 1\n",
+                after = "package com.example\n\nfun String.toDto(): Int = 1\n\ninternal fun Int.toDto(): Int = 1\n",
+                recorded = "String.toDto",
+            ) {
+                functions { should().bePublic() }
+            }
+
+            failure.rejectedDeclarations() shouldContainExactly listOf("Int.toDto")
+        }
     }
 
     "名前の無いブロックは種類の名前で baseline の記録が分かれる" - {
@@ -79,7 +91,7 @@ class KontureBaselineSpec : FreeSpec({
             }
 
             failure.violations.filterIsInstance<UnsatisfiedFileConstraint>()
-                .map { it.constraintName to it.declaration } shouldContainExactly listOf(null to "User.id")
+                .map { it.constraintName to it.declaration } shouldContainExactly listOf("fileConstraint" to "User.id")
         }
     }
 })

@@ -7,7 +7,7 @@ import me.tbsten.katachi.dsl.FileConstraint
 
 internal const val KT_FILE_CONTENT_BACKEND: String = "ktFileContent"
 
-private const val CUSTOM_BACKEND: String = "custom"
+internal const val CUSTOM_BACKEND: String = "custom"
 
 private val BACKEND_PREFIXES: List<Pair<String, String>> = listOf(
     "me.tbsten.katachi.konsist.declarations." to KT_FILE_CONTENT_BACKEND,

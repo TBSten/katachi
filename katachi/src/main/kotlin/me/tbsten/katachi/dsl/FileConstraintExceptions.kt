@@ -137,9 +137,8 @@ public class KatachiDuplicateFileConstraintNameException internal constructor(
                 "violation recorded against one would hold back a new violation of the other.",
         )
         append("Give each a distinct name, as in ${namedSpellingOf(kind)}.")
-        // A plain `fileConstraint { }` written without a name has none, so it never gets the note.
         val unnamedKind = "$name { }"
-        if (unnamedKind != CUSTOM_KIND_SPELLING && (kind == unnamedKind || firstKind == unnamedKind)) {
+        if (kind == unnamedKind || firstKind == unnamedKind) {
             append(" A $unnamedKind written without a name is named \"$name\".")
         }
     },

@@ -70,7 +70,7 @@ class FileConstraintReportSpec : FreeSpec({
                 """.trimIndent()
         }
 
-        "名前も宣言も layout も無いブロックは2行に縮む" {
+        "名前も宣言も layout も無いブロックは既定の名前と Declared at だけを出す" {
             val arch = architectureOf {
                 "domain".group {
                     "UseCase".role {
@@ -89,7 +89,7 @@ class FileConstraintReportSpec : FreeSpec({
                 Katachi check failed: 1 violation (FileConstraint: 1)
 
                 [UnsatisfiedFileConstraint] alpha/Helper.kt
-                  Role: domain.UseCase
+                  Role: domain.UseCase / FileConstraint: "fileConstraint"
                   Declared at: ProjectArchitecture.kt:61
                 """.trimIndent()
         }
