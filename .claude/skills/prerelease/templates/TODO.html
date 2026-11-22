@@ -39,6 +39,10 @@ h2 small{color:var(--muted);font-weight:normal;font-size:13px;margin-left:6px}
 details{font-size:13.5px;color:var(--muted);margin-top:8px}
 details summary{cursor:pointer}
 details ul{margin:6px 0;padding-left:20px}
+.exp{margin:8px 0 0;font-size:13.5px;color:var(--fg)}
+.exp h4{margin:10px 0 2px;font-size:13px;color:var(--blue)}
+.exp p{margin:2px 0}
+.exp pre{background:var(--code);border-radius:6px;padding:8px 10px;overflow-x:auto;font-size:12.5px;margin:4px 0}
 .done{list-style:none;margin:0;padding:0}
 .done li{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 14px;margin:6px 0;font-size:14px}
 .done .to{color:var(--muted)}
@@ -69,7 +73,7 @@ dialog button{font:inherit;margin-top:8px}
 
 <!-- 項目の書き方（references/report-html.md）:
      見出しは「[p9] [コンポーネント] 内容」の 1 行。本文 1〜2 文。「決めてほしい」の下に選択肢を 1 つずつチェックボックスで並べ、
-     おすすめを先頭にして <span class="rec">おすすめ</span> を付ける。根拠・リンクは <details>。
+     おすすめを先頭にして <span class="rec">おすすめ</span> を付ける。根拠・リンクは <details>（中身は毎回 5 つ: 何が起きるか・例・重さ・選択肢の意味・見立て。下の項目 1 のひな形）。
      data-id は項目ごとに一意で、更新しても変えない（選んだ状態がブラウザに残っていて、それと結び付く）。data-opt は a・b・c…。
      決まった項目は消さずに「5. 決定済み・対応中」へ 1 行で移し、🔧 対応中 / ✏️ 編集済み・検証中 / ✓ 済 を付ける。 -->
 
@@ -85,7 +89,13 @@ dialog button{font:inherit;margin-top:8px}
 <li><label><input type="checkbox" data-opt="c"><span>(c) このまま</span></label></li>
 </ul>
 <textarea class="note" rows="1" placeholder="一言（任意）"></textarea>
-<details><summary>詳細</summary><ul><li>{根拠・再現・リンク（file:// の絶対パス）}</li></ul></details>
+<details><summary>詳細</summary><div class="exp">
+<h4>何が起きるか</h4><p>{利用者の手元で何がどう起きるか。原因を知らない人が読んで分かる言葉で}</p>
+<h4>例</h4><pre>{再現の手順・出力・Before / After（コピーして試せる形）}</pre>
+<h4>重さ</h4><p>{誰が・どのくらいの頻度で踏むか。直さないとどうなるか}</p>
+<h4>選択肢の意味</h4><p>(a) {選ぶと何が変わるか。おすすめの理由}<br>(b) {同上}</p>
+<h4>見立て</h4><p>{おすすめと、迷うならこれを先に、という順番}</p>
+<ul><li>{根拠・リンク（file:// の絶対パス）}</li></ul></div></details>
 </div>
 
 <h2 style="--c:var(--amber)">2. 判断してほしい<small>リリースは止めないが、方針が要る</small></h2>
