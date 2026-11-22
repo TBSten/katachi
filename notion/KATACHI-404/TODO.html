@@ -60,7 +60,7 @@ dialog button{font:inherit;margin-top:8px}
 <body>
 <main>
 <h1>v0.4.0 リリース前に確認してほしいこと</h1>
-<p class="sub">2026-11-23 01:02 更新 /リリース前チェック 5 回目（261120-01・<a href="https://app.notion.com/p/41e187beecfc8132a7dbdbe6221e03c8">KATACHI-404</a>）/ 対象は main b5a6b6e3（#119〜#122 マージ後。そのあと #123〜#127・#130〜#140 のうち #128・#129 以外もマージ済み。#141〜#143 もマージ済み）/ 選んだものはこのブラウザに残ります。下の「まとめてコピー」をチャットに貼って返してください</p>
+<p class="sub">2026-11-23 01:03 更新 /リリース前チェック 5 回目（261120-01・<a href="https://app.notion.com/p/41e187beecfc8132a7dbdbe6221e03c8">KATACHI-404</a>）/ 対象は main b5a6b6e3（#119〜#122 マージ後。そのあと #123〜#127・#130〜#140 のうち #128・#129 以外もマージ済み。#141〜#143 もマージ済み）/ 選んだものはこのブラウザに残ります。下の「まとめてコピー」をチャットに貼って返してください</p>
 
 <div class="summary">
   <span class="pill"><b style="color:var(--red)">0</b>リリース前に直すか決める</span>
@@ -149,7 +149,7 @@ EOF</pre>
 <li data-id="r3-decided-inbound">✓ <span class="badge p p7">p7</span><span class="badge c">konture</span>Konture 単体の inbound の規則を Role の <code>konture { }</code> へ移すと、Role の外からの参照が見えず黙って緑になる <span class="to">→ 直さない（「まあこれは治さずでok」、11/23 00:58）→ decisions/process.md に記録（<a href="https://github.com/TBSten/katachi/pull/150">PR #150</a>）</span></li>
 <li data-id="r3-decided-147">✓ <span class="badge p p9">p9</span><span class="badge c">core/検査</span><code>ignore()</code> の下の Role が黙って検査されない・git hook 経由で全体を見てしまう・全体ビルドの扱い <span class="to">→ (a) で決定（11/22 15:33）。<a href="https://github.com/TBSten/katachi/pull/147">PR #147</a>（11/23 00:59 マージ）</span></li>
 <li data-id="r3-decided-148">✓ <span class="badge p p9">p9</span><span class="badge c">konsist・konture</span>baseline のキー・拡張関数の receiver を含む宣言名 <span class="to">→ (a) で決定（3 つとも 0.4.0）。<a href="https://github.com/TBSten/katachi/pull/148">PR #148</a>（11/23 00:59 マージ）。上げたら baseline を 1 回取り直す旨をリリースノートの Migration に足す</span></li>
-<li data-id="r3-decided-149">🔧 <span class="badge p p7">p7</span><span class="badge c">konture</span><code>*</code> の import の下の名前が test の同名クラスで決まらず、規則が黙って緑になる <span class="to">→ (a) で決定。<a href="https://github.com/TBSten/katachi/pull/149">PR #149</a>（CI 待ち）</span></li>
+<li data-id="r3-decided-149">✓ <span class="badge p p7">p7</span><span class="badge c">konture</span><code>*</code> の import の下の名前が test の同名クラスで決まらず、規則が黙って緑になる <span class="to">→ (a) で決定。<a href="https://github.com/TBSten/katachi/pull/149">PR #149</a>（11/23 00:59 マージ）</span></li>
 <li data-id="r3-decided-150">✓ <span class="badge p p7">p7</span><span class="badge c">CLI・script</span><code>release = 8</code> を全モジュールに掛けるプロジェクトで scaffold したモジュールが止まる <span class="to">→ 許容して直さない（「これはこれで許容として直さないし今後も直す予定はない」）→ decisions/process.md に記録。<a href="https://github.com/TBSten/katachi/pull/150">PR #150</a></span></li>
 <li data-id="explore-ide-skip">✓ <span class="badge c">IDE plugin</span>IDE plugin を触る（任意・探索的検証 13 の観点カード） <span class="to">→ 触らない（E2E の結果で十分、11/22 15:33）</span></li>
 <li data-id="codex-r4">✓ <span class="badge c">広域 Codex</span>広域 Codex 4 回目（セッション A・B） <span class="to">→ 発見 9 件（p8×1・p7×2・p6×1・p5×1・p3×3・p2×1）、全件再現済み、過去の判断と同じものは 0 件。p8 は konsist・konture の拡張関数 baseline（上の r3-kk-extension-receiver と同じ原因、PR #148 で直す）。p7 の 2 件（docs の CLI ガイドに <code>agent</code> の案内が残る・projectDir で取り込んだ別 settings のモジュールを scaffold・doctor が検出できない）は直し方を決めてから PR にする。本文は exploratory-広域-r4.md</span></li>
