@@ -4,11 +4,18 @@ import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.fileSize
+import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.readLines
 import kotlin.io.path.writeText
 
 private val PACKAGE_NAME = Regex("^[a-z][a-zA-Z0-9_]*(\\.[a-z][a-zA-Z0-9_]*)*$")
+
+// A hard keyword cannot be written as a package segment, and the generated files do not escape them.
+private val KOTLIN_HARD_KEYWORDS = setOf(
+    "as", "break", "class", "continue", "do", "else", "false", "for", "fun", "if", "in", "interface", "is", "null",
+    "object", "package", "return", "super", "this", "throw", "true", "try", "typealias", "typeof", "val", "var", "when", "while",
+)
 
 /** A value with where it came from, in both languages. */
 private class Sourced(val value: String, val source: Msg)
@@ -23,6 +30,7 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
     parsed.positionals.firstOrNull()?.let { dieUsage(Messages.Scaffold.unknownOption(it)) }
     val pkg = parsed.value("--package") ?: die(Messages.Scaffold.packageRequiredExamplePackage)
     if (!PACKAGE_NAME.matches(pkg)) die(Messages.Scaffold.packageNotValidPackage(pkg))
+    pkg.split('.').firstOrNull { it in KOTLIN_HARD_KEYWORDS }?.let { die(Messages.Scaffold.packageHasKotlinKeyword(pkg, it)) }
     var version = parsed.value("--katachi")?.removePrefix("v") ?: ""
     var kotlin = parsed.value("--kotlin") ?: ""
     val konsist = !parsed.has("--no-konsist")
@@ -39,6 +47,11 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
     if (module.source == ModuleDirSource.ARG && module.recorded.isNotEmpty() && module.recorded != module.dir) {
         note(Messages.Scaffold.moduleDirDiffersWhat(module.dir, module.recorded))
     }
+    val srcDir = "${module.dir}/src/test/kotlin/${pkg.replace('.', '/')}/test/architecture"
+    firstNonDirectory(root, srcDir)?.let { die(Messages.Scaffold.moduleDirBlockedByFile(fileUri(it), fileUri(module.dir))) }
+    listOf("${module.dir}/build.gradle.kts", "${module.dir}/.gitignore", "$srcDir/ProjectArchitecture.kt", "$srcDir/ProjectArchitectureTest.kt")
+        .firstOrNull { root.resolve(it).isDirectory() }
+        ?.let { die(Messages.Scaffold.fileBlockedByDirectory(fileUri(it), fileUri(module.dir))) }
     checkGradleJdk(root)
     val toolchain = detectJvmToolchain(root, module.dir)
 
@@ -79,7 +92,6 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
     if (root.resolve(module.dir).exists() && !force) {
         die(Messages.Scaffold.alreadyExistsAddForce(fileUri(module.dir)))
     }
-    val srcDir = "${module.dir}/src/test/kotlin/${pkg.replace('.', '/')}/test/architecture"
 
     val placement = kotlinPluginPlacement(root, root.resolve(rootBuild.name), module.dir)
     val rootNeedsPlugin = placement == KotlinPlacement.ADD
@@ -307,6 +319,19 @@ internal fun ScriptContext.runScaffold(args: List<String>): Int {
     say("")
     say(Messages.Scaffold.nextTestArchitectureEmpty(module.gradlePath))
     return 0
+}
+
+/** The first existing path on the way down to [relative] that is not a directory: creating [relative] fails under it, with or without `--force`. */
+private fun firstNonDirectory(root: Path, relative: String): String? {
+    var current = root
+    var walked = ""
+    for (segment in relative.split('/')) {
+        current = current.resolve(segment)
+        walked = if (walked.isEmpty()) segment else "$walked/$segment"
+        if (!current.exists()) return null
+        if (!current.isDirectory()) return walked
+    }
+    return null
 }
 
 private class ModuleBuild(
