@@ -14,7 +14,7 @@
 // | 環境変数                     | 意味                                                        | 省略時        |
 // |------------------------------|-------------------------------------------------------------|---------------|
 // | KATACHI_DOCS_BASE            | Astro の `base`。開発版のビルドで `/katachi/dev`            | `/katachi`    |
-// | KATACHI_DOCS_VERSION_LABEL   | いま書いている版のラベル。リリースのビルドでタグから渡す    | 算出（v0.4-dev） |
+// | KATACHI_DOCS_VERSION_LABEL   | いま書いている版のラベル。リリースのビルドでタグから渡す    | 算出（v0.5-dev） |
 // | KATACHI_DOCS_DEV_BASE        | 版の切り替えに足す開発版の base。リリースのビルドで渡す     | 無し（足さない） |
 //
 // 新しい版の切り方は docs/AGENTS.md の「ドキュメントの版」の節にある。
@@ -25,6 +25,7 @@ const env = globalThis.process?.env ?? {};
 
 /** @type {{ slug: string; label: string }[]} */
 export const archivedVersions = [
+  { slug: '0.4', label: 'v0.4' },
   { slug: '0.3', label: 'v0.3' },
   { slug: '0.2', label: 'v0.2' },
 ];
