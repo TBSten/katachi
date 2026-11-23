@@ -5,6 +5,7 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldStartWith
 import kotlin.random.Random
 import me.tbsten.katachi.test.pbt.PBT_SEED
 import me.tbsten.katachi.test.pbt.chance
@@ -90,11 +91,20 @@ class KtFileContentPropertySpec : FreeSpec({
             val key = list.qualified(declaration.name)
             withClue(clueOf("changed $key so that it differs in: ${change.differs}", changed)) {
                 val found = judgedCase(changed)
-                found.map(::keyOf) shouldBe listOf(key)
-                val mismatch = found.single().endsWith(" | Differs in: ${change.differs}")
+                val own = found.filter { keyOf(it) == key }
+                withClue("found: $found") { own.size shouldBe 1 }
+                val mismatch = own.single().endsWith(" | Differs in: ${change.differs}")
                 // Allowed some other way (allow(anythingElse), a line named *), the line is missing instead.
-                val missingWithFound = list.rules?.allowsOtherwise == true && found.single().contains(" | Found: ")
-                withClue("found: ${found.single()}") { (mismatch || missingWithFound) shouldBe true }
+                val missingWithFound = list.rules?.allowsOtherwise == true && own.single().contains(" | Found: ")
+                withClue("found: ${own.single()}") { (mismatch || missingWithFound) shouldBe true }
+                // A type taken by another line is judged by that line from then on, and a line without { } allows no
+                // member: the members it had are reported too (`Alpha.Charlie`), each as one of its own.
+                val others = found - own.toSet()
+                if (missingWithFound && declaration.kind.isType) {
+                    withClue("found: $found") { others.forEach { keyOf(it) shouldStartWith "$key." } }
+                } else {
+                    withClue("found: $found") { others.shouldBeEmpty() }
+                }
             }
         }
     }
