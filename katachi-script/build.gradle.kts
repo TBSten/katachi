@@ -72,6 +72,10 @@ tasks.register<Tar>("cliTar") {
     group = "distribution"
     description = "Packs build/cli into katachi-cli-<version>.tar.gz, the asset the Homebrew formula downloads."
     from(cliDist)
+    // A Tar does not carry over the mode cliDist gave the files: with no mode of its own it packs everything
+    // as 0644, and brew then installs a bin/katachi that cannot be run (KATACHI-455). Say it here.
+    filePermissions { unix("rw-r--r--") }
+    filesMatching("bin/*") { permissions { unix("rwxr-xr-x") } }
     archiveBaseName.set("katachi-cli")
     archiveVersion.set(version.toString())
     compression = Compression.GZIP

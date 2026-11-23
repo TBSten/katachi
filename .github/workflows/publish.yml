@@ -109,6 +109,16 @@ jobs:
       - name: Build the tarball
         run: ./gradlew :katachi-script:cliTar --console=plain --stacktrace
 
+      # brew runs bin/katachi from the tarball as it is, so a tarball whose bin/katachi lost its execute bit
+      # (KATACHI-455) must not reach the release.
+      - name: Check bin/katachi in the tarball is executable
+        run: |
+          version=$(sed -n 's/^katachi = "\(.*\)"/\1/p' gradle/libs.versions.toml | head -n 1)
+          tarball="katachi-script/build/distributions/katachi-cli-${version}.tar.gz"
+          tar -tvzf "${tarball}"
+          tar -tvzf "${tarball}" | grep -E '^-..x.* (\./)?bin/katachi$' \
+            || { echo "::error::${tarball} の bin/katachi に実行権限がありません。katachi-script/build.gradle.kts の cliTar を確かめてください。"; exit 1; }
+
       - name: Attach it to the release
         id: tarball
         env:
