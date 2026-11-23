@@ -181,7 +181,7 @@ title: ...
 - `llms.txt`・`llms-full.txt`・`llms-small.txt` は今の版だけを持つ。凍結した版の全文は `/katachi/<slug>/llms-full.txt`（`src/pages/[version]/llms-full.txt.ts`）にあり、`llms.txt` の Optional から張る。
   starlight-llms-txt は llms-full.txt から除外できないので、pnpm の patch（`patches/`、`pnpm-workspace.yaml`）で `exclude` を llms-full.txt にも適用している
 - public/ の下（API リファレンス・インストールキット・スライド）は版を持たない。古い版のページからのリンクは、`src/middleware.ts` が最新のものへ向け直す
-- いま書いている版のラベルは手で持たない。凍結した版の先頭から「次の minor + `-dev`」を算出する（写しの先頭が `0.3` なら `v0.4-dev`）。
+- いま書いている版のラベルは手で持たない。凍結した版の先頭から「次の minor + `-dev`」を算出する（写しの先頭が `0.4` なら `v0.5-dev`）。
   リリースのビルドだけが `KATACHI_DOCS_VERSION_LABEL`（タグから `v0.4`）で上書きする
 
 ### 公開サイトの構成（`.github/workflows/docs.yml`）
@@ -191,8 +191,8 @@ title: ...
 
 | 置き場所 | ビルド元 | いま書いている版のラベル | 版の切り替えの選択肢 |
 |---|---|---|---|
-| `/katachi/`（と `/katachi/0.2/` などの写し） | main から辿れる最新の `v*` タグ | タグから（`v0.3`） | 現行・写し・末尾に開発版（`v0.4-dev` → `/katachi/dev/`） |
-| `/katachi/dev/`（と `/katachi/dev/0.3/` などの写し） | main | 算出（`v0.4-dev`） | 現行・写し（`/dev/` の中で閉じる） |
+| `/katachi/`（と `/katachi/0.2/` などの写し） | main から辿れる最新の `v*` タグ | タグから（`v0.4`） | 現行・写し・末尾に開発版（`v0.5-dev` → `/katachi/dev/`） |
+| `/katachi/dev/`（と `/katachi/dev/0.4/` などの写し） | main | 算出（`v0.5-dev`） | 現行・写し（`/dev/` の中で閉じる） |
 
 docs.yml は 2 つを別々にビルドして 1 つの Pages に合成する。切り替えは環境変数で、`pnpm run build` を手で回すときは何も渡さなくてよい（root 相当のビルドになり、ラベルは算出）。
 
