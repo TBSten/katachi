@@ -1,4 +1,4 @@
-// (1), (2), (9) and (12) reach Konture's `internal` parser the same way `KontureParsing.kt`
+// (1), (2), (9), (12) and (23) reach Konture's `internal` parser the same way `KontureParsing.kt`
 // does, so that the assumptions are measured against the very members the backend calls.
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 
@@ -553,6 +553,28 @@ class KontureAssumptionsSpec : FreeSpec({
                     noShould.stackTrace.first().className shouldBe builder
                 }
             }
+        }
+    }
+
+    "(23) getDeclaredClassFqNames と getDeclaredTypeAliases は 1 ファイルずつの和で、2 回に分けて読んで足しても同じ" {
+        // `KontureSymbols.tablesOf` reads the production files and the test files once each and adds the two up.
+        fixtureProject(
+            "src/main/kotlin/PublicThing.kt" to PUBLIC_THING_KT,
+            "src/main/kotlin/Aliases.kt" to "package com.example\n\ntypealias Things = List<PublicThing>\n",
+            "src/test/kotlin/Helper.kt" to HELPER_KT,
+            "src/test/kotlin/TestAliases.kt" to "package com.example.test\n\nclass Fake\n\ntypealias Fakes = List<Fake>\n",
+        ) { root ->
+            val production = listOf(File(root, "src/main/kotlin/PublicThing.kt"), File(root, "src/main/kotlin/Aliases.kt"))
+            val test = listOf(File(root, "src/test/kotlin/Helper.kt"), File(root, "src/test/kotlin/TestAliases.kt"))
+
+            val classes = PsiParser.getDeclaredClassFqNames(production + test)
+            val typeAliases = PsiParser.getDeclaredTypeAliases(production + test)
+
+            classes shouldBe PsiParser.getDeclaredClassFqNames(production) + PsiParser.getDeclaredClassFqNames(test)
+            typeAliases shouldBe PsiParser.getDeclaredTypeAliases(production) + PsiParser.getDeclaredTypeAliases(test)
+            // Not vacuous: each side brings a class and an alias of its own.
+            classes shouldContain "com.example.test.Fake"
+            typeAliases.keys shouldContainExactly setOf("com.example.Things", "com.example.test.Fakes")
         }
     }
 })

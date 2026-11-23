@@ -28,10 +28,7 @@ private val MAIN_SOURCE_SET: SourceSet =
 internal data class KontureGraphKey(val files: List<String>)
 
 // Not keyed on the files: the project's files are the same for every constraint of one run, and so is the memo.
-internal data object KontureSymbolsKey
-
-// The table a production file reads: the walked files without the test source sets, which it cannot see.
-internal data object KontureProductionSymbolsKey
+internal data object KontureSymbolTablesKey
 
 // Konture has no public parser, so the parse comes from `KontureSymbols`; the graph's `filePath`s are compared with what was asked for before anything is trusted.
 internal fun kontureGraphOf(subject: FileConstraintSubject): ProjectGraph {
@@ -50,7 +47,7 @@ internal fun kontureGraphOf(subject: FileConstraintSubject): ProjectGraph {
         )
     }
     return subject.memo(KontureGraphKey(wanted), ProjectGraph::class) {
-        val parsed = parsedFilesOf(wanted, subject.projectRoot, kontureSymbolsOf(subject), kontureProductionSymbolsOf(subject))
+        val parsed = parsedFilesOf(wanted, subject.projectRoot, kontureSymbolTablesOf(subject))
         if (parsed.size != wanted.size) {
             throw KatachiKontureGraphIncompleteException(given = wanted.size, visible = parsed.size)
         }
@@ -74,17 +71,16 @@ internal fun kontureGraphOf(subject: FileConstraintSubject): ProjectGraph {
 
 // Every walked file, not just the covered ones: a bare name under two wildcard imports resolves only to a class the
 // table holds. The graph, and so every rule, still holds the covered files alone.
-private fun kontureSymbolsOf(subject: FileConstraintSubject): KontureSymbols =
-    subject.memo(KontureSymbolsKey, KontureSymbols::class) {
-        KontureSymbols.of(subject.projectFiles.parsedFilesUnder(subject.projectRoot))
-    }
-
 // A file of a production source set cannot see a class of a test one, so a bare name there is looked up among the
 // production classes alone: a same-named class in `src/test` would otherwise make the name ambiguous, and a rule
-// that cannot resolve a name leaves it out without a word.
-private fun kontureProductionSymbolsOf(subject: FileConstraintSubject): KontureSymbols =
-    subject.memo(KontureProductionSymbolsKey, KontureSymbols::class) {
-        KontureSymbols.of(subject.projectFiles.filterNot(::isInTestSourceSet).parsedFilesUnder(subject.projectRoot))
+// that cannot resolve a name leaves it out without a word. Both tables come from one read of each file.
+private fun kontureSymbolTablesOf(subject: FileConstraintSubject): KontureSymbolTables =
+    subject.memo(KontureSymbolTablesKey, KontureSymbolTables::class) {
+        val (test, production) = subject.projectFiles.partition(::isInTestSourceSet)
+        KontureSymbols.tablesOf(
+            production = production.parsedFilesUnder(subject.projectRoot),
+            test = test.parsedFilesUnder(subject.projectRoot),
+        )
     }
 
 private fun Collection<String>.parsedFilesUnder(projectRoot: String): List<File> =
@@ -101,14 +97,13 @@ private fun isInTestSourceSet(relativePath: String): Boolean {
 private fun parsedFilesOf(
     wanted: List<String>,
     projectRoot: String,
-    symbols: KontureSymbols,
-    productionSymbols: KontureSymbols,
+    tables: KontureSymbolTables,
 ): List<FileDeclaration> {
     // Deleted since the walk: left out, so that it becomes the count mismatch that names the problem.
     val files = wanted.map(::File).filter { it.isFile }
     return files.mapNotNull { file ->
         val declaration = try {
-            (if (isInTestSourceSet(file.invariantSeparatorsPath.removePrefix("$projectRoot/"))) symbols else productionSymbols).parse(file)
+            (if (isInTestSourceSet(file.invariantSeparatorsPath.removePrefix("$projectRoot/"))) tables.all else tables.production).parse(file)
         } catch (cause: RuntimeException) {
             throw KatachiKontureParseException(file = file.invariantSeparatorsPath, cause = cause)
         } catch (cause: java.io.IOException) {
