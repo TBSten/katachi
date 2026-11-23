@@ -20,9 +20,9 @@ import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.files.internal.RealFileSystem
 import me.tbsten.katachi.dsl.wholeTree
 import me.tbsten.katachi.konture.KontureConstraintScope
+import me.tbsten.katachi.konture.internal.KontureSymbolTables
+import me.tbsten.katachi.konture.internal.KontureSymbolTablesKey
 import me.tbsten.katachi.konture.internal.KontureSymbols
-import me.tbsten.katachi.konture.internal.KontureProductionSymbolsKey
-import me.tbsten.katachi.konture.internal.KontureSymbolsKey
 import me.tbsten.katachi.konture.konture
 
 /**
@@ -235,8 +235,7 @@ class KontureParseTargetSpec : FreeSpec({
             // A constraint evaluated first leaves an empty table in the run's memo. Had either
             // `konture { }` built a table of its own, it would know `UserRepository` and be red.
             val seed = FileConstraint { subject ->
-                subject.memo(KontureSymbolsKey, KontureSymbols::class) { KontureSymbols.of(emptyList()) }
-                subject.memo(KontureProductionSymbolsKey, KontureSymbols::class) { KontureSymbols.of(emptyList()) }
+                subject.memo(KontureSymbolTablesKey, KontureSymbolTables::class) { KontureSymbols.tablesOf(emptyList(), emptyList()) }
                 emptyList()
             }
             val rule: KontureConstraintScope.() -> Unit =
