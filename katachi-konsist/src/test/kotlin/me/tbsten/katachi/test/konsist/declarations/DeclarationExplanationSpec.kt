@@ -150,6 +150,33 @@ class DeclarationExplanationSpec : FreeSpec({
         }
     }
 
+    "許可された宣言のメンバ" - {
+        "{ } の無い行で許可した class は Allowed のまま、メンバは Unexpected と説明する（検査はメンバを違反にする）" {
+            val result = judgedAndExplained(kt("data class Sample(val id: Int) {\n    fun show() {}\n}")) { allow(data, `class`, "Sample") }
+            val sample = result.explanation.declarations.single()
+            sample.verdict shouldBe DeclarationVerdict.Allowed
+            sample.members.map { "${it.kind} ${it.name} ${it.verdict} line ${it.line}" } shouldContainExactly listOf(
+                "val id Unexpected line 3",
+                "fun show Unexpected line 4",
+            )
+            listOf("id", "show").forEach { member ->
+                withClue("the check rejects $member") { result.failures.any { it.declaration?.contains(member) == true } shouldBe true }
+            }
+        }
+
+        "{ } のある行は、メンバをその中の行で決める" {
+            val sample = judgedAndExplained(kt("data class Sample(val id: Int) {\n    fun show() {}\n}")) {
+                allow(data, `class`, "Sample") { allow(`val`, "id") }
+            }.explanation.declarations.single()
+            sample.members.map { "${it.name} ${it.verdict}" } shouldContainExactly listOf("id Allowed", "show Unexpected")
+        }
+
+        "メンバを持たない宣言と許可されなかった宣言の members は空" {
+            val explanation = judgedAndExplained(kt("class Sample\nfun stray() {}")) { allow(`class`, "Sample") }.explanation
+            explanation.declarations.map { it.members } shouldContainExactly listOf(emptyList(), emptyList())
+        }
+    }
+
     "検査との一致" - {
         "ケース表のすべてで、許可でない宣言 ⇔ 違反、missing ⇔ Missing:" {
             for (case in CASES) {

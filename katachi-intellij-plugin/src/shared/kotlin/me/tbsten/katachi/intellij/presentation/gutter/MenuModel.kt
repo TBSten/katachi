@@ -167,7 +167,7 @@ internal object MenuModels {
         val ruleText = (first?.text ?: strings.unrecordedRule) + more
         return when (val verdict = declaration.verdict) {
             DeclarationVerdict.Allowed, DeclarationVerdict.AllowedByAnythingElse ->
-                siteRow(input, strings.menuAllowedBy(ruleText), first?.declaredAt, strings)
+                siteRow(input, strings.menuAllowedBy(ruleText) + GutterTooltips.membersRejected(declaration, strings), first?.declaredAt, strings)
             DeclarationVerdict.Prohibited -> siteRow(input, strings.menuProhibitedBy(ruleText), first?.declaredAt, strings)
             DeclarationVerdict.Mismatched ->
                 siteRow(input, strings.menuMismatched(ruleText) + declaration.difference?.let { ": $it" }.orEmpty(), first?.declaredAt, strings)

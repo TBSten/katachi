@@ -286,6 +286,22 @@ class DefinitionJsonParserTest {
     }
 
     @Test
+    fun `許可された宣言のメンバの判定が読め メンバのキーが無い古い katachi の JSON は空として読む`() {
+        val member = """{ "kind": "val", "name": "id", "line": 4, "verdict": "Unexpected", "rules": [], "difference": null, "members": [] }"""
+        val withMember = DefinitionFixtures.definitionText("synthetic-definition-explained").replaceFirst("\"members\": []", "\"members\": [$member]")
+        val health = parse(withMember).definition.roles.single { it.qualifiedName == "Service" }
+            .constraints.first().fileDeclarations!!.single { it.file == "src/service/HealthService.kt" }.declarations.single()
+        assertEquals(listOf("id"), health.members.map { it.name })
+        assertEquals(DeclarationVerdict.Unexpected, health.members.single().verdict)
+        assertEquals(SourceDeclarationKind.Val, health.members.single().kind)
+        assertEquals(1, health.violatingMemberCount)
+        val oldKatachi = DefinitionFixtures.definitionText("synthetic-definition-explained").replace("\"members\": []", "\"membersRenamed\": []")
+        val old = parse(oldKatachi).definition.roles.single { it.qualifiedName == "Service" }
+            .constraints.first().fileDeclarations!!.single { it.file == "src/service/HealthService.kt" }.declarations.single()
+        assertEquals(emptyList<Any>(), old.members)
+    }
+
+    @Test
     fun `知らないキーは無視され fileDeclarations が無い古い katachi の JSON は null として読む`() {
         val withExtra = text.replaceFirst("\"schemaVersion\": 1,", "\"schemaVersion\": 1,\n  \"future\": { \"x\": [1, 2] },")
         assertEquals(definition, parse(withExtra).definition)

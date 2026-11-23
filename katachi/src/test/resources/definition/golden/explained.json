@@ -153,7 +153,8 @@
                       }
                     }
                   ],
-                  "difference": null
+                  "difference": null,
+                  "members": []
                 }
               ],
               "missing": [],
@@ -169,7 +170,8 @@
                   "line": 3,
                   "verdict": "Unexpected",
                   "rules": [],
-                  "difference": null
+                  "difference": null,
+                  "members": []
                 }
               ],
               "missing": [

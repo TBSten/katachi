@@ -1,5 +1,6 @@
 package me.tbsten.katachi.intellij.presentation.gutter
 
+import me.tbsten.katachi.intellij.model.DeclarationModel
 import me.tbsten.katachi.intellij.model.DeclarationVerdict
 import me.tbsten.katachi.intellij.model.FileRoles
 import me.tbsten.katachi.intellij.model.Freshness
@@ -140,7 +141,8 @@ internal object GutterTooltips {
         is BoundExplanation.Explained -> {
             val declaration = explanation.declaration
             when (val verdict = declaration.verdict) {
-                DeclarationVerdict.Allowed, DeclarationVerdict.AllowedByAnythingElse -> strings.allowedBy(rules(declaration.rules, strings))
+                DeclarationVerdict.Allowed, DeclarationVerdict.AllowedByAnythingElse ->
+                    strings.allowedBy(rules(declaration.rules, strings)) + membersRejected(declaration, strings)
                 DeclarationVerdict.Prohibited -> strings.prohibitedBy(rules(declaration.rules, strings))
                 DeclarationVerdict.Mismatched ->
                     strings.mismatched(rules(declaration.rules, strings)) + declaration.difference?.let { ": $it" }.orEmpty()
@@ -148,6 +150,12 @@ internal object GutterTooltips {
                 is DeclarationVerdict.Unknown -> strings.judgedByNewer(verdict.jsonName)
             }
         }
+    }
+
+    /** `, 1 member is rejected by the check` when the declaration is allowed but a member of it is not; nothing otherwise. */
+    fun membersRejected(declaration: DeclarationModel, strings: GutterStrings): String {
+        val count = declaration.violatingMemberCount
+        return if (count == 0) "" else ", ${strings.membersRejected(count)}"
     }
 
     /** The first line that decided, where it was written, and how many more did: `class HealthService (ServiceRole.kt:80) +1`. */

@@ -76,7 +76,7 @@ public class FileDeclarationsExplanation(
 }
 
 /**
- * How one top-level declaration was decided, and by which lines.
+ * How one declaration was decided, and by which lines: a top-level one, or a member of an allowed class.
  *
  * ## Example 1: say which line allowed a declaration
  * ```kt
@@ -88,7 +88,7 @@ public class FileDeclarationsExplanation(
  */
 @InternalKatachiApi
 public class DeclarationExplanation(
-    /** `class`, `interface`, `object`, `fun`, `val`, `var` or `typealias`: the keyword it is declared with. */
+    /** `class`, `interface`, `object`, `fun`, `val`, `var` or `typealias`: the keyword it is declared with; a member can also be `entry`, `constructor` or `init`. */
     public val kind: String,
     /** Its name, without the receiver of an extension. */
     public val name: String,
@@ -106,6 +106,14 @@ public class DeclarationExplanation(
     public val rules: List<RuleExplanation>,
     /** What differs from the line, for [DeclarationVerdict.Mismatched]; `null` otherwise. */
     public val difference: String?,
+    /**
+     * How the members of this declaration were decided, in the order they are written.
+     *
+     * Only an allowed class has members to judge: a line without `{ }` allows none, so every member
+     * of such a class is [DeclarationVerdict.Unexpected] here, as the check rejects it. Empty for
+     * a declaration with no member, and for one that was not allowed.
+     */
+    public val members: List<DeclarationExplanation> = emptyList(),
 ) {
     override fun toString(): String = "DeclarationExplanation($kind $name, $verdict)"
 }

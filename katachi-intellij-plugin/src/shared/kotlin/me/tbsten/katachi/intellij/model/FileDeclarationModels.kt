@@ -30,7 +30,16 @@ internal data class DeclarationModel(
     val rules: List<RuleRef>,
     /** For [DeclarationVerdict.Mismatched]: how the declaration differs. */
     val difference: String?,
-)
+    /**
+     * How the members of an allowed class were judged, as the check judges them. Empty for any other declaration, and
+     * when katachi is older than this key.
+     */
+    val members: List<DeclarationModel> = emptyList(),
+) {
+    /** How many members, at any depth, the check rejects: a `class` line without `{ }` allows none of its members. */
+    val violatingMemberCount: Int
+        get() = members.sumOf { member -> (if (member.verdict.isAllowed) 0 else 1) + member.violatingMemberCount }
+}
 
 /** One line of the allow list as it was evaluated for the file, and where it was written. */
 internal data class RuleRef(val text: String, val declaredAt: DeclarationSiteRef?)
