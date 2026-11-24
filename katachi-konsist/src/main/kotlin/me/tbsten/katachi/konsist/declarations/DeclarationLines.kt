@@ -158,6 +158,37 @@ public class TypeLine internal constructor(
         return this
     }
 
+    /**
+     * Asks the line to hold a number of declarations in [range]: the declarations of the list it allows, counted for each line
+     * that allows them. A line without `.count(...)` holds any number for `allow(...)` and at least one for `required(...)`;
+     * a lower bound written here replaces both, so `allow(...).count(2..10)` also asks for at least two.
+     *
+     * ## Example 1: two to ten functions, and no more than one class
+     * ```kt
+     * allow(`fun`, "*")().count(2..10)
+     * allow(`class`, "*").count(max = 1)
+     * ```
+     *
+     * @throws KatachiKtFileContentLineException when written twice, on a line that starts with `not.`, or when no number of
+     *   declarations is in [range] (an empty range, a negative minimum, or a maximum below one).
+     */
+    public fun count(range: IntRange): TypeLine {
+        line.writeCount(range)
+        return this
+    }
+
+    /**
+     * [count] with a bound on one side or both: `.count(min = 3)` is three or more, `.count(max = 2)` is none to two (or one to two
+     * for `required(...)`).
+     *
+     * @throws KatachiKtFileContentLineException when no bound is written, when written twice, on a line that starts with `not.`,
+     *   or when no number of declarations is in the bounds.
+     */
+    public fun count(min: Int? = null, max: Int? = null): TypeLine {
+        line.writeCount(min, max)
+        return this
+    }
+
     /** The line as written so far. */
     override fun toString(): String = line.text
 }
@@ -348,6 +379,18 @@ public class FunctionLine internal constructor(
      */
     public fun noBody(): FunctionLine {
         line.writeBodyKind(BodyKind.None)
+        return this
+    }
+
+    /** Asks the line to hold a number of declarations in [range], as [TypeLine.count] does. */
+    public fun count(range: IntRange): FunctionLine {
+        line.writeCount(range)
+        return this
+    }
+
+    /** Asks the line to hold at least [min] and at most [max] declarations, as [TypeLine.count] does; a bound left out asks nothing. */
+    public fun count(min: Int? = null, max: Int? = null): FunctionLine {
+        line.writeCount(min, max)
         return this
     }
 
@@ -545,6 +588,18 @@ public class PropertyLine internal constructor(
         return this
     }
 
+    /** Asks the line to hold a number of declarations in [range], as [TypeLine.count] does. */
+    public fun count(range: IntRange): PropertyLine {
+        line.writeCount(range)
+        return this
+    }
+
+    /** Asks the line to hold at least [min] and at most [max] declarations, as [TypeLine.count] does; a bound left out asks nothing. */
+    public fun count(min: Int? = null, max: Int? = null): PropertyLine {
+        line.writeCount(min, max)
+        return this
+    }
+
     /** The line as written so far. */
     override fun toString(): String = line.text
 }
@@ -628,6 +683,18 @@ public class TypeAliasLine internal constructor(
      */
     public fun kdoc(): TypeAliasLine {
         line.writeKDoc()
+        return this
+    }
+
+    /** Asks the line to hold a number of declarations in [range], as [TypeLine.count] does. */
+    public fun count(range: IntRange): TypeAliasLine {
+        line.writeCount(range)
+        return this
+    }
+
+    /** Asks the line to hold at least [min] and at most [max] declarations, as [TypeLine.count] does; a bound left out asks nothing. */
+    public fun count(min: Int? = null, max: Int? = null): TypeAliasLine {
+        line.writeCount(min, max)
         return this
     }
 

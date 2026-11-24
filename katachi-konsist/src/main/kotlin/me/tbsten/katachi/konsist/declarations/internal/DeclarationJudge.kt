@@ -67,8 +67,8 @@ private fun judgeList(
 ): ListJudgement {
     val allowedLines = rules.lines.filterNot { it.prohibited }
     val decisions = facts.map { fact -> decide(rules, allowedLines, fact) }
-    val satisfied: Set<DeclarationRule> = identitySetOf(decisions.flatMap { (it as? Decision.Allowed)?.rules.orEmpty() })
-    val list = DeclarationListContext(rules, containers, satisfied)
+    val matched = identityCountsOf(decisions.flatMap { (it as? Decision.Allowed)?.rules.orEmpty() })
+    val list = DeclarationListContext(rules, containers, matched)
 
     // A mismatched declaration claims the line its name matches -- the first one still missing,
     // or the first one at all -- so that line is not also reported missing.
@@ -111,9 +111,18 @@ private fun judgeList(
         JudgedDeclaration(fact, outcome, judgedMembers)
     }
 
+    // A declaration two lines allow counts for both, as it satisfies both.
+    for (rule in allowedLines) {
+        val max = rule.maxCount ?: continue
+        if (list.matchedBy(rule) <= max) continue
+        val matches = facts.filterIndexed { index, _ -> (decisions[index] as? Decision.Allowed)?.rules?.any { it === rule } == true }
+        located += TooManyDeclarations(rule, list, max, matches)
+    }
+
     for (rule in unclaimed) {
-        // A name that is a pattern names no one declaration, so none is "the one meant, in another shape".
-        val found = if (rule.name.hasWildcard) {
+        // A name that is a pattern names no one declaration, so none is "the one meant, in another shape". Nor is one the line
+        // already allows: it counts for the line, and the line wants more of them, not another shape of this one.
+        val found = if (rule.name.hasWildcard || list.matchedBy(rule) > 0) {
             null
         } else {
             facts.withIndex().firstOrNull { (index, fact) ->
@@ -139,3 +148,6 @@ private fun decide(rules: DeclarationListRules, allowedLines: List<DeclarationRu
 // Compares by identity: a line is the same line only as itself.
 private fun <T> identitySetOf(items: List<T>): Set<T> =
     Collections.newSetFromMap(IdentityHashMap<T, Boolean>()).apply { addAll(items) }
+
+private fun identityCountsOf(items: List<DeclarationRule>): Map<DeclarationRule, Int> =
+    IdentityHashMap<DeclarationRule, Int>().apply { items.forEach { merge(it, 1, Int::plus) } }

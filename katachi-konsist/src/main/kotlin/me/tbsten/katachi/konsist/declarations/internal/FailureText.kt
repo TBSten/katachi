@@ -10,6 +10,8 @@ import me.tbsten.katachi.dsl.FileConstraintReason
 
 private const val NOT_ALLOWED: String = "Not allowed"
 private const val MISSING: String = "Missing"
+private const val TOO_MANY: String = "Too many"
+private const val COUNT: String = "Count"
 
 private val NOTHING_WRITTEN_NOTE: FileConstraintReason = FileConstraintReason(
     "Note",
@@ -43,6 +45,7 @@ private fun failureOf(finding: KtFileFinding, path: String, rules: FileRules, op
     is ProhibitedDeclaration -> prohibitedDeclarationFailure(finding, path)
     is MismatchedDeclaration -> mismatchedDeclarationFailure(finding, path)
     is MissingDeclaration -> missingDeclarationFailure(finding, path)
+    is TooManyDeclarations -> tooManyDeclarationsFailure(finding, path)
     is UnexpectedImport -> unexpectedImportFailure(finding, path, rules.declaredAt, nothingWritten = rules.imports.isEmpty(), opening)
     is ProhibitedImport -> prohibitedImportFailure(finding, path)
     is UnexpectedPackage -> unexpectedPackageFailure(finding, path, rules.declaredAt)
@@ -153,13 +156,48 @@ private fun missingDeclarationFailure(finding: MissingDeclaration, path: String)
         line = null,
         reasons = buildList {
             add(FileConstraintReason(MISSING, renderRule(rule) + inContainer(list)))
+            if (rule.count != null) add(FileConstraintReason(COUNT, "${finding.matched} found, at least ${rule.minCount} expected"))
             finding.found?.let { found ->
                 add(FileConstraintReason("Found", renderFact(found) + (found.line?.let { " (line $it)" } ?: "")))
             }
         },
-        howToFix = finding.found?.let { found -> foundFixes(found, rule) } ?: listOf(
-            FileConstraintFix(if (container == null) "Declare it in this file" else "Declare it in ${renderContainer(container)}"),
-            notRequiredFix(rule),
+        howToFix = finding.found?.let { found -> foundFixes(found, rule) } ?: if (rule.count != null) {
+            val more = rule.minCount - finding.matched
+            listOf(
+                FileConstraintFix(
+                    "Declare $more more of them " + if (container == null) "in this file" else "in ${renderContainer(container)}",
+                ),
+                FileConstraintFix("Or lower the minimum of the .count(...) at ${rule.declaredAt}"),
+            )
+        } else {
+            listOf(
+                FileConstraintFix(if (container == null) "Declare it in this file" else "Declare it in ${renderContainer(container)}"),
+                notRequiredFix(rule),
+            )
+        },
+        ruleDeclaredAt = rule.declaredAt,
+    )
+}
+
+private fun tooManyDeclarationsFailure(finding: TooManyDeclarations, path: String): FileConstraintFailure {
+    val (rule, list) = finding.rule to finding.list
+    val container = list.container
+    val extra = finding.matches.size - finding.max
+    return FileConstraintFailure(
+        file = path,
+        declaration = list.qualified(rule.name.written),
+        // The first declaration past the limit, as the ones before it are within it.
+        line = finding.matches[finding.max].line,
+        reasons = listOf(
+            FileConstraintReason(TOO_MANY, renderRule(rule) + inContainer(list)),
+            FileConstraintReason(COUNT, "${finding.matches.size} found, at most ${finding.max} allowed"),
+            FileConstraintReason("Found", finding.matches.joinToString(", ") { it.name + (it.line?.let { line -> " (line $line)" } ?: "") }),
+        ),
+        howToFix = listOf(
+            FileConstraintFix(
+                "Remove $extra of them from " + if (container == null) "this file" else renderContainer(container),
+            ),
+            FileConstraintFix("Or raise the maximum of the .count(...) at ${rule.declaredAt}"),
         ),
         ruleDeclaredAt = rule.declaredAt,
     )

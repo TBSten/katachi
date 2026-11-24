@@ -106,6 +106,7 @@ internal class DeclarationLineBuilder(
     private var members: DeclarationListBuilder? = null
     private val except = mutableListOf<NameRule>()
     private val details = mutableListOf<DetailRule>()
+    private var count: CountRule? = null
 
     private val session: EvaluationSession get() = list.session
 
@@ -120,7 +121,7 @@ internal class DeclarationLineBuilder(
             parameters = parameterTexts,
             returnType = returnType?.written,
             except = except.map { it.written },
-            details = details.map { it.rendered },
+            details = details.map { it.rendered } + listOfNotNull(count?.rendered),
         )
 
     val kinds: Set<DeclarationKindName> get() = shapes.mapTo(LinkedHashSet()) { it.kind }
@@ -164,6 +165,31 @@ internal class DeclarationLineBuilder(
         addDetail("typeParameters") { TypeParametersRule(parameters.map { typeParameterRule(it) }) }
 
     fun writeKDoc() = addDetail("kdoc") { KDocRule }
+
+    // A count is a fact about the whole list, not about one declaration, so it is not a detail.
+    fun writeCount(range: IntRange) {
+        if (range.isEmpty()) throw countProblem(KtFileContentLineProblem.CountOutOfRange, "${range.first}..${range.last}")
+        writeCount(range.first, range.last, ".count(${range.first}..${range.last})")
+    }
+
+    fun writeCount(min: Int?, max: Int?) {
+        if (min == null && max == null) throw countProblem(KtFileContentLineProblem.CountWithoutBounds, "")
+        val written = listOfNotNull(min?.let { "min = $it" }, max?.let { "max = $it" }).joinToString(", ")
+        writeCount(min, max, ".count($written)")
+    }
+
+    private fun writeCount(min: Int?, max: Int?, rendered: String) {
+        ensureOpen()
+        if (prohibited) throw countProblem(KtFileContentLineProblem.CountOnProhibited, rendered)
+        if (count != null) throw detailProblem(KtFileContentLineProblem.DetailWrittenTwice, "count")
+        if ((min != null && min < 0) || (max != null && (max < 1 || (min != null && max < min)))) {
+            throw countProblem(KtFileContentLineProblem.CountOutOfRange, rendered)
+        }
+        count = CountRule(min, max, rendered)
+    }
+
+    private fun countProblem(problem: KtFileContentLineProblem, written: String): KatachiKtFileContentLineException =
+        KatachiKtFileContentLineException(problem, text, declaredAt, parameter = written)
 
     fun writeBodyKind(kind: BodyKind) = addDetail("body") { BodyRule(kind) }
 
@@ -253,6 +279,7 @@ internal class DeclarationLineBuilder(
         except = except.toList(),
         declaredAt = declaredAt,
         details = details.toList(),
+        count = count,
     )
 
     private fun ensureOpen() {

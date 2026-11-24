@@ -335,6 +335,24 @@ private fun lineMessage(problem: KtFileContentLineProblem, line: String, at: Dec
             "Remove the .optional() modifier.",
         )
 
+        KtFileContentLineProblem.CountWithoutBounds -> Triple(
+            ".count() on line \"$line\" at $at has neither a minimum nor a maximum.",
+            "count asks how many declarations the line holds, and with no bound it asks nothing.",
+            "Write a range such as .count(2..10), or .count(min = 2), .count(max = 10), or remove .count().",
+        )
+
+        KtFileContentLineProblem.CountOutOfRange -> Triple(
+            "Line \"$line\" at $at writes ${parameter.orEmpty()}, which no number of declarations satisfies.",
+            "A count has a minimum of zero or more and a maximum of one or more that is not below the minimum.",
+            "Write a range such as .count(2..10); to allow none, prohibit the declaration with not.allow(...).",
+        )
+
+        KtFileContentLineProblem.CountOnProhibited -> Triple(
+            "Line \"$line\" at $at prohibits a declaration and also counts it.",
+            "A declaration a not. line matches is reported whatever their number, so the count would never be read.",
+            "Remove .count(...), or remove not. if the line is meant to allow declarations.",
+        )
+
         KtFileContentLineProblem.OutsideItsBlock -> Triple(
             "Line \"$line\" at $at is written with a value that belongs to another block.",
             "A line goes to the block whose vocabulary built it, so a value kept in a variable would put it " +
