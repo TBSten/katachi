@@ -21,7 +21,7 @@ private fun judged(imports: List<String>, block: KtFileContentScope.() -> Unit) 
  * The `package` line and the imports of a file as the IDE's JSON explains them: decided by the same functions as the
  * check, so what is not allowed here is exactly what the check rejects.
  */
-internal class ImportPackageExplanationSpec : FreeSpec({
+class ImportPackageExplanationSpec : FreeSpec({
     "package の行" - {
         "許す行に当たると Allowed で、その行を添える" {
             val explained = judged(emptyList()) { `package`("com.**"); allow(`class`, "*") }.explanation.packageLine.shouldNotBeNull()
