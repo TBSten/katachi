@@ -22,7 +22,7 @@ disappears and the shape does not change.
 
 | Path | When to use |
 |---|---|
-| `feature/*/src/main/kotlin/com/example/sample/feature/*/*ViewModel.kt` |  |
+| `feature/<feature>/src/main/kotlin/com/example/sample/feature/<feature>/<feature.pascalCase>ViewModel.kt` |  |
 
 ## Constraints
 

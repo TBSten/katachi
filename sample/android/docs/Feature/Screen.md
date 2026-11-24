@@ -28,7 +28,7 @@ a preview passes and wraps its body in is not checked.
 
 | Path | When to use |
 |---|---|
-| `feature/*/src/main/kotlin/com/example/sample/feature/*/*Screen.kt` |  |
+| `feature/<feature>/src/main/kotlin/com/example/sample/feature/<feature>/<feature.pascalCase>Screen.kt` |  |
 
 ## Constraints
 

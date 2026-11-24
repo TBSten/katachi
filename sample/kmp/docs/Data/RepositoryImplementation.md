@@ -22,7 +22,7 @@ passes the one `name` to both.
 
 | Path | When to use |
 |---|---|
-| `data/src/commonMain/kotlin/com/example/kmp/data/user/*RepositoryImpl.kt` |  |
+| `data/src/commonMain/kotlin/com/example/kmp/data/user/<name>RepositoryImpl.kt` |  |
 
 ## Constraints
 

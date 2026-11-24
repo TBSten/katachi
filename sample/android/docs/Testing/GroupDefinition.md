@@ -26,7 +26,7 @@ group says something.
 | Path | When to use |
 |---|---|
 | `architecture-test/src/test/kotlin/com/example/sample/**/*Group.kt` |  |
-| `architecture-test/src/test/kotlin/com/example/sample/*/*Group.kt` |  |
+| `architecture-test/src/test/kotlin/com/example/sample/<dir>/<name>Group.kt` |  |
 
 ## Examples
 

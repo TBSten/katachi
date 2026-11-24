@@ -27,8 +27,8 @@ reported as a violation.
 
 | Path | When to use |
 |---|---|
-| `feature/home/src/test/kotlin/com/example/sample/feature/home/Home*Test.kt` | For `:feature:home`. Start the file name with `Home` |
-| `feature/settings/src/test/kotlin/com/example/sample/feature/settings/Settings*Test.kt` | For `:feature:settings`. Start the file name with `Settings` |
+| `feature/home/src/test/kotlin/com/example/sample/feature/home/Home<name>Test.kt` | For `:feature:home`. Start the file name with `Home` |
+| `feature/settings/src/test/kotlin/com/example/sample/feature/settings/Settings<name>Test.kt` | For `:feature:settings`. Start the file name with `Settings` |
 
 ## Constraints
 

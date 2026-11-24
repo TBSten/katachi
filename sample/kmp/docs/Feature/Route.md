@@ -21,7 +21,7 @@ It is fixed to `commonMain` so that the same Route can be called from the Androi
 
 | Path | When to use |
 |---|---|
-| `feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/*Route.kt` |  |
+| `feature/<feature>/src/commonMain/kotlin/com/example/kmp/feature/<feature>/<feature.pascalCase>Route.kt` |  |
 
 ## Examples
 

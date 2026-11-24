@@ -25,9 +25,9 @@ generated as the template set `Data.NewRepository` (`--arg template=Data.NewRepo
 | Path | When to use |
 |---|---|
 | `data/src/main/kotlin/com/example/sample/data/user/UserRepository.kt` |  |
-| `data/src/main/kotlin/com/example/sample/data/user/User*Repository.kt` |  |
+| `data/src/main/kotlin/com/example/sample/data/user/User<name>Repository.kt` |  |
 | `data/src/main/kotlin/com/example/sample/data/settings/SettingsRepository.kt` |  |
-| `data/src/main/kotlin/com/example/sample/data/settings/Settings*Repository.kt` |  |
+| `data/src/main/kotlin/com/example/sample/data/settings/Settings<name>Repository.kt` |  |
 
 ## Constraints
 

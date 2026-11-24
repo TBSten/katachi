@@ -22,7 +22,7 @@ not tie the file name to the module.
 
 | Path | When to use |
 |---|---|
-| `feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/component/*.kt` |  |
+| `feature/<feature>/src/commonMain/kotlin/com/example/kmp/feature/<feature>/component/<name>.kt` |  |
 
 ## Constraints
 

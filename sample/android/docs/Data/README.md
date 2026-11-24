@@ -29,13 +29,13 @@ and think later".
 ```
 data/src/main/kotlin/com/example/sample/data/
   user/
-    UserRepository.kt           Repository interface
-    User*Repository.kt          Repository interface
-    UserRepositoryImpl.kt       Repository implementation
-    User*RepositoryImpl.kt      Repository implementation
+    UserRepository.kt                Repository interface
+    User<name>Repository.kt          Repository interface
+    UserRepositoryImpl.kt            Repository implementation
+    User<name>RepositoryImpl.kt      Repository implementation
   settings/
-    SettingsRepository.kt       Repository interface
-    Settings*Repository.kt      Repository interface
-    SettingsRepositoryImpl.kt   Repository implementation
-    Settings*RepositoryImpl.kt  Repository implementation
+    SettingsRepository.kt            Repository interface
+    Settings<name>Repository.kt      Repository interface
+    SettingsRepositoryImpl.kt        Repository implementation
+    Settings<name>RepositoryImpl.kt  Repository implementation
 ```

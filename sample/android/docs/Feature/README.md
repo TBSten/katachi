@@ -53,11 +53,11 @@ NavHost, the one line the Route role says `:app` grows by.
 
 ```
 feature/
-  */src/main/kotlin/com/example/sample/feature/*/
-    *Screen.kt                                                                   Screen
-    *ViewModel.kt                                                                ViewModel
-    *Route.kt                                                                    Route
-    component/*.kt                                                               Screen part
-  home/src/test/kotlin/com/example/sample/feature/home/Home*Test.kt              Screen test
-  settings/src/test/kotlin/com/example/sample/feature/settings/Settings*Test.kt  Screen test
+  <feature>/src/main/kotlin/com/example/sample/feature/<feature>/
+    <feature.pascalCase>Screen.kt                                                     Screen
+    <feature.pascalCase>ViewModel.kt                                                  ViewModel
+    <feature.pascalCase>Route.kt                                                      Route
+    component/<name>.kt                                                               Screen part
+  home/src/test/kotlin/com/example/sample/feature/home/Home<name>Test.kt              Screen test
+  settings/src/test/kotlin/com/example/sample/feature/settings/Settings<name>Test.kt  Screen test
 ```

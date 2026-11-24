@@ -28,7 +28,7 @@ into the package, so the template accepts only letters and digits (a value such 
 
 | Path | When to use |
 |---|---|
-| `src/main/kotlin/com/example/controller/*/*Controller.kt` |  |
+| `src/main/kotlin/com/example/controller/<resource>/<resource.pascalCase>Controller.kt` |  |
 
 ## Constraints
 

@@ -57,21 +57,20 @@ sits here with the generated files.
 ## Placement in this group
 
 ```
-testing/src/main/kotlin/com/example/sample/testing/Fake*.kt  Fake
+testing/src/main/kotlin/com/example/sample/testing/Fake<repository>.kt  Fake
 architecture-test/src/test/kotlin/com/example/sample/
-  *Test.kt                                                   Architecture test
-  *Spec.kt                                                   Architecture spec
-  ProjectArchitecture.kt                                     Definition entrypoint
-  DocumentSections.kt                                        Definition sections
+  *Test.kt                                                              Architecture test
+  *Spec.kt                                                              Architecture spec
+  ProjectArchitecture.kt                                                Definition entrypoint
+  DocumentSections.kt                                                   Definition sections
   **/
-    *Group.kt                                                Group definition
-    *Role.kt                                                 Role definition
-  */
-    *Group.kt                                                Group definition
-    *Role.kt                                                 Role definition
+    *Group.kt                                                           Group definition
+    *Role.kt                                                            Role definition
+  <dir>/<name>Group.kt                                                  Group definition
+  <group>/<name>Role.kt                                                 Role definition
 docs/
-  README.md                                                  Generated documentation
-  **/*.md                                                    Generated documentation
-snapshots/layout.txt                                         Layout snapshot
-katachi-baseline.json                                        baseline (ledger of held-back violations)
+  README.md                                                             Generated documentation
+  **/*.md                                                               Generated documentation
+snapshots/layout.txt                                                    Layout snapshot
+katachi-baseline.json                                                   baseline (ledger of held-back violations)
 ```

@@ -24,7 +24,7 @@ once it says something.
 | Path | When to use |
 |---|---|
 | `architecture-test/src/test/kotlin/com/example/sample/**/*Role.kt` |  |
-| `architecture-test/src/test/kotlin/com/example/sample/*/*Role.kt` |  |
+| `architecture-test/src/test/kotlin/com/example/sample/<group>/<name>Role.kt` |  |
 
 ## Examples
 

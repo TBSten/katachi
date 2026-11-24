@@ -21,7 +21,7 @@ at the API layer" is held.
 
 | Path | When to use |
 |---|---|
-| `src/main/kotlin/com/example/service/*Service.kt` |  |
+| `src/main/kotlin/com/example/service/<name>Service.kt` |  |
 
 ## Constraints
 

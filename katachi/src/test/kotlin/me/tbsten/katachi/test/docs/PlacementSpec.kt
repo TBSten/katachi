@@ -8,6 +8,7 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.pascalCase
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -142,6 +143,54 @@ class PlacementSpec : FreeSpec({
 
             arch.placementRows("domain/UseCase.md") shouldContainExactly listOf(
                 "| `core/domain/src/main/kotlin/useCase/*UseCase.kt` | ディレクトリの説明 |",
+            )
+        }
+    }
+
+    "capture の名前" - {
+        "名前の付いた * は <名前> で出る" {
+            val arch = architecture {
+                "feature".group {
+                    "Screen".role {
+                        layout {
+                            "feature" / capture("feature") / "src/main/kotlin" / "${capture("name")}Screen".ktFile()
+                        }
+                    }
+                }
+            }
+
+            arch.placementRows("feature/Screen.md") shouldContainExactly listOf(
+                "| `feature/<feature>/src/main/kotlin/<name>Screen.kt` |  |",
+            )
+        }
+
+        "名前のない * はそのまま出る" {
+            val arch = architecture {
+                "feature".group {
+                    "Screen".role {
+                        layout { "feature" / capture("feature") / "src/main/kotlin" / "*Screen".ktFile() }
+                    }
+                }
+            }
+
+            arch.placementRows("feature/Screen.md") shouldContainExactly listOf(
+                "| `feature/<feature>/src/main/kotlin/*Screen.kt` |  |",
+            )
+        }
+
+        "派生した名前は <名前.変換> で出る" {
+            val arch = architecture {
+                "api".group {
+                    "Controller".role {
+                        layout {
+                            "controller" / capture("resource") / "${capture("resource").pascalCase}Controller".ktFile()
+                        }
+                    }
+                }
+            }
+
+            arch.placementRows("api/Controller.md") shouldContainExactly listOf(
+                "| `controller/<resource>/<resource.pascalCase>Controller.kt` |  |",
             )
         }
     }

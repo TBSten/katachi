@@ -22,7 +22,7 @@ decides which screen to go to, and a feature never imports another feature's Rou
 
 | Path | When to use |
 |---|---|
-| `feature/*/src/main/kotlin/com/example/sample/feature/*/*Route.kt` |  |
+| `feature/<feature>/src/main/kotlin/com/example/sample/feature/<feature>/<feature.pascalCase>Route.kt` |  |
 
 ## Constraints
 

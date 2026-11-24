@@ -24,7 +24,7 @@ the module's name; the check does not tie the file name to the module.
 
 | Path | When to use |
 |---|---|
-| `feature/*/src/main/kotlin/com/example/sample/feature/*/component/*.kt` |  |
+| `feature/<feature>/src/main/kotlin/com/example/sample/feature/<feature>/component/<name>.kt` |  |
 
 ## Constraints
 

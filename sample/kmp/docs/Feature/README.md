@@ -39,12 +39,13 @@ screens. Platform differences stay inside ExpectDeclaration and ActualImplementa
 ## Placement in this group
 
 ```
-feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/
-  *Screen.kt      Screen
-  *ViewModel.kt   ViewModel
-  *Route.kt       Route
-  component/*.kt  Screen component
-  *Preview.kt     Screen preview
+feature/
+  <feature>/src/commonMain/kotlin/com/example/kmp/feature/<feature>/
+    <feature.pascalCase>Screen.kt                                Screen
+    <feature.pascalCase>ViewModel.kt                             ViewModel
+    <feature.pascalCase>Route.kt                                 Route
+    component/<name>.kt                                          Screen component
+  */src/commonMain/kotlin/com/example/kmp/feature/*/*Preview.kt  Screen preview
 ```
 
 ## Forbidden contents
