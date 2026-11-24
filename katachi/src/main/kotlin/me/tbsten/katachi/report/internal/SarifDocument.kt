@@ -135,6 +135,10 @@ internal fun sarifMessageOf(violation: Violation): String {
     return if (rest.isEmpty()) block.first() else rest.joinToString("\n")
 }
 
+// What a reader should mark: the whole file (a backend that answers per file, so no declaration), or one declaration in it.
+private const val TARGET_FILE: String = "file"
+private const val TARGET_DECLARATION: String = "declaration"
+
 private fun propertiesOf(violation: Violation): SarifJson = sarifObject {
     put("kind", violation.kind.name)
     put("severity", violation.severity.name)
@@ -149,6 +153,7 @@ private fun propertiesOf(violation: Violation): SarifJson = sarifObject {
             put("role", violation.role.qualifiedName)
             put("constraint", violation.constraintName)
             put("declaration", violation.declaration)
+            put("target", if (violation.declaration == null) TARGET_FILE else TARGET_DECLARATION)
             put("layoutPath", violation.layoutPath)
             put("declaredAt", violation.reportedDeclaredAt.toString())
         }
