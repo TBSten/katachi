@@ -27,9 +27,8 @@ internal enum class GlobGroupKind { Single, Recursive }
  * `\` to mean it literally. Anything the syntax cannot read is rejected with a
  * [KatachiGlobSyntaxException] rather than guessed at.
  *
- * A whole-segment `*` (as in `feature` then `*` below it) is still at least one character in practice, because a
- * real path has no empty level. A `*` mixed with other characters (`app_icon*.xml`) may
- * match nothing and then captures `""`.
+ * A path with an empty level (`src//Foo.kt`, `/Foo.kt`, `src/`) never matches, so a whole-segment `*` is at least
+ * one character. A `*` mixed with other characters (`app_icon*.xml`) may match nothing and then captures `""`.
  *
  * The same class matches module paths (`:` separated) and file paths (`/` separated): the
  * separator is the only difference, so `*` and `**` cannot come to mean two different things.
@@ -50,6 +49,7 @@ public class Glob private constructor(
     internal val separator: Char,
     private val segments: List<String>,
     private val regex: Regex,
+    private val rooted: Boolean,
     // Lets a pattern count its own wildcards without a second parser (see ModulePattern.wildcardPlaceholders).
     internal val groupKinds: List<GlobGroupKind>,
     internal val groupSegments: List<Int>,
@@ -62,10 +62,10 @@ public class Glob private constructor(
     /**
      * Whether [path] matches in full.
      */
-    public fun matches(path: String): Boolean = regex.matches(path)
+    public fun matches(path: String): Boolean = matchEntireOrNull(path) != null
 
     internal fun match(path: String): GlobMatch? {
-        val result = regex.matchEntire(path) ?: return null
+        val result = matchEntireOrNull(path) ?: return null
         val wildcards = mutableListOf<String>()
         groupKinds.forEachIndexed { index, kind ->
             val captured = result.groupValues.getOrElse(index + 1) { "" }
@@ -81,14 +81,29 @@ public class Glob private constructor(
     // Unlike match, `**` is not split into levels and is kept even when it matched nothing (""), so the n-th entry
     // belongs to the n-th wildcard.
     internal fun matchGroups(path: String): List<String>? {
-        val result = regex.matchEntire(path) ?: return null
+        val result = matchEntireOrNull(path) ?: return null
         return groupKinds.indices.map { index -> result.groupValues.getOrElse(index + 1) { "" } }
     }
 
     // A `**` that matched no level is null.
     internal fun matchRanges(path: String): List<IntRange?>? {
-        val result = regex.matchEntire(path) ?: return null
+        val result = matchEntireOrNull(path) ?: return null
         return groupKinds.indices.map { index -> result.groups[index + 1]?.range }
+    }
+
+    // The regex alone would let `*` take "" as a whole level, so `src//Foo.kt` would match `src/*/Foo.kt`.
+    private fun matchEntireOrNull(path: String): MatchResult? =
+        if (hasEmptyLevel(path)) null else regex.matchEntire(path)
+
+    private fun hasEmptyLevel(path: String): Boolean {
+        var levelStart = if (rooted && path.firstOrNull() == separator) 1 else 0
+        if (levelStart == path.length) return true
+        for (index in levelStart until path.length) {
+            if (path[index] != separator) continue
+            if (index == levelStart) return true
+            levelStart = index + 1
+        }
+        return levelStart == path.length
     }
 
     // Module paths only: a `**` in the middle would shift the index of later `*`s from one match to the next.
@@ -183,6 +198,7 @@ public class Glob private constructor(
                 separator = separator,
                 segments = segments,
                 regex = Regex(expression.toString()),
+                rooted = leadingSeparator,
                 groupKinds = kinds.toList(),
                 groupSegments = groupSegments.toList(),
                 literalPrefix = if (leadingSeparator) emptyList() else literalPrefixOf(segmentTokens),
