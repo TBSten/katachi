@@ -12,5 +12,11 @@ internal object KatachiIcons {
             .getOrElse { EmptyIcon.create(GUTTER_ICON_SIZE) }
     }
 
+    /** The 16x16 katachi icon of the tool window, for the run configuration of a `*.katachi.kts` (KATACHI-100). */
+    val tool: Icon by lazy {
+        sdkCall("load the katachi icon") { IconLoader.getIcon("/icons/katachi.svg", KatachiIcons::class.java) }
+            .getOrElse { EmptyIcon.ICON_16 }
+    }
+
     private const val GUTTER_ICON_SIZE = 12
 }

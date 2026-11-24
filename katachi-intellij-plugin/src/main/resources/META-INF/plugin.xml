@@ -28,8 +28,9 @@
         <p>AI agents can use katachi through the JetBrains MCP Server: they read the roles, templates and violations, run the check
         and, once you allow it in Settings &gt; Tools &gt; katachi, generate from a template.</p>
         <p>A <code>*.katachi.kts</code> (katachi's commands written as a Kotlin script) is completed with the definition the
-        installed katachi CLI provides (<code>brew install tbsten/tap/katachi</code>). Without a CLI the script shows a notification
-        on how to get one, and nothing else of the plugin changes.</p>
+        installed katachi CLI provides (<code>brew install tbsten/tap/katachi</code>), and a &#9654; in its gutter runs it with that CLI
+        (the same as <code>katachi &lt;file&gt;.katachi.kts</code>; the output goes to the Run tool window). Without a CLI the script shows a notification
+        on how to get one, has no &#9654;, and nothing else of the plugin changes.</p>
         <p>Needs a Gradle project that applies the katachi Gradle plugin 0.2.0 or later (<code>id("me.tbsten.katachi")</code>);
         the gutter, the violations and templateSets need 0.3.0 or later.
         See <a href="https://tbsten.github.io/katachi/guides/generate-code-from-template/">Generate code from template</a>.</p>
@@ -132,6 +133,10 @@
         <editorNotificationProvider implementation="me.tbsten.katachi.intellij.ide.authoring.errors.DefinitionErrorNotificationProvider"/>
         <!-- A *.katachi.kts without its definition, because the katachi CLI is missing, too old, or its answer could not be read (KATACHI-101). -->
         <editorNotificationProvider implementation="me.tbsten.katachi.intellij.ide.script.KatachiScriptNotificationProvider"/>
+        <!-- The ▶ of a *.katachi.kts, which runs it with the katachi CLI (KATACHI-100): the gutter, Run in the context menu, and the configuration they make. Only where the CLI has given the script's definition. -->
+        <runLineMarkerContributor language="kotlin" implementationClass="me.tbsten.katachi.intellij.ide.script.KatachiScriptRunLineMarkerContributor"/>
+        <configurationType implementation="me.tbsten.katachi.intellij.ide.script.KatachiScriptConfigurationType"/>
+        <runConfigurationProducer implementation="me.tbsten.katachi.intellij.ide.script.KatachiScriptRunProducer"/>
         <!-- The ◆ of a definition file: a role, and a .template { } (ide-authoring design 4.3). Its own switch in Settings | Editor | General | Gutter Icons. -->
         <codeInsight.lineMarkerProvider language="kotlin" implementationClass="me.tbsten.katachi.intellij.ide.authoring.gutter.KatachiDefinitionLineMarkerProvider"/>
         <!-- How many files a layout line holds, at the end of the line (design 4.3), and its group in Settings | Editor | Inlay Hints | Code Vision. -->
