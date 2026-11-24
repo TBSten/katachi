@@ -362,6 +362,7 @@
             "role": "domain.UseCase",
             "constraint": "外から使えること",
             "declaration": "GetUserUseCase",
+            "target": "declaration",
             "layoutPath": "core/domain",
             "declaredAt": "UseCaseRole.kt:16"
           }

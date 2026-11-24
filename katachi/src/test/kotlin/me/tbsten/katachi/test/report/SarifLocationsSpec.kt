@@ -65,6 +65,21 @@ class SarifLocationsSpec : FreeSpec({
             relatedLocationsOf(sarif) shouldContain "\"text\": \"Declared here\""
         }
 
+        "宣言を持たない UnsatisfiedFileConstraint は properties.target がファイル、持つものは宣言になる" {
+            fun target(declaration: String?): String = UnsatisfiedFileConstraint(
+                path = "core/domain/src/main/kotlin/com/example/domain/GetUserUseCase.kt",
+                declaration = declaration,
+                line = null,
+                role = roles.useCase,
+                constraintName = null,
+                layoutPath = null,
+                declaredAt = useCaseSite,
+            ).sarifWith(tree.context())
+            target(null) shouldContain "\"target\": \"file\""
+            target(null) shouldNotContain "\"declaration\""
+            target("GetUserUseCase") shouldContain "\"target\": \"declaration\""
+        }
+
         "規則の行（ruleDeclaredAt）があれば、relatedLocations と properties の宣言元はテキストの報告と同じその行" {
             val violation = UnsatisfiedFileConstraint(
                 path = "core/domain/src/main/kotlin/com/example/domain/GetUserUseCase.kt",

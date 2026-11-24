@@ -60,6 +60,7 @@
             "role": "Screen",
             "constraint": "ktFileContent",
             "declaration": "GetUserUseCaseImpl",
+            "target": "declaration",
             "declaredAt": "KtFileContentSarifSpec.kt:36"
           }
         },
@@ -87,6 +88,7 @@
             "role": "Screen",
             "constraint": "ktFileContent",
             "declaration": "DefaultGetUserUseCase",
+            "target": "declaration",
             "declaredAt": "KtFileContentSarifSpec.kt:38"
           }
         },
@@ -117,6 +119,7 @@
             "role": "Screen",
             "constraint": "ktFileContent",
             "declaration": "HomeViewModel",
+            "target": "declaration",
             "declaredAt": "KtFileContentSarifSpec.kt:37"
           }
         },
@@ -144,6 +147,7 @@
             "role": "Screen",
             "constraint": "ktFileContent",
             "declaration": "DefaultHomeViewModel",
+            "target": "declaration",
             "declaredAt": "KtFileContentSarifSpec.kt:38"
           }
         },
@@ -171,6 +175,7 @@
             "role": "Screen",
             "constraint": "ktFileContent",
             "declaration": "CounterViewModel.count",
+            "target": "declaration",
             "declaredAt": "KtFileContentSarifSpec.kt:49"
           }
         }
