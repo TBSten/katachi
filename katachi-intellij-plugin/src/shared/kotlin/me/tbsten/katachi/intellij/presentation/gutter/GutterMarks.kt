@@ -32,7 +32,8 @@ internal data class GutterInput(
  * - Only a file the definition [MatchOutcome.Matched] gets a ◆.
  * - A `.kt` file one of whose roles' `ktFileContent { }` judged its top-level declarations
  *   (`declarationsChecked`, `false` only when the file could not be explained) gets one per
- *   declaration, saying what allowed it.
+ *   declaration, saying what allowed it, and one per member of an allowed class, object or interface (KATACHI-93),
+ *   right after it.
  * - Any other `.kt` file gets one, at its first declaration (or its head); `.kts` and other files one at the head.
  *
  * ```kotlin
@@ -58,16 +59,50 @@ internal object GutterMarks {
         val bound = restricting.mapValues { (_, explanation) ->
             DeclarationBinding.bind(input.declarations, explanation?.declarations?.declarations.orEmpty())
         }
-        return input.declarations.mapIndexed { index, declaration ->
+        return input.declarations.flatMapIndexed { index, declaration ->
             val roleMarks = roles.map { role ->
                 RoleMark(role, bound[role]?.get(index)?.explanation, missingOf(role, input.explanations), restricting[role]?.constraint?.declaredAt)
             }
-            GutterMark(
+            val mark = GutterMark(
                 target = MarkTarget.Declaration(declaration),
                 placement = MarkPlacement.PerDeclaration,
                 roles = roleMarks,
                 stale = input.stale,
                 tooltip = GutterTooltips.of(roleMarks, input.stale, reloadFailure, strings),
+            )
+            listOf(mark) + membersOf(declaration, roleMarks, input.stale, reloadFailure, strings)
+        }
+    }
+
+    /**
+     * The ◆ of the members of one declaration (KATACHI-93): each takes what the role's `ktFileContent { }` said of the
+     * member, bound by kind and name as the declaration was. A member is drawn when some role judged the members of
+     * [declaration]; a katachi from before members were explained (its answer has none) draws none, rather than a
+     * "not computed" ◆ on every member. A member the answer does not know (written after it) is `NotComputed`.
+     */
+    private fun membersOf(
+        declaration: SourceDeclaration,
+        roleMarks: List<RoleMark>,
+        stale: Boolean,
+        reloadFailure: LoadFailure?,
+        strings: GutterStrings,
+    ): List<GutterMark> {
+        if (declaration.members.isEmpty()) return emptyList()
+        val bound = roleMarks.map { roleMark ->
+            val judged = (roleMark.explanation as? BoundExplanation.Explained)?.declaration?.members.orEmpty()
+            judged.takeIf { it.isNotEmpty() }?.let { DeclarationBinding.bind(declaration.members, it) }
+        }
+        if (bound.all { it == null }) return emptyList()
+        return declaration.members.mapIndexed { index, member ->
+            val memberMarks = roleMarks.mapIndexed { roleIndex, roleMark ->
+                RoleMark(roleMark.role, bound[roleIndex]?.get(index)?.explanation, emptyList(), roleMark.constraintSite)
+            }
+            GutterMark(
+                target = MarkTarget.Declaration(member),
+                placement = MarkPlacement.PerDeclaration,
+                roles = memberMarks,
+                stale = stale,
+                tooltip = GutterTooltips.of(memberMarks, stale, reloadFailure, strings),
             )
         }
     }

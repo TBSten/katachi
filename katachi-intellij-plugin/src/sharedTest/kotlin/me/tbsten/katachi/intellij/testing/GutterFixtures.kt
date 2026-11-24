@@ -90,7 +90,8 @@ internal fun declarationModel(
     verdict: DeclarationVerdict = DeclarationVerdict.Allowed,
     rules: List<RuleRef> = if (verdict == DeclarationVerdict.Unexpected) emptyList() else listOf(RuleRef("${kind.jsonName} $name", DeclarationSiteRef("Role.kt", 10))),
     difference: String? = null,
-): DeclarationModel = DeclarationModel(kind, name, line, verdict, rules, difference)
+    members: List<DeclarationModel> = emptyList(),
+): DeclarationModel = DeclarationModel(kind, name, line, verdict, rules, difference, members)
 
 /** katachi's explanation of [file]; restricting top-level declarations unless [declarationsChecked] says otherwise. */
 internal fun fileDeclarations(

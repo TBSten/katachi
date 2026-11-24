@@ -54,7 +54,7 @@ internal object GutterPlacement {
 
     private fun leafOf(file: PsiFile, target: MarkTarget, sources: List<SourceDeclarationPsi>): PsiElement? = when (target) {
         // By identity: GutterMarks hands back the instances it was given, and two overloads on one line are equal values.
-        is MarkTarget.Declaration -> sources.firstOrNull { it.declaration === target.declaration }
+        is MarkTarget.Declaration -> sources.flatMap { it.withMembers() }.firstOrNull { it.declaration === target.declaration }
             ?.let { source -> sdkCall("find the name of ${source.declaration.name}") { source.leaf.element }.getOrNull() }
         MarkTarget.FileHead -> headOf(file)
     }

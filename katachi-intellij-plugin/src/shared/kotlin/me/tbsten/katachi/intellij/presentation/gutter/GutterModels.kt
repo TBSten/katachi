@@ -21,6 +21,12 @@ internal data class SourceDeclaration(
     val name: String,
     /** 1-based; the first annotation's line when there is one, as katachi counts it. */
     val line: Int,
+    /**
+     * The members written directly in a top-level class, object or interface (a property of its primary constructor,
+     * what is in its `{ }`, an enum entry), in the order they are written. Empty for a member itself: a ◆ goes to a
+     * declaration and what it holds, not deeper (KATACHI-93).
+     */
+    val members: List<SourceDeclaration> = emptyList(),
 )
 
 /** Whether a file gets a ◆ per top-level declaration or one for the file (design 2.1). */
