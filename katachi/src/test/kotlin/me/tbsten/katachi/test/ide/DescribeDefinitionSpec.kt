@@ -184,6 +184,25 @@ class DescribeDefinitionSpec : FreeSpec({
             definition.problems.shouldBeEmpty()
         }
 
+        "package の行と import は、判定と許した行つきで書き、説明しない側は null のまま" {
+            val files = explainedDefinition().definitionOf(explainedProject()).roles.first { it.name == "Service" }
+                .constraints.first { it.name == "explains itself" }.fileDeclarations.shouldNotBeNull()
+
+            val healthy = files.first { it.file == "src/service/HealthService.kt" }
+            healthy.packageLine.shouldNotBeNull().let { line ->
+                line.name shouldBe "com.example"
+                line.line shouldBe 1
+                line.verdict shouldBe "Allowed"
+                line.rules.map { it.text } shouldBe listOf("package(\"com.**\")")
+            }
+            healthy.imports.shouldNotBeNull().map { "${it.path} ${it.line} ${it.verdict}" } shouldBe listOf("java.util.List 2 Unexpected")
+            // A file the constraint says nothing of the package for has none: an older katachi writes none either.
+            files.first { it.file == "src/service/UserServiceBad.kt" }.let {
+                it.packageLine.shouldBeNull()
+                it.imports.shouldBeNull()
+            }
+        }
+
         "DeclarationExplaining を実装しない制約は null" {
             val service = explainedDefinition().definitionOf(explainedProject()).roles.first { it.name == "Service" }
             service.constraints.first { it.name == "does not" }.fileDeclarations.shouldBeNull()

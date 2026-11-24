@@ -21,7 +21,24 @@ internal data class SourceDeclaration(
     val name: String,
     /** 1-based; the first annotation's line when there is one, as katachi counts it. */
     val line: Int,
+    /**
+     * The members written directly in a top-level class, object or interface (a property of its primary constructor,
+     * what is in its `{ }`, an enum entry), in the order they are written. Empty for a member itself: a ◆ goes to a
+     * declaration and what it holds, not deeper (KATACHI-93).
+     */
+    val members: List<SourceDeclaration> = emptyList(),
 )
+
+/**
+ * The `package` line and the imports of a `.kt` file as the PSI has them now (KATACHI-98): [SourceDeclaration]s of kind
+ * `Package` / `Import`, named by the package and the imported path, which the gutter binds to katachi's judgement of the
+ * lines as it binds a declaration.
+ */
+internal data class SourceHeader(val packageLine: SourceDeclaration?, val imports: List<SourceDeclaration>) {
+    companion object {
+        val NONE: SourceHeader = SourceHeader(null, emptyList())
+    }
+}
 
 /** Whether a file gets a ◆ per top-level declaration or one for the file (design 2.1). */
 internal enum class MarkPlacement { PerDeclaration, OnePerFile }

@@ -71,8 +71,70 @@ public class FileDeclarationsExplanation(
      * When set, [declarations] and [missing] are empty.
      */
     public val unexplainedReason: String?,
+    /**
+     * How the file's `package` line was decided, or `null` when the constraint does not read the package, the file declares none, or
+     * the line could not be placed.
+     */
+    public val packageLine: PackageExplanation? = null,
+    /**
+     * How each import of the file was decided, in the order they are written; `null` when the constraint does not read imports.
+     * An import the backend cannot place at a line is left out.
+     */
+    public val imports: List<ImportExplanation>? = null,
 ) {
     override fun toString(): String = "FileDeclarationsExplanation($file, ${declarations.size} declarations)"
+}
+
+/**
+ * How the `package` line of a file was decided, and by which `package(...)` lines.
+ *
+ * ## Example 1: say which line allowed the package
+ * ```kt
+ * val line: PackageExplanation? = file.packageLine
+ * if (line?.verdict == DeclarationVerdict.Allowed) println(line.rules.first().declaredAt)
+ * ```
+ *
+ * @constructor Takes the package and what was decided about it.
+ */
+@InternalKatachiApi
+public class PackageExplanation(
+    /** The package as written. */
+    public val name: String,
+    /** The line it is written at. */
+    public val line: Int,
+    /**
+     * [DeclarationVerdict.Allowed] (an allowed `package(...)` line matches it), [DeclarationVerdict.Prohibited] (a `not.package(...)`
+     * line does) or [DeclarationVerdict.Unexpected] (none does).
+     */
+    public val verdict: DeclarationVerdict,
+    /** The lines that decided it: every allowed line it matches, or the prohibiting one; empty for [DeclarationVerdict.Unexpected]. */
+    public val rules: List<RuleExplanation>,
+) {
+    override fun toString(): String = "PackageExplanation($name, $verdict)"
+}
+
+/**
+ * How one import of a file was decided, and by which `import(...)` lines.
+ *
+ * ## Example 1: list the imports the check rejects
+ * ```kt
+ * file.imports.orEmpty().filterNot { it.verdict.isAllowed }.map { "${it.path} (line ${it.line})" }
+ * ```
+ *
+ * @constructor Takes the import and what was decided about it.
+ */
+@InternalKatachiApi
+public class ImportExplanation(
+    /** The imported path as written, a star import as `a.b.*`. */
+    public val path: String,
+    /** The line it is written at. */
+    public val line: Int,
+    /** [DeclarationVerdict.Allowed], [DeclarationVerdict.Prohibited] or [DeclarationVerdict.Unexpected], as for [PackageExplanation]. */
+    public val verdict: DeclarationVerdict,
+    /** The lines that decided it: every allowed line it matches, or the prohibiting one; empty for [DeclarationVerdict.Unexpected]. */
+    public val rules: List<RuleExplanation>,
+) {
+    override fun toString(): String = "ImportExplanation($path, $verdict)"
 }
 
 /**

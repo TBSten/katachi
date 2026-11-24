@@ -68,7 +68,7 @@ internal object ExplainByFileName : FileConstraint, DeclarationExplaining {
                     declarationsChecked = true,
                     declarations = listOf(DeclarationExplanation("class", name, 3, DeclarationVerdict.Allowed, listOf(rule), null)),
                     missing = emptyList(),
-                    unexplainedReason = null,
+                    unexplainedReason = null, packageLine = me.tbsten.katachi.dsl.internal.PackageExplanation("com.example", 1, DeclarationVerdict.Allowed, listOf(RuleExplanation("package(\"com.**\")", SITE))), imports = listOf(me.tbsten.katachi.dsl.internal.ImportExplanation("java.util.List", 2, DeclarationVerdict.Unexpected, emptyList())),
                 )
             }
         }

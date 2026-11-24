@@ -136,6 +136,18 @@ private fun DefinitionJsonReader.fileDeclarations() = FileDeclarationsModel(
     declarations = array("declarations").map { it.declaration() },
     missing = array("missing").map { it.rule() },
     unexplainedReason = nullableString("unexplainedReason"),
+    packageLine = optionalNullableObj("packageLine")?.line(SourceDeclarationKind.Package, nameKey = "name"),
+    imports = optionalNullableArray("imports")?.map { it.line(SourceDeclarationKind.Import, nameKey = "path") },
+)
+
+// The `package` line and an import are judged as a declaration is, by the lines that allowed or prohibited them.
+private fun DefinitionJsonReader.line(kind: SourceDeclarationKind, nameKey: String): DeclarationModel = DeclarationModel(
+    kind = kind,
+    name = string(nameKey),
+    line = int("line"),
+    verdict = DeclarationVerdict.of(string("verdict")),
+    rules = array("rules").map { it.rule() },
+    difference = null,
 )
 
 private fun DefinitionJsonReader.declaration(): DeclarationModel = DeclarationModel(

@@ -49,9 +49,9 @@ internal class SourceDeclarationsTest : AnalysisTestBase() {
                 SourceDeclaration(SourceDeclarationKind.Class, "Plain", 6),
                 SourceDeclaration(SourceDeclarationKind.Interface, "Port", 7),
                 SourceDeclaration(SourceDeclarationKind.Object, "Single", 8),
-                SourceDeclaration(SourceDeclarationKind.Class, "Color", 9),
+                SourceDeclaration(SourceDeclarationKind.Class, "Color", 9, listOf(SourceDeclaration(SourceDeclarationKind.Entry, "Red", 9))),
                 SourceDeclaration(SourceDeclarationKind.Class, "Marker", 10),
-                SourceDeclaration(SourceDeclarationKind.Class, "Value", 11),
+                SourceDeclaration(SourceDeclarationKind.Class, "Value", 11, listOf(SourceDeclaration(SourceDeclarationKind.Val, "x", 11))),
                 SourceDeclaration(SourceDeclarationKind.Fun, "top", 12),
                 SourceDeclaration(SourceDeclarationKind.Fun, "shout", 13),
                 SourceDeclaration(SourceDeclarationKind.Val, "constant", 14),
@@ -64,6 +64,42 @@ internal class SourceDeclarationsTest : AnalysisTestBase() {
             ),
             declarationsOf("Every.kt", everyKind),
         )
+    }
+
+    fun `test クラスのメンバは 主コンストラクタの val と var のあとに本体の宣言を 書いた順で読み 名前の無いものは飛ばす`() {
+        val text = """
+            package a
+
+            class Repo(private val db: Db, var cache: Cache, plain: Int) : Base() {
+                init { }
+                constructor() : this(Db(), Cache(), 0)
+                @Deprecated("x")
+                fun load() = 1
+                val size = 2
+                companion object { const val NAME = "x" }
+                class Nested { fun deep() = 1 }
+            }
+            object Single { fun go() = 1 }
+            interface Port { fun call() }
+            fun top() = 1
+        """.trimIndent()
+        val declarations = declarationsOf("Repo.kt", text)
+        fun members(name: String) = declarations.first { it.name == name }.members.map { Triple(it.kind, it.name, it.line) }
+        assertEquals(
+            listOf(
+                Triple(SourceDeclarationKind.Val, "db", 3),
+                Triple(SourceDeclarationKind.Var, "cache", 3),
+                Triple(SourceDeclarationKind.Fun, "load", 6),
+                Triple(SourceDeclarationKind.Val, "size", 8),
+                Triple(SourceDeclarationKind.Class, "Nested", 10),
+            ),
+            members("Repo"),
+        )
+        assertEquals(listOf(Triple(SourceDeclarationKind.Fun, "go", 12)), members("Single"))
+        assertEquals(listOf(Triple(SourceDeclarationKind.Fun, "call", 13)), members("Port"))
+        assertEquals(emptyList<Any>(), members("top"))
+        // Only what a top-level declaration holds: the members of a member are not read.
+        assertEquals(emptyList<SourceDeclaration>(), declarations.first { it.name == "Repo" }.members.first { it.name == "Nested" }.members)
     }
 
     fun `test 宣言の鍵は名前の識別子のリーフ`() {

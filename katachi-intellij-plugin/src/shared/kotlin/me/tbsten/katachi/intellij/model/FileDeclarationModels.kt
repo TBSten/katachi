@@ -18,6 +18,16 @@ internal data class FileDeclarationsModel(
     val missing: List<RuleRef>,
     /** Why the block could not be judged for this file; [declarations] is empty then. */
     val unexplainedReason: String?,
+    /**
+     * How the `package` line was judged (a [DeclarationModel] of kind [SourceDeclarationKind.Package] named by the package), or `null`:
+     * katachi is older than this key, or the file declares no package.
+     */
+    val packageLine: DeclarationModel? = null,
+    /**
+     * How each import was judged, in the order written (kind [SourceDeclarationKind.Import], named by the imported path); `null` when
+     * katachi is older than this key, which is not the same as a file with no import (empty).
+     */
+    val imports: List<DeclarationModel>? = null,
 )
 
 internal data class DeclarationModel(
@@ -44,7 +54,7 @@ internal data class DeclarationModel(
 /** One line of the allow list as it was evaluated for the file, and where it was written. */
 internal data class RuleRef(val text: String, val declaredAt: DeclarationSiteRef?)
 
-/** What kind of top-level declaration. A name this plugin does not know is [Unknown]. */
+/** What kind of declaration: a top-level one, or a member of one (an enum [Entry]). A name this plugin does not know is [Unknown]. */
 internal sealed interface SourceDeclarationKind : JsonNamed {
     data object Class : SourceDeclarationKind { override val jsonName: String get() = "class" }
     data object Interface : SourceDeclarationKind { override val jsonName: String get() = "interface" }
@@ -53,10 +63,19 @@ internal sealed interface SourceDeclarationKind : JsonNamed {
     data object Val : SourceDeclarationKind { override val jsonName: String get() = "val" }
     data object Var : SourceDeclarationKind { override val jsonName: String get() = "var" }
     data object TypeAlias : SourceDeclarationKind { override val jsonName: String get() = "typealias" }
+
+    /** The `package` line of a file: judged by `package(...)` lines, not a declaration of the allow list. */
+    data object Package : SourceDeclarationKind { override val jsonName: String get() = "package" }
+
+    /** An `import` line of a file: judged by `import(...)` lines. */
+    data object Import : SourceDeclarationKind { override val jsonName: String get() = "import" }
+
+    /** An enum entry: only a member of an enum class. */
+    data object Entry : SourceDeclarationKind { override val jsonName: String get() = "entry" }
     data class Unknown(override val jsonName: String) : SourceDeclarationKind
 
     companion object {
-        val known: List<SourceDeclarationKind> = listOf(Class, Interface, Object, Fun, Val, Var, TypeAlias)
+        val known: List<SourceDeclarationKind> = listOf(Class, Interface, Object, Fun, Val, Var, TypeAlias, Entry)
         fun of(name: String): SourceDeclarationKind = known.firstOrNull { it.jsonName == name } ?: Unknown(name)
     }
 }
