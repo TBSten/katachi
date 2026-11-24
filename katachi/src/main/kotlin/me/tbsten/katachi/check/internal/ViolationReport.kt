@@ -48,7 +48,9 @@ internal fun List<Violation>.report(
         else -> minOf(warnings.size, maxOf(1, budget / 4))
     }
     val errorBudget = budget - warningBudget
-    val shownErrors = shownIndicesOf(errors, errorBudget).map { errors[it] }
+    // One wrong directory name fails every file under it; they share a block so they do not spend the whole budget.
+    val (errorBlocks, errorGroups) = errors.sharingBlocks()
+    val shownErrors = shownIndicesOf(errorBlocks, errorBudget).map { errorBlocks[it] }
     val shownWarnings = shownIndicesOf(warnings, warningBudget).map { warnings[it] }
 
     return buildString {
@@ -56,9 +58,10 @@ internal fun List<Violation>.report(
             append(summaryLine(errors, warnings.size))
             for (violation in shownErrors) {
                 append("\n\n")
-                append(blockOf(violation, projectRoot?.value).joinToString("\n"))
+                val sharing = (violation as? CaptureMismatch)?.let { errorGroups[it] }.orEmpty()
+                append((blockOf(violation, projectRoot?.value) + sharedFilesLines(sharing, projectRoot?.value)).joinToString("\n"))
             }
-            truncationLine(errors, shownErrors, noun = "", withBreakdown = true)?.let {
+            truncationLine(errorBlocks, shownErrors, noun = "", withBreakdown = true)?.let {
                 append("\n\n$it\n$STEP$TRUNCATION_HINT")
             }
             // After the truncation line, and outside it: these are the only sentences saying
@@ -77,6 +80,55 @@ internal fun List<Violation>.report(
             truncationLine(warnings, shownWarnings, noun = " warnings", withBreakdown = false)
                 ?.let { append("\n\n$it\n$STEP$TRUNCATION_HINT") }
         }
+    }
+}
+
+private const val SHARED_FILES_SHOWN: Int = 5
+
+// The first of each group of CaptureMismatch is its block; the rest are listed in it, so the summary still counts every file.
+private fun List<Violation>.sharingBlocks(): Pair<List<Violation>, Map<CaptureMismatch, List<CaptureMismatch>>> {
+    val groups = LinkedHashMap<List<Any?>, MutableList<CaptureMismatch>>()
+    val blocks = ArrayList<Violation>()
+    for (violation in this) {
+        if (violation !is CaptureMismatch) {
+            blocks += violation
+            continue
+        }
+        val key = violation.sharedBlockKey()
+        val group = groups[key]
+        if (group == null) {
+            groups[key] = mutableListOf(violation)
+            blocks += violation
+        } else {
+            group += violation
+        }
+    }
+    return blocks to groups.values.filter { it.size > 1 }.associateBy { it.first() }
+}
+
+// Same role, same declaration, same wrong levels with the same values, under the same directory down to the last
+// wrong level: files of one misnamed directory. A wrong file name is its own level, so it never shares.
+private fun CaptureMismatch.sharedBlockKey(): List<Any?> {
+    val failed = occurrences.filter { it.expected != null && it.expected != it.value }
+    val lastFailedLevel = failed.maxOfOrNull { it.level } ?: return listOf(this)
+    val levels = path.split('/')
+    if (lastFailedLevel >= levels.lastIndex) return listOf(this)
+    return listOf(
+        role.qualifiedName,
+        declaredAt,
+        failed.map { listOf(it.name, it.transform, it.level, it.value, it.expected) },
+        levels.take(lastFailedLevel + 1),
+    )
+}
+
+private fun sharedFilesLines(group: List<CaptureMismatch>, root: String?): List<String> {
+    if (group.size < 2) return emptyList()
+    val others = group.drop(1)
+    return buildList {
+        add("")
+        add("${STEP}${others.size} more ${if (others.size == 1) "file" else "files"} fail the same way:")
+        for (other in others.take(SHARED_FILES_SHOWN)) add("$STEP$STEP- ${displayExistingPath(root, other.path)}")
+        if (others.size > SHARED_FILES_SHOWN) add("$STEP$STEP- and ${others.size - SHARED_FILES_SHOWN} more")
     }
 }
 
