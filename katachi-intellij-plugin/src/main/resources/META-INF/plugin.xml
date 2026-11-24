@@ -142,6 +142,13 @@
              Settings | Editor | Live Templates | katachi edits or turns them off. -->
         <defaultLiveTemplates file="/liveTemplates/katachi.xml"/>
         <liveTemplateOptionalProcessor implementation="me.tbsten.katachi.intellij.ide.authoring.livetemplate.KatachiLiveTemplateImports"/>
+        <liveTemplateMacro implementation="me.tbsten.katachi.intellij.ide.authoring.livetemplate.KatachiDraftPackageMacro"/>
+        <liveTemplateMacro implementation="me.tbsten.katachi.intellij.ide.authoring.livetemplate.KatachiDraftImportsMacro"/>
+        <liveTemplateMacro implementation="me.tbsten.katachi.intellij.ide.authoring.livetemplate.KatachiDraftDeclarationsMacro"/>
+        <liveTemplateMacro implementation="me.tbsten.katachi.intellij.ide.authoring.livetemplate.KatachiDraftTailMacro"/>
+        <liveTemplateMacro implementation="me.tbsten.katachi.intellij.ide.authoring.livetemplate.KatachiDraftCaptureMacro"/>
+        <liveTemplateMacro implementation="me.tbsten.katachi.intellij.ide.authoring.livetemplate.KatachiDraftMoreCapturesMacro"/>
+        <liveTemplateMacro implementation="me.tbsten.katachi.intellij.ide.authoring.livetemplate.KatachiDraftTemplateBodyMacro"/>
     </extensions>
 
     <actions>

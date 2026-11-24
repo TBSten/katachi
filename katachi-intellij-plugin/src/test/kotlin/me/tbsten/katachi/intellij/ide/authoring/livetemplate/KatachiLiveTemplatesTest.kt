@@ -12,7 +12,21 @@ import com.intellij.openapi.roots.ContentEntry
 import com.intellij.openapi.roots.ModifiableRootModel
 import com.intellij.testFramework.LightProjectDescriptor
 import com.intellij.testFramework.PsiTestUtil
+import com.intellij.testFramework.replaceService
 import me.tbsten.katachi.intellij.AnalysisTestBase
+import me.tbsten.katachi.intellij.ide.authoring.AuthoringPorts
+import me.tbsten.katachi.intellij.ide.definition.FakeDefinitionModelService
+import me.tbsten.katachi.intellij.ide.definition.ResolvedSite
+import me.tbsten.katachi.intellij.model.CaptureRef
+import me.tbsten.katachi.intellij.model.DeclarationSiteRef
+import me.tbsten.katachi.intellij.model.DefinitionState
+import me.tbsten.katachi.intellij.model.Freshness
+import me.tbsten.katachi.intellij.testing.DEFINITION_ROOT
+import me.tbsten.katachi.intellij.testing.declaredAt
+import me.tbsten.katachi.intellij.testing.definitionModel
+import me.tbsten.katachi.intellij.testing.definitionSnapshot
+import me.tbsten.katachi.intellij.testing.layoutEntry
+import me.tbsten.katachi.intellij.testing.roleModel
 import java.io.File
 
 /**
@@ -119,6 +133,113 @@ internal class KatachiLiveTemplatesTest : AnalysisTestBase() {
             expansion.body,
         )
         assertNoErrors()
+    }
+
+
+    /**
+     * Opens `ServiceRole.kt` with the role `domain.Service` declared at its line 3 (where the caret is) over a definition that says
+     * the role holds [files] (the path from the project root and the text), and puts the files where the live template can read them.
+     */
+    private fun openRoleHolding(pattern: String, captures: List<CaptureRef>, files: Map<String, String>) {
+        val service = FakeDefinitionModelService()
+        val onDisk = files.mapKeys { (path, _) -> DEFINITION_ROOT.resolve(path) }.mapValues { (path, text) ->
+            myFixture.addFileToProject(path.toString().removePrefix("/w/repo/"), text).virtualFile
+        }
+        project.replaceService(AuthoringPorts::class.java, AuthoringPorts { service }, testRootDisposable)
+        project.replaceService(LiveTemplatePorts::class.java, LiveTemplatePorts { onDisk[it] }, testRootDisposable)
+        val role = roleModel("domain.Service", layoutEntry(pattern, captures = captures, matchedFiles = files.keys.toList())).declaredAt("ServiceRole.kt", 3)
+        service.emit(DefinitionState.Ready(listOf(definitionSnapshot(definitionModel(role))), Freshness.Fresh))
+        myFixture.configureByText("ServiceRole.kt", "package com.example\n\n<caret>\n")
+        service.resolveWith(DeclarationSiteRef("ServiceRole.kt", 3), ResolvedSite.Found(myFixture.file.virtualFile, 3))
+    }
+
+    private fun expandHere(abbreviation: String): Expansion {
+        myFixture.type(abbreviation)
+        myFixture.performEditorAction(IdeActions.ACTION_EXPAND_LIVE_TEMPLATE_BY_TAB)
+        return Expansion.of(myFixture.editor.document.text)
+    }
+
+    fun `test katachifilecontent は Role が持つファイルから package と import と宣言の行を埋める`() {
+        openRoleHolding(
+            "repo/*Service.kt",
+            emptyList(),
+            mapOf(
+                "repo/UserService.kt" to "package com.example.service\n\nimport kotlinx.coroutines.flow.Flow\n\nclass UserService(private val repository: Any) {\n    fun find(): Flow<Int>? = null\n}\n",
+                "repo/OrderService.kt" to "package com.example.service\n\nimport com.example.model.Order\n\nprivate val limit = 3\n\nclass OrderService\n",
+            ),
+        )
+
+        val expansion = expandHere("katachifilecontent")
+
+        assertEquals(
+            """
+            @OptIn(ExperimentalKatachiApi::class)
+            private fun RoleScope.serviceFileContent() = ktFileContent {
+                `package`("com.example.service")
+                `import`("com.example.model.Order")
+                `import`("kotlinx.coroutines.flow.Flow")
+                required(`class`, fileName) {
+                    allow(anythingElse)
+                }
+                allow(private, `val`, "limit")
+            }
+            """.trimIndent(),
+            expansion.body,
+        )
+        assertNoErrors()
+    }
+
+    fun `test katachitemplate は Role のファイルを capture の値を参照に置き換えて本文にする`() {
+        openRoleHolding(
+            "repo/*/*Service.kt",
+            listOf(CaptureRef("feature", 1), CaptureRef("name", 2)),
+            mapOf(
+                "repo/user/ProfileService.kt" to "class ProfileService // user",
+                "repo/order/OrderListService.kt" to "class OrderListService {\n    // a longer file\n    // is not the shortest\n}",
+            ),
+        )
+
+        val expansion = expandHere("katachitemplate")
+
+        assertEquals(
+            "@OptIn(ExperimentalKatachiApi::class)\n" +
+                "private fun TemplateScope.serviceTemplate(): String {\n" +
+                "    val feature = captureValue(\"feature\")\n" +
+                "    val name = captureValue(\"name\")\n" +
+                "    return \"\"\"\n" +
+                "    class \${name}Service // \${feature}\n" +
+                "    \"\"\".trimIndent() + \"\\n\"\n" +
+                "}",
+            expansion.body,
+        )
+        assertNoErrors()
+    }
+
+    fun `test Role がファイルを持たなければ 固定の文面のまま展開する`() {
+        openRoleHolding("repo/*Service.kt", emptyList(), emptyMap())
+
+        val expansion = expandHere("katachifilecontent")
+
+        assertEquals(
+            """
+            @OptIn(ExperimentalKatachiApi::class)
+            private fun RoleScope.serviceFileContent() = ktFileContent {
+                `package`("**")
+                required(`class`, fileName) {
+                }
+            }
+            """.trimIndent(),
+            expansion.body,
+        )
+    }
+
+    fun `test 開いたファイルに Role が無ければ 定義があっても固定の文面のまま展開する`() {
+        openRoleHolding("repo/*Service.kt", emptyList(), mapOf("repo/UserService.kt" to "package a\n\nclass UserService\n"))
+        myFixture.configureByText("OtherRole.kt", "package com.example\n\n<caret>\n")
+
+        val expansion = expandHere("katachifilecontent")
+
+        assertTrue(expansion.body, expansion.body.contains("`package`(\"**\")"))
     }
 
     fun `test katachitemplate は Role の名前の xxxTemplate にテンプレートの中身を切り出す`() {
@@ -357,8 +478,13 @@ internal class KatachiLiveTemplatesTest : AnalysisTestBase() {
                 interface KtFileContentScope {
                     val fileName: String
                     val `class`: Any
+                    val `val`: Any
+                    val private: Any
+                    val anythingElse: Any
                     fun `package`(pattern: String)
+                    fun `import`(pattern: String)
                     fun required(vararg line: Any, block: () -> Unit = {})
+                    fun allow(vararg line: Any, block: () -> Unit = {})
                 }
 
                 // The real one takes a context(FileConstraintScope), which the light project cannot declare without -Xcontext-parameters.

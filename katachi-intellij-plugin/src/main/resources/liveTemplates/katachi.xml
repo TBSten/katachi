@@ -5,6 +5,10 @@
   - The templates that use an experimental API carry @OptIn(ExperimentalKatachiApi::class) so that they compile in a file
     without @file:OptIn.
   - An extension function (assert, konsist) cannot be written qualified; KatachiLiveTemplateImports imports it.
+  - katachifilecontent and katachitemplate are filled from the loaded definition by the katachiDraft*() macros
+    (KatachiDraftMacros): the package, imports and declarations a role's files already have, or the file of the role as the
+    body of the template. A macro with nothing to draft from answers the fixed text these templates had before (or nothing, and the variable
+    takes its defaultValue).
 -->
 <templateSet group="katachi">
     <template name="katachirole"
@@ -41,21 +45,26 @@
         </context>
     </template>
     <template name="katachifilecontent"
-              value="@OptIn(me.tbsten.katachi.ExperimentalKatachiApi::class)&#10;private fun me.tbsten.katachi.dsl.RoleScope.$NAME$FileContent() = me.tbsten.katachi.konsist.declarations.ktFileContent {&#10;    `package`(&quot;$PACKAGE$&quot;)&#10;&#10;    required(`class`, fileName) {&#10;        $END$&#10;    }&#10;}"
+              value="@OptIn(me.tbsten.katachi.ExperimentalKatachiApi::class)&#10;private fun me.tbsten.katachi.dsl.RoleScope.$NAME$FileContent() = me.tbsten.katachi.konsist.declarations.ktFileContent {&#10;    `package`(&quot;$PACKAGE$&quot;)&#10;&#10;    $IMPORTS$$DECLARATIONS$$END$$TAIL$&#10;}"
               resource-bundle="messages.KatachiBundle" key="liveTemplate.katachifilecontent"
               toReformat="true" toShortenFQNames="true">
         <variable name="NAME" expression="decapitalize(regularExpression(fileNameWithoutExtension(), &quot;Role$&quot;, &quot;&quot;))" defaultValue="&quot;name&quot;" alwaysStopAt="true"/>
-        <variable name="PACKAGE" expression="" defaultValue="&quot;**&quot;" alwaysStopAt="true"/>
+        <variable name="PACKAGE" expression="katachiDraftPackage()" defaultValue="&quot;**&quot;" alwaysStopAt="true"/>
+        <variable name="IMPORTS" expression="katachiDraftImports()" defaultValue="&quot;&quot;" alwaysStopAt="false"/>
+        <variable name="DECLARATIONS" expression="katachiDraftDeclarations()" defaultValue="" alwaysStopAt="false"/>
+        <variable name="TAIL" expression="katachiDraftTail()" defaultValue="" alwaysStopAt="false"/>
         <context>
             <option name="KOTLIN_TOPLEVEL" value="true"/>
         </context>
     </template>
     <template name="katachitemplate"
-              value="@OptIn(me.tbsten.katachi.ExperimentalKatachiApi::class)&#10;private fun me.tbsten.katachi.dsl.TemplateScope.$NAME$Template(): String {&#10;    val $CAPTURE$ = captureValue(&quot;$CAPTURE$&quot;)&#10;    return &quot;&quot;&quot;&#10;        $END$&#10;    &quot;&quot;&quot;.trimIndent() + &quot;\n&quot;&#10;}"
+              value="@OptIn(me.tbsten.katachi.ExperimentalKatachiApi::class)&#10;private fun me.tbsten.katachi.dsl.TemplateScope.$NAME$Template(): String {&#10;    val $CAPTURE$ = captureValue(&quot;$CAPTURE$&quot;)$MORE_CAPTURES$&#10;    return &quot;&quot;&quot;&#10;$BODY$$END$&#10;    &quot;&quot;&quot;.trimIndent() + &quot;\n&quot;&#10;}"
               resource-bundle="messages.KatachiBundle" key="liveTemplate.katachitemplate"
               toReformat="true" toShortenFQNames="true">
         <variable name="NAME" expression="decapitalize(regularExpression(fileNameWithoutExtension(), &quot;Role$&quot;, &quot;&quot;))" defaultValue="&quot;name&quot;" alwaysStopAt="true"/>
-        <variable name="CAPTURE" expression="" defaultValue="&quot;name&quot;" alwaysStopAt="true"/>
+        <variable name="CAPTURE" expression="katachiDraftCapture()" defaultValue="&quot;name&quot;" alwaysStopAt="true"/>
+        <variable name="MORE_CAPTURES" expression="katachiDraftMoreCaptures()" defaultValue="&quot;&quot;" alwaysStopAt="false"/>
+        <variable name="BODY" expression="katachiDraftTemplateBody()" defaultValue="&quot;    &quot;" alwaysStopAt="false"/>
         <context>
             <option name="KOTLIN_TOPLEVEL" value="true"/>
         </context>
