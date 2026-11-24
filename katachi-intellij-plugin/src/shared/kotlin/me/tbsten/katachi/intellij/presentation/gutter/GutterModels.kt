@@ -29,6 +29,17 @@ internal data class SourceDeclaration(
     val members: List<SourceDeclaration> = emptyList(),
 )
 
+/**
+ * The `package` line and the imports of a `.kt` file as the PSI has them now (KATACHI-98): [SourceDeclaration]s of kind
+ * `Package` / `Import`, named by the package and the imported path, which the gutter binds to katachi's judgement of the
+ * lines as it binds a declaration.
+ */
+internal data class SourceHeader(val packageLine: SourceDeclaration?, val imports: List<SourceDeclaration>) {
+    companion object {
+        val NONE: SourceHeader = SourceHeader(null, emptyList())
+    }
+}
+
 /** Whether a file gets a ◆ per top-level declaration or one for the file (design 2.1). */
 internal enum class MarkPlacement { PerDeclaration, OnePerFile }
 

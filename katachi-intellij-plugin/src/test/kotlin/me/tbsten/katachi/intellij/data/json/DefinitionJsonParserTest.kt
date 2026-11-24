@@ -302,6 +302,24 @@ class DefinitionJsonParserTest {
     }
 
     @Test
+    fun `package の行と import の判定が読め キーが無い古い katachi の JSON は null として読む`() {
+        val text = DefinitionFixtures.definitionText("synthetic-definition-explained")
+        fun healthOf(json: String) = parse(json).definition.roles.single { it.qualifiedName == "Service" }
+            .constraints.first().fileDeclarations!!.single { it.file == "src/service/HealthService.kt" }
+        val health = healthOf(text)
+        assertEquals(SourceDeclarationKind.Package, health.packageLine?.kind)
+        assertEquals("com.example", health.packageLine?.name)
+        assertEquals(1, health.packageLine?.line)
+        assertEquals(DeclarationVerdict.Allowed, health.packageLine?.verdict)
+        assertEquals(listOf("java.util.List"), health.imports?.map { it.name })
+        assertEquals(DeclarationVerdict.Unexpected, health.imports?.single()?.verdict)
+        assertEquals(SourceDeclarationKind.Import, health.imports?.single()?.kind)
+        val old = healthOf(text.replace("\"packageLine\":", "\"packageLineRenamed\":").replace("\"imports\":", "\"importsRenamed\":"))
+        assertNull(old.packageLine)
+        assertNull(old.imports)
+    }
+
+    @Test
     fun `知らないキーは無視され fileDeclarations が無い古い katachi の JSON は null として読む`() {
         val withExtra = text.replaceFirst("\"schemaVersion\": 1,", "\"schemaVersion\": 1,\n  \"future\": { \"x\": [1, 2] },")
         assertEquals(definition, parse(withExtra).definition)

@@ -23,6 +23,8 @@ internal data class GutterInput(
     val fileKind: SourceFileKind,
     /** The answer is older than the file or the definition (design 2.6): the explanations get `(stale)`. */
     val stale: Boolean,
+    /** The `package` line and the imports the PSI has now; [SourceHeader.NONE] for anything but `.kt`. */
+    val header: SourceHeader = SourceHeader.NONE,
 )
 
 /**
@@ -56,10 +58,11 @@ internal object GutterMarks {
             return listOf(oneForFile(first?.let(MarkTarget::Declaration) ?: MarkTarget.FileHead, roles, input, missing = true, reloadFailure, strings))
         }
 
+        val headerMarks = headerMarksOf(input, roles, restricting, reloadFailure, strings)
         val bound = restricting.mapValues { (_, explanation) ->
             DeclarationBinding.bind(input.declarations, explanation?.declarations?.declarations.orEmpty())
         }
-        return input.declarations.flatMapIndexed { index, declaration ->
+        return headerMarks + input.declarations.flatMapIndexed { index, declaration ->
             val roleMarks = roles.map { role ->
                 RoleMark(role, bound[role]?.get(index)?.explanation, missingOf(role, input.explanations), restricting[role]?.constraint?.declaredAt)
             }
@@ -73,6 +76,52 @@ internal object GutterMarks {
             listOf(mark) + membersOf(declaration, roleMarks, input.stale, reloadFailure, strings)
         }
     }
+
+    /**
+     * The ◆ of the `package` line and of the imports (KATACHI-98), bound to what each role's `ktFileContent { }` said of them as a
+     * declaration is. Drawn when some role judged them (a katachi from before the key draws none):
+     * - the `package` line always;
+     * - an import only when a role rejects it (prohibited, or no `import(...)` line allows it), and the first import, which stands for the
+     *   group, when every import of the file is allowed: a ◆ on each of a file's many imports would bury the ones of the declarations.
+     */
+    private fun headerMarksOf(
+        input: GutterInput,
+        roles: List<RoleModel>,
+        restricting: Map<RoleModel, RoleFileDeclarations?>,
+        reloadFailure: LoadFailure?,
+        strings: GutterStrings,
+    ): List<GutterMark> {
+        val header = input.header
+        val judged = roles.map { restricting[it]?.declarations }
+        fun markOf(source: SourceDeclaration, explanations: List<BoundExplanation?>): GutterMark {
+            val roleMarks = roles.mapIndexed { index, role -> RoleMark(role, explanations[index], emptyList(), restricting[role]?.constraint?.declaredAt) }
+            return GutterMark(
+                target = MarkTarget.Declaration(source),
+                placement = MarkPlacement.PerDeclaration,
+                roles = roleMarks,
+                stale = input.stale,
+                tooltip = GutterTooltips.of(roleMarks, input.stale, reloadFailure, strings),
+            )
+        }
+        val packageMark = header.packageLine?.let { source ->
+            val explanations = judged.map { file -> file?.packageLine?.let { DeclarationBinding.bind(listOf(source), listOf(it)).single().explanation } }
+            if (explanations.any { it != null }) markOf(source, explanations) else null
+        }
+        val boundImports = judged.map { file -> file?.imports?.let { DeclarationBinding.bind(header.imports, it) } }
+        val importMarks = if (boundImports.all { it == null }) emptyList() else header.imports.mapIndexedNotNull { index, source ->
+            val explanations = boundImports.map { it?.get(index)?.explanation }
+            val rejected = explanations.any { it.isRejectedImport() }
+            val standsForGroup = index == 0 && explanations.any { it.isAllowedImport() } && header.imports.indices.none { other ->
+                boundImports.any { bound -> bound?.get(other)?.explanation.isRejectedImport() }
+            }
+            if (rejected || standsForGroup) markOf(source, explanations) else null
+        }
+        return listOfNotNull(packageMark) + importMarks
+    }
+
+    private fun BoundExplanation?.isRejectedImport(): Boolean = this is BoundExplanation.Explained && !declaration.verdict.isAllowed
+
+    private fun BoundExplanation?.isAllowedImport(): Boolean = this is BoundExplanation.Explained && declaration.verdict.isAllowed
 
     /**
      * The ◆ of the members of one declaration (KATACHI-93): each takes what the role's `ktFileContent { }` said of the

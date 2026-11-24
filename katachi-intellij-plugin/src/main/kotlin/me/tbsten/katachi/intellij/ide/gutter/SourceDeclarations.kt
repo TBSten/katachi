@@ -12,6 +12,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import me.tbsten.katachi.intellij.ide.sdkCall
 import me.tbsten.katachi.intellij.model.SourceDeclarationKind
 import me.tbsten.katachi.intellij.presentation.gutter.SourceDeclaration
+import me.tbsten.katachi.intellij.presentation.gutter.SourceHeader
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtDeclaration
@@ -34,12 +35,46 @@ internal data class SourceDeclarationPsi(
     fun withMembers(): List<SourceDeclarationPsi> = listOf(this) + members
 }
 
+/** The `package` line and the imports of a file, with the leaf each ◆ goes at (KATACHI-98). */
+internal data class SourceHeaderPsi(val packageLine: SourceDeclarationPsi?, val imports: List<SourceDeclarationPsi>) {
+    val header: SourceHeader get() = SourceHeader(packageLine?.declaration, imports.map { it.declaration })
+
+    /** Every line, in the order the ◆ are drawn. */
+    fun all(): List<SourceDeclarationPsi> = listOfNotNull(packageLine) + imports
+
+    companion object {
+        val NONE: SourceHeaderPsi = SourceHeaderPsi(null, emptyList())
+    }
+}
+
 // Read from the PSI alone (no resolve, no index) so it works in dumb mode. Call under a read lock, from the background.
 internal object SourceDeclarations {
     fun of(file: KtFile): List<SourceDeclarationPsi> =
         sdkCall("read the top-level declarations of ${file.name}") {
             CachedValuesManager.getCachedValue(file) { CachedValueProvider.Result.create(compute(file), file) }
         }.getOrDefault(emptyList())
+
+    /** The `package` line (named by the package) and the imports (named by the path, a star import as `a.b.*`), each at its first leaf. */
+    fun headerOf(file: KtFile): SourceHeaderPsi =
+        sdkCall("read the package and imports of ${file.name}") {
+            CachedValuesManager.getCachedValue(file) { CachedValueProvider.Result.create(computeHeader(file), file) }
+        }.getOrDefault(SourceHeaderPsi.NONE)
+
+    private fun computeHeader(file: KtFile): SourceHeaderPsi {
+        if (file.isScript()) return SourceHeaderPsi.NONE
+        val pointers = SmartPointerManager.getInstance(file.project)
+        val text = file.viewProvider.contents
+        fun lineOf(directive: PsiElement, kind: SourceDeclarationKind, name: String): SourceDeclarationPsi? {
+            val leaf = firstLeafOf(directive) ?: return null
+            val line = StringUtil.offsetToLineNumber(text, leaf.textRange.startOffset) + 1
+            return SourceDeclarationPsi(SourceDeclaration(kind, name, line), pointers.createSmartPsiElementPointer(leaf, file))
+        }
+        val packageLine = file.packageDirective?.takeIf { it.textLength > 0 }?.let { lineOf(it, SourceDeclarationKind.Package, file.packageFqName.asString()) }
+        val imports = file.importDirectives.mapNotNull { directive ->
+            directive.importPath?.pathStr?.let { lineOf(directive, SourceDeclarationKind.Import, it) }
+        }
+        return SourceHeaderPsi(packageLine, imports)
+    }
 
     private fun compute(file: KtFile): List<SourceDeclarationPsi> {
         if (file.isScript()) return emptyList()

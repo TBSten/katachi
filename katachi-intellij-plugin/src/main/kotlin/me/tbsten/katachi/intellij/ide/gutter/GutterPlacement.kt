@@ -37,12 +37,13 @@ internal object GutterPlacement {
         val roles = service.forFile(virtualFile) ?: return null
         val kind = kindOf(file)
         val sources = if (kind == SourceFileKind.Kotlin && file is KtFile) SourceDeclarations.of(file) else emptyList()
+        val header = if (kind == SourceFileKind.Kotlin && file is KtFile) SourceDeclarations.headerOf(file) else SourceHeaderPsi.NONE
         val explanations = if (kind == SourceFileKind.Kotlin) service.fileDeclarationsOf(virtualFile) else emptyList()
         val fileState = ports.fileState(virtualFile)
         val generatedAt = service.definitionOf(roles.module.id)?.definition?.generatedAt
         val stale = GutterFreshness.isStale(state, roles.freshness, fileState.modifiedAt, generatedAt, fileState.unsaved)
-        val marks = GutterMarks.of(GutterInput(roles, explanations, sources.map { it.declaration }, kind, stale), BundleGutterStrings)
-        val placed = marks.mapNotNull { mark -> leafOf(file, mark.target, sources)?.let { PlacedMark(it, mark) } }
+        val marks = GutterMarks.of(GutterInput(roles, explanations, sources.map { it.declaration }, kind, stale, header.header), BundleGutterStrings)
+        val placed = marks.mapNotNull { mark -> leafOf(file, mark.target, sources, header)?.let { PlacedMark(it, mark) } }
         return placed.takeIf { it.isNotEmpty() }?.let { PlacedFile(service, roles, it) }
     }
 
@@ -52,9 +53,9 @@ internal object GutterPlacement {
         else -> SourceFileKind.Kotlin
     }
 
-    private fun leafOf(file: PsiFile, target: MarkTarget, sources: List<SourceDeclarationPsi>): PsiElement? = when (target) {
+    private fun leafOf(file: PsiFile, target: MarkTarget, sources: List<SourceDeclarationPsi>, header: SourceHeaderPsi): PsiElement? = when (target) {
         // By identity: GutterMarks hands back the instances it was given, and two overloads on one line are equal values.
-        is MarkTarget.Declaration -> sources.flatMap { it.withMembers() }.firstOrNull { it.declaration === target.declaration }
+        is MarkTarget.Declaration -> (header.all() + sources.flatMap { it.withMembers() }).firstOrNull { it.declaration === target.declaration }
             ?.let { source -> sdkCall("find the name of ${source.declaration.name}") { source.leaf.element }.getOrNull() }
         MarkTarget.FileHead -> headOf(file)
     }

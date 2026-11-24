@@ -100,7 +100,9 @@ internal fun fileDeclarations(
     declarationsChecked: Boolean = true,
     missing: List<RuleRef> = emptyList(),
     unexplainedReason: String? = null,
-): FileDeclarationsModel = FileDeclarationsModel(file, declarationsChecked, declarations.toList(), missing, unexplainedReason)
+    packageLine: DeclarationModel? = null,
+    imports: List<DeclarationModel>? = null,
+): FileDeclarationsModel = FileDeclarationsModel(file, declarationsChecked, declarations.toList(), missing, unexplainedReason, packageLine, imports)
 
 /** [declarations] of [role]'s `ktFileContent { }` constraint, as `fileDeclarationsOf` returns it. */
 internal fun roleFileDeclarations(

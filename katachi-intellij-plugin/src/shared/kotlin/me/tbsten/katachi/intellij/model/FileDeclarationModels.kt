@@ -18,6 +18,16 @@ internal data class FileDeclarationsModel(
     val missing: List<RuleRef>,
     /** Why the block could not be judged for this file; [declarations] is empty then. */
     val unexplainedReason: String?,
+    /**
+     * How the `package` line was judged (a [DeclarationModel] of kind [SourceDeclarationKind.Package] named by the package), or `null`:
+     * katachi is older than this key, or the file declares no package.
+     */
+    val packageLine: DeclarationModel? = null,
+    /**
+     * How each import was judged, in the order written (kind [SourceDeclarationKind.Import], named by the imported path); `null` when
+     * katachi is older than this key, which is not the same as a file with no import (empty).
+     */
+    val imports: List<DeclarationModel>? = null,
 )
 
 internal data class DeclarationModel(
@@ -53,6 +63,12 @@ internal sealed interface SourceDeclarationKind : JsonNamed {
     data object Val : SourceDeclarationKind { override val jsonName: String get() = "val" }
     data object Var : SourceDeclarationKind { override val jsonName: String get() = "var" }
     data object TypeAlias : SourceDeclarationKind { override val jsonName: String get() = "typealias" }
+
+    /** The `package` line of a file: judged by `package(...)` lines, not a declaration of the allow list. */
+    data object Package : SourceDeclarationKind { override val jsonName: String get() = "package" }
+
+    /** An `import` line of a file: judged by `import(...)` lines. */
+    data object Import : SourceDeclarationKind { override val jsonName: String get() = "import" }
 
     /** An enum entry: only a member of an enum class. */
     data object Entry : SourceDeclarationKind { override val jsonName: String get() = "entry" }
