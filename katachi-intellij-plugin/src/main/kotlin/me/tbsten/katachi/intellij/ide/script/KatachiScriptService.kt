@@ -9,14 +9,11 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.Disposer
-import com.intellij.openapi.util.SystemInfo
 import com.intellij.psi.PsiManager
 import com.intellij.ui.EditorNotifications
-import com.intellij.util.EnvironmentUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import me.tbsten.katachi.intellij.data.script.KatachiCliLocator
 import me.tbsten.katachi.intellij.data.script.ScriptClasspath
 import me.tbsten.katachi.intellij.data.script.ScriptClasspathProbe
 import me.tbsten.katachi.intellij.data.script.ScriptClasspathState
@@ -90,13 +87,7 @@ internal class KatachiScriptService(private val scope: CoroutineScope) {
         fun getInstance(): KatachiScriptService = ApplicationManager.getApplication().getService(KatachiScriptService::class.java)
 
         private fun probeInstalledCli(): ScriptClasspath {
-            val path = sdkCall("read the PATH of the login shell") { EnvironmentUtil.getValue("PATH") }.getOrNull() ?: System.getenv("PATH")
-            val locator = KatachiCliLocator(
-                pathVariable = path,
-                home = System.getProperty("user.home"),
-                windows = SystemInfo.isWindows,
-                isExecutable = { Files.isRegularFile(it) && Files.isExecutable(it) },
-            )
+            val locator = KatachiCliEnvironment.locator()
             // The IDE's own PATH is nearly empty when it was started from the Dock, so `kotlin` would not be found.
             val run = TimedProcessRunner(environment = mapOf("PATH" to locator.searchPath()))
             return ScriptClasspathProbe(locate = locator::locate, run = run, exists = Files::exists).probe()
