@@ -44,7 +44,7 @@ internal data class DeclarationModel(
 /** One line of the allow list as it was evaluated for the file, and where it was written. */
 internal data class RuleRef(val text: String, val declaredAt: DeclarationSiteRef?)
 
-/** What kind of top-level declaration. A name this plugin does not know is [Unknown]. */
+/** What kind of declaration: a top-level one, or a member of one (an enum [Entry]). A name this plugin does not know is [Unknown]. */
 internal sealed interface SourceDeclarationKind : JsonNamed {
     data object Class : SourceDeclarationKind { override val jsonName: String get() = "class" }
     data object Interface : SourceDeclarationKind { override val jsonName: String get() = "interface" }
@@ -53,10 +53,13 @@ internal sealed interface SourceDeclarationKind : JsonNamed {
     data object Val : SourceDeclarationKind { override val jsonName: String get() = "val" }
     data object Var : SourceDeclarationKind { override val jsonName: String get() = "var" }
     data object TypeAlias : SourceDeclarationKind { override val jsonName: String get() = "typealias" }
+
+    /** An enum entry: only a member of an enum class. */
+    data object Entry : SourceDeclarationKind { override val jsonName: String get() = "entry" }
     data class Unknown(override val jsonName: String) : SourceDeclarationKind
 
     companion object {
-        val known: List<SourceDeclarationKind> = listOf(Class, Interface, Object, Fun, Val, Var, TypeAlias)
+        val known: List<SourceDeclarationKind> = listOf(Class, Interface, Object, Fun, Val, Var, TypeAlias, Entry)
         fun of(name: String): SourceDeclarationKind = known.firstOrNull { it.jsonName == name } ?: Unknown(name)
     }
 }

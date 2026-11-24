@@ -48,6 +48,62 @@ internal class DeclarationLineMarkerTest : GutterTestBase() {
         ),
     )
 
+    private val memberRule = RuleRef("private val healthRepository", DeclarationSiteRef("ServiceRole.kt", 81))
+    private val functionRule = RuleRef("fun currentHealth", DeclarationSiteRef("ServiceRole.kt", 82))
+
+    private fun serviceWithMembers(vararg members: DeclarationModel) = listOf(
+        roleFileDeclarations(
+            service,
+            fileDeclarations(
+                GutterFixtures.SERVICE_PATH,
+                declarationModel(SourceDeclarationKind.Class, "HealthService", 7, rules = listOf(GutterFixtures.SERVICE_RULE), members = members.toList()),
+            ),
+        ),
+    )
+
+    fun `test 許可されたクラスのメンバの名前にも 許可した行を言う ◆ が付く`() {
+        val answer = serviceWithMembers(
+            declarationModel(SourceDeclarationKind.Val, "healthRepository", 8, rules = listOf(memberRule)),
+            declarationModel(SourceDeclarationKind.Fun, "currentHealth", 10, rules = listOf(functionRule)),
+        )
+        ready(serviceFile, fileRoles(GutterFixtures.SERVICE_PATH, service), answer)
+        val marks = drawn(serviceFile, GutterFixtures.HEALTH_SERVICE_KT)
+        assertEquals(
+            listOf(
+                Triple(7, "HealthService", "katachi: domain.Service — allowed by class HealthService (ServiceRole.kt:80)"),
+                Triple(8, "healthRepository", "katachi: domain.Service — allowed by private val healthRepository (ServiceRole.kt:81)"),
+                Triple(10, "currentHealth", "katachi: domain.Service — allowed by fun currentHealth (ServiceRole.kt:82)"),
+            ),
+            marks.map { Triple(it.line, it.leaf, it.tooltip) },
+        )
+        assertTrue(marks.all { it.isLeaf && it.hasMenu })
+    }
+
+    fun `test 許されないメンバと まだ計算していないメンバを言い分ける`() {
+        val answer = serviceWithMembers(declarationModel(SourceDeclarationKind.Val, "healthRepository", 8, DeclarationVerdict.Unexpected))
+        ready(serviceFile, fileRoles(GutterFixtures.SERVICE_PATH, service), answer)
+        val marks = drawn(serviceFile, GutterFixtures.HEALTH_SERVICE_KT)
+        assertEquals(listOf("HealthService", "healthRepository", "currentHealth"), marks.map { it.leaf })
+        assertEquals(
+            listOf(
+                "katachi: domain.Service — allowed by class HealthService (ServiceRole.kt:80), 1 member is rejected by the check",
+                "katachi: domain.Service — no line in ktFileContent allows this (UnsatisfiedFileConstraint in the check)",
+                "katachi: domain.Service — not computed yet. Reload Definition.",
+            ),
+            marks.map { it.tooltip },
+        )
+    }
+
+    fun `test メンバの説明を持たない古い定義では メンバに ◆ を付けない`() {
+        ready(serviceFile, fileRoles(GutterFixtures.SERVICE_PATH, service), allowedService())
+        assertEquals(listOf("HealthService"), drawn(serviceFile, GutterFixtures.HEALTH_SERVICE_KT).map { it.leaf })
+    }
+
+    fun `test 宣言を縛らない Role のファイルでは メンバにも ◆ を付けない`() {
+        ready("HealthRepository.kt", fileRoles(GutterFixtures.REPOSITORY_PATH, repository))
+        assertEquals(listOf("HealthRepository"), drawn("HealthRepository.kt", GutterFixtures.HEALTH_REPOSITORY_KT).map { it.leaf })
+    }
+
     fun `test 宣言を縛る Role のファイルでは 宣言の名前に許可した行を言う ◆ が付く`() {
         ready(serviceFile, fileRoles(GutterFixtures.SERVICE_PATH, service), allowedService())
         val marks = drawn(serviceFile, GutterFixtures.HEALTH_SERVICE_KT)
