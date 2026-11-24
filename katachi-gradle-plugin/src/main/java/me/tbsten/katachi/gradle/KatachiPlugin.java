@@ -250,6 +250,8 @@ public class KatachiPlugin implements Plugin<Project> {
                 // it changes, which is all that is needed.
                 task.getJvmArgumentProviders().add(new KatachiMaxViolationsArguments(
                         project.getProviders().systemProperty(KatachiMaxViolationsArguments.MAX_VIOLATIONS_PROPERTY)));
+                task.getJvmArgumentProviders().add(new KatachiProjectRootArguments(
+                        project.getProviders().systemProperty(KatachiProjectRootArguments.PROJECT_ROOT_PROPERTY)));
             });
             project.getTasks().withType(KatachiProcessorsTask.class).configureEach(task -> {
                 task.setClasspath(testSourceSet.getRuntimeClasspath());
@@ -277,6 +279,10 @@ public class KatachiPlugin implements Plugin<Project> {
             // the report looks like, not what is written, so being an @Input is enough.
             test.getJvmArgumentProviders().add(new KatachiMaxViolationsArguments(
                     project.getProviders().systemProperty(KatachiMaxViolationsArguments.MAX_VIOLATIONS_PROPERTY)));
+            // `-Dkatachi.projectRoot` names the tree to check, so it is an @Input and a change
+            // reruns the test instead of reporting the last tree's result.
+            test.getJvmArgumentProviders().add(new KatachiProjectRootArguments(
+                    project.getProviders().systemProperty(KatachiProjectRootArguments.PROJECT_ROOT_PROPERTY)));
 
             // `katachi { report { sarif = true } }`. `test` writes build/reports/katachi/
             // katachi.sarif; any other Test task writes under its own name, so two tasks of a
