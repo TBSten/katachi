@@ -49,3 +49,23 @@ export function resolveVersionPath(target: Target, available: ReadonlySet<string
 	if (available.has(top)) return top;
 	return firstPage ? pagePath({ ...target, slug: firstPage }) : same;
 }
+
+/**
+ * 開発中の版のページから案内する、最新のリリース済みの版（`version`）の同じページへの行き先。
+ *
+ * - 公開サイトの開発版（`base` が `/katachi/dev`）: リリース済みの docs は `releasedBase`（`/katachi`）の直下にある。
+ *   そこは別のビルドでページの一覧が分からないので、このビルドの中の写し（`/katachi/dev/0.4/...`）に
+ *   同じページがあれば同じページへ、無ければ（版を切ったあとに足したページ）トップへ送る。
+ * - それ以外（手元の `pnpm dev`・`pnpm run build`。`base` が `releasedBase` と同じ）: リリース済みの docs は
+ *   このビルドの中の写しにしか無いので、写しへ送る（`resolveVersionPath` と同じ決め方）。
+ */
+export function latestReleasedPath(
+	target: Target & { version: string; releasedBase: string },
+	available: ReadonlySet<string>,
+	firstPage?: string,
+): string {
+	const { releasedBase, ...copy } = target;
+	if (copy.base === releasedBase) return resolveVersionPath(copy, available, firstPage);
+	const slug = available.has(pagePath(copy)) ? copy.slug : '';
+	return pagePath({ base: releasedBase, locale: copy.locale, slug });
+}

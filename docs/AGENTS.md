@@ -183,11 +183,15 @@ title: ...
 - public/ の下（API リファレンス・インストールキット・スライド）は版を持たない。古い版のページからのリンクは、`src/middleware.ts` が最新のものへ向け直す
 - いま書いている版のラベルは手で持たない。凍結した版の先頭から「次の minor + `-dev`」を算出する（写しの先頭が `0.4` なら `v0.5-dev`）。
   リリースのビルドだけが `KATACHI_DOCS_VERSION_LABEL`（タグから `v0.4`）で上書きする
+- ページタイトルの下の版の注意は、開発中の版のページにだけ出す（`src/components/VersionNotice.astro`。KATACHI-459）。
+  文面は「このページは開発中バージョンの内容です。最新のドキュメントは v0.4 を参照してください。」で、`v0.4` は凍結した版の先頭から取る。
+  リリース済みの版のページ（root と、`/katachi/0.3/` などの写し）には注意を出さない。どの版を見ているかはヘッダの版の切り替えで分かる。
+  出す条件と文言（日本語が原本、英語は訳）は `src/lib/version-notice.ts`、リンクの行く先は `src/lib/version-destination.ts` の `latestReleasedPath`
 
 ### 公開サイトの構成（`.github/workflows/docs.yml`）
 
 **公開サイトの root は常に最新のリリースの docs。** main の書きかけは `/katachi/dev/` にだけ出る。
-利用者が README から着く先・検索・`llms-small.txt` はリリース済みの内容になり、「古い版」の注意も出ない。
+利用者が README から着く先・検索・`llms-small.txt` はリリース済みの内容になり、版の注意も出ない（注意が出るのは `/katachi/dev/` の開発中の版のページだけ）。
 
 | 置き場所 | ビルド元 | いま書いている版のラベル | 版の切り替えの選択肢 |
 |---|---|---|---|
@@ -215,7 +219,7 @@ docs.yml は 2 つを別々にビルドして 1 つの Pages に合成する。�
 
 1. v0.4 の docs を書き終える（`src/content/docs/` 直下）。ラベルは `v0.4-dev` のまま
 2. リリース（`v0.4.0` のタグ）。docs.yml の `resolve` が新しいタグを拾い、root = v0.4（ラベルはタグから）、`/katachi/0.3/` `/katachi/0.2/` は写しになる
-3. main で `src/lib/versions.mjs` の `archivedVersions` の先頭に `{ slug: '0.4', label: 'v0.4' }` を足す。ラベルの指定は無い（算出で `v0.5-dev` になる）
+3. main で `src/lib/versions.mjs` の `archivedVersions` の先頭に `{ slug: '0.4', label: 'v0.4' }` を足す。ラベルの指定は無い（算出で `v0.5-dev` になる）。開発中の版のページの注意が案内する版も、ここで `v0.4` に変わる
 4. `pnpm run build` を1回回す。ビルドの開始時に、その時点の `src/content/docs/` から `src/content/docs/0.4/`・`src/content/docs/ja/0.4/`・`src/content/versions/0.4.json` ができる。一度に切れる版は1つだけ
 5. `src/content/docs/ja/0.4/` の下にできた古い版の写し（`ja/0.4/0.3/` など）を消し、もう一度 `pnpm run build` を回す。starlight-versions は日本語の写しを作るとき、凍結済みの `ja/0.3/` まで写してしまう（英語側の `0.4/` には入らない）。残すと `/katachi/ja/0.4/0.3/...` へのリンクでリンク検査が落ちる
 6. ビルド（リンク検査を含む）・`pnpm run lint:text`・`pnpm run test` が通るのを確かめ、写しを生成したままコミットする

@@ -58,6 +58,18 @@ export const currentVersion = {
 };
 
 /**
+ * 最新のリリース済みの版（凍結した版の先頭）。開発中の版のページの注意（VersionNotice.astro）が案内する先。
+ * 新しい版のタグを打ってから写しを切るまでの間は、1 つ前の版を指す（docs/AGENTS.md の「新しい版を切る手順」）。
+ */
+export const latestReleasedVersion = archivedVersions[0];
+
+/**
+ * いま書いている版が開発中（ラベルが `-dev` で終わる）か。リリースのビルド（docs.yml が
+ * `KATACHI_DOCS_VERSION_LABEL` にタグの `v0.4` を渡す）だけが `false`。
+ */
+export const currentIsDev = currentVersion.label.endsWith('-dev');
+
+/**
  * 版の切り替えに足す開発版。リリースのビルドで `KATACHI_DOCS_DEV_BASE` が渡されたときだけある。
  * ラベルはこのビルドの現行の版（`v0.3`）の次（`v0.4-dev`）。
  * @type {{ label: string; base: string } | undefined}
