@@ -24,8 +24,14 @@ import me.tbsten.katachi.test.pbt.without
 
 // region reference
 
-/** Whether [pattern] matches [path], read level by level. Patterns stay inside what the generators write. */
-private fun referenceMatches(pattern: String, path: String): Boolean = matchLevels(pattern.split('/'), path.split('/'))
+/**
+ * Whether [pattern] matches [path], read level by level. Patterns stay inside what the generators write.
+ * A path with an empty level matches nothing, whatever the pattern.
+ */
+private fun referenceMatches(pattern: String, path: String): Boolean {
+    val levels = path.split('/')
+    return levels.none { it.isEmpty() } && matchLevels(pattern.split('/'), levels)
+}
 
 private fun matchLevels(pattern: List<String>, path: List<String>): Boolean {
     if (pattern.isEmpty()) return path.isEmpty()
@@ -151,7 +157,9 @@ private fun Random.pattern(wildcards: List<String> = STAR_LEVELS + OTHER_WILDCAR
     return chosen.joinToString("/")
 }
 
-private fun Random.path(): String = List(nextInt(1, 6)) { pick(PATH_LEVELS) }.joinToString("/")
+/** One level in twelve is empty (`src//Foo.kt`, `/Foo.kt`, `src/`), which no pattern may match. */
+private fun Random.path(): String =
+    List(nextInt(1, 6)) { if (nextInt(12) == 0) "" else pick(PATH_LEVELS) }.joinToString("/")
 
 /** Every pattern one level shorter than [pattern], keeping it valid. */
 private fun shorterPatterns(pattern: String): List<String> {
