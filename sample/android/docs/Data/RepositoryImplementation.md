@@ -19,9 +19,9 @@ which passes the one `name` to each of them.
 | Path | When to use |
 |---|---|
 | `data/src/main/kotlin/com/example/sample/data/user/UserRepositoryImpl.kt` |  |
-| `data/src/main/kotlin/com/example/sample/data/user/User*RepositoryImpl.kt` |  |
+| `data/src/main/kotlin/com/example/sample/data/user/User<name>RepositoryImpl.kt` |  |
 | `data/src/main/kotlin/com/example/sample/data/settings/SettingsRepositoryImpl.kt` |  |
-| `data/src/main/kotlin/com/example/sample/data/settings/Settings*RepositoryImpl.kt` |  |
+| `data/src/main/kotlin/com/example/sample/data/settings/Settings<name>RepositoryImpl.kt` |  |
 
 ## Constraints
 

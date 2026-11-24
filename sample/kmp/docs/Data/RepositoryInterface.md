@@ -31,7 +31,7 @@ package in the definition would make the documentation point at a directory that
 
 | Path | When to use |
 |---|---|
-| `data/src/commonMain/kotlin/com/example/kmp/data/user/*Repository.kt` |  |
+| `data/src/commonMain/kotlin/com/example/kmp/data/user/<name>Repository.kt` |  |
 
 ## Constraints
 

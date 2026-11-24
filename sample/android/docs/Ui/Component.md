@@ -31,7 +31,7 @@ convention of this role, not something the layout enforces).
 
 | Path | When to use |
 |---|---|
-| `ui/src/main/kotlin/com/example/sample/ui/component/*.kt` |  |
+| `ui/src/main/kotlin/com/example/sample/ui/component/<name>.kt` |  |
 
 ## Constraints
 

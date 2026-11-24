@@ -28,7 +28,7 @@ goes into is decided by which `DataDomain` the start of the name matches.
 
 | Path | When to use |
 |---|---|
-| `testing/src/main/kotlin/com/example/sample/testing/Fake*.kt` |  |
+| `testing/src/main/kotlin/com/example/sample/testing/Fake<repository>.kt` |  |
 
 ## Constraints
 

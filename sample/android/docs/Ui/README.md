@@ -33,7 +33,7 @@ navigation dependency. Building the graph is done by `:app`.
 
 ```
 ui/src/main/kotlin/com/example/sample/ui/
-  component/*.kt                                                                      Shared component
+  component/<name>.kt                                                                 Shared component
   theme/AppTheme.kt                                                                   Theme
   core/*.kt                                                                           UI foundation
   preview/PreviewRoot.kt                                                              Preview base

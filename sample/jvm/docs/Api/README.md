@@ -27,8 +27,8 @@ here as prose; nothing rejects it mechanically.
 
 ```
 src/main/kotlin/com/example/
-  controller/*/*Controller.kt  Controller
-  plugin/*.kt                  Ktor plugin configuration
+  controller/<resource>/<resource.pascalCase>Controller.kt  Controller
+  plugin/*.kt                                               Ktor plugin configuration
 ```
 
 ## Forbidden contents

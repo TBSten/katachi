@@ -22,7 +22,7 @@ ExpectDeclaration / ActualImplementation (expect/actual) in `:data`, not into a 
 
 | Path | When to use |
 |---|---|
-| `feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/*Screen.kt` |  |
+| `feature/<feature>/src/commonMain/kotlin/com/example/kmp/feature/<feature>/<feature.pascalCase>Screen.kt` |  |
 
 ## Examples
 

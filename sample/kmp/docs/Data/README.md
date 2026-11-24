@@ -30,8 +30,8 @@ instead of into a screen.
 data/src/
   commonMain/kotlin/com/example/kmp/data/
     user/
-      *Repository.kt                                             Repository interface
-      *RepositoryImpl.kt                                         Repository implementation
+      <name>Repository.kt                                        Repository interface
+      <name>RepositoryImpl.kt                                    Repository implementation
     platform/*.kt                                                Expect declaration
   androidMain/kotlin/com/example/kmp/data/platform/*.android.kt  Actual implementation
   iosMain/kotlin/com/example/kmp/data/platform/*.ios.kt          Actual implementation

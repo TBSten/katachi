@@ -19,7 +19,7 @@ It only receives the Repository as an argument and never creates it. Creating it
 
 | Path | When to use |
 |---|---|
-| `feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/*ViewModel.kt` |  |
+| `feature/<feature>/src/commonMain/kotlin/com/example/kmp/feature/<feature>/<feature.pascalCase>ViewModel.kt` |  |
 
 ## Constraints
 
