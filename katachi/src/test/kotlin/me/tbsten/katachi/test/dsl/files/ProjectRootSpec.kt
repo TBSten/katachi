@@ -5,6 +5,7 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import me.tbsten.katachi.dsl.KatachiInvalidProjectRootException
 import me.tbsten.katachi.dsl.KatachiProjectRootNotFoundException
 import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.files.internal.RealFileSystem
@@ -103,6 +104,53 @@ class ProjectRootSpec : FreeSpec({
 
         val exception = shouldThrow<KatachiProjectRootNotFoundException> { findProjectRoot(fileSystem) }
         exception.message.shouldNotBeNull() shouldContain "above file:///repo/app."
+    }
+
+    "-Dkatachi.projectRoot で検査するツリーを指定する" - {
+        fun given(value: String?): (String) -> String? = { name -> value.takeIf { name == "katachi.projectRoot" } }
+
+        val fileSystem = fakeFileSystem(workingDirectory = "/repo/app") {
+            "/repo" {
+                "gradlew"()
+                "app" { "Main.kt"() }
+            }
+            "/old" { "src" { "Old.kt"() } }
+            "/repo/notes.txt"()
+        }
+
+        "指定したディレクトリがマーカー探索より優先される" {
+            findProjectRoot(fileSystem, given("/old")).path shouldBe FsPath.of("/old")
+        }
+
+        "マーカーが1つも無いディレクトリでもルートにできる" {
+            findProjectRoot(fileSystem, given("/old/src")).path shouldBe FsPath.of("/old/src")
+        }
+
+        "相対パスは作業ディレクトリから解決する" {
+            findProjectRoot(fileSystem, given("../../old")).path shouldBe FsPath.of("/old")
+        }
+
+        "指定が無い・空白だけならマーカー探索になる" {
+            findProjectRoot(fileSystem, given(null)).path shouldBe FsPath.of("/repo")
+            findProjectRoot(fileSystem, given("  ")).path shouldBe FsPath.of("/repo")
+        }
+
+        "存在しないパスは例外になり、違反0件で通ったように見せない" {
+            val exception = shouldThrow<KatachiInvalidProjectRootException> {
+                findProjectRoot(fileSystem, given("/typo"))
+            }
+            exception.path shouldBe FsPath.of("/typo")
+            exception.exists shouldBe false
+            exception.message.shouldNotBeNull() shouldContain "file:///typo, which is not found"
+        }
+
+        "ファイルを指したときも例外になる" {
+            val exception = shouldThrow<KatachiInvalidProjectRootException> {
+                findProjectRoot(fileSystem, given("/repo/notes.txt"))
+            }
+            exception.exists shouldBe true
+            exception.message.shouldNotBeNull() shouldContain "not a directory"
+        }
     }
 
     "このリポジトリ自身でもルートを特定できる" {

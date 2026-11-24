@@ -50,3 +50,28 @@ public class KatachiProjectRootNotFoundException internal constructor(
         "katachi looks for a Gradle wrapper (gradlew), a Maven wrapper (mvnw) or a git " +
         "directory (.git) in the working directory and in every directory above it.",
 )
+
+/**
+ * `-Dkatachi.projectRoot` does not name a directory.
+ *
+ * A mistyped path would otherwise check an empty tree and report no violations, which looks like
+ * a pass. The check stops instead.
+ *
+ * ## Example 1: report which path was rejected
+ * ```kt
+ * shouldThrow<KatachiInvalidProjectRootException> { projectArchitecture.assert() }
+ *     .path.value shouldBe "/tmp/old"
+ * ```
+ *
+ * @property path the directory `katachi.projectRoot` resolved to.
+ * @property exists whether something other than a directory sits at [path].
+ */
+public class KatachiInvalidProjectRootException internal constructor(
+    public val path: FsPath,
+    public val exists: Boolean,
+) : KatachiCheckException(
+    message = "-Dkatachi.projectRoot points at ${fileUri(path.value)}, which is " +
+        (if (exists) "not a directory (a symbolic link is not followed either)" else "not found") + ". " +
+        "Give the path of the directory to check, or drop -Dkatachi.projectRoot to look for the " +
+        "project root from the working directory.",
+)
