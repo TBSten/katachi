@@ -64,7 +64,7 @@ public class KatachiProjectRootNotFoundException internal constructor(
  * ```
  *
  * @property path the directory `katachi.projectRoot` resolved to.
- * @property exists whether something other than a directory sits at [path].
+ * @property exists whether something other than a directory sits at `path`.
  */
 public class KatachiInvalidProjectRootException internal constructor(
     public val path: FsPath,
