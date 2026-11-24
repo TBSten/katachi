@@ -48,7 +48,7 @@ Files directly under the root also get one Role per kind (README, LICENSE, `.git
 
 **For the Gradle files (the wrapper, settings, each module's build script, `gradle.properties`, the version catalog), do not write Roles yourself: write the one line `gradle()`.** katachi declares a `Gradle` group split into one Role per kind of file (it comes with the star import of `me.tbsten.katachi.dsl.gradle.*`). Only `buildSrc` and builds added with `includeBuild`, which it does not cover, need Roles of your own. The four wrapper files (`gradlew`, `gradlew.bat`, `gradle/wrapper/gradle-wrapper.jar`, `gradle/wrapper/gradle-wrapper.properties`) are required, and a missing one is `[MissingFile]`. When the project has no wrapper, or keeps only part of it, write `gradle(requireWrapper = false)` instead.
 
-When you want to check the contents of a build file (the ones marked `constraintOnly` in the report), you do not write a Role either. Write the constraint in a hook of the `gradle()` block, as in `gradle { buildScript { fileConstraint("...") { subject -> ... } } }` (`settingsScript { }` for settings, `versionCatalog { }` for the version catalog). `fileConstraint` and `FileConstraintFailure` are experimental APIs, so the file starts with the two lines in the "experimental APIs" paragraph above, and it imports `me.tbsten.katachi.dsl.FileConstraintFailure` (the import list at the top). A `buildScript { }` constraint receives the `build.gradle(.kts)` of every module, the root included, in `subject.files`. To look at one module only, narrow `subject.files` by path inside the constraint (for example `subject.files.filter { it == "app/build.gradle.kts" }`). Writing a Role inside `gradle { }` with the same name as one of katachi's (`"BuildScript".role { }` and so on) raises a duplicate exception. A Role outside `gradle { }` that declares a build file claims the same file as katachi's `BuildScript` and becomes `[AmbiguousLayout]`.
+A constraint on the contents of a build file (the ones marked `constraintOnly` in the report) is not a Role either; it is written in a hook of the `gradle()` block, in 3-4. In 3-2 write only the `gradle()` line. A Role outside `gradle { }` that declares a build file claims the same file as katachi's `BuildScript` and becomes `[AmbiguousLayout]`.
 
 <details>
 <summary>Common mistakes and how to fix them</summary>
@@ -85,46 +85,9 @@ In the field tests of the install kit, these shapes turned up in 13 projects.
 
 #### Do not stop at placement
 
-**Take the conventions you read in step 1 and go through them as candidates for constraints on the contents (`ktFileContent { }`).** A definition that only says where files go only ever tells you that a file is in the right place. `ktFileContent { }` is an experimental API, so the file that uses it starts with the two lines in the "experimental APIs" paragraph above. How to write it is on the `kt-file-content` page (3-1).
+In 3-2 you write **where the files go**. The constraints on their contents (`ktFileContent { }`, `fileConstraint`) are decided and written in 3-4, after 3-3 has tidied the definition up without changing its result. Do not write them here; they would change the check result that 3-3 compares against.
 
-**Do not write catch-all Roles.** A layout like `commonMain/**/*.kt` — "anything, as long as it is here" — looks like a check and is not one. In a real adoption this let **a test for the same responsibility be created somewhere else entirely, and accepted.** If a Role would end up a catch-all, give it at least one of the following.
-
-- a pattern in the file name (`"*ViewModel".ktFile()`)
-- one constraint on the contents (what a file of this Role declares; write it with `ktFileContent { }`)
-
-A constraint on a file's imports goes in the `import` entries of `ktFileContent { }`. Only the `import`s you write are allowed, so "do not import this" is expressed by not listing that import. Many of a project's conventions are of this form.
-
-```kt
-"ViewModel".role {
-  layout { /* ... */ }
-
-  ktFileContent {
-    `package`("com.example.viewModel")
-
-    // android.** is not listed. Importing it is a violation
-    `import`("kotlin.**")
-    `import`("kotlinx.coroutines.**")
-    `import`("androidx.lifecycle.**")
-    `import`("com.example.**")
-
-    required(`class`, fileName) {
-      allow(anythingElse)
-    }
-  }
-}
-```
-
-Constraint names follow `constraintNames` from 1-3. With `numbered`, prefix the name with the id of the question the constraint came from (`q3`, `cq2` and so on), as in `"q3: Does not import the android package".ktFileContent { }`. With `plain`, write the name without the id (`"Does not import the android package".ktFileContent { }`).
-
-#### Dividing the work with the static analysis already there
-
-The project may already run detekt, Android Lint, ktlint or a compiler plugin of its own. **Do not drop a constraint because something else covers it.** In a real adoption the agent leaned so hard on avoiding duplication that it under-constrained, and **the only convention violation actually caught came from the existing checker.**
-
-Decide like this.
-
-- **A convention that belongs to a Role goes into katachi.** "A ViewModel never calls a repository directly" *is* the definition of that Role. Another tool checking something similar does not change that — having it here keeps "what this Role is" in one place
-- **The only safe thing to drop is a rule an existing tool already fails the build on, with no per-file suppression.** If it can be suppressed file by file, katachi's copy still earns its place
-- When unsure, write it. A constraint is easy to delete later
+**Do not write catch-all Roles.** A layout like `commonMain/**/*.kt` — "anything, as long as it is here" — looks like a check and is not one. In a real adoption this let **a test for the same responsibility be created somewhere else entirely, and accepted.** Give a Role a pattern in the file name wherever one exists (`"*ViewModel".ktFile()`). A Role that has none (everything in one directory, say) is not left as it is: it needs a constraint on its contents, which 3-4 writes. Note the Role in the `note` of its `roles` entry in the report ("needs a constraint, 3-4") so 3-4 does not miss it.
 
 #### The verification module needs Roles too
 

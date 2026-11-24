@@ -298,7 +298,7 @@ block(sys.argv[1] + "/check-list.html", "report")
 print(" ".join(i["id"] for st in c["steps"] for i in st["items"]))
 PY
 )
-		want="0-1 0-2 1-1 1-2 1-3 2-1 2-2 3-1 3-2 3-3 4-1 4-2 4-3 5-1 5-2 6-1 6-2 6-3 6-4"
+		want="0-1 0-2 1-1 1-2 1-3 2-1 2-2 3-1 3-2 3-3 3-4 4-1 4-2 4-3 5-1 5-2 6-1 6-2 6-3 6-4"
 		[ "${out}" = "${want}" ] && ok "skill のテンプレート（${l}）は JSON が読め、項目 id が手順と合う" ||
 			ng "skill のテンプレート（${l}）は JSON が読め、項目 id が手順と合う" "${out}"
 	done

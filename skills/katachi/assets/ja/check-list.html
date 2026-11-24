@@ -1294,6 +1294,8 @@
   .rules-head { margin: 0 0 2px; color: var(--muted); font-size: 13px; }
   .rules ul { margin: 0; padding-left: 18px; }
   .rules li { margin: 2px 0; overflow-wrap: anywhere; }
+  .rules .rule-by { margin-left: 8px; font-size: 12px; vertical-align: 1px; }
+  .rules .rule-how { color: var(--muted); font-size: 13px; }
   .rules p.empty { margin: 0; }
 
   @media (max-width: 640px) {
@@ -1438,12 +1440,17 @@
         },
         {
           "id": "3-2",
-          "label": "architecture { } 定義を書き、検査用モジュールの test の出力をリファクタリング前の基準として保存した",
+          "label": "architecture { } 定義（ファイルの置き場所）を書き、検査用モジュールの test の出力をリファクタリング前の基準として保存した",
           "done": false
         },
         {
           "id": "3-3",
           "label": "定義をリファクタリングし（ファイル・パッケージの分割、説明、共通化）、検査のログを前後で比べて、検査結果が変わらないことを確かめた",
+          "done": false
+        },
+        {
+          "id": "3-4",
+          "label": "各 Role のルールをどう検査するか（ktFileContent / fileConstraint / 検査しない）を決め、内容の制約を書き、どれも実際に違反を検出することを確かめた",
           "done": false
         }
       ]
@@ -1610,6 +1617,11 @@
         },
         {
           "id": "3-3",
+          "label": "…",
+          "done": true
+        },
+        {
+          "id": "3-4",
           "label": "…",
           "done": true
         }
@@ -1795,8 +1807,15 @@
       "constraintOnly": false,
       "layout": "app/src/main/kotlin/<package>/ui/*/*ViewModel.kt",
       "naming": "サフィックス ViewModel。ファイル名と同名のクラスを1つだけ持つ。",
-      "allowed": ["UI State の保持と更新", "UseCase の呼び出し", "viewModelScope の管理"],
-      "forbidden": ["Repository への直接アクセス", "Context / View への参照保持"],
+      "allowed": [
+        { "text": "UI State の保持と更新", "by": "none", "how": "判断の話で、制約では言えない" },
+        { "text": "UseCase の呼び出し", "by": "ktFileContent", "how": "com.example.domain.**（UseCase のパッケージ）の import を許す" },
+        { "text": "viewModelScope の管理", "by": "none", "how": "ファイルが宣言・import するものの決まりではない" }
+      ],
+      "forbidden": [
+        { "text": "Repository への直接アクセス", "by": "ktFileContent", "how": "import は kotlin.**、kotlinx.coroutines.**、androidx.lifecycle.**、com.example.domain.** だけ" },
+        { "text": "Context / View への参照保持", "by": "ktFileContent", "how": "android.content.Context と android.view.** を import しない" }
+      ],
       "examples": [
         "app/src/main/kotlin/com/example/app/ui/home/HomeViewModel.kt",
         "app/src/main/kotlin/com/example/app/ui/profile/ProfileViewModel.kt"
@@ -1812,7 +1831,9 @@
       "layout": "app/build.gradle.kts",
       "naming": "固定名",
       "allowed": [],
-      "forbidden": [],
+      "forbidden": [
+        { "text": "namespace がアプリのパッケージ名と違う", "by": "fileConstraint", "how": "gradle() のフック（buildScript { }）で、app/build.gradle.kts の namespace がアプリのパッケージ名と同じことを確かめる" }
+      ],
       "examples": ["app/build.gradle.kts"],
       "count": 1,
       "note": "namespace とアプリのパッケージ名が一致することを、gradle() のフックで検査する（Role は作らない）"
@@ -2204,6 +2225,8 @@
     forbidden: '書いてはいけないもの',
     examples: '実例ファイル',
     countLabel: '件数',
+    byLabel: { ktFileContent: 'ktFileContent', fileConstraint: 'fileConstraint', none: '検査しない' },
+    byTitle: 'katachi がこのルールを検査する方法',
     note: '備考',
     noGroup: 'group 未記入',
     excluded: ['パス', '理由'],
@@ -2323,6 +2346,32 @@
     if (m) parts = [m[1]].concat(m[2].split(/[。;；]\s*/));
     else parts = whole.split(/[。;；]\s*/);
     return parts.map(function (part) { return part.trim(); }).filter(function (part) { return part; });
+  }
+  // allowed / forbidden: a string is a rule in words; { text, by, how } also says how it is checked (3-4)
+  function ruleBullets(values, key) {
+    if (blank(values)) return none();
+    var ul = el('ul');
+    values.forEach(function (item) {
+      var li = el('li');
+      if (item && typeof item === 'object') {
+        li.appendChild(text(blank(item.text) ? '' : String(item.text)));
+        if (!blank(item.by)) {
+          var badge = el('span', 'badge rule-by' + (item.by === 'none' ? ' badge-quiet' : ' badge-note'));
+          badge.textContent = (T.byLabel && T.byLabel[item.by]) || String(item.by);
+          badge.setAttribute('title', T.byTitle);
+          li.appendChild(badge);
+        }
+        if (!blank(item.how)) {
+          var how = el('div', 'rule-how');
+          how.textContent = String(item.how);
+          li.appendChild(how);
+        }
+      } else {
+        li.textContent = String(item);
+      }
+      ul.appendChild(li);
+    });
+    return ul;
   }
   function bulletsOrNone(values) {
     if (blank(values)) return none();
@@ -4458,7 +4507,7 @@
       var label = el('p', 'rules-head');
       label.textContent = spec[0];
       col.appendChild(label);
-      col.appendChild(targetBullets(bulletsOrNone(spec[2]), roleKey + '.' + spec[3]));
+      col.appendChild(targetBullets(ruleBullets(spec[2], ''), roleKey + '.' + spec[3]));
       rules.appendChild(col);
     });
     detail.appendChild(rules);

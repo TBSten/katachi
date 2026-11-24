@@ -1294,6 +1294,8 @@
   .rules-head { margin: 0 0 2px; color: var(--muted); font-size: 13px; }
   .rules ul { margin: 0; padding-left: 18px; }
   .rules li { margin: 2px 0; overflow-wrap: anywhere; }
+  .rules .rule-by { margin-left: 8px; font-size: 12px; vertical-align: 1px; }
+  .rules .rule-how { color: var(--muted); font-size: 13px; }
   .rules p.empty { margin: 0; }
 
   @media (max-width: 640px) {
@@ -1438,12 +1440,17 @@
         },
         {
           "id": "3-2",
-          "label": "Wrote the architecture { } definition and saved the verification module's test output as the pre-refactoring reference log",
+          "label": "Wrote the architecture { } definition (where files go) and saved the verification module's test output as the pre-refactoring reference log",
           "done": false
         },
         {
           "id": "3-3",
           "label": "Refactored the definition (splitting files and packages, descriptions, shared parts) and confirmed by comparing the logs of the check before and after that the result did not change",
+          "done": false
+        },
+        {
+          "id": "3-4",
+          "label": "Decided how each rule of every Role is checked (ktFileContent / fileConstraint / not checked), wrote the constraints on contents, and confirmed that each one fires",
           "done": false
         }
       ]
@@ -1610,6 +1617,11 @@
         },
         {
           "id": "3-3",
+          "label": "…",
+          "done": true
+        },
+        {
+          "id": "3-4",
           "label": "…",
           "done": true
         }
@@ -1795,8 +1807,15 @@
       "constraintOnly": false,
       "layout": "app/src/main/kotlin/<package>/ui/*/*ViewModel.kt",
       "naming": "Suffix ViewModel. Exactly one class per file, matching the file name.",
-      "allowed": ["Holding and updating UI state", "Calling UseCases", "Managing viewModelScope"],
-      "forbidden": ["Direct access to a Repository", "Holding a reference to Context / View"],
+      "allowed": [
+        { "text": "Holding and updating UI state", "by": "none", "how": "A matter of judgement; no constraint can say it" },
+        { "text": "Calling UseCases", "by": "ktFileContent", "how": "May import com.example.domain.** (the UseCase package)" },
+        { "text": "Managing viewModelScope", "by": "none", "how": "Not a rule about what a file declares or imports" }
+      ],
+      "forbidden": [
+        { "text": "Direct access to a Repository", "by": "ktFileContent", "how": "Imports only kotlin.**, kotlinx.coroutines.**, androidx.lifecycle.**, com.example.domain.**" },
+        { "text": "Holding a reference to Context / View", "by": "ktFileContent", "how": "No import of android.content.Context or android.view.**" }
+      ],
       "examples": [
         "app/src/main/kotlin/com/example/app/ui/home/HomeViewModel.kt",
         "app/src/main/kotlin/com/example/app/ui/profile/ProfileViewModel.kt"
@@ -1812,7 +1831,9 @@
       "layout": "app/build.gradle.kts",
       "naming": "Fixed name",
       "allowed": [],
-      "forbidden": [],
+      "forbidden": [
+        { "text": "namespace that differs from the app package name", "by": "fileConstraint", "how": "Hook of gradle() (buildScript { }): the namespace of app/build.gradle.kts equals the app package name" }
+      ],
       "examples": ["app/build.gradle.kts"],
       "count": 1,
       "note": "Checks with a hook on gradle() that the namespace matches the app package name (no Role is created)"
@@ -2204,6 +2225,8 @@
     forbidden: 'Not allowed',
     examples: 'Example files',
     countLabel: 'Count',
+    byLabel: { ktFileContent: 'ktFileContent', fileConstraint: 'fileConstraint', none: 'Not checked' },
+    byTitle: 'How katachi checks this rule',
     note: 'Note',
     noGroup: 'No group',
     excluded: ['Path', 'Reason'],
@@ -2323,6 +2346,32 @@
     if (m) parts = [m[1]].concat(m[2].split(/[。;；]\s*/));
     else parts = whole.split(/[。;；]\s*/);
     return parts.map(function (part) { return part.trim(); }).filter(function (part) { return part; });
+  }
+  // allowed / forbidden: a string is a rule in words; { text, by, how } also says how it is checked (3-4)
+  function ruleBullets(values, key) {
+    if (blank(values)) return none();
+    var ul = el('ul');
+    values.forEach(function (item) {
+      var li = el('li');
+      if (item && typeof item === 'object') {
+        li.appendChild(text(blank(item.text) ? '' : String(item.text)));
+        if (!blank(item.by)) {
+          var badge = el('span', 'badge rule-by' + (item.by === 'none' ? ' badge-quiet' : ' badge-note'));
+          badge.textContent = (T.byLabel && T.byLabel[item.by]) || String(item.by);
+          badge.setAttribute('title', T.byTitle);
+          li.appendChild(badge);
+        }
+        if (!blank(item.how)) {
+          var how = el('div', 'rule-how');
+          how.textContent = String(item.how);
+          li.appendChild(how);
+        }
+      } else {
+        li.textContent = String(item);
+      }
+      ul.appendChild(li);
+    });
+    return ul;
   }
   function bulletsOrNone(values) {
     if (blank(values)) return none();
@@ -4458,7 +4507,7 @@
       var label = el('p', 'rules-head');
       label.textContent = spec[0];
       col.appendChild(label);
-      col.appendChild(targetBullets(bulletsOrNone(spec[2]), roleKey + '.' + spec[3]));
+      col.appendChild(targetBullets(ruleBullets(spec[2], ''), roleKey + '.' + spec[3]));
       rules.appendChild(col);
     });
     detail.appendChild(rules);
