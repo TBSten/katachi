@@ -70,6 +70,7 @@ private val FILES_WITHOUT_SDK_CALLS: Map<String, String> = mapOf(
     "DefinitionErrorAnnotation" to "types that hold a PsiFile, a VirtualFile and a TextRange; no SDK call",
     "KatachiCodeVisionGroup" to "returns constant strings for the settings page; no SDK call",
     "NoRolePanels" to "a weak map of editors to panels; no SDK call, only SDK types as keys",
+    "KatachiScriptRunConfiguration" to "the Run framework's own callbacks: an ExecutionException (no CLI, no script) must reach the framework, which shows it in the Run tool window, so sdkCall would swallow it; the one SDK lookup that is not an exception, KatachiCliEnvironment, wraps its calls in sdkCall",
     "KatachiMcpToolset" to "the MCP Server's entry: its `call` catches every failure of the tools itself and turns it into mcpFail (which must reach the server, so sdkCall would swallow it); the SDK calls behind it are in KatachiMcpTools' collaborators, inside sdkCall",
 )
 

@@ -9,6 +9,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import me.tbsten.katachi.intellij.data.script.ScriptClasspath
 import me.tbsten.katachi.intellij.data.script.ScriptRun
+import me.tbsten.katachi.intellij.ide.sdkCall
 
 /**
  * Run in the context menu of a `*.katachi.kts`, and the configuration the ▶ in its gutter runs. Offered only where the
@@ -34,8 +35,8 @@ internal class KatachiScriptRunProducer(
     override fun isConfigurationFromContext(configuration: KatachiScriptRunConfiguration, context: ConfigurationContext): Boolean =
         scriptOf(context)?.path == configuration.scriptPath
 
-    private fun scriptOf(context: ConfigurationContext): VirtualFile? {
-        val file = context.psiLocation?.containingFile?.originalFile?.virtualFile ?: return null
-        return file.takeIf { ScriptRun.runnable(it.name, answerOf()) }
-    }
+    private fun scriptOf(context: ConfigurationContext): VirtualFile? = sdkCall("find the katachi script of the run context") {
+        val file = context.psiLocation?.containingFile?.originalFile?.virtualFile
+        file?.takeIf { ScriptRun.runnable(it.name, answerOf()) }
+    }.getOrNull()
 }
