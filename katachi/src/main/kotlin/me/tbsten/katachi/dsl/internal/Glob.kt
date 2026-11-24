@@ -96,6 +96,8 @@ public class Glob private constructor(
         if (hasEmptyLevel(path)) null else regex.matchEntire(path)
 
     private fun hasEmptyLevel(path: String): Boolean {
+        // A rooted path that is only the separator is the root module `":"`, which `:**` has to keep matching.
+        if (rooted && path.length == 1 && path[0] == separator) return false
         var levelStart = if (rooted && path.firstOrNull() == separator) 1 else 0
         if (levelStart == path.length) return true
         for (index in levelStart until path.length) {

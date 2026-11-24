@@ -183,7 +183,12 @@ class GlobMatchingSpec : FreeSpec({
             glob.matches(":feature:") shouldBe false
             glob.matches(":feature::home") shouldBe false
             glob.matches("feature:home") shouldBe false
-            modulePath(":**").matches(":") shouldBe false
+        }
+
+        "ルートモジュールの : は、: で始まる ** に一致し続ける" {
+            modulePath(":**").matches(":") shouldBe true
+            modulePath(":**").match(":").shouldNotBeNull().wildcards shouldBe emptyList<String>()
+            modulePath(":**").matches("::") shouldBe false
         }
 
         "実在のパスの答えは変わらない" {
