@@ -133,7 +133,9 @@
               "declarationsChecked": false,
               "declarations": [],
               "missing": [],
-              "unexplainedReason": "IllegalStateException: no rules for Broken"
+              "unexplainedReason": "IllegalStateException: no rules for Broken",
+              "packageLine": null,
+              "imports": null
             },
             {
               "file": "src/service/HealthService.kt",
@@ -158,7 +160,29 @@
                 }
               ],
               "missing": [],
-              "unexplainedReason": null
+              "unexplainedReason": null,
+              "packageLine": {
+                "name": "com.example",
+                "line": 1,
+                "verdict": "Allowed",
+                "rules": [
+                  {
+                    "text": "package(\"com.**\")",
+                    "declaredAt": {
+                      "fileName": "ExplainingRole.kt",
+                      "line": 21
+                    }
+                  }
+                ]
+              },
+              "imports": [
+                {
+                  "path": "java.util.List",
+                  "line": 2,
+                  "verdict": "Unexpected",
+                  "rules": []
+                }
+              ]
             },
             {
               "file": "src/service/UserServiceBad.kt",
@@ -183,7 +207,9 @@
                   }
                 }
               ],
-              "unexplainedReason": null
+              "unexplainedReason": null,
+              "packageLine": null,
+              "imports": null
             }
           ]
         },

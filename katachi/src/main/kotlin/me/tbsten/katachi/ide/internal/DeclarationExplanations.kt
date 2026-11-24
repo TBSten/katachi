@@ -68,6 +68,8 @@ private fun fileDeclarationsJsonOf(file: FileDeclarationsExplanation): FileDecla
     declarations = file.declarations.mapNotNull(::declarationJsonOf),
     missing = file.missing.map(::ruleJsonOf),
     unexplainedReason = file.unexplainedReason,
+    packageLine = file.packageLine?.let { PackageLineJson(it.name, it.line, it.verdict.name, it.rules.map(::ruleJsonOf)) },
+    imports = file.imports?.map { ImportLineJson(it.path, it.line, it.verdict.name, it.rules.map(::ruleJsonOf)) },
 )
 
 private fun declarationJsonOf(declaration: DeclarationExplanation): DeclarationJson? {

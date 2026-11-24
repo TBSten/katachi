@@ -7,6 +7,8 @@ import me.tbsten.katachi.dsl.FileConstraintSubject
 import me.tbsten.katachi.dsl.internal.DeclarationExplanation
 import me.tbsten.katachi.dsl.internal.DeclarationVerdict
 import me.tbsten.katachi.dsl.internal.FileDeclarationsExplanation
+import me.tbsten.katachi.dsl.internal.ImportExplanation
+import me.tbsten.katachi.dsl.internal.PackageExplanation
 import me.tbsten.katachi.dsl.internal.RuleExplanation
 
 internal fun explainKtFiles(
@@ -28,8 +30,38 @@ internal fun explainKtFile(file: String, facts: KtFileFacts, rules: FileRules): 
         declarations = findings.fileLevel.map(::explanationOf),
         missing = findings.fileLevelMissing.map(::ruleExplanationOf),
         unexplainedReason = null,
+        packageLine = packageExplanationOf(rules, facts),
+        imports = importExplanationsOf(rules, facts),
     )
 }
+
+// Decided by the same functions as the check (outcomeOfPackage, outcomesOfImports), so that the two cannot disagree.
+// A file with no package, or a line the backend could not place, has no line to show it at.
+private fun packageExplanationOf(rules: FileRules, facts: KtFileFacts): PackageExplanation? {
+    val name = facts.packageName ?: return null
+    val line = facts.packageLine ?: return null
+    val (verdict, decided) = when (val outcome = outcomeOfPackage(rules.packages, facts)) {
+        is PackageOutcome.Allowed -> DeclarationVerdict.Allowed to outcome.rules.map(::ruleExplanationOf)
+        is PackageOutcome.Prohibited -> DeclarationVerdict.Prohibited to listOf(ruleExplanationOf(outcome.finding.rule))
+        is PackageOutcome.Unexpected -> DeclarationVerdict.Unexpected to emptyList()
+    }
+    return PackageExplanation(name, line, verdict, decided)
+}
+
+private fun importExplanationsOf(rules: FileRules, facts: KtFileFacts): List<ImportExplanation> =
+    outcomesOfImports(rules.imports, facts.imports).mapNotNull { judged ->
+        val line = judged.import.line ?: return@mapNotNull null
+        val (verdict, decided) = when (val outcome = judged.outcome) {
+            is ImportOutcome.Allowed -> DeclarationVerdict.Allowed to outcome.rules.map(::ruleExplanationOf)
+            is ImportOutcome.Prohibited -> DeclarationVerdict.Prohibited to listOf(ruleExplanationOf(outcome.rule))
+            ImportOutcome.Unexpected -> DeclarationVerdict.Unexpected to emptyList()
+        }
+        ImportExplanation(judged.import.path, line, verdict, decided)
+    }
+
+private fun ruleExplanationOf(rule: ImportRule): RuleExplanation = RuleExplanation(renderImport(rule), rule.declaredAt)
+
+private fun ruleExplanationOf(rule: PackageRule): RuleExplanation = RuleExplanation(renderPackage(rule), rule.declaredAt)
 
 private fun explanationOf(judged: JudgedDeclaration): DeclarationExplanation {
     val (verdict, rules, difference) = when (val outcome = judged.outcome) {

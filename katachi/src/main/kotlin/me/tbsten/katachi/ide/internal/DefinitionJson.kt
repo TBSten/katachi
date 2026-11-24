@@ -121,7 +121,16 @@ internal class FileDeclarationsJson(
     val declarations: List<DeclarationJson>,
     val missing: List<RuleJson>,
     val unexplainedReason: String?,
+    // How the `package` line and each import were decided. Added after the first keys, so an older JSON has none (`null`: not explained).
+    val packageLine: PackageLineJson? = null,
+    val imports: List<ImportLineJson>? = null,
 )
+
+@Serializable
+internal class PackageLineJson(val name: String, val line: Int, val verdict: String, val rules: List<RuleJson>)
+
+@Serializable
+internal class ImportLineJson(val path: String, val line: Int, val verdict: String, val rules: List<RuleJson>)
 
 @Serializable
 internal class DeclarationJson(
