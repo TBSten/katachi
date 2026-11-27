@@ -58,8 +58,8 @@ Tests that check behaviour, this definition itself, and the documentation and sn
 How the files that declare the architecture are laid out
 
 - [Architecture definition entry](./KatachiDefinition/ArchitectureDefinitionEntry.md) ... The one file whose architecture { } gathers every group, so the definition is read from here
-- [Group definition](./KatachiDefinition/GroupDefinition.md) ... One <Name>Group.kt per group, in the directory named after the group, listing the roles it is made of
-- [Role definition](./KatachiDefinition/RoleDefinition.md) ... One <Name>Role.kt per role: the extension function that declares it, and the private parts only it uses
+- [Group definition](./KatachiDefinition/GroupDefinition.md) ... One `<Name>Group.kt` per group, in the directory named after the group, listing the roles it is made of
+- [Role definition](./KatachiDefinition/RoleDefinition.md) ... One `<Name>Role.kt` per role: the extension function that declares it, and the private parts only it uses
 - [Architecture test](./KatachiDefinition/ArchitectureTest.md) ... The test that checks the whole project against the definition
 
 ## API

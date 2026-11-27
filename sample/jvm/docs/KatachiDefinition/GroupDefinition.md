@@ -2,11 +2,12 @@
 
 # Group definition
 
-One <Name>Group.kt per group, in the directory named after the group, listing the roles it is made of
+One `<Name>Group.kt` per group, in the directory named after the group, listing the roles it is made of
 
 A group is an extension function on `DeclarationContainerScope` that calls the role
 functions, so a role moves into another group by moving its file. The function is named
-after the file (`DomainGroup.kt` declares `domainGroup()`) and is the only declaration in it.
+after the file (`DomainGroup.kt` declares `domainGroup()`) and is the only function in it. A property
+such as a document section the group fills in may sit beside it.
 
 ## Placement
 

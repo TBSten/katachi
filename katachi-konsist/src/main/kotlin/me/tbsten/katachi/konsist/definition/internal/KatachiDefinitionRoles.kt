@@ -180,17 +180,18 @@ private val ENTRY_TEXT = RoleText(
 
 private val GROUP_TEXT = RoleText(
     title = "Group definition",
-    summary = "One <Name>Group.kt per group, in the directory named after the group, listing the roles it is made of",
+    summary = "One `<Name>Group.kt` per group, in the directory named after the group, listing the roles it is made of",
     description = """
         A group is an extension function on `DeclarationContainerScope` that calls the role
         functions, so a role moves into another group by moving its file. The function is named
-        after the file (`DomainGroup.kt` declares `domainGroup()`) and is the only declaration in it.
+        after the file (`DomainGroup.kt` declares `domainGroup()`) and is the only function in it. A property
+        such as a document section the group fills in may sit beside it.
     """.trimIndent(),
 )
 
 private val ROLE_TEXT = RoleText(
     title = "Role definition",
-    summary = "One <Name>Role.kt per role: the extension function that declares it, and the private parts only it uses",
+    summary = "One `<Name>Role.kt` per role: the extension function that declares it, and the private parts only it uses",
     description = """
         A role is an extension function on `DeclarationContainerScope`, named after the file without
         `Role` (`DslRole.kt` declares `dsl()`). What only that role needs stays `private` in the

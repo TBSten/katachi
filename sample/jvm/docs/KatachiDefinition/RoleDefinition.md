@@ -2,7 +2,7 @@
 
 # Role definition
 
-One <Name>Role.kt per role: the extension function that declares it, and the private parts only it uses
+One `<Name>Role.kt` per role: the extension function that declares it, and the private parts only it uses
 
 A role is an extension function on `DeclarationContainerScope`, named after the file without
 `Role` (`DslRole.kt` declares `dsl()`). What only that role needs stays `private` in the
