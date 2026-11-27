@@ -81,7 +81,8 @@ internal fun ScriptContext.runKatachiScriptFile(file: String, args: List<String>
     val classpath = scriptClasspath().joinToString(java.io.File.pathSeparator)
     // -no-reflect: with a definition from -cp, `kotlin` 2.4.21 puts kotlin-reflect where the standard library
     // is not visible, and the first `::class` fails with NoClassDefFoundError. katachi needs no kotlin-reflect.
-    val command = listOf("kotlin", "-no-reflect", "-cp", classpath, script.toString()) + args
+    // `kotlin` is `kotlin.bat` on Windows, which a process cannot start by the name without its extension.
+    val command = listOf(if (windows) "kotlin.bat" else "kotlin", "-no-reflect", "-cp", classpath, script.toString()) + args
     return try {
         launch.launch(command, mapOf(KATACHI_SCRIPT_FILE_ENV to script.toString()), cwd)
     } catch (_: IOException) {
