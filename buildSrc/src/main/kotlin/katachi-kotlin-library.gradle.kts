@@ -77,7 +77,7 @@ dokka {
 // 2.4 系になり、そちらの metadata で同じ問題が起きる。
 //
 // **代償**: katachi 自身が Kotlin 2.2 にある言語機能しか使えなくなる。
-// 下限を上げるときは README と katachi-install.sh の KOTLIN_MIN_* も一緒に動かすこと。
+// 下限を上げるときは README と katachi-script の ProjectProbe.kt の KOTLIN_MIN_* も一緒に動かすこと。
 kotlin {
     compilerOptions {
         languageVersion.set(KotlinVersion.KOTLIN_2_2)
