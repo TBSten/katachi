@@ -129,10 +129,12 @@ internal class DefinitionServiceTest : DefinitionServiceTestBase() {
         val progress = com.intellij.openapi.progress.ProgressManager.getInstance() as com.intellij.openapi.progress.impl.ProgressManagerImpl
 
         // Every check of the walk is seen by a hook: one for each file at least.
+        // The hooks are global: count only the checks of this thread, or a platform thread's check is taken for the walk's.
+        val walkingThread = Thread.currentThread()
         projectService.siteResolver.invalidateRoots()
         var checks = 0
         val counting = com.intellij.openapi.progress.impl.CoreProgressManager.CheckCanceledHook {
-            checks++
+            if (Thread.currentThread() === walkingThread) checks++
             false
         }
         progress.addCheckCanceledHook(counting)
@@ -147,7 +149,7 @@ internal class DefinitionServiceTest : DefinitionServiceTestBase() {
         projectService.siteResolver.invalidateRoots()
         var seen = 0
         val cancelling = com.intellij.openapi.progress.impl.CoreProgressManager.CheckCanceledHook {
-            if (++seen == FILES / 2) throw com.intellij.openapi.progress.ProcessCanceledException()
+            if (Thread.currentThread() === walkingThread && ++seen == FILES / 2) throw com.intellij.openapi.progress.ProcessCanceledException()
             false
         }
         progress.addCheckCanceledHook(cancelling)
