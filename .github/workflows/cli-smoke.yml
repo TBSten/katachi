@@ -148,3 +148,23 @@ jobs:
           call "%CLI%" hello.katachi.kts > kts.txt || exit /b 1
           type kts.txt
           findstr /C:"katachi-kts-ok" kts.txt || exit /b 1
+
+      # Only when the step above failed: what `katachi <file>.katachi.kts` starts, run by hand, to see which of its arguments is wrong.
+      - name: Diagnose the .katachi.kts launch (Windows)
+        if: ${{ failure() && runner.os == 'Windows' }}
+        continue-on-error: true
+        shell: pwsh
+        env:
+          KATACHI: ${{ steps.versions.outputs.katachi }}
+        run: |
+          $cli = Join-Path $PWD "katachi-script\build\cli\katachi-cli-$env:KATACHI\bin\katachi.cmd"
+          Set-Location (Join-Path $env:RUNNER_TEMP "project")
+          Get-ChildItem Env: | Where-Object { $_.Name -match '^(KATACHI|_?KOTLIN|JAVA)' } | ForEach-Object { "$($_.Name)=$($_.Value)" }
+          $cp = @(& $cli internal script-classpath)
+          "classpath entries: $($cp.Count)"
+          $cp
+          $kts = Join-Path $PWD "hello.katachi.kts"
+          $env:KATACHI_SCRIPT_FILE = $kts
+          Remove-Item Env:KATACHI_WINDOWS_COMMAND_LINE -ErrorAction SilentlyContinue
+          & kotlin.bat -no-reflect -cp ($cp -join ';') $kts
+          "exit=$LASTEXITCODE"
