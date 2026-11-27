@@ -11,7 +11,15 @@ internal class KatachiCliLocatorTest : TestCase() {
 
     fun `test PATH の順に探し そのあとに brew と local bin を探す`() {
         assertEquals(
-            listOf("/a/katachi", "/b/katachi", "/opt/homebrew/bin/katachi", "/usr/local/bin/katachi", "/Users/me/.local/bin/katachi").map(::Path),
+            listOf(
+                "/a/katachi",
+                "/b/katachi",
+                "/opt/homebrew/bin/katachi",
+                "/usr/local/bin/katachi",
+                "/home/linuxbrew/.linuxbrew/bin/katachi",
+                "/Users/me/.linuxbrew/bin/katachi",
+                "/Users/me/.local/bin/katachi",
+            ).map(::Path),
             locator("/a:/b").candidates(),
         )
     }
@@ -34,15 +42,41 @@ internal class KatachiCliLocatorTest : TestCase() {
     }
 
     fun `test katachi に渡す PATH は 探した場所を同じ順に並べたもの`() {
-        assertEquals("/a:/opt/homebrew/bin:/usr/local/bin:/Users/me/.local/bin", locator("/a:/opt/homebrew/bin").searchPath())
+        assertEquals(
+            "/a:/opt/homebrew/bin:/usr/local/bin:/home/linuxbrew/.linuxbrew/bin:/Users/me/.linuxbrew/bin:/Users/me/.local/bin",
+            locator("/a:/opt/homebrew/bin").searchPath(),
+        )
     }
 
     fun `test IDE が PATH を持たなくても katachi に渡す PATH には brew の場所が入る`() {
-        assertEquals("/opt/homebrew/bin:/usr/local/bin:/Users/me/.local/bin", locator(null).searchPath())
+        assertEquals(
+            "/opt/homebrew/bin:/usr/local/bin:/home/linuxbrew/.linuxbrew/bin:/Users/me/.linuxbrew/bin:/Users/me/.local/bin",
+            locator(null).searchPath(),
+        )
+    }
+
+    fun `test Linux の Homebrew の場所でも見つかる`() {
+        assertEquals(
+            Path("/home/linuxbrew/.linuxbrew/bin/katachi"),
+            locator(null, setOf(Path("/home/linuxbrew/.linuxbrew/bin/katachi"))).locate(),
+        )
+        assertEquals(Path("/Users/me/.linuxbrew/bin/katachi"), locator(null, setOf(Path("/Users/me/.linuxbrew/bin/katachi"))).locate())
+    }
+
+    fun `test Windows では Scoop の shims を PATH のあとに探す`() {
+        val candidates = locator("C:\\tools", windows = true).candidates()
+        assertEquals(6, candidates.size)
+        assertEquals(listOf("katachi.bat", "katachi.cmd", "katachi.exe"), candidates.takeLast(3).map { it.fileName.toString() })
+        assertTrue(candidates.takeLast(3).all { it.parent.toString().endsWith("scoop\\shims") })
+    }
+
+    fun `test Windows の PATH に katachi に渡す shims の場所が入る`() {
+        assertEquals("C:\\tools;/Users/me\\scoop\\shims", locator("C:\\tools", windows = true).searchPath())
     }
 
     fun `test Windows では セミコロン区切りで bat と cmd と exe を探す`() {
         val candidates = locator("C:\\katachi\\bin;C:\\tools", windows = true).candidates().map { it.fileName.toString() }
-        assertEquals(listOf("katachi.bat", "katachi.cmd", "katachi.exe", "katachi.bat", "katachi.cmd", "katachi.exe"), candidates)
+        // Two PATH entries and the shims of Scoop.
+        assertEquals(List(3) { listOf("katachi.bat", "katachi.cmd", "katachi.exe") }.flatten(), candidates)
     }
 }
