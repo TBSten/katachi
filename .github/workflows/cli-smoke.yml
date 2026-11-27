@@ -113,20 +113,21 @@ jobs:
           & $cli doctor --lang en
           if ($LASTEXITCODE -ne 0) { exit 1 }
 
-      # The arguments reach katachi as typed: `--package=...` is one argument for katachi, but cmd.exe splits it at the "=" when a
+      # The arguments reach katachi as typed: `--package=...` and `--kotlin=...` are one argument each for katachi, but cmd.exe splits it at the "=" when a
       # batch file reads %1; and a `.katachi.kts` is run through `kotlin` with the jars of this katachi.
       - name: scaffold and a .katachi.kts (Linux)
         if: ${{ runner.os == 'Linux' }}
         shell: bash
         env:
           KATACHI: ${{ steps.versions.outputs.katachi }}
+          KOTLIN: ${{ steps.versions.outputs.kotlin }}
         run: |
           cli="${PWD}/katachi-script/build/cli/katachi-cli-${KATACHI}/bin/katachi"
           project="${RUNNER_TEMP}/project"
           mkdir -p "${project}"
           echo 'rootProject.name = "p"' > "${project}/settings.gradle.kts"
           cd "${project}"
-          "${cli}" scaffold --package=com.example.app
+          "${cli}" scaffold --package=com.example.app --kotlin="${KOTLIN}"
           test -f architecture-test/build.gradle.kts
           echo 'println("katachi-kts-ok")' > hello.katachi.kts
           "${cli}" hello.katachi.kts | tee kts.txt
@@ -141,7 +142,7 @@ jobs:
           mkdir "%PROJECT%" || exit /b 1
           echo rootProject.name = "p"> "%PROJECT%\settings.gradle.kts"
           cd /d "%PROJECT%" || exit /b 1
-          call "%CLI%" scaffold --package=com.example.app || exit /b 1
+          call "%CLI%" scaffold --package=com.example.app --kotlin=${{ steps.versions.outputs.kotlin }} || exit /b 1
           if not exist architecture-test\build.gradle.kts exit /b 1
           echo println("katachi-kts-ok")> hello.katachi.kts
           call "%CLI%" hello.katachi.kts > kts.txt || exit /b 1
