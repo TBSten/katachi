@@ -27,7 +27,7 @@ internal fun fileConstraintDeclarationOf(
     scope: FileConstraintRange,
     check: FileConstraint,
 ): FileConstraintDeclaration {
-    if (name != null && (name.isBlank() || name.any { it == '\n' || it == '\r' })) {
+    if (name != null && isRefusedFileConstraintName(name)) {
         throw KatachiFileConstraintNameException(name = name, declaredAt = declaredAt)
     }
     // A `fileConstraint { }` written without a name is named after its kind, as `konsist { }` and `konture { }` are, so two

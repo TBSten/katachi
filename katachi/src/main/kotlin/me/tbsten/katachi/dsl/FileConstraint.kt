@@ -135,3 +135,51 @@ public data class FileConstraintFailure(
      */
     public val ruleDeclaredAt: DeclarationSite? = null,
 )
+
+/**
+ * A [FileConstraintFailure] built from plain values, so that a constraint imports nothing but
+ * [FileConstraintFailure] itself.
+ *
+ * Each field is given once, as the whole list. [reasons] are `label to text` pairs,
+ * [allowed] is the heading with its entries, and [howToFix] is one sentence per way to fix it. A fix
+ * that also shows code to paste is a [FileConstraintFix], so it goes through the constructor.
+ *
+ * The result is the same data class, so it compares equal to the failure the constructor builds from
+ * the same values.
+ *
+ * ## Example 1: say what is missing, what was expected and how to fix it
+ * ```kt
+ * FileConstraintFailure(
+ *     file = "app/build.gradle.kts",
+ *     reasons = listOf("Missing" to "allWarningsAsErrors"),
+ *     allowed = "Expected inside kotlin { compilerOptions { } }" to listOf("allWarningsAsErrors"),
+ *     howToFix = listOf("Add allWarningsAsErrors to the compilerOptions { } block of app/build.gradle.kts"),
+ * )
+ * ```
+ *
+ * @param file the rejected file, as in [FileConstraintFailure.file].
+ * @param declaration what inside the file was rejected, as in [FileConstraintFailure.declaration].
+ * @param line the line the rejected declaration starts at, as in [FileConstraintFailure.line].
+ * @param reasons one `label to text` pair per [FileConstraintReason] line.
+ * @param allowed the heading and the entries of the [FileConstraintAllowedList], or `null` for no list.
+ * @param howToFix one sentence per [FileConstraintFix], in the order to try them.
+ * @param ruleDeclaredAt the line of the rule this failure comes from, as in [FileConstraintFailure.ruleDeclaredAt].
+ */
+@ExperimentalKatachiApi
+public fun FileConstraintFailure(
+    file: String,
+    declaration: String? = null,
+    line: Int? = null,
+    reasons: List<Pair<String, String>>,
+    allowed: Pair<String, List<String>>? = null,
+    howToFix: List<String> = emptyList(),
+    ruleDeclaredAt: DeclarationSite? = null,
+): FileConstraintFailure = FileConstraintFailure(
+    file = file,
+    declaration = declaration,
+    line = line,
+    reasons = reasons.map { (label, text) -> FileConstraintReason(label, text) },
+    allowed = allowed?.let { (heading, entries) -> FileConstraintAllowedList(heading, entries) },
+    howToFix = howToFix.map { FileConstraintFix(it) },
+    ruleDeclaredAt = ruleDeclaredAt,
+)
