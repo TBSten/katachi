@@ -106,7 +106,21 @@ internal fun interface ProcessLauncher {
 internal object InheritingIoLauncher : ProcessLauncher {
     override fun launch(command: List<String>, extraEnv: Map<String, String>, cwd: Path): Int {
         val builder = ProcessBuilder(command).directory(cwd.toFile()).inheritIO()
+        dropKotlinBatchState(command, builder.environment())
         builder.environment().putAll(extraEnv)
         return builder.start().waitFor()
+    }
+}
+
+/**
+ * Takes out of [environment] what the `kotlin.bat` that started this katachi left there, when [command] is another `kotlin.bat`.
+ *
+ * The batch file collects its arguments in the variable `KOTLIN_OPTS`, and that variable stays in the environment of the `java` it
+ * starts (a `setlocal` only undoes it for the batch file itself). A second `kotlin.bat` started from here would go on from it, and
+ * so run `katachi.main.kts` again with the arguments of the first one, before the script it was asked to run.
+ */
+internal fun dropKotlinBatchState(command: List<String>, environment: MutableMap<String, String>) {
+    if (command.firstOrNull()?.endsWith(".bat", ignoreCase = true) == true) {
+        environment.keys.removeAll { it.equals("KOTLIN_OPTS", ignoreCase = true) }
     }
 }

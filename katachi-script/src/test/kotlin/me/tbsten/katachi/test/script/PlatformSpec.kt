@@ -13,6 +13,7 @@ import me.tbsten.katachi.script.internal.ScriptContext
 import me.tbsten.katachi.script.internal.WINDOWS_COMMAND_LINE_ARG
 import me.tbsten.katachi.script.internal.WINDOWS_COMMAND_LINE_ENV
 import me.tbsten.katachi.script.internal.argsOfWrapper
+import me.tbsten.katachi.script.internal.dropKotlinBatchState
 import me.tbsten.katachi.script.internal.executableNames
 import me.tbsten.katachi.script.internal.findOnPath
 import me.tbsten.katachi.script.internal.javaExecutableIn
@@ -152,6 +153,16 @@ class PlatformSpec : FreeSpec({
         val dir = createTempDirectory("katachi-script-")
         // `cat` ends only when its stdin does.
         runProcess(listOf("cat"), dir, timeoutSeconds = 20)?.status shouldBe 0
+    }
+
+    "kotlin.bat を起動するとき、親の kotlin.bat が環境に残した KOTLIN_OPTS を引き継がない" {
+        val env = mutableMapOf("KOTLIN_OPTS" to "\"katachi.main.kts\" \"katachi-windows-command-line\"", "PATH" to "x")
+        dropKotlinBatchState(listOf("kotlin.bat", "-cp", "a"), env)
+        env shouldBe mapOf("PATH" to "x")
+
+        val posix = mutableMapOf("KOTLIN_OPTS" to "mine")
+        dropKotlinBatchState(listOf("kotlin", "-cp", "a"), posix)
+        posix shouldBe mapOf("KOTLIN_OPTS" to "mine")
     }
 
     "Windows では kotlin.bat を起動する" {
