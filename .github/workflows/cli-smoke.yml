@@ -159,12 +159,18 @@ jobs:
         run: |
           $cli = Join-Path $PWD "katachi-script\build\cli\katachi-cli-$env:KATACHI\bin\katachi.cmd"
           Set-Location (Join-Path $env:RUNNER_TEMP "project")
-          Get-ChildItem Env: | Where-Object { $_.Name -match '^(KATACHI|_?KOTLIN|JAVA)' } | ForEach-Object { "$($_.Name)=$($_.Value)" }
+          $kotlin = (Get-Command kotlin.bat).Source
+          "== $kotlin"
+          Get-Content $kotlin
+          "== kotlinc.bat"
+          Get-Content (Join-Path (Split-Path $kotlin) "kotlinc.bat")
           $cp = @(& $cli internal script-classpath)
-          "classpath entries: $($cp.Count)"
-          $cp
           $kts = Join-Path $PWD "hello.katachi.kts"
           $env:KATACHI_SCRIPT_FILE = $kts
-          Remove-Item Env:KATACHI_WINDOWS_COMMAND_LINE -ErrorAction SilentlyContinue
-          & kotlin.bat -no-reflect -cp ($cp -join ';') $kts
+          "== quoted class path"
+          & kotlin.bat -no-reflect -cp ('"' + ($cp -join ';') + '"') $kts
+          "exit=$LASTEXITCODE"
+          "== quoted class path, with the command line of the first run"
+          $env:KATACHI_WINDOWS_COMMAND_LINE = "hello.katachi.kts"
+          & kotlin.bat -no-reflect -cp ('"' + ($cp -join ';') + '"') $kts
           "exit=$LASTEXITCODE"
