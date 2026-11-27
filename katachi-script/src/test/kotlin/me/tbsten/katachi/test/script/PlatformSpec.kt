@@ -174,9 +174,12 @@ class PlatformSpec : FreeSpec({
 
         run(windows = true, with = launcher).first shouldBe 0
         launched.single().first() shouldBe "kotlin.bat"
+        // `kotlin.bat` splits at `;`, so the class path of several jars goes as one quoted argument.
+        launched.single()[3].let { it.startsWith("\"") && it.endsWith("\"") && it.contains(";") } shouldBe true
         launched.clear()
         run(windows = false, with = launcher).first shouldBe 0
         launched.single().first() shouldBe "kotlin"
+        launched.single()[3].contains("\"") shouldBe false
 
         val (status, err) = run(windows = true, with = failing)
         status shouldBe 1
