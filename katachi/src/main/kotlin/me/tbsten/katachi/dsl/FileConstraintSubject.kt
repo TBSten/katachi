@@ -135,7 +135,7 @@ public class FileConstraintSubject internal constructor(
     public fun captureValuesOf(file: String): Map<String, String> = captureValues(file)
 
     /**
-     * The text of [file], read as UTF-8 from under [projectRoot].
+     * The text of [file], read as UTF-8 from under [projectRoot][FileConstraintSubject.projectRoot].
      *
      * Meant for one of [files][FileConstraintSubject.files], which are the files the walk saw.
      *
