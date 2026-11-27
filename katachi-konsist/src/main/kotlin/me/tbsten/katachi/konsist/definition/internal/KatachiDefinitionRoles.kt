@@ -125,22 +125,31 @@ private fun LayoutScope.testLayout(config: KatachiDefinitionConfig, source: Layo
 }
 
 // The entry holds one `val` and the group files hold one function each, because a role that
-// is written anywhere else is a role no `<Name>Role.kt` reader finds.
+// is written anywhere else is a role no `<Name>Role.kt` reader finds. Every definition file may
+// opt in to the experimental API, which the DSL asks for.
 private fun KtFileContentScope.entryContent(config: KatachiDefinitionConfig) {
+    fileAnnotation("OptIn")
+    fileAnnotation("Suppress")
     `package`(config.rootPackage)
-    `import`("me.tbsten.katachi.**")
-    `import`("${config.rootPackage}.**")
+    `import`("**")
     required(`val`, fileName.lowerFirst()).type("Architecture")
 }
 
 private fun KtFileContentScope.groupContent(config: KatachiDefinitionConfig) {
+    fileAnnotation("OptIn")
+    fileAnnotation("Suppress")
     `package`(matchingDirectory)
-    `import`("me.tbsten.katachi.dsl.**")
-    `import`("${config.rootPackage}.**")
+    `import`("**")
     required(`fun`, "DeclarationContainerScope", fileName.lowerFirst())()
+    // A document section a group fills in (`val TestPolicy = documentSection(...)`) is a property of
+    // the group file; anything else public, such as a second group, is reported.
+    allow(`val` or `var`, "*")
+    allow(private, anythingElse)
 }
 
 private fun KtFileContentScope.roleContent() {
+    fileAnnotation("OptIn")
+    fileAnnotation("Suppress")
     `package`(matchingDirectory)
     `import`("**")
     required(`fun`, "DeclarationContainerScope", fileName.removeSuffix("Role").lowerFirst())()
@@ -148,6 +157,8 @@ private fun KtFileContentScope.roleContent() {
 }
 
 private fun KtFileContentScope.testContent() {
+    fileAnnotation("OptIn")
+    fileAnnotation("Suppress")
     `package`(matchingDirectory)
     `import`("**")
     allow(anythingElse)

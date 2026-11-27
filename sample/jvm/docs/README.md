@@ -4,6 +4,15 @@ A small Ktor HTTP server, described by its shape with katachi. Every page below 
 
 ## Document map
 
+### [Architecture definition](./KatachiDefinition/README.md)
+
+How the files that declare the architecture are laid out
+
+- [Architecture definition entry](./KatachiDefinition/ArchitectureDefinitionEntry.md)
+- [Group definition](./KatachiDefinition/GroupDefinition.md)
+- [Role definition](./KatachiDefinition/RoleDefinition.md)
+- [Architecture test](./KatachiDefinition/ArchitectureTest.md)
+
 ### [API](./Api/README.md)
 
 The layer that faces HTTP. It owns everything from receiving a request to returning a response
@@ -37,16 +46,21 @@ Starting the process, and the configuration loaded at runtime
 Tests that check behaviour, this definition itself, and the documentation and snapshot written out from it
 
 - [Test code](./Testing/Test.md)
-- [Architecture definition entry](./Testing/ArchitectureDefinitionEntry.md)
 - [Document section definition](./Testing/DocumentSectionDefinition.md)
-- [Group definition](./Testing/GroupDefinition.md)
-- [Role definition](./Testing/RoleDefinition.md)
 - [Processor definition](./Testing/ProcessorDefinition.md)
-- [Architecture test](./Testing/ArchitectureTest.md)
 - [Integration spec](./Testing/IntegrationSpec.md)
 - [Generated documentation](./Testing/GeneratedDocumentation.md)
 - [Layout snapshot](./Testing/LayoutSnapshot.md)
 - [Baseline (ledger of held-back violations)](./Testing/BaselineFile.md)
+
+## Architecture definition
+
+How the files that declare the architecture are laid out
+
+- [Architecture definition entry](./KatachiDefinition/ArchitectureDefinitionEntry.md) ... The one file whose architecture { } gathers every group, so the definition is read from here
+- [Group definition](./KatachiDefinition/GroupDefinition.md) ... One <Name>Group.kt per group, in the directory named after the group, listing the roles it is made of
+- [Role definition](./KatachiDefinition/RoleDefinition.md) ... One <Name>Role.kt per role: the extension function that declares it, and the private parts only it uses
+- [Architecture test](./KatachiDefinition/ArchitectureTest.md) ... The test that checks the whole project against the definition
 
 ## API
 
@@ -81,12 +95,8 @@ Starting the process, and the configuration loaded at runtime
 Tests that check behaviour, this definition itself, and the documentation and snapshot written out from it
 
 - [Test code](./Testing/Test.md) ... Tests placed in src/test/kotlin, keeping the same package structure as the main code
-- [Architecture definition entry](./Testing/ArchitectureDefinitionEntry.md) ... The one file whose `architecture { }` gathers every group, so the definition can be read from here
 - [Document section definition](./Testing/DocumentSectionDefinition.md) ... The headings this project declares for itself, so roles and groups can write under them
-- [Group definition](./Testing/GroupDefinition.md) ... One `<Name>Group.kt` per group, in the directory named after the group, saying what the group is made of by calling role functions
-- [Role definition](./Testing/RoleDefinition.md) ... One `<Name>Role.kt` per role, in the directory of the group that calls it, holding its description, its layout and its constraints
 - [Processor definition](./Testing/ProcessorDefinition.md) ... A custom processor that reads the definition, registered in `architecture-test/build.gradle.kts`
-- [Architecture test](./Testing/ArchitectureTest.md) ... The one test that checks the whole project against the definition
 - [Integration spec](./Testing/IntegrationSpec.md) ... katachi's own integration tests, run against this real project
 - [Generated documentation](./Testing/GeneratedDocumentation.md) ... Markdown written out of this definition and committed to the repository
 - [Layout snapshot](./Testing/LayoutSnapshot.md) ... A record of every line of this definition, flattened. It exists so people can review changes to the definition as a diff

@@ -79,11 +79,12 @@ class KatachiDefinitionSpec : FreeSpec({
         violations.filterIsInstance<UnexpectedFile>().map { it.path } shouldBe listOf("$SOURCE/api/Notes.kt")
     }
 
-    "group で許可していない import は違反で、content { } で足すと通る" {
+    "group の import は自由で、content { } で禁止を足すと違反になる" {
         val importsOther = "$SOURCE/api/ApiGroup.kt" to API_GROUP.replace("import ", "import com.other.Thing\nimport ")
 
-        definitionRun(*RECOMMENDED_FILES, importsOther).unsatisfied() shouldBe listOf("$SOURCE/api/ApiGroup.kt")
-        definitionRun(*RECOMMENDED_FILES, importsOther, group = { content { `import`("com.other.**") } }) shouldBe emptyList()
+        definitionRun(*RECOMMENDED_FILES, importsOther) shouldBe emptyList()
+        definitionRun(*RECOMMENDED_FILES, importsOther, group = { content { not.`import`("com.other.**") } })
+            .unsatisfied() shouldBe listOf("$SOURCE/api/ApiGroup.kt")
     }
 
     "recommendedContent = false にすると、その役割の推奨の制約が外れる" {

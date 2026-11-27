@@ -1,16 +1,12 @@
 package com.example.testing
 
 import com.example.forbiddenContents
-import com.example.testing.architectureDefinitionEntry
-import com.example.testing.architectureTest
 import com.example.testing.baselineFile
 import com.example.testing.documentSectionDefinition
 import com.example.testing.generatedDocumentation
-import com.example.testing.groupDefinition
 import com.example.testing.integrationSpec
 import com.example.testing.layoutSnapshot
 import com.example.testing.processorDefinition
-import com.example.testing.roleDefinition
 import com.example.testing.test
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
@@ -46,12 +42,8 @@ fun DeclarationContainerScope.testingGroup() = "Testing".group {
     """.trimIndent()
 
     test()
-    architectureDefinitionEntry()
     documentSectionDefinition()
-    groupDefinition()
-    roleDefinition()
     processorDefinition()
-    architectureTest()
     integrationSpec()
     generatedDocumentation()
     layoutSnapshot()
