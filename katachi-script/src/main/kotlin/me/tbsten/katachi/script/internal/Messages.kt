@@ -218,8 +218,8 @@ internal object Messages {
         )
 
         fun flatGroupsMoreRoles(flatGroupsSize: Any?): Msg = Msg(
-            ja = "平たい group（直下に Role が 8 個以上あり、group を含まない）が $flatGroupsSize 件あります（preferences.nestedGroups = yes）。",
-            en = "Flat groups (8 or more Roles directly inside, no nested group): $flatGroupsSize (preferences.nestedGroups = yes).",
+            ja = "平たい group（直下に Role が 6 個以上あり、group を含まない）が $flatGroupsSize 件あります（preferences.nestedGroups = yes）。",
+            en = "Flat groups (6 or more Roles directly inside, no nested group): $flatGroupsSize (preferences.nestedGroups = yes).",
         )
 
         fun groupRoles(uriG: Any?, gLine: Any?, gName: Any?, gDirectRoles: Any?): Msg = Msg(
@@ -227,9 +227,24 @@ internal object Messages {
             en = "  $uriG:$gLine group \"$gName\" ($gDirectRoles Roles)",
         )
 
-        val nestGroupsOrderModule: Msg = Msg(
-            ja = "group は「モジュール → 層 → 種類」の順で入れ子にし、1 つの group に Role を 8 個以上並べないでください（並ぶなら group を切る）。",
-            en = "Nest groups in the order module -> layer -> kind, and do not put 8 or more Roles in one group (split it when they pile up).",
+        fun nestGroupsOrderModule(limit: Any?): Msg = Msg(
+            ja = "group は「モジュール → 層 → 種類」の順で入れ子にし、1 つの group に Role を $limit 個以上並べないでください（並ぶなら group を切る）。",
+            en = "Nest groups in the order module -> layer -> kind, and do not put $limit or more Roles in one group (split it when they pile up).",
+        )
+
+        fun sameWordGroups(size: Any?, limit: Any?): Msg = Msg(
+            ja = "同じ語で始まる・終わる Role が $limit 個以上並ぶ group が $size 件あります（preferences.nestedGroups = yes）。",
+            en = "Groups with $limit or more Roles that start or end with the same word: $size (preferences.nestedGroups = yes).",
+        )
+
+        fun sharedWord(position: Any?, word: Any?, names: Any?): Msg = Msg(
+            ja = "    ${if (position == "prefix") "接頭辞" else "接尾辞"} \"$word\": $names",
+            en = "    $position \"$word\": $names",
+        )
+
+        val gatherSameWord: Msg = Msg(
+            ja = "同じ語の Role は、その語を名前にした group にまとめ、Role の名前からその語を外してください（例: FooTest・BarTest → Test group の Foo・Bar）。偶然同じ語になっただけなら、そのままで構いません。",
+            en = "Gather Roles that share a word into a group named after that word and drop the word from the Role names (for example FooTest and BarTest become Foo and Bar in a Test group). If the word is only a coincidence, leave them as they are.",
         )
 
         fun lowercaseNames(size: Any?): Msg = Msg(

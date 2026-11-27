@@ -57,7 +57,7 @@ The working directory is only for the setup and is ignored by git, so it may be 
 | What | Command |
 |---|---|
 | Run the check, and compare two runs (before and after a change to the definition) | `./gradlew :architecture-test:test --console=plain -Dkatachi.maxViolations=all > build/katachi/test-<name>.log 2>&1`, then read and compare the logs as [references/run-the-check/README.md](references/run-the-check/README.md) says |
-| Find Roles that hold different kinds of files, hand-written Gradle Roles, flat groups, Role and group names that start lowercase | `katachi lint` |
+| Find Roles that hold different kinds of files, hand-written Gradle Roles, flat groups, groups whose Roles share a word, Role and group names that start lowercase | `katachi lint` |
 | Generate a page per Role | `./gradlew :architecture-test:katachiDocs` |
 | Generate a file from a Role's `.template { }` | `./gradlew :architecture-test:katachiTemplate --arg template=<Group.Role> --arg <name>=<value>` |
 

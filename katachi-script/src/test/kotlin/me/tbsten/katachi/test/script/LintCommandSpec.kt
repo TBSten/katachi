@@ -140,15 +140,58 @@ class LintCommandSpec : FreeSpec({
         run.out shouldContain "ツールごとの設定ディレクトリを anyFile() / ignore() でまとめています: .github, .idea"
     }
 
-    "Role が 8 個以上並ぶ平たい group を指摘し、nestedGroups = no なら黙る" {
-        val roles = (1..8).joinToString("\n") { "    \"R$it\".role { }" }
+    "Role が 6 個以上並ぶ平たい group を指摘し、nestedGroups = no なら黙る" {
+        val roles = (1..6).joinToString("\n") { "    \"R$it\".role { }" }
         val project = projectWithDefinition("FeatureGroup.kt" to "val feature = \"feature\".group {\n$roles\n}")
         val run = runCapturing(project, listOf("lint"))
-        run.out shouldContain "平たい group（直下に Role が 8 個以上あり、group を含まない）が 1 件あります"
-        run.out shouldContain "FeatureGroup.kt:1 group \"feature\"（Role 8 個）"
+        run.out shouldContain "平たい group（直下に Role が 6 個以上あり、group を含まない）が 1 件あります"
+        run.out shouldContain "FeatureGroup.kt:1 group \"feature\"（Role 6 個）"
 
         val quiet = runCapturing(project, listOf("lint"), env = preferences(project, "\"nestedGroups\": \"no\", \"oneRolePerFile\": \"no\""))
         quiet.out shouldNotContain "平たい group"
+    }
+
+    "Role が 5 個までなら平たい group とは言わない" {
+        val roles = (1..5).joinToString("\n") { "    \"R$it\".role { }" }
+        val project = projectWithDefinition("FeatureGroup.kt" to "val feature = \"feature\".group {\n$roles\n}")
+        runCapturing(project, listOf("lint")).out shouldNotContain "平たい group"
+    }
+
+    "同じ接頭辞・接尾辞の Role が 3 つ並ぶ group を指摘し、nestedGroups = no なら黙る（KATACHI-461）" {
+        val project = projectWithDefinition(
+            "FeatureGroup.kt" to """
+                val feature = "feature".group {
+                    "UserTest".role { }
+                    "OrderTest".role { }
+                    "CartTest".role { }
+                    "ViewModel".role { }
+                    "ViewState".role { }
+                }
+            """.trimIndent(),
+        )
+        val run = runCapturing(project, listOf("lint"))
+        run.out shouldContain "同じ語で始まる・終わる Role が 3 個以上並ぶ group が 1 件あります"
+        run.out shouldContain "接尾辞 \"Test\": UserTest, OrderTest, CartTest"
+        run.out shouldNotContain "接頭辞 \"View\""
+        run.out shouldNotContain "平たい group"
+
+        val quiet = runCapturing(project, listOf("lint"), env = preferences(project, "\"nestedGroups\": \"no\", \"oneRolePerFile\": \"no\""))
+        quiet.out shouldNotContain "同じ語で始まる"
+    }
+
+    "接頭辞の判定は camel case の語ごと（Testing と Test は同じ語として数えない）" {
+        val project = projectWithDefinition(
+            "FeatureGroup.kt" to """
+                val feature = "feature".group {
+                    "TestA".role { }
+                    "TestingB".role { }
+                    "TesterC".role { }
+                    "AppViewModel".role { }
+                    "UiViewModel".role { }
+                }
+            """.trimIndent(),
+        )
+        runCapturing(project, listOf("lint")).out shouldNotContain "同じ語で始まる"
     }
 
     "小文字で始まる Role・group の名前を UpperCamelCase の案と一緒に指摘する（KATACHI-362）" {

@@ -57,6 +57,35 @@ private class LintGroup(val name: String, val path: Path, val line: Int, parent:
     var directRoles = 0
     var hasGroup = false
     var documented = false
+
+    /** The names of the Roles directly inside (for the shared prefix / suffix check). */
+    val roleNames = mutableListOf<String>()
+}
+
+/** A group with this many Roles directly inside and no group in it is "flat" (KATACHI-461: was 8). */
+private const val FLAT_GROUP_ROLES = 6
+
+/** This many Roles in one group starting or ending with the same word are listed as a candidate for a group of their own. */
+private const val SAME_WORD_ROLES = 3
+
+/** [names] (Roles) that all start / end with the camel-case word [word]; [position] is "prefix" or "suffix". */
+private class SharedWord(val position: String, val word: String, val names: List<String>)
+
+private val camelBoundary = Regex("(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])")
+
+/**
+ * The words that [SAME_WORD_ROLES] or more of [roleNames] start or end with, a whole camel-case word at a time
+ * (`FooTest` and `BarTest` share the suffix `Test`; `Testing` and `Test` do not share anything).
+ * A name that is one word counts toward its own word (`Test` with `UnitTest` and `UiTest`).
+ */
+private fun sharedWordRuns(roleNames: List<String>): List<SharedWord> {
+    if (roleNames.size < SAME_WORD_ROLES) return emptyList()
+    val words = roleNames.distinct().associateWith { it.split(camelBoundary).filter(String::isNotEmpty) }
+    fun runs(position: String, pick: (List<String>) -> String?) = words.entries
+        .groupBy({ pick(it.value) }, { it.key })
+        .filter { (word, names) -> word != null && names.size >= SAME_WORD_ROLES }
+        .map { (word, names) -> SharedWord(position, word!!, names) }
+    return runs("prefix") { it.firstOrNull() } + runs("suffix") { it.lastOrNull() }
 }
 
 private class Decl(val kind: String, val name: String)
@@ -231,7 +260,10 @@ private fun scan(
                         role = r
                         roles += r
                         decls.getOrPut(path) { mutableListOf() } += Decl("Role", name)
-                        if (group != null) group.directRoles++
+                        if (group != null) {
+                            group.directRoles++
+                            group.roleNames += name
+                        }
                         stack += StackEntry("role", name)
                     }
                 }
@@ -356,7 +388,10 @@ internal fun ScriptContext.lintRoles(moduleDirArg: String?) {
     for (r in roles) {
         val callers = r.definedIn?.let { calls[it] }.orEmpty()
         r.groups += callers
-        callers.forEach { it.directRoles++ }
+        callers.forEach {
+            it.directRoles++
+            it.roleNames += r.name
+        }
     }
     for (g in groups) {
         val callers = g.definedIn?.let { calls[it] }.orEmpty().filter { it !== g }
@@ -398,7 +433,8 @@ internal fun ScriptContext.lintRoles(moduleDirArg: String?) {
 
     val nestedGroups = prefs["nestedGroups"] != "no"
     val oneRolePerFile = prefs["oneRolePerFile"] != "no"
-    val flatGroups = if (nestedGroups) groups.filter { it.directRoles >= 8 && !it.hasGroup } else emptyList()
+    val flatGroups = if (nestedGroups) groups.filter { it.directRoles >= FLAT_GROUP_ROLES && !it.hasGroup } else emptyList()
+    val sameWordGroups = if (nestedGroups) groups.mapNotNull { g -> sharedWordRuns(g.roleNames).takeIf { it.isNotEmpty() }?.let { g to it } } else emptyList()
     val unsplitFiles = if (oneRolePerFile) decls.entries.sortedBy { it.key.toString() }.filter { it.value.size >= 2 } else emptyList()
     // Role and group names are UpperCamelCase, like katachi's own Gradle / Git groups (KATACHI-362).
     val lowercaseNames = (roles.map { Triple("Role", it.name, it.path to it.line) } + groups.map { Triple("group", it.name, it.path to it.line) })
@@ -424,7 +460,7 @@ internal fun ScriptContext.lintRoles(moduleDirArg: String?) {
         "version catalog" to "versionCatalog { }",
     )
 
-    if (warnings.isEmpty() && gradleHand.isEmpty() && gradleConstrained.isEmpty() && flatGroups.isEmpty() && lowercaseNames.isEmpty() && unsplitFiles.isEmpty() && documentedCandidates.isEmpty()) {
+    if (warnings.isEmpty() && gradleHand.isEmpty() && gradleConstrained.isEmpty() && flatGroups.isEmpty() && sameWordGroups.isEmpty() && lowercaseNames.isEmpty() && unsplitFiles.isEmpty() && documentedCandidates.isEmpty()) {
         say(Messages.Lint.roleCheckNoRole(roles.size))
         return
     }
@@ -461,7 +497,16 @@ internal fun ScriptContext.lintRoles(moduleDirArg: String?) {
         say("")
         say(Messages.Lint.flatGroupsMoreRoles(flatGroups.size))
         for (g in flatGroups) say(Messages.Lint.groupRoles(uri(g.path), g.line, g.name, g.directRoles))
-        say(Messages.Lint.nestGroupsOrderModule)
+        say(Messages.Lint.nestGroupsOrderModule(FLAT_GROUP_ROLES))
+    }
+    if (sameWordGroups.isNotEmpty()) {
+        say("")
+        say(Messages.Lint.sameWordGroups(sameWordGroups.size, SAME_WORD_ROLES))
+        for ((g, runs) in sameWordGroups) {
+            say(Messages.Lint.groupRoles(uri(g.path), g.line, g.name, g.directRoles))
+            for (run in runs) say(Messages.Lint.sharedWord(run.position, run.word, run.names.joinToString(", ")))
+        }
+        say(Messages.Lint.gatherSameWord)
     }
     if (lowercaseNames.isNotEmpty()) {
         say("")
