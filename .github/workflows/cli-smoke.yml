@@ -1,0 +1,149 @@
+name: CLI smoke
+
+# `bin/katachi` (macOS, Linux) and `bin/katachi.cmd` (Windows) are shell and batch files that no unit test of
+# katachi-script runs, and what `kotlin` and the shell do to the arguments only shows when they are started for real.
+# This starts both as a user would, on the operating systems that get a `katachi` (KATACHI-456), with the
+# katachi-script of this commit: it is published to mavenLocal first, which the entry point's @file:DependsOn reads
+# before Maven Central.
+#
+# What it does not look at: the Homebrew formula and the Scoop manifest. They change at a release (publish.yml), and
+# are looked at by hand once after it.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'katachi-script/**'
+      - 'katachi/**'
+      - 'gradle/libs.versions.toml'
+      - '.gitattributes'
+      - '.github/workflows/cli-smoke.yml'
+  pull_request:
+    paths:
+      - 'katachi-script/**'
+      - 'katachi/**'
+      - 'gradle/libs.versions.toml'
+      - '.gitattributes'
+      - '.github/workflows/cli-smoke.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  cli:
+    name: cli (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Read the versions
+        id: versions
+        shell: bash
+        run: |
+          echo "katachi=$(sed -n 's/^katachi = "\(.*\)"/\1/p' gradle/libs.versions.toml | head -n 1)" >> "${GITHUB_OUTPUT}"
+          echo "kotlin=$(sed -n 's/^kotlin = "\(.*\)"/\1/p' gradle/libs.versions.toml | head -n 1)" >> "${GITHUB_OUTPUT}"
+
+      # The `kotlin` that `bin/katachi` runs. The same Kotlin as katachi is built with; brew and winget would give the latest.
+      - name: Install kotlin (Linux)
+        if: ${{ runner.os == 'Linux' }}
+        shell: bash
+        env:
+          KOTLIN: ${{ steps.versions.outputs.kotlin }}
+        run: |
+          curl -fsSL --retry 5 --retry-delay 10 -o "${RUNNER_TEMP}/kotlin.zip" \
+            "https://github.com/JetBrains/kotlin/releases/download/v${KOTLIN}/kotlin-compiler-${KOTLIN}.zip"
+          unzip -q "${RUNNER_TEMP}/kotlin.zip" -d "${RUNNER_TEMP}"
+          echo "${RUNNER_TEMP}/kotlinc/bin" >> "${GITHUB_PATH}"
+
+      - name: Install kotlin (Windows)
+        if: ${{ runner.os == 'Windows' }}
+        shell: pwsh
+        env:
+          KOTLIN: ${{ steps.versions.outputs.kotlin }}
+        run: |
+          Invoke-WebRequest "https://github.com/JetBrains/kotlin/releases/download/v$env:KOTLIN/kotlin-compiler-$env:KOTLIN.zip" -OutFile "$env:RUNNER_TEMP\kotlin.zip"
+          Expand-Archive "$env:RUNNER_TEMP\kotlin.zip" -DestinationPath $env:RUNNER_TEMP
+          "$env:RUNNER_TEMP\kotlinc\bin" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+
+      - name: Publish katachi-script to mavenLocal and assemble the command
+        shell: bash
+        run: ./gradlew :katachi:publishToMavenLocal :katachi-script:publishToMavenLocal :katachi-script:cliDist -Pkatachi.skipSigning --console=plain --stacktrace
+
+      - name: katachi --version and doctor (Linux)
+        if: ${{ runner.os == 'Linux' }}
+        shell: bash
+        env:
+          KATACHI: ${{ steps.versions.outputs.katachi }}
+        run: |
+          cli="${PWD}/katachi-script/build/cli/katachi-cli-${KATACHI}/bin/katachi"
+          "${cli}" --version | tee version.txt
+          grep -F "${KATACHI}" version.txt
+          "${cli}" doctor --lang en
+
+      - name: katachi --version and doctor (Windows, PowerShell)
+        if: ${{ runner.os == 'Windows' }}
+        shell: pwsh
+        env:
+          KATACHI: ${{ steps.versions.outputs.katachi }}
+        run: |
+          $cli = Join-Path $PWD "katachi-script\build\cli\katachi-cli-$env:KATACHI\bin\katachi.cmd"
+          $version = & $cli --version
+          $version
+          if ($LASTEXITCODE -ne 0 -or -not ($version -match [regex]::Escape($env:KATACHI))) { exit 1 }
+          & $cli doctor --lang en
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+      # The arguments reach katachi as typed: `--package=...` is one argument for katachi, but cmd.exe splits it at the "=" when a
+      # batch file reads %1; and a `.katachi.kts` is run through `kotlin` with the jars of this katachi.
+      - name: scaffold and a .katachi.kts (Linux)
+        if: ${{ runner.os == 'Linux' }}
+        shell: bash
+        env:
+          KATACHI: ${{ steps.versions.outputs.katachi }}
+        run: |
+          cli="${PWD}/katachi-script/build/cli/katachi-cli-${KATACHI}/bin/katachi"
+          project="${RUNNER_TEMP}/project"
+          mkdir -p "${project}"
+          echo 'rootProject.name = "p"' > "${project}/settings.gradle.kts"
+          cd "${project}"
+          "${cli}" scaffold --package=com.example.app
+          test -f architecture-test/build.gradle.kts
+          echo 'println("katachi-kts-ok")' > hello.katachi.kts
+          "${cli}" hello.katachi.kts | tee kts.txt
+          grep -F katachi-kts-ok kts.txt
+
+      - name: scaffold and a .katachi.kts (Windows, cmd)
+        if: ${{ runner.os == 'Windows' }}
+        shell: cmd
+        run: |
+          set CLI=%GITHUB_WORKSPACE%\katachi-script\build\cli\katachi-cli-${{ steps.versions.outputs.katachi }}\bin\katachi.cmd
+          set PROJECT=%RUNNER_TEMP%\project
+          mkdir "%PROJECT%" || exit /b 1
+          echo rootProject.name = "p"> "%PROJECT%\settings.gradle.kts"
+          cd /d "%PROJECT%" || exit /b 1
+          call "%CLI%" scaffold --package=com.example.app || exit /b 1
+          if not exist architecture-test\build.gradle.kts exit /b 1
+          echo println("katachi-kts-ok")> hello.katachi.kts
+          call "%CLI%" hello.katachi.kts > kts.txt || exit /b 1
+          type kts.txt
+          findstr /C:"katachi-kts-ok" kts.txt || exit /b 1
