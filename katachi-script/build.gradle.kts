@@ -25,6 +25,11 @@ dependencies {
     implementation(libs.kotlinScriptingCommon)
     implementation(libs.kotlinScriptingJvm)
 
+    // `katachi lint` parses the definition files (PSI, parse only) to find constraints written inside a Role
+    // (KATACHI-486). The evaluated definition JSON cannot tell them from ones split out into a function.
+    // About 58MB more for the CLI, and it follows the compiler's version: keep it on the `kotlin` version.
+    implementation(libs.kotlinCompilerEmbeddable)
+
     testImplementation(libs.kotestRunnerJunit5)
     testImplementation(libs.kotestAssertionsCore)
     // Compiles a real `*.katachi.kts` against the definition, as `kotlin` and the IDE do.

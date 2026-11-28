@@ -26,7 +26,7 @@ katachi の性能を測るモジュール。公開しない。`check` には入�
 | konture | `konture { }` | `katachi-konture/src/main` | `KontureBench`・`AssertColdBench` | | v0.4.0 |
 | Gradle plugin | `:architecture-test:test`・`katachi<Key>` のタスク | `katachi-gradle-plugin/src` | `gradle-profiler:architectureTest`・`gradle-profiler:katachiDocs` | | v0.4.0 |
 | Actions | `diff-report`・`diff-report-comment` | `diff-report`・`diff-report-comment` | なし | `katachiDiff` を呼んで結果を貼るだけ（core/katachiDiff の行を見る） | v0.4.0 |
-| CLI・script | `katachi <サブコマンド>`・`*.katachi.kts` | `katachi-script` | なし | 起動は `kotlin` コマンドのスクリプトのコンパイルと依存の解決が主で、JMH には載らない。`katachi lint` は `./gradlew` で定義を評価するので、待ち時間は Gradle の起動と定義のコンパイルが主で、JSON を 1 回読む lint 自身は測るほどではない。測るなら別の仕組みが要る | 未確認 |
+| CLI・script | `katachi <サブコマンド>`・`*.katachi.kts` | `katachi-script` | なし | 起動は `kotlin` コマンドのスクリプトのコンパイルと依存の解決が主で、JMH には載らない。`katachi lint` は `./gradlew` で定義を評価するので、待ち時間は Gradle の起動と定義のコンパイルが主で、JSON を 1 回読む lint 自身は測るほどではない（Role の直書きの制約だけは、定義ファイルを PSI で parse する。Role のあるファイルの数だけで、これも測るほどではない）。測るなら別の仕組みが要る | 未確認 |
 | IDE plugin | ガター・ツールウィンドウ・MCP | `katachi-intellij-plugin/src` | なし | JMH の外。IDE の側のテスト（uiTest・integrationTest）が別にある | v0.4.0 |
 | skill | `skills/katachi/` | `skills/katachi` | なし | 文書だけで、実行するコードが無い | v0.4.0 |
 | docs | ドキュメントサイト・README | `docs` | なし | katachi の実行時間に関わらない | v0.4.0 |

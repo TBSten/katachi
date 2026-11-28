@@ -19,7 +19,14 @@ internal fun ScriptContext.runLint(args: List<String>): Int {
 }
 
 /** A Role written in the definition directory, with the file it was declared in. */
-private class LintRole(val role: DefinedRole, val path: Path, val line: Int, val documentedSomewhere: Boolean) {
+private class LintRole(
+    val role: DefinedRole,
+    val path: Path,
+    val line: Int,
+    val documentedSomewhere: Boolean,
+    /** Constraints written inside the Role's braces, read from the source (the JSON cannot tell them apart). */
+    val inlineConstraints: List<InlineConstraint>,
+) {
     val name: String get() = role.name
 
     /** Files the layout declares one by one, synthetic lines of a `module { }` block left out. */
@@ -119,10 +126,18 @@ internal fun ScriptContext.lintRoles(moduleDirArg: String?) {
     fun documentedSomewhere(role: DefinedRole): Boolean =
         role.documented != null || (1..role.groupPath.size).any { groupsByPath[role.groupPath.take(it)]?.documented != null }
 
+    // Parsed once per file, and only for the files a Role is declared in.
+    val roleCallsByFile = HashMap<Path, List<RoleCall>>()
+    fun inlineConstraintsOf(role: DefinedRole, path: Path, line: Int): List<InlineConstraint> {
+        val calls = roleCallsByFile.getOrPut(path) { parseRoleCalls(path.name, String(Files.readAllBytes(path), Charsets.UTF_8)) }
+        // The JSON's line is the one the Role call was on; fall back to a name that is the only one in the file.
+        val call = calls.firstOrNull { it.line == line } ?: calls.filter { it.name == role.name }.singleOrNull()
+        return call?.inlineConstraints.orEmpty()
+    }
     val roles = model.roles.filterNot { it.declaredByGradle }.mapNotNull { role ->
         val site = role.declaredAt ?: return@mapNotNull null
         val path = sources[site.fileName] ?: return@mapNotNull null
-        LintRole(role, path, site.line, documentedSomewhere(role))
+        LintRole(role, path, site.line, documentedSomewhere(role), inlineConstraintsOf(role, path, site.line))
     }.sortedWith(compareBy({ it.path.toString() }, { it.line }))
     val groups = model.groups.filterNot { it.declaredByGradle }.mapNotNull { group ->
         val site = group.declaredAt ?: return@mapNotNull null
@@ -198,7 +213,8 @@ internal fun ScriptContext.lintRoles(moduleDirArg: String?) {
         "version catalog" to "versionCatalog { }",
     )
 
-    if (warnings.isEmpty() && gradleHand.isEmpty() && gradleConstrained.isEmpty() && flatGroups.isEmpty() && lowercaseNames.isEmpty() && unsplitFiles.isEmpty() && documentedCandidates.isEmpty()) {
+    val inlineConstraintRoles = roles.filter { it.inlineConstraints.isNotEmpty() }
+    if (warnings.isEmpty() && inlineConstraintRoles.isEmpty() && gradleHand.isEmpty() && gradleConstrained.isEmpty() && flatGroups.isEmpty() && lowercaseNames.isEmpty() && unsplitFiles.isEmpty() && documentedCandidates.isEmpty()) {
         say(Messages.Lint.roleCheckNoRole(roles.size))
         return
     }
@@ -230,6 +246,15 @@ internal fun ScriptContext.lintRoles(moduleDirArg: String?) {
             say(Messages.Lint.gradleRoleHook(uri(r.path), r.line, r.name, name.substringAfterLast('/'), hook))
         }
         say(Messages.Lint.replacePlacementSingleLine)
+    }
+    if (inlineConstraintRoles.isNotEmpty()) {
+        say("")
+        say(Messages.Lint.inlineConstraintsInRoles(inlineConstraintRoles.size))
+        for (r in inlineConstraintRoles) {
+            val what = r.inlineConstraints.joinToString(", ") { pick(Messages.Lint.constraintAtLine(it.call, it.line)) }
+            say(Messages.Lint.roleWhat(uri(r.path), r.line, r.name, what))
+        }
+        say(Messages.Lint.splitConstraintsIntoFunctions)
     }
     if (flatGroups.isNotEmpty()) {
         say("")
