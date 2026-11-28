@@ -78,6 +78,99 @@ class LintCommandSpec : FreeSpec({
         run.out shouldNotContain "Ghost"
     }
 
+    "Role の中に直書きした ktFileContent・fileConstraint・konsist・konture を、長さによらず呼び出しごとに指摘する（KATACHI-486）" {
+        val project = gradleProject(
+            "InlineRole.kt" to """
+                val inline = "Inline".role {
+                    ktFileContent { }
+                    fileConstraint("no http") {
+                        a()
+                        b()
+                        c()
+                        d()
+                        e()
+                    }
+                    konsist {
+                        "x".konsist { }
+                    }
+                    konture { }
+                }
+            """.trimIndent(),
+        )
+        val gradle = FakeGradle(json = definitionJson(roles = listOf(roleJson("Inline", "InlineRole.kt", constraints = 4))))
+        val run = runCapturing(project, listOf("lint"), gradle = gradle)
+        run.status shouldBe 0
+        run.out shouldContain "Role の中に制約（ktFileContent・fileConstraint・konsist・konture）を直書きしているものが 1 件あります。"
+        run.out shouldContain
+            "InlineRole.kt:1 Role \"Inline\"（ktFileContent（2 行目）, fileConstraint（3 行目）, konsist（10 行目）, konture（13 行目））"
+        run.out shouldContain "private fun RoleScope.<role>KtFileContent()"
+    }
+
+    "切り出した制約は直書きに数えない（Role の下に置いても、別のファイルでも）（KATACHI-486）" {
+        val project = gradleProject(
+            "BuildRole.kt" to """
+                val build = "Build".role {
+                    buildKtFileContent()
+                    noHttp()
+                    layout {
+                        "build.gradle.kts".file()
+                    }
+                }
+
+                private fun RoleScope.buildKtFileContent() = ktFileContent { }
+
+                private fun RoleScope.noHttp() = fileConstraint("no http") { }
+            """.trimIndent(),
+        )
+        val gradle = FakeGradle(
+            json = definitionJson(roles = listOf(roleJson("Build", "BuildRole.kt", layout = listOf(layoutFile("build.gradle.kts")), constraints = 2))),
+        )
+        val run = runCapturing(project, listOf("lint"), gradle = gradle, env = preferences(project, "\"oneRolePerFile\": \"no\""))
+        run.out shouldNotContain "直書き"
+    }
+
+    "layout の中と、ほかの Role の中の制約は、その Role の直書きに数えない（KATACHI-486）" {
+        val project = gradleProject(
+            "Roles.kt" to """
+                val outer = "Outer".role {
+                    layout { }
+                    layout { "x".file() }
+                }
+                val other = "Other".role {
+                    ktFileContent { }
+                }
+            """.trimIndent(),
+        )
+        val gradle = FakeGradle(
+            json = definitionJson(
+                roles = listOf(
+                    roleJson("Outer", "Roles.kt", line = 1, layout = listOf(layoutFile("x"))),
+                    roleJson("Other", "Roles.kt", line = 5, constraints = 1),
+                ),
+            ),
+        )
+        val run = runCapturing(project, listOf("lint"), gradle = gradle, env = preferences(project, "\"oneRolePerFile\": \"no\""))
+        run.out shouldContain "直書きしているものが 1 件あります。"
+        run.out shouldContain "Roles.kt:5 Role \"Other\"（ktFileContent（6 行目））"
+        run.out shouldNotContain "Role \"Outer\"（ktFileContent"
+    }
+
+    "直書きの制約の指摘は英語でも出て、失敗にはしない（KATACHI-486）" {
+        val project = gradleProject("InlineRole.kt" to "val inline = \"Inline\".role {\n    ktFileContent { }\n}")
+        val gradle = FakeGradle(json = definitionJson(roles = listOf(roleJson("Inline", "InlineRole.kt", constraints = 1))))
+        val run = runCapturing(project, listOf("lint"), gradle = gradle, env = mapOf("KATACHI_LANG" to "en"))
+        run.status shouldBe 0
+        run.out shouldContain "Roles with a constraint written inline (ktFileContent, fileConstraint, konsist, konture): 1."
+        run.out shouldContain "InlineRole.kt:1 Role \"Inline\" (ktFileContent (line 2))"
+    }
+
+    "ソースが読めない・Role の呼び出しが見つからないときは、直書きの指摘を出さずに止まらない（KATACHI-486）" {
+        val project = gradleProject("Broken.kt" to "val x = \"Broken\".role { ktFileContent {")
+        val gradle = FakeGradle(json = definitionJson(roles = listOf(roleJson("Broken", "Broken.kt", line = 40))))
+        val run = runCapturing(project, listOf("lint"), gradle = gradle)
+        run.status shouldBe 0
+    }
+
     "定義のディレクトリに無いファイルで宣言された Role と、gradle() が宣言した Role は点検しない" {
         val project = gradleProject("CleanRole.kt" to "// Clean")
         val gradle = FakeGradle(
