@@ -140,7 +140,7 @@ val projectArchitecture: Architecture = architecture {
 }
 ```
 
-`import me.tbsten.katachi.konsist.definition.katachiDefinition`. A name, a file name, a constraint or an extra Role is changed from the call (`group = { fileName = "*Domain" }`, `role = { content { `import`("**") } }`, `additional { ... }`), not by copying the group out. Without the konsist backend, write the group by hand, with `documented = false` (they are tool configuration, as in 1-2):
+`import me.tbsten.katachi.konsist.katachi.katachiDefinition`. A name, a file name, a constraint or an extra Role is changed from the call (`group = { fileName = "*Domain" }`, `role = { content { `import`("**") } }`, `additional { ... }`), not by copying the group out. Without the konsist backend, write the group by hand, with `documented = false` (they are tool configuration, as in 1-2):
 
 ```kotlin
 "ArchitectureTest".group {

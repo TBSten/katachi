@@ -10,7 +10,7 @@ import com.example.tool.toolGroup
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.konsist.definition.katachiDefinition
+import me.tbsten.katachi.konsist.katachi.katachiDefinition
 
 @OptIn(ExperimentalKatachiApi::class)
 val projectArchitecture: Architecture = architecture {

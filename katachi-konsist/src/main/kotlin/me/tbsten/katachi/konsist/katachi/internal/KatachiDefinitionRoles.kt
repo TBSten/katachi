@@ -1,4 +1,4 @@
-package me.tbsten.katachi.konsist.definition.internal
+package me.tbsten.katachi.konsist.katachi.internal
 
 import me.tbsten.katachi.diff.diffWeight
 import me.tbsten.katachi.dsl.GroupScope
@@ -10,8 +10,8 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.konsist.declarations.KtFileContentScope
 import me.tbsten.katachi.konsist.declarations.ktFileContent
-import me.tbsten.katachi.konsist.definition.KatachiDefinitionConfig
-import me.tbsten.katachi.konsist.definition.KatachiDefinitionRoleConfig
+import me.tbsten.katachi.konsist.katachi.KatachiDefinitionConfig
+import me.tbsten.katachi.konsist.katachi.KatachiDefinitionRoleConfig
 
 internal fun GroupScope.declareDefinitionRoles(config: KatachiDefinitionConfig) {
     declare(config, config.entry, ENTRY_TEXT, weighted = true, { entryLayout(config, it) }) { entryContent(config) }
@@ -58,7 +58,7 @@ private fun LayoutScope.entryLayout(config: KatachiDefinitionConfig, source: Lay
             import me.tbsten.katachi.ExperimentalKatachiApi
             import me.tbsten.katachi.dsl.Architecture
             import me.tbsten.katachi.dsl.architecture
-            import me.tbsten.katachi.konsist.definition.katachiDefinition
+            import me.tbsten.katachi.konsist.katachi.katachiDefinition
 
             val ${config.entry.fileName.lowerFirst()}: Architecture = architecture {
               katachiDefinition(rootPackage = "${config.rootPackage}", moduleDir = "${config.moduleDir}")

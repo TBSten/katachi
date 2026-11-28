@@ -1,4 +1,4 @@
-package me.tbsten.katachi.konsist.definition
+package me.tbsten.katachi.konsist.katachi
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.KatachiDsl

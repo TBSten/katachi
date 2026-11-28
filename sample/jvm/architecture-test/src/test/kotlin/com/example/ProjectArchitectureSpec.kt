@@ -33,7 +33,7 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.pascalCase
 import me.tbsten.katachi.dsl.wholeTree
-import me.tbsten.katachi.konsist.definition.katachiDefinition
+import me.tbsten.katachi.konsist.katachi.katachiDefinition
 
 @OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
 class ProjectArchitectureSpec : FreeSpec({

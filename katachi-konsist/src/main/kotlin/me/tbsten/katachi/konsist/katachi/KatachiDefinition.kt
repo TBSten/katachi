@@ -1,12 +1,12 @@
-package me.tbsten.katachi.konsist.definition
+package me.tbsten.katachi.konsist.katachi
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.GroupScope
-import me.tbsten.katachi.konsist.definition.internal.KatachiDefinitionConfigImpl
-import me.tbsten.katachi.konsist.definition.internal.KatachiDefinitionRoleConfigImpl
-import me.tbsten.katachi.konsist.definition.internal.declareDefinitionRoles
+import me.tbsten.katachi.konsist.katachi.internal.KatachiDefinitionConfigImpl
+import me.tbsten.katachi.konsist.katachi.internal.KatachiDefinitionRoleConfigImpl
+import me.tbsten.katachi.konsist.katachi.internal.declareDefinitionRoles
 
 /**
  * Declares the group that keeps the architecture test module itself in the recommended shape.
@@ -28,7 +28,7 @@ import me.tbsten.katachi.konsist.definition.internal.declareDefinitionRoles
  *
  * import me.tbsten.katachi.dsl.Architecture
  * import me.tbsten.katachi.dsl.architecture
- * import me.tbsten.katachi.konsist.definition.katachiDefinition
+ * import me.tbsten.katachi.konsist.katachi.katachiDefinition
  *
  * val projectArchitecture: Architecture = architecture {
  *   katachiDefinition(rootPackage = "com.example")

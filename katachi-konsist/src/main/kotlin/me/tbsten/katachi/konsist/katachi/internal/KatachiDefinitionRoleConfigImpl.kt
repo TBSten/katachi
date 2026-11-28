@@ -1,9 +1,9 @@
-package me.tbsten.katachi.konsist.definition.internal
+package me.tbsten.katachi.konsist.katachi.internal
 
 import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.konsist.declarations.KtFileContentScope
-import me.tbsten.katachi.konsist.definition.KatachiDefinitionConfig
-import me.tbsten.katachi.konsist.definition.KatachiDefinitionRoleConfig
+import me.tbsten.katachi.konsist.katachi.KatachiDefinitionConfig
+import me.tbsten.katachi.konsist.katachi.KatachiDefinitionRoleConfig
 
 internal class KatachiDefinitionRoleConfigImpl(
     override var name: String,

@@ -16,10 +16,10 @@ import me.tbsten.katachi.dsl.GroupScope
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.files.internal.RealFileSystem
 import me.tbsten.katachi.dsl.wholeTree
-import me.tbsten.katachi.konsist.definition.KatachiDefinitionConfig
-import me.tbsten.katachi.konsist.definition.KatachiDefinitionRoleConfig
-import me.tbsten.katachi.konsist.definition.KatachiInvalidDefinitionArgumentException
-import me.tbsten.katachi.konsist.definition.katachiDefinition
+import me.tbsten.katachi.konsist.katachi.KatachiDefinitionConfig
+import me.tbsten.katachi.konsist.katachi.KatachiDefinitionRoleConfig
+import me.tbsten.katachi.konsist.katachi.KatachiInvalidDefinitionArgumentException
+import me.tbsten.katachi.konsist.katachi.katachiDefinition
 
 /**
  * `katachiDefinition()` end to end: a project laid out the recommended way reports nothing, and
