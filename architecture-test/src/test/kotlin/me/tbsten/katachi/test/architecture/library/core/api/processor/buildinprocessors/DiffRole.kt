@@ -1,4 +1,4 @@
-package me.tbsten.katachi.test.architecture.library.base.api.processor.buildinprocessors
+package me.tbsten.katachi.test.architecture.library.core.api.processor.buildinprocessors
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
@@ -18,26 +18,26 @@ import me.tbsten.katachi.test.architecture.konsist.keepsBlockTagsLast
 import me.tbsten.katachi.test.architecture.konsist.showsExample
 import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
 
-fun DeclarationContainerScope.template() = "Template".role {
-    title = "テンプレート生成"
-    summary = "役割の template { } を replay して、layout が示す場所へファイルを書き出す層"
-    example("GenerateCodeFromTemplate.kt", "katachiTemplate の入口。--arg を受け取り、書き出しを起動する")
-    example("TemplateGeneration.kt", "宣言と値から「パスと中身」の対応を組み立てる純粋関数")
-    example("TemplatePlacement.kt", "生成したファイル名を layout のパターンと突き合わせ、置き場所を1つに決める")
-    example("TemplateOutput.kt", "組み立てた結果をディスクに置く唯一の場所。全部書くか1つも書かないか")
+fun DeclarationContainerScope.diff() = "Diff".role {
+    title = "差分レポート"
+    summary = "git の差分を role / group ごとに振り分け、レビュー用の HTML と Markdown、スクリプト用の JSON と YAML にする層"
+    example("DiffReport.kt", "katachiDiff の入口。差分を取り、振り分け、書き出す")
+    example("GitDiff.kt", "git diff --numstat と gh pr view から変更ファイルの一覧を作る")
+    example("DiffModel.kt", "変更ファイルを layout に照らして role / group の木にする")
+    example("DiffReportData.kt", "同じ木を JSON と YAML のためのデータにする")
     layout {
         "katachi" {
             packageAndLayerImports()
             internalDeclarationsInInternalPackage()
             publicDeclarationsShowExample()
             publicDeclarationsKeepTagsLast()
-            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "template" / "*".ktFile()
-            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "template" / "**" / "*".ktFile()
+            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "diff" / "*".ktFile()
+            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "diff" / "internal" / "*".ktFile()
         }
     }
 }
 
-private const val LAYER: String = "template"
+private const val LAYER: String = "diff"
 
 // Written here rather than in a shared file: katachi captures the first frame outside itself as
 // the declaration site of a `konsist { }`, of a `ktFileContent { }` and of each line in it, so a

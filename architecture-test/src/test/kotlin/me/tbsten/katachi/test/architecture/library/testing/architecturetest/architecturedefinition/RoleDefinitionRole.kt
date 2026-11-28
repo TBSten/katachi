@@ -12,7 +12,7 @@ import me.tbsten.katachi.test.architecture.ARCHITECTURE_TEST_PACKAGE
 fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
     title = "役割の定義"
     summary = "役割1つを宣言する拡張関数と、その役割だけが使う private な部品を持つ <Name>Role.kt。呼ぶ group のディレクトリに置く"
-    example("library/base/api/DslRole.kt", "Dsl の役割と、その制約を組み立てる private な関数")
+    example("library/core/api/DslRole.kt", "Dsl の役割と、その制約を組み立てる private な関数")
     layout {
         "architecture-test" / testSourceSet / kotlin / ARCHITECTURE_TEST_PACKAGE / "**" / "*Role".ktFile()
     }

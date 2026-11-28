@@ -33,7 +33,7 @@ class DocumentationGenerationSpec : FreeSpec({
                 pages shouldContainAll listOf(
                     "README.md",
                     "Library/README.md",
-                    "Library/LibraryBase/Api/Processor/BuildInProcessors/Docs.md",
+                    "Library/LibraryCore/Api/Processor/BuildInProcessors/Docs.md",
                 )
             }
         }

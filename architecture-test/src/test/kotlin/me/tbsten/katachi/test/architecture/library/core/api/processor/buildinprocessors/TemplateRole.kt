@@ -1,4 +1,4 @@
-package me.tbsten.katachi.test.architecture.library.base.api.processor.buildinprocessors
+package me.tbsten.katachi.test.architecture.library.core.api.processor.buildinprocessors
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
@@ -18,26 +18,26 @@ import me.tbsten.katachi.test.architecture.konsist.keepsBlockTagsLast
 import me.tbsten.katachi.test.architecture.konsist.showsExample
 import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
 
-fun DeclarationContainerScope.check() = "Check".role {
-    title = "検査"
-    summary = "利用者が呼ぶ assert() と、宣言に導かれた1度だけの走査、その結果と報告の組み立て"
-    example("Assert.kt", "利用者がテストに書く1行")
-    example("Scan.kt", "唯一の走査")
-    example("Violation.kt", "報告される1件")
-    example("ViolationReport.kt", "違反1件を人が読める1ブロックにする")
+fun DeclarationContainerScope.template() = "Template".role {
+    title = "テンプレート生成"
+    summary = "役割の template { } を replay して、layout が示す場所へファイルを書き出す層"
+    example("GenerateCodeFromTemplate.kt", "katachiTemplate の入口。--arg を受け取り、書き出しを起動する")
+    example("TemplateGeneration.kt", "宣言と値から「パスと中身」の対応を組み立てる純粋関数")
+    example("TemplatePlacement.kt", "生成したファイル名を layout のパターンと突き合わせ、置き場所を1つに決める")
+    example("TemplateOutput.kt", "組み立てた結果をディスクに置く唯一の場所。全部書くか1つも書かないか")
     layout {
         "katachi" {
             packageAndLayerImports()
             internalDeclarationsInInternalPackage()
             publicDeclarationsShowExample()
             publicDeclarationsKeepTagsLast()
-            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "check" / "*".ktFile()
-            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "check" / "**" / "*".ktFile()
+            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "template" / "*".ktFile()
+            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "template" / "**" / "*".ktFile()
         }
     }
 }
 
-private const val LAYER: String = "check"
+private const val LAYER: String = "template"
 
 // Written here rather than in a shared file: katachi captures the first frame outside itself as
 // the declaration site of a `konsist { }`, of a `ktFileContent { }` and of each line in it, so a

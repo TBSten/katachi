@@ -1,4 +1,4 @@
-package me.tbsten.katachi.test.architecture.library.base.api.processor.buildinprocessors
+package me.tbsten.katachi.test.architecture.library.core.api.processor.buildinprocessors
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 

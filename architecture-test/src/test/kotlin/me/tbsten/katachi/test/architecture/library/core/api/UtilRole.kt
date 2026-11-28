@@ -1,4 +1,4 @@
-package me.tbsten.katachi.test.architecture.library.base.api.processor.buildinprocessors
+package me.tbsten.katachi.test.architecture.library.core.api
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
@@ -8,38 +8,26 @@ import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 import me.tbsten.katachi.konsist.konsist
-import me.tbsten.katachi.test.architecture.konsist.INTERNAL_PACKAGE_RULE
-import me.tbsten.katachi.test.architecture.konsist.KDOC_EXAMPLE_RULE
-import me.tbsten.katachi.test.architecture.konsist.KDOC_TAG_ORDER_RULE
-import me.tbsten.katachi.test.architecture.laterLayerImportsOf
-import me.tbsten.katachi.test.architecture.konsist.misplacedDeclarationsOf
-import me.tbsten.katachi.test.architecture.konsist.publicDeclarationsOf
-import me.tbsten.katachi.test.architecture.konsist.keepsBlockTagsLast
-import me.tbsten.katachi.test.architecture.konsist.showsExample
+import me.tbsten.katachi.test.architecture.*
+import me.tbsten.katachi.test.architecture.konsist.*
 import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
 
-fun DeclarationContainerScope.docs() = "Docs".role {
-    title = "ドキュメント生成"
-    summary = "宣言から役割リファレンスの Markdown を組み立て、書き出す層"
-    example("GenerateDocumentation.kt", "katachiDocs の入口。組み立てた結果をディスクに置く唯一の場所")
-    example("RoleReference.kt", "定義1つから、パスと中身の対応を組み立てる入口")
-    example("RolePage.kt", "役割1つのページ。節ごとに関数が分かれている")
-    example("Placements.kt", "layout のエントリを「配置場所」の表の行に変える")
-    example("DirectoryTree.kt", "同じ行を転置して、group の README に出す配置ツリーにする")
-    example("LinkCheck.kt", "組み立てた最後に、相対リンクが実在するページを指しているか確かめる")
+fun DeclarationContainerScope.util() = "Util".role {
+    title = "汎用のツール"
+    summary = "アーキテクチャ定義を知らない、標準ライブラリだけで書かれたツール"
+    example("RunCatchingScoped.kt", "失敗を記録しながら最後まで進める runCatchingScoped")
     layout {
         "katachi" {
             packageAndLayerImports()
             internalDeclarationsInInternalPackage()
             publicDeclarationsShowExample()
             publicDeclarationsKeepTagsLast()
-            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "docs" / "*".ktFile()
-            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "docs" / "**" / "*".ktFile()
+            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "util" / "*".ktFile()
         }
     }
 }
 
-private const val LAYER: String = "docs"
+private const val LAYER: String = "util"
 
 // Written here rather than in a shared file: katachi captures the first frame outside itself as
 // the declaration site of a `konsist { }`, of a `ktFileContent { }` and of each line in it, so a

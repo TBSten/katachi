@@ -1,4 +1,4 @@
-package me.tbsten.katachi.test.architecture.library.base.internal
+package me.tbsten.katachi.test.architecture.library.core.internal.processor
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
@@ -8,27 +8,34 @@ import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 import me.tbsten.katachi.konsist.konsist
-import me.tbsten.katachi.test.architecture.*
-import me.tbsten.katachi.test.architecture.konsist.*
+import me.tbsten.katachi.test.architecture.konsist.INTERNAL_PACKAGE_RULE
+import me.tbsten.katachi.test.architecture.konsist.KDOC_EXAMPLE_RULE
+import me.tbsten.katachi.test.architecture.konsist.KDOC_TAG_ORDER_RULE
+import me.tbsten.katachi.test.architecture.laterLayerImportsOf
+import me.tbsten.katachi.test.architecture.konsist.misplacedDeclarationsOf
+import me.tbsten.katachi.test.architecture.konsist.publicDeclarationsOf
+import me.tbsten.katachi.test.architecture.konsist.keepsBlockTagsLast
+import me.tbsten.katachi.test.architecture.konsist.showsExample
 import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
 
-fun DeclarationContainerScope.util() = "Util".role {
-    title = "内部の汎用ツール"
-    summary = "ライブラリの中でだけ使う、標準ライブラリだけで書かれたツール"
-    example("RunCatchingScoped.kt", "失敗を記録しながら最後まで進める runCatchingScoped")
+fun DeclarationContainerScope.describeDefinition() = "DescribeDefinition".role {
+    title = "定義の書き出しの入口"
+    summary = "IDE プラグインが走らせる、定義を definition.json に書き出す入口"
+    example("DescribeDefinition.kt", "katachiInternalDefinitionJson の入口。IDE プラグインが走らせる")
+    example("DeclarationExplanations.kt", "宣言の説明文を definition.json に載せる形に直す")
     layout {
         "katachi" {
             packageAndLayerImports()
             internalDeclarationsInInternalPackage()
             publicDeclarationsShowExample()
             publicDeclarationsKeepTagsLast()
-            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "util" / "internal" / "*".ktFile()
-            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "internal" / "*".ktFile()
+            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "ide" / "internal" / "DescribeDefinition".ktFile()
+            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "ide" / "internal" / "DeclarationExplanations".ktFile()
         }
     }
 }
 
-private const val LAYER: String = "util"
+private const val LAYER: String = "ide"
 
 // Written here rather than in a shared file: katachi captures the first frame outside itself as
 // the declaration site of a `konsist { }`, of a `ktFileContent { }` and of each line in it, so a

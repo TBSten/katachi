@@ -1,4 +1,4 @@
-package me.tbsten.katachi.test.architecture.library.base.api
+package me.tbsten.katachi.test.architecture.library.core.api
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope

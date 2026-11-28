@@ -1,7 +1,7 @@
-package me.tbsten.katachi.test.architecture.library.base.internal
+package me.tbsten.katachi.test.architecture.library.core.internal
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.test.architecture.library.base.internal.processor.processorGroup
+import me.tbsten.katachi.test.architecture.library.core.internal.processor.processorGroup
 
 fun DeclarationContainerScope.internalGroup() = "Internal".group {
     title = "内部の実装"

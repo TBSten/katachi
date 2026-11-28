@@ -1,4 +1,4 @@
-package me.tbsten.katachi.test.architecture.library.base.internal.processor
+package me.tbsten.katachi.test.architecture.library.core.api.processor.buildinprocessors
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
@@ -18,24 +18,28 @@ import me.tbsten.katachi.test.architecture.konsist.keepsBlockTagsLast
 import me.tbsten.katachi.test.architecture.konsist.showsExample
 import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
 
-fun DeclarationContainerScope.describeDefinition() = "DescribeDefinition".role {
-    title = "定義の書き出しの入口"
-    summary = "IDE プラグインが走らせる、定義を definition.json に書き出す入口"
-    example("DescribeDefinition.kt", "katachiInternalDefinitionJson の入口。IDE プラグインが走らせる")
-    example("DeclarationExplanations.kt", "宣言の説明文を definition.json に載せる形に直す")
+fun DeclarationContainerScope.docs() = "Docs".role {
+    title = "ドキュメント生成"
+    summary = "宣言から役割リファレンスの Markdown を組み立て、書き出す層"
+    example("GenerateDocumentation.kt", "katachiDocs の入口。組み立てた結果をディスクに置く唯一の場所")
+    example("RoleReference.kt", "定義1つから、パスと中身の対応を組み立てる入口")
+    example("RolePage.kt", "役割1つのページ。節ごとに関数が分かれている")
+    example("Placements.kt", "layout のエントリを「配置場所」の表の行に変える")
+    example("DirectoryTree.kt", "同じ行を転置して、group の README に出す配置ツリーにする")
+    example("LinkCheck.kt", "組み立てた最後に、相対リンクが実在するページを指しているか確かめる")
     layout {
         "katachi" {
             packageAndLayerImports()
             internalDeclarationsInInternalPackage()
             publicDeclarationsShowExample()
             publicDeclarationsKeepTagsLast()
-            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "ide" / "internal" / "DescribeDefinition".ktFile()
-            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "ide" / "internal" / "DeclarationExplanations".ktFile()
+            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "docs" / "*".ktFile()
+            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "docs" / "**" / "*".ktFile()
         }
     }
 }
 
-private const val LAYER: String = "ide"
+private const val LAYER: String = "docs"
 
 // Written here rather than in a shared file: katachi captures the first frame outside itself as
 // the declaration site of a `konsist { }`, of a `ktFileContent { }` and of each line in it, so a

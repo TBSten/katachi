@@ -1,4 +1,4 @@
-package me.tbsten.katachi.test.architecture.library.base.internal.processor
+package me.tbsten.katachi.test.architecture.library.core.api.processor.buildinprocessors
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
@@ -18,22 +18,29 @@ import me.tbsten.katachi.test.architecture.konsist.keepsBlockTagsLast
 import me.tbsten.katachi.test.architecture.konsist.showsExample
 import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
 
-fun DeclarationContainerScope.definitionJson() = "DefinitionJson".role {
-    title = "definition.json の形"
-    summary = "IDE プラグインが読む definition.json の形と、それを組み立てる処理"
-    example("DefinitionJsonBuilder.kt", "走査とテンプレートから definition.json の形を組み立てる")
+fun DeclarationContainerScope.report() = "Report".role {
+    title = "レポート出力"
+    summary = "1度の検査の違反を SARIF 2.1.0 のファイルにして、GitHub の PR に注釈として載せるためのもの"
+    example("Sarif.kt", "利用者に開いている純粋な変換 toSarif と、書き出し writeSarif")
+    example("SarifLocations.kt", "違反を置く場所の決め方。実在するファイル、宣言した行、architecture { } の順")
+    example("SarifWrite.kt", "assert() が -Dkatachi.report.sarif を見て書き出す入口")
     layout {
         "katachi" {
             packageAndLayerImports()
             internalDeclarationsInInternalPackage()
             publicDeclarationsShowExample()
             publicDeclarationsKeepTagsLast()
-            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "ide" / "internal" / "DefinitionJson*".ktFile()
+            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "report" / "*".ktFile()
+            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "report" / "internal" / "*".ktFile()
+            // The version `tool.driver.semanticVersion` reports. Written as `version=${katachiVersion}`
+            // and expanded by `processResources`, so the running katachi can read its own version
+            // from a class directory as well as from a jar.
+            mainSourceSet / "resources" / "META-INF" / "katachi" / "version.properties".file()
         }
     }
 }
 
-private const val LAYER: String = "ide"
+private const val LAYER: String = "report"
 
 // Written here rather than in a shared file: katachi captures the first frame outside itself as
 // the declaration site of a `konsist { }`, of a `ktFileContent { }` and of each line in it, so a
