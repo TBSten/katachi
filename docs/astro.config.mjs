@@ -162,7 +162,8 @@ export default defineConfig({
 			// starlight-versions は PageTitle・ThemeSelect・Search・Banner を差し替えて版の表示を足すが、
 			// PageTitle（ここ）と ThemeSelect・Search（starlight-theme-nova）は既に差し替え済みなので、
 			// プラグインは「上書き済み」の警告を出して手を引く。代わりに次のようにしている。
-			// - PageTitle: 自前の PageTitle.astro が「古い版です」の注意（VersionNotice）を出す。
+			// - PageTitle: 自前の PageTitle.astro が版の注意（src/components/VersionNotice.astro）を出す。
+			//   プラグインの「古い版です」の注意は出さず、開発中の版のページにだけ最新のリリース済みの版を案内する。
 			// - ThemeSelect: 自前の ThemeSelect.astro が版の切り替え（VersionSelect）と nova のテーマ切り替えを並べる。
 			// - Search: nova のまま。古い版のページは検索の索引に入れない（src/lib/route-data.ts）。
 			components: {

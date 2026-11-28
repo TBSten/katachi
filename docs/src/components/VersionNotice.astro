@@ -1,0 +1,94 @@
+---
+/**
+ * ページタイトルの下に出す版の注意。starlight-versions の VersionNotice.astro の代わり。
+ *
+ * プラグインのものは、凍結した写し（`/katachi/0.3/...`）のすべてに「このページは v0.3 の内容です。
+ * 最新の内容は最新版を見てください。」を出す。ここでは逆に、リリース済みの版のページには何も出さず、
+ * 開発中の版のページにだけ、最新のリリース済みの版への案内を出す（KATACHI-459）。
+ * 出す条件と文言は src/lib/version-notice.ts、行く先の決め方は src/lib/version-destination.ts。
+ */
+import { basename } from 'node:path';
+import { getCollection } from 'astro:content';
+import { Icon } from '@astrojs/starlight/components';
+import { archivedVersions, currentIsDev, latestReleasedVersion, writtenBase } from '../lib/versions.mjs';
+import { firstSlug, latestReleasedPath, pageSlug } from '../lib/version-destination';
+import { archivedVersionOf } from '../lib/version-links';
+import { showsDevNotice, versionNoticeText } from '../lib/version-notice';
+
+const { id, locale, lang } = Astro.locals.starlightRoute;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const path = Astro.url.pathname.replace(/\/$/, '');
+// トップページ（src/pages/ の .astro）は docs のページではない。ここには出さない。
+const isTopPage = path === base || path === `${base}/ja`;
+const show =
+	!isTopPage && showsDevNotice({ id, currentIsDev, archivedVersion: archivedVersionOf(Astro.url.pathname) });
+
+let href: string | undefined;
+if (show) {
+	const available = new Set<string>();
+	for (const entry of await getCollection('docs')) available.add(`${base}/${entry.id}/`);
+	// entry.id は '0.2' が '02' に変わるので、版の slug はファイル名（0.2.json）から取る。
+	const sidebar = (await getCollection('versions')).find(
+		(entry) => basename(entry.filePath ?? '', '.json') === latestReleasedVersion.slug,
+	)?.data.sidebar;
+	href = latestReleasedPath(
+		{
+			base,
+			releasedBase: writtenBase,
+			locale: locale === 'root' ? undefined : locale,
+			version: latestReleasedVersion.slug,
+			slug: pageSlug(
+				id,
+				locale,
+				archivedVersions.map((version) => version.slug),
+			),
+		},
+		available,
+		firstSlug(sidebar),
+	);
+}
+const text = versionNoticeText(lang);
+---
+
+{
+	show && (
+		<p class="katachi-version-notice">
+			<Icon name="information" size="1em" color="var(--sl-color-orange-high)" />
+			<span>
+				<span class="sentence">{text.dev}</span>{text.joiner}<span class="sentence">{text.latestBefore}<a href={href}>{latestReleasedVersion.label}</a>{text.latestAfter}</span>
+			</span>
+		</p>
+	)
+}
+
+<style>
+	p {
+		display: flex;
+		border: 1px solid var(--sl-color-orange);
+		padding: 0.75em 1em;
+		background-color: var(--sl-color-orange-low);
+		color: var(--sl-color-orange-high);
+		width: max-content;
+		max-width: 100%;
+		align-items: center;
+		gap: 0.75em;
+		font-size: var(--sl-text-sm);
+		line-height: var(--sl-line-height-headings);
+	}
+
+	/* 幅が足りないときは、文の途中ではなく文の間で折り返す。 */
+	.sentence {
+		display: inline-block;
+	}
+
+	a {
+		color: var(--sl-color-orange-high);
+		font-weight: 600;
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+	}
+
+	p :global(svg) {
+		flex-shrink: 0;
+	}
+</style>

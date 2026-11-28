@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { firstSlug, pagePath, pageSlug, resolveVersionPath } from '../src/lib/version-destination';
+import {
+	firstSlug,
+	latestReleasedPath,
+	pagePath,
+	pageSlug,
+	resolveVersionPath,
+} from '../src/lib/version-destination';
 
 const base = '/katachi';
 const available = new Set([
@@ -49,6 +55,41 @@ describe('resolveVersionPath', () => {
 	it('版のトップがあればそこへ', () => {
 		const withTop = new Set([...available, '/katachi/0.2/']);
 		expect(resolveVersionPath({ base, version: '0.2', slug: 'showcase' }, withTop, 'x')).toBe('/katachi/0.2/');
+	});
+});
+
+describe('latestReleasedPath（開発中の版のページから、最新のリリース済みの版へ）', () => {
+	const first = 'get-started/motivation';
+
+	describe('手元のビルド（base がリリース済みの docs と同じ）は、ビルドの中の写しへ', () => {
+		const go = (slug: string, locale?: string) =>
+			latestReleasedPath({ base, releasedBase: base, locale, version: '0.2', slug }, available, first);
+
+		it('写しにあるページは同じページへ', () => {
+			expect(go('guides/role')).toBe('/katachi/0.2/guides/role/');
+			expect(go('guides/role', 'ja')).toBe('/katachi/ja/0.2/guides/role/');
+		});
+
+		it('写しに無いページ（版を切ったあとに足したページ）は、写しの最初のページへ', () => {
+			expect(go('guides/kt-file-content')).toBe('/katachi/0.2/get-started/motivation/');
+		});
+	});
+
+	describe('公開サイトの開発版（base が /katachi/dev）は、リリース済みの docs の直下へ', () => {
+		const devBase = '/katachi/dev';
+		const devAvailable = new Set([...available].map((path) => path.replace(base, devBase)));
+		const go = (slug: string, locale?: string) =>
+			latestReleasedPath({ base: devBase, releasedBase: base, locale, version: '0.2', slug }, devAvailable, first);
+
+		it('写しにあるページは、版の区切りの無い同じページへ', () => {
+			expect(go('guides/role')).toBe('/katachi/guides/role/');
+			expect(go('guides/role', 'ja')).toBe('/katachi/ja/guides/role/');
+		});
+
+		it('写しに無いページは、リリース済みの docs のトップへ', () => {
+			expect(go('guides/kt-file-content')).toBe('/katachi/');
+			expect(go('guides/kt-file-content', 'ja')).toBe('/katachi/ja/');
+		});
 	});
 });
 
