@@ -11,8 +11,8 @@ import me.tbsten.katachi.test.architecture.ARCHITECTURE_TEST_PACKAGE
 
 fun DeclarationContainerScope.definitionEntryPoint() = "DefinitionEntryPoint".role {
     title = "定義のエントリーポイント"
-    summary = "Gradle プラグインが生成するエントリーポイントの手書きの代わり。katachiDiff がクラス名で読み込む"
-    example("ProjectArchitectureEntryPoint.kt", "定義と processor を katachiDiff に渡す object")
+    summary = "Gradle プラグインが生成するエントリーポイントの手書きの代わり。katachiDiff と katachiInternalDefinitionJson がクラス名で読み込む"
+    example("ProjectArchitectureEntryPoint.kt", "定義と processor を katachiDiff・katachiInternalDefinitionJson に渡す object")
     layout {
         "architecture-test" / testSourceSet / kotlin / ARCHITECTURE_TEST_PACKAGE / "ProjectArchitectureEntryPoint".ktFile()
     }

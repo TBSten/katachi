@@ -22,7 +22,8 @@
       "declaredAt": {
         "fileName": "IdePluginSyntheticSpecSupport.kt",
         "line": 69
-      }
+      },
+      "declaredByGradle": false
     },
     {
       "qualifiedName": "a.b",
@@ -34,7 +35,8 @@
       "declaredAt": {
         "fileName": "IdePluginSyntheticSpecSupport.kt",
         "line": 96
-      }
+      },
+      "declaredByGradle": false
     },
     {
       "qualifiedName": "a.b.c",
@@ -46,7 +48,8 @@
       "declaredAt": {
         "fileName": "IdePluginSyntheticSpecSupport.kt",
         "line": 97
-      }
+      },
+      "declaredByGradle": false
     },
     {
       "qualifiedName": "other",
@@ -58,7 +61,8 @@
       "declaredAt": {
         "fileName": "IdePluginSyntheticSpecSupport.kt",
         "line": 121
-      }
+      },
+      "declaredByGradle": false
     }
   ],
   "roles": [
@@ -188,7 +192,8 @@
           "place": false
         }
       ],
-      "constraints": []
+      "constraints": [],
+      "declaredByGradle": false
     },
     {
       "qualifiedName": "Counter",
@@ -316,7 +321,8 @@
           "place": false
         }
       ],
-      "constraints": []
+      "constraints": [],
+      "declaredByGradle": false
     },
     {
       "qualifiedName": "a.Shallow",
@@ -444,7 +450,8 @@
           "place": false
         }
       ],
-      "constraints": []
+      "constraints": [],
+      "declaredByGradle": false
     },
     {
       "qualifiedName": "a.b.Middle",
@@ -600,7 +607,8 @@
           "place": false
         }
       ],
-      "constraints": []
+      "constraints": [],
+      "declaredByGradle": false
     },
     {
       "qualifiedName": "a.b.c.Deep",
@@ -770,7 +778,8 @@
           "place": false
         }
       ],
-      "constraints": []
+      "constraints": [],
+      "declaredByGradle": false
     },
     {
       "qualifiedName": "other.Broken",
@@ -898,7 +907,8 @@
           "place": false
         }
       ],
-      "constraints": []
+      "constraints": [],
+      "declaredByGradle": false
     },
     {
       "qualifiedName": "other.Wildcard",
@@ -1088,7 +1098,8 @@
           "place": false
         }
       ],
-      "constraints": []
+      "constraints": [],
+      "declaredByGradle": false
     }
   ],
   "templates": {

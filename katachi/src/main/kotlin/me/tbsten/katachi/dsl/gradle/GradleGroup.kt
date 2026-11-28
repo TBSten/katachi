@@ -94,6 +94,7 @@ public fun DeclarationContainerScope.gradle(
     title = "Gradle"
     summary = "The files that make this project a Gradle build"
     documented = false
+    metadataBuilder()[DeclaredByGradle] = true
 
     val scope = GradleScopeImpl(this)
     scope.block()
@@ -102,6 +103,7 @@ public fun DeclarationContainerScope.gradle(
         title = "Gradle wrapper"
         summary = "What runs the build with the Gradle version the project pins"
         documented = false
+        metadataBuilder()[DeclaredByGradle] = true
 
         gradleRole(GradleRoleKind.LauncherScript, "The scripts that start the wrapper, for Unix and Windows", scope) {
             "gradlew".file().optionalUnless(requireWrapper)

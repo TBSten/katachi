@@ -52,6 +52,7 @@ internal class ScriptContext(
     val http: HttpFetcher = JdkHttpFetcher,
     val launch: ProcessLauncher = InheritingIoLauncher,
     val macOsJavaStub: MacOsJavaStub? = MacOsJavaStub.onThisHost(),
+    val gradle: GradleRunner = ProcessGradleRunner,
 ) {
     var lang: Lang = Lang.fromEnv(env) ?: Lang.JA
 

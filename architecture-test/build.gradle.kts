@@ -117,3 +117,23 @@ tasks.register<KatachiDiffTask>("katachiDiff") {
     // A git range is not an input Gradle can see, so a second run with the same arguments must still run.
     outputs.upToDateWhen { false }
 }
+
+/**
+ * `./gradlew :architecture-test:katachiInternalDefinitionJson`, the task `katachi lint` and the IDE plugin run to read
+ * the definition as Gradle evaluates it, written here by hand for the same reason as `katachiDiff`. It writes to the
+ * place the plugin's task does.
+ */
+tasks.register<JavaExec>("katachiInternalDefinitionJson") {
+    description = "Internal: writes this repository's own definition as JSON for `katachi lint`. Not meant to be run by hand."
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass = "me.tbsten.katachi.processor.internal.MainKt"
+    workingDir = projectDir
+    args(
+        "--entry-point=me.tbsten.katachi.test.architecture.ProjectArchitectureEntryPoint",
+        "--processor=internalDefinitionJson",
+        "--definition-errors=build/katachi/internalDefinitionJson/definition-errors.json",
+        "--arg=output=build/katachi/internalDefinitionJson/definition.json",
+    )
+    // It walks the repository, which Gradle cannot see: a second run must still run.
+    outputs.upToDateWhen { false }
+}

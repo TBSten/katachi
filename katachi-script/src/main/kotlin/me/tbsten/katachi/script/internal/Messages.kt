@@ -170,12 +170,12 @@ internal object Messages {
         val roleNameRoleStands: Msg = Msg(
             ja = "Role（\"Name\".role { }）は1種類のファイルを表し、種類の違うものを束ねるのは group です。\n" +
                 "katachi skill の setup 3-2 の「1 つの Role = 1 種類のファイル」の3つの問いで見直し、分けるべきものは\n" +
-                "種類ごとの Role に分けて group で束ねてください。テキストの素朴な走査なので誤検知はあり得ます。\n" +
+                "種類ごとの Role に分けて group で束ねてください。\n" +
                 "見直して1種類だと判断したものは、そのままでかまいません。",
             en = "A Role (\"Name\".role { }) stands for one kind of file; group is what bundles different kinds.\n" +
                 "Review them with the three questions of \"one Role = one kind of file\" in step 3-2 of the katachi skill's setup,\n" +
-                "and split what should be split into one Role per kind, bundled with group. This is a plain text\n" +
-                "scan, so false positives are possible. If you review a Role and decide it is one kind, leave it.",
+                "and split what should be split into one Role per kind, bundled with group.\n" +
+                "If you review a Role and decide it is one kind, leave it.",
         )
 
         fun gradleFilesDeclaredHand(names: Any?): Msg = Msg(
@@ -286,6 +286,66 @@ internal object Messages {
         fun roleWhat(path: Any?, line: Any?, role: Any?, what: Any?): Msg = Msg(
             ja = "  $path:$line Role \"$role\"（$what）",
             en = "  $path:$line Role \"$role\" ($what)",
+        )
+
+        fun evaluatingDefinition(command: Any?): Msg = Msg(
+            ja = "定義を Gradle で評価しています: $command（初回は時間がかかります）",
+            en = "Evaluating the definition with Gradle: $command (the first run takes a while)",
+        )
+
+        fun gradlewMissing(rootUri: Any?): Msg = Msg(
+            ja = "lint: プロジェクトのルートに gradlew がありません（$rootUri）。lint は定義を Gradle で評価した結果を読むので、" +
+                "プロジェクトの ./gradlew が要ります。",
+            en = "lint: there is no gradlew in the project root ($rootUri). lint reads the definition as Gradle evaluates it, " +
+                "so it needs the project's ./gradlew.",
+        )
+
+        fun definitionTaskMissing(module: Any?): Msg = Msg(
+            ja = "lint: $module に katachiInternalDefinitionJson のタスクがありません。検査用モジュールに katachi の Gradle プラグイン" +
+                "（me.tbsten.katachi、0.3 以降）を適用してください。モジュールの置き場所が違うなら --module-dir <パス> で指定します。",
+            en = "lint: $module has no katachiInternalDefinitionJson task. Apply katachi's Gradle plugin " +
+                "(me.tbsten.katachi, 0.3 or later) to the verification module. If the module is somewhere else, give it with --module-dir <path>.",
+        )
+
+        fun definitionNotEvaluated(command: Any?, status: Any?, details: Any?): Msg = Msg(
+            ja = "lint: 定義を Gradle で評価できなかったので、点検していません（$command、終了コード $status）。\n" +
+                "$details\n" +
+                "定義を直してから、もう一度 katachi lint を実行してください。",
+            en = "lint: the definition could not be evaluated by Gradle, so nothing was checked ($command, exit code $status).\n" +
+                "$details\n" +
+                "Fix the definition, then run katachi lint again.",
+        )
+
+        fun compileErrors(count: Any?, lines: Any?): Msg = Msg(
+            ja = "コンパイルエラー（$count 件）:\n$lines",
+            en = "Compile errors ($count):\n$lines",
+        )
+
+        fun moreErrors(count: Any?): Msg = Msg(
+            ja = "  ほか $count 件",
+            en = "  and $count more",
+        )
+
+        fun gradleOutputTail(lines: Any?): Msg = Msg(
+            ja = "Gradle の出力（末尾）:\n$lines",
+            en = "The end of Gradle's output:\n$lines",
+        )
+
+        val jsonNotWritten: Msg = Msg(
+            ja = "このコマンドの実行で書かれたファイルがありません",
+            en = "no file was written by this run",
+        )
+
+        fun definitionJsonUnreadable(path: Any?, reason: Any?): Msg = Msg(
+            ja = "lint: Gradle が書いた定義の JSON を読めませんでした（$path）: $reason",
+            en = "lint: could not read the definition JSON Gradle wrote ($path): $reason",
+        )
+
+        fun definitionJsonTooNew(version: Any?, supported: Any?): Msg = Msg(
+            ja = "lint: 定義の JSON のバージョン（schemaVersion $version）がこの katachi コマンドの読めるバージョン（$supported）より新しいです。" +
+                "katachi コマンドを更新してください。",
+            en = "lint: the definition JSON's schemaVersion ($version) is newer than this katachi command reads ($supported). " +
+                "Update the katachi command.",
         )
     }
 
@@ -926,11 +986,12 @@ katachi — katachi の導入と検査を手伝うコマンド
       --dry-run           何も書かずに、何をするかだけ出力する
 
   katachi lint [--module-dir <path>]
-      定義（検査用モジュールの src/test/kotlin）を読み、種類の違うファイルを1つの
-      Role に抱えていそうなもの、Gradle のファイルを手書きで宣言した Role（制約を持つものは
+      Gradle で評価した定義（検査用モジュールの katachiInternalDefinitionJson の JSON）を読み、
+      種類の違うファイルを1つの Role に抱えていそうなもの、Gradle のファイルを手書きで宣言した Role（制約を持つものは
       gradle { } の hook への移し方も出す）、平たい group、小文字で始まる Role・group の名前、
       分けていないファイル、documented = false の候補を列挙する。
-      素朴なテキスト走査なので誤検知があり得る。点検の結果では失敗にしない（0 を返す）。
+      プロジェクトの ./gradlew で定義を評価するので、定義がコンパイルできないときは点検せず、
+      理由を出して 1 を返す。点検の結果では失敗にしない（0 を返す）。
       定義のディレクトリが無ければ（scaffold 前、置き場所の食い違い）1 を返す。
       --module-dir は検査用モジュールの置き場所で、scaffold の --module-dir と同じ（デフォルト:
       作業用ディレクトリのチェックリストの meta.moduleDir。無ければ architecture-test）。
@@ -988,12 +1049,13 @@ Usage:
       --dry-run           Write nothing; only print what would be done
 
   katachi lint [--module-dir <path>]
-      Reads the definition (src/test/kotlin of the verification module) and lists Roles that
-      seem to hold files of different kinds, hand-written Roles for Gradle files (ones with
+      Reads the definition evaluated by Gradle (the JSON of the verification module's
+      katachiInternalDefinitionJson) and lists Roles that seem to hold files of different kinds, hand-written Roles for Gradle files (ones with
       constraints also get the way to move them into a gradle { } hook), flat groups, Role and
       group names starting with a lowercase letter, files not split, and candidates for
       documented = false.
-      It is a plain text scan, so false positives are possible. Findings never fail it (returns 0).
+      It evaluates the definition with the project's ./gradlew, so when the definition does not compile
+      it checks nothing, prints why and returns 1. Findings never fail it (returns 0).
       Returns 1 if the definition directory does not exist (before scaffold, or a different location).
       --module-dir is where the verification module is, the same as scaffold's --module-dir (default:
       meta.moduleDir in the check list of the working directory, otherwise architecture-test).

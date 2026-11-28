@@ -22,7 +22,8 @@
       "declaredAt": {
         "fileName": "DescribeDefinitionSpecSupport.kt",
         "line": 147
-      }
+      },
+      "declaredByGradle": false
     }
   ],
   "roles": [
@@ -214,7 +215,8 @@
           "place": false
         }
       ],
-      "constraints": []
+      "constraints": [],
+      "declaredByGradle": false
     }
   ],
   "templates": {
