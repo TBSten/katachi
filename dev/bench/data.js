@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1795869118303,
+  "lastUpdate": 1795869120928,
   "repoUrl": "https://github.com/TBSten/katachi",
   "entries": {
     "JMH time": [
@@ -61870,6 +61870,296 @@ window.BENCHMARK_DATA = {
             "name": "me.tbsten.katachi.benchmark.AssertColdBench.withKtFileContent ( {\"files\":\"2000\"} )",
             "value": 366289001.6,
             "range": "± 977781",
+            "unit": "B/op",
+            "extra": "mode: ss\nforks: 5"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "81161390+TBSten@users.noreply.github.com",
+            "name": "TBSten",
+            "username": "TBSten"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9b92689751a8be91e019fb3d27ddebf004c5bf01",
+          "message": "Merge pull request #184 from TBSten/claude/project-thread-cnwmsh\n\nfeat(cli): KATACHI-484 katachi lint を評価済みの定義 JSON で読み、文字列の走査をやめる（旧 KATACHI-485 を統合）",
+          "timestamp": "2026-11-28T21:12:13+09:00",
+          "tree_id": "140f7910adebffa08b9d6f3845ee774b07b3bd3d",
+          "url": "https://github.com/TBSten/katachi/commit/9b92689751a8be91e019fb3d27ddebf004c5bf01"
+        },
+        "date": 1795869120373,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "me.tbsten.katachi.benchmark.KonsistScopeBench.parse ( {\"files\":\"200\"} )",
+            "value": 4960049.927069796,
+            "range": "± 2292",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.KonsistScopeBench.parse ( {\"files\":\"2000\"} )",
+            "value": 52265238.89979037,
+            "range": "± 7471",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.KonsistScopeBench.validateWithKonsist ( {\"files\":\"200\"} )",
+            "value": 2228081.441470155,
+            "range": "± 12184",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.KonsistScopeBench.validateWithKonsist ( {\"files\":\"2000\"} )",
+            "value": 17551975.05340136,
+            "range": "± 30002",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.KontureBench.validateWithKonture ( {\"files\":\"200\"} )",
+            "value": 16101069.351668451,
+            "range": "± 171945",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.KontureBench.validateWithKonture ( {\"files\":\"2000\"} )",
+            "value": 160513103.96923074,
+            "range": "± 84310",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.KontureBench.validateWithKontureOnOneRole ( {\"files\":\"200\"} )",
+            "value": 11658665.953149518,
+            "range": "± 29749",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.KontureBench.validateWithKontureOnOneRole ( {\"files\":\"2000\"} )",
+            "value": 117586192.2,
+            "range": "± 49215",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.KtFileContentBench.validateWithKtFileContent ( {\"files\":\"200\"} )",
+            "value": 17812482.284727983,
+            "range": "± 32577",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.KtFileContentBench.validateWithKtFileContent ( {\"files\":\"2000\"} )",
+            "value": 181502694.57777777,
+            "range": "± 181405",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.LayoutEvalBench.discoverAndFlatten ( {\"modules\":\"10\",\"roles\":\"5\"} )",
+            "value": 193784.89837752449,
+            "range": "± 433",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.LayoutEvalBench.discoverAndFlatten ( {\"modules\":\"10\",\"roles\":\"20\"} )",
+            "value": 382474.117698226,
+            "range": "± 2091",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.LayoutEvalBench.discoverAndFlatten ( {\"modules\":\"100\",\"roles\":\"5\"} )",
+            "value": 409689.8050556823,
+            "range": "± 523",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.LayoutEvalBench.discoverAndFlatten ( {\"modules\":\"100\",\"roles\":\"20\"} )",
+            "value": 591454.7520722625,
+            "range": "± 312",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.LayoutEvalBench.flatten ( {\"modules\":\"10\",\"roles\":\"5\"} )",
+            "value": 71528.45156167794,
+            "range": "± 255",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.LayoutEvalBench.flatten ( {\"modules\":\"10\",\"roles\":\"20\"} )",
+            "value": 228945.34861966208,
+            "range": "± 1288",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.LayoutEvalBench.flatten ( {\"modules\":\"100\",\"roles\":\"5\"} )",
+            "value": 72436.43588991216,
+            "range": "± 210",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.LayoutEvalBench.flatten ( {\"modules\":\"100\",\"roles\":\"20\"} )",
+            "value": 228473.33257264612,
+            "range": "± 1058",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.RoleMatchBench.matchEveryFile ( {\"files\":\"10000\",\"modules\":\"10\",\"roles\":\"5\"} )",
+            "value": 17699229.154001545,
+            "range": "± 0",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.RoleMatchBench.matchEveryFile ( {\"files\":\"10000\",\"modules\":\"10\",\"roles\":\"20\"} )",
+            "value": 46681504.759256385,
+            "range": "± 2",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.RoleMatchBench.matchEveryFile ( {\"files\":\"10000\",\"modules\":\"100\",\"roles\":\"5\"} )",
+            "value": 17567765.39338054,
+            "range": "± 0",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.RoleMatchBench.matchEveryFile ( {\"files\":\"10000\",\"modules\":\"100\",\"roles\":\"20\"} )",
+            "value": 46245810.774150185,
+            "range": "± 1",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.WalkBench.validate ( {\"files\":\"1000\",\"modules\":\"10\",\"roles\":\"5\"} )",
+            "value": 2002992.7821834106,
+            "range": "± 23576",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.WalkBench.validate ( {\"files\":\"1000\",\"modules\":\"10\",\"roles\":\"20\"} )",
+            "value": 3191590.0708304755,
+            "range": "± 815",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.WalkBench.validate ( {\"files\":\"1000\",\"modules\":\"100\",\"roles\":\"5\"} )",
+            "value": 3359089.240669305,
+            "range": "± 21939",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.WalkBench.validate ( {\"files\":\"1000\",\"modules\":\"100\",\"roles\":\"20\"} )",
+            "value": 4858791.203713022,
+            "range": "± 23169",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.WalkBench.validate ( {\"files\":\"10000\",\"modules\":\"10\",\"roles\":\"5\"} )",
+            "value": 16898240.99781739,
+            "range": "± 1988",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.WalkBench.validate ( {\"files\":\"10000\",\"modules\":\"10\",\"roles\":\"20\"} )",
+            "value": 23422317.28652245,
+            "range": "± 18020",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.WalkBench.validate ( {\"files\":\"10000\",\"modules\":\"100\",\"roles\":\"5\"} )",
+            "value": 18445817.54967691,
+            "range": "± 8502",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.WalkBench.validate ( {\"files\":\"10000\",\"modules\":\"100\",\"roles\":\"20\"} )",
+            "value": 27419163.667861074,
+            "range": "± 15667",
+            "unit": "B/op",
+            "extra": "mode: avgt\nforks: 2"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.AssertColdBench.layoutOnly ( {\"files\":\"200\"} )",
+            "value": 21279384,
+            "range": "± 43655",
+            "unit": "B/op",
+            "extra": "mode: ss\nforks: 5"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.AssertColdBench.layoutOnly ( {\"files\":\"2000\"} )",
+            "value": 36234443.2,
+            "range": "± 125683",
+            "unit": "B/op",
+            "extra": "mode: ss\nforks: 5"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.AssertColdBench.withKonsist ( {\"files\":\"200\"} )",
+            "value": 75348964.8,
+            "range": "± 50215",
+            "unit": "B/op",
+            "extra": "mode: ss\nforks: 5"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.AssertColdBench.withKonsist ( {\"files\":\"2000\"} )",
+            "value": 176237540.8,
+            "range": "± 554025",
+            "unit": "B/op",
+            "extra": "mode: ss\nforks: 5"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.AssertColdBench.withKonture ( {\"files\":\"200\"} )",
+            "value": 98899496,
+            "range": "± 58484",
+            "unit": "B/op",
+            "extra": "mode: ss\nforks: 5"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.AssertColdBench.withKonture ( {\"files\":\"2000\"} )",
+            "value": 406783457.6,
+            "range": "± 2634461",
+            "unit": "B/op",
+            "extra": "mode: ss\nforks: 5"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.AssertColdBench.withKtFileContent ( {\"files\":\"200\"} )",
+            "value": 96823953.6,
+            "range": "± 84228",
+            "unit": "B/op",
+            "extra": "mode: ss\nforks: 5"
+          },
+          {
+            "name": "me.tbsten.katachi.benchmark.AssertColdBench.withKtFileContent ( {\"files\":\"2000\"} )",
+            "value": 366346260.8,
+            "range": "± 1508300",
             "unit": "B/op",
             "extra": "mode: ss\nforks: 5"
           }
