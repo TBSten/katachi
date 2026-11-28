@@ -1,5 +1,6 @@
-package me.tbsten.katachi.test.architecture
+package me.tbsten.katachi.test.architecture.spec
 
+import me.tbsten.katachi.test.architecture.projectArchitecture
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.ExperimentalKatachiApi

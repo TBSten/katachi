@@ -1,4 +1,4 @@
-package me.tbsten.katachi.test.architecture
+package me.tbsten.katachi.test.architecture.konsist
 
 import com.lemonappdev.konsist.api.declaration.KoBaseDeclaration
 import com.lemonappdev.konsist.api.declaration.KoFileDeclaration

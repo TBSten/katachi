@@ -1,4 +1,4 @@
-package me.tbsten.katachi.test.architecture
+package me.tbsten.katachi.test.architecture.spec
 
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec

@@ -1,5 +1,6 @@
-package me.tbsten.katachi.test.architecture
+package me.tbsten.katachi.test.architecture.spec
 
+import me.tbsten.katachi.test.architecture.projectArchitecture
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainAll
@@ -32,7 +33,7 @@ class DocumentationGenerationSpec : FreeSpec({
                 pages shouldContainAll listOf(
                     "README.md",
                     "Library/README.md",
-                    "Library/Docs.md",
+                    "Library/LibraryBase/Api/Processor/BuildInProcessors/Docs.md",
                 )
             }
         }
@@ -45,8 +46,8 @@ class DocumentationGenerationSpec : FreeSpec({
                 GenerateDocumentation.Args(outputDir = output.path),
             )
 
-            withClue("Tool group は documented = false なので、ページも一覧の行も無い") {
-                File(output, "Tool").exists() shouldBe false
+            withClue("DevSupport group は documented = false なので、ページも一覧の行も無い") {
+                File(output, "DevSupport").exists() shouldBe false
                 File(output, "README.md").readText() shouldContain "[ライブラリ](./Library/README.md)"
             }
         }
