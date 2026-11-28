@@ -2,7 +2,7 @@ package me.tbsten.katachi.test.architecture.library.core.api
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.LayoutScope
+import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -19,15 +19,15 @@ fun DeclarationContainerScope.marker() = "Marker".role {
     example("Exceptions.kt", "利用者が catch する例外の基底")
     layout {
         "katachi" {
-            packageAndLayerImports()
-            internalDeclarationsInInternalPackage()
-            publicDeclarationsShowExample()
-            publicDeclarationsKeepTagsLast()
             // The root package, and only it: `*` never crosses a `/`, so the layer
             // directories one level down are untouched by this.
             mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "*".ktFile()
         }
     }
+    packageAndLayerImports()
+    publicDeclarationsShowExample()
+    publicDeclarationsKeepTagsLast()
+    internalDeclarationsInInternalPackage()
 }
 
 private const val LAYER: String = ""
@@ -37,7 +37,7 @@ private const val LAYER: String = ""
 // `ktFileContent { }` and of each line in it, so a shared wrapper would make every layer role
 // report this same line. Private per file, the report keeps naming the role that owns the rule.
 @OptIn(ExperimentalKatachiApi::class)
-private fun LayoutScope.packageAndLayerImports() =
+private fun RoleScope.packageAndLayerImports() =
     ktFileContent {
         `package`(matchingDirectory)
         `import`("**")
@@ -50,17 +50,17 @@ private fun LayoutScope.packageAndLayerImports() =
         allow(private, anythingElse)
     }
 
-private fun LayoutScope.publicDeclarationsShowExample() =
+private fun RoleScope.publicDeclarationsShowExample() =
     KDOC_EXAMPLE_RULE.konsist {
         files.flatMap(::publicDeclarationsOf).must(::showsExample)
     }
 
-private fun LayoutScope.publicDeclarationsKeepTagsLast() =
+private fun RoleScope.publicDeclarationsKeepTagsLast() =
     KDOC_TAG_ORDER_RULE.konsist {
         files.flatMap(::publicDeclarationsOf).must(::keepsBlockTagsLast)
     }
 
-private fun LayoutScope.internalDeclarationsInInternalPackage() =
+private fun RoleScope.internalDeclarationsInInternalPackage() =
     INTERNAL_PACKAGE_RULE.konsist {
         val sealedParents = classesAndInterfaces(includeNested = true)
             .filter { it.hasSealedModifier }

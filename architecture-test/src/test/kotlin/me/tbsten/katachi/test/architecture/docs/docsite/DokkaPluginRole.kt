@@ -1,7 +1,7 @@
 package me.tbsten.katachi.test.architecture.docs.docsite
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.LayoutScope
+import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -25,7 +25,6 @@ fun DeclarationContainerScope.dokkaPlugin() = "DokkaPlugin".role {
     example("LlmsModuleInstaller.kt", "モジュールの出力に llms.txt と llms-full.txt を足す")
     layout {
         "tool/dokka" {
-            publicDeclarationsKeepTagsLast()
             mainSourceSet / kotlin / DOKKA_MAIN_PACKAGE / "*".ktFile()
             mainSourceSet / kotlin / DOKKA_MAIN_PACKAGE / "featured" / "*".ktFile()
             mainSourceSet / kotlin / DOKKA_MAIN_PACKAGE / "llms" / "*".ktFile()
@@ -44,12 +43,13 @@ fun DeclarationContainerScope.dokkaPlugin() = "DokkaPlugin".role {
             mainSourceSet / "resources" / "META-INF/services" / "org.jetbrains.dokka.plugability.DokkaPlugin".file()
         }
     }
+    publicDeclarationsKeepTagsLast()
 }
 
 // Written here rather than in a shared file: `konsist { }` captures the first frame outside
 // katachi as its declaration site, so a shared wrapper would make every role that declares it
 // report this same line.
-private fun LayoutScope.publicDeclarationsKeepTagsLast() =
+private fun RoleScope.publicDeclarationsKeepTagsLast() =
     KDOC_TAG_ORDER_RULE.konsist {
         files.flatMap(::publicDeclarationsOf).must(::keepsBlockTagsLast)
     }

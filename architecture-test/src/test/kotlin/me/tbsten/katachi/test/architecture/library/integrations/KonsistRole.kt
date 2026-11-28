@@ -2,7 +2,7 @@ package me.tbsten.katachi.test.architecture.library.integrations
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.LayoutScope
+import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -29,10 +29,6 @@ fun DeclarationContainerScope.konsistModule() = "Konsist".role {
     example("KonsistScope.kt", "Konsist の問い合わせ語彙 + must / mustNot / mustBeEmpty")
     layout {
         "katachi-konsist" {
-            packageMatchesDirectory()
-            internalDeclarationsInInternalPackage()
-            publicDeclarationsShowExample()
-            publicDeclarationsKeepTagsLast()
             mainSourceSet / kotlin / KONSIST_MAIN_PACKAGE / "*".ktFile()
             mainSourceSet / kotlin / KONSIST_MAIN_PACKAGE / "internal" / "*".ktFile()
             // `ktFileContent { }`: the same kind of file, Kotlin sources of this backend, so the same
@@ -41,13 +37,17 @@ fun DeclarationContainerScope.konsistModule() = "Konsist".role {
             mainSourceSet / kotlin / KONSIST_MAIN_PACKAGE / "declarations" / "internal" / "*".ktFile()
         }
     }
+    packageMatchesDirectory()
+    publicDeclarationsShowExample()
+    publicDeclarationsKeepTagsLast()
+    internalDeclarationsInInternalPackage()
 }
 
 // Written here rather than in a shared file: katachi captures the first frame outside itself as
 // the declaration site of a `konsist { }`, of a `ktFileContent { }` and of each line in it, so a
 // shared wrapper would make every role that declares these rules report the same line.
 @OptIn(ExperimentalKatachiApi::class)
-private fun LayoutScope.packageMatchesDirectory() =
+private fun RoleScope.packageMatchesDirectory() =
     ktFileContent {
         `package`(matchingDirectory)
         // No layer comes after this one, and what of katachi it may reach is the build's opt-in (see `katachi-konsist/build.gradle.kts`).
@@ -58,17 +58,17 @@ private fun LayoutScope.packageMatchesDirectory() =
         allow(anythingElse)
     }
 
-private fun LayoutScope.publicDeclarationsShowExample() =
+private fun RoleScope.publicDeclarationsShowExample() =
     KDOC_EXAMPLE_RULE.konsist {
         files.flatMap(::publicDeclarationsOf).must(::showsExample)
     }
 
-private fun LayoutScope.publicDeclarationsKeepTagsLast() =
+private fun RoleScope.publicDeclarationsKeepTagsLast() =
     KDOC_TAG_ORDER_RULE.konsist {
         files.flatMap(::publicDeclarationsOf).must(::keepsBlockTagsLast)
     }
 
-private fun LayoutScope.internalDeclarationsInInternalPackage() =
+private fun RoleScope.internalDeclarationsInInternalPackage() =
     INTERNAL_PACKAGE_RULE.konsist {
         val sealedParents = classesAndInterfaces(includeNested = true)
             .filter { it.hasSealedModifier }

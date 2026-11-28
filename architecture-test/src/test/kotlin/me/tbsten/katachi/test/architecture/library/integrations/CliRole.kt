@@ -2,7 +2,7 @@ package me.tbsten.katachi.test.architecture.library.integrations
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.LayoutScope
+import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -33,10 +33,6 @@ fun DeclarationContainerScope.cliModule() = "Cli".role {
     example("bin/katachi.cmd", "Windows 用。kotlin.bat を呼ぶ（CRLF のまま保つ）")
     layout {
         "katachi-script" {
-            packageMatchesDirectory()
-            internalDeclarationsInInternalPackage()
-            publicDeclarationsShowExample()
-            publicDeclarationsKeepTagsLast()
             mainSourceSet / kotlin / SCRIPT_MAIN_PACKAGE / "*".ktFile()
             mainSourceSet / kotlin / SCRIPT_MAIN_PACKAGE / "command" / "*".ktFile()
             mainSourceSet / kotlin / SCRIPT_MAIN_PACKAGE / "error" / "*".ktFile()
@@ -55,13 +51,17 @@ fun DeclarationContainerScope.cliModule() = "Cli".role {
             "cli" / "bin" / "katachi.cmd".file()
         }
     }
+    packageMatchesDirectory()
+    publicDeclarationsShowExample()
+    publicDeclarationsKeepTagsLast()
+    internalDeclarationsInInternalPackage()
 }
 
 // Written here rather than in a shared file: katachi captures the first frame outside itself as
 // the declaration site of a `konsist { }`, of a `ktFileContent { }` and of each line in it, so a
 // shared wrapper would make every role that declares these rules report the same line.
 @OptIn(ExperimentalKatachiApi::class)
-private fun LayoutScope.packageMatchesDirectory() =
+private fun RoleScope.packageMatchesDirectory() =
     ktFileContent {
         `package`(matchingDirectory)
         // The last layer: it may reach every package of katachi, and the kotlinx.serialization JSON it reads with.
@@ -70,17 +70,17 @@ private fun LayoutScope.packageMatchesDirectory() =
         allow(anythingElse)
     }
 
-private fun LayoutScope.publicDeclarationsShowExample() =
+private fun RoleScope.publicDeclarationsShowExample() =
     KDOC_EXAMPLE_RULE.konsist {
         files.flatMap(::publicDeclarationsOf).must(::showsExample)
     }
 
-private fun LayoutScope.publicDeclarationsKeepTagsLast() =
+private fun RoleScope.publicDeclarationsKeepTagsLast() =
     KDOC_TAG_ORDER_RULE.konsist {
         files.flatMap(::publicDeclarationsOf).must(::keepsBlockTagsLast)
     }
 
-private fun LayoutScope.internalDeclarationsInInternalPackage() =
+private fun RoleScope.internalDeclarationsInInternalPackage() =
     INTERNAL_PACKAGE_RULE.konsist {
         val sealedParents = classesAndInterfaces(includeNested = true)
             .filter { it.hasSealedModifier }
