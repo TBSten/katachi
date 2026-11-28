@@ -7,6 +7,7 @@ fun DeclarationContainerScope.apiGroup() = "Api".group {
     title = "公開 API"
 
     marker()
+    exceptions()
     dsl()
     processorGroup()
     util()

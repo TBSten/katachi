@@ -12,16 +12,14 @@ import me.tbsten.katachi.test.architecture.*
 import me.tbsten.katachi.test.architecture.konsist.*
 
 fun DeclarationContainerScope.marker() = "Marker".role {
-    title = "マーカーと例外基底"
-    summary = "どの層にも属さず、すべての層が依存してよいもの"
+    title = "opt-in マーカー"
+    summary = "どの層にも属さず、すべての層が依存してよい、opt-in のマーカー"
     example("ExperimentalKatachiApi.kt", "利用者に開いているが、まだ形が動く API の opt-in マーカー")
     example("InternalKatachiApi.kt", "ライブラリの他モジュール専用の API の opt-in マーカー")
-    example("Exceptions.kt", "利用者が catch する例外の基底")
     layout {
         "katachi" {
-            // The root package, and only it: `*` never crosses a `/`, so the layer
-            // directories one level down are untouched by this.
-            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "*".ktFile()
+            // The root package, and only the markers: `Exceptions` has a role of its own.
+            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "*KatachiApi".ktFile()
         }
     }
     packageAndLayerImports()
@@ -42,9 +40,7 @@ private fun RoleScope.packageAndLayerImports() =
         `package`(matchingDirectory)
         `import`("**")
         laterLayerImportsOf(LAYER).forEach { not.`import`(it) }
-        // What the root package is for: the opt-in markers and the exception bases a user catches,
         allow(public, annotation, `class`, "*KatachiApi")
-        allow(public, abstract, `class`, "Katachi*Exception")
         // The helpers every layer shares live in `internal`, which `Internal › Util` owns, so nothing
         // `internal` belongs in the root package itself.
         allow(private, anythingElse)
