@@ -45,8 +45,8 @@ private fun LayoutScope.packageAndLayerImports() =
         // What the root package is for: the opt-in markers and the exception bases a user catches,
         allow(public, annotation, `class`, "*KatachiApi")
         allow(public, abstract, `class`, "Katachi*Exception")
-        // and, in `internal`, the helpers every layer shares, closed to the library.
-        allow(internal, anythingElse)
+        // The helpers every layer shares live in `internal`, which `Internal › Util` owns, so nothing
+        // `internal` belongs in the root package itself.
         allow(private, anythingElse)
     }
 
