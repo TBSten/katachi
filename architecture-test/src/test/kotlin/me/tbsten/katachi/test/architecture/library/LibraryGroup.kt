@@ -19,4 +19,5 @@ fun DeclarationContainerScope.libraryGroup() = "Library".group {
     diff()
     template()
     ide()
+    definitionJson()
 }

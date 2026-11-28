@@ -20,16 +20,21 @@ import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
 
 fun DeclarationContainerScope.ide() = "Ide".role {
     title = "IDE への受け渡し"
-    summary = "定義・走査の結果・テンプレートを、IDE プラグインが読む 1 つの JSON に書き出す層"
+    summary = "定義・走査の結果・テンプレートを、IDE プラグインが読む 1 つの JSON に書き出す層の入口"
+    description = """
+        definition.json の形そのもの（`DefinitionJson*.kt`）は `DefinitionJson` role が持ちます。この role は、それを走らせる入口と、宣言の説明文を持ちます。
+    """.trimIndent()
     example("DescribeDefinition.kt", "katachiInternalDefinitionJson の入口。IDE プラグインが走らせる")
-    example("DefinitionJsonBuilder.kt", "走査とテンプレートから definition.json の形を組み立てる")
+    example("DeclarationExplanations.kt", "宣言の説明文を definition.json に載せる形に直す")
     layout {
         "katachi" {
             packageAndLayerImports()
             internalDeclarationsInInternalPackage()
             publicDeclarationsShowExample()
             publicDeclarationsKeepTagsLast()
-            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "ide" / "**" / "*".ktFile()
+            // `DefinitionJson*.kt` are the `DefinitionJson` role's: name each file this role keeps instead of `*`.
+            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "ide" / "internal" / "DescribeDefinition".ktFile()
+            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "ide" / "internal" / "DeclarationExplanations".ktFile()
         }
     }
 }

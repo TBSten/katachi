@@ -9,6 +9,7 @@ fun DeclarationContainerScope.toolGroup() = "Tool".group {
     ci()
     gitHubAction()
     agentRule()
+    agentSkill()
     git()
     ideRunConfiguration()
     ideDictionary()
