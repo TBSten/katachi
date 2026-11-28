@@ -8,30 +8,34 @@ Read the documentation before writing one: https://tbsten.github.io/katachi/guid
 
 | The rule is about | Write it as |
 |---|---|
-| What a Kotlin file of one Role may declare or import | `ktFileContent { }` on that Role (from `katachi-konsist`) |
+| What a Kotlin file of one Role may declare or import | `ktFileContent { }` in a function the Role calls (from `katachi-konsist`) |
 | A build file (`build.gradle.kts`, settings, the version catalog) | `fileConstraint("…") { subject -> … }` in a `gradle { }` hook: `buildScript { }`, `settingsScript { }`, `versionCatalog { }` |
-| Any other file's contents | `fileConstraint("…") { subject -> … }` in the Role (`"X".role { fileConstraint(…) { … } }`) |
+| Any other file's contents | `fileConstraint("…") { subject -> … }` in a function the Role calls (`private fun RoleScope.xNoHttp() = fileConstraint(…) { … }`, called from `"X".role { xNoHttp() }`) |
 
 `ktFileContent { }`, `fileConstraint` and `FileConstraintFailure` are experimental: a file that uses one starts with `@file:OptIn(ExperimentalKatachiApi::class)` and `import me.tbsten.katachi.ExperimentalKatachiApi`. Two of them also need an import of their own: `import me.tbsten.katachi.konsist.declarations.ktFileContent` for `ktFileContent { }`, and `import me.tbsten.katachi.dsl.FileConstraintFailure` for the failures a `fileConstraint` returns (`fileConstraint` itself needs none). Pass the reasons, allowed entries and fixes to it as plain values: `FileConstraintFailure(file, reasons = listOf("Missing" to text), howToFix = listOf("sentence"))`. Read a covered file with `subject.textOf(file)`. When the check looks at one file at a time and most files are fine, write it as `buildList { for (file in subject.files) { … continue … add(FileConstraintFailure(…)) } }`: `continue` skips a file that is fine, so the lambda never returns `null` for it.
 
 `ktFileContent { }` is allow-list based: the imports and declarations you list are what is allowed, and anything else is a violation. "Must not import X" is written by listing what may be imported and leaving X out.
 
+Write a constraint as a function the Role calls, not inside the Role's braces (`ktFileContent`, `fileConstraint`, `konsist` and `konture` alike, however short). Put it under the Role in the same file, `private`, and not `inline` (a violation's declaration site is read off the stack trace). It is named `<role>FileContent()` for a `ktFileContent { }` and `<role><Rule>Constraint()` for the others. A constraint in a `gradle { }` hook is not inside a Role, so it stays there.
+
 ```kt
-"ViewModel".role {
+fun DeclarationContainerScope.viewModel() = "ViewModel".role {
   layout { /* … */ }
 
-  ktFileContent {
-    `package`("com.example.viewModel")
+  viewModelFileContent()
+}
 
-    // android.** is not listed, so importing it is a violation
-    `import`("kotlin.**")
-    `import`("kotlinx.coroutines.**")
-    `import`("androidx.lifecycle.**")
-    `import`("com.example.**")
+private fun RoleScope.viewModelFileContent() = ktFileContent {
+  `package`("com.example.viewModel")
 
-    required(`class`, fileName) {
-      allow(anythingElse)
-    }
+  // android.** is not listed, so importing it is a violation
+  `import`("kotlin.**")
+  `import`("kotlinx.coroutines.**")
+  `import`("androidx.lifecycle.**")
+  `import`("com.example.**")
+
+  required(`class`, fileName) {
+    allow(anythingElse)
   }
 }
 ```
