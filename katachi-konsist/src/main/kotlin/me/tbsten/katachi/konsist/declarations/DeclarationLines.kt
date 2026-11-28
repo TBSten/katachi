@@ -163,10 +163,27 @@ public class TypeLine internal constructor(
      * that allows them. A line without `.count(...)` holds any number for `allow(...)` and at least one for `required(...)`;
      * a lower bound written here replaces both, so `allow(...).count(2..10)` also asks for at least two.
      *
-     * ## Example 1: two to ten functions, and no more than one class
+     * ## Example 1: two to ten functions
      * ```kt
      * allow(`fun`, "*")().count(2..10)
-     * allow(`class`, "*").count(max = 1)
+     * ```
+     *
+     * ## Example 2: exactly one `...Screen` class, which `required(...)` already asks for at least once
+     * ```kt
+     * required(`class`, "*Screen").count(1..1)
+     * ```
+     *
+     * ## Example 3: none or up to three listeners in a class body
+     * ```kt
+     * allow(`class`, "Host") {
+     *     allow(`fun`, "on*")().count(0..3)
+     * }
+     * ```
+     *
+     * ## Example 4: a line without `.count(...)` for comparison
+     * ```kt
+     * allow(`fun`, "*")()          // any number of them, including none
+     * required(`fun`, "*")()       // one or more
      * ```
      *
      * @throws KatachiKtFileContentLineException when written twice, on a line that starts with `not.`, or when no number of
@@ -180,6 +197,28 @@ public class TypeLine internal constructor(
     /**
      * [count] with a bound on one side or both: `.count(min = 3)` is three or more, `.count(max = 2)` is none to two (or one to two
      * for `required(...)`).
+     *
+     * ## Example 1: at most one class
+     * ```kt
+     * allow(`class`, "*").count(max = 1)
+     * ```
+     *
+     * ## Example 2: at least three constants
+     * ```kt
+     * allow(const, `val`, "*").count(min = 3)
+     * ```
+     *
+     * ## Example 3: one to four `...Action` classes, both bounds written
+     * ```kt
+     * required(`class`, "*Action").count(min = 1, max = 4)
+     * ```
+     *
+     * ## Example 4: at most two secondary constructors, in a class body
+     * ```kt
+     * allow(`class`, "User") {
+     *     allow(constructor)("id: String").count(max = 2)
+     * }
+     * ```
      *
      * @throws KatachiKtFileContentLineException when no bound is written, when written twice, on a line that starts with `not.`,
      *   or when no number of declarations is in the bounds.
