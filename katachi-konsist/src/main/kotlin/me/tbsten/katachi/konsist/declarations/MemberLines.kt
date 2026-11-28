@@ -783,6 +783,18 @@ public class EntryLine internal constructor(
         return this
     }
 
+    /** Asks the line to hold a number of declarations in [range], as [TypeLine.count] does. */
+    public fun count(range: IntRange): EntryLine {
+        line.writeCount(range)
+        return this
+    }
+
+    /** Asks the line to hold at least [min] and at most [max] declarations, as [TypeLine.count] does; a bound left out asks nothing. */
+    public fun count(min: Int? = null, max: Int? = null): EntryLine {
+        line.writeCount(min, max)
+        return this
+    }
+
     /** The line as written so far. */
     override fun toString(): String = line.text
 }
@@ -831,6 +843,18 @@ public class ConstructorLine internal constructor(
         return this
     }
 
+    /** Asks the line to hold a number of declarations in [range], as [TypeLine.count] does. */
+    public fun count(range: IntRange): ConstructorLine {
+        line.writeCount(range)
+        return this
+    }
+
+    /** Asks the line to hold at least [min] and at most [max] declarations, as [TypeLine.count] does; a bound left out asks nothing. */
+    public fun count(min: Int? = null, max: Int? = null): ConstructorLine {
+        line.writeCount(min, max)
+        return this
+    }
+
     /** The line as written so far. */
     override fun toString(): String = line.text
 }
@@ -847,6 +871,18 @@ public class ConstructorLine internal constructor(
 public class InitLine internal constructor(
     internal val line: DeclarationLineBuilder,
 ) {
+    /** Asks the line to hold a number of declarations in [range], as [TypeLine.count] does. */
+    public fun count(range: IntRange): InitLine {
+        line.writeCount(range)
+        return this
+    }
+
+    /** Asks the line to hold at least [min] and at most [max] declarations, as [TypeLine.count] does; a bound left out asks nothing. */
+    public fun count(min: Int? = null, max: Int? = null): InitLine {
+        line.writeCount(min, max)
+        return this
+    }
+
     /** The line as written so far. */
     override fun toString(): String = line.text
 }

@@ -72,7 +72,7 @@ fun DeclarationContainerScope.service() = "Service".role {
         `import`("com.example.repository.**")
 
         required(public, `class`, fileName) {              // class HealthService; `internal` fails here
-            allow(private, `val`, "*").type("*Repository")      // the Repositories it is built from
+            allow(private, `val`, "*").type("*Repository").count(max = 3) // the Repositories it is built from, at most three
             allow(`fun`, "*")                              // the behaviour a Controller calls
         }
     }

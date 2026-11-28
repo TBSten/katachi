@@ -14,7 +14,7 @@ internal fun renderRule(rule: DeclarationRule): String = renderDeclaration(
     parameters = rule.parameters?.map { it.written },
     returnType = rule.returnType?.written,
     except = rule.except.map { it.written },
-    details = rule.details.map { it.rendered },
+    details = rule.details.map { it.rendered } + listOfNotNull(rule.count?.rendered),
 )
 
 // The `.optional()` modifiers are left out, as the declaration may do without them.

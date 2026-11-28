@@ -114,6 +114,7 @@ private fun DeclarationRule.dump(indent: String): List<String> {
         propertyType?.let { append(" type=").append(it.written) }
         if (superclasses.isNotEmpty()) append(" supers=").append(superclasses.map { it.written })
         if (except.isNotEmpty()) append(" except=").append(except.map { it.written })
+        count?.let { append(" count=").append(it.rendered) }
     }
     val members = members ?: return listOf(head)
     val memberLines = members.dumpEntries("$indent    ")

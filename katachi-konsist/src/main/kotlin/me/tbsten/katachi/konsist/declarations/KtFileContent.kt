@@ -33,6 +33,9 @@ private const val KT_FILE_CONTENT_NAME: String = "ktFileContent"
  * - **`allow(...)` lets a declaration be, `required(...)` asks for it.** A required line with no
  *   pattern for its name asks for that name; a pattern (`*`, `{A,B}` and the like) asks for at
  *   least one declaration it matches. An import line only allows.
+ * - **A line holds any number of the declarations it matches, unless `.count(...)` says how many.**
+ *   `` allow(`fun`, "*")().count(2..10) `` holds two to ten of them and `.count(max = 1)` at most one; a declaration
+ *   two lines allow counts for both of them.
  * - **The block runs once per file**, so [DeclarationListScope.fileName] and
  *   [DeclarationListScope.captureValue] are that file's own `String`s.
  *

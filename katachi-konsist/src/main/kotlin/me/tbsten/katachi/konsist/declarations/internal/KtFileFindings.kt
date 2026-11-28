@@ -5,7 +5,8 @@ internal sealed interface KtFileFinding
 internal class DeclarationListContext(
     val rules: DeclarationListRules,
     val containers: List<DeclarationFact>,
-    val satisfied: Set<DeclarationRule>,
+    // How many declarations of the list each line allows, compared by identity: a line is the same line only as itself.
+    val matched: Map<DeclarationRule, Int>,
 ) {
     val container: DeclarationFact? get() = containers.lastOrNull()
 
@@ -15,7 +16,9 @@ internal class DeclarationListContext(
     fun qualified(fact: DeclarationFact): String =
         qualified(fact.receiver?.written?.takeIf { it.isNotEmpty() }?.let { "$it.${fact.name}" } ?: fact.name)
 
-    fun isMissing(rule: DeclarationRule): Boolean = rule.required && rule !in satisfied
+    fun matchedBy(rule: DeclarationRule): Int = matched[rule] ?: 0
+
+    fun isMissing(rule: DeclarationRule): Boolean = matchedBy(rule) < rule.minCount
 
     override fun toString(): String = "DeclarationListContext(${containers.map { it.name }})"
 }
@@ -43,6 +46,16 @@ internal class MissingDeclaration(
     val rule: DeclarationRule,
     val list: DeclarationListContext,
     val found: DeclarationFact?,
+) : KtFileFinding {
+    val matched: Int get() = list.matchedBy(rule)
+}
+
+// matches: every declaration the line allows, in the order written; there are more of them than `max`.
+internal class TooManyDeclarations(
+    val rule: DeclarationRule,
+    val list: DeclarationListContext,
+    val max: Int,
+    val matches: List<DeclarationFact>,
 ) : KtFileFinding
 
 internal class UnexpectedImport(

@@ -49,7 +49,7 @@ fun DeclarationContainerScope.model() = "Model".role {
         `import`("kotlinx.serialization.**")
 
         required(data or enum or value, `class`, fileName) { // @Serializable data class Health(...)
-            allow(`val`, "*")                                // status, version
+            allow(`val`, "*").count(max = 10)                // status, version; ten at most, or split the model
             allow(`fun`, "*")
         }
     }

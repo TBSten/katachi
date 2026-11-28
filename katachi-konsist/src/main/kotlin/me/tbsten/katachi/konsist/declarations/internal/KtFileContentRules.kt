@@ -125,6 +125,11 @@ internal sealed interface DeclarationListEntry {
     val declaredAt: DeclarationSite
 }
 
+// min and max: null asks nothing beyond the line's own default (at least one for `required(...)`, any number for `allow(...)`).
+internal class CountRule(val min: Int?, val max: Int?, val rendered: String) {
+    override fun toString(): String = "CountRule($rendered)"
+}
+
 internal class DeclarationRule(
     val shapes: List<Shape>,
     val name: NameRule,
@@ -142,7 +147,14 @@ internal class DeclarationRule(
     override val declaredAt: DeclarationSite,
     // The calls chained after the line, such as `.context(...)` and `.kdoc()`, in the order written.
     val details: List<DetailRule> = emptyList(),
+    // null asks nothing: `required(...)` then holds at least one declaration, `allow(...)` any number.
+    val count: CountRule? = null,
 ) : DeclarationListEntry {
+    // A `.count(...)` without a lower bound keeps what the line asks without it, so `required(...)` holds at least one.
+    val minCount: Int get() = count?.min ?: if (required) 1 else 0
+
+    val maxCount: Int? get() = count?.max
+
     override fun toString(): String = "DeclarationRule(${renderRule(this)})"
 }
 

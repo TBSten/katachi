@@ -205,6 +205,18 @@ public enum class KtFileContentLineProblem {
      */
     OptionalAfterNot,
 
+    /** `.count()` with neither a minimum nor a maximum, which asks for nothing. */
+    CountWithoutBounds,
+
+    /**
+     * A `.count(...)` that no number of declarations satisfies: an empty range (`5..2`), a negative minimum, a minimum above
+     * the maximum, or a maximum below one (`not.allow(...)` prohibits a declaration).
+     */
+    CountOutOfRange,
+
+    /** A `.count(...)` on a `not.allow(...)` line, which prohibits every declaration it matches whatever their number. */
+    CountOnProhibited,
+
     /** A value of one block's vocabulary used to write a line in another block, or after its block ended. */
     OutsideItsBlock,
 }
