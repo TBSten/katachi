@@ -16,16 +16,16 @@ Read the documentation before writing one: https://tbsten.github.io/katachi/guid
 
 `ktFileContent { }` is allow-list based: the imports and declarations you list are what is allowed, and anything else is a violation. "Must not import X" is written by listing what may be imported and leaving X out.
 
-Write a constraint as a function the Role calls, not inside the Role's braces (`ktFileContent`, `fileConstraint`, `konsist` and `konture` alike, however short). Put it under the Role in the same file, `private`, and not `inline` (a violation's declaration site is read off the stack trace). It is named `<role>KtFileContent()` for a `ktFileContent { }` and `<role><Rule>Constraint()` for the others. A constraint in a `gradle { }` hook is not inside a Role, so it stays there.
+Write a constraint as a function the Role calls, not inside the Role's braces (`ktFileContent`, `fileConstraint`, `konsist` and `konture` alike, however short). Put it under the Role in the same file, `private`, and not `inline` (a violation's declaration site is read off the stack trace). It is named `<role>FileContent()` for a `ktFileContent { }` and `<role><Rule>Constraint()` for the others. A constraint in a `gradle { }` hook is not inside a Role, so it stays there.
 
 ```kt
 fun DeclarationContainerScope.viewModel() = "ViewModel".role {
   layout { /* … */ }
 
-  viewModelKtFileContent()
+  viewModelFileContent()
 }
 
-private fun RoleScope.viewModelKtFileContent() = ktFileContent {
+private fun RoleScope.viewModelFileContent() = ktFileContent {
   `package`("com.example.viewModel")
 
   // android.** is not listed, so importing it is a violation

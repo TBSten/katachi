@@ -46,7 +46,7 @@ The candidates are already in the report: the `allowed` / `forbidden` of each en
 
 **Write each constraint as a function the Role calls, not inside the Role's braces.** `ktFileContent { }`, `fileConstraint(…)`, `konsist { }` and `konture { }` all follow this, however short the constraint is. A Role that carries its constraints inline is hard to read: the `layout { }` that says where its files go is buried under what they may hold, and a long `ktFileContent { }` is where a Role definition grows to hundreds of lines.
 
-- The function is `private fun RoleScope.<role>KtFileContent() = ktFileContent { … }` for a `ktFileContent { }`, and `private fun RoleScope.<role><Rule>Constraint() = fileConstraint("…") { … }` for the others (`viewModelKtFileContent`, `stringResourceNoHttp`). Put it in the Role's own file, under the Role. The Role then reads as its `layout { }` followed by one call per constraint
+- The function is `private fun RoleScope.<role>FileContent() = ktFileContent { … }` for a `ktFileContent { }`, and `private fun RoleScope.<role><Rule>Constraint() = fileConstraint("…") { … }` for the others (`viewModelFileContent`, `stringResourceNoHttp`). Put it in the Role's own file, under the Role. The Role then reads as its `layout { }` followed by one call per constraint
 - Do not make it `inline` (3-3: katachi reads a violation's declaration site off the stack trace)
 - This is about a Role's braces. A constraint in a hook of `gradle()` (`buildScript { }`, `settingsScript { }`, `versionCatalog { }`) stays where it is: there is no Role of yours to read around it
 
@@ -58,10 +58,10 @@ A constraint on a file's imports goes in the `import` entries of `ktFileContent 
 fun DeclarationContainerScope.viewModel() = "ViewModel".role {
   layout { /* ... */ }
 
-  viewModelKtFileContent()
+  viewModelFileContent()
 }
 
-private fun RoleScope.viewModelKtFileContent() = ktFileContent {
+private fun RoleScope.viewModelFileContent() = ktFileContent {
   `package`("com.example.viewModel")
 
   // android.** is not listed. Importing it is a violation
