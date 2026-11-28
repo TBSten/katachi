@@ -1,8 +1,12 @@
+@file:OptIn(InternalKatachiApi::class)
+
 package me.tbsten.katachi.konsist.declarations
 
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.FileConstraintScope
+import me.tbsten.katachi.dsl.internal.isRefusedFileConstraintName
 import me.tbsten.katachi.konsist.declarations.internal.KtFileContentConstraint
 
 private const val KT_FILE_CONTENT_NAME: String = "ktFileContent"
@@ -148,12 +152,7 @@ public fun String.ktFileContent(block: KtFileContentScope.() -> Unit) {
 }
 
 // A refused name is passed on without the suffix so the exception shows the name as written.
-private fun namedAfter(name: String): String = if (isRefusedName(name)) name else "$name ($KT_FILE_CONTENT_NAME)"
-
-// TODO: a copy of the rule `fileConstraint` applies to a name (blank, or holding a line break), kept
-//  here so that a name is refused before the block is evaluated, as `"...".konsist { }` does. Drop it
-//  once :katachi publishes that judgement.
-private fun isRefusedName(name: String): Boolean = name.isBlank() || name.any { it == '\n' || it == '\r' }
+private fun namedAfter(name: String): String = if (isRefusedFileConstraintName(name)) name else "$name ($KT_FILE_CONTENT_NAME)"
 
 private fun declareKtFileContent(
     scope: FileConstraintScope,
@@ -163,6 +162,6 @@ private fun declareKtFileContent(
 ) {
     val constraint = KtFileContentConstraint(block, declaredAt)
     // A refused name is thrown by fileConstraint below, before the block would be evaluated.
-    if (!isRefusedName(name)) constraint.validateAtDeclaration()
+    if (!isRefusedFileConstraintName(name)) constraint.validateAtDeclaration()
     scope.fileConstraint(name = name, declaredAt = declaredAt, check = constraint)
 }

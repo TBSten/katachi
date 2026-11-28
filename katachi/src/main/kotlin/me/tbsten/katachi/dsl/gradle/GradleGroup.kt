@@ -71,7 +71,7 @@ import me.tbsten.katachi.dsl.kotlin.ktsFile
  *         buildScript {
  *             fileConstraint("fails the build on every compiler warning") { subject ->
  *                 subject.files
- *                     .filterNot { "allWarningsAsErrors" in java.io.File(subject.projectRoot, it).readText() }
+ *                     .filterNot { "allWarningsAsErrors" in subject.textOf(it) }
  *                     .map { FileConstraintFailure(it) }
  *             }
  *         }

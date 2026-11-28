@@ -14,7 +14,7 @@ import me.tbsten.katachi.dsl.kotlin.ktsFile
 import me.tbsten.katachi.konsist.declarations.ktFileContent   // when writing ktFileContent { } (an experimental API)
 ```
 
-`fileConstraint` itself needs no import (it is a member of the scopes you call it in); the `FileConstraintFailure` its check returns does, and so do `FileConstraintReason` and `FileConstraintFix` from the same package if you use them.
+`fileConstraint` itself needs no import (it is a member of the scopes you call it in); the `FileConstraintFailure` its check returns does. Give it the reasons, the allowed entries and the fixes as plain values (`reasons = listOf("Missing" to text)`, `allowed = "Allowed here" to listOf(entry)`, `howToFix = listOf("sentence")`), so nothing else needs an import; `FileConstraintFix` from the same package is only for a fix that also shows code to paste. To read a covered file, call `subject.textOf(file)`, and `subject.lineOf(file, regex)` for the line a failure points at.
 
 **Star-import `me.tbsten.katachi.dsl.gradle`:** one line brings `mainSourceSet`, `testSourceSet`, `kotlin` and `gradle()`. Importing them one by one also works (`/` needs no import).
 

@@ -3,13 +3,9 @@
 package com.example.kmp.gradle
 
 import com.example.kmp.processors.owner
-import java.io.File
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.FileConstraintAllowedList
 import me.tbsten.katachi.dsl.FileConstraintFailure
-import me.tbsten.katachi.dsl.FileConstraintFix
-import me.tbsten.katachi.dsl.FileConstraintReason
 import me.tbsten.katachi.dsl.gradle.gradle
 
 private const val NAMESPACE_ROOT = "com.example.kmp"
@@ -37,17 +33,17 @@ fun DeclarationContainerScope.gradleGroup() = gradle {
             subject.files.mapNotNull { file ->
                 // The root build script has no module path to follow: never a subject here.
                 if ('/' !in file) return@mapNotNull null
-                val text = File(subject.projectRoot, file).readText()
+                val text = subject.textOf(file)
                 if (LIBRARY_BLOCK !in text) return@mapNotNull null
                 val namespace = NAMESPACE.find(text)?.groupValues?.get(1) ?: return@mapNotNull null
                 val expected = "$NAMESPACE_ROOT." + file.substringBeforeLast('/').replace('/', '.')
                 if (namespace == expected) return@mapNotNull null
                 FileConstraintFailure(
                     file = file,
-                    line = text.lineSequence().indexOfFirst { NAMESPACE.containsMatchIn(it) } + 1,
-                    reasons = listOf(FileConstraintReason("Namespace", namespace)),
-                    allowed = FileConstraintAllowedList("Allowed here", listOf(expected)),
-                    howToFix = listOf(FileConstraintFix("Set namespace = \"$expected\" in $file")),
+                    line = subject.lineOf(file, NAMESPACE),
+                    reasons = listOf("Namespace" to namespace),
+                    allowed = "Allowed here" to listOf(expected),
+                    howToFix = listOf("Set namespace = \"$expected\" in $file"),
                 )
             }
         }

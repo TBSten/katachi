@@ -2,6 +2,8 @@ package me.tbsten.katachi.dsl
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.internal.MemoSlot
+import java.io.File
+import java.io.IOException
 import java.util.concurrent.ConcurrentMap
 import kotlin.reflect.KClass
 
@@ -14,7 +16,7 @@ import kotlin.reflect.KClass
  * ```kt
  * val noTodo = FileConstraint { subject ->
  *     println("${subject.role.qualifiedName} ${subject.name ?: subject.declaredAt} under ${subject.paths}")
- *     subject.files.filter { File("${subject.projectRoot}/$it").readText().contains("TODO") }
+ *     subject.files.filter { "TODO" in subject.textOf(it) }
  *         .map { FileConstraintFailure(it) }
  * }
  * ```
@@ -131,6 +133,46 @@ public class FileConstraintSubject internal constructor(
      * layout's declarations say about that path rather than refusing.
      */
     public fun captureValuesOf(file: String): Map<String, String> = captureValues(file)
+
+    /**
+     * The text of [file], read as UTF-8 from under [projectRoot][FileConstraintSubject.projectRoot].
+     *
+     * Meant for one of [files][FileConstraintSubject.files], which are the files the walk saw.
+     *
+     * ## Example 1: reject every file that mentions `TODO`
+     * ```kt
+     * FileConstraint { subject ->
+     *     subject.files.filter { "TODO" in subject.textOf(it) }.map { FileConstraintFailure(it) }
+     * }
+     * ```
+     *
+     * @param file project relative, as spelled in [files][FileConstraintSubject.files].
+     * @throws KatachiFileConstraintReadException when [file] cannot be read.
+     */
+    public fun textOf(file: String): String = try {
+        File(projectRoot, file).readText()
+    } catch (cause: IOException) {
+        throw KatachiFileConstraintReadException(file = file, projectRoot = projectRoot, cause = cause)
+    }
+
+    /**
+     * The line of [file] that [pattern] first matches, 1-based, or `null` when no line matches.
+     *
+     * Meant for the `line` of a [FileConstraintFailure]: it points a report at the line that broke the rule.
+     *
+     * ## Example 2: point a failure at the line it is about
+     * ```kt
+     * subject.files.map { file ->
+     *     FileConstraintFailure(file, line = subject.lineOf(file, Regex("""namespace\s*=""")), reasons = listOf("Namespace" to "wrong"))
+     * }
+     * ```
+     *
+     * @param file project relative, as spelled in [files][FileConstraintSubject.files].
+     * @param pattern matched against one line at a time, anywhere in it.
+     * @throws KatachiFileConstraintReadException when [file] cannot be read.
+     */
+    public fun lineOf(file: String, pattern: Regex): Int? =
+        textOf(file).lineSequence().indexOfFirst { pattern.containsMatchIn(it) }.takeIf { it >= 0 }?.plus(1)
 
     /** The role, the constraint (its name, or where it was declared) and the number of files. */
     override fun toString(): String =

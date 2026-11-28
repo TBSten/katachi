@@ -1,8 +1,10 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.KatachiCheckException
 import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.KatachiInternalException
 import me.tbsten.katachi.dsl.internal.CUSTOM_KIND_SPELLING
+import me.tbsten.katachi.internal.fileUri
 import kotlin.reflect.KClass
 
 private fun oneLine(value: String): String = value.replace("\r", "\\r").replace("\n", "\\n")
@@ -284,4 +286,34 @@ public class KatachiFileConstraintMemoTypeException internal constructor(
                 "https://github.com/TBSten/katachi/issues.",
         )
     },
+)
+
+/**
+ * A constraint asked [FileConstraintSubject] to read a file that could not be read.
+ *
+ * It is raised for the file that was asked about, not for the constraint: the file was walked but
+ * is gone or unreadable by the time the constraint opens it.
+ *
+ * ## Example 1: catch the file a constraint could not read
+ * ```kt
+ * shouldThrow<KatachiFileConstraintReadException> { subject.textOf("app/build.gradle.kts") }
+ *     .file shouldBe "app/build.gradle.kts"
+ * ```
+ */
+public class KatachiFileConstraintReadException internal constructor(
+    /** The file, project relative, as it was asked for. */
+    public val file: String,
+    /** The project root, absolute and `/` separated. */
+    public val projectRoot: String,
+    cause: Throwable,
+) : KatachiCheckException(
+    message = buildString {
+        appendLine("Cannot read ${fileUri(projectRoot, file)}: ${cause.message ?: cause::class.simpleName}.")
+        appendLine(
+            "A file constraint reads the files the walk saw, so one that cannot be opened is " +
+                "reported instead of being treated as satisfying the rule.",
+        )
+        append("Check that the file exists and is readable, then run the check again.")
+    },
+    cause = cause,
 )
