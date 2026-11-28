@@ -22,7 +22,8 @@
       "declaredAt": {
         "fileName": "IdePluginSyntheticSpecSupport.kt",
         "line": 237
-      }
+      },
+      "declaredByGradle": false
     },
     {
       "qualifiedName": "second",
@@ -34,7 +35,8 @@
       "declaredAt": {
         "fileName": "IdePluginSyntheticSpecSupport.kt",
         "line": 249
-      }
+      },
+      "declaredByGradle": false
     }
   ],
   "roles": [
@@ -164,7 +166,8 @@
           "place": false
         }
       ],
-      "constraints": []
+      "constraints": [],
+      "declaredByGradle": false
     },
     {
       "qualifiedName": "SecondRoot",
@@ -292,7 +295,8 @@
           "place": false
         }
       ],
-      "constraints": []
+      "constraints": [],
+      "declaredByGradle": false
     },
     {
       "qualifiedName": "Counter",
@@ -420,7 +424,8 @@
           "place": false
         }
       ],
-      "constraints": []
+      "constraints": [],
+      "declaredByGradle": false
     },
     {
       "qualifiedName": "a.Shallow",
@@ -548,7 +553,8 @@
           "place": false
         }
       ],
-      "constraints": []
+      "constraints": [],
+      "declaredByGradle": false
     },
     {
       "qualifiedName": "second.OnlyHere",
@@ -676,7 +682,8 @@
           "place": false
         }
       ],
-      "constraints": []
+      "constraints": [],
+      "declaredByGradle": false
     },
     {
       "qualifiedName": "second.AlsoOnlyHere",
@@ -804,7 +811,8 @@
           "place": false
         }
       ],
-      "constraints": []
+      "constraints": [],
+      "declaredByGradle": false
     }
   ],
   "templates": {

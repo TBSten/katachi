@@ -22,7 +22,8 @@
       "declaredAt": {
         "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
         "line": 33
-      }
+      },
+      "declaredByGradle": false
     },
     {
       "qualifiedName": "shared",
@@ -34,7 +35,8 @@
       "declaredAt": {
         "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
         "line": 71
-      }
+      },
+      "declaredByGradle": false
     },
     {
       "qualifiedName": "ui",
@@ -46,7 +48,8 @@
       "declaredAt": {
         "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
         "line": 81
-      }
+      },
+      "declaredByGradle": false
     }
   ],
   "roles": [
@@ -217,7 +220,8 @@
           "place": false
         }
       ],
-      "constraints": []
+      "constraints": [],
+      "declaredByGradle": false
     },
     {
       "qualifiedName": "feature.FeatureViewModel",
@@ -386,7 +390,8 @@
           "place": false
         }
       ],
-      "constraints": []
+      "constraints": [],
+      "declaredByGradle": false
     },
     {
       "qualifiedName": "shared.Logger",
@@ -514,7 +519,8 @@
           "place": false
         }
       ],
-      "constraints": []
+      "constraints": [],
+      "declaredByGradle": false
     },
     {
       "qualifiedName": "ui.Screen",
@@ -704,7 +710,8 @@
           "place": false
         }
       ],
-      "constraints": []
+      "constraints": [],
+      "declaredByGradle": false
     }
   ],
   "templates": {

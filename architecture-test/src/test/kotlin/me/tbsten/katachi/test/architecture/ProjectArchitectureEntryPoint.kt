@@ -4,12 +4,13 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.diff.DiffReport
 import me.tbsten.katachi.dsl.Architecture
+import me.tbsten.katachi.ide.internal.DescribeDefinition
 import me.tbsten.katachi.processor.internal.KatachiEntryPoint
 
 /**
  * What the Gradle plugin would generate from a `katachi { }` block, written by hand: this module
  * cannot apply the plugin of the build it belongs to, and `katachiDiff` in build.gradle.kts
- * loads this object by name the way the plugin's tasks load the generated one.
+ * and `katachiInternalDefinitionJson` in build.gradle.kts load this object by name, as the plugin's tasks load the generated one.
  */
 @OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
 object ProjectArchitectureEntryPoint : KatachiEntryPoint {
@@ -17,5 +18,6 @@ object ProjectArchitectureEntryPoint : KatachiEntryPoint {
 
     override val processors: Map<String, Class<*>> = mapOf(
         "diff" to DiffReport::class.java,
+        "internalDefinitionJson" to DescribeDefinition::class.java,
     )
 }

@@ -18,7 +18,7 @@ katachi の性能を測るモジュール。公開しない。`check` には入�
 | core/DSL | `architecture { }` の定義を layout の行に開く・ファイルを role に結び付ける | `katachi/src/main/kotlin/me/tbsten/katachi/dsl` | `LayoutEvalBench`・`RoleMatchBench` | | v0.4.0 |
 | core/検査 | `validate()`・`assert()` | `katachi/src/main/kotlin/me/tbsten/katachi/check`・`katachi/src/main/kotlin/me/tbsten/katachi/report` | `WalkBench`・`AssertColdBench`・`realProject:nowinandroid`・`gradle-profiler:architectureTest` | | v0.4.0 |
 | core/processor API | processor の実行 | `katachi/src/main/kotlin/me/tbsten/katachi/processor` | なし | processor を呼ぶ枠だけで、時間は各 processor の中身と JVM の起動が主。Gradle から呼んだときの待ち時間は `gradle-profiler:katachiDocs` が見る | v0.4.0 |
-| core/IDE 連携 | IDE plugin が読む定義 JSON の書き出し | `katachi/src/main/kotlin/me/tbsten/katachi/ide` | なし | 定義を 1 回書き出すだけ。JMH の外で、IDE の側のテストは別にある | v0.4.0 |
+| core/IDE 連携 | IDE plugin と `katachi lint` が読む定義 JSON の書き出し | `katachi/src/main/kotlin/me/tbsten/katachi/ide` | なし | 定義を 1 回書き出すだけ。JMH の外で、IDE の側のテストは別にある | v0.4.0 |
 | core/katachiDocs | `katachiDocs` | `katachi/src/main/kotlin/me/tbsten/katachi/docs` | `gradle-profiler:katachiDocs` | | v0.4.0 |
 | core/katachiTemplate | `katachiTemplate` | `katachi/src/main/kotlin/me/tbsten/katachi/template` | なし | 1 回の操作で、待ち時間は JVM の起動が主（`gradle-profiler:katachiDocs` と同じ経路） | v0.4.0 |
 | core/katachiDiff | `katachiDiff` | `katachi/src/main/kotlin/me/tbsten/katachi/diff` | なし | 1 PR に 1 回の実行で、時間の大半は git の呼び出し。role への割り当ては walk と同じ索引で、`WalkBench`・`RoleMatchBench` が見ている | v0.4.0 |
@@ -26,7 +26,7 @@ katachi の性能を測るモジュール。公開しない。`check` には入�
 | konture | `konture { }` | `katachi-konture/src/main` | `KontureBench`・`AssertColdBench` | | v0.4.0 |
 | Gradle plugin | `:architecture-test:test`・`katachi<Key>` のタスク | `katachi-gradle-plugin/src` | `gradle-profiler:architectureTest`・`gradle-profiler:katachiDocs` | | v0.4.0 |
 | Actions | `diff-report`・`diff-report-comment` | `diff-report`・`diff-report-comment` | なし | `katachiDiff` を呼んで結果を貼るだけ（core/katachiDiff の行を見る） | v0.4.0 |
-| CLI・script | `katachi <サブコマンド>`・`*.katachi.kts` | `katachi-script` | なし | 起動は `kotlin` コマンドのスクリプトのコンパイルと依存の解決が主で、JMH には載らない。測るなら別の仕組みが要る | v0.4.0 |
+| CLI・script | `katachi <サブコマンド>`・`*.katachi.kts` | `katachi-script` | なし | 起動は `kotlin` コマンドのスクリプトのコンパイルと依存の解決が主で、JMH には載らない。`katachi lint` は `./gradlew` で定義を評価するので、待ち時間は Gradle の起動と定義のコンパイルが主で、JSON を 1 回読む lint 自身は測るほどではない。測るなら別の仕組みが要る | 未確認 |
 | IDE plugin | ガター・ツールウィンドウ・MCP | `katachi-intellij-plugin/src` | なし | JMH の外。IDE の側のテスト（uiTest・integrationTest）が別にある | v0.4.0 |
 | skill | `skills/katachi/` | `skills/katachi` | なし | 文書だけで、実行するコードが無い | v0.4.0 |
 | docs | ドキュメントサイト・README | `docs` | なし | katachi の実行時間に関わらない | v0.4.0 |

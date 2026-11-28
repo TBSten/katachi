@@ -22,7 +22,8 @@
       "declaredAt": {
         "fileName": "DescribeDefinitionSpecSupport.kt",
         "line": 91
-      }
+      },
+      "declaredByGradle": false
     }
   ],
   "roles": [
@@ -81,7 +82,8 @@
           "place": false
         }
       ],
-      "constraints": []
+      "constraints": [],
+      "declaredByGradle": false
     },
     {
       "qualifiedName": "domain.UseCase",
@@ -298,7 +300,8 @@
           },
           "fileDeclarations": null
         }
-      ]
+      ],
+      "declaredByGradle": false
     },
     {
       "qualifiedName": "domain.Model",
@@ -518,7 +521,8 @@
           },
           "fileDeclarations": null
         }
-      ]
+      ],
+      "declaredByGradle": false
     }
   ],
   "templates": {

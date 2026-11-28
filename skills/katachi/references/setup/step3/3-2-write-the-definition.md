@@ -185,4 +185,4 @@ Record the files you created or changed in `changedFiles` (the split files can b
 katachi lint
 ```
 
-It scans the definition and lists the Roles that look like they hold different kinds of files. What it lists is dealt with in the 3-3 checklist.
+It reads the definition as Gradle evaluates it (it runs `./gradlew :architecture-test:katachiInternalDefinitionJson`, so the first run takes a while) and lists the Roles that look like they hold different kinds of files. What it lists is dealt with in the 3-3 checklist. If the definition does not compile, `lint` checks nothing: it prints the compile errors and exits 1, so fix them and run it again.

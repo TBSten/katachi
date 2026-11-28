@@ -41,6 +41,8 @@ internal class GroupJson(
     val summary: String?,
     val documented: Boolean?,
     val declaredAt: DeclarationSiteJson?,
+    // Declared by gradle() rather than written by the user. Added after the first keys, so an older JSON has none.
+    val declaredByGradle: Boolean = false,
 )
 
 @Serializable
@@ -54,6 +56,8 @@ internal class RoleJson(
     val declaredAt: DeclarationSiteJson?,
     val layout: List<LayoutEntryJson>,
     val constraints: List<ConstraintJson>,
+    // Declared by gradle() rather than written by the user, so `declaredAt` is the line of the `gradle { }` call. Added after the first keys, so an older JSON has none.
+    val declaredByGradle: Boolean = false,
 )
 
 @Serializable

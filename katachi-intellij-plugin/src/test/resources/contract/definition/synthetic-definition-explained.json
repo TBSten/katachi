@@ -205,7 +205,8 @@
           },
           "fileDeclarations": null
         }
-      ]
+      ],
+      "declaredByGradle": false
     },
     {
       "qualifiedName": "Thrower",
@@ -302,7 +303,8 @@
           },
           "fileDeclarations": null
         }
-      ]
+      ],
+      "declaredByGradle": false
     }
   ],
   "templates": {

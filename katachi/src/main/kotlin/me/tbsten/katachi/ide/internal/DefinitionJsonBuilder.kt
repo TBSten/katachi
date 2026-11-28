@@ -10,6 +10,7 @@ import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.Summary
 import me.tbsten.katachi.dsl.Title
+import me.tbsten.katachi.dsl.internal.DeclaredByGradle
 import me.tbsten.katachi.dsl.internal.DeclaredFileConstraint
 import me.tbsten.katachi.dsl.internal.ModuleIndex
 import me.tbsten.katachi.dsl.internal.Template
@@ -73,6 +74,7 @@ internal fun definitionJsonOf(
             constraints = constraintsByRole[role].orEmpty().map { declared ->
                 constraintJsonOf(declared, entries, explanations?.of(declared))
             },
+            declaredByGradle = role[DeclaredByGradle] == true,
         )
     }
     explanations?.reportTruncation()
@@ -124,6 +126,7 @@ private fun groupJsonOf(group: Group): GroupJson = GroupJson(
     summary = group[Summary],
     documented = group[Documented],
     declaredAt = siteOf(group.declaredAt),
+    declaredByGradle = group[DeclaredByGradle] == true,
 )
 
 private fun layoutEntryJsonOf(index: Int, entry: LayoutEntry, files: List<String>?, maxMatchedFiles: Int): LayoutEntryJson {

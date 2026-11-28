@@ -52,6 +52,7 @@ internal class ScriptContext(
     val http: HttpFetcher = JdkHttpFetcher,
     val launch: ProcessLauncher = InheritingIoLauncher,
     val macOsJavaStub: MacOsJavaStub? = MacOsJavaStub.onThisHost(),
+    val gradle: GradleRunner = ProcessGradleRunner,
     /** The host is Windows. A test sets it to see what katachi does there. */
     val windows: Boolean = isWindowsHost(),
 ) {

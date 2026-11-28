@@ -44,7 +44,7 @@ class WorkdirSpec : FreeSpec({
             workdir.resolve("tmp").createDirectories()
             workdir.resolve("check-list.html").writeText(checkListHtml("""{"meta": {"projectRoot": "$main"}, "steps": []}""", "ja"))
 
-            val run = runCapturing(worktree, listOf("lint"), mapOf("PATH" to System.getenv("PATH"), "KATACHI_WORKDIR" to workdir.toString()))
+            val run = runWithDefinition(worktree, listOf("lint"), mapOf("PATH" to System.getenv("PATH"), "KATACHI_WORKDIR" to workdir.toString()))
 
             run.status shouldBe 0
             run.err shouldContain "別の作業ツリー（git worktree）です"
@@ -79,7 +79,7 @@ class WorkdirSpec : FreeSpec({
         "メインの作業ツリーの中から走らせれば、これまでどおり記録した場所を検査する" {
             val repo = WorktreeFixture()
 
-            val run = runCapturing(repo.main, listOf("lint"), repo.env())
+            val run = runWithDefinition(repo.main, listOf("lint"), repo.env())
 
             run.status shouldBe 0
             run.err shouldNotContain "別の作業ツリー"
@@ -90,7 +90,7 @@ class WorkdirSpec : FreeSpec({
             val other = createTempDirectory("katachi-other-repo-")
             other.resolve(".git").createDirectories()
 
-            val run = runCapturing(other, listOf("lint"), repo.env())
+            val run = runWithDefinition(other, listOf("lint"), repo.env())
 
             run.status shouldBe 0
             run.err shouldNotContain "別の作業ツリー"
@@ -104,7 +104,7 @@ class WorkdirSpec : FreeSpec({
             val copy = createTempDirectory("katachi-copy-")
             projectRecording(copy, recordedRoot = original)
 
-            val run = runCapturing(copy, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
+            val run = runWithDefinition(copy, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
 
             run.status shouldBe 0
             run.err shouldContain "プロジェクトを作業用ディレクトリごと写したか、移したようです。作業用ディレクトリのある file://$copy を検査します。"
@@ -119,7 +119,7 @@ class WorkdirSpec : FreeSpec({
             val copy = parent.resolve("copy")
             projectRecording(copy, recordedRoot = original, recordedWorkdir = ".local/install-katachi")
 
-            val run = runCapturing(parent, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
+            val run = runWithDefinition(parent, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
 
             run.status shouldBe 0
             run.out shouldContain "定義: file://${copy.resolve("architecture-test/src/test/kotlin")}"
@@ -131,7 +131,7 @@ class WorkdirSpec : FreeSpec({
             val copy = original.resolve("copies/copy")
             projectRecording(copy, recordedRoot = original, recordedWorkdir = ".local/install-katachi")
 
-            val run = runCapturing(copy, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
+            val run = runWithDefinition(copy, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
 
             run.status shouldBe 0
             run.out shouldContain "定義: file://${copy.resolve("architecture-test/src/test/kotlin")}"
@@ -141,7 +141,7 @@ class WorkdirSpec : FreeSpec({
             val moved = createTempDirectory("katachi-moved-")
             projectRecording(moved, recordedRoot = moved.resolveSibling(moved.fileName.toString() + "-before-move"))
 
-            val run = runCapturing(moved, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
+            val run = runWithDefinition(moved, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
 
             run.status shouldBe 0
             run.out shouldContain "定義: file://${moved.resolve("architecture-test/src/test/kotlin")}"
@@ -154,7 +154,7 @@ class WorkdirSpec : FreeSpec({
             val copy = createTempDirectory("katachi-copy-")
             projectRecording(copy, recordedRoot = original)
 
-            val run = runCapturing(copy, listOf("lint"))
+            val run = runWithDefinition(copy, listOf("lint"))
 
             run.status shouldBe 0
             run.err shouldNotContain "定義のディレクトリがありません"
@@ -168,7 +168,7 @@ class WorkdirSpec : FreeSpec({
             val project = parent.resolve("app")
             projectRecording(project, recordedRoot = project)
 
-            val run = runCapturing(parent, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
+            val run = runWithDefinition(parent, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
 
             run.status shouldBe 0
             run.err shouldNotContain "写したか"
@@ -181,7 +181,7 @@ class WorkdirSpec : FreeSpec({
             val workdir = workdirWith("""{"meta": {"projectRoot": "$project"}, "steps": []}""")
             val env = mapOf("PATH" to System.getenv("PATH"), "KATACHI_WORKDIR" to workdir.toString())
 
-            val run = runCapturing(createTempDirectory("katachi-elsewhere-"), listOf("lint"), env)
+            val run = runWithDefinition(createTempDirectory("katachi-elsewhere-"), listOf("lint"), env)
 
             run.status shouldBe 0
             run.out shouldContain "定義: file://${project.resolve("architecture-test/src/test/kotlin")}"
@@ -195,7 +195,7 @@ class WorkdirSpec : FreeSpec({
             val missing = project.resolve("no-such-workdir")
             val env = mapOf("PATH" to System.getenv("PATH"), "KATACHI_WORKDIR" to missing.toString())
 
-            val run = runCapturing(project, listOf("lint"), env)
+            val run = runWithDefinition(project, listOf("lint"), env)
 
             run.status shouldBe 1
             run.err shouldContain "KATACHI_WORKDIR（${missing}）は作業用ディレクトリではありません"
@@ -205,7 +205,7 @@ class WorkdirSpec : FreeSpec({
             val project = projectWithTwoWorkdirs()
             val env = mapOf("PATH" to System.getenv("PATH"), "KATACHI_WORKDIR" to project.resolve("no-such-workdir").toString())
 
-            val run = runCapturing(project, listOf("doctor"), env)
+            val run = runWithDefinition(project, listOf("doctor"), env)
 
             run.status shouldBe 0
             run.err shouldContain "は作業用ディレクトリではありません"
@@ -216,7 +216,7 @@ class WorkdirSpec : FreeSpec({
         "lint は黙って既定値に戻らず、候補を並べて止まる" {
             val project = projectWithTwoWorkdirs()
 
-            val run = runCapturing(project, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
+            val run = runWithDefinition(project, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
 
             run.status shouldBe 1
             run.err shouldContain "作業用ディレクトリ（check-list.html と tmp/ のあるディレクトリ）が 2 つ以上あり"
@@ -228,7 +228,7 @@ class WorkdirSpec : FreeSpec({
         "scaffold も止まる（moduleDir を既定値で作らない）" {
             val project = projectWithTwoWorkdirs()
 
-            val run = runCapturing(project, listOf("scaffold", "--package", "com.example"))
+            val run = runWithDefinition(project, listOf("scaffold", "--package", "com.example"))
 
             run.status shouldBe 1
             run.err shouldContain "KATACHI_WORKDIR"
@@ -239,7 +239,7 @@ class WorkdirSpec : FreeSpec({
             val project = projectWithTwoWorkdirs()
             val env = mapOf("PATH" to System.getenv("PATH"), "KATACHI_WORKDIR" to project.resolve(".local/install-katachi").toString())
 
-            val run = runCapturing(project, listOf("lint"), env)
+            val run = runCapturing(project, listOf("lint"), env, gradle = FakeGradle(moduleDir = "static-analysis/katachi"))
 
             run.status shouldBe 0
             run.err shouldNotContain "2 つ以上"
@@ -248,7 +248,7 @@ class WorkdirSpec : FreeSpec({
         "どちらも同じ言語なら、止まるときのメッセージもその言語で出す" {
             val project = projectWithTwoWorkdirs(lang = "en")
 
-            val run = runCapturing(project, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
+            val run = runWithDefinition(project, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
 
             run.status shouldBe 1
             run.err shouldContain "There are two or more working directories"
@@ -257,7 +257,7 @@ class WorkdirSpec : FreeSpec({
         "doctor は止まらず、2 つあることを警告する" {
             val project = projectWithTwoWorkdirs()
 
-            val run = runCapturing(project, listOf("doctor"))
+            val run = runWithDefinition(project, listOf("doctor"))
 
             run.status shouldBe 0
             run.err shouldContain "2 つ以上あり"
@@ -266,7 +266,7 @@ class WorkdirSpec : FreeSpec({
         "--help は止まらない" {
             val project = projectWithTwoWorkdirs()
 
-            runCapturing(project, listOf("--help")).status shouldBe 0
+            runWithDefinition(project, listOf("--help")).status shouldBe 0
         }
     }
 
@@ -278,10 +278,10 @@ class WorkdirSpec : FreeSpec({
             val locked = project.resolve("someone-else").createDirectories()
             locked.setPosixFilePermissions(PosixFilePermissions.fromString("---------"))
             try {
-                runCapturing(project, listOf("--version")).status shouldBe 0
-                runCapturing(project, listOf("doctor")).err shouldNotContain "Exception"
+                runWithDefinition(project, listOf("--version")).status shouldBe 0
+                runWithDefinition(project, listOf("doctor")).err shouldNotContain "Exception"
 
-                val lint = runCapturing(project, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
+                val lint = runWithDefinition(project, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
 
                 lint.status shouldBe 0
                 lint.err shouldNotContain "定義のディレクトリがありません"
@@ -301,14 +301,14 @@ class WorkdirSpec : FreeSpec({
             locked.writeText(checkListHtml("""{"meta": {}, "steps": []}""", "en"))
             locked.setPosixFilePermissions(PosixFilePermissions.fromString("---------"))
             try {
-                runCapturing(project, listOf("--version")).status shouldBe 0
-                val help = runCapturing(project, listOf("--help"))
+                runWithDefinition(project, listOf("--version")).status shouldBe 0
+                val help = runWithDefinition(project, listOf("--help"))
                 help.status shouldBe 0
                 help.err shouldNotContain "Exception"
                 help.err shouldContain "読めない check-list.html は、作業用ディレクトリとして使いません"
                 help.err shouldContain locked.toString()
 
-                val lint = runCapturing(project, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
+                val lint = runWithDefinition(project, listOf("lint"), mapOf("PATH" to System.getenv("PATH")))
 
                 lint.status shouldBe 0
                 lint.err shouldNotContain "2 つ以上"
@@ -329,7 +329,7 @@ class WorkdirSpec : FreeSpec({
             try {
                 val env = mapOf("PATH" to System.getenv("PATH"), "KATACHI_WORKDIR" to workdir.toString())
 
-                val run = runCapturing(project, listOf("lint"), env)
+                val run = runWithDefinition(project, listOf("lint"), env)
 
                 run.status shouldBe 1
                 run.err shouldNotContain "Exception"
@@ -364,12 +364,21 @@ private class WorktreeFixture(projectDir: String = "", definitionInMain: Boolean
 
     fun env(): Map<String, String> = mapOf("PATH" to System.getenv("PATH"), "KATACHI_WORKDIR" to workdir.toString())
 
-    fun runFromWorktree(vararg args: String): RecordedRun = runCapturing(worktree, args.toList(), env())
+    fun runFromWorktree(vararg args: String): RecordedRun = runWithDefinition(worktree, args.toList(), env())
 }
+
+/** [runCapturing] with a Gradle that answers with the one Role [definitionProject] writes, into the project root it is asked to run in. */
+private fun runWithDefinition(cwd: Path, args: List<String>, env: Map<String, String> = emptyMap()): RecordedRun = runCapturing(
+    cwd,
+    args,
+    env,
+    gradle = FakeGradle(json = definitionJson(roles = listOf(roleJson("Mixed", "MixedRole.kt", layout = listOf(layoutFile("README.md"), layoutFile("LICENSE")))))),
+)
 
 private fun definitionProject(dir: Path, withDefinition: Boolean) {
     dir.createDirectories()
     if (withDefinition) {
+        dir.resolve("gradlew").writeText("")
         val definition = dir.resolve("architecture-test/src/test/kotlin").createDirectories()
         // lint names the definition directory it read only when it reports something, so give it one finding.
         definition.resolve("MixedRole.kt").writeText("val m = \"Mixed\".role { layout { \"README.md\".file(); \"LICENSE\".file() } }\n")
@@ -405,5 +414,6 @@ private fun projectWithTwoWorkdirs(lang: String? = null): Path {
     old.resolve("check-list.html").writeText(checkListHtml("""{"meta": {}, "steps": []}""", lang ?: "en"))
     definitionProject(project, withDefinition = false)
     project.resolve("static-analysis/katachi/src/test/kotlin").createDirectories()
+    project.resolve("gradlew").writeText("")
     return project
 }
