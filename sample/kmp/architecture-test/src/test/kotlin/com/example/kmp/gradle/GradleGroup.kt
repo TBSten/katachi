@@ -30,21 +30,25 @@ fun DeclarationContainerScope.gradleGroup() = gradle {
         owner = "platform"
 
         fileConstraint("namespace of a library module follows the module path") { subject ->
-            subject.files.mapNotNull { file ->
-                // The root build script has no module path to follow: never a subject here.
-                if ('/' !in file) return@mapNotNull null
-                val text = subject.textOf(file)
-                if (LIBRARY_BLOCK !in text) return@mapNotNull null
-                val namespace = NAMESPACE.find(text)?.groupValues?.get(1) ?: return@mapNotNull null
-                val expected = "$NAMESPACE_ROOT." + file.substringBeforeLast('/').replace('/', '.')
-                if (namespace == expected) return@mapNotNull null
-                FileConstraintFailure(
-                    file = file,
-                    line = subject.lineOf(file, NAMESPACE),
-                    reasons = listOf("Namespace" to namespace),
-                    allowed = "Allowed here" to listOf(expected),
-                    howToFix = listOf("Set namespace = \"$expected\" in $file"),
-                )
+            buildList {
+                for (file in subject.files) {
+                    // The root build script has no module path to follow: never a subject here.
+                    if ('/' !in file) continue
+                    val text = subject.textOf(file)
+                    if (LIBRARY_BLOCK !in text) continue
+                    val namespace = NAMESPACE.find(text)?.groupValues?.get(1) ?: continue
+                    val expected = "$NAMESPACE_ROOT." + file.substringBeforeLast('/').replace('/', '.')
+                    if (namespace == expected) continue
+                    add(
+                        FileConstraintFailure(
+                            file = file,
+                            line = subject.lineOf(file, NAMESPACE),
+                            reasons = listOf("Namespace" to namespace),
+                            allowed = "Allowed here" to listOf(expected),
+                            howToFix = listOf("Set namespace = \"$expected\" in $file"),
+                        ),
+                    )
+                }
             }
         }
     }

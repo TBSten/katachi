@@ -20,15 +20,19 @@ fun DeclarationContainerScope.gradleGroup() = gradle {
     """.trimIndent()
     buildScript {
         fileConstraint("fails the build on every compiler warning") { subject ->
-            subject.files.mapNotNull { file ->
-                val text = subject.textOf(file)
-                if (WARNINGS_AS_ERRORS in text) return@mapNotNull null
-                FileConstraintFailure(
-                    file = file,
-                    reasons = listOf("Missing" to WARNINGS_AS_ERRORS),
-                    allowed = "Expected inside kotlin { compilerOptions { } }" to listOf(WARNINGS_AS_ERRORS),
-                    howToFix = listOf("Add $WARNINGS_AS_ERRORS to the compilerOptions { } block of $file"),
-                )
+            buildList {
+                for (file in subject.files) {
+                    val text = subject.textOf(file)
+                    if (WARNINGS_AS_ERRORS in text) continue
+                    add(
+                        FileConstraintFailure(
+                            file = file,
+                            reasons = listOf("Missing" to WARNINGS_AS_ERRORS),
+                            allowed = "Expected inside kotlin { compilerOptions { } }" to listOf(WARNINGS_AS_ERRORS),
+                            howToFix = listOf("Add $WARNINGS_AS_ERRORS to the compilerOptions { } block of $file"),
+                        ),
+                    )
+                }
             }
         }
     }

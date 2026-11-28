@@ -31,6 +31,19 @@ import kotlin.reflect.KClass
  *     }.map { FileConstraintFailure(it) }
  * }
  * ```
+ *
+ * ## Example 3: read each file, skip the ones that are fine, and report the rest
+ * ```kt
+ * FileConstraint { subject ->
+ *     buildList {
+ *         for (file in subject.files) {
+ *             // ⭐️ `continue` skips a file that is fine; no `null` to return
+ *             val line = subject.lineOf(file, Regex("TODO")) ?: continue
+ *             add(FileConstraintFailure(file = file, line = line, reasons = listOf("Found" to "TODO")))
+ *         }
+ *     }
+ * }
+ * ```
  */
 @ExperimentalKatachiApi
 public class FileConstraintSubject internal constructor(
