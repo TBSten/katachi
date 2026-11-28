@@ -5,8 +5,8 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 
 /**
- * Where `katachi` may be. PATH first; then the directories it is installed to, because an IDE started from the
- * Dock or a desktop entry does not get the PATH of the login shell.
+ * Where `katachi` may be. PATH first; then the directories it is installed to (Homebrew on macOS and Linux, Scoop on Windows),
+ * because an IDE started from the Dock, a desktop entry or the Start menu does not get the PATH of the login shell.
  */
 internal class KatachiCliLocator(
     private val pathVariable: String?,
@@ -21,7 +21,7 @@ internal class KatachiCliLocator(
 
     /**
      * The PATH to start `katachi` with. `katachi` runs `kotlin`, which an IDE started from the Dock cannot find on
-     * its own PATH either; Homebrew puts both in the same directories searched here.
+     * its own PATH either; Homebrew (and Scoop) puts both in the same directories searched here.
      */
     fun searchPath(): String = directories().joinToString(separator.toString())
 
@@ -29,7 +29,19 @@ internal class KatachiCliLocator(
 
     private fun directories(): List<String> {
         val fromPath = pathVariable.orEmpty().split(separator).filter { it.isNotBlank() }
-        val installed = if (windows) emptyList() else listOfNotNull("/opt/homebrew/bin", "/usr/local/bin", home?.let { "$it/.local/bin" })
+        val installed = if (windows) {
+            // Where Scoop puts the commands it installs (the `katachi` bucket, KATACHI-456).
+            listOfNotNull(home?.let { "$it\\scoop\\shims" })
+        } else {
+            listOfNotNull(
+                "/opt/homebrew/bin",
+                "/usr/local/bin",
+                // Homebrew on Linux: the default prefix, and the one in the home directory for a user who cannot write to it.
+                "/home/linuxbrew/.linuxbrew/bin",
+                home?.let { "$it/.linuxbrew/bin" },
+                home?.let { "$it/.local/bin" },
+            )
+        }
         return (fromPath + installed).distinct()
     }
 

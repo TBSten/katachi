@@ -52,11 +52,11 @@ tasks.processResources {
 }
 
 // What `brew install tbsten/tap/katachi` unpacks: the `.main.kts` entry point pinned to this
-// version and its `bin/katachi` wrapper. Every subcommand is in the katachi-script artifact the
-// entry point pulls in, so the install kit script is no longer part of it (KATACHI-229).
+// version and its `bin/katachi` wrapper (and `bin/katachi.cmd`, which is what runs on Windows). Every subcommand
+// is in the katachi-script artifact the entry point pulls in, so the install kit script is no longer part of it (KATACHI-229).
 val cliDist = tasks.register<Sync>("cliDist") {
     group = "distribution"
-    description = "Assembles the katachi command (katachi.main.kts, bin/katachi) under build/cli."
+    description = "Assembles the katachi command (katachi.main.kts, bin/katachi, bin/katachi.cmd) under build/cli."
     val katachiVersion = version.toString()
     inputs.property("katachiVersion", katachiVersion)
     from(layout.projectDirectory.dir("cli")) {
@@ -80,5 +80,15 @@ tasks.register<Tar>("cliTar") {
     archiveVersion.set(version.toString())
     compression = Compression.GZIP
     archiveExtension.set("tar.gz")
+    destinationDirectory.set(layout.buildDirectory.dir("distributions"))
+}
+
+// What the Scoop manifest downloads (KATACHI-456): the same files as the tarball, as a zip, which is what Windows unpacks.
+tasks.register<Zip>("cliZip") {
+    group = "distribution"
+    description = "Packs build/cli into katachi-cli-<version>.zip, the asset the Scoop manifest downloads."
+    from(cliDist)
+    archiveBaseName.set("katachi-cli")
+    archiveVersion.set(version.toString())
     destinationDirectory.set(layout.buildDirectory.dir("distributions"))
 }
