@@ -7,7 +7,7 @@ fun DeclarationContainerScope.projectDocument() = "ProjectDocument".role {
     summary = "リポジトリを開いた人が最初に読むもの"
     description = """
         README・LICENSE・CONTRIBUTING は `docs/` の外にありますが、最初に読まれる文書なので、この group に置いています。
-        `Tool` group は機械向けで生成ドキュメントから外れているため、置き場にできません。
+        `DevSupport` group は機械向けで生成ドキュメントから外れているため、置き場にできません。
         group はディレクトリではなく、一緒に属する役割の集まりです。
     """.trimIndent()
     example("README.md", "katachi が何で、どう入れるか")
@@ -24,5 +24,7 @@ fun DeclarationContainerScope.projectDocument() = "ProjectDocument".role {
         "CONTRIBUTING.md".file()
         "CONTRIBUTING.ja.md".file()
         "LICENSE".file()
+        // A draft script that is wired to nothing. An unexpected file cannot be held back by `baseline()`, so it is listed here until it is deleted.
+        "install-katachi.main.kts".file()
     }
 }

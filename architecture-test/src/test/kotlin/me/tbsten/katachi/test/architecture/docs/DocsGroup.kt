@@ -1,13 +1,13 @@
 package me.tbsten.katachi.test.architecture.docs
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
+import me.tbsten.katachi.test.architecture.docs.docsite.docSiteGroup
 
 fun DeclarationContainerScope.docsGroup() = "Docs".group {
     title = "ドキュメント"
 
-    docsSite()
-    docsScript()
-    internalGuide()
+    docSiteGroup()
+    internalDocs()
     projectDocument()
-    apiDocsModule()
+    samples()
 }
