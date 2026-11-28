@@ -21,7 +21,7 @@ In `modules`, write `path` / `kind` / `responsibility` / `buildFile` for each mo
 | `group` | The group it belongs to. Nest with `.` (e.g. `Feature.Ui`). Each group name is UpperCamelCase, like a Role name |
 | `layout` | The placement pattern |
 | `naming` | The naming convention |
-| `allowed` / `forbidden` | What may be written / what must not be written |
+| `allowed` / `forbidden` | What may be written / what must not be written. One rule per entry, as a plain string for now: every rule the team would want checked goes here, because 3-4 goes through these entries one by one and decides how each is checked (it turns the entry into `{ "text", "by", "how" }`) |
 | `examples` | Paths to real example files |
 | `count` | The number of actual instances |
 
@@ -33,7 +33,7 @@ In `modules`, write `path` / `kind` / `responsibility` / `buildFile` for each mo
 - **`build.gradle.kts` / `settings.gradle.kts` / `gradle.properties` / the version catalog are covered by `gradle()`.** Do not make a Role per kind of module, and do not write them into `roles` (except `buildSrc` and builds added with `includeBuild`). The exception is a constraint you want to put on a build file (that the namespace matches the package, say); record it as a `roles` entry with `constraintOnly: true` and the reason in `note`. In the definition it does not become a Role: write the constraint in a hook such as `gradle { buildScript { } }`. A hook's constraint receives the build files of every module, so to look at one module only, narrow them inside the constraint (the Gradle paragraph under "One Role = one kind of file" in 3-2)
 - **Two Roles must not claim the same file** (`[AmbiguousLayout]`). A layout pattern cannot say "every `*.kt` except `*Token.kt`", so split two kinds only when a name pattern or a directory tells them apart (`*Token.kt` and `*Annotation.kt`, or `token/` and `annotation/`). If nothing does, keep them in one Role
 - **Do not name the README's Role `Readme`.** Its documentation page would differ from the index `README.md` only in case, and `katachiDocs` fails. Use `ProjectReadme`
-- **Write down conventions even when detekt, Konsist, Android Lint or the like already checks them.** Whether katachi checks them too is decided in 3-2 ("Dividing the work with the static analysis already there": a convention that belongs to a Role goes into katachi). Read that paragraph before you put a question about it in `questions`
+- **Write down conventions even when detekt, Konsist, Android Lint or the like already checks them.** Whether katachi checks them too is decided in 3-4 ("Do not drop a rule because something else covers it": a convention that belongs to a Role goes into katachi). Read that paragraph before you put a question about it in `questions`
 - **What gets `documented = false`:** (1) generated output (build output, committed generated code), (2) build and tool configuration (`.editorconfig`, CI yaml, lint configuration), (3) single-file helpers (README, LICENSE, `.gitignore`). Only Roles that are useful to a reader go into the generated documentation
 - **For the Android staples (`AndroidManifest.xml`, `res/`), copy the recipe and adapt it.** Base them on the definition in the Android recipe page (https://tbsten.github.io/katachi/recipes/android-three-layer/)
 

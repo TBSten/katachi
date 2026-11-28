@@ -42,7 +42,7 @@ Add an entry by appending an object to the array; keep the entries already there
 | `questions` | checklist | `id` (`q1`, `q2`, …), `question`, `observed`, `options` (array), `recommendation` |
 | `questions` | report | `id` (`cq1`, `cq2`, …), `question`, `observed`, `options` (array), `recommendation` |
 | `modules` | report | `path`, `kind`, `responsibility`, `buildFile`, `deviation` (only when it differs from the other modules of its kind) |
-| `roles` | report | `importance`, `name`, `group`, `layout`, `naming`, `allowed` / `forbidden` / `examples` (arrays), `count`, `note`; `constraintOnly: true` for a constraint on a Gradle build file (1-2) |
+| `roles` | report | `importance`, `name`, `group`, `layout`, `naming`, `allowed` / `forbidden` / `examples` (arrays), `count`, `note`; `constraintOnly: true` for a constraint on a Gradle build file (1-2). An entry of `allowed` / `forbidden` is a string while it is only a rule in words (1-2), and 3-4 turns it into `{ "text", "by", "how" }`: `by` is `ktFileContent`, `fileConstraint` or `none`, `how` is the pattern the constraint holds files to (for `none`, the reason) |
 | `excluded` | report | `path`, `reason` |
 | `templates` | report | `role`, `files` / `params` (arrays), `basedOn`, `reason` |
 

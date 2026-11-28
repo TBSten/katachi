@@ -25,6 +25,7 @@ The steps use the `katachi` command (`brew install tbsten/tap/katachi`) for `doc
 | 3-1 | Read the documentation by topic | [step3/3-1-fetch-docs.md](step3/3-1-fetch-docs.md) |
 | 3-2 | Write the definition | [step3/3-2-write-the-definition.md](step3/3-2-write-the-definition.md) |
 | 3-3 | Refactor the definition | [step3/3-3-refactor.md](step3/3-3-refactor.md) |
+| 3-4 | Decide and write the constraints on contents | [step3/3-4-constraints.md](step3/3-4-constraints.md) |
 | 4 | Verify | [step4/README.md](step4/README.md) |
 | 4-1 | Run the test | [step4/4-1-run-the-test.md](step4/4-1-run-the-test.md) |
 | 4-2 | How to handle errors | [step4/4-2-handle-errors.md](step4/4-2-handle-errors.md) |
@@ -48,6 +49,6 @@ Where subagents are available, split the work as in the table below. Only the ma
 | 1-1, 1-2 | Writing the report's JSON (one writer) | Reading, scanning, drafting Role candidates | JSON per section (subagents do not write) |
 | 1-3, 2 | Everything | — | — |
 | 3-1 | Reading the topic pages | Finding the relevant API in the API reference | Signatures and examples only |
-| 3-2, 3-3, 4 | Editing the definition and running the check | — | — |
+| 3-2, 3-3, 3-4, 4 | Editing the definition and running the check | — | — |
 | 6-A | Choosing the task and judging the result | Implementation and verification (one output directory per subagent) | Violation counts and the difference between the logs of the runs |
 | 6-B to 6-D | Everything | — | — |

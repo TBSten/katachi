@@ -8,6 +8,8 @@ Go through the JSON of both blocks (checklist and report) and list what is left.
 - Report: `architecture.name` and `architecture.rationale` are filled in
 - Report: `modules`, `directoryTree` and `roles` are filled in
 - Report: every entry of `roles` has `importance`, `name`, `layout`, `naming` and `group`
+- Report: every entry of `allowed` and `forbidden` of every Role is an object with `by` (3-4). An entry left as a plain string was not gone through: decide how it is checked, or give it `by: "none"` with the reason in `how`
+- Report: every Role without a pattern in its file name has at least one entry with `by` other than `none` (no catch-all Role)
 
 Anything left means you either forgot to investigate it or forgot to record it. Fill it in and go through the list again. Also look at the steps that carry a `warning`: each says what you left as it is, and step 6 reports it.
 

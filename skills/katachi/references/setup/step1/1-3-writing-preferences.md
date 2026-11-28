@@ -10,7 +10,7 @@ Show the user this table, with the "Recommended" column filled in for this proje
 | `moduleDir` | Where the verification module goes | Path relative to the Gradle root | `architecture-test` | `scaffold` and everything after |
 | `testFramework` | Test framework | `junit5` / `kotest` / `kotest-<style>` | When the project already depends on Kotest, the `kotest-<style>` its existing tests use (`kotest-free` when they extend `FreeSpec`; plain `kotest` when the styles are mixed); otherwise `junit5` | `scaffold` |
 | `dependencyStyle` | How dependencies are written | `catalog` / `literal` | `catalog` if `gradle/libs.versions.toml` exists | `scaffold` |
-| `constraintNames` | Put the question's number in constraint names? | `plain` / `numbered` | `plain` | 3-2 (you read it) |
+| `constraintNames` | Put the question's number in constraint names? | `plain` / `numbered` | `plain` | 3-4 (you read it) |
 | `oneRolePerFile` | Split the definition files per Role? | `yes` / `no` | `yes` | `lint` (3-3) |
 
 `kotest-<style>` is one of `fun`, `string`, `should`, `describe`, `behavior`, `word`, `free`, `feature`, `expect`, `annotation` (`kotest-free` writes a `FreeSpec`; plain `kotest` writes a `FunSpec`).
