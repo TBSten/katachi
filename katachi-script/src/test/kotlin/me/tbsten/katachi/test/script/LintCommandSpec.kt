@@ -96,6 +96,82 @@ class LintCommandSpec : FreeSpec({
         run.out shouldNotContain "Gradle のファイルを手書きの Role で宣言しています（Role:"
     }
 
+    "Role の中に直書きした ktFileContent・fileConstraint・konsist・konture を、長さによらず呼び出しごとに指摘する（KATACHI-457）" {
+        val project = projectWithDefinition(
+            "InlineRole.kt" to """
+                val inline = "Inline".role {
+                    ktFileContent { }
+                    fileConstraint("no http") {
+                        a()
+                        b()
+                        c()
+                        d()
+                        e()
+                    }
+                    konsist {
+                        "x".konsist { }
+                    }
+                    konture { }
+                }
+            """.trimIndent(),
+        )
+        val run = runCapturing(project, listOf("lint"))
+        run.status shouldBe 0
+        run.out shouldContain "Role の中に制約（ktFileContent・fileConstraint・konsist・konture）を直書きしているものが 1 件あります。"
+        run.out shouldContain
+            "InlineRole.kt:1 Role \"Inline\"（ktFileContent（2 行目）, fileConstraint（3 行目）, konsist（10 行目）, konture（13 行目））"
+        run.out shouldContain "private fun RoleScope.<role>KtFileContent()"
+    }
+
+    "切り出した制約は直書きに数えず、その Role を制約付きとして扱う（KATACHI-457）" {
+        val project = projectWithDefinition(
+            "BuildRole.kt" to """
+                val build = "Build".role {
+                    layout {
+                        "build.gradle.kts".file()
+                    }
+                    buildKtFileContent()
+                    noHttp()
+                }
+
+                private fun RoleScope.buildKtFileContent() = ktFileContent { }
+
+                private fun RoleScope.noHttp() = fileConstraint("no http") { }
+            """.trimIndent(),
+        )
+        val run = runCapturing(project, listOf("lint"), env = preferences(project, "\"oneRolePerFile\": \"no\""))
+        run.status shouldBe 0
+        run.out shouldNotContain "直書き"
+        run.out shouldContain "Gradle のファイルを手書きの Role で宣言し、その Role に制約を付けています:"
+        run.out shouldNotContain "Gradle のファイルを手書きの Role で宣言しています（Role:"
+    }
+
+    "制約を持たない関数の呼び出しは、Role を制約付きにも直書きにもしない（KATACHI-457）" {
+        val project = projectWithDefinition(
+            "BuildRole.kt" to """
+                val build = "Build".role {
+                    layout {
+                        "build.gradle.kts".file()
+                    }
+                    helper()
+                }
+
+                private fun RoleScope.helper() = println("x")
+            """.trimIndent(),
+        )
+        val run = runCapturing(project, listOf("lint"), env = preferences(project, "\"oneRolePerFile\": \"no\""))
+        run.out shouldNotContain "直書き"
+        run.out shouldContain "Gradle のファイルを手書きの Role で宣言しています（Role: Build）。"
+    }
+
+    "直書きの制約の指摘は英語でも出て、失敗にはしない（KATACHI-457）" {
+        val project = projectWithDefinition("InlineRole.kt" to "val inline = \"Inline\".role {\n    ktFileContent { }\n}")
+        val run = runCapturing(project, listOf("lint"), env = mapOf("KATACHI_LANG" to "en"))
+        run.status shouldBe 0
+        run.out shouldContain "Roles with a constraint written inline (ktFileContent, fileConstraint, konsist, konture): 1."
+        run.out shouldContain "InlineRole.kt:1 Role \"Inline\" (ktFileContent (line 2))"
+    }
+
     "buildSrc の Gradle のファイルは gradle() の対象外なので数えない" {
         val project = projectWithDefinition(
             "BuildSrcRole.kt" to """

@@ -34,6 +34,7 @@ private class LintRole(val name: String, val path: Path, val line: Int, group: L
     val catchall = mutableListOf<Triple<String, String, Int>>()
     val places = mutableListOf<String>()
     var hasConstraint = false
+    val inlineConstraints = mutableListOf<Pair<String, Int>>()
     var documented = false
 
     /** Itself or any group around it writes documented (a group's false reaches the Roles inside). */
@@ -184,12 +185,20 @@ private fun tokenize(src: String): List<Token> {
 /** hooks such as gradle { buildScript { } } are `identifier {`, a block, never a Role. Keep it that way. */
 private val CONSTRAINT_CALLS = setOf("fileConstraint", "konsist", "ktFileContent", "konture")
 
-private class StackEntry(val kind: String, val name: String? = null, val group: LintGroup? = null)
+private class StackEntry(
+    val kind: String,
+    val name: String? = null,
+    val group: LintGroup? = null,
+    /** The block of a constraint call: a constraint call nested in it is not a second inline constraint. */
+    var constraint: Boolean = false,
+)
 
 /**
  * Reads one definition file. [calls] collects, per function name, the groups whose body calls it
  * (`"Meta".group { projectReadme() }`), so that a Role or group declared in another file by that
- * function can be put back inside them.
+ * function can be put back inside them. [constraintFunctions] collects the top-level functions that
+ * call a constraint, and [roleCalls] the no-argument calls a Role makes, so that a constraint split
+ * out of a Role (`private fun RoleScope.x() = fileConstraint(...)`) still counts as the Role's.
  */
 private fun scan(
     path: Path,
@@ -197,6 +206,8 @@ private fun scan(
     groups: MutableList<LintGroup>,
     decls: MutableMap<Path, MutableList<Decl>>,
     calls: MutableMap<String, MutableList<LintGroup>>,
+    constraintFunctions: MutableSet<String>,
+    roleCalls: MutableList<Pair<LintRole, String>>,
 ) {
     val src = String(Files.readAllBytes(path), Charsets.UTF_8)
     val tokens = tokenize(src)
@@ -204,6 +215,8 @@ private fun scan(
     var role: LintRole? = null
     // The top-level function being read: `fun DeclarationContainerScope.name(...)`.
     var function: String? = null
+    // A constraint call whose `{` has not been read yet.
+    var pendingConstraint = false
     for ((k, tok) in tokens.withIndex()) {
         if (stack.isEmpty() && tok.type == "id" && tok.value == "fun") {
             function = tokens.drop(k + 1).takeWhile { it.value != "(" && it.value != "{" && it.value != "=" }.lastOrNull { it.type == "id" }?.value
@@ -217,6 +230,8 @@ private fun scan(
         val inLayout = "layout" in kinds
         val group = stack.lastOrNull { it.kind == "group" }?.group
         if (tok.type == "op" && tok.value == "{") {
+            val constraintBlock = pendingConstraint
+            pendingConstraint = false
             // A Role is "Name".role { }; the old "Name" { } (now a compile error) outside layout { } is read as one too.
             val roleCall = prev.type == "id" && prev.value == "role" && prev2.value == "." && prev3.type == "str" && prev3.value != null
             if (roleCall || (prev.type == "str" && prev.value != null)) {
@@ -251,9 +266,11 @@ private fun scan(
             } else {
                 stack += StackEntry("block")
             }
+            if (constraintBlock) stack.last().constraint = true
             continue
         }
         if (tok.type == "op" && tok.value == "}") {
+            pendingConstraint = false
             if (stack.isNotEmpty() && stack.removeAt(stack.size - 1).kind == "role") role = null
             if (stack.isEmpty()) function = null
             continue
@@ -264,9 +281,20 @@ private fun scan(
                 calls.getOrPut(tok.value!!) { mutableListOf() } += group
                 continue
             }
+            // A call with no receiver in a Role's body: it may be a constraint split out into a function.
+            if (role != null && prev.value != "." && next.value == "(" && tokens.getOrNull(k + 2)?.value == ")") {
+                roleCalls += role to tok.value!!
+            }
             // Outside layout: note constraint calls and documented = ... on the Role / group.
-            if (role != null && tok.value in CONSTRAINT_CALLS && (next.value == "(" || next.value == "{")) {
-                role.hasConstraint = true
+            if (tok.value in CONSTRAINT_CALLS && (next.value == "(" || next.value == "{")) {
+                pendingConstraint = true
+                if (role != null) {
+                    role.hasConstraint = true
+                    // konsist { "x".konsist { } } is one constraint, not two.
+                    if (stack.none { it.constraint }) role.inlineConstraints += tok.value!! to tok.line
+                } else if (function != null) {
+                    constraintFunctions += function
+                }
             } else if (tok.value == "documented" && next.value == "=") {
                 if (role != null) role.documented = true else if (group != null) group.documented = true
             }
@@ -348,10 +376,13 @@ internal fun ScriptContext.lintRoles(moduleDirArg: String?) {
     val groups = mutableListOf<LintGroup>()
     val decls = LinkedHashMap<Path, MutableList<Decl>>()
     val calls = HashMap<String, MutableList<LintGroup>>()
+    val constraintFunctions = HashSet<String>()
+    val roleCalls = mutableListOf<Pair<LintRole, String>>()
     if (root.isDirectory()) {
         val files = Files.walk(root).use { stream -> stream.asSequence().filter { it.isRegularFile() && it.name.endsWith(".kt") }.toList() }
-        for (file in files.sortedWith(compareBy({ it.parent.toString() }, { it.name }))) scan(file, roles, groups, decls, calls)
+        for (file in files.sortedWith(compareBy({ it.parent.toString() }, { it.name }))) scan(file, roles, groups, decls, calls, constraintFunctions, roleCalls)
     }
+    for ((r, name) in roleCalls) if (name in constraintFunctions) r.hasConstraint = true
     // A definition split into files (one Role or group per file): put each back into the groups that call it.
     for (r in roles) {
         val callers = r.definedIn?.let { calls[it] }.orEmpty()
@@ -424,7 +455,8 @@ internal fun ScriptContext.lintRoles(moduleDirArg: String?) {
         "version catalog" to "versionCatalog { }",
     )
 
-    if (warnings.isEmpty() && gradleHand.isEmpty() && gradleConstrained.isEmpty() && flatGroups.isEmpty() && lowercaseNames.isEmpty() && unsplitFiles.isEmpty() && documentedCandidates.isEmpty()) {
+    val inlineConstraintRoles = roles.filter { it.inlineConstraints.isNotEmpty() }
+    if (warnings.isEmpty() && inlineConstraintRoles.isEmpty() && gradleHand.isEmpty() && gradleConstrained.isEmpty() && flatGroups.isEmpty() && lowercaseNames.isEmpty() && unsplitFiles.isEmpty() && documentedCandidates.isEmpty()) {
         say(Messages.Lint.roleCheckNoRole(roles.size))
         return
     }
@@ -456,6 +488,15 @@ internal fun ScriptContext.lintRoles(moduleDirArg: String?) {
             say(Messages.Lint.gradleRoleHook(uri(r.path), r.line, r.name, name.substringAfterLast('/'), hook))
         }
         say(Messages.Lint.replacePlacementSingleLine)
+    }
+    if (inlineConstraintRoles.isNotEmpty()) {
+        say("")
+        say(Messages.Lint.inlineConstraintsInRoles(inlineConstraintRoles.size))
+        for (r in inlineConstraintRoles) {
+            val what = r.inlineConstraints.joinToString(", ") { (call, line) -> pick(Messages.Lint.constraintAtLine(call, line)) }
+            say(Messages.Lint.roleWhat(uri(r.path), r.line, r.name, what))
+        }
+        say(Messages.Lint.splitConstraintsIntoFunctions)
     }
     if (flatGroups.isNotEmpty()) {
         say("")
