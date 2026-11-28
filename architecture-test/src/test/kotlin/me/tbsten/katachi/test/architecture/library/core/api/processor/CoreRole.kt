@@ -2,7 +2,7 @@ package me.tbsten.katachi.test.architecture.library.core.api.processor
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.LayoutScope
+import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -25,13 +25,13 @@ fun DeclarationContainerScope.core() = "Core".role {
     example("ArchitectureProcessor.kt", "利用者が実装する変換")
     layout {
         "katachi" {
-            packageAndLayerImports()
-            internalDeclarationsInInternalPackage()
-            publicDeclarationsShowExample()
-            publicDeclarationsKeepTagsLast()
             mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "processor" / "*".ktFile()
         }
     }
+    packageAndLayerImports()
+    publicDeclarationsShowExample()
+    publicDeclarationsKeepTagsLast()
+    internalDeclarationsInInternalPackage()
 }
 
 private const val LAYER: String = "processor"
@@ -40,7 +40,7 @@ private const val LAYER: String = "processor"
 // the declaration site of a `konsist { }`, of a `ktFileContent { }` and of each line in it, so a
 // shared wrapper would make every layer role report the same line.
 @OptIn(ExperimentalKatachiApi::class)
-private fun LayoutScope.packageAndLayerImports() =
+private fun RoleScope.packageAndLayerImports() =
     ktFileContent {
         `package`(matchingDirectory)
         `import`("**")
@@ -63,17 +63,17 @@ private val DEFINITION_ERROR_REPORT_IMPORTS: Array<String> = arrayOf(
     "me.tbsten.katachi.template.internal.writeFileAtomically",
 )
 
-private fun LayoutScope.publicDeclarationsShowExample() =
+private fun RoleScope.publicDeclarationsShowExample() =
     KDOC_EXAMPLE_RULE.konsist {
         files.flatMap(::publicDeclarationsOf).must(::showsExample)
     }
 
-private fun LayoutScope.publicDeclarationsKeepTagsLast() =
+private fun RoleScope.publicDeclarationsKeepTagsLast() =
     KDOC_TAG_ORDER_RULE.konsist {
         files.flatMap(::publicDeclarationsOf).must(::keepsBlockTagsLast)
     }
 
-private fun LayoutScope.internalDeclarationsInInternalPackage() =
+private fun RoleScope.internalDeclarationsInInternalPackage() =
     INTERNAL_PACKAGE_RULE.konsist {
         val sealedParents = classesAndInterfaces(includeNested = true)
             .filter { it.hasSealedModifier }
