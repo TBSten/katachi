@@ -39,6 +39,9 @@ fun DeclarationContainerScope.konsistBackend() = "KonsistBackend".role {
             // four rules hold for them rather than a role of their own.
             mainSourceSet / kotlin / KONSIST_MAIN_PACKAGE / "declarations" / "*".ktFile()
             mainSourceSet / kotlin / KONSIST_MAIN_PACKAGE / "declarations" / "internal" / "*".ktFile()
+            // `katachiDefinition()`: the group that keeps a project's own definition files in the recommended shape.
+            mainSourceSet / kotlin / KONSIST_MAIN_PACKAGE / "katachi" / "*".ktFile()
+            mainSourceSet / kotlin / KONSIST_MAIN_PACKAGE / "katachi" / "internal" / "*".ktFile()
         }
     }
 }

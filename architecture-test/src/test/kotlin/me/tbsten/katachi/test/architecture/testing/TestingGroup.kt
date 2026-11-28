@@ -11,9 +11,6 @@ fun DeclarationContainerScope.testingGroup() = "Testing".group {
 
     spec()
     specSupport()
-    architectureDefinitionEntry()
-    groupDefinition()
-    roleDefinition()
     definitionSupport()
     definitionEntryPoint()
     layerImportSnapshot()

@@ -33,6 +33,7 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.pascalCase
 import me.tbsten.katachi.dsl.wholeTree
+import me.tbsten.katachi.konsist.katachi.katachiDefinition
 
 @OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
 class ProjectArchitectureSpec : FreeSpec({
@@ -46,6 +47,7 @@ class ProjectArchitectureSpec : FreeSpec({
             "Gradle",
             "Gradle.GradleWrapper",
             "Tool",
+            "KatachiDefinition",
         )
     }
 
@@ -60,12 +62,8 @@ class ProjectArchitectureSpec : FreeSpec({
             "App.ApplicationConfig",
             "App.LoggingConfig",
             "Testing.Test",
-            "Testing.ArchitectureDefinitionEntry",
             "Testing.DocumentSectionDefinition",
-            "Testing.GroupDefinition",
-            "Testing.RoleDefinition",
             "Testing.ProcessorDefinition",
-            "Testing.ArchitectureTest",
             "Testing.IntegrationSpec",
             "Testing.GeneratedDocumentation",
             "Testing.LayoutSnapshot",
@@ -78,6 +76,10 @@ class ProjectArchitectureSpec : FreeSpec({
             "Gradle.GradleProperties",
             "Gradle.VersionCatalog",
             "Gradle.DaemonJvmProperties",
+            "KatachiDefinition.ArchitectureDefinitionEntry",
+            "KatachiDefinition.GroupDefinition",
+            "KatachiDefinition.RoleDefinition",
+            "KatachiDefinition.ArchitectureTest",
             "Tool.Documentation",
             "Tool.Git",
             "Tool.IdeCodeStyle",
@@ -101,7 +103,10 @@ class ProjectArchitectureSpec : FreeSpec({
         // The point of splitting the definition: `ProjectArchitecture.kt` only calls the
         // group functions, so nothing may be attributed to it. If katachi captured the frame
         // one level out, every declaration would collapse onto this one file.
-        val files = (projectArchitecture.allGroups.map { it.declaredAt } + projectArchitecture.allRoles.map { it.declaredAt })
+        val files = (
+            projectArchitecture.allGroups.filterNot { it.qualifiedName.isKatachiDefinitionSubtree() }.map { it.declaredAt } +
+                projectArchitecture.allRoles.filterNot { it.qualifiedName.isKatachiDefinitionSubtree() }.map { it.declaredAt }
+            )
             .map { it.fileName }
             .distinct()
 
@@ -118,13 +123,13 @@ class ProjectArchitectureSpec : FreeSpec({
         // `Gradle` and everything nested under it are left out: they are declared by
         // katachi's own `gradle()`, not by this convention. The next test checks what they
         // do have instead.
-        projectArchitecture.allGroups.filterNot { it.qualifiedName.isGradleGroupSubtree() }.forEach { group ->
+        projectArchitecture.allGroups.filterNot { it.qualifiedName.isDeclaredByLibraryCall() }.forEach { group ->
             group.declaredAt.fileName shouldBe "${group.name.pascalCase}Group.kt"
         }
     }
 
     "each role is declared in the file determined by its name" {
-        projectArchitecture.allRoles.filterNot { it.qualifiedName.isGradleGroupSubtree() }.forEach { role ->
+        projectArchitecture.allRoles.filterNot { it.qualifiedName.isDeclaredByLibraryCall() }.forEach { role ->
             role.declaredAt.fileName shouldBe "${role.name.pascalCase}Role.kt"
         }
     }
@@ -136,11 +141,11 @@ class ProjectArchitectureSpec : FreeSpec({
         // `inline` slipping onto a group or role function, since the remapped line number no
         // longer holds the name. No line number is hard-coded, so editing the definition does
         // not break it.
-        projectArchitecture.allGroups.filterNot { it.qualifiedName.isGradleGroupSubtree() }.forEach { group ->
+        projectArchitecture.allGroups.filterNot { it.qualifiedName.isDeclaredByLibraryCall() }.forEach { group ->
             val source = sourceLinesOf(group.declaredAt.fileName)
             source[group.declaredAt.lineNumber - 1] shouldContain "\"${group.name}\""
         }
-        projectArchitecture.allRoles.filterNot { it.qualifiedName.isGradleGroupSubtree() }.forEach { role ->
+        projectArchitecture.allRoles.filterNot { it.qualifiedName.isDeclaredByLibraryCall() }.forEach { role ->
             val source = sourceLinesOf(role.declaredAt.fileName)
             source[role.declaredAt.lineNumber - 1] shouldContain "\"${role.name}\""
         }
@@ -165,6 +170,21 @@ class ProjectArchitectureSpec : FreeSpec({
 
         val source = sourceLinesOf(gradleGroup.declaredAt.fileName)
         source[gradleGroup.declaredAt.lineNumber - 1] shouldContain "gradle {"
+    }
+
+    "KatachiDefinition and its roles are declared at the single site that calls katachiDefinition()" {
+        // The utility declares four roles, but a violation or a page names the one line that
+        // called it, the same way as for `gradle()`: that line is where to allow or change them.
+        val group = projectArchitecture.allGroups.single { it.qualifiedName == "KatachiDefinition" }
+        group.declaredAt.fileName shouldBe "ProjectArchitecture.kt"
+
+        val sites = (
+            projectArchitecture.allGroups.filter { it.qualifiedName.isKatachiDefinitionSubtree() }.map { it.declaredAt } +
+                projectArchitecture.allRoles.filter { it.qualifiedName.isKatachiDefinitionSubtree() }.map { it.declaredAt }
+            ).distinct()
+        sites shouldBe listOf(group.declaredAt)
+
+        sourceLinesOf(group.declaredAt.fileName)[group.declaredAt.lineNumber - 1] shouldContain "katachiDefinition("
     }
 
     "only groups marked documented = false are documented = false" {
@@ -286,7 +306,14 @@ private val violationsHeldBackByBaseline: List<String> = listOf(
 
 private fun String.isGradleGroupSubtree(): Boolean = this == "Gradle" || startsWith("Gradle.")
 
+private fun String.isKatachiDefinitionSubtree(): Boolean = this == "KatachiDefinition" || startsWith("KatachiDefinition.")
+
+// What `gradle()` and `katachiDefinition()` declare is declared at the one line that calls them, not in a file named after each declaration.
+private fun String.isDeclaredByLibraryCall(): Boolean = isGradleGroupSubtree() || isKatachiDefinitionSubtree()
+
+@OptIn(ExperimentalKatachiApi::class)
 private val architectureWithoutEntrypointRole: Architecture = architecture {
+    katachiDefinition(rootPackage = "com.example")
     apiGroup()
     domainGroup()
     dataGroup()

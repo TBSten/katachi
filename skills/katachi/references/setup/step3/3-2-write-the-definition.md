@@ -91,7 +91,19 @@ In 3-2 you write **where the files go**. The constraints on their contents (`ktF
 
 #### The verification module needs Roles too
 
-The verification module is checked like any other module. Its `build.gradle.kts` is covered by `gradle()`, but the definition files and the test under `<verification module>/src/test/kotlin/` need a Role, or they come back as `[UnexpectedFile]` (3-3 assumes they have one). Give them a group of their own, with `documented = false` (they are tool configuration, as in 1-2):
+The verification module is checked like any other module. Its `build.gradle.kts` is covered by `gradle()`, but the definition files and the test under `<verification module>/src/test/kotlin/` need a Role, or they come back as `[UnexpectedFile]` (3-3 assumes they have one).
+
+**When the project uses the konsist backend (`katachi-konsist` is a dependency of the verification module), call `katachiDefinition()` instead of writing the group below.** It declares the same four Roles (the entry `ProjectArchitecture.kt`, `*Group.kt`, `*Role.kt` and `*Test.kt`) in a group named `KatachiDefinition`, each with a `ktFileContent { }` constraint, and it is the recommended shape, so call it as it is first and change a name or a constraint only when the project needs it:
+
+```kotlin
+@OptIn(ExperimentalKatachiApi::class)
+val projectArchitecture: Architecture = architecture {
+    katachiDefinition(rootPackage = "com.example.test.architecture")   // meta.moduleDir when it is not "architecture-test"
+    // ...the groups of the project
+}
+```
+
+`import me.tbsten.katachi.konsist.katachi.katachiDefinition`. A name, a file name, a constraint or an extra Role is changed from the call (`group = { fileName = "*Domain" }`, `role = { content { `import`("**") } }`, `additional { ... }`), not by copying the group out. Without the konsist backend, write the group by hand, with `documented = false` (they are tool configuration, as in 1-2):
 
 ```kotlin
 "ArchitectureTest".group {

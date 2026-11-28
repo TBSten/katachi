@@ -22,7 +22,7 @@ katachi の性能を測るモジュール。公開しない。`check` には入�
 | core/katachiDocs | `katachiDocs` | `katachi/src/main/kotlin/me/tbsten/katachi/docs` | `gradle-profiler:katachiDocs` | | v0.4.0 |
 | core/katachiTemplate | `katachiTemplate` | `katachi/src/main/kotlin/me/tbsten/katachi/template` | なし | 1 回の操作で、待ち時間は JVM の起動が主（`gradle-profiler:katachiDocs` と同じ経路） | v0.4.0 |
 | core/katachiDiff | `katachiDiff` | `katachi/src/main/kotlin/me/tbsten/katachi/diff` | なし | 1 PR に 1 回の実行で、時間の大半は git の呼び出し。role への割り当ては walk と同じ索引で、`WalkBench`・`RoleMatchBench` が見ている | v0.4.0 |
-| konsist | `konsist { }`・`ktFileContent { }`・`FileConstraintCheck()` | `katachi-konsist/src/main` | `KonsistScopeBench`・`KtFileContentBench`・`AssertColdBench`・`realProject:nowinandroid` | | v0.4.0 |
+| konsist | `konsist { }`・`ktFileContent { }`・`FileConstraintCheck()`・`katachiDefinition()` | `katachi-konsist/src/main` | `KonsistScopeBench`・`KtFileContentBench`・`AssertColdBench`・`realProject:nowinandroid` | `katachiDefinition()` は役割を 4 つ宣言するだけで、その制約の評価は `ktFileContent { }` と同じ経路（`KtFileContentBench`） | 未確認 |
 | konture | `konture { }` | `katachi-konture/src/main` | `KontureBench`・`AssertColdBench` | | v0.4.0 |
 | Gradle plugin | `:architecture-test:test`・`katachi<Key>` のタスク | `katachi-gradle-plugin/src` | `gradle-profiler:architectureTest`・`gradle-profiler:katachiDocs` | | v0.4.0 |
 | Actions | `diff-report`・`diff-report-comment` | `diff-report`・`diff-report-comment` | なし | `katachiDiff` を呼んで結果を貼るだけ（core/katachiDiff の行を見る） | v0.4.0 |
