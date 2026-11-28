@@ -44,26 +44,34 @@ The candidates are already in the report: the `allowed` / `forbidden` of each en
 
 #### 2. Write them
 
+**Write each constraint as a function the Role calls, not inside the Role's braces.** `ktFileContent { }`, `fileConstraint(…)`, `konsist { }` and `konture { }` all follow this, however short the constraint is. A Role that carries its constraints inline is hard to read: the `layout { }` that says where its files go is buried under what they may hold, and a long `ktFileContent { }` is where a Role definition grows to hundreds of lines.
+
+- The function is `private fun RoleScope.<role>KtFileContent() = ktFileContent { … }` for a `ktFileContent { }`, and `private fun RoleScope.<role><Rule>Constraint() = fileConstraint("…") { … }` for the others (`viewModelKtFileContent`, `stringResourceNoHttp`). Put it in the Role's own file, under the Role. The Role then reads as its `layout { }` followed by one call per constraint
+- Do not make it `inline` (3-3: katachi reads a violation's declaration site off the stack trace)
+- This is about a Role's braces. A constraint in a hook of `gradle()` (`buildScript { }`, `settingsScript { }`, `versionCatalog { }`) stays where it is: there is no Role of yours to read around it
+
 The file that uses a constraint starts with the lines of the "experimental APIs" paragraph of 3-2 and has the imports of its list (`ktFileContent`, `FileConstraintFailure`). Read the `kt-file-content` page (3-1) before you write a `ktFileContent { }`.
 
 A constraint on a file's imports goes in the `import` entries of `ktFileContent { }`. Only the `import`s you write are allowed, so "do not import this" is expressed by not listing that import. Many of a project's conventions are of this form.
 
 ```kt
-"ViewModel".role {
+fun DeclarationContainerScope.viewModel() = "ViewModel".role {
   layout { /* ... */ }
 
-  ktFileContent {
-    `package`("com.example.viewModel")
+  viewModelKtFileContent()
+}
 
-    // android.** is not listed. Importing it is a violation
-    `import`("kotlin.**")
-    `import`("kotlinx.coroutines.**")
-    `import`("androidx.lifecycle.**")
-    `import`("com.example.**")
+private fun RoleScope.viewModelKtFileContent() = ktFileContent {
+  `package`("com.example.viewModel")
 
-    required(`class`, fileName) {
-      allow(anythingElse)
-    }
+  // android.** is not listed. Importing it is a violation
+  `import`("kotlin.**")
+  `import`("kotlinx.coroutines.**")
+  `import`("androidx.lifecycle.**")
+  `import`("com.example.**")
+
+  required(`class`, fileName) {
+    allow(anythingElse)
   }
 }
 ```
@@ -73,14 +81,16 @@ For the contents of any other file, `fileConstraint` receives the files of the R
 ```kt
 import java.io.File
 
-"StringResource".role {
+fun DeclarationContainerScope.stringResource() = "StringResource".role {
   layout { /* "app/src/main/res/values/strings.xml" … */ }
 
-  fileConstraint("no hard-coded http:// URL in strings") { subject ->
-    subject.files
-      .filter { File("${subject.projectRoot}/$it").readText().contains("http://") }
-      .map { FileConstraintFailure(it) }
-  }
+  stringResourceNoHttp()
+}
+
+private fun RoleScope.stringResourceNoHttp() = fileConstraint("no hard-coded http:// URL in strings") { subject ->
+  subject.files
+    .filter { File("${subject.projectRoot}/$it").readText().contains("http://") }
+    .map { FileConstraintFailure(it) }
 }
 ```
 
@@ -112,4 +122,4 @@ A new constraint often finds code that really breaks the rule. **Do not loosen t
 - **A constraint that rejects a few files** is a finding. Leave it as it is, and write in the `questions` of 4-2 (with the files and the options "fix the code", "tolerate with a baseline", "the rule is wrong") what you found
 - A constraint that rejects nothing is fine, once part 3 has shown it fires
 
-In the report, the entry's `how` matches what ended up in the definition. Once the rules are decided, written and firing, and the check result is what you expect, mark `3-4` done.
+In the report, the entry's `how` matches what ended up in the definition. Once the rules are decided, written and firing, and the check result is what you expect, before you mark `3-4` done, read the definition once more and confirm that no `ktFileContent` / `fileConstraint` / `konsist` / `konture` is written inside a Role's braces (all of them are calls to the functions of part 2). Then mark `3-4` done.

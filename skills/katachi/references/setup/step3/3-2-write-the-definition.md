@@ -8,6 +8,7 @@
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.DeclarationContainerScope   // when splitting the definition into functions
 import me.tbsten.katachi.dsl.FileConstraintFailure       // when writing fileConstraint (an experimental API)
+import me.tbsten.katachi.dsl.RoleScope                   // when pulling a constraint out of a Role into a function (3-4)
 import me.tbsten.katachi.dsl.gradle.*                    // mainSourceSet / testSourceSet / kotlin / gradle()
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
