@@ -65,8 +65,9 @@ internal fun runProcess(command: List<String>, dir: Path, timeoutSeconds: Long =
     val process = ProcessBuilder(command)
         .directory(dir.toFile())
         .redirectError(ProcessBuilder.Redirect.DISCARD)
-        .redirectInput(ProcessBuilder.Redirect.from(java.io.File("/dev/null")))
         .start()
+    // Nothing for the program to read: close its stdin. (`/dev/null` is not there on Windows, where naming it fails the start.)
+    process.outputStream.close()
     val output = process.inputStream.readBytes().toString(Charsets.UTF_8)
     if (!process.waitFor(timeoutSeconds, TimeUnit.SECONDS)) {
         process.destroyForcibly()
@@ -286,7 +287,7 @@ internal fun ScriptContext.detectGradleJdk(root: Path): GradleJdk {
     // ./gradlew checks the shell's JAVA_HOME before it reads any Gradle setting, and stops on one with no bin/java.
     // An empty SHELL_JAVA_HOME_ENV is a shell without JAVA_HOME, not a reason to read the JAVA_HOME `kotlin` filled in.
     val shellJavaHome = (env[SHELL_JAVA_HOME_ENV] ?: env["JAVA_HOME"])?.takeIf { it.isNotEmpty() }
-    if (shellJavaHome != null && !Path(shellJavaHome, "bin", "java").isExecutable()) {
+    if (shellJavaHome != null && !javaIn(shellJavaHome).isExecutable()) {
         return GradleJdk(null, null, Messages.Probe.invalidJavaHome(shellJavaHome), invalidJavaHome = true)
     }
     val daemon = root.resolve("gradle/gradle-daemon-jvm.properties")
@@ -297,31 +298,36 @@ internal fun ScriptContext.detectGradleJdk(root: Path): GradleJdk {
         }
     }
     val gradleHome = gradlePropertiesJavaHome(root)
-    if (gradleHome != null && Path(gradleHome, "bin", "java").isExecutable()) {
-        return GradleJdk(javaMajorOf(Path(gradleHome, "bin", "java")), Messages.Probe.gradleJavaHome(gradleHome))
+    if (gradleHome != null && javaIn(gradleHome).isExecutable()) {
+        return GradleJdk(javaMajorOf(javaIn(gradleHome)), Messages.Probe.gradleJavaHome(gradleHome))
     }
     val javaHome = shellJavaHome
-    if (javaHome != null && Path(javaHome, "bin", "java").isExecutable()) {
-        return GradleJdk(javaMajorOf(Path(javaHome, "bin", "java")), Messages.Probe.javaHome(javaHome))
+    if (javaHome != null && javaIn(javaHome).isExecutable()) {
+        return GradleJdk(javaMajorOf(javaIn(javaHome)), Messages.Probe.javaHome(javaHome))
     }
     val onPath = findOnPath("java") ?: return GradleJdk(null, null, fromPath = true)
     val macOs = macOsJavaStub
     if (macOs != null && macOs.isStub(onPath)) {
         val home = macOs.defaultJdkHome(root)
             ?: return GradleJdk(null, null, Messages.Probe.couldNotFindJdkMacOs(onPath, macOs.javaHome), fromPath = true)
-        return GradleJdk(javaMajorOf(Path(home, "bin", "java")), Messages.Probe.javaPathMacOs(onPath, macOs.javaHome, home), fromPath = true)
+        return GradleJdk(javaMajorOf(javaIn(home)), Messages.Probe.javaPathMacOs(onPath, macOs.javaHome, home), fromPath = true)
     }
     return GradleJdk(javaMajorOf(onPath), Messages.Probe.javaPath(onPath), fromPath = true)
 }
 
 /** The kit's `command -v`. */
-internal fun ScriptContext.findOnPath(program: String): Path? =
-    (env["PATH"] ?: "").split(':').filter { it.isNotEmpty() }
-        .map { Path(it, program) }
+internal fun ScriptContext.findOnPath(program: String): Path? {
+    // Windows names the variable `Path` and the environment of a child there is case-insensitive; the Map from System.getenv() is not.
+    val path = env["PATH"] ?: env.entries.firstOrNull { it.key.equals("PATH", ignoreCase = true) }?.value ?: ""
+    val names = executableNames(program, windows, env["PATHEXT"])
+    return path.split(pathSeparatorOf(windows)).filter { it.isNotEmpty() }
+        .flatMap { dir -> names.map { Path(dir, it) } }
         .firstOrNull { it.isRegularFile() && it.isExecutable() }
+}
 
 private fun ScriptContext.gradlePropertiesJavaHome(root: Path): String? {
-    val userHome = env["GRADLE_USER_HOME"]?.takeIf { it.isNotEmpty() } ?: "${env["HOME"] ?: ""}/.gradle"
+    val home = (if (windows) env["USERPROFILE"] else env["HOME"]) ?: env["HOME"] ?: ""
+    val userHome = env["GRADLE_USER_HOME"]?.takeIf { it.isNotEmpty() } ?: "$home/.gradle"
     for (file in listOf(root.resolve("gradle.properties"), Path(userHome, "gradle.properties"))) {
         if (!file.isRegularFile()) continue
         val pattern = Regex("^\\s*org\\.gradle\\.java\\.home\\s*=\\s*(.*)")
@@ -356,7 +362,7 @@ internal fun ScriptContext.checkGradleJdk(root: Path, jdk: GradleJdk = detectGra
 private fun ScriptContext.withKatachiJdkHint(message: Msg, jdk: GradleJdk): Msg {
     if (!jdk.fromPath || env[SHELL_JAVA_HOME_ENV] != "") return message
     val home = env["JAVA_HOME"]?.takeIf { it.isNotEmpty() } ?: return message
-    val major = javaMajorOf(Path(home, "bin", "java"))?.takeIf { it >= JDK_MIN_MAJOR } ?: return message
+    val major = javaMajorOf(javaIn(home))?.takeIf { it >= JDK_MIN_MAJOR } ?: return message
     return Messages.Probe.katachiRunsOnJdk(message, major, home, shellQuote(home))
 }
 

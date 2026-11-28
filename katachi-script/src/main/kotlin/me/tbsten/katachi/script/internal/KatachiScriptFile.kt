@@ -78,10 +78,18 @@ internal fun ScriptContext.runKatachiScriptFile(file: String, args: List<String>
     if (!script.isRegularFile()) {
         die(Messages.ScriptFile.noSuchScript(fileUriOf(script)))
     }
-    val classpath = scriptClasspath().joinToString(java.io.File.pathSeparator)
+    val classpath = scriptClasspath().joinToString(pathSeparatorOf(windows).toString())
     // -no-reflect: with a definition from -cp, `kotlin` 2.4.21 puts kotlin-reflect where the standard library
     // is not visible, and the first `::class` fails with NoClassDefFoundError. katachi needs no kotlin-reflect.
-    val command = listOf("kotlin", "-no-reflect", "-cp", classpath, script.toString()) + args
+    // `kotlin` is `kotlin.bat` on Windows, which a process cannot start by the name without its extension.
+    // The batch file splits its arguments at `;` too, so the class path (`a.jar;b.jar`) is quoted on Windows, as one argument.
+    val command = listOf(
+        if (windows) "kotlin.bat" else "kotlin",
+        "-no-reflect",
+        "-cp",
+        if (windows) "\"$classpath\"" else classpath,
+        script.toString(),
+    ) + args
     return try {
         launch.launch(command, mapOf(KATACHI_SCRIPT_FILE_ENV to script.toString()), cwd)
     } catch (_: IOException) {
@@ -98,7 +106,21 @@ internal fun interface ProcessLauncher {
 internal object InheritingIoLauncher : ProcessLauncher {
     override fun launch(command: List<String>, extraEnv: Map<String, String>, cwd: Path): Int {
         val builder = ProcessBuilder(command).directory(cwd.toFile()).inheritIO()
+        dropKotlinBatchState(command, builder.environment())
         builder.environment().putAll(extraEnv)
         return builder.start().waitFor()
+    }
+}
+
+/**
+ * Takes out of [environment] what the `kotlin.bat` that started this katachi left there, when [command] is another `kotlin.bat`.
+ *
+ * The batch file collects its arguments in the variable `KOTLIN_OPTS`, and that variable stays in the environment of the `java` it
+ * starts (a `setlocal` only undoes it for the batch file itself). A second `kotlin.bat` started from here would go on from it, and
+ * so run `katachi.main.kts` again with the arguments of the first one, before the script it was asked to run.
+ */
+internal fun dropKotlinBatchState(command: List<String>, environment: MutableMap<String, String>) {
+    if (command.firstOrNull()?.endsWith(".bat", ignoreCase = true) == true) {
+        environment.keys.removeAll { it.equals("KOTLIN_OPTS", ignoreCase = true) }
     }
 }

@@ -57,8 +57,8 @@ internal object Messages {
         )
 
         val xcodeSelectInstallBrew: Msg = Msg(
-            ja = "macOS: xcode-select --install か brew install git / Debian・Ubuntu: sudo apt-get install git / Fedora: sudo dnf install git / Alpine: apk add git",
-            en = "macOS: xcode-select --install or brew install git / Debian, Ubuntu: sudo apt-get install git / Fedora: sudo dnf install git / Alpine: apk add git",
+            ja = "macOS: xcode-select --install か brew install git / Debian・Ubuntu: sudo apt-get install git / Fedora: sudo dnf install git / Alpine: apk add git / Windows: winget install --id Git.Git",
+            en = "macOS: xcode-select --install or brew install git / Debian, Ubuntu: sudo apt-get install git / Fedora: sudo dnf install git / Alpine: apk add git / Windows: winget install --id Git.Git",
         )
 
         val withoutGitCommandCannot: Msg = Msg(
@@ -111,8 +111,8 @@ internal object Messages {
         )
 
         val kotlinNotPathInstall: Msg = Msg(
-            ja = "kotlin が PATH にありません。brew install kotlin で入れてください。",
-            en = "kotlin is not on PATH. Install it with: brew install kotlin",
+            ja = "kotlin が PATH にありません。macOS・Linux は brew install kotlin、Windows は winget install JetBrains.Kotlin.Compiler で入れてください。",
+            en = "kotlin is not on PATH. Install it with: brew install kotlin (macOS, Linux) or winget install JetBrains.Kotlin.Compiler (Windows)",
         )
     }
 
@@ -436,9 +436,9 @@ internal object Messages {
         )
 
         fun invalidJavaHome(javaHome: Any?): Msg = Msg(
-            ja = "JAVA_HOME（$javaHome）に bin/java がありません。./gradlew も「JAVA_HOME is set to an invalid directory」で止まります。\n" +
+            ja = "JAVA_HOME（$javaHome）に bin/java がありません。${GRADLEW} も「JAVA_HOME is set to an invalid directory」で止まります。\n" +
                 "    JAVA_HOME を JDK $JDK_MIN_MAJOR 以上のディレクトリに向けるか、unset JAVA_HOME してから、もう一度実行してください。",
-            en = "JAVA_HOME ($javaHome) has no bin/java, so ./gradlew stops too (\"JAVA_HOME is set to an invalid directory\").\n" +
+            en = "JAVA_HOME ($javaHome) has no bin/java, so ${GRADLEW} stops too (\"JAVA_HOME is set to an invalid directory\").\n" +
                 "    Point JAVA_HOME at a JDK $JDK_MIN_MAJOR or later directory, or run unset JAVA_HOME, then run this again.",
         )
 
@@ -509,9 +509,9 @@ internal object Messages {
     object RunScript {
         /** `katachi agent`, `katachi agent test`, `katachi test`, `katachi compare-violations` (KATACHI-429). */
         fun removedCheckCommand(command: Any?): Msg = Msg(
-            ja = "$command は無くなりました。検査は ./gradlew <検査用モジュール>:test を直接実行します" +
+            ja = "$command は無くなりました。検査は ${GRADLEW} <検査用モジュール>:test を直接実行します" +
                 "（手順は katachi skill: gh skill install TBSten/katachi katachi か npx skills add TBSten/katachi --skill katachi で入れる）",
-            en = "$command was removed. Run the check with ./gradlew <verification module>:test directly " +
+            en = "$command was removed. Run the check with ${GRADLEW} <verification module>:test directly " +
                 "(the steps are in the katachi skill: get it with gh skill install TBSten/katachi katachi or npx skills add TBSten/katachi --skill katachi)",
         )
 
@@ -586,9 +586,9 @@ internal object Messages {
 
         val couldNotDetectEmbeddedKotlin: Msg = Msg(
             ja = "Kotlin のバージョンを検出できませんでした。buildSrc は Gradle に同梱の Kotlin（embeddedKotlin）を使っていて、" +
-                "そのバージョンは ./gradlew --version の Kotlin: の行に出ます。--kotlin で指定してください。",
+                "そのバージョンは ${GRADLEW} --version の Kotlin: の行に出ます。--kotlin で指定してください。",
             en = "Could not detect the Kotlin version. buildSrc uses the Kotlin that comes with Gradle (embeddedKotlin), " +
-                "whose version ./gradlew --version prints on its Kotlin: line. Pass it with --kotlin.",
+                "whose version ${GRADLEW} --version prints on its Kotlin: line. Pass it with --kotlin.",
         )
 
         fun couldNotReadKatachi(katachi: Any?): Msg = Msg(
@@ -859,8 +859,8 @@ internal object Messages {
         )
 
         fun nextTestArchitectureEmpty(modulePath: Any?): Msg = Msg(
-            ja = "次: ./gradlew $modulePath:test\n    architecture { } が空なので、すべてのファイルが Unexpected として報告されて\n    失敗するのが正常です。Unexpected 以外のエラーが出た場合だけが問題です。",
-            en = "Next: ./gradlew $modulePath:test\n    architecture { } is empty, so every file is reported as Unexpected and the test\n    fails. That is expected. Only errors other than Unexpected are a problem.",
+            ja = "次: ${GRADLEW} $modulePath:test\n    architecture { } が空なので、すべてのファイルが Unexpected として報告されて\n    失敗するのが正常です。Unexpected 以外のエラーが出た場合だけが問題です。",
+            en = "Next: ${GRADLEW} $modulePath:test\n    architecture { } is empty, so every file is reported as Unexpected and the test\n    fails. That is expected. Only errors other than Unexpected are a problem.",
         )
 
         val projectMatchesDeclaration: Msg = Msg(
@@ -869,8 +869,8 @@ internal object Messages {
         )
 
         fun testFailsUntilAdded(modulePath: Any?): Msg = Msg(
-            ja = "足すまで ./gradlew $modulePath:test は失敗します。",
-            en = "./gradlew $modulePath:test fails until you add it.",
+            ja = "足すまで ${GRADLEW} $modulePath:test は失敗します。",
+            en = "${GRADLEW} $modulePath:test fails until you add it.",
         )
 
         fun catalogRemapped(settingsUri: Any?): Msg = Msg(

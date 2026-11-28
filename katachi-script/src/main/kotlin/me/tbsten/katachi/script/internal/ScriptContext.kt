@@ -53,7 +53,12 @@ internal class ScriptContext(
     val launch: ProcessLauncher = InheritingIoLauncher,
     val macOsJavaStub: MacOsJavaStub? = MacOsJavaStub.onThisHost(),
     val gradle: GradleRunner = ProcessGradleRunner,
+    /** The host is Windows. A test sets it to see what katachi does there. */
+    val windows: Boolean = isWindowsHost(),
 ) {
+    /** The `java` of the JDK at [home]. */
+    fun javaIn(home: String): Path = javaExecutableIn(home, windows)
+
     var lang: Lang = Lang.fromEnv(env) ?: Lang.JA
 
     /** `--lang` given on the command line (doctor); it wins over everything else. */

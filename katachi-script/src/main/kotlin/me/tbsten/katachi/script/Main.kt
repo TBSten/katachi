@@ -2,8 +2,8 @@ package me.tbsten.katachi.script
 
 import kotlin.system.exitProcess
 import me.tbsten.katachi.script.internal.ScriptContext
+import me.tbsten.katachi.script.internal.argsOfWrapper
 import me.tbsten.katachi.script.internal.runScript
-import me.tbsten.katachi.script.internal.unescapeWrapperArgs
 
 /**
  * Runs the `katachi` command with [args] and exits the JVM with its status.
@@ -20,10 +20,11 @@ import me.tbsten.katachi.script.internal.unescapeWrapperArgs
  * ```
  *
  * @param args The command line after the command name, as `bin/katachi` passes it: `scaffold --package com.example.app`.
- *   An argument `bin/katachi` escaped so `kotlin` would not take it (`-D…`, `-J…`) is turned back here.
+ *   An argument `bin/katachi` escaped so `kotlin` would not take it (`-D…`, `-J…`) is turned back here. On Windows,
+ *   `bin\katachi.cmd` passes the line as typed in an environment variable instead, and it is split here.
  * @featured
  */
 public fun main(args: Array<String>) {
-    val status = runScript(unescapeWrapperArgs(args.toList()), ScriptContext.fromSystem())
+    val status = runScript(argsOfWrapper(args.toList(), System.getenv()), ScriptContext.fromSystem())
     if (status != 0) exitProcess(status)
 }

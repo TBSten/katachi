@@ -82,11 +82,16 @@ jobs:
   # it. The script inside resolves me.tbsten.katachi:katachi-script from Maven Central at first
   # run, so this waits for `publish`; the formula still only installs once Central has synced.
   #
+  # And the same for Windows (KATACHI-456): katachi-cli-<version>.zip (with bin/katachi.cmd) attached to the
+  # release, and the manifest of the Scoop bucket in the same tap (`bucket/katachi.json`) pointed at it. The tap is
+  # the bucket too: `scoop bucket add tbsten https://github.com/TBSten/homebrew-tap` reads any Git repository
+  # that has a `bucket` directory, so there is no second repository and no second token to keep.
+  #
   # Pushing to the tap needs HOMEBREW_TAP_TOKEN, a fine-grained token with Contents: read and
-  # write on TBSten/homebrew-tap. Without it the tarball is still attached and the formula is left
-  # for a hand edit (the step prints the url and sha256 to paste).
+  # write on TBSten/homebrew-tap. Without it the tarball and the zip are still attached and the formula and the
+  # manifest are left for a hand edit (the step prints the url and sha256 to paste).
   cli-tarball:
-    name: attach the CLI tarball and update the tap
+    name: attach the CLI tarball and zip and update the tap
     if: ${{ github.event_name == 'release' }}
     needs: publish
     runs-on: ubuntu-latest
@@ -106,8 +111,8 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
-      - name: Build the tarball
-        run: ./gradlew :katachi-script:cliTar --console=plain --stacktrace
+      - name: Build the tarball and the zip
+        run: ./gradlew :katachi-script:cliTar :katachi-script:cliZip --console=plain --stacktrace
 
       # brew runs bin/katachi from the tarball as it is, so a tarball whose bin/katachi lost its execute bit
       # (KATACHI-455) must not reach the release.
@@ -118,6 +123,16 @@ jobs:
           tar -tvzf "${tarball}"
           tar -tvzf "${tarball}" | grep -E '^-..x.* (\./)?bin/katachi$' \
             || { echo "::error::${tarball} の bin/katachi に実行権限がありません。katachi-script/build.gradle.kts の cliTar を確かめてください。"; exit 1; }
+
+      # bin/katachi.cmd needs CRLF line endings: cmd.exe can mis-read a label in a file that is LF only (.gitattributes
+      # says so; this is the guard for a checkout that did not follow it).
+      - name: Check bin/katachi.cmd in the zip has CRLF line endings
+        run: |
+          version=$(sed -n 's/^katachi = "\(.*\)"/\1/p' gradle/libs.versions.toml | head -n 1)
+          zip="katachi-script/build/distributions/katachi-cli-${version}.zip"
+          unzip -l "${zip}"
+          unzip -p "${zip}" bin/katachi.cmd | grep -q $'\r' \
+            || { echo "::error::${zip} の bin/katachi.cmd の改行が CRLF ではありません。.gitattributes を確かめてください。"; exit 1; }
 
       - name: Attach it to the release
         id: tarball
@@ -136,25 +151,67 @@ jobs:
           echo "sha256=${sha}" >> "${GITHUB_OUTPUT}"
           echo "url=https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/katachi-cli-${version}.tar.gz" >> "${GITHUB_OUTPUT}"
 
-      - name: Update the formula in the tap
+      - name: Attach the zip to the release
+        id: zip
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(sed -n 's/^katachi = "\(.*\)"/\1/p' gradle/libs.versions.toml | head -n 1)
+          zip="katachi-script/build/distributions/katachi-cli-${version}.zip"
+          if [ -z "${version}" ] || [ ! -f "${zip}" ]; then
+            echo "::error::${zip} がありません。gradle/libs.versions.toml の katachi と katachi-script/build.gradle.kts の cliZip を確かめてください。"
+            exit 1
+          fi
+          gh release upload "${GITHUB_REF_NAME}" "${zip}" --clobber
+          sha=$(sha256sum "${zip}" | cut -d ' ' -f 1)
+          echo "sha256=${sha}" >> "${GITHUB_OUTPUT}"
+          echo "url=https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/katachi-cli-${version}.zip" >> "${GITHUB_OUTPUT}"
+
+      - name: Update the formula and the Scoop manifest in the tap
         env:
           TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           URL: ${{ steps.tarball.outputs.url }}
           SHA256: ${{ steps.tarball.outputs.sha256 }}
           VERSION: ${{ steps.tarball.outputs.version }}
+          ZIP_URL: ${{ steps.zip.outputs.url }}
+          ZIP_SHA256: ${{ steps.zip.outputs.sha256 }}
         run: |
           if [ -z "${TAP_TOKEN}" ]; then
             echo "::warning::HOMEBREW_TAP_TOKEN が無いので tap は更新していません。Formula/katachi.rb に手で入れてください: url \"${URL}\" / sha256 \"${SHA256}\""
+            echo "::warning::bucket/katachi.json にも手で入れてください: version \"${VERSION}\" / url \"${ZIP_URL}\" / hash \"${ZIP_SHA256}\""
             exit 0
           fi
           git clone --depth 1 "https://x-access-token:${TAP_TOKEN}@github.com/TBSten/homebrew-tap.git" tap
           formula=tap/Formula/katachi.rb
           sed -i -e "s|^  url \".*\"$|  url \"${URL}\"|" -e "s|^  sha256 \".*\"$|  sha256 \"${SHA256}\"|" "${formula}"
           grep -q "${SHA256}" "${formula}" || { echo "::error::${formula} を書き換えられませんでした"; exit 1; }
+          # The Scoop manifest is written whole each time: it holds nothing but this release. `bin` is the .cmd that
+          # puts `katachi` on PATH; `autoupdate` is what `scoop`'s own checkver tooling reads, and the next release rewrites it anyway.
+          mkdir -p tap/bucket
+          python3 - <<'PY'
+          import json, os
+          version = os.environ["VERSION"]
+          manifest = {
+              "version": version,
+              "description": "Architecture definitions for Kotlin projects: the install kit and CLI of katachi",
+              "homepage": "https://tbsten.github.io/katachi",
+              "license": "MIT",
+              "notes": "katachi runs on kotlin. Install it if you do not have it: winget install JetBrains.Kotlin.Compiler",
+              "url": os.environ["ZIP_URL"],
+              "hash": os.environ["ZIP_SHA256"],
+              "bin": "bin\\katachi.cmd",
+              "checkver": {"github": "https://github.com/TBSten/katachi"},
+              "autoupdate": {"url": "https://github.com/TBSten/katachi/releases/download/v$version/katachi-cli-$version.zip"},
+          }
+          with open("tap/bucket/katachi.json", "w", encoding="utf-8") as f:
+              json.dump(manifest, f, indent=4)
+              f.write("\n")
+          PY
+          grep -q "${ZIP_SHA256}" tap/bucket/katachi.json || { echo "::error::bucket/katachi.json を書けませんでした"; exit 1; }
           cd tap
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add Formula/katachi.rb
+          git add Formula/katachi.rb bucket/katachi.json
           git commit -m "katachi ${VERSION}"
           git push origin HEAD
 

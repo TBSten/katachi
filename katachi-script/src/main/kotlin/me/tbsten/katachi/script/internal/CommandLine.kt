@@ -72,8 +72,19 @@ internal fun commandText(arguments: List<String>): String =
 
 private val SHELL_SAFE = Regex("[A-Za-z0-9@%+=:,./_-]+")
 
-internal fun shellQuote(argument: String): String =
-    if (argument.matches(SHELL_SAFE)) argument else "'" + argument.replace("'", "'\\''") + "'"
+/** What may stay bare in cmd.exe and PowerShell too: a path there has backslashes in it. */
+private val WINDOWS_SHELL_SAFE = Regex("[A-Za-z0-9@%+=:,./\\\\_-]+")
+
+/**
+ * [argument] as a person would type it. A POSIX shell takes `'...'`; cmd.exe and PowerShell take `"..."` (a `"` inside doubled),
+ * which is the one quote both read the same way.
+ */
+internal fun shellQuote(argument: String, windows: Boolean = isWindowsHost()): String = when {
+    !windows && argument.matches(SHELL_SAFE) -> argument
+    windows && argument.matches(WINDOWS_SHELL_SAFE) -> argument
+    windows -> "\"" + argument.replace("\"", "\"\"") + "\""
+    else -> "'" + argument.replace("'", "'\\''") + "'"
+}
 
 internal fun Katachi.run(arguments: List<String>): Int {
     if (echo) println("$ ${commandText(arguments)}")
@@ -109,12 +120,19 @@ internal object InProcessRunner : CommandRunner {
 
 internal class SubprocessRunner(private val executable: String) : CommandRunner {
     override fun run(arguments: List<String>, cwd: Path?): Int {
-        val builder = ProcessBuilder(listOf(executable) + arguments).inheritIO()
+        val builder = ProcessBuilder(listOf(programName(executable)) + arguments).inheritIO()
         if (cwd != null) builder.directory(cwd.toFile())
         return builder.start().waitFor()
     }
 
     override fun toString(): String = "CommandRunner.subprocess($executable)"
+
+    /**
+     * What to start. On Windows `katachi` is `katachi.cmd`, which a process cannot start by the name without its extension;
+     * a name that has one (`katachi.exe`, a path to `katachi.cmd`) is taken as it is.
+     */
+    private fun programName(name: String): String =
+        if (isWindowsHost() && java.io.File(name).extension.isEmpty()) "$name.cmd" else name
 }
 
 internal class RawCommand(private val katachi: Katachi, override val arguments: List<String>) : KatachiCommand {
