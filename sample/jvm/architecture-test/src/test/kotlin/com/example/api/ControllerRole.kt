@@ -110,7 +110,7 @@ fun DeclarationContainerScope.controller() = "Controller".role {
 
         required(`class`, fileName) {
             allow(private, `val`, "*").type("*Service")      // the Services it calls, swappable from a test
-            required(`fun`, "register")("route: Route") // the one function plugin/Routing.kt calls
+            required(`fun`, "register")("route: Route").count(1..1) // the one function plugin/Routing.kt calls, exactly one
         }
     }
 }
